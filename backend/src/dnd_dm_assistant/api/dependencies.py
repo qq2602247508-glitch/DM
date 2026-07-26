@@ -24,6 +24,7 @@ from dnd_dm_assistant.infrastructure.database.combat_service import CombatEngine
 from dnd_dm_assistant.infrastructure.database.encounter_service import EncounterAdjustmentService
 from dnd_dm_assistant.infrastructure.database.exploration_service import ExplorationService
 from dnd_dm_assistant.infrastructure.database.narrative_service import NarrativeService
+from dnd_dm_assistant.infrastructure.database.player_service import PlayerService
 from dnd_dm_assistant.infrastructure.database.rest_service import RestService
 from dnd_dm_assistant.infrastructure.database.spell_economy_service import SpellEconomyService
 from dnd_dm_assistant.infrastructure.database.world_service import WorldService
@@ -107,3 +108,7 @@ def get_advancement_service(request: Request) -> AdvancementService:
 
 def get_world_generation_service(request: Request) -> WorldGenerationService:
     return WorldGenerationService(get_runtime_integrations(request))
+
+
+def get_player_service(request: Request) -> PlayerService:
+    return PlayerService(cast(Engine, request.app.state.database_engine))

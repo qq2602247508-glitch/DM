@@ -1538,6 +1538,75 @@ class VisibilityState(Timestamped, Base):
     )
 
 
+class Handout(Timestamped, Base):
+    """A DM-authored document deliberately released to the player view."""
+
+    __tablename__ = "handouts"
+    campaign_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("campaigns.id", ondelete="CASCADE"), nullable=False
+    )
+    title: Mapped[str] = mapped_column(String(200), nullable=False)
+    body: Mapped[str] = mapped_column(Text, nullable=False)
+    published: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False, server_default="0"
+    )
+    sort_order: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=0, server_default="0"
+    )
+    __table_args__ = (
+        CheckConstraint("length(trim(title)) > 0", name="ck_handout_title_nonempty"),
+        Index(
+            "ix_handouts_campaign_published",
+            "campaign_id",
+            "published",
+            "sort_order",
+            "id",
+        ),
+    )
+
+
+class PlayerActionRequest(Timestamped, Base):
+    """An intent submitted by a player; it never changes authoritative state."""
+
+    __tablename__ = "player_action_requests"
+    campaign_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("campaigns.id", ondelete="CASCADE"), nullable=False
+    )
+    character_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("characters.id", ondelete="CASCADE"), nullable=False
+    )
+    player_key: Mapped[str] = mapped_column(String(100), nullable=False)
+    action_type: Mapped[str] = mapped_column(String(80), nullable=False)
+    message: Mapped[str | None] = mapped_column(Text)
+    payload_json: Mapped[dict[str, object]] = mapped_column(
+        JSON, nullable=False, default=dict, server_default="{}"
+    )
+    character_version: Mapped[int] = mapped_column(Integer, nullable=False)
+    idempotency_key: Mapped[str] = mapped_column(String(120), nullable=False)
+    status: Mapped[str] = mapped_column(
+        String(20), nullable=False, default="pending", server_default="pending"
+    )
+    dm_note: Mapped[str | None] = mapped_column(Text)
+    resolved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    __table_args__ = (
+        CheckConstraint(
+            "length(trim(action_type)) > 0", name="ck_player_action_type_nonempty"
+        ),
+        CheckConstraint(
+            "character_version >= 1", name="ck_player_action_character_version"
+        ),
+        CheckConstraint(
+            "status IN ('pending','accepted','rejected','stale')", name="ck_player_action_status"
+        ),
+        UniqueConstraint(
+            "campaign_id", "idempotency_key", name="uq_player_action_campaign_idempotency"
+        ),
+        Index(
+            "ix_player_action_campaign_status", "campaign_id", "status", "created_at", "id"
+        ),
+    )
+
+
 class WorldClock(Timestamped, Base):
     __tablename__ = "world_clock"
     campaign_id: Mapped[str] = mapped_column(

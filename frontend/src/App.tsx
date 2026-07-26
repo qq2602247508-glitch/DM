@@ -18,6 +18,7 @@ import { LocationsPage } from "./pages/LocationsPage";
 import { InventoryPage } from "./pages/InventoryPage";
 import { ScenesPage } from "./pages/ScenesPage";
 import { GameTablePage } from "./pages/GameTablePage";
+import { PlayerPage } from "./pages/PlayerPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -59,21 +60,20 @@ function RoutedPage(): ReactElement {
       return <CombatPage />;
     case "/settings":
       return <SettingsPage />;
+    case "/player":
+      return <PlayerPage />;
     default:
       return <DashboardPage />;
   }
 }
 
 export function App(): ReactElement {
+  const route = useHashRoute();
   return (
     <QueryClientProvider client={queryClient}>
       <CampaignProvider>
         <ToastProvider>
-          <AssistantPrefillProvider>
-            <AppShell>
-              <RoutedPage />
-            </AppShell>
-          </AssistantPrefillProvider>
+          <AssistantPrefillProvider>{route === "/player" ? <PlayerPage /> : <AppShell><RoutedPage /></AppShell>}</AssistantPrefillProvider>
         </ToastProvider>
       </CampaignProvider>
     </QueryClientProvider>
