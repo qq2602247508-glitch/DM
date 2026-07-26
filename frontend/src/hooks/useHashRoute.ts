@@ -15,7 +15,8 @@ export type RoutePath =
   | "/quests"
   | "/combat"
   | "/proposals"
-  | "/settings";
+  | "/settings"
+  | "/player";
 
 const ROUTES: readonly RoutePath[] = [
   "/",
@@ -33,6 +34,7 @@ const ROUTES: readonly RoutePath[] = [
   "/combat",
   "/proposals",
   "/settings",
+  "/player",
 ];
 
 function parseHash(): RoutePath {
