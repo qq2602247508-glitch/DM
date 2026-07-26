@@ -100,9 +100,7 @@ class Character(Timestamped, Base):
     background: Mapped[str | None] = mapped_column(String(100))
     class_name: Mapped[str | None] = mapped_column(String(100))
     level: Mapped[int] = mapped_column(Integer, nullable=False, default=1, server_default="1")
-    experience: Mapped[int] = mapped_column(
-        Integer, nullable=False, default=0, server_default="0"
-    )
+    experience: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
     armor_class: Mapped[int] = mapped_column(
         Integer, nullable=False, default=10, server_default="10"
     )
@@ -122,6 +120,18 @@ class Character(Timestamped, Base):
     )
     hp: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
     max_hp: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
+    max_hp_reduction: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=0, server_default="0"
+    )
+    ability_score_reductions: Mapped[dict[str, int]] = mapped_column(
+        JSON, nullable=False, default=dict, server_default="{}"
+    )
+    death_saves: Mapped[dict[str, int]] = mapped_column(
+        JSON,
+        nullable=False,
+        default=lambda: {"successes": 0, "failures": 0},
+        server_default='{"successes":0,"failures":0}',
+    )
     inventory: Mapped[list[object]] = mapped_column(
         JSON, nullable=False, default=list, server_default="[]"
     )
@@ -157,6 +167,10 @@ class Character(Timestamped, Base):
         CheckConstraint("armor_class >= 0 AND armor_class <= 99", name="ck_character_ac"),
         CheckConstraint("speed >= 0 AND speed <= 1000", name="ck_character_speed"),
         CheckConstraint("hp >= 0 AND max_hp >= 0 AND hp <= max_hp", name="ck_character_hp"),
+        CheckConstraint(
+            "max_hp_reduction >= 0 AND max_hp_reduction <= max_hp",
+            name="ck_character_max_hp_reduction",
+        ),
         Index("ix_characters_campaign_created", "campaign_id", "created_at", "id"),
     )
 
@@ -279,9 +293,7 @@ class Quest(Timestamped, Base):
     )
     giver: Mapped[str | None] = mapped_column(String(200))
     reward: Mapped[str | None] = mapped_column(Text)
-    xp_reward: Mapped[int] = mapped_column(
-        Integer, nullable=False, default=0, server_default="0"
-    )
+    xp_reward: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
     xp_awarded: Mapped[bool] = mapped_column(
         Boolean, nullable=False, default=False, server_default="0"
     )
@@ -423,9 +435,7 @@ class Combatant(Timestamped, Base):
     concentration: Mapped[dict[str, object]] = mapped_column(
         JSON, nullable=False, default=dict, server_default="{}"
     )
-    speed_ft: Mapped[int] = mapped_column(
-        Integer, nullable=False, default=30, server_default="30"
-    )
+    speed_ft: Mapped[int] = mapped_column(Integer, nullable=False, default=30, server_default="30")
     movement_remaining_ft: Mapped[int] = mapped_column(
         Integer, nullable=False, default=30, server_default="30"
     )
@@ -594,12 +604,8 @@ class DeathSave(Timestamped, Base):
     )
     successes: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
     failures: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
-    stable: Mapped[bool] = mapped_column(
-        Boolean, nullable=False, default=False, server_default="0"
-    )
-    dead: Mapped[bool] = mapped_column(
-        Boolean, nullable=False, default=False, server_default="0"
-    )
+    stable: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default="0")
+    dead: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default="0")
     pending_death_confirmation: Mapped[bool] = mapped_column(
         Boolean, nullable=False, default=False, server_default="0"
     )
@@ -675,9 +681,7 @@ class CombatSettlement(Timestamped, Base):
     )
     idempotency_key: Mapped[str] = mapped_column(String(120), nullable=False)
     notes: Mapped[str | None] = mapped_column(Text)
-    confirmed_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False
-    )
+    confirmed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     __table_args__ = (
         CheckConstraint(
             "status IN ('confirmed','reverted','conflict')",
@@ -744,6 +748,159 @@ class OperationTransaction(Timestamped, Base):
             "created_at",
             "id",
         ),
+    )
+
+
+class ResourcePool(Timestamped, Base):
+    __tablename__ = "resource_pools"
+    campaign_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("campaigns.id", ondelete="CASCADE"), nullable=False
+    )
+    character_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("characters.id", ondelete="CASCADE"), nullable=False
+    )
+    key: Mapped[str] = mapped_column(String(100), nullable=False)
+    label: Mapped[str] = mapped_column(String(200), nullable=False)
+    category: Mapped[str] = mapped_column(
+        String(50), nullable=False, default="other", server_default="other"
+    )
+    current: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
+    maximum: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
+    recovery_timing: Mapped[str] = mapped_column(
+        String(30), nullable=False, default="manual", server_default="manual"
+    )
+    recovery_amount: Mapped[int | None] = mapped_column(Integer)
+    die_size: Mapped[int | None] = mapped_column(Integer)
+    source_record_id: Mapped[str | None] = mapped_column(String(100))
+    rule_key: Mapped[str | None] = mapped_column(String(200))
+    metadata_json: Mapped[dict[str, object]] = mapped_column(
+        JSON, nullable=False, default=dict, server_default="{}"
+    )
+    __table_args__ = (
+        CheckConstraint("length(trim(key)) > 0", name="ck_resource_pool_key_nonempty"),
+        CheckConstraint("length(trim(label)) > 0", name="ck_resource_pool_label_nonempty"),
+        CheckConstraint(
+            "current >= 0 AND maximum >= 0 AND current <= maximum", name="ck_resource_pool_bounds"
+        ),
+        CheckConstraint(
+            "recovery_amount IS NULL OR recovery_amount >= 0",
+            name="ck_resource_pool_recovery_amount",
+        ),
+        CheckConstraint("die_size IS NULL OR die_size >= 2", name="ck_resource_pool_die_size"),
+        CheckConstraint(
+            "category IN ('class_feature','spell_slot','hit_die','item','other')",
+            name="ck_resource_pool_category",
+        ),
+        CheckConstraint(
+            "recovery_timing IN ('short_rest','long_rest','both','dawn','manual','none')",
+            name="ck_resource_pool_recovery_timing",
+        ),
+        UniqueConstraint("character_id", "key", name="uq_resource_pool_character_key"),
+        Index("ix_resource_pools_campaign_character", "campaign_id", "character_id", "id"),
+        Index("ix_resource_pools_character_timing", "character_id", "recovery_timing", "id"),
+    )
+
+
+class RestRecord(Timestamped, Base):
+    __tablename__ = "rest_records"
+    campaign_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("campaigns.id", ondelete="CASCADE"), nullable=False
+    )
+    operation_transaction_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("operation_transactions.id", ondelete="SET NULL")
+    )
+    rest_type: Mapped[str] = mapped_column(String(20), nullable=False)
+    status: Mapped[str] = mapped_column(
+        String(30), nullable=False, default="pending", server_default="pending"
+    )
+    duration_minutes: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=0, server_default="0"
+    )
+    interrupted: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False, server_default="0"
+    )
+    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    world_time_before: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    world_time_after: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    request_json: Mapped[dict[str, object]] = mapped_column(
+        JSON, nullable=False, default=dict, server_default="{}"
+    )
+    result_json: Mapped[dict[str, object]] = mapped_column(
+        JSON, nullable=False, default=dict, server_default="{}"
+    )
+    idempotency_key: Mapped[str] = mapped_column(String(120), nullable=False)
+    notes: Mapped[str | None] = mapped_column(Text)
+    __table_args__ = (
+        CheckConstraint("rest_type IN ('short','long')", name="ck_rest_record_type"),
+        CheckConstraint(
+            "status IN ('pending','completed','interrupted','failed','reverted')",
+            name="ck_rest_record_status",
+        ),
+        CheckConstraint("duration_minutes >= 0", name="ck_rest_record_duration"),
+        CheckConstraint(
+            "completed_at IS NULL OR started_at IS NULL OR completed_at >= started_at",
+            name="ck_rest_record_completion_after_start",
+        ),
+        CheckConstraint(
+            "interrupted = 0 OR status = 'interrupted'",
+            name="ck_rest_record_interrupted_status",
+        ),
+        UniqueConstraint(
+            "campaign_id", "idempotency_key", name="uq_rest_record_campaign_idempotency"
+        ),
+        UniqueConstraint("operation_transaction_id", name="uq_rest_record_operation_transaction"),
+        Index("ix_rest_records_campaign_created", "campaign_id", "created_at", "id"),
+        Index("ix_rest_records_campaign_status", "campaign_id", "status", "created_at", "id"),
+    )
+
+
+class RestRecoveryEntry(Timestamped, Base):
+    __tablename__ = "rest_recovery_entries"
+    rest_record_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("rest_records.id", ondelete="CASCADE"), nullable=False
+    )
+    character_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("characters.id", ondelete="CASCADE"), nullable=False
+    )
+    resource_pool_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("resource_pools.id", ondelete="SET NULL")
+    )
+    recovery_type: Mapped[str] = mapped_column("type", String(30), nullable=False)
+    before_value: Mapped[int | None] = mapped_column(Integer)
+    after_value: Mapped[int | None] = mapped_column(Integer)
+    amount: Mapped[int | None] = mapped_column(Integer)
+    die_roll: Mapped[int | None] = mapped_column(Integer)
+    modifier: Mapped[int | None] = mapped_column(Integer)
+    explanation: Mapped[str | None] = mapped_column(Text)
+    rule_reference: Mapped[str | None] = mapped_column(String(200))
+    selected: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=True, server_default="1"
+    )
+    applied: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False, server_default="0"
+    )
+    status: Mapped[str] = mapped_column(
+        String(30), nullable=False, default="pending", server_default="pending"
+    )
+    __table_args__ = (
+        CheckConstraint(
+            "type IN ('hp','resource','hit_die','spell_slot','condition','other')",
+            name="ck_rest_recovery_entry_type",
+        ),
+        CheckConstraint("amount IS NULL OR amount >= 0", name="ck_rest_recovery_entry_amount"),
+        CheckConstraint(
+            "die_roll IS NULL OR die_roll >= 1", name="ck_rest_recovery_entry_die_roll"
+        ),
+        CheckConstraint(
+            "status IN ('pending','applied','skipped','failed','reverted')",
+            name="ck_rest_recovery_entry_status",
+        ),
+        CheckConstraint(
+            "applied = 0 OR status = 'applied'", name="ck_rest_recovery_entry_applied_status"
+        ),
+        Index("ix_rest_recovery_entries_rest", "rest_record_id", "created_at", "id"),
+        Index("ix_rest_recovery_entries_character", "character_id", "created_at", "id"),
     )
 
 
@@ -916,9 +1073,7 @@ class SceneParticipant(Timestamped, Base):
     role: Mapped[str] = mapped_column(
         String(30), nullable=False, default="present", server_default="present"
     )
-    visible: Mapped[bool] = mapped_column(
-        Boolean, nullable=False, default=True, server_default="1"
-    )
+    visible: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True, server_default="1")
     notes: Mapped[str | None] = mapped_column(Text)
     __table_args__ = (
         CheckConstraint(

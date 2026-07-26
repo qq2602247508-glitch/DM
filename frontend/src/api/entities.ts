@@ -23,6 +23,10 @@ import type {
   Npc,
   ProposalEntityType,
   Quest,
+  ResourcePool,
+  RestConfirmRequest,
+  RestPreview,
+  RestPreviewRequest,
   TurnAdvanceResult,
 } from "./types";
 
@@ -95,6 +99,9 @@ export type CharacterInput = {
   ability_scores?: Record<string, number>;
   hp?: number;
   max_hp?: number;
+  max_hp_reduction?: number;
+  ability_score_reductions?: Record<string, number>;
+  death_saves?: { successes: number; failures: number };
   inventory?: unknown[];
   equipment?: unknown[];
   proficiencies?: unknown[];
@@ -118,6 +125,16 @@ export const updateCharacter = (cid: string, id: string, input: CharacterInput, 
 
 export const deleteCharacter = (cid: string, id: string, version: number) =>
   deleteEntity(`/campaigns/${cid}/characters/${id}`, version);
+
+export const listResourcePools = (cid: string, characterId?: string, signal?: AbortSignal) =>
+  apiFetch<{ items: ResourcePool[] }>(`/campaigns/${cid}/resources${characterId ? `?character_id=${encodeURIComponent(characterId)}` : ""}`, { signal })
+    .then((result) => result.items);
+
+export const previewRest = (cid: string, input: RestPreviewRequest) =>
+  apiFetch<RestPreview>(`/campaigns/${cid}/rests/preview`, { method: "POST", body: input });
+
+export const confirmRest = (cid: string, input: RestConfirmRequest) =>
+  apiFetch<RestPreview>(`/campaigns/${cid}/rests/confirm`, { method: "POST", body: input });
 
 // Character conditions -------------------------------------------------------
 
