@@ -1,7 +1,7 @@
 """add player handouts and action requests
 
 Revision ID: fa8b1c2d3e40
-Revises: f19c7e2a6b40
+Revises: f20d8a4b7c61
 """
 
 # ruff: noqa: E501
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 from alembic import op
 
 revision: str = "fa8b1c2d3e40"
-down_revision: str | None = "f19c7e2a6b40"
+down_revision: str | None = "f20d8a4b7c61"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 
