@@ -15,6 +15,7 @@ import type {
   Combatant,
   CombatEffect,
   CombatEffectConfirmation,
+  CombatEndCondition,
   CombatSettlementPreview,
   CombatSettlementResult,
   ConcentrationCheckResult,
@@ -553,6 +554,7 @@ export type CombatActionCommand = {
   actor_combatant_id?: string | null;
   amount: number;
   damage_type?: string | null;
+  critical_hit?: boolean;
   dm_override?: boolean;
   override_reason?: string | null;
 };
@@ -590,6 +592,16 @@ export const listCombatActions = (
     `/campaigns/${cid}/combats/${combatId}/actions`,
     { signal },
   ).then((envelope) => envelope.items);
+
+export const getCombatEndCondition = (
+  cid: string,
+  combatId: string,
+  signal?: AbortSignal,
+) =>
+  apiFetch<CombatEndCondition>(
+    `/campaigns/${cid}/combats/${combatId}/end-condition`,
+    { signal },
+  );
 
 export const getDeathSave = (
   cid: string,
@@ -732,6 +744,19 @@ export type CombatSettlementCommand = {
   combat_version: number;
   resolution_type: "victory" | "defeat" | "retreat" | "negotiated" | "bypassed" | "other";
   xp_awards: { character_id: string; xp: number }[];
+  currency_awards: { character_id: string; copper: number }[];
+  loot_awards: {
+    character_id: string;
+    name: string;
+    description?: string | null;
+    category?: string;
+    quantity?: number;
+    unit_weight_lb?: number;
+    price_cp?: number;
+    source_record_id?: string | null;
+    source_label?: "official" | "legacy" | "custom" | "ai_generated";
+    metadata_json?: Record<string, unknown>;
+  }[];
   writebacks: {
     combatant_id: string;
     character_id: string;

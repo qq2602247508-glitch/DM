@@ -70,6 +70,15 @@ def list_combat_actions(
     return {"items": _safe_call(lambda: service.list_actions(campaign_id, combat_id))}
 
 
+@router.get("/end-condition")
+def get_combat_end_condition(
+    campaign_id: str,
+    combat_id: str,
+    service: Annotated[CombatEngineService, Depends(get_combat_engine_service)],
+) -> dict[str, Any]:
+    return _safe_call(lambda: service.get_end_condition(campaign_id, combat_id))
+
+
 @router.get("/combatants/{combatant_id}/death-save")
 def get_death_save(
     campaign_id: str,

@@ -36,6 +36,38 @@ const SKILL_ABILITY: Record<string, keyof typeof ABILITIES> = {
   游说: "charisma",
 };
 
+const FEATURE_HELP: Record<string, string> = {
+  黑暗视觉: "在昏暗或黑暗环境中仍能依照该种族规则看清周围。",
+  天界抗性: "对光耀与黯蚀伤害具有种族提供的抗性。",
+  治疗之手: "通过接触为一个生物恢复生命值；使用次数按种族规则恢复。",
+  天界显现: "暂时显现天界力量，并获得所选显现形态的战斗效果。",
+  龙族血统: "决定角色的龙族祖先、伤害类型及相关种族能力。",
+  吐息武器: "以吐息覆盖一定区域并造成龙族血统对应类型的伤害。",
+  伤害抗性: "对种族或血统指定的一种伤害类型具有抗性。",
+  矮人韧性: "增强对毒素的抵抗能力，并影响相关豁免与伤害。",
+  石中感知: "帮助角色感知石造环境、结构或异常。",
+  坚韧生命: "提高角色的生命值上限，并随等级成长。",
+  精类血统: "角色属于精类血统，影响部分法术与状态的作用方式。",
+  敏锐感官: "赋予角色与感官相关的技能熟练。",
+  出神: "精灵以出神代替正常睡眠，并按对应规则完成休息。",
+  侏儒狡黠: "强化特定心智属性豁免，帮助抵抗魔法影响。",
+  侏儒血统: "提供所选侏儒血统对应的特殊能力。",
+  巨人血统: "提供所选巨人祖先对应、具有使用次数的能力。",
+  大体格: "在搬运、推动或体格相关情境中按大一级体型处理。",
+  强力体格: "提高角色脱离控制或维持移动的能力。",
+  勇敢: "帮助角色抵抗或摆脱恐慌状态。",
+  半身人灵巧: "可穿过体型比自己更大的生物所占空间。",
+  幸运: "在特定 d20 掷骰出现最低结果时获得重掷机会。",
+  天生隐匿: "可借助更大型生物的遮挡尝试隐藏。",
+  足智多谋: "在完成长休后获得一次英雄激励。",
+  技艺精通: "获得一项额外技能熟练。",
+  多才多艺: "获得一项额外起源专长。",
+  肾上腺素爆发: "以附赠动作疾走，并获得由种族规则提供的临时生命值。",
+  不屈耐力: "受到足以降至 0 HP 的伤害时，有机会改为保留 1 HP。",
+  异界遗产: "决定角色的异界血统、伤害抗性和可使用法术。",
+  异界风采: "获得与欺瞒、威吓或表演相关的种族优势。",
+};
+
 type Tab = "overview" | "skills" | "actions" | "inventory" | "magic";
 
 function numberModifier(score: number): number {
@@ -56,6 +88,22 @@ function objectValue(value: unknown): Record<string, unknown> {
 
 function text(value: unknown, fallback = "—"): string {
   return typeof value === "string" || typeof value === "number" ? String(value) : fallback;
+}
+
+function featureDescription(feature: unknown): string {
+  const data = objectValue(feature);
+  const name = text(data.name ?? feature, "未命名特性");
+  const description = text(
+    data.description ?? data.effect ?? data.rules_text ?? data.summary,
+    "",
+  );
+  if (description) return `${name}：${description}`;
+  const knownDescription = FEATURE_HELP[name];
+  if (knownDescription) return `${name}：${knownDescription}`;
+  if (name.startsWith("背景专长：")) {
+    return `${name}：由角色背景获得的起源专长；具体触发、加值或使用次数以该专长的 D&D 5e 2024 规则为准。`;
+  }
+  return `${name}：该角色拥有此特性。具体触发条件、效果、使用次数与恢复方式以角色所选种族、背景或职业的 D&D 5e 2024 规则为准。`;
 }
 
 export function CharacterSheetDetail({
@@ -136,7 +184,27 @@ export function CharacterSheetDetail({
                 <div className="rounded-lg border border-ink-700 p-4"><h3 className="mt-0 text-sm text-parchment-100">成长</h3><p className="text-xs text-stone-400">{character.experience.toLocaleString()} XP · 熟练加值 +{prof}</p><AdvancementDialog campaignId={campaignId} character={character} /></div>
                 <div className="rounded-lg border border-ink-700 p-4"><h3 className="mt-0 text-sm text-parchment-100">状态与说明</h3><p className="whitespace-pre-wrap text-xs text-stone-400">{character.notes || "暂无角色备注。"}</p></div>
               </div>
-              <div><h3 className="text-sm text-parchment-100">特性</h3><div className="flex flex-wrap gap-2">{character.features.length ? character.features.map((feature, index) => <span className="rounded border border-violet-800/50 bg-violet-950/20 px-2 py-1 text-xs text-violet-200" key={`${text(feature)}-${index}`}>{text(objectValue(feature).name ?? feature)}</span>) : <span className="text-xs text-stone-600">暂无特性</span>}</div></div>
+              <div>
+                <h3 className="text-sm text-parchment-100">特性</h3>
+                <p className="mt-0 text-2xs text-stone-600">将鼠标移到特性上可查看说明。</p>
+                <div className="flex flex-wrap gap-2">
+                  {character.features.length ? character.features.map((feature, index) => {
+                    const name = text(objectValue(feature).name ?? feature);
+                    const description = featureDescription(feature);
+                    return (
+                      <span
+                        aria-label={description}
+                        className="cursor-help rounded border border-violet-800/50 bg-violet-950/20 px-2 py-1 text-xs text-violet-200"
+                        key={`${name}-${index}`}
+                        tabIndex={0}
+                        title={description}
+                      >
+                        {name}
+                      </span>
+                    );
+                  }) : <span className="text-xs text-stone-600">暂无特性</span>}
+                </div>
+              </div>
             </div>
           ) : null}
           {tab === "skills" ? (

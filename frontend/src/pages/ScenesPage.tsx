@@ -29,39 +29,9 @@ import { useToast } from "../hooks/toastContext";
 import { navigate } from "../hooks/useHashRoute";
 import { Badge, Button, EmptyState, ErrorState, LoadingBlock } from "../ui/primitives";
 import { xpForChallengeRating } from "../ui/progressionRules";
+import { generateTacticalSceneGrid } from "../ui/sceneGridGenerator";
 import { inputCls, selectCls } from "../ui/styles";
 import { HpBar } from "../ui/widgets";
-
-function generateSceneGrid(name: string, description: string): SceneGrid {
-  const text = `${name} ${description}`;
-  const church = /教堂|神殿|祭坛|神祇/.test(text);
-  const cells: SceneGrid["cells"] = [];
-  for (let col = 1; col <= 12; col += 1) {
-    cells.push({ row: 1, col, kind: "wall", label: "墙" }, { row: 8, col, kind: "wall", label: "墙" });
-  }
-  for (let row = 2; row <= 7; row += 1) {
-    cells.push({ row, col: 1, kind: "wall", label: "墙" }, { row, col: 12, kind: "wall", label: "墙" });
-  }
-  cells.push({ row: 8, col: 6, kind: "door", label: "入口" });
-  if (church) {
-    cells.push(
-      { row: 2, col: 6, kind: "object", label: "祭坛" },
-      { row: 2, col: 7, kind: "object", label: "祭坛" },
-      { row: 4, col: 4, kind: "cover", label: "长椅" },
-      { row: 4, col: 9, kind: "cover", label: "长椅" },
-      { row: 6, col: 4, kind: "cover", label: "长椅" },
-      { row: 6, col: 9, kind: "cover", label: "长椅" },
-      { row: 3, col: 10, kind: "object", label: "烛台" },
-    );
-  } else {
-    cells.push(
-      { row: 3, col: 7, kind: "cover", label: "掩体" },
-      { row: 6, col: 4, kind: "cover", label: "掩体" },
-      { row: 5, col: 10, kind: "object", label: "可互动物" },
-    );
-  }
-  return { width: 12, height: 8, cell_size_ft: 5, theme: church ? "旧教堂" : "通用场景", cells };
-}
 
 function readSceneGrid(notes: string | null): SceneGrid | null {
   if (!notes) return null;
@@ -132,7 +102,7 @@ function ScenesContent({ campaignId }: { campaignId: string }): ReactElement {
   ], [characters.data, monsters.data, npcs.data]);
   const sceneCreate = useMutation({
     mutationFn: () => {
-      const grid = generateSceneGrid(sceneName.trim(), sceneDescription.trim());
+      const grid = generateTacticalSceneGrid(sceneName.trim(), sceneDescription.trim());
       return createScene(campaignId, {
         name: sceneName.trim(), location_id: locationId || null,
         description: sceneDescription.trim() || null,

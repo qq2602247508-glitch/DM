@@ -844,7 +844,23 @@ export type CombatSettlementPreview = {
     conditions_to_add: string[];
     xp_award: number;
   }[];
+  currency_changes: {
+    character_id: string;
+    name: string;
+    before_copper: number;
+    award_copper: number;
+    after_copper: number;
+  }[];
+  loot_changes: {
+    character_id: string;
+    character_name: string;
+    name: string;
+    quantity: number;
+    unit_weight_lb: number;
+    price_cp: number;
+  }[];
   total_xp: number;
+  total_copper: number;
   notes: string | null;
 };
 
@@ -853,6 +869,18 @@ export type CombatSettlementResult = {
   combat: Combat;
   characters: Character[];
   conditions: CharacterCondition[];
+  wallets: unknown[];
+  loot_items: WorldItem[];
+};
+
+export type CombatEndCondition = {
+  can_end: boolean;
+  suggested_resolution_type: "victory" | null;
+  reason: "all_hostile_monsters_defeated" | "hostile_monsters_remain" | "no_hostile_monsters";
+  hostile_count: number;
+  defeated_count: number;
+  remaining_hostiles: { combatant_id: string; display_name: string; hp: number }[];
+  requires_dm_confirmation: boolean;
 };
 
 export type StateSnapshot = {

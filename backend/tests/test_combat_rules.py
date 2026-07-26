@@ -157,9 +157,9 @@ def test_natural_twenty_restores_one_hp_and_resets_track() -> None:
     assert result.stable is False
 
 
-def test_third_failure_requires_explicit_death_confirmation() -> None:
+def test_third_failure_marks_combatant_dead() -> None:
     result = resolve_death_save(roll=4, successes=0, failures=2)
 
     assert result.failures == 3
-    assert result.pending_death_confirmation is True
-    assert result.dead is False
+    assert result.pending_death_confirmation is False
+    assert result.dead is True

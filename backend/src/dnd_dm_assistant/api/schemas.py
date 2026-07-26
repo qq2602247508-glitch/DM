@@ -644,6 +644,7 @@ class CombatActionCommand(BaseModel):
     actor_combatant_id: str | None = Field(default=None, min_length=1, max_length=36)
     amount: int = Field(ge=0, le=100_000)
     damage_type: str | None = Field(default=None, max_length=50)
+    critical_hit: bool = False
     dm_override: bool = False
     override_reason: str | None = Field(default=None, max_length=1_000)
 
@@ -733,6 +734,27 @@ class CombatXpAward(BaseModel):
     xp: int = Field(ge=0, le=10_000_000)
 
 
+class CombatCurrencyAward(BaseModel):
+    character_id: str = Field(min_length=1, max_length=36)
+    copper: int = Field(ge=0, le=1_000_000_000)
+
+
+class CombatLootAward(BaseModel):
+    character_id: str = Field(min_length=1, max_length=36)
+    name: Annotated[
+        str,
+        StringConstraints(strip_whitespace=True, min_length=1, max_length=200),
+    ]
+    description: str | None = Field(default=None, max_length=5_000)
+    category: str = Field(default="loot", min_length=1, max_length=50)
+    quantity: int = Field(default=1, ge=1, le=10_000)
+    unit_weight_lb: float = Field(default=0, ge=0, le=100_000)
+    price_cp: int = Field(default=0, ge=0, le=1_000_000_000)
+    source_record_id: str | None = Field(default=None, max_length=100)
+    source_label: Literal["official", "legacy", "custom", "ai_generated"] = "custom"
+    metadata_json: dict[str, Any] = Field(default_factory=dict)
+
+
 class CombatWriteback(BaseModel):
     combatant_id: str = Field(min_length=1, max_length=36)
     character_id: str = Field(min_length=1, max_length=36)
@@ -751,6 +773,8 @@ class CombatSettlementCommand(BaseModel):
         "other",
     ]
     xp_awards: list[CombatXpAward] = Field(default_factory=list)
+    currency_awards: list[CombatCurrencyAward] = Field(default_factory=list)
+    loot_awards: list[CombatLootAward] = Field(default_factory=list)
     writebacks: list[CombatWriteback] = Field(default_factory=list)
     notes: str | None = Field(default=None, max_length=5_000)
 
@@ -759,6 +783,11 @@ class CombatSettlementCommand(BaseModel):
         character_ids = [award.character_id for award in self.xp_awards]
         if len(character_ids) != len(set(character_ids)):
             raise ValueError("xp_awards cannot contain duplicate characters")
+        currency_character_ids = [
+            award.character_id for award in self.currency_awards
+        ]
+        if len(currency_character_ids) != len(set(currency_character_ids)):
+            raise ValueError("currency_awards cannot contain duplicate characters")
         combatant_ids = [writeback.combatant_id for writeback in self.writebacks]
         if len(combatant_ids) != len(set(combatant_ids)):
             raise ValueError("writebacks cannot contain duplicate combatants")

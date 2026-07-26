@@ -35,10 +35,13 @@ from dnd_dm_assistant.infrastructure.database.models import (
     Combatant,
     CombatEffect,
     CombatSettlement,
+    CurrencyTransaction,
     DeathSave,
     MonsterInstance,
     OperationTransaction,
     SceneParticipant,
+    Wallet,
+    WorldItem,
 )
 
 
@@ -131,6 +134,59 @@ class CombatEngineService:
             session.flush()
         return death_save
 
+    @staticmethod
+    def _end_condition(session: Session, combat: Combat) -> dict[str, Any]:
+        hostiles = list(
+            session.scalars(
+                select(Combatant)
+                .where(
+                    Combatant.combat_id == combat.id,
+                    Combatant.entity_type == "monster",
+                )
+                .order_by(Combatant.initiative.desc(), Combatant.id)
+            )
+        )
+        defeated = [
+            row
+            for row in hostiles
+            if row.hp <= 0 or not row.is_active
+        ]
+        remaining = [row for row in hostiles if row not in defeated]
+        can_end = bool(hostiles) and not remaining and combat.status == "active"
+        return {
+            "can_end": can_end,
+            "suggested_resolution_type": "victory" if can_end else None,
+            "reason": (
+                "all_hostile_monsters_defeated"
+                if can_end
+                else "hostile_monsters_remain"
+                if remaining
+                else "no_hostile_monsters"
+            ),
+            "hostile_count": len(hostiles),
+            "defeated_count": len(defeated),
+            "remaining_hostiles": [
+                {
+                    "combatant_id": row.id,
+                    "display_name": row.display_name,
+                    "hp": row.hp,
+                }
+                for row in remaining
+            ],
+            "requires_dm_confirmation": can_end,
+        }
+
+    def get_end_condition(
+        self,
+        campaign_id: str,
+        combat_id: str,
+    ) -> dict[str, Any]:
+        with Session(self.engine) as session:
+            combat = session.get(Combat, combat_id)
+            if combat is None or combat.campaign_id != campaign_id:
+                raise StateNotFoundError("combat not found in campaign")
+            return self._end_condition(session, combat)
+
     def preview(
         self,
         campaign_id: str,
@@ -146,6 +202,19 @@ class CombatEngineService:
                     command.target_version,
                     target.version,
                 )
+            if command.action_type == "heal" and target.hp == 0:
+                death_save = session.scalar(
+                    select(DeathSave).where(DeathSave.combatant_id == target.id)
+                )
+                if (
+                    death_save is not None
+                    and death_save.dead
+                    and not command.dm_override
+                ):
+                    raise ValueError(
+                        "ordinary healing cannot restore a dead combatant; "
+                        "use a DM override for a resurrection effect"
+                    )
             return self._resolve(command, target)
 
     def confirm(
@@ -185,6 +254,7 @@ class CombatEngineService:
                 return {
                     "action": serialize(existing),
                     "target": serialize(existing_target) if existing_target is not None else None,
+                    "end_condition": self._end_condition(session, combat),
                 }
             if target.version != command.target_version:
                 raise VersionConflict(
@@ -193,6 +263,19 @@ class CombatEngineService:
                     command.target_version,
                     target.version,
                 )
+            if command.action_type == "heal" and target.hp == 0:
+                current_death_save = session.scalar(
+                    select(DeathSave).where(DeathSave.combatant_id == target.id)
+                )
+                if (
+                    current_death_save is not None
+                    and current_death_save.dead
+                    and not command.dm_override
+                ):
+                    raise ValueError(
+                        "ordinary healing cannot restore a dead combatant; "
+                        "use a DM override for a resurrection effect"
+                    )
             resolved = self._resolve(command, target)
             before = serialize(target)
             after = resolved["after"]
@@ -200,20 +283,58 @@ class CombatEngineService:
             target.temporary_hp = int(after["temporary_hp"])
             target.version += 1
             target.updated_at = datetime.now(UTC)
-            if target.hp == 0:
-                self._death_save(session, target)
+            death_save_result: dict[str, Any] | None = None
+            if command.action_type == "damage" and target.hp == 0:
+                death_save = self._death_save(session, target)
+                was_at_zero = int(resolved["before"]["hp"]) == 0
+                massive_damage = (
+                    int(resolved["result"]["unapplied_damage"]) >= target.max_hp
+                    and target.max_hp > 0
+                )
+                if massive_damage:
+                    death_save.failures = 3
+                    death_save.successes = 0
+                    death_save.stable = False
+                    death_save.dead = True
+                    death_save.pending_death_confirmation = False
+                    death_save.version += 1
+                    death_save_result = {
+                        "failures_added": 3,
+                        "massive_damage": True,
+                        "dead": True,
+                        "explanation": "剩余伤害达到最大生命值，角色立即死亡",
+                    }
+                elif was_at_zero and int(resolved["result"]["adjusted_damage"]) > 0:
+                    failures_added = 2 if command.critical_hit else 1
+                    death_save.failures = min(
+                        3, death_save.failures + failures_added
+                    )
+                    death_save.successes = 0
+                    death_save.stable = False
+                    death_save.dead = death_save.failures >= 3
+                    death_save.pending_death_confirmation = False
+                    death_save.version += 1
+                    death_save_result = {
+                        "failures_added": failures_added,
+                        "massive_damage": False,
+                        "dead": death_save.dead,
+                        "explanation": (
+                            f"0 HP 时受到{'暴击' if command.critical_hit else ''}伤害，"
+                            f"累计 {failures_added} 次死亡豁免失败"
+                        ),
+                    }
             elif command.action_type == "heal":
-                death_save = session.scalar(
+                existing_death_save = session.scalar(
                     select(DeathSave).where(DeathSave.combatant_id == target.id)
                 )
-                if death_save is not None:
-                    death_save.successes = 0
-                    death_save.failures = 0
-                    death_save.stable = False
-                    death_save.dead = False
-                    death_save.pending_death_confirmation = False
-                    death_save.last_roll = None
-                    death_save.version += 1
+                if existing_death_save is not None:
+                    existing_death_save.successes = 0
+                    existing_death_save.failures = 0
+                    existing_death_save.stable = False
+                    existing_death_save.dead = False
+                    existing_death_save.pending_death_confirmation = False
+                    existing_death_save.last_roll = None
+                    existing_death_save.version += 1
             transaction = OperationTransaction(
                 campaign_id=campaign_id,
                 operation_type=f"combat_{command.action_type}",
@@ -234,6 +355,8 @@ class CombatEngineService:
             session.add(transaction)
             session.flush()
             result = dict(resolved["result"])
+            if death_save_result is not None:
+                result["death_save"] = death_save_result
             if resolved["concentration_check_dc"] is not None:
                 result["concentration_check_dc"] = resolved["concentration_check_dc"]
             action = CombatAction(
@@ -261,7 +384,16 @@ class CombatEngineService:
             )
             session.add(action)
             session.flush()
-            return {"action": serialize(action), "target": serialize(target)}
+            return {
+                "action": serialize(action),
+                "target": serialize(target),
+                "death_save": (
+                    serialize(death_save)
+                    if command.action_type == "damage" and target.hp == 0
+                    else None
+                ),
+                "end_condition": self._end_condition(session, combat),
+            }
 
     def get_death_save(
         self,
@@ -340,7 +472,11 @@ class CombatEngineService:
             if target.hp != 0:
                 raise ValueError("death saves are only available at 0 HP")
             death_save = self._death_save(session, target)
-            if death_save.dead or death_save.pending_death_confirmation:
+            if (
+                death_save.dead
+                or death_save.stable
+                or death_save.pending_death_confirmation
+            ):
                 raise ValueError("death save track cannot advance in its current state")
             resolution = resolve_death_save(
                 roll=command.roll,
@@ -352,6 +488,7 @@ class CombatEngineService:
             death_save.successes = resolution.successes
             death_save.failures = resolution.failures
             death_save.stable = resolution.stable
+            death_save.dead = resolution.dead
             death_save.pending_death_confirmation = (
                 resolution.pending_death_confirmation
             )
@@ -1212,7 +1349,13 @@ class CombatEngineService:
         campaign_id: str,
         combat_id: str,
         command: CombatSettlementCommand,
-    ) -> tuple[Combat, dict[str, Character], list[dict[str, Any]]]:
+    ) -> tuple[
+        Combat,
+        dict[str, Character],
+        list[dict[str, Any]],
+        list[dict[str, Any]],
+        list[dict[str, Any]],
+    ]:
         combat = session.get(Combat, combat_id)
         if combat is None or combat.campaign_id != campaign_id:
             raise StateNotFoundError("combat not found in campaign")
@@ -1231,9 +1374,23 @@ class CombatEngineService:
         writeback_by_character = {
             writeback.character_id: writeback for writeback in command.writebacks
         }
-        character_ids = set(xp_by_character) | set(writeback_by_character)
+        currency_by_character = {
+            award.character_id: award.copper
+            for award in command.currency_awards
+        }
+        loot_by_character: dict[str, list[Any]] = {}
+        for award in command.loot_awards:
+            loot_by_character.setdefault(award.character_id, []).append(award)
+        character_ids = (
+            set(xp_by_character)
+            | set(writeback_by_character)
+            | set(currency_by_character)
+            | set(loot_by_character)
+        )
         characters: dict[str, Character] = {}
         changes: list[dict[str, Any]] = []
+        currency_changes: list[dict[str, Any]] = []
+        loot_changes: list[dict[str, Any]] = []
         for character_id in sorted(character_ids):
             character = session.get(Character, character_id)
             if character is None or character.campaign_id != campaign_id:
@@ -1279,7 +1436,43 @@ class CombatEngineService:
                     "xp_award": xp_by_character.get(character_id, 0),
                 }
             )
-        return combat, characters, changes
+            copper = currency_by_character.get(character_id, 0)
+            if copper:
+                wallet = session.scalar(
+                    select(Wallet).where(
+                        Wallet.campaign_id == campaign_id,
+                        Wallet.character_id == character_id,
+                    )
+                )
+                currency_changes.append(
+                    {
+                        "character_id": character_id,
+                        "name": character.name,
+                        "wallet_id": wallet.id if wallet is not None else None,
+                        "wallet_will_be_created": wallet is None,
+                        "before_copper": wallet.copper if wallet is not None else 0,
+                        "award_copper": copper,
+                        "after_copper": (
+                            wallet.copper if wallet is not None else 0
+                        )
+                        + copper,
+                    }
+                )
+            for award in loot_by_character.get(character_id, []):
+                loot_changes.append(
+                    {
+                        "character_id": character_id,
+                        "character_name": character.name,
+                        **award.model_dump(mode="json"),
+                    }
+                )
+        return (
+            combat,
+            characters,
+            changes,
+            currency_changes,
+            loot_changes,
+        )
 
     def preview_settlement(
         self,
@@ -1295,7 +1488,13 @@ class CombatEngineService:
             )
             if existing is not None:
                 raise ValueError("combat is already settled")
-            combat, _, changes = self._settlement_plan(
+            (
+                combat,
+                _,
+                changes,
+                currency_changes,
+                loot_changes,
+            ) = self._settlement_plan(
                 session,
                 campaign_id,
                 combat_id,
@@ -1306,8 +1505,13 @@ class CombatEngineService:
                 "combat": serialize(combat),
                 "resolution_type": command.resolution_type,
                 "character_changes": changes,
+                "currency_changes": currency_changes,
+                "loot_changes": loot_changes,
                 "scene_entity_changes": scene_changes,
                 "total_xp": sum(award.xp for award in command.xp_awards),
+                "total_copper": sum(
+                    award.copper for award in command.currency_awards
+                ),
                 "notes": command.notes,
             }
 
@@ -1328,8 +1532,11 @@ class CombatEngineService:
             )
         ).all()
         for combatant in combatants:
-            model = NPC if combatant.entity_type == "npc" else MonsterInstance
-            entity = session.get(model, combatant.entity_id)
+            entity: NPC | MonsterInstance | None
+            if combatant.entity_type == "npc":
+                entity = session.get(NPC, combatant.entity_id)
+            else:
+                entity = session.get(MonsterInstance, combatant.entity_id)
             if entity is None or entity.campaign_id != combat.campaign_id:
                 continue
             participant = session.scalar(
@@ -1392,18 +1599,38 @@ class CombatEngineService:
                     if isinstance(character_ids_raw, list)
                     else []
                 )
-                existing_characters = [
-                    row
-                    for character_id in character_ids
-                    if isinstance(character_id, str)
-                    and (row := session.get(Character, character_id)) is not None
-                ]
+                existing_characters: list[Character] = []
+                for character_id in character_ids:
+                    if isinstance(character_id, str):
+                        character = session.get(Character, character_id)
+                        if character is not None:
+                            existing_characters.append(character)
+                wallet_ids_raw = existing.result_json.get("wallet_ids", [])
+                wallet_ids = (
+                    wallet_ids_raw if isinstance(wallet_ids_raw, list) else []
+                )
+                existing_wallets: list[Wallet] = []
+                for wallet_id in wallet_ids:
+                    if isinstance(wallet_id, str):
+                        wallet = session.get(Wallet, wallet_id)
+                        if wallet is not None:
+                            existing_wallets.append(wallet)
+                item_ids_raw = existing.result_json.get("loot_item_ids", [])
+                item_ids = item_ids_raw if isinstance(item_ids_raw, list) else []
+                existing_items: list[WorldItem] = []
+                for item_id in item_ids:
+                    if isinstance(item_id, str):
+                        item = session.get(WorldItem, item_id)
+                        if item is not None:
+                            existing_items.append(item)
                 combat = session.get(Combat, combat_id)
                 return {
                     "settlement": serialize(existing),
                     "combat": serialize(combat) if combat is not None else None,
                     "characters": [serialize(row) for row in existing_characters],
                     "conditions": [],
+                    "wallets": [serialize(row) for row in existing_wallets],
+                    "loot_items": [serialize(row) for row in existing_items],
                 }
             other_settlement = session.scalar(
                 select(CombatSettlement).where(
@@ -1412,7 +1639,13 @@ class CombatEngineService:
             )
             if other_settlement is not None:
                 raise ValueError("combat is already settled")
-            combat, characters, changes = self._settlement_plan(
+            (
+                combat,
+                characters,
+                changes,
+                currency_changes,
+                loot_changes,
+            ) = self._settlement_plan(
                 session,
                 campaign_id,
                 combat_id,
@@ -1422,6 +1655,8 @@ class CombatEngineService:
             scene_changes = self._scene_entity_changes(session, combat, command)
             now = datetime.now(UTC)
             created_conditions: list[CharacterCondition] = []
+            updated_wallets: list[Wallet] = []
+            created_items: list[WorldItem] = []
             for change in changes:
                 character = characters[str(change["character_id"])]
                 after = change["after"]
@@ -1450,18 +1685,84 @@ class CombatEngineService:
                         )
                         session.add(condition)
                         created_conditions.append(condition)
+            for currency_change in currency_changes:
+                character_id = str(currency_change["character_id"])
+                wallet = session.scalar(
+                    select(Wallet).where(
+                        Wallet.campaign_id == campaign_id,
+                        Wallet.character_id == character_id,
+                    )
+                )
+                if wallet is None:
+                    wallet = Wallet(
+                        campaign_id=campaign_id,
+                        character_id=character_id,
+                        name="角色钱包",
+                        copper=0,
+                    )
+                    session.add(wallet)
+                    session.flush()
+                award_copper = int(currency_change["award_copper"])
+                wallet.copper += award_copper
+                wallet.version += 1
+                wallet.updated_at = now
+                updated_wallets.append(wallet)
+                session.add(
+                    CurrencyTransaction(
+                        campaign_id=campaign_id,
+                        wallet_id=wallet.id,
+                        amount_copper=award_copper,
+                        kind="adjustment",
+                        idempotency_key=(
+                            f"combat-settlement:{combat.id}:{character_id}"
+                        ),
+                        metadata_json={
+                            "source": "combat_settlement",
+                            "combat_id": combat.id,
+                            "resolution_type": command.resolution_type,
+                        },
+                    )
+                )
+            for loot_change in loot_changes:
+                item = WorldItem(
+                    campaign_id=campaign_id,
+                    owner_character_id=str(loot_change["character_id"]),
+                    name=str(loot_change["name"]),
+                    description=loot_change["description"],
+                    category=str(loot_change["category"]),
+                    quantity=int(loot_change["quantity"]),
+                    unit_weight_lb=float(loot_change["unit_weight_lb"]),
+                    price_cp=int(loot_change["price_cp"]),
+                    source_record_id=loot_change["source_record_id"],
+                    source_label=str(loot_change["source_label"]),
+                    metadata_json={
+                        **dict(loot_change["metadata_json"]),
+                        "source": "combat_settlement",
+                        "combat_id": combat.id,
+                        "resolution_type": command.resolution_type,
+                    },
+                )
+                session.add(item)
+                created_items.append(item)
+            session.flush()
             combat.xp_awarded = bool(command.xp_awards)
             combat.base_xp = sum(award.xp for award in command.xp_awards)
             combat.version += 1
             combat.updated_at = now
             for scene_change in scene_changes:
-                model = NPC if scene_change["entity_type"] == "npc" else MonsterInstance
-                entity = session.get(model, scene_change["entity_id"])
-                if entity is None:
+                if scene_change["entity_type"] == "npc":
+                    scene_entity: NPC | MonsterInstance | None = session.get(
+                        NPC, scene_change["entity_id"]
+                    )
+                else:
+                    scene_entity = session.get(
+                        MonsterInstance, scene_change["entity_id"]
+                    )
+                if scene_entity is None:
                     continue
-                entity.hp = int(scene_change["after"]["hp"])
-                entity.version += 1
-                entity.updated_at = now
+                scene_entity.hp = int(scene_change["after"]["hp"])
+                scene_entity.version += 1
+                scene_entity.updated_at = now
                 participant_id = scene_change["participant_id"]
                 participant = (
                     session.get(SceneParticipant, participant_id)
@@ -1481,12 +1782,16 @@ class CombatEngineService:
                 before_snapshot={
                     "combat": combat_before,
                     "character_changes": changes,
+                    "currency_changes": currency_changes,
+                    "loot_changes": loot_changes,
                     "scene_entity_changes": scene_changes,
                 },
                 after_snapshot={
                     "combat_id": combat.id,
                     "resolution_type": command.resolution_type,
                     "character_ids": list(characters),
+                    "wallet_ids": [wallet.id for wallet in updated_wallets],
+                    "loot_item_ids": [item.id for item in created_items],
                     "scene_entity_changes": scene_changes,
                 },
                 reason=command.notes or f"combat settlement: {command.resolution_type}",
@@ -1512,6 +1817,13 @@ class CombatEngineService:
                     "character_ids": list(characters),
                     "condition_ids": [condition.id for condition in created_conditions],
                     "total_xp": sum(award.xp for award in command.xp_awards),
+                    "total_copper": sum(
+                        award.copper for award in command.currency_awards
+                    ),
+                    "currency_changes": currency_changes,
+                    "wallet_ids": [wallet.id for wallet in updated_wallets],
+                    "loot_changes": loot_changes,
+                    "loot_item_ids": [item.id for item in created_items],
                     "scene_entity_changes": scene_changes,
                 },
                 idempotency_key=idempotency_key,
@@ -1530,6 +1842,8 @@ class CombatEngineService:
                 "conditions": [
                     serialize(condition) for condition in created_conditions
                 ],
+                "wallets": [serialize(wallet) for wallet in updated_wallets],
+                "loot_items": [serialize(item) for item in created_items],
             }
 
     def list_actions(

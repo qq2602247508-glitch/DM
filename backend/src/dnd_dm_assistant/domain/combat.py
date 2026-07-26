@@ -224,18 +224,18 @@ def resolve_death_save(
         explanation = f"{roll}：死亡豁免失败"
 
     stable = next_successes >= 3
-    pending_death = next_failures >= 3
+    dead = next_failures >= 3
     if stable:
         explanation += "，角色已稳定"
-    if pending_death:
-        explanation += "，等待 DM 确认死亡"
+    if dead:
+        explanation += "，角色死亡"
     return DeathSaveResolution(
         roll=roll,
         successes=next_successes,
         failures=next_failures,
         stable=stable,
-        dead=False,
-        pending_death_confirmation=pending_death,
+        dead=dead,
+        pending_death_confirmation=False,
         hp_restored=0,
         explanation=explanation,
     )

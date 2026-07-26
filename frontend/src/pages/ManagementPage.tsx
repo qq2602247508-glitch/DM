@@ -44,6 +44,24 @@ function resourceSummary(resources: Record<string, unknown>): string {
   }).filter(Boolean).join("、");
 }
 
+function characterStatus(character: Character): { label: string; tone: string } {
+  if (character.hp <= 0) {
+    if (character.death_saves.failures >= 3) return { label: "死亡", tone: "border-red-700/60 bg-red-950/40 text-red-200" };
+    if (character.death_saves.successes >= 3) return { label: "稳定", tone: "border-sky-700/60 bg-sky-950/40 text-sky-200" };
+    return {
+      label: `倒地 · 豁免 ${character.death_saves.successes}成/${character.death_saves.failures}败`,
+      tone: "border-red-700/60 bg-red-950/40 text-red-200",
+    };
+  }
+  if (character.max_hp_reduction > 0) {
+    return { label: `最大HP −${character.max_hp_reduction}`, tone: "border-violet-700/60 bg-violet-950/35 text-violet-200" };
+  }
+  if (character.hp <= character.max_hp / 2) {
+    return { label: "重伤", tone: "border-amber-700/60 bg-amber-950/35 text-amber-200" };
+  }
+  return { label: "状态正常", tone: "border-emerald-800/60 bg-emerald-950/30 text-emerald-300" };
+}
+
 function downloadFile(filename: string, content: string, type: string): void {
   const blob = new Blob([content], { type });
   const url = URL.createObjectURL(blob);
@@ -54,7 +72,17 @@ function downloadFile(filename: string, content: string, type: string): void {
   URL.revokeObjectURL(url);
 }
 
-function CharacterToolkit({ campaignId }: { campaignId: string }): ReactElement {
+type CharacterWorkspaceTab = "list" | "create" | "tools";
+
+function CharacterToolkit({
+  campaignId,
+  mode,
+  onCreate,
+}: {
+  campaignId: string;
+  mode: "list" | "tools";
+  onCreate?: () => void;
+}): ReactElement {
   const { showToast } = useToast();
   const client = useQueryClient();
   const characters = useQuery({
@@ -138,17 +166,59 @@ function CharacterToolkit({ campaignId }: { campaignId: string }): ReactElement 
       showToast("OCR 角色草稿已由 DM 确认并创建");
     },
   });
+  if (mode === "list") {
+    return (
+      <>
+        <Panel eyebrow="队伍状态" title="角色列表">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="mr-auto text-xs text-stone-500">
+              外层只显示跑团时最常用的数值；点击任意角色查看背包、技能、特性、动作、法术与资源。
+            </span>
+            <RestPanel campaignId={campaignId} characters={characters.data ?? []} />
+            <Button onClick={onCreate} size="sm" variant="primary">创建角色</Button>
+          </div>
+          {characters.isLoading ? <LoadingBlock label="读取角色列表…" /> : null}
+          {characters.isError ? <ErrorState error={characters.error} onRetry={() => void characters.refetch()} /> : null}
+          <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            {(characters.data ?? []).map((character) => {
+              const status = characterStatus(character);
+              return (
+                  <button
+                    aria-label={`打开${character.name}的详细角色卡`}
+                    className="rounded-xl border border-ink-700 bg-ink-950/45 p-4 text-left transition hover:border-ember-700/60 hover:bg-ink-950/75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ember-400"
+                    key={character.id}
+                    onClick={() => setSelectedCharacter(character)}
+                    type="button"
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="mr-auto"><strong className="block text-base text-parchment-100">{character.name}</strong><span className="mt-1 block text-2xs text-stone-500">{character.race || "未选种族"} · {character.class_name || "未选职业"} Lv {character.level}</span></div>
+                      <div className="flex flex-col items-end gap-1"><span className="rounded bg-ember-500/10 px-2 py-1 text-2xs text-ember-300">详细角色卡</span><span className={`rounded border px-2 py-0.5 text-[10px] ${status.tone}`}>{status.label}</span></div>
+                    </div>
+                    <div className="mt-4 grid grid-cols-3 gap-2 text-center">{[["AC", character.armor_class, "text-amber-300"], ["HP", `${character.hp}/${character.max_hp}`, "text-red-300"], ["速度", `${character.speed}尺`, "text-sky-300"]].map(([label, value, tone]) => <div className="rounded border border-ink-700 bg-ink-900/70 p-2" key={label}><span className="block text-2xs text-stone-600">{label}</span><strong className={`font-mono text-sm ${tone}`}>{value}</strong></div>)}</div>
+                    <div className="mt-3 grid grid-cols-6 gap-1">{Object.entries(ABILITY_LABELS).map(([key, label]) => { const score = character.ability_scores[key] ?? 10; return <div className="rounded bg-ink-900 p-1.5 text-center" key={key}><span className="block text-[9px] text-stone-600">{label}</span><strong className="font-mono text-xs text-parchment-100">{score}</strong><span className="block text-[9px] text-violet-300">{modifier(score)}</span></div>; })}</div>
+                    <div className="mt-3 flex flex-wrap items-center gap-2 text-2xs text-stone-500"><span>{character.experience.toLocaleString()} XP</span><span>·</span><span>{character.actions.length} 个动作</span><span>·</span><span>{resourceSummary(character.resources) || "无职业资源"}</span></div>
+                  </button>
+              );
+            })}
+          </div>
+          {!characters.isLoading && characters.data?.length === 0 ? <EmptyState title="这个团还没有角色" hint="切换到“创建角色”，按 D&D 5e 2024 向导完成车卡。" /> : null}
+          {selectedCharacter ? <CharacterSheetDetail campaignId={campaignId} character={selectedCharacter} onClose={() => setSelectedCharacter(null)} /> : null}
+        </Panel>
+        <CompanionPanel campaignId={campaignId} characters={characters.data ?? []} />
+      </>
+    );
+  }
+
   return (
-    <Panel eyebrow="D&D 5e · 2024" title="角色卡工作台">
+    <Panel eyebrow="本地角色卡工具" title="导入、导出与 OCR">
       <div className="flex flex-wrap items-center gap-2">
-        <span className="mr-auto text-xs text-stone-500">支持手动创建，也支持批量导入 / 导出 JSON、CSV 角色卡。</span>
+        <span className="mr-auto text-xs text-stone-500">批量导入或导出 JSON、CSV；图片识别只在本机生成待审核草稿。</span>
         <input accept=".json,.csv,application/json,text/csv" className="hidden" onChange={(event) => { void importCharacters(event); }} ref={fileRef} type="file" />
         <input accept="image/png,image/jpeg,image/heic,image/tiff,image/webp" className="hidden" onChange={(event) => { const file = event.target.files?.[0]; event.target.value = ""; if (file) ocrMutation.mutate(file); }} ref={ocrFileRef} type="file" />
         <Button onClick={() => fileRef.current?.click()} size="sm">导入角色卡</Button>
         <Button loading={ocrMutation.isPending} onClick={() => ocrFileRef.current?.click()} size="sm">图片 OCR 草稿</Button>
         <Button disabled={!characters.data?.length} onClick={() => exportCharacters("json")} size="sm">导出 JSON</Button>
         <Button disabled={!characters.data?.length} onClick={() => exportCharacters("csv")} size="sm">导出表格</Button>
-        <RestPanel campaignId={campaignId} characters={characters.data ?? []} />
       </div>
       {ocrResult ? (
         <div className="mt-3 rounded-lg border border-violet-800/60 bg-violet-950/20 p-4">
@@ -166,21 +236,51 @@ function CharacterToolkit({ campaignId }: { campaignId: string }): ReactElement 
           <details className="mt-3"><summary className="cursor-pointer text-xs text-violet-300">查看 OCR 原文</summary><pre className="mt-2 max-h-48 overflow-auto whitespace-pre-wrap text-xs text-stone-400">{ocrResult.recognized_text}</pre></details>
         </div>
       ) : null}
-      <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-        {(characters.data ?? []).map((character) => (
-          <button className="rounded-xl border border-ink-700 bg-ink-950/45 p-4 text-left transition hover:border-ember-700/60 hover:bg-ink-950/75" key={character.id} onClick={() => setSelectedCharacter(character)} type="button">
-            <div className="flex items-start gap-3"><div className="mr-auto"><strong className="block text-base text-parchment-100">{character.name}</strong><span className="mt-1 block text-2xs text-stone-500">{character.race || "未选种族"} · {character.class_name || "未选职业"} Lv {character.level}</span></div><span className="rounded bg-ember-500/10 px-2 py-1 text-2xs text-ember-300">查看完整角色卡</span></div>
-            <div className="mt-4 grid grid-cols-3 gap-2 text-center">{[["AC", character.armor_class, "text-amber-300"], ["HP", `${character.hp}/${character.max_hp}`, "text-red-300"], ["速度", `${character.speed}尺`, "text-sky-300"]].map(([label, value, tone]) => <div className="rounded border border-ink-700 bg-ink-900/70 p-2" key={label}><span className="block text-2xs text-stone-600">{label}</span><strong className={`font-mono text-sm ${tone}`}>{value}</strong></div>)}</div>
-            <div className="mt-3 grid grid-cols-6 gap-1">{Object.entries(ABILITY_LABELS).map(([key, label]) => { const score = character.ability_scores[key] ?? 10; return <div className="rounded bg-ink-900 p-1.5 text-center" key={key}><span className="block text-[9px] text-stone-600">{label}</span><strong className="font-mono text-xs text-parchment-100">{score}</strong><span className="block text-[9px] text-violet-300">{modifier(score)}</span></div>; })}</div>
-            <div className="mt-3 flex items-center gap-2 text-2xs text-stone-500"><span>{character.experience.toLocaleString()} XP</span><span>·</span><span>{character.actions.length} 个动作</span><span>·</span><span>{resourceSummary(character.resources) || "无职业资源"}</span></div>
-          </button>
-        ))}
-      </div>
-      {!characters.isLoading && characters.data?.length === 0 ? <EmptyState title="这个团还没有角色" hint="点击页面下方的橙色创建按钮，按 D&D 5e 2024 向导车卡。" /> : null}
-      {selectedCharacter ? <CharacterSheetDetail campaignId={campaignId} character={selectedCharacter} onClose={() => setSelectedCharacter(null)} /> : null}
-      <CompanionPanel campaignId={campaignId} characters={characters.data ?? []} />
       <p className="mb-0 mt-3 text-2xs text-stone-600">图片角色卡使用 macOS Vision 在本机识别为可编辑草稿；不会上传云端，确认后才创建角色。</p>
     </Panel>
+  );
+}
+
+function CharacterWorkspace({ campaignId }: { campaignId: string }): ReactElement {
+  const [tab, setTab] = useState<CharacterWorkspaceTab>("list");
+  const tabs: { id: CharacterWorkspaceTab; label: string; hint: string }[] = [
+    { id: "list", label: "角色列表", hint: "关键属性、状态与详细角色卡" },
+    { id: "create", label: "创建角色", hint: "按 2024 规则逐步车卡" },
+    { id: "tools", label: "导入 / 导出", hint: "JSON、CSV 与本机图片 OCR" },
+  ];
+
+  return (
+    <div className="mx-auto max-w-[1200px] p-4 lg:p-6">
+      <Panel eyebrow="D&D 5e · 2024" title="角色工作区">
+        <p className="mt-0 text-xs text-stone-500">
+          角色、背包与成长集中在这里。选择一个子界面，避免创建、工具和角色数据同时挤在一页。
+        </p>
+        <div aria-label="角色工作区导航" className="grid gap-2 sm:grid-cols-3" role="tablist">
+          {tabs.map((item) => (
+            <button
+              aria-selected={tab === item.id}
+              className={`rounded-lg border px-4 py-3 text-left transition ${
+                tab === item.id
+                  ? "border-ember-500/60 bg-ember-500/10 text-ember-200"
+                  : "border-ink-700 bg-ink-950/35 text-stone-400 hover:border-ink-500 hover:text-parchment-100"
+              }`}
+              key={item.id}
+              onClick={() => setTab(item.id)}
+              role="tab"
+              type="button"
+            >
+              <strong className="block text-sm">{item.label}</strong>
+              <span className="mt-1 block text-2xs text-stone-600">{item.hint}</span>
+            </button>
+          ))}
+        </div>
+      </Panel>
+      <div className="mt-4" role="tabpanel">
+        {tab === "list" ? <CharacterToolkit campaignId={campaignId} mode="list" onCreate={() => setTab("create")} /> : null}
+        {tab === "create" ? <CharacterCreateWizard campaignId={campaignId} onDone={() => setTab("list")} /> : null}
+        {tab === "tools" ? <CharacterToolkit campaignId={campaignId} mode="tools" /> : null}
+      </div>
+    </div>
   );
 }
 
@@ -720,14 +820,12 @@ function RowCard({ kind, campaignId, row }: { kind: EntityKind; campaignId: stri
 function ManagementContent({ kind, campaignId }: { kind: EntityKind; campaignId: string | null }): ReactElement {
   const rows = useRows(kind, campaignId);
   const meta = META[kind];
+  if (kind === "characters" && campaignId) return <CharacterWorkspace campaignId={campaignId} />;
   return (
     <div className="mx-auto max-w-[1200px] p-4 lg:p-6">
-      {kind === "characters" && campaignId ? <CharacterToolkit campaignId={campaignId} /> : null}
-      {kind === "characters" && campaignId ? <CharacterCreateWizard campaignId={campaignId} onDone={() => undefined} /> : (
-        <Panel eyebrow={meta.eyebrow} title={`${meta.title}管理`}>
-          <CreateForm campaignId={campaignId} kind={kind} onDone={() => undefined} />
-        </Panel>
-      )}
+      <Panel eyebrow={meta.eyebrow} title={`${meta.title}管理`}>
+        <CreateForm campaignId={campaignId} kind={kind} onDone={() => undefined} />
+      </Panel>
       <Panel className="mt-4" eyebrow="记录" title={`${meta.title}列表`}>
         {rows.isLoading ? <LoadingBlock /> : null}
         {rows.isError ? <ErrorState error={rows.error} onRetry={() => void rows.refetch()} /> : null}

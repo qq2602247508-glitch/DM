@@ -174,7 +174,7 @@ def test_zero_hp_creates_death_track_and_natural_twenty_recovers(
             "action_type": "damage",
             "target_combatant_id": fighter["id"],
             "target_version": fighter["version"],
-            "amount": 100,
+            "amount": 23,
             "damage_type": "force",
         },
     )
@@ -205,7 +205,7 @@ def test_zero_hp_creates_death_track_and_natural_twenty_recovers(
     assert recovered.json()["action"]["result_json"]["hp_restored"] == 1
 
 
-def test_third_death_failure_stays_pending_until_dm_confirms(
+def test_third_death_failure_marks_character_dead(
     combat_client: TestClient,
 ) -> None:
     campaign = _campaign(combat_client)
@@ -234,18 +234,237 @@ def test_third_death_failure_stays_pending_until_dm_confirms(
         assert saved.status_code == 200
         target = saved.json()["target"]
 
-    assert saved.json()["death_save"]["pending_death_confirmation"] is True
-    assert saved.json()["death_save"]["dead"] is False
-    confirmed = combat_client.post(
-        f"{death_track_path}/confirm-death",
-        headers={"X-Request-ID": "confirm-death"},
+    assert saved.json()["death_save"]["pending_death_confirmation"] is False
+    assert saved.json()["death_save"]["dead"] is True
+
+
+def test_three_successes_stabilize_and_stop_further_death_saves(
+    combat_client: TestClient,
+) -> None:
+    campaign = _campaign(combat_client)
+    combat, fighter = _combatant(combat_client, campaign["id"])
+    fighter_path = _fighter_path(campaign["id"], combat["id"], fighter["id"])
+    target = combat_client.patch(
+        fighter_path,
+        headers={"If-Match": '"1"'},
+        json={"hp": 0},
+    ).json()
+    death_track_path = (
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}"
+        f"/combatants/{fighter['id']}/death-save"
+    )
+    for index in range(3):
+        saved = combat_client.post(
+            f"{death_track_path}/confirm",
+            headers={"X-Request-ID": f"successful-save-{index}"},
+            json={"target_version": target["version"], "roll": 10},
+        )
+        assert saved.status_code == 200
+        target = saved.json()["target"]
+    assert saved.json()["death_save"]["stable"] is True
+    blocked = combat_client.post(
+        f"{death_track_path}/confirm",
+        headers={"X-Request-ID": "save-after-stable"},
+        json={"target_version": target["version"], "roll": 10},
+    )
+    assert blocked.status_code == 400
+    healed = combat_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}/actions/confirm",
+        headers={"X-Request-ID": "heal-stable-combatant"},
         json={
+            "action_type": "heal",
+            "target_combatant_id": fighter["id"],
             "target_version": target["version"],
-            "reason": "三次死亡豁免失败，DM确认",
+            "amount": 3,
         },
     )
-    assert confirmed.status_code == 200
-    assert confirmed.json()["death_save"]["dead"] is True
+    assert healed.status_code == 200
+    assert healed.json()["target"]["hp"] == 3
+    reset = combat_client.get(death_track_path).json()
+    assert reset["stable"] is False
+    assert reset["successes"] == 0
+
+
+def test_damage_at_zero_adds_failures_critical_adds_two_and_healing_resets(
+    combat_client: TestClient,
+) -> None:
+    campaign = _campaign(combat_client)
+    combat, fighter = _combatant(combat_client, campaign["id"])
+    path = (
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}"
+        f"/actions/confirm"
+    )
+    dropped = combat_client.post(
+        path,
+        headers={"X-Request-ID": "zero-damage-drop"},
+        json={
+            "action_type": "damage",
+            "target_combatant_id": fighter["id"],
+            "target_version": fighter["version"],
+            "amount": 23,
+            "damage_type": "force",
+        },
+    )
+    assert dropped.status_code == 200
+    assert dropped.json()["death_save"]["failures"] == 0
+
+    damaged = combat_client.post(
+        path,
+        headers={"X-Request-ID": "zero-damage-normal"},
+        json={
+            "action_type": "damage",
+            "target_combatant_id": fighter["id"],
+            "target_version": dropped.json()["target"]["version"],
+            "amount": 1,
+            "damage_type": "force",
+        },
+    )
+    assert damaged.status_code == 200
+    assert damaged.json()["death_save"]["failures"] == 1
+    assert damaged.json()["action"]["result_json"]["death_save"]["failures_added"] == 1
+
+    healed = combat_client.post(
+        path,
+        headers={"X-Request-ID": "zero-damage-heal"},
+        json={
+            "action_type": "heal",
+            "target_combatant_id": fighter["id"],
+            "target_version": damaged.json()["target"]["version"],
+            "amount": 5,
+        },
+    )
+    assert healed.status_code == 200
+    assert healed.json()["target"]["hp"] == 5
+    track = combat_client.get(
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}"
+        f"/combatants/{fighter['id']}/death-save"
+    ).json()
+    assert track["failures"] == 0
+    assert track["successes"] == 0
+    assert track["dead"] is False
+
+    dropped_again = combat_client.post(
+        path,
+        headers={"X-Request-ID": "zero-damage-drop-again"},
+        json={
+            "action_type": "damage",
+            "target_combatant_id": fighter["id"],
+            "target_version": healed.json()["target"]["version"],
+            "amount": 5,
+            "damage_type": "force",
+        },
+    )
+    failed_again = combat_client.post(
+        path,
+        headers={"X-Request-ID": "zero-damage-fail-again"},
+        json={
+            "action_type": "damage",
+            "target_combatant_id": fighter["id"],
+            "target_version": dropped_again.json()["target"]["version"],
+            "amount": 1,
+            "damage_type": "force",
+        },
+    )
+    critical = combat_client.post(
+        path,
+        headers={"X-Request-ID": "zero-damage-critical"},
+        json={
+            "action_type": "damage",
+            "target_combatant_id": fighter["id"],
+            "target_version": failed_again.json()["target"]["version"],
+            "amount": 1,
+            "damage_type": "force",
+            "critical_hit": True,
+        },
+    )
+    assert critical.status_code == 200
+    assert critical.json()["death_save"]["failures"] == 3
+    assert critical.json()["death_save"]["dead"] is True
+    ordinary_healing = combat_client.post(
+        path,
+        headers={"X-Request-ID": "cannot-heal-dead"},
+        json={
+            "action_type": "heal",
+            "target_combatant_id": fighter["id"],
+            "target_version": critical.json()["target"]["version"],
+            "amount": 5,
+        },
+    )
+    assert ordinary_healing.status_code == 400
+
+
+def test_massive_damage_causes_immediate_death(combat_client: TestClient) -> None:
+    campaign = _campaign(combat_client)
+    combat, fighter = _combatant(combat_client, campaign["id"])
+    damaged = combat_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}/actions/confirm",
+        headers={"X-Request-ID": "massive-damage"},
+        json={
+            "action_type": "damage",
+            "target_combatant_id": fighter["id"],
+            "target_version": fighter["version"],
+            "amount": 43,
+            "damage_type": "force",
+        },
+    )
+    assert damaged.status_code == 200
+    assert damaged.json()["target"]["hp"] == 0
+    assert damaged.json()["death_save"]["dead"] is True
+    assert damaged.json()["action"]["result_json"]["death_save"]["massive_damage"] is True
+
+
+def test_all_monsters_at_zero_exposes_dm_confirmed_end_suggestion(
+    combat_client: TestClient,
+) -> None:
+    campaign = _campaign(combat_client)
+    combat, fighter = _combatant(combat_client, campaign["id"])
+    monster = combat_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "Goblin",
+            "entity_type": "monster",
+            "hp": 3,
+            "max_hp": 3,
+        },
+    ).json()
+    before = combat_client.get(
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}/end-condition"
+    )
+    assert before.status_code == 200
+    assert before.json()["can_end"] is False
+    assert {
+        row["display_name"] for row in before.json()["remaining_hostiles"]
+    } == {"Fire Guard", "Goblin"}
+
+    first_defeated = combat_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}/actions/confirm",
+        headers={"X-Request-ID": "defeat-first-monster"},
+        json={
+            "action_type": "damage",
+            "target_combatant_id": fighter["id"],
+            "target_version": fighter["version"],
+            "amount": 23,
+            "damage_type": "slashing",
+        },
+    )
+    assert first_defeated.status_code == 200
+    assert first_defeated.json()["end_condition"]["can_end"] is False
+    defeated = combat_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}/actions/confirm",
+        headers={"X-Request-ID": "defeat-second-monster"},
+        json={
+            "action_type": "damage",
+            "target_combatant_id": monster["id"],
+            "target_version": monster["version"],
+            "amount": 3,
+            "damage_type": "slashing",
+        },
+    )
+    assert defeated.status_code == 200
+    condition = defeated.json()["end_condition"]
+    assert condition["can_end"] is True
+    assert condition["suggested_resolution_type"] == "victory"
+    assert condition["requires_dm_confirmation"] is True
 
 
 def test_advance_turn_restores_next_combatant_action_economy(
@@ -500,6 +719,17 @@ def test_combat_settlement_preview_and_confirm_are_atomic_and_once_only(
         "combat_version": ended_combat.json()["version"],
         "resolution_type": "victory",
         "xp_awards": [{"character_id": character["id"], "xp": 100}],
+        "currency_awards": [{"character_id": character["id"], "copper": 275}],
+        "loot_awards": [
+            {
+                "character_id": character["id"],
+                "name": "哥布林首领的银钥匙",
+                "description": "一把刻有营地徽记的银钥匙。",
+                "quantity": 1,
+                "unit_weight_lb": 0.1,
+                "price_cp": 50,
+            }
+        ],
         "writebacks": [{
             "combatant_id": fighter["id"],
             "character_id": character["id"],
@@ -511,6 +741,11 @@ def test_combat_settlement_preview_and_confirm_are_atomic_and_once_only(
     assert preview.status_code == 200
     assert preview.json()["character_changes"][0]["before"]["hp"] == 20
     assert preview.json()["character_changes"][0]["after"]["hp"] == 5
+    assert preview.json()["currency_changes"][0]["before_copper"] == 0
+    assert preview.json()["currency_changes"][0]["after_copper"] == 275
+    assert preview.json()["currency_changes"][0]["wallet_will_be_created"] is True
+    assert preview.json()["loot_changes"][0]["name"] == "哥布林首领的银钥匙"
+    assert preview.json()["total_copper"] == 275
     unchanged = combat_client.get(
         f"/api/v1/campaigns/{campaign['id']}/characters/{character['id']}"
     )
@@ -526,6 +761,8 @@ def test_combat_settlement_preview_and_confirm_are_atomic_and_once_only(
     assert confirmed.json()["settlement"]["status"] == "confirmed"
     assert confirmed.json()["characters"][0]["hp"] == 5
     assert confirmed.json()["characters"][0]["experience"] == 100
+    assert confirmed.json()["wallets"][0]["copper"] == 275
+    assert confirmed.json()["loot_items"][0]["name"] == "哥布林首领的银钥匙"
     conditions = combat_client.get(
         f"/api/v1/campaigns/{campaign['id']}/characters/{character['id']}/conditions"
     )
@@ -539,7 +776,15 @@ def test_combat_settlement_preview_and_confirm_are_atomic_and_once_only(
     )
     assert repeated.status_code == 200
     assert repeated.json()["settlement"]["id"] == confirmed.json()["settlement"]["id"]
+    assert repeated.json()["wallets"][0]["copper"] == 275
+    assert repeated.json()["loot_items"][0]["id"] == confirmed.json()["loot_items"][0]["id"]
     after = combat_client.get(
         f"/api/v1/campaigns/{campaign['id']}/characters/{character['id']}"
     ).json()
     assert after["experience"] == 100
+    inventory = combat_client.get(
+        f"/api/v1/campaigns/{campaign['id']}/characters/{character['id']}/inventory"
+    )
+    assert inventory.status_code == 200
+    assert inventory.json()["items"][0]["name"] == "哥布林首领的银钥匙"
+    assert inventory.json()["total_weight_lb"] == 0.1

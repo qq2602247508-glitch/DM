@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState, type FormEvent, type ReactElement } from "react";
 
 import { runAssistantTurn } from "../api/assistant";
+import { getRuleDocument, searchKnowledge } from "../api/knowledge";
 import {
   applyEncounterAdjustment, createClue, createEncounterAdjustment, createEvent, createNpc,
   createQuest, listCharacters, listEncounterAdjustments, listEvents, listLocations, listNpcs,
@@ -11,7 +12,7 @@ import type {
   AgentResponse, EncounterAdjustment, EncounterOperation, SceneParticipant,
 } from "../api/types";
 import {
-  addSceneParticipant, createMonster, createScene, createWorldItem,
+  addSceneParticipant, createMonster, createScene, createWorldItem, generateNpc,
   listMonsters, listSceneParticipants, listScenes,
   removeSceneParticipant, startSceneCombat,
 } from "../api/world";
@@ -21,10 +22,16 @@ import { RequireCampaign } from "../components/RequireCampaign";
 import { useToast } from "../hooks/toastContext";
 import { navigate } from "../hooks/useHashRoute";
 import { Badge, Button, EmptyState, ErrorState, LoadingBlock } from "../ui/primitives";
-import { selectCls, textareaCls } from "../ui/styles";
+import { inputCls, selectCls, textareaCls } from "../ui/styles";
 import { safeDndText } from "../ui/contentSafety";
 import { HpBar } from "../ui/widgets";
 import { parsePrepDraft, type DraftAtom } from "../ui/prepDraft";
+import { generateTacticalSceneGrid } from "../ui/sceneGridGenerator";
+import {
+  campaignMonsterCandidates, compendiumMonsterCandidates, customMonsterDraft,
+  detectArrivalKind, monsterDraftFromCandidate, parseMonsterStats, suggestedNpcName,
+  type ArrivalDraft, type ArrivalKind, type MonsterReferenceCandidate,
+} from "../ui/dynamicEntityDraft";
 import {
   describeEncounterOperation, difficultyShiftLabel,
 } from "../ui/encounterAdjustments";
@@ -76,17 +83,6 @@ function loadCheckpoints(campaignId: string): SessionCheckpoint[] {
   }
 }
 
-function draftSceneGrid(name: string, description: string): string {
-  const church = /教堂|神殿|祭坛|神祇/.test(`${name} ${description}`);
-  const cells: { row: number; col: number; kind: "wall" | "cover" | "door" | "object"; label: string }[] = [];
-  for (let col = 1; col <= 12; col += 1) cells.push({ row: 1, col, kind: "wall", label: "墙" }, { row: 8, col, kind: "wall", label: "墙" });
-  for (let row = 2; row <= 7; row += 1) cells.push({ row, col: 1, kind: "wall", label: "墙" }, { row, col: 12, kind: "wall", label: "墙" });
-  cells.push({ row: 8, col: 6, kind: "door", label: "入口" });
-  if (church) cells.push({ row: 2, col: 6, kind: "object", label: "祭坛" }, { row: 4, col: 4, kind: "cover", label: "长椅" }, { row: 4, col: 9, kind: "cover", label: "长椅" });
-  else cells.push({ row: 3, col: 7, kind: "cover", label: "掩体" }, { row: 5, col: 10, kind: "object", label: "可互动物" });
-  return JSON.stringify({ scene_grid: { width: 12, height: 8, cell_size_ft: 5, theme: church ? "旧教堂" : name, cells } });
-}
-
 function GameTableContent({ campaignId }: { campaignId: string }): ReactElement {
   const client = useQueryClient();
   const { showToast } = useToast();
@@ -111,6 +107,9 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
   const [adjustmentRound, setAdjustmentRound] = useState("3");
   const [adjustmentQuantity, setAdjustmentQuantity] = useState("1");
   const [draftOperations, setDraftOperations] = useState<EncounterOperation[]>([]);
+  const [arrivalDraft, setArrivalDraft] = useState<ArrivalDraft | null>(null);
+  const [arrivalReferences, setArrivalReferences] = useState<MonsterReferenceCandidate[]>([]);
+  const [startCombatAfterArrival, setStartCombatAfterArrival] = useState(false);
   const scenes = useQuery({ queryKey: ["scenes", campaignId], queryFn: ({ signal }) => listScenes(campaignId, signal) });
   const locations = useQuery({ queryKey: ["locations", campaignId], queryFn: ({ signal }) => listLocations(campaignId, signal) });
   const characters = useQuery({ queryKey: ["characters", campaignId], queryFn: ({ signal }) => listCharacters(campaignId, signal) });
@@ -154,6 +153,29 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
   }, [campaignId, checkpoints]);
   const activeScene = scenes.data?.find((scene) => scene.id === sceneId);
   const activeLocation = locations.data?.find((location) => location.id === activeScene?.location_id);
+  const findCompendiumMonsters = async (query: string): Promise<MonsterReferenceCandidate[]> => {
+    let hits = await searchKnowledge({
+      text: query, top_k: 6, candidate_k: 24, min_score: 0.25,
+      content_types: ["monsters"], editions: ["2024", "2025"],
+      current_official: true,
+    });
+    if (hits.length === 0) {
+      hits = await searchKnowledge({
+        text: query, top_k: 6, candidate_k: 24, min_score: 0.25,
+        content_types: ["monsters"], editions: ["2014", "legacy"],
+        current_official: false, allow_unknown: false, allow_third_party: false,
+      });
+    }
+    const enriched = await Promise.all(hits.map(async (hit) => {
+      try {
+        const document = await getRuleDocument(hit.chunk.record_id);
+        return { ...hit, chunk: { ...hit.chunk, text: document.content_plain_text } };
+      } catch {
+        return hit;
+      }
+    }));
+    return compendiumMonsterCandidates(enriched);
+  };
   const candidates = useMemo(() => [
     ...(characters.data ?? []).map((entity) => ({ key: `character:${entity.id}`, label: `玩家 · ${entity.name}` })),
     ...(npcs.data ?? []).map((entity) => ({ key: `npc:${entity.id}`, label: `NPC · ${entity.name}` })),
@@ -184,6 +206,68 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
   const addEntry = (kind: ProgressEntry["kind"], text: string) => {
     setEntries((current) => [...current, { id: crypto.randomUUID(), kind, text, createdAt: new Date().toISOString() }]);
   };
+  const arrivalLookup = useMutation({
+    mutationFn: async ({ kind, prompt, assistantText }: { kind: ArrivalKind; prompt: string; assistantText: string }) => {
+      const sceneContext = `${activeScene?.name ?? ""} ${activeScene?.description ?? ""} ${activeLocation?.name ?? ""} ${activeLocation?.description ?? ""}`;
+      if (kind === "npc") {
+        try {
+          const preview = await generateNpc(campaignId, {
+            mode: "quick",
+            brief: `${prompt}\n当前场景：${sceneContext}\n副DM建议：${assistantText}`,
+            answers: {},
+          });
+          return {
+            draft: {
+              kind: "npc" as const, prompt, sourceKey: "generated-npc",
+              name: preview.npc.name || suggestedNpcName(prompt),
+              description: preview.npc.description || assistantText || prompt,
+              armorClass: preview.npc.armor_class,
+              hp: preview.npc.max_hp,
+              speed: preview.npc.speed,
+              challengeRating: preview.npc.challenge_rating ?? "0",
+            },
+            references: [] as MonsterReferenceCandidate[],
+          };
+        } catch {
+          return {
+            draft: {
+              kind: "npc" as const, prompt, sourceKey: "generated-npc",
+              name: suggestedNpcName(prompt), description: assistantText || prompt,
+              armorClass: 10, hp: 10, speed: 30, challengeRating: "0",
+            },
+            references: [] as MonsterReferenceCandidate[],
+          };
+        }
+      }
+      const availableMonsters = (monsters.data ?? []).filter(
+        (monster) => !presentKeys.has(`monster:${monster.id}`),
+      );
+      const existing = campaignMonsterCandidates(availableMonsters, `${prompt} ${sceneContext}`);
+      let compendium: MonsterReferenceCandidate[] = [];
+      try {
+        compendium = await findCompendiumMonsters(`${prompt} ${assistantText} ${sceneContext}`);
+      } catch {
+        // The local index may be rebuilding. The DM still gets a clearly
+        // labeled custom draft, and no state is written without confirmation.
+      }
+      const references = [...existing, ...compendium];
+      return {
+        draft: references[0]
+          ? monsterDraftFromCandidate(references[0], prompt)
+          : customMonsterDraft(prompt),
+        references,
+      };
+    },
+    onSuccess: ({ draft, references }) => {
+      setArrivalDraft(draft);
+      setArrivalReferences(references);
+      setStartCombatAfterArrival(false);
+      showToast(draft.kind === "monster"
+        ? references.length > 0 ? `已找到 ${references.length} 个本地图鉴/战役候选，请 DM 复核` : "图鉴暂无可靠匹配，已生成明确标记的自制草案"
+        : "NPC 草案已生成，请 DM 复核后加入场景");
+    },
+    onError: () => showToast("无法起草进入场景的人物，请稍后重试", "error"),
+  });
   const assistant = useMutation({
     mutationFn: async (action: string) => {
       const names = (participants.data ?? []).map((item) => `${item.entity_type}:${item.entity.name}${item.role === "defeated" ? "（已击败）" : ""}`).join("、") || "无人";
@@ -195,6 +279,10 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
       setLastResponse(response);
       addEntry("ai", text);
       await log("AI 推进建议", text, { dm_action: action, entry_kind: "ai" });
+      const arrivalKind = detectArrivalKind(`${action}\n${text}`);
+      if (arrivalKind && sceneId) {
+        arrivalLookup.mutate({ kind: arrivalKind, prompt: action, assistantText: text });
+      }
     },
     onError: () => showToast("副 DM 暂时没有响应，请检查本地模型", "error"),
   });
@@ -219,6 +307,96 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
       showToast("人物已进入场景");
     },
     onError: () => showToast("加入场景失败", "error"),
+  });
+  const chooseArrivalReference = (key: string) => {
+    const reference = arrivalReferences.find((item) => item.key === key);
+    if (reference && arrivalDraft) setArrivalDraft(monsterDraftFromCandidate(reference, arrivalDraft.prompt));
+    else if (arrivalDraft) setArrivalDraft(customMonsterDraft(arrivalDraft.prompt));
+  };
+  const arrivalConfirm = useMutation({
+    mutationFn: async () => {
+      if (!arrivalDraft || !sceneId) throw new Error("没有可确认的进入场景草案");
+      let entityId: string;
+      let entityType: "npc" | "monster";
+      if (arrivalDraft.kind === "npc") {
+        const npc = await createNpc(campaignId, {
+          name: arrivalDraft.name,
+          description: arrivalDraft.description,
+          armor_class: arrivalDraft.armorClass,
+          hp: arrivalDraft.hp,
+          max_hp: arrivalDraft.hp,
+          speed: arrivalDraft.speed,
+          challenge_rating: arrivalDraft.challengeRating,
+          ability_scores: {
+            strength: 10, dexterity: 10, constitution: 10,
+            intelligence: 10, wisdom: 10, charisma: 10,
+          },
+          known_information: `登场原因：${arrivalDraft.prompt}`,
+          status: "active",
+        });
+        entityId = npc.id;
+        entityType = "npc";
+      } else {
+        const reference = arrivalReferences.find((item) => item.key === arrivalDraft.sourceKey);
+        if (reference?.origin === "campaign") {
+          entityId = reference.monster.id;
+        } else {
+          const parsed = reference?.origin === "compendium"
+            ? parseMonsterStats(reference.hit)
+            : null;
+          const monster = await createMonster(campaignId, {
+            name: arrivalDraft.name,
+            source_record_id: reference?.origin === "compendium" ? reference.hit.chunk.record_id : null,
+            source_name: reference?.origin === "compendium"
+              ? `${reference.hit.chunk.source_book ?? reference.hit.chunk.source_title} · ${reference.hit.chunk.edition}`
+              : "DM自制模板（非图鉴）",
+            armor_class: arrivalDraft.armorClass,
+            hp: arrivalDraft.hp,
+            max_hp: arrivalDraft.hp,
+            speed: arrivalDraft.speed,
+            challenge_rating: arrivalDraft.challengeRating,
+            ability_scores: parsed?.abilityScores ?? {
+              strength: 10, dexterity: 10, constitution: 10,
+              intelligence: 8, wisdom: 10, charisma: 8,
+            },
+            notes: `${arrivalDraft.description}\n登场原因：${arrivalDraft.prompt}${reference?.origin === "compendium" ? "\n由本地图鉴条目创建，DM已确认。" : "\n自制模板，未匹配到可靠图鉴条目，DM应复核数值。"}`,
+          });
+          entityId = monster.id;
+        }
+        entityType = "monster";
+      }
+      const participant = await addSceneParticipant(campaignId, sceneId, {
+        entity_type: entityType, entity_id: entityId,
+      });
+      await log(
+        `${participant.entity.name}进入场景`,
+        `${participant.entity.name}根据DM确认的动态原子草案进入“${activeScene?.name ?? "当前场景"}”。`,
+        {
+          action: "dynamic_arrival", entry_kind: "system",
+          entity_type: entityType, entity_id: entityId,
+          source: arrivalDraft.sourceKey,
+        },
+      );
+      if (startCombatAfterArrival) {
+        await startSceneCombat(campaignId, sceneId);
+      }
+      return { participant, startedCombat: startCombatAfterArrival };
+    },
+    onSuccess: ({ participant, startedCombat }) => {
+      addEntry("system", `${participant.entity.name}已由 DM 确认并进入当前场景`);
+      setArrivalDraft(null);
+      setArrivalReferences([]);
+      void client.invalidateQueries({ queryKey: ["scene-participants", campaignId, sceneId] });
+      void client.invalidateQueries({ queryKey: ["npcs", campaignId] });
+      void client.invalidateQueries({ queryKey: ["monsters", campaignId] });
+      if (startedCombat) {
+        void client.invalidateQueries({ queryKey: ["combats", campaignId] });
+        navigate("/combat");
+      } else {
+        showToast("原子已创建并加入当前场景");
+      }
+    },
+    onError: () => showToast("确认加入失败；请检查是否已在场景中或字段是否有效", "error"),
   });
   const participantRemove = useMutation({
     mutationFn: async (participant: SceneParticipant) => {
@@ -263,9 +441,49 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
     mutationFn: async () => {
       const selected = draftAtoms.filter((atom) => selectedAtoms.has(atom.id));
       for (const atom of selected) {
-        if (atom.kind === "scene") await createScene(campaignId, { name: atom.name, description: atom.description, notes: draftSceneGrid(atom.name, atom.description) });
+        if (atom.kind === "scene") await createScene(campaignId, { name: atom.name, description: atom.description, notes: JSON.stringify({ scene_grid: generateTacticalSceneGrid(atom.name, atom.description) }) });
         if (atom.kind === "npc") await createNpc(campaignId, { name: atom.name, description: atom.description, armor_class: 10, hp: 10, max_hp: 10, speed: 30, ability_scores: { strength: 10, dexterity: 10, constitution: 10, intelligence: 10, wisdom: 10, charisma: 10 } });
-        if (atom.kind === "monster") await createMonster(campaignId, { name: atom.name, notes: `${atom.description}\nAI草稿导入模板：CR 1/4，DM应在使用前复核。`, armor_class: 12, hp: 8, max_hp: 8, speed: 30, challenge_rating: "1/4", ability_scores: { strength: 10, dexterity: 10, constitution: 10, intelligence: 8, wisdom: 10, charisma: 8 } });
+        if (atom.kind === "monster") {
+          const existing = (monsters.data ?? []).find(
+            (monster) => monster.name.trim().toLowerCase() === atom.name.trim().toLowerCase(),
+          );
+          if (existing) continue;
+          let matched: MonsterReferenceCandidate | undefined;
+          try {
+            const references = await findCompendiumMonsters(`${atom.name} ${atom.description}`);
+            matched = references.find((reference) => reference.origin === "compendium" && (
+              reference.label.trim().toLowerCase() === atom.name.trim().toLowerCase()
+              || reference.hit.chunk.aliases.some((alias) => alias.trim().toLowerCase() === atom.name.trim().toLowerCase())
+              || reference.hit.score >= 0.72
+            ));
+          } catch {
+            // A missing local index never turns into an implicit write. The
+            // fallback remains visibly custom and awaits this explicit import.
+          }
+          if (matched?.origin === "compendium") {
+            const stats = parseMonsterStats(matched.hit);
+            await createMonster(campaignId, {
+              name: stats.name,
+              source_record_id: matched.hit.chunk.record_id,
+              source_name: `${matched.hit.chunk.source_book ?? matched.hit.chunk.source_title} · ${matched.hit.chunk.edition}`,
+              notes: `${atom.description}\n由备团草稿匹配本地图鉴并经DM确认导入。`,
+              armor_class: stats.armorClass,
+              hp: stats.hp,
+              max_hp: stats.hp,
+              speed: stats.speed,
+              challenge_rating: stats.challengeRating,
+              ability_scores: stats.abilityScores,
+            });
+          } else {
+            await createMonster(campaignId, {
+              name: atom.name,
+              source_name: "DM自制模板（非图鉴）",
+              notes: `${atom.description}\n未找到足够可靠的本地图鉴匹配；这是自制模板，CR 1/4，DM应在使用前复核。`,
+              armor_class: 12, hp: 8, max_hp: 8, speed: 30, challenge_rating: "1/4",
+              ability_scores: { strength: 10, dexterity: 10, constitution: 10, intelligence: 8, wisdom: 10, charisma: 8 },
+            });
+          }
+        }
         if (atom.kind === "quest") await createQuest(campaignId, { name: atom.name, description: atom.description, quest_type: "side", status: "open" });
         if (atom.kind === "clue") await createClue(campaignId, { name: atom.name, description: atom.description, player_text: atom.description, verified: false, discovered: false });
         if (atom.kind === "item") await createWorldItem(campaignId, { name: atom.name, description: atom.description, category: "adventure", quantity: 1, unit_weight_lb: 0, price_cp: 0, source_label: "ai_generated" });
@@ -419,6 +637,9 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
   const activeAdjustment = (encounterAdjustments.data ?? [])
     .filter((proposal) => proposal.status === "applied")
     .reduce((sum, proposal) => sum + proposal.difficulty_shift, 0);
+  const selectedArrivalReference = arrivalReferences.find(
+    (reference) => reference.key === arrivalDraft?.sourceKey,
+  );
   return (
     <div className="mx-auto max-w-[1500px] p-4 lg:p-6">
       <SessionStatusBar characters={characters.data ?? []} events={events.data ?? []} npcs={npcs.data ?? []} />
@@ -566,6 +787,53 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
               <p className="mb-0 mt-2 text-2xs text-stone-600">这里只生成可编辑草案；到上方核对 HP、状态、参战者或增援后，再由 DM 确认。</p>
             </div>
           </Panel>
+          {arrivalLookup.isPending ? (
+            <Panel eyebrow="动态原子 · 只读检索" title="正在查找合适的登场者">
+              <LoadingBlock label="优先检索战役原子与本地 D&D 怪物图鉴…" />
+            </Panel>
+          ) : null}
+          {arrivalDraft ? (
+            <Panel eyebrow="动态原子 · 等待 DM 确认" title={arrivalDraft.kind === "monster" ? "怪物进入场景草案" : "NPC 进入场景草案"}>
+              <p className="mt-0 text-xs leading-5 text-stone-500">副 DM 只起草并检索，不会自动写入。核对来源与数值后，点击底部确认才会创建原子并加入当前场景。</p>
+              {arrivalDraft.kind === "monster" ? (
+                <div className="mb-3 space-y-2">
+                  {arrivalReferences.map((reference) => (
+                    <label className={`block cursor-pointer rounded border p-2 text-xs ${arrivalDraft.sourceKey === reference.key ? "border-ember-600/70 bg-ember-950/20" : "border-ink-700 bg-ink-950/40"}`} key={reference.key}>
+                      <span className="flex items-center gap-2">
+                        <input checked={arrivalDraft.sourceKey === reference.key} name="arrival-source" onChange={() => chooseArrivalReference(reference.key)} type="radio" />
+                        <strong className="text-parchment-100">{reference.label}</strong>
+                        <Badge tone={reference.origin === "compendium" ? "ok" : "ai"}>{reference.origin === "compendium" ? "本地图鉴" : "已有原子"}</Badge>
+                      </span>
+                      <span className="mt-1 block text-stone-500">{reference.sourceLabel}</span>
+                      <span className="mt-1 block text-stone-600">{reference.matchReason}</span>
+                    </label>
+                  ))}
+                  <label className={`block cursor-pointer rounded border p-2 text-xs ${arrivalDraft.sourceKey === "custom" ? "border-amber-700/70 bg-amber-950/20" : "border-ink-700 bg-ink-950/40"}`}>
+                    <span className="flex items-center gap-2"><input checked={arrivalDraft.sourceKey === "custom"} name="arrival-source" onChange={() => chooseArrivalReference("custom")} type="radio" /><strong className="text-parchment-100">使用自制模板</strong><Badge tone="warn">非图鉴</Badge></span>
+                    <span className="mt-1 block text-stone-600">仅在图鉴没有合适条目时使用；数值需要 DM 自行复核。</span>
+                  </label>
+                </div>
+              ) : (
+                <div className="mb-3 flex flex-wrap gap-2"><Badge tone="ai">AI 可编辑草案</Badge><span className="text-2xs text-stone-600">NPC 不会在确认前进入数据库。</span></div>
+              )}
+              <div className="grid gap-2 sm:grid-cols-2">
+                <label className="text-2xs text-stone-500 sm:col-span-2">名称<input className={`${inputCls} mt-1`} onChange={(event) => setArrivalDraft((current) => current ? { ...current, name: event.target.value } : current)} value={arrivalDraft.name} /></label>
+                <label className="text-2xs text-stone-500">AC<input className={`${inputCls} mt-1`} min="0" onChange={(event) => setArrivalDraft((current) => current ? { ...current, armorClass: Number(event.target.value) } : current)} type="number" value={arrivalDraft.armorClass} /></label>
+                <label className="text-2xs text-stone-500">生命值<input className={`${inputCls} mt-1`} min="1" onChange={(event) => setArrivalDraft((current) => current ? { ...current, hp: Number(event.target.value) } : current)} type="number" value={arrivalDraft.hp} /></label>
+                <label className="text-2xs text-stone-500">速度（尺）<input className={`${inputCls} mt-1`} min="0" onChange={(event) => setArrivalDraft((current) => current ? { ...current, speed: Number(event.target.value) } : current)} type="number" value={arrivalDraft.speed} /></label>
+                <label className="text-2xs text-stone-500">CR<input className={`${inputCls} mt-1`} onChange={(event) => setArrivalDraft((current) => current ? { ...current, challengeRating: event.target.value } : current)} value={arrivalDraft.challengeRating} /></label>
+                <label className="text-2xs text-stone-500 sm:col-span-2">登场说明<textarea className={`${textareaCls} mt-1`} onChange={(event) => setArrivalDraft((current) => current ? { ...current, description: event.target.value } : current)} value={arrivalDraft.description} /></label>
+              </div>
+              {selectedArrivalReference?.origin === "compendium" ? (
+                <a className="mt-2 block text-2xs text-ember-300 hover:text-ember-200" href={selectedArrivalReference.hit.chunk.canonical_url} rel="noreferrer" target="_blank">查看图鉴来源：{selectedArrivalReference.sourceLabel}</a>
+              ) : null}
+              <label className="mt-3 flex items-center gap-2 text-xs text-stone-300"><input checked={startCombatAfterArrival} onChange={(event) => setStartCombatAfterArrival(event.target.checked)} type="checkbox" />确认加入后立即用当前场景发起战斗</label>
+              <div className="mt-3 flex justify-end gap-2">
+                <Button disabled={arrivalConfirm.isPending} onClick={() => { setArrivalDraft(null); setArrivalReferences([]); }} size="sm">放弃草案</Button>
+                <Button disabled={!arrivalDraft.name.trim() || arrivalDraft.hp < 1 || !sceneId} loading={arrivalConfirm.isPending} onClick={() => arrivalConfirm.mutate()} size="sm" variant="primary">DM 确认创建并加入</Button>
+              </div>
+            </Panel>
+          ) : null}
           <Panel eyebrow="进入 / 离开 / 推进" title="最近情景记录">
             {recentEvents.length === 0 ? <p className="m-0 text-xs text-stone-600">还没有当前场景记录。</p> : <ul className="m-0 space-y-2 p-0">{recentEvents.map((event) => <li className="list-none border-b border-ink-800 pb-2 text-xs last:border-0" key={event.id}><strong className="block text-parchment-100">{event.title}</strong><span className="text-stone-600">{event.metadata_json.entry_kind === "ai" ? safeDndText(event.description) : event.description}</span></li>)}</ul>}
           </Panel>
