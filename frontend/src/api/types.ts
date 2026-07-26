@@ -775,6 +775,7 @@ export type PlayerRollResolutionType =
 export type PlayerRollPromptCommand = {
   actor_combatant_id: string;
   actor_version: number;
+  action_cost?: "action" | "bonus_action" | "reaction" | "none";
   target_combatant_id: string;
   target_version: number;
   action_name: string;

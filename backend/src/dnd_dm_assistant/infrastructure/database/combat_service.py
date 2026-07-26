@@ -75,6 +75,56 @@ class CombatEngineService:
         return combat, target, actor
 
     @staticmethod
+    def _validate_action_economy(
+        session: Session,
+        combat: Combat,
+        actor: Combatant | None,
+        *,
+        actor_version: int | None,
+        action_cost: str,
+        consume: bool,
+    ) -> None:
+        if action_cost == "none":
+            return
+        if actor is None or actor_version is None:
+            raise ValueError("an actor and actor version are required to spend an action")
+        if actor.version != actor_version:
+            raise VersionConflict(
+                "combatant",
+                actor.id,
+                actor_version,
+                actor.version,
+            )
+        ordered = session.scalars(
+            select(Combatant)
+            .where(
+                Combatant.combat_id == combat.id,
+                Combatant.is_active.is_(True),
+            )
+            .order_by(
+                Combatant.initiative.desc(),
+                Combatant.created_at,
+                Combatant.id,
+            )
+        ).all()
+        active = ordered[combat.current_turn_index] if ordered else None
+        if active is None or active.id != actor.id:
+            raise ValueError("only the active combatant can spend actions")
+        field = {
+            "action": "action_available",
+            "bonus_action": "bonus_action_available",
+            "reaction": "reaction_available",
+        }.get(action_cost)
+        if field is None:
+            raise ValueError("unsupported action cost")
+        if not bool(getattr(actor, field)):
+            raise ValueError(f"{action_cost} has already been spent this turn")
+        if consume:
+            setattr(actor, field, False)
+            actor.version += 1
+            actor.updated_at = datetime.now(UTC)
+
+    @staticmethod
     def _resolve(
         command: CombatActionCommand,
         target: Combatant,
@@ -276,6 +326,14 @@ class CombatEngineService:
                     command.target_version,
                     target.version,
                 )
+            self._validate_action_economy(
+                session,
+                combat,
+                actor,
+                actor_version=command.actor_version,
+                action_cost=command.action_cost,
+                consume=True,
+            )
             request_json = command.model_dump(mode="json")
             request_json["actor_name"] = actor.display_name
             request_json["target_name"] = target.display_name
@@ -432,7 +490,9 @@ class CombatEngineService:
         command: CombatActionCommand,
     ) -> dict[str, Any]:
         with Session(self.engine) as session:
-            _, target, _ = self._scope(session, campaign_id, combat_id, command)
+            combat, target, actor = self._scope(
+                session, campaign_id, combat_id, command
+            )
             if target.version != command.target_version:
                 raise VersionConflict(
                     "combatant",
@@ -440,6 +500,14 @@ class CombatEngineService:
                     command.target_version,
                     target.version,
                 )
+            self._validate_action_economy(
+                session,
+                combat,
+                actor,
+                actor_version=command.actor_version,
+                action_cost=command.action_cost,
+                consume=False,
+            )
             if command.action_type == "heal" and target.hp == 0:
                 death_save = session.scalar(
                     select(DeathSave).where(DeathSave.combatant_id == target.id)
@@ -501,6 +569,14 @@ class CombatEngineService:
                     command.target_version,
                     target.version,
                 )
+            self._validate_action_economy(
+                session,
+                combat,
+                actor,
+                actor_version=command.actor_version,
+                action_cost=command.action_cost,
+                consume=True,
+            )
             if command.action_type == "heal" and target.hp == 0:
                 current_death_save = session.scalar(
                     select(DeathSave).where(DeathSave.combatant_id == target.id)
@@ -597,6 +673,24 @@ class CombatEngineService:
                 result["death_save"] = death_save_result
             if resolved["concentration_check_dc"] is not None:
                 result["concentration_check_dc"] = resolved["concentration_check_dc"]
+            if command.action_type == "damage" and actor is not None:
+                action_result = command.resolution_note or (
+                    f"造成 {result['adjusted_damage']} 点"
+                    f"{command.damage_type or ''}伤害"
+                )
+                action_summary = (
+                    f"{actor.display_name} 对 {target.display_name} 使用"
+                    f"「{command.action_name or '攻击'}」；{action_result}"
+                )
+            elif command.action_type == "damage":
+                action_summary = (
+                    f"{target.display_name} 受到 {result['adjusted_damage']} 点"
+                    f"{command.damage_type or ''}伤害"
+                )
+            else:
+                action_summary = (
+                    f"{target.display_name} 恢复 {result['hp_gained']} 点生命"
+                )
             action = CombatAction(
                 campaign_id=campaign_id,
                 combat_id=combat_id,
@@ -609,12 +703,7 @@ class CombatEngineService:
                 explanation=result.get("explanation"),
                 round_number=combat.round_number,
                 turn_index=combat.current_turn_index,
-                summary=(
-                    f"{target.display_name} 受到 {result['adjusted_damage']} 点"
-                    f"{command.damage_type or ''}伤害"
-                    if command.action_type == "damage"
-                    else f"{target.display_name} 恢复 {result['hp_gained']} 点生命"
-                ),
+                summary=action_summary,
                 idempotency_key=idempotency_key,
                 dm_override=command.dm_override,
                 override_reason=command.override_reason,

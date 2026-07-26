@@ -642,6 +642,10 @@ class CombatActionCommand(BaseModel):
     target_combatant_id: str = Field(min_length=1, max_length=36)
     target_version: int = Field(ge=1)
     actor_combatant_id: str | None = Field(default=None, min_length=1, max_length=36)
+    actor_version: int | None = Field(default=None, ge=1)
+    action_cost: Literal["action", "bonus_action", "reaction", "none"] = "none"
+    action_name: str | None = Field(default=None, max_length=200)
+    resolution_note: str | None = Field(default=None, max_length=1_000)
     amount: int = Field(ge=0, le=100_000)
     damage_type: str | None = Field(default=None, max_length=50)
     critical_hit: bool = False
@@ -654,12 +658,19 @@ class CombatActionCommand(BaseModel):
             raise ValueError("damage_type is required for damage")
         if self.dm_override and not (self.override_reason or "").strip():
             raise ValueError("override_reason is required for a DM override")
+        if self.action_cost != "none" and (
+            self.actor_combatant_id is None or self.actor_version is None
+        ):
+            raise ValueError(
+                "actor_combatant_id and actor_version are required when an action is spent"
+            )
         return self
 
 
 class PlayerRollPromptCommand(BaseModel):
     actor_combatant_id: str = Field(min_length=1, max_length=36)
     actor_version: int = Field(ge=1)
+    action_cost: Literal["action", "bonus_action", "reaction", "none"] = "action"
     target_combatant_id: str = Field(min_length=1, max_length=36)
     target_version: int = Field(ge=1)
     action_name: Annotated[

@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useMemo, useState, type ReactElement } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactElement } from "react";
 
 import {
   confirmCombatAction,
@@ -57,12 +57,32 @@ function actionModifier(character: Character, action: CombatActionLike): number 
     + proficiencyBonus(character.level);
 }
 
+type ActionCost = "action" | "bonus_action" | "reaction" | "none";
+
+function actionCost(action: CombatActionLike): ActionCost {
+  const cost = `${action.cost ?? "动作"} ${action.description ?? ""}`;
+  if (/附赠|bonus/i.test(cost)) return "bonus_action";
+  if (/反应|reaction/i.test(cost)) return "reaction";
+  if (/无需动作|不消耗动作|free action/i.test(cost)) return "none";
+  return "action";
+}
+
+function hasActionEconomy(active: Combatant, cost: ActionCost): boolean {
+  if (cost === "none") return true;
+  if (cost === "bonus_action") return active.bonus_action_available;
+  if (cost === "reaction") return active.reaction_available;
+  return active.action_available;
+}
+
 export function TurnCommandConsole({
   active,
   activeCharacter,
   campaignId,
   combatId,
   fighters,
+  autoEnemies,
+  automationReady,
+  onEnemyTurnComplete,
   onRangeChange,
   onTargetChange,
   selectedTargetId,
@@ -74,6 +94,9 @@ export function TurnCommandConsole({
   campaignId: string;
   combatId: string;
   fighters: Combatant[];
+  autoEnemies: boolean;
+  automationReady: boolean;
+  onEnemyTurnComplete: () => void;
   onRangeChange: (range: CombatTargeting | null) => void;
   onTargetChange?: (targetId: string) => void;
   selectedTargetId?: string;
@@ -92,6 +115,7 @@ export function TurnCommandConsole({
   const [checkRoll, setCheckRoll] = useState("");
   const [effectText, setEffectText] = useState("无法行动（1轮）");
   const [tactics, setTactics] = useState<EnemyTactics>("standard");
+  const processedAutomaticTurn = useRef<string | null>(null);
 
   const actions = useMemo(
     () => activeCharacter
@@ -105,6 +129,8 @@ export function TurnCommandConsole({
     range: "5尺",
     cost: "动作",
   };
+  const selectedActionCost = actionCost(selectedAction);
+  const selectedActionAvailable = hasActionEconomy(active, selectedActionCost);
   const possibleTargets = fighters.filter((fighter) =>
     fighter.id !== active.id
     && fighter.hp > 0
@@ -180,6 +206,7 @@ export function TurnCommandConsole({
       target_combatant_id: chosenTarget.id,
       target_version: chosenTarget.version,
       action_name: selectedAction.name ?? "怪物能力",
+      action_cost: selectedActionCost,
       resolution_type: "saving_throw",
       dc: selectedAction.save_dc ?? 10,
       ability: selectedAction.save_ability ?? "dexterity",
@@ -193,7 +220,23 @@ export function TurnCommandConsole({
       invalidate();
       showToast("已在右侧战斗面板生成玩家豁免请求");
     },
-    onError: () => showToast("无法生成玩家豁免请求", "error"),
+    onError: () => {
+      processedAutomaticTurn.current = null;
+      showToast("无法生成玩家豁免请求", "error");
+    },
+  });
+  const autoResolve = useMutation({
+    mutationFn: (command: CombatActionCommand) =>
+      confirmCombatAction(campaignId, combatId, command),
+    onSuccess: () => {
+      invalidate();
+      showToast(`${active.display_name}已自动完成动作并结束回合`);
+      onEnemyTurnComplete();
+    },
+    onError: () => {
+      processedAutomaticTurn.current = null;
+      showToast("怪物自动动作失败，已暂停在当前回合供 DM 检查", "error");
+    },
   });
 
   const selectAction = (value: string) => {
@@ -222,8 +265,23 @@ export function TurnCommandConsole({
     // The active fighter/action list changed; initialize the map indicator.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active.id, tactics, turnKey]);
-  const prepareAttack = (automatic: boolean, forcedTarget?: Combatant) => {
+  const prepareAttack = (
+    automatic: boolean,
+    forcedTarget?: Combatant,
+    fullyAutomaticEnemy = false,
+  ) => {
     const chosenTarget = forcedTarget ?? target;
+    if (!selectedActionAvailable) {
+      showToast(
+        selectedActionCost === "bonus_action"
+          ? "本回合附赠动作已经使用"
+          : selectedActionCost === "reaction"
+            ? "本轮反应已经使用"
+            : "本回合动作已经使用，请结束回合",
+        "error",
+      );
+      return;
+    }
     if (!chosenTarget) {
       showToast("请先选择目标", "error");
       return;
@@ -261,27 +319,34 @@ export function TurnCommandConsole({
     const hit = finalAttack >= chosenTarget.armor_class;
     const rolledDamage = rollDiceExpression(expression);
     const finalDamage = automatic ? rolledDamage.total : Number(damageTotal);
-    if (!hit) {
-      showToast(`未命中：${finalAttack} < AC ${chosenTarget.armor_class}`, "error");
-      return;
-    }
     if (!Number.isFinite(finalDamage) || finalDamage < 0) {
       showToast("请输入玩家掷出的最终伤害", "error");
       return;
     }
-    preview.mutate({
-      command: {
-        action_type: "damage",
-        actor_combatant_id: active.id,
-        target_combatant_id: chosenTarget.id,
-        target_version: chosenTarget.version,
-        amount: finalDamage,
-        damage_type: selectedAction.damage_type ?? "untyped",
-      },
-      explanation: automatic
+    const explanation = hit
+      ? automatic
         ? `${active.display_name} → ${chosenTarget.display_name}，使用「${selectedAction.name ?? "攻击"}」：d20(${d20}) + ${modifier} = ${finalAttack}，命中 AC ${chosenTarget.armor_class}；伤害 ${expression.count}d${expression.sides}${expression.modifier ? `+${expression.modifier}` : ""} = ${finalDamage}`
-        : `${active.display_name} → ${chosenTarget.display_name}，使用「${selectedAction.name ?? "攻击"}」：玩家报告命中总值 ${finalAttack}，达到 AC ${chosenTarget.armor_class}；玩家报告伤害 ${finalDamage}`,
-    });
+        : `${active.display_name} → ${chosenTarget.display_name}，使用「${selectedAction.name ?? "攻击"}」：玩家报告命中总值 ${finalAttack}，达到 AC ${chosenTarget.armor_class}；玩家报告伤害 ${finalDamage}`
+      : `${active.display_name} → ${chosenTarget.display_name}，使用「${selectedAction.name ?? "攻击"}」：命中总值 ${finalAttack}，未达到 AC ${chosenTarget.armor_class}；攻击落空但仍消耗${selectedAction.cost ?? "动作"}`;
+    const command: CombatActionCommand = {
+      action_type: "damage",
+      actor_combatant_id: active.id,
+      actor_version: active.version,
+      action_cost: selectedActionCost,
+      action_name: selectedAction.name ?? "攻击",
+      resolution_note: hit
+        ? `命中并造成 ${finalDamage} 点${selectedAction.damage_type ?? "未分类"}伤害`
+        : `命中总值 ${finalAttack} 未达到 AC ${chosenTarget.armor_class}，攻击未命中`,
+      target_combatant_id: chosenTarget.id,
+      target_version: chosenTarget.version,
+      amount: hit ? finalDamage : 0,
+      damage_type: selectedAction.damage_type ?? "untyped",
+    };
+    if (fullyAutomaticEnemy) {
+      autoResolve.mutate(command);
+    } else {
+      preview.mutate({ command, explanation });
+    }
   };
   const enemyTarget = chooseEnemyTarget(possibleTargets, tactics);
   const enemyReason = tactics === "instinctive"
@@ -291,6 +356,40 @@ export function TurnCommandConsole({
       : tactics === "smart"
         ? "聪明敌人会集中攻击最虚弱的目标并利用自身动作。"
         : "战术敌人优先寻找低 AC、低生命目标，并保留撤退与控制空间。";
+  useEffect(() => {
+    if (!autoEnemies || !automationReady || active.entity_type === "character") return;
+    if (processedAutomaticTurn.current === turnKey) return;
+    if (!selectedActionAvailable) {
+      processedAutomaticTurn.current = turnKey;
+      onEnemyTurnComplete();
+      return;
+    }
+    if (!enemyTarget) {
+      processedAutomaticTurn.current = turnKey;
+      onEnemyTurnComplete();
+      return;
+    }
+    if (validTargetIds?.has(enemyTarget.id)) {
+      processedAutomaticTurn.current = turnKey;
+      setTargetId(enemyTarget.id);
+      prepareAttack(true, enemyTarget, true);
+      return;
+    }
+    if (active.movement_remaining_ft === 0) {
+      processedAutomaticTurn.current = turnKey;
+      onEnemyTurnComplete();
+    }
+    // React when pathfinding updates the combatant position/range.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    active.movement_remaining_ft,
+    autoEnemies,
+    automationReady,
+    enemyTarget?.id,
+    selectedActionAvailable,
+    turnKey,
+    validTargetIds,
+  ]);
 
   return (
     <div className="mt-3 rounded-lg border-2 border-ember-500/50 bg-ember-950/10 p-3">
@@ -298,6 +397,9 @@ export function TurnCommandConsole({
         <Badge tone={active.entity_type === "character" ? "ok" : "danger"}>当前回合</Badge>
         <strong className="text-base text-parchment-100">{active.display_name}</strong>
         <span className="text-xs text-stone-400">{active.entity_type === "character" ? "等待玩家声明行动" : "敌人 AI 正在评估行动"}</span>
+        <Badge tone={active.action_available ? "ok" : "neutral"}>动作：{active.action_available ? "可用" : "已用"}</Badge>
+        <Badge tone={active.bonus_action_available ? "ok" : "neutral"}>附赠：{active.bonus_action_available ? "可用" : "已用"}</Badge>
+        <Badge tone={active.reaction_available ? "ok" : "neutral"}>反应：{active.reaction_available ? "可用" : "已用"}</Badge>
         <div className="ml-auto flex rounded border border-ink-600 p-0.5">
           <button className={`rounded px-2 py-1 text-2xs ${mode === "assisted" ? "bg-ember-600 text-white" : "text-stone-400"}`} onClick={() => setMode("assisted")} type="button">半自动</button>
           <button className={`rounded px-2 py-1 text-2xs ${mode === "auto" ? "bg-ember-600 text-white" : "text-stone-400"}`} onClick={() => setMode("auto")} type="button">自动</button>
@@ -320,7 +422,7 @@ export function TurnCommandConsole({
             <div className="mt-2 grid gap-2 sm:grid-cols-2">
               <select className={selectCls} onChange={(event) => selectAction(event.target.value)} value={actionIndex}>
                 {actions.length === 0 ? <option value="0">临时攻击 · 1d6 · 5尺</option> : null}
-                {actions.map((action, index) => <option key={`${action.name}-${index}`} value={index}>{action.name ?? `动作${index + 1}`} · {action.damage ?? "按描述"} · {action.range ?? "5尺"}</option>)}
+                {actions.map((action, index) => <option disabled={!hasActionEconomy(active, actionCost(action))} key={`${action.name}-${index}`} value={index}>{action.name ?? `动作${index + 1}`} · {action.damage ?? "按描述"} · {action.range ?? "5尺"}{!hasActionEconomy(active, actionCost(action)) ? " · 本回合已用" : ""}</option>)}
               </select>
               <select className={selectCls} onChange={(event) => { setTargetId(event.target.value); onTargetChange?.(event.target.value); }} value={targetId}>
                 <option value="">选择目标</option>
@@ -334,11 +436,11 @@ export function TurnCommandConsole({
                 <div className="mt-2 flex flex-wrap gap-2">
                   <input aria-label="玩家命中总值" className={`${inputCls} w-28`} onChange={(event) => setAttackTotal(event.target.value)} placeholder="命中总值" type="number" value={attackTotal} />
                   <input aria-label="玩家伤害总值" className={`${inputCls} w-28`} onChange={(event) => setDamageTotal(event.target.value)} placeholder="伤害总值" type="number" value={damageTotal} />
-                  <Button disabled={!target || preview.isPending} onClick={() => prepareAttack(false)} variant="primary">计算并预览</Button>
+                  <Button disabled={!target || !selectedActionAvailable || preview.isPending} onClick={() => prepareAttack(false)} variant="primary">计算并预览</Button>
                 </div>
               </div>
             ) : (
-              <Button disabled={!target || preview.isPending} onClick={() => prepareAttack(true)} variant="primary">自动掷命中与伤害</Button>
+              <Button disabled={!target || !selectedActionAvailable || preview.isPending} onClick={() => prepareAttack(true)} variant="primary">自动掷命中与伤害</Button>
             )}
           </div>
 
@@ -373,14 +475,14 @@ export function TurnCommandConsole({
             <select className={`${selectCls} mt-1`} onChange={(event) => selectAction(event.target.value)} value={actionIndex}>
               {actions.length === 0 ? <option value="0">临时攻击 · 1d6 · 5尺</option> : null}
               {actions.map((action, index) => (
-                <option key={`${action.name}-${index}`} value={index}>
+                <option disabled={!hasActionEconomy(active, actionCost(action))} key={`${action.name}-${index}`} value={index}>
                   {action.name ?? `动作${index + 1}`} · {action.damage ?? "按规则描述"} · {actionRangeSummary(action)}
                 </option>
               ))}
             </select>
           </label>
           <p className="mb-2 mt-0 text-2xs text-stone-500">建议动作：{selectedAction.name ?? "基础攻击"} · {selectedAction.damage ?? "1d6"} · {actionRangeSummary(selectedAction)}。地图会先按剩余速度寻路；攻击检定由怪物自动掷，怪物能力要求豁免时会在右侧等待玩家输入骰值。</p>
-          <Button disabled={!enemyTarget || preview.isPending || requestPlayerSave.isPending} onClick={() => { if (enemyTarget) { setTargetId(enemyTarget.id); prepareAttack(true, enemyTarget); } }} variant="danger">自动执行敌人回合</Button>
+          <Button disabled={!enemyTarget || !selectedActionAvailable || preview.isPending || requestPlayerSave.isPending || autoResolve.isPending} onClick={() => { if (enemyTarget) { setTargetId(enemyTarget.id); prepareAttack(true, enemyTarget); } }} variant="danger">执行怪物动作</Button>
         </div>
       )}
 

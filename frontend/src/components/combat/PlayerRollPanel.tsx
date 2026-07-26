@@ -55,12 +55,14 @@ export function PlayerRollPanel({
   campaignId,
   combatId,
   fighters,
+  onResolved,
 }: {
   activeEnemy?: Combatant;
   actions: CombatAction[];
   campaignId: string;
   combatId: string;
   fighters: Combatant[];
+  onResolved?: () => void;
 }): ReactElement | null {
   const client = useQueryClient();
   const { showToast } = useToast();
@@ -162,6 +164,7 @@ export function PlayerRollPanel({
     onSuccess: () => {
       invalidate();
       showToast("玩家骰结果已由 DM 确认并写入战斗日志");
+      onResolved?.();
     },
     onError: () => showToast("确认失败：目标状态可能已变化，请重新预览", "error"),
   });
@@ -279,12 +282,12 @@ export function PlayerRollPanel({
           </label>
           <div className="flex items-end">
             <Button
-              disabled={!targetId || !actionName.trim() || createPrompt.isPending}
+              disabled={!targetId || !actionName.trim() || !activeEnemy.action_available || createPrompt.isPending}
               loading={createPrompt.isPending}
               onClick={() => createPrompt.mutate()}
               variant="primary"
             >
-              要求玩家掷骰
+              {activeEnemy.action_available ? "要求玩家掷骰" : "本回合动作已使用"}
             </Button>
           </div>
         </div>

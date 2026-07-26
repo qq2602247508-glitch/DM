@@ -372,6 +372,8 @@ function BattleGrid({
   activeFighterId,
   turnKey,
   targeting,
+  endingTurn,
+  onEndTurn,
   onTargetSelect,
   onTargetValidityChange,
 }: {
@@ -383,6 +385,8 @@ function BattleGrid({
   activeFighterId: string | null;
   turnKey: string;
   targeting: CombatTargeting | null;
+  endingTurn: boolean;
+  onEndTurn: () => void;
   onTargetSelect: (fighterId: string) => void;
   onTargetValidityChange: (fighterIds: ReadonlySet<string>) => void;
 }): ReactElement {
@@ -462,16 +466,20 @@ function BattleGrid({
     fighter: Combatant,
     plan: MovementPlan,
     automatic: boolean,
+    exhaustMovement = false,
   ) => {
-    if (plan.spentFt <= 0 || movingFighterId) return;
+    if ((plan.spentFt <= 0 && !exhaustMovement) || movingFighterId) return;
     setMovingFighterId(fighter.id);
+    const remainingMovement = exhaustMovement
+      ? 0
+      : Math.max(0, fighter.movement_remaining_ft - plan.spentFt);
     try {
       await updateCombatant(
         campaignId,
         combatId,
         fighter.id,
         {
-          movement_remaining_ft: Math.max(0, fighter.movement_remaining_ft - plan.spentFt),
+          movement_remaining_ft: remainingMovement,
           snapshot_json: {
             ...fighter.snapshot_json,
             grid_position: plan.destination,
@@ -484,7 +492,7 @@ function BattleGrid({
         [fighter.id]: [plan.destination.row, plan.destination.col],
       }));
       await client.invalidateQueries({ queryKey: ["combatants", campaignId, combatId] });
-      if (!automatic) showToast(`${fighter.display_name}移动 ${plan.spentFt} 尺，剩余 ${Math.max(0, fighter.movement_remaining_ft - plan.spentFt)} 尺`);
+      if (!automatic) showToast(`${fighter.display_name}移动 ${plan.spentFt} 尺，剩余 ${remainingMovement} 尺`);
     } catch {
       if (automatic) processedAiTurn.current = null;
       showToast(`${fighter.display_name}移动保存失败，请刷新战斗状态`, "error");
@@ -536,6 +544,9 @@ function BattleGrid({
       setLastAiMove(alreadyInRange
         ? `${active.display_name}已在${target.fighter.display_name}的攻击范围内，保留剩余移动 ${active.movement_remaining_ft} 尺。`
         : `${active.display_name}本回合没有足够移动力到达合法攻击范围。`);
+      if (!alreadyInRange && active.movement_remaining_ft > 0) {
+        void commitMove(active, plan, true, true);
+      }
       return;
     }
     setLastAiMove(`${active.display_name}按规则向${target.fighter.display_name}寻路移动 ${plan.spentFt} 尺；剩余 ${Math.max(0, active.movement_remaining_ft - plan.spentFt)} 尺。`);
@@ -618,6 +629,7 @@ function BattleGrid({
           <button className={`rounded px-2 py-1 text-2xs ${interactionMode === "move" ? "bg-ember-700 text-white" : "text-stone-500"}`} onClick={() => setInteractionMode("move")} type="button">移动</button>
           <button className={`rounded px-2 py-1 text-2xs ${interactionMode === "target" ? "bg-sky-700 text-white" : "text-stone-500"}`} disabled={!targeting} onClick={() => setInteractionMode("target")} type="button">技能范围</button>
         </div>
+        <Button disabled={endingTurn || !activeFighterId} loading={endingTurn} onClick={onEndTurn} size="sm" variant="primary">结束回合</Button>
         {selected ? <span className="ml-auto text-2xs text-ember-300">已选：{fighters.find((fighter) => fighter.id === selected)?.display_name}</span> : null}
       </div>
       {lastAiMove ? <p className="mb-2 mt-0 rounded border border-red-900/50 bg-red-950/10 px-2 py-1 text-2xs text-red-200">{lastAiMove}</p> : null}
@@ -723,6 +735,10 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
   const [armorClass, setArmorClass] = useState("10");
   const [hp, setHp] = useState("10");
   const [selectedKey, setSelectedKey] = useState("");
+  const autoEnemiesStorageKey = `dnd-dm-auto-enemies:${campaignId}:${combat.id}`;
+  const [autoEnemies, setAutoEnemies] = useState(
+    () => localStorage.getItem(autoEnemiesStorageKey) === "true",
+  );
   const [xpOverride, setXpOverride] = useState("");
   const [goldPerCharacter, setGoldPerCharacter] = useState("0");
   const [lootRecipientId, setLootRecipientId] = useState("");
@@ -744,6 +760,9 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
     preview: CombatSettlementPreview;
     command: CombatSettlementCommand;
   } | null>(null);
+  useEffect(() => {
+    localStorage.setItem(autoEnemiesStorageKey, String(autoEnemies));
+  }, [autoEnemies, autoEnemiesStorageKey]);
   const fighters = useQuery({
     queryKey: ["combatants", campaignId, combat.id],
     queryFn: ({ signal }) => listCombatants(campaignId, combat.id, signal),
@@ -809,10 +828,10 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
     onSuccess: (result) => {
       invalidate();
       showToast(result.expiration_prompts.length > 0
-        ? `回合已推进；有 ${result.expiration_prompts.length} 个效果等待 DM 确认结束`
+        ? `回合已结束；有 ${result.expiration_prompts.length} 个效果等待 DM 确认结束`
         : result.active_combatant
           ? `第 ${result.combat.round_number} 轮：轮到 ${result.active_combatant.display_name}`
-          : "回合已推进");
+          : "回合已结束");
     },
     onError: () => showToast("回合推进失败，请刷新战斗状态", "error"),
   });
@@ -981,7 +1000,7 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
       <div className="flex flex-wrap items-center justify-between gap-3">
         <Badge tone={combat.status === "active" ? "danger" : "neutral"}>{COMBAT_STATUS_LABELS[combat.status] ?? combat.status}</Badge>
         <div className="flex gap-2">
-          <Button disabled={combat.status !== "active" || ordered.length === 0 || nextTurn.isPending} loading={nextTurn.isPending} onClick={() => nextTurn.mutate()} size="sm" variant="primary">下一回合</Button>
+          <Button onClick={() => setAutoEnemies((value) => !value)} size="sm" variant={autoEnemies ? "primary" : "ghost"}>怪物全自动：{autoEnemies ? "开" : "关"}</Button>
           <Button disabled={combat.status !== "active" || update.isPending} onClick={() => update.mutate({ status: "ended" })} size="sm">结束战斗</Button>
           {combat.status === "ended" && combat.scene_id ? <Button onClick={() => navigate("/game-table")} size="sm" variant="primary">返回游戏推进台</Button> : null}
         </div>
@@ -1010,9 +1029,14 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
         <TurnCommandConsole
           active={activeFighter}
           activeCharacter={activeCharacter}
+          autoEnemies={autoEnemies}
+          automationReady={!nextTurn.isPending}
           campaignId={campaignId}
           combatId={combat.id}
           fighters={ordered}
+          onEnemyTurnComplete={() => {
+            if (!nextTurn.isPending) nextTurn.mutate();
+          }}
           onRangeChange={setTargetingRange}
           onTargetChange={setSelectedMapTargetId}
           selectedTargetId={selectedMapTargetId}
@@ -1034,8 +1058,10 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
               campaignId={campaignId}
               candidates={candidates}
               combatId={combat.id}
+              endingTurn={nextTurn.isPending}
               fighters={ordered}
               grid={grid}
+              onEndTurn={() => nextTurn.mutate()}
               onTargetSelect={setSelectedMapTargetId}
               onTargetValidityChange={updateTargetableFighterIds}
               targeting={targetingRange}
@@ -1055,6 +1081,11 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
             campaignId={campaignId}
             combatId={combat.id}
             fighters={ordered}
+            onResolved={() => {
+              if (autoEnemies && activeFighter?.entity_type !== "character" && !nextTurn.isPending) {
+                nextTurn.mutate();
+              }
+            }}
           />
           <div className="mt-3 border-t border-ink-700 pt-3">
             <strong className="text-xs text-parchment-100">战斗日志</strong>

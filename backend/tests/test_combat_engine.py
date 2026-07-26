@@ -133,6 +133,76 @@ def test_confirm_damage_is_atomic_logged_and_idempotent(
     assert len(actions.json()["items"]) == 1
 
 
+def test_confirmed_attack_spends_action_and_blocks_repeat(
+    combat_client: TestClient,
+) -> None:
+    campaign = _campaign(combat_client)
+    combat, actor = _combatant(combat_client, campaign["id"])
+    promoted_actor = combat_client.patch(
+        _fighter_path(campaign["id"], combat["id"], actor["id"]),
+        headers={"If-Match": f'"{actor["version"]}"'},
+        json={"initiative": 20},
+    )
+    assert promoted_actor.status_code == 200
+    actor = promoted_actor.json()
+    target_response = combat_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "训练假人",
+            "entity_type": "monster",
+            "initiative": 0,
+            "hp": 20,
+            "max_hp": 20,
+            "armor_class": 10,
+        },
+    )
+    assert target_response.status_code == 201
+    target = target_response.json()
+    path = (
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}"
+        "/actions/confirm"
+    )
+    first = combat_client.post(
+        path,
+        headers={"X-Request-ID": "spend-action-once"},
+        json={
+            "action_type": "damage",
+            "actor_combatant_id": actor["id"],
+            "actor_version": actor["version"],
+            "action_cost": "action",
+            "action_name": "长剑",
+            "target_combatant_id": target["id"],
+            "target_version": target["version"],
+            "amount": 4,
+            "damage_type": "slashing",
+        },
+    )
+    assert first.status_code == 200, first.json()
+    spent_actor = combat_client.get(
+        _fighter_path(campaign["id"], combat["id"], actor["id"])
+    ).json()
+    assert spent_actor["action_available"] is False
+    updated_target = first.json()["target"]
+
+    repeated = combat_client.post(
+        path,
+        headers={"X-Request-ID": "spend-action-twice"},
+        json={
+            "action_type": "damage",
+            "actor_combatant_id": actor["id"],
+            "actor_version": spent_actor["version"],
+            "action_cost": "action",
+            "action_name": "长剑",
+            "target_combatant_id": target["id"],
+            "target_version": updated_target["version"],
+            "amount": 4,
+            "damage_type": "slashing",
+        },
+    )
+    assert repeated.status_code == 400
+    assert "already been spent" in repeated.json()["message"]
+
+
 def test_player_roll_prompt_records_actor_target_action_and_dm_confirmation(
     combat_client: TestClient,
 ) -> None:
@@ -143,6 +213,7 @@ def test_player_roll_prompt_records_actor_target_action_and_dm_confirmation(
         json={
             "display_name": "相位蜘蛛",
             "entity_type": "monster",
+            "initiative": 30,
             "hp": 32,
             "max_hp": 32,
             "armor_class": 13,
@@ -179,6 +250,10 @@ def test_player_roll_prompt_records_actor_target_action_and_dm_confirmation(
     assert action["request_json"]["target_name"] == "Fire Guard"
     assert "相位蜘蛛 对 Fire Guard 使用「毒牙」" in action["summary"]
     assert "等待玩家进行 constitution豁免" in action["summary"]
+    spent_actor = combat_client.get(
+        _fighter_path(campaign["id"], combat["id"], monster["id"])
+    ).json()
+    assert spent_actor["action_available"] is False
 
     preview = combat_client.post(
         (

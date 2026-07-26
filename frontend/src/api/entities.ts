@@ -556,6 +556,10 @@ export type CombatActionCommand = {
   target_combatant_id: string;
   target_version: number;
   actor_combatant_id?: string | null;
+  actor_version?: number | null;
+  action_cost?: "action" | "bonus_action" | "reaction" | "none";
+  action_name?: string | null;
+  resolution_note?: string | null;
   amount: number;
   damage_type?: string | null;
   critical_hit?: boolean;
