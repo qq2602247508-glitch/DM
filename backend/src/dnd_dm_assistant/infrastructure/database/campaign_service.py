@@ -95,6 +95,8 @@ ENTITY_FIELDS: dict[str, tuple[str, ...]] = {
         "resources",
         "spells",
         "spellcasting",
+        "class_levels",
+        "subclass_choices",
         "notes",
     ),
     "npc": (

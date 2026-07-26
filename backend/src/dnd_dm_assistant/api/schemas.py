@@ -141,6 +141,8 @@ class CharacterCreate(BaseModel):
     resources: dict[str, Any] = Field(default_factory=dict)
     spells: list[Any] = Field(default_factory=list)
     spellcasting: dict[str, Any] = Field(default_factory=dict)
+    class_levels: dict[str, int] = Field(default_factory=dict)
+    subclass_choices: dict[str, str] = Field(default_factory=dict)
     notes: str | None = None
 
     @model_validator(mode="after")
@@ -183,6 +185,8 @@ class CharacterPatch(BaseModel):
     resources: dict[str, Any] | None = None
     spells: list[Any] | None = None
     spellcasting: dict[str, Any] | None = None
+    class_levels: dict[str, int] | None = None
+    subclass_choices: dict[str, str] | None = None
     notes: str | None = None
     version: int | None = Field(None, ge=1)
 
@@ -229,7 +233,69 @@ class CharacterResponse(VersionedResponse):
     resources: dict[str, Any]
     spells: list[Any]
     spellcasting: dict[str, Any]
+    class_levels: dict[str, int]
+    subclass_choices: dict[str, str]
     notes: str | None
+
+
+class AdvancementPreviewRequest(BaseModel):
+    character_version: int = Field(ge=1)
+    class_name: str = Field(min_length=1, max_length=100)
+    subclass_name: str | None = Field(default=None, max_length=100)
+    hp_mode: Literal["fixed", "roll"] = "fixed"
+    hp_roll: int | None = Field(default=None, ge=1, le=12)
+    ability_increases: dict[str, int] = Field(default_factory=dict)
+    feat_choice: str | None = Field(default=None, max_length=200)
+    feature_choices: list[str] = Field(default_factory=list, max_length=30)
+    spell_additions: list[dict[str, Any]] = Field(default_factory=list, max_length=100)
+    spell_removals: list[str] = Field(default_factory=list, max_length=100)
+    dm_override_reason: str | None = Field(default=None, max_length=2_000)
+
+
+class AdvancementConfirmRequest(AdvancementPreviewRequest):
+    preview_token: str = Field(min_length=64, max_length=64)
+    idempotency_key: str = Field(min_length=8, max_length=120)
+
+
+class CompanionCreate(BaseModel):
+    owner_character_id: str = Field(min_length=1, max_length=36)
+    name: str = Field(min_length=1, max_length=200)
+    companion_type: Literal[
+        "familiar", "animal_companion", "summon", "wild_shape", "form"
+    ]
+    source_record_id: str | None = Field(default=None, max_length=100)
+    template_json: dict[str, Any] = Field(default_factory=dict)
+    hp: int = Field(1, ge=0)
+    max_hp: int = Field(1, ge=1)
+    armor_class: int = Field(10, ge=0, le=99)
+    speed: int = Field(30, ge=0, le=1000)
+    active: bool = True
+    notes: str | None = None
+
+    @model_validator(mode="after")
+    def validate_hp(self) -> CompanionCreate:
+        if self.hp > self.max_hp:
+            raise ValueError("hp cannot exceed max_hp")
+        return self
+
+
+class CompanionPatch(BaseModel):
+    name: str | None = Field(default=None, min_length=1, max_length=200)
+    source_record_id: str | None = Field(default=None, max_length=100)
+    template_json: dict[str, Any] | None = None
+    hp: int | None = Field(default=None, ge=0)
+    max_hp: int | None = Field(default=None, ge=1)
+    armor_class: int | None = Field(default=None, ge=0, le=99)
+    speed: int | None = Field(default=None, ge=0, le=1000)
+    active: bool | None = None
+    notes: str | None = None
+    version: int | None = Field(default=None, ge=1)
+
+    @model_validator(mode="after")
+    def validate_hp(self) -> CompanionPatch:
+        if self.hp is not None and self.max_hp is not None and self.hp > self.max_hp:
+            raise ValueError("hp cannot exceed max_hp")
+        return self
 
 
 class RestHitDieSelection(BaseModel):

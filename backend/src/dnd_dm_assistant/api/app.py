@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from dnd_dm_assistant.api.errors import install_error_handlers
 from dnd_dm_assistant.api.middleware import RequestIdMiddleware
+from dnd_dm_assistant.api.routes.advancement import router as advancement_router
 from dnd_dm_assistant.api.routes.assistant import router as assistant_router
 from dnd_dm_assistant.api.routes.campaigns import router as campaigns_router
 from dnd_dm_assistant.api.routes.combat_engine import router as combat_engine_router
@@ -49,6 +50,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     )
     install_error_handlers(app)
     app.include_router(health_router, prefix=app_settings.api_prefix)
+    app.include_router(advancement_router, prefix=app_settings.api_prefix)
     app.include_router(knowledge_router, prefix=app_settings.api_prefix)
     app.include_router(campaigns_router, prefix=app_settings.api_prefix)
     app.include_router(combat_engine_router, prefix=app_settings.api_prefix)
