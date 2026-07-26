@@ -20,6 +20,7 @@ from dnd_dm_assistant.infrastructure.database.combat_service import CombatEngine
 from dnd_dm_assistant.infrastructure.database.encounter_service import EncounterAdjustmentService
 from dnd_dm_assistant.infrastructure.database.rest_service import RestService
 from dnd_dm_assistant.infrastructure.database.world_service import WorldService
+from dnd_dm_assistant.infrastructure.database.spell_economy_service import SpellEconomyService
 from dnd_dm_assistant.integrations.runtime import RuntimeIntegrations
 
 
@@ -72,6 +73,10 @@ def get_combat_engine_service(request: Request) -> CombatEngineService:
 
 def get_rest_service(request: Request) -> RestService:
     return RestService(cast(Engine, request.app.state.database_engine))
+
+
+def get_spell_economy_service(request: Request) -> SpellEconomyService:
+    return SpellEconomyService(cast(Engine, request.app.state.database_engine))
 
 
 def get_world_generation_service(request: Request) -> WorldGenerationService:

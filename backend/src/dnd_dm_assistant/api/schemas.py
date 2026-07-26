@@ -129,9 +129,7 @@ class CharacterCreate(BaseModel):
     max_hp: int = Field(0, ge=0)
     max_hp_reduction: int = Field(0, ge=0)
     ability_score_reductions: dict[str, int] = Field(default_factory=dict)
-    death_saves: dict[str, int] = Field(
-        default_factory=lambda: {"successes": 0, "failures": 0}
-    )
+    death_saves: dict[str, int] = Field(default_factory=lambda: {"successes": 0, "failures": 0})
     inventory: list[Any] = Field(default_factory=list)
     equipment: list[Any] = Field(default_factory=list)
     proficiencies: list[Any] = Field(default_factory=list)
@@ -533,11 +531,7 @@ class CombatantPatch(BaseModel):
     @model_validator(mode="after")
     def validate_hp(self) -> CombatantPatch:
         reduction = self.max_hp_reduction
-        if (
-            reduction is not None
-            and self.max_hp is not None
-            and reduction > self.max_hp
-        ):
+        if reduction is not None and self.max_hp is not None and reduction > self.max_hp:
             raise ValueError("max_hp_reduction cannot exceed max_hp")
         if (
             self.hp is not None
@@ -751,16 +745,12 @@ class CampaignImportRequest(BaseModel):
 
 class NPCGenerationRequest(BaseModel):
     mode: Literal["quick", "guided"] = "quick"
-    brief: Annotated[
-        str, StringConstraints(strip_whitespace=True, min_length=1, max_length=2_000)
-    ]
+    brief: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=2_000)]
     answers: dict[str, str] = Field(default_factory=dict)
 
 
 class LocationGenerationRequest(BaseModel):
-    brief: Annotated[
-        str, StringConstraints(strip_whitespace=True, min_length=1, max_length=2_000)
-    ]
+    brief: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=2_000)]
     maximum_depth: int = Field(default=3, ge=1, le=5)
     scale: Literal["small", "medium", "large"] = "medium"
 
@@ -829,3 +819,37 @@ class SceneParticipantCreate(BaseModel):
 
 class SceneCombatStartRequest(BaseModel):
     name: str | None = None
+
+
+class SpellCastRequest(BaseModel):
+    character_id: str
+    character_version: int = Field(ge=1)
+    known_spell_id: str
+    slot_level: int = Field(ge=0, le=9)
+    ritual: bool = False
+    material_available: bool = True
+    concentration: bool = False
+    preview_token: str | None = None
+    idempotency_key: str | None = Field(default=None, min_length=8, max_length=120)
+
+
+class EquipmentOperationRequest(BaseModel):
+    character_id: str
+    character_version: int = Field(ge=1)
+    equipment_id: str
+    operation: Literal["equip", "unequip", "consume", "use_charge", "attune", "unattune"]
+    amount: int = Field(default=1, ge=1)
+    preview_token: str | None = None
+    idempotency_key: str | None = Field(default=None, min_length=8, max_length=120)
+
+
+class CommerceRequest(BaseModel):
+    wallet_id: str
+    wallet_version: int = Field(ge=1)
+    shop_inventory_id: str
+    shop_version: int = Field(ge=1)
+    quantity: int = Field(ge=1)
+    direction: Literal["buy", "sell"]
+    price_modifier_bps: int = Field(default=10_000, ge=0, le=100_000)
+    preview_token: str | None = None
+    idempotency_key: str | None = Field(default=None, min_length=8, max_length=120)
