@@ -27,4 +27,17 @@ describe("parsePrepDraft", () => {
       ["item", "银制圣徽"],
     ]);
   });
+
+  it("does not import bullets under DM advice as the previous atom kind", () => {
+    const atoms = parsePrepDraft(`
+## 物品
+- 银制圣徽｜价值 25 金币
+## DM建议
+- 让守卫先以言语拖延玩家
+- 具体检定由 DM 从规则库确认
+`);
+    expect(atoms.map((atom) => [atom.kind, atom.name])).toEqual([
+      ["item", "银制圣徽"],
+    ]);
+  });
 });

@@ -287,7 +287,10 @@ class WorldService:
             participants = tuple(
                 session.scalars(
                     select(SceneParticipant)
-                    .where(SceneParticipant.scene_id == scene_id)
+                    .where(
+                        SceneParticipant.scene_id == scene_id,
+                        SceneParticipant.role != "defeated",
+                    )
                     .order_by(SceneParticipant.created_at, SceneParticipant.id)
                 )
             )

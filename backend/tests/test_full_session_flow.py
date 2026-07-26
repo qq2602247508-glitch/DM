@@ -131,6 +131,8 @@ def test_two_groups_are_isolated_and_one_session_runs_end_to_end(
         f"{a}/combats/{combat['id']}/settlement/preview", json=settlement_payload
     )
     assert preview.status_code == 200
+    assert preview.json()["scene_entity_changes"][0]["before"]["hp"] == 8
+    assert preview.json()["scene_entity_changes"][0]["after"]["hp"] == 0
     settled = campaign_client.post(
         f"{a}/combats/{combat['id']}/settlement/confirm",
         headers={"X-Request-ID": "acceptance-settlement"},
@@ -138,6 +140,27 @@ def test_two_groups_are_isolated_and_one_session_runs_end_to_end(
     )
     assert settled.status_code == 200
     assert settled.json()["characters"][0]["experience"] == 50
+    remaining_participants = campaign_client.get(
+        f"{a}/scenes/{scene['id']}/participants"
+    ).json()["items"]
+    defeated = next(row for row in remaining_participants if row["entity_id"] == monster["id"])
+    assert defeated["role"] == "defeated"
+    assert defeated["entity"]["hp"] == 0
+    monster_atom = next(
+        row
+        for row in campaign_client.get(f"{a}/monsters").json()["items"]
+        if row["id"] == monster["id"]
+    )
+    assert monster_atom["hp"] == 0
+    next_combat = campaign_client.post(
+        f"{a}/scenes/{scene['id']}/start-combat",
+        json={"name": "结算后再次进入战斗"},
+    )
+    assert next_combat.status_code == 201
+    next_combatants = campaign_client.get(
+        f"{a}/combats/{next_combat.json()['combat']['id']}/combatants"
+    ).json()["items"]
+    assert monster["id"] not in {row["entity_id"] for row in next_combatants}
 
     completed = campaign_client.patch(
         f"{a}/quests/{quest['id']}",

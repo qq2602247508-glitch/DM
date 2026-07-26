@@ -52,6 +52,7 @@ class AgentRequest(StrictModel):
     campaign_id: str = Field(min_length=1, max_length=36)
     action: str = Field(min_length=1, max_length=4_000)
     request_id: str = Field(min_length=1, max_length=120)
+    mode: Literal["general", "narrative"] = "general"
 
     @field_validator("action", "campaign_id", "request_id")
     @classmethod

@@ -71,6 +71,7 @@ class AssistantTurnRequest(BaseModel):
         str,
         StringConstraints(strip_whitespace=True, min_length=1, max_length=4_000),
     ]
+    mode: Literal["general", "narrative"] = "general"
 
 
 class VersionedResponse(BaseModel):

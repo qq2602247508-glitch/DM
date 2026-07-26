@@ -166,7 +166,7 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
     ?? entityId;
   const quickActions = useMemo(() => {
     const npc = participants.data?.find((item) => item.entity_type === "npc");
-    const monster = participants.data?.find((item) => item.entity_type === "monster");
+    const monster = participants.data?.find((item) => item.entity_type === "monster" && item.role !== "defeated");
     return [
       npc ? `推进与 ${npc.entity.name} 的对话，根据其目标、态度和秘密给出具体反应` : "让一名与当前剧情相关的 NPC 进入场景并说明来意",
       `推进对“${activeScene?.name ?? "当前场景"}”的探索，给出检定、DC、线索和可互动内容`,
@@ -186,9 +186,9 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
   };
   const assistant = useMutation({
     mutationFn: async (action: string) => {
-      const names = (participants.data ?? []).map((item) => `${item.entity_type}:${item.entity.name}`).join("、") || "无人";
-      const context = `你是D&D 5e 2024副DM，本应用不是COC。不得使用克苏鲁、奈亚拉托提普、旧日支配者、深潜者、SAN或理智检定等其他系统内容。当前场景：${activeScene?.name ?? "未选择"}。地点：${activeLocation?.name ?? "未绑定"}。当前在场：${names}。最近推进：${entries.slice(-5).map((entry) => entry.text).join("；")}。DM输入：${action}。请只用D&D 5e世界与机制，给DM私密推进建议、NPC可能反应、下一步引导和风险；不要擅自改数据库。`;
-      return runAssistantTurn(campaignId, context);
+      const names = (participants.data ?? []).map((item) => `${item.entity_type}:${item.entity.name}${item.role === "defeated" ? "（已击败）" : ""}`).join("、") || "无人";
+      const context = `你是D&D 5e 2024副DM，本应用不是COC。不得使用克苏鲁、奈亚拉托提普、旧日支配者、深潜者、SAN或理智检定等其他系统内容。当前场景：${activeScene?.name ?? "未选择"}。地点：${activeLocation?.name ?? "未绑定"}。当前在场：${names}。最近推进：${entries.slice(-5).map((entry) => entry.text).join("；")}。DM输入：${action}。请只用D&D 5e世界与机制，给DM私密推进建议、NPC可能反应、下一步引导和风险；本模式只输出叙事草案，不给出未经规则证据逐条支持的DC、CR、伤害骰、加值、次数或持续时间，不要擅自改数据库。`;
+      return runAssistantTurn(campaignId, context, { mode: "narrative" });
     },
     onSuccess: async (response, action) => {
       const text = response.dm_hint?.text || (response.abstained ? "AI 暂时无法给出可靠建议，请由 DM 自由推进。" : "已读取当前战役状态，但没有生成新的提示。");
@@ -265,7 +265,7 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
       for (const atom of selected) {
         if (atom.kind === "scene") await createScene(campaignId, { name: atom.name, description: atom.description, notes: draftSceneGrid(atom.name, atom.description) });
         if (atom.kind === "npc") await createNpc(campaignId, { name: atom.name, description: atom.description, armor_class: 10, hp: 10, max_hp: 10, speed: 30, ability_scores: { strength: 10, dexterity: 10, constitution: 10, intelligence: 10, wisdom: 10, charisma: 10 } });
-        if (atom.kind === "monster") await createMonster(campaignId, { name: atom.name, notes: atom.description, armor_class: 12, hp: 8, max_hp: 8, speed: 30, ability_scores: { strength: 10, dexterity: 10, constitution: 10, intelligence: 8, wisdom: 10, charisma: 8 } });
+        if (atom.kind === "monster") await createMonster(campaignId, { name: atom.name, notes: `${atom.description}\nAI草稿导入模板：CR 1/4，DM应在使用前复核。`, armor_class: 12, hp: 8, max_hp: 8, speed: 30, challenge_rating: "1/4", ability_scores: { strength: 10, dexterity: 10, constitution: 10, intelligence: 8, wisdom: 10, charisma: 8 } });
         if (atom.kind === "quest") await createQuest(campaignId, { name: atom.name, description: atom.description, quest_type: "side", status: "open" });
         if (atom.kind === "clue") await createClue(campaignId, { name: atom.name, description: atom.description, player_text: atom.description, verified: false, discovered: false });
         if (atom.kind === "item") await createWorldItem(campaignId, { name: atom.name, description: atom.description, category: "adventure", quantity: 1, unit_weight_lb: 0, price_cp: 0, source_label: "ai_generated" });
@@ -351,7 +351,7 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
     setAdjustmentValue("");
   };
   const draftFromAssistant = (shift: -1 | 1) => {
-    const monster = participants.data?.find((item) => item.entity_type === "monster");
+    const monster = participants.data?.find((item) => item.entity_type === "monster" && item.role !== "defeated");
     if (!monster) {
       showToast("当前场景没有怪物，先加入怪物原子后再生成后果草案", "error");
       return;
@@ -445,7 +445,7 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
           <div className="rounded border border-ink-700 bg-ink-950/60 p-2"><span className="block text-2xs text-stone-600">地点</span><strong className="text-xs text-parchment-100">{activeLocation?.name ?? "未绑定"}</strong></div>
           <div className="rounded border border-ink-700 bg-ink-950/60 p-2"><span className="block text-2xs text-stone-600">玩家</span><strong className="text-xs text-emerald-300">{participants.data?.filter((item) => item.entity_type === "character").length ?? 0}</strong></div>
           <div className="rounded border border-ink-700 bg-ink-950/60 p-2"><span className="block text-2xs text-stone-600">NPC</span><strong className="text-xs text-violet-300">{participants.data?.filter((item) => item.entity_type === "npc").length ?? 0}</strong></div>
-          <div className="rounded border border-ink-700 bg-ink-950/60 p-2"><span className="block text-2xs text-stone-600">怪物</span><strong className="text-xs text-red-300">{participants.data?.filter((item) => item.entity_type === "monster").length ?? 0}</strong></div>
+          <div className="rounded border border-ink-700 bg-ink-950/60 p-2"><span className="block text-2xs text-stone-600">怪物</span><strong className="text-xs text-red-300">{participants.data?.filter((item) => item.entity_type === "monster" && item.role !== "defeated").length ?? 0} 活动 · {participants.data?.filter((item) => item.entity_type === "monster" && item.role === "defeated").length ?? 0} 已击败</strong></div>
         </div>
       </Panel>
       {tableMode === "prep" ? <Panel className="mt-4" eyebrow="第 1 步 · 开团前准备" title="备团草稿">
@@ -476,8 +476,8 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
       </Panel> : null}
       {showEncounterTools ? <Panel className="mt-4" eyebrow="高级工具 · 玩家行动 → 具体战斗变化" title="遭遇后果草案">
         <div className="mb-3 flex flex-wrap gap-2">
-          <Button disabled={!sceneId || !participants.data?.some((item) => item.entity_type === "monster")} onClick={() => draftFromAssistant(-1)} size="sm" variant="ai">从副 DM 建议生成玩家优势草案</Button>
-          <Button disabled={!sceneId || !participants.data?.some((item) => item.entity_type === "monster")} onClick={() => draftFromAssistant(1)} size="sm" variant="ai">从副 DM 建议生成敌方优势草案</Button>
+          <Button disabled={!sceneId || !participants.data?.some((item) => item.entity_type === "monster" && item.role !== "defeated")} onClick={() => draftFromAssistant(-1)} size="sm" variant="ai">从副 DM 建议生成玩家优势草案</Button>
+          <Button disabled={!sceneId || !participants.data?.some((item) => item.entity_type === "monster" && item.role !== "defeated")} onClick={() => draftFromAssistant(1)} size="sm" variant="ai">从副 DM 建议生成敌方优势草案</Button>
           <span className="self-center text-2xs text-stone-600">AI 只填草案；保存后仍需 DM 再次确认才会改变战斗。</span>
         </div>
         <div className="grid gap-2 lg:grid-cols-[1fr_1.5fr_10rem]">
@@ -541,7 +541,7 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
           <div className="mt-2"><RestPanel campaignId={campaignId} characters={characters.data ?? []} compact defaultCharacterIds={(participants.data ?? []).filter((item) => item.entity_type === "character").map((item) => item.entity_id)} /></div>
           {participants.isLoading ? <LoadingBlock /> : null}
           {participants.data?.length === 0 ? <EmptyState title="当前场景无人" hint="从上方选择玩家、NPC 或怪物进入。" /> : null}
-          <ul className="m-0 mt-3 space-y-2 p-0">{participants.data?.map((participant) => <li className="list-none rounded border border-ink-700 bg-ink-950/50 p-2" key={participant.id}><div className="flex items-center gap-2"><Badge tone={participant.entity_type === "character" ? "ok" : participant.entity_type === "npc" ? "ai" : "danger"}>{participant.entity_type === "character" ? "玩家" : participant.entity_type === "npc" ? "NPC" : "怪物"}</Badge><strong className="min-w-0 flex-1 truncate text-xs text-parchment-100">{participant.entity.name}</strong><Button loading={participantRemove.isPending} onClick={() => participantRemove.mutate(participant)} size="sm">离开</Button></div><div className="mt-2"><HpBar hp={participant.entity.hp} maxHp={participant.entity.max_hp} /></div><p className="mb-0 mt-1 text-2xs text-stone-600">AC {participant.entity.armor_class} · 速度 {participant.entity.speed}</p></li>)}</ul>
+          <ul className="m-0 mt-3 space-y-2 p-0">{participants.data?.map((participant) => <li className="list-none rounded border border-ink-700 bg-ink-950/50 p-2" key={participant.id}><div className="flex items-center gap-2"><Badge tone={participant.entity_type === "character" ? "ok" : participant.entity_type === "npc" ? "ai" : "danger"}>{participant.entity_type === "character" ? "玩家" : participant.entity_type === "npc" ? "NPC" : "怪物"}</Badge>{participant.role === "defeated" ? <Badge>已击败</Badge> : null}<strong className="min-w-0 flex-1 truncate text-xs text-parchment-100">{participant.entity.name}</strong><Button loading={participantRemove.isPending} onClick={() => participantRemove.mutate(participant)} size="sm">离开</Button></div><div className="mt-2"><HpBar hp={participant.entity.hp} maxHp={participant.entity.max_hp} /></div><p className="mb-0 mt-1 text-2xs text-stone-600">AC {participant.entity.armor_class} · 速度 {participant.entity.speed}</p></li>)}</ul>
         </Panel>
         <Panel eyebrow="自由推进 / 快速推进" title="游戏推进对话">
           {!sceneId ? <EmptyState title="先选择场景" hint="选择当前场景后，副 DM 才能读取正确的情景状态。" /> : null}

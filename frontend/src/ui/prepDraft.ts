@@ -18,6 +18,12 @@ export function parsePrepDraft(text: string): DraftAtom[] {
       currentKind = matchedHeading[1];
       continue;
     }
+    // Any other Markdown heading ends the previous import section. Without
+    // this reset, bullets under “DM建议” inherit the preceding “物品” kind.
+    if (/^#{1,6}(?:\s|$)/.test(line)) {
+      currentKind = null;
+      continue;
+    }
     const item = line.match(/^(?:[-*•]|\d+[.)、])\s*(.+)$/)?.[1]?.trim();
     if (!item || !currentKind) continue;
     const [rawName, ...rest] = item.split(/[｜|]/);

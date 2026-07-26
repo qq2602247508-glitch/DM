@@ -26,6 +26,7 @@ from dnd_dm_assistant.domain.combat import (
 )
 from dnd_dm_assistant.infrastructure.database.campaign_service import serialize
 from dnd_dm_assistant.infrastructure.database.models import (
+    NPC,
     Campaign,
     Character,
     CharacterCondition,
@@ -35,7 +36,9 @@ from dnd_dm_assistant.infrastructure.database.models import (
     CombatEffect,
     CombatSettlement,
     DeathSave,
+    MonsterInstance,
     OperationTransaction,
+    SceneParticipant,
 )
 
 
@@ -1298,13 +1301,74 @@ class CombatEngineService:
                 combat_id,
                 command,
             )
+            scene_changes = self._scene_entity_changes(session, combat, command)
             return {
                 "combat": serialize(combat),
                 "resolution_type": command.resolution_type,
                 "character_changes": changes,
+                "scene_entity_changes": scene_changes,
                 "total_xp": sum(award.xp for award in command.xp_awards),
                 "notes": command.notes,
             }
+
+    @staticmethod
+    def _scene_entity_changes(
+        session: Session,
+        combat: Combat,
+        command: CombatSettlementCommand,
+    ) -> list[dict[str, Any]]:
+        if combat.scene_id is None:
+            return []
+        changes: list[dict[str, Any]] = []
+        combatants = session.scalars(
+            select(Combatant).where(
+                Combatant.combat_id == combat.id,
+                Combatant.entity_type.in_(("npc", "monster")),
+                Combatant.entity_id.is_not(None),
+            )
+        ).all()
+        for combatant in combatants:
+            model = NPC if combatant.entity_type == "npc" else MonsterInstance
+            entity = session.get(model, combatant.entity_id)
+            if entity is None or entity.campaign_id != combat.campaign_id:
+                continue
+            participant = session.scalar(
+                select(SceneParticipant).where(
+                    SceneParticipant.scene_id == combat.scene_id,
+                    SceneParticipant.entity_type == combatant.entity_type,
+                    SceneParticipant.entity_id == combatant.entity_id,
+                )
+            )
+            after_role = (
+                "defeated"
+                if command.resolution_type == "victory"
+                and combatant.entity_type == "monster"
+                and combatant.hp <= 0
+                else participant.role if participant is not None else None
+            )
+            if entity.hp == combatant.hp and (
+                participant is None or participant.role == after_role
+            ):
+                continue
+            changes.append(
+                {
+                    "entity_type": combatant.entity_type,
+                    "entity_id": entity.id,
+                    "name": entity.name,
+                    "participant_id": participant.id if participant is not None else None,
+                    "before": {
+                        "hp": entity.hp,
+                        "version": entity.version,
+                        "role": participant.role if participant is not None else None,
+                    },
+                    "after": {
+                        "hp": min(entity.max_hp, combatant.hp),
+                        "version": entity.version + 1,
+                        "role": after_role,
+                    },
+                }
+            )
+        return changes
 
     def confirm_settlement(
         self,
@@ -1355,6 +1419,7 @@ class CombatEngineService:
                 command,
             )
             combat_before = serialize(combat)
+            scene_changes = self._scene_entity_changes(session, combat, command)
             now = datetime.now(UTC)
             created_conditions: list[CharacterCondition] = []
             for change in changes:
@@ -1389,6 +1454,25 @@ class CombatEngineService:
             combat.base_xp = sum(award.xp for award in command.xp_awards)
             combat.version += 1
             combat.updated_at = now
+            for scene_change in scene_changes:
+                model = NPC if scene_change["entity_type"] == "npc" else MonsterInstance
+                entity = session.get(model, scene_change["entity_id"])
+                if entity is None:
+                    continue
+                entity.hp = int(scene_change["after"]["hp"])
+                entity.version += 1
+                entity.updated_at = now
+                participant_id = scene_change["participant_id"]
+                participant = (
+                    session.get(SceneParticipant, participant_id)
+                    if participant_id is not None
+                    else None
+                )
+                after_role = scene_change["after"]["role"]
+                if participant is not None and after_role != participant.role:
+                    participant.role = str(after_role)
+                    participant.version += 1
+                    participant.updated_at = now
             transaction = OperationTransaction(
                 campaign_id=campaign_id,
                 operation_type="combat_settlement",
@@ -1397,11 +1481,13 @@ class CombatEngineService:
                 before_snapshot={
                     "combat": combat_before,
                     "character_changes": changes,
+                    "scene_entity_changes": scene_changes,
                 },
                 after_snapshot={
                     "combat_id": combat.id,
                     "resolution_type": command.resolution_type,
                     "character_ids": list(characters),
+                    "scene_entity_changes": scene_changes,
                 },
                 reason=command.notes or f"combat settlement: {command.resolution_type}",
                 source="combat",
@@ -1426,6 +1512,7 @@ class CombatEngineService:
                     "character_ids": list(characters),
                     "condition_ids": [condition.id for condition in created_conditions],
                     "total_xp": sum(award.xp for award in command.xp_awards),
+                    "scene_entity_changes": scene_changes,
                 },
                 idempotency_key=idempotency_key,
                 notes=command.notes,

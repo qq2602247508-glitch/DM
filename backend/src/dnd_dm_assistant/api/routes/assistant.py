@@ -44,6 +44,7 @@ async def assistant_turn(
                 campaign_id=campaign_id,
                 action=body.action,
                 request_id=_request_id(request),
+                mode=body.mode,
             )
         )
     except StateNotFoundError as exc:

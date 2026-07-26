@@ -364,7 +364,11 @@ class AgentOrchestrator:
                 errors=("推理模型输出未通过结构校验",),
             )
         try:
-            final_hint = self._build_hint(hint, unique_citations)
+            final_hint = self._build_hint(
+                hint,
+                unique_citations,
+                narrative_only=request.mode == "narrative",
+            )
         except InvalidAgentOutputError as exc:
             if "non-D&D content" in str(exc):
                 self._record_run(
@@ -437,7 +441,12 @@ class AgentOrchestrator:
             raise InvalidAgentOutputError("tool call limit exceeded")
 
     @staticmethod
-    def _build_hint(hint: Any, citations: tuple[Citation, ...]) -> DMHint:
+    def _build_hint(
+        hint: Any,
+        citations: tuple[Citation, ...],
+        *,
+        narrative_only: bool = False,
+    ) -> DMHint:
         try:
             ensure_dnd5e_content(hint.model_dump(mode="json"))
         except ValueError as exc:
@@ -476,6 +485,33 @@ class AgentOrchestrator:
         if citations and not hint.citation_chunk_ids:
             raise InvalidAgentOutputError("DM hint omitted citations despite rule evidence")
         canonical = tuple(allowed[chunk_id] for chunk_id in hint.citation_chunk_ids)
+        if narrative_only:
+            narrative_text, stripped = _strip_ungrounded_mechanics(
+                hint.text,
+                pattern=_SPECIFIC_MECHANIC_PATTERNS,
+            )
+            uncertainties = tuple(hint.uncertainties)
+            if stripped:
+                uncertainties = (
+                    *uncertainties,
+                    "叙事草案中的具体机械数值已移除；需要时请从规则搜索单独确认。",
+                )
+            return DMHint(
+                visibility=hint.visibility,
+                text=narrative_text,
+                assumptions=tuple(
+                    item
+                    for item in hint.assumptions
+                    if not _SPECIFIC_MECHANIC_PATTERNS.search(item)
+                ),
+                uncertainties=uncertainties,
+                citations=canonical,
+                proposed_changes=tuple(
+                    item
+                    for item in hint.proposed_changes
+                    if not _SPECIFIC_MECHANIC_PATTERNS.search(item)
+                ),
+            )
         return DMHint(
             visibility=hint.visibility,
             text=hint.text,
@@ -548,13 +584,23 @@ _UNGROUNDED_MECHANIC_PATTERNS = re.compile(
     re.IGNORECASE,
 )
 
+_SPECIFIC_MECHANIC_PATTERNS = re.compile(
+    r"(?:\bCR\s*\d|\bDC\s*\d|\d+d\d+(?:\s*[+\-]\s*\d+)?|[+\-]\d+\b|"
+    r"\d+\s*(?:轮|次|分钟|小时|天)\b)",
+    re.IGNORECASE,
+)
 
-def _strip_ungrounded_mechanics(text: str) -> tuple[str, bool]:
+
+def _strip_ungrounded_mechanics(
+    text: str,
+    *,
+    pattern: re.Pattern[str] = _UNGROUNDED_MECHANIC_PATTERNS,
+) -> tuple[str, bool]:
     sentences = re.split(r"(?<=[。！？])", text)
     kept = [
         sentence
         for sentence in sentences
-        if not _UNGROUNDED_MECHANIC_PATTERNS.search(sentence)
+        if not pattern.search(sentence)
     ]
     cleaned = "".join(kept).strip()
     if not cleaned:

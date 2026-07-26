@@ -28,6 +28,7 @@ import { RequireCampaign } from "../components/RequireCampaign";
 import { useToast } from "../hooks/toastContext";
 import { navigate } from "../hooks/useHashRoute";
 import { Badge, Button, EmptyState, ErrorState, LoadingBlock } from "../ui/primitives";
+import { xpForChallengeRating } from "../ui/progressionRules";
 import { inputCls, selectCls } from "../ui/styles";
 import { HpBar } from "../ui/widgets";
 
@@ -101,6 +102,7 @@ function ScenesContent({ campaignId }: { campaignId: string }): ReactElement {
   const [monsterAc, setMonsterAc] = useState("12");
   const [monsterHp, setMonsterHp] = useState("10");
   const [monsterDex, setMonsterDex] = useState("10");
+  const [monsterCr, setMonsterCr] = useState("1/4");
   const [combatResult, setCombatResult] = useState<SceneCombatResult | null>(null);
   const [objectKind, setObjectKind] = useState<"wall" | "door" | "cover" | "terrain" | "light" | "trap" | "treasure" | "furniture" | "portal">("cover");
   const [objectVisibility, setObjectVisibility] = useState<"public" | "dm" | "hidden">("public");
@@ -252,6 +254,7 @@ function ScenesContent({ campaignId }: { campaignId: string }): ReactElement {
       max_hp: Number(monsterHp),
       speed: 30,
       ability_scores: { strength: 10, dexterity: Number(monsterDex), constitution: 10, intelligence: 10, wisdom: 10, charisma: 10 },
+      challenge_rating: monsterCr,
       source_name: "DM 自定义",
     }),
     onSuccess: () => {
@@ -307,6 +310,12 @@ function ScenesContent({ campaignId }: { campaignId: string }): ReactElement {
             <label className="text-2xs text-stone-600 sm:col-span-2">敏捷值（用于先攻）
               <input className={`${inputCls} mt-1`} max="30" min="1" onChange={(event) => setMonsterDex(event.target.value)} type="number" value={monsterDex} />
             </label>
+            <label className="text-2xs text-stone-600 sm:col-span-2">挑战等级 CR（用于难度与经验）
+              <select className={`${selectCls} mt-1`} onChange={(event) => setMonsterCr(event.target.value)} value={monsterCr}>
+                {["0", "1/8", "1/4", "1/2", ...Array.from({ length: 30 }, (_, index) => String(index + 1))].map((cr) => <option key={cr} value={cr}>CR {cr} · {xpForChallengeRating(cr)} XP</option>)}
+              </select>
+            </label>
+            <p className="m-0 self-end text-2xs text-stone-500">CR 是结算依据；AC、HP 不会自动反推 CR。</p>
           </form>
         </Panel>
       </div>
@@ -334,6 +343,7 @@ function ScenesContent({ campaignId }: { campaignId: string }): ReactElement {
                   <li className="list-none rounded-md border border-ink-700 bg-ink-950/50 p-3" key={participant.id}>
                     <div className="flex items-center gap-2">
                       <Badge tone={participant.entity_type === "character" ? "ok" : participant.entity_type === "npc" ? "ai" : "danger"}>{participant.entity_type}</Badge>
+                      {participant.role === "defeated" ? <Badge>已击败</Badge> : null}
                       <strong className="text-sm text-parchment-100">{participant.entity.name}</strong>
                       <Button className="ml-auto" loading={participantRemove.isPending} onClick={() => participantRemove.mutate({ id: participant.id, version: participant.version })} size="sm">移出</Button>
                     </div>

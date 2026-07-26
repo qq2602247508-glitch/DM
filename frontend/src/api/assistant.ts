@@ -9,12 +9,12 @@ import type {
 export function runAssistantTurn(
   campaignId: string,
   action: string,
-  signal?: AbortSignal,
+  options: { mode?: "general" | "narrative"; signal?: AbortSignal } = {},
 ): Promise<AgentResponse> {
   return apiFetch<AgentResponse>(`/campaigns/${campaignId}/assistant/turns`, {
     method: "POST",
-    body: { action },
-    signal,
+    body: { action, mode: options.mode ?? "general" },
+    signal: options.signal,
   });
 }
 
