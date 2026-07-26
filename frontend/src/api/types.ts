@@ -77,6 +77,11 @@ export type IndexStatus = {
   updated_at: string | null;
 };
 
+export type RecoveryPoint = { id: string; label: string; kind: string; file_name: string; sha256: string; size_bytes: number; created_at: string };
+export type AuditEntry = { id: string; campaign_id: string | null; actor: string; action: string; entity_type: string; entity_id: string | null; before_json: unknown; after_json: unknown; request_id: string; created_at: string };
+export type HouseRuleOverride = { id: string; rule_key: string; core_value_json: unknown; override_value_json: unknown; source: string; reason: string; enabled: boolean; version?: number };
+export type Diagnostics = { database: { available: boolean; reason: string | null; migration_revision: string | null }; read_only_safe_mode: boolean; backups_directory: string; index: unknown; models: unknown };
+
 // ---------------------------------------------------------------------------
 // Knowledge (domain/rag.py)
 // ---------------------------------------------------------------------------

@@ -9,6 +9,7 @@ from dnd_dm_assistant.application.agent import AgentOrchestrator
 from dnd_dm_assistant.application.campaigns import CampaignService
 from dnd_dm_assistant.application.character_catalog import CharacterCatalog
 from dnd_dm_assistant.application.health import HealthService
+from dnd_dm_assistant.application.reliability import ReliabilityService
 from dnd_dm_assistant.application.world_generation import WorldGenerationService
 from dnd_dm_assistant.config import Settings
 from dnd_dm_assistant.infrastructure.database.advancement_service import (
@@ -36,6 +37,12 @@ def get_app_settings(request: Request) -> Settings:
 
 def get_health_service(request: Request) -> HealthService:
     return HealthService(cast(Engine, request.app.state.database_engine))
+
+
+def get_reliability_service(request: Request) -> ReliabilityService:
+    return ReliabilityService(
+        cast(Engine, request.app.state.database_engine), get_app_settings(request)
+    )
 
 
 def get_runtime_integrations(request: Request) -> RuntimeIntegrations:
