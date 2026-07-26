@@ -87,6 +87,67 @@ def _seed(client: TestClient) -> tuple[dict[str, Any], dict[str, Any], dict[str,
     return campaign, character, ids
 
 
+def test_dm_can_create_atomic_character_assets_and_shop_stock(
+    economy_client: TestClient,
+) -> None:
+    campaign = economy_client.post(
+        "/api/v1/campaigns", json={"name": "资产录入"}
+    ).json()
+    character = economy_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/characters",
+        json={"name": "录入角色", "hp": 8, "max_hp": 8},
+    ).json()
+    prefix = f"/api/v1/campaigns/{campaign['id']}"
+    spell = economy_client.post(
+        f"{prefix}/characters/assets/spells",
+        json={
+            "character_id": character["id"],
+            "character_version": character["version"],
+            "name": "护盾术",
+            "spell_level": 1,
+            "prepared": True,
+        },
+    )
+    assert spell.status_code == 201
+    character = economy_client.get(
+        f"{prefix}/characters/{character['id']}"
+    ).json()
+    equipment = economy_client.post(
+        f"{prefix}/characters/assets/equipment",
+        json={
+            "character_id": character["id"],
+            "character_version": character["version"],
+            "name": "法杖",
+            "category": "weapon",
+            "quantity": 1,
+        },
+    )
+    assert equipment.status_code == 201
+    character = economy_client.get(
+        f"{prefix}/characters/{character['id']}"
+    ).json()
+    wallet = economy_client.post(
+        f"{prefix}/characters/assets/wallets",
+        json={
+            "character_id": character["id"],
+            "character_version": character["version"],
+            "copper": 50,
+        },
+    )
+    assert wallet.status_code == 201
+    stock = economy_client.post(
+        f"{prefix}/shop-inventory",
+        json={"name": "治疗药水", "quantity": 2, "price_copper": 25},
+    )
+    assert stock.status_code == 201
+    assets = economy_client.get(
+        f"{prefix}/characters/{character['id']}/assets"
+    ).json()
+    assert assets["spells"][0]["prepared"] is True
+    assert assets["equipment"][0]["name"] == "法杖"
+    assert assets["wallet"]["copper"] == 50
+
+
 def test_spell_and_equipment_preview_confirm_idempotent(economy_client: TestClient) -> None:
     campaign, character, ids = _seed(economy_client)
     spell_body = {

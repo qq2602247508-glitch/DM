@@ -199,6 +199,15 @@ export type CharacterAssets = { spells: Array<Record<string, unknown>>; equipmen
 export const getCharacterAssets = (cid: string, characterId: string, signal?: AbortSignal) =>
   apiFetch<CharacterAssets>(`/campaigns/${cid}/characters/${characterId}/assets`, { signal });
 
+export const createKnownSpell = (cid: string, input: { character_id: string; character_version: number; name: string; spell_level: number; prepared?: boolean; source_reference?: string; metadata_json?: Record<string, unknown> }) =>
+  apiFetch<Record<string, unknown>>(`/campaigns/${cid}/characters/assets/spells`, { method: "POST", body: input });
+export const createEquipmentInstance = (cid: string, input: { character_id: string; character_version: number; name: string; category?: string; quantity?: number; armor_class?: number | null; attunement_required?: boolean; charges?: number | null; max_charges?: number | null; metadata_json?: Record<string, unknown> }) =>
+  apiFetch<Record<string, unknown>>(`/campaigns/${cid}/characters/assets/equipment`, { method: "POST", body: input });
+export const createCharacterWallet = (cid: string, input: { character_id: string; character_version: number; name?: string; copper?: number }) =>
+  apiFetch<Record<string, unknown>>(`/campaigns/${cid}/characters/assets/wallets`, { method: "POST", body: input });
+export const createShopInventoryItem = (cid: string, input: { name: string; quantity: number; price_copper: number; metadata_json?: Record<string, unknown> }) =>
+  apiFetch<Record<string, unknown>>(`/campaigns/${cid}/shop-inventory`, { method: "POST", body: input });
+
 export type EquipmentOperationInput = { character_id: string; character_version: number; equipment_id: string; operation: "equip" | "unequip" | "consume" | "use_charge" | "attune" | "unattune"; amount?: number; preview_token?: string; idempotency_key?: string };
 export type SpellCastInput = { character_id: string; character_version: number; known_spell_id: string; slot_level: number; ritual?: boolean; material_available?: boolean; concentration?: boolean; preview_token?: string; idempotency_key?: string };
 export type CommerceInput = { wallet_id: string; wallet_version: number; shop_inventory_id: string; shop_version: number; quantity: number; direction: "buy" | "sell"; price_modifier_bps?: number; preview_token?: string; idempotency_key?: string };

@@ -98,6 +98,63 @@ class SpellEconomyService:
                 ).all()
             ]
 
+    def create_known_spell(self, cid: str, data: dict[str, Any]) -> dict[str, Any]:
+        with Session(self.engine) as s, s.begin():
+            character = self._character(
+                s, cid, str(data.pop("character_id")), int(data.pop("character_version"))
+            )
+            prepared = bool(data.pop("prepared"))
+            spell = KnownSpell(campaign_id=cid, character_id=character.id, **data)
+            s.add(spell)
+            s.flush()
+            if prepared:
+                s.add(
+                    PreparedSpell(
+                        known_spell_id=spell.id,
+                        character_id=character.id,
+                        prepared=True,
+                    )
+                )
+            character.version += 1
+            return {**serialize(spell), "prepared": prepared}
+
+    def create_equipment(self, cid: str, data: dict[str, Any]) -> dict[str, Any]:
+        with Session(self.engine) as s, s.begin():
+            character = self._character(
+                s, cid, str(data.pop("character_id")), int(data.pop("character_version"))
+            )
+            equipment = EquipmentInstance(
+                campaign_id=cid, character_id=character.id, **data
+            )
+            s.add(equipment)
+            character.version += 1
+            s.flush()
+            return serialize(equipment)
+
+    def create_wallet(self, cid: str, data: dict[str, Any]) -> dict[str, Any]:
+        with Session(self.engine) as s, s.begin():
+            character = self._character(
+                s, cid, str(data.pop("character_id")), int(data.pop("character_version"))
+            )
+            if s.scalar(
+                select(Wallet).where(
+                    Wallet.campaign_id == cid, Wallet.character_id == character.id
+                )
+            ):
+                raise ValueError("character wallet already exists")
+            wallet = Wallet(campaign_id=cid, character_id=character.id, **data)
+            s.add(wallet)
+            character.version += 1
+            s.flush()
+            return serialize(wallet)
+
+    def create_shop_inventory(self, cid: str, data: dict[str, Any]) -> dict[str, Any]:
+        with Session(self.engine) as s, s.begin():
+            item = ShopInventory(campaign_id=cid, **data)
+            s.add(item)
+            s.flush()
+            return serialize(item)
+
     def spell_preview(self, cid: str, data: dict[str, Any]) -> dict[str, Any]:
         with Session(self.engine) as s:
             c = self._character(s, cid, data["character_id"], data["character_version"])

@@ -7,8 +7,12 @@ from dnd_dm_assistant.api.dependencies import get_spell_economy_service
 from dnd_dm_assistant.api.schemas import (
     CommerceRequest,
     CurrencySplitRequest,
+    EquipmentInstanceCreate,
     EquipmentOperationRequest,
+    KnownSpellCreate,
+    ShopInventoryCreate,
     SpellCastRequest,
+    WalletCreate,
 )
 from dnd_dm_assistant.domain.campaign_state import StateNotFoundError, VersionConflict
 from dnd_dm_assistant.infrastructure.database.spell_economy_service import SpellEconomyService
@@ -42,6 +46,42 @@ def shop_inventory(
     service: Annotated[SpellEconomyService, Depends(get_spell_economy_service)],
 ):
     return {"items": call(lambda: service.shop_inventory(campaign_id))}
+
+
+@router.post("/characters/assets/spells", status_code=201)
+def create_known_spell(
+    campaign_id: str,
+    body: KnownSpellCreate,
+    service: Annotated[SpellEconomyService, Depends(get_spell_economy_service)],
+):
+    return call(lambda: service.create_known_spell(campaign_id, body.model_dump()))
+
+
+@router.post("/characters/assets/equipment", status_code=201)
+def create_equipment(
+    campaign_id: str,
+    body: EquipmentInstanceCreate,
+    service: Annotated[SpellEconomyService, Depends(get_spell_economy_service)],
+):
+    return call(lambda: service.create_equipment(campaign_id, body.model_dump()))
+
+
+@router.post("/characters/assets/wallets", status_code=201)
+def create_wallet(
+    campaign_id: str,
+    body: WalletCreate,
+    service: Annotated[SpellEconomyService, Depends(get_spell_economy_service)],
+):
+    return call(lambda: service.create_wallet(campaign_id, body.model_dump()))
+
+
+@router.post("/shop-inventory", status_code=201)
+def create_shop_inventory(
+    campaign_id: str,
+    body: ShopInventoryCreate,
+    service: Annotated[SpellEconomyService, Depends(get_spell_economy_service)],
+):
+    return call(lambda: service.create_shop_inventory(campaign_id, body.model_dump()))
 
 
 @router.post("/spells/cast/preview")

@@ -946,6 +946,43 @@ class SceneCombatStartRequest(BaseModel):
     name: str | None = None
 
 
+class KnownSpellCreate(BaseModel):
+    character_id: str = Field(min_length=1, max_length=36)
+    character_version: int = Field(ge=1)
+    name: str = Field(min_length=1, max_length=200)
+    spell_level: int = Field(ge=0, le=9)
+    prepared: bool = True
+    source_reference: str | None = Field(default="PHB 2024", max_length=200)
+    metadata_json: dict[str, Any] = Field(default_factory=dict)
+
+
+class EquipmentInstanceCreate(BaseModel):
+    character_id: str = Field(min_length=1, max_length=36)
+    character_version: int = Field(ge=1)
+    name: str = Field(min_length=1, max_length=200)
+    category: str = Field(default="gear", min_length=1, max_length=30)
+    quantity: int = Field(default=1, ge=1)
+    armor_class: int | None = Field(default=None, ge=0, le=99)
+    attunement_required: bool = False
+    charges: int | None = Field(default=None, ge=0)
+    max_charges: int | None = Field(default=None, ge=0)
+    metadata_json: dict[str, Any] = Field(default_factory=dict)
+
+
+class WalletCreate(BaseModel):
+    character_id: str = Field(min_length=1, max_length=36)
+    character_version: int = Field(ge=1)
+    name: str = Field(default="角色钱包", min_length=1, max_length=100)
+    copper: int = Field(default=0, ge=0)
+
+
+class ShopInventoryCreate(BaseModel):
+    name: str = Field(min_length=1, max_length=200)
+    quantity: int = Field(default=1, ge=0)
+    price_copper: int = Field(default=0, ge=0)
+    metadata_json: dict[str, Any] = Field(default_factory=dict)
+
+
 class SpellCastRequest(BaseModel):
     character_id: str
     character_version: int = Field(ge=1)

@@ -5,6 +5,10 @@ import {
   confirmCommerce,
   confirmEquipmentOperation,
   confirmSpellCast,
+  createCharacterWallet,
+  createEquipmentInstance,
+  createKnownSpell,
+  createShopInventoryItem,
   getCharacterAssets,
   listCharacters,
   listShopInventory,
@@ -20,7 +24,7 @@ import { Panel } from "../components/Panel";
 import { RequireCampaign } from "../components/RequireCampaign";
 import { useToast } from "../hooks/toastContext";
 import { Badge, Button, EmptyState, ErrorState, LoadingBlock } from "../ui/primitives";
-import { selectCls } from "../ui/styles";
+import { inputCls, selectCls } from "../ui/styles";
 
 const STATE_LABELS = {
   normal: "负重正常",
@@ -42,6 +46,9 @@ type PendingChange =
 function InventoryContent({ campaignId }: { campaignId: string }): ReactElement {
   const [characterId, setCharacterId] = useState("");
   const [pending, setPending] = useState<PendingChange | null>(null);
+  const [assetName, setAssetName] = useState("");
+  const [assetLevel, setAssetLevel] = useState("1");
+  const [shopPrice, setShopPrice] = useState("10");
   const queryClient = useQueryClient();
   const { showToast } = useToast();
   const characters = useQuery({
@@ -123,6 +130,48 @@ function InventoryContent({ campaignId }: { campaignId: string }): ReactElement 
       showToast("已由 DM 确认并写入", "success");
     },
   });
+  const createMutation = useMutation({
+    mutationFn: async (kind: "spell" | "equipment" | "wallet" | "shop") => {
+      if (!selectedCharacter && kind !== "shop") throw new Error("请选择角色");
+      if (kind === "spell") {
+        return createKnownSpell(campaignId, {
+          character_id: characterId,
+          character_version: selectedCharacter!.version,
+          name: assetName,
+          spell_level: Number(assetLevel),
+          prepared: true,
+        });
+      }
+      if (kind === "equipment") {
+        return createEquipmentInstance(campaignId, {
+          character_id: characterId,
+          character_version: selectedCharacter!.version,
+          name: assetName,
+          category: "gear",
+          quantity: 1,
+        });
+      }
+      if (kind === "wallet") {
+        return createCharacterWallet(campaignId, {
+          character_id: characterId,
+          character_version: selectedCharacter!.version,
+          copper: 0,
+        });
+      }
+      return createShopInventoryItem(campaignId, {
+        name: assetName,
+        quantity: 1,
+        price_copper: Number(shopPrice),
+      });
+    },
+    onSuccess: async () => {
+      setAssetName("");
+      await queryClient.invalidateQueries({ queryKey: ["character-assets", campaignId] });
+      await queryClient.invalidateQueries({ queryKey: ["characters", campaignId] });
+      await queryClient.invalidateQueries({ queryKey: ["shop-inventory", campaignId] });
+      showToast("原子资产已录入", "success");
+    },
+  });
   const selectedCharacter = characters.data?.find((item) => item.id === characterId);
   const ratio = inventory.data?.maximum_weight_lb
     ? Math.min(inventory.data.total_weight_lb / inventory.data.maximum_weight_lb, 1)
@@ -171,6 +220,19 @@ function InventoryContent({ campaignId }: { campaignId: string }): ReactElement 
               <div className="h-2 overflow-hidden rounded-full bg-ink-700">
                 <div className={`h-full rounded-full ${ratio > 0.8 ? "bg-amber-500" : "bg-emerald-500"}`} style={{ width: `${ratio * 100}%` }} />
               </div>
+            </div>
+            <div className="mt-5 rounded-md border border-ink-700 bg-ink-950/40 p-4">
+              <p className="m-0 text-2xs uppercase tracking-[0.16em] text-stone-600">DM 原子资产录入</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                <input className={inputCls} onChange={(event) => setAssetName(event.target.value)} placeholder="法术 / 装备 / 商品名称" value={assetName} />
+                <input className={inputCls} max="9" min="0" onChange={(event) => setAssetLevel(event.target.value)} title="法术环级" type="number" value={assetLevel} />
+                <input className={inputCls} min="0" onChange={(event) => setShopPrice(event.target.value)} title="商品价格（铜币）" type="number" value={shopPrice} />
+                <Button disabled={!assetName.trim()} loading={createMutation.isPending} onClick={() => createMutation.mutate("spell")} size="sm">录入法术</Button>
+                <Button disabled={!assetName.trim()} loading={createMutation.isPending} onClick={() => createMutation.mutate("equipment")} size="sm">录入装备</Button>
+                <Button disabled={Boolean(assets.data?.wallet)} loading={createMutation.isPending} onClick={() => createMutation.mutate("wallet")} size="sm">建立钱包</Button>
+                <Button disabled={!assetName.trim()} loading={createMutation.isPending} onClick={() => createMutation.mutate("shop")} size="sm">上架商品</Button>
+              </div>
+              {createMutation.isError ? <div className="mt-2"><ErrorState error={createMutation.error} /></div> : null}
             </div>
             {inventory.data.items.length ? (
               <ul className="m-0 mt-5 divide-y divide-ink-700/70 p-0">
