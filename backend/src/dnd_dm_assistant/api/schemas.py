@@ -273,6 +273,11 @@ class AdvancementPreviewRequest(BaseModel):
     dm_override_reason: str | None = Field(default=None, max_length=2_000)
 
 
+class CharacterSheetOcrRequest(BaseModel):
+    filename: str = Field(min_length=1, max_length=255)
+    image_base64: str = Field(min_length=4, max_length=17_000_000)
+
+
 class AdvancementConfirmRequest(AdvancementPreviewRequest):
     preview_token: str = Field(min_length=64, max_length=64)
     idempotency_key: str = Field(min_length=8, max_length=120)

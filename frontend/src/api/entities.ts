@@ -136,6 +136,19 @@ export const deleteCharacter = (cid: string, id: string, version: number) =>
 export const getCharacterOptions = (signal?: AbortSignal) =>
   apiFetch<CharacterOptionsCatalog>("/rules/character-options", { signal });
 
+export type CharacterOcrResult = {
+  engine: string;
+  local_only: boolean;
+  recognized_text: string;
+  draft: CharacterInput & { name: string };
+  requires_dm_confirmation: boolean;
+};
+export const recognizeCharacterSheet = (filename: string, imageBase64: string) =>
+  apiFetch<CharacterOcrResult>("/rules/character-sheet/ocr", {
+    method: "POST",
+    body: { filename, image_base64: imageBase64 },
+  });
+
 export const previewAdvancement = (
   cid: string,
   characterId: string,

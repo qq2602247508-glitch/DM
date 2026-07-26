@@ -6,8 +6,9 @@ import {
   createCharacter, createClue, createEvent, createLocation, createNpc, createQuest,
   deleteCharacter, deleteClue, deleteEvent, deleteLocation, deleteNpc, deleteQuest,
   listCharacters, listClues, listEvents, listLocations, listNpcs, listQuests,
+  recognizeCharacterSheet,
   updateCharacter, updateClue, updateEvent, updateLocation, updateNpc, updateQuest,
-  type CharacterInput, type ClueInput, type EventInput, type LocationInput, type NpcInput, type QuestInput,
+  type CharacterInput, type CharacterOcrResult, type ClueInput, type EventInput, type LocationInput, type NpcInput, type QuestInput,
 } from "../api/entities";
 import type { Campaign, CampaignEvent, Character, Clue, Location, Npc, Quest } from "../api/types";
 import { Panel } from "../components/Panel";
@@ -91,6 +92,8 @@ function CharacterToolkit({ campaignId }: { campaignId: string }): ReactElement 
     queryFn: ({ signal }) => listCharacters(campaignId, signal),
   });
   const fileRef = useRef<HTMLInputElement>(null);
+  const ocrFileRef = useRef<HTMLInputElement>(null);
+  const [ocrResult, setOcrResult] = useState<CharacterOcrResult | null>(null);
   const importCharacters = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     event.target.value = "";
@@ -129,16 +132,69 @@ function CharacterToolkit({ campaignId }: { campaignId: string }): ReactElement 
       downloadFile("dnd5e-characters.csv", [header, ...csvRows].join("\n"), "text/csv;charset=utf-8");
     }
   };
+  const ocrMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const dataUrl = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onerror = () => reject(reader.error ?? new Error("图片读取失败"));
+        reader.onload = () => {
+          if (typeof reader.result !== "string") {
+            reject(new Error("图片读取结果无效"));
+            return;
+          }
+          resolve(reader.result);
+        };
+        reader.readAsDataURL(file);
+      });
+      return recognizeCharacterSheet(file.name, dataUrl.split(",", 2)[1] ?? "");
+    },
+    onSuccess: (result) => {
+      setOcrResult(result);
+      showToast("本机 OCR 草稿已生成，请审核后确认");
+    },
+    onError: (error) => {
+      showToast(error instanceof Error ? `图片识别失败：${error.message}` : "图片识别失败", "error");
+    },
+  });
+  const confirmOcr = useMutation({
+    mutationFn: () => {
+      if (!ocrResult) throw new Error("没有 OCR 草稿");
+      return createCharacter(campaignId, ocrResult.draft);
+    },
+    onSuccess: async () => {
+      setOcrResult(null);
+      await client.invalidateQueries({ queryKey: ["characters", campaignId] });
+      showToast("OCR 角色草稿已由 DM 确认并创建");
+    },
+  });
   return (
     <Panel eyebrow="D&D 5e · 2024" title="角色卡工作台">
       <div className="flex flex-wrap items-center gap-2">
         <span className="mr-auto text-xs text-stone-500">支持手动创建，也支持批量导入 / 导出 JSON、CSV 角色卡。</span>
         <input accept=".json,.csv,application/json,text/csv" className="hidden" onChange={(event) => { void importCharacters(event); }} ref={fileRef} type="file" />
+        <input accept="image/png,image/jpeg,image/heic,image/tiff,image/webp" className="hidden" onChange={(event) => { const file = event.target.files?.[0]; event.target.value = ""; if (file) ocrMutation.mutate(file); }} ref={ocrFileRef} type="file" />
         <Button onClick={() => fileRef.current?.click()} size="sm">导入角色卡</Button>
+        <Button loading={ocrMutation.isPending} onClick={() => ocrFileRef.current?.click()} size="sm">图片 OCR 草稿</Button>
         <Button disabled={!characters.data?.length} onClick={() => exportCharacters("json")} size="sm">导出 JSON</Button>
         <Button disabled={!characters.data?.length} onClick={() => exportCharacters("csv")} size="sm">导出表格</Button>
         <RestPanel campaignId={campaignId} characters={characters.data ?? []} />
       </div>
+      {ocrResult ? (
+        <div className="mt-3 rounded-lg border border-violet-800/60 bg-violet-950/20 p-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div><strong className="text-sm text-parchment-100">本机 Vision OCR 待审核草稿</strong><p className="mb-0 mt-1 text-2xs text-stone-500">未上传云端；只有点击确认后才写入角色事实。</p></div>
+            <div className="flex gap-2"><Button loading={confirmOcr.isPending} onClick={() => confirmOcr.mutate()} size="sm" variant="primary">DM 确认创建</Button><Button onClick={() => setOcrResult(null)} size="sm">取消</Button></div>
+          </div>
+          <div className="mt-3 grid gap-2 sm:grid-cols-3">
+            {(["name", "race", "class_name", "background", "level", "armor_class", "hp", "max_hp", "speed"] as const).map((field) => (
+              <label className="text-2xs text-stone-500" key={field}>{field}
+                <input className={`${inputCls} mt-1 w-full`} onChange={(event) => setOcrResult({ ...ocrResult, draft: { ...ocrResult.draft, [field]: ["level", "armor_class", "hp", "max_hp", "speed"].includes(field) ? Number(event.target.value) : event.target.value } })} type={["level", "armor_class", "hp", "max_hp", "speed"].includes(field) ? "number" : "text"} value={String(ocrResult.draft[field] ?? "")} />
+              </label>
+            ))}
+          </div>
+          <details className="mt-3"><summary className="cursor-pointer text-xs text-violet-300">查看 OCR 原文</summary><pre className="mt-2 max-h-48 overflow-auto whitespace-pre-wrap text-xs text-stone-400">{ocrResult.recognized_text}</pre></details>
+        </div>
+      ) : null}
       <div className="mt-3 overflow-x-auto rounded-lg border border-ink-700">
         <table className="w-full min-w-[980px] border-collapse text-left text-xs">
           <thead className="bg-ink-950/80 text-2xs uppercase tracking-wide text-stone-500">
@@ -167,7 +223,7 @@ function CharacterToolkit({ campaignId }: { campaignId: string }): ReactElement 
         </table>
       </div>
       <CompanionPanel campaignId={campaignId} characters={characters.data ?? []} />
-      <p className="mb-0 mt-3 text-2xs text-stone-600">图片车卡可先用系统 OCR 转为文字后导入；标准 PDF/图片识别接口将在本地 OCR 模块接入后启用。</p>
+      <p className="mb-0 mt-3 text-2xs text-stone-600">图片角色卡使用 macOS Vision 在本机识别为可编辑草稿；不会上传云端，确认后才创建角色。</p>
     </Panel>
   );
 }

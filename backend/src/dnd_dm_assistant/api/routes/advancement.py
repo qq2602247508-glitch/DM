@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
@@ -11,10 +12,12 @@ from dnd_dm_assistant.api.dependencies import (
 from dnd_dm_assistant.api.schemas import (
     AdvancementConfirmRequest,
     AdvancementPreviewRequest,
+    CharacterSheetOcrRequest,
     CompanionCreate,
     CompanionPatch,
 )
 from dnd_dm_assistant.application.character_catalog import CharacterCatalog
+from dnd_dm_assistant.application.character_ocr import recognize_character_sheet
 from dnd_dm_assistant.domain.campaign_state import StateNotFoundError, VersionConflict
 from dnd_dm_assistant.infrastructure.database.advancement_service import (
     AdvancementService,
@@ -50,6 +53,18 @@ def character_options(
     catalog: Annotated[CharacterCatalog, Depends(get_character_catalog)],
 ) -> dict[str, Any]:
     return catalog.options()
+
+
+@router.post("/rules/character-sheet/ocr")
+def character_sheet_ocr(body: CharacterSheetOcrRequest) -> dict[str, Any]:
+    script = Path(__file__).resolve().parents[5] / "scripts" / "character-sheet-ocr.swift"
+    return _safe_call(
+        lambda: recognize_character_sheet(
+            body.image_base64,
+            filename=body.filename,
+            script_path=script,
+        )
+    )
 
 
 @router.post(
