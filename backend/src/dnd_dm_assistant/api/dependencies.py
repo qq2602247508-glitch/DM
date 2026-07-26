@@ -21,6 +21,7 @@ from dnd_dm_assistant.infrastructure.database.encounter_service import Encounter
 from dnd_dm_assistant.infrastructure.database.rest_service import RestService
 from dnd_dm_assistant.infrastructure.database.spell_economy_service import SpellEconomyService
 from dnd_dm_assistant.infrastructure.database.world_service import WorldService
+from dnd_dm_assistant.infrastructure.database.exploration_service import ExplorationService
 from dnd_dm_assistant.integrations.runtime import RuntimeIntegrations
 
 
@@ -61,6 +62,10 @@ def get_agent_orchestrator(request: Request) -> AgentOrchestrator:
 
 def get_world_service(request: Request) -> WorldService:
     return WorldService(cast(Engine, request.app.state.database_engine))
+
+
+def get_exploration_service(request: Request) -> ExplorationService:
+    return ExplorationService(cast(Engine, request.app.state.database_engine))
 
 
 def get_encounter_adjustment_service(request: Request) -> EncounterAdjustmentService:

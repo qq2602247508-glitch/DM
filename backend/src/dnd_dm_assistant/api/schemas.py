@@ -863,3 +863,67 @@ class CurrencySplitRequest(BaseModel):
     copper: int = Field(gt=0)
     preview_token: str | None = None
     idempotency_key: str | None = Field(default=None, min_length=8, max_length=120)
+
+
+class SceneGridCreate(BaseModel):
+    width: int = Field(12, ge=1, le=100)
+    height: int = Field(8, ge=1, le=100)
+    cell_size_ft: int = Field(5, ge=1, le=100)
+    mode: Literal["narrative", "exploration", "combat"] = "narrative"
+    public_description: str | None = None
+    dm_description: str | None = None
+    layers_json: dict[str, Any] = Field(default_factory=dict)
+
+
+class SceneTokenCreate(BaseModel):
+    entity_type: Literal["character", "npc", "monster", "marker"]
+    entity_id: str | None = None
+    label: str = Field(min_length=1, max_length=200)
+    row: int = Field(1, ge=1)
+    col: int = Field(1, ge=1)
+    size_cells: int = Field(1, ge=1, le=4)
+    elevation_ft: int = 0
+    visible: bool = True
+    metadata_json: dict[str, Any] = Field(default_factory=dict)
+
+
+class SceneObjectCreate(BaseModel):
+    object_type: Literal[
+        "wall", "door", "cover", "terrain", "light", "trap", "treasure", "furniture", "portal"
+    ]
+    label: str = Field(min_length=1, max_length=200)
+    row: int = Field(ge=1)
+    col: int = Field(ge=1)
+    width_cells: int = Field(1, ge=1, le=20)
+    height_cells: int = Field(1, ge=1, le=20)
+    state: Literal["active", "open", "closed", "destroyed", "disarmed", "picked_up"] = "active"
+    visibility: Literal["public", "dm", "hidden"] = "public"
+    interaction_json: dict[str, Any] = Field(default_factory=dict)
+    metadata_json: dict[str, Any] = Field(default_factory=dict)
+
+
+class ExplorationPreviewRequest(BaseModel):
+    action: Literal["move", "search", "interact", "explore"] = "explore"
+    minutes: int = Field(10, ge=1, le=1440)
+    token_id: str | None = None
+    path: list[tuple[int, int]] = Field(default_factory=list, max_length=200)
+    object_id: str | None = None
+    object_state: str | None = Field(default=None, max_length=30)
+    notes: str | None = Field(default=None, max_length=2000)
+
+
+class ExplorationConfirmRequest(ExplorationPreviewRequest):
+    preview_token: str = Field(min_length=16, max_length=128)
+    idempotency_key: str = Field(min_length=8, max_length=120)
+
+
+class TravelPreviewRequest(BaseModel):
+    to_location_id: str
+    distance_miles: float = Field(ge=0, le=100000)
+    pace: Literal["fast", "normal", "slow"] = "normal"
+    notes: str | None = Field(default=None, max_length=2000)
+
+
+class TravelConfirmRequest(TravelPreviewRequest):
+    preview_token: str = Field(min_length=16, max_length=128)
+    idempotency_key: str = Field(min_length=8, max_length=120)
