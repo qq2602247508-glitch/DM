@@ -44,6 +44,10 @@ type SessionCheckpoint = {
   participantKeys: string[];
 };
 
+function SessionStatusBar({ characters, npcs, events }: { characters: { name: string; hp: number; max_hp: number }[]; npcs: { name: string; attitude: string | null }[]; events: { title: string }[] }): ReactElement {
+  return <Panel className="mb-4" eyebrow="统一状态栏 · 已确认事实" title="队伍、关系与未解决事项"><div className="grid gap-3 text-xs md:grid-cols-3"><div><strong>队伍</strong><p className="mb-0 mt-1 text-stone-500">{characters.map((c) => `${c.name} ${c.hp}/${c.max_hp}`).join("、") || "—"}</p></div><div><strong>NPC 态度</strong><p className="mb-0 mt-1 text-stone-500">{npcs.slice(0, 3).map((n) => `${n.name}·${n.attitude ?? "未定"}`).join("、") || "—"}</p></div><div><strong>未解决事项</strong><p className="mb-0 mt-1 text-stone-500">{events.slice(-3).map((e) => e.title).join("、") || "暂无"}</p></div></div></Panel>;
+}
+
 function storageKey(campaignId: string, sceneId: string): string {
   return `dnd-game-table:${campaignId}:${sceneId}`;
 }
@@ -414,6 +418,7 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
     .reduce((sum, proposal) => sum + proposal.difficulty_shift, 0);
   return (
     <div className="mx-auto max-w-[1500px] p-4 lg:p-6">
+      <SessionStatusBar characters={characters.data ?? []} events={events.data ?? []} npcs={npcs.data ?? []} />
       <Panel eyebrow="副 DM · 实时场次" title="游戏推进台">
         <div className="grid gap-3 lg:grid-cols-[1fr_auto]">
           <select className={selectCls} onChange={(event) => setSceneId(event.target.value)} value={sceneId}><option value="">选择当前场景</option>{scenes.data?.map((scene) => <option key={scene.id} value={scene.id}>{scene.name}</option>)}</select>

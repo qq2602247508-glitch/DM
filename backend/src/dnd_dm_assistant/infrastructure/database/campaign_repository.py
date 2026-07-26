@@ -12,15 +12,21 @@ from dnd_dm_assistant.infrastructure.database.models import (
     Character,
     CharacterCondition,
     Clue,
+    ClueDiscovery,
     Combat,
     Combatant,
     Event,
+    FactionReputation,
     Location,
     LocationConnection,
     MonsterInstance,
+    NPCMemory,
     Quest,
+    QuestObjective,
     Scene,
     SceneParticipant,
+    StoryBeat,
+    DowntimeActivity,
     WorldItem,
 )
 
@@ -41,6 +47,9 @@ ENTITY_MODELS: dict[str, type[Any]] = {
     "scene": Scene,
     "scene_participant": SceneParticipant,
     "audit": AuditLog,
+    "story_beat": StoryBeat, "quest_objective": QuestObjective,
+    "npc_memory": NPCMemory, "faction_reputation": FactionReputation,
+    "clue_discovery": ClueDiscovery, "downtime_activity": DowntimeActivity,
 }
 
 
@@ -64,6 +73,7 @@ class SqlAlchemyCampaignStateRepository:
             "world_item",
             "monster",
             "scene",
+            "story_beat", "quest_objective", "npc_memory", "faction_reputation", "clue_discovery", "downtime_activity",
         }:
             return entity.campaign_id
         if entity_type == "condition":
@@ -114,6 +124,7 @@ class SqlAlchemyCampaignStateRepository:
             "world_item",
             "monster",
             "scene",
+            "story_beat", "quest_objective", "npc_memory", "faction_reputation", "clue_discovery", "downtime_activity",
         }:
             query = query.where(model.campaign_id == campaign_id)
         elif entity_type == "condition":
