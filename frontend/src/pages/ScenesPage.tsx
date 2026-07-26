@@ -8,13 +8,20 @@ import {
   createMonster,
   createPersistentGrid,
   createSceneObject,
+  createSceneToken,
   createScene,
+  confirmExploration,
+  confirmTravel,
   listMonsters,
   listSceneParticipants,
   listScenes,
   getSceneGrid,
+  previewExploration,
+  previewTravel,
   removeSceneParticipant,
   startSceneCombat,
+  type ExplorationInput,
+  type TravelInput,
 } from "../api/world";
 import { Panel } from "../components/Panel";
 import { RequireCampaign } from "../components/RequireCampaign";
@@ -97,6 +104,11 @@ function ScenesContent({ campaignId }: { campaignId: string }): ReactElement {
   const [combatResult, setCombatResult] = useState<SceneCombatResult | null>(null);
   const [objectKind, setObjectKind] = useState<"wall" | "door" | "cover" | "terrain" | "light" | "trap" | "treasure" | "furniture" | "portal">("cover");
   const [objectVisibility, setObjectVisibility] = useState<"public" | "dm" | "hidden">("public");
+  const [tokenId, setTokenId] = useState("");
+  const [explorationDraft, setExplorationDraft] = useState<{ input: ExplorationInput; preview: Record<string, unknown> } | null>(null);
+  const [travelLocationId, setTravelLocationId] = useState("");
+  const [travelDistance, setTravelDistance] = useState("1");
+  const [travelDraft, setTravelDraft] = useState<{ input: TravelInput; preview: Record<string, unknown> } | null>(null);
   const scenes = useQuery({ queryKey: ["scenes", campaignId], queryFn: ({ signal }) => listScenes(campaignId, signal) });
   const locations = useQuery({ queryKey: ["locations", campaignId], queryFn: ({ signal }) => listLocations(campaignId, signal) });
   const characters = useQuery({ queryKey: ["characters", campaignId], queryFn: ({ signal }) => listCharacters(campaignId, signal) });
@@ -143,6 +155,71 @@ function ScenesContent({ campaignId }: { campaignId: string }): ReactElement {
     mutationFn: (position: { row: number; col: number }) => createSceneObject(campaignId, sceneId, { object_type: objectKind, label: objectKind === "terrain" ? "困难地形" : objectKind, row: position.row, col: position.col, visibility: objectVisibility, metadata_json: objectKind === "terrain" ? { difficult: true } : {} }),
     onSuccess: () => { void client.invalidateQueries({ queryKey: ["persistent-scene-grid", campaignId, sceneId] }); },
     onError: () => showToast("对象放置失败", "error"),
+  });
+  const tokenCreate = useMutation({
+    mutationFn: () => {
+      const [entity_type, entity_id] = entityKey.split(":");
+      const candidate = candidates.find((item) => item.key === entityKey);
+      if (!candidate || !entity_type || !entity_id) throw new Error("请选择要放置的参与者");
+      return createSceneToken(campaignId, sceneId, {
+        entity_type: entity_type as "character" | "npc" | "monster",
+        entity_id,
+        label: candidate.label.replace(/^.+? · /, ""),
+        row: 2,
+        col: 2,
+      });
+    },
+    onSuccess: (token) => {
+      setTokenId(token.id);
+      void client.invalidateQueries({ queryKey: ["persistent-scene-grid", campaignId, sceneId] });
+      showToast("单位已放置到探索网格");
+    },
+    onError: () => showToast("单位放置失败", "error"),
+  });
+  const explorationPreview = useMutation({
+    mutationFn: async (input: ExplorationInput) => ({
+      input,
+      preview: await previewExploration(campaignId, sceneId, input),
+    }),
+    onSuccess: setExplorationDraft,
+    onError: () => showToast("探索操作无法预览", "error"),
+  });
+  const explorationConfirm = useMutation({
+    mutationFn: () => {
+      if (!explorationDraft) throw new Error("没有待确认的探索操作");
+      return confirmExploration(campaignId, sceneId, {
+        ...explorationDraft.input,
+        preview_token: String(explorationDraft.preview.preview_token),
+        idempotency_key: crypto.randomUUID(),
+      });
+    },
+    onSuccess: () => {
+      setExplorationDraft(null);
+      void client.invalidateQueries({ queryKey: ["persistent-scene-grid", campaignId, sceneId] });
+      showToast("探索轮已确认，世界时间已推进");
+    },
+  });
+  const travelPreview = useMutation({
+    mutationFn: async (input: TravelInput) => ({
+      input,
+      preview: await previewTravel(campaignId, input),
+    }),
+    onSuccess: setTravelDraft,
+    onError: () => showToast("旅行无法预览", "error"),
+  });
+  const travelConfirm = useMutation({
+    mutationFn: () => {
+      if (!travelDraft) throw new Error("没有待确认的旅行");
+      return confirmTravel(campaignId, {
+        ...travelDraft.input,
+        preview_token: String(travelDraft.preview.preview_token),
+        idempotency_key: crypto.randomUUID(),
+      });
+    },
+    onSuccess: () => {
+      setTravelDraft(null);
+      showToast("旅行已确认，地点与世界时间已更新");
+    },
   });
   const participantAdd = useMutation({
     mutationFn: () => {
@@ -218,7 +295,8 @@ function ScenesContent({ campaignId }: { campaignId: string }): ReactElement {
           {activeScene ? <p className="mb-0 mt-3 text-xs text-stone-500">{activeScene.description || "这个场景尚未添加描述。"} · {participants.data?.length ?? 0} 名参与者</p> : null}
           {activeGrid ? <SceneGridPreview grid={activeGrid} /> : null}
           {sceneId ? <div className="mt-3 flex flex-wrap gap-2"><Button loading={gridCreate.isPending} onClick={() => gridCreate.mutate()} variant="ghost">生成持久探索网格</Button><span className="self-center text-2xs text-stone-500">网格、对象与位置会写入场景事实；战斗将复用它。</span></div> : null}
-          {persistentGrid.data ? <div className="mt-3"><div className="mb-2 flex flex-wrap gap-2"><select className={selectCls} onChange={(event) => setObjectKind(event.target.value as typeof objectKind)} value={objectKind}>{["wall","door","cover","terrain","light","trap","treasure","furniture","portal"].map((kind) => <option key={kind} value={kind}>{kind}</option>)}</select><select className={selectCls} onChange={(event) => setObjectVisibility(event.target.value as typeof objectVisibility)} value={objectVisibility}><option value="public">公开层</option><option value="dm">DM 私密层</option><option value="hidden">隐藏层</option></select><span className="self-center text-2xs text-stone-500">点击格子放置对象；困难地形移动消耗翻倍。</span></div><div className="grid max-w-[600px] gap-px overflow-hidden rounded border border-ink-700 bg-ink-700" style={{ gridTemplateColumns: `repeat(${persistentGrid.data.grid.width}, minmax(0, 1fr))` }}>{Array.from({ length: persistentGrid.data.grid.width * persistentGrid.data.grid.height }, (_, index) => { const row = Math.floor(index / persistentGrid.data.grid.width) + 1; const col = index % persistentGrid.data.grid.width + 1; const obj = persistentGrid.data.objects.find((item) => item.row === row && item.col === col); return <button className={`aspect-square min-h-6 ${obj?.object_type === "wall" ? "bg-stone-700" : obj?.object_type === "terrain" ? "bg-amber-900" : obj?.visibility !== "public" ? "bg-violet-950" : obj ? "bg-emerald-900" : "bg-ink-950"}`} disabled={objectCreate.isPending} key={`${row}-${col}`} onClick={() => objectCreate.mutate({ row, col })} title={obj ? `${obj.label} · ${obj.visibility}` : `${row},${col}`} type="button" />; })}</div><p className="mt-1 text-2xs text-stone-500">公开 {persistentGrid.data.objects.filter((item) => item.visibility === "public").length} · DM/隐藏 {persistentGrid.data.objects.filter((item) => item.visibility !== "public").length}</p></div> : null}
+          {persistentGrid.data ? <div className="mt-3"><div className="mb-2 flex flex-wrap gap-2"><select className={selectCls} onChange={(event) => setObjectKind(event.target.value as typeof objectKind)} value={objectKind}>{["wall","door","cover","terrain","light","trap","treasure","furniture","portal"].map((kind) => <option key={kind} value={kind}>{kind}</option>)}</select><select className={selectCls} onChange={(event) => setObjectVisibility(event.target.value as typeof objectVisibility)} value={objectVisibility}><option value="public">公开层</option><option value="dm">DM 私密层</option><option value="hidden">隐藏层</option></select><span className="self-center text-2xs text-stone-500">点击格子放置对象；困难地形移动消耗翻倍。</span></div><div className="grid max-w-[600px] gap-px overflow-hidden rounded border border-ink-700 bg-ink-700" style={{ gridTemplateColumns: `repeat(${persistentGrid.data.grid.width}, minmax(0, 1fr))` }}>{Array.from({ length: persistentGrid.data.grid.width * persistentGrid.data.grid.height }, (_, index) => { const row = Math.floor(index / persistentGrid.data.grid.width) + 1; const col = index % persistentGrid.data.grid.width + 1; const obj = persistentGrid.data.objects.find((item) => item.row === row && item.col === col); const token = persistentGrid.data.tokens.find((item) => item.row === row && item.col === col); return <button className={`aspect-square min-h-6 ${token ? "bg-sky-900" : obj?.object_type === "wall" ? "bg-stone-700" : obj?.object_type === "terrain" ? "bg-amber-900" : obj?.visibility !== "public" ? "bg-violet-950" : obj ? "bg-emerald-900" : "bg-ink-950"}`} disabled={objectCreate.isPending} key={`${row}-${col}`} onClick={() => tokenId ? explorationPreview.mutate({ action: "move", minutes: 1, token_id: tokenId, path: [[persistentGrid.data.tokens.find((item) => item.id === tokenId)?.row ?? row, persistentGrid.data.tokens.find((item) => item.id === tokenId)?.col ?? col], [row, col]] }) : objectCreate.mutate({ row, col })} title={token ? token.label : obj ? `${obj.label} · ${obj.visibility}` : `${row},${col}`} type="button" />; })}</div><p className="mt-1 text-2xs text-stone-500">公开 {persistentGrid.data.objects.filter((item) => item.visibility === "public").length} · DM/隐藏 {persistentGrid.data.objects.filter((item) => item.visibility !== "public").length}</p><div className="mt-3 flex flex-wrap gap-2"><Button disabled={!entityKey} loading={tokenCreate.isPending} onClick={() => tokenCreate.mutate()}>将所选参与者放到 2,2</Button><select className={selectCls} onChange={(event) => setTokenId(event.target.value)} value={tokenId}><option value="">选择移动单位</option>{persistentGrid.data.tokens.map((token) => <option key={token.id} value={token.id}>{token.label}（{token.row},{token.col}）</option>)}</select><Button onClick={() => explorationPreview.mutate({ action: "search", minutes: 10, notes: "场景搜寻" })}>预览搜寻 10 分钟</Button></div>{explorationDraft ? <div className="mt-3 rounded border border-amber-700/50 p-3 text-xs"><pre className="max-h-32 overflow-auto whitespace-pre-wrap">{JSON.stringify(explorationDraft.preview, null, 2)}</pre><div className="mt-2 flex gap-2"><Button loading={explorationConfirm.isPending} onClick={() => explorationConfirm.mutate()} variant="primary">DM 确认探索</Button><Button onClick={() => setExplorationDraft(null)}>取消</Button></div></div> : null}</div> : null}
+          <div className="mt-4 rounded border border-ink-700 p-3"><p className="m-0 text-xs font-medium text-parchment-100">地点旅行</p><div className="mt-2 flex flex-wrap gap-2"><select className={selectCls} onChange={(event) => setTravelLocationId(event.target.value)} value={travelLocationId}><option value="">目的地</option>{locations.data?.map((location) => <option key={location.id} value={location.id}>{location.name}</option>)}</select><input className={inputCls} min="0" onChange={(event) => setTravelDistance(event.target.value)} type="number" value={travelDistance} /><Button disabled={!travelLocationId} onClick={() => travelPreview.mutate({ to_location_id: travelLocationId, distance_miles: Number(travelDistance), pace: "normal" })}>预览旅行</Button></div>{travelDraft ? <div className="mt-2 text-xs text-stone-400">预计 {String(travelDraft.preview.duration_minutes)} 分钟 <Button className="ml-2" loading={travelConfirm.isPending} onClick={() => travelConfirm.mutate()} size="sm" variant="primary">DM 确认</Button></div> : null}</div>
         </Panel>
         <Panel eyebrow="可复用原子" title="快速创建怪物实例">
           <form className="grid gap-2 sm:grid-cols-5" onSubmit={(event) => { event.preventDefault(); monsterCreate.mutate(); }}>

@@ -126,6 +126,24 @@ export function createPersistentGrid(campaignId: string, sceneId: string, input:
 export function createSceneObject(campaignId: string, sceneId: string, input: { object_type: "wall" | "door" | "cover" | "terrain" | "light" | "trap" | "treasure" | "furniture" | "portal"; label: string; row: number; col: number; visibility?: "public" | "dm" | "hidden"; interaction_json?: Record<string, unknown>; metadata_json?: Record<string, unknown> }): Promise<PersistentSceneObject> {
   return apiFetch(`/campaigns/${campaignId}/scenes/${sceneId}/objects`, { method: "POST", body: input });
 }
+export type SceneTokenInput = { entity_type: "character" | "npc" | "monster" | "marker"; entity_id?: string | null; label: string; row: number; col: number; size_cells?: number; elevation_ft?: number; visible?: boolean; metadata_json?: Record<string, unknown> };
+export function createSceneToken(campaignId: string, sceneId: string, input: SceneTokenInput): Promise<SceneToken> {
+  return apiFetch(`/campaigns/${campaignId}/scenes/${sceneId}/tokens`, { method: "POST", body: input });
+}
+export type ExplorationInput = { action: "move" | "search" | "interact" | "explore"; minutes: number; token_id?: string | null; path?: Array<[number, number]>; object_id?: string | null; object_state?: string | null; notes?: string | null; preview_token?: string; idempotency_key?: string };
+export function previewExploration(campaignId: string, sceneId: string, input: ExplorationInput): Promise<Record<string, unknown>> {
+  return apiFetch(`/campaigns/${campaignId}/scenes/${sceneId}/exploration/preview`, { method: "POST", body: input });
+}
+export function confirmExploration(campaignId: string, sceneId: string, input: ExplorationInput): Promise<Record<string, unknown>> {
+  return apiFetch(`/campaigns/${campaignId}/scenes/${sceneId}/exploration/confirm`, { method: "POST", body: input });
+}
+export type TravelInput = { to_location_id: string; distance_miles: number; pace: "fast" | "normal" | "slow"; notes?: string | null; preview_token?: string; idempotency_key?: string };
+export function previewTravel(campaignId: string, input: TravelInput): Promise<Record<string, unknown>> {
+  return apiFetch(`/campaigns/${campaignId}/travel/preview`, { method: "POST", body: input });
+}
+export function confirmTravel(campaignId: string, input: TravelInput): Promise<Record<string, unknown>> {
+  return apiFetch(`/campaigns/${campaignId}/travel/confirm`, { method: "POST", body: input });
+}
 
 export async function listSceneParticipants(
   campaignId: string,
