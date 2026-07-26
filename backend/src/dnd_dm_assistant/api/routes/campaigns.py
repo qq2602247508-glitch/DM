@@ -31,6 +31,8 @@ from dnd_dm_assistant.api.schemas import (
     NPCCreate,
     NPCPatch,
     NPCResponse,
+    NarrativeCreate,
+    NarrativePatch,
     QuestCreate,
     QuestPatch,
     StateSnapshot,
@@ -319,6 +321,12 @@ _crud_routes(
 _crud_routes(resource="quests", create_model=QuestCreate, patch_model=QuestPatch, singular="quest")
 _crud_routes(resource="clues", create_model=ClueCreate, patch_model=CluePatch, singular="clue")
 _crud_routes(resource="events", create_model=EventCreate, patch_model=EventPatch, singular="event")
+_crud_routes(resource="story-beats", create_model=NarrativeCreate, patch_model=NarrativePatch, singular="story_beat")
+_crud_routes(resource="quest-objectives", create_model=NarrativeCreate, patch_model=NarrativePatch, singular="quest_objective")
+_crud_routes(resource="npc-memories", create_model=NarrativeCreate, patch_model=NarrativePatch, singular="npc_memory")
+_crud_routes(resource="faction-reputations", create_model=NarrativeCreate, patch_model=NarrativePatch, singular="faction_reputation")
+_crud_routes(resource="clue-discoveries", create_model=NarrativeCreate, patch_model=NarrativePatch, singular="clue_discovery")
+_crud_routes(resource="downtime-activities", create_model=NarrativeCreate, patch_model=NarrativePatch, singular="downtime_activity")
 _crud_routes(
     resource="combats", create_model=CombatCreate, patch_model=CombatPatch, singular="combat"
 )

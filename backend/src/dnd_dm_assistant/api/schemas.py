@@ -686,6 +686,37 @@ class ConditionCreate(BaseModel):
     details: dict[str, Any] = Field(default_factory=dict)
 
 
+class NarrativeCreate(BaseModel):
+    title: str | None = Field(default=None, min_length=1, max_length=200)
+    description: str | None = None
+    status: str | None = None
+    quest_id: str | None = None
+    npc_id: str | None = None
+    character_id: str | None = None
+    clue_id: str | None = None
+    faction_name: str | None = Field(default=None, max_length=200)
+    summary: str | None = None
+    activity_type: str | None = Field(default=None, max_length=40)
+    objective_type: str | None = Field(default=None, max_length=40)
+    hidden: bool | None = None
+    score: int | None = Field(default=None, ge=-100, le=100)
+    attitude_delta: int | None = Field(default=None, ge=-100, le=100)
+    duration_days: int | None = Field(default=None, ge=1, le=10000)
+    progress_days: int | None = Field(default=None, ge=0, le=10000)
+    daily_cost_cp: int | None = Field(default=None, ge=0)
+    method: str | None = None
+    details: dict[str, Any] | None = None
+    branches: dict[str, Any] | None = None
+    prerequisites: list[Any] | None = None
+    tags: list[Any] | None = None
+    secret: bool | None = None
+    notes: str | None = None
+
+
+class NarrativePatch(NarrativeCreate):
+    version: int | None = Field(default=None, ge=1)
+
+
 class ConditionPatch(BaseModel):
     condition_name: Annotated[
         str | None, StringConstraints(strip_whitespace=True, min_length=1, max_length=100)

@@ -324,6 +324,8 @@ export type CharacterCondition = Versioned & {
   details: Record<string, unknown>;
 };
 
+export type NarrativeRecord = Versioned & Record<string, unknown> & { campaign_id: string; status?: string; title?: string; description?: string | null };
+
 export type Npc = Versioned & {
   campaign_id: string;
   name: string;

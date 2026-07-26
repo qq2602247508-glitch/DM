@@ -23,6 +23,7 @@ import type {
   Npc,
   ProposalEntityType,
   Quest,
+  NarrativeRecord,
   ResourcePool,
   RestConfirmRequest,
   RestPreview,
@@ -308,6 +309,12 @@ export const updateEvent = (cid: string, id: string, input: EventInput, version:
 
 export const deleteEvent = (cid: string, id: string, version: number) =>
   deleteEntity(`/campaigns/${cid}/events/${id}`, version);
+
+export type NarrativeInput = Record<string, unknown>;
+const narrativePath = (kind: string) => `/campaigns/${kind}`;
+export const listNarrative = (cid: string, kind: string, signal?: AbortSignal) => listEntities<NarrativeRecord>(`${narrativePath(cid)}/${kind}`, signal);
+export const createNarrative = (cid: string, kind: string, input: NarrativeInput) => createEntity<NarrativeRecord, NarrativeInput>(`${narrativePath(cid)}/${kind}`, input);
+export const updateNarrative = (cid: string, kind: string, id: string, input: NarrativeInput, version: number) => patchEntity<NarrativeRecord, NarrativeInput>(`${narrativePath(cid)}/${kind}/${id}`, input, version);
 
 // Encounter adjustment proposals --------------------------------------------
 
