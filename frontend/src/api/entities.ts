@@ -316,6 +316,17 @@ export const listNarrative = (cid: string, kind: string, signal?: AbortSignal) =
 export const createNarrative = (cid: string, kind: string, input: NarrativeInput) => createEntity<NarrativeRecord, NarrativeInput>(`${narrativePath(cid)}/${kind}`, input);
 export const updateNarrative = (cid: string, kind: string, id: string, input: NarrativeInput, version: number) => patchEntity<NarrativeRecord, NarrativeInput>(`${narrativePath(cid)}/${kind}/${id}`, input, version);
 
+export type NarrativeOperationInput = {
+  kind: "story_beat" | "quest_objective" | "reputation" | "downtime" | "quest_reward" | "runtime";
+  entity_id?: string; version?: number; status?: string; score_delta?: number; progress_days?: number;
+  character_ids?: string[]; xp_each?: number; title?: string; detail?: string;
+  mode?: "skill_challenge" | "chase" | "negotiation" | "stealth" | "investigation"; successes?: number; failures?: number;
+};
+export type NarrativeTransactionInput = { operations: NarrativeOperationInput[]; idempotency_key: string; preview_token?: string; notes?: string };
+export type NarrativeTransactionPreview = { preview_token: string; rows: { kind: string; entity_id?: string; before: Record<string, unknown>; after: Record<string, unknown>; explanation?: string }[]; warnings: string[] };
+export const previewNarrativeTransaction = (cid: string, input: NarrativeTransactionInput) => createEntity<NarrativeTransactionPreview, NarrativeTransactionInput>(`/campaigns/${cid}/narrative/preview`, input);
+export const confirmNarrativeTransaction = (cid: string, input: NarrativeTransactionInput) => createEntity<{ idempotent: boolean }, NarrativeTransactionInput>(`/campaigns/${cid}/narrative/confirm`, input);
+
 // Encounter adjustment proposals --------------------------------------------
 
 export type EncounterAdjustmentInput = {

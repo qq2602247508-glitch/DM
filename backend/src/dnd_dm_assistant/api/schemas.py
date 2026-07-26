@@ -717,6 +717,34 @@ class NarrativePatch(NarrativeCreate):
     version: int | None = Field(default=None, ge=1)
 
 
+class NarrativeOperation(BaseModel):
+    """One DM-reviewed narrative state change.  No operation is applied at preview time."""
+    kind: Literal[
+        "story_beat", "quest_objective", "reputation", "downtime", "quest_reward", "runtime"
+    ]
+    entity_id: str | None = Field(default=None, max_length=36)
+    version: int | None = Field(default=None, ge=1)
+    status: str | None = Field(default=None, max_length=30)
+    score_delta: int | None = Field(default=None, ge=-100, le=100)
+    progress_days: int | None = Field(default=None, ge=0, le=10000)
+    character_ids: list[str] = Field(default_factory=list, max_length=20)
+    xp_each: int | None = Field(default=None, ge=0, le=1_000_000)
+    title: str | None = Field(default=None, max_length=200)
+    detail: str | None = Field(default=None, max_length=5000)
+    mode: Literal[
+        "skill_challenge", "chase", "negotiation", "stealth", "investigation"
+    ] | None = None
+    successes: int | None = Field(default=None, ge=0, le=99)
+    failures: int | None = Field(default=None, ge=0, le=99)
+
+
+class NarrativeTransactionRequest(BaseModel):
+    operations: list[NarrativeOperation] = Field(min_length=1, max_length=40)
+    idempotency_key: str = Field(min_length=8, max_length=120)
+    preview_token: str | None = Field(default=None, max_length=128)
+    notes: str | None = Field(default=None, max_length=5000)
+
+
 class ConditionPatch(BaseModel):
     condition_name: Annotated[
         str | None, StringConstraints(strip_whitespace=True, min_length=1, max_length=100)

@@ -15,6 +15,7 @@ from dnd_dm_assistant.api.routes.encounters import router as encounters_router
 from dnd_dm_assistant.api.routes.health import router as health_router
 from dnd_dm_assistant.api.routes.knowledge import router as knowledge_router
 from dnd_dm_assistant.api.routes.rests import router as rests_router
+from dnd_dm_assistant.api.routes.narrative import router as narrative_router
 from dnd_dm_assistant.api.routes.world import router as world_router
 from dnd_dm_assistant.config import Settings, get_settings
 from dnd_dm_assistant.infrastructure.database import create_database_engine
@@ -54,6 +55,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(combat_engine_router, prefix=app_settings.api_prefix)
     app.include_router(encounters_router, prefix=app_settings.api_prefix)
     app.include_router(rests_router, prefix=app_settings.api_prefix)
+    app.include_router(narrative_router, prefix=app_settings.api_prefix)
     app.include_router(assistant_router, prefix=app_settings.api_prefix)
     app.include_router(world_router, prefix=app_settings.api_prefix)
     return app
