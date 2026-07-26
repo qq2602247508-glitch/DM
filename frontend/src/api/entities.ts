@@ -1,0 +1,344 @@
+import { apiFetch } from "./client";
+import type {
+  CampaignEvent,
+  Character,
+  CharacterCondition,
+  Clue,
+  Combat,
+  Combatant,
+  ListEnvelope,
+  Location,
+  Npc,
+  ProposalEntityType,
+  Quest,
+} from "./types";
+
+/**
+ * Typed wrappers over the nested campaign-state CRUD routes. All mutations
+ * send the entity `version` in the request body (backend accepts body version
+ * in place of If-Match).
+ */
+
+async function listEntities<T>(path: string, signal?: AbortSignal): Promise<T[]> {
+  const envelope = await apiFetch<ListEnvelope<T>>(`${path}?limit=200`, { signal });
+  return envelope.items;
+}
+
+/** Resource path segments for proposal-targeted entity types. */
+const PROPOSAL_RESOURCE_PATHS: Record<ProposalEntityType, string> = {
+  character: "characters",
+  npc: "npcs",
+  quest: "quests",
+  event: "events",
+};
+
+/** Fetch a single proposal-targeted entity (for before/after diffs). */
+export function getProposalEntity(
+  campaignId: string,
+  entityType: ProposalEntityType,
+  entityId: string,
+  signal?: AbortSignal,
+): Promise<Record<string, unknown>> {
+  return apiFetch<Record<string, unknown>>(
+    `/campaigns/${campaignId}/${PROPOSAL_RESOURCE_PATHS[entityType]}/${entityId}`,
+    { signal },
+  );
+}
+
+function createEntity<T, TInput>(path: string, input: TInput): Promise<T> {
+  return apiFetch<T>(path, { method: "POST", body: input });
+}
+
+function patchEntity<T, TInput extends object>(
+  path: string,
+  input: TInput,
+  version: number,
+): Promise<T> {
+  return apiFetch<T>(path, {
+    method: "PATCH",
+    body: { ...input, version },
+  });
+}
+
+function deleteEntity(path: string, version: number): Promise<void> {
+  const separator = path.includes("?") ? "&" : "?";
+  return apiFetch<void>(`${path}${separator}version=${version}`, { method: "DELETE" });
+}
+
+// ---------------------------------------------------------------------------
+// Characters
+// ---------------------------------------------------------------------------
+
+export type CharacterInput = {
+  name?: string;
+  race?: string | null;
+  background?: string | null;
+  class_name?: string | null;
+  level?: number;
+  experience?: number;
+  armor_class?: number;
+  speed?: number;
+  ability_scores?: Record<string, number>;
+  hp?: number;
+  max_hp?: number;
+  inventory?: unknown[];
+  equipment?: unknown[];
+  proficiencies?: unknown[];
+  skills?: Record<string, unknown>;
+  features?: unknown[];
+  actions?: unknown[];
+  resources?: Record<string, unknown>;
+  spells?: unknown[];
+  spellcasting?: Record<string, unknown>;
+  notes?: string | null;
+};
+
+export const listCharacters = (cid: string, signal?: AbortSignal) =>
+  listEntities<Character>(`/campaigns/${cid}/characters`, signal);
+
+export const createCharacter = (cid: string, input: CharacterInput) =>
+  createEntity<Character, CharacterInput>(`/campaigns/${cid}/characters`, input);
+
+export const updateCharacter = (cid: string, id: string, input: CharacterInput, version: number) =>
+  patchEntity<Character, CharacterInput>(`/campaigns/${cid}/characters/${id}`, input, version);
+
+export const deleteCharacter = (cid: string, id: string, version: number) =>
+  deleteEntity(`/campaigns/${cid}/characters/${id}`, version);
+
+// Character conditions -------------------------------------------------------
+
+export type ConditionInput = {
+  condition_name?: string;
+  source?: string | null;
+  duration?: string | null;
+  notes?: string | null;
+  details?: Record<string, unknown>;
+};
+
+export const listConditions = (cid: string, characterId: string, signal?: AbortSignal) =>
+  listEntities<CharacterCondition>(
+    `/campaigns/${cid}/characters/${characterId}/conditions`,
+    signal,
+  );
+
+export const createCondition = (cid: string, characterId: string, input: ConditionInput) =>
+  createEntity<CharacterCondition, ConditionInput>(
+    `/campaigns/${cid}/characters/${characterId}/conditions`,
+    input,
+  );
+
+export const deleteCondition = (cid: string, characterId: string, id: string, version: number) =>
+  deleteEntity(`/campaigns/${cid}/characters/${characterId}/conditions/${id}`, version);
+
+// ---------------------------------------------------------------------------
+// NPCs
+// ---------------------------------------------------------------------------
+
+export type NpcInput = {
+  name?: string;
+  description?: string | null;
+  alignment?: string | null;
+  attitude?: string | null;
+  personality?: string | null;
+  goal?: string | null;
+  fear?: string | null;
+  armor_class?: number;
+  hp?: number;
+  max_hp?: number;
+  speed?: number;
+  ability_scores?: Record<string, number>;
+  challenge_rating?: string | null;
+  actions?: unknown[];
+  equipment?: unknown[];
+  relationship?: string | null;
+  secrets?: string | null;
+  known_information?: string | null;
+  location_id?: string | null;
+  status?: string;
+};
+
+export const listNpcs = (cid: string, signal?: AbortSignal) =>
+  listEntities<Npc>(`/campaigns/${cid}/npcs`, signal);
+
+export const createNpc = (cid: string, input: NpcInput) =>
+  createEntity<Npc, NpcInput>(`/campaigns/${cid}/npcs`, input);
+
+export const updateNpc = (cid: string, id: string, input: NpcInput, version: number) =>
+  patchEntity<Npc, NpcInput>(`/campaigns/${cid}/npcs/${id}`, input, version);
+
+export const deleteNpc = (cid: string, id: string, version: number) =>
+  deleteEntity(`/campaigns/${cid}/npcs/${id}`, version);
+
+// ---------------------------------------------------------------------------
+// Locations
+// ---------------------------------------------------------------------------
+
+export type LocationInput = {
+  name?: string;
+  parent_location_id?: string | null;
+  depth?: number;
+  description?: string | null;
+  interactive_objects?: unknown[];
+  secrets?: string | null;
+  discovered?: boolean;
+  notes?: string | null;
+};
+
+export const listLocations = (cid: string, signal?: AbortSignal) =>
+  listEntities<Location>(`/campaigns/${cid}/locations`, signal);
+
+export const createLocation = (cid: string, input: LocationInput) =>
+  createEntity<Location, LocationInput>(`/campaigns/${cid}/locations`, input);
+
+export const updateLocation = (cid: string, id: string, input: LocationInput, version: number) =>
+  patchEntity<Location, LocationInput>(`/campaigns/${cid}/locations/${id}`, input, version);
+
+export const deleteLocation = (cid: string, id: string, version: number) =>
+  deleteEntity(`/campaigns/${cid}/locations/${id}`, version);
+
+// ---------------------------------------------------------------------------
+// Quests
+// ---------------------------------------------------------------------------
+
+export type QuestInput = {
+  name?: string;
+  description?: string | null;
+  quest_type?: "main" | "side" | "personal" | "faction";
+  giver?: string | null;
+  reward?: string | null;
+  xp_reward?: number;
+  xp_awarded?: boolean;
+  status?: string;
+  notes?: string | null;
+};
+
+export const listQuests = (cid: string, signal?: AbortSignal) =>
+  listEntities<Quest>(`/campaigns/${cid}/quests`, signal);
+
+export const createQuest = (cid: string, input: QuestInput) =>
+  createEntity<Quest, QuestInput>(`/campaigns/${cid}/quests`, input);
+
+export const updateQuest = (cid: string, id: string, input: QuestInput, version: number) =>
+  patchEntity<Quest, QuestInput>(`/campaigns/${cid}/quests/${id}`, input, version);
+
+export const deleteQuest = (cid: string, id: string, version: number) =>
+  deleteEntity(`/campaigns/${cid}/quests/${id}`, version);
+
+// ---------------------------------------------------------------------------
+// Clues
+// ---------------------------------------------------------------------------
+
+export type ClueInput = {
+  name?: string;
+  description?: string | null;
+  player_text?: string | null;
+  dm_truth?: string | null;
+  verified?: boolean;
+  quest_id?: string | null;
+  discovered?: boolean;
+  discovered_at?: string | null;
+  source_event_id?: string | null;
+};
+
+export const listClues = (cid: string, signal?: AbortSignal) =>
+  listEntities<Clue>(`/campaigns/${cid}/clues`, signal);
+
+export const createClue = (cid: string, input: ClueInput) =>
+  createEntity<Clue, ClueInput>(`/campaigns/${cid}/clues`, input);
+
+export const updateClue = (cid: string, id: string, input: ClueInput, version: number) =>
+  patchEntity<Clue, ClueInput>(`/campaigns/${cid}/clues/${id}`, input, version);
+
+export const deleteClue = (cid: string, id: string, version: number) =>
+  deleteEntity(`/campaigns/${cid}/clues/${id}`, version);
+
+// ---------------------------------------------------------------------------
+// Events
+// ---------------------------------------------------------------------------
+
+export type EventInput = {
+  title?: string;
+  event_type?: string;
+  description?: string | null;
+  occurred_at?: string | null;
+  location_id?: string | null;
+  visibility?: "dm" | "players" | "public";
+  metadata_json?: Record<string, unknown>;
+};
+
+export const listEvents = (cid: string, signal?: AbortSignal) =>
+  listEntities<CampaignEvent>(`/campaigns/${cid}/events`, signal);
+
+export const createEvent = (cid: string, input: EventInput) =>
+  createEntity<CampaignEvent, EventInput>(`/campaigns/${cid}/events`, input);
+
+export const updateEvent = (cid: string, id: string, input: EventInput, version: number) =>
+  patchEntity<CampaignEvent, EventInput>(`/campaigns/${cid}/events/${id}`, input, version);
+
+export const deleteEvent = (cid: string, id: string, version: number) =>
+  deleteEntity(`/campaigns/${cid}/events/${id}`, version);
+
+// ---------------------------------------------------------------------------
+// Combats & combatants
+// ---------------------------------------------------------------------------
+
+export type CombatInput = {
+  name?: string;
+  scene_id?: string | null;
+  status?: string;
+  round_number?: number;
+  current_turn_index?: number;
+  difficulty?: "trivial" | "low" | "moderate" | "high" | null;
+  base_xp?: number;
+  difficulty_adjustments?: unknown[];
+  xp_awarded?: boolean;
+};
+
+export const listCombats = (cid: string, signal?: AbortSignal) =>
+  listEntities<Combat>(`/campaigns/${cid}/combats`, signal);
+
+export const createCombat = (cid: string, input: CombatInput) =>
+  createEntity<Combat, CombatInput>(`/campaigns/${cid}/combats`, input);
+
+export const updateCombat = (cid: string, id: string, input: CombatInput, version: number) =>
+  patchEntity<Combat, CombatInput>(`/campaigns/${cid}/combats/${id}`, input, version);
+
+export const deleteCombat = (cid: string, id: string, version: number) =>
+  deleteEntity(`/campaigns/${cid}/combats/${id}`, version);
+
+export type CombatantInput = {
+  display_name?: string;
+  entity_type?: string;
+  entity_id?: string | null;
+  initiative?: number;
+  armor_class?: number;
+  hp?: number;
+  max_hp?: number;
+  conditions?: unknown[];
+  is_active?: boolean;
+};
+
+export const listCombatants = (cid: string, combatId: string, signal?: AbortSignal) =>
+  listEntities<Combatant>(`/campaigns/${cid}/combats/${combatId}/combatants`, signal);
+
+export const createCombatant = (cid: string, combatId: string, input: CombatantInput) =>
+  createEntity<Combatant, CombatantInput>(
+    `/campaigns/${cid}/combats/${combatId}/combatants`,
+    input,
+  );
+
+export const updateCombatant = (
+  cid: string,
+  combatId: string,
+  id: string,
+  input: CombatantInput,
+  version: number,
+) =>
+  patchEntity<Combatant, CombatantInput>(
+    `/campaigns/${cid}/combats/${combatId}/combatants/${id}`,
+    input,
+    version,
+  );
+
+export const deleteCombatant = (cid: string, combatId: string, id: string, version: number) =>
+  deleteEntity(`/campaigns/${cid}/combats/${combatId}/combatants/${id}`, version);

@@ -1,0 +1,297 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMemo, useState, type ReactElement } from "react";
+
+import { listCharacters, listLocations } from "../api/entities";
+import type {
+  GeneratedLocationNode,
+  Location,
+  LocationGenerationPreview,
+  WorldItem,
+} from "../api/types";
+import {
+  confirmLocation,
+  generateLocation,
+  listWorldItems,
+  pickupItem,
+} from "../api/world";
+import { CitationList } from "../components/Citations";
+import { Panel } from "../components/Panel";
+import { RequireCampaign } from "../components/RequireCampaign";
+import { useToast } from "../hooks/toastContext";
+import { Badge, Button, EmptyState, ErrorState, LoadingBlock } from "../ui/primitives";
+import { inputCls, selectCls, textareaCls } from "../ui/styles";
+import { AiTag, SecretBlock } from "../ui/widgets";
+import { ManagementPage } from "./ManagementPage";
+
+function money(cp: number): string {
+  if (cp >= 100) return `${cp / 100} gp`;
+  if (cp >= 10) return `${cp / 10} sp`;
+  return `${cp} cp`;
+}
+
+function GeneratedNode({ node, level = 0 }: { node: GeneratedLocationNode; level?: number }): ReactElement {
+  return (
+    <li className="list-none">
+      <div
+        className="rounded-md border border-ink-700 bg-ink-950/50 p-3"
+        style={{ marginLeft: `${Math.min(level, 4) * 18}px` }}
+      >
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge tone="ember">第 {level + 1} 层</Badge>
+          <strong className="text-sm text-parchment-100">{node.name}</strong>
+          {node.suggested_npcs.length ? <Badge tone="ai">{node.suggested_npcs.length} NPC 建议</Badge> : null}
+          {node.suggested_monsters.length ? <Badge tone="danger">{node.suggested_monsters.length} 怪物建议</Badge> : null}
+        </div>
+        <p className="prose-block mb-0 mt-2 text-xs text-stone-400">{node.description}</p>
+        {node.interactive_objects.length ? (
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {node.interactive_objects.map((object) => <Badge key={object}>{object}</Badge>)}
+          </div>
+        ) : null}
+        {node.items.length ? (
+          <div className="mt-3 grid gap-2 sm:grid-cols-2">
+            {node.items.map((item, index) => (
+              <div className="rounded border border-ink-700/70 bg-ink-900 px-2.5 py-2 text-xs" key={`${item.name}-${index}`}>
+                <span className="font-medium text-parchment-100">{item.name} ×{item.quantity}</span>
+                <span className="ml-2 text-stone-600">{item.unit_weight_lb} lb · {money(item.price_cp)}</span>
+                {item.description ? <p className="mb-0 mt-1 text-stone-500">{item.description}</p> : null}
+              </div>
+            ))}
+          </div>
+        ) : null}
+      </div>
+      {node.children.length ? (
+        <ul className="m-0 mt-2 space-y-2 p-0">
+          {node.children.map((child) => <GeneratedNode key={child.temp_id} level={level + 1} node={child} />)}
+        </ul>
+      ) : null}
+    </li>
+  );
+}
+
+function ExistingNode({
+  location,
+  childrenByParent,
+  items,
+  characterId,
+  pickupPending,
+  onPickup,
+  level = 0,
+}: {
+  location: Location;
+  childrenByParent: Map<string | null, Location[]>;
+  items: WorldItem[];
+  characterId: string;
+  pickupPending: boolean;
+  onPickup: (item: WorldItem) => void;
+  level?: number;
+}): ReactElement {
+  const children = childrenByParent.get(location.id) ?? [];
+  const localItems = items.filter((item) => item.location_id === location.id && !item.is_hidden);
+  return (
+    <li className="list-none">
+      <div
+        className="rounded-lg border border-ink-700 bg-ink-950/50 p-3"
+        style={{ marginLeft: `${Math.min(level, 4) * 20}px` }}
+      >
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge tone={level === 0 ? "ember" : "neutral"}>层级 {location.depth}</Badge>
+          <strong className="text-sm text-parchment-100">{location.name}</strong>
+          <span className="ml-auto text-2xs text-stone-700">{children.length} 个子地点</span>
+        </div>
+        <p className="prose-block mb-0 mt-1.5 text-xs text-stone-500">{location.description || "暂无描述"}</p>
+        {location.interactive_objects.length ? (
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {location.interactive_objects.map((object, index) => (
+              <Badge key={`${String(object)}-${index}`}>{String(object)}</Badge>
+            ))}
+          </div>
+        ) : null}
+        {localItems.length ? (
+          <div className="mt-3 space-y-2">
+            {localItems.map((item) => (
+              <div className="flex flex-wrap items-center gap-2 rounded border border-ink-700/70 bg-ink-900/80 px-3 py-2" key={item.id}>
+                <span className="text-xs font-medium text-parchment-100">{item.name} ×{item.quantity}</span>
+                <span className="text-2xs text-stone-500">{item.unit_weight_lb} lb/件 · {money(item.price_cp)}/件</span>
+                <Button
+                  className="ml-auto"
+                  disabled={!characterId}
+                  loading={pickupPending}
+                  onClick={() => onPickup(item)}
+                  size="sm"
+                  variant="primary"
+                >
+                  拾取到背包
+                </Button>
+              </div>
+            ))}
+          </div>
+        ) : null}
+        {location.secrets ? <div className="mt-3"><SecretBlock label="地点秘密" value={location.secrets} /></div> : null}
+      </div>
+      {children.length ? (
+        <ul className="m-0 mt-2 space-y-2 p-0">
+          {children.map((child) => (
+            <ExistingNode
+              characterId={characterId}
+              childrenByParent={childrenByParent}
+              items={items}
+              key={child.id}
+              level={level + 1}
+              location={child}
+              onPickup={onPickup}
+              pickupPending={pickupPending}
+            />
+          ))}
+        </ul>
+      ) : null}
+    </li>
+  );
+}
+
+function LocationsContent({ campaignId }: { campaignId: string }): ReactElement {
+  const client = useQueryClient();
+  const { showToast } = useToast();
+  const [brief, setBrief] = useState("一座被异端神祇信徒占领的旧教堂");
+  const [maximumDepth, setMaximumDepth] = useState(3);
+  const [scale, setScale] = useState<"small" | "medium" | "large">("medium");
+  const [preview, setPreview] = useState<LocationGenerationPreview | null>(null);
+  const [characterId, setCharacterId] = useState("");
+  const locations = useQuery({
+    queryKey: ["locations", campaignId],
+    queryFn: ({ signal }) => listLocations(campaignId, signal),
+  });
+  const items = useQuery({
+    queryKey: ["world-items", campaignId],
+    queryFn: ({ signal }) => listWorldItems(campaignId, {}, signal),
+  });
+  const characters = useQuery({
+    queryKey: ["characters", campaignId],
+    queryFn: ({ signal }) => listCharacters(campaignId, signal),
+  });
+  const generation = useMutation({
+    mutationFn: () => generateLocation(campaignId, {
+      brief,
+      maximum_depth: maximumDepth,
+      scale,
+    }),
+    onSuccess: (value) => {
+      setPreview(value);
+      showToast("地点树草稿已生成，请复核");
+    },
+    onError: () => showToast("地点生成失败，请检查本地模型", "error"),
+  });
+  const confirmation = useMutation({
+    mutationFn: () => {
+      if (!preview) throw new Error("没有可确认的地点草稿");
+      return confirmLocation(campaignId, preview);
+    },
+    onSuccess: () => {
+      setPreview(null);
+      void client.invalidateQueries({ queryKey: ["locations", campaignId] });
+      void client.invalidateQueries({ queryKey: ["world-items", campaignId] });
+      showToast("地点树和物品已写入战役");
+    },
+    onError: () => showToast("地点树保存失败", "error"),
+  });
+  const pickup = useMutation({
+    mutationFn: (item: WorldItem) => {
+      if (!characterId) throw new Error("请先选择拾取物品的角色");
+      return pickupItem(campaignId, item.id, {
+        character_id: characterId,
+        quantity: item.quantity,
+        version: item.version,
+      });
+    },
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: ["world-items", campaignId] });
+      void client.invalidateQueries({ queryKey: ["inventory", campaignId, characterId] });
+      showToast("物品已进入角色背包，负重已重新计算");
+    },
+    onError: () => showToast("拾取失败，物品可能已被移动", "error"),
+  });
+  const childrenByParent = useMemo(() => {
+    const map = new Map<string | null, Location[]>();
+    for (const location of locations.data ?? []) {
+      const bucket = map.get(location.parent_location_id) ?? [];
+      bucket.push(location);
+      map.set(location.parent_location_id, bucket);
+    }
+    return map;
+  }, [locations.data]);
+  return (
+    <div className="mx-auto max-w-[1200px] p-4 lg:p-6">
+      <Panel eyebrow="冰山式世界结构" title="AI 地点树生成器">
+        <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_9rem_9rem_auto]">
+          <textarea className={textareaCls} onChange={(event) => setBrief(event.target.value)} value={brief} />
+          <label className="text-xs text-stone-400">
+            最大层级
+            <select className={`${selectCls} mt-1.5`} onChange={(event) => setMaximumDepth(Number(event.target.value))} value={maximumDepth}>
+              {[1, 2, 3, 4, 5].map((depth) => <option key={depth} value={depth}>最多 {depth} 层</option>)}
+            </select>
+          </label>
+          <label className="text-xs text-stone-400">
+            规模
+            <select className={`${selectCls} mt-1.5`} onChange={(event) => setScale(event.target.value as typeof scale)} value={scale}>
+              <option value="small">小型</option><option value="medium">中型</option><option value="large">大型</option>
+            </select>
+          </label>
+          <Button disabled={!brief.trim()} loading={generation.isPending} onClick={() => generation.mutate()} variant="ai">
+            生成地点树
+          </Button>
+        </div>
+        <p className="mb-0 mt-2 text-2xs text-stone-600">“最大层级”是上限，不会强迫每条分支都达到该层；每个节点会包含互动点和可拾取物品。</p>
+        {generation.isError ? <div className="mt-4"><ErrorState error={generation.error} onRetry={() => generation.mutate()} /></div> : null}
+        {preview ? (
+          <div className="mt-5 border-t border-ink-700 pt-4">
+            <div className="mb-3 flex flex-wrap items-center gap-2">
+              <AiTag>地点草稿</AiTag><Badge tone="ok">D&D 5e · 2024</Badge>
+              <Button className="ml-auto" loading={confirmation.isPending} onClick={() => confirmation.mutate()} variant="primary">
+                确认创建地点与物品
+              </Button>
+            </div>
+            <ul className="m-0 space-y-2 p-0"><GeneratedNode node={preview.root} /></ul>
+            <div className="mt-4"><CitationList citations={preview.citations} /></div>
+          </div>
+        ) : null}
+      </Panel>
+      <Panel
+        action={
+          <select className={inputCls} onChange={(event) => setCharacterId(event.target.value)} value={characterId}>
+            <option value="">选择拾取角色</option>
+            {characters.data?.map((character) => <option key={character.id} value={character.id}>{character.name}</option>)}
+          </select>
+        }
+        className="mt-4"
+        eyebrow="持久地点 · 原子物品"
+        title="地点树"
+      >
+        {locations.isLoading || items.isLoading ? <LoadingBlock /> : null}
+        {locations.isError ? <ErrorState error={locations.error} onRetry={() => void locations.refetch()} /> : null}
+        {locations.data?.length === 0 ? <EmptyState hint="使用上方 AI 生成器，或在下方手动创建地点。" title="还没有地点" /> : null}
+        {locations.data?.length ? (
+          <ul className="m-0 space-y-2 p-0">
+            {(childrenByParent.get(null) ?? []).map((location) => (
+              <ExistingNode
+                characterId={characterId}
+                childrenByParent={childrenByParent}
+                items={items.data ?? []}
+                key={location.id}
+                location={location}
+                onPickup={(item) => pickup.mutate(item)}
+                pickupPending={pickup.isPending}
+              />
+            ))}
+          </ul>
+        ) : null}
+      </Panel>
+      <div className="-mx-4 -mb-4 mt-4 lg:-mx-6 lg:-mb-6">
+        <ManagementPage kind="locations" />
+      </div>
+    </div>
+  );
+}
+
+export function LocationsPage(): ReactElement {
+  return <RequireCampaign>{(campaignId) => <LocationsContent campaignId={campaignId} />}</RequireCampaign>;
+}

@@ -1,0 +1,63 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color: #e9e4d9;
+  background: #090b0f;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 50% -10%, rgba(169, 113, 50, 0.13), transparent 32rem),
+    #090b0f;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+::selection {
+  color: #090b0f;
+  background: #e1b875;
+}
+
+/* Thin, unobtrusive scrollbars that fit the dark console. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #33404e transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: #33404e;
+  border-radius: 4px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Prose blocks (AI hints, rule text) stay readable over long sessions. */
+.prose-block {
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.75;
+}

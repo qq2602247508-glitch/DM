@@ -1,0 +1,52 @@
+[project]
+name = "local-dnd-dm-assistant-backend"
+version = "0.1.0"
+description = "Local AI D&D Dungeon Master Assistant backend"
+readme = "../README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "alembic>=1.16.4,<2",
+  "beautifulsoup4>=4.13.4,<5",
+  "fastapi>=0.116.1,<1",
+  "httpx>=0.28.1,<1",
+  "pydantic-settings>=2.10.1,<3",
+  "qdrant-client>=1.15.1,<2",
+  "sqlalchemy>=2.0.41,<3",
+  "uvicorn[standard]>=0.35.0,<1",
+]
+
+[project.scripts]
+dnd-content = "dnd_dm_assistant.ingestion_cli:main"
+dnd-rag = "dnd_dm_assistant.rag_cli:main"
+
+[dependency-groups]
+dev = [
+  "mypy>=1.17.0,<2",
+  "pytest>=8.4.1,<9",
+  "pytest-cov>=6.2.1,<7",
+  "ruff>=0.12.5,<1",
+  "types-beautifulsoup4>=4.12.0.20250516",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/dnd_dm_assistant"]
+
+[tool.pytest.ini_options]
+addopts = "-q"
+testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+plugins = ["pydantic.mypy"]
