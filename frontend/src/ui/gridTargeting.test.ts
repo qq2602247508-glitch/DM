@@ -73,4 +73,37 @@ describe("grid targeting helpers", () => {
       { row: 3, col: 3 },
     )).toBe(true);
   });
+
+  it("matches the 12th-level wizard acceptance layout for Fireball and Lightning Bolt", () => {
+    const wizard = { row: 6, col: 3 };
+    const mindFlayers = [
+      { id: "A", point: { row: 6, col: 9 } },
+      { id: "B", point: { row: 6, col: 12 } },
+      { id: "C", point: { row: 8, col: 10 } },
+    ];
+    const targetIds = (
+      cells: ReturnType<typeof getTargetingCells>,
+    ) => {
+      const keys = new Set(cells.map((cell) => `${cell.row}:${cell.col}`));
+      return mindFlayers
+        .filter(({ point }) => keys.has(`${point.row}:${point.col}`))
+        .map(({ id }) => id);
+    };
+
+    const fireball = getTargetingCells(
+      grid,
+      wizard,
+      { row: 6, col: 10 },
+      { shape: "circle", rangeFt: 150, sizeFt: 20 },
+    );
+    const lightningBolt = getTargetingCells(
+      grid,
+      wizard,
+      { row: 6, col: 16 },
+      { shape: "line", rangeFt: 100, sizeFt: 100, widthFt: 5 },
+    );
+
+    expect(targetIds(fireball)).toEqual(["A", "B", "C"]);
+    expect(targetIds(lightningBolt)).toEqual(["A", "B"]);
+  });
 });

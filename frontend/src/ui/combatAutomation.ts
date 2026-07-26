@@ -10,6 +10,8 @@ export type CombatActionLike = {
   save_ability?: string;
   half_damage_on_save?: boolean;
   recharge?: string;
+  resource_key?: string;
+  resource_cost?: number;
 };
 
 export type DiceExpression = {

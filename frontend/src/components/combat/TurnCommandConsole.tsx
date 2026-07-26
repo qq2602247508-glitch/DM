@@ -5,6 +5,7 @@ import {
   confirmCombatAction,
   createPlayerRollPrompt,
   previewCombatAction,
+  updateCharacter,
   updateCombatant,
   type CombatActionCommand,
 } from "../../api/entities";
@@ -24,6 +25,10 @@ import {
   type CombatActionLike,
   type EnemyTactics,
 } from "../../ui/combatAutomation";
+import {
+  resolveAreaSavingThrows,
+  type AreaSpellResolution,
+} from "../../ui/areaSpellResolution";
 import { Badge, Button } from "../../ui/primitives";
 import { inputCls, selectCls, textareaCls } from "../../ui/styles";
 import type { TargetingTemplate } from "../../ui/gridTargeting";
@@ -34,6 +39,13 @@ type PendingResolution = {
   command: CombatActionCommand;
   preview: CombatActionPreview;
   explanation: string;
+};
+
+type PendingAreaResolution = {
+  resolution: AreaSpellResolution;
+  actionName: string;
+  actionCost: ActionCost;
+  damageType: string;
 };
 
 function normalizeAction(raw: unknown, index: number): CombatActionLike {
@@ -74,6 +86,30 @@ function hasActionEconomy(active: Combatant, cost: ActionCost): boolean {
   return active.action_available;
 }
 
+function targetingForAction(action: CombatActionLike): CombatTargeting {
+  const summary = actionRangeSummary(action);
+  const targetingText = `${action.range ?? ""} ${action.description ?? ""}`;
+  const radiusMatch = targetingText.match(/(\d+)\s*尺(?:半径|范围|球形|爆发)/);
+  const lengthMatch = targetingText.match(/(\d+)\s*尺(?:长|锥形|直线)/);
+  const widthMatch = targetingText.match(/(\d+)\s*尺(?:宽|宽度)/);
+  const shape = /锥形/.test(summary)
+    ? "cone"
+    : /直线/.test(summary)
+      ? "line"
+      : /圆形|球形|半径|爆炸|爆发/.test(`${summary} ${targetingText}`)
+        ? "circle"
+        : "single";
+  return {
+    rangeFt: parseRangeFeet(action.range),
+    sizeFt: shape === "circle"
+      ? (radiusMatch ? Number(radiusMatch[1]) : undefined)
+      : (lengthMatch ? Number(lengthMatch[1]) : undefined),
+    widthFt: widthMatch ? Number(widthMatch[1]) : undefined,
+    shape,
+    label: `${action.name ?? "动作"} · ${summary}`,
+  };
+}
+
 export function TurnCommandConsole({
   active,
   activeCharacter,
@@ -111,6 +147,7 @@ export function TurnCommandConsole({
   const [attackTotal, setAttackTotal] = useState("");
   const [damageTotal, setDamageTotal] = useState("");
   const [pending, setPending] = useState<PendingResolution | null>(null);
+  const [pendingArea, setPendingArea] = useState<PendingAreaResolution | null>(null);
   const [freeform, setFreeform] = useState("");
   const [checkRoll, setCheckRoll] = useState("");
   const [effectText, setEffectText] = useState("无法行动（1轮）");
@@ -130,7 +167,26 @@ export function TurnCommandConsole({
     cost: "动作",
   };
   const selectedActionCost = actionCost(selectedAction);
-  const selectedActionAvailable = hasActionEconomy(active, selectedActionCost);
+  const selectedResourceKey = selectedAction.resource_key;
+  const selectedResource = selectedResourceKey && activeCharacter
+    ? activeCharacter.resources[selectedResourceKey] as {
+        label?: string;
+        current?: number;
+        max?: number;
+      } | undefined
+    : undefined;
+  const selectedResourceCost = Math.max(1, Number(selectedAction.resource_cost ?? 1));
+  const selectedResourceAvailable = !selectedResourceKey
+    || Number(selectedResource?.current ?? 0) >= selectedResourceCost;
+  const selectedActionAvailable = hasActionEconomy(active, selectedActionCost)
+    && selectedResourceAvailable;
+  const selectedTargeting = targetingForAction(selectedAction);
+  const isAreaSaveAction = Boolean(
+    active.entity_type === "character"
+    && selectedAction.save_dc
+    && selectedAction.save_ability
+    && selectedTargeting.shape !== "single",
+  );
   const possibleTargets = fighters.filter((fighter) =>
     fighter.id !== active.id
     && fighter.hp > 0
@@ -173,6 +229,60 @@ export function TurnCommandConsole({
       showToast("动作已由 DM 确认并写入战斗日志");
     },
     onError: () => showToast("动作确认失败，目标状态可能已改变", "error"),
+  });
+  const confirmArea = useMutation({
+    mutationFn: async () => {
+      if (!pendingArea) throw new Error("没有待确认的区域法术");
+      for (const [index, result] of pendingArea.resolution.targets.entries()) {
+        const currentTarget = fighters.find((fighter) => fighter.id === result.targetId);
+        if (!currentTarget) throw new Error(`${result.targetName}已不在本场战斗`);
+        await confirmCombatAction(campaignId, combatId, {
+          action_type: "damage",
+          actor_combatant_id: index === 0 ? active.id : null,
+          actor_version: index === 0 ? active.version : null,
+          action_cost: index === 0 ? pendingArea.actionCost : "none",
+          action_name: pendingArea.actionName,
+          resolution_note: `${result.targetName}：${pendingArea.resolution.saveAbility}豁免 d20(${result.d20}) ${result.modifier >= 0 ? "+" : ""}${result.modifier} = ${result.saveTotal}，对 DC ${pendingArea.resolution.saveDc} ${result.success ? "成功" : "失败"}；承受 ${result.damage} 点${pendingArea.damageType}伤害`,
+          target_combatant_id: result.targetId,
+          target_version: currentTarget.version,
+          amount: result.damage,
+          damage_type: pendingArea.damageType,
+        });
+      }
+      if (selectedResourceKey && activeCharacter && selectedResource) {
+        await updateCharacter(
+          campaignId,
+          activeCharacter.id,
+          {
+            resources: {
+              ...activeCharacter.resources,
+              [selectedResourceKey]: {
+                ...selectedResource,
+                current: Math.max(
+                  0,
+                  Number(selectedResource.current ?? 0) - selectedResourceCost,
+                ),
+              },
+            },
+          },
+          activeCharacter.version,
+        );
+      }
+    },
+    onSuccess: () => {
+      setPendingArea(null);
+      invalidate();
+      void client.invalidateQueries({ queryKey: ["characters", campaignId] });
+      showToast(
+        selectedResourceKey
+          ? `区域法术已对全部目标结算；只消耗一次动作和 ${selectedResourceCost} 点${selectedResource?.label ?? selectedResourceKey}`
+          : "区域法术已对范围内全部目标结算；动作只消耗一次",
+      );
+    },
+    onError: (error) => showToast(
+      error instanceof Error ? error.message : "区域法术结算失败，目标状态可能已改变",
+      "error",
+    ),
   });
   const applyFreeform = useMutation({
     mutationFn: () => {
@@ -242,15 +352,9 @@ export function TurnCommandConsole({
   const selectAction = (value: string) => {
     setActionIndex(value);
     const action = actions[Number(value)] ?? selectedAction;
-    const summary = actionRangeSummary(action);
-    const targetingText = `${action.range ?? ""} ${action.description ?? ""}`;
-    const sizeMatch = targetingText.match(/(\d+)\s*尺(?:半径|范围|球形|锥形|直线)/);
-    onRangeChange({
-      rangeFt: parseRangeFeet(action.range),
-      sizeFt: sizeMatch ? Number(sizeMatch[1]) : undefined,
-      shape: /锥形/.test(summary) ? "cone" : /直线/.test(summary) ? "line" : /圆形|球形|半径|爆炸/.test(targetingText) ? "circle" : "single",
-      label: `${action.name ?? "动作"} · ${summary}`,
-    });
+    setPending(null);
+    setPendingArea(null);
+    onRangeChange(targetingForAction(action));
   };
   useEffect(() => {
     if (selectedTargetId !== undefined && selectedTargetId !== targetId) {
@@ -348,6 +452,45 @@ export function TurnCommandConsole({
       preview.mutate({ command, explanation });
     }
   };
+  const prepareAreaSpell = () => {
+    if (!selectedActionAvailable) {
+      showToast(
+        selectedResourceAvailable
+          ? "本回合动作已经使用，请结束回合"
+          : `${selectedResource?.label ?? "所需资源"}不足，无法施放`,
+        "error",
+      );
+      return;
+    }
+    const affectedTargets = possibleTargets.filter((fighter) => validTargetIds?.has(fighter.id));
+    if (affectedTargets.length === 0) {
+      showToast("请先在战斗地图上选择范围中心或直线方向，并确保至少覆盖一个敌人", "error");
+      return;
+    }
+    try {
+      const resolution = resolveAreaSavingThrows({
+        targets: affectedTargets.map((fighter) => ({
+          id: fighter.id,
+          name: fighter.display_name,
+          abilityScores: fighter.snapshot_json.ability_scores as Record<string, number> | undefined,
+          savingThrows: fighter.snapshot_json.saving_throws as Record<string, number> | undefined,
+        })),
+        damageExpression: selectedAction.damage ?? "",
+        saveDc: Number(selectedAction.save_dc),
+        saveAbility: String(selectedAction.save_ability),
+        halfDamageOnSave: Boolean(selectedAction.half_damage_on_save),
+      });
+      setPending(null);
+      setPendingArea({
+        resolution,
+        actionName: selectedAction.name ?? "区域法术",
+        actionCost: selectedActionCost,
+        damageType: selectedAction.damage_type ?? "untyped",
+      });
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : "无法计算区域法术", "error");
+    }
+  };
   const enemyTarget = chooseEnemyTarget(possibleTargets, tactics);
   const enemyReason = tactics === "instinctive"
     ? "本能型会扑向最先发现的目标。"
@@ -430,9 +573,39 @@ export function TurnCommandConsole({
               </select>
             </div>
             <p className="mb-2 mt-2 text-2xs text-stone-400">{selectedAction.cost ?? "动作"} · {actionRangeSummary(selectedAction)} · {selectedAction.description ?? "以角色卡和规则条目为准"}</p>
-            {mode === "assisted" ? (
+            {isAreaSaveAction ? (
+              <div className="rounded border border-fuchsia-800/60 bg-fuchsia-950/20 p-2">
+                <p className="m-0 text-xs text-fuchsia-100">
+                  这是区域豁免法术，不进行攻击检定。先在地图选择
+                  {selectedTargeting.shape === "circle" ? "爆发中心" : "直线方向"}；
+                  当前覆盖 <strong>{possibleTargets.filter((fighter) => validTargetIds?.has(fighter.id)).length}</strong> 个敌人。
+                  系统只掷一次 {selectedAction.damage}，每个目标分别进行
+                  {selectedAction.save_ability}豁免（DC {selectedAction.save_dc}），成功
+                  {selectedAction.half_damage_on_save ? "伤害减半" : "不受伤害"}。
+                </p>
+                <p className="mb-2 mt-1 text-2xs text-stone-400">
+                  范围内：{possibleTargets.filter((fighter) => validTargetIds?.has(fighter.id)).map((fighter) => fighter.display_name).join("、") || "尚未覆盖目标"}
+                  {selectedResourceKey
+                    ? ` · 消耗 ${selectedResourceCost} 点${selectedResource?.label ?? selectedResourceKey}（剩余 ${Number(selectedResource?.current ?? 0)}）`
+                    : ""}
+                </p>
+                <Button
+                  disabled={!selectedActionAvailable || !validTargetIds?.size || confirmArea.isPending}
+                  onClick={prepareAreaSpell}
+                  variant="primary"
+                >
+                  掷伤害与全部豁免并预览
+                </Button>
+              </div>
+            ) : mode === "assisted" ? (
               <div className="rounded border border-sky-800/50 bg-sky-950/20 p-2">
-                <p className="m-0 text-xs text-sky-200">请玩家先掷 d20 命中；命中后再掷 {selectedAction.damage ?? "角色卡所列伤害骰"}。输入最终总值，系统负责对比 AC、抗性与HP。</p>
+                <p className="m-0 text-xs text-sky-200">
+                  请玩家掷 d20 并加入角色卡命中调整值。
+                  {target
+                    ? <>最终命中总值至少需要达到 <strong>AC {target.armor_class}</strong>（即 ≥ {target.armor_class}）</>
+                    : <>选择目标后，这里会明确显示需要达到的 AC</>}。
+                  命中后再掷 {selectedAction.damage ?? "角色卡所列伤害骰"}；请输入最终总值，系统负责对比 AC、抗性与 HP。
+                </p>
                 <div className="mt-2 flex flex-wrap gap-2">
                   <input aria-label="玩家命中总值" className={`${inputCls} w-28`} onChange={(event) => setAttackTotal(event.target.value)} placeholder="命中总值" type="number" value={attackTotal} />
                   <input aria-label="玩家伤害总值" className={`${inputCls} w-28`} onChange={(event) => setDamageTotal(event.target.value)} placeholder="伤害总值" type="number" value={damageTotal} />
@@ -492,6 +665,36 @@ export function TurnCommandConsole({
           <p className="mb-1 mt-1 text-xs text-stone-300">{pending.explanation}</p>
           <p className="mb-2 mt-0 text-2xs text-stone-500">HP {String(pending.preview.before.hp)} → {String(pending.preview.after.hp)}；尚未写入。</p>
           <div className="flex gap-2"><Button loading={confirm.isPending} onClick={() => confirm.mutate()} variant="primary">DM确认写入</Button><Button onClick={() => setPending(null)}>取消</Button></div>
+        </div>
+      ) : null}
+      {pendingArea ? (
+        <div className="mt-3 rounded border-2 border-fuchsia-600/60 bg-fuchsia-950/20 p-3">
+          <strong className="text-xs text-fuchsia-100">
+            {pendingArea.actionName} · 区域结算预览（尚未写入）
+          </strong>
+          <p className="mb-2 mt-1 text-xs text-stone-300">
+            共用伤害骰 {pendingArea.resolution.damageExpression}：
+            [{pendingArea.resolution.damageRolls.join(" + ")}] = <strong>{pendingArea.resolution.sharedDamage}</strong>。
+            下列每个目标独立豁免。
+          </p>
+          <ul className="m-0 space-y-1 pl-4 text-xs text-stone-300">
+            {pendingArea.resolution.targets.map((result) => (
+              <li key={result.targetId}>
+                <strong>{result.targetName}</strong>：d20({result.d20}) {result.modifier >= 0 ? "+" : ""}{result.modifier}
+                {" = "}{result.saveTotal} vs DC {pendingArea.resolution.saveDc}，
+                <span className={result.success ? "text-emerald-300" : "text-red-300"}>
+                  {result.success ? "成功" : "失败"}
+                </span>
+                ，预计 {result.damage} 点{pendingArea.damageType}伤害
+              </li>
+            ))}
+          </ul>
+          <div className="mt-3 flex gap-2">
+            <Button loading={confirmArea.isPending} onClick={() => confirmArea.mutate()} variant="primary">
+              DM确认对全部目标结算
+            </Button>
+            <Button disabled={confirmArea.isPending} onClick={() => setPendingArea(null)}>取消</Button>
+          </div>
         </div>
       ) : null}
     </div>
