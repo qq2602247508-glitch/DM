@@ -24,6 +24,29 @@ class ReadinessResponse(BaseModel):
     models: RuntimeModelStatus
 
 
+class SafeModeRequest(BaseModel):
+    enabled: bool
+    reason: str | None = Field(default=None, max_length=2_000)
+
+
+class BackupCreateRequest(BaseModel):
+    label: str = Field(default="手动恢复点", min_length=1, max_length=200)
+
+
+class RestoreConfirmRequest(BaseModel):
+    confirm_token: str = Field(min_length=16, max_length=200)
+    confirmation: str = Field(min_length=1, max_length=20)
+
+
+class HouseRuleOverrideRequest(BaseModel):
+    rule_key: str = Field(min_length=1, max_length=160)
+    core_value: Any
+    override_value: Any
+    source: str = Field(min_length=1, max_length=200)
+    reason: str = Field(min_length=1, max_length=2_000)
+    enabled: bool = True
+
+
 class ErrorEnvelope(BaseModel):
     code: str
     message: str

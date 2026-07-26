@@ -7,7 +7,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from dnd_dm_assistant.api.errors import install_error_handlers
-from dnd_dm_assistant.api.middleware import RequestIdMiddleware
+from dnd_dm_assistant.api.middleware import ReadOnlySafeModeMiddleware, RequestIdMiddleware
 from dnd_dm_assistant.api.routes.advancement import router as advancement_router
 from dnd_dm_assistant.api.routes.assistant import router as assistant_router
 from dnd_dm_assistant.api.routes.campaigns import router as campaigns_router
@@ -18,6 +18,7 @@ from dnd_dm_assistant.api.routes.knowledge import router as knowledge_router
 from dnd_dm_assistant.api.routes.narrative import router as narrative_router
 from dnd_dm_assistant.api.routes.player import dm_router as player_dm_router
 from dnd_dm_assistant.api.routes.player import player_router
+from dnd_dm_assistant.api.routes.reliability import router as reliability_router
 from dnd_dm_assistant.api.routes.rests import router as rests_router
 from dnd_dm_assistant.api.routes.spells_economy import router as spells_economy_router
 from dnd_dm_assistant.api.routes.world import router as world_router
@@ -45,15 +46,17 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     )
     app.state.settings = app_settings
     app.add_middleware(RequestIdMiddleware)
+    app.add_middleware(ReadOnlySafeModeMiddleware)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=[app_settings.frontend_origin],
         allow_credentials=False,
-        allow_methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+        allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
         allow_headers=["Accept", "Content-Type", "If-Match", "X-Request-ID"],
     )
     install_error_handlers(app)
     app.include_router(health_router, prefix=app_settings.api_prefix)
+    app.include_router(reliability_router, prefix=app_settings.api_prefix)
     app.include_router(advancement_router, prefix=app_settings.api_prefix)
     app.include_router(knowledge_router, prefix=app_settings.api_prefix)
     app.include_router(campaigns_router, prefix=app_settings.api_prefix)

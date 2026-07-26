@@ -22,6 +22,8 @@ class Settings(BaseSettings):
 
     database_url: str = "sqlite:///./data/dnd_dm.db"
     vector_store_path: Path = Path("./data/vectors")
+    backup_directory: Path = Path("./data/backups")
+    read_only_safe_mode: bool = False
 
     ollama_base_url: str = "http://127.0.0.1:11434"
     intent_model: str = ""
