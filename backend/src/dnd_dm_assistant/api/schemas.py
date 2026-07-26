@@ -853,3 +853,13 @@ class CommerceRequest(BaseModel):
     price_modifier_bps: int = Field(default=10_000, ge=0, le=100_000)
     preview_token: str | None = None
     idempotency_key: str | None = Field(default=None, min_length=8, max_length=120)
+
+
+class CurrencySplitRequest(BaseModel):
+    source_wallet_id: str
+    source_wallet_version: int = Field(ge=1)
+    target_wallet_id: str
+    target_wallet_version: int = Field(ge=1)
+    copper: int = Field(gt=0)
+    preview_token: str | None = None
+    idempotency_key: str | None = Field(default=None, min_length=8, max_length=120)

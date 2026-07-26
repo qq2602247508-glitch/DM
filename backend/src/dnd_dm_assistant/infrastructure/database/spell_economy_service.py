@@ -1,3 +1,4 @@
+# ruff: noqa: E501
 from __future__ import annotations
 
 import hashlib
@@ -14,6 +15,7 @@ from dnd_dm_assistant.infrastructure.database.campaign_service import serialize
 from dnd_dm_assistant.infrastructure.database.models import (
     Attunement,
     Character,
+    CurrencyTransaction,
     EquipmentInstance,
     KnownSpell,
     OperationTransaction,
@@ -41,6 +43,60 @@ class SpellEconomyService:
         if row.version != version:
             raise VersionConflict("character", char_id, version, row.version)
         return row
+
+    def character_assets(self, cid: str, character_id: str) -> dict[str, Any]:
+        """Read model for the character sheet; mutations remain preview/confirm only."""
+        with Session(self.engine) as s:
+            character = s.get(Character, character_id)
+            if character is None or character.campaign_id != cid:
+                raise StateNotFoundError("character not found in campaign")
+            spells = s.scalars(
+                select(KnownSpell)
+                .where(KnownSpell.character_id == character_id)
+                .order_by(KnownSpell.spell_level, KnownSpell.name)
+            ).all()
+            prepared_ids = set(
+                s.scalars(
+                    select(PreparedSpell.known_spell_id).where(
+                        PreparedSpell.character_id == character_id, PreparedSpell.prepared.is_(True)
+                    )
+                ).all()
+            )
+            equipment = s.scalars(
+                select(EquipmentInstance)
+                .where(EquipmentInstance.character_id == character_id)
+                .order_by(EquipmentInstance.created_at, EquipmentInstance.id)
+            ).all()
+            active_ids = set(
+                s.scalars(
+                    select(Attunement.equipment_instance_id).where(
+                        Attunement.character_id == character_id, Attunement.status == "active"
+                    )
+                ).all()
+            )
+            wallet = s.scalar(
+                select(Wallet).where(Wallet.campaign_id == cid, Wallet.character_id == character_id)
+            )
+            return {
+                "spells": [
+                    {**serialize(row), "prepared": row.id in prepared_ids} for row in spells
+                ],
+                "equipment": [
+                    {**serialize(row), "attuned": row.id in active_ids} for row in equipment
+                ],
+                "wallet": serialize(wallet) if wallet else None,
+            }
+
+    def shop_inventory(self, cid: str) -> list[dict[str, Any]]:
+        with Session(self.engine) as s:
+            return [
+                serialize(row)
+                for row in s.scalars(
+                    select(ShopInventory)
+                    .where(ShopInventory.campaign_id == cid)
+                    .order_by(ShopInventory.name)
+                ).all()
+            ]
 
     def spell_preview(self, cid: str, data: dict[str, Any]) -> dict[str, Any]:
         with Session(self.engine) as s:
@@ -85,6 +141,8 @@ class SpellEconomyService:
     def spell_confirm(self, cid: str, data: dict[str, Any]) -> dict[str, Any]:
         key = str(data.pop("idempotency_key"))
         token = str(data.pop("preview_token"))
+        data["idempotency_key"] = None
+        data["preview_token"] = None
         with Session(self.engine) as s, s.begin():
             old = s.scalar(
                 select(OperationTransaction).where(
@@ -159,7 +217,97 @@ class SpellEconomyService:
                 },
                 "rule_reference": RULE,
             }
+            if op == "equip":
+                out["after"] = {"equipped": True, "armor_class": e.armor_class or c.armor_class}
+            elif op == "unequip":
+                out["after"] = {
+                    "equipped": False,
+                    "armor_class": 10 if e.armor_class is not None else c.armor_class,
+                }
+            elif op == "consume":
+                out["after"] = {"quantity": e.quantity - data["amount"]}
+            elif op == "use_charge":
+                out["after"] = {"charges": (e.charges or 0) - data["amount"]}
+            elif op == "attune":
+                out["after"] = {"attuned": True, "active_attunements": active + 1}
+            elif op == "unattune":
+                existing = s.scalar(
+                    select(Attunement).where(
+                        Attunement.equipment_instance_id == e.id, Attunement.status == "active"
+                    )
+                )
+                if existing is None:
+                    raise ValueError("item is not attuned")
+                out["after"] = {"attuned": False}
             out["preview_token"] = _token({"data": data, "out": out, "version": c.version})
+            return out
+
+    def equipment_confirm(self, cid: str, data: dict[str, Any]) -> dict[str, Any]:
+        key = str(data.pop("idempotency_key"))
+        token = str(data.pop("preview_token"))
+        data["idempotency_key"] = None
+        data["preview_token"] = None
+        with Session(self.engine) as s, s.begin():
+            old = s.scalar(
+                select(OperationTransaction).where(
+                    OperationTransaction.campaign_id == cid,
+                    OperationTransaction.idempotency_key == f"equipment:{key}",
+                )
+            )
+            if old is not None:
+                return dict(old.after_snapshot)
+            # Recompute in the same transaction below; the public preview token protects DM intent.
+            preview = self.equipment_preview(cid, data)
+            if preview["preview_token"] != token:
+                raise VersionConflict("equipment preview", "state", 1, 2)
+            c = self._character(s, cid, data["character_id"], data["character_version"])
+            e = s.get(EquipmentInstance, data["equipment_id"])
+            if e is None:
+                raise StateNotFoundError("equipment not found")
+            op, amount = data["operation"], data["amount"]
+            if op == "equip":
+                e.equipped = True
+                if e.armor_class is not None:
+                    c.armor_class = e.armor_class
+            elif op == "unequip":
+                e.equipped = False
+                if e.armor_class is not None:
+                    c.armor_class = 10
+            elif op == "consume":
+                e.quantity -= amount
+            elif op == "use_charge":
+                assert e.charges is not None
+                e.charges -= amount
+            elif op == "attune":
+                s.add(Attunement(character_id=c.id, equipment_instance_id=e.id, status="active"))
+            elif op == "unattune":
+                att = s.scalar(
+                    select(Attunement).where(
+                        Attunement.equipment_instance_id == e.id, Attunement.status == "active"
+                    )
+                )
+                if att is None:
+                    raise ValueError("item is not attuned")
+                att.status = "ended"
+                att.version += 1
+            c.version += 1
+            e.version += 1
+            out = {
+                **preview,
+                "confirmed": True,
+                "after": {**preview.get("after", {}), "armor_class": c.armor_class},
+            }
+            s.add(
+                OperationTransaction(
+                    campaign_id=cid,
+                    operation_type=f"equipment_{op}",
+                    idempotency_key=f"equipment:{key}",
+                    before_snapshot=preview["before"],
+                    after_snapshot=out,
+                    source="dm",
+                    confirmed_at=datetime.now(UTC),
+                )
+            )
             return out
 
     def commerce_preview(self, cid: str, data: dict[str, Any]) -> dict[str, Any]:
@@ -177,6 +325,17 @@ class SpellEconomyService:
                 item.quantity < data["quantity"] or w.copper < total
             ):
                 raise ValueError("insufficient stock or copper")
+            character = s.get(Character, w.character_id) if w.character_id else None
+            weight = float(item.metadata_json.get("unit_weight_lb", 0)) * data["quantity"]
+            current_weight = float(item.metadata_json.get("current_weight_lb", 0))
+            maximum_weight = None
+            if character is not None:
+                strength = int(
+                    character.ability_scores.get("力量", character.ability_scores.get("str", 10))
+                )
+                maximum_weight = strength * 15
+                if data["direction"] == "buy" and current_weight + weight > maximum_weight:
+                    raise ValueError("purchase exceeds carrying capacity")
             out = {
                 "wallet_id": w.id,
                 "shop_inventory_id": item.id,
@@ -189,8 +348,170 @@ class SpellEconomyService:
                 "stock_after": item.quantity
                 + (-data["quantity"] if data["direction"] == "buy" else data["quantity"]),
                 "rule_reference": RULE,
+                "weight_change_lb": weight if data["direction"] == "buy" else -weight,
+                "maximum_weight_lb": maximum_weight,
             }
             out["preview_token"] = _token(
                 {"data": data, "out": out, "wv": w.version, "sv": item.version}
+            )
+            return out
+
+    def commerce_confirm(self, cid: str, data: dict[str, Any]) -> dict[str, Any]:
+        key = str(data.pop("idempotency_key"))
+        token = str(data.pop("preview_token"))
+        data["idempotency_key"] = None
+        data["preview_token"] = None
+        with Session(self.engine) as s, s.begin():
+            old = s.scalar(
+                select(OperationTransaction).where(
+                    OperationTransaction.campaign_id == cid,
+                    OperationTransaction.idempotency_key == f"commerce:{key}",
+                )
+            )
+            if old is not None:
+                return dict(old.after_snapshot)
+            preview = self.commerce_preview(cid, data)
+            if preview["preview_token"] != token:
+                raise VersionConflict("commerce preview", "state", 1, 2)
+            wallet = s.get(Wallet, data["wallet_id"])
+            item = s.get(ShopInventory, data["shop_inventory_id"])
+            assert wallet is not None and item is not None
+            total, qty = int(preview["total_copper"]), data["quantity"]
+            buying = data["direction"] == "buy"
+            wallet.copper += -total if buying else total
+            item.quantity += -qty if buying else qty
+            wallet.version += 1
+            item.version += 1
+            # Every commercial movement records a signed copper ledger row.  The shop
+            # is external, so the player wallet is the conserved campaign-side balance.
+            s.add(
+                CurrencyTransaction(
+                    campaign_id=cid,
+                    wallet_id=wallet.id,
+                    amount_copper=-total if buying else total,
+                    kind="purchase" if buying else "sale",
+                    idempotency_key=f"commerce:{key}",
+                    metadata_json={
+                        "shop_inventory_id": item.id,
+                        "quantity": qty,
+                        "price_copper": total,
+                    },
+                )
+            )
+            out = {**preview, "confirmed": True}
+            s.add(
+                OperationTransaction(
+                    campaign_id=cid,
+                    operation_type="commerce",
+                    idempotency_key=f"commerce:{key}",
+                    before_snapshot={
+                        "wallet": preview["wallet_before"],
+                        "stock": preview["stock_before"],
+                    },
+                    after_snapshot=out,
+                    source="dm",
+                    confirmed_at=datetime.now(UTC),
+                )
+            )
+            return out
+
+    def split_preview(self, cid: str, data: dict[str, Any]) -> dict[str, Any]:
+        with Session(self.engine) as s:
+            source, target = (
+                s.get(Wallet, data["source_wallet_id"]),
+                s.get(Wallet, data["target_wallet_id"]),
+            )
+            if (
+                source is None
+                or target is None
+                or source.campaign_id != cid
+                or target.campaign_id != cid
+            ):
+                raise StateNotFoundError("wallet not found in campaign")
+            if source.id == target.id:
+                raise ValueError("source and target wallets must differ")
+            if source.version != data["source_wallet_version"]:
+                raise VersionConflict(
+                    "source wallet", source.id, data["source_wallet_version"], source.version
+                )
+            if target.version != data["target_wallet_version"]:
+                raise VersionConflict(
+                    "target wallet", target.id, data["target_wallet_version"], target.version
+                )
+            if source.copper < data["copper"]:
+                raise ValueError("insufficient copper")
+            out = {
+                "source_wallet_id": source.id,
+                "target_wallet_id": target.id,
+                "copper": data["copper"],
+                "source_before": source.copper,
+                "source_after": source.copper - data["copper"],
+                "target_before": target.copper,
+                "target_after": target.copper + data["copper"],
+                "rule_reference": RULE,
+            }
+            out["preview_token"] = _token(
+                {"data": data, "out": out, "sv": source.version, "tv": target.version}
+            )
+            return out
+
+    def split_confirm(self, cid: str, data: dict[str, Any]) -> dict[str, Any]:
+        key, token = str(data.pop("idempotency_key")), str(data.pop("preview_token"))
+        data["idempotency_key"] = None
+        data["preview_token"] = None
+        with Session(self.engine) as s, s.begin():
+            old = s.scalar(
+                select(OperationTransaction).where(
+                    OperationTransaction.campaign_id == cid,
+                    OperationTransaction.idempotency_key == f"split:{key}",
+                )
+            )
+            if old is not None:
+                return dict(old.after_snapshot)
+            preview = self.split_preview(cid, data)
+            if preview["preview_token"] != token:
+                raise VersionConflict("currency split preview", "state", 1, 2)
+            source, target = (
+                s.get(Wallet, data["source_wallet_id"]),
+                s.get(Wallet, data["target_wallet_id"]),
+            )
+            assert source is not None and target is not None
+            amount = data["copper"]
+            source.copper -= amount
+            target.copper += amount
+            source.version += 1
+            target.version += 1
+            s.add_all(
+                [
+                    CurrencyTransaction(
+                        campaign_id=cid,
+                        wallet_id=source.id,
+                        amount_copper=-amount,
+                        kind="split",
+                        idempotency_key=f"split:{key}:debit",
+                    ),
+                    CurrencyTransaction(
+                        campaign_id=cid,
+                        wallet_id=target.id,
+                        amount_copper=amount,
+                        kind="split",
+                        idempotency_key=f"split:{key}:credit",
+                    ),
+                ]
+            )
+            out = {**preview, "confirmed": True}
+            s.add(
+                OperationTransaction(
+                    campaign_id=cid,
+                    operation_type="currency_split",
+                    idempotency_key=f"split:{key}",
+                    before_snapshot={
+                        "source": preview["source_before"],
+                        "target": preview["target_before"],
+                    },
+                    after_snapshot=out,
+                    source="dm",
+                    confirmed_at=datetime.now(UTC),
+                )
             )
             return out

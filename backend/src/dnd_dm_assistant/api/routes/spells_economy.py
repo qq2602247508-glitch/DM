@@ -1,3 +1,4 @@
+# ruff: noqa: E501
 from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -5,6 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from dnd_dm_assistant.api.dependencies import get_spell_economy_service
 from dnd_dm_assistant.api.schemas import (
     CommerceRequest,
+    CurrencySplitRequest,
     EquipmentOperationRequest,
     SpellCastRequest,
 )
@@ -23,6 +25,23 @@ def call(fn: Any) -> Any:
         raise HTTPException(409, str(e)) from e
     except ValueError as e:
         raise HTTPException(400, str(e)) from e
+
+
+@router.get("/characters/{character_id}/assets")
+def character_assets(
+    campaign_id: str,
+    character_id: str,
+    service: Annotated[SpellEconomyService, Depends(get_spell_economy_service)],
+):
+    return call(lambda: service.character_assets(campaign_id, character_id))
+
+
+@router.get("/shop-inventory")
+def shop_inventory(
+    campaign_id: str,
+    service: Annotated[SpellEconomyService, Depends(get_spell_economy_service)],
+):
+    return {"items": call(lambda: service.shop_inventory(campaign_id))}
 
 
 @router.post("/spells/cast/preview")
@@ -54,6 +73,17 @@ def equipment_preview(
     return call(lambda: service.equipment_preview(campaign_id, body.model_dump()))
 
 
+@router.post("/equipment/confirm")
+def equipment_confirm(
+    campaign_id: str,
+    body: EquipmentOperationRequest,
+    service: Annotated[SpellEconomyService, Depends(get_spell_economy_service)],
+):
+    if not body.preview_token or not body.idempotency_key:
+        raise HTTPException(422, "preview_token and idempotency_key required")
+    return call(lambda: service.equipment_confirm(campaign_id, body.model_dump()))
+
+
 @router.post("/commerce/preview")
 def commerce_preview(
     campaign_id: str,
@@ -61,3 +91,34 @@ def commerce_preview(
     service: Annotated[SpellEconomyService, Depends(get_spell_economy_service)],
 ):
     return call(lambda: service.commerce_preview(campaign_id, body.model_dump()))
+
+
+@router.post("/commerce/confirm")
+def commerce_confirm(
+    campaign_id: str,
+    body: CommerceRequest,
+    service: Annotated[SpellEconomyService, Depends(get_spell_economy_service)],
+):
+    if not body.preview_token or not body.idempotency_key:
+        raise HTTPException(422, "preview_token and idempotency_key required")
+    return call(lambda: service.commerce_confirm(campaign_id, body.model_dump()))
+
+
+@router.post("/currency/split/preview")
+def split_preview(
+    campaign_id: str,
+    body: CurrencySplitRequest,
+    service: Annotated[SpellEconomyService, Depends(get_spell_economy_service)],
+):
+    return call(lambda: service.split_preview(campaign_id, body.model_dump()))
+
+
+@router.post("/currency/split/confirm")
+def split_confirm(
+    campaign_id: str,
+    body: CurrencySplitRequest,
+    service: Annotated[SpellEconomyService, Depends(get_spell_economy_service)],
+):
+    if not body.preview_token or not body.idempotency_key:
+        raise HTTPException(422, "preview_token and idempotency_key required")
+    return call(lambda: service.split_confirm(campaign_id, body.model_dump()))

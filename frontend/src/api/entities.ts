@@ -136,6 +136,10 @@ export const previewRest = (cid: string, input: RestPreviewRequest) =>
 export const confirmRest = (cid: string, input: RestConfirmRequest) =>
   apiFetch<RestPreview>(`/campaigns/${cid}/rests/confirm`, { method: "POST", body: input });
 
+export type CharacterAssets = { spells: Array<Record<string, unknown>>; equipment: Array<Record<string, unknown>>; wallet: Record<string, unknown> | null };
+export const getCharacterAssets = (cid: string, characterId: string, signal?: AbortSignal) =>
+  apiFetch<CharacterAssets>(`/campaigns/${cid}/characters/${characterId}/assets`, { signal });
+
 // Character conditions -------------------------------------------------------
 
 export type ConditionInput = {
