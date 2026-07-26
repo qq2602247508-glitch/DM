@@ -908,6 +908,7 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
     mutationFn: () => resetCombat(campaignId, combat.id, combat.version),
     onSuccess: () => {
       setResetConfirmation(false);
+      setAutoEnemies(false);
       setResetGeneration((value) => value + 1);
       setSelectedMapTargetId("");
       setTargetableFighterIds(new Set());
@@ -1121,7 +1122,7 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
             </>
           ) : (
             <Button
-              disabled={combat.status !== "active" || combat.xp_awarded}
+              disabled={!["active", "ended"].includes(combat.status)}
               onClick={() => setResetConfirmation(true)}
               size="sm"
               variant="danger"
@@ -1135,7 +1136,9 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
       </div>
       {resetConfirmation ? (
         <p className="mb-0 mt-2 rounded border border-red-900/60 bg-red-950/15 px-3 py-2 text-2xs text-red-200">
-          将清空本场日志、效果、死亡豁免和地图位置，并把所有参战者恢复到开战记录、回到第1轮第一位。已经写入角色背包或经验的结算不会被倒扣。
+          {combat.status === "ended" ? "这场战斗将重新变为进行中。" : ""}
+          将清空本场日志、效果、死亡豁免和地图位置，并把所有参战者恢复到开战记录、回到第1轮第一位。
+          已经写入角色背包、金币或经验的结算不会被倒扣，也不会再次发放。
         </p>
       ) : null}
       {combat.status === "active" && allMonstersDefeated ? (

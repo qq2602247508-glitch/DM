@@ -783,6 +783,22 @@ def test_reset_combat_restores_start_state_and_clears_log(
     )
     assert stale.status_code == 409
 
+    ended = combat_client.patch(
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}",
+        headers={"If-Match": f'"{body["combat"]["version"]}"'},
+        json={"status": "ended"},
+    )
+    assert ended.status_code == 200
+    reset_ended = combat_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}/reset",
+        headers={"X-Request-ID": "reset-ended-combat"},
+        json={"combat_version": ended.json()["version"]},
+    )
+    assert reset_ended.status_code == 200, reset_ended.json()
+    assert reset_ended.json()["combat"]["status"] == "active"
+    assert reset_ended.json()["combat"]["round_number"] == 1
+    assert reset_ended.json()["combat"]["current_turn_index"] == 0
+
 
 def test_new_concentration_previews_and_ends_previous_effect(
     combat_client: TestClient,
@@ -1059,3 +1075,20 @@ def test_combat_settlement_preview_and_confirm_are_atomic_and_once_only(
     assert inventory.status_code == 200
     assert inventory.json()["items"][0]["name"] == "哥布林首领的银钥匙"
     assert inventory.json()["total_weight_lb"] == 0.1
+
+    reset_settled = combat_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}/reset",
+        headers={"X-Request-ID": "reset-settled-combat"},
+        json={"combat_version": confirmed.json()["combat"]["version"]},
+    )
+    assert reset_settled.status_code == 200, reset_settled.json()
+    assert reset_settled.json()["combat"]["status"] == "active"
+    assert reset_settled.json()["combat"]["xp_awarded"] is True
+    preserved = combat_client.get(
+        f"/api/v1/campaigns/{campaign['id']}/characters/{character['id']}"
+    ).json()
+    assert preserved["experience"] == 100
+    preserved_inventory = combat_client.get(
+        f"/api/v1/campaigns/{campaign['id']}/characters/{character['id']}/inventory"
+    ).json()
+    assert preserved_inventory["items"][0]["id"] == inventory.json()["items"][0]["id"]

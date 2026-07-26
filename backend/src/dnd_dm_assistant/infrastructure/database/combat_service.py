@@ -1135,13 +1135,8 @@ class CombatEngineService:
                     command.combat_version,
                     combat.version,
                 )
-            if combat.status != "active" or combat.xp_awarded:
-                raise ValueError("only an active, unsettled combat can be reset")
-            settlement = session.scalar(
-                select(CombatSettlement).where(CombatSettlement.combat_id == combat_id)
-            )
-            if settlement is not None:
-                raise ValueError("a settled combat cannot be reset")
+            if combat.status not in {"active", "ended"}:
+                raise ValueError("only an active or ended combat can be reset")
 
             combatants = session.scalars(
                 select(Combatant)
