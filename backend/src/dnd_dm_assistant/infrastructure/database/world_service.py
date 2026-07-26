@@ -12,6 +12,9 @@ from sqlalchemy.orm import Session
 from dnd_dm_assistant.domain.campaign_state import StateNotFoundError, VersionConflict
 from dnd_dm_assistant.domain.world import GeneratedLocationNode
 from dnd_dm_assistant.infrastructure.database.campaign_service import serialize
+from dnd_dm_assistant.infrastructure.database.encounter_service import (
+    EncounterAdjustmentService,
+)
 from dnd_dm_assistant.infrastructure.database.models import (
     NPC,
     AuditLog,
@@ -333,6 +336,13 @@ class WorldService:
                         "total": total,
                     }
                 )
+            session.flush()
+            EncounterAdjustmentService(self.engine).consume_for_combat(
+                session,
+                campaign_id=campaign_id,
+                scene_id=scene_id,
+                combat=combat,
+            )
             session.flush()
             self._audit(
                 session,

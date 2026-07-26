@@ -5,6 +5,7 @@ from typing import Annotated, Any, Literal
 
 from pydantic import BaseModel, Field, StringConstraints, model_validator
 
+from dnd_dm_assistant.domain.encounters import EncounterOperation
 from dnd_dm_assistant.domain.rag import SearchHit, SearchQuery
 from dnd_dm_assistant.domain.runtime_status import RuntimeModelStatus
 from dnd_dm_assistant.domain.world import LocationGenerationPreview
@@ -54,6 +55,24 @@ class VersionedResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
     version: int
+
+
+class EncounterAdjustmentCreate(BaseModel):
+    scene_id: str = Field(min_length=1, max_length=36)
+    combat_id: str | None = Field(default=None, min_length=1, max_length=36)
+    source_event_id: str | None = Field(default=None, min_length=1, max_length=36)
+    title: str = Field(min_length=1, max_length=200)
+    reason: str = Field(min_length=1, max_length=2_000)
+    difficulty_shift: Literal[-1, 0, 1] = 0
+    operations: list[EncounterOperation] = Field(default_factory=list, max_length=8)
+
+
+class EncounterAdjustmentPatch(BaseModel):
+    title: str | None = Field(default=None, min_length=1, max_length=200)
+    reason: str | None = Field(default=None, min_length=1, max_length=2_000)
+    difficulty_shift: Literal[-1, 0, 1] | None = None
+    operations: list[EncounterOperation] | None = Field(default=None, max_length=8)
+    version: int | None = Field(default=None, ge=1)
 
 
 class CampaignCreate(BaseModel):

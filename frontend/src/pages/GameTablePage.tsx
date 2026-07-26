@@ -3,10 +3,13 @@ import { useEffect, useMemo, useState, type FormEvent, type ReactElement } from 
 
 import { runAssistantTurn } from "../api/assistant";
 import {
-  createClue, createEvent, createNpc, createQuest,
-  listCharacters, listEvents, listLocations, listNpcs,
+  applyEncounterAdjustment, createClue, createEncounterAdjustment, createEvent, createNpc,
+  createQuest, listCharacters, listEncounterAdjustments, listEvents, listLocations, listNpcs,
+  rejectEncounterAdjustment, revertEncounterAdjustment,
 } from "../api/entities";
-import type { AgentResponse, SceneParticipant } from "../api/types";
+import type {
+  AgentResponse, EncounterAdjustment, EncounterOperation, SceneParticipant,
+} from "../api/types";
 import {
   addSceneParticipant, createMonster, createScene, createWorldItem,
   listMonsters, listSceneParticipants, listScenes,
@@ -20,6 +23,9 @@ import { Badge, Button, EmptyState, ErrorState, LoadingBlock } from "../ui/primi
 import { selectCls, textareaCls } from "../ui/styles";
 import { HpBar } from "../ui/widgets";
 import { parsePrepDraft, type DraftAtom } from "../ui/prepDraft";
+import {
+  describeEncounterOperation, difficultyShiftLabel,
+} from "../ui/encounterAdjustments";
 
 type ProgressEntry = {
   id: string;
@@ -88,6 +94,15 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
   const [prepDraft, setPrepDraft] = useState("");
   const [draftAtoms, setDraftAtoms] = useState<DraftAtom[]>([]);
   const [selectedAtoms, setSelectedAtoms] = useState<Set<string>>(new Set());
+  const [adjustmentTitle, setAdjustmentTitle] = useState("");
+  const [adjustmentReason, setAdjustmentReason] = useState("");
+  const [adjustmentShift, setAdjustmentShift] = useState<-1 | 0 | 1>(0);
+  const [adjustmentTarget, setAdjustmentTarget] = useState("");
+  const [adjustmentKind, setAdjustmentKind] = useState<EncounterOperation["kind"]>("set_entity_hp");
+  const [adjustmentValue, setAdjustmentValue] = useState("");
+  const [adjustmentRound, setAdjustmentRound] = useState("3");
+  const [adjustmentQuantity, setAdjustmentQuantity] = useState("1");
+  const [draftOperations, setDraftOperations] = useState<EncounterOperation[]>([]);
   const scenes = useQuery({ queryKey: ["scenes", campaignId], queryFn: ({ signal }) => listScenes(campaignId, signal) });
   const locations = useQuery({ queryKey: ["locations", campaignId], queryFn: ({ signal }) => listLocations(campaignId, signal) });
   const characters = useQuery({ queryKey: ["characters", campaignId], queryFn: ({ signal }) => listCharacters(campaignId, signal) });
@@ -97,6 +112,11 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
   const participants = useQuery({
     queryKey: ["scene-participants", campaignId, sceneId],
     queryFn: ({ signal }) => listSceneParticipants(campaignId, sceneId, signal),
+    enabled: Boolean(sceneId),
+  });
+  const encounterAdjustments = useQuery({
+    queryKey: ["encounter-adjustments", campaignId, sceneId],
+    queryFn: ({ signal }) => listEncounterAdjustments(campaignId, sceneId, signal),
     enabled: Boolean(sceneId),
   });
   useEffect(() => {
@@ -133,6 +153,9 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
   ], [characters.data, monsters.data, npcs.data]);
   const presentKeys = new Set((participants.data ?? []).map((item) => `${item.entity_type}:${item.entity_id}`));
   const availableCandidates = candidates.filter((candidate) => !presentKeys.has(candidate.key));
+  const entityName = (entityType: string, entityId: string) =>
+    candidates.find((candidate) => candidate.key === `${entityType}:${entityId}`)?.label.replace(/^.+ · /, "")
+    ?? entityId;
   const quickActions = useMemo(() => {
     const npc = participants.data?.find((item) => item.entity_type === "npc");
     const monster = participants.data?.find((item) => item.entity_type === "monster");
@@ -279,34 +302,115 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
     },
     onError: () => showToast("恢复检查点失败", "error"),
   });
-  const encounterAdjustment = useMutation({
-    mutationFn: async ({ shift, label }: { shift: -1 | 1; label: string }) => {
-      const latestDmAction = [...entries].reverse().find((entry) => entry.kind === "dm")?.text;
-      const reason = latestDmAction
-        ? `${label}。依据玩家行动：${latestDmAction}`
-        : label;
-      await log(
-        shift < 0 ? "遭遇难度降低" : "遭遇难度提高",
-        reason,
-        {
-          entry_kind: "system",
-          encounter_adjustment: shift,
-          encounter_reason: reason,
-          assistant_suggested: Boolean(lastResponse),
-        },
-      );
-      return reason;
+  const addDraftOperation = () => {
+    const [entityType, entityId] = adjustmentTarget.split(":");
+    if (!entityType || !entityId) {
+      showToast("先选择要调整的角色、NPC 或怪物", "error");
+      return;
+    }
+    const reason = adjustmentReason.trim() || "由 DM 在游戏推进台记录的情景后果。";
+    const base = {
+      entity_type: entityType as "character" | "npc" | "monster",
+      entity_id: entityId,
+      reason,
+    };
+    let operation: EncounterOperation;
+    if (adjustmentKind === "set_entity_hp") {
+      const hp = Number(adjustmentValue);
+      if (!Number.isInteger(hp) || hp < 0) {
+        showToast("请输入有效的目标 HP", "error");
+        return;
+      }
+      operation = { ...base, kind: adjustmentKind, hp };
+    } else if (adjustmentKind === "add_entity_condition") {
+      if (!adjustmentValue.trim()) {
+        showToast("请输入具体状态，例如“无法召唤阴影”", "error");
+        return;
+      }
+      operation = { ...base, kind: adjustmentKind, condition: adjustmentValue.trim() };
+    } else if (adjustmentKind === "schedule_reinforcement") {
+      const round = Number(adjustmentRound);
+      const quantity = Number(adjustmentQuantity);
+      if (!Number.isInteger(round) || round < 1 || !Number.isInteger(quantity) || quantity < 1) {
+        showToast("增援轮次和数量必须是正整数", "error");
+        return;
+      }
+      operation = { ...base, kind: adjustmentKind, round, quantity };
+    } else {
+      operation = { ...base, kind: adjustmentKind };
+    }
+    setDraftOperations((current) => [...current, operation].slice(0, 8));
+    setAdjustmentValue("");
+  };
+  const draftFromAssistant = (shift: -1 | 1) => {
+    const monster = participants.data?.find((item) => item.entity_type === "monster");
+    if (!monster) {
+      showToast("当前场景没有怪物，先加入怪物原子后再生成后果草案", "error");
+      return;
+    }
+    const latestDmAction = [...entries].reverse().find((entry) => entry.kind === "dm")?.text
+      ?? "当前推进记录";
+    const hint = lastResponse?.dm_hint?.text;
+    setAdjustmentTitle(shift < 0 ? "玩家准备产生的遭遇后果" : "敌方优势产生的遭遇后果");
+    setAdjustmentReason(`${latestDmAction}${hint ? `。副 DM 判断：${hint}` : ""}`);
+    setAdjustmentShift(shift);
+    setDraftOperations(shift < 0
+      ? [{
+          kind: "set_entity_hp",
+          entity_type: "monster",
+          entity_id: monster.entity_id,
+          hp: Math.max(0, Math.floor(monster.entity.hp * 0.75)),
+          reason: `依据玩家行动：${latestDmAction}`,
+        }]
+      : [{
+          kind: "schedule_reinforcement",
+          entity_type: "monster",
+          entity_id: monster.entity_id,
+          round: 3,
+          quantity: 1,
+          reason: `依据敌方优势：${latestDmAction}`,
+        }]);
+    showToast("已生成可编辑草案，检查具体变化后再保存");
+  };
+  const createAdjustment = useMutation({
+    mutationFn: () => createEncounterAdjustment(campaignId, {
+      scene_id: sceneId,
+      source_event_id: [...(events.data ?? [])].reverse()
+        .find((event) => event.metadata_json.scene_id === sceneId && event.metadata_json.entry_kind === "dm")?.id,
+      title: adjustmentTitle.trim(),
+      reason: adjustmentReason.trim(),
+      difficulty_shift: adjustmentShift,
+      operations: draftOperations,
+    }),
+    onSuccess: async (created) => {
+      setDraftOperations([]);
+      setAdjustmentTitle("");
+      setAdjustmentReason("");
+      setAdjustmentShift(0);
+      await client.invalidateQueries({ queryKey: ["encounter-adjustments", campaignId, sceneId] });
+      addEntry("system", `已保存遭遇后果草案“${created.title}”，等待 DM 确认应用。`);
+      showToast("草案已保存，尚未改变战斗事实");
     },
-    onSuccess: (reason) => {
-      addEntry("system", reason);
-      showToast("遭遇情景修正已保存，战斗页会自动读取");
+    onError: () => showToast("保存遭遇后果草案失败", "error"),
+  });
+  const changeAdjustment = useMutation({
+    mutationFn: ({ proposal, action }: { proposal: EncounterAdjustment; action: "apply" | "reject" | "revert" }) => {
+      if (action === "apply") return applyEncounterAdjustment(campaignId, proposal.id, proposal.version);
+      if (action === "reject") return rejectEncounterAdjustment(campaignId, proposal.id, proposal.version);
+      return revertEncounterAdjustment(campaignId, proposal.id, proposal.version);
     },
-    onError: () => showToast("保存遭遇修正失败", "error"),
+    onSuccess: async (proposal) => {
+      await client.invalidateQueries({ queryKey: ["encounter-adjustments", campaignId, sceneId] });
+      await client.invalidateQueries({ queryKey: ["combats", campaignId] });
+      addEntry("system", `遭遇后果“${proposal.title}”状态变为 ${proposal.status}。`);
+      showToast(proposal.status === "applied" ? "具体遭遇后果已应用" : proposal.status === "reverted" ? "遭遇后果已撤销" : "草案已拒绝");
+    },
+    onError: () => showToast("遭遇后果状态更新失败，请刷新后重试", "error"),
   });
   const recentEvents = (events.data ?? []).filter((event) => event.metadata_json.scene_id === sceneId).slice(-6).reverse();
-  const activeAdjustment = (events.data ?? [])
-    .filter((event) => event.metadata_json.scene_id === sceneId)
-    .reduce((sum, event) => sum + Number(event.metadata_json.encounter_adjustment ?? 0), 0);
+  const activeAdjustment = (encounterAdjustments.data ?? [])
+    .filter((proposal) => proposal.status === "applied")
+    .reduce((sum, proposal) => sum + proposal.difficulty_shift, 0);
   return (
     <div className="mx-auto max-w-[1500px] p-4 lg:p-6">
       <Panel eyebrow="副 DM · 实时场次" title="游戏推进台">
@@ -348,6 +452,67 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
           </div>
         ) : null}
       </Panel>
+      <Panel className="mt-4" eyebrow="玩家行动 → 具体战斗变化" title="遭遇后果草案">
+        <div className="mb-3 flex flex-wrap gap-2">
+          <Button disabled={!sceneId || !participants.data?.some((item) => item.entity_type === "monster")} onClick={() => draftFromAssistant(-1)} size="sm" variant="ai">从副 DM 建议生成玩家优势草案</Button>
+          <Button disabled={!sceneId || !participants.data?.some((item) => item.entity_type === "monster")} onClick={() => draftFromAssistant(1)} size="sm" variant="ai">从副 DM 建议生成敌方优势草案</Button>
+          <span className="self-center text-2xs text-stone-600">AI 只填草案；保存后仍需 DM 再次确认才会改变战斗。</span>
+        </div>
+        <div className="grid gap-2 lg:grid-cols-[1fr_1.5fr_10rem]">
+          <input className={selectCls} onChange={(event) => setAdjustmentTitle(event.target.value)} placeholder="草案标题，例如：玩家提前破坏仪式" value={adjustmentTitle} />
+          <input className={selectCls} onChange={(event) => setAdjustmentReason(event.target.value)} placeholder="触发原因与事实依据" value={adjustmentReason} />
+          <select className={selectCls} onChange={(event) => setAdjustmentShift(Number(event.target.value) as -1 | 0 | 1)} value={adjustmentShift}>
+            <option value={-1}>难度降低一级</option>
+            <option value={0}>难度不变</option>
+            <option value={1}>难度提高一级</option>
+          </select>
+        </div>
+        <div className="mt-2 grid gap-2 md:grid-cols-[1fr_12rem_1fr_auto]">
+          <select className={selectCls} onChange={(event) => setAdjustmentTarget(event.target.value)} value={adjustmentTarget}>
+            <option value="">选择受影响原子</option>
+            {candidates.map((candidate) => <option key={candidate.key} value={candidate.key}>{candidate.label}</option>)}
+          </select>
+          <select className={selectCls} onChange={(event) => setAdjustmentKind(event.target.value as EncounterOperation["kind"])} value={adjustmentKind}>
+            <option value="set_entity_hp">调整当前 HP</option>
+            <option value="add_entity_condition">添加具体状态</option>
+            <option value="remove_entity">移出本次战斗</option>
+            <option value="add_scene_entity">加入本次战斗</option>
+            <option value="schedule_reinforcement">安排增援</option>
+          </select>
+          {adjustmentKind === "set_entity_hp" ? <input className={selectCls} min="0" onChange={(event) => setAdjustmentValue(event.target.value)} placeholder="目标 HP" type="number" value={adjustmentValue} /> : null}
+          {adjustmentKind === "add_entity_condition" ? <input className={selectCls} onChange={(event) => setAdjustmentValue(event.target.value)} placeholder="状态，例如：无法召唤阴影" value={adjustmentValue} /> : null}
+          {adjustmentKind === "schedule_reinforcement" ? <div className="grid grid-cols-2 gap-2"><input className={selectCls} min="1" onChange={(event) => setAdjustmentRound(event.target.value)} placeholder="轮次" type="number" value={adjustmentRound} /><input className={selectCls} min="1" onChange={(event) => setAdjustmentQuantity(event.target.value)} placeholder="数量" type="number" value={adjustmentQuantity} /></div> : null}
+          {adjustmentKind === "remove_entity" || adjustmentKind === "add_scene_entity" ? <p className="m-0 self-center text-2xs text-stone-500">此操作只影响本次战斗实例，不删除原子。</p> : null}
+          <Button disabled={!adjustmentTarget || draftOperations.length >= 8} onClick={addDraftOperation} size="sm">加入变化</Button>
+        </div>
+        {draftOperations.length > 0 ? (
+          <div className="mt-3 rounded border border-ink-700 bg-ink-950/40 p-3">
+            <div className="mb-2 flex items-center gap-2"><strong className="mr-auto text-xs text-parchment-100">待保存具体变化 · {draftOperations.length}/8</strong><Button disabled={!sceneId || !adjustmentTitle.trim() || !adjustmentReason.trim()} loading={createAdjustment.isPending} onClick={() => createAdjustment.mutate()} size="sm" variant="primary">保存为待确认草案</Button></div>
+            <ol className="m-0 space-y-1.5 pl-5 text-xs text-stone-300">
+              {draftOperations.map((operation, index) => <li key={`${operation.kind}-${operation.entity_id}-${index}`}><span>{describeEncounterOperation(operation, entityName(operation.entity_type, operation.entity_id))}</span><button className="ml-2 text-red-300 hover:text-red-200" onClick={() => setDraftOperations((current) => current.filter((_, itemIndex) => itemIndex !== index))} type="button">删除</button><span className="block text-2xs text-stone-600">原因：{operation.reason}</span></li>)}
+            </ol>
+          </div>
+        ) : null}
+        <div className="mt-4 grid gap-2 lg:grid-cols-2">
+          {encounterAdjustments.data?.map((proposal) => (
+            <article className="rounded border border-ink-700 bg-ink-950/50 p-3" key={proposal.id}>
+              <div className="flex flex-wrap items-center gap-2">
+                <strong className="mr-auto text-sm text-parchment-100">{proposal.title}</strong>
+                <Badge tone={proposal.status === "applied" ? "ok" : proposal.status === "pending" ? "warn" : "neutral"}>{({ pending: "待确认", applied: "已应用", rejected: "已拒绝", reverted: "已撤销", conflict: "冲突" } as const)[proposal.status]}</Badge>
+                <Badge>{difficultyShiftLabel(proposal.difficulty_shift)}</Badge>
+              </div>
+              <p className="mb-2 mt-2 text-xs text-stone-400">{proposal.reason}</p>
+              <ul className="m-0 space-y-1 pl-4 text-xs text-stone-300">{proposal.operations_json.map((operation, index) => <li key={`${operation.kind}-${operation.entity_id}-${index}`}>{describeEncounterOperation(operation, entityName(operation.entity_type, operation.entity_id))}<span className="block text-2xs text-stone-600">{operation.reason}</span></li>)}</ul>
+              <div className="mt-3 flex justify-end gap-2">
+                {proposal.status === "pending" ? <Button disabled={changeAdjustment.isPending} onClick={() => changeAdjustment.mutate({ proposal, action: "reject" })} size="sm">拒绝</Button> : null}
+                {proposal.status === "pending" ? <Button disabled={changeAdjustment.isPending} onClick={() => changeAdjustment.mutate({ proposal, action: "apply" })} size="sm" variant="primary">DM 确认应用</Button> : null}
+                {proposal.status === "applied" ? <Button disabled={changeAdjustment.isPending} onClick={() => changeAdjustment.mutate({ proposal, action: "revert" })} size="sm">撤销后果</Button> : null}
+              </div>
+            </article>
+          ))}
+          {!encounterAdjustments.isLoading && encounterAdjustments.data?.length === 0 ? <EmptyState title="暂无遭遇后果草案" hint="记录玩家行动后，可让副 DM 生成草案，或手工添加具体变化。" /> : null}
+        </div>
+      </Panel>
       <div className="mt-4 grid gap-4 xl:grid-cols-[0.8fr_1.4fr_0.8fr]">
         <Panel eyebrow="情景状态" title="当前在场">
           <div className="flex gap-2"><select className={selectCls} onChange={(event) => setEntityKey(event.target.value)} value={entityKey}><option value="">选择进入人物</option>{availableCandidates.map((candidate) => <option key={candidate.key} value={candidate.key}>{candidate.label}</option>)}</select><Button disabled={!entityKey} loading={participantAdd.isPending} onClick={() => participantAdd.mutate()} size="sm">进入</Button></div>
@@ -372,10 +537,10 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
             <div className="mt-3 rounded border border-ink-700 bg-ink-950/50 p-2">
               <p className="m-0 text-2xs text-stone-500">当前场景遭遇修正：<strong className={activeAdjustment < 0 ? "text-emerald-300" : activeAdjustment > 0 ? "text-red-300" : "text-stone-300"}>{activeAdjustment > 0 ? `提高 ${activeAdjustment} 级` : activeAdjustment < 0 ? `降低 ${Math.abs(activeAdjustment)} 级` : "无"}</strong></p>
               <div className="mt-2 grid gap-1.5">
-                <Button disabled={!sceneId || encounterAdjustment.isPending} onClick={() => encounterAdjustment.mutate({ shift: -1, label: "玩家的提前准备削弱了敌人、移除了增援或创造了战术优势，遭遇降低一级" })} size="sm">应用玩家准备：降低一级</Button>
-                <Button disabled={!sceneId || encounterAdjustment.isPending} onClick={() => encounterAdjustment.mutate({ shift: 1, label: "敌方获得增援、警戒或地形优势，遭遇提高一级" })} size="sm">应用敌方优势：提高一级</Button>
+                <Button disabled={!sceneId} onClick={() => draftFromAssistant(-1)} size="sm">起草玩家准备后果</Button>
+                <Button disabled={!sceneId} onClick={() => draftFromAssistant(1)} size="sm">起草敌方优势后果</Button>
               </div>
-              <p className="mb-0 mt-2 text-2xs text-stone-600">修正会引用最近一次 DM 输入作为原因，并随场景进入战斗；AI 只提出建议，仍由 DM 点击确认。</p>
+              <p className="mb-0 mt-2 text-2xs text-stone-600">这里只生成可编辑草案；到上方核对 HP、状态、参战者或增援后，再由 DM 确认。</p>
             </div>
           </Panel>
           <Panel eyebrow="进入 / 离开 / 推进" title="最近情景记录">

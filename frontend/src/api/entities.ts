@@ -6,6 +6,8 @@ import type {
   Clue,
   Combat,
   Combatant,
+  EncounterAdjustment,
+  EncounterOperation,
   ListEnvelope,
   Location,
   Npc,
@@ -20,7 +22,8 @@ import type {
  */
 
 async function listEntities<T>(path: string, signal?: AbortSignal): Promise<T[]> {
-  const envelope = await apiFetch<ListEnvelope<T>>(`${path}?limit=200`, { signal });
+  const separator = path.includes("?") ? "&" : "?";
+  const envelope = await apiFetch<ListEnvelope<T>>(`${path}${separator}limit=200`, { signal });
   return envelope.items;
 }
 
@@ -277,6 +280,52 @@ export const updateEvent = (cid: string, id: string, input: EventInput, version:
 
 export const deleteEvent = (cid: string, id: string, version: number) =>
   deleteEntity(`/campaigns/${cid}/events/${id}`, version);
+
+// Encounter adjustment proposals --------------------------------------------
+
+export type EncounterAdjustmentInput = {
+  scene_id: string;
+  combat_id?: string | null;
+  source_event_id?: string | null;
+  title: string;
+  reason: string;
+  difficulty_shift: -1 | 0 | 1;
+  operations: EncounterOperation[];
+};
+
+export const listEncounterAdjustments = (
+  cid: string,
+  sceneId?: string,
+  signal?: AbortSignal,
+) =>
+  listEntities<EncounterAdjustment>(
+    `/campaigns/${cid}/encounter-adjustments${sceneId ? `?scene_id=${encodeURIComponent(sceneId)}` : ""}`,
+    signal,
+  );
+
+export const createEncounterAdjustment = (cid: string, input: EncounterAdjustmentInput) =>
+  createEntity<EncounterAdjustment, EncounterAdjustmentInput>(
+    `/campaigns/${cid}/encounter-adjustments`,
+    input,
+  );
+
+export const rejectEncounterAdjustment = (cid: string, id: string, version: number) =>
+  apiFetch<EncounterAdjustment>(`/campaigns/${cid}/encounter-adjustments/${id}/reject`, {
+    method: "POST",
+    headers: { "If-Match": `"${version}"`, "X-Request-ID": crypto.randomUUID() },
+  });
+
+export const applyEncounterAdjustment = (cid: string, id: string, version: number) =>
+  apiFetch<EncounterAdjustment>(`/campaigns/${cid}/encounter-adjustments/${id}/apply`, {
+    method: "POST",
+    headers: { "If-Match": `"${version}"`, "X-Request-ID": crypto.randomUUID() },
+  });
+
+export const revertEncounterAdjustment = (cid: string, id: string, version: number) =>
+  apiFetch<EncounterAdjustment>(`/campaigns/${cid}/encounter-adjustments/${id}/revert`, {
+    method: "POST",
+    headers: { "If-Match": `"${version}"`, "X-Request-ID": crypto.randomUUID() },
+  });
 
 // ---------------------------------------------------------------------------
 // Combats & combatants

@@ -415,6 +415,111 @@ class Combatant(Timestamped, Base):
     )
 
 
+class OperationTransaction(Timestamped, Base):
+    __tablename__ = "operation_transactions"
+    campaign_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("campaigns.id", ondelete="CASCADE"), nullable=False
+    )
+    operation_type: Mapped[str] = mapped_column(String(80), nullable=False)
+    idempotency_key: Mapped[str] = mapped_column(String(120), nullable=False)
+    status: Mapped[str] = mapped_column(
+        String(30), nullable=False, default="applied", server_default="applied"
+    )
+    before_snapshot: Mapped[dict[str, object]] = mapped_column(
+        JSON, nullable=False, default=dict, server_default="{}"
+    )
+    after_snapshot: Mapped[dict[str, object]] = mapped_column(
+        JSON, nullable=False, default=dict, server_default="{}"
+    )
+    reason: Mapped[str | None] = mapped_column(Text)
+    source: Mapped[str] = mapped_column(
+        String(30), nullable=False, default="dm", server_default="dm"
+    )
+    confirmed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    reverted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    __table_args__ = (
+        CheckConstraint(
+            "status IN ('pending','applied','reverted','conflict','failed')",
+            name="ck_operation_transaction_status",
+        ),
+        CheckConstraint(
+            "source IN ('dm','game_table','combat','system')",
+            name="ck_operation_transaction_source",
+        ),
+        UniqueConstraint(
+            "campaign_id",
+            "idempotency_key",
+            name="uq_operation_transaction_campaign_idempotency",
+        ),
+        Index(
+            "ix_operation_transactions_campaign_created",
+            "campaign_id",
+            "created_at",
+            "id",
+        ),
+    )
+
+
+class EncounterAdjustmentProposal(Timestamped, Base):
+    __tablename__ = "encounter_adjustment_proposals"
+    campaign_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("campaigns.id", ondelete="CASCADE"), nullable=False
+    )
+    scene_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("scenes.id", ondelete="CASCADE"), nullable=False
+    )
+    combat_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("combats.id", ondelete="SET NULL")
+    )
+    source_event_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("events.id", ondelete="SET NULL")
+    )
+    operation_transaction_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("operation_transactions.id", ondelete="SET NULL")
+    )
+    title: Mapped[str] = mapped_column(String(200), nullable=False)
+    reason: Mapped[str] = mapped_column(Text, nullable=False)
+    difficulty_shift: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=0, server_default="0"
+    )
+    operations_json: Mapped[list[object]] = mapped_column(
+        JSON, nullable=False, default=list, server_default="[]"
+    )
+    inverse_operations_json: Mapped[list[object]] = mapped_column(
+        JSON, nullable=False, default=list, server_default="[]"
+    )
+    status: Mapped[str] = mapped_column(
+        String(30), nullable=False, default="pending", server_default="pending"
+    )
+    applied_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    reverted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    __table_args__ = (
+        CheckConstraint("length(trim(title)) > 0", name="ck_encounter_adjustment_title"),
+        CheckConstraint("length(trim(reason)) > 0", name="ck_encounter_adjustment_reason"),
+        CheckConstraint(
+            "difficulty_shift IN (-1,0,1)",
+            name="ck_encounter_adjustment_difficulty_shift",
+        ),
+        CheckConstraint(
+            "status IN ('pending','applied','rejected','reverted','conflict')",
+            name="ck_encounter_adjustment_status",
+        ),
+        Index(
+            "ix_encounter_adjustments_campaign_status",
+            "campaign_id",
+            "status",
+            "created_at",
+            "id",
+        ),
+        Index(
+            "ix_encounter_adjustments_scene_combat",
+            "scene_id",
+            "combat_id",
+            "id",
+        ),
+    )
+
+
 class WorldItem(Timestamped, Base):
     __tablename__ = "world_items"
     campaign_id: Mapped[str] = mapped_column(

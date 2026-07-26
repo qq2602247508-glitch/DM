@@ -10,6 +10,7 @@ from dnd_dm_assistant.api.errors import install_error_handlers
 from dnd_dm_assistant.api.middleware import RequestIdMiddleware
 from dnd_dm_assistant.api.routes.assistant import router as assistant_router
 from dnd_dm_assistant.api.routes.campaigns import router as campaigns_router
+from dnd_dm_assistant.api.routes.encounters import router as encounters_router
 from dnd_dm_assistant.api.routes.health import router as health_router
 from dnd_dm_assistant.api.routes.knowledge import router as knowledge_router
 from dnd_dm_assistant.api.routes.world import router as world_router
@@ -48,6 +49,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(health_router, prefix=app_settings.api_prefix)
     app.include_router(knowledge_router, prefix=app_settings.api_prefix)
     app.include_router(campaigns_router, prefix=app_settings.api_prefix)
+    app.include_router(encounters_router, prefix=app_settings.api_prefix)
     app.include_router(assistant_router, prefix=app_settings.api_prefix)
     app.include_router(world_router, prefix=app_settings.api_prefix)
     return app

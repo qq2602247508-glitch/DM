@@ -16,6 +16,7 @@ from dnd_dm_assistant.infrastructure.database.agent_service import (
 from dnd_dm_assistant.infrastructure.database.campaign_service import (
     SqlAlchemyCampaignStateGateway,
 )
+from dnd_dm_assistant.infrastructure.database.encounter_service import EncounterAdjustmentService
 from dnd_dm_assistant.infrastructure.database.world_service import WorldService
 from dnd_dm_assistant.integrations.runtime import RuntimeIntegrations
 
@@ -57,6 +58,10 @@ def get_agent_orchestrator(request: Request) -> AgentOrchestrator:
 
 def get_world_service(request: Request) -> WorldService:
     return WorldService(cast(Engine, request.app.state.database_engine))
+
+
+def get_encounter_adjustment_service(request: Request) -> EncounterAdjustmentService:
+    return EncounterAdjustmentService(cast(Engine, request.app.state.database_engine))
 
 
 def get_world_generation_service(request: Request) -> WorldGenerationService:

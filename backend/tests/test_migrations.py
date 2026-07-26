@@ -34,4 +34,6 @@ def test_alembic_upgrades_empty_database(tmp_path: Path, monkeypatch: Any) -> No
         "audit_log",
         "state_change_proposals",
         "model_runs",
+        "operation_transactions",
+        "encounter_adjustment_proposals",
     } <= tables

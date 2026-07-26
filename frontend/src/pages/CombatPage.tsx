@@ -3,11 +3,14 @@ import { useEffect, useState, type FormEvent, type ReactElement } from "react";
 
 import {
   createCombat, createCombatant, deleteCombatant, listCombatants, listCombats,
-  listEvents, updateCombat, updateCombatant,
+  listEncounterAdjustments, listEvents, revertEncounterAdjustment, updateCombat,
+  updateCombatant,
 } from "../api/entities";
 import { listCharacters, listNpcs, updateCharacter } from "../api/entities";
 import { listMonsters, listScenes } from "../api/world";
-import type { Combat, Combatant, Character, Monster, Npc, SceneGrid } from "../api/types";
+import type {
+  Combat, Combatant, Character, EncounterAdjustment, Monster, Npc, SceneGrid,
+} from "../api/types";
 import { RequireCampaign } from "../components/RequireCampaign";
 import { Panel } from "../components/Panel";
 import { inputCls } from "../ui/styles";
@@ -20,6 +23,9 @@ import {
   DIFFICULTY_LABELS, encounterDifficulty, shiftDifficulty, xpForChallengeRating,
   type Difficulty,
 } from "../ui/progressionRules";
+import {
+  describeEncounterOperation, difficultyShiftLabel,
+} from "../ui/encounterAdjustments";
 
 type CombatCandidate = {
   key: string;
@@ -175,7 +181,7 @@ function BattleGrid({ fighters, grid, candidates }: { fighters: Combatant[]; gri
   );
 }
 
-function CombatCard({ campaignId, combat, candidates, grid, sceneName, sceneAdjustments }: { campaignId: string; combat: Combat; candidates: CombatCandidate[]; grid: SceneGrid | null; sceneName: string | null; sceneAdjustments: { shift: number; reason: string }[] }): ReactElement {
+function CombatCard({ campaignId, combat, candidates, encounterConsequences, grid, sceneName, sceneAdjustments }: { campaignId: string; combat: Combat; candidates: CombatCandidate[]; encounterConsequences: EncounterAdjustment[]; grid: SceneGrid | null; sceneName: string | null; sceneAdjustments: { shift: number; reason: string }[] }): ReactElement {
   const client = useQueryClient();
   const { showToast } = useToast();
   const [name, setName] = useState("");
@@ -220,7 +226,7 @@ function CombatCard({ campaignId, combat, candidates, grid, sceneName, sceneAdju
     onSuccess: () => { invalidate(); showToast("战斗进度已保存"); },
     onError: () => showToast("战斗进度保存失败", "error"),
   });
-  const ordered = [...(fighters.data ?? [])].sort((a, b) => b.initiative - a.initiative || a.display_name.localeCompare(b.display_name));
+  const ordered = [...(fighters.data ?? [])].filter((fighter) => fighter.is_active).sort((a, b) => b.initiative - a.initiative || a.display_name.localeCompare(b.display_name));
   const playerCharacters = ordered
     .filter((fighter) => fighter.entity_type === "character" && fighter.entity_id)
     .map((fighter) => candidates.find((candidate) => candidate.entityType === "character" && candidate.entityId === fighter.entity_id)?.character)
@@ -232,7 +238,8 @@ function CombatCard({ campaignId, combat, candidates, grid, sceneName, sceneAdju
       return sum + xpForChallengeRating(candidate?.challengeRating);
     }, 0);
   const baseDifficulty = encounterDifficulty(playerCharacters.map((character) => character.level), monsterXp);
-  const sceneShift = sceneAdjustments.reduce((sum, adjustment) => sum + adjustment.shift, 0);
+  const sceneShift = sceneAdjustments.reduce((sum, adjustment) => sum + adjustment.shift, 0)
+    + encounterConsequences.reduce((sum, proposal) => sum + proposal.difficulty_shift, 0);
   const manualShift = combat.difficulty_adjustments.reduce<number>((sum, raw) => {
     const adjustment = raw as { shift?: number };
     return sum + Number(adjustment.shift ?? 0);
@@ -275,6 +282,16 @@ function CombatCard({ campaignId, combat, candidates, grid, sceneName, sceneAdju
     },
     onError: (error) => showToast(error instanceof Error ? error.message : "经验发放失败", "error"),
   });
+  const revertConsequence = useMutation({
+    mutationFn: (proposal: EncounterAdjustment) =>
+      revertEncounterAdjustment(campaignId, proposal.id, proposal.version),
+    onSuccess: () => {
+      invalidate();
+      void client.invalidateQueries({ queryKey: ["encounter-adjustments", campaignId] });
+      showToast("情景后果已撤销，战斗员状态已恢复");
+    },
+    onError: () => showToast("无法撤销；战斗可能已经结算或状态已被后续操作改变", "error"),
+  });
   const nextIndex = ordered.length === 0 ? 0 : (combat.current_turn_index + 1) % ordered.length;
   const nextRound = ordered.length > 0 && nextIndex === 0 ? combat.round_number + 1 : combat.round_number;
   return (
@@ -288,6 +305,11 @@ function CombatCard({ campaignId, combat, candidates, grid, sceneName, sceneAdju
           </div>
           <p className="mb-0 mt-1 text-2xs text-stone-500">队伍：{playerCharacters.length ? playerCharacters.map((character) => `${character.name} Lv${character.level}`).join("、") : "尚无玩家"} · 怪物基础 XP：{monsterXp} · 基础判定：{DIFFICULTY_LABELS[baseDifficulty]}</p>
           {sceneAdjustments.length > 0 ? <ul className="mb-0 mt-2 pl-4 text-2xs text-emerald-300">{sceneAdjustments.map((item, index) => <li key={`${item.reason}-${index}`}>{item.shift < 0 ? "降低" : "提高"}一级：{item.reason}</li>)}</ul> : <p className="mb-0 mt-1 text-2xs text-stone-600">推进台没有记录玩家准备或敌方优势修正。</p>}
+          {encounterConsequences.length > 0 ? (
+            <div className="mt-2 space-y-2">
+              {encounterConsequences.map((proposal) => <div className="rounded border border-emerald-900/60 bg-emerald-950/10 p-2" key={proposal.id}><div className="flex flex-wrap items-center gap-2"><strong className="mr-auto text-xs text-emerald-200">{proposal.title}</strong><Badge tone="ok">{difficultyShiftLabel(proposal.difficulty_shift)}</Badge><Button disabled={combat.xp_awarded || revertConsequence.isPending} onClick={() => revertConsequence.mutate(proposal)} size="sm">撤销</Button></div><p className="mb-1 mt-1 text-2xs text-stone-500">{proposal.reason}</p><ul className="m-0 pl-4 text-2xs text-stone-300">{proposal.operations_json.map((operation, index) => { const candidate = candidates.find((item) => item.entityType === operation.entity_type && item.entityId === operation.entity_id); return <li key={`${operation.kind}-${operation.entity_id}-${index}`}>{describeEncounterOperation(operation, candidate?.name)}</li>; })}</ul></div>)}
+            </div>
+          ) : null}
           <p className="mb-0 mt-1 text-2xs text-stone-600">难度估算综合角色等级、怪物 CR/XP 与情景修正；行动经济、地形和资源消耗仍由 DM 最终判断。</p>
         </div>
         <div className="flex gap-1.5 md:flex-col">
@@ -352,6 +374,7 @@ function CombatContent({ campaignId }: { campaignId: string }): ReactElement {
   const npcs = useQuery({ queryKey: ["npcs", campaignId], queryFn: ({ signal }) => listNpcs(campaignId, signal) });
   const monsters = useQuery({ queryKey: ["monsters", campaignId], queryFn: ({ signal }) => listMonsters(campaignId, signal) });
   const events = useQuery({ queryKey: ["events", campaignId], queryFn: ({ signal }) => listEvents(campaignId, signal) });
+  const encounterAdjustments = useQuery({ queryKey: ["encounter-adjustments", campaignId], queryFn: ({ signal }) => listEncounterAdjustments(campaignId, undefined, signal) });
   const candidates: CombatCandidate[] = [
     ...(characters.data ?? []).map((entity: Character) => ({ key: `character:${entity.id}`, entityType: "character" as const, entityId: entity.id, name: entity.name, armorClass: entity.armor_class, hp: entity.hp, maxHp: entity.max_hp, dexterity: entity.ability_scores.dexterity ?? 10, speed: entity.speed, character: entity })),
     ...(npcs.data ?? []).map((entity: Npc) => ({ key: `npc:${entity.id}`, entityType: "npc" as const, entityId: entity.id, name: entity.name, armorClass: entity.armor_class, hp: entity.hp, maxHp: entity.max_hp, dexterity: entity.ability_scores.dexterity ?? 10, speed: entity.speed, challengeRating: entity.challenge_rating })),
@@ -386,7 +409,9 @@ function CombatContent({ campaignId }: { campaignId: string }): ReactElement {
                 reason: typeof rawReason === "string" ? rawReason : (event.description ?? event.title),
               };
             });
-          return <CombatCard campaignId={campaignId} combat={combat} candidates={candidates} grid={scene ? readSceneGrid(scene.notes) : null} key={combat.id} sceneAdjustments={sceneAdjustments} sceneName={scene?.name ?? null} />;
+          const encounterConsequences = (encounterAdjustments.data ?? [])
+            .filter((proposal) => proposal.status === "applied" && proposal.combat_id === combat.id);
+          return <CombatCard campaignId={campaignId} combat={combat} candidates={candidates} encounterConsequences={encounterConsequences} grid={scene ? readSceneGrid(scene.notes) : null} key={combat.id} sceneAdjustments={sceneAdjustments} sceneName={scene?.name ?? null} />;
         })}
       </div>
     </div>

@@ -19,6 +19,7 @@ coverage.xml
 htmlcov/
 
 data/
+data
 generated-content/
 source-checkouts/
 backend/generated-content/
@@ -30,6 +31,7 @@ backend/tests/.generated/
 *.sqlite3
 
 frontend/node_modules/
+frontend/node_modules
 frontend/dist/
 frontend/coverage/
 frontend/.vite/
@@ -86,3 +88,6 @@ frontend/pnpm-lock.yaml
 *.pfx
 credentials*.json
 secrets*.json
+
+# Worktree dependency links
+backend/.venv

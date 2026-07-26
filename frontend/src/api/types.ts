@@ -461,6 +461,41 @@ export type CampaignEvent = Versioned & {
   metadata_json: Record<string, unknown>;
 };
 
+export type EncounterEntityType = "character" | "npc" | "monster";
+
+type EncounterOperationBase = {
+  entity_type: EncounterEntityType;
+  entity_id: string;
+  reason: string;
+};
+
+export type EncounterOperation =
+  | (EncounterOperationBase & { kind: "remove_entity" })
+  | (EncounterOperationBase & { kind: "add_scene_entity" })
+  | (EncounterOperationBase & { kind: "set_entity_hp"; hp: number })
+  | (EncounterOperationBase & { kind: "add_entity_condition"; condition: string })
+  | (EncounterOperationBase & {
+      kind: "schedule_reinforcement";
+      round: number;
+      quantity: number;
+    });
+
+export type EncounterAdjustment = Versioned & {
+  campaign_id: string;
+  scene_id: string;
+  combat_id: string | null;
+  source_event_id: string | null;
+  operation_transaction_id: string | null;
+  title: string;
+  reason: string;
+  difficulty_shift: -1 | 0 | 1;
+  operations_json: EncounterOperation[];
+  inverse_operations_json: unknown[];
+  status: "pending" | "applied" | "rejected" | "reverted" | "conflict";
+  applied_at: string | null;
+  reverted_at: string | null;
+};
+
 export type Combat = Versioned & {
   campaign_id: string;
   scene_id: string | null;

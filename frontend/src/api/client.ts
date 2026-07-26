@@ -31,6 +31,7 @@ export function isApiError(error: unknown, status?: number): boolean {
 type RequestOptions = {
   method?: "GET" | "POST" | "PATCH" | "DELETE";
   body?: unknown;
+  headers?: Record<string, string>;
   signal?: AbortSignal;
 };
 
@@ -38,11 +39,14 @@ export async function apiFetch<T>(
   path: string,
   options: RequestOptions = {},
 ): Promise<T> {
-  const { method = "GET", body, signal } = options;
+  const { method = "GET", body, headers, signal } = options;
   const response = await fetch(`${apiBaseUrl}${path}`, {
     method,
     signal,
-    headers: body === undefined ? undefined : { "Content-Type": "application/json" },
+    headers: {
+      ...(body === undefined ? {} : { "Content-Type": "application/json" }),
+      ...headers,
+    },
     body: body === undefined ? undefined : JSON.stringify(body),
   });
 
