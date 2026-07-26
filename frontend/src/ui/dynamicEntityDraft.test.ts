@@ -3,8 +3,12 @@ import { describe, expect, it } from "vitest";
 import type { SearchHit } from "../api/types";
 import {
   compendiumMonsterCandidates,
+  customMonsterDraft,
   detectArrivalKind,
+  monsterDraftFromCandidate,
+  parseMonsterActions,
   parseMonsterStats,
+  requestedMonsterName,
   suggestedNpcName,
 } from "./dynamicEntityDraft";
 
@@ -25,9 +29,11 @@ const hit = {
 describe("dynamic scene arrivals", () => {
   it("detects monster and NPC arrival language without treating plain mentions as writes", () => {
     expect(detectArrivalKind("这时候来了一个怪物突袭")).toBe("monster");
+    expect(detectArrivalKind("这时候出现了多心魔")).toBe("monster");
     expect(detectArrivalKind("突然有个名叫“米拉”的旅人闯入")).toBe("npc");
     expect(detectArrivalKind("附近可能存在怪物")).toBeNull();
     expect(suggestedNpcName("突然有个名叫“米拉”的旅人闯入")).toBe("米拉");
+    expect(requestedMonsterName("这时候出现了多心魔")).toBe("多心魔");
   });
 
   it("extracts usable combat stats and provenance from a real compendium hit", () => {
@@ -37,5 +43,39 @@ describe("dynamic scene arrivals", () => {
     });
     expect(compendiumMonsterCandidates([hit, hit])).toHaveLength(1);
     expect(compendiumMonsterCandidates([hit])[0]?.sourceLabel).toContain("官方");
+  });
+
+  it("extracts D&D actions and lets a custom monster bind the matched template", () => {
+    const actions = parseMonsterActions(
+      "夺心魔 Mind Flayer\n动作\n触须 Tentacles。近战武器攻击：命中 +7，触及 5 尺。命中：15（2d10+4）点心灵伤害。\n心灵震爆 Mind Blast（充能 5~6）。覆盖一处60尺的锥状区域。目标进行一次DC 15的智力豁免，失败受到22（4d8+4）点心灵伤害。",
+    );
+    expect(actions).toEqual(expect.arrayContaining([
+      expect.objectContaining({ name: "触须", damage: "2d10+4", range: "5尺", attack_bonus: 7 }),
+      expect.objectContaining({ name: "心灵震爆", damage: "4d8+4", range: "60尺锥形", save_dc: 15, save_ability: "intelligence" }),
+    ]));
+
+    const mindFlayerHit: SearchHit = {
+      ...hit,
+      chunk: {
+        ...hit.chunk,
+        record_id: "mind-flayer",
+        chunk_id: "mind-flayer-1",
+        name: "夺心魔",
+        aliases: ["Mind Flayer", "灵吸怪"],
+        text: `夺心魔 AC 15 HP 71 速度 30尺 力量 11 敏捷 12 体质 12 智力 19 感知 17 魅力 17 CR 7\n动作\n${actions.map((action) => action.description).join("\n")}`,
+      },
+    };
+    const candidate = compendiumMonsterCandidates([hit, mindFlayerHit], "出现了多心魔")[0];
+    expect(candidate?.label).toBe("夺心魔");
+    if (!candidate) throw new Error("expected fuzzy match");
+    const officialDraft = monsterDraftFromCandidate(candidate, "出现了多心魔");
+    const custom = customMonsterDraft("出现了多心魔", candidate);
+    expect(custom).toMatchObject({
+      name: "多心魔",
+      sourceKey: "custom",
+      templateSourceKey: candidate.key,
+      armorClass: officialDraft.armorClass,
+    });
+    expect(custom.actions.length).toBeGreaterThan(0);
   });
 });

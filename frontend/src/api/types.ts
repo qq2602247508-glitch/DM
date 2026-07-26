@@ -463,6 +463,15 @@ export type Location = Versioned & {
 export type GeneratedAction = {
   name: string;
   description: string;
+  damage?: string;
+  damage_type?: string;
+  range?: string;
+  cost?: string;
+  attack_bonus?: number;
+  save_dc?: number;
+  save_ability?: string;
+  half_damage_on_save?: boolean;
+  recharge?: string;
 };
 
 export type GeneratedItem = {

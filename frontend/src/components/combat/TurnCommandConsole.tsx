@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState, type ReactElement } from "react";
 
 import {
   confirmCombatAction,
+  createPlayerRollPrompt,
   previewCombatAction,
   updateCombatant,
   type CombatActionCommand,
@@ -14,6 +15,7 @@ import {
   abilityModifier,
   actionRangeSummary,
   chooseEnemyTarget,
+  chooseEnemyActionIndex,
   parseDiceExpression,
   parseRangeFeet,
   proficiencyBonus,
@@ -64,6 +66,7 @@ export function TurnCommandConsole({
   onRangeChange,
   onTargetChange,
   selectedTargetId,
+  turnKey,
   validTargetIds,
 }: {
   active: Combatant;
@@ -74,6 +77,7 @@ export function TurnCommandConsole({
   onRangeChange: (range: CombatTargeting | null) => void;
   onTargetChange?: (targetId: string) => void;
   selectedTargetId?: string;
+  turnKey: string;
   validTargetIds?: ReadonlySet<string>;
 }): ReactElement {
   const client = useQueryClient();
@@ -161,6 +165,36 @@ export function TurnCommandConsole({
     },
     onError: () => showToast("临场效果写入失败", "error"),
   });
+  const requestPlayerSave = useMutation({
+    mutationFn: ({
+      chosenTarget,
+      failureDamage,
+      successDamage,
+    }: {
+      chosenTarget: Combatant;
+      failureDamage: number;
+      successDamage: number;
+    }) => createPlayerRollPrompt(campaignId, combatId, {
+      actor_combatant_id: active.id,
+      actor_version: active.version,
+      target_combatant_id: chosenTarget.id,
+      target_version: chosenTarget.version,
+      action_name: selectedAction.name ?? "怪物能力",
+      resolution_type: "saving_throw",
+      dc: selectedAction.save_dc ?? 10,
+      ability: selectedAction.save_ability ?? "dexterity",
+      skill: null,
+      damage_on_success: successDamage,
+      damage_on_failure: failureDamage,
+      damage_type: selectedAction.damage_type ?? "untyped",
+      description: `${active.display_name} 对 ${chosenTarget.display_name} 使用「${selectedAction.name ?? "怪物能力"}」，等待玩家进行${selectedAction.save_ability ?? "敏捷"}豁免。`,
+    }),
+    onSuccess: () => {
+      invalidate();
+      showToast("已在右侧战斗面板生成玩家豁免请求");
+    },
+    onError: () => showToast("无法生成玩家豁免请求", "error"),
+  });
 
   const selectAction = (value: string) => {
     setActionIndex(value);
@@ -181,10 +215,13 @@ export function TurnCommandConsole({
     }
   }, [selectedTargetId, targetId]);
   useEffect(() => {
-    selectAction("0");
+    const nextIndex = active.entity_type === "character"
+      ? 0
+      : chooseEnemyActionIndex(actions, tactics, Number(turnKey.split(":")[0] ?? 0));
+    selectAction(String(nextIndex));
     // The active fighter/action list changed; initialize the map indicator.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [active.id]);
+  }, [active.id, tactics, turnKey]);
   const prepareAttack = (automatic: boolean, forcedTarget?: Combatant) => {
     const chosenTarget = forcedTarget ?? target;
     if (!chosenTarget) {
@@ -200,7 +237,25 @@ export function TurnCommandConsole({
       sides: 6,
       modifier: 0,
     };
-    const modifier = activeCharacter ? actionModifier(activeCharacter, selectedAction) : 3;
+    if (
+      active.entity_type !== "character"
+      && selectedAction.save_dc
+      && selectedAction.save_ability
+    ) {
+      const damageRoll = rollDiceExpression(expression);
+      const successDamage = selectedAction.half_damage_on_save
+        ? Math.floor(damageRoll.total / 2)
+        : 0;
+      requestPlayerSave.mutate({
+        chosenTarget,
+        failureDamage: damageRoll.total,
+        successDamage,
+      });
+      return;
+    }
+    const modifier = activeCharacter
+      ? actionModifier(activeCharacter, selectedAction)
+      : selectedAction.attack_bonus ?? 3;
     const d20 = Math.floor(Math.random() * 20) + 1;
     const finalAttack = automatic ? d20 + modifier : Number(attackTotal);
     const hit = finalAttack >= chosenTarget.armor_class;
@@ -221,7 +276,7 @@ export function TurnCommandConsole({
         target_combatant_id: chosenTarget.id,
         target_version: chosenTarget.version,
         amount: finalDamage,
-        damage_type: "untyped",
+        damage_type: selectedAction.damage_type ?? "untyped",
       },
       explanation: automatic
         ? `${active.display_name} → ${chosenTarget.display_name}，使用「${selectedAction.name ?? "攻击"}」：d20(${d20}) + ${modifier} = ${finalAttack}，命中 AC ${chosenTarget.armor_class}；伤害 ${expression.count}d${expression.sides}${expression.modifier ? `+${expression.modifier}` : ""} = ${finalDamage}`
@@ -313,8 +368,19 @@ export function TurnCommandConsole({
             </select>
           </div>
           <p className="mb-2 mt-2 text-xs text-stone-300">建议目标：<strong>{enemyTarget?.display_name ?? "无有效玩家目标"}</strong>。{enemyReason}</p>
-          <p className="mb-2 mt-0 text-2xs text-stone-500">建议动作：{selectedAction.name ?? "基础攻击"} · {selectedAction.damage ?? "1d6"} · {actionRangeSummary(selectedAction)}。右侧日志会保留命中与伤害计算。</p>
-          <Button disabled={!enemyTarget || preview.isPending} onClick={() => { if (enemyTarget) { setTargetId(enemyTarget.id); prepareAttack(true, enemyTarget); } }} variant="danger">自动执行敌人回合</Button>
+          <label className="mb-2 block text-2xs text-stone-400">
+            本回合怪物动作
+            <select className={`${selectCls} mt-1`} onChange={(event) => selectAction(event.target.value)} value={actionIndex}>
+              {actions.length === 0 ? <option value="0">临时攻击 · 1d6 · 5尺</option> : null}
+              {actions.map((action, index) => (
+                <option key={`${action.name}-${index}`} value={index}>
+                  {action.name ?? `动作${index + 1}`} · {action.damage ?? "按规则描述"} · {actionRangeSummary(action)}
+                </option>
+              ))}
+            </select>
+          </label>
+          <p className="mb-2 mt-0 text-2xs text-stone-500">建议动作：{selectedAction.name ?? "基础攻击"} · {selectedAction.damage ?? "1d6"} · {actionRangeSummary(selectedAction)}。地图会先按剩余速度寻路；攻击检定由怪物自动掷，怪物能力要求豁免时会在右侧等待玩家输入骰值。</p>
+          <Button disabled={!enemyTarget || preview.isPending || requestPlayerSave.isPending} onClick={() => { if (enemyTarget) { setTargetId(enemyTarget.id); prepareAttack(true, enemyTarget); } }} variant="danger">自动执行敌人回合</Button>
         </div>
       )}
 

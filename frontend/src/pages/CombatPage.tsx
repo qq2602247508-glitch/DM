@@ -42,6 +42,11 @@ import {
   actionEconomySummary, damageModifierLabel, deathSaveSummary,
 } from "../ui/combatPresentation";
 import {
+  planApproachPath,
+  shortestMovementPath,
+  type MovementPlan,
+} from "../ui/combatMovement";
+import {
   getTargetingCells,
   gridDistanceFt,
   isAimPointInRange,
@@ -359,22 +364,30 @@ function CombatantRow({ campaignId, combat, fighter, current, character, effects
 }
 
 function BattleGrid({
+  campaignId,
+  combatId,
   fighters,
   grid,
   candidates,
   activeFighterId,
+  turnKey,
   targeting,
   onTargetSelect,
   onTargetValidityChange,
 }: {
+  campaignId: string;
+  combatId: string;
   fighters: Combatant[];
   grid: SceneGrid | null;
   candidates: CombatCandidate[];
   activeFighterId: string | null;
+  turnKey: string;
   targeting: CombatTargeting | null;
   onTargetSelect: (fighterId: string) => void;
   onTargetValidityChange: (fighterIds: ReadonlySet<string>) => void;
 }): ReactElement {
+  const client = useQueryClient();
+  const { showToast } = useToast();
   const tacticalGrid = useMemo(
     () => grid ?? generateTacticalSceneGrid("临时战场", "通用战斗区域"),
     [grid],
@@ -387,6 +400,7 @@ function BattleGrid({
   const [targetingMessage, setTargetingMessage] = useState("");
   const [aimPoint, setAimPoint] = useState<GridPoint | null>(null);
   const [interactionMode, setInteractionMode] = useState<"move" | "target">("move");
+  const [movingFighterId, setMovingFighterId] = useState<string | null>(null);
   const processedAiTurn = useRef<string | null>(null);
   useEffect(() => {
     setPositions((current) => {
@@ -395,6 +409,23 @@ function BattleGrid({
       const enemySpawns = findSceneSpawnCells(tacticalGrid, "enemy");
       fighters.forEach((fighter, index) => {
         if (next[fighter.id]) return;
+        const stored = fighter.snapshot_json.grid_position as { row?: unknown; col?: unknown } | undefined;
+        if (
+          stored
+          && Number.isInteger(stored.row)
+          && Number.isInteger(stored.col)
+          && Number(stored.row) >= 1
+          && Number(stored.row) <= height
+          && Number(stored.col) >= 1
+          && Number(stored.col) <= width
+          && !isBlockedCell(tacticalGrid, { row: Number(stored.row), col: Number(stored.col) })
+          && !Object.values(next).some(([placedRow, placedCol]) => (
+            placedRow === Number(stored.row) && placedCol === Number(stored.col)
+          ))
+        ) {
+          next[fighter.id] = [Number(stored.row), Number(stored.col)];
+          return;
+        }
         const preferred = fighter.entity_type === "character"
           ? playerSpawns[index % Math.max(1, playerSpawns.length)]
           : enemySpawns[index % Math.max(1, enemySpawns.length)];
@@ -427,54 +458,95 @@ function BattleGrid({
       ? `先在地图上选择${targeting.shape === "circle" ? "爆发中心" : "目标或方向"}；浅蓝色是施法距离，紫色是实际影响范围。`
       : "");
   }, [targeting]);
+  const commitMove = useCallback(async (
+    fighter: Combatant,
+    plan: MovementPlan,
+    automatic: boolean,
+  ) => {
+    if (plan.spentFt <= 0 || movingFighterId) return;
+    setMovingFighterId(fighter.id);
+    try {
+      await updateCombatant(
+        campaignId,
+        combatId,
+        fighter.id,
+        {
+          movement_remaining_ft: Math.max(0, fighter.movement_remaining_ft - plan.spentFt),
+          snapshot_json: {
+            ...fighter.snapshot_json,
+            grid_position: plan.destination,
+          },
+        },
+        fighter.version,
+      );
+      setPositions((current) => ({
+        ...current,
+        [fighter.id]: [plan.destination.row, plan.destination.col],
+      }));
+      await client.invalidateQueries({ queryKey: ["combatants", campaignId, combatId] });
+      if (!automatic) showToast(`${fighter.display_name}移动 ${plan.spentFt} 尺，剩余 ${Math.max(0, fighter.movement_remaining_ft - plan.spentFt)} 尺`);
+    } catch {
+      if (automatic) processedAiTurn.current = null;
+      showToast(`${fighter.display_name}移动保存失败，请刷新战斗状态`, "error");
+    } finally {
+      setMovingFighterId(null);
+    }
+  }, [campaignId, client, combatId, movingFighterId, showToast]);
   useEffect(() => {
     if (!activeFighterId) return;
-    if (processedAiTurn.current === activeFighterId) return;
-    processedAiTurn.current = activeFighterId;
+    if (processedAiTurn.current === turnKey || movingFighterId) return;
     const active = fighters.find((fighter) => fighter.id === activeFighterId);
     if (!active || active.entity_type === "character" || active.hp <= 0) return;
-    setPositions((current) => {
-      const from = current[active.id];
-      const target = fighters
-        .filter((fighter) => fighter.entity_type === "character" && fighter.hp > 0)
-        .map((fighter) => ({ fighter, position: current[fighter.id] }))
-        .filter((item): item is { fighter: Combatant; position: [number, number] } => Boolean(item.position))
-        .sort((a, b) => {
-          if (!from) return 0;
-          const distanceA = Math.abs(a.position[0] - from[0]) + Math.abs(a.position[1] - from[1]);
-          const distanceB = Math.abs(b.position[0] - from[0]) + Math.abs(b.position[1] - from[1]);
-          return distanceA - distanceB;
-        })[0];
-      if (!from || !target) return current;
-      const speed = candidates.find((candidate) => candidate.entityId === active.entity_id)?.speed ?? active.speed_ft;
-      let [row, col] = from;
-      const maximumSteps = Math.max(0, Math.floor(speed / 5) - 1);
-      for (let step = 0; step < maximumSteps; step += 1) {
-        const rowStep = target.position[0] === row ? 0 : target.position[0] > row ? 1 : -1;
-        const colStep = target.position[1] === col ? 0 : target.position[1] > col ? 1 : -1;
-        const candidatesForStep: [number, number][] = rowStep !== 0
-          ? [[row + rowStep, col], [row, col + colStep]]
-          : [[row, col + colStep]];
-        const next = candidatesForStep.find(([nextRow, nextCol]) => (
-          nextRow >= 1 && nextRow <= height && nextCol >= 1 && nextCol <= width
-          && !isBlockedCell(tacticalGrid, { row: nextRow, col: nextCol })
-          && !Object.entries(current).some(([id, position]) => id !== active.id && position[0] === nextRow && position[1] === nextCol)
-        ));
-        if (!next) break;
-        [row, col] = next;
-        if (Math.abs(target.position[0] - row) + Math.abs(target.position[1] - col) <= 1) break;
-      }
-      if (row === from[0] && col === from[1]) {
-        setLastAiMove(`${active.display_name}没有安全可达路径，保持当前位置。`);
-        return current;
-      }
-      setLastAiMove(`${active.display_name}自动向${target.fighter.display_name}移动：(${from[0]},${from[1]}) → (${row},${col})。`);
-      return { ...current, [active.id]: [row, col] };
-    });
-  }, [activeFighterId, candidates, fighters, height, tacticalGrid, width]);
+    const from = positions[active.id];
+    const target = fighters
+      .filter((fighter) => fighter.entity_type === "character" && fighter.hp > 0)
+      .map((fighter) => ({ fighter, position: positions[fighter.id] }))
+      .filter((item): item is { fighter: Combatant; position: [number, number] } => Boolean(item.position))
+      .sort((a, b) => {
+        if (!from) return 0;
+        return gridDistanceFt(
+          { row: from[0], col: from[1] },
+          { row: a.position[0], col: a.position[1] },
+          tacticalGrid.cell_size_ft,
+        ) - gridDistanceFt(
+          { row: from[0], col: from[1] },
+          { row: b.position[0], col: b.position[1] },
+          tacticalGrid.cell_size_ft,
+        );
+      })[0];
+    if (!from || !target) return;
+    processedAiTurn.current = turnKey;
+    const occupied = new Set(Object.entries(positions)
+      .filter(([id]) => id !== active.id)
+      .map(([, position]) => `${position[0]}:${position[1]}`));
+    const plan = planApproachPath(
+      tacticalGrid,
+      { row: from[0], col: from[1] },
+      { row: target.position[0], col: target.position[1] },
+      occupied,
+      active.movement_remaining_ft,
+      targeting?.rangeFt ?? 5,
+    );
+    if (plan.spentFt <= 0) {
+      const alreadyInRange = gridDistanceFt(
+        { row: from[0], col: from[1] },
+        { row: target.position[0], col: target.position[1] },
+        tacticalGrid.cell_size_ft,
+      ) <= (targeting?.rangeFt ?? 5);
+      setLastAiMove(alreadyInRange
+        ? `${active.display_name}已在${target.fighter.display_name}的攻击范围内，保留剩余移动 ${active.movement_remaining_ft} 尺。`
+        : `${active.display_name}本回合没有足够移动力到达合法攻击范围。`);
+      return;
+    }
+    setLastAiMove(`${active.display_name}按规则向${target.fighter.display_name}寻路移动 ${plan.spentFt} 尺；剩余 ${Math.max(0, active.movement_remaining_ft - plan.spentFt)} 尺。`);
+    void commitMove(active, plan, true);
+  }, [activeFighterId, commitMove, fighters, movingFighterId, positions, tacticalGrid, targeting?.rangeFt, turnKey]);
   const selectedPosition = selected ? positions[selected] : null;
   const selectedFighter = fighters.find((fighter) => fighter.id === selected);
-  const selectedSpeed = candidates.find((candidate) => candidate.entityId === selectedFighter?.entity_id)?.speed ?? 30;
+  const selectedSpeed = selectedFighter?.speed_ft
+    ?? candidates.find((candidate) => candidate.entityId === selectedFighter?.entity_id)?.speed
+    ?? 30;
+  const selectedRemaining = selectedFighter?.movement_remaining_ft ?? 0;
   const distance = (row: number, col: number) => selectedPosition
     ? gridDistanceFt(
         { row: selectedPosition[0], col: selectedPosition[1] },
@@ -556,7 +628,26 @@ function BattleGrid({
           const sceneCell = tacticalGrid.cells.find((cell) => cell.row === rowNumber && cell.col === colNumber);
           const blocked = isBlockedCell(tacticalGrid, point);
           const moveDistance = distance(rowNumber, colNumber);
-          const canMove = Boolean(selected && !fighter && !blocked && moveDistance !== null && moveDistance <= selectedSpeed);
+          const occupied = new Set(Object.entries(positions)
+            .filter(([id]) => id !== selected)
+            .map(([, position]) => `${position[0]}:${position[1]}`));
+          const manualPlan = selectedPosition
+            ? shortestMovementPath(
+                tacticalGrid,
+                { row: selectedPosition[0], col: selectedPosition[1] },
+                point,
+                occupied,
+                selectedRemaining,
+              )
+            : null;
+          const canMove = Boolean(
+            selected
+            && selected === activeFighterId
+            && !fighter
+            && !blocked
+            && manualPlan
+            && !movingFighterId
+          );
           const inCastRange = Boolean(targeting && activePosition && isAimPointInRange(
             activePosition,
             point,
@@ -590,8 +681,12 @@ function BattleGrid({
                   }
                   return;
                 }
-                if (fighter) setSelected(fighter.id);
-                else if (canMove && selected) setPositions((current) => ({ ...current, [selected]: [rowNumber, colNumber] }));
+                if (fighter) {
+                  if (fighter.id === activeFighterId) setSelected(fighter.id);
+                  else setTargetingMessage("只能移动当前回合单位；要选择攻击目标，请切换到“技能范围”。");
+                } else if (canMove && selectedFighter && manualPlan) {
+                  void commitMove(selectedFighter, manualPlan, false);
+                }
               }}
               title={sceneCell?.label ?? (moveDistance === null ? "选择一个单位" : `${moveDistance} 尺`)}
               type="button"
@@ -608,7 +703,7 @@ function BattleGrid({
         <span><i className="mr-1 inline-block h-2 w-2 rounded bg-stone-700" />墙体</span>
         <span><i className="mr-1 inline-block h-2 w-2 rounded border border-sky-400" />施法距离</span>
         <span><i className="mr-1 inline-block h-2 w-2 rounded bg-fuchsia-700 ring-1 ring-fuchsia-400" />实际影响范围</span>
-        <span>当前单位移动上限：{selected ? `${selectedSpeed}尺（${Math.floor(selectedSpeed / 5)}格）` : "选择单位后显示"}</span>
+        <span>速度上限：{selected ? `${selectedSpeed}尺` : "—"} · 本回合剩余：{selected ? `${selectedRemaining}尺（${Math.floor(selectedRemaining / 5)}格）` : "选择当前单位后显示"}</span>
       </div>
     </div>
   );
@@ -915,6 +1010,7 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
           onRangeChange={setTargetingRange}
           onTargetChange={setSelectedMapTargetId}
           selectedTargetId={selectedMapTargetId}
+          turnKey={`${combat.round_number}:${combat.current_turn_index}:${activeFighter.id}`}
           validTargetIds={targetableFighterIds}
         />
       ) : null}
@@ -926,7 +1022,20 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
             {!fighters.isLoading && ordered.length === 0 ? <EmptyState title="尚无参与者" hint="录入先攻与 HP 后即可开始逐回合追踪。" /> : null}
             {ordered.length > 0 ? <ol className="m-0 flex list-none flex-col gap-1.5 p-0">{ordered.map((fighter, index) => <CombatantRow campaignId={campaignId} character={candidates.find((candidate) => candidate.entityId === fighter.entity_id)?.character} combat={combat} combatants={ordered} current={combat.status === "active" && index === combat.current_turn_index} effects={(combatEffects.data ?? []).filter((effect) => effect.target_combatant_id === fighter.id && effect.status === "active")} fighter={fighter} key={fighter.id} />)}</ol> : null}
           </div>
-          {ordered.length > 0 ? <BattleGrid activeFighterId={activeFighter?.id ?? null} candidates={candidates} fighters={ordered} grid={grid} onTargetSelect={setSelectedMapTargetId} onTargetValidityChange={updateTargetableFighterIds} targeting={targetingRange} /> : null}
+          {ordered.length > 0 ? (
+            <BattleGrid
+              activeFighterId={activeFighter?.id ?? null}
+              campaignId={campaignId}
+              candidates={candidates}
+              combatId={combat.id}
+              fighters={ordered}
+              grid={grid}
+              onTargetSelect={setSelectedMapTargetId}
+              onTargetValidityChange={updateTargetableFighterIds}
+              targeting={targetingRange}
+              turnKey={`${combat.round_number}:${combat.current_turn_index}:${activeFighter?.id ?? "none"}`}
+            />
+          ) : null}
         </div>
         <aside className="rounded-lg border border-ink-700 bg-ink-950/55 p-3 xl:sticky xl:top-4">
           <div className="mb-3">

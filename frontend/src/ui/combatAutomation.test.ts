@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   abilityModifier,
+  chooseEnemyActionIndex,
   chooseEnemyTarget,
   parseDiceExpression,
   parseRangeFeet,
@@ -38,5 +39,15 @@ describe("combat automation helpers", () => {
     const wounded = { hp: 3, max_hp: 10, armor_class: 14 };
     expect(chooseEnemyTarget([sturdy, wounded], "instinctive")).toBe(sturdy);
     expect(chooseEnemyTarget([sturdy, wounded], "smart")).toBe(wounded);
+  });
+
+  it("rotates real enemy actions and lets tactical enemies favor control damage", () => {
+    const actions = [
+      { name: "触须", damage: "2d10+4", range: "5尺" },
+      { name: "心灵震爆", damage: "4d8+4", range: "60尺锥形", save_dc: 15 },
+    ];
+    expect(chooseEnemyActionIndex(actions, "standard", 0)).toBe(0);
+    expect(chooseEnemyActionIndex(actions, "standard", 1)).toBe(1);
+    expect(chooseEnemyActionIndex(actions, "tactical", 0)).toBe(1);
   });
 });

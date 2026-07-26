@@ -2,8 +2,14 @@ export type CombatActionLike = {
   name?: string;
   description?: string;
   damage?: string;
+  damage_type?: string;
   range?: string;
   cost?: string;
+  attack_bonus?: number;
+  save_dc?: number;
+  save_ability?: string;
+  half_damage_on_save?: boolean;
+  recharge?: string;
 };
 
 export type DiceExpression = {
@@ -125,6 +131,40 @@ export function chooseEnemyTarget<T extends { hp: number; max_hp: number; armor_
     return [...targets].sort((a, b) => (a.hp / Math.max(1, a.max_hp)) - (b.hp / Math.max(1, b.max_hp)))[0] ?? null;
   }
   return [...targets].sort((a, b) => a.armor_class - b.armor_class || a.hp - b.hp)[0] ?? null;
+}
+
+function expectedDamage(action: CombatActionLike): number {
+  const dice = parseDiceExpression(action.damage);
+  return dice
+    ? dice.count * ((dice.sides + 1) / 2) + dice.modifier
+    : 0;
+}
+
+export function chooseEnemyActionIndex(
+  actions: CombatActionLike[],
+  tactics: EnemyTactics,
+  turnSeed = 0,
+): number {
+  if (actions.length === 0) return 0;
+  const damaging = actions
+    .map((action, index) => ({ action, index }))
+    .filter(({ action }) => Boolean(parseDiceExpression(action.damage)));
+  if (damaging.length === 0) return 0;
+  if (tactics === "instinctive") return damaging[0]?.index ?? 0;
+  if (tactics === "standard") {
+    return damaging[Math.abs(turnSeed) % damaging.length]?.index ?? 0;
+  }
+  return [...damaging].sort((left, right) => {
+    const leftControl = left.action.save_dc ? 4 : 0;
+    const rightControl = right.action.save_dc ? 4 : 0;
+    const leftRange = parseRangeFeet(left.action.range) / 30;
+    const rightRange = parseRangeFeet(right.action.range) / 30;
+    const tacticalWeight = tactics === "tactical" ? 1.5 : 1;
+    return (
+      expectedDamage(right.action) + rightControl * tacticalWeight + rightRange
+      - expectedDamage(left.action) - leftControl * tacticalWeight - leftRange
+    );
+  })[0]?.index ?? 0;
 }
 
 export function actionRangeSummary(action: CombatActionLike): string {

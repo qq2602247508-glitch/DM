@@ -30,6 +30,7 @@ import { generateTacticalSceneGrid } from "../ui/sceneGridGenerator";
 import {
   campaignMonsterCandidates, compendiumMonsterCandidates, customMonsterDraft,
   detectArrivalKind, monsterDraftFromCandidate, parseMonsterStats, suggestedNpcName,
+  requestedMonsterName,
   type ArrivalDraft, type ArrivalKind, type MonsterReferenceCandidate,
 } from "../ui/dynamicEntityDraft";
 import {
@@ -154,19 +155,7 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
   const activeScene = scenes.data?.find((scene) => scene.id === sceneId);
   const activeLocation = locations.data?.find((location) => location.id === activeScene?.location_id);
   const findCompendiumMonsters = async (query: string): Promise<MonsterReferenceCandidate[]> => {
-    let hits = await searchKnowledge({
-      text: query, top_k: 6, candidate_k: 24, min_score: 0.25,
-      content_types: ["monsters"], editions: ["2024", "2025"],
-      current_official: true,
-    });
-    if (hits.length === 0) {
-      hits = await searchKnowledge({
-        text: query, top_k: 6, candidate_k: 24, min_score: 0.25,
-        content_types: ["monsters"], editions: ["2014", "legacy"],
-        current_official: false, allow_unknown: false, allow_third_party: false,
-      });
-    }
-    const enriched = await Promise.all(hits.map(async (hit) => {
+    const enrichHits = (hits: Awaited<ReturnType<typeof searchKnowledge>>) => Promise.all(hits.map(async (hit) => {
       try {
         const document = await getRuleDocument(hit.chunk.record_id);
         return { ...hit, chunk: { ...hit.chunk, text: document.content_plain_text } };
@@ -174,7 +163,25 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
         return hit;
       }
     }));
-    return compendiumMonsterCandidates(enriched);
+    const currentHits = await searchKnowledge({
+      text: query, top_k: 6, candidate_k: 24, min_score: 0.25,
+      content_types: ["monsters"], editions: ["2024", "2025"],
+      current_official: true,
+    });
+    const enrichedCurrent = await enrichHits(currentHits);
+    let allHits = enrichedCurrent;
+    if (
+      enrichedCurrent.length === 0
+      || enrichedCurrent.every((hit) => parseMonsterStats(hit).actions.length === 0)
+    ) {
+      const legacyHits = await searchKnowledge({
+        text: query, top_k: 6, candidate_k: 24, min_score: 0.25,
+        content_types: ["monsters"], editions: ["2014", "legacy"],
+        current_official: false, allow_unknown: false, allow_third_party: false,
+      });
+      allHits = [...enrichedCurrent, ...await enrichHits(legacyHits)];
+    }
+    return compendiumMonsterCandidates(allHits, query);
   };
   const candidates = useMemo(() => [
     ...(characters.data ?? []).map((entity) => ({ key: `character:${entity.id}`, label: `玩家 · ${entity.name}` })),
@@ -225,6 +232,9 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
               hp: preview.npc.max_hp,
               speed: preview.npc.speed,
               challengeRating: preview.npc.challenge_rating ?? "0",
+              templateSourceKey: null,
+              abilityScores: preview.npc.ability_scores,
+              actions: preview.npc.actions,
             },
             references: [] as MonsterReferenceCandidate[],
           };
@@ -234,6 +244,12 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
               kind: "npc" as const, prompt, sourceKey: "generated-npc",
               name: suggestedNpcName(prompt), description: assistantText || prompt,
               armorClass: 10, hp: 10, speed: 30, challengeRating: "0",
+              templateSourceKey: null,
+              abilityScores: {
+                strength: 10, dexterity: 10, constitution: 10,
+                intelligence: 10, wisdom: 10, charisma: 10,
+              },
+              actions: [],
             },
             references: [] as MonsterReferenceCandidate[],
           };
@@ -245,7 +261,10 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
       const existing = campaignMonsterCandidates(availableMonsters, `${prompt} ${sceneContext}`);
       let compendium: MonsterReferenceCandidate[] = [];
       try {
-        compendium = await findCompendiumMonsters(`${prompt} ${assistantText} ${sceneContext}`);
+        const requestedName = requestedMonsterName(prompt);
+        compendium = await findCompendiumMonsters(
+          `${requestedName} ${prompt} ${assistantText} ${sceneContext}`,
+        );
       } catch {
         // The local index may be rebuilding. The DM still gets a clearly
         // labeled custom draft, and no state is written without confirmation.
@@ -311,7 +330,12 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
   const chooseArrivalReference = (key: string) => {
     const reference = arrivalReferences.find((item) => item.key === key);
     if (reference && arrivalDraft) setArrivalDraft(monsterDraftFromCandidate(reference, arrivalDraft.prompt));
-    else if (arrivalDraft) setArrivalDraft(customMonsterDraft(arrivalDraft.prompt));
+    else if (arrivalDraft) setArrivalDraft(customMonsterDraft(arrivalDraft.prompt, arrivalReferences[0]));
+  };
+  const chooseCustomTemplate = (key: string) => {
+    if (!arrivalDraft) return;
+    const reference = arrivalReferences.find((item) => item.key === key);
+    setArrivalDraft(customMonsterDraft(arrivalDraft.prompt, reference));
   };
   const arrivalConfirm = useMutation({
     mutationFn: async () => {
@@ -341,25 +365,27 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
         if (reference?.origin === "campaign") {
           entityId = reference.monster.id;
         } else {
-          const parsed = reference?.origin === "compendium"
-            ? parseMonsterStats(reference.hit)
-            : null;
+          const templateReference = arrivalReferences.find(
+            (item) => item.key === arrivalDraft.templateSourceKey,
+          );
+          const isOfficialReference = reference?.origin === "compendium";
+          const templateLabel = templateReference?.label;
           const monster = await createMonster(campaignId, {
             name: arrivalDraft.name,
-            source_record_id: reference?.origin === "compendium" ? reference.hit.chunk.record_id : null,
-            source_name: reference?.origin === "compendium"
+            source_record_id: isOfficialReference ? reference.hit.chunk.record_id : null,
+            source_name: isOfficialReference
               ? `${reference.hit.chunk.source_book ?? reference.hit.chunk.source_title} · ${reference.hit.chunk.edition}`
-              : "DM自制模板（非图鉴）",
+              : templateLabel
+                ? `DM自制怪物 · 规则模板参考 ${templateLabel}`
+                : "DM自制模板（非图鉴）",
             armor_class: arrivalDraft.armorClass,
             hp: arrivalDraft.hp,
             max_hp: arrivalDraft.hp,
             speed: arrivalDraft.speed,
             challenge_rating: arrivalDraft.challengeRating,
-            ability_scores: parsed?.abilityScores ?? {
-              strength: 10, dexterity: 10, constitution: 10,
-              intelligence: 8, wisdom: 10, charisma: 8,
-            },
-            notes: `${arrivalDraft.description}\n登场原因：${arrivalDraft.prompt}${reference?.origin === "compendium" ? "\n由本地图鉴条目创建，DM已确认。" : "\n自制模板，未匹配到可靠图鉴条目，DM应复核数值。"}`,
+            ability_scores: arrivalDraft.abilityScores,
+            actions: arrivalDraft.actions,
+            notes: `${arrivalDraft.description}\n登场原因：${arrivalDraft.prompt}${isOfficialReference ? "\n由本地图鉴条目创建，DM已确认。" : templateLabel ? `\n自制怪物，规则数值与动作绑定模板“${templateLabel}”，DM已确认。` : "\n自制模板，未绑定图鉴规则模板，DM应复核数值。"}`,
           });
           entityId = monster.id;
         }
@@ -812,8 +838,31 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
                   ))}
                   <label className={`block cursor-pointer rounded border p-2 text-xs ${arrivalDraft.sourceKey === "custom" ? "border-amber-700/70 bg-amber-950/20" : "border-ink-700 bg-ink-950/40"}`}>
                     <span className="flex items-center gap-2"><input checked={arrivalDraft.sourceKey === "custom"} name="arrival-source" onChange={() => chooseArrivalReference("custom")} type="radio" /><strong className="text-parchment-100">使用自制模板</strong><Badge tone="warn">非图鉴</Badge></span>
-                    <span className="mt-1 block text-stone-600">仅在图鉴没有合适条目时使用；数值需要 DM 自行复核。</span>
+                    <span className="mt-1 block text-stone-600">保留自定义名称和设定，同时可以绑定一个真实 D&D 怪物作为 AC、HP、属性与动作模板。</span>
                   </label>
+                  {arrivalDraft.sourceKey === "custom" ? (
+                    <label className="block rounded border border-amber-900/50 bg-ink-950/50 p-2 text-2xs text-stone-400">
+                      绑定规则模板
+                      <select
+                        aria-label="自制怪物规则模板"
+                        className={`${selectCls} mt-1`}
+                        onChange={(event) => chooseCustomTemplate(event.target.value)}
+                        value={arrivalDraft.templateSourceKey ?? ""}
+                      >
+                        <option value="">不绑定（DM自行填写数值和动作）</option>
+                        {arrivalReferences.map((reference) => (
+                          <option key={`template-${reference.key}`} value={reference.key}>
+                            {reference.label} · {reference.origin === "compendium" ? "本地图鉴" : "已有原子"}
+                          </option>
+                        ))}
+                      </select>
+                      <span className="mt-1 block">
+                        {arrivalDraft.templateSourceKey
+                          ? `已绑定模板；将继承 ${arrivalDraft.actions.length} 个动作，但数据库中仍保存为“${arrivalDraft.name}”这个自制怪物。`
+                          : "未绑定时只会使用临时基础攻击。"}
+                      </span>
+                    </label>
+                  ) : null}
                 </div>
               ) : (
                 <div className="mb-3 flex flex-wrap gap-2"><Badge tone="ai">AI 可编辑草案</Badge><span className="text-2xs text-stone-600">NPC 不会在确认前进入数据库。</span></div>
