@@ -1,4 +1,10 @@
-from dnd_dm_assistant.domain.exploration import cover_between, grid_distance_ft, line_of_sight, movement_cost_ft, travel_minutes
+from dnd_dm_assistant.domain.exploration import (
+    cover_between,
+    grid_distance_ft,
+    line_of_sight,
+    movement_cost_ft,
+    travel_minutes,
+)
 
 
 def test_geometry_and_difficult_path() -> None:

@@ -18,8 +18,18 @@ depends_on: str | Sequence[str] | None = None
 def _timestamps() -> list[sa.Column[object]]:
     return [
         sa.Column("id", sa.String(length=36), nullable=False),
-        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.current_timestamp(), nullable=False),
-        sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.func.current_timestamp(), nullable=False),
+        sa.Column(
+            "created_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.func.current_timestamp(),
+            nullable=False,
+        ),
+        sa.Column(
+            "updated_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.func.current_timestamp(),
+            nullable=False,
+        ),
     ]
 
 
@@ -77,7 +87,9 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(["campaign_id"], ["campaigns.id"], ondelete="CASCADE"),
         sa.ForeignKeyConstraint(["character_id"], ["characters.id"], ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("id"),
-        sa.UniqueConstraint("campaign_id", "character_id", "faction_name", name="uq_faction_reputation"),
+        sa.UniqueConstraint(
+            "campaign_id", "character_id", "faction_name", name="uq_faction_reputation"
+        ),
     )
     op.create_table(
         "clue_discoveries",
@@ -90,7 +102,9 @@ def upgrade() -> None:
         sa.Column("notes", sa.Text()),
         sa.ForeignKeyConstraint(["campaign_id"], ["campaigns.id"], ondelete="CASCADE"),
         sa.ForeignKeyConstraint(["clue_id"], ["clues.id"], ondelete="CASCADE"),
-        sa.ForeignKeyConstraint(["discoverer_character_id"], ["characters.id"], ondelete="SET NULL"),
+        sa.ForeignKeyConstraint(
+            ["discoverer_character_id"], ["characters.id"], ondelete="SET NULL"
+        ),
         sa.ForeignKeyConstraint(["scene_id"], ["scenes.id"], ondelete="SET NULL"),
         sa.PrimaryKeyConstraint("id"),
     )

@@ -366,69 +366,129 @@ class Event(Timestamped, Base):
 
 class StoryBeat(Timestamped, Base):
     __tablename__ = "story_beats"
-    campaign_id: Mapped[str] = mapped_column(String(36), ForeignKey("campaigns.id", ondelete="CASCADE"), nullable=False)
+    campaign_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("campaigns.id", ondelete="CASCADE"), nullable=False
+    )
     title: Mapped[str] = mapped_column(String(200), nullable=False)
     description: Mapped[str | None] = mapped_column(Text)
-    status: Mapped[str] = mapped_column(String(30), nullable=False, default="planned", server_default="planned")
-    prerequisites: Mapped[list[object]] = mapped_column(JSON, nullable=False, default=list, server_default="[]")
-    branches: Mapped[dict[str, object]] = mapped_column(JSON, nullable=False, default=dict, server_default="{}")
+    status: Mapped[str] = mapped_column(
+        String(30), nullable=False, default="planned", server_default="planned"
+    )
+    prerequisites: Mapped[list[object]] = mapped_column(
+        JSON, nullable=False, default=list, server_default="[]"
+    )
+    branches: Mapped[dict[str, object]] = mapped_column(
+        JSON, nullable=False, default=dict, server_default="{}"
+    )
     deadline_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
 
 class QuestObjective(Timestamped, Base):
     __tablename__ = "quest_objectives"
-    campaign_id: Mapped[str] = mapped_column(String(36), ForeignKey("campaigns.id", ondelete="CASCADE"), nullable=False)
-    quest_id: Mapped[str] = mapped_column(String(36), ForeignKey("quests.id", ondelete="CASCADE"), nullable=False)
+    campaign_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("campaigns.id", ondelete="CASCADE"), nullable=False
+    )
+    quest_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("quests.id", ondelete="CASCADE"), nullable=False
+    )
     title: Mapped[str] = mapped_column(String(200), nullable=False)
-    objective_type: Mapped[str] = mapped_column(String(40), nullable=False, default="custom", server_default="custom")
-    status: Mapped[str] = mapped_column(String(30), nullable=False, default="active", server_default="active")
+    objective_type: Mapped[str] = mapped_column(
+        String(40), nullable=False, default="custom", server_default="custom"
+    )
+    status: Mapped[str] = mapped_column(
+        String(30), nullable=False, default="active", server_default="active"
+    )
     hidden: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default="0")
     deadline_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
-    details: Mapped[dict[str, object]] = mapped_column(JSON, nullable=False, default=dict, server_default="{}")
+    details: Mapped[dict[str, object]] = mapped_column(
+        JSON, nullable=False, default=dict, server_default="{}"
+    )
 
 
 class NPCMemory(Timestamped, Base):
     __tablename__ = "npc_memories"
-    campaign_id: Mapped[str] = mapped_column(String(36), ForeignKey("campaigns.id", ondelete="CASCADE"), nullable=False)
-    npc_id: Mapped[str] = mapped_column(String(36), ForeignKey("npcs.id", ondelete="CASCADE"), nullable=False)
+    campaign_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("campaigns.id", ondelete="CASCADE"), nullable=False
+    )
+    npc_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("npcs.id", ondelete="CASCADE"), nullable=False
+    )
     summary: Mapped[str] = mapped_column(Text, nullable=False)
-    memory_kind: Mapped[str] = mapped_column(String(30), nullable=False, default="witnessed", server_default="witnessed")
-    attitude_delta: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
-    tags: Mapped[list[object]] = mapped_column(JSON, nullable=False, default=list, server_default="[]")
+    memory_kind: Mapped[str] = mapped_column(
+        String(30), nullable=False, default="witnessed", server_default="witnessed"
+    )
+    attitude_delta: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=0, server_default="0"
+    )
+    tags: Mapped[list[object]] = mapped_column(
+        JSON, nullable=False, default=list, server_default="[]"
+    )
     secret: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default="0")
 
 
 class FactionReputation(Timestamped, Base):
     __tablename__ = "faction_reputations"
-    campaign_id: Mapped[str] = mapped_column(String(36), ForeignKey("campaigns.id", ondelete="CASCADE"), nullable=False)
-    character_id: Mapped[str] = mapped_column(String(36), ForeignKey("characters.id", ondelete="CASCADE"), nullable=False)
+    campaign_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("campaigns.id", ondelete="CASCADE"), nullable=False
+    )
+    character_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("characters.id", ondelete="CASCADE"), nullable=False
+    )
     faction_name: Mapped[str] = mapped_column(String(200), nullable=False)
     score: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
     notes: Mapped[str | None] = mapped_column(Text)
-    __table_args__ = (UniqueConstraint("campaign_id", "character_id", "faction_name", name="uq_faction_reputation"),)
+    __table_args__ = (
+        UniqueConstraint(
+            "campaign_id", "character_id", "faction_name", name="uq_faction_reputation"
+        ),
+    )
 
 
 class ClueDiscovery(Timestamped, Base):
     __tablename__ = "clue_discoveries"
-    campaign_id: Mapped[str] = mapped_column(String(36), ForeignKey("campaigns.id", ondelete="CASCADE"), nullable=False)
-    clue_id: Mapped[str] = mapped_column(String(36), ForeignKey("clues.id", ondelete="CASCADE"), nullable=False)
-    discoverer_character_id: Mapped[str | None] = mapped_column(String(36), ForeignKey("characters.id", ondelete="SET NULL"))
-    method: Mapped[str] = mapped_column(String(100), nullable=False, default="other", server_default="other")
-    scene_id: Mapped[str | None] = mapped_column(String(36), ForeignKey("scenes.id", ondelete="SET NULL"))
+    campaign_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("campaigns.id", ondelete="CASCADE"), nullable=False
+    )
+    clue_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("clues.id", ondelete="CASCADE"), nullable=False
+    )
+    discoverer_character_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("characters.id", ondelete="SET NULL")
+    )
+    method: Mapped[str] = mapped_column(
+        String(100), nullable=False, default="other", server_default="other"
+    )
+    scene_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("scenes.id", ondelete="SET NULL")
+    )
     notes: Mapped[str | None] = mapped_column(Text)
 
 
 class DowntimeActivity(Timestamped, Base):
     __tablename__ = "downtime_activities"
-    campaign_id: Mapped[str] = mapped_column(String(36), ForeignKey("campaigns.id", ondelete="CASCADE"), nullable=False)
-    character_id: Mapped[str] = mapped_column(String(36), ForeignKey("characters.id", ondelete="CASCADE"), nullable=False)
+    campaign_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("campaigns.id", ondelete="CASCADE"), nullable=False
+    )
+    character_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("characters.id", ondelete="CASCADE"), nullable=False
+    )
     activity_type: Mapped[str] = mapped_column(String(40), nullable=False)
     title: Mapped[str] = mapped_column(String(200), nullable=False)
-    status: Mapped[str] = mapped_column(String(30), nullable=False, default="planned", server_default="planned")
-    duration_days: Mapped[int] = mapped_column(Integer, nullable=False, default=1, server_default="1")
-    progress_days: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
-    daily_cost_cp: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
-    details: Mapped[dict[str, object]] = mapped_column(JSON, nullable=False, default=dict, server_default="{}")
+    status: Mapped[str] = mapped_column(
+        String(30), nullable=False, default="planned", server_default="planned"
+    )
+    duration_days: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=1, server_default="1"
+    )
+    progress_days: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=0, server_default="0"
+    )
+    daily_cost_cp: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=0, server_default="0"
+    )
+    details: Mapped[dict[str, object]] = mapped_column(
+        JSON, nullable=False, default=dict, server_default="{}"
+    )
 
 
 class Combat(Timestamped, Base):
@@ -1162,8 +1222,7 @@ class AdvancementRecord(Timestamped, Base):
     confirmed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     __table_args__ = (
         CheckConstraint(
-            "from_level >= 1 AND to_level >= 2 AND to_level <= 20 "
-            "AND to_level = from_level + 1",
+            "from_level >= 1 AND to_level >= 2 AND to_level <= 20 AND to_level = from_level + 1",
             name="ck_advancement_level_step",
         ),
         CheckConstraint(
@@ -1205,9 +1264,7 @@ class CharacterCompanion(Timestamped, Base):
         Integer, nullable=False, default=10, server_default="10"
     )
     speed: Mapped[int] = mapped_column(Integer, nullable=False, default=30, server_default="30")
-    active: Mapped[bool] = mapped_column(
-        Boolean, nullable=False, default=True, server_default="1"
-    )
+    active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True, server_default="1")
     notes: Mapped[str | None] = mapped_column(Text)
     __table_args__ = (
         CheckConstraint("length(trim(name)) > 0", name="ck_companion_name_nonempty"),

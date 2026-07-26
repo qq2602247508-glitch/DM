@@ -15,8 +15,8 @@ from dnd_dm_assistant.api.routes.combat_engine import router as combat_engine_ro
 from dnd_dm_assistant.api.routes.encounters import router as encounters_router
 from dnd_dm_assistant.api.routes.health import router as health_router
 from dnd_dm_assistant.api.routes.knowledge import router as knowledge_router
-from dnd_dm_assistant.api.routes.rests import router as rests_router
 from dnd_dm_assistant.api.routes.narrative import router as narrative_router
+from dnd_dm_assistant.api.routes.rests import router as rests_router
 from dnd_dm_assistant.api.routes.spells_economy import router as spells_economy_router
 from dnd_dm_assistant.api.routes.world import router as world_router
 from dnd_dm_assistant.config import Settings, get_settings
