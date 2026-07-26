@@ -123,6 +123,7 @@ export const NPC_STATUS_LABELS: Record<string, string> = {
 export const COMBAT_STATUS_LABELS: Record<string, string> = {
   active: "进行中",
   ended: "已结束",
+  archived: "已归档",
 };
 
 export const VISIBILITY_LABELS: Record<EventVisibility, string> = {

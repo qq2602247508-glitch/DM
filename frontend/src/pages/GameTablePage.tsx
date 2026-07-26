@@ -9,17 +9,19 @@ import {
   rejectEncounterAdjustment, revertEncounterAdjustment,
 } from "../api/entities";
 import type {
-  AgentResponse, EncounterAdjustment, EncounterOperation, Scene, SceneParticipant,
+  AgentResponse, Character, EncounterAdjustment, EncounterOperation, Monster, Npc, Scene, SceneParticipant,
 } from "../api/types";
 import {
   addSceneParticipant, createMonster, createScene, createWorldItem, generateNpc,
   listMonsters, listSceneParticipants, listScenes,
   removeSceneParticipant, startSceneCombat,
 } from "../api/world";
+import { CharacterSheetDetail } from "../components/CharacterSheetDetail";
 import { Panel } from "../components/Panel";
 import { RestPanel } from "../components/RestPanel";
 import { RequireCampaign } from "../components/RequireCampaign";
 import { SceneOutlinePanel } from "../components/SceneOutlinePanel";
+import { SceneEntityDetailDialog } from "../components/SceneEntityDetailDialog";
 import { useToast } from "../hooks/toastContext";
 import { navigate } from "../hooks/useHashRoute";
 import { Badge, Button, EmptyState, ErrorState, LoadingBlock } from "../ui/primitives";
@@ -104,6 +106,7 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
   const [tableMode, setTableMode] = useState<"prep" | "play">("play");
   const [showEncounterTools, setShowEncounterTools] = useState(false);
   const [entityKey, setEntityKey] = useState("");
+  const [detailParticipant, setDetailParticipant] = useState<SceneParticipant | null>(null);
   const [input, setInput] = useState("");
   const [entries, setEntries] = useState<ProgressEntry[]>([]);
   const [lastResponse, setLastResponse] = useState<AgentResponse | null>(null);
@@ -1079,7 +1082,8 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
           <div className="mt-2"><RestPanel campaignId={campaignId} characters={characters.data ?? []} compact defaultCharacterIds={(participants.data ?? []).filter((item) => item.entity_type === "character").map((item) => item.entity_id)} /></div>
           {participants.isLoading ? <LoadingBlock /> : null}
           {participants.data?.length === 0 ? <EmptyState title="当前场景无人" hint="从上方选择玩家、NPC 或怪物进入。" /> : null}
-          <ul className="m-0 mt-3 space-y-2 p-0">{participants.data?.map((participant) => <li className="list-none rounded border border-ink-700 bg-ink-950/50 p-2" key={participant.id}><div className="flex items-center gap-2"><Badge tone={participant.entity_type === "character" ? "ok" : participant.entity_type === "npc" ? "ai" : "danger"}>{participant.entity_type === "character" ? "玩家" : participant.entity_type === "npc" ? "NPC" : "怪物"}</Badge>{participant.role === "defeated" ? <Badge>已击败</Badge> : null}<strong className="min-w-0 flex-1 truncate text-xs text-parchment-100">{participant.entity.name}</strong><Button loading={participantRemove.isPending} onClick={() => participantRemove.mutate(participant)} size="sm">离开</Button></div><div className="mt-2"><HpBar hp={participant.entity.hp} maxHp={participant.entity.max_hp} /></div><p className="mb-0 mt-1 text-2xs text-stone-600">AC {participant.entity.armor_class} · 速度 {participant.entity.speed}</p></li>)}</ul>
+          <p className="mb-0 mt-3 text-2xs text-stone-600">点击任意卡片查看完整原子详情；这里负责把角色、NPC、怪物汇合到当前 Scene。</p>
+          <ul className="m-0 mt-2 space-y-2 p-0">{participants.data?.map((participant) => <li className="list-none" key={participant.id}><div aria-label={`查看${participant.entity.name}详情`} className="w-full cursor-pointer rounded border border-ink-700 bg-ink-950/50 p-2 text-left transition hover:border-violet-600 hover:bg-ink-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400" onClick={() => setDetailParticipant(participant)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); setDetailParticipant(participant); } }} role="button" tabIndex={0}><div className="flex items-center gap-2"><Badge tone={participant.entity_type === "character" ? "ok" : participant.entity_type === "npc" ? "ai" : "danger"}>{participant.entity_type === "character" ? "玩家" : participant.entity_type === "npc" ? "NPC" : "怪物"}</Badge>{participant.role === "defeated" ? <Badge>已击败</Badge> : null}<strong className="min-w-0 flex-1 truncate text-xs text-parchment-100">{participant.entity.name}</strong><Button loading={participantRemove.isPending} onClick={(event) => { event.stopPropagation(); participantRemove.mutate(participant); }} size="sm">离开</Button></div><div className="mt-2"><HpBar hp={participant.entity.hp} maxHp={participant.entity.max_hp} /></div><p className="mb-0 mt-1 text-2xs text-stone-600">AC {participant.entity.armor_class} · 速度 {participant.entity.speed} · 点击查看详情</p></div></li>)}</ul>
         </Panel>
         <Panel eyebrow="自由推进 / 快速推进" title="游戏推进对话">
           {!sceneId ? <EmptyState title="先选择场景" hint="选择当前场景后，副 DM 才能读取正确的情景状态。" /> : null}
@@ -1221,6 +1225,8 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
           </Panel>
         </div>
       </div> : null}
+      {detailParticipant?.entity_type === "character" ? <CharacterSheetDetail campaignId={campaignId} character={detailParticipant.entity as Character} onClose={() => setDetailParticipant(null)} /> : null}
+      {detailParticipant?.entity_type === "npc" || detailParticipant?.entity_type === "monster" ? <SceneEntityDetailDialog entity={detailParticipant.entity as Npc | Monster} entityType={detailParticipant.entity_type} onClose={() => setDetailParticipant(null)} /> : null}
     </div>
   );
 }

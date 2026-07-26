@@ -537,7 +537,7 @@ class EventPatch(BaseModel):
 class CombatCreate(BaseModel):
     name: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=200)]
     scene_id: str | None = None
-    status: str = "active"
+    status: Literal["active", "ended", "archived"] = "active"
     round_number: int = Field(1, ge=1)
     current_turn_index: int = Field(0, ge=0)
     difficulty: Literal["trivial", "low", "moderate", "high"] | None = None
@@ -551,7 +551,7 @@ class CombatPatch(BaseModel):
         str | None, StringConstraints(strip_whitespace=True, min_length=1, max_length=200)
     ] = None
     scene_id: str | None = None
-    status: str | None = None
+    status: Literal["active", "ended", "archived"] | None = None
     round_number: int | None = Field(None, ge=1)
     current_turn_index: int | None = Field(None, ge=0)
     difficulty: Literal["trivial", "low", "moderate", "high"] | None = None

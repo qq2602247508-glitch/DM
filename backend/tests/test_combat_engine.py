@@ -799,6 +799,33 @@ def test_reset_combat_restores_start_state_and_clears_log(
     assert reset_ended.json()["combat"]["round_number"] == 1
     assert reset_ended.json()["combat"]["current_turn_index"] == 0
 
+    reended = combat_client.patch(
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}",
+        headers={"If-Match": f'"{reset_ended.json()["combat"]["version"]}"'},
+        json={"status": "ended"},
+    )
+    assert reended.status_code == 200
+    archived = combat_client.patch(
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}",
+        headers={"If-Match": f'"{reended.json()["version"]}"'},
+        json={"status": "archived"},
+    )
+    assert archived.status_code == 200
+    assert archived.json()["status"] == "archived"
+    reset_archived = combat_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}/reset",
+        headers={"X-Request-ID": "reset-archived-combat"},
+        json={"combat_version": archived.json()["version"]},
+    )
+    assert reset_archived.status_code == 400
+    restored_archive = combat_client.patch(
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}",
+        headers={"If-Match": f'"{archived.json()["version"]}"'},
+        json={"status": "ended"},
+    )
+    assert restored_archive.status_code == 200
+    assert restored_archive.json()["status"] == "ended"
+
 
 def test_new_concentration_previews_and_ends_previous_effect(
     combat_client: TestClient,

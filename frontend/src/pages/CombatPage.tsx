@@ -829,6 +829,7 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
   const [automaticMovementPending, setAutomaticMovementPending] = useState(false);
   const [expandedFighterId, setExpandedFighterId] = useState<string | null>(null);
   const [resetConfirmation, setResetConfirmation] = useState(false);
+  const [archiveConfirmation, setArchiveConfirmation] = useState(false);
   const [resetGeneration, setResetGeneration] = useState(0);
   const updateTargetableFighterIds = useCallback((next: ReadonlySet<string>) => {
     setTargetableFighterIds((current) => {
@@ -901,7 +902,7 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
   const update = useMutation({
     mutationFn: (payload: { status?: string; round_number?: number; current_turn_index?: number; difficulty?: Difficulty; base_xp?: number; difficulty_adjustments?: unknown[] }) =>
       updateCombat(campaignId, combat.id, payload, combat.version),
-    onSuccess: () => { invalidate(); showToast("战斗进度已保存"); },
+    onSuccess: () => { setArchiveConfirmation(false); invalidate(); showToast("战斗进度已保存"); },
     onError: () => showToast("战斗进度保存失败", "error"),
   });
   const resetCurrentCombat = useMutation({
@@ -1099,14 +1100,14 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
           <p className="mb-0 mt-1 text-2xs text-stone-600">难度估算综合角色等级、怪物 CR/XP 与情景修正；行动经济、地形和资源消耗仍由 DM 最终判断。</p>
         </div>
         <div className="flex gap-1.5 md:flex-col">
-          <Button disabled={manualAdjustment.isPending} onClick={() => manualAdjustment.mutate(-1)} size="sm">DM 降一级</Button>
-          <Button disabled={manualAdjustment.isPending} onClick={() => manualAdjustment.mutate(1)} size="sm">DM 升一级</Button>
+          <Button disabled={combat.status === "archived" || manualAdjustment.isPending} onClick={() => manualAdjustment.mutate(-1)} size="sm">DM 降一级</Button>
+          <Button disabled={combat.status === "archived" || manualAdjustment.isPending} onClick={() => manualAdjustment.mutate(1)} size="sm">DM 升一级</Button>
         </div>
       </div>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <Badge tone={combat.status === "active" ? "danger" : "neutral"}>{COMBAT_STATUS_LABELS[combat.status] ?? combat.status}</Badge>
-        <div className="flex gap-2">
-          <Button onClick={() => setAutoEnemies((value) => !value)} size="sm" variant={autoEnemies ? "primary" : "ghost"}>怪物全自动：{autoEnemies ? "开" : "关"}</Button>
+        <div className="flex flex-wrap gap-2">
+          <Button disabled={combat.status !== "active"} onClick={() => setAutoEnemies((value) => !value)} size="sm" variant={autoEnemies ? "primary" : "ghost"}>怪物全自动：{autoEnemies ? "开" : "关"}</Button>
           {resetConfirmation ? (
             <>
               <Button
@@ -1131,6 +1132,13 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
             </Button>
           )}
           <Button disabled={combat.status !== "active" || update.isPending} onClick={() => update.mutate({ status: "ended" })} size="sm">结束战斗</Button>
+          {combat.status === "ended" ? archiveConfirmation ? (
+            <>
+              <Button disabled={update.isPending} loading={update.isPending} onClick={() => update.mutate({ status: "archived" })} size="sm" variant="danger">确认归档</Button>
+              <Button disabled={update.isPending} onClick={() => setArchiveConfirmation(false)} size="sm">取消</Button>
+            </>
+          ) : <Button onClick={() => setArchiveConfirmation(true)} size="sm">归档战斗</Button> : null}
+          {combat.status === "archived" ? <Button disabled={update.isPending} loading={update.isPending} onClick={() => update.mutate({ status: "ended" })} size="sm">恢复归档</Button> : null}
           {combat.status === "ended" && combat.scene_id ? <Button onClick={() => navigate("/game-table")} size="sm" variant="primary">返回游戏推进台</Button> : null}
         </div>
       </div>
@@ -1139,6 +1147,16 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
           {combat.status === "ended" ? "这场战斗将重新变为进行中。" : ""}
           将清空本场日志、效果、死亡豁免和地图位置，并把所有参战者恢复到开战记录、回到第1轮第一位。
           已经写入角色背包、金币或经验的结算不会被倒扣，也不会再次发放。
+        </p>
+      ) : null}
+      {archiveConfirmation ? (
+        <p className="mb-0 mt-2 rounded border border-amber-800/60 bg-amber-950/15 px-3 py-2 text-2xs text-amber-200">
+          归档后本场战斗只读，日志、结算和奖励记录都会保留；以后可随时恢复，不会删除任何战役事实。
+        </p>
+      ) : null}
+      {combat.status === "archived" ? (
+        <p className="mb-0 mt-2 rounded border border-ink-600 bg-ink-950/60 px-3 py-2 text-2xs text-stone-400">
+          这场战斗已归档并处于只读状态。仍可查看先攻卡、战斗地图、日志与既有结算记录；恢复归档后可继续管理。
         </p>
       ) : null}
       {combat.status === "active" && allMonstersDefeated ? (
@@ -1175,7 +1193,7 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
           {fighters.isLoading ? <LoadingBlock label="正在读取先攻列表…" /> : null}
           {fighters.isError ? <ErrorState error={fighters.error} onRetry={() => void fighters.refetch()} /> : null}
           {!fighters.isLoading && ordered.length === 0 ? <EmptyState title="尚无参与者" hint="录入先攻与 HP 后即可开始逐回合追踪。" /> : null}
-          {ordered.length > 0 ? (
+          {ordered.length > 0 && combat.status !== "archived" ? (
             <details className="mb-3 rounded-lg border border-ink-700 bg-ink-950/40">
               <summary className="cursor-pointer px-3 py-2 text-xs font-semibold text-stone-300">DM状态调整与高级编辑</summary>
               <ol className="m-0 flex list-none flex-col gap-1.5 border-t border-ink-700 p-3">
@@ -1323,8 +1341,10 @@ function CombatContent({ campaignId }: { campaignId: string }): ReactElement {
     const available = combats.data ?? [];
     if (available.length === 0) return;
     if (available.some((combat) => combat.id === selectedCombatId)) return;
-    const preferred = [...available].reverse().find((combat) => combat.status === "active")
-      ?? available[available.length - 1];
+    const newestFirst = [...available].reverse();
+    const preferred = newestFirst.find((combat) => combat.status === "active")
+      ?? newestFirst.find((combat) => combat.status === "ended")
+      ?? newestFirst[0];
     if (!preferred) return;
     setSelectedCombatId(preferred.id);
     sessionStorage.setItem(`dnd-dm-active-combat:${campaignId}`, preferred.id);
@@ -1352,7 +1372,7 @@ function CombatContent({ campaignId }: { campaignId: string }): ReactElement {
             >
               {combats.data?.map((combat) => (
                 <option key={combat.id} value={combat.id}>
-                  {combat.status === "active" ? "进行中" : "已结束"} · {combat.name}
+                  {COMBAT_STATUS_LABELS[combat.status] ?? combat.status} · {combat.name}
                 </option>
               ))}
             </select>
