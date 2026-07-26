@@ -1135,6 +1135,7 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
               campaignId={campaignId}
               combatId={combat.id}
               fighters={ordered}
+              onAutoEnemiesChange={setAutoEnemies}
               onEnemyTurnComplete={() => {
                 if (!nextTurn.isPending) nextTurn.mutate();
               }}

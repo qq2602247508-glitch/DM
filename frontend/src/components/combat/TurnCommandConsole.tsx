@@ -119,6 +119,7 @@ export function TurnCommandConsole({
   fighters,
   autoEnemies,
   automationReady,
+  onAutoEnemiesChange,
   onEnemyTurnComplete,
   onRangeChange,
   onTargetChange,
@@ -133,6 +134,7 @@ export function TurnCommandConsole({
   fighters: Combatant[];
   autoEnemies: boolean;
   automationReady: boolean;
+  onAutoEnemiesChange: (enabled: boolean) => void;
   onEnemyTurnComplete: () => void;
   onRangeChange: (range: CombatTargeting | null) => void;
   onTargetChange?: (targetId: string) => void;
@@ -548,10 +550,23 @@ export function TurnCommandConsole({
         <Badge tone={active.action_available ? "ok" : "neutral"}>动作：{active.action_available ? "可用" : "已用"}</Badge>
         <Badge tone={active.bonus_action_available ? "ok" : "neutral"}>附赠：{active.bonus_action_available ? "可用" : "已用"}</Badge>
         <Badge tone={active.reaction_available ? "ok" : "neutral"}>反应：{active.reaction_available ? "可用" : "已用"}</Badge>
-        <div className="ml-auto flex rounded border border-ink-600 p-0.5">
-          <button className={`rounded px-2 py-1 text-2xs ${mode === "assisted" ? "bg-ember-600 text-white" : "text-stone-400"}`} onClick={() => setMode("assisted")} type="button">半自动</button>
-          <button className={`rounded px-2 py-1 text-2xs ${mode === "auto" ? "bg-ember-600 text-white" : "text-stone-400"}`} onClick={() => setMode("auto")} type="button">自动</button>
-        </div>
+        {active.entity_type === "character" ? (
+          <div className="ml-auto">
+            <span className="mb-1 block text-right text-2xs text-stone-500">玩家攻击结算</span>
+            <div className="flex rounded border border-ink-600 p-0.5">
+              <button className={`rounded px-2 py-1 text-2xs ${mode === "assisted" ? "bg-ember-600 text-white" : "text-stone-400"}`} onClick={() => setMode("assisted")} type="button">玩家报骰</button>
+              <button className={`rounded px-2 py-1 text-2xs ${mode === "auto" ? "bg-ember-600 text-white" : "text-stone-400"}`} onClick={() => setMode("auto")} type="button">系统掷骰</button>
+            </div>
+          </div>
+        ) : (
+          <div className="ml-auto">
+            <span className="mb-1 block text-right text-2xs text-stone-500">怪物回合控制</span>
+            <div className="flex rounded border border-ink-600 p-0.5">
+              <button className={`rounded px-2 py-1 text-2xs ${!autoEnemies ? "bg-stone-700 text-white" : "text-stone-400"}`} onClick={() => onAutoEnemiesChange(false)} type="button">DM手动</button>
+              <button className={`rounded px-2 py-1 text-2xs ${autoEnemies ? "bg-ember-600 text-white" : "text-stone-400"}`} onClick={() => onAutoEnemiesChange(true)} type="button">怪物全自动</button>
+            </div>
+          </div>
+        )}
       </div>
 
       {active.entity_type === "character" ? (
@@ -667,7 +682,12 @@ export function TurnCommandConsole({
               若无需玩家掷骰，结算后会自动结束回合。
             </div>
           ) : (
-            <Button disabled={!enemyTarget || !selectedActionAvailable || preview.isPending || requestPlayerSave.isPending || autoResolve.isPending} onClick={() => { if (enemyTarget) { setTargetId(enemyTarget.id); prepareAttack(true, enemyTarget); } }} variant="danger">手动执行怪物动作</Button>
+            <div className="rounded border border-amber-800/60 bg-amber-950/15 p-2">
+              <p className="mb-2 mt-0 text-xs text-amber-200">
+                当前是 DM 手动模式，所以系统不会自行攻击。切换右上角“怪物全自动”后，怪物会立即自行选目标、移动、攻击并结束回合。
+              </p>
+              <Button disabled={!enemyTarget || !selectedActionAvailable || preview.isPending || requestPlayerSave.isPending || autoResolve.isPending} onClick={() => { if (enemyTarget) { setTargetId(enemyTarget.id); prepareAttack(true, enemyTarget); } }} variant="danger">手动执行怪物动作</Button>
+            </div>
           )}
         </div>
       )}
