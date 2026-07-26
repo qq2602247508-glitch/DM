@@ -6,10 +6,13 @@ import type { SceneCombatResult, SceneGrid } from "../api/types";
 import {
   addSceneParticipant,
   createMonster,
+  createPersistentGrid,
+  createSceneObject,
   createScene,
   listMonsters,
   listSceneParticipants,
   listScenes,
+  getSceneGrid,
   removeSceneParticipant,
   startSceneCombat,
 } from "../api/world";
@@ -92,6 +95,8 @@ function ScenesContent({ campaignId }: { campaignId: string }): ReactElement {
   const [monsterHp, setMonsterHp] = useState("10");
   const [monsterDex, setMonsterDex] = useState("10");
   const [combatResult, setCombatResult] = useState<SceneCombatResult | null>(null);
+  const [objectKind, setObjectKind] = useState<"wall" | "door" | "cover" | "terrain" | "light" | "trap" | "treasure" | "furniture" | "portal">("cover");
+  const [objectVisibility, setObjectVisibility] = useState<"public" | "dm" | "hidden">("public");
   const scenes = useQuery({ queryKey: ["scenes", campaignId], queryFn: ({ signal }) => listScenes(campaignId, signal) });
   const locations = useQuery({ queryKey: ["locations", campaignId], queryFn: ({ signal }) => listLocations(campaignId, signal) });
   const characters = useQuery({ queryKey: ["characters", campaignId], queryFn: ({ signal }) => listCharacters(campaignId, signal) });
@@ -105,6 +110,7 @@ function ScenesContent({ campaignId }: { campaignId: string }): ReactElement {
     queryFn: ({ signal }) => listSceneParticipants(campaignId, sceneId, signal),
     enabled: Boolean(sceneId),
   });
+  const persistentGrid = useQuery({ queryKey: ["persistent-scene-grid", campaignId, sceneId], queryFn: ({ signal }) => getSceneGrid(campaignId, sceneId, signal), enabled: Boolean(sceneId), retry: false });
   const candidates = useMemo(() => [
     ...(characters.data ?? []).map((entity) => ({ key: `character:${entity.id}`, label: `玩家 · ${entity.name}` })),
     ...(npcs.data ?? []).map((entity) => ({ key: `npc:${entity.id}`, label: `NPC · ${entity.name}` })),
@@ -127,6 +133,16 @@ function ScenesContent({ campaignId }: { campaignId: string }): ReactElement {
       showToast("场景已创建");
     },
     onError: () => showToast("场景创建失败", "error"),
+  });
+  const gridCreate = useMutation({
+    mutationFn: () => createPersistentGrid(campaignId, sceneId, { width: activeGrid?.width ?? 12, height: activeGrid?.height ?? 8, cell_size_ft: 5, mode: "exploration", public_description: activeScene?.description ?? null }),
+    onSuccess: () => { void client.invalidateQueries({ queryKey: ["persistent-scene-grid", campaignId, sceneId] }); showToast("持久探索网格已生成"); },
+    onError: () => showToast("网格已存在或创建失败", "error"),
+  });
+  const objectCreate = useMutation({
+    mutationFn: (position: { row: number; col: number }) => createSceneObject(campaignId, sceneId, { object_type: objectKind, label: objectKind === "terrain" ? "困难地形" : objectKind, row: position.row, col: position.col, visibility: objectVisibility, metadata_json: objectKind === "terrain" ? { difficult: true } : {} }),
+    onSuccess: () => { void client.invalidateQueries({ queryKey: ["persistent-scene-grid", campaignId, sceneId] }); },
+    onError: () => showToast("对象放置失败", "error"),
   });
   const participantAdd = useMutation({
     mutationFn: () => {
@@ -201,6 +217,8 @@ function ScenesContent({ campaignId }: { campaignId: string }): ReactElement {
           </div>
           {activeScene ? <p className="mb-0 mt-3 text-xs text-stone-500">{activeScene.description || "这个场景尚未添加描述。"} · {participants.data?.length ?? 0} 名参与者</p> : null}
           {activeGrid ? <SceneGridPreview grid={activeGrid} /> : null}
+          {sceneId ? <div className="mt-3 flex flex-wrap gap-2"><Button loading={gridCreate.isPending} onClick={() => gridCreate.mutate()} variant="ghost">生成持久探索网格</Button><span className="self-center text-2xs text-stone-500">网格、对象与位置会写入场景事实；战斗将复用它。</span></div> : null}
+          {persistentGrid.data ? <div className="mt-3"><div className="mb-2 flex flex-wrap gap-2"><select className={selectCls} onChange={(event) => setObjectKind(event.target.value as typeof objectKind)} value={objectKind}>{["wall","door","cover","terrain","light","trap","treasure","furniture","portal"].map((kind) => <option key={kind} value={kind}>{kind}</option>)}</select><select className={selectCls} onChange={(event) => setObjectVisibility(event.target.value as typeof objectVisibility)} value={objectVisibility}><option value="public">公开层</option><option value="dm">DM 私密层</option><option value="hidden">隐藏层</option></select><span className="self-center text-2xs text-stone-500">点击格子放置对象；困难地形移动消耗翻倍。</span></div><div className="grid max-w-[600px] gap-px overflow-hidden rounded border border-ink-700 bg-ink-700" style={{ gridTemplateColumns: `repeat(${persistentGrid.data.grid.width}, minmax(0, 1fr))` }}>{Array.from({ length: persistentGrid.data.grid.width * persistentGrid.data.grid.height }, (_, index) => { const row = Math.floor(index / persistentGrid.data.grid.width) + 1; const col = index % persistentGrid.data.grid.width + 1; const obj = persistentGrid.data.objects.find((item) => item.row === row && item.col === col); return <button className={`aspect-square min-h-6 ${obj?.object_type === "wall" ? "bg-stone-700" : obj?.object_type === "terrain" ? "bg-amber-900" : obj?.visibility !== "public" ? "bg-violet-950" : obj ? "bg-emerald-900" : "bg-ink-950"}`} disabled={objectCreate.isPending} key={`${row}-${col}`} onClick={() => objectCreate.mutate({ row, col })} title={obj ? `${obj.label} · ${obj.visibility}` : `${row},${col}`} type="button" />; })}</div><p className="mt-1 text-2xs text-stone-500">公开 {persistentGrid.data.objects.filter((item) => item.visibility === "public").length} · DM/隐藏 {persistentGrid.data.objects.filter((item) => item.visibility !== "public").length}</p></div> : null}
         </Panel>
         <Panel eyebrow="可复用原子" title="快速创建怪物实例">
           <form className="grid gap-2 sm:grid-cols-5" onSubmit={(event) => { event.preventDefault(); monsterCreate.mutate(); }}>

@@ -7,10 +7,13 @@ from sqlalchemy.exc import IntegrityError
 
 from dnd_dm_assistant.api.dependencies import (
     get_campaign_service,
+    get_exploration_service,
     get_world_generation_service,
     get_world_service,
 )
 from dnd_dm_assistant.api.schemas import (
+    ExplorationConfirmRequest,
+    ExplorationPreviewRequest,
     ItemPickupRequest,
     LocationGenerationConfirmRequest,
     LocationGenerationRequest,
@@ -18,7 +21,12 @@ from dnd_dm_assistant.api.schemas import (
     NPCGenerationRequest,
     SceneCombatStartRequest,
     SceneCreate,
+    SceneGridCreate,
+    SceneObjectCreate,
     SceneParticipantCreate,
+    SceneTokenCreate,
+    TravelConfirmRequest,
+    TravelPreviewRequest,
     WorldItemCreate,
 )
 from dnd_dm_assistant.application.campaigns import CampaignService, NotFoundError
@@ -26,6 +34,7 @@ from dnd_dm_assistant.application.rag import RuntimeUnavailableError
 from dnd_dm_assistant.application.world_generation import WorldGenerationService
 from dnd_dm_assistant.domain.campaign_state import StateNotFoundError, VersionConflict
 from dnd_dm_assistant.domain.world import LocationGenerationPreview, NPCGenerationPreview
+from dnd_dm_assistant.infrastructure.database.exploration_service import ExplorationService
 from dnd_dm_assistant.infrastructure.database.world_service import WorldService
 
 router = APIRouter(prefix="/campaigns/{campaign_id}", tags=["world"])
@@ -239,15 +248,90 @@ def create_scene(
     )
 
 
+@router.get("/scenes/{scene_id}/grid")
+def get_scene_grid(
+    campaign_id: str,
+    scene_id: str,
+    service: Annotated[ExplorationService, Depends(get_exploration_service)],
+) -> dict[str, Any]:
+    return _safe_call(lambda: service.grid(campaign_id, scene_id))
+
+
+@router.post("/scenes/{scene_id}/grid", status_code=status.HTTP_201_CREATED)
+def create_scene_grid(
+    campaign_id: str,
+    scene_id: str,
+    body: SceneGridCreate,
+    service: Annotated[ExplorationService, Depends(get_exploration_service)],
+) -> dict[str, Any]:
+    return _safe_call(lambda: service.create_grid(campaign_id, scene_id, body.model_dump()))
+
+
+@router.post("/scenes/{scene_id}/tokens", status_code=status.HTTP_201_CREATED)
+def create_scene_token(
+    campaign_id: str,
+    scene_id: str,
+    body: SceneTokenCreate,
+    service: Annotated[ExplorationService, Depends(get_exploration_service)],
+) -> dict[str, Any]:
+    return _safe_call(lambda: service.add_token(campaign_id, scene_id, body.model_dump()))
+
+
+@router.post("/scenes/{scene_id}/objects", status_code=status.HTTP_201_CREATED)
+def create_scene_object(
+    campaign_id: str,
+    scene_id: str,
+    body: SceneObjectCreate,
+    service: Annotated[ExplorationService, Depends(get_exploration_service)],
+) -> dict[str, Any]:
+    return _safe_call(lambda: service.add_object(campaign_id, scene_id, body.model_dump()))
+
+
+@router.post("/scenes/{scene_id}/exploration/preview")
+def preview_exploration(
+    campaign_id: str,
+    scene_id: str,
+    body: ExplorationPreviewRequest,
+    service: Annotated[ExplorationService, Depends(get_exploration_service)],
+) -> dict[str, Any]:
+    return _safe_call(lambda: service.preview_exploration(campaign_id, scene_id, body.model_dump()))
+
+
+@router.post("/scenes/{scene_id}/exploration/confirm")
+def confirm_exploration(
+    campaign_id: str,
+    scene_id: str,
+    body: ExplorationConfirmRequest,
+    service: Annotated[ExplorationService, Depends(get_exploration_service)],
+) -> dict[str, Any]:
+    return _safe_call(lambda: service.confirm_exploration(campaign_id, scene_id, body.model_dump()))
+
+
+@router.post("/travel/preview")
+def preview_travel(
+    campaign_id: str,
+    body: TravelPreviewRequest,
+    service: Annotated[ExplorationService, Depends(get_exploration_service)],
+) -> dict[str, Any]:
+    return _safe_call(lambda: service.preview_travel(campaign_id, body.model_dump()))
+
+
+@router.post("/travel/confirm")
+def confirm_travel(
+    campaign_id: str,
+    body: TravelConfirmRequest,
+    service: Annotated[ExplorationService, Depends(get_exploration_service)],
+) -> dict[str, Any]:
+    return _safe_call(lambda: service.confirm_travel(campaign_id, body.model_dump()))
+
+
 @router.get("/scenes/{scene_id}/participants")
 def list_scene_participants(
     campaign_id: str,
     scene_id: str,
     service: Annotated[WorldService, Depends(get_world_service)],
 ) -> dict[str, Any]:
-    return {
-        "items": _safe_call(lambda: service.list_participants(campaign_id, scene_id))
-    }
+    return {"items": _safe_call(lambda: service.list_participants(campaign_id, scene_id))}
 
 
 @router.post("/scenes/{scene_id}/participants", status_code=status.HTTP_201_CREATED)

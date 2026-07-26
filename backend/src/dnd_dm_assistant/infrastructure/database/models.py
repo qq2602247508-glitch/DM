@@ -1085,6 +1085,201 @@ class SceneParticipant(Timestamped, Base):
     )
 
 
+class SceneGrid(Timestamped, Base):
+    __tablename__ = "scene_grids"
+    scene_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("scenes.id", ondelete="CASCADE"), nullable=False, unique=True
+    )
+    width: Mapped[int] = mapped_column(Integer, nullable=False, default=12, server_default="12")
+    height: Mapped[int] = mapped_column(Integer, nullable=False, default=8, server_default="8")
+    cell_size_ft: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=5, server_default="5"
+    )
+    mode: Mapped[str] = mapped_column(
+        String(20), nullable=False, default="narrative", server_default="narrative"
+    )
+    public_description: Mapped[str | None] = mapped_column(Text)
+    dm_description: Mapped[str | None] = mapped_column(Text)
+    layers_json: Mapped[dict[str, object]] = mapped_column(
+        JSON, nullable=False, default=dict, server_default="{}"
+    )
+    __table_args__ = (
+        CheckConstraint(
+            "width >= 1 AND width <= 100 AND height >= 1 AND height <= 100",
+            name="ck_scene_grid_size",
+        ),
+        CheckConstraint(
+            "cell_size_ft >= 1 AND cell_size_ft <= 100", name="ck_scene_grid_cell_size"
+        ),
+        CheckConstraint("mode IN ('narrative','exploration','combat')", name="ck_scene_grid_mode"),
+    )
+
+
+class SceneToken(Timestamped, Base):
+    __tablename__ = "scene_tokens"
+    scene_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("scenes.id", ondelete="CASCADE"), nullable=False
+    )
+    entity_type: Mapped[str] = mapped_column(String(30), nullable=False)
+    entity_id: Mapped[str | None] = mapped_column(String(36))
+    label: Mapped[str] = mapped_column(String(200), nullable=False)
+    row: Mapped[int] = mapped_column(Integer, nullable=False, default=1, server_default="1")
+    col: Mapped[int] = mapped_column(Integer, nullable=False, default=1, server_default="1")
+    size_cells: Mapped[int] = mapped_column(Integer, nullable=False, default=1, server_default="1")
+    elevation_ft: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=0, server_default="0"
+    )
+    visible: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True, server_default="1")
+    metadata_json: Mapped[dict[str, object]] = mapped_column(
+        JSON, nullable=False, default=dict, server_default="{}"
+    )
+    __table_args__ = (
+        CheckConstraint(
+            "entity_type IN ('character','npc','monster','marker')", name="ck_scene_token_type"
+        ),
+        CheckConstraint(
+            "row >= 1 AND col >= 1 AND size_cells >= 1 AND size_cells <= 4",
+            name="ck_scene_token_coords",
+        ),
+        Index("ix_scene_tokens_scene", "scene_id", "id"),
+    )
+
+
+class SceneObject(Timestamped, Base):
+    __tablename__ = "scene_objects"
+    scene_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("scenes.id", ondelete="CASCADE"), nullable=False
+    )
+    object_type: Mapped[str] = mapped_column(String(30), nullable=False)
+    label: Mapped[str] = mapped_column(String(200), nullable=False)
+    row: Mapped[int] = mapped_column(Integer, nullable=False)
+    col: Mapped[int] = mapped_column(Integer, nullable=False)
+    width_cells: Mapped[int] = mapped_column(Integer, nullable=False, default=1, server_default="1")
+    height_cells: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=1, server_default="1"
+    )
+    state: Mapped[str] = mapped_column(
+        String(30), nullable=False, default="active", server_default="active"
+    )
+    visibility: Mapped[str] = mapped_column(
+        String(20), nullable=False, default="public", server_default="public"
+    )
+    interaction_json: Mapped[dict[str, object]] = mapped_column(
+        JSON, nullable=False, default=dict, server_default="{}"
+    )
+    metadata_json: Mapped[dict[str, object]] = mapped_column(
+        JSON, nullable=False, default=dict, server_default="{}"
+    )
+    __table_args__ = (
+        CheckConstraint(
+            "object_type IN ('wall','door','cover','terrain','light','trap','treasure',"
+            "'furniture','portal')",
+            name="ck_scene_object_type",
+        ),
+        CheckConstraint(
+            "state IN ('active','open','closed','destroyed','disarmed','picked_up')",
+            name="ck_scene_object_state",
+        ),
+        CheckConstraint(
+            "visibility IN ('public','dm','hidden')", name="ck_scene_object_visibility"
+        ),
+        CheckConstraint(
+            "row >= 1 AND col >= 1 AND width_cells >= 1 AND height_cells >= 1",
+            name="ck_scene_object_coords",
+        ),
+        Index("ix_scene_objects_scene", "scene_id", "id"),
+    )
+
+
+class VisibilityState(Timestamped, Base):
+    __tablename__ = "visibility_states"
+    scene_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("scenes.id", ondelete="CASCADE"), nullable=False
+    )
+    viewer_key: Mapped[str] = mapped_column(String(100), nullable=False)
+    explored_cells: Mapped[list[object]] = mapped_column(
+        JSON, nullable=False, default=list, server_default="[]"
+    )
+    visible_cells: Mapped[list[object]] = mapped_column(
+        JSON, nullable=False, default=list, server_default="[]"
+    )
+    __table_args__ = (
+        UniqueConstraint("scene_id", "viewer_key", name="uq_visibility_scene_viewer"),
+    )
+
+
+class WorldClock(Timestamped, Base):
+    __tablename__ = "world_clock"
+    campaign_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("campaigns.id", ondelete="CASCADE"), nullable=False, unique=True
+    )
+    current_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    calendar_name: Mapped[str] = mapped_column(
+        String(100), nullable=False, default="Fantasy Calendar", server_default="Fantasy Calendar"
+    )
+    paused: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default="0")
+
+
+class ExplorationTurn(Timestamped, Base):
+    __tablename__ = "exploration_turns"
+    campaign_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("campaigns.id", ondelete="CASCADE"), nullable=False
+    )
+    scene_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("scenes.id", ondelete="CASCADE"), nullable=False
+    )
+    transaction_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("operation_transactions.id", ondelete="SET NULL")
+    )
+    minutes: Mapped[int] = mapped_column(Integer, nullable=False)
+    action: Mapped[str] = mapped_column(
+        String(40), nullable=False, default="explore", server_default="explore"
+    )
+    result_json: Mapped[dict[str, object]] = mapped_column(
+        JSON, nullable=False, default=dict, server_default="{}"
+    )
+    __table_args__ = (
+        CheckConstraint("minutes >= 1 AND minutes <= 1440", name="ck_exploration_turn_minutes"),
+        Index("ix_exploration_turns_scene", "scene_id", "created_at", "id"),
+    )
+
+
+class TravelLeg(Timestamped, Base):
+    __tablename__ = "travel_legs"
+    campaign_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("campaigns.id", ondelete="CASCADE"), nullable=False
+    )
+    from_location_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("locations.id", ondelete="SET NULL")
+    )
+    to_location_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("locations.id", ondelete="SET NULL"), nullable=False
+    )
+    transaction_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("operation_transactions.id", ondelete="SET NULL")
+    )
+    distance_miles: Mapped[float] = mapped_column(Float, nullable=False)
+    pace: Mapped[str] = mapped_column(
+        String(20), nullable=False, default="normal", server_default="normal"
+    )
+    duration_minutes: Mapped[int] = mapped_column(Integer, nullable=False)
+    status: Mapped[str] = mapped_column(
+        String(20), nullable=False, default="completed", server_default="completed"
+    )
+    details_json: Mapped[dict[str, object]] = mapped_column(
+        JSON, nullable=False, default=dict, server_default="{}"
+    )
+    __table_args__ = (
+        CheckConstraint("distance_miles >= 0", name="ck_travel_leg_distance"),
+        CheckConstraint("pace IN ('fast','normal','slow')", name="ck_travel_leg_pace"),
+        CheckConstraint("duration_minutes >= 0", name="ck_travel_leg_duration"),
+        CheckConstraint(
+            "status IN ('planned','completed','interrupted')", name="ck_travel_leg_status"
+        ),
+        Index("ix_travel_legs_campaign", "campaign_id", "created_at", "id"),
+    )
+
+
 class AuditLog(Base):
     __tablename__ = "audit_log"
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_id)

@@ -114,6 +114,19 @@ export function createScene(
   return apiFetch(`/campaigns/${campaignId}/scenes`, { method: "POST", body: input });
 }
 
+export type PersistentSceneGrid = { id: string; width: number; height: number; cell_size_ft: number; mode: "narrative" | "exploration" | "combat"; public_description: string | null; dm_description: string | null; layers_json: Record<string, unknown> };
+export type SceneToken = { id: string; label: string; row: number; col: number; entity_type: string; visible: boolean };
+export type PersistentSceneObject = { id: string; label: string; row: number; col: number; object_type: string; state: string; visibility: string };
+export function getSceneGrid(campaignId: string, sceneId: string, signal?: AbortSignal): Promise<{ grid: PersistentSceneGrid; tokens: SceneToken[]; objects: PersistentSceneObject[] }> {
+  return apiFetch(`/campaigns/${campaignId}/scenes/${sceneId}/grid`, { signal });
+}
+export function createPersistentGrid(campaignId: string, sceneId: string, input: Partial<PersistentSceneGrid> = {}): Promise<PersistentSceneGrid> {
+  return apiFetch(`/campaigns/${campaignId}/scenes/${sceneId}/grid`, { method: "POST", body: input });
+}
+export function createSceneObject(campaignId: string, sceneId: string, input: { object_type: "wall" | "door" | "cover" | "terrain" | "light" | "trap" | "treasure" | "furniture" | "portal"; label: string; row: number; col: number; visibility?: "public" | "dm" | "hidden"; interaction_json?: Record<string, unknown>; metadata_json?: Record<string, unknown> }): Promise<PersistentSceneObject> {
+  return apiFetch(`/campaigns/${campaignId}/scenes/${sceneId}/objects`, { method: "POST", body: input });
+}
+
 export async function listSceneParticipants(
   campaignId: string,
   sceneId: string,
