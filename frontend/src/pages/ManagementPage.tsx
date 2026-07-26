@@ -12,7 +12,7 @@ import {
 } from "../api/entities";
 import type { Campaign, CampaignEvent, Character, Clue, Location, Npc, Quest } from "../api/types";
 import { Panel } from "../components/Panel";
-import { AdvancementDialog } from "../components/AdvancementDialog";
+import { CharacterSheetDetail } from "../components/CharacterSheetDetail";
 import { CompanionPanel } from "../components/CompanionPanel";
 import { RestPanel } from "../components/RestPanel";
 import { RequireCampaign } from "../components/RequireCampaign";
@@ -22,7 +22,6 @@ import { formatDateTime } from "../ui/format";
 import { ConfirmDialog } from "../ui/widgets";
 import { useToast } from "../hooks/toastContext";
 import { BACKGROUNDS_2024, CLASSES_2024, SPECIES_2024 } from "../ui/characterRules";
-import { levelFromXp, nextLevelXp, XP_THRESHOLDS } from "../ui/progressionRules";
 
 const ABILITY_LABELS: Record<string, string> = {
   strength: "力量", dexterity: "敏捷", constitution: "体质",
@@ -45,15 +44,6 @@ function resourceSummary(resources: Record<string, unknown>): string {
   }).filter(Boolean).join("、");
 }
 
-function actionName(value: unknown): string {
-  if (typeof value === "string") return value;
-  if (typeof value === "object" && value !== null) {
-    const name = (value as { name?: unknown }).name;
-    return typeof name === "string" || typeof name === "number" ? String(name) : "";
-  }
-  return "";
-}
-
 function downloadFile(filename: string, content: string, type: string): void {
   const blob = new Blob([content], { type });
   const url = URL.createObjectURL(blob);
@@ -62,26 +52,6 @@ function downloadFile(filename: string, content: string, type: string): void {
   anchor.download = filename;
   anchor.click();
   URL.revokeObjectURL(url);
-}
-
-function CharacterProgressCell({ campaignId, character }: { campaignId: string; character: Character }): ReactElement {
-  const nextThreshold = nextLevelXp(character.level);
-  const eligibleLevel = levelFromXp(character.experience);
-  const canLevel = eligibleLevel > character.level && character.level < 20;
-  const currentFloor = XP_THRESHOLDS[Math.max(0, character.level - 1)] ?? 0;
-  const progress = nextThreshold === null ? 100 : Math.max(0, Math.min(100,
-    ((character.experience - currentFloor) / Math.max(1, nextThreshold - currentFloor)) * 100,
-  ));
-  return (
-    <td className="min-w-56 px-3 py-3">
-      <div className="flex items-center gap-2 text-2xs"><strong className="text-ember-300">{character.experience.toLocaleString()} XP</strong><span className="text-stone-600">/ {nextThreshold?.toLocaleString() ?? "满级"}</span></div>
-      <div className="mt-1 h-1.5 overflow-hidden rounded bg-ink-700"><div className="h-full bg-ember-500" style={{ width: `${progress}%` }} /></div>
-      {character.level < 20 ? <div className="mt-2"><AdvancementDialog campaignId={campaignId} character={character} /></div> : null}
-      <p className={`mb-0 mt-1 text-2xs ${canLevel ? "text-emerald-300" : "text-stone-600"}`}>
-        {canLevel ? "经验已达标；可按 2024 职业表处理升级。" : "未达经验门槛时可由 DM 以里程碑理由覆盖。"}
-      </p>
-    </td>
-  );
 }
 
 function CharacterToolkit({ campaignId }: { campaignId: string }): ReactElement {
@@ -94,6 +64,7 @@ function CharacterToolkit({ campaignId }: { campaignId: string }): ReactElement 
   const fileRef = useRef<HTMLInputElement>(null);
   const ocrFileRef = useRef<HTMLInputElement>(null);
   const [ocrResult, setOcrResult] = useState<CharacterOcrResult | null>(null);
+  const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
   const importCharacters = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     event.target.value = "";
@@ -195,33 +166,18 @@ function CharacterToolkit({ campaignId }: { campaignId: string }): ReactElement 
           <details className="mt-3"><summary className="cursor-pointer text-xs text-violet-300">查看 OCR 原文</summary><pre className="mt-2 max-h-48 overflow-auto whitespace-pre-wrap text-xs text-stone-400">{ocrResult.recognized_text}</pre></details>
         </div>
       ) : null}
-      <div className="mt-3 overflow-x-auto rounded-lg border border-ink-700">
-        <table className="w-full min-w-[980px] border-collapse text-left text-xs">
-          <thead className="bg-ink-950/80 text-2xs uppercase tracking-wide text-stone-500">
-            <tr>{["角色", "种族 / 职业 / 背景", "等级", "经验 / 升级", "力量", "敏捷", "体质", "智力", "感知", "魅力", "AC", "HP", "速度", "资源", "动作", "装备"].map((label) => <th className="border-b border-ink-700 px-3 py-2 font-medium" key={label}>{label}</th>)}</tr>
-          </thead>
-          <tbody>
-            {(characters.data ?? []).map((character) => (
-              <tr className="border-b border-ink-800/80 last:border-0 hover:bg-ink-900/50" key={character.id}>
-                <td className="px-3 py-3 font-medium text-parchment-100">{character.name}</td>
-                <td className="px-3 py-3 text-stone-400">{character.race || "—"} / {character.class_name || "—"} / {character.background || "—"}</td>
-                <td className="px-3 py-3 font-mono text-ember-300">Lv {character.level}</td>
-                <CharacterProgressCell campaignId={campaignId} character={character} />
-                {Object.keys(ABILITY_LABELS).map((key) => {
-                  const score = character.ability_scores[key] ?? 10;
-                  return <td className="px-3 py-3 font-mono text-parchment-100" key={key}>{score} <span className="text-2xs text-violet-300">({modifier(score)})</span></td>;
-                })}
-                <td className="px-3 py-3 font-mono text-amber-300">{character.armor_class}</td>
-                <td className="px-3 py-3 font-mono text-red-300">{character.hp}/{character.max_hp}</td>
-                <td className="px-3 py-3 font-mono text-sky-300">{character.speed} 尺</td>
-                <td className="max-w-48 px-3 py-3 text-violet-300">{resourceSummary(character.resources) || "—"}</td>
-                <td className="max-w-48 px-3 py-3 text-stone-400">{character.actions.map(actionName).filter(Boolean).join("、") || "—"}</td>
-                <td className="px-3 py-3 text-stone-400">{character.equipment.length} 件</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+        {(characters.data ?? []).map((character) => (
+          <button className="rounded-xl border border-ink-700 bg-ink-950/45 p-4 text-left transition hover:border-ember-700/60 hover:bg-ink-950/75" key={character.id} onClick={() => setSelectedCharacter(character)} type="button">
+            <div className="flex items-start gap-3"><div className="mr-auto"><strong className="block text-base text-parchment-100">{character.name}</strong><span className="mt-1 block text-2xs text-stone-500">{character.race || "未选种族"} · {character.class_name || "未选职业"} Lv {character.level}</span></div><span className="rounded bg-ember-500/10 px-2 py-1 text-2xs text-ember-300">查看完整角色卡</span></div>
+            <div className="mt-4 grid grid-cols-3 gap-2 text-center">{[["AC", character.armor_class, "text-amber-300"], ["HP", `${character.hp}/${character.max_hp}`, "text-red-300"], ["速度", `${character.speed}尺`, "text-sky-300"]].map(([label, value, tone]) => <div className="rounded border border-ink-700 bg-ink-900/70 p-2" key={label}><span className="block text-2xs text-stone-600">{label}</span><strong className={`font-mono text-sm ${tone}`}>{value}</strong></div>)}</div>
+            <div className="mt-3 grid grid-cols-6 gap-1">{Object.entries(ABILITY_LABELS).map(([key, label]) => { const score = character.ability_scores[key] ?? 10; return <div className="rounded bg-ink-900 p-1.5 text-center" key={key}><span className="block text-[9px] text-stone-600">{label}</span><strong className="font-mono text-xs text-parchment-100">{score}</strong><span className="block text-[9px] text-violet-300">{modifier(score)}</span></div>; })}</div>
+            <div className="mt-3 flex items-center gap-2 text-2xs text-stone-500"><span>{character.experience.toLocaleString()} XP</span><span>·</span><span>{character.actions.length} 个动作</span><span>·</span><span>{resourceSummary(character.resources) || "无职业资源"}</span></div>
+          </button>
+        ))}
       </div>
+      {!characters.isLoading && characters.data?.length === 0 ? <EmptyState title="这个团还没有角色" hint="点击页面下方的橙色创建按钮，按 D&D 5e 2024 向导车卡。" /> : null}
+      {selectedCharacter ? <CharacterSheetDetail campaignId={campaignId} character={selectedCharacter} onClose={() => setSelectedCharacter(null)} /> : null}
       <CompanionPanel campaignId={campaignId} characters={characters.data ?? []} />
       <p className="mb-0 mt-3 text-2xs text-stone-600">图片角色卡使用 macOS Vision 在本机识别为可编辑草稿；不会上传云端，确认后才创建角色。</p>
     </Panel>
@@ -251,7 +207,7 @@ type EntityKind = "campaigns" | "characters" | "npcs" | "quests" | "clues" | "lo
 type Row = Campaign | Character | Npc | Quest | Clue | Location | CampaignEvent;
 
 const META: Record<EntityKind, { title: string; eyebrow: string; name: string; description: string }> = {
-  campaigns: { title: "战役", eyebrow: "世界", name: "战役名称", description: "世界观与冒险说明" },
+  campaigns: { title: "跑团档案", eyebrow: "A团 / B团 · 数据完全独立", name: "团名（例如 A团）", description: "本团世界观与冒险说明" },
   characters: { title: "玩家角色", eyebrow: "队伍", name: "角色名称", description: "角色备注" },
   npcs: { title: "NPC", eyebrow: "登场人物", name: "NPC 名称", description: "公开描述" },
   quests: { title: "任务", eyebrow: "故事线", name: "任务名称", description: "任务描述" },

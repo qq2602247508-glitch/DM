@@ -16,7 +16,7 @@ const NAV_ITEMS: { path: RoutePath; label: string; icon: IconName }[] = [
   { path: "/game-table", label: "游戏推进台", icon: "sparkle" },
   { path: "/assistant", label: "AI 助手", icon: "sparkle" },
   { path: "/rules", label: "规则搜索", icon: "book" },
-  { path: "/campaigns", label: "战役管理", icon: "scroll" },
+  { path: "/campaigns", label: "跑团档案", icon: "scroll" },
   { path: "/characters", label: "角色", icon: "users" },
   { path: "/npcs", label: "NPC", icon: "map-pin" },
   { path: "/locations", label: "地点", icon: "map-pin" },
@@ -147,7 +147,7 @@ export function AppShell({ children }: { children: ReactNode }): ReactElement {
 
           <div className="flex min-w-0 items-center gap-2">
             <label className="sr-only" htmlFor="campaign-switcher">
-              当前战役
+              当前跑团
             </label>
             <select
               className="max-w-56 truncate rounded-md border border-ink-600 bg-ink-950 px-2.5 py-1.5 text-sm text-parchment-100"
@@ -163,9 +163,14 @@ export function AppShell({ children }: { children: ReactNode }): ReactElement {
                   </option>
                 ))
               ) : (
-                <option value="">未选择战役</option>
+                <option value="">未选择跑团</option>
               )}
             </select>
+            {currentCampaign ? (
+              <span className="hidden rounded border border-emerald-800/50 bg-emerald-950/25 px-2 py-1 text-2xs text-emerald-300 sm:inline">
+                团档隔离
+              </span>
+            ) : null}
             {currentCampaign ? (
               <span className="hidden items-center gap-1.5 truncate text-xs text-stone-500 lg:flex">
                 <Icon name="map-pin" size={12} />

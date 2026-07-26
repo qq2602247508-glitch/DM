@@ -22,6 +22,7 @@ import { useToast } from "../hooks/toastContext";
 import { navigate } from "../hooks/useHashRoute";
 import { Badge, Button, EmptyState, ErrorState, LoadingBlock } from "../ui/primitives";
 import { selectCls, textareaCls } from "../ui/styles";
+import { safeDndText } from "../ui/contentSafety";
 import { HpBar } from "../ui/widgets";
 import { parsePrepDraft, type DraftAtom } from "../ui/prepDraft";
 import {
@@ -90,6 +91,8 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
   const client = useQueryClient();
   const { showToast } = useToast();
   const [sceneId, setSceneId] = useState("");
+  const [tableMode, setTableMode] = useState<"prep" | "play">("play");
+  const [showEncounterTools, setShowEncounterTools] = useState(false);
   const [entityKey, setEntityKey] = useState("");
   const [input, setInput] = useState("");
   const [entries, setEntries] = useState<ProgressEntry[]>([]);
@@ -184,7 +187,7 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
   const assistant = useMutation({
     mutationFn: async (action: string) => {
       const names = (participants.data ?? []).map((item) => `${item.entity_type}:${item.entity.name}`).join("、") || "无人";
-      const context = `你是副DM。当前场景：${activeScene?.name ?? "未选择"}。地点：${activeLocation?.name ?? "未绑定"}。当前在场：${names}。最近推进：${entries.slice(-5).map((entry) => entry.text).join("；")}。DM输入：${action}。请给DM私密推进建议、NPC可能反应、下一步引导和风险；不要擅自改数据库。`;
+      const context = `你是D&D 5e 2024副DM，本应用不是COC。不得使用克苏鲁、奈亚拉托提普、旧日支配者、深潜者、SAN或理智检定等其他系统内容。当前场景：${activeScene?.name ?? "未选择"}。地点：${activeLocation?.name ?? "未绑定"}。当前在场：${names}。最近推进：${entries.slice(-5).map((entry) => entry.text).join("；")}。DM输入：${action}。请只用D&D 5e世界与机制，给DM私密推进建议、NPC可能反应、下一步引导和风险；不要擅自改数据库。`;
       return runAssistantTurn(campaignId, context);
     },
     onSuccess: async (response, action) => {
@@ -239,7 +242,7 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
     onError: () => showToast("无法发起战斗，请确认当前场景里至少有一名参与者", "error"),
   });
   const prep = useMutation({
-    mutationFn: () => runAssistantTurn(campaignId, `你是D&D 5e 2024备团副DM。根据冒险描述生成可审核草稿。必须严格使用以下Markdown结构，每条使用“名称｜描述”，不要省略标题：\n## 场景\n- 名称｜描述\n## NPC\n- 名称｜描述\n## 怪物\n- 名称｜描述\n## 任务\n- 名称｜描述\n## 线索\n- 名称｜描述\n## 物品\n- 名称｜描述\n最后可以补充“## DM建议”，但不要直接修改数据库。\n冒险描述：${prepBrief}`),
+    mutationFn: () => runAssistantTurn(campaignId, `你是D&D 5e 2024备团副DM，本应用不是COC。严禁使用克苏鲁、奈亚拉托提普、旧日支配者、深潜者、SAN、理智检定等其他系统专有内容；诡异主题必须使用D&D 5e的神祇、异怪、法术、豁免与状态。根据冒险描述生成可审核草稿。必须严格使用以下Markdown结构，每条使用“名称｜描述”，不要省略标题：\n## 场景\n- 名称｜描述\n## NPC\n- 名称｜描述\n## 怪物\n- 名称｜描述\n## 任务\n- 名称｜描述\n## 线索\n- 名称｜描述\n## 物品\n- 名称｜描述\n最后可以补充“## DM建议”，但不要直接修改数据库。\n冒险描述：${prepBrief}`),
     onSuccess: (response) => {
       const text = response.dm_hint?.text ?? "模型没有生成完整草稿，请补充冒险目标、玩家等级和预计时长。";
       setPrepDraft(text);
@@ -419,6 +422,19 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
   return (
     <div className="mx-auto max-w-[1500px] p-4 lg:p-6">
       <SessionStatusBar characters={characters.data ?? []} events={events.data ?? []} npcs={npcs.data ?? []} />
+      <div className="mb-4 rounded-xl border border-ember-800/45 bg-ember-950/10 p-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <strong className="mr-auto text-sm text-parchment-100">现在要做什么？</strong>
+          <Button onClick={() => setTableMode("prep")} size="sm" variant={tableMode === "prep" ? "primary" : "ghost"}>1 · 开团前备团</Button>
+          <Button onClick={() => setTableMode("play")} size="sm" variant={tableMode === "play" ? "primary" : "ghost"}>2 · 开始 / 继续跑团</Button>
+          <Button onClick={() => setShowEncounterTools((value) => !value)} size="sm">{showEncounterTools ? "收起高级遭遇工具" : "高级遭遇工具"}</Button>
+        </div>
+        <p className="mb-0 mt-2 text-2xs text-stone-500">
+          {tableMode === "prep"
+            ? "备团顺序：写冒险概要 → AI 生成草稿 → 勾选并导入 → 切到“开始跑团”。"
+            : "推进顺序：选场景 → 添加当前在场人物 → 记录玩家行动 / 选择快捷推进 → 需要时发起战斗。"}
+        </p>
+      </div>
       <Panel eyebrow="副 DM · 实时场次" title="游戏推进台">
         <div className="grid gap-3 lg:grid-cols-[1fr_auto]">
           <select className={selectCls} onChange={(event) => setSceneId(event.target.value)} value={sceneId}><option value="">选择当前场景</option>{scenes.data?.map((scene) => <option key={scene.id} value={scene.id}>{scene.name}</option>)}</select>
@@ -432,7 +448,7 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
           <div className="rounded border border-ink-700 bg-ink-950/60 p-2"><span className="block text-2xs text-stone-600">怪物</span><strong className="text-xs text-red-300">{participants.data?.filter((item) => item.entity_type === "monster").length ?? 0}</strong></div>
         </div>
       </Panel>
-      <Panel className="mt-4" eyebrow="开团前准备" title="备团草稿">
+      {tableMode === "prep" ? <Panel className="mt-4" eyebrow="第 1 步 · 开团前准备" title="备团草稿">
         <div className="grid gap-2 lg:grid-cols-[1fr_auto]">
           <textarea className={textareaCls} onChange={(event) => setPrepBrief(event.target.value)} placeholder="描述本次冒险，或粘贴完整脚本。建议包含玩家等级、开场地点、目标和预计时长。" value={prepBrief} />
           <Button disabled={!prepBrief.trim()} loading={prep.isPending} onClick={() => prep.mutate()} variant="ai">AI 生成备团草稿</Button>
@@ -457,8 +473,8 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
             </div>
           </div>
         ) : null}
-      </Panel>
-      <Panel className="mt-4" eyebrow="玩家行动 → 具体战斗变化" title="遭遇后果草案">
+      </Panel> : null}
+      {showEncounterTools ? <Panel className="mt-4" eyebrow="高级工具 · 玩家行动 → 具体战斗变化" title="遭遇后果草案">
         <div className="mb-3 flex flex-wrap gap-2">
           <Button disabled={!sceneId || !participants.data?.some((item) => item.entity_type === "monster")} onClick={() => draftFromAssistant(-1)} size="sm" variant="ai">从副 DM 建议生成玩家优势草案</Button>
           <Button disabled={!sceneId || !participants.data?.some((item) => item.entity_type === "monster")} onClick={() => draftFromAssistant(1)} size="sm" variant="ai">从副 DM 建议生成敌方优势草案</Button>
@@ -518,8 +534,8 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
           ))}
           {!encounterAdjustments.isLoading && encounterAdjustments.data?.length === 0 ? <EmptyState title="暂无遭遇后果草案" hint="记录玩家行动后，可让副 DM 生成草案，或手工添加具体变化。" /> : null}
         </div>
-      </Panel>
-      <div className="mt-4 grid gap-4 xl:grid-cols-[0.8fr_1.4fr_0.8fr]">
+      </Panel> : null}
+      {tableMode === "play" ? <div className="mt-4 grid gap-4 xl:grid-cols-[0.8fr_1.4fr_0.8fr]">
         <Panel eyebrow="情景状态" title="当前在场">
           <div className="flex gap-2"><select className={selectCls} onChange={(event) => setEntityKey(event.target.value)} value={entityKey}><option value="">选择进入人物</option>{availableCandidates.map((candidate) => <option key={candidate.key} value={candidate.key}>{candidate.label}</option>)}</select><Button disabled={!entityKey} loading={participantAdd.isPending} onClick={() => participantAdd.mutate()} size="sm">进入</Button></div>
           <div className="mt-2"><RestPanel campaignId={campaignId} characters={characters.data ?? []} compact defaultCharacterIds={(participants.data ?? []).filter((item) => item.entity_type === "character").map((item) => item.entity_id)} /></div>
@@ -530,7 +546,7 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
         <Panel eyebrow="自由推进 / 快速推进" title="游戏推进对话">
           {!sceneId ? <EmptyState title="先选择场景" hint="选择当前场景后，副 DM 才能读取正确的情景状态。" /> : null}
           <div className="max-h-[52vh] space-y-3 overflow-y-auto pr-1">
-            {entries.map((entry) => <div className={`rounded-lg border px-3 py-2 ${entry.kind === "dm" ? "ml-10 border-ember-800/50 bg-ember-950/20" : entry.kind === "ai" ? "mr-10 border-violet-800/50 bg-violet-950/20" : "border-ink-700 bg-ink-950/50"}`} key={entry.id}><span className="block text-2xs text-stone-600">{entry.kind === "dm" ? "DM 推进" : entry.kind === "ai" ? "副 DM 私密提示" : "情景变化"}</span><p className="prose-block mb-0 mt-1 text-sm text-stone-300">{entry.text}</p></div>)}
+            {entries.map((entry) => <div className={`rounded-lg border px-3 py-2 ${entry.kind === "dm" ? "ml-10 border-ember-800/50 bg-ember-950/20" : entry.kind === "ai" ? "mr-10 border-violet-800/50 bg-violet-950/20" : "border-ink-700 bg-ink-950/50"}`} key={entry.id}><span className="block text-2xs text-stone-600">{entry.kind === "dm" ? "DM 推进" : entry.kind === "ai" ? "副 DM 私密提示" : "情景变化"}</span><p className="prose-block mb-0 mt-1 text-sm text-stone-300">{entry.kind === "ai" ? safeDndText(entry.text) : entry.text}</p></div>)}
             {entries.length === 0 && sceneId ? <EmptyState title="等待游戏开始" hint="输入开场、玩家行动或现场变化，副 DM 会读取当前人物与场景后给出建议。" /> : null}
           </div>
           <div className="mt-4 grid gap-2">{quickActions.map((action) => <Button disabled={!sceneId || assistant.isPending} key={action} onClick={() => advance(action)} size="sm">{action}</Button>)}</div>
@@ -539,7 +555,7 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
         </Panel>
         <div className="space-y-4">
           <Panel eyebrow="DM 帷幕" title="当前提示">
-            <p className="prose-block m-0 text-sm text-stone-300">{lastResponse?.dm_hint?.text ?? "副 DM 的推进建议、NPC 反应和风险会显示在这里。"}</p>
+            <p className="prose-block m-0 text-sm text-stone-300">{lastResponse?.dm_hint?.text ? safeDndText(lastResponse.dm_hint.text) : "副 DM 的推进建议、NPC 反应和风险会显示在这里。"}</p>
             {lastResponse?.dm_hint?.uncertainties.length ? <ul className="mb-0 mt-3 pl-4 text-xs text-amber-300">{lastResponse.dm_hint.uncertainties.map((item) => <li key={item}>{item}</li>)}</ul> : null}
             <div className="mt-3 rounded border border-ink-700 bg-ink-950/50 p-2">
               <p className="m-0 text-2xs text-stone-500">当前场景遭遇修正：<strong className={activeAdjustment < 0 ? "text-emerald-300" : activeAdjustment > 0 ? "text-red-300" : "text-stone-300"}>{activeAdjustment > 0 ? `提高 ${activeAdjustment} 级` : activeAdjustment < 0 ? `降低 ${Math.abs(activeAdjustment)} 级` : "无"}</strong></p>
@@ -551,7 +567,7 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
             </div>
           </Panel>
           <Panel eyebrow="进入 / 离开 / 推进" title="最近情景记录">
-            {recentEvents.length === 0 ? <p className="m-0 text-xs text-stone-600">还没有当前场景记录。</p> : <ul className="m-0 space-y-2 p-0">{recentEvents.map((event) => <li className="list-none border-b border-ink-800 pb-2 text-xs last:border-0" key={event.id}><strong className="block text-parchment-100">{event.title}</strong><span className="text-stone-600">{event.description}</span></li>)}</ul>}
+            {recentEvents.length === 0 ? <p className="m-0 text-xs text-stone-600">还没有当前场景记录。</p> : <ul className="m-0 space-y-2 p-0">{recentEvents.map((event) => <li className="list-none border-b border-ink-800 pb-2 text-xs last:border-0" key={event.id}><strong className="block text-parchment-100">{event.title}</strong><span className="text-stone-600">{event.metadata_json.entry_kind === "ai" ? safeDndText(event.description) : event.description}</span></li>)}</ul>}
           </Panel>
           <Panel eyebrow="本地快照 · 最近 20 个" title="场次检查点">
             <Button disabled={!sceneId} onClick={saveCheckpoint} size="sm" variant="primary">保存当前检查点</Button>
@@ -561,7 +577,7 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
             {!checkpoints.some((checkpoint) => checkpoint.sceneId === sceneId) ? <p className="mb-0 mt-2 text-2xs text-stone-600">尚无当前场景检查点。</p> : null}
           </Panel>
         </div>
-      </div>
+      </div> : null}
     </div>
   );
 }
