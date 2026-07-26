@@ -2,14 +2,17 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState, type FormEvent, type ReactElement } from "react";
 
 import {
-  createCombat, createCombatant, deleteCombatant, listCombatants, listCombats,
-  listEncounterAdjustments, listEvents, revertEncounterAdjustment, updateCombat,
-  updateCombatant,
+  advanceCombatTurn, confirmCombatAction, confirmCombatantDeath, confirmDeathSave,
+  createCombat, createCombatant, deleteCombatant, getDeathSave, listCombatActions,
+  listCombatants, listCombats, listEncounterAdjustments, listEvents,
+  previewCombatAction, revertEncounterAdjustment, updateCombat, updateCombatant,
 } from "../api/entities";
+import type { CombatActionCommand } from "../api/entities";
 import { listCharacters, listNpcs, updateCharacter } from "../api/entities";
 import { listMonsters, listScenes } from "../api/world";
 import type {
-  Combat, Combatant, Character, EncounterAdjustment, Monster, Npc, SceneGrid,
+  Combat, CombatActionPreview, Combatant, Character, EncounterAdjustment, Monster,
+  Npc, SceneGrid,
 } from "../api/types";
 import { RequireCampaign } from "../components/RequireCampaign";
 import { Panel } from "../components/Panel";
@@ -26,6 +29,9 @@ import {
 import {
   describeEncounterOperation, difficultyShiftLabel,
 } from "../ui/encounterAdjustments";
+import {
+  actionEconomySummary, damageModifierLabel, deathSaveSummary,
+} from "../ui/combatPresentation";
 
 type CombatCandidate = {
   key: string;
@@ -50,19 +56,83 @@ function readSceneGrid(notes: string | null): SceneGrid | null {
   }
 }
 
+function displayValue(value: unknown, fallback = "0"): string {
+  return typeof value === "string" || typeof value === "number"
+    ? String(value)
+    : fallback;
+}
+
 function CombatantRow({ campaignId, combat, fighter, current, character }: { campaignId: string; combat: Combat; fighter: Combatant; current: boolean; character?: Character }): ReactElement {
   const client = useQueryClient();
   const { showToast } = useToast();
   const [amount, setAmount] = useState("1");
+  const [damageType, setDamageType] = useState("slashing");
   const [condition, setCondition] = useState("");
+  const [deathRoll, setDeathRoll] = useState("10");
+  const [pendingAction, setPendingAction] = useState<{
+    command: CombatActionCommand;
+    preview: CombatActionPreview;
+  } | null>(null);
   const invalidate = () => {
     void client.invalidateQueries({ queryKey: ["combatants", campaignId, combat.id] });
+    void client.invalidateQueries({ queryKey: ["combat-actions", campaignId, combat.id] });
+    void client.invalidateQueries({ queryKey: ["death-save", campaignId, combat.id, fighter.id] });
     void client.invalidateQueries({ queryKey: ["campaign-state", campaignId] });
   };
   const change = useMutation({
     mutationFn: (payload: { hp?: number; conditions?: unknown[] }) => updateCombatant(campaignId, combat.id, fighter.id, payload, fighter.version),
     onSuccess: () => { invalidate(); showToast("战斗状态已更新"); },
     onError: () => showToast("战斗状态更新失败", "error"),
+  });
+  const previewAction = useMutation({
+    mutationFn: (command: CombatActionCommand) =>
+      previewCombatAction(campaignId, combat.id, command),
+    onSuccess: (preview, command) => setPendingAction({ command, preview }),
+    onError: () => showToast("无法生成结算预览，请刷新战斗状态", "error"),
+  });
+  const confirmAction = useMutation({
+    mutationFn: (command: CombatActionCommand) =>
+      confirmCombatAction(campaignId, combat.id, command),
+    onSuccess: (result) => {
+      setPendingAction(null);
+      invalidate();
+      const dc = Number(result.action.result_json.concentration_check_dc ?? 0);
+      showToast(dc > 0 ? `结算完成；需要专注检定 DC ${dc}` : "结算已确认并写入战斗日志");
+    },
+    onError: () => showToast("确认失败，目标状态可能已变化，请重新预览", "error"),
+  });
+  const deathSave = useQuery({
+    queryKey: ["death-save", campaignId, combat.id, fighter.id],
+    queryFn: ({ signal }) => getDeathSave(campaignId, combat.id, fighter.id, signal),
+    enabled: fighter.hp === 0,
+  });
+  const rollDeathSave = useMutation({
+    mutationFn: () => confirmDeathSave(
+      campaignId,
+      combat.id,
+      fighter.id,
+      fighter.version,
+      Number(deathRoll),
+    ),
+    onSuccess: () => {
+      invalidate();
+      showToast("死亡豁免已由 DM 确认");
+    },
+    onError: () => showToast("死亡豁免记录失败，请刷新后重试", "error"),
+  });
+  const confirmDeath = useMutation({
+    mutationFn: () => confirmCombatantDeath(
+      campaignId,
+      combat.id,
+      fighter.id,
+      fighter.version,
+      "三次死亡豁免失败，DM在战斗台确认",
+    ),
+    onSuccess: () => {
+      invalidate();
+      showToast("死亡状态已由 DM 最终确认");
+    },
+    onError: () => showToast("死亡确认失败，请刷新状态", "error"),
   });
   const remove = useMutation({
     mutationFn: () => deleteCombatant(campaignId, combat.id, fighter.id, fighter.version),
@@ -84,22 +154,84 @@ function CombatantRow({ campaignId, combat, fighter, current, character }: { cam
     },
     onError: () => showToast("资源消耗失败，请刷新角色状态", "error"),
   });
+  const requestPreview = (actionType: "damage" | "heal") => {
+    const numericAmount = Math.max(0, Number(amount));
+    previewAction.mutate({
+      action_type: actionType,
+      target_combatant_id: fighter.id,
+      target_version: fighter.version,
+      amount: numericAmount,
+      damage_type: actionType === "damage" ? damageType : null,
+    });
+  };
+  const effectiveMaxHp = Math.max(0, fighter.max_hp - fighter.max_hp_reduction);
   return (
     <li className={`grid gap-2 rounded-md border px-3 py-2 md:grid-cols-[3rem_1fr_12rem_auto] md:items-center ${current ? "border-ember-500/50 bg-ember-500/5" : "border-ink-700 bg-ink-950/40"}`}>
       <span className="text-center"><strong className="block font-mono text-sm text-ember-300">{fighter.initiative}</strong><span className="block text-2xs text-stone-600">先攻</span></span>
       <div className="min-w-0">
         <p className="m-0 truncate text-sm text-parchment-100">{fighter.display_name}</p>
-        <p className="mb-0 mt-0.5 text-2xs text-stone-600">护甲 AC {fighter.armor_class} · {fighter.entity_type === "character" ? "玩家" : fighter.entity_type === "npc" ? "NPC" : "其他"}{fighter.conditions.length > 0 ? ` · 状态：${fighter.conditions.join("、")}` : ""}</p>
+        <p className="mb-0 mt-0.5 text-2xs text-stone-500">护甲 AC {fighter.armor_class} · {fighter.entity_type === "character" ? "玩家" : fighter.entity_type === "npc" ? "NPC" : "怪物"} · {actionEconomySummary(fighter)}</p>
+        <p className="mb-0 mt-0.5 text-2xs text-stone-600">
+          {fighter.temporary_hp > 0 ? `临时生命 ${fighter.temporary_hp} · ` : ""}
+          {fighter.max_hp_reduction > 0 ? `有效生命上限 ${effectiveMaxHp}（下降 ${fighter.max_hp_reduction}） · ` : ""}
+          {fighter.conditions.length > 0 ? `状态：${fighter.conditions.join("、")} · ` : ""}
+          {Object.keys(fighter.concentration).length > 0 ? "正在专注" : "未专注"}
+        </p>
+        {fighter.damage_resistances.length + fighter.damage_vulnerabilities.length + fighter.damage_immunities.length > 0 ? (
+          <p className="mb-0 mt-0.5 text-2xs text-stone-600">
+            {fighter.damage_resistances.length > 0 ? `抗性：${fighter.damage_resistances.join("、")} ` : ""}
+            {fighter.damage_vulnerabilities.length > 0 ? `易伤：${fighter.damage_vulnerabilities.join("、")} ` : ""}
+            {fighter.damage_immunities.length > 0 ? `免疫：${fighter.damage_immunities.join("、")}` : ""}
+          </p>
+        ) : null}
       </div>
-      <HpBar hp={fighter.hp} maxHp={fighter.max_hp} />
+      <div><HpBar hp={fighter.hp} maxHp={effectiveMaxHp} />{fighter.temporary_hp > 0 ? <p className="m-0 text-center text-2xs text-sky-300">+{fighter.temporary_hp} 临时生命</p> : null}</div>
       <div className="flex flex-wrap justify-end gap-1">
         <input aria-label={`${fighter.display_name} 数值`} className="w-14 rounded border border-ink-600 bg-ink-950 px-1.5 py-1 text-xs text-parchment-100" min="1" onChange={(event) => setAmount(event.target.value)} type="number" value={amount} />
-        <Button disabled={change.isPending || fighter.hp <= 0} onClick={() => change.mutate({ hp: Math.max(0, fighter.hp - Number(amount)) })} size="sm">伤害</Button>
-        <Button disabled={change.isPending || fighter.hp >= fighter.max_hp} onClick={() => change.mutate({ hp: Math.min(fighter.max_hp, fighter.hp + Number(amount)) })} size="sm">治疗</Button>
+        <select aria-label={`${fighter.display_name} 伤害类型`} className="rounded border border-ink-600 bg-ink-950 px-1.5 py-1 text-xs text-parchment-100" onChange={(event) => setDamageType(event.target.value)} value={damageType}>
+          <option value="slashing">挥砍</option><option value="piercing">穿刺</option><option value="bludgeoning">钝击</option><option value="fire">火焰</option><option value="cold">寒冷</option><option value="lightning">闪电</option><option value="poison">毒素</option><option value="acid">强酸</option><option value="necrotic">黯蚀</option><option value="radiant">光耀</option><option value="psychic">心灵</option><option value="force">力场</option><option value="thunder">雷鸣</option>
+        </select>
+        <Button disabled={previewAction.isPending || Number(amount) < 1} onClick={() => requestPreview("damage")} size="sm">预览伤害</Button>
+        <Button disabled={previewAction.isPending || fighter.hp >= effectiveMaxHp || Number(amount) < 1} onClick={() => requestPreview("heal")} size="sm">预览治疗</Button>
         <input aria-label={`${fighter.display_name} 条件`} className="w-20 rounded border border-ink-600 bg-ink-950 px-1.5 py-1 text-xs text-parchment-100" onChange={(event) => setCondition(event.target.value)} placeholder="条件" value={condition} />
         <Button disabled={!condition.trim() || change.isPending} onClick={() => { change.mutate({ conditions: [...fighter.conditions, condition.trim()] }); setCondition(""); }} size="sm">加状态</Button>
         <Button disabled={remove.isPending} onClick={() => remove.mutate()} size="sm" variant="danger">移除</Button>
       </div>
+      {pendingAction ? (
+        <div className="rounded border border-ember-700/60 bg-ember-950/10 p-2 md:col-span-4">
+          <div className="flex flex-wrap items-center gap-2">
+            <strong className="mr-auto text-xs text-parchment-100">结算预览（尚未写入）</strong>
+            {pendingAction.command.action_type === "damage" ? <Badge tone="warn">{damageModifierLabel(pendingAction.preview.result.modifier)}</Badge> : <Badge tone="ok">治疗</Badge>}
+          </div>
+          <p className="mb-2 mt-1 text-xs text-stone-300">
+            {displayValue(
+              pendingAction.preview.result.explanation,
+              `恢复 ${displayValue(pendingAction.preview.result.hp_gained)} 点生命`,
+            )}
+            {" · "}HP {String(pendingAction.preview.before.hp)} → {String(pendingAction.preview.after.hp)}
+            {Number(pendingAction.preview.before.temporary_hp ?? 0) > 0 ? ` · 临时生命 ${String(pendingAction.preview.before.temporary_hp)} → ${String(pendingAction.preview.after.temporary_hp)}` : ""}
+          </p>
+          {pendingAction.preview.concentration_check_dc ? <p className="mb-2 mt-0 text-2xs text-amber-300">确认伤害后需要专注检定 DC {pendingAction.preview.concentration_check_dc}</p> : null}
+          <div className="flex gap-2">
+            <Button loading={confirmAction.isPending} onClick={() => confirmAction.mutate(pendingAction.command)} size="sm" variant="primary">DM 确认结算</Button>
+            <Button disabled={confirmAction.isPending} onClick={() => setPendingAction(null)} size="sm">取消</Button>
+          </div>
+        </div>
+      ) : null}
+      {fighter.hp === 0 ? (
+        <div className="rounded border border-red-800/60 bg-red-950/15 p-2 md:col-span-4">
+          <div className="flex flex-wrap items-center gap-2">
+            <strong className="mr-auto text-xs text-red-200">死亡豁免</strong>
+            {deathSave.data ? <Badge tone={deathSave.data.dead ? "danger" : deathSave.data.stable ? "ok" : "warn"}>{deathSaveSummary(deathSave.data)}</Badge> : null}
+          </div>
+          <p className="mb-2 mt-1 text-2xs text-stone-500">自然 1 计两次失败；自然 20 恢复 1 HP；三次失败后仍需 DM 最终确认死亡。</p>
+          <div className="flex flex-wrap items-center gap-2">
+            <input aria-label={`${fighter.display_name} 死亡豁免骰`} className="w-16 rounded border border-ink-600 bg-ink-950 px-1.5 py-1 text-xs text-parchment-100" max="20" min="1" onChange={(event) => setDeathRoll(event.target.value)} type="number" value={deathRoll} />
+            <Button disabled={deathSave.data?.stable || deathSave.data?.dead || deathSave.data?.pending_death_confirmation || rollDeathSave.isPending} onClick={() => rollDeathSave.mutate()} size="sm" variant="primary">DM 确认骰值</Button>
+            {deathSave.data?.pending_death_confirmation ? <Button loading={confirmDeath.isPending} onClick={() => confirmDeath.mutate()} size="sm" variant="danger">最终确认死亡</Button> : null}
+          </div>
+        </div>
+      ) : null}
       {character ? (
         <div className="border-t border-ink-700/70 pt-2 md:col-span-4">
           <div className="flex flex-wrap gap-1.5">
@@ -194,6 +326,10 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
     queryKey: ["combatants", campaignId, combat.id],
     queryFn: ({ signal }) => listCombatants(campaignId, combat.id, signal),
   });
+  const combatActions = useQuery({
+    queryKey: ["combat-actions", campaignId, combat.id],
+    queryFn: ({ signal }) => listCombatActions(campaignId, combat.id, signal),
+  });
   const invalidate = () => {
     void client.invalidateQueries({ queryKey: ["combats", campaignId] });
     void client.invalidateQueries({ queryKey: ["combatants", campaignId, combat.id] });
@@ -215,7 +351,15 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
       display_name: name.trim(), entity_type: selectedCandidate?.entityType ?? "custom",
       entity_id: selectedCandidate?.entityId ?? null,
       initiative: Number(initiative), armor_class: Number(armorClass),
-      hp: Number(hp), max_hp: Number(hp), is_active: true,
+      hp: Number(hp), max_hp: Number(hp),
+      speed_ft: selectedCandidate?.speed ?? 30,
+      movement_remaining_ft: selectedCandidate?.speed ?? 30,
+      snapshot_json: selectedCandidate ? {
+        source_name: selectedCandidate.name,
+        source_type: selectedCandidate.entityType,
+        source_speed: selectedCandidate.speed,
+      } : {},
+      is_active: true,
     }),
     onSuccess: () => { setName(""); invalidate(); showToast("参与者已加入战斗"); },
     onError: () => showToast("添加参与者失败", "error"),
@@ -225,6 +369,16 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
       updateCombat(campaignId, combat.id, payload, combat.version),
     onSuccess: () => { invalidate(); showToast("战斗进度已保存"); },
     onError: () => showToast("战斗进度保存失败", "error"),
+  });
+  const nextTurn = useMutation({
+    mutationFn: () => advanceCombatTurn(campaignId, combat.id, combat.version),
+    onSuccess: (result) => {
+      invalidate();
+      showToast(result.active_combatant
+        ? `第 ${result.combat.round_number} 轮：轮到 ${result.active_combatant.display_name}`
+        : "回合已推进");
+    },
+    onError: () => showToast("回合推进失败，请刷新战斗状态", "error"),
   });
   const ordered = [...(fighters.data ?? [])].filter((fighter) => fighter.is_active).sort((a, b) => b.initiative - a.initiative || a.display_name.localeCompare(b.display_name));
   const playerCharacters = ordered
@@ -292,8 +446,6 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
     },
     onError: () => showToast("无法撤销；战斗可能已经结算或状态已被后续操作改变", "error"),
   });
-  const nextIndex = ordered.length === 0 ? 0 : (combat.current_turn_index + 1) % ordered.length;
-  const nextRound = ordered.length > 0 && nextIndex === 0 ? combat.round_number + 1 : combat.round_number;
   return (
     <Panel eyebrow={`第 ${combat.round_number} 轮 · 回合 ${combat.current_turn_index + 1}`} title={combat.name}>
       <p className="mb-3 mt-0 text-2xs text-stone-500">战斗场景：{sceneName ?? "未绑定场景"}{grid ? ` · 已加载 ${grid.theme} 网格` : " · 使用临时通用网格"}</p>
@@ -320,7 +472,7 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
       <div className="flex flex-wrap items-center justify-between gap-3">
         <Badge tone={combat.status === "active" ? "danger" : "neutral"}>{COMBAT_STATUS_LABELS[combat.status] ?? combat.status}</Badge>
         <div className="flex gap-2">
-          <Button disabled={combat.status !== "active" || ordered.length === 0 || update.isPending} onClick={() => update.mutate({ round_number: nextRound, current_turn_index: nextIndex })} size="sm" variant="primary">下一回合</Button>
+          <Button disabled={combat.status !== "active" || ordered.length === 0 || nextTurn.isPending} loading={nextTurn.isPending} onClick={() => nextTurn.mutate()} size="sm" variant="primary">下一回合</Button>
           <Button disabled={combat.status !== "active" || update.isPending} onClick={() => update.mutate({ status: "ended" })} size="sm">结束战斗</Button>
           {combat.status === "ended" && combat.scene_id ? <Button onClick={() => navigate("/game-table")} size="sm" variant="primary">返回游戏推进台</Button> : null}
         </div>
@@ -344,6 +496,20 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
         {!fighters.isLoading && ordered.length === 0 ? <EmptyState title="尚无参与者" hint="录入先攻与 HP 后即可开始逐回合追踪。" /> : null}
         {ordered.length > 0 ? <ol className="m-0 flex list-none flex-col gap-1.5 p-0">{ordered.map((fighter, index) => <CombatantRow campaignId={campaignId} character={candidates.find((candidate) => candidate.entityId === fighter.entity_id)?.character} combat={combat} current={combat.status === "active" && index === combat.current_turn_index} fighter={fighter} key={fighter.id} />)}</ol> : null}
       </div>
+      {(combatActions.data?.length ?? 0) > 0 ? (
+        <div className="mt-4 rounded-lg border border-ink-700 bg-ink-950/50 p-3">
+          <strong className="text-xs text-parchment-100">可审计战斗日志</strong>
+          <ol className="mb-0 mt-2 max-h-48 space-y-1 overflow-y-auto pl-5 text-2xs text-stone-400">
+            {[...(combatActions.data ?? [])].reverse().map((action) => (
+              <li key={action.id}>
+                <span className="text-stone-600">R{action.round_number} · T{action.turn_index + 1}</span>
+                {" "}{action.summary}
+                {action.explanation ? <span className="text-stone-600"> — {action.explanation}</span> : null}
+              </li>
+            ))}
+          </ol>
+        </div>
+      ) : null}
       {ordered.length > 0 ? <BattleGrid candidates={candidates} fighters={ordered} grid={grid} /> : null}
       {combat.status === "ended" ? (
         <div className="mt-4 rounded-lg border border-amber-800/50 bg-amber-950/10 p-3">

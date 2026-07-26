@@ -399,8 +399,47 @@ class Combatant(Timestamped, Base):
     )
     hp: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
     max_hp: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
+    temporary_hp: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=0, server_default="0"
+    )
+    max_hp_reduction: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=0, server_default="0"
+    )
+    damage_resistances: Mapped[list[str]] = mapped_column(
+        JSON, nullable=False, default=list, server_default="[]"
+    )
+    damage_vulnerabilities: Mapped[list[str]] = mapped_column(
+        JSON, nullable=False, default=list, server_default="[]"
+    )
+    damage_immunities: Mapped[list[str]] = mapped_column(
+        JSON, nullable=False, default=list, server_default="[]"
+    )
+    condition_immunities: Mapped[list[str]] = mapped_column(
+        JSON, nullable=False, default=list, server_default="[]"
+    )
     conditions: Mapped[list[object]] = mapped_column(
         JSON, nullable=False, default=list, server_default="[]"
+    )
+    concentration: Mapped[dict[str, object]] = mapped_column(
+        JSON, nullable=False, default=dict, server_default="{}"
+    )
+    speed_ft: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=30, server_default="30"
+    )
+    movement_remaining_ft: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=30, server_default="30"
+    )
+    action_available: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=True, server_default="1"
+    )
+    bonus_action_available: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=True, server_default="1"
+    )
+    reaction_available: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=True, server_default="1"
+    )
+    snapshot_json: Mapped[dict[str, object]] = mapped_column(
+        JSON, nullable=False, default=dict, server_default="{}"
     )
     is_active: Mapped[bool] = mapped_column(
         Boolean, nullable=False, default=True, server_default="1"
@@ -411,7 +450,202 @@ class Combatant(Timestamped, Base):
             "initiative >= -100 AND initiative <= 1000", name="ck_combatant_initiative"
         ),
         CheckConstraint("armor_class >= 0 AND armor_class <= 99", name="ck_combatant_ac"),
-        CheckConstraint("hp >= 0 AND max_hp >= 0 AND hp <= max_hp", name="ck_combatant_hp"),
+        CheckConstraint(
+            "hp >= 0 AND max_hp >= 0 AND hp + max_hp_reduction <= max_hp",
+            name="ck_combatant_hp",
+        ),
+        CheckConstraint("temporary_hp >= 0", name="ck_combatant_temporary_hp"),
+        CheckConstraint(
+            "max_hp_reduction >= 0 AND max_hp_reduction <= max_hp",
+            name="ck_combatant_max_hp_reduction",
+        ),
+        CheckConstraint("speed_ft >= 0", name="ck_combatant_speed"),
+        CheckConstraint(
+            "movement_remaining_ft >= 0",
+            name="ck_combatant_movement_remaining",
+        ),
+    )
+
+
+class CombatAction(Timestamped, Base):
+    __tablename__ = "combat_actions"
+    campaign_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("campaigns.id", ondelete="CASCADE"), nullable=False
+    )
+    combat_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("combats.id", ondelete="CASCADE"), nullable=False
+    )
+    actor_combatant_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("combatants.id", ondelete="SET NULL")
+    )
+    transaction_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("operation_transactions.id", ondelete="SET NULL")
+    )
+    action_type: Mapped[str] = mapped_column(String(50), nullable=False)
+    target_combatant_ids: Mapped[list[str]] = mapped_column(
+        JSON, nullable=False, default=list, server_default="[]"
+    )
+    request_json: Mapped[dict[str, object]] = mapped_column(
+        JSON, nullable=False, default=dict, server_default="{}"
+    )
+    result_json: Mapped[dict[str, object]] = mapped_column(
+        JSON, nullable=False, default=dict, server_default="{}"
+    )
+    explanation: Mapped[str | None] = mapped_column(Text)
+    round_number: Mapped[int] = mapped_column(Integer, nullable=False)
+    turn_index: Mapped[int] = mapped_column(Integer, nullable=False)
+    summary: Mapped[str] = mapped_column(Text, nullable=False)
+    idempotency_key: Mapped[str] = mapped_column(String(120), nullable=False)
+    dm_override: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False, server_default="0"
+    )
+    override_reason: Mapped[str | None] = mapped_column(Text)
+    status: Mapped[str] = mapped_column(
+        String(30), nullable=False, default="confirmed", server_default="confirmed"
+    )
+    __table_args__ = (
+        CheckConstraint(
+            "status IN ('previewed','confirmed','reverted','conflict')",
+            name="ck_combat_action_status",
+        ),
+        CheckConstraint("round_number >= 1", name="ck_combat_action_round"),
+        CheckConstraint("turn_index >= 0", name="ck_combat_action_turn"),
+        CheckConstraint("length(trim(summary)) > 0", name="ck_combat_action_summary"),
+        UniqueConstraint(
+            "combat_id",
+            "idempotency_key",
+            name="uq_combat_action_combat_idempotency",
+        ),
+        Index("ix_combat_actions_combat_created", "combat_id", "created_at", "id"),
+    )
+
+
+class CombatEffect(Timestamped, Base):
+    __tablename__ = "combat_effects"
+    campaign_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("campaigns.id", ondelete="CASCADE"), nullable=False
+    )
+    combat_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("combats.id", ondelete="CASCADE"), nullable=False
+    )
+    target_combatant_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("combatants.id", ondelete="CASCADE"), nullable=False
+    )
+    source_combatant_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("combatants.id", ondelete="SET NULL")
+    )
+    source_action_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("combat_actions.id", ondelete="SET NULL")
+    )
+    name: Mapped[str] = mapped_column(String(120), nullable=False)
+    effect_type: Mapped[str] = mapped_column(String(50), nullable=False)
+    details_json: Mapped[dict[str, object]] = mapped_column(
+        JSON, nullable=False, default=dict, server_default="{}"
+    )
+    started_round: Mapped[int] = mapped_column(Integer, nullable=False)
+    duration_unit: Mapped[str] = mapped_column(
+        String(30), nullable=False, default="until_removed", server_default="until_removed"
+    )
+    duration_value: Mapped[int | None] = mapped_column(Integer)
+    ends_round: Mapped[int | None] = mapped_column(Integer)
+    requires_concentration: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False, server_default="0"
+    )
+    save_dc: Mapped[int | None] = mapped_column(Integer)
+    save_ability: Mapped[str | None] = mapped_column(String(30))
+    trigger_timing: Mapped[str | None] = mapped_column(String(40))
+    status: Mapped[str] = mapped_column(
+        String(30), nullable=False, default="active", server_default="active"
+    )
+    ended_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    end_reason: Mapped[str | None] = mapped_column(Text)
+    __table_args__ = (
+        CheckConstraint("length(trim(name)) > 0", name="ck_combat_effect_name"),
+        CheckConstraint("started_round >= 1", name="ck_combat_effect_started_round"),
+        CheckConstraint(
+            "duration_value IS NULL OR duration_value >= 0",
+            name="ck_combat_effect_duration",
+        ),
+        CheckConstraint(
+            "ends_round IS NULL OR ends_round >= started_round",
+            name="ck_combat_effect_ends_round",
+        ),
+        CheckConstraint(
+            "save_dc IS NULL OR save_dc >= 0",
+            name="ck_combat_effect_save_dc",
+        ),
+        CheckConstraint(
+            "status IN ('active','ended')",
+            name="ck_combat_effect_status",
+        ),
+        Index(
+            "ix_combat_effects_target_status",
+            "target_combatant_id",
+            "status",
+            "id",
+        ),
+    )
+
+
+class DeathSave(Timestamped, Base):
+    __tablename__ = "death_saves"
+    combatant_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("combatants.id", ondelete="CASCADE"), nullable=False
+    )
+    successes: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
+    failures: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
+    stable: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False, server_default="0"
+    )
+    dead: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False, server_default="0"
+    )
+    pending_death_confirmation: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False, server_default="0"
+    )
+    last_roll: Mapped[int | None] = mapped_column(Integer)
+    __table_args__ = (
+        CheckConstraint("successes >= 0 AND successes <= 3", name="ck_death_save_successes"),
+        CheckConstraint("failures >= 0 AND failures <= 3", name="ck_death_save_failures"),
+        CheckConstraint(
+            "last_roll IS NULL OR (last_roll >= 1 AND last_roll <= 20)",
+            name="ck_death_save_last_roll",
+        ),
+        UniqueConstraint("combatant_id", name="uq_death_save_combatant"),
+    )
+
+
+class CombatReinforcement(Timestamped, Base):
+    __tablename__ = "combat_reinforcements"
+    combat_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("combats.id", ondelete="CASCADE"), nullable=False
+    )
+    proposal_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("encounter_adjustment_proposals.id", ondelete="SET NULL")
+    )
+    entity_type: Mapped[str] = mapped_column(String(30), nullable=False)
+    entity_id: Mapped[str] = mapped_column(String(36), nullable=False)
+    target_round: Mapped[int] = mapped_column(Integer, nullable=False)
+    quantity: Mapped[int] = mapped_column(Integer, nullable=False, default=1, server_default="1")
+    reason: Mapped[str | None] = mapped_column(Text)
+    deployed: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False, server_default="0"
+    )
+    deployed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    __table_args__ = (
+        CheckConstraint(
+            "entity_type IN ('character','npc','monster')",
+            name="ck_combat_reinforcement_type",
+        ),
+        CheckConstraint("target_round >= 1", name="ck_combat_reinforcement_round"),
+        CheckConstraint("quantity >= 1", name="ck_combat_reinforcement_quantity"),
+        Index(
+            "ix_combat_reinforcements_combat_round",
+            "combat_id",
+            "target_round",
+            "deployed",
+            "id",
+        ),
     )
 
 

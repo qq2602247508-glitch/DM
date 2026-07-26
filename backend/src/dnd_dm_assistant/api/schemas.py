@@ -421,13 +421,28 @@ class CombatantCreate(BaseModel):
     armor_class: int = Field(10, ge=0, le=99)
     hp: int = Field(0, ge=0)
     max_hp: int = Field(0, ge=0)
+    temporary_hp: int = Field(0, ge=0)
+    max_hp_reduction: int = Field(0, ge=0)
+    damage_resistances: list[str] = Field(default_factory=list)
+    damage_vulnerabilities: list[str] = Field(default_factory=list)
+    damage_immunities: list[str] = Field(default_factory=list)
+    condition_immunities: list[str] = Field(default_factory=list)
     conditions: list[Any] = Field(default_factory=list)
+    concentration: dict[str, Any] = Field(default_factory=dict)
+    speed_ft: int = Field(30, ge=0)
+    movement_remaining_ft: int = Field(30, ge=0)
+    action_available: bool = True
+    bonus_action_available: bool = True
+    reaction_available: bool = True
+    snapshot_json: dict[str, Any] = Field(default_factory=dict)
     is_active: bool = True
 
     @model_validator(mode="after")
     def validate_hp(self) -> CombatantCreate:
-        if self.hp > self.max_hp:
-            raise ValueError("hp cannot exceed max_hp")
+        if self.max_hp_reduction > self.max_hp:
+            raise ValueError("max_hp_reduction cannot exceed max_hp")
+        if self.hp + self.max_hp_reduction > self.max_hp:
+            raise ValueError("hp cannot exceed effective max_hp")
         return self
 
 
@@ -441,15 +456,75 @@ class CombatantPatch(BaseModel):
     armor_class: int | None = Field(None, ge=0, le=99)
     hp: int | None = Field(None, ge=0)
     max_hp: int | None = Field(None, ge=0)
+    temporary_hp: int | None = Field(None, ge=0)
+    max_hp_reduction: int | None = Field(None, ge=0)
+    damage_resistances: list[str] | None = None
+    damage_vulnerabilities: list[str] | None = None
+    damage_immunities: list[str] | None = None
+    condition_immunities: list[str] | None = None
     conditions: list[Any] | None = None
+    concentration: dict[str, Any] | None = None
+    speed_ft: int | None = Field(None, ge=0)
+    movement_remaining_ft: int | None = Field(None, ge=0)
+    action_available: bool | None = None
+    bonus_action_available: bool | None = None
+    reaction_available: bool | None = None
+    snapshot_json: dict[str, Any] | None = None
     is_active: bool | None = None
     version: int | None = Field(None, ge=1)
 
     @model_validator(mode="after")
     def validate_hp(self) -> CombatantPatch:
-        if self.hp is not None and self.max_hp is not None and self.hp > self.max_hp:
-            raise ValueError("hp cannot exceed max_hp")
+        reduction = self.max_hp_reduction
+        if (
+            reduction is not None
+            and self.max_hp is not None
+            and reduction > self.max_hp
+        ):
+            raise ValueError("max_hp_reduction cannot exceed max_hp")
+        if (
+            self.hp is not None
+            and self.max_hp is not None
+            and self.hp + (reduction or 0) > self.max_hp
+        ):
+            raise ValueError("hp cannot exceed effective max_hp")
         return self
+
+
+class CombatActionCommand(BaseModel):
+    action_type: Literal["damage", "heal"]
+    target_combatant_id: str = Field(min_length=1, max_length=36)
+    target_version: int = Field(ge=1)
+    actor_combatant_id: str | None = Field(default=None, min_length=1, max_length=36)
+    amount: int = Field(ge=0, le=100_000)
+    damage_type: str | None = Field(default=None, max_length=50)
+    dm_override: bool = False
+    override_reason: str | None = Field(default=None, max_length=1_000)
+
+    @model_validator(mode="after")
+    def validate_action(self) -> CombatActionCommand:
+        if self.action_type == "damage" and not (self.damage_type or "").strip():
+            raise ValueError("damage_type is required for damage")
+        if self.dm_override and not (self.override_reason or "").strip():
+            raise ValueError("override_reason is required for a DM override")
+        return self
+
+
+class DeathSaveCommand(BaseModel):
+    target_version: int = Field(ge=1)
+    roll: int = Field(ge=1, le=20)
+
+
+class DeathConfirmationCommand(BaseModel):
+    target_version: int = Field(ge=1)
+    reason: Annotated[
+        str,
+        StringConstraints(strip_whitespace=True, min_length=1, max_length=1_000),
+    ]
+
+
+class TurnAdvanceCommand(BaseModel):
+    combat_version: int = Field(ge=1)
 
 
 class ConditionCreate(BaseModel):

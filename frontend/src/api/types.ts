@@ -521,8 +521,75 @@ export type Combatant = Versioned & {
   armor_class: number;
   hp: number;
   max_hp: number;
+  temporary_hp: number;
+  max_hp_reduction: number;
+  damage_resistances: string[];
+  damage_vulnerabilities: string[];
+  damage_immunities: string[];
+  condition_immunities: string[];
   conditions: unknown[];
+  concentration: Record<string, unknown>;
+  speed_ft: number;
+  movement_remaining_ft: number;
+  action_available: boolean;
+  bonus_action_available: boolean;
+  reaction_available: boolean;
+  snapshot_json: Record<string, unknown>;
   is_active: boolean;
+};
+
+export type CombatAction = Versioned & {
+  campaign_id: string;
+  combat_id: string;
+  actor_combatant_id: string | null;
+  transaction_id: string | null;
+  action_type: string;
+  target_combatant_ids: string[];
+  request_json: Record<string, unknown>;
+  result_json: Record<string, unknown>;
+  explanation: string | null;
+  round_number: number;
+  turn_index: number;
+  summary: string;
+  idempotency_key: string;
+  dm_override: boolean;
+  override_reason: string | null;
+  status: string;
+};
+
+export type CombatActionPreview = {
+  before: Record<string, unknown>;
+  after: Record<string, unknown>;
+  result: Record<string, unknown>;
+  concentration_check_dc: number | null;
+};
+
+export type CombatActionConfirmation = {
+  action: CombatAction;
+  target: Combatant;
+};
+
+export type DeathSave = Versioned & {
+  combatant_id: string;
+  successes: number;
+  failures: number;
+  stable: boolean;
+  dead: boolean;
+  pending_death_confirmation: boolean;
+  last_roll: number | null;
+};
+
+export type DeathSaveConfirmation = {
+  action: CombatAction;
+  target: Combatant;
+  death_save: DeathSave;
+};
+
+export type TurnAdvanceResult = {
+  action: CombatAction;
+  combat: Combat;
+  active_combatant: Combatant | null;
+  expiration_prompts: unknown[];
 };
 
 export type StateSnapshot = {

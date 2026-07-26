@@ -296,7 +296,14 @@ class EncounterAdjustmentService:
                         armor_class=int(getattr(entity, "armor_class", 10)),
                         hp=int(getattr(entity, "hp", 1)),
                         max_hp=int(getattr(entity, "max_hp", 1)),
+                        speed_ft=int(getattr(entity, "speed", 30)),
+                        movement_remaining_ft=int(getattr(entity, "speed", 30)),
                         conditions=[],
+                        snapshot_json={
+                            "speed_ft": int(getattr(entity, "speed", 30)),
+                            "ability_scores": dict(entity.ability_scores or {}),
+                            "actions": list(getattr(entity, "actions", []) or []),
+                        },
                         is_active=True,
                     )
                     session.add(combatant)

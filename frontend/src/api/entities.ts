@@ -5,7 +5,12 @@ import type {
   CharacterCondition,
   Clue,
   Combat,
+  CombatAction,
+  CombatActionConfirmation,
+  CombatActionPreview,
   Combatant,
+  DeathSave,
+  DeathSaveConfirmation,
   EncounterAdjustment,
   EncounterOperation,
   ListEnvelope,
@@ -13,6 +18,7 @@ import type {
   Npc,
   ProposalEntityType,
   Quest,
+  TurnAdvanceResult,
 } from "./types";
 
 /**
@@ -363,7 +369,20 @@ export type CombatantInput = {
   armor_class?: number;
   hp?: number;
   max_hp?: number;
+  temporary_hp?: number;
+  max_hp_reduction?: number;
+  damage_resistances?: string[];
+  damage_vulnerabilities?: string[];
+  damage_immunities?: string[];
+  condition_immunities?: string[];
   conditions?: unknown[];
+  concentration?: Record<string, unknown>;
+  speed_ft?: number;
+  movement_remaining_ft?: number;
+  action_available?: boolean;
+  bonus_action_available?: boolean;
+  reaction_available?: boolean;
+  snapshot_json?: Record<string, unknown>;
   is_active?: boolean;
 };
 
@@ -391,3 +410,105 @@ export const updateCombatant = (
 
 export const deleteCombatant = (cid: string, combatId: string, id: string, version: number) =>
   deleteEntity(`/campaigns/${cid}/combats/${combatId}/combatants/${id}`, version);
+
+export type CombatActionCommand = {
+  action_type: "damage" | "heal";
+  target_combatant_id: string;
+  target_version: number;
+  actor_combatant_id?: string | null;
+  amount: number;
+  damage_type?: string | null;
+  dm_override?: boolean;
+  override_reason?: string | null;
+};
+
+export const previewCombatAction = (
+  cid: string,
+  combatId: string,
+  input: CombatActionCommand,
+) =>
+  apiFetch<CombatActionPreview>(
+    `/campaigns/${cid}/combats/${combatId}/actions/preview`,
+    { method: "POST", body: input },
+  );
+
+export const confirmCombatAction = (
+  cid: string,
+  combatId: string,
+  input: CombatActionCommand,
+) =>
+  apiFetch<CombatActionConfirmation>(
+    `/campaigns/${cid}/combats/${combatId}/actions/confirm`,
+    {
+      method: "POST",
+      body: input,
+      headers: { "X-Request-ID": crypto.randomUUID() },
+    },
+  );
+
+export const listCombatActions = (
+  cid: string,
+  combatId: string,
+  signal?: AbortSignal,
+) =>
+  apiFetch<ListEnvelope<CombatAction>>(
+    `/campaigns/${cid}/combats/${combatId}/actions`,
+    { signal },
+  ).then((envelope) => envelope.items);
+
+export const getDeathSave = (
+  cid: string,
+  combatId: string,
+  combatantId: string,
+  signal?: AbortSignal,
+) =>
+  apiFetch<DeathSave>(
+    `/campaigns/${cid}/combats/${combatId}/combatants/${combatantId}/death-save`,
+    { signal },
+  );
+
+export const confirmDeathSave = (
+  cid: string,
+  combatId: string,
+  combatantId: string,
+  targetVersion: number,
+  roll: number,
+) =>
+  apiFetch<DeathSaveConfirmation>(
+    `/campaigns/${cid}/combats/${combatId}/combatants/${combatantId}/death-save/confirm`,
+    {
+      method: "POST",
+      body: { target_version: targetVersion, roll },
+      headers: { "X-Request-ID": crypto.randomUUID() },
+    },
+  );
+
+export const confirmCombatantDeath = (
+  cid: string,
+  combatId: string,
+  combatantId: string,
+  targetVersion: number,
+  reason: string,
+) =>
+  apiFetch<DeathSaveConfirmation>(
+    `/campaigns/${cid}/combats/${combatId}/combatants/${combatantId}/death-save/confirm-death`,
+    {
+      method: "POST",
+      body: { target_version: targetVersion, reason },
+      headers: { "X-Request-ID": crypto.randomUUID() },
+    },
+  );
+
+export const advanceCombatTurn = (
+  cid: string,
+  combatId: string,
+  combatVersion: number,
+) =>
+  apiFetch<TurnAdvanceResult>(
+    `/campaigns/${cid}/combats/${combatId}/turns/advance`,
+    {
+      method: "POST",
+      body: { combat_version: combatVersion },
+      headers: { "X-Request-ID": crypto.randomUUID() },
+    },
+  );

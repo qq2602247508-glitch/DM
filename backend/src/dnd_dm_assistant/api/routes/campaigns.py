@@ -428,7 +428,10 @@ def create_combatant(
     request: Request,
     service: Annotated[CampaignService, Depends(get_campaign_service)],
 ) -> dict[str, Any]:
-    data = body.model_dump(exclude_unset=True)
+    # Combatants have rules-significant defaults (entity type, action economy,
+    # movement, and defensive traits). Persist the complete validated snapshot
+    # so database rows never depend on a caller spelling those defaults out.
+    data = body.model_dump()
     data["combat_id"] = combat_id
     return _safe_call(
         lambda: service.create(
