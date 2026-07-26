@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState, type ReactElement } from "react";
 
-import { listCharacters } from "../api/entities";
+import { getCharacterAssets, listCharacters } from "../api/entities";
 import { getInventory } from "../api/world";
 import { Panel } from "../components/Panel";
 import { RequireCampaign } from "../components/RequireCampaign";
@@ -16,6 +16,10 @@ const STATE_LABELS = {
   ignored: "不计算负重",
 } as const;
 
+function displayValue(value: unknown): string {
+  return typeof value === "string" || typeof value === "number" ? String(value) : "—";
+}
+
 function InventoryContent({ campaignId }: { campaignId: string }): ReactElement {
   const [characterId, setCharacterId] = useState("");
   const characters = useQuery({
@@ -28,6 +32,11 @@ function InventoryContent({ campaignId }: { campaignId: string }): ReactElement 
   const inventory = useQuery({
     queryKey: ["inventory", campaignId, characterId],
     queryFn: ({ signal }) => getInventory(campaignId, characterId, signal),
+    enabled: Boolean(characterId),
+  });
+  const assets = useQuery({
+    queryKey: ["character-assets", campaignId, characterId],
+    queryFn: ({ signal }) => getCharacterAssets(campaignId, characterId, signal),
     enabled: Boolean(characterId),
   });
   const ratio = inventory.data?.maximum_weight_lb
@@ -92,6 +101,18 @@ function InventoryContent({ campaignId }: { campaignId: string }): ReactElement 
                 ))}
               </ul>
             ) : <EmptyState hint="在地点页选择角色，然后点击物品的“拾取到背包”。" title="背包还是空的" />}
+            <div className="mt-6 grid gap-4 lg:grid-cols-2">
+              <div className="rounded-md border border-ink-700 bg-ink-950/40 p-4">
+                <p className="m-0 text-2xs uppercase tracking-[0.16em] text-stone-600">法术与施法资源</p>
+                <p className="mb-2 mt-1 text-sm text-parchment-100">法术位、仪式与专注消耗在战斗或角色卡中均需先预览并由 DM 确认。</p>
+                {assets.data?.spells.length ? <ul className="m-0 space-y-1 p-0 text-xs text-stone-400">{assets.data.spells.map((spell) => <li key={String(spell.id)}>{String(spell.name)} · {String(spell.spell_level)} 环{spell.prepared ? " · 已准备" : ""}</li>)}</ul> : <span className="text-xs text-stone-600">尚未录入原子化法术。</span>}
+              </div>
+              <div className="rounded-md border border-ink-700 bg-ink-950/40 p-4">
+                <p className="m-0 text-2xs uppercase tracking-[0.16em] text-stone-600">装备、同调与零钱包</p>
+                <p className="mb-2 mt-1 text-sm text-parchment-100">{assets.data?.wallet ? `${displayValue(assets.data.wallet.copper ?? 0)} cp` : "未建立钱包"} · 同调物品最多 3 件</p>
+                {assets.data?.equipment.length ? <ul className="m-0 space-y-1 p-0 text-xs text-stone-400">{assets.data.equipment.map((item) => <li key={String(item.id)}>{displayValue(item.name)} ×{displayValue(item.quantity)}{item.equipped ? " · 已装备" : ""}{item.attuned ? " · 已同调" : ""}{item.charges !== null && item.charges !== undefined ? ` · 充能 ${displayValue(item.charges)}` : ""}</li>)}</ul> : <span className="text-xs text-stone-600">尚未录入原子化装备。</span>}
+              </div>
+            </div>
           </>
         ) : null}
       </Panel>
