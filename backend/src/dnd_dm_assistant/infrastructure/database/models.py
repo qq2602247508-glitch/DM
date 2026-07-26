@@ -649,6 +649,59 @@ class CombatReinforcement(Timestamped, Base):
     )
 
 
+class CombatSettlement(Timestamped, Base):
+    __tablename__ = "combat_settlements"
+    campaign_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("campaigns.id", ondelete="CASCADE"), nullable=False
+    )
+    combat_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("combats.id", ondelete="CASCADE"), nullable=False
+    )
+    transaction_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("operation_transactions.id", ondelete="SET NULL")
+    )
+    status: Mapped[str] = mapped_column(
+        String(30), nullable=False, default="confirmed", server_default="confirmed"
+    )
+    resolution_type: Mapped[str] = mapped_column(String(30), nullable=False)
+    xp_allocations: Mapped[list[object]] = mapped_column(
+        JSON, nullable=False, default=list, server_default="[]"
+    )
+    writebacks: Mapped[list[object]] = mapped_column(
+        JSON, nullable=False, default=list, server_default="[]"
+    )
+    result_json: Mapped[dict[str, object]] = mapped_column(
+        JSON, nullable=False, default=dict, server_default="{}"
+    )
+    idempotency_key: Mapped[str] = mapped_column(String(120), nullable=False)
+    notes: Mapped[str | None] = mapped_column(Text)
+    confirmed_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False
+    )
+    __table_args__ = (
+        CheckConstraint(
+            "status IN ('confirmed','reverted','conflict')",
+            name="ck_combat_settlement_status",
+        ),
+        CheckConstraint(
+            "resolution_type IN ('victory','defeat','retreat','negotiated','bypassed','other')",
+            name="ck_combat_settlement_resolution",
+        ),
+        UniqueConstraint("combat_id", name="uq_combat_settlement_combat"),
+        UniqueConstraint(
+            "campaign_id",
+            "idempotency_key",
+            name="uq_combat_settlement_campaign_idempotency",
+        ),
+        Index(
+            "ix_combat_settlements_campaign_confirmed",
+            "campaign_id",
+            "confirmed_at",
+            "id",
+        ),
+    )
+
+
 class OperationTransaction(Timestamped, Base):
     __tablename__ = "operation_transactions"
     campaign_id: Mapped[str] = mapped_column(

@@ -9,6 +9,11 @@ import type {
   CombatActionConfirmation,
   CombatActionPreview,
   Combatant,
+  CombatEffect,
+  CombatEffectConfirmation,
+  CombatSettlementPreview,
+  CombatSettlementResult,
+  ConcentrationCheckResult,
   DeathSave,
   DeathSaveConfirmation,
   EncounterAdjustment,
@@ -509,6 +514,123 @@ export const advanceCombatTurn = (
     {
       method: "POST",
       body: { combat_version: combatVersion },
+      headers: { "X-Request-ID": crypto.randomUUID() },
+    },
+  );
+
+export type CombatEffectCommand = {
+  target_combatant_id: string;
+  target_version: number;
+  source_combatant_id?: string | null;
+  source_version?: number | null;
+  name: string;
+  effect_type: "condition" | "buff" | "debuff" | "aura" | "damage_over_time";
+  details_json?: Record<string, unknown>;
+  duration_unit: "rounds" | "minutes" | "concentration" | "until_save" | "until_removed";
+  duration_value?: number | null;
+  requires_concentration?: boolean;
+  save_dc?: number | null;
+  save_ability?: string | null;
+  trigger_timing?: "turn_start" | "turn_end" | "round_start" | "round_end" | null;
+};
+
+export const listCombatEffects = (
+  cid: string,
+  combatId: string,
+  signal?: AbortSignal,
+) =>
+  apiFetch<ListEnvelope<CombatEffect>>(
+    `/campaigns/${cid}/combats/${combatId}/effects`,
+    { signal },
+  ).then((envelope) => envelope.items);
+
+export const confirmCombatEffect = (
+  cid: string,
+  combatId: string,
+  input: CombatEffectCommand,
+) =>
+  apiFetch<CombatEffectConfirmation>(
+    `/campaigns/${cid}/combats/${combatId}/effects/confirm`,
+    {
+      method: "POST",
+      body: input,
+      headers: { "X-Request-ID": crypto.randomUUID() },
+    },
+  );
+
+export const endCombatEffect = (
+  cid: string,
+  combatId: string,
+  effectId: string,
+  targetVersion: number,
+  sourceVersion: number | null,
+  reason: string,
+) =>
+  apiFetch<CombatEffectConfirmation>(
+    `/campaigns/${cid}/combats/${combatId}/effects/${effectId}/end`,
+    {
+      method: "POST",
+      body: {
+        target_version: targetVersion,
+        source_version: sourceVersion,
+        reason,
+      },
+      headers: { "X-Request-ID": crypto.randomUUID() },
+    },
+  );
+
+export const confirmConcentrationCheck = (
+  cid: string,
+  combatId: string,
+  input: {
+    combatant_id: string;
+    target_version: number;
+    damage_action_id: string;
+    roll_total: number;
+  },
+) =>
+  apiFetch<ConcentrationCheckResult>(
+    `/campaigns/${cid}/combats/${combatId}/concentration/confirm`,
+    {
+      method: "POST",
+      body: input,
+      headers: { "X-Request-ID": crypto.randomUUID() },
+    },
+  );
+
+export type CombatSettlementCommand = {
+  combat_version: number;
+  resolution_type: "victory" | "defeat" | "retreat" | "negotiated" | "bypassed" | "other";
+  xp_awards: { character_id: string; xp: number }[];
+  writebacks: {
+    combatant_id: string;
+    character_id: string;
+    write_hp: boolean;
+    write_conditions: boolean;
+  }[];
+  notes?: string | null;
+};
+
+export const previewCombatSettlement = (
+  cid: string,
+  combatId: string,
+  input: CombatSettlementCommand,
+) =>
+  apiFetch<CombatSettlementPreview>(
+    `/campaigns/${cid}/combats/${combatId}/settlement/preview`,
+    { method: "POST", body: input },
+  );
+
+export const confirmCombatSettlement = (
+  cid: string,
+  combatId: string,
+  input: CombatSettlementCommand,
+) =>
+  apiFetch<CombatSettlementResult>(
+    `/campaigns/${cid}/combats/${combatId}/settlement/confirm`,
+    {
+      method: "POST",
+      body: input,
       headers: { "X-Request-ID": crypto.randomUUID() },
     },
   );

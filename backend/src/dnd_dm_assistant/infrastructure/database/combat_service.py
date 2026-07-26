@@ -10,6 +10,10 @@ from sqlalchemy.orm import Session
 
 from dnd_dm_assistant.api.schemas import (
     CombatActionCommand,
+    CombatEffectCommand,
+    CombatEffectEndCommand,
+    CombatSettlementCommand,
+    ConcentrationCheckCommand,
     DeathConfirmationCommand,
     DeathSaveCommand,
     TurnAdvanceCommand,
@@ -23,9 +27,13 @@ from dnd_dm_assistant.domain.combat import (
 from dnd_dm_assistant.infrastructure.database.campaign_service import serialize
 from dnd_dm_assistant.infrastructure.database.models import (
     Campaign,
+    Character,
+    CharacterCondition,
     Combat,
     CombatAction,
     Combatant,
+    CombatEffect,
+    CombatSettlement,
     DeathSave,
     OperationTransaction,
 )
@@ -568,6 +576,17 @@ class CombatEngineService:
             now = datetime.now(UTC)
             active.updated_at = now
             combat.updated_at = now
+            expiring_effects = session.scalars(
+                select(CombatEffect)
+                .where(
+                    CombatEffect.combat_id == combat_id,
+                    CombatEffect.status == "active",
+                    CombatEffect.ends_round.is_not(None),
+                    CombatEffect.ends_round <= combat.round_number,
+                )
+                .order_by(CombatEffect.ends_round, CombatEffect.created_at, CombatEffect.id)
+            ).all()
+            expiration_prompts = [serialize(effect) for effect in expiring_effects]
             transaction = OperationTransaction(
                 campaign_id=campaign_id,
                 operation_type="combat_advance_turn",
@@ -590,7 +609,7 @@ class CombatEngineService:
                 "active_combatant_id": active.id,
                 "round_number": combat.round_number,
                 "turn_index": combat.current_turn_index,
-                "expiration_prompts": [],
+                "expiration_prompts": expiration_prompts,
             }
             action = CombatAction(
                 campaign_id=campaign_id,
@@ -616,7 +635,814 @@ class CombatEngineService:
                 "action": serialize(action),
                 "combat": serialize(combat),
                 "active_combatant": serialize(active),
-                "expiration_prompts": [],
+                "expiration_prompts": expiration_prompts,
+            }
+
+    @staticmethod
+    def _effect_scope(
+        session: Session,
+        campaign_id: str,
+        combat_id: str,
+        command: CombatEffectCommand,
+    ) -> tuple[Combat, Combatant, Combatant | None]:
+        campaign = session.get(Campaign, campaign_id)
+        if campaign is None:
+            raise StateNotFoundError("campaign not found")
+        combat = session.get(Combat, combat_id)
+        if combat is None or combat.campaign_id != campaign_id:
+            raise StateNotFoundError("combat not found in campaign")
+        target = session.get(Combatant, command.target_combatant_id)
+        if target is None or target.combat_id != combat_id:
+            raise StateNotFoundError("target combatant not found in combat")
+        source = None
+        if command.source_combatant_id is not None:
+            source = session.get(Combatant, command.source_combatant_id)
+            if source is None or source.combat_id != combat_id:
+                raise StateNotFoundError("source combatant not found in combat")
+        return combat, target, source
+
+    @staticmethod
+    def _active_concentration_effects(
+        session: Session,
+        combat_id: str,
+        source_id: str | None,
+    ) -> list[CombatEffect]:
+        if source_id is None:
+            return []
+        return list(
+            session.scalars(
+                select(CombatEffect)
+                .where(
+                    CombatEffect.combat_id == combat_id,
+                    CombatEffect.source_combatant_id == source_id,
+                    CombatEffect.requires_concentration.is_(True),
+                    CombatEffect.status == "active",
+                )
+                .order_by(CombatEffect.created_at, CombatEffect.id)
+            ).all()
+        )
+
+    def preview_effect(
+        self,
+        campaign_id: str,
+        combat_id: str,
+        command: CombatEffectCommand,
+    ) -> dict[str, Any]:
+        with Session(self.engine) as session:
+            combat, target, source = self._effect_scope(
+                session,
+                campaign_id,
+                combat_id,
+                command,
+            )
+            if target.version != command.target_version:
+                raise VersionConflict(
+                    "combatant",
+                    target.id,
+                    command.target_version,
+                    target.version,
+                )
+            if (
+                source is not None
+                and source.id != target.id
+                and source.version != command.source_version
+            ):
+                raise VersionConflict(
+                    "combatant",
+                    source.id,
+                    command.source_version or 0,
+                    source.version,
+                )
+            old_effects = (
+                self._active_concentration_effects(session, combat_id, source.id)
+                if command.requires_concentration and source is not None
+                else []
+            )
+            ends_round = (
+                combat.round_number + int(command.duration_value or 0)
+                if command.duration_unit == "rounds"
+                else None
+            )
+            return {
+                "effect": {
+                    **command.model_dump(mode="json"),
+                    "started_round": combat.round_number,
+                    "ends_round": ends_round,
+                    "status": "active",
+                },
+                "effects_to_end": [serialize(effect) for effect in old_effects],
+                "target": serialize(target),
+                "source": serialize(source) if source is not None else None,
+            }
+
+    def confirm_effect(
+        self,
+        campaign_id: str,
+        combat_id: str,
+        command: CombatEffectCommand,
+        *,
+        idempotency_key: str,
+    ) -> dict[str, Any]:
+        with Session(self.engine) as session, session.begin():
+            combat, target, source = self._effect_scope(
+                session,
+                campaign_id,
+                combat_id,
+                command,
+            )
+            existing_action = session.scalar(
+                select(CombatAction).where(
+                    CombatAction.combat_id == combat_id,
+                    CombatAction.idempotency_key == idempotency_key,
+                )
+            )
+            if existing_action is not None:
+                effect_id = existing_action.result_json.get("effect_id")
+                effect = (
+                    session.get(CombatEffect, effect_id)
+                    if isinstance(effect_id, str)
+                    else None
+                )
+                if effect is None:
+                    raise ValueError("confirmed effect record is missing")
+                ended_ids_raw = existing_action.result_json.get(
+                    "ended_effect_ids",
+                    [],
+                )
+                ended_ids = (
+                    ended_ids_raw if isinstance(ended_ids_raw, list) else []
+                )
+                ended_effects = [
+                    row
+                    for effect_id_value in ended_ids
+                    if isinstance(effect_id_value, str)
+                    and (row := session.get(CombatEffect, effect_id_value)) is not None
+                ]
+                return {
+                    "action": serialize(existing_action),
+                    "effect": serialize(effect),
+                    "ended_effects": [serialize(row) for row in ended_effects],
+                    "target": serialize(target),
+                    "source": serialize(source) if source is not None else None,
+                }
+            if target.version != command.target_version:
+                raise VersionConflict(
+                    "combatant",
+                    target.id,
+                    command.target_version,
+                    target.version,
+                )
+            if (
+                source is not None
+                and source.id != target.id
+                and source.version != command.source_version
+            ):
+                raise VersionConflict(
+                    "combatant",
+                    source.id,
+                    command.source_version or 0,
+                    source.version,
+                )
+            now = datetime.now(UTC)
+            old_effects = (
+                self._active_concentration_effects(session, combat_id, source.id)
+                if command.requires_concentration and source is not None
+                else []
+            )
+            before = {
+                "target": serialize(target),
+                "source": serialize(source) if source is not None else None,
+                "effects_to_end": [serialize(row) for row in old_effects],
+            }
+            for old_effect in old_effects:
+                old_effect.status = "ended"
+                old_effect.ended_at = now
+                old_effect.end_reason = f"开始新专注：{command.name}"
+                old_effect.version += 1
+            ends_round = (
+                combat.round_number + int(command.duration_value or 0)
+                if command.duration_unit == "rounds"
+                else None
+            )
+            effect = CombatEffect(
+                campaign_id=campaign_id,
+                combat_id=combat_id,
+                target_combatant_id=target.id,
+                source_combatant_id=source.id if source is not None else None,
+                name=command.name,
+                effect_type=command.effect_type,
+                details_json=command.details_json,
+                started_round=combat.round_number,
+                duration_unit=command.duration_unit,
+                duration_value=command.duration_value,
+                ends_round=ends_round,
+                requires_concentration=command.requires_concentration,
+                save_dc=command.save_dc,
+                save_ability=command.save_ability,
+                trigger_timing=command.trigger_timing,
+                status="active",
+            )
+            session.add(effect)
+            session.flush()
+            if command.requires_concentration and source is not None:
+                source.concentration = {
+                    "effect_id": effect.id,
+                    "name": effect.name,
+                    "started_round": combat.round_number,
+                }
+            target.version += 1
+            target.updated_at = now
+            if source is not None and source.id != target.id:
+                source.version += 1
+                source.updated_at = now
+            transaction = OperationTransaction(
+                campaign_id=campaign_id,
+                operation_type="combat_add_effect",
+                idempotency_key=idempotency_key,
+                status="applied",
+                before_snapshot=before,
+                after_snapshot={
+                    "effect": serialize(effect),
+                    "ended_effect_ids": [row.id for row in old_effects],
+                },
+                reason=f"DM confirmed effect: {command.name}",
+                source="combat",
+                confirmed_at=now,
+            )
+            session.add(transaction)
+            session.flush()
+            result = {
+                "effect_id": effect.id,
+                "ended_effect_ids": [row.id for row in old_effects],
+                "requires_concentration": command.requires_concentration,
+            }
+            action = CombatAction(
+                campaign_id=campaign_id,
+                combat_id=combat_id,
+                actor_combatant_id=source.id if source is not None else None,
+                transaction_id=transaction.id,
+                action_type="add_effect",
+                target_combatant_ids=[target.id],
+                request_json=command.model_dump(mode="json"),
+                result_json=result,
+                explanation=(
+                    f"结束 {len(old_effects)} 个旧专注效果"
+                    if old_effects
+                    else "建立结构化战斗效果"
+                ),
+                round_number=combat.round_number,
+                turn_index=combat.current_turn_index,
+                summary=f"{target.display_name} 获得效果：{command.name}",
+                idempotency_key=idempotency_key,
+                status="confirmed",
+            )
+            session.add(action)
+            session.flush()
+            return {
+                "action": serialize(action),
+                "effect": serialize(effect),
+                "ended_effects": [serialize(row) for row in old_effects],
+                "target": serialize(target),
+                "source": serialize(source) if source is not None else None,
+            }
+
+    def list_effects(
+        self,
+        campaign_id: str,
+        combat_id: str,
+    ) -> tuple[dict[str, Any], ...]:
+        with Session(self.engine) as session:
+            combat = session.get(Combat, combat_id)
+            if combat is None or combat.campaign_id != campaign_id:
+                raise StateNotFoundError("combat not found in campaign")
+            rows = session.scalars(
+                select(CombatEffect)
+                .where(CombatEffect.combat_id == combat_id)
+                .order_by(CombatEffect.created_at, CombatEffect.id)
+            ).all()
+            return tuple(serialize(row) for row in rows)
+
+    def confirm_concentration_check(
+        self,
+        campaign_id: str,
+        combat_id: str,
+        command: ConcentrationCheckCommand,
+        *,
+        idempotency_key: str,
+    ) -> dict[str, Any]:
+        with Session(self.engine) as session, session.begin():
+            campaign = session.get(Campaign, campaign_id)
+            if campaign is None:
+                raise StateNotFoundError("campaign not found")
+            combat = session.get(Combat, combat_id)
+            if combat is None or combat.campaign_id != campaign_id:
+                raise StateNotFoundError("combat not found in campaign")
+            target = session.get(Combatant, command.combatant_id)
+            if target is None or target.combat_id != combat_id:
+                raise StateNotFoundError("combatant not found in combat")
+            existing = session.scalar(
+                select(CombatAction).where(
+                    CombatAction.combat_id == combat_id,
+                    CombatAction.idempotency_key == idempotency_key,
+                )
+            )
+            if existing is not None:
+                ended_ids_raw = existing.result_json.get("ended_effect_ids", [])
+                ended_ids = (
+                    ended_ids_raw if isinstance(ended_ids_raw, list) else []
+                )
+                existing_ended = [
+                    row
+                    for effect_id in ended_ids
+                    if isinstance(effect_id, str)
+                    and (row := session.get(CombatEffect, effect_id)) is not None
+                ]
+                return {
+                    "action": serialize(existing),
+                    "target": serialize(target),
+                    "dc": existing.result_json.get("dc"),
+                    "roll_total": existing.result_json.get("roll_total"),
+                    "success": existing.result_json.get("success"),
+                    "ended_effects": [serialize(row) for row in existing_ended],
+                }
+            if target.version != command.target_version:
+                raise VersionConflict(
+                    "combatant",
+                    target.id,
+                    command.target_version,
+                    target.version,
+                )
+            damage_action = session.get(CombatAction, command.damage_action_id)
+            if damage_action is None or damage_action.combat_id != combat_id:
+                raise StateNotFoundError("damage action not found in combat")
+            if (
+                damage_action.action_type != "damage"
+                or target.id not in damage_action.target_combatant_ids
+            ):
+                raise ValueError("action does not require this target's concentration check")
+            raw_dc = damage_action.result_json.get("concentration_check_dc")
+            if not isinstance(raw_dc, int) or raw_dc <= 0:
+                raise ValueError("damage action has no concentration check")
+            success = command.roll_total >= raw_dc
+            active_effects = self._active_concentration_effects(
+                session,
+                combat_id,
+                target.id,
+            )
+            before = {
+                "target": serialize(target),
+                "effects": [serialize(row) for row in active_effects],
+            }
+            ended: list[CombatEffect] = []
+            now = datetime.now(UTC)
+            if not success:
+                for effect in active_effects:
+                    effect.status = "ended"
+                    effect.ended_at = now
+                    effect.end_reason = (
+                        f"专注检定失败：{command.roll_total} < DC {raw_dc}"
+                    )
+                    effect.version += 1
+                    ended.append(effect)
+                target.concentration = {}
+                target.version += 1
+                target.updated_at = now
+            transaction = OperationTransaction(
+                campaign_id=campaign_id,
+                operation_type="combat_concentration_check",
+                idempotency_key=idempotency_key,
+                status="applied",
+                before_snapshot=before,
+                after_snapshot={
+                    "combatant_id": target.id,
+                    "dc": raw_dc,
+                    "roll_total": command.roll_total,
+                    "success": success,
+                    "ended_effect_ids": [row.id for row in ended],
+                },
+                reason="DM confirmed concentration check",
+                source="combat",
+                confirmed_at=now,
+            )
+            session.add(transaction)
+            session.flush()
+            result = {
+                "dc": raw_dc,
+                "roll_total": command.roll_total,
+                "success": success,
+                "ended_effect_ids": [row.id for row in ended],
+                "damage_action_id": damage_action.id,
+            }
+            action = CombatAction(
+                campaign_id=campaign_id,
+                combat_id=combat_id,
+                actor_combatant_id=target.id,
+                transaction_id=transaction.id,
+                action_type="concentration_check",
+                target_combatant_ids=[target.id],
+                request_json=command.model_dump(mode="json"),
+                result_json=result,
+                explanation=(
+                    f"{command.roll_total} 对抗 DC {raw_dc}："
+                    f"{'成功，维持专注' if success else '失败，结束专注'}"
+                ),
+                round_number=combat.round_number,
+                turn_index=combat.current_turn_index,
+                summary=(
+                    f"{target.display_name} 专注检定"
+                    f"{'成功' if success else '失败'}"
+                ),
+                idempotency_key=idempotency_key,
+                status="confirmed",
+            )
+            session.add(action)
+            session.flush()
+            return {
+                "action": serialize(action),
+                "target": serialize(target),
+                "dc": raw_dc,
+                "roll_total": command.roll_total,
+                "success": success,
+                "ended_effects": [serialize(row) for row in ended],
+            }
+
+    def end_effect(
+        self,
+        campaign_id: str,
+        combat_id: str,
+        effect_id: str,
+        command: CombatEffectEndCommand,
+        *,
+        idempotency_key: str,
+    ) -> dict[str, Any]:
+        with Session(self.engine) as session, session.begin():
+            combat = session.get(Combat, combat_id)
+            if combat is None or combat.campaign_id != campaign_id:
+                raise StateNotFoundError("combat not found in campaign")
+            effect = session.get(CombatEffect, effect_id)
+            if effect is None or effect.combat_id != combat_id:
+                raise StateNotFoundError("effect not found in combat")
+            target = session.get(Combatant, effect.target_combatant_id)
+            if target is None:
+                raise StateNotFoundError("effect target is missing")
+            source = (
+                session.get(Combatant, effect.source_combatant_id)
+                if effect.source_combatant_id is not None
+                else None
+            )
+            existing = session.scalar(
+                select(CombatAction).where(
+                    CombatAction.combat_id == combat_id,
+                    CombatAction.idempotency_key == idempotency_key,
+                )
+            )
+            if existing is not None:
+                return {
+                    "action": serialize(existing),
+                    "effect": serialize(effect),
+                    "target": serialize(target),
+                    "source": serialize(source) if source is not None else None,
+                }
+            if effect.status != "active":
+                raise ValueError("effect is already ended")
+            if target.version != command.target_version:
+                raise VersionConflict(
+                    "combatant",
+                    target.id,
+                    command.target_version,
+                    target.version,
+                )
+            if (
+                source is not None
+                and source.id != target.id
+                and source.version != command.source_version
+            ):
+                raise VersionConflict(
+                    "combatant",
+                    source.id,
+                    command.source_version or 0,
+                    source.version,
+                )
+            before = {
+                "effect": serialize(effect),
+                "target": serialize(target),
+                "source": serialize(source) if source is not None else None,
+            }
+            now = datetime.now(UTC)
+            effect.status = "ended"
+            effect.ended_at = now
+            effect.end_reason = command.reason
+            effect.version += 1
+            target.version += 1
+            target.updated_at = now
+            if source is not None:
+                concentration_id = source.concentration.get("effect_id")
+                if concentration_id == effect.id:
+                    source.concentration = {}
+                if source.id != target.id:
+                    source.version += 1
+                    source.updated_at = now
+            transaction = OperationTransaction(
+                campaign_id=campaign_id,
+                operation_type="combat_end_effect",
+                idempotency_key=idempotency_key,
+                status="applied",
+                before_snapshot=before,
+                after_snapshot={
+                    "effect_id": effect.id,
+                    "status": effect.status,
+                    "end_reason": effect.end_reason,
+                },
+                reason=command.reason,
+                source="combat",
+                confirmed_at=now,
+            )
+            session.add(transaction)
+            session.flush()
+            action = CombatAction(
+                campaign_id=campaign_id,
+                combat_id=combat_id,
+                actor_combatant_id=source.id if source is not None else None,
+                transaction_id=transaction.id,
+                action_type="end_effect",
+                target_combatant_ids=[target.id],
+                request_json=command.model_dump(mode="json"),
+                result_json={
+                    "effect_id": effect.id,
+                    "effect_name": effect.name,
+                    "reason": command.reason,
+                },
+                explanation=command.reason,
+                round_number=combat.round_number,
+                turn_index=combat.current_turn_index,
+                summary=f"{target.display_name} 的效果结束：{effect.name}",
+                idempotency_key=idempotency_key,
+                status="confirmed",
+            )
+            session.add(action)
+            session.flush()
+            return {
+                "action": serialize(action),
+                "effect": serialize(effect),
+                "target": serialize(target),
+                "source": serialize(source) if source is not None else None,
+            }
+
+    @staticmethod
+    def _condition_names(values: list[object]) -> list[str]:
+        names: list[str] = []
+        for value in values:
+            if isinstance(value, str):
+                name = value.strip()
+            elif isinstance(value, dict):
+                raw_name = value.get("name", value.get("condition_name"))
+                name = raw_name.strip() if isinstance(raw_name, str) else ""
+            else:
+                name = ""
+            if name and name not in names:
+                names.append(name)
+        return names
+
+    @staticmethod
+    def _settlement_plan(
+        session: Session,
+        campaign_id: str,
+        combat_id: str,
+        command: CombatSettlementCommand,
+    ) -> tuple[Combat, dict[str, Character], list[dict[str, Any]]]:
+        combat = session.get(Combat, combat_id)
+        if combat is None or combat.campaign_id != campaign_id:
+            raise StateNotFoundError("combat not found in campaign")
+        if combat.version != command.combat_version:
+            raise VersionConflict(
+                "combat",
+                combat.id,
+                command.combat_version,
+                combat.version,
+            )
+        if combat.status != "ended":
+            raise ValueError("combat must be ended before settlement")
+        xp_by_character = {
+            award.character_id: award.xp for award in command.xp_awards
+        }
+        writeback_by_character = {
+            writeback.character_id: writeback for writeback in command.writebacks
+        }
+        character_ids = set(xp_by_character) | set(writeback_by_character)
+        characters: dict[str, Character] = {}
+        changes: list[dict[str, Any]] = []
+        for character_id in sorted(character_ids):
+            character = session.get(Character, character_id)
+            if character is None or character.campaign_id != campaign_id:
+                raise StateNotFoundError("settlement character not found in campaign")
+            characters[character_id] = character
+            before = {
+                "hp": character.hp,
+                "experience": character.experience,
+                "version": character.version,
+            }
+            after = dict(before)
+            after["experience"] = character.experience + xp_by_character.get(
+                character_id,
+                0,
+            )
+            condition_names: list[str] = []
+            writeback = writeback_by_character.get(character_id)
+            if writeback is not None:
+                combatant = session.get(Combatant, writeback.combatant_id)
+                if (
+                    combatant is None
+                    or combatant.combat_id != combat_id
+                    or combatant.entity_type != "character"
+                    or combatant.entity_id != character_id
+                ):
+                    raise ValueError(
+                        "writeback combatant must reference the selected character"
+                    )
+                if writeback.write_hp:
+                    after["hp"] = min(character.max_hp, combatant.hp)
+                if writeback.write_conditions:
+                    condition_names = CombatEngineService._condition_names(
+                        combatant.conditions
+                    )
+            after["version"] = character.version + 1
+            changes.append(
+                {
+                    "character_id": character_id,
+                    "name": character.name,
+                    "before": before,
+                    "after": after,
+                    "conditions_to_add": condition_names,
+                    "xp_award": xp_by_character.get(character_id, 0),
+                }
+            )
+        return combat, characters, changes
+
+    def preview_settlement(
+        self,
+        campaign_id: str,
+        combat_id: str,
+        command: CombatSettlementCommand,
+    ) -> dict[str, Any]:
+        with Session(self.engine) as session:
+            existing = session.scalar(
+                select(CombatSettlement).where(
+                    CombatSettlement.combat_id == combat_id
+                )
+            )
+            if existing is not None:
+                raise ValueError("combat is already settled")
+            combat, _, changes = self._settlement_plan(
+                session,
+                campaign_id,
+                combat_id,
+                command,
+            )
+            return {
+                "combat": serialize(combat),
+                "resolution_type": command.resolution_type,
+                "character_changes": changes,
+                "total_xp": sum(award.xp for award in command.xp_awards),
+                "notes": command.notes,
+            }
+
+    def confirm_settlement(
+        self,
+        campaign_id: str,
+        combat_id: str,
+        command: CombatSettlementCommand,
+        *,
+        idempotency_key: str,
+    ) -> dict[str, Any]:
+        with Session(self.engine) as session, session.begin():
+            existing = session.scalar(
+                select(CombatSettlement).where(
+                    CombatSettlement.campaign_id == campaign_id,
+                    CombatSettlement.idempotency_key == idempotency_key,
+                )
+            )
+            if existing is not None:
+                character_ids_raw = existing.result_json.get("character_ids", [])
+                character_ids = (
+                    character_ids_raw
+                    if isinstance(character_ids_raw, list)
+                    else []
+                )
+                existing_characters = [
+                    row
+                    for character_id in character_ids
+                    if isinstance(character_id, str)
+                    and (row := session.get(Character, character_id)) is not None
+                ]
+                combat = session.get(Combat, combat_id)
+                return {
+                    "settlement": serialize(existing),
+                    "combat": serialize(combat) if combat is not None else None,
+                    "characters": [serialize(row) for row in existing_characters],
+                    "conditions": [],
+                }
+            other_settlement = session.scalar(
+                select(CombatSettlement).where(
+                    CombatSettlement.combat_id == combat_id
+                )
+            )
+            if other_settlement is not None:
+                raise ValueError("combat is already settled")
+            combat, characters, changes = self._settlement_plan(
+                session,
+                campaign_id,
+                combat_id,
+                command,
+            )
+            combat_before = serialize(combat)
+            now = datetime.now(UTC)
+            created_conditions: list[CharacterCondition] = []
+            for change in changes:
+                character = characters[str(change["character_id"])]
+                after = change["after"]
+                character.hp = int(after["hp"])
+                character.experience = int(after["experience"])
+                character.version += 1
+                character.updated_at = now
+                for condition_name in change["conditions_to_add"]:
+                    duplicate = session.scalar(
+                        select(CharacterCondition).where(
+                            CharacterCondition.character_id == character.id,
+                            CharacterCondition.condition_name == condition_name,
+                        )
+                    )
+                    if duplicate is None:
+                        condition = CharacterCondition(
+                            character_id=character.id,
+                            condition_name=condition_name,
+                            source=f"战斗结算：{combat.name}",
+                            duration="持续，直至规则或DM移除",
+                            notes=command.notes,
+                            details={
+                                "combat_id": combat.id,
+                                "settlement_resolution": command.resolution_type,
+                            },
+                        )
+                        session.add(condition)
+                        created_conditions.append(condition)
+            combat.xp_awarded = bool(command.xp_awards)
+            combat.base_xp = sum(award.xp for award in command.xp_awards)
+            combat.version += 1
+            combat.updated_at = now
+            transaction = OperationTransaction(
+                campaign_id=campaign_id,
+                operation_type="combat_settlement",
+                idempotency_key=idempotency_key,
+                status="applied",
+                before_snapshot={
+                    "combat": combat_before,
+                    "character_changes": changes,
+                },
+                after_snapshot={
+                    "combat_id": combat.id,
+                    "resolution_type": command.resolution_type,
+                    "character_ids": list(characters),
+                },
+                reason=command.notes or f"combat settlement: {command.resolution_type}",
+                source="combat",
+                confirmed_at=now,
+            )
+            session.add(transaction)
+            session.flush()
+            settlement = CombatSettlement(
+                campaign_id=campaign_id,
+                combat_id=combat_id,
+                transaction_id=transaction.id,
+                status="confirmed",
+                resolution_type=command.resolution_type,
+                xp_allocations=[
+                    award.model_dump(mode="json") for award in command.xp_awards
+                ],
+                writebacks=[
+                    writeback.model_dump(mode="json")
+                    for writeback in command.writebacks
+                ],
+                result_json={
+                    "character_ids": list(characters),
+                    "condition_ids": [condition.id for condition in created_conditions],
+                    "total_xp": sum(award.xp for award in command.xp_awards),
+                },
+                idempotency_key=idempotency_key,
+                notes=command.notes,
+                confirmed_at=now,
+            )
+            session.add(settlement)
+            session.flush()
+            return {
+                "settlement": serialize(settlement),
+                "combat": serialize(combat),
+                "characters": [
+                    serialize(characters[character_id])
+                    for character_id in sorted(characters)
+                ],
+                "conditions": [
+                    serialize(condition) for condition in created_conditions
+                ],
             }
 
     def list_actions(

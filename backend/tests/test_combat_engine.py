@@ -292,3 +292,254 @@ def test_advance_turn_restores_next_combatant_action_economy(
     assert repeated.status_code == 200
     assert repeated.json()["combat"]["current_turn_index"] == 1
     assert repeated.json()["action"]["id"] == advanced.json()["action"]["id"]
+
+
+def test_new_concentration_previews_and_ends_previous_effect(
+    combat_client: TestClient,
+) -> None:
+    campaign = _campaign(combat_client)
+    combat, fighter = _combatant(combat_client, campaign["id"])
+    effect_path = (
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}/effects"
+    )
+    first_payload = {
+        "target_combatant_id": fighter["id"],
+        "target_version": fighter["version"],
+        "source_combatant_id": fighter["id"],
+        "name": "祝福术",
+        "effect_type": "buff",
+        "requires_concentration": True,
+        "duration_unit": "rounds",
+        "duration_value": 10,
+    }
+    first = combat_client.post(
+        f"{effect_path}/confirm",
+        headers={"X-Request-ID": "first-concentration"},
+        json=first_payload,
+    )
+    assert first.status_code == 200
+    assert first.json()["effect"]["status"] == "active"
+    fighter = first.json()["target"]
+    assert fighter["concentration"]["effect_id"] == first.json()["effect"]["id"]
+
+    second_payload = {
+        **first_payload,
+        "target_version": fighter["version"],
+        "name": "隐形术",
+    }
+    preview = combat_client.post(f"{effect_path}/preview", json=second_payload)
+    assert preview.status_code == 200
+    assert preview.json()["effects_to_end"][0]["id"] == first.json()["effect"]["id"]
+    listed_before = combat_client.get(effect_path).json()["items"]
+    assert listed_before[0]["status"] == "active"
+
+    second = combat_client.post(
+        f"{effect_path}/confirm",
+        headers={"X-Request-ID": "second-concentration"},
+        json=second_payload,
+    )
+    assert second.status_code == 200
+    assert second.json()["ended_effects"][0]["status"] == "ended"
+    assert second.json()["effect"]["name"] == "隐形术"
+    assert second.json()["target"]["concentration"]["effect_id"] == second.json()["effect"]["id"]
+
+    repeated = combat_client.post(
+        f"{effect_path}/confirm",
+        headers={"X-Request-ID": "second-concentration"},
+        json=second_payload,
+    )
+    assert repeated.status_code == 200
+    assert repeated.json()["effect"]["id"] == second.json()["effect"]["id"]
+
+
+def test_failed_concentration_check_ends_effect_from_damage_action(
+    combat_client: TestClient,
+) -> None:
+    campaign = _campaign(combat_client)
+    combat, fighter = _combatant(combat_client, campaign["id"])
+    effect_path = (
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}/effects"
+    )
+    concentrated = combat_client.post(
+        f"{effect_path}/confirm",
+        headers={"X-Request-ID": "concentrate"},
+        json={
+            "target_combatant_id": fighter["id"],
+            "target_version": fighter["version"],
+            "source_combatant_id": fighter["id"],
+            "name": "隐形术",
+            "effect_type": "buff",
+            "requires_concentration": True,
+            "duration_unit": "concentration",
+        },
+    )
+    assert concentrated.status_code == 200
+    fighter = concentrated.json()["target"]
+    damaged = combat_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}/actions/confirm",
+        headers={"X-Request-ID": "concentration-damage"},
+        json={
+            "action_type": "damage",
+            "target_combatant_id": fighter["id"],
+            "target_version": fighter["version"],
+            "amount": 12,
+            "damage_type": "force",
+        },
+    )
+    assert damaged.status_code == 200
+    assert damaged.json()["action"]["result_json"]["concentration_check_dc"] == 10
+
+    resolved = combat_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}"
+        "/concentration/confirm",
+        headers={"X-Request-ID": "failed-concentration"},
+        json={
+            "combatant_id": fighter["id"],
+            "target_version": damaged.json()["target"]["version"],
+            "damage_action_id": damaged.json()["action"]["id"],
+            "roll_total": 9,
+        },
+    )
+
+    assert resolved.status_code == 200
+    assert resolved.json()["success"] is False
+    assert resolved.json()["dc"] == 10
+    assert resolved.json()["target"]["concentration"] == {}
+    assert resolved.json()["ended_effects"][0]["status"] == "ended"
+
+
+def test_turn_advance_prompts_expired_effect_until_dm_ends_it(
+    combat_client: TestClient,
+) -> None:
+    campaign = _campaign(combat_client)
+    combat, fighter = _combatant(combat_client, campaign["id"])
+    second = combat_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}/combatants",
+        json={"display_name": "Second", "hp": 5, "max_hp": 5, "initiative": -1},
+    )
+    assert second.status_code == 201
+    effect_path = (
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}/effects"
+    )
+    created = combat_client.post(
+        f"{effect_path}/confirm",
+        headers={"X-Request-ID": "short-effect"},
+        json={
+            "target_combatant_id": fighter["id"],
+            "target_version": fighter["version"],
+            "name": "短暂目盲",
+            "effect_type": "condition",
+            "duration_unit": "rounds",
+            "duration_value": 0,
+            "trigger_timing": "turn_end",
+        },
+    )
+    assert created.status_code == 200
+
+    advanced = combat_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}/turns/advance",
+        headers={"X-Request-ID": "advance-with-expiry"},
+        json={"combat_version": combat["version"]},
+    )
+    assert advanced.status_code == 200
+    assert advanced.json()["expiration_prompts"][0]["id"] == created.json()["effect"]["id"]
+    listed = combat_client.get(effect_path).json()["items"]
+    assert listed[0]["status"] == "active"
+
+    ended = combat_client.post(
+        f"{effect_path}/{created.json()['effect']['id']}/end",
+        headers={"X-Request-ID": "end-short-effect"},
+        json={
+            "target_version": created.json()["target"]["version"],
+            "reason": "持续时间结束，DM确认",
+        },
+    )
+    assert ended.status_code == 200
+    assert ended.json()["effect"]["status"] == "ended"
+
+
+def test_combat_settlement_preview_and_confirm_are_atomic_and_once_only(
+    combat_client: TestClient,
+) -> None:
+    campaign = _campaign(combat_client)
+    character_response = combat_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/characters",
+        json={"name": "Aria", "hp": 20, "max_hp": 20},
+    )
+    assert character_response.status_code == 201
+    character = character_response.json()
+    combat_response = combat_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/combats",
+        json={"name": "Settlement"},
+    )
+    assert combat_response.status_code == 201
+    combat = combat_response.json()
+    fighter_response = combat_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": character["name"],
+            "entity_type": "character",
+            "entity_id": character["id"],
+            "hp": 5,
+            "max_hp": 20,
+            "conditions": ["poisoned"],
+        },
+    )
+    assert fighter_response.status_code == 201
+    fighter = fighter_response.json()
+    ended_combat = combat_client.patch(
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}",
+        headers={"If-Match": '"1"'},
+        json={"status": "ended"},
+    )
+    assert ended_combat.status_code == 200
+    settlement_path = (
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}/settlement"
+    )
+    payload = {
+        "combat_version": ended_combat.json()["version"],
+        "resolution_type": "victory",
+        "xp_awards": [{"character_id": character["id"], "xp": 100}],
+        "writebacks": [{
+            "combatant_id": fighter["id"],
+            "character_id": character["id"],
+            "write_hp": True,
+            "write_conditions": True,
+        }],
+    }
+    preview = combat_client.post(f"{settlement_path}/preview", json=payload)
+    assert preview.status_code == 200
+    assert preview.json()["character_changes"][0]["before"]["hp"] == 20
+    assert preview.json()["character_changes"][0]["after"]["hp"] == 5
+    unchanged = combat_client.get(
+        f"/api/v1/campaigns/{campaign['id']}/characters/{character['id']}"
+    )
+    assert unchanged.json()["hp"] == 20
+    assert unchanged.json()["experience"] == 0
+
+    confirmed = combat_client.post(
+        f"{settlement_path}/confirm",
+        headers={"X-Request-ID": "settlement-once"},
+        json=payload,
+    )
+    assert confirmed.status_code == 200
+    assert confirmed.json()["settlement"]["status"] == "confirmed"
+    assert confirmed.json()["characters"][0]["hp"] == 5
+    assert confirmed.json()["characters"][0]["experience"] == 100
+    conditions = combat_client.get(
+        f"/api/v1/campaigns/{campaign['id']}/characters/{character['id']}/conditions"
+    )
+    assert conditions.status_code == 200
+    assert conditions.json()["items"][0]["condition_name"] == "poisoned"
+
+    repeated = combat_client.post(
+        f"{settlement_path}/confirm",
+        headers={"X-Request-ID": "settlement-once"},
+        json=payload,
+    )
+    assert repeated.status_code == 200
+    assert repeated.json()["settlement"]["id"] == confirmed.json()["settlement"]["id"]
+    after = combat_client.get(
+        f"/api/v1/campaigns/{campaign['id']}/characters/{character['id']}"
+    ).json()
+    assert after["experience"] == 100

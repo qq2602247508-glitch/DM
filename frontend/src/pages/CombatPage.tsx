@@ -2,17 +2,21 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState, type FormEvent, type ReactElement } from "react";
 
 import {
-  advanceCombatTurn, confirmCombatAction, confirmCombatantDeath, confirmDeathSave,
-  createCombat, createCombatant, deleteCombatant, getDeathSave, listCombatActions,
-  listCombatants, listCombats, listEncounterAdjustments, listEvents,
-  previewCombatAction, revertEncounterAdjustment, updateCombat, updateCombatant,
+  advanceCombatTurn, confirmCombatAction, confirmCombatEffect,
+  confirmCombatSettlement, confirmCombatantDeath, confirmConcentrationCheck,
+  confirmDeathSave, createCombat, createCombatant, deleteCombatant, endCombatEffect,
+  getDeathSave, listCombatActions, listCombatEffects, listCombatants, listCombats,
+  listEncounterAdjustments, listEvents, previewCombatAction,
+  previewCombatSettlement, revertEncounterAdjustment, updateCombat, updateCombatant,
 } from "../api/entities";
-import type { CombatActionCommand } from "../api/entities";
+import type {
+  CombatActionCommand, CombatEffectCommand, CombatSettlementCommand,
+} from "../api/entities";
 import { listCharacters, listNpcs, updateCharacter } from "../api/entities";
 import { listMonsters, listScenes } from "../api/world";
 import type {
-  Combat, CombatActionPreview, Combatant, Character, EncounterAdjustment, Monster,
-  Npc, SceneGrid,
+  Combat, CombatActionPreview, CombatEffect, CombatSettlementPreview, Combatant,
+  Character, EncounterAdjustment, Monster, Npc, SceneGrid,
 } from "../api/types";
 import { RequireCampaign } from "../components/RequireCampaign";
 import { Panel } from "../components/Panel";
@@ -62,13 +66,21 @@ function displayValue(value: unknown, fallback = "0"): string {
     : fallback;
 }
 
-function CombatantRow({ campaignId, combat, fighter, current, character }: { campaignId: string; combat: Combat; fighter: Combatant; current: boolean; character?: Character }): ReactElement {
+function CombatantRow({ campaignId, combat, fighter, current, character, effects, combatants }: { campaignId: string; combat: Combat; fighter: Combatant; current: boolean; character?: Character; effects: CombatEffect[]; combatants: Combatant[] }): ReactElement {
   const client = useQueryClient();
   const { showToast } = useToast();
   const [amount, setAmount] = useState("1");
   const [damageType, setDamageType] = useState("slashing");
   const [condition, setCondition] = useState("");
+  const [effectName, setEffectName] = useState("");
+  const [effectRounds, setEffectRounds] = useState("1");
+  const [effectConcentration, setEffectConcentration] = useState(false);
   const [deathRoll, setDeathRoll] = useState("10");
+  const [concentrationRoll, setConcentrationRoll] = useState("10");
+  const [pendingConcentration, setPendingConcentration] = useState<{
+    actionId: string;
+    dc: number;
+  } | null>(null);
   const [pendingAction, setPendingAction] = useState<{
     command: CombatActionCommand;
     preview: CombatActionPreview;
@@ -76,6 +88,7 @@ function CombatantRow({ campaignId, combat, fighter, current, character }: { cam
   const invalidate = () => {
     void client.invalidateQueries({ queryKey: ["combatants", campaignId, combat.id] });
     void client.invalidateQueries({ queryKey: ["combat-actions", campaignId, combat.id] });
+    void client.invalidateQueries({ queryKey: ["combat-effects", campaignId, combat.id] });
     void client.invalidateQueries({ queryKey: ["death-save", campaignId, combat.id, fighter.id] });
     void client.invalidateQueries({ queryKey: ["campaign-state", campaignId] });
   };
@@ -97,6 +110,7 @@ function CombatantRow({ campaignId, combat, fighter, current, character }: { cam
       setPendingAction(null);
       invalidate();
       const dc = Number(result.action.result_json.concentration_check_dc ?? 0);
+      if (dc > 0) setPendingConcentration({ actionId: result.action.id, dc });
       showToast(dc > 0 ? `结算完成；需要专注检定 DC ${dc}` : "结算已确认并写入战斗日志");
     },
     onError: () => showToast("确认失败，目标状态可能已变化，请重新预览", "error"),
@@ -133,6 +147,64 @@ function CombatantRow({ campaignId, combat, fighter, current, character }: { cam
       showToast("死亡状态已由 DM 最终确认");
     },
     onError: () => showToast("死亡确认失败，请刷新状态", "error"),
+  });
+  const addEffect = useMutation({
+    mutationFn: () => {
+      const command: CombatEffectCommand = {
+        target_combatant_id: fighter.id,
+        target_version: fighter.version,
+        source_combatant_id: effectConcentration ? fighter.id : null,
+        name: effectName.trim(),
+        effect_type: "condition",
+        duration_unit: effectConcentration ? "concentration" : "rounds",
+        duration_value: effectConcentration ? null : Math.max(0, Number(effectRounds)),
+        requires_concentration: effectConcentration,
+        trigger_timing: "turn_end",
+      };
+      return confirmCombatEffect(campaignId, combat.id, command);
+    },
+    onSuccess: (result) => {
+      setEffectName("");
+      invalidate();
+      showToast(result.ended_effects.length > 0
+        ? `效果已建立，并结束 ${result.ended_effects.length} 个旧专注效果`
+        : "结构化效果已建立");
+    },
+    onError: () => showToast("效果建立失败，请刷新战斗员状态", "error"),
+  });
+  const endEffect = useMutation({
+    mutationFn: (effect: CombatEffect) => endCombatEffect(
+      campaignId,
+      combat.id,
+      effect.id,
+      fighter.version,
+      effect.source_combatant_id && effect.source_combatant_id !== fighter.id
+        ? combatants.find((item) => item.id === effect.source_combatant_id)?.version ?? null
+        : null,
+      "DM在战斗台确认效果结束",
+    ),
+    onSuccess: () => {
+      invalidate();
+      showToast("效果已确认结束");
+    },
+    onError: () => showToast("效果结束失败，请刷新后重试", "error"),
+  });
+  const resolveConcentration = useMutation({
+    mutationFn: () => {
+      if (!pendingConcentration) throw new Error("没有待处理专注检定");
+      return confirmConcentrationCheck(campaignId, combat.id, {
+        combatant_id: fighter.id,
+        target_version: fighter.version,
+        damage_action_id: pendingConcentration.actionId,
+        roll_total: Number(concentrationRoll),
+      });
+    },
+    onSuccess: (result) => {
+      setPendingConcentration(null);
+      invalidate();
+      showToast(result.success ? "专注检定成功" : "专注检定失败，相关效果已结束");
+    },
+    onError: () => showToast("专注检定确认失败，请刷新状态", "error"),
   });
   const remove = useMutation({
     mutationFn: () => deleteCombatant(campaignId, combat.id, fighter.id, fighter.version),
@@ -215,6 +287,26 @@ function CombatantRow({ campaignId, combat, fighter, current, character }: { cam
           <div className="flex gap-2">
             <Button loading={confirmAction.isPending} onClick={() => confirmAction.mutate(pendingAction.command)} size="sm" variant="primary">DM 确认结算</Button>
             <Button disabled={confirmAction.isPending} onClick={() => setPendingAction(null)} size="sm">取消</Button>
+          </div>
+        </div>
+      ) : null}
+      <div className="rounded border border-violet-900/60 bg-violet-950/10 p-2 md:col-span-4">
+        <div className="flex flex-wrap items-center gap-2">
+          <strong className="mr-auto text-xs text-violet-200">结构化效果</strong>
+          <input aria-label={`${fighter.display_name} 效果名称`} className="w-28 rounded border border-ink-600 bg-ink-950 px-1.5 py-1 text-xs text-parchment-100" onChange={(event) => setEffectName(event.target.value)} placeholder="例如：目盲" value={effectName} />
+          {!effectConcentration ? <input aria-label={`${fighter.display_name} 效果轮数`} className="w-14 rounded border border-ink-600 bg-ink-950 px-1.5 py-1 text-xs text-parchment-100" min="0" onChange={(event) => setEffectRounds(event.target.value)} type="number" value={effectRounds} /> : null}
+          <label className="flex items-center gap-1 text-2xs text-stone-400"><input checked={effectConcentration} onChange={(event) => setEffectConcentration(event.target.checked)} type="checkbox" />需要专注</label>
+          <Button disabled={!effectName.trim() || addEffect.isPending} loading={addEffect.isPending} onClick={() => addEffect.mutate()} size="sm">DM确认添加</Button>
+        </div>
+        {effects.length > 0 ? <div className="mt-2 flex flex-wrap gap-1.5">{effects.map((effect) => <span className="inline-flex items-center gap-1 rounded border border-violet-800/60 px-2 py-1 text-2xs text-stone-300" key={effect.id}>{effect.name}{effect.requires_concentration ? " · 专注" : effect.ends_round !== null ? ` · 至第${effect.ends_round}轮` : ""}<Button disabled={endEffect.isPending} onClick={() => endEffect.mutate(effect)} size="sm">结束</Button></span>)}</div> : <p className="mb-0 mt-1 text-2xs text-stone-600">当前没有活动效果。</p>}
+      </div>
+      {pendingConcentration ? (
+        <div className="rounded border border-amber-700/60 bg-amber-950/10 p-2 md:col-span-4">
+          <strong className="text-xs text-amber-200">待处理专注检定 DC {pendingConcentration.dc}</strong>
+          <p className="mb-2 mt-1 text-2xs text-stone-500">输入最终体质豁免总值；DC 来自已确认伤害日志，不能在此修改。</p>
+          <div className="flex gap-2">
+            <input aria-label={`${fighter.display_name} 专注检定总值`} className="w-16 rounded border border-ink-600 bg-ink-950 px-1.5 py-1 text-xs text-parchment-100" onChange={(event) => setConcentrationRoll(event.target.value)} type="number" value={concentrationRoll} />
+            <Button loading={resolveConcentration.isPending} onClick={() => resolveConcentration.mutate()} size="sm" variant="primary">DM确认检定</Button>
           </div>
         </div>
       ) : null}
@@ -322,6 +414,10 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
   const [hp, setHp] = useState("10");
   const [selectedKey, setSelectedKey] = useState("");
   const [xpOverride, setXpOverride] = useState("");
+  const [settlementPreview, setSettlementPreview] = useState<{
+    preview: CombatSettlementPreview;
+    command: CombatSettlementCommand;
+  } | null>(null);
   const fighters = useQuery({
     queryKey: ["combatants", campaignId, combat.id],
     queryFn: ({ signal }) => listCombatants(campaignId, combat.id, signal),
@@ -329,6 +425,10 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
   const combatActions = useQuery({
     queryKey: ["combat-actions", campaignId, combat.id],
     queryFn: ({ signal }) => listCombatActions(campaignId, combat.id, signal),
+  });
+  const combatEffects = useQuery({
+    queryKey: ["combat-effects", campaignId, combat.id],
+    queryFn: ({ signal }) => listCombatEffects(campaignId, combat.id, signal),
   });
   const invalidate = () => {
     void client.invalidateQueries({ queryKey: ["combats", campaignId] });
@@ -374,9 +474,11 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
     mutationFn: () => advanceCombatTurn(campaignId, combat.id, combat.version),
     onSuccess: (result) => {
       invalidate();
-      showToast(result.active_combatant
-        ? `第 ${result.combat.round_number} 轮：轮到 ${result.active_combatant.display_name}`
-        : "回合已推进");
+      showToast(result.expiration_prompts.length > 0
+        ? `回合已推进；有 ${result.expiration_prompts.length} 个效果等待 DM 确认结束`
+        : result.active_combatant
+          ? `第 ${result.combat.round_number} 轮：轮到 ${result.active_combatant.display_name}`
+          : "回合已推进");
     },
     onError: () => showToast("回合推进失败，请刷新战斗状态", "error"),
   });
@@ -414,27 +516,52 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
     onSuccess: () => { invalidate(); showToast("DM难度修正已保存"); },
     onError: () => showToast("难度修正保存失败，请刷新后重试", "error"),
   });
-  const awardExperience = useMutation({
-    mutationFn: async () => {
+  const buildSettlementCommand = (): CombatSettlementCommand => ({
+    combat_version: combat.version,
+    resolution_type: "victory",
+    xp_awards: playerCharacters.map((character) => ({
+      character_id: character.id,
+      xp: xpPerCharacter,
+    })),
+    writebacks: ordered.flatMap((fighter) => (
+      fighter.entity_type === "character" && fighter.entity_id
+        ? [{
+            combatant_id: fighter.id,
+            character_id: fighter.entity_id,
+            write_hp: true,
+            write_conditions: true,
+          }]
+        : []
+    )),
+    notes: "DM在战斗辅助页确认结算",
+  });
+  const previewSettlement = useMutation({
+    mutationFn: () => {
       if (combat.xp_awarded) throw new Error("该战斗已经发放经验");
       if (playerCharacters.length === 0 || xpPerCharacter <= 0) throw new Error("没有可发放的参与玩家或经验值");
-      for (const character of playerCharacters) {
-        await updateCharacter(campaignId, character.id, {
-          experience: character.experience + xpPerCharacter,
-        }, character.version);
-      }
-      return updateCombat(campaignId, combat.id, {
-        xp_awarded: true,
-        base_xp: distributableXp,
-        difficulty: finalDifficulty,
-      }, combat.version);
+      const command = buildSettlementCommand();
+      return previewCombatSettlement(campaignId, combat.id, command)
+        .then((preview) => ({ preview, command }));
+    },
+    onSuccess: (value) => setSettlementPreview(value),
+    onError: (error) => showToast(error instanceof Error ? error.message : "结算预览失败", "error"),
+  });
+  const confirmSettlement = useMutation({
+    mutationFn: () => {
+      if (!settlementPreview) throw new Error("请先生成结算预览");
+      return confirmCombatSettlement(
+        campaignId,
+        combat.id,
+        settlementPreview.command,
+      );
     },
     onSuccess: () => {
+      setSettlementPreview(null);
       invalidate();
       void client.invalidateQueries({ queryKey: ["characters", campaignId] });
-      showToast(`战斗经验已发放：每名参与玩家 ${xpPerCharacter} XP`);
+      showToast(`战斗已原子结算：每名参与玩家 ${xpPerCharacter} XP，并回写所选HP与持续状态`);
     },
-    onError: (error) => showToast(error instanceof Error ? error.message : "经验发放失败", "error"),
+    onError: (error) => showToast(error instanceof Error ? error.message : "战斗结算失败", "error"),
   });
   const revertConsequence = useMutation({
     mutationFn: (proposal: EncounterAdjustment) =>
@@ -494,7 +621,7 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
         {fighters.isLoading ? <LoadingBlock label="正在读取先攻列表…" /> : null}
         {fighters.isError ? <ErrorState error={fighters.error} onRetry={() => void fighters.refetch()} /> : null}
         {!fighters.isLoading && ordered.length === 0 ? <EmptyState title="尚无参与者" hint="录入先攻与 HP 后即可开始逐回合追踪。" /> : null}
-        {ordered.length > 0 ? <ol className="m-0 flex list-none flex-col gap-1.5 p-0">{ordered.map((fighter, index) => <CombatantRow campaignId={campaignId} character={candidates.find((candidate) => candidate.entityId === fighter.entity_id)?.character} combat={combat} current={combat.status === "active" && index === combat.current_turn_index} fighter={fighter} key={fighter.id} />)}</ol> : null}
+        {ordered.length > 0 ? <ol className="m-0 flex list-none flex-col gap-1.5 p-0">{ordered.map((fighter, index) => <CombatantRow campaignId={campaignId} character={candidates.find((candidate) => candidate.entityId === fighter.entity_id)?.character} combat={combat} combatants={ordered} current={combat.status === "active" && index === combat.current_turn_index} effects={(combatEffects.data ?? []).filter((effect) => effect.target_combatant_id === fighter.id && effect.status === "active")} fighter={fighter} key={fighter.id} />)}</ol> : null}
       </div>
       {(combatActions.data?.length ?? 0) > 0 ? (
         <div className="mt-4 rounded-lg border border-ink-700 bg-ink-950/50 p-3">
@@ -514,15 +641,27 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
       {combat.status === "ended" ? (
         <div className="mt-4 rounded-lg border border-amber-800/50 bg-amber-950/10 p-3">
           <div className="flex flex-wrap items-center gap-2">
-            <strong className="mr-auto text-sm text-parchment-100">战斗经验结算</strong>
-            <Badge tone={combat.xp_awarded ? "ok" : "warn"}>{combat.xp_awarded ? "已发放" : "等待 DM 确认"}</Badge>
+            <strong className="mr-auto text-sm text-parchment-100">战斗原子结算</strong>
+            <Badge tone={combat.xp_awarded ? "ok" : "warn"}>{combat.xp_awarded ? "已结算" : "等待预览与 DM 确认"}</Badge>
           </div>
-          <p className="mb-2 mt-2 text-xs text-stone-400">参与玩家：{playerCharacters.map((character) => character.name).join("、") || "无"}。总经验由怪物 CR 换算，可由 DM 修改；确认后平均分配且此战斗不能重复发放。</p>
+          <p className="mb-2 mt-2 text-xs text-stone-400">参与玩家：{playerCharacters.map((character) => character.name).join("、") || "无"}。一次事务同时分配经验，并把参战实例的 HP 与持续状态回写角色卡；预览不会写入。</p>
           <div className="flex flex-wrap items-end gap-2">
             <label className="text-2xs text-stone-500">总 XP<input className={`${inputCls} mt-1 w-32`} disabled={combat.xp_awarded} min="0" onChange={(event) => setXpOverride(event.target.value)} type="number" value={xpOverride || String(combat.base_xp || monsterXp)} /></label>
             <span className="pb-2 text-xs text-ember-300">每名玩家 {xpPerCharacter} XP</span>
-            <Button disabled={combat.xp_awarded || playerCharacters.length === 0 || xpPerCharacter <= 0} loading={awardExperience.isPending} onClick={() => awardExperience.mutate()} variant="primary">DM 确认发放经验</Button>
+            <Button disabled={combat.xp_awarded || playerCharacters.length === 0 || xpPerCharacter <= 0} loading={previewSettlement.isPending} onClick={() => previewSettlement.mutate()}>生成结算预览</Button>
           </div>
+          {settlementPreview ? (
+            <div className="mt-3 rounded border border-amber-700/50 bg-ink-950/40 p-2">
+              <strong className="text-xs text-amber-200">尚未写入：请核对以下变化</strong>
+              <ul className="mb-2 mt-1 pl-4 text-2xs text-stone-300">
+                {settlementPreview.preview.character_changes.map((change) => <li key={change.character_id}>{change.name}：HP {change.before.hp} → {change.after.hp}；XP +{change.xp_award}{change.conditions_to_add.length > 0 ? `；持续状态 ${change.conditions_to_add.join("、")}` : ""}</li>)}
+              </ul>
+              <div className="flex gap-2">
+                <Button loading={confirmSettlement.isPending} onClick={() => confirmSettlement.mutate()} variant="primary">DM确认一次性结算</Button>
+                <Button disabled={confirmSettlement.isPending} onClick={() => setSettlementPreview(null)}>取消</Button>
+              </div>
+            </div>
+          ) : null}
         </div>
       ) : null}
     </Panel>

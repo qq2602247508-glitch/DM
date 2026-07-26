@@ -527,6 +527,98 @@ class TurnAdvanceCommand(BaseModel):
     combat_version: int = Field(ge=1)
 
 
+class CombatEffectCommand(BaseModel):
+    target_combatant_id: str = Field(min_length=1, max_length=36)
+    target_version: int = Field(ge=1)
+    source_combatant_id: str | None = Field(default=None, min_length=1, max_length=36)
+    source_version: int | None = Field(default=None, ge=1)
+    name: Annotated[
+        str,
+        StringConstraints(strip_whitespace=True, min_length=1, max_length=120),
+    ]
+    effect_type: Literal["condition", "buff", "debuff", "aura", "damage_over_time"]
+    details_json: dict[str, Any] = Field(default_factory=dict)
+    duration_unit: Literal[
+        "rounds",
+        "minutes",
+        "concentration",
+        "until_save",
+        "until_removed",
+    ] = "until_removed"
+    duration_value: int | None = Field(default=None, ge=0)
+    requires_concentration: bool = False
+    save_dc: int | None = Field(default=None, ge=0)
+    save_ability: str | None = Field(default=None, max_length=30)
+    trigger_timing: Literal["turn_start", "turn_end", "round_start", "round_end"] | None = None
+
+    @model_validator(mode="after")
+    def validate_effect(self) -> CombatEffectCommand:
+        if self.duration_unit in {"rounds", "minutes"} and self.duration_value is None:
+            raise ValueError("duration_value is required for timed effects")
+        if self.requires_concentration and self.source_combatant_id is None:
+            raise ValueError("source_combatant_id is required for concentration")
+        if (
+            self.source_combatant_id is not None
+            and self.source_combatant_id != self.target_combatant_id
+            and self.source_version is None
+        ):
+            raise ValueError("source_version is required when source and target differ")
+        return self
+
+
+class CombatEffectEndCommand(BaseModel):
+    target_version: int = Field(ge=1)
+    source_version: int | None = Field(default=None, ge=1)
+    reason: Annotated[
+        str,
+        StringConstraints(strip_whitespace=True, min_length=1, max_length=1_000),
+    ]
+
+
+class ConcentrationCheckCommand(BaseModel):
+    combatant_id: str = Field(min_length=1, max_length=36)
+    target_version: int = Field(ge=1)
+    damage_action_id: str = Field(min_length=1, max_length=36)
+    roll_total: int = Field(ge=-100, le=1_000)
+
+
+class CombatXpAward(BaseModel):
+    character_id: str = Field(min_length=1, max_length=36)
+    xp: int = Field(ge=0, le=10_000_000)
+
+
+class CombatWriteback(BaseModel):
+    combatant_id: str = Field(min_length=1, max_length=36)
+    character_id: str = Field(min_length=1, max_length=36)
+    write_hp: bool = True
+    write_conditions: bool = False
+
+
+class CombatSettlementCommand(BaseModel):
+    combat_version: int = Field(ge=1)
+    resolution_type: Literal[
+        "victory",
+        "defeat",
+        "retreat",
+        "negotiated",
+        "bypassed",
+        "other",
+    ]
+    xp_awards: list[CombatXpAward] = Field(default_factory=list)
+    writebacks: list[CombatWriteback] = Field(default_factory=list)
+    notes: str | None = Field(default=None, max_length=5_000)
+
+    @model_validator(mode="after")
+    def validate_settlement(self) -> CombatSettlementCommand:
+        character_ids = [award.character_id for award in self.xp_awards]
+        if len(character_ids) != len(set(character_ids)):
+            raise ValueError("xp_awards cannot contain duplicate characters")
+        combatant_ids = [writeback.combatant_id for writeback in self.writebacks]
+        if len(combatant_ids) != len(set(combatant_ids)):
+            raise ValueError("writebacks cannot contain duplicate combatants")
+        return self
+
+
 class ConditionCreate(BaseModel):
     condition_name: Annotated[
         str, StringConstraints(strip_whitespace=True, min_length=1, max_length=100)

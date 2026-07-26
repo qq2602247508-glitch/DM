@@ -592,6 +592,81 @@ export type TurnAdvanceResult = {
   expiration_prompts: unknown[];
 };
 
+export type CombatEffect = Versioned & {
+  campaign_id: string;
+  combat_id: string;
+  target_combatant_id: string;
+  source_combatant_id: string | null;
+  source_action_id: string | null;
+  name: string;
+  effect_type: "condition" | "buff" | "debuff" | "aura" | "damage_over_time";
+  details_json: Record<string, unknown>;
+  started_round: number;
+  duration_unit: string;
+  duration_value: number | null;
+  ends_round: number | null;
+  requires_concentration: boolean;
+  save_dc: number | null;
+  save_ability: string | null;
+  trigger_timing: string | null;
+  status: "active" | "ended";
+  ended_at: string | null;
+  end_reason: string | null;
+};
+
+export type CombatEffectConfirmation = {
+  action: CombatAction;
+  effect: CombatEffect;
+  ended_effects: CombatEffect[];
+  target: Combatant;
+  source: Combatant | null;
+};
+
+export type ConcentrationCheckResult = {
+  action: CombatAction;
+  target: Combatant;
+  dc: number;
+  roll_total: number;
+  success: boolean;
+  ended_effects: CombatEffect[];
+};
+
+export type CombatSettlement = Versioned & {
+  campaign_id: string;
+  combat_id: string;
+  transaction_id: string | null;
+  status: "confirmed" | "reverted" | "conflict";
+  resolution_type: string;
+  xp_allocations: unknown[];
+  writebacks: unknown[];
+  result_json: Record<string, unknown>;
+  idempotency_key: string;
+  notes: string | null;
+  confirmed_at: string;
+};
+
+export type CombatSettlementPreview = {
+  combat: Combat;
+  resolution_type: string;
+  character_changes: {
+    character_id: string;
+    name: string;
+    before: { hp: number; experience: number; version: number };
+    after: { hp: number; experience: number; version: number };
+    conditions_to_add: string[];
+    xp_award: number;
+  }[];
+  total_xp: number;
+  notes: string | null;
+};
+
+export type CombatSettlementResult = {
+  settlement: CombatSettlement;
+  combat: Combat;
+  characters: Character[];
+  conditions: CharacterCondition[];
+};
+
 export type StateSnapshot = {
   campaign: Record<string, unknown> & Partial<Campaign>;
   characters: Character[];

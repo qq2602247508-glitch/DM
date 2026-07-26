@@ -40,4 +40,5 @@ def test_alembic_upgrades_empty_database(tmp_path: Path, monkeypatch: Any) -> No
         "combat_effects",
         "death_saves",
         "combat_reinforcements",
+        "combat_settlements",
     } <= tables
