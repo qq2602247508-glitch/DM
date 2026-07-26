@@ -904,6 +904,162 @@ class RestRecoveryEntry(Timestamped, Base):
     )
 
 
+class KnownSpell(Timestamped, Base):
+    __tablename__ = "known_spells"
+    campaign_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("campaigns.id", ondelete="CASCADE"), nullable=False
+    )
+    character_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("characters.id", ondelete="CASCADE"), nullable=False
+    )
+    name: Mapped[str] = mapped_column(String(200), nullable=False)
+    spell_level: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
+    source_reference: Mapped[str | None] = mapped_column(String(200))
+    metadata_json: Mapped[dict[str, object]] = mapped_column(
+        JSON, nullable=False, default=dict, server_default="{}"
+    )
+    __table_args__ = (
+        CheckConstraint("length(trim(name)) > 0", name="ck_known_spell_name"),
+        CheckConstraint("spell_level >= 0 AND spell_level <= 9", name="ck_known_spell_level"),
+        UniqueConstraint("character_id", "name", name="uq_known_spell_character_name"),
+        Index("ix_known_spells_character", "character_id", "created_at", "id"),
+    )
+
+
+class PreparedSpell(Timestamped, Base):
+    __tablename__ = "prepared_spells"
+    known_spell_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("known_spells.id", ondelete="CASCADE"), nullable=False
+    )
+    character_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("characters.id", ondelete="CASCADE"), nullable=False
+    )
+    prepared: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=True, server_default="1"
+    )
+    __table_args__ = (
+        UniqueConstraint(
+            "character_id", "known_spell_id", name="uq_prepared_spell_character_known"
+        ),
+    )
+
+
+class EquipmentInstance(Timestamped, Base):
+    __tablename__ = "equipment_instances"
+    campaign_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("campaigns.id", ondelete="CASCADE"), nullable=False
+    )
+    character_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("characters.id", ondelete="SET NULL")
+    )
+    name: Mapped[str] = mapped_column(String(200), nullable=False)
+    category: Mapped[str] = mapped_column(
+        String(30), nullable=False, default="gear", server_default="gear"
+    )
+    quantity: Mapped[int] = mapped_column(Integer, nullable=False, default=1, server_default="1")
+    armor_class: Mapped[int | None] = mapped_column(Integer)
+    equipped: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False, server_default="0"
+    )
+    attunement_required: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False, server_default="0"
+    )
+    charges: Mapped[int | None] = mapped_column(Integer)
+    max_charges: Mapped[int | None] = mapped_column(Integer)
+    metadata_json: Mapped[dict[str, object]] = mapped_column(
+        JSON, nullable=False, default=dict, server_default="{}"
+    )
+    __table_args__ = (
+        CheckConstraint("length(trim(name)) > 0", name="ck_equipment_name"),
+        CheckConstraint("quantity >= 0", name="ck_equipment_quantity"),
+        CheckConstraint(
+            "charges IS NULL OR (charges >= 0 AND max_charges IS NOT NULL "
+            "AND charges <= max_charges)",
+            name="ck_equipment_charges",
+        ),
+        Index("ix_equipment_campaign_character", "campaign_id", "character_id", "id"),
+    )
+
+
+class Attunement(Timestamped, Base):
+    __tablename__ = "attunements"
+    character_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("characters.id", ondelete="CASCADE"), nullable=False
+    )
+    equipment_instance_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("equipment_instances.id", ondelete="CASCADE"), nullable=False
+    )
+    status: Mapped[str] = mapped_column(
+        String(20), nullable=False, default="active", server_default="active"
+    )
+    __table_args__ = (
+        CheckConstraint("status IN ('active','ended')", name="ck_attunement_status"),
+        UniqueConstraint("equipment_instance_id", name="uq_attunement_equipment"),
+        Index("ix_attunements_character_status", "character_id", "status", "id"),
+    )
+
+
+class Wallet(Timestamped, Base):
+    __tablename__ = "wallets"
+    campaign_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("campaigns.id", ondelete="CASCADE"), nullable=False
+    )
+    character_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("characters.id", ondelete="CASCADE")
+    )
+    name: Mapped[str] = mapped_column(String(100), nullable=False)
+    copper: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
+    __table_args__ = (
+        CheckConstraint("copper >= 0", name="ck_wallet_copper"),
+        UniqueConstraint("campaign_id", "character_id", name="uq_wallet_campaign_character"),
+    )
+
+
+class CurrencyTransaction(Timestamped, Base):
+    __tablename__ = "currency_transactions"
+    campaign_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("campaigns.id", ondelete="CASCADE"), nullable=False
+    )
+    wallet_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("wallets.id", ondelete="CASCADE"), nullable=False
+    )
+    amount_copper: Mapped[int] = mapped_column(Integer, nullable=False)
+    kind: Mapped[str] = mapped_column(String(20), nullable=False)
+    idempotency_key: Mapped[str] = mapped_column(String(120), nullable=False)
+    metadata_json: Mapped[dict[str, object]] = mapped_column(
+        JSON, nullable=False, default=dict, server_default="{}"
+    )
+    __table_args__ = (
+        CheckConstraint(
+            "kind IN ('purchase','sale','split','adjustment')", name="ck_currency_transaction_kind"
+        ),
+        UniqueConstraint(
+            "campaign_id", "idempotency_key", name="uq_currency_transaction_idempotency"
+        ),
+        Index("ix_currency_transactions_wallet", "wallet_id", "created_at", "id"),
+    )
+
+
+class ShopInventory(Timestamped, Base):
+    __tablename__ = "shop_inventories"
+    campaign_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("campaigns.id", ondelete="CASCADE"), nullable=False
+    )
+    name: Mapped[str] = mapped_column(String(200), nullable=False)
+    quantity: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
+    price_copper: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=0, server_default="0"
+    )
+    metadata_json: Mapped[dict[str, object]] = mapped_column(
+        JSON, nullable=False, default=dict, server_default="{}"
+    )
+    __table_args__ = (
+        CheckConstraint("length(trim(name)) > 0", name="ck_shop_inventory_name"),
+        CheckConstraint("quantity >= 0 AND price_copper >= 0", name="ck_shop_inventory_bounds"),
+        Index("ix_shop_inventory_campaign", "campaign_id", "created_at", "id"),
+    )
+
+
 class EncounterAdjustmentProposal(Timestamped, Base):
     __tablename__ = "encounter_adjustment_proposals"
     campaign_id: Mapped[str] = mapped_column(
