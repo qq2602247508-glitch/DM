@@ -28,4 +28,31 @@ describe("combat movement", () => {
   it("rejects a manual destination beyond the current allowance", () => {
     expect(shortestMovementPath(grid, { row: 1, col: 1 }, { row: 8, col: 8 }, new Set(), 10)).toBeNull();
   });
+
+  it("recalculates the reachable range from the new position after movement", () => {
+    const firstMove = shortestMovementPath(
+      grid,
+      { row: 1, col: 1 },
+      { row: 1, col: 3 },
+      new Set(),
+      30,
+    );
+    expect(firstMove?.spentFt).toBe(10);
+    const remainingFt = 30 - (firstMove?.spentFt ?? 0);
+    const secondMove = shortestMovementPath(
+      grid,
+      firstMove?.destination ?? { row: 1, col: 1 },
+      { row: 1, col: 7 },
+      new Set(),
+      remainingFt,
+    );
+    expect(secondMove?.spentFt).toBe(20);
+    expect(shortestMovementPath(
+      grid,
+      firstMove?.destination ?? { row: 1, col: 1 },
+      { row: 1, col: 8 },
+      new Set(),
+      remainingFt,
+    )).toBeNull();
+  });
 });

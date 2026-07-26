@@ -610,6 +610,9 @@ function BattleGrid({
       <div className="mb-2 flex flex-wrap items-center gap-2">
         <span className="text-xs font-semibold text-parchment-100">战斗场景 · {tacticalGrid.theme}</span>
         <span className="text-2xs text-stone-500">每格 5 尺 · 地图直接来自当前场景 · 单位按双方出生区布置</span>
+        {interactionMode === "move" && selected === activeFighterId ? (
+          <Badge tone="ok">绿色范围：本回合剩余可移动区域</Badge>
+        ) : null}
         {targeting ? <Badge tone="ai">施法指示：{targeting.label}</Badge> : null}
         <div className="flex rounded border border-ink-700 p-0.5">
           <button className={`rounded px-2 py-1 text-2xs ${interactionMode === "move" ? "bg-ember-700 text-white" : "text-stone-500"}`} onClick={() => setInteractionMode("move")} type="button">移动</button>
@@ -659,7 +662,7 @@ function BattleGrid({
           const glyph = !sceneCell ? "" : sceneCell.kind === "wall" ? "■" : sceneCell.kind === "door" ? "门" : /吧台/.test(sceneCell.label) ? "吧" : /桌/.test(sceneCell.label) ? "桌" : /椅/.test(sceneCell.label) ? "椅" : sceneCell.kind === "cover" ? "▦" : sceneCell.kind === "floor" ? "" : "◆";
           return (
             <button
-              className={`relative aspect-square min-h-7 text-2xs transition-colors ${terrainClass} ${inCastRange && !blocked ? "ring-1 ring-inset ring-sky-500/50" : ""} ${affected && !blocked ? "bg-fuchsia-800/45 ring-2 ring-inset ring-fuchsia-400" : ""} ${aimPoint?.row === rowNumber && aimPoint.col === colNumber ? "outline outline-2 outline-amber-300" : ""} ${canMove ? "hover:bg-ember-500/30" : ""}`}
+              className={`relative aspect-square min-h-7 text-2xs transition-colors ${terrainClass} ${inCastRange && !blocked && interactionMode === "target" ? "ring-1 ring-inset ring-sky-500/50" : ""} ${affected && !blocked && interactionMode === "target" ? "bg-fuchsia-800/45 ring-2 ring-inset ring-fuchsia-400" : ""} ${aimPoint?.row === rowNumber && aimPoint.col === colNumber ? "outline outline-2 outline-amber-300" : ""} ${canMove && interactionMode === "move" ? "bg-emerald-950/65 ring-1 ring-inset ring-emerald-400/80 hover:bg-emerald-700/55" : ""}`}
               key={`${rowNumber}-${colNumber}`}
               onClick={() => {
                 if (interactionMode === "target" && targeting && activePosition && activeFighterId) {
@@ -688,7 +691,9 @@ function BattleGrid({
                   void commitMove(selectedFighter, manualPlan, false);
                 }
               }}
-              title={sceneCell?.label ?? (moveDistance === null ? "选择一个单位" : `${moveDistance} 尺`)}
+              title={canMove && manualPlan
+                ? `可移动到这里 · 消耗 ${manualPlan.spentFt} 尺（${manualPlan.path.length} 格）`
+                : sceneCell?.label ?? (moveDistance === null ? "选择一个单位" : `${moveDistance} 尺`)}
               type="button"
             >
               {fighter ? <span className={`mx-auto flex h-6 w-6 items-center justify-center rounded-full text-2xs font-bold ${selected === fighter.id ? "bg-ember-400 text-ink-950" : "bg-violet-500/80 text-white"}`}>{fighter.display_name.slice(0, 1)}</span> : null}
@@ -701,9 +706,10 @@ function BattleGrid({
         <span><i className="mr-1 inline-block h-2 w-2 rounded-full bg-violet-500/80" />单位</span>
         <span><i className="mr-1 inline-block h-2 w-2 rounded bg-emerald-900" />掩体</span>
         <span><i className="mr-1 inline-block h-2 w-2 rounded bg-stone-700" />墙体</span>
+        <span><i className="mr-1 inline-block h-2 w-2 rounded border border-emerald-400 bg-emerald-900" />本回合可移动范围</span>
         <span><i className="mr-1 inline-block h-2 w-2 rounded border border-sky-400" />施法距离</span>
         <span><i className="mr-1 inline-block h-2 w-2 rounded bg-fuchsia-700 ring-1 ring-fuchsia-400" />实际影响范围</span>
-        <span>速度上限：{selected ? `${selectedSpeed}尺` : "—"} · 本回合剩余：{selected ? `${selectedRemaining}尺（${Math.floor(selectedRemaining / 5)}格）` : "选择当前单位后显示"}</span>
+        <span>速度上限：{selected ? `${selectedSpeed}尺` : "—"} · 本回合剩余：{selected ? `${selectedRemaining}尺（${Math.floor(selectedRemaining / tacticalGrid.cell_size_ft)}格）` : "选择当前单位后显示"}；每次移动后会从新位置重新计算绿色范围</span>
       </div>
     </div>
   );
