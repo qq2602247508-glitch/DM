@@ -40,4 +40,21 @@ describe("parsePrepDraft", () => {
       ["item", "银制圣徽"],
     ]);
   });
+
+  it("parses chapter-aware scene outlines", () => {
+    const atoms = parsePrepDraft(`
+## 场景
+- 第一章｜1｜深水城集结｜让玩家彼此认识｜酒馆开场｜共同接受委托｜线人失踪｜决定追查｜前往旧教堂
+`);
+    expect(atoms[0]).toMatchObject({
+      kind: "scene",
+      name: "深水城集结",
+      sceneOutline: {
+        chapterTitle: "第一章",
+        sceneOrder: 1,
+        opening: "酒馆开场",
+        transition: "前往旧教堂",
+      },
+    });
+  });
 });
