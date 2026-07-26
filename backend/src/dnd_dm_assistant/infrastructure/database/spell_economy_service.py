@@ -14,7 +14,6 @@ from dnd_dm_assistant.infrastructure.database.campaign_service import serialize
 from dnd_dm_assistant.infrastructure.database.models import (
     Attunement,
     Character,
-    CurrencyTransaction,
     EquipmentInstance,
     KnownSpell,
     OperationTransaction,

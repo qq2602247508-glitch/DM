@@ -19,8 +19,8 @@ from dnd_dm_assistant.infrastructure.database.campaign_service import (
 from dnd_dm_assistant.infrastructure.database.combat_service import CombatEngineService
 from dnd_dm_assistant.infrastructure.database.encounter_service import EncounterAdjustmentService
 from dnd_dm_assistant.infrastructure.database.rest_service import RestService
-from dnd_dm_assistant.infrastructure.database.world_service import WorldService
 from dnd_dm_assistant.infrastructure.database.spell_economy_service import SpellEconomyService
+from dnd_dm_assistant.infrastructure.database.world_service import WorldService
 from dnd_dm_assistant.integrations.runtime import RuntimeIntegrations
 
 

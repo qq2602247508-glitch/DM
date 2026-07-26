@@ -1,5 +1,7 @@
 from typing import Annotated, Any
+
 from fastapi import APIRouter, Depends, HTTPException
+
 from dnd_dm_assistant.api.dependencies import get_spell_economy_service
 from dnd_dm_assistant.api.schemas import (
     CommerceRequest,
