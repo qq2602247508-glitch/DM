@@ -1,0 +1,723 @@
+from __future__ import annotations
+
+import hashlib
+import json
+from datetime import UTC, datetime, timedelta
+from typing import Any, cast
+
+from sqlalchemy import select
+from sqlalchemy.engine import Engine
+from sqlalchemy.orm import Session
+
+from dnd_dm_assistant.domain.campaign_state import StateNotFoundError, VersionConflict
+from dnd_dm_assistant.domain.rests import (
+    HitDieSpend,
+    ResourceRecovery,
+    RestResource,
+    resolve_long_rest,
+    resolve_short_rest,
+)
+from dnd_dm_assistant.infrastructure.database.campaign_service import serialize
+from dnd_dm_assistant.infrastructure.database.models import (
+    Campaign,
+    Character,
+    CharacterCondition,
+    OperationTransaction,
+    ResourcePool,
+    RestRecord,
+    RestRecoveryEntry,
+)
+
+RULE_REFERENCE = "PHB 2024 / 术语汇编 / 休息"
+HIT_DIE_BY_CLASS = {
+    "barbarian": 12,
+    "野蛮人": 12,
+    "fighter": 10,
+    "战士": 10,
+    "paladin": 10,
+    "圣武士": 10,
+    "ranger": 10,
+    "游侠": 10,
+    "bard": 8,
+    "吟游诗人": 8,
+    "cleric": 8,
+    "牧师": 8,
+    "druid": 8,
+    "德鲁伊": 8,
+    "monk": 8,
+    "武僧": 8,
+    "rogue": 8,
+    "游荡者": 8,
+    "warlock": 8,
+    "邪术师": 8,
+    "sorcerer": 6,
+    "术士": 6,
+    "wizard": 6,
+    "法师": 6,
+}
+
+
+def _json_value(value: Any) -> Any:
+    if isinstance(value, datetime):
+        return value.isoformat()
+    if isinstance(value, dict):
+        return {str(key): _json_value(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_json_value(item) for item in value]
+    return value
+
+
+def _ability_modifier(score: int) -> int:
+    return (score - 10) // 2
+
+
+def _hit_die_size(class_name: str | None) -> int:
+    normalized = (class_name or "").strip().lower()
+    for key, size in HIT_DIE_BY_CLASS.items():
+        if key in normalized:
+            return size
+    return 8
+
+
+def _resource_recovery(value: str) -> ResourceRecovery:
+    if value in {"short_rest", "both"}:
+        return "short_rest"
+    if value == "long_rest":
+        return "long_rest"
+    if value in {"dawn", "special", "manual"}:
+        return "special" if value != "dawn" else "dawn"
+    return None
+
+
+class RestService:
+    def __init__(self, engine: Engine) -> None:
+        self.engine = engine
+
+    @staticmethod
+    def _campaign(session: Session, campaign_id: str) -> Campaign:
+        campaign = session.get(Campaign, campaign_id)
+        if campaign is None:
+            raise StateNotFoundError("campaign not found")
+        return campaign
+
+    @staticmethod
+    def _character(session: Session, campaign_id: str, character_id: str) -> Character:
+        character = session.get(Character, character_id)
+        if character is None or character.campaign_id != campaign_id:
+            raise StateNotFoundError("character not found in campaign")
+        return character
+
+    @staticmethod
+    def _fatigue_condition(
+        session: Session, character_id: str
+    ) -> CharacterCondition | None:
+        rows = session.scalars(
+            select(CharacterCondition).where(
+                CharacterCondition.character_id == character_id
+            )
+        ).all()
+        return next(
+            (
+                row
+                for row in rows
+                if row.condition_name.strip().lower()
+                in {"exhaustion", "疲劳", "力竭"}
+            ),
+            None,
+        )
+
+    @staticmethod
+    def _fatigue_level(condition: CharacterCondition | None) -> int:
+        if condition is None:
+            return 0
+        raw = (condition.details or {}).get("level", 1)
+        try:
+            return max(0, min(6, int(cast(Any, raw))))
+        except (TypeError, ValueError):
+            return 1
+
+    def _sync_pools(self, session: Session, character: Character) -> list[ResourcePool]:
+        pools = list(
+            session.scalars(
+                select(ResourcePool)
+                .where(ResourcePool.character_id == character.id)
+                .order_by(ResourcePool.created_at, ResourcePool.id)
+            ).all()
+        )
+        by_key = {pool.key: pool for pool in pools}
+        raw_resources = dict(character.resources or {})
+        for key, raw in raw_resources.items():
+            if not isinstance(raw, dict):
+                continue
+            current = max(0, int(raw.get("current", 0) or 0))
+            maximum = max(current, int(raw.get("max", current) or current))
+            recovery = str(raw.get("recovery", "manual") or "manual")
+            timing = recovery if recovery in {
+                "short_rest",
+                "long_rest",
+                "both",
+                "dawn",
+                "manual",
+                "none",
+            } else "manual"
+            pool = by_key.get(str(key))
+            if pool is None:
+                pool = ResourcePool(
+                    campaign_id=character.campaign_id,
+                    character_id=character.id,
+                    key=str(key),
+                    label=str(raw.get("label", key)),
+                    category="spell_slot"
+                    if str(key).startswith("spell_slots")
+                    else "class_feature",
+                    current=current,
+                    maximum=maximum,
+                    recovery_timing=timing,
+                    metadata_json={"legacy_resource": True},
+                )
+                session.add(pool)
+                pools.append(pool)
+                by_key[pool.key] = pool
+            elif pool.category != "hit_die":
+                pool.label = str(raw.get("label", pool.label))
+                pool.current = current
+                pool.maximum = maximum
+                pool.recovery_timing = timing
+
+        hit_die_size = _hit_die_size(character.class_name)
+        hit_die_key = f"hit_dice_d{hit_die_size}"
+        hit_die = by_key.get(hit_die_key)
+        if hit_die is None:
+            hit_die = ResourcePool(
+                campaign_id=character.campaign_id,
+                character_id=character.id,
+                key=hit_die_key,
+                label=f"d{hit_die_size} 生命骰",
+                category="hit_die",
+                current=character.level,
+                maximum=character.level,
+                recovery_timing="manual",
+                die_size=hit_die_size,
+                rule_key="character.hit_dice",
+                metadata_json={"derived_from_class": character.class_name or ""},
+            )
+            session.add(hit_die)
+            pools.append(hit_die)
+        elif hit_die.maximum < character.level:
+            gained = character.level - hit_die.maximum
+            hit_die.maximum = character.level
+            hit_die.current = min(hit_die.maximum, hit_die.current + gained)
+        session.flush()
+        return sorted(pools, key=lambda pool: (pool.key, pool.id))
+
+    def list_resources(
+        self, campaign_id: str, *, character_id: str | None = None
+    ) -> tuple[dict[str, Any], ...]:
+        with Session(self.engine) as session, session.begin():
+            self._campaign(session, campaign_id)
+            query = select(Character).where(Character.campaign_id == campaign_id)
+            if character_id:
+                query = query.where(Character.id == character_id)
+            characters = session.scalars(query.order_by(Character.created_at, Character.id)).all()
+            if character_id and not characters:
+                raise StateNotFoundError("character not found in campaign")
+            for character in characters:
+                self._sync_pools(session, character)
+            rows = session.scalars(
+                select(ResourcePool)
+                .where(
+                    ResourcePool.campaign_id == campaign_id,
+                    *(
+                        (ResourcePool.character_id == character_id,)
+                        if character_id
+                        else ()
+                    ),
+                )
+                .order_by(ResourcePool.character_id, ResourcePool.created_at, ResourcePool.id)
+            ).all()
+            return tuple(serialize(row) for row in rows)
+
+    def _preview_in_session(
+        self,
+        session: Session,
+        campaign_id: str,
+        request_data: dict[str, Any],
+    ) -> dict[str, Any]:
+        campaign = self._campaign(session, campaign_id)
+        rest_type = str(request_data["rest_type"])
+        duration = int(request_data["duration_minutes"])
+        interrupted = bool(request_data.get("interrupted", False))
+        fallback = bool(request_data.get("fallback_to_short_rest", False))
+        override = str(request_data.get("dm_override_reason") or "").strip()
+        minimum = 60 if rest_type == "short" else 480
+        if duration < minimum and not override:
+            raise ValueError(
+                f"{'short' if rest_type == 'short' else 'long'} rest requires "
+                f"at least {minimum} minutes or a DM override reason"
+            )
+        if fallback and (not interrupted or rest_type != "long" or duration < 60):
+            raise ValueError(
+                "short-rest fallback requires an interrupted long rest with at least 60 minutes"
+            )
+
+        world_before = campaign.current_time
+        world_after = world_before + timedelta(minutes=duration) if world_before else None
+        warnings: list[str] = []
+        if world_before is None:
+            warnings.append("战役世界时间为空；本次休息不会擅自写入现实时间。")
+        if rest_type == "long" and world_before is not None:
+            last_long_rest = session.scalar(
+                select(RestRecord)
+                .where(
+                    RestRecord.campaign_id == campaign_id,
+                    RestRecord.rest_type == "long",
+                    RestRecord.status == "completed",
+                    RestRecord.world_time_after.is_not(None),
+                )
+                .order_by(RestRecord.world_time_after.desc(), RestRecord.id.desc())
+            )
+            if (
+                last_long_rest is not None
+                and last_long_rest.world_time_after is not None
+                and world_before - last_long_rest.world_time_after < timedelta(hours=16)
+            ):
+                if not override:
+                    raise ValueError(
+                        "a character must wait at least 16 hours after a long rest; "
+                        "provide a DM override reason to continue"
+                    )
+                warnings.append("DM 已覆盖两次长休之间至少 16 小时的限制。")
+        if interrupted:
+            warnings.append("休息被中断；只有 DM 明确选择的长休折算短休才会产生收益。")
+        effective_type = "short" if fallback else rest_type
+        no_benefits = interrupted and not fallback
+        participant_results: list[dict[str, Any]] = []
+        token_state: list[dict[str, Any]] = []
+
+        seen_characters: set[str] = set()
+        for participant in request_data["participants"]:
+            character_id = str(participant["character_id"])
+            if character_id in seen_characters:
+                raise ValueError("duplicate rest participant")
+            seen_characters.add(character_id)
+            character = self._character(session, campaign_id, character_id)
+            expected_version = int(participant["character_version"])
+            if character.version != expected_version:
+                raise VersionConflict(
+                    "character",
+                    character.id,
+                    expected_version,
+                    character.version,
+                )
+            pools = self._sync_pools(session, character)
+            pool_by_id = {pool.id: pool for pool in pools}
+            excluded = {str(key) for key in participant.get("excluded_resource_keys", [])}
+            resources = tuple(
+                RestResource(
+                    key=pool.key,
+                    current=pool.current,
+                    maximum=pool.maximum,
+                    recovery=_resource_recovery(pool.recovery_timing),
+                )
+                for pool in pools
+                if pool.category != "hit_die" and pool.key not in excluded
+            )
+            untouched = {
+                pool.key: pool
+                for pool in pools
+                if pool.category != "hit_die" and pool.key in excluded
+            }
+            hit_dice_pools = [pool for pool in pools if pool.category == "hit_die"]
+            hit_dice = {
+                f"d{pool.die_size or 8}": pool.current for pool in hit_dice_pools
+            }
+            spends: list[HitDieSpend] = []
+            hit_die_details: list[dict[str, Any]] = []
+            for selection in participant.get("hit_dice", []):
+                pool = pool_by_id.get(str(selection["resource_pool_id"]))
+                if pool is None or pool.category != "hit_die":
+                    raise ValueError("selected hit die resource pool is invalid")
+                roll = int(selection["roll"])
+                if pool.die_size is not None and roll > pool.die_size:
+                    raise ValueError(f"hit die roll cannot exceed d{pool.die_size}")
+                die = f"d{pool.die_size or 8}"
+                spends.append(HitDieSpend(die=die, roll=roll))
+                hit_die_details.append(
+                    {"resource_pool_id": pool.id, "key": pool.key, "die": die, "roll": roll}
+                )
+
+            ability_scores = dict(character.ability_scores or {})
+            con_modifier = _ability_modifier(int(ability_scores.get("constitution", 10)))
+            fatigue_condition = self._fatigue_condition(session, character.id)
+            fatigue = self._fatigue_level(fatigue_condition)
+            if no_benefits:
+                after_hp = character.hp
+                after_fatigue = fatigue
+                after_resources = resources
+                after_hit_dice = hit_dice
+                completed = False
+            elif effective_type == "short":
+                resolution = resolve_short_rest(
+                    current_hp=character.hp,
+                    max_hp=character.max_hp,
+                    constitution_modifier=con_modifier,
+                    hit_dice=hit_dice,
+                    spends=tuple(spends),
+                    resources=resources,
+                    started_at=world_before,
+                )
+                after_hp = resolution.current_hp
+                after_fatigue = fatigue
+                after_resources = resolution.resources
+                after_hit_dice = resolution.hit_dice
+                completed = True
+            else:
+                if spends:
+                    raise ValueError("hit dice can only be spent during a short rest")
+                resolution_long = resolve_long_rest(
+                    current_hp=character.hp,
+                    max_hp=character.max_hp,
+                    fatigue=fatigue,
+                    resources=resources,
+                    started_at=world_before,
+                )
+                after_hp = resolution_long.current_hp
+                after_fatigue = resolution_long.fatigue
+                after_resources = resolution_long.resources
+                after_hit_dice = hit_dice
+                completed = True
+
+            after_resource_map = {item.key: item for item in after_resources}
+            resource_changes: list[dict[str, Any]] = []
+            for pool in pools:
+                if pool.category == "hit_die":
+                    after_value = after_hit_dice.get(f"d{pool.die_size or 8}", pool.current)
+                    change_type = "hit_die"
+                elif pool.key in untouched:
+                    after_value = pool.current
+                    change_type = "resource"
+                else:
+                    after_value = after_resource_map.get(
+                        pool.key,
+                        RestResource(pool.key, pool.current, pool.maximum, None),
+                    ).current
+                    change_type = "spell_slot" if pool.category == "spell_slot" else "resource"
+                if after_value != pool.current:
+                    resource_changes.append(
+                        {
+                            "type": change_type,
+                            "resource_pool_id": pool.id,
+                            "key": pool.key,
+                            "label": pool.label,
+                            "before": pool.current,
+                            "after": after_value,
+                            "amount": abs(after_value - pool.current),
+                        }
+                    )
+            changes = [
+                {
+                    "type": "hp",
+                    "before": character.hp,
+                    "after": after_hp,
+                    "amount": max(0, after_hp - character.hp),
+                    "explanation": (
+                        "生命骰恢复"
+                        if effective_type == "short"
+                        else "长休恢复全部生命值"
+                    ),
+                }
+            ]
+            changes.extend(resource_changes)
+            if after_fatigue != fatigue:
+                changes.append(
+                    {
+                        "type": "condition",
+                        "before": fatigue,
+                        "after": after_fatigue,
+                        "amount": fatigue - after_fatigue,
+                        "explanation": "完成长休后疲劳降低 1 级",
+                    }
+                )
+            if completed and effective_type == "long":
+                if character.max_hp_reduction:
+                    changes.append(
+                        {
+                            "type": "other",
+                            "key": "max_hp_reduction",
+                            "label": "最大生命值降低",
+                            "before": character.max_hp_reduction,
+                            "after": 0,
+                            "amount": character.max_hp_reduction,
+                            "explanation": "完成长休后恢复降低的最大生命值",
+                        }
+                    )
+                ability_reduction_total = sum(
+                    max(0, int(value))
+                    for value in (character.ability_score_reductions or {}).values()
+                )
+                if ability_reduction_total:
+                    changes.append(
+                        {
+                            "type": "other",
+                            "key": "ability_score_reductions",
+                            "label": "属性值降低",
+                            "before": ability_reduction_total,
+                            "after": 0,
+                            "amount": ability_reduction_total,
+                            "explanation": "完成长休后恢复降低的属性值",
+                        }
+                    )
+                death_save_total = sum(
+                    max(0, int((character.death_saves or {}).get(key, 0)))
+                    for key in ("successes", "failures")
+                )
+                if death_save_total:
+                    changes.append(
+                        {
+                            "type": "other",
+                            "key": "death_saves",
+                            "label": "死亡豁免记录",
+                            "before": death_save_total,
+                            "after": 0,
+                            "amount": death_save_total,
+                            "explanation": "角色恢复后清空死亡豁免记录",
+                        }
+                    )
+            participant_results.append(
+                {
+                    "character_id": character.id,
+                    "character_name": character.name,
+                    "character_version": character.version,
+                    "completed": completed,
+                    "before": {
+                        "hp": character.hp,
+                        "fatigue": fatigue,
+                        "max_hp_reduction": character.max_hp_reduction,
+                        "ability_score_reductions": dict(
+                            character.ability_score_reductions or {}
+                        ),
+                        "death_saves": dict(character.death_saves or {}),
+                    },
+                    "after": {
+                        "hp": after_hp,
+                        "fatigue": after_fatigue,
+                        "max_hp_reduction": (
+                            0 if completed and effective_type == "long"
+                            else character.max_hp_reduction
+                        ),
+                        "ability_score_reductions": (
+                            {} if completed and effective_type == "long"
+                            else dict(character.ability_score_reductions or {})
+                        ),
+                        "death_saves": (
+                            {"successes": 0, "failures": 0}
+                            if completed and effective_type == "long"
+                            else dict(character.death_saves or {})
+                        ),
+                    },
+                    "changes": changes,
+                    "hit_dice": hit_die_details,
+                }
+            )
+            token_state.append(
+                {
+                    "id": character.id,
+                    "version": character.version,
+                    "hp": character.hp,
+                    "max_hp": character.max_hp,
+                    "fatigue": fatigue,
+                    "max_hp_reduction": character.max_hp_reduction,
+                    "ability_score_reductions": dict(
+                        character.ability_score_reductions or {}
+                    ),
+                    "death_saves": dict(character.death_saves or {}),
+                    "pools": [
+                        [pool.id, pool.key, pool.current, pool.maximum, pool.recovery_timing]
+                        for pool in pools
+                    ],
+                }
+            )
+
+        token_payload = {
+            "campaign_id": campaign_id,
+            "campaign_version": campaign.version,
+            "world_time": _json_value(world_before),
+            "request": _json_value(request_data),
+            "state": token_state,
+        }
+        token = hashlib.sha256(
+            json.dumps(token_payload, ensure_ascii=False, sort_keys=True).encode()
+        ).hexdigest()
+        return {
+            "preview_token": token,
+            "rest_type": rest_type,
+            "effective_rest_type": effective_type,
+            "duration_minutes": duration,
+            "interrupted": interrupted,
+            "world_time_before": _json_value(world_before),
+            "world_time_after": _json_value(world_after),
+            "warnings": warnings,
+            "participants": participant_results,
+            "rule_reference": RULE_REFERENCE,
+        }
+
+    def preview(self, campaign_id: str, request_data: dict[str, Any]) -> dict[str, Any]:
+        with Session(self.engine) as session, session.begin():
+            return self._preview_in_session(session, campaign_id, request_data)
+
+    def confirm(self, campaign_id: str, request_data: dict[str, Any]) -> dict[str, Any]:
+        idempotency_key = str(request_data.pop("idempotency_key"))
+        preview_token = str(request_data.pop("preview_token"))
+        with Session(self.engine) as session, session.begin():
+            existing = session.scalar(
+                select(RestRecord).where(
+                    RestRecord.campaign_id == campaign_id,
+                    RestRecord.idempotency_key == idempotency_key,
+                )
+            )
+            if existing is not None:
+                return dict(existing.result_json or {})
+
+            preview = self._preview_in_session(session, campaign_id, request_data)
+            if preview["preview_token"] != preview_token:
+                raise VersionConflict("rest preview", "state", 1, 2)
+            campaign = self._campaign(session, campaign_id)
+            now = datetime.now(UTC)
+            before_snapshot = {
+                "campaign_time": _json_value(campaign.current_time),
+                "participants": [
+                    {
+                        "character_id": item["character_id"],
+                        "before": item["before"],
+                    }
+                    for item in preview["participants"]
+                ],
+            }
+            operation = OperationTransaction(
+                campaign_id=campaign_id,
+                operation_type="rest",
+                idempotency_key=f"rest:{idempotency_key}",
+                status="applied",
+                before_snapshot=before_snapshot,
+                after_snapshot={},
+                reason=str(request_data.get("notes") or "DM 确认休息结算"),
+                source="game_table",
+                confirmed_at=now,
+            )
+            session.add(operation)
+            session.flush()
+            rest = RestRecord(
+                campaign_id=campaign_id,
+                operation_transaction_id=operation.id,
+                rest_type=str(request_data["rest_type"]),
+                status="interrupted" if request_data.get("interrupted") else "completed",
+                duration_minutes=int(request_data["duration_minutes"]),
+                interrupted=bool(request_data.get("interrupted", False)),
+                started_at=campaign.current_time,
+                completed_at=(
+                    campaign.current_time + timedelta(minutes=int(request_data["duration_minutes"]))
+                    if campaign.current_time
+                    else now
+                ),
+                world_time_before=campaign.current_time,
+                world_time_after=(
+                    campaign.current_time + timedelta(minutes=int(request_data["duration_minutes"]))
+                    if campaign.current_time
+                    else None
+                ),
+                request_json=_json_value(request_data),
+                result_json={},
+                idempotency_key=idempotency_key,
+                notes=request_data.get("notes"),
+            )
+            session.add(rest)
+            session.flush()
+
+            for participant in preview["participants"]:
+                character = self._character(session, campaign_id, participant["character_id"])
+                character.hp = int(participant["after"]["hp"])
+                resources_json = dict(character.resources or {})
+                for change in participant["changes"]:
+                    change_type = str(change["type"])
+                    pool_id = change.get("resource_pool_id")
+                    pool = session.get(ResourcePool, pool_id) if pool_id else None
+                    if pool is not None:
+                        pool.current = int(change["after"])
+                        if pool.category != "hit_die":
+                            existing_resource = resources_json.get(pool.key, {})
+                            raw = (
+                                dict(existing_resource)
+                                if isinstance(existing_resource, dict)
+                                else {}
+                            )
+                            raw["label"] = pool.label
+                            raw["current"] = pool.current
+                            raw["max"] = pool.maximum
+                            raw["recovery"] = pool.recovery_timing
+                            resources_json[pool.key] = raw
+                    session.add(
+                        RestRecoveryEntry(
+                            rest_record_id=rest.id,
+                            character_id=character.id,
+                            resource_pool_id=pool.id if pool else None,
+                            recovery_type=change_type,
+                            before_value=int(change["before"]),
+                            after_value=int(change["after"]),
+                            amount=int(change.get("amount", 0)),
+                            die_roll=None,
+                            modifier=None,
+                            explanation=str(change.get("explanation") or ""),
+                            rule_reference=RULE_REFERENCE,
+                            selected=True,
+                            applied=True,
+                            status="applied",
+                        )
+                    )
+                character.resources = resources_json
+                character.max_hp_reduction = int(
+                    participant["after"]["max_hp_reduction"]
+                )
+                character.ability_score_reductions = dict(
+                    participant["after"]["ability_score_reductions"]
+                )
+                character.death_saves = dict(participant["after"]["death_saves"])
+                before_fatigue = int(participant["before"]["fatigue"])
+                after_fatigue = int(participant["after"]["fatigue"])
+                if after_fatigue != before_fatigue:
+                    condition = self._fatigue_condition(session, character.id)
+                    if condition is not None:
+                        if after_fatigue == 0:
+                            session.delete(condition)
+                        else:
+                            details = dict(condition.details or {})
+                            details["level"] = after_fatigue
+                            condition.details = details
+                            condition.version += 1
+                character.version += 1
+                character.updated_at = now
+
+            if campaign.current_time is not None:
+                campaign.current_time = campaign.current_time + timedelta(
+                    minutes=int(request_data["duration_minutes"])
+                )
+                campaign.version += 1
+                campaign.updated_at = now
+            result = {
+                **preview,
+                "rest_record_id": rest.id,
+                "operation_transaction_id": operation.id,
+                "idempotent_replay": False,
+            }
+            operation.after_snapshot = {
+                "campaign_time": _json_value(campaign.current_time),
+                "participants": [
+                    {
+                        "character_id": item["character_id"],
+                        "after": item["after"],
+                    }
+                    for item in preview["participants"]
+                ],
+            }
+            rest.result_json = _json_value(result)
+            session.flush()
+            return result

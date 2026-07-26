@@ -127,6 +127,11 @@ class CharacterCreate(BaseModel):
     ability_scores: dict[str, int] = Field(default_factory=dict)
     hp: int = Field(0, ge=0)
     max_hp: int = Field(0, ge=0)
+    max_hp_reduction: int = Field(0, ge=0)
+    ability_score_reductions: dict[str, int] = Field(default_factory=dict)
+    death_saves: dict[str, int] = Field(
+        default_factory=lambda: {"successes": 0, "failures": 0}
+    )
     inventory: list[Any] = Field(default_factory=list)
     equipment: list[Any] = Field(default_factory=list)
     proficiencies: list[Any] = Field(default_factory=list)
@@ -142,6 +147,13 @@ class CharacterCreate(BaseModel):
     def validate_hp(self) -> CharacterCreate:
         if self.hp > self.max_hp:
             raise ValueError("hp cannot exceed max_hp")
+        if self.max_hp_reduction > self.max_hp:
+            raise ValueError("max_hp_reduction cannot exceed max_hp")
+        if any(
+            self.death_saves.get(key, 0) < 0 or self.death_saves.get(key, 0) > 3
+            for key in ("successes", "failures")
+        ):
+            raise ValueError("death save successes and failures must be between 0 and 3")
         return self
 
 
@@ -159,6 +171,9 @@ class CharacterPatch(BaseModel):
     ability_scores: dict[str, int] | None = None
     hp: int | None = Field(None, ge=0)
     max_hp: int | None = Field(None, ge=0)
+    max_hp_reduction: int | None = Field(None, ge=0)
+    ability_score_reductions: dict[str, int] | None = None
+    death_saves: dict[str, int] | None = None
     inventory: list[Any] | None = None
     equipment: list[Any] | None = None
     proficiencies: list[Any] | None = None
@@ -175,6 +190,17 @@ class CharacterPatch(BaseModel):
     def validate_hp(self) -> CharacterPatch:
         if self.hp is not None and self.max_hp is not None and self.hp > self.max_hp:
             raise ValueError("hp cannot exceed max_hp")
+        if (
+            self.max_hp_reduction is not None
+            and self.max_hp is not None
+            and self.max_hp_reduction > self.max_hp
+        ):
+            raise ValueError("max_hp_reduction cannot exceed max_hp")
+        if self.death_saves is not None and any(
+            self.death_saves.get(key, 0) < 0 or self.death_saves.get(key, 0) > 3
+            for key in ("successes", "failures")
+        ):
+            raise ValueError("death save successes and failures must be between 0 and 3")
         return self
 
 
@@ -191,6 +217,9 @@ class CharacterResponse(VersionedResponse):
     ability_scores: dict[str, int]
     hp: int
     max_hp: int
+    max_hp_reduction: int
+    ability_score_reductions: dict[str, int]
+    death_saves: dict[str, int]
     inventory: list[Any]
     equipment: list[Any]
     proficiencies: list[Any]
@@ -201,6 +230,34 @@ class CharacterResponse(VersionedResponse):
     spells: list[Any]
     spellcasting: dict[str, Any]
     notes: str | None
+
+
+class RestHitDieSelection(BaseModel):
+    resource_pool_id: str = Field(min_length=1, max_length=36)
+    roll: int = Field(ge=1, le=20)
+
+
+class RestParticipantInput(BaseModel):
+    character_id: str = Field(min_length=1, max_length=36)
+    character_version: int = Field(ge=1)
+    hit_dice: list[RestHitDieSelection] = Field(default_factory=list, max_length=20)
+    excluded_resource_keys: list[str] = Field(default_factory=list, max_length=50)
+
+
+class RestPreviewRequest(BaseModel):
+    rest_type: Literal["short", "long"]
+    duration_minutes: int = Field(ge=1, le=24 * 60)
+    interrupted: bool = False
+    interruption_reason: str | None = Field(default=None, max_length=2_000)
+    fallback_to_short_rest: bool = False
+    participants: list[RestParticipantInput] = Field(min_length=1, max_length=20)
+    notes: str | None = Field(default=None, max_length=4_000)
+    dm_override_reason: str | None = Field(default=None, max_length=2_000)
+
+
+class RestConfirmRequest(RestPreviewRequest):
+    preview_token: str = Field(min_length=16, max_length=128)
+    idempotency_key: str = Field(min_length=8, max_length=120)
 
 
 class NPCCreate(BaseModel):

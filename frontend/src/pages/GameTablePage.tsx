@@ -16,6 +16,7 @@ import {
   removeSceneParticipant, startSceneCombat,
 } from "../api/world";
 import { Panel } from "../components/Panel";
+import { RestPanel } from "../components/RestPanel";
 import { RequireCampaign } from "../components/RequireCampaign";
 import { useToast } from "../hooks/toastContext";
 import { navigate } from "../hooks/useHashRoute";
@@ -516,6 +517,7 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
       <div className="mt-4 grid gap-4 xl:grid-cols-[0.8fr_1.4fr_0.8fr]">
         <Panel eyebrow="情景状态" title="当前在场">
           <div className="flex gap-2"><select className={selectCls} onChange={(event) => setEntityKey(event.target.value)} value={entityKey}><option value="">选择进入人物</option>{availableCandidates.map((candidate) => <option key={candidate.key} value={candidate.key}>{candidate.label}</option>)}</select><Button disabled={!entityKey} loading={participantAdd.isPending} onClick={() => participantAdd.mutate()} size="sm">进入</Button></div>
+          <div className="mt-2"><RestPanel campaignId={campaignId} characters={characters.data ?? []} compact defaultCharacterIds={(participants.data ?? []).filter((item) => item.entity_type === "character").map((item) => item.entity_id)} /></div>
           {participants.isLoading ? <LoadingBlock /> : null}
           {participants.data?.length === 0 ? <EmptyState title="当前场景无人" hint="从上方选择玩家、NPC 或怪物进入。" /> : null}
           <ul className="m-0 mt-3 space-y-2 p-0">{participants.data?.map((participant) => <li className="list-none rounded border border-ink-700 bg-ink-950/50 p-2" key={participant.id}><div className="flex items-center gap-2"><Badge tone={participant.entity_type === "character" ? "ok" : participant.entity_type === "npc" ? "ai" : "danger"}>{participant.entity_type === "character" ? "玩家" : participant.entity_type === "npc" ? "NPC" : "怪物"}</Badge><strong className="min-w-0 flex-1 truncate text-xs text-parchment-100">{participant.entity.name}</strong><Button loading={participantRemove.isPending} onClick={() => participantRemove.mutate(participant)} size="sm">离开</Button></div><div className="mt-2"><HpBar hp={participant.entity.hp} maxHp={participant.entity.max_hp} /></div><p className="mb-0 mt-1 text-2xs text-stone-600">AC {participant.entity.armor_class} · 速度 {participant.entity.speed}</p></li>)}</ul>

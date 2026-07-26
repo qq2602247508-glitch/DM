@@ -214,6 +214,9 @@ export type Character = Versioned & {
   ability_scores: Record<string, number>;
   hp: number;
   max_hp: number;
+  max_hp_reduction: number;
+  ability_score_reductions: Record<string, number>;
+  death_saves: { successes: number; failures: number };
   inventory: unknown[];
   equipment: unknown[];
   proficiencies: unknown[];
@@ -224,6 +227,91 @@ export type Character = Versioned & {
   spells: unknown[];
   spellcasting: Record<string, unknown>;
   notes: string | null;
+};
+
+export type RestType = "short" | "long";
+
+export type ResourcePool = {
+  id: string;
+  character_id: string;
+  key: string;
+  label: string;
+  category: string;
+  current: number;
+  maximum: number;
+  recovery_timing: string;
+  die_size: number | null;
+  version: number;
+};
+
+export type RestHitDieUse = { resource_pool_id: string; roll: number };
+
+export type RestParticipantRequest = {
+  character_id: string;
+  character_version: number;
+  hit_dice: RestHitDieUse[];
+  excluded_resource_keys: string[];
+};
+
+export type RestPreviewRequest = {
+  rest_type: RestType;
+  duration_minutes: number;
+  interrupted: boolean;
+  interruption_reason?: string | null;
+  fallback_to_short_rest: boolean;
+  participants: RestParticipantRequest[];
+  notes?: string | null;
+  dm_override_reason?: string | null;
+};
+
+export type RestChange = {
+  type: string;
+  key?: string | null;
+  label?: string | null;
+  before: number;
+  after: number;
+  amount: number;
+  explanation?: string | null;
+};
+
+export type RestParticipantPreview = {
+  character_id: string;
+  character_name: string;
+  character_version: number;
+  before: {
+    hp: number;
+    fatigue: number;
+    max_hp_reduction: number;
+    ability_score_reductions: Record<string, number>;
+    death_saves: { successes: number; failures: number };
+  };
+  after: {
+    hp: number;
+    fatigue: number;
+    max_hp_reduction: number;
+    ability_score_reductions: Record<string, number>;
+    death_saves: { successes: number; failures: number };
+  };
+  changes: RestChange[];
+  hit_dice: RestHitDieUse[];
+};
+
+export type RestPreview = {
+  preview_token: string;
+  rest_type: RestType;
+  effective_rest_type: RestType;
+  duration_minutes: number;
+  interrupted: boolean;
+  world_time_before: string | null;
+  world_time_after: string | null;
+  warnings: string[];
+  rule_reference: string | null;
+  participants: RestParticipantPreview[];
+};
+
+export type RestConfirmRequest = RestPreviewRequest & {
+  preview_token: string;
+  idempotency_key: string;
 };
 
 export type CharacterCondition = Versioned & {

@@ -11,6 +11,7 @@ import {
 } from "../api/entities";
 import type { Campaign, CampaignEvent, Character, Clue, Location, Npc, Quest } from "../api/types";
 import { Panel } from "../components/Panel";
+import { RestPanel } from "../components/RestPanel";
 import { RequireCampaign } from "../components/RequireCampaign";
 import { inputCls } from "../ui/styles";
 import { Button, EmptyState, ErrorState, LoadingBlock } from "../ui/primitives";
@@ -163,6 +164,7 @@ function CharacterToolkit({ campaignId }: { campaignId: string }): ReactElement 
         <Button onClick={() => fileRef.current?.click()} size="sm">导入角色卡</Button>
         <Button disabled={!characters.data?.length} onClick={() => exportCharacters("json")} size="sm">导出 JSON</Button>
         <Button disabled={!characters.data?.length} onClick={() => exportCharacters("csv")} size="sm">导出表格</Button>
+        <RestPanel campaignId={campaignId} characters={characters.data ?? []} />
       </div>
       <div className="mt-3 overflow-x-auto rounded-lg border border-ink-700">
         <table className="w-full min-w-[980px] border-collapse text-left text-xs">
