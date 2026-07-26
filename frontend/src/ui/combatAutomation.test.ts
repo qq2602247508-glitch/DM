@@ -50,4 +50,14 @@ describe("combat automation helpers", () => {
     expect(chooseEnemyActionIndex(actions, "standard", 1)).toBe(1);
     expect(chooseEnemyActionIndex(actions, "tactical", 0)).toBe(1);
   });
+
+  it("does not auto-select a conditional action before its prerequisite exists", () => {
+    const actions = [
+      { name: "触须", damage: "4d8+4", range: "5尺" },
+      { name: "采脑", damage: "10d10", range: "5尺", auto_eligible: false },
+      { name: "心灵震爆", damage: "6d8+4", range: "60尺锥形", save_dc: 15 },
+    ];
+    expect(chooseEnemyActionIndex(actions, "standard", 1)).toBe(2);
+    expect(chooseEnemyActionIndex(actions, "tactical", 0)).toBe(2);
+  });
 });

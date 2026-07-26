@@ -395,6 +395,13 @@ class CombatEngineService:
             {
                 "action_type": "damage",
                 "actor_combatant_id": action.actor_combatant_id,
+                "action_cost": "none",
+                "action_name": request["action_name"],
+                "resolution_note": (
+                    f"{target.display_name} 的玩家骰总值 {command.roll_total}"
+                    f" 对抗 DC {dc}，{'成功' if success else '失败'}；"
+                    f"结算 {damage} 点{request.get('damage_type') or ''}伤害"
+                ),
                 "target_combatant_id": target.id,
                 "target_version": target.version,
                 "amount": damage,

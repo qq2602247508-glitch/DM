@@ -32,6 +32,7 @@ import {
 import { Badge, Button } from "../../ui/primitives";
 import { inputCls, selectCls, textareaCls } from "../../ui/styles";
 import type { TargetingTemplate } from "../../ui/gridTargeting";
+import { monsterActionsForRules } from "../../ui/monsterRuleProfiles";
 
 export type CombatTargeting = TargetingTemplate & { label: string };
 
@@ -157,8 +158,12 @@ export function TurnCommandConsole({
   const actions = useMemo(
     () => activeCharacter
       ? [...activeCharacter.actions, ...activeCharacter.spells].map(normalizeAction)
-      : ((active.snapshot_json.actions as unknown[] | undefined) ?? []).map(normalizeAction),
-    [active.snapshot_json.actions, activeCharacter],
+      : monsterActionsForRules(
+          active.display_name,
+          ((active.snapshot_json.actions as unknown[] | undefined) ?? [])
+            .map(normalizeAction),
+        ),
+    [active.display_name, active.snapshot_json.actions, activeCharacter],
   );
   const selectedAction = actions[Number(actionIndex)] ?? actions[0] ?? {
     name: "临时攻击",
@@ -550,7 +555,7 @@ export function TurnCommandConsole({
       </div>
 
       {active.entity_type === "character" ? (
-        <div className="mt-3 grid gap-3 xl:grid-cols-[1fr_1fr]">
+        <div className="mt-3 grid gap-3">
           <div className="rounded border border-ink-700 bg-ink-950/60 p-3">
             <strong className="text-xs text-parchment-100">角色卡动作与施法指示</strong>
             {activeCharacter && Object.keys(activeCharacter.skills).length > 0 ? (
@@ -655,7 +660,15 @@ export function TurnCommandConsole({
             </select>
           </label>
           <p className="mb-2 mt-0 text-2xs text-stone-500">建议动作：{selectedAction.name ?? "基础攻击"} · {selectedAction.damage ?? "1d6"} · {actionRangeSummary(selectedAction)}。地图会先按剩余速度寻路；攻击检定由怪物自动掷，怪物能力要求豁免时会在右侧等待玩家输入骰值。</p>
-          <Button disabled={!enemyTarget || !selectedActionAvailable || preview.isPending || requestPlayerSave.isPending || autoResolve.isPending} onClick={() => { if (enemyTarget) { setTargetId(enemyTarget.id); prepareAttack(true, enemyTarget); } }} variant="danger">执行怪物动作</Button>
+          {autoEnemies ? (
+            <div className="rounded border border-red-900/60 bg-red-950/20 p-2 text-xs text-red-100">
+              全自动处理中：{active.display_name}会先移动到合法位置，再使用
+              「{selectedAction.name ?? "基础攻击"}」攻击{enemyTarget?.display_name ?? "有效目标"}。
+              若无需玩家掷骰，结算后会自动结束回合。
+            </div>
+          ) : (
+            <Button disabled={!enemyTarget || !selectedActionAvailable || preview.isPending || requestPlayerSave.isPending || autoResolve.isPending} onClick={() => { if (enemyTarget) { setTargetId(enemyTarget.id); prepareAttack(true, enemyTarget); } }} variant="danger">手动执行怪物动作</Button>
+          )}
         </div>
       )}
 

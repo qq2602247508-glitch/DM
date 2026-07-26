@@ -52,6 +52,7 @@ function actionNameOf(raw: unknown): string {
 export function PlayerRollPanel({
   activeEnemy,
   actions,
+  automationEnabled = false,
   campaignId,
   combatId,
   fighters,
@@ -59,6 +60,7 @@ export function PlayerRollPanel({
 }: {
   activeEnemy?: Combatant;
   actions: CombatAction[];
+  automationEnabled?: boolean;
   campaignId: string;
   combatId: string;
   fighters: Combatant[];
@@ -175,10 +177,21 @@ export function PlayerRollPanel({
     <section className="mt-3 rounded-lg border border-sky-800/60 bg-sky-950/10 p-3">
       <div className="flex items-center gap-2">
         <Badge tone="neutral">玩家掷骰</Badge>
-        <strong className="text-sm text-sky-100">怪物动作与玩家防御/豁免</strong>
+        <strong className="text-sm text-sky-100">怪物动作与玩家豁免</strong>
       </div>
 
-      {activeEnemy ? (
+      {activeEnemy && automationEnabled ? (
+        <div className="mt-3 rounded border border-red-900/50 bg-red-950/10 p-2">
+          <strong className="text-xs text-red-200">{activeEnemy.display_name} 正在自动行动</strong>
+          <p className="mb-0 mt-1 text-2xs leading-5 text-stone-400">
+            怪物会自行选择技能、寻路、攻击并结束回合。普通攻击由怪物自动掷攻击骰并与玩家 AC 比较；
+            只有属性豁免、检定等确实需要玩家掷骰时，流程才会停在下方等待输入。
+          </p>
+          {pending.length === 0 ? (
+            <p className="mb-0 mt-1 text-2xs text-emerald-300">当前无需玩家掷骰，正在等待怪物动作结算。</p>
+          ) : null}
+        </div>
+      ) : activeEnemy ? (
         <div className="mt-3 grid gap-2 sm:grid-cols-2">
           <label className="text-2xs text-stone-400">
             谁攻击谁

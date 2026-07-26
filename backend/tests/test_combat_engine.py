@@ -268,6 +268,8 @@ def test_player_roll_prompt_records_actor_target_action_and_dm_confirmation(
     assert follow_up["actor_combatant_id"] == monster["id"]
     assert follow_up["target_combatant_id"] == player["id"]
     assert follow_up["amount"] == 7
+    assert follow_up["action_name"] == "毒牙"
+    assert "玩家骰总值 9 对抗 DC 11，失败" in follow_up["resolution_note"]
 
     confirmed = combat_client.post(
         (

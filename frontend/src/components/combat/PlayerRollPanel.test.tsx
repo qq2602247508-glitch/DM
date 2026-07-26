@@ -130,4 +130,28 @@ describe("PlayerRollPanel", () => {
     expect(screen.getByRole("spinbutton", { name: "艾琳玩家骰结果" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "DM确认" })).toBeDisabled();
   });
+
+  it("explains the automatic enemy flow without showing manual prompt controls", () => {
+    const client = new QueryClient({
+      defaultOptions: { mutations: { retry: false }, queries: { retry: false } },
+    });
+    render(
+      <QueryClientProvider client={client}>
+        <ToastProvider>
+          <PlayerRollPanel
+            activeEnemy={FIGHTERS[0]}
+            actions={[]}
+            automationEnabled
+            campaignId="campaign-1"
+            combatId="combat-1"
+            fighters={FIGHTERS}
+          />
+        </ToastProvider>
+      </QueryClientProvider>,
+    );
+
+    expect(screen.getByText("相位蜘蛛 正在自动行动")).toBeInTheDocument();
+    expect(screen.getByText(/普通攻击由怪物自动掷攻击骰/)).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "要求玩家掷骰" })).not.toBeInTheDocument();
+  });
 });

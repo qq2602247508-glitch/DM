@@ -104,7 +104,7 @@ function actionName(line: string): string {
 }
 
 function actionDamage(line: string): string | undefined {
-  return line.match(/[（(]\s*(\d+d\d+(?:\s*[+-]\s*\d+)?)\s*[）)]\s*点[^。]*?伤害/i)?.[1]
+  return line.match(/[（(]\s*(\d+d\d+(?:\s*[+-]\s*\d+)?)\s*[）)]\s*(?:点)?[^。]*?伤害/i)?.[1]
     ?.replace(/\s+/g, "")
     ?? line.match(/(\d+d\d+(?:\s*[+-]\s*\d+)?)\s*点[^。]*?伤害/i)?.[1]
       ?.replace(/\s+/g, "");
@@ -120,7 +120,7 @@ export function parseMonsterActions(text: string): GeneratedAction[] {
     .replace(/\r/g, "")
     .replace(/[ \t]+/g, " ")
     .replace(/\n(?=[A-Za-z])/g, " ");
-  const actionSection = normalized.match(/(?:^|\n)动作\s*\n([\s\S]*?)(?=\n(?:附赠动作|反应|传奇动作|巢穴动作|EndFragment)\b|$)/u)?.[1]
+  const actionSection = normalized.match(/(?:^|\n)动作(?:Actions)?\s*\n([\s\S]*?)(?=\n(?:附赠动作|反应|传奇动作|巢穴动作|施法|EndFragment)\b|$)/u)?.[1]
     ?? normalized;
   const lines = actionSection.split("\n").map((line) => line.trim()).filter(Boolean);
   return lines
@@ -131,8 +131,10 @@ export function parseMonsterActions(text: string): GeneratedAction[] {
     .slice(0, 12)
     .map((line): GeneratedAction => {
       const save = line.match(/DC\s*(\d+)\s*的?\s*(力量|敏捷|体质|智力|感知|魅力)\s*豁免/iu);
+      const leadingSave = line.match(/(力量|敏捷|体质|智力|感知|魅力)\s*豁免(?:检定)?[：:]?\s*DC\s*(\d+)/iu);
       const range = line.match(/触及\s*(\d+)\s*尺/iu)?.[1]
         ?? line.match(/(?:覆盖(?:一处)?|长)\s*(\d+)\s*尺(?:的)?\s*(?:锥状|线状|范围)?/iu)?.[1]
+        ?? line.match(/(\d+)\s*尺(?:锥形|锥状|直线|线状)/iu)?.[1]
         ?? line.match(/射程\s*(\d+)\s*尺/iu)?.[1];
       const shape = /锥状|锥形/u.test(line) ? "锥形" : /线状|直线/u.test(line) ? "直线" : "";
       return {
@@ -142,10 +144,17 @@ export function parseMonsterActions(text: string): GeneratedAction[] {
         damage_type: actionDamageType(line),
         range: range ? `${range}尺${shape}` : "5尺",
         cost: "动作",
-        attack_bonus: Number(line.match(/命中\s*\+\s*(\d+)/iu)?.[1]) || undefined,
-        save_dc: save ? Number(save[1]) : undefined,
-        save_ability: save?.[2] ? ABILITY_KEYS[save[2]] : undefined,
-        half_damage_on_save: /豁免成功.*(?:减半|一半)|成功则伤害减半/u.test(line),
+        attack_bonus: Number(
+          line.match(/(?:命中|攻击检定[：:]?)\s*\+\s*(\d+)/iu)?.[1],
+        ) || undefined,
+        save_dc: save ? Number(save[1]) : leadingSave ? Number(leadingSave[2]) : undefined,
+        save_ability: save?.[2]
+          ? ABILITY_KEYS[save[2]]
+          : leadingSave?.[1]
+            ? ABILITY_KEYS[leadingSave[1]]
+            : undefined,
+        half_damage_on_save: /豁免成功.*(?:减半|一半)|成功则伤害减半|成功[：:].*(?:半伤|减半)/u.test(line),
+        auto_eligible: !/(?:正受擒|被[^。]{0,20}擒抱|陷入失能)/u.test(line),
         recharge: line.match(/充能\s*([0-9~～\-–—]+)/u)?.[1],
       };
     });

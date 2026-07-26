@@ -12,6 +12,7 @@ export type CombatActionLike = {
   recharge?: string;
   resource_key?: string;
   resource_cost?: number;
+  auto_eligible?: boolean;
 };
 
 export type DiceExpression = {
@@ -150,7 +151,10 @@ export function chooseEnemyActionIndex(
   if (actions.length === 0) return 0;
   const damaging = actions
     .map((action, index) => ({ action, index }))
-    .filter(({ action }) => Boolean(parseDiceExpression(action.damage)));
+    .filter(({ action }) => (
+      action.auto_eligible !== false
+      && Boolean(parseDiceExpression(action.damage))
+    ));
   if (damaging.length === 0) return 0;
   if (tactics === "instinctive") return damaging[0]?.index ?? 0;
   if (tactics === "standard") {

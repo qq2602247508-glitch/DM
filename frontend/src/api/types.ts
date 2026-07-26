@@ -474,6 +474,7 @@ export type GeneratedAction = {
   recharge?: string;
   resource_key?: string;
   resource_cost?: number;
+  auto_eligible?: boolean;
 };
 
 export type GeneratedItem = {

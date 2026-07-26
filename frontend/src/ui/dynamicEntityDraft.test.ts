@@ -78,4 +78,34 @@ describe("dynamic scene arrivals", () => {
     });
     expect(custom.actions.length).toBeGreaterThan(0);
   });
+
+  it("parses the official 2025 mind flayer damage and save wording", () => {
+    const actions = parseMonsterActions(
+      "夺心魔Mind Flayer\n动作Actions\n触须Tentacles。近战攻击检定：+7，触及5尺。命中：22（4d8+4）心灵伤害。\n采脑Extract Brain。体质豁免检定：DC15，单一正受擒于夺心魔触须的生物。失败：55（10d10）穿刺伤害。成功：半伤。\n心灵震爆Mind Blast（充能5–6）。智力豁免检定：DC15，60尺锥形区域内的每名生物。失败：31（6d8+4）心灵伤害。成功：仅半伤。\n施法Spellcasting。",
+    );
+
+    expect(actions).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        name: "触须",
+        damage: "4d8+4",
+        attack_bonus: 7,
+      }),
+      expect.objectContaining({
+        name: "采脑",
+        damage: "10d10",
+        save_dc: 15,
+        save_ability: "constitution",
+        half_damage_on_save: true,
+        auto_eligible: false,
+      }),
+      expect.objectContaining({
+        name: "心灵震爆",
+        damage: "6d8+4",
+        range: "60尺锥形",
+        save_dc: 15,
+        save_ability: "intelligence",
+        half_damage_on_save: true,
+      }),
+    ]));
+  });
 });

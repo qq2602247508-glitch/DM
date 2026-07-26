@@ -15,7 +15,7 @@ import type {
 import { listCharacters, listLocations, listNpcs, updateCharacter } from "../api/entities";
 import { listMonsters, listScenes } from "../api/world";
 import type {
-  Combat, CombatActionPreview, CombatEffect, CombatSettlementPreview, Combatant,
+  Combat, CombatAction, CombatActionPreview, CombatEffect, CombatSettlementPreview, Combatant,
   Character, EncounterAdjustment, Monster, Npc, SceneGrid,
 } from "../api/types";
 import { RequireCampaign } from "../components/RequireCampaign";
@@ -81,6 +81,31 @@ function readSceneGrid(notes: string | null): SceneGrid | null {
   } catch {
     return null;
   }
+}
+
+function CombatLogPanel({ actions }: { actions: CombatAction[] }): ReactElement {
+  return (
+    <section className="mt-3 rounded-lg border border-ink-700 bg-ink-950/45 p-3">
+      <div className="flex flex-wrap items-center gap-2">
+        <Badge tone="neutral">历史</Badge>
+        <strong className="text-sm text-parchment-100">战斗日志</strong>
+        <span className="text-2xs text-stone-500">记录攻击者 → 目标 → 技能/法术 → 骰值 → 结果</span>
+      </div>
+      {actions.length > 0 ? (
+        <ol className="mb-0 mt-2 grid max-h-56 gap-2 overflow-y-auto p-0 text-2xs text-stone-400 md:grid-cols-2">
+          {[...actions].reverse().map((action) => (
+            <li className="list-none rounded border border-ink-800 bg-ink-950/70 p-2" key={action.id}>
+              <span className="text-stone-600">R{action.round_number} · T{action.turn_index + 1}</span>
+              <strong className="mt-0.5 block text-stone-200">{action.summary}</strong>
+              {action.explanation ? <span className="mt-1 block leading-5 text-stone-500">{action.explanation}</span> : null}
+            </li>
+          ))}
+        </ol>
+      ) : (
+        <p className="mb-0 mt-2 text-2xs text-stone-600">行动确认后会按时间倒序显示在这里。</p>
+      )}
+    </section>
+  );
 }
 
 function displayValue(value: unknown, fallback = "0"): string {
@@ -370,10 +395,12 @@ function BattleGrid({
   grid,
   candidates,
   activeFighterId,
+  automateEnemies,
   turnKey,
   targeting,
   endingTurn,
   onEndTurn,
+  onAutomationMovementChange,
   onTargetSelect,
   onTargetValidityChange,
 }: {
@@ -383,10 +410,12 @@ function BattleGrid({
   grid: SceneGrid | null;
   candidates: CombatCandidate[];
   activeFighterId: string | null;
+  automateEnemies: boolean;
   turnKey: string;
   targeting: CombatTargeting | null;
   endingTurn: boolean;
   onEndTurn: () => void;
+  onAutomationMovementChange: (moving: boolean) => void;
   onTargetSelect: (fighterId: string) => void;
   onTargetValidityChange: (fighterIds: ReadonlySet<string>) => void;
 }): ReactElement {
@@ -470,6 +499,7 @@ function BattleGrid({
   ) => {
     if ((plan.spentFt <= 0 && !exhaustMovement) || movingFighterId) return;
     setMovingFighterId(fighter.id);
+    if (automatic) onAutomationMovementChange(true);
     const remainingMovement = exhaustMovement
       ? 0
       : Math.max(0, fighter.movement_remaining_ft - plan.spentFt);
@@ -498,9 +528,18 @@ function BattleGrid({
       showToast(`${fighter.display_name}移动保存失败，请刷新战斗状态`, "error");
     } finally {
       setMovingFighterId(null);
+      if (automatic) onAutomationMovementChange(false);
     }
-  }, [campaignId, client, combatId, movingFighterId, showToast]);
+  }, [
+    campaignId,
+    client,
+    combatId,
+    movingFighterId,
+    onAutomationMovementChange,
+    showToast,
+  ]);
   useEffect(() => {
+    if (!automateEnemies) return;
     if (!activeFighterId) return;
     if (processedAiTurn.current === turnKey || movingFighterId) return;
     const active = fighters.find((fighter) => fighter.id === activeFighterId);
@@ -551,7 +590,7 @@ function BattleGrid({
     }
     setLastAiMove(`${active.display_name}按规则向${target.fighter.display_name}寻路移动 ${plan.spentFt} 尺；剩余 ${Math.max(0, active.movement_remaining_ft - plan.spentFt)} 尺。`);
     void commitMove(active, plan, true);
-  }, [activeFighterId, commitMove, fighters, movingFighterId, positions, tacticalGrid, targeting?.rangeFt, turnKey]);
+  }, [activeFighterId, automateEnemies, commitMove, fighters, movingFighterId, positions, tacticalGrid, targeting?.rangeFt, turnKey]);
   const selectedPosition = selected ? positions[selected] : null;
   const selectedFighter = fighters.find((fighter) => fighter.id === selected);
   const selectedSpeed = selectedFighter?.speed_ft
@@ -572,6 +611,33 @@ function BattleGrid({
       : null,
     [activePositionTuple],
   );
+  useEffect(() => {
+    if (!automateEnemies || !targeting || !activePosition || !activeFighterId) return;
+    const active = fighters.find((fighter) => fighter.id === activeFighterId);
+    if (!active || active.entity_type === "character") return;
+    const target = fighters
+      .filter((fighter) => fighter.entity_type === "character" && fighter.hp > 0)
+      .map((fighter) => positions[fighter.id])
+      .find((position): position is [number, number] => Boolean(position));
+    if (!target) return;
+    setAimPoint((current) => (
+      current?.row === target[0] && current.col === target[1]
+        ? current
+        : { row: target[0], col: target[1] }
+    ));
+    setInteractionMode("target");
+    setTargetingMessage(
+      `${active.display_name} 正在自动瞄准；紫色区域是「${targeting.label}」的实际影响范围。`,
+    );
+  }, [
+    activeFighterId,
+    activePosition,
+    automateEnemies,
+    fighters,
+    positions,
+    targeting,
+    turnKey,
+  ]);
   const areaCells = useMemo(
     () => targeting && activePosition && aimPoint
       ? getTargetingCells(tacticalGrid, activePosition, aimPoint, targeting)
@@ -737,7 +803,7 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
   const [selectedKey, setSelectedKey] = useState("");
   const autoEnemiesStorageKey = `dnd-dm-auto-enemies:${campaignId}:${combat.id}`;
   const [autoEnemies, setAutoEnemies] = useState(
-    () => localStorage.getItem(autoEnemiesStorageKey) === "true",
+    () => localStorage.getItem(autoEnemiesStorageKey) !== "false",
   );
   const [xpOverride, setXpOverride] = useState("");
   const [goldPerCharacter, setGoldPerCharacter] = useState("0");
@@ -749,6 +815,7 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
   const [targetingRange, setTargetingRange] = useState<CombatTargeting | null>(null);
   const [selectedMapTargetId, setSelectedMapTargetId] = useState("");
   const [targetableFighterIds, setTargetableFighterIds] = useState<ReadonlySet<string>>(new Set());
+  const [automaticMovementPending, setAutomaticMovementPending] = useState(false);
   const updateTargetableFighterIds = useCallback((next: ReadonlySet<string>) => {
     setTargetableFighterIds((current) => {
       const currentKey = [...current].sort().join("|");
@@ -1025,26 +1092,8 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
           </form>
         </>
       ) : null}
-      {activeFighter ? (
-        <TurnCommandConsole
-          active={activeFighter}
-          activeCharacter={activeCharacter}
-          autoEnemies={autoEnemies}
-          automationReady={!nextTurn.isPending}
-          campaignId={campaignId}
-          combatId={combat.id}
-          fighters={ordered}
-          onEnemyTurnComplete={() => {
-            if (!nextTurn.isPending) nextTurn.mutate();
-          }}
-          onRangeChange={setTargetingRange}
-          onTargetChange={setSelectedMapTargetId}
-          selectedTargetId={selectedMapTargetId}
-          turnKey={`${combat.round_number}:${combat.current_turn_index}:${activeFighter.id}`}
-          validTargetIds={targetableFighterIds}
-        />
-      ) : null}
-      <div className="mt-3 grid items-start gap-3 xl:grid-cols-[minmax(0,1fr)_24rem]">
+      <CombatLogPanel actions={combatActions.data ?? []} />
+      <div className="mt-3 grid items-start gap-3 xl:grid-cols-[minmax(0,1fr)_30rem]">
         <div className="min-w-0">
           <div>
             {fighters.isLoading ? <LoadingBlock label="正在读取先攻列表…" /> : null}
@@ -1055,6 +1104,7 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
           {ordered.length > 0 ? (
             <BattleGrid
               activeFighterId={activeFighter?.id ?? null}
+              automateEnemies={autoEnemies}
               campaignId={campaignId}
               candidates={candidates}
               combatId={combat.id}
@@ -1062,6 +1112,7 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
               fighters={ordered}
               grid={grid}
               onEndTurn={() => nextTurn.mutate()}
+              onAutomationMovementChange={setAutomaticMovementPending}
               onTargetSelect={setSelectedMapTargetId}
               onTargetValidityChange={updateTargetableFighterIds}
               targeting={targetingRange}
@@ -1069,15 +1120,37 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
             />
           ) : null}
         </div>
-        <aside className="rounded-lg border border-ink-700 bg-ink-950/55 p-3 xl:sticky xl:top-4">
+        <aside className="rounded-lg border-2 border-ember-700/60 bg-ink-950/70 p-3 xl:sticky xl:top-4">
           <div className="mb-3">
-            <p className="m-0 text-2xs uppercase tracking-[0.16em] text-ember-400">Combat Feed</p>
-            <h3 className="mb-0 mt-1 text-sm text-parchment-100">战斗面板</h3>
-            <p className="mb-0 mt-1 text-2xs text-stone-500">明确记录攻击者 → 目标 → 技能/法术 → 骰值 → 结果。</p>
+            <p className="m-0 text-2xs uppercase tracking-[0.16em] text-ember-400">Current Turn</p>
+            <h3 className="mb-0 mt-1 text-sm text-parchment-100">当前回合操作台</h3>
+            <p className="mb-0 mt-1 text-2xs text-stone-500">随当前角色自动切换；玩家在这里选择行动，怪物在这里自动执行。</p>
           </div>
+          {activeFighter ? (
+            <TurnCommandConsole
+              active={activeFighter}
+              activeCharacter={activeCharacter}
+              autoEnemies={autoEnemies}
+              automationReady={!nextTurn.isPending && !automaticMovementPending}
+              campaignId={campaignId}
+              combatId={combat.id}
+              fighters={ordered}
+              onEnemyTurnComplete={() => {
+                if (!nextTurn.isPending) nextTurn.mutate();
+              }}
+              onRangeChange={setTargetingRange}
+              onTargetChange={setSelectedMapTargetId}
+              selectedTargetId={selectedMapTargetId}
+              turnKey={`${combat.round_number}:${combat.current_turn_index}:${activeFighter.id}`}
+              validTargetIds={targetableFighterIds}
+            />
+          ) : (
+            <p className="text-xs text-stone-500">当前没有可行动单位。</p>
+          )}
           <PlayerRollPanel
             actions={combatActions.data ?? []}
             activeEnemy={activeFighter && activeFighter.entity_type !== "character" ? activeFighter : undefined}
+            automationEnabled={autoEnemies}
             campaignId={campaignId}
             combatId={combat.id}
             fighters={ordered}
@@ -1087,20 +1160,6 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
               }
             }}
           />
-          <div className="mt-3 border-t border-ink-700 pt-3">
-            <strong className="text-xs text-parchment-100">战斗日志</strong>
-            {(combatActions.data?.length ?? 0) > 0 ? (
-              <ol className="mb-0 mt-2 max-h-[34rem] space-y-2 overflow-y-auto pl-4 text-2xs text-stone-400">
-                {[...(combatActions.data ?? [])].reverse().map((action) => (
-                  <li className="rounded border border-ink-800 bg-ink-950/70 p-2" key={action.id}>
-                    <span className="text-stone-600">R{action.round_number} · T{action.turn_index + 1}</span>
-                    <strong className="mt-0.5 block text-stone-200">{action.summary}</strong>
-                    {action.explanation ? <span className="mt-1 block leading-5 text-stone-500">{action.explanation}</span> : null}
-                  </li>
-                ))}
-              </ol>
-            ) : <p className="mb-0 mt-2 text-2xs text-stone-600">行动确认后会按时间倒序显示在这里。</p>}
-          </div>
         </aside>
       </div>
       {combat.status === "ended" ? (
