@@ -757,6 +757,66 @@ export type CombatActionConfirmation = {
   target: Combatant;
 };
 
+export type PlayerRollResolutionType =
+  | "armor_class"
+  | "saving_throw"
+  | "ability_check"
+  | "skill_check";
+
+export type PlayerRollPromptCommand = {
+  actor_combatant_id: string;
+  actor_version: number;
+  target_combatant_id: string;
+  target_version: number;
+  action_name: string;
+  resolution_type: PlayerRollResolutionType;
+  dc: number;
+  ability?: string | null;
+  skill?: string | null;
+  roll_formula?: string;
+  damage_on_success?: number;
+  damage_on_failure?: number;
+  damage_type?: string | null;
+  description?: string | null;
+};
+
+export type PlayerRollResolutionCommand = {
+  action_version: number;
+  roll_total: number;
+  dm_note?: string | null;
+};
+
+export type PlayerRollResolution = {
+  phase: "awaiting_player_roll" | "resolved";
+  roll_owner: "player";
+  roll_total?: number;
+  dc?: number;
+  success?: boolean;
+  outcome?: "success" | "failure";
+  damage?: number;
+  damage_type?: string | null;
+  dm_note?: string | null;
+  follow_up_damage?: {
+    action_type: "damage";
+    actor_combatant_id: string;
+    target_combatant_id: string;
+    target_version: number;
+    amount: number;
+    damage_type: string;
+  } | null;
+};
+
+export type PlayerRollPromptResult = {
+  action: CombatAction;
+};
+
+export type PlayerRollResolutionResult = {
+  action: CombatAction;
+  actor: Combatant;
+  target: Combatant;
+  resolution: PlayerRollResolution;
+};
+
 export type DeathSave = Versioned & {
   combatant_id: string;
   successes: number;

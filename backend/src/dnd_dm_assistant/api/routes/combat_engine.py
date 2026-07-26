@@ -13,6 +13,8 @@ from dnd_dm_assistant.api.schemas import (
     ConcentrationCheckCommand,
     DeathConfirmationCommand,
     DeathSaveCommand,
+    PlayerRollPromptCommand,
+    PlayerRollResolutionCommand,
     TurnAdvanceCommand,
 )
 from dnd_dm_assistant.domain.campaign_state import StateNotFoundError, VersionConflict
@@ -68,6 +70,64 @@ def list_combat_actions(
     service: Annotated[CombatEngineService, Depends(get_combat_engine_service)],
 ) -> dict[str, Any]:
     return {"items": _safe_call(lambda: service.list_actions(campaign_id, combat_id))}
+
+
+@router.post("/actions/player-rolls/pending")
+def create_pending_player_roll(
+    campaign_id: str,
+    combat_id: str,
+    body: PlayerRollPromptCommand,
+    request: Request,
+    service: Annotated[CombatEngineService, Depends(get_combat_engine_service)],
+) -> dict[str, Any]:
+    request_id = str(getattr(request.state, "request_id", "unknown"))
+    return _safe_call(
+        lambda: service.create_player_roll_prompt(
+            campaign_id,
+            combat_id,
+            body,
+            idempotency_key=request_id,
+        )
+    )
+
+
+@router.post("/actions/player-rolls/{action_id}/preview")
+def preview_player_roll(
+    campaign_id: str,
+    combat_id: str,
+    action_id: str,
+    body: PlayerRollResolutionCommand,
+    service: Annotated[CombatEngineService, Depends(get_combat_engine_service)],
+) -> dict[str, Any]:
+    return _safe_call(
+        lambda: service.preview_player_roll(
+            campaign_id,
+            combat_id,
+            action_id,
+            body,
+        )
+    )
+
+
+@router.post("/actions/player-rolls/{action_id}/confirm")
+def confirm_player_roll(
+    campaign_id: str,
+    combat_id: str,
+    action_id: str,
+    body: PlayerRollResolutionCommand,
+    request: Request,
+    service: Annotated[CombatEngineService, Depends(get_combat_engine_service)],
+) -> dict[str, Any]:
+    request_id = str(getattr(request.state, "request_id", "unknown"))
+    return _safe_call(
+        lambda: service.confirm_player_roll(
+            campaign_id,
+            combat_id,
+            action_id,
+            body,
+            idempotency_key=request_id,
+        )
+    )
 
 
 @router.get("/end-condition")

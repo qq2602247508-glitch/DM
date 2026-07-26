@@ -16,6 +16,8 @@ from dnd_dm_assistant.api.schemas import (
     ConcentrationCheckCommand,
     DeathConfirmationCommand,
     DeathSaveCommand,
+    PlayerRollPromptCommand,
+    PlayerRollResolutionCommand,
     TurnAdvanceCommand,
 )
 from dnd_dm_assistant.domain.campaign_state import StateNotFoundError, VersionConflict
@@ -186,6 +188,242 @@ class CombatEngineService:
             if combat is None or combat.campaign_id != campaign_id:
                 raise StateNotFoundError("combat not found in campaign")
             return self._end_condition(session, combat)
+
+    @staticmethod
+    def _player_roll_scope(
+        session: Session,
+        campaign_id: str,
+        combat_id: str,
+        action_id: str,
+    ) -> tuple[Combat, CombatAction, Combatant, Combatant]:
+        combat = session.get(Combat, combat_id)
+        if combat is None or combat.campaign_id != campaign_id:
+            raise StateNotFoundError("combat not found in campaign")
+        action = session.get(CombatAction, action_id)
+        if (
+            action is None
+            or action.combat_id != combat_id
+            or action.campaign_id != campaign_id
+            or action.action_type != "player_roll_prompt"
+        ):
+            raise StateNotFoundError("player roll prompt not found in combat")
+        actor = (
+            session.get(Combatant, action.actor_combatant_id)
+            if action.actor_combatant_id is not None
+            else None
+        )
+        target_id = (
+            action.target_combatant_ids[0]
+            if action.target_combatant_ids
+            else None
+        )
+        target = (
+            session.get(Combatant, target_id)
+            if isinstance(target_id, str)
+            else None
+        )
+        if (
+            actor is None
+            or actor.combat_id != combat_id
+            or target is None
+            or target.combat_id != combat_id
+        ):
+            raise StateNotFoundError("prompt actor or target is no longer in combat")
+        return combat, action, actor, target
+
+    def create_player_roll_prompt(
+        self,
+        campaign_id: str,
+        combat_id: str,
+        command: PlayerRollPromptCommand,
+        *,
+        idempotency_key: str,
+    ) -> dict[str, Any]:
+        if not idempotency_key.strip():
+            raise ValueError("idempotency key is required")
+        with Session(self.engine) as session, session.begin():
+            campaign = session.get(Campaign, campaign_id)
+            if campaign is None:
+                raise StateNotFoundError("campaign not found")
+            combat = session.get(Combat, combat_id)
+            if combat is None or combat.campaign_id != campaign_id:
+                raise StateNotFoundError("combat not found in campaign")
+            existing = session.scalar(
+                select(CombatAction).where(
+                    CombatAction.combat_id == combat_id,
+                    CombatAction.idempotency_key == idempotency_key,
+                )
+            )
+            if existing is not None:
+                return {"action": serialize(existing)}
+            actor = session.get(Combatant, command.actor_combatant_id)
+            target = session.get(Combatant, command.target_combatant_id)
+            if actor is None or actor.combat_id != combat_id:
+                raise StateNotFoundError("actor combatant not found in combat")
+            if target is None or target.combat_id != combat_id:
+                raise StateNotFoundError("target combatant not found in combat")
+            if actor.version != command.actor_version:
+                raise VersionConflict(
+                    "combatant",
+                    actor.id,
+                    command.actor_version,
+                    actor.version,
+                )
+            if target.version != command.target_version:
+                raise VersionConflict(
+                    "combatant",
+                    target.id,
+                    command.target_version,
+                    target.version,
+                )
+            request_json = command.model_dump(mode="json")
+            request_json["actor_name"] = actor.display_name
+            request_json["target_name"] = target.display_name
+            label = {
+                "armor_class": "AC 防御",
+                "saving_throw": f"{command.ability or ''}豁免",
+                "ability_check": f"{command.ability or ''}属性检定",
+                "skill_check": f"{command.skill or ''}技能检定",
+            }[command.resolution_type]
+            action = CombatAction(
+                campaign_id=campaign_id,
+                combat_id=combat_id,
+                actor_combatant_id=actor.id,
+                action_type="player_roll_prompt",
+                target_combatant_ids=[target.id],
+                request_json=request_json,
+                result_json={
+                    "phase": "awaiting_player_roll",
+                    "roll_owner": "player",
+                },
+                explanation=command.description,
+                round_number=combat.round_number,
+                turn_index=combat.current_turn_index,
+                summary=(
+                    f"{actor.display_name} 对 {target.display_name} 使用"
+                    f"「{command.action_name}」；等待玩家进行 {label}"
+                    f"（{command.roll_formula}，DC {command.dc}）"
+                ),
+                idempotency_key=idempotency_key,
+                status="previewed",
+            )
+            session.add(action)
+            session.flush()
+            return {"action": serialize(action)}
+
+    @staticmethod
+    def _resolve_player_roll(
+        action: CombatAction,
+        target: Combatant,
+        command: PlayerRollResolutionCommand,
+    ) -> dict[str, Any]:
+        request = action.request_json
+        dc = int(str(request["dc"]))
+        success = command.roll_total >= dc
+        damage_key = "damage_on_success" if success else "damage_on_failure"
+        damage = int(str(request.get(damage_key, 0)))
+        result: dict[str, Any] = {
+            "phase": "resolved",
+            "roll_owner": "player",
+            "roll_total": command.roll_total,
+            "dc": dc,
+            "success": success,
+            "outcome": "success" if success else "failure",
+            "damage": damage,
+            "damage_type": request.get("damage_type"),
+            "dm_note": command.dm_note,
+        }
+        result["follow_up_damage"] = (
+            {
+                "action_type": "damage",
+                "actor_combatant_id": action.actor_combatant_id,
+                "target_combatant_id": target.id,
+                "target_version": target.version,
+                "amount": damage,
+                "damage_type": request.get("damage_type"),
+            }
+            if damage > 0
+            else None
+        )
+        return result
+
+    def preview_player_roll(
+        self,
+        campaign_id: str,
+        combat_id: str,
+        action_id: str,
+        command: PlayerRollResolutionCommand,
+    ) -> dict[str, Any]:
+        with Session(self.engine) as session:
+            _, action, actor, target = self._player_roll_scope(
+                session, campaign_id, combat_id, action_id
+            )
+            if action.version != command.action_version:
+                raise VersionConflict(
+                    "combat_action",
+                    action.id,
+                    command.action_version,
+                    action.version,
+                )
+            if action.status != "previewed":
+                raise ValueError("player roll prompt has already been resolved")
+            return {
+                "action": serialize(action),
+                "actor": serialize(actor),
+                "target": serialize(target),
+                "resolution": self._resolve_player_roll(action, target, command),
+            }
+
+    def confirm_player_roll(
+        self,
+        campaign_id: str,
+        combat_id: str,
+        action_id: str,
+        command: PlayerRollResolutionCommand,
+        *,
+        idempotency_key: str,
+    ) -> dict[str, Any]:
+        if not idempotency_key.strip():
+            raise ValueError("idempotency key is required")
+        with Session(self.engine) as session, session.begin():
+            _, action, actor, target = self._player_roll_scope(
+                session, campaign_id, combat_id, action_id
+            )
+            if action.status == "confirmed":
+                return {
+                    "action": serialize(action),
+                    "actor": serialize(actor),
+                    "target": serialize(target),
+                    "resolution": action.result_json,
+                }
+            if action.version != command.action_version:
+                raise VersionConflict(
+                    "combat_action",
+                    action.id,
+                    command.action_version,
+                    action.version,
+                )
+            resolution = self._resolve_player_roll(action, target, command)
+            action.result_json = {
+                **resolution,
+                "confirmation_idempotency_key": idempotency_key,
+            }
+            action.status = "confirmed"
+            action.version += 1
+            action.updated_at = datetime.now(UTC)
+            action.summary = (
+                f"{actor.display_name} 对 {target.display_name} 使用"
+                f"「{action.request_json['action_name']}」；"
+                f"{target.display_name} 掷骰 {command.roll_total} 对抗"
+                f" DC {action.request_json['dc']}，"
+                f"{'成功' if resolution['success'] else '失败'}"
+            )
+            return {
+                "action": serialize(action),
+                "actor": serialize(actor),
+                "target": serialize(target),
+                "resolution": action.result_json,
+            }
 
     def preview(
         self,

@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState, type ReactElement } from "react";
+import { useEffect, useMemo, useState, type ReactElement } from "react";
 
 import {
   confirmCombatAction,
@@ -24,6 +24,9 @@ import {
 } from "../../ui/combatAutomation";
 import { Badge, Button } from "../../ui/primitives";
 import { inputCls, selectCls, textareaCls } from "../../ui/styles";
+import type { TargetingTemplate } from "../../ui/gridTargeting";
+
+export type CombatTargeting = TargetingTemplate & { label: string };
 
 type PendingResolution = {
   command: CombatActionCommand;
@@ -59,13 +62,19 @@ export function TurnCommandConsole({
   combatId,
   fighters,
   onRangeChange,
+  onTargetChange,
+  selectedTargetId,
+  validTargetIds,
 }: {
   active: Combatant;
   activeCharacter?: Character;
   campaignId: string;
   combatId: string;
   fighters: Combatant[];
-  onRangeChange: (range: { feet: number; shape: string; label: string } | null) => void;
+  onRangeChange: (range: CombatTargeting | null) => void;
+  onTargetChange?: (targetId: string) => void;
+  selectedTargetId?: string;
+  validTargetIds?: ReadonlySet<string>;
 }): ReactElement {
   const client = useQueryClient();
   const { showToast } = useToast();
@@ -157,16 +166,33 @@ export function TurnCommandConsole({
     setActionIndex(value);
     const action = actions[Number(value)] ?? selectedAction;
     const summary = actionRangeSummary(action);
+    const targetingText = `${action.range ?? ""} ${action.description ?? ""}`;
+    const sizeMatch = targetingText.match(/(\d+)\s*尺(?:半径|范围|球形|锥形|直线)/);
     onRangeChange({
-      feet: parseRangeFeet(action.range),
-      shape: /锥形/.test(summary) ? "cone" : /直线/.test(summary) ? "line" : /圆形/.test(summary) ? "sphere" : "single",
+      rangeFt: parseRangeFeet(action.range),
+      sizeFt: sizeMatch ? Number(sizeMatch[1]) : undefined,
+      shape: /锥形/.test(summary) ? "cone" : /直线/.test(summary) ? "line" : /圆形|球形|半径|爆炸/.test(targetingText) ? "circle" : "single",
       label: `${action.name ?? "动作"} · ${summary}`,
     });
   };
+  useEffect(() => {
+    if (selectedTargetId !== undefined && selectedTargetId !== targetId) {
+      setTargetId(selectedTargetId);
+    }
+  }, [selectedTargetId, targetId]);
+  useEffect(() => {
+    selectAction("0");
+    // The active fighter/action list changed; initialize the map indicator.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [active.id]);
   const prepareAttack = (automatic: boolean, forcedTarget?: Combatant) => {
     const chosenTarget = forcedTarget ?? target;
     if (!chosenTarget) {
       showToast("请先选择目标", "error");
+      return;
+    }
+    if (validTargetIds && !validTargetIds.has(chosenTarget.id)) {
+      showToast("目标不在当前技能的合法距离或范围内，请先在战斗地图上选择有效目标", "error");
       return;
     }
     const expression = parseDiceExpression(selectedAction.damage) ?? {
@@ -198,8 +224,8 @@ export function TurnCommandConsole({
         damage_type: "untyped",
       },
       explanation: automatic
-        ? `自动：d20(${d20}) + ${modifier} = ${finalAttack}，命中 AC ${chosenTarget.armor_class}；伤害 ${expression.count}d${expression.sides}${expression.modifier ? `+${expression.modifier}` : ""} = ${finalDamage}`
-        : `玩家报告命中总值 ${finalAttack}，达到 AC ${chosenTarget.armor_class}；玩家报告伤害 ${finalDamage}`,
+        ? `${active.display_name} → ${chosenTarget.display_name}，使用「${selectedAction.name ?? "攻击"}」：d20(${d20}) + ${modifier} = ${finalAttack}，命中 AC ${chosenTarget.armor_class}；伤害 ${expression.count}d${expression.sides}${expression.modifier ? `+${expression.modifier}` : ""} = ${finalDamage}`
+        : `${active.display_name} → ${chosenTarget.display_name}，使用「${selectedAction.name ?? "攻击"}」：玩家报告命中总值 ${finalAttack}，达到 AC ${chosenTarget.armor_class}；玩家报告伤害 ${finalDamage}`,
     });
   };
   const enemyTarget = chooseEnemyTarget(possibleTargets, tactics);
@@ -241,9 +267,9 @@ export function TurnCommandConsole({
                 {actions.length === 0 ? <option value="0">临时攻击 · 1d6 · 5尺</option> : null}
                 {actions.map((action, index) => <option key={`${action.name}-${index}`} value={index}>{action.name ?? `动作${index + 1}`} · {action.damage ?? "按描述"} · {action.range ?? "5尺"}</option>)}
               </select>
-              <select className={selectCls} onChange={(event) => setTargetId(event.target.value)} value={targetId}>
+              <select className={selectCls} onChange={(event) => { setTargetId(event.target.value); onTargetChange?.(event.target.value); }} value={targetId}>
                 <option value="">选择目标</option>
-                {possibleTargets.map((fighter) => <option key={fighter.id} value={fighter.id}>{fighter.display_name} · AC {fighter.armor_class} · HP {fighter.hp}/{fighter.max_hp}</option>)}
+                {possibleTargets.map((fighter) => <option disabled={Boolean(validTargetIds && !validTargetIds.has(fighter.id))} key={fighter.id} value={fighter.id}>{fighter.display_name} · AC {fighter.armor_class} · HP {fighter.hp}/{fighter.max_hp}{validTargetIds && !validTargetIds.has(fighter.id) ? " · 超出范围" : ""}</option>)}
               </select>
             </div>
             <p className="mb-2 mt-2 text-2xs text-stone-400">{selectedAction.cost ?? "动作"} · {actionRangeSummary(selectedAction)} · {selectedAction.description ?? "以角色卡和规则条目为准"}</p>

@@ -657,6 +657,49 @@ class CombatActionCommand(BaseModel):
         return self
 
 
+class PlayerRollPromptCommand(BaseModel):
+    actor_combatant_id: str = Field(min_length=1, max_length=36)
+    actor_version: int = Field(ge=1)
+    target_combatant_id: str = Field(min_length=1, max_length=36)
+    target_version: int = Field(ge=1)
+    action_name: Annotated[
+        str,
+        StringConstraints(strip_whitespace=True, min_length=1, max_length=200),
+    ]
+    resolution_type: Literal[
+        "armor_class",
+        "saving_throw",
+        "ability_check",
+        "skill_check",
+    ]
+    dc: int = Field(ge=0, le=99)
+    ability: str | None = Field(default=None, max_length=30)
+    skill: str | None = Field(default=None, max_length=80)
+    roll_formula: str = Field(default="1d20", min_length=1, max_length=50)
+    damage_on_success: int = Field(default=0, ge=0, le=100_000)
+    damage_on_failure: int = Field(default=0, ge=0, le=100_000)
+    damage_type: str | None = Field(default=None, max_length=50)
+    description: str | None = Field(default=None, max_length=2_000)
+
+    @model_validator(mode="after")
+    def validate_roll_prompt(self) -> PlayerRollPromptCommand:
+        if self.resolution_type == "saving_throw" and not (self.ability or "").strip():
+            raise ValueError("ability is required for a saving throw")
+        if self.resolution_type == "skill_check" and not (self.skill or "").strip():
+            raise ValueError("skill is required for a skill check")
+        if (
+            self.damage_on_success > 0 or self.damage_on_failure > 0
+        ) and not (self.damage_type or "").strip():
+            raise ValueError("damage_type is required when the roll can deal damage")
+        return self
+
+
+class PlayerRollResolutionCommand(BaseModel):
+    action_version: int = Field(ge=1)
+    roll_total: int = Field(ge=-100, le=1_000)
+    dm_note: str | None = Field(default=None, max_length=1_000)
+
+
 class DeathSaveCommand(BaseModel):
     target_version: int = Field(ge=1)
     roll: int = Field(ge=1, le=20)

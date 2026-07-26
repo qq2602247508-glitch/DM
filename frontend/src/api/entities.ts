@@ -29,6 +29,10 @@ import type {
   ProposalEntityType,
   Quest,
   NarrativeRecord,
+  PlayerRollPromptCommand,
+  PlayerRollPromptResult,
+  PlayerRollResolutionCommand,
+  PlayerRollResolutionResult,
   ResourcePool,
   RestConfirmRequest,
   RestPreview,
@@ -573,13 +577,14 @@ export const confirmCombatAction = (
   cid: string,
   combatId: string,
   input: CombatActionCommand,
+  requestId: string = crypto.randomUUID(),
 ) =>
   apiFetch<CombatActionConfirmation>(
     `/campaigns/${cid}/combats/${combatId}/actions/confirm`,
     {
       method: "POST",
       body: input,
-      headers: { "X-Request-ID": crypto.randomUUID() },
+      headers: { "X-Request-ID": requestId },
     },
   );
 
@@ -592,6 +597,46 @@ export const listCombatActions = (
     `/campaigns/${cid}/combats/${combatId}/actions`,
     { signal },
   ).then((envelope) => envelope.items);
+
+export const createPlayerRollPrompt = (
+  cid: string,
+  combatId: string,
+  input: PlayerRollPromptCommand,
+) =>
+  apiFetch<PlayerRollPromptResult>(
+    `/campaigns/${cid}/combats/${combatId}/actions/player-rolls/pending`,
+    {
+      method: "POST",
+      body: input,
+      headers: { "X-Request-ID": crypto.randomUUID() },
+    },
+  );
+
+export const previewPlayerRoll = (
+  cid: string,
+  combatId: string,
+  actionId: string,
+  input: PlayerRollResolutionCommand,
+) =>
+  apiFetch<PlayerRollResolutionResult>(
+    `/campaigns/${cid}/combats/${combatId}/actions/player-rolls/${actionId}/preview`,
+    { method: "POST", body: input },
+  );
+
+export const confirmPlayerRoll = (
+  cid: string,
+  combatId: string,
+  actionId: string,
+  input: PlayerRollResolutionCommand,
+) =>
+  apiFetch<PlayerRollResolutionResult>(
+    `/campaigns/${cid}/combats/${combatId}/actions/player-rolls/${actionId}/confirm`,
+    {
+      method: "POST",
+      body: input,
+      headers: { "X-Request-ID": crypto.randomUUID() },
+    },
+  );
 
 export const getCombatEndCondition = (
   cid: string,

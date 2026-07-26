@@ -133,6 +133,118 @@ def test_confirm_damage_is_atomic_logged_and_idempotent(
     assert len(actions.json()["items"]) == 1
 
 
+def test_player_roll_prompt_records_actor_target_action_and_dm_confirmation(
+    combat_client: TestClient,
+) -> None:
+    campaign = _campaign(combat_client)
+    combat, player = _combatant(combat_client, campaign["id"])
+    monster_response = combat_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "相位蜘蛛",
+            "entity_type": "monster",
+            "hp": 32,
+            "max_hp": 32,
+            "armor_class": 13,
+        },
+    )
+    assert monster_response.status_code == 201
+    monster = monster_response.json()
+
+    pending = combat_client.post(
+        (
+            f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}"
+            "/actions/player-rolls/pending"
+        ),
+        headers={"X-Request-ID": "phase-spider-bite"},
+        json={
+            "actor_combatant_id": monster["id"],
+            "actor_version": monster["version"],
+            "target_combatant_id": player["id"],
+            "target_version": player["version"],
+            "action_name": "毒牙",
+            "resolution_type": "saving_throw",
+            "dc": 11,
+            "ability": "constitution",
+            "damage_on_failure": 7,
+            "damage_on_success": 3,
+            "damage_type": "poison",
+            "description": "玩家亲自掷体质豁免。",
+        },
+    )
+    assert pending.status_code == 200, pending.json()
+    action = pending.json()["action"]
+    assert action["status"] == "previewed"
+    assert action["request_json"]["actor_name"] == "相位蜘蛛"
+    assert action["request_json"]["target_name"] == "Fire Guard"
+    assert "相位蜘蛛 对 Fire Guard 使用「毒牙」" in action["summary"]
+    assert "等待玩家进行 constitution豁免" in action["summary"]
+
+    preview = combat_client.post(
+        (
+            f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}"
+            f"/actions/player-rolls/{action['id']}/preview"
+        ),
+        json={"action_version": action["version"], "roll_total": 9},
+    )
+    assert preview.status_code == 200
+    assert preview.json()["resolution"]["success"] is False
+    follow_up = preview.json()["resolution"]["follow_up_damage"]
+    assert follow_up["actor_combatant_id"] == monster["id"]
+    assert follow_up["target_combatant_id"] == player["id"]
+    assert follow_up["amount"] == 7
+
+    confirmed = combat_client.post(
+        (
+            f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}"
+            f"/actions/player-rolls/{action['id']}/confirm"
+        ),
+        headers={"X-Request-ID": "phase-spider-bite-roll"},
+        json={
+            "action_version": action["version"],
+            "roll_total": 9,
+            "dm_note": "玩家报告骰面为 9。",
+        },
+    )
+    assert confirmed.status_code == 200
+    resolved = confirmed.json()
+    assert resolved["action"]["status"] == "confirmed"
+    assert resolved["resolution"]["roll_total"] == 9
+    assert resolved["resolution"]["success"] is False
+    assert "Fire Guard 掷骰 9 对抗 DC 11，失败" in resolved["action"]["summary"]
+
+    unchanged = combat_client.get(
+        _fighter_path(campaign["id"], combat["id"], player["id"])
+    ).json()
+    assert unchanged["hp"] == 20
+    assert resolved["resolution"]["follow_up_damage"]["target_version"] == unchanged["version"]
+
+
+def test_player_roll_prompt_requires_save_ability_and_damage_type(
+    combat_client: TestClient,
+) -> None:
+    campaign = _campaign(combat_client)
+    combat, player = _combatant(combat_client, campaign["id"])
+    path = (
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}"
+        "/actions/player-rolls/pending"
+    )
+    invalid = combat_client.post(
+        path,
+        json={
+            "actor_combatant_id": player["id"],
+            "actor_version": player["version"],
+            "target_combatant_id": player["id"],
+            "target_version": player["version"],
+            "action_name": "测试",
+            "resolution_type": "saving_throw",
+            "dc": 10,
+            "damage_on_failure": 1,
+        },
+    )
+    assert invalid.status_code == 422
+
+
 def test_healing_respects_max_hp_reduction(combat_client: TestClient) -> None:
     campaign = _campaign(combat_client)
     combat, fighter = _combatant(combat_client, campaign["id"])

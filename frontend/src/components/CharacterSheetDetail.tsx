@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
-import { useState, type ReactElement } from "react";
+import { useId, useState, type ReactElement } from "react";
 
+import { getCharacterAssets } from "../api/entities";
 import { getInventory } from "../api/world";
 import type { Character } from "../api/types";
 import { Button, EmptyState, LoadingBlock } from "../ui/primitives";
@@ -106,6 +107,101 @@ function featureDescription(feature: unknown): string {
   return `${name}：该角色拥有此特性。具体触发条件、效果、使用次数与恢复方式以角色所选种族、背景或职业的 D&D 5e 2024 规则为准。`;
 }
 
+function FeatureHelp({ feature }: { feature: unknown }): ReactElement {
+  const [open, setOpen] = useState(false);
+  const tooltipId = useId();
+  const name = text(objectValue(feature).name ?? feature);
+  const description = featureDescription(feature);
+
+  return (
+    <span className="relative inline-flex">
+      <button
+        aria-describedby={open ? tooltipId : undefined}
+        aria-expanded={open}
+        className="cursor-help rounded border border-violet-700/70 bg-violet-950/30 px-2.5 py-1.5 text-left text-xs text-violet-100 outline-none transition hover:border-violet-400 hover:bg-violet-900/40 focus-visible:ring-2 focus-visible:ring-violet-300"
+        onBlur={() => setOpen(false)}
+        onClick={() => setOpen(true)}
+        onFocus={() => setOpen(true)}
+        onMouseEnter={() => setOpen(true)}
+        onMouseLeave={() => setOpen(false)}
+        type="button"
+      >
+        {name}
+        <span aria-hidden="true" className="ml-1 text-violet-400">ⓘ</span>
+      </button>
+      {open ? (
+        <span
+          className="absolute left-0 top-full z-30 mt-2 w-72 max-w-[calc(100vw-3rem)] rounded-lg border border-violet-600/70 bg-ink-950 p-3 text-xs leading-5 text-parchment-100 shadow-2xl"
+          id={tooltipId}
+          role="tooltip"
+        >
+          <strong className="mb-1 block text-violet-200">{name}</strong>
+          {description.replace(`${name}：`, "")}
+          <span aria-hidden="true" className="absolute -top-1 left-4 h-2 w-2 rotate-45 border-l border-t border-violet-600/70 bg-ink-950" />
+        </span>
+      ) : null}
+    </span>
+  );
+}
+
+type SpellView = {
+  name: string;
+  level: string;
+  prepared: boolean | null;
+  description: string;
+  damage: string;
+  range: string;
+  castingTime: string;
+  duration: string;
+  components: string;
+  limitation: string;
+  source: string;
+};
+
+function spellView(spell: unknown): SpellView {
+  const raw = objectValue(spell);
+  const metadata = objectValue(raw.metadata_json ?? raw.metadata);
+  const data = { ...metadata, ...raw };
+  const numericLevel = typeof data.spell_level === "number"
+    ? data.spell_level
+    : typeof data.level === "number"
+      ? data.level
+      : null;
+  const levelText = numericLevel === 0
+    ? "戏法"
+    : numericLevel !== null
+      ? `${numericLevel}环`
+      : text(data.level, "环级未记录");
+  const concentration = data.concentration === true ? "专注" : "";
+  const ritual = data.ritual === true ? "仪式" : "";
+  const limitations = [
+    text(data.cost ?? data.resource_cost ?? data.slot_cost, ""),
+    concentration,
+    ritual,
+    text(data.uses ?? data.limit ?? data.restriction, ""),
+  ].filter(Boolean);
+
+  return {
+    name: text(data.name ?? spell, "未命名法术"),
+    level: levelText,
+    prepared: typeof data.prepared === "boolean" ? data.prepared : null,
+    description: text(
+      data.description ?? data.effect ?? data.rules_text ?? data.summary,
+      "尚未录入法术效果说明；可在原子化法术资料中补充。",
+    ),
+    damage: text(
+      data.damage_expression ?? data.damage ?? data.healing,
+      "无直接伤害或尚未记录",
+    ),
+    range: text(data.range, "距离未记录"),
+    castingTime: text(data.casting_time ?? data.castingTime ?? data.action, "施法时间未记录"),
+    duration: text(data.duration, "持续时间未记录"),
+    components: text(data.components, "成分未记录"),
+    limitation: limitations.join(" · ") || "通常消耗对应环级法术位；具体限制尚未记录",
+    source: text(data.source_reference ?? data.source, ""),
+  };
+}
+
 export function CharacterSheetDetail({
   campaignId,
   character,
@@ -121,10 +217,52 @@ export function CharacterSheetDetail({
     queryFn: ({ signal }) => getInventory(campaignId, character.id, signal),
     enabled: tab === "inventory",
   });
+  const characterAssets = useQuery({
+    queryKey: ["character-assets", campaignId, character.id],
+    queryFn: ({ signal }) => getCharacterAssets(campaignId, character.id, signal),
+    enabled: tab === "magic",
+  });
   const prof = proficiencyBonus(character.level);
   const skills = Object.entries(SKILL_ABILITY);
   const actions = character.actions.map(objectValue);
   const resources = Object.values(character.resources).map(objectValue);
+  const spells = [
+    ...(characterAssets.data?.spells ?? []),
+    ...character.spells,
+  ].map(spellView).filter((spell, index, all) => (
+    all.findIndex((candidate) => candidate.name === spell.name) === index
+  ));
+  const spellcasting = objectValue(character.spellcasting);
+  const spellAbilityRaw = text(spellcasting.ability, "");
+  const abilityKey = spellAbilityRaw in ABILITIES
+    ? spellAbilityRaw
+    : Object.entries(ABILITIES).find(([, label]) => label === spellAbilityRaw)?.[0];
+  const spellAbility = abilityKey ? ABILITIES[abilityKey] : spellAbilityRaw;
+  const spellAbilityModifier = abilityKey
+    ? numberModifier(character.ability_scores[abilityKey] ?? 10)
+    : null;
+  const spellAttack = spellAbilityModifier === null ? null : prof + spellAbilityModifier;
+  const spellSaveDc = spellAbilityModifier === null ? null : 8 + prof + spellAbilityModifier;
+  const resourceSlots = Object.entries(character.resources)
+    .filter(([key, value]) => key.startsWith("spell_slots_") || /法术位|魔法位/.test(text(objectValue(value).label, "")))
+    .map(([, value]) => objectValue(value));
+  const nestedSlots = Object.entries(objectValue(spellcasting.slots)).map(([level, value]) => ({
+    label: `${level}环法术位`,
+    ...objectValue(value),
+  }));
+  const legacyLevelOneSlots = resourceSlots.length === 0
+    && nestedSlots.length === 0
+    && typeof spellcasting.level1Slots === "number"
+    ? [{
+      label: "1环法术位",
+      current: spellcasting.level1Slots,
+      max: spellcasting.level1Slots,
+    }]
+    : [];
+  const spellSlotResources = [...resourceSlots, ...nestedSlots, ...legacyLevelOneSlots]
+    .filter((slot, index, all) => all.findIndex((candidate) => (
+      text(candidate.label) === text(slot.label)
+    )) === index);
 
   return (
     <div
@@ -186,23 +324,14 @@ export function CharacterSheetDetail({
               </div>
               <div>
                 <h3 className="text-sm text-parchment-100">特性</h3>
-                <p className="mt-0 text-2xs text-stone-600">将鼠标移到特性上可查看说明。</p>
+                <p className="mt-0 text-2xs text-stone-500">悬停、聚焦或点击特性，即可查看完整说明。</p>
                 <div className="flex flex-wrap gap-2">
-                  {character.features.length ? character.features.map((feature, index) => {
-                    const name = text(objectValue(feature).name ?? feature);
-                    const description = featureDescription(feature);
-                    return (
-                      <span
-                        aria-label={description}
-                        className="cursor-help rounded border border-violet-800/50 bg-violet-950/20 px-2 py-1 text-xs text-violet-200"
-                        key={`${name}-${index}`}
-                        tabIndex={0}
-                        title={description}
-                      >
-                        {name}
-                      </span>
-                    );
-                  }) : <span className="text-xs text-stone-600">暂无特性</span>}
+                  {character.features.length ? character.features.map((feature, index) => (
+                    <FeatureHelp
+                      feature={feature}
+                      key={`${text(objectValue(feature).name ?? feature)}-${index}`}
+                    />
+                  )) : <span className="text-xs text-stone-600">暂无特性</span>}
                 </div>
               </div>
             </div>
@@ -238,9 +367,97 @@ export function CharacterSheetDetail({
             </div>
           ) : null}
           {tab === "magic" ? (
-            <div className="grid gap-4 md:grid-cols-2">
-              <section><h3 className="mt-0 text-sm text-parchment-100">职业资源</h3><div className="space-y-2">{resources.map((resource, index) => <div className="rounded border border-ink-700 p-3" key={`${text(resource.label)}-${index}`}><div className="flex"><strong className="mr-auto text-xs text-parchment-100">{text(resource.label, "资源")}</strong><span className="font-mono text-violet-300">{text(resource.current, "0")}/{text(resource.max, "0")}</span></div><p className="mb-0 mt-1 text-2xs text-stone-600">{resource.recovery === "short_rest" ? "短休恢复" : "长休恢复"}</p></div>)}{resources.length === 0 ? <p className="text-xs text-stone-600">暂无职业资源。</p> : null}</div></section>
-              <section><h3 className="mt-0 text-sm text-parchment-100">法术</h3><div className="space-y-2">{character.spells.map((spell, index) => { const data = objectValue(spell); return <div className="rounded border border-ink-700 p-3" key={`${text(data.name ?? spell)}-${index}`} title={text(data.description, "暂无法术说明")}><strong className="text-xs text-parchment-100">{text(data.name ?? spell)}</strong><p className="mb-0 mt-1 text-2xs text-stone-500">{text(data.level, "法术")} · {text(data.range, "距离未记录")}</p></div>; })}{character.spells.length === 0 ? <p className="text-xs text-stone-600">暂无已记录法术。</p> : null}</div></section>
+            <div className="space-y-5">
+              <section aria-label="施法概览" className="rounded-lg border border-violet-800/60 bg-violet-950/15 p-4">
+                <div className="flex flex-wrap items-start gap-3">
+                  <div className="mr-auto">
+                    <p className="m-0 text-2xs uppercase tracking-[0.16em] text-violet-400">Spellcasting</p>
+                    <h3 className="mb-0 mt-1 text-base text-parchment-100">法术与施法</h3>
+                    <p className="mb-0 mt-1 text-xs text-stone-400">
+                      {spellAbility
+                        ? `施法关键属性：${spellAbility}`
+                        : "当前职业尚未记录施法能力；若通过种族、背景或专长获得法术，可继续录入。"}
+                    </p>
+                  </div>
+                  {spellAbility ? (
+                    <div className="grid grid-cols-2 gap-2 text-center">
+                      <div className="rounded border border-ink-700 bg-ink-950/60 px-3 py-2">
+                        <span className="block text-2xs text-stone-600">法术攻击</span>
+                        <strong className="font-mono text-base text-violet-200">{spellAttack === null ? "—" : signed(spellAttack)}</strong>
+                      </div>
+                      <div className="rounded border border-ink-700 bg-ink-950/60 px-3 py-2">
+                        <span className="block text-2xs text-stone-600">法术豁免 DC</span>
+                        <strong className="font-mono text-base text-violet-200">{spellSaveDc ?? "—"}</strong>
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {spellSlotResources.length ? spellSlotResources.map((slot, index) => (
+                    <span className="rounded border border-violet-800/50 bg-ink-950/45 px-2.5 py-1 text-xs text-stone-300" key={`${text(slot.label)}-${index}`}>
+                      {text(slot.label, "法术位")}：
+                      <strong className="font-mono text-violet-200">{text(objectValue(slot).current, "0")}/{text(objectValue(slot).max, "0")}</strong>
+                    </span>
+                  )) : (
+                    <span className="text-xs text-stone-500">
+                      {spellAbility ? "尚未记录可用法术位；戏法通常不消耗法术位。" : "该角色目前没有职业法术位。"}
+                    </span>
+                  )}
+                </div>
+              </section>
+              <div className="grid gap-4 lg:grid-cols-[0.65fr_1.35fr]">
+                <section>
+                  <h3 className="mt-0 text-sm text-parchment-100">职业资源</h3>
+                  <div className="space-y-2">
+                    {resources.map((resource, index) => <div className="rounded border border-ink-700 p-3" key={`${text(resource.label)}-${index}`}><div className="flex"><strong className="mr-auto text-xs text-parchment-100">{text(resource.label, "资源")}</strong><span className="font-mono text-violet-300">{text(resource.current, "0")}/{text(resource.max, "0")}</span></div><p className="mb-0 mt-1 text-2xs text-stone-600">{resource.recovery === "short_rest" ? "短休恢复" : "长休恢复"}</p></div>)}
+                    {resources.length === 0 ? <p className="text-xs text-stone-600">暂无职业资源。</p> : null}
+                  </div>
+                </section>
+                <section aria-label="角色法术栏">
+                  <div className="mb-2 flex items-end gap-2">
+                    <h3 className="m-0 text-sm text-parchment-100">法术栏</h3>
+                    <span className="text-2xs text-stone-600">{spells.length} 个已知法术</span>
+                  </div>
+                  {characterAssets.isLoading ? <LoadingBlock label="读取原子化法术…" /> : null}
+                  <div className="space-y-3">
+                    {spells.map((spell, index) => (
+                      <article className="rounded-lg border border-ink-700 bg-ink-950/45 p-4" key={`${spell.name}-${index}`}>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <strong className="mr-auto text-sm text-parchment-100">{spell.name}</strong>
+                          <span className="rounded bg-violet-950/60 px-2 py-1 text-2xs text-violet-200">{spell.level}</span>
+                          {spell.prepared !== null ? (
+                            <span className={`rounded px-2 py-1 text-2xs ${spell.prepared ? "bg-emerald-950/60 text-emerald-200" : "bg-amber-950/50 text-amber-200"}`}>
+                              {spell.prepared ? "已准备" : "未准备"}
+                            </span>
+                          ) : null}
+                        </div>
+                        <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-xs sm:grid-cols-3">
+                          <div><dt className="text-stone-600">施法时间</dt><dd className="m-0 text-stone-300">{spell.castingTime}</dd></div>
+                          <div><dt className="text-stone-600">距离</dt><dd className="m-0 text-stone-300">{spell.range}</dd></div>
+                          <div><dt className="text-stone-600">伤害 / 治疗</dt><dd className="m-0 text-red-200">{spell.damage}</dd></div>
+                          <div><dt className="text-stone-600">持续时间</dt><dd className="m-0 text-stone-300">{spell.duration}</dd></div>
+                          <div><dt className="text-stone-600">成分</dt><dd className="m-0 text-stone-300">{spell.components}</dd></div>
+                          <div><dt className="text-stone-600">消耗 / 限制</dt><dd className="m-0 text-amber-200">{spell.limitation}</dd></div>
+                        </dl>
+                        <p className="mb-0 mt-3 text-xs leading-5 text-stone-400">{spell.description}</p>
+                        {spell.source ? <p className="mb-0 mt-2 text-2xs text-stone-600">来源：{spell.source}</p> : null}
+                      </article>
+                    ))}
+                    {!characterAssets.isLoading && spells.length === 0 ? (
+                      <div className="rounded-lg border border-dashed border-ink-600 bg-ink-950/35 p-4">
+                        <strong className="text-sm text-parchment-100">
+                          {spellAbility ? "尚未学习或准备法术" : "当前角色没有已记录法术"}
+                        </strong>
+                        <p className="mb-0 mt-2 text-xs leading-5 text-stone-500">
+                          {spellAbility
+                            ? `该角色使用${spellAbility}施法，但法术栏还是空的。请在升级或角色资产中录入已知/准备法术；录入后这里会显示伤害、范围、施法时间、成分、持续时间和法术位消耗。`
+                            : "如果角色通过种族、背景、职业或专长获得法术，请在角色资产中录入。法术会与角色绑定，不会混入其他角色。"}
+                        </p>
+                      </div>
+                    ) : null}
+                  </div>
+                </section>
+              </div>
             </div>
           ) : null}
         </div>

@@ -377,10 +377,10 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
           source: arrivalDraft.sourceKey,
         },
       );
-      if (startCombatAfterArrival) {
-        await startSceneCombat(campaignId, sceneId);
-      }
-      return { participant, startedCombat: startCombatAfterArrival };
+      const startedCombat = startCombatAfterArrival
+        ? await startSceneCombat(campaignId, sceneId)
+        : null;
+      return { participant, startedCombat };
     },
     onSuccess: ({ participant, startedCombat }) => {
       addEntry("system", `${participant.entity.name}已由 DM 确认并进入当前场景`);
@@ -390,6 +390,7 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
       void client.invalidateQueries({ queryKey: ["npcs", campaignId] });
       void client.invalidateQueries({ queryKey: ["monsters", campaignId] });
       if (startedCombat) {
+        sessionStorage.setItem(`dnd-dm-active-combat:${campaignId}`, startedCombat.combat.id);
         void client.invalidateQueries({ queryKey: ["combats", campaignId] });
         navigate("/combat");
       } else {
@@ -412,8 +413,9 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
   });
   const combat = useMutation({
     mutationFn: () => startSceneCombat(campaignId, sceneId),
-    onSuccess: () => {
+    onSuccess: (result) => {
       void log("进入战斗", `“${activeScene?.name ?? "当前场景"}”进入战斗，已加载当前人物与场景网格。`);
+      sessionStorage.setItem(`dnd-dm-active-combat:${campaignId}`, result.combat.id);
       void client.invalidateQueries({ queryKey: ["combats", campaignId] });
       navigate("/combat");
     },
