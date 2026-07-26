@@ -382,6 +382,19 @@ class SpellEconomyService:
             item.quantity += -qty if buying else qty
             wallet.version += 1
             item.version += 1
+            if buying and wallet.character_id:
+                # A shop purchase becomes an owned atomic item immediately, so later
+                # equip/consume/attune operations never act on a shop stock row.
+                s.add(
+                    EquipmentInstance(
+                        campaign_id=cid,
+                        character_id=wallet.character_id,
+                        name=item.name,
+                        category=str(item.metadata_json.get("category", "gear")),
+                        quantity=qty,
+                        metadata_json=dict(item.metadata_json),
+                    )
+                )
             # Every commercial movement records a signed copper ledger row.  The shop
             # is external, so the player wallet is the conserved campaign-side balance.
             s.add(

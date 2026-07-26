@@ -165,3 +165,4 @@ def test_attunement_cap_and_commerce_money_stock(economy_client: TestClient) -> 
         f"/api/v1/campaigns/{campaign['id']}/characters/{character['id']}/assets"
     )
     assert assets.status_code == 200 and assets.json()["wallet"]["copper"] == 50
+    assert any(row["name"] == "治疗药水" and row["quantity"] == 2 for row in assets.json()["equipment"])

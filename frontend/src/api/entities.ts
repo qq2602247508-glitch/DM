@@ -140,6 +140,14 @@ export type CharacterAssets = { spells: Array<Record<string, unknown>>; equipmen
 export const getCharacterAssets = (cid: string, characterId: string, signal?: AbortSignal) =>
   apiFetch<CharacterAssets>(`/campaigns/${cid}/characters/${characterId}/assets`, { signal });
 
+export type EquipmentOperationInput = { character_id: string; character_version: number; equipment_id: string; operation: "equip" | "unequip" | "consume" | "use_charge" | "attune" | "unattune"; amount?: number; preview_token?: string; idempotency_key?: string };
+export type CommerceInput = { wallet_id: string; wallet_version: number; shop_inventory_id: string; shop_version: number; quantity: number; direction: "buy" | "sell"; price_modifier_bps?: number; preview_token?: string; idempotency_key?: string };
+export const previewEquipmentOperation = (cid: string, input: EquipmentOperationInput) => apiFetch<Record<string, unknown>>(`/campaigns/${cid}/equipment/preview`, { method: "POST", body: input });
+export const confirmEquipmentOperation = (cid: string, input: EquipmentOperationInput) => apiFetch<Record<string, unknown>>(`/campaigns/${cid}/equipment/confirm`, { method: "POST", body: input });
+export const listShopInventory = (cid: string, signal?: AbortSignal) => apiFetch<{ items: Array<Record<string, unknown>> }>(`/campaigns/${cid}/shop-inventory`, { signal }).then((result) => result.items);
+export const previewCommerce = (cid: string, input: CommerceInput) => apiFetch<Record<string, unknown>>(`/campaigns/${cid}/commerce/preview`, { method: "POST", body: input });
+export const confirmCommerce = (cid: string, input: CommerceInput) => apiFetch<Record<string, unknown>>(`/campaigns/${cid}/commerce/confirm`, { method: "POST", body: input });
+
 // Character conditions -------------------------------------------------------
 
 export type ConditionInput = {
