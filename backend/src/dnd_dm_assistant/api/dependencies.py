@@ -7,9 +7,13 @@ from sqlalchemy.engine import Engine
 
 from dnd_dm_assistant.application.agent import AgentOrchestrator
 from dnd_dm_assistant.application.campaigns import CampaignService
+from dnd_dm_assistant.application.character_catalog import CharacterCatalog
 from dnd_dm_assistant.application.health import HealthService
 from dnd_dm_assistant.application.world_generation import WorldGenerationService
 from dnd_dm_assistant.config import Settings
+from dnd_dm_assistant.infrastructure.database.advancement_service import (
+    AdvancementService,
+)
 from dnd_dm_assistant.infrastructure.database.agent_service import (
     SqlAlchemyAgentPersistence,
 )
@@ -87,6 +91,18 @@ def get_spell_economy_service(request: Request) -> SpellEconomyService:
 
 def get_narrative_service(request: Request) -> NarrativeService:
     return NarrativeService(cast(Engine, request.app.state.database_engine))
+
+
+def get_character_catalog(request: Request) -> CharacterCatalog:
+    settings = get_app_settings(request)
+    return CharacterCatalog(settings.rag_corpus_json_root)
+
+
+def get_advancement_service(request: Request) -> AdvancementService:
+    return AdvancementService(
+        cast(Engine, request.app.state.database_engine),
+        get_character_catalog(request),
+    )
 
 
 def get_world_generation_service(request: Request) -> WorldGenerationService:

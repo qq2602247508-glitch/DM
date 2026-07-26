@@ -1,6 +1,10 @@
 import { apiFetch } from "./client";
 import type {
   CampaignEvent,
+  CharacterCompanion,
+  CharacterOptionsCatalog,
+  AdvancementPreview,
+  AdvancementRequest,
   Character,
   CharacterCondition,
   Clue,
@@ -112,6 +116,8 @@ export type CharacterInput = {
   resources?: Record<string, unknown>;
   spells?: unknown[];
   spellcasting?: Record<string, unknown>;
+  class_levels?: Record<string, number>;
+  subclass_choices?: Record<string, string>;
   notes?: string | null;
 };
 
@@ -126,6 +132,58 @@ export const updateCharacter = (cid: string, id: string, input: CharacterInput, 
 
 export const deleteCharacter = (cid: string, id: string, version: number) =>
   deleteEntity(`/campaigns/${cid}/characters/${id}`, version);
+
+export const getCharacterOptions = (signal?: AbortSignal) =>
+  apiFetch<CharacterOptionsCatalog>("/rules/character-options", { signal });
+
+export const previewAdvancement = (
+  cid: string,
+  characterId: string,
+  input: AdvancementRequest,
+) =>
+  apiFetch<AdvancementPreview>(
+    `/campaigns/${cid}/characters/${characterId}/advancement/preview`,
+    { method: "POST", body: input },
+  );
+
+export const confirmAdvancement = (
+  cid: string,
+  characterId: string,
+  input: AdvancementRequest & { preview_token: string; idempotency_key: string },
+) =>
+  apiFetch<AdvancementPreview & { advancement_record_id: string }>(
+    `/campaigns/${cid}/characters/${characterId}/advancement/confirm`,
+    { method: "POST", body: input },
+  );
+
+export const listCompanions = (
+  cid: string,
+  ownerCharacterId?: string,
+  signal?: AbortSignal,
+) =>
+  apiFetch<ListEnvelope<CharacterCompanion>>(
+    `/campaigns/${cid}/companions${ownerCharacterId ? `?owner_character_id=${encodeURIComponent(ownerCharacterId)}` : ""}`,
+    { signal },
+  ).then((result) => result.items);
+
+export type CompanionInput = Omit<
+  CharacterCompanion,
+  keyof import("./types").Versioned | "campaign_id"
+>;
+
+export const createCompanion = (cid: string, input: CompanionInput) =>
+  createEntity<CharacterCompanion, CompanionInput>(`/campaigns/${cid}/companions`, input);
+
+export const updateCompanion = (
+  cid: string,
+  id: string,
+  input: Partial<CompanionInput>,
+  version: number,
+) => patchEntity<CharacterCompanion, Partial<CompanionInput>>(
+  `/campaigns/${cid}/companions/${id}`,
+  input,
+  version,
+);
 
 export const listResourcePools = (cid: string, characterId?: string, signal?: AbortSignal) =>
   apiFetch<{ items: ResourcePool[] }>(`/campaigns/${cid}/resources${characterId ? `?character_id=${encodeURIComponent(characterId)}` : ""}`, { signal })

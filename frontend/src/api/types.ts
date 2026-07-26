@@ -226,6 +226,99 @@ export type Character = Versioned & {
   resources: Record<string, unknown>;
   spells: unknown[];
   spellcasting: Record<string, unknown>;
+  class_levels: Record<string, number>;
+  subclass_choices: Record<string, string>;
+  notes: string | null;
+};
+
+export type CharacterOptionSummary = {
+  name: string;
+  source_record_id: string;
+  source_path: string;
+};
+
+export type ClassLevelOption = {
+  level: number;
+  proficiency_bonus: number;
+  features: string[];
+  progression: Record<string, string>;
+};
+
+export type ClassOption = CharacterOptionSummary & {
+  hit_die: number;
+  levels: ClassLevelOption[];
+  subclasses: CharacterOptionSummary[];
+};
+
+export type CharacterOptionsCatalog = {
+  edition: 2024;
+  officiality: "official";
+  classes: ClassOption[];
+  species: CharacterOptionSummary[];
+  backgrounds: CharacterOptionSummary[];
+  feats: CharacterOptionSummary[];
+  spells: CharacterOptionSummary[];
+  skills: string[];
+  languages: string[];
+  tools: string[];
+};
+
+export type AdvancementRequest = {
+  character_version: number;
+  class_name: string;
+  subclass_name?: string | null;
+  hp_mode: "fixed" | "roll";
+  hp_roll?: number | null;
+  ability_increases: Record<string, number>;
+  feat_choice?: string | null;
+  feature_choices: string[];
+  spell_additions: Array<Record<string, unknown>>;
+  spell_removals: string[];
+  dm_override_reason?: string | null;
+};
+
+export type AdvancementPreview = {
+  preview_token: string;
+  character_id: string;
+  character_name: string;
+  from_level: number;
+  to_level: number;
+  class_name: string;
+  class_level: number;
+  subclass_name: string | null;
+  hit_die: number;
+  hp_mode: "fixed" | "roll";
+  hp_gain: number;
+  before: Record<string, unknown>;
+  after: Record<string, unknown>;
+  features_gained: Array<{
+    name: string;
+    class_name: string;
+    class_level: number;
+    source_record_id: string;
+    rule_year: 2024;
+  }>;
+  feat_choice: string | null;
+  warnings: string[];
+  rule_reference: {
+    year: 2024;
+    source_record_id: string;
+    source_path: string;
+  };
+};
+
+export type CharacterCompanion = Versioned & {
+  campaign_id: string;
+  owner_character_id: string;
+  name: string;
+  companion_type: "familiar" | "animal_companion" | "summon" | "wild_shape" | "form";
+  source_record_id: string | null;
+  template_json: Record<string, unknown>;
+  hp: number;
+  max_hp: number;
+  armor_class: number;
+  speed: number;
+  active: boolean;
   notes: string | null;
 };
 

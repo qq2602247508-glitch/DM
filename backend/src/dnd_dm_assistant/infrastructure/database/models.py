@@ -159,6 +159,12 @@ class Character(Timestamped, Base):
     spellcasting: Mapped[dict[str, object]] = mapped_column(
         JSON, nullable=False, default=dict, server_default="{}"
     )
+    class_levels: Mapped[dict[str, int]] = mapped_column(
+        JSON, nullable=False, default=dict, server_default="{}"
+    )
+    subclass_choices: Mapped[dict[str, str]] = mapped_column(
+        JSON, nullable=False, default=dict, server_default="{}"
+    )
     notes: Mapped[str | None] = mapped_column(Text)
     __table_args__ = (
         CheckConstraint("length(trim(name)) > 0", name="ck_character_name_nonempty"),
@@ -1124,6 +1130,107 @@ class ShopInventory(Timestamped, Base):
         CheckConstraint("length(trim(name)) > 0", name="ck_shop_inventory_name"),
         CheckConstraint("quantity >= 0 AND price_copper >= 0", name="ck_shop_inventory_bounds"),
         Index("ix_shop_inventory_campaign", "campaign_id", "created_at", "id"),
+    )
+
+
+class AdvancementRecord(Timestamped, Base):
+    __tablename__ = "advancement_records"
+    campaign_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("campaigns.id", ondelete="CASCADE"), nullable=False
+    )
+    character_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("characters.id", ondelete="CASCADE"), nullable=False
+    )
+    operation_transaction_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("operation_transactions.id", ondelete="SET NULL")
+    )
+    class_name: Mapped[str] = mapped_column(String(100), nullable=False)
+    subclass_name: Mapped[str | None] = mapped_column(String(100))
+    from_level: Mapped[int] = mapped_column(Integer, nullable=False)
+    to_level: Mapped[int] = mapped_column(Integer, nullable=False)
+    choices_json: Mapped[dict[str, object]] = mapped_column(
+        JSON, nullable=False, default=dict, server_default="{}"
+    )
+    result_json: Mapped[dict[str, object]] = mapped_column(
+        JSON, nullable=False, default=dict, server_default="{}"
+    )
+    preview_token: Mapped[str] = mapped_column(String(64), nullable=False)
+    idempotency_key: Mapped[str] = mapped_column(String(120), nullable=False)
+    status: Mapped[str] = mapped_column(
+        String(30), nullable=False, default="confirmed", server_default="confirmed"
+    )
+    confirmed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    __table_args__ = (
+        CheckConstraint(
+            "from_level >= 1 AND to_level >= 2 AND to_level <= 20 "
+            "AND to_level = from_level + 1",
+            name="ck_advancement_level_step",
+        ),
+        CheckConstraint(
+            "status IN ('confirmed','reverted','conflict')",
+            name="ck_advancement_status",
+        ),
+        UniqueConstraint(
+            "campaign_id",
+            "idempotency_key",
+            name="uq_advancement_campaign_idempotency",
+        ),
+        Index(
+            "ix_advancement_character_level",
+            "character_id",
+            "to_level",
+            "created_at",
+            "id",
+        ),
+    )
+
+
+class CharacterCompanion(Timestamped, Base):
+    __tablename__ = "character_companions"
+    campaign_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("campaigns.id", ondelete="CASCADE"), nullable=False
+    )
+    owner_character_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("characters.id", ondelete="CASCADE"), nullable=False
+    )
+    name: Mapped[str] = mapped_column(String(200), nullable=False)
+    companion_type: Mapped[str] = mapped_column(String(30), nullable=False)
+    source_record_id: Mapped[str | None] = mapped_column(String(100))
+    template_json: Mapped[dict[str, object]] = mapped_column(
+        JSON, nullable=False, default=dict, server_default="{}"
+    )
+    hp: Mapped[int] = mapped_column(Integer, nullable=False, default=1, server_default="1")
+    max_hp: Mapped[int] = mapped_column(Integer, nullable=False, default=1, server_default="1")
+    armor_class: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=10, server_default="10"
+    )
+    speed: Mapped[int] = mapped_column(Integer, nullable=False, default=30, server_default="30")
+    active: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=True, server_default="1"
+    )
+    notes: Mapped[str | None] = mapped_column(Text)
+    __table_args__ = (
+        CheckConstraint("length(trim(name)) > 0", name="ck_companion_name_nonempty"),
+        CheckConstraint(
+            "companion_type IN ('familiar','animal_companion','summon','wild_shape','form')",
+            name="ck_companion_type",
+        ),
+        CheckConstraint(
+            "hp >= 0 AND max_hp >= 1 AND hp <= max_hp",
+            name="ck_companion_hp",
+        ),
+        CheckConstraint(
+            "armor_class >= 0 AND armor_class <= 99",
+            name="ck_companion_ac",
+        ),
+        CheckConstraint("speed >= 0 AND speed <= 1000", name="ck_companion_speed"),
+        Index(
+            "ix_companions_campaign_owner",
+            "campaign_id",
+            "owner_character_id",
+            "active",
+            "id",
+        ),
     )
 
 

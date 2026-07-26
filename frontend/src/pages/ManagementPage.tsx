@@ -11,6 +11,8 @@ import {
 } from "../api/entities";
 import type { Campaign, CampaignEvent, Character, Clue, Location, Npc, Quest } from "../api/types";
 import { Panel } from "../components/Panel";
+import { AdvancementDialog } from "../components/AdvancementDialog";
+import { CompanionPanel } from "../components/CompanionPanel";
 import { RestPanel } from "../components/RestPanel";
 import { RequireCampaign } from "../components/RequireCampaign";
 import { inputCls } from "../ui/styles";
@@ -19,7 +21,7 @@ import { formatDateTime } from "../ui/format";
 import { ConfirmDialog } from "../ui/widgets";
 import { useToast } from "../hooks/toastContext";
 import { BACKGROUNDS_2024, CLASSES_2024, SPECIES_2024 } from "../ui/characterRules";
-import { averageHpGain, levelFromXp, nextLevelXp, XP_THRESHOLDS } from "../ui/progressionRules";
+import { levelFromXp, nextLevelXp, XP_THRESHOLDS } from "../ui/progressionRules";
 
 const ABILITY_LABELS: Record<string, string> = {
   strength: "力量", dexterity: "敏捷", constitution: "体质",
@@ -61,16 +63,7 @@ function downloadFile(filename: string, content: string, type: string): void {
   URL.revokeObjectURL(url);
 }
 
-const LEVEL_FEATURE_CHOICES = [
-  "属性值提升", "警觉", "幸运", "健壮", "熟练", "战地施法者",
-  "哨兵", "神射手", "巨武器大师", "防御式决斗", "技能专家", "魔法学徒",
-];
-
 function CharacterProgressCell({ campaignId, character }: { campaignId: string; character: Character }): ReactElement {
-  const client = useQueryClient();
-  const { showToast } = useToast();
-  const [feature, setFeature] = useState("");
-  const classRule = CLASSES_2024.find((item) => item.name === character.class_name);
   const nextThreshold = nextLevelXp(character.level);
   const eligibleLevel = levelFromXp(character.experience);
   const canLevel = eligibleLevel > character.level && character.level < 20;
@@ -78,34 +71,14 @@ function CharacterProgressCell({ campaignId, character }: { campaignId: string; 
   const progress = nextThreshold === null ? 100 : Math.max(0, Math.min(100,
     ((character.experience - currentFloor) / Math.max(1, nextThreshold - currentFloor)) * 100,
   ));
-  const hpGain = averageHpGain(classRule?.hitDie ?? 8, character.ability_scores.constitution ?? 10);
-  const levelUp = useMutation({
-    mutationFn: () => updateCharacter(campaignId, character.id, {
-      level: character.level + 1,
-      hp: character.hp + hpGain,
-      max_hp: character.max_hp + hpGain,
-      features: feature ? [...character.features, `Lv${character.level + 1}：${feature}`] : character.features,
-      resources: Object.fromEntries(Object.entries(character.resources).map(([key, raw]) => {
-        const resource = raw as { current?: number; max?: number; label?: string };
-        if (key === "focus") {
-          const maximum = Math.max(Number(resource.max ?? 0), character.level + 1);
-          return [key, { ...resource, current: maximum, max: maximum }];
-        }
-        return [key, raw];
-      })),
-    }, character.version),
-    onSuccess: () => {
-      void client.invalidateQueries({ queryKey: ["characters", campaignId] });
-      showToast(`${character.name} 已升至 ${character.level + 1} 级，最大生命 +${hpGain}`);
-    },
-    onError: () => showToast("升级失败，请刷新角色版本后重试", "error"),
-  });
   return (
     <td className="min-w-56 px-3 py-3">
       <div className="flex items-center gap-2 text-2xs"><strong className="text-ember-300">{character.experience.toLocaleString()} XP</strong><span className="text-stone-600">/ {nextThreshold?.toLocaleString() ?? "满级"}</span></div>
       <div className="mt-1 h-1.5 overflow-hidden rounded bg-ink-700"><div className="h-full bg-ember-500" style={{ width: `${progress}%` }} /></div>
-      {canLevel ? <div className="mt-2 flex gap-1"><select aria-label={`${character.name}升级选择`} className={`${inputCls} min-w-0 py-1 text-2xs`} onChange={(event) => setFeature(event.target.value)} value={feature}><option value="">本级无额外选择</option>{LEVEL_FEATURE_CHOICES.map((item) => <option key={item} value={item}>{item}</option>)}</select><Button loading={levelUp.isPending} onClick={() => levelUp.mutate()} size="sm" variant="primary">升级</Button></div> : null}
-      {canLevel ? <p className="mb-0 mt-1 text-2xs text-stone-600">固定平均生命 +{hpGain}；可记录本级专长/技能选择。</p> : null}
+      {character.level < 20 ? <div className="mt-2"><AdvancementDialog campaignId={campaignId} character={character} /></div> : null}
+      <p className={`mb-0 mt-1 text-2xs ${canLevel ? "text-emerald-300" : "text-stone-600"}`}>
+        {canLevel ? "经验已达标；可按 2024 职业表处理升级。" : "未达经验门槛时可由 DM 以里程碑理由覆盖。"}
+      </p>
     </td>
   );
 }
@@ -193,6 +166,7 @@ function CharacterToolkit({ campaignId }: { campaignId: string }): ReactElement 
           </tbody>
         </table>
       </div>
+      <CompanionPanel campaignId={campaignId} characters={characters.data ?? []} />
       <p className="mb-0 mt-3 text-2xs text-stone-600">图片车卡可先用系统 OCR 转为文字后导入；标准 PDF/图片识别接口将在本地 OCR 模块接入后启用。</p>
     </Panel>
   );
@@ -301,6 +275,8 @@ function CharacterCreateWizard({ campaignId, onDone }: { campaignId: string; onD
         resources: classResources,
         spells: [],
         spellcasting: classRule?.spellcasting ?? {},
+        class_levels: className ? { [className === "邪术师" ? "魔契师" : className]: 1 } : {},
+        subclass_choices: {},
         notes: `D&D 5e 2024规则角色${background ? ` · 背景：${background}` : ""}`,
       });
     },
@@ -404,6 +380,7 @@ function CreateForm({ kind, campaignId, onDone }: { kind: EntityKind; campaignId
           Object.entries(abilities).map(([key, value]) => [key, Number(value)]),
         ),
         hp: Number(hp), max_hp: Number(maxHp), notes: description || null,
+        class_levels: extra ? { [extra === "邪术师" ? "魔契师" : extra]: Number(level) } : {},
         equipment: equipment.split(/\n|、|,/).map((item) => item.trim()).filter(Boolean),
       } satisfies CharacterInput);
       if (kind === "npcs") return createNpc(campaignId, {
