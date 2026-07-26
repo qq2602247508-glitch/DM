@@ -7,7 +7,7 @@ import {
   confirmDeathSave, createCombat, createCombatant, deleteCombatant, endCombatEffect,
   createEvent, getCombatEndCondition, getDeathSave, listCombatActions, listCombatEffects, listCombatants, listCombats,
   listEncounterAdjustments, listEvents, previewCombatAction,
-  previewCombatSettlement, revertEncounterAdjustment, updateCombat, updateCombatant,
+  previewCombatSettlement, resetCombat, revertEncounterAdjustment, updateCombat, updateCombatant,
 } from "../api/entities";
 import type {
   CombatActionCommand, CombatEffectCommand, CombatSettlementCommand,
@@ -27,6 +27,7 @@ import { HpBar } from "../ui/widgets";
 import { useToast } from "../hooks/toastContext";
 import { navigate } from "../hooks/useHashRoute";
 import { PlayerRollPanel } from "../components/combat/PlayerRollPanel";
+import { InitiativeCardStrip } from "../components/combat/InitiativeCardStrip";
 import {
   TurnCommandConsole,
   type CombatTargeting,
@@ -84,14 +85,24 @@ function readSceneGrid(notes: string | null): SceneGrid | null {
 }
 
 function CombatLogPanel({ actions }: { actions: CombatAction[] }): ReactElement {
+  const [expanded, setExpanded] = useState(true);
   return (
     <section className="mt-3 rounded-lg border border-ink-700 bg-ink-950/45 p-3">
       <div className="flex flex-wrap items-center gap-2">
         <Badge tone="neutral">历史</Badge>
         <strong className="text-sm text-parchment-100">战斗日志</strong>
         <span className="text-2xs text-stone-500">记录攻击者 → 目标 → 技能/法术 → 骰值 → 结果</span>
+        <button
+          aria-expanded={expanded}
+          aria-label={expanded ? "收起战斗日志" : "展开战斗日志"}
+          className="ml-auto flex size-7 items-center justify-center rounded border border-ink-600 bg-ink-900 text-base font-bold text-stone-300 hover:border-ember-600 hover:text-ember-200"
+          onClick={() => setExpanded((value) => !value)}
+          type="button"
+        >
+          {expanded ? "−" : "+"}
+        </button>
       </div>
-      {actions.length > 0 ? (
+      {expanded && actions.length > 0 ? (
         <ol className="mb-0 mt-2 grid max-h-56 gap-2 overflow-y-auto p-0 text-2xs text-stone-400 md:grid-cols-2">
           {[...actions].reverse().map((action) => (
             <li className="list-none rounded border border-ink-800 bg-ink-950/70 p-2" key={action.id}>
@@ -101,9 +112,9 @@ function CombatLogPanel({ actions }: { actions: CombatAction[] }): ReactElement 
             </li>
           ))}
         </ol>
-      ) : (
+      ) : expanded ? (
         <p className="mb-0 mt-2 text-2xs text-stone-600">行动确认后会按时间倒序显示在这里。</p>
-      )}
+      ) : null}
     </section>
   );
 }
@@ -816,6 +827,9 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
   const [selectedMapTargetId, setSelectedMapTargetId] = useState("");
   const [targetableFighterIds, setTargetableFighterIds] = useState<ReadonlySet<string>>(new Set());
   const [automaticMovementPending, setAutomaticMovementPending] = useState(false);
+  const [expandedFighterId, setExpandedFighterId] = useState<string | null>(null);
+  const [resetConfirmation, setResetConfirmation] = useState(false);
+  const [resetGeneration, setResetGeneration] = useState(0);
   const updateTargetableFighterIds = useCallback((next: ReadonlySet<string>) => {
     setTargetableFighterIds((current) => {
       const currentKey = [...current].sort().join("|");
@@ -890,6 +904,26 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
     onSuccess: () => { invalidate(); showToast("战斗进度已保存"); },
     onError: () => showToast("战斗进度保存失败", "error"),
   });
+  const resetCurrentCombat = useMutation({
+    mutationFn: () => resetCombat(campaignId, combat.id, combat.version),
+    onSuccess: () => {
+      setResetConfirmation(false);
+      setResetGeneration((value) => value + 1);
+      setSelectedMapTargetId("");
+      setTargetableFighterIds(new Set());
+      setTargetingRange(null);
+      void client.invalidateQueries({ queryKey: ["combats", campaignId] });
+      void client.invalidateQueries({ queryKey: ["combatants", campaignId, combat.id] });
+      void client.invalidateQueries({ queryKey: ["combat-actions", campaignId, combat.id] });
+      void client.invalidateQueries({ queryKey: ["combat-effects", campaignId, combat.id] });
+      void client.invalidateQueries({ queryKey: ["combat-end-condition", campaignId, combat.id] });
+      showToast("当前战斗已重置：回到第1轮第一位，战斗状态与日志已清空");
+    },
+    onError: (error) => {
+      setResetConfirmation(false);
+      showToast(error instanceof Error ? error.message : "当前战斗重置失败", "error");
+    },
+  });
   const nextTurn = useMutation({
     mutationFn: () => advanceCombatTurn(campaignId, combat.id, combat.version),
     onSuccess: (result) => {
@@ -906,6 +940,10 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
   const activeFighter = combat.status === "active"
     ? ordered[combat.current_turn_index] ?? ordered[0]
     : undefined;
+  const activeFighterIdForCard = activeFighter?.id;
+  useEffect(() => {
+    if (activeFighterIdForCard) setExpandedFighterId(activeFighterIdForCard);
+  }, [activeFighterIdForCard]);
   const activeCharacter = activeFighter?.entity_type === "character" && activeFighter.entity_id
     ? candidates.find((candidate) => candidate.entityType === "character" && candidate.entityId === activeFighter.entity_id)?.character
     : undefined;
@@ -1068,10 +1106,38 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
         <Badge tone={combat.status === "active" ? "danger" : "neutral"}>{COMBAT_STATUS_LABELS[combat.status] ?? combat.status}</Badge>
         <div className="flex gap-2">
           <Button onClick={() => setAutoEnemies((value) => !value)} size="sm" variant={autoEnemies ? "primary" : "ghost"}>怪物全自动：{autoEnemies ? "开" : "关"}</Button>
+          {resetConfirmation ? (
+            <>
+              <Button
+                disabled={resetCurrentCombat.isPending}
+                loading={resetCurrentCombat.isPending}
+                onClick={() => resetCurrentCombat.mutate()}
+                size="sm"
+                variant="danger"
+              >
+                确认重置当前战斗
+              </Button>
+              <Button disabled={resetCurrentCombat.isPending} onClick={() => setResetConfirmation(false)} size="sm">取消</Button>
+            </>
+          ) : (
+            <Button
+              disabled={combat.status !== "active" || combat.xp_awarded}
+              onClick={() => setResetConfirmation(true)}
+              size="sm"
+              variant="danger"
+            >
+              重置当前战斗
+            </Button>
+          )}
           <Button disabled={combat.status !== "active" || update.isPending} onClick={() => update.mutate({ status: "ended" })} size="sm">结束战斗</Button>
           {combat.status === "ended" && combat.scene_id ? <Button onClick={() => navigate("/game-table")} size="sm" variant="primary">返回游戏推进台</Button> : null}
         </div>
       </div>
+      {resetConfirmation ? (
+        <p className="mb-0 mt-2 rounded border border-red-900/60 bg-red-950/15 px-3 py-2 text-2xs text-red-200">
+          将清空本场日志、效果、死亡豁免和地图位置，并把所有参战者恢复到开战记录、回到第1轮第一位。已经写入角色背包或经验的结算不会被倒扣。
+        </p>
+      ) : null}
       {combat.status === "active" && allMonstersDefeated ? (
         <div className="mt-3 flex flex-wrap items-center gap-2 rounded border-2 border-emerald-500/60 bg-emerald-950/20 p-3">
           <Badge tone="ok">结束条件已满足</Badge>
@@ -1093,16 +1159,30 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
         </>
       ) : null}
       <CombatLogPanel actions={combatActions.data ?? []} />
+      {ordered.length > 0 ? (
+        <InitiativeCardStrip
+          currentIndex={combat.current_turn_index}
+          expandedId={expandedFighterId}
+          fighters={ordered}
+          onToggle={(fighterId) => setExpandedFighterId((current) => current === fighterId ? null : fighterId)}
+        />
+      ) : null}
       <div className="mt-3 grid items-start gap-3 xl:grid-cols-[minmax(0,1fr)_30rem]">
         <div className="min-w-0">
-          <div>
-            {fighters.isLoading ? <LoadingBlock label="正在读取先攻列表…" /> : null}
-            {fighters.isError ? <ErrorState error={fighters.error} onRetry={() => void fighters.refetch()} /> : null}
-            {!fighters.isLoading && ordered.length === 0 ? <EmptyState title="尚无参与者" hint="录入先攻与 HP 后即可开始逐回合追踪。" /> : null}
-            {ordered.length > 0 ? <ol className="m-0 flex list-none flex-col gap-1.5 p-0">{ordered.map((fighter, index) => <CombatantRow campaignId={campaignId} character={candidates.find((candidate) => candidate.entityId === fighter.entity_id)?.character} combat={combat} combatants={ordered} current={combat.status === "active" && index === combat.current_turn_index} effects={(combatEffects.data ?? []).filter((effect) => effect.target_combatant_id === fighter.id && effect.status === "active")} fighter={fighter} key={fighter.id} />)}</ol> : null}
-          </div>
+          {fighters.isLoading ? <LoadingBlock label="正在读取先攻列表…" /> : null}
+          {fighters.isError ? <ErrorState error={fighters.error} onRetry={() => void fighters.refetch()} /> : null}
+          {!fighters.isLoading && ordered.length === 0 ? <EmptyState title="尚无参与者" hint="录入先攻与 HP 后即可开始逐回合追踪。" /> : null}
+          {ordered.length > 0 ? (
+            <details className="mb-3 rounded-lg border border-ink-700 bg-ink-950/40">
+              <summary className="cursor-pointer px-3 py-2 text-xs font-semibold text-stone-300">DM状态调整与高级编辑</summary>
+              <ol className="m-0 flex list-none flex-col gap-1.5 border-t border-ink-700 p-3">
+                {ordered.map((fighter, index) => <CombatantRow campaignId={campaignId} character={candidates.find((candidate) => candidate.entityId === fighter.entity_id)?.character} combat={combat} combatants={ordered} current={combat.status === "active" && index === combat.current_turn_index} effects={(combatEffects.data ?? []).filter((effect) => effect.target_combatant_id === fighter.id && effect.status === "active")} fighter={fighter} key={fighter.id} />)}
+              </ol>
+            </details>
+          ) : null}
           {ordered.length > 0 ? (
             <BattleGrid
+              key={`${combat.id}:${resetGeneration}`}
               activeFighterId={activeFighter?.id ?? null}
               automateEnemies={autoEnemies}
               campaignId={campaignId}
@@ -1128,6 +1208,7 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
           </div>
           {activeFighter ? (
             <TurnCommandConsole
+              key={`${combat.id}:${resetGeneration}:${activeFighter.id}`}
               active={activeFighter}
               activeCharacter={activeCharacter}
               autoEnemies={autoEnemies}

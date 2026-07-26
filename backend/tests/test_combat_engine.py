@@ -702,6 +702,88 @@ def test_advance_turn_restores_next_combatant_action_economy(
     assert repeated.json()["action"]["id"] == advanced.json()["action"]["id"]
 
 
+def test_reset_combat_restores_start_state_and_clears_log(
+    combat_client: TestClient,
+) -> None:
+    campaign = _campaign(combat_client)
+    combat, fighter = _combatant(combat_client, campaign["id"])
+    second = combat_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "Reset Target",
+            "entity_type": "monster",
+            "initiative": -1,
+            "hp": 12,
+            "max_hp": 12,
+        },
+    )
+    assert second.status_code == 201
+    damaged = combat_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}/actions/confirm",
+        headers={"X-Request-ID": "reset-damage"},
+        json={
+            "action_type": "damage",
+            "target_combatant_id": fighter["id"],
+            "target_version": fighter["version"],
+            "amount": 8,
+            "damage_type": "fire",
+        },
+    )
+    assert damaged.status_code == 200
+    moved = combat_client.patch(
+        _fighter_path(campaign["id"], combat["id"], fighter["id"]),
+        headers={"If-Match": f'"{damaged.json()["target"]["version"]}"'},
+        json={
+            "conditions": ["prone"],
+            "movement_remaining_ft": 5,
+            "snapshot_json": {
+                **damaged.json()["target"]["snapshot_json"],
+                "grid_position": {"row": 7, "col": 9},
+            },
+        },
+    )
+    assert moved.status_code == 200
+    advanced = combat_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}/turns/advance",
+        headers={"X-Request-ID": "reset-advance"},
+        json={"combat_version": combat["version"]},
+    )
+    assert advanced.status_code == 200
+    assert advanced.json()["combat"]["current_turn_index"] == 1
+
+    reset = combat_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}/reset",
+        headers={"X-Request-ID": "reset-combat"},
+        json={"combat_version": advanced.json()["combat"]["version"]},
+    )
+    assert reset.status_code == 200, reset.json()
+    body = reset.json()
+    assert body["combat"]["round_number"] == 1
+    assert body["combat"]["current_turn_index"] == 0
+    assert body["cleared_log"] is True
+    restored = next(
+        item for item in body["combatants"] if item["id"] == fighter["id"]
+    )
+    assert restored["hp"] == 20
+    assert restored["temporary_hp"] == 3
+    assert restored["conditions"] == []
+    assert restored["movement_remaining_ft"] == 30
+    assert restored["action_available"] is True
+    assert "grid_position" not in restored["snapshot_json"]
+    actions = combat_client.get(
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}/actions"
+    )
+    assert actions.status_code == 200
+    assert actions.json()["items"] == []
+
+    stale = combat_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}/reset",
+        headers={"X-Request-ID": "reset-combat-stale"},
+        json={"combat_version": advanced.json()["combat"]["version"]},
+    )
+    assert stale.status_code == 409
+
+
 def test_new_concentration_previews_and_ends_previous_effect(
     combat_client: TestClient,
 ) -> None:

@@ -18,6 +18,7 @@ import type {
   CombatEndCondition,
   CombatSettlementPreview,
   CombatSettlementResult,
+  CombatResetResult,
   ConcentrationCheckResult,
   DeathSave,
   DeathSaveConfirmation,
@@ -601,6 +602,20 @@ export const listCombatActions = (
     `/campaigns/${cid}/combats/${combatId}/actions`,
     { signal },
   ).then((envelope) => envelope.items);
+
+export const resetCombat = (
+  cid: string,
+  combatId: string,
+  combatVersion: number,
+) =>
+  apiFetch<CombatResetResult>(
+    `/campaigns/${cid}/combats/${combatId}/reset`,
+    {
+      method: "POST",
+      body: { combat_version: combatVersion },
+      headers: { "X-Request-ID": crypto.randomUUID() },
+    },
+  );
 
 export const createPlayerRollPrompt = (
   cid: string,

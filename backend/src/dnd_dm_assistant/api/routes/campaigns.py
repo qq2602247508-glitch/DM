@@ -470,6 +470,19 @@ def create_combatant(
     # movement, and defensive traits). Persist the complete validated snapshot
     # so database rows never depend on a caller spelling those defaults out.
     data = body.model_dump()
+    snapshot = dict(data["snapshot_json"])
+    snapshot.setdefault(
+        "combat_start_state",
+        {
+            "hp": data["hp"],
+            "temporary_hp": data["temporary_hp"],
+            "max_hp_reduction": data["max_hp_reduction"],
+            "conditions": list(data["conditions"]),
+            "concentration": dict(data["concentration"]),
+            "is_active": data["is_active"],
+        },
+    )
+    data["snapshot_json"] = snapshot
     data["combat_id"] = combat_id
     return _safe_call(
         lambda: service.create(

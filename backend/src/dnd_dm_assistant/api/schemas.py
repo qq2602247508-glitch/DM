@@ -637,6 +637,10 @@ class CombatantPatch(BaseModel):
         return self
 
 
+class CombatResetCommand(BaseModel):
+    combat_version: int = Field(ge=1)
+
+
 class CombatActionCommand(BaseModel):
     action_type: Literal["damage", "heal"]
     target_combatant_id: str = Field(min_length=1, max_length=36)

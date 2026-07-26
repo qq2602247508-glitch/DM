@@ -4,7 +4,7 @@ from dataclasses import asdict
 from datetime import UTC, datetime
 from typing import Any
 
-from sqlalchemy import select
+from sqlalchemy import delete, select
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
@@ -12,6 +12,7 @@ from dnd_dm_assistant.api.schemas import (
     CombatActionCommand,
     CombatEffectCommand,
     CombatEffectEndCommand,
+    CombatResetCommand,
     CombatSettlementCommand,
     ConcentrationCheckCommand,
     DeathConfirmationCommand,
@@ -1110,6 +1111,140 @@ class CombatEngineService:
                 "combat": serialize(combat),
                 "active_combatant": serialize(active),
                 "expiration_prompts": expiration_prompts,
+            }
+
+    def reset_combat(
+        self,
+        campaign_id: str,
+        combat_id: str,
+        command: CombatResetCommand,
+        *,
+        idempotency_key: str,
+    ) -> dict[str, Any]:
+        with Session(self.engine) as session, session.begin():
+            campaign = session.get(Campaign, campaign_id)
+            if campaign is None:
+                raise StateNotFoundError("campaign not found")
+            combat = session.get(Combat, combat_id)
+            if combat is None or combat.campaign_id != campaign_id:
+                raise StateNotFoundError("combat not found in campaign")
+            if combat.version != command.combat_version:
+                raise VersionConflict(
+                    "combat",
+                    combat.id,
+                    command.combat_version,
+                    combat.version,
+                )
+            if combat.status != "active" or combat.xp_awarded:
+                raise ValueError("only an active, unsettled combat can be reset")
+            settlement = session.scalar(
+                select(CombatSettlement).where(CombatSettlement.combat_id == combat_id)
+            )
+            if settlement is not None:
+                raise ValueError("a settled combat cannot be reset")
+
+            combatants = session.scalars(
+                select(Combatant)
+                .where(Combatant.combat_id == combat_id)
+                .order_by(
+                    Combatant.initiative.desc(),
+                    Combatant.created_at,
+                    Combatant.id,
+                )
+            ).all()
+            if not combatants:
+                raise ValueError("combat has no combatants")
+
+            before = {
+                "combat": serialize(combat),
+                "combatants": [serialize(fighter) for fighter in combatants],
+            }
+            combatant_ids = [fighter.id for fighter in combatants]
+            session.execute(
+                delete(DeathSave).where(DeathSave.combatant_id.in_(combatant_ids))
+            )
+            session.execute(
+                delete(CombatEffect).where(CombatEffect.combat_id == combat_id)
+            )
+            session.execute(
+                delete(CombatAction).where(CombatAction.combat_id == combat_id)
+            )
+
+            now = datetime.now(UTC)
+            for fighter in combatants:
+                snapshot = dict(fighter.snapshot_json or {})
+                baseline_raw = snapshot.get("combat_start_state")
+                baseline = (
+                    baseline_raw
+                    if isinstance(baseline_raw, dict)
+                    else {}
+                )
+                fighter.hp = max(
+                    0,
+                    min(
+                        fighter.max_hp,
+                        int(baseline.get("hp", fighter.max_hp)),
+                    ),
+                )
+                fighter.temporary_hp = max(
+                    0,
+                    int(baseline.get("temporary_hp", 0)),
+                )
+                fighter.max_hp_reduction = max(
+                    0,
+                    min(
+                        fighter.max_hp,
+                        int(baseline.get("max_hp_reduction", 0)),
+                    ),
+                )
+                if fighter.hp + fighter.max_hp_reduction > fighter.max_hp:
+                    fighter.hp = fighter.max_hp - fighter.max_hp_reduction
+                conditions = baseline.get("conditions", [])
+                concentration = baseline.get("concentration", {})
+                fighter.conditions = list(conditions) if isinstance(conditions, list) else []
+                fighter.concentration = (
+                    dict(concentration)
+                    if isinstance(concentration, dict)
+                    else {}
+                )
+                fighter.movement_remaining_ft = fighter.speed_ft
+                fighter.action_available = True
+                fighter.bonus_action_available = True
+                fighter.reaction_available = True
+                fighter.is_active = bool(baseline.get("is_active", True))
+                snapshot.pop("grid_position", None)
+                fighter.snapshot_json = snapshot
+                fighter.version += 1
+                fighter.updated_at = now
+
+            combat.status = "active"
+            combat.round_number = 1
+            combat.current_turn_index = 0
+            combat.ended_at = None
+            combat.version += 1
+            combat.updated_at = now
+            transaction = OperationTransaction(
+                campaign_id=campaign_id,
+                operation_type="combat_reset",
+                idempotency_key=idempotency_key,
+                status="applied",
+                before_snapshot=before,
+                after_snapshot={
+                    "combat_id": combat.id,
+                    "round_number": 1,
+                    "current_turn_index": 0,
+                    "combatant_ids": combatant_ids,
+                },
+                reason="DM reset active combat to its starting state",
+                source="combat",
+                confirmed_at=now,
+            )
+            session.add(transaction)
+            session.flush()
+            return {
+                "combat": serialize(combat),
+                "combatants": [serialize(fighter) for fighter in combatants],
+                "cleared_log": True,
             }
 
     @staticmethod

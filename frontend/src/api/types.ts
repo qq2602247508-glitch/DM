@@ -853,6 +853,12 @@ export type TurnAdvanceResult = {
   expiration_prompts: unknown[];
 };
 
+export type CombatResetResult = {
+  combat: Combat;
+  combatants: Combatant[];
+  cleared_log: boolean;
+};
+
 export type CombatEffect = Versioned & {
   campaign_id: string;
   combat_id: string;

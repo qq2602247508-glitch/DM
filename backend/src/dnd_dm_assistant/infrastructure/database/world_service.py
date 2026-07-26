@@ -344,6 +344,14 @@ class WorldService:
                         "speed_ft": int(getattr(entity, "speed", 30)),
                         "ability_scores": dict(entity.ability_scores or {}),
                         "actions": list(getattr(entity, "actions", []) or []),
+                        "combat_start_state": {
+                            "hp": int(getattr(entity, "hp", 1)),
+                            "temporary_hp": 0,
+                            "max_hp_reduction": 0,
+                            "conditions": [],
+                            "concentration": {},
+                            "is_active": True,
+                        },
                     },
                     is_active=True,
                 )
