@@ -9,6 +9,8 @@ frontend_url="http://127.0.0.1:5173/"
 
 mkdir -p "$log_dir"
 
+"$repo_dir/scripts/diagnose.sh"
+
 backend_ready() {
   curl -fsS --max-time 2 "$backend_url" >/dev/null 2>&1
 }
@@ -38,6 +40,10 @@ for attempt in $(seq 1 60); do
 
   if [ "$backend_ok" -eq 1 ] && [ "$frontend_ok" -eq 1 ]; then
     echo "本地 D&D 助手已就绪。"
+    diagnostics="$(curl -fsS --max-time 10 http://127.0.0.1:8000/api/v1/system/diagnostics || true)"
+    if [ -n "$diagnostics" ]; then
+      echo "启动诊断已完成；详细状态可在“设置与备份”查看。"
+    fi
     open "$frontend_url"
     exit 0
   fi
