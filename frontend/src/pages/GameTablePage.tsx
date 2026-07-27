@@ -12,8 +12,9 @@ import {
   type NoncombatPendingAction,
 } from "../api/playerRoom";
 import {
-  applyEncounterAdjustment, createClue, createEncounterAdjustment, createEvent, createLocation, createNpc,
-  createQuest, listCharacters, listEncounterAdjustments, listEvents, listLocations, listNpcs,
+  applyEncounterAdjustment, createClue, createEncounterAdjustment, createEquipmentInstance,
+  createEvent, createKnownSpell, createLocation, createNpc, createQuest, getCharacterOptions,
+  listCharacters, listEncounterAdjustments, listEvents, listLocations, listNpcs, updateCharacter,
   rejectEncounterAdjustment, revertEncounterAdjustment,
 } from "../api/entities";
 import type {
@@ -50,6 +51,10 @@ import {
   requestedMonsterName,
   type ArrivalDraft, type ArrivalKind, type MonsterReferenceCandidate,
 } from "../ui/dynamicEntityDraft";
+import {
+  buildFeatureGrantDraft, buildItemGrantDraft, buildSpellGrantDraft,
+  detectCharacterGrantIntent, type CharacterGrantDraft, type CharacterGrantIntent,
+} from "../ui/characterGrants";
 import {
   describeEncounterOperation, difficultyShiftLabel,
 } from "../ui/encounterAdjustments";
@@ -326,6 +331,7 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
   const [draftOperations, setDraftOperations] = useState<EncounterOperation[]>([]);
   const [arrivalDraft, setArrivalDraft] = useState<ArrivalDraft | null>(null);
   const [arrivalReferences, setArrivalReferences] = useState<MonsterReferenceCandidate[]>([]);
+  const [grantDraft, setGrantDraft] = useState<CharacterGrantDraft | null>(null);
   const [startCombatAfterArrival, setStartCombatAfterArrival] = useState(false);
   const [suggestedSceneId, setSuggestedSceneId] = useState<string | null>(null);
   const [sceneChapter, setSceneChapter] = useState("第一章");
@@ -342,6 +348,7 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
   const scenes = useQuery({ queryKey: ["scenes", campaignId], queryFn: ({ signal }) => listScenes(campaignId, signal) });
   const locations = useQuery({ queryKey: ["locations", campaignId], queryFn: ({ signal }) => listLocations(campaignId, signal) });
   const characters = useQuery({ queryKey: ["characters", campaignId], queryFn: ({ signal }) => listCharacters(campaignId, signal) });
+  const characterOptions = useQuery({ queryKey: ["character-options"], queryFn: ({ signal }) => getCharacterOptions(signal) });
   const npcs = useQuery({ queryKey: ["npcs", campaignId], queryFn: ({ signal }) => listNpcs(campaignId, signal) });
   const monsters = useQuery({ queryKey: ["monsters", campaignId], queryFn: ({ signal }) => listMonsters(campaignId, signal) });
   const events = useQuery({ queryKey: ["events", campaignId], queryFn: ({ signal }) => listEvents(campaignId, signal) });
@@ -475,6 +482,56 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
   const addEntry = (kind: ProgressEntry["kind"], text: string) => {
     setEntries((current) => [...current, { id: createClientId("progress"), kind, text, createdAt: new Date().toISOString() }]);
   };
+  const grantLookup = useMutation({
+    mutationFn: async (intent: CharacterGrantIntent) => {
+      const character = characters.data?.find((item) => item.id === intent.characterId);
+      const catalog = characterOptions.data;
+      if (!character || !catalog) throw new Error("角色或本地 2024 规则目录尚未载入");
+      if (intent.kind === "spell") return buildSpellGrantDraft(intent, character, catalog);
+      if (intent.kind === "class_feature" || intent.kind === "skill_proficiency") {
+        return buildFeatureGrantDraft(intent, character, catalog);
+      }
+      const hits = await searchKnowledge({
+        text: intent.kind === "item"
+          ? `${intent.requestedName} 道具 物品 重量 价格`
+          : `${intent.requestedName} 武器 护甲 装备 重量 价格`,
+        top_k: 12,
+        candidate_k: 64,
+        min_score: 0.1,
+        content_types: intent.kind === "item" ? ["items", "equipment"] : ["equipment"],
+        editions: ["2024"],
+        current_official: true,
+        allow_unknown: false,
+        allow_third_party: false,
+      });
+      const documents = await Promise.all(hits.slice(0, 12).map(async (hit) => {
+        try {
+          return await getRuleDocument(hit.chunk.record_id);
+        } catch {
+          return null;
+        }
+      }));
+      const exact = documents.find((document) => (
+        document?.content_type === "equipment"
+        && document.content_plain_text.includes(intent.requestedName)
+      ))
+        ?? documents.find((document) => (
+          document?.content_type === "items"
+          && document.content_plain_text.includes(intent.requestedName)
+        ))
+        ?? documents.find((document) => document?.content_plain_text.includes(intent.requestedName))
+        ?? documents.find((document) => document !== null)
+        ?? null;
+      return buildItemGrantDraft(intent, exact);
+    },
+    onSuccess: (draft) => {
+      setGrantDraft(draft);
+      setArrivalDraft(null);
+      setArrivalReferences([]);
+      showToast(draft.eligible ? "已生成规则校验后的玩家授予草案" : "授予请求未通过 2024 规则校验", draft.eligible ? "success" : "error");
+    },
+    onError: (error) => showToast(error.message, "error"),
+  });
   const arrivalLookup = useMutation({
     mutationFn: async ({ kind, prompt, assistantText }: { kind: ArrivalKind; prompt: string; assistantText: string; startCombat?: boolean }) => {
       const sceneContext = `${activeScene?.name ?? ""} ${activeScene?.description ?? ""} ${activeLocation?.name ?? ""} ${activeLocation?.description ?? ""}`;
@@ -587,9 +644,15 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
   };
   const executeInput = () => {
     const action = input.trim();
-    if (!action || !sceneId || arrivalLookup.isPending) return;
+    if (!action || !sceneId || arrivalLookup.isPending || grantLookup.isPending) return;
     addEntry("dm", `【执行】${action}`);
     void log("DM 执行指令", action, { entry_kind: "dm", action: "execute_request" });
+    const grantIntent = detectCharacterGrantIntent(action, characters.data ?? []);
+    if (grantIntent) {
+      grantLookup.mutate(grantIntent);
+      setInput("");
+      return;
+    }
     const kind = detectArrivalKind(action);
     if (kind) {
       const startsCombat = /攻击|战斗|突袭|伏击|开战|冲向|袭击/.test(action);
@@ -605,6 +668,92 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
     assistant.mutate(`DM要求立即落实以下场景变化，并给出可执行后果草案：${action}`);
     setInput("");
   };
+  const grantConfirm = useMutation({
+    mutationFn: async () => {
+      if (!grantDraft?.eligible) throw new Error(grantDraft?.blockingReason ?? "授予草案未通过规则校验");
+      const character = characters.data?.find((item) => item.id === grantDraft.characterId);
+      if (!character) throw new Error("目标角色已不存在");
+      if (grantDraft.kind === "spell") {
+        await createKnownSpell(campaignId, {
+          character_id: character.id,
+          character_version: character.version,
+          name: grantDraft.candidateName,
+          spell_level: Number(grantDraft.metadata.spell_level ?? 0),
+          prepared: false,
+          source_reference: grantDraft.sourceLabel,
+          metadata_json: {
+            ...grantDraft.metadata,
+            source_record_id: grantDraft.sourceRecordId,
+            canonical_url: grantDraft.canonicalUrl,
+            edition: grantDraft.edition,
+            officiality: grantDraft.officiality,
+          },
+        });
+      } else if (grantDraft.kind === "class_feature") {
+        await updateCharacter(campaignId, character.id, {
+          features: [
+            ...character.features,
+            {
+              name: grantDraft.candidateName,
+              description: grantDraft.description || grantDraft.ruleReason,
+              source_record_id: grantDraft.sourceRecordId,
+              source_label: grantDraft.sourceLabel,
+              class_name: grantDraft.metadata.class_name,
+              class_level: grantDraft.metadata.class_level,
+              rule_year: 2024,
+            },
+          ],
+        }, character.version);
+      } else {
+        await createEquipmentInstance(campaignId, {
+          character_id: character.id,
+          character_version: character.version,
+          name: grantDraft.candidateName,
+          category: typeof grantDraft.metadata.category === "string"
+            ? grantDraft.metadata.category
+            : grantDraft.kind === "item" ? "item" : "gear",
+          quantity: grantDraft.quantity,
+          armor_class: typeof grantDraft.metadata.armor_class === "number" ? grantDraft.metadata.armor_class : null,
+          attunement_required: grantDraft.metadata.attunement_required === true,
+          metadata_json: {
+            ...grantDraft.metadata,
+            source_record_id: grantDraft.sourceRecordId,
+            canonical_url: grantDraft.canonicalUrl,
+            edition: grantDraft.edition,
+            officiality: grantDraft.officiality,
+          },
+        });
+      }
+      await createEvent(campaignId, {
+        title: `${grantDraft.characterName}获得${grantDraft.candidateName}`,
+        description: `DM确认授予：${grantDraft.candidateName}${grantDraft.quantity > 1 ? ` × ${grantDraft.quantity}` : ""}。${grantDraft.ruleReason}`,
+        event_type: "character_grant",
+        visibility: "players",
+        location_id: activeScene?.location_id ?? null,
+        metadata_json: {
+          action: "character_grant",
+          grant_kind: grantDraft.kind,
+          character_id: grantDraft.characterId,
+          source_record_id: grantDraft.sourceRecordId,
+          scene_id: sceneId,
+          game_table: true,
+        },
+      });
+      return grantDraft;
+    },
+    onSuccess: async (confirmed) => {
+      addEntry("system", `${confirmed.characterName}获得${confirmed.candidateName}${confirmed.quantity > 1 ? ` × ${confirmed.quantity}` : ""}`);
+      setGrantDraft(null);
+      await Promise.all([
+        client.invalidateQueries({ queryKey: ["characters", campaignId] }),
+        client.invalidateQueries({ queryKey: ["character-assets", campaignId, confirmed.characterId] }),
+        client.invalidateQueries({ queryKey: ["dm-noncombat-actions", campaignId, confirmed.characterId] }),
+        client.invalidateQueries({ queryKey: ["events", campaignId] }),
+      ]);
+      showToast("已按 2024 规则写入角色，并同步给玩家端");
+    },
+    onError: (error) => showToast(error.message, "error"),
+  });
   const participantAdd = useMutation({
     mutationFn: async () => {
       const [entityType, entityId] = entityKey.split(":");
@@ -1506,7 +1655,7 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
             </div>
           ) : null}
           <div className="mt-4 grid gap-2">{quickActions.map((action) => <Button disabled={!sceneId || assistant.isPending} key={action} onClick={() => advance(action)} size="sm">{action}</Button>)}</div>
-          <form className="mt-3" onSubmit={(event: FormEvent) => { event.preventDefault(); advance(input); }}><textarea className={textareaCls} onChange={(event) => setInput(event.target.value)} placeholder="记录玩家行动、NPC 对话或现场变化……" value={input} /><div className="mt-2 flex flex-wrap justify-end gap-2"><Button disabled={!sceneId || !input.trim()} loading={arrivalLookup.isPending} onClick={executeInput} type="button" variant="primary">执行并生成实体 / 后果</Button><Button disabled={!sceneId || !input.trim()} loading={assistant.isPending} type="submit" variant="ai">记录并询问副 DM</Button></div><p className="mb-0 mt-2 text-2xs text-stone-600">“询问”只记录并给建议；“执行”会把登场者、突袭或变化转成等待DM确认的真实草案。</p></form>
+          <form className="mt-3" onSubmit={(event: FormEvent) => { event.preventDefault(); advance(input); }}><textarea className={textareaCls} onChange={(event) => setInput(event.target.value)} placeholder="记录玩家行动、NPC 对话、现场变化，或输入“给艾琳一把长剑”……" value={input} /><div className="mt-2 flex flex-wrap justify-end gap-2"><Button disabled={!sceneId || !input.trim()} loading={arrivalLookup.isPending || grantLookup.isPending} onClick={executeInput} type="button" variant="primary">执行并生成实体 / 奖励 / 后果</Button><Button disabled={!sceneId || !input.trim()} loading={assistant.isPending} type="submit" variant="ai">记录并询问副 DM</Button></div><p className="mb-0 mt-2 text-2xs text-stone-600">“询问”只记录并给建议；“执行”会把登场者、玩家装备/道具或合法能力变化转成规则校验后的草案，DM确认前不会写入。</p></form>
           {assistant.isError ? <div className="mt-3"><ErrorState error={assistant.error} onRetry={() => advance(input)} /></div> : null}
         </Panel>
         </div>
@@ -1525,6 +1674,37 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
           {arrivalLookup.isPending ? (
             <Panel eyebrow="动态原子 · 只读检索" title="正在查找合适的登场者">
               <LoadingBlock label="优先检索战役原子与本地 D&D 怪物图鉴…" />
+            </Panel>
+          ) : null}
+          {grantLookup.isPending ? (
+            <Panel eyebrow="玩家授予 · 只读检索" title="正在核对 D&D 5e 2024 规则">
+              <LoadingBlock label="正在定位官方条目并校验职业、等级、环阶与既有角色数据…" />
+            </Panel>
+          ) : null}
+          {grantDraft ? (
+            <Panel eyebrow="玩家授予草案 · 等待 DM 确认" title={`${grantDraft.characterName} ← ${grantDraft.candidateName}`}>
+              <div className="flex flex-wrap gap-2">
+                <Badge tone={grantDraft.eligible ? "ok" : "warn"}>{grantDraft.eligible ? "规则校验通过" : "已阻止写入"}</Badge>
+                <Badge tone="ai">D&D 5e · {grantDraft.edition}</Badge>
+                <Badge>{grantDraft.kind === "spell" ? "法术" : grantDraft.kind === "class_feature" ? "职业特性" : grantDraft.kind === "skill_proficiency" ? "技能熟练" : grantDraft.kind === "item" ? "道具" : "装备"}</Badge>
+                {grantDraft.quantity > 1 ? <Badge>数量 × {grantDraft.quantity}</Badge> : null}
+              </div>
+              <dl className="mt-3 grid gap-2 text-xs sm:grid-cols-2">
+                <div className="rounded border border-ink-800 bg-ink-950/40 p-2"><dt className="text-stone-600">目标角色</dt><dd className="m-0 mt-1 text-parchment-100">{grantDraft.characterName}</dd></div>
+                <div className="rounded border border-ink-800 bg-ink-950/40 p-2"><dt className="text-stone-600">规则来源</dt><dd className="m-0 mt-1 text-parchment-100">{grantDraft.sourceLabel}</dd></div>
+                {typeof grantDraft.metadata.unit_weight_lb === "number" ? <div className="rounded border border-ink-800 bg-ink-950/40 p-2"><dt className="text-stone-600">单位重量</dt><dd className="m-0 mt-1 text-parchment-100">{grantDraft.metadata.unit_weight_lb} 磅</dd></div> : null}
+                {typeof grantDraft.metadata.price_cp === "number" ? <div className="rounded border border-ink-800 bg-ink-950/40 p-2"><dt className="text-stone-600">规则价格</dt><dd className="m-0 mt-1 text-parchment-100">{(grantDraft.metadata.price_cp / 100).toFixed(2)} GP</dd></div> : null}
+              </dl>
+              <p className={`rounded border p-2 text-xs leading-5 ${grantDraft.eligible ? "border-emerald-900/60 bg-emerald-950/15 text-emerald-100" : "border-red-900/70 bg-red-950/20 text-red-200"}`}>
+                {grantDraft.blockingReason ?? grantDraft.ruleReason}
+              </p>
+              {grantDraft.description ? <details className="rounded border border-ink-800 p-2 text-xs text-stone-400"><summary className="cursor-pointer text-parchment-100">查看规则摘录与限制</summary><p className="mb-0 whitespace-pre-wrap leading-5">{grantDraft.description}</p></details> : null}
+              {grantDraft.canonicalUrl ? <a className="mt-2 block text-2xs text-ember-300 hover:text-ember-200" href={grantDraft.canonicalUrl} rel="noreferrer" target="_blank">打开本地条目对应来源</a> : null}
+              <p className="mb-0 mt-2 text-2xs text-stone-600">模型不能改写来源、职业、环阶、价格或重量；确认后才会原子化写入角色，并公开同步到玩家日志。</p>
+              <div className="mt-3 flex justify-end gap-2">
+                <Button disabled={grantConfirm.isPending} onClick={() => setGrantDraft(null)} size="sm">放弃草案</Button>
+                <Button disabled={!grantDraft.eligible} loading={grantConfirm.isPending} onClick={() => grantConfirm.mutate()} size="sm" variant="primary">DM 确认授予</Button>
+              </div>
             </Panel>
           ) : null}
           {arrivalDraft ? (

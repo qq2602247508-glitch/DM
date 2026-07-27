@@ -146,6 +146,83 @@ def test_dm_can_create_atomic_character_assets_and_shop_stock(
     assert assets["spells"][0]["prepared"] is True
     assert assets["equipment"][0]["name"] == "法杖"
     assert assets["wallet"]["copper"] == 50
+    character = economy_client.get(
+        f"{prefix}/characters/{character['id']}"
+    ).json()
+    assert character["spells"][0]["name"] == "护盾术"
+    assert character["actions"][0]["name"] == "护盾术"
+    assert character["inventory"][0]["name"] == "法杖"
+
+
+def test_character_asset_mirrors_are_idempotent_and_preserve_preparation_rules(
+    economy_client: TestClient,
+) -> None:
+    campaign = economy_client.post(
+        "/api/v1/campaigns", json={"name": "同步验收"}
+    ).json()
+    character = economy_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/characters",
+        json={"name": "验收法师", "hp": 8, "max_hp": 8},
+    ).json()
+    prefix = f"/api/v1/campaigns/{campaign['id']}"
+    spell_payload = {
+        "character_id": character["id"],
+        "character_version": character["version"],
+        "name": "火球术",
+        "spell_level": 3,
+        "prepared": False,
+        "metadata_json": {
+            "source_record_id": "fireball-2024",
+            "character_spell": {
+                "name": "火球术",
+                "source_record_id": "fireball-2024",
+                "damage_expression": "8d6",
+            },
+        },
+    }
+    assert economy_client.post(
+        f"{prefix}/characters/assets/spells", json=spell_payload
+    ).status_code == 201
+    character = economy_client.get(
+        f"{prefix}/characters/{character['id']}"
+    ).json()
+    assert [item["name"] for item in character["spells"]] == ["火球术"]
+    assert character["actions"] == []
+    duplicate = economy_client.post(
+        f"{prefix}/characters/assets/spells",
+        json={**spell_payload, "character_version": character["version"]},
+    )
+    assert duplicate.status_code == 201
+    assert duplicate.json()["duplicate"] is True
+
+    equipment_payload = {
+        "character_id": character["id"],
+        "character_version": character["version"],
+        "name": "治疗药水",
+        "category": "item",
+        "quantity": 2,
+        "metadata_json": {
+            "source_record_id": "healing-potion-2024",
+            "unit_weight_lb": 0.5,
+            "price_cp": 5000,
+        },
+    }
+    assert economy_client.post(
+        f"{prefix}/characters/assets/equipment", json=equipment_payload
+    ).status_code == 201
+    character = economy_client.get(
+        f"{prefix}/characters/{character['id']}"
+    ).json()
+    assert character["inventory"][0]["quantity"] == 2
+    assert economy_client.post(
+        f"{prefix}/characters/assets/equipment",
+        json={**equipment_payload, "character_version": character["version"], "quantity": 1},
+    ).status_code == 201
+    character = economy_client.get(
+        f"{prefix}/characters/{character['id']}"
+    ).json()
+    assert len(character["inventory"]) == 1
+    assert character["inventory"][0]["quantity"] == 3
 
 
 def test_spell_and_equipment_preview_confirm_idempotent(economy_client: TestClient) -> None:

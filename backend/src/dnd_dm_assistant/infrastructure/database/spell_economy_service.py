@@ -104,6 +104,25 @@ class SpellEconomyService:
                 s, cid, str(data.pop("character_id")), int(data.pop("character_version"))
             )
             prepared = bool(data.pop("prepared"))
+            existing = s.scalar(
+                select(KnownSpell).where(
+                    KnownSpell.character_id == character.id,
+                    func.lower(KnownSpell.name) == str(data["name"]).lower(),
+                )
+            )
+            if existing is not None:
+                is_prepared = s.scalar(
+                    select(PreparedSpell).where(
+                        PreparedSpell.character_id == character.id,
+                        PreparedSpell.known_spell_id == existing.id,
+                        PreparedSpell.prepared.is_(True),
+                    )
+                )
+                return {
+                    **serialize(existing),
+                    "prepared": is_prepared is not None,
+                    "duplicate": True,
+                }
             spell = KnownSpell(campaign_id=cid, character_id=character.id, **data)
             s.add(spell)
             s.flush()
@@ -115,6 +134,52 @@ class SpellEconomyService:
                         prepared=True,
                     )
                 )
+            metadata = dict(spell.metadata_json)
+            raw_character_spell = metadata.get("character_spell")
+            character_spell = (
+                dict(raw_character_spell)
+                if isinstance(raw_character_spell, dict)
+                else {
+                    "name": spell.name,
+                    "spell_level": spell.spell_level,
+                    "prepared": prepared,
+                    "source_reference": spell.source_reference,
+                    "source_record_id": metadata.get("source_record_id"),
+                }
+            )
+            character_spell.update(
+                {
+                    "name": spell.name,
+                    "spell_level": spell.spell_level,
+                    "prepared": prepared,
+                }
+            )
+            spell_identity = str(
+                character_spell.get("source_record_id") or character_spell["name"]
+            )
+            mirrored_spells = [
+                item
+                for item in character.spells
+                if not (
+                    isinstance(item, dict)
+                    and str(item.get("source_record_id") or item.get("name") or "")
+                    == spell_identity
+                )
+            ]
+            mirrored_spells.append(character_spell)
+            character.spells = mirrored_spells
+            if spell.spell_level == 0 or prepared:
+                mirrored_actions = [
+                    item
+                    for item in character.actions
+                    if not (
+                        isinstance(item, dict)
+                        and str(item.get("source_record_id") or item.get("name") or "")
+                        == spell_identity
+                    )
+                ]
+                mirrored_actions.append(character_spell)
+                character.actions = mirrored_actions
             character.version += 1
             return {**serialize(spell), "prepared": prepared}
 
@@ -123,10 +188,67 @@ class SpellEconomyService:
             character = self._character(
                 s, cid, str(data.pop("character_id")), int(data.pop("character_version"))
             )
-            equipment = EquipmentInstance(
-                campaign_id=cid, character_id=character.id, **data
+            metadata = dict(data.get("metadata_json") or {})
+            source_record_id = str(metadata.get("source_record_id") or "")
+            existing = s.scalar(
+                select(EquipmentInstance).where(
+                    EquipmentInstance.character_id == character.id,
+                    func.lower(EquipmentInstance.name) == str(data["name"]).lower(),
+                )
             )
-            s.add(equipment)
+            if existing is not None:
+                existing.quantity += int(data.get("quantity") or 1)
+                existing.category = str(data.get("category") or existing.category)
+                existing.armor_class = data.get("armor_class")
+                existing.attunement_required = bool(
+                    data.get("attunement_required", existing.attunement_required)
+                )
+                existing.charges = data.get("charges")
+                existing.max_charges = data.get("max_charges")
+                existing.metadata_json = {**existing.metadata_json, **metadata}
+                equipment = existing
+            else:
+                equipment = EquipmentInstance(
+                    campaign_id=cid, character_id=character.id, **data
+                )
+                s.add(equipment)
+                s.flush()
+            inventory = list(character.inventory)
+            matching_index = next(
+                (
+                    index
+                    for index, item in enumerate(inventory)
+                    if isinstance(item, dict)
+                    and (
+                        (
+                            source_record_id
+                            and str(item.get("source_record_id") or "") == source_record_id
+                        )
+                        or str(item.get("name") or "").lower() == equipment.name.lower()
+                    )
+                ),
+                None,
+            )
+            summary = {
+                "name": equipment.name,
+                "quantity": equipment.quantity,
+                "category": equipment.category,
+                "armor_class": equipment.armor_class,
+                "attunement_required": equipment.attunement_required,
+                "charges": equipment.charges,
+                "max_charges": equipment.max_charges,
+                **metadata,
+            }
+            if matching_index is None:
+                inventory.append(summary)
+            else:
+                old_summary = inventory[matching_index]
+                previous = dict(old_summary) if isinstance(old_summary, dict) else {}
+                inventory[matching_index] = {
+                    **previous,
+                    **summary,
+                }
+            character.inventory = inventory
             character.version += 1
             s.flush()
             return serialize(equipment)
