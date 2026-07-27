@@ -3,7 +3,7 @@ from __future__ import annotations
 import threading
 import time
 from collections.abc import Callable
-from typing import Annotated, Any
+from typing import Annotated, Any, Literal
 
 from fastapi import APIRouter, Cookie, Depends, HTTPException, Request, Response, status
 from pydantic import BaseModel, Field, StringConstraints
@@ -69,6 +69,19 @@ class ActionRequestInput(BaseModel):
     message: str | None = Field(default=None, max_length=4000)
     payload_json: dict[str, Any] = Field(default_factory=dict)
     idempotency_key: str = Field(min_length=8, max_length=120)
+
+
+class NoncombatActionPlanInput(BaseModel):
+    action_id: str = Field(min_length=1, max_length=200)
+    target_type: Literal["self", "npc", "monster", "object", "area"]
+    target_id: str | None = Field(default=None, max_length=36)
+    message: str | None = Field(default=None, max_length=4000)
+    idempotency_key: str = Field(min_length=8, max_length=120)
+
+
+class NoncombatRollInput(BaseModel):
+    version: int = Field(ge=1)
+    raw_roll: int = Field(ge=1, le=20)
 
 
 class MoveInput(BaseModel):
@@ -288,6 +301,39 @@ def submit_action_request(
             body.payload_json,
             body.idempotency_key,
             _request_id(request),
+        )
+    )
+
+
+@public_player_room_router.post(
+    "/me/noncombat-actions/plan", status_code=status.HTTP_201_CREATED
+)
+def plan_noncombat_action(
+    body: NoncombatActionPlanInput,
+    request: Request,
+    principal: Annotated[PlayerPrincipal, Depends(get_player_principal)],
+    service: Annotated[PlayerRoomService, Depends(get_player_room_service)],
+) -> dict[str, Any]:
+    return _safe(
+        lambda: service.plan_noncombat_action(
+            principal, body.model_dump(), _request_id(request)
+        )
+    )
+
+
+@public_player_room_router.post("/me/noncombat-actions/{action_request_id}/roll")
+def roll_noncombat_action(
+    action_request_id: str,
+    body: NoncombatRollInput,
+    principal: Annotated[PlayerPrincipal, Depends(get_player_principal)],
+    service: Annotated[PlayerRoomService, Depends(get_player_room_service)],
+) -> dict[str, Any]:
+    return _safe(
+        lambda: service.roll_noncombat_action(
+            principal,
+            action_request_id,
+            body.version,
+            body.raw_roll,
         )
     )
 

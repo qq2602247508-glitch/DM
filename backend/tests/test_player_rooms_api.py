@@ -233,6 +233,10 @@ def test_player_snapshot_exposes_selected_scene_grid_and_public_objects(
         "cell_size_ft": 5,
         "mode": "combat",
         "public_description": "酒馆大厅、吧台与后厨",
+        "cells": [
+            {"row": 1, "col": 1, "kind": "wall", "label": "酒馆外墙"},
+            {"row": 2, "col": 2, "kind": "cover", "label": "木制吧台"},
+        ],
     }
     assert {(item["object_type"], item["label"]) for item in public_scene["objects"]} == {
         ("wall", "酒馆外墙"),
@@ -390,3 +394,119 @@ def test_ended_combat_is_read_only_in_player_snapshot(
     enemy_snapshot = next(item for item in snapshot["combatants"] if item["name"] == "地精")
     assert enemy_snapshot["armor_class"] == 15
     assert "hp" not in enemy_snapshot
+
+
+def test_noncombat_lockpick_uses_raw_roll_and_dm_confirmation(
+    campaign_client: TestClient,
+) -> None:
+    campaign = _campaign(campaign_client, "非战斗规则团")
+    character = campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/characters",
+        json={
+            "name": "洛克",
+            "class_name": "游荡者",
+            "level": 3,
+            "hp": 20,
+            "max_hp": 20,
+            "ability_scores": {
+                "strength": 8,
+                "dexterity": 16,
+                "constitution": 12,
+                "intelligence": 14,
+                "wisdom": 10,
+                "charisma": 13,
+            },
+            "skills": {"巧手": {"proficient": True}},
+        },
+    ).json()
+    scene = campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/scenes",
+        json={"name": "锁住的酒馆后门"},
+    ).json()
+    assert campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/scenes/{scene['id']}/grid",
+        json={
+            "width": 8,
+            "height": 6,
+            "cell_size_ft": 5,
+            "mode": "exploration",
+            "layers_json": {"cells": [{"row": 2, "col": 3, "kind": "door"}]},
+        },
+    ).status_code == 201
+    assert campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/scenes/{scene['id']}/tokens",
+        json={
+            "entity_type": "character",
+            "entity_id": character["id"],
+            "label": character["name"],
+            "row": 2,
+            "col": 2,
+        },
+    ).status_code == 201
+    door = campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/scenes/{scene['id']}/objects",
+        json={
+            "object_type": "door",
+            "label": "后门铁锁",
+            "row": 2,
+            "col": 3,
+            "state": "closed",
+            "visibility": "public",
+            "interaction_json": {"action": "lockpick", "locked": True, "dc": 15},
+        },
+    ).json()
+    opened = _open(campaign_client, campaign["id"])
+    _join(campaign_client, opened["join_code"])
+    assert campaign_client.post(
+        "/api/v1/player-room/me/bind-character",
+        json={"character_id": character["id"]},
+    ).status_code == 200
+    assert campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/player-room/live-state",
+        json={"scene_id": scene["id"]},
+    ).status_code == 200
+
+    snapshot = campaign_client.get("/api/v1/player-room/me").json()
+    token = snapshot["table"]["scene"]["tokens"][0]
+    assert token["entity_type"] == "character"
+    assert token["entity_id"] == character["id"]
+    assert any(
+        action["id"] == "tool:thieves_tools"
+        for action in snapshot["table"]["noncombat"]["available_actions"]
+    )
+    planned = campaign_client.post(
+        "/api/v1/player-room/me/noncombat-actions/plan",
+        json={
+            "action_id": "tool:thieves_tools",
+            "target_type": "object",
+            "target_id": door["id"],
+            "message": "我用盗贼工具撬开后门。",
+            "idempotency_key": "lockpick-plan-1",
+        },
+    )
+    assert planned.status_code == 201
+    request = planned.json()
+    resolution = request["payload_json"]["resolution"]
+    assert resolution["modifier"] == 5
+    assert resolution["dc"] == 15
+    rolled = campaign_client.post(
+        f"/api/v1/player-room/me/noncombat-actions/{request['id']}/roll",
+        json={"version": request["version"], "raw_roll": 10},
+    )
+    assert rolled.status_code == 200
+    resolved = rolled.json()
+    assert resolved["payload_json"]["resolution"]["total"] == 15
+    assert resolved["payload_json"]["resolution"]["success"] is True
+    accepted = campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/player-action-requests/{request['id']}/accept",
+        json={"version": resolved["version"], "dm_note": "锁舌弹开。"},
+    )
+    assert accepted.status_code == 200
+    assert accepted.json()["payload_json"]["phase"] == "dm_confirmed"
+    grid = campaign_client.get(
+        f"/api/v1/campaigns/{campaign['id']}/scenes/{scene['id']}/grid"
+    ).json()
+    updated_door = next(item for item in grid["objects"] if item["id"] == door["id"])
+    assert updated_door["state"] == "open"
+    shared = campaign_client.get("/api/v1/player-room/me").json()["table"]["shared_log"]
+    assert shared[0]["event_type"] == "player_noncombat_action"

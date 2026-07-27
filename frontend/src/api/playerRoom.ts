@@ -83,6 +83,8 @@ export type PlayerSceneGrid = {
 
 export type PlayerSceneToken = {
   id: string;
+  entity_type: "character" | "npc" | "monster" | "marker";
+  entity_id: string | null;
   label: string;
   row: number;
   col: number;
@@ -99,6 +101,47 @@ export type PlayerSceneObject = {
   width_cells: number;
   height_cells: number;
   state: string;
+  interaction?: Record<string, unknown>;
+};
+
+export type NoncombatActionOption = {
+  id: string;
+  kind: "skill" | "tool" | "spell";
+  name: string;
+  description: string;
+  ability?: string;
+  ability_label?: string;
+  suggested_dc?: number;
+  range?: string | null;
+  duration?: string | null;
+  concentration?: boolean;
+  resource_key?: string | null;
+  resource_cost?: number;
+  target_types: Array<"self" | "npc" | "monster" | "object" | "area">;
+};
+
+export type NoncombatPendingAction = {
+  id: string;
+  version: number;
+  message: string | null;
+  payload: {
+    phase?: "awaiting_player_roll" | "resolved" | "dm_confirmed";
+    action?: NoncombatActionOption;
+    target?: { type?: string; id?: string; name?: string };
+    resolution?: {
+      kind?: string;
+      instruction?: string;
+      modifier?: number;
+      dc?: number;
+      raw_roll?: number;
+      total?: number;
+      success?: boolean;
+      save?: Record<string, unknown>;
+    };
+    proposal?: { kind?: string; summary?: string };
+    cost?: Record<string, unknown>;
+    narrative_suggestions?: string[];
+  };
 };
 
 export type PlayerCombatant = {
@@ -164,6 +207,10 @@ export type PlayerRoomSnapshot = {
     };
     handouts: Array<{ id: string; title: string; body: string; sort_order: number }>;
     shared_log: Array<{ id: string; event_type: string; title: string; description: string | null; occurred_at: string }>;
+    noncombat: {
+      available_actions: NoncombatActionOption[];
+      pending_actions: NoncombatPendingAction[];
+    };
   };
   combat: PlayerCombatSnapshot | null;
 };
@@ -303,6 +350,31 @@ export const submitMyActionRequest = (actionType: string, message: string) =>
       idempotency_key: crypto.randomUUID(),
     }),
   });
+
+export const planMyNoncombatAction = (
+  actionId: string,
+  targetType: "self" | "npc" | "monster" | "object" | "area",
+  targetId: string | null,
+  message: string,
+) => playerFetch<Record<string, unknown>>("/player-room/me/noncombat-actions/plan", {
+  method: "POST",
+  body: JSON.stringify({
+    action_id: actionId,
+    target_type: targetType,
+    target_id: targetId,
+    message,
+    idempotency_key: crypto.randomUUID(),
+  }),
+});
+
+export const rollMyNoncombatAction = (
+  requestId: string,
+  version: number,
+  rawRoll: number,
+) => playerFetch<Record<string, unknown>>(`/player-room/me/noncombat-actions/${requestId}/roll`, {
+  method: "POST",
+  body: JSON.stringify({ version, raw_roll: rawRoll }),
+});
 
 export const moveMyCombatant = (row: number, col: number, combatantVersion: number) =>
   playerFetch<Record<string, unknown>>("/player-room/me/combat/move", {

@@ -10,6 +10,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
 from dnd_dm_assistant.domain.campaign_state import StateNotFoundError, VersionConflict
+from dnd_dm_assistant.domain.noncombat_actions import json_dict
 from dnd_dm_assistant.infrastructure.database.campaign_service import serialize
 from dnd_dm_assistant.infrastructure.database.models import (
     AuditLog,
@@ -299,6 +300,74 @@ class PlayerService:
                 )
             if item.status != "pending":
                 return serialize(item)  # confirmation is idempotent
+            if status == "accepted" and item.action_type == "noncombat_rule":
+                payload = dict(item.payload_json or {})
+                if payload.get("schema_version") != "1.0":
+                    raise ValueError("unsupported noncombat action schema")
+                if payload.get("phase") != "resolved":
+                    raise ValueError("玩家仍需完成投骰，当前行动不能确认")
+                character = self._character(session, campaign_id, item.character_id)
+                cost = json_dict(payload.get("cost"))
+                resource_key = cost.get("resource_key")
+                amount = int(cost.get("amount") or 0)
+                if resource_key and amount > 0:
+                    resources = dict(character.resources or {})
+                    resource = resources.get(str(resource_key))
+                    if not isinstance(resource, dict):
+                        raise ValueError("角色卡缺少行动所需资源")
+                    updated = dict(resource)
+                    current = int(updated.get("current") or 0)
+                    if current < amount:
+                        raise ValueError("角色资源已变化且不足，不能确认该行动")
+                    updated["current"] = current - amount
+                    resources[str(resource_key)] = updated
+                    character.resources = resources
+                    character.version += 1
+                    character.updated_at = datetime.now(UTC)
+                resolution = json_dict(payload.get("resolution"))
+                proposal = json_dict(payload.get("proposal"))
+                if resolution.get("success") is not False and proposal.get("kind") == "object_state":
+                    object_id = str(proposal.get("object_id") or "")
+                    scene_object = session.get(SceneObject, object_id)
+                    scene_data = json_dict(payload.get("scene"))
+                    if (
+                        scene_object is None
+                        or scene_object.scene_id != scene_data.get("id")
+                        or scene_object.visibility != "public"
+                    ):
+                        raise ValueError("待更新的 Scene 物体已不存在")
+                    if scene_object.state != proposal.get("from_state"):
+                        raise ValueError("物体状态已变化，请玩家重新提交行动")
+                    scene_object.state = str(proposal["to_state"])
+                    scene_object.version += 1
+                    scene_object.updated_at = datetime.now(UTC)
+                actor = json_dict(payload.get("actor"))
+                action = json_dict(payload.get("action"))
+                target = json_dict(payload.get("target"))
+                summary = str(proposal.get("summary") or "行动已由 DM 确认。")
+                event = Event(
+                    campaign_id=campaign_id,
+                    event_type="player_noncombat_action",
+                    title=f"{actor.get('name', '玩家')}：{action.get('name', '非战斗行动')}",
+                    description=f"目标：{target.get('name', '当前区域')}。{summary}",
+                    visibility="public",
+                    metadata_json={
+                        "scene_id": json_dict(payload.get("scene")).get("id"),
+                        "player_action_request_id": item.id,
+                        "resolution": resolution,
+                        "proposal": proposal,
+                        "dm_note": dm_note,
+                    },
+                )
+                session.add(event)
+                session.flush()
+                payload["phase"] = "dm_confirmed"
+                payload["confirmation"] = {
+                    "event_id": event.id,
+                    "dm_note": dm_note,
+                    "confirmed_at": datetime.now(UTC).isoformat(),
+                }
+                item.payload_json = payload
             item.status, item.dm_note, item.resolved_at, item.version, item.updated_at = (
                 status,
                 dm_note,

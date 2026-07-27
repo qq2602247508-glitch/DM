@@ -28,6 +28,7 @@ from dnd_dm_assistant.infrastructure.database.models import (
     SceneGrid,
     SceneObject,
     SceneParticipant,
+    SceneToken,
     WorldItem,
 )
 
@@ -241,6 +242,52 @@ class WorldService:
             participant = SceneParticipant(scene_id=scene_id, **data)
             session.add(participant)
             session.flush()
+            grid = session.scalar(select(SceneGrid).where(SceneGrid.scene_id == scene_id))
+            existing_token = session.scalar(
+                select(SceneToken).where(
+                    SceneToken.scene_id == scene_id,
+                    SceneToken.entity_type == participant.entity_type,
+                    SceneToken.entity_id == participant.entity_id,
+                )
+            )
+            if grid is not None and existing_token is None:
+                occupied = {
+                    (token.row, token.col)
+                    for token in session.scalars(
+                        select(SceneToken).where(SceneToken.scene_id == scene_id)
+                    )
+                }
+                raw_cells = grid.layers_json.get("cells", [])
+                cells = raw_cells if isinstance(raw_cells, list) else []
+                blocked = {
+                    (int(cell["row"]), int(cell["col"]))
+                    for cell in cells
+                    if isinstance(cell, dict)
+                    and cell.get("kind") in {"wall", "door"}
+                    and isinstance(cell.get("row"), int)
+                    and isinstance(cell.get("col"), int)
+                }
+                position = next(
+                    (
+                        (row, col)
+                        for row in range(2, max(3, grid.height))
+                        for col in range(2, max(3, grid.width))
+                        if (row, col) not in occupied and (row, col) not in blocked
+                    ),
+                    (1, 1),
+                )
+                session.add(
+                    SceneToken(
+                        scene_id=scene_id,
+                        entity_type=participant.entity_type,
+                        entity_id=participant.entity_id,
+                        label=str(entity.get("name") or participant.entity_type),
+                        row=position[0],
+                        col=position[1],
+                        visible=participant.visible,
+                        metadata_json={"generated_from": "scene_participant"},
+                    )
+                )
             self._audit(
                 session,
                 campaign_id,
@@ -269,6 +316,17 @@ class WorldService:
                 raise StateNotFoundError("scene participant not found")
             self._version(participant, expected_version, "scene_participant")
             before = serialize(participant)
+            token = session.scalar(
+                select(SceneToken).where(
+                    SceneToken.scene_id == scene_id,
+                    SceneToken.entity_type == participant.entity_type,
+                    SceneToken.entity_id == participant.entity_id,
+                    SceneToken.metadata_json["generated_from"].as_string()
+                    == "scene_participant",
+                )
+            )
+            if token is not None:
+                session.delete(token)
             session.delete(participant)
             self._audit(
                 session,

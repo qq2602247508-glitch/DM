@@ -170,15 +170,45 @@ export function PlayerRoomPanel({
                 {pendingRequests.map((request) => {
                   const member = activeMembers.find((item) => item.id === request.player_key);
                   const character = characters.find((item) => item.id === request.character_id);
+                  const payload = request.payload_json as {
+                    phase?: string;
+                    action?: { name?: string; kind?: string };
+                    target?: { name?: string };
+                    resolution?: {
+                      kind?: string;
+                      instruction?: string;
+                      raw_roll?: number;
+                      modifier?: number;
+                      total?: number;
+                      dc?: number;
+                      success?: boolean;
+                      save?: { raw_roll?: number; modifier?: number; total?: number; dc?: number; success?: boolean; ability_label?: string };
+                    };
+                    proposal?: { summary?: string };
+                    cost?: { resource_key?: string; amount?: number; available_before?: number; available_after?: number };
+                    narrative_suggestions?: string[];
+                  };
+                  const structured = request.action_type === "noncombat_rule";
+                  const ready = !structured || payload.phase === "resolved";
                   return (
                     <div className="rounded border border-violet-800/70 bg-violet-950/20 p-3" key={request.id}>
                       <div className="flex items-center gap-2">
                         <strong className="mr-auto text-sm">{member?.display_name ?? character?.name ?? "玩家"}</strong>
-                        <Badge tone="warn">等待 DM</Badge>
+                        <Badge tone={ready ? "warn" : "neutral"}>{ready ? "等待 DM" : "等待玩家投骰"}</Badge>
                       </div>
                       <p className="mb-0 mt-2 whitespace-pre-wrap text-sm text-stone-300">{request.message || "未填写说明"}</p>
+                      {structured ? <div className="mt-2 rounded border border-violet-900/70 bg-ink-950/45 p-2 text-xs leading-5 text-stone-300">
+                        <strong className="text-violet-200">{payload.action?.name ?? "结构化行动"} → {payload.target?.name ?? "当前区域"}</strong>
+                        {payload.resolution?.instruction ? <span className="block">{payload.resolution.instruction}</span> : null}
+                        {payload.resolution?.total !== undefined ? <span className="block">玩家裸骰 {payload.resolution.raw_roll} {Number(payload.resolution.modifier ?? 0) >= 0 ? "+" : ""}{payload.resolution.modifier} = {payload.resolution.total} vs DC {payload.resolution.dc} · {payload.resolution.success ? "成功" : "失败"}</span> : null}
+                        {payload.resolution?.save ? <span className="block">系统代掷目标{payload.resolution.save.ability_label}豁免：{payload.resolution.save.raw_roll} {Number(payload.resolution.save.modifier ?? 0) >= 0 ? "+" : ""}{payload.resolution.save.modifier} = {payload.resolution.save.total} vs DC {payload.resolution.save.dc} · {payload.resolution.save.success ? "成功" : "失败"}</span> : null}
+                        {payload.cost?.resource_key ? <span className="block text-amber-200">确认后消耗 {payload.cost.resource_key} × {payload.cost.amount}（{payload.cost.available_before} → {payload.cost.available_after}）</span> : null}
+                        {payload.proposal?.summary ? <span className="mt-1 block text-emerald-200">建议结果：{payload.proposal.summary}</span> : null}
+                        {payload.narrative_suggestions?.length ? <ul className="mb-0 mt-1 pl-4 text-stone-500">{payload.narrative_suggestions.map((suggestion) => <li key={suggestion}>{suggestion}</li>)}</ul> : null}
+                      </div> : null}
                       <div className="mt-2 flex justify-end gap-2">
                         <Button
+                          disabled={!ready}
                           loading={resolveRequest.isPending}
                           onClick={() => resolveRequest.mutate({
                             requestId: request.id,

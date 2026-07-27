@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import os
+import re
 import secrets
 import socket
 from dataclasses import dataclass
@@ -22,14 +23,28 @@ from dnd_dm_assistant.application.rule_block_compiler import (
 )
 from dnd_dm_assistant.domain.campaign_state import StateNotFoundError, VersionConflict
 from dnd_dm_assistant.domain.exploration import grid_distance_ft, movement_cost_ft
+from dnd_dm_assistant.domain.noncombat_actions import (
+    ABILITY_LABELS,
+    OBJECT_SKILLS,
+    SKILL_RULES,
+    SOCIAL_SKILLS,
+    grid_range_ft,
+    json_dict,
+    public_cells,
+    roll_save,
+    skill_modifier,
+)
 from dnd_dm_assistant.infrastructure.database.campaign_service import serialize
 from dnd_dm_assistant.infrastructure.database.combat_service import CombatEngineService
 from dnd_dm_assistant.infrastructure.database.models import (
+    NPC,
     Campaign,
     Character,
     Combat,
     CombatAction,
     Combatant,
+    MonsterInstance,
+    PlayerActionRequest,
     PlayerRoom,
     PlayerSession,
     Scene,
@@ -1209,6 +1224,7 @@ class PlayerRoomService:
                     "scene": public.get("scene"),
                     "handouts": public.get("handouts", []),
                     "shared_log": public.get("shared_log", []),
+                    "noncombat": self._noncombat_snapshot(session, room, principal),
                 },
                 "combat": self._combat_snapshot(session, room, principal),
             }
@@ -1241,11 +1257,14 @@ class PlayerRoomService:
                     "cell_size_ft": grid.cell_size_ft,
                     "mode": grid.mode,
                     "public_description": grid.public_description,
+                    "cells": public_cells(grid.layers_json),
                 }
             ),
             "tokens": [
                 {
                     "id": item.id,
+                    "entity_type": item.entity_type,
+                    "entity_id": item.entity_id,
                     "label": item.label,
                     "row": item.row,
                     "col": item.col,
@@ -1264,8 +1283,100 @@ class PlayerRoomService:
                     "width_cells": item.width_cells,
                     "height_cells": item.height_cells,
                     "state": item.state,
+                    "interaction": {
+                        key: value
+                        for key, value in (item.interaction_json or {}).items()
+                        if key in {"action", "locked", "tool", "description"}
+                    },
                 }
                 for item in objects
+            ],
+        }
+
+    def _noncombat_snapshot(
+        self, session: Session, room: PlayerRoom, principal: PlayerPrincipal
+    ) -> dict[str, Any]:
+        if principal.character_id is None or room.current_scene_id is None:
+            return {"available_actions": [], "pending_actions": []}
+        character = session.get(Character, principal.character_id)
+        if character is None:
+            return {"available_actions": [], "pending_actions": []}
+        actions: list[dict[str, Any]] = [
+            {
+                "id": f"skill:{name}",
+                "kind": "skill",
+                "name": name,
+                "description": description,
+                "ability": ability,
+                "ability_label": ABILITY_LABELS[ability],
+                "suggested_dc": dc,
+                "target_types": (
+                    ["npc", "monster"]
+                    if name in SOCIAL_SKILLS
+                    else ["object", "area"]
+                    if name in OBJECT_SKILLS
+                    else ["self", "area"]
+                ),
+            }
+            for name, (ability, dc, description) in SKILL_RULES.items()
+        ]
+        actions.append(
+            {
+                "id": "tool:thieves_tools",
+                "kind": "tool",
+                "name": "盗贼工具：撬锁/解除机关",
+                "description": "对公开的门、宝箱或机关提出结构化操作。",
+                "ability": "dexterity",
+                "ability_label": "敏捷",
+                "suggested_dc": 15,
+                "target_types": ["object"],
+            }
+        )
+        for index, raw in enumerate(character.spells or []):
+            if not isinstance(raw, dict) or raw.get("prepared") is False:
+                continue
+            if raw.get("resolution_kind") == "damage" or raw.get("damage"):
+                continue
+            name = str(raw.get("name") or f"法术 {index + 1}")
+            actions.append(
+                {
+                    "id": f"spell:{raw.get('source_record_id') or index}",
+                    "kind": "spell",
+                    "name": name,
+                    "description": str(raw.get("description") or "由 DM 按法术说明裁定。"),
+                    "range": raw.get("range"),
+                    "duration": raw.get("duration"),
+                    "concentration": bool(raw.get("concentration")),
+                    "resource_key": raw.get("resource_key"),
+                    "resource_cost": int(raw.get("resource_cost") or 0),
+                    "save_ability": raw.get("save_ability"),
+                    "save_dc": raw.get("save_dc"),
+                    "target_types": (
+                        ["self"] if "隐形" in name else ["npc", "monster"] if "命令" in name else
+                        ["self", "npc", "monster", "object", "area"]
+                    ),
+                }
+            )
+        pending = session.scalars(
+            select(PlayerActionRequest)
+            .where(
+                PlayerActionRequest.campaign_id == principal.campaign_id,
+                PlayerActionRequest.player_key == principal.session_id,
+                PlayerActionRequest.action_type == "noncombat_rule",
+                PlayerActionRequest.status == "pending",
+            )
+            .order_by(PlayerActionRequest.created_at.desc())
+        ).all()
+        return {
+            "available_actions": actions,
+            "pending_actions": [
+                {
+                    "id": item.id,
+                    "version": item.version,
+                    "message": item.message,
+                    "payload": item.payload_json,
+                }
+                for item in pending
             ],
         }
 
@@ -1425,6 +1536,292 @@ class PlayerRoomService:
             },
             request_id,
         )
+
+    def plan_noncombat_action(
+        self,
+        principal: PlayerPrincipal,
+        data: dict[str, Any],
+        request_id: str,
+    ) -> dict[str, Any]:
+        if principal.character_id is None:
+            raise ValueError("请先绑定角色")
+        with Session(self.engine) as session, session.begin():
+            room = session.get(PlayerRoom, principal.room_id)
+            if room is None or room.campaign_id != principal.campaign_id:
+                raise StateNotFoundError("player room not found")
+            self._active(room)
+            if room.current_scene_id is None:
+                raise ValueError("DM 尚未选择当前 Scene")
+            if room.current_combat_id:
+                combat = session.get(Combat, room.current_combat_id)
+                if combat is not None and combat.status == "active":
+                    raise ValueError("战斗中请使用战斗面板，不能提交非战斗行动")
+            scene = session.get(Scene, room.current_scene_id)
+            character = session.get(Character, principal.character_id)
+            if scene is None or character is None:
+                raise StateNotFoundError("current scene or character not found")
+            available = self._noncombat_snapshot(session, room, principal)["available_actions"]
+            action = next((item for item in available if item["id"] == data["action_id"]), None)
+            if action is None:
+                raise ValueError("该能力不在角色当前可用的非战斗行动中")
+
+            target_type = str(data.get("target_type") or "area")
+            target_id = str(data.get("target_id") or "")
+            if target_type not in action["target_types"]:
+                raise ValueError("该能力不能选择这种目标")
+            target: dict[str, Any] = {"type": target_type, "id": target_id, "name": "当前区域"}
+            target_position: dict[str, int] | None = None
+            target_scores: dict[str, int] | None = None
+            target_object: SceneObject | None = None
+            if target_type == "self":
+                target.update(id=character.id, name=character.name)
+            elif target_type == "object":
+                target_object = session.get(SceneObject, target_id)
+                if (
+                    target_object is None
+                    or target_object.scene_id != scene.id
+                    or target_object.visibility != "public"
+                ):
+                    raise ValueError("目标物体不在当前公开 Scene 中")
+                target.update(name=target_object.label, state=target_object.state)
+                target_position = {"row": target_object.row, "col": target_object.col}
+            elif target_type in {"npc", "monster"}:
+                token = session.scalar(
+                    select(SceneToken).where(
+                        SceneToken.scene_id == scene.id,
+                        SceneToken.entity_type == target_type,
+                        SceneToken.entity_id == target_id,
+                        SceneToken.visible.is_(True),
+                    )
+                )
+                if token is None:
+                    raise ValueError("目标不在当前公开 Scene 中")
+                entity = (
+                    session.get(NPC, target_id)
+                    if target_type == "npc"
+                    else session.get(MonsterInstance, target_id)
+                )
+                if entity is None or entity.campaign_id != principal.campaign_id:
+                    raise ValueError("目标原子不存在")
+                target.update(name=entity.name)
+                target_position = {"row": token.row, "col": token.col}
+                target_scores = dict(entity.ability_scores or {})
+
+            actor_token = session.scalar(
+                select(SceneToken).where(
+                    SceneToken.scene_id == scene.id,
+                    SceneToken.entity_type == "character",
+                    SceneToken.entity_id == character.id,
+                    SceneToken.visible.is_(True),
+                )
+            )
+            actor_position = (
+                {"row": actor_token.row, "col": actor_token.col} if actor_token else None
+            )
+            grid = session.scalar(select(SceneGrid).where(SceneGrid.scene_id == scene.id))
+            measured_range = grid_range_ft(
+                actor_position,
+                target_position,
+                grid.cell_size_ft if grid else 5,
+            )
+            range_text = str(action.get("range") or "")
+            match = re.search(r"(\d+)\s*(?:ft|feet|foot|尺)", range_text.lower())
+            maximum_range = int(match.group(1)) if match else None
+            if (
+                maximum_range is not None
+                and measured_range is not None
+                and measured_range > maximum_range
+            ):
+                raise ValueError(f"目标距离 {measured_range} 尺，超过该能力 {maximum_range} 尺范围")
+
+            plan: dict[str, Any] = {
+                "schema_version": "1.0",
+                "phase": "resolved",
+                "scene": {"id": scene.id, "name": scene.name},
+                "actor": {"type": "character", "id": character.id, "name": character.name},
+                "target": target,
+                "action": action,
+                "eligibility": {
+                    "owned": True,
+                    "prepared": True,
+                    "range_ft": measured_range,
+                    "maximum_range_ft": maximum_range,
+                },
+                "cost": {
+                    "resource_key": action.get("resource_key"),
+                    "amount": int(action.get("resource_cost") or 0),
+                    "consume_on_dm_accept": True,
+                },
+                "resolution": {"kind": "narrative", "requires_dm_confirmation": True},
+                "proposal": {
+                    "kind": "narrative",
+                    "summary": "按规则结果推进叙事；具体世界状态由 DM 确认。",
+                },
+                "narrative_suggestions": [
+                    "描述行动造成的直接可见变化。",
+                    "给出目标反应，并保留 DM 对隐情与后果的裁量。",
+                    "若行动改变 Scene 状态，把变化写入公开推进日志。",
+                ],
+            }
+            kind = str(action["kind"])
+            if (
+                kind == "tool"
+                and target_object is not None
+                and target_object.object_type not in {"door", "trap", "treasure", "portal"}
+            ):
+                raise ValueError("盗贼工具只能用于门、锁具、机关、宝箱或传送机关")
+            if kind in {"skill", "tool"}:
+                skill = "巧手" if kind == "tool" else str(action["name"])
+                ability = str(action["ability"])
+                modifier, reasons = skill_modifier(character, skill, ability)
+                interaction = target_object.interaction_json if target_object else {}
+                dc = int(str(interaction.get("dc") or action.get("suggested_dc") or 12))
+                plan["phase"] = "awaiting_player_roll"
+                plan["resolution"] = {
+                    "kind": "ability_check",
+                    "roll_owner": "player",
+                    "raw_roll_formula": "1d20",
+                    "ability": ability,
+                    "ability_label": ABILITY_LABELS[ability],
+                    "skill": skill,
+                    "modifier": modifier,
+                    "modifier_reasons": reasons,
+                    "dc": dc,
+                    "instruction": (
+                        f"请玩家掷 1d20 并输入裸骰。系统会加 {modifier:+d}；"
+                        f"最终总值需达到 DC {dc}（≥ {dc}）。"
+                    ),
+                    "requires_dm_confirmation": True,
+                }
+                if kind == "tool" and target_object is not None:
+                    desired_state = (
+                        "disarmed" if target_object.object_type == "trap" else "open"
+                    )
+                    plan["proposal"] = {
+                        "kind": "object_state",
+                        "object_id": target_object.id,
+                        "from_state": target_object.state,
+                        "to_state": desired_state,
+                        "summary": f"成功后将「{target_object.label}」标记为{desired_state}。",
+                    }
+            elif kind == "spell":
+                resource_key = action.get("resource_key")
+                resource_cost = int(action.get("resource_cost") or 0)
+                if resource_key and resource_cost:
+                    resource = (character.resources or {}).get(str(resource_key))
+                    current = (
+                        int(resource.get("current") or 0)
+                        if isinstance(resource, dict)
+                        else 0
+                    )
+                    if current < resource_cost:
+                        raise ValueError("对应法术位或资源不足")
+                    plan["cost"]["available_before"] = current
+                    plan["cost"]["available_after"] = current - resource_cost
+                if "命令" in str(action["name"]):
+                    if target_scores is None:
+                        raise ValueError("命令术必须选择当前 Scene 中的 NPC 或怪物")
+                    dc = int(action.get("save_dc") or 10)
+                    save = roll_save(target_scores, "wisdom", dc)
+                    plan["resolution"] = {
+                        "kind": "saving_throw",
+                        "roll_owner": "system",
+                        "save": save,
+                        "requires_dm_confirmation": True,
+                    }
+                    plan["proposal"] = {
+                        "kind": "narrative",
+                        "summary": (
+                            f"{target['name']}感知豁免"
+                            + (
+                                "成功，通常不受命令影响。"
+                                if save["success"]
+                                else "失败，建议按命令术文本执行到其下一回合。"
+                            )
+                        ),
+                    }
+                elif "隐形" in str(action["name"]):
+                    plan["proposal"] = {
+                        "kind": "condition_advice",
+                        "condition": "隐形",
+                        "concentration": True,
+                        "summary": "建议记录目标隐形与施法者专注；具体可见性由 DM 裁定。",
+                    }
+            item = PlayerActionRequest(
+                campaign_id=principal.campaign_id,
+                character_id=character.id,
+                character_version=character.version,
+                player_key=principal.session_id,
+                action_type="noncombat_rule",
+                message=str(data.get("message") or f"{character.name}使用{action['name']}"),
+                payload_json=plan,
+                idempotency_key=str(data["idempotency_key"]),
+            )
+            existing = session.scalar(
+                select(PlayerActionRequest).where(
+                    PlayerActionRequest.campaign_id == principal.campaign_id,
+                    PlayerActionRequest.idempotency_key == item.idempotency_key,
+                )
+            )
+            if existing is not None:
+                return serialize(existing)
+            session.add(item)
+            session.flush()
+            return serialize(item)
+
+    def roll_noncombat_action(
+        self,
+        principal: PlayerPrincipal,
+        action_request_id: str,
+        expected_version: int,
+        raw_roll: int,
+    ) -> dict[str, Any]:
+        if raw_roll < 1 or raw_roll > 20:
+            raise ValueError("请输入 d20 的裸骰结果（1–20）")
+        with Session(self.engine) as session, session.begin():
+            item = session.get(PlayerActionRequest, action_request_id)
+            if (
+                item is None
+                or item.campaign_id != principal.campaign_id
+                or item.player_key != principal.session_id
+                or item.character_id != principal.character_id
+                or item.action_type != "noncombat_rule"
+            ):
+                raise StateNotFoundError("noncombat action request not found")
+            if item.version != expected_version:
+                raise VersionConflict(
+                    "player_action_request", item.id, expected_version, item.version
+                )
+            payload = dict(item.payload_json or {})
+            if payload.get("phase") != "awaiting_player_roll":
+                return serialize(item)
+            resolution = json_dict(payload.get("resolution"))
+            modifier = int(resolution.get("modifier") or 0)
+            dc = int(resolution.get("dc") or 10)
+            total = raw_roll + modifier
+            resolution.update(
+                raw_roll=raw_roll,
+                total=total,
+                success=total >= dc,
+                instruction=(
+                    f"裸骰 {raw_roll} {modifier:+d} = {total}；"
+                    f"DC {dc}，{'成功' if total >= dc else '失败'}。"
+                ),
+            )
+            payload["phase"] = "resolved"
+            payload["resolution"] = resolution
+            proposal = json_dict(payload.get("proposal"))
+            if not total >= dc and proposal.get("kind") == "object_state":
+                proposal = {
+                    "kind": "narrative",
+                    "summary": "检定失败；不改变物体状态，DM 可描述代价、时间或暴露风险。",
+                }
+            payload["proposal"] = proposal
+            item.payload_json = payload
+            item.version += 1
+            item.updated_at = _now()
+            session.flush()
+            return serialize(item)
 
     def move(
         self, principal: PlayerPrincipal, row: int, col: int, combatant_version: int
