@@ -4,6 +4,7 @@ import type { Character, CharacterOptionsCatalog, RuleDocument } from "../api/ty
 import {
   buildFeatureGrantDraft,
   buildItemGrantDraft,
+  buildSkillGrantDraft,
   buildSpellGrantDraft,
   detectCharacterGrantIntent,
 } from "./characterGrants";
@@ -20,13 +21,24 @@ const character: Character = {
 
 const catalog: CharacterOptionsCatalog = {
   edition: 2024, officiality: "official", species: [], backgrounds: [], feats: [],
-  skills: ["隐匿"], languages: [], tools: [],
+  skills: ["隐匿", "洞悉", "奥秘", "调查"], languages: [], tools: [],
   classes: [{
     name: "法师", source_record_id: "wizard", source_path: "玩家手册2024/职业/法师",
     hit_die: 6, subclasses: [],
     levels: [
       { level: 1, proficiency_bonus: 2, features: ["奥术恢复"], progression: {} },
       { level: 5, proficiency_bonus: 3, features: ["记忆法术"], progression: {} },
+    ],
+  }, {
+    name: "战士", source_record_id: "fighter", source_path: "玩家手册2024/职业/战士",
+    hit_die: 10, subclasses: [],
+    levels: [{ level: 1, proficiency_bonus: 2, features: [], progression: {} }],
+  }, {
+    name: "游荡者", source_record_id: "rogue", source_path: "玩家手册2024/职业/游荡者",
+    hit_die: 8, subclasses: [],
+    levels: [
+      { level: 1, proficiency_bonus: 2, features: ["专精"], progression: {} },
+      { level: 6, proficiency_bonus: 3, features: ["专精"], progression: {} },
     ],
   }],
   spells: [{
@@ -86,7 +98,58 @@ describe("rule-validated character grants", () => {
     const skill = detectCharacterGrantIntent("给艾琳添加隐匿熟练", [character]);
     if (!spell || !skill) throw new Error("expected intents");
     expect(buildSpellGrantDraft(spell, bard, catalog).blockingReason).toContain("不能绕过职业成长");
-    expect(buildFeatureGrantDraft(skill, character, catalog).blockingReason).toContain("升级选择");
+    expect(buildSkillGrantDraft(skill, character, catalog).blockingReason).toContain("不在法师");
+  });
+
+  it("fills only a real unused class or background skill choice", () => {
+    const fighter = {
+      ...character,
+      class_name: "战士",
+      class_levels: { 战士: 1 },
+      level: 1,
+      background: "守卫",
+      skills: {
+        运动: { proficient: true },
+        察觉: { proficient: true },
+        生存: { proficient: true },
+      },
+    };
+    const legal = detectCharacterGrantIntent("给艾琳添加洞悉熟练", [fighter]);
+    const illegal = detectCharacterGrantIntent("给艾琳添加奥秘熟练", [fighter]);
+    if (!legal || !illegal) throw new Error("expected skill intents");
+    expect(buildSkillGrantDraft(legal, fighter, catalog)).toMatchObject({
+      eligible: true, candidateName: "洞悉",
+    });
+    expect(buildSkillGrantDraft(illegal, fighter, catalog).blockingReason).toContain("不在战士");
+    expect(buildSkillGrantDraft(legal, {
+      ...fighter,
+      skills: { ...fighter.skills, 洞悉: { proficient: true } },
+    }, catalog).eligible).toBe(false);
+  });
+
+  it("requires proficiency and an unused class entitlement for expertise", () => {
+    const rogue = {
+      ...character,
+      class_name: "游荡者",
+      class_levels: { 游荡者: 6 },
+      level: 6,
+      skills: {
+        隐匿: { proficient: true, expertise: true },
+        调查: { proficient: true },
+      },
+    };
+    const expertise = detectCharacterGrantIntent("给艾琳添加调查专精", [rogue]);
+    if (!expertise) throw new Error("expected expertise intent");
+    expect(buildSkillGrantDraft(expertise, rogue, catalog)).toMatchObject({
+      eligible: true, candidateName: "调查",
+    });
+    expect(buildSkillGrantDraft(expertise, {
+      ...rogue,
+      skills: {
+        ...rogue.skills,
+        调查: { proficient: true, expertise: true },
+      },
+    }, catalog).eligible).toBe(false);
   });
 
   it("only restores a missing class feature available at the current level", () => {

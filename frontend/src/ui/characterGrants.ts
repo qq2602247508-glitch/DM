@@ -4,13 +4,15 @@ import type {
   RuleDocument,
   SpellOption,
 } from "../api/types";
+import { BACKGROUNDS_2024, classSkillSelection } from "./characterRules";
 
 export type CharacterGrantKind =
   | "equipment"
   | "item"
   | "spell"
   | "class_feature"
-  | "skill_proficiency";
+  | "skill_proficiency"
+  | "skill_expertise";
 
 export type CharacterGrantIntent = {
   characterId: string;
@@ -94,11 +96,158 @@ function requestedName(text: string, characterName: string): string {
 }
 
 function detectKind(text: string): CharacterGrantKind {
+  if (/专精/u.test(text)) return "skill_expertise";
   if (/熟练|技能熟练/u.test(text)) return "skill_proficiency";
   if (/抄入|法术书|(?:学会|学习|添加|获得).*(?:术|咒|法术)|戏法|法术/u.test(text)) return "spell";
   if (/职业特性|职业能力|技能|特性|能力/u.test(text)) return "class_feature";
   if (/道具|药水|毒药|卷轴|消耗品|材料包/u.test(text)) return "item";
   return "equipment";
+}
+
+const SKILL_ALIASES: Record<string, string> = {
+  潜行: "隐匿",
+};
+
+function canonicalSkillName(value: string): string {
+  const name = value.trim();
+  return SKILL_ALIASES[name] ?? name;
+}
+
+function primaryClassName(character: Character): string {
+  const explicit = (character.class_name ?? "")
+    .split("/")[0]
+    ?.replace(/\d+/g, "")
+    .trim();
+  if (explicit) return canonicalClassName(explicit);
+  return canonicalClassName(Object.keys(character.class_levels)[0] ?? "");
+}
+
+function skillSetting(character: Character, skillName: string): Record<string, unknown> {
+  const canonical = canonicalSkillName(skillName);
+  const entry = Object.entries(character.skills).find(
+    ([name]) => canonicalSkillName(name) === canonical,
+  );
+  return entry && entry[1] && typeof entry[1] === "object"
+    ? entry[1] as Record<string, unknown>
+    : {};
+}
+
+function proficientSkillNames(character: Character): string[] {
+  return Object.entries(character.skills)
+    .filter(([, value]) => (
+      value === true
+      || (value && typeof value === "object" && (value as { proficient?: unknown }).proficient === true)
+    ))
+    .map(([name]) => canonicalSkillName(name));
+}
+
+function expertiseEntitlement(character: Character, catalog: CharacterOptionsCatalog): number {
+  return catalog.classes.reduce((total, rule) => {
+    const level = characterClassLevel(character, rule.name);
+    if (level < 1) return total;
+    const grants = rule.levels
+      .filter((entry) => entry.level <= level)
+      .flatMap((entry) => entry.features)
+      .filter((name) => name.includes("专精")).length;
+    return total + grants * 2;
+  }, 0);
+}
+
+export function buildSkillGrantDraft(
+  intent: CharacterGrantIntent,
+  character: Character,
+  catalog: CharacterOptionsCatalog,
+): CharacterGrantDraft {
+  const requested = canonicalSkillName(intent.requestedName.replace(/专精|熟练|技能/g, "").trim());
+  const officialSkill = catalog.skills.find((name) => canonicalSkillName(name) === requested);
+  const setting = skillSetting(character, requested);
+  const alreadyProficient = setting.proficient === true || setting.expertise === true;
+  const alreadyExpert = setting.expertise === true;
+  const primaryClass = primaryClassName(character);
+  const background = BACKGROUNDS_2024.find((item) => item.name === character.background);
+  const backgroundSkills = (background?.skills ?? []).map(canonicalSkillName);
+  const skillRuleClass = primaryClass === "魔契师" ? "邪术师" : primaryClass;
+  const classSelection = classSkillSelection(skillRuleClass, backgroundSkills);
+  const proficient = proficientSkillNames(character);
+  const usedClassChoices = proficient.filter(
+    (name) => classSelection.choices.map(canonicalSkillName).includes(name)
+      && !backgroundSkills.includes(name),
+  ).length;
+  const classRule = catalog.classes.find(
+    (item) => canonicalClassName(item.name) === primaryClass,
+  );
+  let eligible = false;
+  let blockingReason: string | null = null;
+  let ruleReason = "";
+  let sourceLabel = "玩家手册 2024 · 技能规则";
+  let sourceRecordId: string | null = null;
+  let sourcePath: string | null = null;
+  if (!officialSkill) {
+    blockingReason = `“${intent.requestedName}”不是 D&D 5e 2024 的标准技能。`;
+  } else if (intent.kind === "skill_expertise") {
+    const entitlement = expertiseEntitlement(character, catalog);
+    const usedExpertise = Object.values(character.skills).filter(
+      (value) => value && typeof value === "object"
+        && (value as { expertise?: unknown }).expertise === true,
+    ).length;
+    if (!alreadyProficient) {
+      blockingReason = `${requested}尚未熟练，不能直接获得专精。`;
+    } else if (alreadyExpert) {
+      blockingReason = `${character.name}已经拥有${requested}专精。`;
+    } else if (usedExpertise >= entitlement) {
+      blockingReason = `角色职业等级只提供${entitlement}个专精选择，当前已经全部使用。`;
+    } else {
+      eligible = true;
+      ruleReason = `角色职业成长共提供${entitlement}个专精选择，当前已用${usedExpertise}个；本次补齐剩余选择。`;
+      sourceLabel = "玩家手册 2024 · 职业专精";
+    }
+  } else if (alreadyProficient) {
+    blockingReason = `${character.name}已经拥有${requested}熟练。`;
+  } else if (backgroundSkills.includes(requested)) {
+    eligible = true;
+    ruleReason = `${character.background}背景固定授予${requested}熟练；本次只补齐角色卡缺失数据。`;
+    const backgroundRule = catalog.backgrounds.find((item) => item.name === character.background);
+    sourceLabel = `玩家手册 2024 · ${character.background}背景`;
+    sourceRecordId = backgroundRule?.source_record_id ?? null;
+    sourcePath = backgroundRule?.source_path ?? null;
+  } else if (
+    classSelection.choices.map(canonicalSkillName).includes(requested)
+    && usedClassChoices < classSelection.count
+  ) {
+    eligible = true;
+    ruleReason = `${primaryClass}应选择${classSelection.count}项职业技能熟练，当前仅记录${usedClassChoices}项；本次补齐一个合法空缺。`;
+    sourceLabel = `玩家手册 2024 · ${primaryClass}职业技能`;
+    sourceRecordId = classRule?.source_record_id ?? null;
+    sourcePath = classRule?.source_path ?? null;
+  } else if (!classSelection.choices.map(canonicalSkillName).includes(requested)) {
+    blockingReason = `${requested}不在${primaryClass}的职业技能选择列表中，且不是${character.background ?? "当前"}背景固定技能。`;
+  } else {
+    blockingReason = `${primaryClass}的${classSelection.count}个职业技能选择已经全部使用；额外熟练必须来自明确的专长或升级选择。`;
+  }
+  return {
+    ...intent,
+    requestedName: requested,
+    candidateName: requested,
+    eligible,
+    blockingReason,
+    ruleReason: ruleReason || "没有可用于本次技能变化的合法规则额度。",
+    sourceRecordId,
+    sourceLabel,
+    sourcePath,
+    canonicalUrl: null,
+    edition: "2024",
+    officiality: officialSkill ? "official" : "unknown",
+    description: eligible
+      ? `${requested}检定使用对应属性调整值；熟练时加入熟练加值，专精时熟练加值翻倍。`
+      : "",
+    metadata: {
+      skill_name: requested,
+      expertise: intent.kind === "skill_expertise",
+      primary_class: primaryClass,
+      used_class_choices: usedClassChoices,
+      class_choice_limit: classSelection.count,
+    },
+  };
 }
 
 export function detectCharacterGrantIntent(
@@ -200,23 +349,6 @@ export function buildFeatureGrantDraft(
   character: Character,
   catalog: CharacterOptionsCatalog,
 ): CharacterGrantDraft {
-  if (intent.kind === "skill_proficiency") {
-    return {
-      ...intent,
-      candidateName: intent.requestedName,
-      eligible: false,
-      blockingReason: "技能熟练必须来自职业、背景、种族、专长或升级选择；DM 执行指令不能直接绕过这些来源。",
-      ruleReason: "请改用角色升级、专长或明确的房规覆盖流程。",
-      sourceRecordId: null,
-      sourceLabel: "D&D 5e 2024 角色成长规则",
-      sourcePath: null,
-      canonicalUrl: null,
-      edition: "2024",
-      officiality: "official",
-      description: "",
-      metadata: {},
-    };
-  }
   const classCandidates = catalog.classes
     .map((rule) => ({
       rule,

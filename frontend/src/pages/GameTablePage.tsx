@@ -52,7 +52,7 @@ import {
   type ArrivalDraft, type ArrivalKind, type MonsterReferenceCandidate,
 } from "../ui/dynamicEntityDraft";
 import {
-  buildFeatureGrantDraft, buildItemGrantDraft, buildSpellGrantDraft,
+  buildFeatureGrantDraft, buildItemGrantDraft, buildSkillGrantDraft, buildSpellGrantDraft,
   detectCharacterGrantIntent, type CharacterGrantDraft, type CharacterGrantIntent,
 } from "../ui/characterGrants";
 import {
@@ -488,7 +488,10 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
       const catalog = characterOptions.data;
       if (!character || !catalog) throw new Error("角色或本地 2024 规则目录尚未载入");
       if (intent.kind === "spell") return buildSpellGrantDraft(intent, character, catalog);
-      if (intent.kind === "class_feature" || intent.kind === "skill_proficiency") {
+      if (intent.kind === "skill_proficiency" || intent.kind === "skill_expertise") {
+        return buildSkillGrantDraft(intent, character, catalog);
+      }
+      if (intent.kind === "class_feature") {
         return buildFeatureGrantDraft(intent, character, catalog);
       }
       const hits = await searchKnowledge({
@@ -703,6 +706,25 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
               rule_year: 2024,
             },
           ],
+        }, character.version);
+      } else if (grantDraft.kind === "skill_proficiency" || grantDraft.kind === "skill_expertise") {
+        const skillName = typeof grantDraft.metadata.skill_name === "string"
+          ? grantDraft.metadata.skill_name
+          : grantDraft.candidateName;
+        const old = character.skills[skillName];
+        const oldSetting = old && typeof old === "object" ? old as Record<string, unknown> : {};
+        await updateCharacter(campaignId, character.id, {
+          skills: {
+            ...character.skills,
+            [skillName]: {
+              ...oldSetting,
+              proficient: true,
+              expertise: grantDraft.kind === "skill_expertise" || oldSetting.expertise === true,
+              source_record_id: grantDraft.sourceRecordId,
+              source_label: grantDraft.sourceLabel,
+              rule_year: 2024,
+            },
+          },
         }, character.version);
       } else {
         await createEquipmentInstance(campaignId, {
@@ -1686,7 +1708,7 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
               <div className="flex flex-wrap gap-2">
                 <Badge tone={grantDraft.eligible ? "ok" : "warn"}>{grantDraft.eligible ? "规则校验通过" : "已阻止写入"}</Badge>
                 <Badge tone="ai">D&D 5e · {grantDraft.edition}</Badge>
-                <Badge>{grantDraft.kind === "spell" ? "法术" : grantDraft.kind === "class_feature" ? "职业特性" : grantDraft.kind === "skill_proficiency" ? "技能熟练" : grantDraft.kind === "item" ? "道具" : "装备"}</Badge>
+                <Badge>{grantDraft.kind === "spell" ? "法术" : grantDraft.kind === "class_feature" ? "职业特性" : grantDraft.kind === "skill_expertise" ? "技能专精" : grantDraft.kind === "skill_proficiency" ? "技能熟练" : grantDraft.kind === "item" ? "道具" : "装备"}</Badge>
                 {grantDraft.quantity > 1 ? <Badge>数量 × {grantDraft.quantity}</Badge> : null}
               </div>
               <dl className="mt-3 grid gap-2 text-xs sm:grid-cols-2">
