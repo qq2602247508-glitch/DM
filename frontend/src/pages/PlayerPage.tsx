@@ -270,7 +270,13 @@ export function PlayerPage(): ReactElement {
     queryKey: ["my-player-room"],
     queryFn: ({ signal }) => getMyPlayerRoom(signal),
     retry: false,
-    refetchInterval: (query) => query.state.data?.combat?.status === "active" ? 1_000 : 2_500,
+    // Keep the join form stable while the player is unauthenticated. Polling
+    // the 401 response every few seconds can remount the gate while someone
+    // is typing, which looks like the page refreshed and clears the room code.
+    refetchInterval: (query) => {
+      if (!query.state.data) return false;
+      return query.state.data.combat?.status === "active" ? 1_000 : 2_500;
+    },
   });
   const refresh = () => { void client.invalidateQueries({ queryKey: ["my-player-room"] }); };
   const missing = room.isError && isPlayerSessionMissing(room.error);
