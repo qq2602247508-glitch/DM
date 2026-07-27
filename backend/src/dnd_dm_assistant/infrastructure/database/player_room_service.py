@@ -1625,7 +1625,6 @@ class PlayerRoomService:
     @staticmethod
     def _safe_combatant(item: Combatant, own: Combatant | None) -> dict[str, Any]:
         is_own = own is not None and item.id == own.id
-        ally = item.entity_type in {"character", "npc"}
         ratio = item.hp / max(1, item.max_hp)
         health = (
             "倒地"
@@ -1650,19 +1649,23 @@ class PlayerRoomService:
             "position": position,
             "health_status": health,
             "is_own": is_own,
-            # Players need the concrete hit threshold before rolling. Exact
-            # enemy HP and private notes remain hidden, but AC is a public
-            # combat target value in this assisted workflow.
+            # The shared battle card exposes deterministic combat statistics
+            # needed for assisted play. DM notes and unrevealed narrative
+            # identity remain outside this snapshot.
             "armor_class": item.armor_class,
+            "hp": item.hp,
+            "max_hp": item.max_hp,
+            "conditions": item.conditions,
+            "speed_ft": item.speed_ft,
+            "ability_scores": json_dict(item.snapshot_json.get("ability_scores")),
+            "actions": (
+                item.snapshot_json.get("actions")
+                if isinstance(item.snapshot_json.get("actions"), list)
+                else []
+            ),
+            "damage_resistances": item.damage_resistances,
+            "damage_immunities": item.damage_immunities,
         }
-        if is_own or ally:
-            result.update(
-                {
-                    "hp": item.hp,
-                    "max_hp": item.max_hp,
-                    "conditions": item.conditions,
-                }
-            )
         if is_own:
             result.update(
                 {
@@ -2101,6 +2104,7 @@ class PlayerRoomService:
         action_name: str,
         attack_total: int,
         damage_total: int,
+        end_turn_after: bool,
         idempotency_key: str,
     ) -> dict[str, Any]:
         if principal.character_id is None:
@@ -2345,10 +2349,21 @@ class PlayerRoomService:
                 character.resources = resources
                 character.version += 1
                 character.updated_at = _now()
+        turn_advance = (
+            self._advance_player_room_turn(
+                principal,
+                combat_id,
+                f"{idempotency_key}:advance",
+                require_non_character=False,
+            )
+            if end_turn_after
+            else None
+        )
         return {
             "action_name": action_name,
             "target_count": len(results),
             "results": results,
+            "turn_advance": turn_advance,
         }
 
     def confirm_roll(
@@ -2409,7 +2424,65 @@ class PlayerRoomService:
                 CombatActionCommand.model_validate(follow_up),
                 idempotency_key=damage_key,
             )
-        return {"roll": roll_result, "damage": damage_result}
+        turn_advance = self._advance_player_room_turn(
+            principal,
+            combat_id,
+            f"{idempotency_key}:advance",
+            require_non_character=True,
+        )
+        return {
+            "roll": roll_result,
+            "damage": damage_result,
+            "turn_advance": turn_advance,
+        }
+
+    def _advance_player_room_turn(
+        self,
+        principal: PlayerPrincipal,
+        combat_id: str,
+        idempotency_key: str,
+        *,
+        require_non_character: bool,
+    ) -> dict[str, Any] | None:
+        with Session(self.engine) as session:
+            combat = session.get(Combat, combat_id)
+            if combat is None or combat.status != "active":
+                return None
+            fighters = session.scalars(
+                select(Combatant)
+                .where(Combatant.combat_id == combat.id, Combatant.is_active.is_(True))
+                .order_by(Combatant.initiative.desc(), Combatant.created_at, Combatant.id)
+            ).all()
+            active = (
+                fighters[combat.current_turn_index]
+                if fighters and combat.current_turn_index < len(fighters)
+                else None
+            )
+            if active is None:
+                return None
+            if require_non_character and active.entity_type == "character":
+                return None
+            if not require_non_character and (
+                active.entity_type != "character"
+                or active.entity_id != principal.character_id
+            ):
+                return None
+            unresolved = session.scalar(
+                select(CombatAction).where(
+                    CombatAction.combat_id == combat.id,
+                    CombatAction.status == "previewed",
+                    CombatAction.action_type == "player_roll_prompt",
+                )
+            )
+            if unresolved is not None:
+                return None
+            combat_version = combat.version
+        return self.combat.advance_turn(
+            principal.campaign_id,
+            combat_id,
+            TurnAdvanceCommand(combat_version=combat_version),
+            idempotency_key=idempotency_key,
+        )
 
     def end_turn(
         self, principal: PlayerPrincipal, combat_version: int, idempotency_key: str

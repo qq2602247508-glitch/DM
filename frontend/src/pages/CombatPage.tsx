@@ -45,6 +45,7 @@ import {
 } from "../ui/combatPresentation";
 import {
   planApproachPath,
+  planRetreatPath,
   shortestMovementPath,
   type MovementPlan,
 } from "../ui/combatMovement";
@@ -521,6 +522,7 @@ function BattleGrid({
     plan: MovementPlan,
     automatic: boolean,
     exhaustMovement = false,
+    fleeing = false,
   ) => {
     if ((plan.spentFt <= 0 && !exhaustMovement) || movingFighterId) return;
     setMovingFighterId(fighter.id);
@@ -545,6 +547,9 @@ function BattleGrid({
         combatId,
         fighter.id,
         {
+          conditions: fleeing
+            ? [...new Set([...fighter.conditions, "撤退中"])]
+            : fighter.conditions,
           movement_remaining_ft: remainingMovement,
           snapshot_json: {
             ...fighter.snapshot_json,
@@ -559,6 +564,10 @@ function BattleGrid({
       }));
       await client.invalidateQueries({ queryKey: ["combatants", campaignId, combatId] });
       if (!automatic) showToast(`${fighter.display_name}移动 ${plan.spentFt} 尺，剩余 ${remainingMovement} 尺`);
+      if (fleeing) {
+        setLastAiMove(`${fighter.display_name}选择撤退，本回合只远离威胁并结束行动。`);
+        onEndTurn();
+      }
     } catch {
       if (startPosition) {
         setPositions((current) => ({ ...current, [fighter.id]: startPosition }));
@@ -575,6 +584,7 @@ function BattleGrid({
     combatId,
     movingFighterId,
     onAutomationMovementChange,
+    onEndTurn,
     positions,
     showToast,
   ]);
@@ -585,6 +595,33 @@ function BattleGrid({
     const active = fighters.find((fighter) => fighter.id === activeFighterId);
     if (!active || active.entity_type === "character" || active.hp <= 0) return;
     const from = positions[active.id];
+    if (!from) return;
+    if (active.entity_type === "npc") {
+      processedAiTurn.current = turnKey;
+      const occupied = new Set(Object.entries(positions)
+        .filter(([id]) => id !== active.id)
+        .map(([, position]) => `${position[0]}:${position[1]}`));
+      const threats = fighters
+        .filter((fighter) => fighter.entity_type === "monster" && fighter.hp > 0)
+        .map((fighter) => positions[fighter.id])
+        .filter((position): position is [number, number] => Boolean(position))
+        .map((position) => ({ row: position[0], col: position[1] }));
+      const plan = planRetreatPath(
+        tacticalGrid,
+        { row: from[0], col: from[1] },
+        threats,
+        occupied,
+        active.movement_remaining_ft,
+      );
+      if (plan.spentFt <= 0) {
+        setLastAiMove(`${active.display_name}无法继续撤退，选择原地防守并结束回合。`);
+        onEndTurn();
+      } else {
+        setLastAiMove(`${active.display_name}不进行攻击，正远离${threats.length ? "最近的怪物" : "当前冲突区域"}。`);
+        void commitMove(active, plan, true, false, true);
+      }
+      return;
+    }
     const target = fighters
       .filter((fighter) => fighter.entity_type === "character" && fighter.hp > 0)
       .map((fighter) => ({ fighter, position: positions[fighter.id] }))
@@ -601,7 +638,7 @@ function BattleGrid({
           tacticalGrid.cell_size_ft,
         );
       })[0];
-    if (!from || !target) return;
+    if (!target) return;
     processedAiTurn.current = turnKey;
     const occupied = new Set(Object.entries(positions)
       .filter(([id]) => id !== active.id)
@@ -630,7 +667,7 @@ function BattleGrid({
     }
     setLastAiMove(`${active.display_name}按规则向${target.fighter.display_name}寻路移动 ${plan.spentFt} 尺；剩余 ${Math.max(0, active.movement_remaining_ft - plan.spentFt)} 尺。`);
     void commitMove(active, plan, true);
-  }, [activeFighterId, automateEnemies, commitMove, fighters, movingFighterId, positions, tacticalGrid, targeting?.rangeFt, turnKey]);
+  }, [activeFighterId, automateEnemies, commitMove, fighters, movingFighterId, onEndTurn, positions, tacticalGrid, targeting?.rangeFt, turnKey]);
   const selectedPosition = selected ? positions[selected] : null;
   const selectedFighter = fighters.find((fighter) => fighter.id === selected);
   const selectedSpeed = selectedFighter?.speed_ft
@@ -654,7 +691,7 @@ function BattleGrid({
   useEffect(() => {
     if (!automateEnemies || !targeting || !activePosition || !activeFighterId) return;
     const active = fighters.find((fighter) => fighter.id === activeFighterId);
-    if (!active || active.entity_type === "character") return;
+    if (!active || active.entity_type !== "monster") return;
     const target = fighters
       .filter((fighter) => fighter.entity_type === "character" && fighter.hp > 0)
       .map((fighter) => positions[fighter.id])
@@ -1286,7 +1323,7 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
           )}
           <PlayerRollPanel
             actions={combatActions.data ?? []}
-            activeEnemy={activeFighter && activeFighter.entity_type !== "character" ? activeFighter : undefined}
+            activeEnemy={activeFighter?.entity_type === "monster" ? activeFighter : undefined}
             automationEnabled={autoEnemies}
             campaignId={campaignId}
             combatId={combat.id}

@@ -128,3 +128,69 @@ export function planApproachPath(
     spentFt: path.length * grid.cell_size_ft,
   };
 }
+
+export function planRetreatPath(
+  grid: SceneGrid,
+  origin: GridPoint,
+  threats: GridPoint[],
+  occupied: ReadonlySet<string>,
+  movementRemainingFt: number,
+): MovementPlan {
+  const maximumSteps = Math.max(0, Math.floor(movementRemainingFt / grid.cell_size_ft));
+  const queue: GridPoint[] = [origin];
+  const previous = new Map<string, GridPoint | null>([[pointKey(origin), null]]);
+  const depth = new Map<string, number>([[pointKey(origin), 0]]);
+  const threatDistance = (point: GridPoint) => threats.length === 0
+    ? 0
+    : Math.min(...threats.map((threat) => (
+        Math.max(Math.abs(point.row - threat.row), Math.abs(point.col - threat.col))
+      )));
+  const edgeDistance = (point: GridPoint) => Math.min(
+    point.row - 1,
+    grid.height - point.row,
+    point.col - 1,
+    grid.width - point.col,
+  );
+  const score = (point: GridPoint): [number, number, number] => [
+    threatDistance(point),
+    -edgeDistance(point),
+    depth.get(pointKey(point)) ?? 0,
+  ];
+  const isBetter = (candidate: GridPoint, current: GridPoint) => {
+    const candidateScore = score(candidate);
+    const currentScore = score(current);
+    return candidateScore[0] > currentScore[0]
+      || (candidateScore[0] === currentScore[0] && candidateScore[1] > currentScore[1])
+      || (
+        candidateScore[0] === currentScore[0]
+        && candidateScore[1] === currentScore[1]
+        && candidateScore[2] > currentScore[2]
+      );
+  };
+  let best = origin;
+  while (queue.length > 0) {
+    const current = queue.shift();
+    if (!current) break;
+    const currentDepth = depth.get(pointKey(current)) ?? 0;
+    if (isBetter(current, best)) best = current;
+    if (currentDepth >= maximumSteps) continue;
+    for (const next of neighbors(grid, current)) {
+      const key = pointKey(next);
+      if (previous.has(key) || isBlockedCell(grid, next) || occupied.has(key)) continue;
+      previous.set(key, current);
+      depth.set(key, currentDepth + 1);
+      queue.push(next);
+    }
+  }
+  const path: GridPoint[] = [];
+  let cursor: GridPoint | null = best;
+  while (cursor && pointKey(cursor) !== pointKey(origin)) {
+    path.unshift(cursor);
+    cursor = previous.get(pointKey(cursor)) ?? null;
+  }
+  return {
+    path,
+    destination: best,
+    spentFt: path.length * grid.cell_size_ft,
+  };
+}

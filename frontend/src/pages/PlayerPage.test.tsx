@@ -73,7 +73,7 @@ describe("PlayerPage", () => {
 
     expect(await screen.findByRole("heading", { name: "酒馆突袭" })).toBeInTheDocument();
     expect(screen.getByText("等待其他单位")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "提交攻击并同步结算" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "提交攻击并结束回合" })).toBeDisabled();
 
     await userEvent.click(screen.getByRole("button", { name: "我的角色" }));
     expect(screen.getByRole("heading", { name: "伊莱娜" })).toBeInTheDocument();

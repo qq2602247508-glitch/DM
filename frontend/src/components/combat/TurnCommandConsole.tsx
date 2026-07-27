@@ -529,6 +529,9 @@ export function TurnCommandConsole({
         : "战术敌人优先寻找低 AC、低生命目标，并保留撤退与控制空间。";
   useEffect(() => {
     if (!autoEnemies || !automationReady || active.entity_type === "character") return;
+    // Friendly/neutral NPC movement and turn completion are handled by the
+    // shared battle grid. They must never enter the monster attack selector.
+    if (active.entity_type === "npc") return;
     if (processedAutomaticTurn.current === turnKey) return;
     if (!selectedActionAvailable) {
       processedAutomaticTurn.current = turnKey;
@@ -567,7 +570,7 @@ export function TurnCommandConsole({
       <div className="flex flex-wrap items-center gap-2">
         <Badge tone={active.entity_type === "character" ? "ok" : "danger"}>当前回合</Badge>
         <strong className="text-base text-parchment-100">{active.display_name}</strong>
-        <span className="text-xs text-stone-400">{active.entity_type === "character" ? "等待玩家声明行动" : "敌人 AI 正在评估行动"}</span>
+        <span className="text-xs text-stone-400">{active.entity_type === "character" ? "等待玩家声明行动" : active.entity_type === "npc" ? "NPC 正在撤离危险区域" : "敌人 AI 正在评估行动"}</span>
         <Badge tone={active.action_available ? "ok" : "neutral"}>动作：{active.action_available ? "可用" : "已用"}</Badge>
         <Badge tone={active.bonus_action_available ? "ok" : "neutral"}>附赠：{active.bonus_action_available ? "可用" : "已用"}</Badge>
         <Badge tone={active.reaction_available ? "ok" : "neutral"}>反应：{active.reaction_available ? "可用" : "已用"}</Badge>
@@ -693,6 +696,14 @@ export function TurnCommandConsole({
               </div>
             ) : null}
           </div>
+        </div>
+      ) : active.entity_type === "npc" ? (
+        <div className="mt-3 rounded border border-violet-800/50 bg-violet-950/15 p-3">
+          <strong className="text-xs text-violet-200">NPC 撤退回合</strong>
+          <p className="mb-0 mt-1 text-xs leading-5 text-stone-300">
+            {active.display_name}不会被当成敌对怪物操作。系统会让其远离最近怪物或冲突中心；
+            无路可走时原地防守，然后自动结束回合。
+          </p>
         </div>
       ) : (
         <div className="mt-3 rounded border border-red-900/60 bg-red-950/10 p-3">

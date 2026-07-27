@@ -486,7 +486,93 @@ def test_ended_combat_is_read_only_in_player_snapshot(
     assert snapshot["pending_rolls"] == []
     enemy_snapshot = next(item for item in snapshot["combatants"] if item["name"] == "地精")
     assert enemy_snapshot["armor_class"] == 15
-    assert "hp" not in enemy_snapshot
+    assert enemy_snapshot["hp"] == 7
+    assert enemy_snapshot["max_hp"] == 7
+    assert enemy_snapshot["speed_ft"] == 30
+    assert enemy_snapshot["ability_scores"] == {}
+    assert enemy_snapshot["actions"] == []
+
+
+def test_player_submitted_save_advances_enemy_turn(
+    campaign_client: TestClient,
+) -> None:
+    campaign = _campaign(campaign_client, "联机豁免推进团")
+    character = campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/characters",
+        json={"name": "豁免玩家", "hp": 20, "max_hp": 20},
+    ).json()
+    combat = campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/combats",
+        json={"name": "自动推进战斗"},
+    ).json()
+    player = campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": character["name"],
+            "entity_type": "character",
+            "entity_id": character["id"],
+            "initiative": 10,
+            "hp": 20,
+            "max_hp": 20,
+        },
+    ).json()
+    monster = campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "相位蜘蛛",
+            "entity_type": "monster",
+            "initiative": 20,
+            "hp": 32,
+            "max_hp": 32,
+            "armor_class": 13,
+        },
+    ).json()
+    opened = _open(campaign_client, campaign["id"])
+    _join(campaign_client, opened["join_code"])
+    assert campaign_client.post(
+        "/api/v1/player-room/me/bind-character",
+        json={"character_id": character["id"]},
+    ).status_code == 200
+    assert campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/player-room/live-state",
+        json={"combat_id": combat["id"]},
+    ).status_code == 200
+    pending = campaign_client.post(
+        (
+            f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}"
+            "/actions/player-rolls/pending"
+        ),
+        headers={"X-Request-ID": "lan-spider-save"},
+        json={
+            "actor_combatant_id": monster["id"],
+            "actor_version": monster["version"],
+            "target_combatant_id": player["id"],
+            "target_version": player["version"],
+            "action_name": "毒牙",
+            "resolution_type": "saving_throw",
+            "dc": 11,
+            "ability": "constitution",
+            "damage_on_failure": 7,
+            "damage_on_success": 3,
+            "damage_type": "poison",
+        },
+    )
+    assert pending.status_code == 200
+    action = pending.json()["action"]
+    submitted = campaign_client.post(
+        f"/api/v1/player-room/me/combat/player-rolls/{action['id']}",
+        json={
+            "action_version": action["version"],
+            "roll_total": 9,
+            "idempotency_key": "lan-player-save-001",
+        },
+    )
+    assert submitted.status_code == 200, submitted.json()
+    assert submitted.json()["turn_advance"]["active_combatant"]["id"] == player["id"]
+    snapshot = campaign_client.get("/api/v1/player-room/me").json()["combat"]
+    assert snapshot["active_combatant_id"] == player["id"]
+    assert snapshot["is_my_turn"] is True
+    assert snapshot["pending_rolls"] == []
 
 
 def test_noncombat_lockpick_uses_raw_roll_and_dm_confirmation(
@@ -784,12 +870,14 @@ def test_player_area_spell_uses_one_damage_roll_and_spends_one_slot(
             "action_name": "火球术",
             "attack_total": 0,
             "damage_total": 28,
+            "end_turn_after": True,
             "idempotency_key": "fireball-area-regression-1",
         },
     )
     assert resolved.status_code == 200, resolved.json()
     assert resolved.json()["target_count"] == 3
     assert len(resolved.json()["results"]) == 3
+    assert resolved.json()["turn_advance"]["active_combatant"]["entity_type"] == "monster"
     updated = campaign_client.get(
         f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}/combatants"
     ).json()["items"]

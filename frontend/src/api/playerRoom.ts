@@ -191,6 +191,11 @@ export type PlayerCombatant = {
   action_available?: boolean;
   bonus_action_available?: boolean;
   reaction_available?: boolean;
+  speed_ft: number;
+  ability_scores: Record<string, number>;
+  actions: Array<string | Record<string, unknown>>;
+  damage_resistances: string[];
+  damage_immunities: string[];
 };
 
 export type PlayerPendingRoll = {
@@ -491,6 +496,7 @@ export const attackWithMyCombatant = (
   actionName: string,
   attackTotal: number,
   damageTotal: number,
+  endTurnAfter = false,
 ) => playerFetch<Record<string, unknown>>("/player-room/me/combat/attack", {
   method: "POST",
   body: JSON.stringify({
@@ -499,6 +505,7 @@ export const attackWithMyCombatant = (
     action_name: actionName,
     attack_total: attackTotal,
     damage_total: damageTotal,
+    end_turn_after: endTurnAfter,
     idempotency_key: createClientId("player-attack"),
   }),
 });

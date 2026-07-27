@@ -37,6 +37,7 @@ export function SceneMap({
   selectedTargetKeys,
   selectableTargetKeys = new Set(),
   affectedCellKeys = new Set(),
+  movementCellKeys = new Set(),
   rangeCellKeys = new Set(),
   onTargetSelect,
   onCellSelect,
@@ -50,6 +51,7 @@ export function SceneMap({
   selectedTargetKeys?: ReadonlySet<string>;
   selectableTargetKeys?: ReadonlySet<string>;
   affectedCellKeys?: ReadonlySet<string>;
+  movementCellKeys?: ReadonlySet<string>;
   rangeCellKeys?: ReadonlySet<string>;
   onTargetSelect?: (targetKey: string) => void;
   onCellSelect?: (row: number, col: number) => void;
@@ -66,6 +68,7 @@ export function SceneMap({
         <span>{grid.width}×{grid.height} · 每格 {grid.cell_size_ft} 尺</span>
         {selectableTargetKeys.size ? <span className="text-emerald-300">绿色虚线：可以点击的目标</span> : null}
         {selectedTargetKey ? <span className="text-emerald-200">绿色实框：当前目标</span> : null}
+        {movementCellKeys.size ? <span className="text-lime-300">绿色格：本回合剩余可移动范围</span> : null}
       </div>
       <div
         className="grid min-w-[560px] gap-px bg-ink-700"
@@ -85,6 +88,7 @@ export function SceneMap({
             && (targetKey === selectedTargetKey || selectedTargetKeys?.has(targetKey)),
           );
           const affected = affectedCellKeys.has(key);
+          const movable = movementCellKeys.has(key);
           const inRange = rangeCellKeys.has(key);
           const blocked = terrain?.kind === "wall"
             || object?.object_type === "wall"
@@ -104,7 +108,7 @@ export function SceneMap({
           return (
             <button
               aria-label={`格子 ${row},${col}${token ? ` · ${token.label}` : object ? ` · ${object.label}` : ""}`}
-              className={`relative aspect-square border border-ink-800 text-[9px] transition duration-200 ${terrainClass} ${inRange ? "bg-sky-950/60 ring-1 ring-inset ring-sky-500/50" : ""} ${affected ? "bg-fuchsia-900/70 ring-2 ring-inset ring-fuchsia-400/80" : ""} ${selectable ? "cursor-pointer outline outline-2 outline-dashed outline-emerald-500/70 hover:bg-emerald-950/60" : ""} ${selected ? "z-10 ring-4 ring-inset ring-emerald-300 shadow-[0_0_12px_rgba(110,231,183,.8)]" : ""} ${cellSelectable ? "cursor-pointer hover:bg-emerald-950/70" : ""}`}
+              className={`relative aspect-square border border-ink-800 text-[9px] transition duration-200 ${terrainClass} ${movable ? "bg-emerald-950/75 ring-1 ring-inset ring-emerald-400/75" : ""} ${inRange ? "bg-sky-950/60 ring-1 ring-inset ring-sky-500/50" : ""} ${affected ? "bg-fuchsia-900/70 ring-2 ring-inset ring-fuchsia-400/80" : ""} ${selectable ? "cursor-pointer outline outline-2 outline-dashed outline-emerald-500/70 hover:bg-emerald-950/60" : ""} ${selected ? "z-10 ring-4 ring-inset ring-emerald-300 shadow-[0_0_12px_rgba(110,231,183,.8)]" : ""} ${cellSelectable ? "cursor-pointer hover:bg-emerald-950/70" : ""}`}
               disabled={blocked || (!selectable && !cellSelectable)}
               key={key}
               onClick={() => {

@@ -104,6 +104,7 @@ class AttackInput(BaseModel):
     action_name: str = Field(min_length=1, max_length=200)
     attack_total: int = Field(ge=-100, le=1000)
     damage_total: int = Field(ge=0, le=100_000)
+    end_turn_after: bool = False
     idempotency_key: str = Field(min_length=8, max_length=120)
 
 
@@ -442,6 +443,7 @@ def attack(
             body.action_name,
             body.attack_total,
             body.damage_total,
+            body.end_turn_after,
             body.idempotency_key,
         )
     )

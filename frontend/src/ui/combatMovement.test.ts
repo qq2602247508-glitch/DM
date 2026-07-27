@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { SceneGrid } from "../api/types";
-import { planApproachPath, shortestMovementPath } from "./combatMovement";
+import { planApproachPath, planRetreatPath, shortestMovementPath } from "./combatMovement";
 
 const grid: SceneGrid = {
   width: 8,
@@ -54,5 +54,25 @@ describe("combat movement", () => {
       new Set(),
       remainingFt,
     )).toBeNull();
+  });
+
+  it("moves a fleeing NPC away from threats and prefers a map edge", () => {
+    const plan = planRetreatPath(
+      grid,
+      { row: 4, col: 4 },
+      [{ row: 4, col: 5 }],
+      new Set(),
+      15,
+    );
+    expect(plan.spentFt).toBe(15);
+    expect(plan.destination.col).toBeLessThan(4);
+    expect(
+      Math.min(
+        plan.destination.row - 1,
+        grid.height - plan.destination.row,
+        plan.destination.col - 1,
+        grid.width - plan.destination.col,
+      ),
+    ).toBeLessThanOrEqual(1);
   });
 });
