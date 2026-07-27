@@ -174,9 +174,8 @@ class SpellEconomyService:
                 raise ValueError("slot level is below spell level")
             if not data["ritual"] and spell.spell_level and not data["material_available"]:
                 raise ValueError("required material is unavailable")
-            slots = (
-                dict(c.spellcasting.get("slots", {})) if isinstance(c.spellcasting, dict) else {}
-            )
+            raw_slots = c.spellcasting.get("slots", {})
+            slots = dict(raw_slots) if isinstance(raw_slots, dict) else {}
             key = str(data["slot_level"])
             before = slots.get(key, {})
             current = int(before.get("current", 0)) if isinstance(before, dict) else 0
@@ -213,8 +212,10 @@ class SpellEconomyService:
             if preview["preview_token"] != token:
                 raise VersionConflict("spell preview", "state", 1, 2)
             c = self._character(s, cid, data["character_id"], data["character_version"])
-            slots = dict(c.spellcasting.get("slots", {}))
-            slot = dict(slots.get(str(data["slot_level"]), {}))
+            raw_slots = c.spellcasting.get("slots", {})
+            slots = dict(raw_slots) if isinstance(raw_slots, dict) else {}
+            raw_slot = slots.get(str(data["slot_level"]), {})
+            slot = dict(raw_slot) if isinstance(raw_slot, dict) else {}
             slot["current"] = preview["slot_after"]
             slots[str(data["slot_level"])] = slot
             c.spellcasting = {**c.spellcasting, "slots": slots}
@@ -383,8 +384,18 @@ class SpellEconomyService:
             ):
                 raise ValueError("insufficient stock or copper")
             character = s.get(Character, w.character_id) if w.character_id else None
-            weight = float(item.metadata_json.get("unit_weight_lb", 0)) * data["quantity"]
-            current_weight = float(item.metadata_json.get("current_weight_lb", 0))
+            raw_weight = item.metadata_json.get("unit_weight_lb", 0)
+            raw_current_weight = item.metadata_json.get("current_weight_lb", 0)
+            weight = (
+                float(raw_weight)
+                if isinstance(raw_weight, (int, float, str))
+                else 0.0
+            ) * data["quantity"]
+            current_weight = (
+                float(raw_current_weight)
+                if isinstance(raw_current_weight, (int, float, str))
+                else 0.0
+            )
             maximum_weight = None
             if character is not None:
                 strength = int(

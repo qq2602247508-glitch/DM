@@ -9,6 +9,7 @@ from dnd_dm_assistant.application.agent import AgentOrchestrator
 from dnd_dm_assistant.application.campaigns import CampaignService
 from dnd_dm_assistant.application.character_catalog import CharacterCatalog
 from dnd_dm_assistant.application.health import HealthService
+from dnd_dm_assistant.application.player_rules_search import PlayerRulesSearch
 from dnd_dm_assistant.application.reliability import ReliabilityService
 from dnd_dm_assistant.application.world_generation import WorldGenerationService
 from dnd_dm_assistant.config import Settings
@@ -25,6 +26,7 @@ from dnd_dm_assistant.infrastructure.database.combat_service import CombatEngine
 from dnd_dm_assistant.infrastructure.database.encounter_service import EncounterAdjustmentService
 from dnd_dm_assistant.infrastructure.database.exploration_service import ExplorationService
 from dnd_dm_assistant.infrastructure.database.narrative_service import NarrativeService
+from dnd_dm_assistant.infrastructure.database.player_room_service import PlayerRoomService
 from dnd_dm_assistant.infrastructure.database.player_service import PlayerService
 from dnd_dm_assistant.infrastructure.database.rest_service import RestService
 from dnd_dm_assistant.infrastructure.database.spell_economy_service import SpellEconomyService
@@ -119,3 +121,11 @@ def get_world_generation_service(request: Request) -> WorldGenerationService:
 
 def get_player_service(request: Request) -> PlayerService:
     return PlayerService(cast(Engine, request.app.state.database_engine))
+
+
+def get_player_room_service(request: Request) -> PlayerRoomService:
+    return PlayerRoomService(cast(Engine, request.app.state.database_engine))
+
+
+def get_player_rules_search(request: Request) -> PlayerRulesSearch:
+    return PlayerRulesSearch(get_app_settings(request).rag_corpus_json_root)

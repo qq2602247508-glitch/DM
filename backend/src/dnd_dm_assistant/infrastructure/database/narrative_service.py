@@ -23,7 +23,7 @@ from dnd_dm_assistant.infrastructure.database.models import (
     StoryBeat,
 )
 
-MODELS = {
+MODELS: dict[str, Any] = {
     "story_beat": StoryBeat,
     "quest_objective": QuestObjective,
     "reputation": FactionReputation,
@@ -169,6 +169,8 @@ class NarrativeService:
                     raise VersionConflict(
                         row["kind"], row["entity_id"], row["version"], actual_version
                     )
+                if entity is None:
+                    raise StateNotFoundError(f"{row['kind']} not found in campaign")
                 after = row["after"]
                 for field in ("status", "score", "progress_days", "xp_awarded"):
                     if field in after and getattr(entity, field, None) != after[field]:

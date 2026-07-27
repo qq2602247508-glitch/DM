@@ -15,6 +15,7 @@ from sqlalchemy import (
     Text,
     UniqueConstraint,
     func,
+    text,
 )
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
@@ -1607,9 +1608,7 @@ class Handout(Timestamped, Base):
     published: Mapped[bool] = mapped_column(
         Boolean, nullable=False, default=False, server_default="0"
     )
-    sort_order: Mapped[int] = mapped_column(
-        Integer, nullable=False, default=0, server_default="0"
-    )
+    sort_order: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
     __table_args__ = (
         CheckConstraint("length(trim(title)) > 0", name="ck_handout_title_nonempty"),
         Index(
@@ -1618,6 +1617,68 @@ class Handout(Timestamped, Base):
             "published",
             "sort_order",
             "id",
+        ),
+    )
+
+
+class PlayerRoom(Timestamped, Base):
+    """A temporary LAN room opened by the DM for one campaign."""
+
+    __tablename__ = "player_rooms"
+    campaign_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("campaigns.id", ondelete="CASCADE"), nullable=False
+    )
+    current_scene_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("scenes.id", ondelete="SET NULL")
+    )
+    current_combat_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("combats.id", ondelete="SET NULL")
+    )
+    join_code_salt: Mapped[str] = mapped_column(String(32), nullable=False)
+    join_code_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    join_code_hint: Mapped[str] = mapped_column(String(2), nullable=False)
+    status: Mapped[str] = mapped_column(
+        String(20), nullable=False, default="active", server_default="active"
+    )
+    allow_character_creation: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=True, server_default="1"
+    )
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    __table_args__ = (
+        CheckConstraint("status IN ('active','closed')", name="ck_player_room_status"),
+        UniqueConstraint("campaign_id", name="uq_player_room_campaign"),
+        Index("ix_player_rooms_status_expires", "status", "expires_at", "id"),
+    )
+
+
+class PlayerSession(Timestamped, Base):
+    """A revocable player identity; only a hash of its bearer token is stored."""
+
+    __tablename__ = "player_sessions"
+    room_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("player_rooms.id", ondelete="CASCADE"), nullable=False
+    )
+    character_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("characters.id", ondelete="SET NULL")
+    )
+    display_name: Mapped[str] = mapped_column(String(80), nullable=False)
+    token_hash: Mapped[str] = mapped_column(String(64), nullable=False, unique=True)
+    status: Mapped[str] = mapped_column(
+        String(20), nullable=False, default="active", server_default="active"
+    )
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    last_seen_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    __table_args__ = (
+        CheckConstraint("length(trim(display_name)) > 0", name="ck_player_session_name"),
+        CheckConstraint("status IN ('active','revoked')", name="ck_player_session_status"),
+        Index("ix_player_sessions_room_status", "room_id", "status", "created_at", "id"),
+        Index("ix_player_sessions_character_status", "character_id", "status", "id"),
+        Index(
+            "uq_player_sessions_active_character",
+            "room_id",
+            "character_id",
+            unique=True,
+            sqlite_where=text("status = 'active' AND character_id IS NOT NULL"),
         ),
     )
 
@@ -1646,21 +1707,15 @@ class PlayerActionRequest(Timestamped, Base):
     dm_note: Mapped[str | None] = mapped_column(Text)
     resolved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     __table_args__ = (
-        CheckConstraint(
-            "length(trim(action_type)) > 0", name="ck_player_action_type_nonempty"
-        ),
-        CheckConstraint(
-            "character_version >= 1", name="ck_player_action_character_version"
-        ),
+        CheckConstraint("length(trim(action_type)) > 0", name="ck_player_action_type_nonempty"),
+        CheckConstraint("character_version >= 1", name="ck_player_action_character_version"),
         CheckConstraint(
             "status IN ('pending','accepted','rejected','stale')", name="ck_player_action_status"
         ),
         UniqueConstraint(
             "campaign_id", "idempotency_key", name="uq_player_action_campaign_idempotency"
         ),
-        Index(
-            "ix_player_action_campaign_status", "campaign_id", "status", "created_at", "id"
-        ),
+        Index("ix_player_action_campaign_status", "campaign_id", "status", "created_at", "id"),
     )
 
 

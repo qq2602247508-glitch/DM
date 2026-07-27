@@ -18,6 +18,7 @@ import {
 } from "../api/world";
 import { CharacterSheetDetail } from "../components/CharacterSheetDetail";
 import { Panel } from "../components/Panel";
+import { PlayerRoomPanel } from "../components/PlayerRoomPanel";
 import { RestPanel } from "../components/RestPanel";
 import { RequireCampaign } from "../components/RequireCampaign";
 import { SceneOutlinePanel } from "../components/SceneOutlinePanel";
@@ -103,6 +104,9 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
   const client = useQueryClient();
   const { showToast } = useToast();
   const [sceneId, setSceneId] = useState("");
+  const [playerCombatId, setPlayerCombatId] = useState<string | null>(
+    () => sessionStorage.getItem(`dnd-dm-active-combat:${campaignId}`),
+  );
   const [tableMode, setTableMode] = useState<"prep" | "play">("play");
   const [showEncounterTools, setShowEncounterTools] = useState(false);
   const [entityKey, setEntityKey] = useState("");
@@ -464,6 +468,7 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
       void client.invalidateQueries({ queryKey: ["monsters", campaignId] });
       if (startedCombat) {
         sessionStorage.setItem(`dnd-dm-active-combat:${campaignId}`, startedCombat.combat.id);
+        setPlayerCombatId(startedCombat.combat.id);
         void client.invalidateQueries({ queryKey: ["combats", campaignId] });
         navigate("/combat");
       } else {
@@ -489,6 +494,7 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
     onSuccess: (result) => {
       void log("进入战斗", `“${activeScene?.name ?? "当前场景"}”进入战斗，已加载当前人物与场景网格。`);
       sessionStorage.setItem(`dnd-dm-active-combat:${campaignId}`, result.combat.id);
+      setPlayerCombatId(result.combat.id);
       void client.invalidateQueries({ queryKey: ["combats", campaignId] });
       navigate("/combat");
     },
@@ -521,6 +527,7 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
     onSuccess: async (created) => {
       await client.invalidateQueries({ queryKey: ["scenes", campaignId] });
       setSceneId(created.id);
+      setPlayerCombatId(null);
       setSceneName("");
       setSceneObjective("");
       setSceneOpening("");
@@ -600,6 +607,7 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
     const nextEntries = [...loadEntries(campaignId, target.id), systemEntry];
     saveEntries(campaignId, target.id, nextEntries);
     setSceneId(target.id);
+    setPlayerCombatId(null);
     setEntries(nextEntries);
     setLastResponse(null);
     setSuggestedSceneId(null);
@@ -851,6 +859,12 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
   );
   return (
     <div className="mx-auto max-w-[1500px] p-4 lg:p-6">
+      <PlayerRoomPanel
+        campaignId={campaignId}
+        characters={characters.data ?? []}
+        currentCombatId={playerCombatId}
+        currentSceneId={sceneId || null}
+      />
       <SessionStatusBar characters={characters.data ?? []} events={events.data ?? []} npcs={npcs.data ?? []} />
       <div className="mb-4 rounded-xl border border-ember-800/45 bg-ember-950/10 p-3">
         <div className="flex flex-wrap items-center gap-2">

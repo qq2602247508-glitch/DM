@@ -9,6 +9,8 @@ uv run --project backend mypy backend/src
 uv run --project backend pytest backend/tests
 /bin/bash scripts/tests/test-dev-supervisor.sh
 /bin/bash scripts/tests/test-dev-backend-cache.sh
+/bin/bash scripts/tests/test-launch-desktop-player-gateway.sh
+/bin/bash scripts/tests/test-player-gateway-waits-for-backend.sh
 
 smoke_dir="$(mktemp -d "${TMPDIR:-/tmp}/dnd-dm-alembic.XXXXXX")"
 trap 'rm -rf "$smoke_dir"' EXIT

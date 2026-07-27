@@ -14,6 +14,7 @@ import type {
 } from "../api/entities";
 import { listCharacters, listLocations, listNpcs, updateCharacter } from "../api/entities";
 import { listMonsters, listScenes } from "../api/world";
+import { setPlayerRoomLiveState } from "../api/playerRoom";
 import type {
   Combat, CombatAction, CombatActionPreview, CombatEffect, CombatSettlementPreview, Combatant,
   Character, EncounterAdjustment, Monster, Npc, SceneGrid,
@@ -848,19 +849,23 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
   const fighters = useQuery({
     queryKey: ["combatants", campaignId, combat.id],
     queryFn: ({ signal }) => listCombatants(campaignId, combat.id, signal),
+    refetchInterval: combat.status === "active" ? 1_000 : false,
   });
   const combatActions = useQuery({
     queryKey: ["combat-actions", campaignId, combat.id],
     queryFn: ({ signal }) => listCombatActions(campaignId, combat.id, signal),
+    refetchInterval: combat.status === "active" ? 1_000 : false,
   });
   const combatEffects = useQuery({
     queryKey: ["combat-effects", campaignId, combat.id],
     queryFn: ({ signal }) => listCombatEffects(campaignId, combat.id, signal),
+    refetchInterval: combat.status === "active" ? 1_000 : false,
   });
   const endCondition = useQuery({
     queryKey: ["combat-end-condition", campaignId, combat.id],
     queryFn: ({ signal }) => getCombatEndCondition(campaignId, combat.id, signal),
     enabled: combat.status === "active",
+    refetchInterval: combat.status === "active" ? 1_000 : false,
   });
   const invalidate = () => {
     void client.invalidateQueries({ queryKey: ["combats", campaignId] });
@@ -1313,7 +1318,7 @@ function CombatContent({ campaignId }: { campaignId: string }): ReactElement {
   const [selectedCombatId, setSelectedCombatId] = useState(
     () => sessionStorage.getItem(`dnd-dm-active-combat:${campaignId}`) ?? "",
   );
-  const combats = useQuery({ queryKey: ["combats", campaignId], queryFn: ({ signal }) => listCombats(campaignId, signal) });
+  const combats = useQuery({ queryKey: ["combats", campaignId], queryFn: ({ signal }) => listCombats(campaignId, signal), refetchInterval: 1_000 });
   const scenes = useQuery({ queryKey: ["scenes", campaignId], queryFn: ({ signal }) => listScenes(campaignId, signal) });
   const characters = useQuery({ queryKey: ["characters", campaignId], queryFn: ({ signal }) => listCharacters(campaignId, signal) });
   const locations = useQuery({ queryKey: ["locations", campaignId], queryFn: ({ signal }) => listLocations(campaignId, signal) });
@@ -1350,6 +1355,16 @@ function CombatContent({ campaignId }: { campaignId: string }): ReactElement {
     sessionStorage.setItem(`dnd-dm-active-combat:${campaignId}`, preferred.id);
   }, [campaignId, combats.data, selectedCombatId]);
   const selectedCombat = combats.data?.find((combat) => combat.id === selectedCombatId);
+  const selectedCombatSceneId = selectedCombat?.scene_id ?? null;
+  const liveCombatId = selectedCombat?.id ?? null;
+  useEffect(() => {
+    if (!liveCombatId) return;
+    void setPlayerRoomLiveState(
+      campaignId,
+      selectedCombatSceneId,
+      liveCombatId,
+    ).catch(() => undefined);
+  }, [campaignId, liveCombatId, selectedCombatSceneId]);
   return (
     <div className="mx-auto max-w-[1500px] p-4 lg:p-6">
       <Panel eyebrow="遭遇" title="战斗辅助">

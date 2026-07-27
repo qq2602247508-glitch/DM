@@ -50,6 +50,32 @@ Run the applications separately:
 ./scripts/dev-frontend.sh
 ```
 
+### LAN player gateway
+
+The full DM dashboard and API intentionally remain loopback-only. The macOS
+one-click desktop launcher starts the isolated player gateway after the local
+backend is healthy. It can also be started separately in a terminal:
+
+```bash
+./scripts/player-gateway.sh
+```
+
+This command waits for the loopback DM backend to finish its migrations, builds
+the frontend with a same-origin player API, confirms the database is at the
+current migration, and starts a production player gateway on port `8787`. It
+prints the Mac's private-network URLs for players. The gateway serves only the
+public room API and the built player SPA; campaign administration, AI, backup,
+diagnostics, and all other DM routes return `404` on that port. It does not
+enable Uvicorn reload.
+
+Use this only on a trusted home/table network. Do not add router port forwarding
+or a public tunnel. Players must normally be on the same Wi-Fi or wired LAN;
+guest-network client isolation and some VPNs can prevent local devices from
+reaching one another. If the macOS firewall is enabled, allow the Python player
+gateway to accept incoming connections when prompted. Press `Ctrl-C` in the
+gateway terminal to stop accepting player connections. The DM continues to use
+<http://127.0.0.1:5173>.
+
 Override any setting through `.env`; see `.env.example` for the complete current
 configuration surface.
 

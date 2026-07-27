@@ -5,12 +5,13 @@ repo_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$repo_dir"
 
 export UV_CACHE_DIR="${UV_CACHE_DIR:-/Users/inagi/codex/900-杂项/uv-cache}"
+python_bin="${DND_DM_BACKEND_PYTHON:-$repo_dir/backend/.venv/bin/python}"
+alembic_bin="${DND_DM_BACKEND_ALEMBIC:-$repo_dir/backend/.venv/bin/alembic}"
 
-if [ -x "$repo_dir/backend/.venv/bin/python" ] &&
-  [ -x "$repo_dir/backend/.venv/bin/alembic" ]; then
+if [ -x "$python_bin" ] && [ -x "$alembic_bin" ]; then
   export PYTHONPATH="$repo_dir/backend/src${PYTHONPATH:+:$PYTHONPATH}"
-  "$repo_dir/backend/.venv/bin/alembic" -c backend/alembic.ini upgrade head
-  exec "$repo_dir/backend/.venv/bin/python" -m dnd_dm_assistant
+  "$alembic_bin" -c backend/alembic.ini upgrade head
+  exec "$python_bin" -m dnd_dm_assistant
 fi
 
 echo "缺少 backend/.venv；请在联网时运行一次 ./scripts/setup.sh。" >&2
