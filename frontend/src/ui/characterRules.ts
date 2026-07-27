@@ -137,6 +137,7 @@ export function spellToCharacterAction(
     resource_key: string | null;
     resource_cost: number;
     resolution_kind: "damage" | "narrative";
+    rule_plan?: Record<string, unknown>;
   },
   spellSaveDc: number,
   prepared = true,
@@ -165,6 +166,7 @@ export function spellToCharacterAction(
     resource_key: spell.resource_key ?? undefined,
     resource_cost: spell.resource_cost,
     resolution_kind: spell.resolution_kind,
+    rule_plan: spell.rule_plan,
   };
 }
 

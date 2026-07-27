@@ -28,6 +28,12 @@ function idempotencyKey(): string {
   return globalThis.crypto?.randomUUID?.() ?? `advance-${Date.now()}`;
 }
 
+function displayScalar(value: unknown, fallback: string): string {
+  return typeof value === "string" || typeof value === "number"
+    ? String(value)
+    : fallback;
+}
+
 export function AdvancementDialog({
   campaignId,
   character,
@@ -49,6 +55,7 @@ export function AdvancementDialog({
   const [featureChoices, setFeatureChoices] = useState("");
   const [spellAdditions, setSpellAdditions] = useState("");
   const [spellRemovals, setSpellRemovals] = useState("");
+  const [preparedSpellNames, setPreparedSpellNames] = useState<string[]>([]);
   const [overrideReason, setOverrideReason] = useState("");
   const [preview, setPreview] = useState<AdvancementPreview | null>(null);
   const catalog = useQuery({
@@ -70,6 +77,31 @@ export function AdvancementDialog({
     );
   const targetRule = selectedClass?.levels[currentClassLevel];
   const grantsAsi = targetRule?.features.some((item) => item.includes("属性值提升")) ?? false;
+  const choiceRequirements = targetRule?.choice_requirements ?? [];
+  const maximumSpellLevel = Math.max(
+    0,
+    ...choiceRequirements.map((item) => item.maximum_spell_level ?? 0),
+  );
+  const canonicalClassName = className === "邪术师" ? "魔契师" : className;
+  const legalSpellOptions = (catalog.data?.spells ?? []).filter((spell) => (
+    spell.classes.includes(canonicalClassName)
+    && spell.level <= maximumSpellLevel
+  ));
+  const additionNames = spellAdditions
+    .split(/[,，、]/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+  const selectedAdditionSpells = additionNames.map((name) => (
+    legalSpellOptions.find((spell) => spell.name === name)
+  ));
+  const preparedTarget = choiceRequirements.find(
+    (item) => item.key === "prepared_spells",
+  )?.target_total ?? null;
+  const currentPrepared = character.spells.filter((spell) => {
+    if (typeof spell !== "object" || spell === null) return false;
+    const record = spell as Record<string, unknown>;
+    return Number(record.spell_level ?? record.level ?? 0) > 0 && record.prepared === true;
+  }).length;
 
   const clearPreview = (): void => setPreview(null);
   const request = (): AdvancementRequest => ({
@@ -83,8 +115,23 @@ export function AdvancementDialog({
     ),
     feat_choice: feat || null,
     feature_choices: featureChoices.split(/[,，、]/).map((item) => item.trim()).filter(Boolean),
-    spell_additions: spellAdditions.split(/[,，、]/).map((item) => item.trim()).filter(Boolean)
-      .map((name) => ({ name, source: "level_up_choice", rule_year: 2024 })),
+    spell_additions: selectedAdditionSpells.map((spell, index) => {
+      const name = additionNames[index] ?? "";
+      return spell
+        ? {
+            ...spell,
+            spell_level: spell.level,
+            prepared: spell.level === 0 || preparedSpellNames.includes(spell.name),
+            source: "level_up_choice",
+            rule_year: 2024,
+          }
+        : {
+            name,
+            prepared: preparedSpellNames.includes(name),
+            source: "level_up_choice",
+            rule_year: 2024,
+          };
+    }),
     spell_removals: spellRemovals.split(/[,，、]/).map((item) => item.trim()).filter(Boolean),
     dm_override_reason: overrideReason || null,
   });
@@ -152,6 +199,9 @@ export function AdvancementDialog({
                     onChange={(event) => {
                       setClassName(event.target.value);
                       setSubclassName("");
+                      setSpellAdditions("");
+                      setSpellRemovals("");
+                      setPreparedSpellNames([]);
                       clearPreview();
                     }}
                     value={className}
@@ -251,6 +301,30 @@ export function AdvancementDialog({
                     </select>
                   </div>
                 ) : null}
+                {choiceRequirements.length ? (
+                  <div className="rounded border border-sky-800/60 bg-sky-950/15 p-3">
+                    <strong className="text-xs text-sky-100">本级规则积木</strong>
+                    <ul className="mb-0 mt-2 space-y-2 p-0 text-2xs text-stone-300">
+                      {choiceRequirements.map((requirement) => (
+                        <li className="list-none rounded border border-ink-700 p-2" key={requirement.key}>
+                          <span className={requirement.strict ? "text-emerald-300" : "text-amber-300"}>
+                            {requirement.strict ? "系统强制" : "DM复核"}
+                          </span>
+                          {" · "}{requirement.key}：{requirement.minimum === requirement.maximum
+                            ? `选择 ${requirement.maximum} 项`
+                            : `选择 ${requirement.minimum}–${requirement.maximum} 项`}
+                          {requirement.target_total !== null ? ` · 完成后总数 ${requirement.target_total}` : ""}
+                          {requirement.maximum_spell_level !== null ? ` · 最高 ${requirement.maximum_spell_level} 环` : ""}
+                          <span className="mt-1 block text-stone-500">{requirement.reason}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : (
+                  <p className="rounded border border-ink-700 p-2 text-2xs text-stone-500">
+                    本级成长表没有额外选择；生命值、职业特性和资源变化仍会进入预览。
+                  </p>
+                )}
                 <input
                   className={inputCls}
                   onChange={(event) => {
@@ -271,10 +345,39 @@ export function AdvancementDialog({
                   value={spellAdditions}
                 />
                 <datalist id="advancement-spells">
-                  {(catalog.data?.spells ?? []).map((item) => (
+                  {legalSpellOptions.map((item) => (
                     <option key={item.source_record_id} value={item.name} />
                   ))}
                 </datalist>
+                {selectedAdditionSpells.some(Boolean) ? (
+                  <div className="rounded border border-violet-800/60 bg-violet-950/15 p-3">
+                    <strong className="text-xs text-violet-100">新增法术的准备状态</strong>
+                    <p className="mb-2 mt-1 text-2xs text-stone-500">
+                      戏法始终可用；有环法术只有标记“升级后准备”才进入战斗栏。
+                      {preparedTarget !== null
+                        ? ` 当前已准备 ${currentPrepared} 个，本级目标总数 ${preparedTarget} 个。`
+                        : ""}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedAdditionSpells.filter((spell) => Boolean(spell)).map((spell) => spell && (
+                        <label className="rounded border border-ink-700 px-2 py-1 text-2xs text-stone-300" key={spell.source_record_id}>
+                          <input
+                            checked={spell.level === 0 || preparedSpellNames.includes(spell.name)}
+                            className="mr-1"
+                            disabled={spell.level === 0}
+                            onChange={(event) => setPreparedSpellNames((current) => (
+                              event.target.checked
+                                ? [...new Set([...current, spell.name])]
+                                : current.filter((name) => name !== spell.name)
+                            ))}
+                            type="checkbox"
+                          />
+                          {spell.name} · {spell.level === 0 ? "戏法（始终可用）" : `${spell.level}环`}
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
                 <input
                   className={inputCls}
                   onChange={(event) => {
@@ -347,6 +450,13 @@ export function AdvancementDialog({
                     {preview.warnings.map((warning) => (
                       <p className="mb-1 text-xs text-amber-300" key={warning}>警告：{warning}</p>
                     ))}
+                    {preview.resource_updates && Object.keys(preview.resource_updates).length ? (
+                      <p className="mb-1 text-xs text-sky-300">
+                        资源更新：{Object.values(preview.resource_updates)
+                          .map((resource) => `${displayScalar(resource.label, "职业资源")}上限 ${displayScalar(resource.max, "—")}`)
+                          .join("、")}
+                      </p>
+                    ) : null}
                     <p className="mb-0 text-2xs text-stone-600">
                       来源：{preview.rule_reference.source_path}
                     </p>

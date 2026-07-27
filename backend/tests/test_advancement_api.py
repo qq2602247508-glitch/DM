@@ -17,7 +17,7 @@ from dnd_dm_assistant.config import Settings
 def _class_record(name: str, stable_id: str, path: str) -> dict[str, Any]:
     rows = "\n".join(
         f"| {level} | +{2 + (level - 1) // 4} | "
-        f"{'战士子职' if level == 3 else '属性值提升' if level == 4 else f'{level}级特性'} |"
+        f"{f'{name}子职' if level == 3 else '属性值提升' if level == 4 else f'{level}级特性'} |"
         for level in range(1, 21)
     )
     return {
@@ -60,6 +60,54 @@ def advancement_client(tmp_path: Path, monkeypatch: Any) -> Iterator[TestClient]
     (classes / "champion.json").write_text(
         json.dumps(subclass, ensure_ascii=False), encoding="utf-8"
     )
+    wizard = _class_record(
+        "法师",
+        "wizard-2024",
+        "玩家手册2024/角色职业/法师/法师.htm",
+    )
+    wizard_rows = "\n".join(
+        f"| {level} | +{2 + (level - 1) // 4} | "
+        f"{'法师子职' if level == 3 else '属性值提升' if level == 4 else f'{level}级特性'}"
+        f" | {3 + int(level >= 4)} | {3 + level} |"
+        for level in range(1, 21)
+    )
+    wizard["content_markdown"] = (
+        "# 法师\n生命值骰 Hit Point Die：每法师等级D6\n"
+        "| 等级 | 熟练加值(PB) | 职业特性 | 戏法 | 准备法术 |\n"
+        "| --- | --- | --- | --- | --- |\n"
+        f"{wizard_rows}\n"
+    )
+    (classes / "wizard.json").write_text(
+        json.dumps(wizard, ensure_ascii=False), encoding="utf-8"
+    )
+    spells = corpus / "spells"
+    spells.mkdir()
+    spell_specs = [
+        ("法师戏法一", "wiz-cantrip-1", 0, ["法师"]),
+        ("法师戏法二", "wiz-cantrip-2", 0, ["法师"]),
+        ("法师戏法三", "wiz-cantrip-3", 0, ["法师"]),
+        *[
+            (f"法师一环{index}", f"wiz-level1-{index}", 1, ["法师"])
+            for index in range(1, 9)
+        ],
+        ("牧师一环", "cleric-level1", 1, ["牧师"]),
+        ("法师二环", "wiz-level2", 2, ["法师"]),
+    ]
+    for name, stable_id, level, spell_classes in spell_specs:
+        record = {
+            "name": name,
+            "stable_id": stable_id,
+            "edition": "2024",
+            "officiality": "official",
+            "source_relative_path": (
+                f"玩家手册2024/法术详述/{level}环.{name}/{name}.htm"
+            ),
+            "content_markdown": f"# {name}\n测试规则文本",
+            "spell": {"level": level, "classes": spell_classes},
+        }
+        (spells / f"{stable_id}.json").write_text(
+            json.dumps(record, ensure_ascii=False), encoding="utf-8"
+        )
     monkeypatch.setenv("DND_DM_DATABASE_URL", database_url)
     command.upgrade(Config("backend/alembic.ini"), "head")
     settings = Settings(
@@ -82,7 +130,9 @@ def test_character_options_load_complete_local_2024_progression(
 ) -> None:
     response = advancement_client.get("/api/v1/rules/character-options")
     assert response.status_code == 200
-    fighter = response.json()["classes"][0]
+    fighter = next(
+        item for item in response.json()["classes"] if item["name"] == "战士"
+    )
     assert fighter["name"] == "战士"
     assert len(fighter["levels"]) == 20
     assert fighter["subclasses"][0]["name"] == "勇士"
@@ -195,3 +245,131 @@ def test_level_three_requires_valid_subclass(
     )
     assert valid.status_code == 200
     assert valid.json()["subclass_name"] == "勇士"
+
+
+def test_wizard_advancement_rejects_wrong_class_level_and_preparation(
+    advancement_client: TestClient,
+) -> None:
+    campaign = _campaign(advancement_client)
+    initial_spells = [
+        *[
+            {
+                "name": f"法师戏法{label}",
+                "source_record_id": f"wiz-cantrip-{index}",
+                "spell_level": 0,
+                "classes": ["法师"],
+                "prepared": True,
+            }
+            for index, label in enumerate(("一", "二", "三"), 1)
+        ],
+        *[
+            {
+                "name": f"法师一环{index}",
+                "source_record_id": f"wiz-level1-{index}",
+                "spell_level": 1,
+                "classes": ["法师"],
+                "prepared": index <= 4,
+            }
+            for index in range(1, 7)
+        ],
+    ]
+    created = advancement_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/characters",
+        json={
+            "name": "成长法师",
+            "class_name": "法师",
+            "level": 1,
+            "experience": 300,
+            "hp": 8,
+            "max_hp": 8,
+            "ability_scores": {"constitution": 14, "intelligence": 16},
+            "class_levels": {"法师": 1},
+            "spells": initial_spells,
+        },
+    ).json()
+    path = (
+        f"/api/v1/campaigns/{campaign['id']}/characters/{created['id']}"
+        "/advancement/preview"
+    )
+    base = {
+        "character_version": created["version"],
+        "class_name": "法师",
+    }
+
+    wrong_class = advancement_client.post(
+        path,
+        json={
+            **base,
+            "spell_additions": [
+                {
+                    "name": "牧师一环",
+                    "source_record_id": "cleric-level1",
+                    "prepared": False,
+                }
+            ],
+        },
+    )
+    assert wrong_class.status_code == 400
+    assert "不属于法师法术表" in wrong_class.text
+
+    too_high = advancement_client.post(
+        path,
+        json={
+            **base,
+            "spell_additions": [
+                {
+                    "name": "法师二环",
+                    "source_record_id": "wiz-level2",
+                    "prepared": False,
+                }
+            ],
+        },
+    )
+    assert too_high.status_code == 400
+    assert "最高只能选择1环" in too_high.text
+
+    over_prepared = advancement_client.post(
+        path,
+        json={
+            **base,
+            "spell_additions": [
+                {
+                    "name": "法师一环7",
+                    "source_record_id": "wiz-level1-7",
+                    "prepared": True,
+                },
+                {
+                    "name": "法师一环8",
+                    "source_record_id": "wiz-level1-8",
+                    "prepared": True,
+                },
+            ],
+        },
+    )
+    assert over_prepared.status_code == 400
+    assert "必须准备5个" in over_prepared.text
+
+    valid = advancement_client.post(
+        path,
+        json={
+            **base,
+            "spell_additions": [
+                {
+                    "name": "法师一环7",
+                    "source_record_id": "wiz-level1-7",
+                    "prepared": True,
+                },
+                {
+                    "name": "法师一环8",
+                    "source_record_id": "wiz-level1-8",
+                    "prepared": False,
+                },
+            ],
+        },
+    )
+    assert valid.status_code == 200, valid.text
+    assert next(
+        item
+        for item in valid.json()["choice_requirements"]
+        if item["key"] == "spellbook_additions"
+    )["maximum"] == 2

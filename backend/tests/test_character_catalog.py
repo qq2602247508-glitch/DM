@@ -89,9 +89,24 @@ def test_spell_options_expose_structured_combat_and_narrative_metadata(
     assert fireball["half_damage_on_save"] is True
     assert fireball["resource_key"] == "spell_slots_3"
     assert fireball["resolution_kind"] == "damage"
+    assert fireball["rule_plan"]["automation_ready"] is True
+    fireball_target = fireball["rule_plan"]["blocks"][0]
+    assert fireball_target["mode"] == "area"
+    assert fireball_target["shape"] == "sphere"
+    assert fireball_target["range_ft"] == 150
+    assert fireball_target["size_ft"] == 20
+    assert any(
+        block["kind"] == "damage" and block["expression"] == "8d6"
+        for block in fireball["rule_plan"]["blocks"]
+    )
     assert mage_hand["level"] == 0
     assert mage_hand["resource_key"] is None
     assert mage_hand["resolution_kind"] == "narrative"
     assert detect_magic["damage_expression"] is None
     assert detect_magic["save_ability"] is None
     assert "后续法术" not in detect_magic["description"]
+    assert detect_magic["rule_plan"]["automation_confidence"] == "manual"
+    assert all(
+        block["kind"] != "damage"
+        for block in detect_magic["rule_plan"]["blocks"]
+    )

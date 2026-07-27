@@ -17,6 +17,9 @@ from dnd_dm_assistant.api.schemas import (
     PlayerRollResolutionCommand,
     TurnAdvanceCommand,
 )
+from dnd_dm_assistant.application.rule_block_compiler import (
+    compile_rule_blocks_dict,
+)
 from dnd_dm_assistant.domain.campaign_state import StateNotFoundError, VersionConflict
 from dnd_dm_assistant.domain.exploration import grid_distance_ft, movement_cost_ft
 from dnd_dm_assistant.infrastructure.database.campaign_service import serialize
@@ -1066,34 +1069,40 @@ class PlayerRoomService:
                 resources=resources,
                 spells=[
                     {
-                        key: (str(value)[:2400] if isinstance(value, str) else value)
-                        for key, value in spell.items()
-                        if key
-                        in {
-                            "name",
-                            "source_record_id",
-                            "source_path",
-                            "spell_level",
-                            "prepared",
-                            "school",
-                            "casting_time",
-                            "range",
-                            "components",
-                            "duration",
-                            "concentration",
-                            "ritual",
-                            "damage",
-                            "damage_type",
-                            "save_ability",
-                            "save_dc",
-                            "half_damage_on_save",
-                            "description",
-                            "cost",
-                            "resource_key",
-                            "resource_cost",
-                            "resolution_kind",
-                            "classes",
-                        }
+                        **{
+                            key: (str(value)[:2400] if isinstance(value, str) else value)
+                            for key, value in spell.items()
+                            if key
+                            in {
+                                "name",
+                                "source_record_id",
+                                "source_path",
+                                "spell_level",
+                                "prepared",
+                                "school",
+                                "casting_time",
+                                "range",
+                                "components",
+                                "duration",
+                                "concentration",
+                                "ritual",
+                                "damage",
+                                "damage_type",
+                                "save_ability",
+                                "save_dc",
+                                "half_damage_on_save",
+                                "description",
+                                "cost",
+                                "resource_key",
+                                "resource_cost",
+                                "resolution_kind",
+                                "classes",
+                            }
+                        },
+                        "rule_plan": compile_rule_blocks_dict(
+                            spell,
+                            source_kind="spell",
+                        ),
                     }
                     for spell in requested_spells
                     if spell.get("name")

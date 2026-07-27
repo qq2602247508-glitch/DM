@@ -15,6 +15,12 @@ from dnd_dm_assistant.domain.advancement import (
     merge_spell_slot_resources,
     validate_multiclass_prerequisites,
 )
+from dnd_dm_assistant.domain.advancement_choices import (
+    advancement_choice_requirements,
+    canonical_class_name,
+    maximum_class_spell_level,
+    progression_resource_updates,
+)
 from dnd_dm_assistant.domain.campaign_state import StateNotFoundError, VersionConflict
 from dnd_dm_assistant.infrastructure.database.campaign_service import serialize
 from dnd_dm_assistant.infrastructure.database.models import (
@@ -62,8 +68,7 @@ class AdvancementService:
         return character
 
     def _class_rule(self, class_name: str) -> Any:
-        if class_name == "邪术师":
-            class_name = "魔契师"
+        class_name = canonical_class_name(class_name)
         rule = next(
             (item for item in self.catalog.classes() if item.name == class_name),
             None,
@@ -71,6 +76,177 @@ class AdvancementService:
         if rule is None:
             raise ValueError("selected 2024 class is unavailable in the local rule catalog")
         return rule
+
+    def _spell_catalog(self) -> tuple[dict[str, Any], ...]:
+        return tuple(dict(item) for item in self.catalog.options().get("spells", []))
+
+    @staticmethod
+    def _merge_progression_resources(
+        resources: dict[str, Any],
+        updates: dict[str, dict[str, Any]],
+    ) -> dict[str, Any]:
+        merged = dict(resources)
+        for key, update in updates.items():
+            old = merged.get(key)
+            old_max = int(old.get("max", 0)) if isinstance(old, dict) else 0
+            old_current = (
+                int(old.get("current", old_max)) if isinstance(old, dict) else 0
+            )
+            new_max = int(update["max"])
+            merged[key] = {
+                **(old if isinstance(old, dict) else {}),
+                **update,
+                "current": min(new_max, old_current + max(0, new_max - old_max)),
+            }
+        return merged
+
+    def _validate_spell_choices(
+        self,
+        *,
+        class_name: str,
+        target_class_level: int,
+        existing_spells: list[dict[str, Any]],
+        spell_additions: list[dict[str, Any]],
+        spell_removals: set[str],
+        after_spells: list[dict[str, Any]],
+        target_cantrips: int | None,
+        target_prepared: int | None,
+        dm_override: bool,
+        warnings: list[str],
+    ) -> None:
+        if not spell_additions and not spell_removals:
+            if target_cantrips is not None or target_prepared is not None:
+                warnings.append(
+                    "本次没有提交法术变更；后端保留原法术表，"
+                    "升级界面仍需完成本级法术选择/准备后再用于严格规则战斗。"
+                )
+            return
+
+        catalog = self._spell_catalog()
+        by_id = {
+            str(item.get("source_record_id") or ""): item
+            for item in catalog
+            if item.get("source_record_id")
+        }
+        by_name = {
+            str(item.get("name") or ""): item for item in catalog if item.get("name")
+        }
+        max_level = maximum_class_spell_level(class_name, target_class_level)
+        invalid: list[str] = []
+        for addition in spell_additions:
+            record = by_id.get(str(addition.get("source_record_id") or "")) or by_name.get(
+                str(addition.get("name") or "")
+            )
+            name = str(addition.get("name") or "(未命名法术)")
+            if record is None:
+                invalid.append(f"{name}不在本地2024法术目录")
+                continue
+            record_classes = {
+                canonical_class_name(str(item))
+                for item in list(record.get("classes") or [])
+            }
+            spell_level = int(record.get("level") or 0)
+            if class_name not in record_classes:
+                invalid.append(f"{name}不属于{class_name}法术表")
+            elif spell_level > max_level:
+                invalid.append(
+                    f"{name}为{spell_level}环，{class_name}{target_class_level}级"
+                    f"最高只能选择{max_level}环"
+                )
+            addition.update(
+                {
+                    **record,
+                    **addition,
+                    "name": record["name"],
+                    "source_record_id": record["source_record_id"],
+                    "spell_level": spell_level,
+                    "classes": list(record.get("classes") or []),
+                    "class_name": class_name,
+                }
+            )
+        if invalid and not dm_override:
+            raise ValueError("; ".join(invalid))
+        if invalid:
+            warnings.append("DM 已覆盖法术目录、职业或环级限制：" + "；".join(invalid))
+
+        existing_names = {str(item.get("name") or "") for item in existing_spells}
+        existing_ids = {
+            str(item.get("source_record_id") or "")
+            for item in existing_spells
+            if item.get("source_record_id")
+        }
+        missing_removals = {
+            item
+            for item in spell_removals
+            if item not in existing_names and item not in existing_ids
+        }
+        if missing_removals and not dm_override:
+            raise ValueError(
+                "cannot remove spells not known by the character: "
+                + ", ".join(sorted(missing_removals))
+            )
+        if missing_removals:
+            warnings.append("DM 已覆盖不存在的法术移除项。")
+
+        seen: set[str] = set()
+        for spell in after_spells:
+            identity = str(spell.get("source_record_id") or spell.get("name") or "")
+            if not identity:
+                continue
+            if identity in seen and not dm_override:
+                raise ValueError("the resulting spell list contains duplicate spells")
+            seen.add(identity)
+            level = int(spell.get("spell_level", spell.get("level", 0)) or 0)
+            if level == 0 and spell.get("prepared") is False and not dm_override:
+                raise ValueError("cantrips are always available and cannot be unprepared")
+
+        class_spells = [
+            spell
+            for spell in after_spells
+            if canonical_class_name(str(spell.get("class_name") or class_name))
+            == class_name
+        ]
+        cantrip_count = sum(
+            int(spell.get("spell_level", spell.get("level", 0)) or 0) == 0
+            for spell in class_spells
+        )
+        prepared_count = sum(
+            int(spell.get("spell_level", spell.get("level", 0)) or 0) > 0
+            and spell.get("prepared") is True
+            for spell in class_spells
+        )
+        if target_cantrips is not None and cantrip_count != target_cantrips:
+            message = (
+                f"{class_name}{target_class_level}级必须有{target_cantrips}个戏法，"
+                f"当前结果为{cantrip_count}个"
+            )
+            if not dm_override:
+                raise ValueError(message)
+            warnings.append("DM 已覆盖：" + message)
+        if target_prepared is not None and prepared_count != target_prepared:
+            message = (
+                f"{class_name}{target_class_level}级必须准备{target_prepared}个有环法术，"
+                f"当前结果为{prepared_count}个"
+            )
+            if not dm_override:
+                raise ValueError(message)
+            warnings.append("DM 已覆盖：" + message)
+
+        if class_name == "法师" and target_class_level > 1:
+            learned = [
+                spell
+                for spell in spell_additions
+                if int(spell.get("spell_level", spell.get("level", 0)) or 0) > 0
+                and str(spell.get("name") or "") not in existing_names
+                and str(spell.get("source_record_id") or "") not in existing_ids
+            ]
+            if len(learned) != 2:
+                message = (
+                    f"法师本级必须向法术书加入2个新法师法术，当前提交{len(learned)}个"
+                )
+                if not dm_override:
+                    raise ValueError(message)
+                warnings.append("DM 已覆盖：" + message)
 
     def _preview_in_session(
         self,
@@ -122,7 +298,10 @@ class AdvancementService:
             or subclass_choices.get(class_name)
             or ""
         ).strip()
-        needs_subclass = any("子职" in feature for feature in level_rule.features)
+        needs_subclass = any(
+            "子职" in feature or "子职业" in feature
+            for feature in level_rule.features
+        )
         available_subclasses = {item["name"] for item in rule.subclasses}
         if needs_subclass and not subclass_name:
             raise ValueError("this level requires a subclass choice")
@@ -150,6 +329,10 @@ class AdvancementService:
         }
         grants_asi = any("属性值提升" in feature for feature in level_rule.features)
         feat_choice = str(data.get("feat_choice") or "").strip()
+        if grants_asi and not ability_increases and not feat_choice:
+            raise ValueError(
+                "this level requires ability score increases or one feat choice"
+            )
         if ability_increases or feat_choice:
             if not grants_asi:
                 raise ValueError("this level does not grant an ability score improvement")
@@ -168,18 +351,122 @@ class AdvancementService:
 
         spell_additions = [dict(item) for item in data.get("spell_additions", [])]
         spell_removals = {str(item) for item in data.get("spell_removals", [])}
+        spell_catalog = self._spell_catalog() if spell_additions else ()
+        spell_by_id = {
+            str(item.get("source_record_id") or ""): item
+            for item in spell_catalog
+            if item.get("source_record_id")
+        }
+        spell_by_name = {
+            str(item.get("name") or ""): item
+            for item in spell_catalog
+            if item.get("name")
+        }
+        for spell in spell_additions:
+            canonical = spell_by_id.get(
+                str(spell.get("source_record_id") or "")
+            ) or spell_by_name.get(str(spell.get("name") or ""))
+            if canonical is not None:
+                submitted = dict(spell)
+                spell.clear()
+                spell.update(
+                    {
+                        **canonical,
+                        **submitted,
+                        "name": canonical["name"],
+                        "source_record_id": canonical["source_record_id"],
+                        "spell_level": int(canonical.get("level") or 0),
+                        "classes": list(canonical.get("classes") or []),
+                        "class_name": class_name,
+                    }
+                )
         existing_spells = [
             dict(item) if isinstance(item, dict) else {"name": str(item)}
             for item in (character.spells or [])
         ]
         after_spells = [
-            item for item in existing_spells if str(item.get("name")) not in spell_removals
+            item
+            for item in existing_spells
+            if str(item.get("name")) not in spell_removals
+            and str(item.get("source_record_id") or "") not in spell_removals
         ]
-        existing_names = {str(item.get("name")) for item in after_spells}
+        existing_by_identity: dict[str, dict[str, Any]] = {}
+        for item in after_spells:
+            for identity in (
+                str(item.get("source_record_id") or ""),
+                str(item.get("name") or ""),
+            ):
+                if identity:
+                    existing_by_identity[identity] = item
         for spell in spell_additions:
-            if str(spell.get("name") or "").strip() and str(spell["name"]) not in existing_names:
+            name = str(spell.get("name") or "").strip()
+            source_id = str(spell.get("source_record_id") or "").strip()
+            existing = existing_by_identity.get(source_id) or existing_by_identity.get(
+                name
+            )
+            if existing is not None:
+                existing.update(spell)
+                continue
+            if name:
                 after_spells.append(spell)
-                existing_names.add(str(spell["name"]))
+                existing_by_identity[name] = spell
+                if source_id:
+                    existing_by_identity[source_id] = spell
+
+        requirements = advancement_choice_requirements(rule, target_class_level)
+        target_cantrips = next(
+            (
+                item.target_total
+                for item in requirements
+                if item.key == "cantrips"
+            ),
+            None,
+        )
+        target_prepared = next(
+            (
+                item.target_total
+                for item in requirements
+                if item.key == "prepared_spells"
+            ),
+            None,
+        )
+        self._validate_spell_choices(
+            class_name=class_name,
+            target_class_level=target_class_level,
+            existing_spells=existing_spells,
+            spell_additions=spell_additions,
+            spell_removals=spell_removals,
+            after_spells=after_spells,
+            target_cantrips=target_cantrips,
+            target_prepared=target_prepared,
+            dm_override=bool(override),
+            warnings=warnings,
+        )
+
+        requested_feature_choices = [
+            str(item).strip()
+            for item in data.get("feature_choices", [])
+            if str(item).strip()
+        ]
+        feature_requirements = [
+            item for item in requirements if item.kind == "feature_option"
+        ]
+        maximum_feature_choices = sum(item.maximum for item in feature_requirements)
+        if requested_feature_choices and not feature_requirements and not override:
+            raise ValueError("this level does not grant a class feature option")
+        if len(requested_feature_choices) > maximum_feature_choices and not override:
+            raise ValueError(
+                f"this level allows at most {maximum_feature_choices} feature choices"
+            )
+        unresolved_feature_requirements = [
+            item for item in feature_requirements if not item.strict
+        ]
+        if unresolved_feature_requirements:
+            warnings.append(
+                "以下职业选项的数量来自2024成长表，但具体选项前置条件仍需"
+                "本地规则条目或DM复核："
+                + "、".join(item.key for item in unresolved_feature_requirements)
+            )
 
         class_levels[class_name] = target_class_level
         if subclass_name:
@@ -188,6 +475,11 @@ class AdvancementService:
             dict(character.resources or {}),
             class_levels,
             subclass_choices,
+        )
+        resource_updates = progression_resource_updates(rule, target_class_level)
+        after_resources = self._merge_progression_resources(
+            after_resources,
+            resource_updates,
         )
         new_features = [
             {
@@ -208,8 +500,7 @@ class AdvancementService:
                 "source_record_id": rule.source_record_id,
                 "rule_year": 2024,
             }
-            for choice in data.get("feature_choices", [])
-            if str(choice).strip()
+            for choice in requested_feature_choices
         ]
         result = {
             "character_id": character.id,
@@ -241,6 +532,8 @@ class AdvancementService:
             },
             "features_gained": [*new_features, *chosen_features],
             "feat_choice": feat_choice or None,
+            "choice_requirements": [item.as_dict() for item in requirements],
+            "resource_updates": resource_updates,
             "warnings": warnings,
             "rule_reference": {
                 "year": 2024,

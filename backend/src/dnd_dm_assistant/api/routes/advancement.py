@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from pathlib import Path
 from typing import Annotated, Any
 
@@ -15,10 +16,13 @@ from dnd_dm_assistant.api.schemas import (
     CharacterSheetOcrRequest,
     CompanionCreate,
     CompanionPatch,
+    RuleBlockCompileRequest,
 )
 from dnd_dm_assistant.application.character_catalog import CharacterCatalog
 from dnd_dm_assistant.application.character_ocr import recognize_character_sheet
+from dnd_dm_assistant.application.rule_block_compiler import compile_rule_blocks
 from dnd_dm_assistant.domain.campaign_state import StateNotFoundError, VersionConflict
+from dnd_dm_assistant.domain.rule_blocks import build_execution_plan
 from dnd_dm_assistant.infrastructure.database.advancement_service import (
     AdvancementService,
 )
@@ -26,7 +30,7 @@ from dnd_dm_assistant.infrastructure.database.advancement_service import (
 router = APIRouter(tags=["character-advancement"])
 
 
-def _safe_call(fn: Any) -> Any:
+def _safe_call[T](fn: Callable[[], T]) -> T:
     try:
         return fn()
     except StateNotFoundError as exc:
@@ -53,6 +57,19 @@ def character_options(
     catalog: Annotated[CharacterCatalog, Depends(get_character_catalog)],
 ) -> dict[str, Any]:
     return catalog.options()
+
+
+@router.post("/rules/blocks/compile")
+def compile_rule_plan(body: RuleBlockCompileRequest) -> dict[str, Any]:
+    def compile_value() -> dict[str, Any]:
+        plan = compile_rule_blocks(body.source, source_kind=body.source_kind)
+        execution = build_execution_plan(plan)
+        return {
+            "rule_plan": plan.model_dump(mode="json"),
+            "execution_plan": execution.model_dump(mode="json"),
+        }
+
+    return _safe_call(compile_value)
 
 
 @router.post("/rules/character-sheet/ocr")

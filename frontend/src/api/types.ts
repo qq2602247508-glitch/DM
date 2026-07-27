@@ -261,6 +261,19 @@ export type SpellOption = CharacterOptionSummary & {
   resource_key: string | null;
   resource_cost: number;
   resolution_kind: "damage" | "narrative";
+  rule_plan?: Record<string, unknown>;
+};
+
+export type AdvancementChoiceRequirement = {
+  key: string;
+  kind: string;
+  minimum: number;
+  maximum: number;
+  strict: boolean;
+  options_source: string;
+  reason: string;
+  target_total: number | null;
+  maximum_spell_level: number | null;
 };
 
 export type ClassLevelOption = {
@@ -268,6 +281,8 @@ export type ClassLevelOption = {
   proficiency_bonus: number;
   features: string[];
   progression: Record<string, string>;
+  choice_requirements?: AdvancementChoiceRequirement[];
+  resource_updates?: Record<string, Record<string, unknown>>;
 };
 
 export type ClassOption = CharacterOptionSummary & {
@@ -326,6 +341,8 @@ export type AdvancementPreview = {
   }>;
   feat_choice: string | null;
   warnings: string[];
+  choice_requirements?: AdvancementChoiceRequirement[];
+  resource_updates?: Record<string, Record<string, unknown>>;
   rule_reference: {
     year: 2024;
     source_record_id: string;

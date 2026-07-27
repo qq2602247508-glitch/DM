@@ -14,6 +14,7 @@ export type CombatActionLike = {
   resource_cost?: number;
   auto_eligible?: boolean;
   resolution_kind?: "damage" | "narrative";
+  rule_plan?: Record<string, unknown>;
 };
 
 export type DiceExpression = {

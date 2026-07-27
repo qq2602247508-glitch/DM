@@ -284,6 +284,18 @@ class AdvancementConfirmRequest(AdvancementPreviewRequest):
     idempotency_key: str = Field(min_length=8, max_length=120)
 
 
+class RuleBlockCompileRequest(BaseModel):
+    source_kind: Literal[
+        "spell",
+        "action",
+        "feature",
+        "item",
+        "monster_action",
+        "unknown",
+    ]
+    source: dict[str, Any]
+
+
 class CompanionCreate(BaseModel):
     owner_character_id: str = Field(min_length=1, max_length=36)
     name: str = Field(min_length=1, max_length=200)

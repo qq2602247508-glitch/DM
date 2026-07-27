@@ -5,9 +5,16 @@ import re
 from pathlib import Path
 from typing import Any
 
+from dnd_dm_assistant.application.rule_block_compiler import (
+    compile_rule_blocks_dict,
+)
 from dnd_dm_assistant.domain.advancement import (
     ClassProgression,
     class_progression_from_record,
+)
+from dnd_dm_assistant.domain.advancement_choices import (
+    advancement_choice_requirements,
+    progression_resource_updates,
 )
 
 CORE_CLASSES_2024 = {
@@ -108,7 +115,7 @@ class CharacterCatalog:
                 )
                 else None
             )
-            return {
+            summary = {
                 "name": str(record.get("name") or ""),
                 "source_record_id": str(record.get("stable_id") or ""),
                 "source_path": source_path,
@@ -143,6 +150,11 @@ class CharacterCatalog:
                 "resource_cost": 1 if level > 0 else 0,
                 "resolution_kind": "damage" if damage_expression else "narrative",
             }
+            summary["rule_plan"] = compile_rule_blocks_dict(
+                summary,
+                source_kind="spell",
+            )
+            return summary
 
         def summaries(fragment: str) -> list[dict[str, str]]:
             return sorted(
@@ -204,6 +216,17 @@ class CharacterCatalog:
                             "proficiency_bonus": level.proficiency_bonus,
                             "features": list(level.features),
                             "progression": level.progression,
+                            "choice_requirements": [
+                                requirement.as_dict()
+                                for requirement in advancement_choice_requirements(
+                                    item,
+                                    level.level,
+                                )
+                            ],
+                            "resource_updates": progression_resource_updates(
+                                item,
+                                level.level,
+                            ),
                         }
                         for level in item.levels
                     ],

@@ -6,6 +6,7 @@ import { getInventory } from "../api/world";
 import type { Character } from "../api/types";
 import { Button, EmptyState, LoadingBlock } from "../ui/primitives";
 import { AdvancementDialog } from "./AdvancementDialog";
+import { RuleBlockPlan } from "./RuleBlockPlan";
 
 const ABILITIES: Record<string, string> = {
   strength: "力量",
@@ -156,6 +157,7 @@ type SpellView = {
   components: string;
   limitation: string;
   source: string;
+  ruleSource: Record<string, unknown>;
 };
 
 function spellView(spell: unknown): SpellView {
@@ -199,6 +201,7 @@ function spellView(spell: unknown): SpellView {
     components: text(data.components, "成分未记录"),
     limitation: limitations.join(" · ") || "通常消耗对应环级法术位；具体限制尚未记录",
     source: text(data.source_reference ?? data.source, ""),
+    ruleSource: data,
   };
 }
 
@@ -356,7 +359,7 @@ export function CharacterSheetDetail({
               {actions.length ? actions.map((action, index) => {
                 const description = text(action.description, "暂无说明");
                 const tooltip = `${description}；伤害 ${text(action.damage)}；距离 ${text(action.range)}；消耗 ${text(action.cost, "动作")}${action.resource ? `；资源 ${text(action.resource)}` : ""}`;
-                return <article className="rounded-lg border border-ink-700 bg-ink-950/45 p-4" key={`${text(action.name)}-${index}`} title={tooltip}><div className="flex items-start gap-3"><strong className="mr-auto text-sm text-parchment-100">{text(action.name, "未命名动作")}</strong><span className="rounded bg-red-950/50 px-2 py-1 font-mono text-xs text-red-200">{text(action.damage, "无伤害")}</span></div><dl className="mt-3 grid grid-cols-2 gap-2 text-xs"><div><dt className="text-stone-600">距离</dt><dd className="m-0 text-stone-300">{text(action.range)}</dd></div><div><dt className="text-stone-600">消耗</dt><dd className="m-0 text-stone-300">{text(action.cost, "动作")}</dd></div></dl><p className="mb-0 mt-3 text-xs leading-5 text-stone-400">{description}</p></article>;
+                return <article className="rounded-lg border border-ink-700 bg-ink-950/45 p-4" key={`${text(action.name)}-${index}`} title={tooltip}><div className="flex items-start gap-3"><strong className="mr-auto text-sm text-parchment-100">{text(action.name, "未命名动作")}</strong><span className="rounded bg-red-950/50 px-2 py-1 font-mono text-xs text-red-200">{text(action.damage, "无伤害")}</span></div><dl className="mt-3 grid grid-cols-2 gap-2 text-xs"><div><dt className="text-stone-600">距离</dt><dd className="m-0 text-stone-300">{text(action.range)}</dd></div><div><dt className="text-stone-600">消耗</dt><dd className="m-0 text-stone-300">{text(action.cost, "动作")}</dd></div></dl><p className="mb-0 mt-3 text-xs leading-5 text-stone-400">{description}</p><RuleBlockPlan source={action} /></article>;
               }) : <EmptyState title="暂无攻击或动作" hint="创建角色时会按职业配置基础动作，也可在角色数据中补充。" />}
             </div>
           ) : null}
@@ -441,6 +444,7 @@ export function CharacterSheetDetail({
                         </dl>
                         <p className="mb-0 mt-3 text-xs leading-5 text-stone-400">{spell.description}</p>
                         {spell.source ? <p className="mb-0 mt-2 text-2xs text-stone-600">来源：{spell.source}</p> : null}
+                        <RuleBlockPlan source={spell.ruleSource} />
                       </article>
                     ))}
                     {!characterAssets.isLoading && spells.length === 0 ? (

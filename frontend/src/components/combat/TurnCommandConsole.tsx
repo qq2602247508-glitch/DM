@@ -26,6 +26,7 @@ import {
   type EnemyTactics,
 } from "../../ui/combatAutomation";
 import { isPreparedCombatSpell } from "../../ui/characterRules";
+import { targetingFromRulePlan } from "../../ui/ruleBlocks";
 import {
   resolveAreaSavingThrows,
   type AreaSpellResolution,
@@ -34,6 +35,7 @@ import { Badge, Button } from "../../ui/primitives";
 import { inputCls, selectCls, textareaCls } from "../../ui/styles";
 import type { TargetingTemplate } from "../../ui/gridTargeting";
 import { monsterActionsForRules } from "../../ui/monsterRuleProfiles";
+import { RuleBlockPlan } from "../RuleBlockPlan";
 
 export type CombatTargeting = TargetingTemplate & { label: string };
 
@@ -89,6 +91,13 @@ function hasActionEconomy(active: Combatant, cost: ActionCost): boolean {
 }
 
 function targetingForAction(action: CombatActionLike): CombatTargeting {
+  const compiled = targetingFromRulePlan(action);
+  if (compiled) {
+    return {
+      ...compiled,
+      label: `${action.name ?? "动作"} · 已编译规则范围`,
+    };
+  }
   const summary = actionRangeSummary(action);
   const targetingText = `${action.range ?? ""} ${action.description ?? ""}`;
   const radiusMatch = targetingText.match(/(\d+)\s*尺(?:半径|范围|球形|爆发)/);
@@ -598,6 +607,7 @@ export function TurnCommandConsole({
               </select>
             </div>
             <p className="mb-2 mt-2 text-2xs text-stone-400">{selectedAction.cost ?? "动作"} · {actionRangeSummary(selectedAction)} · {selectedAction.description ?? "以角色卡和规则条目为准"}</p>
+            <RuleBlockPlan source={selectedAction} title="当前动作执行积木" />
             {isNarrativeAction ? (
               <div className="rounded border border-violet-800/50 bg-violet-950/20 p-2">
                 <p className="m-0 text-xs leading-5 text-violet-100">
