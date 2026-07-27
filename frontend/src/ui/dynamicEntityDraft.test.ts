@@ -30,6 +30,7 @@ describe("dynamic scene arrivals", () => {
   it("detects monster and NPC arrival language without treating plain mentions as writes", () => {
     expect(detectArrivalKind("这时候来了一个怪物突袭")).toBe("monster");
     expect(detectArrivalKind("这时候出现了多心魔")).toBe("monster");
+    expect(detectArrivalKind("鼠集群突然从暗处涌出，攻击兽群与玩家")).toBe("monster");
     expect(detectArrivalKind("突然有个名叫“米拉”的旅人闯入")).toBe("npc");
     expect(detectArrivalKind("附近可能存在怪物")).toBeNull();
     expect(suggestedNpcName("突然有个名叫“米拉”的旅人闯入")).toBe("米拉");

@@ -47,8 +47,8 @@ export type ArrivalDraft = {
   actions: GeneratedAction[];
 };
 
-const ARRIVAL_PATTERN = /(?:来(?:了|到|袭)|出现|进入|闯入|突袭|袭击|赶到|现身|冒出|召唤|增援)/i;
-const MONSTER_PATTERN = /(?:怪物|魔物|敌人|野兽|亡灵|恶魔|魔鬼|巨龙|地精|哥布林|兽人|妖精|异怪|构装|元素|邪魔|[\p{Script=Han}]{1,8}(?:魔|兽|怪|龙|蛛|鬼|妖|灵))/iu;
+const ARRIVAL_PATTERN = /(?:来(?:了|到|袭)|出现|进入|闯入|突袭|袭击|赶到|现身|冒出|涌出|召唤|增援)/i;
+const MONSTER_PATTERN = /(?:怪物|魔物|敌人|野兽|亡灵|恶魔|魔鬼|巨龙|地精|哥布林|兽人|妖精|异怪|构装|元素|邪魔|鼠群|鼠集群|老鼠|[\p{Script=Han}]{1,8}(?:魔|兽|怪|龙|蛛|鬼|妖|灵))/iu;
 const NPC_PATTERN = /(?:NPC|人物|有人|一个人|陌生人|商人|守卫|村民|牧师|旅人|访客|盟友|使者|雇主)/i;
 
 export function detectArrivalKind(text: string): ArrivalKind | null {
@@ -73,13 +73,13 @@ export function requestedMonsterName(text: string): string {
   )?.[1];
   if (leading && !ARRIVAL_PATTERN.test(leading)) return leading;
   const afterArrival = text.match(
-    /(?:出现|来了|来了一只|来了一个|现身|闯入|突袭|召唤|冒出)(?:了|一只|一个|一名|一头|一群|一些)?\s*([\p{Script=Han}A-Za-z· -]{2,20})/u,
+    /(?:出现|来了|来了一只|来了一个|现身|闯入|突袭|召唤|冒出|涌出)(?:了|一只|一个|一名|一头|一群|一些)?\s*([\p{Script=Han}A-Za-z· -]{2,20})/u,
   )?.[1]?.trim();
   const cleaned = afterArrival
     ?.replace(/(?:并|然后|而且|开始|正在|向|对|袭击|攻击|突袭).*$/u, "")
     .trim();
   if (cleaned) return cleaned;
-  return text.match(/([\p{Script=Han}]{2,10}(?:魔|兽|怪|龙|蛛|鬼|妖|灵))/u)?.[1]
+  return text.match(/(鼠集群|鼠群|老鼠|[\p{Script=Han}]{2,10}(?:魔|兽|怪|龙|蛛|鬼|妖|灵))/u)?.[1]
     ?? "待命名的自制怪物";
 }
 

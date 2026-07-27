@@ -374,9 +374,27 @@ def test_scene_reuses_atomic_participants_and_starts_visible_initiative(
     scene = campaign_client.post(f"{base}/scenes", json={"name": "教堂冲突"}).json()
     grid = campaign_client.post(
         f"{base}/scenes/{scene['id']}/grid",
-        json={"width": 12, "height": 8, "cell_size_ft": 5, "mode": "combat"},
+        json={
+            "width": 12,
+            "height": 8,
+            "cell_size_ft": 5,
+            "mode": "combat",
+            "layers_json": {
+                "theme": "测试酒馆",
+                "cells": [
+                    {"row": 1, "col": 1, "kind": "wall", "label": "外墙"},
+                    {"row": 2, "col": 2, "kind": "door", "label": "正门"},
+                    {"row": 3, "col": 3, "kind": "floor", "label": "玩家出生区"},
+                ],
+            },
+        },
     )
     assert grid.status_code == 201
+    public_grid = campaign_client.get(f"{base}/scenes/{scene['id']}/grid").json()
+    assert {(item["object_type"], item["label"]) for item in public_grid["objects"]} == {
+        ("wall", "外墙"),
+        ("door", "正门"),
+    }
     for entity_type, entity_id in (("character", character["id"]), ("npc", npc["id"])):
         response = campaign_client.post(
             f"{base}/scenes/{scene['id']}/participants",

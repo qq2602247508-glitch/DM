@@ -84,6 +84,13 @@ def test_player_character_creation_binding_and_campaign_scope(
                 "wisdom": 12,
                 "charisma": 10,
             },
+            "spells": [
+                {
+                    "name": "魔法飞弹",
+                    "source_record_id": "spell-magic-missile",
+                    "source_path": "玩家手册2024/法术详述/1环.htm",
+                }
+            ],
         },
     )
     assert created.status_code == 201
@@ -99,6 +106,7 @@ def test_player_character_creation_binding_and_campaign_scope(
     assert character["resources"]["arcane_recovery"]["current"] == 1
     assert character["spellcasting"]["ability"] == "智力"
     assert character["actions"][0]["name"] == "火焰箭"
+    assert character["spells"][0]["name"] == "魔法飞弹"
     assert "notes" not in character
     assert (
         campaign_client.get("/api/v1/player-room/me").json()["character"]["id"] == character["id"]
@@ -113,6 +121,53 @@ def test_player_character_creation_binding_and_campaign_scope(
         json={"character_id": foreign["id"]},
     )
     assert rejected.status_code == 404
+
+
+def test_player_snapshot_exposes_selected_scene_grid_and_public_objects(
+    campaign_client: TestClient,
+) -> None:
+    campaign = _campaign(campaign_client, "公开地图团")
+    scene = campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/scenes",
+        json={"name": "博德之门酒馆"},
+    ).json()
+    created_grid = campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/scenes/{scene['id']}/grid",
+        json={
+            "width": 18,
+            "height": 12,
+            "cell_size_ft": 5,
+            "mode": "combat",
+            "public_description": "酒馆大厅、吧台与后厨",
+            "layers_json": {
+                "cells": [
+                    {"row": 1, "col": 1, "kind": "wall", "label": "酒馆外墙"},
+                    {"row": 2, "col": 2, "kind": "cover", "label": "木制吧台"},
+                ]
+            },
+        },
+    )
+    assert created_grid.status_code == 201
+    opened = _open(campaign_client, campaign["id"])
+    _join(campaign_client, opened["join_code"])
+    live = campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/player-room/live-state",
+        json={"scene_id": scene["id"]},
+    )
+    assert live.status_code == 200
+
+    public_scene = campaign_client.get("/api/v1/player-room/me").json()["table"]["scene"]
+    assert public_scene["grid"] == {
+        "width": 18,
+        "height": 12,
+        "cell_size_ft": 5,
+        "mode": "combat",
+        "public_description": "酒馆大厅、吧台与后厨",
+    }
+    assert {(item["object_type"], item["label"]) for item in public_scene["objects"]} == {
+        ("wall", "酒馆外墙"),
+        ("cover", "木制吧台"),
+    }
 
 
 def test_room_live_state_rejects_cross_campaign_ids(campaign_client: TestClient) -> None:
@@ -232,6 +287,18 @@ def test_ended_combat_is_read_only_in_player_snapshot(
         },
     )
     assert fighter.status_code == 201
+    enemy = campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "地精",
+            "entity_type": "monster",
+            "initiative": 10,
+            "armor_class": 15,
+            "hp": 7,
+            "max_hp": 7,
+        },
+    )
+    assert enemy.status_code == 201
     ended = campaign_client.patch(
         f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}",
         headers={"If-Match": '"1"'},
@@ -249,3 +316,6 @@ def test_ended_combat_is_read_only_in_player_snapshot(
     assert snapshot["active_combatant_id"] is None
     assert snapshot["is_my_turn"] is False
     assert snapshot["pending_rolls"] == []
+    enemy_snapshot = next(item for item in snapshot["combatants"] if item["name"] == "地精")
+    assert enemy_snapshot["armor_class"] == 15
+    assert "hp" not in enemy_snapshot

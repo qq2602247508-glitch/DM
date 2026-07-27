@@ -5,18 +5,25 @@ import { Badge, Button } from "../ui/primitives";
 import {
   readSceneStoryOutline, sortScenesByOutline,
 } from "../ui/sceneOutline";
+import {
+  SCENE_PHASE_LABELS, type ScenePhase,
+} from "../ui/contextualQuickActions";
 
 export function SceneOutlinePanel({
   currentSceneId,
   entering,
   onEnter,
+  onEnterPhase,
   scenes,
+  activePhase,
   suggestedSceneId,
 }: {
   currentSceneId: string;
   entering: boolean;
   onEnter: (scene: Scene, source: "manual" | "ai") => void;
+  onEnterPhase: (scene: Scene, phase: ScenePhase) => void;
   scenes: Scene[];
+  activePhase: ScenePhase;
   suggestedSceneId: string | null;
 }) {
   const ordered = useMemo(() => sortScenesByOutline(scenes), [scenes]);
@@ -85,11 +92,33 @@ export function SceneOutlinePanel({
                     {expanded ? (
                       <div className="mt-2 space-y-1 border-t border-ink-700 pt-2 text-2xs leading-5 text-stone-400">
                         <p className="m-0"><b className="text-ember-200">目标：</b>{outline.objective}</p>
-                        <p className="m-0"><b className="text-stone-300">起：</b>{outline.opening}</p>
-                        <p className="m-0"><b className="text-stone-300">承：</b>{outline.development}</p>
-                        <p className="m-0"><b className="text-stone-300">转：</b>{outline.twist}</p>
-                        <p className="m-0"><b className="text-stone-300">合：</b>{outline.climax}</p>
-                        <p className="m-0"><b className="text-violet-200">转场：</b>{outline.transition}</p>
+                        {([
+                          ["opening", outline.opening],
+                          ["development", outline.development],
+                          ["twist", outline.twist],
+                          ["climax", outline.climax],
+                          ["transition", outline.transition],
+                        ] as const).map(([phase, text]) => {
+                          const active = current && activePhase === phase;
+                          return (
+                            <button
+                              className={`flex w-full gap-1 rounded border px-2 py-1 text-left transition ${
+                                active
+                                  ? "border-ember-500 bg-ember-950/30 text-parchment-100"
+                                  : "border-transparent hover:border-violet-700 hover:bg-violet-950/15"
+                              }`}
+                              disabled={entering}
+                              key={phase}
+                              onClick={() => onEnterPhase(scene, phase)}
+                              type="button"
+                            >
+                              <b className={phase === "transition" ? "text-violet-200" : "text-stone-300"}>
+                                {SCENE_PHASE_LABELS[phase]}：
+                              </b>
+                              <span>{text}</span>
+                            </button>
+                          );
+                        })}
                         {!current ? (
                           <div className="flex justify-end pt-1">
                             <Button

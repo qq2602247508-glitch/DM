@@ -55,7 +55,57 @@ class ExplorationService:
             row = SceneGrid(scene_id=scene_id, **data)
             s.add(row)
             s.flush()
+            self._materialize_layer_cells(s, row)
             return serialize(row)
+
+    @staticmethod
+    def _materialize_layer_cells(session: Session, grid: SceneGrid) -> None:
+        """Turn generated layer cells into public, queryable map objects.
+
+        The DM renderer can understand the compact ``layers_json`` payload,
+        while the player gateway intentionally exposes only normalized public
+        objects. Materializing once here keeps both views on the same map
+        without dozens of follow-up HTTP writes from the browser.
+        """
+        raw_cells = grid.layers_json.get("cells", [])
+        if not isinstance(raw_cells, list):
+            return
+        kind_map = {
+            "wall": "wall",
+            "door": "door",
+            "cover": "cover",
+            "object": "furniture",
+        }
+        seen: set[tuple[int, int]] = set()
+        for cell in raw_cells[:500]:
+            if not isinstance(cell, dict):
+                continue
+            object_type = kind_map.get(str(cell.get("kind", "")))
+            if object_type is None:
+                continue
+            try:
+                row = int(cell["row"])
+                col = int(cell["col"])
+            except (KeyError, TypeError, ValueError):
+                continue
+            if not (1 <= row <= grid.height and 1 <= col <= grid.width):
+                continue
+            if (row, col) in seen:
+                continue
+            seen.add((row, col))
+            label = str(cell.get("label") or object_type)[:200]
+            session.add(
+                SceneObject(
+                    scene_id=grid.scene_id,
+                    object_type=object_type,
+                    label=label,
+                    row=row,
+                    col=col,
+                    state="closed" if object_type == "door" else "active",
+                    visibility="public",
+                    metadata_json={"generated_from": "layers_json"},
+                )
+            )
 
     def add_token(self, campaign_id: str, scene_id: str, data: dict[str, Any]) -> dict[str, Any]:
         with Session(self.engine) as s, s.begin():

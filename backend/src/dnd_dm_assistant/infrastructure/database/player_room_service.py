@@ -965,7 +965,15 @@ class PlayerRoomService:
                 ],
                 actions=[dict(action) for action in list(class_rule.get("actions") or [])],
                 resources=resources,
-                spells=[],
+                spells=[
+                    {
+                        key: str(spell[key])[:500]
+                        for key in ("name", "source_record_id", "source_path")
+                        if spell.get(key)
+                    }
+                    for spell in list(data.get("spells") or [])
+                    if spell.get("name")
+                ],
                 spellcasting=spellcasting,
                 class_levels={"魔契师" if class_name == "邪术师" else class_name: 1},
                 notes=f"D&D 5e 2024规则角色 · 背景：{background}",
@@ -1237,13 +1245,16 @@ class PlayerRoomService:
             "position": position,
             "health_status": health,
             "is_own": is_own,
+            # Players need the concrete hit threshold before rolling. Exact
+            # enemy HP and private notes remain hidden, but AC is a public
+            # combat target value in this assisted workflow.
+            "armor_class": item.armor_class,
         }
         if is_own or ally:
             result.update(
                 {
                     "hp": item.hp,
                     "max_hp": item.max_hp,
-                    "armor_class": item.armor_class,
                     "conditions": item.conditions,
                 }
             )

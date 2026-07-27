@@ -6,7 +6,7 @@ import {
   createCharacter, createClue, createEvent, createLocation, createNpc, createQuest,
   deleteCharacter, deleteClue, deleteEvent, deleteLocation, deleteNpc, deleteQuest,
   listCharacters, listClues, listEvents, listLocations, listNpcs, listQuests,
-  recognizeCharacterSheet,
+  getCharacterOptions, recognizeCharacterSheet,
   updateCharacter, updateClue, updateEvent, updateLocation, updateNpc, updateQuest,
   type CharacterInput, type CharacterOcrResult, type ClueInput, type EventInput, type LocationInput, type NpcInput, type QuestInput,
 } from "../api/entities";
@@ -17,7 +17,7 @@ import { CompanionPanel } from "../components/CompanionPanel";
 import { RestPanel } from "../components/RestPanel";
 import { RequireCampaign } from "../components/RequireCampaign";
 import { inputCls } from "../ui/styles";
-import { Button, EmptyState, ErrorState, LoadingBlock } from "../ui/primitives";
+import { Badge, Button, EmptyState, ErrorState, LoadingBlock } from "../ui/primitives";
 import { formatDateTime } from "../ui/format";
 import { ConfirmDialog } from "../ui/widgets";
 import { useToast } from "../hooks/toastContext";
@@ -31,6 +31,10 @@ const ABILITY_LABELS: Record<string, string> = {
 function modifier(score: number): string {
   const value = Math.floor((score - 10) / 2);
   return value >= 0 ? `+${value}` : String(value);
+}
+
+function isLevelOneSpell(sourcePath: string): boolean {
+  return /\/(?:0环|1环)\.htm$/i.test(sourcePath);
 }
 
 function resourceSummary(resources: Record<string, unknown>): string {
@@ -357,6 +361,13 @@ function CharacterCreateWizard({ campaignId, onDone }: { campaignId: string; onD
   const [speed, setSpeed] = useState("30");
   const [hp, setHp] = useState("10");
   const [equipment, setEquipment] = useState("");
+  const [spellSearch, setSpellSearch] = useState("");
+  const [selectedSpells, setSelectedSpells] = useState<string[]>([]);
+  const characterOptions = useQuery({
+    queryKey: ["character-options"],
+    queryFn: ({ signal }) => getCharacterOptions(signal),
+    staleTime: 60 * 60 * 1000,
+  });
   const mutation = useMutation({
     mutationFn: () => {
       if (!name.trim()) throw new Error("角色名称不能为空");
@@ -385,7 +396,13 @@ function CharacterCreateWizard({ campaignId, onDone }: { campaignId: string; onD
         features: [...(speciesRule?.features ?? []), ...(backgroundRule ? [`背景专长：${backgroundRule.feat}`] : [])],
         actions: classRule?.actions ?? [],
         resources: classResources,
-        spells: [],
+        spells: (characterOptions.data?.spells ?? []).filter((spell) => isLevelOneSpell(spell.source_path))
+          .filter((spell) => selectedSpells.includes(spell.source_record_id))
+          .map((spell) => ({
+            name: spell.name,
+            source_record_id: spell.source_record_id,
+            source_path: spell.source_path,
+          })),
         spellcasting: classRule?.spellcasting ?? {},
         class_levels: className ? { [className === "邪术师" ? "魔契师" : className]: 1 } : {},
         subclass_choices: {},
@@ -394,7 +411,7 @@ function CharacterCreateWizard({ campaignId, onDone }: { campaignId: string; onD
     },
     onSuccess: () => {
       void client.invalidateQueries({ queryKey: ["characters", campaignId] });
-      setStep(1); setName(""); setRace(""); setClassName(""); setBackground(""); setEquipment("");
+      setStep(1); setName(""); setRace(""); setClassName(""); setBackground(""); setEquipment(""); setSelectedSpells([]);
       showToast("角色卡已创建"); onDone();
     },
     onError: (error) => showToast(error instanceof Error ? error.message : "角色创建失败", "error"),
@@ -414,7 +431,7 @@ function CharacterCreateWizard({ campaignId, onDone }: { campaignId: string; onD
   return (
     <Panel eyebrow="D&D 5e · 2024" title="按规则创建角色">
       <div className="mb-4 flex items-center gap-2">
-        {[["1", "身份"], ["2", "属性"], ["3", "战斗与装备"]].map(([number, label]) => <div className={`flex items-center gap-2 text-xs ${step === Number(number) ? "text-ember-300" : "text-stone-600"}`} key={number}><span className={`flex h-6 w-6 items-center justify-center rounded-full border ${step === Number(number) ? "border-ember-400 bg-ember-500/15" : "border-ink-600"}`}>{number}</span>{label}</div>)}
+        {[["1", "身份"], ["2", "属性"], ["3", "职业选项"], ["4", "战斗与装备"]].map(([number, label]) => <div className={`flex items-center gap-2 text-xs ${step === Number(number) ? "text-ember-300" : "text-stone-600"}`} key={number}><span className={`flex h-6 w-6 items-center justify-center rounded-full border ${step === Number(number) ? "border-ember-400 bg-ember-500/15" : "border-ink-600"}`}>{number}</span>{label}</div>)}
       </div>
       {step === 1 ? (
         <div className="grid gap-3 md:grid-cols-2">
@@ -435,6 +452,34 @@ function CharacterCreateWizard({ campaignId, onDone }: { campaignId: string; onD
         </div>
       ) : null}
       {step === 3 ? (
+        <div>
+          <div className="rounded border border-ink-700 bg-ink-950/50 p-3 text-xs text-stone-400">
+            <strong className="text-parchment-100">子职</strong>
+            <p className="mb-0 mt-1">当前创建的是1级角色。D&D 5e 2024核心职业通常在3级选择子职，因此现在不会强制选择；达到解锁等级时，升级界面会展示 {characterOptions.data?.classes.find((item) => item.name === className)?.subclasses.filter((item) => !item.name.includes("法术列表")).map((item) => item.name).join("、") || "该职业的全部子职"}。</p>
+          </div>
+          {selectedClass?.spellcasting ? (
+            <div className="mt-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <strong className="mr-auto text-sm text-parchment-100">选择初始法术</strong>
+                <Badge tone="ai">已选 {selectedSpells.length}</Badge>
+                <input aria-label="搜索法术" className={`${inputCls} max-w-xs`} onChange={(event) => setSpellSearch(event.target.value)} placeholder="搜索全部2024法术" value={spellSearch} />
+              </div>
+              <p className="text-2xs text-stone-600">法术来自本地2024规则目录。请按职业规则选择戏法与1环法术；法术位已按职业资源写入角色卡。</p>
+              <div className="max-h-72 overflow-y-auto rounded border border-ink-700 p-2">
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {(characterOptions.data?.spells ?? []).filter((spell) => isLevelOneSpell(spell.source_path)).filter((spell) => !spellSearch.trim() || `${spell.name} ${spell.source_path}`.toLowerCase().includes(spellSearch.trim().toLowerCase())).map((spell) => (
+                    <label className={`flex cursor-pointer items-start gap-2 rounded border p-2 text-xs ${selectedSpells.includes(spell.source_record_id) ? "border-violet-500 bg-violet-950/20" : "border-ink-700"}`} key={spell.source_record_id}>
+                      <input checked={selectedSpells.includes(spell.source_record_id)} onChange={(event) => setSelectedSpells((current) => event.target.checked ? [...current, spell.source_record_id] : current.filter((id) => id !== spell.source_record_id))} type="checkbox" />
+                      <span><strong className="block text-parchment-100">{spell.name}</strong><span className="text-2xs text-stone-600">{spell.source_path}</span></span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ) : <p className="rounded border border-ink-700 p-3 text-xs text-stone-500">该职业1级没有法术选择；职业资源与动作仍会按规则写入。</p>}
+        </div>
+      ) : null}
+      {step === 4 ? (
         <div className="grid gap-3 md:grid-cols-2">
           <label className="text-xs text-stone-400">护甲等级 AC<input className={`${inputCls} mt-1`} max="99" min="0" onChange={(event) => setArmorClass(event.target.value)} type="number" value={armorClass} /></label>
           <label className="text-xs text-stone-400">速度<input className={`${inputCls} mt-1`} min="0" onChange={(event) => setSpeed(event.target.value)} type="number" value={speed} /></label>
@@ -445,7 +490,7 @@ function CharacterCreateWizard({ campaignId, onDone }: { campaignId: string; onD
       ) : null}
       <div className="mt-4 flex justify-between border-t border-ink-700 pt-3">
         <Button disabled={step === 1} onClick={() => setStep((current) => current - 1)} size="sm">上一步</Button>
-        {step < 3 ? <Button disabled={step === 1 ? (!name.trim() || !race || !className || !background) : false} onClick={() => { if (step === 2) applyDerivedStats(); else setStep((current) => current + 1); }} variant="primary">下一步</Button> : <Button disabled={!name.trim() || Number(hp) < 1} loading={mutation.isPending} onClick={() => mutation.mutate()} variant="primary">确认创建角色</Button>}
+        {step < 4 ? <Button disabled={step === 1 ? (!name.trim() || !race || !className || !background) : false} onClick={() => { if (step === 2) applyDerivedStats(); else setStep((current) => current + 1); }} variant="primary">下一步</Button> : <Button disabled={!name.trim() || Number(hp) < 1} loading={mutation.isPending} onClick={() => mutation.mutate()} variant="primary">确认创建角色</Button>}
       </div>
     </Panel>
   );

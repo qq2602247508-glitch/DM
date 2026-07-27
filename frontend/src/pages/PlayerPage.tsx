@@ -17,6 +17,7 @@ import {
   type PlayerRoomSnapshot,
   type SafePlayerCharacter,
 } from "../api/playerRoom";
+import { getCharacterOptions } from "../api/entities";
 import { BACKGROUNDS_2024, CLASSES_2024, SPECIES_2024 } from "../ui/characterRules";
 import { Button, EmptyState, ErrorState, LoadingBlock } from "../ui/primitives";
 
@@ -39,6 +40,10 @@ function display(value: unknown): string {
     if (typeof name === "string" || typeof name === "number") return String(name);
   }
   return JSON.stringify(value);
+}
+
+function isLevelOneSpell(sourcePath: string): boolean {
+  return /\/(?:0环|1环)\.htm$/i.test(sourcePath);
 }
 
 function JoinRoom({ onJoined }: { onJoined: () => void }): ReactElement {
@@ -76,18 +81,33 @@ function CharacterBuilder({ snapshot, onDone }: { snapshot: PlayerRoomSnapshot; 
   const [race, setRace] = useState("");
   const [className, setClassName] = useState("");
   const [background, setBackground] = useState("");
+  const [spellSearch, setSpellSearch] = useState("");
+  const [selectedSpells, setSelectedSpells] = useState<string[]>([]);
   const [scores, setScores] = useState<Record<string, number>>({
     strength: 15, dexterity: 14, constitution: 13,
     intelligence: 12, wisdom: 10, charisma: 8,
   });
   const bind = useMutation({ mutationFn: () => bindMyCharacter(selected), onSuccess: onDone });
+  const characterOptions = useQuery({
+    queryKey: ["character-options"],
+    queryFn: ({ signal }) => getCharacterOptions(signal),
+    staleTime: 60 * 60 * 1000,
+  });
   const create = useMutation({
     mutationFn: () => createMyCharacter({
       name, race, class_name: className, background, ability_scores: scores, equipment: [],
+      spells: (characterOptions.data?.spells ?? []).filter((spell) => isLevelOneSpell(spell.source_path))
+        .filter((spell) => selectedSpells.includes(spell.source_record_id))
+        .map((spell) => ({
+          name: spell.name,
+          source_record_id: spell.source_record_id,
+          source_path: spell.source_path,
+        })),
     }),
     onSuccess: onDone,
   });
   const validArray = [...Object.values(scores)].sort((a, b) => a - b).join(",") === "8,10,12,13,14,15";
+  const selectedClass = CLASSES_2024.find((item) => item.name === className);
   return (
     <main className="mx-auto min-h-screen max-w-4xl p-4 lg:p-8">
       <header className="mb-5">
@@ -133,6 +153,21 @@ function CharacterBuilder({ snapshot, onDone }: { snapshot: PlayerRoomSnapshot; 
             {Object.entries(ABILITIES).map(([key, label]) => <label className="text-xs text-stone-400" key={key}>{label}<select className={`${inputCls} mt-1`} onChange={(event) => setScores((current) => ({ ...current, [key]: Number(event.target.value) }))} value={scores[key]}>{[15, 14, 13, 12, 10, 8].map((value) => <option key={value}>{value}</option>)}</select></label>)}
           </div>
           {!validArray ? <p className="text-sm text-red-300">标准数组的每个数值必须恰好使用一次。</p> : null}
+          <div className="mt-5 rounded border border-ink-700 bg-ink-950/40 p-3">
+            <h3 className="m-0 text-sm text-parchment-100">职业选项</h3>
+            <p className="mb-2 mt-1 text-xs text-stone-500">当前创建1级角色；子职通常在3级解锁，升级时再从该职业完整子职库中选择。</p>
+            {selectedClass?.spellcasting ? (
+              <>
+                <input aria-label="玩家搜索法术" className={inputCls} onChange={(event) => setSpellSearch(event.target.value)} placeholder="搜索并选择初始法术" value={spellSearch} />
+                <div className="mt-2 max-h-56 overflow-y-auto rounded border border-ink-700 p-2">
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {(characterOptions.data?.spells ?? []).filter((spell) => isLevelOneSpell(spell.source_path)).filter((spell) => !spellSearch.trim() || `${spell.name} ${spell.source_path}`.toLowerCase().includes(spellSearch.trim().toLowerCase())).map((spell) => <label className={`flex gap-2 rounded border p-2 text-xs ${selectedSpells.includes(spell.source_record_id) ? "border-amber-500 bg-amber-950/20" : "border-ink-700"}`} key={spell.source_record_id}><input checked={selectedSpells.includes(spell.source_record_id)} onChange={(event) => setSelectedSpells((current) => event.target.checked ? [...current, spell.source_record_id] : current.filter((id) => id !== spell.source_record_id))} type="checkbox" /><span><strong className="block">{spell.name}</strong><span className="text-2xs text-stone-600">{spell.source_path}</span></span></label>)}
+                  </div>
+                </div>
+                <p className="mb-0 mt-2 text-xs text-amber-200">已选择 {selectedSpells.length} 个法术；请按职业1级已知/准备数量自行核对。</p>
+              </>
+            ) : <p className="mb-0 text-xs text-stone-600">该职业1级没有法术选择。</p>}
+          </div>
           <Button className="mt-5" disabled={!name.trim() || !race || !className || !background || !validArray} loading={create.isPending} onClick={() => create.mutate()} variant="primary">创建并绑定角色</Button>
           {create.isError ? <p className="text-sm text-red-300">{create.error.message}</p> : null}
         </section>
@@ -210,6 +245,12 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
   const own = combat?.combatants.find((item) => item.is_own);
   const actions = (snapshot.character?.actions ?? []).filter((item): item is Record<string, unknown> => typeof item === "object" && item !== null);
   const enemies = combat?.combatants.filter((item) => item.entity_type === "monster" && item.health_status !== "倒地") ?? [];
+  const selectedAction = actions.find((item) => display(item.name) === actionName);
+  const selectedTarget = enemies.find((item) => item.id === targetId);
+  const attackBonus = typeof selectedAction?.attack_bonus === "number"
+    ? selectedAction.attack_bonus
+    : null;
+  const damageFormula = display(selectedAction?.damage ?? selectedAction?.description ?? "角色卡所列伤害骰");
   const mutation = useMutation({ mutationFn: async (fn: () => Promise<unknown>) => fn(), onSuccess: refresh });
   if (!combat) return <EmptyState hint="DM 从当前 Scene 发起战斗后，这里会自动切换。" title="当前没有战斗" />;
   const ended = combat.status === "ended";
@@ -228,6 +269,20 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
           {ended ? <p className="rounded border border-amber-800/60 bg-amber-950/20 p-3 text-sm text-amber-100">战斗已由 DM 结束。你仍可查看地图和完整公开日志；奖励请到“我的角色”查看。</p> : null}
           <label className="block text-xs text-stone-400">攻击/技能<select className={`${inputCls} mt-1`} disabled={ended || !combat.is_my_turn} onChange={(event) => setActionName(event.target.value)} value={actionName}><option value="">选择角色卡动作</option>{actions.map((action) => <option key={display(action.name)} value={display(action.name)}>{display(action.name)} · {display(action.damage ?? action.description ?? "")}</option>)}</select></label>
           <label className="mt-2 block text-xs text-stone-400">目标<select className={`${inputCls} mt-1`} disabled={ended || !combat.is_my_turn} onChange={(event) => setTargetId(event.target.value)} value={targetId}><option value="">选择合法敌人</option>{enemies.map((item) => <option key={item.id} value={item.id}>{item.name} · {item.health_status}</option>)}</select></label>
+          <div className="mt-3 rounded border border-amber-800/60 bg-amber-950/20 p-3 text-xs leading-5 text-amber-100">
+            {selectedAction && selectedTarget ? (
+              <>
+                <strong>{selectedAction.name as string} → {selectedTarget.name}</strong>
+                <span className="mt-1 block">
+                  请掷 d20{attackBonus === null ? "并加入角色卡命中调整值" : ` + ${attackBonus} 命中加值`}；
+                  最终总值需要达到 AC {selectedTarget.armor_class}（≥ {selectedTarget.armor_class}）才命中。
+                  命中后掷 {damageFormula}，再把最终伤害总值填到下方。
+                </span>
+              </>
+            ) : (
+              <span>先选择攻击/技能和目标；这里会明确显示命中所需 AC、命中加值与伤害骰。</span>
+            )}
+          </div>
           <div className="mt-2 grid grid-cols-2 gap-2"><label className="text-xs text-stone-400">d20命中总值<input className={`${inputCls} mt-1`} onChange={(event) => setAttackTotal(event.target.value)} type="number" value={attackTotal} /></label><label className="text-xs text-stone-400">伤害骰最终总值<input className={`${inputCls} mt-1`} onChange={(event) => setDamageTotal(event.target.value)} type="number" value={damageTotal} /></label></div>
           <Button className="mt-3 w-full" disabled={ended || !combat.is_my_turn || !actionName || !targetId || !attackTotal || !damageTotal || !own?.action_available} loading={mutation.isPending} onClick={() => mutation.mutate(() => attackWithMyCombatant(targetId, actionName, Number(attackTotal), Number(damageTotal)))} variant="primary">提交攻击并同步结算</Button>
           <Button className="mt-2 w-full" disabled={ended || !combat.is_my_turn} onClick={() => mutation.mutate(() => endMyTurn(combat.version))}>结束我的回合</Button>

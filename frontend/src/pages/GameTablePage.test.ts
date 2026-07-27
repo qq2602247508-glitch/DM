@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { parsePrepDraft } from "../ui/prepDraft";
+import { buildFallbackPrepDraft, parsePrepDraft } from "../ui/prepDraft";
 
 describe("parsePrepDraft", () => {
   it("parses strict prep sections into importable atoms", () => {
@@ -56,5 +56,16 @@ describe("parsePrepDraft", () => {
         transition: "前往旧教堂",
       },
     });
+  });
+
+  it("turns a one-line tavern brief into locations, scenes and a D&D encounter", () => {
+    const text = buildFallbackPrepDraft(
+      "玩家1级，新手村，一个博德之门的小酒馆集结，然后遇到地精发生战斗",
+    );
+    const atoms = parsePrepDraft(text);
+    expect(atoms.some((atom) => atom.kind === "location" && atom.name.includes("酒馆"))).toBe(true);
+    expect(atoms.filter((atom) => atom.kind === "scene")).toHaveLength(2);
+    expect(atoms.some((atom) => atom.kind === "monster" && atom.name === "地精")).toBe(true);
+    expect(text).not.toContain("混入非 D&D");
   });
 });

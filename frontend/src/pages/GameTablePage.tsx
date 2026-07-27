@@ -5,7 +5,7 @@ import { runAssistantTurn } from "../api/assistant";
 import { getRuleDocument, searchKnowledge } from "../api/knowledge";
 import { setPlayerRoomLiveState } from "../api/playerRoom";
 import {
-  applyEncounterAdjustment, createClue, createEncounterAdjustment, createEvent, createNpc,
+  applyEncounterAdjustment, createClue, createEncounterAdjustment, createEvent, createLocation, createNpc,
   createQuest, listCharacters, listEncounterAdjustments, listEvents, listLocations, listNpcs,
   rejectEncounterAdjustment, revertEncounterAdjustment,
 } from "../api/entities";
@@ -13,7 +13,7 @@ import type {
   AgentResponse, Character, EncounterAdjustment, EncounterOperation, Monster, Npc, Scene, SceneParticipant,
 } from "../api/types";
 import {
-  addSceneParticipant, createMonster, createScene, createWorldItem, generateNpc,
+  addSceneParticipant, createMonster, createPersistentGrid, createScene, createWorldItem, generateNpc, getSceneGrid,
   listMonsters, listSceneParticipants, listScenes,
   removeSceneParticipant, startSceneCombat,
 } from "../api/world";
@@ -30,7 +30,7 @@ import { Badge, Button, EmptyState, ErrorState, LoadingBlock } from "../ui/primi
 import { inputCls, selectCls, textareaCls } from "../ui/styles";
 import { safeDndText } from "../ui/contentSafety";
 import { HpBar } from "../ui/widgets";
-import { parsePrepDraft, type DraftAtom } from "../ui/prepDraft";
+import { buildFallbackPrepDraft, parsePrepDraft, type DraftAtom } from "../ui/prepDraft";
 import { generateTacticalSceneGrid } from "../ui/sceneGridGenerator";
 import {
   buildSceneNotes, chapterOrderFromTitle, readSceneStoryOutline,
@@ -45,6 +45,9 @@ import {
 import {
   describeEncounterOperation, difficultyShiftLabel,
 } from "../ui/encounterAdjustments";
+import {
+  buildContextualQuickActions, SCENE_PHASE_LABELS, scenePhaseText, type ScenePhase,
+} from "../ui/contextualQuickActions";
 
 type ProgressEntry = {
   id: string;
@@ -101,6 +104,55 @@ function loadCheckpoints(campaignId: string): SessionCheckpoint[] {
   }
 }
 
+async function createSceneWithPersistentGrid(
+  campaignId: string,
+  input: { name: string; location_id?: string | null; description?: string | null; notes?: string | null },
+  locationName = "",
+): Promise<Scene> {
+  const scene = await createScene(campaignId, input);
+  const grid = generateTacticalSceneGrid(
+    input.name,
+    input.description ?? "",
+    locationName,
+  );
+  await createPersistentGrid(campaignId, scene.id, {
+    width: grid.width,
+    height: grid.height,
+    cell_size_ft: grid.cell_size_ft,
+    mode: "combat",
+    public_description: grid.theme,
+    dm_description: `由 Scene“${input.name}”自动生成，可在场景页继续调整。`,
+    layers_json: { theme: grid.theme, cells: grid.cells },
+  });
+  return scene;
+}
+
+async function ensureScenePersistentGrid(
+  campaignId: string,
+  scene: Scene,
+  locationName = "",
+): Promise<void> {
+  try {
+    await getSceneGrid(campaignId, scene.id);
+    return;
+  } catch {
+    const grid = generateTacticalSceneGrid(
+      scene.name,
+      scene.description ?? "",
+      locationName,
+    );
+    await createPersistentGrid(campaignId, scene.id, {
+      width: grid.width,
+      height: grid.height,
+      cell_size_ft: grid.cell_size_ft,
+      mode: "combat",
+      public_description: grid.theme,
+      dm_description: `由旧Scene“${scene.name}”补建并同步到玩家端。`,
+      layers_json: { theme: grid.theme, cells: grid.cells },
+    });
+  }
+}
+
 function GameTableContent({ campaignId }: { campaignId: string }): ReactElement {
   const client = useQueryClient();
   const { showToast } = useToast();
@@ -143,6 +195,7 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
   const [sceneTwist, setSceneTwist] = useState("");
   const [sceneClimax, setSceneClimax] = useState("");
   const [sceneTransition, setSceneTransition] = useState("");
+  const [activePhase, setActivePhase] = useState<ScenePhase>("opening");
   const scenes = useQuery({ queryKey: ["scenes", campaignId], queryFn: ({ signal }) => listScenes(campaignId, signal) });
   const locations = useQuery({ queryKey: ["locations", campaignId], queryFn: ({ signal }) => listLocations(campaignId, signal) });
   const characters = useQuery({ queryKey: ["characters", campaignId], queryFn: ({ signal }) => listCharacters(campaignId, signal) });
@@ -230,19 +283,39 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
     ...(monsters.data ?? []).map((entity) => ({ key: `monster:${entity.id}`, label: `怪物 · ${entity.name}` })),
   ], [characters.data, monsters.data, npcs.data]);
   const presentKeys = new Set((participants.data ?? []).map((item) => `${item.entity_type}:${item.entity_id}`));
+  const sanitizeSceneNarration = (
+    text: string,
+    outline: SceneStoryOutline,
+    fallback: string,
+    allowedEntityKeys = presentKeys,
+  ): { text: string; contaminated: boolean } => {
+    const allowedOutlineText = Object.values(outline).join(" ");
+    const contaminated = [
+      ...(npcs.data ?? []).map((entity) => ({ key: `npc:${entity.id}`, name: entity.name })),
+      ...(monsters.data ?? []).map((entity) => ({ key: `monster:${entity.id}`, name: entity.name })),
+    ].some((entity) => (
+      entity.name.trim().length >= 2
+      && !allowedEntityKeys.has(entity.key)
+      && !allowedOutlineText.includes(entity.name)
+      && text.includes(entity.name)
+    ));
+    return contaminated ? { text: fallback, contaminated: true } : { text, contaminated: false };
+  };
   const availableCandidates = candidates.filter((candidate) => !presentKeys.has(candidate.key));
   const entityName = (entityType: string, entityId: string) =>
     candidates.find((candidate) => candidate.key === `${entityType}:${entityId}`)?.label.replace(/^.+ · /, "")
     ?? entityId;
-  const quickActions = useMemo(() => {
-    const npc = participants.data?.find((item) => item.entity_type === "npc");
-    const monster = participants.data?.find((item) => item.entity_type === "monster" && item.role !== "defeated");
-    return [
-      npc ? `推进与 ${npc.entity.name} 的对话，根据其目标、态度和秘密给出具体反应` : "让一名与当前剧情相关的 NPC 进入场景并说明来意",
-      `推进对“${activeScene?.name ?? "当前场景"}”的探索，给出检定、DC、线索和可互动内容`,
-      monster ? `根据 ${monster.entity.name} 的存在制造紧张升级，并判断是否应该进入战斗` : "制造具体局势变化：人物进入、离开、暴露秘密或出现新的威胁",
-    ];
-  }, [activeScene?.name, participants.data]);
+  const quickActions = useMemo(() => buildContextualQuickActions({
+    sceneName: activeScene?.name ?? "当前场景",
+    outline: activeOutline,
+    phase: activePhase,
+    participants: (participants.data ?? []).map((item) => ({
+      entity_type: item.entity_type,
+      name: item.entity.name,
+      defeated: item.role === "defeated",
+    })),
+    recentText: entries.at(-1)?.text,
+  }), [activeOutline, activePhase, activeScene?.name, entries, participants.data]);
   const log = async (title: string, description: string, metadata: Record<string, unknown> = {}) => {
     await createEvent(campaignId, {
       title, description, event_type: "session_progress", visibility: "dm",
@@ -255,7 +328,7 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
     setEntries((current) => [...current, { id: crypto.randomUUID(), kind, text, createdAt: new Date().toISOString() }]);
   };
   const arrivalLookup = useMutation({
-    mutationFn: async ({ kind, prompt, assistantText }: { kind: ArrivalKind; prompt: string; assistantText: string }) => {
+    mutationFn: async ({ kind, prompt, assistantText }: { kind: ArrivalKind; prompt: string; assistantText: string; startCombat?: boolean }) => {
       const sceneContext = `${activeScene?.name ?? ""} ${activeScene?.description ?? ""} ${activeLocation?.name ?? ""} ${activeLocation?.description ?? ""}`;
       if (kind === "npc") {
         try {
@@ -318,10 +391,10 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
         references,
       };
     },
-    onSuccess: ({ draft, references }) => {
+    onSuccess: ({ draft, references }, variables) => {
       setArrivalDraft(draft);
       setArrivalReferences(references);
-      setStartCombatAfterArrival(false);
+      setStartCombatAfterArrival(Boolean(variables.startCombat));
       showToast(draft.kind === "monster"
         ? references.length > 0 ? `已找到 ${references.length} 个本地图鉴/战役候选，请 DM 复核` : "图鉴暂无可靠匹配，已生成明确标记的自制草案"
         : "NPC 草案已生成，请 DM 复核后加入场景");
@@ -362,6 +435,26 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
     addEntry("dm", action.trim());
     void log("DM 推进", action.trim(), { entry_kind: "dm" });
     assistant.mutate(action.trim());
+    setInput("");
+  };
+  const executeInput = () => {
+    const action = input.trim();
+    if (!action || !sceneId || arrivalLookup.isPending) return;
+    addEntry("dm", `【执行】${action}`);
+    void log("DM 执行指令", action, { entry_kind: "dm", action: "execute_request" });
+    const kind = detectArrivalKind(action);
+    if (kind) {
+      const startsCombat = /攻击|战斗|突袭|伏击|开战|冲向|袭击/.test(action);
+      arrivalLookup.mutate({
+        kind,
+        prompt: action,
+        assistantText: "DM要求将描述转成当前场景中的真实D&D原子。",
+        startCombat: startsCombat,
+      });
+      setInput("");
+      return;
+    }
+    assistant.mutate(`DM要求立即落实以下场景变化，并给出可执行后果草案：${action}`);
     setInput("");
   };
   const participantAdd = useMutation({
@@ -455,6 +548,9 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
           source: arrivalDraft.sourceKey,
         },
       );
+      if (startCombatAfterArrival && activeScene) {
+        await ensureScenePersistentGrid(campaignId, activeScene, activeLocation?.name ?? "");
+      }
       const startedCombat = startCombatAfterArrival
         ? await startSceneCombat(campaignId, sceneId)
         : null;
@@ -492,7 +588,11 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
     },
   });
   const combat = useMutation({
-    mutationFn: () => startSceneCombat(campaignId, sceneId),
+    mutationFn: async () => {
+      if (!activeScene) throw new Error("请先选择当前Scene");
+      await ensureScenePersistentGrid(campaignId, activeScene, activeLocation?.name ?? "");
+      return startSceneCombat(campaignId, sceneId);
+    },
     onSuccess: async (result) => {
       void log("进入战斗", `“${activeScene?.name ?? "当前场景"}”进入战斗，已加载当前人物与场景网格。`);
       sessionStorage.setItem(`dnd-dm-active-combat:${campaignId}`, result.combat.id);
@@ -517,7 +617,7 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
         climax: sceneClimax.trim() || "确认当前 Scene 的目标是否完成。",
         transition: sceneTransition.trim() || "由 DM 决定是否进入下一个 Scene。",
       };
-      return createScene(campaignId, {
+      return createSceneWithPersistentGrid(campaignId, {
         name: sceneName.trim(),
         location_id: sceneLocationId || null,
         description: outline.objective,
@@ -525,7 +625,7 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
           generateTacticalSceneGrid(sceneName, `${outline.objective} ${outline.opening}`),
           outline,
         ),
-      });
+      }, locations.data?.find((location) => location.id === sceneLocationId)?.name ?? "");
     },
     onSuccess: async (created) => {
       await client.invalidateQueries({ queryKey: ["scenes", campaignId] });
@@ -562,15 +662,24 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
           source,
         },
       });
-      const prompt = `你是D&D 5e 2024副DM。现在正式进入${outline.chapterTitle}的 Scene ${outline.sceneOrder}「${target.name}」。目标：${outline.objective}。开场：${outline.opening}。发展：${outline.development}。转折：${outline.twist}。收束：${outline.climax}。请生成一段简洁的可朗读进入描述，然后另起一段给DM一个开场操作提示。不要擅自改变事实或写入数据库。`;
+      const allowedNames = target.id === sceneId
+        ? (participants.data ?? []).map((item) => item.entity.name).join("、") || "无"
+        : "无";
+      const prompt = `你是D&D 5e 2024副DM。现在正式进入${outline.chapterTitle}的 Scene ${outline.sceneOrder}「${target.name}」。目标：${outline.objective}。开场：${outline.opening}。发展：${outline.development}。转折：${outline.twist}。收束：${outline.climax}。当前Scene已确认在场人物仅有：${allowedNames}。只可使用大纲明确写到的人物或这份在场名单；严禁从同一战役的其他Scene、旧记录或模型记忆带入任何人物。请生成一段简洁的可朗读进入描述，然后另起一段给DM一个开场操作提示。不要擅自改变事实或写入数据库。`;
       const response = await runAssistantTurn(campaignId, prompt, { mode: "narrative" });
-      return { response, target };
-    },
-    onSuccess: async ({ response, target }) => {
-      const text = withoutSceneTransitionMarker(
+      const rawText = withoutSceneTransitionMarker(
         response.dm_hint?.text
         || "已进入新 Scene。请按右侧大纲介绍开场并询问玩家行动。",
       );
+      const sanitized = sanitizeSceneNarration(
+        rawText,
+        outline,
+        `${outline.opening}\n\nDM提示：只介绍当前Scene大纲与已在场人物，然后询问每名玩家要做什么。`,
+        target.id === sceneId ? presentKeys : new Set<string>(),
+      );
+      return { response: sanitized.contaminated ? null : response, target, text: sanitized.text };
+    },
+    onSuccess: async ({ response, target, text }) => {
       const aiEntry: ProgressEntry = {
         id: crypto.randomUUID(),
         kind: "ai",
@@ -613,18 +722,93 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
     setPlayerCombatId(null);
     setEntries(nextEntries);
     setLastResponse(null);
+    setActivePhase("opening");
     setSuggestedSceneId(null);
     sceneTransitionNarration.mutate({ target, source });
   };
+  const phaseNarration = useMutation({
+    mutationFn: async ({ target, phase }: { target: Scene; phase: ScenePhase }) => {
+      const targetIndex = orderedScenes.findIndex((scene) => scene.id === target.id);
+      const outline = readSceneStoryOutline(target, targetIndex + 1);
+      const phaseContent = scenePhaseText(outline, phase);
+      const allowedNames = target.id === sceneId
+        ? (participants.data ?? []).map((item) => item.entity.name).join("、") || "无"
+        : "无";
+      const prompt = `你是D&D 5e 2024副DM。DM明确进入${outline.chapterTitle} Scene ${outline.sceneOrder}「${target.name}」的“${SCENE_PHASE_LABELS[phase]}”阶段。大纲内容：${phaseContent}。Scene目标：${outline.objective}。当前Scene已确认在场人物仅有：${allowedNames}。只可使用大纲明确写到的人物或这份在场名单；严禁从其他Scene、旧记录或模型记忆带入人物。请生成：1）一段可直接朗读给玩家的内容；2）两到四个只针对当前局势、会随阶段变化的可选推进；3）一条DM私密注意事项。不要引入其他规则系统，不要修改数据库。`;
+      try {
+        const response = await runAssistantTurn(campaignId, prompt, { mode: "narrative" });
+        const rawText = withoutSceneTransitionMarker(response.dm_hint?.text || `进入该阶段：${phaseContent}`);
+        const sanitized = sanitizeSceneNarration(
+          rawText,
+          outline,
+          `进入“${SCENE_PHASE_LABELS[phase]}”阶段：${phaseContent}\n\n可选推进：让玩家调查现场、与已在场人物交涉、利用环境，或对明确威胁采取行动。`,
+          target.id === sceneId ? presentKeys : new Set<string>(),
+        );
+        return {
+          target, phase, response: sanitized.contaminated ? null : response,
+          text: sanitized.text,
+        };
+      } catch {
+        return {
+          target, phase, response: null,
+          text: `进入当前阶段：${phaseContent}\n\n请描述局势变化，并让玩家选择调查、交涉、利用环境或采取战斗行动。`,
+        };
+      }
+    },
+    onSuccess: async ({ target, phase, response, text }) => {
+      const nextEntries = [
+        ...loadEntries(campaignId, target.id),
+        {
+          id: crypto.randomUUID(),
+          kind: "system" as const,
+          text: `DM进入“${SCENE_PHASE_LABELS[phase]}”阶段。`,
+          createdAt: new Date().toISOString(),
+        },
+        {
+          id: crypto.randomUUID(),
+          kind: "ai" as const,
+          text,
+          createdAt: new Date().toISOString(),
+        },
+      ];
+      saveEntries(campaignId, target.id, nextEntries);
+      setEntries(nextEntries);
+      if (response) setLastResponse(response);
+      await createEvent(campaignId, {
+        title: `进入Scene阶段 · ${SCENE_PHASE_LABELS[phase]}`,
+        description: text,
+        event_type: "session_progress",
+        visibility: "dm",
+        location_id: target.location_id,
+        metadata_json: {
+          scene_id: target.id,
+          game_table: true,
+          entry_kind: "ai",
+          action: "scene_phase",
+          phase,
+        },
+      });
+      void client.invalidateQueries({ queryKey: ["events", campaignId] });
+    },
+  });
+  const enterScenePhase = (target: Scene, phase: ScenePhase) => {
+    if (target.id !== sceneId) enterScene(target, "manual");
+    setActivePhase(phase);
+    phaseNarration.mutate({ target, phase });
+  };
   const prep = useMutation({
-    mutationFn: () => runAssistantTurn(campaignId, `你是D&D 5e 2024备团副DM，本应用不是COC。严禁使用克苏鲁、奈亚拉托提普、旧日支配者、深潜者、SAN、理智检定等其他系统专有内容；诡异主题必须使用D&D 5e的神祇、异怪、法术、豁免与状态。根据冒险描述生成可审核草稿。必须严格使用以下Markdown结构，不要省略标题。\n场景必须按章节和跑团顺序生成，每行严格使用：章节｜Scene序号数字｜场景名｜目标｜起（开场）｜承（发展）｜转（变化）｜合（收束）｜如何进入下一Scene。例如：\n## 场景\n- 第一章｜1｜深水城集结｜让玩家相识并接受委托｜酒馆内分别介绍角色｜委托人说明失踪事件｜线人突然失踪｜玩家决定追查｜前往旧教堂\n其他原子每条使用“名称｜描述”：\n## NPC\n- 名称｜描述\n## 怪物\n- 名称｜描述\n## 任务\n- 名称｜描述\n## 线索\n- 名称｜描述\n## 物品\n- 名称｜描述\n最后可以补充“## DM建议”，但不要直接修改数据库。\n冒险描述：${prepBrief}`),
+    mutationFn: () => runAssistantTurn(campaignId, `你是D&D 5e 2024备团副DM。用户可以只写一句简短概要；信息不足时请做保守、可编辑的D&D默认补全，不要拒绝生成，也不要把“博德之门、酒馆、地精、新手村”等D&D/奇幻内容误判成其他规则系统。本应用不是COC，严禁使用克苏鲁、奈亚拉托提普、旧日支配者、深潜者、SAN、理智检定等其他系统专有内容。根据冒险描述生成可审核草稿。必须严格使用以下Markdown结构，不要省略标题。\n## 地点\n- 地点名称｜地点描述、主要区域与可互动物\n场景必须按章节和跑团顺序生成，每行严格使用：章节｜Scene序号数字｜场景名｜目标｜起（开场）｜承（发展）｜转（变化）｜合（收束）｜如何进入下一Scene。例如：\n## 场景\n- 第一章｜1｜深水城集结｜让玩家相识并接受委托｜酒馆内分别介绍角色｜委托人说明失踪事件｜线人突然失踪｜玩家决定追查｜前往旧教堂\n其他原子每条使用“名称｜描述”：\n## NPC\n- 名称｜描述\n## 怪物\n- 名称｜描述\n## 任务\n- 名称｜描述\n## 线索\n- 名称｜描述\n## 物品\n- 名称｜描述\n最后可以补充“## DM建议”，但不要直接修改数据库。每个Scene导入时会自动生成并绑定持久化5尺战斗网格。\n冒险描述：${prepBrief}`, { mode: "narrative" }),
     onSuccess: (response) => {
-      const text = response.dm_hint?.text ?? "模型没有生成完整草稿，请补充冒险目标、玩家等级和预计时长。";
+      const modelText = response.dm_hint?.text ?? "";
+      const unsafeOrEmpty = !modelText.trim()
+        || modelText.includes("混入非 D&D 内容已自动隔离")
+        || parsePrepDraft(modelText).filter((atom) => atom.kind === "scene").length === 0;
+      const text = unsafeOrEmpty ? buildFallbackPrepDraft(prepBrief) : modelText;
       setPrepDraft(text);
       const parsed = parsePrepDraft(text);
       setDraftAtoms(parsed);
       setSelectedAtoms(new Set(parsed.map((atom) => atom.id)));
-      showToast("备团草稿已生成");
+      showToast(unsafeOrEmpty ? "已用D&D安全模板补全备团草稿" : "备团草稿已生成");
     },
     onError: () => showToast("备团草稿生成失败", "error"),
   });
@@ -637,7 +821,29 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
   const importDraft = useMutation({
     mutationFn: async () => {
       const selected = draftAtoms.filter((atom) => selectedAtoms.has(atom.id));
+      const locationIds = new Map<string, string>();
+      for (const atom of selected.filter((item) => item.kind === "location")) {
+        const existing = (locations.data ?? []).find(
+          (location) => location.name.trim().toLowerCase() === atom.name.trim().toLowerCase(),
+        );
+        const location = existing ?? await createLocation(campaignId, {
+          name: atom.name,
+          description: atom.description,
+          depth: 1,
+          discovered: true,
+          interactive_objects: [],
+          notes: "由DM确认的备团草稿导入。",
+        });
+        locationIds.set(atom.name, location.id);
+      }
+      const defaultLocationId = locationIds.values().next().value
+        ?? selected.map((atom) => atom.name).map((name) => (
+          locations.data ?? []
+        ).find((location) => location.name === name)?.id).find(Boolean)
+        ?? null;
+      const defaultLocationName = [...locationIds.keys()][0] ?? "";
       for (const atom of selected) {
+        if (atom.kind === "location") continue;
         if (atom.kind === "scene") {
           const sceneOutline = atom.sceneOutline;
           const outline: SceneStoryOutline = {
@@ -653,14 +859,15 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
             climax: sceneOutline?.climax ?? "确认场景目标。",
             transition: sceneOutline?.transition ?? "由 DM 决定是否转场。",
           };
-          await createScene(campaignId, {
+          await createSceneWithPersistentGrid(campaignId, {
             name: atom.name,
+            location_id: defaultLocationId,
             description: atom.description,
             notes: buildSceneNotes(
               generateTacticalSceneGrid(atom.name, atom.description),
               outline,
             ),
-          });
+          }, defaultLocationName);
         }
         if (atom.kind === "npc") await createNpc(campaignId, { name: atom.name, description: atom.description, armor_class: 10, hp: 10, max_hp: 10, speed: 30, ability_scores: { strength: 10, dexterity: 10, constitution: 10, intelligence: 10, wisdom: 10, charisma: 10 } });
         if (atom.kind === "monster") {
@@ -711,9 +918,9 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
       return selected.length;
     },
     onSuccess: (count) => {
-      for (const key of ["scenes", "npcs", "monsters", "quests", "clues", "world-items"]) void client.invalidateQueries({ queryKey: [key, campaignId] });
+      for (const key of ["locations", "scenes", "npcs", "monsters", "quests", "clues", "world-items"]) void client.invalidateQueries({ queryKey: [key, campaignId] });
       showToast(`已确认导入 ${count} 个备团原子`);
-      void log("导入备团草稿", `从备团草稿导入了 ${count} 个场景、人物、任务或物品原子。`, { entry_kind: "system" });
+      void log("导入备团草稿", `从备团草稿导入了 ${count} 个地点、场景、人物、任务或物品原子；每个Scene已绑定持久化战斗网格。`, { entry_kind: "system" });
     },
     onError: () => showToast("备团导入失败；已成功写入的条目会保留，请检查是否存在同名或无效数据", "error"),
   });
@@ -983,7 +1190,7 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
             <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
               {draftAtoms.map((atom) => (
                 <label className={`rounded border p-3 ${selectedAtoms.has(atom.id) ? "border-ember-700/60 bg-ember-950/10" : "border-ink-700 bg-ink-950/40 opacity-60"}`} key={atom.id}>
-                  <div className="flex items-center gap-2"><input checked={selectedAtoms.has(atom.id)} onChange={(event) => setSelectedAtoms((current) => { const next = new Set(current); if (event.target.checked) next.add(atom.id); else next.delete(atom.id); return next; })} type="checkbox" /><Badge>{({ scene: "场景", npc: "NPC", monster: "怪物", quest: "任务", clue: "线索", item: "物品" } as const)[atom.kind]}</Badge></div>
+                  <div className="flex items-center gap-2"><input checked={selectedAtoms.has(atom.id)} onChange={(event) => setSelectedAtoms((current) => { const next = new Set(current); if (event.target.checked) next.add(atom.id); else next.delete(atom.id); return next; })} type="checkbox" /><Badge>{({ location: "地点", scene: "场景", npc: "NPC", monster: "怪物", quest: "任务", clue: "线索", item: "物品" } as const)[atom.kind]}</Badge></div>
                   {atom.sceneOutline ? (
                     <div className="mt-2 grid grid-cols-[1fr_5rem] gap-2">
                       <input
@@ -1093,7 +1300,8 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
           {!encounterAdjustments.isLoading && encounterAdjustments.data?.length === 0 ? <EmptyState title="暂无遭遇后果草案" hint="记录玩家行动后，可让副 DM 生成草案，或手工添加具体变化。" /> : null}
         </div>
       </Panel> : null}
-      {tableMode === "play" ? <div className="mt-4 grid gap-4 xl:grid-cols-[0.8fr_1.4fr_0.8fr]">
+      {tableMode === "play" ? <div className="mt-4 grid gap-4 xl:h-[calc(100vh-10rem)] xl:grid-cols-[0.8fr_1.4fr_0.8fr] xl:overflow-hidden">
+        <div className="space-y-4 xl:min-h-0 xl:overflow-y-auto xl:pr-1">
         <Panel eyebrow="情景状态" title="当前在场">
           <div className="flex gap-2"><select className={selectCls} onChange={(event) => setEntityKey(event.target.value)} value={entityKey}><option value="">选择进入人物</option>{availableCandidates.map((candidate) => <option key={candidate.key} value={candidate.key}>{candidate.label}</option>)}</select><Button disabled={!entityKey} loading={participantAdd.isPending} onClick={() => participantAdd.mutate()} size="sm">进入</Button></div>
           <div className="mt-2"><RestPanel campaignId={campaignId} characters={characters.data ?? []} compact defaultCharacterIds={(participants.data ?? []).filter((item) => item.entity_type === "character").map((item) => item.entity_id)} /></div>
@@ -1102,6 +1310,16 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
           <p className="mb-0 mt-3 text-2xs text-stone-600">点击任意卡片查看完整原子详情；这里负责把角色、NPC、怪物汇合到当前 Scene。</p>
           <ul className="m-0 mt-2 space-y-2 p-0">{participants.data?.map((participant) => <li className="list-none" key={participant.id}><div aria-label={`查看${participant.entity.name}详情`} className="w-full cursor-pointer rounded border border-ink-700 bg-ink-950/50 p-2 text-left transition hover:border-violet-600 hover:bg-ink-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400" onClick={() => setDetailParticipant(participant)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); setDetailParticipant(participant); } }} role="button" tabIndex={0}><div className="flex items-center gap-2"><Badge tone={participant.entity_type === "character" ? "ok" : participant.entity_type === "npc" ? "ai" : "danger"}>{participant.entity_type === "character" ? "玩家" : participant.entity_type === "npc" ? "NPC" : "怪物"}</Badge>{participant.role === "defeated" ? <Badge>已击败</Badge> : null}<strong className="min-w-0 flex-1 truncate text-xs text-parchment-100">{participant.entity.name}</strong><Button loading={participantRemove.isPending} onClick={(event) => { event.stopPropagation(); participantRemove.mutate(participant); }} size="sm">离开</Button></div><div className="mt-2"><HpBar hp={participant.entity.hp} maxHp={participant.entity.max_hp} /></div><p className="mb-0 mt-1 text-2xs text-stone-600">AC {participant.entity.armor_class} · 速度 {participant.entity.speed} · 点击查看详情</p></div></li>)}</ul>
         </Panel>
+          <Panel eyebrow="DM 帷幕" title="当前提示">
+            <p className="prose-block m-0 text-sm text-stone-300">{lastResponse?.dm_hint?.text ? safeDndText(withoutSceneTransitionMarker(lastResponse.dm_hint.text)) : "副 DM 的推进建议、NPC 反应和风险会显示在这里。"}</p>
+            {lastResponse?.dm_hint?.uncertainties.length ? <ul className="mb-0 mt-3 pl-4 text-xs text-amber-300">{lastResponse.dm_hint.uncertainties.map((item) => <li key={item}>{item}</li>)}</ul> : null}
+            <div className="mt-3 rounded border border-ink-700 bg-ink-950/50 p-2">
+              <p className="m-0 text-2xs text-stone-500">当前场景遭遇修正：<strong className={activeAdjustment < 0 ? "text-emerald-300" : activeAdjustment > 0 ? "text-red-300" : "text-stone-300"}>{activeAdjustment > 0 ? `提高 ${activeAdjustment} 级` : activeAdjustment < 0 ? `降低 ${Math.abs(activeAdjustment)} 级` : "无"}</strong></p>
+              <div className="mt-2 grid gap-1.5"><Button disabled={!sceneId} onClick={() => draftFromAssistant(-1)} size="sm">起草玩家准备后果</Button><Button disabled={!sceneId} onClick={() => draftFromAssistant(1)} size="sm">起草敌方优势后果</Button></div>
+            </div>
+          </Panel>
+        </div>
+        <div className="xl:min-h-0 xl:overflow-y-auto xl:px-1">
         <Panel eyebrow="自由推进 / 快速推进" title="游戏推进对话">
           {!sceneId ? <EmptyState title="先选择场景" hint="选择当前场景后，副 DM 才能读取正确的情景状态。" /> : null}
           <div className="max-h-[52vh] space-y-3 overflow-y-auto pr-1">
@@ -1135,30 +1353,21 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
             </div>
           ) : null}
           <div className="mt-4 grid gap-2">{quickActions.map((action) => <Button disabled={!sceneId || assistant.isPending} key={action} onClick={() => advance(action)} size="sm">{action}</Button>)}</div>
-          <form className="mt-3" onSubmit={(event: FormEvent) => { event.preventDefault(); advance(input); }}><textarea className={textareaCls} onChange={(event) => setInput(event.target.value)} placeholder="记录玩家行动、NPC 对话或现场变化……" value={input} /><div className="mt-2 flex justify-end"><Button disabled={!sceneId || !input.trim()} loading={assistant.isPending} type="submit" variant="ai">记录并询问副 DM</Button></div></form>
+          <form className="mt-3" onSubmit={(event: FormEvent) => { event.preventDefault(); advance(input); }}><textarea className={textareaCls} onChange={(event) => setInput(event.target.value)} placeholder="记录玩家行动、NPC 对话或现场变化……" value={input} /><div className="mt-2 flex flex-wrap justify-end gap-2"><Button disabled={!sceneId || !input.trim()} loading={arrivalLookup.isPending} onClick={executeInput} type="button" variant="primary">执行并生成实体 / 后果</Button><Button disabled={!sceneId || !input.trim()} loading={assistant.isPending} type="submit" variant="ai">记录并询问副 DM</Button></div><p className="mb-0 mt-2 text-2xs text-stone-600">“询问”只记录并给建议；“执行”会把登场者、突袭或变化转成等待DM确认的真实草案。</p></form>
           {assistant.isError ? <div className="mt-3"><ErrorState error={assistant.error} onRetry={() => advance(input)} /></div> : null}
         </Panel>
-        <div className="space-y-4">
+        </div>
+        <div className="space-y-4 xl:min-h-0 xl:overflow-y-auto xl:pl-1">
           <Panel eyebrow="冒险大纲 · 点击展开" title="章节与 Scene">
             <SceneOutlinePanel
               currentSceneId={sceneId}
-              entering={sceneTransitionNarration.isPending}
+              entering={sceneTransitionNarration.isPending || phaseNarration.isPending}
+              activePhase={activePhase}
               onEnter={enterScene}
+              onEnterPhase={enterScenePhase}
               scenes={orderedScenes}
               suggestedSceneId={suggestedSceneId}
             />
-          </Panel>
-          <Panel eyebrow="DM 帷幕" title="当前提示">
-            <p className="prose-block m-0 text-sm text-stone-300">{lastResponse?.dm_hint?.text ? safeDndText(withoutSceneTransitionMarker(lastResponse.dm_hint.text)) : "副 DM 的推进建议、NPC 反应和风险会显示在这里。"}</p>
-            {lastResponse?.dm_hint?.uncertainties.length ? <ul className="mb-0 mt-3 pl-4 text-xs text-amber-300">{lastResponse.dm_hint.uncertainties.map((item) => <li key={item}>{item}</li>)}</ul> : null}
-            <div className="mt-3 rounded border border-ink-700 bg-ink-950/50 p-2">
-              <p className="m-0 text-2xs text-stone-500">当前场景遭遇修正：<strong className={activeAdjustment < 0 ? "text-emerald-300" : activeAdjustment > 0 ? "text-red-300" : "text-stone-300"}>{activeAdjustment > 0 ? `提高 ${activeAdjustment} 级` : activeAdjustment < 0 ? `降低 ${Math.abs(activeAdjustment)} 级` : "无"}</strong></p>
-              <div className="mt-2 grid gap-1.5">
-                <Button disabled={!sceneId} onClick={() => draftFromAssistant(-1)} size="sm">起草玩家准备后果</Button>
-                <Button disabled={!sceneId} onClick={() => draftFromAssistant(1)} size="sm">起草敌方优势后果</Button>
-              </div>
-              <p className="mb-0 mt-2 text-2xs text-stone-600">这里只生成可编辑草案；到上方核对 HP、状态、参战者或增援后，再由 DM 确认。</p>
-            </div>
           </Panel>
           {arrivalLookup.isPending ? (
             <Panel eyebrow="动态原子 · 只读检索" title="正在查找合适的登场者">

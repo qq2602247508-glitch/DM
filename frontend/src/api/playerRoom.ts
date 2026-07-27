@@ -175,6 +175,7 @@ export type PlayerCharacterDraft = {
   background: string;
   ability_scores: Record<string, number>;
   equipment: string[];
+  spells?: Array<{ name: string; source_record_id: string; source_path: string }>;
 };
 
 export type PlayerRuleHit = {
