@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState, type FormEvent, type ReactElement } from 
 
 import { runAssistantTurn } from "../api/assistant";
 import { getRuleDocument, searchKnowledge } from "../api/knowledge";
+import { setPlayerRoomLiveState } from "../api/playerRoom";
 import {
   applyEncounterAdjustment, createClue, createEncounterAdjustment, createEvent, createNpc,
   createQuest, listCharacters, listEncounterAdjustments, listEvents, listLocations, listNpcs,
@@ -459,7 +460,7 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
         : null;
       return { participant, startedCombat };
     },
-    onSuccess: ({ participant, startedCombat }) => {
+    onSuccess: async ({ participant, startedCombat }) => {
       addEntry("system", `${participant.entity.name}已由 DM 确认并进入当前场景`);
       setArrivalDraft(null);
       setArrivalReferences([]);
@@ -469,6 +470,7 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
       if (startedCombat) {
         sessionStorage.setItem(`dnd-dm-active-combat:${campaignId}`, startedCombat.combat.id);
         setPlayerCombatId(startedCombat.combat.id);
+        await setPlayerRoomLiveState(campaignId, sceneId, startedCombat.combat.id);
         void client.invalidateQueries({ queryKey: ["combats", campaignId] });
         navigate("/combat");
       } else {
@@ -491,10 +493,11 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
   });
   const combat = useMutation({
     mutationFn: () => startSceneCombat(campaignId, sceneId),
-    onSuccess: (result) => {
+    onSuccess: async (result) => {
       void log("进入战斗", `“${activeScene?.name ?? "当前场景"}”进入战斗，已加载当前人物与场景网格。`);
       sessionStorage.setItem(`dnd-dm-active-combat:${campaignId}`, result.combat.id);
       setPlayerCombatId(result.combat.id);
+      await setPlayerRoomLiveState(campaignId, sceneId, result.combat.id);
       void client.invalidateQueries({ queryKey: ["combats", campaignId] });
       navigate("/combat");
     },

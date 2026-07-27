@@ -1346,6 +1346,7 @@ function CombatContent({ campaignId }: { campaignId: string }): ReactElement {
     const available = combats.data ?? [];
     if (available.length === 0) return;
     if (available.some((combat) => combat.id === selectedCombatId)) return;
+    if (selectedCombatId && combats.isFetching) return;
     const newestFirst = [...available].reverse();
     const preferred = newestFirst.find((combat) => combat.status === "active")
       ?? newestFirst.find((combat) => combat.status === "ended")
@@ -1353,7 +1354,7 @@ function CombatContent({ campaignId }: { campaignId: string }): ReactElement {
     if (!preferred) return;
     setSelectedCombatId(preferred.id);
     sessionStorage.setItem(`dnd-dm-active-combat:${campaignId}`, preferred.id);
-  }, [campaignId, combats.data, selectedCombatId]);
+  }, [campaignId, combats.data, combats.isFetching, selectedCombatId]);
   const selectedCombat = combats.data?.find((combat) => combat.id === selectedCombatId);
   const selectedCombatSceneId = selectedCombat?.scene_id ?? null;
   const liveCombatId = selectedCombat?.id ?? null;
@@ -1405,17 +1406,13 @@ function CombatContent({ campaignId }: { campaignId: string }): ReactElement {
             (item) => item.id === scene?.location_id,
           );
           const storedGrid = scene ? readSceneGrid(scene.notes) : null;
-          const sceneGrid = scene && (
-            !storedGrid
-            || storedGrid.width < 16
-            || /通用场景|多房间战斗区域/.test(storedGrid.theme)
-          )
+          const sceneGrid = storedGrid ?? (scene
             ? generateTacticalSceneGrid(
                 scene.name,
                 scene.description ?? "",
                 `${location?.name ?? ""} ${location?.description ?? ""}`,
               )
-            : storedGrid;
+            : null);
           const sceneAdjustments = (events.data ?? [])
             .filter((event) => event.metadata_json.scene_id === selectedCombat.scene_id && Number(event.metadata_json.encounter_adjustment ?? 0) !== 0)
             .map((event) => {

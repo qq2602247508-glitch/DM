@@ -25,6 +25,8 @@ from dnd_dm_assistant.infrastructure.database.models import (
     Location,
     MonsterInstance,
     Scene,
+    SceneGrid,
+    SceneObject,
     SceneParticipant,
     WorldItem,
 )
@@ -304,6 +306,70 @@ class WorldService:
             )
             session.add(combat)
             session.flush()
+            grid = session.scalar(select(SceneGrid).where(SceneGrid.scene_id == scene_id))
+            blocked: set[tuple[int, int]] = set()
+            if grid is not None:
+                objects = session.scalars(
+                    select(SceneObject).where(SceneObject.scene_id == scene_id)
+                ).all()
+                for scene_object in objects:
+                    blocks_movement = (
+                        scene_object.object_type in {"wall", "cover", "furniture"}
+                        or (
+                            scene_object.object_type == "door"
+                            and scene_object.state in {"active", "closed"}
+                        )
+                    )
+                    if not blocks_movement:
+                        continue
+                    for row in range(
+                        scene_object.row,
+                        scene_object.row + scene_object.height_cells,
+                    ):
+                        for col in range(
+                            scene_object.col,
+                            scene_object.col + scene_object.width_cells,
+                        ):
+                            blocked.add((row, col))
+            occupied: set[tuple[int, int]] = set()
+            ally_spawn_index = 0
+            enemy_spawn_index = 0
+
+            def spawn_position(entity_type: str) -> dict[str, int] | None:
+                nonlocal ally_spawn_index, enemy_spawn_index
+                if grid is None:
+                    return None
+                if entity_type == "monster":
+                    origin = (
+                        min(grid.height, 2),
+                        max(1, grid.width - 2 - enemy_spawn_index),
+                    )
+                    enemy_spawn_index += 1
+                else:
+                    origin = (
+                        max(1, grid.height - 1),
+                        min(grid.width, 2 + ally_spawn_index),
+                    )
+                    ally_spawn_index += 1
+                candidates = [
+                    (row, col)
+                    for row in range(1, grid.height + 1)
+                    for col in range(1, grid.width + 1)
+                    if (row, col) not in blocked and (row, col) not in occupied
+                ]
+                if not candidates:
+                    return None
+                row, col = min(
+                    candidates,
+                    key=lambda point: (
+                        abs(point[0] - origin[0]) + abs(point[1] - origin[1]),
+                        point[0],
+                        point[1],
+                    ),
+                )
+                occupied.add((row, col))
+                return {"row": row, "col": col}
+
             rolls: list[dict[str, Any]] = []
             for participant in participants:
                 entity = self._entity_model(
@@ -316,6 +382,22 @@ class WorldService:
                 modifier = floor((dexterity - 10) / 2)
                 die = secrets.randbelow(20) + 1
                 total = die + modifier
+                position = spawn_position(participant.entity_type)
+                snapshot = {
+                    "speed_ft": int(getattr(entity, "speed", 30)),
+                    "ability_scores": dict(entity.ability_scores or {}),
+                    "actions": list(getattr(entity, "actions", []) or []),
+                    "combat_start_state": {
+                        "hp": int(getattr(entity, "hp", 1)),
+                        "temporary_hp": 0,
+                        "max_hp_reduction": 0,
+                        "conditions": [],
+                        "concentration": {},
+                        "is_active": True,
+                    },
+                }
+                if position is not None:
+                    snapshot["grid_position"] = position
                 combatant = Combatant(
                     combat_id=combat.id,
                     entity_type=participant.entity_type,
@@ -340,19 +422,7 @@ class WorldService:
                         getattr(entity, "condition_immunities", []) or []
                     ),
                     conditions=[],
-                    snapshot_json={
-                        "speed_ft": int(getattr(entity, "speed", 30)),
-                        "ability_scores": dict(entity.ability_scores or {}),
-                        "actions": list(getattr(entity, "actions", []) or []),
-                        "combat_start_state": {
-                            "hp": int(getattr(entity, "hp", 1)),
-                            "temporary_hp": 0,
-                            "max_hp_reduction": 0,
-                            "conditions": [],
-                            "concentration": {},
-                            "is_active": True,
-                        },
-                    },
+                    snapshot_json=snapshot,
                     is_active=True,
                 )
                 session.add(combatant)

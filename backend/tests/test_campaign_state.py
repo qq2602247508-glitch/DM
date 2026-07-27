@@ -372,6 +372,11 @@ def test_scene_reuses_atomic_participants_and_starts_visible_initiative(
         },
     ).json()
     scene = campaign_client.post(f"{base}/scenes", json={"name": "教堂冲突"}).json()
+    grid = campaign_client.post(
+        f"{base}/scenes/{scene['id']}/grid",
+        json={"width": 12, "height": 8, "cell_size_ft": 5, "mode": "combat"},
+    )
+    assert grid.status_code == 201
     for entity_type, entity_id in (("character", character["id"]), ("npc", npc["id"])):
         response = campaign_client.post(
             f"{base}/scenes/{scene['id']}/participants",
@@ -399,6 +404,10 @@ def test_scene_reuses_atomic_participants_and_starts_visible_initiative(
         "items"
     ]
     assert {row["entity_id"] for row in combatants} == {character["id"], npc["id"]}
+    positions = [row["snapshot_json"]["grid_position"] for row in combatants]
+    assert len({(position["row"], position["col"]) for position in positions}) == 2
+    assert all(1 <= position["row"] <= 8 for position in positions)
+    assert all(1 <= position["col"] <= 12 for position in positions)
     backup = campaign_client.get(f"{base}/export").json()
     imported = campaign_client.post(
         "/api/v1/campaigns/import-backup",

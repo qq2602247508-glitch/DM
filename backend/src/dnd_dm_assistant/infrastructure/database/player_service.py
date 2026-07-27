@@ -24,6 +24,7 @@ from dnd_dm_assistant.infrastructure.database.models import (
     SceneGrid,
     SceneObject,
     SceneToken,
+    Wallet,
 )
 
 
@@ -191,8 +192,14 @@ class PlayerService:
     def character_view(self, campaign_id: str, character_id: str) -> dict[str, Any]:
         with Session(self.engine) as session:
             character = self._character(session, campaign_id, character_id)
+            wallet = session.scalar(
+                select(Wallet).where(
+                    Wallet.campaign_id == campaign_id,
+                    Wallet.character_id == character_id,
+                )
+            )
             # Explicit allowlist: notably excludes notes and every DM-only relation.
-            return {
+            result = {
                 key: getattr(character, key)
                 for key in (
                     "id",
@@ -223,6 +230,16 @@ class PlayerService:
                     "version",
                 )
             }
+            result["wallet"] = (
+                {
+                    "name": wallet.name,
+                    "copper": wallet.copper,
+                    "gp": wallet.copper / 100,
+                }
+                if wallet is not None
+                else None
+            )
+            return result
 
     def submit_action(
         self, campaign_id: str, data: dict[str, Any], request_id: str

@@ -198,3 +198,54 @@ def test_closing_room_revokes_every_player_cookie(campaign_client: TestClient) -
     assert closed.status_code == 200
     assert closed.json()["active"] is False
     assert campaign_client.get("/api/v1/player-room/me").status_code == 401
+
+
+def test_ended_combat_is_read_only_in_player_snapshot(
+    campaign_client: TestClient,
+) -> None:
+    campaign = _campaign(campaign_client)
+    character = campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/characters",
+        json={"name": "联机法师", "hp": 7, "max_hp": 7},
+    ).json()
+    opened = _open(campaign_client, campaign["id"])
+    _join(campaign_client, opened["join_code"])
+    bound = campaign_client.post(
+        "/api/v1/player-room/me/bind-character",
+        json={"character_id": character["id"]},
+    )
+    assert bound.status_code == 200
+
+    combat = campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/combats",
+        json={"name": "已结束的联机战斗"},
+    ).json()
+    fighter = campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": character["name"],
+            "entity_type": "character",
+            "entity_id": character["id"],
+            "initiative": 20,
+            "hp": 7,
+            "max_hp": 7,
+        },
+    )
+    assert fighter.status_code == 201
+    ended = campaign_client.patch(
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}",
+        headers={"If-Match": '"1"'},
+        json={"status": "ended"},
+    )
+    assert ended.status_code == 200
+    live = campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/player-room/live-state",
+        json={"combat_id": combat["id"]},
+    )
+    assert live.status_code == 200
+
+    snapshot = campaign_client.get("/api/v1/player-room/me").json()["combat"]
+    assert snapshot["status"] == "ended"
+    assert snapshot["active_combatant_id"] is None
+    assert snapshot["is_my_turn"] is False
+    assert snapshot["pending_rolls"] == []

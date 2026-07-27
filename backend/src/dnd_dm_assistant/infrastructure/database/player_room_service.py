@@ -1141,7 +1141,11 @@ class PlayerRoomService:
         ).all()
         active = (
             fighters[combat.current_turn_index]
-            if fighters and combat.current_turn_index < len(fighters)
+            if (
+                combat.status == "active"
+                and fighters
+                and combat.current_turn_index < len(fighters)
+            )
             else None
         )
         own = next(
@@ -1161,7 +1165,8 @@ class PlayerRoomService:
         pending = []
         for action in actions:
             if (
-                action.status != "previewed"
+                combat.status != "active"
+                or action.status != "previewed"
                 or own is None
                 or own.id not in action.target_combatant_ids
             ):

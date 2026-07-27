@@ -63,6 +63,7 @@ export type SafePlayerCharacter = {
   spellcasting: Record<string, unknown>;
   class_levels: Record<string, number>;
   subclass_choices: Record<string, string>;
+  wallet: { name: string; copper: number; gp: number } | null;
   version: number;
 };
 
