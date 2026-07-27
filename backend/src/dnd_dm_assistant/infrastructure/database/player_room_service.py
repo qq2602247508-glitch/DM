@@ -95,6 +95,60 @@ CLASS_HIT_DIE = {
     "法师": 6,
     "术士": 6,
 }
+CLASS_SKILL_SELECTION: dict[str, tuple[int, frozenset[str]]] = {
+    "野蛮人": (2, frozenset({"驯兽", "运动", "威吓", "自然", "察觉", "生存"})),
+    "吟游诗人": (
+        3,
+        frozenset(
+            {
+                "杂技",
+                "驯兽",
+                "奥秘",
+                "运动",
+                "欺瞒",
+                "历史",
+                "洞悉",
+                "威吓",
+                "调查",
+                "医药",
+                "自然",
+                "察觉",
+                "表演",
+                "游说",
+                "宗教",
+                "巧手",
+                "隐匿",
+                "生存",
+            }
+        ),
+    ),
+    "牧师": (2, frozenset({"历史", "洞悉", "医药", "游说", "宗教"})),
+    "德鲁伊": (2, frozenset({"驯兽", "奥秘", "洞悉", "医药", "自然", "察觉", "宗教", "生存"})),
+    "战士": (
+        2,
+        frozenset({"杂技", "驯兽", "运动", "历史", "洞悉", "威吓", "察觉", "游说", "生存"}),
+    ),
+    "武僧": (2, frozenset({"杂技", "运动", "历史", "洞悉", "宗教", "隐匿"})),
+    "圣武士": (2, frozenset({"运动", "洞悉", "威吓", "医药", "游说", "宗教"})),
+    "游侠": (3, frozenset({"驯兽", "运动", "洞悉", "调查", "自然", "察觉", "隐匿", "生存"})),
+    "游荡者": (
+        4,
+        frozenset({"杂技", "运动", "欺瞒", "洞悉", "威吓", "调查", "察觉", "游说", "巧手", "隐匿"}),
+    ),
+    "术士": (2, frozenset({"奥秘", "欺瞒", "洞悉", "威吓", "游说", "宗教"})),
+    "邪术师": (2, frozenset({"奥秘", "欺瞒", "历史", "威吓", "调查", "自然", "宗教"})),
+    "法师": (2, frozenset({"奥秘", "历史", "洞悉", "调查", "医药", "自然", "宗教"})),
+}
+SPELL_SELECTION_2024: dict[str, tuple[int, int]] = {
+    "吟游诗人": (2, 4),
+    "牧师": (3, 4),
+    "德鲁伊": (2, 4),
+    "圣武士": (0, 2),
+    "游侠": (0, 2),
+    "术士": (4, 2),
+    "邪术师": (2, 2),
+    "法师": (3, 6),
+}
 CLASS_ACTION = {
     "野蛮人": {
         "name": "巨斧",
@@ -896,9 +950,57 @@ class PlayerRoomService:
         species_rule = SPECIES_RULES[race]
         background_rule = BACKGROUND_RULES[background]
         class_rule = CLASS_RULES[class_name]
+        requested_skills = [str(item) for item in data.get("skill_proficiencies") or []]
+        skill_count, allowed_skills = CLASS_SKILL_SELECTION[class_name]
+        background_skills = set(background_rule.get("skills") or [])
+        if (
+            len(requested_skills) != skill_count
+            or len(set(requested_skills)) != skill_count
+            or not set(requested_skills) <= allowed_skills
+            or set(requested_skills) & background_skills
+        ):
+            raise ValueError(
+                f"{class_name}必须从职业列表中选择{skill_count}项不与背景重复的技能熟练"
+            )
+        requested_spells = list(data.get("spells") or [])
+        expected_cantrips, expected_leveled = SPELL_SELECTION_2024.get(class_name, (0, 0))
+        canonical_class = "魔契师" if class_name == "邪术师" else class_name
+        spell_ids = [str(spell.get("source_record_id") or "") for spell in requested_spells]
+        cantrip_count = sum(int(spell.get("spell_level") or 0) == 0 for spell in requested_spells)
+        leveled_count = sum(int(spell.get("spell_level") or 0) == 1 for spell in requested_spells)
+        prepared_leveled_count = sum(
+            int(spell.get("spell_level") or 0) == 1 and spell.get("prepared") is True
+            for spell in requested_spells
+        )
+        if (
+            any(not spell_id for spell_id in spell_ids)
+            or len(set(spell_ids)) != len(spell_ids)
+            or cantrip_count != expected_cantrips
+            or leveled_count != expected_leveled
+            or any(
+                int(spell.get("spell_level") or 0) not in {0, 1}
+                or canonical_class not in list(spell.get("classes") or [canonical_class])
+                for spell in requested_spells
+            )
+        ):
+            raise ValueError(
+                f"{class_name}1级必须选择{expected_cantrips}个戏法和"
+                f"{expected_leveled}个1环法术，且只能来自本职业法术表"
+            )
+        if class_name == "法师" and prepared_leveled_count != 4:
+            raise ValueError("1级法师必须从法术书的6个1环法术中恰好准备4个")
+        if class_name != "法师" and any(
+            int(spell.get("spell_level") or 0) == 1 and spell.get("prepared") is not True
+            for spell in requested_spells
+        ):
+            raise ValueError(f"{class_name}选择的1环法术必须标记为已准备")
+        if any(
+            int(spell.get("spell_level") or 0) == 0 and spell.get("prepared") is not True
+            for spell in requested_spells
+        ):
+            raise ValueError("戏法必须标记为始终可用")
         resources = {
-            key: dict(value)
-            for key, value in dict(class_rule.get("resources") or {}).items()
+            key: dict(value) for key, value in dict(class_rule.get("resources") or {}).items()
         }
         spellcasting = dict(class_rule.get("spellcasting") or {})
         if spellcasting:
@@ -909,10 +1011,7 @@ class PlayerRoomService:
                 "max": slots,
                 "recovery": "long_rest",
             }
-        skill_names = {
-            *list(class_rule.get("skills") or []),
-            *list(background_rule.get("skills") or []),
-        }
+        skill_names = {*requested_skills, *background_skills}
         initial_equipment = [
             *list(class_rule.get("equipment") or []),
             *list(background_rule.get("equipment") or []),
@@ -967,11 +1066,36 @@ class PlayerRoomService:
                 resources=resources,
                 spells=[
                     {
-                        key: str(spell[key])[:500]
-                        for key in ("name", "source_record_id", "source_path")
-                        if spell.get(key)
+                        key: (str(value)[:2400] if isinstance(value, str) else value)
+                        for key, value in spell.items()
+                        if key
+                        in {
+                            "name",
+                            "source_record_id",
+                            "source_path",
+                            "spell_level",
+                            "prepared",
+                            "school",
+                            "casting_time",
+                            "range",
+                            "components",
+                            "duration",
+                            "concentration",
+                            "ritual",
+                            "damage",
+                            "damage_type",
+                            "save_ability",
+                            "save_dc",
+                            "half_damage_on_save",
+                            "description",
+                            "cost",
+                            "resource_key",
+                            "resource_cost",
+                            "resolution_kind",
+                            "classes",
+                        }
                     }
-                    for spell in list(data.get("spells") or [])
+                    for spell in requested_spells
                     if spell.get("name")
                 ],
                 spellcasting=spellcasting,
@@ -1150,9 +1274,7 @@ class PlayerRoomService:
         active = (
             fighters[combat.current_turn_index]
             if (
-                combat.status == "active"
-                and fighters
-                and combat.current_turn_index < len(fighters)
+                combat.status == "active" and fighters and combat.current_turn_index < len(fighters)
             )
             else None
         )

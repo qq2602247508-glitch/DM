@@ -21,7 +21,11 @@ import { Badge, Button, EmptyState, ErrorState, LoadingBlock } from "../ui/primi
 import { formatDateTime } from "../ui/format";
 import { ConfirmDialog } from "../ui/widgets";
 import { useToast } from "../hooks/toastContext";
-import { BACKGROUNDS_2024, CLASSES_2024, SPECIES_2024 } from "../ui/characterRules";
+import {
+  BACKGROUNDS_2024, CLASSES_2024, SPECIES_2024,
+  classSkillSelection, spellChoiceCounts, spellChoicesComplete,
+  spellIsAvailable, spellSelectionRule, spellToCharacterAction,
+} from "../ui/characterRules";
 
 const ABILITY_LABELS: Record<string, string> = {
   strength: "力量", dexterity: "敏捷", constitution: "体质",
@@ -31,10 +35,6 @@ const ABILITY_LABELS: Record<string, string> = {
 function modifier(score: number): string {
   const value = Math.floor((score - 10) / 2);
   return value >= 0 ? `+${value}` : String(value);
-}
-
-function isLevelOneSpell(sourcePath: string): boolean {
-  return /\/(?:0环|1环)\.htm$/i.test(sourcePath);
 }
 
 function resourceSummary(resources: Record<string, unknown>): string {
@@ -363,6 +363,8 @@ function CharacterCreateWizard({ campaignId, onDone }: { campaignId: string; onD
   const [equipment, setEquipment] = useState("");
   const [spellSearch, setSpellSearch] = useState("");
   const [selectedSpells, setSelectedSpells] = useState<string[]>([]);
+  const [preparedSpellIds, setPreparedSpellIds] = useState<string[]>([]);
+  const [selectedClassSkills, setSelectedClassSkills] = useState<string[]>([]);
   const characterOptions = useQuery({
     queryKey: ["character-options"],
     queryFn: ({ signal }) => getCharacterOptions(signal),
@@ -385,6 +387,22 @@ function CharacterCreateWizard({ campaignId, onDone }: { campaignId: string; onD
         ...(classRule?.equipment ?? []), ...(backgroundRule?.equipment ?? []),
         ...equipment.split(/\n|、|,/).map((item) => item.trim()).filter(Boolean),
       ];
+      const spellAbilityKey = {
+        力量: "strength", 敏捷: "dexterity", 体质: "constitution",
+        智力: "intelligence", 感知: "wisdom", 魅力: "charisma",
+      }[classRule?.spellcasting?.ability ?? "智力"] ?? "intelligence";
+      const spellSaveDc = 10 + Math.floor((Number(abilities[spellAbilityKey]) - 10) / 2);
+      const availableSpells = (characterOptions.data?.spells ?? [])
+        .filter((spell) => spellIsAvailable(spell, className));
+      if (selectedClassSkills.length !== classSkillSelection(className, backgroundRule?.skills).count) {
+        throw new Error("请按职业规则选满技能熟练项");
+      }
+      if (!spellChoicesComplete(className, selectedSpells, availableSpells)) {
+        throw new Error("请按职业规则选满戏法与1环法术");
+      }
+      if (className === "法师" && preparedSpellIds.length !== 4) {
+        throw new Error("1级法师必须从法术书中准备4个1环法术");
+      }
       return createCharacter(campaignId, {
         name: name.trim(), race: race || null, class_name: className || null,
         background: background || null,
@@ -392,17 +410,17 @@ function CharacterCreateWizard({ campaignId, onDone }: { campaignId: string; onD
         ability_scores: Object.fromEntries(Object.entries(abilities).map(([key, value]) => [key, Number(value)])),
         hp: Number(hp), max_hp: Number(hp), equipment: initialEquipment,
         proficiencies: [...(classRule?.proficiencies ?? []), ...(classRule?.saves.map((item) => `${item}豁免`) ?? [])],
-        skills: Object.fromEntries([...(classRule?.defaultSkills ?? []), ...(backgroundRule?.skills ?? [])].map((skill) => [skill, { proficient: true }])),
+        skills: Object.fromEntries([...selectedClassSkills, ...(backgroundRule?.skills ?? [])].map((skill) => [skill, { proficient: true }])),
         features: [...(speciesRule?.features ?? []), ...(backgroundRule ? [`背景专长：${backgroundRule.feat}`] : [])],
         actions: classRule?.actions ?? [],
         resources: classResources,
-        spells: (characterOptions.data?.spells ?? []).filter((spell) => isLevelOneSpell(spell.source_path))
+        spells: availableSpells
           .filter((spell) => selectedSpells.includes(spell.source_record_id))
-          .map((spell) => ({
-            name: spell.name,
-            source_record_id: spell.source_record_id,
-            source_path: spell.source_path,
-          })),
+          .map((spell) => spellToCharacterAction(
+            spell,
+            spellSaveDc,
+            className !== "法师" || preparedSpellIds.includes(spell.source_record_id),
+          )),
         spellcasting: classRule?.spellcasting ?? {},
         class_levels: className ? { [className === "邪术师" ? "魔契师" : className]: 1 } : {},
         subclass_choices: {},
@@ -411,7 +429,7 @@ function CharacterCreateWizard({ campaignId, onDone }: { campaignId: string; onD
     },
     onSuccess: () => {
       void client.invalidateQueries({ queryKey: ["characters", campaignId] });
-      setStep(1); setName(""); setRace(""); setClassName(""); setBackground(""); setEquipment(""); setSelectedSpells([]);
+      setStep(1); setName(""); setRace(""); setClassName(""); setBackground(""); setEquipment(""); setSelectedSpells([]); setPreparedSpellIds([]); setSelectedClassSkills([]);
       showToast("角色卡已创建"); onDone();
     },
     onError: (error) => showToast(error instanceof Error ? error.message : "角色创建失败", "error"),
@@ -421,6 +439,31 @@ function CharacterCreateWizard({ campaignId, onDone }: { campaignId: string; onD
   const selectedSpecies = SPECIES_2024.find((item) => item.name === race);
   const selectedBackground = BACKGROUNDS_2024.find((item) => item.name === background);
   const selectedClass = CLASSES_2024.find((item) => item.name === className);
+  const skillRule = classSkillSelection(className, selectedBackground?.skills);
+  const spellLimits = spellSelectionRule(className);
+  const availableSpells = (characterOptions.data?.spells ?? [])
+    .filter((spell) => spellIsAvailable(spell, className));
+  const spellCounts = spellChoiceCounts(selectedSpells, availableSpells);
+  const preparedRequired = spellLimits.preparedLeveled ?? 0;
+  const preparedCount = preparedSpellIds.filter((id) => selectedSpells.includes(id)).length;
+  const preparedComplete = preparedRequired === 0 || preparedCount === preparedRequired;
+  const choicesComplete = selectedClassSkills.length === skillRule.count
+    && spellChoicesComplete(className, selectedSpells, availableSpells)
+    && preparedComplete;
+  const toggleSpell = (id: string, level: number, checked: boolean) => {
+    if (!checked) {
+      setSelectedSpells((current) => current.filter((item) => item !== id));
+      setPreparedSpellIds((current) => current.filter((item) => item !== id));
+      return;
+    }
+    const limit = level === 0 ? spellLimits.cantrips : spellLimits.leveled;
+    const count = level === 0 ? spellCounts.cantrips : spellCounts.leveled;
+    if (count >= limit) {
+      showToast(`该职业1级最多选择 ${limit} 个${level === 0 ? "戏法" : spellLimits.leveledLabel}`, "error");
+      return;
+    }
+    setSelectedSpells((current) => [...current, id]);
+  };
   const applyDerivedStats = () => {
     const constitutionModifier = Math.floor((Number(abilities.constitution) - 10) / 2);
     setSpeed(String(selectedSpecies?.speed ?? 30));
@@ -437,8 +480,8 @@ function CharacterCreateWizard({ campaignId, onDone }: { campaignId: string; onD
         <div className="grid gap-3 md:grid-cols-2">
           <label className="text-xs text-stone-400">角色名称<input className={`${inputCls} mt-1`} onChange={(event) => setName(event.target.value)} placeholder="例如：艾拉" value={name} /></label>
           <label className="text-xs text-stone-400">种族（2024核心）<select className={`${inputCls} mt-1`} onChange={(event) => setRace(event.target.value)} value={race}><option value="">选择种族</option>{SPECIES_2024.map((item) => <option key={item.name} value={item.name}>{item.name} · {item.speed}尺</option>)}</select></label>
-          <label className="text-xs text-stone-400">职业（全部12个核心职业）<select className={`${inputCls} mt-1`} onChange={(event) => setClassName(event.target.value)} value={className}><option value="">选择职业</option>{CLASSES_2024.map((item) => <option key={item.name} value={item.name}>{item.name} · d{item.hitDie} · {item.primary}</option>)}</select></label>
-          <label className="text-xs text-stone-400">背景（2024核心）<select className={`${inputCls} mt-1`} onChange={(event) => setBackground(event.target.value)} value={background}><option value="">选择背景</option>{BACKGROUNDS_2024.map((item) => <option key={item.name} value={item.name}>{item.name} · {item.skills.join("、")}</option>)}</select></label>
+          <label className="text-xs text-stone-400">职业（全部12个核心职业）<select className={`${inputCls} mt-1`} onChange={(event) => { setClassName(event.target.value); setSelectedSpells([]); setPreparedSpellIds([]); setSelectedClassSkills([]); }} value={className}><option value="">选择职业</option>{CLASSES_2024.map((item) => <option key={item.name} value={item.name}>{item.name} · d{item.hitDie} · {item.primary}</option>)}</select></label>
+          <label className="text-xs text-stone-400">背景（2024核心）<select className={`${inputCls} mt-1`} onChange={(event) => { setBackground(event.target.value); setSelectedClassSkills([]); }} value={background}><option value="">选择背景</option>{BACKGROUNDS_2024.map((item) => <option key={item.name} value={item.name}>{item.name} · {item.skills.join("、")}</option>)}</select></label>
           {selectedSpecies ? <div className="rounded border border-ink-700 bg-ink-950/50 p-2 text-xs text-stone-400"><strong className="text-parchment-100">{selectedSpecies.name}</strong> · 速度 {selectedSpecies.speed}尺 · {selectedSpecies.size}<br />{selectedSpecies.features.join("、")}</div> : null}
           {selectedClass ? <div className="rounded border border-ink-700 bg-ink-950/50 p-2 text-xs text-stone-400"><strong className="text-parchment-100">{selectedClass.name}</strong> · d{selectedClass.hitDie}生命骰 · 豁免 {selectedClass.saves.join("、")}<br />{selectedClass.proficiencies.join("、")}</div> : null}
           {selectedBackground ? <div className="rounded border border-ink-700 bg-ink-950/50 p-2 text-xs text-stone-400"><strong className="text-parchment-100">{selectedBackground.name}</strong> · 技能 {selectedBackground.skills.join("、")} · {selectedBackground.feat}</div> : null}
@@ -457,24 +500,69 @@ function CharacterCreateWizard({ campaignId, onDone }: { campaignId: string; onD
             <strong className="text-parchment-100">子职</strong>
             <p className="mb-0 mt-1">当前创建的是1级角色。D&D 5e 2024核心职业通常在3级选择子职，因此现在不会强制选择；达到解锁等级时，升级界面会展示 {characterOptions.data?.classes.find((item) => item.name === className)?.subclasses.filter((item) => !item.name.includes("法术列表")).map((item) => item.name).join("、") || "该职业的全部子职"}。</p>
           </div>
+          <div className="mt-3 rounded border border-ink-700 p-3">
+            <div className="flex items-center gap-2">
+              <strong className="mr-auto text-sm text-parchment-100">职业技能熟练</strong>
+              <Badge tone={selectedClassSkills.length === skillRule.count ? "ok" : "warn"}>
+                {selectedClassSkills.length}/{skillRule.count}
+              </Badge>
+            </div>
+            <p className="mb-2 mt-1 text-2xs text-stone-600">背景已固定提供：{selectedBackground?.skills.join("、") || "无"}。从职业列表中恰好选择 {skillRule.count} 项；与背景重复的技能已排除。</p>
+            <div className="flex flex-wrap gap-2">
+              {skillRule.choices.map((skill) => (
+                <label className={`cursor-pointer rounded border px-2 py-1 text-xs ${selectedClassSkills.includes(skill) ? "border-emerald-500 bg-emerald-950/20 text-emerald-200" : "border-ink-700 text-stone-400"}`} key={skill}>
+                  <input
+                    checked={selectedClassSkills.includes(skill)}
+                    className="mr-1"
+                    onChange={(event) => {
+                      if (!event.target.checked) setSelectedClassSkills((current) => current.filter((item) => item !== skill));
+                      else if (selectedClassSkills.length < skillRule.count) setSelectedClassSkills((current) => [...current, skill]);
+                      else showToast(`该职业只能选择 ${skillRule.count} 项技能熟练`, "error");
+                    }}
+                    type="checkbox"
+                  />
+                  {skill}
+                </label>
+              ))}
+            </div>
+          </div>
           {selectedClass?.spellcasting ? (
             <div className="mt-3">
               <div className="flex flex-wrap items-center gap-2">
                 <strong className="mr-auto text-sm text-parchment-100">选择初始法术</strong>
-                <Badge tone="ai">已选 {selectedSpells.length}</Badge>
+                <Badge tone={spellCounts.cantrips === spellLimits.cantrips && spellCounts.leveled === spellLimits.leveled ? "ok" : "warn"}>
+                  戏法 {spellCounts.cantrips}/{spellLimits.cantrips} · {spellLimits.leveledLabel} {spellCounts.leveled}/{spellLimits.leveled}
+                </Badge>
                 <input aria-label="搜索法术" className={`${inputCls} max-w-xs`} onChange={(event) => setSpellSearch(event.target.value)} placeholder="搜索全部2024法术" value={spellSearch} />
               </div>
-              <p className="text-2xs text-stone-600">法术来自本地2024规则目录。请按职业规则选择戏法与1环法术；法术位已按职业资源写入角色卡。</p>
+              <p className="text-2xs text-stone-600">只显示该职业可用的2024法术。必须恰好选择 {spellLimits.cantrips} 个戏法和 {spellLimits.leveled} 个{spellLimits.leveledLabel}；1环法术共用法术位，不是每个法术各有次数。</p>
               <div className="max-h-72 overflow-y-auto rounded border border-ink-700 p-2">
                 <div className="grid gap-2 sm:grid-cols-2">
-                  {(characterOptions.data?.spells ?? []).filter((spell) => isLevelOneSpell(spell.source_path)).filter((spell) => !spellSearch.trim() || `${spell.name} ${spell.source_path}`.toLowerCase().includes(spellSearch.trim().toLowerCase())).map((spell) => (
+                  {availableSpells.filter((spell) => !spellSearch.trim() || `${spell.name} ${spell.source_path}`.toLowerCase().includes(spellSearch.trim().toLowerCase())).map((spell) => (
                     <label className={`flex cursor-pointer items-start gap-2 rounded border p-2 text-xs ${selectedSpells.includes(spell.source_record_id) ? "border-violet-500 bg-violet-950/20" : "border-ink-700"}`} key={spell.source_record_id}>
-                      <input checked={selectedSpells.includes(spell.source_record_id)} onChange={(event) => setSelectedSpells((current) => event.target.checked ? [...current, spell.source_record_id] : current.filter((id) => id !== spell.source_record_id))} type="checkbox" />
-                      <span><strong className="block text-parchment-100">{spell.name}</strong><span className="text-2xs text-stone-600">{spell.source_path}</span></span>
+                      <input checked={selectedSpells.includes(spell.source_record_id)} onChange={(event) => toggleSpell(spell.source_record_id, spell.level, event.target.checked)} type="checkbox" />
+                      <span><strong className="block text-parchment-100">{spell.name} · {spell.level === 0 ? "戏法" : `${spell.level}环`}</strong><span className="text-2xs text-stone-600">{spell.casting_time || "施法时间未记录"} · {spell.range || "距离未记录"} · {spell.damage_expression || "叙事/辅助效果"}</span></span>
                     </label>
                   ))}
                 </div>
               </div>
+              {preparedRequired > 0 ? (
+                <div className="mt-3 rounded border border-sky-800/60 bg-sky-950/15 p-2">
+                  <p className="mb-2 mt-0 text-xs text-sky-200">法师准备栏：从已选的6个1环法术中恰好准备 {preparedRequired} 个（当前 {preparedCount}/{preparedRequired}）。只有已准备法术会出现在战斗动作栏；戏法始终可用。</p>
+                  <div className="flex flex-wrap gap-2">
+                    {availableSpells.filter((spell) => spell.level === 1 && selectedSpells.includes(spell.source_record_id)).map((spell) => (
+                      <label className={`rounded border px-2 py-1 text-xs ${preparedSpellIds.includes(spell.source_record_id) ? "border-sky-500 text-sky-200" : "border-ink-700 text-stone-500"}`} key={`prepared-${spell.source_record_id}`}>
+                        <input checked={preparedSpellIds.includes(spell.source_record_id)} className="mr-1" onChange={(event) => {
+                          if (!event.target.checked) setPreparedSpellIds((current) => current.filter((id) => id !== spell.source_record_id));
+                          else if (preparedCount < preparedRequired) setPreparedSpellIds((current) => [...current, spell.source_record_id]);
+                          else showToast(`1级法师只能准备 ${preparedRequired} 个1环法术`, "error");
+                        }} type="checkbox" />
+                        准备 · {spell.name}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
             </div>
           ) : <p className="rounded border border-ink-700 p-3 text-xs text-stone-500">该职业1级没有法术选择；职业资源与动作仍会按规则写入。</p>}
         </div>
@@ -490,7 +578,7 @@ function CharacterCreateWizard({ campaignId, onDone }: { campaignId: string; onD
       ) : null}
       <div className="mt-4 flex justify-between border-t border-ink-700 pt-3">
         <Button disabled={step === 1} onClick={() => setStep((current) => current - 1)} size="sm">上一步</Button>
-        {step < 4 ? <Button disabled={step === 1 ? (!name.trim() || !race || !className || !background) : false} onClick={() => { if (step === 2) applyDerivedStats(); else setStep((current) => current + 1); }} variant="primary">下一步</Button> : <Button disabled={!name.trim() || Number(hp) < 1} loading={mutation.isPending} onClick={() => mutation.mutate()} variant="primary">确认创建角色</Button>}
+        {step < 4 ? <Button disabled={step === 1 ? (!name.trim() || !race || !className || !background) : step === 3 ? !choicesComplete : false} onClick={() => { if (step === 2) applyDerivedStats(); else setStep((current) => current + 1); }} variant="primary">下一步</Button> : <Button disabled={!name.trim() || Number(hp) < 1 || !choicesComplete} loading={mutation.isPending} onClick={() => mutation.mutate()} variant="primary">确认创建角色</Button>}
       </div>
     </Panel>
   );

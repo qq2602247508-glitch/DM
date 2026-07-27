@@ -13,6 +13,7 @@ export type CombatActionLike = {
   resource_key?: string;
   resource_cost?: number;
   auto_eligible?: boolean;
+  resolution_kind?: "damage" | "narrative";
 };
 
 export type DiceExpression = {

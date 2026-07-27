@@ -25,6 +25,7 @@ import {
   type CombatActionLike,
   type EnemyTactics,
 } from "../../ui/combatAutomation";
+import { isPreparedCombatSpell } from "../../ui/characterRules";
 import {
   resolveAreaSavingThrows,
   type AreaSpellResolution,
@@ -159,7 +160,10 @@ export function TurnCommandConsole({
 
   const actions = useMemo(
     () => activeCharacter
-      ? [...activeCharacter.actions, ...activeCharacter.spells].map(normalizeAction)
+      ? [
+          ...activeCharacter.actions,
+          ...activeCharacter.spells.filter(isPreparedCombatSpell),
+        ].map(normalizeAction)
       : monsterActionsForRules(
           active.display_name,
           ((active.snapshot_json.actions as unknown[] | undefined) ?? [])
@@ -194,6 +198,7 @@ export function TurnCommandConsole({
     && selectedAction.save_ability
     && selectedTargeting.shape !== "single",
   );
+  const isNarrativeAction = selectedAction.resolution_kind === "narrative";
   const possibleTargets = fighters.filter((fighter) =>
     fighter.id !== active.id
     && fighter.hp > 0
@@ -593,15 +598,22 @@ export function TurnCommandConsole({
               </select>
             </div>
             <p className="mb-2 mt-2 text-2xs text-stone-400">{selectedAction.cost ?? "动作"} · {actionRangeSummary(selectedAction)} · {selectedAction.description ?? "以角色卡和规则条目为准"}</p>
-            {isAreaSaveAction ? (
+            {isNarrativeAction ? (
+              <div className="rounded border border-violet-800/50 bg-violet-950/20 p-2">
+                <p className="m-0 text-xs leading-5 text-violet-100">
+                  这是叙事、辅助或持续效果法术，没有可直接套用的即时伤害公式。系统会显示规则描述、距离、持续时间与资源消耗，但不会虚构伤害；请在下方“自由行动裁定”记录具体目标和效果。
+                </p>
+                {selectedResourceKey ? <p className="mb-0 mt-1 text-2xs text-stone-400">施放时消耗 {selectedResourceCost} 点{selectedResource?.label ?? selectedResourceKey}；当前剩余 {Number(selectedResource?.current ?? 0)}。</p> : null}
+              </div>
+            ) : isAreaSaveAction ? (
               <div className="rounded border border-fuchsia-800/60 bg-fuchsia-950/20 p-2">
                 <p className="m-0 text-xs text-fuchsia-100">
                   这是区域豁免法术，不进行攻击检定。先在地图选择
                   {selectedTargeting.shape === "circle" ? "爆发中心" : "直线方向"}；
                   当前覆盖 <strong>{possibleTargets.filter((fighter) => validTargetIds?.has(fighter.id)).length}</strong> 个敌人。
-                  系统只掷一次 {selectedAction.damage}，每个目标分别进行
+                  按 D&D 5e 规则，本次施法共用一次 {selectedAction.damage} 伤害骰；每个目标分别进行
                   {selectedAction.save_ability}豁免（DC {selectedAction.save_dc}），成功
-                  {selectedAction.half_damage_on_save ? "伤害减半" : "不受伤害"}。
+                  {selectedAction.half_damage_on_save ? "伤害减半" : "不受伤害"}，再分别应用各自的抗性、易伤或免疫，因此最终扣血可以不同。
                 </p>
                 <p className="mb-2 mt-1 text-2xs text-stone-400">
                   范围内：{possibleTargets.filter((fighter) => validTargetIds?.has(fighter.id)).map((fighter) => fighter.display_name).join("、") || "尚未覆盖目标"}

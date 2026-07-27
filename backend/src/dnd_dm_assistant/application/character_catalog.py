@@ -39,18 +39,13 @@ class CharacterCatalog:
                 value = json.loads(path.read_text(encoding="utf-8"))
             except (OSError, json.JSONDecodeError):
                 continue
-            if (
-                value.get("edition") == "2024"
-                and value.get("officiality") == "official"
-            ):
+            if value.get("edition") == "2024" and value.get("officiality") == "official":
                 records.append(value)
         return records
 
     def classes(self) -> tuple[ClassProgression, ...]:
         records = self._records()
-        by_path = {
-            str(record.get("source_relative_path") or ""): record for record in records
-        }
+        by_path = {str(record.get("source_relative_path") or ""): record for record in records}
         result: list[ClassProgression] = []
         for record in records:
             name = str(record.get("name") or "")
@@ -86,6 +81,69 @@ class CharacterCatalog:
     def options(self) -> dict[str, Any]:
         records = self._records()
 
+        def spell_summary(record: dict[str, Any]) -> dict[str, Any]:
+            mechanics = dict(record.get("spell") or {})
+            source_path = str(record.get("source_relative_path") or "")
+            raw_level = mechanics.get("level")
+            level = (
+                int(raw_level) if isinstance(raw_level, int) else 0 if "/0环." in source_path else 1
+            )
+            markdown = str(record.get("content_markdown") or "").strip()
+            if markdown:
+                headings = list(re.finditer(r"(?m)^#{2,6}\s+", markdown))
+                body = markdown[: headings[1].start()].strip() if len(headings) > 1 else markdown
+            else:
+                body = str(record.get("content_plain_text") or "").strip()
+            raw_save = str(mechanics.get("save") or "")
+            save = raw_save if raw_save and raw_save in body else ""
+            casting_time = str(mechanics.get("casting_time") or "")
+            raw_damage_expression = mechanics.get("damage_expression")
+            damage_expression = (
+                raw_damage_expression
+                if isinstance(raw_damage_expression, str)
+                and re.search(
+                    re.escape(raw_damage_expression).replace(r"\ ", r"\s*"),
+                    body,
+                    re.IGNORECASE,
+                )
+                else None
+            )
+            return {
+                "name": str(record.get("name") or ""),
+                "source_record_id": str(record.get("stable_id") or ""),
+                "source_path": source_path,
+                "level": level,
+                "classes": [str(item) for item in mechanics.get("classes") or []],
+                "school": mechanics.get("school"),
+                "casting_time": mechanics.get("casting_time"),
+                "range": mechanics.get("range"),
+                "components": mechanics.get("components"),
+                "duration": mechanics.get("duration"),
+                "concentration": bool(mechanics.get("concentration")),
+                "ritual": bool(mechanics.get("ritual")),
+                "damage_expression": damage_expression,
+                "damage_type": mechanics.get("damage_type") if damage_expression else None,
+                "save_ability": save.removesuffix("豁免") or None,
+                "half_damage_on_save": bool(
+                    damage_expression
+                    and re.search(
+                        r"豁免成功.{0,24}(?:一半|半伤|减半)|成功则只受一半",
+                        body,
+                    )
+                ),
+                "description": body[:2400],
+                "cost": (
+                    "附赠动作"
+                    if "附赠" in casting_time
+                    else "反应"
+                    if "反应" in casting_time
+                    else "动作"
+                ),
+                "resource_key": f"spell_slots_{level}" if level > 0 else None,
+                "resource_cost": 1 if level > 0 else 0,
+                "resolution_kind": "damage" if damage_expression else "narrative",
+            }
+
         def summaries(fragment: str) -> list[dict[str, str]]:
             return sorted(
                 (
@@ -106,8 +164,7 @@ class CharacterCatalog:
             (
                 record
                 for record in records
-                if record.get("source_relative_path")
-                == "玩家手册2024/专长/专长概述.htm"
+                if record.get("source_relative_path") == "玩家手册2024/专长/专长概述.htm"
             ),
             None,
         )
@@ -127,12 +184,8 @@ class CharacterCatalog:
                         {
                             "name": cells[0],
                             "category": cells[1],
-                            "source_record_id": str(
-                                feat_overview.get("stable_id") or ""
-                            ),
-                            "source_path": str(
-                                feat_overview.get("source_relative_path") or ""
-                            ),
+                            "source_record_id": str(feat_overview.get("stable_id") or ""),
+                            "source_path": str(feat_overview.get("source_relative_path") or ""),
                         }
                     )
 
@@ -161,7 +214,15 @@ class CharacterCatalog:
             "species": summaries("玩家手册2024/角色起源/种族/"),
             "backgrounds": summaries("玩家手册2024/角色起源/背景/"),
             "feats": feat_options or summaries("玩家手册2024/专长/"),
-            "spells": summaries("玩家手册2024/法术详述/"),
+            "spells": sorted(
+                (
+                    spell_summary(record)
+                    for record in records
+                    if "玩家手册2024/法术详述/" in str(record.get("source_relative_path") or "")
+                    and record.get("spell")
+                ),
+                key=lambda item: (item["level"], item["name"]),
+            ),
             "skills": [
                 "杂技",
                 "驯兽",

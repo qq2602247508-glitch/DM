@@ -68,6 +68,78 @@ def test_player_character_creation_binding_and_campaign_scope(
     campaign_b = _campaign(campaign_client, "B团")
     opened = _open(campaign_client, campaign_a["id"])
     _join(campaign_client, opened["join_code"])
+    wizard_spells = [
+        {
+            "name": name,
+            "source_record_id": f"spell-{index}",
+            "source_path": f"玩家手册2024/法术详述/{level}环.htm",
+            "spell_level": level,
+            "classes": ["法师"],
+        }
+        for index, (name, level) in enumerate(
+            [
+                ("火焰箭", 0),
+                ("法师之手", 0),
+                ("次级幻象", 0),
+                ("魔法飞弹", 1),
+                ("护盾术", 1),
+                ("睡眠术", 1),
+                ("油腻术", 1),
+                ("云雾术", 1),
+                ("寻获魔宠", 1),
+            ]
+        )
+    ]
+    for spell in wizard_spells:
+        spell["prepared"] = spell["spell_level"] == 0 or spell["name"] in {
+            "魔法飞弹",
+            "护盾术",
+            "睡眠术",
+            "油腻术",
+        }
+    rejected_unlimited = campaign_client.post(
+        "/api/v1/player-room/me/characters",
+        json={
+            "name": "未按规则选择",
+            "race": "精灵",
+            "class_name": "法师",
+            "background": "学者",
+            "ability_scores": {
+                "strength": 8,
+                "dexterity": 14,
+                "constitution": 13,
+                "intelligence": 15,
+                "wisdom": 12,
+                "charisma": 10,
+            },
+            "skill_proficiencies": [],
+            "spells": wizard_spells[:1],
+        },
+    )
+    assert rejected_unlimited.status_code == 400
+    invalid_preparation = [
+        {**spell, "prepared": spell["spell_level"] == 0} for spell in wizard_spells
+    ]
+    rejected_unprepared = campaign_client.post(
+        "/api/v1/player-room/me/characters",
+        json={
+            "name": "未准备足够法术",
+            "race": "精灵",
+            "class_name": "法师",
+            "background": "学者",
+            "ability_scores": {
+                "strength": 8,
+                "dexterity": 14,
+                "constitution": 13,
+                "intelligence": 15,
+                "wisdom": 12,
+                "charisma": 10,
+            },
+            "skill_proficiencies": ["洞悉", "调查"],
+            "spells": invalid_preparation,
+        },
+    )
+    assert rejected_unprepared.status_code == 400
 
     created = campaign_client.post(
         "/api/v1/player-room/me/characters",
@@ -84,13 +156,8 @@ def test_player_character_creation_binding_and_campaign_scope(
                 "wisdom": 12,
                 "charisma": 10,
             },
-            "spells": [
-                {
-                    "name": "魔法飞弹",
-                    "source_record_id": "spell-magic-missile",
-                    "source_path": "玩家手册2024/法术详述/1环.htm",
-                }
-            ],
+            "skill_proficiencies": ["洞悉", "调查"],
+            "spells": wizard_spells,
         },
     )
     assert created.status_code == 201
@@ -106,7 +173,10 @@ def test_player_character_creation_binding_and_campaign_scope(
     assert character["resources"]["arcane_recovery"]["current"] == 1
     assert character["spellcasting"]["ability"] == "智力"
     assert character["actions"][0]["name"] == "火焰箭"
-    assert character["spells"][0]["name"] == "魔法飞弹"
+    assert {spell["name"] for spell in character["spells"]} >= {"魔法飞弹", "火焰箭"}
+    assert sum(
+        spell["spell_level"] == 1 and spell["prepared"] for spell in character["spells"]
+    ) == 4
     assert "notes" not in character
     assert (
         campaign_client.get("/api/v1/player-room/me").json()["character"]["id"] == character["id"]
@@ -236,10 +306,13 @@ def test_failed_join_is_rate_limited_and_success_clears_failures(
     )
     assert limited.status_code == 429
     _clear_join_failures("testclient")
-    assert campaign_client.post(
-        "/api/v1/player-room/join",
-        json={"join_code": opened["join_code"], "display_name": "正常玩家"},
-    ).status_code == 201
+    assert (
+        campaign_client.post(
+            "/api/v1/player-room/join",
+            json={"join_code": opened["join_code"], "display_name": "正常玩家"},
+        ).status_code
+        == 201
+    )
 
 
 def test_closing_room_revokes_every_player_cookie(campaign_client: TestClient) -> None:
@@ -247,9 +320,7 @@ def test_closing_room_revokes_every_player_cookie(campaign_client: TestClient) -
     opened = _open(campaign_client, campaign["id"])
     _join(campaign_client, opened["join_code"])
     assert campaign_client.get("/api/v1/player-room/me").status_code == 200
-    closed = campaign_client.post(
-        f"/api/v1/campaigns/{campaign['id']}/player-room/close"
-    )
+    closed = campaign_client.post(f"/api/v1/campaigns/{campaign['id']}/player-room/close")
     assert closed.status_code == 200
     assert closed.json()["active"] is False
     assert campaign_client.get("/api/v1/player-room/me").status_code == 401

@@ -60,7 +60,8 @@ class CharacterCreateInput(BaseModel):
     background: str = Field(min_length=1, max_length=100)
     ability_scores: dict[str, int]
     equipment: list[str] = Field(default_factory=list, max_length=50)
-    spells: list[dict[str, str]] = Field(default_factory=list, max_length=30)
+    skill_proficiencies: list[str] = Field(default_factory=list, max_length=4)
+    spells: list[dict[str, Any]] = Field(default_factory=list, max_length=30)
 
 
 class ActionRequestInput(BaseModel):

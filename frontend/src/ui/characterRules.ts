@@ -25,6 +25,149 @@ export type ClassRule = {
   spellcasting?: { ability: string; mode: "slots"; level1Slots: number };
 };
 
+export type SpellSelectionRule = {
+  cantrips: number;
+  leveled: number;
+  leveledLabel: string;
+  preparedLeveled?: number;
+};
+
+export const SKILLS_2024 = [
+  "杂技", "驯兽", "奥秘", "运动", "欺瞒", "历史", "洞悉", "威吓", "调查",
+  "医药", "自然", "察觉", "表演", "游说", "宗教", "巧手", "隐匿", "生存",
+] as const;
+
+const CLASS_SKILL_SELECTION: Record<string, { count: number; choices: readonly string[] }> = {
+  野蛮人: { count: 2, choices: ["驯兽", "运动", "威吓", "自然", "察觉", "生存"] },
+  吟游诗人: { count: 3, choices: SKILLS_2024 },
+  牧师: { count: 2, choices: ["历史", "洞悉", "医药", "游说", "宗教"] },
+  德鲁伊: { count: 2, choices: ["驯兽", "奥秘", "洞悉", "医药", "自然", "察觉", "宗教", "生存"] },
+  战士: { count: 2, choices: ["杂技", "驯兽", "运动", "历史", "洞悉", "威吓", "察觉", "游说", "生存"] },
+  武僧: { count: 2, choices: ["杂技", "运动", "历史", "洞悉", "宗教", "隐匿"] },
+  圣武士: { count: 2, choices: ["运动", "洞悉", "威吓", "医药", "游说", "宗教"] },
+  游侠: { count: 3, choices: ["驯兽", "运动", "洞悉", "调查", "自然", "察觉", "隐匿", "生存"] },
+  游荡者: { count: 4, choices: ["杂技", "运动", "欺瞒", "洞悉", "威吓", "调查", "察觉", "游说", "巧手", "隐匿"] },
+  术士: { count: 2, choices: ["奥秘", "欺瞒", "洞悉", "威吓", "游说", "宗教"] },
+  邪术师: { count: 2, choices: ["奥秘", "欺瞒", "历史", "威吓", "调查", "自然", "宗教"] },
+  法师: { count: 2, choices: ["奥秘", "历史", "洞悉", "调查", "医药", "自然", "宗教"] },
+};
+
+const SPELL_SELECTION_2024: Record<string, SpellSelectionRule> = {
+  吟游诗人: { cantrips: 2, leveled: 4, leveledLabel: "准备法术" },
+  牧师: { cantrips: 3, leveled: 4, leveledLabel: "准备法术" },
+  德鲁伊: { cantrips: 2, leveled: 4, leveledLabel: "准备法术" },
+  圣武士: { cantrips: 0, leveled: 2, leveledLabel: "准备法术" },
+  游侠: { cantrips: 0, leveled: 2, leveledLabel: "准备法术" },
+  术士: { cantrips: 4, leveled: 2, leveledLabel: "准备法术" },
+  邪术师: { cantrips: 2, leveled: 2, leveledLabel: "准备法术" },
+  法师: { cantrips: 3, leveled: 6, leveledLabel: "法术书1环法术", preparedLeveled: 4 },
+};
+
+export function classSkillSelection(className: string, backgroundSkills: readonly string[] = []) {
+  const rule = CLASS_SKILL_SELECTION[className] ?? { count: 0, choices: [] };
+  return {
+    count: rule.count,
+    choices: rule.choices.filter((skill) => !backgroundSkills.includes(skill)),
+  };
+}
+
+export function spellSelectionRule(className: string): SpellSelectionRule {
+  return SPELL_SELECTION_2024[className] ?? { cantrips: 0, leveled: 0, leveledLabel: "1环法术" };
+}
+
+export function canonicalSpellClass(className: string): string {
+  return className === "邪术师" ? "魔契师" : className;
+}
+
+export function spellIsAvailable(
+  spell: { level: number; classes: string[] },
+  className: string,
+): boolean {
+  return spell.level <= 1 && spell.classes.includes(canonicalSpellClass(className));
+}
+
+export function spellChoiceCounts(
+  selectedIds: readonly string[],
+  spells: readonly { source_record_id: string; level: number }[],
+): { cantrips: number; leveled: number } {
+  const selected = spells.filter((spell) => selectedIds.includes(spell.source_record_id));
+  return {
+    cantrips: selected.filter((spell) => spell.level === 0).length,
+    leveled: selected.filter((spell) => spell.level === 1).length,
+  };
+}
+
+export function spellChoicesComplete(
+  className: string,
+  selectedIds: readonly string[],
+  spells: readonly { source_record_id: string; level: number }[],
+): boolean {
+  const limits = spellSelectionRule(className);
+  const counts = spellChoiceCounts(selectedIds, spells);
+  return counts.cantrips === limits.cantrips && counts.leveled === limits.leveled;
+}
+
+export function isPreparedCombatSpell(spell: unknown): boolean {
+  if (typeof spell !== "object" || spell === null) return true;
+  const record = spell as Record<string, unknown>;
+  const level = Number(record.spell_level ?? 0);
+  return level === 0 || record.prepared !== false;
+}
+
+export function spellToCharacterAction(
+  spell: {
+    name: string;
+    source_record_id: string;
+    source_path: string;
+    level: number;
+    classes: string[];
+    school: string | null;
+    casting_time: string | null;
+    range: string | null;
+    components: string | null;
+    duration: string | null;
+    concentration: boolean;
+    ritual: boolean;
+    damage_expression: string | null;
+    damage_type: string | null;
+    save_ability: string | null;
+    half_damage_on_save: boolean;
+    description: string;
+    cost: string;
+    resource_key: string | null;
+    resource_cost: number;
+    resolution_kind: "damage" | "narrative";
+  },
+  spellSaveDc: number,
+  prepared = true,
+): Record<string, unknown> {
+  return {
+    name: spell.name,
+    source_record_id: spell.source_record_id,
+    source_path: spell.source_path,
+    spell_level: spell.level,
+    prepared: spell.level === 0 || prepared,
+    classes: spell.classes,
+    school: spell.school,
+    casting_time: spell.casting_time,
+    range: spell.range,
+    components: spell.components,
+    duration: spell.duration,
+    concentration: spell.concentration,
+    ritual: spell.ritual,
+    damage: spell.damage_expression,
+    damage_type: spell.damage_type,
+    save_ability: spell.save_ability,
+    save_dc: spell.save_ability ? spellSaveDc : undefined,
+    half_damage_on_save: spell.half_damage_on_save,
+    description: spell.description,
+    cost: spell.cost,
+    resource_key: spell.resource_key ?? undefined,
+    resource_cost: spell.resource_cost,
+    resolution_kind: spell.resolution_kind,
+  };
+}
+
 export const SPECIES_2024: SpeciesRule[] = [
   { name: "阿斯莫", speed: 30, size: "中型或小型", features: ["黑暗视觉", "天界抗性", "治疗之手", "天界显现"] },
   { name: "龙裔", speed: 30, size: "中型", features: ["龙族血统", "吐息武器", "伤害抗性", "黑暗视觉"] },

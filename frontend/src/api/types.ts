@@ -242,6 +242,27 @@ export type CharacterOptionSummary = {
   source_path: string;
 };
 
+export type SpellOption = CharacterOptionSummary & {
+  level: number;
+  classes: string[];
+  school: string | null;
+  casting_time: string | null;
+  range: string | null;
+  components: string | null;
+  duration: string | null;
+  concentration: boolean;
+  ritual: boolean;
+  damage_expression: string | null;
+  damage_type: string | null;
+  save_ability: string | null;
+  half_damage_on_save: boolean;
+  description: string;
+  cost: string;
+  resource_key: string | null;
+  resource_cost: number;
+  resolution_kind: "damage" | "narrative";
+};
+
 export type ClassLevelOption = {
   level: number;
   proficiency_bonus: number;
@@ -262,7 +283,7 @@ export type CharacterOptionsCatalog = {
   species: CharacterOptionSummary[];
   backgrounds: CharacterOptionSummary[];
   feats: CharacterOptionSummary[];
-  spells: CharacterOptionSummary[];
+  spells: SpellOption[];
   skills: string[];
   languages: string[];
   tools: string[];
