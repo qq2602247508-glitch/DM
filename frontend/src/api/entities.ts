@@ -1,4 +1,5 @@
 import { apiFetch } from "./client";
+import { createClientId } from "../ui/id";
 import type {
   CampaignEvent,
   CharacterCompanion,
@@ -459,19 +460,19 @@ export const createEncounterAdjustment = (cid: string, input: EncounterAdjustmen
 export const rejectEncounterAdjustment = (cid: string, id: string, version: number) =>
   apiFetch<EncounterAdjustment>(`/campaigns/${cid}/encounter-adjustments/${id}/reject`, {
     method: "POST",
-    headers: { "If-Match": `"${version}"`, "X-Request-ID": crypto.randomUUID() },
+    headers: { "If-Match": `"${version}"`, "X-Request-ID": createClientId("request") },
   });
 
 export const applyEncounterAdjustment = (cid: string, id: string, version: number) =>
   apiFetch<EncounterAdjustment>(`/campaigns/${cid}/encounter-adjustments/${id}/apply`, {
     method: "POST",
-    headers: { "If-Match": `"${version}"`, "X-Request-ID": crypto.randomUUID() },
+    headers: { "If-Match": `"${version}"`, "X-Request-ID": createClientId("request") },
   });
 
 export const revertEncounterAdjustment = (cid: string, id: string, version: number) =>
   apiFetch<EncounterAdjustment>(`/campaigns/${cid}/encounter-adjustments/${id}/revert`, {
     method: "POST",
-    headers: { "If-Match": `"${version}"`, "X-Request-ID": crypto.randomUUID() },
+    headers: { "If-Match": `"${version}"`, "X-Request-ID": createClientId("request") },
   });
 
 // ---------------------------------------------------------------------------
@@ -582,7 +583,7 @@ export const confirmCombatAction = (
   cid: string,
   combatId: string,
   input: CombatActionCommand,
-  requestId: string = crypto.randomUUID(),
+  requestId: string = createClientId("request"),
 ) =>
   apiFetch<CombatActionConfirmation>(
     `/campaigns/${cid}/combats/${combatId}/actions/confirm`,
@@ -613,7 +614,7 @@ export const resetCombat = (
     {
       method: "POST",
       body: { combat_version: combatVersion },
-      headers: { "X-Request-ID": crypto.randomUUID() },
+      headers: { "X-Request-ID": createClientId("request") },
     },
   );
 
@@ -627,7 +628,7 @@ export const createPlayerRollPrompt = (
     {
       method: "POST",
       body: input,
-      headers: { "X-Request-ID": crypto.randomUUID() },
+      headers: { "X-Request-ID": createClientId("request") },
     },
   );
 
@@ -653,7 +654,7 @@ export const confirmPlayerRoll = (
     {
       method: "POST",
       body: input,
-      headers: { "X-Request-ID": crypto.randomUUID() },
+      headers: { "X-Request-ID": createClientId("request") },
     },
   );
 
@@ -690,7 +691,7 @@ export const confirmDeathSave = (
     {
       method: "POST",
       body: { target_version: targetVersion, roll },
-      headers: { "X-Request-ID": crypto.randomUUID() },
+      headers: { "X-Request-ID": createClientId("request") },
     },
   );
 
@@ -706,7 +707,7 @@ export const confirmCombatantDeath = (
     {
       method: "POST",
       body: { target_version: targetVersion, reason },
-      headers: { "X-Request-ID": crypto.randomUUID() },
+      headers: { "X-Request-ID": createClientId("request") },
     },
   );
 
@@ -720,7 +721,7 @@ export const advanceCombatTurn = (
     {
       method: "POST",
       body: { combat_version: combatVersion },
-      headers: { "X-Request-ID": crypto.randomUUID() },
+      headers: { "X-Request-ID": createClientId("request") },
     },
   );
 
@@ -760,7 +761,7 @@ export const confirmCombatEffect = (
     {
       method: "POST",
       body: input,
-      headers: { "X-Request-ID": crypto.randomUUID() },
+      headers: { "X-Request-ID": createClientId("request") },
     },
   );
 
@@ -781,7 +782,7 @@ export const endCombatEffect = (
         source_version: sourceVersion,
         reason,
       },
-      headers: { "X-Request-ID": crypto.randomUUID() },
+      headers: { "X-Request-ID": createClientId("request") },
     },
   );
 
@@ -800,7 +801,7 @@ export const confirmConcentrationCheck = (
     {
       method: "POST",
       body: input,
-      headers: { "X-Request-ID": crypto.randomUUID() },
+      headers: { "X-Request-ID": createClientId("request") },
     },
   );
 
@@ -850,6 +851,6 @@ export const confirmCombatSettlement = (
     {
       method: "POST",
       body: input,
-      headers: { "X-Request-ID": crypto.randomUUID() },
+      headers: { "X-Request-ID": createClientId("request") },
     },
   );

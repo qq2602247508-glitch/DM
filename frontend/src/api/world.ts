@@ -115,7 +115,7 @@ export function createScene(
 }
 
 export type PersistentSceneGrid = { id: string; width: number; height: number; cell_size_ft: number; mode: "narrative" | "exploration" | "combat"; public_description: string | null; dm_description: string | null; layers_json: Record<string, unknown> };
-export type SceneToken = { id: string; label: string; row: number; col: number; entity_type: string; visible: boolean };
+export type SceneToken = { id: string; label: string; row: number; col: number; entity_type: string; entity_id?: string | null; visible: boolean };
 export type PersistentSceneObject = { id: string; label: string; row: number; col: number; object_type: string; state: string; visibility: string };
 export function getSceneGrid(campaignId: string, sceneId: string, signal?: AbortSignal): Promise<{ grid: PersistentSceneGrid; tokens: SceneToken[]; objects: PersistentSceneObject[] }> {
   return apiFetch(`/campaigns/${campaignId}/scenes/${sceneId}/grid`, { signal });

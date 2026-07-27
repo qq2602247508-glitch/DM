@@ -630,12 +630,12 @@ export type Scene = Versioned & {
 export type SceneGrid = {
   width: number;
   height: number;
-  cell_size_ft: 5;
+  cell_size_ft: number;
   theme: string;
   cells: {
     row: number;
     col: number;
-    kind: "floor" | "wall" | "cover" | "door" | "object";
+    kind: "floor" | "wall" | "cover" | "door" | "object" | "water" | "difficult" | "terrain" | "light" | "trap" | "treasure" | "furniture" | "portal";
     label: string;
   }[];
 };

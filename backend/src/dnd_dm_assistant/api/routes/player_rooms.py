@@ -84,6 +84,14 @@ class NoncombatRollInput(BaseModel):
     raw_roll: int = Field(ge=1, le=20)
 
 
+class DmNoncombatActionPlanInput(NoncombatActionPlanInput):
+    character_id: str = Field(min_length=1, max_length=36)
+
+
+class DmNoncombatRollInput(NoncombatRollInput):
+    character_id: str = Field(min_length=1, max_length=36)
+
+
 class MoveInput(BaseModel):
     row: int = Field(ge=1, le=100)
     col: int = Field(ge=1, le=100)
@@ -92,6 +100,7 @@ class MoveInput(BaseModel):
 
 class AttackInput(BaseModel):
     target_combatant_id: str = Field(min_length=1, max_length=36)
+    target_combatant_ids: list[str] = Field(default_factory=list, max_length=30)
     action_name: str = Field(min_length=1, max_length=200)
     attack_total: int = Field(ge=-100, le=1000)
     damage_total: int = Field(ge=0, le=100_000)
@@ -193,6 +202,50 @@ def set_live_state(
     service: Annotated[PlayerRoomService, Depends(get_player_room_service)],
 ) -> dict[str, Any]:
     return _safe(lambda: service.set_live_state(campaign_id, body.scene_id, body.combat_id))
+
+
+@admin_player_room_router.get("/dm/noncombat-actions/{character_id}")
+def dm_noncombat_actions(
+    campaign_id: str,
+    character_id: str,
+    service: Annotated[PlayerRoomService, Depends(get_player_room_service)],
+) -> dict[str, Any]:
+    return _safe(lambda: service.dm_noncombat_snapshot(campaign_id, character_id))
+
+
+@admin_player_room_router.post("/dm/noncombat-actions/plan")
+def dm_plan_noncombat_action(
+    campaign_id: str,
+    body: DmNoncombatActionPlanInput,
+    request: Request,
+    service: Annotated[PlayerRoomService, Depends(get_player_room_service)],
+) -> dict[str, Any]:
+    return _safe(
+        lambda: service.dm_plan_noncombat_action(
+            campaign_id,
+            body.character_id,
+            body.model_dump(exclude={"character_id"}),
+            _request_id(request),
+        )
+    )
+
+
+@admin_player_room_router.post("/dm/noncombat-actions/{action_request_id}/roll")
+def dm_roll_noncombat_action(
+    campaign_id: str,
+    action_request_id: str,
+    body: DmNoncombatRollInput,
+    service: Annotated[PlayerRoomService, Depends(get_player_room_service)],
+) -> dict[str, Any]:
+    return _safe(
+        lambda: service.dm_roll_noncombat_action(
+            campaign_id,
+            body.character_id,
+            action_request_id,
+            body.version,
+            body.raw_roll,
+        )
+    )
 
 
 @admin_player_room_router.post("/members/{member_id}/kick")
@@ -357,6 +410,7 @@ def attack(
         lambda: service.attack(
             principal,
             body.target_combatant_id,
+            body.target_combatant_ids,
             body.action_name,
             body.attack_total,
             body.damage_total,

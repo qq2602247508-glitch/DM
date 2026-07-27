@@ -359,9 +359,10 @@ export function TurnCommandConsole({
   const autoResolve = useMutation({
     mutationFn: (command: CombatActionCommand) =>
       confirmCombatAction(campaignId, combatId, command),
-    onSuccess: () => {
+    onSuccess: async () => {
       invalidate();
-      showToast(`${active.display_name}已自动完成动作并结束回合`);
+      showToast(`${active.display_name}已完成攻击；正在展示命中与伤害效果`);
+      await new Promise((resolve) => window.setTimeout(resolve, 900));
       onEnemyTurnComplete();
     },
     onError: () => {
@@ -488,6 +489,11 @@ export function TurnCommandConsole({
       showToast("请先在战斗地图上选择范围中心或直线方向，并确保至少覆盖一个敌人", "error");
       return;
     }
+    const reportedDamage = Number(damageTotal);
+    if (!damageTotal || !Number.isFinite(reportedDamage) || reportedDamage < 0) {
+      showToast(`请先让玩家掷 ${selectedAction.damage ?? "伤害骰"}，并输入最终伤害总值`, "error");
+      return;
+    }
     try {
       const resolution = resolveAreaSavingThrows({
         targets: affectedTargets.map((fighter) => ({
@@ -500,6 +506,7 @@ export function TurnCommandConsole({
         saveDc: Number(selectedAction.save_dc),
         saveAbility: String(selectedAction.save_ability),
         halfDamageOnSave: Boolean(selectedAction.half_damage_on_save),
+        sharedDamage: reportedDamage,
       });
       setPending(null);
       setPendingArea({
@@ -631,13 +638,24 @@ export function TurnCommandConsole({
                     ? ` · 消耗 ${selectedResourceCost} 点${selectedResource?.label ?? selectedResourceKey}（剩余 ${Number(selectedResource?.current ?? 0)}）`
                     : ""}
                 </p>
-                <Button
-                  disabled={!selectedActionAvailable || !validTargetIds?.size || confirmArea.isPending}
-                  onClick={prepareAreaSpell}
-                  variant="primary"
-                >
-                  掷伤害与全部豁免并预览
-                </Button>
+                <div className="flex flex-wrap gap-2">
+                  <input
+                    aria-label="区域法术玩家伤害总值"
+                    className={`${inputCls} w-36`}
+                    min="0"
+                    onChange={(event) => setDamageTotal(event.target.value)}
+                    placeholder={`玩家掷 ${selectedAction.damage ?? "伤害骰"}`}
+                    type="number"
+                    value={damageTotal}
+                  />
+                  <Button
+                    disabled={!selectedActionAvailable || !validTargetIds?.size || !damageTotal || confirmArea.isPending}
+                    onClick={prepareAreaSpell}
+                    variant="primary"
+                  >
+                    使用玩家伤害骰并预览豁免
+                  </Button>
+                </div>
               </div>
             ) : mode === "assisted" ? (
               <div className="rounded border border-sky-800/50 bg-sky-950/20 p-2">
@@ -729,7 +747,10 @@ export function TurnCommandConsole({
           </strong>
           <p className="mb-2 mt-1 text-xs text-stone-300">
             共用伤害骰 {pendingArea.resolution.damageExpression}：
-            [{pendingArea.resolution.damageRolls.join(" + ")}] = <strong>{pendingArea.resolution.sharedDamage}</strong>。
+            {pendingArea.resolution.damageRolls.length
+              ? <>[{pendingArea.resolution.damageRolls.join(" + ")}] = </>
+              : <>玩家报告最终总值 = </>}
+            <strong>{pendingArea.resolution.sharedDamage}</strong>。
             下列每个目标独立豁免。
           </p>
           <ul className="m-0 space-y-1 pl-4 text-xs text-stone-300">

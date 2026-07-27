@@ -13,7 +13,7 @@ import type {
   CombatActionCommand, CombatEffectCommand, CombatSettlementCommand,
 } from "../api/entities";
 import { listCharacters, listLocations, listNpcs, updateCharacter } from "../api/entities";
-import { listMonsters, listScenes } from "../api/world";
+import { getSceneGrid, listMonsters, listScenes } from "../api/world";
 import { setPlayerRoomLiveState } from "../api/playerRoom";
 import type {
   Combat, CombatAction, CombatActionPreview, CombatEffect, CombatSettlementPreview, Combatant,
@@ -446,7 +446,9 @@ function BattleGrid({
   const [aimPoint, setAimPoint] = useState<GridPoint | null>(null);
   const [interactionMode, setInteractionMode] = useState<"move" | "target">("move");
   const [movingFighterId, setMovingFighterId] = useState<string | null>(null);
+  const [impactFighterId, setImpactFighterId] = useState<string | null>(null);
   const processedAiTurn = useRef<string | null>(null);
+  const previousHp = useRef<Record<string, number>>({});
   useEffect(() => {
     setPositions((current) => {
       const next = { ...current };
@@ -497,6 +499,17 @@ function BattleGrid({
     if (activeFighterId) setSelected(activeFighterId);
   }, [activeFighterId]);
   useEffect(() => {
+    const changed = fighters.find((fighter) => (
+      previousHp.current[fighter.id] !== undefined
+      && previousHp.current[fighter.id] !== fighter.hp
+    ));
+    previousHp.current = Object.fromEntries(fighters.map((fighter) => [fighter.id, fighter.hp]));
+    if (!changed) return;
+    setImpactFighterId(changed.id);
+    const timeout = window.setTimeout(() => setImpactFighterId(null), 900);
+    return () => window.clearTimeout(timeout);
+  }, [fighters]);
+  useEffect(() => {
     setAimPoint(null);
     setInteractionMode(targeting ? "target" : "move");
     setTargetingMessage(targeting
@@ -515,7 +528,18 @@ function BattleGrid({
     const remainingMovement = exhaustMovement
       ? 0
       : Math.max(0, fighter.movement_remaining_ft - plan.spentFt);
+    const startPosition = positions[fighter.id];
     try {
+      for (const point of plan.path) {
+        setPositions((current) => ({
+          ...current,
+          [fighter.id]: [point.row, point.col],
+        }));
+        await new Promise((resolve) => window.setTimeout(resolve, automatic ? 220 : 140));
+      }
+      if (automatic && plan.path.length > 0) {
+        await new Promise((resolve) => window.setTimeout(resolve, 350));
+      }
       await updateCombatant(
         campaignId,
         combatId,
@@ -536,6 +560,9 @@ function BattleGrid({
       await client.invalidateQueries({ queryKey: ["combatants", campaignId, combatId] });
       if (!automatic) showToast(`${fighter.display_name}移动 ${plan.spentFt} 尺，剩余 ${remainingMovement} 尺`);
     } catch {
+      if (startPosition) {
+        setPositions((current) => ({ ...current, [fighter.id]: startPosition }));
+      }
       if (automatic) processedAiTurn.current = null;
       showToast(`${fighter.display_name}移动保存失败，请刷新战斗状态`, "error");
     } finally {
@@ -548,6 +575,7 @@ function BattleGrid({
     combatId,
     movingFighterId,
     onAutomationMovementChange,
+    positions,
     showToast,
   ]);
   useEffect(() => {
@@ -698,7 +726,7 @@ function BattleGrid({
     <div className="mt-4 rounded-lg border border-ink-700 bg-ink-950/50 p-3">
       <div className="mb-2 flex flex-wrap items-center gap-2">
         <span className="text-xs font-semibold text-parchment-100">战斗场景 · {tacticalGrid.theme}</span>
-        <span className="text-2xs text-stone-500">每格 5 尺 · 地图直接来自当前场景 · 单位按双方出生区布置</span>
+        <span className="text-2xs text-stone-500">每格 {tacticalGrid.cell_size_ft} 尺 · 地图直接来自当前场景 · 单位按双方出生区布置</span>
         {interactionMode === "move" && selected === activeFighterId ? (
           <Badge tone="ok">绿色范围：本回合剩余可移动区域</Badge>
         ) : null}
@@ -765,6 +793,7 @@ function BattleGrid({
                   if (fighter && fighter.id !== activeFighterId) {
                     if (affectedNow.some((cell) => cell.row === rowNumber && cell.col === colNumber)) {
                       onTargetSelect(fighter.id);
+                      setSelected(fighter.id);
                       setTargetingMessage(`${fighter.display_name}位于合法范围内，已选为目标。`);
                     } else {
                       setTargetingMessage(`${fighter.display_name}不在当前技能的实际影响范围内。`);
@@ -786,7 +815,7 @@ function BattleGrid({
                 : sceneCell?.label ?? (moveDistance === null ? "选择一个单位" : `${moveDistance} 尺`)}
               type="button"
             >
-              {fighter ? <span className={`mx-auto flex h-6 w-6 items-center justify-center rounded-full text-2xs font-bold ${selected === fighter.id ? "bg-ember-400 text-ink-950" : "bg-violet-500/80 text-white"}`}>{fighter.display_name.slice(0, 1)}</span> : null}
+              {fighter ? <span className={`mx-auto flex h-6 w-6 items-center justify-center rounded-full text-2xs font-bold transition duration-300 ${impactFighterId === fighter.id ? "scale-125 bg-red-500 text-white ring-4 ring-red-300/80" : selected === fighter.id && fighter.id !== activeFighterId ? "bg-emerald-400 text-ink-950 ring-4 ring-emerald-300/70" : selected === fighter.id ? "bg-ember-400 text-ink-950" : "bg-violet-500/80 text-white"}`}>{fighter.display_name.slice(0, 1)}</span> : null}
               {!fighter && glyph ? <span className="text-stone-200">{glyph}</span> : null}
             </button>
           );
@@ -1358,6 +1387,11 @@ function CombatContent({ campaignId }: { campaignId: string }): ReactElement {
   const selectedCombat = combats.data?.find((combat) => combat.id === selectedCombatId);
   const selectedCombatSceneId = selectedCombat?.scene_id ?? null;
   const liveCombatId = selectedCombat?.id ?? null;
+  const persistentSceneGrid = useQuery({
+    queryKey: ["scene-grid", campaignId, selectedCombatSceneId],
+    queryFn: ({ signal }) => getSceneGrid(campaignId, selectedCombatSceneId ?? "", signal),
+    enabled: Boolean(selectedCombatSceneId),
+  });
   useEffect(() => {
     if (!liveCombatId) return;
     void setPlayerRoomLiveState(
@@ -1371,7 +1405,7 @@ function CombatContent({ campaignId }: { campaignId: string }): ReactElement {
       <Panel eyebrow="遭遇" title="战斗辅助">
         <form className="grid gap-2 md:grid-cols-[1fr_1fr_auto]" onSubmit={(event) => { event.preventDefault(); if (name.trim()) create.mutate(); }}>
           <input className={inputCls} onChange={(event) => setName(event.target.value)} placeholder="战斗名称，例如：城门伏击" value={name} />
-          <select className={inputCls} onChange={(event) => setSceneId(event.target.value)} value={sceneId}><option value="">必须选择战斗场景</option>{scenes.data?.map((scene) => <option key={scene.id} value={scene.id}>{scene.name}{readSceneGrid(scene.notes) ? " · 有网格" : ""}</option>)}</select>
+          <select className={inputCls} onChange={(event) => setSceneId(event.target.value)} value={sceneId}><option value="">必须选择战斗场景</option>{scenes.data?.map((scene) => <option key={scene.id} value={scene.id}>{scene.name} · 共用 Scene 网格</option>)}</select>
           <Button disabled={!name.trim() || !sceneId} loading={create.isPending} icon="plus" type="submit" variant="primary">创建战斗</Button>
         </form>
         {(combats.data?.length ?? 0) > 0 ? (
@@ -1405,8 +1439,49 @@ function CombatContent({ campaignId }: { campaignId: string }): ReactElement {
           const location = locations.data?.find(
             (item) => item.id === scene?.location_id,
           );
+          const layers = persistentSceneGrid.data?.grid.layers_json as {
+            theme?: string;
+            cells?: SceneGrid["cells"];
+          } | undefined;
+          const layerCells = layers?.cells ?? [];
+          const occupiedLayerCells = new Set(
+            layerCells.map((cell) => `${cell.row}:${cell.col}`),
+          );
+          const objectCells: SceneGrid["cells"] = (persistentSceneGrid.data?.objects ?? [])
+            .filter((item) => !occupiedLayerCells.has(`${item.row}:${item.col}`))
+            .map((item) => ({
+              row: item.row,
+              col: item.col,
+              kind: (
+                item.object_type === "wall"
+                  ? "wall"
+                  : item.object_type === "door"
+                    ? "door"
+                    : item.object_type === "cover"
+                      ? "cover"
+                      : item.object_type === "trap"
+                        ? "trap"
+                        : item.object_type === "treasure"
+                          ? "treasure"
+                          : item.object_type === "portal"
+                            ? "portal"
+                            : item.object_type === "terrain"
+                              ? "terrain"
+                              : item.object_type === "light"
+                                ? "light"
+                                : "object"
+              ),
+              label: item.label,
+            }));
+          const serviceGrid: SceneGrid | null = persistentSceneGrid.data ? {
+            width: persistentSceneGrid.data.grid.width,
+            height: persistentSceneGrid.data.grid.height,
+            cell_size_ft: persistentSceneGrid.data.grid.cell_size_ft,
+            theme: layers?.theme ?? persistentSceneGrid.data.grid.public_description ?? scene?.name ?? "当前 Scene",
+            cells: [...layerCells, ...objectCells],
+          } : null;
           const storedGrid = scene ? readSceneGrid(scene.notes) : null;
-          const sceneGrid = storedGrid ?? (scene
+          const sceneGrid = serviceGrid ?? storedGrid ?? (scene
             ? generateTacticalSceneGrid(
                 scene.name,
                 scene.description ?? "",

@@ -91,7 +91,7 @@ export function parsePrepDraft(text: string): DraftAtom[] {
       ] = parts;
       if (!chapterTitle || !name) continue;
       atoms.push({
-        id: crypto.randomUUID(),
+        id: createClientId("prep"),
         kind: "scene",
         name,
         description: objective || `${name}（来自备团草稿）`,
@@ -112,9 +112,10 @@ export function parsePrepDraft(text: string): DraftAtom[] {
     const name = rawName?.replace(/\*\*/g, "").replace(/[：:]$/, "").trim();
     if (!name) continue;
     atoms.push({
-      id: crypto.randomUUID(), kind: currentKind, name,
+      id: createClientId("prep"), kind: currentKind, name,
       description: rest.join("｜").trim() || `${name}（来自备团草稿）`,
     });
   }
   return atoms;
 }
+import { createClientId } from "./id";

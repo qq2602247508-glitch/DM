@@ -1,4 +1,5 @@
 import { apiFetch, ApiError } from "./client";
+import { createClientId } from "../ui/id";
 
 export type PlayerRoomMember = {
   id: string;
@@ -316,6 +317,56 @@ export const resolvePlayerActionRequest = (
   { method: "POST", body: { version, dm_note: null } },
 );
 
+export const getDmNoncombatActions = (
+  campaignId: string,
+  characterId: string,
+  signal?: AbortSignal,
+) => apiFetch<{
+  available_actions: NoncombatActionOption[];
+  pending_actions: NoncombatPendingAction[];
+}>(
+  `/campaigns/${campaignId}/player-room/dm/noncombat-actions/${characterId}`,
+  { signal },
+);
+
+export const planDmNoncombatAction = (
+  campaignId: string,
+  input: {
+    character_id: string;
+    action_id: string;
+    target_type: "self" | "npc" | "monster" | "object" | "area";
+    target_id: string | null;
+    message: string;
+  },
+) => apiFetch<Record<string, unknown>>(
+  `/campaigns/${campaignId}/player-room/dm/noncombat-actions/plan`,
+  {
+    method: "POST",
+    body: {
+      ...input,
+      idempotency_key: createClientId("dm-noncombat-plan"),
+    },
+  },
+);
+
+export const rollDmNoncombatAction = (
+  campaignId: string,
+  characterId: string,
+  requestId: string,
+  version: number,
+  rawRoll: number,
+) => apiFetch<Record<string, unknown>>(
+  `/campaigns/${campaignId}/player-room/dm/noncombat-actions/${requestId}/roll`,
+  {
+    method: "POST",
+    body: {
+      character_id: characterId,
+      version,
+      raw_roll: rawRoll,
+    },
+  },
+);
+
 export const isMissingPlayerRoom = (error: unknown): boolean =>
   error instanceof ApiError && error.status === 404;
 
@@ -347,7 +398,7 @@ export const submitMyActionRequest = (actionType: string, message: string) =>
       action_type: actionType,
       message,
       payload_json: {},
-      idempotency_key: crypto.randomUUID(),
+      idempotency_key: createClientId("player-action"),
     }),
   });
 
@@ -363,7 +414,7 @@ export const planMyNoncombatAction = (
     target_type: targetType,
     target_id: targetId,
     message,
-    idempotency_key: crypto.randomUUID(),
+    idempotency_key: createClientId("noncombat-plan"),
   }),
 });
 
@@ -384,6 +435,7 @@ export const moveMyCombatant = (row: number, col: number, combatantVersion: numb
 
 export const attackWithMyCombatant = (
   targetId: string,
+  targetIds: string[],
   actionName: string,
   attackTotal: number,
   damageTotal: number,
@@ -391,10 +443,11 @@ export const attackWithMyCombatant = (
   method: "POST",
   body: JSON.stringify({
     target_combatant_id: targetId,
+    target_combatant_ids: targetIds,
     action_name: actionName,
     attack_total: attackTotal,
     damage_total: damageTotal,
-    idempotency_key: crypto.randomUUID(),
+    idempotency_key: createClientId("player-attack"),
   }),
 });
 
@@ -404,14 +457,17 @@ export const submitMyPlayerRoll = (actionId: string, actionVersion: number, roll
     body: JSON.stringify({
       action_version: actionVersion,
       roll_total: rollTotal,
-      idempotency_key: crypto.randomUUID(),
+      idempotency_key: createClientId("player-roll"),
     }),
   });
 
 export const endMyTurn = (combatVersion: number) =>
   playerFetch<Record<string, unknown>>("/player-room/me/combat/end-turn", {
     method: "POST",
-    body: JSON.stringify({ combat_version: combatVersion, idempotency_key: crypto.randomUUID() }),
+    body: JSON.stringify({
+      combat_version: combatVersion,
+      idempotency_key: createClientId("player-end-turn"),
+    }),
   });
 
 export const searchPlayerRules = (text: string, signal?: AbortSignal) =>

@@ -3,7 +3,14 @@ import { useEffect, useMemo, useState, type FormEvent, type ReactElement } from 
 
 import { runAssistantTurn } from "../api/assistant";
 import { getRuleDocument, searchKnowledge } from "../api/knowledge";
-import { setPlayerRoomLiveState } from "../api/playerRoom";
+import {
+  getDmNoncombatActions,
+  planDmNoncombatAction,
+  rollDmNoncombatAction,
+  setPlayerRoomLiveState,
+  type NoncombatActionOption,
+  type NoncombatPendingAction,
+} from "../api/playerRoom";
 import {
   applyEncounterAdjustment, createClue, createEncounterAdjustment, createEvent, createLocation, createNpc,
   createQuest, listCharacters, listEncounterAdjustments, listEvents, listLocations, listNpcs,
@@ -24,6 +31,7 @@ import { RestPanel } from "../components/RestPanel";
 import { RequireCampaign } from "../components/RequireCampaign";
 import { SceneOutlinePanel } from "../components/SceneOutlinePanel";
 import { SceneEntityDetailDialog } from "../components/SceneEntityDetailDialog";
+import { SceneMap } from "../components/SceneMap";
 import { useToast } from "../hooks/toastContext";
 import { navigate } from "../hooks/useHashRoute";
 import { Badge, Button, EmptyState, ErrorState, LoadingBlock } from "../ui/primitives";
@@ -48,6 +56,7 @@ import {
 import {
   buildContextualQuickActions, SCENE_PHASE_LABELS, scenePhaseText, type ScenePhase,
 } from "../ui/contextualQuickActions";
+import { createClientId } from "../ui/id";
 
 type ProgressEntry = {
   id: string;
@@ -67,6 +76,140 @@ type SessionCheckpoint = {
 
 function SessionStatusBar({ characters, npcs, events }: { characters: { name: string; hp: number; max_hp: number }[]; npcs: { name: string; attitude: string | null }[]; events: { title: string }[] }): ReactElement {
   return <Panel className="mb-4" eyebrow="统一状态栏 · 已确认事实" title="队伍、关系与未解决事项"><div className="grid gap-3 text-xs md:grid-cols-3"><div><strong>队伍</strong><p className="mb-0 mt-1 text-stone-500">{characters.map((c) => `${c.name} ${c.hp}/${c.max_hp}`).join("、") || "—"}</p></div><div><strong>NPC 态度</strong><p className="mb-0 mt-1 text-stone-500">{npcs.slice(0, 3).map((n) => `${n.name}·${n.attitude ?? "未定"}`).join("、") || "—"}</p></div><div><strong>未解决事项</strong><p className="mb-0 mt-1 text-stone-500">{events.slice(-3).map((e) => e.title).join("、") || "暂无"}</p></div></div></Panel>;
+}
+
+function DmSceneActionPanel({
+  campaignId,
+  characters,
+  gridData,
+}: {
+  campaignId: string;
+  characters: Character[];
+  gridData: Awaited<ReturnType<typeof getSceneGrid>> | undefined;
+}): ReactElement {
+  const client = useQueryClient();
+  const [characterId, setCharacterId] = useState("");
+  const [actionId, setActionId] = useState("");
+  const [targetValue, setTargetValue] = useState("");
+  const [message, setMessage] = useState("");
+  const [rolls, setRolls] = useState<Record<string, string>>({});
+  useEffect(() => {
+    if (!characterId && characters[0]) setCharacterId(characters[0].id);
+  }, [characterId, characters]);
+  const actions = useQuery({
+    queryKey: ["dm-noncombat-actions", campaignId, characterId],
+    queryFn: ({ signal }) => getDmNoncombatActions(campaignId, characterId, signal),
+    enabled: Boolean(characterId),
+    refetchInterval: 1_500,
+  });
+  const selected = actions.data?.available_actions.find((item) => item.id === actionId);
+  const targets = selected && gridData ? [
+    ...(selected.target_types.includes("self")
+      ? [{ value: `self:${characterId}`, label: `自己 · ${characters.find((item) => item.id === characterId)?.name ?? "玩家"}` }]
+      : []),
+    ...(selected.target_types.includes("area")
+      ? [{ value: "area:", label: "当前地点 / 区域" }]
+      : []),
+    ...gridData.tokens
+      .filter((token) => token.entity_id && selected.target_types.includes(token.entity_type as "npc" | "monster"))
+      .map((token) => ({
+        value: `${token.entity_type}:${token.entity_id}`,
+        label: `${token.entity_type === "npc" ? "NPC" : "怪物"} · ${token.label}`,
+      })),
+    ...gridData.objects
+      .filter((object) => selected.target_types.includes("object")
+        && (selected.kind !== "tool" || ["door", "trap", "treasure", "portal"].includes(object.object_type)))
+      .map((object) => ({
+        value: `object:${object.id}`,
+        label: `物体 · ${object.label}（${object.state}）`,
+      })),
+  ] : [];
+  const invalidate = () => client.invalidateQueries({
+    queryKey: ["dm-noncombat-actions", campaignId, characterId],
+  });
+  const mutation = useMutation({
+    mutationFn: async (fn: () => Promise<unknown>) => fn(),
+    onSuccess: () => { setMessage(""); void invalidate(); },
+  });
+  const submit = () => {
+    const [targetType, targetId] = targetValue.split(":");
+    if (!selected || !targetType || !characterId) return;
+    mutation.mutate(() => planDmNoncombatAction(campaignId, {
+      character_id: characterId,
+      action_id: selected.id,
+      target_type: targetType as "self" | "npc" | "monster" | "object" | "area",
+      target_id: targetId || null,
+      message: message || `DM代${characters.find((item) => item.id === characterId)?.name ?? "玩家"}使用${selected.name}`,
+    }));
+  };
+  const pending = actions.data?.pending_actions ?? [];
+  const layers = gridData?.grid.layers_json as {
+    theme?: string;
+    cells?: Array<{ row: number; col: number; kind: string; label?: string }>;
+  } | undefined;
+  return (
+    <Panel eyebrow="统一 Scene 操作台" title="DM 地图与代玩家操作">
+      <p className="mt-0 text-xs leading-5 text-stone-500">
+        DM 与玩家共用服务端持久化 Scene 网格。可以从列表选目标，也可以先选能力，再直接点击地图中的绿色目标。
+      </p>
+      {gridData ? (
+        <SceneMap
+          grid={{
+            width: gridData.grid.width,
+            height: gridData.grid.height,
+            cell_size_ft: gridData.grid.cell_size_ft,
+            theme: layers?.theme ?? gridData.grid.public_description,
+            cells: layers?.cells ?? [],
+          }}
+          objects={gridData.objects.map((item) => ({ ...item, targetKey: `object:${item.id}` }))}
+          onTargetSelect={setTargetValue}
+          selectedTargetKey={targetValue}
+          selectableTargetKeys={new Set(targets.map((target) => target.value))}
+          tokens={gridData.tokens.map((item) => ({
+            ...item,
+            targetKey: item.entity_id ? `${item.entity_type}:${item.entity_id}` : undefined,
+            isOwn: item.entity_type === "character" && item.entity_id === characterId,
+          }))}
+        />
+      ) : <EmptyState hint="选择当前 Scene 后会读取服务端唯一网格。" title="尚未载入地图" />}
+      <div className="mt-3 grid gap-2 md:grid-cols-3">
+        <label className="text-2xs text-stone-500">代操角色
+          <select className={`${selectCls} mt-1`} onChange={(event) => { setCharacterId(event.target.value); setActionId(""); setTargetValue(""); }} value={characterId}>
+            <option value="">选择场景玩家</option>
+            {characters.map((character) => <option key={character.id} value={character.id}>{character.name}</option>)}
+          </select>
+        </label>
+        <label className="text-2xs text-stone-500">技能 / 工具 / 非伤害法术
+          <select className={`${selectCls} mt-1`} disabled={!characterId} onChange={(event) => { setActionId(event.target.value); setTargetValue(""); }} value={actionId}>
+            <option value="">选择行动</option>
+            {(actions.data?.available_actions ?? []).map((action: NoncombatActionOption) => <option key={action.id} value={action.id}>{action.kind === "spell" ? "法术" : action.kind === "tool" ? "工具" : "技能"} · {action.name}</option>)}
+          </select>
+        </label>
+        <label className="text-2xs text-stone-500">目标
+          <select className={`${selectCls} mt-1`} disabled={!selected} onChange={(event) => setTargetValue(event.target.value)} value={targetValue}>
+            <option value="">列表选择，或点击地图绿色目标</option>
+            {targets.map((target) => <option key={target.value} value={target.value}>{target.label}</option>)}
+          </select>
+        </label>
+      </div>
+      {selected ? <p className="mb-0 mt-2 rounded border border-sky-900/50 bg-sky-950/15 p-2 text-xs text-sky-100">{selected.description}{selected.range ? ` · 距离 ${selected.range}` : ""}</p> : null}
+      <div className="mt-2 flex gap-2">
+        <input className={inputCls} onChange={(event) => setMessage(event.target.value)} placeholder="补充玩家具体做法（可选）" value={message} />
+        <Button disabled={!selected || !targetValue} loading={mutation.isPending} onClick={submit} variant="primary">DM代玩家执行</Button>
+      </div>
+      {mutation.isError ? <p className="text-xs text-red-300">{mutation.error.message}</p> : null}
+      {pending.map((request: NoncombatPendingAction) => {
+        const awaiting = request.payload.phase === "awaiting_player_roll";
+        return (
+          <div className="mt-2 rounded border border-violet-800/60 bg-violet-950/15 p-2" key={request.id}>
+            <strong className="text-xs">{request.payload.action?.name} → {request.payload.target?.name}</strong>
+            <p className="mb-0 mt-1 text-xs text-stone-400">{request.payload.resolution?.instruction ?? request.payload.proposal?.summary}</p>
+            {awaiting ? <div className="mt-2 flex gap-2"><input className={inputCls} max={20} min={1} onChange={(event) => setRolls((current) => ({ ...current, [request.id]: event.target.value }))} placeholder="玩家 d20 裸骰" type="number" value={rolls[request.id] ?? ""} /><Button disabled={!rolls[request.id]} onClick={() => mutation.mutate(() => rollDmNoncombatAction(campaignId, characterId, request.id, request.version, Number(rolls[request.id])))} size="sm">提交骰值</Button></div> : <span className="mt-1 block text-2xs text-amber-200">规则已结算；在上方玩家房间面板接受或驳回。</span>}
+          </div>
+        );
+      })}
+    </Panel>
+  );
 }
 
 function storageKey(campaignId: string, sceneId: string): string {
@@ -207,6 +350,11 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
     queryFn: ({ signal }) => listSceneParticipants(campaignId, sceneId, signal),
     enabled: Boolean(sceneId),
   });
+  const sceneGrid = useQuery({
+    queryKey: ["scene-grid", campaignId, sceneId],
+    queryFn: ({ signal }) => getSceneGrid(campaignId, sceneId, signal),
+    enabled: Boolean(sceneId),
+  });
   const encounterAdjustments = useQuery({
     queryKey: ["encounter-adjustments", campaignId, sceneId],
     queryFn: ({ signal }) => listEncounterAdjustments(campaignId, sceneId, signal),
@@ -325,7 +473,7 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
     await client.invalidateQueries({ queryKey: ["events", campaignId] });
   };
   const addEntry = (kind: ProgressEntry["kind"], text: string) => {
-    setEntries((current) => [...current, { id: crypto.randomUUID(), kind, text, createdAt: new Date().toISOString() }]);
+    setEntries((current) => [...current, { id: createClientId("progress"), kind, text, createdAt: new Date().toISOString() }]);
   };
   const arrivalLookup = useMutation({
     mutationFn: async ({ kind, prompt, assistantText }: { kind: ArrivalKind; prompt: string; assistantText: string; startCombat?: boolean }) => {
@@ -681,7 +829,7 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
     },
     onSuccess: async ({ response, target, text }) => {
       const aiEntry: ProgressEntry = {
-        id: crypto.randomUUID(),
+        id: createClientId("progress"),
         kind: "ai",
         text,
         createdAt: new Date().toISOString(),
@@ -711,7 +859,7 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
     const targetIndex = orderedScenes.findIndex((scene) => scene.id === target.id);
     const outline = readSceneStoryOutline(target, targetIndex + 1);
     const systemEntry: ProgressEntry = {
-      id: crypto.randomUUID(),
+      id: createClientId("progress"),
       kind: "system",
       text: `进入 ${outline.chapterTitle} · Scene ${outline.sceneOrder}「${target.name}」。开场：${outline.opening}`,
       createdAt: new Date().toISOString(),
@@ -759,13 +907,13 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
       const nextEntries = [
         ...loadEntries(campaignId, target.id),
         {
-          id: crypto.randomUUID(),
+          id: createClientId("progress"),
           kind: "system" as const,
           text: `DM进入“${SCENE_PHASE_LABELS[phase]}”阶段。`,
           createdAt: new Date().toISOString(),
         },
         {
-          id: crypto.randomUUID(),
+          id: createClientId("progress"),
           kind: "ai" as const,
           text,
           createdAt: new Date().toISOString(),
@@ -927,7 +1075,7 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
   const saveCheckpoint = () => {
     if (!sceneId) return;
     const checkpoint: SessionCheckpoint = {
-      id: crypto.randomUUID(), label: `${activeScene?.name ?? "场景"} · ${new Date().toLocaleTimeString()}`,
+      id: createClientId("checkpoint"), label: `${activeScene?.name ?? "场景"} · ${new Date().toLocaleTimeString()}`,
       createdAt: new Date().toISOString(), sceneId, entries,
       participantKeys: (participants.data ?? []).map((item) => `${item.entity_type}:${item.entity_id}`),
     };
@@ -1320,6 +1468,11 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
           </Panel>
         </div>
         <div className="xl:min-h-0 xl:overflow-y-auto xl:px-1">
+        <DmSceneActionPanel
+          campaignId={campaignId}
+          characters={(characters.data ?? []).filter((character) => presentKeys.has(`character:${character.id}`))}
+          gridData={sceneGrid.data}
+        />
         <Panel eyebrow="自由推进 / 快速推进" title="游戏推进对话">
           {!sceneId ? <EmptyState title="先选择场景" hint="选择当前场景后，副 DM 才能读取正确的情景状态。" /> : null}
           <div className="max-h-[52vh] space-y-3 overflow-y-auto pr-1">

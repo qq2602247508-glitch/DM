@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState, type ReactElement } from "react";
+import { createClientId } from "../ui/id";
 
 import {
   confirmCommerce,
@@ -106,20 +107,20 @@ function InventoryContent({ campaignId }: { campaignId: string }): ReactElement 
         return confirmSpellCast(campaignId, {
           ...pending.input,
           preview_token: previewToken,
-          idempotency_key: crypto.randomUUID(),
+          idempotency_key: createClientId("inventory"),
         });
       }
       if (pending.kind === "equipment") {
         return confirmEquipmentOperation(campaignId, {
           ...pending.input,
           preview_token: previewToken,
-          idempotency_key: crypto.randomUUID(),
+          idempotency_key: createClientId("inventory"),
         });
       }
       return confirmCommerce(campaignId, {
         ...pending.input,
         preview_token: previewToken,
-        idempotency_key: crypto.randomUUID(),
+        idempotency_key: createClientId("inventory"),
       });
     },
     onSuccess: async () => {

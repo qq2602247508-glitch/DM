@@ -623,7 +623,7 @@ def _code_digest(value: str, salt_hex: str) -> str:
 
 
 def _code() -> str:
-    return "".join(secrets.choice(ROOM_ALPHABET) for _ in range(6))
+    return "D" + "".join(secrets.choice(ROOM_ALPHABET) for _ in range(5))
 
 
 def _token() -> str:
@@ -905,6 +905,55 @@ class PlayerRoomService:
             return PlayerPrincipal(
                 room.id, room.campaign_id, member.id, member.display_name, member.character_id
             )
+
+    def _dm_principal(self, campaign_id: str, character_id: str) -> PlayerPrincipal:
+        with Session(self.engine) as session:
+            room = self._room(session, campaign_id)
+            self._active(room)
+            character = session.get(Character, character_id)
+            if character is None or character.campaign_id != campaign_id:
+                raise StateNotFoundError("character not found in campaign")
+            return PlayerPrincipal(
+                room_id=room.id,
+                campaign_id=campaign_id,
+                session_id=f"dm:{character_id}",
+                display_name="DM 代玩家操作",
+                character_id=character_id,
+            )
+
+    def dm_noncombat_snapshot(self, campaign_id: str, character_id: str) -> dict[str, Any]:
+        principal = self._dm_principal(campaign_id, character_id)
+        with Session(self.engine) as session:
+            room = self._room(session, campaign_id)
+            return self._noncombat_snapshot(session, room, principal)
+
+    def dm_plan_noncombat_action(
+        self,
+        campaign_id: str,
+        character_id: str,
+        data: dict[str, Any],
+        request_id: str,
+    ) -> dict[str, Any]:
+        return self.plan_noncombat_action(
+            self._dm_principal(campaign_id, character_id),
+            data,
+            request_id,
+        )
+
+    def dm_roll_noncombat_action(
+        self,
+        campaign_id: str,
+        character_id: str,
+        action_request_id: str,
+        expected_version: int,
+        raw_roll: int,
+    ) -> dict[str, Any]:
+        return self.roll_noncombat_action(
+            self._dm_principal(campaign_id, character_id),
+            action_request_id,
+            expected_version,
+            raw_roll,
+        )
 
     def logout(self, principal: PlayerPrincipal) -> None:
         with Session(self.engine) as session, session.begin():
@@ -1934,6 +1983,7 @@ class PlayerRoomService:
         self,
         principal: PlayerPrincipal,
         target_id: str,
+        target_ids: list[str],
         action_name: str,
         attack_total: int,
         damage_total: int,
@@ -1978,9 +2028,8 @@ class PlayerRoomService:
                 raise ValueError("玩家快捷攻击只能选择敌对怪物")
             action = self._action_data(character, action_name)
             range_text = str(action.get("range") or "5尺")
-            normal_range = range_text.split("/", 1)[0]
-            digits = "".join(char for char in normal_range if char.isdigit())
-            maximum_range = int(digits or "5")
+            range_numbers = [int(value) for value in re.findall(r"(\d+)\s*尺", range_text)]
+            maximum_range = range_numbers[0] if range_numbers else 5
             actor_pos = actor.snapshot_json.get("grid_position")
             target_pos = target.snapshot_json.get("grid_position")
             if not isinstance(actor_pos, dict) or not isinstance(target_pos, dict):
@@ -1998,7 +2047,6 @@ class PlayerRoomService:
             )
             if distance > maximum_range:
                 raise ValueError("目标超出该动作的合法距离")
-            hit = attack_total >= target.armor_class
             cost_text = str(action.get("cost") or "动作")
             cost: Literal["action", "bonus_action", "reaction"] = (
                 "bonus_action"
@@ -2027,25 +2075,167 @@ class PlayerRoomService:
                 (kind for kind in known_damage_types if kind in damage_text),
                 str(action.get("damage_type") or "钝击"),
             )
-            result_text = "命中" if hit else "未命中"
-            command = CombatActionCommand(
-                action_type="damage",
-                target_combatant_id=target.id,
-                target_version=target.version,
-                actor_combatant_id=actor.id,
-                actor_version=actor.version,
-                action_cost=cost,
-                action_name=action_name,
-                resolution_note=(
-                    f"玩家掷骰 {attack_total} 对抗 AC {target.armor_class}：{result_text}"
-                ),
-                amount=damage_total if hit else 0,
-                damage_type=damage_type,
-            )
             combat_id = combat.id
-        return self.combat.confirm(
-            principal.campaign_id, combat_id, command, idempotency_key=idempotency_key
-        )
+            save_ability = str(action.get("save_ability") or "")
+            save_dc = int(action.get("save_dc") or 0)
+            saving_throw_action = bool(save_ability and save_dc)
+            requested_ids = list(dict.fromkeys(target_ids or [target.id]))
+            if target.id not in requested_ids:
+                requested_ids.insert(0, target.id)
+            requested_targets = [
+                item
+                for item in fighters
+                if item.id in requested_ids and item.entity_type == "monster" and item.hp > 0
+            ]
+            if {item.id for item in requested_targets} != set(requested_ids):
+                raise ValueError("区域目标包含不存在、倒地或非敌对单位")
+
+            if saving_throw_action and len(requested_targets) > 1:
+                actor_point = (int(actor_pos["row"]), int(actor_pos["col"]))
+                aim_point = (int(target_pos["row"]), int(target_pos["col"]))
+                cell_size = grid.cell_size_ft if grid is not None else 5
+                shape = (
+                    "line"
+                    if re.search(r"直线|束", range_text)
+                    else "circle"
+                    if re.search(r"半径|球形|爆发|圆形", range_text)
+                    else "single"
+                )
+                radius = range_numbers[1] if len(range_numbers) > 1 else 20
+                width = range_numbers[1] if len(range_numbers) > 1 else cell_size
+                actor_row, actor_col = actor_point
+                aim_row, aim_col = aim_point
+                vector_row = aim_row - actor_row
+                vector_col = aim_col - actor_col
+                length_squared = vector_row**2 + vector_col**2
+                for candidate in requested_targets:
+                    candidate_pos = candidate.snapshot_json.get("grid_position")
+                    if not isinstance(candidate_pos, dict):
+                        raise ValueError("区域目标尚未设置战斗地图位置")
+                    candidate_point = (
+                        int(candidate_pos["row"]),
+                        int(candidate_pos["col"]),
+                    )
+                    legal = candidate.id == target.id
+                    if shape == "circle":
+                        legal = (
+                            grid_distance_ft(
+                                aim_point,
+                                candidate_point,
+                                cell_size_ft=cell_size,
+                            )
+                            <= radius
+                        )
+                    elif shape == "line" and length_squared > 0:
+                        candidate_range = grid_distance_ft(
+                            actor_point,
+                            candidate_point,
+                            cell_size_ft=cell_size,
+                        )
+                        candidate_row = candidate_point[0] - actor_row
+                        candidate_col = candidate_point[1] - actor_col
+                        projection = (
+                            candidate_row * vector_row + candidate_col * vector_col
+                        ) / length_squared
+                        closest_row = actor_row + projection * vector_row
+                        closest_col = actor_col + projection * vector_col
+                        perpendicular_ft = (
+                            (
+                                (candidate_point[0] - closest_row) ** 2
+                                + (candidate_point[1] - closest_col) ** 2
+                            )
+                            ** 0.5
+                        ) * cell_size
+                        legal = (
+                            0 <= projection
+                            and candidate_range <= maximum_range
+                            and perpendicular_ft <= max(cell_size / 2, width / 2)
+                        )
+                    if not legal:
+                        raise ValueError(f"{candidate.display_name}不在玩家选择的技能范围内")
+            elif not saving_throw_action:
+                requested_targets = [target]
+
+            resource_key = str(action.get("resource_key") or "")
+            resource_cost = int(action.get("resource_cost") or 0)
+            if resource_key and resource_cost:
+                resource = (character.resources or {}).get(resource_key)
+                current = int(resource.get("current") or 0) if isinstance(resource, dict) else 0
+                if current < resource_cost:
+                    raise ValueError("对应法术位或资源不足")
+
+            commands: list[CombatActionCommand] = []
+            for index, current_target in enumerate(requested_targets):
+                if saving_throw_action:
+                    scores = current_target.snapshot_json.get("ability_scores")
+                    save = roll_save(
+                        scores if isinstance(scores, dict) else {},
+                        save_ability,
+                        save_dc,
+                    )
+                    amount = (
+                        damage_total // 2
+                        if save["success"] and bool(action.get("half_damage_on_save"))
+                        else 0
+                        if save["success"]
+                        else damage_total
+                    )
+                    note = (
+                        f"玩家报告共用伤害骰 {damage_total}；"
+                        f"{current_target.display_name}{save['ability_label']}豁免 "
+                        f"{save['raw_roll']} {save['modifier']:+d} = {save['total']} "
+                        f"vs DC {save_dc}：{'成功' if save['success'] else '失败'}"
+                    )
+                else:
+                    hit = attack_total >= current_target.armor_class
+                    amount = damage_total if hit else 0
+                    note = (
+                        f"玩家掷骰 {attack_total} 对抗 AC {current_target.armor_class}："
+                        f"{'命中' if hit else '未命中'}"
+                    )
+                commands.append(
+                    CombatActionCommand(
+                        action_type="damage",
+                        target_combatant_id=current_target.id,
+                        target_version=current_target.version,
+                        actor_combatant_id=actor.id if index == 0 else None,
+                        actor_version=actor.version if index == 0 else None,
+                        action_cost=cost if index == 0 else "none",
+                        action_name=action_name,
+                        resolution_note=note,
+                        amount=amount,
+                        damage_type=damage_type,
+                    )
+                )
+
+        results = [
+            self.combat.confirm(
+                principal.campaign_id,
+                combat_id,
+                command,
+                idempotency_key=(
+                    idempotency_key if index == 0 else f"{idempotency_key}:{index}"
+                ),
+            )
+            for index, command in enumerate(commands)
+        ]
+        if resource_key and resource_cost:
+            with Session(self.engine) as session, session.begin():
+                character = session.get(Character, principal.character_id)
+                if character is None:
+                    raise StateNotFoundError("character not found")
+                resources = dict(character.resources or {})
+                resource = json_dict(resources.get(resource_key))
+                resource["current"] = max(0, int(resource.get("current") or 0) - resource_cost)
+                resources[resource_key] = resource
+                character.resources = resources
+                character.version += 1
+                character.updated_at = _now()
+        return {
+            "action_name": action_name,
+            "target_count": len(results),
+            "results": results,
+        }
 
     def confirm_roll(
         self,

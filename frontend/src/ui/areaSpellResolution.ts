@@ -63,6 +63,7 @@ export function resolveAreaSavingThrows({
   saveDc,
   saveAbility,
   halfDamageOnSave,
+  sharedDamage,
   random = Math.random,
 }: {
   targets: AreaSpellTarget[];
@@ -70,11 +71,17 @@ export function resolveAreaSavingThrows({
   saveDc: number;
   saveAbility: string;
   halfDamageOnSave: boolean;
+  sharedDamage?: number;
   random?: () => number;
 }): AreaSpellResolution {
   const expression = parseDiceExpression(damageExpression);
   if (!expression) throw new Error("区域法术缺少有效伤害骰");
-  const damageRoll = rollDiceExpression(expression, random);
+  if (sharedDamage !== undefined && (!Number.isFinite(sharedDamage) || sharedDamage < 0)) {
+    throw new Error("玩家伤害骰总值必须是非负数字");
+  }
+  const damageRoll = sharedDamage === undefined
+    ? rollDiceExpression(expression, random)
+    : { rolls: [], total: sharedDamage };
   const normalizedSaveAbility = normalizedAbility(saveAbility);
   return {
     damageExpression,

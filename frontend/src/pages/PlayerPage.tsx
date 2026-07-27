@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState, type ReactElement } from "react";
+import { useEffect, useMemo, useState, type ReactElement } from "react";
 
 import {
   attackWithMyCombatant,
@@ -26,6 +26,13 @@ import {
   spellIsAvailable, spellSelectionRule, spellToCharacterAction,
 } from "../ui/characterRules";
 import { Button, EmptyState, ErrorState, LoadingBlock } from "../ui/primitives";
+import { SceneMap } from "../components/SceneMap";
+import {
+  getTargetingCells,
+  gridDistanceFt,
+  type TargetingTemplate,
+} from "../ui/gridTargeting";
+import { targetingFromRulePlan } from "../ui/ruleBlocks";
 
 const ABILITIES: Record<string, string> = {
   strength: "力量",
@@ -251,37 +258,60 @@ function CharacterView({ character }: { character: SafePlayerCharacter }): React
   );
 }
 
-function SceneGridView({ snapshot, onMove }: { snapshot: PlayerRoomSnapshot; onMove: (row: number, col: number) => void }): ReactElement {
+function SceneGridView({
+  snapshot,
+  onMove,
+  selectedTargetKey,
+  selectableTargetKeys,
+  onTargetSelect,
+  selectedTargetKeys,
+  affectedCellKeys,
+  rangeCellKeys,
+}: {
+  snapshot: PlayerRoomSnapshot;
+  onMove: (row: number, col: number) => void;
+  selectedTargetKey?: string;
+  selectableTargetKeys?: ReadonlySet<string>;
+  onTargetSelect?: (targetKey: string) => void;
+  selectedTargetKeys?: ReadonlySet<string>;
+  affectedCellKeys?: ReadonlySet<string>;
+  rangeCellKeys?: ReadonlySet<string>;
+}): ReactElement {
   const scene = snapshot.table.scene;
   const combat = snapshot.combat;
   if (!scene?.grid) return <EmptyState hint="等待 DM 选择带网格的场景。" title="尚无公开地图" />;
-  const { width, height } = scene.grid;
-  const combatByCell = new Map(combat?.combatants.filter((item) => item.position).map((item) => [`${item.position?.row}:${item.position?.col}`, item]) ?? []);
-  const sceneTokensByCell = new Map(scene.tokens.map((item) => [`${item.row}:${item.col}`, item]));
-  const objectsByCell = new Map(scene.objects.map((item) => [`${item.row}:${item.col}`, item]));
-  const cellsByCell = new Map((scene.grid.cells ?? []).map((item) => [`${item.row}:${item.col}`, item]));
+  const own = combat?.combatants.find((item) => item.is_own);
+  const tokens = combat
+    ? combat.combatants.flatMap((item) => item.position ? [{
+        id: item.id,
+        entity_id: item.id,
+        entity_type: item.entity_type,
+        label: item.name,
+        row: item.position.row,
+        col: item.position.col,
+        targetKey: `combatant:${item.id}`,
+        isOwn: item.is_own,
+      }] : [])
+    : scene.tokens.map((item) => ({
+        ...item,
+        targetKey: item.entity_id ? `${item.entity_type}:${item.entity_id}` : undefined,
+        isOwn: item.entity_type === "character" && item.entity_id === snapshot.character?.id,
+      }));
   return (
-    <div className="overflow-auto rounded border border-ink-700 bg-ink-950 p-1">
-      <div className="grid min-w-[560px] gap-px" style={{ gridTemplateColumns: `repeat(${width}, minmax(28px, 1fr))` }}>
-        {Array.from({ length: width * height }, (_, index) => {
-          const row = Math.floor(index / width) + 1;
-          const col = index % width + 1;
-          const combatant = combatByCell.get(`${row}:${col}`);
-          const sceneToken = sceneTokensByCell.get(`${row}:${col}`);
-          const object = objectsByCell.get(`${row}:${col}`);
-          const terrain = cellsByCell.get(`${row}:${col}`);
-          const blocked = object?.object_type === "wall" || (object?.object_type === "door" && object.state !== "open");
-          const token = combatant ? null : sceneToken;
-          const terrainClass = terrain?.kind === "wall" ? "bg-stone-800" : terrain?.kind === "cover" ? "bg-amber-950/50" : terrain?.kind === "water" ? "bg-sky-950/60" : "bg-ink-900";
-          const ownSceneToken = token?.entity_type === "character" && token.entity_id === snapshot.character?.id;
-          return <button aria-label={`格子 ${row},${col}`} className={`relative aspect-square border border-ink-800 text-[9px] ${blocked ? "bg-stone-800" : combat?.is_my_turn ? `${terrainClass} hover:bg-emerald-950` : terrainClass} ${combatant?.is_own || ownSceneToken ? "ring-2 ring-amber-400" : ""}`} disabled={!combat?.is_my_turn || blocked} key={`${row}-${col}`} onClick={() => onMove(row, col)} title={object?.label ?? terrain?.label ?? token?.label ?? `${row},${col}`} type="button">
-            {object ? <span className="absolute left-0 top-0 text-stone-500">{object.label.slice(0, 2)}</span> : null}
-            {combatant ? <span className={`flex h-full items-center justify-center rounded-full px-1 text-center ${combatant.is_own ? "bg-amber-500/30 text-amber-100" : combatant.entity_type === "monster" ? "bg-red-500/25 text-red-100" : "bg-blue-500/20 text-blue-100"}`}>{combatant.name.slice(0, 4)}</span> : null}
-            {token ? <span className={`flex h-full items-center justify-center rounded-full px-1 text-center ${ownSceneToken ? "bg-amber-500/30 text-amber-100" : token.entity_type === "monster" ? "bg-red-500/25 text-red-100" : token.entity_type === "npc" ? "bg-violet-500/25 text-violet-100" : "bg-blue-500/20 text-blue-100"}`}>{token.label.slice(0, 4)}</span> : null}
-          </button>;
-        })}
-      </div>
-    </div>
+    <SceneMap
+      canSelectCell={() => Boolean(combat?.is_my_turn && own)}
+      grid={scene.grid}
+      objects={scene.objects.map((item) => ({ ...item, targetKey: `object:${item.id}` }))}
+      onCellSelect={onMove}
+      onTargetSelect={onTargetSelect}
+      affectedCellKeys={affectedCellKeys}
+      rangeCellKeys={rangeCellKeys}
+      selectedTargetKey={selectedTargetKey}
+      selectedTargetKeys={selectedTargetKeys}
+      selectableTargetKeys={selectableTargetKeys}
+      title={combat ? "玩家战斗地图 · 与 DM 共用当前 Scene" : "玩家场景地图 · 点击绿色目标"}
+      tokens={tokens}
+    />
   );
 }
 
@@ -348,6 +378,15 @@ function NoncombatActionPanel({
           {targets.map((target) => <option key={target.value} value={target.value}>{target.label}</option>)}
         </select>
       </label>
+      <div className="mt-3">
+        <SceneGridView
+          onMove={() => undefined}
+          onTargetSelect={setTargetValue}
+          selectedTargetKey={targetValue}
+          selectableTargetKeys={new Set(targets.map((target) => target.value))}
+          snapshot={snapshot}
+        />
+      </div>
       <textarea className={`${inputCls} mt-2`} onChange={(event) => setMessage(event.target.value)} placeholder="补充你具体想怎么做；例如：低声命令守卫“离开”。" rows={2} value={message} />
       <Button className="mt-2 w-full" disabled={!selected || !targetValue} loading={mutation.isPending} onClick={submit} variant="primary">按规则生成行动计划</Button>
       {mutation.isError ? <p className="text-sm text-red-300">{mutation.error.message}</p> : null}
@@ -384,6 +423,56 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
     ? selectedAction.attack_bonus
     : null;
   const damageFormula = display(selectedAction?.damage ?? selectedAction?.description ?? "角色卡所列伤害骰");
+  const targeting = (() => {
+    if (!selectedAction) return null;
+    const compiled = targetingFromRulePlan(selectedAction);
+    if (compiled) return compiled;
+    const text = `${display(selectedAction.range ?? "")} ${display(selectedAction.description ?? "")}`;
+    const numbers = [...text.matchAll(/(\d+)\s*尺/g)].map((match) => Number(match[1]));
+    const shape = /直线|束/.test(text) ? "line" : /半径|球形|爆发|圆形/.test(text) ? "circle" : "single";
+    return {
+      shape,
+      rangeFt: numbers[0] ?? 5,
+      sizeFt: shape === "circle" ? numbers[1] ?? 20 : shape === "line" ? numbers[0] ?? 5 : undefined,
+      widthFt: shape === "line" ? numbers[1] ?? 5 : undefined,
+    } satisfies TargetingTemplate;
+  })();
+  const actorPosition = own?.position;
+  const grid = snapshot.table.scene?.grid;
+  const aimPosition = selectedTarget?.position;
+  const rangeCellKeys = new Set<string>();
+  if (grid && actorPosition && targeting) {
+    for (let row = 1; row <= grid.height; row += 1) {
+      for (let col = 1; col <= grid.width; col += 1) {
+        if (gridDistanceFt(actorPosition, { row, col }, grid.cell_size_ft) <= targeting.rangeFt) {
+          rangeCellKeys.add(`${row}:${col}`);
+        }
+      }
+    }
+  }
+  const affectedCells = grid && actorPosition && aimPosition && targeting
+      ? getTargetingCells(
+        {
+          width: grid.width,
+          height: grid.height,
+          cell_size_ft: grid.cell_size_ft,
+        },
+        actorPosition,
+        aimPosition,
+        targeting,
+      )
+    : [];
+  const affectedCellKeys = new Set(affectedCells.map((cell) => `${cell.row}:${cell.col}`));
+  const affectedEnemies = selectedTarget && targeting
+    ? (targeting.shape === "single"
+        ? [selectedTarget]
+        : enemies.filter((enemy) => enemy.position && affectedCellKeys.has(`${enemy.position.row}:${enemy.position.col}`)))
+    : [];
+  const targetableEnemies = enemies.filter((enemy) => (
+    enemy.position
+    && rangeCellKeys.has(`${enemy.position.row}:${enemy.position.col}`)
+  ));
+  const isSavingThrowAction = Boolean(selectedAction?.save_dc && selectedAction?.save_ability);
   const mutation = useMutation({ mutationFn: async (fn: () => Promise<unknown>) => fn(), onSuccess: refresh });
   if (!combat) return <EmptyState hint="DM 从当前 Scene 发起战斗后，这里会自动切换。" title="当前没有战斗" />;
   const ended = combat.status === "ended";
@@ -392,7 +481,16 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
       <section className={cardCls}>
         <div className="mb-3 flex flex-wrap items-center gap-2"><h2 className="m-0 mr-auto font-display text-2xl">{combat.name}</h2><span className="rounded bg-ink-950 px-2 py-1 text-xs">第 {combat.round_number} 轮</span><span className={`rounded px-2 py-1 text-xs ${ended ? "bg-amber-500/20 text-amber-200" : combat.is_my_turn ? "bg-emerald-500/20 text-emerald-200" : "bg-ink-800 text-stone-400"}`}>{ended ? "战斗已结束" : combat.is_my_turn ? "轮到你行动" : "等待其他单位"}</span></div>
         <div className="mb-3 flex gap-2 overflow-x-auto">{combat.combatants.map((item) => <div className={`min-w-32 rounded border p-2 text-xs ${item.id === combat.active_combatant_id ? "border-amber-400" : "border-ink-700"}`} key={item.id}><strong>{item.name}</strong><span className="block text-stone-500">{item.health_status} · 先攻 {item.initiative}</span></div>)}</div>
-        <SceneGridView onMove={(row, col) => own && mutation.mutate(() => moveMyCombatant(row, col, own.version ?? 1))} snapshot={snapshot} />
+        <SceneGridView
+          onMove={(row, col) => own && mutation.mutate(() => moveMyCombatant(row, col, own.version ?? 1))}
+          onTargetSelect={(value) => setTargetId(value.replace(/^combatant:/, ""))}
+          selectedTargetKey={targetId ? `combatant:${targetId}` : undefined}
+          selectedTargetKeys={new Set(affectedEnemies.map((item) => `combatant:${item.id}`))}
+          selectableTargetKeys={new Set(targetableEnemies.map((item) => `combatant:${item.id}`))}
+          affectedCellKeys={affectedCellKeys}
+          rangeCellKeys={rangeCellKeys}
+          snapshot={snapshot}
+        />
         {own ? <p className="mb-0 mt-2 text-xs text-stone-400">剩余移动 {own.movement_remaining_ft ?? 0}尺 · 动作 {own.action_available ? "可用" : "已用"} · 附赠动作 {own.bonus_action_available ? "可用" : "已用"}</p> : null}
       </section>
       <aside className="space-y-4">
@@ -407,17 +505,17 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
               <>
                 <strong>{selectedAction.name as string} → {selectedTarget.name}</strong>
                 <span className="mt-1 block">
-                  请掷 d20{attackBonus === null ? "并加入角色卡命中调整值" : ` + ${attackBonus} 命中加值`}；
-                  最终总值需要达到 AC {selectedTarget.armor_class}（≥ {selectedTarget.armor_class}）才命中。
-                  命中后掷 {damageFormula}，再把最终伤害总值填到下方。
+                  {isSavingThrowAction
+                    ? <>该能力不需要玩家掷命中；请玩家掷一次 {damageFormula} 并输入最终伤害总值。系统会让范围内的每个目标分别进行 {display(selectedAction?.save_ability)} 豁免（DC {display(selectedAction?.save_dc)}）。</>
+                    : <>请掷 d20{attackBonus === null ? "并加入角色卡命中调整值" : ` + ${attackBonus} 命中加值`}；最终总值需要达到 AC {selectedTarget.armor_class}（≥ {selectedTarget.armor_class}）才命中。命中后掷 {damageFormula}，再把最终伤害总值填到下方。</>}
                 </span>
               </>
             ) : (
               <span>先选择攻击/技能和目标；这里会明确显示命中所需 AC、命中加值与伤害骰。</span>
             )}
           </div>
-          <div className="mt-2 grid grid-cols-2 gap-2"><label className="text-xs text-stone-400">d20命中总值<input className={`${inputCls} mt-1`} onChange={(event) => setAttackTotal(event.target.value)} type="number" value={attackTotal} /></label><label className="text-xs text-stone-400">伤害骰最终总值<input className={`${inputCls} mt-1`} onChange={(event) => setDamageTotal(event.target.value)} type="number" value={damageTotal} /></label></div>
-          <Button className="mt-3 w-full" disabled={ended || !combat.is_my_turn || !actionName || !targetId || !attackTotal || !damageTotal || !own?.action_available} loading={mutation.isPending} onClick={() => mutation.mutate(() => attackWithMyCombatant(targetId, actionName, Number(attackTotal), Number(damageTotal)))} variant="primary">提交攻击并同步结算</Button>
+          <div className="mt-2 grid grid-cols-2 gap-2"><label className="text-xs text-stone-400">d20命中总值<input className={`${inputCls} mt-1`} disabled={isSavingThrowAction} onChange={(event) => setAttackTotal(event.target.value)} placeholder={isSavingThrowAction ? "豁免法术无需命中" : ""} type="number" value={attackTotal} /></label><label className="text-xs text-stone-400">伤害骰最终总值<input className={`${inputCls} mt-1`} onChange={(event) => setDamageTotal(event.target.value)} type="number" value={damageTotal} /></label></div>
+          <Button className="mt-3 w-full" disabled={ended || !combat.is_my_turn || !actionName || !targetId || (!isSavingThrowAction && !attackTotal) || !damageTotal || !own?.action_available} loading={mutation.isPending} onClick={() => mutation.mutate(() => attackWithMyCombatant(targetId, affectedEnemies.map((item) => item.id), actionName, Number(attackTotal || 0), Number(damageTotal)))} variant="primary">{isSavingThrowAction ? `提交玩家伤害骰并结算 ${affectedEnemies.length} 个目标` : "提交攻击并同步结算"}</Button>
           <Button className="mt-2 w-full" disabled={ended || !combat.is_my_turn} onClick={() => mutation.mutate(() => endMyTurn(combat.version))}>结束我的回合</Button>
           {mutation.isError ? <p className="text-sm text-red-300">{mutation.error.message}</p> : null}
         </section>
@@ -436,6 +534,9 @@ function PlayerDashboard({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; 
   const [ruleHits, setRuleHits] = useState<Awaited<ReturnType<typeof searchPlayerRules>>>([]);
   const intentMutation = useMutation({ mutationFn: () => submitMyActionRequest("player_intent", intent), onSuccess: () => setIntent("") });
   const rulesMutation = useMutation({ mutationFn: () => searchPlayerRules(ruleText), onSuccess: setRuleHits });
+  useEffect(() => {
+    if (snapshot.combat?.status === "active") setTab("combat");
+  }, [snapshot.combat?.id, snapshot.combat?.status]);
   return (
     <main className="mx-auto min-h-screen max-w-[1500px] p-3 lg:p-6">
       <header className="mb-4 flex flex-wrap items-center gap-3 border-b border-ink-700 pb-4">
@@ -449,7 +550,7 @@ function PlayerDashboard({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; 
       {tab === "rules" ? <section className={cardCls}><h2 className="mt-0 font-display text-2xl">D&D 5e 本地规则搜索</h2><p className="text-sm text-stone-400">只做确定性关键词检索，不调用本地生成AI。</p><div className="flex gap-2"><input aria-label="规则关键词" className={inputCls} onChange={(event) => setRuleText(event.target.value)} placeholder="例如：擒抱、火球术、倒地" value={ruleText} /><Button disabled={!ruleText.trim()} loading={rulesMutation.isPending} onClick={() => rulesMutation.mutate()} variant="primary">搜索</Button></div><div className="mt-4 space-y-3">{ruleHits.map((hit, index) => <article className="rounded border border-ink-700 p-3" key={`${hit.name}-${index}`}><strong>{hit.name}</strong><span className="ml-2 text-2xs text-stone-500">{hit.edition} · {hit.content_type}</span><p className="mb-0 text-sm leading-6 text-stone-400">{hit.excerpt}</p></article>)}</div></section> : null}
       {tab === "table" ? <div className="grid gap-4 lg:grid-cols-[1.2fr_.8fr]">
         <div className="space-y-4">
-          <section className={cardCls}><h2 className="mt-0 font-display text-2xl">{snapshot.table.scene?.name ?? "等待 DM 选择 Scene"}</h2><p className="whitespace-pre-wrap text-sm leading-6 text-stone-400">{snapshot.table.scene?.description}</p><SceneGridView onMove={() => undefined} snapshot={snapshot} /></section>
+          <section className={cardCls}><h2 className="mt-0 font-display text-2xl">{snapshot.table.scene?.name ?? "等待 DM 选择 Scene"}</h2><p className="whitespace-pre-wrap text-sm leading-6 text-stone-400">{snapshot.table.scene?.description}</p></section>
           {snapshot.table.scene ? <NoncombatActionPanel refresh={refresh} snapshot={snapshot} /> : null}
         </div>
         <aside className="space-y-4">

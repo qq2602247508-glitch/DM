@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState, type ReactElement } from "react";
+import { createClientId } from "../ui/id";
 
 import { listCharacters, listLocations, listNpcs } from "../api/entities";
 import type { SceneCombatResult, SceneGrid } from "../api/types";
@@ -162,7 +163,7 @@ function ScenesContent({ campaignId }: { campaignId: string }): ReactElement {
       return confirmExploration(campaignId, sceneId, {
         ...explorationDraft.input,
         preview_token: String(explorationDraft.preview.preview_token),
-        idempotency_key: crypto.randomUUID(),
+        idempotency_key: createClientId("exploration"),
       });
     },
     onSuccess: () => {
@@ -185,7 +186,7 @@ function ScenesContent({ campaignId }: { campaignId: string }): ReactElement {
       return confirmTravel(campaignId, {
         ...travelDraft.input,
         preview_token: String(travelDraft.preview.preview_token),
-        idempotency_key: crypto.randomUUID(),
+        idempotency_key: createClientId("travel"),
       });
     },
     onSuccess: () => {
