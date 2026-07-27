@@ -16,5 +16,8 @@ export default defineConfig({
     globals: true,
     setupFiles: "./src/test/setup.ts",
     css: true,
+    // Playwright specs live beside unit tests but must only run through
+    // `npm run e2e`; Vitest cannot collect Playwright's test() globals.
+    exclude: ["**/node_modules/**", "**/dist/**", "**/e2e/**"],
   },
 });

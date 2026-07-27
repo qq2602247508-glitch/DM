@@ -4,13 +4,14 @@
 from __future__ import annotations
 
 import json
+import os
 import sys
 import urllib.error
 import urllib.request
 from datetime import UTC, datetime
 from typing import Any
 
-BASE = "http://127.0.0.1:8000/api/v1"
+BASE = os.getenv("DND_DM_ACCEPTANCE_BASE", "http://127.0.0.1:8000/api/v1")
 
 
 def request(method: str, path: str, body: dict[str, Any] | None = None) -> Any:
