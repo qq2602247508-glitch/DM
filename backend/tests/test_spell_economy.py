@@ -275,6 +275,141 @@ def test_spell_and_equipment_preview_confirm_idempotent(economy_client: TestClie
     )
 
 
+def test_equipment_slots_block_two_handed_shield_and_untrained_armor(
+    economy_client: TestClient,
+) -> None:
+    campaign = economy_client.post("/api/v1/campaigns", json={"name": "装备规则"}).json()
+    character = economy_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/characters",
+        json={
+            "name": "装备测试员",
+            "hp": 12,
+            "max_hp": 12,
+            "proficiencies": ["轻甲", "盾牌", "军用武器"],
+        },
+    ).json()
+    engine = create_engine(economy_client.database_url)  # type: ignore[attr-defined]
+    with Session(engine) as session, session.begin():
+        rows = [
+            EquipmentInstance(
+                campaign_id=campaign["id"],
+                character_id=character["id"],
+                name="长剑",
+                category="weapon",
+            ),
+            EquipmentInstance(
+                campaign_id=campaign["id"],
+                character_id=character["id"],
+                name="盾牌",
+                category="shield",
+            ),
+            EquipmentInstance(
+                campaign_id=campaign["id"],
+                character_id=character["id"],
+                name="巨剑",
+                category="weapon",
+                metadata_json={"two_handed": True},
+            ),
+            EquipmentInstance(
+                campaign_id=campaign["id"],
+                character_id=character["id"],
+                name="板甲",
+                category="armor",
+                armor_class=18,
+                metadata_json={"armor_type": "heavy"},
+            ),
+            EquipmentInstance(
+                campaign_id=campaign["id"],
+                character_id=character["id"],
+                name="镶钉皮甲",
+                category="armor",
+                armor_class=12,
+                metadata_json={"armor_type": "light"},
+            ),
+        ]
+        session.add_all(rows)
+        session.flush()
+        ids = {row.name: row.id for row in rows}
+
+    def equip(name: str, slot: str) -> Any:
+        current = economy_client.get(
+            f"/api/v1/campaigns/{campaign['id']}/characters/{character['id']}"
+        ).json()
+        body = {
+            "character_id": character["id"],
+            "character_version": current["version"],
+            "equipment_id": ids[name],
+            "operation": "equip",
+            "slot": slot,
+        }
+        preview = economy_client.post(
+            f"/api/v1/campaigns/{campaign['id']}/equipment/preview", json=body
+        )
+        if preview.status_code != 200:
+            return preview
+        return economy_client.post(
+            f"/api/v1/campaigns/{campaign['id']}/equipment/confirm",
+            json={
+                    **body,
+                    "preview_token": preview.json()["preview_token"],
+                    "idempotency_key": f"equip-{name}-{current['version']}",
+                },
+            )
+
+    def unequip(name: str) -> Any:
+        current = economy_client.get(
+            f"/api/v1/campaigns/{campaign['id']}/characters/{character['id']}"
+        ).json()
+        body = {
+            "character_id": character["id"],
+            "character_version": current["version"],
+            "equipment_id": ids[name],
+            "operation": "unequip",
+        }
+        preview = economy_client.post(
+            f"/api/v1/campaigns/{campaign['id']}/equipment/preview", json=body
+        )
+        assert preview.status_code == 200
+        return economy_client.post(
+            f"/api/v1/campaigns/{campaign['id']}/equipment/confirm",
+            json={
+                **body,
+                "preview_token": preview.json()["preview_token"],
+                "idempotency_key": f"unequip-{name}-{current['version']}",
+            },
+        )
+
+    assert equip("长剑", "main_hand").status_code == 200
+    assert equip("盾牌", "off_hand").status_code == 200
+    blocked_two_handed = equip("巨剑", "main_hand")
+    assert blocked_two_handed.status_code == 400
+    assert "双手武器" in blocked_two_handed.json()["message"]
+    blocked_heavy = equip("板甲", "armor")
+    assert blocked_heavy.status_code == 400
+    assert "护甲训练" in blocked_heavy.json()["message"]
+    assert equip("镶钉皮甲", "armor").status_code == 200
+    assert unequip("盾牌").status_code == 200
+    after_shield_removed = economy_client.get(
+        f"/api/v1/campaigns/{campaign['id']}/characters/{character['id']}"
+    ).json()
+    assert after_shield_removed["armor_class"] == 12
+    assert equip("盾牌", "off_hand").status_code == 200
+    assert unequip("镶钉皮甲").status_code == 200
+
+    assets = economy_client.get(
+        f"/api/v1/campaigns/{campaign['id']}/characters/{character['id']}/assets"
+    ).json()["equipment"]
+    slots = {item["name"]: item["slot"] for item in assets if item["equipped"]}
+    assert slots == {
+        "长剑": "main_hand",
+        "盾牌": "off_hand",
+    }
+    saved_character = economy_client.get(
+        f"/api/v1/campaigns/{campaign['id']}/characters/{character['id']}"
+    ).json()
+    assert saved_character["armor_class"] == 12
+
+
 def test_attunement_cap_and_commerce_money_stock(economy_client: TestClient) -> None:
     campaign, character, ids = _seed(economy_client)
     trade = {

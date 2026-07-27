@@ -55,6 +55,8 @@ export type SafePlayerCharacter = {
   death_saves: { successes: number; failures: number };
   inventory: unknown[];
   equipment: unknown[];
+  equipment_assets: PlayerEquipmentAsset[];
+  active_attunements: number;
   proficiencies: unknown[];
   skills: Record<string, unknown>;
   features: unknown[];
@@ -66,6 +68,33 @@ export type SafePlayerCharacter = {
   subclass_choices: Record<string, string>;
   wallet: { name: string; copper: number; gp: number } | null;
   version: number;
+};
+
+export type PlayerEquipmentSlot = "armor" | "main_hand" | "off_hand" | "focus" | "worn";
+
+export type PlayerEquipmentAsset = {
+  id: string;
+  name: string;
+  category: string;
+  quantity: number;
+  armor_class: number | null;
+  equipped: boolean;
+  attunement_required: boolean;
+  attuned: boolean;
+  charges: number | null;
+  max_charges: number | null;
+  slot: PlayerEquipmentSlot | null;
+  metadata_json: Record<string, unknown>;
+  profile: {
+    kind: "armor" | "shield" | "weapon" | "focus" | "worn";
+    allowed_slots: PlayerEquipmentSlot[];
+    default_slot: PlayerEquipmentSlot;
+    hand_usage: number;
+    two_handed: boolean;
+    armor_type: "light" | "medium" | "heavy" | null;
+    base_armor_class: number | null;
+    rule_reference: string;
+  };
 };
 
 export type AvailablePlayerCharacter = Pick<
@@ -238,12 +267,15 @@ export type PlayerRuleHit = {
 
 const PUBLIC_API = "/api/v1";
 
-export class PlayerRoomApiError extends Error {
-  readonly status: number;
+export class PlayerRoomApiError extends ApiError {
   constructor(status: number, message: string) {
-    super(message);
+    super(status, {
+      code: `http_${status}`,
+      message,
+      details: null,
+      request_id: "player-gateway",
+    });
     this.name = "PlayerRoomApiError";
-    this.status = status;
   }
 }
 
@@ -389,6 +421,26 @@ export const bindMyCharacter = (characterId: string) =>
   playerFetch<SafePlayerCharacter>("/player-room/me/bind-character", {
     method: "POST",
     body: JSON.stringify({ character_id: characterId }),
+  });
+
+export type PlayerEquipmentOperation = {
+  equipment_id: string;
+  operation: "equip" | "unequip" | "attune" | "unattune";
+  slot?: PlayerEquipmentSlot | null;
+  preview_token?: string;
+  idempotency_key?: string;
+};
+
+export const previewMyEquipment = (input: PlayerEquipmentOperation) =>
+  playerFetch<Record<string, unknown>>("/player-room/me/equipment/preview", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+
+export const confirmMyEquipment = (input: PlayerEquipmentOperation) =>
+  playerFetch<Record<string, unknown>>("/player-room/me/equipment/confirm", {
+    method: "POST",
+    body: JSON.stringify(input),
   });
 
 export const submitMyActionRequest = (actionType: string, message: string) =>

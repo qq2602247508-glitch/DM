@@ -10,14 +10,17 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
 from dnd_dm_assistant.domain.campaign_state import StateNotFoundError, VersionConflict
+from dnd_dm_assistant.domain.equipment_rules import equipment_profile
 from dnd_dm_assistant.domain.noncombat_actions import json_dict
 from dnd_dm_assistant.infrastructure.database.campaign_service import serialize
 from dnd_dm_assistant.infrastructure.database.models import (
+    Attunement,
     AuditLog,
     Campaign,
     Character,
     Combat,
     Combatant,
+    EquipmentInstance,
     Event,
     Handout,
     PlayerActionRequest,
@@ -240,6 +243,34 @@ class PlayerService:
                 if wallet is not None
                 else None
             )
+            equipment_rows = session.scalars(
+                select(EquipmentInstance)
+                .where(EquipmentInstance.character_id == character_id)
+                .order_by(EquipmentInstance.created_at, EquipmentInstance.id)
+            ).all()
+            active_attunements = set(
+                session.scalars(
+                    select(Attunement.equipment_instance_id).where(
+                        Attunement.character_id == character_id,
+                        Attunement.status == "active",
+                    )
+                ).all()
+            )
+            result["equipment_assets"] = [
+                {
+                    **serialize(row),
+                    "attuned": row.id in active_attunements,
+                    "slot": row.metadata_json.get("equipment_slot"),
+                    "profile": equipment_profile(
+                        row.name,
+                        row.category,
+                        dict(row.metadata_json),
+                        row.armor_class,
+                    ),
+                }
+                for row in equipment_rows
+            ]
+            result["active_attunements"] = len(active_attunements)
             return result
 
     def submit_action(

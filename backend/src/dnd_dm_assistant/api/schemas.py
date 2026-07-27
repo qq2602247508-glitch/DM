@@ -1128,6 +1128,7 @@ class EquipmentOperationRequest(BaseModel):
     character_version: int = Field(ge=1)
     equipment_id: str
     operation: Literal["equip", "unequip", "consume", "use_charge", "attune", "unattune"]
+    slot: Literal["armor", "main_hand", "off_hand", "focus", "worn"] | None = None
     amount: int = Field(default=1, ge=1)
     preview_token: str | None = None
     idempotency_key: str | None = Field(default=None, min_length=8, max_length=120)

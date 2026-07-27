@@ -8,7 +8,11 @@ from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session
 
 from dnd_dm_assistant.api.routes.player_rooms import _clear_join_failures
-from dnd_dm_assistant.infrastructure.database.models import PlayerRoom, PlayerSession
+from dnd_dm_assistant.infrastructure.database.models import (
+    EquipmentInstance,
+    PlayerRoom,
+    PlayerSession,
+)
 from dnd_dm_assistant.infrastructure.database.player_room_service import _code_digest
 
 
@@ -62,6 +66,74 @@ def test_room_code_is_salted_and_cookie_session_is_revocable(
     logged_out = campaign_client.post("/api/v1/player-room/logout")
     assert logged_out.status_code == 204
     assert campaign_client.get("/api/v1/player-room/me").status_code == 401
+
+
+def test_player_equipment_is_scoped_to_bound_character(
+    campaign_client: TestClient,
+) -> None:
+    campaign = _campaign(campaign_client, "装备权限团")
+    opened = _open(campaign_client, campaign["id"])
+    _join(campaign_client, opened["join_code"])
+    own = campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/characters",
+        json={"name": "自己的角色", "hp": 10, "max_hp": 10},
+    ).json()
+    other = campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/characters",
+        json={"name": "别人的角色", "hp": 10, "max_hp": 10},
+    ).json()
+    assert campaign_client.post(
+        "/api/v1/player-room/me/bind-character",
+        json={"character_id": own["id"]},
+    ).status_code == 200
+    engine = create_engine(campaign_client.database_url)  # type: ignore[attr-defined]
+    with Session(engine) as session, session.begin():
+        own_sword = EquipmentInstance(
+            campaign_id=campaign["id"],
+            character_id=own["id"],
+            name="长剑",
+            category="weapon",
+        )
+        other_sword = EquipmentInstance(
+            campaign_id=campaign["id"],
+            character_id=other["id"],
+            name="别人的长剑",
+            category="weapon",
+        )
+        session.add_all([own_sword, other_sword])
+        session.flush()
+        own_id, other_id = own_sword.id, other_sword.id
+
+    forbidden = campaign_client.post(
+        "/api/v1/player-room/me/equipment/preview",
+        json={
+            "equipment_id": other_id,
+            "operation": "equip",
+            "slot": "main_hand",
+        },
+    )
+    assert forbidden.status_code == 404
+    body = {
+        "equipment_id": own_id,
+        "operation": "equip",
+        "slot": "main_hand",
+    }
+    preview = campaign_client.post(
+        "/api/v1/player-room/me/equipment/preview", json=body
+    )
+    assert preview.status_code == 200
+    confirmed = campaign_client.post(
+        "/api/v1/player-room/me/equipment/confirm",
+        json={
+            **body,
+            "preview_token": preview.json()["preview_token"],
+            "idempotency_key": "player-equip-001",
+        },
+    )
+    assert confirmed.status_code == 200
+    character = campaign_client.get("/api/v1/player-room/me").json()["character"]
+    assert character["equipment_assets"][0]["name"] == "长剑"
+    assert character["equipment_assets"][0]["slot"] == "main_hand"
 
 
 def test_legacy_unprefixed_six_character_room_code_still_joins(

@@ -49,6 +49,14 @@ export function describeError(error: unknown): DescribedError {
         guidance: null,
       };
     }
+    if (error.status === 400) {
+      return {
+        kind: "validation",
+        title: "未通过 D&D 规则校验",
+        message: error.message || "该操作与当前角色、装备位置或资源状态冲突。",
+        guidance: null,
+      };
+    }
     if (error.status === 404) {
       return {
         kind: "not-found",

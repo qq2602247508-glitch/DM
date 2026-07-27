@@ -27,6 +27,7 @@ import {
 } from "../ui/characterRules";
 import { Button, EmptyState, ErrorState, LoadingBlock } from "../ui/primitives";
 import { SceneMap } from "../components/SceneMap";
+import { PlayerEquipmentPanel } from "../components/player/PlayerEquipmentPanel";
 import {
   getTargetingCells,
   gridDistanceFt,
@@ -225,7 +226,13 @@ function CharacterBuilder({ snapshot, onDone }: { snapshot: PlayerRoomSnapshot; 
   );
 }
 
-function CharacterView({ character }: { character: SafePlayerCharacter }): ReactElement {
+function CharacterView({
+  character,
+  onChanged,
+}: {
+  character: SafePlayerCharacter;
+  onChanged: () => void;
+}): ReactElement {
   const resources = Object.entries(character.resources ?? {}).map(([key, value]) => {
     const resource = typeof value === "object" && value !== null
       ? value as Record<string, unknown>
@@ -243,6 +250,12 @@ function CharacterView({ character }: { character: SafePlayerCharacter }): React
     };
   });
   const spellcastingAbility = display(character.spellcasting?.ability ?? "");
+  const atomicEquipmentNames = new Set(
+    (character.equipment_assets ?? []).map((item) => item.name),
+  );
+  const ordinaryInventory = character.inventory.filter(
+    (item) => !atomicEquipmentNames.has(display(item)),
+  );
   return (
     <div className="grid gap-4 lg:grid-cols-2">
       <section className={cardCls}>
@@ -252,7 +265,8 @@ function CharacterView({ character }: { character: SafePlayerCharacter }): React
         <div className="mt-3 grid grid-cols-3 gap-2">{Object.entries(ABILITIES).map(([key, label]) => <div className="rounded border border-ink-700 p-2 text-center" key={key}><span className="block text-2xs text-stone-500">{label}</span><strong>{character.ability_scores[key] ?? 10}</strong></div>)}</div>
       </section>
       <section className={cardCls}><h2 className="mt-0 font-display text-xl">动作与法术</h2>{spellcastingAbility ? <p className="text-xs text-amber-200">施法属性：{spellcastingAbility}</p> : null}{[...character.actions, ...character.spells].length ? [...character.actions, ...character.spells].map((item, index) => <details className="mb-2 rounded border border-ink-700 p-2" key={`${display(item)}-${index}`}><summary className="cursor-pointer text-sm text-parchment-100">{display(item)}</summary><pre className="whitespace-pre-wrap text-xs text-stone-400">{JSON.stringify(item, null, 2)}</pre></details>) : <p className="text-sm text-stone-500">暂无动作或法术。</p>}</section>
-      <section className={cardCls}><h2 className="mt-0 font-display text-xl">背包与装备</h2>{[...character.inventory, ...character.equipment].length ? <ul className="pl-5 text-sm">{[...character.inventory, ...character.equipment].map((item, index) => <li className="mb-1" key={`${display(item)}-${index}`}>{display(item)}</li>)}</ul> : <p className="text-sm text-stone-500">背包为空。</p>}</section>
+      <PlayerEquipmentPanel character={character} onChanged={onChanged} />
+      <section className={cardCls}><h2 className="mt-0 font-display text-xl">背包与普通道具</h2>{ordinaryInventory.length ? <ul className="pl-5 text-sm">{ordinaryInventory.map((item, index) => <li className="mb-1" key={`${display(item)}-${index}`}>{display(item)}</li>)}</ul> : <p className="text-sm text-stone-500">背包里暂无普通道具。</p>}</section>
       <section className={cardCls}><h2 className="mt-0 font-display text-xl">特性、技能与资源</h2><div className="flex flex-wrap gap-2">{character.features.map((item, index) => <span className="rounded bg-violet-500/10 px-2 py-1 text-xs text-violet-200" key={`${display(item)}-${index}`} title={display(item)}>{display(item)}</span>)}</div><p className="mt-4 text-xs text-stone-400">熟练：{character.proficiencies.map(display).join("、") || "无"}</p><p className="text-xs text-stone-400">技能：{Object.keys(character.skills).join("、") || "无"}</p>{resources.map((resource) => <div className="mt-2 flex items-center gap-3 rounded border border-ink-700 p-3 text-xs" key={resource.key}><strong className="mr-auto text-parchment-100">{resource.label}</strong>{resource.current !== undefined && resource.max !== undefined ? <span className="font-mono text-base text-amber-200">{display(resource.current)}/{display(resource.max)}</span> : null}{resource.recovery ? <span className="text-stone-500">{resource.recovery}</span> : null}</div>)}</section>
     </div>
   );
@@ -545,7 +559,7 @@ function PlayerDashboard({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; 
         <Button onClick={() => void logoutPlayerRoom().then(() => window.location.reload())} size="sm">退出房间</Button>
       </header>
       <nav className="mb-4 flex gap-2 overflow-x-auto">{([["table", "游戏推进"], ["character", "我的角色"], ["combat", snapshot.combat?.status === "active" ? "战斗中" : "战斗"], ["rules", "规则搜索"]] as const).map(([key, label]) => <Button key={key} onClick={() => setTab(key)} variant={tab === key ? "primary" : "ghost"}>{label}</Button>)}</nav>
-      {tab === "character" && snapshot.character ? <CharacterView character={snapshot.character} /> : null}
+      {tab === "character" && snapshot.character ? <CharacterView character={snapshot.character} onChanged={refresh} /> : null}
       {tab === "combat" ? <CombatView refresh={refresh} snapshot={snapshot} /> : null}
       {tab === "rules" ? <section className={cardCls}><h2 className="mt-0 font-display text-2xl">D&D 5e 本地规则搜索</h2><p className="text-sm text-stone-400">只做确定性关键词检索，不调用本地生成AI。</p><div className="flex gap-2"><input aria-label="规则关键词" className={inputCls} onChange={(event) => setRuleText(event.target.value)} placeholder="例如：擒抱、火球术、倒地" value={ruleText} /><Button disabled={!ruleText.trim()} loading={rulesMutation.isPending} onClick={() => rulesMutation.mutate()} variant="primary">搜索</Button></div><div className="mt-4 space-y-3">{ruleHits.map((hit, index) => <article className="rounded border border-ink-700 p-3" key={`${hit.name}-${index}`}><strong>{hit.name}</strong><span className="ml-2 text-2xs text-stone-500">{hit.edition} · {hit.content_type}</span><p className="mb-0 text-sm leading-6 text-stone-400">{hit.excerpt}</p></article>)}</div></section> : null}
       {tab === "table" ? <div className="grid gap-4 lg:grid-cols-[1.2fr_.8fr]">

@@ -123,6 +123,14 @@ class RuleSearchInput(BaseModel):
     limit: int = Field(default=8, ge=1, le=20)
 
 
+class PlayerEquipmentInput(BaseModel):
+    equipment_id: str = Field(min_length=1, max_length=36)
+    operation: Literal["equip", "unequip", "attune", "unattune"]
+    slot: Literal["armor", "main_hand", "off_hand", "focus", "worn"] | None = None
+    preview_token: str | None = None
+    idempotency_key: str | None = Field(default=None, min_length=8, max_length=120)
+
+
 def _safe[T](fn: Callable[[], T]) -> T:
     try:
         return fn()
@@ -337,6 +345,26 @@ def bind_character(
     service: Annotated[PlayerRoomService, Depends(get_player_room_service)],
 ) -> dict[str, Any]:
     return _safe(lambda: service.bind_character(principal, body.character_id))
+
+
+@public_player_room_router.post("/me/equipment/preview")
+def preview_equipment(
+    body: PlayerEquipmentInput,
+    principal: Annotated[PlayerPrincipal, Depends(get_player_principal)],
+    service: Annotated[PlayerRoomService, Depends(get_player_room_service)],
+) -> dict[str, Any]:
+    return _safe(lambda: service.preview_equipment(principal, body.model_dump()))
+
+
+@public_player_room_router.post("/me/equipment/confirm")
+def confirm_equipment(
+    body: PlayerEquipmentInput,
+    principal: Annotated[PlayerPrincipal, Depends(get_player_principal)],
+    service: Annotated[PlayerRoomService, Depends(get_player_room_service)],
+) -> dict[str, Any]:
+    if not body.preview_token or not body.idempotency_key:
+        raise HTTPException(422, "preview_token and idempotency_key required")
+    return _safe(lambda: service.confirm_equipment(principal, body.model_dump()))
 
 
 @public_player_room_router.post("/me/action-requests", status_code=status.HTTP_201_CREATED)

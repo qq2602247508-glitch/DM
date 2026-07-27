@@ -22,6 +22,7 @@ from dnd_dm_assistant.application.rule_block_compiler import (
     compile_rule_blocks_dict,
 )
 from dnd_dm_assistant.domain.campaign_state import StateNotFoundError, VersionConflict
+from dnd_dm_assistant.domain.equipment_rules import equipment_profile
 from dnd_dm_assistant.domain.exploration import grid_distance_ft, movement_cost_ft
 from dnd_dm_assistant.domain.noncombat_actions import (
     ABILITY_LABELS,
@@ -43,6 +44,7 @@ from dnd_dm_assistant.infrastructure.database.models import (
     Combat,
     CombatAction,
     Combatant,
+    EquipmentInstance,
     MonsterInstance,
     PlayerActionRequest,
     PlayerRoom,
@@ -53,6 +55,7 @@ from dnd_dm_assistant.infrastructure.database.models import (
     SceneToken,
 )
 from dnd_dm_assistant.infrastructure.database.player_service import PlayerService
+from dnd_dm_assistant.infrastructure.database.spell_economy_service import SpellEconomyService
 
 ROOM_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
 CORE_SPECIES = {
@@ -699,6 +702,7 @@ class PlayerRoomService:
         self.engine = engine
         self.player = PlayerService(engine)
         self.combat = CombatEngineService(engine)
+        self.economy = SpellEconomyService(engine)
 
     @staticmethod
     def _campaign(session: Session, campaign_id: str) -> Campaign:
@@ -992,6 +996,40 @@ class PlayerRoomService:
             session.flush()
             return self.player.character_view(principal.campaign_id, character_id)
 
+    def preview_equipment(
+        self, principal: PlayerPrincipal, data: dict[str, Any]
+    ) -> dict[str, Any]:
+        if principal.character_id is None:
+            raise ValueError("请先绑定角色")
+        character = self.player.character_view(
+            principal.campaign_id, principal.character_id
+        )
+        safe = {
+            **data,
+            "character_id": principal.character_id,
+            "character_version": character["version"],
+            "amount": 1,
+            "preview_token": None,
+            "idempotency_key": None,
+        }
+        return self.economy.equipment_preview(principal.campaign_id, safe)
+
+    def confirm_equipment(
+        self, principal: PlayerPrincipal, data: dict[str, Any]
+    ) -> dict[str, Any]:
+        if principal.character_id is None:
+            raise ValueError("请先绑定角色")
+        character = self.player.character_view(
+            principal.campaign_id, principal.character_id
+        )
+        safe = {
+            **data,
+            "character_id": principal.character_id,
+            "character_version": character["version"],
+            "amount": 1,
+        }
+        return self.economy.equipment_confirm(principal.campaign_id, safe)
+
     def create_character(self, principal: PlayerPrincipal, data: dict[str, Any]) -> dict[str, Any]:
         race = str(data["race"])
         class_name = str(data["class_name"])
@@ -1093,6 +1131,70 @@ class PlayerRoomService:
             if class_name == "野蛮人"
             else 10 + dexterity_modifier
         )
+        starter_assets: list[dict[str, Any]] = []
+        occupied_hands: set[str] = set()
+        has_armor = False
+        for equipment_name in dict.fromkeys(initial_equipment):
+            profile = equipment_profile(str(equipment_name))
+            slot = str(profile["default_slot"])
+            equip_now = False
+            if slot == "armor" and not has_armor:
+                equip_now = True
+                has_armor = True
+            elif slot == "main_hand" and not occupied_hands:
+                equip_now = True
+                occupied_hands.add("main_hand")
+                if profile["two_handed"]:
+                    occupied_hands.add("off_hand")
+            elif slot == "off_hand" and "off_hand" not in occupied_hands:
+                equip_now = True
+                occupied_hands.add("off_hand")
+            elif slot == "focus":
+                equip_now = True
+            metadata: dict[str, Any] = {
+                "equipment_profile": profile,
+                "origin": "character_creation_2024",
+                "rule_reference": profile["rule_reference"],
+            }
+            if equip_now:
+                metadata["equipment_slot"] = slot
+            starter_assets.append(
+                {
+                    "name": str(equipment_name),
+                    "category": str(profile["kind"]),
+                    "armor_class": profile["base_armor_class"],
+                    "equipped": equip_now,
+                    "metadata_json": metadata,
+                }
+            )
+        equipped_armor = next(
+            (
+                asset
+                for asset in starter_assets
+                if asset["equipped"] and asset["category"] == "armor"
+            ),
+            None,
+        )
+        if equipped_armor and equipped_armor["armor_class"] is not None:
+            armor_type = str(
+                dict(equipped_armor["metadata_json"])["equipment_profile"].get(
+                    "armor_type"
+                )
+                or ""
+            )
+            base_ac = int(equipped_armor["armor_class"])
+            armor_class = (
+                base_ac + dexterity_modifier
+                if armor_type == "light"
+                else base_ac + min(2, dexterity_modifier)
+                if armor_type == "medium"
+                else base_ac
+            )
+        if any(
+            asset["equipped"] and asset["category"] == "shield"
+            for asset in starter_assets
+        ):
+            armor_class += 2
         with Session(self.engine) as session, session.begin():
             member = session.get(PlayerSession, principal.session_id)
             room = session.get(PlayerRoom, principal.room_id)
@@ -1177,6 +1279,18 @@ class PlayerRoomService:
             )
             session.add(item)
             session.flush()
+            session.add_all(
+                [
+                    EquipmentInstance(
+                        campaign_id=principal.campaign_id,
+                        character_id=item.id,
+                        quantity=1,
+                        attunement_required=False,
+                        **asset,
+                    )
+                    for asset in starter_assets
+                ]
+            )
             member.character_id = item.id
             member.version += 1
             session.flush()

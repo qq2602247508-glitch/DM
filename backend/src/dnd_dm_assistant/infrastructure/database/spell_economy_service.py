@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from collections.abc import Sequence
 from datetime import UTC, datetime
 from typing import Any
 
@@ -11,6 +12,12 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
 from dnd_dm_assistant.domain.campaign_state import StateNotFoundError, VersionConflict
+from dnd_dm_assistant.domain.equipment_rules import (
+    armor_class_from_profile,
+    armor_is_proficient,
+    equipment_profile,
+    weapon_proficiency_warning,
+)
 from dnd_dm_assistant.infrastructure.database.campaign_service import serialize
 from dnd_dm_assistant.infrastructure.database.models import (
     Attunement,
@@ -77,13 +84,24 @@ class SpellEconomyService:
             wallet = s.scalar(
                 select(Wallet).where(Wallet.campaign_id == cid, Wallet.character_id == character_id)
             )
+            equipment_rows = []
+            for row in equipment:
+                profile = equipment_profile(
+                    row.name, row.category, dict(row.metadata_json), row.armor_class
+                )
+                equipment_rows.append(
+                    {
+                        **serialize(row),
+                        "attuned": row.id in active_ids,
+                        "slot": row.metadata_json.get("equipment_slot"),
+                        "profile": profile,
+                    }
+                )
             return {
                 "spells": [
                     {**serialize(row), "prepared": row.id in prepared_ids} for row in spells
                 ],
-                "equipment": [
-                    {**serialize(row), "attuned": row.id in active_ids} for row in equipment
-                ],
+                "equipment": equipment_rows,
                 "wallet": serialize(wallet) if wallet else None,
             }
 
@@ -361,6 +379,81 @@ class SpellEconomyService:
             )
             return out
 
+    @staticmethod
+    def _equipment_armor_class(
+        character: Character,
+        equipped: Sequence[EquipmentInstance],
+        *,
+        add: EquipmentInstance | None = None,
+        remove: EquipmentInstance | None = None,
+    ) -> tuple[int, int]:
+        relevant: list[tuple[EquipmentInstance, dict[str, Any]]] = []
+        for row in equipped:
+            profile = equipment_profile(
+                row.name, row.category, dict(row.metadata_json), row.armor_class
+            )
+            if profile["kind"] in {"armor", "shield"}:
+                relevant.append((row, profile))
+        baseline = next(
+            (
+                int(value)
+                for row, _profile in relevant
+                for value in (
+                    row.metadata_json.get("equipment_ac_baseline"),
+                    row.metadata_json.get("armor_class_before_equip"),
+                )
+                if isinstance(value, int)
+            ),
+            None,
+        )
+        dexterity = int(character.ability_scores.get("dexterity", 10))
+        dexterity_modifier = (dexterity - 10) // 2
+        if baseline is None:
+            if any(profile["kind"] == "armor" for _row, profile in relevant):
+                class_name = str(character.class_name or "")
+                wisdom_modifier = (
+                    int(character.ability_scores.get("wisdom", 10)) - 10
+                ) // 2
+                constitution_modifier = (
+                    int(character.ability_scores.get("constitution", 10)) - 10
+                ) // 2
+                baseline = (
+                    10 + dexterity_modifier + wisdom_modifier
+                    if "武僧" in class_name
+                    else 10 + dexterity_modifier + constitution_modifier
+                    if "野蛮人" in class_name
+                    else 10 + dexterity_modifier
+                )
+            elif any(profile["kind"] == "shield" for _row, profile in relevant):
+                baseline = max(10, character.armor_class - 2)
+            else:
+                baseline = character.armor_class
+
+        after_rows = [
+            row for row in equipped if remove is None or row.id != remove.id
+        ]
+        if add is not None and all(row.id != add.id for row in after_rows):
+            after_rows.append(add)
+        after_profiles = [
+            equipment_profile(
+                row.name, row.category, dict(row.metadata_json), row.armor_class
+            )
+            for row in after_rows
+        ]
+        armor_profile = next(
+            (profile for profile in after_profiles if profile["kind"] == "armor"),
+            None,
+        )
+        armor_ac = (
+            armor_class_from_profile(armor_profile, dexterity_modifier)
+            if armor_profile is not None
+            else None
+        )
+        calculated = armor_ac if armor_ac is not None else baseline
+        if any(profile["kind"] == "shield" for profile in after_profiles):
+            calculated += 2
+        return calculated, baseline
+
     def equipment_preview(self, cid: str, data: dict[str, Any]) -> dict[str, Any]:
         with Session(self.engine) as s:
             c = self._character(s, cid, data["character_id"], data["character_version"])
@@ -368,13 +461,85 @@ class SpellEconomyService:
             if e is None or e.campaign_id != cid or e.character_id != c.id:
                 raise StateNotFoundError("equipment not found")
             op = data["operation"]
+            profile = equipment_profile(e.name, e.category, dict(e.metadata_json), e.armor_class)
+            requested_slot = data.get("slot") or profile["default_slot"]
+            warnings: list[str] = []
+            equipped_all = s.scalars(
+                select(EquipmentInstance).where(
+                    EquipmentInstance.character_id == c.id,
+                    EquipmentInstance.equipped.is_(True),
+                )
+            ).all()
+            if op == "equip":
+                if e.equipped:
+                    raise ValueError("item is already equipped")
+                if requested_slot not in profile["allowed_slots"]:
+                    raise ValueError(
+                        f"{e.name}不能装备到{requested_slot}；允许位置："
+                        + "、".join(profile["allowed_slots"])
+                    )
+                if (
+                    profile["kind"] == "armor"
+                    and profile["armor_type"]
+                    and not armor_is_proficient(list(c.proficiencies), profile["armor_type"])
+                ):
+                    raise ValueError(
+                        f"角色没有{profile['armor_type'] or '该类'}护甲训练，"
+                        "玩家快捷装备已阻止；如采用房规请由 DM 调整。"
+                    )
+                if profile["kind"] == "shield" and "盾牌" not in {
+                    str(value) for value in c.proficiencies
+                }:
+                    raise ValueError("角色没有盾牌训练，玩家快捷装备已阻止。")
+                equipped = [current for current in equipped_all if current.id != e.id]
+                occupied: dict[str, EquipmentInstance] = {}
+                has_two_handed = False
+                for current in equipped:
+                    current_profile = equipment_profile(
+                        current.name,
+                        current.category,
+                        dict(current.metadata_json),
+                        current.armor_class,
+                    )
+                    current_slot = str(
+                        current.metadata_json.get("equipment_slot")
+                        or current_profile["default_slot"]
+                    )
+                    occupied[current_slot] = current
+                    has_two_handed = has_two_handed or bool(current_profile["two_handed"])
+                if profile["two_handed"] and (
+                    "main_hand" in occupied or "off_hand" in occupied
+                ):
+                    raise ValueError("双手武器需要主手和副手都为空。")
+                if has_two_handed and requested_slot in {"main_hand", "off_hand"}:
+                    raise ValueError("当前双手武器占用两只手，请先卸下。")
+                if requested_slot == "armor" and "armor" in occupied:
+                    raise ValueError("同一时间只能穿着一套护甲。")
+                if requested_slot in occupied:
+                    raise ValueError(
+                        f"{requested_slot}已由{occupied[requested_slot].name}占用，请先卸下。"
+                    )
+                if profile["kind"] == "weapon":
+                    warning = weapon_proficiency_warning(e.name, list(c.proficiencies))
+                    if warning:
+                        warnings.append(warning)
             if op == "consume" and e.quantity < data["amount"]:
                 raise ValueError("insufficient consumable quantity")
             if op == "use_charge" and (e.charges is None or e.charges < data["amount"]):
                 raise ValueError("insufficient charges")
+            if op == "unequip" and not e.equipped:
+                raise ValueError("item is not equipped")
             if op == "attune":
                 if not e.attunement_required:
                     raise ValueError("item does not require attunement")
+                existing_attunement = s.scalar(
+                    select(Attunement).where(
+                        Attunement.equipment_instance_id == e.id,
+                        Attunement.status == "active",
+                    )
+                )
+                if existing_attunement is not None:
+                    raise ValueError("item is already attuned")
                 active = (
                     s.scalar(
                         select(func.count())
@@ -389,6 +554,9 @@ class SpellEconomyService:
                 "character_id": c.id,
                 "equipment_id": e.id,
                 "operation": op,
+                "slot": requested_slot if op == "equip" else e.metadata_json.get("equipment_slot"),
+                "profile": profile,
+                "warnings": warnings,
                 "before": {
                     "quantity": e.quantity,
                     "charges": e.charges,
@@ -398,11 +566,22 @@ class SpellEconomyService:
                 "rule_reference": RULE,
             }
             if op == "equip":
-                out["after"] = {"equipped": True, "armor_class": e.armor_class or c.armor_class}
+                after_ac, ac_baseline = self._equipment_armor_class(
+                    c, equipped_all, add=e
+                )
+                out["after"] = {
+                    "equipped": True,
+                    "slot": requested_slot,
+                    "armor_class": after_ac,
+                    "equipment_ac_baseline": ac_baseline,
+                }
             elif op == "unequip":
+                after_ac, _ac_baseline = self._equipment_armor_class(
+                    c, equipped_all, remove=e
+                )
                 out["after"] = {
                     "equipped": False,
-                    "armor_class": 10 if e.armor_class is not None else c.armor_class,
+                    "armor_class": after_ac,
                 }
             elif op == "consume":
                 out["after"] = {"quantity": e.quantity - data["amount"]}
@@ -447,19 +626,48 @@ class SpellEconomyService:
             op, amount = data["operation"], data["amount"]
             if op == "equip":
                 e.equipped = True
-                if e.armor_class is not None:
-                    c.armor_class = e.armor_class
+                e.metadata_json = {
+                    **e.metadata_json,
+                    "equipment_slot": preview["slot"],
+                    "equipment_profile": preview["profile"],
+                    "equipment_ac_baseline": preview["after"][
+                        "equipment_ac_baseline"
+                    ],
+                }
+                c.armor_class = int(preview["after"]["armor_class"])
             elif op == "unequip":
                 e.equipped = False
-                if e.armor_class is not None:
-                    c.armor_class = 10
+                e.metadata_json = {
+                    key: value
+                    for key, value in e.metadata_json.items()
+                    if key
+                    not in {
+                        "equipment_slot",
+                        "armor_class_before_equip",
+                        "equipment_ac_baseline",
+                    }
+                }
+                c.armor_class = int(preview["after"]["armor_class"])
             elif op == "consume":
                 e.quantity -= amount
             elif op == "use_charge":
                 assert e.charges is not None
                 e.charges -= amount
             elif op == "attune":
-                s.add(Attunement(character_id=c.id, equipment_instance_id=e.id, status="active"))
+                old_attunement = s.scalar(
+                    select(Attunement).where(Attunement.equipment_instance_id == e.id)
+                )
+                if old_attunement is None:
+                    s.add(
+                        Attunement(
+                            character_id=c.id,
+                            equipment_instance_id=e.id,
+                            status="active",
+                        )
+                    )
+                else:
+                    old_attunement.status = "active"
+                    old_attunement.version += 1
             elif op == "unattune":
                 att = s.scalar(
                     select(Attunement).where(
