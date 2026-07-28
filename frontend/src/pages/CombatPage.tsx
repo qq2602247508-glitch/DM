@@ -452,26 +452,38 @@ function BattleGrid({
   const previousHp = useRef<Record<string, number>>({});
   useEffect(() => {
     setPositions((current) => {
-      const next = { ...current };
+      const next: Record<string, [number, number]> = {};
       const playerSpawns = findSceneSpawnCells(tacticalGrid, "player");
       const enemySpawns = findSceneSpawnCells(tacticalGrid, "enemy");
+      const occupied = new Set<string>();
+      fighters.forEach((fighter) => {
+        const stored = fighter.snapshot_json.grid_position as { row?: unknown; col?: unknown } | undefined;
+        const local = current[fighter.id];
+        const row = movingFighterId === fighter.id && local ? local[0] : Number(stored?.row);
+        const col = movingFighterId === fighter.id && local ? local[1] : Number(stored?.col);
+        if (
+          Number.isInteger(row)
+          && Number.isInteger(col)
+          && row >= 1
+          && row <= height
+          && col >= 1
+          && col <= width
+          && !isBlockedCell(tacticalGrid, { row, col })
+        ) {
+          next[fighter.id] = [row, col];
+          occupied.add(`${row}:${col}`);
+        }
+      });
       fighters.forEach((fighter, index) => {
         if (next[fighter.id]) return;
-        const stored = fighter.snapshot_json.grid_position as { row?: unknown; col?: unknown } | undefined;
+        const local = current[fighter.id];
         if (
-          stored
-          && Number.isInteger(stored.row)
-          && Number.isInteger(stored.col)
-          && Number(stored.row) >= 1
-          && Number(stored.row) <= height
-          && Number(stored.col) >= 1
-          && Number(stored.col) <= width
-          && !isBlockedCell(tacticalGrid, { row: Number(stored.row), col: Number(stored.col) })
-          && !Object.values(next).some(([placedRow, placedCol]) => (
-            placedRow === Number(stored.row) && placedCol === Number(stored.col)
-          ))
+          local
+          && !isBlockedCell(tacticalGrid, { row: local[0], col: local[1] })
+          && !occupied.has(`${local[0]}:${local[1]}`)
         ) {
-          next[fighter.id] = [Number(stored.row), Number(stored.col)];
+          next[fighter.id] = local;
+          occupied.add(`${local[0]}:${local[1]}`);
           return;
         }
         const preferred = fighter.entity_type === "character"
@@ -485,17 +497,25 @@ function BattleGrid({
           Array.from({ length: width }, (_, col) => ({ row: row + 1, col: col + 1 }))
         )).flat().filter((point) => (
           !isBlockedCell(tacticalGrid, point)
-          && !Object.values(next).some(([placedRow, placedCol]) => (
-            placedRow === point.row && placedCol === point.col
-          ))
+          && !occupied.has(`${point.row}:${point.col}`)
         )).sort((a, b) => (
           gridDistanceFt(origin, a) - gridDistanceFt(origin, b)
         ))[0];
-        if (free) next[fighter.id] = [free.row, free.col];
+        if (free) {
+          next[fighter.id] = [free.row, free.col];
+          occupied.add(`${free.row}:${free.col}`);
+        }
       });
-      return next;
+      const currentIds = Object.keys(current);
+      const nextIds = Object.keys(next);
+      const unchanged = currentIds.length === nextIds.length
+        && nextIds.every((id) => (
+          current[id]?.[0] === next[id]?.[0]
+          && current[id]?.[1] === next[id]?.[1]
+        ));
+      return unchanged ? current : next;
     });
-  }, [fighters, height, tacticalGrid, width]);
+  }, [fighters, height, movingFighterId, tacticalGrid, width]);
   useEffect(() => {
     if (activeFighterId) setSelected(activeFighterId);
   }, [activeFighterId]);
@@ -777,7 +797,8 @@ function BattleGrid({
       </div>
       {lastAiMove ? <p className="mb-2 mt-0 rounded border border-red-900/50 bg-red-950/10 px-2 py-1 text-2xs text-red-200">{lastAiMove}</p> : null}
       {targetingMessage ? <p className="mb-2 mt-0 rounded border border-sky-800/50 bg-sky-950/15 px-2 py-1 text-2xs text-sky-200">{targetingMessage}</p> : null}
-      <div className="grid w-full gap-px overflow-hidden rounded border border-ink-700 bg-ink-700" style={{ gridTemplateColumns: `repeat(${width}, minmax(0, 1fr))` }}>
+      <div className="overflow-auto rounded border border-ink-700 bg-ink-950 p-2">
+      <div className="grid w-max gap-px bg-ink-700" style={{ gridTemplateColumns: `repeat(${width}, minmax(28px, 48px))` }}>
         {Array.from({ length: height }, (_, row) => Array.from({ length: width }, (_, col) => {
           const rowNumber = row + 1;
           const colNumber = col + 1;
@@ -813,11 +834,13 @@ function BattleGrid({
             tacticalGrid.cell_size_ft,
           ));
           const affected = areaKeys.has(`${rowNumber}:${colNumber}`);
-          const terrainClass = sceneCell?.kind === "wall" ? "bg-stone-700" : sceneCell?.kind === "cover" ? "bg-emerald-900/80" : sceneCell?.kind === "door" ? "bg-amber-800/80" : sceneCell?.kind === "object" ? "bg-violet-900/80" : "bg-ink-950/80";
-          const glyph = !sceneCell ? "" : sceneCell.kind === "wall" ? "■" : sceneCell.kind === "door" ? "门" : /吧台/.test(sceneCell.label) ? "吧" : /桌/.test(sceneCell.label) ? "桌" : /椅/.test(sceneCell.label) ? "椅" : sceneCell.kind === "cover" ? "▦" : sceneCell.kind === "floor" ? "" : "◆";
+          const terrainClass = sceneCell?.kind === "wall" ? "bg-stone-800" : sceneCell?.kind === "cover" ? "bg-emerald-950/70" : sceneCell?.kind === "water" ? "bg-sky-950/60" : sceneCell?.kind === "door" ? "bg-amber-950/70" : sceneCell?.kind === "object" ? "bg-violet-950/60" : "bg-ink-900";
           return (
             <button
-              className={`relative aspect-square min-h-7 text-2xs transition-colors ${terrainClass} ${inCastRange && !blocked && interactionMode === "target" ? "ring-1 ring-inset ring-sky-500/50" : ""} ${affected && !blocked && interactionMode === "target" ? "bg-fuchsia-800/45 ring-2 ring-inset ring-fuchsia-400" : ""} ${aimPoint?.row === rowNumber && aimPoint.col === colNumber ? "outline outline-2 outline-amber-300" : ""} ${canMove && interactionMode === "move" ? "bg-emerald-950/65 ring-1 ring-inset ring-emerald-400/80 hover:bg-emerald-700/55" : ""}`}
+              className={`relative aspect-square border border-ink-800 text-[9px] transition duration-200 ${terrainClass} ${inCastRange && !blocked && interactionMode === "target" ? "bg-sky-950/60 ring-1 ring-inset ring-sky-500/50" : ""} ${affected && !blocked && interactionMode === "target" ? "bg-fuchsia-900/70 ring-2 ring-inset ring-fuchsia-400/80" : ""} ${aimPoint?.row === rowNumber && aimPoint.col === colNumber ? "outline outline-2 outline-amber-300" : ""} ${canMove && interactionMode === "move" ? "bg-emerald-950/75 ring-1 ring-inset ring-emerald-400/75 hover:bg-emerald-950/60" : ""}`}
+              data-grid-col={colNumber}
+              data-grid-row={rowNumber}
+              data-token-id={fighter?.id}
               key={`${rowNumber}-${colNumber}`}
               onClick={() => {
                 if (interactionMode === "target" && targeting && activePosition && activeFighterId) {
@@ -852,11 +875,12 @@ function BattleGrid({
                 : sceneCell?.label ?? (moveDistance === null ? "选择一个单位" : `${moveDistance} 尺`)}
               type="button"
             >
-              {fighter ? <span className={`mx-auto flex h-6 w-6 items-center justify-center rounded-full text-2xs font-bold transition duration-300 ${impactFighterId === fighter.id ? "scale-125 bg-red-500 text-white ring-4 ring-red-300/80" : selected === fighter.id && fighter.id !== activeFighterId ? "bg-emerald-400 text-ink-950 ring-4 ring-emerald-300/70" : selected === fighter.id ? "bg-ember-400 text-ink-950" : "bg-violet-500/80 text-white"}`}>{fighter.display_name.slice(0, 1)}</span> : null}
-              {!fighter && glyph ? <span className="text-stone-200">{glyph}</span> : null}
+              {sceneCell?.label ? <span className="absolute left-0 top-0 max-w-full truncate text-stone-500">{sceneCell.label.slice(0, 2)}</span> : null}
+              {fighter ? <span className={`flex h-full items-center justify-center rounded-full px-1 text-center transition duration-300 ${impactFighterId === fighter.id ? "scale-110 bg-red-500 text-white ring-4 ring-red-300/80" : selected === fighter.id && fighter.id !== activeFighterId ? "bg-emerald-400 text-ink-950 ring-4 ring-emerald-300/70" : fighter.entity_type === "monster" ? "bg-red-500/30 text-red-100" : fighter.entity_type === "npc" ? "bg-violet-500/25 text-violet-100" : "bg-amber-500/35 text-amber-100"}`}>{fighter.display_name.slice(0, 4)}</span> : null}
             </button>
           );
         }))}
+      </div>
       </div>
       <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-2xs text-stone-500">
         <span><i className="mr-1 inline-block h-2 w-2 rounded-full bg-violet-500/80" />单位</span>

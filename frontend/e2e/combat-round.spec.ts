@@ -1,6 +1,6 @@
 import { expect, test, type APIRequestContext, type Page } from "@playwright/test";
 
-import { playerUrl } from "../playwright.config";
+import { dmUrl, playerUrl } from "../playwright.config";
 
 const apiBase = process.env.E2E_API_URL ?? "http://127.0.0.1:8000/api/v1";
 type Json = Record<string, unknown>;
@@ -102,6 +102,7 @@ test("玩家端加载当前战斗地图、回合面板、攻击控件和公开�
     data: { scene_id: scene.id, combat_id: combatId },
   }));
   const player = await browser.newContext();
+  const dm = await browser.newContext();
   try {
     const page = await player.newPage();
     await page.setViewportSize({ width: 1366, height: 900 });
@@ -113,6 +114,36 @@ test("玩家端加载当前战斗地图、回合面板、攻击控件和公开�
     await expect(page.getByText("玩家战斗地图 · 与 DM 共用当前 Scene", { exact: true })).toBeVisible();
     await expect(page.getByText("20×14 · 每格 5 尺", { exact: true })).toBeVisible();
     await expect(page.getByRole("heading", { name: "当前战斗面板" })).toBeVisible();
+    const dmPage = await dm.newPage();
+    await dmPage.addInitScript(({ activeCampaignId, activeCombatId }) => {
+      window.localStorage.setItem("dnd.currentCampaignId", activeCampaignId);
+      window.localStorage.setItem(`dnd-dm-auto-enemies:${activeCampaignId}:${activeCombatId}`, "false");
+    }, { activeCampaignId: campaignId, activeCombatId: combatId });
+    await dmPage.goto(`${dmUrl}/#/combat`);
+    await expect(dmPage.getByRole("heading", { name: "战斗辅助" })).toBeVisible();
+    const playerHeroToken = page.locator(`[data-token-id="${String(heroCombatant.id)}"]`);
+    const dmHeroToken = dmPage.locator(`[data-token-id="${String(heroCombatant.id)}"]`);
+    await expect(playerHeroToken).toHaveAttribute("data-grid-row", "4");
+    await expect(playerHeroToken).toHaveAttribute("data-grid-col", "3");
+    await expect(dmHeroToken).toHaveAttribute("data-grid-row", "4");
+    await expect(dmHeroToken).toHaveAttribute("data-grid-col", "3");
+    await page.getByRole("button", { name: "格子 5,3" }).click();
+    await expect(playerHeroToken).toHaveAttribute("data-grid-row", "5");
+    await expect(playerHeroToken).toHaveAttribute("data-grid-col", "3");
+    await expect(dmHeroToken).toHaveAttribute("data-grid-row", "5");
+    await expect(dmHeroToken).toHaveAttribute("data-grid-col", "3");
+    const sharedCellStyles = await Promise.all([
+      page.locator('[data-grid-row="1"][data-grid-col="1"]').evaluate((element) => {
+        const style = getComputedStyle(element);
+        return { width: element.getBoundingClientRect().width, background: style.backgroundColor };
+      }),
+      dmPage.locator('[data-grid-row="1"][data-grid-col="1"]').evaluate((element) => {
+        const style = getComputedStyle(element);
+        return { width: element.getBoundingClientRect().width, background: style.backgroundColor };
+      }),
+    ]);
+    expect(Math.abs(sharedCellStyles[0].width - sharedCellStyles[1].width)).toBeLessThanOrEqual(1);
+    expect(sharedCellStyles[0].background).toBe(sharedCellStyles[1].background);
     const dimensions = await page.evaluate(() => {
       const panelHeading = Array.from(document.querySelectorAll("h2"))
         .find((element) => element.textContent?.trim() === "当前战斗面板");
@@ -140,6 +171,8 @@ test("玩家端加载当前战斗地图、回合面板、攻击控件和公开�
     expect(dimensions.sidebarRight).toBeLessThanOrEqual(dimensions.viewportWidth);
     // 20 × 48px cells plus 19 one-pixel grid gaps.
     expect(dimensions.mapGridWidth).toBeLessThanOrEqual(980);
+    const stableMapTop = (await page.getByTestId("player-combat-map").boundingBox())?.y;
+    expect(stableMapTop).toBeDefined();
     await ok(await request.patch(`${prefix}/combats/${combatId}/combatants/${String(enemyCombatant.id)}`, {
       headers: { "If-Match": `"${Number(enemyCombatant.version)}"` },
       data: {
@@ -170,6 +203,8 @@ test("玩家端加载当前战斗地图、回合面板、攻击控件和公开�
     })).toBe(true);
     await expect(page.getByTestId("player-enemy-action-banner")).toContainText("验收地精");
     await expect(page.getByTestId("player-enemy-action-banner")).toContainText("移动");
+    await expect.poll(async () => (await page.getByTestId("player-combat-map").boundingBox())?.y)
+      .toBe(stableMapTop);
     await expect(page.getByLabel("攻击/技能")).toBeVisible();
     await expect(page.getByLabel("目标")).toBeVisible();
     await expect(page.getByRole("heading", { name: "公开战斗日志" })).toBeVisible();
@@ -207,7 +242,7 @@ test("玩家端加载当前战斗地图、回合面板、攻击控件和公开�
       await expect.poll(async () => page.locator("button.outline-red-500").count()).toBeGreaterThan(1);
     }
   } finally {
-    await player.close();
+    await Promise.all([player.close(), dm.close()]);
     await request.delete(`${apiBase}/campaigns/${campaignId}`, {
       headers: { "If-Match": `"${Number(campaign.version)}"` },
     });

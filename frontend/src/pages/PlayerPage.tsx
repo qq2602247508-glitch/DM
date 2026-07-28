@@ -769,8 +769,9 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
       <section className={`${cardCls} min-w-0`}>
         <div className="mb-3 flex flex-wrap items-center gap-2"><h2 className="m-0 mr-auto font-display text-2xl">{combat.name}</h2><span className="rounded bg-ink-950 px-2 py-1 text-xs">第 {combat.round_number} 轮</span><span className={`rounded px-2 py-1 text-xs ${ended ? "bg-amber-500/20 text-amber-200" : combat.is_my_turn ? "bg-emerald-500/20 text-emerald-200" : "bg-ink-800 text-stone-400"}`}>{ended ? "战斗已结束" : presentation ? "正在展示敌方行动" : combat.is_my_turn ? "轮到你行动" : `${activeCombatant?.name ?? "其他单位"}行动中`}</span></div>
         <PlayerCombatantStrip activeId={combat.active_combatant_id} combatants={combat.combatants} />
+        <div className="mb-3 min-h-[5.75rem]">
         {presentation ? (
-          <div className="mb-3 rounded-lg border-2 border-red-700/60 bg-red-950/20 p-3" data-testid="player-enemy-action-banner">
+          <div className="h-full rounded-lg border-2 border-red-700/60 bg-red-950/20 p-3" data-testid="player-enemy-action-banner">
             <div className="flex flex-wrap items-center gap-2">
               <span className="rounded bg-red-500/20 px-2 py-1 text-2xs text-red-200">
                 {presentation.action_type === "move" ? "敌方移动" : presentation.action_type === "advance_turn" ? "回合切换" : "敌方动作"}
@@ -781,7 +782,8 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
             <p className="mb-0 mt-2 text-xs leading-5 text-stone-300">{presentation.summary}</p>
             {presentationTargets.length ? <p className="mb-0 mt-1 text-2xs text-amber-200">目标：{presentationTargets.map((item) => item.name).join("、")}</p> : null}
           </div>
-        ) : null}
+        ) : <div aria-hidden="true" className="h-[5.75rem] rounded-lg border border-transparent" />}
+        </div>
         <div data-testid="player-combat-map">
           <SceneGridView
             onMove={(row, col) => own && mutation.mutate(() => moveMyCombatant(row, col, own.version ?? 1))}
@@ -802,8 +804,9 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
       <aside className="min-w-0 space-y-4" data-testid="player-combat-sidebar">
         <section className={cardCls}>
           <h2 className="mt-0 font-display text-xl">当前战斗面板</h2>
+          <div className="mb-3 min-h-[6.75rem]">
           {!combat.is_my_turn && activeCombatant ? (
-            <div className="mb-3 rounded border border-red-900/60 bg-red-950/15 p-3" data-testid="player-active-enemy-panel">
+            <div className="h-full rounded border border-red-900/60 bg-red-950/15 p-3" data-testid="player-active-enemy-panel">
               <strong className="text-sm text-red-100">{activeCombatant.name} · 当前行动单位</strong>
               <p className="mb-0 mt-1 text-xs leading-5 text-stone-300">
                 {activeCombatant.entity_type === "monster"
@@ -812,7 +815,8 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
               </p>
               {(activeCombatant.actions ?? []).length ? <p className="mb-0 mt-1 text-2xs text-stone-500">可见动作：{activeCombatant.actions.map(display).join("、")}</p> : null}
             </div>
-          ) : null}
+          ) : <div aria-hidden="true" className="h-[6.75rem] rounded border border-transparent" />}
+          </div>
           {combat.pending_rolls.map((roll) => <div className="mb-3 rounded border border-violet-700 bg-violet-950/20 p-3" data-testid="player-pending-roll" key={roll.id}><strong className="text-sm text-violet-100">{roll.actor_name ?? "敌方单位"} 对你使用「{roll.action_name}」</strong>{roll.description ? <p className="mb-0 mt-1 text-xs leading-5 text-stone-300">{roll.description}</p> : null}<p className="text-xs text-stone-400">请掷 {roll.roll_formula}，总值需达到 DC {roll.dc}（{roll.ability || roll.skill || roll.resolution_type}）。{roll.damage_on_failure ? `失败将承受 ${roll.damage_on_failure} 点${roll.damage_type ?? ""}伤害` : ""}{roll.damage_on_success ? `；成功仍承受 ${roll.damage_on_success} 点${roll.damage_type ?? ""}伤害` : ""}</p>{dangerCellKeys.size ? <p className="text-2xs text-red-300">地图上的红色描边为「{roll.action_name}」当前影响范围。</p> : null}<div className="flex gap-2"><input aria-label={`${roll.action_name}骰值`} className={inputCls} onChange={(event) => setRolls((current) => ({ ...current, [roll.id]: event.target.value }))} type="number" value={rolls[roll.id] ?? ""} /><Button disabled={!rolls[roll.id]} onClick={() => mutation.mutate(async () => { const result = await submitMyPlayerRoll(roll.id, roll.version, Number(rolls[roll.id])); const next = (result as { turn_advance?: { active_combatant?: { display_name?: string } } }).turn_advance?.active_combatant?.display_name; setLastResolution(`你对「${roll.action_name}」的豁免已结算${next ? `；现在轮到 ${next}` : "；战斗状态已更新"}。`); return result; })} variant="primary">提交并继续战斗</Button></div></div>)}
           {ended ? <p className="rounded border border-amber-800/60 bg-amber-950/20 p-3 text-sm text-amber-100">战斗已由 DM 结束。你仍可查看地图和完整公开日志；奖励请到“我的角色”查看。</p> : null}
           <label className="block text-xs text-stone-400">攻击/技能<select className={`${inputCls} mt-1`} disabled={ended || !combat.is_my_turn} onChange={(event) => setActionName(event.target.value)} value={actionName}><option value="">选择角色卡动作</option>{actions.map((action) => <option key={display(action.name)} value={display(action.name)}>{display(action.name)} · {display(action.damage ?? action.description ?? "")}</option>)}</select></label>
