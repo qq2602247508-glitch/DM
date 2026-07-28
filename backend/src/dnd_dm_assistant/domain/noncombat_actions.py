@@ -121,14 +121,15 @@ def public_cells(layers_json: dict[str, object]) -> list[dict[str, Any]]:
             row, col = int(cell["row"]), int(cell["col"])
         except (KeyError, TypeError, ValueError):
             continue
-        result.append(
-            {
-                "row": row,
-                "col": col,
-                "kind": str(cell.get("kind") or "floor"),
-                "label": str(cell.get("label") or ""),
-            }
-        )
+        public_cell: dict[str, Any] = {
+            "row": row,
+            "col": col,
+            "kind": str(cell.get("kind") or "floor"),
+            "label": str(cell.get("label") or ""),
+        }
+        if cell.get("blocks_sight") is True:
+            public_cell["blocks_sight"] = True
+        result.append(public_cell)
     return result
 
 

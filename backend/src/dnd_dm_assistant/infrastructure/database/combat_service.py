@@ -1019,6 +1019,17 @@ class CombatEngineService:
                 )
             if combat.status in {"completed", "cancelled"}:
                 raise ValueError("completed combat cannot advance turns")
+            unresolved_player_roll = session.scalar(
+                select(CombatAction).where(
+                    CombatAction.combat_id == combat_id,
+                    CombatAction.action_type == "player_roll_prompt",
+                    CombatAction.status == "previewed",
+                )
+            )
+            if unresolved_player_roll is not None:
+                raise ValueError(
+                    "当前仍有玩家掷骰请求未结算，不能结束怪物回合"
+                )
             ordered = session.scalars(
                 select(Combatant)
                 .where(

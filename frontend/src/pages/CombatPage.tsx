@@ -52,6 +52,7 @@ import {
 import {
   getTargetingCells,
   gridDistanceFt,
+  hasLineOfSight,
   isAimPointInRange,
   isBlockedCell,
   type GridPoint,
@@ -760,6 +761,10 @@ function BattleGrid({
           { row: position[0], col: position[1] },
           targeting.rangeFt,
           tacticalGrid.cell_size_ft,
+        ) && hasLineOfSight(
+          tacticalGrid,
+          activePosition,
+          { row: position[0], col: position[1] },
         );
       }
       return areaKeys.has(`${position[0]}:${position[1]}`);
@@ -772,7 +777,7 @@ function BattleGrid({
     fighters,
     onTargetValidityChange,
     positions,
-    tacticalGrid.cell_size_ft,
+    tacticalGrid,
     targeting,
   ]);
   const tokenAt = (row: number, col: number) => fighters.find((fighter) => {
@@ -832,7 +837,7 @@ function BattleGrid({
             point,
             targeting.rangeFt,
             tacticalGrid.cell_size_ft,
-          ));
+          ) && hasLineOfSight(tacticalGrid, activePosition, point));
           const affected = areaKeys.has(`${rowNumber}:${colNumber}`);
           const terrainClass = sceneCell?.kind === "wall" ? "bg-stone-800" : sceneCell?.kind === "cover" ? "bg-emerald-950/70" : sceneCell?.kind === "water" ? "bg-sky-950/60" : sceneCell?.kind === "door" ? "bg-amber-950/70" : sceneCell?.kind === "object" ? "bg-violet-950/60" : "bg-ink-900";
           return (
@@ -845,7 +850,11 @@ function BattleGrid({
               onClick={() => {
                 if (interactionMode === "target" && targeting && activePosition && activeFighterId) {
                   if (!inCastRange || blocked) {
-                    setTargetingMessage(`该格不在「${targeting.label}」的施法距离内，不能作为目标点。`);
+                    setTargetingMessage(
+                      !hasLineOfSight(tacticalGrid, activePosition, point)
+                        ? `该格被墙体或硬遮挡阻断，无法建立视线。`
+                        : `该格不在「${targeting.label}」的施法距离内，不能作为目标点。`,
+                    );
                     return;
                   }
                   setAimPoint(point);
@@ -946,6 +955,9 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
     queryFn: ({ signal }) => listCombatActions(campaignId, combat.id, signal),
     refetchInterval: combat.status === "active" ? 1_000 : false,
   });
+  const hasPendingPlayerRoll = (combatActions.data ?? []).some(
+    (action) => action.action_type === "player_roll_prompt" && action.status === "previewed",
+  );
   const combatEffects = useQuery({
     queryKey: ["combat-effects", campaignId, combat.id],
     queryFn: ({ signal }) => listCombatEffects(campaignId, combat.id, signal),
@@ -1031,7 +1043,10 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
           ? `第 ${result.combat.round_number} 轮：轮到 ${result.active_combatant.display_name}`
           : "回合已结束");
     },
-    onError: () => showToast("回合推进失败，请刷新战斗状态", "error"),
+    onError: (error) => showToast(
+      error instanceof Error ? error.message : "回合推进失败，请刷新战斗状态",
+      "error",
+    ),
   });
   const ordered = [...(fighters.data ?? [])].filter((fighter) => fighter.is_active).sort((a, b) => b.initiative - a.initiative || a.display_name.localeCompare(b.display_name));
   const activeFighter = combat.status === "active"
@@ -1275,6 +1290,11 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
         </>
       ) : null}
       <CombatLogPanel actions={combatActions.data ?? []} />
+      {hasPendingPlayerRoll ? (
+        <div className="mt-3 rounded-lg border border-sky-700/60 bg-sky-950/20 px-3 py-2 text-xs text-sky-100">
+          等待玩家完成当前豁免或检定；怪物行动队列已暂停，结算后才会轮到下一单位。
+        </div>
+      ) : null}
       {ordered.length > 0 ? (
         <InitiativeCardStrip
           currentIndex={combat.current_turn_index}
@@ -1300,14 +1320,16 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
             <BattleGrid
               key={`${combat.id}:${resetGeneration}`}
               activeFighterId={activeFighter?.id ?? null}
-              automateEnemies={autoEnemies}
+              automateEnemies={autoEnemies && !hasPendingPlayerRoll}
               campaignId={campaignId}
               candidates={candidates}
               combatId={combat.id}
               endingTurn={nextTurn.isPending}
               fighters={ordered}
               grid={grid}
-              onEndTurn={() => nextTurn.mutate()}
+              onEndTurn={() => {
+                if (!hasPendingPlayerRoll) nextTurn.mutate();
+              }}
               onAutomationMovementChange={setAutomaticMovementPending}
               onTargetSelect={setSelectedMapTargetId}
               onTargetValidityChange={updateTargetableFighterIds}
@@ -1328,13 +1350,17 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
               active={activeFighter}
               activeCharacter={activeCharacter}
               autoEnemies={autoEnemies}
-              automationReady={!nextTurn.isPending && !automaticMovementPending}
+              automationReady={
+                !hasPendingPlayerRoll
+                && !nextTurn.isPending
+                && !automaticMovementPending
+              }
               campaignId={campaignId}
               combatId={combat.id}
               fighters={ordered}
               onAutoEnemiesChange={setAutoEnemies}
               onEnemyTurnComplete={() => {
-                if (!nextTurn.isPending) nextTurn.mutate();
+                if (!hasPendingPlayerRoll && !nextTurn.isPending) nextTurn.mutate();
               }}
               onRangeChange={setTargetingRange}
               onTargetChange={setSelectedMapTargetId}

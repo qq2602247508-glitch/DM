@@ -108,7 +108,13 @@ export type PlayerSceneGrid = {
   cell_size_ft: number;
   mode?: string;
   public_description?: string | null;
-  cells?: Array<{ row: number; col: number; kind: string; label?: string }>;
+  cells?: Array<{
+    row: number;
+    col: number;
+    kind: string;
+    label?: string;
+    blocks_sight?: boolean;
+  }>;
 };
 
 export type PlayerSceneToken = {

@@ -23,7 +23,11 @@ from dnd_dm_assistant.application.rule_block_compiler import (
 )
 from dnd_dm_assistant.domain.campaign_state import StateNotFoundError, VersionConflict
 from dnd_dm_assistant.domain.equipment_rules import equipment_profile
-from dnd_dm_assistant.domain.exploration import grid_distance_ft, movement_cost_ft
+from dnd_dm_assistant.domain.exploration import (
+    grid_distance_ft,
+    line_of_sight,
+    movement_cost_ft,
+)
 from dnd_dm_assistant.domain.noncombat_actions import (
     ABILITY_LABELS,
     OBJECT_SKILLS,
@@ -2210,6 +2214,46 @@ class PlayerRoomService:
             )
             if distance > maximum_range:
                 raise ValueError("目标超出该动作的合法距离")
+            sight_blockers: set[tuple[int, int]] = set()
+            if grid is not None:
+                raw_cells = grid.layers_json.get("cells", [])
+                if isinstance(raw_cells, list):
+                    sight_blockers.update(
+                        (int(cell["row"]), int(cell["col"]))
+                        for cell in raw_cells
+                        if isinstance(cell, dict)
+                        and (
+                            cell.get("kind") == "wall"
+                            or cell.get("blocks_sight") is True
+                        )
+                        and isinstance(cell.get("row"), int)
+                        and isinstance(cell.get("col"), int)
+                    )
+                scene_objects = session.scalars(
+                    select(SceneObject).where(SceneObject.scene_id == grid.scene_id)
+                ).all()
+                for scene_object in scene_objects:
+                    blocks_sight = scene_object.object_type == "wall" or (
+                        scene_object.object_type == "door"
+                        and scene_object.state in {"active", "closed"}
+                    )
+                    if not blocks_sight:
+                        continue
+                    sight_blockers.update(
+                        (row, col)
+                        for row in range(
+                            scene_object.row,
+                            scene_object.row + scene_object.height_cells,
+                        )
+                        for col in range(
+                            scene_object.col,
+                            scene_object.col + scene_object.width_cells,
+                        )
+                    )
+            actor_point = (int(actor_pos["row"]), int(actor_pos["col"]))
+            target_point = (int(target_pos["row"]), int(target_pos["col"]))
+            if not line_of_sight(actor_point, target_point, sight_blockers):
+                raise ValueError("目标被墙体或关闭的门完全遮挡，无法建立攻击视线")
             cost_text = str(action.get("cost") or "动作")
             cost: Literal["action", "bonus_action", "reaction"] = (
                 "bonus_action"
@@ -2254,7 +2298,6 @@ class PlayerRoomService:
                 raise ValueError("区域目标包含不存在、倒地或非敌对单位")
 
             if saving_throw_action and len(requested_targets) > 1:
-                actor_point = (int(actor_pos["row"]), int(actor_pos["col"]))
                 aim_point = (int(target_pos["row"]), int(target_pos["col"]))
                 cell_size = grid.cell_size_ft if grid is not None else 5
                 shape = (
@@ -2288,6 +2331,11 @@ class PlayerRoomService:
                                 cell_size_ft=cell_size,
                             )
                             <= radius
+                            and line_of_sight(
+                                aim_point,
+                                candidate_point,
+                                sight_blockers,
+                            )
                         )
                     elif shape == "line" and length_squared > 0:
                         candidate_range = grid_distance_ft(
@@ -2313,6 +2361,11 @@ class PlayerRoomService:
                             0 <= projection
                             and candidate_range <= maximum_range
                             and perpendicular_ft <= max(cell_size / 2, width / 2)
+                            and line_of_sight(
+                                actor_point,
+                                candidate_point,
+                                sight_blockers,
+                            )
                         )
                     if not legal:
                         raise ValueError(f"{candidate.display_name}不在玩家选择的技能范围内")

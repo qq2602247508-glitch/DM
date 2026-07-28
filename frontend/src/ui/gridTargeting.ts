@@ -13,6 +13,9 @@ export type TargetingTemplate = {
   widthFt?: number;
 };
 
+type TargetingGrid = Pick<SceneGrid, "width" | "height" | "cell_size_ft">
+  & { cells?: Array<{ row: number; col: number; kind: string; blocks_sight?: boolean }> };
+
 function cellsForGrid(grid: Pick<SceneGrid, "width" | "height">): GridPoint[] {
   return Array.from({ length: grid.height }, (_, row) => (
     Array.from({ length: grid.width }, (_, col) => ({ row: row + 1, col: col + 1 }))
@@ -56,19 +59,23 @@ function distanceToSegment(point: GridPoint, start: GridPoint, end: GridPoint): 
 }
 
 export function getTargetingCells(
-  grid: Pick<SceneGrid, "width" | "height" | "cell_size_ft">,
+  grid: TargetingGrid,
   origin: GridPoint,
   aim: GridPoint,
   template: TargetingTemplate,
 ): GridPoint[] {
   const cellSizeFt = grid.cell_size_ft;
   if (!isAimPointInRange(origin, aim, template.rangeFt, cellSizeFt)) return [];
+  if (!hasLineOfSight(grid, origin, aim)) return [];
   if (template.shape === "single") return [aim];
 
   const cells = cellsForGrid(grid);
   const sizeCells = Math.max(0, (template.sizeFt ?? template.rangeFt) / cellSizeFt);
   if (template.shape === "circle") {
-    return cells.filter((cell) => vectorLength(vector(aim, cell)) <= sizeCells + 0.01);
+    return cells.filter((cell) => (
+      vectorLength(vector(aim, cell)) <= sizeCells + 0.01
+      && hasLineOfSight(grid, aim, cell)
+    ));
   }
 
   const [directionX, directionY] = vector(origin, aim);
@@ -87,7 +94,8 @@ export function getTargetingCells(
       const [cellX, cellY] = vector(origin, cell);
       const forward = cellX * normalizedX + cellY * normalizedY;
       return forward >= 0 && forward <= sizeCells + 0.01
-        && distanceToSegment(cell, origin, end) <= halfWidthCells + 0.01;
+        && distanceToSegment(cell, origin, end) <= halfWidthCells + 0.01
+        && hasLineOfSight(grid, origin, cell);
     });
   }
 
@@ -99,8 +107,51 @@ export function getTargetingCells(
     if (distance > sizeCells + 0.01) return false;
     if (distance === 0) return true;
     const forward = cellX * normalizedX + cellY * normalizedY;
-    return forward >= 0 && forward / distance >= Math.SQRT1_2 - 0.01;
+    return forward >= 0
+      && forward / distance >= Math.SQRT1_2 - 0.01
+      && hasLineOfSight(grid, origin, cell);
   });
+}
+
+export function hasLineOfSight(
+  grid: {
+    cells?: Array<{
+      row: number;
+      col: number;
+      kind: string;
+      blocks_sight?: boolean;
+    }>;
+  },
+  start: GridPoint,
+  end: GridPoint,
+): boolean {
+  const blockers = new Set(
+    (grid.cells ?? [])
+      .filter((cell) => cell.kind === "wall" || cell.blocks_sight === true)
+      .map((cell) => `${cell.row}:${cell.col}`),
+  );
+  let row = start.row;
+  let col = start.col;
+  const rowDelta = Math.abs(end.row - row);
+  const colDelta = Math.abs(end.col - col);
+  const rowStep = row < end.row ? 1 : -1;
+  const colStep = col < end.col ? 1 : -1;
+  let error = rowDelta - colDelta;
+  while (row !== end.row || col !== end.col) {
+    if ((row !== start.row || col !== start.col) && blockers.has(`${row}:${col}`)) {
+      return false;
+    }
+    const doubled = 2 * error;
+    if (doubled > -colDelta) {
+      error -= colDelta;
+      row += rowStep;
+    }
+    if (doubled < rowDelta) {
+      error += rowDelta;
+      col += colStep;
+    }
+  }
+  return true;
 }
 
 export function isBlockedCell(grid: SceneGrid, point: GridPoint): boolean {

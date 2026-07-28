@@ -33,6 +33,7 @@ import { PlayerEquipmentPanel } from "../components/player/PlayerEquipmentPanel"
 import {
   getTargetingCells,
   gridDistanceFt,
+  hasLineOfSight,
   type TargetingTemplate,
 } from "../ui/gridTargeting";
 import { targetingFromRulePlan } from "../ui/ruleBlocks";
@@ -650,7 +651,9 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
     for (let row = 1; row <= grid.height; row += 1) {
       for (let col = 1; col <= grid.width; col += 1) {
         if (gridDistanceFt(actorPosition, { row, col }, grid.cell_size_ft) <= targeting.rangeFt) {
-          rangeCellKeys.add(`${row}:${col}`);
+          if (hasLineOfSight(grid, actorPosition, { row, col })) {
+            rangeCellKeys.add(`${row}:${col}`);
+          }
         }
       }
     }
@@ -661,6 +664,7 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
           width: grid.width,
           height: grid.height,
           cell_size_ft: grid.cell_size_ft,
+          cells: grid.cells,
         },
         actorPosition,
         aimPosition,
@@ -714,6 +718,7 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
           width: grid.width,
           height: grid.height,
           cell_size_ft: grid.cell_size_ft,
+          cells: grid.cells,
         },
         pendingActor.position,
         own.position,

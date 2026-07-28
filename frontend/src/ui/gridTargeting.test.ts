@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   getTargetingCells,
   gridDistanceFt,
+  hasLineOfSight,
   isAimPointInRange,
   isBlockedCell,
 } from "./gridTargeting";
@@ -72,6 +73,58 @@ describe("grid targeting helpers", () => {
       { ...grid, theme: "test", cells: [{ row: 3, col: 3, kind: "wall", label: "墙" }] },
       { row: 3, col: 3 },
     )).toBe(true);
+  });
+
+  it("blocks single targets behind walls but not targets before the wall", () => {
+    const walledGrid = {
+      ...grid,
+      theme: "多房间",
+      cells: [{ row: 4, col: 5, kind: "wall" as const, label: "隔墙" }],
+    };
+    expect(hasLineOfSight(walledGrid, { row: 4, col: 2 }, { row: 4, col: 4 })).toBe(true);
+    expect(hasLineOfSight(walledGrid, { row: 4, col: 2 }, { row: 4, col: 8 })).toBe(false);
+    expect(getTargetingCells(
+      walledGrid,
+      { row: 4, col: 2 },
+      { row: 4, col: 8 },
+      { shape: "single", rangeFt: 60 },
+    )).toEqual([]);
+  });
+
+  it("treats explicitly tall cover as total sight blocking terrain", () => {
+    const coverGrid = {
+      ...grid,
+      theme: "遗迹",
+      cells: [{
+        row: 4,
+        col: 5,
+        kind: "cover" as const,
+        label: "落地书架",
+        blocks_sight: true,
+      }],
+    };
+    expect(hasLineOfSight(coverGrid, { row: 4, col: 2 }, { row: 4, col: 8 })).toBe(false);
+  });
+
+  it("prevents an area effect from reaching cells behind a hard wall", () => {
+    const walledGrid = {
+      ...grid,
+      theme: "分隔房间",
+      cells: Array.from({ length: 12 }, (_, index) => ({
+        row: index + 1,
+        col: 8,
+        kind: "wall" as const,
+        label: "石墙",
+      })),
+    };
+    const cells = getTargetingCells(
+      walledGrid,
+      { row: 6, col: 2 },
+      { row: 6, col: 6 },
+      { shape: "circle", rangeFt: 150, sizeFt: 20 },
+    );
+    expect(cells).toContainEqual({ row: 6, col: 7 });
+    expect(cells).not.toContainEqual({ row: 6, col: 9 });
   });
 
   it("matches the 12th-level wizard acceptance layout for Fireball and Lightning Bolt", () => {

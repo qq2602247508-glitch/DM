@@ -794,7 +794,17 @@ def test_player_area_spell_uses_one_damage_roll_and_spends_one_slot(
             "height": 10,
             "cell_size_ft": 5,
             "mode": "combat",
-            "layers_json": {"cells": []},
+            "layers_json": {
+                "cells": [
+                    {
+                        "row": 5,
+                        "col": 2,
+                        "kind": "cover",
+                        "label": "落地石屏风",
+                        "blocks_sight": True,
+                    }
+                ]
+            },
         },
     ).status_code == 201
     combat = campaign_client.post(
@@ -833,6 +843,21 @@ def test_player_area_spell_uses_one_damage_roll_and_spends_one_slot(
         )
         assert response.status_code == 201
         enemies.append(response.json())
+    hidden_enemy = campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "石屏风后的假人",
+            "entity_type": "monster",
+            "initiative": 1,
+            "armor_class": 10,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {
+                "grid_position": {"row": 8, "col": 2},
+                "ability_scores": {"dexterity": 10},
+            },
+        },
+    ).json()
     opened = _open(campaign_client, campaign["id"])
     _join(campaign_client, opened["join_code"])
     assert campaign_client.post(
@@ -843,6 +868,20 @@ def test_player_area_spell_uses_one_damage_roll_and_spends_one_slot(
         f"/api/v1/campaigns/{campaign['id']}/player-room/live-state",
         json={"scene_id": scene["id"], "combat_id": combat["id"]},
     ).status_code == 200
+
+    blocked_by_sight = campaign_client.post(
+        "/api/v1/player-room/me/combat/attack",
+        json={
+            "target_combatant_id": hidden_enemy["id"],
+            "target_combatant_ids": [hidden_enemy["id"]],
+            "action_name": "火球术",
+            "attack_total": 0,
+            "damage_total": 28,
+            "idempotency_key": "line-of-sight-regression-1",
+        },
+    )
+    assert blocked_by_sight.status_code == 400
+    assert "无法建立攻击视线" in blocked_by_sight.json()["message"]
 
     too_far = campaign_client.post(
         "/api/v1/player-room/me/combat/attack",
@@ -891,7 +930,8 @@ def test_player_area_spell_uses_one_damage_roll_and_spends_one_slot(
         f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}/combatants"
     ).json()["items"]
     updated_actor = next(item for item in updated if item["id"] == actor["id"])
-    updated_enemies = [item for item in updated if item["entity_type"] == "monster"]
+    affected_ids = {item["id"] for item in enemies}
+    updated_enemies = [item for item in updated if item["id"] in affected_ids]
     assert updated_actor["action_available"] is False
     assert all(item["hp"] in {43, 57} for item in updated_enemies)
     refreshed_character = campaign_client.get(

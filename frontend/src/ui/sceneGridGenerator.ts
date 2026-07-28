@@ -28,16 +28,23 @@ function buildGrid(theme: GridTheme, seed: number): SceneGrid {
   const cells: SceneGrid["cells"] = [];
   const occupied = new Map<string, number>();
   const keyOf = (row: number, col: number) => `${row}:${col}`;
-  const add = (row: number, col: number, kind: CellKind, label: string, replace = false) => {
+  const add = (
+    row: number,
+    col: number,
+    kind: CellKind,
+    label: string,
+    replace = false,
+    blocksSight = false,
+  ) => {
     if (row < 1 || row > HEIGHT || col < 1 || col > WIDTH) return;
     const key = keyOf(row, col);
     const index = occupied.get(key);
     if (index !== undefined) {
-      if (replace) cells[index] = { row, col, kind, label };
+      if (replace) cells[index] = { row, col, kind, label, blocks_sight: blocksSight };
       return;
     }
     occupied.set(key, cells.length);
-    cells.push({ row, col, kind, label });
+    cells.push({ row, col, kind, label, blocks_sight: blocksSight });
   };
   const line = (
     startRow: number,
@@ -111,7 +118,7 @@ function buildGrid(theme: GridTheme, seed: number): SceneGrid {
       line(row, 5, row, 7, "cover", "长椅");
       line(row, 12, row, 14, "cover", "长椅");
     }
-    add(6, 3, "cover", "倒塌石柱");
+    add(6, 3, "cover", "倒塌石柱", false, true);
     add(6, 16, "object", "告解室");
     spawn(10, 9, "玩家");
     spawn(3, 9, "敌方");
@@ -129,9 +136,9 @@ function buildGrid(theme: GridTheme, seed: number): SceneGrid {
     line(7, 9, 10, 9, "wall", "中央岩脊");
     door(6, 9, "狭窄岩隙");
     door(7, 18, "洞穴入口");
-    add(5, 4, "cover", "巨型石笋");
+    add(5, 4, "cover", "巨型石笋", false, true);
     add(8, 6, "cover", "坍塌岩块");
-    add(4, 13, "cover", "天然岩柱");
+    add(4, 13, "cover", "天然岩柱", false, true);
     add(8, 14, "object", "地下水池");
     add(6, 16, "object", "发光菌丛");
     add(9, 11, "cover", "断裂矿车");
@@ -180,23 +187,42 @@ function buildGrid(theme: GridTheme, seed: number): SceneGrid {
     spawn(6, 2, "玩家");
     spawn(7, 17, "敌方");
   } else {
-    const splitCol = 7 + (seed % 4);
-    const splitRow = 6 + (seed % 3);
-    line(1, 2, 1, 17, "wall", "外墙");
-    line(2, 1, 11, 1, "wall", "外墙");
-    line(2, 18, 10, 18, "wall", "外墙");
-    line(12, 3, 12, 16, "wall", "外墙");
-    line(2, splitCol, 8, splitCol, "wall", "隔墙");
-    line(splitRow, splitCol, splitRow, 17, "wall", "隔墙");
-    door(5, splitCol, "内门");
-    door(splitRow, 13, "侧室门");
-    door(12, 8 + (seed % 3), "主要入口");
-    add(4, 4, "cover", "大型掩体");
-    add(8, 5, "object", "可互动物");
-    add(3, 14, "cover", "翻倒家具");
-    add(9, 15, "cover", "碎石障碍");
-    spawn(10, 5, "玩家");
-    spawn(3, 15, "敌方");
+    // A stepped ruin with five rooms joined by a central hall. The offset
+    // outer walls and multiple doorways produce useful flanks and choke points
+    // instead of one rectangular arena.
+    line(1, 4, 1, 15, "wall", "北侧断墙");
+    line(2, 3, 4, 3, "wall", "西北外墙");
+    line(4, 1, 4, 3, "wall", "西侧凸墙");
+    line(5, 1, 10, 1, "wall", "西侧外墙");
+    line(2, 16, 7, 16, "wall", "东北外墙");
+    line(7, 16, 7, 18, "wall", "东侧凸墙");
+    line(8, 18, 10, 18, "wall", "东侧外墙");
+    line(11, 2, 11, 17, "wall", "南侧断墙");
+
+    line(2, 9, 4, 9, "wall", "北侧房间隔墙");
+    line(5, 2, 5, 15, "wall", "中央大厅北墙");
+    door(5, 6 + (seed % 2), "西北房门");
+    door(5, 12 + (seed % 2), "东北房门");
+    line(6, 7, 10, 7, "wall", "西南房间隔墙");
+    line(6, 13, 10, 13, "wall", "东南房间隔墙");
+    door(8, 7, "西南房门");
+    door(7 + (seed % 2), 13, "东南房门");
+    door(11, 9 + (seed % 2), "主要入口");
+
+    add(3, 5, "floor", "西北侧室");
+    add(3, 12, "floor", "东北侧室");
+    add(6, 10, "floor", "中央走廊");
+    add(9, 4, "floor", "西南储藏室");
+    add(9, 10, "floor", "南侧大厅");
+    add(9, 15, "floor", "东南侧室");
+    add(3, 7, "cover", "坍塌书架", false, true);
+    add(3, 13, "object", "机关石碑");
+    add(6, 5, "cover", "断裂石柱", false, true);
+    add(6, 11, "cover", "倒塌拱门", false, true);
+    add(9, 5, "object", "可搜索木箱");
+    add(9, 14, "cover", "碎石掩体");
+    spawn(10, 9, "玩家");
+    spawn(3, 14, "敌方");
   }
 
   const themeNames: Record<GridTheme, string> = {

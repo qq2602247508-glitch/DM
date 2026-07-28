@@ -702,6 +702,82 @@ def test_advance_turn_restores_next_combatant_action_economy(
     assert repeated.json()["action"]["id"] == advanced.json()["action"]["id"]
 
 
+def test_advance_turn_waits_for_pending_player_roll(
+    combat_client: TestClient,
+) -> None:
+    campaign = _campaign(combat_client)
+    combat, player = _combatant(combat_client, campaign["id"])
+    first_monster = combat_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "第一只相位蜘蛛",
+            "entity_type": "monster",
+            "initiative": 30,
+            "hp": 32,
+            "max_hp": 32,
+        },
+    ).json()
+    second_monster = combat_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "第二只相位蜘蛛",
+            "entity_type": "monster",
+            "initiative": 20,
+            "hp": 32,
+            "max_hp": 32,
+        },
+    ).json()
+    pending = combat_client.post(
+        (
+            f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}"
+            "/actions/player-rolls/pending"
+        ),
+        headers={"X-Request-ID": "first-spider-save"},
+        json={
+            "actor_combatant_id": first_monster["id"],
+            "actor_version": first_monster["version"],
+            "target_combatant_id": player["id"],
+            "target_version": player["version"],
+            "action_name": "毒牙",
+            "resolution_type": "saving_throw",
+            "dc": 11,
+            "ability": "constitution",
+            "damage_on_failure": 7,
+            "damage_on_success": 3,
+            "damage_type": "poison",
+            "description": "等待玩家完成第一只怪物的豁免。",
+        },
+    )
+    assert pending.status_code == 200, pending.json()
+
+    blocked = combat_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}/turns/advance",
+        headers={"X-Request-ID": "must-wait-for-player"},
+        json={"combat_version": combat["version"]},
+    )
+    assert blocked.status_code == 400
+    assert "玩家掷骰请求未结算" in blocked.json()["message"]
+
+    action = pending.json()["action"]
+    resolved = combat_client.post(
+        (
+            f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}"
+            f"/actions/player-rolls/{action['id']}/confirm"
+        ),
+        headers={"X-Request-ID": "resolve-first-spider-save"},
+        json={"action_version": action["version"], "roll_total": 15},
+    )
+    assert resolved.status_code == 200, resolved.json()
+
+    advanced = combat_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}/turns/advance",
+        headers={"X-Request-ID": "advance-after-player-roll"},
+        json={"combat_version": combat["version"]},
+    )
+    assert advanced.status_code == 200, advanced.json()
+    assert advanced.json()["active_combatant"]["id"] == second_monster["id"]
+
+
 def test_reset_combat_restores_start_state_and_clears_log(
     combat_client: TestClient,
 ) -> None:

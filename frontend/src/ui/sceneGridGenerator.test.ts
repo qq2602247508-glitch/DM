@@ -43,6 +43,14 @@ describe("generateTacticalSceneGrid", () => {
   it("keeps the SceneGrid dimensions and cell kinds compatible", () => {
     const grid = generateTacticalSceneGrid("遗迹", "多房间遭遇");
     expect(grid).toMatchObject({ width: 18, height: 12, cell_size_ft: 5 });
+    expect(grid.theme).toContain("多房间");
+    expect(grid.cells.filter((cell) => cell.kind === "door")).toHaveLength(5);
+    expect(grid.cells.filter((cell) => (
+      cell.kind === "floor" && /侧室|大厅|走廊|储藏室/.test(cell.label)
+    )).length).toBeGreaterThanOrEqual(5);
+    expect(grid.cells.some((cell) => cell.label === "西侧凸墙")).toBe(true);
+    expect(grid.cells.some((cell) => cell.label === "东侧凸墙")).toBe(true);
+    expect(grid.cells.filter((cell) => cell.blocks_sight).length).toBeGreaterThanOrEqual(3);
     expect(grid.cells.every((cell) => (
       ["floor", "wall", "cover", "door", "object"].includes(cell.kind)
       && cell.row >= 1 && cell.row <= grid.height
