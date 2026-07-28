@@ -127,6 +127,15 @@ def main() -> None:
 
     combat_actions = [
         action(
+            "魔法飞弹",
+            "自动命中的力场飞弹；默认产生3枚飞弹，可分配给一个或多个可见目标。",
+            "3d4+3 力场",
+            "120尺；最多3个可见目标",
+            damage_type="force",
+            resource_key="spell_slots_1",
+            resource_cost=1,
+        ),
+        action(
             "迅捷刺剑",
             "近战武器攻击；单体、5尺，测试贴身攻击与AC命中。",
             "1d8+4 穿刺",
@@ -151,6 +160,14 @@ def main() -> None:
             damage_type="fire",
         ),
         action(
+            "冷冻射线",
+            "远程法术攻击；命中后造成冷冻伤害，并由DM记录目标速度降低10尺。",
+            "3d8 冷冻",
+            "60尺",
+            attack_bonus=9,
+            damage_type="cold",
+        ),
+        action(
             "火球术",
             "150尺施法距离；以目标点为中心20尺半径球形爆发。",
             "8d6 火焰",
@@ -171,6 +188,15 @@ def main() -> None:
             damage_type="lightning",
             resource_key="spell_slots_3",
             resource_cost=1,
+        ),
+        action(
+            "酸液飞溅",
+            "目标进行敏捷豁免；用于测试无需攻击检定的单体戏法。",
+            "3d6 酸蚀",
+            "60尺",
+            save_ability="dexterity",
+            save_dc=17,
+            damage_type="acid",
         ),
     ]
     noncombat_spells = [
@@ -544,21 +570,58 @@ def main() -> None:
         for col in range(1, width + 1):
             if row in {1, height} or col in {1, width}:
                 cells.append({"row": row, "col": col, "kind": "wall", "label": "石墙"})
-    for row in range(2, 11):
-        if row != 7:
-            cells.append({"row": row, "col": 11, "kind": "wall", "label": "酒窖隔墙"})
+    # Five connected rooms: northwest archive, southwest store, central hall,
+    # northeast chapel and a broad southern cellar. Door gaps create several
+    # routes and choke points rather than a single rectangular arena.
+    for row in range(2, 14):
+        if row != 5:
+            cells.append({"row": row, "col": 8, "kind": "wall", "label": "西侧隔墙"})
+    for row in range(2, 10):
+        if row != 4:
+            cells.append({"row": row, "col": 14, "kind": "wall", "label": "东侧隔墙"})
+    for col in range(2, 8):
+        if col != 4:
+            cells.append({"row": 7, "col": col, "kind": "wall", "label": "档案室南墙"})
+    for col in range(9, 20):
+        if col not in {11, 16}:
+            cells.append({"row": 9, "col": col, "kind": "wall", "label": "地下室北墙"})
     cells.extend(
         [
-            {"row": 7, "col": 11, "kind": "door", "label": "警铃铁门"},
+            {"row": 5, "col": 8, "kind": "door", "label": "档案室侧门"},
+            {"row": 4, "col": 14, "kind": "door", "label": "礼拜堂木门"},
+            {"row": 7, "col": 4, "kind": "door", "label": "警铃铁门"},
+            {"row": 9, "col": 11, "kind": "door", "label": "酒窖北门"},
+            {"row": 9, "col": 16, "kind": "door", "label": "排水沟侧门"},
             {"row": 4, "col": 4, "kind": "cover", "label": "档案桌"},
             {"row": 4, "col": 5, "kind": "cover", "label": "档案桌"},
-            {"row": 9, "col": 5, "kind": "cover", "label": "翻倒长椅"},
-            {"row": 10, "col": 15, "kind": "cover", "label": "酒桶堆"},
-            {"row": 11, "col": 15, "kind": "cover", "label": "酒桶堆"},
-            {"row": 12, "col": 16, "kind": "water", "label": "排水沟"},
+            {
+                "row": 4,
+                "col": 11,
+                "kind": "cover",
+                "label": "落地档案柜",
+                "blocks_sight": True,
+            },
+            {
+                "row": 6,
+                "col": 12,
+                "kind": "cover",
+                "label": "承重石柱",
+                "blocks_sight": True,
+            },
+            {
+                "row": 5,
+                "col": 17,
+                "kind": "cover",
+                "label": "倒塌圣像",
+                "blocks_sight": True,
+            },
+            {"row": 10, "col": 5, "kind": "cover", "label": "翻倒长椅"},
+            {"row": 11, "col": 16, "kind": "cover", "label": "酒桶堆"},
+            {"row": 12, "col": 16, "kind": "cover", "label": "酒桶堆"},
             {"row": 12, "col": 17, "kind": "water", "label": "排水沟"},
-            {"row": 8, "col": 14, "kind": "difficult", "label": "碎石"},
-            {"row": 8, "col": 15, "kind": "difficult", "label": "碎石"},
+            {"row": 12, "col": 18, "kind": "water", "label": "排水沟"},
+            {"row": 11, "col": 10, "kind": "difficult", "label": "碎石"},
+            {"row": 11, "col": 11, "kind": "difficult", "label": "碎石"},
         ]
     )
     post(
@@ -569,8 +632,8 @@ def main() -> None:
             "cell_size_ft": 5,
             "mode": "exploration",
             "public_description": (
-                "20×14格钟楼地下层：公共大厅、档案区、上锁酒窖、酒桶掩体、"
-                "碎石困难地形和排水沟。每格5尺。"
+                "20×14格钟楼地下层：五个相连房间、中央走廊、礼拜堂、上锁酒窖、"
+                "多条门路、硬遮挡、碎石困难地形和排水沟。每格5尺。"
             ),
             "dm_description": "隐藏压力板位于铁门内侧；拟怪伪装为南侧宝箱。",
             "layers_json": {"theme": "clocktower-cellar", "cells": cells},
@@ -582,7 +645,7 @@ def main() -> None:
             "object_type": "door",
             "label": "带警铃假销的酒窖铁门",
             "row": 7,
-            "col": 11,
+            "col": 4,
             "state": "closed",
             "visibility": "public",
             "interaction_json": {
@@ -611,8 +674,8 @@ def main() -> None:
         {
             "object_type": "trap",
             "label": "可见的符文警报机关",
-            "row": 7,
-            "col": 12,
+            "row": 8,
+            "col": 4,
             "state": "active",
             "visibility": "public",
             "interaction_json": {
@@ -625,8 +688,8 @@ def main() -> None:
         {
             "object_type": "trap",
             "label": "隐藏压力板（玩家不应看到）",
-            "row": 9,
-            "col": 13,
+            "row": 10,
+            "col": 10,
             "state": "active",
             "visibility": "hidden",
             "interaction_json": {"action": "disarm", "dc": 17},
@@ -636,7 +699,7 @@ def main() -> None:
             "object_type": "portal",
             "label": "钟楼升降机关",
             "row": 3,
-            "col": 17,
+            "col": 18,
             "state": "closed",
             "visibility": "public",
             "interaction_json": {
@@ -668,13 +731,13 @@ def main() -> None:
     token_specs = [
         ("character", character, 5, 4),
         ("npc", npcs[0], 3, 4),
-        ("npc", npcs[1], 5, 7),
-        ("npc", npcs[2], 6, 9),
+        ("npc", npcs[1], 10, 4),
+        ("npc", npcs[2], 6, 10),
         ("monster", monsters[0], 4, 16),
-        ("monster", monsters[1], 9, 17),
-        ("monster", monsters[2], 6, 15),
-        ("monster", monsters[3], 10, 8),
-        ("monster", monsters[4], 12, 17),
+        ("monster", monsters[1], 11, 18),
+        ("monster", monsters[2], 5, 12),
+        ("monster", monsters[3], 10, 6),
+        ("monster", monsters[4], 12, 13),
     ]
     for entity_type, entity, row, col in token_specs:
         post(
@@ -721,6 +784,8 @@ def main() -> None:
             "先不要发起战斗：测试网格、NPC/怪物/物体位置、调查/察觉/游说/潜行/巧手。",
             "测试铁门、旅行箱、公开符文机关；确认隐藏压力板不会泄漏。",
             "再由DM从当前Scene发起战斗，测试五种战斗能力与五类怪物。",
+            "重点对比魔法飞弹自动命中、火焰箭/冷冻射线攻击检定、酸液飞溅单体豁免、火球术圆形范围与闪电束直线范围。",
+            "尝试隔墙选择目标，确认墙、落地档案柜、石柱和倒塌圣像会阻断视线。",
         ],
     }
     print(json.dumps(result, ensure_ascii=False, indent=2))
