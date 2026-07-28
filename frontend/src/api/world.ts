@@ -41,6 +41,13 @@ export type SiteLevelPreview = {
   connectors: Array<Record<string, unknown>>;
   monster_plan: Array<{ name: string; quantity: number; xp_each: number; source: string }>;
   reward_plan: Array<{ name: string; value_gp: number }>;
+  quality?: {
+    score: number;
+    room_size_cv: number;
+    largest_smallest_ratio: number;
+    valid_connectors: number;
+    algorithm: string;
+  };
 };
 export type SiteGenerationPreview = {
   schema_version: string;

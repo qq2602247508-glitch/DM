@@ -150,6 +150,7 @@ class SiteService:
                     generation_json={
                         "monster_plan": level_data["monster_plan"],
                         "reward_plan": level_data["reward_plan"],
+                        "quality": level_data.get("quality", {}),
                     },
                 )
                 session.add(level)
@@ -290,6 +291,7 @@ class SiteService:
                         "layout": level.layout_json,
                         "monster_plan": level.generation_json.get("monster_plan", []),
                         "reward_plan": level.generation_json.get("reward_plan", []),
+                        "quality": level.generation_json.get("quality", {}),
                         "rooms": [
                             serialize(room)
                             for room in session.scalars(

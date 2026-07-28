@@ -46,6 +46,61 @@ def test_site_generator_is_deterministic_connected_and_progressive() -> None:
     )
 
 
+def test_buildings_and_dungeons_use_distinct_high_quality_layout_grammars() -> None:
+    building = generate_site(
+        _request(
+            site_type="building",
+            name="普罗宅邸",
+            brief="带有主会客厅、卧室、书房、厨房和密室的旧贵族宅邸",
+            maximum_levels=3,
+        )
+    )
+    dungeon = generate_site(_request(maximum_levels=3))
+    for level in building["levels"]:
+        assert level["quality"]["score"] >= 88
+        assert level["quality"]["algorithm"] == "building_bsp"
+        assert level["quality"]["largest_smallest_ratio"] >= 1.8
+        assert level["quality"]["valid_connectors"] >= len(level["rooms"]) - 1
+    for level in dungeon["levels"]:
+        assert level["quality"]["score"] >= 88
+        assert level["quality"]["algorithm"] == "dungeon_rooms_and_corridors"
+        assert level["quality"]["valid_connectors"] >= len(level["rooms"]) - 1
+    assert building["levels"][0]["layout"]["width"] != dungeon["levels"][0]["layout"]["width"]
+    assert any(
+        connector["connector_type"] == "secret_door"
+        for level in dungeon["levels"]
+        for connector in level["connectors"]
+    )
+    assert any(
+        cell["kind"] == "stairs"
+        for level in building["levels"]
+        for cell in level["layout"]["cells"]
+    )
+
+
+def test_layout_quality_gate_holds_across_many_seeds_and_themes() -> None:
+    cases = (
+        ("building", "两层酒馆与客房"),
+        ("building", "被邪教徒占领的旧教堂"),
+        ("dungeon", "亡灵墓穴与隐藏藏宝室"),
+        ("dungeon", "地精洞穴、分叉通道和首领巢穴"),
+    )
+    scores: list[int] = []
+    for site_type, brief in cases:
+        for seed in range(20, 30):
+            preview = generate_site(
+                _request(
+                    site_type=site_type,
+                    name=brief,
+                    brief=brief,
+                    maximum_levels=2,
+                    seed=seed,
+                )
+            )
+            scores.extend(level["quality"]["score"] for level in preview["levels"])
+    assert min(scores) >= 88
+
+
 def test_site_generation_api_persists_atomic_hierarchy_and_is_idempotent(
     campaign_client: TestClient,
 ) -> None:

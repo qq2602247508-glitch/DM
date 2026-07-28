@@ -144,8 +144,8 @@ export function SceneMap({
                 </>
               ) : null}
               {object && object.object_type !== "wall" && !isVoid && !isDoor ? <span className="absolute left-0 top-0 max-w-full truncate text-stone-500">{object.label.slice(0, 2)}</span> : null}
-              {!token && terrain?.kind === "floor" && !/出生区/.test(terrain.label ?? "") ? (
-                <span className="absolute inset-x-0 bottom-0 truncate px-0.5 text-[8px] text-stone-500">{terrain.label?.slice(0, 5)}</span>
+              {!token && ["floor", "room", "stairs"].includes(terrain?.kind ?? "") && !/出生区/.test(terrain?.label ?? "") ? (
+                <span className="absolute inset-x-0 bottom-0 truncate px-0.5 text-[8px] text-stone-500">{terrain?.label?.slice(0, 5)}</span>
               ) : null}
               {token ? (
                 <span className={`flex h-full items-center justify-center rounded-full px-1 text-center ${token.isOwn ? "bg-amber-500/35 text-amber-100" : token.entity_type === "monster" ? "bg-red-500/30 text-red-100" : token.entity_type === "npc" ? "bg-violet-500/25 text-violet-100" : "bg-blue-500/25 text-blue-100"}`}>

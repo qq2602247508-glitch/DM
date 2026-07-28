@@ -22,6 +22,8 @@ const cellColor: Record<string, string> = {
   floor: "bg-amber-950/30 border-amber-900/40",
   door: "bg-amber-500/80 border-amber-300",
   cover: "bg-emerald-900 border-emerald-500",
+  room: "bg-cyan-950 border-cyan-500",
+  stairs: "bg-violet-950 border-violet-400",
 };
 
 function SiteGrid({ level }: { level: SiteLevelPreview }): ReactElement {
@@ -34,10 +36,16 @@ function SiteGrid({ level }: { level: SiteLevelPreview }): ReactElement {
       >
         {level.layout.cells.map((cell) => (
           <div
-            className={`aspect-square border text-[7px] leading-none ${cellColor[cell.kind] ?? "bg-ink-900 border-ink-700"}`}
+            className={`aspect-square border text-[7px] leading-none ${cell.label === "地图外区域" ? "border-black/70 bg-black/80" : cellColor[cell.kind] ?? "bg-ink-900 border-ink-700"}`}
             key={`${cell.row}-${cell.col}`}
             title={`${cell.label}（${cell.row}, ${cell.col}）`}
-          />
+          >
+            {["room", "door", "cover", "stairs"].includes(cell.kind) ? (
+              <span className="relative z-10 whitespace-nowrap text-[7px] text-parchment-100">
+                {cell.kind === "door" ? "门" : cell.label}
+              </span>
+            ) : null}
+          </div>
         ))}
       </div>
     </div>
@@ -161,7 +169,7 @@ export function SiteMapWorkbench({ campaignId }: { campaignId: string }): ReactE
                 {preview.levels.map((level, index) => <Button key={level.level_index} size="sm" variant={index === previewLevel ? "primary" : "ghost"} onClick={() => setPreviewLevel(index)}>{level.name}</Button>)}
                 <Button className="ml-auto" loading={confirmation.isPending} onClick={() => confirmation.mutate()} variant="primary">确认写入战役</Button>
               </div>
-              {activePreviewLevel ? <><div className="mb-2 flex flex-wrap gap-2"><Badge tone="danger">{activePreviewLevel.difficulty}</Badge><Badge>{activePreviewLevel.encounter_budget_xp} XP 预算</Badge><Badge tone="ok">{activePreviewLevel.reward_budget_gp} gp 奖励预算</Badge><Badge>{activePreviewLevel.rooms.length} 房间</Badge></div><SiteGrid level={activePreviewLevel} /></> : null}
+              {activePreviewLevel ? <><div className="mb-2 flex flex-wrap gap-2"><Badge tone="danger">{activePreviewLevel.difficulty}</Badge><Badge>{activePreviewLevel.encounter_budget_xp} XP 预算</Badge><Badge tone="ok">{activePreviewLevel.reward_budget_gp} gp 奖励预算</Badge><Badge>{activePreviewLevel.rooms.length} 房间</Badge>{activePreviewLevel.quality ? <Badge tone={activePreviewLevel.quality.score >= 88 ? "ok" : "danger"}>布局评分 {activePreviewLevel.quality.score}/100 · 房间比例 {activePreviewLevel.quality.largest_smallest_ratio}×</Badge> : null}</div><SiteGrid level={activePreviewLevel} /></> : null}
             </>
           ) : <RegionOverview maps={maps.data ?? []} />}
         </div>
@@ -180,6 +188,7 @@ export function SiteMapWorkbench({ campaignId }: { campaignId: string }): ReactE
             <div className="mb-3 flex flex-wrap gap-2">
               {site.data?.levels?.map((level, index) => <Button key={level.id} size="sm" variant={index === savedLevel ? "primary" : "ghost"} onClick={() => setSavedLevel(index)}>{level.name}</Button>)}
             </div>
+            {selectedLevel.quality ? <div className="mb-2"><Badge tone="ok">布局评分 {selectedLevel.quality.score}/100 · {selectedLevel.quality.algorithm}</Badge></div> : null}
             <SiteGrid level={selectedLevel} />
           </>
         ) : null}

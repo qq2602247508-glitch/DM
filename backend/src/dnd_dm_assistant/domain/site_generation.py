@@ -1,8 +1,11 @@
 from __future__ import annotations
 
 import hashlib
+import math
 import random
 from collections import deque
+from dataclasses import dataclass
+from statistics import mean, pstdev
 from typing import Any
 
 ENCOUNTER_BUDGETS = {
@@ -69,89 +72,462 @@ def _theme(text: str) -> str:
     return "default"
 
 
-def _connected_slots(rng: random.Random, count: int) -> list[tuple[int, int]]:
-    selected = {(1, 1)}
-    while len(selected) < count:
-        candidates: set[tuple[int, int]] = set()
-        for row, col in selected:
-            for dr, dc in ((1, 0), (-1, 0), (0, 1), (0, -1)):
-                point = (row + dr, col + dc)
-                if 0 <= point[0] < 3 and 0 <= point[1] < 3 and point not in selected:
-                    candidates.add(point)
-        selected.add(rng.choice(sorted(candidates)))
-    return sorted(selected)
+@dataclass(frozen=True)
+class Rect:
+    top: int
+    left: int
+    bottom: int
+    right: int
+
+    @property
+    def width(self) -> int:
+        return self.right - self.left + 1
+
+    @property
+    def height(self) -> int:
+        return self.bottom - self.top + 1
+
+    @property
+    def area(self) -> int:
+        return self.width * self.height
+
+    @property
+    def center(self) -> tuple[int, int]:
+        return ((self.top + self.bottom) // 2, (self.left + self.right) // 2)
 
 
-def _layout(rng: random.Random, room_count: int, names: tuple[str, ...]) -> dict[str, Any]:
-    width, height = 26, 20
-    slots = _connected_slots(rng, room_count)
-    cells = [
-        {"row": row, "col": col, "kind": "void", "label": "地图外区域", "blocks_sight": True}
+def _blank_cells(
+    width: int, height: int
+) -> tuple[list[dict[str, Any]], dict[tuple[int, int], dict[str, Any]]]:
+    cells: list[dict[str, Any]] = [
+        {"row": row, "col": col, "kind": "wall", "label": "地图外区域", "blocks_sight": True}
         for row in range(height)
         for col in range(width)
     ]
-    lookup = {(cell["row"], cell["col"]): cell for cell in cells}
-    rooms: list[dict[str, Any]] = []
-    origins = {(sr, sc): (1 + sr * 6, 1 + sc * 8) for sr, sc in slots}
-    for index, slot in enumerate(slots, 1):
-        top, left = origins[slot]
-        name = names[(index - 1) % len(names)]
-        for row in range(top, top + 5):
-            for col in range(left, left + 7):
-                boundary = row in (top, top + 4) or col in (left, left + 6)
-                lookup[(row, col)].update(
-                    kind="wall" if boundary else "floor",
-                    label="墙壁" if boundary else name,
-                    blocks_sight=boundary,
+    return cells, {(int(cell["row"]), int(cell["col"])): cell for cell in cells}
+
+
+def _room_record(index: int, name: str, rect: Rect, room_type: str = "room") -> dict[str, Any]:
+    return {
+        "room_index": index,
+        "name": name,
+        "room_type": room_type,
+        "description": f"{name}，面积约 {rect.area * 25} 平方尺，包含可调查细节与战术空间。",
+        "bounds": {
+            "row": rect.top,
+            "col": rect.left,
+            "width": rect.width,
+            "height": rect.height,
+        },
+        "interactive_objects": [{"name": f"{name}内的可调查物", "interaction": "调查"}],
+    }
+
+
+def _building_names(brief: str, level_index: int) -> tuple[str, ...]:
+    lowered = brief.lower()
+    if "酒馆" in lowered or "旅店" in lowered:
+        return ("公共大厅", "吧台", "厨房", "客房", "储藏室", "楼梯间", "酒窖", "包间", "办公室")
+    if "教堂" in lowered or "神殿" in lowered:
+        return ("主礼拜堂", "祭衣间", "祈祷室", "藏经室", "牧师房", "钟楼间", "地下墓室", "储物间")
+    if level_index == 1:
+        return ("主会客厅", "门厅", "餐厅", "厨房", "书房", "储藏室", "仆役间", "楼梯厅", "密室")
+    return ("起居大厅", "主卧室", "客卧", "书房", "更衣室", "浴室", "楼梯厅", "储藏室", "密室")
+
+
+def _split_building(
+    rng: random.Random, footprint: Rect, target_count: int
+) -> tuple[list[Rect], list[dict[str, Any]]]:
+    leaves = [footprint]
+    partitions: list[dict[str, Any]] = []
+    while len(leaves) < target_count:
+        candidates = [rect for rect in leaves if rect.width >= 8 or rect.height >= 8]
+        if not candidates:
+            break
+        rect = max(candidates, key=lambda item: item.area * rng.uniform(0.8, 1.2))
+        orientations: list[str] = []
+        if rect.width >= 8:
+            orientations.append("vertical")
+        if rect.height >= 8:
+            orientations.append("horizontal")
+        if rect.width / max(1, rect.height) > 1.35 and "vertical" in orientations:
+            orientation = "vertical"
+        elif rect.height / max(1, rect.width) > 1.35 and "horizontal" in orientations:
+            orientation = "horizontal"
+        else:
+            orientation = rng.choice(orientations)
+        if orientation == "vertical":
+            low, high = rect.left + 3, rect.right - 3
+            split = rng.randint(low, high)
+            children = (
+                Rect(rect.top, rect.left, rect.bottom, split - 1),
+                Rect(rect.top, split + 1, rect.bottom, rect.right),
+            )
+            partition = {
+                "orientation": orientation,
+                "fixed": split,
+                "start": rect.top,
+                "end": rect.bottom,
+            }
+        else:
+            low, high = rect.top + 3, rect.bottom - 3
+            split = rng.randint(low, high)
+            children = (
+                Rect(rect.top, rect.left, split - 1, rect.right),
+                Rect(split + 1, rect.left, rect.bottom, rect.right),
+            )
+            partition = {
+                "orientation": orientation,
+                "fixed": split,
+                "start": rect.left,
+                "end": rect.right,
+            }
+        leaves.remove(rect)
+        leaves.extend(children)
+        partitions.append(partition)
+    return leaves, partitions
+
+
+def _building_layout(
+    rng: random.Random, room_count: int, brief: str, level_index: int
+) -> dict[str, Any]:
+    width = rng.randrange(31, 39, 2)
+    height = rng.randrange(23, 29, 2)
+    cells, lookup = _blank_cells(width, height)
+    inset_top = rng.choice((1, 2))
+    inset_left = rng.choice((1, 2))
+    footprint = Rect(inset_top + 1, inset_left + 1, height - 3, width - 3)
+    leaves, partitions = _split_building(rng, footprint, room_count)
+    ordered = sorted(leaves, key=lambda rect: (-rect.area, rect.top, rect.left))
+    names = _building_names(brief, level_index)
+    named = {rect: names[index % len(names)] for index, rect in enumerate(ordered)}
+    for rect in leaves:
+        for row in range(rect.top, rect.bottom + 1):
+            for col in range(rect.left, rect.right + 1):
+                lookup[(row, col)].update(kind="floor", label="地板", blocks_sight=False)
+    for row in range(footprint.top - 1, footprint.bottom + 2):
+        for col in range(footprint.left - 1, footprint.right + 2):
+            if row in (footprint.top - 1, footprint.bottom + 1) or col in (
+                footprint.left - 1,
+                footprint.right + 1,
+            ):
+                lookup[(row, col)].update(kind="wall", label="外墙", blocks_sight=True)
+    for partition in partitions:
+        if partition["orientation"] == "vertical":
+            for row in range(partition["start"], partition["end"] + 1):
+                lookup[(row, partition["fixed"])].update(
+                    kind="wall", label="内墙", blocks_sight=True
                 )
-        rooms.append(
+        else:
+            for col in range(partition["start"], partition["end"] + 1):
+                lookup[(partition["fixed"], col)].update(
+                    kind="wall", label="内墙", blocks_sight=True
+                )
+    connectors: list[dict[str, Any]] = []
+    for partition in partitions:
+        candidates: list[tuple[int, int]] = []
+        if partition["orientation"] == "vertical":
+            col = partition["fixed"]
+            candidates = [
+                (row, col)
+                for row in range(partition["start"] + 1, partition["end"])
+                if lookup[(row, col - 1)]["kind"] == "floor"
+                and lookup[(row, col + 1)]["kind"] == "floor"
+            ]
+        else:
+            row = partition["fixed"]
+            candidates = [
+                (row, col)
+                for col in range(partition["start"] + 1, partition["end"])
+                if lookup[(row - 1, col)]["kind"] == "floor"
+                and lookup[(row + 1, col)]["kind"] == "floor"
+            ]
+        if not candidates:
+            continue
+        door = rng.choice(candidates)
+        lookup[door].update(kind="door", label="门", blocks_sight=False)
+        neighbor_points = (
+            ((door[0], door[1] - 1), (door[0], door[1] + 1))
+            if partition["orientation"] == "vertical"
+            else ((door[0] - 1, door[1]), (door[0] + 1, door[1]))
+        )
+        adjoining = [
+            next(
+                (
+                    index + 1
+                    for index, rect in enumerate(leaves)
+                    if rect.top <= point[0] <= rect.bottom and rect.left <= point[1] <= rect.right
+                ),
+                1,
+            )
+            for point in neighbor_points
+        ]
+        connectors.append(
             {
-                "room_index": index,
-                "name": name,
-                "room_type": "room",
-                "description": f"{name}，包含可调查的环境细节与战术空间。",
-                "bounds": {"row": top, "col": left, "width": 7, "height": 5},
-                "interactive_objects": [{"name": "可调查物", "interaction": "调查"}],
+                "from_room_index": adjoining[0],
+                "to_room_index": adjoining[1],
+                "connector_type": "door",
+                "label": "房门",
+                "state": "closed",
+                "position": {"row": door[0], "col": door[1]},
             }
         )
-    index_by_slot = {slot: index + 1 for index, slot in enumerate(slots)}
-    connectors: list[dict[str, Any]] = []
-    for slot in slots:
-        row, col = slot
-        for neighbor in ((row + 1, col), (row, col + 1)):
-            if neighbor not in index_by_slot:
-                continue
-            top, left = origins[slot]
-            ntop, nleft = origins[neighbor]
-            if neighbor[0] != row:
-                points = ((top + 4, left + 3), (top + 5, left + 3), (ntop, nleft + 3))
-            else:
-                points = ((top + 2, left + 6), (top + 2, left + 7), (ntop + 2, nleft))
-            for point in points:
-                lookup[point].update(kind="door", label="门", blocks_sight=False)
-            connectors.append(
-                {
-                    "from_room_index": index_by_slot[slot],
-                    "to_room_index": index_by_slot[neighbor],
-                    "connector_type": "door",
-                    "label": "房门",
-                    "state": "closed",
-                    "position": {"row": points[1][0], "col": points[1][1]},
-                }
-            )
-    for room in rng.sample(rooms, k=min(2, len(rooms))):
-        bounds = room["bounds"]
-        row, col = bounds["row"] + 2, bounds["col"] + 3
-        lookup[(row, col)].update(kind="cover", label="掩体", blocks_sight=True)
+    room_index = {rect: index + 1 for index, rect in enumerate(leaves)}
+    rooms = [_room_record(room_index[rect], named[rect], rect, "building_room") for rect in leaves]
+    for rect in leaves:
+        center = rect.center
+        lookup[center].update(kind="room", label=named[rect], blocks_sight=False)
+    for rect in ordered[: min(3, len(ordered))]:
+        row = min(rect.bottom, rect.center[0] + 1)
+        col = min(rect.right, rect.center[1] + 1)
+        if lookup[(row, col)]["kind"] == "floor":
+            lookup[(row, col)].update(kind="cover", label="家具", blocks_sight=True)
     return {
         "width": width,
         "height": height,
         "cell_size_ft": 5,
         "grid_type": "square",
+        "algorithm": "building_bsp",
         "cells": cells,
         "rooms": rooms,
         "connectors": connectors,
     }
+
+
+def _overlaps_with_margin(candidate: Rect, rooms: list[Rect], margin: int = 2) -> bool:
+    return any(
+        candidate.left - margin <= room.right
+        and candidate.right + margin >= room.left
+        and candidate.top - margin <= room.bottom
+        and candidate.bottom + margin >= room.top
+        for room in rooms
+    )
+
+
+def _dungeon_layout(
+    rng: random.Random, room_count: int, brief: str, level_index: int
+) -> dict[str, Any]:
+    width, height = 42, 30
+    cells, lookup = _blank_cells(width, height)
+    rects: list[Rect] = []
+    for _ in range(500):
+        if len(rects) >= room_count:
+            break
+        room_width = rng.randint(4, 10)
+        room_height = rng.randint(4, 8)
+        candidate = Rect(
+            rng.randint(2, height - room_height - 3),
+            rng.randint(2, width - room_width - 3),
+            0,
+            0,
+        )
+        candidate = Rect(
+            candidate.top,
+            candidate.left,
+            candidate.top + room_height - 1,
+            candidate.left + room_width - 1,
+        )
+        if not _overlaps_with_margin(candidate, rects):
+            rects.append(candidate)
+    if len(rects) < max(3, room_count - 1):
+        raise ValueError("could not place enough dungeon rooms")
+    rects = rects[:room_count]
+    for rect in rects:
+        for row in range(rect.top, rect.bottom + 1):
+            for col in range(rect.left, rect.right + 1):
+                lookup[(row, col)].update(kind="floor", label="洞窟地面", blocks_sight=False)
+    connected = {0}
+    edges: list[tuple[int, int]] = []
+    while len(connected) < len(rects):
+        edge = min(
+            (
+                (left, right)
+                for left in connected
+                for right in range(len(rects))
+                if right not in connected
+            ),
+            key=lambda pair: math.dist(rects[pair[0]].center, rects[pair[1]].center),
+        )
+        edges.append(edge)
+        connected.add(edge[1])
+    extra_candidates = [
+        (left, right)
+        for left in range(len(rects))
+        for right in range(left + 1, len(rects))
+        if (left, right) not in edges and (right, left) not in edges
+    ]
+    rng.shuffle(extra_candidates)
+    edges.extend(extra_candidates[: max(1, len(rects) // 4)])
+    connectors: list[dict[str, Any]] = []
+    degrees = [0] * len(rects)
+    for edge_index, (left_index, right_index) in enumerate(edges):
+        degrees[left_index] += 1
+        degrees[right_index] += 1
+        start = rects[left_index].center
+        end = rects[right_index].center
+        if rng.random() < 0.5:
+            path = [
+                *(
+                    (start[0], col)
+                    for col in range(min(start[1], end[1]), max(start[1], end[1]) + 1)
+                ),
+                *((row, end[1]) for row in range(min(start[0], end[0]), max(start[0], end[0]) + 1)),
+            ]
+        else:
+            path = [
+                *(
+                    (row, start[1])
+                    for row in range(min(start[0], end[0]), max(start[0], end[0]) + 1)
+                ),
+                *((end[0], col) for col in range(min(start[1], end[1]), max(start[1], end[1]) + 1)),
+            ]
+        for point in path:
+            lookup[point].update(kind="floor", label="通道", blocks_sight=False)
+        door = next(
+            (
+                point
+                for point in path
+                if point
+                not in {
+                    (row, col)
+                    for row in range(rects[left_index].top, rects[left_index].bottom + 1)
+                    for col in range(rects[left_index].left, rects[left_index].right + 1)
+                }
+            ),
+            path[len(path) // 2],
+        )
+        connector_type = (
+            "secret_door" if edge_index == len(edges) - 1 and len(edges) >= len(rects) else "door"
+        )
+        lookup[door].update(
+            kind="door",
+            label="暗门" if connector_type == "secret_door" else "门",
+            blocks_sight=connector_type == "secret_door",
+        )
+        connectors.append(
+            {
+                "from_room_index": left_index + 1,
+                "to_room_index": right_index + 1,
+                "connector_type": connector_type,
+                "label": "隐藏通道" if connector_type == "secret_door" else "石门",
+                "state": "hidden" if connector_type == "secret_door" else "closed",
+                "position": {"row": door[0], "col": door[1]},
+            }
+        )
+    walkable = {point for point, cell in lookup.items() if cell["kind"] in ("floor", "door")}
+    for row, col in walkable:
+        for neighbor in (
+            (row + 1, col),
+            (row - 1, col),
+            (row, col + 1),
+            (row, col - 1),
+        ):
+            if (
+                neighbor in lookup
+                and lookup[neighbor]["kind"] == "wall"
+                and lookup[neighbor]["label"] == "地图外区域"
+            ):
+                lookup[neighbor].update(kind="wall", label="岩壁", blocks_sight=True)
+    names = ROOM_NAMES["dungeon"]
+    ordered = sorted(range(len(rects)), key=lambda index: (-rects[index].area, index))
+    assigned: dict[int, str] = {}
+    for rank, index in enumerate(ordered):
+        if rank == 0:
+            assigned[index] = "主洞厅" if level_index < 3 else "首领巢穴"
+        elif degrees[index] == 1 and rank == len(ordered) - 1:
+            assigned[index] = "隐秘藏宝室"
+        else:
+            assigned[index] = names[(rank + level_index - 1) % len(names)]
+    rooms = [
+        _room_record(index + 1, assigned[index], rect, "dungeon_room")
+        for index, rect in enumerate(rects)
+    ]
+    for index, rect in enumerate(rects):
+        lookup[rect.center].update(kind="room", label=assigned[index], blocks_sight=False)
+    for index in ordered[: min(3, len(ordered))]:
+        rect = rects[index]
+        point = (rect.center[0], min(rect.right, rect.center[1] + 1))
+        if lookup[point]["kind"] == "floor":
+            lookup[point].update(kind="cover", label="岩柱", blocks_sight=True)
+    return {
+        "width": width,
+        "height": height,
+        "cell_size_ft": 5,
+        "grid_type": "square",
+        "algorithm": "dungeon_rooms_and_corridors",
+        "cells": cells,
+        "rooms": rooms,
+        "connectors": connectors,
+        "graph": {"edges": edges, "degrees": degrees},
+    }
+
+
+def score_layout(layout: dict[str, Any], site_type: str) -> dict[str, Any]:
+    rooms = layout.get("rooms", [])
+    areas = [int(room["bounds"]["width"]) * int(room["bounds"]["height"]) for room in rooms]
+    connectors = layout.get("connectors", [])
+    connected = layout_is_connected(layout)
+    diversity = pstdev(areas) / mean(areas) if len(areas) > 1 and mean(areas) else 0
+    size_ratio = max(areas) / min(areas) if areas else 0
+    valid_doors = sum(
+        1
+        for connector in connectors
+        if connector.get("from_room_index") != connector.get("to_room_index")
+    )
+    walkable = sum(
+        1 for cell in layout.get("cells", []) if cell.get("kind") not in ("void", "wall")
+    )
+    utilization = walkable / max(1, int(layout["width"]) * int(layout["height"]))
+    score = 25 if connected else 0
+    score += min(20, round(diversity * 60))
+    score += min(10, round(max(0, size_ratio - 1) * 8))
+    score += min(15, round(15 * valid_doors / max(1, len(rooms) - 1)))
+    score += 10 if len(rooms) >= 3 else 0
+    if site_type == "building":
+        score += 10 if size_ratio >= 1.8 else 0
+        score += 10 if 0.35 <= utilization <= 0.85 else 4
+    else:
+        graph = layout.get("graph", {})
+        degrees = graph.get("degrees", [])
+        cycle_count = max(0, len(graph.get("edges", [])) - len(rooms) + 1)
+        score += 5 if cycle_count >= 1 else 0
+        score += 5 if any(degree == 1 for degree in degrees) else 0
+        score += 10 if 0.12 <= utilization <= 0.55 else 4
+    return {
+        "score": min(100, score),
+        "connected": connected,
+        "room_size_cv": round(diversity, 3),
+        "largest_smallest_ratio": round(size_ratio, 2),
+        "valid_connectors": valid_doors,
+        "walkable_utilization": round(utilization, 3),
+        "algorithm": layout.get("algorithm"),
+    }
+
+
+def _best_layout(
+    site_type: str,
+    seed: int,
+    room_count: int,
+    brief: str,
+    level_index: int,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    candidates: list[tuple[dict[str, Any], dict[str, Any]]] = []
+    for attempt in range(16):
+        rng = random.Random(seed + attempt * 104_729)
+        try:
+            layout = (
+                _building_layout(rng, room_count, brief, level_index)
+                if site_type == "building"
+                else _dungeon_layout(rng, room_count, brief, level_index)
+            )
+        except ValueError:
+            continue
+        quality = score_layout(layout, site_type)
+        candidates.append((layout, quality))
+        if quality["score"] >= 88:
+            break
+    if not candidates:
+        raise ValueError("could not generate a valid site layout")
+    return max(candidates, key=lambda item: item[1]["score"])
 
 
 def _monster_plan(theme: str, budget: int) -> list[dict[str, Any]]:
@@ -214,7 +590,13 @@ def generate_site(data: dict[str, Any]) -> dict[str, Any]:
             * (1 + 0.35 * (level_index - 1))
         )
         room_count = rng.randint(rooms_min, rooms_max)
-        layout = _layout(rng, room_count, ROOM_NAMES[site_type])
+        layout, quality = _best_layout(
+            site_type,
+            seed + level_index * 1_000_003,
+            room_count,
+            str(data["brief"]),
+            level_index,
+        )
         levels.append(
             {
                 "level_index": level_index,
@@ -228,17 +610,34 @@ def generate_site(data: dict[str, Any]) -> dict[str, Any]:
                 "layout": {
                     key: value
                     for key, value in layout.items()
-                    if key not in ("rooms", "connectors")
+                    if key not in ("rooms", "connectors", "graph")
                 },
                 "rooms": layout["rooms"],
                 "connectors": layout["connectors"],
-                "monster_plan": _monster_plan(
-                    theme, round(budget * monster_density / 100)
-                ),
+                "quality": quality,
+                "monster_plan": _monster_plan(theme, round(budget * monster_density / 100)),
                 "reward_plan": [{"name": "金币与等价战利品", "value_gp": reward}],
             }
         )
     for current, following in zip(levels, levels[1:], strict=False):
+        from_bounds = current["rooms"][-1]["bounds"]
+        to_bounds = following["rooms"][0]["bounds"]
+        from_position = {
+            "row": int(from_bounds["row"]) + int(from_bounds["height"]) // 2,
+            "col": int(from_bounds["col"]) + int(from_bounds["width"]) // 2,
+        }
+        to_position = {
+            "row": int(to_bounds["row"]) + int(to_bounds["height"]) // 2,
+            "col": int(to_bounds["col"]) + int(to_bounds["width"]) // 2,
+        }
+        for cell in current["layout"]["cells"]:
+            if cell["row"] == from_position["row"] and cell["col"] == from_position["col"]:
+                cell.update(kind="stairs", label="向下楼梯", blocks_sight=False)
+                break
+        for cell in following["layout"]["cells"]:
+            if cell["row"] == to_position["row"] and cell["col"] == to_position["col"]:
+                cell.update(kind="stairs", label="向上楼梯", blocks_sight=False)
+                break
         current["connectors"].append(
             {
                 "from_room_index": current["rooms"][-1]["room_index"],
@@ -247,7 +646,18 @@ def generate_site(data: dict[str, Any]) -> dict[str, Any]:
                 "connector_type": "stairs_down",
                 "label": "通往下一层",
                 "state": "open",
-                "position": {"row": 3, "col": 3},
+                "position": from_position,
+            }
+        )
+        following["connectors"].append(
+            {
+                "from_room_index": following["rooms"][0]["room_index"],
+                "to_level_index": current["level_index"],
+                "to_room_index": current["rooms"][-1]["room_index"],
+                "connector_type": "stairs_up",
+                "label": "返回上一层",
+                "state": "open",
+                "position": to_position,
             }
         )
     return {

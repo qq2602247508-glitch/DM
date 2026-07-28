@@ -30,6 +30,8 @@ export function terrainCellClass(cell: PresentableMapCell | undefined): string {
   if (isMapVoidCell(cell)) return "bg-black/80 border-black/70";
   if (cell?.kind === "wall") return "bg-stone-800";
   if (cell?.kind === "cover") return "bg-emerald-950/70";
+  if (cell?.kind === "room") return "bg-cyan-950/55";
+  if (cell?.kind === "stairs") return "bg-violet-950/70";
   if (cell?.kind === "water") return "bg-sky-950/60";
   if (cell?.kind === "door") return "bg-amber-950/80";
   if (cell?.kind === "object") return "bg-violet-950/60";
