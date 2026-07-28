@@ -78,6 +78,15 @@ def create_recovery_point(
     return _service_call(lambda: service.create_backup(body.label, _request_id(request)))
 
 
+@router.post("/recovery-points/ensure-automatic")
+def ensure_automatic_recovery_point(
+    request: Request,
+    service: Annotated[ReliabilityService, Depends(get_reliability_service)],
+) -> dict[str, Any]:
+    """Ensure a recent startup snapshot exists without duplicating it on refresh."""
+    return _service_call(lambda: service.ensure_automatic_backup(_request_id(request)))
+
+
 @router.post("/recovery-points/{point_id}/preview-restore")
 def preview_restore(
     point_id: str, service: Annotated[ReliabilityService, Depends(get_reliability_service)]

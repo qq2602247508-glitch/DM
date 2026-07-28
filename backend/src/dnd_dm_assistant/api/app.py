@@ -22,8 +22,10 @@ from dnd_dm_assistant.api.routes.player_rooms import (
     admin_player_room_router,
     public_player_room_router,
 )
+from dnd_dm_assistant.api.routes.prep_imports import router as prep_imports_router
 from dnd_dm_assistant.api.routes.reliability import router as reliability_router
 from dnd_dm_assistant.api.routes.rests import router as rests_router
+from dnd_dm_assistant.api.routes.session_checkpoints import router as session_checkpoints_router
 from dnd_dm_assistant.api.routes.spells_economy import router as spells_economy_router
 from dnd_dm_assistant.api.routes.world import router as world_router
 from dnd_dm_assistant.config import Settings, get_settings
@@ -67,10 +69,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(combat_engine_router, prefix=app_settings.api_prefix)
     app.include_router(encounters_router, prefix=app_settings.api_prefix)
     app.include_router(rests_router, prefix=app_settings.api_prefix)
+    app.include_router(session_checkpoints_router, prefix=app_settings.api_prefix)
     app.include_router(spells_economy_router, prefix=app_settings.api_prefix)
     app.include_router(narrative_router, prefix=app_settings.api_prefix)
     app.include_router(assistant_router, prefix=app_settings.api_prefix)
     app.include_router(world_router, prefix=app_settings.api_prefix)
+    app.include_router(prep_imports_router, prefix=app_settings.api_prefix)
     app.include_router(player_router, prefix=app_settings.api_prefix)
     app.include_router(player_dm_router, prefix=app_settings.api_prefix)
     app.include_router(admin_player_room_router, prefix=app_settings.api_prefix)

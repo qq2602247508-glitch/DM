@@ -66,6 +66,13 @@ for attempt in $(seq 1 120); do
     if [ -n "$diagnostics" ]; then
       echo "启动诊断已完成；详细状态可在“设置与备份”查看。"
     fi
+    if curl -fsS --max-time 30 -X POST \
+      http://127.0.0.1:8000/api/v1/system/recovery-points/ensure-automatic \
+      >/dev/null 2>&1; then
+      echo "每日自动恢复点已检查。"
+    else
+      echo "自动恢复点创建失败；服务仍可使用，请在“设置与备份”手动创建。" >&2
+    fi
     open "$frontend_url"
     exit 0
   fi

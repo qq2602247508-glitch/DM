@@ -6,14 +6,20 @@ import type {
   StateChangeProposal,
 } from "./types";
 
+export type AssistantMode = "quick" | "narrative" | "combat";
+export type LegacyAssistantMode = "general";
+
 export function runAssistantTurn(
   campaignId: string,
   action: string,
-  options: { mode?: "general" | "narrative"; signal?: AbortSignal } = {},
+  options: {
+    mode?: AssistantMode | LegacyAssistantMode;
+    signal?: AbortSignal;
+  } = {},
 ): Promise<AgentResponse> {
   return apiFetch<AgentResponse>(`/campaigns/${campaignId}/assistant/turns`, {
     method: "POST",
-    body: { action, mode: options.mode ?? "general" },
+    body: { action, mode: options.mode ?? "quick" },
     signal: options.signal,
   });
 }

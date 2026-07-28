@@ -7,7 +7,10 @@ import {
   type ReactElement,
 } from "react";
 
-import { runAssistantTurn } from "../api/assistant";
+import {
+  runAssistantTurn,
+  type AssistantMode,
+} from "../api/assistant";
 import { answerKnowledge } from "../api/knowledge";
 import type { AgentResponse, GroundedAnswer } from "../api/types";
 import { AgentResponseView, RulesAnswerView } from "../components/assistant/AgentResponseView";
@@ -17,6 +20,12 @@ import { Icon } from "../ui/icons";
 import { Button, ErrorState, Spinner } from "../ui/primitives";
 
 type Mode = "quick" | "rules" | "story" | "combat";
+
+const AGENT_MODE_BY_UI_MODE: Record<Exclude<Mode, "rules">, AssistantMode> = {
+  quick: "quick",
+  story: "narrative",
+  combat: "combat",
+};
 
 const MODES: { id: Mode; label: string; hint: string; placeholder: string }[] = [
   {
@@ -122,7 +131,9 @@ function AssistantContent({ campaignId }: { campaignId: string }): ReactElement 
     mutationFn: ({ text, selectedMode }: { text: string; selectedMode: Mode }) =>
       selectedMode === "rules"
         ? answerKnowledge(text)
-        : runAssistantTurn(campaignId, text),
+        : runAssistantTurn(campaignId, text, {
+            mode: AGENT_MODE_BY_UI_MODE[selectedMode],
+          }),
     onSuccess: (data, { selectedMode }) => {
       if (selectedMode === "rules") {
         push({ kind: "rules", answer: data as GroundedAnswer });

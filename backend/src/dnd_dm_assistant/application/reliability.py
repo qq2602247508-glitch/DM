@@ -5,7 +5,7 @@ import hashlib
 import json
 import secrets
 import sqlite3
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -137,6 +137,52 @@ class ReliabilityService:
                 },
             )
         return payload
+
+    def ensure_automatic_backup(
+        self,
+        request_id: str,
+        *,
+        minimum_interval: timedelta = timedelta(hours=24),
+    ) -> dict[str, Any]:
+        """Create at most one startup recovery point per interval.
+
+        The check and snapshot are intentionally kept server-side so every
+        launcher follows the same policy and a browser refresh cannot create a
+        pile of backups. Existing recovery points are never removed here.
+        """
+        if minimum_interval.total_seconds() <= 0:
+            raise ReliabilityError("automatic backup interval must be positive")
+        if not self._available():
+            raise ReliabilityError("database has not been migrated for recovery points")
+        with self._engine.connect() as connection:
+            row = (
+                connection.execute(
+                    text(
+                        "SELECT id, label, kind, file_name, sha256, size_bytes, created_at "
+                        "FROM recovery_points WHERE kind='automatic_startup' "
+                        "ORDER BY created_at DESC, id DESC LIMIT 1"
+                    )
+                )
+                .mappings()
+                .first()
+            )
+        if row is not None:
+            raw_created = row["created_at"]
+            created_at = (
+                raw_created
+                if isinstance(raw_created, datetime)
+                else datetime.fromisoformat(str(raw_created).replace("Z", "+00:00"))
+            )
+            if created_at.tzinfo is None:
+                created_at = created_at.replace(tzinfo=UTC)
+            if datetime.now(UTC) - created_at < minimum_interval:
+                return {**dict(row), "created": False}
+        point = self.create_backup(
+            "每日启动自动恢复点",
+            request_id,
+            kind="automatic_startup",
+        )
+        return {**point, "created": True}
 
     def list_recovery_points(self) -> list[dict[str, Any]]:
         if not self._available():

@@ -45,6 +45,15 @@ def test_recovery_point_and_read_only_mode_are_local_and_explicit(tmp_path: Path
         assert preview.status_code == 200
         assert "confirm_token" in preview.json()
 
+        automatic = client.post("/api/v1/system/recovery-points/ensure-automatic")
+        repeated = client.post("/api/v1/system/recovery-points/ensure-automatic")
+        assert automatic.status_code == 200
+        assert automatic.json()["created"] is True
+        assert repeated.status_code == 200
+        assert repeated.json()["created"] is False
+        assert repeated.json()["id"] == automatic.json()["id"]
+        assert len(client.get("/api/v1/system/recovery-points").json()["items"]) == 2
+
         assert (
             client.post(
                 "/api/v1/system/safe-mode", json={"enabled": True, "reason": "investigating"}

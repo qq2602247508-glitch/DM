@@ -3,6 +3,12 @@ import { useEffect, useMemo, useState, type FormEvent, type ReactElement } from 
 
 import { runAssistantTurn } from "../api/assistant";
 import { getRuleDocument, searchKnowledge } from "../api/knowledge";
+import { confirmPrepImport, previewPrepImport, type PrepDraft, type PrepImportPreview } from "../api/prep";
+import {
+  createSessionCheckpoint, getSessionCheckpoint, listSessionCheckpoints,
+  previewSessionCheckpointRestore, restoreSessionCheckpoint,
+  type SessionCheckpointRestorePreview, type SessionCheckpointSummary,
+} from "../api/sessionCheckpoints";
 import {
   getDmNoncombatActions,
   planDmNoncombatAction,
@@ -12,8 +18,8 @@ import {
   type NoncombatPendingAction,
 } from "../api/playerRoom";
 import {
-  applyEncounterAdjustment, createClue, createEncounterAdjustment, createEquipmentInstance,
-  createEvent, createKnownSpell, createLocation, createNpc, createQuest, getCharacterOptions,
+  applyEncounterAdjustment, createEncounterAdjustment, createEquipmentInstance,
+  createEvent, createKnownSpell, createNpc, getCharacterOptions,
   listCharacters, listEncounterAdjustments, listEvents, listLocations, listNpcs, updateCharacter,
   rejectEncounterAdjustment, revertEncounterAdjustment,
 } from "../api/entities";
@@ -21,8 +27,8 @@ import type {
   AgentResponse, Character, EncounterAdjustment, EncounterOperation, Monster, Npc, Scene, SceneParticipant,
 } from "../api/types";
 import {
-  addSceneParticipant, createMonster, createPersistentGrid, createScene, createWorldItem, generateNpc, getSceneGrid,
-  listMonsters, listSceneParticipants, listScenes, previewSiteGeneration, confirmSiteGeneration,
+  addSceneParticipant, createMonster, createPersistentGrid, createScene, generateNpc, getSceneGrid,
+  listMonsters, listSceneParticipants, listScenes,
   removeSceneParticipant, startSceneCombat,
 } from "../api/world";
 import { CharacterSheetDetail } from "../components/CharacterSheetDetail";
@@ -39,7 +45,7 @@ import { Badge, Button, EmptyState, ErrorState, LoadingBlock } from "../ui/primi
 import { inputCls, selectCls, textareaCls } from "../ui/styles";
 import { safeDndText } from "../ui/contentSafety";
 import { HpBar } from "../ui/widgets";
-import { buildFallbackPrepDraft, parsePrepDraft, type DraftAtom } from "../ui/prepDraft";
+import { atomsToStrictPrepDraft, buildFallbackPrepDraft, parsePrepDraft, type DraftAtom } from "../ui/prepDraft";
 import { generateTacticalSceneGrid } from "../ui/sceneGridGenerator";
 import {
   buildSceneNotes, chapterOrderFromTitle, readSceneStoryOutline,
@@ -70,7 +76,11 @@ type ProgressEntry = {
   createdAt: string;
 };
 
-type SessionCheckpoint = {
+function summaryCount(value: unknown): number {
+  return typeof value === "number" && Number.isFinite(value) ? value : 0;
+}
+
+type LegacySessionCheckpoint = {
   id: string;
   label: string;
   createdAt: string;
@@ -315,10 +325,10 @@ function checkpointKey(campaignId: string): string {
   return `dnd-game-checkpoints:${campaignId}`;
 }
 
-function loadCheckpoints(campaignId: string): SessionCheckpoint[] {
+function loadLegacyCheckpoints(campaignId: string): LegacySessionCheckpoint[] {
   try {
     const parsed = JSON.parse(localStorage.getItem(checkpointKey(campaignId)) ?? "[]") as unknown;
-    return Array.isArray(parsed) ? parsed as SessionCheckpoint[] : [];
+    return Array.isArray(parsed) ? parsed as LegacySessionCheckpoint[] : [];
   } catch {
     return [];
   }
@@ -387,11 +397,22 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
   const [input, setInput] = useState("");
   const [entries, setEntries] = useState<ProgressEntry[]>([]);
   const [lastResponse, setLastResponse] = useState<AgentResponse | null>(null);
-  const [checkpoints, setCheckpoints] = useState<SessionCheckpoint[]>(() => loadCheckpoints(campaignId));
+  const [legacyCheckpointCount] = useState(
+    () => loadLegacyCheckpoints(campaignId).length,
+  );
+  const [checkpointPreview, setCheckpointPreview] = useState<{
+    checkpoint: SessionCheckpointSummary;
+    preview: SessionCheckpointRestorePreview;
+  } | null>(null);
   const [prepBrief, setPrepBrief] = useState("");
   const [prepDraft, setPrepDraft] = useState("");
   const [draftAtoms, setDraftAtoms] = useState<DraftAtom[]>([]);
   const [selectedAtoms, setSelectedAtoms] = useState<Set<string>>(new Set());
+  const [prepImportReview, setPrepImportReview] = useState<{
+    draft: PrepDraft;
+    preview: PrepImportPreview;
+    omittedSites: number;
+  } | null>(null);
   const [adjustmentTitle, setAdjustmentTitle] = useState("");
   const [adjustmentReason, setAdjustmentReason] = useState("");
   const [adjustmentShift, setAdjustmentShift] = useState<-1 | 0 | 1>(0);
@@ -439,6 +460,10 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
     queryFn: ({ signal }) => listEncounterAdjustments(campaignId, sceneId, signal),
     enabled: Boolean(sceneId),
   });
+  const checkpoints = useQuery({
+    queryKey: ["session-checkpoints", campaignId],
+    queryFn: ({ signal }) => listSessionCheckpoints(campaignId, signal),
+  });
   useEffect(() => {
     if (!sceneId && scenes.data?.[0]) setSceneId(scenes.data[0].id);
   }, [sceneId, scenes.data]);
@@ -461,9 +486,6 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
       }));
     if (restored.length > 0) setEntries(restored);
   }, [entries.length, events.data, sceneId]);
-  useEffect(() => {
-    localStorage.setItem(checkpointKey(campaignId), JSON.stringify(checkpoints.slice(-20)));
-  }, [campaignId, checkpoints]);
   const activeScene = scenes.data?.find((scene) => scene.id === sceneId);
   const activeLocation = locations.data?.find((location) => location.id === activeScene?.location_id);
   const orderedScenes = useMemo(
@@ -1209,164 +1231,85 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
     setSelectedAtoms(new Set(parsed.map((atom) => atom.id)));
     showToast(parsed.length > 0 ? `已解析 ${parsed.length} 个可导入原子` : "没有识别到结构化条目，请按“名称｜描述”格式调整草稿", parsed.length > 0 ? "success" : "error");
   };
-  const importDraft = useMutation({
+  const previewDraftImport = useMutation({
     mutationFn: async () => {
       const selected = draftAtoms.filter((atom) => selectedAtoms.has(atom.id));
-      const locationIds = new Map<string, string>();
-      for (const atom of selected.filter((item) => item.kind === "location")) {
-        const existing = (locations.data ?? []).find(
-          (location) => location.name.trim().toLowerCase() === atom.name.trim().toLowerCase(),
-        );
-        const location = existing ?? await createLocation(campaignId, {
-          name: atom.name,
-          description: atom.description,
-          depth: 1,
-          discovered: true,
-          interactive_objects: [],
-          notes: "由DM确认的备团草稿导入。",
-        });
-        locationIds.set(atom.name, location.id);
-      }
-      const defaultLocationId = locationIds.values().next().value
-        ?? selected.map((atom) => atom.name).map((name) => (
-          locations.data ?? []
-        ).find((location) => location.name === name)?.id).find(Boolean)
-        ?? null;
-      const defaultLocationName = [...locationIds.keys()][0] ?? "";
-      for (const atom of selected) {
-        if (atom.kind === "location") continue;
-        if (atom.kind === "building" || atom.kind === "dungeon") {
-          const sitePreview = await previewSiteGeneration(campaignId, {
-            site_type: atom.kind,
-            name: atom.name,
-            brief: atom.description,
-            region_path: atom.siteConfig?.regionPath ?? "未归类区域",
-            maximum_levels: atom.siteConfig?.maximumLevels ?? 1,
-            rooms_min: 3,
-            rooms_max: atom.kind === "dungeon" ? 9 : 7,
-            party_level: Math.max(
-              1,
-              Math.min(20, Math.max(...(characters.data ?? []).map((character) => character.level), 1)),
-            ),
-            party_size: Math.max(1, (characters.data ?? []).length || 4),
-            starting_difficulty: "low",
-            difficulty_growth: atom.kind === "dungeon" ? 2 : 1,
-            monster_density: atom.kind === "dungeon" ? 75 : 40,
-            reward_rate: 1,
-          });
-          await confirmSiteGeneration(campaignId, sitePreview, `prep-site-${atom.id}`);
-          continue;
-        }
-        if (atom.kind === "scene") {
-          const sceneOutline = atom.sceneOutline;
-          const outline: SceneStoryOutline = {
-            chapterTitle: sceneOutline?.chapterTitle ?? "未编排章节",
-            chapterOrder: chapterOrderFromTitle(sceneOutline?.chapterTitle ?? ""),
-            sceneOrder: sceneOutline?.sceneOrder ?? selected.filter(
-              (candidate) => candidate.kind === "scene",
-            ).findIndex((candidate) => candidate.id === atom.id) + 1,
-            objective: sceneOutline?.objective ?? atom.description,
-            opening: sceneOutline?.opening ?? atom.description,
-            development: sceneOutline?.development ?? "根据玩家行动推进。",
-            twist: sceneOutline?.twist ?? "可选转折。",
-            climax: sceneOutline?.climax ?? "确认场景目标。",
-            transition: sceneOutline?.transition ?? "由 DM 决定是否转场。",
-          };
-          await createSceneWithPersistentGrid(campaignId, {
-            name: atom.name,
-            location_id: defaultLocationId,
-            description: atom.description,
-            notes: buildSceneNotes(
-              generateTacticalSceneGrid(atom.name, atom.description),
-              outline,
-            ),
-          }, defaultLocationName);
-        }
-        if (atom.kind === "npc") await createNpc(campaignId, { name: atom.name, description: atom.description, armor_class: 10, hp: 10, max_hp: 10, speed: 30, ability_scores: { strength: 10, dexterity: 10, constitution: 10, intelligence: 10, wisdom: 10, charisma: 10 } });
-        if (atom.kind === "monster") {
-          const existing = (monsters.data ?? []).find(
-            (monster) => monster.name.trim().toLowerCase() === atom.name.trim().toLowerCase(),
-          );
-          if (existing) continue;
-          let matched: MonsterReferenceCandidate | undefined;
-          try {
-            const references = await findCompendiumMonsters(`${atom.name} ${atom.description}`);
-            matched = references.find((reference) => reference.origin === "compendium" && (
-              reference.label.trim().toLowerCase() === atom.name.trim().toLowerCase()
-              || reference.hit.chunk.aliases.some((alias) => alias.trim().toLowerCase() === atom.name.trim().toLowerCase())
-              || reference.hit.score >= 0.72
-            ));
-          } catch {
-            // A missing local index never turns into an implicit write. The
-            // fallback remains visibly custom and awaits this explicit import.
-          }
-          if (matched?.origin === "compendium") {
-            const stats = parseMonsterStats(matched.hit);
-            await createMonster(campaignId, {
-              name: stats.name,
-              source_record_id: matched.hit.chunk.record_id,
-              source_name: `${matched.hit.chunk.source_book ?? matched.hit.chunk.source_title} · ${matched.hit.chunk.edition}`,
-              notes: `${atom.description}\n由备团草稿匹配本地图鉴并经DM确认导入。`,
-              armor_class: stats.armorClass,
-              hp: stats.hp,
-              max_hp: stats.hp,
-              speed: stats.speed,
-              challenge_rating: stats.challengeRating,
-              ability_scores: stats.abilityScores,
-            });
-          } else {
-            await createMonster(campaignId, {
-              name: atom.name,
-              source_name: "DM自制模板（非图鉴）",
-              notes: `${atom.description}\n未找到足够可靠的本地图鉴匹配；这是自制模板，CR 1/4，DM应在使用前复核。`,
-              armor_class: 12, hp: 8, max_hp: 8, speed: 30, challenge_rating: "1/4",
-              ability_scores: { strength: 10, dexterity: 10, constitution: 10, intelligence: 8, wisdom: 10, charisma: 8 },
-            });
-          }
-        }
-        if (atom.kind === "quest") await createQuest(campaignId, { name: atom.name, description: atom.description, quest_type: "side", status: "open" });
-        if (atom.kind === "clue") await createClue(campaignId, { name: atom.name, description: atom.description, player_text: atom.description, verified: false, discovered: false });
-        if (atom.kind === "item") await createWorldItem(campaignId, { name: atom.name, description: atom.description, category: "adventure", quantity: 1, unit_weight_lb: 0, price_cp: 0, source_label: "ai_generated" });
-      }
-      return selected.length;
+      const omittedSites = selected.filter(
+        (atom) => atom.kind === "building" || atom.kind === "dungeon",
+      ).length;
+      const draft = atomsToStrictPrepDraft(selected, prepBrief.trim() || "备团草稿");
+      const preview = await previewPrepImport(campaignId, draft, "reuse");
+      return { draft, preview, omittedSites };
     },
-    onSuccess: (count) => {
-      for (const key of ["locations", "scenes", "npcs", "monsters", "quests", "clues", "world-items", "region-maps", "adventure-sites"]) void client.invalidateQueries({ queryKey: [key, campaignId] });
-      showToast(`已确认导入 ${count} 个备团原子`);
-      void log("导入备团草稿", `从备团草稿导入了 ${count} 个地点、场景、人物、任务或物品原子；每个Scene已绑定持久化战斗网格。`, { entry_kind: "system" });
+    onSuccess: (review) => {
+      setPrepImportReview(review);
+      showToast(review.preview.valid ? "原子导入预览已生成；确认前不会写入" : "草稿未通过严格校验", review.preview.valid ? "success" : "error");
     },
-    onError: () => showToast("备团导入失败；已成功写入的条目会保留，请检查是否存在同名或无效数据", "error"),
+    onError: (error) => showToast(error instanceof Error ? error.message : "备团草稿校验失败", "error"),
   });
-  const saveCheckpoint = () => {
-    if (!sceneId) return;
-    const checkpoint: SessionCheckpoint = {
-      id: createClientId("checkpoint"), label: `${activeScene?.name ?? "场景"} · ${new Date().toLocaleTimeString()}`,
-      createdAt: new Date().toISOString(), sceneId, entries,
-      participantKeys: (participants.data ?? []).map((item) => `${item.entity_type}:${item.entity_id}`),
-    };
-    setCheckpoints((current) => [...current, checkpoint].slice(-20));
-    showToast("场次检查点已保存");
-  };
-  const restoreCheckpoint = useMutation({
-    mutationFn: async (checkpoint: SessionCheckpoint) => {
-      if (checkpoint.sceneId !== sceneId) throw new Error("请先切换到检查点所属场景");
-      const current = participants.data ?? [];
-      const target = new Set(checkpoint.participantKeys);
-      await Promise.all(current.filter((item) => !target.has(`${item.entity_type}:${item.entity_id}`)).map((item) => removeSceneParticipant(campaignId, sceneId, item.id, item.version)));
-      const currentKeys = new Set(current.map((item) => `${item.entity_type}:${item.entity_id}`));
-      await Promise.all(checkpoint.participantKeys.filter((key) => !currentKeys.has(key)).map((key) => {
-        const [entityType, entityId] = key.split(":");
-        if (!entityType || !entityId) throw new Error("检查点人物数据无效");
-        return addSceneParticipant(campaignId, checkpoint.sceneId, { entity_type: entityType as "character" | "npc" | "monster", entity_id: entityId });
-      }));
-      setEntries(checkpoint.entries);
-      await log("恢复场次检查点", `已恢复到检查点“${checkpoint.label}”。`, { entry_kind: "system", checkpoint_id: checkpoint.id });
+  const importDraft = useMutation({
+    mutationFn: async () => {
+      if (!prepImportReview?.preview.valid) throw new Error("请先生成有效的原子导入预览");
+      return confirmPrepImport(campaignId, {
+        draft: prepImportReview.draft,
+        duplicate_strategy: "reuse",
+        preview_token: prepImportReview.preview.preview_token,
+        idempotency_key: createClientId("prep-import"),
+      });
+    },
+    onSuccess: (result) => {
+      for (const key of ["locations", "scenes", "npcs", "monsters", "quests", "clues", "world-items", "region-maps", "adventure-sites"]) void client.invalidateQueries({ queryKey: [key, campaignId] });
+      const count = Object.values(result.created).reduce((sum, value) => sum + value, 0);
+      showToast(`已用单一事务导入 ${count} 个备团原子`);
+      setPrepImportReview(null);
+      void log("原子导入备团草稿", `严格 JSON 校验与引用重映射通过，共创建 ${count} 个原子；失败时整批回滚。`, { entry_kind: "system", prep_import_id: result.import_id });
+    },
+    onError: (error) => showToast(error instanceof Error ? error.message : "备团事务导入失败；数据库未发生部分写入", "error"),
+  });
+  const saveCheckpoint = useMutation({
+    mutationFn: () => {
+      if (!sceneId) throw new Error("请先选择 Scene");
+      return createSessionCheckpoint(campaignId, {
+        name: `${activeScene?.name ?? "场景"} · ${new Date().toLocaleTimeString()}`,
+        scene_id: sceneId,
+        active_combat_id: playerCombatId,
+        entries,
+        notes: "由游戏推进台创建的服务端权威场次快照。",
+      });
     },
     onSuccess: () => {
-      void client.invalidateQueries({ queryKey: ["scene-participants", campaignId] });
-      showToast("检查点已恢复");
+      void client.invalidateQueries({ queryKey: ["session-checkpoints", campaignId] });
+      showToast("服务端场次快照已保存");
     },
-    onError: () => showToast("恢复检查点失败", "error"),
+    onError: (error) => showToast(error instanceof Error ? error.message : "保存检查点失败", "error"),
+  });
+  const previewCheckpointRestore = useMutation({
+    mutationFn: async (checkpoint: SessionCheckpointSummary) => ({
+      checkpoint,
+      preview: await previewSessionCheckpointRestore(campaignId, checkpoint.id),
+    }),
+    onSuccess: setCheckpointPreview,
+    onError: (error) => showToast(error instanceof Error ? error.message : "无法预览恢复", "error"),
+  });
+  const restoreCheckpoint = useMutation({
+    mutationFn: async () => {
+      if (!checkpointPreview) throw new Error("请先预览恢复内容");
+      const { checkpoint, preview } = checkpointPreview;
+      if (!preview.can_restore) throw new Error("当前状态存在冲突，不能直接恢复");
+      const result = await restoreSessionCheckpoint(campaignId, checkpoint.id, {
+        idempotency_key: createClientId("checkpoint-restore"),
+      });
+      const detail = await getSessionCheckpoint(campaignId, checkpoint.id);
+      return { result, detail };
+    },
+    onSuccess: async ({ detail }) => {
+      if (detail.scene_id) setSceneId(detail.scene_id);
+      setEntries(detail.entries as unknown as ProgressEntry[]);
+      setCheckpointPreview(null);
+      await client.invalidateQueries();
+      showToast("服务端场次快照已事务恢复");
+    },
+    onError: (error) => showToast(error instanceof Error ? error.message : "恢复检查点失败", "error"),
   });
   const addDraftOperation = () => {
     const [entityType, entityId] = adjustmentTarget.split(":");
@@ -1607,7 +1550,8 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
         ) : null}
         {draftAtoms.length > 0 ? (
           <div className="mt-4 border-t border-ink-700 pt-3">
-            <div className="mb-3 flex flex-wrap items-center gap-2"><strong className="mr-auto text-sm text-parchment-100">结构化导入预览 · 已选 {selectedAtoms.size}/{draftAtoms.length}</strong><Button onClick={() => setSelectedAtoms(new Set(draftAtoms.map((atom) => atom.id)))} size="sm">全选</Button><Button onClick={() => setSelectedAtoms(new Set())} size="sm">清空</Button><Button disabled={selectedAtoms.size === 0} loading={importDraft.isPending} onClick={() => importDraft.mutate()} variant="primary">确认导入所选内容</Button></div>
+            <div className="mb-3 flex flex-wrap items-center gap-2"><strong className="mr-auto text-sm text-parchment-100">结构化草稿 · 已选 {selectedAtoms.size}/{draftAtoms.length}</strong><Button onClick={() => { setSelectedAtoms(new Set(draftAtoms.map((atom) => atom.id))); setPrepImportReview(null); }} size="sm">全选</Button><Button onClick={() => { setSelectedAtoms(new Set()); setPrepImportReview(null); }} size="sm">清空</Button><Button disabled={selectedAtoms.size === 0} loading={previewDraftImport.isPending} onClick={() => previewDraftImport.mutate()} variant="primary">严格校验并预览</Button></div>
+            {prepImportReview ? <div className="mb-3 rounded border border-amber-500/30 bg-ink-900 p-3 text-xs text-stone-300"><strong className="text-amber-200">事务导入预览</strong><p className="mb-1 mt-1">计划 {prepImportReview.preview.operations.length} 项操作；确认后全部成功或全部回滚。引用和同名复用均由服务端校验。</p>{prepImportReview.omittedSites > 0 ? <p className="text-amber-300">有 {prepImportReview.omittedSites} 个建筑/地下城草案未进入本次原子事务；它们仍保留在草稿中，需使用地点页的站点生成器单独预览确认，不会被静默部分写入。</p> : null}{prepImportReview.preview.errors.map((issue) => <p className="text-red-300" key={`${issue.code}-${issue.path}`}>{issue.path}：{issue.message}</p>)}<div className="mt-2 flex gap-2"><Button onClick={() => setPrepImportReview(null)} size="sm">取消</Button><Button disabled={!prepImportReview.preview.valid} loading={importDraft.isPending} onClick={() => importDraft.mutate()} size="sm" variant="primary">DM 确认原子导入</Button></div></div> : null}
             <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
               {draftAtoms.map((atom) => (
                 <label className={`rounded border p-3 ${selectedAtoms.has(atom.id) ? "border-ember-700/60 bg-ember-950/10" : "border-ink-700 bg-ink-950/40 opacity-60"}`} key={atom.id}>
@@ -1901,12 +1845,14 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
           <Panel eyebrow="进入 / 离开 / 推进" title="最近情景记录">
             {recentEvents.length === 0 ? <p className="m-0 text-xs text-stone-600">还没有当前场景记录。</p> : <ul className="m-0 space-y-2 p-0">{recentEvents.map((event) => <li className="list-none border-b border-ink-800 pb-2 text-xs last:border-0" key={event.id}><strong className="block text-parchment-100">{event.title}</strong><span className="text-stone-600">{event.metadata_json.entry_kind === "ai" ? safeDndText(event.description) : event.description}</span></li>)}</ul>}
           </Panel>
-          <Panel eyebrow="本地快照 · 最近 20 个" title="场次检查点">
-            <Button disabled={!sceneId} onClick={saveCheckpoint} size="sm" variant="primary">保存当前检查点</Button>
+          <Panel eyebrow="服务端权威快照 · HP / 资源 / 战斗 / 场景" title="场次检查点">
+            <Button disabled={!sceneId} loading={saveCheckpoint.isPending} onClick={() => saveCheckpoint.mutate()} size="sm" variant="primary">保存当前检查点</Button>
             <ul className="m-0 mt-3 space-y-2 p-0">
-              {checkpoints.filter((checkpoint) => checkpoint.sceneId === sceneId).slice(-5).reverse().map((checkpoint) => <li className="flex list-none items-center gap-2 text-xs" key={checkpoint.id}><span className="min-w-0 flex-1 truncate text-stone-500">{checkpoint.label}</span><Button loading={restoreCheckpoint.isPending} onClick={() => restoreCheckpoint.mutate(checkpoint)} size="sm">恢复</Button></li>)}
+              {(checkpoints.data ?? []).filter((checkpoint) => checkpoint.scene_id === sceneId).slice(0, 5).map((checkpoint) => <li className="flex list-none items-center gap-2 text-xs" key={checkpoint.id}><span className="min-w-0 flex-1 truncate text-stone-500">{checkpoint.name}</span><Button loading={previewCheckpointRestore.isPending} onClick={() => previewCheckpointRestore.mutate(checkpoint)} size="sm">预览恢复</Button></li>)}
             </ul>
-            {!checkpoints.some((checkpoint) => checkpoint.sceneId === sceneId) ? <p className="mb-0 mt-2 text-2xs text-stone-600">尚无当前场景检查点。</p> : null}
+            {checkpointPreview ? <div className="mt-3 rounded border border-amber-500/30 bg-ink-900 p-3 text-xs text-stone-300"><strong className="text-amber-200">恢复预览 · {checkpointPreview.checkpoint.name}</strong><p className="mb-2 mt-1">将恢复 {summaryCount(checkpointPreview.preview.change_summary.character_count)} 名角色、{summaryCount(checkpointPreview.preview.change_summary.npc_count)} 名 NPC、{summaryCount(checkpointPreview.preview.change_summary.monster_count)} 只怪物及关联战斗状态。</p>{checkpointPreview.preview.conflicts.length ? <p className="text-red-300">发现 {checkpointPreview.preview.conflicts.length} 个版本或依赖冲突，已阻止直接恢复。</p> : null}<div className="flex gap-2"><Button onClick={() => setCheckpointPreview(null)} size="sm">取消</Button><Button disabled={!checkpointPreview.preview.can_restore} loading={restoreCheckpoint.isPending} onClick={() => restoreCheckpoint.mutate()} size="sm" variant="primary">DM 确认事务恢复</Button></div></div> : null}
+            {!(checkpoints.data ?? []).some((checkpoint) => checkpoint.scene_id === sceneId) ? <p className="mb-0 mt-2 text-2xs text-stone-600">尚无当前场景的服务端检查点。</p> : null}
+            {legacyCheckpointCount > 0 ? <p className="mb-0 mt-2 text-2xs text-stone-600">检测到 {legacyCheckpointCount} 个旧版本地界面检查点；它们不包含 HP、资源和战斗事实，因此不会冒充可恢复存档。</p> : null}
           </Panel>
         </div>
       </div> : null}

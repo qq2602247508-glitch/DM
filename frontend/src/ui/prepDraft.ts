@@ -18,6 +18,89 @@ export type DraftAtom = {
   sceneOutline?: DraftSceneOutline;
 };
 
+function atomKey(atom: DraftAtom, index: number): string {
+  const stem = atom.name
+    .normalize("NFKC")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 48);
+  return `${atom.kind}:${stem || index + 1}`;
+}
+
+export function atomsToStrictPrepDraft(
+  atoms: DraftAtom[],
+  title = "备团草稿",
+): import("../api/prep").PrepDraft {
+  const supported = atoms.filter(
+    (atom) => atom.kind !== "building" && atom.kind !== "dungeon",
+  );
+  const keyed = supported.map((atom, index) => ({
+    atom,
+    key: atomKey(atom, index),
+  }));
+  const firstLocation = keyed.find(({ atom }) => atom.kind === "location")?.key;
+  const abilityScores = {
+    strength: 10, dexterity: 10, constitution: 10,
+    intelligence: 10, wisdom: 10, charisma: 10,
+  };
+  return {
+    schema_version: "1.0",
+    title,
+    locations: keyed.filter(({ atom }) => atom.kind === "location").map(({ atom, key }) => ({
+      key, name: atom.name, description: atom.description, depth: 1,
+      discovered: true, interactive_objects: [],
+      notes: "由旧版 Markdown 备团草稿转换；已通过后端严格校验后才会写入。",
+    })),
+    scenes: keyed.filter(({ atom }) => atom.kind === "scene").map(({ atom, key }) => {
+      const grid = generateTacticalSceneGrid(atom.name, atom.description);
+      return {
+        key, name: atom.name, location_key: firstLocation ?? null,
+        description: atom.description, status: "active",
+        notes: atom.sceneOutline ? JSON.stringify({ story_outline: atom.sceneOutline }) : null,
+        grid: {
+          width: grid.width, height: grid.height, cell_size_ft: grid.cell_size_ft,
+          mode: "exploration", public_description: grid.theme,
+          dm_description: `由备团草稿“${atom.name}”生成并与战斗共用。`,
+          layers_json: { theme: grid.theme, cells: grid.cells },
+        },
+        participants: [],
+      };
+    }),
+    npcs: keyed.filter(({ atom }) => atom.kind === "npc").map(({ atom, key }) => ({
+      key, name: atom.name, description: atom.description,
+      armor_class: 10, hp: 10, max_hp: 10, speed: 30,
+      ability_scores: abilityScores, actions: [], location_key: firstLocation ?? null,
+      status: "active",
+    })),
+    monsters: keyed.filter(({ atom }) => atom.kind === "monster").map(({ atom, key }) => ({
+      key, name: atom.name, notes: `${atom.description}\n旧版兼容草稿：这是待DM复核的自制 CR 1/4 模板。`,
+      armor_class: 12, hp: 8, max_hp: 8, speed: 30, challenge_rating: "1/4",
+      ability_scores: { ...abilityScores, intelligence: 8, charisma: 8 },
+      actions: [], source_name: "DM自制模板（旧版草稿兼容）",
+    })),
+    quests: keyed.filter(({ atom }) => atom.kind === "quest").map(({ atom, key }) => ({
+      key, name: atom.name, description: atom.description,
+      quest_type: "side", status: "open", xp_reward: 0,
+    })),
+    clues: keyed.filter(({ atom }) => atom.kind === "clue").map(({ atom, key }) => ({
+      key, name: atom.name, description: atom.description,
+      player_text: atom.description, verified: false, discovered: false,
+    })),
+    items: keyed.filter(({ atom }) => atom.kind === "item").map(({ atom, key }) => {
+      if (!firstLocation) {
+        throw new Error("物品导入需要至少选择一个地点，以保证地点引用合法");
+      }
+      return {
+        key, name: atom.name, description: atom.description,
+        category: "adventure", quantity: 1, unit_weight_lb: 0, price_cp: 0,
+        source_label: "ai_generated", location_key: firstLocation,
+        is_hidden: false, metadata_json: { requires_dm_weight_and_price_review: true },
+      };
+    }),
+  };
+}
+
 const DRAFT_HEADINGS: Record<string, DraftKind> = {
   "地点": "location", "地点与场景": "location", "场景": "scene", "npc": "npc", "NPC": "npc",
   "怪物": "monster", "敌人与怪物": "monster", "任务": "quest",
@@ -153,3 +236,4 @@ export function parsePrepDraft(text: string): DraftAtom[] {
   return atoms;
 }
 import { createClientId } from "./id";
+import { generateTacticalSceneGrid } from "./sceneGridGenerator";

@@ -13,6 +13,10 @@ from sqlalchemy.orm import Session
 
 from dnd_dm_assistant.domain.campaign_state import StateNotFoundError
 from dnd_dm_assistant.infrastructure.database.models import AuditLog, Base, Campaign
+from dnd_dm_assistant.infrastructure.database.session_checkpoint_models import (
+    CampaignSessionState,
+    SessionCheckpoint,
+)
 
 # Authentication secrets, transient LAN-room state, audit history and model telemetry are
 # deliberately not copied into a new campaign. Everything else is authoritative campaign
@@ -27,10 +31,14 @@ EXCLUDED_TABLES = frozenset(
     }
 )
 
+EXTENSION_TABLE_NAMES = frozenset(
+    {CampaignSessionState.__tablename__, SessionCheckpoint.__tablename__}
+)
+
 BACKUP_TABLE_NAMES = tuple(
     sorted(
         table_name
-        for table_name in Base.metadata.tables
+        for table_name in set(Base.metadata.tables) | set(EXTENSION_TABLE_NAMES)
         if table_name not in EXCLUDED_TABLES and table_name != "campaigns"
     )
 )

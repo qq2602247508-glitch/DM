@@ -52,7 +52,9 @@ class AgentRequest(StrictModel):
     campaign_id: str = Field(min_length=1, max_length=36)
     action: str = Field(min_length=1, max_length=4_000)
     request_id: str = Field(min_length=1, max_length=120)
-    mode: Literal["general", "narrative"] = "general"
+    # ``general`` remains accepted for older clients and is normalized to the
+    # quick-mode policy by the orchestrator.
+    mode: Literal["quick", "narrative", "combat", "general"] = "quick"
 
     @field_validator("action", "campaign_id", "request_id")
     @classmethod

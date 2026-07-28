@@ -48,4 +48,6 @@ def test_alembic_upgrades_empty_database(tmp_path: Path, monkeypatch: Any) -> No
         "site_levels",
         "site_rooms",
         "site_connectors",
+        "campaign_session_states",
+        "session_checkpoints",
     } <= tables

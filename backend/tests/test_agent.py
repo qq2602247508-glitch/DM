@@ -312,6 +312,71 @@ async def _test_update_tool_only_creates_pending_proposal() -> None:
     assert response.tool_results[0].data["applied"] is False
 
 
+async def _test_assistant_modes_use_distinct_prompts_and_contexts() -> None:
+    plan = AgentPlan(
+        intent=Intent.STATE_LOOKUP,
+        rationale="read mode-bounded context",
+        calls=(
+            ToolCall(
+                tool=ToolName.GET_CAMPAIGN_STATE,
+                arguments={"campaign_id": "campaign-1"},
+            ),
+        ),
+    )
+    prompts: dict[str, tuple[str, str, str, str]] = {}
+    state_data: dict[str, dict[str, Any]] = {}
+    run_versions: dict[str, tuple[str, str]] = {}
+
+    for mode in ("quick", "narrative", "combat"):
+        planner = FakePlanner(plan)
+        generator = FakeHintGenerator(GeneratedDMHint(text="给 DM 的模式化建议。"))
+        persistence = FakePersistence()
+        response = await AgentOrchestrator(
+            planner=planner,
+            hint_generator=generator,
+            knowledge=FakeKnowledge(GroundedAnswer(answer="", abstained=True)),
+            state=FakeState(),
+            persistence=persistence,
+        ).run(
+            AgentRequest(
+                campaign_id="campaign-1",
+                action="下一步怎么处理？",
+                request_id=f"request-{mode}",
+                mode=mode,  # type: ignore[arg-type]
+            )
+        )
+        prompts[mode] = (
+            planner.prompts[0][0],
+            planner.prompts[0][1],
+            generator.prompts[0][0],
+            generator.prompts[0][1],
+        )
+        state_data[mode] = response.tool_results[0].data
+        run_versions[mode] = (
+            persistence.runs[0].prompt_version,
+            persistence.runs[1].prompt_version,
+        )
+
+    assert len({value[0] for value in prompts.values()}) == 3
+    assert len({value[2] for value in prompts.values()}) == 3
+    assert "assistant_mode=quick" in prompts["quick"][1]
+    assert "assistant_mode=narrative" in prompts["narrative"][1]
+    assert "assistant_mode=combat" in prompts["combat"][1]
+    assert '"assistant_mode":"narrative"' in prompts["narrative"][3]
+    assert "可选推进" in prompts["narrative"][2]
+    assert "动作经济" in prompts["combat"][0]
+    assert "需要的骰子/豁免" in prompts["combat"][2]
+
+    assert "open_clues" in state_data["quick"]
+    assert "active_combats" in state_data["quick"]
+    assert "open_clues" in state_data["narrative"]
+    assert "active_combats" not in state_data["narrative"]
+    assert "active_combats" in state_data["combat"]
+    assert "quests" not in state_data["combat"]
+    assert "open_clues" not in state_data["combat"]
+    assert len(set(run_versions.values())) == 3
+
+
 def test_unknown_duplicate_and_invalid_typed_payload_fail_closed() -> None:
     with pytest.raises(ValidationError):
         AgentPlan.model_validate_json(
@@ -364,6 +429,10 @@ def test_rule_evidence_without_hint_citation_fails_closed() -> None:
 
 def test_update_tool_only_creates_pending_proposal() -> None:
     asyncio.run(_test_update_tool_only_creates_pending_proposal())
+
+
+def test_assistant_modes_use_distinct_prompts_and_contexts() -> None:
+    asyncio.run(_test_assistant_modes_use_distinct_prompts_and_contexts())
 
 
 def test_missing_intent_model_is_explicitly_unavailable() -> None:
@@ -566,6 +635,17 @@ def test_assistant_api_contract_and_explicit_unavailable(
         )
         assert unavailable.status_code == 503
         assert unavailable.json()["code"] == "http_503"
+        for mode in ("quick", "narrative", "combat", "general"):
+            response = client.post(
+                f"/api/v1/campaigns/{campaign_id}/assistant/turns",
+                json={"action": "Mode contract", "mode": mode},
+            )
+            assert response.status_code == 503
+        invalid_mode = client.post(
+            f"/api/v1/campaigns/{campaign_id}/assistant/turns",
+            json={"action": "Rules use the dedicated endpoint", "mode": "rules"},
+        )
+        assert invalid_mode.status_code == 422
 
         listed = client.get(f"/api/v1/campaigns/{campaign_id}/change-proposals")
         assert listed.status_code == 200

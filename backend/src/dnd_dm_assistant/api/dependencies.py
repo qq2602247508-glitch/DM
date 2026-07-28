@@ -28,7 +28,11 @@ from dnd_dm_assistant.infrastructure.database.exploration_service import Explora
 from dnd_dm_assistant.infrastructure.database.narrative_service import NarrativeService
 from dnd_dm_assistant.infrastructure.database.player_room_service import PlayerRoomService
 from dnd_dm_assistant.infrastructure.database.player_service import PlayerService
+from dnd_dm_assistant.infrastructure.database.prep_import_service import PrepImportService
 from dnd_dm_assistant.infrastructure.database.rest_service import RestService
+from dnd_dm_assistant.infrastructure.database.session_checkpoint_service import (
+    SessionCheckpointService,
+)
 from dnd_dm_assistant.infrastructure.database.site_service import SiteService
 from dnd_dm_assistant.infrastructure.database.spell_economy_service import SpellEconomyService
 from dnd_dm_assistant.infrastructure.database.world_service import WorldService
@@ -100,6 +104,10 @@ def get_rest_service(request: Request) -> RestService:
     return RestService(cast(Engine, request.app.state.database_engine))
 
 
+def get_session_checkpoint_service(request: Request) -> SessionCheckpointService:
+    return SessionCheckpointService(cast(Engine, request.app.state.database_engine))
+
+
 def get_spell_economy_service(request: Request) -> SpellEconomyService:
     return SpellEconomyService(cast(Engine, request.app.state.database_engine))
 
@@ -130,6 +138,10 @@ def get_player_service(request: Request) -> PlayerService:
 
 def get_player_room_service(request: Request) -> PlayerRoomService:
     return PlayerRoomService(cast(Engine, request.app.state.database_engine))
+
+
+def get_prep_import_service(request: Request) -> PrepImportService:
+    return PrepImportService(cast(Engine, request.app.state.database_engine))
 
 
 def get_player_rules_search(request: Request) -> PlayerRulesSearch:
