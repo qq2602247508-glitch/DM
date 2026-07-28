@@ -45,8 +45,8 @@ test("玩家端加载当前战斗地图、回合面板、攻击控件和公开�
   }));
   await ok(await request.post(`${prefix}/scenes/${String(scene.id)}/grid`, {
     data: {
-      width: 8,
-      height: 6,
+      width: 20,
+      height: 14,
       cell_size_ft: 5,
       mode: "combat",
       public_description: "吧台和墙壁",
@@ -92,14 +92,41 @@ test("玩家端加载当前战斗地图、回合面板、攻击控件和公开�
   const player = await browser.newContext();
   try {
     const page = await player.newPage();
+    await page.setViewportSize({ width: 1366, height: 900 });
     await join(page, String(room.join_code));
     await expect(page.getByRole("heading", { name: "选择或创建你的角色" })).toBeVisible();
     await page.getByRole("button", { name: new RegExp(String(hero.name)) }).click();
     await page.getByRole("button", { name: "绑定所选角色" }).click();
     await expect(page.getByRole("heading", { name: "战斗验收遭遇" })).toBeVisible();
     await expect(page.getByText("玩家战斗地图 · 与 DM 共用当前 Scene", { exact: true })).toBeVisible();
-    await expect(page.getByText("8×6 · 每格 5 尺", { exact: true })).toBeVisible();
+    await expect(page.getByText("20×14 · 每格 5 尺", { exact: true })).toBeVisible();
     await expect(page.getByRole("heading", { name: "当前战斗面板" })).toBeVisible();
+    const dimensions = await page.evaluate(() => {
+      const panelHeading = Array.from(document.querySelectorAll("h2"))
+        .find((element) => element.textContent?.trim() === "当前战斗面板");
+      const mapTitle = Array.from(document.querySelectorAll("strong"))
+        .find((element) => element.textContent?.trim() === "玩家战斗地图 · 与 DM 共用当前 Scene");
+      const sidebarElement = panelHeading?.closest<HTMLElement>("aside") ?? null;
+      const layoutElement = sidebarElement?.parentElement ?? null;
+      const mapElement = mapTitle?.parentElement?.parentElement ?? null;
+      const sidebarRect = sidebarElement?.getBoundingClientRect();
+      const mapGrid = mapElement?.querySelector<HTMLElement>(".grid.w-max");
+      return {
+        viewportWidth: document.documentElement.clientWidth,
+        layoutVisible: Boolean(layoutElement && layoutElement.getBoundingClientRect().height > 0),
+        sidebarVisible: Boolean(sidebarElement && sidebarElement.getBoundingClientRect().height > 0),
+        mapVisible: Boolean(mapElement && mapElement.getBoundingClientRect().height > 0),
+        sidebarWidth: sidebarRect?.width ?? 0,
+        sidebarRight: sidebarRect?.right ?? Number.POSITIVE_INFINITY,
+        mapGridWidth: mapGrid?.getBoundingClientRect().width ?? 0,
+      };
+    });
+    expect(dimensions.layoutVisible).toBe(true);
+    expect(dimensions.sidebarVisible).toBe(true);
+    expect(dimensions.mapVisible).toBe(true);
+    expect(dimensions.sidebarWidth).toBeGreaterThanOrEqual(320);
+    expect(dimensions.sidebarRight).toBeLessThanOrEqual(dimensions.viewportWidth);
+    expect(dimensions.mapGridWidth).toBeLessThanOrEqual(960);
     await expect(page.getByLabel("攻击/技能")).toBeVisible();
     await expect(page.getByLabel("目标")).toBeVisible();
     await expect(page.getByRole("heading", { name: "公开战斗日志" })).toBeVisible();

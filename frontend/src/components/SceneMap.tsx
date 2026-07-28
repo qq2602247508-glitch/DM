@@ -43,6 +43,7 @@ export function SceneMap({
   onCellSelect,
   canSelectCell,
   title = "统一场景地图",
+  compactCells = false,
 }: {
   grid: SceneMapGrid;
   tokens: SceneMapToken[];
@@ -57,6 +58,7 @@ export function SceneMap({
   onCellSelect?: (row: number, col: number) => void;
   canSelectCell?: (row: number, col: number) => boolean;
   title?: string;
+  compactCells?: boolean;
 }): ReactElement {
   const tokensByCell = new Map(tokens.map((item) => [`${item.row}:${item.col}`, item]));
   const objectsByCell = new Map(objects.map((item) => [`${item.row}:${item.col}`, item]));
@@ -71,8 +73,12 @@ export function SceneMap({
         {movementCellKeys.size ? <span className="text-lime-300">绿色格：本回合剩余可移动范围</span> : null}
       </div>
       <div
-        className="grid min-w-[560px] gap-px bg-ink-700"
-        style={{ gridTemplateColumns: `repeat(${grid.width}, minmax(28px, 1fr))` }}
+        className={`grid gap-px bg-ink-700 ${compactCells ? "w-max max-w-none" : "min-w-[560px]"}`}
+        style={{
+          gridTemplateColumns: compactCells
+            ? `repeat(${grid.width}, minmax(28px, 48px))`
+            : `repeat(${grid.width}, minmax(28px, 1fr))`,
+        }}
       >
         {Array.from({ length: grid.width * grid.height }, (_, index) => {
           const row = Math.floor(index / grid.width) + 1;

@@ -335,6 +335,7 @@ function SceneGridView({
         && own
         && movementCellKeys?.has(`${row}:${col}`),
       )}
+      compactCells={Boolean(combat)}
       grid={scene.grid}
       objects={scene.objects.map((item) => ({ ...item, targetKey: `object:${item.id}` }))}
       onCellSelect={onMove}
@@ -615,24 +616,29 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
   if (!combat) return <EmptyState hint="DM 从当前 Scene 发起战斗后，这里会自动切换。" title="当前没有战斗" />;
   const ended = combat.status === "ended";
   return (
-    <div className="grid gap-4 xl:grid-cols-[1.35fr_.65fr]">
-      <section className={cardCls}>
+    <div
+      className="grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(320px,380px)]"
+      data-testid="player-combat-layout"
+    >
+      <section className={`${cardCls} min-w-0`}>
         <div className="mb-3 flex flex-wrap items-center gap-2"><h2 className="m-0 mr-auto font-display text-2xl">{combat.name}</h2><span className="rounded bg-ink-950 px-2 py-1 text-xs">第 {combat.round_number} 轮</span><span className={`rounded px-2 py-1 text-xs ${ended ? "bg-amber-500/20 text-amber-200" : combat.is_my_turn ? "bg-emerald-500/20 text-emerald-200" : "bg-ink-800 text-stone-400"}`}>{ended ? "战斗已结束" : combat.is_my_turn ? "轮到你行动" : "等待其他单位"}</span></div>
         <PlayerCombatantStrip activeId={combat.active_combatant_id} combatants={combat.combatants} />
-        <SceneGridView
-          onMove={(row, col) => own && mutation.mutate(() => moveMyCombatant(row, col, own.version ?? 1))}
-          onTargetSelect={(value) => setTargetId(value.replace(/^combatant:/, ""))}
-          selectedTargetKey={targetId ? `combatant:${targetId}` : undefined}
-          selectedTargetKeys={new Set(affectedEnemies.map((item) => `combatant:${item.id}`))}
-          selectableTargetKeys={new Set(targetableEnemies.map((item) => `combatant:${item.id}`))}
-          affectedCellKeys={affectedCellKeys}
-          movementCellKeys={movementCellKeys}
-          rangeCellKeys={rangeCellKeys}
-          snapshot={snapshot}
-        />
+        <div data-testid="player-combat-map">
+          <SceneGridView
+            onMove={(row, col) => own && mutation.mutate(() => moveMyCombatant(row, col, own.version ?? 1))}
+            onTargetSelect={(value) => setTargetId(value.replace(/^combatant:/, ""))}
+            selectedTargetKey={targetId ? `combatant:${targetId}` : undefined}
+            selectedTargetKeys={new Set(affectedEnemies.map((item) => `combatant:${item.id}`))}
+            selectableTargetKeys={new Set(targetableEnemies.map((item) => `combatant:${item.id}`))}
+            affectedCellKeys={affectedCellKeys}
+            movementCellKeys={movementCellKeys}
+            rangeCellKeys={rangeCellKeys}
+            snapshot={snapshot}
+          />
+        </div>
         {own ? <p className="mb-0 mt-2 text-xs text-stone-400">剩余移动 {own.movement_remaining_ft ?? 0}尺 · 动作 {own.action_available ? "可用" : "已用"} · 附赠动作 {own.bonus_action_available ? "可用" : "已用"}</p> : null}
       </section>
-      <aside className="space-y-4">
+      <aside className="min-w-0 space-y-4" data-testid="player-combat-sidebar">
         <section className={cardCls}>
           <h2 className="mt-0 font-display text-xl">当前战斗面板</h2>
           {combat.pending_rolls.map((roll) => <div className="mb-3 rounded border border-violet-700 bg-violet-950/20 p-3" key={roll.id}><strong className="text-sm">{roll.action_name}</strong><p className="text-xs text-stone-400">请掷 {roll.roll_formula}，总值需达到 DC {roll.dc}（{roll.ability || roll.skill || roll.resolution_type}）</p><div className="flex gap-2"><input aria-label={`${roll.action_name}骰值`} className={inputCls} onChange={(event) => setRolls((current) => ({ ...current, [roll.id]: event.target.value }))} type="number" value={rolls[roll.id] ?? ""} /><Button disabled={!rolls[roll.id]} onClick={() => mutation.mutate(async () => { const result = await submitMyPlayerRoll(roll.id, roll.version, Number(rolls[roll.id])); setLastResolution("豁免已结算；怪物/NPC 回合已自动结束，正在同步下一位。"); return result; })} variant="primary">提交并继续战斗</Button></div></div>)}
