@@ -72,7 +72,8 @@ describe("PlayerPage", () => {
     renderPage();
 
     expect(await screen.findByRole("heading", { name: "酒馆突袭" })).toBeInTheDocument();
-    expect(screen.getByText("等待其他单位")).toBeInTheDocument();
+    expect(screen.getByText("地精行动中")).toBeInTheDocument();
+    expect(screen.getByTestId("player-active-enemy-panel")).toHaveTextContent("地精 · 当前行动单位");
     expect(screen.getByRole("button", { name: "提交攻击并结束回合" })).toBeDisabled();
 
     await userEvent.click(screen.getByRole("button", { name: "我的角色" }));

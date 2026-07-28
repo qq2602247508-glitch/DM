@@ -24,6 +24,7 @@ from dnd_dm_assistant.infrastructure.database.models import (
     CharacterCondition,
     Clue,
     Combat,
+    CombatAction,
     Combatant,
     Event,
     Location,
@@ -426,6 +427,64 @@ class SqlAlchemyCampaignStateGateway:
             if getattr(result, "rowcount", None) != 1:
                 raise VersionConflict(entity_type, entity_id, expected_version, actual)
             session.refresh(entity)
+            if entity_type == "combatant":
+                before_snapshot = before.get("snapshot_json")
+                after_snapshot = entity.snapshot_json
+                before_position = (
+                    before_snapshot.get("grid_position")
+                    if isinstance(before_snapshot, dict)
+                    else None
+                )
+                after_position = (
+                    after_snapshot.get("grid_position")
+                    if isinstance(after_snapshot, dict)
+                    else None
+                )
+                if (
+                    isinstance(before_position, dict)
+                    and isinstance(after_position, dict)
+                    and before_position != after_position
+                ):
+                    combat = session.get(Combat, entity.combat_id)
+                    if combat is not None:
+                        spent_ft = max(
+                            0,
+                            int(before.get("movement_remaining_ft", 0))
+                            - int(entity.movement_remaining_ft),
+                        )
+                        session.add(
+                            CombatAction(
+                                campaign_id=combat.campaign_id,
+                                combat_id=combat.id,
+                                actor_combatant_id=entity.id,
+                                action_type="move",
+                                target_combatant_ids=[entity.id],
+                                request_json={
+                                    "action_name": "移动",
+                                    "from_position": before_position,
+                                    "to_position": after_position,
+                                    "movement_spent_ft": spent_ft,
+                                },
+                                result_json={
+                                    "from_position": before_position,
+                                    "to_position": after_position,
+                                    "movement_remaining_ft": entity.movement_remaining_ft,
+                                },
+                                explanation="战斗地图移动已公开同步",
+                                round_number=combat.round_number,
+                                turn_index=combat.current_turn_index,
+                                summary=(
+                                    f"{entity.display_name} 从"
+                                    f"（{before_position.get('row')},{before_position.get('col')}）"
+                                    f"移动到（{after_position.get('row')},{after_position.get('col')}）"
+                                    f"；消耗 {spent_ft} 尺移动力"
+                                ),
+                                idempotency_key=(
+                                    f"combatant-move:{entity.id}:{expected_version}"
+                                ),
+                                status="confirmed",
+                            )
+                        )
             self._audit(
                 session,
                 campaign_id=self._resolve_campaign_id(session, entity_type, entity),

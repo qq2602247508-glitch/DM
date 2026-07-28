@@ -1575,6 +1575,7 @@ class PlayerRoomService:
             .order_by(CombatAction.created_at.desc())
             .limit(80)
         ).all()
+        fighters_by_id = {item.id: item for item in fighters}
         pending = []
         for action in actions:
             if (
@@ -1616,6 +1617,35 @@ class PlayerRoomService:
                     "round_number": action.round_number,
                     "turn_index": action.turn_index,
                     "status": action.status,
+                    "action_type": action.action_type,
+                    "actor_combatant_id": action.actor_combatant_id,
+                    "actor_name": (
+                        fighters_by_id[action.actor_combatant_id].display_name
+                        if action.actor_combatant_id in fighters_by_id
+                        else None
+                    ),
+                    "target_combatant_ids": action.target_combatant_ids,
+                    "target_names": [
+                        fighters_by_id[target_id].display_name
+                        for target_id in action.target_combatant_ids
+                        if target_id in fighters_by_id
+                    ],
+                    "action_name": action.request_json.get("action_name"),
+                    "from_position": action.request_json.get("from_position"),
+                    "to_position": action.request_json.get("to_position"),
+                    "movement_spent_ft": action.request_json.get(
+                        "movement_spent_ft"
+                    ),
+                    "resolution_type": action.request_json.get(
+                        "resolution_type"
+                    ),
+                    "dc": action.request_json.get("dc"),
+                    "roll_formula": action.request_json.get("roll_formula"),
+                    "damage": action.result_json.get(
+                        "adjusted_damage",
+                        action.result_json.get("damage"),
+                    ),
+                    "created_at": action.created_at.isoformat(),
                 }
                 for action in actions
             ],

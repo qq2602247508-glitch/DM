@@ -194,6 +194,41 @@ def test_two_independent_player_sessions_share_table_combat_and_settlement(
             for item in monster_turn["combatants"]
             if item["id"] == by_entity[monster["id"]]["id"]
         )
+        monster_state = next(
+            item
+            for item in campaign_client.get(
+                f"/api/v1/campaigns/{campaign_id}/combats/{combat['id']}/combatants"
+            ).json()["items"]
+            if item["id"] == by_entity[monster["id"]]["id"]
+        )
+        moved_monster = campaign_client.patch(
+            (
+                f"/api/v1/campaigns/{campaign_id}/combats/{combat['id']}"
+                f"/combatants/{monster_state['id']}"
+            ),
+            headers={"If-Match": f'"{monster_state["version"]}"'},
+            json={
+                "movement_remaining_ft": 25,
+                "snapshot_json": {
+                    **monster_state["snapshot_json"],
+                    "grid_position": {"row": 6, "col": 3},
+                },
+            },
+        )
+        assert moved_monster.status_code == 200, moved_monster.text
+        by_entity[monster["id"]] = moved_monster.json()
+        monster_version = moved_monster.json()["version"]
+        public_move = next(
+            item
+            for item in player_a.get("/api/v1/player-room/me").json()["combat"]["log"]
+            if item["action_type"] == "move"
+            and item["actor_combatant_id"] == monster_state["id"]
+            and item["to_position"] == {"row": 6, "col": 3}
+        )
+        assert public_move["actor_name"] == "地精"
+        assert public_move["from_position"] == {"row": 7, "col": 3}
+        assert public_move["movement_spent_ft"] == 5
+        assert "移动" in public_move["summary"]
         player_fighter_id = by_entity[hero_a["id"]]["id"]
         player_fighter = next(
             item for item in monster_turn["combatants"] if item["id"] == player_fighter_id

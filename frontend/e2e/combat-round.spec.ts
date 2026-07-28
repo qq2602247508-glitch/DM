@@ -73,7 +73,7 @@ test("玩家端加载当前战斗地图、回合面板、攻击控件和公开�
       snapshot_json: { grid_position: { row: 4, col: 3 }, actions: hero.actions },
     },
   }));
-  await ok(await request.post(`${prefix}/combats/${combatId}/combatants`, {
+  const enemyCombatant = await ok(await request.post(`${prefix}/combats/${combatId}/combatants`, {
     data: {
       display_name: "验收地精",
       entity_type: "monster",
@@ -126,14 +126,37 @@ test("玩家端加载当前战斗地图、回合面板、攻击控件和公开�
     expect(dimensions.mapVisible).toBe(true);
     expect(dimensions.sidebarWidth).toBeGreaterThanOrEqual(320);
     expect(dimensions.sidebarRight).toBeLessThanOrEqual(dimensions.viewportWidth);
-    expect(dimensions.mapGridWidth).toBeLessThanOrEqual(960);
+    // 20 × 48px cells plus 19 one-pixel grid gaps.
+    expect(dimensions.mapGridWidth).toBeLessThanOrEqual(980);
+    await ok(await request.patch(`${prefix}/combats/${combatId}/combatants/${String(enemyCombatant.id)}`, {
+      headers: { "If-Match": `"${Number(enemyCombatant.version)}"` },
+      data: {
+        movement_remaining_ft: 25,
+        snapshot_json: {
+          grid_position: { row: 4, col: 6 },
+          actions: [{ name: "短剑", damage: "1d6+2 穿刺" }],
+        },
+      },
+    }));
+    await expect.poll(async () => page.evaluate(async () => {
+      const response = await fetch("/api/v1/player-room/me");
+      const snapshot = await response.json() as {
+        combat?: { log?: Array<{ actor_name?: string; action_type?: string }> };
+      };
+      return snapshot.combat?.log?.some(
+        (entry) => entry.actor_name === "验收地精" && entry.action_type === "move",
+      ) ?? false;
+    })).toBe(true);
+    await expect(page.getByTestId("player-enemy-action-banner")).toContainText("验收地精");
+    await expect(page.getByTestId("player-enemy-action-banner")).toContainText("移动");
     await expect(page.getByLabel("攻击/技能")).toBeVisible();
     await expect(page.getByLabel("目标")).toBeVisible();
     await expect(page.getByRole("heading", { name: "公开战斗日志" })).toBeVisible();
     const endTurn = page.getByRole("button", { name: "结束我的回合" });
     if (await endTurn.isEnabled()) {
       await endTurn.click();
-      await expect(page.getByText("等待其他单位", { exact: true })).toBeVisible();
+      await expect(page.getByText("验收地精行动中", { exact: true })).toBeVisible();
+      await expect(page.getByTestId("player-active-enemy-panel")).toContainText("验收地精 · 当前行动单位");
     }
   } finally {
     await player.close();

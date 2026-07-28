@@ -221,7 +221,27 @@ export type PlayerCombatSnapshot = {
   is_my_turn: boolean;
   own_combatant_id: string | null;
   combatants: PlayerCombatant[];
-  log: Array<{ id: string; summary: string; round_number: number; turn_index: number; status: string }>;
+  log: Array<{
+    id: string;
+    summary: string;
+    round_number: number;
+    turn_index: number;
+    status: string;
+    action_type?: string;
+    actor_combatant_id?: string | null;
+    actor_name?: string | null;
+    target_combatant_ids?: string[];
+    target_names?: string[];
+    action_name?: string | null;
+    from_position?: { row: number; col: number } | null;
+    to_position?: { row: number; col: number } | null;
+    movement_spent_ft?: number | null;
+    resolution_type?: string | null;
+    dc?: number | null;
+    roll_formula?: string | null;
+    damage?: number | null;
+    created_at?: string;
+  }>;
   pending_rolls: PlayerPendingRoll[];
 };
 

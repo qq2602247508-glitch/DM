@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useMemo, useState, type ReactElement } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactElement } from "react";
 
 import {
   attackWithMyCombatant,
@@ -18,6 +18,7 @@ import {
   submitMyPlayerRoll,
   type PlayerRoomSnapshot,
   type PlayerCombatant,
+  type PlayerCombatSnapshot,
   type SafePlayerCharacter,
 } from "../api/playerRoom";
 import { getCharacterOptions } from "../api/entities";
@@ -297,6 +298,7 @@ function SceneGridView({
   affectedCellKeys,
   movementCellKeys,
   rangeCellKeys,
+  positionOverrides,
 }: {
   snapshot: PlayerRoomSnapshot;
   onMove: (row: number, col: number) => void;
@@ -307,22 +309,26 @@ function SceneGridView({
   affectedCellKeys?: ReadonlySet<string>;
   movementCellKeys?: ReadonlySet<string>;
   rangeCellKeys?: ReadonlySet<string>;
+  positionOverrides?: Record<string, { row: number; col: number }>;
 }): ReactElement {
   const scene = snapshot.table.scene;
   const combat = snapshot.combat;
   if (!scene?.grid) return <EmptyState hint="等待 DM 选择带网格的场景。" title="尚无公开地图" />;
   const own = combat?.combatants.find((item) => item.is_own);
   const tokens = combat
-    ? combat.combatants.flatMap((item) => item.position ? [{
-        id: item.id,
-        entity_id: item.id,
-        entity_type: item.entity_type,
-        label: item.name,
-        row: item.position.row,
-        col: item.position.col,
-        targetKey: `combatant:${item.id}`,
-        isOwn: item.is_own,
-      }] : [])
+    ? combat.combatants.flatMap((item) => {
+        const position = positionOverrides?.[item.id] ?? item.position;
+        return position ? [{
+          id: item.id,
+          entity_id: item.id,
+          entity_type: item.entity_type,
+          label: item.name,
+          row: position.row,
+          col: position.col,
+          targetKey: `combatant:${item.id}`,
+          isOwn: item.is_own,
+        }] : [];
+      })
     : scene.tokens.map((item) => ({
         ...item,
         targetKey: item.entity_id ? `${item.entity_type}:${item.entity_id}` : undefined,
@@ -508,6 +514,12 @@ function PlayerCombatantStrip({
   );
 }
 
+type PlayerCombatLogEntry = PlayerCombatSnapshot["log"][number];
+
+function combatLogKey(entry: PlayerCombatLogEntry): string {
+  return `${entry.id}:${entry.status}`;
+}
+
 function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refresh: () => void }): ReactElement {
   const combat = snapshot.combat;
   const [actionName, setActionName] = useState("");
@@ -517,6 +529,77 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
   const [rolls, setRolls] = useState<Record<string, string>>({});
   const [endTurnAfterAttack, setEndTurnAfterAttack] = useState(true);
   const [lastResolution, setLastResolution] = useState("");
+  const [actionQueue, setActionQueue] = useState<PlayerCombatLogEntry[]>([]);
+  const [presentation, setPresentation] = useState<PlayerCombatLogEntry | null>(null);
+  const [positionOverrides, setPositionOverrides] = useState<Record<string, { row: number; col: number }>>({});
+  const seenCombatLogKeys = useRef<Set<string>>(new Set());
+  const replayCombatId = useRef<string | null>(null);
+  useEffect(() => {
+    if (!combat) return;
+    if (replayCombatId.current !== combat.id) {
+      replayCombatId.current = combat.id;
+      seenCombatLogKeys.current = new Set(combat.log.map(combatLogKey));
+      setActionQueue([]);
+      setPresentation(null);
+      setPositionOverrides({});
+      return;
+    }
+    const unseen = combat.log
+      .filter((entry) => !seenCombatLogKeys.current.has(combatLogKey(entry)))
+      .reverse();
+    if (!unseen.length) return;
+    for (const entry of unseen) seenCombatLogKeys.current.add(combatLogKey(entry));
+    const visibleEnemyEvents = unseen.filter((entry) => {
+      const actor = combat.combatants.find((item) => item.id === entry.actor_combatant_id);
+      return actor?.entity_type === "monster"
+        || actor?.entity_type === "npc"
+        || entry.action_type === "advance_turn";
+    });
+    if (visibleEnemyEvents.length) {
+      setActionQueue((current) => [...current, ...visibleEnemyEvents]);
+    }
+  }, [combat]);
+  useEffect(() => {
+    if (presentation || !actionQueue.length) return;
+    const nextPresentation = actionQueue[0];
+    if (!nextPresentation) return;
+    setPresentation(nextPresentation);
+    setActionQueue((current) => current.slice(1));
+  }, [actionQueue, presentation]);
+  useEffect(() => {
+    if (!presentation) return;
+    let cancelled = false;
+    const wait = (milliseconds: number) => new Promise<void>((resolve) => {
+      window.setTimeout(resolve, milliseconds);
+    });
+    const replay = async () => {
+      const actorId = presentation.actor_combatant_id;
+      const from = presentation.from_position;
+      const to = presentation.to_position;
+      if (presentation.action_type === "move" && actorId && from && to) {
+        setPositionOverrides((current) => ({ ...current, [actorId]: from }));
+        for (const point of gridLine(from, to).slice(1)) {
+          await wait(240);
+          if (cancelled) return;
+          setPositionOverrides((current) => ({ ...current, [actorId]: point }));
+        }
+        await wait(700);
+        if (cancelled) return;
+        setPositionOverrides((current) => {
+          const next = { ...current };
+          delete next[actorId];
+          return next;
+        });
+      } else {
+        await wait(presentation.action_type === "advance_turn" ? 850 : 1500);
+      }
+      if (!cancelled) setPresentation(null);
+    };
+    void replay();
+    return () => {
+      cancelled = true;
+    };
+  }, [presentation]);
   const own = combat?.combatants.find((item) => item.is_own);
   const actions = (snapshot.character?.actions ?? []).filter((item): item is Record<string, unknown> => typeof item === "object" && item !== null);
   const enemies = combat?.combatants.filter((item) => item.entity_type === "monster" && item.health_status !== "倒地") ?? [];
@@ -575,6 +658,21 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
     enemy.position
     && rangeCellKeys.has(`${enemy.position.row}:${enemy.position.col}`)
   ));
+  const presentationActor = combat?.combatants.find(
+    (item) => item.id === presentation?.actor_combatant_id,
+  );
+  const presentationTargets = (presentation?.target_combatant_ids ?? [])
+    .map((id) => combat?.combatants.find((item) => item.id === id))
+    .filter((item): item is PlayerCombatant => Boolean(item));
+  const replayTargetCellKeys = new Set(
+    presentationTargets
+      .filter((item) => item.position)
+      .map((item) => `${item.position?.row}:${item.position?.col}`),
+  );
+  const displayAffectedCellKeys = new Set([...affectedCellKeys, ...replayTargetCellKeys]);
+  const activeCombatant = combat?.combatants.find(
+    (item) => item.id === combat.active_combatant_id,
+  );
   const movementCellKeys = new Set<string>();
   if (combat?.is_my_turn && grid && actorPosition && (own?.movement_remaining_ft ?? 0) > 0) {
     const occupied = new Set(
@@ -621,8 +719,21 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
       data-testid="player-combat-layout"
     >
       <section className={`${cardCls} min-w-0`}>
-        <div className="mb-3 flex flex-wrap items-center gap-2"><h2 className="m-0 mr-auto font-display text-2xl">{combat.name}</h2><span className="rounded bg-ink-950 px-2 py-1 text-xs">第 {combat.round_number} 轮</span><span className={`rounded px-2 py-1 text-xs ${ended ? "bg-amber-500/20 text-amber-200" : combat.is_my_turn ? "bg-emerald-500/20 text-emerald-200" : "bg-ink-800 text-stone-400"}`}>{ended ? "战斗已结束" : combat.is_my_turn ? "轮到你行动" : "等待其他单位"}</span></div>
+        <div className="mb-3 flex flex-wrap items-center gap-2"><h2 className="m-0 mr-auto font-display text-2xl">{combat.name}</h2><span className="rounded bg-ink-950 px-2 py-1 text-xs">第 {combat.round_number} 轮</span><span className={`rounded px-2 py-1 text-xs ${ended ? "bg-amber-500/20 text-amber-200" : combat.is_my_turn ? "bg-emerald-500/20 text-emerald-200" : "bg-ink-800 text-stone-400"}`}>{ended ? "战斗已结束" : presentation ? "正在展示敌方行动" : combat.is_my_turn ? "轮到你行动" : `${activeCombatant?.name ?? "其他单位"}行动中`}</span></div>
         <PlayerCombatantStrip activeId={combat.active_combatant_id} combatants={combat.combatants} />
+        {presentation ? (
+          <div className="mb-3 rounded-lg border-2 border-red-700/60 bg-red-950/20 p-3" data-testid="player-enemy-action-banner">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="rounded bg-red-500/20 px-2 py-1 text-2xs text-red-200">
+                {presentation.action_type === "move" ? "敌方移动" : presentation.action_type === "advance_turn" ? "回合切换" : "敌方动作"}
+              </span>
+              <strong className="text-sm text-parchment-100">{presentationActor?.name ?? presentation.actor_name ?? "战斗单位"}</strong>
+              {presentation.action_name ? <span className="text-xs text-red-200">使用「{presentation.action_name}」</span> : null}
+            </div>
+            <p className="mb-0 mt-2 text-xs leading-5 text-stone-300">{presentation.summary}</p>
+            {presentationTargets.length ? <p className="mb-0 mt-1 text-2xs text-amber-200">目标：{presentationTargets.map((item) => item.name).join("、")}</p> : null}
+          </div>
+        ) : null}
         <div data-testid="player-combat-map">
           <SceneGridView
             onMove={(row, col) => own && mutation.mutate(() => moveMyCombatant(row, col, own.version ?? 1))}
@@ -630,8 +741,9 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
             selectedTargetKey={targetId ? `combatant:${targetId}` : undefined}
             selectedTargetKeys={new Set(affectedEnemies.map((item) => `combatant:${item.id}`))}
             selectableTargetKeys={new Set(targetableEnemies.map((item) => `combatant:${item.id}`))}
-            affectedCellKeys={affectedCellKeys}
+            affectedCellKeys={displayAffectedCellKeys}
             movementCellKeys={movementCellKeys}
+            positionOverrides={positionOverrides}
             rangeCellKeys={rangeCellKeys}
             snapshot={snapshot}
           />
@@ -641,6 +753,17 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
       <aside className="min-w-0 space-y-4" data-testid="player-combat-sidebar">
         <section className={cardCls}>
           <h2 className="mt-0 font-display text-xl">当前战斗面板</h2>
+          {!combat.is_my_turn && activeCombatant ? (
+            <div className="mb-3 rounded border border-red-900/60 bg-red-950/15 p-3" data-testid="player-active-enemy-panel">
+              <strong className="text-sm text-red-100">{activeCombatant.name} · 当前行动单位</strong>
+              <p className="mb-0 mt-1 text-xs leading-5 text-stone-300">
+                {activeCombatant.entity_type === "monster"
+                  ? `怪物正在由战斗 AI 移动并选择攻击。AC ${activeCombatant.armor_class} · HP ${activeCombatant.hp}/${activeCombatant.max_hp} · 剩余移动 ${activeCombatant.movement_remaining_ft ?? 0}尺。`
+                  : "NPC 正在按当前战斗状态行动。"}
+              </p>
+              {(activeCombatant.actions ?? []).length ? <p className="mb-0 mt-1 text-2xs text-stone-500">可见动作：{activeCombatant.actions.map(display).join("、")}</p> : null}
+            </div>
+          ) : null}
           {combat.pending_rolls.map((roll) => <div className="mb-3 rounded border border-violet-700 bg-violet-950/20 p-3" key={roll.id}><strong className="text-sm">{roll.action_name}</strong><p className="text-xs text-stone-400">请掷 {roll.roll_formula}，总值需达到 DC {roll.dc}（{roll.ability || roll.skill || roll.resolution_type}）</p><div className="flex gap-2"><input aria-label={`${roll.action_name}骰值`} className={inputCls} onChange={(event) => setRolls((current) => ({ ...current, [roll.id]: event.target.value }))} type="number" value={rolls[roll.id] ?? ""} /><Button disabled={!rolls[roll.id]} onClick={() => mutation.mutate(async () => { const result = await submitMyPlayerRoll(roll.id, roll.version, Number(rolls[roll.id])); setLastResolution("豁免已结算；怪物/NPC 回合已自动结束，正在同步下一位。"); return result; })} variant="primary">提交并继续战斗</Button></div></div>)}
           {ended ? <p className="rounded border border-amber-800/60 bg-amber-950/20 p-3 text-sm text-amber-100">战斗已由 DM 结束。你仍可查看地图和完整公开日志；奖励请到“我的角色”查看。</p> : null}
           <label className="block text-xs text-stone-400">攻击/技能<select className={`${inputCls} mt-1`} disabled={ended || !combat.is_my_turn} onChange={(event) => setActionName(event.target.value)} value={actionName}><option value="">选择角色卡动作</option>{actions.map((action) => <option key={display(action.name)} value={display(action.name)}>{display(action.name)} · {display(action.damage ?? action.description ?? "")}</option>)}</select></label>
