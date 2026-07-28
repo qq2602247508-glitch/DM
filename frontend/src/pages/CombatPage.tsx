@@ -61,6 +61,7 @@ import {
   findSceneSpawnCells,
   generateTacticalSceneGrid,
 } from "../ui/sceneGridGenerator";
+import { getDoorOrientation, isMapVoidCell, terrainCellClass } from "../ui/mapPresentation";
 
 type CombatCandidate = {
   key: string;
@@ -839,7 +840,12 @@ function BattleGrid({
             tacticalGrid.cell_size_ft,
           ) && hasLineOfSight(tacticalGrid, activePosition, point));
           const affected = areaKeys.has(`${rowNumber}:${colNumber}`);
-          const terrainClass = sceneCell?.kind === "wall" ? "bg-stone-800" : sceneCell?.kind === "cover" ? "bg-emerald-950/70" : sceneCell?.kind === "water" ? "bg-sky-950/60" : sceneCell?.kind === "door" ? "bg-amber-950/70" : sceneCell?.kind === "object" ? "bg-violet-950/60" : "bg-ink-900";
+          const terrainClass = terrainCellClass(sceneCell);
+          const isVoid = isMapVoidCell(sceneCell);
+          const isDoor = sceneCell?.kind === "door";
+          const doorOrientation = isDoor
+            ? getDoorOrientation(tacticalGrid.cells, rowNumber, colNumber)
+            : null;
           return (
             <button
               className={`relative aspect-square border border-ink-800 text-[9px] transition duration-200 ${terrainClass} ${inCastRange && !blocked && interactionMode === "target" ? "bg-sky-950/60 ring-1 ring-inset ring-sky-500/50" : ""} ${affected && !blocked && interactionMode === "target" ? "bg-fuchsia-900/70 ring-2 ring-inset ring-fuchsia-400/80" : ""} ${aimPoint?.row === rowNumber && aimPoint.col === colNumber ? "outline outline-2 outline-amber-300" : ""} ${canMove && interactionMode === "move" ? "bg-emerald-950/75 ring-1 ring-inset ring-emerald-400/75 hover:bg-emerald-950/60" : ""}`}
@@ -884,7 +890,20 @@ function BattleGrid({
                 : sceneCell?.label ?? (moveDistance === null ? "选择一个单位" : `${moveDistance} 尺`)}
               type="button"
             >
-              {sceneCell?.label ? <span className="absolute left-0 top-0 max-w-full truncate text-stone-500">{sceneCell.label.slice(0, 2)}</span> : null}
+              {isDoor ? (
+                <>
+                  <span
+                    aria-hidden
+                    className={`absolute rounded bg-amber-400 shadow-[0_0_6px_rgba(251,191,36,.85)] ${
+                      doorOrientation === "vertical"
+                        ? "inset-y-1 left-1/2 w-1 -translate-x-1/2"
+                        : "inset-x-1 top-1/2 h-1 -translate-y-1/2"
+                    }`}
+                  />
+                  <span className="absolute right-0 top-0 rounded-bl bg-amber-500 px-0.5 font-bold text-ink-950">门</span>
+                </>
+              ) : null}
+              {sceneCell?.label && sceneCell.kind !== "wall" && !isVoid && !isDoor ? <span className="absolute left-0 top-0 max-w-full truncate text-stone-500">{sceneCell.label.slice(0, 2)}</span> : null}
               {fighter ? <span className={`flex h-full items-center justify-center rounded-full px-1 text-center transition duration-300 ${impactFighterId === fighter.id ? "scale-110 bg-red-500 text-white ring-4 ring-red-300/80" : selected === fighter.id && fighter.id !== activeFighterId ? "bg-emerald-400 text-ink-950 ring-4 ring-emerald-300/70" : fighter.entity_type === "monster" ? "bg-red-500/30 text-red-100" : fighter.entity_type === "npc" ? "bg-violet-500/25 text-violet-100" : "bg-amber-500/35 text-amber-100"}`}>{fighter.display_name.slice(0, 4)}</span> : null}
             </button>
           );

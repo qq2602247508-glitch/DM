@@ -187,42 +187,67 @@ function buildGrid(theme: GridTheme, seed: number): SceneGrid {
     spawn(6, 2, "玩家");
     spawn(7, 17, "敌方");
   } else {
-    // A stepped ruin with five rooms joined by a central hall. The offset
-    // outer walls and multiple doorways produce useful flanks and choke points
-    // instead of one rectangular arena.
-    line(1, 4, 1, 15, "wall", "北侧断墙");
-    line(2, 3, 4, 3, "wall", "西北外墙");
-    line(4, 1, 4, 3, "wall", "西侧凸墙");
-    line(5, 1, 10, 1, "wall", "西侧外墙");
-    line(2, 16, 7, 16, "wall", "东北外墙");
-    line(7, 16, 7, 18, "wall", "东侧凸墙");
-    line(8, 18, 10, 18, "wall", "东侧外墙");
-    line(11, 2, 11, 17, "wall", "南侧断墙");
+    // Four independently enclosed rooms open into a cross-shaped central hall.
+    // Everything outside the room/corridor footprint becomes an unwalkable
+    // dark void, which makes the result read like a real dungeon floor plan.
+    const rect = (
+      top: number,
+      left: number,
+      bottom: number,
+      right: number,
+      label: string,
+    ) => {
+      line(top, left, top, right, "wall", label);
+      line(bottom, left, bottom, right, "wall", label);
+      line(top, left, bottom, left, "wall", label);
+      line(top, right, bottom, right, "wall", label);
+    };
+    rect(1, 1, 5, 7, "西北侧室石墙");
+    rect(1, 12, 5, 18, "东北侧室石墙");
+    rect(7, 1, 12, 7, "西南储藏室石墙");
+    rect(7, 12, 12, 18, "东南密室石墙");
+    line(2, 7, 2, 12, "wall", "北走廊墙");
+    line(4, 7, 4, 7, "wall", "中央走廊墙");
+    line(4, 12, 4, 12, "wall", "中央走廊墙");
+    line(3, 7, 10, 7, "wall", "中央走廊西墙");
+    line(3, 12, 10, 12, "wall", "中央走廊东墙");
+    line(10, 7, 10, 12, "wall", "中央大厅南墙");
 
-    line(2, 9, 4, 9, "wall", "北侧房间隔墙");
-    line(5, 2, 5, 15, "wall", "中央大厅北墙");
-    door(5, 6 + (seed % 2), "西北房门");
-    door(5, 12 + (seed % 2), "东北房门");
-    line(6, 7, 10, 7, "wall", "西南房间隔墙");
-    line(6, 13, 10, 13, "wall", "东南房间隔墙");
-    door(8, 7, "西南房门");
-    door(7 + (seed % 2), 13, "东南房门");
-    door(11, 9 + (seed % 2), "主要入口");
+    door(3, 7, "西北侧室门");
+    door(3, 12, "东北侧室门");
+    door(9, 7, "西南储藏室门");
+    door(9, 12, "东南密室门");
+    door(10, 9 + (seed % 2), "地城主要入口");
 
-    add(3, 5, "floor", "西北侧室");
-    add(3, 12, "floor", "东北侧室");
-    add(6, 10, "floor", "中央走廊");
+    add(3, 4, "floor", "西北侧室");
+    add(3, 15, "floor", "东北侧室");
+    add(3, 9, "floor", "北侧走廊");
+    add(6, 9, "floor", "中央大厅");
+    add(11, 9, "floor", "入口前厅");
     add(9, 4, "floor", "西南储藏室");
-    add(9, 10, "floor", "南侧大厅");
-    add(9, 15, "floor", "东南侧室");
-    add(3, 7, "cover", "坍塌书架", false, true);
-    add(3, 13, "object", "机关石碑");
-    add(6, 5, "cover", "断裂石柱", false, true);
-    add(6, 11, "cover", "倒塌拱门", false, true);
-    add(9, 5, "object", "可搜索木箱");
-    add(9, 14, "cover", "碎石掩体");
-    spawn(10, 9, "玩家");
-    spawn(3, 14, "敌方");
+    add(9, 15, "floor", "东南密室");
+    add(2, 3, "cover", "坍塌书架", false, true);
+    add(2, 15, "object", "机关石碑");
+    add(6, 8, "cover", "断裂石柱", false, true);
+    add(7, 11, "cover", "倒塌拱门", false, true);
+    add(8, 3, "object", "可搜索木箱");
+    add(8, 16, "cover", "碎石掩体");
+    spawn(8, 9, "玩家");
+    spawn(3, 15, "敌方");
+
+    const insideFootprint = (row: number, col: number) => (
+      (row >= 1 && row <= 5 && col >= 1 && col <= 7)
+      || (row >= 1 && row <= 5 && col >= 12 && col <= 18)
+      || (row >= 7 && row <= 12 && col >= 1 && col <= 7)
+      || (row >= 7 && row <= 12 && col >= 12 && col <= 18)
+      || (row >= 2 && row <= 10 && col >= 7 && col <= 12)
+      || (row === 11 && col >= 9 && col <= 10)
+    );
+    for (let row = 1; row <= HEIGHT; row += 1) {
+      for (let col = 1; col <= WIDTH; col += 1) {
+        if (!insideFootprint(row, col)) add(row, col, "wall", "地图外区域");
+      }
+    }
   }
 
   const themeNames: Record<GridTheme, string> = {

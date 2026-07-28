@@ -1,5 +1,7 @@
 import type { ReactElement } from "react";
 
+import { getDoorOrientation, isMapVoidCell, terrainCellClass } from "../ui/mapPresentation";
+
 export type SceneMapGrid = {
   width: number;
   height: number;
@@ -106,15 +108,12 @@ export function SceneMap({
           const cellSelectable = Boolean(
             !token && !object && onCellSelect && canSelectCell?.(row, col),
           );
-          const terrainClass = terrain?.kind === "wall"
-            ? "bg-stone-800"
-            : terrain?.kind === "cover"
-              ? "bg-emerald-950/70"
-              : terrain?.kind === "water"
-                ? "bg-sky-950/60"
-                : terrain?.kind === "door"
-                  ? "bg-amber-950/70"
-                  : "bg-ink-900";
+          const terrainClass = terrainCellClass(terrain);
+          const isVoid = isMapVoidCell(terrain);
+          const isDoor = terrain?.kind === "door" || object?.object_type === "door";
+          const doorOrientation = isDoor
+            ? getDoorOrientation(grid.cells ?? [], row, col)
+            : null;
           return (
             <button
               aria-label={`格子 ${row},${col}${token ? ` · ${token.label}` : object ? ` · ${object.label}` : ""}`}
@@ -131,7 +130,23 @@ export function SceneMap({
               title={token?.label ?? object?.label ?? terrain?.label ?? `${row},${col}`}
               type="button"
             >
-              {object ? <span className="absolute left-0 top-0 max-w-full truncate text-stone-500">{object.label.slice(0, 2)}</span> : null}
+              {isDoor ? (
+                <>
+                  <span
+                    aria-hidden
+                    className={`absolute rounded bg-amber-400 shadow-[0_0_6px_rgba(251,191,36,.85)] ${
+                      doorOrientation === "vertical"
+                        ? "inset-y-1 left-1/2 w-1 -translate-x-1/2"
+                        : "inset-x-1 top-1/2 h-1 -translate-y-1/2"
+                    }`}
+                  />
+                  <span className="absolute right-0 top-0 rounded-bl bg-amber-500 px-0.5 font-bold text-ink-950">门</span>
+                </>
+              ) : null}
+              {object && object.object_type !== "wall" && !isVoid && !isDoor ? <span className="absolute left-0 top-0 max-w-full truncate text-stone-500">{object.label.slice(0, 2)}</span> : null}
+              {!token && terrain?.kind === "floor" && !/出生区/.test(terrain.label ?? "") ? (
+                <span className="absolute inset-x-0 bottom-0 truncate px-0.5 text-[8px] text-stone-500">{terrain.label?.slice(0, 5)}</span>
+              ) : null}
               {token ? (
                 <span className={`flex h-full items-center justify-center rounded-full px-1 text-center ${token.isOwn ? "bg-amber-500/35 text-amber-100" : token.entity_type === "monster" ? "bg-red-500/30 text-red-100" : token.entity_type === "npc" ? "bg-violet-500/25 text-violet-100" : "bg-blue-500/25 text-blue-100"}`}>
                   {token.label.slice(0, 4)}

@@ -48,8 +48,20 @@ describe("generateTacticalSceneGrid", () => {
     expect(grid.cells.filter((cell) => (
       cell.kind === "floor" && /侧室|大厅|走廊|储藏室/.test(cell.label)
     )).length).toBeGreaterThanOrEqual(5);
-    expect(grid.cells.some((cell) => cell.label === "西侧凸墙")).toBe(true);
-    expect(grid.cells.some((cell) => cell.label === "东侧凸墙")).toBe(true);
+    expect(grid.cells.some((cell) => cell.label === "西北侧室石墙")).toBe(true);
+    expect(grid.cells.some((cell) => cell.label === "东南密室石墙")).toBe(true);
+    expect(grid.cells.filter((cell) => cell.label === "地图外区域").length).toBeGreaterThan(20);
+    for (const door of grid.cells.filter((cell) => cell.kind === "door")) {
+      const neighboringFloors = [
+        [door.row - 1, door.col],
+        [door.row + 1, door.col],
+        [door.row, door.col - 1],
+        [door.row, door.col + 1],
+      ].filter(([row, col]) => !grid.cells.some(
+        (cell) => cell.row === row && cell.col === col && cell.kind === "wall",
+      ));
+      expect(neighboringFloors.length).toBeGreaterThanOrEqual(2);
+    }
     expect(grid.cells.filter((cell) => cell.blocks_sight).length).toBeGreaterThanOrEqual(3);
     expect(grid.cells.every((cell) => (
       ["floor", "wall", "cover", "door", "object"].includes(cell.kind)

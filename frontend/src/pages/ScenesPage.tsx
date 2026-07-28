@@ -31,6 +31,7 @@ import { navigate } from "../hooks/useHashRoute";
 import { Badge, Button, EmptyState, ErrorState, LoadingBlock } from "../ui/primitives";
 import { xpForChallengeRating } from "../ui/progressionRules";
 import { generateTacticalSceneGrid } from "../ui/sceneGridGenerator";
+import { getDoorOrientation, terrainCellClass } from "../ui/mapPresentation";
 import { inputCls, selectCls } from "../ui/styles";
 import { HpBar } from "../ui/widgets";
 
@@ -53,8 +54,17 @@ function SceneGridPreview({ grid }: { grid: SceneGrid }): ReactElement {
           const row = Math.floor(index / grid.width) + 1;
           const col = (index % grid.width) + 1;
           const cell = grid.cells.find((item) => item.row === row && item.col === col);
-          const color = cell?.kind === "wall" ? "bg-stone-700" : cell?.kind === "cover" ? "bg-emerald-900" : cell?.kind === "door" ? "bg-amber-800" : cell?.kind === "object" ? "bg-violet-900" : "bg-ink-950";
-          return <div className={`aspect-square min-h-6 ${color}`} key={`${row}-${col}`} title={cell?.label ?? "地面"} />;
+          const orientation = cell?.kind === "door" ? getDoorOrientation(grid.cells, row, col) : null;
+          return (
+            <div className={`relative aspect-square min-h-6 ${terrainCellClass(cell)}`} key={`${row}-${col}`} title={cell?.label ?? "地面"}>
+              {cell?.kind === "door" ? (
+                <>
+                  <span className={`absolute rounded bg-amber-400 ${orientation === "vertical" ? "inset-y-1 left-1/2 w-1 -translate-x-1/2" : "inset-x-1 top-1/2 h-1 -translate-y-1/2"}`} />
+                  <span className="absolute right-0 top-0 text-[8px] font-bold text-amber-100">门</span>
+                </>
+              ) : null}
+            </div>
+          );
         })}
       </div>
     </div>

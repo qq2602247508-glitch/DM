@@ -550,10 +550,10 @@ def main() -> None:
             "name": "Scene 1 · 雾锁钟楼综合验收场",
             "location_id": location["id"],
             "description": (
-                "玩家从旅店大厅进入钟楼地下层。西侧是老板与守卫所在的公共区，"
-                "中央为档案桌和可疑账本，东侧铁门通向酒窖；门锁带警铃假销。"
-                "南侧宝箱附近潜伏拟怪，排水沟中有凝胶立方。五只怪物暂处于可见的"
-                "验收位置，DM可先按非战斗状态测试，随后从本Scene发起战斗。"
+                "玩家从旅店大厅进入钟楼地下层。档案室、仪式室、卧室、军械室、"
+                "秘密墓室与藏宝室由横向走廊和中央通道连接；每个出入口都有门。"
+                "仪式室铁门带警铃假销，藏宝室附近潜伏拟怪，排水沟中有凝胶立方。"
+                "DM可先按非战斗状态测试，随后从同一Scene发起战斗。"
             ),
             "status": "active",
             "notes": (
@@ -566,64 +566,161 @@ def main() -> None:
 
     cells: list[dict[str, Any]] = []
     width, height = 20, 14
+    occupied: dict[tuple[int, int], int] = {}
+
+    def add_cell(
+        row: int,
+        col: int,
+        kind: str,
+        label: str,
+        *,
+        replace: bool = False,
+        blocks_sight: bool = False,
+    ) -> None:
+        payload: dict[str, Any] = {"row": row, "col": col, "kind": kind, "label": label}
+        if blocks_sight:
+            payload["blocks_sight"] = True
+        existing = occupied.get((row, col))
+        if existing is not None:
+            if replace:
+                cells[existing] = payload
+            return
+        occupied[(row, col)] = len(cells)
+        cells.append(payload)
+
+    def line(
+        start_row: int,
+        start_col: int,
+        end_row: int,
+        end_col: int,
+        label: str,
+    ) -> None:
+        row_step = 0 if start_row == end_row else (1 if end_row > start_row else -1)
+        col_step = 0 if start_col == end_col else (1 if end_col > start_col else -1)
+        row, col = start_row, start_col
+        while True:
+            add_cell(row, col, "wall", label)
+            if row == end_row and col == end_col:
+                break
+            row += row_step
+            col += col_step
+
+    def room(top: int, left: int, bottom: int, right: int, label: str) -> None:
+        line(top, left, top, right, f"{label}墙")
+        line(bottom, left, bottom, right, f"{label}墙")
+        line(top, left, bottom, left, f"{label}墙")
+        line(top, right, bottom, right, f"{label}墙")
+
+    # Six individually enclosed rooms joined by one horizontal corridor,
+    # a vertical spine and two side branches. The remaining cells are dark,
+    # blocked map void rather than an implausibly walkable mega-room.
+    room(1, 1, 7, 7, "档案室")
+    room(9, 1, 14, 7, "仪式室")
+    room(1, 10, 3, 15, "卧室")
+    room(1, 17, 7, 20, "军械室")
+    room(12, 10, 14, 16, "秘密墓室")
+    room(9, 17, 14, 20, "藏宝室")
+    line(3, 7, 3, 17, "北走廊墙")
+    line(5, 7, 5, 10, "北走廊墙")
+    line(5, 15, 5, 17, "北走廊墙")
+    line(5, 11, 10, 11, "中央通道西墙")
+    line(5, 14, 10, 14, "中央通道东墙")
+    line(10, 7, 10, 11, "西支路墙")
+    line(12, 7, 12, 10, "西支路墙")
+    line(10, 14, 10, 17, "东支路墙")
+    line(12, 16, 12, 17, "东支路墙")
+
+    doors = [
+        (4, 7, "档案室侧门"),
+        (11, 7, "仪式室警铃铁门"),
+        (3, 12, "卧室南门"),
+        (4, 17, "军械室木门"),
+        (11, 11, "西支路拱门"),
+        (11, 14, "东支路拱门"),
+        (12, 13, "秘密墓室门"),
+        (11, 17, "藏宝室铁门"),
+        (8, 12, "中央升降门"),
+    ]
+    for row, col, label in doors:
+        add_cell(row, col, "door", label, replace=True)
+
+    for row, col, label in [
+        (2, 4, "档案室"),
+        (13, 4, "仪式室"),
+        (2, 12, "卧室"),
+        (2, 18, "军械室"),
+        (4, 9, "北走廊"),
+        (7, 12, "中央通道"),
+        (13, 11, "秘密墓室"),
+        (13, 18, "藏宝室"),
+    ]:
+        add_cell(row, col, "floor", label)
+
+    def footprint(row: int, col: int) -> bool:
+        return (
+            (1 <= row <= 7 and 1 <= col <= 7)
+            or (9 <= row <= 14 and 1 <= col <= 7)
+            or (1 <= row <= 3 and 10 <= col <= 15)
+            or (1 <= row <= 7 and 17 <= col <= 20)
+            or (12 <= row <= 14 and 10 <= col <= 16)
+            or (9 <= row <= 14 and 17 <= col <= 20)
+            or (3 <= row <= 5 and 7 <= col <= 17)
+            or (5 <= row <= 12 and 11 <= col <= 14)
+            or (10 <= row <= 12 and 7 <= col <= 11)
+            or (10 <= row <= 12 and 14 <= col <= 17)
+        )
     for row in range(1, height + 1):
         for col in range(1, width + 1):
-            if row in {1, height} or col in {1, width}:
-                cells.append({"row": row, "col": col, "kind": "wall", "label": "石墙"})
-    # Five connected rooms: northwest archive, southwest store, central hall,
-    # northeast chapel and a broad southern cellar. Door gaps create several
-    # routes and choke points rather than a single rectangular arena.
-    for row in range(2, 14):
-        if row != 5:
-            cells.append({"row": row, "col": 8, "kind": "wall", "label": "西侧隔墙"})
-    for row in range(2, 10):
-        if row != 4:
-            cells.append({"row": row, "col": 14, "kind": "wall", "label": "东侧隔墙"})
-    for col in range(2, 8):
-        if col != 4:
-            cells.append({"row": 7, "col": col, "kind": "wall", "label": "档案室南墙"})
-    for col in range(9, 20):
-        if col not in {11, 16}:
-            cells.append({"row": 9, "col": col, "kind": "wall", "label": "地下室北墙"})
-    cells.extend(
-        [
-            {"row": 5, "col": 8, "kind": "door", "label": "档案室侧门"},
-            {"row": 4, "col": 14, "kind": "door", "label": "礼拜堂木门"},
-            {"row": 7, "col": 4, "kind": "door", "label": "警铃铁门"},
-            {"row": 9, "col": 11, "kind": "door", "label": "酒窖北门"},
-            {"row": 9, "col": 16, "kind": "door", "label": "排水沟侧门"},
-            {"row": 4, "col": 4, "kind": "cover", "label": "档案桌"},
-            {"row": 4, "col": 5, "kind": "cover", "label": "档案桌"},
-            {
-                "row": 4,
-                "col": 11,
-                "kind": "cover",
-                "label": "落地档案柜",
-                "blocks_sight": True,
-            },
-            {
-                "row": 6,
-                "col": 12,
-                "kind": "cover",
-                "label": "承重石柱",
-                "blocks_sight": True,
-            },
-            {
-                "row": 5,
-                "col": 17,
-                "kind": "cover",
-                "label": "倒塌圣像",
-                "blocks_sight": True,
-            },
-            {"row": 10, "col": 5, "kind": "cover", "label": "翻倒长椅"},
-            {"row": 11, "col": 16, "kind": "cover", "label": "酒桶堆"},
-            {"row": 12, "col": 16, "kind": "cover", "label": "酒桶堆"},
-            {"row": 12, "col": 17, "kind": "water", "label": "排水沟"},
-            {"row": 12, "col": 18, "kind": "water", "label": "排水沟"},
-            {"row": 11, "col": 10, "kind": "difficult", "label": "碎石"},
-            {"row": 11, "col": 11, "kind": "difficult", "label": "碎石"},
-        ]
-    )
+            if not footprint(row, col):
+                add_cell(row, col, "wall", "地图外区域")
+
+    for row, col, kind, label, blocks_sight in [
+        (3, 3, "cover", "档案桌", False),
+        (3, 4, "cover", "档案桌", False),
+        (4, 13, "cover", "落地档案柜", True),
+        (7, 13, "cover", "承重石柱", True),
+        (5, 18, "cover", "武器架", True),
+        (10, 4, "cover", "翻倒长椅", False),
+        (12, 19, "cover", "酒桶堆", False),
+        (13, 19, "water", "排水沟", False),
+        (9, 12, "difficult", "碎石", False),
+        (10, 13, "difficult", "碎石", False),
+    ]:
+        add_cell(row, col, kind, label, blocks_sight=blocks_sight)
+
+    blocked_cells = {
+        (int(cell["row"]), int(cell["col"]))
+        for cell in cells
+        if cell["kind"] == "wall"
+    }
+    room_markers = {
+        (int(cell["row"]), int(cell["col"]))
+        for cell in cells
+        if cell["kind"] == "floor"
+        and cell["label"] in {"档案室", "仪式室", "卧室", "军械室", "秘密墓室", "藏宝室"}
+    }
+    frontier = [next(iter(room_markers))]
+    reachable = set(frontier)
+    while frontier:
+        row, col = frontier.pop()
+        for candidate in ((row - 1, col), (row + 1, col), (row, col - 1), (row, col + 1)):
+            if (
+                1 <= candidate[0] <= height
+                and 1 <= candidate[1] <= width
+                and candidate not in blocked_cells
+                and candidate not in reachable
+            ):
+                reachable.add(candidate)
+                frontier.append(candidate)
+    if not room_markers.issubset(reachable):
+        raise RuntimeError("generated acceptance grid contains a disconnected room")
+    for row, col, label in doors:
+        open_neighbors = sum(
+            neighbor not in blocked_cells
+            for neighbor in ((row - 1, col), (row + 1, col), (row, col - 1), (row, col + 1))
+        )
+        if open_neighbors < 2:
+            raise RuntimeError(f"door {label} does not connect two walkable areas")
     post(
         f"{prefix}/scenes/{sid}/grid",
         {
@@ -632,8 +729,8 @@ def main() -> None:
             "cell_size_ft": 5,
             "mode": "exploration",
             "public_description": (
-                "20×14格钟楼地下层：五个相连房间、中央走廊、礼拜堂、上锁酒窖、"
-                "多条门路、硬遮挡、碎石困难地形和排水沟。每格5尺。"
+                "20×14格钟楼地下层：六个独立房间由横向走廊、中央通道和支路连接；"
+                "每个房间入口均有明确门标记，并包含硬遮挡、碎石和排水沟。每格5尺。"
             ),
             "dm_description": "隐藏压力板位于铁门内侧；拟怪伪装为南侧宝箱。",
             "layers_json": {"theme": "clocktower-cellar", "cells": cells},
@@ -643,9 +740,9 @@ def main() -> None:
     object_specs = [
         {
             "object_type": "door",
-            "label": "带警铃假销的酒窖铁门",
-            "row": 7,
-            "col": 4,
+            "label": "带警铃假销的仪式室铁门",
+            "row": 11,
+            "col": 7,
             "state": "closed",
             "visibility": "public",
             "interaction_json": {
@@ -659,8 +756,8 @@ def main() -> None:
         {
             "object_type": "treasure",
             "label": "三重锁旅行箱",
-            "row": 10,
-            "col": 7,
+            "row": 12,
+            "col": 4,
             "state": "closed",
             "visibility": "public",
             "interaction_json": {
@@ -674,8 +771,8 @@ def main() -> None:
         {
             "object_type": "trap",
             "label": "可见的符文警报机关",
-            "row": 8,
-            "col": 4,
+            "row": 10,
+            "col": 5,
             "state": "active",
             "visibility": "public",
             "interaction_json": {
@@ -688,8 +785,8 @@ def main() -> None:
         {
             "object_type": "trap",
             "label": "隐藏压力板（玩家不应看到）",
-            "row": 10,
-            "col": 10,
+            "row": 9,
+            "col": 12,
             "state": "active",
             "visibility": "hidden",
             "interaction_json": {"action": "disarm", "dc": 17},
@@ -699,7 +796,7 @@ def main() -> None:
             "object_type": "portal",
             "label": "钟楼升降机关",
             "row": 3,
-            "col": 18,
+            "col": 19,
             "state": "closed",
             "visibility": "public",
             "interaction_json": {
@@ -713,8 +810,8 @@ def main() -> None:
         {
             "object_type": "furniture",
             "label": "夹层账本",
-            "row": 4,
-            "col": 4,
+            "row": 3,
+            "col": 3,
             "state": "active",
             "visibility": "public",
             "interaction_json": {
@@ -729,15 +826,15 @@ def main() -> None:
     ]
 
     token_specs = [
-        ("character", character, 5, 4),
-        ("npc", npcs[0], 3, 4),
-        ("npc", npcs[1], 10, 4),
-        ("npc", npcs[2], 6, 10),
-        ("monster", monsters[0], 4, 16),
-        ("monster", monsters[1], 11, 18),
-        ("monster", monsters[2], 5, 12),
-        ("monster", monsters[3], 10, 6),
-        ("monster", monsters[4], 12, 13),
+        ("character", character, 4, 4),
+        ("npc", npcs[0], 3, 5),
+        ("npc", npcs[1], 11, 4),
+        ("npc", npcs[2], 2, 13),
+        ("monster", monsters[0], 4, 18),
+        ("monster", monsters[1], 12, 18),
+        ("monster", monsters[2], 8, 13),
+        ("monster", monsters[3], 12, 5),
+        ("monster", monsters[4], 13, 13),
     ]
     for entity_type, entity, row, col in token_specs:
         post(
