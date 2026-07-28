@@ -1597,6 +1597,21 @@ class PlayerRoomService:
                         "skill": action.request_json.get("skill"),
                         "roll_formula": action.request_json.get("roll_formula", "1d20"),
                         "description": action.request_json.get("description"),
+                        "actor_combatant_id": action.actor_combatant_id,
+                        "actor_name": action.request_json.get("actor_name"),
+                        "target_combatant_id": (
+                            action.target_combatant_ids[0]
+                            if action.target_combatant_ids
+                            else None
+                        ),
+                        "target_name": action.request_json.get("target_name"),
+                        "damage_on_success": action.request_json.get(
+                            "damage_on_success", 0
+                        ),
+                        "damage_on_failure": action.request_json.get(
+                            "damage_on_failure", 0
+                        ),
+                        "damage_type": action.request_json.get("damage_type"),
                     }
                 )
         return {

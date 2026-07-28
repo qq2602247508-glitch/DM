@@ -72,6 +72,35 @@ function gridLine(
   return result;
 }
 
+function targetingForAction(action: Record<string, unknown> | undefined): TargetingTemplate | null {
+  if (!action) return null;
+  const compiled = targetingFromRulePlan(action);
+  if (compiled) return compiled;
+  const text = [
+    display(action.range ?? ""),
+    display(action.description ?? ""),
+    display(action.area ?? ""),
+  ].join(" ");
+  const numbers = [...text.matchAll(/(\d+)\s*尺/g)].map((match) => Number(match[1]));
+  const shape = /锥形|锥状|锥体/.test(text)
+    ? "cone"
+    : /直线|束/.test(text)
+      ? "line"
+      : /半径|球形|爆发|圆形/.test(text)
+        ? "circle"
+        : "single";
+  return {
+    shape,
+    rangeFt: numbers[0] ?? 5,
+    sizeFt: shape === "circle"
+      ? numbers[1] ?? 20
+      : shape === "line" || shape === "cone"
+        ? numbers[0] ?? 5
+        : undefined,
+    widthFt: shape === "line" ? numbers[1] ?? 5 : undefined,
+  };
+}
+
 function JoinRoom({ onJoined }: { onJoined: () => void }): ReactElement {
   const [code, setCode] = useState("");
   const [name, setName] = useState("");
@@ -298,6 +327,7 @@ function SceneGridView({
   affectedCellKeys,
   movementCellKeys,
   rangeCellKeys,
+  dangerCellKeys,
   positionOverrides,
 }: {
   snapshot: PlayerRoomSnapshot;
@@ -309,6 +339,7 @@ function SceneGridView({
   affectedCellKeys?: ReadonlySet<string>;
   movementCellKeys?: ReadonlySet<string>;
   rangeCellKeys?: ReadonlySet<string>;
+  dangerCellKeys?: ReadonlySet<string>;
   positionOverrides?: Record<string, { row: number; col: number }>;
 }): ReactElement {
   const scene = snapshot.table.scene;
@@ -347,6 +378,7 @@ function SceneGridView({
       onCellSelect={onMove}
       onTargetSelect={onTargetSelect}
       affectedCellKeys={affectedCellKeys}
+      dangerCellKeys={dangerCellKeys}
       movementCellKeys={movementCellKeys}
       rangeCellKeys={rangeCellKeys}
       selectedTargetKey={selectedTargetKey}
@@ -609,20 +641,7 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
     ? selectedAction.attack_bonus
     : null;
   const damageFormula = display(selectedAction?.damage ?? selectedAction?.description ?? "角色卡所列伤害骰");
-  const targeting = (() => {
-    if (!selectedAction) return null;
-    const compiled = targetingFromRulePlan(selectedAction);
-    if (compiled) return compiled;
-    const text = `${display(selectedAction.range ?? "")} ${display(selectedAction.description ?? "")}`;
-    const numbers = [...text.matchAll(/(\d+)\s*尺/g)].map((match) => Number(match[1]));
-    const shape = /直线|束/.test(text) ? "line" : /半径|球形|爆发|圆形/.test(text) ? "circle" : "single";
-    return {
-      shape,
-      rangeFt: numbers[0] ?? 5,
-      sizeFt: shape === "circle" ? numbers[1] ?? 20 : shape === "line" ? numbers[0] ?? 5 : undefined,
-      widthFt: shape === "line" ? numbers[1] ?? 5 : undefined,
-    } satisfies TargetingTemplate;
-  })();
+  const targeting = targetingForAction(selectedAction);
   const actorPosition = own?.position;
   const grid = snapshot.table.scene?.grid;
   const aimPosition = selectedTarget?.position;
@@ -672,6 +691,35 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
   const displayAffectedCellKeys = new Set([...affectedCellKeys, ...replayTargetCellKeys]);
   const activeCombatant = combat?.combatants.find(
     (item) => item.id === combat.active_combatant_id,
+  );
+  const pendingRoll = combat?.pending_rolls[0];
+  const pendingActor = combat?.combatants.find(
+    (item) => item.id === pendingRoll?.actor_combatant_id,
+  );
+  const pendingAction = pendingActor?.actions.find(
+    (item): item is Record<string, unknown> => (
+      typeof item === "object"
+      && item !== null
+      && display(item.name) === pendingRoll?.action_name
+    ),
+  );
+  const pendingTargeting = targetingForAction(pendingAction);
+  const dangerCellKeys = new Set(
+    grid
+    && pendingActor?.position
+    && own?.position
+    && pendingTargeting
+      ? getTargetingCells(
+        {
+          width: grid.width,
+          height: grid.height,
+          cell_size_ft: grid.cell_size_ft,
+        },
+        pendingActor.position,
+        own.position,
+        pendingTargeting,
+      ).map((cell) => `${cell.row}:${cell.col}`)
+      : [],
   );
   const movementCellKeys = new Set<string>();
   if (combat?.is_my_turn && grid && actorPosition && (own?.movement_remaining_ft ?? 0) > 0) {
@@ -742,6 +790,7 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
             selectedTargetKeys={new Set(affectedEnemies.map((item) => `combatant:${item.id}`))}
             selectableTargetKeys={new Set(targetableEnemies.map((item) => `combatant:${item.id}`))}
             affectedCellKeys={displayAffectedCellKeys}
+            dangerCellKeys={dangerCellKeys}
             movementCellKeys={movementCellKeys}
             positionOverrides={positionOverrides}
             rangeCellKeys={rangeCellKeys}
@@ -764,7 +813,7 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
               {(activeCombatant.actions ?? []).length ? <p className="mb-0 mt-1 text-2xs text-stone-500">可见动作：{activeCombatant.actions.map(display).join("、")}</p> : null}
             </div>
           ) : null}
-          {combat.pending_rolls.map((roll) => <div className="mb-3 rounded border border-violet-700 bg-violet-950/20 p-3" key={roll.id}><strong className="text-sm">{roll.action_name}</strong><p className="text-xs text-stone-400">请掷 {roll.roll_formula}，总值需达到 DC {roll.dc}（{roll.ability || roll.skill || roll.resolution_type}）</p><div className="flex gap-2"><input aria-label={`${roll.action_name}骰值`} className={inputCls} onChange={(event) => setRolls((current) => ({ ...current, [roll.id]: event.target.value }))} type="number" value={rolls[roll.id] ?? ""} /><Button disabled={!rolls[roll.id]} onClick={() => mutation.mutate(async () => { const result = await submitMyPlayerRoll(roll.id, roll.version, Number(rolls[roll.id])); setLastResolution("豁免已结算；怪物/NPC 回合已自动结束，正在同步下一位。"); return result; })} variant="primary">提交并继续战斗</Button></div></div>)}
+          {combat.pending_rolls.map((roll) => <div className="mb-3 rounded border border-violet-700 bg-violet-950/20 p-3" data-testid="player-pending-roll" key={roll.id}><strong className="text-sm text-violet-100">{roll.actor_name ?? "敌方单位"} 对你使用「{roll.action_name}」</strong>{roll.description ? <p className="mb-0 mt-1 text-xs leading-5 text-stone-300">{roll.description}</p> : null}<p className="text-xs text-stone-400">请掷 {roll.roll_formula}，总值需达到 DC {roll.dc}（{roll.ability || roll.skill || roll.resolution_type}）。{roll.damage_on_failure ? `失败将承受 ${roll.damage_on_failure} 点${roll.damage_type ?? ""}伤害` : ""}{roll.damage_on_success ? `；成功仍承受 ${roll.damage_on_success} 点${roll.damage_type ?? ""}伤害` : ""}</p>{dangerCellKeys.size ? <p className="text-2xs text-red-300">地图上的红色描边为「{roll.action_name}」当前影响范围。</p> : null}<div className="flex gap-2"><input aria-label={`${roll.action_name}骰值`} className={inputCls} onChange={(event) => setRolls((current) => ({ ...current, [roll.id]: event.target.value }))} type="number" value={rolls[roll.id] ?? ""} /><Button disabled={!rolls[roll.id]} onClick={() => mutation.mutate(async () => { const result = await submitMyPlayerRoll(roll.id, roll.version, Number(rolls[roll.id])); const next = (result as { turn_advance?: { active_combatant?: { display_name?: string } } }).turn_advance?.active_combatant?.display_name; setLastResolution(`你对「${roll.action_name}」的豁免已结算${next ? `；现在轮到 ${next}` : "；战斗状态已更新"}。`); return result; })} variant="primary">提交并继续战斗</Button></div></div>)}
           {ended ? <p className="rounded border border-amber-800/60 bg-amber-950/20 p-3 text-sm text-amber-100">战斗已由 DM 结束。你仍可查看地图和完整公开日志；奖励请到“我的角色”查看。</p> : null}
           <label className="block text-xs text-stone-400">攻击/技能<select className={`${inputCls} mt-1`} disabled={ended || !combat.is_my_turn} onChange={(event) => setActionName(event.target.value)} value={actionName}><option value="">选择角色卡动作</option>{actions.map((action) => <option key={display(action.name)} value={display(action.name)}>{display(action.name)} · {display(action.damage ?? action.description ?? "")}</option>)}</select></label>
           <label className="mt-2 block text-xs text-stone-400">目标<select className={`${inputCls} mt-1`} disabled={ended || !combat.is_my_turn} onChange={(event) => setTargetId(event.target.value)} value={targetId}><option value="">选择合法敌人</option>{enemies.map((item) => <option key={item.id} value={item.id}>{item.name} · {item.health_status}</option>)}</select></label>
@@ -784,9 +833,9 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
           </div>
           <div className="mt-2 grid grid-cols-2 gap-2"><label className="text-xs text-stone-400">d20命中总值<input className={`${inputCls} mt-1`} disabled={isSavingThrowAction} onChange={(event) => setAttackTotal(event.target.value)} placeholder={isSavingThrowAction ? "豁免法术无需命中" : ""} type="number" value={attackTotal} /></label><label className="text-xs text-stone-400">伤害骰最终总值<input className={`${inputCls} mt-1`} onChange={(event) => setDamageTotal(event.target.value)} type="number" value={damageTotal} /></label></div>
           <label className="mt-2 flex items-start gap-2 rounded border border-ink-700 p-2 text-xs text-stone-400"><input checked={endTurnAfterAttack} onChange={(event) => setEndTurnAfterAttack(event.target.checked)} type="checkbox" /><span>攻击结算后自动结束回合并切到下一位。取消勾选可在攻击后继续使用剩余移动或附赠动作。</span></label>
-          <Button className="mt-3 w-full" disabled={ended || !combat.is_my_turn || !actionName || !targetId || (!isSavingThrowAction && !attackTotal) || !damageTotal || !own?.action_available} loading={mutation.isPending} onClick={() => mutation.mutate(async () => { const result = await attackWithMyCombatant(targetId, affectedEnemies.map((item) => item.id), actionName, Number(attackTotal || 0), Number(damageTotal), endTurnAfterAttack); setAttackTotal(""); setDamageTotal(""); setLastResolution(endTurnAfterAttack ? "攻击已结算并自动结束回合，正在同步下一位。" : "攻击已结算；你仍可移动、使用附赠动作或手动结束回合。"); return result; })} variant="primary">{isSavingThrowAction ? `提交玩家伤害骰并结算 ${affectedEnemies.length} 个目标` : endTurnAfterAttack ? "提交攻击并结束回合" : "提交攻击并同步结算"}</Button>
+          <Button className="mt-3 w-full" disabled={ended || !combat.is_my_turn || !actionName || !targetId || (!isSavingThrowAction && !attackTotal) || !damageTotal || !own?.action_available} loading={mutation.isPending} onClick={() => mutation.mutate(async () => { const result = await attackWithMyCombatant(targetId, affectedEnemies.map((item) => item.id), actionName, Number(attackTotal || 0), Number(damageTotal), endTurnAfterAttack) as { target_count?: number; results?: Array<{ action?: { summary?: string } }>; turn_advance?: { active_combatant?: { display_name?: string } } }; setAttackTotal(""); setDamageTotal(""); const summaries = (result.results ?? []).map((item) => item.action?.summary).filter((item): item is string => Boolean(item)); const next = result.turn_advance?.active_combatant?.display_name; setLastResolution([`${actionName}已完成全部 ${result.target_count ?? affectedEnemies.length} 个目标的结算。`, ...summaries, endTurnAfterAttack ? (next ? `回合已切换至 ${next}。` : "回合已经结束并完成同步。") : "你仍可移动、使用附赠动作或手动结束回合。"].join("\n")); return result; })} variant="primary">{isSavingThrowAction ? `提交玩家伤害骰并结算 ${affectedEnemies.length} 个目标` : endTurnAfterAttack ? "提交攻击并结束回合" : "提交攻击并同步结算"}</Button>
           <Button className="mt-2 w-full" disabled={ended || !combat.is_my_turn} onClick={() => mutation.mutate(() => endMyTurn(combat.version))}>结束我的回合</Button>
-          {lastResolution ? <p className="mb-0 mt-2 rounded border border-emerald-800/60 bg-emerald-950/20 p-2 text-xs text-emerald-200">{lastResolution}</p> : null}
+          {lastResolution ? <p className="mb-0 mt-2 whitespace-pre-line rounded border border-emerald-800/60 bg-emerald-950/20 p-2 text-xs text-emerald-200" data-testid="player-last-resolution">{lastResolution}</p> : null}
           {mutation.isError ? <p className="text-sm text-red-300">{mutation.error.message}</p> : null}
         </section>
         <section className={cardCls}><h2 className="mt-0 font-display text-xl">公开战斗日志</h2><div className="max-h-72 space-y-2 overflow-auto">{combat.log.map((entry) => <p className="m-0 border-b border-ink-800 pb-2 text-xs text-stone-400" key={entry.id}><span className="text-amber-300">R{entry.round_number}</span> {entry.summary}</p>)}</div></section>

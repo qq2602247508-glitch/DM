@@ -208,6 +208,13 @@ export type PlayerPendingRoll = {
   skill: string | null;
   roll_formula: string;
   description: string | null;
+  actor_combatant_id: string | null;
+  actor_name: string | null;
+  target_combatant_id: string | null;
+  target_name: string | null;
+  damage_on_success: number;
+  damage_on_failure: number;
+  damage_type: string | null;
 };
 
 export type PlayerCombatSnapshot = {

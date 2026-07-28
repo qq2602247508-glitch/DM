@@ -559,6 +559,15 @@ def test_player_submitted_save_advances_enemy_turn(
     )
     assert pending.status_code == 200
     action = pending.json()["action"]
+    pending_snapshot = campaign_client.get("/api/v1/player-room/me").json()["combat"]
+    prompt = pending_snapshot["pending_rolls"][0]
+    assert prompt["actor_combatant_id"] == monster["id"]
+    assert prompt["actor_name"] == "相位蜘蛛"
+    assert prompt["target_combatant_id"] == player["id"]
+    assert prompt["target_name"] == "豁免玩家"
+    assert prompt["damage_on_failure"] == 7
+    assert prompt["damage_on_success"] == 3
+    assert prompt["damage_type"] == "poison"
     submitted = campaign_client.post(
         f"/api/v1/player-room/me/combat/player-rolls/{action['id']}",
         json={

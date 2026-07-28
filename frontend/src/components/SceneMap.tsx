@@ -37,6 +37,7 @@ export function SceneMap({
   selectedTargetKeys,
   selectableTargetKeys = new Set(),
   affectedCellKeys = new Set(),
+  dangerCellKeys = new Set(),
   movementCellKeys = new Set(),
   rangeCellKeys = new Set(),
   onTargetSelect,
@@ -52,6 +53,7 @@ export function SceneMap({
   selectedTargetKeys?: ReadonlySet<string>;
   selectableTargetKeys?: ReadonlySet<string>;
   affectedCellKeys?: ReadonlySet<string>;
+  dangerCellKeys?: ReadonlySet<string>;
   movementCellKeys?: ReadonlySet<string>;
   rangeCellKeys?: ReadonlySet<string>;
   onTargetSelect?: (targetKey: string) => void;
@@ -71,6 +73,7 @@ export function SceneMap({
         {selectableTargetKeys.size ? <span className="text-emerald-300">绿色虚线：可以点击的目标</span> : null}
         {selectedTargetKey ? <span className="text-emerald-200">绿色实框：当前目标</span> : null}
         {movementCellKeys.size ? <span className="text-lime-300">绿色格：本回合剩余可移动范围</span> : null}
+        {dangerCellKeys.size ? <span className="text-red-300">红色描边：敌方技能影响范围</span> : null}
       </div>
       <div
         className={`grid gap-px bg-ink-700 ${compactCells ? "w-max max-w-none" : "min-w-[560px]"}`}
@@ -94,6 +97,7 @@ export function SceneMap({
             && (targetKey === selectedTargetKey || selectedTargetKeys?.has(targetKey)),
           );
           const affected = affectedCellKeys.has(key);
+          const dangerous = dangerCellKeys.has(key);
           const movable = movementCellKeys.has(key);
           const inRange = rangeCellKeys.has(key);
           const blocked = terrain?.kind === "wall"
@@ -114,7 +118,7 @@ export function SceneMap({
           return (
             <button
               aria-label={`格子 ${row},${col}${token ? ` · ${token.label}` : object ? ` · ${object.label}` : ""}`}
-              className={`relative aspect-square border border-ink-800 text-[9px] transition duration-200 ${terrainClass} ${movable ? "bg-emerald-950/75 ring-1 ring-inset ring-emerald-400/75" : ""} ${inRange ? "bg-sky-950/60 ring-1 ring-inset ring-sky-500/50" : ""} ${affected ? "bg-fuchsia-900/70 ring-2 ring-inset ring-fuchsia-400/80" : ""} ${selectable ? "cursor-pointer outline outline-2 outline-dashed outline-emerald-500/70 hover:bg-emerald-950/60" : ""} ${selected ? "z-10 ring-4 ring-inset ring-emerald-300 shadow-[0_0_12px_rgba(110,231,183,.8)]" : ""} ${cellSelectable ? "cursor-pointer hover:bg-emerald-950/70" : ""}`}
+              className={`relative aspect-square border border-ink-800 text-[9px] transition duration-200 ${terrainClass} ${movable ? "bg-emerald-950/75 ring-1 ring-inset ring-emerald-400/75" : ""} ${inRange ? "bg-sky-950/60 ring-1 ring-inset ring-sky-500/50" : ""} ${affected ? "bg-fuchsia-900/70 ring-2 ring-inset ring-fuchsia-400/80" : ""} ${dangerous ? "bg-red-950/65 outline outline-2 outline-inset outline-red-500 shadow-[inset_0_0_10px_rgba(239,68,68,.35)]" : ""} ${selectable ? "cursor-pointer outline outline-2 outline-dashed outline-emerald-500/70 hover:bg-emerald-950/60" : ""} ${selected ? "z-10 ring-4 ring-inset ring-emerald-300 shadow-[0_0_12px_rgba(110,231,183,.8)]" : ""} ${cellSelectable ? "cursor-pointer hover:bg-emerald-950/70" : ""}`}
               disabled={blocked || (!selectable && !cellSelectable)}
               key={key}
               onClick={() => {
