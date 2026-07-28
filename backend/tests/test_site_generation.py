@@ -58,7 +58,7 @@ def test_buildings_and_dungeons_use_distinct_high_quality_layout_grammars() -> N
     dungeon = generate_site(_request(maximum_levels=3))
     for level in building["levels"]:
         assert level["quality"]["score"] >= 88
-        assert level["quality"]["algorithm"] == "building_bsp"
+        assert level["quality"]["algorithm"] == "building_wings_bsp"
         assert level["quality"]["largest_smallest_ratio"] >= 1.8
         assert level["quality"]["valid_connectors"] >= len(level["rooms"]) - 1
     for level in dungeon["levels"]:
@@ -76,6 +76,31 @@ def test_buildings_and_dungeons_use_distinct_high_quality_layout_grammars() -> N
         for level in building["levels"]
         for cell in level["layout"]["cells"]
     )
+
+
+def test_multilevel_tavern_has_irregular_wings_and_semantic_furnishings() -> None:
+    tavern = generate_site(
+        _request(
+            site_type="building",
+            name="铜壶与狮鹫酒馆",
+            brief="三层临街酒馆，有公共大厅、吧台、后厨、客房、包间和地下酒窖",
+            maximum_levels=3,
+            rooms_min=6,
+            rooms_max=8,
+            seed=20260728,
+        )
+    )
+    labels = {
+        cell["label"]
+        for level in tavern["levels"]
+        for cell in level["layout"]["cells"]
+        if cell["kind"] == "cover"
+    }
+    room_names = {room["name"] for level in tavern["levels"] for room in level["rooms"]}
+    assert all(level["quality"]["outline"] == "l_shape" for level in tavern["levels"])
+    assert all(level["quality"]["furniture_diversity"] >= 8 for level in tavern["levels"])
+    assert {"公共大厅", "吧台", "厨房", "客房", "酒窖"} <= room_names
+    assert {"桌椅", "吧台", "酒桶", "炉灶", "床铺"} <= labels
 
 
 def test_layout_quality_gate_holds_across_many_seeds_and_themes() -> None:

@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { getDoorOrientation, isMapVoidCell, terrainCellClass } from "./mapPresentation";
+import {
+  getDoorOrientation,
+  isMapVoidCell,
+  shouldShowTerrainLabel,
+  terrainCellClass,
+} from "./mapPresentation";
 
 describe("mapPresentation", () => {
   it("orients a door along the wall it interrupts", () => {
@@ -20,5 +25,13 @@ describe("mapPresentation", () => {
     const cell = { row: 1, col: 1, kind: "wall", label: "地图外区域" };
     expect(isMapVoidCell(cell)).toBe(true);
     expect(terrainCellClass(cell)).toContain("bg-black");
+  });
+
+  it("hides repetitive ground labels but keeps meaningful room markers", () => {
+    expect(shouldShowTerrainLabel({ row: 1, col: 1, kind: "floor", label: "地板" })).toBe(false);
+    expect(shouldShowTerrainLabel({ row: 1, col: 2, kind: "floor", label: "洞窟地面" })).toBe(false);
+    expect(shouldShowTerrainLabel({ row: 1, col: 3, kind: "floor", label: "通道" })).toBe(false);
+    expect(shouldShowTerrainLabel({ row: 2, col: 1, kind: "room", label: "公共大厅" })).toBe(true);
+    expect(shouldShowTerrainLabel({ row: 2, col: 2, kind: "stairs", label: "向上楼梯" })).toBe(true);
   });
 });

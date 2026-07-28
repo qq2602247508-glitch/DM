@@ -11,6 +11,14 @@ export function isMapVoidCell(cell: PresentableMapCell | undefined): boolean {
   return cell?.kind === "wall" && cell.label === "地图外区域";
 }
 
+const GENERIC_GROUND_LABEL = /^(地板|木地板|石地板|洞窟地面|地面|泥地|草地|道路|通道|走廊|可见)$/;
+
+export function shouldShowTerrainLabel(cell: PresentableMapCell | undefined): boolean {
+  if (!cell?.label || /出生区/.test(cell.label)) return false;
+  if (cell.kind === "room" || cell.kind === "stairs") return true;
+  return cell.kind === "floor" && !GENERIC_GROUND_LABEL.test(cell.label.trim());
+}
+
 export function getDoorOrientation(
   cells: readonly PresentableMapCell[],
   row: number,

@@ -11,6 +11,7 @@ import type {
 import {
   confirmLocation,
   generateLocation,
+  listAdventureSites,
   listWorldItems,
   pickupItem,
 } from "../api/world";
@@ -77,6 +78,8 @@ function ExistingNode({
   characterId,
   pickupPending,
   onPickup,
+  siteByLocation,
+  onOpenSite,
   level = 0,
 }: {
   location: Location;
@@ -85,8 +88,12 @@ function ExistingNode({
   characterId: string;
   pickupPending: boolean;
   onPickup: (item: WorldItem) => void;
+  siteByLocation: Map<string, string>;
+  onOpenSite: (siteId: string) => void;
   level?: number;
 }): ReactElement {
+  const [expanded, setExpanded] = useState(level === 0);
+  const siteId = siteByLocation.get(location.id);
   const children = childrenByParent.get(location.id) ?? [];
   const localItems = items.filter((item) => item.location_id === location.id && !item.is_hidden);
   return (
@@ -96,8 +103,19 @@ function ExistingNode({
         style={{ marginLeft: `${Math.min(level, 4) * 20}px` }}
       >
         <div className="flex flex-wrap items-center gap-2">
+          {children.length ? (
+            <Button
+              aria-label={`${expanded ? "收起" : "展开"}${location.name}`}
+              onClick={() => setExpanded((value) => !value)}
+              size="sm"
+              variant="ghost"
+            >
+              {expanded ? "−" : "+"}
+            </Button>
+          ) : <span className="inline-block w-8" />}
           <Badge tone={level === 0 ? "ember" : "neutral"}>层级 {location.depth}</Badge>
           <strong className="text-sm text-parchment-100">{location.name}</strong>
+          {siteId ? <Button onClick={() => onOpenSite(siteId)} size="sm" variant="primary">查看网格</Button> : null}
           <span className="ml-auto text-2xs text-stone-700">{children.length} 个子地点</span>
         </div>
         <p className="prose-block mb-0 mt-1.5 text-xs text-stone-500">{location.description || "暂无描述"}</p>
@@ -130,7 +148,7 @@ function ExistingNode({
         ) : null}
         {location.secrets ? <div className="mt-3"><SecretBlock label="地点秘密" value={location.secrets} /></div> : null}
       </div>
-      {children.length ? (
+      {children.length && expanded ? (
         <ul className="m-0 mt-2 space-y-2 p-0">
           {children.map((child) => (
             <ExistingNode
@@ -141,7 +159,9 @@ function ExistingNode({
               level={level + 1}
               location={child}
               onPickup={onPickup}
+              onOpenSite={onOpenSite}
               pickupPending={pickupPending}
+              siteByLocation={siteByLocation}
             />
           ))}
         </ul>
@@ -158,6 +178,7 @@ function LocationsContent({ campaignId }: { campaignId: string }): ReactElement 
   const [scale, setScale] = useState<"small" | "medium" | "large">("medium");
   const [preview, setPreview] = useState<LocationGenerationPreview | null>(null);
   const [characterId, setCharacterId] = useState("");
+  const [focusedSiteId, setFocusedSiteId] = useState("");
   const locations = useQuery({
     queryKey: ["locations", campaignId],
     queryFn: ({ signal }) => listLocations(campaignId, signal),
@@ -170,6 +191,14 @@ function LocationsContent({ campaignId }: { campaignId: string }): ReactElement 
     queryKey: ["characters", campaignId],
     queryFn: ({ signal }) => listCharacters(campaignId, signal),
   });
+  const sites = useQuery({
+    queryKey: ["adventure-sites", campaignId],
+    queryFn: ({ signal }) => listAdventureSites(campaignId, signal),
+  });
+  const siteByLocation = useMemo(
+    () => new Map((sites.data ?? []).map((site) => [site.location_id, site.id])),
+    [sites.data],
+  );
   const generation = useMutation({
     mutationFn: () => generateLocation(campaignId, {
       brief,
@@ -222,7 +251,7 @@ function LocationsContent({ campaignId }: { campaignId: string }): ReactElement 
   }, [locations.data]);
   return (
     <div className="mx-auto max-w-[1200px] p-4 lg:p-6">
-      <SiteMapWorkbench campaignId={campaignId} />
+      <SiteMapWorkbench campaignId={campaignId} requestedSiteId={focusedSiteId} />
       <Panel eyebrow="冰山式世界结构" title="AI 地点树生成器">
         <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_9rem_9rem_auto]">
           <textarea className={textareaCls} onChange={(event) => setBrief(event.target.value)} value={brief} />
@@ -281,7 +310,9 @@ function LocationsContent({ campaignId }: { campaignId: string }): ReactElement 
                 key={location.id}
                 location={location}
                 onPickup={(item) => pickup.mutate(item)}
+                onOpenSite={setFocusedSiteId}
                 pickupPending={pickup.isPending}
+                siteByLocation={siteByLocation}
               />
             ))}
           </ul>

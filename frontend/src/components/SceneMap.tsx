@@ -1,6 +1,11 @@
 import type { ReactElement } from "react";
 
-import { getDoorOrientation, isMapVoidCell, terrainCellClass } from "../ui/mapPresentation";
+import {
+  getDoorOrientation,
+  isMapVoidCell,
+  shouldShowTerrainLabel,
+  terrainCellClass,
+} from "../ui/mapPresentation";
 
 export type SceneMapGrid = {
   width: number;
@@ -144,7 +149,7 @@ export function SceneMap({
                 </>
               ) : null}
               {object && object.object_type !== "wall" && !isVoid && !isDoor ? <span className="absolute left-0 top-0 max-w-full truncate text-stone-500">{object.label.slice(0, 2)}</span> : null}
-              {!token && ["floor", "room", "stairs"].includes(terrain?.kind ?? "") && !/出生区/.test(terrain?.label ?? "") ? (
+              {!token && shouldShowTerrainLabel(terrain) ? (
                 <span className="absolute inset-x-0 bottom-0 truncate px-0.5 text-[8px] text-stone-500">{terrain?.label?.slice(0, 5)}</span>
               ) : null}
               {token ? (

@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState, type ReactElement } from "react";
+import { useEffect, useState, type ReactElement } from "react";
 
 import {
   confirmSiteGeneration,
@@ -52,7 +52,13 @@ function SiteGrid({ level }: { level: SiteLevelPreview }): ReactElement {
   );
 }
 
-function RegionOverview({ maps }: { maps: Awaited<ReturnType<typeof listRegionMaps>> }): ReactElement {
+function RegionOverview({
+  maps,
+  onSelectSite,
+}: {
+  maps: Awaited<ReturnType<typeof listRegionMaps>>;
+  onSelectSite: (siteId: string) => void;
+}): ReactElement {
   if (!maps.length) return <EmptyState title="还没有区域地图" hint="确认生成一个建筑或地下城后，系统会把它放到对应区域。" />;
   return (
     <div className="grid gap-3 lg:grid-cols-2">
@@ -69,6 +75,7 @@ function RegionOverview({ maps }: { maps: Awaited<ReturnType<typeof listRegionMa
               <button
                 className="absolute -translate-x-1/2 -translate-y-1/2 rounded border border-amber-500 bg-ink-950 px-2 py-1 text-2xs text-amber-200 shadow"
                 key={poi.site_id}
+                onClick={() => onSelectSite(poi.site_id)}
                 style={{ left: `${(poi.col / map.width) * 100}%`, top: `${(poi.row / map.height) * 100}%` }}
                 title={poi.site_type === "building" ? "建筑" : "地下城"}
                 type="button"
@@ -83,7 +90,13 @@ function RegionOverview({ maps }: { maps: Awaited<ReturnType<typeof listRegionMa
   );
 }
 
-export function SiteMapWorkbench({ campaignId }: { campaignId: string }): ReactElement {
+export function SiteMapWorkbench({
+  campaignId,
+  requestedSiteId = "",
+}: {
+  campaignId: string;
+  requestedSiteId?: string;
+}): ReactElement {
   const client = useQueryClient();
   const { showToast } = useToast();
   const [input, setInput] = useState<SiteGenerationInput>({
@@ -114,6 +127,12 @@ export function SiteMapWorkbench({ campaignId }: { campaignId: string }): ReactE
     queryFn: ({ signal }) => getAdventureSite(campaignId, selectedSiteId, signal),
     enabled: Boolean(selectedSiteId),
   });
+  useEffect(() => {
+    if (!requestedSiteId) return;
+    setSelectedSiteId(requestedSiteId);
+    setSavedLevel(0);
+    document.getElementById("site-grid-viewer")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [requestedSiteId]);
   const generation = useMutation({
     mutationFn: () => previewSiteGeneration(campaignId, input),
     onSuccess: (value) => {
@@ -152,8 +171,10 @@ export function SiteMapWorkbench({ campaignId }: { campaignId: string }): ReactE
           <input className={inputCls} aria-label="建筑或地下城名称" onChange={(event) => setInput({ ...input, name: event.target.value })} value={input.name} />
           <input className={inputCls} aria-label="所属区域路径" onChange={(event) => setInput({ ...input, region_path: event.target.value })} value={input.region_path} />
           <textarea className={textareaCls} aria-label="生成描述与风格" onChange={(event) => setInput({ ...input, brief: event.target.value })} value={input.brief} />
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
             <label className="text-2xs text-stone-500">最多楼层<input className={`${inputCls} mt-1`} min={1} max={20} type="number" value={input.maximum_levels} onChange={(event) => setInput({ ...input, maximum_levels: Number(event.target.value) })} /></label>
+            <label className="text-2xs text-stone-500">每层最少房间<input aria-label="每层最少房间" className={`${inputCls} mt-1`} min={2} max={9} type="number" value={input.rooms_min} onChange={(event) => setInput({ ...input, rooms_min: Number(event.target.value) })} /></label>
+            <label className="text-2xs text-stone-500">每层最多房间<input aria-label="每层最多房间" className={`${inputCls} mt-1`} min={2} max={9} type="number" value={input.rooms_max} onChange={(event) => setInput({ ...input, rooms_max: Number(event.target.value) })} /></label>
             <label className="text-2xs text-stone-500">队伍等级<input className={`${inputCls} mt-1`} min={1} max={20} type="number" value={input.party_level} onChange={(event) => setInput({ ...input, party_level: Number(event.target.value) })} /></label>
             <label className="text-2xs text-stone-500">玩家人数<input className={`${inputCls} mt-1`} min={1} max={12} type="number" value={input.party_size} onChange={(event) => setInput({ ...input, party_size: Number(event.target.value) })} /></label>
             <label className="text-2xs text-stone-500">起始难度<select className={`${selectCls} mt-1`} value={input.starting_difficulty} onChange={(event) => setInput({ ...input, starting_difficulty: event.target.value as SiteGenerationInput["starting_difficulty"] })}><option value="low">低</option><option value="moderate">中</option><option value="high">高</option></select></label>
@@ -171,10 +192,14 @@ export function SiteMapWorkbench({ campaignId }: { campaignId: string }): ReactE
               </div>
               {activePreviewLevel ? <><div className="mb-2 flex flex-wrap gap-2"><Badge tone="danger">{activePreviewLevel.difficulty}</Badge><Badge>{activePreviewLevel.encounter_budget_xp} XP 预算</Badge><Badge tone="ok">{activePreviewLevel.reward_budget_gp} gp 奖励预算</Badge><Badge>{activePreviewLevel.rooms.length} 房间</Badge>{activePreviewLevel.quality ? <Badge tone={activePreviewLevel.quality.score >= 88 ? "ok" : "danger"}>布局评分 {activePreviewLevel.quality.score}/100 · 房间比例 {activePreviewLevel.quality.largest_smallest_ratio}×</Badge> : null}</div><SiteGrid level={activePreviewLevel} /></> : null}
             </>
-          ) : <RegionOverview maps={maps.data ?? []} />}
+          ) : <RegionOverview maps={maps.data ?? []} onSelectSite={(siteId) => {
+            setSelectedSiteId(siteId);
+            setSavedLevel(0);
+            requestAnimationFrame(() => document.getElementById("site-grid-viewer")?.scrollIntoView({ behavior: "smooth", block: "start" }));
+          }} />}
         </div>
       </div>
-      <div className="mt-5 border-t border-ink-700 pt-4">
+      <div className="mt-5 scroll-mt-4 border-t border-ink-700 pt-4" id="site-grid-viewer">
         <div className="mb-3 flex flex-wrap items-center gap-2">
           <strong className="text-sm text-parchment-100">已保存建筑与地下城</strong>
           <select className={`${selectCls} ml-auto max-w-sm`} value={selectedSiteId} onChange={(event) => { setSelectedSiteId(event.target.value); setSavedLevel(0); }}>

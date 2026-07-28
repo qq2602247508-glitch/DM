@@ -126,7 +126,30 @@ def _room_record(index: int, name: str, rect: Rect, room_type: str = "room") -> 
 def _building_names(brief: str, level_index: int) -> tuple[str, ...]:
     lowered = brief.lower()
     if "酒馆" in lowered or "旅店" in lowered:
-        return ("公共大厅", "吧台", "厨房", "客房", "储藏室", "楼梯间", "酒窖", "包间", "办公室")
+        if level_index == 1:
+            return (
+                "公共大厅",
+                "吧台",
+                "厨房",
+                "门厅",
+                "包间",
+                "储藏室",
+                "楼梯间",
+                "办公室",
+                "客房",
+            )
+        if level_index == 2:
+            return (
+                "客房",
+                "豪华客房",
+                "公共起居室",
+                "盥洗室",
+                "布草间",
+                "楼梯间",
+                "包间",
+                "办公室",
+            )
+        return ("酒窖", "储藏室", "酿酒间", "秘密包间", "地窖走廊", "楼梯间", "守夜人房")
     if "教堂" in lowered or "神殿" in lowered:
         return ("主礼拜堂", "祭衣间", "祈祷室", "藏经室", "牧师房", "钟楼间", "地下墓室", "储物间")
     if level_index == 1:
@@ -187,44 +210,58 @@ def _split_building(
     return leaves, partitions
 
 
-def _building_layout(
-    rng: random.Random, room_count: int, brief: str, level_index: int
-) -> dict[str, Any]:
-    width = rng.randrange(31, 39, 2)
-    height = rng.randrange(23, 29, 2)
-    cells, lookup = _blank_cells(width, height)
-    inset_top = rng.choice((1, 2))
-    inset_left = rng.choice((1, 2))
-    footprint = Rect(inset_top + 1, inset_left + 1, height - 3, width - 3)
-    leaves, partitions = _split_building(rng, footprint, room_count)
-    ordered = sorted(leaves, key=lambda rect: (-rect.area, rect.top, rect.left))
-    names = _building_names(brief, level_index)
-    named = {rect: names[index % len(names)] for index, rect in enumerate(ordered)}
-    for rect in leaves:
-        for row in range(rect.top, rect.bottom + 1):
-            for col in range(rect.left, rect.right + 1):
-                lookup[(row, col)].update(kind="floor", label="地板", blocks_sight=False)
-    for row in range(footprint.top - 1, footprint.bottom + 2):
-        for col in range(footprint.left - 1, footprint.right + 2):
-            if row in (footprint.top - 1, footprint.bottom + 1) or col in (
-                footprint.left - 1,
-                footprint.right + 1,
-            ):
-                lookup[(row, col)].update(kind="wall", label="外墙", blocks_sight=True)
-    for partition in partitions:
-        if partition["orientation"] == "vertical":
-            for row in range(partition["start"], partition["end"] + 1):
-                lookup[(row, partition["fixed"])].update(
-                    kind="wall", label="内墙", blocks_sight=True
-                )
-        else:
-            for col in range(partition["start"], partition["end"] + 1):
-                lookup[(partition["fixed"], col)].update(
-                    kind="wall", label="内墙", blocks_sight=True
-                )
+def _add_building_furnishings(
+    lookup: dict[tuple[int, int], dict[str, Any]],
+    rect: Rect,
+    name: str,
+    rng: random.Random,
+) -> list[dict[str, str]]:
+    if "公共大厅" in name or "起居" in name:
+        labels = ["桌椅", "桌椅", "桌椅", "壁炉"]
+    elif "吧台" in name:
+        labels = ["吧台", "吧台", "酒桶", "酒架"]
+    elif "厨房" in name or "酿酒" in name:
+        labels = ["炉灶", "备餐台", "水槽", "酒桶"]
+    elif "客房" in name or "卧" in name or "守夜人房" in name:
+        labels = ["床铺", "衣柜", "小桌"]
+    elif "储藏" in name or "布草" in name or "酒窖" in name:
+        labels = ["木箱", "酒桶", "货架"]
+    elif "书房" in name or "办公室" in name:
+        labels = ["书架", "书桌", "文件柜"]
+    elif "礼拜" in name or "祈祷" in name:
+        labels = ["祭坛", "长椅", "烛台"]
+    elif "包间" in name:
+        labels = ["圆桌", "座椅", "酒柜"]
+    else:
+        labels = ["桌椅", "储物柜"]
+    candidates = [
+        (row, col)
+        for row in range(rect.top, rect.bottom + 1)
+        for col in range(rect.left, rect.right + 1)
+        if lookup[(row, col)]["kind"] == "floor"
+        and (row, col) != rect.center
+        and (row in (rect.top, rect.bottom) or col in (rect.left, rect.right))
+    ]
+    rng.shuffle(candidates)
+    interactive: list[dict[str, str]] = []
+    for label, point in zip(labels, candidates, strict=False):
+        lookup[point].update(
+            kind="cover",
+            label=label,
+            blocks_sight=label in {"吧台", "酒架", "货架", "书架", "衣柜", "文件柜"},
+        )
+        interactive.append({"name": label, "interaction": "调查或互动"})
+    return interactive
+
+
+def _partition_doors(
+    rng: random.Random,
+    partitions: list[dict[str, Any]],
+    leaves: list[Rect],
+    lookup: dict[tuple[int, int], dict[str, Any]],
+) -> list[dict[str, Any]]:
     connectors: list[dict[str, Any]] = []
     for partition in partitions:
-        candidates: list[tuple[int, int]] = []
         if partition["orientation"] == "vertical":
             col = partition["fixed"]
             candidates = [
@@ -271,22 +308,111 @@ def _building_layout(
                 "position": {"row": door[0], "col": door[1]},
             }
         )
+    return connectors
+
+
+def _building_layout(
+    rng: random.Random, room_count: int, brief: str, level_index: int
+) -> dict[str, Any]:
+    width = rng.randrange(31, 39, 2)
+    height = rng.randrange(23, 29, 2)
+    cells, lookup = _blank_cells(width, height)
+    top, left, bottom, right = 2, 2, height - 3, width - 3
+    side_zone: Rect | None = None
+    split_col = -1
+    if room_count >= 5:
+        split_col = left + round((right - left) * rng.uniform(0.52, 0.62))
+        wing_edge = top + round((bottom - top) * rng.uniform(0.48, 0.62))
+        main_zone = Rect(top, left, bottom, split_col - 1)
+        side_zone = (
+            Rect(top, split_col + 1, wing_edge, right)
+            if rng.random() < 0.5
+            else Rect(wing_edge, split_col + 1, bottom, right)
+        )
+        main_count = min(room_count - 2, max(3, round(room_count * 0.62)))
+        main_leaves, main_partitions = _split_building(rng, main_zone, main_count)
+        side_leaves, side_partitions = _split_building(rng, side_zone, room_count - main_count)
+        leaves = [*main_leaves, *side_leaves]
+        partitions = [*main_partitions, *side_partitions]
+        outline = "l_shape"
+    else:
+        main_zone = Rect(top, left, bottom, right)
+        leaves, partitions = _split_building(rng, main_zone, room_count)
+        outline = "compact"
+    ordered = sorted(leaves, key=lambda rect: (-rect.area, rect.top, rect.left))
+    names = _building_names(brief, level_index)
+    named = {rect: names[index % len(names)] for index, rect in enumerate(ordered)}
+    for rect in leaves:
+        for row in range(rect.top, rect.bottom + 1):
+            for col in range(rect.left, rect.right + 1):
+                lookup[(row, col)].update(kind="floor", label="地板", blocks_sight=False)
+    floor_points = {point for point, cell in lookup.items() if cell["kind"] == "floor"}
+    for row, col in floor_points:
+        for point in ((row - 1, col), (row + 1, col), (row, col - 1), (row, col + 1)):
+            if point in lookup and lookup[point]["label"] == "地图外区域":
+                lookup[point].update(kind="wall", label="外墙", blocks_sight=True)
+    for partition in partitions:
+        if partition["orientation"] == "vertical":
+            for row in range(partition["start"], partition["end"] + 1):
+                lookup[(row, partition["fixed"])].update(
+                    kind="wall", label="内墙", blocks_sight=True
+                )
+        else:
+            for col in range(partition["start"], partition["end"] + 1):
+                lookup[(partition["fixed"], col)].update(
+                    kind="wall", label="内墙", blocks_sight=True
+                )
+    connectors = _partition_doors(rng, partitions, leaves, lookup)
+    if side_zone is not None:
+        bridge_candidates = [
+            (row, split_col)
+            for row in range(
+                max(main_zone.top, side_zone.top), min(main_zone.bottom, side_zone.bottom) + 1
+            )
+            if lookup[(row, split_col - 1)]["kind"] == "floor"
+            and lookup[(row, split_col + 1)]["kind"] == "floor"
+        ]
+        if not bridge_candidates:
+            raise ValueError("could not connect building wings")
+        bridge = rng.choice(bridge_candidates)
+        lookup[bridge].update(kind="door", label="翼廊门", blocks_sight=False)
+        adjoining = [
+            next(
+                index + 1
+                for index, rect in enumerate(leaves)
+                if rect.top <= bridge[0] <= rect.bottom
+                and rect.left <= bridge[1] + offset <= rect.right
+            )
+            for offset in (-1, 1)
+        ]
+        connectors.append(
+            {
+                "from_room_index": adjoining[0],
+                "to_room_index": adjoining[1],
+                "connector_type": "door",
+                "label": "连接主翼与侧翼",
+                "state": "closed",
+                "position": {"row": bridge[0], "col": bridge[1]},
+            }
+        )
     room_index = {rect: index + 1 for index, rect in enumerate(leaves)}
     rooms = [_room_record(room_index[rect], named[rect], rect, "building_room") for rect in leaves]
     for rect in leaves:
-        center = rect.center
-        lookup[center].update(kind="room", label=named[rect], blocks_sight=False)
-    for rect in ordered[: min(3, len(ordered))]:
-        row = min(rect.bottom, rect.center[0] + 1)
-        col = min(rect.right, rect.center[1] + 1)
-        if lookup[(row, col)]["kind"] == "floor":
-            lookup[(row, col)].update(kind="cover", label="家具", blocks_sight=True)
+        lookup[rect.center].update(kind="room", label=named[rect], blocks_sight=False)
+    room_by_index = {int(room["room_index"]): room for room in rooms}
+    furniture_labels: set[str] = set()
+    for rect in leaves:
+        interactive = _add_building_furnishings(lookup, rect, named[rect], rng)
+        room_by_index[room_index[rect]]["interactive_objects"] = interactive
+        furniture_labels.update(item["name"] for item in interactive)
     return {
         "width": width,
         "height": height,
         "cell_size_ft": 5,
         "grid_type": "square",
-        "algorithm": "building_bsp",
+        "algorithm": "building_wings_bsp",
+        "outline": outline,
+        "furniture_labels": sorted(furniture_labels),
         "cells": cells,
         "rooms": rooms,
         "connectors": connectors,
@@ -485,6 +611,8 @@ def score_layout(layout: dict[str, Any], site_type: str) -> dict[str, Any]:
     if site_type == "building":
         score += 10 if size_ratio >= 1.8 else 0
         score += 10 if 0.35 <= utilization <= 0.85 else 4
+        score += 5 if layout.get("outline") == "l_shape" else 0
+        score += min(5, len(layout.get("furniture_labels", [])) // 3)
     else:
         graph = layout.get("graph", {})
         degrees = graph.get("degrees", [])
@@ -500,6 +628,8 @@ def score_layout(layout: dict[str, Any], site_type: str) -> dict[str, Any]:
         "valid_connectors": valid_doors,
         "walkable_utilization": round(utilization, 3),
         "algorithm": layout.get("algorithm"),
+        "outline": layout.get("outline"),
+        "furniture_diversity": len(layout.get("furniture_labels", [])),
     }
 
 
