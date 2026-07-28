@@ -2,6 +2,7 @@
 set -euo pipefail
 
 # Explicit LAN-only player surface. The full DM backend remains on loopback.
+export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:${PATH:-}"
 repo_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$repo_dir"
 
@@ -9,10 +10,22 @@ gateway_port=8787
 export UV_CACHE_DIR="${UV_CACHE_DIR:-/Users/inagi/codex/900-杂项/uv-cache}"
 python_bin="${DND_DM_GATEWAY_PYTHON:-$repo_dir/backend/.venv/bin/python}"
 alembic_bin="${DND_DM_GATEWAY_ALEMBIC:-$repo_dir/backend/.venv/bin/alembic}"
-npm_bin="${DND_DM_GATEWAY_NPM:-npm}"
+if [ -n "${DND_DM_GATEWAY_NPM:-}" ]; then
+  npm_bin="$DND_DM_GATEWAY_NPM"
+elif [ -x /opt/homebrew/bin/npm ]; then
+  npm_bin=/opt/homebrew/bin/npm
+elif [ -x /usr/local/bin/npm ]; then
+  npm_bin=/usr/local/bin/npm
+else
+  npm_bin="$(command -v npm || true)"
+fi
 
 if [ ! -x "$python_bin" ] || [ ! -x "$alembic_bin" ]; then
   echo "缺少 backend/.venv；请在联网时运行一次 ./scripts/setup.sh。" >&2
+  exit 1
+fi
+if [ -z "$npm_bin" ] || [ ! -x "$npm_bin" ]; then
+  echo "找不到 npm；请确认 Node.js 已安装在 /opt/homebrew、/usr/local 或 PATH 中。" >&2
   exit 1
 fi
 if [ ! -d "$repo_dir/frontend/node_modules" ]; then
