@@ -733,7 +733,11 @@ async function updateRow(
 ) {
   const id = display(row.id, "");
   const version = typeof row.version === "number" ? row.version : 0;
-  if (kind === "campaigns") return updateCampaign(id, { name, description: description || null }, version);
+  if (kind === "campaigns") return updateCampaign(id, {
+    name,
+    description: description || null,
+    status: detail.status || "active",
+  }, version);
   if (!campaignId) throw new Error("尚未选择战役");
   if (kind === "characters") return updateCharacter(campaignId, id, {
     name, notes: description || null, race: detail.race || null,
@@ -868,7 +872,25 @@ function RowCard({ kind, campaignId, row }: { kind: EntityKind; campaignId: stri
   const remove = useMutation({
     mutationFn: () => removeRow(kind, campaignId, row),
     onSuccess: () => { setConfirming(false); invalidate(); showToast(`${META[kind].title}已删除`); },
-    onError: () => showToast("删除失败，请重试", "error"),
+    onError: (error) => showToast(
+      kind === "locations" && error instanceof Error && /site|managed|建筑|地下城|楼层|房间/i.test(error.message)
+        ? "这是生成建筑/地下城托管的地点，请在地点页上方选择整座建筑或地下城后安全删除"
+        : "删除失败，请重试",
+      "error",
+    ),
+  });
+  const archive = useMutation({
+    mutationFn: () => updateCampaign(
+      display(row.id, ""),
+      { status: detail.status === "archived" ? "active" : "archived" },
+      Number(row.version),
+    ),
+    onSuccess: (campaign) => {
+      setDetailValue("status", campaign.status);
+      invalidate();
+      showToast(campaign.status === "archived" ? "跑团已归档" : "跑团已恢复");
+    },
+    onError: () => showToast("归档状态更新失败，请刷新后重试", "error"),
   });
   return (
     <li className="py-3">
@@ -880,6 +902,14 @@ function RowCard({ kind, campaignId, row }: { kind: EntityKind; campaignId: stri
             <Button onClick={() => setEditing(false)} size="sm">取消</Button>
             <Button disabled={!name.trim()} loading={save.isPending} size="sm" type="submit" variant="primary">保存</Button>
           </div>
+          {kind === "campaigns" ? (
+            <label className="text-2xs text-stone-500">跑团状态
+              <select className={`${inputCls} mt-1`} onChange={(event) => setDetailValue("status", event.target.value)} value={detail.status}>
+                <option value="active">进行中</option>
+                <option value="archived">已归档</option>
+              </select>
+            </label>
+          ) : null}
           {kind === "characters" ? (
             <>
               <input className={inputCls} onChange={(event) => setDetailValue("race", event.target.value)} placeholder="种族" value={detail.race} />
@@ -923,6 +953,7 @@ function RowCard({ kind, campaignId, row }: { kind: EntityKind; campaignId: stri
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
             <p className="m-0 text-sm font-medium text-parchment-100">{originalName}</p>
+            {kind === "campaigns" ? <Badge tone={detail.status === "archived" ? "neutral" : "ok"}>{detail.status === "archived" ? "已归档" : "进行中"}</Badge> : null}
             <p className="prose-block mb-0 mt-1 text-xs text-stone-500">{originalDescription || "暂无描述"}</p>
             {kind === "characters" ? <p className="mb-0 mt-1 text-2xs text-ember-300/80">{display(row.race, "未设种族")} · {display(row.class_name, "未设职业")} Lv{display(row.level, "1")} · AC {display(row.armor_class, "10")} · 速度 {display(row.speed, "30")} · HP {display(row.hp, "0")}/{display(row.max_hp, "0")}</p> : null}
             {kind === "npcs" ? (
@@ -939,6 +970,7 @@ function RowCard({ kind, campaignId, row }: { kind: EntityKind; campaignId: stri
             <p className="mb-0 mt-1 text-2xs text-stone-700">{typeof row.updated_at === "string" ? `更新于 ${formatDateTime(row.updated_at)} · v${display(row.version, "1")}` : ""}</p>
           </div>
           <div className="flex gap-1.5">
+            {kind === "campaigns" ? <Button loading={archive.isPending} onClick={() => archive.mutate()} size="sm">{detail.status === "archived" ? "恢复" : "归档"}</Button> : null}
             <Button onClick={() => setEditing(true)} size="sm">编辑</Button>
             <Button onClick={() => setConfirming(true)} size="sm" variant="danger">删除</Button>
           </div>
@@ -951,21 +983,34 @@ function RowCard({ kind, campaignId, row }: { kind: EntityKind; campaignId: stri
 }
 
 function ManagementContent({ kind, campaignId }: { kind: EntityKind; campaignId: string | null }): ReactElement {
+  const [showArchived, setShowArchived] = useState(false);
   const rows = useRows(kind, campaignId);
   const meta = META[kind];
   if (kind === "characters" && campaignId) return <CharacterWorkspace campaignId={campaignId} />;
+  const visibleRows = kind === "campaigns" && !showArchived
+    ? rows.data?.filter((row) => row.status !== "archived")
+    : rows.data;
   return (
     <div className="mx-auto max-w-[1200px] p-4 lg:p-6">
       <Panel eyebrow={meta.eyebrow} title={`${meta.title}管理`}>
         <CreateForm campaignId={campaignId} kind={kind} onDone={() => undefined} />
       </Panel>
       <Panel className="mt-4" eyebrow="记录" title={`${meta.title}列表`}>
+        {kind === "campaigns" ? (
+          <div className="mb-3 flex items-center justify-between gap-3 rounded border border-ink-700 bg-ink-950/40 p-2">
+            <span className="text-xs text-stone-500">主切团菜单默认只显示进行中的团；归档不会删除任何数据。</span>
+            <label className="flex shrink-0 items-center gap-2 text-xs text-stone-300">
+              <input checked={showArchived} onChange={(event) => setShowArchived(event.target.checked)} type="checkbox" />
+              显示已归档
+            </label>
+          </div>
+        ) : null}
         {rows.isLoading ? <LoadingBlock /> : null}
         {rows.isError ? <ErrorState error={rows.error} onRetry={() => void rows.refetch()} /> : null}
-        {!rows.isLoading && !rows.isError && rows.data?.length === 0 ? <EmptyState title={`还没有${meta.title}`} hint="使用上方表单创建第一条记录。" /> : null}
-        {rows.data && rows.data.length > 0 ? (
+        {!rows.isLoading && !rows.isError && visibleRows?.length === 0 ? <EmptyState title={kind === "campaigns" && !showArchived ? "没有进行中的跑团" : `还没有${meta.title}`} hint={kind === "campaigns" && !showArchived ? "创建新团，或打开“显示已归档”恢复旧团。" : "使用上方表单创建第一条记录。"} /> : null}
+        {visibleRows && visibleRows.length > 0 ? (
           <ul className="m-0 divide-y divide-ink-700/60 p-0">
-            {rows.data.map((row) => <RowCard campaignId={campaignId} key={display(row.id, "")} kind={kind} row={row} />)}
+            {visibleRows.map((row) => <RowCard campaignId={campaignId} key={display(row.id, "")} kind={kind} row={row} />)}
           </ul>
         ) : null}
       </Panel>

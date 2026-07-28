@@ -1013,9 +1013,19 @@ export type StateSnapshot = {
 };
 
 export type CampaignBackup = {
-  schema_version: "1.0";
+  schema_version: "1.0" | "2.0";
   exported_at: string;
   campaign: Record<string, unknown> & Partial<Campaign>;
+  manifest?: {
+    format: "dnd-dm-campaign-backup";
+    source_campaign_id: string;
+    table_names: string[];
+    excluded_tables: string[];
+    record_count: number;
+    sha256: string;
+  } | null;
+  counts?: Record<string, number>;
+  tables?: Record<string, Record<string, unknown>[]>;
   characters: Record<string, unknown>[];
   conditions: Record<string, unknown>[];
   npcs: Record<string, unknown>[];

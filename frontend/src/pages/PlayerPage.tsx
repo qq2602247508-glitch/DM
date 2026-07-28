@@ -31,6 +31,7 @@ import {
 import { Button, EmptyState, ErrorState, LoadingBlock } from "../ui/primitives";
 import { SceneMap } from "../components/SceneMap";
 import { PlayerEquipmentPanel } from "../components/player/PlayerEquipmentPanel";
+import { useOffline } from "../hooks/useOffline";
 import {
   getTargetingCells,
   gridDistanceFt,
@@ -854,7 +855,21 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
   );
 }
 
-function PlayerDashboard({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refresh: () => void }): ReactElement {
+function PlayerDashboard({
+  snapshot,
+  refresh,
+  syncing,
+  updatedAt,
+  offline,
+  degraded,
+}: {
+  snapshot: PlayerRoomSnapshot;
+  refresh: () => void;
+  syncing: boolean;
+  updatedAt: number;
+  offline: boolean;
+  degraded: boolean;
+}): ReactElement {
   const [tab, setTab] = useState<"table" | "character" | "combat" | "rules">(
     snapshot.combat?.status === "active" ? "combat" : "table",
   );
@@ -877,6 +892,12 @@ function PlayerDashboard({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; 
       <header className="mb-4 flex flex-wrap items-center gap-3 border-b border-ink-700 pb-4">
         <div className="mr-auto"><p className="m-0 text-xs uppercase tracking-[.18em] text-amber-300">玩家辅助台 · {snapshot.player.display_name}</p><h1 className="mb-0 mt-1 font-display text-2xl">{snapshot.campaign.name}</h1></div>
         <span className="text-xs text-stone-500">{snapshot.character?.name}</span>
+        <span
+          className={`rounded border px-2 py-1 text-2xs ${offline || degraded ? "border-red-800/60 bg-red-950/30 text-red-200" : syncing ? "border-amber-800/60 bg-amber-950/30 text-amber-200" : "border-emerald-800/60 bg-emerald-950/25 text-emerald-300"}`}
+          title={updatedAt ? `最后同步：${new Date(updatedAt).toLocaleTimeString()}` : "尚未完成同步"}
+        >
+          {offline ? "网络已断开" : degraded ? "服务器连接中断 · 保留当前画面" : syncing ? "正在同步…" : "已同步"}
+        </span>
         <Button onClick={() => setShowRoomSwitch((current) => !current)} size="sm" variant="primary">切换跑团</Button>
         <Button onClick={() => void logoutPlayerRoom().then(() => window.location.reload())} size="sm">退出房间</Button>
       </header>
@@ -930,6 +951,7 @@ function PlayerDashboard({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; 
 
 export function PlayerPage(): ReactElement {
   const client = useQueryClient();
+  const offline = useOffline();
   const room = useQuery({
     queryKey: ["my-player-room"],
     queryFn: ({ signal }) => getMyPlayerRoom(signal),
@@ -946,9 +968,18 @@ export function PlayerPage(): ReactElement {
   const missing = room.isError && isPlayerSessionMissing(room.error);
   const content = useMemo(() => room.data, [room.data]);
   if (room.isLoading) return <LoadingBlock label="正在连接玩家房间…" />;
-  if (missing) return <JoinRoom onJoined={refresh} />;
-  if (room.isError) return <main className="mx-auto max-w-xl p-6"><ErrorState error={room.error} onRetry={() => void room.refetch()} /></main>;
+  if (missing && !content) return <JoinRoom onJoined={refresh} />;
+  if (room.isError && !content) return <main className="mx-auto max-w-xl p-6"><ErrorState error={room.error} onRetry={() => void room.refetch()} /></main>;
   if (!content) return <JoinRoom onJoined={refresh} />;
   if (!content.character) return <CharacterBuilder onDone={refresh} snapshot={content} />;
-  return <PlayerDashboard refresh={refresh} snapshot={content} />;
+  return (
+    <PlayerDashboard
+      offline={offline}
+      degraded={room.isError}
+      refresh={refresh}
+      snapshot={content}
+      syncing={room.isFetching}
+      updatedAt={room.dataUpdatedAt}
+    />
+  );
 }

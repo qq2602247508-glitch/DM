@@ -166,6 +166,26 @@ def get_adventure_site(
     return _safe_call(lambda: service.get(campaign_id, site_id))
 
 
+@router.delete("/sites/{site_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_adventure_site(
+    campaign_id: str,
+    site_id: str,
+    request: Request,
+    response: Response,
+    service: Annotated[SiteService, Depends(get_site_service)],
+    version: int = Query(ge=1),
+) -> None:
+    _safe_call(
+        lambda: service.delete(
+            campaign_id,
+            site_id,
+            expected_version=version,
+            request_id=_request_id(request),
+        )
+    )
+    response.status_code = status.HTTP_204_NO_CONTENT
+
+
 @router.get("/items")
 def list_items(
     campaign_id: str,

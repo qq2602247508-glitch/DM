@@ -44,11 +44,14 @@ export function AppShell({ children }: { children: ReactNode }): ReactElement {
       return;
     }
     if (campaignId === null || !items.some((c) => c.id === campaignId)) {
-      selectCampaign(items[0]?.id ?? null);
+      selectCampaign(items.find((campaign) => campaign.status !== "archived")?.id ?? items[0]?.id ?? null);
     }
   }, [campaigns.data, campaignId, selectCampaign]);
 
   const currentCampaign = campaigns.data?.find((c) => c.id === campaignId) ?? null;
+  const selectableCampaigns = campaigns.data?.filter(
+    (campaign) => campaign.status !== "archived" || campaign.id === campaignId,
+  );
 
   const locations = useQuery({
     queryKey: ["locations", campaignId],
@@ -153,10 +156,10 @@ export function AppShell({ children }: { children: ReactNode }): ReactElement {
               onChange={(event) => selectCampaign(event.target.value)}
               value={campaignId ?? ""}
             >
-              {campaigns.data && campaigns.data.length > 0 ? (
-                campaigns.data.map((campaign) => (
+              {selectableCampaigns && selectableCampaigns.length > 0 ? (
+                selectableCampaigns.map((campaign) => (
                   <option key={campaign.id} value={campaign.id}>
-                    {campaign.name}
+                    {campaign.name}{campaign.status === "archived" ? "（已归档）" : ""}
                   </option>
                 ))
               ) : (

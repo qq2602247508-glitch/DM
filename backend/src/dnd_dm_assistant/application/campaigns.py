@@ -94,6 +94,9 @@ class CampaignService:
         return self._gateway.state(campaign_id, limit=limit)
 
     def export_backup(self, campaign_id: str) -> dict[str, Any]:
+        exporter = getattr(self._gateway, "export_campaign_backup", None)
+        if callable(exporter):
+            return exporter(campaign_id)
         campaign = self.get("campaign", campaign_id)
         return {
             "schema_version": "1.0",
@@ -124,6 +127,13 @@ class CampaignService:
         name: str | None = None,
         request_id: str = "unknown",
     ) -> dict[str, Any]:
+        importer = getattr(self._gateway, "import_campaign_backup", None)
+        if (
+            str(backup.get("schema_version")) == "2.0"
+            and backup.get("tables")
+            and callable(importer)
+        ):
+            return importer(backup, name=name, request_id=request_id)
         source_campaign = dict(backup["campaign"])
         source_campaign["name"] = name or f"{source_campaign.get('name', '导入战役')}（导入）"
         source_location_id = source_campaign.pop("current_location_id", None)

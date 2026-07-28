@@ -179,6 +179,7 @@ function LocationsContent({ campaignId }: { campaignId: string }): ReactElement 
   const [preview, setPreview] = useState<LocationGenerationPreview | null>(null);
   const [characterId, setCharacterId] = useState("");
   const [focusedSiteId, setFocusedSiteId] = useState("");
+  const [showManualManagement, setShowManualManagement] = useState(false);
   const locations = useQuery({
     queryKey: ["locations", campaignId],
     queryFn: ({ signal }) => listLocations(campaignId, signal),
@@ -318,9 +319,22 @@ function LocationsContent({ campaignId }: { campaignId: string }): ReactElement 
           </ul>
         ) : null}
       </Panel>
-      <div className="-mx-4 -mb-4 mt-4 lg:-mx-6 lg:-mb-6">
-        <ManagementPage kind="locations" />
-      </div>
+      <section className="mt-4 rounded-xl border border-ink-700 bg-ink-950/35">
+        <div className="flex flex-wrap items-center gap-2 px-4 py-3">
+          <div className="mr-auto">
+            <strong className="block text-sm text-stone-300">高级 · 手动地点记录管理</strong>
+            <span className="text-2xs text-stone-600">默认不载入大量房间记录；生成建筑与地下城请使用上方专用工作台。</span>
+          </div>
+          <Button onClick={() => setShowManualManagement((value) => !value)} size="sm">
+            {showManualManagement ? "收起手动管理" : "展开手动管理"}
+          </Button>
+        </div>
+        {showManualManagement ? (
+          <div className="-mx-4 -mb-4 border-t border-ink-700 lg:-mx-6">
+            <ManagementPage kind="locations" />
+          </div>
+        ) : null}
+      </section>
     </div>
   );
 }

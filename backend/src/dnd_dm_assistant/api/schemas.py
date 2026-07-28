@@ -105,7 +105,7 @@ class CampaignCreate(BaseModel):
     world_setting: str | None = None
     current_time: datetime | None = None
     current_location_id: str | None = None
-    status: str = "active"
+    status: Literal["active", "archived"] = "active"
     ruleset: Literal["dnd5e"] = "dnd5e"
     primary_rules_year: Literal[2024] = 2024
     allow_legacy: bool = False
@@ -120,7 +120,7 @@ class CampaignPatch(BaseModel):
     world_setting: str | None = None
     current_time: datetime | None = None
     current_location_id: str | None = None
-    status: str | None = None
+    status: Literal["active", "archived"] | None = None
     allow_legacy: bool | None = None
     encumbrance_mode: Literal["standard", "variant", "none"] | None = None
     version: int | None = Field(None, ge=1)
@@ -966,10 +966,22 @@ class StateSnapshot(BaseModel):
     as_of: datetime
 
 
+class CampaignBackupManifest(BaseModel):
+    format: Literal["dnd-dm-campaign-backup"] = "dnd-dm-campaign-backup"
+    source_campaign_id: str
+    table_names: tuple[str, ...] = ()
+    excluded_tables: tuple[str, ...] = ()
+    record_count: int = Field(default=0, ge=0)
+    sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+
+
 class CampaignBackup(BaseModel):
-    schema_version: Literal["1.0"] = "1.0"
+    schema_version: Literal["1.0", "2.0"] = "1.0"
     exported_at: datetime
     campaign: dict[str, Any]
+    manifest: CampaignBackupManifest | None = None
+    counts: dict[str, int] = Field(default_factory=dict)
+    tables: dict[str, tuple[dict[str, Any], ...]] = Field(default_factory=dict)
     characters: tuple[dict[str, Any], ...] = ()
     conditions: tuple[dict[str, Any], ...] = ()
     npcs: tuple[dict[str, Any], ...] = ()

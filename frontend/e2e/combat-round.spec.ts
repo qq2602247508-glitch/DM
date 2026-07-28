@@ -239,7 +239,7 @@ test("玩家端加载当前战斗地图、回合面板、攻击控件和公开�
       await expect(page.getByTestId("player-pending-roll")).toContainText("验收地精 对你使用「毒雾爆发」");
       await expect(page.getByTestId("player-pending-roll")).toContainText("失败将承受 14 点毒素伤害");
       await expect(page.getByText("红色描边：敌方技能影响范围", { exact: true })).toBeVisible();
-      await expect.poll(async () => page.locator("button.outline-red-500").count()).toBeGreaterThan(1);
+      await expect.poll(async () => page.locator("[data-grid-row].outline-red-500").count()).toBeGreaterThan(1);
     }
   } finally {
     await Promise.all([player.close(), dm.close()]);

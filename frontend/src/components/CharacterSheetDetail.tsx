@@ -5,6 +5,7 @@ import { getCharacterAssets } from "../api/entities";
 import { getInventory } from "../api/world";
 import type { Character } from "../api/types";
 import { Button, EmptyState, LoadingBlock } from "../ui/primitives";
+import { buildRuleBlockPlan } from "../ui/ruleBlocks";
 import { AdvancementDialog } from "./AdvancementDialog";
 import { RuleBlockPlan } from "./RuleBlockPlan";
 
@@ -37,6 +38,32 @@ const SKILL_ABILITY: Record<string, keyof typeof ABILITIES> = {
   表演: "charisma",
   游说: "charisma",
 };
+
+function RuleCoverageSummary({ sources }: { sources: unknown[] }): ReactElement {
+  const counts = sources.reduce<{ automatic: number; partial: number; manual: number }>(
+    (result, source) => {
+      result[buildRuleBlockPlan(source).automation] += 1;
+      return result;
+    },
+    { automatic: 0, partial: 0, manual: 0 },
+  );
+  const total = sources.length;
+  return (
+    <section className="mb-3 rounded-lg border border-ink-700 bg-ink-950/35 p-3" aria-label="规则自动化覆盖">
+      <div className="flex flex-wrap items-center gap-2">
+        <strong className="mr-auto text-xs text-parchment-100">规则自动化覆盖</strong>
+        <span className="rounded bg-emerald-950/40 px-2 py-1 text-2xs text-emerald-200">完整自动 {counts.automatic}</span>
+        <span className="rounded bg-amber-950/40 px-2 py-1 text-2xs text-amber-200">半自动 {counts.partial}</span>
+        <span className="rounded bg-red-950/40 px-2 py-1 text-2xs text-red-200">DM裁定 {counts.manual}</span>
+      </div>
+      <p className="mb-0 mt-2 text-2xs text-stone-500">
+        {total > 0
+          ? "系统只自动执行已经结构化的距离、目标、投骰、伤害、资源与状态；其余效果会明确交给 DM 裁定。"
+          : "当前没有可评估的动作或法术。"}
+      </p>
+    </section>
+  );
+}
 
 const FEATURE_HELP: Record<string, string> = {
   黑暗视觉: "在昏暗或黑暗环境中仍能依照该种族规则看清周围。",
@@ -355,12 +382,15 @@ export function CharacterSheetDetail({
             </div>
           ) : null}
           {tab === "actions" ? (
-            <div className="grid gap-3 md:grid-cols-2">
+            <div>
+              <RuleCoverageSummary sources={actions} />
+              <div className="grid gap-3 md:grid-cols-2">
               {actions.length ? actions.map((action, index) => {
                 const description = text(action.description, "暂无说明");
                 const tooltip = `${description}；伤害 ${text(action.damage)}；距离 ${text(action.range)}；消耗 ${text(action.cost, "动作")}${action.resource ? `；资源 ${text(action.resource)}` : ""}`;
                 return <article className="rounded-lg border border-ink-700 bg-ink-950/45 p-4" key={`${text(action.name)}-${index}`} title={tooltip}><div className="flex items-start gap-3"><strong className="mr-auto text-sm text-parchment-100">{text(action.name, "未命名动作")}</strong><span className="rounded bg-red-950/50 px-2 py-1 font-mono text-xs text-red-200">{text(action.damage, "无伤害")}</span></div><dl className="mt-3 grid grid-cols-2 gap-2 text-xs"><div><dt className="text-stone-600">距离</dt><dd className="m-0 text-stone-300">{text(action.range)}</dd></div><div><dt className="text-stone-600">消耗</dt><dd className="m-0 text-stone-300">{text(action.cost, "动作")}</dd></div></dl><p className="mb-0 mt-3 text-xs leading-5 text-stone-400">{description}</p><RuleBlockPlan source={action} /></article>;
               }) : <EmptyState title="暂无攻击或动作" hint="创建角色时会按职业配置基础动作，也可在角色数据中补充。" />}
+              </div>
             </div>
           ) : null}
           {tab === "inventory" ? (
@@ -371,6 +401,7 @@ export function CharacterSheetDetail({
           ) : null}
           {tab === "magic" ? (
             <div className="space-y-5">
+              <RuleCoverageSummary sources={spells.map((spell) => spell.ruleSource)} />
               <section aria-label="施法概览" className="rounded-lg border border-violet-800/60 bg-violet-950/15 p-4">
                 <div className="flex flex-wrap items-start gap-3">
                   <div className="mr-auto">

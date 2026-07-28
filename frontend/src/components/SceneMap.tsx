@@ -119,22 +119,10 @@ export function SceneMap({
           const doorOrientation = isDoor
             ? getDoorOrientation(grid.cells ?? [], row, col)
             : null;
-          return (
-            <button
-              aria-label={`格子 ${row},${col}${token ? ` · ${token.label}` : object ? ` · ${object.label}` : ""}`}
-              className={`relative aspect-square border border-ink-800 text-[9px] transition duration-200 ${terrainClass} ${movable ? "bg-emerald-950/75 ring-1 ring-inset ring-emerald-400/75" : ""} ${inRange ? "bg-sky-950/60 ring-1 ring-inset ring-sky-500/50" : ""} ${affected ? "bg-fuchsia-900/70 ring-2 ring-inset ring-fuchsia-400/80" : ""} ${dangerous ? "bg-red-950/65 outline outline-2 outline-inset outline-red-500 shadow-[inset_0_0_10px_rgba(239,68,68,.35)]" : ""} ${selectable ? "cursor-pointer outline outline-2 outline-dashed outline-emerald-500/70 hover:bg-emerald-950/60" : ""} ${selected ? "z-10 ring-4 ring-inset ring-emerald-300 shadow-[0_0_12px_rgba(110,231,183,.8)]" : ""} ${cellSelectable ? "cursor-pointer hover:bg-emerald-950/70" : ""}`}
-              data-grid-col={col}
-              data-grid-row={row}
-              data-token-id={token?.id}
-              disabled={blocked || (!selectable && !cellSelectable)}
-              key={key}
-              onClick={() => {
-                if (selectable && targetKey) onTargetSelect?.(targetKey);
-                else if (cellSelectable) onCellSelect?.(row, col);
-              }}
-              title={token?.label ?? object?.label ?? terrain?.label ?? `${row},${col}`}
-              type="button"
-            >
+          const interactive = selectable || cellSelectable;
+          const cellClass = `relative aspect-square border border-ink-800 text-[9px] transition duration-200 ${terrainClass} ${movable ? "bg-emerald-950/75 ring-1 ring-inset ring-emerald-400/75" : ""} ${inRange ? "bg-sky-950/60 ring-1 ring-inset ring-sky-500/50" : ""} ${affected ? "bg-fuchsia-900/70 ring-2 ring-inset ring-fuchsia-400/80" : ""} ${dangerous ? "bg-red-950/65 outline outline-2 outline-inset outline-red-500 shadow-[inset_0_0_10px_rgba(239,68,68,.35)]" : ""} ${selectable ? "cursor-pointer outline outline-2 outline-dashed outline-emerald-500/70 hover:bg-emerald-950/60" : ""} ${selected ? "z-10 ring-4 ring-inset ring-emerald-300 shadow-[0_0_12px_rgba(110,231,183,.8)]" : ""} ${cellSelectable ? "cursor-pointer hover:bg-emerald-950/70" : ""}`;
+          const cellContent = (
+            <>
               {isDoor ? (
                 <>
                   <span
@@ -157,6 +145,42 @@ export function SceneMap({
                   {token.label.slice(0, 4)}
                 </span>
               ) : null}
+            </>
+          );
+          if (!interactive) {
+            return (
+              <div
+                aria-hidden={!token && !object ? "true" : undefined}
+                aria-label={token || object ? `格子 ${row},${col}${token ? ` · ${token.label}` : ` · ${object?.label}`}` : undefined}
+                className={cellClass}
+                data-grid-col={col}
+                data-grid-row={row}
+                data-token-id={token?.id}
+                key={key}
+                role={token || object ? "img" : "presentation"}
+                title={token?.label ?? object?.label ?? terrain?.label ?? `${row},${col}`}
+              >
+                {cellContent}
+              </div>
+            );
+          }
+          return (
+            <button
+              aria-label={`格子 ${row},${col}${token ? ` · ${token.label}` : object ? ` · ${object.label}` : ""}`}
+              className={cellClass}
+              data-grid-col={col}
+              data-grid-row={row}
+              data-token-id={token?.id}
+              disabled={blocked}
+              key={key}
+              onClick={() => {
+                if (selectable && targetKey) onTargetSelect?.(targetKey);
+                else if (cellSelectable) onCellSelect?.(row, col);
+              }}
+              title={token?.label ?? object?.label ?? terrain?.label ?? `${row},${col}`}
+              type="button"
+            >
+              {cellContent}
             </button>
           );
         })}

@@ -3,6 +3,7 @@ import { useEffect, useState, type ReactElement } from "react";
 
 import {
   confirmSiteGeneration,
+  deleteAdventureSite,
   getAdventureSite,
   listAdventureSites,
   listRegionMaps,
@@ -14,6 +15,7 @@ import {
 import { useToast } from "../hooks/toastContext";
 import { Badge, Button, EmptyState, ErrorState, LoadingBlock } from "../ui/primitives";
 import { inputCls, selectCls, textareaCls } from "../ui/styles";
+import { ConfirmDialog } from "../ui/widgets";
 import { Panel } from "./Panel";
 
 const cellColor: Record<string, string> = {
@@ -119,6 +121,7 @@ export function SiteMapWorkbench({
   const [previewLevel, setPreviewLevel] = useState(0);
   const [selectedSiteId, setSelectedSiteId] = useState("");
   const [savedLevel, setSavedLevel] = useState(0);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const [requestId, setRequestId] = useState(`site-${Date.now()}-${Math.random().toString(36).slice(2)}`);
   const maps = useQuery({ queryKey: ["region-maps", campaignId], queryFn: ({ signal }) => listRegionMaps(campaignId, signal) });
   const sites = useQuery({ queryKey: ["adventure-sites", campaignId], queryFn: ({ signal }) => listAdventureSites(campaignId, signal) });
@@ -157,6 +160,25 @@ export function SiteMapWorkbench({
       showToast("已写入区域地图、地点树、楼层、房间和连接器");
     },
     onError: () => showToast("保存失败，草稿仍保留，可重试", "error"),
+  });
+  const removal = useMutation({
+    mutationFn: () => {
+      if (!site.data) throw new Error("没有选择建筑或地下城");
+      return deleteAdventureSite(campaignId, site.data.id, site.data.version);
+    },
+    onSuccess: async () => {
+      setConfirmDelete(false);
+      setSelectedSiteId("");
+      setSavedLevel(0);
+      await Promise.all([
+        client.invalidateQueries({ queryKey: ["region-maps", campaignId] }),
+        client.invalidateQueries({ queryKey: ["adventure-sites", campaignId] }),
+        client.invalidateQueries({ queryKey: ["locations", campaignId] }),
+        client.invalidateQueries({ queryKey: ["scenes", campaignId] }),
+      ]);
+      showToast("建筑/地下城及其托管楼层、房间、Scene 和网格已完整删除");
+    },
+    onError: () => showToast("删除失败；数据可能已更新，请刷新后重试", "error"),
   });
   const selectedLevel = site.data?.levels?.[savedLevel];
   const activePreviewLevel = preview?.levels[previewLevel];
@@ -202,10 +224,11 @@ export function SiteMapWorkbench({
       <div className="mt-5 scroll-mt-4 border-t border-ink-700 pt-4" id="site-grid-viewer">
         <div className="mb-3 flex flex-wrap items-center gap-2">
           <strong className="text-sm text-parchment-100">已保存建筑与地下城</strong>
-          <select className={`${selectCls} ml-auto max-w-sm`} value={selectedSiteId} onChange={(event) => { setSelectedSiteId(event.target.value); setSavedLevel(0); }}>
+          <select aria-label="选择已保存建筑或地下城" className={`${selectCls} ml-auto max-w-sm`} value={selectedSiteId} onChange={(event) => { setSelectedSiteId(event.target.value); setSavedLevel(0); }}>
             <option value="">选择建筑或地下城</option>
             {sites.data?.map((item) => <option key={item.id} value={item.id}>{item.site_type === "building" ? "建筑" : "地下城"} · {item.name}</option>)}
           </select>
+          {site.data ? <Button onClick={() => setConfirmDelete(true)} size="sm" variant="danger">删除整座{site.data.site_type === "building" ? "建筑" : "地下城"}</Button> : null}
         </div>
         {site.isLoading ? <LoadingBlock /> : null}
         {selectedLevel ? (
@@ -218,6 +241,23 @@ export function SiteMapWorkbench({
           </>
         ) : null}
       </div>
+      <ConfirmDialog
+        body={site.data ? (
+          <div>
+            <p className="mt-0 text-parchment-100">{site.data.name}</p>
+            <p className="mb-0 text-stone-400">
+              将原子删除这座{site.data.site_type === "building" ? "建筑" : "地下城"}、全部楼层与房间地点、
+              关联 Scene 和网格，并从区域地图移除对应标记和道路。角色、NPC、物品和其他地点不会删除。
+            </p>
+          </div>
+        ) : null}
+        confirmLabel="确认删除整座站点"
+        loading={removal.isPending}
+        onCancel={() => setConfirmDelete(false)}
+        onConfirm={() => removal.mutate()}
+        open={confirmDelete}
+        title="删除建筑或地下城"
+      />
     </Panel>
   );
 }

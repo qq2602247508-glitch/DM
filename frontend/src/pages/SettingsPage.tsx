@@ -9,6 +9,7 @@ import { useCurrentCampaign } from "../hooks/appContexts";
 import { useToast } from "../hooks/toastContext";
 import { Badge, Button, ErrorState, KeyValue, LoadingBlock } from "../ui/primitives";
 import { formatDateTime } from "../ui/format";
+import { ConfirmDialog } from "../ui/widgets";
 
 function saveJson(filename: string, value: unknown): void {
   const blob = new Blob([JSON.stringify(value, null, 2)], { type: "application/json" });
@@ -27,6 +28,8 @@ export function SettingsPage(): ReactElement {
   const fileInput = useRef<HTMLInputElement>(null);
   const [safeReason, setSafeReason] = useState("");
   const [house, setHouse] = useState({ rule_key: "", core_value: "", override_value: "", source: "DM", reason: "" });
+  const [restorePreview, setRestorePreview] = useState<(Awaited<ReturnType<typeof previewRestore>> & { pointId: string }) | null>(null);
+  const [importPreview, setImportPreview] = useState<{ backup: CampaignBackup; fileName: string } | null>(null);
   const models = useQuery({
     queryKey: ["runtime-models"],
     queryFn: ({ signal }) => getModelStatus(signal),
@@ -42,7 +45,23 @@ export function SettingsPage(): ReactElement {
   const houseRules = useQuery({ queryKey: ["house-rules", campaignId], queryFn: ({ signal }) => listHouseRules(campaignId ?? "", signal), enabled: Boolean(campaignId) });
   const backupPoint = useMutation({ mutationFn: () => createRecoveryPoint("DM 手动恢复点"), onSuccess: () => { void points.refetch(); showToast("已创建一致性 SQLite 恢复点"); }, onError: () => showToast("创建恢复点失败", "error") });
   const toggleSafe = useMutation({ mutationFn: () => setSafeMode(!safeMode.data?.enabled, safeReason), onSuccess: () => { void safeMode.refetch(); setSafeReason(""); showToast("安全模式已更新"); }, onError: () => showToast("启用安全模式需填写原因", "error") });
-  const restore = useMutation({ mutationFn: async (id: string) => { const preview = await previewRestore(id); if (!window.confirm(`${preview.warning}\n\n恢复点：${preview.label}\n包含 ${preview.campaigns} 个战役。确定继续？`)) throw new Error("cancelled"); return restorePoint(id, preview.confirm_token); }, onSuccess: () => { void points.refetch(); showToast("恢复完成；已先创建自动备份，请刷新页面"); }, onError: (error) => { if (error instanceof Error && error.message === "cancelled") return; showToast("恢复被取消或失败", "error"); } });
+  const loadRestorePreview = useMutation({
+    mutationFn: async (pointId: string) => ({ ...(await previewRestore(pointId)), pointId }),
+    onSuccess: setRestorePreview,
+    onError: () => showToast("无法读取恢复点预览", "error"),
+  });
+  const restore = useMutation({
+    mutationFn: () => {
+      if (!restorePreview) throw new Error("missing restore preview");
+      return restorePoint(restorePreview.pointId, restorePreview.confirm_token);
+    },
+    onSuccess: () => {
+      setRestorePreview(null);
+      void points.refetch();
+      showToast("恢复完成；已先创建自动备份，请刷新页面");
+    },
+    onError: () => showToast("恢复失败；当前数据库未被覆盖", "error"),
+  });
   const houseSave = useMutation({ mutationFn: async () => { if (!campaignId) throw new Error("campaign required"); return saveHouseRule(campaignId, { ...house, core_value: house.core_value, override_value: house.override_value, enabled: true }); }, onSuccess: () => { setHouse({ rule_key: "", core_value: "", override_value: "", source: "DM", reason: "" }); void houseRules.refetch(); void audit.refetch(); showToast("房规覆盖已保存并记录来源与理由"); }, onError: () => showToast("请填写规则键、来源和理由", "error") });
   const exporting = useMutation({
     mutationFn: async () => {
@@ -53,13 +72,16 @@ export function SettingsPage(): ReactElement {
       const rawName = typeof backup.campaign.name === "string" ? backup.campaign.name : "campaign";
       const safeName = rawName.replace(/[\\/:*?"<>|]/g, "-");
       saveJson(`${safeName}-${new Date().toISOString().slice(0, 10)}.json`, backup);
-      showToast("战役备份已下载");
+      showToast(backup.schema_version === "2.0"
+        ? `完整战役备份已下载，共 ${backup.manifest?.record_count ?? 0} 条关联记录`
+        : "兼容版战役备份已下载");
     },
     onError: () => showToast("战役备份失败", "error"),
   });
   const importing = useMutation({
     mutationFn: (backup: CampaignBackup) => importCampaign(backup),
     onSuccess: (campaign) => {
+      setImportPreview(null);
       void queryClient.invalidateQueries({ queryKey: ["campaigns"] });
       selectCampaign(campaign.id);
       showToast("战役已作为新副本导入");
@@ -73,10 +95,10 @@ export function SettingsPage(): ReactElement {
     if (!file) return;
     try {
       const parsed = JSON.parse(await file.text()) as CampaignBackup;
-      if (parsed.schema_version !== "1.0" || typeof parsed.campaign !== "object") {
+      if (!["1.0", "2.0"].includes(parsed.schema_version) || typeof parsed.campaign !== "object") {
         throw new Error("invalid backup");
       }
-      importing.mutate(parsed);
+      setImportPreview({ backup: parsed, fileName: file.name });
     } catch {
       showToast("无法读取该备份文件", "error");
     }
@@ -114,8 +136,8 @@ export function SettingsPage(): ReactElement {
 
       <Panel className="mt-4" eyebrow="本地数据安全" title="备份与恢复">
         <p className="mt-0 text-sm leading-6 text-stone-400">
-          备份包含当前战役的角色、状态、NPC、地点连接、任务、线索、事件、战斗和参战者。
-          导入始终创建新副本，不覆盖现有战役。
+          2.0 完整备份包含当前跑团的角色、地图、建筑与地下城、Scene 网格、法术、装备、资源、
+          经济、成长、叙事、战斗明细和结算。导入始终创建新副本，不覆盖现有跑团。
         </p>
         <div className="flex flex-wrap gap-2">
           <Button disabled={!campaignId} icon="copy" loading={exporting.isPending} onClick={() => exporting.mutate()} variant="primary">
@@ -127,13 +149,49 @@ export function SettingsPage(): ReactElement {
           <input accept="application/json,.json" className="hidden" onChange={(event) => void onImport(event)} ref={fileInput} type="file" />
         </div>
         <p className="mb-0 mt-3 text-xs text-stone-600">
-          文件保存在你选择的本机位置；应用不会上传备份或自动下载模型。
+          文件保存在你选择的本机位置；应用不会上传备份。玩家房间凭据、操作审计和模型遥测不会复制到新副本。
         </p>
+        <ConfirmDialog
+          body={importPreview ? (
+            <div>
+              <p className="mt-0 text-parchment-100">{importPreview.fileName}</p>
+              <p className="mb-0 text-stone-400">
+                格式 {importPreview.backup.schema_version}
+                {importPreview.backup.schema_version === "2.0"
+                  ? ` · ${importPreview.backup.manifest?.record_count ?? 0} 条关联记录 · 完整性校验将在服务端执行`
+                  : " · 旧版兼容备份，只包含早期核心数据"}
+                <br />确认后会创建一个独立的新跑团，不覆盖当前数据。
+              </p>
+            </div>
+          ) : null}
+          confirmLabel="校验并导入为新副本"
+          loading={importing.isPending}
+          onCancel={() => setImportPreview(null)}
+          onConfirm={() => {
+            if (importPreview) importing.mutate(importPreview.backup);
+          }}
+          open={importPreview !== null}
+          title="导入跑团备份"
+        />
         <div className="mt-4 border-t border-ink-700/60 pt-4">
           <div className="flex flex-wrap items-center justify-between gap-2"><span className="text-sm text-parchment-100">SQLite 一致性恢复点</span><Button loading={backupPoint.isPending} onClick={() => backupPoint.mutate()} size="sm">创建恢复点</Button></div>
           <p className="text-xs text-stone-500">使用 SQLite backup API，包含所有本地战役与系统配置；恢复前总会自动备份当前数据库。</p>
-          <ul className="m-0 list-none divide-y divide-ink-700/50 p-0">{points.data?.items.map((point) => <li className="flex items-center justify-between gap-3 py-2 text-xs" key={point.id}><span>{point.label} · {formatDateTime(point.created_at)} · {(point.size_bytes / 1024).toFixed(1)} KB</span><Button loading={restore.isPending} onClick={() => restore.mutate(point.id)} size="sm" variant="danger">预览并恢复</Button></li>) ?? <li className="py-2 text-xs text-stone-600">尚无恢复点</li>}</ul>
+          <ul className="m-0 list-none divide-y divide-ink-700/50 p-0">{points.data?.items.map((point) => <li className="flex items-center justify-between gap-3 py-2 text-xs" key={point.id}><span>{point.label} · {formatDateTime(point.created_at)} · {(point.size_bytes / 1024).toFixed(1)} KB</span><Button loading={loadRestorePreview.isPending} onClick={() => loadRestorePreview.mutate(point.id)} size="sm" variant="danger">预览并恢复</Button></li>) ?? <li className="py-2 text-xs text-stone-600">尚无恢复点</li>}</ul>
         </div>
+        <ConfirmDialog
+          body={restorePreview ? (
+            <div>
+              <p className="mt-0">{restorePreview.warning}</p>
+              <p className="mb-0 text-stone-400">恢复点：{restorePreview.label}<br />包含 {restorePreview.campaigns} 个跑团。恢复前系统会自动保存当前数据库。</p>
+            </div>
+          ) : null}
+          confirmLabel="确认恢复整个数据库"
+          loading={restore.isPending}
+          onCancel={() => setRestorePreview(null)}
+          onConfirm={() => restore.mutate()}
+          open={restorePreview !== null}
+          title="恢复 SQLite 一致性快照"
+        />
       </Panel>
 
       <Panel className="mt-4" eyebrow="故障隔离" title="只读安全模式与启动诊断">

@@ -574,6 +574,16 @@ def _dungeon_layout(
         point = (rect.center[0], min(rect.right, rect.center[1] + 1))
         if lookup[point]["kind"] == "floor":
             lookup[point].update(kind="cover", label="岩柱", blocks_sight=True)
+    # Later corridor carving and room labels may cross an earlier connector.
+    # Re-assert connector cells after all decorative passes so persisted
+    # connector metadata always lands on a real door cell.
+    for connector in connectors:
+        position = connector["position"]
+        lookup[(int(position["row"]), int(position["col"]))].update(
+            kind="door",
+            label="暗门" if connector["connector_type"] == "secret_door" else "门",
+            blocks_sight=connector["connector_type"] == "secret_door",
+        )
     return {
         "width": width,
         "height": height,
@@ -752,14 +762,41 @@ def generate_site(data: dict[str, Any]) -> dict[str, Any]:
     for current, following in zip(levels, levels[1:], strict=False):
         from_bounds = current["rooms"][-1]["bounds"]
         to_bounds = following["rooms"][0]["bounds"]
-        from_position = {
-            "row": int(from_bounds["row"]) + int(from_bounds["height"]) // 2,
-            "col": int(from_bounds["col"]) + int(from_bounds["width"]) // 2,
-        }
-        to_position = {
-            "row": int(to_bounds["row"]) + int(to_bounds["height"]) // 2,
-            "col": int(to_bounds["col"]) + int(to_bounds["width"]) // 2,
-        }
+        def stair_position(
+            level: dict[str, Any], bounds: dict[str, Any]
+        ) -> dict[str, int]:
+            occupied = {
+                (int(connector["position"]["row"]), int(connector["position"]["col"]))
+                for connector in level["connectors"]
+            }
+            center = (
+                int(bounds["row"]) + int(bounds["height"]) // 2,
+                int(bounds["col"]) + int(bounds["width"]) // 2,
+            )
+            cells = {
+                (int(cell["row"]), int(cell["col"])): cell
+                for cell in level["layout"]["cells"]
+            }
+            candidates = [
+                (row, col)
+                for row in range(int(bounds["row"]), int(bounds["row"]) + int(bounds["height"]))
+                for col in range(int(bounds["col"]), int(bounds["col"]) + int(bounds["width"]))
+                if (row, col) not in occupied
+                and cells.get((row, col), {}).get("kind") in {"floor", "room"}
+            ]
+            if not candidates:
+                raise ValueError("could not place a non-overlapping staircase")
+            row, col = min(
+                candidates,
+                key=lambda point: (
+                    abs(point[0] - center[0]) + abs(point[1] - center[1]),
+                    point,
+                ),
+            )
+            return {"row": row, "col": col}
+
+        from_position = stair_position(current, from_bounds)
+        to_position = stair_position(following, to_bounds)
         for cell in current["layout"]["cells"]:
             if cell["row"] == from_position["row"] and cell["col"] == from_position["col"]:
                 cell.update(kind="stairs", label="向下楼梯", blocks_sight=False)

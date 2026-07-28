@@ -1,24 +1,26 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import type { ReactElement } from "react";
+import { lazy, Suspense, type ReactElement } from "react";
 
 import { AppShell } from "./components/AppShell";
 import { useHashRoute } from "./hooks/useHashRoute";
 import { AssistantPrefillProvider, CampaignProvider } from "./hooks/providers";
-import { DashboardPage } from "./pages/DashboardPage";
-import { AssistantPage } from "./pages/AssistantPage";
-import { RulesPage } from "./pages/RulesPage";
-import { ProposalsPage } from "./pages/ProposalsPage";
-import { ManagementPage } from "./pages/ManagementPage";
-import { CombatPage } from "./pages/CombatPage";
-import { StoryManagementPage } from "./pages/StoryManagementPage";
 import { ToastProvider } from "./components/ToastProvider";
-import { SettingsPage } from "./pages/SettingsPage";
-import { NpcPage } from "./pages/NpcPage";
-import { LocationsPage } from "./pages/LocationsPage";
-import { InventoryPage } from "./pages/InventoryPage";
-import { ScenesPage } from "./pages/ScenesPage";
-import { GameTablePage } from "./pages/GameTablePage";
-import { PlayerPage } from "./pages/PlayerPage";
+import { LoadingBlock } from "./ui/primitives";
+
+const DashboardPage = lazy(() => import("./pages/DashboardPage").then((module) => ({ default: module.DashboardPage })));
+const AssistantPage = lazy(() => import("./pages/AssistantPage").then((module) => ({ default: module.AssistantPage })));
+const RulesPage = lazy(() => import("./pages/RulesPage").then((module) => ({ default: module.RulesPage })));
+const ProposalsPage = lazy(() => import("./pages/ProposalsPage").then((module) => ({ default: module.ProposalsPage })));
+const ManagementPage = lazy(() => import("./pages/ManagementPage").then((module) => ({ default: module.ManagementPage })));
+const CombatPage = lazy(() => import("./pages/CombatPage").then((module) => ({ default: module.CombatPage })));
+const StoryManagementPage = lazy(() => import("./pages/StoryManagementPage").then((module) => ({ default: module.StoryManagementPage })));
+const SettingsPage = lazy(() => import("./pages/SettingsPage").then((module) => ({ default: module.SettingsPage })));
+const NpcPage = lazy(() => import("./pages/NpcPage").then((module) => ({ default: module.NpcPage })));
+const LocationsPage = lazy(() => import("./pages/LocationsPage").then((module) => ({ default: module.LocationsPage })));
+const InventoryPage = lazy(() => import("./pages/InventoryPage").then((module) => ({ default: module.InventoryPage })));
+const ScenesPage = lazy(() => import("./pages/ScenesPage").then((module) => ({ default: module.ScenesPage })));
+const GameTablePage = lazy(() => import("./pages/GameTablePage").then((module) => ({ default: module.GameTablePage })));
+const PlayerPage = lazy(() => import("./pages/PlayerPage").then((module) => ({ default: module.PlayerPage })));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -73,7 +75,11 @@ export function App(): ReactElement {
     <QueryClientProvider client={queryClient}>
       <CampaignProvider>
         <ToastProvider>
-          <AssistantPrefillProvider>{route === "/player" ? <PlayerPage /> : <AppShell><RoutedPage /></AppShell>}</AssistantPrefillProvider>
+          <AssistantPrefillProvider>
+            <Suspense fallback={<LoadingBlock label="正在载入工作区…" />}>
+              {route === "/player" ? <PlayerPage /> : <AppShell><RoutedPage /></AppShell>}
+            </Suspense>
+          </AssistantPrefillProvider>
         </ToastProvider>
       </CampaignProvider>
     </QueryClientProvider>

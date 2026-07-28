@@ -4,7 +4,7 @@ from datetime import UTC, datetime
 from typing import Any, TypeVar
 
 from sqlalchemy import delete as sa_delete
-from sqlalchemy import update
+from sqlalchemy import select, update
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
@@ -18,6 +18,7 @@ from dnd_dm_assistant.infrastructure.database.campaign_repository import (
 )
 from dnd_dm_assistant.infrastructure.database.models import (
     NPC,
+    AdventureSite,
     AuditLog,
     Campaign,
     Character,
@@ -33,6 +34,8 @@ from dnd_dm_assistant.infrastructure.database.models import (
     Quest,
     Scene,
     SceneParticipant,
+    SiteLevel,
+    SiteRoom,
     WorldItem,
 )
 
@@ -516,6 +519,21 @@ class SqlAlchemyCampaignStateGateway:
                 raise NotFoundError(f"{entity_type} not found")
             if int(entity.version) != expected_version:
                 raise VersionConflict(entity_type, entity_id, expected_version, int(entity.version))
+            if entity_type == "location":
+                managed = session.scalar(
+                    select(AdventureSite.id).where(AdventureSite.location_id == entity_id)
+                )
+                managed = managed or session.scalar(
+                    select(SiteLevel.id).where(SiteLevel.location_id == entity_id)
+                )
+                managed = managed or session.scalar(
+                    select(SiteRoom.id).where(SiteRoom.location_id == entity_id)
+                )
+                if managed is not None:
+                    raise ValueError(
+                        "generated site locations must be deleted through "
+                        "the adventure site endpoint"
+                    )
             before = serialize(entity)
             audit_campaign = self._resolve_campaign_id(session, entity_type, entity)
             # Campaign deletion retains a tombstone audit record via SET NULL FK.
@@ -551,6 +569,28 @@ class SqlAlchemyCampaignStateGateway:
                 "combat", campaign_id=campaign_id, limit=limit, open_only=True
             ),
             as_of=now,
+        )
+
+    def export_campaign_backup(self, campaign_id: str) -> dict[str, Any]:
+        from dnd_dm_assistant.infrastructure.database.backup_service import (
+            CampaignBackupStore,
+        )
+
+        return CampaignBackupStore(self.engine).export(campaign_id)
+
+    def import_campaign_backup(
+        self,
+        backup: dict[str, Any],
+        *,
+        name: str | None,
+        request_id: str,
+    ) -> dict[str, Any]:
+        from dnd_dm_assistant.infrastructure.database.backup_service import (
+            CampaignBackupStore,
+        )
+
+        return CampaignBackupStore(self.engine).import_backup(
+            backup, name=name, request_id=request_id
         )
 
     def _ensure_campaign(self, session: Session, campaign_id: str) -> Campaign:

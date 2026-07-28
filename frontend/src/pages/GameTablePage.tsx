@@ -83,6 +83,78 @@ function SessionStatusBar({ characters, npcs, events }: { characters: { name: st
   return <Panel className="mb-4" eyebrow="统一状态栏 · 已确认事实" title="队伍、关系与未解决事项"><div className="grid gap-3 text-xs md:grid-cols-3"><div><strong>队伍</strong><p className="mb-0 mt-1 text-stone-500">{characters.map((c) => `${c.name} ${c.hp}/${c.max_hp}`).join("、") || "—"}</p></div><div><strong>NPC 态度</strong><p className="mb-0 mt-1 text-stone-500">{npcs.slice(0, 3).map((n) => `${n.name}·${n.attitude ?? "未定"}`).join("、") || "—"}</p></div><div><strong>未解决事项</strong><p className="mb-0 mt-1 text-stone-500">{events.slice(-3).map((e) => e.title).join("、") || "暂无"}</p></div></div></Panel>;
 }
 
+function SessionReadiness({
+  characterCount,
+  sceneCount,
+  hasActiveScene,
+  participantCount,
+  hasGrid,
+  onPrep,
+}: {
+  characterCount: number;
+  sceneCount: number;
+  hasActiveScene: boolean;
+  participantCount: number;
+  hasGrid: boolean;
+  onPrep: () => void;
+}): ReactElement {
+  const steps = [
+    {
+      label: "玩家角色",
+      ready: characterCount > 0,
+      detail: characterCount > 0 ? `${characterCount} 名可用` : "还没有玩家角色",
+      action: () => navigate("/characters"),
+      actionLabel: "去创建角色",
+    },
+    {
+      label: "章节与 Scene",
+      ready: sceneCount > 0,
+      detail: sceneCount > 0 ? `${sceneCount} 个 Scene` : "还没有冒险场景",
+      action: onPrep,
+      actionLabel: "开始备团",
+    },
+    {
+      label: "当前 Scene",
+      ready: hasActiveScene && hasGrid,
+      detail: !hasActiveScene ? "请选择当前 Scene" : hasGrid ? "地图已就绪" : "地图尚未生成",
+      action: onPrep,
+      actionLabel: "检查 Scene",
+    },
+    {
+      label: "在场成员",
+      ready: participantCount > 0,
+      detail: participantCount > 0 ? `${participantCount} 个单位在场` : "尚未将角色或 NPC 加入场景",
+      action: () => {
+        document.getElementById("scene-participant-workspace")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      },
+      actionLabel: "添加在场成员",
+    },
+  ];
+  const completed = steps.filter((step) => step.ready).length;
+  if (completed === steps.length) return <></>;
+  const next = steps.find((step) => !step.ready);
+  return (
+    <section className="mb-4 rounded-xl border border-amber-700/45 bg-amber-950/15 p-3" aria-label="开团准备度">
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="mr-auto">
+          <strong className="block text-sm text-amber-100">开团准备度 · {completed}/{steps.length}</strong>
+          <span className="text-2xs text-stone-500">按顺序补齐即可开始；已经完成的内容不会被改动。</span>
+        </div>
+        {next ? <Button onClick={next.action} size="sm" variant="primary">{next.actionLabel}</Button> : null}
+      </div>
+      <ol className="mt-3 grid list-none gap-2 p-0 sm:grid-cols-2 xl:grid-cols-4">
+        {steps.map((step, index) => (
+          <li className={`rounded border p-2 ${step.ready ? "border-emerald-800/55 bg-emerald-950/15" : index === completed ? "border-amber-700/55 bg-amber-950/20" : "border-ink-700 bg-ink-950/40"}`} key={step.label}>
+            <span className={`text-2xs ${step.ready ? "text-emerald-300" : "text-stone-500"}`}>{step.ready ? "✓ 已完成" : `${index + 1} · 待完成`}</span>
+            <strong className="mt-1 block text-xs text-parchment-100">{step.label}</strong>
+            <span className="text-2xs text-stone-500">{step.detail}</span>
+          </li>
+        ))}
+      </ol>
+    </section>
+  );
+}
+
 function DmSceneActionPanel({
   campaignId,
   characters,
@@ -1410,6 +1482,14 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
   );
   return (
     <div className="mx-auto max-w-[1500px] p-4 lg:p-6">
+      <SessionReadiness
+        characterCount={characters.data?.length ?? 0}
+        hasActiveScene={Boolean(activeScene)}
+        hasGrid={Boolean(sceneGrid.data)}
+        onPrep={() => setTableMode("prep")}
+        participantCount={participants.data?.length ?? 0}
+        sceneCount={scenes.data?.length ?? 0}
+      />
       <PlayerRoomPanel
         campaignId={campaignId}
         characters={characters.data ?? []}
@@ -1643,6 +1723,7 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
       </Panel> : null}
       {tableMode === "play" ? <div className="mt-4 grid gap-4 xl:h-[calc(100vh-10rem)] xl:grid-cols-[0.8fr_1.4fr_0.8fr] xl:overflow-hidden">
         <div className="space-y-4 xl:min-h-0 xl:overflow-y-auto xl:pr-1">
+        <div id="scene-participant-workspace">
         <Panel eyebrow="情景状态" title="当前在场">
           <div className="flex gap-2"><select className={selectCls} onChange={(event) => setEntityKey(event.target.value)} value={entityKey}><option value="">选择进入人物</option>{availableCandidates.map((candidate) => <option key={candidate.key} value={candidate.key}>{candidate.label}</option>)}</select><Button disabled={!entityKey} loading={participantAdd.isPending} onClick={() => participantAdd.mutate()} size="sm">进入</Button></div>
           <div className="mt-2"><RestPanel campaignId={campaignId} characters={characters.data ?? []} compact defaultCharacterIds={(participants.data ?? []).filter((item) => item.entity_type === "character").map((item) => item.entity_id)} /></div>
@@ -1651,6 +1732,7 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
           <p className="mb-0 mt-3 text-2xs text-stone-600">点击任意卡片查看完整原子详情；这里负责把角色、NPC、怪物汇合到当前 Scene。</p>
           <ul className="m-0 mt-2 space-y-2 p-0">{participants.data?.map((participant) => <li className="list-none" key={participant.id}><div aria-label={`查看${participant.entity.name}详情`} className="w-full cursor-pointer rounded border border-ink-700 bg-ink-950/50 p-2 text-left transition hover:border-violet-600 hover:bg-ink-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400" onClick={() => setDetailParticipant(participant)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); setDetailParticipant(participant); } }} role="button" tabIndex={0}><div className="flex items-center gap-2"><Badge tone={participant.entity_type === "character" ? "ok" : participant.entity_type === "npc" ? "ai" : "danger"}>{participant.entity_type === "character" ? "玩家" : participant.entity_type === "npc" ? "NPC" : "怪物"}</Badge>{participant.role === "defeated" ? <Badge>已击败</Badge> : null}<strong className="min-w-0 flex-1 truncate text-xs text-parchment-100">{participant.entity.name}</strong><Button loading={participantRemove.isPending} onClick={(event) => { event.stopPropagation(); participantRemove.mutate(participant); }} size="sm">离开</Button></div><div className="mt-2"><HpBar hp={participant.entity.hp} maxHp={participant.entity.max_hp} /></div><p className="mb-0 mt-1 text-2xs text-stone-600">AC {participant.entity.armor_class} · 速度 {participant.entity.speed} · 点击查看详情</p></div></li>)}</ul>
         </Panel>
+        </div>
           <Panel eyebrow="DM 帷幕" title="当前提示">
             <p className="prose-block m-0 text-sm text-stone-300">{lastResponse?.dm_hint?.text ? safeDndText(withoutSceneTransitionMarker(lastResponse.dm_hint.text)) : "副 DM 的推进建议、NPC 反应和风险会显示在这里。"}</p>
             {lastResponse?.dm_hint?.uncertainties.length ? <ul className="mb-0 mt-3 pl-4 text-xs text-amber-300">{lastResponse.dm_hint.uncertainties.map((item) => <li key={item}>{item}</li>)}</ul> : null}

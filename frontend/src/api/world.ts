@@ -58,6 +58,7 @@ export type SiteGenerationPreview = {
 };
 export type AdventureSite = SiteGenerationPreview["site"] & {
   id: string;
+  version: number;
   region_map_id: string;
   location_id: string;
   map_position: { row: number; col: number };
@@ -97,6 +98,16 @@ export async function listAdventureSites(campaignId: string, signal?: AbortSigna
 
 export function getAdventureSite(campaignId: string, siteId: string, signal?: AbortSignal): Promise<AdventureSite> {
   return apiFetch(`/campaigns/${campaignId}/sites/${siteId}`, { signal });
+}
+
+export function deleteAdventureSite(
+  campaignId: string,
+  siteId: string,
+  version: number,
+): Promise<void> {
+  return apiFetch(`/campaigns/${campaignId}/sites/${siteId}?version=${version}`, {
+    method: "DELETE",
+  });
 }
 
 export async function listRegionMaps(campaignId: string, signal?: AbortSignal): Promise<RegionMap[]> {

@@ -15,6 +15,7 @@ import {
 import { useToast } from "../hooks/toastContext";
 import { Badge, Button, ErrorState, LoadingBlock } from "../ui/primitives";
 import { selectCls } from "../ui/styles";
+import { ConfirmDialog } from "../ui/widgets";
 import { Panel } from "./Panel";
 
 type CharacterOption = { id: string; name: string };
@@ -34,6 +35,7 @@ export function PlayerRoomPanel({
   const { showToast } = useToast();
   const [joinCode, setJoinCode] = useState("");
   const [assignments, setAssignments] = useState<Record<string, string>>({});
+  const [confirmAction, setConfirmAction] = useState<"rotate" | "close" | null>(null);
   const room = useQuery({
     queryKey: ["player-room-admin", campaignId],
     queryFn: ({ signal }) => getPlayerRoom(campaignId, signal),
@@ -50,6 +52,7 @@ export function PlayerRoomPanel({
   const open = useMutation({
     mutationFn: () => openPlayerRoom(campaignId),
     onSuccess: (result) => {
+      setConfirmAction(null);
       setJoinCode(result.join_code ?? "");
       client.setQueryData(["player-room-admin", campaignId], result);
       showToast("玩家房间已开启；房间码只会完整显示这一次");
@@ -59,6 +62,7 @@ export function PlayerRoomPanel({
   const close = useMutation({
     mutationFn: () => closePlayerRoom(campaignId),
     onSuccess: () => {
+      setConfirmAction(null);
       setJoinCode("");
       void invalidate();
       showToast("玩家房间已关闭，现有玩家会话已撤销");
@@ -123,11 +127,12 @@ export function PlayerRoomPanel({
         <Button
           loading={open.isPending}
           onClick={() => {
-            if (!active || window.confirm("轮换房间码会让当前玩家全部掉线，确定继续？")) open.mutate();
+            if (active) setConfirmAction("rotate");
+            else open.mutate();
           }}
           variant="primary"
         >{active ? "轮换房间码" : "开启玩家房间"}</Button>
-        {active ? <Button loading={close.isPending} onClick={() => { if (window.confirm("关闭后所有玩家会立即退出，确定关闭？")) close.mutate(); }} variant="danger">关闭房间</Button> : null}
+        {active ? <Button loading={close.isPending} onClick={() => setConfirmAction("close")} variant="danger">关闭房间</Button> : null}
       </div>
       {active ? (
         <>
@@ -237,6 +242,20 @@ export function PlayerRoomPanel({
           </div>
         </>
       ) : <p className="mb-0 mt-2 text-xs text-stone-500">开启后会生成 6 位房间码和局域网地址。完整 DM API 仍只监听本机，玩家无法读取 NPC 秘密或调用本地 AI。</p>}
+      <ConfirmDialog
+        body={confirmAction === "rotate"
+          ? "轮换后当前房间码立即失效，所有已连接玩家都会退出；他们需要使用新房间码重新加入。角色与团数据不会删除。"
+          : "关闭后所有玩家会立即退出，未提交的输入可能丢失；角色、Scene、战斗与公开日志仍会保留。"}
+        confirmLabel={confirmAction === "rotate" ? "确认轮换房间码" : "确认关闭房间"}
+        loading={open.isPending || close.isPending}
+        onCancel={() => setConfirmAction(null)}
+        onConfirm={() => {
+          if (confirmAction === "rotate") open.mutate();
+          if (confirmAction === "close") close.mutate();
+        }}
+        open={confirmAction !== null}
+        title={confirmAction === "rotate" ? "轮换玩家房间码" : "关闭玩家房间"}
+      />
     </Panel>
   );
 }
