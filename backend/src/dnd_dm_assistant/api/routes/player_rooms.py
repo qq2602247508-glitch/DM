@@ -306,6 +306,38 @@ def join_room(
     return payload
 
 
+@public_player_room_router.post("/switch", status_code=status.HTTP_201_CREATED)
+def switch_room(
+    body: JoinInput,
+    response: Response,
+    request: Request,
+    principal: Annotated[PlayerPrincipal, Depends(get_player_principal)],
+    service: Annotated[PlayerRoomService, Depends(get_player_room_service)],
+) -> dict[str, Any]:
+    rate_key = _join_rate_key(request)
+    if _join_rate_limited(rate_key):
+        raise HTTPException(status_code=429, detail="too many failed room join attempts")
+    try:
+        token, payload = service.join(body.join_code, body.display_name)
+    except ValueError as exc:
+        _record_join_failure(rate_key)
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    _clear_join_failures(rate_key)
+    _safe(lambda: service.logout(principal))
+    settings = request.app.state.settings
+    max_age = int(payload.pop("session_max_age_seconds"))
+    response.set_cookie(
+        key=PLAYER_SESSION_COOKIE,
+        value=token,
+        max_age=max_age,
+        httponly=True,
+        secure=False,
+        samesite="strict",
+        path=f"{settings.api_prefix}/player-room",
+    )
+    return payload
+
+
 @public_player_room_router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
 def logout(
     response: Response,

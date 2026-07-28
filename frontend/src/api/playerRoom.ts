@@ -446,6 +446,12 @@ export const joinPlayerRoom = (joinCode: string, displayName: string) =>
     { method: "POST", body: JSON.stringify({ join_code: joinCode, display_name: displayName }) },
   );
 
+export const switchPlayerRoom = (joinCode: string, displayName: string) =>
+  playerFetch<{ campaign: { id: string; name: string }; player: { id: string; display_name: string }; expires_at: string }>(
+    "/player-room/switch",
+    { method: "POST", body: JSON.stringify({ join_code: joinCode, display_name: displayName }) },
+  );
+
 export const getMyPlayerRoom = (signal?: AbortSignal) =>
   playerFetch<PlayerRoomSnapshot>("/player-room/me", { signal });
 

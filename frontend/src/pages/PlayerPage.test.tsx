@@ -80,6 +80,14 @@ describe("PlayerPage", () => {
     expect(screen.getByRole("heading", { name: "伊莱娜" })).toBeInTheDocument();
     expect(screen.getByText("法杖")).toBeInTheDocument();
     expect(screen.queryByText(/地精.*AC/)).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("button", { name: "切换跑团" }));
+    const roomCode = screen.getByRole("textbox", { name: "新团房间码" });
+    const switchButton = screen.getByRole("button", { name: "确认切换" });
+    expect(switchButton).toBeDisabled();
+    await userEvent.type(roomCode, "dqsa3e");
+    expect(roomCode).toHaveValue("DQSA3E");
+    expect(switchButton).toBeEnabled();
   });
 
   it("marks an ended battle read-only and keeps its public log visible", async () => {

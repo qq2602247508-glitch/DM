@@ -68,6 +68,39 @@ def test_room_code_is_salted_and_cookie_session_is_revocable(
     assert campaign_client.get("/api/v1/player-room/me").status_code == 401
 
 
+def test_player_can_safely_switch_to_another_campaign(
+    campaign_client: TestClient,
+) -> None:
+    campaign_a = _campaign(campaign_client, "A团")
+    campaign_b = _campaign(campaign_client, "B团")
+    room_a = _open(campaign_client, campaign_a["id"])
+    room_b = _open(campaign_client, campaign_b["id"])
+    joined_a = _join(campaign_client, room_a["join_code"])
+    old_session_id = joined_a["player"]["id"]
+    assert campaign_client.get("/api/v1/player-room/me").json()["campaign"]["id"] == campaign_a["id"]
+
+    rejected = campaign_client.post(
+        "/api/v1/player-room/switch",
+        json={"join_code": "DXXXXX", "display_name": "玩家甲"},
+    )
+    assert rejected.status_code == 400
+    assert campaign_client.get("/api/v1/player-room/me").json()["campaign"]["id"] == campaign_a["id"]
+
+    switched = campaign_client.post(
+        "/api/v1/player-room/switch",
+        json={"join_code": room_b["join_code"], "display_name": "玩家甲"},
+    )
+    assert switched.status_code == 201
+    assert switched.json()["campaign"]["id"] == campaign_b["id"]
+    assert campaign_client.get("/api/v1/player-room/me").json()["campaign"]["id"] == campaign_b["id"]
+
+    engine = create_engine(campaign_client.database_url)  # type: ignore[attr-defined]
+    with Session(engine) as session:
+        old_session = session.get(PlayerSession, old_session_id)
+        assert old_session is not None
+        assert old_session.status == "revoked"
+
+
 def test_player_equipment_is_scoped_to_bound_character(
     campaign_client: TestClient,
 ) -> None:

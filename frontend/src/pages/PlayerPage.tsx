@@ -16,6 +16,7 @@ import {
   searchPlayerRules,
   submitMyActionRequest,
   submitMyPlayerRoll,
+  switchPlayerRoom,
   type PlayerRoomSnapshot,
   type PlayerCombatant,
   type PlayerCombatSnapshot,
@@ -860,8 +861,14 @@ function PlayerDashboard({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; 
   const [intent, setIntent] = useState("");
   const [ruleText, setRuleText] = useState("");
   const [ruleHits, setRuleHits] = useState<Awaited<ReturnType<typeof searchPlayerRules>>>([]);
+  const [showRoomSwitch, setShowRoomSwitch] = useState(false);
+  const [switchCode, setSwitchCode] = useState("");
   const intentMutation = useMutation({ mutationFn: () => submitMyActionRequest("player_intent", intent), onSuccess: () => setIntent("") });
   const rulesMutation = useMutation({ mutationFn: () => searchPlayerRules(ruleText), onSuccess: setRuleHits });
+  const roomSwitchMutation = useMutation({
+    mutationFn: () => switchPlayerRoom(switchCode, snapshot.player.display_name),
+    onSuccess: () => window.location.reload(),
+  });
   useEffect(() => {
     if (snapshot.combat?.status === "active") setTab("combat");
   }, [snapshot.combat?.id, snapshot.combat?.status]);
@@ -870,8 +877,38 @@ function PlayerDashboard({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; 
       <header className="mb-4 flex flex-wrap items-center gap-3 border-b border-ink-700 pb-4">
         <div className="mr-auto"><p className="m-0 text-xs uppercase tracking-[.18em] text-amber-300">玩家辅助台 · {snapshot.player.display_name}</p><h1 className="mb-0 mt-1 font-display text-2xl">{snapshot.campaign.name}</h1></div>
         <span className="text-xs text-stone-500">{snapshot.character?.name}</span>
+        <Button onClick={() => setShowRoomSwitch((current) => !current)} size="sm" variant="primary">切换跑团</Button>
         <Button onClick={() => void logoutPlayerRoom().then(() => window.location.reload())} size="sm">退出房间</Button>
       </header>
+      {showRoomSwitch ? (
+        <section className="mb-4 rounded-xl border border-amber-700/70 bg-amber-950/20 p-4">
+          <strong className="text-sm text-amber-100">切换到 DM 当前发布的新团</strong>
+          <p className="mb-3 mt-1 text-xs leading-5 text-stone-400">
+            输入新团房间码。验证成功后才会离开“{snapshot.campaign.name}”；错误房间码不会影响当前会话。
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <input
+              aria-label="新团房间码"
+              autoCapitalize="characters"
+              className={`${inputCls} max-w-56 text-center font-mono tracking-[.2em]`}
+              maxLength={8}
+              onChange={(event) => setSwitchCode(event.target.value.toUpperCase())}
+              placeholder="6位房间码"
+              value={switchCode}
+            />
+            <Button
+              disabled={switchCode.trim().length < 6}
+              loading={roomSwitchMutation.isPending}
+              onClick={() => roomSwitchMutation.mutate()}
+              variant="primary"
+            >
+              确认切换
+            </Button>
+            <Button onClick={() => setShowRoomSwitch(false)}>取消</Button>
+          </div>
+          {roomSwitchMutation.isError ? <p className="mb-0 mt-2 text-sm text-red-300">{roomSwitchMutation.error.message}</p> : null}
+        </section>
+      ) : null}
       <nav className="mb-4 flex gap-2 overflow-x-auto">{([["table", "游戏推进"], ["character", "我的角色"], ["combat", snapshot.combat?.status === "active" ? "战斗中" : "战斗"], ["rules", "规则搜索"]] as const).map(([key, label]) => <Button key={key} onClick={() => setTab(key)} variant={tab === key ? "primary" : "ghost"}>{label}</Button>)}</nav>
       {tab === "character" && snapshot.character ? <CharacterView character={snapshot.character} onChanged={refresh} /> : null}
       {tab === "combat" ? <CombatView refresh={refresh} snapshot={snapshot} /> : null}
