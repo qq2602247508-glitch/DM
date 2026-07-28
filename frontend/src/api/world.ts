@@ -12,6 +12,90 @@ import type {
 
 type Items<T> = { items: T[] };
 
+export type SiteGenerationInput = {
+  site_type: "building" | "dungeon";
+  name: string;
+  brief: string;
+  region_path: string;
+  maximum_levels: number;
+  rooms_min: number;
+  rooms_max: number;
+  party_level: number;
+  party_size: number;
+  starting_difficulty: "low" | "moderate" | "high";
+  difficulty_growth: number;
+  monster_density: number;
+  reward_rate: number;
+  seed?: number;
+};
+export type SiteCell = { row: number; col: number; kind: string; label: string; blocks_sight?: boolean };
+export type SiteLevelPreview = {
+  level_index: number;
+  name: string;
+  description: string;
+  difficulty: "low" | "moderate" | "high";
+  encounter_budget_xp: number;
+  reward_budget_gp: number;
+  layout: { width: number; height: number; cell_size_ft: number; cells: SiteCell[] };
+  rooms: Array<{ room_index: number; name: string; room_type: string; description: string; bounds: Record<string, number> }>;
+  connectors: Array<Record<string, unknown>>;
+  monster_plan: Array<{ name: string; quantity: number; xp_each: number; source: string }>;
+  reward_plan: Array<{ name: string; value_gp: number }>;
+};
+export type SiteGenerationPreview = {
+  schema_version: string;
+  site: SiteGenerationInput & { theme: string; seed: number; generation_parameters: Record<string, unknown> };
+  region: { path: string[]; name: string };
+  levels: SiteLevelPreview[];
+  warnings: string[];
+};
+export type AdventureSite = SiteGenerationPreview["site"] & {
+  id: string;
+  region_map_id: string;
+  location_id: string;
+  map_position: { row: number; col: number };
+  status: string;
+  levels?: Array<SiteLevelPreview & { id: string; rooms: Array<Record<string, unknown>> }>;
+};
+export type RegionMap = {
+  id: string; name: string; width: number; height: number;
+  map_json: { pois?: Array<{ site_id: string; name: string; site_type: string; row: number; col: number }> };
+};
+
+export function previewSiteGeneration(
+  campaignId: string,
+  input: SiteGenerationInput,
+): Promise<SiteGenerationPreview> {
+  return apiFetch(`/campaigns/${campaignId}/sites/generate/preview`, {
+    method: "POST",
+    body: input,
+  });
+}
+
+export function confirmSiteGeneration(
+  campaignId: string,
+  preview: SiteGenerationPreview,
+  requestId: string,
+): Promise<AdventureSite> {
+  return apiFetch(`/campaigns/${campaignId}/sites/generate/confirm`, {
+    method: "POST",
+    body: { preview },
+    headers: { "X-Request-ID": requestId },
+  });
+}
+
+export async function listAdventureSites(campaignId: string, signal?: AbortSignal): Promise<AdventureSite[]> {
+  return (await apiFetch<{ sites: AdventureSite[] }>(`/campaigns/${campaignId}/sites`, { signal })).sites;
+}
+
+export function getAdventureSite(campaignId: string, siteId: string, signal?: AbortSignal): Promise<AdventureSite> {
+  return apiFetch(`/campaigns/${campaignId}/sites/${siteId}`, { signal });
+}
+
+export async function listRegionMaps(campaignId: string, signal?: AbortSignal): Promise<RegionMap[]> {
+  return (await apiFetch<{ region_maps: RegionMap[] }>(`/campaigns/${campaignId}/region-maps`, { signal })).region_maps;
+}
+
 export function generateNpc(
   campaignId: string,
   input: {

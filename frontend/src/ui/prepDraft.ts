@@ -1,4 +1,4 @@
-export type DraftKind = "location" | "scene" | "npc" | "monster" | "quest" | "clue" | "item";
+export type DraftKind = "location" | "building" | "dungeon" | "scene" | "npc" | "monster" | "quest" | "clue" | "item";
 export type DraftSceneOutline = {
   chapterTitle: string;
   sceneOrder: number;
@@ -14,6 +14,7 @@ export type DraftAtom = {
   kind: DraftKind;
   name: string;
   description: string;
+  siteConfig?: { regionPath: string; maximumLevels: number };
   sceneOutline?: DraftSceneOutline;
 };
 
@@ -21,6 +22,7 @@ const DRAFT_HEADINGS: Record<string, DraftKind> = {
   "地点": "location", "地点与场景": "location", "场景": "scene", "npc": "npc", "NPC": "npc",
   "怪物": "monster", "敌人与怪物": "monster", "任务": "quest",
   "线索": "clue", "物品": "item", "奖励与物品": "item",
+  "建筑": "building", "地下城": "dungeon",
 };
 
 function includesAny(text: string, words: string[]): boolean {
@@ -50,6 +52,8 @@ export function buildFallbackPrepDraft(brief: string): string {
 ## 场景
 - 第一章｜1｜${firstScene}｜让玩家认识彼此并了解眼前局势｜描述${locationName}与在场人物，请每名玩家介绍角色｜通过店主、旅客或现场细节给出行动切入点｜异动打断集结，${monsterName}威胁现场｜玩家决定交涉、保护平民或迎战｜威胁出现时进入下一Scene
 - 第一章｜2｜${monsterName}突袭｜处理突袭并保护现场｜从入口、暗处或混乱人群中展示敌人出现｜让玩家利用环境、交涉或准备战斗｜敌人改变位置或威胁无辜者｜击退、制服或迫使敌人撤退｜战斗结算后调查敌人的来意
+## 建筑
+- ${locationName}｜${isBaldursGate ? "博德之门/下城区" : "新手村/中心区"}｜2｜包含集结大厅、后厨、客房、储藏室与门廊；楼层和房间以门连接。
 ## NPC
 - 酒馆老板｜熟悉本地消息，会优先保护客人与财物，可向玩家提供目击线索。
 ## 怪物
@@ -111,10 +115,40 @@ export function parsePrepDraft(text: string): DraftAtom[] {
     const [rawName, ...rest] = parts;
     const name = rawName?.replace(/\*\*/g, "").replace(/[：:]$/, "").trim();
     if (!name) continue;
-    atoms.push({
-      id: createClientId("prep"), kind: currentKind, name,
-      description: rest.join("｜").trim() || `${name}（来自备团草稿）`,
-    });
+    if ((currentKind === "building" || currentKind === "dungeon") && parts.length >= 4) {
+      const [, regionPath, rawLevels, ...description] = parts;
+      atoms.push({
+        id: createClientId("prep"), kind: currentKind, name,
+        description: description.join("｜").trim() || `${name}（来自备团草稿）`,
+        siteConfig: {
+          regionPath: regionPath || "未归类区域",
+          maximumLevels: Math.max(1, Math.min(20, Number(rawLevels) || 1)),
+        },
+      });
+    } else {
+      atoms.push({
+        id: createClientId("prep"), kind: currentKind, name,
+        description: rest.join("｜").trim() || `${name}（来自备团草稿）`,
+      });
+    }
+  }
+  if (!atoms.some((atom) => atom.kind === "building" || atom.kind === "dungeon")) {
+    const candidate = atoms.find((atom) => atom.kind === "location" && (
+      /地下城|地牢|矿坑|洞穴|遗迹|宅邸|酒馆|旅店|教堂|塔楼|城堡/.test(`${atom.name}${atom.description}`)
+    ));
+    if (candidate) {
+      const dungeon = /地下城|地牢|矿坑|洞穴|遗迹/.test(`${candidate.name}${candidate.description}`);
+      atoms.push({
+        id: createClientId("prep"),
+        kind: dungeon ? "dungeon" : "building",
+        name: candidate.name,
+        description: candidate.description,
+        siteConfig: {
+          regionPath: "未归类区域",
+          maximumLevels: dungeon ? 3 : 2,
+        },
+      });
+    }
   }
   return atoms;
 }

@@ -288,6 +288,164 @@ class LocationConnection(Timestamped, Base):
     )
 
 
+class RegionMap(Timestamped, Base):
+    __tablename__ = "region_maps"
+    campaign_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("campaigns.id", ondelete="CASCADE"), nullable=False
+    )
+    location_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("locations.id", ondelete="CASCADE"), nullable=False
+    )
+    name: Mapped[str] = mapped_column(String(200), nullable=False)
+    description: Mapped[str | None] = mapped_column(Text)
+    width: Mapped[int] = mapped_column(Integer, nullable=False, default=24, server_default="24")
+    height: Mapped[int] = mapped_column(Integer, nullable=False, default=16, server_default="16")
+    seed: Mapped[int] = mapped_column(Integer, nullable=False)
+    map_json: Mapped[dict[str, object]] = mapped_column(
+        JSON, nullable=False, default=dict, server_default="{}"
+    )
+    __table_args__ = (
+        CheckConstraint("width >= 8 AND width <= 100", name="ck_region_map_width"),
+        CheckConstraint("height >= 8 AND height <= 100", name="ck_region_map_height"),
+        UniqueConstraint("campaign_id", "location_id", name="uq_region_map_location"),
+        Index("ix_region_maps_campaign_created", "campaign_id", "created_at", "id"),
+    )
+
+
+class AdventureSite(Timestamped, Base):
+    __tablename__ = "adventure_sites"
+    campaign_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("campaigns.id", ondelete="CASCADE"), nullable=False
+    )
+    region_map_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("region_maps.id", ondelete="CASCADE"), nullable=False
+    )
+    location_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("locations.id", ondelete="CASCADE"), nullable=False
+    )
+    site_type: Mapped[str] = mapped_column(String(20), nullable=False)
+    name: Mapped[str] = mapped_column(String(200), nullable=False)
+    brief: Mapped[str] = mapped_column(Text, nullable=False)
+    theme: Mapped[str] = mapped_column(String(100), nullable=False)
+    seed: Mapped[int] = mapped_column(Integer, nullable=False)
+    maximum_levels: Mapped[int] = mapped_column(Integer, nullable=False)
+    party_level: Mapped[int] = mapped_column(Integer, nullable=False)
+    party_size: Mapped[int] = mapped_column(Integer, nullable=False)
+    generation_parameters: Mapped[dict[str, object]] = mapped_column(
+        JSON, nullable=False, default=dict, server_default="{}"
+    )
+    map_position: Mapped[dict[str, int]] = mapped_column(
+        JSON, nullable=False, default=dict, server_default="{}"
+    )
+    status: Mapped[str] = mapped_column(
+        String(20), nullable=False, default="active", server_default="active"
+    )
+    generation_request_id: Mapped[str | None] = mapped_column(String(100))
+    __table_args__ = (
+        CheckConstraint("site_type IN ('building','dungeon')", name="ck_site_type"),
+        CheckConstraint("maximum_levels >= 1 AND maximum_levels <= 20", name="ck_site_levels"),
+        CheckConstraint("party_level >= 1 AND party_level <= 20", name="ck_site_party_level"),
+        CheckConstraint("party_size >= 1 AND party_size <= 12", name="ck_site_party_size"),
+        CheckConstraint("status IN ('draft','active','archived')", name="ck_site_status"),
+        UniqueConstraint("campaign_id", "location_id", name="uq_site_location"),
+        UniqueConstraint("campaign_id", "generation_request_id", name="uq_site_generation_request"),
+        Index("ix_sites_campaign_region", "campaign_id", "region_map_id", "created_at", "id"),
+    )
+
+
+class SiteLevel(Timestamped, Base):
+    __tablename__ = "site_levels"
+    site_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("adventure_sites.id", ondelete="CASCADE"), nullable=False
+    )
+    location_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("locations.id", ondelete="CASCADE"), nullable=False
+    )
+    level_index: Mapped[int] = mapped_column(Integer, nullable=False)
+    name: Mapped[str] = mapped_column(String(200), nullable=False)
+    description: Mapped[str | None] = mapped_column(Text)
+    difficulty: Mapped[str] = mapped_column(String(20), nullable=False)
+    encounter_budget_xp: Mapped[int] = mapped_column(Integer, nullable=False)
+    reward_budget_gp: Mapped[int] = mapped_column(Integer, nullable=False)
+    layout_json: Mapped[dict[str, object]] = mapped_column(
+        JSON, nullable=False, default=dict, server_default="{}"
+    )
+    generation_json: Mapped[dict[str, object]] = mapped_column(
+        JSON, nullable=False, default=dict, server_default="{}"
+    )
+    __table_args__ = (
+        CheckConstraint("level_index >= 1 AND level_index <= 20", name="ck_site_level_index"),
+        CheckConstraint("difficulty IN ('low','moderate','high')", name="ck_site_level_difficulty"),
+        CheckConstraint("encounter_budget_xp >= 0", name="ck_site_level_xp"),
+        CheckConstraint("reward_budget_gp >= 0", name="ck_site_level_reward"),
+        UniqueConstraint("site_id", "level_index", name="uq_site_level_index"),
+        Index("ix_site_levels_site_index", "site_id", "level_index", "id"),
+    )
+
+
+class SiteRoom(Timestamped, Base):
+    __tablename__ = "site_rooms"
+    site_level_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("site_levels.id", ondelete="CASCADE"), nullable=False
+    )
+    location_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("locations.id", ondelete="CASCADE"), nullable=False
+    )
+    room_index: Mapped[int] = mapped_column(Integer, nullable=False)
+    name: Mapped[str] = mapped_column(String(200), nullable=False)
+    room_type: Mapped[str] = mapped_column(String(50), nullable=False)
+    description: Mapped[str | None] = mapped_column(Text)
+    bounds_json: Mapped[dict[str, int]] = mapped_column(
+        JSON, nullable=False, default=dict, server_default="{}"
+    )
+    encounter_json: Mapped[dict[str, object]] = mapped_column(
+        JSON, nullable=False, default=dict, server_default="{}"
+    )
+    reward_json: Mapped[dict[str, object]] = mapped_column(
+        JSON, nullable=False, default=dict, server_default="{}"
+    )
+    interactive_objects: Mapped[list[object]] = mapped_column(
+        JSON, nullable=False, default=list, server_default="[]"
+    )
+    __table_args__ = (
+        CheckConstraint("room_index >= 1", name="ck_site_room_index"),
+        UniqueConstraint("site_level_id", "room_index", name="uq_site_room_index"),
+        Index("ix_site_rooms_level_index", "site_level_id", "room_index", "id"),
+    )
+
+
+class SiteConnector(Timestamped, Base):
+    __tablename__ = "site_connectors"
+    site_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("adventure_sites.id", ondelete="CASCADE"), nullable=False
+    )
+    from_level_index: Mapped[int] = mapped_column(Integer, nullable=False)
+    from_room_index: Mapped[int | None] = mapped_column(Integer)
+    to_level_index: Mapped[int] = mapped_column(Integer, nullable=False)
+    to_room_index: Mapped[int | None] = mapped_column(Integer)
+    connector_type: Mapped[str] = mapped_column(String(20), nullable=False)
+    label: Mapped[str] = mapped_column(String(200), nullable=False)
+    state: Mapped[str] = mapped_column(
+        String(20), nullable=False, default="closed", server_default="closed"
+    )
+    position_json: Mapped[dict[str, int]] = mapped_column(
+        JSON, nullable=False, default=dict, server_default="{}"
+    )
+    metadata_json: Mapped[dict[str, object]] = mapped_column(
+        JSON, nullable=False, default=dict, server_default="{}"
+    )
+    __table_args__ = (
+        CheckConstraint(
+            "connector_type IN ('door','stairs_up','stairs_down','secret_door','portal')",
+            name="ck_site_connector_type",
+        ),
+        CheckConstraint(
+            "state IN ('open','closed','locked','hidden')", name="ck_site_connector_state"
+        ),
+        Index("ix_site_connectors_site_levels", "site_id", "from_level_index", "to_level_index"),
+    )
+
+
 class Quest(Timestamped, Base):
     __tablename__ = "quests"
     campaign_id: Mapped[str] = mapped_column(

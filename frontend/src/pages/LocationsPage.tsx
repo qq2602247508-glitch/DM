@@ -17,6 +17,7 @@ import {
 import { CitationList } from "../components/Citations";
 import { Panel } from "../components/Panel";
 import { RequireCampaign } from "../components/RequireCampaign";
+import { SiteMapWorkbench } from "../components/SiteMapWorkbench";
 import { useToast } from "../hooks/toastContext";
 import { Badge, Button, EmptyState, ErrorState, LoadingBlock } from "../ui/primitives";
 import { inputCls, selectCls, textareaCls } from "../ui/styles";
@@ -221,6 +222,7 @@ function LocationsContent({ campaignId }: { campaignId: string }): ReactElement 
   }, [locations.data]);
   return (
     <div className="mx-auto max-w-[1200px] p-4 lg:p-6">
+      <SiteMapWorkbench campaignId={campaignId} />
       <Panel eyebrow="冰山式世界结构" title="AI 地点树生成器">
         <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_9rem_9rem_auto]">
           <textarea className={textareaCls} onChange={(event) => setBrief(event.target.value)} value={brief} />

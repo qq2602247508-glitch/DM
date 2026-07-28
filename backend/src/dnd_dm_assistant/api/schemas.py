@@ -299,9 +299,7 @@ class RuleBlockCompileRequest(BaseModel):
 class CompanionCreate(BaseModel):
     owner_character_id: str = Field(min_length=1, max_length=36)
     name: str = Field(min_length=1, max_length=200)
-    companion_type: Literal[
-        "familiar", "animal_companion", "summon", "wild_shape", "form"
-    ]
+    companion_type: Literal["familiar", "animal_companion", "summon", "wild_shape", "form"]
     source_record_id: str | None = Field(default=None, max_length=100)
     template_json: dict[str, Any] = Field(default_factory=dict)
     hp: int = Field(1, ge=0)
@@ -714,9 +712,9 @@ class PlayerRollPromptCommand(BaseModel):
             raise ValueError("ability is required for a saving throw")
         if self.resolution_type == "skill_check" and not (self.skill or "").strip():
             raise ValueError("skill is required for a skill check")
-        if (
-            self.damage_on_success > 0 or self.damage_on_failure > 0
-        ) and not (self.damage_type or "").strip():
+        if (self.damage_on_success > 0 or self.damage_on_failure > 0) and not (
+            self.damage_type or ""
+        ).strip():
             raise ValueError("damage_type is required when the roll can deal damage")
         return self
 
@@ -853,9 +851,7 @@ class CombatSettlementCommand(BaseModel):
         character_ids = [award.character_id for award in self.xp_awards]
         if len(character_ids) != len(set(character_ids)):
             raise ValueError("xp_awards cannot contain duplicate characters")
-        currency_character_ids = [
-            award.character_id for award in self.currency_awards
-        ]
+        currency_character_ids = [award.character_id for award in self.currency_awards]
         if len(currency_character_ids) != len(set(currency_character_ids)):
             raise ValueError("currency_awards cannot contain duplicate characters")
         combatant_ids = [writeback.combatant_id for writeback in self.writebacks]
@@ -907,6 +903,7 @@ class NarrativePatch(NarrativeCreate):
 
 class NarrativeOperation(BaseModel):
     """One DM-reviewed narrative state change.  No operation is applied at preview time."""
+
     kind: Literal[
         "story_beat", "quest_objective", "reputation", "downtime", "quest_reward", "runtime"
     ]
@@ -919,9 +916,9 @@ class NarrativeOperation(BaseModel):
     xp_each: int | None = Field(default=None, ge=0, le=1_000_000)
     title: str | None = Field(default=None, max_length=200)
     detail: str | None = Field(default=None, max_length=5000)
-    mode: Literal[
-        "skill_challenge", "chase", "negotiation", "stealth", "investigation"
-    ] | None = None
+    mode: Literal["skill_challenge", "chase", "negotiation", "stealth", "investigation"] | None = (
+        None
+    )
     successes: int | None = Field(default=None, ge=0, le=99)
     failures: int | None = Field(default=None, ge=0, le=99)
 
@@ -1010,6 +1007,35 @@ class LocationGenerationRequest(BaseModel):
 
 class LocationGenerationConfirmRequest(BaseModel):
     preview: LocationGenerationPreview
+
+
+class SiteGenerationRequest(BaseModel):
+    site_type: Literal["building", "dungeon"]
+    name: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=200)]
+    brief: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=4_000)]
+    region_path: Annotated[
+        str, StringConstraints(strip_whitespace=True, min_length=1, max_length=500)
+    ]
+    maximum_levels: int = Field(default=1, ge=1, le=20)
+    rooms_min: int = Field(default=3, ge=2, le=9)
+    rooms_max: int = Field(default=7, ge=2, le=9)
+    party_level: int = Field(default=1, ge=1, le=20)
+    party_size: int = Field(default=4, ge=1, le=12)
+    starting_difficulty: Literal["low", "moderate", "high"] = "low"
+    difficulty_growth: int = Field(default=1, ge=0, le=2)
+    monster_density: int = Field(default=60, ge=0, le=100)
+    reward_rate: float = Field(default=1, ge=0.25, le=3)
+    seed: int | None = Field(default=None, ge=0, le=2_147_483_647)
+
+    @model_validator(mode="after")
+    def validate_room_range(self) -> SiteGenerationRequest:
+        if self.rooms_min > self.rooms_max:
+            raise ValueError("rooms_min cannot exceed rooms_max")
+        return self
+
+
+class SiteGenerationConfirmRequest(BaseModel):
+    preview: dict[str, Any]
 
 
 class WorldItemCreate(BaseModel):

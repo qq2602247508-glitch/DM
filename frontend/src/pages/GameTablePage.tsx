@@ -22,7 +22,7 @@ import type {
 } from "../api/types";
 import {
   addSceneParticipant, createMonster, createPersistentGrid, createScene, createWorldItem, generateNpc, getSceneGrid,
-  listMonsters, listSceneParticipants, listScenes,
+  listMonsters, listSceneParticipants, listScenes, previewSiteGeneration, confirmSiteGeneration,
   removeSceneParticipant, startSceneCombat,
 } from "../api/world";
 import { CharacterSheetDetail } from "../components/CharacterSheetDetail";
@@ -1163,6 +1163,28 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
       const defaultLocationName = [...locationIds.keys()][0] ?? "";
       for (const atom of selected) {
         if (atom.kind === "location") continue;
+        if (atom.kind === "building" || atom.kind === "dungeon") {
+          const sitePreview = await previewSiteGeneration(campaignId, {
+            site_type: atom.kind,
+            name: atom.name,
+            brief: atom.description,
+            region_path: atom.siteConfig?.regionPath ?? "未归类区域",
+            maximum_levels: atom.siteConfig?.maximumLevels ?? 1,
+            rooms_min: 3,
+            rooms_max: atom.kind === "dungeon" ? 9 : 7,
+            party_level: Math.max(
+              1,
+              Math.min(20, Math.max(...(characters.data ?? []).map((character) => character.level), 1)),
+            ),
+            party_size: Math.max(1, (characters.data ?? []).length || 4),
+            starting_difficulty: "low",
+            difficulty_growth: atom.kind === "dungeon" ? 2 : 1,
+            monster_density: atom.kind === "dungeon" ? 75 : 40,
+            reward_rate: 1,
+          });
+          await confirmSiteGeneration(campaignId, sitePreview, `prep-site-${atom.id}`);
+          continue;
+        }
         if (atom.kind === "scene") {
           const sceneOutline = atom.sceneOutline;
           const outline: SceneStoryOutline = {
@@ -1237,7 +1259,7 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
       return selected.length;
     },
     onSuccess: (count) => {
-      for (const key of ["locations", "scenes", "npcs", "monsters", "quests", "clues", "world-items"]) void client.invalidateQueries({ queryKey: [key, campaignId] });
+      for (const key of ["locations", "scenes", "npcs", "monsters", "quests", "clues", "world-items", "region-maps", "adventure-sites"]) void client.invalidateQueries({ queryKey: [key, campaignId] });
       showToast(`已确认导入 ${count} 个备团原子`);
       void log("导入备团草稿", `从备团草稿导入了 ${count} 个地点、场景、人物、任务或物品原子；每个Scene已绑定持久化战斗网格。`, { entry_kind: "system" });
     },
@@ -1509,7 +1531,7 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
             <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
               {draftAtoms.map((atom) => (
                 <label className={`rounded border p-3 ${selectedAtoms.has(atom.id) ? "border-ember-700/60 bg-ember-950/10" : "border-ink-700 bg-ink-950/40 opacity-60"}`} key={atom.id}>
-                  <div className="flex items-center gap-2"><input checked={selectedAtoms.has(atom.id)} onChange={(event) => setSelectedAtoms((current) => { const next = new Set(current); if (event.target.checked) next.add(atom.id); else next.delete(atom.id); return next; })} type="checkbox" /><Badge>{({ location: "地点", scene: "场景", npc: "NPC", monster: "怪物", quest: "任务", clue: "线索", item: "物品" } as const)[atom.kind]}</Badge></div>
+                  <div className="flex items-center gap-2"><input checked={selectedAtoms.has(atom.id)} onChange={(event) => setSelectedAtoms((current) => { const next = new Set(current); if (event.target.checked) next.add(atom.id); else next.delete(atom.id); return next; })} type="checkbox" /><Badge>{({ location: "地点", building: "建筑", dungeon: "地下城", scene: "场景", npc: "NPC", monster: "怪物", quest: "任务", clue: "线索", item: "物品" } as const)[atom.kind]}</Badge></div>
                   {atom.sceneOutline ? (
                     <div className="mt-2 grid grid-cols-[1fr_5rem] gap-2">
                       <input

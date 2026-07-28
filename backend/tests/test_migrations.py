@@ -43,4 +43,9 @@ def test_alembic_upgrades_empty_database(tmp_path: Path, monkeypatch: Any) -> No
         "combat_settlements",
         "handouts",
         "player_action_requests",
+        "region_maps",
+        "adventure_sites",
+        "site_levels",
+        "site_rooms",
+        "site_connectors",
     } <= tables

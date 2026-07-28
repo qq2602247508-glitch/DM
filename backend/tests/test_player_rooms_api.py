@@ -77,14 +77,20 @@ def test_player_can_safely_switch_to_another_campaign(
     room_b = _open(campaign_client, campaign_b["id"])
     joined_a = _join(campaign_client, room_a["join_code"])
     old_session_id = joined_a["player"]["id"]
-    assert campaign_client.get("/api/v1/player-room/me").json()["campaign"]["id"] == campaign_a["id"]
+    assert (
+        campaign_client.get("/api/v1/player-room/me").json()["campaign"]["id"]
+        == campaign_a["id"]
+    )
 
     rejected = campaign_client.post(
         "/api/v1/player-room/switch",
         json={"join_code": "DXXXXX", "display_name": "玩家甲"},
     )
     assert rejected.status_code == 400
-    assert campaign_client.get("/api/v1/player-room/me").json()["campaign"]["id"] == campaign_a["id"]
+    assert (
+        campaign_client.get("/api/v1/player-room/me").json()["campaign"]["id"]
+        == campaign_a["id"]
+    )
 
     switched = campaign_client.post(
         "/api/v1/player-room/switch",
@@ -92,7 +98,10 @@ def test_player_can_safely_switch_to_another_campaign(
     )
     assert switched.status_code == 201
     assert switched.json()["campaign"]["id"] == campaign_b["id"]
-    assert campaign_client.get("/api/v1/player-room/me").json()["campaign"]["id"] == campaign_b["id"]
+    assert (
+        campaign_client.get("/api/v1/player-room/me").json()["campaign"]["id"]
+        == campaign_b["id"]
+    )
 
     engine = create_engine(campaign_client.database_url)  # type: ignore[attr-defined]
     with Session(engine) as session:

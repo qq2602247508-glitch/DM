@@ -3,6 +3,18 @@ import { describe, expect, it } from "vitest";
 import { buildFallbackPrepDraft, parsePrepDraft } from "../ui/prepDraft";
 
 describe("parsePrepDraft", () => {
+  it("parses building and dungeon atoms with region paths and level caps", () => {
+    const atoms = parsePrepDraft(`
+## 建筑
+- 普罗宅邸｜深水城/海区｜3｜旧贵族宅邸与密室
+## 地下城
+- 低语矿坑｜深水城/北区｜5｜难度逐层递增的异怪矿坑
+`);
+    expect(atoms.map((atom) => atom.kind)).toEqual(["building", "dungeon"]);
+    expect(atoms[0]?.siteConfig).toEqual({ regionPath: "深水城/海区", maximumLevels: 3 });
+    expect(atoms[1]?.siteConfig?.maximumLevels).toBe(5);
+  });
+
   it("parses strict prep sections into importable atoms", () => {
     const atoms = parsePrepDraft(`
 ## 场景

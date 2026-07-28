@@ -8,6 +8,7 @@ from sqlalchemy.exc import IntegrityError
 from dnd_dm_assistant.api.dependencies import (
     get_campaign_service,
     get_exploration_service,
+    get_site_service,
     get_world_generation_service,
     get_world_service,
 )
@@ -25,6 +26,8 @@ from dnd_dm_assistant.api.schemas import (
     SceneObjectCreate,
     SceneParticipantCreate,
     SceneTokenCreate,
+    SiteGenerationConfirmRequest,
+    SiteGenerationRequest,
     TravelConfirmRequest,
     TravelPreviewRequest,
     WorldItemCreate,
@@ -35,6 +38,7 @@ from dnd_dm_assistant.application.world_generation import WorldGenerationService
 from dnd_dm_assistant.domain.campaign_state import StateNotFoundError, VersionConflict
 from dnd_dm_assistant.domain.world import LocationGenerationPreview, NPCGenerationPreview
 from dnd_dm_assistant.infrastructure.database.exploration_service import ExplorationService
+from dnd_dm_assistant.infrastructure.database.site_service import SiteService
 from dnd_dm_assistant.infrastructure.database.world_service import WorldService
 
 router = APIRouter(prefix="/campaigns/{campaign_id}", tags=["world"])
@@ -114,6 +118,52 @@ def confirm_location_generation(
             request_id=_request_id(request),
         )
     )
+
+
+@router.post("/sites/generate/preview")
+def preview_site_generation(
+    campaign_id: str,
+    body: SiteGenerationRequest,
+    service: Annotated[SiteService, Depends(get_site_service)],
+) -> dict[str, Any]:
+    return _safe_call(lambda: service.preview(body.model_dump()))
+
+
+@router.post("/sites/generate/confirm", status_code=status.HTTP_201_CREATED)
+def confirm_site_generation(
+    campaign_id: str,
+    body: SiteGenerationConfirmRequest,
+    request: Request,
+    service: Annotated[SiteService, Depends(get_site_service)],
+) -> dict[str, Any]:
+    return _safe_call(
+        lambda: service.confirm(campaign_id, body.preview, request_id=_request_id(request))
+    )
+
+
+@router.get("/region-maps")
+def list_region_maps(
+    campaign_id: str,
+    service: Annotated[SiteService, Depends(get_site_service)],
+) -> dict[str, Any]:
+    return {"region_maps": _safe_call(lambda: service.list_region_maps(campaign_id))}
+
+
+@router.get("/sites")
+def list_adventure_sites(
+    campaign_id: str,
+    service: Annotated[SiteService, Depends(get_site_service)],
+) -> dict[str, Any]:
+    return {"sites": _safe_call(lambda: service.list_sites(campaign_id))}
+
+
+@router.get("/sites/{site_id}")
+def get_adventure_site(
+    campaign_id: str,
+    site_id: str,
+    service: Annotated[SiteService, Depends(get_site_service)],
+) -> dict[str, Any]:
+    return _safe_call(lambda: service.get(campaign_id, site_id))
 
 
 @router.get("/items")
