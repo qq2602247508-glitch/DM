@@ -865,6 +865,63 @@ class SiteService:
                         select(SceneParticipant).where(SceneParticipant.scene_id == scene.id)
                     )
                 )
+                if not participants:
+                    generation = dict(level.generation_json or {})
+                    raw_plan = generation.get("monster_plan", [])
+                    monster_plan = raw_plan if isinstance(raw_plan, list) else []
+                    for raw_monster in monster_plan:
+                        if not isinstance(raw_monster, dict):
+                            continue
+                        room_index = _safe_int(raw_monster.get("room_index"), 1)
+                        target_room = room_by_index.get(room_index)
+                        xp_each = max(25, _safe_int(raw_monster.get("xp_each"), 25))
+                        quantity = max(1, min(12, _safe_int(raw_monster.get("quantity"), 1)))
+                        for copy_index in range(quantity):
+                            hp = max(5, round((xp_each**0.5) * 1.3))
+                            base_name = str(raw_monster.get("name") or "未命名怪物")
+                            monster = MonsterInstance(
+                                campaign_id=campaign_id,
+                                name=(
+                                    base_name if quantity == 1 else f"{base_name} {copy_index + 1}"
+                                ),
+                                source_name=str(raw_monster.get("source") or "generated_plan"),
+                                armor_class=min(22, 12 + int(site.party_level) // 4),
+                                hp=hp,
+                                max_hp=hp,
+                                speed=30,
+                                ability_scores={
+                                    "strength": 12,
+                                    "dexterity": 12,
+                                    "constitution": 12,
+                                    "intelligence": 10,
+                                    "wisdom": 10,
+                                    "charisma": 8,
+                                },
+                                actions=[
+                                    {
+                                        "name": "基础攻击",
+                                        "action_type": "action",
+                                        "range_ft": 5,
+                                        "damage": (f"1d8+{max(1, int(site.party_level) // 4)}"),
+                                    }
+                                ],
+                                notes=(
+                                    f"由旧版站点计划回填；房间 {room_index}："
+                                    f"{target_room.name if target_room else level.name}。"
+                                ),
+                            )
+                            session.add(monster)
+                            session.flush()
+                            participant = SceneParticipant(
+                                scene_id=scene.id,
+                                entity_type="monster",
+                                entity_id=monster.id,
+                                role="present",
+                                visible=False,
+                                notes="由旧版站点计划幂等回填；探索后揭示。",
+                            )
+                            session.add(participant)
+                            participants.append(participant)
                 for participant in participants:
                     key = (participant.entity_type, participant.entity_id)
                     if key in token_entities or participant.entity_id is None:
@@ -923,6 +980,41 @@ class SiteService:
                         )
                     )
                 )
+                if not rewards:
+                    generation = dict(level.generation_json or {})
+                    raw_rewards = generation.get("reward_plan", [])
+                    reward_plan = raw_rewards if isinstance(raw_rewards, list) else []
+                    for raw_reward in reward_plan:
+                        if not isinstance(raw_reward, dict):
+                            continue
+                        room_index = _safe_int(raw_reward.get("room_index"), 1)
+                        target_room = room_by_index.get(room_index)
+                        item = WorldItem(
+                            campaign_id=campaign_id,
+                            name=str(raw_reward.get("name") or "未命名战利品"),
+                            description="由旧版地下城奖励计划回填。",
+                            category=str(raw_reward.get("category") or "treasure"),
+                            quantity=max(1, _safe_int(raw_reward.get("quantity"), 1)),
+                            unit_weight_lb=0,
+                            price_cp=max(0, _safe_int(raw_reward.get("value_gp"), 0) * 100),
+                            source_label="ai_generated",
+                            location_id=(
+                                target_room.location_id
+                                if target_room is not None
+                                else level.location_id
+                            ),
+                            is_hidden=True,
+                            metadata_json={
+                                "site_id": site.id,
+                                "site_level": level.level_index,
+                                "room_index": room_index,
+                                "original": True,
+                                "backfilled": True,
+                            },
+                        )
+                        session.add(item)
+                        session.flush()
+                        rewards.append(item)
                 for item in rewards:
                     metadata = dict(item.metadata_json or {})
                     if (
