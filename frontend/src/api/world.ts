@@ -52,7 +52,15 @@ export type SiteLevelPreview = {
   encounter_budget_xp: number;
   reward_budget_gp: number;
   layout: { width: number; height: number; cell_size_ft: number; cells: SiteCell[] };
-  visual_theme?: { theme?: string; label?: string; palette?: string };
+  visual_theme?: {
+    theme?: string;
+    label?: string;
+    palette?: string;
+    source_kind?: "preset" | "compiled";
+    keywords?: string[];
+    atmosphere?: string;
+    hazard_motifs?: string[];
+  };
   rooms: SiteRoomPlan[];
   connectors: Array<Record<string, unknown>>;
   monster_plan: Array<{ name: string; quantity: number; xp_each: number; source: string; room_index?: number }>;

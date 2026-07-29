@@ -8,6 +8,8 @@ from dataclasses import dataclass
 from statistics import mean, pstdev
 from typing import Any
 
+from dnd_dm_assistant.domain.site_theme import ThemeDescriptor, compile_theme
+
 ENCOUNTER_BUDGETS = {
     1: (50, 75, 100),
     2: (100, 150, 200),
@@ -61,6 +63,8 @@ MONSTERS = {
     "aberration": (("噬脑怪", 450), ("喋喋不休的异怪", 450), ("格雷尔", 700), ("夺心魔", 2900)),
     "undead": (("骷髅", 50), ("僵尸", 50), ("食尸鬼", 200), ("尸妖", 700)),
     "goblin": (("地精", 50), ("大地精", 100), ("熊地精", 200), ("地精首领", 200)),
+    "ocean": (("巨蟹", 25), ("鲨鱼", 100), ("海鬼婆", 700), ("水元素", 1800)),
+    "forest": (("狼", 50), ("树针怪", 100), ("枭熊", 700), ("树人", 5000)),
     "sahuagin": (
         ("鲨华鱼人", 100),
         ("鲨华祭司", 450),
@@ -72,83 +76,15 @@ MONSTERS = {
     "cult": (("邪教徒", 25), ("邪教狂信徒", 450), ("祭司", 450), ("法师", 2300)),
     "fire": (("岩浆怪", 100), ("火蛇", 200), ("炼狱犬", 700), ("火元素", 1800)),
     "frost": (("冰魔蝠", 50), ("冬狼", 700), ("雪人", 700), ("霜巨人", 3900)),
+    "swamp": (("毒蛇", 25), ("巨蛙", 50), ("蜥蜴人", 100), ("蔓生怪", 1800)),
+    "crystal": (("飞剑", 50), ("岩石魔蝠", 100), ("石像鬼", 450), ("土元素", 1800)),
+    "clockwork": (("飞剑", 50), ("活化护甲", 200), ("牛头人骷髅", 450), ("铁魔像", 15000)),
+    "fungal": (("紫蕈", 25), ("蕈人幼体", 50), ("蕈人王", 450), ("蔓生怪", 1800)),
+    "desert": (("毒蛇", 25), ("巨蝎", 700), ("木乃伊", 700), ("木乃伊领主", 13000)),
+    "shadow": (("暗影", 100), ("幽魂", 200), ("妖魂", 1100), ("夜行者", 5900)),
+    "radiant": (("飞剑", 50), ("活化护甲", 200), ("独角兽", 1800), ("天使", 10000)),
+    "storm": (("血鹰", 25), ("鹰身女妖", 200), ("风元素", 1800), ("风暴巨人", 10000)),
     "default": (("巨鼠", 25), ("强盗", 25), ("守卫", 25), ("狼", 50)),
-}
-THEME_PROFILES: dict[str, dict[str, Any]] = {
-    "sahuagin": {
-        "label": "鲨华鱼人 / 深海",
-        "palette": "ocean",
-        "wall_label": "潮湿岩壁",
-        "cover_label": "珊瑚柱",
-        "room_names": (
-            "潮门入口",
-            "积水哨室",
-            "断船厅",
-            "贝壳祭坛",
-            "盐渍牢房",
-            "育卵池",
-            "珊瑚藏宝室",
-            "潮汐仪式厅",
-            "鲨华男爵巢穴",
-        ),
-        "loot": (
-            ("潮汐珍珠", "treasure"),
-            ("鲨华祭司的防水卷轴匣", "adventuring_gear"),
-            ("深海珊瑚护符", "wondrous"),
-        ),
-    },
-    "aberration": {"label": "异怪污染", "palette": "violet"},
-    "undead": {"label": "亡灵墓穴", "palette": "ashen"},
-    "goblin": {"label": "地精巢穴", "palette": "moss"},
-    "cult": {
-        "label": "邪教仪式",
-        "palette": "violet",
-        "room_names": (
-            "伪装入口",
-            "信徒宿舍",
-            "献祭准备室",
-            "亵渎祭坛",
-            "囚禁室",
-            "经卷库",
-            "圣物密藏",
-            "召唤仪式厅",
-            "教首密室",
-        ),
-        "loot": (("被亵渎的圣徽", "treasure"), ("仪式经卷匣", "adventuring_gear")),
-    },
-    "fire": {
-        "label": "火山与熔岩",
-        "palette": "ember",
-        "room_names": (
-            "焦岩入口",
-            "熔渣哨站",
-            "岩浆断桥",
-            "火焰祭坛",
-            "冷却石牢",
-            "硫磺洞",
-            "黑曜石宝库",
-            "熔炉仪式厅",
-            "炎兽巢穴",
-        ),
-        "loot": (("黑曜石火晶", "treasure"), ("耐热炼金器具", "adventuring_gear")),
-    },
-    "frost": {
-        "label": "冰窟与霜寒",
-        "palette": "ice",
-        "room_names": (
-            "覆霜入口",
-            "冰墙哨室",
-            "裂隙冰桥",
-            "霜纹祭坛",
-            "冻牢",
-            "蓝冰洞",
-            "寒晶宝库",
-            "极光仪式厅",
-            "霜兽巢穴",
-        ),
-        "loot": (("永冻寒晶", "treasure"), ("保温远行装备", "adventuring_gear")),
-    },
-    "default": {"label": "通用地下城", "palette": "amber"},
 }
 
 
@@ -158,37 +94,6 @@ def _seed(data: dict[str, Any]) -> int:
         return int(supplied)
     digest = hashlib.sha256(f"{data['name']}|{data['brief']}".encode()).hexdigest()
     return int(digest[:8], 16)
-
-
-def _theme(text: str) -> str:
-    lowered = text.lower()
-    if any(
-        word in lowered
-        for word in (
-            "渔人",
-            "鱼人",
-            "鲨华",
-            "深海",
-            "海底",
-            "潮汐",
-            "sahuagin",
-            "fish folk",
-        )
-    ):
-        return "sahuagin"
-    if any(word in lowered for word in ("夺心魔", "异怪", "心灵", "mind flayer")):
-        return "aberration"
-    if any(word in lowered for word in ("亡灵", "墓穴", "骷髅", "undead")):
-        return "undead"
-    if any(word in lowered for word in ("地精", "goblin")):
-        return "goblin"
-    if any(word in lowered for word in ("邪教", "献祭", "异端", "cult")):
-        return "cult"
-    if any(word in lowered for word in ("火山", "岩浆", "熔炉", "烈焰", "inferno")):
-        return "fire"
-    if any(word in lowered for word in ("冰窟", "冰川", "霜寒", "冻原", "frost")):
-        return "frost"
-    return "default"
 
 
 @dataclass(frozen=True)
@@ -460,9 +365,7 @@ def _building_layout(
             else Rect(wing_edge, split_col + 1, bottom, right)
         )
         main_count = min(room_count - 2, max(3, round(room_count * 0.62)))
-        main_leaves, main_partitions = _split_building(
-            rng, main_zone, main_count, minimum_span
-        )
+        main_leaves, main_partitions = _split_building(rng, main_zone, main_count, minimum_span)
         side_leaves, side_partitions = _split_building(
             rng, side_zone, room_count - main_count, minimum_span
         )
@@ -566,7 +469,7 @@ def _overlaps_with_margin(candidate: Rect, rooms: list[Rect], margin: int = 2) -
 def _dungeon_layout(
     rng: random.Random,
     room_count: int,
-    brief: str,
+    descriptor: ThemeDescriptor,
     level_index: int,
     overall_scale: str,
     minimum_room_size: str,
@@ -574,8 +477,6 @@ def _dungeon_layout(
     party_size: int,
 ) -> dict[str, Any]:
     width, height = MAP_SIZE_PRESETS[overall_scale]
-    theme = _theme(brief)
-    profile = THEME_PROFILES.get(theme, THEME_PROFILES["default"])
     minimum_span = ROOM_SIZE_PRESETS[minimum_room_size][0]
     maximum_span = ROOM_SIZE_PRESETS[maximum_room_size][1]
     # A selected party needs at least one genuine tactical room.  Small side
@@ -612,7 +513,9 @@ def _dungeon_layout(
     for rect in rects:
         for row in range(rect.top, rect.bottom + 1):
             for col in range(rect.left, rect.right + 1):
-                lookup[(row, col)].update(kind="floor", label="洞窟地面", blocks_sight=False)
+                lookup[(row, col)].update(
+                    kind="floor", label=descriptor.floor_label, blocks_sight=False
+                )
     connected = {0}
     edges: list[tuple[int, int]] = []
     while len(connected) < len(rects):
@@ -706,25 +609,17 @@ def _dungeon_layout(
             ):
                 lookup[neighbor].update(
                     kind="wall",
-                    label=str(profile.get("wall_label") or "岩壁"),
+                    label=descriptor.wall_label,
                     blocks_sight=True,
                 )
-    names = tuple(profile.get("room_names") or ROOM_NAMES["dungeon"])
+    names = descriptor.room_functions
     ordered = sorted(range(len(rects)), key=lambda index: (-rects[index].area, index))
     assigned: dict[int, str] = {}
     for rank, index in enumerate(ordered):
         if rank == 0:
-            assigned[index] = (
-                str(names[0])
-                if theme == "sahuagin" and level_index < 3
-                else str(names[-1])
-                if theme == "sahuagin"
-                else "主洞厅"
-                if level_index < 3
-                else "首领巢穴"
-            )
+            assigned[index] = str(names[0]) if level_index < 3 else str(names[-1])
         elif degrees[index] == 1 and rank == len(ordered) - 1:
-            assigned[index] = "隐秘藏宝室"
+            assigned[index] = str(names[-3])
         else:
             assigned[index] = names[(rank + level_index - 1) % len(names)]
     rooms = [
@@ -739,9 +634,22 @@ def _dungeon_layout(
         if lookup[point]["kind"] == "floor":
             lookup[point].update(
                 kind="cover",
-                label=str(profile.get("cover_label") or "岩柱"),
+                label=descriptor.cover_label,
                 blocks_sight=True,
             )
+    object_candidates = [
+        (index, point)
+        for index in ordered
+        for point in (
+            (rects[index].top + 1, rects[index].left + 1),
+            (rects[index].bottom - 1, rects[index].right - 1),
+        )
+        if lookup[point]["kind"] == "floor"
+    ]
+    for object_label, (_, point) in zip(
+        descriptor.environment_objects, object_candidates, strict=False
+    ):
+        lookup[point].update(kind="cover", label=object_label, blocks_sight=True)
     # Later corridor carving and room labels may cross an earlier connector.
     # Re-assert connector cells after all decorative passes so persisted
     # connector metadata always lands on a real door cell.
@@ -818,6 +726,7 @@ def _best_layout(
     seed: int,
     room_count: int,
     brief: str,
+    descriptor: ThemeDescriptor,
     level_index: int,
     overall_scale: str,
     minimum_room_size: str,
@@ -841,7 +750,7 @@ def _best_layout(
                 else _dungeon_layout(
                     rng,
                     room_count,
-                    brief,
+                    descriptor,
                     level_index,
                     overall_scale,
                     minimum_room_size,
@@ -860,8 +769,12 @@ def _best_layout(
     return max(candidates, key=lambda item: item[1]["score"])
 
 
-def _monster_plan(theme: str, budget: int) -> list[dict[str, Any]]:
-    choices = [item for item in MONSTERS[theme] if item[1] <= max(25, round(budget * 1.25))]
+def _monster_plan(descriptor: ThemeDescriptor, budget: int) -> list[dict[str, Any]]:
+    choices = [
+        item
+        for item in MONSTERS.get(descriptor.theme_id, MONSTERS["default"])
+        if item[1] <= max(25, round(budget * 1.25))
+    ]
     if not choices:
         return []
     result: list[dict[str, Any]] = []
@@ -878,8 +791,16 @@ def _monster_plan(theme: str, budget: int) -> list[dict[str, Any]]:
                     "name": name,
                     "quantity": quantity,
                     "xp_each": xp,
-                    "source": "official",
-                    "theme": theme,
+                    "source": (
+                        "official" if descriptor.source_kind == "preset" else "official_fallback"
+                    ),
+                    "theme": descriptor.theme_id,
+                    "theme_queries": list(descriptor.monster_queries),
+                    "selection_reason": (
+                        f"匹配主题：{'、'.join(descriptor.monster_queries[:3])}"
+                        if descriptor.source_kind == "preset"
+                        else "未找到可验证的同主题规则原子；暂用官方通用模板，等待 DM 替换"
+                    ),
                     "encounter_role": (
                         "首领" if xp >= max(450, budget // 3) else "精英" if xp >= 450 else "杂兵"
                     ),
@@ -893,7 +814,7 @@ def _party_loot_plan(
     class_names: list[str],
     party_level: int,
     budget_gp: int,
-    theme: str,
+    descriptor: ThemeDescriptor,
 ) -> list[dict[str, Any]]:
     """Build a rules-shaped loot mix without pretending homebrew is official."""
     lowered = " ".join(class_names).lower()
@@ -904,19 +825,19 @@ def _party_loot_plan(
     if any(name in lowered for name in ("wizard", "法师", "sorcerer", "术士", "warlock", "邪术师")):
         suggestions.append(("与队伍环级相符的法术卷轴", "spell_scroll", max(50, budget_gp // 4)))
     if any(
-        name in lowered
-        for name in ("fighter", "战士", "paladin", "圣武士", "barbarian", "野蛮人")
+        name in lowered for name in ("fighter", "战士", "paladin", "圣武士", "barbarian", "野蛮人")
     ):
         suggestions.append(("精制武器或护甲材料", "equipment", max(50, budget_gp // 4)))
     if any(name in lowered for name in ("rogue", "游荡者", "ranger", "游侠")):
         suggestions.append(("精制弹药与探索工具", "equipment", max(35, budget_gp // 5)))
     if any(name in lowered for name in ("cleric", "牧师", "druid", "德鲁伊", "bard", "吟游诗人")):
         suggestions.append(("法器材料与恢复性消耗品", "consumable", max(40, budget_gp // 5)))
-    profile = THEME_PROFILES.get(theme, {})
-    for themed_name, themed_category in profile.get("loot", ()):
-        suggestions.append(
-            (str(themed_name), str(themed_category), max(25, budget_gp // 6))
-        )
+    themed_rewards = (
+        (f"{descriptor.label.split('/')[0].strip()}遗物", "wondrous"),
+        (f"{descriptor.loot_queries[0]}主题补给", "adventuring_gear"),
+    )
+    for themed_name, themed_category in themed_rewards:
+        suggestions.append((str(themed_name), str(themed_category), max(25, budget_gp // 6)))
     return [
         {
             "name": name,
@@ -930,10 +851,10 @@ def _party_loot_plan(
     ]
 
 
-def _npc_plan(brief: str, level_index: int) -> list[dict[str, Any]]:
+def _npc_plan(brief: str, level_index: int, descriptor: ThemeDescriptor) -> list[dict[str, Any]]:
     lowered = brief.lower()
-    if _theme(brief) == "sahuagin":
-        role = "被放逐的鲨华鱼人向导" if level_index == 1 else "被囚禁的沿海水手"
+    if descriptor.npc_roles:
+        role = descriptor.npc_roles[(level_index - 1) % len(descriptor.npc_roles)]
     elif any(word in lowered for word in ("酒馆", "旅店")):
         role = "酒馆经营者" if level_index == 1 else "住客或雇员"
     elif any(word in lowered for word in ("教堂", "神殿")):
@@ -961,7 +882,8 @@ def generate_site(data: dict[str, Any]) -> dict[str, Any]:
     if not 1 <= maximum_levels <= 20:
         raise ValueError("maximum_levels must be between 1 and 20")
     seed = _seed(data)
-    theme = _theme(f"{data['name']} {data['brief']}")
+    descriptor = compile_theme(f"{data['name']} {data['brief']}")
+    theme = descriptor.theme_id
     region_path = [
         part.strip()
         for part in str(data["region_path"]).replace(">", "/").split("/")
@@ -969,9 +891,7 @@ def generate_site(data: dict[str, Any]) -> dict[str, Any]:
     ]
     if not region_path:
         raise ValueError("region_path is required")
-    profiles = [
-        profile for profile in data.get("party_profiles", []) if isinstance(profile, dict)
-    ]
+    profiles = [profile for profile in data.get("party_profiles", []) if isinstance(profile, dict)]
     configured_level = int(data.get("party_level", 1))
     configured_size = int(data.get("party_size", 4))
     party_size = len(profiles) if profiles else configured_size
@@ -1024,6 +944,7 @@ def generate_site(data: dict[str, Any]) -> dict[str, Any]:
             seed + level_index * 1_000_003,
             room_count,
             str(data["brief"]),
+            descriptor,
             level_index,
             overall_scale,
             minimum_room_size,
@@ -1031,14 +952,12 @@ def generate_site(data: dict[str, Any]) -> dict[str, Any]:
             party_size,
         )
         monster_plan = (
-            _monster_plan(theme, round(budget * monster_density / 100))
+            _monster_plan(descriptor, round(budget * monster_density / 100))
             if generate_monsters
             else []
         )
         reward_plan = (
-            _party_loot_plan(class_names, party_level, reward, theme)
-            if generate_loot
-            else []
+            _party_loot_plan(class_names, party_level, reward, descriptor) if generate_loot else []
         )
         levels.append(
             {
@@ -1049,16 +968,12 @@ def generate_site(data: dict[str, Any]) -> dict[str, Any]:
                 "description": f"{data['brief']}（{difficulty} 难度）",
                 "visual_theme": {
                     "theme": theme,
-                    "label": str(
-                        THEME_PROFILES.get(theme, THEME_PROFILES["default"]).get(
-                            "label", theme
-                        )
-                    ),
-                    "palette": str(
-                        THEME_PROFILES.get(theme, THEME_PROFILES["default"]).get(
-                            "palette", "amber"
-                        )
-                    ),
+                    "label": descriptor.label,
+                    "palette": descriptor.palette,
+                    "source_kind": descriptor.source_kind,
+                    "keywords": list(descriptor.keywords),
+                    "atmosphere": descriptor.atmosphere,
+                    "hazard_motifs": list(descriptor.hazard_motifs),
                 },
                 "difficulty": difficulty,
                 "encounter_budget_xp": budget,
@@ -1075,13 +990,13 @@ def generate_site(data: dict[str, Any]) -> dict[str, Any]:
                     {**monster, "room_index": (index % len(layout["rooms"])) + 1}
                     for index, monster in enumerate(monster_plan)
                 ],
-                "npc_plan": _npc_plan(str(data["brief"]), level_index) if generate_npcs else [],
+                "npc_plan": (
+                    _npc_plan(str(data["brief"]), level_index, descriptor) if generate_npcs else []
+                ),
                 "reward_plan": [
                     {
                         **item,
-                        "room_index": (
-                            (index + len(layout["rooms"]) - 1) % len(layout["rooms"])
-                        )
+                        "room_index": ((index + len(layout["rooms"]) - 1) % len(layout["rooms"]))
                         + 1,
                     }
                     for index, item in enumerate(reward_plan)
@@ -1091,9 +1006,8 @@ def generate_site(data: dict[str, Any]) -> dict[str, Any]:
     for current, following in zip(levels, levels[1:], strict=False):
         from_bounds = current["rooms"][-1]["bounds"]
         to_bounds = following["rooms"][0]["bounds"]
-        def stair_position(
-            level: dict[str, Any], bounds: dict[str, Any]
-        ) -> dict[str, int]:
+
+        def stair_position(level: dict[str, Any], bounds: dict[str, Any]) -> dict[str, int]:
             occupied = {
                 (int(connector["position"]["row"]), int(connector["position"]["col"]))
                 for connector in level["connectors"]
@@ -1103,8 +1017,7 @@ def generate_site(data: dict[str, Any]) -> dict[str, Any]:
                 int(bounds["col"]) + int(bounds["width"]) // 2,
             )
             cells = {
-                (int(cell["row"]), int(cell["col"])): cell
-                for cell in level["layout"]["cells"]
+                (int(cell["row"]), int(cell["col"])): cell for cell in level["layout"]["cells"]
             }
             candidates = [
                 (row, col)
@@ -1163,13 +1076,7 @@ def generate_site(data: dict[str, Any]) -> dict[str, Any]:
             "name": str(data["name"]).strip(),
             "brief": str(data["brief"]).strip(),
             "theme": theme,
-            "theme_profile": {
-                key: value
-                for key, value in THEME_PROFILES.get(
-                    theme, THEME_PROFILES["default"]
-                ).items()
-                if key not in {"room_names", "loot"}
-            },
+            "theme_profile": descriptor.model_dump(mode="json"),
             "seed": seed,
             "maximum_levels": maximum_levels,
             "party_level": party_level,

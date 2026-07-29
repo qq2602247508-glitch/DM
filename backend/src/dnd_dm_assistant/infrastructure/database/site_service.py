@@ -137,19 +137,22 @@ class SiteService:
 
         site = dict(preview.get("site") or {})
         parameters = dict(site.get("generation_parameters") or {})
-        profiles = [
-            item for item in parameters.get("party_profiles", []) if isinstance(item, dict)
-        ]
+        profiles = [item for item in parameters.get("party_profiles", []) if isinstance(item, dict)]
         class_text = " ".join(str(item.get("class_name") or "") for item in profiles)
         theme = str(site.get("theme") or "default")
+        theme_profile = dict(site.get("theme_profile") or {})
+        loot_queries = tuple(
+            str(item)
+            for item in theme_profile.get("loot_queries", [])
+            if isinstance(item, str) and item
+        )
         seed = int(site.get("seed") or 0)
         candidates = [
             entry
             for entry in self.official_catalog.entries
             if entry.get("entry_type") in {"equipment", "item"}
             and bool(dict(entry.get("filters_json") or {}).get("atomic_item"))
-            and str(dict(entry.get("filters_json") or {}).get("edition") or "")
-            in {"2024", "2025"}
+            and str(dict(entry.get("filters_json") or {}).get("edition") or "") in {"2024", "2025"}
         ]
         used: set[str] = set()
         for level in preview.get("levels", []):
@@ -165,15 +168,13 @@ class SiteService:
                     entry
                     for entry in candidates
                     if str(entry.get("id")) not in used
-                    and self._reward_atom_matches(
-                        entry, str(raw.get("category") or ""), class_text
-                    )
+                    and self._reward_atom_matches(entry, str(raw.get("category") or ""), class_text)
                 ]
                 if not matches:
                     continue
                 matches.sort(
                     key=lambda entry: (
-                        -self._reward_theme_score(entry, theme),
+                        -self._reward_theme_score(entry, theme, loot_queries),
                         hashlib.sha256(
                             f"{seed}|{level.get('level_index')}|{index}|{entry['id']}".encode()
                         ).hexdigest(),
@@ -194,14 +195,15 @@ class SiteService:
                         "description": selected.get("description"),
                         "value_gp": max(
                             1,
-                            int(rules.get("price_cp", 0)) // 100
-                            or int(raw.get("value_gp", 1)),
+                            int(rules.get("price_cp", 0)) // 100 or int(raw.get("value_gp", 1)),
                         ),
                     }
                 )
 
     @staticmethod
-    def _reward_theme_score(entry: dict[str, Any], theme: str) -> int:
+    def _reward_theme_score(
+        entry: dict[str, Any], theme: str, dynamic_queries: tuple[str, ...] = ()
+    ) -> int:
         """Prefer official atoms that reinforce the generated site's theme."""
 
         keywords = {
@@ -228,6 +230,7 @@ class SiteService:
             "cult": ("邪教", "仪式", "圣徽", "祭", "诅咒"),
             "goblin": ("地精", "陷阱", "伏击", "洞穴"),
         }.get(theme, ())
+        keywords = tuple(dict.fromkeys((*dynamic_queries, *keywords)))
         if not keywords:
             return 0
         text = " ".join(
@@ -241,9 +244,7 @@ class SiteService:
         return sum(5 if keyword in name else 1 for keyword in keywords if keyword in text)
 
     @staticmethod
-    def _reward_atom_matches(
-        entry: dict[str, Any], planned_category: str, class_text: str
-    ) -> bool:
+    def _reward_atom_matches(entry: dict[str, Any], planned_category: str, class_text: str) -> bool:
         filters = dict(entry.get("filters_json") or {})
         category = str(filters.get("category") or "")
         item_function = str(filters.get("item_function") or "")
@@ -735,9 +736,7 @@ class SiteService:
                             "original": reward_data.get("source_kind") != "official",
                             "source_kind": reward_data.get("source_kind"),
                             "source_record_id": reward_data.get("source_record_id"),
-                            "compendium_entry_id": reward_data.get(
-                                "compendium_entry_id"
-                            ),
+                            "compendium_entry_id": reward_data.get("compendium_entry_id"),
                             "rules_validated_budget": True,
                         },
                     )

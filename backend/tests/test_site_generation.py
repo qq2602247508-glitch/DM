@@ -10,6 +10,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from dnd_dm_assistant.domain.site_generation import generate_site, layout_is_connected
+from dnd_dm_assistant.domain.site_theme import compile_theme
 from dnd_dm_assistant.infrastructure.database.models import (
     AdventureSite,
     Location,
@@ -94,6 +95,80 @@ def test_sahuagin_prompt_drives_rooms_palette_monsters_and_loot() -> None:
         for level in preview["levels"]
         for reward in level["reward_plan"]
     )
+
+
+@pytest.mark.parametrize(
+    ("name", "brief", "theme", "palette", "expected_terms"),
+    (
+        (
+            "沉没的绿鳞神庙",
+            "剧毒沼泽与沉没神庙，蜥蜴人与孢子植物盘踞其中",
+            "swamp",
+            "toxic",
+            {"毒雾", "孢子", "蜥蜴人"},
+        ),
+        (
+            "紫水晶矿洞",
+            "奥术晶体持续共鸣，矿道遍布巨大晶簇",
+            "crystal",
+            "crystal",
+            {"晶", "奥术", "共鸣"},
+        ),
+        (
+            "废弃矮人钟楼",
+            "齿轮、蒸汽机关与失控自动机占据每一层",
+            "clockwork",
+            "brass",
+            {"齿轮", "蒸汽", "机械"},
+        ),
+    ),
+)
+def test_semantic_theme_compiler_drives_distinct_dungeon_content(
+    name: str,
+    brief: str,
+    theme: str,
+    palette: str,
+    expected_terms: set[str],
+) -> None:
+    preview = generate_site(
+        _request(name=name, brief=brief, maximum_levels=2, rooms_min=7, rooms_max=8)
+    )
+    assert preview["site"]["theme"] == theme
+    assert preview["site"]["theme_profile"]["palette"] == palette
+    assert preview["site"]["theme_profile"]["source_kind"] == "preset"
+    content = " ".join(
+        [
+            *(room["name"] for level in preview["levels"] for room in level["rooms"]),
+            *(
+                cell["label"]
+                for level in preview["levels"]
+                for cell in level["layout"]["cells"]
+                if cell["kind"] == "cover"
+            ),
+            *preview["site"]["theme_profile"]["monster_queries"],
+            *preview["site"]["theme_profile"]["loot_queries"],
+        ]
+    )
+    assert sum(term in content for term in expected_terms) >= 2
+    assert all(level["visual_theme"]["palette"] == palette for level in preview["levels"])
+
+
+def test_unknown_theme_is_stable_compiled_and_never_generic_amber() -> None:
+    text = "会唱歌的纸月迷宫，墨水河流记录每个来客遗忘的名字"
+    descriptor = compile_theme(f"纸月迷宫 {text}")
+    repeated = compile_theme(f"纸月迷宫 {text}")
+    assert descriptor == repeated
+    assert descriptor.theme_id.startswith("custom-")
+    assert descriptor.source_kind == "compiled"
+    assert descriptor.palette != "amber"
+    assert descriptor.keywords
+    preview = generate_site(
+        _request(name="纸月迷宫", brief=text, maximum_levels=1, rooms_min=7, rooms_max=7)
+    )
+    assert preview["site"]["theme"] == descriptor.theme_id
+    assert preview["site"]["theme_profile"]["source_kind"] == "compiled"
+    assert preview["levels"][0]["visual_theme"]["palette"] == descriptor.palette
+    assert any(descriptor.keywords[0] in room["name"] for room in preview["levels"][0]["rooms"])
 
 
 def test_buildings_and_dungeons_use_distinct_high_quality_layout_grammars() -> None:
@@ -210,7 +285,7 @@ def test_site_generation_api_persists_atomic_hierarchy_and_is_idempotent(
     assert len(maps[0]["map_json"]["pois"]) == 1
     locations = campaign_client.get(f"/api/v1/campaigns/{campaign_id}/locations").json()["items"]
     names = {location["name"] for location in locations}
-    assert {"深水城", "海区", "低语矿坑", "地下城第 1 层", "入口厅"} <= names
+    assert {"深水城", "海区", "低语矿坑", "地下城第 1 层", "污染入口"} <= names
     engine = campaign_client.app.state.database_engine
     with Session(engine) as session:
         grids = list(

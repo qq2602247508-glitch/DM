@@ -51,10 +51,38 @@ const iceCellColor: Record<string, string> = {
   floor: "bg-sky-950/50 border-sky-800",
   room: "bg-blue-950 border-sky-200",
 };
+const themedPalette = (
+  wall: string,
+  floor: string,
+  door: string,
+  cover: string,
+  room: string,
+  stairs: string,
+): Record<string, string> => ({
+  void: "bg-transparent border-transparent",
+  wall,
+  floor,
+  door,
+  cover,
+  room,
+  stairs,
+});
 const paletteColors: Record<string, Record<string, string>> = {
   ocean: oceanCellColor,
   ember: emberCellColor,
   ice: iceCellColor,
+  ashen: themedPalette("bg-zinc-950 border-zinc-700", "bg-zinc-900/70 border-zinc-700", "bg-stone-600 border-stone-300", "bg-stone-800 border-stone-500", "bg-zinc-950 border-zinc-400", "bg-violet-950 border-violet-400"),
+  moss: themedPalette("bg-stone-900 border-lime-950", "bg-lime-950/40 border-lime-900", "bg-amber-800 border-lime-600", "bg-green-950 border-lime-600", "bg-emerald-950 border-lime-400", "bg-violet-950 border-violet-400"),
+  violet: themedPalette("bg-slate-950 border-purple-950", "bg-purple-950/50 border-purple-900", "bg-fuchsia-900 border-fuchsia-500", "bg-violet-950 border-fuchsia-600", "bg-purple-950 border-fuchsia-400", "bg-indigo-950 border-violet-300"),
+  toxic: themedPalette("bg-stone-950 border-emerald-950", "bg-lime-950/60 border-emerald-900", "bg-emerald-900 border-lime-400", "bg-green-950 border-lime-500", "bg-emerald-950 border-lime-300", "bg-violet-950 border-violet-300"),
+  crystal: themedPalette("bg-indigo-950 border-violet-900", "bg-purple-950/50 border-violet-800", "bg-violet-700 border-fuchsia-300", "bg-fuchsia-950 border-fuchsia-400", "bg-indigo-950 border-violet-200", "bg-cyan-950 border-cyan-300"),
+  brass: themedPalette("bg-stone-950 border-yellow-950", "bg-amber-950/60 border-yellow-900", "bg-yellow-800 border-yellow-400", "bg-stone-800 border-amber-500", "bg-amber-950 border-yellow-300", "bg-slate-950 border-cyan-400"),
+  sandstone: themedPalette("bg-stone-900 border-amber-900", "bg-yellow-950/50 border-amber-800", "bg-orange-900 border-amber-400", "bg-amber-950 border-yellow-600", "bg-orange-950 border-amber-300", "bg-violet-950 border-violet-300"),
+  fungal: themedPalette("bg-stone-950 border-fuchsia-950", "bg-emerald-950/50 border-purple-900", "bg-purple-800 border-fuchsia-400", "bg-fuchsia-950 border-lime-500", "bg-purple-950 border-lime-300", "bg-cyan-950 border-cyan-300"),
+  shadow: themedPalette("bg-black border-slate-800", "bg-slate-950 border-indigo-950", "bg-indigo-950 border-violet-500", "bg-black border-purple-700", "bg-slate-950 border-violet-400", "bg-violet-950 border-fuchsia-400"),
+  radiant: themedPalette("bg-stone-900 border-yellow-700", "bg-amber-950/40 border-yellow-700", "bg-yellow-600 border-yellow-200", "bg-amber-900 border-yellow-300", "bg-yellow-950 border-yellow-100", "bg-sky-950 border-sky-200"),
+  forest: themedPalette("bg-stone-950 border-green-950", "bg-green-950/50 border-emerald-900", "bg-amber-900 border-green-500", "bg-emerald-950 border-green-400", "bg-green-950 border-emerald-300", "bg-violet-950 border-violet-300"),
+  storm: themedPalette("bg-slate-950 border-blue-950", "bg-slate-900/70 border-blue-900", "bg-blue-800 border-cyan-300", "bg-indigo-950 border-blue-400", "bg-slate-950 border-cyan-300", "bg-violet-950 border-fuchsia-300"),
 };
 
 function roomBounds(room: SiteRoomPlan): Record<string, number> {
@@ -427,7 +455,7 @@ export function SiteMapWorkbench({
                 {preview.levels.map((level, index) => <Button key={level.level_index} size="sm" variant={index === previewLevel ? "primary" : "ghost"} onClick={() => { setPreviewLevel(index); setSelectedPreviewRoom(null); }}>{level.name}</Button>)}
                 <Button className="ml-auto" loading={confirmation.isPending} onClick={() => confirmation.mutate()} variant="primary">确认写入战役</Button>
               </div>
-              {activePreviewLevel ? <><div className="mb-2 flex flex-wrap gap-2"><Badge tone="danger">{activePreviewLevel.difficulty}</Badge>{activePreviewLevel.visual_theme?.label ? <Badge tone="ai">主题 · {activePreviewLevel.visual_theme.label}</Badge> : null}<Badge>{activePreviewLevel.encounter_budget_xp} XP 预算</Badge><Badge tone="ok">{activePreviewLevel.reward_budget_gp} gp 奖励预算</Badge><Badge>{activePreviewLevel.rooms.length} 房间</Badge><Badge>{activePreviewLevel.monster_plan.length} 种怪物</Badge><Badge>{activePreviewLevel.npc_plan?.length ?? 0} NPC</Badge><Badge>{activePreviewLevel.reward_plan.length} 类战利品</Badge>{activePreviewLevel.quality ? <Badge tone={activePreviewLevel.quality.score >= 88 ? "ok" : "danger"}>布局评分 {activePreviewLevel.quality.score}/100 · 房间比例 {activePreviewLevel.quality.largest_smallest_ratio}×</Badge> : null}</div><SiteGrid level={activePreviewLevel} onSelectRoom={setSelectedPreviewRoom} selectedRoomIndex={selectedPreviewRoom} /><LevelPlanDetails level={activePreviewLevel} onSelectRoom={setSelectedPreviewRoom} selectedRoomIndex={selectedPreviewRoom} /></> : null}
+              {activePreviewLevel ? <><div className="mb-2 flex flex-wrap gap-2"><Badge tone="danger">{activePreviewLevel.difficulty}</Badge>{activePreviewLevel.visual_theme?.label ? <Badge tone="ai">主题 · {activePreviewLevel.visual_theme.label}</Badge> : null}{activePreviewLevel.visual_theme?.source_kind ? <Badge>{activePreviewLevel.visual_theme.source_kind === "compiled" ? "动态编译主题" : "可靠预设主题"}</Badge> : null}<Badge>{activePreviewLevel.encounter_budget_xp} XP 预算</Badge><Badge tone="ok">{activePreviewLevel.reward_budget_gp} gp 奖励预算</Badge><Badge>{activePreviewLevel.rooms.length} 房间</Badge><Badge>{activePreviewLevel.monster_plan.length} 种怪物</Badge><Badge>{activePreviewLevel.npc_plan?.length ?? 0} NPC</Badge><Badge>{activePreviewLevel.reward_plan.length} 类战利品</Badge>{activePreviewLevel.quality ? <Badge tone={activePreviewLevel.quality.score >= 88 ? "ok" : "danger"}>布局评分 {activePreviewLevel.quality.score}/100 · 房间比例 {activePreviewLevel.quality.largest_smallest_ratio}×</Badge> : null}</div>{activePreviewLevel.visual_theme?.atmosphere ? <p className="mb-2 text-xs text-stone-400">{activePreviewLevel.visual_theme.atmosphere}{activePreviewLevel.visual_theme.keywords?.length ? ` · 主题词：${activePreviewLevel.visual_theme.keywords.join("、")}` : ""}</p> : null}<SiteGrid level={activePreviewLevel} onSelectRoom={setSelectedPreviewRoom} selectedRoomIndex={selectedPreviewRoom} /><LevelPlanDetails level={activePreviewLevel} onSelectRoom={setSelectedPreviewRoom} selectedRoomIndex={selectedPreviewRoom} /></> : null}
             </>
           ) : <RegionOverview maps={maps.data ?? []} onSelectSite={(siteId) => {
             setSelectedSiteId(siteId);
