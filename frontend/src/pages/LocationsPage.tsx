@@ -173,12 +173,13 @@ function ExistingNode({
 function LocationsContent({ campaignId }: { campaignId: string }): ReactElement {
   const client = useQueryClient();
   const { showToast } = useToast();
-  const [brief, setBrief] = useState("一座被异端神祇信徒占领的旧教堂");
-  const [maximumDepth, setMaximumDepth] = useState(3);
-  const [scale, setScale] = useState<"small" | "medium" | "large">("medium");
+  const [brief, setBrief] = useState("深水城的海区，以及其中几个值得记录的街区与地标");
+  const [maximumDepth, setMaximumDepth] = useState(2);
+  const [scale, setScale] = useState<"small" | "medium" | "large">("small");
   const [preview, setPreview] = useState<LocationGenerationPreview | null>(null);
   const [characterId, setCharacterId] = useState("");
   const [focusedSiteId, setFocusedSiteId] = useState("");
+  const [showAbstractCreator, setShowAbstractCreator] = useState(false);
   const [showManualManagement, setShowManualManagement] = useState(false);
   const locations = useQuery({
     queryKey: ["locations", campaignId],
@@ -208,9 +209,9 @@ function LocationsContent({ campaignId }: { campaignId: string }): ReactElement 
     }),
     onSuccess: (value) => {
       setPreview(value);
-      showToast("地点树草稿已生成，请复核");
+      showToast("抽象地点草稿已生成，请复核");
     },
-    onError: () => showToast("地点生成失败，请检查本地模型", "error"),
+    onError: () => showToast("抽象地点生成失败，请检查本地模型", "error"),
   });
   const confirmation = useMutation({
     mutationFn: () => {
@@ -221,9 +222,9 @@ function LocationsContent({ campaignId }: { campaignId: string }): ReactElement 
       setPreview(null);
       void client.invalidateQueries({ queryKey: ["locations", campaignId] });
       void client.invalidateQueries({ queryKey: ["world-items", campaignId] });
-      showToast("地点树和物品已写入战役");
+      showToast("抽象地点和物品已写入战役地点索引");
     },
-    onError: () => showToast("地点树保存失败", "error"),
+    onError: () => showToast("抽象地点保存失败", "error"),
   });
   const pickup = useMutation({
     mutationFn: (item: WorldItem) => {
@@ -253,37 +254,49 @@ function LocationsContent({ campaignId }: { campaignId: string }): ReactElement 
   return (
     <div className="mx-auto max-w-[1200px] p-4 lg:p-6">
       <SiteMapWorkbench campaignId={campaignId} requestedSiteId={focusedSiteId} />
-      <Panel eyebrow="冰山式世界结构" title="AI 地点树生成器">
-        <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_9rem_9rem_auto]">
-          <textarea className={textareaCls} onChange={(event) => setBrief(event.target.value)} value={brief} />
-          <label className="text-xs text-stone-400">
-            最大层级
-            <select className={`${selectCls} mt-1.5`} onChange={(event) => setMaximumDepth(Number(event.target.value))} value={maximumDepth}>
-              {[1, 2, 3, 4, 5].map((depth) => <option key={depth} value={depth}>最多 {depth} 层</option>)}
-            </select>
-          </label>
-          <label className="text-xs text-stone-400">
-            规模
-            <select className={`${selectCls} mt-1.5`} onChange={(event) => setScale(event.target.value as typeof scale)} value={scale}>
-              <option value="small">小型</option><option value="medium">中型</option><option value="large">大型</option>
-            </select>
-          </label>
-          <Button disabled={!brief.trim()} loading={generation.isPending} onClick={() => generation.mutate()} variant="ai">
-            生成地点树
-          </Button>
-        </div>
-        <p className="mb-0 mt-2 text-2xs text-stone-600">“最大层级”是上限，不会强迫每条分支都达到该层；每个节点会包含互动点和可拾取物品。</p>
-        {generation.isError ? <div className="mt-4"><ErrorState error={generation.error} onRetry={() => generation.mutate()} /></div> : null}
-        {preview ? (
-          <div className="mt-5 border-t border-ink-700 pt-4">
-            <div className="mb-3 flex flex-wrap items-center gap-2">
-              <AiTag>地点草稿</AiTag><Badge tone="ok">D&D 5e · 2024</Badge>
-              <Button className="ml-auto" loading={confirmation.isPending} onClick={() => confirmation.mutate()} variant="primary">
-                确认创建地点与物品
+      <Panel
+        action={<Button onClick={() => setShowAbstractCreator((value) => !value)} size="sm">{showAbstractCreator ? "收起" : "创建抽象地点"}</Button>}
+        className="mt-4"
+        eyebrow="可选 · 非网格化世界信息"
+        title="抽象地点"
+      >
+        <p className="prose-block my-0 text-sm text-stone-400">
+          只用于国家、城市、城区、组织领地和遥远地标。酒馆、宅邸、教堂与地下城请使用上方专用生成器，它会自动写入地点索引并生成楼层网格。
+        </p>
+        {showAbstractCreator ? (
+          <div className="mt-4 border-t border-ink-700 pt-4">
+            <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_9rem_9rem_auto]">
+              <textarea aria-label="抽象地点描述" className={textareaCls} onChange={(event) => setBrief(event.target.value)} value={brief} />
+              <label className="text-xs text-stone-400">
+                最大层级
+                <select className={`${selectCls} mt-1.5`} onChange={(event) => setMaximumDepth(Number(event.target.value))} value={maximumDepth}>
+                  {[1, 2, 3].map((depth) => <option key={depth} value={depth}>最多 {depth} 层</option>)}
+                </select>
+              </label>
+              <label className="text-xs text-stone-400">
+                规模
+                <select className={`${selectCls} mt-1.5`} onChange={(event) => setScale(event.target.value as typeof scale)} value={scale}>
+                  <option value="small">小型</option><option value="medium">中型</option><option value="large">大型</option>
+                </select>
+              </label>
+              <Button disabled={!brief.trim()} loading={generation.isPending} onClick={() => generation.mutate()} variant="ai">
+                生成抽象地点
               </Button>
             </div>
-            <ul className="m-0 space-y-2 p-0"><GeneratedNode node={preview.root} /></ul>
-            <div className="mt-4"><CitationList citations={preview.citations} /></div>
+            <p className="mb-0 mt-2 text-2xs text-stone-600">这里不会创建战斗网格；最大层级只是上限。</p>
+            {generation.isError ? <div className="mt-4"><ErrorState error={generation.error} onRetry={() => generation.mutate()} /></div> : null}
+            {preview ? (
+              <div className="mt-5 border-t border-ink-700 pt-4">
+                <div className="mb-3 flex flex-wrap items-center gap-2">
+                  <AiTag>抽象地点草稿</AiTag><Badge tone="ok">D&D 5e · 2024</Badge>
+                  <Button className="ml-auto" loading={confirmation.isPending} onClick={() => confirmation.mutate()} variant="primary">
+                    确认写入地点索引
+                  </Button>
+                </div>
+                <ul className="m-0 space-y-2 p-0"><GeneratedNode node={preview.root} /></ul>
+                <div className="mt-4"><CitationList citations={preview.citations} /></div>
+              </div>
+            ) : null}
           </div>
         ) : null}
       </Panel>
@@ -295,12 +308,12 @@ function LocationsContent({ campaignId }: { campaignId: string }): ReactElement 
           </select>
         }
         className="mt-4"
-        eyebrow="持久地点 · 原子物品"
-        title="地点树"
+        eyebrow="自动汇总 · 原子地点与物品"
+        title="世界地点索引"
       >
         {locations.isLoading || items.isLoading ? <LoadingBlock /> : null}
         {locations.isError ? <ErrorState error={locations.error} onRetry={() => void locations.refetch()} /> : null}
-        {locations.data?.length === 0 ? <EmptyState hint="使用上方 AI 生成器，或在下方手动创建地点。" title="还没有地点" /> : null}
+        {locations.data?.length === 0 ? <EmptyState hint="生成建筑、地下城或抽象地点后，系统会在这里统一汇总。" title="还没有地点" /> : null}
         {locations.data?.length ? (
           <ul className="m-0 space-y-2 p-0">
             {(childrenByParent.get(null) ?? []).map((location) => (
@@ -322,8 +335,8 @@ function LocationsContent({ campaignId }: { campaignId: string }): ReactElement 
       <section className="mt-4 rounded-xl border border-ink-700 bg-ink-950/35">
         <div className="flex flex-wrap items-center gap-2 px-4 py-3">
           <div className="mr-auto">
-            <strong className="block text-sm text-stone-300">高级 · 手动地点记录管理</strong>
-            <span className="text-2xs text-stone-600">默认不载入大量房间记录；生成建筑与地下城请使用上方专用工作台。</span>
+            <strong className="block text-sm text-stone-300">高级 · 手动编辑抽象地点</strong>
+            <span className="text-2xs text-stone-600">用于修正城市、城区和地标记录；建筑与地下城请使用上方专用工作台。</span>
           </div>
           <Button onClick={() => setShowManualManagement((value) => !value)} size="sm">
             {showManualManagement ? "收起手动管理" : "展开手动管理"}
