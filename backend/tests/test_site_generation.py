@@ -190,18 +190,58 @@ def test_site_generation_api_persists_atomic_hierarchy_and_is_idempotent(
             for grid in grids
             for cell in grid.layers_json["cells"]
         )
-        assert session.scalar(
-            select(func.count()).select_from(SceneToken).join(Scene).where(
-                Scene.campaign_id == campaign_id,
-                SceneToken.entity_type == "monster",
+        assert (
+            session.scalar(
+                select(func.count())
+                .select_from(SceneToken)
+                .join(Scene)
+                .where(
+                    Scene.campaign_id == campaign_id,
+                    SceneToken.entity_type == "monster",
+                )
             )
-        ) > 0
-        assert session.scalar(
-            select(func.count()).select_from(SceneObject).join(Scene).where(
+            > 0
+        )
+        assert (
+            session.scalar(
+                select(func.count())
+                .select_from(SceneObject)
+                .join(Scene)
+                .where(
+                    Scene.campaign_id == campaign_id,
+                    SceneObject.object_type == "treasure",
+                )
+            )
+            > 0
+        )
+        for token in session.scalars(
+            select(SceneToken)
+            .join(Scene)
+            .where(
+                Scene.campaign_id == campaign_id,
+                SceneToken.entity_type.in_(("monster", "npc")),
+            )
+        ):
+            session.delete(token)
+        for scene_object in session.scalars(
+            select(SceneObject)
+            .join(Scene)
+            .where(
                 Scene.campaign_id == campaign_id,
                 SceneObject.object_type == "treasure",
             )
-        ) > 0
+        ):
+            session.delete(scene_object)
+        session.commit()
+    repaired = campaign_client.post(f"/api/v1/campaigns/{campaign_id}/sites/repair-scene-atoms")
+    assert repaired.status_code == 200, repaired.text
+    assert repaired.json()["tokens"] > 0
+    assert repaired.json()["treasures"] > 0
+    repeated_repair = campaign_client.post(
+        f"/api/v1/campaigns/{campaign_id}/sites/repair-scene-atoms"
+    )
+    assert repeated_repair.json()["tokens"] == 0
+    assert repeated_repair.json()["treasures"] == 0
 
     other_campaign = campaign_client.post("/api/v1/campaigns", json={"name": "隔离团"}).json()
     forbidden = campaign_client.get(f"/api/v1/campaigns/{other_campaign['id']}/sites/{site['id']}")
@@ -217,16 +257,12 @@ def test_site_preview_rejects_broken_cross_references_and_geometry() -> None:
         SiteService._validate_preview(invalid)
 
     invalid = deepcopy(preview)
-    invalid["levels"][0]["rooms"][1]["room_index"] = invalid["levels"][0]["rooms"][0][
-        "room_index"
-    ]
+    invalid["levels"][0]["rooms"][1]["room_index"] = invalid["levels"][0]["rooms"][0]["room_index"]
     with pytest.raises(ValueError, match="room indexes"):
         SiteService._validate_preview(invalid)
 
     invalid = deepcopy(preview)
-    invalid["levels"][0]["rooms"][0]["bounds"]["row"] = invalid["levels"][0]["layout"][
-        "height"
-    ]
+    invalid["levels"][0]["rooms"][0]["bounds"]["row"] = invalid["levels"][0]["layout"]["height"]
     with pytest.raises(ValueError, match="bounds exceed"):
         SiteService._validate_preview(invalid)
 
@@ -315,9 +351,7 @@ def test_site_delete_removes_managed_locations_scenes_grids_and_region_poi(
         campaign_client.get(f"/api/v1/campaigns/{campaign_id}/sites/{site['id']}").status_code
         == 404
     )
-    maps = campaign_client.get(f"/api/v1/campaigns/{campaign_id}/region-maps").json()[
-        "region_maps"
-    ]
+    maps = campaign_client.get(f"/api/v1/campaigns/{campaign_id}/region-maps").json()["region_maps"]
     assert maps[0]["map_json"]["pois"] == []
     assert maps[0]["map_json"]["roads"] == []
 
@@ -325,14 +359,20 @@ def test_site_delete_removes_managed_locations_scenes_grids_and_region_poi(
     with Session(engine) as session:
         assert session.get(Location, child_id) is None
         assert session.get(Scene, scene_id) is None
-        assert session.scalar(
-            select(func.count()).select_from(SceneGrid).where(SceneGrid.scene_id == scene_id)
-        ) == 0
-        assert session.scalar(
-            select(func.count())
-            .select_from(Location)
-            .where(Location.campaign_id == campaign_id, Location.parent_location_id.is_(None))
-        ) == 1  # the region root remains; the generated site tree does not
+        assert (
+            session.scalar(
+                select(func.count()).select_from(SceneGrid).where(SceneGrid.scene_id == scene_id)
+            )
+            == 0
+        )
+        assert (
+            session.scalar(
+                select(func.count())
+                .select_from(Location)
+                .where(Location.campaign_id == campaign_id, Location.parent_location_id.is_(None))
+            )
+            == 1
+        )  # the region root remains; the generated site tree does not
 
 
 def test_concurrent_site_confirm_with_same_request_is_gracefully_idempotent(
@@ -372,14 +412,17 @@ def test_concurrent_site_confirm_with_same_request_is_gracefully_idempotent(
     assert len(results) == 2
     assert len(set(results)) == 1
     with Session(campaign_client.app.state.database_engine) as session:
-        assert session.scalar(
-            select(func.count())
-            .select_from(AdventureSite)
-            .where(
-                AdventureSite.campaign_id == campaign_id,
-                AdventureSite.generation_request_id == "site-concurrent-same-request",
+        assert (
+            session.scalar(
+                select(func.count())
+                .select_from(AdventureSite)
+                .where(
+                    AdventureSite.campaign_id == campaign_id,
+                    AdventureSite.generation_request_id == "site-concurrent-same-request",
+                )
             )
-        ) == 1
+            == 1
+        )
 
 
 def test_concurrent_distinct_sites_preserve_both_region_pois(
@@ -420,6 +463,4 @@ def test_concurrent_distinct_sites_preserve_both_region_pois(
     maps = service.list_region_maps(campaign_id)
     assert len(sites) == 2
     assert len(maps) == 1
-    assert {poi["site_id"] for poi in maps[0]["map_json"]["pois"]} == {
-        site["id"] for site in sites
-    }
+    assert {poi["site_id"] for poi in maps[0]["map_json"]["pois"]} == {site["id"] for site in sites}

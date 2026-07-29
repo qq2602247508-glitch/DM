@@ -157,6 +157,14 @@ def list_adventure_sites(
     return {"sites": _safe_call(lambda: service.list_sites(campaign_id))}
 
 
+@router.post("/sites/repair-scene-atoms")
+def repair_site_scene_atoms(
+    campaign_id: str,
+    service: Annotated[SiteService, Depends(get_site_service)],
+) -> dict[str, int]:
+    return _safe_call(lambda: service.repair_generated_scene_atoms(campaign_id))
+
+
 @router.get("/sites/{site_id}")
 def get_adventure_site(
     campaign_id: str,

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import random
+import re
 import time
 from pathlib import Path
 from threading import Lock, RLock
@@ -74,6 +75,10 @@ def _next_spawn(
     )
     occupied_cells.add(fallback)
     return fallback
+
+
+def _safe_int(value: object, default: int) -> int:
+    return int(value) if isinstance(value, (int, float, str)) else default
 
 
 class SiteService:
@@ -780,6 +785,191 @@ class SiteService:
                 .order_by(AdventureSite.created_at, AdventureSite.id)
             )
             return tuple(serialize(row) for row in rows)
+
+    def repair_generated_scene_atoms(self, campaign_id: str) -> dict[str, int]:
+        """Idempotently upgrade sites created before scene tokens were persisted."""
+
+        repaired = {"grids": 0, "tokens": 0, "treasures": 0}
+        with Session(self.engine) as session, session.begin():
+            self._campaign(session, campaign_id)
+            levels = list(
+                session.execute(
+                    select(SiteLevel, AdventureSite)
+                    .join(AdventureSite, SiteLevel.site_id == AdventureSite.id)
+                    .where(AdventureSite.campaign_id == campaign_id)
+                )
+            )
+            for level, site in levels:
+                scene = session.scalar(
+                    select(Scene).where(
+                        Scene.campaign_id == campaign_id,
+                        Scene.location_id == level.location_id,
+                    )
+                )
+                if scene is None:
+                    continue
+                grid = session.scalar(select(SceneGrid).where(SceneGrid.scene_id == scene.id))
+                if grid is None:
+                    continue
+                layers = dict(grid.layers_json or {})
+                raw_cells = layers.get("cells", [])
+                cells = (
+                    [dict(cell) for cell in raw_cells if isinstance(cell, dict)]
+                    if isinstance(raw_cells, list)
+                    else []
+                )
+                if cells and layers.get("coordinate_system") != "one_based":
+                    cells = [
+                        {
+                            **cell,
+                            "row": int(cell.get("row", 0)) + 1,
+                            "col": int(cell.get("col", 0)) + 1,
+                        }
+                        for cell in cells
+                    ]
+                    layers["cells"] = cells
+                    layers["coordinate_system"] = "one_based"
+                    grid.layers_json = layers
+                    grid.version += 1
+                    repaired["grids"] += 1
+                rooms = list(
+                    session.scalars(select(SiteRoom).where(SiteRoom.site_level_id == level.id))
+                )
+                room_by_index = {room.room_index: room for room in rooms}
+                room_by_location = {room.location_id: room.room_index for room in rooms}
+                room_spawn_cells: dict[int, list[tuple[int, int]]] = {}
+                cell_lookup = {
+                    (int(cell.get("row", 0)), int(cell.get("col", 0))): cell for cell in cells
+                }
+                for room in rooms:
+                    bounds = dict(room.bounds_json)
+                    room_spawn_cells[room.room_index] = [
+                        (row, col)
+                        for row in range(
+                            int(bounds["row"]) + 1,
+                            int(bounds["row"]) + int(bounds["height"]) + 1,
+                        )
+                        for col in range(
+                            int(bounds["col"]) + 1,
+                            int(bounds["col"]) + int(bounds["width"]) + 1,
+                        )
+                        if cell_lookup.get((row, col), {}).get("kind") in {"floor", "room"}
+                    ]
+                tokens = list(
+                    session.scalars(select(SceneToken).where(SceneToken.scene_id == scene.id))
+                )
+                occupied = {(token.row, token.col) for token in tokens}
+                token_entities = {(token.entity_type, token.entity_id) for token in tokens}
+                participants = list(
+                    session.scalars(
+                        select(SceneParticipant).where(SceneParticipant.scene_id == scene.id)
+                    )
+                )
+                for participant in participants:
+                    key = (participant.entity_type, participant.entity_id)
+                    if key in token_entities or participant.entity_id is None:
+                        continue
+                    room_index = min(room_by_index, default=1)
+                    label = participant.entity_type
+                    if participant.entity_type == "monster":
+                        monster_entity = session.get(MonsterInstance, participant.entity_id)
+                        if monster_entity is None:
+                            continue
+                        label = monster_entity.name
+                        match = re.search(r"房间\s*(\d+)", monster_entity.notes or "")
+                        if match:
+                            room_index = int(match.group(1))
+                    elif participant.entity_type == "npc":
+                        npc_entity = session.get(NPC, participant.entity_id)
+                        if npc_entity is None:
+                            continue
+                        label = npc_entity.name
+                        room_index = room_by_location.get(npc_entity.location_id or "", room_index)
+                    else:
+                        continue
+                    row, col = _next_spawn(room_index, room_spawn_cells, occupied, cells)
+                    session.add(
+                        SceneToken(
+                            scene_id=scene.id,
+                            entity_type=participant.entity_type,
+                            entity_id=participant.entity_id,
+                            label=label,
+                            row=row,
+                            col=col,
+                            visible=participant.visible,
+                            metadata_json={
+                                "site_id": site.id,
+                                "site_level": level.level_index,
+                                "room_index": room_index,
+                                "generated_from": "site_generation",
+                                "backfilled": True,
+                            },
+                        )
+                    )
+                    repaired["tokens"] += 1
+                existing_item_ids = {
+                    str(obj.metadata_json.get("world_item_id"))
+                    for obj in session.scalars(
+                        select(SceneObject).where(SceneObject.scene_id == scene.id)
+                    )
+                    if obj.metadata_json.get("world_item_id")
+                }
+                room_location_ids = set(room_by_location)
+                rewards = list(
+                    session.scalars(
+                        select(WorldItem).where(
+                            WorldItem.campaign_id == campaign_id,
+                            WorldItem.location_id.in_(room_location_ids),
+                        )
+                    )
+                )
+                for item in rewards:
+                    metadata = dict(item.metadata_json or {})
+                    if (
+                        item.id in existing_item_ids
+                        or metadata.get("site_id") != site.id
+                        or _safe_int(metadata.get("site_level"), -1) != level.level_index
+                    ):
+                        continue
+                    room_index = _safe_int(
+                        metadata.get("room_index"),
+                        room_by_location.get(item.location_id or "", 1),
+                    )
+                    row, col = _next_spawn(room_index, room_spawn_cells, occupied, cells)
+                    session.add(
+                        SceneObject(
+                            scene_id=scene.id,
+                            object_type="treasure",
+                            label=item.name,
+                            row=row,
+                            col=col,
+                            visibility="hidden",
+                            interaction_json={
+                                "action": "collect_world_item",
+                                "world_item_id": item.id,
+                            },
+                            metadata_json={
+                                **metadata,
+                                "world_item_id": item.id,
+                                "generated_from": "site_generation",
+                                "backfilled": True,
+                            },
+                        )
+                    )
+                    repaired["treasures"] += 1
+            session.add(
+                AuditLog(
+                    campaign_id=campaign_id,
+                    actor=self.actor,
+                    action="repair",
+                    entity_type="adventure_site",
+                    entity_id=None,
+                    before_json=None,
+                    after_json=repaired,
+                    request_id="site-scene-atom-backfill-v1",
+                )
+            )
+        return repaired
 
     def get(self, campaign_id: str, site_id: str) -> dict[str, Any]:
         with Session(self.engine) as session:
