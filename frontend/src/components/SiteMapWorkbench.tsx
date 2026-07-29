@@ -8,6 +8,7 @@ import {
   listAdventureSites,
   listRegionMaps,
   previewSiteGeneration,
+  setSiteRoomVisibility,
   type SiteGenerationInput,
   type SiteGenerationPreview,
   type SiteLevelPreview,
@@ -132,6 +133,9 @@ export function SiteGrid({
           const rewardCount = room
             ? level.reward_plan.filter((item) => item.room_index === room.room_index).length
             : 0;
+          const roomMonsters = room
+            ? level.monster_plan.filter((item) => item.room_index === room.room_index)
+            : [];
           return (
           <div
             className={`aspect-square border text-[7px] leading-none ${
@@ -160,8 +164,13 @@ export function SiteGrid({
               </span>
             ) : null}
             {isRoomMarker && (monsterCount || rewardCount) ? (
-              <span className="relative z-20 block whitespace-nowrap text-[6px] font-bold text-red-200">
-                {monsterCount ? `怪${monsterCount}` : ""}{monsterCount && rewardCount ? " · " : ""}{rewardCount ? `宝${rewardCount}` : ""}
+              <span className="relative z-20 flex flex-col items-center whitespace-nowrap text-[6px] font-bold">
+                {roomMonsters.length ? (
+                  <span className="rounded-full border border-red-300 bg-red-950/90 px-1 text-red-100" title={roomMonsters.map((item) => `${item.name} × ${item.quantity}`).join("、")}>
+                    ⚔ {roomMonsters.map((item) => item.name.slice(0, 2)).join("/")} ×{monsterCount}
+                  </span>
+                ) : null}
+                {rewardCount ? <span className="text-amber-200">宝 {rewardCount}</span> : null}
               </span>
             ) : null}
           </div>
@@ -176,10 +185,16 @@ export function LevelPlanDetails({
   level,
   selectedRoomIndex,
   onSelectRoom,
+  persisted = false,
+  visibilityPendingRoom = null,
+  onVisibilityChange,
 }: {
   level: SiteLevelPreview;
   selectedRoomIndex: number | null;
   onSelectRoom: (roomIndex: number) => void;
+  persisted?: boolean;
+  visibilityPendingRoom?: number | null;
+  onVisibilityChange?: (roomIndex: number, visible: boolean) => void;
 }): ReactElement {
   return (
     <div className="mt-3 rounded-lg border border-ink-700 bg-ink-950/45 p-3">
@@ -193,6 +208,7 @@ export function LevelPlanDetails({
           const npcs = (level.npc_plan ?? []).filter((item) => item.room_index === room.room_index);
           const rewards = level.reward_plan.filter((item) => item.room_index === room.room_index);
           const selected = selectedRoomIndex === room.room_index;
+          const revealed = room.encounter_json?.visibility === "revealed";
           return (
             <details
               className={`rounded border p-3 ${selected ? "border-cyan-500 bg-cyan-950/20" : "border-ink-700 bg-ink-900/50"}`}
@@ -202,11 +218,27 @@ export function LevelPlanDetails({
               }}
             >
               <summary className="cursor-pointer text-sm text-parchment-100">
-                房间 {room.room_index} · {room.name}
+                <span>房间 {room.room_index} · {room.name}</span>
                 <span className="ml-2 text-2xs text-stone-500">
-                  怪物 {monsters.length} · NPC {npcs.length} · 战利品 {rewards.length}
+                  怪物 {monsters.reduce((sum, item) => sum + item.quantity, 0)} · NPC {npcs.length} · 战利品 {rewards.length}
                 </span>
               </summary>
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                {persisted ? (
+                  <Button
+                    aria-label={`${revealed ? "重新隐藏" : "向玩家揭露"}房间 ${room.room_index}`}
+                    disabled={!onVisibilityChange}
+                    loading={visibilityPendingRoom === room.room_index}
+                    onClick={() => onVisibilityChange?.(room.room_index, !revealed)}
+                    size="sm"
+                    variant={revealed ? "primary" : "ghost"}
+                  >
+                    <span aria-hidden="true">{revealed ? "👁" : "👁̸"}</span>
+                    {revealed ? "玩家已可见 · 点击隐藏" : "DM 私密 · 点击揭露"}
+                  </Button>
+                ) : <Badge>DM 预览可见 · 写入后可逐房揭露</Badge>}
+                <span className="text-2xs text-stone-600">DM 始终看到完整房间与全部怪物；眼睛只控制玩家视图。</span>
+              </div>
               <p className="mb-2 mt-2 text-xs leading-5 text-stone-400">
                 {room.description || room.room_type || "暂无房间说明"}
               </p>
@@ -323,7 +355,6 @@ export function SiteMapWorkbench({
     generate_npcs: true,
     generate_monsters: true,
     generate_loot: true,
-    seed: 20240728,
   });
   const [preview, setPreview] = useState<SiteGenerationPreview | null>(null);
   const [previewLevel, setPreviewLevel] = useState(0);
@@ -341,6 +372,8 @@ export function SiteMapWorkbench({
     queryFn: ({ signal }) => getAdventureSite(campaignId, selectedSiteId, signal),
     enabled: Boolean(selectedSiteId),
   });
+  const selectedLevel = site.data?.levels?.[savedLevel];
+  const activePreviewLevel = preview?.levels[previewLevel];
   useEffect(() => {
     if (!requestedSiteId) return;
     setSelectedSiteId(requestedSiteId);
@@ -349,7 +382,10 @@ export function SiteMapWorkbench({
     document.getElementById("site-grid-viewer")?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, [requestedSiteId]);
   const generation = useMutation({
-    mutationFn: () => previewSiteGeneration(campaignId, input),
+    mutationFn: (generationInput?: SiteGenerationInput) => previewSiteGeneration(
+      campaignId,
+      generationInput ?? input,
+    ),
     onSuccess: (value) => {
       setPreview(value);
       setPreviewLevel(0);
@@ -393,8 +429,30 @@ export function SiteMapWorkbench({
     },
     onError: () => showToast("删除失败；数据可能已更新，请刷新后重试", "error"),
   });
-  const selectedLevel = site.data?.levels?.[savedLevel];
-  const activePreviewLevel = preview?.levels[previewLevel];
+  const visibility = useMutation({
+    mutationFn: ({ roomIndex, visible }: { roomIndex: number; visible: boolean }) => {
+      if (!site.data || !selectedLevel) throw new Error("没有选择已保存楼层");
+      return setSiteRoomVisibility(
+        campaignId,
+        site.data.id,
+        selectedLevel.level_index,
+        roomIndex,
+        visible,
+      );
+    },
+    onSuccess: async (value) => {
+      await Promise.all([
+        client.invalidateQueries({ queryKey: ["adventure-site", campaignId, selectedSiteId] }),
+        client.invalidateQueries({ queryKey: ["scene-grid", campaignId] }),
+      ]);
+      showToast(
+        value.visibility === "revealed"
+          ? `房间 ${value.room_index} 已向玩家揭露`
+          : `房间 ${value.room_index} 已重新隐藏`,
+      );
+    },
+    onError: () => showToast("房间可见性更新失败，请刷新后重试", "error"),
+  });
   return (
     <Panel eyebrow="战役地图原子库" title="区域、建筑与地下城">
       <div className="grid gap-4 xl:grid-cols-[minmax(360px,.8fr)_minmax(0,1.4fr)]">
@@ -445,14 +503,46 @@ export function SiteMapWorkbench({
             <label className="flex items-center gap-2 text-xs text-stone-300"><input checked={input.generate_loot} onChange={(event) => setInput({ ...input, generate_loot: event.target.checked })} type="checkbox" />生成职业相关战利品</label>
           </div>
           <p className="text-2xs text-stone-600">路径示例：深水城/海区。描述会决定风格与怪物主题；数值预算、连通性和难度曲线由规则程序重算。</p>
-          <Button className="w-full" loading={generation.isPending} onClick={() => generation.mutate()} variant="ai">生成完整预览</Button>
-          {generation.isError ? <ErrorState error={generation.error} onRetry={() => generation.mutate()} /> : null}
+          <div className="grid gap-2 sm:grid-cols-2">
+            <Button
+              className="w-full"
+              loading={generation.isPending}
+              onClick={() => generation.mutate(input)}
+              variant="ai"
+            >
+              {input.seed === undefined ? "生成新预览" : "按锁定种子复现"}
+            </Button>
+            <Button
+              disabled={generation.isPending}
+              onClick={() => {
+                const nextInput = { ...input, seed: undefined };
+                setInput(nextInput);
+                generation.mutate(nextInput);
+              }}
+              variant="ghost"
+            >换一版（新随机种子）</Button>
+          </div>
+          <p className="mt-1 text-2xs text-stone-600">
+            {input.seed === undefined
+              ? "当前为随机模式：同样描述每次会生成不同布局与遇敌组合。"
+              : `已锁定种子 ${input.seed}：可精确复现当前版本。`}
+          </p>
+          {generation.isError ? <ErrorState error={generation.error} onRetry={() => generation.mutate(input)} /> : null}
         </div>
         <div>
           {preview ? (
             <>
               <div className="mb-3 flex flex-wrap items-center gap-2">
                 {preview.levels.map((level, index) => <Button key={level.level_index} size="sm" variant={index === previewLevel ? "primary" : "ghost"} onClick={() => { setPreviewLevel(index); setSelectedPreviewRoom(null); }}>{level.name}</Button>)}
+                <Badge>种子 {preview.site.seed}</Badge>
+                <Button
+                  onClick={() => setInput({ ...input, seed: preview.site.seed })}
+                  size="sm"
+                  variant={input.seed === preview.site.seed ? "primary" : "ghost"}
+                >{input.seed === preview.site.seed ? "已锁定当前种子" : "锁定当前种子"}</Button>
+                {input.seed !== undefined ? (
+                  <Button onClick={() => setInput({ ...input, seed: undefined })} size="sm" variant="ghost">解除种子锁定</Button>
+                ) : null}
                 <Button className="ml-auto" loading={confirmation.isPending} onClick={() => confirmation.mutate()} variant="primary">确认写入战役</Button>
               </div>
               {activePreviewLevel ? <><div className="mb-2 flex flex-wrap gap-2"><Badge tone="danger">{activePreviewLevel.difficulty}</Badge>{activePreviewLevel.visual_theme?.label ? <Badge tone="ai">主题 · {activePreviewLevel.visual_theme.label}</Badge> : null}{activePreviewLevel.visual_theme?.source_kind ? <Badge>{activePreviewLevel.visual_theme.source_kind === "compiled" ? "动态编译主题" : "可靠预设主题"}</Badge> : null}<Badge>{activePreviewLevel.encounter_budget_xp} XP 预算</Badge><Badge tone="ok">{activePreviewLevel.reward_budget_gp} gp 奖励预算</Badge><Badge>{activePreviewLevel.rooms.length} 房间</Badge><Badge>{activePreviewLevel.monster_plan.length} 种怪物</Badge><Badge>{activePreviewLevel.npc_plan?.length ?? 0} NPC</Badge><Badge>{activePreviewLevel.reward_plan.length} 类战利品</Badge>{activePreviewLevel.quality ? <Badge tone={activePreviewLevel.quality.score >= 88 ? "ok" : "danger"}>布局评分 {activePreviewLevel.quality.score}/100 · 房间比例 {activePreviewLevel.quality.largest_smallest_ratio}×</Badge> : null}</div>{activePreviewLevel.visual_theme?.atmosphere ? <p className="mb-2 text-xs text-stone-400">{activePreviewLevel.visual_theme.atmosphere}{activePreviewLevel.visual_theme.keywords?.length ? ` · 主题词：${activePreviewLevel.visual_theme.keywords.join("、")}` : ""}</p> : null}<SiteGrid level={activePreviewLevel} onSelectRoom={setSelectedPreviewRoom} selectedRoomIndex={selectedPreviewRoom} /><LevelPlanDetails level={activePreviewLevel} onSelectRoom={setSelectedPreviewRoom} selectedRoomIndex={selectedPreviewRoom} /></> : null}
@@ -485,7 +575,14 @@ export function SiteMapWorkbench({
               {selectedLevel.quality ? <Badge tone="ok">布局评分 {selectedLevel.quality.score}/100 · {selectedLevel.quality.algorithm}</Badge> : null}
             </div>
             <SiteGrid level={selectedLevel} onSelectRoom={setSelectedSavedRoom} selectedRoomIndex={selectedSavedRoom} />
-            <LevelPlanDetails level={selectedLevel} onSelectRoom={setSelectedSavedRoom} selectedRoomIndex={selectedSavedRoom} />
+            <LevelPlanDetails
+              level={selectedLevel}
+              onSelectRoom={setSelectedSavedRoom}
+              onVisibilityChange={(roomIndex, visible) => visibility.mutate({ roomIndex, visible })}
+              persisted
+              selectedRoomIndex={selectedSavedRoom}
+              visibilityPendingRoom={visibility.isPending ? visibility.variables?.roomIndex ?? null : null}
+            />
           </>
         ) : null}
       </div>

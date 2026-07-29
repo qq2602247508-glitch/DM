@@ -34,8 +34,31 @@ export function getDoorOrientation(
   return verticalWall && !horizontalWall ? "vertical" : "horizontal";
 }
 
-export function terrainCellClass(cell: PresentableMapCell | undefined): string {
+const THEME_CELL_CLASSES: Record<string, Partial<Record<string, string>>> = {
+  ocean: { wall: "bg-slate-900", floor: "bg-cyan-950/70", room: "bg-blue-950/70", cover: "bg-teal-950/80", door: "bg-sky-950/80", stairs: "bg-indigo-950/80" },
+  ember: { wall: "bg-stone-950", floor: "bg-red-950/60", room: "bg-orange-950/70", cover: "bg-red-950/90", door: "bg-orange-950/80" },
+  ice: { wall: "bg-slate-900", floor: "bg-sky-950/50", room: "bg-blue-950/70", cover: "bg-cyan-950/80", door: "bg-blue-950/80" },
+  ashen: { wall: "bg-zinc-950", floor: "bg-zinc-900/70", room: "bg-zinc-950/80", cover: "bg-stone-800", door: "bg-stone-900" },
+  moss: { wall: "bg-stone-900", floor: "bg-lime-950/40", room: "bg-emerald-950/70", cover: "bg-green-950/90", door: "bg-amber-950/80" },
+  violet: { wall: "bg-slate-950", floor: "bg-purple-950/50", room: "bg-purple-950/75", cover: "bg-violet-950/90", door: "bg-fuchsia-950/80" },
+  toxic: { wall: "bg-stone-950", floor: "bg-lime-950/60", room: "bg-emerald-950/75", cover: "bg-green-950/90", door: "bg-emerald-950/85" },
+  crystal: { wall: "bg-indigo-950", floor: "bg-purple-950/50", room: "bg-indigo-950/75", cover: "bg-fuchsia-950/85", door: "bg-violet-950/85" },
+  brass: { wall: "bg-stone-950", floor: "bg-amber-950/60", room: "bg-amber-950/75", cover: "bg-stone-800", door: "bg-yellow-950/85" },
+  sandstone: { wall: "bg-stone-900", floor: "bg-yellow-950/50", room: "bg-orange-950/70", cover: "bg-amber-950/90", door: "bg-orange-950/85" },
+  fungal: { wall: "bg-stone-950", floor: "bg-emerald-950/50", room: "bg-purple-950/75", cover: "bg-fuchsia-950/85", door: "bg-purple-950/85" },
+  shadow: { wall: "bg-black", floor: "bg-slate-950", room: "bg-slate-950/90", cover: "bg-black", door: "bg-indigo-950/90" },
+  radiant: { wall: "bg-stone-900", floor: "bg-amber-950/40", room: "bg-yellow-950/70", cover: "bg-amber-900/80", door: "bg-yellow-950/80" },
+  forest: { wall: "bg-stone-950", floor: "bg-green-950/50", room: "bg-green-950/75", cover: "bg-emerald-950/90", door: "bg-amber-950/85" },
+  storm: { wall: "bg-slate-950", floor: "bg-slate-900/70", room: "bg-slate-950/85", cover: "bg-indigo-950/90", door: "bg-blue-950/85" },
+};
+
+export function terrainCellClass(
+  cell: PresentableMapCell | undefined,
+  theme?: string | null,
+): string {
   if (isMapVoidCell(cell)) return "bg-black/80 border-black/70";
+  const themed = theme ? THEME_CELL_CLASSES[theme]?.[cell?.kind ?? "floor"] : undefined;
+  if (themed) return themed;
   if (cell?.kind === "wall") return "bg-stone-800";
   if (cell?.kind === "cover") return "bg-emerald-950/70";
   if (cell?.kind === "room") return "bg-cyan-950/55";

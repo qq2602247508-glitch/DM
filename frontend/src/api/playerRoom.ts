@@ -108,6 +108,8 @@ export type PlayerSceneGrid = {
   cell_size_ft: number;
   mode?: string;
   public_description?: string | null;
+  theme?: string | null;
+  visual_theme?: Record<string, unknown>;
   cells?: Array<{
     row: number;
     col: number;

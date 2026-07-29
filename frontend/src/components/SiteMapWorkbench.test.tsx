@@ -2,6 +2,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useState } from "react";
 import { describe, expect, it } from "vitest";
+import { vi } from "vitest";
 
 import type { SiteLevelPreview } from "../api/world";
 import { LevelPlanDetails, SiteGrid } from "./SiteMapWorkbench";
@@ -32,6 +33,7 @@ const LEVEL: SiteLevelPreview = {
     room_type: "guard_room",
     description: "门边堆着破损盾牌。",
     bounds: { row: 0, col: 0, width: 2, height: 2 },
+    encounter_json: { visibility: "hidden" },
   }],
   connectors: [],
   monster_plan: [{ name: "地精守卫", quantity: 2, xp_each: 50, source: "官方", room_index: 1 }],
@@ -59,5 +61,24 @@ describe("SiteMapWorkbench room plans", () => {
     expect(screen.getByText("受困斥候")).toBeInTheDocument();
     expect(screen.getByText(/银制钥匙 · 20 gp/)).toBeInTheDocument();
     expect(container.querySelector('[data-room-index="1"].ring-cyan-300')).not.toBeNull();
+  });
+
+  it("shows all encounter details to the DM and exposes room-level reveal control", async () => {
+    const user = userEvent.setup();
+    const onVisibilityChange = vi.fn();
+    render(
+      <LevelPlanDetails
+        level={LEVEL}
+        onSelectRoom={() => undefined}
+        onVisibilityChange={onVisibilityChange}
+        persisted
+        selectedRoomIndex={1}
+      />,
+    );
+
+    await user.click(screen.getByText(/房间 1 · 守卫厅/));
+    expect(screen.getByText(/地精守卫 × 2/)).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "向玩家揭露房间 1" }));
+    expect(onVisibilityChange).toHaveBeenCalledWith(1, true);
   });
 });

@@ -1065,6 +1065,10 @@ class SiteGenerationConfirmRequest(BaseModel):
     preview: dict[str, Any]
 
 
+class SiteRoomVisibilityRequest(BaseModel):
+    visible: bool
+
+
 class CompendiumEntryCreate(BaseModel):
     entry_type: Literal[
         "spell", "feature", "monster", "equipment", "item", "npc", "location", "scene"

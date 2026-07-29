@@ -46,6 +46,43 @@ class _ConcurrentRegionUpdate(RuntimeError):
 _SITE_LOCKS_GUARD = Lock()
 _SITE_LOCKS: dict[tuple[str, str], Any] = {}
 
+CR_XP = {
+    "0": 25,
+    "1/8": 25,
+    "1/4": 50,
+    "1/2": 100,
+    "1": 200,
+    "2": 450,
+    "3": 700,
+    "4": 1100,
+    "5": 1800,
+    "6": 2300,
+    "7": 2900,
+    "8": 3900,
+    "9": 5000,
+    "10": 5900,
+    "11": 7200,
+    "12": 8400,
+    "13": 10000,
+    "14": 11500,
+    "15": 13000,
+    "16": 15000,
+    "17": 18000,
+    "18": 20000,
+    "19": 22000,
+    "20": 25000,
+    "21": 33000,
+    "22": 41000,
+    "23": 50000,
+    "24": 62000,
+    "25": 75000,
+    "26": 90000,
+    "27": 105000,
+    "28": 120000,
+    "29": 135000,
+    "30": 155000,
+}
+
 
 def _generation_lock(engine: Engine, campaign_id: str) -> Any:
     """Serialize local site writes per campaign without blocking other campaigns."""
@@ -129,8 +166,124 @@ class SiteService:
                     ],
                 }
         preview = generate_site(data)
+        self._bind_official_monster_atoms(preview)
         self._bind_official_reward_atoms(preview)
         return preview
+
+    def _bind_official_monster_atoms(self, preview: dict[str, Any]) -> None:
+        """Make semantic compendium retrieval the primary encounter source."""
+
+        site = dict(preview.get("site") or {})
+        profile = dict(site.get("theme_profile") or {})
+        queries = tuple(
+            dict.fromkeys(
+                str(item).strip()
+                for item in [
+                    *profile.get("monster_queries", []),
+                    *profile.get("keywords", []),
+                ]
+                if isinstance(item, str) and len(item.strip()) >= 2
+            )
+        )
+        if not queries:
+            return
+        candidates: list[tuple[int, int, dict[str, Any]]] = []
+        for entry in self.official_catalog.entries:
+            if entry.get("entry_type") != "monster":
+                continue
+            filters = dict(entry.get("filters_json") or {})
+            xp = CR_XP.get(str(filters.get("challenge_rating") or ""))
+            if xp is None:
+                continue
+            name = str(entry.get("name") or "")
+            description = str(entry.get("description") or "")
+            monster_type = str(filters.get("monster_type") or "")
+            tags = " ".join(str(tag) for tag in entry.get("tags", []))
+            score = sum(
+                24 if query in name else 7 if query in monster_type else 3
+                for query in queries
+                if query in f"{name} {description} {monster_type} {tags}"
+            )
+            if score:
+                edition_bonus = 12 if str(filters.get("edition")) in {"2024", "2025"} else 0
+                candidates.append((score + edition_bonus, xp, entry))
+        if not candidates:
+            return
+        seed = int(site.get("seed") or 0)
+        theme = str(site.get("theme") or "custom")
+        for level in preview.get("levels", []):
+            if not isinstance(level, dict) or not level.get("monster_plan"):
+                continue
+            budget = sum(
+                max(1, int(item.get("quantity", 1))) * max(25, int(item.get("xp_each", 25)))
+                for item in level["monster_plan"]
+                if isinstance(item, dict)
+            )
+            affordable = [item for item in candidates if item[1] <= max(25, round(budget * 1.25))]
+            if not affordable:
+                continue
+            level_index = int(level.get("level_index") or 1)
+            affordable.sort(
+                key=lambda item: (
+                    -item[0],
+                    hashlib.sha256(
+                        f"{seed}|{level_index}|{item[2].get('id')}".encode()
+                    ).hexdigest(),
+                )
+            )
+            pool = affordable[:8]
+            rng = random.Random(seed + level_index * 65537)
+            top_score = pool[0][0]
+            strong = [item for item in pool if item[0] >= top_score - 8]
+            rng.shuffle(strong)
+            selected = strong[: min(3, len(strong))]
+            if len(selected) < min(3, len(pool)):
+                selected_ids = {str(item[2].get("id")) for item in selected}
+                selected.extend(item for item in pool if str(item[2].get("id")) not in selected_ids)
+                selected = selected[: min(3, len(pool))]
+            quantities = [1] * len(selected)
+            spent = sum(item[1] for item in selected)
+            while spent < budget and sum(quantities) < 12:
+                choices = [
+                    index
+                    for index, (_, xp, _) in enumerate(selected)
+                    if quantities[index] < 4 and spent + xp <= round(budget * 1.15)
+                ]
+                if not choices:
+                    break
+                choice = rng.choice(choices)
+                quantities[choice] += 1
+                spent += selected[choice][1]
+            level["monster_plan"] = [
+                {
+                    "name": str(entry.get("name") or "未命名怪物"),
+                    "quantity": quantities[index],
+                    "xp_each": xp,
+                    "source": "official_compendium",
+                    "source_record_id": entry.get("source_record_id"),
+                    "compendium_entry_id": entry.get("id"),
+                    "theme": theme,
+                    "theme_queries": list(queries),
+                    "selection_reason": self._monster_selection_reason(entry, queries),
+                    "encounter_role": (
+                        "首领" if xp >= max(450, budget // 3) else "精英" if xp >= 450 else "杂兵"
+                    ),
+                    "room_index": (index % max(1, len(level.get("rooms", [])))) + 1,
+                }
+                for index, (_, xp, entry) in enumerate(selected)
+            ]
+
+    @staticmethod
+    def _monster_selection_reason(entry: dict[str, Any], queries: tuple[str, ...]) -> str:
+        searchable = " ".join(
+            (
+                str(entry.get("name") or ""),
+                str(entry.get("description") or ""),
+                str(dict(entry.get("filters_json") or {}).get("monster_type") or ""),
+            )
+        )
+        matched = [query for query in queries if query in searchable][:3]
+        return f"官方图鉴语义匹配：{'、'.join(matched) or '主题关联词'}"
 
     def _bind_official_reward_atoms(self, preview: dict[str, Any]) -> None:
         """Replace abstract reward placeholders with reusable official atoms."""
@@ -468,6 +621,10 @@ class SiteService:
                         ),
                         layers_json={
                             "cells": scene_cells,
+                            "theme": str(
+                                dict(level_data.get("visual_theme") or {}).get("palette") or "amber"
+                            ),
+                            "visual_theme": dict(level_data.get("visual_theme") or {}),
                             "site_id": site.id,
                             "site_level_index": level.level_index,
                             "shared_site_grid": True,
@@ -498,6 +655,7 @@ class SiteService:
                             description=str(room_data["description"]),
                             bounds_json=dict(room_data["bounds"]),
                             encounter_json={
+                                "visibility": "hidden",
                                 "monsters": [
                                     item
                                     for item in level_data.get("monster_plan", [])
@@ -782,6 +940,102 @@ class SiteService:
             site_id = site.id
         return self.get(campaign_id, site_id)
 
+    def set_room_visibility(
+        self,
+        campaign_id: str,
+        site_id: str,
+        level_index: int,
+        room_index: int,
+        *,
+        visible: bool,
+        request_id: str,
+    ) -> dict[str, Any]:
+        """Reveal or hide one generated room's actors from player views."""
+
+        with Session(self.engine) as session, session.begin():
+            site = session.scalar(
+                select(AdventureSite).where(
+                    AdventureSite.id == site_id,
+                    AdventureSite.campaign_id == campaign_id,
+                )
+            )
+            if site is None:
+                raise StateNotFoundError("adventure site not found")
+            level = session.scalar(
+                select(SiteLevel).where(
+                    SiteLevel.site_id == site_id,
+                    SiteLevel.level_index == level_index,
+                )
+            )
+            if level is None:
+                raise StateNotFoundError("site level not found")
+            room = session.scalar(
+                select(SiteRoom).where(
+                    SiteRoom.site_level_id == level.id,
+                    SiteRoom.room_index == room_index,
+                )
+            )
+            if room is None:
+                raise StateNotFoundError("site room not found")
+            scene = session.scalar(
+                select(Scene).where(
+                    Scene.campaign_id == campaign_id,
+                    Scene.location_id == level.location_id,
+                )
+            )
+            if scene is None:
+                raise StateNotFoundError("generated scene not found")
+            matched_tokens = [
+                token
+                for token in session.scalars(
+                    select(SceneToken).where(SceneToken.scene_id == scene.id)
+                )
+                if token.entity_type in {"monster", "npc"}
+                and _safe_int(dict(token.metadata_json or {}).get("room_index"), -1) == room_index
+            ]
+            entity_keys = {(token.entity_type, token.entity_id) for token in matched_tokens}
+            for token in matched_tokens:
+                token.visible = visible
+                token.version += 1
+            matched_participants = [
+                participant
+                for participant in session.scalars(
+                    select(SceneParticipant).where(SceneParticipant.scene_id == scene.id)
+                )
+                if (participant.entity_type, participant.entity_id) in entity_keys
+            ]
+            for participant in matched_participants:
+                participant.visible = visible
+                participant.version += 1
+            before_visibility = str(dict(room.encounter_json or {}).get("visibility") or "hidden")
+            encounter = dict(room.encounter_json or {})
+            encounter["visibility"] = "revealed" if visible else "hidden"
+            room.encounter_json = encounter
+            room.version += 1
+            session.add(
+                AuditLog(
+                    campaign_id=campaign_id,
+                    actor=self.actor,
+                    action="reveal" if visible else "hide",
+                    entity_type="site_room",
+                    entity_id=room.id,
+                    before_json={"visibility": before_visibility},
+                    after_json={
+                        "visibility": encounter["visibility"],
+                        "tokens": len(matched_tokens),
+                    },
+                    request_id=request_id,
+                )
+            )
+            return {
+                "site_id": site_id,
+                "level_index": level_index,
+                "room_index": room_index,
+                "visibility": encounter["visibility"],
+                "tokens_updated": len(matched_tokens),
+                "participants_updated": len(matched_participants),
+            }
+
     def delete(
         self,
         campaign_id: str,
@@ -964,6 +1218,7 @@ class SiteService:
                 )
             )
             for level, site in levels:
+                grid_changed = False
                 scene = session.scalar(
                     select(Scene).where(
                         Scene.campaign_id == campaign_id,
@@ -976,6 +1231,18 @@ class SiteService:
                 if grid is None:
                     continue
                 layers = dict(grid.layers_json or {})
+                visual_theme = dict(level.generation_json or {}).get("visual_theme", {})
+                if isinstance(visual_theme, dict) and visual_theme:
+                    expected_palette = str(visual_theme.get("palette") or "amber")
+                    if (
+                        layers.get("theme") != expected_palette
+                        or layers.get("visual_theme") != visual_theme
+                    ):
+                        layers["theme"] = expected_palette
+                        layers["visual_theme"] = visual_theme
+                        grid.layers_json = layers
+                        grid.version += 1
+                        grid_changed = True
                 raw_cells = layers.get("cells", [])
                 cells = (
                     [dict(cell) for cell in raw_cells if isinstance(cell, dict)]
@@ -995,6 +1262,8 @@ class SiteService:
                     layers["coordinate_system"] = "one_based"
                     grid.layers_json = layers
                     grid.version += 1
+                    grid_changed = True
+                if grid_changed:
                     repaired["grids"] += 1
                 rooms = list(
                     session.scalars(select(SiteRoom).where(SiteRoom.site_level_id == level.id))

@@ -43,6 +43,11 @@ export type SiteRoomPlan = {
   description?: string | null;
   bounds?: Record<string, number>;
   bounds_json?: Record<string, number>;
+  encounter_json?: {
+    visibility?: "hidden" | "revealed";
+    monsters?: Array<Record<string, unknown>>;
+    npcs?: Array<Record<string, unknown>>;
+  };
 };
 export type SiteLevelPreview = {
   level_index: number;
@@ -130,6 +135,25 @@ export async function listAdventureSites(campaignId: string, signal?: AbortSigna
 
 export function getAdventureSite(campaignId: string, siteId: string, signal?: AbortSignal): Promise<AdventureSite> {
   return apiFetch(`/campaigns/${campaignId}/sites/${siteId}`, { signal });
+}
+
+export function setSiteRoomVisibility(
+  campaignId: string,
+  siteId: string,
+  levelIndex: number,
+  roomIndex: number,
+  visible: boolean,
+): Promise<{
+  site_id: string;
+  level_index: number;
+  room_index: number;
+  visibility: "hidden" | "revealed";
+  tokens_updated: number;
+}> {
+  return apiFetch(
+    `/campaigns/${campaignId}/sites/${siteId}/levels/${levelIndex}/rooms/${roomIndex}/visibility`,
+    { method: "PUT", body: { visible } },
+  );
 }
 
 export function deleteAdventureSite(

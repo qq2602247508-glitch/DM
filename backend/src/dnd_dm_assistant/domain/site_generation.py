@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-import hashlib
 import math
 import random
+import secrets
 from collections import deque
 from dataclasses import dataclass
 from statistics import mean, pstdev
@@ -92,8 +92,10 @@ def _seed(data: dict[str, Any]) -> int:
     supplied = data.get("seed")
     if supplied is not None:
         return int(supplied)
-    digest = hashlib.sha256(f"{data['name']}|{data['brief']}".encode()).hexdigest()
-    return int(digest[:8], 16)
+    # Preview requests should produce a fresh variation by default.  Once the
+    # DM confirms or explicitly locks this seed, the exact result remains
+    # reproducible forever.
+    return secrets.randbelow(2_147_483_648)
 
 
 @dataclass(frozen=True)

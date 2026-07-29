@@ -17,6 +17,7 @@ from dnd_dm_assistant.infrastructure.database.models import (
     Scene,
     SceneGrid,
     SceneObject,
+    SceneParticipant,
     SceneToken,
 )
 from dnd_dm_assistant.infrastructure.database.site_service import SiteService
@@ -59,6 +60,42 @@ def test_site_generator_is_deterministic_connected_and_progressive() -> None:
         for level in first["levels"]
         for monster in level["monster_plan"]
     )
+
+
+def test_site_generator_uses_fresh_random_seed_unless_dm_locks_one() -> None:
+    random_request = _request()
+    random_request.pop("seed")
+    first = generate_site(random_request)
+    second = generate_site(random_request)
+    assert first["site"]["seed"] != second["site"]["seed"]
+
+    locked = _request(seed=771122)
+    assert generate_site(locked) == generate_site(locked)
+
+
+def test_fungal_prompt_retrieves_official_myconids_from_compendium(
+    campaign_client: TestClient,
+) -> None:
+    campaign_id = campaign_client.post(
+        "/api/v1/campaigns", json={"name": "蕈人图鉴检索验收"}
+    ).json()["id"]
+    response = campaign_client.post(
+        f"/api/v1/campaigns/{campaign_id}/sites/generate/preview",
+        json=_request(
+            name="蕈人幽穴",
+            brief="藏在深林的地下城，充满了蕈人相关怪物",
+            maximum_levels=2,
+            seed=12345,
+        ),
+    )
+    assert response.status_code == 200, response.text
+    preview = response.json()
+    assert preview["site"]["theme"] == "fungal"
+    monsters = [monster for level in preview["levels"] for monster in level["monster_plan"]]
+    assert monsters
+    assert all(monster["source"] == "official_compendium" for monster in monsters)
+    assert all(monster["compendium_entry_id"] for monster in monsters)
+    assert all("蕈人" in monster["name"] for monster in monsters)
 
 
 def test_sahuagin_prompt_drives_rooms_palette_monsters_and_loot() -> None:
@@ -296,6 +333,8 @@ def test_site_generation_api_persists_atomic_hierarchy_and_is_idempotent(
             )
         )
         assert grids
+        assert all(grid.layers_json.get("theme") for grid in grids)
+        assert all(grid.layers_json.get("visual_theme") for grid in grids)
         assert all(
             int(cell["row"]) >= 1 and int(cell["col"]) >= 1
             for grid in grids
@@ -353,6 +392,72 @@ def test_site_generation_api_persists_atomic_hierarchy_and_is_idempotent(
     )
     assert repeated_repair.json()["tokens"] == 0
     assert repeated_repair.json()["treasures"] == 0
+
+    first_level = site["levels"][0]
+    with Session(engine) as session:
+        scene = session.scalar(select(Scene).where(Scene.location_id == first_level["location_id"]))
+        assert scene is not None
+        monster_tokens = list(
+            session.scalars(
+                select(SceneToken).where(
+                    SceneToken.scene_id == scene.id,
+                    SceneToken.entity_type == "monster",
+                )
+            )
+        )
+        assert monster_tokens
+        room_index = int(monster_tokens[0].metadata_json["room_index"])
+        room_entity_ids = {
+            token.entity_id
+            for token in monster_tokens
+            if int(token.metadata_json["room_index"]) == room_index
+        }
+        assert all(not token.visible for token in monster_tokens)
+        scene_id = scene.id
+
+    dm_grid = campaign_client.get(f"/api/v1/campaigns/{campaign_id}/scenes/{scene_id}/grid")
+    assert dm_grid.status_code == 200, dm_grid.text
+    assert room_entity_ids <= {token["entity_id"] for token in dm_grid.json()["tokens"]}
+
+    revealed = campaign_client.put(
+        f"/api/v1/campaigns/{campaign_id}/sites/{site['id']}"
+        f"/levels/{first_level['level_index']}/rooms/{room_index}/visibility",
+        json={"visible": True},
+    )
+    assert revealed.status_code == 200, revealed.text
+    assert revealed.json()["visibility"] == "revealed"
+    with Session(engine) as session:
+        assert all(
+            token.visible
+            for token in session.scalars(
+                select(SceneToken).where(
+                    SceneToken.scene_id == scene_id,
+                    SceneToken.entity_id.in_(room_entity_ids),
+                )
+            )
+        )
+        assert all(
+            participant.visible
+            for participant in session.scalars(
+                select(SceneParticipant).where(
+                    SceneParticipant.scene_id == scene_id,
+                    SceneParticipant.entity_id.in_(room_entity_ids),
+                )
+            )
+        )
+    persisted = campaign_client.get(f"/api/v1/campaigns/{campaign_id}/sites/{site['id']}").json()
+    room = next(
+        room for room in persisted["levels"][0]["rooms"] if room["room_index"] == room_index
+    )
+    assert room["encounter_json"]["visibility"] == "revealed"
+
+    hidden = campaign_client.put(
+        f"/api/v1/campaigns/{campaign_id}/sites/{site['id']}"
+        f"/levels/{first_level['level_index']}/rooms/{room_index}/visibility",
+        json={"visible": False},
+    )
+    assert hidden.status_code == 200, hidden.text
+    assert hidden.json()["visibility"] == "hidden"
 
     other_campaign = campaign_client.post("/api/v1/campaigns", json={"name": "隔离团"}).json()
     forbidden = campaign_client.get(f"/api/v1/campaigns/{other_campaign['id']}/sites/{site['id']}")

@@ -34,4 +34,18 @@ describe("mapPresentation", () => {
     expect(shouldShowTerrainLabel({ row: 2, col: 1, kind: "room", label: "公共大厅" })).toBe(true);
     expect(shouldShowTerrainLabel({ row: 2, col: 2, kind: "stairs", label: "向上楼梯" })).toBe(true);
   });
+
+  it("uses the persisted dungeon theme instead of the generic scene palette", () => {
+    const fungal = terrainCellClass(
+      { row: 1, col: 1, kind: "room", label: "母菌核心" },
+      "fungal",
+    );
+    const ocean = terrainCellClass(
+      { row: 1, col: 1, kind: "room", label: "潮汐祭坛" },
+      "ocean",
+    );
+    expect(fungal).toContain("purple");
+    expect(ocean).toContain("blue");
+    expect(fungal).not.toBe(ocean);
+  });
 });

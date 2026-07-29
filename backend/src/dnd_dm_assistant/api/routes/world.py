@@ -28,6 +28,7 @@ from dnd_dm_assistant.api.schemas import (
     SceneTokenCreate,
     SiteGenerationConfirmRequest,
     SiteGenerationRequest,
+    SiteRoomVisibilityRequest,
     TravelConfirmRequest,
     TravelPreviewRequest,
     WorldItemCreate,
@@ -172,6 +173,28 @@ def get_adventure_site(
     service: Annotated[SiteService, Depends(get_site_service)],
 ) -> dict[str, Any]:
     return _safe_call(lambda: service.get(campaign_id, site_id))
+
+
+@router.put("/sites/{site_id}/levels/{level_index}/rooms/{room_index}/visibility")
+def set_site_room_visibility(
+    campaign_id: str,
+    site_id: str,
+    level_index: int,
+    room_index: int,
+    body: SiteRoomVisibilityRequest,
+    request: Request,
+    service: Annotated[SiteService, Depends(get_site_service)],
+) -> dict[str, Any]:
+    return _safe_call(
+        lambda: service.set_room_visibility(
+            campaign_id,
+            site_id,
+            level_index,
+            room_index,
+            visible=body.visible,
+            request_id=_request_id(request),
+        )
+    )
 
 
 @router.delete("/sites/{site_id}", status_code=status.HTTP_204_NO_CONTENT)

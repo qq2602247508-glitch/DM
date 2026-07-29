@@ -1003,14 +1003,10 @@ class PlayerRoomService:
             session.flush()
             return self.player.character_view(principal.campaign_id, character_id)
 
-    def preview_equipment(
-        self, principal: PlayerPrincipal, data: dict[str, Any]
-    ) -> dict[str, Any]:
+    def preview_equipment(self, principal: PlayerPrincipal, data: dict[str, Any]) -> dict[str, Any]:
         if principal.character_id is None:
             raise ValueError("请先绑定角色")
-        character = self.player.character_view(
-            principal.campaign_id, principal.character_id
-        )
+        character = self.player.character_view(principal.campaign_id, principal.character_id)
         safe = {
             **data,
             "character_id": principal.character_id,
@@ -1021,14 +1017,10 @@ class PlayerRoomService:
         }
         return self.economy.equipment_preview(principal.campaign_id, safe)
 
-    def confirm_equipment(
-        self, principal: PlayerPrincipal, data: dict[str, Any]
-    ) -> dict[str, Any]:
+    def confirm_equipment(self, principal: PlayerPrincipal, data: dict[str, Any]) -> dict[str, Any]:
         if principal.character_id is None:
             raise ValueError("请先绑定角色")
-        character = self.player.character_view(
-            principal.campaign_id, principal.character_id
-        )
+        character = self.player.character_view(principal.campaign_id, principal.character_id)
         safe = {
             **data,
             "character_id": principal.character_id,
@@ -1184,10 +1176,7 @@ class PlayerRoomService:
         )
         if equipped_armor and equipped_armor["armor_class"] is not None:
             armor_type = str(
-                dict(equipped_armor["metadata_json"])["equipment_profile"].get(
-                    "armor_type"
-                )
-                or ""
+                dict(equipped_armor["metadata_json"])["equipment_profile"].get("armor_type") or ""
             )
             base_ac = int(equipped_armor["armor_class"])
             armor_class = (
@@ -1197,10 +1186,7 @@ class PlayerRoomService:
                 if armor_type == "medium"
                 else base_ac
             )
-        if any(
-            asset["equipped"] and asset["category"] == "shield"
-            for asset in starter_assets
-        ):
+        if any(asset["equipped"] and asset["category"] == "shield" for asset in starter_assets):
             armor_class += 2
         with Session(self.engine) as session, session.begin():
             member = session.get(PlayerSession, principal.session_id)
@@ -1419,18 +1405,21 @@ class PlayerRoomService:
                 SceneObject.visibility == "public",
             )
         ).all()
-        safe_tokens = tokens if not fog_enabled else [
-            item
-            for item in tokens
-            if (
-                item.entity_type == "character"
-                and item.entity_id == principal.character_id
-            )
-            or (item.row, item.col) in visible
-        ]
-        safe_objects = objects if not fog_enabled else [
-            item for item in objects if (item.row, item.col) in explored | visible
-        ]
+        safe_tokens = (
+            tokens
+            if not fog_enabled
+            else [
+                item
+                for item in tokens
+                if (item.entity_type == "character" and item.entity_id == principal.character_id)
+                or (item.row, item.col) in visible
+            ]
+        )
+        safe_objects = (
+            objects
+            if not fog_enabled
+            else [item for item in objects if (item.row, item.col) in explored | visible]
+        )
         transitions: list[dict[str, Any]] = []
         current_level = session.scalar(
             select(SiteLevel).where(SiteLevel.location_id == scene.location_id)
@@ -1494,6 +1483,16 @@ class PlayerRoomService:
                     "cell_size_ft": grid.cell_size_ft,
                     "mode": grid.mode,
                     "public_description": grid.public_description,
+                    **(
+                        {
+                            "theme": str(dict(grid.layers_json or {})["theme"]),
+                            "visual_theme": dict(grid.layers_json or {}).get(
+                                "visual_theme", {}
+                            ),
+                        }
+                        if dict(grid.layers_json or {}).get("theme")
+                        else {}
+                    ),
                     **(
                         {
                             "fog_of_war": True,
@@ -1693,8 +1692,11 @@ class PlayerRoomService:
                     "save_ability": raw.get("save_ability"),
                     "save_dc": raw.get("save_dc"),
                     "target_types": (
-                        ["self"] if "隐形" in name else ["npc", "monster"] if "命令" in name else
-                        ["self", "npc", "monster", "object", "area"]
+                        ["self"]
+                        if "隐形" in name
+                        else ["npc", "monster"]
+                        if "命令" in name
+                        else ["self", "npc", "monster", "object", "area"]
                     ),
                 }
             )
@@ -1778,17 +1780,11 @@ class PlayerRoomService:
                         "actor_combatant_id": action.actor_combatant_id,
                         "actor_name": action.request_json.get("actor_name"),
                         "target_combatant_id": (
-                            action.target_combatant_ids[0]
-                            if action.target_combatant_ids
-                            else None
+                            action.target_combatant_ids[0] if action.target_combatant_ids else None
                         ),
                         "target_name": action.request_json.get("target_name"),
-                        "damage_on_success": action.request_json.get(
-                            "damage_on_success", 0
-                        ),
-                        "damage_on_failure": action.request_json.get(
-                            "damage_on_failure", 0
-                        ),
+                        "damage_on_success": action.request_json.get("damage_on_success", 0),
+                        "damage_on_failure": action.request_json.get("damage_on_failure", 0),
                         "damage_type": action.request_json.get("damage_type"),
                     }
                 )
@@ -1826,12 +1822,8 @@ class PlayerRoomService:
                     "action_name": action.request_json.get("action_name"),
                     "from_position": action.request_json.get("from_position"),
                     "to_position": action.request_json.get("to_position"),
-                    "movement_spent_ft": action.request_json.get(
-                        "movement_spent_ft"
-                    ),
-                    "resolution_type": action.request_json.get(
-                        "resolution_type"
-                    ),
+                    "movement_spent_ft": action.request_json.get("movement_spent_ft"),
+                    "resolution_type": action.request_json.get("resolution_type"),
                     "dc": action.request_json.get("dc"),
                     "roll_formula": action.request_json.get("roll_formula"),
                     "damage": action.result_json.get(
@@ -2107,9 +2099,7 @@ class PlayerRoomService:
                     "requires_dm_confirmation": True,
                 }
                 if kind == "tool" and target_object is not None:
-                    desired_state = (
-                        "disarmed" if target_object.object_type == "trap" else "open"
-                    )
+                    desired_state = "disarmed" if target_object.object_type == "trap" else "open"
                     plan["proposal"] = {
                         "kind": "object_state",
                         "object_id": target_object.id,
@@ -2122,11 +2112,7 @@ class PlayerRoomService:
                 resource_cost = int(action.get("resource_cost") or 0)
                 if resource_key and resource_cost:
                     resource = (character.resources or {}).get(str(resource_key))
-                    current = (
-                        int(resource.get("current") or 0)
-                        if isinstance(resource, dict)
-                        else 0
-                    )
+                    current = int(resource.get("current") or 0) if isinstance(resource, dict) else 0
                     if current < resource_cost:
                         raise ValueError("对应法术位或资源不足")
                     plan["cost"]["available_before"] = current
@@ -2468,10 +2454,7 @@ class PlayerRoomService:
                         (int(cell["row"]), int(cell["col"]))
                         for cell in raw_cells
                         if isinstance(cell, dict)
-                        and (
-                            cell.get("kind") == "wall"
-                            or cell.get("blocks_sight") is True
-                        )
+                        and (cell.get("kind") == "wall" or cell.get("blocks_sight") is True)
                         and isinstance(cell.get("row"), int)
                         and isinstance(cell.get("col"), int)
                     )
@@ -2570,18 +2553,14 @@ class PlayerRoomService:
                     )
                     legal = candidate.id == target.id
                     if shape == "circle":
-                        legal = (
-                            grid_distance_ft(
-                                aim_point,
-                                candidate_point,
-                                cell_size_ft=cell_size,
-                            )
-                            <= radius
-                            and line_of_sight(
-                                aim_point,
-                                candidate_point,
-                                sight_blockers,
-                            )
+                        legal = grid_distance_ft(
+                            aim_point,
+                            candidate_point,
+                            cell_size_ft=cell_size,
+                        ) <= radius and line_of_sight(
+                            aim_point,
+                            candidate_point,
+                            sight_blockers,
                         )
                     elif shape == "line" and length_squared > 0:
                         candidate_range = grid_distance_ft(
@@ -2677,9 +2656,7 @@ class PlayerRoomService:
                 principal.campaign_id,
                 combat_id,
                 command,
-                idempotency_key=(
-                    idempotency_key if index == 0 else f"{idempotency_key}:{index}"
-                ),
+                idempotency_key=(idempotency_key if index == 0 else f"{idempotency_key}:{index}"),
             )
             for index, command in enumerate(commands)
         ]
@@ -2809,8 +2786,7 @@ class PlayerRoomService:
             if require_non_character and active.entity_type == "character":
                 return None
             if not require_non_character and (
-                active.entity_type != "character"
-                or active.entity_id != principal.character_id
+                active.entity_type != "character" or active.entity_id != principal.character_id
             ):
                 return None
             unresolved = session.scalar(

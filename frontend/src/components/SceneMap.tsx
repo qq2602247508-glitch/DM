@@ -117,7 +117,7 @@ export function SceneMap({
           const cellSelectable = Boolean(
             !token && !object && onCellSelect && canSelectCell?.(row, col),
           );
-          const terrainClass = terrainCellClass(terrain);
+          const terrainClass = terrainCellClass(terrain, grid.theme);
           const isVoid = isMapVoidCell(terrain);
           const isDoor = terrain?.kind === "door" || object?.object_type === "door";
           const doorOrientation = isDoor
