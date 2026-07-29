@@ -117,6 +117,68 @@ def _monster_fields(text: str) -> tuple[dict[str, Any], dict[str, Any]]:
     return filters, rules
 
 
+def _atomic_monster_entries(data: dict[str, Any]) -> list[dict[str, Any]]:
+    """Split legacy CR/type index pages into actual reusable monster atoms."""
+
+    text = str(data.get("content_plain_text") or "")
+    lines = text.splitlines()
+    size_pattern = re.compile(r"^(微型|小型|中型|大型|巨型|超巨型)")
+    starts: list[tuple[int, int, str]] = []
+    for index, line in enumerate(lines):
+        if not size_pattern.match(line.strip()) or index == 0:
+            continue
+        name_index = index - 1
+        name_parts = [lines[name_index].strip()]
+        if not re.search(r"[\u3400-\u9fff]", name_parts[0]) and name_index > 0:
+            previous = lines[name_index - 1].strip()
+            if re.search(r"[\u3400-\u9fff]", previous):
+                name_index -= 1
+                name_parts.insert(0, previous)
+        raw_name = " ".join(part for part in name_parts if part)
+        if not raw_name or not re.search(r"[\u3400-\u9fff]", raw_name):
+            continue
+        starts.append((name_index, index, raw_name))
+    if len(starts) <= 1:
+        return []
+    stable_id = str(data["stable_id"])
+    result: list[dict[str, Any]] = []
+    for position, (name_index, _stat_index, raw_name) in enumerate(starts):
+        end = starts[position + 1][0] if position + 1 < len(starts) else len(lines)
+        block = "\n".join(lines[name_index:end]).strip()
+        name = _clean_name(raw_name)
+        if not name or len(block) < 40:
+            continue
+        filters, rules = _monster_fields(block)
+        suffix = hashlib.sha256(f"{stable_id}|{name}|{position}".encode()).hexdigest()[:12]
+        result.append(
+            {
+                "id": f"official:{stable_id}:{suffix}",
+                "version": 1,
+                "campaign_id": "official",
+                "entry_type": "monster",
+                "name": name,
+                "description": block[:1200],
+                "source_kind": "official",
+                "source_record_id": stable_id,
+                "source_name": data.get("source_book"),
+                "family_key": None,
+                "tags": ["官方", str(data.get("edition") or "未知版本"), "怪物原子"],
+                "filters_json": {
+                    "content_type": "monsters",
+                    "edition": data.get("edition"),
+                    "source_book": data.get("source_book"),
+                    **filters,
+                },
+                "rules_json": {
+                    "canonical_url": data.get("canonical_url"),
+                    "source_relative_path": data.get("source_relative_path"),
+                    **rules,
+                },
+            }
+        )
+    return result
+
+
 def _record_entry(data: dict[str, Any]) -> dict[str, Any] | None:
     content_type = str(data.get("content_type") or "")
     entry_type = CONTENT_ENTRY_TYPES.get(content_type)
@@ -322,6 +384,11 @@ def _load_catalog(root_value: str) -> tuple[dict[str, Any], ...]:
                 continue
             if not isinstance(data, dict):
                 continue
+            if content_type == "monsters" and data.get("officiality") == "official":
+                atomic_monsters = _atomic_monster_entries(data)
+                if atomic_monsters:
+                    entries.extend(atomic_monsters)
+                    continue
             entry = _record_entry(data)
             if entry is not None:
                 entries.append(entry)
