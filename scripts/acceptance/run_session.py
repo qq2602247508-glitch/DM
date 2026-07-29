@@ -368,7 +368,22 @@ def main() -> int:
         logger.finalize(status="passed" if not logger.failures else "failed", fixture=fixture)
         print(json.dumps({"report_dir": str(args.report_dir), "fixture": fixture}, ensure_ascii=False, indent=2))
         if not args.keep:
-            call(host, logger, "DM", "DELETE", f"/campaigns/{campaign_id}", expected={204})
+            latest_campaign = call(
+                host,
+                logger,
+                "DM",
+                "GET",
+                f"/campaigns/{campaign_id}",
+            )
+            call(
+                host,
+                logger,
+                "DM",
+                "DELETE",
+                f"/campaigns/{campaign_id}",
+                expected={204},
+                headers={"If-Match": f'"{latest_campaign["version"]}"'},
+            )
         return 0 if not logger.failures else 1
     except Exception as exc:  # noqa: BLE001 - the report must capture every runner failure
         logger.failure("三端快速流程异常", str(exc))
