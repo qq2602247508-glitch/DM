@@ -38,17 +38,19 @@ def list_entries(
     entry_type: str | None = Query(default=None),
     source_kind: str | None = Query(default=None),
     text: str = Query(default="", max_length=200),
+    page: int = Query(default=1, ge=1),
+    page_size: int = Query(default=40, ge=1, le=100),
 ) -> dict[str, Any]:
-    return {
-        "items": _call(
-            lambda: service.list(
-                campaign_id,
-                entry_type=entry_type,
-                source_kind=source_kind,
-                text=text,
-            )
+    return _call(
+        lambda: service.catalog(
+            campaign_id,
+            entry_type=entry_type,
+            source_kind=source_kind,
+            text=text,
+            page=page,
+            page_size=page_size,
         )
-    }
+    )
 
 
 @router.post("", status_code=status.HTTP_201_CREATED)

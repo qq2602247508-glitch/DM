@@ -1071,9 +1071,9 @@ class CompendiumEntryCreate(BaseModel):
     ]
     name: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=200)]
     description: str | None = None
-    source_kind: Literal[
-        "official", "original", "ai_generated", "dm_modified", "third_party"
-    ] = "original"
+    source_kind: Literal["official", "original", "ai_generated", "dm_modified", "third_party"] = (
+        "original"
+    )
     source_record_id: str | None = None
     source_name: str | None = None
     family_key: str | None = None
@@ -1197,6 +1197,25 @@ class ShopInventoryCreate(BaseModel):
     quantity: int = Field(default=1, ge=0)
     price_copper: int = Field(default=0, ge=0)
     metadata_json: dict[str, Any] = Field(default_factory=dict)
+
+
+class MerchantGenerateRequest(BaseModel):
+    name: str | None = Field(default=None, max_length=200)
+    brief: str = Field(default="", max_length=1000)
+    location_id: str | None = Field(default=None, max_length=36)
+    scene_id: str | None = Field(default=None, max_length=36)
+    categories: list[
+        Literal["weapon", "armor", "shield", "adventuring_gear", "consumable", "magic"]
+    ] = Field(default_factory=list, max_length=6)
+    item_tier: Literal["mundane", "common", "uncommon", "rare", "very_rare", "legendary"] = "common"
+    character_ids: list[str] = Field(default_factory=list, max_length=12)
+    stock_size: int = Field(default=12, ge=1, le=40)
+    price_modifier_bps: int = Field(default=10_000, ge=5_000, le=20_000)
+    allow_original: bool = True
+
+
+class MerchantConfirmRequest(BaseModel):
+    preview: dict[str, Any]
 
 
 class SpellCastRequest(BaseModel):

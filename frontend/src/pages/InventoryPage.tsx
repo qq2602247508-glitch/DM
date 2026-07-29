@@ -223,7 +223,10 @@ function InventoryContent({ campaignId }: { campaignId: string }): ReactElement 
               </div>
             </div>
             <div className="mt-5 rounded-md border border-ink-700 bg-ink-950/40 p-4">
-              <p className="m-0 text-2xs uppercase tracking-[0.16em] text-stone-600">DM 原子资产录入</p>
+              <p className="m-0 text-2xs uppercase tracking-[0.16em] text-stone-600">高级手动补录</p>
+              <p className="mb-0 mt-1 text-xs leading-5 text-stone-500">
+                这里只管理角色已经拥有的实例。常规装备、法术与商店货品请从“原子图鉴”授予，或在“商人与商店”中生成。
+              </p>
               <div className="mt-2 flex flex-wrap gap-2">
                 <input className={inputCls} onChange={(event) => setAssetName(event.target.value)} placeholder="法术 / 装备 / 商品名称" value={assetName} />
                 <input className={inputCls} max="9" min="0" onChange={(event) => setAssetLevel(event.target.value)} title="法术环级" type="number" value={assetLevel} />
@@ -231,7 +234,7 @@ function InventoryContent({ campaignId }: { campaignId: string }): ReactElement 
                 <Button disabled={!assetName.trim()} loading={createMutation.isPending} onClick={() => createMutation.mutate("spell")} size="sm">录入法术</Button>
                 <Button disabled={!assetName.trim()} loading={createMutation.isPending} onClick={() => createMutation.mutate("equipment")} size="sm">录入装备</Button>
                 <Button disabled={Boolean(assets.data?.wallet)} loading={createMutation.isPending} onClick={() => createMutation.mutate("wallet")} size="sm">建立钱包</Button>
-                <Button disabled={!assetName.trim()} loading={createMutation.isPending} onClick={() => createMutation.mutate("shop")} size="sm">上架商品</Button>
+                <Button disabled={!assetName.trim()} loading={createMutation.isPending} onClick={() => createMutation.mutate("shop")} size="sm">录入未归属库存</Button>
               </div>
               {createMutation.isError ? <div className="mt-2"><ErrorState error={createMutation.error} /></div> : null}
             </div>

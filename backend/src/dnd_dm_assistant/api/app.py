@@ -16,6 +16,7 @@ from dnd_dm_assistant.api.routes.compendium import router as compendium_router
 from dnd_dm_assistant.api.routes.encounters import router as encounters_router
 from dnd_dm_assistant.api.routes.health import router as health_router
 from dnd_dm_assistant.api.routes.knowledge import router as knowledge_router
+from dnd_dm_assistant.api.routes.merchants import router as merchants_router
 from dnd_dm_assistant.api.routes.narrative import router as narrative_router
 from dnd_dm_assistant.api.routes.player import dm_router as player_dm_router
 from dnd_dm_assistant.api.routes.player import player_router
@@ -71,6 +72,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(campaigns_router, prefix=app_settings.api_prefix)
     app.include_router(combat_engine_router, prefix=app_settings.api_prefix)
     app.include_router(compendium_router, prefix=app_settings.api_prefix)
+    app.include_router(merchants_router, prefix=app_settings.api_prefix)
     app.include_router(encounters_router, prefix=app_settings.api_prefix)
     app.include_router(rests_router, prefix=app_settings.api_prefix)
     app.include_router(session_checkpoints_router, prefix=app_settings.api_prefix)

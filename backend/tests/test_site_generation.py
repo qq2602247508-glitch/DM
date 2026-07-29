@@ -15,6 +15,8 @@ from dnd_dm_assistant.infrastructure.database.models import (
     Location,
     Scene,
     SceneGrid,
+    SceneObject,
+    SceneToken,
 )
 from dnd_dm_assistant.infrastructure.database.site_service import SiteService
 
@@ -173,6 +175,33 @@ def test_site_generation_api_persists_atomic_hierarchy_and_is_idempotent(
     locations = campaign_client.get(f"/api/v1/campaigns/{campaign_id}/locations").json()["items"]
     names = {location["name"] for location in locations}
     assert {"深水城", "海区", "低语矿坑", "地下城第 1 层", "入口厅"} <= names
+    engine = campaign_client.app.state.database_engine
+    with Session(engine) as session:
+        grids = list(
+            session.scalars(
+                select(SceneGrid)
+                .join(Scene, SceneGrid.scene_id == Scene.id)
+                .where(Scene.campaign_id == campaign_id)
+            )
+        )
+        assert grids
+        assert all(
+            int(cell["row"]) >= 1 and int(cell["col"]) >= 1
+            for grid in grids
+            for cell in grid.layers_json["cells"]
+        )
+        assert session.scalar(
+            select(func.count()).select_from(SceneToken).join(Scene).where(
+                Scene.campaign_id == campaign_id,
+                SceneToken.entity_type == "monster",
+            )
+        ) > 0
+        assert session.scalar(
+            select(func.count()).select_from(SceneObject).join(Scene).where(
+                Scene.campaign_id == campaign_id,
+                SceneObject.object_type == "treasure",
+            )
+        ) > 0
 
     other_campaign = campaign_client.post("/api/v1/campaigns", json={"name": "隔离团"}).json()
     forbidden = campaign_client.get(f"/api/v1/campaigns/{other_campaign['id']}/sites/{site['id']}")

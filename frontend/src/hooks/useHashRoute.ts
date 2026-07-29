@@ -11,6 +11,7 @@ export type RoutePath =
   | "/npcs"
   | "/locations"
   | "/inventory"
+  | "/merchants"
   | "/scenes"
   | "/events"
   | "/quests"
@@ -30,6 +31,7 @@ const ROUTES: readonly RoutePath[] = [
   "/npcs",
   "/locations",
   "/inventory",
+  "/merchants",
   "/scenes",
   "/events",
   "/quests",

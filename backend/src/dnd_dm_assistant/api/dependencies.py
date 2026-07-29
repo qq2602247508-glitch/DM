@@ -26,6 +26,7 @@ from dnd_dm_assistant.infrastructure.database.combat_service import CombatEngine
 from dnd_dm_assistant.infrastructure.database.compendium_service import CompendiumService
 from dnd_dm_assistant.infrastructure.database.encounter_service import EncounterAdjustmentService
 from dnd_dm_assistant.infrastructure.database.exploration_service import ExplorationService
+from dnd_dm_assistant.infrastructure.database.merchant_service import MerchantService
 from dnd_dm_assistant.infrastructure.database.narrative_service import NarrativeService
 from dnd_dm_assistant.infrastructure.database.player_room_service import PlayerRoomService
 from dnd_dm_assistant.infrastructure.database.player_service import PlayerService
@@ -86,7 +87,10 @@ def get_world_service(request: Request) -> WorldService:
 
 
 def get_site_service(request: Request) -> SiteService:
-    return SiteService(cast(Engine, request.app.state.database_engine))
+    return SiteService(
+        cast(Engine, request.app.state.database_engine),
+        catalog_root=get_app_settings(request).rag_corpus_json_root,
+    )
 
 
 def get_exploration_service(request: Request) -> ExplorationService:
@@ -102,7 +106,17 @@ def get_combat_engine_service(request: Request) -> CombatEngineService:
 
 
 def get_compendium_service(request: Request) -> CompendiumService:
-    return CompendiumService(cast(Engine, request.app.state.database_engine))
+    return CompendiumService(
+        cast(Engine, request.app.state.database_engine),
+        catalog_root=get_app_settings(request).rag_corpus_json_root,
+    )
+
+
+def get_merchant_service(request: Request) -> MerchantService:
+    return MerchantService(
+        cast(Engine, request.app.state.database_engine),
+        get_app_settings(request).rag_corpus_json_root,
+    )
 
 
 def get_rest_service(request: Request) -> RestService:

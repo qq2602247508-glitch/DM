@@ -29,7 +29,8 @@ const NAV_GROUPS: Array<{ label: string; items: Array<{ path: RoutePath; label: 
   ] },
   { label: "D&D 图鉴库", items: [
     { path: "/compendium", label: "原子图鉴", icon: "copy" },
-    { path: "/inventory", label: "装备与背包", icon: "copy" },
+    { path: "/merchants", label: "商人与商店", icon: "users" },
+    { path: "/inventory", label: "角色背包与装备", icon: "copy" },
     { path: "/rules", label: "D&D 规则库", icon: "scroll" },
   ] },
   { label: "副驾驶", items: [

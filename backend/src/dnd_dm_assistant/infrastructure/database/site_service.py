@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import random
 import time
+from pathlib import Path
 from threading import Lock, RLock
 from typing import Any
 
@@ -11,6 +12,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.exc import IntegrityError, OperationalError
 from sqlalchemy.orm import Session
 
+from dnd_dm_assistant.application.official_compendium import OfficialCompendiumCatalog
 from dnd_dm_assistant.domain.campaign_state import StateNotFoundError, VersionConflict
 from dnd_dm_assistant.domain.site_generation import generate_site, layout_is_connected
 from dnd_dm_assistant.infrastructure.database.campaign_service import serialize
@@ -25,7 +27,9 @@ from dnd_dm_assistant.infrastructure.database.models import (
     RegionMap,
     Scene,
     SceneGrid,
+    SceneObject,
     SceneParticipant,
+    SceneToken,
     SiteConnector,
     SiteLevel,
     SiteRoom,
@@ -49,10 +53,42 @@ def _generation_lock(engine: Engine, campaign_id: str) -> Any:
         return _SITE_LOCKS.setdefault(key, RLock())
 
 
+def _next_spawn(
+    room_index: int,
+    room_spawn_cells: dict[int, list[tuple[int, int]]],
+    occupied_cells: set[tuple[int, int]],
+    scene_cells: list[dict[str, Any]],
+) -> tuple[int, int]:
+    for candidate in room_spawn_cells.get(room_index, []):
+        if candidate not in occupied_cells:
+            occupied_cells.add(candidate)
+            return candidate
+    fallback = next(
+        (
+            (int(cell["row"]), int(cell["col"]))
+            for cell in scene_cells
+            if cell.get("kind") in {"floor", "room"}
+            and (int(cell["row"]), int(cell["col"])) not in occupied_cells
+        ),
+        (1, 1),
+    )
+    occupied_cells.add(fallback)
+    return fallback
+
+
 class SiteService:
-    def __init__(self, engine: Engine, *, actor: str = "dm") -> None:
+    def __init__(
+        self,
+        engine: Engine,
+        *,
+        actor: str = "dm",
+        catalog_root: Path | None = None,
+    ) -> None:
         self.engine = engine
         self.actor = actor
+        self.official_catalog = OfficialCompendiumCatalog(
+            catalog_root or Path("__missing_catalog__")
+        )
 
     def preview(self, campaign_id: str, data: dict[str, Any]) -> dict[str, Any]:
         character_ids = [str(item) for item in data.get("character_ids", []) if str(item)]
@@ -231,6 +267,16 @@ class SiteService:
             if getattr(result, "rowcount", 0) != 1:
                 raise _ConcurrentRegionUpdate
             for level_data in preview["levels"]:
+                raw_cells = list(level_data["layout"]["cells"])
+                scene_cells = [
+                    {
+                        **dict(cell),
+                        "row": int(cell["row"]) + 1,
+                        "col": int(cell["col"]) + 1,
+                    }
+                    for cell in raw_cells
+                ]
+                cell_lookup = {(int(cell["row"]), int(cell["col"])): cell for cell in raw_cells}
                 level_location = Location(
                     campaign_id=campaign_id,
                     name=str(level_data["name"]),
@@ -282,14 +328,16 @@ class SiteService:
                             f"奖励规划 {level.reward_budget_gp} gp。"
                         ),
                         layers_json={
-                            "cells": level_data["layout"]["cells"],
+                            "cells": scene_cells,
                             "site_id": site.id,
                             "site_level_index": level.level_index,
                             "shared_site_grid": True,
+                            "coordinate_system": "one_based",
                         },
                     )
                 )
                 room_locations: dict[int, Location] = {}
+                room_spawn_cells: dict[int, list[tuple[int, int]]] = {}
                 for room_data in level_data["rooms"]:
                     room_location = Location(
                         campaign_id=campaign_id,
@@ -316,6 +364,20 @@ class SiteService:
                         )
                     )
                     room_locations[int(room_data["room_index"])] = room_location
+                    bounds = dict(room_data["bounds"])
+                    room_spawn_cells[int(room_data["room_index"])] = [
+                        (row + 1, col + 1)
+                        for row in range(
+                            int(bounds["row"]),
+                            int(bounds["row"]) + int(bounds["height"]),
+                        )
+                        for col in range(
+                            int(bounds["col"]),
+                            int(bounds["col"]) + int(bounds["width"]),
+                        )
+                        if cell_lookup.get((row, col), {}).get("kind") in {"floor", "room"}
+                    ]
+                occupied_cells: set[tuple[int, int]] = set()
                 for connector in level_data["connectors"]:
                     session.add(
                         SiteConnector(
@@ -337,8 +399,25 @@ class SiteService:
                     target_location = room_locations.get(room_index, level_location)
                     xp_each = max(25, int(monster_data.get("xp_each", 25)))
                     quantity = max(1, min(12, int(monster_data.get("quantity", 1))))
+                    monster_name = str(monster_data["name"])
+                    official_template = next(
+                        (
+                            entry
+                            for entry in self.official_catalog.search(
+                                entry_type="monster", text=monster_name
+                            )
+                            if monster_name.lower() in str(entry["name"]).lower()
+                        ),
+                        None,
+                    )
+                    official_rules = (
+                        dict(official_template.get("rules_json") or {}) if official_template else {}
+                    )
                     for copy_index in range(quantity):
-                        hp = max(5, round((xp_each**0.5) * 1.3))
+                        hp = max(
+                            5,
+                            int(official_rules.get("hp", round((xp_each**0.5) * 1.3))),
+                        )
                         monster = MonsterInstance(
                             campaign_id=campaign_id,
                             name=(
@@ -346,31 +425,50 @@ class SiteService:
                                 if quantity == 1
                                 else f"{monster_data['name']} {copy_index + 1}"
                             ),
-                            source_name=str(monster_data.get("source", "generated_plan")),
-                            armor_class=min(22, 12 + int(site.party_level) // 4),
+                            source_name=(
+                                str(official_template.get("source_name"))
+                                if official_template
+                                else str(monster_data.get("source", "generated_plan"))
+                            ),
+                            armor_class=int(
+                                official_rules.get(
+                                    "armor_class",
+                                    min(22, 12 + int(site.party_level) // 4),
+                                )
+                            ),
                             hp=hp,
                             max_hp=hp,
-                            speed=30,
-                            ability_scores={
-                                "strength": 12,
-                                "dexterity": 12,
-                                "constitution": 12,
-                                "intelligence": 10,
-                                "wisdom": 10,
-                                "charisma": 8,
-                            },
-                            actions=[
-                                {
-                                    "name": "基础攻击",
-                                    "action_type": "action",
-                                    "range_ft": 5,
-                                    "damage": f"1d8+{max(1, int(site.party_level) // 4)}",
-                                    "damage_type": "由图鉴模板决定",
+                            speed=int(official_rules.get("speed", 30)),
+                            ability_scores=dict(
+                                official_rules.get("ability_scores")
+                                or {
+                                    "strength": 12,
+                                    "dexterity": 12,
+                                    "constitution": 12,
+                                    "intelligence": 10,
+                                    "wisdom": 10,
+                                    "charisma": 8,
                                 }
-                            ],
+                            ),
+                            actions=list(
+                                official_rules.get("actions")
+                                or [
+                                    {
+                                        "name": "基础攻击",
+                                        "action_type": "action",
+                                        "range_ft": 5,
+                                        "damage": (f"1d8+{max(1, int(site.party_level) // 4)}"),
+                                        "damage_type": "由图鉴模板决定",
+                                    }
+                                ]
+                            ),
                             notes=(
                                 f"由站点生成器分配至房间 {room_index}：{target_location.name}。"
-                                "战斗前应优先用图鉴同名模板补全动作。"
+                                + (
+                                    f"已绑定官方图鉴：{official_template['name']}。"
+                                    if official_template
+                                    else "未检索到同名官方模板，使用受控后备数值。"
+                                )
                             ),
                         )
                         session.add(monster)
@@ -383,6 +481,26 @@ class SiteService:
                                 role="present",
                                 visible=False,
                                 notes=f"初始位于{target_location.name}；探索到房间后揭示。",
+                            )
+                        )
+                        token_row, token_col = _next_spawn(
+                            room_index, room_spawn_cells, occupied_cells, scene_cells
+                        )
+                        session.add(
+                            SceneToken(
+                                scene_id=scene.id,
+                                entity_type="monster",
+                                entity_id=monster.id,
+                                label=monster.name,
+                                row=token_row,
+                                col=token_col,
+                                visible=False,
+                                metadata_json={
+                                    "site_id": site.id,
+                                    "site_level": level.level_index,
+                                    "room_index": room_index,
+                                    "generated_from": "site_generation",
+                                },
                             )
                         )
                 for npc_data in level_data.get("npc_plan", []):
@@ -410,30 +528,72 @@ class SiteService:
                             notes=f"初始位于{target_location.name}；探索到房间后揭示。",
                         )
                     )
-                for reward_data in level_data.get("reward_plan", []):
-                    room_index = int(reward_data.get("room_index", 1))
-                    target_location = room_locations.get(room_index, level_location)
-                    value_gp = max(0, int(reward_data.get("value_gp", 0)))
+                    token_row, token_col = _next_spawn(
+                        room_index, room_spawn_cells, occupied_cells, scene_cells
+                    )
                     session.add(
-                        WorldItem(
-                            campaign_id=campaign_id,
-                            name=str(reward_data["name"]),
-                            description=(
-                                f"由地下城奖励预算生成，推荐队伍等级 {site.party_level}。"
-                            ),
-                            category=str(reward_data.get("category", "treasure")),
-                            quantity=max(1, int(reward_data.get("quantity", 1))),
-                            unit_weight_lb=0,
-                            price_cp=value_gp * 100,
-                            source_label="ai_generated",
-                            location_id=target_location.id,
-                            is_hidden=True,
+                        SceneToken(
+                            scene_id=scene.id,
+                            entity_type="npc",
+                            entity_id=npc.id,
+                            label=npc.name,
+                            row=token_row,
+                            col=token_col,
+                            visible=False,
                             metadata_json={
                                 "site_id": site.id,
                                 "site_level": level.level_index,
                                 "room_index": room_index,
-                                "original": True,
-                                "rules_validated_budget": True,
+                                "generated_from": "site_generation",
+                            },
+                        )
+                    )
+                for reward_data in level_data.get("reward_plan", []):
+                    room_index = int(reward_data.get("room_index", 1))
+                    target_location = room_locations.get(room_index, level_location)
+                    value_gp = max(0, int(reward_data.get("value_gp", 0)))
+                    world_item = WorldItem(
+                        campaign_id=campaign_id,
+                        name=str(reward_data["name"]),
+                        description=(f"由地下城奖励预算生成，推荐队伍等级 {site.party_level}。"),
+                        category=str(reward_data.get("category", "treasure")),
+                        quantity=max(1, int(reward_data.get("quantity", 1))),
+                        unit_weight_lb=0,
+                        price_cp=value_gp * 100,
+                        source_label="ai_generated",
+                        location_id=target_location.id,
+                        is_hidden=True,
+                        metadata_json={
+                            "site_id": site.id,
+                            "site_level": level.level_index,
+                            "room_index": room_index,
+                            "original": True,
+                            "rules_validated_budget": True,
+                        },
+                    )
+                    session.add(world_item)
+                    session.flush()
+                    object_row, object_col = _next_spawn(
+                        room_index, room_spawn_cells, occupied_cells, scene_cells
+                    )
+                    session.add(
+                        SceneObject(
+                            scene_id=scene.id,
+                            object_type="treasure",
+                            label=world_item.name,
+                            row=object_row,
+                            col=object_col,
+                            visibility="hidden",
+                            interaction_json={
+                                "action": "collect_world_item",
+                                "world_item_id": world_item.id,
+                            },
+                            metadata_json={
+                                "world_item_id": world_item.id,
+                                "site_id": site.id,
+                                "site_level": level.level_index,
+                                "room_index": room_index,
+                                "generated_from": "site_generation",
                             },
                         )
                     )
@@ -734,9 +894,7 @@ class SiteService:
                     raise ValueError(
                         f"level {expected} contains an invalid cell coordinate"
                     ) from exc
-                if point in coordinates or not (
-                    0 <= point[0] < height and 0 <= point[1] < width
-                ):
+                if point in coordinates or not (0 <= point[0] < height and 0 <= point[1] < width):
                     raise ValueError(f"level {expected} contains duplicate or out-of-bounds cells")
                 coordinates.add(point)
                 cells_by_coordinate[point] = cell
@@ -792,13 +950,9 @@ class SiteService:
                         target_room = int(item["room_index"])
                         item_name = str(item["name"]).strip()
                     except (KeyError, TypeError, ValueError) as exc:
-                        raise ValueError(
-                            f"level {expected} {plan_key} item is incomplete"
-                        ) from exc
+                        raise ValueError(f"level {expected} {plan_key} item is incomplete") from exc
                     if target_room not in room_indexes or not item_name:
-                        raise ValueError(
-                            f"level {expected} {plan_key} references an unknown room"
-                        )
+                        raise ValueError(f"level {expected} {plan_key} references an unknown room")
             if not layout_is_connected(dict(layout)):
                 raise ValueError(f"level {expected} map is not connected")
             connectors = level.get("connectors")
@@ -851,10 +1005,14 @@ class SiteService:
                     (position_point[0], position_point[1] + 1),
                     (position_point[0], position_point[1] - 1),
                 )
-                if connector_type in {"door", "secret_door"} and sum(
-                    cells_by_coordinate.get(point, {}).get("kind") not in {None, "wall", "void"}
-                    for point in neighbors
-                ) < 2:
+                if (
+                    connector_type in {"door", "secret_door"}
+                    and sum(
+                        cells_by_coordinate.get(point, {}).get("kind") not in {None, "wall", "void"}
+                        for point in neighbors
+                    )
+                    < 2
+                ):
                     raise ValueError("door connector must join at least two walkable cells")
             previous_difficulty = difficulty
             previous_reward = reward

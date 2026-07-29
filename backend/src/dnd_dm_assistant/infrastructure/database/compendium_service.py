@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import hashlib
+from pathlib import Path
 from typing import Any
 
 from sqlalchemy import select
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
+from dnd_dm_assistant.application.official_compendium import OfficialCompendiumCatalog
 from dnd_dm_assistant.domain.campaign_state import StateNotFoundError
 from dnd_dm_assistant.infrastructure.database.campaign_service import serialize
 from dnd_dm_assistant.infrastructure.database.models import (
@@ -53,9 +55,16 @@ def _sequence(value: object) -> list[Any]:
 class CompendiumService:
     """Campaign-scoped reusable atoms and explicit template→instance actions."""
 
-    def __init__(self, engine: Engine, *, actor: str = "dm") -> None:
+    def __init__(
+        self,
+        engine: Engine,
+        *,
+        actor: str = "dm",
+        catalog_root: Path | None = None,
+    ) -> None:
         self.engine = engine
         self.actor = actor
+        self.official = OfficialCompendiumCatalog(catalog_root or Path("__missing_catalog__"))
 
     def list(
         self,
@@ -78,6 +87,54 @@ class CompendiumService:
                 query.order_by(CompendiumEntry.entry_type, CompendiumEntry.name, CompendiumEntry.id)
             ).all()
             return tuple(serialize(item) for item in items)
+
+    def catalog(
+        self,
+        campaign_id: str,
+        *,
+        entry_type: str | None = None,
+        source_kind: str | None = None,
+        text: str = "",
+        page: int = 1,
+        page_size: int = 40,
+    ) -> dict[str, Any]:
+        custom = list(
+            self.list(
+                campaign_id,
+                entry_type=entry_type,
+                source_kind=source_kind if source_kind != "official" else "__none__",
+                text=text,
+            )
+        )
+        official = (
+            []
+            if source_kind and source_kind != "official"
+            else self.official.search(entry_type=entry_type, text=text)
+        )
+        items = [*official, *custom]
+        items.sort(
+            key=lambda item: (
+                0 if item.get("source_kind") == "official" else 1,
+                str(item.get("name") or ""),
+                str(item.get("id") or ""),
+            )
+        )
+        start = (page - 1) * page_size
+        counts = self.official.counts()
+        with Session(self.engine) as session:
+            self._campaign(session, campaign_id)
+            for row in session.scalars(
+                select(CompendiumEntry).where(CompendiumEntry.campaign_id == campaign_id)
+            ):
+                counts[row.entry_type] = counts.get(row.entry_type, 0) + 1
+        return {
+            "items": items[start : start + page_size],
+            "total": len(items),
+            "page": page,
+            "page_size": page_size,
+            "counts": counts,
+            "official_total": sum(self.official.counts().values()),
+        }
 
     def create(
         self,
@@ -336,8 +393,15 @@ class CompendiumService:
         request_id: str,
     ) -> dict[str, Any]:
         with Session(self.engine) as session, session.begin():
-            entry = session.get(CompendiumEntry, entry_id)
-            if entry is None or entry.campaign_id != campaign_id:
+            entry: dict[str, Any] | None
+            persisted = session.get(CompendiumEntry, entry_id)
+            if persisted is not None and persisted.campaign_id == campaign_id:
+                entry = serialize(persisted)
+            elif entry_id.startswith("official:"):
+                entry = self.official.get(entry_id)
+            else:
+                entry = None
+            if entry is None:
                 raise StateNotFoundError("compendium entry not found")
             target_type = str(data.get("target_type") or "")
             target_id = str(data.get("target_id") or "")
@@ -345,40 +409,43 @@ class CompendiumService:
                 character = session.get(Character, target_id)
                 if character is None or character.campaign_id != campaign_id:
                     raise StateNotFoundError("character not found")
-                if entry.entry_type in {"spell", "feature"}:
-                    field = "spells" if entry.entry_type == "spell" else "features"
+                entry_type = str(entry["entry_type"])
+                if entry_type in {"spell", "feature"}:
+                    field = "spells" if entry_type == "spell" else "features"
                     values = list(getattr(character, field) or [])
                     values.append(
                         {
-                            "name": entry.name,
-                            "description": entry.description,
-                            "source_record_id": entry.source_record_id,
-                            "source_kind": entry.source_kind,
-                            **dict(entry.rules_json or {}),
+                            "name": entry["name"],
+                            "description": entry.get("description"),
+                            "source_record_id": entry.get("source_record_id"),
+                            "source_kind": entry.get("source_kind"),
+                            **dict(entry.get("rules_json") or {}),
                         }
                     )
                     setattr(character, field, values)
                     character.version += 1
                     result = {"target_type": "character", "target_id": character.id, "field": field}
-                elif entry.entry_type in {"equipment", "item"}:
-                    rules = dict(entry.rules_json or {})
+                elif entry_type in {"equipment", "item"}:
+                    rules = dict(entry.get("rules_json") or {})
                     item = WorldItem(
                         campaign_id=campaign_id,
-                        name=entry.name,
-                        description=entry.description,
-                        category=entry.entry_type,
+                        name=str(entry["name"]),
+                        description=entry.get("description"),
+                        category=entry_type,
                         quantity=1,
                         unit_weight_lb=_number(rules.get("weight_lb"), 0),
                         price_cp=_integer(rules.get("price_cp"), 0),
-                        source_record_id=entry.source_record_id,
+                        source_record_id=entry.get("source_record_id"),
                         source_label=(
-                            "official" if entry.source_kind == "official" else "ai_generated"
+                            "official"
+                            if entry.get("source_kind") == "official"
+                            else "ai_generated"
                         ),
                         owner_character_id=character.id,
                         metadata_json={
-                            "compendium_entry_id": entry.id,
-                            "source_kind": entry.source_kind,
-                            **dict(entry.filters_json or {}),
+                            "compendium_entry_id": entry["id"],
+                            "source_kind": entry.get("source_kind"),
+                            **dict(entry.get("filters_json") or {}),
                             **rules,
                         },
                     )
@@ -395,30 +462,33 @@ class CompendiumService:
                 scene = session.get(Scene, target_id)
                 if scene is None or scene.campaign_id != campaign_id:
                     raise StateNotFoundError("scene not found")
-                rules = dict(entry.rules_json or {})
-                if entry.entry_type == "monster":
+                rules = dict(entry.get("rules_json") or {})
+                entry_type = str(entry["entry_type"])
+                if entry_type == "monster":
                     entity: NPC | MonsterInstance = MonsterInstance(
                         campaign_id=campaign_id,
-                        name=entry.name,
-                        source_record_id=entry.source_record_id,
-                        source_name=entry.source_name or entry.source_kind,
+                        name=str(entry["name"]),
+                        source_record_id=entry.get("source_record_id"),
+                        source_name=entry.get("source_name") or entry.get("source_kind"),
                         armor_class=_integer(rules.get("armor_class"), 12),
                         hp=_integer(rules.get("hp"), 8),
                         max_hp=_integer(rules.get("hp"), 8),
                         speed=_integer(rules.get("speed"), 30),
                         ability_scores=_mapping(rules.get("ability_scores")),
                         challenge_rating=str(
-                            entry.filters_json.get("challenge_rating", "1/4")
+                            dict(entry.get("filters_json") or {}).get(
+                                "challenge_rating", "1/4"
+                            )
                         ),
                         actions=_sequence(rules.get("actions")),
-                        notes=entry.description,
+                        notes=entry.get("description"),
                     )
                     entity_type = "monster"
-                elif entry.entry_type == "npc":
+                elif entry_type == "npc":
                     entity = NPC(
                         campaign_id=campaign_id,
-                        name=entry.name,
-                        description=entry.description,
+                        name=str(entry["name"]),
+                        description=entry.get("description"),
                         armor_class=_integer(rules.get("armor_class"), 10),
                         hp=_integer(rules.get("hp"), 4),
                         max_hp=_integer(rules.get("hp"), 4),
@@ -435,7 +505,7 @@ class CompendiumService:
                     entity_id=entity.id,
                     role="present",
                     visible=True,
-                    notes=f"由图鉴模板 {entry.name} 创建。",
+                    notes=f"由图鉴模板 {entry['name']} 创建。",
                 )
                 session.add(participant)
                 session.flush()
@@ -454,7 +524,7 @@ class CompendiumService:
                     actor=self.actor,
                     action="instantiate",
                     entity_type="compendium_entry",
-                    entity_id=entry.id,
+                    entity_id=entry_id,
                     before_json=None,
                     after_json=result,
                     request_id=request_id,

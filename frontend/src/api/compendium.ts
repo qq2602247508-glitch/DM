@@ -30,20 +30,37 @@ export type CompendiumGenerationPreview = {
   warnings: string[];
 };
 
+export type CompendiumCatalog = {
+  items: CompendiumEntry[];
+  total: number;
+  page: number;
+  page_size: number;
+  counts: Record<string, number>;
+  official_total: number;
+};
+
 export async function listCompendium(
   campaignId: string,
-  filters: { entry_type?: string; source_kind?: string; text?: string },
+  filters: {
+    entry_type?: string;
+    source_kind?: string;
+    text?: string;
+    page?: number;
+    page_size?: number;
+  },
   signal?: AbortSignal,
-): Promise<CompendiumEntry[]> {
+): Promise<CompendiumCatalog> {
   const query = new URLSearchParams();
   if (filters.entry_type) query.set("entry_type", filters.entry_type);
   if (filters.source_kind) query.set("source_kind", filters.source_kind);
   if (filters.text) query.set("text", filters.text);
+  if (filters.page) query.set("page", String(filters.page));
+  if (filters.page_size) query.set("page_size", String(filters.page_size));
   const suffix = query.size ? `?${query.toString()}` : "";
-  return (await apiFetch<{ items: CompendiumEntry[] }>(
+  return apiFetch<CompendiumCatalog>(
     `/campaigns/${campaignId}/compendium${suffix}`,
     { signal },
-  )).items;
+  );
 }
 
 export function generateCompendium(

@@ -132,6 +132,7 @@ function CompendiumContent({ campaignId }: { campaignId: string }): ReactElement
   const [entryType, setEntryType] = useState<CompendiumEntryType>("spell");
   const [sourceKind, setSourceKind] = useState("");
   const [text, setText] = useState("");
+  const [page, setPage] = useState(1);
   const [filterA, setFilterA] = useState("");
   const [filterB, setFilterB] = useState("");
   const [prompt, setPrompt] = useState("一套基于火龙指甲锻造的装备");
@@ -139,11 +140,13 @@ function CompendiumContent({ campaignId }: { campaignId: string }): ReactElement
   const [level, setLevel] = useState(5);
   const [preview, setPreview] = useState<CompendiumGenerationPreview | null>(null);
   const entries = useQuery({
-    queryKey: ["compendium", campaignId, entryType, sourceKind, text],
+    queryKey: ["compendium", campaignId, entryType, sourceKind, text, page],
     queryFn: ({ signal }) => listCompendium(campaignId, {
       entry_type: entryType,
       source_kind: sourceKind || undefined,
       text: text || undefined,
+      page,
+      page_size: 40,
     }, signal),
   });
   const characters = useQuery({ queryKey: ["characters", campaignId], queryFn: ({ signal }) => listCharacters(campaignId, signal) });
@@ -195,15 +198,15 @@ function CompendiumContent({ campaignId }: { campaignId: string }): ReactElement
   const activeFilters = FILTERS[entryType];
   const filterOptions = useMemo(() => {
     const options = ({ key }: { key: string }) => Array.from(new Set(
-      (entries.data ?? [])
+      (entries.data?.items ?? [])
         .map((entry) => entry.filters_json[key])
         .filter((value) => value !== null && value !== undefined && value !== "")
         .map(display),
     )).sort((left, right) => left.localeCompare(right, "zh-CN", { numeric: true }));
     return [options(activeFilters[0]), options(activeFilters[1])] as const;
-  }, [activeFilters, entries.data]);
+  }, [activeFilters, entries.data?.items]);
   const visibleEntries = useMemo(
-    () => (entries.data ?? [])
+    () => (entries.data?.items ?? [])
       .filter((entry) => !filterA || display(entry.filters_json[activeFilters[0].key]) === filterA)
       .filter((entry) => !filterB || display(entry.filters_json[activeFilters[1].key]) === filterB)
       .sort((left, right) => {
@@ -214,22 +217,27 @@ function CompendiumContent({ campaignId }: { campaignId: string }): ReactElement
           { numeric: true },
         ) || left.name.localeCompare(right.name, "zh-CN");
       }),
-    [activeFilters, entries.data, filterA, filterB],
+    [activeFilters, entries.data?.items, filterA, filterB],
   );
   function chooseType(nextType: CompendiumEntryType): void {
     setEntryType(nextType);
+    setPage(1);
     setFilterA("");
     setFilterB("");
   }
   return (
     <div className="mx-auto max-w-[1280px] p-4 lg:p-6">
       <Panel eyebrow="统一原子库" title="D&D 图鉴库">
+        <p className="mt-0 text-xs text-stone-400">
+          已直接接入本地规则资料中的 {entries.data?.official_total ?? "…"} 个官方原子；
+          原创条目仍按当前团独立保存。
+        </p>
         <div className="flex flex-wrap gap-2">
-          {TYPES.map((item) => <Button key={item.value} onClick={() => chooseType(item.value)} size="sm" variant={entryType === item.value ? "primary" : "ghost"}>{item.label}</Button>)}
+          {TYPES.map((item) => <Button key={item.value} onClick={() => chooseType(item.value)} size="sm" variant={entryType === item.value ? "primary" : "ghost"}>{item.label} {entries.data?.counts[item.value] ? `(${entries.data.counts[item.value]})` : ""}</Button>)}
         </div>
         <div className="mt-3 grid gap-2 md:grid-cols-[minmax(0,1fr)_repeat(3,12rem)]">
-          <input className={inputCls} onChange={(event) => setText(event.target.value)} placeholder="搜索图鉴名称、法术、怪物、装备…" value={text} />
-          <select className={selectCls} onChange={(event) => setSourceKind(event.target.value)} value={sourceKind}>
+          <input className={inputCls} onChange={(event) => { setText(event.target.value); setPage(1); }} placeholder="搜索图鉴名称、法术、怪物、装备…" value={text} />
+          <select className={selectCls} onChange={(event) => { setSourceKind(event.target.value); setPage(1); }} value={sourceKind}>
             <option value="">全部来源</option>
             <option value="official">官方</option>
             <option value="ai_generated">原创 · AI</option>
@@ -254,6 +262,11 @@ function CompendiumContent({ campaignId }: { campaignId: string }): ReactElement
           <div className="grid gap-3 md:grid-cols-2">
             {visibleEntries.map((entry) => <EntryCard campaignId={campaignId} entry={entry} key={entry.id} targets={targets} />)}
           </div>
+          {entries.data && entries.data.total > entries.data.page_size ? <div className="mt-4 flex items-center justify-between border-t border-ink-700 pt-3 text-xs text-stone-400">
+            <Button disabled={page <= 1} onClick={() => setPage((value) => Math.max(1, value - 1))} size="sm">上一页</Button>
+            <span>第 {page} / {Math.ceil(entries.data.total / entries.data.page_size)} 页 · 共 {entries.data.total} 条</span>
+            <Button disabled={page * entries.data.page_size >= entries.data.total} onClick={() => setPage((value) => value + 1)} size="sm">下一页</Button>
+          </div> : null}
         </Panel>
         <Panel eyebrow="严格校验 · 原创标签" title="AI 图鉴生成">
           <select className={selectCls} onChange={(event) => setMode(event.target.value as typeof mode)} value={mode}>

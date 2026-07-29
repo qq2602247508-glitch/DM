@@ -137,3 +137,52 @@ def test_site_generation_can_derive_party_and_room_scale_from_characters(
     }
     assert "与队伍环级相符的法术卷轴" in loot_names
     assert "精制武器或护甲材料" in loot_names
+
+
+def test_merchant_generation_creates_grouped_stock_and_original_atoms(
+    campaign_client: TestClient,
+) -> None:
+    campaign = campaign_client.post("/api/v1/campaigns", json={"name": "商店验收团"}).json()
+    root = f"/api/v1/campaigns/{campaign['id']}"
+    character = campaign_client.post(
+        f"{root}/characters",
+        json={"name": "伊奥", "class_name": "法师", "level": 5, "hp": 28, "max_hp": 28},
+    ).json()
+    location = campaign_client.post(
+        f"{root}/locations", json={"name": "长桥市场", "depth": 1}
+    ).json()
+    scene = campaign_client.post(
+        f"{root}/scenes",
+        json={"name": "月灯杂货铺", "location_id": location["id"]},
+    ).json()
+    response = campaign_client.post(
+        f"{root}/merchants/generate/preview",
+        json={
+            "name": "月灯杂货铺",
+            "brief": "给五级法师准备的奥术远行补给",
+            "location_id": location["id"],
+            "scene_id": scene["id"],
+            "categories": ["magic"],
+            "item_tier": "uncommon",
+            "character_ids": [character["id"]],
+            "stock_size": 4,
+            "allow_original": True,
+        },
+    )
+    assert response.status_code == 200, response.text
+    preview = response.json()
+    assert len(preview["stock"]) == 4
+    assert preview["summary"]["original_atoms"] == 4
+    confirmed = campaign_client.post(
+        f"{root}/merchants/generate/confirm",
+        json={"preview": preview},
+    )
+    assert confirmed.status_code == 201, confirmed.text
+    shops = campaign_client.get(f"{root}/merchants").json()["items"]
+    assert len(shops) == 1
+    assert shops[0]["name"] == "月灯杂货铺"
+    assert len(shops[0]["stock"]) == 4
+    originals = campaign_client.get(
+        f"{root}/compendium?source_kind=original&entry_type=item"
+    ).json()
+    assert originals["total"] >= 4
