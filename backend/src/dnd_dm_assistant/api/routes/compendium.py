@@ -40,6 +40,16 @@ def list_entries(
     text: str = Query(default="", max_length=200),
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=40, ge=1, le=100),
+    class_name: str | None = Query(default=None, max_length=100),
+    spell_level: str | None = Query(default=None, max_length=10),
+    monster_type: str | None = Query(default=None, max_length=100),
+    challenge_rating: str | None = Query(default=None, max_length=20),
+    slot: str | None = Query(default=None, max_length=50),
+    rarity: str | None = Query(default=None, max_length=50),
+    category: str | None = Query(default=None, max_length=50),
+    attunement: str | None = Query(default=None, max_length=50),
+    edition: str | None = Query(default=None, max_length=50),
+    content_type: str | None = Query(default=None, max_length=50),
 ) -> dict[str, Any]:
     return _call(
         lambda: service.catalog(
@@ -49,6 +59,22 @@ def list_entries(
             text=text,
             page=page,
             page_size=page_size,
+            filters={
+                key: value
+                for key, value in {
+                    "class_name": class_name,
+                    "spell_level": spell_level,
+                    "monster_type": monster_type,
+                    "challenge_rating": challenge_rating,
+                    "slot": slot,
+                    "rarity": rarity,
+                    "category": category,
+                    "attunement": attunement,
+                    "edition": edition,
+                    "content_type": content_type,
+                }.items()
+                if value
+            },
         )
     )
 
@@ -71,9 +97,7 @@ def create_entry(
 
 @router.post("/generate/preview")
 def generate_preview(body: CompendiumGenerateRequest) -> dict[str, Any]:
-    return _call(
-        lambda: CompendiumService.generate_preview(body.model_dump(mode="json"))
-    )
+    return _call(lambda: CompendiumService.generate_preview(body.model_dump(mode="json")))
 
 
 @router.post("/generate/confirm", status_code=status.HTTP_201_CREATED)

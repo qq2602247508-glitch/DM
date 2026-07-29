@@ -37,6 +37,7 @@ export type CompendiumCatalog = {
   page_size: number;
   counts: Record<string, number>;
   official_total: number;
+  facets: Record<string, string[]>;
 };
 
 export async function listCompendium(
@@ -47,6 +48,16 @@ export async function listCompendium(
     text?: string;
     page?: number;
     page_size?: number;
+    class_name?: string;
+    spell_level?: string;
+    monster_type?: string;
+    challenge_rating?: string;
+    slot?: string;
+    rarity?: string;
+    category?: string;
+    attunement?: string;
+    edition?: string;
+    content_type?: string;
   },
   signal?: AbortSignal,
 ): Promise<CompendiumCatalog> {
@@ -56,6 +67,12 @@ export async function listCompendium(
   if (filters.text) query.set("text", filters.text);
   if (filters.page) query.set("page", String(filters.page));
   if (filters.page_size) query.set("page_size", String(filters.page_size));
+  for (const key of [
+    "class_name", "spell_level", "monster_type", "challenge_rating",
+    "slot", "rarity", "category", "attunement", "edition", "content_type",
+  ] as const) {
+    if (filters[key]) query.set(key, filters[key]);
+  }
   const suffix = query.size ? `?${query.toString()}` : "";
   return apiFetch<CompendiumCatalog>(
     `/campaigns/${campaignId}/compendium${suffix}`,

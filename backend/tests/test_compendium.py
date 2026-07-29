@@ -3,6 +3,81 @@ from __future__ import annotations
 from fastapi.testclient import TestClient
 
 
+def test_official_compendium_filters_before_pagination_and_only_returns_atoms(
+    campaign_client: TestClient,
+) -> None:
+    campaign = campaign_client.post("/api/v1/campaigns", json={"name": "官方图鉴质量验收团"}).json()
+    root = f"/api/v1/campaigns/{campaign['id']}/compendium"
+    druid_page_one = campaign_client.get(
+        f"{root}?entry_type=spell&class_name=德鲁伊&page=1&page_size=10"
+    ).json()
+    druid_page_two = campaign_client.get(
+        f"{root}?entry_type=spell&class_name=德鲁伊&page=2&page_size=10"
+    ).json()
+    assert druid_page_one["total"] > 20
+    assert len(druid_page_one["items"]) == 10
+    assert len(druid_page_two["items"]) == 10
+    assert all(
+        "德鲁伊" in item["filters_json"]["classes"]
+        for item in [*druid_page_one["items"], *druid_page_two["items"]]
+    )
+    class_facets = druid_page_one["facets"]["class_name"]
+    assert "德鲁伊" in class_facets
+    assert all("仪式" not in value and "TCE" not in value for value in class_facets)
+    all_spell_names = {
+        item["name"]
+        for page in range(1, 30)
+        for item in campaign_client.get(
+            f"{root}?entry_type=spell&page={page}&page_size=100"
+        ).json()["items"]
+    }
+    assert not {"牧师", "施法距离", "创作法术", "职业法术列表"} & all_spell_names
+    detect_magic = campaign_client.get(
+        f"{root}?entry_type=spell&text=侦测魔法&page_size=100"
+    ).json()["items"]
+    assert detect_magic
+    assert all("侦测毒性和疾病" not in item["description"] for item in detect_magic)
+    druid_level_two = campaign_client.get(
+        f"{root}?entry_type=spell&class_name=德鲁伊&spell_level=2&page=2&page_size=10"
+    ).json()
+    assert druid_level_two["total"] > 10
+    assert druid_level_two["items"]
+    assert all(item["filters_json"]["spell_level"] == 2 for item in druid_level_two["items"])
+
+    equipment = campaign_client.get(f"{root}?entry_type=equipment&page_size=100").json()["items"]
+    assert equipment
+    assert not {"财富", "词条", "饰品"} & {item["name"] for item in equipment}
+    assert all(item["filters_json"]["atomic_item"] for item in equipment)
+    assert all(
+        item["filters_json"]["category"] in {"weapon", "armor", "shield"} for item in equipment
+    )
+
+    magic_items = campaign_client.get(
+        f"{root}?entry_type=item&category=wondrous&rarity=传说&page_size=100"
+    ).json()
+    assert magic_items["items"]
+    assert all(item["name"] != "传说" for item in magic_items["items"])
+    assert all(item["name"] != "神器" for item in magic_items["items"])
+    assert all(
+        item["filters_json"]["category"] == "wondrous" and item["filters_json"]["rarity"] == "传说"
+        for item in magic_items["items"]
+    )
+    magic_weapons = campaign_client.get(
+        f"{root}?entry_type=item&category=weapon&text=魔法武器&page_size=100"
+    ).json()["items"]
+    assert {(item["name"], item["filters_json"]["rarity"]) for item in magic_weapons} >= {
+        ("魔法武器 +1", "非普通"),
+        ("魔法武器 +2", "珍稀"),
+        ("魔法武器 +3", "极珍稀"),
+    }
+    universal_solvent = campaign_client.get(
+        f"{root}?entry_type=item&text=万溶剂&page_size=100"
+    ).json()["items"]
+    assert universal_solvent
+    assert all("乳白" in item["description"] for item in universal_solvent)
+    assert all("卡牌通常存放" not in item["description"] for item in universal_solvent)
+
+
 def test_generated_compendium_templates_are_reusable_instances(
     campaign_client: TestClient,
 ) -> None:
@@ -46,9 +121,9 @@ def test_generated_compendium_templates_are_reusable_instances(
         json={"target_type": "character", "target_id": character["id"]},
     )
     assert granted.status_code == 201, granted.text
-    inventory = campaign_client.get(
-        f"{root}/items?owner_character_id={character['id']}"
-    ).json()["items"]
+    inventory = campaign_client.get(f"{root}/items?owner_character_id={character['id']}").json()[
+        "items"
+    ]
     assert any(item["name"] == equipment["name"] for item in inventory)
 
     monster_preview = campaign_client.post(
@@ -70,9 +145,7 @@ def test_generated_compendium_templates_are_reusable_instances(
         json={"target_type": "scene", "target_id": scene["id"]},
     )
     assert arrival.status_code == 201, arrival.text
-    participants = campaign_client.get(
-        f"{root}/scenes/{scene['id']}/participants"
-    ).json()["items"]
+    participants = campaign_client.get(f"{root}/scenes/{scene['id']}/participants").json()["items"]
     assert any(item["entity_type"] == "monster" for item in participants)
 
 
@@ -122,19 +195,13 @@ def test_site_generation_can_derive_party_and_room_scale_from_characters(
     assert preview["site"]["character_ids"] == [wizard["id"], fighter["id"]]
     assert all(level["layout"]["width"] >= 60 for level in preview["levels"])
     assert all(
-        max(
-            room["bounds"]["width"] * room["bounds"]["height"]
-            for room in level["rooms"]
-        )
-        >= 64
+        max(room["bounds"]["width"] * room["bounds"]["height"] for room in level["rooms"]) >= 64
         for level in preview["levels"]
     )
     assert all(level["monster_plan"] for level in preview["levels"])
     assert all(level["npc_plan"] for level in preview["levels"])
     assert all(level["reward_plan"] for level in preview["levels"])
-    loot_names = {
-        item["name"] for level in preview["levels"] for item in level["reward_plan"]
-    }
+    loot_names = {item["name"] for level in preview["levels"] for item in level["reward_plan"]}
     assert "与队伍环级相符的法术卷轴" in loot_names
     assert "精制武器或护甲材料" in loot_names
 

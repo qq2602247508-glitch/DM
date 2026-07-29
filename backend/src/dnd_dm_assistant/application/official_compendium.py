@@ -20,6 +20,21 @@ CONTENT_ENTRY_TYPES = {
     "actions": "feature",
 }
 CURRENT_EDITIONS = {"2024", "2025"}
+SPELL_CLASS_NAMES = (
+    "野蛮人",
+    "吟游诗人",
+    "牧师",
+    "德鲁伊",
+    "战士",
+    "武僧",
+    "圣武士",
+    "游侠",
+    "游荡者",
+    "术士",
+    "魔契师",
+    "法师",
+    "奇械师",
+)
 ABILITY_KEYS = {
     "力量": "strength",
     "敏捷": "dexterity",
@@ -34,6 +49,29 @@ def _clean_name(value: str) -> str:
     chinese = re.match(r"^([\u3400-\u9fff·（）()、\s]+?)(?=[A-Za-z]|$)", value.strip())
     result = (chinese.group(1) if chinese else value).strip()
     return re.sub(r"\s+", " ", result)
+
+
+def _plain_markdown(value: str) -> str:
+    result = re.sub(r"(?m)^#{1,6}\s*", "", value)
+    result = result.replace("**", "").replace("__", "").replace("*", "")
+    result = re.sub(r"\s+", " ", result)
+    return result.strip()
+
+
+def _normalize_spell_classes(value: object) -> list[str]:
+    raw_values = value if isinstance(value, list) else [value]
+    text = "、".join(str(item) for item in raw_values if item)
+    return [class_name for class_name in SPELL_CLASS_NAMES if class_name in text]
+
+
+def _spell_description(data: dict[str, Any]) -> str:
+    markdown = str(data.get("content_markdown") or "")
+    headings = list(re.finditer(r"(?m)^#{4,6}\s+.+?\s*$", markdown))
+    if headings:
+        start = headings[0].start()
+        end = headings[1].start() if len(headings) > 1 else len(markdown)
+        return _plain_markdown(markdown[start:end])[:1600]
+    return str(data.get("content_plain_text") or "")[:1600]
 
 
 def _number(text: str, pattern: str, default: int) -> int:
@@ -196,17 +234,19 @@ def _record_entry(data: dict[str, Any]) -> dict[str, Any] | None:
         "source_relative_path": data.get("source_relative_path"),
     }
     if spell:
-        raw_classes = spell.get("classes")
-        classes = raw_classes if isinstance(raw_classes, list) else []
+        classes = _normalize_spell_classes(spell.get("classes"))
+        if not classes or not spell.get("casting_time") or not spell.get("range"):
+            return None
         raw_level = spell.get("level")
         spell_level = (
             int(raw_level)
             if isinstance(raw_level, (int, float, str)) and str(raw_level).isdigit()
-            else 0
+            else 0  # The corpus uses null for cantrips.
         )
         filters.update(
             {
                 "class_name": "、".join(str(value) for value in classes),
+                "classes": [str(value) for value in classes],
                 "spell_level": spell_level,
                 "school": spell.get("school"),
                 "casting_time": spell.get("casting_time"),
@@ -215,6 +255,7 @@ def _record_entry(data: dict[str, Any]) -> dict[str, Any] | None:
             }
         )
         rules.update(spell)
+        rules["classes"] = classes
     if entry_type == "monster":
         monster_filters, monster_rules = _monster_fields(str(data.get("content_plain_text") or ""))
         filters.update(monster_filters)
@@ -225,7 +266,9 @@ def _record_entry(data: dict[str, Any]) -> dict[str, Any] | None:
         "campaign_id": "official",
         "entry_type": entry_type,
         "name": str(data.get("name") or stable_id),
-        "description": str(data.get("content_plain_text") or "")[:1200],
+        "description": (
+            _spell_description(data) if spell else str(data.get("content_plain_text") or "")[:1200]
+        ),
         "source_kind": "official",
         "source_record_id": stable_id,
         "source_name": data.get("source_book"),
@@ -270,6 +313,12 @@ def _atomic_equipment_entries(data: dict[str, Any]) -> list[dict[str, Any]]:
         if not price or price in {"—", "多类"}:
             return
         suffix = hashlib.sha256(f"{stable_id}|{item_name}".encode()).hexdigest()[:12]
+        category_label = {
+            "weapon": "武器",
+            "armor": "护甲",
+            "shield": "盾牌",
+            "adventuring_gear": "冒险装备",
+        }.get(category, "物品")
         result.append(
             {
                 "id": f"official:{stable_id}:{suffix}",
@@ -278,7 +327,8 @@ def _atomic_equipment_entries(data: dict[str, Any]) -> list[dict[str, Any]]:
                 "entry_type": "equipment" if category in {"weapon", "armor", "shield"} else "item",
                 "name": item_name,
                 "description": (
-                    f"来自《{data.get('source_book') or 'D&D规则资料'}》的官方{category}条目。"
+                    f"来自《{data.get('source_book') or 'D&D规则资料'}》的官方"
+                    f"{category_label}条目。"
                 ),
                 "source_kind": "official",
                 "source_record_id": stable_id,
@@ -339,10 +389,11 @@ def _atomic_equipment_entries(data: dict[str, Any]) -> list[dict[str, Any]]:
                 continue
             if not re.search(r"\d", row[1]):
                 continue
+            row_category = "shield" if "盾牌" in row[0] else armor_category
             append_item(
                 row[0],
-                category=armor_category,
-                slot="off_hand" if armor_category == "shield" else "armor",
+                category=row_category,
+                slot="off_hand" if row_category == "shield" else "armor",
                 weight=row[4],
                 price=row[5],
                 rules={
@@ -364,6 +415,170 @@ def _atomic_equipment_entries(data: dict[str, Any]) -> list[dict[str, Any]]:
                     price=row[offset + 2],
                     rules={},
                 )
+    return result
+
+
+def _item_category(data: dict[str, Any], metadata: str) -> str:
+    path = " ".join(str(value) for value in data.get("heading_path", []))
+    text = f"{path} {metadata}"
+    categories = (
+        ("护甲", "armor"),
+        ("武器", "weapon"),
+        ("戒指", "ring"),
+        ("权杖", "rod"),
+        ("法杖", "staff"),
+        ("魔杖", "wand"),
+        ("药水", "potion"),
+        ("卷轴", "scroll"),
+        ("弹药", "ammunition"),
+        ("奇物", "wondrous"),
+    )
+    return next((value for label, value in categories if label in text), "magic_item")
+
+
+def _item_rarity(data: dict[str, Any], metadata: str) -> str:
+    rarities = ("神器", "传说", "极珍稀", "非常稀有", "珍稀", "非普通", "普通")
+    record_name = str(data.get("name") or "")
+    if record_name in rarities:
+        return "极珍稀" if record_name == "非常稀有" else record_name
+    metadata_match = re.search(
+        r"(?:奇物|护甲|武器|戒指|权杖|法杖|魔杖|药水|卷轴|弹药)"
+        r"[^。；]{0,50}?[，,]\s*(神器|传说|极珍稀|非常稀有|珍稀|非普通|普通)",
+        metadata,
+    )
+    if metadata_match:
+        rarity = metadata_match.group(1)
+        return "极珍稀" if rarity == "非常稀有" else rarity
+    return "未标注"
+
+
+def _legacy_item_blocks(markdown: str) -> list[tuple[str, str]]:
+    """Use rarity metadata lines as boundaries even when legacy bold markup is broken."""
+
+    lines = markdown.splitlines()
+    starts: list[tuple[int, int, str]] = []
+    metadata_pattern = re.compile(
+        r"^\*+.*(?:奇物|护甲|武器|戒指|权杖|法杖|魔杖|药水|卷轴|弹药)"
+        r".*(?:神器|传说|非常稀有|稀有|非普通|普通).*\*+\s*$"
+    )
+    for metadata_index, line in enumerate(lines):
+        if not metadata_pattern.match(line.strip()):
+            continue
+        title_end = metadata_index - 1
+        while title_end >= 0 and not lines[title_end].strip():
+            title_end -= 1
+        if title_end < 0:
+            continue
+        title_start = title_end
+        while title_start > 0 and title_end - title_start < 2 and lines[title_start - 1].strip():
+            title_start -= 1
+        title_lines = lines[title_start : title_end + 1]
+        if not any("**" in value for value in title_lines):
+            continue
+        raw_title = " ".join(value.strip().strip("*") for value in title_lines)
+        starts.append((title_start, metadata_index, raw_title))
+    result: list[tuple[str, str]] = []
+    for index, (title_start, metadata_index, raw_title) in enumerate(starts):
+        del title_start
+        end = starts[index + 1][0] if index + 1 < len(starts) else len(lines)
+        result.append((raw_title, "\n".join(lines[metadata_index:end]).strip()))
+    return result
+
+
+def _atomic_item_entries(data: dict[str, Any]) -> list[dict[str, Any]]:
+    markdown = str(data.get("content_markdown") or "")
+    stable_id = str(data["stable_id"])
+    blocks: list[tuple[str, str]] = []
+    heading_matches = list(re.finditer(r"(?m)^#{4,6}\s+(.+?)\s*$", markdown))
+    if heading_matches:
+        for index, match in enumerate(heading_matches):
+            end = (
+                heading_matches[index + 1].start()
+                if index + 1 < len(heading_matches)
+                else len(markdown)
+            )
+            blocks.append((match.group(1), markdown[match.end() : end].strip()))
+    else:
+        blocks = _legacy_item_blocks(markdown)
+    if not blocks:
+        return []
+    result: list[dict[str, Any]] = []
+    for position, (raw_name, body) in enumerate(blocks):
+        name = _clean_name(_plain_markdown(raw_name))
+        description = _plain_markdown(body)
+        metadata = description[:180]
+        rarity = _item_rarity(data, metadata)
+        if (
+            not name
+            or name in {"神器", "魔法物品", "魔法物品类别"}
+            or name.endswith("增益词条")
+            or name.endswith("减益词条")
+            or rarity == "未标注"
+            or len(description) < 10
+        ):
+            continue
+        category = _item_category(data, metadata)
+        charge_match = re.search(r"(?:具有|有)\s*(\d+)\s*(?:发)?充能", description)
+        attunement_match = re.search(r"需([^（）()，,。]{0,30})同调", metadata)
+        rarity_variants = re.findall(
+            r"(神器|传说|极珍稀|非常稀有|珍稀|非普通|普通)\s*[（(]([+-]\d+)[）)]",
+            metadata,
+        )
+        variants: list[tuple[str, str, int | None]]
+        if name in {"武器", "护甲"} and len(rarity_variants) > 1:
+            variants = [
+                (
+                    f"魔法{name} {bonus}",
+                    "极珍稀" if variant_rarity == "非常稀有" else variant_rarity,
+                    int(bonus),
+                )
+                for variant_rarity, bonus in rarity_variants
+            ]
+        else:
+            variants = [(name, rarity, None)]
+        for variant_name, variant_rarity, magic_bonus in variants:
+            suffix = hashlib.sha256(f"{stable_id}|{variant_name}|{position}".encode()).hexdigest()[
+                :12
+            ]
+            result.append(
+                {
+                    "id": f"official:{stable_id}:{suffix}",
+                    "version": 1,
+                    "campaign_id": "official",
+                    "entry_type": "item",
+                    "name": variant_name,
+                    "description": description[:1600],
+                    "source_kind": "official",
+                    "source_record_id": stable_id,
+                    "source_name": data.get("source_book"),
+                    "family_key": None,
+                    "tags": [
+                        "官方",
+                        str(data.get("edition") or "未知版本"),
+                        variant_rarity,
+                        category,
+                    ],
+                    "filters_json": {
+                        "content_type": "items",
+                        "edition": data.get("edition"),
+                        "source_book": data.get("source_book"),
+                        "category": category,
+                        "rarity": variant_rarity,
+                        "attunement": "需同调" if "同调" in metadata else "无需同调",
+                        "attunement_classes": (
+                            attunement_match.group(1).strip() if attunement_match else ""
+                        ),
+                        "atomic_item": True,
+                    },
+                    "rules_json": {
+                        "canonical_url": data.get("canonical_url"),
+                        "source_relative_path": data.get("source_relative_path"),
+                        "charges": int(charge_match.group(1)) if charge_match else None,
+                        "attunement": "同调" in metadata,
+                        "magic_bonus": magic_bonus,
+                    },
+                }
+            )
     return result
 
 
@@ -389,15 +604,20 @@ def _load_catalog(root_value: str) -> tuple[dict[str, Any], ...]:
                 if atomic_monsters:
                     entries.extend(atomic_monsters)
                     continue
+            if content_type == "equipment" and data.get("officiality") == "official":
+                atomic_equipment = (
+                    _atomic_equipment_entries(data) if data.get("edition") == "2024" else []
+                )
+                entries.extend(atomic_equipment)
+                continue
+            if content_type == "items" and data.get("officiality") == "official":
+                atomic_items = _atomic_item_entries(data)
+                if atomic_items:
+                    entries.extend(atomic_items)
+                continue
             entry = _record_entry(data)
             if entry is not None:
                 entries.append(entry)
-            if (
-                content_type == "equipment"
-                and data.get("officiality") == "official"
-                and data.get("edition") == "2024"
-            ):
-                entries.extend(_atomic_equipment_entries(data))
     return tuple(entries)
 
 
@@ -419,6 +639,7 @@ class OfficialCompendiumCatalog:
         *,
         entry_type: str | None = None,
         text: str = "",
+        filters: dict[str, str] | None = None,
     ) -> list[dict[str, Any]]:
         query = text.strip().lower()
         return [
@@ -436,7 +657,29 @@ class OfficialCompendiumCatalog:
                     ]
                 ).lower()
             )
+            and self.matches_filters(entry, filters or {})
         ]
+
+    @staticmethod
+    def matches_filters(entry: dict[str, Any], filters: dict[str, str]) -> bool:
+        values = dict(entry.get("filters_json") or {})
+        for key, expected in filters.items():
+            if not expected:
+                continue
+            if key == "class_name":
+                classes = values.get("classes", [])
+                if isinstance(classes, list) and expected in {str(item) for item in classes}:
+                    continue
+                if expected not in str(values.get("class_name") or "").split("、"):
+                    return False
+                continue
+            actual = values.get(key)
+            if isinstance(actual, list):
+                if expected not in {str(item) for item in actual}:
+                    return False
+            elif str(actual if actual is not None else "") != expected:
+                return False
+        return True
 
     def counts(self) -> dict[str, int]:
         counts: dict[str, int] = {}

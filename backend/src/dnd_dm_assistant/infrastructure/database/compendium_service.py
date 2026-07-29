@@ -97,8 +97,9 @@ class CompendiumService:
         text: str = "",
         page: int = 1,
         page_size: int = 40,
+        filters: dict[str, str] | None = None,
     ) -> dict[str, Any]:
-        custom = list(
+        custom_base = list(
             self.list(
                 campaign_id,
                 entry_type=entry_type,
@@ -106,12 +107,39 @@ class CompendiumService:
                 text=text,
             )
         )
-        official = (
+        official_base = (
             []
             if source_kind and source_kind != "official"
             else self.official.search(entry_type=entry_type, text=text)
         )
-        items = [*official, *custom]
+        base_items = [*official_base, *custom_base]
+        facets: dict[str, list[str]] = {}
+        for key in (
+            "class_name",
+            "spell_level",
+            "monster_type",
+            "challenge_rating",
+            "slot",
+            "rarity",
+            "category",
+            "attunement",
+            "edition",
+            "content_type",
+        ):
+            values: set[str] = set()
+            for item in base_items:
+                raw = dict(item.get("filters_json") or {}).get(key)
+                if key == "class_name":
+                    raw_classes = dict(item.get("filters_json") or {}).get("classes", [])
+                    if isinstance(raw_classes, list):
+                        values.update(str(value) for value in raw_classes if value)
+                        continue
+                if isinstance(raw, list):
+                    values.update(str(value) for value in raw if value)
+                elif raw is not None and str(raw):
+                    values.add(str(raw))
+            facets[key] = sorted(values, key=lambda value: (len(value), value))
+        items = [item for item in base_items if self.official.matches_filters(item, filters or {})]
         items.sort(
             key=lambda item: (
                 0 if item.get("source_kind") == "official" else 1,
@@ -134,6 +162,7 @@ class CompendiumService:
             "page_size": page_size,
             "counts": counts,
             "official_total": sum(self.official.counts().values()),
+            "facets": facets,
         }
 
     def create(
@@ -437,9 +466,7 @@ class CompendiumService:
                         price_cp=_integer(rules.get("price_cp"), 0),
                         source_record_id=entry.get("source_record_id"),
                         source_label=(
-                            "official"
-                            if entry.get("source_kind") == "official"
-                            else "ai_generated"
+                            "official" if entry.get("source_kind") == "official" else "ai_generated"
                         ),
                         owner_character_id=character.id,
                         metadata_json={
@@ -476,9 +503,7 @@ class CompendiumService:
                         speed=_integer(rules.get("speed"), 30),
                         ability_scores=_mapping(rules.get("ability_scores")),
                         challenge_rating=str(
-                            dict(entry.get("filters_json") or {}).get(
-                                "challenge_rating", "1/4"
-                            )
+                            dict(entry.get("filters_json") or {}).get("challenge_rating", "1/4")
                         ),
                         actions=_sequence(rules.get("actions")),
                         notes=entry.get("description"),

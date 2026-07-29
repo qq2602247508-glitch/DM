@@ -22,7 +22,7 @@ import { inputCls, selectCls, textareaCls } from "../ui/styles";
 
 const TYPES: Array<{ value: CompendiumEntryType; label: string; contentType?: ContentType }> = [
   { value: "spell", label: "法术", contentType: "spells" },
-  { value: "feature", label: "职业能力", contentType: "classes" },
+  { value: "feature", label: "职业与子职", contentType: "classes" },
   { value: "monster", label: "怪物", contentType: "monsters" },
   { value: "equipment", label: "装备", contentType: "equipment" },
   { value: "item", label: "道具", contentType: "items" },
@@ -43,8 +43,8 @@ const FILTERS: Record<
     { key: "spell_level", label: "法术环级 / 消耗" },
   ],
   feature: [
-    { key: "class_name", label: "职业" },
-    { key: "level", label: "获得等级" },
+    { key: "content_type", label: "内容类别" },
+    { key: "edition", label: "规则版本" },
   ],
   monster: [
     { key: "monster_type", label: "怪物类型" },
@@ -75,6 +75,67 @@ const FILTERS: Record<
 function display(value: unknown): string {
   if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") return String(value);
   return JSON.stringify(value);
+}
+
+const VALUE_LABELS: Record<string, string> = {
+  weapon: "武器",
+  armor: "护甲",
+  shield: "盾牌",
+  adventuring_gear: "冒险装备",
+  wondrous: "奇物",
+  potion: "药水",
+  scroll: "卷轴",
+  ring: "戒指",
+  rod: "权杖",
+  staff: "法杖",
+  wand: "魔杖",
+  ammunition: "弹药",
+  magic_item: "其他魔法物品",
+  classes: "职业",
+  subclasses: "子职",
+  feats: "专长",
+  backgrounds: "背景",
+  conditions: "状态",
+  actions: "动作规则",
+  main_hand: "主手",
+  off_hand: "副手",
+  inventory: "背包",
+  legacy: "2014 旧版",
+  "2024": "2024 版",
+  "2025": "2025 版",
+};
+
+const FILTER_KEY_LABELS: Record<string, string> = {
+  category: "分类",
+  slot: "装备部位",
+  rarity: "稀有度",
+  recommended_level: "建议等级",
+  edition: "规则版本",
+  class_name: "职业",
+  spell_level: "法术环级",
+  school: "学派",
+  casting_time: "施法时间",
+  concentration: "专注",
+  ritual: "仪式",
+  monster_type: "怪物类型",
+  challenge_rating: "挑战等级",
+  attunement: "同调",
+  attunement_classes: "同调限制",
+};
+
+const HIDDEN_FILTER_KEYS = new Set([
+  "atomic_item",
+  "content_type",
+  "classes",
+  "source_book",
+]);
+
+function displayFilterValue(value: unknown): string {
+  if (Array.isArray(value)) return value.map(displayFilterValue).join("、");
+  if (value === true) return "是";
+  if (value === false) return "否";
+  const raw = display(value);
+  return VALUE_LABELS[raw] ?? raw;
 }
 
 function EntryCard({
@@ -109,11 +170,24 @@ function EntryCard({
         <Badge tone={entry.source_kind === "official" ? "ok" : "ai"}>
           {entry.source_kind === "official" ? "官方" : entry.source_kind === "ai_generated" ? "原创 · AI" : "原创"}
         </Badge>
-        {entry.tags.map((tag) => <Badge key={tag}>{tag}</Badge>)}
+        {entry.tags.filter((tag) => tag !== "官方").map((tag) => <Badge key={tag}>{VALUE_LABELS[tag] ?? tag}</Badge>)}
       </div>
-      <p className="mb-2 mt-2 text-xs leading-5 text-stone-400">{entry.description || "暂无描述"}</p>
+      <p className="mb-2 mt-2 line-clamp-4 text-xs leading-5 text-stone-400">{entry.description || "暂无描述"}</p>
+      {entry.description && entry.description.length > 220 ? (
+        <details className="mb-2 text-xs text-stone-400">
+          <summary className="cursor-pointer text-ember-300">展开完整说明</summary>
+          <p className="whitespace-pre-wrap leading-5">{entry.description}</p>
+        </details>
+      ) : null}
       <div className="flex flex-wrap gap-1.5">
-        {Object.entries(entry.filters_json).slice(0, 8).map(([key, value]) => <Badge key={key}>{key}: {display(value)}</Badge>)}
+        {Object.entries(entry.filters_json)
+          .filter(([key, value]) => !HIDDEN_FILTER_KEYS.has(key) && value !== "" && value !== null)
+          .slice(0, 8)
+          .map(([key, value]) => (
+            <Badge key={key}>
+              {FILTER_KEY_LABELS[key] ?? key}: {displayFilterValue(value)}
+            </Badge>
+          ))}
       </div>
       <div className="mt-3 flex gap-2">
         <select className={`${selectCls} min-w-0 flex-1`} onChange={(event) => setTarget(event.target.value)} value={target}>
@@ -139,14 +213,17 @@ function CompendiumContent({ campaignId }: { campaignId: string }): ReactElement
   const [mode, setMode] = useState<"single" | "equipment_set" | "monster_family">("equipment_set");
   const [level, setLevel] = useState(5);
   const [preview, setPreview] = useState<CompendiumGenerationPreview | null>(null);
+  const activeFilters = FILTERS[entryType];
   const entries = useQuery({
-    queryKey: ["compendium", campaignId, entryType, sourceKind, text, page],
+    queryKey: ["compendium", campaignId, entryType, sourceKind, text, filterA, filterB, page],
     queryFn: ({ signal }) => listCompendium(campaignId, {
       entry_type: entryType,
       source_kind: sourceKind || undefined,
       text: text || undefined,
       page,
       page_size: 40,
+      [activeFilters[0].key]: filterA || undefined,
+      [activeFilters[1].key]: filterB || undefined,
     }, signal),
   });
   const characters = useQuery({ queryKey: ["characters", campaignId], queryFn: ({ signal }) => listCharacters(campaignId, signal) });
@@ -195,29 +272,14 @@ function CompendiumContent({ campaignId }: { campaignId: string }): ReactElement
     }
     return [];
   }, [characters.data, entryType, scenes.data]);
-  const activeFilters = FILTERS[entryType];
   const filterOptions = useMemo(() => {
-    const options = ({ key }: { key: string }) => Array.from(new Set(
-      (entries.data?.items ?? [])
-        .map((entry) => entry.filters_json[key])
-        .filter((value) => value !== null && value !== undefined && value !== "")
-        .map(display),
-    )).sort((left, right) => left.localeCompare(right, "zh-CN", { numeric: true }));
+    const options = ({ key }: { key: string }) =>
+      entries.data?.facets[key] ?? [];
     return [options(activeFilters[0]), options(activeFilters[1])] as const;
-  }, [activeFilters, entries.data?.items]);
+  }, [activeFilters, entries.data?.facets]);
   const visibleEntries = useMemo(
-    () => (entries.data?.items ?? [])
-      .filter((entry) => !filterA || display(entry.filters_json[activeFilters[0].key]) === filterA)
-      .filter((entry) => !filterB || display(entry.filters_json[activeFilters[1].key]) === filterB)
-      .sort((left, right) => {
-        const filterKey = activeFilters[1].key;
-        return display(left.filters_json[filterKey] ?? "").localeCompare(
-          display(right.filters_json[filterKey] ?? ""),
-          "zh-CN",
-          { numeric: true },
-        ) || left.name.localeCompare(right.name, "zh-CN");
-      }),
-    [activeFilters, entries.data?.items, filterA, filterB],
+    () => entries.data?.items ?? [],
+    [entries.data?.items],
   );
   function chooseType(nextType: CompendiumEntryType): void {
     setEntryType(nextType);
@@ -244,13 +306,13 @@ function CompendiumContent({ campaignId }: { campaignId: string }): ReactElement
             <option value="original">原创 · DM</option>
             <option value="third_party">第三方</option>
           </select>
-          <select className={selectCls} onChange={(event) => setFilterA(event.target.value)} value={filterA}>
+          <select className={selectCls} onChange={(event) => { setFilterA(event.target.value); setPage(1); }} value={filterA}>
             <option value="">全部{activeFilters[0].label}</option>
-            {filterOptions[0].map((value) => <option key={value} value={value}>{value}</option>)}
+            {filterOptions[0].map((value) => <option key={value} value={value}>{displayFilterValue(value)}</option>)}
           </select>
-          <select className={selectCls} onChange={(event) => setFilterB(event.target.value)} value={filterB}>
+          <select className={selectCls} onChange={(event) => { setFilterB(event.target.value); setPage(1); }} value={filterB}>
             <option value="">全部{activeFilters[1].label}</option>
-            {filterOptions[1].map((value) => <option key={value} value={value}>{value}</option>)}
+            {filterOptions[1].map((value) => <option key={value} value={value}>{displayFilterValue(value)}</option>)}
           </select>
         </div>
       </Panel>
