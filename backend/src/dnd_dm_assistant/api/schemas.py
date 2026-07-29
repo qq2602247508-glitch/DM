@@ -921,6 +921,11 @@ class NarrativeOperation(BaseModel):
     )
     successes: int | None = Field(default=None, ge=0, le=99)
     failures: int | None = Field(default=None, ge=0, le=99)
+    runtime_id: str | None = Field(default=None, max_length=36)
+    success_delta: int | None = Field(default=None, ge=0, le=20)
+    failure_delta: int | None = Field(default=None, ge=0, le=20)
+    target_successes: int | None = Field(default=None, ge=1, le=20)
+    target_failures: int | None = Field(default=None, ge=1, le=20)
 
 
 class NarrativeTransactionRequest(BaseModel):

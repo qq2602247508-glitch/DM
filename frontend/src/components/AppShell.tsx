@@ -7,6 +7,7 @@ import { listLocations } from "../api/entities";
 import { useCurrentCampaign } from "../hooks/appContexts";
 import { navigate, useHashRoute, type RoutePath } from "../hooks/useHashRoute";
 import { useOffline } from "../hooks/useOffline";
+import { useCampaignRealtime } from "../hooks/useRealtimeInvalidation";
 import { Icon, type IconName } from "../ui/icons";
 import { formatDateTime } from "../ui/format";
 import { StatusCluster } from "./StatusCluster";
@@ -30,6 +31,7 @@ export function AppShell({ children }: { children: ReactNode }): ReactElement {
   const route = useHashRoute();
   const offline = useOffline();
   const { campaignId, selectCampaign } = useCurrentCampaign();
+  useCampaignRealtime(campaignId);
 
   const campaigns = useQuery({
     queryKey: ["campaigns"],

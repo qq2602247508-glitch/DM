@@ -187,7 +187,7 @@ function DmSceneActionPanel({
     queryKey: ["dm-noncombat-actions", campaignId, characterId],
     queryFn: ({ signal }) => getDmNoncombatActions(campaignId, characterId, signal),
     enabled: Boolean(characterId),
-    refetchInterval: 1_500,
+    refetchInterval: 15_000,
   });
   const selected = actions.data?.available_actions.find((item) => item.id === actionId);
   const targets = selected && gridData ? [

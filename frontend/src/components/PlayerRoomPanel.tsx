@@ -40,13 +40,13 @@ export function PlayerRoomPanel({
     queryKey: ["player-room-admin", campaignId],
     queryFn: ({ signal }) => getPlayerRoom(campaignId, signal),
     retry: false,
-    refetchInterval: (query) => query.state.data?.status === "active" ? 2_000 : false,
+    refetchInterval: (query) => query.state.data?.status === "active" ? 15_000 : false,
   });
   const actionRequests = useQuery({
     enabled: room.data?.status === "active",
     queryKey: ["player-action-requests", campaignId],
     queryFn: ({ signal }) => listPlayerActionRequests(campaignId, signal),
-    refetchInterval: 1_000,
+    refetchInterval: 15_000,
   });
   const invalidate = () => client.invalidateQueries({ queryKey: ["player-room-admin", campaignId] });
   const open = useMutation({

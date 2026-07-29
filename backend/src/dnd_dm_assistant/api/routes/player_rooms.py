@@ -6,12 +6,14 @@ from collections.abc import Callable
 from typing import Annotated, Any, Literal
 
 from fastapi import APIRouter, Cookie, Depends, HTTPException, Request, Response, status
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field, StringConstraints
 
 from dnd_dm_assistant.api.dependencies import (
     get_player_room_service,
     get_player_rules_search,
 )
+from dnd_dm_assistant.api.routes.realtime import sqlite_change_stream
 from dnd_dm_assistant.application.player_rules_search import PlayerRulesSearch
 from dnd_dm_assistant.domain.campaign_state import StateNotFoundError, VersionConflict
 from dnd_dm_assistant.infrastructure.database.player_room_service import (
@@ -104,6 +106,7 @@ class AttackInput(BaseModel):
     action_name: str = Field(min_length=1, max_length=200)
     attack_total: int = Field(ge=-100, le=1000)
     damage_total: int = Field(ge=0, le=100_000)
+    critical_hit: bool = False
     end_turn_after: bool = False
     idempotency_key: str = Field(min_length=8, max_length=120)
 
@@ -362,6 +365,26 @@ def me(
     return _safe(lambda: service.snapshot(principal))
 
 
+@public_player_room_router.get("/me/events")
+def my_realtime_events(
+    request: Request,
+    principal: Annotated[PlayerPrincipal, Depends(get_player_principal)],
+    service: Annotated[PlayerRoomService, Depends(get_player_room_service)],
+) -> StreamingResponse:
+    return StreamingResponse(
+        sqlite_change_stream(
+            request,
+            service.engine,
+            scope=f"player-room:{principal.room_id}",
+        ),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache, no-transform",
+            "X-Accel-Buffering": "no",
+        },
+    )
+
+
 @public_player_room_router.post("/me/characters", status_code=status.HTTP_201_CREATED)
 def create_character(
     body: CharacterCreateInput,
@@ -475,6 +498,7 @@ def attack(
             body.action_name,
             body.attack_total,
             body.damage_total,
+            body.critical_hit,
             body.end_turn_after,
             body.idempotency_key,
         )

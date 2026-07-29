@@ -115,7 +115,15 @@ class RuntimeIntegrations:
         )
 
     async def status(self) -> IndexStatus:
-        raw_status = await self.vector_store.status()
+        try:
+            raw_status = await self.vector_store.status()
+        except (OSError, RuntimeError, ValueError) as exc:
+            return IndexStatus(
+                collection_name=self.vector_store.collection_name,
+                available=False,
+                state="inconsistent",
+                reason=f"local rule index is temporarily unavailable: {exc}",
+            )
         manifest = self.manifest_store.load()
         return validated_index_status(
             raw_status,

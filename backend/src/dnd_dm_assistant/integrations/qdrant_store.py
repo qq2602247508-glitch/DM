@@ -25,6 +25,10 @@ class QdrantLocalVectorStore:
         self._client: QdrantClient | None = None
         self._lock = asyncio.Lock()
 
+    @property
+    def collection_name(self) -> str:
+        return self._collection_name
+
     def _get_client(self) -> QdrantClient:
         if self._client is None:
             self._path.mkdir(parents=True, exist_ok=True)

@@ -423,9 +423,13 @@ export type NarrativeOperationInput = {
   entity_id?: string; version?: number; status?: string; score_delta?: number; progress_days?: number;
   character_ids?: string[]; xp_each?: number; title?: string; detail?: string;
   mode?: "skill_challenge" | "chase" | "negotiation" | "stealth" | "investigation"; successes?: number; failures?: number;
+  runtime_id?: string; success_delta?: number; failure_delta?: number;
+  target_successes?: number; target_failures?: number;
 };
 export type NarrativeTransactionInput = { operations: NarrativeOperationInput[]; idempotency_key: string; preview_token?: string; notes?: string };
 export type NarrativeTransactionPreview = { preview_token: string; rows: { kind: string; entity_id?: string; before: Record<string, unknown>; after: Record<string, unknown>; explanation?: string }[]; warnings: string[] };
+export type NarrativeRuntime = { runtime_id: string; title: string; detail?: string | null; mode: string; successes: number; failures: number; target_successes: number; target_failures: number; status: "active" | "succeeded" | "failed"; updated_at: string };
+export const listNarrativeRuntimes = (cid: string, signal?: AbortSignal) => apiFetch<{ items: NarrativeRuntime[] }>(`/campaigns/${cid}/narrative/runtimes`, { signal });
 export const previewNarrativeTransaction = (cid: string, input: NarrativeTransactionInput) => createEntity<NarrativeTransactionPreview, NarrativeTransactionInput>(`/campaigns/${cid}/narrative/preview`, input);
 export const confirmNarrativeTransaction = (cid: string, input: NarrativeTransactionInput) => createEntity<{ idempotent: boolean }, NarrativeTransactionInput>(`/campaigns/${cid}/narrative/confirm`, input);
 

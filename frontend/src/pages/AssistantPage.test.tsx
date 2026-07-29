@@ -108,7 +108,7 @@ describe("AssistantPage mode routing", () => {
       expect(mocks.runAssistantTurn).toHaveBeenLastCalledWith(
         "campaign-1",
         "快速建议",
-        { mode: "quick" },
+        expect.objectContaining({ mode: "quick" }),
       ),
     );
 
@@ -118,7 +118,7 @@ describe("AssistantPage mode routing", () => {
       expect(mocks.runAssistantTurn).toHaveBeenLastCalledWith(
         "campaign-1",
         "剧情推进",
-        { mode: "narrative" },
+        expect.objectContaining({ mode: "narrative" }),
       ),
     );
 
@@ -128,14 +128,18 @@ describe("AssistantPage mode routing", () => {
       expect(mocks.runAssistantTurn).toHaveBeenLastCalledWith(
         "campaign-1",
         "战斗步骤",
-        { mode: "combat" },
+        expect.objectContaining({ mode: "combat" }),
       ),
     );
 
     await user.click(screen.getByRole("tab", { name: "规则查询" }));
     await submit(user, "火球术豁免");
     await waitFor(() =>
-      expect(mocks.answerKnowledge).toHaveBeenLastCalledWith("火球术豁免"),
+      expect(mocks.answerKnowledge).toHaveBeenLastCalledWith(
+        "火球术豁免",
+        undefined,
+        expect.any(AbortSignal),
+      ),
     );
     expect(mocks.runAssistantTurn).toHaveBeenCalledTimes(3);
   });

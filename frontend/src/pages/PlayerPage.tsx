@@ -32,6 +32,7 @@ import { Button, EmptyState, ErrorState, LoadingBlock } from "../ui/primitives";
 import { SceneMap } from "../components/SceneMap";
 import { PlayerEquipmentPanel } from "../components/player/PlayerEquipmentPanel";
 import { useOffline } from "../hooks/useOffline";
+import { usePlayerRealtime } from "../hooks/useRealtimeInvalidation";
 import {
   getTargetingCells,
   gridDistanceFt,
@@ -561,6 +562,7 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
   const [targetId, setTargetId] = useState("");
   const [attackTotal, setAttackTotal] = useState("");
   const [damageTotal, setDamageTotal] = useState("");
+  const [criticalHit, setCriticalHit] = useState(false);
   const [rolls, setRolls] = useState<Record<string, string>>({});
   const [endTurnAfterAttack, setEndTurnAfterAttack] = useState(true);
   const [lastResolution, setLastResolution] = useState("");
@@ -842,9 +844,9 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
               <span>先选择攻击/技能和目标；这里会明确显示命中所需 AC、命中加值与伤害骰。</span>
             )}
           </div>
-          <div className="mt-2 grid grid-cols-2 gap-2"><label className="text-xs text-stone-400">d20命中总值<input className={`${inputCls} mt-1`} disabled={isSavingThrowAction} onChange={(event) => setAttackTotal(event.target.value)} placeholder={isSavingThrowAction ? "豁免法术无需命中" : ""} type="number" value={attackTotal} /></label><label className="text-xs text-stone-400">伤害骰最终总值<input className={`${inputCls} mt-1`} onChange={(event) => setDamageTotal(event.target.value)} type="number" value={damageTotal} /></label></div>
+          <div className="mt-2 grid grid-cols-2 gap-2"><label className="text-xs text-stone-400">d20命中总值<input className={`${inputCls} mt-1`} disabled={isSavingThrowAction} onChange={(event) => setAttackTotal(event.target.value)} placeholder={isSavingThrowAction ? "豁免法术无需命中" : ""} type="number" value={attackTotal} /></label><label className="text-xs text-stone-400">伤害骰最终总值<input className={`${inputCls} mt-1`} onChange={(event) => setDamageTotal(event.target.value)} type="number" value={damageTotal} /></label></div>{!isSavingThrowAction ? <label className="mt-2 flex items-center gap-2 text-xs text-amber-200"><input checked={criticalHit} onChange={(event) => setCriticalHit(event.target.checked)} type="checkbox" />天然 20 暴击（伤害总值请使用暴击骰）</label> : null}
           <label className="mt-2 flex items-start gap-2 rounded border border-ink-700 p-2 text-xs text-stone-400"><input checked={endTurnAfterAttack} onChange={(event) => setEndTurnAfterAttack(event.target.checked)} type="checkbox" /><span>攻击结算后自动结束回合并切到下一位。取消勾选可在攻击后继续使用剩余移动或附赠动作。</span></label>
-          <Button className="mt-3 w-full" disabled={ended || !combat.is_my_turn || !actionName || !targetId || (!isSavingThrowAction && !attackTotal) || !damageTotal || !own?.action_available} loading={mutation.isPending} onClick={() => mutation.mutate(async () => { const result = await attackWithMyCombatant(targetId, affectedEnemies.map((item) => item.id), actionName, Number(attackTotal || 0), Number(damageTotal), endTurnAfterAttack) as { target_count?: number; results?: Array<{ action?: { summary?: string } }>; turn_advance?: { active_combatant?: { display_name?: string } } }; setAttackTotal(""); setDamageTotal(""); const summaries = (result.results ?? []).map((item) => item.action?.summary).filter((item): item is string => Boolean(item)); const next = result.turn_advance?.active_combatant?.display_name; setLastResolution([`${actionName}已完成全部 ${result.target_count ?? affectedEnemies.length} 个目标的结算。`, ...summaries, endTurnAfterAttack ? (next ? `回合已切换至 ${next}。` : "回合已经结束并完成同步。") : "你仍可移动、使用附赠动作或手动结束回合。"].join("\n")); return result; })} variant="primary">{isSavingThrowAction ? `提交玩家伤害骰并结算 ${affectedEnemies.length} 个目标` : endTurnAfterAttack ? "提交攻击并结束回合" : "提交攻击并同步结算"}</Button>
+          <Button className="mt-3 w-full" disabled={ended || !combat.is_my_turn || !actionName || !targetId || (!isSavingThrowAction && !attackTotal) || !damageTotal || !own?.action_available} loading={mutation.isPending} onClick={() => mutation.mutate(async () => { const result = await attackWithMyCombatant(targetId, affectedEnemies.map((item) => item.id), actionName, Number(attackTotal || 0), Number(damageTotal), criticalHit, endTurnAfterAttack) as { target_count?: number; results?: Array<{ action?: { summary?: string } }>; turn_advance?: { active_combatant?: { display_name?: string } } }; setAttackTotal(""); setDamageTotal(""); setCriticalHit(false); const summaries = (result.results ?? []).map((item) => item.action?.summary).filter((item): item is string => Boolean(item)); const next = result.turn_advance?.active_combatant?.display_name; setLastResolution([`${actionName}已完成全部 ${result.target_count ?? affectedEnemies.length} 个目标的结算。`, ...summaries, endTurnAfterAttack ? (next ? `回合已切换至 ${next}。` : "回合已经结束并完成同步。") : "你仍可移动、使用附赠动作或手动结束回合。"].join("\n")); return result; })} variant="primary">{isSavingThrowAction ? `提交玩家伤害骰并结算 ${affectedEnemies.length} 个目标` : endTurnAfterAttack ? "提交攻击并结束回合" : "提交攻击并同步结算"}</Button>
           <Button className="mt-2 w-full" disabled={ended || !combat.is_my_turn} onClick={() => mutation.mutate(() => endMyTurn(combat.version))}>结束我的回合</Button>
           {lastResolution ? <p className="mb-0 mt-2 whitespace-pre-line rounded border border-emerald-800/60 bg-emerald-950/20 p-2 text-xs text-emerald-200" data-testid="player-last-resolution">{lastResolution}</p> : null}
           {mutation.isError ? <p className="text-sm text-red-300">{mutation.error.message}</p> : null}
@@ -959,11 +961,9 @@ export function PlayerPage(): ReactElement {
     // Keep the join form stable while the player is unauthenticated. Polling
     // the 401 response every few seconds can remount the gate while someone
     // is typing, which looks like the page refreshed and clears the room code.
-    refetchInterval: (query) => {
-      if (!query.state.data) return false;
-      return query.state.data.combat?.status === "active" ? 1_000 : 2_500;
-    },
+    refetchInterval: false,
   });
+  usePlayerRealtime(Boolean(room.data));
   const refresh = () => { void client.invalidateQueries({ queryKey: ["my-player-room"] }); };
   const missing = room.isError && isPlayerSessionMissing(room.error);
   const content = useMemo(() => room.data, [room.data]);

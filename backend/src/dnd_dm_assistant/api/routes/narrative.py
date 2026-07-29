@@ -23,6 +23,14 @@ def _call(fn: Any) -> Any:
         raise HTTPException(400, str(exc)) from exc
 
 
+@router.get("/runtimes")
+def runtimes(
+    campaign_id: str,
+    service: Annotated[NarrativeService, Depends(get_narrative_service)],
+) -> dict[str, Any]:
+    return _call(lambda: {"items": service.list_runtimes(campaign_id)})
+
+
 @router.post("/preview")
 def preview(
     campaign_id: str,

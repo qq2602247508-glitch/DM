@@ -23,6 +23,7 @@ from dnd_dm_assistant.api.routes.player_rooms import (
     public_player_room_router,
 )
 from dnd_dm_assistant.api.routes.prep_imports import router as prep_imports_router
+from dnd_dm_assistant.api.routes.realtime import router as realtime_router
 from dnd_dm_assistant.api.routes.reliability import router as reliability_router
 from dnd_dm_assistant.api.routes.rests import router as rests_router
 from dnd_dm_assistant.api.routes.session_checkpoints import router as session_checkpoints_router
@@ -63,6 +64,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     install_error_handlers(app)
     app.include_router(health_router, prefix=app_settings.api_prefix)
     app.include_router(reliability_router, prefix=app_settings.api_prefix)
+    app.include_router(realtime_router, prefix=app_settings.api_prefix)
     app.include_router(advancement_router, prefix=app_settings.api_prefix)
     app.include_router(knowledge_router, prefix=app_settings.api_prefix)
     app.include_router(campaigns_router, prefix=app_settings.api_prefix)

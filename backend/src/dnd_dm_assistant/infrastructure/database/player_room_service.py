@@ -2153,6 +2153,7 @@ class PlayerRoomService:
         action_name: str,
         attack_total: int,
         damage_total: int,
+        critical_hit: bool,
         end_turn_after: bool,
         idempotency_key: str,
     ) -> dict[str, Any]:
@@ -2403,10 +2404,11 @@ class PlayerRoomService:
                         f"vs DC {save_dc}：{'成功' if save['success'] else '失败'}"
                     )
                 else:
-                    hit = attack_total >= current_target.armor_class
+                    hit = critical_hit or attack_total >= current_target.armor_class
                     amount = damage_total if hit else 0
                     note = (
-                        f"玩家掷骰 {attack_total} 对抗 AC {current_target.armor_class}："
+                        f"玩家掷骰 {attack_total} 对抗 AC {current_target.armor_class}"
+                        f"{'（天然 20 暴击）' if critical_hit else ''}："
                         f"{'命中' if hit else '未命中'}"
                     )
                 commands.append(
@@ -2421,6 +2423,7 @@ class PlayerRoomService:
                         resolution_note=note,
                         amount=amount,
                         damage_type=damage_type,
+                        critical_hit=critical_hit and not saving_throw_action,
                     )
                 )
 

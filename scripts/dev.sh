@@ -44,7 +44,7 @@ trap cleanup EXIT
 trap 'exit 130' INT
 trap 'exit 143' TERM
 
-"$backend_script" &
+DND_DM_RELOAD=1 "$backend_script" &
 backend_pid=$!
 "$frontend_script" &
 frontend_pid=$!

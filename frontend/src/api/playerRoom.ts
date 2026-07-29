@@ -535,6 +535,7 @@ export const attackWithMyCombatant = (
   actionName: string,
   attackTotal: number,
   damageTotal: number,
+  criticalHit = false,
   endTurnAfter = false,
 ) => playerFetch<Record<string, unknown>>("/player-room/me/combat/attack", {
   method: "POST",
@@ -544,6 +545,7 @@ export const attackWithMyCombatant = (
     action_name: actionName,
     attack_total: attackTotal,
     damage_total: damageTotal,
+    critical_hit: criticalHit,
     end_turn_after: endTurnAfter,
     idempotency_key: createClientId("player-attack"),
   }),

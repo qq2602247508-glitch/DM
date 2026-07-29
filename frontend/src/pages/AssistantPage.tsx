@@ -99,6 +99,9 @@ function AssistantContent({ campaignId }: { campaignId: string }): ReactElement 
   const nextId = useRef(entries.reduce((max, entry) => Math.max(max, entry.id), 0) + 1);
   const threadEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const activeRequest = useRef<AbortController | null>(null);
+
+  useEffect(() => () => activeRequest.current?.abort(), []);
 
   useEffect(() => {
     if (prefill !== null) {
@@ -128,12 +131,16 @@ function AssistantContent({ campaignId }: { campaignId: string }): ReactElement 
     unknown,
     { text: string; selectedMode: Mode }
   >({
-    mutationFn: ({ text, selectedMode }: { text: string; selectedMode: Mode }) =>
-      selectedMode === "rules"
-        ? answerKnowledge(text)
+    mutationFn: ({ text, selectedMode }: { text: string; selectedMode: Mode }) => {
+      const controller = new AbortController();
+      activeRequest.current = controller;
+      return selectedMode === "rules"
+        ? answerKnowledge(text, undefined, controller.signal)
         : runAssistantTurn(campaignId, text, {
             mode: AGENT_MODE_BY_UI_MODE[selectedMode],
-          }),
+            signal: controller.signal,
+          });
+    },
     onSuccess: (data, { selectedMode }) => {
       if (selectedMode === "rules") {
         push({ kind: "rules", answer: data as GroundedAnswer });
@@ -142,7 +149,11 @@ function AssistantContent({ campaignId }: { campaignId: string }): ReactElement 
       }
     },
     onError: (error, { text, selectedMode }) => {
+      if (error instanceof DOMException && error.name === "AbortError") return;
       push({ kind: "error", error, text, mode: selectedMode });
+    },
+    onSettled: () => {
+      activeRequest.current = null;
     },
   });
 
@@ -256,7 +267,8 @@ function AssistantContent({ campaignId }: { campaignId: string }): ReactElement 
         {turn.isPending ? (
           <div className="mt-4 flex items-center gap-2.5 rounded-lg border border-violet-900/50 bg-violet-950/20 px-4 py-3 text-sm text-violet-200/90">
             <Spinner size={14} />
-            {mode === "rules" ? "正在检索规则库…" : "本地模型正在思考（可能需要几十秒）…"}
+            <span className="mr-auto">{mode === "rules" ? "正在检索规则库…" : "本地模型正在思考（可能需要几十秒）…"}</span>
+            <Button onClick={() => activeRequest.current?.abort()} size="sm" variant="ghost">取消</Button>
           </div>
         ) : null}
         <div ref={threadEndRef} />

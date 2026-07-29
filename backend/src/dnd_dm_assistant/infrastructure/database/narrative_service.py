@@ -53,24 +53,52 @@ class NarrativeService:
             kind = operation["kind"]
             if kind == "runtime":
                 mode = operation.get("mode") or "skill_challenge"
-                successes = operation.get("successes", 0)
-                failures = operation.get("failures", 0)
-                outcome = (
-                    "success"
-                    if successes > failures
-                    else "complication" if failures else "pending"
+                runtime_id = operation.get("runtime_id")
+                before = self._runtime_state(session, campaign_id, runtime_id)
+                successes = int(before.get("successes", 0)) + int(
+                    operation.get("success_delta") or operation.get("successes") or 0
                 )
+                failures = int(before.get("failures", 0)) + int(
+                    operation.get("failure_delta") or operation.get("failures") or 0
+                )
+                target_successes = int(
+                    operation.get("target_successes")
+                    or before.get("target_successes")
+                    or 3
+                )
+                target_failures = int(
+                    operation.get("target_failures")
+                    or before.get("target_failures")
+                    or 3
+                )
+                status = (
+                    "succeeded"
+                    if successes >= target_successes
+                    else "failed"
+                    if failures >= target_failures
+                    else "active"
+                )
+                after = {
+                    "runtime_id": runtime_id,
+                    "title": operation.get("title") or before.get("title") or mode,
+                    "detail": operation.get("detail") or before.get("detail"),
+                    "mode": mode if not before else before.get("mode", mode),
+                    "successes": successes,
+                    "failures": failures,
+                    "target_successes": target_successes,
+                    "target_failures": target_failures,
+                    "status": status,
+                    "revision": int(before.get("revision", 0)) + 1,
+                }
                 rows.append(
                     {
                         "kind": kind,
-                        "before": {},
-                        "after": {
-                            "mode": mode,
-                            "successes": successes,
-                            "failures": failures,
-                            "outcome": outcome,
-                        },
-                        "explanation": f"{mode}：成功 {successes} / 失败 {failures}",
+                        "before": before,
+                        "after": after,
+                        "explanation": (
+                            f"{after['title']}：成功 {successes}/{target_successes}，"
+                            f"失败 {failures}/{target_failures}（{status}）"
+                        ),
                     }
                 )
                 continue
@@ -121,6 +149,56 @@ class NarrativeService:
             "warnings": ["预览不会写入；确认后所有条目会作为一个事务提交。"],
         }
 
+    @staticmethod
+    def _runtime_state(
+        session: Session, campaign_id: str, runtime_id: str | None
+    ) -> dict[str, Any]:
+        if not runtime_id:
+            return {}
+        candidates = session.scalars(
+            select(Event)
+            .where(
+                Event.campaign_id == campaign_id,
+                Event.event_type == "narrative_runtime",
+            )
+            .order_by(Event.created_at.desc(), Event.id.desc())
+        ).all()
+        matches: list[dict[str, Any]] = []
+        for candidate in candidates:
+            metadata = candidate.metadata_json or {}
+            if metadata.get("runtime_id") == runtime_id:
+                matches.append(dict(metadata))
+        return max(matches, key=lambda item: int(item.get("revision", 0)), default={})
+
+    def list_runtimes(self, campaign_id: str) -> list[dict[str, Any]]:
+        with Session(self.engine) as session:
+            if session.get(Campaign, campaign_id) is None:
+                raise StateNotFoundError("campaign not found")
+            events = session.scalars(
+                select(Event)
+                .where(
+                    Event.campaign_id == campaign_id,
+                    Event.event_type == "narrative_runtime",
+                )
+                .order_by(Event.created_at.desc(), Event.id.desc())
+            ).all()
+            latest: dict[str, dict[str, Any]] = {}
+            for event in events:
+                item = dict(event.metadata_json or {})
+                runtime_id = str(item.get("runtime_id") or "")
+                if not runtime_id:
+                    continue
+                current = latest.get(runtime_id)
+                if current is None or int(str(item.get("revision", 0))) > int(
+                    str(current.get("revision", 0))
+                ):
+                    latest[runtime_id] = {**item, "updated_at": event.created_at}
+            return sorted(
+                latest.values(),
+                key=lambda item: str(item.get("updated_at") or ""),
+                reverse=True,
+            )
+
     def preview(self, campaign_id: str, request: dict[str, Any]) -> dict[str, Any]:
         with Session(self.engine) as session:
             return self._preview(session, campaign_id, request)
@@ -156,7 +234,7 @@ class NarrativeService:
                         Event(
                             campaign_id=campaign_id,
                             event_type="narrative_runtime",
-                            title=f"{row['after']['mode']} 结算",
+                            title=f"{row['after']['title']}推进",
                             description=row["explanation"],
                             visibility="dm",
                             metadata_json=row["after"],

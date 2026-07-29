@@ -418,6 +418,21 @@ def test_runtime_blocks_partial_index_and_allows_only_consistent_manifest() -> N
     assert "point count" in (mismatch.reason or "")
 
 
+def test_runtime_reports_embedded_index_lock_as_degraded_status() -> None:
+    class LockedStore:
+        collection_name = "dnd_rules"
+
+        async def status(self) -> IndexStatus:
+            raise RuntimeError("Storage folder is already accessed")
+
+    runtime = object.__new__(RuntimeIntegrations)
+    runtime.vector_store = LockedStore()
+    status = asyncio.run(runtime.status())
+    assert status.available is False
+    assert status.state == "inconsistent"
+    assert "temporarily unavailable" in (status.reason or "")
+
+
 def test_retriever_excludes_unknown_and_third_party_by_default_and_filters_edition() -> None:
     chunker = DeterministicChunker(max_chars=300, overlap_chars=20)
     official = chunker.chunk(_record())[0]
