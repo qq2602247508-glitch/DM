@@ -1038,21 +1038,66 @@ class SiteGenerationRequest(BaseModel):
     rooms_max: int = Field(default=7, ge=2, le=9)
     party_level: int = Field(default=1, ge=1, le=20)
     party_size: int = Field(default=4, ge=1, le=12)
+    character_ids: list[str] = Field(default_factory=list, max_length=12)
     starting_difficulty: Literal["low", "moderate", "high"] = "low"
     difficulty_growth: int = Field(default=1, ge=0, le=2)
     monster_density: int = Field(default=60, ge=0, le=100)
     reward_rate: float = Field(default=1, ge=0.25, le=3)
+    overall_scale: Literal["small", "medium", "large", "huge"] = "medium"
+    minimum_room_size: Literal["small", "medium", "large", "huge"] = "medium"
+    maximum_room_size: Literal["small", "medium", "large", "huge"] = "large"
+    generate_npcs: bool = True
+    generate_monsters: bool = True
+    generate_loot: bool = True
     seed: int | None = Field(default=None, ge=0, le=2_147_483_647)
 
     @model_validator(mode="after")
     def validate_room_range(self) -> SiteGenerationRequest:
         if self.rooms_min > self.rooms_max:
             raise ValueError("rooms_min cannot exceed rooms_max")
+        order = ("small", "medium", "large", "huge")
+        if order.index(self.minimum_room_size) > order.index(self.maximum_room_size):
+            raise ValueError("minimum_room_size cannot exceed maximum_room_size")
         return self
 
 
 class SiteGenerationConfirmRequest(BaseModel):
     preview: dict[str, Any]
+
+
+class CompendiumEntryCreate(BaseModel):
+    entry_type: Literal[
+        "spell", "feature", "monster", "equipment", "item", "npc", "location", "scene"
+    ]
+    name: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=200)]
+    description: str | None = None
+    source_kind: Literal[
+        "official", "original", "ai_generated", "dm_modified", "third_party"
+    ] = "original"
+    source_record_id: str | None = None
+    source_name: str | None = None
+    family_key: str | None = None
+    tags: list[str] = Field(default_factory=list, max_length=30)
+    filters_json: dict[str, Any] = Field(default_factory=dict)
+    rules_json: dict[str, Any] = Field(default_factory=dict)
+
+
+class CompendiumGenerateRequest(BaseModel):
+    mode: Literal["single", "equipment_set", "monster_family"] = "single"
+    entry_type: Literal[
+        "spell", "feature", "monster", "equipment", "item", "npc", "location", "scene"
+    ] = "item"
+    prompt: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=2_000)]
+    applicable_level: int = Field(default=1, ge=1, le=20)
+
+
+class CompendiumGenerateConfirmRequest(BaseModel):
+    preview: dict[str, Any]
+
+
+class CompendiumInstantiateRequest(BaseModel):
+    target_type: Literal["character", "scene"]
+    target_id: str = Field(min_length=1, max_length=36)
 
 
 class WorldItemCreate(BaseModel):

@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState, type FormEvent, type ReactElement } from "react";
 
 import { runAssistantTurn } from "../api/assistant";
+import { createCompendiumEntry } from "../api/compendium";
 import { getRuleDocument, searchKnowledge } from "../api/knowledge";
 import { confirmPrepImport, previewPrepImport, type PrepDraft, type PrepImportPreview } from "../api/prep";
 import {
@@ -840,6 +841,24 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
           },
         });
       }
+      if (!grantDraft.sourceRecordId || grantDraft.officiality !== "official") {
+        const entryType = grantDraft.kind === "spell"
+          ? "spell"
+          : grantDraft.kind === "class_feature"
+            ? "feature"
+            : grantDraft.kind === "item"
+              ? "item"
+              : "equipment";
+        await createCompendiumEntry(campaignId, {
+          entry_type: entryType,
+          name: grantDraft.candidateName,
+          description: grantDraft.description || grantDraft.ruleReason,
+          source_kind: "ai_generated",
+          tags: ["原创", "推进台确认"],
+          filters_json: grantDraft.metadata,
+          rules_json: grantDraft.metadata,
+        });
+      }
       await createEvent(campaignId, {
         title: `${grantDraft.characterName}获得${grantDraft.candidateName}`,
         description: `DM确认授予：${grantDraft.candidateName}${grantDraft.quantity > 1 ? ` × ${grantDraft.quantity}` : ""}。${grantDraft.ruleReason}`,
@@ -918,6 +937,21 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
         });
         entityId = npc.id;
         entityType = "npc";
+        await createCompendiumEntry(campaignId, {
+          entry_type: "npc",
+          name: arrivalDraft.name,
+          description: arrivalDraft.description,
+          source_kind: "ai_generated",
+          tags: ["原创", "推进台确认"],
+          filters_json: { challenge_rating: arrivalDraft.challengeRating },
+          rules_json: {
+            armor_class: arrivalDraft.armorClass,
+            hp: arrivalDraft.hp,
+            speed: arrivalDraft.speed,
+            ability_scores: arrivalDraft.abilityScores,
+            actions: arrivalDraft.actions,
+          },
+        });
       } else {
         const reference = arrivalReferences.find((item) => item.key === arrivalDraft.sourceKey);
         if (reference?.origin === "campaign") {
@@ -946,6 +980,23 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
             notes: `${arrivalDraft.description}\n登场原因：${arrivalDraft.prompt}${isOfficialReference ? "\n由本地图鉴条目创建，DM已确认。" : templateLabel ? `\n自制怪物，规则数值与动作绑定模板“${templateLabel}”，DM已确认。` : "\n自制模板，未绑定图鉴规则模板，DM应复核数值。"}`,
           });
           entityId = monster.id;
+          if (!isOfficialReference) {
+            await createCompendiumEntry(campaignId, {
+              entry_type: "monster",
+              name: arrivalDraft.name,
+              description: arrivalDraft.description,
+              source_kind: "ai_generated",
+              tags: ["原创", "推进台确认"],
+              filters_json: { challenge_rating: arrivalDraft.challengeRating },
+              rules_json: {
+                armor_class: arrivalDraft.armorClass,
+                hp: arrivalDraft.hp,
+                speed: arrivalDraft.speed,
+                ability_scores: arrivalDraft.abilityScores,
+                actions: arrivalDraft.actions,
+              },
+            });
+          }
         }
         entityType = "monster";
       }

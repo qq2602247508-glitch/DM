@@ -23,6 +23,7 @@ from dnd_dm_assistant.infrastructure.database.campaign_service import (
     SqlAlchemyCampaignStateGateway,
 )
 from dnd_dm_assistant.infrastructure.database.combat_service import CombatEngineService
+from dnd_dm_assistant.infrastructure.database.compendium_service import CompendiumService
 from dnd_dm_assistant.infrastructure.database.encounter_service import EncounterAdjustmentService
 from dnd_dm_assistant.infrastructure.database.exploration_service import ExplorationService
 from dnd_dm_assistant.infrastructure.database.narrative_service import NarrativeService
@@ -98,6 +99,10 @@ def get_encounter_adjustment_service(request: Request) -> EncounterAdjustmentSer
 
 def get_combat_engine_service(request: Request) -> CombatEngineService:
     return CombatEngineService(cast(Engine, request.app.state.database_engine))
+
+
+def get_compendium_service(request: Request) -> CompendiumService:
+    return CompendiumService(cast(Engine, request.app.state.database_engine))
 
 
 def get_rest_service(request: Request) -> RestService:

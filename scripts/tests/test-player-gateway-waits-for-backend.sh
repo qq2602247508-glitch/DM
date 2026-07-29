@@ -25,28 +25,21 @@ cat >"$state_dir/bin/npm" <<'EOF'
 printf '%s\n' "$*" >"$DND_TEST_NPM_LOG"
 exit 0
 EOF
-cat >"$state_dir/bin/alembic" <<'EOF'
-#!/bin/bash
-[ -f "$DND_TEST_BACKEND_READY" ] || exit 42
-printf '%s\n' "$*" >"$DND_TEST_ALEMBIC_LOG"
-exit 0
-EOF
 cat >"$state_dir/bin/python" <<'EOF'
 #!/bin/bash
+[ "$*" != "-c import alembic" ] || exit 0
 [ -f "$DND_TEST_BACKEND_READY" ] || exit 43
-printf '%s\n' "$*" >"$DND_TEST_PYTHON_LOG"
+printf '%s\n' "$*" >>"$DND_TEST_PYTHON_LOG"
 exit 0
 EOF
 chmod +x "$state_dir/bin/curl" "$state_dir/bin/npm" \
-  "$state_dir/bin/alembic" "$state_dir/bin/python"
+  "$state_dir/bin/python"
 
 DND_TEST_CURL_COUNT="$state_dir/curl-count" \
 DND_TEST_BACKEND_READY="$state_dir/backend.ready" \
 DND_TEST_NPM_LOG="$state_dir/npm.log" \
-DND_TEST_ALEMBIC_LOG="$state_dir/alembic.log" \
 DND_TEST_PYTHON_LOG="$state_dir/python.log" \
 DND_DM_GATEWAY_NPM="$state_dir/bin/npm" \
-DND_DM_GATEWAY_ALEMBIC="$state_dir/bin/alembic" \
 DND_DM_GATEWAY_PYTHON="$state_dir/bin/python" \
 PATH="$state_dir/bin:$PATH" \
   /bin/bash "$repo_dir/scripts/player-gateway.sh" >"$state_dir/output.log" 2>&1
@@ -59,7 +52,7 @@ if ! grep -F -- "--prefix frontend run build" "$state_dir/npm.log" >/dev/null; t
   echo "Player gateway did not build the frontend after backend readiness" >&2
   exit 1
 fi
-if ! grep -F -- "-c backend/alembic.ini upgrade head" "$state_dir/alembic.log" >/dev/null; then
+if ! grep -F -- "-m alembic -c backend/alembic.ini upgrade head" "$state_dir/python.log" >/dev/null; then
   echo "Player gateway did not verify migrations after backend readiness" >&2
   exit 1
 fi

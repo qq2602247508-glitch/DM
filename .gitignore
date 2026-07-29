@@ -50,6 +50,8 @@ npm-debug.log*
 *.sock
 *.db-journal
 logs/
+reports/*
+!reports/.gitkeep
 tmp/
 temp/
 

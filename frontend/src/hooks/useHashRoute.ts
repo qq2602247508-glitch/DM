@@ -5,6 +5,7 @@ export type RoutePath =
   | "/assistant"
   | "/game-table"
   | "/rules"
+  | "/compendium"
   | "/campaigns"
   | "/characters"
   | "/npcs"
@@ -23,6 +24,7 @@ const ROUTES: readonly RoutePath[] = [
   "/assistant",
   "/game-table",
   "/rules",
+  "/compendium",
   "/campaigns",
   "/characters",
   "/npcs",

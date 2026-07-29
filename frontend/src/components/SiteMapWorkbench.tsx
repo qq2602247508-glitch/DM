@@ -12,6 +12,7 @@ import {
   type SiteGenerationPreview,
   type SiteLevelPreview,
 } from "../api/world";
+import { listCharacters } from "../api/entities";
 import { useToast } from "../hooks/toastContext";
 import { Badge, Button, EmptyState, ErrorState, LoadingBlock } from "../ui/primitives";
 import { inputCls, selectCls, textareaCls } from "../ui/styles";
@@ -111,10 +112,17 @@ export function SiteMapWorkbench({
     rooms_max: 8,
     party_level: 3,
     party_size: 4,
+    character_ids: [],
     starting_difficulty: "low",
     difficulty_growth: 1,
     monster_density: 60,
     reward_rate: 1,
+    overall_scale: "medium",
+    minimum_room_size: "medium",
+    maximum_room_size: "large",
+    generate_npcs: true,
+    generate_monsters: true,
+    generate_loot: true,
     seed: 20240728,
   });
   const [preview, setPreview] = useState<SiteGenerationPreview | null>(null);
@@ -125,6 +133,7 @@ export function SiteMapWorkbench({
   const [requestId, setRequestId] = useState(`site-${Date.now()}-${Math.random().toString(36).slice(2)}`);
   const maps = useQuery({ queryKey: ["region-maps", campaignId], queryFn: ({ signal }) => listRegionMaps(campaignId, signal) });
   const sites = useQuery({ queryKey: ["adventure-sites", campaignId], queryFn: ({ signal }) => listAdventureSites(campaignId, signal) });
+  const characters = useQuery({ queryKey: ["characters", campaignId], queryFn: ({ signal }) => listCharacters(campaignId, signal) });
   const site = useQuery({
     queryKey: ["adventure-site", campaignId, selectedSiteId],
     queryFn: ({ signal }) => getAdventureSite(campaignId, selectedSiteId, signal),
@@ -193,6 +202,28 @@ export function SiteMapWorkbench({
           <input className={inputCls} aria-label="建筑或地下城名称" onChange={(event) => setInput({ ...input, name: event.target.value })} value={input.name} />
           <input className={inputCls} aria-label="所属区域路径" onChange={(event) => setInput({ ...input, region_path: event.target.value })} value={input.region_path} />
           <textarea className={textareaCls} aria-label="生成描述与风格" onChange={(event) => setInput({ ...input, brief: event.target.value })} value={input.brief} />
+          <div className="rounded border border-ink-700 bg-ink-950/50 p-3">
+            <strong className="text-xs text-parchment-100">按真实角色生成（可选）</strong>
+            <p className="mb-2 mt-1 text-2xs text-stone-500">选择后以角色等级、职业与队伍构成为基准；下面的难度和奖励参数仍可继续覆盖调整。</p>
+            <div className="grid gap-1.5 sm:grid-cols-2">
+              {characters.data?.map((character) => (
+                <label className="flex items-center gap-2 rounded border border-ink-700/70 px-2 py-1.5 text-xs text-stone-300" key={character.id}>
+                  <input
+                    checked={input.character_ids.includes(character.id)}
+                    onChange={(event) => setInput({
+                      ...input,
+                      character_ids: event.target.checked
+                        ? [...input.character_ids, character.id]
+                        : input.character_ids.filter((id) => id !== character.id),
+                    })}
+                    type="checkbox"
+                  />
+                  {character.name} · {character.class_name || "未定职业"} Lv.{character.level}
+                </label>
+              ))}
+              {!characters.data?.length ? <span className="text-2xs text-stone-600">当前团还没有可选择的角色。</span> : null}
+            </div>
+          </div>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
             <label className="text-2xs text-stone-500">最多楼层<input className={`${inputCls} mt-1`} min={1} max={20} type="number" value={input.maximum_levels} onChange={(event) => setInput({ ...input, maximum_levels: Number(event.target.value) })} /></label>
             <label className="text-2xs text-stone-500">每层最少房间<input aria-label="每层最少房间" className={`${inputCls} mt-1`} min={2} max={9} type="number" value={input.rooms_min} onChange={(event) => setInput({ ...input, rooms_min: Number(event.target.value) })} /></label>
@@ -200,6 +231,14 @@ export function SiteMapWorkbench({
             <label className="text-2xs text-stone-500">队伍等级<input className={`${inputCls} mt-1`} min={1} max={20} type="number" value={input.party_level} onChange={(event) => setInput({ ...input, party_level: Number(event.target.value) })} /></label>
             <label className="text-2xs text-stone-500">玩家人数<input className={`${inputCls} mt-1`} min={1} max={12} type="number" value={input.party_size} onChange={(event) => setInput({ ...input, party_size: Number(event.target.value) })} /></label>
             <label className="text-2xs text-stone-500">起始难度<select className={`${selectCls} mt-1`} value={input.starting_difficulty} onChange={(event) => setInput({ ...input, starting_difficulty: event.target.value as SiteGenerationInput["starting_difficulty"] })}><option value="low">低</option><option value="moderate">中</option><option value="high">高</option></select></label>
+            <label className="text-2xs text-stone-500">地图总体规模<select className={`${selectCls} mt-1`} value={input.overall_scale} onChange={(event) => setInput({ ...input, overall_scale: event.target.value as SiteGenerationInput["overall_scale"] })}><option value="small">小</option><option value="medium">中</option><option value="large">大</option><option value="huge">巨大</option></select></label>
+            <label className="text-2xs text-stone-500">最小房间<select className={`${selectCls} mt-1`} value={input.minimum_room_size} onChange={(event) => setInput({ ...input, minimum_room_size: event.target.value as SiteGenerationInput["minimum_room_size"] })}><option value="small">小（约 4–6 格）</option><option value="medium">中（约 6–10 格）</option><option value="large">大（约 8–14 格）</option><option value="huge">巨大（约 12–20 格）</option></select></label>
+            <label className="text-2xs text-stone-500">最大房间<select className={`${selectCls} mt-1`} value={input.maximum_room_size} onChange={(event) => setInput({ ...input, maximum_room_size: event.target.value as SiteGenerationInput["maximum_room_size"] })}><option value="small">小</option><option value="medium">中</option><option value="large">大</option><option value="huge">巨大</option></select></label>
+          </div>
+          <div className="grid gap-2 rounded border border-ink-700 bg-ink-950/50 p-3 sm:grid-cols-3">
+            <label className="flex items-center gap-2 text-xs text-stone-300"><input checked={input.generate_npcs} onChange={(event) => setInput({ ...input, generate_npcs: event.target.checked })} type="checkbox" />生成并分布 NPC</label>
+            <label className="flex items-center gap-2 text-xs text-stone-300"><input checked={input.generate_monsters} onChange={(event) => setInput({ ...input, generate_monsters: event.target.checked })} type="checkbox" />生成并分布怪物</label>
+            <label className="flex items-center gap-2 text-xs text-stone-300"><input checked={input.generate_loot} onChange={(event) => setInput({ ...input, generate_loot: event.target.checked })} type="checkbox" />生成职业相关战利品</label>
           </div>
           <p className="text-2xs text-stone-600">路径示例：深水城/海区。描述会决定风格与怪物主题；数值预算、连通性和难度曲线由规则程序重算。</p>
           <Button className="w-full" loading={generation.isPending} onClick={() => generation.mutate()} variant="ai">生成完整预览</Button>
@@ -212,7 +251,7 @@ export function SiteMapWorkbench({
                 {preview.levels.map((level, index) => <Button key={level.level_index} size="sm" variant={index === previewLevel ? "primary" : "ghost"} onClick={() => setPreviewLevel(index)}>{level.name}</Button>)}
                 <Button className="ml-auto" loading={confirmation.isPending} onClick={() => confirmation.mutate()} variant="primary">确认写入战役</Button>
               </div>
-              {activePreviewLevel ? <><div className="mb-2 flex flex-wrap gap-2"><Badge tone="danger">{activePreviewLevel.difficulty}</Badge><Badge>{activePreviewLevel.encounter_budget_xp} XP 预算</Badge><Badge tone="ok">{activePreviewLevel.reward_budget_gp} gp 奖励预算</Badge><Badge>{activePreviewLevel.rooms.length} 房间</Badge>{activePreviewLevel.quality ? <Badge tone={activePreviewLevel.quality.score >= 88 ? "ok" : "danger"}>布局评分 {activePreviewLevel.quality.score}/100 · 房间比例 {activePreviewLevel.quality.largest_smallest_ratio}×</Badge> : null}</div><SiteGrid level={activePreviewLevel} /></> : null}
+              {activePreviewLevel ? <><div className="mb-2 flex flex-wrap gap-2"><Badge tone="danger">{activePreviewLevel.difficulty}</Badge><Badge>{activePreviewLevel.encounter_budget_xp} XP 预算</Badge><Badge tone="ok">{activePreviewLevel.reward_budget_gp} gp 奖励预算</Badge><Badge>{activePreviewLevel.rooms.length} 房间</Badge><Badge>{activePreviewLevel.monster_plan.length} 种怪物</Badge><Badge>{activePreviewLevel.npc_plan?.length ?? 0} NPC</Badge><Badge>{activePreviewLevel.reward_plan.length} 类战利品</Badge>{activePreviewLevel.quality ? <Badge tone={activePreviewLevel.quality.score >= 88 ? "ok" : "danger"}>布局评分 {activePreviewLevel.quality.score}/100 · 房间比例 {activePreviewLevel.quality.largest_smallest_ratio}×</Badge> : null}</div><SiteGrid level={activePreviewLevel} /></> : null}
             </>
           ) : <RegionOverview maps={maps.data ?? []} onSelectSite={(siteId) => {
             setSelectedSiteId(siteId);

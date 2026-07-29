@@ -9,7 +9,6 @@ cd "$repo_dir"
 gateway_port=8787
 export UV_CACHE_DIR="${UV_CACHE_DIR:-/Users/inagi/codex/900-杂项/uv-cache}"
 python_bin="${DND_DM_GATEWAY_PYTHON:-$repo_dir/backend/.venv/bin/python}"
-alembic_bin="${DND_DM_GATEWAY_ALEMBIC:-$repo_dir/backend/.venv/bin/alembic}"
 if [ -n "${DND_DM_GATEWAY_NPM:-}" ]; then
   npm_bin="$DND_DM_GATEWAY_NPM"
 elif [ -x /opt/homebrew/bin/npm ]; then
@@ -20,7 +19,7 @@ else
   npm_bin="$(command -v npm || true)"
 fi
 
-if [ ! -x "$python_bin" ] || [ ! -x "$alembic_bin" ]; then
+if [ ! -x "$python_bin" ] || ! "$python_bin" -c "import alembic" >/dev/null 2>&1; then
   echo "缺少 backend/.venv；请在联网时运行一次 ./scripts/setup.sh。" >&2
   exit 1
 fi
@@ -53,7 +52,7 @@ VITE_API_BASE_URL=/api/v1 "$npm_bin" --prefix frontend run build
 
 echo "确认数据库迁移版本..."
 export PYTHONPATH="$repo_dir/backend/src${PYTHONPATH:+:$PYTHONPATH}"
-"$alembic_bin" -c backend/alembic.ini upgrade head
+"$python_bin" -m alembic -c backend/alembic.ini upgrade head
 
 echo ""
 echo "局域网玩家网关即将启动。只应在可信任的家庭/桌面局域网中使用。"

@@ -12,6 +12,7 @@ from dnd_dm_assistant.infrastructure.database.models import (
     EquipmentInstance,
     PlayerRoom,
     PlayerSession,
+    SceneToken,
 )
 from dnd_dm_assistant.infrastructure.database.player_room_service import _code_digest
 
@@ -377,6 +378,74 @@ def test_player_snapshot_exposes_selected_scene_grid_and_public_objects(
         ("wall", "酒馆外墙"),
         ("cover", "木制吧台"),
     }
+
+
+def test_bound_player_receives_server_filtered_fog_of_war(
+    campaign_client: TestClient,
+) -> None:
+    campaign = _campaign(campaign_client, "战争迷雾团")
+    character = campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/characters",
+        json={"name": "探索者", "hp": 12, "max_hp": 12},
+    ).json()
+    scene = campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/scenes",
+        json={"name": "未知地下城"},
+    ).json()
+    cells = [
+        {"row": row, "col": col, "kind": "floor", "label": "石地"}
+        for row, col in ((2, 2), (3, 3), (10, 18))
+    ]
+    assert campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/scenes/{scene['id']}/grid",
+        json={
+            "width": 20,
+            "height": 12,
+            "cell_size_ft": 5,
+            "mode": "exploration",
+            "layers_json": {"cells": cells},
+        },
+    ).status_code == 201
+    engine = create_engine(campaign_client.database_url)  # type: ignore[attr-defined]
+    with Session(engine) as session, session.begin():
+        session.add(
+            SceneToken(
+                scene_id=scene["id"],
+                entity_type="character",
+                entity_id=character["id"],
+                label=character["name"],
+                row=2,
+                col=2,
+            )
+        )
+        session.add(
+            SceneToken(
+                scene_id=scene["id"],
+                entity_type="monster",
+                entity_id="hidden-monster",
+                label="远处怪物",
+                row=10,
+                col=18,
+            )
+        )
+    opened = _open(campaign_client, campaign["id"])
+    _join(campaign_client, opened["join_code"])
+    assert campaign_client.post(
+        "/api/v1/player-room/me/bind-character",
+        json={"character_id": character["id"]},
+    ).status_code == 200
+    assert campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/player-room/live-state",
+        json={"scene_id": scene["id"]},
+    ).status_code == 200
+    public_scene = campaign_client.get("/api/v1/player-room/me").json()["table"]["scene"]
+    assert public_scene["grid"]["fog_of_war"] is True
+    visible_positions = {
+        (cell["row"], cell["col"]) for cell in public_scene["grid"]["cells"]
+    }
+    assert (2, 2) in visible_positions
+    assert (10, 18) not in visible_positions
+    assert all(token["label"] != "远处怪物" for token in public_scene["tokens"])
 
 
 def test_room_live_state_rejects_cross_campaign_ids(campaign_client: TestClient) -> None:

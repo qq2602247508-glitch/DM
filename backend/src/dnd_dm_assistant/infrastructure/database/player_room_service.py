@@ -57,6 +57,7 @@ from dnd_dm_assistant.infrastructure.database.models import (
     SceneGrid,
     SceneObject,
     SceneToken,
+    VisibilityState,
 )
 from dnd_dm_assistant.infrastructure.database.player_service import PlayerService
 from dnd_dm_assistant.infrastructure.database.spell_economy_service import SpellEconomyService
@@ -1368,7 +1369,7 @@ class PlayerRoomService:
             if scene is not None:
                 if scene.campaign_id != principal.campaign_id:
                     raise ValueError("player room scene is outside its campaign")
-                public["scene"] = self._safe_scene(session, scene)
+                public["scene"] = self._safe_scene(session, scene, principal)
             return {
                 "room": {"id": room.id, "status": room.status, "expires_at": room.expires_at},
                 "campaign": {
@@ -1396,9 +1397,14 @@ class PlayerRoomService:
                 "combat": self._combat_snapshot(session, room, principal),
             }
 
-    @staticmethod
-    def _safe_scene(session: Session, scene: Scene) -> dict[str, Any]:
+    def _safe_scene(
+        self, session: Session, scene: Scene, principal: PlayerPrincipal
+    ) -> dict[str, Any]:
         grid = session.scalar(select(SceneGrid).where(SceneGrid.scene_id == scene.id))
+        fog_enabled = principal.character_id is not None
+        visibility = self._visibility_for(session, scene, principal, grid)
+        visible = visibility["visible"]
+        explored = visibility["explored"]
         tokens = session.scalars(
             select(SceneToken).where(
                 SceneToken.scene_id == scene.id,
@@ -1411,6 +1417,18 @@ class PlayerRoomService:
                 SceneObject.visibility == "public",
             )
         ).all()
+        safe_tokens = tokens if not fog_enabled else [
+            item
+            for item in tokens
+            if (
+                item.entity_type == "character"
+                and item.entity_id == principal.character_id
+            )
+            or (item.row, item.col) in visible
+        ]
+        safe_objects = objects if not fog_enabled else [
+            item for item in objects if (item.row, item.col) in explored | visible
+        ]
         return {
             "id": scene.id,
             "name": scene.name,
@@ -1424,7 +1442,33 @@ class PlayerRoomService:
                     "cell_size_ft": grid.cell_size_ft,
                     "mode": grid.mode,
                     "public_description": grid.public_description,
-                    "cells": public_cells(grid.layers_json),
+                    **(
+                        {
+                            "fog_of_war": True,
+                            "explored_cells": [
+                                {"row": row, "col": col} for row, col in sorted(explored)
+                            ],
+                            "visible_cells": [
+                                {"row": row, "col": col} for row, col in sorted(visible)
+                            ],
+                        }
+                        if fog_enabled
+                        else {}
+                    ),
+                    # Unexplored cells are not transmitted at all.  The
+                    # player renderer therefore sees an opaque cell and the
+                    # complete dungeon topology cannot be recovered from the
+                    # network payload or browser devtools.
+                    "cells": (
+                        [
+                            cell
+                            for cell in public_cells(grid.layers_json)
+                            if (int(cell.get("row", -1)), int(cell.get("col", -1)))
+                            in explored | visible
+                        ]
+                        if fog_enabled
+                        else public_cells(grid.layers_json)
+                    ),
                 }
             ),
             "tokens": [
@@ -1438,7 +1482,7 @@ class PlayerRoomService:
                     "size_cells": item.size_cells,
                     "elevation_ft": item.elevation_ft,
                 }
-                for item in tokens
+                for item in safe_tokens
             ],
             "objects": [
                 {
@@ -1456,9 +1500,86 @@ class PlayerRoomService:
                         if key in {"action", "locked", "tool", "description"}
                     },
                 }
-                for item in objects
+                for item in safe_objects
             ],
         }
+
+    @staticmethod
+    def _visibility_for(
+        session: Session,
+        scene: Scene,
+        principal: PlayerPrincipal,
+        grid: SceneGrid | None,
+        *,
+        origin_override: tuple[int, int] | None = None,
+    ) -> dict[str, set[tuple[int, int]]]:
+        if grid is None or principal.character_id is None:
+            return {"visible": set(), "explored": set()}
+        viewer_key = f"character:{principal.character_id}"
+        state = session.scalar(
+            select(VisibilityState).where(
+                VisibilityState.scene_id == scene.id,
+                VisibilityState.viewer_key == viewer_key,
+            )
+        )
+        explored = {
+            (int(item["row"]), int(item["col"]))
+            for item in (state.explored_cells if state else [])
+            if isinstance(item, dict) and "row" in item and "col" in item
+        }
+        origin = origin_override
+        if origin is None:
+            token = session.scalar(
+                select(SceneToken).where(
+                    SceneToken.scene_id == scene.id,
+                    SceneToken.entity_type == "character",
+                    SceneToken.entity_id == principal.character_id,
+                )
+            )
+            if token is not None:
+                origin = (token.row, token.col)
+        if origin is None:
+            room = session.get(PlayerRoom, principal.room_id)
+            combat = (
+                session.get(Combat, room.current_combat_id)
+                if room and room.current_combat_id
+                else None
+            )
+            if combat is not None:
+                combatant = session.scalar(
+                    select(Combatant).where(
+                        Combatant.combat_id == combat.id,
+                        Combatant.entity_type == "character",
+                        Combatant.entity_id == principal.character_id,
+                    )
+                )
+                position = combatant.snapshot_json.get("grid_position") if combatant else None
+                if isinstance(position, dict):
+                    origin = (int(position["row"]), int(position["col"]))
+        if origin is None:
+            return {"visible": set(), "explored": explored}
+        blockers = {
+            (int(cell["row"]), int(cell["col"]))
+            for cell in public_cells(grid.layers_json)
+            if bool(cell.get("blocks_sight"))
+        }
+        for item in session.scalars(
+            select(SceneObject).where(SceneObject.scene_id == scene.id)
+        ).all():
+            if item.object_type == "wall" or (
+                item.object_type == "door" and item.state in {"active", "closed"}
+            ):
+                blockers.update(_object_cells(item))
+        radius = 8
+        visible = {
+            (row, col)
+            for row in range(max(0, origin[0] - radius), min(grid.height, origin[0] + radius) + 1)
+            for col in range(max(0, origin[1] - radius), min(grid.width, origin[1] + radius) + 1)
+            if grid_distance_ft(origin, (row, col), cell_size_ft=grid.cell_size_ft)
+            <= radius * grid.cell_size_ft
+            and line_of_sight(origin, (row, col), blockers)
+        }
+        return {"visible": visible, "explored": explored | visible}
 
     def _noncombat_snapshot(
         self, session: Session, room: PlayerRoom, principal: PlayerPrincipal
@@ -2135,6 +2256,53 @@ class PlayerRoomService:
             actor.movement_remaining_ft -= cost
             actor.version += 1
             actor.updated_at = _now()
+            if scene_id:
+                token = session.scalar(
+                    select(SceneToken).where(
+                        SceneToken.scene_id == scene_id,
+                        SceneToken.entity_type == "character",
+                        SceneToken.entity_id == principal.character_id,
+                    )
+                )
+                if token is not None:
+                    token.row = row
+                    token.col = col
+                    token.version += 1
+                    token.updated_at = _now()
+                scene = session.get(Scene, scene_id)
+                if scene is not None and grid is not None:
+                    visibility = self._visibility_for(
+                        session,
+                        scene,
+                        principal,
+                        grid,
+                        origin_override=(row, col),
+                    )
+                    viewer_key = f"character:{principal.character_id}"
+                    state = session.scalar(
+                        select(VisibilityState).where(
+                            VisibilityState.scene_id == scene.id,
+                            VisibilityState.viewer_key == viewer_key,
+                        )
+                    )
+                    if state is None:
+                        state = VisibilityState(
+                            scene_id=scene.id,
+                            viewer_key=viewer_key,
+                            version=1,
+                        )
+                        session.add(state)
+                    else:
+                        state.version += 1
+                    state.explored_cells = [
+                        {"row": point[0], "col": point[1]}
+                        for point in sorted(visibility["explored"])
+                    ]
+                    state.visible_cells = [
+                        {"row": point[0], "col": point[1]}
+                        for point in sorted(visibility["visible"])
+                    ]
+                    state.updated_at = _now()
             session.flush()
             return serialize(actor)
 

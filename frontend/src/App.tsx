@@ -21,6 +21,7 @@ const InventoryPage = lazy(() => import("./pages/InventoryPage").then((module) =
 const ScenesPage = lazy(() => import("./pages/ScenesPage").then((module) => ({ default: module.ScenesPage })));
 const GameTablePage = lazy(() => import("./pages/GameTablePage").then((module) => ({ default: module.GameTablePage })));
 const PlayerPage = lazy(() => import("./pages/PlayerPage").then((module) => ({ default: module.PlayerPage })));
+const CompendiumPage = lazy(() => import("./pages/CompendiumPage").then((module) => ({ default: module.CompendiumPage })));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -40,6 +41,8 @@ function RoutedPage(): ReactElement {
       return <GameTablePage />;
     case "/rules":
       return <RulesPage />;
+    case "/compendium":
+      return <CompendiumPage />;
     case "/proposals":
       return <ProposalsPage />;
     case "/campaigns":

@@ -126,7 +126,7 @@ def preview_site_generation(
     body: SiteGenerationRequest,
     service: Annotated[SiteService, Depends(get_site_service)],
 ) -> dict[str, Any]:
-    return _safe_call(lambda: service.preview(body.model_dump()))
+    return _safe_call(lambda: service.preview(campaign_id, body.model_dump()))
 
 
 @router.post("/sites/generate/confirm", status_code=status.HTTP_201_CREATED)

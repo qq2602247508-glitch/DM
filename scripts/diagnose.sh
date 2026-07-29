@@ -16,9 +16,15 @@ check_file() {
 }
 
 check_file "后端 Python 环境" "$repo_dir/backend/.venv/bin/python"
-check_file "Alembic 迁移工具" "$repo_dir/backend/.venv/bin/alembic"
 check_file "前端依赖" "$repo_dir/frontend/node_modules"
 check_file "前端入口" "$repo_dir/frontend/package.json"
+
+if "$repo_dir/backend/.venv/bin/python" -c "import alembic" >/dev/null 2>&1; then
+  echo "✓ Alembic 迁移模块"
+else
+  echo "✗ 后端环境缺少 Alembic 迁移模块" >&2
+  failed=1
+fi
 
 if command -v sqlite3 >/dev/null 2>&1; then
   echo "✓ SQLite 工具"

@@ -31,6 +31,18 @@ ENCOUNTER_BUDGETS = {
     20: (6400, 13200, 22000),
 }
 DIFFICULTIES = ("low", "moderate", "high")
+ROOM_SIZE_PRESETS = {
+    "small": (4, 6),
+    "medium": (6, 10),
+    "large": (8, 14),
+    "huge": (12, 20),
+}
+MAP_SIZE_PRESETS = {
+    "small": (36, 26),
+    "medium": (48, 34),
+    "large": (64, 46),
+    "huge": (82, 60),
+}
 ROOM_NAMES = {
     "building": ("门厅", "会客厅", "厨房", "卧室", "书房", "储藏室", "礼拜堂", "密室", "走廊"),
     "dungeon": (
@@ -158,19 +170,23 @@ def _building_names(brief: str, level_index: int) -> tuple[str, ...]:
 
 
 def _split_building(
-    rng: random.Random, footprint: Rect, target_count: int
+    rng: random.Random, footprint: Rect, target_count: int, minimum_span: int
 ) -> tuple[list[Rect], list[dict[str, Any]]]:
     leaves = [footprint]
     partitions: list[dict[str, Any]] = []
     while len(leaves) < target_count:
-        candidates = [rect for rect in leaves if rect.width >= 8 or rect.height >= 8]
+        candidates = [
+            rect
+            for rect in leaves
+            if rect.width >= minimum_span * 2 + 1 or rect.height >= minimum_span * 2 + 1
+        ]
         if not candidates:
             break
         rect = max(candidates, key=lambda item: item.area * rng.uniform(0.8, 1.2))
         orientations: list[str] = []
-        if rect.width >= 8:
+        if rect.width >= minimum_span * 2 + 1:
             orientations.append("vertical")
-        if rect.height >= 8:
+        if rect.height >= minimum_span * 2 + 1:
             orientations.append("horizontal")
         if rect.width / max(1, rect.height) > 1.35 and "vertical" in orientations:
             orientation = "vertical"
@@ -179,7 +195,7 @@ def _split_building(
         else:
             orientation = rng.choice(orientations)
         if orientation == "vertical":
-            low, high = rect.left + 3, rect.right - 3
+            low, high = rect.left + minimum_span, rect.right - minimum_span
             split = rng.randint(low, high)
             children = (
                 Rect(rect.top, rect.left, rect.bottom, split - 1),
@@ -192,7 +208,7 @@ def _split_building(
                 "end": rect.bottom,
             }
         else:
-            low, high = rect.top + 3, rect.bottom - 3
+            low, high = rect.top + minimum_span, rect.bottom - minimum_span
             split = rng.randint(low, high)
             children = (
                 Rect(rect.top, rect.left, split - 1, rect.right),
@@ -312,10 +328,17 @@ def _partition_doors(
 
 
 def _building_layout(
-    rng: random.Random, room_count: int, brief: str, level_index: int
+    rng: random.Random,
+    room_count: int,
+    brief: str,
+    level_index: int,
+    overall_scale: str,
+    minimum_room_size: str,
 ) -> dict[str, Any]:
-    width = rng.randrange(31, 39, 2)
-    height = rng.randrange(23, 29, 2)
+    base_width, base_height = MAP_SIZE_PRESETS[overall_scale]
+    width = min(99, base_width + rng.randrange(-3, 4, 2))
+    height = min(99, base_height + rng.randrange(-3, 4, 2))
+    minimum_span = ROOM_SIZE_PRESETS[minimum_room_size][0]
     cells, lookup = _blank_cells(width, height)
     top, left, bottom, right = 2, 2, height - 3, width - 3
     side_zone: Rect | None = None
@@ -330,14 +353,18 @@ def _building_layout(
             else Rect(wing_edge, split_col + 1, bottom, right)
         )
         main_count = min(room_count - 2, max(3, round(room_count * 0.62)))
-        main_leaves, main_partitions = _split_building(rng, main_zone, main_count)
-        side_leaves, side_partitions = _split_building(rng, side_zone, room_count - main_count)
+        main_leaves, main_partitions = _split_building(
+            rng, main_zone, main_count, minimum_span
+        )
+        side_leaves, side_partitions = _split_building(
+            rng, side_zone, room_count - main_count, minimum_span
+        )
         leaves = [*main_leaves, *side_leaves]
         partitions = [*main_partitions, *side_partitions]
         outline = "l_shape"
     else:
         main_zone = Rect(top, left, bottom, right)
-        leaves, partitions = _split_building(rng, main_zone, room_count)
+        leaves, partitions = _split_building(rng, main_zone, room_count, minimum_span)
         outline = "compact"
     ordered = sorted(leaves, key=lambda rect: (-rect.area, rect.top, rect.left))
     names = _building_names(brief, level_index)
@@ -430,16 +457,32 @@ def _overlaps_with_margin(candidate: Rect, rooms: list[Rect], margin: int = 2) -
 
 
 def _dungeon_layout(
-    rng: random.Random, room_count: int, brief: str, level_index: int
+    rng: random.Random,
+    room_count: int,
+    brief: str,
+    level_index: int,
+    overall_scale: str,
+    minimum_room_size: str,
+    maximum_room_size: str,
+    party_size: int,
 ) -> dict[str, Any]:
-    width, height = 42, 30
+    width, height = MAP_SIZE_PRESETS[overall_scale]
+    minimum_span = ROOM_SIZE_PRESETS[minimum_room_size][0]
+    maximum_span = ROOM_SIZE_PRESETS[maximum_room_size][1]
+    # A selected party needs at least one genuine tactical room.  Small side
+    # chambers remain possible, but the main chamber must support movement,
+    # cover and common area templates instead of degenerating to 4×5 boxes.
+    tactical_span = min(maximum_span, max(8, 6 + math.ceil(max(0, party_size - 4) / 2)))
     cells, lookup = _blank_cells(width, height)
     rects: list[Rect] = []
     for _ in range(500):
         if len(rects) >= room_count:
             break
-        room_width = rng.randint(4, 10)
-        room_height = rng.randint(4, 8)
+        room_width = rng.randint(minimum_span, maximum_span)
+        room_height = rng.randint(minimum_span, maximum_span)
+        if not rects:
+            room_width = max(room_width, tactical_span)
+            room_height = max(room_height, tactical_span)
         candidate = Rect(
             rng.randint(2, height - room_height - 3),
             rng.randint(2, width - room_width - 3),
@@ -630,6 +673,8 @@ def score_layout(layout: dict[str, Any], site_type: str) -> dict[str, Any]:
         score += 5 if cycle_count >= 1 else 0
         score += 5 if any(degree == 1 for degree in degrees) else 0
         score += 10 if 0.12 <= utilization <= 0.55 else 4
+        largest = max(areas, default=0)
+        score += 5 if largest >= 64 else 0
     return {
         "score": min(100, score),
         "connected": connected,
@@ -649,15 +694,35 @@ def _best_layout(
     room_count: int,
     brief: str,
     level_index: int,
+    overall_scale: str,
+    minimum_room_size: str,
+    maximum_room_size: str,
+    party_size: int,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     candidates: list[tuple[dict[str, Any], dict[str, Any]]] = []
     for attempt in range(16):
         rng = random.Random(seed + attempt * 104_729)
         try:
             layout = (
-                _building_layout(rng, room_count, brief, level_index)
+                _building_layout(
+                    rng,
+                    room_count,
+                    brief,
+                    level_index,
+                    overall_scale,
+                    minimum_room_size,
+                )
                 if site_type == "building"
-                else _dungeon_layout(rng, room_count, brief, level_index)
+                else _dungeon_layout(
+                    rng,
+                    room_count,
+                    brief,
+                    level_index,
+                    overall_scale,
+                    minimum_room_size,
+                    maximum_room_size,
+                    party_size,
+                )
             )
         except ValueError:
             continue
@@ -688,6 +753,62 @@ def _monster_plan(theme: str, budget: int) -> list[dict[str, Any]]:
     return result
 
 
+def _party_loot_plan(
+    class_names: list[str],
+    party_level: int,
+    budget_gp: int,
+) -> list[dict[str, Any]]:
+    """Build a rules-shaped loot mix without pretending homebrew is official."""
+    lowered = " ".join(class_names).lower()
+    suggestions: list[tuple[str, str, int]] = [
+        ("治疗药水", "consumable", max(25, min(100, budget_gp // 5))),
+        ("金币与可交易宝物", "treasure", max(1, budget_gp // 2)),
+    ]
+    if any(name in lowered for name in ("wizard", "法师", "sorcerer", "术士", "warlock", "邪术师")):
+        suggestions.append(("与队伍环级相符的法术卷轴", "spell_scroll", max(50, budget_gp // 4)))
+    if any(
+        name in lowered
+        for name in ("fighter", "战士", "paladin", "圣武士", "barbarian", "野蛮人")
+    ):
+        suggestions.append(("精制武器或护甲材料", "equipment", max(50, budget_gp // 4)))
+    if any(name in lowered for name in ("rogue", "游荡者", "ranger", "游侠")):
+        suggestions.append(("精制弹药与探索工具", "equipment", max(35, budget_gp // 5)))
+    if any(name in lowered for name in ("cleric", "牧师", "druid", "德鲁伊", "bard", "吟游诗人")):
+        suggestions.append(("法器材料与恢复性消耗品", "consumable", max(40, budget_gp // 5)))
+    return [
+        {
+            "name": name,
+            "category": category,
+            "value_gp": min(value, max(1, budget_gp)),
+            "quantity": 1,
+            "source_kind": "generated_plan",
+            "recommended_level": party_level,
+        }
+        for name, category, value in suggestions
+    ]
+
+
+def _npc_plan(brief: str, level_index: int) -> list[dict[str, Any]]:
+    lowered = brief.lower()
+    if any(word in lowered for word in ("酒馆", "旅店")):
+        role = "酒馆经营者" if level_index == 1 else "住客或雇员"
+    elif any(word in lowered for word in ("教堂", "神殿")):
+        role = "教堂看守或幸存信徒"
+    elif any(word in lowered for word in ("矿坑", "地下城", "洞穴")):
+        role = "受困的探险者"
+    else:
+        role = "地点知情人"
+    return [
+        {
+            "name": role,
+            "role": role,
+            "attitude": "neutral",
+            "source_kind": "original",
+            "room_index": 1,
+        }
+    ]
+
+
 def generate_site(data: dict[str, Any]) -> dict[str, Any]:
     site_type = str(data["site_type"])
     if site_type not in ROOM_NAMES:
@@ -704,14 +825,38 @@ def generate_site(data: dict[str, Any]) -> dict[str, Any]:
     ]
     if not region_path:
         raise ValueError("region_path is required")
-    party_level = int(data.get("party_level", 1))
-    party_size = int(data.get("party_size", 4))
+    profiles = [
+        profile for profile in data.get("party_profiles", []) if isinstance(profile, dict)
+    ]
+    configured_level = int(data.get("party_level", 1))
+    configured_size = int(data.get("party_size", 4))
+    party_size = len(profiles) if profiles else configured_size
+    profile_levels = [int(profile.get("level", configured_level)) for profile in profiles]
+    party_level = (
+        max(1, min(20, round(sum(profile_levels) / len(profile_levels))))
+        if profile_levels
+        else configured_level
+    )
+    class_names = [str(profile.get("class_name") or "") for profile in profiles]
     starting = DIFFICULTIES.index(str(data.get("starting_difficulty", "low")))
     growth = int(data.get("difficulty_growth", 1))
     reward_rate = float(data.get("reward_rate", 1))
     monster_density = int(data.get("monster_density", 60))
     rooms_min = int(data.get("rooms_min", 3))
     rooms_max = int(data.get("rooms_max", 7))
+    overall_scale = str(data.get("overall_scale", "medium"))
+    minimum_room_size = str(data.get("minimum_room_size", "medium"))
+    maximum_room_size = str(data.get("maximum_room_size", "large"))
+    generate_monsters = bool(data.get("generate_monsters", True))
+    generate_npcs = bool(data.get("generate_npcs", True))
+    generate_loot = bool(data.get("generate_loot", True))
+    if overall_scale not in MAP_SIZE_PRESETS:
+        raise ValueError("overall_scale is invalid")
+    if minimum_room_size not in ROOM_SIZE_PRESETS or maximum_room_size not in ROOM_SIZE_PRESETS:
+        raise ValueError("room size preset is invalid")
+    size_order = tuple(ROOM_SIZE_PRESETS)
+    if size_order.index(minimum_room_size) > size_order.index(maximum_room_size):
+        raise ValueError("minimum_room_size cannot exceed maximum_room_size")
     if not 2 <= rooms_min <= rooms_max <= 9:
         raise ValueError("rooms must satisfy 2 <= min <= max <= 9")
     rng = random.Random(seed)
@@ -736,6 +881,18 @@ def generate_site(data: dict[str, Any]) -> dict[str, Any]:
             room_count,
             str(data["brief"]),
             level_index,
+            overall_scale,
+            minimum_room_size,
+            maximum_room_size,
+            party_size,
+        )
+        monster_plan = (
+            _monster_plan(theme, round(budget * monster_density / 100))
+            if generate_monsters
+            else []
+        )
+        reward_plan = (
+            _party_loot_plan(class_names, party_level, reward) if generate_loot else []
         )
         levels.append(
             {
@@ -755,8 +912,21 @@ def generate_site(data: dict[str, Any]) -> dict[str, Any]:
                 "rooms": layout["rooms"],
                 "connectors": layout["connectors"],
                 "quality": quality,
-                "monster_plan": _monster_plan(theme, round(budget * monster_density / 100)),
-                "reward_plan": [{"name": "金币与等价战利品", "value_gp": reward}],
+                "monster_plan": [
+                    {**monster, "room_index": (index % len(layout["rooms"])) + 1}
+                    for index, monster in enumerate(monster_plan)
+                ],
+                "npc_plan": _npc_plan(str(data["brief"]), level_index) if generate_npcs else [],
+                "reward_plan": [
+                    {
+                        **item,
+                        "room_index": (
+                            (index + len(layout["rooms"]) - 1) % len(layout["rooms"])
+                        )
+                        + 1,
+                    }
+                    for index, item in enumerate(reward_plan)
+                ],
             }
         )
     for current, following in zip(levels, levels[1:], strict=False):
@@ -838,6 +1008,7 @@ def generate_site(data: dict[str, Any]) -> dict[str, Any]:
             "maximum_levels": maximum_levels,
             "party_level": party_level,
             "party_size": party_size,
+            "character_ids": list(data.get("character_ids", [])),
             "generation_parameters": {
                 "rooms_min": rooms_min,
                 "rooms_max": rooms_max,
@@ -845,6 +1016,13 @@ def generate_site(data: dict[str, Any]) -> dict[str, Any]:
                 "difficulty_growth": growth,
                 "reward_rate": reward_rate,
                 "monster_density": monster_density,
+                "overall_scale": overall_scale,
+                "minimum_room_size": minimum_room_size,
+                "maximum_room_size": maximum_room_size,
+                "generate_monsters": generate_monsters,
+                "generate_npcs": generate_npcs,
+                "generate_loot": generate_loot,
+                "party_profiles": profiles,
             },
         },
         "region": {"path": region_path, "name": region_path[-1]},

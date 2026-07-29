@@ -3,7 +3,7 @@ set -euo pipefail
 
 # One-click local launcher for macOS. Existing healthy services are reused.
 repo_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-log_dir="${DND_DM_LOG_DIR:-/Users/inagi/codex/900-杂项/local-dnd-dm-assistant/logs}"
+log_dir="${DND_DM_LOG_DIR:-$repo_dir/logs}"
 diagnose_script="${DND_DM_DIAGNOSE_SCRIPT:-$repo_dir/scripts/diagnose.sh}"
 player_gateway_script="${DND_DM_PLAYER_GATEWAY_SCRIPT:-$repo_dir/scripts/player-gateway.sh}"
 backend_url="http://127.0.0.1:8000/api/v1/health"

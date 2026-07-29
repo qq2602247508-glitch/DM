@@ -22,10 +22,17 @@ export type SiteGenerationInput = {
   rooms_max: number;
   party_level: number;
   party_size: number;
+  character_ids: string[];
   starting_difficulty: "low" | "moderate" | "high";
   difficulty_growth: number;
   monster_density: number;
   reward_rate: number;
+  overall_scale: "small" | "medium" | "large" | "huge";
+  minimum_room_size: "small" | "medium" | "large" | "huge";
+  maximum_room_size: "small" | "medium" | "large" | "huge";
+  generate_npcs: boolean;
+  generate_monsters: boolean;
+  generate_loot: boolean;
   seed?: number;
 };
 export type SiteCell = { row: number; col: number; kind: string; label: string; blocks_sight?: boolean };
@@ -40,7 +47,8 @@ export type SiteLevelPreview = {
   rooms: Array<{ room_index: number; name: string; room_type: string; description: string; bounds: Record<string, number> }>;
   connectors: Array<Record<string, unknown>>;
   monster_plan: Array<{ name: string; quantity: number; xp_each: number; source: string }>;
-  reward_plan: Array<{ name: string; value_gp: number }>;
+  npc_plan?: Array<{ name: string; role: string; room_index: number }>;
+  reward_plan: Array<{ name: string; value_gp: number; category?: string; room_index?: number }>;
   quality?: {
     score: number;
     room_size_cv: number;

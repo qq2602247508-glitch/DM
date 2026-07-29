@@ -12,6 +12,9 @@ export type SceneMapGrid = {
   height: number;
   cell_size_ft: number;
   theme?: string | null;
+  fog_of_war?: boolean;
+  explored_cells?: Array<{ row: number; col: number }>;
+  visible_cells?: Array<{ row: number; col: number }>;
   cells?: Array<{ row: number; col: number; kind: string; label?: string }>;
 };
 
@@ -77,6 +80,7 @@ export function SceneMap({
       <div className="mb-2 flex flex-wrap items-center gap-2 text-2xs text-stone-500">
         <strong className="text-stone-300">{title}</strong>
         <span>{grid.width}×{grid.height} · 每格 {grid.cell_size_ft} 尺</span>
+        {grid.fog_of_war ? <span className="text-violet-300">战争迷雾：未探索区域由服务端隐藏</span> : null}
         {selectableTargetKeys.size ? <span className="text-emerald-300">绿色虚线：可以点击的目标</span> : null}
         {selectedTargetKey ? <span className="text-emerald-200">绿色实框：当前目标</span> : null}
         {movementCellKeys.size ? <span className="text-lime-300">绿色格：本回合剩余可移动范围</span> : null}

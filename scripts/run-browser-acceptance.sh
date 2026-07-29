@@ -8,7 +8,7 @@ set -euo pipefail
 repo_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$repo_dir"
 
-run_root="${DND_DM_ACCEPTANCE_RUN_ROOT:-/Users/inagi/codex/900-杂项/local-dnd-dm-assistant/e2e-runs}"
+run_root="${DND_DM_ACCEPTANCE_RUN_ROOT:-$repo_dir/reports/e2e-runs}"
 run_id="$(date +%Y%m%d-%H%M%S)"
 report_dir="$run_root/$run_id"
 mkdir -p "$report_dir"

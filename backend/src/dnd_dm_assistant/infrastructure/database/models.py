@@ -1558,6 +1558,59 @@ class WorldItem(Timestamped, Base):
     )
 
 
+class CompendiumEntry(Timestamped, Base):
+    """Reusable rule/content atom; runtime instances always remain separate."""
+
+    __tablename__ = "compendium_entries"
+    campaign_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("campaigns.id", ondelete="CASCADE"), nullable=False
+    )
+    entry_type: Mapped[str] = mapped_column(String(30), nullable=False)
+    name: Mapped[str] = mapped_column(String(200), nullable=False)
+    description: Mapped[str | None] = mapped_column(Text)
+    source_kind: Mapped[str] = mapped_column(
+        String(30), nullable=False, default="original", server_default="original"
+    )
+    source_record_id: Mapped[str | None] = mapped_column(String(100))
+    source_name: Mapped[str | None] = mapped_column(String(200))
+    family_key: Mapped[str | None] = mapped_column(String(100))
+    tags: Mapped[list[object]] = mapped_column(
+        JSON, nullable=False, default=list, server_default="[]"
+    )
+    filters_json: Mapped[dict[str, object]] = mapped_column(
+        JSON, nullable=False, default=dict, server_default="{}"
+    )
+    rules_json: Mapped[dict[str, object]] = mapped_column(
+        JSON, nullable=False, default=dict, server_default="{}"
+    )
+    __table_args__ = (
+        CheckConstraint(
+            "entry_type IN "
+            "('spell','feature','monster','equipment','item','npc','location','scene')",
+            name="ck_compendium_entry_type",
+        ),
+        CheckConstraint(
+            "source_kind IN ('official','original','ai_generated','dm_modified','third_party')",
+            name="ck_compendium_source_kind",
+        ),
+        CheckConstraint("length(trim(name)) > 0", name="ck_compendium_name_nonempty"),
+        UniqueConstraint(
+            "campaign_id",
+            "entry_type",
+            "name",
+            "source_kind",
+            name="uq_compendium_campaign_type_name_source",
+        ),
+        Index(
+            "ix_compendium_campaign_type_name",
+            "campaign_id",
+            "entry_type",
+            "name",
+            "id",
+        ),
+    )
+
+
 class MonsterInstance(Timestamped, Base):
     __tablename__ = "monster_instances"
     campaign_id: Mapped[str] = mapped_column(

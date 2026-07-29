@@ -15,16 +15,21 @@ from dnd_dm_assistant.domain.campaign_state import StateNotFoundError, VersionCo
 from dnd_dm_assistant.domain.site_generation import generate_site, layout_is_connected
 from dnd_dm_assistant.infrastructure.database.campaign_service import serialize
 from dnd_dm_assistant.infrastructure.database.models import (
+    NPC,
     AdventureSite,
     AuditLog,
     Campaign,
+    Character,
     Location,
+    MonsterInstance,
     RegionMap,
     Scene,
     SceneGrid,
+    SceneParticipant,
     SiteConnector,
     SiteLevel,
     SiteRoom,
+    WorldItem,
 )
 
 
@@ -49,8 +54,38 @@ class SiteService:
         self.engine = engine
         self.actor = actor
 
-    @staticmethod
-    def preview(data: dict[str, Any]) -> dict[str, Any]:
+    def preview(self, campaign_id: str, data: dict[str, Any]) -> dict[str, Any]:
+        character_ids = [str(item) for item in data.get("character_ids", []) if str(item)]
+        if character_ids:
+            with Session(self.engine) as session:
+                characters = session.scalars(
+                    select(Character).where(
+                        Character.campaign_id == campaign_id,
+                        Character.id.in_(character_ids),
+                    )
+                ).all()
+                found = {item.id for item in characters}
+                missing = [item for item in character_ids if item not in found]
+                if missing:
+                    raise ValueError("selected character is outside the current campaign")
+                data = {
+                    **data,
+                    "party_profiles": [
+                        {
+                            "id": item.id,
+                            "name": item.name,
+                            "level": item.level,
+                            "class_name": item.class_name,
+                            "armor_class": item.armor_class,
+                            "hp": item.hp,
+                            "max_hp": item.max_hp,
+                            "skills": item.skills,
+                            "features": item.features,
+                            "spells": item.spells,
+                        }
+                        for item in characters
+                    ],
+                }
         return generate_site(data)
 
     def confirm(
@@ -217,6 +252,7 @@ class SiteService:
                     layout_json=dict(level_data["layout"]),
                     generation_json={
                         "monster_plan": level_data["monster_plan"],
+                        "npc_plan": level_data.get("npc_plan", []),
                         "reward_plan": level_data["reward_plan"],
                         "quality": level_data.get("quality", {}),
                     },
@@ -253,6 +289,7 @@ class SiteService:
                         },
                     )
                 )
+                room_locations: dict[int, Location] = {}
                 for room_data in level_data["rooms"]:
                     room_location = Location(
                         campaign_id=campaign_id,
@@ -278,6 +315,7 @@ class SiteService:
                             interactive_objects=list(room_data["interactive_objects"]),
                         )
                     )
+                    room_locations[int(room_data["room_index"])] = room_location
                 for connector in level_data["connectors"]:
                     session.add(
                         SiteConnector(
@@ -292,6 +330,111 @@ class SiteService:
                             label=str(connector["label"]),
                             state=str(connector["state"]),
                             position_json=dict(connector["position"]),
+                        )
+                    )
+                for monster_data in level_data.get("monster_plan", []):
+                    room_index = int(monster_data.get("room_index", 1))
+                    target_location = room_locations.get(room_index, level_location)
+                    xp_each = max(25, int(monster_data.get("xp_each", 25)))
+                    quantity = max(1, min(12, int(monster_data.get("quantity", 1))))
+                    for copy_index in range(quantity):
+                        hp = max(5, round((xp_each**0.5) * 1.3))
+                        monster = MonsterInstance(
+                            campaign_id=campaign_id,
+                            name=(
+                                str(monster_data["name"])
+                                if quantity == 1
+                                else f"{monster_data['name']} {copy_index + 1}"
+                            ),
+                            source_name=str(monster_data.get("source", "generated_plan")),
+                            armor_class=min(22, 12 + int(site.party_level) // 4),
+                            hp=hp,
+                            max_hp=hp,
+                            speed=30,
+                            ability_scores={
+                                "strength": 12,
+                                "dexterity": 12,
+                                "constitution": 12,
+                                "intelligence": 10,
+                                "wisdom": 10,
+                                "charisma": 8,
+                            },
+                            actions=[
+                                {
+                                    "name": "基础攻击",
+                                    "action_type": "action",
+                                    "range_ft": 5,
+                                    "damage": f"1d8+{max(1, int(site.party_level) // 4)}",
+                                    "damage_type": "由图鉴模板决定",
+                                }
+                            ],
+                            notes=(
+                                f"由站点生成器分配至房间 {room_index}：{target_location.name}。"
+                                "战斗前应优先用图鉴同名模板补全动作。"
+                            ),
+                        )
+                        session.add(monster)
+                        session.flush()
+                        session.add(
+                            SceneParticipant(
+                                scene_id=scene.id,
+                                entity_type="monster",
+                                entity_id=monster.id,
+                                role="present",
+                                visible=False,
+                                notes=f"初始位于{target_location.name}；探索到房间后揭示。",
+                            )
+                        )
+                for npc_data in level_data.get("npc_plan", []):
+                    room_index = int(npc_data.get("room_index", 1))
+                    target_location = room_locations.get(room_index, level_location)
+                    npc = NPC(
+                        campaign_id=campaign_id,
+                        name=str(npc_data["name"]),
+                        description=f"{site.name}中的{npc_data.get('role', '地点人物')}。",
+                        attitude=str(npc_data.get("attitude", "neutral")),
+                        location_id=target_location.id,
+                        hp=max(4, 4 + int(site.party_level)),
+                        max_hp=max(4, 4 + int(site.party_level)),
+                        armor_class=10,
+                    )
+                    session.add(npc)
+                    session.flush()
+                    session.add(
+                        SceneParticipant(
+                            scene_id=scene.id,
+                            entity_type="npc",
+                            entity_id=npc.id,
+                            role="present",
+                            visible=False,
+                            notes=f"初始位于{target_location.name}；探索到房间后揭示。",
+                        )
+                    )
+                for reward_data in level_data.get("reward_plan", []):
+                    room_index = int(reward_data.get("room_index", 1))
+                    target_location = room_locations.get(room_index, level_location)
+                    value_gp = max(0, int(reward_data.get("value_gp", 0)))
+                    session.add(
+                        WorldItem(
+                            campaign_id=campaign_id,
+                            name=str(reward_data["name"]),
+                            description=(
+                                f"由地下城奖励预算生成，推荐队伍等级 {site.party_level}。"
+                            ),
+                            category=str(reward_data.get("category", "treasure")),
+                            quantity=max(1, int(reward_data.get("quantity", 1))),
+                            unit_weight_lb=0,
+                            price_cp=value_gp * 100,
+                            source_label="ai_generated",
+                            location_id=target_location.id,
+                            is_hidden=True,
+                            metadata_json={
+                                "site_id": site.id,
+                                "site_level": level.level_index,
+                                "room_index": room_index,
+                                "original": True,
+                                "rules_validated_budget": True,
+                            },
                         )
                     )
             session.add(
@@ -638,6 +781,24 @@ class SiteService:
                 room_indexes.add(room_index)
                 rectangles.append((top, left, bottom, right, room_index))
             room_indexes_by_level[level_index] = room_indexes
+            for plan_key in ("monster_plan", "npc_plan", "reward_plan"):
+                plan = level.get(plan_key, [])
+                if not isinstance(plan, list):
+                    raise ValueError(f"level {expected} {plan_key} is invalid")
+                for item in plan:
+                    if not isinstance(item, dict):
+                        raise ValueError(f"level {expected} {plan_key} contains an invalid item")
+                    try:
+                        target_room = int(item["room_index"])
+                        item_name = str(item["name"]).strip()
+                    except (KeyError, TypeError, ValueError) as exc:
+                        raise ValueError(
+                            f"level {expected} {plan_key} item is incomplete"
+                        ) from exc
+                    if target_room not in room_indexes or not item_name:
+                        raise ValueError(
+                            f"level {expected} {plan_key} references an unknown room"
+                        )
             if not layout_is_connected(dict(layout)):
                 raise ValueError(f"level {expected} map is not connected")
             connectors = level.get("connectors")

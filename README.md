@@ -7,6 +7,22 @@ React dashboard, structured D&D character/story/combat fields, runtime model
 status, full rule-document reading, and local campaign backup/restore. The
 knowledge index remains isolated from campaign state.
 
+## Canonical local package
+
+On this Mac the self-contained working package is:
+
+```text
+/Users/inagi/codex/130 游戏/135-跑团助手 dnd
+```
+
+Source, frontend, backend, SQLite campaign data, indexed rule content, reports,
+logs, launch scripts, and the local Git history live together in that folder.
+Double-click `启动.command` in the package (or the desktop launcher) to start
+the DM dashboard, backend, and isolated LAN player gateway.
+
+The older `700-AI/local-dnd-dm-assistant` checkout is retained as a recoverable
+development mirror; it is not required by the packaged launchers.
+
 ## Prerequisites
 
 - macOS on Apple Silicon (other local platforms may also work)
@@ -42,6 +58,14 @@ Start both applications:
 
 The dashboard is then available at <http://127.0.0.1:5173>, and the backend at
 <http://127.0.0.1:8000>. The backend intentionally binds only to `127.0.0.1`.
+
+The dashboard includes a campaign-scoped D&D compendium for spells, features,
+monsters, equipment, items, NPCs, locations, and scenes. Original generated
+content is always tagged separately from official rule references. Building and
+dungeon generation can use selected characters, party parameters, independent
+difficulty/reward overrides, room-scale bounds, NPC/monster population, and
+level-appropriate loot. Player maps receive server-filtered exploration state,
+so unrevealed rooms and creatures are not transmitted to the player client.
 
 Run the applications separately:
 

@@ -12,20 +12,35 @@ import { Icon, type IconName } from "../ui/icons";
 import { formatDateTime } from "../ui/format";
 import { StatusCluster } from "./StatusCluster";
 
-const NAV_ITEMS: { path: RoutePath; label: string; icon: IconName }[] = [
-  { path: "/", label: "主控制台", icon: "home" },
-  { path: "/game-table", label: "游戏推进台", icon: "sparkle" },
-  { path: "/assistant", label: "AI 助手", icon: "sparkle" },
-  { path: "/campaigns", label: "跑团档案", icon: "scroll" },
-  { path: "/characters", label: "角色", icon: "users" },
-  { path: "/npcs", label: "NPC", icon: "map-pin" },
-  { path: "/locations", label: "地点", icon: "map-pin" },
-  { path: "/events", label: "事件时间线", icon: "scroll" },
-  { path: "/quests", label: "任务与线索", icon: "scroll" },
-  { path: "/combat", label: "战斗辅助", icon: "sword" },
-  { path: "/proposals", label: "提案中心", icon: "alert" },
-  { path: "/settings", label: "设置与备份", icon: "copy" },
+const NAV_GROUPS: Array<{ label: string; items: Array<{ path: RoutePath; label: string; icon: IconName }> }> = [
+  { label: "现场", items: [
+    { path: "/", label: "DM 仪表板", icon: "home" },
+    { path: "/game-table", label: "游戏推进台", icon: "sparkle" },
+    { path: "/combat", label: "战斗辅助", icon: "sword" },
+  ] },
+  { label: "战役档案", items: [
+    { path: "/campaigns", label: "跑团档案", icon: "scroll" },
+    { path: "/characters", label: "玩家角色", icon: "users" },
+    { path: "/npcs", label: "NPC 与人物", icon: "users" },
+    { path: "/locations", label: "地点与场景", icon: "map-pin" },
+    { path: "/scenes", label: "Scene 编排", icon: "map-pin" },
+    { path: "/quests", label: "任务与线索", icon: "scroll" },
+    { path: "/events", label: "事件时间线", icon: "scroll" },
+  ] },
+  { label: "D&D 图鉴库", items: [
+    { path: "/compendium", label: "原子图鉴", icon: "copy" },
+    { path: "/inventory", label: "装备与背包", icon: "copy" },
+    { path: "/rules", label: "D&D 规则库", icon: "scroll" },
+  ] },
+  { label: "副驾驶", items: [
+    { path: "/assistant", label: "AI 助手", icon: "sparkle" },
+    { path: "/proposals", label: "提案中心", icon: "alert" },
+  ] },
+  { label: "系统", items: [
+    { path: "/settings", label: "设置与备份", icon: "copy" },
+  ] },
 ];
+const NAV_ITEMS = NAV_GROUPS.flatMap((group) => group.items);
 
 export function AppShell({ children }: { children: ReactNode }): ReactElement {
   const route = useHashRoute();
@@ -76,7 +91,7 @@ export function AppShell({ children }: { children: ReactNode }): ReactElement {
   return (
     <div className="flex h-screen overflow-hidden">
       {/* Left navigation */}
-      <aside className="hidden w-48 shrink-0 flex-col border-r border-ink-700/70 bg-ink-950/70 md:flex">
+      <aside className="hidden w-56 shrink-0 flex-col border-r border-ink-700/70 bg-ink-950/70 md:flex">
         <button
           className="flex items-center gap-2.5 border-b border-ink-700/70 px-4 py-4 text-left transition-colors hover:bg-ink-900/60"
           onClick={() => navigate("/")}
@@ -94,34 +109,33 @@ export function AppShell({ children }: { children: ReactNode }): ReactElement {
           </span>
         </button>
         <nav aria-label="主导航" className="flex-1 overflow-y-auto px-2 py-3">
-          <ul className="m-0 flex list-none flex-col gap-0.5 p-0">
-            {NAV_ITEMS.map((item) => {
-              const active = route === item.path;
-              const badge = item.path === "/proposals" && pendingCount > 0;
-              return (
-                <li key={item.path}>
-                  <button
-                    aria-current={active ? "page" : undefined}
-                    className={`flex w-full items-center gap-2.5 rounded-md border px-3 py-2 text-sm transition-colors ${
-                      active
-                        ? "border-ember-600/40 bg-ember-500/10 text-ember-200"
-                        : "border-transparent text-stone-400 hover:bg-ink-800/70 hover:text-parchment-100"
-                    }`}
-                    onClick={() => navigate(item.path)}
-                    type="button"
-                  >
-                    <Icon name={item.icon} size={15} />
-                    <span className="flex-1 text-left">{item.label}</span>
-                    {badge ? (
-                      <span className="rounded-full bg-amber-500/20 px-1.5 py-0.5 text-2xs font-medium text-amber-300">
-                        {pendingCount}
-                      </span>
-                    ) : null}
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
+          {NAV_GROUPS.map((group) => <section className="mb-3" key={group.label}>
+            <h2 className="mb-1 px-3 text-[10px] font-medium uppercase tracking-[.18em] text-stone-700">{group.label}</h2>
+            <ul className="m-0 flex list-none flex-col gap-0.5 p-0">
+              {group.items.map((item) => {
+                const active = route === item.path;
+                const badge = item.path === "/proposals" && pendingCount > 0;
+                return (
+                  <li key={item.path}>
+                    <button
+                      aria-current={active ? "page" : undefined}
+                      className={`flex w-full items-center gap-2.5 rounded-md border px-3 py-2 text-sm transition-colors ${
+                        active
+                          ? "border-ember-600/40 bg-ember-500/10 text-ember-200"
+                          : "border-transparent text-stone-400 hover:bg-ink-800/70 hover:text-parchment-100"
+                      }`}
+                      onClick={() => navigate(item.path)}
+                      type="button"
+                    >
+                      <Icon name={item.icon} size={15} />
+                      <span className="flex-1 text-left">{item.label}</span>
+                      {badge ? <span className="rounded-full bg-amber-500/20 px-1.5 py-0.5 text-2xs font-medium text-amber-300">{pendingCount}</span> : null}
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>)}
         </nav>
         <div className="border-t border-ink-700/70 px-4 py-3 text-2xs leading-5 text-stone-600">
           数据保存在本机 SQLite

@@ -6,11 +6,10 @@ cd "$repo_dir"
 
 export UV_CACHE_DIR="${UV_CACHE_DIR:-/Users/inagi/codex/900-杂项/uv-cache}"
 python_bin="${DND_DM_BACKEND_PYTHON:-$repo_dir/backend/.venv/bin/python}"
-alembic_bin="${DND_DM_BACKEND_ALEMBIC:-$repo_dir/backend/.venv/bin/alembic}"
 
-if [ -x "$python_bin" ] && [ -x "$alembic_bin" ]; then
+if [ -x "$python_bin" ] && "$python_bin" -c "import alembic" >/dev/null 2>&1; then
   export PYTHONPATH="$repo_dir/backend/src${PYTHONPATH:+:$PYTHONPATH}"
-  "$alembic_bin" -c backend/alembic.ini upgrade head
+  "$python_bin" -m alembic -c backend/alembic.ini upgrade head
   exec "$python_bin" -m dnd_dm_assistant
 fi
 
