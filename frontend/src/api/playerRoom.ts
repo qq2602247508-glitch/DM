@@ -272,6 +272,17 @@ export type PlayerRoomSnapshot = {
       grid: PlayerSceneGrid | null;
       tokens: PlayerSceneToken[];
       objects: PlayerSceneObject[];
+      available_transitions: Array<{
+        connector_id: string;
+        direction: "stairs_up" | "stairs_down";
+        label: string;
+        row: number;
+        col: number;
+        from_scene_id: string;
+        target_scene_id: string;
+        target_level_index: number;
+        target_level_name: string;
+      }>;
     };
     handouts: Array<{ id: string; title: string; body: string; sort_order: number }>;
     shared_log: Array<{ id: string; event_type: string; title: string; description: string | null; occurred_at: string }>;
@@ -487,13 +498,17 @@ export const confirmMyEquipment = (input: PlayerEquipmentOperation) =>
     body: JSON.stringify(input),
   });
 
-export const submitMyActionRequest = (actionType: string, message: string) =>
+export const submitMyActionRequest = (
+  actionType: string,
+  message: string,
+  payloadJson: Record<string, unknown> = {},
+) =>
   playerFetch<Record<string, unknown>>("/player-room/me/action-requests", {
     method: "POST",
     body: JSON.stringify({
       action_type: actionType,
       message,
-      payload_json: {},
+      payload_json: payloadJson,
       idempotency_key: createClientId("player-action"),
     }),
   });

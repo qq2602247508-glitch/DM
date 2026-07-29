@@ -40,6 +40,8 @@ export type CompendiumCatalog = {
   facets: Record<string, string[]>;
 };
 
+export type CompendiumSortOrder = "asc" | "desc";
+
 export async function listCompendium(
   campaignId: string,
   filters: {
@@ -58,6 +60,11 @@ export async function listCompendium(
     attunement?: string;
     edition?: string;
     content_type?: string;
+    feature_kind?: string;
+    item_function?: string;
+    include_legacy?: boolean;
+    sort_by?: string;
+    sort_order?: CompendiumSortOrder;
   },
   signal?: AbortSignal,
 ): Promise<CompendiumCatalog> {
@@ -67,9 +74,13 @@ export async function listCompendium(
   if (filters.text) query.set("text", filters.text);
   if (filters.page) query.set("page", String(filters.page));
   if (filters.page_size) query.set("page_size", String(filters.page_size));
+  if (filters.include_legacy !== undefined) {
+    query.set("include_legacy", String(filters.include_legacy));
+  }
   for (const key of [
     "class_name", "spell_level", "monster_type", "challenge_rating",
     "slot", "rarity", "category", "attunement", "edition", "content_type",
+    "feature_kind", "item_function", "sort_by", "sort_order",
   ] as const) {
     if (filters[key]) query.set(key, filters[key]);
   }

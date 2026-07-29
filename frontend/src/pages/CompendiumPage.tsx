@@ -43,20 +43,20 @@ const FILTERS: Record<
     { key: "spell_level", label: "法术环级 / 消耗" },
   ],
   feature: [
-    { key: "content_type", label: "内容类别" },
-    { key: "edition", label: "规则版本" },
+    { key: "class_name", label: "所属职业" },
+    { key: "feature_kind", label: "职业 / 子职" },
   ],
   monster: [
     { key: "monster_type", label: "怪物类型" },
     { key: "challenge_rating", label: "挑战等级 CR" },
   ],
   equipment: [
-    { key: "slot", label: "装备部位" },
+    { key: "category", label: "装备类别" },
     { key: "rarity", label: "稀有度" },
   ],
   item: [
-    { key: "category", label: "功能分类" },
-    { key: "rarity", label: "稀有度" },
+    { key: "item_function", label: "用途" },
+    { key: "category", label: "道具类别" },
   ],
   npc: [
     { key: "role", label: "职责" },
@@ -71,6 +71,41 @@ const FILTERS: Record<
     { key: "difficulty", label: "难度" },
   ],
 };
+
+const SORTS: Record<CompendiumEntryType, ReadonlyArray<{ value: string; label: string }>> = {
+  spell: [
+    { value: "level:asc", label: "环级：低到高" },
+    { value: "level:desc", label: "环级：高到低" },
+    { value: "name:asc", label: "名称：正序" },
+  ],
+  feature: [
+    { value: "class:asc", label: "按职业与子职分组" },
+    { value: "level:asc", label: "解锁等级：低到高" },
+    { value: "name:asc", label: "名称：正序" },
+  ],
+  monster: [
+    { value: "strength:asc", label: "CR：低到高" },
+    { value: "strength:desc", label: "CR：高到低" },
+    { value: "name:asc", label: "名称：正序" },
+  ],
+  equipment: [
+    { value: "strength:asc", label: "稀有度：低到高" },
+    { value: "strength:desc", label: "稀有度：高到低" },
+    { value: "name:asc", label: "名称：正序" },
+  ],
+  item: [
+    { value: "category:asc", label: "按用途分组" },
+    { value: "name:asc", label: "名称：正序" },
+    { value: "name:desc", label: "名称：倒序" },
+  ],
+  npc: [{ value: "name:asc", label: "名称：正序" }],
+  location: [{ value: "name:asc", label: "名称：正序" }],
+  scene: [{ value: "name:asc", label: "名称：正序" }],
+};
+
+function defaultSort(entryType: CompendiumEntryType): string {
+  return SORTS[entryType][0]?.value ?? "name:asc";
+}
 
 function display(value: unknown): string {
   if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") return String(value);
@@ -91,6 +126,9 @@ const VALUE_LABELS: Record<string, string> = {
   wand: "魔杖",
   ammunition: "弹药",
   magic_item: "其他魔法物品",
+  class: "职业",
+  subclass: "子职",
+  class_rule: "职业规则",
   classes: "职业",
   subclasses: "子职",
   feats: "专长",
@@ -100,6 +138,15 @@ const VALUE_LABELS: Record<string, string> = {
   main_hand: "主手",
   off_hand: "副手",
   inventory: "背包",
+  consumable: "消耗品",
+  container: "容器",
+  illumination: "照明",
+  camping: "露营与补给",
+  exploration: "探索工具",
+  restraint_security: "束缚与安防",
+  writing_navigation: "书写与导航",
+  tool: "工具",
+  miscellaneous: "杂物与演绎道具",
   legacy: "2014 旧版",
   "2024": "2024 版",
   "2025": "2025 版",
@@ -121,6 +168,9 @@ const FILTER_KEY_LABELS: Record<string, string> = {
   challenge_rating: "挑战等级",
   attunement: "同调",
   attunement_classes: "同调限制",
+  feature_kind: "条目类型",
+  item_function: "用途",
+  level: "解锁等级",
 };
 
 const HIDDEN_FILTER_KEYS = new Set([
@@ -209,19 +259,29 @@ function CompendiumContent({ campaignId }: { campaignId: string }): ReactElement
   const [page, setPage] = useState(1);
   const [filterA, setFilterA] = useState("");
   const [filterB, setFilterB] = useState("");
+  const [includeLegacy, setIncludeLegacy] = useState(false);
+  const [sort, setSort] = useState(defaultSort("spell"));
   const [prompt, setPrompt] = useState("一套基于火龙指甲锻造的装备");
   const [mode, setMode] = useState<"single" | "equipment_set" | "monster_family">("equipment_set");
   const [level, setLevel] = useState(5);
   const [preview, setPreview] = useState<CompendiumGenerationPreview | null>(null);
   const activeFilters = FILTERS[entryType];
+  const [sortBy, sortOrder] = sort.split(":");
   const entries = useQuery({
-    queryKey: ["compendium", campaignId, entryType, sourceKind, text, filterA, filterB, page],
+    queryKey: [
+      "compendium", campaignId, entryType, sourceKind, text, filterA, filterB,
+      includeLegacy, sortBy, sortOrder, page,
+    ],
     queryFn: ({ signal }) => listCompendium(campaignId, {
       entry_type: entryType,
       source_kind: sourceKind || undefined,
       text: text || undefined,
       page,
       page_size: 40,
+      include_legacy: includeLegacy,
+      sort_by: sortBy,
+      sort_order: sortOrder === "desc" ? "desc" : "asc",
+      content_type: entryType === "feature" ? "classes" : undefined,
       [activeFilters[0].key]: filterA || undefined,
       [activeFilters[1].key]: filterB || undefined,
     }, signal),
@@ -286,6 +346,7 @@ function CompendiumContent({ campaignId }: { campaignId: string }): ReactElement
     setPage(1);
     setFilterA("");
     setFilterB("");
+    setSort(defaultSort(nextType));
   }
   return (
     <div className="mx-auto max-w-[1280px] p-4 lg:p-6">
@@ -297,7 +358,7 @@ function CompendiumContent({ campaignId }: { campaignId: string }): ReactElement
         <div className="flex flex-wrap gap-2">
           {TYPES.map((item) => <Button key={item.value} onClick={() => chooseType(item.value)} size="sm" variant={entryType === item.value ? "primary" : "ghost"}>{item.label} {entries.data?.counts[item.value] ? `(${entries.data.counts[item.value]})` : ""}</Button>)}
         </div>
-        <div className="mt-3 grid gap-2 md:grid-cols-[minmax(0,1fr)_repeat(3,12rem)]">
+        <div className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_repeat(4,11rem)]">
           <input className={inputCls} onChange={(event) => { setText(event.target.value); setPage(1); }} placeholder="搜索图鉴名称、法术、怪物、装备…" value={text} />
           <select className={selectCls} onChange={(event) => { setSourceKind(event.target.value); setPage(1); }} value={sourceKind}>
             <option value="">全部来源</option>
@@ -314,7 +375,32 @@ function CompendiumContent({ campaignId }: { campaignId: string }): ReactElement
             <option value="">全部{activeFilters[1].label}</option>
             {filterOptions[1].map((value) => <option key={value} value={value}>{displayFilterValue(value)}</option>)}
           </select>
+          <select
+            aria-label="图鉴排序"
+            className={selectCls}
+            onChange={(event) => { setSort(event.target.value); setPage(1); }}
+            value={sort}
+          >
+            {SORTS[entryType].map((item) => (
+              <option key={item.value} value={item.value}>{item.label}</option>
+            ))}
+          </select>
         </div>
+        <label className="mt-3 inline-flex cursor-pointer items-center gap-2 rounded border border-ink-700 px-3 py-2 text-xs text-stone-400">
+          <input
+            checked={includeLegacy}
+            onChange={(event) => {
+              setIncludeLegacy(event.target.checked);
+              setPage(1);
+            }}
+            type="checkbox"
+          />
+          显示 2014 / legacy 旧版
+          <span className="text-stone-600">（默认隐藏，避免与 2024/2025 条目重复）</span>
+        </label>
+        <p className="mb-0 mt-2 text-2xs text-stone-600">
+          “装备”包含武器、护甲、盾牌与魔法装备；“道具”只收录无战斗属性的基础冒险用品、工具和演绎杂物。
+        </p>
       </Panel>
       <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1.4fr)_minmax(320px,.7fr)]">
         <Panel eyebrow="可复用模板" title={`${TYPES.find((item) => item.value === entryType)?.label ?? "图鉴"}条目`}>

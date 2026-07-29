@@ -48,12 +48,11 @@ def test_official_compendium_filters_before_pagination_and_only_returns_atoms(
     assert equipment
     assert not {"财富", "词条", "饰品"} & {item["name"] for item in equipment}
     assert all(item["filters_json"]["atomic_item"] for item in equipment)
-    assert all(
-        item["filters_json"]["category"] in {"weapon", "armor", "shield"} for item in equipment
-    )
+    assert all(item["filters_json"]["category"] != "adventuring_gear" for item in equipment)
+    assert any(item["filters_json"]["item_kind"] == "magic_equipment" for item in equipment)
 
     magic_items = campaign_client.get(
-        f"{root}?entry_type=item&category=wondrous&rarity=传说&page_size=100"
+        f"{root}?entry_type=equipment&category=wondrous&rarity=传说&page_size=100"
     ).json()
     assert magic_items["items"]
     assert all(item["name"] != "传说" for item in magic_items["items"])
@@ -63,7 +62,7 @@ def test_official_compendium_filters_before_pagination_and_only_returns_atoms(
         for item in magic_items["items"]
     )
     magic_weapons = campaign_client.get(
-        f"{root}?entry_type=item&category=weapon&text=魔法武器&page_size=100"
+        f"{root}?entry_type=equipment&category=weapon&text=魔法武器&page_size=100"
     ).json()["items"]
     assert {(item["name"], item["filters_json"]["rarity"]) for item in magic_weapons} >= {
         ("魔法武器 +1", "非普通"),
@@ -71,11 +70,56 @@ def test_official_compendium_filters_before_pagination_and_only_returns_atoms(
         ("魔法武器 +3", "极珍稀"),
     }
     universal_solvent = campaign_client.get(
-        f"{root}?entry_type=item&text=万溶剂&page_size=100"
+        f"{root}?entry_type=equipment&text=万溶剂&page_size=100"
     ).json()["items"]
     assert universal_solvent
     assert all("乳白" in item["description"] for item in universal_solvent)
     assert all("卡牌通常存放" not in item["description"] for item in universal_solvent)
+    mundane_items = campaign_client.get(f"{root}?entry_type=item&page_size=100").json()["items"]
+    assert mundane_items
+    assert all(item["filters_json"]["item_kind"] == "mundane_item" for item in mundane_items)
+    assert all(item["filters_json"]["item_function"] for item in mundane_items)
+    mundane_names = {item["name"] for item in mundane_items}
+    assert not {
+        "一环卷轴",
+        "戏法卷轴",
+        "治疗药水",
+        "强酸",
+        "炽火胶",
+        "基础毒药",
+        "圣水",
+    } & mundane_names
+    for combat_consumable in ("一环卷轴", "治疗药水", "强酸"):
+        matches = campaign_client.get(
+            f"{root}?entry_type=equipment&text={combat_consumable}&page_size=100"
+        ).json()["items"]
+        assert any(item["name"] == combat_consumable for item in matches)
+        assert all(item["filters_json"]["item_function"] for item in matches)
+
+    current_spells = campaign_client.get(
+        f"{root}?entry_type=spell&sort_by=level&page_size=100"
+    ).json()
+    legacy_spells = campaign_client.get(
+        f"{root}?entry_type=spell&include_legacy=true&page_size=100"
+    ).json()
+    assert all(
+        item["filters_json"]["edition"] in {"2024", "2025"}
+        for item in current_spells["items"]
+    )
+    assert legacy_spells["total"] > current_spells["total"]
+    assert [
+        item["filters_json"]["spell_level"] for item in current_spells["items"]
+    ] == sorted(item["filters_json"]["spell_level"] for item in current_spells["items"])
+
+    class_entries = campaign_client.get(
+        f"{root}?entry_type=feature&content_type=classes&sort_by=class&page_size=100"
+    ).json()["items"]
+    assert class_entries
+    assert all(item["filters_json"]["class_name"] for item in class_entries)
+    assert all(
+        item["filters_json"]["feature_kind"] in {"class", "subclass"}
+        for item in class_entries
+    )
 
 
 def test_generated_compendium_templates_are_reusable_instances(
@@ -201,12 +245,59 @@ def test_site_generation_can_derive_party_and_room_scale_from_characters(
     assert all(level["monster_plan"] for level in preview["levels"])
     assert all(level["npc_plan"] for level in preview["levels"])
     assert all(level["reward_plan"] for level in preview["levels"])
-    loot_names = {item["name"] for level in preview["levels"] for item in level["reward_plan"]}
-    assert "与队伍环级相符的法术卷轴" in loot_names
-    assert "精制武器或护甲材料" in loot_names
+    rewards = [item for level in preview["levels"] for item in level["reward_plan"]]
+    assert any(item["source_kind"] == "official" for item in rewards)
+    assert all(item["name"] != "与队伍环级相符的法术卷轴" for item in rewards)
+    assert all(item["name"] != "精制武器或护甲材料" for item in rewards)
 
 
-def test_merchant_generation_creates_grouped_stock_and_original_atoms(
+def test_sahuagin_site_prefers_theme_matching_official_reward_atoms(
+    campaign_client: TestClient,
+) -> None:
+    campaign = campaign_client.post("/api/v1/campaigns", json={"name": "渔人战利品验收团"}).json()
+    root = f"/api/v1/campaigns/{campaign['id']}"
+    preview = campaign_client.post(
+        f"{root}/sites/generate/preview",
+        json={
+            "site_type": "dungeon",
+            "name": "潮鳞巢穴",
+            "brief": "蓝色潮湿的渔人地下城，全部由鲨华鱼人占据，有育卵池与潮汐祭坛",
+            "region_path": "深水城/海区",
+            "maximum_levels": 2,
+            "rooms_min": 5,
+            "rooms_max": 7,
+            "party_level": 5,
+            "party_size": 4,
+            "starting_difficulty": "moderate",
+            "difficulty_growth": 1,
+            "monster_density": 70,
+            "reward_rate": 1.2,
+            "overall_scale": "large",
+            "minimum_room_size": "medium",
+            "maximum_room_size": "huge",
+            "generate_npcs": True,
+            "generate_monsters": True,
+            "generate_loot": True,
+            "seed": 20260729,
+        },
+    ).json()
+    official_rewards = [
+        reward
+        for level in preview["levels"]
+        for reward in level["reward_plan"]
+        if reward.get("source_kind") == "official"
+    ]
+    assert official_rewards
+    assert any(
+        any(
+            keyword in reward["name"]
+            for keyword in ("水下", "水上", "水手", "海", "鱼", "珍珠", "三叉戟")
+        )
+        for reward in official_rewards
+    )
+
+
+def test_merchant_generation_uses_real_atoms_before_original_fallback(
     campaign_client: TestClient,
 ) -> None:
     campaign = campaign_client.post("/api/v1/campaigns", json={"name": "商店验收团"}).json()
@@ -239,7 +330,11 @@ def test_merchant_generation_creates_grouped_stock_and_original_atoms(
     assert response.status_code == 200, response.text
     preview = response.json()
     assert len(preview["stock"]) == 4
-    assert preview["summary"]["original_atoms"] == 4
+    assert preview["summary"]["official_atoms"] == 4
+    assert preview["summary"]["original_atoms"] == 0
+    assert len({item["name"] for item in preview["stock"]}) == 4
+    assert all("定制货品" not in item["name"] for item in preview["stock"])
+    assert all(item["price_copper"] > 0 for item in preview["stock"])
     confirmed = campaign_client.post(
         f"{root}/merchants/generate/confirm",
         json={"preview": preview},
@@ -249,7 +344,38 @@ def test_merchant_generation_creates_grouped_stock_and_original_atoms(
     assert len(shops) == 1
     assert shops[0]["name"] == "月灯杂货铺"
     assert len(shops[0]["stock"]) == 4
-    originals = campaign_client.get(
-        f"{root}/compendium?source_kind=original&entry_type=item"
+    originals = campaign_client.get(f"{root}/compendium?source_kind=original").json()
+    assert originals["total"] == 0
+
+
+def test_level_twelve_wizard_consumables_are_real_and_rerollable(
+    campaign_client: TestClient,
+) -> None:
+    campaign = campaign_client.post("/api/v1/campaigns", json={"name": "消耗品商店团"}).json()
+    root = f"/api/v1/campaigns/{campaign['id']}"
+    wizard = campaign_client.post(
+        f"{root}/characters",
+        json={"name": "艾琳", "class_name": "法师", "level": 12, "hp": 58, "max_hp": 58},
     ).json()
-    assert originals["total"] >= 4
+    base = {
+        "name": "规则图鉴商店",
+        "brief": "为当前队伍提供实用冒险装备",
+        "categories": ["consumable"],
+        "item_tier": "common",
+        "character_ids": [wizard["id"]],
+        "stock_size": 12,
+        "allow_original": True,
+    }
+    first = campaign_client.post(
+        f"{root}/merchants/generate/preview", json={**base, "seed": 17}
+    ).json()
+    second = campaign_client.post(
+        f"{root}/merchants/generate/preview", json={**base, "seed": 23}
+    ).json()
+    assert first["summary"]["official_atoms"] == 12
+    assert first["summary"]["original_atoms"] == 0
+    assert len({item["name"] for item in first["stock"]}) == 12
+    assert all("定制货品" not in item["name"] for item in first["stock"])
+    assert {item["name"] for item in first["stock"]} != {
+        item["name"] for item in second["stock"]
+    }

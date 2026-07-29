@@ -1212,6 +1212,7 @@ class MerchantGenerateRequest(BaseModel):
     stock_size: int = Field(default=12, ge=1, le=40)
     price_modifier_bps: int = Field(default=10_000, ge=5_000, le=20_000)
     allow_original: bool = True
+    seed: int | None = Field(default=None, ge=0, le=9_223_372_036_854_775_807)
 
 
 class MerchantConfirmRequest(BaseModel):

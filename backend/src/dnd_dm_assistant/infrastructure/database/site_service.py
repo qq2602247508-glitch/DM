@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import random
 import re
 import time
@@ -127,7 +128,138 @@ class SiteService:
                         for item in characters
                     ],
                 }
-        return generate_site(data)
+        preview = generate_site(data)
+        self._bind_official_reward_atoms(preview)
+        return preview
+
+    def _bind_official_reward_atoms(self, preview: dict[str, Any]) -> None:
+        """Replace abstract reward placeholders with reusable official atoms."""
+
+        site = dict(preview.get("site") or {})
+        parameters = dict(site.get("generation_parameters") or {})
+        profiles = [
+            item for item in parameters.get("party_profiles", []) if isinstance(item, dict)
+        ]
+        class_text = " ".join(str(item.get("class_name") or "") for item in profiles)
+        theme = str(site.get("theme") or "default")
+        seed = int(site.get("seed") or 0)
+        candidates = [
+            entry
+            for entry in self.official_catalog.entries
+            if entry.get("entry_type") in {"equipment", "item"}
+            and bool(dict(entry.get("filters_json") or {}).get("atomic_item"))
+            and str(dict(entry.get("filters_json") or {}).get("edition") or "")
+            in {"2024", "2025"}
+        ]
+        used: set[str] = set()
+        for level in preview.get("levels", []):
+            if not isinstance(level, dict):
+                continue
+            rewards = level.get("reward_plan", [])
+            if not isinstance(rewards, list):
+                continue
+            for index, raw in enumerate(rewards):
+                if not isinstance(raw, dict) or raw.get("category") == "treasure":
+                    continue
+                matches = [
+                    entry
+                    for entry in candidates
+                    if str(entry.get("id")) not in used
+                    and self._reward_atom_matches(
+                        entry, str(raw.get("category") or ""), class_text
+                    )
+                ]
+                if not matches:
+                    continue
+                matches.sort(
+                    key=lambda entry: (
+                        -self._reward_theme_score(entry, theme),
+                        hashlib.sha256(
+                            f"{seed}|{level.get('level_index')}|{index}|{entry['id']}".encode()
+                        ).hexdigest(),
+                    )
+                )
+                selected = matches[0]
+                used.add(str(selected["id"]))
+                filters = dict(selected.get("filters_json") or {})
+                rules = dict(selected.get("rules_json") or {})
+                raw.update(
+                    {
+                        "name": selected["name"],
+                        "category": filters.get("category", raw.get("category")),
+                        "source_kind": "official",
+                        "source_record_id": selected.get("source_record_id"),
+                        "compendium_entry_id": selected["id"],
+                        "rarity": filters.get("rarity"),
+                        "description": selected.get("description"),
+                        "value_gp": max(
+                            1,
+                            int(rules.get("price_cp", 0)) // 100
+                            or int(raw.get("value_gp", 1)),
+                        ),
+                    }
+                )
+
+    @staticmethod
+    def _reward_theme_score(entry: dict[str, Any], theme: str) -> int:
+        """Prefer official atoms that reinforce the generated site's theme."""
+
+        keywords = {
+            "sahuagin": (
+                "水下",
+                "水上",
+                "水手",
+                "水元素",
+                "净水",
+                "无尽水",
+                "水袋",
+                "海",
+                "鱼",
+                "珍珠",
+                "三叉戟",
+                "潮",
+                "珊瑚",
+                "游泳",
+            ),
+            "fire": ("火", "炎", "焰", "熔", "岩浆", "灰烬"),
+            "frost": ("冰", "霜", "寒", "雪", "极地"),
+            "undead": ("亡灵", "死灵", "骸骨", "幽魂", "坟", "墓"),
+            "aberration": ("心灵", "异界", "触须", "星界", "畸变"),
+            "cult": ("邪教", "仪式", "圣徽", "祭", "诅咒"),
+            "goblin": ("地精", "陷阱", "伏击", "洞穴"),
+        }.get(theme, ())
+        if not keywords:
+            return 0
+        text = " ".join(
+            (
+                str(entry.get("name") or ""),
+                str(entry.get("description") or ""),
+                " ".join(str(tag) for tag in entry.get("tags", [])),
+            )
+        )
+        name = str(entry.get("name") or "")
+        return sum(5 if keyword in name else 1 for keyword in keywords if keyword in text)
+
+    @staticmethod
+    def _reward_atom_matches(
+        entry: dict[str, Any], planned_category: str, class_text: str
+    ) -> bool:
+        filters = dict(entry.get("filters_json") or {})
+        category = str(filters.get("category") or "")
+        item_function = str(filters.get("item_function") or "")
+        if planned_category == "spell_scroll":
+            return category == "scroll" or "卷轴" in str(entry.get("name") or "")
+        if planned_category == "consumable":
+            return category == "potion" or item_function == "consumable"
+        if planned_category == "adventuring_gear":
+            return entry.get("entry_type") == "item"
+        if planned_category == "wondrous":
+            return category in {"wondrous", "ring", "rod", "staff", "wand"}
+        if planned_category == "equipment":
+            if any(name in class_text for name in ("法师", "术士", "魔契师")):
+                return category in {"wand", "staff", "ring", "wondrous", "scroll"}
+            return category in {"weapon", "armor", "shield", "wondrous"}
+        return False
 
     def confirm(
         self, campaign_id: str, preview: dict[str, Any], *, request_id: str
@@ -306,6 +438,7 @@ class SiteService:
                         "npc_plan": level_data.get("npc_plan", []),
                         "reward_plan": level_data["reward_plan"],
                         "quality": level_data.get("quality", {}),
+                        "visual_theme": level_data.get("visual_theme", {}),
                     },
                 )
                 session.add(level)
@@ -363,8 +496,28 @@ class SiteService:
                             room_type=str(room_data["room_type"]),
                             description=str(room_data["description"]),
                             bounds_json=dict(room_data["bounds"]),
-                            encounter_json={},
-                            reward_json={},
+                            encounter_json={
+                                "monsters": [
+                                    item
+                                    for item in level_data.get("monster_plan", [])
+                                    if int(item.get("room_index", 0))
+                                    == int(room_data["room_index"])
+                                ],
+                                "npcs": [
+                                    item
+                                    for item in level_data.get("npc_plan", [])
+                                    if int(item.get("room_index", 0))
+                                    == int(room_data["room_index"])
+                                ],
+                            },
+                            reward_json={
+                                "items": [
+                                    item
+                                    for item in level_data.get("reward_plan", [])
+                                    if int(item.get("room_index", 0))
+                                    == int(room_data["room_index"])
+                                ]
+                            },
                             interactive_objects=list(room_data["interactive_objects"]),
                         )
                     )
@@ -560,19 +713,31 @@ class SiteService:
                     world_item = WorldItem(
                         campaign_id=campaign_id,
                         name=str(reward_data["name"]),
-                        description=(f"由地下城奖励预算生成，推荐队伍等级 {site.party_level}。"),
+                        description=(
+                            str(reward_data.get("description") or "")
+                            or f"由地下城奖励预算生成，推荐队伍等级 {site.party_level}。"
+                        ),
                         category=str(reward_data.get("category", "treasure")),
                         quantity=max(1, int(reward_data.get("quantity", 1))),
                         unit_weight_lb=0,
                         price_cp=value_gp * 100,
-                        source_label="ai_generated",
+                        source_label=(
+                            "official"
+                            if reward_data.get("source_kind") == "official"
+                            else "ai_generated"
+                        ),
                         location_id=target_location.id,
                         is_hidden=True,
                         metadata_json={
                             "site_id": site.id,
                             "site_level": level.level_index,
                             "room_index": room_index,
-                            "original": True,
+                            "original": reward_data.get("source_kind") != "official",
+                            "source_kind": reward_data.get("source_kind"),
+                            "source_record_id": reward_data.get("source_record_id"),
+                            "compendium_entry_id": reward_data.get(
+                                "compendium_entry_id"
+                            ),
                             "rules_validated_budget": True,
                         },
                     )
@@ -1091,8 +1256,10 @@ class SiteService:
                         **serialize(level),
                         "layout": level.layout_json,
                         "monster_plan": level.generation_json.get("monster_plan", []),
+                        "npc_plan": level.generation_json.get("npc_plan", []),
                         "reward_plan": level.generation_json.get("reward_plan", []),
                         "quality": level.generation_json.get("quality", {}),
+                        "visual_theme": level.generation_json.get("visual_theme", {}),
                         "rooms": [
                             serialize(room)
                             for room in session.scalars(

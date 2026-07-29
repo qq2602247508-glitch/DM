@@ -25,11 +25,13 @@ export function PlayerRoomPanel({
   currentSceneId,
   currentCombatId,
   characters,
+  onSceneChange,
 }: {
   campaignId: string;
   currentSceneId: string | null;
   currentCombatId: string | null;
   characters: CharacterOption[];
+  onSceneChange?: (sceneId: string) => void;
 }): ReactElement {
   const client = useQueryClient();
   const { showToast } = useToast();
@@ -90,8 +92,14 @@ export function PlayerRoomPanel({
       version: number;
       decision: "accept" | "reject";
     }) => resolvePlayerActionRequest(campaignId, requestId, version, decision),
-    onSuccess: (_, variables) => {
+    onSuccess: (result, variables) => {
       void client.invalidateQueries({ queryKey: ["player-action-requests", campaignId] });
+      const rawTargetSceneId = result.payload_json.target_scene_id;
+      const targetSceneId = result.action_type === "site_level_transition"
+        && typeof rawTargetSceneId === "string"
+        ? rawTargetSceneId
+        : "";
+      if (variables.decision === "accept" && targetSceneId) onSceneChange?.(targetSceneId);
       showToast(variables.decision === "accept" ? "已接受玩家行动" : "已驳回玩家行动");
     },
     onError: () => showToast("处理玩家行动失败，请刷新后重试", "error"),
@@ -176,6 +184,10 @@ export function PlayerRoomPanel({
                   const member = activeMembers.find((item) => item.id === request.player_key);
                   const character = characters.find((item) => item.id === request.character_id);
                   const payload = request.payload_json as {
+                    schema_version?: string;
+                    direction?: "stairs_up" | "stairs_down";
+                    label?: string;
+                    target_level_name?: string;
                     phase?: string;
                     action?: { name?: string; kind?: string };
                     target?: { name?: string };
@@ -194,6 +206,7 @@ export function PlayerRoomPanel({
                     narrative_suggestions?: string[];
                   };
                   const structured = request.action_type === "noncombat_rule";
+                  const levelChange = request.action_type === "site_level_transition";
                   const ready = !structured || payload.phase === "resolved";
                   return (
                     <div className="rounded border border-violet-800/70 bg-violet-950/20 p-3" key={request.id}>
@@ -202,6 +215,15 @@ export function PlayerRoomPanel({
                         <Badge tone={ready ? "warn" : "neutral"}>{ready ? "等待 DM" : "等待玩家投骰"}</Badge>
                       </div>
                       <p className="mb-0 mt-2 whitespace-pre-wrap text-sm text-stone-300">{request.message || "未填写说明"}</p>
+                      {levelChange ? (
+                        <div className="mt-2 rounded border border-violet-900/70 bg-ink-950/45 p-2 text-xs leading-5 text-stone-300">
+                          <strong className="text-violet-200">
+                            楼层切换申请 · {payload.direction === "stairs_up" ? "前往上一层" : "前往下一层"}
+                          </strong>
+                          <span className="block">楼梯：{payload.label ?? "已发现楼梯"} → {payload.target_level_name ?? "相邻楼层"}</span>
+                          <span className="block text-amber-200">批准后会自动同步 DM 与全部玩家到目标楼层 Scene。</span>
+                        </div>
+                      ) : null}
                       {structured ? <div className="mt-2 rounded border border-violet-900/70 bg-ink-950/45 p-2 text-xs leading-5 text-stone-300">
                         <strong className="text-violet-200">{payload.action?.name ?? "结构化行动"} → {payload.target?.name ?? "当前区域"}</strong>
                         {payload.resolution?.instruction ? <span className="block">{payload.resolution.instruction}</span> : null}
@@ -222,7 +244,7 @@ export function PlayerRoomPanel({
                           })}
                           size="sm"
                           variant="danger"
-                        >驳回</Button>
+                        >{levelChange ? "拒绝换层" : "驳回"}</Button>
                         <Button
                           loading={resolveRequest.isPending}
                           onClick={() => resolveRequest.mutate({
@@ -232,7 +254,7 @@ export function PlayerRoomPanel({
                           })}
                           size="sm"
                           variant="primary"
-                        >接受</Button>
+                        >{levelChange ? "批准换层申请" : "接受"}</Button>
                       </div>
                     </div>
                   );

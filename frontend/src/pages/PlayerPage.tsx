@@ -881,6 +881,15 @@ function PlayerDashboard({
   const [showRoomSwitch, setShowRoomSwitch] = useState(false);
   const [switchCode, setSwitchCode] = useState("");
   const intentMutation = useMutation({ mutationFn: () => submitMyActionRequest("player_intent", intent), onSuccess: () => setIntent("") });
+  const levelRequestMutation = useMutation({
+    mutationFn: (transition: NonNullable<PlayerRoomSnapshot["table"]["scene"]>["available_transitions"][number]) =>
+      submitMyActionRequest(
+        "site_level_transition",
+        `申请通过「${transition.label}」前往${transition.target_level_name}。`,
+        { connector_id: transition.connector_id },
+      ),
+    onSuccess: refresh,
+  });
   const rulesMutation = useMutation({ mutationFn: () => searchPlayerRules(ruleText), onSuccess: setRuleHits });
   const roomSwitchMutation = useMutation({
     mutationFn: () => switchPlayerRoom(switchCode, snapshot.player.display_name),
@@ -889,6 +898,7 @@ function PlayerDashboard({
   useEffect(() => {
     if (snapshot.combat?.status === "active") setTab("combat");
   }, [snapshot.combat?.id, snapshot.combat?.status]);
+  const availableTransitions = snapshot.table.scene?.available_transitions ?? [];
   return (
     <main className="mx-auto min-h-screen max-w-[1500px] p-3 lg:p-6">
       <header className="mb-4 flex flex-wrap items-center gap-3 border-b border-ink-700 pb-4">
@@ -938,7 +948,32 @@ function PlayerDashboard({
       {tab === "rules" ? <section className={cardCls}><h2 className="mt-0 font-display text-2xl">D&D 5e 本地规则搜索</h2><p className="text-sm text-stone-400">只做确定性关键词检索，不调用本地生成AI。</p><div className="flex gap-2"><input aria-label="规则关键词" className={inputCls} onChange={(event) => setRuleText(event.target.value)} placeholder="例如：擒抱、火球术、倒地" value={ruleText} /><Button disabled={!ruleText.trim()} loading={rulesMutation.isPending} onClick={() => rulesMutation.mutate()} variant="primary">搜索</Button></div><div className="mt-4 space-y-3">{ruleHits.map((hit, index) => <article className="rounded border border-ink-700 p-3" key={`${hit.name}-${index}`}><strong>{hit.name}</strong><span className="ml-2 text-2xs text-stone-500">{hit.edition} · {hit.content_type}</span><p className="mb-0 text-sm leading-6 text-stone-400">{hit.excerpt}</p></article>)}</div></section> : null}
       {tab === "table" ? <div className="grid gap-4 lg:grid-cols-[1.2fr_.8fr]">
         <div className="space-y-4">
-          <section className={cardCls}><h2 className="mt-0 font-display text-2xl">{snapshot.table.scene?.name ?? "等待 DM 选择 Scene"}</h2><p className="whitespace-pre-wrap text-sm leading-6 text-stone-400">{snapshot.table.scene?.description}</p></section>
+          <section className={cardCls}><h2 className="mt-0 font-display text-2xl">{snapshot.table.scene?.name ?? "等待 DM 选择 Scene"}</h2><p className="whitespace-pre-wrap text-sm leading-6 text-stone-400">{snapshot.table.scene?.description}</p>
+            {availableTransitions.length ? (
+              <div className="mt-3 rounded border border-violet-800/60 bg-violet-950/20 p-3">
+                <strong className="text-sm text-violet-100">已发现楼层连接</strong>
+                <p className="mb-2 mt-1 text-2xs text-stone-400">这里只显示战争迷雾已经公开的楼梯。提交后需由 DM 批准并切换公开 Scene。</p>
+                <div className="flex flex-wrap gap-2">
+                  {availableTransitions.map((transition) => (
+                    <Button
+                      key={transition.connector_id}
+                      loading={levelRequestMutation.isPending}
+                      onClick={() => levelRequestMutation.mutate(transition)}
+                      size="sm"
+                      variant="primary"
+                    >
+                      {transition.direction === "stairs_up"
+                        ? "申请前往上一层"
+                        : "申请前往下一层"}
+                      {` · ${transition.target_level_name}`}
+                    </Button>
+                  ))}
+                </div>
+                {levelRequestMutation.isSuccess ? <p className="mb-0 mt-2 text-2xs text-emerald-300">换层申请已发送，等待 DM 处理。</p> : null}
+                {levelRequestMutation.isError ? <p className="mb-0 mt-2 text-2xs text-red-300">{levelRequestMutation.error.message}</p> : null}
+              </div>
+            ) : null}
+          </section>
           {snapshot.table.scene ? <NoncombatActionPanel refresh={refresh} snapshot={snapshot} /> : null}
         </div>
         <aside className="space-y-4">

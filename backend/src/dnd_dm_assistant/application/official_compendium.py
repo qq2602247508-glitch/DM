@@ -44,6 +44,85 @@ ABILITY_KEYS = {
     "魅力": "charisma",
 }
 
+def _feature_filters(data: dict[str, Any]) -> dict[str, Any]:
+    content_type = str(data.get("content_type") or "")
+    if content_type != "classes":
+        return {"feature_kind": content_type.rstrip("s") or "feature"}
+    name = _clean_name(str(data.get("name") or ""))
+    heading_path = [
+        _clean_name(str(value))
+        for value in data.get("heading_path", [])
+        if isinstance(value, str)
+    ]
+    class_name = next(
+        (value for value in reversed(heading_path) if value in SPELL_CLASS_NAMES),
+        name if name in SPELL_CLASS_NAMES else "",
+    )
+    feature_kind = "class" if name == class_name else "subclass"
+    return {
+        "class_name": class_name,
+        "classes": [class_name] if class_name else [],
+        "feature_kind": feature_kind,
+        "recommended_level": 1 if feature_kind == "class" else 3,
+    }
+
+
+def _item_function(name: str) -> str:
+    """Give mundane role-play gear a useful browsing category."""
+
+    groups = (
+        ("illumination", ("火把", "提灯", "灯", "灯油", "火绒")),
+        (
+            "consumable",
+            (
+                "口粮",
+                "燃油",
+                "强酸",
+                "抗毒",
+                "毒药",
+                "圣水",
+                "治疗药水",
+                "医疗包",
+                "治疗工具",
+                "卷轴",
+                "炽火胶",
+                "滚珠",
+                "铁蒺藜",
+                "肥皂",
+                "蜡烛",
+            ),
+        ),
+        ("container", ("背包", "袋", "箱", "桶", "瓶", "水袋", "箭袋", "卷轴匣")),
+        ("camping", ("铺盖", "帐篷", "毯", "炊具", "钓具")),
+        ("exploration", ("绳", "抓钩", "铁钉", "撬棍", "梯", "望远镜", "放大镜")),
+        ("restraint_security", ("锁", "镣铐", "链", "捕兽夹")),
+        ("writing_navigation", ("纸", "墨", "笔", "地图", "指南针", "书", "信号哨")),
+    )
+    for category, keywords in groups:
+        if any(keyword in name for keyword in keywords):
+            return category
+    return "miscellaneous"
+
+
+def _adventuring_gear_classification(name: str) -> tuple[str, str, str]:
+    """Keep combat consumables out of the narrative-prop item shelf."""
+
+    if "卷轴" in name and "卷轴匣" not in name and "地图" not in name:
+        return "equipment", "scroll", "magic_consumable"
+    if name == "治疗药水":
+        return "equipment", "potion", "magic_consumable"
+    if name in {
+        "强酸",
+        "炽火胶",
+        "抗毒剂",
+        "基础毒药",
+        "圣水",
+        "铁蒺藜",
+        "滚珠",
+    }:
+        return "equipment", "consumable", "mundane_equipment"
+    return "item", "adventuring_gear", "mundane_item"
+
 
 def _clean_name(value: str) -> str:
     chinese = re.match(r"^([\u3400-\u9fff·（）()、\s]+?)(?=[A-Za-z]|$)", value.strip())
@@ -260,6 +339,11 @@ def _record_entry(data: dict[str, Any]) -> dict[str, Any] | None:
         monster_filters, monster_rules = _monster_fields(str(data.get("content_plain_text") or ""))
         filters.update(monster_filters)
         rules.update(monster_rules)
+    if entry_type == "feature":
+        feature_filters = _feature_filters(data)
+        if content_type == "classes" and not feature_filters.get("class_name"):
+            return None
+        filters.update(feature_filters)
     return {
         "id": f"official:{stable_id}",
         "version": 1,
@@ -312,6 +396,12 @@ def _atomic_equipment_entries(data: dict[str, Any]) -> list[dict[str, Any]]:
             return
         if not price or price in {"—", "多类"}:
             return
+        entry_type = "equipment" if category in {"weapon", "armor", "shield"} else "item"
+        item_kind = (
+            "mundane_item" if category == "adventuring_gear" else "mundane_equipment"
+        )
+        if category == "adventuring_gear":
+            entry_type, category, item_kind = _adventuring_gear_classification(item_name)
         suffix = hashlib.sha256(f"{stable_id}|{item_name}".encode()).hexdigest()[:12]
         category_label = {
             "weapon": "武器",
@@ -324,7 +414,7 @@ def _atomic_equipment_entries(data: dict[str, Any]) -> list[dict[str, Any]]:
                 "id": f"official:{stable_id}:{suffix}",
                 "version": 1,
                 "campaign_id": "official",
-                "entry_type": "equipment" if category in {"weapon", "armor", "shield"} else "item",
+                "entry_type": entry_type,
                 "name": item_name,
                 "description": (
                     f"来自《{data.get('source_book') or 'D&D规则资料'}》的官方"
@@ -337,6 +427,12 @@ def _atomic_equipment_entries(data: dict[str, Any]) -> list[dict[str, Any]]:
                 "tags": ["官方", "2024", "原子条目", category],
                 "filters_json": {
                     "category": category,
+                    "item_function": (
+                        _item_function(item_name)
+                        if category == "adventuring_gear"
+                        else category
+                    ),
+                    "item_kind": item_kind,
                     "slot": slot,
                     "rarity": "普通",
                     "recommended_level": 1,
@@ -545,7 +641,7 @@ def _atomic_item_entries(data: dict[str, Any]) -> list[dict[str, Any]]:
                     "id": f"official:{stable_id}:{suffix}",
                     "version": 1,
                     "campaign_id": "official",
-                    "entry_type": "item",
+                    "entry_type": "equipment",
                     "name": variant_name,
                     "description": description[:1600],
                     "source_kind": "official",
@@ -563,6 +659,11 @@ def _atomic_item_entries(data: dict[str, Any]) -> list[dict[str, Any]]:
                         "edition": data.get("edition"),
                         "source_book": data.get("source_book"),
                         "category": category,
+                        "item_kind": (
+                            "magic_consumable"
+                            if category in {"potion", "scroll"}
+                            else "magic_equipment"
+                        ),
                         "rarity": variant_rarity,
                         "attunement": "需同调" if "同调" in metadata else "无需同调",
                         "attunement_classes": (

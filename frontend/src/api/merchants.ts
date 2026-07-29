@@ -7,6 +7,8 @@ export type MerchantStock = {
   price_copper: number;
   source_kind?: "official" | "original";
   category?: string;
+  filters_json?: Record<string, unknown>;
+  rules_json?: Record<string, unknown>;
   metadata_json?: Record<string, unknown>;
 };
 
@@ -26,7 +28,13 @@ export type MerchantPreview = {
     price_modifier_bps: number;
   };
   stock: MerchantStock[];
-  summary: { official_atoms: number; original_atoms: number; party_level: number | null };
+  summary: {
+    official_atoms: number;
+    original_atoms: number;
+    party_level: number | null;
+    seed?: number | string;
+    categories?: Record<string, number>;
+  };
 };
 
 export type MerchantGroup = {
@@ -50,6 +58,7 @@ export type MerchantGenerateInput = {
   stock_size: number;
   price_modifier_bps: number;
   allow_original: boolean;
+  seed?: number;
 };
 
 export async function listMerchants(

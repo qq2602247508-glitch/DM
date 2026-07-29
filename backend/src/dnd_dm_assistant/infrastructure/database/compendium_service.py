@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+from fractions import Fraction
 from pathlib import Path
 from typing import Any
 
@@ -34,6 +35,23 @@ ENTRY_TYPES = {
     "scene",
 }
 SOURCE_KINDS = {"official", "original", "ai_generated", "dm_modified", "third_party"}
+CURRENT_EDITIONS = {"2024", "2025"}
+RARITY_ORDER = {
+    "普通": 0,
+    "mundane": 0,
+    "common": 1,
+    "非普通": 2,
+    "uncommon": 2,
+    "珍稀": 3,
+    "稀有": 3,
+    "rare": 3,
+    "极珍稀": 4,
+    "非常稀有": 4,
+    "very_rare": 4,
+    "传说": 5,
+    "legendary": 5,
+    "神器": 6,
+}
 
 
 def _integer(value: object, default: int) -> int:
@@ -98,6 +116,9 @@ class CompendiumService:
         page: int = 1,
         page_size: int = 40,
         filters: dict[str, str] | None = None,
+        include_legacy: bool = False,
+        sort_by: str = "default",
+        sort_order: str = "asc",
     ) -> dict[str, Any]:
         custom_base = list(
             self.list(
@@ -112,7 +133,16 @@ class CompendiumService:
             if source_kind and source_kind != "official"
             else self.official.search(entry_type=entry_type, text=text)
         )
-        base_items = [*official_base, *custom_base]
+        base_items = [
+            *[
+                item
+                for item in official_base
+                if include_legacy
+                or str(dict(item.get("filters_json") or {}).get("edition") or "")
+                in CURRENT_EDITIONS
+            ],
+            *custom_base,
+        ]
         facets: dict[str, list[str]] = {}
         for key in (
             "class_name",
@@ -125,6 +155,9 @@ class CompendiumService:
             "attunement",
             "edition",
             "content_type",
+            "feature_kind",
+            "item_function",
+            "item_kind",
         ):
             values: set[str] = set()
             for item in base_items:
@@ -140,30 +173,58 @@ class CompendiumService:
                     values.add(str(raw))
             facets[key] = sorted(values, key=lambda value: (len(value), value))
         items = [item for item in base_items if self.official.matches_filters(item, filters or {})]
-        items.sort(
-            key=lambda item: (
-                0 if item.get("source_kind") == "official" else 1,
-                str(item.get("name") or ""),
-                str(item.get("id") or ""),
-            )
-        )
+        items.sort(key=lambda item: self._sort_key(item, sort_by), reverse=sort_order == "desc")
         start = (page - 1) * page_size
-        counts = self.official.counts()
-        with Session(self.engine) as session:
-            self._campaign(session, campaign_id)
-            for row in session.scalars(
-                select(CompendiumEntry).where(CompendiumEntry.campaign_id == campaign_id)
-            ):
-                counts[row.entry_type] = counts.get(row.entry_type, 0) + 1
+        counts: dict[str, int] = {}
+        for item in base_items:
+            key = str(item.get("entry_type") or "")
+            counts[key] = counts.get(key, 0) + 1
         return {
             "items": items[start : start + page_size],
             "total": len(items),
             "page": page,
             "page_size": page_size,
             "counts": counts,
-            "official_total": sum(self.official.counts().values()),
+            "official_total": sum(
+                1 for item in base_items if item.get("source_kind") == "official"
+            ),
             "facets": facets,
         }
+
+    @staticmethod
+    def _sort_key(item: dict[str, Any], sort_by: str) -> tuple[Any, ...]:
+        filters = dict(item.get("filters_json") or {})
+        source = 0 if item.get("source_kind") == "official" else 1
+        name = str(item.get("name") or "")
+        item_id = str(item.get("id") or "")
+        if sort_by == "level":
+            level = filters.get("spell_level", filters.get("recommended_level", 99))
+            return source, _integer(level, 99), name, item_id
+        if sort_by == "strength":
+            challenge = str(filters.get("challenge_rating") or "")
+            try:
+                strength: float = float(Fraction(challenge))
+            except (ValueError, ZeroDivisionError):
+                strength = float(RARITY_ORDER.get(str(filters.get("rarity") or ""), 99))
+            return source, strength, name, item_id
+        if sort_by == "class":
+            return (
+                source,
+                str(filters.get("class_name") or "未分类"),
+                0 if filters.get("feature_kind") == "class" else 1,
+                _integer(filters.get("recommended_level"), 99),
+                name,
+                item_id,
+            )
+        if sort_by == "category":
+            return (
+                source,
+                str(filters.get("item_function") or filters.get("category") or ""),
+                RARITY_ORDER.get(str(filters.get("rarity") or ""), 99),
+                name,
+                item_id,
+            )
+        return source, name, item_id
 
     def create(
         self,

@@ -61,7 +61,94 @@ MONSTERS = {
     "aberration": (("噬脑怪", 450), ("喋喋不休的异怪", 450), ("格雷尔", 700), ("夺心魔", 2900)),
     "undead": (("骷髅", 50), ("僵尸", 50), ("食尸鬼", 200), ("尸妖", 700)),
     "goblin": (("地精", 50), ("大地精", 100), ("熊地精", 200), ("地精首领", 200)),
+    "sahuagin": (
+        ("鲨华鱼人", 100),
+        ("鲨华祭司", 450),
+        ("寻猎鲨", 450),
+        ("鲨华女祭司", 450),
+        ("鲨华鱼人男爵", 1800),
+        ("底栖魔鱼", 5900),
+    ),
+    "cult": (("邪教徒", 25), ("邪教狂信徒", 450), ("祭司", 450), ("法师", 2300)),
+    "fire": (("岩浆怪", 100), ("火蛇", 200), ("炼狱犬", 700), ("火元素", 1800)),
+    "frost": (("冰魔蝠", 50), ("冬狼", 700), ("雪人", 700), ("霜巨人", 3900)),
     "default": (("巨鼠", 25), ("强盗", 25), ("守卫", 25), ("狼", 50)),
+}
+THEME_PROFILES: dict[str, dict[str, Any]] = {
+    "sahuagin": {
+        "label": "鲨华鱼人 / 深海",
+        "palette": "ocean",
+        "wall_label": "潮湿岩壁",
+        "cover_label": "珊瑚柱",
+        "room_names": (
+            "潮门入口",
+            "积水哨室",
+            "断船厅",
+            "贝壳祭坛",
+            "盐渍牢房",
+            "育卵池",
+            "珊瑚藏宝室",
+            "潮汐仪式厅",
+            "鲨华男爵巢穴",
+        ),
+        "loot": (
+            ("潮汐珍珠", "treasure"),
+            ("鲨华祭司的防水卷轴匣", "adventuring_gear"),
+            ("深海珊瑚护符", "wondrous"),
+        ),
+    },
+    "aberration": {"label": "异怪污染", "palette": "violet"},
+    "undead": {"label": "亡灵墓穴", "palette": "ashen"},
+    "goblin": {"label": "地精巢穴", "palette": "moss"},
+    "cult": {
+        "label": "邪教仪式",
+        "palette": "violet",
+        "room_names": (
+            "伪装入口",
+            "信徒宿舍",
+            "献祭准备室",
+            "亵渎祭坛",
+            "囚禁室",
+            "经卷库",
+            "圣物密藏",
+            "召唤仪式厅",
+            "教首密室",
+        ),
+        "loot": (("被亵渎的圣徽", "treasure"), ("仪式经卷匣", "adventuring_gear")),
+    },
+    "fire": {
+        "label": "火山与熔岩",
+        "palette": "ember",
+        "room_names": (
+            "焦岩入口",
+            "熔渣哨站",
+            "岩浆断桥",
+            "火焰祭坛",
+            "冷却石牢",
+            "硫磺洞",
+            "黑曜石宝库",
+            "熔炉仪式厅",
+            "炎兽巢穴",
+        ),
+        "loot": (("黑曜石火晶", "treasure"), ("耐热炼金器具", "adventuring_gear")),
+    },
+    "frost": {
+        "label": "冰窟与霜寒",
+        "palette": "ice",
+        "room_names": (
+            "覆霜入口",
+            "冰墙哨室",
+            "裂隙冰桥",
+            "霜纹祭坛",
+            "冻牢",
+            "蓝冰洞",
+            "寒晶宝库",
+            "极光仪式厅",
+            "霜兽巢穴",
+        ),
+        "loot": (("永冻寒晶", "treasure"), ("保温远行装备", "adventuring_gear")),
+    },
+    "default": {"label": "通用地下城", "palette": "amber"},
 }
 
 
@@ -75,12 +162,32 @@ def _seed(data: dict[str, Any]) -> int:
 
 def _theme(text: str) -> str:
     lowered = text.lower()
+    if any(
+        word in lowered
+        for word in (
+            "渔人",
+            "鱼人",
+            "鲨华",
+            "深海",
+            "海底",
+            "潮汐",
+            "sahuagin",
+            "fish folk",
+        )
+    ):
+        return "sahuagin"
     if any(word in lowered for word in ("夺心魔", "异怪", "心灵", "mind flayer")):
         return "aberration"
     if any(word in lowered for word in ("亡灵", "墓穴", "骷髅", "undead")):
         return "undead"
     if any(word in lowered for word in ("地精", "goblin")):
         return "goblin"
+    if any(word in lowered for word in ("邪教", "献祭", "异端", "cult")):
+        return "cult"
+    if any(word in lowered for word in ("火山", "岩浆", "熔炉", "烈焰", "inferno")):
+        return "fire"
+    if any(word in lowered for word in ("冰窟", "冰川", "霜寒", "冻原", "frost")):
+        return "frost"
     return "default"
 
 
@@ -467,6 +574,8 @@ def _dungeon_layout(
     party_size: int,
 ) -> dict[str, Any]:
     width, height = MAP_SIZE_PRESETS[overall_scale]
+    theme = _theme(brief)
+    profile = THEME_PROFILES.get(theme, THEME_PROFILES["default"])
     minimum_span = ROOM_SIZE_PRESETS[minimum_room_size][0]
     maximum_span = ROOM_SIZE_PRESETS[maximum_room_size][1]
     # A selected party needs at least one genuine tactical room.  Small side
@@ -595,13 +704,25 @@ def _dungeon_layout(
                 and lookup[neighbor]["kind"] == "wall"
                 and lookup[neighbor]["label"] == "地图外区域"
             ):
-                lookup[neighbor].update(kind="wall", label="岩壁", blocks_sight=True)
-    names = ROOM_NAMES["dungeon"]
+                lookup[neighbor].update(
+                    kind="wall",
+                    label=str(profile.get("wall_label") or "岩壁"),
+                    blocks_sight=True,
+                )
+    names = tuple(profile.get("room_names") or ROOM_NAMES["dungeon"])
     ordered = sorted(range(len(rects)), key=lambda index: (-rects[index].area, index))
     assigned: dict[int, str] = {}
     for rank, index in enumerate(ordered):
         if rank == 0:
-            assigned[index] = "主洞厅" if level_index < 3 else "首领巢穴"
+            assigned[index] = (
+                str(names[0])
+                if theme == "sahuagin" and level_index < 3
+                else str(names[-1])
+                if theme == "sahuagin"
+                else "主洞厅"
+                if level_index < 3
+                else "首领巢穴"
+            )
         elif degrees[index] == 1 and rank == len(ordered) - 1:
             assigned[index] = "隐秘藏宝室"
         else:
@@ -616,7 +737,11 @@ def _dungeon_layout(
         rect = rects[index]
         point = (rect.center[0], min(rect.right, rect.center[1] + 1))
         if lookup[point]["kind"] == "floor":
-            lookup[point].update(kind="cover", label="岩柱", blocks_sight=True)
+            lookup[point].update(
+                kind="cover",
+                label=str(profile.get("cover_label") or "岩柱"),
+                blocks_sight=True,
+            )
     # Later corridor carving and room labels may cross an earlier connector.
     # Re-assert connector cells after all decorative passes so persisted
     # connector metadata always lands on a real door cell.
@@ -748,7 +873,18 @@ def _monster_plan(theme: str, budget: int) -> list[dict[str, Any]]:
         if not result and quantity == 0 and xp <= round(budget * 1.25):
             quantity = 1
         if quantity:
-            result.append({"name": name, "quantity": quantity, "xp_each": xp, "source": "official"})
+            result.append(
+                {
+                    "name": name,
+                    "quantity": quantity,
+                    "xp_each": xp,
+                    "source": "official",
+                    "theme": theme,
+                    "encounter_role": (
+                        "首领" if xp >= max(450, budget // 3) else "精英" if xp >= 450 else "杂兵"
+                    ),
+                }
+            )
             remaining -= quantity * xp
     return result
 
@@ -757,6 +893,7 @@ def _party_loot_plan(
     class_names: list[str],
     party_level: int,
     budget_gp: int,
+    theme: str,
 ) -> list[dict[str, Any]]:
     """Build a rules-shaped loot mix without pretending homebrew is official."""
     lowered = " ".join(class_names).lower()
@@ -775,6 +912,11 @@ def _party_loot_plan(
         suggestions.append(("精制弹药与探索工具", "equipment", max(35, budget_gp // 5)))
     if any(name in lowered for name in ("cleric", "牧师", "druid", "德鲁伊", "bard", "吟游诗人")):
         suggestions.append(("法器材料与恢复性消耗品", "consumable", max(40, budget_gp // 5)))
+    profile = THEME_PROFILES.get(theme, {})
+    for themed_name, themed_category in profile.get("loot", ()):
+        suggestions.append(
+            (str(themed_name), str(themed_category), max(25, budget_gp // 6))
+        )
     return [
         {
             "name": name,
@@ -790,7 +932,9 @@ def _party_loot_plan(
 
 def _npc_plan(brief: str, level_index: int) -> list[dict[str, Any]]:
     lowered = brief.lower()
-    if any(word in lowered for word in ("酒馆", "旅店")):
+    if _theme(brief) == "sahuagin":
+        role = "被放逐的鲨华鱼人向导" if level_index == 1 else "被囚禁的沿海水手"
+    elif any(word in lowered for word in ("酒馆", "旅店")):
         role = "酒馆经营者" if level_index == 1 else "住客或雇员"
     elif any(word in lowered for word in ("教堂", "神殿")):
         role = "教堂看守或幸存信徒"
@@ -892,7 +1036,9 @@ def generate_site(data: dict[str, Any]) -> dict[str, Any]:
             else []
         )
         reward_plan = (
-            _party_loot_plan(class_names, party_level, reward) if generate_loot else []
+            _party_loot_plan(class_names, party_level, reward, theme)
+            if generate_loot
+            else []
         )
         levels.append(
             {
@@ -901,6 +1047,19 @@ def generate_site(data: dict[str, Any]) -> dict[str, Any]:
                 if site_type == "building"
                 else f"地下城第 {level_index} 层",
                 "description": f"{data['brief']}（{difficulty} 难度）",
+                "visual_theme": {
+                    "theme": theme,
+                    "label": str(
+                        THEME_PROFILES.get(theme, THEME_PROFILES["default"]).get(
+                            "label", theme
+                        )
+                    ),
+                    "palette": str(
+                        THEME_PROFILES.get(theme, THEME_PROFILES["default"]).get(
+                            "palette", "amber"
+                        )
+                    ),
+                },
                 "difficulty": difficulty,
                 "encounter_budget_xp": budget,
                 "reward_budget_gp": reward,
@@ -1004,6 +1163,13 @@ def generate_site(data: dict[str, Any]) -> dict[str, Any]:
             "name": str(data["name"]).strip(),
             "brief": str(data["brief"]).strip(),
             "theme": theme,
+            "theme_profile": {
+                key: value
+                for key, value in THEME_PROFILES.get(
+                    theme, THEME_PROFILES["default"]
+                ).items()
+                if key not in {"room_names", "loot"}
+            },
             "seed": seed,
             "maximum_levels": maximum_levels,
             "party_level": party_level,

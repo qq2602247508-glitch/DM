@@ -16,10 +16,26 @@ const CATEGORIES = [
   ["weapon", "武器"],
   ["armor", "护甲"],
   ["shield", "盾牌"],
-  ["adventuring_gear", "冒险装备"],
-  ["consumable", "消耗品"],
-  ["magic", "魔法物品"],
+  ["adventuring_gear", "基础道具与探索杂物"],
+  ["consumable", "药水、卷轴与消耗品"],
+  ["magic", "魔法装备与奇物"],
 ] as const;
+
+const TIER_LABELS: Record<string, string> = {
+  mundane: "普通非魔法物品",
+  common: "普通",
+  uncommon: "非普通",
+  rare: "珍稀",
+  very_rare: "极珍稀",
+  legendary: "传说",
+};
+
+const CATEGORY_LABELS = Object.fromEntries(CATEGORIES) as Record<string, string>;
+
+function metadataText(stock: MerchantPreview["stock"][number], key: string): string | null {
+  const value = stock.filters_json?.[key] ?? stock.metadata_json?.[key];
+  return typeof value === "string" && value.trim() ? value : null;
+}
 
 export function MerchantsPage(): ReactElement {
   const { campaignId } = useCurrentCampaign();
@@ -108,7 +124,7 @@ export function MerchantsPage(): ReactElement {
         </label>
         <label className="text-xs text-stone-400">物品级别
           <select className="mt-1 w-full rounded border border-ink-600 bg-ink-950 p-2 text-sm" onChange={(e) => setTier(e.target.value)} value={tier}>
-            {["mundane", "common", "uncommon", "rare", "very_rare", "legendary"].map((value) => <option key={value} value={value}>{value}</option>)}
+            {["mundane", "common", "uncommon", "rare", "very_rare", "legendary"].map((value) => <option key={value} value={value}>{TIER_LABELS[value]}</option>)}
           </select>
         </label>
         <div className="lg:col-span-2">
@@ -118,6 +134,9 @@ export function MerchantsPage(): ReactElement {
               <input checked={categories.includes(value)} className="mr-1" onChange={() => setCategories((old) => old.includes(value) ? old.filter((item) => item !== value) : [...old, value])} type="checkbox" />{label}
             </label>
           ))}</div>
+          <p className="mb-0 mt-2 text-2xs text-stone-600">
+            基础道具是绳索、照明、容器、工具等无战斗属性物品；魔法武器、护甲、药水和奇物均从装备图鉴选货。
+          </p>
         </div>
         <label className="text-xs text-stone-400">库存数量
           <input className="mt-1 w-full rounded border border-ink-600 bg-ink-950 p-2 text-sm" max={40} min={1} onChange={(e) => setStockSize(Number(e.target.value))} type="number" value={stockSize} />
@@ -135,9 +154,48 @@ export function MerchantsPage(): ReactElement {
       </section>
       {generation.error ? <ErrorState error={generation.error} /> : null}
       {preview ? <section className="rounded-lg border border-violet-800/50 bg-violet-950/10 p-4">
-        <div className="flex flex-wrap items-center gap-2"><h2 className="m-0 font-display text-lg">{preview.merchant.name}</h2><Badge tone="ok">官方 {preview.summary.official_atoms}</Badge><Badge tone="ai">原创 {preview.summary.original_atoms}</Badge></div>
-        <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">{preview.stock.map((item, index) => <div className="rounded border border-ink-700 bg-ink-950/50 p-3" key={`${item.name}-${index}`}><p className="m-0 text-sm text-parchment-100">{item.name}</p><p className="mb-0 mt-1 text-xs text-stone-500">{(item.price_copper / 100).toFixed(2)} gp · {item.source_kind === "official" ? "官方原子" : "原创候选"}</p></div>)}</div>
-        <Button className="mt-4" loading={confirmation.isPending} onClick={() => confirmation.mutate()} variant="primary">确认创建商人与库存</Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <h2 className="m-0 font-display text-lg">{preview.merchant.name}</h2>
+          <Badge tone="ok">图鉴原子 {preview.summary.official_atoms}</Badge>
+          <Badge tone="ai">原创补位 {preview.summary.original_atoms}</Badge>
+          {preview.summary.party_level ? <Badge>队伍参考等级 {preview.summary.party_level}</Badge> : null}
+          {preview.summary.seed !== undefined ? <Badge>选货种子 {preview.summary.seed}</Badge> : null}
+        </div>
+        {preview.summary.official_atoms === 0 ? (
+          <p className="rounded border border-amber-800/60 bg-amber-950/20 p-2 text-xs text-amber-200">
+            当前条件没有命中官方图鉴库存。请调整类别或级别；只有明确标记“原创补位”的条目才会写入原创图鉴。
+          </p>
+        ) : null}
+        {preview.stock.length ? (
+          <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            {preview.stock.map((item, index) => {
+              const rarity = metadataText(item, "rarity");
+              const sourceName = metadataText(item, "source_name");
+              return (
+                <div className="rounded border border-ink-700 bg-ink-950/50 p-3" key={`${item.name}-${index}`}>
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <p className="m-0 text-sm text-parchment-100">{item.name}</p>
+                    <Badge tone={item.source_kind === "official" ? "ok" : "ai"}>
+                      {item.source_kind === "official" ? "官方图鉴" : "原创补位"}
+                    </Badge>
+                  </div>
+                  <p className="mb-0 mt-2 text-xs text-stone-500">
+                    {(item.price_copper / 100).toFixed(2)} gp · 库存 {item.quantity}
+                  </p>
+                  <p className="mb-0 mt-1 text-2xs text-stone-600">
+                    {CATEGORY_LABELS[item.category ?? ""] ?? item.category ?? "未分类"}
+                    {rarity ? ` · ${rarity}` : ""}
+                    {sourceName ? ` · ${sourceName}` : ""}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        ) : <EmptyState title="没有生成有效库存" hint="调整物品级别、贩卖类别或角色后重新生成。" />}
+        <div className="mt-4 flex flex-wrap gap-2">
+          <Button loading={confirmation.isPending} onClick={() => confirmation.mutate()} variant="primary">确认创建商人与库存</Button>
+          <Button loading={generation.isPending} onClick={() => generation.mutate()} variant="ai">换一批库存</Button>
+        </div>
       </section> : null}
       <section>
         <h2 className="font-display text-lg">已创建商店</h2>

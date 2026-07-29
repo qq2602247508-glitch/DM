@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+import builtins
+import hashlib
+import random
+import secrets
 from pathlib import Path
 from typing import Any
 from uuid import uuid4
@@ -24,13 +28,36 @@ from dnd_dm_assistant.infrastructure.database.models import (
     ShopInventory,
 )
 
-TIER_PRICE_LIMITS = {
-    "mundane": 75_000,
-    "common": 100_000,
-    "uncommon": 500_000,
-    "rare": 5_000_000,
-    "very_rare": 50_000_000,
-    "legendary": 500_000_000,
+TIER_RANK = {
+    "mundane": 0,
+    "common": 1,
+    "uncommon": 2,
+    "rare": 3,
+    "very_rare": 4,
+    "legendary": 5,
+}
+RARITY_RANK = {
+    "普通": 1,
+    "common": 1,
+    "非普通": 2,
+    "uncommon": 2,
+    "珍稀": 3,
+    "稀有": 3,
+    "rare": 3,
+    "极珍稀": 4,
+    "非常稀有": 4,
+    "very_rare": 4,
+    "传说": 5,
+    "legendary": 5,
+    "神器": 6,
+}
+MAGIC_PRICE_RANGES_CP = {
+    1: (5_000, 10_000),
+    2: (10_000, 50_000),
+    3: (50_000, 500_000),
+    4: (500_000, 5_000_000),
+    5: (5_000_000, 20_000_000),
+    6: (20_000_000, 50_000_000),
 }
 
 
@@ -64,7 +91,9 @@ class MerchantService:
                 raise ValueError("selected character is outside the current campaign")
         stock_size = max(1, min(40, int(data.get("stock_size", 12))))
         tier = str(data.get("item_tier", "common"))
-        max_price = TIER_PRICE_LIMITS.get(tier, TIER_PRICE_LIMITS["common"])
+        tier_rank = TIER_RANK.get(tier, 1)
+        seed = int(data.get("seed") or secrets.randbits(63))
+        rng = random.Random(seed)
         class_text = " ".join((item.class_name or "").lower() for item in characters)
         preferred = self._preferred_categories(class_text)
         candidates = [
@@ -72,28 +101,28 @@ class MerchantService:
             for entry in self.catalog.entries
             if entry["entry_type"] in {"equipment", "item"}
             and bool(entry.get("filters_json", {}).get("atomic_item"))
-            and 0 < int(entry.get("rules_json", {}).get("price_cp", 0)) <= max_price
-            and (
-                not categories
-                or str(entry.get("filters_json", {}).get("category", "")) in categories
-            )
+            and str(entry.get("filters_json", {}).get("edition") or "") in {"2024", "2025"}
+            and self._matches_categories(entry, categories)
+            and self._within_tier(entry, tier_rank)
         ]
+        rng.shuffle(candidates)
         candidates.sort(
             key=lambda entry: (
                 str(entry.get("filters_json", {}).get("category", "")) not in preferred,
-                int(entry.get("rules_json", {}).get("price_cp", 0)),
-                str(entry["name"]),
+                abs(self._rarity_rank(entry) - tier_rank),
+                rng.random(),
             )
         )
-        selected = candidates[:stock_size]
-        rows = [self._stock_from_atom(entry, data) for entry in selected]
+        selected = self._diverse_selection(candidates, stock_size)
+        generation_data = {**data, "seed": seed}
+        rows = [self._stock_from_atom(entry, generation_data, rng) for entry in selected]
         party_level = (
             round(sum(item.level for item in characters) / len(characters))
             if characters
             else None
         )
         if bool(data.get("allow_original", True)) and len(rows) < stock_size:
-            generation_data = {**data, "party_level": party_level}
+            generation_data = {**generation_data, "party_level": party_level}
             rows.extend(
                 self._original_stock(generation_data, index)
                 for index in range(len(rows), stock_size)
@@ -118,6 +147,11 @@ class MerchantService:
                 "official_atoms": sum(row["source_kind"] == "official" for row in rows),
                 "original_atoms": sum(row["source_kind"] == "original" for row in rows),
                 "party_level": party_level,
+                "seed": seed,
+                "categories": {
+                    category: sum(row["category"] == category for row in rows)
+                    for category in sorted({str(row["category"]) for row in rows})
+                },
             },
         }
 
@@ -253,31 +287,106 @@ class MerchantService:
 
     @staticmethod
     def _preferred_categories(class_text: str) -> set[str]:
-        preferred = {"adventuring_gear"}
+        preferred = {"adventuring_gear", "potion"}
         if any(value in class_text for value in ("fighter", "战士", "paladin", "圣武士")):
             preferred.update({"weapon", "armor", "shield"})
         if any(value in class_text for value in ("wizard", "法师", "sorcerer", "术士")):
-            preferred.update({"adventuring_gear"})
+            preferred.update({"scroll", "wand", "staff", "ring", "wondrous"})
         if any(value in class_text for value in ("rogue", "游荡者", "ranger", "游侠")):
             preferred.update({"weapon", "adventuring_gear"})
         return preferred
 
     @staticmethod
-    def _stock_from_atom(entry: dict[str, Any], data: dict[str, Any]) -> dict[str, Any]:
+    def _rarity_rank(entry: dict[str, Any]) -> int:
+        filters = dict(entry.get("filters_json") or {})
+        if filters.get("item_kind") in {"mundane_item", "mundane_equipment"}:
+            return 0
+        return RARITY_RANK.get(str(filters.get("rarity") or ""), 1)
+
+    @classmethod
+    def _within_tier(cls, entry: dict[str, Any], tier_rank: int) -> bool:
+        rank = cls._rarity_rank(entry)
+        return rank == 0 if tier_rank == 0 else rank <= tier_rank
+
+    @staticmethod
+    def _matches_categories(
+        entry: dict[str, Any], categories: builtins.list[str]
+    ) -> bool:
+        if not categories:
+            return True
+        filters = dict(entry.get("filters_json") or {})
+        category = str(filters.get("category") or "")
+        kind = str(filters.get("item_kind") or "")
+        item_function = str(filters.get("item_function") or "")
+        for requested in categories:
+            if requested in {"weapon", "armor", "shield"} and category == requested:
+                return True
+            if requested == "adventuring_gear" and kind == "mundane_item":
+                return True
+            if requested == "consumable" and (
+                category in {"potion", "scroll"} or item_function == "consumable"
+            ):
+                return True
+            if requested == "magic" and kind in {"magic_equipment", "magic_consumable"}:
+                return True
+        return False
+
+    @staticmethod
+    def _diverse_selection(
+        candidates: builtins.list[dict[str, Any]], stock_size: int
+    ) -> builtins.list[dict[str, Any]]:
+        selected: builtins.list[dict[str, Any]] = []
+        remaining: builtins.list[dict[str, Any]] = candidates.copy()
+        seen_categories: set[str] = set()
+        while remaining and len(selected) < stock_size:
+            index = next(
+                (
+                    position
+                    for position, entry in enumerate(remaining)
+                    if str(entry.get("filters_json", {}).get("category", ""))
+                    not in seen_categories
+                ),
+                0,
+            )
+            entry = remaining.pop(index)
+            selected.append(entry)
+            seen_categories.add(str(entry.get("filters_json", {}).get("category", "")))
+        return selected
+
+    @classmethod
+    def _stock_from_atom(
+        cls, entry: dict[str, Any], data: dict[str, Any], rng: random.Random
+    ) -> dict[str, Any]:
         rules = dict(entry.get("rules_json") or {})
+        filters = dict(entry.get("filters_json") or {})
         modifier = max(5_000, min(20_000, int(data.get("price_modifier_bps", 10_000))))
+        base_price = int(rules.get("price_cp", 0))
+        rank = cls._rarity_rank(entry)
+        if base_price <= 0:
+            low, high = MAGIC_PRICE_RANGES_CP.get(rank, MAGIC_PRICE_RANGES_CP[1])
+            identity = f"{entry.get('id')}|{data.get('seed', '')}"
+            stable = int(hashlib.sha256(identity.encode()).hexdigest()[:8], 16)
+            base_price = low + stable % max(1, high - low + 1)
+        category = str(filters.get("category", "misc"))
+        quantity = (
+            rng.randint(1, 4)
+            if category in {"potion", "scroll"} or filters.get("item_function") == "consumable"
+            else rng.randint(1, 3)
+            if rank == 0
+            else 1
+        )
         return {
             "name": entry["name"],
             "description": entry.get("description"),
             "entry_type": entry["entry_type"],
-            "category": entry.get("filters_json", {}).get("category", "misc"),
-            "quantity": 1,
-            "price_copper": max(1, int(rules.get("price_cp", 1)) * modifier // 10_000),
+            "category": category,
+            "quantity": quantity,
+            "price_copper": max(1, base_price * modifier // 10_000),
             "source_kind": "official",
             "source_record_id": entry.get("source_record_id"),
             "compendium_entry_id": entry["id"],
-            "filters_json": entry.get("filters_json", {}),
-            "rules_json": rules,
+            "filters_json": filters,
+            "rules_json": {**rules, "price_cp": base_price},
         }
 
     @staticmethod
@@ -293,11 +402,26 @@ class MerchantService:
             "very_rare": 1_000_000,
             "legendary": 5_000_000,
         }.get(tier, 5_000)
-        prompt = str(data.get("brief") or "本地风格")
+        style = str(data.get("brief") or "本地风格").strip()
+        names = {
+            "weapon": ("余烬淬火短剑", "巡路者折叠长矛", "守夜人银纹短弓"),
+            "armor": ("烟痕鳞甲", "远行者夹层皮甲", "月灯守卫胸甲"),
+            "shield": ("铜缘折光盾", "远行者圆盾", "月纹护卫盾"),
+            "adventuring_gear": ("无烟引火盒", "防水地图匣", "静音滑轮组"),
+            "consumable": ("清醒薄荷剂", "烟幕蜡丸", "止血树脂包"),
+            "magic": ("余烬回响护符", "月灯储能戒指", "折光旅法杖"),
+        }
+        pool = names.get(category, names["adventuring_gear"])
+        name = pool[index % len(pool)]
         return {
-            "name": f"{prompt[:18]}·定制货品 {index + 1}",
-            "description": "规则引擎按所选等级和类别生成的原创候选，交付前由 DM 确认。",
-            "entry_type": "equipment" if category in {"weapon", "armor", "shield"} else "item",
+            "name": name,
+            "description": (
+                f"根据“{style[:40]}”生成的具名原创候选；效果、价格与适用等级已经规则预算，"
+                "仍需 DM 在确认商店时批准。"
+            ),
+            "entry_type": (
+                "item" if category == "adventuring_gear" else "equipment"
+            ),
             "category": category,
             "quantity": 1,
             "price_copper": base,

@@ -12,7 +12,10 @@ from dnd_dm_assistant.infrastructure.database.models import (
     EquipmentInstance,
     PlayerRoom,
     PlayerSession,
+    Scene,
     SceneToken,
+    SiteConnector,
+    SiteLevel,
 )
 from dnd_dm_assistant.infrastructure.database.player_room_service import _code_digest
 
@@ -446,6 +449,108 @@ def test_bound_player_receives_server_filtered_fog_of_war(
     assert (2, 2) in visible_positions
     assert (10, 18) not in visible_positions
     assert all(token["label"] != "远处怪物" for token in public_scene["tokens"])
+
+
+def test_discovered_stairs_can_request_dm_approved_level_transition(
+    campaign_client: TestClient,
+) -> None:
+    campaign = _campaign(campaign_client, "楼层申请团")
+    root = f"/api/v1/campaigns/{campaign['id']}"
+    character = campaign_client.post(
+        f"{root}/characters",
+        json={"name": "探路者", "class_name": "游荡者", "level": 5, "hp": 35, "max_hp": 35},
+    ).json()
+    preview = campaign_client.post(
+        f"{root}/sites/generate/preview",
+        json={
+            "site_type": "dungeon",
+            "name": "潮鳞巢穴",
+            "brief": "蓝色潮湿的渔人地下城，由鲨华鱼人占据",
+            "region_path": "深水城/海区",
+            "maximum_levels": 2,
+            "rooms_min": 4,
+            "rooms_max": 5,
+            "party_level": 5,
+            "party_size": 1,
+            "seed": 9917,
+        },
+    ).json()
+    site = campaign_client.post(
+        f"{root}/sites/generate/confirm",
+        headers={"X-Request-ID": "stairs-flow-1"},
+        json={"preview": preview},
+    ).json()
+    engine = create_engine(campaign_client.database_url)  # type: ignore[attr-defined]
+    with Session(engine) as session, session.begin():
+        first = session.scalar(
+            select(SiteLevel).where(
+                SiteLevel.site_id == site["id"], SiteLevel.level_index == 1
+            )
+        )
+        second = session.scalar(
+            select(SiteLevel).where(
+                SiteLevel.site_id == site["id"], SiteLevel.level_index == 2
+            )
+        )
+        assert first is not None and second is not None
+        first_scene = session.scalar(select(Scene).where(Scene.location_id == first.location_id))
+        second_scene = session.scalar(select(Scene).where(Scene.location_id == second.location_id))
+        stairs = session.scalar(
+            select(SiteConnector).where(
+                SiteConnector.site_id == site["id"],
+                SiteConnector.from_level_index == 1,
+                SiteConnector.connector_type == "stairs_down",
+            )
+        )
+        assert first_scene is not None and second_scene is not None and stairs is not None
+        position = stairs.position_json
+        session.add(
+            SceneToken(
+                scene_id=first_scene.id,
+                entity_type="character",
+                entity_id=character["id"],
+                label=character["name"],
+                row=int(position["row"]) + 1,
+                col=int(position["col"]) + 1,
+            )
+        )
+        first_scene_id = first_scene.id
+        second_scene_id = second_scene.id
+
+    opened = _open(campaign_client, campaign["id"])
+    _join(campaign_client, opened["join_code"])
+    assert campaign_client.post(
+        "/api/v1/player-room/me/bind-character",
+        json={"character_id": character["id"]},
+    ).status_code == 200
+    assert campaign_client.post(
+        f"{root}/player-room/live-state",
+        json={"scene_id": first_scene_id, "combat_id": None},
+    ).status_code == 200
+    snapshot = campaign_client.get("/api/v1/player-room/me").json()
+    transitions = snapshot["table"]["scene"]["available_transitions"]
+    assert len(transitions) == 1
+    transition = transitions[0]
+    assert transition["target_scene_id"] == second_scene_id
+    requested = campaign_client.post(
+        "/api/v1/player-room/me/action-requests",
+        json={
+            "action_type": "site_level_transition",
+            "message": "申请沿楼梯前往下一层。",
+            "payload_json": {"connector_id": transition["connector_id"]},
+            "idempotency_key": "stairs-request-1",
+        },
+    )
+    assert requested.status_code == 201, requested.text
+    accepted = campaign_client.post(
+        f"{root}/player-action-requests/{requested.json()['id']}/accept",
+        json={"version": requested.json()["version"], "dm_note": "允许换层。"},
+    )
+    assert accepted.status_code == 200, accepted.text
+    room = campaign_client.get(f"{root}/player-room").json()
+    assert room["current_scene_id"] == second_scene_id
+    player_scene = campaign_client.get("/api/v1/player-room/me").json()["table"]["scene"]
+    assert player_scene["id"] == second_scene_id
 
 
 def test_room_live_state_rejects_cross_campaign_ids(campaign_client: TestClient) -> None:

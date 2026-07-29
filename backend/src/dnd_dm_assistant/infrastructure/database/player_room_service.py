@@ -57,6 +57,8 @@ from dnd_dm_assistant.infrastructure.database.models import (
     SceneGrid,
     SceneObject,
     SceneToken,
+    SiteConnector,
+    SiteLevel,
     VisibilityState,
 )
 from dnd_dm_assistant.infrastructure.database.player_service import PlayerService
@@ -1429,6 +1431,56 @@ class PlayerRoomService:
         safe_objects = objects if not fog_enabled else [
             item for item in objects if (item.row, item.col) in explored | visible
         ]
+        transitions: list[dict[str, Any]] = []
+        current_level = session.scalar(
+            select(SiteLevel).where(SiteLevel.location_id == scene.location_id)
+        )
+        if current_level is not None:
+            for connector in session.scalars(
+                select(SiteConnector).where(
+                    SiteConnector.site_id == current_level.site_id,
+                    SiteConnector.from_level_index == current_level.level_index,
+                    SiteConnector.connector_type.in_(("stairs_up", "stairs_down")),
+                )
+            ).all():
+                position = dict(connector.position_json or {})
+                public_position = (
+                    int(position.get("row", -2)) + 1,
+                    int(position.get("col", -2)) + 1,
+                )
+                if fog_enabled and public_position not in explored | visible:
+                    continue
+                target_level = session.scalar(
+                    select(SiteLevel).where(
+                        SiteLevel.site_id == current_level.site_id,
+                        SiteLevel.level_index == connector.to_level_index,
+                    )
+                )
+                target_scene = (
+                    session.scalar(
+                        select(Scene).where(
+                            Scene.campaign_id == scene.campaign_id,
+                            Scene.location_id == target_level.location_id,
+                        )
+                    )
+                    if target_level is not None
+                    else None
+                )
+                if target_level is None or target_scene is None:
+                    continue
+                transitions.append(
+                    {
+                        "connector_id": connector.id,
+                        "direction": connector.connector_type,
+                        "label": connector.label,
+                        "row": public_position[0],
+                        "col": public_position[1],
+                        "from_scene_id": scene.id,
+                        "target_scene_id": target_scene.id,
+                        "target_level_index": target_level.level_index,
+                        "target_level_name": target_level.name,
+                    }
+                )
         return {
             "id": scene.id,
             "name": scene.name,
@@ -1502,6 +1554,7 @@ class PlayerRoomService:
                 }
                 for item in safe_objects
             ],
+            "available_transitions": transitions,
         }
 
     @staticmethod
@@ -1858,6 +1911,30 @@ class PlayerRoomService:
     ) -> dict[str, Any]:
         if principal.character_id is None:
             raise ValueError("请先绑定角色")
+        if action_type == "site_level_transition":
+            with Session(self.engine) as session:
+                room = session.get(PlayerRoom, principal.room_id)
+                scene = (
+                    session.get(Scene, room.current_scene_id)
+                    if room is not None and room.current_scene_id
+                    else None
+                )
+                if room is None or scene is None:
+                    raise ValueError("DM 尚未发布可切换楼层的当前场景")
+                safe_scene = self._safe_scene(session, scene, principal)
+                connector_id = str(payload.get("connector_id") or "")
+                transition = next(
+                    (
+                        item
+                        for item in safe_scene.get("available_transitions", [])
+                        if item.get("connector_id") == connector_id
+                    ),
+                    None,
+                )
+                if transition is None:
+                    raise ValueError("尚未探索到该楼梯，或楼层连接已经变化")
+                payload = {"schema_version": "1.0", **transition}
+                message = message or f"申请{transition['label']}：{transition['target_level_name']}"
         character = self.player.character_view(principal.campaign_id, principal.character_id)
         return self.player.submit_action(
             principal.campaign_id,

@@ -24,6 +24,7 @@ from dnd_dm_assistant.infrastructure.database.models import (
     Event,
     Handout,
     PlayerActionRequest,
+    PlayerRoom,
     Scene,
     SceneGrid,
     SceneObject,
@@ -399,6 +400,43 @@ class PlayerService:
                     "confirmed_at": datetime.now(UTC).isoformat(),
                 }
                 item.payload_json = payload
+            if status == "accepted" and item.action_type == "site_level_transition":
+                payload = dict(item.payload_json or {})
+                if payload.get("schema_version") != "1.0":
+                    raise ValueError("unsupported site transition schema")
+                from_scene_id = str(payload.get("from_scene_id") or "")
+                target_scene_id = str(payload.get("target_scene_id") or "")
+                target_scene = session.get(Scene, target_scene_id)
+                room = session.scalar(
+                    select(PlayerRoom).where(PlayerRoom.campaign_id == campaign_id)
+                )
+                if (
+                    target_scene is None
+                    or target_scene.campaign_id != campaign_id
+                    or room is None
+                    or room.current_scene_id != from_scene_id
+                ):
+                    raise ValueError("楼层或当前场景已经变化，请玩家重新申请")
+                room.current_scene_id = target_scene.id
+                room.current_combat_id = None
+                room.version += 1
+                room.updated_at = datetime.now(UTC)
+                session.add(
+                    Event(
+                        campaign_id=campaign_id,
+                        event_type="site_level_transition",
+                        title=f"队伍进入「{target_scene.name}」",
+                        description=(
+                            f"DM 已批准玩家从当前楼层前往{payload.get('target_level_name') or target_scene.name}。"
+                        ),
+                        visibility="public",
+                        metadata_json={
+                            "player_action_request_id": item.id,
+                            "from_scene_id": from_scene_id,
+                            "target_scene_id": target_scene.id,
+                        },
+                    )
+                )
             item.status, item.dm_note, item.resolved_at, item.version, item.updated_at = (
                 status,
                 dm_note,

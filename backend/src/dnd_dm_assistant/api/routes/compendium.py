@@ -50,6 +50,15 @@ def list_entries(
     attunement: str | None = Query(default=None, max_length=50),
     edition: str | None = Query(default=None, max_length=50),
     content_type: str | None = Query(default=None, max_length=50),
+    feature_kind: str | None = Query(default=None, max_length=50),
+    item_function: str | None = Query(default=None, max_length=50),
+    item_kind: str | None = Query(default=None, max_length=50),
+    include_legacy: bool = Query(default=False),
+    sort_by: str = Query(
+        default="default",
+        pattern="^(default|name|level|strength|class|category)$",
+    ),
+    sort_order: str = Query(default="asc", pattern="^(asc|desc)$"),
 ) -> dict[str, Any]:
     return _call(
         lambda: service.catalog(
@@ -72,9 +81,15 @@ def list_entries(
                     "attunement": attunement,
                     "edition": edition,
                     "content_type": content_type,
+                    "feature_kind": feature_kind,
+                    "item_function": item_function,
+                    "item_kind": item_kind,
                 }.items()
                 if value
             },
+            include_legacy=include_legacy,
+            sort_by=sort_by,
+            sort_order=sort_order,
         )
     )
 

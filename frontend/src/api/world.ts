@@ -36,6 +36,14 @@ export type SiteGenerationInput = {
   seed?: number;
 };
 export type SiteCell = { row: number; col: number; kind: string; label: string; blocks_sight?: boolean };
+export type SiteRoomPlan = {
+  room_index: number;
+  name: string;
+  room_type: string;
+  description?: string | null;
+  bounds?: Record<string, number>;
+  bounds_json?: Record<string, number>;
+};
 export type SiteLevelPreview = {
   level_index: number;
   name: string;
@@ -44,11 +52,19 @@ export type SiteLevelPreview = {
   encounter_budget_xp: number;
   reward_budget_gp: number;
   layout: { width: number; height: number; cell_size_ft: number; cells: SiteCell[] };
-  rooms: Array<{ room_index: number; name: string; room_type: string; description: string; bounds: Record<string, number> }>;
+  visual_theme?: { theme?: string; label?: string; palette?: string };
+  rooms: SiteRoomPlan[];
   connectors: Array<Record<string, unknown>>;
-  monster_plan: Array<{ name: string; quantity: number; xp_each: number; source: string }>;
+  monster_plan: Array<{ name: string; quantity: number; xp_each: number; source: string; room_index?: number }>;
   npc_plan?: Array<{ name: string; role: string; room_index: number }>;
-  reward_plan: Array<{ name: string; value_gp: number; category?: string; room_index?: number }>;
+  reward_plan: Array<{
+    name: string;
+    value_gp: number;
+    category?: string;
+    room_index?: number;
+    source_kind?: string;
+    rarity?: string | null;
+  }>;
   quality?: {
     score: number;
     room_size_cv: number;
@@ -71,7 +87,7 @@ export type AdventureSite = SiteGenerationPreview["site"] & {
   location_id: string;
   map_position: { row: number; col: number };
   status: string;
-  levels?: Array<SiteLevelPreview & { id: string; rooms: Array<Record<string, unknown>> }>;
+  levels?: Array<SiteLevelPreview & { id: string }>;
 };
 export type RegionMap = {
   id: string; name: string; width: number; height: number;

@@ -11,6 +11,7 @@ import {
   type SiteGenerationInput,
   type SiteGenerationPreview,
   type SiteLevelPreview,
+  type SiteRoomPlan,
 } from "../api/world";
 import { listCharacters } from "../api/entities";
 import { useToast } from "../hooks/toastContext";
@@ -28,8 +29,59 @@ const cellColor: Record<string, string> = {
   room: "bg-cyan-950 border-cyan-500",
   stairs: "bg-violet-950 border-violet-400",
 };
+const oceanCellColor: Record<string, string> = {
+  void: "bg-transparent border-transparent",
+  wall: "bg-slate-900 border-sky-950",
+  floor: "bg-cyan-950/70 border-cyan-900/70",
+  door: "bg-sky-600/90 border-sky-300",
+  cover: "bg-teal-900 border-teal-400",
+  room: "bg-blue-950 border-cyan-300",
+  stairs: "bg-indigo-950 border-sky-300",
+};
+const emberCellColor: Record<string, string> = {
+  ...cellColor,
+  wall: "bg-stone-950 border-red-950",
+  floor: "bg-red-950/60 border-orange-950",
+  room: "bg-orange-950 border-orange-400",
+  cover: "bg-red-950 border-red-500",
+};
+const iceCellColor: Record<string, string> = {
+  ...oceanCellColor,
+  wall: "bg-slate-900 border-blue-900",
+  floor: "bg-sky-950/50 border-sky-800",
+  room: "bg-blue-950 border-sky-200",
+};
+const paletteColors: Record<string, Record<string, string>> = {
+  ocean: oceanCellColor,
+  ember: emberCellColor,
+  ice: iceCellColor,
+};
 
-function SiteGrid({ level }: { level: SiteLevelPreview }): ReactElement {
+function roomBounds(room: SiteRoomPlan): Record<string, number> {
+  return room.bounds ?? room.bounds_json ?? {};
+}
+
+function roomAt(level: SiteLevelPreview, row: number, col: number): SiteRoomPlan | undefined {
+  return level.rooms.find((room) => {
+    const bounds = roomBounds(room);
+    const top = Number(bounds.row ?? -1);
+    const left = Number(bounds.col ?? -1);
+    const width = Number(bounds.width ?? 0);
+    const height = Number(bounds.height ?? 0);
+    return row >= top && row < top + height && col >= left && col < left + width;
+  });
+}
+
+export function SiteGrid({
+  level,
+  selectedRoomIndex,
+  onSelectRoom,
+}: {
+  level: SiteLevelPreview;
+  selectedRoomIndex?: number | null;
+  onSelectRoom?: (roomIndex: number) => void;
+}): ReactElement {
+  const colors = paletteColors[level.visual_theme?.palette ?? ""] ?? cellColor;
   return (
     <div className="max-h-[62vh] overflow-auto rounded-lg border border-ink-700 bg-ink-950 p-2">
       <div
@@ -37,10 +89,41 @@ function SiteGrid({ level }: { level: SiteLevelPreview }): ReactElement {
         className="grid min-w-[650px]"
         style={{ gridTemplateColumns: `repeat(${level.layout.width}, minmax(24px, 1fr))` }}
       >
-        {level.layout.cells.map((cell) => (
+        {level.layout.cells.map((cell) => {
+          const room = roomAt(level, cell.row, cell.col);
+          const selected = room?.room_index === selectedRoomIndex;
+          const bounds = room ? roomBounds(room) : {};
+          const isRoomMarker = Boolean(room)
+            && cell.row === Number(bounds.row ?? -10) + Math.floor(Number(bounds.height ?? 0) / 2)
+            && cell.col === Number(bounds.col ?? -10) + Math.floor(Number(bounds.width ?? 0) / 2);
+          const monsterCount = room
+            ? level.monster_plan
+                .filter((item) => item.room_index === room.room_index)
+                .reduce((sum, item) => sum + item.quantity, 0)
+            : 0;
+          const rewardCount = room
+            ? level.reward_plan.filter((item) => item.room_index === room.room_index).length
+            : 0;
+          return (
           <div
-            className={`aspect-square border text-[7px] leading-none ${cell.label === "地图外区域" ? "border-black/70 bg-black/80" : cellColor[cell.kind] ?? "bg-ink-900 border-ink-700"}`}
+            className={`aspect-square border text-[7px] leading-none ${
+              cell.label === "地图外区域"
+                ? "border-black/70 bg-black/80"
+                : colors[cell.kind] ?? "bg-ink-900 border-ink-700"
+            } ${room && onSelectRoom ? "cursor-pointer hover:brightness-125" : ""} ${
+              selected ? "relative z-10 ring-2 ring-inset ring-cyan-300" : ""
+            }`}
+            data-room-index={room?.room_index}
             key={`${cell.row}-${cell.col}`}
+            onClick={() => room && onSelectRoom?.(room.room_index)}
+            onKeyDown={(event) => {
+              if (room && onSelectRoom && (event.key === "Enter" || event.key === " ")) {
+                event.preventDefault();
+                onSelectRoom(room.room_index);
+              }
+            }}
+            role={room && onSelectRoom ? "button" : undefined}
+            tabIndex={room && onSelectRoom ? 0 : undefined}
             title={`${cell.label}（${cell.row}, ${cell.col}）`}
           >
             {["room", "door", "cover", "stairs"].includes(cell.kind) ? (
@@ -48,8 +131,97 @@ function SiteGrid({ level }: { level: SiteLevelPreview }): ReactElement {
                 {cell.kind === "door" ? "门" : cell.label}
               </span>
             ) : null}
+            {isRoomMarker && (monsterCount || rewardCount) ? (
+              <span className="relative z-20 block whitespace-nowrap text-[6px] font-bold text-red-200">
+                {monsterCount ? `怪${monsterCount}` : ""}{monsterCount && rewardCount ? " · " : ""}{rewardCount ? `宝${rewardCount}` : ""}
+              </span>
+            ) : null}
           </div>
-        ))}
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+export function LevelPlanDetails({
+  level,
+  selectedRoomIndex,
+  onSelectRoom,
+}: {
+  level: SiteLevelPreview;
+  selectedRoomIndex: number | null;
+  onSelectRoom: (roomIndex: number) => void;
+}): ReactElement {
+  return (
+    <div className="mt-3 rounded-lg border border-ink-700 bg-ink-950/45 p-3">
+      <div className="mb-2 flex flex-wrap items-center gap-2">
+        <strong className="text-sm text-parchment-100">房间内容规划</strong>
+        <span className="text-2xs text-stone-500">展开房间查看怪物、NPC 与战利品；点击房间或地图格定位。</span>
+      </div>
+      <div className="grid gap-2 lg:grid-cols-2">
+        {level.rooms.map((room) => {
+          const monsters = level.monster_plan.filter((item) => item.room_index === room.room_index);
+          const npcs = (level.npc_plan ?? []).filter((item) => item.room_index === room.room_index);
+          const rewards = level.reward_plan.filter((item) => item.room_index === room.room_index);
+          const selected = selectedRoomIndex === room.room_index;
+          return (
+            <details
+              className={`rounded border p-3 ${selected ? "border-cyan-500 bg-cyan-950/20" : "border-ink-700 bg-ink-900/50"}`}
+              key={room.room_index}
+              onToggle={(event) => {
+                if (event.currentTarget.open) onSelectRoom(room.room_index);
+              }}
+            >
+              <summary className="cursor-pointer text-sm text-parchment-100">
+                房间 {room.room_index} · {room.name}
+                <span className="ml-2 text-2xs text-stone-500">
+                  怪物 {monsters.length} · NPC {npcs.length} · 战利品 {rewards.length}
+                </span>
+              </summary>
+              <p className="mb-2 mt-2 text-xs leading-5 text-stone-400">
+                {room.description || room.room_type || "暂无房间说明"}
+              </p>
+              <Button onClick={() => onSelectRoom(room.room_index)} size="sm">在地图上定位</Button>
+              <div className="mt-3 grid gap-2 sm:grid-cols-3">
+                <div>
+                  <strong className="text-2xs text-red-300">怪物</strong>
+                  {monsters.length ? monsters.map((monster, index) => (
+                    <p className="mb-0 mt-1 text-xs text-stone-300" key={`${monster.name}-${index}`}>
+                      {monster.name} × {monster.quantity} · {monster.xp_each} XP
+                      <span className="block text-2xs text-stone-600">{monster.source}</span>
+                    </p>
+                  )) : <p className="text-2xs text-stone-600">无预设怪物</p>}
+                </div>
+                <div>
+                  <strong className="text-2xs text-sky-300">NPC</strong>
+                  {npcs.length ? npcs.map((npc, index) => (
+                    <p className="mb-0 mt-1 text-xs text-stone-300" key={`${npc.name}-${index}`}>
+                      {npc.name}<span className="block text-2xs text-stone-600">{npc.role}</span>
+                    </p>
+                  )) : <p className="text-2xs text-stone-600">无预设 NPC</p>}
+                </div>
+                <div>
+                  <strong className="text-2xs text-emerald-300">战利品</strong>
+                  {rewards.length ? rewards.map((reward, index) => (
+                    <p className="mb-0 mt-1 text-xs text-stone-300" key={`${reward.name}-${index}`}>
+                      {reward.name} · {reward.value_gp} gp
+                      {reward.category ? (
+                        <span className="block text-2xs text-stone-600">
+                          {reward.category}
+                          {reward.rarity ? ` · ${reward.rarity}` : ""}
+                          {reward.source_kind
+                            ? ` · ${reward.source_kind === "official" ? "官方图鉴" : "原创规划"}`
+                            : ""}
+                        </span>
+                      ) : null}
+                    </p>
+                  )) : <p className="text-2xs text-stone-600">无预设战利品</p>}
+                </div>
+              </div>
+            </details>
+          );
+        })}
       </div>
     </div>
   );
@@ -129,6 +301,8 @@ export function SiteMapWorkbench({
   const [previewLevel, setPreviewLevel] = useState(0);
   const [selectedSiteId, setSelectedSiteId] = useState("");
   const [savedLevel, setSavedLevel] = useState(0);
+  const [selectedPreviewRoom, setSelectedPreviewRoom] = useState<number | null>(null);
+  const [selectedSavedRoom, setSelectedSavedRoom] = useState<number | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [requestId, setRequestId] = useState(`site-${Date.now()}-${Math.random().toString(36).slice(2)}`);
   const maps = useQuery({ queryKey: ["region-maps", campaignId], queryFn: ({ signal }) => listRegionMaps(campaignId, signal) });
@@ -143,6 +317,7 @@ export function SiteMapWorkbench({
     if (!requestedSiteId) return;
     setSelectedSiteId(requestedSiteId);
     setSavedLevel(0);
+    setSelectedSavedRoom(null);
     document.getElementById("site-grid-viewer")?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, [requestedSiteId]);
   const generation = useMutation({
@@ -150,6 +325,7 @@ export function SiteMapWorkbench({
     onSuccess: (value) => {
       setPreview(value);
       setPreviewLevel(0);
+      setSelectedPreviewRoom(null);
       setRequestId(`site-${Date.now()}-${Math.random().toString(36).slice(2)}`);
       showToast("建筑/地下城草稿已按规则生成");
     },
@@ -248,14 +424,15 @@ export function SiteMapWorkbench({
           {preview ? (
             <>
               <div className="mb-3 flex flex-wrap items-center gap-2">
-                {preview.levels.map((level, index) => <Button key={level.level_index} size="sm" variant={index === previewLevel ? "primary" : "ghost"} onClick={() => setPreviewLevel(index)}>{level.name}</Button>)}
+                {preview.levels.map((level, index) => <Button key={level.level_index} size="sm" variant={index === previewLevel ? "primary" : "ghost"} onClick={() => { setPreviewLevel(index); setSelectedPreviewRoom(null); }}>{level.name}</Button>)}
                 <Button className="ml-auto" loading={confirmation.isPending} onClick={() => confirmation.mutate()} variant="primary">确认写入战役</Button>
               </div>
-              {activePreviewLevel ? <><div className="mb-2 flex flex-wrap gap-2"><Badge tone="danger">{activePreviewLevel.difficulty}</Badge><Badge>{activePreviewLevel.encounter_budget_xp} XP 预算</Badge><Badge tone="ok">{activePreviewLevel.reward_budget_gp} gp 奖励预算</Badge><Badge>{activePreviewLevel.rooms.length} 房间</Badge><Badge>{activePreviewLevel.monster_plan.length} 种怪物</Badge><Badge>{activePreviewLevel.npc_plan?.length ?? 0} NPC</Badge><Badge>{activePreviewLevel.reward_plan.length} 类战利品</Badge>{activePreviewLevel.quality ? <Badge tone={activePreviewLevel.quality.score >= 88 ? "ok" : "danger"}>布局评分 {activePreviewLevel.quality.score}/100 · 房间比例 {activePreviewLevel.quality.largest_smallest_ratio}×</Badge> : null}</div><SiteGrid level={activePreviewLevel} /></> : null}
+              {activePreviewLevel ? <><div className="mb-2 flex flex-wrap gap-2"><Badge tone="danger">{activePreviewLevel.difficulty}</Badge>{activePreviewLevel.visual_theme?.label ? <Badge tone="ai">主题 · {activePreviewLevel.visual_theme.label}</Badge> : null}<Badge>{activePreviewLevel.encounter_budget_xp} XP 预算</Badge><Badge tone="ok">{activePreviewLevel.reward_budget_gp} gp 奖励预算</Badge><Badge>{activePreviewLevel.rooms.length} 房间</Badge><Badge>{activePreviewLevel.monster_plan.length} 种怪物</Badge><Badge>{activePreviewLevel.npc_plan?.length ?? 0} NPC</Badge><Badge>{activePreviewLevel.reward_plan.length} 类战利品</Badge>{activePreviewLevel.quality ? <Badge tone={activePreviewLevel.quality.score >= 88 ? "ok" : "danger"}>布局评分 {activePreviewLevel.quality.score}/100 · 房间比例 {activePreviewLevel.quality.largest_smallest_ratio}×</Badge> : null}</div><SiteGrid level={activePreviewLevel} onSelectRoom={setSelectedPreviewRoom} selectedRoomIndex={selectedPreviewRoom} /><LevelPlanDetails level={activePreviewLevel} onSelectRoom={setSelectedPreviewRoom} selectedRoomIndex={selectedPreviewRoom} /></> : null}
             </>
           ) : <RegionOverview maps={maps.data ?? []} onSelectSite={(siteId) => {
             setSelectedSiteId(siteId);
             setSavedLevel(0);
+            setSelectedSavedRoom(null);
             requestAnimationFrame(() => document.getElementById("site-grid-viewer")?.scrollIntoView({ behavior: "smooth", block: "start" }));
           }} />}
         </div>
@@ -263,7 +440,7 @@ export function SiteMapWorkbench({
       <div className="mt-5 scroll-mt-4 border-t border-ink-700 pt-4" id="site-grid-viewer">
         <div className="mb-3 flex flex-wrap items-center gap-2">
           <strong className="text-sm text-parchment-100">已保存建筑与地下城</strong>
-          <select aria-label="选择已保存建筑或地下城" className={`${selectCls} ml-auto max-w-sm`} value={selectedSiteId} onChange={(event) => { setSelectedSiteId(event.target.value); setSavedLevel(0); }}>
+          <select aria-label="选择已保存建筑或地下城" className={`${selectCls} ml-auto max-w-sm`} value={selectedSiteId} onChange={(event) => { setSelectedSiteId(event.target.value); setSavedLevel(0); setSelectedSavedRoom(null); }}>
             <option value="">选择建筑或地下城</option>
             {sites.data?.map((item) => <option key={item.id} value={item.id}>{item.site_type === "building" ? "建筑" : "地下城"} · {item.name}</option>)}
           </select>
@@ -273,10 +450,14 @@ export function SiteMapWorkbench({
         {selectedLevel ? (
           <>
             <div className="mb-3 flex flex-wrap gap-2">
-              {site.data?.levels?.map((level, index) => <Button key={level.id} size="sm" variant={index === savedLevel ? "primary" : "ghost"} onClick={() => setSavedLevel(index)}>{level.name}</Button>)}
+              {site.data?.levels?.map((level, index) => <Button key={level.id} size="sm" variant={index === savedLevel ? "primary" : "ghost"} onClick={() => { setSavedLevel(index); setSelectedSavedRoom(null); }}>{level.name}</Button>)}
             </div>
-            {selectedLevel.quality ? <div className="mb-2"><Badge tone="ok">布局评分 {selectedLevel.quality.score}/100 · {selectedLevel.quality.algorithm}</Badge></div> : null}
-            <SiteGrid level={selectedLevel} />
+            <div className="mb-2 flex flex-wrap gap-2">
+              {selectedLevel.visual_theme?.label ? <Badge tone="ai">主题 · {selectedLevel.visual_theme.label}</Badge> : null}
+              {selectedLevel.quality ? <Badge tone="ok">布局评分 {selectedLevel.quality.score}/100 · {selectedLevel.quality.algorithm}</Badge> : null}
+            </div>
+            <SiteGrid level={selectedLevel} onSelectRoom={setSelectedSavedRoom} selectedRoomIndex={selectedSavedRoom} />
+            <LevelPlanDetails level={selectedLevel} onSelectRoom={setSelectedSavedRoom} selectedRoomIndex={selectedSavedRoom} />
           </>
         ) : null}
       </div>

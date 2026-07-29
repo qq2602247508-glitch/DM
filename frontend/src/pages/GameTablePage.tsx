@@ -1489,6 +1489,11 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
         characters={characters.data ?? []}
         currentCombatId={playerCombatId}
         currentSceneId={sceneId || null}
+        onSceneChange={(targetSceneId) => {
+          const target = scenes.data?.find((item) => item.id === targetSceneId);
+          if (target) enterScene(target, "manual");
+          else setSceneId(targetSceneId);
+        }}
       />
       <SessionStatusBar characters={characters.data ?? []} events={events.data ?? []} npcs={npcs.data ?? []} />
       <div className="mb-4 rounded-xl border border-ember-800/45 bg-ember-950/10 p-3">

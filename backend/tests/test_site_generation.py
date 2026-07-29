@@ -60,6 +60,42 @@ def test_site_generator_is_deterministic_connected_and_progressive() -> None:
     )
 
 
+def test_sahuagin_prompt_drives_rooms_palette_monsters_and_loot() -> None:
+    preview = generate_site(
+        _request(
+            name="潮鳞巢穴",
+            brief="蓝色潮湿的渔人地下城，全部由鲨华鱼人占据，有育卵池与潮汐祭坛",
+            maximum_levels=3,
+            party_level=8,
+            rooms_min=6,
+            rooms_max=8,
+            seed=74013,
+        )
+    )
+    assert preview["site"]["theme"] == "sahuagin"
+    assert preview["site"]["theme_profile"]["palette"] == "ocean"
+    room_names = {room["name"] for level in preview["levels"] for room in level["rooms"]}
+    assert {"潮门入口", "育卵池", "珊瑚藏宝室"} & room_names
+    monster_names = {
+        monster["name"] for level in preview["levels"] for monster in level["monster_plan"]
+    }
+    assert monster_names
+    assert monster_names <= {
+        "鲨华鱼人",
+        "鲨华祭司",
+        "寻猎鲨",
+        "鲨华女祭司",
+        "鲨华鱼人男爵",
+        "底栖魔鱼",
+    }
+    assert all(level["visual_theme"]["palette"] == "ocean" for level in preview["levels"])
+    assert any(
+        "潮汐" in reward["name"] or "鲨华" in reward["name"] or "珊瑚" in reward["name"]
+        for level in preview["levels"]
+        for reward in level["reward_plan"]
+    )
+
+
 def test_buildings_and_dungeons_use_distinct_high_quality_layout_grammars() -> None:
     building = generate_site(
         _request(
