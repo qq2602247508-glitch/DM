@@ -72,7 +72,7 @@ import {
 } from "../ui/contextualQuickActions";
 import { createClientId } from "../ui/id";
 import {
-  assistantDeliveryIssue, assistantEntryLabel, buildSafeExplanationFallback, buildSafeGuidanceFallback, buildSafeReadAloudFallback, buildSafeRevisionFallback, buildSafeSpokenLineFallback, confirmedAssistantContextEntries, gameTableAssistantContract, inferAssistantDeliveryMode, isUnwantedRepeatedReply,
+  assistantDeliveryIssue, assistantEntryLabel, buildSafeExplanationFallback, buildSafeGuidanceFallback, buildSafeReadAloudFallback, buildSafeRevisionFallback, buildSafeSpokenLineFallback, confirmedAssistantContextEntries, gameTableAssistantContract, inferAssistantDeliveryMode, isUnwantedRepeatedReply, repairReadAloudCandidate,
   repairLegacyAssistantHistory,
   type AssistantDeliveryMode,
   type GameTableAssistantIntent,
@@ -836,51 +836,36 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
       const recentEntries = (intent === "ask" ? [] : confirmedAssistantContextEntries(entries))
         .map((entry) => `${assistantEntryLabel(entry.kind, entry.intent)}：${entry.text}`)
         .join("；");
+      const requestedCharacters = Number(action.match(/(?:大约|约|至少|到)?\s*(\d{2,4})\s*字/)?.[1] ?? 0);
       let semanticBrief = "";
       let deliveryMode: AssistantDeliveryMode = "other";
       const deterministicRevision = intent === "ask"
         && inferAssistantDeliveryMode(action, "other") === "revision";
       if (deterministicRevision) {
         deliveryMode = "revision";
-        semanticBrief = `交付类型：revision；直接改写同团上一条已通过回答；不得新增战役事实。`;
+        const expansionRequirement = /(?:太短|不够长|长一点|再长|扩写|展开|详细一点|写长)/i.test(action)
+          ? "必须交付一份从头到尾完整的新版本，保留上一条的叙事风格，正文至少比上一条长20%；不能只复述、只追加一句或解释自己做了什么。"
+          : "";
+        semanticBrief = `交付类型：revision；直接承接并改写同团上一条已通过回答；必须遵守本句里的长度、语气、说话者和玩家参与量要求。${expansionRequirement}对可朗读创作文案允许继续自由发挥氛围与无规则结算的叙事细节；对事实说明不得新增战役事实。`;
       } else if (intent === "ask") {
-        const interpretationPrompt =
-          `这是最终回答之前的任务理解步骤，不是回答本身。不要读取、复述或续写战役内容，也不要创作DM所请求的成品。只分析下面这句DM原话。必须区分“形式/文风”和“实际用途”：环境描写、神秘感、沉浸感、简短、文学化以及“给一段”都只是形式，不决定 delivery_mode。delivery_mode 必须按用途分类：回答事情为什么成立、人物为何到场或动机是什么属于 explanation；给 DM 怎么组织、提问或引导属于 dm_guidance；只让某个角色亲口说一句话属于 spoken_line；直接给玩家朗读并启动其互动属于 read_aloud；依赖上一条内容进行缩短、扩写、换说话者或改写属于 revision。request_understanding 必须说明交付对象、受众、实际使用场合，以及受众采用后下一步应该能做什么；response_plan 必须列出实现这个用途不可缺少的信息或动作交接与完成标准。不要把所有请求都解释为环境描写、NPC反应或剧情推进。\nDM原话：${action}`;
-        const interpretationOptions = {
-          mode: "narrative" as const,
-          rememberConversation: false,
-          includeCampaignState: false,
-        };
-        let interpretation = await runAssistantTurn(
-          campaignId,
-          interpretationPrompt,
-          interpretationOptions,
-        );
-        let understanding = interpretation.dm_hint?.request_understanding.trim() ?? "";
-        let responsePlan = interpretation.dm_hint?.response_plan.trim() ?? "";
-        if (!understanding || !responsePlan) {
-          interpretation = await runAssistantTurn(
-            campaignId,
-            `${interpretationPrompt}\n上一次分析缺少必填语义字段。只修复结构，必须完整填写 request_understanding、response_plan、delivery_mode 与 audience_handoff。`,
-            interpretationOptions,
-          );
-          understanding = interpretation.dm_hint?.request_understanding.trim() ?? "";
-          responsePlan = interpretation.dm_hint?.response_plan.trim() ?? "";
-        }
-        deliveryMode = inferAssistantDeliveryMode(
-          action,
-          interpretation.dm_hint?.delivery_mode ?? "other",
-        );
-        const audienceHandoff = interpretation.dm_hint?.audience_handoff.trim() ?? "";
-        if (!understanding || !responsePlan) {
-          throw new Error("副 DM 未能形成可靠的请求理解，已停止生成以避免答非所问");
-        }
-        semanticBrief = `请求理解：${understanding}；交付类型：${deliveryMode}；回答计划：${responsePlan}；使用后交接：${audienceHandoff || "必须让受众知道下一步能做什么"}`;
+        deliveryMode = inferAssistantDeliveryMode(action, "other");
+        const creativeFreedom = deliveryMode === "read_aloud"
+          ? `可自由创作不涉及规则结算的光线、声音、气味、物件、人物小动作、时间感和象征意象，让成品自然、有画面、有叙事节奏；结尾自然用一句简短的行动问题把控制交还玩家，不要改成逐人采访。${requestedCharacters >= 80 ? `DM明确要求约${requestedCharacters}字，正文写到${Math.floor(requestedCharacters * 0.8)}至${Math.ceil(requestedCharacters * 1.2)}字，不要过早收尾。` : ""}这些只是供DM采用的文案草案，不自动成为战役事实。不得泄露未公开名单或隐藏数据。`
+          : "";
+        semanticBrief = `交付类型：${deliveryMode}；直接完成DM原句要求。逐项遵守其中的长度、详略、自然程度、说话者、受众和玩家需要发言多少等限制；这些明确限制的优先级高于惯用模板。${creativeFreedom}`;
       }
       const interpretationContract = semanticBrief
         ? `回答前的独立任务分析如下：${semanticBrief}。这份分析决定本次交付目标；场景资料只能提供素材，不能覆盖或改变它。`
         : "";
-      const context = `你是D&D 5e 2024副DM，本应用不是COC。不得使用克苏鲁、奈亚拉托提普、旧日支配者、深潜者、SAN或理智检定等其他系统内容。${requestContract}${interpretationContract}当前章节与场景：${activeOutline?.chapterTitle ?? "未编排"} / Scene ${activeOutline?.sceneOrder ?? "?"} ${activeScene?.name ?? "未选择"}。当前Scene目标：${activeOutline?.objective ?? "未填写"}。${flowContext}地点：${activeLocation?.name ?? "未绑定"}。当前在场：${names}。最近已确认事实：${recentEntries || "无"}。历史普通询问、副DM回答、建议和未确认草案都不是战役事实，已从上下文排除，严禁凭记忆复用。DM本次输入：${action}。${nextScene && nextOutline ? `下一个候选是 Scene ${nextOutline.sceneOrder}「${nextScene.name}」，进入条件提示：${activeOutline?.transition ?? "由DM判断"}。` : "当前没有下一个已编排Scene。"}只用D&D 5e世界与机制，严格优先完成DM本次输入，不要复用上一条回答。本模式只输出叙事或建议草案，不给出未经规则证据逐条支持的DC、CR、伤害骰、加值、次数或持续时间，不要擅自修改数据库。${transitionContract}`;
+      const askNames = (participants.data ?? [])
+        .filter((item) => item.entity_type === "npc" && item.visible && item.role !== "defeated")
+        .map((item) => `npc:${item.entity.name}`)
+        .join("、") || "没有需要主动点名的公开NPC";
+      const contextNames = intent === "ask" ? askNames : names;
+      const sceneMaterial = intent === "ask"
+        ? `公开地点概况：${activeLocation?.description || "未填写；只使用场景名和地点名作为创作锚点"}。`
+        : `当前Scene目标：${activeOutline?.objective ?? "未填写"}。`;
+      const context = `你是D&D 5e 2024副DM，本应用不是COC。不得使用克苏鲁、奈亚拉托提普、旧日支配者、深潜者、SAN或理智检定等其他系统内容。${requestContract}${interpretationContract}当前章节与场景：${activeOutline?.chapterTitle ?? "未编排"} / Scene ${activeOutline?.sceneOrder ?? "?"} ${activeScene?.name ?? "未选择"}。${sceneMaterial}${flowContext}地点：${activeLocation?.name ?? "未绑定"}。当前可公开点名的在场人物：${contextNames}。最近已确认事实：${recentEntries || "无"}。历史普通询问、副DM回答、建议和未确认草案都不是战役事实，已从上下文排除，严禁凭记忆复用。DM本次输入：${action}。${nextScene && nextOutline ? `下一个候选是 Scene ${nextOutline.sceneOrder}「${nextScene.name}」，进入条件提示：${activeOutline?.transition ?? "由DM判断"}。` : "当前没有下一个已编排Scene。"}只用D&D 5e世界与机制，严格优先完成DM本次输入，不要复用上一条回答。DM要求长文时必须充分展开，要求玩家少说时不得改成逐人自我介绍或连续提问。本模式只输出叙事或建议草案，不给出未经规则证据逐条支持的DC、CR、伤害骰、加值、次数或持续时间，不要擅自修改数据库。${transitionContract}`;
       let previousReply = [...entries].reverse().find(
         (entry) => entry.kind === "ai" && assistantDeliveryIssue("revision", entry.text) === null,
       )?.text;
@@ -891,16 +876,15 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
             && assistantDeliveryIssue("revision", message.content) === null,
         )?.content ?? previousReply;
       }
+      const revisionContext = deliveryMode === "revision" && previousReply
+        ? `${context}\n上一条待改写文本如下：\n---\n${previousReply}\n---\n请只把这段作为待编辑原稿，不要照抄后再机械追加。${requestedCharacters >= 80 ? `本次目标约${requestedCharacters}字，正文不得少于${Math.floor(requestedCharacters * 0.8)}字。` : "若要求扩写，新成品至少比原稿长25%。"}`
+        : context;
       if (
         deliveryMode === "revision"
         && previousReply
         && /(?:再短|缩短|精简|亲口说|改成|换成|没有发生|不是事实|不要再使用|别再提|纠正)/i.test(action)
       ) {
-        const revisedText = buildSafeRevisionFallback({
-          requestText: action,
-          previousText: previousReply,
-          locationName: activeLocation?.name ?? "当前地点",
-        });
+        const revisedText = buildSafeRevisionFallback({ requestText: action, previousText: previousReply, locationName: activeLocation?.name ?? "当前地点" });
         await recordAssistantConversationTurn(campaignId, action, revisedText);
         return {
           request_id: createClientId(),
@@ -924,36 +908,53 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
           errors: [],
         } satisfies AgentResponse;
       }
-      let response = await runAssistantTurn(campaignId, context, {
+      let response = await runAssistantTurn(campaignId, revisionContext, {
         mode: "narrative",
         userMessage: action,
-        useConversationHistory: true,
+        useConversationHistory: false,
         includeCampaignState: false,
       });
+      deliveryMode = inferAssistantDeliveryMode(
+        action,
+        response.dm_hint?.delivery_mode ?? deliveryMode,
+      );
       let reply = withoutSceneTransitionMarker(response.dm_hint?.text ?? "");
-      let deliveryIssue = response.dm_hint?.assumptions.length
-        ? "候选回答包含未确认的新人物、事件、地点或因果"
-        : assistantDeliveryIssue(deliveryMode, reply);
-      if (isUnwantedRepeatedReply(action, reply, previousReply) || deliveryIssue) {
+      const revisesReadAloud = deliveryMode === "revision"
+        && Boolean(previousReply)
+        && assistantDeliveryIssue("read_aloud", previousReply ?? "") === null;
+      if (deliveryMode === "read_aloud" || revisesReadAloud) {
+        reply = repairReadAloudCandidate(action, reply);
+      }
+      let deliveryIssue = assistantDeliveryIssue(deliveryMode, reply, action, previousReply ?? "");
+      let repeatedReply = isUnwantedRepeatedReply(action, reply, previousReply);
+      const needsCreativeRetry = deliveryMode === "read_aloud"
+        ? repeatedReply || Boolean(deliveryIssue)
+        : deliveryMode === "revision"
+          && /(?:太短|不够长|长一点|再长|扩写|展开|详细一点|写长)/i.test(action)
+          && Boolean(deliveryIssue);
+      if (needsCreativeRetry) {
         response = await runAssistantTurn(
           campaignId,
-          `${context}\n纠错要求：刚才的候选回答未通过交付检查，不能使用。${deliveryIssue ? `具体问题：${deliveryIssue}。` : "它与上一条副DM回答重复。"}请依据交付类型 ${deliveryMode} 彻底重写，严格完成“${action}”的实际用途，不要保留候选的开头、意象或句式。`,
+          `${revisionContext}\n重写要求：首次候选没有通过文案检查。${deliveryIssue ? `问题是：${deliveryIssue}。` : "它沿用了最近回答的主要叙事骨架。"}请重新创作一份从头到尾完整的成品，不要只复制原文后追加一段；继续允许自然的氛围细节，并严格遵守DM要求的字数和玩家发言量。`,
           {
             mode: "narrative",
             userMessage: action,
-            useConversationHistory: true,
+            useConversationHistory: false,
             includeCampaignState: false,
           },
         );
         reply = withoutSceneTransitionMarker(response.dm_hint?.text ?? "");
-        deliveryIssue = response.dm_hint?.assumptions.length
-          ? "候选回答包含未确认的新人物、事件、地点或因果"
-          : assistantDeliveryIssue(deliveryMode, reply);
-        if (isUnwantedRepeatedReply(action, reply, previousReply) || deliveryIssue) {
-          if (!response.dm_hint || !["read_aloud", "explanation", "dm_guidance", "spoken_line", "revision"].includes(deliveryMode)) {
-            throw new Error(deliveryIssue ?? "副 DM 连续返回了旧内容，已拦截重复回复");
-          }
-          reply = deliveryMode === "explanation"
+        if (deliveryMode === "read_aloud" || revisesReadAloud) {
+          reply = repairReadAloudCandidate(action, reply);
+        }
+        deliveryIssue = assistantDeliveryIssue(deliveryMode, reply, action, previousReply ?? "");
+        repeatedReply = isUnwantedRepeatedReply(action, reply, previousReply);
+      }
+      if (repeatedReply || deliveryIssue) {
+        if (!response.dm_hint || !["read_aloud", "explanation", "dm_guidance", "spoken_line", "revision"].includes(deliveryMode)) {
+          throw new Error(deliveryIssue ?? "副 DM 连续返回了旧内容，已拦截重复回复");
+        }
+        reply = deliveryMode === "explanation"
             ? buildSafeExplanationFallback({
                 sceneName: activeScene?.name ?? "当前 Scene",
                 locationName: activeLocation?.name ?? "当前地点",
@@ -975,20 +976,30 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
                 requestText: action,
                 sceneName: activeScene?.name ?? "当前 Scene",
                 locationName: activeLocation?.name ?? "当前地点",
+                sceneDescription: activeScene?.description,
+                locationDescription: activeLocation?.description,
                 presentNames: (participants.data ?? [])
-                  .filter((item) => item.entity_type !== "character")
+                  .filter((item) => item.entity_type === "npc" && item.visible && item.role !== "defeated")
                   .map((item) => item.entity.name),
               });
-          response = {
-            ...response,
-            dm_hint: {
-              ...response.dm_hint,
-              text: reply,
-              assumptions: [],
-              uncertainties: ["模型候选未通过事实与交付检查，已使用当前 Scene 的事实受限版本。"],
-            },
-          };
-        }
+        response = {
+          ...response,
+          dm_hint: {
+            ...response.dm_hint,
+            text: reply,
+            assumptions: [],
+            uncertainties: ["模型候选未通过事实与交付检查，已使用当前 Scene 的事实受限版本。"],
+          },
+        };
+      }
+      if (response.dm_hint) {
+        response = {
+          ...response,
+          dm_hint: {
+            ...response.dm_hint,
+            text: reply,
+          },
+        };
       }
       await recordAssistantConversationTurn(campaignId, action, reply);
       return response;

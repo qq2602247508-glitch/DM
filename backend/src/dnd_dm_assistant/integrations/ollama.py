@@ -225,7 +225,11 @@ class OllamaDMHintAdapter:
         return self._model
 
     async def generate_hint(self, system_prompt: str, user_prompt: str) -> GeneratedDMHint:
-        options: dict[str, Any] = {"temperature": 0.2}
+        # Campaign conversation history is deliberately bounded before it
+        # reaches this adapter. Letting Ollama use the model's 262k default
+        # context made a short table-side request reserve about 44 GB and
+        # spend seconds preparing an almost entirely empty context window.
+        options: dict[str, Any] = {"temperature": 0.2, "num_ctx": 8192}
         if "narrative 剧情快速模式" in system_prompt:
             # A table-side hint should return while the DM is still speaking,
             # not expand into an essay. This remains large enough for the

@@ -12,6 +12,7 @@ import {
   gameTableAssistantContract,
   inferAssistantDeliveryMode,
   isUnwantedRepeatedReply,
+  repairReadAloudCandidate,
   repairLegacyAssistantHistory,
 } from "./gameTableAssistant";
 
@@ -21,7 +22,9 @@ describe("game table assistant intent", () => {
     expect(inferAssistantDeliveryMode("我该怎么引导玩家互相认识？", "read_aloud")).toBe("dm_guidance");
     expect(inferAssistantDeliveryMode("给店主一句警告玩家的台词", "read_aloud")).toBe("spoken_line");
     expect(inferAssistantDeliveryMode("给玩家一段描述，作为跑团开始", "other")).toBe("read_aloud");
+    expect(inferAssistantDeliveryMode("我该怎么给玩家开场？", "dm_guidance")).toBe("read_aloud");
     expect(inferAssistantDeliveryMode("把它改成店主亲口说的", "spoken_line")).toBe("revision");
+    expect(inferAssistantDeliveryMode("太短了", "other")).toBe("revision");
   });
 
   it("checks delivery function by semantic mode instead of request keywords", () => {
@@ -53,6 +56,49 @@ describe("game table assistant intent", () => {
     };
     expect(buildSafeReadAloudFallback({ ...base, requestText: "给我一段给玩家的 opener" }))
       .not.toBe(buildSafeReadAloudFallback({ ...base, requestText: "给玩家一段描述，作为这个跑团的开始" }));
+  });
+
+  it("honors a long opener request without forcing every player through an interview", () => {
+    const request = "不要让玩家说太多，你给我一个比较长的开场白，自然一点";
+    const text = buildSafeReadAloudFallback({
+      requestText: request,
+      sceneName: "雾锁钟楼综合验收场",
+      locationName: "雾锁钟楼旅店",
+      sceneDescription: "玩家从旅店大厅进入钟楼地下层。门锁带警铃假销。南侧潜伏着怪物。",
+      locationDescription: "一座建在废弃钟楼下的两层旅店。这里适合测试战斗网格。",
+      presentNames: ["旅店老板玛拉", "钟表匠奥杜"],
+    });
+    expect(text.length).toBeGreaterThanOrEqual(180);
+    expect(text).toContain("只要由最先采取行动的人直接告诉我");
+    expect(text).toContain("一座建在废弃钟楼下的两层旅店");
+    expect(text).toContain("你们从旅店大厅进入钟楼地下层");
+    expect(text).not.toContain("测试战斗网格");
+    expect(text).not.toContain("警铃假销");
+    expect(text).not.toMatch(/每位玩家|依次介绍|邪教狂信徒/);
+    expect(assistantDeliveryIssue("read_aloud", text, request)).toBeNull();
+    expect(assistantDeliveryIssue("read_aloud", "你们已经来到旅店。现在打算怎么做？", request)).toContain("太短");
+    expect(assistantDeliveryIssue("read_aloud", "你们来到旅店。现在准备做什么？", "写一段约250字的开场白"))
+      .toContain("约250字");
+    expect(assistantDeliveryIssue("read_aloud", "甲".repeat(170) + "。你们准备做什么？", "写一段约250字的开场白"))
+      .toContain("约250字");
+  });
+
+  it("keeps a strong read-aloud candidate and repairs only its player handoff", () => {
+    const request = "给我一段约270字的自然开场白，不要让玩家逐个介绍";
+    const candidate = "炉火在壁炉里低语，橙红的光晕漫过斑驳的橡木桌。空气里浮动着烤洋葱与迷迭香的香气。城卫军士蕾娜靠在门边，目光落在桌上的热汤上。";
+    const repaired = repairReadAloudCandidate(request, candidate);
+    expect(repaired).toContain(candidate);
+    expect(repaired).toContain("你们准备先做什么？");
+    expect(assistantDeliveryIssue("read_aloud", repaired)).toBeNull();
+
+    const interviewEnding = `${candidate}从左手边的玩家开始，依次介绍角色为何到场；然后告诉我你们准备做什么？`;
+    const withoutInterview = repairReadAloudCandidate(request, interviewEnding);
+    expect(withoutInterview).not.toContain("依次介绍");
+    expect(withoutInterview).toContain("你们准备先做什么？");
+
+    const partyVoice = repairReadAloudCandidate(request, "你站在门边，听见远处的钟声。现在，你打算做什么？");
+    expect(partyVoice).toContain("你们站在门边");
+    expect(partyVoice).toContain("你们打算做什么？");
   });
 
   it("builds a reason without inventing a fixed personal backstory", () => {
@@ -100,7 +146,13 @@ describe("game table assistant intent", () => {
       previousText: previous,
       locationName: "提灯旅店",
     })).toContain("不作为战役事实");
+    expect(buildSafeRevisionFallback({
+      requestText: "太短了",
+      previousText: "你们来到旅店。现在打算怎么做？",
+      locationName: "提灯旅店",
+    }).length).toBeGreaterThan("你们来到旅店。现在打算怎么做？".length);
     expect(assistantDeliveryIssue("revision", "短到不能再短。")).toContain("元说明");
+    expect(assistantDeliveryIssue("revision", "还是很短。", "太短了", "上一条其实更长一些。")).toContain("没有明显比上一条更完整");
   });
 
   it("keeps advice separate from confirmed progress", () => {
