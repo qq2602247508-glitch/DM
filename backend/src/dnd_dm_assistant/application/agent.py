@@ -65,8 +65,12 @@ _DM_HINT_BASE_SYSTEM_PROMPT = """
 并明确机械细节需 DM 从规则库另行确认。不得虚构怪物、法术或规则书条目。
 创意内容必须放在 assumptions 或 proposed_changes 中，不能伪装成事实。
 任何 pending proposal 都尚未执行。visibility 必须是 dm_private。
-只输出一个 JSON 对象，必须包含 visibility、text、assumptions、uncertainties、
-citation_chunk_ids、proposed_changes；数组无内容时输出 []。
+只输出一个 JSON 对象，字段顺序必须是 visibility、request_understanding、response_plan、
+text、assumptions、uncertainties、citation_chunk_ids、proposed_changes；数组无内容时输出 []。
+request_understanding 是生成答案前的语义锁：只用一句话说明这次真正要交付的对象、
+受众、形式和实际用途，不得写答案内容，也不得被战役背景或最近回答替换。
+response_plan 用一句话说明答案必须实现的功能和完成标准，不能只描述文风。
+text 必须严格执行前两项；对象、用途或完成标准不一致都视为无效输出。
 """.strip()
 
 
@@ -108,7 +112,7 @@ _QUICK_POLICY = _AssistantModePolicy(
 _NARRATIVE_POLICY = _AssistantModePolicy(
     name="narrative",
     planner_prompt_version="agent-planner-v3-narrative",
-    hint_prompt_version="dm-hint-v5-narrative-intent-aware-dnd-only",
+    hint_prompt_version="dm-hint-v7-purpose-plan-dnd-only",
     state_scopes=("campaign", "characters", "npcs", "locations", "quests", "clues"),
     state_limit=60,
     planner_contract=(
@@ -117,11 +121,12 @@ _NARRATIVE_POLICY = _AssistantModePolicy(
         "NPC 反应、线索延展与后果，不得把创意当成既有事实。"
     ),
     hint_contract=(
-        "当前是 narrative 剧情快速模式。text 控制在500个中文字符以内。先判断 action "
-        "是在记录已发生的推进，还是只向副DM询问建议、请求玩家可朗读文案或要求草案。"
-        "只有明确记录已发生推进时，才给现场反应、二至四个短选项和必要风险；只询问时"
-        "必须直接回答本次问题并服从其格式，不得把建议写成既成事实，不得固定追加推进"
-        "选项、风险或转场判断；请求可朗读文案时优先给干净的玩家可见正文。"
+        "当前是 narrative 剧情快速模式。text 控制在500个中文字符以内。先填写"
+        "request_understanding，锁定DM本次原始请求所要求的对象、受众、形式和实际用途；"
+        "再填写 response_plan，说明功能目标和完成标准；最后生成与两者严格对位的 text。"
+        "战役状态和最近记录只提供事实素材，不能改变交付目标。"
+        "不得把环境描写、固定选项、风险段落或最近回答当作通用模板。只有DM明确记录"
+        "已发生推进时才描述世界反应；只询问时不推进、不转场、不把建议写成既成事实。"
         "assumptions 和 uncertainties 各不超过三条。没有规则证据时不得给具体 DC、"
         "伤害骰、持续轮数或规则来源。新角色、事件和转折只能写入 assumptions 或 "
         "proposed_changes，不能声称已写入战役。"
@@ -605,6 +610,8 @@ class AgentOrchestrator:
                 )
             return DMHint(
                 visibility=hint.visibility,
+                request_understanding=hint.request_understanding,
+                response_plan=hint.response_plan,
                 text=narrative_text,
                 assumptions=tuple(
                     item
@@ -633,6 +640,8 @@ class AgentOrchestrator:
                 )
             return DMHint(
                 visibility=hint.visibility,
+                request_understanding=hint.request_understanding,
+                response_plan=hint.response_plan,
                 text=narrative_text,
                 assumptions=tuple(
                     item
@@ -649,6 +658,8 @@ class AgentOrchestrator:
             )
         return DMHint(
             visibility=hint.visibility,
+            request_understanding=hint.request_understanding,
+            response_plan=hint.response_plan,
             text=hint.text,
             assumptions=hint.assumptions,
             uncertainties=hint.uncertainties,

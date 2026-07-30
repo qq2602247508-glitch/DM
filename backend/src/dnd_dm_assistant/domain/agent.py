@@ -331,6 +331,8 @@ class ProposalDecision(StrictModel):
 
 class DMHint(StrictModel):
     visibility: Literal["dm_private"] = "dm_private"
+    request_understanding: str = Field(default="", max_length=500)
+    response_plan: str = Field(default="", max_length=500)
     text: str = Field(min_length=1, max_length=8_000)
     assumptions: tuple[str, ...] = Field(default=(), max_length=20)
     uncertainties: tuple[str, ...] = Field(default=(), max_length=20)
@@ -340,6 +342,8 @@ class DMHint(StrictModel):
 
 class GeneratedDMHint(StrictModel):
     visibility: Literal["dm_private"] = "dm_private"
+    request_understanding: str = Field(default="", max_length=500)
+    response_plan: str = Field(default="", max_length=500)
     text: str = Field(min_length=1, max_length=8_000)
     assumptions: tuple[str, ...] = Field(default=(), max_length=20)
     uncertainties: tuple[str, ...] = Field(default=(), max_length=20)

@@ -1087,6 +1087,8 @@ export type ProposalDecision = {
 
 export type DmHint = {
   visibility: "dm_private";
+  request_understanding: string;
+  response_plan: string;
   text: string;
   assumptions: string[];
   uncertainties: string[];

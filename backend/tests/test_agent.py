@@ -209,6 +209,8 @@ async def _test_orchestrator_json_tool_args_scopes_and_citations() -> None:
     planner = FakePlanner(plan)
     generator = FakeHintGenerator(
         GeneratedDMHint(
+            request_understanding="回答火球术规则问题",
+            response_plan="依据已验证规则引用给出结论",
             text="火球术规则见证据。",
             citation_chunk_ids=("chunk-1",),
         )
@@ -235,6 +237,8 @@ async def _test_orchestrator_json_tool_args_scopes_and_citations() -> None:
         )
     )
     assert response.dm_hint is not None
+    assert response.dm_hint.request_understanding == "回答火球术规则问题"
+    assert response.dm_hint.response_plan == "依据已验证规则引用给出结论"
     assert response.dm_hint.citations == (citation,)
     state_data = response.tool_results[0].data
     assert "open_clues" in state_data and "active_combats" in state_data
@@ -364,8 +368,9 @@ async def _test_assistant_modes_use_distinct_prompts_and_contexts() -> None:
     assert len(run_versions["narrative"]) == 1
     assert "assistant_mode=combat" in prompts["combat"][1]
     assert '"assistant_mode":"narrative"' in prompts["narrative"][3]
-    assert "是在记录已发生的推进，还是只向副DM询问建议" in prompts["narrative"][2]
-    assert "请求可朗读文案时优先给干净的玩家可见正文" in prompts["narrative"][2]
+    assert "request_understanding" in prompts["narrative"][2]
+    assert "response_plan" in prompts["narrative"][2]
+    assert "战役状态和最近记录只提供事实素材" in prompts["narrative"][2]
     assert "动作经济" in prompts["combat"][0]
     assert "需要的骰子/豁免" in prompts["combat"][2]
 

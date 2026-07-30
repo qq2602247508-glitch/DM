@@ -15,16 +15,20 @@ describe("game table assistant intent", () => {
     expect(assistantEntryLabel("ai", "advance")).toBe("副 DM 推进提示");
   });
 
-  it("requests clean player-facing copy without generic options and risks", () => {
-    const contract = gameTableAssistantContract("来一段给玩家的最初导入语", "ask");
-    expect(contract).toContain("【可直接朗读】");
-    expect(contract).toContain("不要追加固定调查选项、风险清单");
-  });
-
-  it("distinguishes party motivation from atmospheric read-aloud copy", () => {
-    const contract = gameTableAssistantContract("来一段玩家聚集在这里的理由", "ask");
-    expect(contract).toContain("为何在此聚集");
-    expect(contract).toContain("不要重写开场环境描写");
+  it("uses one semantic contract for different DM requests", () => {
+    for (const request of [
+      "来一段给玩家的最初导入语",
+      "来一段玩家聚集在这里的理由",
+      "给店主一句警告玩家的台词",
+      "我该怎么引导玩家互相认识？",
+    ]) {
+      const contract = gameTableAssistantContract(request, "ask");
+      expect(contract).toContain(`原始请求：“${request}”`);
+      expect(contract).toContain("对象、受众、形式、实际用途");
+      expect(contract).toContain("不能只模仿文本表面风格");
+      expect(contract).toContain("不得用通用环境描写");
+      expect(contract).toContain("不追加选项列表、风险清单");
+    }
   });
 
   it("blocks stale duplicate replies unless repetition was explicitly requested", () => {

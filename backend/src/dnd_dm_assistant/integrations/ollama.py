@@ -252,7 +252,12 @@ class OllamaDMHintAdapter:
             timeout=self._timeout,
             retries=self._retries,
         )
-        return _validated_chat_content(response, GeneratedDMHint, "DM hint")
+        hint = _validated_chat_content(response, GeneratedDMHint, "DM hint")
+        if not hint.request_understanding.strip():
+            raise ValueError("DM hint is missing request understanding")
+        if not hint.response_plan.strip():
+            raise ValueError("DM hint is missing response plan")
+        return hint
 
     async def close(self) -> None:
         if self._owned_client:

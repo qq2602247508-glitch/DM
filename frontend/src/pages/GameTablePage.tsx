@@ -831,7 +831,24 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
         ? "如果已确认的玩家行动使当前Scene目标完成、绕过或自然收束，并且确实存在下一个Scene，请在末尾单独输出[[建议进入下一场景]]；否则输出[[继续当前场景]]。"
         : "不要输出场景切换标记，也不要因为这次询问改变当前流程位置。";
       const recentEntries = entries.slice(-4).map((entry) => `${assistantEntryLabel(entry.kind, entry.intent)}：${entry.text}`).join("；");
-      const context = `你是D&D 5e 2024副DM，本应用不是COC。不得使用克苏鲁、奈亚拉托提普、旧日支配者、深潜者、SAN或理智检定等其他系统内容。${requestContract}当前章节与场景：${activeOutline?.chapterTitle ?? "未编排"} / Scene ${activeOutline?.sceneOrder ?? "?"} ${activeScene?.name ?? "未选择"}。当前Scene目标：${activeOutline?.objective ?? "未填写"}。${flowContext}地点：${activeLocation?.name ?? "未绑定"}。当前在场：${names}。最近记录：${recentEntries || "无"}。DM本次输入：${action}。${nextScene && nextOutline ? `下一个候选是 Scene ${nextOutline.sceneOrder}「${nextScene.name}」，进入条件提示：${activeOutline?.transition ?? "由DM判断"}。` : "当前没有下一个已编排Scene。"}只用D&D 5e世界与机制，严格优先完成DM本次输入，不要复用上一条回答。本模式只输出叙事或建议草案，不给出未经规则证据逐条支持的DC、CR、伤害骰、加值、次数或持续时间，不要擅自修改数据库。${transitionContract}`;
+      let semanticBrief = "";
+      if (intent === "ask") {
+        const interpretation = await runAssistantTurn(
+          campaignId,
+          `这是最终回答之前的任务理解步骤，不是回答本身。不要读取、复述或续写战役内容，也不要创作DM所请求的成品。只分析下面这句DM原话，并用五个短字段输出：交付对象、受众、实际用途、完成标准、禁止替代。必须根据原话本身判断，不能把所有请求都解释为环境描写、NPC反应或剧情推进。\nDM原话：${action}`,
+          { mode: "narrative" },
+        );
+        const understanding = interpretation.dm_hint?.request_understanding.trim() ?? "";
+        const responsePlan = interpretation.dm_hint?.response_plan.trim() ?? "";
+        if (!understanding || !responsePlan) {
+          throw new Error("副 DM 未能形成可靠的请求理解，已停止生成以避免答非所问");
+        }
+        semanticBrief = `请求理解：${understanding}；回答计划：${responsePlan}`;
+      }
+      const interpretationContract = semanticBrief
+        ? `回答前的独立任务分析如下：${semanticBrief}。这份分析决定本次交付目标；场景资料只能提供素材，不能覆盖或改变它。`
+        : "";
+      const context = `你是D&D 5e 2024副DM，本应用不是COC。不得使用克苏鲁、奈亚拉托提普、旧日支配者、深潜者、SAN或理智检定等其他系统内容。${requestContract}${interpretationContract}当前章节与场景：${activeOutline?.chapterTitle ?? "未编排"} / Scene ${activeOutline?.sceneOrder ?? "?"} ${activeScene?.name ?? "未选择"}。当前Scene目标：${activeOutline?.objective ?? "未填写"}。${flowContext}地点：${activeLocation?.name ?? "未绑定"}。当前在场：${names}。最近记录：${recentEntries || "无"}。DM本次输入：${action}。${nextScene && nextOutline ? `下一个候选是 Scene ${nextOutline.sceneOrder}「${nextScene.name}」，进入条件提示：${activeOutline?.transition ?? "由DM判断"}。` : "当前没有下一个已编排Scene。"}只用D&D 5e世界与机制，严格优先完成DM本次输入，不要复用上一条回答。本模式只输出叙事或建议草案，不给出未经规则证据逐条支持的DC、CR、伤害骰、加值、次数或持续时间，不要擅自修改数据库。${transitionContract}`;
       const previousReply = [...entries].reverse().find((entry) => entry.kind === "ai")?.text;
       let response = await runAssistantTurn(campaignId, context, { mode: "narrative" });
       let reply = withoutSceneTransitionMarker(response.dm_hint?.text ?? "");
