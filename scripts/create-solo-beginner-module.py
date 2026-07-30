@@ -16,6 +16,8 @@ import urllib.request
 from datetime import UTC, datetime
 from typing import Any
 
+from duskbell_map_layouts import DuskbellMapLayout, assert_duskbell_layouts
+
 BASE = os.getenv("DND_DM_ACCEPTANCE_BASE", "http://127.0.0.1:8000/api/v1")
 
 
@@ -113,87 +115,22 @@ def outline(
     )
 
 
-def tactical_cells(
-    width: int,
-    height: int,
-    theme: str,
-    *,
-    interior_walls: list[tuple[int, int, int, int, str]] | None = None,
-    doors: list[tuple[int, int, str]] | None = None,
-    features: list[tuple[int, int, str, str, bool]] | None = None,
-) -> list[dict[str, Any]]:
-    """Build a sparse readable grid with blocking walls and useful cover."""
-    cells: dict[tuple[int, int], dict[str, Any]] = {}
-
-    def put(
-        row: int,
-        col: int,
-        kind: str,
-        label: str,
-        blocks_sight: bool = False,
-    ) -> None:
-        item: dict[str, Any] = {"row": row, "col": col, "kind": kind, "label": label}
-        if blocks_sight:
-            item["blocks_sight"] = True
-        cells[(row, col)] = item
-
-    def line(r1: int, c1: int, r2: int, c2: int, label: str) -> None:
-        row_step = 0 if r1 == r2 else (1 if r2 > r1 else -1)
-        col_step = 0 if c1 == c2 else (1 if c2 > c1 else -1)
-        row, col = r1, c1
-        while True:
-            put(row, col, "wall", label, True)
-            if (row, col) == (r2, c2):
-                break
-            row += row_step
-            col += col_step
-
-    line(1, 1, 1, width, f"{theme}北墙")
-    line(height, 1, height, width, f"{theme}南墙")
-    line(1, 1, height, 1, f"{theme}西墙")
-    line(1, width, height, width, f"{theme}东墙")
-    for wall in interior_walls or []:
-        line(*wall)
-    for row, col, label in doors or []:
-        put(row, col, "door", label)
-    for row, col, kind, label, blocks_sight in features or []:
-        put(row, col, kind, label, blocks_sight)
-    return list(cells.values())
-
-
 def create_grid(
     prefix: str,
     scene_id: str,
     *,
-    width: int,
-    height: int,
-    theme: str,
-    public_description: str,
-    dm_description: str,
-    interior_walls: list[tuple[int, int, int, int, str]] | None = None,
-    doors: list[tuple[int, int, str]] | None = None,
-    features: list[tuple[int, int, str, str, bool]] | None = None,
+    layout: DuskbellMapLayout,
 ) -> Any:
     return post(
         f"{prefix}/scenes/{scene_id}/grid",
         {
-            "width": width,
-            "height": height,
+            "width": layout.width,
+            "height": layout.height,
             "cell_size_ft": 5,
             "mode": "exploration",
-            "public_description": public_description,
-            "dm_description": dm_description,
-            "layers_json": {
-                "theme": theme,
-                "cells": tactical_cells(
-                    width,
-                    height,
-                    theme,
-                    interior_walls=interior_walls,
-                    doors=doors,
-                    features=features,
-                ),
-            },
+            "public_description": layout.public_description,
+            "dm_description": layout.dm_description,
+            "layers_json": layout.layers_json(),
         },
     )
 
@@ -209,16 +146,9 @@ def add_participant(
     visible: bool = True,
     role: str = "present",
 ) -> None:
-    post(
-        f"{prefix}/scenes/{scene_id}/participants",
-        {
-            "entity_type": entity_type,
-            "entity_id": entity["id"],
-            "role": role,
-            "visible": visible,
-            "notes": "《暮铃磨坊》模组预设成员",
-        },
-    )
+    # Place the intentional module token first.  The participant endpoint only
+    # creates a fallback token when none exists, so this order prevents a
+    # duplicate actor from appearing near the top-left corner of every map.
     post(
         f"{prefix}/scenes/{scene_id}/tokens",
         {
@@ -229,6 +159,16 @@ def add_participant(
             "col": col,
             "visible": visible,
             "metadata_json": {"module": "duskbell-mill", "role": role},
+        },
+    )
+    post(
+        f"{prefix}/scenes/{scene_id}/participants",
+        {
+            "entity_type": entity_type,
+            "entity_id": entity["id"],
+            "role": role,
+            "visible": visible,
+            "notes": "《暮铃磨坊》模组预设成员",
         },
     )
 
@@ -616,64 +556,9 @@ def main() -> None:
         scenes.append(post(f"{prefix}/scenes", {"name": name, "location_id": location["id"], "description": description, "status": "active", "notes": notes}))
 
     s1, s2, s3, s4, s5 = scenes
-    create_grid(
-        prefix,
-        s1["id"],
-        width=18,
-        height=12,
-        theme="lantern-tavern",
-        public_description="提灯旅店一层：吧台、壁炉、公告板、补给货架和通往客房的门。每格5尺。",
-        dm_description="奥尔莎的账本藏在吧台下；玩家可通过洞悉让她主动取出。",
-        interior_walls=[(1, 13, 5, 13, "厨房隔墙"), (5, 13, 5, 18, "厨房南墙")],
-        doors=[(4, 13, "厨房门"), (12, 9, "旅店正门")],
-        features=[(3, 4, "cover", "吧台", False), (3, 5, "cover", "吧台", False), (9, 4, "cover", "长桌", False), (9, 5, "cover", "长桌", False), (3, 16, "cover", "补给货架", True), (6, 3, "fire", "壁炉", False), (7, 15, "marker", "委托公告板", False)],
-    )
-    create_grid(
-        prefix,
-        s2["id"],
-        width=20,
-        height=14,
-        theme="rainy-forest-crossing",
-        public_description="林间旧路横跨湍急溪流；断桥、倒木、浅滩与高地兽径构成四种通过方式。",
-        dm_description="桥下工具包默认隐藏；发现后揭露。深水是困难地形。",
-        interior_walls=[(1, 8, 5, 8, "西岸断崖"), (10, 8, 14, 8, "西岸断崖"), (1, 13, 6, 13, "东岸断崖"), (9, 13, 14, 13, "东岸断崖")],
-        doors=[],
-        features=[(6, 8, "difficult", "断桥西端", False), (7, 9, "water", "急流", False), (7, 10, "water", "急流", False), (7, 11, "water", "急流", False), (7, 12, "water", "急流", False), (8, 13, "difficult", "断桥东端", False), (4, 5, "cover", "倒木", True), (11, 16, "cover", "巨石", True), (3, 15, "difficult", "高地兽径", False)],
-    )
-    create_grid(
-        prefix,
-        s3["id"],
-        width=20,
-        height=14,
-        theme="dusk-mill-yard",
-        public_description="暮铃磨坊外院：木栅围住不规则院落，粮车、矮墙、水渠和侧门提供移动与掩体选择。",
-        dm_description="巨鼠起初藏在粮车后；可由DM眼睛按钮揭露。",
-        interior_walls=[(2, 14, 8, 14, "磨坊西墙"), (2, 14, 2, 20, "磨坊北墙"), (8, 14, 8, 20, "磨坊南墙"), (4, 4, 10, 4, "院落矮墙")],
-        doors=[(5, 14, "磨坊侧门"), (14, 10, "外院木门")],
-        features=[(5, 8, "cover", "粮车", True), (5, 9, "cover", "粮车", True), (9, 7, "cover", "面粉桶", False), (10, 12, "water", "引水渠", False), (11, 12, "water", "引水渠", False), (6, 17, "stairs", "地下入口", False)],
-    )
-    create_grid(
-        prefix,
-        s4["id"],
-        width=22,
-        height=16,
-        theme="brass-gear-undercroft",
-        public_description="地下工坊分为维修间、储藏室、主轴厅和控制台房；门、石柱与大型齿轮会阻挡移动或视线。",
-        dm_description="DM默认可见全部布局和敌人；玩家只看到已揭露区域。两个拉杆都关闭可令齿轮侍从停机。",
-        interior_walls=[(1, 8, 7, 8, "维修间东墙"), (7, 1, 7, 8, "维修间南墙"), (1, 15, 6, 15, "储藏室西墙"), (6, 15, 6, 22, "储藏室南墙"), (10, 1, 10, 9, "档案室北墙"), (10, 9, 16, 9, "档案室东墙"), (10, 14, 16, 14, "控制室西墙"), (10, 14, 10, 22, "控制室北墙")],
-        doors=[(4, 8, "维修间门"), (6, 18, "储藏室门"), (10, 5, "档案室门"), (10, 18, "控制室门"), (16, 11, "地下入口")],
-        features=[(5, 4, "cover", "维修台", False), (3, 18, "cover", "木箱堆", True), (8, 11, "cover", "主轴齿轮", True), (8, 12, "cover", "主轴齿轮", True), (12, 5, "cover", "档案柜", True), (13, 18, "lever", "东侧拉杆", False), (5, 6, "lever", "西侧拉杆", False), (12, 11, "difficult", "散落齿轮", False)],
-    )
-    create_grid(
-        prefix,
-        s5["id"],
-        width=18,
-        height=12,
-        theme="lantern-tavern-celebration",
-        public_description="庆功后的提灯旅店：角色可结算奖励、复访商店并完成升级。",
-        dm_description="用结算面板确认奖励后再进行升级预览/确认。",
-        features=[(3, 4, "cover", "吧台", False), (9, 5, "cover", "庆功长桌", False), (7, 15, "marker", "新的委托", False)],
-    )
+    layouts = assert_duskbell_layouts()
+    for scene, layout in zip(scenes, layouts, strict=True):
+        create_grid(prefix, scene["id"], layout=layout)
 
     add_participant(prefix, s1["id"], "character", character, 9, 9)
     add_participant(prefix, s1["id"], "npc", ally, 9, 10)
@@ -683,7 +568,7 @@ def main() -> None:
     add_participant(prefix, s3["id"], "character", character, 12, 10)
     add_participant(prefix, s3["id"], "npc", ally, 12, 11)
     add_participant(prefix, s3["id"], "npc", tinker, 5, 17, visible=False, role="hidden")
-    add_participant(prefix, s3["id"], "monster", rat, 5, 8, visible=False, role="hidden")
+    add_participant(prefix, s3["id"], "monster", rat, 6, 8, visible=False, role="hidden")
     add_participant(prefix, s4["id"], "character", character, 14, 11)
     add_participant(prefix, s4["id"], "npc", ally, 14, 12)
     add_participant(prefix, s4["id"], "npc", tinker, 5, 5, visible=False, role="hidden")

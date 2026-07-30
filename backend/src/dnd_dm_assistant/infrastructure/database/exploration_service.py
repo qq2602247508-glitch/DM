@@ -70,19 +70,22 @@ class ExplorationService:
         raw_cells = grid.layers_json.get("cells", [])
         if not isinstance(raw_cells, list):
             return
-        kind_map = {
-            "wall": "wall",
-            "door": "door",
-            "cover": "cover",
-            "object": "furniture",
+        kind_map: dict[str, tuple[str, dict[str, object]]] = {
+            "wall": ("wall", {}),
+            "door": ("door", {}),
+            "cover": ("cover", {}),
+            "object": ("furniture", {}),
+            "water": ("terrain", {"difficult": True, "terrain_kind": "water"}),
+            "difficult": ("terrain", {"difficult": True, "terrain_kind": "difficult"}),
         }
         seen: set[tuple[int, int]] = set()
         for cell in raw_cells[:500]:
             if not isinstance(cell, dict):
                 continue
-            object_type = kind_map.get(str(cell.get("kind", "")))
-            if object_type is None:
+            materialized = kind_map.get(str(cell.get("kind", "")))
+            if materialized is None:
                 continue
+            object_type, metadata = materialized
             try:
                 row = int(cell["row"])
                 col = int(cell["col"])
@@ -103,7 +106,7 @@ class ExplorationService:
                     col=col,
                     state="closed" if object_type == "door" else "active",
                     visibility="public",
-                    metadata_json={"generated_from": "layers_json"},
+                    metadata_json={"generated_from": "layers_json", **metadata},
                 )
             )
 
