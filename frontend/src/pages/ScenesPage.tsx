@@ -1,9 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState, type ReactElement } from "react";
 import { createClientId } from "../ui/id";
 
 import { listCharacters, listLocations, listNpcs } from "../api/entities";
-import type { SceneCombatResult, SceneGrid } from "../api/types";
+import type { Location, Scene, SceneCombatResult, SceneGrid } from "../api/types";
 import {
   addSceneParticipant,
   createMonster,
@@ -26,12 +26,14 @@ import {
 } from "../api/world";
 import { Panel } from "../components/Panel";
 import { RequireCampaign } from "../components/RequireCampaign";
+import { SceneGridPreview } from "../components/SceneGridPreview";
 import { useToast } from "../hooks/toastContext";
 import { navigate } from "../hooks/useHashRoute";
 import { Badge, Button, EmptyState, ErrorState, LoadingBlock } from "../ui/primitives";
 import { xpForChallengeRating } from "../ui/progressionRules";
 import { generateTacticalSceneGrid } from "../ui/sceneGridGenerator";
-import { getDoorOrientation, terrainCellClass } from "../ui/mapPresentation";
+import { persistentGridAsSceneGrid } from "../ui/persistentSceneGrid";
+import { buildSceneFlow, readSceneStoryOutline, sortScenesByOutline } from "../ui/sceneOutline";
 import { inputCls, selectCls } from "../ui/styles";
 import { HpBar } from "../ui/widgets";
 
@@ -45,36 +47,140 @@ function readSceneGrid(notes: string | null): SceneGrid | null {
   }
 }
 
-function SceneGridPreview({ grid }: { grid: SceneGrid }): ReactElement {
+function requestGameTableScene(campaignId: string, sceneId: string): void {
+  sessionStorage.setItem(`dnd-dm-requested-scene:${campaignId}`, sceneId);
+  navigate("/game-table");
+}
+
+function SceneAtomLibrary({
+  campaignId,
+  scenes,
+  locations,
+  grids,
+  expandedSceneId,
+  onExpand,
+  onEdit,
+}: {
+  campaignId: string;
+  scenes: Scene[];
+  locations: Location[];
+  grids: Map<string, Awaited<ReturnType<typeof getSceneGrid>>>;
+  expandedSceneId: string;
+  onExpand: (sceneId: string) => void;
+  onEdit: (sceneId: string) => void;
+}): ReactElement {
+  const ordered = sortScenesByOutline(scenes);
+  const locationNames = new Map(locations.map((location) => [location.id, location.name]));
+  const boundLocations = new Set(scenes.map((scene) => scene.location_id).filter(Boolean));
   return (
-    <div className="mt-3">
-      <p className="mb-2 text-2xs text-stone-500">{grid.theme} · {grid.width}×{grid.height} · 每格 {grid.cell_size_ft} 尺</p>
-      <div className="grid max-w-[600px] gap-px overflow-hidden rounded border border-ink-700 bg-ink-700" style={{ gridTemplateColumns: `repeat(${grid.width}, minmax(0, 1fr))` }}>
-        {Array.from({ length: grid.width * grid.height }, (_, index) => {
-          const row = Math.floor(index / grid.width) + 1;
-          const col = (index % grid.width) + 1;
-          const cell = grid.cells.find((item) => item.row === row && item.col === col);
-          const orientation = cell?.kind === "door" ? getDoorOrientation(grid.cells, row, col) : null;
+    <Panel
+      eyebrow="推进台 Scene 的权威原子库"
+      title="Scene 编排总览"
+      action={<Badge tone="ok">{grids.size}/{scenes.length} 张持久地图</Badge>}
+    >
+      <p className="prose-block mt-0 text-sm text-stone-400">
+        这里一次列出全部 Scene，不受当前推进位置影响。每个原子都能核对地点、网格、流程和 DM 细节；游戏推进台只负责运行当前选中的一个。
+      </p>
+      <div className="mb-4 grid gap-2 sm:grid-cols-4">
+        {[
+          ["Scene 原子", scenes.length],
+          ["已绑定地点", boundLocations.size],
+          ["持久地图", grids.size],
+          ["尚无地图", Math.max(0, scenes.length - grids.size)],
+        ].map(([label, value]) => (
+          <div className="rounded-lg border border-ink-700 bg-ink-950/55 p-3" key={label}>
+            <strong className="block text-xl text-parchment-100">{value}</strong>
+            <span className="text-2xs text-stone-500">{label}</span>
+          </div>
+        ))}
+      </div>
+      {ordered.length === 0 ? <EmptyState title="还没有 Scene 原子" hint="在下方创建，或从备团草稿导入。" /> : null}
+      <div className="space-y-3">
+        {ordered.map((scene, index) => {
+          const outline = readSceneStoryOutline(scene, index + 1);
+          const flow = buildSceneFlow(scene, index + 1);
+          const gridData = grids.get(scene.id);
+          const isExpanded = expandedSceneId === scene.id;
+          const locationName = scene.location_id ? locationNames.get(scene.location_id) : null;
           return (
-            <div className={`relative aspect-square min-h-6 ${terrainCellClass(cell)}`} key={`${row}-${col}`} title={cell?.label ?? "地面"}>
-              {cell?.kind === "door" ? (
-                <>
-                  <span className={`absolute rounded bg-amber-400 ${orientation === "vertical" ? "inset-y-1 left-1/2 w-1 -translate-x-1/2" : "inset-x-1 top-1/2 h-1 -translate-y-1/2"}`} />
-                  <span className="absolute right-0 top-0 text-[8px] font-bold text-amber-100">门</span>
-                </>
+            <article className="rounded-xl border border-ink-700 bg-ink-950/45 p-3" key={scene.id}>
+              <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(260px,0.72fr)]">
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge tone="ember">{outline.chapterTitle} · Scene {outline.sceneOrder}</Badge>
+                    <Badge tone={scene.status === "active" ? "ok" : "neutral"}>{scene.status}</Badge>
+                    <strong className="text-sm text-parchment-100">{scene.name}</strong>
+                  </div>
+                  <p className="mb-0 mt-2 text-xs text-stone-400">{scene.description || "暂无场景描述"}</p>
+                  <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                    <div className="rounded border border-ink-700/70 bg-ink-900/60 p-2 text-xs">
+                      <span className="block text-2xs text-stone-600">绑定地点</span>
+                      <strong className="text-parchment-100">{locationName ?? "未绑定地点"}</strong>
+                    </div>
+                    <div className="rounded border border-ink-700/70 bg-ink-900/60 p-2 text-xs">
+                      <span className="block text-2xs text-stone-600">本场目标</span>
+                      <strong className="text-parchment-100">{outline.objective}</strong>
+                    </div>
+                  </div>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <Button onClick={() => onExpand(isExpanded ? "" : scene.id)} size="sm">{isExpanded ? "收起完整细节" : `查看完整细节 · ${flow.length} 步`}</Button>
+                    <Button onClick={() => onEdit(scene.id)} size="sm" variant="primary">编辑地图与参与者</Button>
+                    <Button onClick={() => requestGameTableScene(campaignId, scene.id)} size="sm" variant="ai">在推进台打开</Button>
+                  </div>
+                </div>
+                <div>
+                  {gridData ? (
+                    <>
+                      <div className="flex flex-wrap gap-2 text-2xs text-stone-500">
+                        <Badge tone="ok">持久地图</Badge>
+                        <span>{gridData.grid.width}×{gridData.grid.height}</span>
+                        <span>{gridData.objects.length} 个对象</span>
+                        <span>{gridData.tokens.length} 个 Token</span>
+                      </div>
+                      <SceneGridPreview grid={persistentGridAsSceneGrid(gridData, scene.name)} tokens={gridData.tokens} compact />
+                    </>
+                  ) : (
+                    <div className="rounded-lg border border-dashed border-amber-800/70 bg-amber-950/10 p-4 text-xs text-amber-200">尚无服务端持久地图。下方仍可显示旧兼容网格，但推进台和玩家端不会把它当作权威探索状态。</div>
+                  )}
+                </div>
+              </div>
+              {isExpanded ? (
+                <div className="mt-4 border-t border-ink-700 pt-4">
+                  <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
+                    {[
+                      ["开场", outline.opening], ["发展", outline.development], ["转折", outline.twist],
+                      ["收束", outline.climax], ["转场", outline.transition],
+                    ].map(([label, text]) => (
+                      <div className="rounded border border-ink-700 bg-ink-900/55 p-3" key={label}>
+                        <strong className="text-xs text-amber-200">{label}</strong>
+                        <p className="prose-block mb-0 mt-1 text-xs text-stone-400">{text}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <ol className="mt-4 grid list-none gap-2 p-0 lg:grid-cols-2">
+                    {flow.map((step) => (
+                      <li className="rounded border border-ink-700/80 bg-ink-950/60 p-3" key={step.id}>
+                        <div className="flex items-center gap-2"><Badge>{step.order}</Badge><strong className="text-xs text-parchment-100">{step.title}</strong></div>
+                        <p className="prose-block mb-0 mt-2 text-xs text-stone-400">{step.instruction}</p>
+                        <p className="mb-0 mt-2 text-2xs text-stone-600">DM：{step.dmNote}</p>
+                      </li>
+                    ))}
+                  </ol>
+                </div>
               ) : null}
-            </div>
+            </article>
           );
         })}
       </div>
-    </div>
+    </Panel>
   );
 }
 
 function ScenesContent({ campaignId }: { campaignId: string }): ReactElement {
   const client = useQueryClient();
   const { showToast } = useToast();
-  const [sceneId, setSceneId] = useState("");
+  const [sceneId, setSceneId] = useState(() => sessionStorage.getItem(`dnd-dm-requested-scene:${campaignId}`) ?? "");
+  const [expandedSceneId, setExpandedSceneId] = useState("");
   const [sceneName, setSceneName] = useState("");
   const [sceneDescription, setSceneDescription] = useState("");
   const [locationId, setLocationId] = useState("");
@@ -97,9 +203,27 @@ function ScenesContent({ campaignId }: { campaignId: string }): ReactElement {
   const characters = useQuery({ queryKey: ["characters", campaignId], queryFn: ({ signal }) => listCharacters(campaignId, signal) });
   const npcs = useQuery({ queryKey: ["npcs", campaignId], queryFn: ({ signal }) => listNpcs(campaignId, signal) });
   const monsters = useQuery({ queryKey: ["monsters", campaignId], queryFn: ({ signal }) => listMonsters(campaignId, signal) });
+  const allGridQueries = useQueries({
+    queries: (scenes.data ?? []).map((scene) => ({
+      queryKey: ["persistent-scene-grid", campaignId, scene.id],
+      queryFn: ({ signal }: { signal: AbortSignal }) => getSceneGrid(campaignId, scene.id, signal),
+      retry: false,
+    })),
+  });
+  const allGrids = useMemo(() => {
+    const result = new Map<string, Awaited<ReturnType<typeof getSceneGrid>>>();
+    (scenes.data ?? []).forEach((scene, index) => {
+      const data = allGridQueries[index]?.data;
+      if (data) result.set(scene.id, data);
+    });
+    return result;
+  }, [allGridQueries, scenes.data]);
   useEffect(() => {
-    if (!sceneId && scenes.data?.[0]) setSceneId(scenes.data[0].id);
-  }, [sceneId, scenes.data]);
+    const fallbackScene = scenes.data?.[0];
+    if (!fallbackScene) return;
+    if (!scenes.data?.some((scene) => scene.id === sceneId)) setSceneId(fallbackScene.id);
+    sessionStorage.removeItem(`dnd-dm-requested-scene:${campaignId}`);
+  }, [campaignId, sceneId, scenes.data]);
   const participants = useQuery({
     queryKey: ["scene-participants", campaignId, sceneId],
     queryFn: ({ signal }) => listSceneParticipants(campaignId, sceneId, signal),
@@ -258,7 +382,20 @@ function ScenesContent({ campaignId }: { campaignId: string }): ReactElement {
   const activeGrid = activeScene ? readSceneGrid(activeScene.notes) : null;
   return (
     <div className="mx-auto max-w-[1200px] p-4 lg:p-6">
-      <div className="grid gap-4 xl:grid-cols-[0.85fr_1.15fr]">
+      <SceneAtomLibrary
+        campaignId={campaignId}
+        expandedSceneId={expandedSceneId}
+        grids={allGrids}
+        locations={locations.data ?? []}
+        onEdit={(targetSceneId) => {
+          setSceneId(targetSceneId);
+          setCombatResult(null);
+          requestAnimationFrame(() => document.getElementById("scene-editor")?.scrollIntoView({ behavior: "smooth", block: "start" }));
+        }}
+        onExpand={setExpandedSceneId}
+        scenes={scenes.data ?? []}
+      />
+      <div className="mt-4 grid gap-4 xl:grid-cols-[0.85fr_1.15fr]" id="scene-editor">
         <Panel eyebrow="地点的当前可玩快照" title="场景">
           <form className="grid gap-2 sm:grid-cols-[1fr_1fr_auto]" onSubmit={(event) => { event.preventDefault(); sceneCreate.mutate(); }}>
             <input className={inputCls} onChange={(event) => setSceneName(event.target.value)} placeholder="场景名称" value={sceneName} />

@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState, type ReactElement } from "react";
 
 import { listCharacters, listLocations } from "../api/entities";
@@ -6,23 +6,30 @@ import type {
   GeneratedLocationNode,
   Location,
   LocationGenerationPreview,
+  Scene,
   WorldItem,
 } from "../api/types";
 import {
   confirmLocation,
   generateLocation,
+  getSceneGrid,
   listAdventureSites,
+  listScenes,
   listWorldItems,
   pickupItem,
 } from "../api/world";
 import { CitationList } from "../components/Citations";
 import { Panel } from "../components/Panel";
 import { RequireCampaign } from "../components/RequireCampaign";
+import { SceneGridPreview } from "../components/SceneGridPreview";
 import { SiteMapWorkbench } from "../components/SiteMapWorkbench";
 import { useToast } from "../hooks/toastContext";
 import { Badge, Button, EmptyState, ErrorState, LoadingBlock } from "../ui/primitives";
 import { inputCls, selectCls, textareaCls } from "../ui/styles";
 import { AiTag, SecretBlock } from "../ui/widgets";
+import { readSceneStoryOutline } from "../ui/sceneOutline";
+import { persistentGridAsSceneGrid } from "../ui/persistentSceneGrid";
+import { navigate } from "../hooks/useHashRoute";
 import { ManagementPage } from "./ManagementPage";
 
 function money(cp: number): string {
@@ -79,7 +86,10 @@ function ExistingNode({
   pickupPending,
   onPickup,
   siteByLocation,
+  scenesByLocation,
+  sceneGrids,
   onOpenSite,
+  onOpenScene,
   level = 0,
 }: {
   location: Location;
@@ -89,13 +99,17 @@ function ExistingNode({
   pickupPending: boolean;
   onPickup: (item: WorldItem) => void;
   siteByLocation: Map<string, string>;
+  scenesByLocation: Map<string, Scene[]>;
+  sceneGrids: Map<string, Awaited<ReturnType<typeof getSceneGrid>>>;
   onOpenSite: (siteId: string) => void;
+  onOpenScene: (sceneId: string) => void;
   level?: number;
 }): ReactElement {
   const [expanded, setExpanded] = useState(level === 0);
   const siteId = siteByLocation.get(location.id);
   const children = childrenByParent.get(location.id) ?? [];
   const localItems = items.filter((item) => item.location_id === location.id && !item.is_hidden);
+  const linkedScenes = scenesByLocation.get(location.id) ?? [];
   return (
     <li className="list-none">
       <div
@@ -124,6 +138,36 @@ function ExistingNode({
             {location.interactive_objects.map((object, index) => (
               <Badge key={`${String(object)}-${index}`}>{String(object)}</Badge>
             ))}
+          </div>
+        ) : null}
+        {linkedScenes.length ? (
+          <div className="mt-3 border-t border-ink-700/80 pt-3">
+            <div className="mb-2 flex flex-wrap items-center gap-2">
+              <strong className="text-xs text-amber-200">关联 Scene / 地图</strong>
+              <Badge tone="ai">{linkedScenes.length} 个 Scene</Badge>
+            </div>
+            <div className="grid gap-3 lg:grid-cols-2">
+              {linkedScenes.map((scene, index) => {
+                const outline = readSceneStoryOutline(scene, index + 1);
+                const gridData = sceneGrids.get(scene.id);
+                return (
+                  <div className="rounded-lg border border-ink-700 bg-ink-900/55 p-3" key={scene.id}>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Badge>{outline.chapterTitle} · {outline.sceneOrder}</Badge>
+                      <strong className="text-xs text-parchment-100">{scene.name}</strong>
+                    </div>
+                    <p className="mb-0 mt-2 text-2xs text-stone-500">{outline.objective}</p>
+                    {gridData ? (
+                      <>
+                        <p className="mb-0 mt-2 text-2xs text-emerald-300">持久地图 {gridData.grid.width}×{gridData.grid.height} · {gridData.objects.length} 对象 · {gridData.tokens.length} Token</p>
+                        <SceneGridPreview compact grid={persistentGridAsSceneGrid(gridData, scene.name)} tokens={gridData.tokens} />
+                      </>
+                    ) : <p className="mb-0 mt-2 text-2xs text-amber-300">尚无持久地图</p>}
+                    <Button className="mt-3" onClick={() => onOpenScene(scene.id)} size="sm" variant="primary">在 Scene 原子库打开</Button>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         ) : null}
         {localItems.length ? (
@@ -160,7 +204,10 @@ function ExistingNode({
               location={child}
               onPickup={onPickup}
               onOpenSite={onOpenSite}
+              onOpenScene={onOpenScene}
               pickupPending={pickupPending}
+              sceneGrids={sceneGrids}
+              scenesByLocation={scenesByLocation}
               siteByLocation={siteByLocation}
             />
           ))}
@@ -197,6 +244,35 @@ function LocationsContent({ campaignId }: { campaignId: string }): ReactElement 
     queryKey: ["adventure-sites", campaignId],
     queryFn: ({ signal }) => listAdventureSites(campaignId, signal),
   });
+  const scenes = useQuery({
+    queryKey: ["scenes", campaignId],
+    queryFn: ({ signal }) => listScenes(campaignId, signal),
+  });
+  const sceneGridQueries = useQueries({
+    queries: (scenes.data ?? []).map((scene) => ({
+      queryKey: ["persistent-scene-grid", campaignId, scene.id],
+      queryFn: ({ signal }: { signal: AbortSignal }) => getSceneGrid(campaignId, scene.id, signal),
+      retry: false,
+    })),
+  });
+  const sceneGrids = useMemo(() => {
+    const result = new Map<string, Awaited<ReturnType<typeof getSceneGrid>>>();
+    (scenes.data ?? []).forEach((scene, index) => {
+      const data = sceneGridQueries[index]?.data;
+      if (data) result.set(scene.id, data);
+    });
+    return result;
+  }, [sceneGridQueries, scenes.data]);
+  const scenesByLocation = useMemo(() => {
+    const result = new Map<string, Scene[]>();
+    for (const scene of scenes.data ?? []) {
+      if (!scene.location_id) continue;
+      const bucket = result.get(scene.location_id) ?? [];
+      bucket.push(scene);
+      result.set(scene.location_id, bucket);
+    }
+    return result;
+  }, [scenes.data]);
   const siteByLocation = useMemo(
     () => new Map((sites.data ?? []).map((site) => [site.location_id, site.id])),
     [sites.data],
@@ -325,7 +401,13 @@ function LocationsContent({ campaignId }: { campaignId: string }): ReactElement 
                 location={location}
                 onPickup={(item) => pickup.mutate(item)}
                 onOpenSite={setFocusedSiteId}
+                onOpenScene={(sceneId) => {
+                  sessionStorage.setItem(`dnd-dm-requested-scene:${campaignId}`, sceneId);
+                  navigate("/scenes");
+                }}
                 pickupPending={pickup.isPending}
+                sceneGrids={sceneGrids}
+                scenesByLocation={scenesByLocation}
                 siteByLocation={siteByLocation}
               />
             ))}

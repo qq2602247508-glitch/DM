@@ -400,7 +400,9 @@ async function ensureScenePersistentGrid(
 function GameTableContent({ campaignId }: { campaignId: string }): ReactElement {
   const client = useQueryClient();
   const { showToast } = useToast();
-  const [sceneId, setSceneId] = useState("");
+  const [sceneId, setSceneId] = useState(
+    () => sessionStorage.getItem(`dnd-dm-requested-scene:${campaignId}`) ?? "",
+  );
   const [playerCombatId, setPlayerCombatId] = useState<string | null>(
     () => sessionStorage.getItem(`dnd-dm-active-combat:${campaignId}`),
   );
@@ -481,8 +483,11 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
     queryFn: ({ signal }) => listSessionCheckpoints(campaignId, signal),
   });
   useEffect(() => {
-    if (!sceneId && scenes.data?.[0]) setSceneId(scenes.data[0].id);
-  }, [sceneId, scenes.data]);
+    const fallbackScene = scenes.data?.[0];
+    if (!fallbackScene) return;
+    if (!scenes.data?.some((scene) => scene.id === sceneId)) setSceneId(fallbackScene.id);
+    sessionStorage.removeItem(`dnd-dm-requested-scene:${campaignId}`);
+  }, [campaignId, sceneId, scenes.data]);
   useEffect(() => {
     setEntries(loadEntries(campaignId, sceneId));
     setLastResponse(null);
