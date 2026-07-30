@@ -26,6 +26,7 @@ from dnd_dm_assistant.config import Settings
 from dnd_dm_assistant.domain.agent import (
     AgentPlan,
     AgentRequest,
+    CampaignAIMessage,
     CampaignStateArgs,
     GeneratedDMHint,
     Intent,
@@ -48,8 +49,12 @@ from dnd_dm_assistant.infrastructure.database.campaign_service import (
 )
 from dnd_dm_assistant.infrastructure.database.models import (
     AuditLog,
+    CampaignAISession,
     Character,
     ModelRun,
+)
+from dnd_dm_assistant.infrastructure.database.models import (
+    CampaignAIMessage as CampaignAIMessageRow,
 )
 from dnd_dm_assistant.infrastructure.database.models import (
     StateChangeProposal as ProposalRow,
@@ -112,6 +117,23 @@ class FakePersistence:
     def __init__(self) -> None:
         self.proposals: list[StateChangeProposal] = []
         self.runs: list[ModelRunRecord] = []
+        self.history: list[CampaignAIMessage] = []
+        self.turns: list[tuple[str, str, str]] = []
+
+    def conversation_history(
+        self, campaign_id: str, *, limit: int = 12
+    ) -> tuple[CampaignAIMessage, ...]:
+        return tuple(self.history[-limit:])
+
+    def append_conversation_turn(
+        self,
+        campaign_id: str,
+        *,
+        user_message: str,
+        assistant_message: str,
+        request_id: str,
+    ) -> None:
+        self.turns.append((user_message, assistant_message, request_id))
 
     def create_proposal(
         self,
@@ -385,6 +407,48 @@ async def _test_assistant_modes_use_distinct_prompts_and_contexts() -> None:
     assert len(run_versions["combat"]) == 2
 
 
+async def _test_campaign_conversation_is_bounded_non_authoritative_context() -> None:
+    persistence = FakePersistence()
+    persistence.history.append(
+        CampaignAIMessage(
+            role="assistant",
+            content="主轴倒转，古老之物苏醒。",
+            message_kind="answer",
+            authoritative=False,
+            created_at=datetime.now(UTC),
+        )
+    )
+    generator = FakeHintGenerator(
+        GeneratedDMHint(
+            request_understanding="把上一条可朗读内容缩短",
+            response_plan="保留用途并压缩为一句话",
+            text="店主压低声音：别靠近地下室。",
+        )
+    )
+    response = await AgentOrchestrator(
+        planner=FakePlanner(AgentPlan(intent=Intent.DM_ASSIST, rationale="unused", calls=())),
+        hint_generator=generator,
+        knowledge=FakeKnowledge(GroundedAnswer(answer="", abstained=True)),
+        state=FakeState(),
+        persistence=persistence,
+    ).run(
+        AgentRequest(
+            campaign_id="campaign-1",
+            action="完整上下文 prompt",
+            user_message="再短一点",
+            remember_conversation=True,
+            request_id="conversation-1",
+            mode="narrative",
+        )
+    )
+    assert response.dm_hint is not None
+    prompt = json.loads(generator.prompts[0][1])
+    assert prompt["conversation_history_non_authoritative"][0]["content"].startswith("主轴")
+    assert prompt["conversation_history_non_authoritative"][0]["authoritative"] is False
+    assert "不是战役事实" in prompt["conversation_history_policy"]
+    assert persistence.turns == [("再短一点", "店主压低声音：别靠近地下室。", "conversation-1")]
+
+
 def test_unknown_duplicate_and_invalid_typed_payload_fail_closed() -> None:
     with pytest.raises(ValidationError):
         AgentPlan.model_validate_json(
@@ -443,6 +507,10 @@ def test_assistant_modes_use_distinct_prompts_and_contexts() -> None:
     asyncio.run(_test_assistant_modes_use_distinct_prompts_and_contexts())
 
 
+def test_campaign_conversation_is_bounded_non_authoritative_context() -> None:
+    asyncio.run(_test_campaign_conversation_is_bounded_non_authoritative_context())
+
+
 def test_missing_intent_model_is_explicitly_unavailable() -> None:
     asyncio.run(_test_missing_intent_model_is_explicitly_unavailable())
 
@@ -479,6 +547,39 @@ def _create_character_proposal(
         model_name="fake-intent",
         request_id="proposal-request",
     )
+
+
+def test_campaign_conversation_persists_per_campaign_and_cascades(
+    agent_database: tuple[Any, str],
+) -> None:
+    engine, campaign_id = agent_database
+    persistence = SqlAlchemyAgentPersistence(engine)
+    assert persistence.conversation_history(campaign_id) == ()
+    persistence.append_conversation_turn(
+        campaign_id,
+        user_message="给店主一句警告台词",
+        assistant_message="“别靠近地下室。”",
+        request_id="turn-1",
+    )
+    history = persistence.conversation_history(campaign_id)
+    assert [(item.role, item.message_kind, item.authoritative) for item in history] == [
+        ("dm", "question", False),
+        ("assistant", "answer", False),
+    ]
+    assert history[0].content == "给店主一句警告台词"
+    with Session(engine) as session:
+        ai_session = session.scalar(
+            select(CampaignAISession).where(CampaignAISession.campaign_id == campaign_id)
+        )
+        assert ai_session is not None
+        assert (
+            session.scalar(
+                select(func.count())
+                .select_from(CampaignAIMessageRow)
+                .where(CampaignAIMessageRow.session_id == ai_session.id)
+            )
+            == 2
+        )
 
 
 def test_confirm_is_atomic_idempotent_and_audited(

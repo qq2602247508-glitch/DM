@@ -35,6 +35,12 @@ describe("runAssistantTurn", () => {
     await runAssistantTurn("campaign-1", "fast", { mode: "quick" });
     await runAssistantTurn("campaign-1", "story", { mode: "narrative" });
     await runAssistantTurn("campaign-1", "fight", { mode: "combat" });
+    await runAssistantTurn("campaign-1", "follow-up context", {
+      mode: "narrative",
+      userMessage: "再短一点",
+      rememberConversation: true,
+      includeCampaignState: false,
+    });
 
     const bodies = fetchMock.mock.calls.map(([, init]) => {
       if (typeof init?.body !== "string") {
@@ -47,6 +53,13 @@ describe("runAssistantTurn", () => {
       { action: "fast", mode: "quick" },
       { action: "story", mode: "narrative" },
       { action: "fight", mode: "combat" },
+      {
+        action: "follow-up context",
+        mode: "narrative",
+        user_message: "再短一点",
+        remember_conversation: true,
+        include_campaign_state: false,
+      },
     ]);
   });
 });

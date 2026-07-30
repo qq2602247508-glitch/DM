@@ -91,6 +91,42 @@ class Campaign(Timestamped, Base):
     )
 
 
+class CampaignAISession(Timestamped, Base):
+    __tablename__ = "campaign_ai_sessions"
+    campaign_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("campaigns.id", ondelete="CASCADE"), nullable=False, unique=True
+    )
+    summary_text: Mapped[str | None] = mapped_column(Text)
+
+
+class CampaignAIMessage(Base):
+    __tablename__ = "campaign_ai_messages"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_id)
+    session_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("campaign_ai_sessions.id", ondelete="CASCADE"), nullable=False
+    )
+    role: Mapped[str] = mapped_column(String(20), nullable=False)
+    content: Mapped[str] = mapped_column(Text, nullable=False)
+    message_kind: Mapped[str] = mapped_column(String(30), nullable=False)
+    authoritative: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False, server_default="0"
+    )
+    request_id: Mapped[str] = mapped_column(String(120), nullable=False)
+    sequence_number: Mapped[int] = mapped_column(Integer, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.current_timestamp(), nullable=False
+    )
+    __table_args__ = (
+        CheckConstraint("role IN ('dm','assistant')", name="ck_campaign_ai_message_role"),
+        CheckConstraint(
+            "message_kind IN ('question','answer','confirmed_progress')",
+            name="ck_campaign_ai_message_kind",
+        ),
+        UniqueConstraint("session_id", "sequence_number", name="uq_campaign_ai_message_sequence"),
+        Index("ix_campaign_ai_messages_session_created", "session_id", "created_at", "id"),
+    )
+
+
 class Character(Timestamped, Base):
     __tablename__ = "characters"
     campaign_id: Mapped[str] = mapped_column(

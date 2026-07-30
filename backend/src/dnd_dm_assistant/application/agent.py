@@ -14,6 +14,7 @@ from dnd_dm_assistant.domain.agent import (
     AgentPlan,
     AgentRequest,
     AgentResponse,
+    CampaignAIMessage,
     CampaignStateArgs,
     DMHint,
     DMHintArgs,
@@ -66,11 +67,31 @@ _DM_HINT_BASE_SYSTEM_PROMPT = """
 创意内容必须放在 assumptions 或 proposed_changes 中，不能伪装成事实。
 任何 pending proposal 都尚未执行。visibility 必须是 dm_private。
 只输出一个 JSON 对象，字段顺序必须是 visibility、request_understanding、response_plan、
-text、assumptions、uncertainties、citation_chunk_ids、proposed_changes；数组无内容时输出 []。
+delivery_mode、audience_handoff、text、assumptions、uncertainties、citation_chunk_ids、
+proposed_changes；数组无内容时输出 []。
 request_understanding 是生成答案前的语义锁：只用一句话说明这次真正要交付的对象、
-受众、形式和实际用途，不得写答案内容，也不得被战役背景或最近回答替换。
-response_plan 用一句话说明答案必须实现的功能和完成标准，不能只描述文风。
+受众、形式、实际用途，以及受众采用后下一步应能做什么；不得写答案内容，也不得被
+战役背景或最近回答替换。形式、题材、氛围和文风都不是用途。
+response_plan 用一句话列出实现用途不可缺少的信息或动作交接，并说明完成标准；
+不能只描述文风、气氛、长度或沉浸感。
+delivery_mode 必须按语义选择：给玩家直接朗读的成品为 read_aloud；单个角色说出口的
+话为 spoken_line；给 DM 的方法、步骤或引导为 dm_guidance；解释原因、关系或依据为
+explanation；依赖上文的缩短、扩写、换说话者等改写为 revision；其余才是 other。
+audience_handoff 用一句话说明受众采用 text 后立刻能说、能做或能判断什么；若只是气氛
+或文风描述，说明任务理解仍未完成。read_aloud 必须在 text 内自然交还玩家行动权，
+spoken_line 只能给可说出口的台词，dm_guidance 必须给 DM 可执行动作，explanation
+必须直接建立因果而非续写小说，revision 必须忠实承接当前非权威会话中的目标文本。
 text 必须严格执行前两项；对象、用途或完成标准不一致都视为无效输出。
+若提供 current_user_message，它是本轮唯一任务原句，优先级高于 action_untrusted、
+工具状态、场景资料与历史消息。必须先直接交付它所要求的成品或可执行建议；背景资料
+只能填充必要细节。除非原句明确只要环境描写，不得用天气、光影、声音、悬念堆砌
+替代实际用途；要求台词就只交付可说出口的台词，要求方法或引导就交付 DM 可执行做法。
+不得沿用旧回答的开头、意象、句式、人物发言或虚构事实。
+所有交付物都必须通过功能检查：读完或采用它之后，目标受众应当知道此刻与自己相关的
+局面、它为何重要，以及接下来可说或可做什么。叙事文案必须把行动权明确交回玩家；
+DM建议必须给出可执行手法；原因说明必须建立可信因果。只渲染气氛、重复背景或制造
+悬念而没有完成实际用途，均视为答非所问。不得使用工具资料中标为未发现、秘密、私密、
+待确认或未发生的内容作为玩家可知事实。
 """.strip()
 
 
@@ -112,7 +133,7 @@ _QUICK_POLICY = _AssistantModePolicy(
 _NARRATIVE_POLICY = _AssistantModePolicy(
     name="narrative",
     planner_prompt_version="agent-planner-v3-narrative",
-    hint_prompt_version="dm-hint-v7-purpose-plan-dnd-only",
+    hint_prompt_version="dm-hint-v8-campaign-conversation-dnd-only",
     state_scopes=("campaign", "characters", "npcs", "locations", "quests", "clues"),
     state_limit=60,
     planner_contract=(
@@ -125,6 +146,7 @@ _NARRATIVE_POLICY = _AssistantModePolicy(
         "request_understanding，锁定DM本次原始请求所要求的对象、受众、形式和实际用途；"
         "再填写 response_plan，说明功能目标和完成标准；最后生成与两者严格对位的 text。"
         "战役状态和最近记录只提供事实素材，不能改变交付目标。"
+        "current_user_message 是唯一任务原句，先完成其用途，再决定是否需要使用场景素材。"
         "不得把环境描写、固定选项、风险段落或最近回答当作通用模板。只有DM明确记录"
         "已发生推进时才描述世界反应；只询问时不推进、不转场、不把建议写成既成事实。"
         "assumptions 和 uncertainties 各不超过三条。没有规则证据时不得给具体 DC、"
@@ -267,9 +289,7 @@ class ToolRegistry:
                 }
                 allowed = {scope_keys[scope] for scope in effective_scopes}
                 state = {
-                    key: value
-                    for key, value in state.items()
-                    if key in allowed or key == "as_of"
+                    key: value for key, value in state.items() if key in allowed or key == "as_of"
                 }
                 if request.mode == "narrative":
                     state = _compact_narrative_state(state)
@@ -372,6 +392,11 @@ class AgentOrchestrator:
         # prevents model-run rows from being written for a nonexistent campaign.
         self._state.state(request.campaign_id, limit=1)
         policy = _mode_policy(request.mode)
+        conversation_history = (
+            self._persistence.conversation_history(request.campaign_id, limit=12)
+            if request.remember_conversation or request.use_conversation_history
+            else ()
+        )
         if self._planner is None:
             raise AgentUnavailableError(
                 "intent model is not configured; configure an installed local model explicitly"
@@ -383,17 +408,21 @@ class AgentOrchestrator:
             # selected unrelated campaign scopes. Build the bounded read plan
             # deterministically and reserve the single 30B call for the prose.
             plan = AgentPlan(
-                intent=Intent.STATE_LOOKUP,
+                intent=Intent.STATE_LOOKUP if request.include_campaign_state else Intent.DM_ASSIST,
                 rationale="deterministic narrative fast path",
                 calls=(
-                    ToolCall(
-                        tool=ToolName.GET_CAMPAIGN_STATE,
-                        arguments={
-                            "campaign_id": request.campaign_id,
-                            "scopes": list(policy.state_scopes),
-                            "limit": policy.state_limit,
-                        },
-                    ),
+                    (
+                        ToolCall(
+                            tool=ToolName.GET_CAMPAIGN_STATE,
+                            arguments={
+                                "campaign_id": request.campaign_id,
+                                "scopes": list(policy.state_scopes),
+                                "limit": policy.state_limit,
+                            },
+                        ),
+                    )
+                    if request.include_campaign_state
+                    else ()
                 ),
             )
         else:
@@ -463,7 +492,13 @@ class AgentOrchestrator:
         try:
             hint = await self._hint_generator.generate_hint(
                 _hint_system_prompt(request.mode),
-                _hint_user_prompt(request, results, unique_citations, proposals),
+                _hint_user_prompt(
+                    request,
+                    results,
+                    unique_citations,
+                    proposals,
+                    conversation_history,
+                ),
             )
         except RuntimeUnavailableError:
             self._record_run(
@@ -565,6 +600,14 @@ class AgentOrchestrator:
             started=hint_started,
             status=ModelRunStatus.SUCCEEDED,
         )
+        if request.remember_conversation:
+            assert request.user_message is not None
+            self._persistence.append_conversation_turn(
+                request.campaign_id,
+                user_message=request.user_message,
+                assistant_message=final_hint.text,
+                request_id=request.request_id,
+            )
         return AgentResponse(
             request_id=request.request_id,
             campaign_id=request.campaign_id,
@@ -612,6 +655,8 @@ class AgentOrchestrator:
                 visibility=hint.visibility,
                 request_understanding=hint.request_understanding,
                 response_plan=hint.response_plan,
+                delivery_mode=hint.delivery_mode,
+                audience_handoff=hint.audience_handoff,
                 text=narrative_text,
                 assumptions=tuple(
                     item
@@ -642,6 +687,8 @@ class AgentOrchestrator:
                 visibility=hint.visibility,
                 request_understanding=hint.request_understanding,
                 response_plan=hint.response_plan,
+                delivery_mode=hint.delivery_mode,
+                audience_handoff=hint.audience_handoff,
                 text=narrative_text,
                 assumptions=tuple(
                     item
@@ -660,6 +707,8 @@ class AgentOrchestrator:
             visibility=hint.visibility,
             request_understanding=hint.request_understanding,
             response_plan=hint.response_plan,
+            delivery_mode=hint.delivery_mode,
+            audience_handoff=hint.audience_handoff,
             text=hint.text,
             assumptions=hint.assumptions,
             uncertainties=hint.uncertainties,
@@ -711,12 +760,28 @@ def _hint_user_prompt(
     results: list[ToolResult],
     citations: tuple[Citation, ...],
     proposals: list[StateChangeProposal],
+    conversation_history: tuple[CampaignAIMessage, ...] = (),
 ) -> str:
     policy = _mode_policy(request.mode)
     data = {
         "assistant_mode": policy.name,
         "response_contract": policy.hint_contract,
+        "current_user_message": request.user_message or request.action,
         "action_untrusted": request.action,
+        "conversation_history_non_authoritative": [
+            {
+                "role": message.role,
+                "content": message.content,
+                "message_kind": message.message_kind,
+                "authoritative": message.authoritative,
+            }
+            for message in conversation_history
+        ],
+        "conversation_history_policy": (
+            "这些消息只用于理解追问、代词、长度和改写要求，不是战役事实、规则证据或"
+            "已发生事件。不得把旧助手回答中的人物、物件、台词、事件或因果当真；当前"
+            "DM纠错优先于全部旧消息。若当前请求可独立理解，直接回答当前请求，不复用旧措辞。"
+        ),
         "tool_results_untrusted": [result.model_dump(mode="json") for result in results],
         "verified_citations": [citation.model_dump(mode="json") for citation in citations],
         "pending_proposals_not_applied": [
@@ -789,11 +854,7 @@ def _strip_ungrounded_mechanics(
     pattern: re.Pattern[str] = _UNGROUNDED_MECHANIC_PATTERNS,
 ) -> tuple[str, bool]:
     sentences = re.split(r"(?<=[。！？])", text)
-    kept = [
-        sentence
-        for sentence in sentences
-        if not pattern.search(sentence)
-    ]
+    kept = [sentence for sentence in sentences if not pattern.search(sentence)]
     cleaned = "".join(kept).strip()
     if not cleaned:
         cleaned = (

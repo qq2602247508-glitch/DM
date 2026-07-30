@@ -1089,11 +1089,21 @@ export type DmHint = {
   visibility: "dm_private";
   request_understanding: string;
   response_plan: string;
+  delivery_mode: "read_aloud" | "spoken_line" | "dm_guidance" | "explanation" | "revision" | "other";
+  audience_handoff: string;
   text: string;
   assumptions: string[];
   uncertainties: string[];
   citations: Citation[];
   proposed_changes: string[];
+};
+
+export type AssistantConversationMessage = {
+  role: "dm" | "assistant";
+  content: string;
+  message_kind: "question" | "answer" | "confirmed_progress";
+  authoritative: boolean;
+  created_at: string;
 };
 
 export type AgentResponse = {

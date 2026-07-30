@@ -72,6 +72,27 @@ class AssistantTurnRequest(BaseModel):
         StringConstraints(strip_whitespace=True, min_length=1, max_length=4_000),
     ]
     mode: Literal["quick", "narrative", "combat", "general"] = "quick"
+    user_message: (
+        Annotated[
+            str,
+            StringConstraints(strip_whitespace=True, min_length=1, max_length=2_000),
+        ]
+        | None
+    ) = None
+    remember_conversation: bool = False
+    use_conversation_history: bool = False
+    include_campaign_state: bool = True
+
+
+class AssistantConversationTurnRequest(BaseModel):
+    user_message: Annotated[
+        str,
+        StringConstraints(strip_whitespace=True, min_length=1, max_length=2_000),
+    ]
+    assistant_message: Annotated[
+        str,
+        StringConstraints(strip_whitespace=True, min_length=1, max_length=8_000),
+    ]
 
 
 class VersionedResponse(BaseModel):
