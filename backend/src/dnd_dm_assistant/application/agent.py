@@ -108,7 +108,7 @@ _QUICK_POLICY = _AssistantModePolicy(
 _NARRATIVE_POLICY = _AssistantModePolicy(
     name="narrative",
     planner_prompt_version="agent-planner-v3-narrative",
-    hint_prompt_version="dm-hint-v4-narrative-dnd-only",
+    hint_prompt_version="dm-hint-v5-narrative-intent-aware-dnd-only",
     state_scopes=("campaign", "characters", "npcs", "locations", "quests", "clues"),
     state_limit=60,
     planner_contract=(
@@ -117,8 +117,11 @@ _NARRATIVE_POLICY = _AssistantModePolicy(
         "NPC 反应、线索延展与后果，不得把创意当成既有事实。"
     ),
     hint_contract=(
-        "当前是 narrative 剧情快速模式。text 控制在500个中文字符以内，先给一段可立即"
-        "采用的现场反应，再给二至四个真正随情境变化的短选项，最后只写必要风险；"
+        "当前是 narrative 剧情快速模式。text 控制在500个中文字符以内。先判断 action "
+        "是在记录已发生的推进，还是只向副DM询问建议、请求玩家可朗读文案或要求草案。"
+        "只有明确记录已发生推进时，才给现场反应、二至四个短选项和必要风险；只询问时"
+        "必须直接回答本次问题并服从其格式，不得把建议写成既成事实，不得固定追加推进"
+        "选项、风险或转场判断；请求可朗读文案时优先给干净的玩家可见正文。"
         "assumptions 和 uncertainties 各不超过三条。没有规则证据时不得给具体 DC、"
         "伤害骰、持续轮数或规则来源。新角色、事件和转折只能写入 assumptions 或 "
         "proposed_changes，不能声称已写入战役。"
@@ -749,7 +752,10 @@ def _compact_narrative_state(state: dict[str, Any]) -> dict[str, Any]:
 
 
 def _json_safe(value: Any) -> dict[str, Any]:
-    return json.loads(json.dumps(value, ensure_ascii=False, default=str))
+    loaded = json.loads(json.dumps(value, ensure_ascii=False, default=str))
+    if not isinstance(loaded, dict):
+        raise TypeError("agent tool state must serialize to an object")
+    return {str(key): item for key, item in loaded.items()}
 
 
 _UNGROUNDED_MECHANIC_PATTERNS = re.compile(

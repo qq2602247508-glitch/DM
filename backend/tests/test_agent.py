@@ -364,7 +364,8 @@ async def _test_assistant_modes_use_distinct_prompts_and_contexts() -> None:
     assert len(run_versions["narrative"]) == 1
     assert "assistant_mode=combat" in prompts["combat"][1]
     assert '"assistant_mode":"narrative"' in prompts["narrative"][3]
-    assert "现场反应" in prompts["narrative"][2]
+    assert "是在记录已发生的推进，还是只向副DM询问建议" in prompts["narrative"][2]
+    assert "请求可朗读文案时优先给干净的玩家可见正文" in prompts["narrative"][2]
     assert "动作经济" in prompts["combat"][0]
     assert "需要的骰子/豁免" in prompts["combat"][2]
 

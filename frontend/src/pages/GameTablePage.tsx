@@ -71,16 +71,23 @@ import {
   buildContextualQuickActions, type ScenePhase,
 } from "../ui/contextualQuickActions";
 import { createClientId } from "../ui/id";
+import {
+  assistantEntryLabel, gameTableAssistantContract, isUnwantedRepeatedReply,
+  repairLegacyAssistantHistory,
+  type GameTableAssistantIntent,
+} from "../ui/gameTableAssistant";
 
 type ProgressEntry = {
   id: string;
   kind: "dm" | "ai" | "system";
+  intent?: GameTableAssistantIntent;
   text: string;
   createdAt: string;
 };
 
 type LiveAssistantEntry = {
   id: string;
+  intent: GameTableAssistantIntent;
   label: string;
   status: "thinking" | "revealing";
   text: string;
@@ -321,7 +328,9 @@ function loadEntries(campaignId: string, sceneId: string): ProgressEntry[] {
   if (!sceneId) return [];
   try {
     const parsed = JSON.parse(localStorage.getItem(storageKey(campaignId, sceneId)) ?? "[]") as unknown;
-    return Array.isArray(parsed) ? parsed as ProgressEntry[] : [];
+    return Array.isArray(parsed)
+      ? repairLegacyAssistantHistory(parsed as ProgressEntry[])
+      : [];
   } catch {
     return [];
   }
@@ -511,10 +520,15 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
       .map((event): ProgressEntry => ({
         id: `event:${event.id}`,
         kind: event.metadata_json.entry_kind === "dm" ? "dm" : event.metadata_json.entry_kind === "ai" ? "ai" : "system",
+        intent: event.metadata_json.assistant_intent === "ask"
+          || event.metadata_json.assistant_intent === "advance"
+          || event.metadata_json.assistant_intent === "execute"
+          ? event.metadata_json.assistant_intent
+          : undefined,
         text: event.description ?? event.title,
         createdAt: event.occurred_at,
       }));
-    if (restored.length > 0) setEntries(restored);
+    if (restored.length > 0) setEntries(repairLegacyAssistantHistory(restored));
   }, [entries.length, events.data, sceneId]);
   const activeScene = scenes.data?.find((scene) => scene.id === sceneId);
   const activeLocation = locations.data?.find((location) => location.id === activeScene?.location_id);
@@ -654,12 +668,12 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
       showToast("主机推进已完成，但玩家行动提示暂时没有同步", "error");
     }
   };
-  const addEntry = (kind: ProgressEntry["kind"], text: string) => {
-    setEntries((current) => [...current, { id: createClientId("progress"), kind, text, createdAt: new Date().toISOString() }]);
+  const addEntry = (kind: ProgressEntry["kind"], text: string, intent?: GameTableAssistantIntent) => {
+    setEntries((current) => [...current, { id: createClientId("progress"), kind, intent, text, createdAt: new Date().toISOString() }]);
   };
-  const startAssistantActivity = (label: string): string => {
+  const startAssistantActivity = (label: string, intent: GameTableAssistantIntent = "advance"): string => {
     const id = createClientId("assistant-live");
-    setLiveAssistant({ id, label, status: "thinking", text: "" });
+    setLiveAssistant({ id, intent, label, status: "thinking", text: "" });
     return id;
   };
   const revealAssistantText = async (activityId: string, text: string): Promise<void> => {
@@ -804,7 +818,7 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
     onError: () => showToast("无法起草进入场景的人物，请稍后重试", "error"),
   });
   const assistant = useMutation({
-    mutationFn: async ({ action }: { action: string; activityId: string }) => {
+    mutationFn: async ({ action, intent }: { action: string; activityId: string; intent: GameTableAssistantIntent }) => {
       const names = (participants.data ?? []).map((item) => `${item.entity_type}:${item.entity.name}${item.role === "defeated" ? "（已击败）" : ""}`).join("、") || "无人";
       const nextOutline = nextScene
         ? readSceneStoryOutline(nextScene, activeSceneIndex + 2)
@@ -812,56 +826,102 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
       const flowContext = currentFlowStep
         ? `当前流程步骤 ${currentFlowStep.order}/${activeFlow.length}「${currentFlowStep.title}」：${currentFlowStep.instruction}。这只是DM导航，玩家若采用其他合理方案，应响应玩家而不是强行拉回预设流程。`
         : "当前没有预设流程步骤，由DM自由推进。";
-      const context = `你是D&D 5e 2024副DM，本应用不是COC。不得使用克苏鲁、奈亚拉托提普、旧日支配者、深潜者、SAN或理智检定等其他系统内容。当前章节与场景：${activeOutline?.chapterTitle ?? "未编排"} / Scene ${activeOutline?.sceneOrder ?? "?"} ${activeScene?.name ?? "未选择"}。当前Scene目标：${activeOutline?.objective ?? "未填写"}。${flowContext}地点：${activeLocation?.name ?? "未绑定"}。当前在场：${names}。最近推进：${entries.slice(-4).map((entry) => entry.text).join("；")}。DM输入：${action}。${nextScene && nextOutline ? `下一个候选是 Scene ${nextOutline.sceneOrder}「${nextScene.name}」，进入条件提示：${activeOutline?.transition ?? "由DM判断"}。` : "当前没有下一个已编排Scene。"}请只用D&D 5e世界与机制，给DM私密推进建议、NPC可能反应、下一步引导和风险；本模式只输出叙事草案，不给出未经规则证据逐条支持的DC、CR、伤害骰、加值、次数或持续时间，不要擅自改数据库。如果玩家行动脱离预设，只调整尚未发生的建议，不能覆盖已经确认的事实。如果根据已记录的玩家行动，当前Scene目标已经完成、绕过或自然收束，并且确实存在下一个Scene，请在回复末尾单独输出[[建议进入下一场景]]；否则输出[[继续当前场景]]。`;
-      return runAssistantTurn(campaignId, context, { mode: "narrative" });
+      const requestContract = gameTableAssistantContract(action, intent);
+      const transitionContract = intent === "advance"
+        ? "如果已确认的玩家行动使当前Scene目标完成、绕过或自然收束，并且确实存在下一个Scene，请在末尾单独输出[[建议进入下一场景]]；否则输出[[继续当前场景]]。"
+        : "不要输出场景切换标记，也不要因为这次询问改变当前流程位置。";
+      const recentEntries = entries.slice(-4).map((entry) => `${assistantEntryLabel(entry.kind, entry.intent)}：${entry.text}`).join("；");
+      const context = `你是D&D 5e 2024副DM，本应用不是COC。不得使用克苏鲁、奈亚拉托提普、旧日支配者、深潜者、SAN或理智检定等其他系统内容。${requestContract}当前章节与场景：${activeOutline?.chapterTitle ?? "未编排"} / Scene ${activeOutline?.sceneOrder ?? "?"} ${activeScene?.name ?? "未选择"}。当前Scene目标：${activeOutline?.objective ?? "未填写"}。${flowContext}地点：${activeLocation?.name ?? "未绑定"}。当前在场：${names}。最近记录：${recentEntries || "无"}。DM本次输入：${action}。${nextScene && nextOutline ? `下一个候选是 Scene ${nextOutline.sceneOrder}「${nextScene.name}」，进入条件提示：${activeOutline?.transition ?? "由DM判断"}。` : "当前没有下一个已编排Scene。"}只用D&D 5e世界与机制，严格优先完成DM本次输入，不要复用上一条回答。本模式只输出叙事或建议草案，不给出未经规则证据逐条支持的DC、CR、伤害骰、加值、次数或持续时间，不要擅自修改数据库。${transitionContract}`;
+      const previousReply = [...entries].reverse().find((entry) => entry.kind === "ai")?.text;
+      let response = await runAssistantTurn(campaignId, context, { mode: "narrative" });
+      let reply = withoutSceneTransitionMarker(response.dm_hint?.text ?? "");
+      if (isUnwantedRepeatedReply(action, reply, previousReply)) {
+        response = await runAssistantTurn(
+          campaignId,
+          `${context}\n纠错要求：刚才的候选回答与上一条副DM回答重复，不能使用。请重新理解“${action}”，从不同角度重新生成，并严格服从本次请求类型。`,
+          { mode: "narrative" },
+        );
+        reply = withoutSceneTransitionMarker(response.dm_hint?.text ?? "");
+        if (isUnwantedRepeatedReply(action, reply, previousReply)) {
+          throw new Error("副 DM 连续返回了旧内容，已拦截重复回复");
+        }
+      }
+      return response;
     },
-    onSuccess: async (response, { action, activityId }) => {
+    onSuccess: async (response, { action, activityId, intent }) => {
       const rawText = response.dm_hint?.text || (response.abstained ? "AI 暂时无法给出可靠建议，请由 DM 自由推进。" : "已读取当前战役状态，但没有生成新的提示。");
       const text = withoutSceneTransitionMarker(rawText);
-      const dmRecordedTransition = /(?:决定|接受|完成|解决|离开|出发|前往|抵达|进入|打开|深入|转场)/.test(action);
-      const suggestsTransition = Boolean(nextScene) && (
+      const dmRecordedTransition = intent === "advance" && /(?:决定|接受|完成|解决|离开|出发|前往|抵达|进入|打开|深入|转场)/.test(action);
+      const suggestsTransition = intent === "advance" && Boolean(nextScene) && (
         rawText.includes("[[建议进入下一场景]]")
         || /(?:可以|建议|适合|准备).{0,8}(?:进入|切换|转入).{0,8}(?:下一|下个).{0,4}(?:场景|Scene)/i.test(rawText)
         || dmRecordedTransition
       );
-      setSuggestedSceneId(suggestsTransition ? nextScene?.id ?? null : null);
+      if (intent === "advance") {
+        setSuggestedSceneId(suggestsTransition ? nextScene?.id ?? null : null);
+      }
       setLastResponse(response);
       await revealAssistantText(activityId, text);
-      addEntry("ai", text);
+      addEntry("ai", text, intent);
       finishAssistantActivity(activityId);
-      await log("AI 推进建议", text, { dm_action: action, entry_kind: "ai" });
-      await publishPlayerGuidance({
-        sceneName: activeScene?.name ?? "当前 Scene",
-        sceneId,
-        locationId: activeScene?.location_id,
-        phase: activePhase,
-        reason: "dm_advanced",
+      await log(intent === "ask" ? "副DM回答" : intent === "execute" ? "副DM执行建议" : "AI 推进建议", text, {
+        dm_action: action, entry_kind: "ai", assistant_intent: intent,
       });
-      const arrivalKind = detectArrivalKind(`${action}\n${text}`);
-      if (arrivalKind && sceneId) {
-        arrivalLookup.mutate({ kind: arrivalKind, prompt: action, assistantText: text });
+      if (intent === "advance") {
+        await publishPlayerGuidance({
+          sceneName: activeScene?.name ?? "当前 Scene",
+          sceneId,
+          locationId: activeScene?.location_id,
+          phase: activePhase,
+          reason: "dm_advanced",
+        });
+        const arrivalKind = detectArrivalKind(`${action}\n${text}`);
+        if (arrivalKind && sceneId) {
+          arrivalLookup.mutate({ kind: arrivalKind, prompt: action, assistantText: text });
+        }
       }
     },
-    onError: (_error, { activityId }) => {
+    onError: (error, { activityId }) => {
       finishAssistantActivity(activityId);
-      showToast("副 DM 暂时没有响应，请检查本地模型", "error");
+      showToast(error.message.includes("重复回复") ? error.message : "副 DM 暂时没有响应，请检查本地模型", "error");
     },
   });
-  const advance = (action: string) => {
+  const askAssistant = (action: string) => {
     if (!action.trim() || !sceneId || assistant.isPending || liveAssistant) return;
-    addEntry("dm", action.trim());
-    void log("DM 推进", action.trim(), { entry_kind: "dm" });
+    addEntry("dm", action.trim(), "ask");
+    void log("DM 询问", action.trim(), { entry_kind: "dm", assistant_intent: "ask" });
     assistant.mutate({
       action: action.trim(),
-      activityId: startAssistantActivity("副 DM 正在读取当前 Scene 并生成推进建议"),
+      intent: "ask",
+      activityId: startAssistantActivity("副 DM 正在理解问题并生成回答", "ask"),
     });
     setInput("");
+  };
+  const recordProgressAndAsk = (action: string) => {
+    if (!action.trim() || !sceneId || assistant.isPending || liveAssistant) return;
+    addEntry("dm", action.trim(), "advance");
+    void log("DM 推进", action.trim(), { entry_kind: "dm", assistant_intent: "advance" });
+    assistant.mutate({
+      action: action.trim(),
+      intent: "advance",
+      activityId: startAssistantActivity("副 DM 正在承接已发生事实并生成推进建议", "advance"),
+    });
+    setInput("");
+  };
+  const retryAssistant = () => {
+    const failed = assistant.variables;
+    if (!failed || assistant.isPending || liveAssistant) return;
+    assistant.reset();
+    assistant.mutate({
+      ...failed,
+      activityId: startAssistantActivity(failed.intent === "ask" ? "副 DM 正在重新回答" : "副 DM 正在重新生成推进建议", failed.intent),
+    });
   };
   const executeInput = () => {
     const action = input.trim();
     if (!action || !sceneId || arrivalLookup.isPending || grantLookup.isPending || liveAssistant) return;
-    addEntry("dm", `【执行】${action}`);
-    void log("DM 执行指令", action, { entry_kind: "dm", action: "execute_request" });
+    addEntry("dm", action, "execute");
+    void log("DM 执行指令", action, { entry_kind: "dm", action: "execute_request", assistant_intent: "execute" });
     const grantIntent = detectCharacterGrantIntent(action, characters.data ?? []);
     if (grantIntent) {
       grantLookup.mutate(grantIntent);
@@ -882,7 +942,8 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
     }
     assistant.mutate({
       action: `DM要求立即落实以下场景变化，并给出可执行后果草案：${action}`,
-      activityId: startAssistantActivity("副 DM 正在分析这次场景变化"),
+      intent: "execute",
+      activityId: startAssistantActivity("副 DM 正在分析这次场景变化", "execute"),
     });
     setInput("");
   };
@@ -1268,6 +1329,7 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
       const aiEntry: ProgressEntry = {
         id: createClientId("progress"),
         kind: "ai",
+        intent: "advance",
         text,
         createdAt: new Date().toISOString(),
       };
@@ -1286,6 +1348,7 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
           scene_id: target.id,
           game_table: true,
           entry_kind: "ai",
+          assistant_intent: "advance",
           action: "scene_opening",
         },
       });
@@ -1362,12 +1425,14 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
         {
           id: createClientId("progress"),
           kind: "system" as const,
+          intent: "advance" as const,
           text: `DM把流程推进到第 ${step.order} 步“${step.title}”。`,
           createdAt: new Date().toISOString(),
         },
         {
           id: createClientId("progress"),
           kind: "ai" as const,
+          intent: "advance" as const,
           text,
           createdAt: new Date().toISOString(),
         },
@@ -1933,7 +1998,7 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
         <Panel eyebrow="自由推进 / 快速推进" title="游戏推进对话">
           {!sceneId ? <EmptyState title="先选择场景" hint="选择当前场景后，副 DM 才能读取正确的情景状态。" /> : null}
           <div className="max-h-[52vh] space-y-3 overflow-y-auto pr-1">
-            {entries.map((entry) => <div className={`rounded-lg border px-3 py-2 ${entry.kind === "dm" ? "ml-10 border-ember-800/50 bg-ember-950/20" : entry.kind === "ai" ? "mr-10 border-violet-800/50 bg-violet-950/20" : "border-ink-700 bg-ink-950/50"}`} key={entry.id}><span className="block text-2xs text-stone-600">{entry.kind === "dm" ? "DM 推进" : entry.kind === "ai" ? "副 DM 私密提示" : "情景变化"}</span><p className="prose-block mb-0 mt-1 text-sm text-stone-300">{entry.kind === "ai" ? safeDndText(entry.text) : entry.text}</p></div>)}
+            {entries.map((entry) => <div className={`rounded-lg border px-3 py-2 ${entry.kind === "dm" ? "ml-10 border-ember-800/50 bg-ember-950/20" : entry.kind === "ai" ? "mr-10 border-violet-800/50 bg-violet-950/20" : "border-ink-700 bg-ink-950/50"}`} key={entry.id}><span className="block text-2xs text-stone-600">{assistantEntryLabel(entry.kind, entry.intent)}</span><p className="prose-block mb-0 mt-1 text-sm text-stone-300">{entry.kind === "ai" ? safeDndText(entry.text) : entry.text}</p></div>)}
             {liveAssistant ? (
               <div
                 aria-busy={liveAssistant.status === "thinking"}
@@ -1941,7 +2006,7 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
                 className="mr-10 rounded-lg border border-violet-700/60 bg-violet-950/25 px-3 py-2 shadow-[0_0_24px_rgba(124,58,237,0.08)]"
                 role="status"
               >
-                <span className="block text-2xs text-violet-300">副 DM 私密提示 · 实时生成</span>
+                <span className="block text-2xs text-violet-300">{assistantEntryLabel("ai", liveAssistant.intent)} · 实时生成</span>
                 {liveAssistant.status === "thinking" ? (
                   <div className="mt-2 flex items-center gap-2 text-sm text-stone-300">
                     <span className="flex gap-1" aria-hidden="true">
@@ -1983,9 +2048,9 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
               </p>
             </div>
           ) : null}
-          <div className="mt-4 grid gap-2">{quickActions.map((action) => <Button disabled={!sceneId || assistant.isPending || Boolean(liveAssistant)} key={action} onClick={() => advance(action)} size="sm">{action}</Button>)}</div>
-          <form className="mt-3" onSubmit={(event: FormEvent) => { event.preventDefault(); advance(input); }}><textarea className={textareaCls} onChange={(event) => setInput(event.target.value)} placeholder="记录玩家行动、NPC 对话、现场变化，或输入“给艾琳一把长剑”……" value={input} /><div className="mt-2 flex flex-wrap justify-end gap-2"><Button disabled={!sceneId || !input.trim() || Boolean(liveAssistant)} loading={arrivalLookup.isPending || grantLookup.isPending} onClick={executeInput} type="button" variant="primary">执行并生成实体 / 奖励 / 后果</Button><Button disabled={!sceneId || !input.trim() || Boolean(liveAssistant)} loading={assistant.isPending} type="submit" variant="ai">记录并询问副 DM</Button></div><p className="mb-0 mt-2 text-2xs text-stone-600">“询问”只记录并给建议；“执行”会把登场者、玩家装备/道具或合法能力变化转成规则校验后的草案，DM确认前不会写入。</p></form>
-          {assistant.isError ? <div className="mt-3"><ErrorState error={assistant.error} onRetry={() => advance(input)} /></div> : null}
+          <div className="mt-4 grid gap-2">{quickActions.map((action) => <Button disabled={!sceneId || assistant.isPending || Boolean(liveAssistant)} key={action} onClick={() => askAssistant(action)} size="sm">{action}</Button>)}</div>
+          <form className="mt-3" onSubmit={(event: FormEvent) => { event.preventDefault(); askAssistant(input); }}><textarea aria-label="副 DM 输入" className={textareaCls} onChange={(event) => setInput(event.target.value)} placeholder="问建议、要一段可朗读文案，或记录已经发生的玩家行动……" value={input} /><div className="mt-2 flex flex-wrap justify-end gap-2"><Button disabled={!sceneId || !input.trim() || Boolean(liveAssistant)} loading={arrivalLookup.isPending || grantLookup.isPending} onClick={executeInput} type="button" variant="primary">执行并生成草案</Button><Button disabled={!sceneId || !input.trim() || Boolean(liveAssistant)} loading={assistant.isPending && assistant.variables?.intent === "advance"} onClick={() => recordProgressAndAsk(input)} type="button">记录为推进并询问</Button><Button disabled={!sceneId || !input.trim() || Boolean(liveAssistant)} loading={assistant.isPending && assistant.variables?.intent === "ask"} type="submit" variant="ai">只询问副 DM</Button></div><p className="mb-0 mt-2 text-2xs text-stone-600">“只询问”不会推进流程、同步玩家提示或触发转场；只有“记录为推进”代表事情已经发生。“执行”只生成待确认的实体、奖励或后果草案。</p></form>
+          {assistant.isError ? <div className="mt-3"><ErrorState error={assistant.error} onRetry={retryAssistant} /></div> : null}
         </Panel>
         </div>
         <div className="space-y-4 xl:min-h-0 xl:overflow-y-auto xl:pl-1">
