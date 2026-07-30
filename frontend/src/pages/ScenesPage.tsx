@@ -236,25 +236,57 @@ function ScenesContent({ campaignId }: { campaignId: string }): ReactElement {
     ...(monsters.data ?? []).map((entity) => ({ key: `monster:${entity.id}`, label: `怪物 · ${entity.name}` })),
   ], [characters.data, monsters.data, npcs.data]);
   const sceneCreate = useMutation({
-    mutationFn: () => {
-      const grid = generateTacticalSceneGrid(sceneName.trim(), sceneDescription.trim());
-      return createScene(campaignId, {
+    mutationFn: async () => {
+      const location = locations.data?.find((item) => item.id === locationId);
+      const grid = generateTacticalSceneGrid(
+        sceneName.trim(),
+        sceneDescription.trim(),
+        `${location?.name ?? ""} ${location?.description ?? ""}`,
+      );
+      const scene = await createScene(campaignId, {
         name: sceneName.trim(), location_id: locationId || null,
         description: sceneDescription.trim() || null,
         notes: JSON.stringify({ scene_grid: grid }),
       });
+      await createPersistentGrid(campaignId, scene.id, {
+        width: grid.width,
+        height: grid.height,
+        cell_size_ft: grid.cell_size_ft,
+        mode: "exploration",
+        public_description: grid.theme,
+        dm_description: `由 Scene“${scene.name}”的名称、地点与描述自动生成，可继续调整。`,
+        layers_json: { theme: grid.theme, cells: grid.cells },
+      });
+      return scene;
     },
-    onSuccess: (scene) => {
+    onSuccess: async (scene) => {
       setSceneName("");
       setSceneDescription("");
+      await client.invalidateQueries({ queryKey: ["scenes", campaignId] });
       setSceneId(scene.id);
-      void client.invalidateQueries({ queryKey: ["scenes", campaignId] });
+      await client.invalidateQueries({ queryKey: ["persistent-scene-grid", campaignId, scene.id] });
       showToast("场景已创建");
     },
     onError: () => showToast("场景创建失败", "error"),
   });
   const gridCreate = useMutation({
-    mutationFn: () => createPersistentGrid(campaignId, sceneId, { width: activeGrid?.width ?? 12, height: activeGrid?.height ?? 8, cell_size_ft: 5, mode: "exploration", public_description: activeScene?.description ?? null }),
+    mutationFn: () => {
+      const location = locations.data?.find((item) => item.id === activeScene?.location_id);
+      const grid = activeGrid ?? generateTacticalSceneGrid(
+        activeScene?.name ?? "未命名场景",
+        activeScene?.description ?? "",
+        `${location?.name ?? ""} ${location?.description ?? ""}`,
+      );
+      return createPersistentGrid(campaignId, sceneId, {
+        width: grid.width,
+        height: grid.height,
+        cell_size_ft: grid.cell_size_ft,
+        mode: "exploration",
+        public_description: grid.theme,
+        dm_description: `由旧 Scene“${activeScene?.name ?? "未命名场景"}”补建。`,
+        layers_json: { theme: grid.theme, cells: grid.cells },
+      });
+    },
     onSuccess: () => { void client.invalidateQueries({ queryKey: ["persistent-scene-grid", campaignId, sceneId] }); showToast("持久探索网格已生成"); },
     onError: () => showToast("网格已存在或创建失败", "error"),
   });
