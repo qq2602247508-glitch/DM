@@ -46,6 +46,7 @@ import { Badge, Button, EmptyState, ErrorState, LoadingBlock } from "../ui/primi
 import { inputCls, selectCls, textareaCls } from "../ui/styles";
 import { safeDndText } from "../ui/contentSafety";
 import { splitAssistantRevealChunks } from "../ui/assistantReveal";
+import { buildPlayerGuidance, type PlayerGuidanceReason } from "../ui/playerGuidance";
 import { HpBar } from "../ui/widgets";
 import { atomsToStrictPrepDraft, buildFallbackPrepDraft, parsePrepDraft, type DraftAtom } from "../ui/prepDraft";
 import { generateTacticalSceneGrid } from "../ui/sceneGridGenerator";
@@ -623,6 +624,31 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
     });
     await client.invalidateQueries({ queryKey: ["events", campaignId] });
   };
+  const publishPlayerGuidance = async (input: {
+    sceneName: string;
+    sceneId: string;
+    locationId?: string | null;
+    phase: ScenePhase;
+    reason: PlayerGuidanceReason;
+  }) => {
+    const guidance = buildPlayerGuidance(input);
+    try {
+      await createEvent(campaignId, {
+        title: guidance.title,
+        description: guidance.suggestions.join("\n"),
+        event_type: "player_guidance",
+        visibility: "players",
+        location_id: input.locationId ?? null,
+        metadata_json: {
+          scene_id: input.sceneId,
+          guidance_phase: input.phase,
+          guidance_reason: input.reason,
+        },
+      });
+    } catch {
+      showToast("主机推进已完成，但玩家行动提示暂时没有同步", "error");
+    }
+  };
   const addEntry = (kind: ProgressEntry["kind"], text: string) => {
     setEntries((current) => [...current, { id: createClientId("progress"), kind, text, createdAt: new Date().toISOString() }]);
   };
@@ -799,6 +825,13 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
       addEntry("ai", text);
       finishAssistantActivity(activityId);
       await log("AI 推进建议", text, { dm_action: action, entry_kind: "ai" });
+      await publishPlayerGuidance({
+        sceneName: activeScene?.name ?? "当前 Scene",
+        sceneId,
+        locationId: activeScene?.location_id,
+        phase: activePhase,
+        reason: "dm_advanced",
+      });
       const arrivalKind = detectArrivalKind(`${action}\n${text}`);
       if (arrivalKind && sceneId) {
         arrivalLookup.mutate({ kind: arrivalKind, prompt: action, assistantText: text });
@@ -1251,6 +1284,13 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
           action: "scene_opening",
         },
       });
+      await publishPlayerGuidance({
+        sceneName: target.name,
+        sceneId: target.id,
+        locationId: target.location_id,
+        phase: "opening",
+        reason: "scene_entered",
+      });
       void client.invalidateQueries({ queryKey: ["events", campaignId] });
     },
     onError: (_error, { activityId }) => {
@@ -1348,6 +1388,13 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
           flow_step_kind: step.kind,
           flow_step_status: "current",
         },
+      });
+      await publishPlayerGuidance({
+        sceneName: target.name,
+        sceneId: target.id,
+        locationId: target.location_id,
+        phase: step.sourcePhase,
+        reason: "flow_advanced",
       });
       void client.invalidateQueries({ queryKey: ["events", campaignId] });
     },

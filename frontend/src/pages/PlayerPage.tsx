@@ -899,6 +899,17 @@ function PlayerDashboard({
     if (snapshot.combat?.status === "active") setTab("combat");
   }, [snapshot.combat?.id, snapshot.combat?.status]);
   const availableTransitions = snapshot.table.scene?.available_transitions ?? [];
+  const latestGuidance = snapshot.table.shared_log.find(
+    (event) => event.event_type === "player_guidance",
+  );
+  const guidanceSuggestions = latestGuidance?.description
+    ?.split("\n")
+    .map((item) => item.trim())
+    .filter(Boolean) ?? [];
+  const publicLog = snapshot.table.shared_log.filter(
+    (event) => event.event_type !== "player_guidance",
+  );
+  const suggestedCharacterActions = snapshot.table.noncombat?.available_actions.slice(0, 3) ?? [];
   return (
     <main className="mx-auto min-h-screen max-w-[1500px] p-3 lg:p-6">
       <header className="mb-4 flex flex-wrap items-center gap-3 border-b border-ink-700 pb-4">
@@ -948,6 +959,28 @@ function PlayerDashboard({
       {tab === "rules" ? <section className={cardCls}><h2 className="mt-0 font-display text-2xl">D&D 5e 本地规则搜索</h2><p className="text-sm text-stone-400">只做确定性关键词检索，不调用本地生成AI。</p><div className="flex gap-2"><input aria-label="规则关键词" className={inputCls} onChange={(event) => setRuleText(event.target.value)} placeholder="例如：擒抱、火球术、倒地" value={ruleText} /><Button disabled={!ruleText.trim()} loading={rulesMutation.isPending} onClick={() => rulesMutation.mutate()} variant="primary">搜索</Button></div><div className="mt-4 space-y-3">{ruleHits.map((hit, index) => <article className="rounded border border-ink-700 p-3" key={`${hit.name}-${index}`}><strong>{hit.name}</strong><span className="ml-2 text-2xs text-stone-500">{hit.edition} · {hit.content_type}</span><p className="mb-0 text-sm leading-6 text-stone-400">{hit.excerpt}</p></article>)}</div></section> : null}
       {tab === "table" ? <div className="grid gap-4 lg:grid-cols-[1.2fr_.8fr]">
         <div className="space-y-4">
+          {latestGuidance ? (
+            <section
+              aria-live="polite"
+              className={`${cardCls} border-violet-700/70 bg-violet-950/20`}
+              data-testid="player-live-guidance"
+              key={latestGuidance.id}
+            >
+              <p className="m-0 text-2xs font-semibold uppercase tracking-[.18em] text-violet-300">随 DM 推进自动更新</p>
+              <h2 className="mb-2 mt-1 font-display text-xl text-violet-50">{latestGuidance.title}</h2>
+              <ul className="m-0 space-y-2 pl-5 text-sm leading-6 text-stone-300">
+                {guidanceSuggestions.map((suggestion) => <li key={suggestion}>{suggestion}</li>)}
+              </ul>
+              {suggestedCharacterActions.length ? (
+                <div className="mt-3 border-t border-violet-800/50 pt-3">
+                  <span className="text-2xs text-stone-500">结合你的角色，可考虑：</span>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {suggestedCharacterActions.map((action) => <span className="rounded border border-violet-800/60 bg-ink-950/50 px-2 py-1 text-xs text-violet-200" key={action.id}>{action.name}</span>)}
+                  </div>
+                </div>
+              ) : null}
+            </section>
+          ) : null}
           <section className={cardCls}><h2 className="mt-0 font-display text-2xl">{snapshot.table.scene?.name ?? "等待 DM 选择 Scene"}</h2><p className="whitespace-pre-wrap text-sm leading-6 text-stone-400">{snapshot.table.scene?.description}</p>
             {availableTransitions.length ? (
               <div className="mt-3 rounded border border-violet-800/60 bg-violet-950/20 p-3">
@@ -977,7 +1010,7 @@ function PlayerDashboard({
           {snapshot.table.scene ? <NoncombatActionPanel refresh={refresh} snapshot={snapshot} /> : null}
         </div>
         <aside className="space-y-4">
-          <section className={cardCls}><h2 className="mt-0 font-display text-xl">公开游戏日志</h2>{snapshot.table.shared_log.length ? snapshot.table.shared_log.map((event) => <article className="mb-3 border-l-2 border-amber-700 pl-3" key={event.id}><strong className="text-sm">{event.title}</strong><p className="mb-0 mt-1 text-xs text-stone-400">{event.description}</p></article>) : <p className="text-sm text-stone-500">等待 DM 推进。</p>}</section>
+          <section className={cardCls}><h2 className="mt-0 font-display text-xl">公开游戏日志</h2>{publicLog.length ? publicLog.map((event) => <article className="mb-3 border-l-2 border-amber-700 pl-3" key={event.id}><strong className="text-sm">{event.title}</strong><p className="mb-0 mt-1 text-xs text-stone-400">{event.description}</p></article>) : <p className="text-sm text-stone-500">等待 DM 推进。</p>}</section>
           <section className={cardCls}><h2 className="mt-0 font-display text-xl">公开讲义</h2>{snapshot.table.handouts.map((handout) => <details className="mb-2 rounded border border-ink-700 p-2" key={handout.id}><summary>{handout.title}</summary><p className="whitespace-pre-wrap text-sm text-stone-400">{handout.body}</p></details>)}</section>
           <section className={cardCls}><h2 className="mt-0 font-display text-xl">自由行动</h2><p className="text-xs text-stone-500">规则列表没有覆盖时，仍可用自然语言告诉 DM。</p><textarea className={inputCls} onChange={(event) => setIntent(event.target.value)} placeholder="例如：我把耳朵贴在门上听里面的声音。" rows={3} value={intent} /><Button className="mt-2" disabled={!intent.trim()} loading={intentMutation.isPending} onClick={() => intentMutation.mutate()} variant="primary">提交给 DM 裁定</Button></section>
         </aside>

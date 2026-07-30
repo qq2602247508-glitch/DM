@@ -219,4 +219,45 @@ describe("PlayerPage", () => {
       });
     });
   });
+
+  it("shows the latest player-safe guidance and character-specific actions", async () => {
+    vi.stubGlobal("fetch", vi.fn(() => Promise.resolve(new Response(JSON.stringify({
+      room: { id: "room-1", status: "active", expires_at: "2026-07-28T00:00:00Z" },
+      campaign: { id: "campaign-1", name: "暮铃磨坊", current_time: null },
+      player: { id: "session-1", display_name: "玩家甲", character_id: "hero-1" },
+      available_characters: [],
+      character: {
+        id: "hero-1", name: "莉亚", race: "人类", background: "艺人", class_name: "吟游诗人",
+        level: 1, experience: 0, armor_class: 14, speed: 30, ability_scores: {}, hp: 10, max_hp: 10,
+        max_hp_reduction: 0, death_saves: { successes: 0, failures: 0 }, inventory: [], equipment: [],
+        equipment_assets: [], active_attunements: 0, proficiencies: [], skills: {}, features: [], actions: [],
+        resources: {}, spells: [], spellcasting: {}, class_levels: { 吟游诗人: 1 }, subclass_choices: {},
+        wallet: null, version: 1,
+      },
+      table: {
+        scene: { id: "scene-1", name: "提灯旅店", description: "钟声刚刚停下。", grid: null, tokens: [], objects: [], available_transitions: [] },
+        handouts: [],
+        shared_log: [
+          { id: "guide-2", event_type: "player_guidance", title: "场景进入了新的推进节点 · 轮到你们回应", description: "观察门外的动静。\n决定由谁先与店主交谈。", occurred_at: "2026-07-30T10:00:00Z" },
+          { id: "log-1", event_type: "session_progress", title: "钟声停止", description: "大厅安静下来。", occurred_at: "2026-07-30T09:59:00Z" },
+        ],
+        noncombat: {
+          available_actions: [
+            { id: "skill-perception", kind: "skill", name: "察觉", description: "观察环境", target_types: ["area"] },
+            { id: "skill-insight", kind: "skill", name: "洞悉", description: "判断态度", target_types: ["npc"] },
+          ],
+          pending_actions: [],
+        },
+      },
+      combat: null,
+    }), { status: 200, headers: { "Content-Type": "application/json" } }))));
+    renderPage();
+
+    const guidance = await screen.findByTestId("player-live-guidance");
+    expect(guidance).toHaveTextContent("场景进入了新的推进节点 · 轮到你们回应");
+    expect(guidance).toHaveTextContent("观察门外的动静");
+    expect(guidance).toHaveTextContent("察觉");
+    expect(guidance).toHaveTextContent("洞悉");
+    expect(screen.getByRole("heading", { name: "公开游戏日志" }).parentElement).not.toHaveTextContent("轮到你们回应");
+  });
 });
