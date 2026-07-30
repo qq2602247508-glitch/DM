@@ -1,6 +1,31 @@
 import { describe, expect, it } from "vitest";
 
+import { splitAssistantRevealChunks } from "../ui/assistantReveal";
 import { buildFallbackPrepDraft, parsePrepDraft } from "../ui/prepDraft";
+
+describe("splitAssistantRevealChunks", () => {
+  it("keeps multiple lines ordered", () => {
+    expect(splitAssistantRevealChunks("第一段。\n\n第二段。\n第三段。")).toEqual([
+      "第一段。",
+      "第二段。",
+      "第三段。",
+    ]);
+  });
+
+  it("splits a long single Chinese paragraph at sentence punctuation", () => {
+    const text = "守卫放下长矛，但仍然挡在门前。远处的钟声突然停了；酒馆里的谈话也跟着安静下来！你们现在要继续交涉，还是寻找另一条入口？";
+    expect(splitAssistantRevealChunks(text)).toEqual([
+      "守卫放下长矛，但仍然挡在门前。",
+      "远处的钟声突然停了；",
+      "酒馆里的谈话也跟着安静下来！",
+      "你们现在要继续交涉，还是寻找另一条入口？",
+    ]);
+  });
+
+  it("returns no chunks for blank input", () => {
+    expect(splitAssistantRevealChunks(" \n\n ")).toEqual([]);
+  });
+});
 
 describe("parsePrepDraft", () => {
   it("parses building and dungeon atoms with region paths and level caps", () => {
