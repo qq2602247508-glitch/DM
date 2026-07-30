@@ -6,6 +6,7 @@ import {
   confirmMerchant,
   listMerchants,
   previewMerchant,
+  type MerchantGroup,
   type MerchantPreview,
 } from "../api/merchants";
 import { listScenes } from "../api/world";
@@ -37,6 +38,83 @@ function metadataText(stock: MerchantPreview["stock"][number], key: string): str
   return typeof value === "string" && value.trim() ? value : null;
 }
 
+function stockCategory(stock: MerchantGroup["stock"][number]): string {
+  return metadataText(stock, "category") ?? "未分类";
+}
+
+function stockSourceKind(stock: MerchantGroup["stock"][number]): "official" | "original" | null {
+  const value = stock.source_kind ?? stock.metadata_json?.source_kind;
+  return value === "official" || value === "original" ? value : null;
+}
+
+function MerchantCard({
+  shop,
+  open,
+  onToggle,
+}: {
+  shop: MerchantGroup;
+  open: boolean;
+  onToggle: () => void;
+}): ReactElement {
+  const panelId = `merchant-${shop.merchant_id}`;
+  return (
+    <article className={`rounded-lg border bg-ink-900/50 transition ${open ? "border-violet-700" : "border-ink-700 hover:border-ink-500"}`}>
+      <button
+        aria-controls={panelId}
+        aria-expanded={open}
+        className="flex w-full items-center justify-between gap-4 p-4 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400"
+        onClick={onToggle}
+        type="button"
+      >
+        <span>
+          <span className="block text-base text-parchment-100">{shop.name}</span>
+          <span className="mt-2 block text-xs text-stone-500">
+            {shop.stock.length} 种库存 · {TIER_LABELS[shop.item_tier] ?? shop.item_tier}
+          </span>
+        </span>
+        <span className="shrink-0 text-xs text-violet-300">{open ? "收起" : "打开商店 →"}</span>
+      </button>
+      {open ? (
+        <div className="border-t border-ink-700 p-4" id={panelId}>
+          <div className="flex flex-wrap gap-2">
+            <Badge tone="ai">商人 NPC</Badge>
+            {shop.location_name ? <Badge>地点：{shop.location_name}</Badge> : null}
+            {shop.scene_name ? <Badge>Scene：{shop.scene_name}</Badge> : null}
+            {shop.armor_class !== null ? <Badge>AC {shop.armor_class}</Badge> : null}
+            {shop.hp !== null && shop.max_hp !== null ? <Badge>HP {shop.hp}/{shop.max_hp}</Badge> : null}
+          </div>
+          <p className="mb-0 mt-3 text-sm leading-6 text-stone-400">
+            {shop.brief || "这位商人还没有经营描述。"}
+          </p>
+          <h4 className="mb-2 mt-4 text-sm text-parchment-100">当前库存</h4>
+          {shop.stock.length ? (
+            <ul className="m-0 grid gap-2 p-0 sm:grid-cols-2">
+              {shop.stock.map((item) => {
+                const sourceKind = stockSourceKind(item);
+                const category = stockCategory(item);
+                return (
+                  <li className="list-none rounded border border-ink-700 bg-ink-950/50 p-3" key={item.id ?? `${shop.merchant_id}-${item.name}`}>
+                    <div className="flex items-start justify-between gap-2">
+                      <span className="text-sm text-parchment-100">{item.name}</span>
+                      {sourceKind ? <Badge tone={sourceKind === "official" ? "ok" : "ai"}>{sourceKind === "official" ? "官方图鉴" : "原创"}</Badge> : null}
+                    </div>
+                    <p className="mb-0 mt-2 text-xs text-stone-500">
+                      {(item.price_copper / 100).toFixed(2)} gp · 库存 {item.quantity}
+                    </p>
+                    <p className="mb-0 mt-1 text-2xs text-stone-600">
+                      {CATEGORY_LABELS[category] ?? category}
+                    </p>
+                  </li>
+                );
+              })}
+            </ul>
+          ) : <EmptyState title="当前没有库存" />}
+        </div>
+      ) : null}
+    </article>
+  );
+}
+
 export function MerchantsPage(): ReactElement {
   const { campaignId } = useCurrentCampaign();
   const queryClient = useQueryClient();
@@ -49,6 +127,7 @@ export function MerchantsPage(): ReactElement {
   const [categories, setCategories] = useState<string[]>(["weapon", "armor", "adventuring_gear"]);
   const [characterIds, setCharacterIds] = useState<string[]>([]);
   const [preview, setPreview] = useState<MerchantPreview | null>(null);
+  const [openMerchantId, setOpenMerchantId] = useState<string | null>(null);
 
   const locations = useQuery({
     queryKey: ["locations", campaignId],
@@ -88,8 +167,9 @@ export function MerchantsPage(): ReactElement {
   });
   const confirmation = useMutation({
     mutationFn: () => confirmMerchant(campaignId ?? "", preview as MerchantPreview),
-    onSuccess: async () => {
+    onSuccess: async (result) => {
       setPreview(null);
+      setOpenMerchantId(result.merchant_id);
       await queryClient.invalidateQueries({ queryKey: ["merchants", campaignId] });
     },
   });
@@ -199,7 +279,18 @@ export function MerchantsPage(): ReactElement {
       </section> : null}
       <section>
         <h2 className="font-display text-lg">已创建商店</h2>
-        {merchants.isLoading ? <LoadingBlock /> : merchants.error ? <ErrorState error={merchants.error} /> : merchants.data?.length ? <div className="grid gap-3 lg:grid-cols-2">{merchants.data.map((shop) => <article className="rounded-lg border border-ink-700 bg-ink-900/50 p-4" key={shop.merchant_id}><h3 className="m-0 text-base text-parchment-100">{shop.name}</h3><p className="mb-0 mt-2 text-xs text-stone-500">{shop.stock.length} 种库存 · {shop.item_tier}</p></article>)}</div> : <EmptyState title="还没有商店" hint="先从官方原子图鉴按地点、队伍和等级生成一间商店。" />}
+        {merchants.isLoading ? <LoadingBlock /> : merchants.error ? <ErrorState error={merchants.error} /> : merchants.data?.length ? (
+          <div className="grid items-start gap-3 lg:grid-cols-2">
+            {merchants.data.map((shop) => (
+              <MerchantCard
+                key={shop.merchant_id}
+                onToggle={() => setOpenMerchantId((current) => current === shop.merchant_id ? null : shop.merchant_id)}
+                open={openMerchantId === shop.merchant_id}
+                shop={shop}
+              />
+            ))}
+          </div>
+        ) : <EmptyState title="还没有商店" hint="先从官方原子图鉴按地点、队伍和等级生成一间商店。" />}
       </section>
     </div>
   );

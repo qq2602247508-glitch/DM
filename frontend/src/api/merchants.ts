@@ -41,8 +41,15 @@ export type MerchantGroup = {
   merchant_id: string;
   name: string;
   npc_id: string;
+  brief: string;
+  attitude: string | null;
+  hp: number | null;
+  max_hp: number | null;
+  armor_class: number | null;
   location_id: string | null;
+  location_name: string | null;
   scene_id: string | null;
+  scene_name: string | null;
   item_tier: string;
   stock: MerchantStock[];
 };

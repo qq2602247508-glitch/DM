@@ -283,6 +283,29 @@ class MerchantService:
                     },
                 )
                 group["stock"].append(serialize(row))
+            for group in grouped.values():
+                npc = session.get(NPC, group["npc_id"]) if group.get("npc_id") else None
+                location = (
+                    session.get(Location, group["location_id"])
+                    if group.get("location_id")
+                    else None
+                )
+                scene = (
+                    session.get(Scene, group["scene_id"])
+                    if group.get("scene_id")
+                    else None
+                )
+                group.update(
+                    {
+                        "brief": npc.description if npc else "",
+                        "attitude": npc.attitude if npc else None,
+                        "hp": npc.hp if npc else None,
+                        "max_hp": npc.max_hp if npc else None,
+                        "armor_class": npc.armor_class if npc else None,
+                        "location_name": location.name if location else None,
+                        "scene_name": scene.name if scene else None,
+                    }
+                )
             return list(grouped.values())
 
     @staticmethod
