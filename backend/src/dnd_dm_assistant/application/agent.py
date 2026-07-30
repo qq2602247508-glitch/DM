@@ -17,6 +17,7 @@ from dnd_dm_assistant.domain.agent import (
     CampaignStateArgs,
     DMHint,
     DMHintArgs,
+    Intent,
     ModelRunRecord,
     ModelRunStatus,
     RuleSearchArgs,
@@ -116,9 +117,10 @@ _NARRATIVE_POLICY = _AssistantModePolicy(
         "NPC 反应、线索延展与后果，不得把创意当成既有事实。"
     ),
     hint_contract=(
-        "当前是 narrative 剧情模式。text 必须按“当前局势、可选推进、可能后果”组织，"
-        "给出二至四个真正随情境变化的选择；没有规则证据时不得给具体 DC、伤害骰、"
-        "持续轮数或规则来源。新角色、事件和转折只能写入 assumptions 或 "
+        "当前是 narrative 剧情快速模式。text 控制在500个中文字符以内，先给一段可立即"
+        "采用的现场反应，再给二至四个真正随情境变化的短选项，最后只写必要风险；"
+        "assumptions 和 uncertainties 各不超过三条。没有规则证据时不得给具体 DC、"
+        "伤害骰、持续轮数或规则来源。新角色、事件和转折只能写入 assumptions 或 "
         "proposed_changes，不能声称已写入战役。"
     ),
 )
@@ -261,6 +263,8 @@ class ToolRegistry:
                     for key, value in state.items()
                     if key in allowed or key == "as_of"
                 }
+                if request.mode == "narrative":
+                    state = _compact_narrative_state(state)
                 return ToolResult(tool=call.tool, ok=True, data=_json_safe(state)), (), None
             if call.tool is ToolName.UPDATE_CAMPAIGN_STATE:
                 update_args = _validate_tool_args(UpdateCampaignStateArgs, call.arguments)
@@ -346,15 +350,13 @@ class AgentOrchestrator:
         self._hint_generator = hint_generator
         self._persistence = persistence
         self._state = state
-        self._tools = (
-            ToolRegistry(
-                knowledge=knowledge,
-                state=state,
-                persistence=persistence,
-                planner_model_name=planner.model_name,
-            )
-            if planner is not None
-            else None
+        self._tools = ToolRegistry(
+            knowledge=knowledge,
+            state=state,
+            persistence=persistence,
+            planner_model_name=(
+                planner.model_name if planner is not None else hint_generator.model_name
+            ),
         )
 
     async def run(self, request: AgentRequest) -> AgentResponse:
@@ -362,59 +364,81 @@ class AgentOrchestrator:
         # prevents model-run rows from being written for a nonexistent campaign.
         self._state.state(request.campaign_id, limit=1)
         policy = _mode_policy(request.mode)
-        if self._planner is None or self._tools is None:
+        if self._planner is None:
             raise AgentUnavailableError(
                 "intent model is not configured; configure an installed local model explicitly"
             )
-        plan_started = perf_counter()
-        try:
-            plan = await self._planner.plan(
-                _planner_system_prompt(request.mode),
-                _planner_user_prompt(request),
+        if request.mode == "narrative":
+            # The game table already sends the active Scene, participants,
+            # current flow step and recent log in the action. A second model
+            # call to rediscover that intent added latency and occasionally
+            # selected unrelated campaign scopes. Build the bounded read plan
+            # deterministically and reserve the single 30B call for the prose.
+            plan = AgentPlan(
+                intent=Intent.STATE_LOOKUP,
+                rationale="deterministic narrative fast path",
+                calls=(
+                    ToolCall(
+                        tool=ToolName.GET_CAMPAIGN_STATE,
+                        arguments={
+                            "campaign_id": request.campaign_id,
+                            "scopes": list(policy.state_scopes),
+                            "limit": policy.state_limit,
+                        },
+                    ),
+                ),
             )
-        except RuntimeUnavailableError as exc:
+        else:
+            assert self._planner is not None
+            plan_started = perf_counter()
+            try:
+                plan = await self._planner.plan(
+                    _planner_system_prompt(request.mode),
+                    _planner_user_prompt(request),
+                )
+            except RuntimeUnavailableError as exc:
+                self._record_run(
+                    request,
+                    role="intent",
+                    model=self._planner.model_name,
+                    version=policy.planner_prompt_version,
+                    started=plan_started,
+                    status=ModelRunStatus.UNAVAILABLE,
+                    error="runtime_unavailable",
+                )
+                raise AgentUnavailableError("configured local intent model is unavailable") from exc
+            except (ValidationError, ValueError) as exc:
+                self._record_run(
+                    request,
+                    role="intent",
+                    model=self._planner.model_name,
+                    version=policy.planner_prompt_version,
+                    started=plan_started,
+                    status=ModelRunStatus.INVALID_OUTPUT,
+                    error="invalid_output",
+                )
+                raise InvalidAgentOutputError("intent model returned invalid JSON") from exc
+            try:
+                self._validate_plan(plan)
+            except InvalidAgentOutputError:
+                self._record_run(
+                    request,
+                    role="intent",
+                    model=self._planner.model_name,
+                    version=policy.planner_prompt_version,
+                    started=plan_started,
+                    status=ModelRunStatus.INVALID_OUTPUT,
+                    error="invalid_plan",
+                )
+                raise
             self._record_run(
                 request,
                 role="intent",
                 model=self._planner.model_name,
                 version=policy.planner_prompt_version,
                 started=plan_started,
-                status=ModelRunStatus.UNAVAILABLE,
-                error="runtime_unavailable",
+                status=ModelRunStatus.SUCCEEDED,
             )
-            raise AgentUnavailableError("configured local intent model is unavailable") from exc
-        except (ValidationError, ValueError) as exc:
-            self._record_run(
-                request,
-                role="intent",
-                model=self._planner.model_name,
-                version=policy.planner_prompt_version,
-                started=plan_started,
-                status=ModelRunStatus.INVALID_OUTPUT,
-                error="invalid_output",
-            )
-            raise InvalidAgentOutputError("intent model returned invalid JSON") from exc
-        try:
-            self._validate_plan(plan)
-        except InvalidAgentOutputError:
-            self._record_run(
-                request,
-                role="intent",
-                model=self._planner.model_name,
-                version=policy.planner_prompt_version,
-                started=plan_started,
-                status=ModelRunStatus.INVALID_OUTPUT,
-                error="invalid_plan",
-            )
-            raise
-        self._record_run(
-            request,
-            role="intent",
-            model=self._planner.model_name,
-            version=policy.planner_prompt_version,
-            started=plan_started,
-            status=ModelRunStatus.SUCCEEDED,
-        )
 
         results: list[ToolResult] = []
         citations: list[Citation] = []
@@ -686,6 +710,42 @@ def _hint_user_prompt(
         ],
     }
     return json.dumps(data, ensure_ascii=False, separators=(",", ":"))
+
+
+def _compact_narrative_state(state: dict[str, Any]) -> dict[str, Any]:
+    """Keep the single-call table prompt relevant and bounded.
+
+    The game-table action already contains the active Scene, current flow step,
+    participants and recent log. Campaign state is only a safety net here, so
+    verbose combat sheets, equipment and private bookkeeping would add latency
+    and increase cross-Scene contamination without improving the suggestion.
+    """
+
+    field_limits: dict[str, tuple[tuple[str, ...], int]] = {
+        "characters": (("name", "class_name", "level", "hp", "max_hp"), 8),
+        "npcs": (("name", "attitude", "goal", "known_information"), 8),
+        "locations": (("name", "description"), 8),
+        "quests": (("name", "status", "description"), 6),
+        "open_clues": (("name", "player_text", "discovered"), 6),
+    }
+    compact: dict[str, Any] = {"as_of": state.get("as_of")}
+    campaign = state.get("campaign")
+    if isinstance(campaign, dict):
+        compact["campaign"] = {
+            key: campaign.get(key)
+            for key in ("name", "world_setting", "current_time")
+            if campaign.get(key) is not None
+        }
+    for collection, (fields, limit) in field_limits.items():
+        raw_items = state.get(collection)
+        if not isinstance(raw_items, (list, tuple)):
+            continue
+        compact[collection] = [
+            {key: item.get(key) for key in fields if item.get(key) is not None}
+            for item in raw_items[:limit]
+            if isinstance(item, dict)
+        ]
+    return compact
 
 
 def _json_safe(value: Any) -> dict[str, Any]:

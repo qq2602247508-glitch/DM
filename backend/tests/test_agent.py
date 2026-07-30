@@ -325,7 +325,7 @@ async def _test_assistant_modes_use_distinct_prompts_and_contexts() -> None:
     )
     prompts: dict[str, tuple[str, str, str, str]] = {}
     state_data: dict[str, dict[str, Any]] = {}
-    run_versions: dict[str, tuple[str, str]] = {}
+    run_versions: dict[str, tuple[str, ...]] = {}
 
     for mode in ("quick", "narrative", "combat"):
         planner = FakePlanner(plan)
@@ -345,25 +345,26 @@ async def _test_assistant_modes_use_distinct_prompts_and_contexts() -> None:
                 mode=mode,  # type: ignore[arg-type]
             )
         )
+        planner_prompt = (
+            planner.prompts[0] if planner.prompts else ("deterministic", "deterministic")
+        )
         prompts[mode] = (
-            planner.prompts[0][0],
-            planner.prompts[0][1],
+            planner_prompt[0],
+            planner_prompt[1],
             generator.prompts[0][0],
             generator.prompts[0][1],
         )
         state_data[mode] = response.tool_results[0].data
-        run_versions[mode] = (
-            persistence.runs[0].prompt_version,
-            persistence.runs[1].prompt_version,
-        )
+        run_versions[mode] = tuple(run.prompt_version for run in persistence.runs)
 
-    assert len({value[0] for value in prompts.values()}) == 3
+    assert prompts["narrative"][0] == "deterministic"
+    assert len({value[0] for value in (prompts["quick"], prompts["combat"])}) == 2
     assert len({value[2] for value in prompts.values()}) == 3
     assert "assistant_mode=quick" in prompts["quick"][1]
-    assert "assistant_mode=narrative" in prompts["narrative"][1]
+    assert len(run_versions["narrative"]) == 1
     assert "assistant_mode=combat" in prompts["combat"][1]
     assert '"assistant_mode":"narrative"' in prompts["narrative"][3]
-    assert "可选推进" in prompts["narrative"][2]
+    assert "现场反应" in prompts["narrative"][2]
     assert "动作经济" in prompts["combat"][0]
     assert "需要的骰子/豁免" in prompts["combat"][2]
 
@@ -374,7 +375,8 @@ async def _test_assistant_modes_use_distinct_prompts_and_contexts() -> None:
     assert "active_combats" in state_data["combat"]
     assert "quests" not in state_data["combat"]
     assert "open_clues" not in state_data["combat"]
-    assert len(set(run_versions.values())) == 3
+    assert len(run_versions["quick"]) == 2
+    assert len(run_versions["combat"]) == 2
 
 
 def test_unknown_duplicate_and_invalid_typed_payload_fail_closed() -> None:

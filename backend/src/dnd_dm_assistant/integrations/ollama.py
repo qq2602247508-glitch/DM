@@ -225,6 +225,12 @@ class OllamaDMHintAdapter:
         return self._model
 
     async def generate_hint(self, system_prompt: str, user_prompt: str) -> GeneratedDMHint:
+        options: dict[str, Any] = {"temperature": 0.2}
+        if "narrative 剧情快速模式" in system_prompt:
+            # A table-side hint should return while the DM is still speaking,
+            # not expand into an essay. This remains large enough for the
+            # strict JSON envelope plus a concise Chinese response.
+            options["num_predict"] = 700
         response = await _request_with_retry(
             self._client,
             "/api/chat",
@@ -241,7 +247,7 @@ class OllamaDMHintAdapter:
                 # JSON object; `_validated_chat_content` performs the complete
                 # strict Pydantic validation and fails closed.
                 "format": "json",
-                "options": {"temperature": 0.2},
+                "options": options,
             },
             timeout=self._timeout,
             retries=self._retries,

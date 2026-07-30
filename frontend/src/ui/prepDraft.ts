@@ -8,6 +8,7 @@ export type DraftSceneOutline = {
   twist: string;
   climax: string;
   transition: string;
+  flow?: string[];
 };
 export type DraftAtom = {
   id: string;
@@ -57,7 +58,10 @@ export function atomsToStrictPrepDraft(
       return {
         key, name: atom.name, location_key: firstLocation ?? null,
         description: atom.description, status: "active",
-        notes: atom.sceneOutline ? JSON.stringify({ story_outline: atom.sceneOutline }) : null,
+        notes: atom.sceneOutline ? JSON.stringify({
+          story_outline: atom.sceneOutline,
+          story_flow: atom.sceneOutline.flow ?? [],
+        }) : null,
         grid: {
           width: grid.width, height: grid.height, cell_size_ft: grid.cell_size_ft,
           mode: "exploration", public_description: grid.theme,
@@ -133,8 +137,8 @@ export function buildFallbackPrepDraft(brief: string): string {
   return `## 地点
 - ${locationName}｜${normalized}。这里包含入口、主要活动区、掩体与可互动物，并生成对应的5尺战斗网格。
 ## 场景
-- 第一章｜1｜${firstScene}｜让玩家认识彼此并了解眼前局势｜描述${locationName}与在场人物，请每名玩家介绍角色｜通过店主、旅客或现场细节给出行动切入点｜异动打断集结，${monsterName}威胁现场｜玩家决定交涉、保护平民或迎战｜威胁出现时进入下一Scene
-- 第一章｜2｜${monsterName}突袭｜处理突袭并保护现场｜从入口、暗处或混乱人群中展示敌人出现｜让玩家利用环境、交涉或准备战斗｜敌人改变位置或威胁无辜者｜击退、制服或迫使敌人撤退｜战斗结算后调查敌人的来意
+- 第一章｜1｜${firstScene}｜让玩家认识彼此并了解眼前局势｜描述${locationName}与在场人物，请每名玩家介绍角色｜通过店主、旅客或现场细节给出行动切入点｜异动打断集结，${monsterName}威胁现场｜玩家决定交涉、保护平民或迎战｜威胁出现时进入下一Scene｜描述地点与在场人物 >> 请每名玩家介绍角色和此刻行动 >> 给出现场人物或物件的自然切入点 >> 接收玩家自由方案并描述世界反应 >> 只在必要时进行规则裁定 >> 异动出现并询问玩家如何处理 >> 记录人物态度、线索与资源变化 >> DM确认是否进入下一Scene
+- 第一章｜2｜${monsterName}突袭｜处理突袭并保护现场｜从入口、暗处或混乱人群中展示敌人出现｜让玩家利用环境、交涉或准备战斗｜敌人改变位置或威胁无辜者｜击退、制服或迫使敌人撤退｜战斗结算后调查敌人的来意｜展示威胁位置与可见意图 >> 询问所有玩家的即时反应 >> 接收交涉、利用环境、撤离或战斗方案 >> 裁定行动和失败代价 >> 若开战则使用当前Scene网格 >> 结算战斗或非战斗解决结果 >> 记录奖励、伤势和线索 >> DM确认后继续调查
 ## 建筑
 - ${locationName}｜${isBaldursGate ? "博德之门/下城区" : "新手村/中心区"}｜2｜包含集结大厅、后厨、客房、储藏室与门廊；楼层和房间以门连接。
 ## NPC
@@ -174,7 +178,7 @@ export function parsePrepDraft(text: string): DraftAtom[] {
     if (currentKind === "scene" && parts.length >= 4 && /^\d+$/.test(parts[1] ?? "")) {
       const [
         chapterTitle, rawOrder, name, objective = "", opening = "",
-        development = "", twist = "", climax = "", transition = "",
+        development = "", twist = "", climax = "", transition = "", rawFlow = "",
       ] = parts;
       if (!chapterTitle || !name) continue;
       atoms.push({
@@ -191,6 +195,7 @@ export function parsePrepDraft(text: string): DraftAtom[] {
           twist: twist || "可选转折。",
           climax: climax || "确认场景目标。",
           transition: transition || "由 DM 决定是否转场。",
+          flow: rawFlow.split(">>").map((step) => step.trim()).filter(Boolean),
         },
       });
       continue;
