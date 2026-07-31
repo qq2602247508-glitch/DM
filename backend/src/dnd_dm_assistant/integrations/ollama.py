@@ -234,6 +234,7 @@ class OllamaDMHintAdapter:
             # A table-side hint should return while the DM is still speaking,
             # not expand into an essay. This remains large enough for the
             # strict JSON envelope plus a concise Chinese response.
+            options["temperature"] = 0.35
             options["num_predict"] = 700
         response = await _request_with_retry(
             self._client,

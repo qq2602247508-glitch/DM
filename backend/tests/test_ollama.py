@@ -8,9 +8,59 @@ import pytest
 
 from dnd_dm_assistant.application.rag import RuntimeUnavailableError
 from dnd_dm_assistant.integrations.ollama import (
+    OllamaDMHintAdapter,
     OllamaEmbeddingAdapter,
     OllamaGroundedAnswerAdapter,
 )
+
+
+def test_narrative_hint_uses_bounded_context_and_creative_temperature() -> None:
+    captured: dict[str, object] = {}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        captured.update(json.loads(request.content))
+        return httpx.Response(
+            200,
+            json={
+                "message": {
+                    "content": json.dumps(
+                        {
+                            "visibility": "dm_private",
+                            "request_understanding": "写一段可朗读文案",
+                            "response_plan": "自然描写并交还行动权",
+                            "delivery_mode": "read_aloud",
+                            "audience_handoff": "直接朗读",
+                            "text": "灯火轻晃。你们准备怎么做？",
+                            "assumptions": [],
+                            "uncertainties": [],
+                            "citation_chunk_ids": [],
+                            "proposed_changes": [],
+                        }
+                    )
+                }
+            },
+        )
+
+    async def scenario() -> None:
+        client = httpx.AsyncClient(
+            transport=httpx.MockTransport(handler), base_url="http://ollama.test"
+        )
+        adapter = OllamaDMHintAdapter(
+            base_url="http://ollama.test",
+            model="qwen",
+            retries=0,
+            client=client,
+        )
+        result = await adapter.generate_hint("当前是 narrative 剧情快速模式。", "写开场")
+        assert result.delivery_mode == "read_aloud"
+        await client.aclose()
+
+    asyncio.run(scenario())
+    assert captured["options"] == {
+        "temperature": 0.35,
+        "num_ctx": 8192,
+        "num_predict": 700,
+    }
 
 
 def test_embedding_batches_and_preserves_vector_dimensions() -> None:

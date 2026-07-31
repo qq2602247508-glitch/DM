@@ -849,18 +849,31 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
         semanticBrief = `交付类型：revision；直接承接并改写同团上一条已通过回答；必须遵守本句里的长度、语气、说话者和玩家参与量要求。${expansionRequirement}对可朗读创作文案允许继续自由发挥氛围与无规则结算的叙事细节；对事实说明不得新增战役事实。`;
       } else if (intent === "ask") {
         deliveryMode = inferAssistantDeliveryMode(action, "other");
+        const deliveryContract = deliveryMode === "dm_guidance"
+          ? "这是给DM的方法建议：默认只给主持方法，不创作新的NPC台词、异象、线索、遭遇或替代任务，除非DM明确要求这些示例。若DM要求引导步骤、主持步骤或明确说不要旁白，输出主持人可以执行的元层步骤（例如确认、询问、复述、交还选择），不要写场景事件、NPC扮演或玩家预设反应。必须直接回应当前难题，尊重玩家已经作出的选择，不能换一种说法把人强推回原路线；创意内容只能明确标成可选做法，不能冒充已经发生。DM说‘不要推进’时，任何新的世界事件或剧情钩子都不允许出现。若DM要求若干条，每一条都要功能不同且能实际采用。"
+          : deliveryMode === "spoken_line"
+            ? "这是角色可以直接说出口的成品台词：必须让听者从话本身感受到说话者已经察觉了什么，并准确实现DM要求的克制、警告、隐瞒、邀请等目的；不要用无关寒暄或新道具、新经历绕开说话目的。只给台词，不要加入旁白、动作说明、建议列表或解释；没有依据时不要宣布新的世界事实。"
+            : deliveryMode === "explanation"
+              ? "这是原因或逻辑说明：先直接回答为什么，再区分已确认依据与可选解释。DM要求你设计或提供一个理由时，必须以‘可采用的共同理由是’等提案语气开头，所有新增细节都要保持可选，不能冒充战役事实；如果只要一个可选理由，交付一个短段即可，多句时每句都继续使用‘可以/可采用/如果/若/不必/只需/暂时’等提案或短期语气，不要扩展成倒计时、强制后果、封印/失控机制或完整剧情。DM不要写死玩家背景时，共同理由只能来自眼前的公共处境、短期利益或当场选择，不能追加角色过去、梦境、家人、秘密或既往遭遇；不要把说明改写成环境描写或DM操作流程。"
+              : deliveryMode === "read_aloud"
+                ? "这是可以直接念给玩家的成品文案：要有清楚的场面变化与叙事节奏，不写DM说明，不替玩家决定动作、感受、过去或结论。DM提到某次行动却没有说明具体目标时，只能用‘刚才检查的地方/目标’等中性指代，不能擅自指定门、石板、箱子、道具或其他对象。"
+                : "严格按DM原句指定的对象、格式、数量和用途交付；如果要的是正文就直接给正文，如果要的是分析就直接给结论与依据。";
         const creativeFreedom = deliveryMode === "read_aloud"
           ? `可自由创作不涉及规则结算的光线、声音、气味、物件、人物小动作、时间感和象征意象，让成品自然、有画面、有叙事节奏；结尾自然用一句简短的行动问题把控制交还玩家，不要改成逐人采访。${requestedCharacters >= 80 ? `DM明确要求约${requestedCharacters}字，正文写到${Math.floor(requestedCharacters * 0.8)}至${Math.ceil(requestedCharacters * 1.2)}字，不要过早收尾。` : ""}这些只是供DM采用的文案草案，不自动成为战役事实。不得泄露未公开名单或隐藏数据。`
           : "";
-        semanticBrief = `交付类型：${deliveryMode}；直接完成DM原句要求。逐项遵守其中的长度、详略、自然程度、说话者、受众和玩家需要发言多少等限制；这些明确限制的优先级高于惯用模板。${creativeFreedom}`;
+        semanticBrief = `交付类型：${deliveryMode}；直接完成DM原句要求。逐项遵守其中的长度、详略、自然程度、说话者、受众和玩家需要发言多少等限制；这些明确限制的优先级高于惯用模板。${deliveryContract}${creativeFreedom}`;
       }
       const interpretationContract = semanticBrief
         ? `回答前的独立任务分析如下：${semanticBrief}。这份分析决定本次交付目标；场景资料只能提供素材，不能覆盖或改变它。`
         : "";
-      const askNames = (participants.data ?? [])
+      const visibleAskParticipants = (participants.data ?? [])
         .filter((item) => item.entity_type === "npc" && item.visible && item.role !== "defeated")
-        .map((item) => `npc:${item.entity.name}`)
-        .join("、") || "没有需要主动点名的公开NPC";
+        .map((item) => item.entity.name);
+      const shouldOfferSceneCast = deliveryMode === "read_aloud" || deliveryMode === "spoken_line";
+      const askNames = visibleAskParticipants
+        .filter((name) => shouldOfferSceneCast || action.includes(name))
+        .map((name) => `npc:${name}`)
+        .join("、") || "DM本次没有点名需要使用的NPC；不要主动编写NPC对白";
       const contextNames = intent === "ask" ? askNames : names;
       const sceneMaterial = intent === "ask"
         ? `公开地点概况：${activeLocation?.description || "未填写；只使用场景名和地点名作为创作锚点"}。`
@@ -877,11 +890,12 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
         )?.content ?? previousReply;
       }
       const revisionContext = deliveryMode === "revision" && previousReply
-        ? `${context}\n上一条待改写文本如下：\n---\n${previousReply}\n---\n请只把这段作为待编辑原稿，不要照抄后再机械追加。${requestedCharacters >= 80 ? `本次目标约${requestedCharacters}字，正文不得少于${Math.floor(requestedCharacters * 0.8)}字。` : "若要求扩写，新成品至少比原稿长25%。"}`
+        ? `${context}\n上一条待改写文本如下：\n---\n${previousReply}\n---\n请只把这段作为待编辑原稿，不要照抄后再机械追加。${requestedCharacters >= 80 ? `本次目标约${requestedCharacters}字，正文控制在${Math.floor(requestedCharacters * 0.8)}至${Math.ceil(requestedCharacters * 1.3)}字。` : "若要求扩写，新成品至少比原稿长25%。"}`
         : context;
       if (
         deliveryMode === "revision"
         && previousReply
+        && requestedCharacters === 0
         && /(?:再短|缩短|精简|亲口说|改成|换成|没有发生|不是事实|不要再使用|别再提|纠正)/i.test(action)
       ) {
         const revisedText = buildSafeRevisionFallback({ requestText: action, previousText: previousReply, locationName: activeLocation?.name ?? "当前地点" });
@@ -927,11 +941,10 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
       }
       let deliveryIssue = assistantDeliveryIssue(deliveryMode, reply, action, previousReply ?? "");
       let repeatedReply = isUnwantedRepeatedReply(action, reply, previousReply);
-      const needsCreativeRetry = deliveryMode === "read_aloud"
-        ? repeatedReply || Boolean(deliveryIssue)
-        : deliveryMode === "revision"
-          && /(?:太短|不够长|长一点|再长|扩写|展开|详细一点|写长)/i.test(action)
-          && Boolean(deliveryIssue);
+      const needsCreativeRetry = deliveryMode === "revision"
+        ? Boolean(deliveryIssue)
+        : ["read_aloud", "explanation", "dm_guidance", "spoken_line"].includes(deliveryMode)
+          && (repeatedReply || Boolean(deliveryIssue));
       if (needsCreativeRetry) {
         response = await runAssistantTurn(
           campaignId,
@@ -956,11 +969,13 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
         }
         reply = deliveryMode === "explanation"
             ? buildSafeExplanationFallback({
+                requestText: action,
                 sceneName: activeScene?.name ?? "当前 Scene",
                 locationName: activeLocation?.name ?? "当前地点",
               })
             : deliveryMode === "dm_guidance"
               ? buildSafeGuidanceFallback({
+                  requestText: action,
                   sceneName: activeScene?.name ?? "当前 Scene",
                   locationName: activeLocation?.name ?? "当前地点",
                 })

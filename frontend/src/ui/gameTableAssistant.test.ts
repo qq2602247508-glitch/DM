@@ -23,16 +23,89 @@ describe("game table assistant intent", () => {
     expect(inferAssistantDeliveryMode("给店主一句警告玩家的台词", "read_aloud")).toBe("spoken_line");
     expect(inferAssistantDeliveryMode("给玩家一段描述，作为跑团开始", "other")).toBe("read_aloud");
     expect(inferAssistantDeliveryMode("我该怎么给玩家开场？", "dm_guidance")).toBe("read_aloud");
+    expect(inferAssistantDeliveryMode("店主发现玩家撒谎，她会怎么回应？只给一句台词", "dm_guidance")).toBe("spoken_line");
+    expect(inferAssistantDeliveryMode("给我一段玩家推开门后的失败后果描写", "other")).toBe("read_aloud");
+    expect(inferAssistantDeliveryMode("玩家不去钟楼，我该怎么办？给三条主持方法，不要写NPC台词、环境事件或新线索", "spoken_line")).toBe("dm_guidance");
     expect(inferAssistantDeliveryMode("把它改成店主亲口说的", "spoken_line")).toBe("revision");
     expect(inferAssistantDeliveryMode("太短了", "other")).toBe("revision");
+    expect(inferAssistantDeliveryMode("玩家刚才调查失败，给我一段后果描写", "other")).toBe("read_aloud");
+    expect(inferAssistantDeliveryMode("保持刚才的叙事风格，再扩写一点", "other")).toBe("revision");
+    expect(inferAssistantDeliveryMode("把刚才那段压到80字，删掉多余比喻", "other")).toBe("revision");
+    expect(inferAssistantDeliveryMode("改得更克制，再来一版", "other")).toBe("revision");
   });
 
   it("checks delivery function by semantic mode instead of request keywords", () => {
     expect(assistantDeliveryIssue("read_aloud", "雨声敲窗，火光摇曳。")).toContain("行动");
     expect(assistantDeliveryIssue("read_aloud", "委托就在桌上。你们打算怎么做？")).toBeNull();
+    expect(assistantDeliveryIssue("read_aloud", "调查没有得到答案。你们接下来要做什么？")).toBeNull();
     expect(assistantDeliveryIssue("dm_guidance", "众人沉默地看着彼此。")).toContain("可执行");
     expect(assistantDeliveryIssue("dm_guidance", "先请每人介绍一个共同经历，再让下一位接话。")).toBeNull();
+    expect(assistantDeliveryIssue(
+      "dm_guidance",
+      "1. 店主说：‘你们不去也好。’ 2. 阴影已经避开你们。 3. 旅店藏着新线索。",
+      "给三条主持方法，不要写NPC台词、环境事件或新线索",
+    )).toContain("台词");
+    expect(assistantDeliveryIssue(
+      "dm_guidance",
+      "1. 让玩家扮演旅店老板。2. 突然响起钟声。3. 请玩家说出本能反应。",
+      "给主持步骤，不要变成开场旁白",
+    )).toContain("场景事件");
+    expect(assistantDeliveryIssue(
+      "spoken_line",
+      "这杯酒和昨天不太一样。",
+      "店主发现玩家撒谎，只给一句克制台词",
+    )).toContain("察觉谎言");
+    expect(assistantDeliveryIssue(
+      "read_aloud",
+      "你伸手碰门，猛地后退，并意识到这里很危险。现在，你们准备怎么办？",
+      "给一段失败后果描写，不要替玩家决定反应",
+    )).toContain("替玩家决定");
+    expect(assistantDeliveryIssue(
+      "read_aloud",
+      "空气里传来低沉的声音。你们感觉到一阵寒意，也听见自己心跳。现在，你们准备怎么办？",
+      "调查失败，但不要替玩家决定行动、感受或结论",
+    )).toContain("替玩家决定");
+    expect(assistantDeliveryIssue(
+      "read_aloud",
+      "你指尖触过的地方没有回应。你环顾四周，一切如常。现在，你们准备怎么办？",
+      "调查失败，但不要替玩家决定行动、感受或结论",
+    )).toContain("替玩家决定");
+    expect(assistantDeliveryIssue(
+      "read_aloud",
+      "墙壁浮出一道裂痕，地面微微下陷。现在，你们准备怎么办？",
+      "调查失败，但我没有说明调查对象；不要指定具体物件",
+    )).toContain("擅自指定");
     expect(assistantDeliveryIssue("explanation", "因为都收到奥尔莎的委托，所以他们在旅店会合。")).toBeNull();
+    expect(assistantDeliveryIssue(
+      "explanation",
+      "出口已经封锁，钥匙藏在地下，所以众人必须合作。",
+      "给一个自然可信的共同理由",
+    )).toContain("已经确认的事实");
+    expect(assistantDeliveryIssue(
+      "explanation",
+      "可采用的共同理由是：出口暂时封锁，所以众人需要合作。",
+      "给一个自然可信的共同理由",
+    )).toBeNull();
+    expect(assistantDeliveryIssue(
+      "explanation",
+      "可采用的共同理由是：他们每个人都曾在梦境里听见钟声。",
+      "给一个共同合作理由，但不要替他们写死个人背景",
+    )).toContain("既往经历");
+    expect(assistantDeliveryIssue(
+      "explanation",
+      "可采用的共同理由是：三人被钟楼深处的低语吸引，必须在三轮内关闭失控的古代装置，否则整座旅店会被吞噬。",
+      "三名陌生玩家为什么愿意临时合作？请给一个可选的共同理由，不要写死个人背景",
+    )).toContain("过度具体");
+    expect(assistantDeliveryIssue(
+      "explanation",
+      "可采用的共同理由是：三人同时被一道神秘召唤术击中，感知到同一道低语。他们虽互不相识，却都察觉到自身被魔法束缚，唯有合作解开共鸣机关才能脱困。",
+      "三名陌生玩家为什么愿意临时合作？请给一个可选的共同理由，不要写死个人背景",
+    )).toContain("过度具体");
+    expect(assistantDeliveryIssue(
+      "explanation",
+      "可采用的共同理由是：三名玩家在旅店大厅中同时被一道来自旧祭坛的幽蓝符文光柱击中，瞬间感知到彼此意识中浮现同一段警告——‘钟楼未眠，门已开启，若不共赴其下，将同陷永夜’。这并非幻觉，而是某种空间共鸣的共感现象，暗示他们正被同一股未知力量选中，必须暂时联手才能查明真相并逃离当前的异常状态。",
+      "三名陌生玩家为什么愿意临时合作？请给一个可选的共同理由，不要写死个人背景",
+    )).toContain("过度具体");
   });
 
   it("builds a fact-bounded read-aloud fallback with an explicit player handoff", () => {
@@ -81,6 +154,8 @@ describe("game table assistant intent", () => {
       .toContain("约250字");
     expect(assistantDeliveryIssue("read_aloud", "甲".repeat(170) + "。你们准备做什么？", "写一段约250字的开场白"))
       .toContain("约250字");
+    expect(assistantDeliveryIssue("revision", "甲".repeat(120), "把刚才那段压到80字"))
+      .toContain("超出目标长度");
   });
 
   it("keeps a strong read-aloud candidate and repairs only its player handoff", () => {
@@ -99,27 +174,67 @@ describe("game table assistant intent", () => {
     const partyVoice = repairReadAloudCandidate(request, "你站在门边，听见远处的钟声。现在，你打算做什么？");
     expect(partyVoice).toContain("你们站在门边");
     expect(partyVoice).toContain("你们打算做什么？");
+
+    const existingHandoff = "调查没有得到答案。你们接下来要做什么？";
+    expect(repairReadAloudCandidate(request, existingHandoff)).toBe(existingHandoff);
+  });
+
+  it("keeps failed investigation narration moving without puppeting players", () => {
+    const text = buildSafeReadAloudFallback({
+      requestText: "调查失败但不要卡团，也不要替玩家决定反应",
+      sceneName: "雾锁钟楼",
+      locationName: "旅店大厅",
+      presentNames: [],
+    });
+    expect(text).toContain("失败也没有抹去已经公开的痕迹");
+    expect(text).toContain("选择仍在你们手里");
+    expect(text).not.toMatch(/你们?(?:伸手|后退|意识到|感到)/);
+    expect(assistantDeliveryIssue("read_aloud", text, "不要替玩家决定反应")).toBeNull();
+  });
+
+  it("keeps an unspecified investigation target neutral", () => {
+    const request = "调查失败，但我没有说明调查对象；不要替玩家决定行动、感受或结论，也不要指定门、石板、箱子或道具";
+    const text = buildSafeReadAloudFallback({
+      requestText: request,
+      sceneName: "雾锁钟楼",
+      locationName: "旅店大厅",
+      presentNames: [],
+    });
+    expect(text).toContain("刚才检查的地方");
+    expect(text).not.toMatch(/门|石板|箱子|道具|墙壁|地面|裂痕/);
+    expect(assistantDeliveryIssue("read_aloud", text, request)).toBeNull();
   });
 
   it("builds a reason without inventing a fixed personal backstory", () => {
     const text = buildSafeExplanationFallback({
+      requestText: "为什么三名陌生冒险者愿意临时合作？",
       sceneName: "提灯旅店的委托",
       locationName: "提灯旅店",
     });
-    expect(text).toContain("共同事项");
-    expect(text).toContain("个人动机不要替玩家定死");
+    expect(text).toContain("可采用的共同理由是");
+    expect(text).toContain("不必拥有共同过去");
     expect(text).not.toContain("工头");
     expect(text).not.toContain("召唤");
   });
 
-  it("builds DM guidance that asks players to author their own motives and links", () => {
+  it("builds DM guidance that respects player agency without forcing the old route", () => {
     const text = buildSafeGuidanceFallback({
+      requestText: "玩家不去钟楼，我怎么接住这个选择？",
       sceneName: "提灯旅店的委托",
       locationName: "提灯旅店",
     });
-    expect(text).toContain("依次问每位玩家");
-    expect(text).toContain("接住一个细节");
-    expect(text).toContain("不要替玩家预写个人经历");
+    expect(text).toContain("玩家不去钟楼");
+    expect(text).toContain("现在想达成什么");
+    expect(text).toContain("不是替他们决定替代路线");
+
+    const introduction = buildSafeGuidanceFallback({
+      requestText: "怎么让三名玩家自然互相认识？",
+      sceneName: "提灯旅店的委托",
+      locationName: "提灯旅店",
+    });
+    expect(introduction).toContain("不追问过去");
+    expect(introduction).toContain("眼前处境");
+    expect(introduction).toContain("不替他们定义关系");
   });
 
   it("builds a minimal spoken warning without inventing the danger's cause", () => {
@@ -127,6 +242,8 @@ describe("game table assistant intent", () => {
       .toBe("“别靠近地下室。我说认真的。”");
     expect(buildSafeSpokenLineFallback("给店主一句提醒大家该出发的台词"))
       .toBe("“各位，该出发了。”");
+    expect(buildSafeSpokenLineFallback("店主发现玩家撒谎，但不要直接撕破脸"))
+      .toContain("再把刚才那句话说一遍");
   });
 
   it("turns revision failures into actual shortened or spoken content", () => {
@@ -151,6 +268,13 @@ describe("game table assistant intent", () => {
       previousText: "你们来到旅店。现在打算怎么做？",
       locationName: "提灯旅店",
     }).length).toBeGreaterThan("你们来到旅店。现在打算怎么做？".length);
+    const compressed = buildSafeRevisionFallback({
+      requestText: "压到80字，保留三步结构",
+      previousText: "1. 先确认玩家已经作出的选择，不质疑也不追加钩子。 2. 再询问他们现在想达成什么，不替他们决定路线。 3. 最后说明公开空间并把行动权交还玩家。",
+      locationName: "提灯旅店",
+    });
+    expect(compressed.length).toBeLessThanOrEqual(80);
+    expect(compressed).toMatch(/1\..*2\..*3\./);
     expect(assistantDeliveryIssue("revision", "短到不能再短。")).toContain("元说明");
     expect(assistantDeliveryIssue("revision", "还是很短。", "太短了", "上一条其实更长一些。")).toContain("没有明显比上一条更完整");
   });
