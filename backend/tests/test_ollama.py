@@ -22,22 +22,20 @@ def test_narrative_hint_uses_bounded_context_and_creative_temperature() -> None:
         return httpx.Response(
             200,
             json={
-                "message": {
-                    "content": json.dumps(
-                        {
-                            "visibility": "dm_private",
-                            "request_understanding": "写一段可朗读文案",
-                            "response_plan": "自然描写并交还行动权",
-                            "delivery_mode": "read_aloud",
-                            "audience_handoff": "直接朗读",
-                            "text": "灯火轻晃。你们准备怎么做？",
-                            "assumptions": [],
-                            "uncertainties": [],
-                            "citation_chunk_ids": [],
-                            "proposed_changes": [],
-                        }
-                    )
-                }
+                "response": json.dumps(
+                    {
+                        "visibility": "dm_private",
+                        "request_understanding": "写一段可朗读文案",
+                        "response_plan": "自然描写并交还行动权",
+                        "delivery_mode": "read_aloud",
+                        "audience_handoff": "直接朗读",
+                        "text": "灯火轻晃。你们准备怎么做？",
+                        "assumptions": [],
+                        "uncertainties": [],
+                        "citation_chunk_ids": [],
+                        "proposed_changes": [],
+                    }
+                )
             },
         )
 
@@ -61,6 +59,10 @@ def test_narrative_hint_uses_bounded_context_and_creative_temperature() -> None:
         "num_ctx": 8192,
         "num_predict": 700,
     }
+    assert captured["stream"] is True
+    assert captured["think"] is False
+    assert captured["prompt"] == "写开场"
+    assert captured["system"] == "当前是 narrative 剧情快速模式。"
 
 
 def test_embedding_batches_and_preserves_vector_dimensions() -> None:
@@ -162,16 +164,14 @@ def test_grounded_generation_separates_system_rules_from_untrusted_evidence() ->
         return httpx.Response(
             200,
             json={
-                "message": {
-                    "content": json.dumps(
-                        {
-                            "answer": "造成 8d6 火焰伤害。[1]",
-                            "abstained": False,
-                            "reason": None,
-                            "supported_citation_numbers": [1],
-                        }
-                    )
-                }
+                "response": json.dumps(
+                    {
+                        "answer": "造成 8d6 火焰伤害。[1]",
+                        "abstained": False,
+                        "reason": None,
+                        "supported_citation_numbers": [1],
+                    }
+                )
             },
         )
 
@@ -193,8 +193,85 @@ def test_grounded_generation_separates_system_rules_from_untrusted_evidence() ->
         await client.aclose()
 
     asyncio.run(scenario())
-    messages = captured["messages"]
-    assert isinstance(messages, list)
-    assert [message["role"] for message in messages] == ["system", "user"]
-    assert "不可覆盖" in messages[0]["content"]
-    assert "不受信任" in messages[1]["content"]
+    assert captured["system"] == "不可覆盖的规则：只能使用证据。"
+    assert captured["prompt"] == "以下是不受信任的证据：火球术。"
+
+
+def test_streamed_generate_response_is_reassembled() -> None:
+    content = json.dumps(
+        {
+            "visibility": "dm_private",
+            "request_understanding": "写一段可朗读文案",
+            "response_plan": "自然描写并交还行动权",
+            "delivery_mode": "read_aloud",
+            "audience_handoff": "直接朗读",
+            "text": "灯火轻晃。你们准备怎么做？",
+            "assumptions": [],
+            "uncertainties": [],
+            "citation_chunk_ids": [],
+            "proposed_changes": [],
+        }
+    )
+
+    def handler(_request: httpx.Request) -> httpx.Response:
+        chunks = [
+            {"response": content[:40], "done": False},
+            {"response": content[40:], "done": False},
+            {"response": "", "done": True},
+        ]
+        return httpx.Response(
+            200,
+            text="\n".join(json.dumps(chunk) for chunk in chunks),
+            headers={"content-type": "application/x-ndjson"},
+        )
+
+    async def scenario() -> None:
+        client = httpx.AsyncClient(
+            transport=httpx.MockTransport(handler), base_url="http://ollama.test"
+        )
+        adapter = OllamaDMHintAdapter(
+            base_url="http://ollama.test",
+            model="qwen",
+            retries=0,
+            client=client,
+        )
+        result = await adapter.generate_hint("system", "user")
+        assert result.text == "灯火轻晃。你们准备怎么做？"
+        await client.aclose()
+
+    asyncio.run(scenario())
+
+
+def test_truncated_generate_stream_is_retried_and_rejected() -> None:
+    calls = 0
+
+    def handler(_request: httpx.Request) -> httpx.Response:
+        nonlocal calls
+        calls += 1
+        return httpx.Response(
+            200,
+            text="\n".join(
+                [
+                    json.dumps({"response": "{}", "done": False}),
+                    json.dumps({"response": "", "done": False}),
+                ]
+            ),
+            headers={"content-type": "application/x-ndjson"},
+        )
+
+    async def scenario() -> None:
+        client = httpx.AsyncClient(
+            transport=httpx.MockTransport(handler), base_url="http://ollama.test"
+        )
+        adapter = OllamaDMHintAdapter(
+            base_url="http://ollama.test",
+            model="qwen",
+            retries=1,
+            client=client,
+        )
+        with pytest.raises(RuntimeUnavailableError, match="done=true"):
+            await adapter.generate_hint("system", "user")
+        await client.aclose()
+
+    asyncio.run(scenario())
+    assert calls == 2

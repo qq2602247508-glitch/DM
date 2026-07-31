@@ -21,7 +21,7 @@
 - 运行副本：`/Users/inagi/codex/130 游戏/135-跑团助手 dnd`
 - 当前分支：`main`
 - 当前基线：`f7d824d`（`fix: preserve natural table-side narration`）；本轮接手改动待提交。
-- 本轮完成后，5 个功能文件与本交接文件一并提交并推送 `main`。
+- 前一轮的 5 个副 DM 功能文件已经在该基线中；本轮工作树只新增 Ollama 适配器兼容修复及其回归测试，连同本交接文件提交并推送 `main`。
 - 页面：`http://127.0.0.1:5173/#/game-table`
 - 后端端口：`8000`
 - 玩家网关端口：`8787`
@@ -99,6 +99,12 @@
 - `read_aloud`、`spoken_line`、`dm_guidance`、`explanation`、`revision` 的交付质量失败都可触发一次定向重写。
 - 正常成功仍为一次模型调用；不是所有请求都固定调用两次。
 
+9. Ollama 生成接口兼容：
+
+- 本机 `qwen3:30b-instruct` 的 `/api/chat` 会返回 `unexpected EOF`；实测 `/api/generate` 配合 `stream: true` 正常返回 NDJSON。
+- 所有 completion 请求统一使用 `system`、`prompt`、`format`、`think: false` 和现有 options；适配器会拼接 `response` 流片段，并继续兼容旧的 `message.content` 响应。
+- NDJSON 必须以 `done: true` 结束；空流、截断流和 Ollama error 帧进入重试路径，避免把截断 JSON 当作成功结果。
+
 ## 已做真实页面验收
 
 在隔离验收团“综合规则验收团 · 0727-2101”中已经验证：
@@ -110,6 +116,12 @@
 
 运行数据库 `model_runs` 的最近证据：正常成功调用约 2.8–3.9 秒；质量失败重写通常是两条约 2.8–3.3 秒的 reasoning run。页面观察到的更长时间还包含测试等待和渐显，不应全部算作模型 latency。
 
+在标准团 `3119d660-b546-4ae2-8e32-083f4ebb3db2` 的 `Scene 5 · 晨溪村庆功与升级` 页面上重新验收：
+
+- 调查失败请求在约 40 秒内完成，返回不指定调查对象的可朗读后果；没有新增门、石板、箱子或道具，也没有替玩家决定动作、感受或结论。
+- “怎么让三名互不相识的玩家自然认识？给三步主持方法，不要开场旁白，不要替他们编过去”返回恰好三步主持方法，没有开场旁白或 NPC 台词。
+- 两次请求只新增 `question/answer` 对话；最近 10 分钟没有新增 `player_guidance`，Scene 仍停留在 Scene 5；应用控制台错误为 0。
+
 ## 交接时未完成内容（本轮已处理）
 
 交接列出的调查目标边界、玩家相识、交叉验收、运行副本同步、标准团恢复、门禁和记忆回写均已在本轮完成：
@@ -117,8 +129,8 @@
 1. 未说明调查对象时，新增具体物件、替玩家动作/感受/认知或结论会被质量门拦截；二次候选仍不合格时使用不指定对象的事实受限回退。
 2. 真实页面确认玩家相识请求返回三步主持方法，不写开场旁白、不编个人过去、不强推路线。
 3. 交叉验收覆盖调查失败、玩家相识、NPC撒谎台词、共同理由、DM建议、精确长度与安全回退；无应用控制台错误。
-4. 5 个功能文件已与运行副本逐一 `cmp` 一致；标准团已恢复到 `Scene 5 · 晨溪村庆功与升级`。
-5. 完整门禁和 8787 健康检查通过；本文件和功能文件待本轮提交推送。
+4. 当前两份变更文件已与运行副本逐一 `cmp` 一致；标准团已恢复到 `Scene 5 · 晨溪村庆功与升级`。
+5. 完整门禁、真实模型调用、浏览器验收和 8787 健康检查通过；本文件和 Ollama 文件待本轮提交推送。
 
 ## 关键决策
 
@@ -137,15 +149,9 @@
 当前未提交的功能文件：
 
 - `backend/src/dnd_dm_assistant/integrations/ollama.py`
-  - narrative temperature、context 和输出预算。
+  - `/api/generate` 流式 NDJSON、`think: false`、截断检测与重试；保留 narrative temperature、context 和输出预算。
 - `backend/tests/test_ollama.py`
-  - narrative Ollama options 回归测试。
-- `frontend/src/pages/GameTablePage.tsx`
-  - 各 delivery mode 的语义契约、NPC 上下文收窄、重试与安全回退接线。
-- `frontend/src/ui/gameTableAssistant.ts`
-  - 类型推断、交付质量检查、安全回退、精确改写。
-- `frontend/src/ui/gameTableAssistant.test.ts`
-  - 新分类、边界、玩家能动性、理由、破冰、台词和长度回归。
+  - payload、流式拼接和截断流回归测试。
 
 本交接文件 `CODEX_HANDOFF.md` 会随本轮功能改动一并提交。
 
@@ -157,7 +163,7 @@
 - 前端 TypeScript：通过。
 - 前端 ESLint：通过。
 - 前端 production build：通过。
-- 后端定向 `tests/test_ollama.py`：6 项通过。
+- 后端定向 `tests/test_ollama.py`：7 项通过。
 - 后端完整 `backend/tests`：245 项通过。
 - Ruff：`backend/src backend/tests` 通过。
 - mypy：本轮后端文件 `backend/src/dnd_dm_assistant/integrations/ollama.py` 通过。
@@ -192,7 +198,7 @@ Statsig 网络超时属于浏览器插件噪音，不是产品错误，不要因
 
 ## 下一步
 
-1. 提交并推送本轮已验证的改动。
+1. 提交并推送本轮已验证的改动，并把最终 commit 写回项目记忆。
 2. 后续继续扩展交付类型时，保持一次正常调用、一次定向重写上限和事实受限回退边界。
 3. 继续使用运行副本数据库，避免把 D&D 与 COC 的服务和记忆混接。
 
