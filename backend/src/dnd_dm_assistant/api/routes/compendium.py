@@ -53,6 +53,7 @@ def list_entries(
     feature_kind: str | None = Query(default=None, max_length=50),
     item_function: str | None = Query(default=None, max_length=50),
     item_kind: str | None = Query(default=None, max_length=50),
+    content_pack: str | None = Query(default=None, max_length=50),
     include_legacy: bool = Query(default=False),
     sort_by: str = Query(
         default="default",
@@ -84,6 +85,7 @@ def list_entries(
                     "feature_kind": feature_kind,
                     "item_function": item_function,
                     "item_kind": item_kind,
+                    "content_pack_key": content_pack,
                 }.items()
                 if value
             },

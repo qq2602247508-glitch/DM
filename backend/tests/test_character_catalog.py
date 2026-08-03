@@ -53,6 +53,24 @@ def test_spell_options_expose_structured_combat_and_narrative_metadata(
             },
         },
         {
+            "stable_id": "summon-elemental",
+            "name": "元素召唤术",
+            "edition": "2024",
+            "officiality": "official",
+            "source_relative_path": "玩家手册2024/法术详述/4环.htm",
+            "content_markdown": (
+                "#### 元素召唤术｜Summon Elemental\n\n"
+                "**施法距离：**90尺\n\n在战斗中，该生物使用你的先攻。"
+            ),
+            "spell": {
+                "level": 4,
+                "classes": ["法师"],
+                "casting_time": "动作",
+                "range": "90尺",
+                "damage_expression": None,
+            },
+        },
+        {
             "stable_id": "detect-magic",
             "name": "侦测魔法",
             "edition": "2024",
@@ -82,6 +100,7 @@ def test_spell_options_expose_structured_combat_and_narrative_metadata(
     options = CharacterCatalog(tmp_path).options()["spells"]
     fireball = next(item for item in options if item["name"] == "火球术")
     mage_hand = next(item for item in options if item["name"] == "法师之手")
+    elemental = next(item for item in options if item["name"] == "元素召唤术")
     detect_magic = next(item for item in options if item["name"] == "侦测魔法")
 
     assert fireball["damage_expression"] == "8d6"
@@ -102,6 +121,11 @@ def test_spell_options_expose_structured_combat_and_narrative_metadata(
     assert mage_hand["level"] == 0
     assert mage_hand["resource_key"] is None
     assert mage_hand["resolution_kind"] == "narrative"
+    assert any(
+        block["kind"] == "summon"
+        and block["initiative_mode"] == "shared_with_source"
+        for block in elemental["rule_plan"]["blocks"]
+    )
     assert detect_magic["damage_expression"] is None
     assert detect_magic["save_ability"] is None
     assert "后续法术" not in detect_magic["description"]

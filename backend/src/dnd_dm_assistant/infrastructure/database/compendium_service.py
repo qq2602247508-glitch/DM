@@ -33,6 +33,7 @@ ENTRY_TYPES = {
     "npc",
     "location",
     "scene",
+    "rule",
 }
 SOURCE_KINDS = {"official", "original", "ai_generated", "dm_modified", "third_party"}
 CURRENT_EDITIONS = {"2024", "2025"}
@@ -120,6 +121,9 @@ class CompendiumService:
         sort_by: str = "default",
         sort_order: str = "asc",
     ) -> dict[str, Any]:
+        with Session(self.engine) as session:
+            campaign = self._campaign(session, campaign_id)
+            enabled_content_packs = list(campaign.enabled_content_packs or [])
         custom_base = list(
             self.list(
                 campaign_id,
@@ -131,13 +135,22 @@ class CompendiumService:
         official_base = (
             []
             if source_kind and source_kind != "official"
-            else self.official.search(entry_type=entry_type, text=text)
+            else self.official.search(
+                entry_type=entry_type,
+                text=text,
+                enabled_content_packs=enabled_content_packs,
+                allow_legacy=bool(campaign.allow_legacy),
+            )
         )
         base_items = [
             *[
                 item
                 for item in official_base
                 if include_legacy
+                or str(
+                    dict(item.get("filters_json") or {}).get("content_pack_key") or ""
+                )
+                in set(enabled_content_packs)
                 or str(dict(item.get("filters_json") or {}).get("edition") or "")
                 in CURRENT_EDITIONS
             ],
@@ -158,6 +171,7 @@ class CompendiumService:
             "feature_kind",
             "item_function",
             "item_kind",
+            "content_pack_key",
         ):
             values: set[str] = set()
             for item in base_items:
@@ -189,7 +203,13 @@ class CompendiumService:
                 1 for item in base_items if item.get("source_kind") == "official"
             ),
             "facets": facets,
+            "enabled_content_packs": enabled_content_packs,
         }
+
+    def content_packs(self) -> tuple[dict[str, Any], ...]:
+        """Metadata and locally importable atom counts for the setup screen."""
+
+        return self.official.content_packs()
 
     @staticmethod
     def _sort_key(item: dict[str, Any], sort_by: str) -> tuple[Any, ...]:
@@ -483,12 +503,17 @@ class CompendiumService:
         request_id: str,
     ) -> dict[str, Any]:
         with Session(self.engine) as session, session.begin():
+            campaign = self._campaign(session, campaign_id)
             entry: dict[str, Any] | None
             persisted = session.get(CompendiumEntry, entry_id)
             if persisted is not None and persisted.campaign_id == campaign_id:
                 entry = serialize(persisted)
             elif entry_id.startswith("official:"):
-                entry = self.official.get(entry_id)
+                entry = self.official.get(
+                    entry_id,
+                    enabled_content_packs=campaign.enabled_content_packs,
+                    allow_legacy=bool(campaign.allow_legacy),
+                )
             else:
                 entry = None
             if entry is None:
@@ -567,6 +592,10 @@ class CompendiumService:
                             dict(entry.get("filters_json") or {}).get("challenge_rating", "1/4")
                         ),
                         actions=_sequence(rules.get("actions")),
+                        damage_resistances=_sequence(rules.get("damage_resistances")),
+                        damage_vulnerabilities=_sequence(rules.get("damage_vulnerabilities")),
+                        damage_immunities=_sequence(rules.get("damage_immunities")),
+                        condition_immunities=_sequence(rules.get("condition_immunities")),
                         notes=entry.get("description"),
                     )
                     entity_type = "monster"

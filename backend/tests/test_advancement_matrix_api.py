@@ -132,6 +132,7 @@ def test_all_core_classes_have_a_legal_level_two_preview(
             json={
                 "character_version": character["version"],
                 "class_name": class_name,
+                "dm_override_reason": "矩阵夹具不重复构造1级完整法术与职业选项",
             },
         )
         assert response.status_code == 200, (
@@ -145,6 +146,143 @@ def test_all_core_classes_have_a_legal_level_two_preview(
         assert isinstance(preview["resource_updates"], dict)
         observed.add(class_name)
     assert observed == set(CORE_CLASSES_2024)
+
+
+def test_batch_advancement_persists_each_step_and_runtime_sheet_state(
+    matrix_client: TestClient,
+    matrix_campaign: dict[str, Any],
+    character_options: dict[str, Any],
+) -> None:
+    fighter = _create_character(
+        matrix_client,
+        matrix_campaign["id"],
+        class_name="战士",
+        level=1,
+        experience=900,
+        suffix="批量运行时",
+    )
+    subclass = _class_option(character_options, "战士")["subclasses"][0]["name"]
+    base_path = (
+        f"/api/v1/campaigns/{matrix_campaign['id']}/characters/{fighter['id']}"
+        "/advancement/batch"
+    )
+    request = {
+        "character_version": fighter["version"],
+        "steps": [
+            {
+                "class_name": "战士",
+                "dm_override_reason": "矩阵夹具仅验证逐级事务状态",
+            },
+            {
+                "class_name": "战士",
+                "subclass_name": subclass,
+                "dm_override_reason": "矩阵夹具仅验证逐级事务状态",
+            },
+        ],
+    }
+    preview_response = matrix_client.post(f"{base_path}/preview", json=request)
+    assert preview_response.status_code == 200, preview_response.text
+    preview = preview_response.json()
+    assert preview["to_level"] == 3
+    assert [step["to_level"] for step in preview["steps"]] == [2, 3]
+    assert preview["after"]["resources"]["action_surge"]["recovery"] == "short_rest"
+    assert any(
+        feature.get("runtime", {}).get("automation_status") in {"partial", "dm_only"}
+        for feature in preview["after"]["features"]
+        if isinstance(feature, dict)
+    )
+
+    confirmed_response = matrix_client.post(
+        f"{base_path}/confirm",
+        json={
+            **request,
+            "preview_token": preview["preview_token"],
+            "idempotency_key": "batch-runtime-state-0001",
+        },
+    )
+    assert confirmed_response.status_code == 200, confirmed_response.text
+    confirmed = confirmed_response.json()
+    assert len(confirmed["advancement_record_ids"]) == 2
+    persisted = matrix_client.get(
+        f"/api/v1/campaigns/{matrix_campaign['id']}/characters/{fighter['id']}"
+    ).json()
+    assert persisted["level"] == 3
+    assert persisted["resources"]["action_surge"]["max"] == 1
+    assert len(
+        matrix_client.get(
+            f"/api/v1/campaigns/{matrix_campaign['id']}/characters/{fighter['id']}/advancement"
+        ).json()["items"]
+    ) >= 2
+
+
+def test_asi_is_an_atomic_sheet_grant_and_preview_exposes_runtime_registry(
+    matrix_client: TestClient,
+    matrix_campaign: dict[str, Any],
+) -> None:
+    fighter = _create_character(
+        matrix_client,
+        matrix_campaign["id"],
+        class_name="战士",
+        level=3,
+        experience=2700,
+        suffix="属性提升运行时",
+    )
+    path = _preview_path(matrix_campaign["id"], fighter["id"])
+
+    incomplete = matrix_client.post(
+        path,
+        json={
+            "character_version": fighter["version"],
+            "class_name": "战士",
+            "ability_increases": {"strength": 1},
+        },
+    )
+    assert incomplete.status_code == 400
+    assert "exactly 2" in incomplete.text
+
+    preview_response = matrix_client.post(
+        path,
+        json={
+            "character_version": fighter["version"],
+            "class_name": "战士",
+            "ability_increases": {"strength": 2},
+            "feature_choices": ["长剑"],
+        },
+    )
+    assert preview_response.status_code == 200, preview_response.text
+    preview = preview_response.json()
+    assert preview["after"]["ability_scores"]["strength"] == 16
+    asi = next(
+        item
+        for item in preview["features_gained"]
+        if item.get("kind") == "ability_score_increase"
+    )
+    assert asi["runtime"]["automation_status"] == "full"
+    assert asi["runtime"]["execution"]["delta"] == {"strength": 2}
+    assert preview["runtime_registry"]["progression"]["proficiency_bonus"] == 2
+    assert preview["after"]["feature_runtime"] == preview["runtime_registry"]
+
+    confirmed_response = matrix_client.post(
+        path.replace("/preview", "/confirm"),
+        json={
+            "character_version": fighter["version"],
+            "class_name": "战士",
+            "ability_increases": {"strength": 2},
+            "feature_choices": ["长剑"],
+            "preview_token": preview["preview_token"],
+            "idempotency_key": "asi-runtime-registry-0001",
+        },
+    )
+    assert confirmed_response.status_code == 200, confirmed_response.text
+    persisted = matrix_client.get(
+        f"/api/v1/campaigns/{matrix_campaign['id']}/characters/{fighter['id']}"
+    ).json()
+    assert persisted["ability_scores"]["strength"] == 16
+    assert any(
+        item.get("kind") == "ability_score_increase"
+        for item in persisted["features"]
+        if isinstance(item, dict)
+    )
 
 
 @pytest.mark.parametrize("class_name", ["战士", "法师", "牧师"])
@@ -176,7 +314,11 @@ def test_level_three_requires_and_accepts_a_catalog_subclass(
 
     valid = matrix_client.post(
         path,
-        json={**base, "subclass_name": subclass_name},
+        json={
+            **base,
+            "subclass_name": subclass_name,
+            "dm_override_reason": "子职矩阵夹具未构造完整法术状态",
+        },
     )
     assert valid.status_code == 200, valid.text
     assert valid.json()["subclass_name"] == subclass_name
@@ -186,6 +328,49 @@ def test_level_three_requires_and_accepts_a_catalog_subclass(
         if item["key"] == "subclass"
     )
     assert requirement["minimum"] == requirement["maximum"] == 1
+
+
+def test_multiclass_preview_requires_the_campaign_extension(
+    matrix_client: TestClient,
+    matrix_campaign: dict[str, Any],
+) -> None:
+    character = _create_character(
+        matrix_client,
+        matrix_campaign["id"],
+        class_name="战士",
+        level=1,
+        experience=300,
+        suffix="未启用兼职",
+    )
+    path = _preview_path(matrix_campaign["id"], character["id"])
+    blocked = matrix_client.post(
+        path,
+        json={"character_version": character["version"], "class_name": "法师"},
+    )
+    assert blocked.status_code == 400
+    assert "未启用兼职" in blocked.text
+
+    enabled_campaign = matrix_client.post(
+        "/api/v1/campaigns",
+        json={"name": "启用兼职", "enabled_rule_extensions": ["multiclassing"]},
+    ).json()
+    enabled_character = _create_character(
+        matrix_client,
+        enabled_campaign["id"],
+        class_name="战士",
+        level=1,
+        experience=300,
+        suffix="启用兼职",
+    )
+    allowed = matrix_client.post(
+        _preview_path(enabled_campaign["id"], enabled_character["id"]),
+        json={
+            "character_version": enabled_character["version"],
+            "class_name": "法师",
+            "dm_override_reason": "兼职矩阵夹具未构造新职业1级法术状态",
+        },
+    )
+    assert allowed.status_code == 200, allowed.text
 
 
 @pytest.mark.parametrize("class_name", ["野蛮人", "战士", "游荡者"])
@@ -224,10 +409,99 @@ def test_level_four_requires_exactly_one_asi_or_feat_path(
 
     valid = matrix_client.post(
         path,
-        json={**base, "ability_increases": {"strength": 2}},
+        json={
+            **base,
+            "ability_increases": {"strength": 2},
+            "feature_choices": [
+                f"测试职业选项{index + 1}"
+                for index in range(
+                    sum(
+                        item["minimum"]
+                        for item in _class_option(character_options, class_name)[
+                            "levels"
+                        ][3]["choice_requirements"]
+                        if item["kind"] == "feature_option"
+                    )
+                )
+            ],
+        },
     )
     assert valid.status_code == 200, valid.text
     assert valid.json()["after"]["ability_scores"]["strength"] == 16
+
+
+def test_strict_caster_state_feat_prerequisite_and_dm_character_consistency(
+    matrix_client: TestClient,
+    matrix_campaign: dict[str, Any],
+    character_options: dict[str, Any],
+) -> None:
+    caster = _create_character(
+        matrix_client,
+        matrix_campaign["id"],
+        class_name="吟游诗人",
+        level=1,
+        experience=300,
+        suffix="缺失法术",
+    )
+    strict = matrix_client.post(
+        _preview_path(matrix_campaign["id"], caster["id"]),
+        json={"character_version": caster["version"], "class_name": "吟游诗人"},
+    )
+    assert strict.status_code == 400
+    assert "戏法" in strict.text
+
+    rogue_subclass = _class_option(character_options, "游荡者")["subclasses"][0]["name"]
+    rogue = _create_character(
+        matrix_client,
+        matrix_campaign["id"],
+        class_name="游荡者",
+        level=3,
+        experience=2_700,
+        suffix="专长前置",
+        subclass_name=rogue_subclass,
+    )
+    lowered_scores = {**_abilities(), "charisma": 8}
+    lowered = matrix_client.patch(
+        f"/api/v1/campaigns/{matrix_campaign['id']}/characters/{rogue['id']}",
+        headers={"If-Match": str(rogue["version"])},
+        json={"ability_scores": lowered_scores},
+    )
+    assert lowered.status_code == 200, lowered.text
+    rogue = lowered.json()
+    feat_path = _preview_path(matrix_campaign["id"], rogue["id"])
+    blocked_feat = matrix_client.post(
+        feat_path,
+        json={
+            "character_version": rogue["version"],
+            "class_name": "游荡者",
+            "feat_choice": "演员Actor",
+        },
+    )
+    assert blocked_feat.status_code == 400
+    assert "魅力13+" in blocked_feat.text
+
+    hp_growth = matrix_client.post(
+        feat_path,
+        json={
+            "character_version": rogue["version"],
+            "class_name": "游荡者",
+            "ability_increases": {"constitution": 2},
+        },
+    )
+    assert hp_growth.status_code == 200, hp_growth.text
+    assert hp_growth.json()["constitution_hp_adjustment"] == 4
+    assert hp_growth.json()["hp_gain"] == 11
+
+    invalid_create = matrix_client.post(
+        f"/api/v1/campaigns/{matrix_campaign['id']}/characters",
+        json={
+            "name": "非法等级",
+            "class_name": "战士",
+            "level": 5,
+            "class_levels": {"战士": 4},
+        },
+    )
+    assert invalid_create.status_code == 400
 
 
 def test_wizard_spell_matrix_rejects_wrong_class_ring_count_and_preparation(

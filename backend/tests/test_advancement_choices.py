@@ -4,6 +4,7 @@ from dnd_dm_assistant.domain.advancement import ClassLevel, ClassProgression
 from dnd_dm_assistant.domain.advancement_choices import (
     CORE_CLASSES_2024,
     advancement_choice_requirements,
+    core_feature_grants,
     maximum_class_spell_level,
     progression_resource_updates,
 )
@@ -70,6 +71,51 @@ def test_resource_progression_is_compiled_from_the_class_table() -> None:
     assert progression_resource_updates(fighter, 4)["second_wind"] == {
         "label": "回气",
         "max": 3,
-        "recovery": "long_rest",
+        "recovery": "short_rest",
         "source": "战士 4级成长表",
+        "recovery_events": [
+            {"rest": "short_rest", "operation": "restore", "amount": 1},
+            {"rest": "long_rest", "operation": "set_to_max"},
+        ],
     }
+
+
+def test_runtime_grants_keep_unstructured_effects_in_dm_adjudication() -> None:
+    monk = _rule("武僧")
+    monk_level_two = monk.levels[1]
+    monk = ClassProgression(
+        name=monk.name,
+        source_record_id=monk.source_record_id,
+        source_path=monk.source_path,
+        hit_die=monk.hit_die,
+        levels=(
+            monk.levels[0],
+            ClassLevel(
+                monk_level_two.level,
+                monk_level_two.proficiency_bonus,
+                ("功力", "偏转攻击"),
+                {"功力": "2"},
+            ),
+            *monk.levels[2:],
+        ),
+        subclasses=monk.subclasses,
+    )
+
+    updates = progression_resource_updates(monk, 2)
+    assert updates["focus"] == {
+        "label": "功力点",
+        "max": 2,
+        "recovery": "short_rest",
+        "source": "武僧 2级成长表",
+        "recovery_events": [
+            {"rest": "short_rest", "operation": "set_to_max"},
+            {"rest": "long_rest", "operation": "set_to_max"},
+        ],
+    }
+    grants = core_feature_grants(monk, 2)
+    tracked = next(item for item in grants if item["name"] == "功力")
+    unresolved = next(item for item in grants if item["name"] == "偏转攻击")
+    assert tracked["runtime"]["automation_status"] == "full"
+    assert tracked["runtime"]["tracked_resource_keys"] == ["focus"]
+    assert unresolved["runtime"]["automation_status"] == "partial"
+    assert unresolved["runtime"]["requires_dm_adjudication"] is True

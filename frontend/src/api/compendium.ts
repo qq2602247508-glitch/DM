@@ -1,7 +1,7 @@
 import { apiFetch } from "./client";
 
 export type CompendiumEntryType =
-  | "spell" | "feature" | "monster" | "equipment" | "item" | "npc" | "location" | "scene";
+  | "spell" | "feature" | "monster" | "equipment" | "item" | "npc" | "location" | "scene" | "rule";
 export type CompendiumSourceKind =
   | "official" | "original" | "ai_generated" | "dm_modified" | "third_party";
 

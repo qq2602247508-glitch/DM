@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  abilityGenerationIsValid,
   classSkillSelection,
   isPreparedCombatSpell,
+  rolledAbilityScore,
   spellChoicesComplete,
   spellIsAvailable,
   spellSelectionRule,
@@ -10,6 +12,24 @@ import {
 } from "./characterRules";
 
 describe("2024 character creation limits", () => {
+  it("validates standard array, point buy, and auditable 4d6 rolls", () => {
+    const standard = { strength: 15, dexterity: 14, constitution: 13, intelligence: 12, wisdom: 10, charisma: 8 };
+    const pointBuy = { strength: 15, dexterity: 14, constitution: 13, intelligence: 12, wisdom: 10, charisma: 8 };
+    const rolls = {
+      strength: [6, 6, 6, 1], dexterity: [6, 5, 4, 1], constitution: [5, 5, 4, 1],
+      intelligence: [4, 4, 4, 1], wisdom: [4, 4, 3, 1], charisma: [3, 3, 3, 1],
+    };
+    const rolled = {
+      strength: 18, dexterity: 15, constitution: 14, intelligence: 12, wisdom: 11, charisma: 9,
+    };
+
+    expect(abilityGenerationIsValid("standard_array", standard, {})).toBe(true);
+    expect(abilityGenerationIsValid("point_buy", pointBuy, {})).toBe(true);
+    expect(abilityGenerationIsValid("rolled_4d6_drop_lowest", rolled, rolls)).toBe(true);
+    expect(rolledAbilityScore([6, 6, 6, 1])).toBe(18);
+    expect(abilityGenerationIsValid("rolled_4d6_drop_lowest", { ...rolled, wisdom: 12 }, rolls)).toBe(false);
+  });
+
   it("requires wizard skill choices and removes background duplicates", () => {
     const rule = classSkillSelection("法师", ["奥秘", "历史"]);
     expect(rule.count).toBe(2);

@@ -32,6 +32,44 @@ export type SpellSelectionRule = {
   preparedLeveled?: number;
 };
 
+export type AbilityGenerationMethod = "standard_array" | "point_buy" | "rolled_4d6_drop_lowest";
+
+export const ABILITY_GENERATION_METHODS: Array<{ key: AbilityGenerationMethod; label: string }> = [
+  { key: "standard_array", label: "标准数组" },
+  { key: "point_buy", label: "27 点购点" },
+  { key: "rolled_4d6_drop_lowest", label: "4d6 去最低" },
+];
+
+export const STANDARD_ARRAY = [8, 10, 12, 13, 14, 15] as const;
+export const POINT_BUY_COSTS: Record<number, number> = {
+  8: 0, 9: 1, 10: 2, 11: 3, 12: 4, 13: 5, 14: 7, 15: 9,
+};
+export const LANGUAGES_2024 = [
+  "通用语", "矮人语", "精灵语", "巨人语", "侏儒语", "地精语", "半身人语", "兽人语", "龙语", "炼狱语",
+] as const;
+
+export function rolledAbilityScore(rolls: readonly number[]): number | null {
+  if (rolls.length !== 4 || rolls.some((roll) => !Number.isInteger(roll) || roll < 1 || roll > 6)) return null;
+  return [...rolls].sort((left, right) => left - right).slice(1).reduce((sum, roll) => sum + roll, 0);
+}
+
+export function abilityGenerationIsValid(
+  method: AbilityGenerationMethod,
+  scores: Record<string, number>,
+  rolls: Record<string, number[]>,
+): boolean {
+  const values = Object.values(scores);
+  if (values.length !== 6 || values.some((score) => !Number.isInteger(score))) return false;
+  if (method === "standard_array") {
+    return [...values].sort((left, right) => left - right).join(",") === STANDARD_ARRAY.join(",");
+  }
+  if (method === "point_buy") {
+    return values.every((score) => score in POINT_BUY_COSTS)
+      && values.reduce((total, score) => total + (POINT_BUY_COSTS[score] ?? 0), 0) === 27;
+  }
+  return Object.entries(scores).every(([ability, score]) => rolledAbilityScore(rolls[ability] ?? []) === score);
+}
+
 export const SKILLS_2024 = [
   "杂技", "驯兽", "奥秘", "运动", "欺瞒", "历史", "洞悉", "威吓", "调查",
   "医药", "自然", "察觉", "表演", "游说", "宗教", "巧手", "隐匿", "生存",
@@ -201,6 +239,33 @@ export const BACKGROUNDS_2024: BackgroundRule[] = [
   { name: "士兵", skills: ["运动", "威吓"], feat: "凶蛮打手", equipment: ["长矛", "短弓"] },
   { name: "流浪者", skills: ["洞悉", "隐匿"], feat: "幸运", equipment: ["匕首", "盗贼工具"] },
 ];
+
+export type BackgroundCreationRule = {
+  abilityOptions: string[];
+  toolChoices: string[];
+};
+
+export const BACKGROUND_CREATION_RULES: Record<string, BackgroundCreationRule> = {
+  侍僧: { abilityOptions: ["intelligence", "wisdom", "charisma"], toolChoices: ["书法工具"] },
+  工匠: {
+    abilityOptions: ["strength", "dexterity", "intelligence"],
+    toolChoices: ["炼金工具", "酿酒工具", "书法工具", "木匠工具", "制图工具", "鞋匠工具", "厨师工具", "玻璃工具", "珠宝工具", "皮匠工具", "石匠工具", "绘画工具", "陶匠工具", "铁匠工具", "修补工具", "织布工具", "木雕工具"],
+  },
+  骗子: { abilityOptions: ["dexterity", "constitution", "charisma"], toolChoices: ["伪装工具"] },
+  罪犯: { abilityOptions: ["dexterity", "constitution", "intelligence"], toolChoices: ["盗贼工具"] },
+  艺人: { abilityOptions: ["dexterity", "intelligence", "charisma"], toolChoices: ["乐器"] },
+  农夫: { abilityOptions: ["strength", "constitution", "wisdom"], toolChoices: ["木匠工具"] },
+  守卫: { abilityOptions: ["strength", "intelligence", "wisdom"], toolChoices: ["游戏套组"] },
+  向导: { abilityOptions: ["dexterity", "constitution", "wisdom"], toolChoices: ["制图工具"] },
+  隐士: { abilityOptions: ["constitution", "wisdom", "charisma"], toolChoices: ["草药工具"] },
+  商人: { abilityOptions: ["constitution", "intelligence", "charisma"], toolChoices: ["导航工具"] },
+  贵族: { abilityOptions: ["strength", "intelligence", "charisma"], toolChoices: ["游戏套组"] },
+  学者: { abilityOptions: ["constitution", "intelligence", "wisdom"], toolChoices: ["书法工具"] },
+  水手: { abilityOptions: ["strength", "dexterity", "wisdom"], toolChoices: ["导航工具"] },
+  书记员: { abilityOptions: ["dexterity", "intelligence", "wisdom"], toolChoices: ["书法工具"] },
+  士兵: { abilityOptions: ["strength", "dexterity", "constitution"], toolChoices: ["游戏套组"] },
+  流浪者: { abilityOptions: ["dexterity", "wisdom", "charisma"], toolChoices: ["盗贼工具"] },
+};
 
 export const CLASSES_2024: ClassRule[] = [
   { name: "野蛮人", hitDie: 12, primary: "力量", saves: ["力量", "体质"], proficiencies: ["轻甲", "中甲", "盾牌", "军用武器"], defaultSkills: ["运动", "生存"], equipment: ["巨斧", "四把手斧", "探索套组"], actions: [{ name: "巨斧", description: "近战武器攻击", damage: "1d12+力量 挥砍", range: "5尺", cost: "动作" }, { name: "狂暴", description: "进入狂暴并获得对应增益", cost: "附赠动作", resource: "rage" }], resources: { rage: { label: "狂暴", current: 2, max: 2, recovery: "long_rest" } } },

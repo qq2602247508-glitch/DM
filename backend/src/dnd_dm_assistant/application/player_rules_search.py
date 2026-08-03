@@ -4,6 +4,12 @@ import json
 from pathlib import Path
 from typing import Any
 
+from dnd_dm_assistant.domain.content_packs import (
+    content_pack_for_record,
+    normalize_enabled_content_packs,
+    record_is_enabled_for_content_packs,
+)
+
 
 class PlayerRulesSearch:
     """Deterministic public rule lookup that never calls an embedding or text model."""
@@ -20,22 +26,34 @@ class PlayerRulesSearch:
         start = max(0, index - size // 3)
         return compact[start : start + size]
 
-    def search(self, text: str, *, limit: int = 8) -> list[dict[str, Any]]:
+    def search(
+        self,
+        text: str,
+        *,
+        limit: int = 8,
+        enabled_content_packs: object = (),
+    ) -> list[dict[str, Any]]:
         query = text.strip()
         if not query:
             raise ValueError("rule search text must not be blank")
         if not self.corpus_root.exists():
             return []
+        enabled_pack_keys = frozenset(normalize_enabled_content_packs(enabled_content_packs))
         scored: list[tuple[int, str, dict[str, Any]]] = []
         for path in self.corpus_root.glob("*/*.json"):
             try:
                 record = json.loads(path.read_text(encoding="utf-8"))
             except (OSError, json.JSONDecodeError):
                 continue
-            if record.get("officiality") != "official" or record.get("edition") not in {
+            is_core = record.get("officiality") == "official" and record.get("edition") in {
                 "2024",
                 "2025",
-            }:
+            }
+            is_enabled_pack = record_is_enabled_for_content_packs(
+                record,
+                enabled_pack_keys,
+            )
+            if not is_core and not is_enabled_pack:
                 continue
             name = str(record.get("name") or "")
             aliases = " ".join(str(value) for value in record.get("aliases") or [])
@@ -51,6 +69,7 @@ class PlayerRulesSearch:
             )
             if query_folded in aliases_folded:
                 score += 20
+            content_pack = content_pack_for_record(record)
             item = {
                 "name": name,
                 "excerpt": self._excerpt(content, query),
@@ -58,6 +77,9 @@ class PlayerRulesSearch:
                 "canonical_url": str(record.get("canonical_url") or record.get("source_url") or ""),
                 "edition": str(record.get("edition") or ""),
                 "officiality": "official",
+                "content_pack_key": (
+                    content_pack.key if is_enabled_pack and content_pack is not None else None
+                ),
             }
             scored.append((score, name, item))
         scored.sort(key=lambda row: (-row[0], row[1]))

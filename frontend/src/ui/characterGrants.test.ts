@@ -22,6 +22,7 @@ const character: Character = {
 const catalog: CharacterOptionsCatalog = {
   edition: 2024, officiality: "official", species: [], backgrounds: [], feats: [],
   skills: ["隐匿", "洞悉", "奥秘", "调查"], languages: [], tools: [],
+  enabled_rule_extensions: [], rule_extensions: [],
   classes: [{
     name: "法师", source_record_id: "wizard", source_path: "玩家手册2024/职业/法师",
     hit_die: 6, subclasses: [],

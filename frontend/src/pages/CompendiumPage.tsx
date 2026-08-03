@@ -29,6 +29,7 @@ const TYPES: Array<{ value: CompendiumEntryType; label: string; contentType?: Co
   { value: "npc", label: "NPC 模板" },
   { value: "location", label: "地点模板" },
   { value: "scene", label: "场景模板" },
+  { value: "rule", label: "规则扩展", contentType: "rules" },
 ];
 
 const FILTERS: Record<
@@ -70,6 +71,10 @@ const FILTERS: Record<
     { key: "scene_type", label: "场景类型" },
     { key: "difficulty", label: "难度" },
   ],
+  rule: [
+    { key: "category", label: "规则类别" },
+    { key: "automation_status", label: "自动化状态" },
+  ],
 };
 
 const SORTS: Record<CompendiumEntryType, ReadonlyArray<{ value: string; label: string }>> = {
@@ -101,6 +106,7 @@ const SORTS: Record<CompendiumEntryType, ReadonlyArray<{ value: string; label: s
   npc: [{ value: "name:asc", label: "名称：正序" }],
   location: [{ value: "name:asc", label: "名称：正序" }],
   scene: [{ value: "name:asc", label: "名称：正序" }],
+  rule: [{ value: "name:asc", label: "名称：正序" }],
 };
 
 function defaultSort(entryType: CompendiumEntryType): string {

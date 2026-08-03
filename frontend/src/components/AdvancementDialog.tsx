@@ -2,11 +2,15 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState, type ReactElement } from "react";
 
 import {
+  confirmBatchAdvancement,
   confirmAdvancement,
   getCharacterOptions,
+  previewBatchAdvancement,
   previewAdvancement,
 } from "../api/entities";
 import type {
+  AdvancementBatchPreview,
+  AdvancementBatchRequest,
   AdvancementPreview,
   AdvancementRequest,
   Character,
@@ -58,9 +62,11 @@ export function AdvancementDialog({
   const [preparedSpellNames, setPreparedSpellNames] = useState<string[]>([]);
   const [overrideReason, setOverrideReason] = useState("");
   const [preview, setPreview] = useState<AdvancementPreview | null>(null);
+  const [batchPlan, setBatchPlan] = useState("");
+  const [batchPreview, setBatchPreview] = useState<AdvancementBatchPreview | null>(null);
   const catalog = useQuery({
-    queryKey: ["character-options", 2024],
-    queryFn: ({ signal }) => getCharacterOptions(signal),
+    queryKey: ["character-options", 2024, campaignId],
+    queryFn: ({ signal }) => getCharacterOptions(signal, campaignId),
     enabled: open,
     staleTime: 5 * 60_000,
   });
@@ -135,6 +141,18 @@ export function AdvancementDialog({
     spell_removals: spellRemovals.split(/[,，、]/).map((item) => item.trim()).filter(Boolean),
     dm_override_reason: overrideReason || null,
   });
+  const batchRequest = (): AdvancementBatchRequest => {
+    let steps: unknown;
+    try {
+      steps = JSON.parse(batchPlan);
+    } catch {
+      throw new Error("批量计划必须是 JSON 数组，每项为一个逐级升级选择");
+    }
+    if (!Array.isArray(steps) || steps.length < 2) {
+      throw new Error("批量计划至少需要两个逐级升级选择");
+    }
+    return { character_version: character.version, steps: steps as AdvancementBatchRequest["steps"] };
+  };
   const previewMutation = useMutation({
     mutationFn: () => {
       if (!className) throw new Error("请选择本级职业");
@@ -159,6 +177,28 @@ export function AdvancementDialog({
       setOpen(false);
     },
     onError: (error) => showToast(error instanceof Error ? error.message : "升级确认失败", "error"),
+  });
+  const batchPreviewMutation = useMutation({
+    mutationFn: () => previewBatchAdvancement(campaignId, character.id, batchRequest()),
+    onSuccess: setBatchPreview,
+    onError: (error) => showToast(error instanceof Error ? error.message : "批量升级预览失败", "error"),
+  });
+  const batchConfirmMutation = useMutation({
+    mutationFn: () => {
+      if (!batchPreview) throw new Error("请先生成批量升级预览");
+      return confirmBatchAdvancement(campaignId, character.id, {
+        ...batchRequest(),
+        preview_token: batchPreview.preview_token,
+        idempotency_key: idempotencyKey(),
+      });
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["characters", campaignId] });
+      void queryClient.invalidateQueries({ queryKey: ["resources", campaignId] });
+      showToast(`${character.name} 的批量升级已由 DM 确认`);
+      setOpen(false);
+    },
+    onError: (error) => showToast(error instanceof Error ? error.message : "批量升级确认失败", "error"),
   });
 
   return (
@@ -396,6 +436,21 @@ export function AdvancementDialog({
                   placeholder="DM 覆盖理由（里程碑升级、属性前置等，仅需要时填写）"
                   value={overrideReason}
                 />
+                <label className="block text-xs text-stone-400">
+                  连续升级计划（DM JSON 数组）
+                  <textarea
+                    className={`${inputCls} mt-1 min-h-28 font-mono text-2xs`}
+                    onChange={(event) => {
+                      setBatchPlan(event.target.value);
+                      setBatchPreview(null);
+                    }}
+                    placeholder={'[{"class_name":"战士"},{"class_name":"战士","subclass_name":"冠军"}]'}
+                    value={batchPlan}
+                  />
+                  <span className="mt-1 block text-2xs text-stone-500">
+                    每项使用本表单的升级字段（不含 character_version）。服务器会逐级校验；涉及专长、法术或未结构化扩展时仍需明确填入选择或 DM 覆盖理由。
+                  </span>
+                </label>
               </div>
               <div className="min-w-0">
                 <div className="max-h-72 overflow-auto rounded border border-ink-700">
@@ -466,6 +521,14 @@ export function AdvancementDialog({
                     选择完成后生成预览。预览不会修改角色；只有 DM 确认才会一次性写入。
                   </p>
                 )}
+                {batchPreview ? (
+                  <div className="mt-3 rounded border border-sky-800/60 bg-sky-950/20 p-3 text-xs">
+                    <strong className="text-sky-100">批量升级预览：{batchPreview.from_level} → {batchPreview.to_level} 级</strong>
+                    <p className="mb-0 mt-1 text-stone-400">
+                      {batchPreview.steps.map((step) => `${step.class_name} ${step.class_level}级`).join(" → ")}
+                    </p>
+                  </div>
+                ) : null}
               </div>
             </div>
             <div className="flex justify-end gap-2 border-t border-ink-700 px-5 py-3">
@@ -483,6 +546,21 @@ export function AdvancementDialog({
                 variant="primary"
               >
                 DM 确认升级
+              </Button>
+              <Button
+                disabled={!batchPlan.trim()}
+                loading={batchPreviewMutation.isPending}
+                onClick={() => batchPreviewMutation.mutate()}
+              >
+                批量预览
+              </Button>
+              <Button
+                disabled={!batchPreview}
+                loading={batchConfirmMutation.isPending}
+                onClick={() => batchConfirmMutation.mutate()}
+                variant="primary"
+              >
+                DM 确认批量升级
               </Button>
             </div>
           </div>

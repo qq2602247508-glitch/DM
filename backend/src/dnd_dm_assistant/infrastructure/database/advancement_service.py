@@ -2,10 +2,12 @@ from __future__ import annotations
 
 import hashlib
 import json
+from copy import deepcopy
 from datetime import UTC, datetime
+from types import SimpleNamespace
 from typing import Any
 
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
@@ -13,15 +15,25 @@ from dnd_dm_assistant.application.character_catalog import CharacterCatalog
 from dnd_dm_assistant.domain.advancement import (
     average_hp_gain,
     merge_spell_slot_resources,
+    proficiency_bonus_for_level,
     validate_multiclass_prerequisites,
 )
 from dnd_dm_assistant.domain.advancement_choices import (
     advancement_choice_requirements,
     canonical_class_name,
+    core_feat_rules_from_records,
+    core_feature_grants,
+    core_runtime_actions,
+    extension_feat_rules_from_records,
+    find_feat_rule,
     maximum_class_spell_level,
     progression_resource_updates,
+    progression_scaling_updates,
+    subclass_runtime_grants,
+    validate_feat_prerequisites,
 )
 from dnd_dm_assistant.domain.campaign_state import StateNotFoundError, VersionConflict
+from dnd_dm_assistant.domain.feature_runtime import compile_feature_runtime_registry
 from dnd_dm_assistant.infrastructure.database.campaign_service import serialize
 from dnd_dm_assistant.infrastructure.database.models import (
     AdvancementRecord,
@@ -67,18 +79,61 @@ class AdvancementService:
             raise StateNotFoundError("character not found in campaign")
         return character
 
-    def _class_rule(self, class_name: str) -> Any:
+    def _class_rule(
+        self,
+        class_name: str,
+        *,
+        enabled_content_packs: object = (),
+        allow_legacy: bool = False,
+    ) -> Any:
         class_name = canonical_class_name(class_name)
         rule = next(
-            (item for item in self.catalog.classes() if item.name == class_name),
+            (
+                item
+                for item in self.catalog.classes(
+                    enabled_content_packs=enabled_content_packs,
+                    allow_legacy=allow_legacy,
+                )
+                if item.name == class_name
+            ),
             None,
         )
         if rule is None:
-            raise ValueError("selected 2024 class is unavailable in the local rule catalog")
+            raise ValueError(
+                "selected class is unavailable in the campaign's structured rule catalog"
+            )
         return rule
 
-    def _spell_catalog(self) -> tuple[dict[str, Any], ...]:
-        return tuple(dict(item) for item in self.catalog.options().get("spells", []))
+    def _spell_catalog(
+        self,
+        *,
+        enabled_content_packs: object = (),
+        allow_legacy: bool = False,
+    ) -> tuple[dict[str, Any], ...]:
+        return tuple(
+            dict(item)
+            for item in self.catalog.options(
+                enabled_content_packs=enabled_content_packs,
+                allow_legacy=allow_legacy,
+            ).get("spells", [])
+        )
+
+    def _feat_rules(
+        self,
+        *,
+        enabled_content_packs: object = (),
+        allow_legacy: bool = False,
+    ) -> tuple[Any, ...]:
+        records = self.catalog._records(
+            enabled_content_packs=enabled_content_packs,
+            allow_legacy=allow_legacy,
+        )
+        return (
+            *core_feat_rules_from_records(records),
+            *extension_feat_rules_from_records(
+                record for record in records if record.get("content_pack_key")
+            ),
+        )
 
     @staticmethod
     def _merge_progression_resources(
@@ -86,25 +141,206 @@ class AdvancementService:
         updates: dict[str, dict[str, Any]],
     ) -> dict[str, Any]:
         merged = dict(resources)
-        for key, update in updates.items():
+        for key, resource_update in updates.items():
+            if "max" not in resource_update:
+                # The catalog can describe a formula (for example bardic
+                # inspiration) without enough persisted ability scores to
+                # evaluate it.  Do not invent a usable total in that case.
+                continue
             old = merged.get(key)
             old_max = int(old.get("max", 0)) if isinstance(old, dict) else 0
             old_current = (
                 int(old.get("current", old_max)) if isinstance(old, dict) else 0
             )
-            new_max = int(update["max"])
+            new_max = max(old_max, int(resource_update["max"]))
             merged[key] = {
                 **(old if isinstance(old, dict) else {}),
-                **update,
+                **resource_update,
                 "current": min(new_max, old_current + max(0, new_max - old_max)),
             }
         return merged
+
+    @staticmethod
+    def _state_from_character(character: Character) -> SimpleNamespace:
+        """Copy just the persisted character state needed by a sequential preview."""
+
+        return SimpleNamespace(
+            id=character.id,
+            name=character.name,
+            version=character.version,
+            level=character.level,
+            experience=character.experience,
+            class_name=character.class_name,
+            hp=character.hp,
+            max_hp=character.max_hp,
+            ability_scores=deepcopy(dict(character.ability_scores or {})),
+            class_levels=deepcopy(dict(character.class_levels or {})),
+            subclass_choices=deepcopy(dict(character.subclass_choices or {})),
+            spells=deepcopy(list(character.spells or [])),
+            resources=deepcopy(dict(character.resources or {})),
+            features=deepcopy(list(character.features or [])),
+            actions=deepcopy(list(character.actions or [])),
+            proficiencies=deepcopy(list(character.proficiencies or [])),
+        )
+
+    @staticmethod
+    def _apply_preview_to_state(state: Any, preview: dict[str, Any]) -> None:
+        """Advance an in-memory state by one already-validated preview."""
+
+        after = dict(preview["after"])
+        state.level = int(preview["to_level"])
+        state.hp = int(after["hp"])
+        state.max_hp = int(after["max_hp"])
+        state.ability_scores = deepcopy(dict(after["ability_scores"]))
+        state.class_levels = deepcopy(dict(after["class_levels"]))
+        state.subclass_choices = deepcopy(dict(after["subclass_choices"]))
+        state.spells = deepcopy(list(after["spells"]))
+        state.resources = deepcopy(dict(after["resources"]))
+        state.features = deepcopy(list(after.get("features", state.features)))
+        state.actions = deepcopy(list(after.get("actions", state.actions)))
+        state.version += 1
+
+    @staticmethod
+    def _apply_preview_to_character(
+        character: Character,
+        preview: dict[str, Any],
+        *,
+        updated_at: datetime,
+    ) -> None:
+        """Persist an already-confirmed preview without recomputing any rule."""
+
+        after = dict(preview["after"])
+        character.level = int(preview["to_level"])
+        character.hp = int(after["hp"])
+        character.max_hp = int(after["max_hp"])
+        character.ability_scores = dict(after["ability_scores"])
+        character.class_levels = dict(after["class_levels"])
+        character.subclass_choices = dict(after["subclass_choices"])
+        character.spells = list(after["spells"])
+        character.resources = dict(after["resources"])
+        character.features = list(after.get("features", character.features or []))
+        character.actions = list(after.get("actions", character.actions or []))
+        character.version += 1
+        character.updated_at = updated_at
+
+    @staticmethod
+    def _merge_runtime_actions(
+        existing: list[Any],
+        additions: list[dict[str, Any]],
+    ) -> list[Any]:
+        """Merge sheet actions by their durable class-feature identity."""
+
+        result = [deepcopy(item) for item in existing]
+        known = {
+            (
+                str(item.get("name") or ""),
+                str(item.get("kind") or ""),
+                str(item.get("class_name") or ""),
+                int(item.get("class_level") or 0),
+            )
+            for item in result
+            if isinstance(item, dict)
+        }
+        for action in additions:
+            identity = (
+                str(action.get("name") or ""),
+                str(action.get("kind") or ""),
+                str(action.get("class_name") or ""),
+                int(action.get("class_level") or 0),
+            )
+            if identity not in known:
+                result.append(deepcopy(action))
+                known.add(identity)
+        return result
+
+    @staticmethod
+    def _apply_preview_with_cas(
+        session: Session,
+        *,
+        campaign_id: str,
+        character: Character,
+        preview: dict[str, Any],
+        expected_version: int,
+        updated_at: datetime,
+    ) -> None:
+        """Persist the already-previewed sheet with a database CAS predicate."""
+
+        after = dict(preview["after"])
+        outcome = session.execute(
+            update(Character)
+            .where(
+                Character.id == character.id,
+                Character.campaign_id == campaign_id,
+                Character.version == expected_version,
+            )
+            .values(
+                level=int(preview["to_level"]),
+                hp=int(after["hp"]),
+                max_hp=int(after["max_hp"]),
+                ability_scores=dict(after["ability_scores"]),
+                class_levels=dict(after["class_levels"]),
+                subclass_choices=dict(after["subclass_choices"]),
+                spells=list(after["spells"]),
+                resources=dict(after["resources"]),
+                features=list(after.get("features", character.features or [])),
+                actions=list(after.get("actions", character.actions or [])),
+                version=expected_version + 1,
+                updated_at=updated_at,
+            )
+        )
+        if outcome.rowcount != 1:
+            actual = session.scalar(
+                select(Character.version).where(
+                    Character.id == character.id,
+                    Character.campaign_id == campaign_id,
+                )
+            )
+            raise VersionConflict(
+                "character",
+                character.id,
+                expected_version,
+                int(actual or 0),
+            )
+        session.expire(character)
+
+    @staticmethod
+    def _merge_feature_grants(
+        existing: list[Any],
+        grants: list[dict[str, Any]],
+    ) -> list[Any]:
+        """Avoid duplicate persisted grants when a preview is replayed in a batch."""
+
+        result = [deepcopy(item) for item in existing]
+        known = {
+            (
+                str(item.get("name") or ""),
+                str(item.get("kind") or ""),
+                str(item.get("class_name") or ""),
+                int(item.get("class_level") or 0),
+            )
+            for item in result
+            if isinstance(item, dict)
+        }
+        for grant in grants:
+            identity = (
+                str(grant.get("name") or ""),
+                str(grant.get("kind") or ""),
+                str(grant.get("class_name") or ""),
+                int(grant.get("class_level") or 0),
+            )
+            if identity in known:
+                continue
+            result.append(deepcopy(grant))
+            known.add(identity)
+        return result
 
     def _validate_spell_choices(
         self,
         *,
         class_name: str,
         target_class_level: int,
+        enabled_content_packs: object,
+        allow_legacy: bool,
         existing_spells: list[dict[str, Any]],
         spell_additions: list[dict[str, Any]],
         spell_removals: set[str],
@@ -114,15 +350,10 @@ class AdvancementService:
         dm_override: bool,
         warnings: list[str],
     ) -> None:
-        if not spell_additions and not spell_removals:
-            if target_cantrips is not None or target_prepared is not None:
-                warnings.append(
-                    "本次没有提交法术变更；后端保留原法术表，"
-                    "升级界面仍需完成本级法术选择/准备后再用于严格规则战斗。"
-                )
-            return
-
-        catalog = self._spell_catalog()
+        catalog = self._spell_catalog(
+            enabled_content_packs=enabled_content_packs,
+            allow_legacy=allow_legacy,
+        )
         by_id = {
             str(item.get("source_record_id") or ""): item
             for item in catalog
@@ -248,6 +479,24 @@ class AdvancementService:
                     raise ValueError(message)
                 warnings.append("DM 已覆盖：" + message)
 
+        if class_name in {"吟游诗人", "游侠", "术士", "魔契师"}:
+            removed_leveled = [
+                spell
+                for spell in existing_spells
+                if (
+                    str(spell.get("name") or "") in spell_removals
+                    or str(spell.get("source_record_id") or "") in spell_removals
+                )
+                and canonical_class_name(str(spell.get("class_name") or class_name))
+                == class_name
+                and int(spell.get("spell_level", spell.get("level", 0)) or 0) > 0
+            ]
+            if len(removed_leveled) > 1:
+                message = f"{class_name}每次获得职业等级至多替换1个有环法术"
+                if not dm_override:
+                    raise ValueError(message)
+                warnings.append("DM 已覆盖：" + message)
+
     def _preview_in_session(
         self,
         session: Session,
@@ -256,6 +505,15 @@ class AdvancementService:
         data: dict[str, Any],
     ) -> dict[str, Any]:
         character = self._character(session, campaign_id, character_id)
+        return self._preview_for_character(session, campaign_id, character, data)
+
+    def _preview_for_character(
+        self,
+        session: Session,
+        campaign_id: str,
+        character: Any,
+        data: dict[str, Any],
+    ) -> dict[str, Any]:
         expected = int(data["character_version"])
         if character.version != expected:
             raise VersionConflict(
@@ -272,8 +530,24 @@ class AdvancementService:
                     f"character needs {required_xp} XP to reach level {character.level + 1}"
                 )
             warnings.append("DM 已覆盖经验门槛。")
+        campaign = session.get(Campaign, campaign_id)
+        if campaign is None:
+            raise StateNotFoundError("campaign not found")
+        enabled_extensions = {
+            str(value)
+            for value in (campaign.enabled_rule_extensions or [])
+        }
+        enabled_content_packs = tuple(
+            str(value)
+            for value in (campaign.enabled_content_packs or [])
+        )
+        allow_legacy = bool(campaign.allow_legacy)
         requested_class_name = str(data["class_name"])
-        rule = self._class_rule(requested_class_name)
+        rule = self._class_rule(
+            requested_class_name,
+            enabled_content_packs=enabled_content_packs,
+            allow_legacy=allow_legacy,
+        )
         class_name = str(rule.name)
         class_levels = dict(character.class_levels or {})
         if not class_levels and character.class_name:
@@ -281,6 +555,10 @@ class AdvancementService:
         current_class_level = int(class_levels.get(class_name, 0))
         is_multiclass = bool(class_levels) and class_name not in class_levels
         if is_multiclass:
+            if "multiclassing" not in enabled_extensions and not override:
+                raise ValueError("本战役未启用兼职规则，不能新增多职业")
+            if "multiclassing" not in enabled_extensions:
+                warnings.append("DM 已覆盖战役未启用兼职规则的限制。")
             failures = validate_multiclass_prerequisites(
                 class_name, dict(character.ability_scores or {})
             )
@@ -292,6 +570,7 @@ class AdvancementService:
                 warnings.append("DM 已覆盖多职业属性前置条件。")
         target_class_level = current_class_level + 1
         level_rule = rule.levels[target_class_level - 1]
+        requirements = advancement_choice_requirements(rule, target_class_level)
         subclass_choices = dict(character.subclass_choices or {})
         subclass_name = str(
             data.get("subclass_name")
@@ -302,11 +581,28 @@ class AdvancementService:
             "子职" in feature or "子职业" in feature
             for feature in level_rule.features
         )
-        available_subclasses = {item["name"] for item in rule.subclasses}
+        available_subclasses = {
+            str(item.get("name") or ""): dict(item) for item in rule.subclasses
+        }
         if needs_subclass and not subclass_name:
-            raise ValueError("this level requires a subclass choice")
+            if not override:
+                raise ValueError("this level requires a subclass choice")
+            warnings.append("DM 已覆盖本级子职选择要求。")
         if subclass_name and subclass_name not in available_subclasses:
-            raise ValueError("selected subclass is not available for this class")
+            if not override:
+                raise ValueError("selected subclass is not available for this class")
+            warnings.append("DM 已覆盖本地子职目录限制。")
+        selected_subclass = available_subclasses.get(subclass_name)
+        if (
+            selected_subclass is not None
+            and not selected_subclass.get("selectable_for_automatic_advancement", True)
+        ):
+            if not override:
+                raise ValueError(
+                    "selected subclass lacks a structured automatic-advancement source; "
+                    "provide a DM override to record it manually"
+                )
+            warnings.append("DM 已覆盖未结构化子职的自动升级限制。")
 
         constitution = int((character.ability_scores or {}).get("constitution", 10))
         con_modifier = (constitution - 10) // 2
@@ -328,30 +624,127 @@ class AdvancementService:
             if int(value)
         }
         grants_asi = any("属性值提升" in feature for feature in level_rule.features)
+        grants_epic_boon = any(
+            "传奇恩惠" in feature or "史诗恩惠" in feature
+            for feature in level_rule.features
+        )
         feat_choice = str(data.get("feat_choice") or "").strip()
-        if grants_asi and not ability_increases and not feat_choice:
+        if (grants_asi or grants_epic_boon) and not ability_increases and not feat_choice:
             raise ValueError(
                 "this level requires ability score increases or one feat choice"
             )
         if ability_increases or feat_choice:
-            if not grants_asi:
+            if not grants_asi and not grants_epic_boon:
                 raise ValueError("this level does not grant an ability score improvement")
+            if grants_epic_boon and ability_increases:
+                raise ValueError("an epic boon level requires a feat choice")
             if ability_increases and feat_choice:
                 raise ValueError("choose ability increases or one feat, not both")
-            if sum(ability_increases.values()) > 2 or any(
-                value not in {1, 2} for value in ability_increases.values()
-            ):
-                raise ValueError("ability score increases may total at most 2")
-            for ability, increase in ability_increases.items():
-                if ability not in ability_scores:
-                    raise ValueError(f"unknown ability score: {ability}")
-                if ability_scores[ability] + increase > 20 and not override:
-                    raise ValueError("ability score cannot exceed 20 without a DM override")
-                ability_scores[ability] += increase
+            if ability_increases:
+                if sum(ability_increases.values()) > 2 or any(
+                    value not in {1, 2} for value in ability_increases.values()
+                ):
+                    raise ValueError("ability score increases may total at most 2")
+                if sum(ability_increases.values()) != 2:
+                    if not override:
+                        raise ValueError("ability score increases must total exactly 2")
+                    warnings.append("DM 已覆盖属性值提升必须合计 +2 的限制。")
+                for ability, increase in ability_increases.items():
+                    if ability not in ability_scores:
+                        raise ValueError(f"unknown ability score: {ability}")
+                    if ability_scores[ability] + increase > 20 and not override:
+                        raise ValueError("ability score cannot exceed 20 without a DM override")
+                    ability_scores[ability] += increase
+
+        feat_grant: dict[str, Any] | None = None
+        if feat_choice:
+            feat_rule = find_feat_rule(
+                self._feat_rules(
+                    enabled_content_packs=enabled_content_packs,
+                    allow_legacy=allow_legacy,
+                ),
+                feat_choice,
+            )
+            feat_failures: list[str] = []
+            if feat_rule is None:
+                feat_failures.append("所选专长不在本地2024核心专长目录")
+            else:
+                feat_failures.extend(
+                    validate_feat_prerequisites(
+                        feat_rule,
+                        expected_category="传奇恩惠" if grants_epic_boon else "通用",
+                        total_level=character.level + 1,
+                        ability_scores=ability_scores,
+                        class_levels={**class_levels, class_name: target_class_level},
+                        proficiencies=list(character.proficiencies or []),
+                        features=list(character.features or []),
+                    )
+                )
+                feat_grant = {
+                    "name": feat_rule.name,
+                    "kind": "feat",
+                    "level": character.level + 1,
+                    "class_name": class_name,
+                    "class_level": target_class_level,
+                    "category": feat_rule.category,
+                    "source_record_id": feat_rule.source_record_id,
+                    "source_path": feat_rule.source_path,
+                    "rule_year": feat_rule.rule_year,
+                    "content_pack_key": feat_rule.content_pack_key,
+                    "runtime": {
+                        "automation_status": "dm_only",
+                        "requires_dm_adjudication": True,
+                        "execution": {
+                            "kind": "sheet_feat_grant",
+                            "grant_status": "full",
+                            "effect_status": "dm_only",
+                        },
+                        "note": "专长授予和前置条件已执行；专长具体效果保留给 DM 裁定。",
+                    },
+                }
+            if feat_failures and not override:
+                raise ValueError("专长前置条件不满足：" + "；".join(feat_failures))
+            if feat_failures:
+                warnings.append("DM 已覆盖专长限制：" + "；".join(feat_failures))
+            if feat_grant is None:
+                feat_grant = {
+                    "name": feat_choice,
+                    "kind": "feat",
+                    "level": character.level + 1,
+                    "class_name": class_name,
+                    "class_level": target_class_level,
+                    "rule_year": rule.rule_year,
+                    "dm_override": True,
+                    "runtime": {
+                        "automation_status": "dm_only",
+                        "requires_dm_adjudication": True,
+                        "execution": {
+                            "kind": "sheet_feat_grant",
+                            "grant_status": "full",
+                            "effect_status": "dm_only",
+                        },
+                        "note": "这是 DM 覆盖的专长授予记录；效果需由 DM 裁定。",
+                    },
+                }
+
+        old_con_modifier = con_modifier
+        new_constitution = int(ability_scores.get("constitution", constitution))
+        new_con_modifier = (new_constitution - 10) // 2
+        constitution_hp_adjustment = (
+            new_con_modifier - old_con_modifier
+        ) * (character.level + 1)
+        hp_gain += constitution_hp_adjustment
 
         spell_additions = [dict(item) for item in data.get("spell_additions", [])]
         spell_removals = {str(item) for item in data.get("spell_removals", [])}
-        spell_catalog = self._spell_catalog() if spell_additions else ()
+        spell_catalog = (
+            self._spell_catalog(
+                enabled_content_packs=enabled_content_packs,
+                allow_legacy=allow_legacy,
+            )
+            if spell_additions
+            else ()
+        )
         spell_by_id = {
             str(item.get("source_record_id") or ""): item
             for item in spell_catalog
@@ -384,6 +777,21 @@ class AdvancementService:
             dict(item) if isinstance(item, dict) else {"name": str(item)}
             for item in (character.spells or [])
         ]
+        existing_classes = {
+            canonical_class_name(str(name)) for name in class_levels if int(class_levels[name])
+        }
+        for spell in existing_spells:
+            if spell.get("class_name"):
+                spell["class_name"] = canonical_class_name(str(spell["class_name"]))
+                continue
+            candidates = {
+                canonical_class_name(str(name))
+                for name in list(spell.get("classes") or [])
+            } & existing_classes
+            if len(candidates) == 1:
+                spell["class_name"] = next(iter(candidates))
+            elif len(existing_classes) == 1:
+                spell["class_name"] = next(iter(existing_classes))
         after_spells = [
             item
             for item in existing_spells
@@ -413,7 +821,6 @@ class AdvancementService:
                 if source_id:
                     existing_by_identity[source_id] = spell
 
-        requirements = advancement_choice_requirements(rule, target_class_level)
         target_cantrips = next(
             (
                 item.target_total
@@ -433,6 +840,8 @@ class AdvancementService:
         self._validate_spell_choices(
             class_name=class_name,
             target_class_level=target_class_level,
+            enabled_content_packs=enabled_content_packs,
+            allow_legacy=allow_legacy,
             existing_spells=existing_spells,
             spell_additions=spell_additions,
             spell_removals=spell_removals,
@@ -452,8 +861,17 @@ class AdvancementService:
             item for item in requirements if item.kind == "feature_option"
         ]
         maximum_feature_choices = sum(item.maximum for item in feature_requirements)
+        minimum_feature_choices = sum(item.minimum for item in feature_requirements)
+        if len(set(requested_feature_choices)) != len(requested_feature_choices):
+            if not override:
+                raise ValueError("class feature choices cannot contain duplicates")
+            warnings.append("DM 已覆盖重复职业选项限制。")
         if requested_feature_choices and not feature_requirements and not override:
             raise ValueError("this level does not grant a class feature option")
+        if len(requested_feature_choices) < minimum_feature_choices and not override:
+            raise ValueError(
+                f"this level requires {minimum_feature_choices} feature choices"
+            )
         if len(requested_feature_choices) > maximum_feature_choices and not override:
             raise ValueError(
                 f"this level allows at most {maximum_feature_choices} feature choices"
@@ -471,26 +889,146 @@ class AdvancementService:
         class_levels[class_name] = target_class_level
         if subclass_name:
             subclass_choices[class_name] = subclass_name
+        raw_subclass_choices = data.get("subclass_feature_choices") or {}
+        if not isinstance(raw_subclass_choices, dict):
+            raise ValueError("subclass_feature_choices must be an object keyed by feature id")
+        selected_subclass_choices = {
+            str(feature_id): [str(choice).strip() for choice in choices if str(choice).strip()]
+            for feature_id, choices in raw_subclass_choices.items()
+            if isinstance(choices, list)
+        }
+        if len(selected_subclass_choices) != len(raw_subclass_choices):
+            raise ValueError("each subclass feature choice must be a list of text choices")
+        subclass_runtime = (
+            subclass_runtime_grants(
+                selected_subclass,
+                class_name=class_name,
+                target_class_level=target_class_level,
+                ability_scores=ability_scores,
+                selected_choices=selected_subclass_choices,
+            )
+            if selected_subclass is not None
+            else {"grants": [], "resources": {}, "actions": [], "choice_requirements": []}
+        )
+        known_subclass_choice_ids = {
+            str(item.get("feature_id") or "")
+            for item in subclass_runtime["choice_requirements"]
+        }
+        unknown_subclass_choices = sorted(
+            set(selected_subclass_choices) - known_subclass_choice_ids
+        )
+        if unknown_subclass_choices and not override:
+            raise ValueError(
+                "submitted subclass feature choices are not granted at this level: "
+                + ", ".join(unknown_subclass_choices)
+            )
+        if unknown_subclass_choices:
+            warnings.append("DM 已覆盖不在本级的子职特性选择。")
+        for requirement in subclass_runtime["choice_requirements"]:
+            feature_id = str(requirement["feature_id"])
+            selected = selected_subclass_choices.get(feature_id, [])
+            minimum = int(requirement["minimum"])
+            maximum = int(requirement["maximum"])
+            if not minimum <= len(selected) <= maximum:
+                message = (
+                    f"子职特性{feature_id}必须选择 {minimum} 至 {maximum} 项，"
+                    f"当前为 {len(selected)} 项"
+                )
+                if not override:
+                    raise ValueError(message)
+                warnings.append("DM 已覆盖：" + message)
         after_resources = merge_spell_slot_resources(
             dict(character.resources or {}),
             class_levels,
             subclass_choices,
         )
-        resource_updates = progression_resource_updates(rule, target_class_level)
+        resource_updates = progression_resource_updates(
+            rule,
+            target_class_level,
+            ability_scores=ability_scores,
+        )
+        scaling_updates = progression_scaling_updates(rule, target_class_level)
         after_resources = self._merge_progression_resources(
             after_resources,
             resource_updates,
         )
-        new_features = [
+        subclass_resource_updates = dict(subclass_runtime["resources"])
+        after_resources = self._merge_progression_resources(
+            after_resources,
+            subclass_resource_updates,
+        )
+        new_features = list(
+            core_feature_grants(
+                rule,
+                target_class_level,
+                ability_scores=ability_scores,
+            )
+        )
+        scaling_features = [
             {
-                "name": feature,
+                "name": str(update["label"]),
+                "kind": "class_scaling",
                 "class_name": class_name,
                 "class_level": target_class_level,
+                "scaling_key": key,
+                "value": update["value"],
+                "value_kind": update["value_kind"],
                 "source_record_id": rule.source_record_id,
-                "rule_year": 2024,
+                "source_path": rule.source_path,
+                "rule_year": rule.rule_year,
+                "runtime": {
+                    "automation_status": "partial",
+                    "requires_dm_adjudication": True,
+                    "note": "成长表数值已写入车卡；其对具体检定或伤害的影响由 DM 裁定。",
+                },
             }
-            for feature in level_rule.features
+            for key, update in scaling_updates.items()
         ]
+        ability_score_grant = (
+            {
+                "name": "属性值提升",
+                "kind": "ability_score_increase",
+                "class_name": class_name,
+                "class_level": target_class_level,
+                "level": character.level + 1,
+                "ability_increases": dict(ability_increases),
+                "source_record_id": rule.source_record_id,
+                "source_path": rule.source_path,
+                "rule_year": rule.rule_year,
+                "runtime": {
+                    "automation_status": "full",
+                    "requires_dm_adjudication": False,
+                    "execution": {
+                        "kind": "sheet_ability_score_increase",
+                        "delta": dict(ability_increases),
+                    },
+                    "note": "已在升级事务中原子写入所选属性值提升。",
+                },
+            }
+            if ability_increases
+            else None
+        )
+        proficiency_bonus_grant = {
+            "name": "熟练加值",
+            "kind": "proficiency_bonus",
+            "class_name": class_name,
+            "class_level": target_class_level,
+            "level": character.level + 1,
+            "value": proficiency_bonus_for_level(character.level + 1),
+            "value_kind": "proficiency_bonus",
+            "source_record_id": rule.source_record_id,
+            "source_path": rule.source_path,
+            "rule_year": rule.rule_year,
+            "runtime": {
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+                "execution": {
+                    "kind": "sheet_proficiency_bonus",
+                    "value": proficiency_bonus_for_level(character.level + 1),
+                },
+                "note": "熟练加值由总角色等级确定，并可由运行时 registry 直接读取。",
+            },
+        }
         chosen_features = [
             {
                 "name": str(choice),
@@ -498,10 +1036,51 @@ class AdvancementService:
                 "class_name": class_name,
                 "class_level": target_class_level,
                 "source_record_id": rule.source_record_id,
-                "rule_year": 2024,
+                "rule_year": rule.rule_year,
+                "runtime": {
+                    "automation_status": "dm_only",
+                    "requires_dm_adjudication": True,
+                    "note": "成长表只确认选择数量；具体选项前置条件和效果由 DM 复核。",
+                },
             }
             for choice in requested_feature_choices
         ]
+        grants_to_persist = [
+            *new_features,
+            *scaling_features,
+            *([ability_score_grant] if ability_score_grant is not None else []),
+            proficiency_bonus_grant,
+            *list(subclass_runtime["grants"]),
+            *chosen_features,
+        ]
+        if feat_grant:
+            grants_to_persist.append(dict(feat_grant))
+        after_features = self._merge_feature_grants(
+            list(character.features or []),
+            grants_to_persist,
+        )
+        after_actions = self._merge_runtime_actions(
+            list(character.actions or []),
+            [
+                *core_runtime_actions(rule, target_class_level),
+                *list(subclass_runtime["actions"]),
+            ],
+        )
+        all_resource_updates = {**resource_updates, **subclass_resource_updates}
+        runtime_scalings = {
+            str(item.get("scaling_key")): {"value": item.get("value")}
+            for item in after_features
+            if isinstance(item, dict)
+            and item.get("kind") == "class_scaling"
+            and isinstance(item.get("scaling_key"), str)
+        }
+        runtime_registry = compile_feature_runtime_registry(
+            [item for item in after_features if isinstance(item, dict)],
+            resources=after_resources,
+            scalings=runtime_scalings,
+            class_levels=class_levels,
+            total_level=character.level + 1,
+        )
         result = {
             "character_id": character.id,
             "character_name": character.name,
@@ -513,13 +1092,17 @@ class AdvancementService:
             "hit_die": rule.hit_die,
             "hp_mode": hp_mode,
             "hp_gain": hp_gain,
+            "constitution_hp_adjustment": constitution_hp_adjustment,
             "before": {
                 "hp": character.hp,
                 "max_hp": character.max_hp,
                 "ability_scores": dict(character.ability_scores or {}),
                 "class_levels": dict(character.class_levels or {}),
+                "subclass_choices": dict(character.subclass_choices or {}),
                 "spells": list(character.spells or []),
                 "resources": dict(character.resources or {}),
+                "features": list(character.features or []),
+                "actions": list(character.actions or []),
             },
             "after": {
                 "hp": character.hp + hp_gain,
@@ -529,16 +1112,33 @@ class AdvancementService:
                 "subclass_choices": subclass_choices,
                 "spells": after_spells,
                 "resources": after_resources,
+                "features": after_features,
+                "actions": after_actions,
+                "feature_runtime": runtime_registry,
             },
-            "features_gained": [*new_features, *chosen_features],
+            "features_gained": [
+                *new_features,
+                *scaling_features,
+                *([ability_score_grant] if ability_score_grant is not None else []),
+                proficiency_bonus_grant,
+                *list(subclass_runtime["grants"]),
+                *chosen_features,
+            ],
             "feat_choice": feat_choice or None,
-            "choice_requirements": [item.as_dict() for item in requirements],
-            "resource_updates": resource_updates,
+            "feat_grant": feat_grant,
+            "choice_requirements": [
+                *[item.as_dict() for item in requirements],
+                *list(subclass_runtime["choice_requirements"]),
+            ],
+            "resource_updates": all_resource_updates,
+            "scaling_updates": scaling_updates,
+            "runtime_registry": runtime_registry,
             "warnings": warnings,
             "rule_reference": {
-                "year": 2024,
+                "year": rule.rule_year,
                 "source_record_id": rule.source_record_id,
                 "source_path": rule.source_path,
+                "content_pack_key": rule.content_pack_key,
             },
         }
         token_payload = {
@@ -567,6 +1167,104 @@ class AdvancementService:
         with Session(self.engine) as session:
             return self._preview_in_session(session, campaign_id, character_id, data)
 
+    def _preview_batch_in_session(
+        self,
+        session: Session,
+        campaign_id: str,
+        character_id: str,
+        data: dict[str, Any],
+    ) -> dict[str, Any]:
+        character = self._character(session, campaign_id, character_id)
+        expected = int(data["character_version"])
+        if character.version != expected:
+            raise VersionConflict("character", character.id, expected, character.version)
+        raw_steps = data.get("steps")
+        if not isinstance(raw_steps, list) or not 2 <= len(raw_steps) <= 19:
+            raise ValueError("batch advancement requires 2 to 19 ordered steps")
+
+        working = self._state_from_character(character)
+        steps: list[dict[str, Any]] = []
+        resource_updates: dict[str, dict[str, Any]] = {}
+        scaling_updates: dict[str, dict[str, Any]] = {}
+        warnings: list[str] = []
+        features_gained: list[dict[str, Any]] = []
+        for index, raw_step in enumerate(raw_steps, start=1):
+            if not isinstance(raw_step, dict):
+                raise ValueError(f"batch step {index} must be an object")
+            step_data = {
+                **dict(raw_step),
+                "character_version": working.version,
+            }
+            step_preview = self._preview_for_character(
+                session,
+                campaign_id,
+                working,
+                step_data,
+            )
+            public_step = {
+                key: deepcopy(value)
+                for key, value in step_preview.items()
+                if key != "preview_token"
+            }
+            public_step["batch_index"] = index
+            steps.append(public_step)
+            resource_updates.update(deepcopy(step_preview.get("resource_updates", {})))
+            scaling_updates.update(deepcopy(step_preview.get("scaling_updates", {})))
+            warnings.extend(str(item) for item in step_preview.get("warnings", []))
+            features_gained.extend(deepcopy(step_preview.get("features_gained", [])))
+            if step_preview.get("feat_grant"):
+                features_gained.append(deepcopy(step_preview["feat_grant"]))
+            self._apply_preview_to_state(working, step_preview)
+
+        result = {
+            "kind": "batch",
+            "character_id": character.id,
+            "character_name": character.name,
+            "from_level": character.level,
+            "to_level": working.level,
+            "before": deepcopy(steps[0]["before"]),
+            "after": deepcopy(steps[-1]["after"]),
+            "steps": steps,
+            "features_gained": features_gained,
+            "resource_updates": resource_updates,
+            "scaling_updates": scaling_updates,
+            "warnings": list(dict.fromkeys(warnings)),
+            "rule_reference": {
+                "year": 2024,
+                "source_path": "sequential core-class advancement",
+            },
+        }
+        token_payload = {
+            "request": data,
+            "character_version": character.version,
+            "character_level": character.level,
+            "character_xp": character.experience,
+            "result": result,
+        }
+        result["preview_token"] = hashlib.sha256(
+            json.dumps(
+                token_payload,
+                ensure_ascii=False,
+                sort_keys=True,
+                default=str,
+            ).encode()
+        ).hexdigest()
+        return result
+
+    def preview_batch(
+        self,
+        campaign_id: str,
+        character_id: str,
+        data: dict[str, Any],
+    ) -> dict[str, Any]:
+        with Session(self.engine) as session:
+            return self._preview_batch_in_session(
+                session,
+                campaign_id,
+                character_id,
+                data,
+            )
+
     def confirm(
         self,
         campaign_id: str,
@@ -583,6 +1281,10 @@ class AdvancementService:
                 )
             )
             if existing is not None:
+                if existing.character_id != character_id:
+                    raise ValueError(
+                        "idempotency key was already used for a different character"
+                    )
                 return dict(existing.result_json or {})
             preview = self._preview_in_session(
                 session, campaign_id, character_id, data
@@ -604,28 +1306,14 @@ class AdvancementService:
             )
             session.add(operation)
             session.flush()
-            character.level = int(preview["to_level"])
-            character.hp = int(preview["after"]["hp"])
-            character.max_hp = int(preview["after"]["max_hp"])
-            character.ability_scores = dict(preview["after"]["ability_scores"])
-            character.class_levels = dict(preview["after"]["class_levels"])
-            character.subclass_choices = dict(preview["after"]["subclass_choices"])
-            character.spells = list(preview["after"]["spells"])
-            character.resources = dict(preview["after"]["resources"])
-            features = list(character.features or [])
-            features.extend(preview["features_gained"])
-            if preview["feat_choice"]:
-                features.append(
-                    {
-                        "name": preview["feat_choice"],
-                        "kind": "feat",
-                        "level": preview["to_level"],
-                        "rule_year": 2024,
-                    }
-                )
-            character.features = features
-            character.version += 1
-            character.updated_at = now
+            self._apply_preview_with_cas(
+                session,
+                campaign_id=campaign_id,
+                character=character,
+                preview=preview,
+                expected_version=int(data["character_version"]),
+                updated_at=now,
+            )
             result = {
                 **preview,
                 "idempotent_replay": False,
@@ -650,6 +1338,104 @@ class AdvancementService:
             session.flush()
             result["advancement_record_id"] = record.id
             record.result_json = dict(result)
+            session.flush()
+            return result
+
+    def confirm_batch(
+        self,
+        campaign_id: str,
+        character_id: str,
+        data: dict[str, Any],
+    ) -> dict[str, Any]:
+        payload = dict(data)
+        preview_token = str(payload.pop("preview_token"))
+        idempotency_key = str(payload.pop("idempotency_key"))
+        digest = hashlib.sha256(idempotency_key.encode()).hexdigest()
+        record_key_prefix = f"advancement-batch:{digest}"
+        first_record_key = f"{record_key_prefix}:1"
+        with Session(self.engine) as session, session.begin():
+            existing = session.scalar(
+                select(AdvancementRecord).where(
+                    AdvancementRecord.campaign_id == campaign_id,
+                    AdvancementRecord.idempotency_key == first_record_key,
+                )
+            )
+            if existing is not None:
+                if existing.character_id != character_id:
+                    raise ValueError(
+                        "idempotency key was already used for a different character"
+                    )
+                return dict(existing.result_json or {})
+
+            preview = self._preview_batch_in_session(
+                session,
+                campaign_id,
+                character_id,
+                payload,
+            )
+            if preview["preview_token"] != preview_token:
+                raise VersionConflict("advancement preview", character_id, 1, 2)
+            character = self._character(session, campaign_id, character_id)
+            now = datetime.now(UTC)
+            operation = OperationTransaction(
+                campaign_id=campaign_id,
+                operation_type="character_advancement_batch",
+                idempotency_key=record_key_prefix,
+                status="applied",
+                before_snapshot=preview["before"],
+                after_snapshot=preview["after"],
+                reason="DM confirmed sequential character advancement",
+                source="dm",
+                confirmed_at=now,
+            )
+            session.add(operation)
+            session.flush()
+            self._apply_preview_with_cas(
+                session,
+                campaign_id=campaign_id,
+                character=character,
+                preview=preview,
+                expected_version=int(payload["character_version"]),
+                updated_at=now,
+            )
+
+            records: list[AdvancementRecord] = []
+            submitted_steps = list(payload["steps"])
+            for index, step in enumerate(preview["steps"], start=1):
+                record = AdvancementRecord(
+                    campaign_id=campaign_id,
+                    character_id=character.id,
+                    operation_transaction_id=operation.id,
+                    class_name=str(step["class_name"]),
+                    subclass_name=step.get("subclass_name"),
+                    from_level=int(step["from_level"]),
+                    to_level=int(step["to_level"]),
+                    choices_json=dict(submitted_steps[index - 1]),
+                    result_json={},
+                    preview_token=preview_token,
+                    idempotency_key=f"{record_key_prefix}:{index}",
+                    status="confirmed",
+                    confirmed_at=now,
+                )
+                session.add(record)
+                records.append(record)
+            session.flush()
+            result = {
+                **preview,
+                "idempotent_replay": False,
+                "operation_transaction_id": operation.id,
+                "advancement_record_ids": [record.id for record in records],
+            }
+            for index, record in enumerate(records, start=1):
+                record.result_json = (
+                    dict(result)
+                    if index == 1
+                    else {
+                        "batch_operation_transaction_id": operation.id,
+                        "batch_index": index,
+                        "advancement_record_id": record.id,
+                    }
+                )
             session.flush()
             return result
 

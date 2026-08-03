@@ -8,9 +8,12 @@ from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
 
 from dnd_dm_assistant.api.dependencies import (
     get_advancement_service,
+    get_campaign_service,
     get_character_catalog,
 )
 from dnd_dm_assistant.api.schemas import (
+    AdvancementBatchConfirmRequest,
+    AdvancementBatchPreviewRequest,
     AdvancementConfirmRequest,
     AdvancementPreviewRequest,
     CharacterSheetOcrRequest,
@@ -23,6 +26,7 @@ from dnd_dm_assistant.application.character_ocr import recognize_character_sheet
 from dnd_dm_assistant.application.rule_block_compiler import compile_rule_blocks
 from dnd_dm_assistant.domain.campaign_state import StateNotFoundError, VersionConflict
 from dnd_dm_assistant.domain.rule_blocks import build_execution_plan
+from dnd_dm_assistant.domain.rule_extensions import list_rule_extensions
 from dnd_dm_assistant.infrastructure.database.advancement_service import (
     AdvancementService,
 )
@@ -55,8 +59,29 @@ def _version(if_match: str | None, explicit: int | None) -> int:
 @router.get("/rules/character-options")
 def character_options(
     catalog: Annotated[CharacterCatalog, Depends(get_character_catalog)],
+    campaign_service: Annotated[Any, Depends(get_campaign_service)],
+    campaign_id: str | None = Query(default=None, min_length=1, max_length=36),
 ) -> dict[str, Any]:
-    return catalog.options()
+    enabled_content_packs: list[str] = []
+    enabled: list[str] = []
+    allow_legacy = False
+    if campaign_id:
+        campaign = campaign_service.get("campaign", campaign_id)
+        enabled = [str(value) for value in campaign.get("enabled_rule_extensions", [])]
+        enabled_content_packs = [
+            str(value) for value in campaign.get("enabled_content_packs", [])
+        ]
+        allow_legacy = bool(campaign.get("allow_legacy", False))
+    result = catalog.options(
+        enabled_content_packs=enabled_content_packs,
+        allow_legacy=allow_legacy,
+    )
+    result["allow_legacy"] = allow_legacy
+    result["enabled_rule_extensions"] = enabled
+    result["rule_extensions"] = [
+        item for item in list_rule_extensions() if item["key"] in set(enabled)
+    ]
+    return result
 
 
 @router.post("/rules/blocks/compile")
@@ -113,6 +138,42 @@ def confirm_advancement(
 ) -> dict[str, Any]:
     return _safe_call(
         lambda: service.confirm(
+            campaign_id,
+            character_id,
+            body.model_dump(mode="json"),
+        )
+    )
+
+
+@router.post(
+    "/campaigns/{campaign_id}/characters/{character_id}/advancement/batch/preview"
+)
+def preview_batch_advancement(
+    campaign_id: str,
+    character_id: str,
+    body: AdvancementBatchPreviewRequest,
+    service: Annotated[AdvancementService, Depends(get_advancement_service)],
+) -> dict[str, Any]:
+    return _safe_call(
+        lambda: service.preview_batch(
+            campaign_id,
+            character_id,
+            body.model_dump(mode="json"),
+        )
+    )
+
+
+@router.post(
+    "/campaigns/{campaign_id}/characters/{character_id}/advancement/batch/confirm"
+)
+def confirm_batch_advancement(
+    campaign_id: str,
+    character_id: str,
+    body: AdvancementBatchConfirmRequest,
+    service: Annotated[AdvancementService, Depends(get_advancement_service)],
+) -> dict[str, Any]:
+    return _safe_call(
+        lambda: service.confirm_batch(
             campaign_id,
             character_id,
             body.model_dump(mode="json"),

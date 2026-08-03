@@ -2,6 +2,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRef, useState, type ChangeEvent, type FormEvent, type ReactElement } from "react";
 
 import { createCampaign, deleteCampaign, listCampaigns, updateCampaign } from "../api/campaigns";
+import { listContentPacks, type ContentPack } from "../api/contentPacks";
+import { listRuleExtensions, type RuleExtension } from "../api/ruleExtensions";
 import {
   createCharacter, createClue, createEvent, createLocation, createNpc, createQuest,
   deleteCharacter, deleteClue, deleteEvent, deleteLocation, deleteNpc, deleteQuest,
@@ -366,8 +368,8 @@ function CharacterCreateWizard({ campaignId, onDone }: { campaignId: string; onD
   const [preparedSpellIds, setPreparedSpellIds] = useState<string[]>([]);
   const [selectedClassSkills, setSelectedClassSkills] = useState<string[]>([]);
   const characterOptions = useQuery({
-    queryKey: ["character-options"],
-    queryFn: ({ signal }) => getCharacterOptions(signal),
+    queryKey: ["character-options", campaignId],
+    queryFn: ({ signal }) => getCharacterOptions(signal, campaignId),
     staleTime: 60 * 60 * 1000,
   });
   const mutation = useMutation({
@@ -476,6 +478,8 @@ function CharacterCreateWizard({ campaignId, onDone }: { campaignId: string; onD
       <div className="mb-4 flex items-center gap-2">
         {[["1", "身份"], ["2", "属性"], ["3", "职业选项"], ["4", "战斗与装备"]].map(([number, label]) => <div className={`flex items-center gap-2 text-xs ${step === Number(number) ? "text-ember-300" : "text-stone-600"}`} key={number}><span className={`flex h-6 w-6 items-center justify-center rounded-full border ${step === Number(number) ? "border-ember-400 bg-ember-500/15" : "border-ink-600"}`}>{number}</span>{label}</div>)}
       </div>
+      {characterOptions.data?.rule_extensions?.length ? <div className="mb-4 rounded border border-violet-800/60 bg-violet-950/20 p-3 text-xs text-violet-100"><strong>本团已启用规则扩展：</strong>{characterOptions.data.rule_extensions.map((item) => <span className="ml-2 inline-flex rounded bg-violet-500/15 px-2 py-1 text-2xs" key={item.key}>{item.label} · {item.automation_status === "partial" ? "部分自动" : item.automation_status === "dm_only" ? "DM裁定" : "自动"}</span>)}<p className="mb-0 mt-2 text-2xs text-violet-200/70">车卡与升级会保留这些规则的来源；需要数值或前置条件的扩展仍需 DM 最终确认。</p></div> : null}
+      {(characterOptions.data?.extension_character_options?.length ?? 0) > 0 ? <div className="mb-4 rounded border border-amber-800/60 bg-amber-950/20 p-3 text-xs text-amber-100"><strong>已启用扩展角色资料：</strong>{characterOptions.data?.extension_character_options?.length} 项。当前均标记为“DM 裁定”，不会混入 2024 核心职业、子职或专长自动选择器。</div> : null}
       {step === 1 ? (
         <div className="grid gap-3 md:grid-cols-2">
           <label className="text-xs text-stone-400">角色名称<input className={`${inputCls} mt-1`} onChange={(event) => setName(event.target.value)} placeholder="例如：艾拉" value={name} /></label>
@@ -613,10 +617,33 @@ function CreateForm({ kind, campaignId, onDone }: { kind: EntityKind; campaignId
   const [playerText, setPlayerText] = useState("");
   const [dmTruth, setDmTruth] = useState("");
   const [verified, setVerified] = useState(false);
+  const [allowLegacy, setAllowLegacy] = useState(false);
+  const [encumbranceMode, setEncumbranceMode] = useState<"standard" | "variant" | "none">("standard");
+  const [enabledRuleExtensions, setEnabledRuleExtensions] = useState<string[]>([]);
+  const [enabledContentPacks, setEnabledContentPacks] = useState<string[]>([]);
+  const extensionCatalog = useQuery({
+    queryKey: ["rule-extensions"],
+    queryFn: ({ signal }) => listRuleExtensions(signal),
+    enabled: kind === "campaigns",
+    staleTime: 5 * 60 * 1000,
+  });
+  const contentPackCatalog = useQuery({
+    queryKey: ["content-packs"],
+    queryFn: ({ signal }) => listContentPacks(signal),
+    enabled: kind === "campaigns",
+    staleTime: 5 * 60 * 1000,
+  });
   const mutation = useMutation({
     mutationFn: async () => {
       if (!name.trim()) throw new Error("名称不能为空");
-      if (kind === "campaigns") return createCampaign({ name: name.trim(), description: description || null });
+      if (kind === "campaigns") return createCampaign({
+        name: name.trim(),
+        description: description || null,
+        allow_legacy: allowLegacy,
+        encumbrance_mode: encumbranceMode,
+        enabled_rule_extensions: enabledRuleExtensions,
+        enabled_content_packs: enabledContentPacks,
+      });
       if (!campaignId) throw new Error("尚未选择战役");
       if (kind === "characters") return createCharacter(campaignId, {
         name: name.trim(), race: race || null, class_name: extra || null, level: Number(level),
@@ -654,6 +681,7 @@ function CreateForm({ kind, campaignId, onDone }: { kind: EntityKind; campaignId
       setGoal(""); setFear(""); setGiver(""); setReward("");
       setXpReward("0");
       setPlayerText(""); setDmTruth(""); setVerified(false); onDone();
+      setAllowLegacy(false); setEncumbranceMode("standard"); setEnabledRuleExtensions([]); setEnabledContentPacks([]);
       showToast(`${META[kind].title}已创建`);
     },
     onError: () => showToast(`${META[kind].title}创建失败`, "error"),
@@ -662,6 +690,76 @@ function CreateForm({ kind, campaignId, onDone }: { kind: EntityKind; campaignId
     <form className="grid gap-2 md:grid-cols-2 xl:grid-cols-4" onSubmit={(event: FormEvent) => { event.preventDefault(); mutation.mutate(); }}>
       <input className={inputCls} onChange={(event) => setName(event.target.value)} placeholder={META[kind].name} value={name} />
       <input className={inputCls} onChange={(event) => setDescription(event.target.value)} placeholder={META[kind].description} value={description} />
+      {kind === "campaigns" ? (
+        <div className="grid gap-3 rounded-lg border border-ember-800/50 bg-ink-950/45 p-3 md:col-span-2 xl:col-span-4">
+          <div className="flex flex-wrap items-center gap-3">
+            <label className="flex items-center gap-2 text-xs text-stone-300">
+              <input checked={allowLegacy} onChange={(event) => {
+                const next = event.target.checked;
+                setAllowLegacy(next);
+                if (!next) {
+                  setEnabledRuleExtensions((current) => current.filter((key) => !extensionCatalog.data?.items.find((item) => item.key === key)?.requires_legacy));
+                }
+              }} type="checkbox" />
+              允许旧版 / 变体规则
+            </label>
+            <label className="flex items-center gap-2 text-xs text-stone-300">
+              负重
+              <select className={`${inputCls} !w-auto`} onChange={(event) => setEncumbranceMode(event.target.value as typeof encumbranceMode)} value={encumbranceMode}>
+                <option value="standard">标准负重</option>
+                <option value="variant">变体负重</option>
+                <option value="none">关闭负重</option>
+              </select>
+            </label>
+          </div>
+          <div>
+            <p className="mb-2 text-xs font-medium text-parchment-100">开团时启用规则扩展（默认不启用）</p>
+            {extensionCatalog.isLoading ? <p className="m-0 text-2xs text-stone-500">正在读取本地 D&D 规则目录…</p> : null}
+            {extensionCatalog.isError ? <p className="m-0 text-2xs text-red-300">规则目录读取失败；仍可创建核心 2024 规则团。</p> : null}
+            <div className="grid gap-2 md:grid-cols-2">
+              {(extensionCatalog.data?.items ?? []).map((extension: RuleExtension) => (
+                <label className={`rounded border p-2 text-xs ${extension.requires_legacy && !allowLegacy ? "border-ink-800 opacity-50" : "border-ink-700 hover:border-ember-700/60"}`} key={extension.key}>
+                  <span className="flex items-start gap-2">
+                    <input
+                      checked={enabledRuleExtensions.includes(extension.key)}
+                      disabled={extension.requires_legacy && !allowLegacy}
+                      onChange={(event) => setEnabledRuleExtensions((current) => event.target.checked ? [...current, extension.key] : current.filter((key) => key !== extension.key))}
+                      type="checkbox"
+                    />
+                    <span><strong className="text-parchment-100">{extension.label}</strong><span className="ml-2 text-[10px] text-stone-500">{extension.category} · {extension.automation_status === "full" ? "自动" : extension.automation_status === "partial" ? "部分自动" : "DM裁定"}</span><span className="mt-1 block text-2xs text-stone-500">{extension.summary}</span></span>
+                  </span>
+                </label>
+              ))}
+            </div>
+            <p className="mb-0 mt-2 text-2xs text-stone-600">扩展会同时写入本团的规则原子库与规则积木；未实现自动结算的部分会明确标记为 DM 裁定，不会猜数字。</p>
+          </div>
+          <div>
+            <p className="mb-2 text-xs font-medium text-parchment-100">开团时启用本地资料书内容包（默认不启用）</p>
+            {contentPackCatalog.isLoading ? <p className="m-0 text-2xs text-stone-500">正在核对本地资料书可导入内容…</p> : null}
+            {contentPackCatalog.isError ? <p className="m-0 text-2xs text-red-300">资料书目录读取失败；仍可创建核心 2024 规则团。</p> : null}
+            <div className="grid gap-2 md:grid-cols-2">
+              {(contentPackCatalog.data?.items ?? []).map((pack: ContentPack) => (
+                <label className="rounded border border-ink-700 p-2 text-xs hover:border-ember-700/60" key={pack.key}>
+                  <span className="flex items-start gap-2">
+                    <input
+                      checked={enabledContentPacks.includes(pack.key)}
+                      onChange={(event) => setEnabledContentPacks((current) => event.target.checked ? [...current, pack.key] : current.filter((key) => key !== pack.key))}
+                      type="checkbox"
+                    />
+                    <span>
+                      <strong className="text-parchment-100">{pack.label}</strong>
+                      <span className="ml-2 text-[10px] text-stone-500">{pack.available_entries} 条可检索</span>
+                      <span className="mt-1 block text-2xs text-stone-500">{pack.summary}</span>
+                      <span className="mt-1 block text-2xs text-stone-600">已导入 {pack.status_counts.imported} · 待标准化 {pack.status_counts.needs_normalization}</span>
+                    </span>
+                  </span>
+                </label>
+              ))}
+            </div>
+            <p className="mb-0 mt-2 text-2xs text-stone-600">启用后，资料库、角色法术选项和玩家规则查询都会只显示本团选中的资料书；待标准化条目保留原文与来源，不会伪装成可自动执行的职业成长或规则。</p>
+          </div>
+        </div>
+      ) : null}
       {kind === "characters" ? (
         <>
           <input className={inputCls} onChange={(event) => setRace(event.target.value)} placeholder="种族" value={race} />

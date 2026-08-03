@@ -2,11 +2,64 @@ from __future__ import annotations
 
 from fastapi.testclient import TestClient
 
+from dnd_dm_assistant.application.official_compendium import _monster_actions
+
+
+def test_monster_actions_keep_action_economy_and_recharge_metadata() -> None:
+    text = """
+动作
+多重攻击。该生物进行两次爪击。
+爪击。近战攻击检定：+7，触及5尺，命中造成（2d6+4）挥砍伤害。
+火焰吐息（充能 5-6）。锥形区域内进行DC 15的敏捷豁免，失败受到（8d6）火焰伤害，成功减半。
+反应
+借机攻击。该生物进行一次近战攻击。
+传奇动作
+该生物每轮可以进行3个传奇动作。
+尾击。消耗1个传奇动作，触及10尺，命中：受到（2d8）钝击伤害。
+巢穴动作
+地面震动。每个生物进行DC 14的力量豁免，失败倒地。
+"""
+
+    actions = _monster_actions(text)
+
+    by_name = {item["name"]: item for item in actions}
+    assert by_name["多重攻击"]["action_type"] == "action"
+    assert by_name["多重攻击"]["multiattack"] is True
+    assert by_name["多重攻击"]["multiattack_count"] == 2
+    assert by_name["多重攻击"]["multiattack_components"] == [
+        {"action_name": "爪击", "count": 2}
+    ]
+    assert by_name["火焰吐息"]["recharge"] == {"minimum": 5, "maximum": 6}
+    assert by_name["借机攻击"]["action_type"] == "reaction"
+    assert by_name["尾击"]["action_type"] == "legendary_action"
+    assert by_name["尾击"]["legendary_cost"] == 1
+    assert by_name["尾击"]["legendary_pool_max"] == 3
+    assert by_name["地面震动"]["action_type"] == "lair_action"
+
+
+def test_monster_action_parser_keeps_area_and_exact_condition_duration() -> None:
+    actions = _monster_actions(
+        """
+动作
+心灵震爆（充能5-6）。该生物发出60尺锥形能量；范围内每个生物进行DC15的智力豁免，失败受到（6d8+4）心灵伤害并震慑，直到该生物的下个回合结束，成功伤害减半。
+"""
+    )
+
+    blast = actions[0]
+    assert blast["area_shape"] == "cone"
+    assert blast["area_size_ft"] == 60
+    assert blast["affects_multiple_targets"] is True
+    assert blast["conditions_on_failure"] == ["震慑"]
+    assert blast["condition_duration"] == "actor_turn_end"
+
 
 def test_official_compendium_filters_before_pagination_and_only_returns_atoms(
     campaign_client: TestClient,
 ) -> None:
-    campaign = campaign_client.post("/api/v1/campaigns", json={"name": "官方图鉴质量验收团"}).json()
+    campaign = campaign_client.post(
+        "/api/v1/campaigns",
+        json={"name": "官方图鉴质量验收团", "allow_legacy": True},
+    ).json()
     root = f"/api/v1/campaigns/{campaign['id']}/compendium"
     druid_page_one = campaign_client.get(
         f"{root}?entry_type=spell&class_name=德鲁伊&page=1&page_size=10"
@@ -191,6 +244,30 @@ def test_generated_compendium_templates_are_reusable_instances(
     assert arrival.status_code == 201, arrival.text
     participants = campaign_client.get(f"{root}/scenes/{scene['id']}/participants").json()["items"]
     assert any(item["entity_type"] == "monster" for item in participants)
+
+
+def test_official_monster_defenses_are_visible_as_typed_rule_blocks(
+    campaign_client: TestClient,
+) -> None:
+    campaign = campaign_client.post(
+        "/api/v1/campaigns",
+        json={"name": "伤害类型验收团", "allow_legacy": True},
+    ).json()
+    root = f"/api/v1/campaigns/{campaign['id']}/compendium"
+    response = campaign_client.get(
+        f"{root}?entry_type=monster&text=毒虫罗斯魔&include_legacy=true&page_size=100"
+    )
+    assert response.status_code == 200, response.text
+    entry = next(item for item in response.json()["items"] if item["name"] == "毒虫罗斯魔")
+    rules = entry["rules_json"]
+    assert set(rules["damage_resistances"]) >= {"bludgeoning", "cold", "fire"}
+    assert set(rules["damage_immunities"]) >= {"acid", "poison"}
+    plan = rules["rule_plan"]
+    assert plan["source_kind"] == "monster"
+    assert {block["operation"] for block in plan["blocks"] if block["kind"] == "defense"} == {
+        "resistance",
+        "immunity",
+    }
 
 
 def test_site_generation_can_derive_party_and_room_scale_from_characters(

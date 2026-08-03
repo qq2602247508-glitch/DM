@@ -1,11 +1,17 @@
 from __future__ import annotations
 
 import re
+from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Any
 
+from dnd_dm_assistant.domain.feature_runtime import resource_recovery_events
+
 TABLE_ROW = re.compile(r"^\|\s*(.*?)\s*\|\s*$")
-LEVEL = re.compile(r"^\d{1,2}$")
+# The core tables use plain digits, while already-ingested supplement tables
+# commonly use ``1st``/``2nd``.  Both are table rows; arbitrary prose numbers
+# remain excluded.
+LEVEL = re.compile(r"^(\d{1,2})(?:st|nd|rd|th|级)?$", re.I)
 
 MULTICLASS_SPELL_SLOTS: tuple[tuple[int, ...], ...] = (
     (),
@@ -31,6 +37,18 @@ MULTICLASS_SPELL_SLOTS: tuple[tuple[int, ...], ...] = (
     (4, 3, 3, 3, 3, 2, 2, 1, 1),
 )
 
+# ``class_levels`` predates the normalized character-sheet contract in a few
+# saved campaigns.  Keep the spell-slot helper tolerant of those historical
+# labels instead of accidentally treating one class as two separate casters.
+# The broader catalog aliases live in ``advancement_choices``; this small copy
+# deliberately stays here to avoid a domain-layer import cycle.
+MULTICLASS_CLASS_ALIASES: dict[str, str] = {
+    "邪术师": "魔契师",
+    "奇械师（旧版）": "奇械师",
+    "奇械师(旧版)": "奇械师",
+    "Artificer": "奇械师",
+}
+
 
 @dataclass(frozen=True, slots=True)
 class ClassLevel:
@@ -47,7 +65,17 @@ class ClassProgression:
     source_path: str
     hit_die: int
     levels: tuple[ClassLevel, ...]
-    subclasses: tuple[dict[str, str], ...] = ()
+    subclasses: tuple[dict[str, Any], ...] = ()
+    rule_year: str = "2024"
+    content_pack_key: str | None = None
+
+
+def proficiency_bonus_for_level(total_level: int) -> int:
+    """Return the deterministic 2024 proficiency bonus for total character level."""
+
+    if not 1 <= total_level <= 20:
+        raise ValueError("total character level must be between 1 and 20")
+    return 2 + (total_level - 1) // 4
 
 
 def _cells(line: str) -> list[str]:
@@ -95,14 +123,15 @@ def parse_progression_table(markdown: str) -> tuple[ClassLevel, ...]:
             row = _cells(row_line)
             if not row:
                 break
-            if not row or not LEVEL.match(row[0]):
+            level_match = LEVEL.match(row[0]) if row else None
+            if not row or level_match is None:
                 continue
-            level = int(row[0])
+            level = int(level_match.group(1))
             if not 1 <= level <= 20:
                 continue
             pb_raw = row[pb_index] if pb_index < len(row) else ""
             pb_match = re.search(r"\d+", pb_raw)
-            pb = int(pb_match.group()) if pb_match else 2 + (level - 1) // 4
+            pb = int(pb_match.group()) if pb_match else proficiency_bonus_for_level(level)
             features = _feature_names(row[feature_index] if feature_index < len(row) else "")
             progression = {
                 header[position]: value
@@ -146,6 +175,12 @@ def class_progression_from_record(
         hit_die=parse_hit_die(markdown),
         levels=parse_progression_table(markdown),
         subclasses=subclasses,
+        rule_year=str(record.get("normalized_edition") or record.get("edition") or "2024"),
+        content_pack_key=(
+            str(record.get("content_pack_key"))
+            if record.get("content_pack_key")
+            else None
+        ),
     )
 
 
@@ -173,6 +208,7 @@ def validate_multiclass_prerequisites(
         "魔契师": (("charisma", 13),),
         "邪术师": (("charisma", 13),),
         "法师": (("intelligence", 13),),
+        "奇械师": (("intelligence", 13),),
     }
     failures: list[str] = []
     for ability, minimum in requirements.get(class_name, ()):
@@ -187,22 +223,59 @@ def validate_multiclass_prerequisites(
     return tuple(failures)
 
 
+def normalize_multiclass_class_levels(
+    class_levels: Mapping[str, object],
+) -> dict[str, int]:
+    """Return canonical positive class levels for multiclass math.
+
+    Character creation already rejects duplicate canonical class names.  This
+    helper protects advancement/resource recalculation as well, including
+    sheets saved before aliases such as ``邪术师`` were normalized.  Combining
+    duplicate alias entries would silently invent class levels, so it is an
+    explicit validation error instead.
+    """
+
+    normalized: dict[str, int] = {}
+    for raw_name, raw_level in class_levels.items():
+        name = MULTICLASS_CLASS_ALIASES.get(str(raw_name).strip(), str(raw_name).strip())
+        if not name:
+            raise ValueError("class_levels contains an empty class name")
+        level = int(raw_level)
+        if level < 0:
+            raise ValueError(f"{name} class level cannot be negative")
+        if level == 0:
+            continue
+        if name in normalized:
+            raise ValueError(
+                f"class_levels contains duplicate class after alias normalization: {name}"
+            )
+        normalized[name] = level
+    return normalized
+
+
 def multiclass_caster_level(
     class_levels: dict[str, int],
     subclass_choices: dict[str, str] | None = None,
 ) -> int:
     """Return the 2024 multiclass spell-slot level; Pact Magic stays separate."""
 
+    normalized_levels = normalize_multiclass_class_levels(class_levels)
     subclasses = subclass_choices or {}
     full = {"吟游诗人", "牧师", "德鲁伊", "术士", "法师"}
-    total = sum(int(class_levels.get(name, 0)) for name in full)
+    total = sum(int(normalized_levels.get(name, 0)) for name in full)
     total += sum(
-        (int(class_levels.get(name, 0)) + 1) // 2 for name in ("圣武士", "游侠")
+        (int(normalized_levels.get(name, 0)) + 1) // 2
+        for name in ("圣武士", "游侠")
     )
-    if subclasses.get("战士") in {"奥法骑士", "奥术骑士"}:
-        total += int(class_levels.get("战士", 0)) // 3
-    if subclasses.get("游荡者") in {"诡术师", "奥法诡术师"}:
-        total += int(class_levels.get("游荡者", 0)) // 3
+    # The legacy artificer is a half caster whose multiclass contribution
+    # rounds up. Pact Magic deliberately remains outside this shared table.
+    total += (int(normalized_levels.get("奇械师", 0)) + 1) // 2
+    fighter_subclass = str(subclasses.get("战士") or "")
+    rogue_subclass = str(subclasses.get("游荡者") or "")
+    if any(name in fighter_subclass for name in ("奥法骑士", "奥术骑士")):
+        total += int(normalized_levels.get("战士", 0)) // 3
+    if any(name in rogue_subclass for name in ("诡术师", "奥法诡术师")):
+        total += int(normalized_levels.get("游荡者", 0)) // 3
     return min(20, total)
 
 
@@ -239,5 +312,9 @@ def merge_spell_slot_resources(
             "current": min(new_max, old_current + max(0, new_max - old_max)),
             "max": new_max,
             "recovery": "long_rest",
+            "recovery_events": resource_recovery_events(
+                key,
+                {"recovery": "long_rest"},
+            ),
         }
     return merged
