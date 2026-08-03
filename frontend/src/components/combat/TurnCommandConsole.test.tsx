@@ -65,6 +65,7 @@ const DRAGON = fighter({
       {
         name: "借机尾击",
         action_type: "reaction",
+        reaction_event: "leaves_reach",
         reaction_trigger: "目标离开近战威胁范围",
         attack_bonus: 9,
         damage: "1d8+5",
@@ -238,6 +239,7 @@ describe("TurnCommandConsole advanced monster action window", () => {
         target_version: 1,
         action_cost: "reaction",
         action_name: "借机尾击",
+        reaction_event: "leaves_reach",
         reaction_trigger: "冒险者离开黑龙的近战威胁范围",
         attack_roll_total: 18,
       },

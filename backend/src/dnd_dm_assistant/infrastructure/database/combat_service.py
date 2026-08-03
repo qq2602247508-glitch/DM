@@ -981,6 +981,7 @@ class CombatEngineService:
         legendary_cost: int | None = None,
         legendary_pool_max: int | None = None,
         reaction_trigger: str | None = None,
+        reaction_event: str | None = None,
     ) -> dict[str, object] | None:
         """Return the authoritative audit context for an off-turn action.
 
@@ -995,6 +996,9 @@ class CombatEngineService:
             return None
         metadata: dict[str, object] = {"action_cost": cost}
         if cost == "reaction":
+            event = (reaction_event or "").strip()
+            if event:
+                metadata["reaction_event"] = event
             trigger = (reaction_trigger or "").strip()
             if trigger:
                 metadata["reaction_trigger"] = trigger
@@ -1013,18 +1017,32 @@ class CombatEngineService:
         legendary_cost: int | None = None,
         legendary_pool_max: int | None = None,
         reaction_trigger: str | None = None,
+        reaction_event: str | None = None,
     ) -> str | None:
         metadata = cls._action_window_metadata(
             action_cost,
             legendary_cost=legendary_cost,
             legendary_pool_max=legendary_pool_max,
             reaction_trigger=reaction_trigger,
+            reaction_event=reaction_event,
         )
         if metadata is None:
             return None
         cost = str(metadata["action_cost"])
         if cost == "reaction":
-            return f"反应触发：{metadata.get('reaction_trigger', 'DM已确认的实际事件')}"
+            event = metadata.get("reaction_event")
+            event_label = {
+                "leaves_reach": "离开近战威胁范围",
+                "enters_reach": "进入近战威胁范围",
+                "takes_damage": "受到伤害",
+                "casts_spell": "施法",
+                "turn_end": "回合结束",
+            }.get(str(event), event)
+            event_text = f"；结构化事件：{event_label}" if event_label else ""
+            return (
+                f"反应触发：{metadata.get('reaction_trigger', 'DM已确认的实际事件')}"
+                f"{event_text}"
+            )
         if cost == "legendary_action":
             cost_label = metadata.get("legendary_cost")
             pool_label = metadata.get("legendary_pool_max")
@@ -1048,6 +1066,8 @@ class CombatEngineService:
         legendary_cost: int | None = None,
         legendary_pool_max: int | None = None,
         reaction_trigger: str | None = None,
+        action_name: str | None = None,
+        reaction_event: str | None = None,
     ) -> bool:
         if action_cost == "none":
             return False
@@ -1080,6 +1100,32 @@ class CombatEngineService:
             raise ValueError("only the active combatant can spend actions")
         if action_cost == "reaction" and not (reaction_trigger or "").strip():
             raise ValueError("a reaction requires an explicit trigger confirmed by the DM")
+        if action_cost == "reaction" and action_name:
+            raw_actions = (actor.snapshot_json or {}).get("actions", [])
+            if isinstance(raw_actions, list):
+                structured = next(
+                    (
+                        raw
+                        for raw in raw_actions
+                        if isinstance(raw, dict)
+                        and str(raw.get("name") or "").strip() == action_name.strip()
+                        and str(raw.get("reaction_event") or "").strip()
+                    ),
+                    None,
+                )
+                if structured is not None:
+                    expected_event = str(structured["reaction_event"]).strip()
+                    supplied_event = (reaction_event or "").strip()
+                    if not supplied_event:
+                        raise ValueError(
+                            f"reaction action {action_name!r} requires its structured "
+                            "reaction_event"
+                        )
+                    if supplied_event != expected_event:
+                        raise ValueError(
+                            f"reaction_event {supplied_event!r} does not match "
+                            f"{action_name!r} ({expected_event!r})"
+                        )
         if action_cost == "legendary_action":
             if actor.entity_type != "monster":
                 raise ValueError("only monsters can spend legendary actions")
@@ -3443,6 +3489,8 @@ class CombatEngineService:
                 legendary_cost=command.legendary_cost,
                 legendary_pool_max=command.legendary_pool_max,
                 reaction_trigger=command.reaction_trigger,
+                action_name=command.action_name,
+                reaction_event=command.reaction_event,
             )
             recharge_consumed = self._validate_recharge(
                 actor,
@@ -3464,12 +3512,14 @@ class CombatEngineService:
                 legendary_cost=command.legendary_cost,
                 legendary_pool_max=command.legendary_pool_max,
                 reaction_trigger=command.reaction_trigger,
+                reaction_event=command.reaction_event,
             )
             window_summary = self._action_window_summary(
                 command.action_cost,
                 legendary_cost=command.legendary_cost,
                 legendary_pool_max=command.legendary_pool_max,
                 reaction_trigger=command.reaction_trigger,
+                reaction_event=command.reaction_event,
             )
             label = {
                 "armor_class": "AC 防御",
@@ -3675,6 +3725,8 @@ class CombatEngineService:
                 legendary_cost=command.legendary_cost,
                 legendary_pool_max=command.legendary_pool_max,
                 reaction_trigger=command.reaction_trigger,
+                action_name=command.action_name,
+                reaction_event=command.reaction_event,
             )
             self._validate_recharge(
                 actor,
@@ -3710,6 +3762,8 @@ class CombatEngineService:
                 legendary_cost=command.legendary_cost,
                 legendary_pool_max=command.legendary_pool_max,
                 reaction_trigger=command.reaction_trigger,
+                action_name=command.action_name,
+                reaction_event=command.reaction_event,
             )
             recharge_consumed = self._validate_recharge(
                 actor,
@@ -3726,12 +3780,14 @@ class CombatEngineService:
                 legendary_cost=command.legendary_cost,
                 legendary_pool_max=command.legendary_pool_max,
                 reaction_trigger=command.reaction_trigger,
+                reaction_event=command.reaction_event,
             )
             window_summary = self._action_window_summary(
                 command.action_cost,
                 legendary_cost=command.legendary_cost,
                 legendary_pool_max=command.legendary_pool_max,
                 reaction_trigger=command.reaction_trigger,
+                reaction_event=command.reaction_event,
             )
             actions: list[CombatAction] = []
             for index, (prompt, target, effect_target, area_geometry) in enumerate(prepared):
@@ -4219,17 +4275,24 @@ class CombatEngineService:
                 if request.get("reaction_trigger") is not None
                 else None
             )
+            request_reaction_event = (
+                str(request.get("reaction_event"))
+                if request.get("reaction_event") is not None
+                else None
+            )
             action_window = self._action_window_metadata(
                 request_action_cost,
                 legendary_cost=request_legendary_cost,
                 legendary_pool_max=request_legendary_pool_max,
                 reaction_trigger=request_reaction_trigger,
+                reaction_event=request_reaction_event,
             )
             window_summary = self._action_window_summary(
                 request_action_cost,
                 legendary_cost=request_legendary_cost,
                 legendary_pool_max=request_legendary_pool_max,
                 reaction_trigger=request_reaction_trigger,
+                reaction_event=request_reaction_event,
             )
             effect_target = target
             raw_effect_target_id = request.get("effect_target_combatant_id")
@@ -4365,6 +4428,8 @@ class CombatEngineService:
                 legendary_cost=command.legendary_cost,
                 legendary_pool_max=command.legendary_pool_max,
                 reaction_trigger=command.reaction_trigger,
+                action_name=command.action_name,
+                reaction_event=command.reaction_event,
             )
             self._validate_recharge(
                 actor,
@@ -4482,6 +4547,8 @@ class CombatEngineService:
                     legendary_cost=command.legendary_cost,
                     legendary_pool_max=command.legendary_pool_max,
                     reaction_trigger=command.reaction_trigger,
+                    action_name=command.action_name,
+                    reaction_event=command.reaction_event,
                 )
                 if actor is not None and command.area_shape is not None:
                     # The normal confirmation path performs this same
@@ -4606,6 +4673,8 @@ class CombatEngineService:
                 legendary_cost=command.legendary_cost,
                 legendary_pool_max=command.legendary_pool_max,
                 reaction_trigger=command.reaction_trigger,
+                action_name=command.action_name,
+                reaction_event=command.reaction_event,
             )
             recharge_consumed = self._validate_recharge(
                 actor,
@@ -4814,6 +4883,7 @@ class CombatEngineService:
                 legendary_cost=command.legendary_cost,
                 legendary_pool_max=command.legendary_pool_max,
                 reaction_trigger=command.reaction_trigger,
+                reaction_event=command.reaction_event,
             )
             if action_window is not None:
                 result["action_window"] = action_window
@@ -4873,6 +4943,7 @@ class CombatEngineService:
                     legendary_cost=command.legendary_cost,
                     legendary_pool_max=command.legendary_pool_max,
                     reaction_trigger=command.reaction_trigger,
+                    reaction_event=command.reaction_event,
                 )
                 if window_summary:
                     action_result += f"；{window_summary}"
@@ -4900,6 +4971,7 @@ class CombatEngineService:
                     legendary_cost=command.legendary_cost,
                     legendary_pool_max=command.legendary_pool_max,
                     reaction_trigger=command.reaction_trigger,
+                    reaction_event=command.reaction_event,
                 )
                 if window_summary:
                     action_summary += f"；{window_summary}"
@@ -5349,6 +5421,8 @@ class CombatEngineService:
                 legendary_cost=command.legendary_cost,
                 legendary_pool_max=command.legendary_pool_max,
                 reaction_trigger=command.reaction_trigger,
+                action_name=command.action_name,
+                reaction_event=command.reaction_event,
             )
             recharge_consumed = self._validate_recharge(
                 actor,

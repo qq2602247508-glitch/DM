@@ -95,6 +95,7 @@ def test_advanced_phase_previews_execute_through_combat_action_api(
             "actor_version": dragon["version"],
             "action_cost": "reaction",
             "reaction_trigger": "冒险者离开黑龙的近战威胁范围",
+            "reaction_event": "leaves_reach",
             "action_name": "借机尾击",
             "target_combatant_id": hero["id"],
             "target_version": hero["version"],
@@ -108,6 +109,7 @@ def test_advanced_phase_previews_execute_through_combat_action_api(
     assert "反应触发：冒险者离开黑龙的近战威胁范围" in reaction_action["summary"]
     assert reaction_action["result_json"]["action_window"] == {
         "action_cost": "reaction",
+        "reaction_event": "leaves_reach",
         "reaction_trigger": "冒险者离开黑龙的近战威胁范围",
     }
 
@@ -534,6 +536,7 @@ def test_reaction_save_prompt_keeps_trigger_after_player_resolution(
             "damage_on_failure": 7,
             "damage_type": "acid",
             "reaction_trigger": trigger,
+            "reaction_event": "leaves_reach",
             "description": "DM确认反应已经触发",
         },
     )
@@ -552,6 +555,7 @@ def test_reaction_save_prompt_keeps_trigger_after_player_resolution(
     assert trigger in resolved_action["summary"]
     assert resolved_action["result_json"]["action_window"] == {
         "action_cost": "reaction",
+        "reaction_event": "leaves_reach",
         "reaction_trigger": trigger,
     }
     follow_up = resolved.json()["resolution"]["follow_up_damage"]

@@ -641,6 +641,7 @@ export type CombatActionCommand = {
   legendary_cost?: number | null;
   legendary_pool_max?: number | null;
   reaction_trigger?: string | null;
+  reaction_event?: MonsterReactionEvent | null;
   sequence_id?: string | null;
   sequence_step?: number | null;
   sequence_size?: number | null;

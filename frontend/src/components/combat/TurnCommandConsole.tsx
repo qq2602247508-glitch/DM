@@ -1138,6 +1138,7 @@ export function TurnCommandConsole({
           legendary_cost: cost === "legendary_action" ? Number(action.legendary_cost ?? 1) : null,
           legendary_pool_max: cost === "legendary_action" ? Number(action.legendary_pool_max) : null,
           reaction_trigger: cost === "reaction" ? reactionTrigger.trim() : null,
+          reaction_event: cost === "reaction" ? reactionEvent || null : null,
           sequence_id: sequenceId,
           sequence_step: 0,
           sequence_size: affectedTargets.length,
@@ -1198,6 +1199,7 @@ export function TurnCommandConsole({
           legendary_cost: actionCostValue === "legendary_action" ? Number(action.legendary_cost ?? 1) : null,
           legendary_pool_max: actionCostValue === "legendary_action" ? Number(action.legendary_pool_max) : null,
           reaction_trigger: actionCostValue === "reaction" ? reactionTrigger.trim() : null,
+          reaction_event: actionCostValue === "reaction" ? reactionEvent || null : null,
           sequence_id: sequenceId,
           sequence_step: index,
           sequence_size: affectedTargets.length,
@@ -1289,6 +1291,7 @@ export function TurnCommandConsole({
     onSuccess: ({ pendingRollCount, targetCount, cost }) => {
       invalidate();
       setReactionTrigger("");
+      setReactionEvent("");
       setAdvancedAttackTotal("");
       setAdvancedAreaTargetingKey(null);
       onRangeChange(targetingForAction(targetingAction), active.id);

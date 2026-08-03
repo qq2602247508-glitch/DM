@@ -925,6 +925,86 @@ def test_monster_sequence_and_legendary_action_spend_exactly_once(
     assert lair.json()["actor"]["snapshot_json"]["lair_action_round"] == 1
 
 
+def test_structured_reaction_event_must_match_monster_action(
+    combat_client: TestClient,
+) -> None:
+    campaign = _campaign(combat_client, "Structured reaction event")
+    combat = combat_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/combats", json={"name": "Reaction event"}
+    ).json()
+    monster = combat_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "守卫",
+            "entity_type": "monster",
+            "initiative": 10,
+            "hp": 30,
+            "max_hp": 30,
+            "snapshot_json": {
+                "actions": [
+                    {
+                        "name": "借机斩",
+                        "action_type": "reaction",
+                        "reaction_event": "leaves_reach",
+                        "damage": "1d8",
+                    }
+                ]
+            },
+        },
+    ).json()
+    hero = combat_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "冒险者",
+            "entity_type": "character",
+            "initiative": 20,
+            "hp": 20,
+            "max_hp": 20,
+        },
+    ).json()
+    path = f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}/actions/confirm"
+    base = {
+        "action_type": "damage",
+        "actor_combatant_id": monster["id"],
+        "actor_version": monster["version"],
+        "action_cost": "reaction",
+        "action_name": "借机斩",
+        "reaction_trigger": "冒险者离开守卫的近战威胁范围",
+        "target_combatant_id": hero["id"],
+        "target_version": hero["version"],
+        "amount": 4,
+        "damage_type": "slashing",
+    }
+    missing = combat_client.post(
+        path,
+        headers={"X-Request-ID": "reaction-event-missing"},
+        json=base,
+    )
+    assert missing.status_code == 400, missing.text
+    assert "structured reaction_event" in missing.json()["message"]
+
+    mismatch = combat_client.post(
+        path,
+        headers={"X-Request-ID": "reaction-event-mismatch"},
+        json={**base, "reaction_event": "takes_damage"},
+    )
+    assert mismatch.status_code == 400, mismatch.text
+    assert "does not match" in mismatch.json()["message"]
+
+    confirmed = combat_client.post(
+        path,
+        headers={"X-Request-ID": "reaction-event-match"},
+        json={**base, "reaction_event": "leaves_reach"},
+    )
+    assert confirmed.status_code == 200, confirmed.text
+    assert confirmed.json()["action"]["result_json"]["action_window"] == {
+        "action_cost": "reaction",
+        "reaction_event": "leaves_reach",
+        "reaction_trigger": "冒险者离开守卫的近战威胁范围",
+    }
+    assert confirmed.json()["target"]["hp"] == 16
+
+
 def test_multiattack_sequence_records_independent_hits_and_targets(
     combat_client: TestClient,
 ) -> None:

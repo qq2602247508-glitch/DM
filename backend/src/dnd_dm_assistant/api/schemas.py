@@ -760,6 +760,13 @@ class CombatActionCommand(BaseModel):
     legendary_cost: int | None = Field(default=None, ge=1, le=10)
     legendary_pool_max: int | None = Field(default=None, ge=1, le=10)
     reaction_trigger: str | None = Field(default=None, max_length=1_000)
+    reaction_event: Literal[
+        "leaves_reach",
+        "enters_reach",
+        "takes_damage",
+        "casts_spell",
+        "turn_end",
+    ] | None = None
     sequence_id: str | None = Field(default=None, max_length=120)
     sequence_step: int | None = Field(default=None, ge=0, le=50)
     sequence_size: int | None = Field(default=None, ge=1, le=50)
@@ -819,6 +826,8 @@ class CombatActionCommand(BaseModel):
             raise ValueError("reaction_trigger is required for a monster reaction")
         if self.action_cost != "reaction" and self.reaction_trigger is not None:
             raise ValueError("reaction_trigger is only valid for a reaction")
+        if self.action_cost != "reaction" and self.reaction_event is not None:
+            raise ValueError("reaction_event is only valid for a reaction")
         sequence_values = (self.sequence_id, self.sequence_step, self.sequence_size)
         if any(value is not None for value in sequence_values) and not all(
             value is not None for value in sequence_values
@@ -1115,6 +1124,13 @@ class _PlayerRollPromptBase(BaseModel):
     legendary_cost: int | None = Field(default=None, ge=1, le=10)
     legendary_pool_max: int | None = Field(default=None, ge=1, le=10)
     reaction_trigger: str | None = Field(default=None, max_length=1_000)
+    reaction_event: Literal[
+        "leaves_reach",
+        "enters_reach",
+        "takes_damage",
+        "casts_spell",
+        "turn_end",
+    ] | None = None
     sequence_id: str | None = Field(default=None, max_length=120)
     sequence_step: int | None = Field(default=None, ge=0, le=50)
     sequence_size: int | None = Field(default=None, ge=1, le=50)
@@ -1181,6 +1197,10 @@ class _PlayerRollPromptBase(BaseModel):
             )
         if self.action_cost == "reaction" and not (self.reaction_trigger or "").strip():
             raise ValueError("reaction_trigger is required for a monster reaction")
+        if self.action_cost != "reaction" and self.reaction_trigger is not None:
+            raise ValueError("reaction_trigger is only valid for a reaction")
+        if self.action_cost != "reaction" and self.reaction_event is not None:
+            raise ValueError("reaction_event is only valid for a reaction")
         sequence_values = (self.sequence_id, self.sequence_step, self.sequence_size)
         if any(value is not None for value in sequence_values) and not all(
             value is not None for value in sequence_values
@@ -1372,6 +1392,13 @@ class MonsterAreaActionCommand(BaseModel):
     legendary_cost: int | None = Field(default=None, ge=1, le=10)
     legendary_pool_max: int | None = Field(default=None, ge=1, le=10)
     reaction_trigger: str | None = Field(default=None, max_length=1_000)
+    reaction_event: Literal[
+        "leaves_reach",
+        "enters_reach",
+        "takes_damage",
+        "casts_spell",
+        "turn_end",
+    ] | None = None
     dm_geometry_note: Annotated[
         str,
         StringConstraints(strip_whitespace=True, min_length=1, max_length=1_000),
@@ -1434,6 +1461,8 @@ class MonsterAreaActionCommand(BaseModel):
             raise ValueError("reaction area actions require an explicit trigger")
         if self.action_cost != "reaction" and self.reaction_trigger is not None:
             raise ValueError("reaction_trigger is only valid for reactions")
+        if self.action_cost != "reaction" and self.reaction_event is not None:
+            raise ValueError("reaction_event is only valid for reactions")
         return self
 
 
