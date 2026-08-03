@@ -123,6 +123,54 @@ def test_compiles_area_save_damage_resource_and_duration() -> None:
     assert damage.applies_on == "save_failure"
 
 
+def test_compiles_damage_tags_for_compound_and_single_damage() -> None:
+    compound = compile_rule_blocks(
+        {
+            "name": "魔法武器爆发",
+            "damage_components": [
+                {
+                    "expression": "1d8",
+                    "damage_type": "穿刺",
+                    "damage_tags": ["magical", "weapon", "magical"],
+                },
+                {"expression": "2d6", "damage_type": "火焰", "damage_tags": ["spell"]},
+            ],
+            "resolution_kind": "damage",
+        }
+    )
+
+    damages = [block for block in compound.blocks if isinstance(block, DamageBlock)]
+    assert [block.damage_tags for block in damages] == [
+        ["magical", "weapon"],
+        ["spell"],
+    ]
+
+    single = compile_rule_blocks(
+        {
+            "name": "非魔法箭",
+            "damage_expression": "1d6",
+            "damage_type": "穿刺",
+            "damage_tags": ["nonmagical"],
+            "resolution_kind": "damage",
+        }
+    )
+    single_damage = next(block for block in single.blocks if isinstance(block, DamageBlock))
+    assert single_damage.damage_tags == ["nonmagical"]
+
+
+def test_rejects_non_string_damage_tags() -> None:
+    with pytest.raises(ValueError, match="damage_tags"):
+        compile_rule_blocks(
+            {
+                "name": "不安全伤害标签",
+                "damage_expression": "1d6",
+                "damage_type": "火焰",
+                "damage_tags": ["magical", 1],
+                "resolution_kind": "damage",
+            }
+        )
+
+
 @pytest.mark.parametrize(
     ("description", "shape", "size_ft"),
     [

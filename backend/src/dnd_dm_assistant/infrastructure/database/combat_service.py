@@ -4543,6 +4543,14 @@ class CombatEngineService:
                     f"造成 {result['adjusted_damage']} 点"
                     f"{command.damage_type or ''}伤害"
                 )
+                if command.damage_components:
+                    reported_damage = int(result.get("original_damage", 0))
+                    adjusted_damage = int(result.get("adjusted_damage", 0))
+                    if reported_damage != adjusted_damage:
+                        action_result += (
+                            f"；实际扣除 {adjusted_damage} 点"
+                            f"（原始报告 {reported_damage} 点）"
+                        )
                 if summon_ended:
                     action_result += "；召唤物生命归零，已离开战斗"
                 if combatant_deactivated:
@@ -4556,6 +4564,14 @@ class CombatEngineService:
                     f"{target.display_name} 受到 {result['adjusted_damage']} 点"
                     f"{command.damage_type or ''}伤害"
                 )
+                if command.damage_components:
+                    reported_damage = int(result.get("original_damage", 0))
+                    adjusted_damage = int(result.get("adjusted_damage", 0))
+                    if reported_damage != adjusted_damage:
+                        action_summary += (
+                            f"；实际扣除 {adjusted_damage} 点"
+                            f"（原始报告 {reported_damage} 点）"
+                        )
                 if summon_ended:
                     action_summary += "；召唤物生命归零，已离开战斗"
             else:

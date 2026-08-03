@@ -43,7 +43,8 @@ import {
   describeEncounterOperation, difficultyShiftLabel,
 } from "../ui/encounterAdjustments";
 import {
-  actionEconomySummary, damageModifierLabel, deathSaveSummary,
+  actionEconomySummary, damageComponentsByTargetSummary, damageComponentsSummary,
+  damageModifierLabel, deathSaveSummary,
 } from "../ui/combatPresentation";
 import { chooseEnemyTarget, isPlayerControlledCombatant } from "../ui/combatAutomation";
 import { advancedActionPendingRollSummary } from "../ui/advancedMonsterActions";
@@ -156,13 +157,19 @@ function CombatLogPanel({ actions }: { actions: CombatAction[] }): ReactElement 
       </div>
       {expanded && actions.length > 0 ? (
         <ol className="mb-0 mt-2 grid max-h-56 gap-2 overflow-y-auto p-0 text-2xs text-stone-400 md:grid-cols-2">
-          {[...actions].reverse().map((action) => (
-            <li className="list-none rounded border border-ink-800 bg-ink-950/70 p-2" key={action.id}>
-              <span className="text-stone-600">R{action.round_number} · T{action.turn_index + 1}</span>
-              <strong className="mt-0.5 block text-stone-200">{action.summary}</strong>
-              {action.explanation ? <span className="mt-1 block leading-5 text-stone-500">{action.explanation}</span> : null}
-            </li>
-          ))}
+          {[...actions].reverse().map((action) => {
+            const componentSummary = damageComponentsSummary(action.result_json.damage_components);
+            const targetComponentSummary = damageComponentsByTargetSummary(action.result_json.damage_components_by_target);
+            return (
+              <li className="list-none rounded border border-ink-800 bg-ink-950/70 p-2" key={action.id}>
+                <span className="text-stone-600">R{action.round_number} · T{action.turn_index + 1}</span>
+                <strong className="mt-0.5 block text-stone-200">{action.summary}</strong>
+                {componentSummary ? <span className="mt-1 block leading-5 text-amber-200">伤害段：{componentSummary}</span> : null}
+                {targetComponentSummary ? <span className="mt-1 block leading-5 text-amber-200">逐目标：{targetComponentSummary}</span> : null}
+                {action.explanation ? <span className="mt-1 block leading-5 text-stone-500">{action.explanation}</span> : null}
+              </li>
+            );
+          })}
         </ol>
       ) : expanded ? (
         <p className="mb-0 mt-2 text-2xs text-stone-600">行动确认后会按时间倒序显示在这里。</p>
@@ -517,6 +524,7 @@ function CombatantRow({ campaignId, combat, fighter, current, character, effects
             {" · "}HP {String(pendingAction.preview.before.hp)} → {String(pendingAction.preview.after.hp)}
             {Number(pendingAction.preview.before.temporary_hp ?? 0) > 0 ? ` · 临时生命 ${String(pendingAction.preview.before.temporary_hp)} → ${String(pendingAction.preview.after.temporary_hp)}` : ""}
           </p>
+          {damageComponentsSummary(pendingAction.preview.result.damage_components) ? <p className="mb-2 mt-0 text-2xs text-amber-200">逐段结算：{damageComponentsSummary(pendingAction.preview.result.damage_components)}</p> : null}
           {pendingAction.preview.concentration_check_dc ? <p className="mb-2 mt-0 text-2xs text-amber-300">确认伤害后需要专注检定 DC {pendingAction.preview.concentration_check_dc}</p> : null}
           <div className="flex gap-2">
             <Button loading={confirmAction.isPending} onClick={() => confirmAction.mutate(pendingAction.command)} size="sm" variant="primary">DM 确认结算</Button>

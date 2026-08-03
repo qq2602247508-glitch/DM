@@ -351,6 +351,13 @@ export type PlayerCombatSnapshot = {
     dc?: number | null;
     roll_formula?: string | null;
     damage?: number | null;
+    damage_type?: string | null;
+    damage_components?: Array<Record<string, unknown>>;
+    damage_components_by_target?: Array<{
+      target_combatant_id: string;
+      target_name: string;
+      damage_components: Array<Record<string, unknown>>;
+    }>;
     created_at?: string;
   }>;
   pending_rolls: PlayerPendingRoll[];

@@ -2978,6 +2978,72 @@ class PlayerRoomService:
                         return True
             return False
 
+        def public_damage_components(raw: object) -> list[dict[str, object]]:
+            """Keep the typed damage audit trail in the player-safe snapshot."""
+
+            if not isinstance(raw, list):
+                return []
+            result: list[dict[str, object]] = []
+            for item in raw:
+                if not isinstance(item, dict):
+                    continue
+                damage_type = str(item.get("damage_type") or "").strip()
+                if not damage_type or damage_type.lower() in {"mixed", "复合", "多种"}:
+                    continue
+                component: dict[str, object] = {"damage_type": damage_type}
+                for key in (
+                    "original_damage",
+                    "adjusted_damage",
+                    "modifier",
+                    "temporary_hp_lost",
+                    "hp_lost",
+                    "unapplied_damage",
+                    "amount",
+                ):
+                    value = item.get(key)
+                    if isinstance(value, (int, float)) and not isinstance(value, bool):
+                        component[key] = int(value)
+                tags = item.get("damage_tags")
+                if isinstance(tags, list):
+                    component["damage_tags"] = [
+                        str(tag).strip() for tag in tags if str(tag).strip()
+                    ]
+                result.append(component)
+            return result
+
+        def public_damage_details(action: CombatAction) -> dict[str, object]:
+            result_json = action.result_json if isinstance(action.result_json, dict) else {}
+            details: dict[str, object] = {
+                "damage_type": result_json.get("damage_type"),
+                "damage_components": public_damage_components(
+                    result_json.get("damage_components")
+                ),
+            }
+            raw_target_results = result_json.get("target_results")
+            if isinstance(raw_target_results, list):
+                by_target: list[dict[str, object]] = []
+                for target_result in raw_target_results:
+                    if not isinstance(target_result, dict):
+                        continue
+                    target_id = target_result.get("target_combatant_id")
+                    if not isinstance(target_id, str) or target_id not in safe_fighters_by_id:
+                        continue
+                    damage = target_result.get("damage")
+                    if not isinstance(damage, dict):
+                        continue
+                    components = public_damage_components(damage.get("damage_components"))
+                    if components:
+                        by_target.append(
+                            {
+                                "target_combatant_id": target_id,
+                                "target_name": safe_fighters_by_id[target_id].display_name,
+                                "damage_components": components,
+                            }
+                        )
+                if by_target:
+                    details["damage_components_by_target"] = by_target
+            return details
+
         return {
             "id": combat.id,
             "version": combat.version,
@@ -3034,6 +3100,7 @@ class PlayerRoomService:
                         "adjusted_damage",
                         action.result_json.get("damage"),
                     ),
+                    **public_damage_details(action),
                     "created_at": action.created_at.isoformat(),
                 }
                 for action in actions
@@ -6223,6 +6290,7 @@ class PlayerRoomService:
                             "target_version": current_target.version,
                             "block_id": component.block_id,
                             "damage_type": component.damage_type,
+                            "damage_tags": list(rule.damage_tags),
                             "amount": amount,
                             "critical_hit": effective_critical,
                             "note": (
@@ -6289,7 +6357,14 @@ class PlayerRoomService:
                 {
                     "amount": int(spec["amount"]),
                     "damage_type": str(spec["damage_type"]),
-                    "damage_tags": list(action_damage_tags),
+                    "damage_tags": list(dict.fromkeys([
+                        *action_damage_tags,
+                        *[
+                            str(tag)
+                            for tag in spec.get("damage_tags", [])
+                            if str(tag).strip()
+                        ],
+                    ])),
                 }
                 for spec in target_specs
             ]

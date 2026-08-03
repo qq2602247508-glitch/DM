@@ -100,6 +100,52 @@ class SimulationService:
         }
 
     @staticmethod
+    def _compound_damage_action() -> dict[str, Any]:
+        return {
+            "name": "元素裂解",
+            "description": "远程法术攻击；命中造成 2d6 火焰和 1d6 力场伤害，逐段结算防御。",
+            "damage": "2d6+1d6",
+            "damage_type": "mixed",
+            "damage_components": [
+                {"expression": "2d6", "damage_type": "fire"},
+                {"expression": "1d6", "damage_type": "force"},
+            ],
+            "range": "60尺",
+            "spell_level": 2,
+            "cost": "动作",
+            "resource_key": "spell_slots_2",
+            "resource_cost": 1,
+            "rule_plan": SimulationService._rule_plan(
+                [
+                    {
+                        "id": "target-elemental-split",
+                        "kind": "target",
+                        "mode": "single",
+                        "disposition": "enemy",
+                        "range_ft": 60,
+                    },
+                    {
+                        "id": "damage-elemental-split-fire",
+                        "kind": "damage",
+                        "expression": "2d6",
+                        "damage_type": "fire",
+                    },
+                    {
+                        "id": "damage-elemental-split-force",
+                        "kind": "damage",
+                        "expression": "1d6",
+                        "damage_type": "force",
+                    },
+                ],
+                [
+                    "target-elemental-split",
+                    "damage-elemental-split-fire",
+                    "damage-elemental-split-force",
+                ],
+            ),
+        }
+
+    @staticmethod
     def _combatant(
         combat: Combat,
         *,
@@ -348,6 +394,7 @@ class SimulationService:
             ),
         }
         magic_missile = cls._magic_missile_action()
+        compound_damage = cls._compound_damage_action()
         healing_word = {
             "name": "治疗之触",
             "description": "接触恢复 1d4+4 生命。",
@@ -419,7 +466,14 @@ class SimulationService:
             hp=28,
             max_hp=28,
             actions=[fire_bolt],
-            spells=[thunderwave, fireball, magic_missile, healing_word, summon_elemental],
+            spells=[
+                thunderwave,
+                fireball,
+                magic_missile,
+                compound_damage,
+                healing_word,
+                summon_elemental,
+            ],
             spellcasting={
                 "ability": "intelligence",
                 "mode": "slots",
@@ -561,6 +615,7 @@ class SimulationService:
                 thunderwave,
                 fireball,
                 magic_missile,
+                compound_damage,
                 healing_word,
                 summon_elemental,
             ],
@@ -945,6 +1000,11 @@ class SimulationService:
                 for item in character.spells
             ):
                 character.spells = [*character.spells, cls._magic_missile_action()]
+            if not any(
+                isinstance(item, dict) and item.get("name") == "元素裂解"
+                for item in character.spells
+            ):
+                character.spells = [*character.spells, cls._compound_damage_action()]
         combat = session.scalar(
             select(Combat).where(
                 Combat.campaign_id == campaign.id,
@@ -1009,6 +1069,11 @@ class SimulationService:
                 for item in snapshot["actions"]
             ):
                 snapshot["actions"].append(cls._magic_missile_action())
+            if fighter.entity_type == "character" and not any(
+                isinstance(item, dict) and item.get("name") == "元素裂解"
+                for item in snapshot["actions"]
+            ):
+                snapshot["actions"].append(cls._compound_damage_action())
             fixture_positions = {
                 "模拟玩家·奥术师": {"row": 6, "col": 2},
                 "熔火术士·AI": {"row": 5, "col": 4},

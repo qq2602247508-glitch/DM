@@ -139,6 +139,7 @@ def test_mixed_damage_components_apply_defenses_independently(
     assert result["damage_type"] == "mixed"
     assert confirmed.json()["target"]["hp"] == 15
     assert confirmed.json()["target"]["temporary_hp"] == 0
+    assert "实际扣除 8 点（原始报告 11 点）" in confirmed.json()["action"]["summary"]
 
     invalid = combat_client.post(
         path,
@@ -150,6 +151,19 @@ def test_mixed_damage_components_apply_defenses_independently(
         },
     )
     assert invalid.status_code == 422
+
+    ambiguous = combat_client.post(
+        path,
+        headers={"X-Request-ID": "mixed-damage-ambiguous"},
+        json={
+            **payload,
+            "target_version": confirmed.json()["target"]["version"],
+            "amount": 10,
+            "damage_type": "mixed",
+            "damage_components": [],
+        },
+    )
+    assert ambiguous.status_code == 422
 
 
 def test_conditional_damage_defense_requires_explicit_source_tag(

@@ -1736,7 +1736,7 @@ def test_player_compound_damage_is_one_lifecycle_event(
             "name": "元素裂解",
             "range": "30尺",
             "damage_components": [
-                {"expression": "1d1", "damage_type": "火焰"},
+                {"expression": "1d1", "damage_type": "火焰", "damage_tags": ["nonmagical"]},
                 {"expression": "1d1", "damage_type": "寒冷"},
             ],
             "resolution_kind": "damage",
@@ -1755,7 +1755,7 @@ def test_player_compound_damage_is_one_lifecycle_event(
                     "cost": "动作",
                     "range": "30尺",
                     "damage_components": [
-                        {"expression": "1d1", "damage_type": "火焰"},
+                        {"expression": "1d1", "damage_type": "火焰", "damage_tags": ["nonmagical"]},
                         {"expression": "1d1", "damage_type": "寒冷"},
                     ],
                     "rule_plan": compound_plan,
@@ -1801,9 +1801,18 @@ def test_player_compound_damage_is_one_lifecycle_event(
             "initiative": 10,
             "hp": 2,
             "max_hp": 2,
-            "damage_resistances": ["fire"],
+            "snapshot_json": {
+                "grid_position": {"row": 3, "col": 3},
+                "conditional_damage_defenses": [
+                    {
+                        "id": "nonmagical-fire-resistance",
+                        "condition": "nonmagical",
+                        "operation": "resistance",
+                        "damage_types": ["fire"],
+                    }
+                ],
+            },
             "damage_vulnerabilities": ["cold"],
-            "snapshot_json": {"grid_position": {"row": 3, "col": 3}},
         },
     ).json()
     opened = _open(campaign_client, campaign["id"])
@@ -1834,8 +1843,18 @@ def test_player_compound_damage_is_one_lifecycle_event(
     result = body["results"][0]["action"]["result_json"]
     assert result["damage_type"] == "mixed"
     assert [item["adjusted_damage"] for item in result["damage_components"]] == [0, 2]
+    assert result["damage_components"][0]["damage_tags"] == ["nonmagical"]
     assert result["condition_changes"] == ["added:unconscious"]
     assert body["results"][0]["death_save"]["failures"] == 0
+
+    public_snapshot = campaign_client.get("/api/v1/player-room/me").json()["combat"]
+    public_entry = next(
+        item for item in public_snapshot["log"] if item["id"] == body["results"][0]["action"]["id"]
+    )
+    assert [
+        (item["damage_type"], item["original_damage"], item["adjusted_damage"])
+        for item in public_entry["damage_components"]
+    ] == [("fire", 1, 0), ("cold", 1, 2)]
 
 
 def test_player_compiled_forced_movement_is_applied_after_failed_save(

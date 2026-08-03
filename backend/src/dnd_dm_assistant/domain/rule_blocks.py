@@ -345,6 +345,7 @@ class DamageBlock(RuleSchema):
     kind: Literal["damage"] = "damage"
     expression: str = Field(min_length=1, max_length=80)
     damage_type: str = Field(min_length=1, max_length=50)
+    damage_tags: list[str] = Field(default_factory=list, max_length=20)
     applies_on: Literal["always", "hit", "save_failure"] = "always"
     shared_roll: bool = True
     save_block_id: str | None = Field(default=None, min_length=1, max_length=80)

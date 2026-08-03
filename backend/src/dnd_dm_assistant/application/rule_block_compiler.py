@@ -577,6 +577,20 @@ def compile_rule_blocks(
             raise ValueError(f"{field_name} must be one of {', '.join(sorted(allowed))}")
         return normalized
 
+    def damage_tags(value: object, *, field_name: str) -> tuple[str, ...]:
+        if value is None:
+            return ()
+        if not isinstance(value, (list, tuple, set)):
+            raise ValueError(f"{field_name} must be a list of strings")
+        tags: list[str] = []
+        for tag in value:
+            if not isinstance(tag, str) or not tag.strip():
+                raise ValueError(f"{field_name} must contain non-empty strings")
+            normalized = tag.strip()
+            if normalized not in tags:
+                tags.append(normalized)
+        return tuple(tags)
+
     def add(block: RuleBlock, *, root: bool = True) -> None:
         blocks.append(block)
         if root:
@@ -670,7 +684,8 @@ def compile_rule_blocks(
     damage_text = _text(raw_damage)
     damage_expression = _dice_expression(raw_damage)
     damage_type = _damage_type(data.get("damage_type"), damage_text)
-    damage_components: list[tuple[str, str, bool, str | None]] = []
+    top_level_damage_tags = damage_tags(data.get("damage_tags"), field_name="damage_tags")
+    damage_components: list[tuple[str, str, bool, str | None, tuple[str, ...]]] = []
     if component_sources:
         for raw_component in component_sources:
             if not isinstance(raw_component, Mapping):
@@ -700,6 +715,10 @@ def compile_rule_blocks(
                         raw_component.get("applies_on"),
                         field_name="damage component applies_on",
                     ),
+                    damage_tags(
+                        raw_component.get("damage_tags"),
+                        field_name="damage component damage_tags",
+                    ),
                 )
             )
     elif damage_expression is not None and damage_type is not None:
@@ -709,6 +728,7 @@ def compile_rule_blocks(
                 damage_type,
                 bool(data.get("shared_damage_roll", True)),
                 applies_on(data.get("damage_applies_on"), field_name="damage_applies_on"),
+                top_level_damage_tags,
             )
         )
     raw_upcast_damage = data.get("upcast_damage_dice")
@@ -775,12 +795,19 @@ def compile_rule_blocks(
             add(attack_roll)
         if raw_upcast_damage is not None and len(damage_components) != 1:
             warnings.append("升环伤害增量对应多个伤害组成，未自动绑定")
-        for expression, component_type, shared_roll, explicit_applies_on in damage_components:
+        for (
+            expression,
+            component_type,
+            shared_roll,
+            explicit_applies_on,
+            component_damage_tags,
+        ) in damage_components:
             add(
                 DamageBlock(
                     id=_identifier(len(blocks), "damage"),
                     expression=expression,
                     damage_type=component_type,
+                    damage_tags=list(component_damage_tags),
                     applies_on=(
                         explicit_applies_on
                         or ("save_failure" if save else "hit" if attack_roll else "always")

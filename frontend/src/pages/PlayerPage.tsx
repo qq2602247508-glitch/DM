@@ -59,6 +59,7 @@ import {
 } from "../ui/gridTargeting";
 import { buildRuleBlockPlan, targetingFromRulePlan } from "../ui/ruleBlocks";
 import { upcastExpression } from "../ui/combatAutomation";
+import { damageComponentsByTargetSummary, damageComponentsSummary } from "../ui/combatPresentation";
 
 const ABILITIES: Record<string, string> = {
   strength: "力量",
@@ -1914,6 +1915,7 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
             const damageSegments = (roll.damage_components_on_failure?.length
               ? roll.damage_components_on_failure
               : roll.damage_components_on_success) ?? [];
+            const damageSegmentSummary = damageComponentsSummary(damageSegments);
             return (
             <div className="mb-3 rounded border border-violet-700 bg-violet-950/20 p-3" data-testid="player-pending-roll" key={roll.id}>
               <div className="flex flex-wrap items-center gap-2">
@@ -1926,7 +1928,7 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
               {roll.action_cost === "legendary_action" && roll.legendary_cost ? <p className="mb-0 mt-1 text-2xs text-fuchsia-200">本次消耗传奇动作点：{roll.legendary_cost} / 动作池上限 {roll.legendary_pool_max ?? "未同步"}</p> : null}
               {roll.action_cost === "reaction" && roll.reaction_trigger ? <p className="mb-0 mt-1 text-2xs text-fuchsia-200">实际触发事件：{roll.reaction_trigger}</p> : null}
               <p className="mb-0 mt-2 text-xs text-stone-400">请掷 {roll.roll_formula}，总值需达到 DC {roll.dc}（{roll.ability || roll.skill || roll.resolution_type}）。{roll.effect_target_name && roll.effect_target_name !== snapshot.character?.name ? `成功后的效果目标：${roll.effect_target_name}。` : ""}{roll.damage_on_failure ? `失败将承受 ${roll.damage_on_failure} 点${roll.damage_type ?? ""}伤害` : ""}{roll.damage_on_success ? `；成功仍承受 ${roll.damage_on_success} 点${roll.damage_type ?? ""}伤害` : ""}</p>
-              {damageSegments.length > 1 ? <p className="mb-0 mt-1 text-2xs text-stone-300">复合伤害会逐段结算抗性/易伤/免疫：{damageSegments.map((segment) => `${segment.damage_type} ${segment.amount}`).join("；")}</p> : null}
+              {damageSegments.length > 1 && damageSegmentSummary ? <p className="mb-0 mt-1 text-2xs text-stone-300">复合伤害会逐段结算抗性/易伤/免疫：{damageSegmentSummary}</p> : null}
               <p className="mb-0 mt-1 text-2xs text-violet-200">提交骰子前，伤害、状态和后续回合都尚未完成。</p>
               {dangerCellKeys.size ? <p className="text-2xs text-red-300">地图上的红色描边为「{roll.action_name}」当前影响范围。</p> : null}
               <div className="mt-2 flex gap-2">
@@ -2037,11 +2039,11 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
               return result;
             }
             if (isCastAction) {
-              const result = await castMyCombatAction(targetId, affectedEnemies.map((item) => item.id), actionName, selectedSpellLevel > 0 ? Math.max(selectedSpellLevel, slotLevel) : null, Number(hasHealingBlock ? damageTotal : 0), effectiveEndTurnAfterAttack, specialInputs()) as { target_count?: number; results?: Array<{ action?: { summary?: string } }>; turn_advance?: { active_combatant?: { display_name?: string } } };
+              const result = await castMyCombatAction(targetId, affectedEnemies.map((item) => item.id), actionName, selectedSpellLevel > 0 ? Math.max(selectedSpellLevel, slotLevel) : null, Number(hasHealingBlock ? damageTotal : 0), effectiveEndTurnAfterAttack, specialInputs()) as { target_count?: number; results?: Array<{ action?: { summary?: string; result_json?: Record<string, unknown> } }>; turn_advance?: { active_combatant?: { display_name?: string } } };
               setAttackTotal("");
               setDamageTotal("");
               const next = result.turn_advance?.active_combatant?.display_name;
-              setLastResolution([`${actionName}已对 ${result.target_count ?? affectedEnemies.length} 个友方目标生效。`, ...(result.results ?? []).map((item) => item.action?.summary).filter((item): item is string => Boolean(item)), effectiveEndTurnAfterAttack ? (next ? `回合已切换至 ${next}。` : "回合已经结束并完成同步。") : "你仍可移动、使用附赠动作或手动结束回合。"].join("\n"));
+              setLastResolution([`${actionName}已对 ${result.target_count ?? affectedEnemies.length} 个友方目标生效。`, ...(result.results ?? []).flatMap((item) => { const summary = item.action?.summary; const components = damageComponentsSummary(item.action?.result_json?.damage_components); return [summary, components ? `伤害段：${components}` : null].filter((value): value is string => Boolean(value)); }), effectiveEndTurnAfterAttack ? (next ? `回合已切换至 ${next}。` : "回合已经结束并完成同步。") : "你仍可移动、使用附赠动作或手动结束回合。"].join("\n"));
               return result;
             }
             const result = await attackWithMyCombatant(targetId, affectedEnemies.map((item) => item.id), actionName, selectedSpellLevel > 0 ? Math.max(selectedSpellLevel, slotLevel) : null, Number(attackTotal || 0), Number(damageTotal), criticalHit, effectiveEndTurnAfterAttack, {
@@ -2055,11 +2057,11 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
               }))]) : []),
               reactionTrigger: reactionTrigger.trim() || undefined,
               specialInputs: specialInputs(),
-            }) as { target_count?: number; results?: Array<{ action?: { summary?: string } }>; turn_advance?: { active_combatant?: { display_name?: string } } };
+            }) as { target_count?: number; results?: Array<{ action?: { summary?: string; result_json?: Record<string, unknown> } }>; turn_advance?: { active_combatant?: { display_name?: string } } };
             setAttackTotal("");
             setDamageTotal("");
             setCriticalHit(false);
-            const summaries = (result.results ?? []).map((item) => item.action?.summary).filter((item): item is string => Boolean(item));
+            const summaries = (result.results ?? []).flatMap((item) => { const summary = item.action?.summary; const components = damageComponentsSummary(item.action?.result_json?.damage_components); return [summary, components ? `伤害段：${components}` : null].filter((value): value is string => Boolean(value)); });
             const next = result.turn_advance?.active_combatant?.display_name;
             setLastResolution([`${actionName}已完成全部 ${result.target_count ?? affectedEnemies.length} 个目标的结算。`, ...summaries, effectiveEndTurnAfterAttack ? (next ? `回合已切换至 ${next}。` : "回合已经结束并完成同步。") : "你仍可移动、使用附赠动作或手动结束回合。"].join("\n"));
             return result;
@@ -2068,7 +2070,7 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
           {lastResolution ? <p className="mb-0 mt-2 whitespace-pre-line rounded border border-emerald-800/60 bg-emerald-950/20 p-2 text-xs text-emerald-200" data-testid="player-last-resolution">{lastResolution}</p> : null}
           {mutation.isError ? <p className="text-sm text-red-300">{mutation.error.message}</p> : null}
         </section>
-        <section className={cardCls}><h2 className="mt-0 font-display text-xl">公开战斗日志</h2><div className="max-h-72 space-y-2 overflow-auto">{combat.log.map((entry) => <p className="m-0 border-b border-ink-800 pb-2 text-xs text-stone-400" key={entry.id}><span className="text-amber-300">R{entry.round_number}</span> {entry.summary}</p>)}</div></section>
+        <section className={cardCls}><h2 className="mt-0 font-display text-xl">公开战斗日志</h2><div className="max-h-72 space-y-2 overflow-auto">{combat.log.map((entry) => { const components = damageComponentsSummary(entry.damage_components); const byTarget = damageComponentsByTargetSummary(entry.damage_components_by_target); return <div className="border-b border-ink-800 pb-2" key={entry.id}><p className="m-0 text-xs text-stone-400"><span className="text-amber-300">R{entry.round_number}</span> {entry.summary}</p>{components ? <p className="m-0 mt-1 text-2xs text-amber-200">伤害段：{components}</p> : null}{byTarget ? <p className="m-0 mt-1 text-2xs text-amber-200">逐目标：{byTarget}</p> : null}</div>; })}</div></section>
       </aside>
     </div>
   );

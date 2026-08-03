@@ -719,6 +719,15 @@ class CombatDamageComponent(BaseModel):
     damage_type: str = Field(min_length=1, max_length=50)
     damage_tags: list[str] = Field(default_factory=list, max_length=20)
 
+    @model_validator(mode="after")
+    def validate_typed_damage(self) -> CombatDamageComponent:
+        if self.damage_type.strip().lower() in {"mixed", "复合", "多种"}:
+            raise ValueError(
+                "each damage component needs one concrete damage_type; "
+                "use multiple components for mixed damage"
+            )
+        return self
+
 
 class CombatActionCommand(BaseModel):
     action_type: Literal["damage", "heal"]
@@ -786,6 +795,10 @@ class CombatActionCommand(BaseModel):
                     raise ValueError("damage amount must equal the sum of damage_components")
             elif not (self.damage_type or "").strip():
                 raise ValueError("damage_type is required for damage")
+            elif self.damage_type.strip().lower() in {"mixed", "复合", "多种"}:
+                raise ValueError(
+                    "mixed damage requires explicit damage_components for each type"
+                )
         elif self.damage_components:
             raise ValueError("damage_components are only valid for damage actions")
         if self.dm_override and not (self.override_reason or "").strip():
@@ -1377,6 +1390,10 @@ class MonsterAreaActionCommand(BaseModel):
         if self.damage_components:
             if sum(component.amount for component in self.damage_components) != self.damage_total:
                 raise ValueError("damage_total must equal the sum of damage_components")
+        elif self.damage_type.strip().lower() in {"mixed", "复合", "多种"}:
+            raise ValueError(
+                "mixed area damage requires explicit damage_components for each type"
+            )
         if len({target.target_combatant_id for target in self.targets}) != len(self.targets):
             raise ValueError("area targets must be unique")
         if (self.conditions_on_success or self.conditions_on_failure) and (
