@@ -2,6 +2,17 @@
 
 更新时间：2026-08-01（Asia/Shanghai）
 
+## 2026-08-03 结构化怪物反应事件与模拟剧本兼容迁移（最新）
+
+- 怪物资料解析现在只把明确写出的反应触发映射为关闭词表：离开近战范围 `leaves_reach`、进入近战范围 `enters_reach`、受到伤害 `takes_damage`、施法 `casts_spell`、回合结束 `turn_end`；没有明确事件的反应不会被猜测。
+- `monster-ai/preview` 的 reaction 窗口接收结构化事件并过滤动作；DM 高级动作面板增加事件选择器和实际触发文本。模拟剧本的旧持久化反应动作如果已有明确文字触发，会在“重新载入剧本”时幂等迁移为结构化事件。
+- 回归覆盖资料解析、事件筛选、API 预览、旧模拟动作迁移；代码与测试提交为 `4546b9f`。无关未跟踪文件 `backend/tests/integrations/`、`backend/tests/ollama.py` 保留未动。
+- 浏览器实际验收：DM 选择“离开近战威胁范围”、填写实际触发和目标后，后端返回“借机熔击 · reaction”；玩家端加入同一模拟房间并显示相同先攻、地图和日志。DM/玩家控制台 error/warn 均为空。
+- 截图：`/private/tmp/dnd-reaction-event-dm-current-20260803.png`、`/private/tmp/dnd-reaction-event-player-current-20260803.png`。
+- 门禁：后端全量 `436 passed`（1 个既有 Starlette/httpx 弃用警告）、Ruff、前端 TypeScript、ESLint、Vitest 39 文件/190 项、生产构建、`git diff --check` 全部通过。
+
+边界：本项完成的是“明确反应事件 → 可审计预览筛选 → 模拟旧数据迁移”。DM 仍需确认真实触发、目标、攻击骰和伤害骰；所有反应/传奇/巢穴动作的自动触发矩阵、复杂状态组合、复杂三维遮挡和全职业 1–20 级运行时仍未全部完成。
+
 ## 2026-08-03 复杂多段/复合伤害闭环（当前最新）
 
 - 复合伤害现在必须显式提供逐段 `damage_components`；每段保留 `damage_type`、`damage_tags`、原始骰值和防御后结果。编译器、API schema、DM/玩家战斗提交路径都会拒绝把 `mixed/复合/多种` 当成具体伤害类型，也不会从总值猜分配。
