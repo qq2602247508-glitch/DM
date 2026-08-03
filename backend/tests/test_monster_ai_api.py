@@ -193,6 +193,97 @@ def test_monster_ai_preview_chooses_live_enemy_and_requires_confirmation(
     assert body["requires_confirmation"] is True
 
 
+def test_advanced_ai_preview_matches_lair_and_legendary_windows(
+    campaign_client: TestClient,
+) -> None:
+    campaign = campaign_client.post(
+        "/api/v1/campaigns", json={"name": "高级动作窗口一致性团"}
+    ).json()
+    base = f"/api/v1/campaigns/{campaign['id']}"
+    combat = campaign_client.post(
+        f"{base}/combats", json={"name": "窗口一致性战斗"}
+    ).json()
+    _guard = campaign_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "高先攻观察者",
+            "entity_type": "character",
+            "initiative": 30,
+            "hp": 20,
+            "max_hp": 20,
+        },
+    ).json()
+    dragon = campaign_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "窗口龙",
+            "entity_type": "monster",
+            "initiative": 20,
+            "hp": 40,
+            "max_hp": 40,
+            "snapshot_json": {
+                "disposition": "enemy",
+                "actions": [
+                    {
+                        "name": "巢穴震击",
+                        "action_type": "lair_action",
+                        "damage": "1d6",
+                    },
+                    {
+                        "name": "传奇尾击",
+                        "action_type": "legendary_action",
+                        "legendary_cost": 1,
+                        "legendary_pool_max": 3,
+                        "damage": "1d8",
+                    },
+                ],
+                "legendary_actions_remaining": 3,
+            },
+        },
+    ).json()
+    _hero = campaign_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "冒险者",
+            "entity_type": "character",
+            "initiative": 10,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {"disposition": "ally"},
+        },
+    ).json()
+
+    lair_preview = campaign_client.post(
+        f"{base}/combats/{combat['id']}/monster-ai/preview",
+        json={
+            "actor_combatant_id": dragon["id"],
+            "actor_version": dragon["version"],
+            "phase": "lair",
+        },
+    )
+    assert lair_preview.status_code == 200, lair_preview.text
+    assert lair_preview.json()["plan"] is None
+
+    advanced = campaign_client.post(
+        f"{base}/combats/{combat['id']}/turns/advance",
+        headers={"X-Request-ID": "advanced-window-to-dragon"},
+        json={"combat_version": combat["version"]},
+    )
+    assert advanced.status_code == 200, advanced.text
+    assert advanced.json()["active_combatant"]["id"] == dragon["id"]
+    active_dragon = advanced.json()["active_combatant"]
+    legendary_preview = campaign_client.post(
+        f"{base}/combats/{combat['id']}/monster-ai/preview",
+        json={
+            "actor_combatant_id": dragon["id"],
+            "actor_version": active_dragon["version"],
+            "phase": "legendary",
+        },
+    )
+    assert legendary_preview.status_code == 200, legendary_preview.text
+    assert legendary_preview.json()["plan"] is None
+
+
 def test_confirmed_monster_tactics_persist_and_drive_preview(
     campaign_client: TestClient,
 ) -> None:

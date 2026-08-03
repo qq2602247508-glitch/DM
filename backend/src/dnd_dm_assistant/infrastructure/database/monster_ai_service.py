@@ -92,6 +92,21 @@ class MonsterAIService:
                     .order_by(Combatant.initiative.desc(), Combatant.created_at, Combatant.id)
                 ).all()
             )
+            active = (
+                rows[combat.current_turn_index]
+                if 0 <= combat.current_turn_index < len(rows)
+                else None
+            )
+            previous_initiative = (
+                rows[combat.current_turn_index - 1].initiative
+                if active is not None and combat.current_turn_index > 0
+                else None
+            )
+            lair_window = bool(
+                active is not None
+                and active.initiative <= 20
+                and (previous_initiative is None or previous_initiative > 20)
+            )
 
             def snapshot(row: Combatant) -> dict[str, Any]:
                 state = dict(row.snapshot_json or {})
@@ -129,7 +144,15 @@ class MonsterAIService:
             legendary_remaining = self._state_int(
                 actor.snapshot_json.get("legendary_actions_remaining")
             )
-            if phase == "legendary" and legendary_remaining == 0:
+            # The combat confirmation gate rejects a legendary action during
+            # the monster's own turn.  Apply that same gate while previewing,
+            # otherwise the DM UI can offer a plan that is guaranteed to fail.
+            legendary_window_open = not (
+                phase == "legendary" and active is not None and active.id == actor.id
+            )
+            if not legendary_window_open:
+                legendary_remaining = 0
+            if phase == "legendary" and legendary_window_open and legendary_remaining == 0:
                 actor_actions = actor_state.get("actions")
                 normalized_actor_actions = actor_actions if isinstance(actor_actions, list) else []
                 pools = {
@@ -146,7 +169,8 @@ class MonsterAIService:
                 tactics=tactics,
                 legendary_actions_remaining=legendary_remaining,
                 lair_action_available=(
-                    self._state_int(actor.snapshot_json.get("lair_action_round"))
+                    lair_window
+                    and self._state_int(actor.snapshot_json.get("lair_action_round"))
                     != combat.round_number
                 ),
                 recharge_available=live_recharge,
