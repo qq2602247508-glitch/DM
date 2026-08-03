@@ -146,6 +146,20 @@ class SimulationService:
         }
 
     @staticmethod
+    def _simulation_melee_action() -> dict[str, Any]:
+        return {
+            "name": "法杖敲击",
+            "description": "近战攻击；命中造成 1d6 钝击伤害。",
+            "damage": "1d6",
+            "damage_type": "bludgeoning",
+            "range": "5尺",
+            "range_ft": 5,
+            "attack_type": "melee",
+            "attack_bonus": 5,
+            "cost": "动作",
+        }
+
+    @staticmethod
     def _combatant(
         combat: Combat,
         *,
@@ -465,7 +479,7 @@ class SimulationService:
             },
             hp=28,
             max_hp=28,
-            actions=[fire_bolt],
+            actions=[cls._simulation_melee_action(), fire_bolt],
             spells=[
                 thunderwave,
                 fireball,
@@ -611,6 +625,7 @@ class SimulationService:
             position=(6, 2),
             disposition="ally",
             actions=[
+                cls._simulation_melee_action(),
                 fire_bolt,
                 thunderwave,
                 fireball,
@@ -1018,6 +1033,11 @@ class SimulationService:
             character.actions = [repair_action(item) for item in character.actions or []]
             character.spells = [repair_action(item) for item in character.spells or []]
             if not any(
+                isinstance(item, dict) and item.get("name") == "法杖敲击"
+                for item in character.actions
+            ):
+                character.actions = [cls._simulation_melee_action(), *character.actions]
+            if not any(
                 isinstance(item, dict) and item.get("name") == "魔法飞弹"
                 for item in character.spells
             ):
@@ -1072,6 +1092,11 @@ class SimulationService:
         ).all():
             snapshot = deepcopy(fighter.snapshot_json or {})
             snapshot["actions"] = [repair_action(item) for item in snapshot.get("actions", [])]
+            if fighter.entity_type == "character" and not any(
+                isinstance(item, dict) and item.get("name") == "法杖敲击"
+                for item in snapshot["actions"]
+            ):
+                snapshot["actions"].insert(0, cls._simulation_melee_action())
             if fighter.display_name == "熔火术士·AI":
                 existing_names = {
                     str(item.get("name") or "")
