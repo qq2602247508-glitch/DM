@@ -974,6 +974,67 @@ class CombatEngineService:
                 raise StateNotFoundError("actor combatant not found in combat")
         return combat, target, actor
 
+    @staticmethod
+    def _action_window_metadata(
+        action_cost: str | None,
+        *,
+        legendary_cost: int | None = None,
+        legendary_pool_max: int | None = None,
+        reaction_trigger: str | None = None,
+    ) -> dict[str, object] | None:
+        """Return the authoritative audit context for an off-turn action.
+
+        The request already carries these fields, but the request is not what
+        the DM/player combat log presents after a player roll resolves. Keep a
+        small, stable copy in the result so a confirmed action remains
+        self-explanatory even when its original prompt is no longer visible.
+        """
+
+        cost = (action_cost or "").strip()
+        if cost not in {"reaction", "legendary_action", "lair_action"}:
+            return None
+        metadata: dict[str, object] = {"action_cost": cost}
+        if cost == "reaction":
+            trigger = (reaction_trigger or "").strip()
+            if trigger:
+                metadata["reaction_trigger"] = trigger
+        elif cost == "legendary_action":
+            if legendary_cost is not None:
+                metadata["legendary_cost"] = legendary_cost
+            if legendary_pool_max is not None:
+                metadata["legendary_pool_max"] = legendary_pool_max
+        return metadata
+
+    @classmethod
+    def _action_window_summary(
+        cls,
+        action_cost: str | None,
+        *,
+        legendary_cost: int | None = None,
+        legendary_pool_max: int | None = None,
+        reaction_trigger: str | None = None,
+    ) -> str | None:
+        metadata = cls._action_window_metadata(
+            action_cost,
+            legendary_cost=legendary_cost,
+            legendary_pool_max=legendary_pool_max,
+            reaction_trigger=reaction_trigger,
+        )
+        if metadata is None:
+            return None
+        cost = str(metadata["action_cost"])
+        if cost == "reaction":
+            return f"反应触发：{metadata.get('reaction_trigger', 'DM已确认的实际事件')}"
+        if cost == "legendary_action":
+            cost_label = metadata.get("legendary_cost")
+            pool_label = metadata.get("legendary_pool_max")
+            return (
+                f"传奇动作窗口（消耗 {cost_label} 点；动作池 {pool_label}）"
+                if cost_label is not None and pool_label is not None
+                else "传奇动作窗口"
+            )
+        return "巢穴动作窗口（本轮先攻20）"
+
     @classmethod
     def _validate_action_economy(
         cls,
@@ -3398,6 +3459,18 @@ class CombatEngineService:
             request_json["actor_name"] = actor.display_name
             request_json["target_name"] = target.display_name
             request_json["effect_target_name"] = effect_target.display_name
+            action_window = self._action_window_metadata(
+                command.action_cost,
+                legendary_cost=command.legendary_cost,
+                legendary_pool_max=command.legendary_pool_max,
+                reaction_trigger=command.reaction_trigger,
+            )
+            window_summary = self._action_window_summary(
+                command.action_cost,
+                legendary_cost=command.legendary_cost,
+                legendary_pool_max=command.legendary_pool_max,
+                reaction_trigger=command.reaction_trigger,
+            )
             label = {
                 "armor_class": "AC 防御",
                 "saving_throw": f"{command.ability or ''}豁免",
@@ -3414,6 +3487,7 @@ class CombatEngineService:
                 result_json={
                     "phase": "awaiting_player_roll",
                     "roll_owner": "player",
+                    **({"action_window": action_window} if action_window is not None else {}),
                 },
                 explanation=command.description,
                 round_number=combat.round_number,
@@ -3422,6 +3496,7 @@ class CombatEngineService:
                     f"{actor.display_name} 对 {target.display_name} 使用"
                     f"「{command.action_name}」；等待玩家进行 {label}"
                     f"（{command.roll_formula}，DC {command.dc}）"
+                    + (f"；{window_summary}" if window_summary else "")
                 ),
                 idempotency_key=idempotency_key,
                 status="previewed",
@@ -3646,6 +3721,18 @@ class CombatEngineService:
                 actor.updated_at = now
 
             label = f"{command.ability or ''}豁免"
+            action_window = self._action_window_metadata(
+                command.action_cost,
+                legendary_cost=command.legendary_cost,
+                legendary_pool_max=command.legendary_pool_max,
+                reaction_trigger=command.reaction_trigger,
+            )
+            window_summary = self._action_window_summary(
+                command.action_cost,
+                legendary_cost=command.legendary_cost,
+                legendary_pool_max=command.legendary_pool_max,
+                reaction_trigger=command.reaction_trigger,
+            )
             actions: list[CombatAction] = []
             for index, (prompt, target, effect_target, area_geometry) in enumerate(prepared):
                 request_json = prompt.model_dump(mode="json")
@@ -3675,6 +3762,11 @@ class CombatEngineService:
                             "roll_owner": "player",
                             "batch_index": index,
                             "batch_size": len(prepared),
+                            **(
+                                {"action_window": action_window}
+                                if action_window is not None
+                                else {}
+                            ),
                         },
                         explanation=prompt.description,
                         round_number=combat.round_number,
@@ -3683,6 +3775,7 @@ class CombatEngineService:
                             f"{actor.display_name} 对 {target.display_name} 使用"
                             f"「{prompt.action_name}」；等待玩家进行 {label}"
                             f"（{prompt.roll_formula}，DC {prompt.dc}）"
+                            + (f"；{window_summary}" if window_summary else "")
                         ),
                         idempotency_key=self._batch_player_roll_prompt_key(
                             idempotency_key,
@@ -4106,6 +4199,38 @@ class CombatEngineService:
                 consume_defenses=True,
             )
             request = dict(action.request_json or {})
+            request_action_cost = (
+                str(request.get("action_cost"))
+                if request.get("action_cost") is not None
+                else None
+            )
+            request_legendary_cost = (
+                request.get("legendary_cost")
+                if isinstance(request.get("legendary_cost"), int)
+                else None
+            )
+            request_legendary_pool_max = (
+                request.get("legendary_pool_max")
+                if isinstance(request.get("legendary_pool_max"), int)
+                else None
+            )
+            request_reaction_trigger = (
+                str(request.get("reaction_trigger"))
+                if request.get("reaction_trigger") is not None
+                else None
+            )
+            action_window = self._action_window_metadata(
+                request_action_cost,
+                legendary_cost=request_legendary_cost,
+                legendary_pool_max=request_legendary_pool_max,
+                reaction_trigger=request_reaction_trigger,
+            )
+            window_summary = self._action_window_summary(
+                request_action_cost,
+                legendary_cost=request_legendary_cost,
+                legendary_pool_max=request_legendary_pool_max,
+                reaction_trigger=request_reaction_trigger,
+            )
             effect_target = target
             raw_effect_target_id = request.get("effect_target_combatant_id")
             if isinstance(raw_effect_target_id, str) and raw_effect_target_id != target.id:
@@ -4185,6 +4310,7 @@ class CombatEngineService:
             action.result_json = {
                 **resolution,
                 "confirmation_idempotency_key": idempotency_key,
+                **({"action_window": action_window} if action_window is not None else {}),
             }
             action.status = "confirmed"
             action.version += 1
@@ -4195,6 +4321,7 @@ class CombatEngineService:
                 f"{target.display_name} 掷骰 {resolution['roll_total']} 对抗"
                 f" DC {action.request_json['dc']}，"
                 f"{'成功' if resolution['success'] else '失败'}"
+                + (f"；{window_summary}" if window_summary else "")
             )
             effect_ids = structured_effects.get("effect_ids", [])
             if isinstance(effect_ids, list):
@@ -4682,6 +4809,14 @@ class CombatEngineService:
             session.add(transaction)
             session.flush()
             result = dict(resolved["result"])
+            action_window = self._action_window_metadata(
+                command.action_cost,
+                legendary_cost=command.legendary_cost,
+                legendary_pool_max=command.legendary_pool_max,
+                reaction_trigger=command.reaction_trigger,
+            )
+            if action_window is not None:
+                result["action_window"] = action_window
             if structured_effects:
                 result["structured_effects"] = structured_effects
             if extra_attack_budget:
@@ -4733,6 +4868,14 @@ class CombatEngineService:
                     action_result += "；召唤物生命归零，已离开战斗"
                 if combatant_deactivated:
                     action_result += "；单位生命归零，已离开先攻轨道"
+                window_summary = self._action_window_summary(
+                    command.action_cost,
+                    legendary_cost=command.legendary_cost,
+                    legendary_pool_max=command.legendary_pool_max,
+                    reaction_trigger=command.reaction_trigger,
+                )
+                if window_summary:
+                    action_result += f"；{window_summary}"
                 action_summary = (
                     f"{actor.display_name} 对 {target.display_name} 使用"
                     f"「{command.action_name or '攻击'}」；{action_result}"
@@ -4752,6 +4895,14 @@ class CombatEngineService:
                         )
                 if summon_ended:
                     action_summary += "；召唤物生命归零，已离开战斗"
+                window_summary = self._action_window_summary(
+                    command.action_cost,
+                    legendary_cost=command.legendary_cost,
+                    legendary_pool_max=command.legendary_pool_max,
+                    reaction_trigger=command.reaction_trigger,
+                )
+                if window_summary:
+                    action_summary += f"；{window_summary}"
             else:
                 action_summary = (
                     f"{target.display_name} 恢复 {result['hp_gained']} 点生命"

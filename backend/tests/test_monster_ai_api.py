@@ -98,6 +98,12 @@ def test_advanced_phase_previews_execute_through_combat_action_api(
     )
     assert reaction.status_code == 200, reaction.text
     assert reaction.json()["actor"]["reaction_available"] is False
+    reaction_action = reaction.json()["action"]
+    assert "反应触发：冒险者离开黑龙的近战威胁范围" in reaction_action["summary"]
+    assert reaction_action["result_json"]["action_window"] == {
+        "action_cost": "reaction",
+        "reaction_trigger": "冒险者离开黑龙的近战威胁范围",
+    }
 
     legendary = campaign_client.post(
         confirm_path,
@@ -118,6 +124,13 @@ def test_advanced_phase_previews_execute_through_combat_action_api(
     )
     assert legendary.status_code == 200, legendary.text
     assert legendary.json()["actor"]["snapshot_json"]["legendary_actions_remaining"] == 2
+    legendary_action = legendary.json()["action"]
+    assert "传奇动作窗口（消耗 1 点；动作池 3）" in legendary_action["summary"]
+    assert legendary_action["result_json"]["action_window"] == {
+        "action_cost": "legendary_action",
+        "legendary_cost": 1,
+        "legendary_pool_max": 3,
+    }
 
     lair = campaign_client.post(
         confirm_path,
@@ -136,6 +149,11 @@ def test_advanced_phase_previews_execute_through_combat_action_api(
     )
     assert lair.status_code == 200, lair.text
     assert lair.json()["actor"]["snapshot_json"]["lair_action_round"] == 1
+    lair_action = lair.json()["action"]
+    assert "巢穴动作窗口（本轮先攻20）" in lair_action["summary"]
+    assert lair_action["result_json"]["action_window"] == {
+        "action_cost": "lair_action",
+    }
 
 
 def test_monster_ai_preview_chooses_live_enemy_and_requires_confirmation(
@@ -463,3 +481,79 @@ def test_low_hp_retreat_plan_executes_disengage_once(
     assert replay.status_code == 200, replay.text
     assert replay.json()["already_applied"] is True
     assert replay.json()["action"]["id"] == body["action"]["id"]
+
+
+def test_reaction_save_prompt_keeps_trigger_after_player_resolution(
+    campaign_client: TestClient,
+) -> None:
+    campaign = campaign_client.post(
+        "/api/v1/campaigns", json={"name": "反应审计团"}
+    ).json()
+    base = f"/api/v1/campaigns/{campaign['id']}"
+    combat = campaign_client.post(f"{base}/combats", json={"name": "反应豁免"}).json()
+    hero = campaign_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "冒险者",
+            "entity_type": "character",
+            "initiative": 20,
+            "hp": 20,
+            "max_hp": 20,
+        },
+    ).json()
+    dragon = campaign_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "黑龙",
+            "entity_type": "monster",
+            "initiative": 10,
+            "hp": 100,
+            "max_hp": 100,
+        },
+    ).json()
+    trigger = "冒险者离开黑龙的近战威胁范围"
+    prompt = campaign_client.post(
+        f"{base}/combats/{combat['id']}/actions/player-rolls/pending",
+        headers={"X-Request-ID": "reaction-save-prompt"},
+        json={
+            "actor_combatant_id": dragon["id"],
+            "actor_version": dragon["version"],
+            "target_combatant_id": hero["id"],
+            "target_version": hero["version"],
+            "action_cost": "reaction",
+            "action_name": "酸液反击",
+            "resolution_type": "saving_throw",
+            "dc": 13,
+            "ability": "dexterity",
+            "damage_on_failure": 7,
+            "damage_type": "acid",
+            "reaction_trigger": trigger,
+            "description": "DM确认反应已经触发",
+        },
+    )
+    assert prompt.status_code == 200, prompt.text
+    prompt_action = prompt.json()["action"]
+    assert trigger in prompt_action["summary"]
+    assert prompt_action["result_json"]["action_window"]["reaction_trigger"] == trigger
+
+    resolved = campaign_client.post(
+        f"{base}/combats/{combat['id']}/actions/player-rolls/{prompt_action['id']}/confirm",
+        headers={"X-Request-ID": "reaction-save-resolve"},
+        json={"action_version": prompt_action["version"], "roll_total": 5},
+    )
+    assert resolved.status_code == 200, resolved.text
+    resolved_action = resolved.json()["action"]
+    assert trigger in resolved_action["summary"]
+    assert resolved_action["result_json"]["action_window"] == {
+        "action_cost": "reaction",
+        "reaction_trigger": trigger,
+    }
+    follow_up = resolved.json()["resolution"]["follow_up_damage"]
+    assert follow_up["amount"] == 7
+    damage = campaign_client.post(
+        f"{base}/combats/{combat['id']}/actions/confirm",
+        headers={"X-Request-ID": "reaction-save-follow-up"},
+        json=follow_up,
+    )
+    assert damage.status_code == 200, damage.text
+    assert damage.json()["target"]["hp"] == 13
