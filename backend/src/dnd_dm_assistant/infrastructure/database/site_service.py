@@ -4,6 +4,7 @@ import hashlib
 import random
 import re
 import time
+from datetime import UTC, datetime
 from pathlib import Path
 from threading import Lock, RLock
 from typing import Any
@@ -599,6 +600,7 @@ class SiteService:
                 session.flush()
                 scene = Scene(
                     campaign_id=campaign_id,
+                    created_at=datetime.now(UTC),
                     name=f"{site.name} · {level.name}",
                     location_id=level_location.id,
                     description=level.description,

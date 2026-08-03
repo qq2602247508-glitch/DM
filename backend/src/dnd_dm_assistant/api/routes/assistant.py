@@ -8,7 +8,7 @@ from dnd_dm_assistant.api.dependencies import (
     get_agent_orchestrator,
     get_agent_persistence,
 )
-from dnd_dm_assistant.api.schemas import AssistantTurnRequest
+from dnd_dm_assistant.api.schemas import AssistantConversationTurnRequest, AssistantTurnRequest
 from dnd_dm_assistant.application.agent import (
     AgentOrchestrator,
     AgentUnavailableError,
@@ -17,6 +17,7 @@ from dnd_dm_assistant.application.agent import (
 from dnd_dm_assistant.domain.agent import (
     AgentRequest,
     AgentResponse,
+    CampaignAIMessage,
     ProposalDecision,
     ProposalStatus,
     StateChangeProposal,
@@ -45,6 +46,10 @@ async def assistant_turn(
                 action=body.action,
                 request_id=_request_id(request),
                 mode=body.mode,
+                user_message=body.user_message,
+                remember_conversation=body.remember_conversation,
+                use_conversation_history=body.use_conversation_history,
+                include_campaign_state=body.include_campaign_state,
             )
         )
     except StateNotFoundError as exc:
@@ -53,6 +58,36 @@ async def assistant_turn(
         raise HTTPException(status_code=503, detail=str(exc)) from exc
     except InvalidAgentOutputError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@router.post("/assistant/conversation-turns", status_code=204)
+def record_assistant_conversation_turn(
+    campaign_id: str,
+    body: AssistantConversationTurnRequest,
+    request: Request,
+    persistence: Annotated[AgentPersistence, Depends(get_agent_persistence)],
+) -> None:
+    try:
+        persistence.append_conversation_turn(
+            campaign_id,
+            user_message=body.user_message,
+            assistant_message=body.assistant_message,
+            request_id=_request_id(request),
+        )
+    except StateNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="campaign not found") from exc
+
+
+@router.get("/assistant/conversation-turns", response_model=tuple[CampaignAIMessage, ...])
+def list_assistant_conversation_turns(
+    campaign_id: str,
+    persistence: Annotated[AgentPersistence, Depends(get_agent_persistence)],
+    limit: int = Query(12, ge=1, le=24),
+) -> tuple[CampaignAIMessage, ...]:
+    try:
+        return persistence.conversation_history(campaign_id, limit=limit)
+    except StateNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="campaign not found") from exc
 
 
 @router.get("/change-proposals", response_model=tuple[StateChangeProposal, ...])

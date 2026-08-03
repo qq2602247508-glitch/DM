@@ -49,6 +49,9 @@ class PlayerActionInput(BaseModel):
 class ResolveActionInput(BaseModel):
     version: int = Field(ge=1)
     dm_note: str | None = Field(default=None, max_length=4000)
+    attack_total: int | None = Field(default=None, ge=-100, le=1000)
+    damage_total: int | None = Field(default=None, ge=0, le=100000)
+    critical_hit: bool = False
 
 
 def _safe(fn: Any) -> Any:
@@ -150,6 +153,9 @@ def accept_player_action(
             "accepted",
             body.dm_note,
             _request_id(request),
+            attack_total=body.attack_total,
+            damage_total=body.damage_total,
+            critical_hit=body.critical_hit,
         )
     )
 

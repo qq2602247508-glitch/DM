@@ -13,6 +13,14 @@ from dnd_dm_assistant.domain.campaign_state import (
     StateNotFoundError,
     VersionConflict,
 )
+from dnd_dm_assistant.domain.content_packs import validate_content_pack_compatibility
+from dnd_dm_assistant.domain.feature_runtime import compile_feature_runtime_registry
+from dnd_dm_assistant.domain.rule_extensions import (
+    normalize_enabled_extensions,
+    runtime_effects_for_extensions,
+    seed_atoms_for_extensions,
+)
+from dnd_dm_assistant.domain.spell_rules import enrich_spell_action
 from dnd_dm_assistant.infrastructure.database.campaign_repository import (
     SqlAlchemyCampaignStateRepository,
 )
@@ -27,7 +35,10 @@ from dnd_dm_assistant.infrastructure.database.models import (
     Combat,
     CombatAction,
     Combatant,
+    CompendiumEntry,
+    DowntimeActivity,
     Event,
+    KnownSpell,
     Location,
     LocationConnection,
     MonsterInstance,
@@ -52,6 +63,7 @@ ENTITY_MODELS: dict[str, type[Any]] = {
     "quest": Quest,
     "clue": Clue,
     "event": Event,
+    "downtime_activity": DowntimeActivity,
     "combat": Combat,
     "combatant": Combatant,
     "world_item": WorldItem,
@@ -74,6 +86,8 @@ ENTITY_FIELDS: dict[str, tuple[str, ...]] = {
         "primary_rules_year",
         "allow_legacy",
         "encumbrance_mode",
+        "enabled_rule_extensions",
+        "enabled_content_packs",
     ),
     "character": (
         "name",
@@ -166,6 +180,16 @@ ENTITY_FIELDS: dict[str, tuple[str, ...]] = {
         "visibility",
         "metadata_json",
     ),
+    "downtime_activity": (
+        "character_id",
+        "activity_type",
+        "title",
+        "status",
+        "duration_days",
+        "progress_days",
+        "daily_cost_cp",
+        "details",
+    ),
     "combat": (
         "scene_id",
         "name",
@@ -232,6 +256,10 @@ ENTITY_FIELDS: dict[str, tuple[str, ...]] = {
         "ability_scores",
         "challenge_rating",
         "actions",
+        "damage_resistances",
+        "damage_vulnerabilities",
+        "damage_immunities",
+        "condition_immunities",
         "notes",
     ),
     "scene": ("location_id", "name", "description", "status", "notes"),
@@ -325,6 +353,23 @@ class SqlAlchemyCampaignStateGateway:
                 self._ensure_campaign(session, campaign_id or "")
                 data = self._with_parent(entity_type, data, campaign_id or "")
                 self._ensure_related_scope(session, entity_type, data, campaign_id or "")
+            if entity_type == "campaign":
+                enabled_rule_extensions = normalize_enabled_extensions(
+                    data.get("enabled_rule_extensions", []),
+                    allow_legacy=bool(data.get("allow_legacy", False)),
+                )
+                data = {
+                    **data,
+                    "enabled_rule_extensions": enabled_rule_extensions,
+                    "enabled_content_packs": validate_content_pack_compatibility(
+                        data.get("enabled_content_packs", []),
+                        allow_legacy=bool(data.get("allow_legacy", False)),
+                        primary_rules_year=int(data.get("primary_rules_year", 2024)),
+                    ),
+                    **runtime_effects_for_extensions(enabled_rule_extensions),
+                }
+            if entity_type == "combatant":
+                data = self._hydrate_combatant_feature_runtime(session, data)
             values = {field: data[field] for field in ENTITY_FIELDS[entity_type] if field in data}
             if entity_type in {
                 "character",
@@ -333,6 +378,7 @@ class SqlAlchemyCampaignStateGateway:
                 "quest",
                 "clue",
                 "event",
+                "downtime_activity",
                 "combat",
                 "world_item",
                 "monster",
@@ -344,6 +390,13 @@ class SqlAlchemyCampaignStateGateway:
             entity = model(**values)
             session.add(entity)
             session.flush()
+            if entity_type == "campaign":
+                self._seed_rule_extension_atoms(
+                    session,
+                    campaign_id=entity.id,
+                    enabled_rule_extensions=entity.enabled_rule_extensions,
+                    request_id=request_id,
+                )
             self._audit(
                 session,
                 campaign_id=self._resolve_campaign_id(session, entity_type, entity),
@@ -356,6 +409,126 @@ class SqlAlchemyCampaignStateGateway:
             )
             session.flush()
             return serialize(entity)
+
+    @staticmethod
+    def _hydrate_combatant_feature_runtime(
+        session: Session,
+        data: dict[str, Any],
+    ) -> dict[str, Any]:
+        """Freeze a character's 1–20 runtime contract into the combat snapshot.
+
+        Combat is intentionally a snapshot boundary.  Previously the DM page
+        copied a character's visible actions but omitted the compiled feature
+        registry, so Extra Attack, riders, resources, and defensive blocks
+        could exist on the sheet while the combat engine could not see them.
+        The source character remains authoritative; this only freezes the
+        auditable runtime projection for this encounter.
+        """
+
+        if data.get("entity_type") != "character" or not data.get("entity_id"):
+            return data
+        character = session.get(Character, data["entity_id"])
+        if character is None:
+            return data
+        grants = [item for item in (character.features or []) if isinstance(item, dict)]
+        scaling_values = {
+            str(item.get("scaling_key")): item.get("value")
+            for item in grants
+            if item.get("kind") == "class_scaling"
+            and isinstance(item.get("scaling_key"), str)
+        }
+        snapshot = dict(data.get("snapshot_json") or {})
+        supplied_registry = snapshot.get("feature_runtime")
+        registry = (
+            dict(supplied_registry)
+            if isinstance(supplied_registry, dict)
+            else compile_feature_runtime_registry(
+                grants,
+                resources=(character.resources or {})
+                if isinstance(character.resources, dict)
+                else {},
+                scalings={key: {"value": value} for key, value in scaling_values.items()},
+                class_levels=(character.class_levels or {})
+                if isinstance(character.class_levels, dict)
+                else {},
+                total_level=character.level,
+            )
+        )
+        snapshot["feature_runtime"] = registry
+        combat_start = dict(snapshot.get("combat_start_state") or {})
+        combat_start["snapshot_json"] = dict(snapshot)
+        snapshot["combat_start_state"] = combat_start
+
+        combat_start_registry = registry.get("combat_start")
+        if isinstance(combat_start_registry, dict):
+            modifiers = combat_start_registry.get("modifiers")
+            rule_modifiers = dict(snapshot.get("rule_modifiers") or {})
+            if isinstance(modifiers, list):
+                for index, modifier in enumerate(modifiers):
+                    if not isinstance(modifier, dict):
+                        continue
+                    stat = str(modifier.get("stat") or "").strip()
+                    operation = str(modifier.get("operation") or "").strip()
+                    value = modifier.get("value")
+                    if not stat or operation not in {"add", "advantage", "disadvantage"}:
+                        continue
+                    if not isinstance(value, int) and operation == "add":
+                        continue
+                    scope = str(modifier.get("scope") or "all")
+                    skill = str(modifier.get("skill") or "")
+                    key = f"{stat}:{scope}:{skill}:{index}"
+                    rule_modifiers[key] = {
+                        # Keep the selector fields alongside the legacy key.
+                        # Combat resolution must be able to evaluate a typed
+                        # feature modifier (for example Danger Sense's
+                        # Dexterity-save advantage) without parsing a
+                        # presentation-only string key.
+                        "stat": stat,
+                        "scope": scope,
+                        "skill": skill or None,
+                        "ability": modifier.get("ability"),
+                        "operation": operation,
+                        "value": value,
+                        "source": modifier.get("source_feature")
+                        or modifier.get("feature_name"),
+                        "applies_when": modifier.get("applies_when"),
+                        "frequency": modifier.get("frequency"),
+                        "expires": modifier.get("expires"),
+                    }
+            if rule_modifiers:
+                snapshot["rule_modifiers"] = rule_modifiers
+
+            defenses = combat_start_registry.get("defenses")
+            if isinstance(defenses, list):
+                advanced_defenses = dict(snapshot.get("advanced_defenses") or {})
+                conditional = list(snapshot.get("conditional_damage_defenses") or [])
+                for index, defense in enumerate(defenses):
+                    if not isinstance(defense, dict):
+                        continue
+                    if defense.get("kind") == "evasion":
+                        advanced_defenses["evasion"] = True
+                        continue
+                    operation = str(defense.get("operation") or "").strip()
+                    types = defense.get("damage_types")
+                    if operation not in {"resistance", "vulnerability", "immunity"}:
+                        continue
+                    if not isinstance(types, list) or not types:
+                        continue
+                    conditional.append(
+                        {
+                            "id": str(defense.get("id") or f"feature-defense-{index + 1}"),
+                            "condition": str(
+                                defense.get("applies_when") or "feature_condition"
+                            ),
+                            "operation": operation,
+                            "damage_types": [str(value) for value in types],
+                        }
+                    )
+                if advanced_defenses:
+                    snapshot["advanced_defenses"] = advanced_defenses
+                if conditional:
+                    snapshot["conditional_damage_defenses"] = conditional
+        return {**data, "snapshot_json": snapshot}
 
     def get(self, entity_type: str, entity_id: str, *, campaign_id: str | None = None) -> Any:
         with Session(self.engine) as session:
@@ -385,7 +558,50 @@ class SqlAlchemyCampaignStateGateway:
                 open_only=open_only,
                 parent_id=parent_id,
             )
-            return tuple(serialize(item) for item in rows)
+            result = [serialize(item) for item in rows]
+            if entity_type == "combatant":
+                # Combatants persist a snapshot at combat start.  Existing
+                # combats may therefore contain an older character action
+                # card; refresh its structured spell fields at read time.
+                for item, row in zip(result, rows, strict=True):
+                    if row.entity_type != "character" or not row.entity_id:
+                        continue
+                    known_spells = session.scalars(
+                        select(KnownSpell).where(KnownSpell.character_id == row.entity_id)
+                    ).all()
+                    character = session.get(Character, row.entity_id)
+                    spellcasting = character.spellcasting if character is not None else None
+                    by_name = {
+                        spell.name: dict(spell.metadata_json or {})
+                        for spell in known_spells
+                    }
+                    actions = item.get("snapshot_json", {}).get("actions")
+                    if not isinstance(actions, list):
+                        continue
+                    hydrated = []
+                    for raw in actions:
+                        action = dict(raw) if isinstance(raw, dict) else raw
+                        if isinstance(action, dict):
+                            metadata = by_name.get(str(action.get("name") or ""), {})
+                            source = metadata.get("character_spell")
+                            source_fields = dict(source) if isinstance(source, dict) else metadata
+                            for key in (
+                                "damage", "damage_expression", "damage_dice", "healing",
+                                "damage_type",
+                                "save_ability", "save_dc", "half_damage_on_save", "range",
+                                "description", "cost", "resource_key", "resource_cost",
+                                "resolution_kind", "rule_plan", "spell_level",
+                                "upcast_damage_dice", "upcast_healing_dice",
+                            ):
+                                if source_fields.get(key) not in (None, ""):
+                                    action[key] = source_fields[key]
+                            action = enrich_spell_action(
+                                action,
+                                spellcasting=spellcasting,
+                            )
+                        hydrated.append(action)
+                    item["snapshot_json"] = {**item["snapshot_json"], "actions": hydrated}
+            return tuple(result)
 
     def update(
         self,
@@ -408,6 +624,37 @@ class SqlAlchemyCampaignStateGateway:
             if actual != expected_version:
                 raise VersionConflict(entity_type, entity_id, expected_version, actual)
             before = serialize(entity)
+            if entity_type == "campaign":
+                enabled_rule_extensions = data.get(
+                    "enabled_rule_extensions", entity.enabled_rule_extensions
+                )
+                if "enabled_rule_extensions" in data:
+                    enabled_rule_extensions = normalize_enabled_extensions(
+                        enabled_rule_extensions,
+                        allow_legacy=bool(data.get("allow_legacy", entity.allow_legacy)),
+                    )
+                    data = {
+                        **data,
+                        "enabled_rule_extensions": enabled_rule_extensions,
+                    }
+                if "enabled_content_packs" in data or "allow_legacy" in data:
+                    data = {
+                        **data,
+                        "enabled_content_packs": validate_content_pack_compatibility(
+                            data.get(
+                                "enabled_content_packs",
+                                entity.enabled_content_packs,
+                            ),
+                            allow_legacy=bool(
+                                data.get("allow_legacy", entity.allow_legacy)
+                            ),
+                            primary_rules_year=int(entity.primary_rules_year),
+                        ),
+                    }
+                data = {
+                    **data,
+                    **runtime_effects_for_extensions(enabled_rule_extensions),
+                }
             values = {field: data[field] for field in ENTITY_FIELDS[entity_type] if field in data}
             if entity_type != "campaign":
                 self._ensure_related_scope(
@@ -430,6 +677,13 @@ class SqlAlchemyCampaignStateGateway:
             if getattr(result, "rowcount", None) != 1:
                 raise VersionConflict(entity_type, entity_id, expected_version, actual)
             session.refresh(entity)
+            if entity_type == "campaign" and "enabled_rule_extensions" in values:
+                self._seed_rule_extension_atoms(
+                    session,
+                    campaign_id=entity.id,
+                    enabled_rule_extensions=entity.enabled_rule_extensions,
+                    request_id=request_id,
+                )
             if entity_type == "combatant":
                 before_snapshot = before.get("snapshot_json")
                 after_snapshot = entity.snapshot_json
@@ -500,6 +754,41 @@ class SqlAlchemyCampaignStateGateway:
             )
             session.flush()
             return serialize(entity)
+
+    def _seed_rule_extension_atoms(
+        self,
+        session: Session,
+        *,
+        campaign_id: str,
+        enabled_rule_extensions: object,
+        request_id: str,
+    ) -> None:
+        """Materialize selected registry modules as campaign-scoped rule atoms."""
+
+        for atom in seed_atoms_for_extensions(enabled_rule_extensions):
+            existing = session.scalar(
+                select(CompendiumEntry).where(
+                    CompendiumEntry.campaign_id == campaign_id,
+                    CompendiumEntry.entry_type == "rule",
+                    CompendiumEntry.name == atom["name"],
+                    CompendiumEntry.source_kind == atom["source_kind"],
+                )
+            )
+            if existing is not None:
+                continue
+            entry = CompendiumEntry(campaign_id=campaign_id, **atom)
+            session.add(entry)
+            session.flush()
+            self._audit(
+                session,
+                campaign_id=campaign_id,
+                action="seed_rule_extension",
+                entity_type="compendium_entry",
+                entity_id=entry.id,
+                before=None,
+                after=entry,
+                request_id=request_id,
+            )
 
     def delete(
         self,
@@ -609,6 +898,7 @@ class SqlAlchemyCampaignStateGateway:
             "quest",
             "clue",
             "event",
+            "downtime_activity",
             "combat",
             "world_item",
             "monster",
@@ -636,6 +926,10 @@ class SqlAlchemyCampaignStateGateway:
             if quest is None or quest.campaign_id != campaign_id:
                 raise NotFoundError("quest not found in campaign")
         if entity_type == "condition" and data.get("character_id"):
+            character = session.get(Character, data["character_id"])
+            if character is None or character.campaign_id != campaign_id:
+                raise NotFoundError("character not found in campaign")
+        if entity_type == "downtime_activity" and data.get("character_id"):
             character = session.get(Character, data["character_id"])
             if character is None or character.campaign_id != campaign_id:
                 raise NotFoundError("character not found in campaign")

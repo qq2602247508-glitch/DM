@@ -513,7 +513,7 @@ class PrepImportService:
                     if row.location_key is not None
                     else None
                 )
-                entity = Scene(campaign_id=campaign_id, **data)
+                entity = Scene(campaign_id=campaign_id, created_at=datetime.now(UTC), **data)
                 session.add(entity)
                 session.flush()
                 refs["scenes"][row.key] = entity.id

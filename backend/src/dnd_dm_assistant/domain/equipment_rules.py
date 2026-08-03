@@ -30,6 +30,8 @@ TWO_HANDED_NAMES = {
     "重弩",
 }
 FOCUS_WORDS = ("法器", "圣徽", "法杖", "魔杖", "乐器", "工具")
+CONSUMABLE_CATEGORIES = {"consumable", "potion", "scroll", "poison"}
+CONSUMABLE_WORDS = ("药水", "药剂", "卷轴", "强酸", "强碱", "毒药", "炸药")
 WEAPON_WORDS = (
     "剑",
     "弓",
@@ -57,6 +59,14 @@ def equipment_profile(
     metadata = dict(metadata or {})
     text = f"{name} {metadata.get('description', '')} {metadata.get('properties', '')}"
     explicit_kind = str(metadata.get("equipment_kind") or "").lower()
+    item_function = str(metadata.get("item_function") or "").lower()
+    category_key = category.strip().lower()
+    is_consumable = (
+        explicit_kind == "consumable"
+        or item_function == "consumable"
+        or category_key in CONSUMABLE_CATEGORIES
+        or any(word in text for word in CONSUMABLE_WORDS)
+    )
     armor_name = next((key for key in ARMOR_NAMES if key in name), None)
     armor_type = str(metadata.get("armor_type") or "")
     if not armor_type and armor_name:
@@ -78,8 +88,14 @@ def equipment_profile(
         weapon in name for weapon in TWO_HANDED_NAMES
     )
 
-    if is_armor:
-        allowed_slots: list[EquipmentSlot] = ["armor"]
+    allowed_slots: list[EquipmentSlot]
+    if is_consumable:
+        allowed_slots = []
+        kind = "consumable"
+        hand_usage = 0
+        two_handed = False
+    elif is_armor:
+        allowed_slots = ["armor"]
         kind = "armor"
         hand_usage = 0
     elif is_shield:
@@ -105,7 +121,7 @@ def equipment_profile(
     return {
         "kind": kind,
         "allowed_slots": allowed_slots,
-        "default_slot": allowed_slots[0],
+        "default_slot": allowed_slots[0] if allowed_slots else None,
         "hand_usage": hand_usage,
         "two_handed": two_handed,
         "armor_type": armor_type or None,

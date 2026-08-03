@@ -4,6 +4,7 @@ from typing import Protocol
 
 from dnd_dm_assistant.domain.agent import (
     AgentPlan,
+    CampaignAIMessage,
     GeneratedDMHint,
     ModelRunRecord,
     ProposalDecision,
@@ -37,6 +38,19 @@ class CampaignStateReader(Protocol):
 
 
 class AgentPersistence(Protocol):
+    def conversation_history(
+        self, campaign_id: str, *, limit: int = 12
+    ) -> tuple[CampaignAIMessage, ...]: ...
+
+    def append_conversation_turn(
+        self,
+        campaign_id: str,
+        *,
+        user_message: str,
+        assistant_message: str,
+        request_id: str,
+    ) -> None: ...
+
     def create_proposal(
         self,
         campaign_id: str,

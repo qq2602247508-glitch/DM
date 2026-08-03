@@ -225,6 +225,38 @@ def test_character_asset_mirrors_are_idempotent_and_preserve_preparation_rules(
     assert character["inventory"][0]["quantity"] == 3
 
 
+def test_spell_metadata_damage_is_mirrored_to_character_combat_action(
+    economy_client: TestClient,
+) -> None:
+    campaign = economy_client.post("/api/v1/campaigns", json={"name": "伤害骰同步"}).json()
+    character = economy_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/characters",
+        json={"name": "雷鸣法师", "hp": 8, "max_hp": 8},
+    ).json()
+    prefix = f"/api/v1/campaigns/{campaign['id']}"
+    created = economy_client.post(
+        f"{prefix}/characters/assets/spells",
+        json={
+            "character_id": character["id"],
+            "character_version": character["version"],
+            "name": "雷鸣波",
+            "spell_level": 1,
+            "prepared": True,
+            "metadata_json": {
+                "kind": "area_damage",
+                "damage": "2d8 thunder",
+                "save": "Constitution",
+            },
+        },
+    )
+    assert created.status_code == 201, created.text
+    refreshed = economy_client.get(
+        f"{prefix}/characters/{character['id']}"
+    ).json()
+    mirrored = next(item for item in refreshed["actions"] if item["name"] == "雷鸣波")
+    assert mirrored["damage"] == "2d8 thunder"
+
+
 def test_spell_and_equipment_preview_confirm_idempotent(economy_client: TestClient) -> None:
     campaign, character, ids = _seed(economy_client)
     spell_body = {

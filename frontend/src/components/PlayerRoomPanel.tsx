@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState, type ReactElement } from "react";
+import { useEffect, useRef, useState, type ReactElement } from "react";
 
 import {
   assignPlayerRoomCharacter,
@@ -12,6 +12,7 @@ import {
   resolvePlayerActionRequest,
   setPlayerRoomLiveState,
 } from "../api/playerRoom";
+import { isApiError } from "../api/client";
 import { useToast } from "../hooks/toastContext";
 import { Badge, Button, ErrorState, LoadingBlock } from "../ui/primitives";
 import { selectCls } from "../ui/styles";
@@ -25,19 +26,24 @@ export function PlayerRoomPanel({
   currentSceneId,
   currentCombatId,
   characters,
+  liveStateIntent,
   onSceneChange,
 }: {
   campaignId: string;
   currentSceneId: string | null;
   currentCombatId: string | null;
   characters: CharacterOption[];
+  /** Increment only after an explicit DM scene/checkpoint action. */
+  liveStateIntent: number | null;
   onSceneChange?: (sceneId: string) => void;
 }): ReactElement {
   const client = useQueryClient();
   const { showToast } = useToast();
   const [joinCode, setJoinCode] = useState("");
   const [assignments, setAssignments] = useState<Record<string, string>>({});
+  const [opportunityRolls, setOpportunityRolls] = useState<Record<string, { attack: string; damage: string }>>({});
   const [confirmAction, setConfirmAction] = useState<"rotate" | "close" | null>(null);
+  const syncedLiveStateIntent = useRef<number | null>(null);
   const room = useQuery({
     queryKey: ["player-room-admin", campaignId],
     queryFn: ({ signal }) => getPlayerRoom(campaignId, signal),
@@ -87,11 +93,18 @@ export function PlayerRoomPanel({
       requestId,
       version,
       decision,
+      attackTotal,
+      damageTotal,
     }: {
       requestId: string;
       version: number;
       decision: "accept" | "reject";
-    }) => resolvePlayerActionRequest(campaignId, requestId, version, decision),
+      attackTotal?: number;
+      damageTotal?: number;
+    }) => resolvePlayerActionRequest(campaignId, requestId, version, decision, {
+      attack_total: attackTotal,
+      damage_total: damageTotal,
+    }),
     onSuccess: (result, variables) => {
       void client.invalidateQueries({ queryKey: ["player-action-requests", campaignId] });
       const rawTargetSceneId = result.payload_json.target_scene_id;
@@ -106,15 +119,47 @@ export function PlayerRoomPanel({
   });
 
   useEffect(() => {
-    if (room.data?.status !== "active") return;
+    // Do not continuously reconcile the room to this tab's local Scene. An
+    // old DM tab can be left on Scene 5 while the active tab moves to Scene 1;
+    // automatic reconciliation makes both tabs fight by repeatedly writing
+    // their own local selection to the same player room. Only an explicit DM
+    // action (scene transition, checkpoint restore, or manual Scene creation)
+    // increments liveStateIntent and is allowed to publish a new live state.
+    if (
+      room.data?.status !== "active"
+      || currentSceneId === null
+      || liveStateIntent === null
+      || syncedLiveStateIntent.current === liveStateIntent
+    ) return;
+    syncedLiveStateIntent.current = liveStateIntent;
     if (
       room.data.current_scene_id === currentSceneId
       && room.data.current_combat_id === currentCombatId
     ) return;
-    void setPlayerRoomLiveState(campaignId, currentSceneId, currentCombatId)
-      .then((result) => client.setQueryData(["player-room-admin", campaignId], result))
-      .catch(() => showToast("玩家端实时场景同步失败", "error"));
-  }, [campaignId, client, currentCombatId, currentSceneId, room.data, showToast]);
+    const expectedVersion = room.data.version;
+    void setPlayerRoomLiveState(campaignId, currentSceneId, currentCombatId, expectedVersion)
+      .then((result) => {
+        client.setQueryData(["player-room-admin", campaignId], result);
+      })
+      .catch((error: unknown) => {
+        if (isApiError(error, 409)) {
+          void client.invalidateQueries({ queryKey: ["player-room-admin", campaignId] });
+        } else {
+          showToast("玩家端实时场景同步失败", "error");
+        }
+      });
+  }, [
+    campaignId,
+    client,
+    currentCombatId,
+    currentSceneId,
+    liveStateIntent,
+    room.data?.current_combat_id,
+    room.data?.current_scene_id,
+    room.data?.status,
+    room.data?.version,
+    showToast,
+  ]);
 
   if (room.isLoading) return <Panel eyebrow="局域网玩家" title="玩家房间"><LoadingBlock label="正在读取玩家房间…" /></Panel>;
   if (room.isError && !isMissingPlayerRoom(room.error)) {
@@ -185,6 +230,8 @@ export function PlayerRoomPanel({
                   const character = characters.find((item) => item.id === request.character_id);
                   const payload = request.payload_json as {
                     schema_version?: string;
+                    rest_type?: "short" | "long";
+                    duration_minutes?: number;
                     direction?: "stairs_up" | "stairs_down";
                     label?: string;
                     target_level_name?: string;
@@ -207,7 +254,14 @@ export function PlayerRoomPanel({
                   };
                   const structured = request.action_type === "noncombat_rule";
                   const levelChange = request.action_type === "site_level_transition";
-                  const ready = !structured || payload.phase === "resolved";
+                  const restRequest = request.action_type === "rest_request";
+                  const opportunity = request.action_type === "opportunity_attack";
+                  const opportunityPayload = payload as typeof payload & {
+                    source_name?: string;
+                    target_name?: string;
+                    damage_expression?: string;
+                  };
+                  const ready = restRequest || !structured || payload.phase === "resolved";
                   return (
                     <div className="rounded border border-violet-800/70 bg-violet-950/20 p-3" key={request.id}>
                       <div className="flex items-center gap-2">
@@ -222,6 +276,22 @@ export function PlayerRoomPanel({
                           </strong>
                           <span className="block">楼梯：{payload.label ?? "已发现楼梯"} → {payload.target_level_name ?? "相邻楼层"}</span>
                           <span className="block text-amber-200">批准后会自动同步 DM 与全部玩家到目标楼层 Scene。</span>
+                        </div>
+                      ) : null}
+                      {restRequest ? (
+                        <div className="mt-2 rounded border border-amber-900/70 bg-amber-950/20 p-2 text-xs leading-5 text-stone-300">
+                          <strong className="text-amber-200">休息申请 · {payload.rest_type === "long" ? "长休（8小时）" : "短休（1小时）"}</strong>
+                          <span className="block">批准后会立即按 D&amp;D 5e 2024 规则结算，并同步角色生命值与资源。</span>
+                        </div>
+                      ) : null}
+                      {opportunity ? (
+                        <div className="mt-2 rounded border border-red-900/70 bg-red-950/20 p-2 text-xs leading-5 text-stone-300">
+                          <strong className="text-red-200">借机攻击 · {opportunityPayload.source_name} → {opportunityPayload.target_name}</strong>
+                          <span className="block">离开近战威胁范围；预期伤害：{opportunityPayload.damage_expression ?? "按 DM 裁定"}。</span>
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            <input aria-label={`${request.id}借机攻击总值`} className="w-24 rounded border border-ink-600 bg-ink-950 px-2 py-1" placeholder="攻击总值" type="number" value={opportunityRolls[request.id]?.attack ?? ""} onChange={(event) => setOpportunityRolls((current) => ({ ...current, [request.id]: { attack: event.target.value, damage: current[request.id]?.damage ?? "" } }))} />
+                            <input aria-label={`${request.id}借机伤害骰`} className="w-24 rounded border border-ink-600 bg-ink-950 px-2 py-1" placeholder="伤害总值" type="number" value={opportunityRolls[request.id]?.damage ?? ""} onChange={(event) => setOpportunityRolls((current) => ({ ...current, [request.id]: { attack: current[request.id]?.attack ?? "", damage: event.target.value } }))} />
+                          </div>
                         </div>
                       ) : null}
                       {structured ? <div className="mt-2 rounded border border-violet-900/70 bg-ink-950/45 p-2 text-xs leading-5 text-stone-300">
@@ -244,17 +314,20 @@ export function PlayerRoomPanel({
                           })}
                           size="sm"
                           variant="danger"
-                        >{levelChange ? "拒绝换层" : "驳回"}</Button>
+                        >{levelChange ? "拒绝换层" : restRequest ? "拒绝休息" : "驳回"}</Button>
                         <Button
+                          disabled={resolveRequest.isPending || (opportunity && (!opportunityRolls[request.id]?.attack || !opportunityRolls[request.id]?.damage))}
                           loading={resolveRequest.isPending}
                           onClick={() => resolveRequest.mutate({
                             requestId: request.id,
                             version: request.version,
                             decision: "accept",
+                            attackTotal: opportunity ? Number(opportunityRolls[request.id]?.attack) : undefined,
+                            damageTotal: opportunity ? Number(opportunityRolls[request.id]?.damage) : undefined,
                           })}
                           size="sm"
                           variant="primary"
-                        >{levelChange ? "批准换层申请" : "接受"}</Button>
+                        >{levelChange ? "批准换层申请" : restRequest ? "批准并执行休息" : "接受"}</Button>
                       </div>
                     </div>
                   );

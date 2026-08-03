@@ -142,7 +142,7 @@ export function parseMonsterActions(text: string): GeneratedAction[] {
         description: line.slice(0, 900),
         damage: actionDamage(line),
         damage_type: actionDamageType(line),
-        range: range ? `${range}尺${shape}` : "5尺",
+        range: range ? `${range}尺${shape}` : undefined,
         cost: "动作",
         attack_bonus: Number(
           line.match(/(?:命中|攻击检定[：:]?)\s*\+\s*(\d+)/iu)?.[1],

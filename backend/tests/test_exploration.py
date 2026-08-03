@@ -16,6 +16,8 @@ def test_los_and_cover() -> None:
     assert not line_of_sight((1, 1), (4, 1), {(2, 1)})
     assert cover_between((1, 1), (4, 1), set(), {(2, 1)}) == "total"
     assert cover_between((1, 1), (4, 1), {(4, 2)}, set()) == "half"
+    assert cover_between((1, 1), (5, 1), {(3, 2)}, set()) == "half"
+    assert cover_between((1, 1), (4, 1), {(5, 2)}, set()) == "none"
 
 
 def test_travel_paces() -> None:

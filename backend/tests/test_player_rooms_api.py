@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+from concurrent.futures import ThreadPoolExecutor
 from typing import Any
 
 from fastapi.testclient import TestClient
@@ -8,16 +9,26 @@ from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session
 
 from dnd_dm_assistant.api.routes.player_rooms import _clear_join_failures
+from dnd_dm_assistant.application.rule_block_compiler import compile_rule_blocks_dict
 from dnd_dm_assistant.infrastructure.database.models import (
+    NPC,
     EquipmentInstance,
+    Event,
     PlayerRoom,
     PlayerSession,
+    RestRecord,
     Scene,
+    SceneParticipant,
     SceneToken,
+    ShopInventory,
     SiteConnector,
     SiteLevel,
 )
-from dnd_dm_assistant.infrastructure.database.player_room_service import _code_digest
+from dnd_dm_assistant.infrastructure.database.player_room_service import (
+    PlayerRoomService,
+    _code_digest,
+)
+from dnd_dm_assistant.infrastructure.database.player_service import PlayerService
 
 
 def _campaign(client: TestClient, name: str = "LAN团") -> dict[str, Any]:
@@ -182,6 +193,199 @@ def test_player_equipment_is_scoped_to_bound_character(
     assert character["equipment_assets"][0]["slot"] == "main_hand"
 
 
+def test_player_consumable_uses_quantity_instead_of_equipment_slot(
+    campaign_client: TestClient,
+) -> None:
+    campaign = _campaign(campaign_client, "消耗品操作团")
+    opened = _open(campaign_client, campaign["id"])
+    _join(campaign_client, opened["join_code"])
+    character = campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/characters",
+        json={"name": "药水使用者", "hp": 8, "max_hp": 8},
+    ).json()
+    assert campaign_client.post(
+        "/api/v1/player-room/me/bind-character",
+        json={"character_id": character["id"]},
+    ).status_code == 200
+    engine = create_engine(campaign_client.database_url)  # type: ignore[attr-defined]
+    with Session(engine) as session, session.begin():
+        potion = EquipmentInstance(
+            campaign_id=campaign["id"],
+            character_id=character["id"],
+            name="治疗药水",
+            category="consumable",
+            quantity=2,
+            metadata_json={"healing": "2d4+2"},
+        )
+        session.add(potion)
+        session.flush()
+        potion_id = potion.id
+
+    body = {"equipment_id": potion_id, "operation": "consume", "amount": 1}
+    preview = campaign_client.post(
+        "/api/v1/player-room/me/equipment/preview", json=body
+    )
+    assert preview.status_code == 200
+    assert preview.json()["profile"]["kind"] == "consumable"
+    assert preview.json()["slot"] is None
+    confirmed = campaign_client.post(
+        "/api/v1/player-room/me/equipment/confirm",
+        json={
+            **body,
+            "preview_token": preview.json()["preview_token"],
+            "idempotency_key": "player-consume-potion-001",
+        },
+    )
+    assert confirmed.status_code == 200
+    snapshot = campaign_client.get("/api/v1/player-room/me").json()
+    asset = next(
+        item for item in snapshot["character"]["equipment_assets"] if item["id"] == potion_id
+    )
+    assert asset["quantity"] == 1
+    assert asset["profile"]["kind"] == "consumable"
+    assert asset["slot"] is None
+
+    equip = campaign_client.post(
+        "/api/v1/player-room/me/equipment/preview",
+        json={"equipment_id": potion_id, "operation": "equip"},
+    )
+    assert equip.status_code == 400
+    assert "消耗品" in equip.json()["message"]
+
+
+def test_player_rest_request_executes_only_after_dm_approval(
+    campaign_client: TestClient,
+) -> None:
+    campaign = _campaign(campaign_client, "玩家休息申请团")
+    opened = _open(campaign_client, campaign["id"])
+    _join(campaign_client, opened["join_code"])
+    character = campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/characters",
+        json={"name": "需要休息的角色", "hp": 5, "max_hp": 10},
+    ).json()
+    assert campaign_client.post(
+        "/api/v1/player-room/me/bind-character",
+        json={"character_id": character["id"]},
+    ).status_code == 200
+
+    resources = campaign_client.get(
+        f"/api/v1/campaigns/{campaign['id']}/resources",
+        params={"character_id": character["id"]},
+    )
+    assert resources.status_code == 200
+    hit_die = next(item for item in resources.json()["items"] if item["category"] == "hit_die")
+
+    submitted = campaign_client.post(
+        "/api/v1/player-room/me/action-requests",
+        json={
+            "action_type": "rest_request",
+            "message": "申请短休。",
+            "payload_json": {
+                "rest_type": "short",
+                "hit_dice": [{"resource_pool_id": hit_die["id"], "roll": 4}],
+            },
+            "idempotency_key": "player-rest-request-short",
+        },
+    )
+    assert submitted.status_code == 201
+    request = submitted.json()
+    assert request["payload_json"]["rest_type"] == "short"
+    assert request["payload_json"]["participants"][0]["hit_dice"] == [
+        {"resource_pool_id": hit_die["id"], "roll": 4}
+    ]
+    assert campaign_client.get(
+        f"/api/v1/campaigns/{campaign['id']}/characters/{character['id']}"
+    ).json()["hp"] == 5
+
+    accepted = campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/player-action-requests/{request['id']}/accept",
+        json={"version": request["version"], "dm_note": "允许短休。"},
+    )
+    assert accepted.status_code == 200, accepted.text
+    assert accepted.json()["status"] == "accepted"
+
+    updated = campaign_client.get(
+        f"/api/v1/campaigns/{campaign['id']}/characters/{character['id']}"
+    ).json()
+    assert updated["hp"] == 9
+
+    long_request = campaign_client.post(
+        "/api/v1/player-room/me/action-requests",
+        json={
+            "action_type": "rest_request",
+            "message": "申请长休。",
+            "payload_json": {"rest_type": "long"},
+            "idempotency_key": "player-rest-request-long",
+        },
+    ).json()
+    long_accepted = campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/player-action-requests/{long_request['id']}/accept",
+        json={"version": long_request["version"], "dm_note": None},
+    )
+    assert long_accepted.status_code == 200, long_accepted.text
+    assert campaign_client.get(
+        f"/api/v1/campaigns/{campaign['id']}/characters/{character['id']}"
+    ).json()["hp"] == 10
+
+
+def test_concurrent_player_rest_approval_claims_once(
+    campaign_client: TestClient,
+) -> None:
+    campaign = _campaign(campaign_client, "并发休息审批团")
+    opened = _open(campaign_client, campaign["id"])
+    _join(campaign_client, opened["join_code"])
+    character = campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/characters",
+        json={"name": "并发休息角色", "hp": 5, "max_hp": 10},
+    ).json()
+    assert campaign_client.post(
+        "/api/v1/player-room/me/bind-character",
+        json={"character_id": character["id"]},
+    ).status_code == 200
+    request = campaign_client.post(
+        "/api/v1/player-room/me/action-requests",
+        json={
+            "action_type": "rest_request",
+            "message": "申请长休。",
+            "payload_json": {"rest_type": "long"},
+            "idempotency_key": "player-rest-concurrent-001",
+        },
+    ).json()
+
+    engine = create_engine(campaign_client.database_url)  # type: ignore[attr-defined]
+
+    def approve() -> dict[str, Any]:
+        return PlayerService(engine).resolve_action(
+            campaign["id"],
+            request["id"],
+            request["version"],
+            "accepted",
+            None,
+            "concurrent-dm",
+        )
+
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        results = list(executor.map(lambda _index: approve(), range(2)))
+
+    assert [item["status"] for item in results] == ["accepted", "accepted"]
+    with Session(engine) as session:
+        assert len(
+            session.scalars(
+                select(RestRecord).where(RestRecord.campaign_id == campaign["id"])
+            ).all()
+        ) == 1
+        assert len(
+            session.scalars(
+                select(Event).where(
+                    Event.campaign_id == campaign["id"], Event.event_type == "rest"
+                )
+            ).all()
+        ) == 1
+    assert campaign_client.get(
+        f"/api/v1/campaigns/{campaign['id']}/characters/{character['id']}"
+    ).json()["hp"] == 10
+
+
 def test_legacy_unprefixed_six_character_room_code_still_joins(
     campaign_client: TestClient,
 ) -> None:
@@ -236,6 +440,21 @@ def test_player_character_creation_binding_and_campaign_scope(
             "睡眠术",
             "油腻术",
         }
+    creation_context = {
+        "ability_generation_method": "standard_array",
+        "origin_ability_increases": {"intelligence": 2, "wisdom": 1},
+        "background_tool_proficiency": "书法工具",
+        "languages": ["精灵语", "龙语"],
+        "starter_equipment_option": "fixed_package",
+    }
+    standard_array_scores = {
+        "strength": 8,
+        "dexterity": 14,
+        "constitution": 13,
+        "intelligence": 17,
+        "wisdom": 13,
+        "charisma": 10,
+    }
     rejected_unlimited = campaign_client.post(
         "/api/v1/player-room/me/characters",
         json={
@@ -243,14 +462,8 @@ def test_player_character_creation_binding_and_campaign_scope(
             "race": "精灵",
             "class_name": "法师",
             "background": "学者",
-            "ability_scores": {
-                "strength": 8,
-                "dexterity": 14,
-                "constitution": 13,
-                "intelligence": 15,
-                "wisdom": 12,
-                "charisma": 10,
-            },
+            "ability_scores": standard_array_scores,
+            **creation_context,
             "skill_proficiencies": [],
             "spells": wizard_spells[:1],
         },
@@ -266,14 +479,8 @@ def test_player_character_creation_binding_and_campaign_scope(
             "race": "精灵",
             "class_name": "法师",
             "background": "学者",
-            "ability_scores": {
-                "strength": 8,
-                "dexterity": 14,
-                "constitution": 13,
-                "intelligence": 15,
-                "wisdom": 12,
-                "charisma": 10,
-            },
+            "ability_scores": standard_array_scores,
+            **creation_context,
             "skill_proficiencies": ["洞悉", "调查"],
             "spells": invalid_preparation,
         },
@@ -287,14 +494,8 @@ def test_player_character_creation_binding_and_campaign_scope(
             "race": "精灵",
             "class_name": "法师",
             "background": "学者",
-            "ability_scores": {
-                "strength": 8,
-                "dexterity": 14,
-                "constitution": 13,
-                "intelligence": 15,
-                "wisdom": 12,
-                "charisma": 10,
-            },
+            "ability_scores": standard_array_scores,
+            **creation_context,
             "skill_proficiencies": ["洞悉", "调查"],
             "spells": wizard_spells,
         },
@@ -305,9 +506,14 @@ def test_player_character_creation_binding_and_campaign_scope(
     assert character["class_levels"] == {"法师": 1}
     assert character["speed"] == 30
     assert {"黑暗视觉", "敏锐感官", "出神"} <= set(character["features"])
+    assert "属性生成：标准数组" in character["features"]
+    assert "背景起源：智力 +2、感知 +1" in character["features"]
     assert "背景专长：魔法学徒（法师）" in character["features"]
     assert {"奥秘", "历史", "调查"} <= set(character["skills"])
     assert {"法杖", "法术书", "书法工具"} <= set(character["equipment"])
+    assert {"工具：书法工具", "语言：通用语", "语言：精灵语", "语言：龙语"} <= set(
+        character["proficiencies"]
+    )
     assert character["resources"]["spell_slots_1"]["current"] == 2
     assert character["resources"]["arcane_recovery"]["current"] == 1
     assert character["spellcasting"]["ability"] == "智力"
@@ -330,6 +536,55 @@ def test_player_character_creation_binding_and_campaign_scope(
         json={"character_id": foreign["id"]},
     )
     assert rejected.status_code == 404
+
+
+def test_player_character_creation_uses_point_buy_and_fixed_starter_package(
+    campaign_client: TestClient,
+) -> None:
+    campaign = _campaign(campaign_client, "点购车卡团")
+    opened = _open(campaign_client, campaign["id"])
+    _join(campaign_client, opened["join_code"])
+    draft = {
+        "name": "诺拉",
+        "race": "人类",
+        "class_name": "战士",
+        "background": "学者",
+        "ability_generation_method": "point_buy",
+        "ability_scores": {
+            "strength": 15,
+            "dexterity": 14,
+            "constitution": 13,
+            "intelligence": 14,
+            "wisdom": 11,
+            "charisma": 8,
+        },
+        "origin_ability_increases": {"intelligence": 2, "wisdom": 1},
+        "background_tool_proficiency": "书法工具",
+        "languages": ["矮人语", "精灵语"],
+        "starter_equipment_option": "fixed_package",
+        "equipment": [],
+        "skill_proficiencies": ["运动", "察觉"],
+        "spells": [],
+    }
+
+    forged_equipment = campaign_client.post(
+        "/api/v1/player-room/me/characters",
+        json={**draft, "equipment": ["板甲"]},
+    )
+    assert forged_equipment.status_code == 400
+    assert "不能在起始装备包外追加" in forged_equipment.json()["message"]
+
+    created = campaign_client.post("/api/v1/player-room/me/characters", json=draft)
+    assert created.status_code == 201
+    character = created.json()
+    assert character["ability_scores"]["intelligence"] == 14
+    assert "属性生成：27 点购点" in character["features"]
+    assert "背景起源：智力 +2、感知 +1" in character["features"]
+    assert {"工具：书法工具", "语言：通用语", "语言：矮人语", "语言：精灵语"} <= set(
+        character["proficiencies"]
+    )
+    assert {"长剑", "链甲", "法杖", "书法工具"} <= set(character["equipment"])
+    assert "板甲" not in character["equipment"]
 
 
 def test_player_snapshot_exposes_selected_scene_grid_and_public_objects(
@@ -568,6 +823,49 @@ def test_room_live_state_rejects_cross_campaign_ids(campaign_client: TestClient)
     assert response.status_code == 404
 
 
+def test_room_live_state_is_idempotent_when_state_is_unchanged(
+    campaign_client: TestClient,
+) -> None:
+    campaign = _campaign(campaign_client, "幂等实时状态团")
+    scene = campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/scenes",
+        json={"name": "唯一场景"},
+    ).json()
+    _open(campaign_client, campaign["id"])
+    first = campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/player-room/live-state",
+        json={"scene_id": scene["id"]},
+    )
+    assert first.status_code == 200
+    version = first.json()["version"]
+    repeated = campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/player-room/live-state",
+        json={"scene_id": scene["id"], "expected_version": version},
+    )
+    assert repeated.status_code == 200
+    assert repeated.json()["current_scene_id"] == scene["id"]
+    assert repeated.json()["version"] == version
+
+
+def test_open_player_room_starts_at_first_active_scene(
+    campaign_client: TestClient,
+) -> None:
+    campaign = _campaign(campaign_client, "首次开房默认首节点团")
+    first = campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/scenes",
+        json={"name": "Scene 1"},
+    ).json()
+    second = campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/scenes",
+        json={"name": "Scene 5"},
+    ).json()
+
+    opened = _open(campaign_client, campaign["id"])
+
+    assert opened["current_scene_id"] == first["id"]
+    assert opened["current_scene_id"] != second["id"]
+
+
 def test_active_character_can_only_be_claimed_once(campaign_client: TestClient) -> None:
     campaign = _campaign(campaign_client)
     character = campaign_client.post(
@@ -798,6 +1096,19 @@ def test_player_submitted_save_advances_enemy_turn(
     assert snapshot["active_combatant_id"] == player["id"]
     assert snapshot["is_my_turn"] is True
     assert snapshot["pending_rolls"] == []
+
+
+def test_active_monster_action_preview_uses_structured_damage_action() -> None:
+    action = PlayerRoomService._active_monster_action(
+        [
+            {"name": "无法自动猜测", "description": "需要 DM 裁定"},
+            {"name": "毒牙", "damage": "2d8", "damage_type": "poison"},
+        ],
+        round_number=0,
+        snapshot={},
+    )
+    assert action is not None
+    assert action["name"] == "毒牙"
 
 
 def test_noncombat_lockpick_uses_raw_roll_and_dm_confirmation(
@@ -1097,7 +1408,10 @@ def test_player_area_spell_uses_one_damage_roll_and_spends_one_slot(
         },
     )
     assert blocked_by_sight.status_code == 400
-    assert "无法建立攻击视线" in blocked_by_sight.json()["message"]
+    assert any(
+        phrase in blocked_by_sight.json()["message"]
+        for phrase in ("目标处于战争迷雾中", "无法建立攻击视线")
+    )
 
     too_far = campaign_client.post(
         "/api/v1/player-room/me/combat/attack",
@@ -1111,20 +1425,24 @@ def test_player_area_spell_uses_one_damage_roll_and_spends_one_slot(
         },
     )
     assert too_far.status_code == 400
-    assert "技能范围" in too_far.json()["message"]
-    moved_third = campaign_client.patch(
-        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}/combatants/"
-        f"{enemies[2]['id']}",
-        headers={"If-Match": f'"{enemies[2]["version"]}"'},
-        json={
-            "snapshot_json": {
-                **enemies[2]["snapshot_json"],
-                "grid_position": {"row": 3, "col": 20},
-            }
-        },
+    assert any(
+        phrase in too_far.json()["message"]
+        for phrase in ("技能范围", "目标处于战争迷雾中")
     )
-    assert moved_third.status_code == 200
-    enemies[2] = moved_third.json()
+    for index, position in enumerate(((2, 8), (2, 9), (3, 10))):
+        moved = campaign_client.patch(
+            f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}/combatants/"
+            f"{enemies[index]['id']}",
+            headers={"If-Match": f'"{enemies[index]["version"]}"'},
+            json={
+                "snapshot_json": {
+                    **enemies[index]["snapshot_json"],
+                    "grid_position": {"row": position[0], "col": position[1]},
+                }
+            },
+        )
+        assert moved.status_code == 200
+        enemies[index] = moved.json()
 
     resolved = campaign_client.post(
         "/api/v1/player-room/me/combat/attack",
@@ -1154,3 +1472,476 @@ def test_player_area_spell_uses_one_damage_roll_and_spends_one_slot(
         f"/api/v1/campaigns/{campaign['id']}/characters/{character['id']}"
     ).json()
     assert refreshed_character["resources"]["spell_slots_3"]["current"] == 2
+
+
+def test_player_shop_is_visible_only_in_current_scene_and_purchase_is_bound_to_character(
+    campaign_client: TestClient,
+) -> None:
+    campaign = _campaign(campaign_client, "玩家商店入口团")
+    root = f"/api/v1/campaigns/{campaign['id']}"
+    location = campaign_client.post(
+        f"{root}/locations", json={"name": "长桥市场", "depth": 1}
+    ).json()
+    current_scene = campaign_client.post(
+        f"{root}/scenes", json={"name": "月灯杂货铺", "location_id": location["id"]}
+    ).json()
+    other_scene = campaign_client.post(
+        f"{root}/scenes", json={"name": "市场后巷", "location_id": location["id"]}
+    ).json()
+    opened = _open(campaign_client, campaign["id"])
+    _join(campaign_client, opened["join_code"])
+    character = campaign_client.post(
+        f"{root}/characters",
+        json={
+            "name": "商店测试角色",
+            "class_name": "战士",
+            "ability_scores": {"strength": 10},
+            "hp": 10,
+            "max_hp": 10,
+        },
+    ).json()
+    assert campaign_client.post(
+        "/api/v1/player-room/me/bind-character",
+        json={"character_id": character["id"]},
+    ).status_code == 200
+    wallet = campaign_client.post(
+        f"{root}/characters/assets/wallets",
+        json={
+            "character_id": character["id"],
+            "character_version": character["version"],
+            "copper": 100,
+        },
+    ).json()
+    other_character = campaign_client.post(
+        f"{root}/characters",
+        json={"name": "别人的钱包", "hp": 10, "max_hp": 10},
+    ).json()
+    other_wallet = campaign_client.post(
+        f"{root}/characters/assets/wallets",
+        json={
+            "character_id": other_character["id"],
+            "character_version": other_character["version"],
+            "copper": 100,
+        },
+    ).json()
+
+    engine = create_engine(campaign_client.database_url)  # type: ignore[attr-defined]
+    with Session(engine) as session, session.begin():
+        current_npc = NPC(
+            campaign_id=campaign["id"],
+            name="月灯老板",
+            description="只向眼前的客人展示货架。",
+        )
+        other_npc = NPC(
+            campaign_id=campaign["id"], name="后巷商人", description="另一处货架。"
+        )
+        session.add_all([current_npc, other_npc])
+        session.flush()
+        session.add_all(
+            [
+                SceneParticipant(
+                    scene_id=current_scene["id"],
+                    entity_type="npc",
+                    entity_id=current_npc.id,
+                    role="merchant",
+                    visible=True,
+                ),
+                SceneParticipant(
+                    scene_id=other_scene["id"],
+                    entity_type="npc",
+                    entity_id=other_npc.id,
+                    role="merchant",
+                    visible=True,
+                ),
+                ShopInventory(
+                    campaign_id=campaign["id"],
+                    name="治疗药水",
+                    quantity=2,
+                    price_copper=25,
+                    metadata_json={
+                        "merchant_id": "current-shop",
+                        "merchant_name": current_npc.name,
+                        "merchant_npc_id": current_npc.id,
+                        "scene_id": current_scene["id"],
+                        "category": "potion",
+                    },
+                ),
+                ShopInventory(
+                    campaign_id=campaign["id"],
+                    name="后巷卷轴",
+                    quantity=2,
+                    price_copper=25,
+                    metadata_json={
+                        "merchant_id": "other-shop",
+                        "merchant_name": other_npc.name,
+                        "merchant_npc_id": other_npc.id,
+                        "scene_id": other_scene["id"],
+                        "category": "scroll",
+                    },
+                ),
+            ]
+        )
+
+    snapshot = campaign_client.get("/api/v1/player-room/me").json()
+    assert snapshot["table"]["shops"][0]["name"] == "月灯老板"
+    assert [item["name"] for item in snapshot["table"]["shops"][0]["stock"]] == ["治疗药水"]
+    assert snapshot["character"]["wallet"]["id"] == wallet["id"]
+    stock = snapshot["table"]["shops"][0]["stock"][0]
+    trade = {
+        "wallet_id": wallet["id"],
+        "wallet_version": snapshot["character"]["wallet"]["version"],
+        "shop_inventory_id": stock["id"],
+        "shop_version": stock["version"],
+        "quantity": 1,
+    }
+    preview = campaign_client.post("/api/v1/player-room/me/commerce/preview", json=trade)
+    assert preview.status_code == 200, preview.text
+    assert preview.json()["total_copper"] == 25
+    confirmed = campaign_client.post(
+        "/api/v1/player-room/me/commerce/confirm",
+        json={
+            **trade,
+            "preview_token": preview.json()["preview_token"],
+            "idempotency_key": "player-shop-001",
+        },
+    )
+    assert confirmed.status_code == 200, confirmed.text
+    after = campaign_client.get("/api/v1/player-room/me").json()
+    assert after["character"]["wallet"]["copper"] == 75
+    assert after["table"]["shops"][0]["stock"][0]["quantity"] == 1
+    assert any(item["name"] == "治疗药水" for item in after["character"]["equipment_assets"])
+    forged = campaign_client.post(
+        "/api/v1/player-room/me/commerce/preview",
+        json={
+            **trade,
+            "wallet_id": other_wallet["id"],
+            "wallet_version": other_wallet["version"],
+        },
+    )
+    assert forged.status_code == 400
+    assert "绑定角色" in forged.json()["message"]
+
+
+def test_player_attack_applies_half_cover_to_target_ac(
+    campaign_client: TestClient,
+) -> None:
+    campaign = _campaign(campaign_client, "联机掩体规则团")
+    character = campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/characters",
+        json={
+            "name": "掩体测试员",
+            "hp": 20,
+            "max_hp": 20,
+            "actions": [
+                {
+                    "name": "短弓",
+                    "cost": "动作",
+                    "range": "30尺",
+                    "damage": "1d6穿刺",
+                    "damage_type": "穿刺",
+                }
+            ],
+        },
+    ).json()
+    scene = campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/scenes",
+        json={"name": "有掩体的靶场"},
+    ).json()
+    assert campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/scenes/{scene['id']}/grid",
+        json={
+            "width": 10,
+            "height": 6,
+            "cell_size_ft": 5,
+            "mode": "combat",
+            "layers_json": {"cells": []},
+        },
+    ).status_code == 201
+    cover = campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/scenes/{scene['id']}/objects",
+        json={
+            "object_type": "cover",
+            "label": "半身高木箱",
+            "row": 2,
+            "col": 4,
+            "state": "active",
+            "visibility": "public",
+        },
+    )
+    assert cover.status_code == 201, cover.text
+    combat = campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/combats",
+        json={"name": "掩体规则战斗", "scene_id": scene["id"]},
+    ).json()
+    campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": character["name"],
+            "entity_type": "character",
+            "entity_id": character["id"],
+            "initiative": 20,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {"grid_position": {"row": 2, "col": 2}},
+        },
+    ).json()
+    target = campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "木箱后的靶人",
+            "entity_type": "monster",
+            "initiative": 10,
+            "armor_class": 12,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {"grid_position": {"row": 2, "col": 5}},
+        },
+    ).json()
+    opened = _open(campaign_client, campaign["id"])
+    _join(campaign_client, opened["join_code"])
+    assert campaign_client.post(
+        "/api/v1/player-room/me/bind-character",
+        json={"character_id": character["id"]},
+    ).status_code == 200
+    assert campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/player-room/live-state",
+        json={"scene_id": scene["id"], "combat_id": combat["id"]},
+    ).status_code == 200
+
+    attack = campaign_client.post(
+        "/api/v1/player-room/me/combat/attack",
+        json={
+            "target_combatant_id": target["id"],
+            "action_name": "短弓",
+            "attack_total": 13,
+            "damage_total": 6,
+            "idempotency_key": "half-cover-attack-001",
+        },
+    )
+    assert attack.status_code == 200, attack.text
+    result = attack.json()["results"][0]
+    assert "半掩体 +2" in result["action"]["summary"]
+    current_target = campaign_client.get(
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}/combatants"
+    ).json()["items"]
+    assert next(item for item in current_target if item["id"] == target["id"])["hp"] == 20
+
+
+def test_player_compiled_forced_movement_is_applied_after_failed_save(
+    campaign_client: TestClient,
+) -> None:
+    campaign = _campaign(campaign_client, "雷鸣波规则执行团")
+    character = campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/characters",
+        json={
+            "name": "雷鸣波施法者",
+            "class_name": "法师",
+            "hp": 20,
+            "max_hp": 20,
+            "actions": [
+                {
+                    "name": "雷鸣波",
+                    "cost": "动作",
+                    "range": "自身（15尺立方）",
+                    "damage": "2d8雷鸣",
+                    "damage_type": "雷鸣",
+                    "save_ability": "constitution",
+                    "save_dc": 99,
+                    "rule_plan": compile_rule_blocks_dict(
+                        {
+                            "name": "雷鸣波",
+                            "spell_level": 1,
+                            "range": "自身（15尺立方）",
+                            "description": (
+                                "以你为源点15尺立方区域内的每个生物进行体质豁免，"
+                                "失败受到2d8雷鸣伤害并被推离10尺。"
+                            ),
+                            "damage_expression": "2d8",
+                            "damage_type": "雷鸣",
+                            "save_ability": "constitution",
+                            "save_dc": 99,
+                            "movement": {
+                                "distance_ft": 10,
+                                "type": "forced",
+                                "direction": "away",
+                            },
+                            "resolution_kind": "damage",
+                        },
+                        source_kind="spell",
+                    ),
+                }
+            ],
+        },
+    ).json()
+    scene = campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/scenes",
+        json={"name": "雷鸣波测试场"},
+    ).json()
+    assert campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/scenes/{scene['id']}/grid",
+        json={"width": 10, "height": 10, "cell_size_ft": 5, "mode": "combat"},
+    ).status_code == 201
+    combat = campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/combats",
+        json={"name": "雷鸣波战斗", "scene_id": scene["id"]},
+    ).json()
+    campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": character["name"],
+            "entity_type": "character",
+            "entity_id": character["id"],
+            "initiative": 20,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {"grid_position": {"row": 5, "col": 5}},
+        },
+    ).json()
+    target = campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "雷鸣波目标",
+            "entity_type": "monster",
+            "initiative": 10,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {
+                "grid_position": {"row": 5, "col": 6},
+                "ability_scores": {"constitution": 10},
+            },
+        },
+    ).json()
+    opened = _open(campaign_client, campaign["id"])
+    _join(campaign_client, opened["join_code"])
+    assert campaign_client.post(
+        "/api/v1/player-room/me/bind-character",
+        json={"character_id": character["id"]},
+    ).status_code == 200
+    assert campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/player-room/live-state",
+        json={"scene_id": scene["id"], "combat_id": combat["id"]},
+    ).status_code == 200
+
+    attack = campaign_client.post(
+        "/api/v1/player-room/me/combat/attack",
+        json={
+            "target_combatant_id": target["id"],
+            "target_combatant_ids": [target["id"]],
+            "action_name": "雷鸣波",
+            "attack_total": 0,
+            "damage_total": 8,
+            "idempotency_key": "thunderwave-forced-movement-001",
+        },
+    )
+    assert attack.status_code == 200, attack.text
+    compiled = attack.json()["compiled_effects"]
+    movement = next(item for item in compiled if item["block_id"].endswith("move"))
+    assert movement["result"]["moved_ft"] == 10
+    fighters = campaign_client.get(
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}/combatants"
+    ).json()["items"]
+    moved_target = next(item for item in fighters if item["id"] == target["id"])
+    assert moved_target["snapshot_json"]["grid_position"] == {"row": 5, "col": 8}
+    assert moved_target["hp"] == 12
+
+
+def test_player_cast_applies_friendly_modifier_and_spends_slot(
+    campaign_client: TestClient,
+) -> None:
+    campaign = _campaign(campaign_client, "友方战斗法术团")
+    character = campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/characters",
+        json={
+            "name": "增益施法者",
+            "class_name": "法师",
+            "hp": 20,
+            "max_hp": 20,
+            "actions": [
+                {
+                    "name": "护盾术",
+                    "spell_level": 1,
+                    "cost": "反应",
+                    "range": "自身",
+                    "resource_key": "spell_slots_1",
+                    "resource_cost": 1,
+                    "rule_plan": compile_rule_blocks_dict(
+                        {
+                            "name": "护盾术",
+                            "spell_level": 1,
+                            "range": "自身",
+                            "description": "你的AC提高5，持续到你的下个回合开始。",
+                            "resolution_kind": "modifier",
+                        },
+                        source_kind="spell",
+                    ),
+                }
+            ],
+            "resources": {
+                "spell_slots_1": {"label": "1环法术位", "current": 1, "maximum": 1}
+            },
+        },
+    ).json()
+    scene = campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/scenes",
+        json={"name": "友方效果测试场"},
+    ).json()
+    assert campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/scenes/{scene['id']}/grid",
+        json={"width": 8, "height": 8, "cell_size_ft": 5, "mode": "combat"},
+    ).status_code == 201
+    combat = campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/combats",
+        json={"name": "友方效果战斗", "scene_id": scene["id"]},
+    ).json()
+    actor = campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": character["name"],
+            "entity_type": "character",
+            "entity_id": character["id"],
+            "initiative": 20,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {"grid_position": {"row": 4, "col": 4}},
+        },
+    ).json()
+    opened = _open(campaign_client, campaign["id"])
+    _join(campaign_client, opened["join_code"])
+    assert campaign_client.post(
+        "/api/v1/player-room/me/bind-character",
+        json={"character_id": character["id"]},
+    ).status_code == 200
+    assert campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/player-room/live-state",
+        json={"scene_id": scene["id"], "combat_id": combat["id"]},
+    ).status_code == 200
+
+    cast = campaign_client.post(
+        "/api/v1/player-room/me/combat/cast",
+        json={
+            "target_combatant_id": actor["id"],
+            "target_combatant_ids": [actor["id"]],
+            "action_name": "护盾术",
+            "slot_level": 1,
+            "idempotency_key": "friendly-shield-cast-001",
+        },
+    )
+    assert cast.status_code == 200, cast.text
+    assert cast.json()["compiled_effects"]
+    assert cast.json()["resource_spend"] == {
+        "resource_key": "spell_slots_1",
+        "amount": 1,
+    }
+    current = campaign_client.get(
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}/combatants"
+    ).json()["items"]
+    updated_actor = next(item for item in current if item["id"] == actor["id"])
+    assert updated_actor["action_available"] is True
+    assert updated_actor["reaction_available"] is False
+    assert updated_actor["armor_class"] == 15
+    refreshed_character = campaign_client.get(
+        f"/api/v1/campaigns/{campaign['id']}/characters/{character['id']}"
+    ).json()
+    # A level-1 wizard is normalized to the 2024 core two-slot progression;
+    # this cast spends one of those two slots.
+    assert refreshed_character["resources"]["spell_slots_1"]["current"] == 1

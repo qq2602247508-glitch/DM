@@ -13,6 +13,14 @@ from dnd_dm_assistant.api.dependencies import (
     get_world_service,
 )
 from dnd_dm_assistant.api.schemas import (
+    AfflictionConfirmRequest,
+    AfflictionPreviewRequest,
+    ChaseConfirmRequest,
+    ChasePreviewRequest,
+    DowntimeResolutionConfirmRequest,
+    DowntimeResolutionPreviewRequest,
+    EnvironmentHazardConfirmRequest,
+    EnvironmentHazardPreviewRequest,
     ExplorationConfirmRequest,
     ExplorationPreviewRequest,
     ItemPickupRequest,
@@ -20,6 +28,8 @@ from dnd_dm_assistant.api.schemas import (
     LocationGenerationRequest,
     MonsterCreate,
     NPCGenerationRequest,
+    NPCMoraleConfirmRequest,
+    NPCMoralePreviewRequest,
     SceneCombatStartRequest,
     SceneCreate,
     SceneGridCreate,
@@ -29,6 +39,10 @@ from dnd_dm_assistant.api.schemas import (
     SiteGenerationConfirmRequest,
     SiteGenerationRequest,
     SiteRoomVisibilityRequest,
+    SocialInteractionConfirmRequest,
+    SocialInteractionPreviewRequest,
+    TrapResolutionConfirmRequest,
+    TrapResolutionPreviewRequest,
     TravelConfirmRequest,
     TravelPreviewRequest,
     WorldItemCreate,
@@ -424,6 +438,191 @@ def confirm_travel(
     service: Annotated[ExplorationService, Depends(get_exploration_service)],
 ) -> dict[str, Any]:
     return _safe_call(lambda: service.confirm_travel(campaign_id, body.model_dump()))
+
+
+@router.get("/chases")
+def list_chases(
+    campaign_id: str,
+    service: Annotated[ExplorationService, Depends(get_exploration_service)],
+) -> dict[str, Any]:
+    return {"items": _safe_call(lambda: service.list_chases(campaign_id))}
+
+
+@router.post("/chases/preview")
+def preview_chase(
+    campaign_id: str,
+    body: ChasePreviewRequest,
+    service: Annotated[ExplorationService, Depends(get_exploration_service)],
+) -> dict[str, Any]:
+    return _safe_call(lambda: service.preview_chase(campaign_id, body.model_dump(mode="json")))
+
+
+@router.post("/chases/confirm")
+def confirm_chase(
+    campaign_id: str,
+    body: ChaseConfirmRequest,
+    service: Annotated[ExplorationService, Depends(get_exploration_service)],
+) -> dict[str, Any]:
+    return _safe_call(lambda: service.confirm_chase(campaign_id, body.model_dump(mode="json")))
+
+
+@router.post("/scenes/{scene_id}/traps/{trap_id}/preview")
+def preview_trap_resolution(
+    campaign_id: str,
+    scene_id: str,
+    trap_id: str,
+    body: TrapResolutionPreviewRequest,
+    service: Annotated[ExplorationService, Depends(get_exploration_service)],
+) -> dict[str, Any]:
+    return _safe_call(
+        lambda: service.preview_trap_resolution(
+            campaign_id, scene_id, {**body.model_dump(mode="json"), "trap_id": trap_id}
+        )
+    )
+
+
+@router.post("/scenes/{scene_id}/traps/{trap_id}/confirm")
+def confirm_trap_resolution(
+    campaign_id: str,
+    scene_id: str,
+    trap_id: str,
+    body: TrapResolutionConfirmRequest,
+    service: Annotated[ExplorationService, Depends(get_exploration_service)],
+) -> dict[str, Any]:
+    return _safe_call(
+        lambda: service.confirm_trap_resolution(
+            campaign_id,
+            scene_id,
+            trap_id,
+            body.model_dump(mode="json"),
+        )
+    )
+
+
+@router.post("/scenes/{scene_id}/hazards/preview")
+def preview_environment_hazard(
+    campaign_id: str,
+    scene_id: str,
+    body: EnvironmentHazardPreviewRequest,
+    service: Annotated[ExplorationService, Depends(get_exploration_service)],
+) -> dict[str, Any]:
+    return _safe_call(
+        lambda: service.preview_environment_hazard(
+            campaign_id, scene_id, body.model_dump(mode="json")
+        )
+    )
+
+
+@router.post("/scenes/{scene_id}/hazards/confirm")
+def confirm_environment_hazard(
+    campaign_id: str,
+    scene_id: str,
+    body: EnvironmentHazardConfirmRequest,
+    service: Annotated[ExplorationService, Depends(get_exploration_service)],
+) -> dict[str, Any]:
+    return _safe_call(
+        lambda: service.confirm_environment_hazard(
+            campaign_id, scene_id, body.model_dump(mode="json")
+        )
+    )
+
+
+@router.post("/afflictions/preview")
+def preview_affliction(
+    campaign_id: str,
+    body: AfflictionPreviewRequest,
+    service: Annotated[ExplorationService, Depends(get_exploration_service)],
+) -> dict[str, Any]:
+    return _safe_call(lambda: service.preview_affliction(campaign_id, body.model_dump(mode="json")))
+
+
+@router.post("/afflictions/confirm")
+def confirm_affliction(
+    campaign_id: str,
+    body: AfflictionConfirmRequest,
+    service: Annotated[ExplorationService, Depends(get_exploration_service)],
+) -> dict[str, Any]:
+    return _safe_call(lambda: service.confirm_affliction(campaign_id, body.model_dump(mode="json")))
+
+
+@router.post("/downtime/{activity_id}/preview")
+def preview_downtime_resolution(
+    campaign_id: str,
+    activity_id: str,
+    body: DowntimeResolutionPreviewRequest,
+    service: Annotated[ExplorationService, Depends(get_exploration_service)],
+) -> dict[str, Any]:
+    return _safe_call(
+        lambda: service.preview_downtime_resolution(
+            campaign_id, activity_id, body.model_dump(mode="json")
+        )
+    )
+
+
+@router.post("/downtime/{activity_id}/confirm")
+def confirm_downtime_resolution(
+    campaign_id: str,
+    activity_id: str,
+    body: DowntimeResolutionConfirmRequest,
+    service: Annotated[ExplorationService, Depends(get_exploration_service)],
+) -> dict[str, Any]:
+    return _safe_call(
+        lambda: service.confirm_downtime_resolution(
+            campaign_id, activity_id, body.model_dump(mode="json")
+        )
+    )
+
+
+@router.post("/npcs/{npc_id}/social/preview")
+def preview_social_interaction(
+    campaign_id: str,
+    npc_id: str,
+    body: SocialInteractionPreviewRequest,
+    service: Annotated[ExplorationService, Depends(get_exploration_service)],
+) -> dict[str, Any]:
+    return _safe_call(
+        lambda: service.preview_social_interaction(
+            campaign_id, npc_id, body.model_dump(mode="json")
+        )
+    )
+
+
+@router.post("/npcs/{npc_id}/social/confirm")
+def confirm_social_interaction(
+    campaign_id: str,
+    npc_id: str,
+    body: SocialInteractionConfirmRequest,
+    service: Annotated[ExplorationService, Depends(get_exploration_service)],
+) -> dict[str, Any]:
+    return _safe_call(
+        lambda: service.confirm_social_interaction(
+            campaign_id, npc_id, body.model_dump(mode="json")
+        )
+    )
+
+
+@router.post("/npcs/{npc_id}/morale/preview")
+def preview_npc_morale(
+    campaign_id: str,
+    npc_id: str,
+    body: NPCMoralePreviewRequest,
+    service: Annotated[ExplorationService, Depends(get_exploration_service)],
+) -> dict[str, Any]:
+    return _safe_call(
+        lambda: service.preview_npc_morale(campaign_id, npc_id, body.model_dump(mode="json"))
+    )
+
+
+@router.post("/npcs/{npc_id}/morale/confirm")
+def confirm_npc_morale(
+    campaign_id: str,
+    npc_id: str,
+    body: NPCMoraleConfirmRequest,
+    service: Annotated[ExplorationService, Depends(get_exploration_service)],
+) -> dict[str, Any]:
+    return _safe_call(
+        lambda: service.confirm_npc_morale(campaign_id, npc_id, body.model_dump(mode="json"))
+    )
 
 
 @router.get("/scenes/{scene_id}/participants")

@@ -1,7 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useMemo, useState, type FormEvent, type ReactElement } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactElement } from "react";
 
-import { runAssistantTurn } from "../api/assistant";
+import { listAssistantConversationTurns, recordAssistantConversationTurn, runAssistantTurn } from "../api/assistant";
+import { isApiError } from "../api/client";
 import { createCompendiumEntry } from "../api/compendium";
 import { getRuleDocument, searchKnowledge } from "../api/knowledge";
 import { confirmPrepImport, previewPrepImport, type PrepDraft, type PrepImportPreview } from "../api/prep";
@@ -12,6 +13,7 @@ import {
 } from "../api/sessionCheckpoints";
 import {
   getDmNoncombatActions,
+  getPlayerRoom,
   planDmNoncombatAction,
   rollDmNoncombatAction,
   setPlayerRoomLiveState,
@@ -40,17 +42,20 @@ import { RequireCampaign } from "../components/RequireCampaign";
 import { SceneOutlinePanel } from "../components/SceneOutlinePanel";
 import { SceneEntityDetailDialog } from "../components/SceneEntityDetailDialog";
 import { SceneMap } from "../components/SceneMap";
+import { RuleBlockPlan } from "../components/RuleBlockPlan";
 import { useToast } from "../hooks/toastContext";
 import { navigate } from "../hooks/useHashRoute";
 import { Badge, Button, EmptyState, ErrorState, LoadingBlock } from "../ui/primitives";
 import { inputCls, selectCls, textareaCls } from "../ui/styles";
 import { safeDndText } from "../ui/contentSafety";
+import { splitAssistantRevealChunks } from "../ui/assistantReveal";
+import { buildPlayerGuidance, type PlayerGuidanceReason } from "../ui/playerGuidance";
 import { HpBar } from "../ui/widgets";
 import { atomsToStrictPrepDraft, buildFallbackPrepDraft, parsePrepDraft, type DraftAtom } from "../ui/prepDraft";
 import { generateTacticalSceneGrid } from "../ui/sceneGridGenerator";
 import {
-  buildSceneNotes, chapterOrderFromTitle, readSceneStoryOutline,
-  sortScenesByOutline, type SceneStoryOutline,
+  buildSceneFlow, buildSceneNotes, chapterOrderFromTitle, readSceneStoryOutline,
+  sortScenesByOutline, type SceneFlowStep, type SceneStoryOutline,
 } from "../ui/sceneOutline";
 import {
   campaignMonsterCandidates, compendiumMonsterCandidates, customMonsterDraft,
@@ -66,19 +71,38 @@ import {
   describeEncounterOperation, difficultyShiftLabel,
 } from "../ui/encounterAdjustments";
 import {
-  buildContextualQuickActions, SCENE_PHASE_LABELS, scenePhaseText, type ScenePhase,
+  buildContextualQuickActions, type ScenePhase,
 } from "../ui/contextualQuickActions";
 import { createClientId } from "../ui/id";
+import {
+  assistantDeliveryIssue, assistantEntryLabel, buildSafeExplanationFallback, buildSafeGuidanceFallback, buildSafeReadAloudFallback, buildSafeRevisionFallback, buildSafeSpokenLineFallback, confirmedAssistantContextEntries, gameTableAssistantContract, inferAssistantDeliveryMode, isUnwantedRepeatedReply, repairReadAloudCandidate,
+  repairLegacyAssistantHistory,
+  type AssistantDeliveryMode,
+  type GameTableAssistantIntent,
+} from "../ui/gameTableAssistant";
 
 type ProgressEntry = {
   id: string;
   kind: "dm" | "ai" | "system";
+  intent?: GameTableAssistantIntent;
   text: string;
   createdAt: string;
 };
 
+type LiveAssistantEntry = {
+  id: string;
+  intent: GameTableAssistantIntent;
+  label: string;
+  status: "thinking" | "revealing";
+  text: string;
+};
+
 function summaryCount(value: unknown): number {
   return typeof value === "number" && Number.isFinite(value) ? value : 0;
+}
+
+function flowStepId(value: unknown): string {
+  return typeof value === "string" ? value : "";
 }
 
 type LegacySessionCheckpoint = {
@@ -281,6 +305,7 @@ function DmSceneActionPanel({
         </label>
       </div>
       {selected ? <p className="mb-0 mt-2 rounded border border-sky-900/50 bg-sky-950/15 p-2 text-xs text-sky-100">{selected.description}{selected.range ? ` · 距离 ${selected.range}` : ""}</p> : null}
+      {selected?.rule_plan ? <RuleBlockPlan source={{ rule_plan: selected.rule_plan }} title={`${selected.name} · 规则积木`} /> : null}
       <div className="mt-2 flex gap-2">
         <input className={inputCls} onChange={(event) => setMessage(event.target.value)} placeholder="补充玩家具体做法（可选）" value={message} />
         <Button disabled={!selected || !targetValue} loading={mutation.isPending} onClick={submit} variant="primary">DM代玩家执行</Button>
@@ -308,7 +333,9 @@ function loadEntries(campaignId: string, sceneId: string): ProgressEntry[] {
   if (!sceneId) return [];
   try {
     const parsed = JSON.parse(localStorage.getItem(storageKey(campaignId, sceneId)) ?? "[]") as unknown;
-    return Array.isArray(parsed) ? parsed as ProgressEntry[] : [];
+    return Array.isArray(parsed)
+      ? repairLegacyAssistantHistory(parsed as ProgressEntry[])
+      : [];
   } catch {
     return [];
   }
@@ -387,17 +414,22 @@ async function ensureScenePersistentGrid(
 function GameTableContent({ campaignId }: { campaignId: string }): ReactElement {
   const client = useQueryClient();
   const { showToast } = useToast();
-  const [sceneId, setSceneId] = useState("");
+  const [sceneId, setSceneId] = useState(
+    () => sessionStorage.getItem(`dnd-dm-requested-scene:${campaignId}`) ?? "",
+  );
   const [playerCombatId, setPlayerCombatId] = useState<string | null>(
     () => sessionStorage.getItem(`dnd-dm-active-combat:${campaignId}`),
   );
+  const [liveStateIntent, setLiveStateIntent] = useState<number | null>(null);
   const [tableMode, setTableMode] = useState<"prep" | "play">("play");
   const [showEncounterTools, setShowEncounterTools] = useState(false);
   const [entityKey, setEntityKey] = useState("");
   const [detailParticipant, setDetailParticipant] = useState<SceneParticipant | null>(null);
   const [input, setInput] = useState("");
   const [entries, setEntries] = useState<ProgressEntry[]>([]);
+  const [liveAssistant, setLiveAssistant] = useState<LiveAssistantEntry | null>(null);
   const [lastResponse, setLastResponse] = useState<AgentResponse | null>(null);
+  const conversationEndRef = useRef<HTMLDivElement>(null);
   const [legacyCheckpointCount] = useState(
     () => loadLegacyCheckpoints(campaignId).length,
   );
@@ -438,11 +470,11 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
   const [sceneTwist, setSceneTwist] = useState("");
   const [sceneClimax, setSceneClimax] = useState("");
   const [sceneTransition, setSceneTransition] = useState("");
-  const [activePhase, setActivePhase] = useState<ScenePhase>("opening");
+  const [currentFlowStepId, setCurrentFlowStepId] = useState<string | null>(null);
   const scenes = useQuery({ queryKey: ["scenes", campaignId], queryFn: ({ signal }) => listScenes(campaignId, signal) });
   const locations = useQuery({ queryKey: ["locations", campaignId], queryFn: ({ signal }) => listLocations(campaignId, signal) });
   const characters = useQuery({ queryKey: ["characters", campaignId], queryFn: ({ signal }) => listCharacters(campaignId, signal) });
-  const characterOptions = useQuery({ queryKey: ["character-options"], queryFn: ({ signal }) => getCharacterOptions(signal) });
+  const characterOptions = useQuery({ queryKey: ["character-options", campaignId], queryFn: ({ signal }) => getCharacterOptions(signal, campaignId) });
   const npcs = useQuery({ queryKey: ["npcs", campaignId], queryFn: ({ signal }) => listNpcs(campaignId, signal) });
   const monsters = useQuery({ queryKey: ["monsters", campaignId], queryFn: ({ signal }) => listMonsters(campaignId, signal) });
   const events = useQuery({ queryKey: ["events", campaignId], queryFn: ({ signal }) => listEvents(campaignId, signal) });
@@ -466,8 +498,11 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
     queryFn: ({ signal }) => listSessionCheckpoints(campaignId, signal),
   });
   useEffect(() => {
-    if (!sceneId && scenes.data?.[0]) setSceneId(scenes.data[0].id);
-  }, [sceneId, scenes.data]);
+    const fallbackScene = sortScenesByOutline(scenes.data ?? [])[0];
+    if (!fallbackScene) return;
+    if (!scenes.data?.some((scene) => scene.id === sceneId)) setSceneId(fallbackScene.id);
+    sessionStorage.removeItem(`dnd-dm-requested-scene:${campaignId}`);
+  }, [campaignId, sceneId, scenes.data]);
   useEffect(() => {
     setEntries(loadEntries(campaignId, sceneId));
     setLastResponse(null);
@@ -476,16 +511,30 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
     if (sceneId) localStorage.setItem(storageKey(campaignId, sceneId), JSON.stringify(entries));
   }, [campaignId, entries, sceneId]);
   useEffect(() => {
+    const frame = requestAnimationFrame(() => {
+      conversationEndRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "end",
+      });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [entries, liveAssistant?.status, liveAssistant?.text]);
+  useEffect(() => {
     if (!sceneId || entries.length > 0 || !events.data) return;
     const restored = events.data
       .filter((event) => event.metadata_json.scene_id === sceneId && event.metadata_json.game_table === true)
       .map((event): ProgressEntry => ({
         id: `event:${event.id}`,
         kind: event.metadata_json.entry_kind === "dm" ? "dm" : event.metadata_json.entry_kind === "ai" ? "ai" : "system",
+        intent: event.metadata_json.assistant_intent === "ask"
+          || event.metadata_json.assistant_intent === "advance"
+          || event.metadata_json.assistant_intent === "execute"
+          ? event.metadata_json.assistant_intent
+          : undefined,
         text: event.description ?? event.title,
         createdAt: event.occurred_at,
       }));
-    if (restored.length > 0) setEntries(restored);
+    if (restored.length > 0) setEntries(repairLegacyAssistantHistory(restored));
   }, [entries.length, events.data, sceneId]);
   const activeScene = scenes.data?.find((scene) => scene.id === sceneId);
   const activeLocation = locations.data?.find((location) => location.id === activeScene?.location_id);
@@ -498,6 +547,32 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
   const activeOutline = activeScene
     ? readSceneStoryOutline(activeScene, activeSceneIndex + 1)
     : null;
+  const activeFlow = activeScene ? buildSceneFlow(activeScene, activeSceneIndex + 1) : [];
+  const currentFlowStep = activeFlow.find((step) => step.id === currentFlowStepId) ?? activeFlow[0];
+  const activePhase: ScenePhase = currentFlowStep?.sourcePhase ?? "opening";
+  const sceneFlowEvents = (events.data ?? []).filter((event) => (
+    event.metadata_json.scene_id === sceneId
+    && event.metadata_json.action === "scene_flow_step"
+  ));
+  const skippedFlowStepIds = new Set(sceneFlowEvents
+    .filter((event) => event.metadata_json.flow_step_status === "skipped")
+    .map((event) => flowStepId(event.metadata_json.flow_step_id))
+    .filter(Boolean));
+  useEffect(() => {
+    if (!activeScene) {
+      setCurrentFlowStepId(null);
+      return;
+    }
+    const latestCurrent = [...sceneFlowEvents].reverse().find(
+      (event) => event.metadata_json.flow_step_status === "current",
+    );
+    const restoredId = flowStepId(latestCurrent?.metadata_json.flow_step_id);
+    const fallbackId = buildSceneFlow(activeScene, activeSceneIndex + 1)[0]?.id ?? null;
+    setCurrentFlowStepId(restoredId || fallbackId);
+  // The event list is the server-side source of truth. Do not depend on the
+  // derived array identity or this effect would reset after every render.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeScene?.id, events.data, sceneId]);
   const findCompendiumMonsters = async (query: string): Promise<MonsterReferenceCandidate[]> => {
     const enrichHits = (hits: Awaited<ReturnType<typeof searchKnowledge>>) => Promise.all(hits.map(async (hit) => {
       try {
@@ -574,8 +649,75 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
     });
     await client.invalidateQueries({ queryKey: ["events", campaignId] });
   };
-  const addEntry = (kind: ProgressEntry["kind"], text: string) => {
-    setEntries((current) => [...current, { id: createClientId("progress"), kind, text, createdAt: new Date().toISOString() }]);
+  const publishPlayerRoomLiveState = async (
+    targetSceneId: string,
+    targetCombatId: string | null,
+  ): Promise<void> => {
+    let room: Awaited<ReturnType<typeof getPlayerRoom>> | null = null;
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      try {
+        room ??= await getPlayerRoom(campaignId);
+        if (room.status !== "active") return;
+        const result = await setPlayerRoomLiveState(
+          campaignId,
+          targetSceneId,
+          targetCombatId,
+          room.version,
+        );
+        client.setQueryData(["player-room-admin", campaignId], result);
+        return;
+      } catch (error: unknown) {
+        if (!isApiError(error, 409) || attempt === 1) return;
+        room = null;
+      }
+    }
+  };
+  const publishPlayerGuidance = async (input: {
+    sceneName: string;
+    sceneId: string;
+    locationId?: string | null;
+    phase: ScenePhase;
+    reason: PlayerGuidanceReason;
+  }) => {
+    const guidance = buildPlayerGuidance(input);
+    try {
+      await createEvent(campaignId, {
+        title: guidance.title,
+        description: guidance.suggestions.join("\n"),
+        event_type: "player_guidance",
+        visibility: "players",
+        location_id: input.locationId ?? null,
+        metadata_json: {
+          scene_id: input.sceneId,
+          guidance_phase: input.phase,
+          guidance_reason: input.reason,
+        },
+      });
+    } catch {
+      showToast("主机推进已完成，但玩家行动提示暂时没有同步", "error");
+    }
+  };
+  const addEntry = (kind: ProgressEntry["kind"], text: string, intent?: GameTableAssistantIntent) => {
+    setEntries((current) => [...current, { id: createClientId("progress"), kind, intent, text, createdAt: new Date().toISOString() }]);
+  };
+  const startAssistantActivity = (label: string, intent: GameTableAssistantIntent = "advance"): string => {
+    const id = createClientId("assistant-live");
+    setLiveAssistant({ id, intent, label, status: "thinking", text: "" });
+    return id;
+  };
+  const revealAssistantText = async (activityId: string, text: string): Promise<void> => {
+    const chunks = splitAssistantRevealChunks(text);
+    let visible = "";
+    for (const chunk of chunks) {
+      visible = visible ? `${visible}\n\n${chunk}` : chunk;
+      setLiveAssistant((current) => current?.id === activityId
+        ? { ...current, status: "revealing", text: visible }
+        : current);
+      await new Promise((resolve) => window.setTimeout(resolve, 110));
+    }
+  };
+  const finishAssistantActivity = (activityId: string) => {
+    setLiveAssistant((current) => current?.id === activityId ? null : current);
   };
   const grantLookup = useMutation({
     mutationFn: async (intent: CharacterGrantIntent) => {
@@ -705,46 +847,280 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
     onError: () => showToast("无法起草进入场景的人物，请稍后重试", "error"),
   });
   const assistant = useMutation({
-    mutationFn: async (action: string) => {
+    mutationFn: async ({ action, intent }: { action: string; activityId: string; intent: GameTableAssistantIntent }) => {
       const names = (participants.data ?? []).map((item) => `${item.entity_type}:${item.entity.name}${item.role === "defeated" ? "（已击败）" : ""}`).join("、") || "无人";
       const nextOutline = nextScene
         ? readSceneStoryOutline(nextScene, activeSceneIndex + 2)
         : null;
-      const context = `你是D&D 5e 2024副DM，本应用不是COC。不得使用克苏鲁、奈亚拉托提普、旧日支配者、深潜者、SAN或理智检定等其他系统内容。当前章节与场景：${activeOutline?.chapterTitle ?? "未编排"} / Scene ${activeOutline?.sceneOrder ?? "?"} ${activeScene?.name ?? "未选择"}。当前Scene目标：${activeOutline?.objective ?? "未填写"}。当前Scene收束条件：${activeOutline?.climax ?? "未填写"}。地点：${activeLocation?.name ?? "未绑定"}。当前在场：${names}。最近推进：${entries.slice(-5).map((entry) => entry.text).join("；")}。DM输入：${action}。${nextScene && nextOutline ? `下一个候选是 Scene ${nextOutline.sceneOrder}「${nextScene.name}」，进入条件提示：${activeOutline?.transition ?? "由DM判断"}。` : "当前没有下一个已编排Scene。"}请只用D&D 5e世界与机制，给DM私密推进建议、NPC可能反应、下一步引导和风险；本模式只输出叙事草案，不给出未经规则证据逐条支持的DC、CR、伤害骰、加值、次数或持续时间，不要擅自改数据库。如果根据已记录的玩家行动，当前Scene目标已经完成、绕过或自然收束，并且确实存在下一个Scene，请在回复末尾单独输出[[建议进入下一场景]]；否则输出[[继续当前场景]]。`;
-      return runAssistantTurn(campaignId, context, { mode: "narrative" });
+      const flowContext = currentFlowStep
+        ? intent === "ask"
+          ? `当前流程位置 ${currentFlowStep.order}/${activeFlow.length}。只提供序号定位，不得复述或猜测该步骤的标题与原始文案。`
+          : `当前流程步骤 ${currentFlowStep.order}/${activeFlow.length}「${currentFlowStep.title}」：${currentFlowStep.instruction}。这只是DM导航，玩家若采用其他合理方案，应响应玩家而不是强行拉回预设流程。`
+        : "当前没有预设流程步骤，由DM自由推进。";
+      const requestContract = gameTableAssistantContract(action, intent);
+      const transitionContract = intent === "advance"
+        ? "如果已确认的玩家行动使当前Scene目标完成、绕过或自然收束，并且确实存在下一个Scene，请在末尾单独输出[[建议进入下一场景]]；否则输出[[继续当前场景]]。"
+        : "不要输出场景切换标记，也不要因为这次询问改变当前流程位置。";
+      const recentEntries = (intent === "ask" ? [] : confirmedAssistantContextEntries(entries))
+        .map((entry) => `${assistantEntryLabel(entry.kind, entry.intent)}：${entry.text}`)
+        .join("；");
+      const requestedCharacters = Number(action.match(/(?:大约|约|至少|到)?\s*(\d{2,4})\s*字/)?.[1] ?? 0);
+      let semanticBrief = "";
+      let deliveryMode: AssistantDeliveryMode = "other";
+      const deterministicRevision = intent === "ask"
+        && inferAssistantDeliveryMode(action, "other") === "revision";
+      if (deterministicRevision) {
+        deliveryMode = "revision";
+        const expansionRequirement = /(?:太短|不够长|长一点|再长|扩写|展开|详细一点|写长)/i.test(action)
+          ? "必须交付一份从头到尾完整的新版本，保留上一条的叙事风格，正文至少比上一条长20%；不能只复述、只追加一句或解释自己做了什么。"
+          : "";
+        semanticBrief = `交付类型：revision；直接承接并改写同团上一条已通过回答；必须遵守本句里的长度、语气、说话者和玩家参与量要求。${expansionRequirement}对可朗读创作文案允许继续自由发挥氛围与无规则结算的叙事细节；对事实说明不得新增战役事实。`;
+      } else if (intent === "ask") {
+        deliveryMode = inferAssistantDeliveryMode(action, "other");
+        const deliveryContract = deliveryMode === "dm_guidance"
+          ? "这是给DM的方法建议：默认只给主持方法，不创作新的NPC台词、异象、线索、遭遇或替代任务，除非DM明确要求这些示例。若DM要求引导步骤、主持步骤或明确说不要旁白，输出主持人可以执行的元层步骤（例如确认、询问、复述、交还选择），不要写场景事件、NPC扮演或玩家预设反应。必须直接回应当前难题，尊重玩家已经作出的选择，不能换一种说法把人强推回原路线；创意内容只能明确标成可选做法，不能冒充已经发生。DM说‘不要推进’时，任何新的世界事件或剧情钩子都不允许出现。若DM要求若干条，每一条都要功能不同且能实际采用。"
+          : deliveryMode === "spoken_line"
+            ? "这是角色可以直接说出口的成品台词：必须让听者从话本身感受到说话者已经察觉了什么，并准确实现DM要求的克制、警告、隐瞒、邀请等目的；不要用无关寒暄或新道具、新经历绕开说话目的。只给台词，不要加入旁白、动作说明、建议列表或解释；没有依据时不要宣布新的世界事实。"
+            : deliveryMode === "explanation"
+              ? "这是原因或逻辑说明：先直接回答为什么，再区分已确认依据与可选解释。DM要求你设计或提供一个理由时，必须以‘可采用的共同理由是’等提案语气开头，所有新增细节都要保持可选，不能冒充战役事实；如果只要一个可选理由，交付一个短段即可，多句时每句都继续使用‘可以/可采用/如果/若/不必/只需/暂时’等提案或短期语气，不要扩展成倒计时、强制后果、封印/失控机制或完整剧情。DM不要写死玩家背景时，共同理由只能来自眼前的公共处境、短期利益或当场选择，不能追加角色过去、梦境、家人、秘密或既往遭遇；不要把说明改写成环境描写或DM操作流程。"
+              : deliveryMode === "read_aloud"
+                ? "这是可以直接念给玩家的成品文案：要有清楚的场面变化与叙事节奏，不写DM说明，不替玩家决定动作、感受、过去或结论。DM提到某次行动却没有说明具体目标时，只能用‘刚才检查的地方/目标’等中性指代，不能擅自指定门、石板、箱子、道具或其他对象。"
+                : "严格按DM原句指定的对象、格式、数量和用途交付；如果要的是正文就直接给正文，如果要的是分析就直接给结论与依据。";
+        const creativeFreedom = deliveryMode === "read_aloud"
+          ? `可自由创作不涉及规则结算的光线、声音、气味、物件、人物小动作、时间感和象征意象，让成品自然、有画面、有叙事节奏；结尾自然用一句简短的行动问题把控制交还玩家，不要改成逐人采访。${requestedCharacters >= 80 ? `DM明确要求约${requestedCharacters}字，正文写到${Math.floor(requestedCharacters * 0.8)}至${Math.ceil(requestedCharacters * 1.2)}字，不要过早收尾。` : ""}这些只是供DM采用的文案草案，不自动成为战役事实。不得泄露未公开名单或隐藏数据。`
+          : "";
+        semanticBrief = `交付类型：${deliveryMode}；直接完成DM原句要求。逐项遵守其中的长度、详略、自然程度、说话者、受众和玩家需要发言多少等限制；这些明确限制的优先级高于惯用模板。${deliveryContract}${creativeFreedom}`;
+      }
+      const interpretationContract = semanticBrief
+        ? `回答前的独立任务分析如下：${semanticBrief}。这份分析决定本次交付目标；场景资料只能提供素材，不能覆盖或改变它。`
+        : "";
+      const visibleAskParticipants = (participants.data ?? [])
+        .filter((item) => item.entity_type === "npc" && item.visible && item.role !== "defeated")
+        .map((item) => item.entity.name);
+      const shouldOfferSceneCast = deliveryMode === "read_aloud" || deliveryMode === "spoken_line";
+      const askNames = visibleAskParticipants
+        .filter((name) => shouldOfferSceneCast || action.includes(name))
+        .map((name) => `npc:${name}`)
+        .join("、") || "DM本次没有点名需要使用的NPC；不要主动编写NPC对白";
+      const contextNames = intent === "ask" ? askNames : names;
+      const sceneMaterial = intent === "ask"
+        ? `公开地点概况：${activeLocation?.description || "未填写；只使用场景名和地点名作为创作锚点"}。`
+        : `当前Scene目标：${activeOutline?.objective ?? "未填写"}。`;
+      const context = `你是D&D 5e 2024副DM，本应用不是COC。不得使用克苏鲁、奈亚拉托提普、旧日支配者、深潜者、SAN或理智检定等其他系统内容。${requestContract}${interpretationContract}当前章节与场景：${activeOutline?.chapterTitle ?? "未编排"} / Scene ${activeOutline?.sceneOrder ?? "?"} ${activeScene?.name ?? "未选择"}。${sceneMaterial}${flowContext}地点：${activeLocation?.name ?? "未绑定"}。当前可公开点名的在场人物：${contextNames}。最近已确认事实：${recentEntries || "无"}。历史普通询问、副DM回答、建议和未确认草案都不是战役事实，已从上下文排除，严禁凭记忆复用。DM本次输入：${action}。${nextScene && nextOutline ? `下一个候选是 Scene ${nextOutline.sceneOrder}「${nextScene.name}」，进入条件提示：${activeOutline?.transition ?? "由DM判断"}。` : "当前没有下一个已编排Scene。"}只用D&D 5e世界与机制，严格优先完成DM本次输入，不要复用上一条回答。DM要求长文时必须充分展开，要求玩家少说时不得改成逐人自我介绍或连续提问。本模式只输出叙事或建议草案，不给出未经规则证据逐条支持的DC、CR、伤害骰、加值、次数或持续时间，不要擅自修改数据库。${transitionContract}`;
+      let previousReply = [...entries].reverse().find(
+        (entry) => entry.kind === "ai" && assistantDeliveryIssue("revision", entry.text) === null,
+      )?.text;
+      if (deliveryMode === "revision") {
+        const conversation = await listAssistantConversationTurns(campaignId);
+        previousReply = [...conversation].reverse().find(
+          (message) => message.role === "assistant"
+            && assistantDeliveryIssue("revision", message.content) === null,
+        )?.content ?? previousReply;
+      }
+      const revisionContext = deliveryMode === "revision" && previousReply
+        ? `${context}\n上一条待改写文本如下：\n---\n${previousReply}\n---\n请只把这段作为待编辑原稿，不要照抄后再机械追加。${requestedCharacters >= 80 ? `本次目标约${requestedCharacters}字，正文控制在${Math.floor(requestedCharacters * 0.8)}至${Math.ceil(requestedCharacters * 1.3)}字。` : "若要求扩写，新成品至少比原稿长25%。"}`
+        : context;
+      if (
+        deliveryMode === "revision"
+        && previousReply
+        && requestedCharacters === 0
+        && /(?:再短|缩短|精简|亲口说|改成|换成|没有发生|不是事实|不要再使用|别再提|纠正)/i.test(action)
+      ) {
+        const revisedText = buildSafeRevisionFallback({ requestText: action, previousText: previousReply, locationName: activeLocation?.name ?? "当前地点" });
+        await recordAssistantConversationTurn(campaignId, action, revisedText);
+        return {
+          request_id: createClientId(),
+          campaign_id: campaignId,
+          dm_hint: {
+            visibility: "dm_private" as const,
+            request_understanding: (semanticBrief || `改写上一条回答：${action}`).slice(0, 500),
+            response_plan: "直接编辑上一条已通过的同团回答，不新增战役事实。",
+            delivery_mode: "revision" as const,
+            audience_handoff: "DM 可直接使用改写后的文本。",
+            text: revisedText,
+            assumptions: [],
+            uncertainties: [],
+            citations: [],
+            proposed_changes: [],
+          },
+          tool_results: [],
+          citations: [],
+          proposals: [],
+          abstained: false,
+          errors: [],
+        } satisfies AgentResponse;
+      }
+      let response = await runAssistantTurn(campaignId, revisionContext, {
+        mode: "narrative",
+        userMessage: action,
+        useConversationHistory: false,
+        includeCampaignState: false,
+      });
+      deliveryMode = inferAssistantDeliveryMode(
+        action,
+        response.dm_hint?.delivery_mode ?? deliveryMode,
+      );
+      let reply = withoutSceneTransitionMarker(response.dm_hint?.text ?? "");
+      const revisesReadAloud = deliveryMode === "revision"
+        && Boolean(previousReply)
+        && assistantDeliveryIssue("read_aloud", previousReply ?? "") === null;
+      if (deliveryMode === "read_aloud" || revisesReadAloud) {
+        reply = repairReadAloudCandidate(action, reply);
+      }
+      let deliveryIssue = assistantDeliveryIssue(deliveryMode, reply, action, previousReply ?? "");
+      let repeatedReply = isUnwantedRepeatedReply(action, reply, previousReply);
+      const needsCreativeRetry = deliveryMode === "revision"
+        ? Boolean(deliveryIssue)
+        : ["read_aloud", "explanation", "dm_guidance", "spoken_line"].includes(deliveryMode)
+          && (repeatedReply || Boolean(deliveryIssue));
+      if (needsCreativeRetry) {
+        response = await runAssistantTurn(
+          campaignId,
+          `${revisionContext}\n重写要求：首次候选没有通过文案检查。${deliveryIssue ? `问题是：${deliveryIssue}。` : "它沿用了最近回答的主要叙事骨架。"}请重新创作一份从头到尾完整的成品，不要只复制原文后追加一段；继续允许自然的氛围细节，并严格遵守DM要求的字数和玩家发言量。`,
+          {
+            mode: "narrative",
+            userMessage: action,
+            useConversationHistory: false,
+            includeCampaignState: false,
+          },
+        );
+        reply = withoutSceneTransitionMarker(response.dm_hint?.text ?? "");
+        if (deliveryMode === "read_aloud" || revisesReadAloud) {
+          reply = repairReadAloudCandidate(action, reply);
+        }
+        deliveryIssue = assistantDeliveryIssue(deliveryMode, reply, action, previousReply ?? "");
+        repeatedReply = isUnwantedRepeatedReply(action, reply, previousReply);
+      }
+      if (repeatedReply || deliveryIssue) {
+        if (!response.dm_hint || !["read_aloud", "explanation", "dm_guidance", "spoken_line", "revision"].includes(deliveryMode)) {
+          throw new Error(deliveryIssue ?? "副 DM 连续返回了旧内容，已拦截重复回复");
+        }
+        reply = deliveryMode === "explanation"
+            ? buildSafeExplanationFallback({
+                requestText: action,
+                sceneName: activeScene?.name ?? "当前 Scene",
+                locationName: activeLocation?.name ?? "当前地点",
+              })
+            : deliveryMode === "dm_guidance"
+              ? buildSafeGuidanceFallback({
+                  requestText: action,
+                  sceneName: activeScene?.name ?? "当前 Scene",
+                  locationName: activeLocation?.name ?? "当前地点",
+                })
+              : deliveryMode === "spoken_line"
+                ? buildSafeSpokenLineFallback(action)
+              : deliveryMode === "revision"
+                ? buildSafeRevisionFallback({
+                    requestText: action,
+                    previousText: previousReply ?? "",
+                    locationName: activeLocation?.name ?? "当前地点",
+                  })
+            : buildSafeReadAloudFallback({
+                requestText: action,
+                sceneName: activeScene?.name ?? "当前 Scene",
+                locationName: activeLocation?.name ?? "当前地点",
+                sceneDescription: activeScene?.description,
+                locationDescription: activeLocation?.description,
+                presentNames: (participants.data ?? [])
+                  .filter((item) => item.entity_type === "npc" && item.visible && item.role !== "defeated")
+                  .map((item) => item.entity.name),
+              });
+        response = {
+          ...response,
+          dm_hint: {
+            ...response.dm_hint,
+            text: reply,
+            assumptions: [],
+            uncertainties: ["模型候选未通过事实与交付检查，已使用当前 Scene 的事实受限版本。"],
+          },
+        };
+      }
+      if (response.dm_hint) {
+        response = {
+          ...response,
+          dm_hint: {
+            ...response.dm_hint,
+            text: reply,
+          },
+        };
+      }
+      await recordAssistantConversationTurn(campaignId, action, reply);
+      return response;
     },
-    onSuccess: async (response, action) => {
+    onSuccess: async (response, { action, activityId, intent }) => {
       const rawText = response.dm_hint?.text || (response.abstained ? "AI 暂时无法给出可靠建议，请由 DM 自由推进。" : "已读取当前战役状态，但没有生成新的提示。");
       const text = withoutSceneTransitionMarker(rawText);
-      const dmRecordedTransition = /(?:决定|接受|完成|解决|离开|出发|前往|抵达|进入|打开|深入|转场)/.test(action);
-      const suggestsTransition = Boolean(nextScene) && (
+      const dmRecordedTransition = intent === "advance" && /(?:决定|接受|完成|解决|离开|出发|前往|抵达|进入|打开|深入|转场)/.test(action);
+      const suggestsTransition = intent === "advance" && Boolean(nextScene) && (
         rawText.includes("[[建议进入下一场景]]")
         || /(?:可以|建议|适合|准备).{0,8}(?:进入|切换|转入).{0,8}(?:下一|下个).{0,4}(?:场景|Scene)/i.test(rawText)
         || dmRecordedTransition
       );
-      setSuggestedSceneId(suggestsTransition ? nextScene?.id ?? null : null);
+      if (intent === "advance") {
+        setSuggestedSceneId(suggestsTransition ? nextScene?.id ?? null : null);
+      }
       setLastResponse(response);
-      addEntry("ai", text);
-      await log("AI 推进建议", text, { dm_action: action, entry_kind: "ai" });
-      const arrivalKind = detectArrivalKind(`${action}\n${text}`);
-      if (arrivalKind && sceneId) {
-        arrivalLookup.mutate({ kind: arrivalKind, prompt: action, assistantText: text });
+      await revealAssistantText(activityId, text);
+      addEntry("ai", text, intent);
+      finishAssistantActivity(activityId);
+      await log(intent === "ask" ? "副DM回答" : intent === "execute" ? "副DM执行建议" : "AI 推进建议", text, {
+        dm_action: action, entry_kind: "ai", assistant_intent: intent,
+      });
+      if (intent === "advance") {
+        await publishPlayerGuidance({
+          sceneName: activeScene?.name ?? "当前 Scene",
+          sceneId,
+          locationId: activeScene?.location_id,
+          phase: activePhase,
+          reason: "dm_advanced",
+        });
+        const arrivalKind = detectArrivalKind(`${action}\n${text}`);
+        if (arrivalKind && sceneId) {
+          arrivalLookup.mutate({ kind: arrivalKind, prompt: action, assistantText: text });
+        }
       }
     },
-    onError: () => showToast("副 DM 暂时没有响应，请检查本地模型", "error"),
+    onError: (error, { activityId }) => {
+      finishAssistantActivity(activityId);
+      showToast(error.message.includes("重复回复") ? error.message : "副 DM 暂时没有响应，请检查本地模型", "error");
+    },
   });
-  const advance = (action: string) => {
-    if (!action.trim() || !sceneId || assistant.isPending) return;
-    addEntry("dm", action.trim());
-    void log("DM 推进", action.trim(), { entry_kind: "dm" });
-    assistant.mutate(action.trim());
+  const askAssistant = (action: string) => {
+    if (!action.trim() || !sceneId || assistant.isPending || liveAssistant) return;
+    addEntry("dm", action.trim(), "ask");
+    void log("DM 询问", action.trim(), { entry_kind: "dm", assistant_intent: "ask" });
+    assistant.mutate({
+      action: action.trim(),
+      intent: "ask",
+      activityId: startAssistantActivity("副 DM 正在理解问题并生成回答", "ask"),
+    });
     setInput("");
+  };
+  const recordProgressAndAsk = (action: string) => {
+    if (!action.trim() || !sceneId || assistant.isPending || liveAssistant) return;
+    addEntry("dm", action.trim(), "advance");
+    void log("DM 推进", action.trim(), { entry_kind: "dm", assistant_intent: "advance" });
+    assistant.mutate({
+      action: action.trim(),
+      intent: "advance",
+      activityId: startAssistantActivity("副 DM 正在承接已发生事实并生成推进建议", "advance"),
+    });
+    setInput("");
+  };
+  const retryAssistant = () => {
+    const failed = assistant.variables;
+    if (!failed || assistant.isPending || liveAssistant) return;
+    assistant.reset();
+    assistant.mutate({
+      ...failed,
+      activityId: startAssistantActivity(failed.intent === "ask" ? "副 DM 正在重新回答" : "副 DM 正在重新生成推进建议", failed.intent),
+    });
   };
   const executeInput = () => {
     const action = input.trim();
-    if (!action || !sceneId || arrivalLookup.isPending || grantLookup.isPending) return;
-    addEntry("dm", `【执行】${action}`);
-    void log("DM 执行指令", action, { entry_kind: "dm", action: "execute_request" });
+    if (!action || !sceneId || arrivalLookup.isPending || grantLookup.isPending || liveAssistant) return;
+    addEntry("dm", action, "execute");
+    void log("DM 执行指令", action, { entry_kind: "dm", action: "execute_request", assistant_intent: "execute" });
     const grantIntent = detectCharacterGrantIntent(action, characters.data ?? []);
     if (grantIntent) {
       grantLookup.mutate(grantIntent);
@@ -763,7 +1139,11 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
       setInput("");
       return;
     }
-    assistant.mutate(`DM要求立即落实以下场景变化，并给出可执行后果草案：${action}`);
+    assistant.mutate({
+      action: `DM要求立即落实以下场景变化，并给出可执行后果草案：${action}`,
+      intent: "execute",
+      activityId: startAssistantActivity("副 DM 正在分析这次场景变化", "execute"),
+    });
     setInput("");
   };
   const grantConfirm = useMutation({
@@ -1030,7 +1410,7 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
       if (startedCombat) {
         sessionStorage.setItem(`dnd-dm-active-combat:${campaignId}`, startedCombat.combat.id);
         setPlayerCombatId(startedCombat.combat.id);
-        await setPlayerRoomLiveState(campaignId, sceneId, startedCombat.combat.id);
+        await publishPlayerRoomLiveState(sceneId, startedCombat.combat.id);
         void client.invalidateQueries({ queryKey: ["combats", campaignId] });
         navigate("/combat");
       } else {
@@ -1061,7 +1441,7 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
       void log("进入战斗", `“${activeScene?.name ?? "当前场景"}”进入战斗，已加载当前人物与场景网格。`);
       sessionStorage.setItem(`dnd-dm-active-combat:${campaignId}`, result.combat.id);
       setPlayerCombatId(result.combat.id);
-      await setPlayerRoomLiveState(campaignId, sceneId, result.combat.id);
+      await publishPlayerRoomLiveState(sceneId, result.combat.id);
       void client.invalidateQueries({ queryKey: ["combats", campaignId] });
       navigate("/combat");
     },
@@ -1094,6 +1474,7 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
     onSuccess: async (created) => {
       await client.invalidateQueries({ queryKey: ["scenes", campaignId] });
       setSceneId(created.id);
+      setLiveStateIntent((current) => (current ?? 0) + 1);
       setPlayerCombatId(null);
       setSceneName("");
       setSceneObjective("");
@@ -1108,7 +1489,7 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
     onError: () => showToast("Scene 创建失败，请检查名称和地点", "error"),
   });
   const sceneTransitionNarration = useMutation({
-    mutationFn: async ({ target, source }: { target: Scene; source: "manual" | "ai" }) => {
+    mutationFn: async ({ target, source, activityId }: { target: Scene; source: "manual" | "ai"; activityId: string }) => {
       const targetIndex = orderedScenes.findIndex((scene) => scene.id === target.id);
       const outline = readSceneStoryOutline(target, targetIndex + 1);
       await createEvent(campaignId, {
@@ -1141,12 +1522,14 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
         `${outline.opening}\n\nDM提示：只介绍当前Scene大纲与已在场人物，然后询问每名玩家要做什么。`,
         target.id === sceneId ? presentKeys : new Set<string>(),
       );
-      return { response: sanitized.contaminated ? null : response, target, text: sanitized.text };
+      return { activityId, response: sanitized.contaminated ? null : response, target, text: sanitized.text };
     },
-    onSuccess: async ({ response, target, text }) => {
+    onSuccess: async ({ activityId, response, target, text }) => {
+      await revealAssistantText(activityId, text);
       const aiEntry: ProgressEntry = {
         id: createClientId("progress"),
         kind: "ai",
+        intent: "advance",
         text,
         createdAt: new Date().toISOString(),
       };
@@ -1154,6 +1537,7 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
       saveEntries(campaignId, target.id, nextEntries);
       if (target.id === sceneId) setEntries(nextEntries);
       setLastResponse(response);
+      finishAssistantActivity(activityId);
       await createEvent(campaignId, {
         title: "副DM Scene 开场",
         description: text,
@@ -1164,14 +1548,26 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
           scene_id: target.id,
           game_table: true,
           entry_kind: "ai",
+          assistant_intent: "advance",
           action: "scene_opening",
         },
       });
+      await publishPlayerGuidance({
+        sceneName: target.name,
+        sceneId: target.id,
+        locationId: target.location_id,
+        phase: "opening",
+        reason: "scene_entered",
+      });
       void client.invalidateQueries({ queryKey: ["events", campaignId] });
     },
-    onError: () => showToast("Scene 已切换，但副DM开场描述暂时生成失败", "error"),
+    onError: (_error, { activityId }) => {
+      finishAssistantActivity(activityId);
+      showToast("Scene 已切换，但副DM开场描述暂时生成失败", "error");
+    },
   });
   const enterScene = (target: Scene, source: "manual" | "ai") => {
+    if (liveAssistant) return;
     const targetIndex = orderedScenes.findIndex((scene) => scene.id === target.id);
     const outline = readSceneStoryOutline(target, targetIndex + 1);
     const systemEntry: ProgressEntry = {
@@ -1183,63 +1579,72 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
     const nextEntries = [...loadEntries(campaignId, target.id), systemEntry];
     saveEntries(campaignId, target.id, nextEntries);
     setSceneId(target.id);
+    setLiveStateIntent((current) => (current ?? 0) + 1);
     setPlayerCombatId(null);
     setEntries(nextEntries);
     setLastResponse(null);
-    setActivePhase("opening");
+    setCurrentFlowStepId(buildSceneFlow(target, targetIndex + 1)[0]?.id ?? null);
     setSuggestedSceneId(null);
-    sceneTransitionNarration.mutate({ target, source });
+    sceneTransitionNarration.mutate({
+      target,
+      source,
+      activityId: startAssistantActivity("副 DM 正在生成新 Scene 的进入描述"),
+    });
   };
-  const phaseNarration = useMutation({
-    mutationFn: async ({ target, phase }: { target: Scene; phase: ScenePhase }) => {
+  const flowStepNarration = useMutation({
+    mutationFn: async ({ target, step, activityId }: { target: Scene; step: SceneFlowStep; activityId: string }) => {
       const targetIndex = orderedScenes.findIndex((scene) => scene.id === target.id);
       const outline = readSceneStoryOutline(target, targetIndex + 1);
-      const phaseContent = scenePhaseText(outline, phase);
       const allowedNames = target.id === sceneId
         ? (participants.data ?? []).map((item) => item.entity.name).join("、") || "无"
         : "无";
-      const prompt = `你是D&D 5e 2024副DM。DM明确进入${outline.chapterTitle} Scene ${outline.sceneOrder}「${target.name}」的“${SCENE_PHASE_LABELS[phase]}”阶段。大纲内容：${phaseContent}。Scene目标：${outline.objective}。当前Scene已确认在场人物仅有：${allowedNames}。只可使用大纲明确写到的人物或这份在场名单；严禁从其他Scene、旧记录或模型记忆带入人物。请生成：1）一段可直接朗读给玩家的内容；2）两到四个只针对当前局势、会随阶段变化的可选推进；3）一条DM私密注意事项。不要引入其他规则系统，不要修改数据库。`;
+      const prompt = `你是D&D 5e 2024副DM。DM明确把流程推进到${outline.chapterTitle} Scene ${outline.sceneOrder}「${target.name}」的第${step.order}步「${step.title}」。当前步骤：${step.instruction}。DM注意：${step.dmNote}。Scene目标：${outline.objective}。当前Scene已确认在场人物仅有：${allowedNames}。流程只是导航，若已记录的玩家行动采用其他合理方案，要承接玩家选择，不得强行照剧本；不得覆盖已经发生的事实。只可使用大纲明确写到的人物或这份在场名单；严禁从其他Scene、旧记录或模型记忆带入人物。请生成：1）一段简短可朗读内容；2）两到四个随当前局势变化的可选推进；3）一条DM私密注意事项。不要引入其他规则系统，不要修改数据库。`;
       try {
         const response = await runAssistantTurn(campaignId, prompt, { mode: "narrative" });
-        const rawText = withoutSceneTransitionMarker(response.dm_hint?.text || `进入该阶段：${phaseContent}`);
+        const rawText = withoutSceneTransitionMarker(response.dm_hint?.text || `推进到：${step.instruction}`);
         const sanitized = sanitizeSceneNarration(
           rawText,
           outline,
-          `进入“${SCENE_PHASE_LABELS[phase]}”阶段：${phaseContent}\n\n可选推进：让玩家调查现场、与已在场人物交涉、利用环境，或对明确威胁采取行动。`,
+          `当前流程：${step.instruction}\n\n让玩家根据现场事实自由选择调查、交涉、利用环境或采取行动。`,
           target.id === sceneId ? presentKeys : new Set<string>(),
         );
         return {
-          target, phase, response: sanitized.contaminated ? null : response,
+          activityId, target, step, response: sanitized.contaminated ? null : response,
           text: sanitized.text,
         };
       } catch {
         return {
-          target, phase, response: null,
-          text: `进入当前阶段：${phaseContent}\n\n请描述局势变化，并让玩家选择调查、交涉、利用环境或采取战斗行动。`,
+          activityId, target, step, response: null,
+          text: `当前流程：${step.instruction}\n\n请承接玩家已经采取的行动，并询问他们下一步具体怎么做。`,
         };
       }
     },
-    onSuccess: async ({ target, phase, response, text }) => {
+    onSuccess: async ({ activityId, target, step, response, text }) => {
+      await revealAssistantText(activityId, text);
       const nextEntries = [
         ...loadEntries(campaignId, target.id),
         {
           id: createClientId("progress"),
           kind: "system" as const,
-          text: `DM进入“${SCENE_PHASE_LABELS[phase]}”阶段。`,
+          intent: "advance" as const,
+          text: `DM把流程推进到第 ${step.order} 步“${step.title}”。`,
           createdAt: new Date().toISOString(),
         },
         {
           id: createClientId("progress"),
           kind: "ai" as const,
+          intent: "advance" as const,
           text,
           createdAt: new Date().toISOString(),
         },
       ];
       saveEntries(campaignId, target.id, nextEntries);
       setEntries(nextEntries);
+      setCurrentFlowStepId(step.id);
       if (response) setLastResponse(response);
+      finishAssistantActivity(activityId);
       await createEvent(campaignId, {
-        title: `进入Scene阶段 · ${SCENE_PHASE_LABELS[phase]}`,
+        title: `流程 ${step.order} · ${step.title}`,
         description: text,
         event_type: "session_progress",
         visibility: "dm",
@@ -1248,20 +1653,53 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
           scene_id: target.id,
           game_table: true,
           entry_kind: "ai",
-          action: "scene_phase",
-          phase,
+          action: "scene_flow_step",
+          flow_step_id: step.id,
+          flow_step_order: step.order,
+          flow_step_kind: step.kind,
+          flow_step_status: "current",
         },
+      });
+      await publishPlayerGuidance({
+        sceneName: target.name,
+        sceneId: target.id,
+        locationId: target.location_id,
+        phase: step.sourcePhase,
+        reason: "flow_advanced",
       });
       void client.invalidateQueries({ queryKey: ["events", campaignId] });
     },
   });
-  const enterScenePhase = (target: Scene, phase: ScenePhase) => {
-    if (target.id !== sceneId) enterScene(target, "manual");
-    setActivePhase(phase);
-    phaseNarration.mutate({ target, phase });
+  const enterFlowStep = (target: Scene, step: SceneFlowStep) => {
+    if (target.id !== sceneId || liveAssistant) return;
+    flowStepNarration.mutate({
+      target,
+      step,
+      activityId: startAssistantActivity(`副 DM 正在生成流程第 ${step.order} 步“${step.title}”`),
+    });
   };
+  const skipFlowStep = useMutation({
+    mutationFn: async ({ target, step }: { target: Scene; step: SceneFlowStep; nextStep: SceneFlowStep | null }) => createEvent(campaignId, {
+      title: `跳过流程 ${step.order} · ${step.title}`,
+      description: `DM明确跳过“${step.title}”；不会调用AI，也不会改变当前流程位置。`,
+      event_type: "session_progress",
+      visibility: "dm",
+      location_id: target.location_id,
+      metadata_json: {
+        scene_id: target.id, game_table: true, entry_kind: "system",
+        action: "scene_flow_step", flow_step_id: step.id,
+        flow_step_order: step.order, flow_step_kind: step.kind,
+        flow_step_status: "skipped",
+      },
+    }),
+    onSuccess: async (_, { step }) => {
+      addEntry("system", `DM跳过流程第 ${step.order} 步“${step.title}”。`);
+      await client.invalidateQueries({ queryKey: ["events", campaignId] });
+    },
+    onError: () => showToast("流程状态保存失败，请重试", "error"),
+  });
   const prep = useMutation({
-    mutationFn: () => runAssistantTurn(campaignId, `你是D&D 5e 2024备团副DM。用户可以只写一句简短概要；信息不足时请做保守、可编辑的D&D默认补全，不要拒绝生成，也不要把“博德之门、酒馆、地精、新手村”等D&D/奇幻内容误判成其他规则系统。本应用不是COC，严禁使用克苏鲁、奈亚拉托提普、旧日支配者、深潜者、SAN、理智检定等其他系统专有内容。根据冒险描述生成可审核草稿。必须严格使用以下Markdown结构，不要省略标题。\n## 地点\n- 地点名称｜地点描述、主要区域与可互动物\n场景必须按章节和跑团顺序生成，每行严格使用：章节｜Scene序号数字｜场景名｜目标｜起（开场）｜承（发展）｜转（变化）｜合（收束）｜如何进入下一Scene。例如：\n## 场景\n- 第一章｜1｜深水城集结｜让玩家相识并接受委托｜酒馆内分别介绍角色｜委托人说明失踪事件｜线人突然失踪｜玩家决定追查｜前往旧教堂\n其他原子每条使用“名称｜描述”：\n## NPC\n- 名称｜描述\n## 怪物\n- 名称｜描述\n## 任务\n- 名称｜描述\n## 线索\n- 名称｜描述\n## 物品\n- 名称｜描述\n最后可以补充“## DM建议”，但不要直接修改数据库。每个Scene导入时会自动生成并绑定持久化5尺战斗网格。\n冒险描述：${prepBrief}`, { mode: "narrative" }),
+    mutationFn: () => runAssistantTurn(campaignId, `你是D&D 5e 2024备团副DM。用户可以只写一句简短概要；信息不足时请做保守、可编辑的D&D默认补全，不要拒绝生成，也不要把“博德之门、酒馆、地精、新手村”等D&D/奇幻内容误判成其他规则系统。本应用不是COC，严禁使用克苏鲁、奈亚拉托提普、旧日支配者、深潜者、SAN、理智检定等其他系统专有内容。根据冒险描述生成可审核草稿。必须严格使用以下Markdown结构，不要省略标题。\n## 地点\n- 地点名称｜地点描述、主要区域与可互动物\n场景必须按章节和跑团顺序生成。前五个剧情字段只是兼容摘要，不能把实际跑团锁死成起承转合。每行严格使用：章节｜Scene序号数字｜场景名｜目标｜开场摘要｜发展摘要｜可选变化｜收束摘要｜如何进入下一Scene｜完整推进流程。完整推进流程必须包含6到12个按实际情境安排的短步骤，用 >> 分隔；步骤应覆盖玩家自由行动、人物或环境反应、必要检定、失败后果、状态结算和转场，但不要机械套固定戏剧结构。例如：\n## 场景\n- 第一章｜1｜深水城集结｜让玩家相识并接受委托｜酒馆内分别介绍角色｜委托人说明失踪事件｜线人可能失踪｜玩家决定是否追查｜前往旧教堂｜描述酒馆可见事实 >> 请每名玩家介绍角色与此刻行动 >> 老板说明失踪事件 >> 玩家自由询问、调查或拒绝 >> 根据具体方法裁定是否需要检定 >> 描述成功、失败或代价造成的世界反应 >> 记录已获线索与NPC态度 >> 询问离场前行动 >> DM确认后前往旧教堂\n其他原子每条使用“名称｜描述”：\n## NPC\n- 名称｜描述\n## 怪物\n- 名称｜描述\n## 任务\n- 名称｜描述\n## 线索\n- 名称｜描述\n## 物品\n- 名称｜描述\n最后可以补充“## DM建议”，但不要直接修改数据库。每个Scene导入时会自动生成并绑定持久化5尺战斗网格。\n冒险描述：${prepBrief}`, { mode: "narrative" }),
     onSuccess: (response) => {
       const modelText = response.dm_hint?.text ?? "";
       const unsafeOrEmpty = !modelText.trim()
@@ -1354,7 +1792,10 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
       return { result, detail };
     },
     onSuccess: async ({ detail }) => {
-      if (detail.scene_id) setSceneId(detail.scene_id);
+      if (detail.scene_id) {
+        setSceneId(detail.scene_id);
+        setLiveStateIntent((current) => (current ?? 0) + 1);
+      }
       setEntries(detail.entries as unknown as ProgressEntry[]);
       setCheckpointPreview(null);
       await client.invalidateQueries();
@@ -1489,6 +1930,7 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
         characters={characters.data ?? []}
         currentCombatId={playerCombatId}
         currentSceneId={sceneId || null}
+        liveStateIntent={liveStateIntent}
         onSceneChange={(targetSceneId) => {
           const target = scenes.data?.find((item) => item.id === targetSceneId);
           if (target) enterScene(target, "manual");
@@ -1514,7 +1956,7 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
           <select
             aria-label="快速切换当前 Scene"
             className={selectCls}
-            disabled={sceneTransitionNarration.isPending}
+            disabled={sceneTransitionNarration.isPending || Boolean(liveAssistant)}
             onChange={(event) => {
               const target = orderedScenes.find((scene) => scene.id === event.target.value);
               if (target && target.id !== sceneId) enterScene(target, "manual");
@@ -1572,16 +2014,16 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
             <label className="text-2xs text-stone-500 md:col-span-2">Scene 目标
               <input aria-label="Scene目标" className={`${inputCls} mt-1`} onChange={(event) => setSceneObjective(event.target.value)} placeholder="让玩家彼此认识并接受委托" value={sceneObjective} />
             </label>
-            <label className="text-2xs text-stone-500 md:col-span-2">起 · 开场
+            <label className="text-2xs text-stone-500 md:col-span-2">开场摘要
               <input aria-label="Scene起" className={`${inputCls} mt-1`} onChange={(event) => setSceneOpening(event.target.value)} placeholder="DM怎样介绍环境与人物" value={sceneOpening} />
             </label>
-            <label className="text-2xs text-stone-500 md:col-span-2">承 · 发展
+            <label className="text-2xs text-stone-500 md:col-span-2">主要发展摘要
               <input aria-label="Scene承" className={`${inputCls} mt-1`} onChange={(event) => setSceneDevelopment(event.target.value)} placeholder="玩家可以调查、对话或做什么" value={sceneDevelopment} />
             </label>
-            <label className="text-2xs text-stone-500 md:col-span-2">转 · 变化
+            <label className="text-2xs text-stone-500 md:col-span-2">可选变化
               <input aria-label="Scene转" className={`${inputCls} mt-1`} onChange={(event) => setSceneTwist(event.target.value)} placeholder="可选转折、威胁或新信息" value={sceneTwist} />
             </label>
-            <label className="text-2xs text-stone-500 md:col-span-2">合 · 收束
+            <label className="text-2xs text-stone-500 md:col-span-2">完成 / 绕过条件
               <input aria-label="Scene合" className={`${inputCls} mt-1`} onChange={(event) => setSceneClimax(event.target.value)} placeholder="怎样算完成或绕过这个 Scene" value={sceneClimax} />
             </label>
             <label className="text-2xs text-stone-500 md:col-span-2">进入下一 Scene
@@ -1634,13 +2076,13 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
                   <textarea className={`${textareaCls} mt-2 min-h-20`} onChange={(event) => setDraftAtoms((current) => current.map((item) => item.id === atom.id ? { ...item, description: event.target.value } : item))} value={atom.description} />
                   {atom.sceneOutline ? (
                     <details className="mt-2 rounded border border-ink-700 bg-ink-950/50 p-2">
-                      <summary className="cursor-pointer text-2xs text-stone-400">编辑起承转合</summary>
+                      <summary className="cursor-pointer text-2xs text-stone-400">编辑 Scene 摘要与完整流程</summary>
                       <div className="mt-2 grid gap-2">
                         {([
-                          ["opening", "起 · 开场"],
-                          ["development", "承 · 发展"],
-                          ["twist", "转 · 变化"],
-                          ["climax", "合 · 收束"],
+                          ["opening", "开场摘要"],
+                          ["development", "主要发展"],
+                          ["twist", "可选变化"],
+                          ["climax", "完成 / 绕过条件"],
                           ["transition", "进入下一 Scene"],
                         ] as const).map(([key, label]) => (
                           <label className="text-2xs text-stone-500" key={key}>{label}
@@ -1651,6 +2093,13 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
                             />
                           </label>
                         ))}
+                        <label className="text-2xs text-stone-500">完整推进流程 · 每行一步
+                          <textarea
+                            className={`${textareaCls} mt-1 min-h-40`}
+                            onChange={(event) => setDraftAtoms((current) => current.map((item) => item.id === atom.id && item.sceneOutline ? { ...item, sceneOutline: { ...item.sceneOutline, flow: event.target.value.split("\n").map((step) => step.trim()).filter(Boolean) } } : item))}
+                            value={(atom.sceneOutline.flow ?? []).join("\n")}
+                          />
+                        </label>
                       </div>
                     </details>
                   ) : null}
@@ -1733,9 +2182,12 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
           <ul className="m-0 mt-2 space-y-2 p-0">{participants.data?.map((participant) => <li className="list-none" key={participant.id}><div aria-label={`查看${participant.entity.name}详情`} className="w-full cursor-pointer rounded border border-ink-700 bg-ink-950/50 p-2 text-left transition hover:border-violet-600 hover:bg-ink-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400" onClick={() => setDetailParticipant(participant)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); setDetailParticipant(participant); } }} role="button" tabIndex={0}><div className="flex items-center gap-2"><Badge tone={participant.entity_type === "character" ? "ok" : participant.entity_type === "npc" ? "ai" : "danger"}>{participant.entity_type === "character" ? "玩家" : participant.entity_type === "npc" ? "NPC" : "怪物"}</Badge>{participant.role === "defeated" ? <Badge>已击败</Badge> : null}<strong className="min-w-0 flex-1 truncate text-xs text-parchment-100">{participant.entity.name}</strong><Button loading={participantRemove.isPending} onClick={(event) => { event.stopPropagation(); participantRemove.mutate(participant); }} size="sm">离开</Button></div><div className="mt-2"><HpBar hp={participant.entity.hp} maxHp={participant.entity.max_hp} /></div><p className="mb-0 mt-1 text-2xs text-stone-600">AC {participant.entity.armor_class} · 速度 {participant.entity.speed} · 点击查看详情</p></div></li>)}</ul>
         </Panel>
         </div>
-          <Panel eyebrow="DM 帷幕" title="当前提示">
-            <p className="prose-block m-0 text-sm text-stone-300">{lastResponse?.dm_hint?.text ? safeDndText(withoutSceneTransitionMarker(lastResponse.dm_hint.text)) : "副 DM 的推进建议、NPC 反应和风险会显示在这里。"}</p>
-            {lastResponse?.dm_hint?.uncertainties.length ? <ul className="mb-0 mt-3 pl-4 text-xs text-amber-300">{lastResponse.dm_hint.uncertainties.map((item) => <li key={item}>{item}</li>)}</ul> : null}
+          <Panel eyebrow="已确认事实 · 不重复 AI 对话" title="Scene 状态摘要">
+            <dl className="m-0 grid gap-2 text-xs">
+              <div className="rounded border border-ink-800 bg-ink-950/40 p-2"><dt className="text-stone-600">当前目标</dt><dd className="m-0 mt-1 text-parchment-100">{activeOutline?.objective ?? "未填写"}</dd></div>
+              <div className="rounded border border-ink-800 bg-ink-950/40 p-2"><dt className="text-stone-600">当前位置</dt><dd className="m-0 mt-1 text-parchment-100">{activeLocation?.name ?? "未绑定地点"}</dd></div>
+              <div className="rounded border border-ink-800 bg-ink-950/40 p-2"><dt className="text-stone-600">当前流程</dt><dd className="m-0 mt-1 text-parchment-100">{currentFlowStep ? `${currentFlowStep.order}/${activeFlow.length} · ${currentFlowStep.title}` : "自由推进"}</dd></div>
+            </dl>
             <div className="mt-3 rounded border border-ink-700 bg-ink-950/50 p-2">
               <p className="m-0 text-2xs text-stone-500">当前场景遭遇修正：<strong className={activeAdjustment < 0 ? "text-emerald-300" : activeAdjustment > 0 ? "text-red-300" : "text-stone-300"}>{activeAdjustment > 0 ? `提高 ${activeAdjustment} 级` : activeAdjustment < 0 ? `降低 ${Math.abs(activeAdjustment)} 级` : "无"}</strong></p>
               <div className="mt-2 grid gap-1.5"><Button disabled={!sceneId} onClick={() => draftFromAssistant(-1)} size="sm">起草玩家准备后果</Button><Button disabled={!sceneId} onClick={() => draftFromAssistant(1)} size="sm">起草敌方优势后果</Button></div>
@@ -1751,14 +2203,35 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
         <Panel eyebrow="自由推进 / 快速推进" title="游戏推进对话">
           {!sceneId ? <EmptyState title="先选择场景" hint="选择当前场景后，副 DM 才能读取正确的情景状态。" /> : null}
           <div className="max-h-[52vh] space-y-3 overflow-y-auto pr-1">
-            {entries.map((entry) => <div className={`rounded-lg border px-3 py-2 ${entry.kind === "dm" ? "ml-10 border-ember-800/50 bg-ember-950/20" : entry.kind === "ai" ? "mr-10 border-violet-800/50 bg-violet-950/20" : "border-ink-700 bg-ink-950/50"}`} key={entry.id}><span className="block text-2xs text-stone-600">{entry.kind === "dm" ? "DM 推进" : entry.kind === "ai" ? "副 DM 私密提示" : "情景变化"}</span><p className="prose-block mb-0 mt-1 text-sm text-stone-300">{entry.kind === "ai" ? safeDndText(entry.text) : entry.text}</p></div>)}
-            {entries.length === 0 && sceneId ? <EmptyState title="等待游戏开始" hint="输入开场、玩家行动或现场变化，副 DM 会读取当前人物与场景后给出建议。" /> : null}
+            {entries.map((entry) => <div className={`rounded-lg border px-3 py-2 ${entry.kind === "dm" ? "ml-10 border-ember-800/50 bg-ember-950/20" : entry.kind === "ai" ? "mr-10 border-violet-800/50 bg-violet-950/20" : "border-ink-700 bg-ink-950/50"}`} key={entry.id}><span className="block text-2xs text-stone-600">{assistantEntryLabel(entry.kind, entry.intent)}</span><p className="prose-block mb-0 mt-1 text-sm text-stone-300">{entry.kind === "ai" ? safeDndText(entry.text) : entry.text}</p></div>)}
+            {liveAssistant ? (
+              <div
+                aria-busy={liveAssistant.status === "thinking"}
+                aria-live="polite"
+                className="mr-10 rounded-lg border border-violet-700/60 bg-violet-950/25 px-3 py-2 shadow-[0_0_24px_rgba(124,58,237,0.08)]"
+                role="status"
+              >
+                <span className="block text-2xs text-violet-300">{assistantEntryLabel("ai", liveAssistant.intent)} · 实时生成</span>
+                {liveAssistant.status === "thinking" ? (
+                  <div className="mt-2 flex items-center gap-2 text-sm text-stone-300">
+                    <span className="flex gap-1" aria-hidden="true">
+                      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-violet-300" />
+                      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-violet-300 [animation-delay:150ms]" />
+                      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-violet-300 [animation-delay:300ms]" />
+                    </span>
+                    <span>{liveAssistant.label}……</span>
+                  </div>
+                ) : (
+                  <p className="prose-block mb-0 mt-1 whitespace-pre-wrap text-sm text-stone-300">
+                    {safeDndText(liveAssistant.text)}
+                    <span className="ml-0.5 inline-block h-4 w-0.5 animate-pulse bg-violet-300 align-text-bottom" aria-hidden="true" />
+                  </p>
+                )}
+              </div>
+            ) : null}
+            {entries.length === 0 && sceneId && !liveAssistant ? <EmptyState title="等待游戏开始" hint="输入开场、玩家行动或现场变化，副 DM 会读取当前人物与场景后给出建议。" /> : null}
+            <div ref={conversationEndRef} />
           </div>
-          {sceneTransitionNarration.isPending ? (
-            <div className="mt-3 rounded border border-violet-800/50 bg-violet-950/15 p-3 text-xs text-violet-200">
-              已切换 Scene；副 DM 正在生成新 Scene 的进入描述……
-            </div>
-          ) : null}
           {suggestedSceneId && nextScene?.id === suggestedSceneId ? (
             <div className="mt-3 rounded-lg border-2 border-violet-600/60 bg-violet-950/20 p-3">
               <div className="flex flex-wrap items-center gap-2">
@@ -1780,20 +2253,22 @@ function GameTableContent({ campaignId }: { campaignId: string }): ReactElement 
               </p>
             </div>
           ) : null}
-          <div className="mt-4 grid gap-2">{quickActions.map((action) => <Button disabled={!sceneId || assistant.isPending} key={action} onClick={() => advance(action)} size="sm">{action}</Button>)}</div>
-          <form className="mt-3" onSubmit={(event: FormEvent) => { event.preventDefault(); advance(input); }}><textarea className={textareaCls} onChange={(event) => setInput(event.target.value)} placeholder="记录玩家行动、NPC 对话、现场变化，或输入“给艾琳一把长剑”……" value={input} /><div className="mt-2 flex flex-wrap justify-end gap-2"><Button disabled={!sceneId || !input.trim()} loading={arrivalLookup.isPending || grantLookup.isPending} onClick={executeInput} type="button" variant="primary">执行并生成实体 / 奖励 / 后果</Button><Button disabled={!sceneId || !input.trim()} loading={assistant.isPending} type="submit" variant="ai">记录并询问副 DM</Button></div><p className="mb-0 mt-2 text-2xs text-stone-600">“询问”只记录并给建议；“执行”会把登场者、玩家装备/道具或合法能力变化转成规则校验后的草案，DM确认前不会写入。</p></form>
-          {assistant.isError ? <div className="mt-3"><ErrorState error={assistant.error} onRetry={() => advance(input)} /></div> : null}
+          <div className="mt-4 grid gap-2">{quickActions.map((action) => <Button disabled={!sceneId || assistant.isPending || Boolean(liveAssistant)} key={action} onClick={() => askAssistant(action)} size="sm">{action}</Button>)}</div>
+          <form className="mt-3" onSubmit={(event: FormEvent) => { event.preventDefault(); askAssistant(input); }}><textarea aria-label="副 DM 输入" className={textareaCls} onChange={(event) => setInput(event.target.value)} placeholder="问建议、要一段可朗读文案，或记录已经发生的玩家行动……" value={input} /><div className="mt-2 flex flex-wrap justify-end gap-2"><Button disabled={!sceneId || !input.trim() || Boolean(liveAssistant)} loading={arrivalLookup.isPending || grantLookup.isPending} onClick={executeInput} type="button" variant="primary">执行并生成草案</Button><Button disabled={!sceneId || !input.trim() || Boolean(liveAssistant)} loading={assistant.isPending && assistant.variables?.intent === "advance"} onClick={() => recordProgressAndAsk(input)} type="button">记录为推进并询问</Button><Button disabled={!sceneId || !input.trim() || Boolean(liveAssistant)} loading={assistant.isPending && assistant.variables?.intent === "ask"} type="submit" variant="ai">只询问副 DM</Button></div><p className="mb-0 mt-2 text-2xs text-stone-600">“只询问”不会推进流程、同步玩家提示或触发转场；只有“记录为推进”代表事情已经发生。“执行”只生成待确认的实体、奖励或后果草案。</p></form>
+          {assistant.isError ? <div className="mt-3"><ErrorState error={assistant.error} onRetry={retryAssistant} /></div> : null}
         </Panel>
         </div>
         <div className="space-y-4 xl:min-h-0 xl:overflow-y-auto xl:pl-1">
-          <Panel eyebrow="冒险大纲 · 点击展开" title="章节与 Scene">
+          <Panel eyebrow="完整流程 · 查看不会推进" title="DM 流程导航">
             <SceneOutlinePanel
               currentSceneId={sceneId}
-              entering={sceneTransitionNarration.isPending || phaseNarration.isPending}
-              activePhase={activePhase}
+              currentStepId={currentFlowStepId}
+              entering={sceneTransitionNarration.isPending || flowStepNarration.isPending || Boolean(liveAssistant)}
+              onAdvanceStep={enterFlowStep}
               onEnter={enterScene}
-              onEnterPhase={enterScenePhase}
+              onSkipStep={(target, step, nextStep) => skipFlowStep.mutate({ target, step, nextStep })}
               scenes={orderedScenes}
+              skippedStepIds={skippedFlowStepIds}
               suggestedSceneId={suggestedSceneId}
             />
           </Panel>

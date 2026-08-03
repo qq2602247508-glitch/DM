@@ -30,8 +30,8 @@ def test_player_movement_enforces_remaining_distance_obstacles_and_sync(
     grid = campaign_client.post(
         f"/api/v1/campaigns/{campaign_id}/scenes/{scene['id']}/grid",
         json={
-            "width": 8,
-            "height": 8,
+            "width": 20,
+            "height": 12,
             "cell_size_ft": 5,
             "mode": "combat",
             "public_description": "训练场",
@@ -80,7 +80,7 @@ def test_player_movement_enforces_remaining_distance_obstacles_and_sync(
             "initiative": 10,
             "hp": 10,
             "max_hp": 10,
-            "snapshot_json": {"grid_position": {"row": 1, "col": 8}},
+                "snapshot_json": {"grid_position": {"row": 1, "col": 20}},
         },
     )
     assert enemy.status_code == 201
@@ -108,6 +108,7 @@ def test_player_movement_enforces_remaining_distance_obstacles_and_sync(
 
         initial = player_a.get("/api/v1/player-room/me").json()["combat"]
         assert initial["is_my_turn"] is True
+        assert all(item["name"] != "训练假人" for item in initial["combatants"])
         current = next(
             item for item in initial["combatants"] if item["id"] == initial["own_combatant_id"]
         )
@@ -146,12 +147,32 @@ def test_player_movement_enforces_remaining_distance_obstacles_and_sync(
             "position"
         ] == {"row": 4, "col": 2}
 
+        dodged = player_a.post(
+            "/api/v1/player-room/me/combat/maneuver",
+            json={
+                "action_type": "dodge",
+                "actor_version": moved["version"],
+                "idempotency_key": "player-dodge-001",
+            },
+        )
+        assert dodged.status_code == 200, dodged.text
+        assert dodged.json()["action"]["action_type"] == "dodge"
+        after_dodge = player_a.get("/api/v1/player-room/me").json()["combat"]
+        dodging = next(
+            item
+            for item in after_dodge["combatants"]
+            if item["id"] == after_dodge["own_combatant_id"]
+        )
+        assert dodging["action_available"] is False
+        assert "闪避" in dodging["conditions"]
+        assert any("闪避" in effect["name"] for effect in dodging["active_effects"])
+
         too_far = player_a.post(
             "/api/v1/player-room/me/combat/move",
             json={
                 "row": 1,
                 "col": 2,
-                "combatant_version": moved["version"],
+                "combatant_version": dodging["version"],
             },
         )
         assert too_far.status_code == 400

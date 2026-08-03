@@ -16,6 +16,7 @@ const NAV_GROUPS: Array<{ label: string; items: Array<{ path: RoutePath; label: 
   { label: "现场", items: [
     { path: "/", label: "DM 仪表板", icon: "home" },
     { path: "/game-table", label: "游戏推进台", icon: "sparkle" },
+    { path: "/simulation", label: "模拟战斗", icon: "sword" },
     { path: "/combat", label: "战斗辅助", icon: "sword" },
   ] },
   { label: "战役档案", items: [

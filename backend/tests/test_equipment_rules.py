@@ -18,6 +18,13 @@ def test_profiles_use_real_5e_equipment_semantics() -> None:
     assert equipment_profile("隐形斗篷")["allowed_slots"] == ["worn"]
 
 
+def test_consumable_profile_has_no_equipment_slot() -> None:
+    profile = equipment_profile("治疗药水", "consumable")
+    assert profile["kind"] == "consumable"
+    assert profile["allowed_slots"] == []
+    assert profile["default_slot"] is None
+
+
 def test_armor_training_is_tiered() -> None:
     assert armor_is_proficient(["轻甲"], "light") is True
     assert armor_is_proficient(["轻甲"], "medium") is False

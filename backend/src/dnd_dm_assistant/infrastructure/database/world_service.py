@@ -10,6 +10,10 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
 from dnd_dm_assistant.domain.campaign_state import StateNotFoundError, VersionConflict
+from dnd_dm_assistant.domain.feature_runtime import (
+    compile_feature_runtime_registry,
+    feature_runtime_action_projections,
+)
 from dnd_dm_assistant.domain.world import GeneratedLocationNode
 from dnd_dm_assistant.infrastructure.database.campaign_service import serialize
 from dnd_dm_assistant.infrastructure.database.encounter_service import (
@@ -205,7 +209,10 @@ class WorldService:
             location_id = data.get("location_id")
             if location_id is not None:
                 self._location(session, campaign_id, str(location_id))
-            scene = Scene(campaign_id=campaign_id, **data)
+            # SQLite's server-side CURRENT_TIMESTAMP has only second precision;
+            # explicit microsecond timestamps keep creation order deterministic
+            # when several outline Scenes are created in one second.
+            scene = Scene(campaign_id=campaign_id, created_at=datetime.now(UTC), **data)
             session.add(scene)
             session.flush()
             self._audit(session, campaign_id, "create", "scene", scene.id, None, scene, request_id)
@@ -454,6 +461,114 @@ class WorldService:
                         "is_active": True,
                     },
                 }
+                # Advancement grants are persisted on the character sheet, but
+                # the combat engine reads the immutable combatant snapshot.  A
+                # feature that was merely displayed on the sheet therefore
+                # had no runtime effect after entering combat.  Copy only
+                # numeric/advantage profiles that were explicitly compiled by
+                # the advancement compiler; prose-only grants remain DM-only.
+                if isinstance(entity, Character):
+                    feature_grants = [
+                        item for item in (entity.features or [])
+                        if isinstance(item, dict)
+                    ]
+                    scaling_values = {
+                        str(item.get("scaling_key")): item.get("value")
+                        for item in feature_grants
+                        if item.get("kind") == "class_scaling"
+                        and isinstance(item.get("scaling_key"), str)
+                    }
+                    rule_modifiers: dict[str, dict[str, Any]] = {}
+                    for grant in feature_grants:
+                        runtime = grant.get("runtime")
+                        if not isinstance(runtime, dict):
+                            continue
+                        raw_modifiers = runtime.get("modifiers")
+                        if not isinstance(raw_modifiers, list):
+                            continue
+                        for raw_modifier in raw_modifiers:
+                            if not isinstance(raw_modifier, dict):
+                                continue
+                            stat = str(raw_modifier.get("stat") or "").strip()
+                            operation = str(raw_modifier.get("operation") or "").strip()
+                            scope = str(raw_modifier.get("scope") or "all").strip()
+                            if not stat or not operation:
+                                continue
+                            modifier = dict(raw_modifier)
+                            scaling_key = modifier.get("scaling_key")
+                            if "value" not in modifier and isinstance(scaling_key, str):
+                                candidate = scaling_values.get(scaling_key)
+                                if isinstance(candidate, int):
+                                    modifier["value"] = candidate
+                                elif (
+                                    isinstance(candidate, str)
+                                    and candidate.strip().lstrip("+-").isdigit()
+                                ):
+                                    modifier["value"] = int(candidate.strip())
+                            if "value" not in modifier and operation in {"add", "grant"}:
+                                # A numeric modifier without a resolved value
+                                # is not safe to apply automatically.
+                                continue
+                            skill = str(modifier.get("skill") or "")
+                            rule_modifiers[f"{stat}:{scope}:{skill}"] = modifier
+                    if rule_modifiers:
+                        snapshot["rule_modifiers"] = rule_modifiers
+                    feature_registry = compile_feature_runtime_registry(
+                        feature_grants,
+                        resources=(entity.resources or {})
+                        if isinstance(entity.resources, dict)
+                        else {},
+                        scalings={
+                            key: {"value": value}
+                            for key, value in scaling_values.items()
+                        },
+                        class_levels=(entity.class_levels or {})
+                        if isinstance(entity.class_levels, dict)
+                        else {},
+                        total_level=entity.level,
+                    )
+                    snapshot["feature_runtime"] = feature_registry
+                    snapshot["resources"] = dict(entity.resources or {})
+                    runtime_actions = feature_runtime_action_projections(feature_registry)
+                    if runtime_actions:
+                        snapshot["actions"] = [
+                            *list(snapshot.get("actions") or []),
+                            *runtime_actions,
+                        ]
+                    snapshot["attack_action_count"] = int(
+                        feature_registry.get("combat_start", {}).get(
+                            "attack_action_count", 1
+                        )
+                    )
+                    conditional_defenses = [
+                        {
+                            "id": item.get("id"),
+                            "condition": item.get("applies_when"),
+                            "operation": item.get("operation"),
+                            "damage_types": item.get("damage_types", []),
+                        }
+                        for item in feature_registry.get("combat_start", {}).get("defenses", [])
+                        if isinstance(item, dict)
+                        and item.get("applies_when")
+                        and item.get("operation")
+                    ]
+                    if conditional_defenses:
+                        snapshot["conditional_damage_defenses"] = conditional_defenses
+                    advanced_defenses = dict(
+                        snapshot.get("advanced_defenses")
+                        if isinstance(snapshot.get("advanced_defenses"), dict)
+                        else {}
+                    )
+                    for defense in feature_registry.get("combat_start", {}).get(
+                        "defenses", []
+                    ):
+                        if not isinstance(defense, dict):
+                            continue
+                        if defense.get("kind") == "evasion":
+                            advanced_defenses["evasion"] = True
+                    if advanced_defenses:
+                        snapshot["advanced_defenses"] = advanced_defenses
+                    snapshot["feature_grants"] = feature_grants
                 if position is not None:
                     snapshot["grid_position"] = position
                 combatant = Combatant(

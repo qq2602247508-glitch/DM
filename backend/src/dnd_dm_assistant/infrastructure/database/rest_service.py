@@ -10,6 +10,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
 from dnd_dm_assistant.domain.campaign_state import StateNotFoundError, VersionConflict
+from dnd_dm_assistant.domain.feature_runtime import resource_recovery_events
 from dnd_dm_assistant.domain.rests import (
     HitDieSpend,
     ResourceRecovery,
@@ -152,6 +153,12 @@ class RestService:
             current = max(0, int(raw.get("current", 0) or 0))
             maximum = max(current, int(raw.get("max", current) or current))
             recovery = str(raw.get("recovery", "manual") or "manual")
+            raw_events = raw.get("recovery_events")
+            recovery_events = (
+                [dict(item) for item in raw_events if isinstance(item, dict)]
+                if isinstance(raw_events, list)
+                else resource_recovery_events(str(key), raw)
+            )
             timing = recovery if recovery in {
                 "short_rest",
                 "long_rest",
@@ -173,7 +180,10 @@ class RestService:
                     current=current,
                     maximum=maximum,
                     recovery_timing=timing,
-                    metadata_json={"legacy_resource": True},
+                    metadata_json={
+                        "legacy_resource": True,
+                        "recovery_events": recovery_events,
+                    },
                 )
                 session.add(pool)
                 pools.append(pool)
@@ -183,6 +193,9 @@ class RestService:
                 pool.current = current
                 pool.maximum = maximum
                 pool.recovery_timing = timing
+                metadata = dict(pool.metadata_json or {})
+                metadata["recovery_events"] = recovery_events
+                pool.metadata_json = metadata
 
         hit_die_size = _hit_die_size(character.class_name)
         hit_die_key = f"hit_dice_d{hit_die_size}"
@@ -318,6 +331,11 @@ class RestService:
                     current=pool.current,
                     maximum=pool.maximum,
                     recovery=_resource_recovery(pool.recovery_timing),
+                    recovery_events=tuple(
+                        dict(item)
+                        for item in (pool.metadata_json or {}).get("recovery_events", [])
+                        if isinstance(item, dict)
+                    ),
                 )
                 for pool in pools
                 if pool.category != "hit_die" and pool.key not in excluded
@@ -566,158 +584,170 @@ class RestService:
             return self._preview_in_session(session, campaign_id, request_data)
 
     def confirm(self, campaign_id: str, request_data: dict[str, Any]) -> dict[str, Any]:
-        idempotency_key = str(request_data.pop("idempotency_key"))
-        preview_token = str(request_data.pop("preview_token"))
         with Session(self.engine) as session, session.begin():
-            existing = session.scalar(
-                select(RestRecord).where(
-                    RestRecord.campaign_id == campaign_id,
-                    RestRecord.idempotency_key == idempotency_key,
-                )
-            )
-            if existing is not None:
-                return dict(existing.result_json or {})
+            return self.confirm_in_session(session, campaign_id, request_data)
 
-            preview = self._preview_in_session(session, campaign_id, request_data)
-            if preview["preview_token"] != preview_token:
-                raise VersionConflict("rest preview", "state", 1, 2)
-            campaign = self._campaign(session, campaign_id)
-            now = datetime.now(UTC)
-            before_snapshot = {
-                "campaign_time": _json_value(campaign.current_time),
-                "participants": [
-                    {
-                        "character_id": item["character_id"],
-                        "before": item["before"],
-                    }
-                    for item in preview["participants"]
-                ],
-            }
-            operation = OperationTransaction(
-                campaign_id=campaign_id,
-                operation_type="rest",
-                idempotency_key=f"rest:{idempotency_key}",
-                status="applied",
-                before_snapshot=before_snapshot,
-                after_snapshot={},
-                reason=str(request_data.get("notes") or "DM 确认休息结算"),
-                source="game_table",
-                confirmed_at=now,
+    def confirm_in_session(
+        self,
+        session: Session,
+        campaign_id: str,
+        request_data: dict[str, Any],
+        *,
+        require_preview_token: bool = True,
+    ) -> dict[str, Any]:
+        request_data = dict(request_data)
+        idempotency_key = str(request_data.pop("idempotency_key"))
+        raw_preview_token = request_data.pop("preview_token", None)
+        preview_token = str(raw_preview_token) if raw_preview_token is not None else None
+        if require_preview_token and preview_token is None:
+            raise ValueError("preview_token required")
+        existing = session.scalar(
+            select(RestRecord).where(
+                RestRecord.campaign_id == campaign_id,
+                RestRecord.idempotency_key == idempotency_key,
             )
-            session.add(operation)
-            session.flush()
-            rest = RestRecord(
-                campaign_id=campaign_id,
-                operation_transaction_id=operation.id,
-                rest_type=str(request_data["rest_type"]),
-                status="interrupted" if request_data.get("interrupted") else "completed",
-                duration_minutes=int(request_data["duration_minutes"]),
-                interrupted=bool(request_data.get("interrupted", False)),
-                started_at=campaign.current_time,
-                completed_at=(
-                    campaign.current_time + timedelta(minutes=int(request_data["duration_minutes"]))
-                    if campaign.current_time
-                    else now
-                ),
-                world_time_before=campaign.current_time,
-                world_time_after=(
-                    campaign.current_time + timedelta(minutes=int(request_data["duration_minutes"]))
-                    if campaign.current_time
-                    else None
-                ),
-                request_json=_json_value(request_data),
-                result_json={},
-                idempotency_key=idempotency_key,
-                notes=request_data.get("notes"),
-            )
-            session.add(rest)
-            session.flush()
+        )
+        if existing is not None:
+            return dict(existing.result_json or {})
 
-            for participant in preview["participants"]:
-                character = self._character(session, campaign_id, participant["character_id"])
-                character.hp = int(participant["after"]["hp"])
-                resources_json = dict(character.resources or {})
-                for change in participant["changes"]:
-                    change_type = str(change["type"])
-                    pool_id = change.get("resource_pool_id")
-                    pool = session.get(ResourcePool, pool_id) if pool_id else None
-                    if pool is not None:
-                        pool.current = int(change["after"])
-                        if pool.category != "hit_die":
-                            existing_resource = resources_json.get(pool.key, {})
-                            raw = (
-                                dict(existing_resource)
-                                if isinstance(existing_resource, dict)
-                                else {}
-                            )
-                            raw["label"] = pool.label
-                            raw["current"] = pool.current
-                            raw["max"] = pool.maximum
-                            raw["recovery"] = pool.recovery_timing
-                            resources_json[pool.key] = raw
-                    session.add(
-                        RestRecoveryEntry(
-                            rest_record_id=rest.id,
-                            character_id=character.id,
-                            resource_pool_id=pool.id if pool else None,
-                            recovery_type=change_type,
-                            before_value=int(change["before"]),
-                            after_value=int(change["after"]),
-                            amount=int(change.get("amount", 0)),
-                            die_roll=None,
-                            modifier=None,
-                            explanation=str(change.get("explanation") or ""),
-                            rule_reference=RULE_REFERENCE,
-                            selected=True,
-                            applied=True,
-                            status="applied",
+        preview = self._preview_in_session(session, campaign_id, request_data)
+        if preview_token is not None and preview["preview_token"] != preview_token:
+            raise VersionConflict("rest preview", "state", 1, 2)
+        campaign = self._campaign(session, campaign_id)
+        now = datetime.now(UTC)
+        before_snapshot = {
+            "campaign_time": _json_value(campaign.current_time),
+            "participants": [
+                {"character_id": item["character_id"], "before": item["before"]}
+                for item in preview["participants"]
+            ],
+        }
+        operation = OperationTransaction(
+            campaign_id=campaign_id,
+            operation_type="rest",
+            idempotency_key=f"rest:{idempotency_key}",
+            status="applied",
+            before_snapshot=before_snapshot,
+            after_snapshot={},
+            reason=str(request_data.get("notes") or "DM 确认休息结算"),
+            source="game_table",
+            confirmed_at=now,
+        )
+        session.add(operation)
+        session.flush()
+        rest = RestRecord(
+            campaign_id=campaign_id,
+            operation_transaction_id=operation.id,
+            rest_type=str(request_data["rest_type"]),
+            status="interrupted" if request_data.get("interrupted") else "completed",
+            duration_minutes=int(request_data["duration_minutes"]),
+            interrupted=bool(request_data.get("interrupted", False)),
+            started_at=campaign.current_time,
+            completed_at=(
+                campaign.current_time + timedelta(minutes=int(request_data["duration_minutes"]))
+                if campaign.current_time
+                else now
+            ),
+            world_time_before=campaign.current_time,
+            world_time_after=(
+                campaign.current_time + timedelta(minutes=int(request_data["duration_minutes"]))
+                if campaign.current_time
+                else None
+            ),
+            request_json=_json_value(request_data),
+            result_json={},
+            idempotency_key=idempotency_key,
+            notes=request_data.get("notes"),
+        )
+        session.add(rest)
+        session.flush()
+
+        for participant in preview["participants"]:
+            character = self._character(session, campaign_id, participant["character_id"])
+            character.hp = int(participant["after"]["hp"])
+            resources_json = dict(character.resources or {})
+            for change in participant["changes"]:
+                change_type = str(change["type"])
+                pool_id = change.get("resource_pool_id")
+                pool = session.get(ResourcePool, pool_id) if pool_id else None
+                if pool is not None:
+                    pool.current = int(change["after"])
+                    if pool.category != "hit_die":
+                        existing_resource = resources_json.get(pool.key, {})
+                        raw = (
+                            dict(existing_resource)
+                            if isinstance(existing_resource, dict)
+                            else {}
                         )
+                        raw["label"] = pool.label
+                        raw["current"] = pool.current
+                        raw["max"] = pool.maximum
+                        raw["recovery"] = pool.recovery_timing
+                        metadata = dict(pool.metadata_json or {})
+                        events = metadata.get("recovery_events")
+                        if isinstance(events, list):
+                            raw["recovery_events"] = [
+                                dict(item) for item in events if isinstance(item, dict)
+                            ]
+                        resources_json[pool.key] = raw
+                session.add(
+                    RestRecoveryEntry(
+                        rest_record_id=rest.id,
+                        character_id=character.id,
+                        resource_pool_id=pool.id if pool else None,
+                        recovery_type=change_type,
+                        before_value=int(change["before"]),
+                        after_value=int(change["after"]),
+                        amount=int(change.get("amount", 0)),
+                        die_roll=None,
+                        modifier=None,
+                        explanation=str(change.get("explanation") or ""),
+                        rule_reference=RULE_REFERENCE,
+                        selected=True,
+                        applied=True,
+                        status="applied",
                     )
-                character.resources = resources_json
-                character.max_hp_reduction = int(
-                    participant["after"]["max_hp_reduction"]
                 )
-                character.ability_score_reductions = dict(
-                    participant["after"]["ability_score_reductions"]
-                )
-                character.death_saves = dict(participant["after"]["death_saves"])
-                before_fatigue = int(participant["before"]["fatigue"])
-                after_fatigue = int(participant["after"]["fatigue"])
-                if after_fatigue != before_fatigue:
-                    condition = self._fatigue_condition(session, character.id)
-                    if condition is not None:
-                        if after_fatigue == 0:
-                            session.delete(condition)
-                        else:
-                            details = dict(condition.details or {})
-                            details["level"] = after_fatigue
-                            condition.details = details
-                            condition.version += 1
-                character.version += 1
-                character.updated_at = now
+            character.resources = resources_json
+            character.max_hp_reduction = int(participant["after"]["max_hp_reduction"])
+            character.ability_score_reductions = dict(
+                participant["after"]["ability_score_reductions"]
+            )
+            character.death_saves = dict(participant["after"]["death_saves"])
+            before_fatigue = int(participant["before"]["fatigue"])
+            after_fatigue = int(participant["after"]["fatigue"])
+            if after_fatigue != before_fatigue:
+                condition = self._fatigue_condition(session, character.id)
+                if condition is not None:
+                    if after_fatigue == 0:
+                        session.delete(condition)
+                    else:
+                        details = dict(condition.details or {})
+                        details["level"] = after_fatigue
+                        condition.details = details
+                        condition.version += 1
+            character.version += 1
+            character.updated_at = now
 
-            if campaign.current_time is not None:
-                campaign.current_time = campaign.current_time + timedelta(
-                    minutes=int(request_data["duration_minutes"])
-                )
-                campaign.version += 1
-                campaign.updated_at = now
-            result = {
-                **preview,
-                "rest_record_id": rest.id,
-                "operation_transaction_id": operation.id,
-                "idempotent_replay": False,
-            }
-            operation.after_snapshot = {
-                "campaign_time": _json_value(campaign.current_time),
-                "participants": [
-                    {
-                        "character_id": item["character_id"],
-                        "after": item["after"],
-                    }
-                    for item in preview["participants"]
-                ],
-            }
-            rest.result_json = _json_value(result)
-            session.flush()
-            return result
+        if campaign.current_time is not None:
+            campaign.current_time = campaign.current_time + timedelta(
+                minutes=int(request_data["duration_minutes"])
+            )
+            campaign.version += 1
+            campaign.updated_at = now
+        result = {
+            **preview,
+            "rest_record_id": rest.id,
+            "operation_transaction_id": operation.id,
+            "idempotent_replay": False,
+        }
+        operation.after_snapshot = {
+            "campaign_time": _json_value(campaign.current_time),
+            "participants": [
+                {"character_id": item["character_id"], "after": item["after"]}
+                for item in preview["participants"]
+            ],
+        }
+        rest.result_json = _json_value(result)
+        session.flush()
+        return result

@@ -39,6 +39,7 @@ from dnd_dm_assistant.api.schemas import (
 )
 from dnd_dm_assistant.application.campaigns import CampaignService, NotFoundError
 from dnd_dm_assistant.domain.campaign_state import VersionConflict
+from dnd_dm_assistant.domain.character_creation import validate_character_state
 
 router = APIRouter(prefix="/campaigns", tags=["campaign-state"])
 
@@ -217,10 +218,21 @@ def _crud_routes(
         request: Request,
         service: Annotated[CampaignService, Depends(get_campaign_service)],
     ) -> dict[str, Any]:
+        values = body.model_dump(exclude_unset=True)  # type: ignore[attr-defined]
+        if singular == "character":
+            override_reason = str(values.pop("dm_override_reason", "") or "")
+            campaign = _safe_call(lambda: service.get("campaign", campaign_id))
+            values = _safe_call(
+                lambda: validate_character_state(
+                    values,
+                    enabled_rule_extensions=campaign.get("enabled_rule_extensions", []),
+                    dm_override_reason=override_reason,
+                )
+            )
         return _safe_call(
             lambda: service.create(
                 singular,
-                body.model_dump(exclude_unset=True),  # type: ignore[attr-defined]
+                values,
                 campaign_id=campaign_id,
                 request_id=_request_id(request),
             )
@@ -263,6 +275,22 @@ def _crud_routes(
         )
         if not values:
             raise HTTPException(status_code=400, detail="Patch must include at least one field")
+        if singular == "character":
+            override_reason = str(values.pop("dm_override_reason", "") or "")
+            current = _safe_call(
+                lambda: service.get(singular, entity_id, campaign_id=campaign_id)
+            )
+            campaign = _safe_call(lambda: service.get("campaign", campaign_id))
+            normalized = _safe_call(
+                lambda: validate_character_state(
+                    {**current, **values},
+                    enabled_rule_extensions=campaign.get("enabled_rule_extensions", []),
+                    dm_override_reason=override_reason,
+                )
+            )
+            values = {
+                key: normalized.get(key, submitted) for key, submitted in values.items()
+            }
         return _safe_call(
             lambda: service.update(
                 singular,

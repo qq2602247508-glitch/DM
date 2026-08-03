@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import type { Scene } from "../api/types";
 import {
-  buildSceneNotes, chapterOrderFromTitle, readSceneStoryOutline, sortScenesByOutline,
+  buildSceneFlow, buildSceneNotes, chapterOrderFromTitle, readSceneStoryOutline, sortScenesByOutline,
   type SceneStoryOutline,
 } from "./sceneOutline";
 import { generateTacticalSceneGrid } from "./sceneGridGenerator";
@@ -42,5 +42,33 @@ describe("scene outlines", () => {
       scene("Scene 3", makeNotes("第二章", 1), "2026-01-03"),
     ]);
     expect(ordered.map((item) => item.name)).toEqual(["Scene 1", "Scene 2", "Scene 3"]);
+  });
+
+  it("compiles a detailed flow without exposing a fixed five-act UI", () => {
+    const target = scene("酒馆", buildSceneNotes(
+      generateTacticalSceneGrid("酒馆", "大厅"),
+      {
+        chapterTitle: "第一章", chapterOrder: 1, sceneOrder: 1,
+        objective: "接受磨坊委托", opening: "雨夜进入酒馆",
+        development: "老板展示失踪账本", twist: "钟声突然响起",
+        climax: "决定是否出发", transition: "前往旧磨坊",
+      },
+    ), "2026-01-01");
+    const flow = buildSceneFlow(target, 1);
+    expect(flow.length).toBeGreaterThanOrEqual(5);
+    expect(flow.map((step) => step.kind)).toContain("choice");
+    expect(flow.length).toBeLessThan(9);
+    expect(flow.at(-1)?.instruction).toBe("前往旧磨坊");
+
+    const simple = scene("安静谈话", buildSceneNotes(
+      generateTacticalSceneGrid("书房", "书房"),
+      {
+        chapterTitle: "第一章", chapterOrder: 1, sceneOrder: 2,
+        objective: "确认是否同行", opening: "朋友前来道别",
+        development: "由 DM 自由推进。", twist: "可选转折。",
+        climax: "记录玩家决定", transition: "结束谈话",
+      },
+    ), "2026-01-02");
+    expect(buildSceneFlow(simple, 2).length).not.toBe(flow.length);
   });
 });

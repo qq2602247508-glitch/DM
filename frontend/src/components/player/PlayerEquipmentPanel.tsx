@@ -54,8 +54,33 @@ function itemDetails(item: PlayerEquipmentAsset): string {
         : "",
     item.profile.two_handed ? "双手" : item.profile.hand_usage === 1 ? "单手" : "",
     item.armor_class !== null ? `护甲基值 ${item.armor_class}` : "",
+    item.charges !== null ? `充能 ${item.charges}/${item.max_charges ?? item.charges}` : "",
   ].filter(Boolean);
   return parts.join(" · ");
+}
+
+function operationLabel(operation: PlayerEquipmentOperation["operation"]): string {
+  return operation === "equip"
+    ? "装备"
+    : operation === "unequip"
+      ? "卸下"
+      : operation === "consume"
+        ? "消耗"
+        : operation === "use_charge"
+          ? "使用充能"
+          : operation === "attune"
+            ? "同调"
+            : "解除同调";
+}
+
+function equipActionLabel(item: PlayerEquipmentAsset): string {
+  return item.profile.kind === "focus" ? "预览持用" : "预览装备";
+}
+
+function getUseOperation(item: PlayerEquipmentAsset): "consume" | "use_charge" | null {
+  if (item.profile.kind === "consumable" && item.quantity > 0) return "consume";
+  if (item.charges !== null && item.charges > 0) return "use_charge";
+  return null;
 }
 
 export function PlayerEquipmentPanel({
@@ -82,6 +107,7 @@ export function PlayerEquipmentPanel({
       const input: PlayerEquipmentOperation = {
         equipment_id: item.id,
         operation,
+        amount: 1,
         slot: operation === "equip"
           ? slotChoices[item.id] ?? item.profile.default_slot
           : item.slot,
@@ -108,7 +134,9 @@ export function PlayerEquipmentPanel({
   });
   const assets = character.equipment_assets ?? [];
   const equipped = assets.filter((item) => item.equipped);
-  const backpack = assets.filter((item) => !item.equipped && item.quantity > 0);
+  const consumables = assets.filter((item) => !item.equipped && item.profile.kind === "consumable" && item.quantity > 0);
+  const backpack = assets.filter((item) => !item.equipped && item.profile.kind !== "consumable" && item.profile.kind !== "worn" && item.quantity > 0);
+  const ordinaryItems = assets.filter((item) => !item.equipped && item.profile.kind === "worn" && item.quantity > 0);
   const legacy = character.equipment
     .map((item) => text(item && typeof item === "object" && "name" in item ? item.name : item))
     .filter((name) => name && !assets.some((asset) => asset.name === name));
@@ -138,13 +166,17 @@ export function PlayerEquipmentPanel({
               <strong className="text-sm text-parchment-100">{SLOT_LABELS[slot]}</strong>
               <p className="mt-1 text-2xs leading-4 text-stone-600">{SLOT_HELP[slot]}</p>
               {blockedByTwoHanded ? <p className="rounded bg-amber-950/40 px-2 py-1 text-2xs text-amber-200">被双手武器占用</p> : null}
-              {items.map((item) => (
-                <div className="mt-2 rounded border border-emerald-800/60 bg-emerald-950/20 p-2" key={item.id}>
-                  <strong className="block text-xs text-emerald-100">{item.name}</strong>
-                  <span className="block text-2xs text-stone-500">{itemDetails(item) || "已装备"}</span>
-                  <Button className="mt-2" loading={preview.isPending} onClick={() => preview.mutate({ item, operation: "unequip" })} size="sm">卸下</Button>
-                </div>
-              ))}
+              {items.map((item) => {
+                const operation = getUseOperation(item);
+                return (
+                  <div className="mt-2 rounded border border-emerald-800/60 bg-emerald-950/20 p-2" key={item.id}>
+                    <strong className="block text-xs text-emerald-100">{item.name}</strong>
+                    <span className="block text-2xs text-stone-500">{itemDetails(item) || "已装备"}</span>
+                    <Button className="mt-2" loading={preview.isPending} onClick={() => preview.mutate({ item, operation: "unequip" })} size="sm">卸下</Button>
+                    {operation ? <Button className="ml-2 mt-2" loading={preview.isPending} onClick={() => preview.mutate({ item, operation })} size="sm">{operation === "consume" ? "消耗 1 件" : "使用 1 次充能"}</Button> : null}
+                  </div>
+                );
+              })}
               {legacyItems.map((name) => (
                 <div className="mt-2 rounded border border-ink-700 p-2" key={`legacy-${slot}-${name}`}>
                   <strong className="block text-xs">{name}</strong>
@@ -180,11 +212,11 @@ export function PlayerEquipmentPanel({
                         ...current,
                         [item.id]: event.target.value as PlayerEquipmentSlot,
                       }))}
-                      value={selectedSlot}
+                      value={selectedSlot ?? ""}
                     >
                       {item.profile.allowed_slots.map((slot) => <option key={slot} value={slot}>{SLOT_LABELS[slot]}</option>)}
                     </select>
-                    <Button loading={preview.isPending} onClick={() => preview.mutate({ item, operation: "equip" })} size="sm">预览装备</Button>
+                    <Button loading={preview.isPending} onClick={() => preview.mutate({ item, operation: "equip" })} size="sm">{equipActionLabel(item)}</Button>
                     {item.attunement_required ? (
                       <Button
                         disabled={!item.attuned && character.active_attunements >= 3}
@@ -203,12 +235,42 @@ export function PlayerEquipmentPanel({
         ) : <p className="mb-0 text-xs text-stone-600">背包里暂无可操作的原子化装备。普通道具仍保留在下方背包清单。</p>}
       </div>
 
+      <div className="mt-4 rounded-lg border border-amber-800/60 bg-amber-950/10 p-3">
+        <h3 className="m-0 text-sm">消耗品与使用次数</h3>
+        {consumables.length ? (
+          <div className="mt-3 grid gap-2 md:grid-cols-2">
+            {consumables.map((item) => {
+              const operation = getUseOperation(item);
+              return (
+                <div className="flex items-center gap-2 rounded border border-amber-900/60 bg-ink-950/40 p-3" key={`usable-${item.id}`}>
+                  <div className="mr-auto">
+                    <strong className="block text-sm">{item.name}</strong>
+                    <span className="text-2xs text-stone-500">{itemDetails(item) || "可使用物品"}</span>
+                  </div>
+                  {operation ? <Button loading={preview.isPending} onClick={() => preview.mutate({ item, operation })} size="sm">{operation === "consume" ? "预览使用" : "预览用充能"}</Button> : null}
+                </div>
+              );
+            })}
+          </div>
+        ) : <p className="mb-0 mt-2 text-xs text-stone-600">暂无可使用的消耗品或充能。</p>}
+        <p className="mb-0 mt-2 text-2xs text-stone-600">使用或消耗会先进行规则预览，确认后才扣除数量或充能；实际恢复生命、施加效果等由物品规则与 DM 结算决定。</p>
+      </div>
+
+      {ordinaryItems.length ? (
+        <div className="mt-4 rounded-lg border border-ink-700 p-3">
+          <h3 className="m-0 text-sm">普通物品</h3>
+          <div className="mt-3 grid gap-2 md:grid-cols-2">
+            {ordinaryItems.map((item) => <div className="rounded border border-ink-700 bg-ink-950/40 p-3" key={`ordinary-${item.id}`}><strong className="block text-sm">{item.name}</strong><span className="text-2xs text-stone-500">{itemDetails(item) || item.category} · 不能放入装备槽</span></div>)}
+          </div>
+        </div>
+      ) : null}
+
       {preview.isError ? <div className="mt-3"><ErrorState error={preview.error} /></div> : null}
       {confirm.isError ? <div className="mt-3"><ErrorState error={confirm.error} /></div> : null}
       {pending ? (
         <div className="mt-4 rounded-lg border border-amber-700/70 bg-amber-950/20 p-4">
           <strong className="text-sm text-amber-100">
-            待确认：{pending.itemName} · {pending.input.operation === "equip" ? "装备" : pending.input.operation === "unequip" ? "卸下" : pending.input.operation === "attune" ? "同调" : "解除同调"}
+            待确认：{pending.itemName} · {operationLabel(pending.input.operation)}
           </strong>
           <p className="mb-0 mt-1 text-xs text-stone-400">
             {Array.isArray(pending.preview.warnings) && pending.preview.warnings.length

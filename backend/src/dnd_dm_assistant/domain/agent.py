@@ -55,14 +55,36 @@ class AgentRequest(StrictModel):
     # ``general`` remains accepted for older clients and is normalized to the
     # quick-mode policy by the orchestrator.
     mode: Literal["quick", "narrative", "combat", "general"] = "quick"
+    user_message: str | None = Field(default=None, min_length=1, max_length=2_000)
+    remember_conversation: bool = False
+    use_conversation_history: bool = False
+    include_campaign_state: bool = True
 
-    @field_validator("action", "campaign_id", "request_id")
+    @field_validator("action", "campaign_id", "request_id", "user_message")
     @classmethod
-    def strip_text(cls, value: str) -> str:
+    def strip_text(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
         value = value.strip()
         if not value:
             raise ValueError("value must not be blank")
         return value
+
+    @model_validator(mode="after")
+    def conversation_has_user_message(self) -> AgentRequest:
+        if (
+            self.remember_conversation or self.use_conversation_history
+        ) and self.user_message is None:
+            raise ValueError("user_message is required when conversation context is enabled")
+        return self
+
+
+class CampaignAIMessage(StrictModel):
+    role: Literal["dm", "assistant"]
+    content: str = Field(min_length=1, max_length=8_000)
+    message_kind: Literal["question", "answer", "confirmed_progress"]
+    authoritative: bool = False
+    created_at: datetime
 
 
 class RuleSearchFilters(StrictModel):
@@ -331,6 +353,12 @@ class ProposalDecision(StrictModel):
 
 class DMHint(StrictModel):
     visibility: Literal["dm_private"] = "dm_private"
+    request_understanding: str = Field(default="", max_length=500)
+    response_plan: str = Field(default="", max_length=500)
+    delivery_mode: Literal[
+        "read_aloud", "spoken_line", "dm_guidance", "explanation", "revision", "other"
+    ] = "other"
+    audience_handoff: str = Field(default="", max_length=500)
     text: str = Field(min_length=1, max_length=8_000)
     assumptions: tuple[str, ...] = Field(default=(), max_length=20)
     uncertainties: tuple[str, ...] = Field(default=(), max_length=20)
@@ -340,6 +368,12 @@ class DMHint(StrictModel):
 
 class GeneratedDMHint(StrictModel):
     visibility: Literal["dm_private"] = "dm_private"
+    request_understanding: str = Field(default="", max_length=500)
+    response_plan: str = Field(default="", max_length=500)
+    delivery_mode: Literal[
+        "read_aloud", "spoken_line", "dm_guidance", "explanation", "revision", "other"
+    ] = "other"
+    audience_handoff: str = Field(default="", max_length=500)
     text: str = Field(min_length=1, max_length=8_000)
     assumptions: tuple[str, ...] = Field(default=(), max_length=20)
     uncertainties: tuple[str, ...] = Field(default=(), max_length=20)

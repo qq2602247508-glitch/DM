@@ -18,6 +18,7 @@ from dnd_dm_assistant.domain.equipment_rules import (
     equipment_profile,
     weapon_proficiency_warning,
 )
+from dnd_dm_assistant.domain.spell_rules import enrich_spell_action
 from dnd_dm_assistant.infrastructure.database.campaign_service import serialize
 from dnd_dm_assistant.infrastructure.database.models import (
     Attunement,
@@ -26,7 +27,9 @@ from dnd_dm_assistant.infrastructure.database.models import (
     EquipmentInstance,
     KnownSpell,
     OperationTransaction,
+    PlayerRoom,
     PreparedSpell,
+    SceneParticipant,
     ShopInventory,
     Wallet,
 )
@@ -165,12 +168,40 @@ class SpellEconomyService:
                     "source_record_id": metadata.get("source_record_id"),
                 }
             )
+            # DM/imported spell metadata historically stored the combat fields
+            # at the top level. Preserve those fields when mirroring the spell
+            # onto the character card; otherwise the player UI cannot show the
+            # damage formula and the combat endpoint loses the damage type.
+            for key in (
+                "source_record_id",
+                "source_path",
+                "damage",
+                "damage_expression",
+                "damage_dice",
+                "damage_type",
+                "save_ability",
+                "save_dc",
+                "half_damage_on_save",
+                "range",
+                "description",
+                "cost",
+                "resource_key",
+                "resource_cost",
+                "resolution_kind",
+                "rule_plan",
+            ):
+                if character_spell.get(key) in (None, "") and metadata.get(key) not in (None, ""):
+                    character_spell[key] = metadata[key]
             character_spell.update(
                 {
                     "name": spell.name,
                     "spell_level": spell.spell_level,
                     "prepared": prepared,
                 }
+            )
+            character_spell = enrich_spell_action(
+                character_spell,
+                spellcasting=character.spellcasting,
             )
             spell_identity = str(
                 character_spell.get("source_record_id") or character_spell["name"]
@@ -471,6 +502,8 @@ class SpellEconomyService:
                 )
             ).all()
             if op == "equip":
+                if profile["kind"] == "consumable":
+                    raise ValueError("消耗品不能装备；请使用或消耗它。")
                 if e.equipped:
                     raise ValueError("item is already equipped")
                 if requested_slot not in profile["allowed_slots"]:
@@ -523,8 +556,11 @@ class SpellEconomyService:
                     warning = weapon_proficiency_warning(e.name, list(c.proficiencies))
                     if warning:
                         warnings.append(warning)
-            if op == "consume" and e.quantity < data["amount"]:
-                raise ValueError("insufficient consumable quantity")
+            if op == "consume":
+                if profile["kind"] != "consumable":
+                    raise ValueError("只有消耗品可以使用或消耗。")
+                if e.quantity < data["amount"]:
+                    raise ValueError("insufficient consumable quantity")
             if op == "use_charge" and (e.charges is None or e.charges < data["amount"]):
                 raise ValueError("insufficient charges")
             if op == "unequip" and not e.equipped:
@@ -698,61 +734,122 @@ class SpellEconomyService:
             )
             return out
 
-    def commerce_preview(self, cid: str, data: dict[str, Any]) -> dict[str, Any]:
-        with Session(self.engine) as s:
-            w = s.get(Wallet, data["wallet_id"])
-            item = s.get(ShopInventory, data["shop_inventory_id"])
-            if w is None or item is None or w.campaign_id != cid or item.campaign_id != cid:
+    @staticmethod
+    def _player_shop_scope(
+        session: Session,
+        cid: str,
+        room_id: str,
+        character_id: str,
+        data: dict[str, Any],
+    ) -> tuple[Wallet, ShopInventory]:
+        room = session.get(PlayerRoom, room_id)
+        if room is None or room.campaign_id != cid or room.status != "active":
+            raise StateNotFoundError("player room not found or inactive")
+        if room.current_scene_id is None:
+            raise ValueError("当前 Scene 没有公开商店")
+        wallet = session.get(Wallet, data["wallet_id"])
+        item = session.get(ShopInventory, data["shop_inventory_id"])
+        if wallet is None or item is None or wallet.campaign_id != cid or item.campaign_id != cid:
+            raise StateNotFoundError("wallet or shop inventory not found")
+        if wallet.character_id != character_id:
+            raise ValueError("只能使用绑定角色的钱包")
+        metadata = dict(item.metadata_json)
+        merchant_npc_id = str(metadata.get("merchant_npc_id") or "")
+        if (
+            str(metadata.get("scene_id") or "") != room.current_scene_id
+            or not metadata.get("merchant_id")
+            or not merchant_npc_id
+        ):
+            raise ValueError("该商品不在当前公开 Scene 的商店中")
+        visible = session.scalar(
+            select(SceneParticipant).where(
+                SceneParticipant.scene_id == room.current_scene_id,
+                SceneParticipant.entity_type == "npc",
+                SceneParticipant.entity_id == merchant_npc_id,
+                SceneParticipant.visible.is_(True),
+            )
+        )
+        if visible is None:
+            raise ValueError("该商店当前未向玩家公开")
+        return wallet, item
+
+    def _commerce_preview_in_session(
+        self,
+        session: Session,
+        cid: str,
+        data: dict[str, Any],
+        *,
+        player_scope: tuple[str, str] | None = None,
+    ) -> dict[str, Any]:
+        if player_scope is not None:
+            wallet, item = self._player_shop_scope(
+                session, cid, player_scope[0], player_scope[1], data
+            )
+        else:
+            raw_wallet = session.get(Wallet, data["wallet_id"])
+            raw_item = session.get(ShopInventory, data["shop_inventory_id"])
+            if raw_wallet is None or raw_item is None or raw_wallet.campaign_id != cid or raw_item.campaign_id != cid:
                 raise StateNotFoundError("wallet or shop inventory not found")
-            if w.version != data["wallet_version"]:
-                raise VersionConflict("wallet", w.id, data["wallet_version"], w.version)
-            if item.version != data["shop_version"]:
-                raise VersionConflict("shop inventory", item.id, data["shop_version"], item.version)
-            total = item.price_copper * data["quantity"] * data["price_modifier_bps"] // 10_000
-            if data["direction"] == "buy" and (
-                item.quantity < data["quantity"] or w.copper < total
-            ):
-                raise ValueError("insufficient stock or copper")
-            character = s.get(Character, w.character_id) if w.character_id else None
-            raw_weight = item.metadata_json.get("unit_weight_lb", 0)
-            raw_current_weight = item.metadata_json.get("current_weight_lb", 0)
-            weight = (
-                float(raw_weight)
-                if isinstance(raw_weight, (int, float, str))
-                else 0.0
-            ) * data["quantity"]
-            current_weight = (
-                float(raw_current_weight)
-                if isinstance(raw_current_weight, (int, float, str))
-                else 0.0
+            wallet, item = raw_wallet, raw_item
+        if wallet.version != data["wallet_version"]:
+            raise VersionConflict("wallet", wallet.id, data["wallet_version"], wallet.version)
+        if item.version != data["shop_version"]:
+            raise VersionConflict("shop inventory", item.id, data["shop_version"], item.version)
+        total = item.price_copper * data["quantity"] * data["price_modifier_bps"] // 10_000
+        if data["direction"] == "buy" and (
+            item.quantity < data["quantity"] or wallet.copper < total
+        ):
+            raise ValueError("insufficient stock or copper")
+        character = session.get(Character, wallet.character_id) if wallet.character_id else None
+        raw_weight = item.metadata_json.get("unit_weight_lb", 0)
+        raw_current_weight = item.metadata_json.get("current_weight_lb", 0)
+        weight = (
+            float(raw_weight) if isinstance(raw_weight, (int, float, str)) else 0.0
+        ) * data["quantity"]
+        current_weight = (
+            float(raw_current_weight)
+            if isinstance(raw_current_weight, (int, float, str))
+            else 0.0
+        )
+        maximum_weight = None
+        if character is not None:
+            strength = int(
+                character.ability_scores.get("力量", character.ability_scores.get("str", 10))
             )
-            maximum_weight = None
-            if character is not None:
-                strength = int(
-                    character.ability_scores.get("力量", character.ability_scores.get("str", 10))
-                )
-                maximum_weight = strength * 15
-                if data["direction"] == "buy" and current_weight + weight > maximum_weight:
-                    raise ValueError("purchase exceeds carrying capacity")
-            out = {
-                "wallet_id": w.id,
-                "shop_inventory_id": item.id,
-                "direction": data["direction"],
-                "quantity": data["quantity"],
-                "total_copper": total,
-                "wallet_before": w.copper,
-                "wallet_after": w.copper + (-total if data["direction"] == "buy" else total),
-                "stock_before": item.quantity,
-                "stock_after": item.quantity
-                + (-data["quantity"] if data["direction"] == "buy" else data["quantity"]),
-                "rule_reference": RULE,
-                "weight_change_lb": weight if data["direction"] == "buy" else -weight,
-                "maximum_weight_lb": maximum_weight,
-            }
-            out["preview_token"] = _token(
-                {"data": data, "out": out, "wv": w.version, "sv": item.version}
+            maximum_weight = strength * 15
+            if data["direction"] == "buy" and current_weight + weight > maximum_weight:
+                raise ValueError("purchase exceeds carrying capacity")
+        out = {
+            "wallet_id": wallet.id,
+            "shop_inventory_id": item.id,
+            "direction": data["direction"],
+            "quantity": data["quantity"],
+            "total_copper": total,
+            "wallet_before": wallet.copper,
+            "wallet_after": wallet.copper + (-total if data["direction"] == "buy" else total),
+            "stock_before": item.quantity,
+            "stock_after": item.quantity
+            + (-data["quantity"] if data["direction"] == "buy" else data["quantity"]),
+            "rule_reference": RULE,
+            "weight_change_lb": weight if data["direction"] == "buy" else -weight,
+            "maximum_weight_lb": maximum_weight,
+        }
+        out["preview_token"] = _token(
+            {"data": data, "out": out, "wv": wallet.version, "sv": item.version}
+        )
+        return out
+
+    def commerce_preview(self, cid: str, data: dict[str, Any]) -> dict[str, Any]:
+        with Session(self.engine) as session:
+            return self._commerce_preview_in_session(session, cid, data)
+
+    def player_commerce_preview(
+        self, cid: str, room_id: str, character_id: str, data: dict[str, Any]
+    ) -> dict[str, Any]:
+        with Session(self.engine) as session:
+            return self._commerce_preview_in_session(
+                session, cid, data, player_scope=(room_id, character_id)
             )
-            return out
 
     def commerce_confirm(self, cid: str, data: dict[str, Any]) -> dict[str, Any]:
         key = str(data.pop("idempotency_key"))
@@ -768,7 +865,7 @@ class SpellEconomyService:
             )
             if old is not None:
                 return dict(old.after_snapshot)
-            preview = self.commerce_preview(cid, data)
+            preview = self._commerce_preview_in_session(s, cid, data)
             if preview["preview_token"] != token:
                 raise VersionConflict("commerce preview", "state", 1, 2)
             wallet = s.get(Wallet, data["wallet_id"])
@@ -821,6 +918,80 @@ class SpellEconomyService:
                     },
                     after_snapshot=out,
                     source="dm",
+                    confirmed_at=datetime.now(UTC),
+                )
+            )
+            return out
+
+    def player_commerce_confirm(
+        self, cid: str, room_id: str, character_id: str, data: dict[str, Any]
+    ) -> dict[str, Any]:
+        key = str(data.pop("idempotency_key"))
+        token = str(data.pop("preview_token"))
+        data["idempotency_key"] = None
+        data["preview_token"] = None
+        with Session(self.engine) as session, session.begin():
+            old = session.scalar(
+                select(OperationTransaction).where(
+                    OperationTransaction.campaign_id == cid,
+                    OperationTransaction.idempotency_key == f"player-commerce:{key}",
+                )
+            )
+            if old is not None:
+                return dict(old.after_snapshot)
+            preview = self._commerce_preview_in_session(
+                session,
+                cid,
+                data,
+                player_scope=(room_id, character_id),
+            )
+            if preview["preview_token"] != token:
+                raise VersionConflict("commerce preview", "state", 1, 2)
+            wallet = session.get(Wallet, data["wallet_id"])
+            item = session.get(ShopInventory, data["shop_inventory_id"])
+            assert wallet is not None and item is not None
+            total, quantity = int(preview["total_copper"]), data["quantity"]
+            wallet.copper -= total
+            item.quantity -= quantity
+            wallet.version += 1
+            item.version += 1
+            session.add(
+                EquipmentInstance(
+                    campaign_id=cid,
+                    character_id=character_id,
+                    name=item.name,
+                    category=str(item.metadata_json.get("category", "gear")),
+                    quantity=quantity,
+                    metadata_json=dict(item.metadata_json),
+                )
+            )
+            session.add(
+                CurrencyTransaction(
+                    campaign_id=cid,
+                    wallet_id=wallet.id,
+                    amount_copper=-total,
+                    kind="purchase",
+                    idempotency_key=f"player-commerce:{key}",
+                    metadata_json={
+                        "shop_inventory_id": item.id,
+                        "quantity": quantity,
+                        "price_copper": total,
+                        "player_room_id": room_id,
+                    },
+                )
+            )
+            out = {**preview, "confirmed": True}
+            session.add(
+                OperationTransaction(
+                    campaign_id=cid,
+                    operation_type="commerce",
+                    idempotency_key=f"player-commerce:{key}",
+                    before_snapshot={
+                        "wallet": preview["wallet_before"],
+                        "stock": preview["stock_before"],
+                    },
+                    after_snapshot=out,
+                    source="game_table",
                     confirmed_at=datetime.now(UTC),
                 )
             )

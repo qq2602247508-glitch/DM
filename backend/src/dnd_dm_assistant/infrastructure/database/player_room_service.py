@@ -11,10 +11,18 @@ from typing import Any, Literal
 
 from sqlalchemy import select
 from sqlalchemy.engine import Engine
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from dnd_dm_assistant.api.schemas import (
     CombatActionCommand,
+    CombatEffectCommand,
+    CombatEffectEndCommand,
+    CombatFeatureActionCommand,
+    CombatManeuverCommand,
+    CombatSummonCommand,
+    CombatSummonEndCommand,
+    DeathSaveCommand,
     PlayerRollResolutionCommand,
     TurnAdvanceCommand,
 )
@@ -22,11 +30,22 @@ from dnd_dm_assistant.application.rule_block_compiler import (
     compile_rule_blocks_dict,
 )
 from dnd_dm_assistant.domain.campaign_state import StateNotFoundError, VersionConflict
+from dnd_dm_assistant.domain.character_creation import (
+    ability_generation_label,
+    validate_ability_generation,
+    validate_character_state,
+    validate_languages,
+)
 from dnd_dm_assistant.domain.equipment_rules import equipment_profile
 from dnd_dm_assistant.domain.exploration import (
+    cover_between,
     grid_distance_ft,
     line_of_sight,
     movement_cost_ft,
+)
+from dnd_dm_assistant.domain.feature_runtime import (
+    compile_feature_runtime_registry,
+    feature_runtime_action_projections,
 )
 from dnd_dm_assistant.domain.noncombat_actions import (
     ABILITY_LABELS,
@@ -39,16 +58,28 @@ from dnd_dm_assistant.domain.noncombat_actions import (
     roll_save,
     skill_modifier,
 )
+from dnd_dm_assistant.domain.rule_blocks import (
+    DamageBlock,
+    TargetBlock,
+    TargetCandidate,
+    resolve_damage_component_totals,
+    resolve_target_selection,
+)
+from dnd_dm_assistant.domain.spell_rules import upcast_spell_action
 from dnd_dm_assistant.infrastructure.database.campaign_service import serialize
 from dnd_dm_assistant.infrastructure.database.combat_service import CombatEngineService
 from dnd_dm_assistant.infrastructure.database.models import (
     NPC,
     Campaign,
     Character,
+    CharacterCompanion,
     Combat,
     CombatAction,
     Combatant,
+    CombatEffect,
+    DeathSave,
     EquipmentInstance,
+    KnownSpell,
     MonsterInstance,
     PlayerActionRequest,
     PlayerRoom,
@@ -56,15 +87,52 @@ from dnd_dm_assistant.infrastructure.database.models import (
     Scene,
     SceneGrid,
     SceneObject,
+    SceneParticipant,
     SceneToken,
+    ShopInventory,
     SiteConnector,
     SiteLevel,
     VisibilityState,
+    WorldItem,
 )
 from dnd_dm_assistant.infrastructure.database.player_service import PlayerService
 from dnd_dm_assistant.infrastructure.database.spell_economy_service import SpellEconomyService
 
 ROOM_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
+
+
+def _merge_grid_position(
+    current: object,
+    *,
+    row: int,
+    col: int,
+    requested: object | None = None,
+) -> dict[str, int]:
+    """Update horizontal coordinates without erasing a creature's height.
+
+    A movement/teleport request normally only carries row/col.  Replacing the
+    whole JSON object at those call sites silently put flying creatures back
+    on the ground and made the next 3-D area check disagree with the map.
+    Explicit vertical coordinates are accepted only when the request includes
+    them; otherwise the current elevation is preserved.
+    """
+
+    position = dict(current) if isinstance(current, dict) else {}
+    position.update({"row": row, "col": col})
+    if isinstance(requested, dict):
+        for key in ("elevation_ft", "height_ft", "z"):
+            value = requested.get(key)
+            if isinstance(value, int) and not isinstance(value, bool):
+                position[key] = value
+    return {
+        str(key): int(value)
+        for key, value in position.items()
+        if key in {"row", "col", "elevation_ft", "height_ft", "z"}
+        and isinstance(value, int)
+        and not isinstance(value, bool)
+    }
+
+
 CORE_SPECIES = {
     "人类",
     "阿斯莫",
@@ -326,6 +394,90 @@ BACKGROUND_RULES: dict[str, dict[str, Any]] = {
         "skills": ["洞悉", "隐匿"],
         "feat": "幸运",
         "equipment": ["匕首", "盗贼工具"],
+    },
+}
+BACKGROUND_CREATION_RULES: dict[str, dict[str, tuple[str, ...]]] = {
+    "侍僧": {
+        "ability_options": ("intelligence", "wisdom", "charisma"),
+        "tool_choices": ("书法工具",),
+    },
+    "工匠": {
+        "ability_options": ("strength", "dexterity", "intelligence"),
+        "tool_choices": (
+            "炼金工具",
+            "酿酒工具",
+            "书法工具",
+            "木匠工具",
+            "制图工具",
+            "鞋匠工具",
+            "厨师工具",
+            "玻璃工具",
+            "珠宝工具",
+            "皮匠工具",
+            "石匠工具",
+            "绘画工具",
+            "陶匠工具",
+            "铁匠工具",
+            "修补工具",
+            "织布工具",
+            "木雕工具",
+        ),
+    },
+    "骗子": {
+        "ability_options": ("dexterity", "constitution", "charisma"),
+        "tool_choices": ("伪装工具",),
+    },
+    "罪犯": {
+        "ability_options": ("dexterity", "constitution", "intelligence"),
+        "tool_choices": ("盗贼工具",),
+    },
+    "艺人": {
+        "ability_options": ("dexterity", "intelligence", "charisma"),
+        "tool_choices": ("乐器",),
+    },
+    "农夫": {
+        "ability_options": ("strength", "constitution", "wisdom"),
+        "tool_choices": ("木匠工具",),
+    },
+    "守卫": {
+        "ability_options": ("strength", "intelligence", "wisdom"),
+        "tool_choices": ("游戏套组",),
+    },
+    "向导": {
+        "ability_options": ("dexterity", "constitution", "wisdom"),
+        "tool_choices": ("制图工具",),
+    },
+    "隐士": {
+        "ability_options": ("constitution", "wisdom", "charisma"),
+        "tool_choices": ("草药工具",),
+    },
+    "商人": {
+        "ability_options": ("constitution", "intelligence", "charisma"),
+        "tool_choices": ("导航工具",),
+    },
+    "贵族": {
+        "ability_options": ("strength", "intelligence", "charisma"),
+        "tool_choices": ("游戏套组",),
+    },
+    "学者": {
+        "ability_options": ("constitution", "intelligence", "wisdom"),
+        "tool_choices": ("书法工具",),
+    },
+    "水手": {
+        "ability_options": ("strength", "dexterity", "wisdom"),
+        "tool_choices": ("导航工具",),
+    },
+    "书记员": {
+        "ability_options": ("dexterity", "intelligence", "wisdom"),
+        "tool_choices": ("书法工具",),
+    },
+    "士兵": {
+        "ability_options": ("strength", "dexterity", "constitution"),
+        "tool_choices": ("游戏套组",),
+    },
+    "流浪者": {
+        "ability_options": ("dexterity", "wisdom", "charisma"),
+        "tool_choices": ("盗贼工具",),
     },
 }
 CLASS_RULES: dict[str, dict[str, Any]] = {
@@ -712,6 +864,380 @@ class PlayerRoomService:
         self.economy = SpellEconomyService(engine)
 
     @staticmethod
+    def _combatant_owner(combatant: Combatant) -> str | None:
+        if combatant.entity_type == "character":
+            return combatant.entity_id
+        raw = combatant.snapshot_json.get("owner_character_id")
+        return str(raw) if raw else None
+
+    @classmethod
+    def _is_player_controlled(cls, combatant: Combatant, character_id: str | None) -> bool:
+        if character_id is None:
+            return False
+        if combatant.entity_type == "character":
+            return combatant.entity_id == character_id
+        return (
+            combatant.entity_type == "companion"
+            and combatant.snapshot_json.get("controller") == "player"
+            and cls._combatant_owner(combatant) == character_id
+        )
+
+    @classmethod
+    def _controlled_actor(
+        cls,
+        fighters: list[Combatant],
+        active: Combatant | None,
+        character_id: str | None,
+    ) -> Combatant | None:
+        if active is None or not cls._is_player_controlled(active, character_id):
+            return None
+        return active
+
+    @staticmethod
+    def _combatant_faction(combatant: Combatant) -> str:
+        raw = combatant.snapshot_json.get("disposition")
+        if raw in {"ally", "enemy"}:
+            return str(raw)
+        if combatant.entity_type in {"character", "companion"}:
+            return "ally"
+        return "enemy"
+
+    @staticmethod
+    def _rule_modifier(
+        combatant: Combatant,
+        stat: str,
+        *,
+        scope: str,
+        skill: str | None = None,
+    ) -> tuple[int, bool, bool]:
+        """Read compiled numeric/advantage modifiers from a combat snapshot."""
+
+        raw = combatant.snapshot_json.get("rule_modifiers")
+        if not isinstance(raw, dict):
+            return 0, False, False
+        numeric = 0
+        advantage = False
+        disadvantage = False
+        for key, value in raw.items():
+            if not isinstance(value, dict):
+                continue
+            parts = str(key).split(":", 2)
+            if not parts or parts[0] != stat:
+                continue
+            modifier_scope = parts[1] if len(parts) > 1 else "all"
+            modifier_skill = parts[2] if len(parts) > 2 else ""
+            if modifier_scope not in {"all", scope}:
+                continue
+            if skill is not None and modifier_skill not in {"", skill}:
+                continue
+            operation = str(value.get("operation") or "")
+            raw_value = value.get("value")
+            if operation == "add" and isinstance(raw_value, int):
+                numeric += raw_value
+            elif operation == "advantage":
+                advantage = True
+            elif operation == "disadvantage":
+                disadvantage = True
+        return numeric, advantage, disadvantage
+
+    @staticmethod
+    def _condition_attack_context(
+        actor: Combatant,
+        target: Combatant,
+        *,
+        distance_ft: int | None,
+        target_dodging: bool = False,
+    ) -> tuple[str, bool, bool, bool]:
+        """Resolve the deterministic attack consequences of core conditions."""
+
+        advantage: list[str] = []
+        disadvantage: list[str] = []
+        automatic_critical = False
+        if CombatEngineService._has_condition(actor, "prone"):
+            disadvantage.append("攻击者倒地")
+        for condition, label in (
+            ("blinded", "攻击者目盲"),
+            ("poisoned", "攻击者中毒"),
+            ("restrained", "攻击者束缚"),
+            ("frightened", "攻击者恐慌"),
+        ):
+            if CombatEngineService._has_condition(actor, condition):
+                disadvantage.append(label)
+        if CombatEngineService._has_condition(actor, "invisible"):
+            advantage.append("攻击者隐形")
+        for condition, label in (
+            ("blinded", "目标目盲"),
+            ("restrained", "目标束缚"),
+            ("stunned", "目标震慑"),
+            ("paralyzed", "目标麻痹"),
+            ("petrified", "目标石化"),
+        ):
+            if CombatEngineService._has_condition(target, condition):
+                advantage.append(label)
+        if CombatEngineService._has_condition(target, "prone"):
+            if distance_ft is not None and distance_ft <= 5:
+                advantage.append("近距离攻击倒地目标")
+            else:
+                disadvantage.append("远距离攻击倒地目标")
+        if target_dodging:
+            disadvantage.append("目标闪避")
+        if (
+            distance_ft is not None
+            and distance_ft <= 5
+            and (
+                CombatEngineService._has_condition(target, "paralyzed")
+                or CombatEngineService._has_condition(target, "unconscious")
+            )
+        ):
+            automatic_critical = True
+        mode = "normal"
+        if advantage and not disadvantage:
+            mode = "advantage"
+        elif disadvantage and not advantage:
+            mode = "disadvantage"
+        reasons = [*advantage, *disadvantage]
+        return mode, bool(advantage), bool(disadvantage), automatic_critical if reasons else False
+
+    @staticmethod
+    def _action_rule_blocks(action: dict[str, Any]) -> list[dict[str, Any]]:
+        raw_plan = action.get("rule_plan")
+        if not isinstance(raw_plan, dict):
+            raw_plan = compile_rule_blocks_dict(
+                action,
+                source_kind="spell" if action.get("spell_level") is not None else "action",
+            )
+            action["rule_plan"] = raw_plan
+        raw_blocks = raw_plan.get("blocks")
+        if not isinstance(raw_blocks, list):
+            raise ValueError("该动作的规则计划无效，无法自动结算")
+        return [block for block in raw_blocks if isinstance(block, dict)]
+
+    @staticmethod
+    def _attack_rider_total(
+        rider: dict[str, Any],
+        *,
+        special_inputs: dict[str, Any],
+        critical_hit: bool,
+    ) -> tuple[int, dict[str, Any]] | None:
+        """Validate one compiled attack rider without rolling on the server.
+
+        Fixed riders such as Rage's ``+4`` are deterministic.  Dice riders
+        (Sneak Attack, Divine Smite dice supplied by a future registry entry,
+        and similar features) must arrive as an explicit player-reported total
+        under ``attack_rider_totals``.  The engine never invents a dice result.
+        """
+
+        rider_id = str(rider.get("id") or "").strip()
+        if not rider_id:
+            return None
+        raw_value = str(rider.get("value") or rider.get("expression") or "").strip()
+        if not raw_value:
+            raise ValueError(f"攻击附伤 {rider_id} 缺少明确骰式或固定数值")
+        normalized = raw_value.replace(" ", "")
+        match = re.fullmatch(r"\+?(?:(\d*)d(\d+)([+-]\d+)?|(\d+))", normalized, re.I)
+        if match is None:
+            raise ValueError(f"攻击附伤 {rider_id} 的骰式无法自动解析：{raw_value}")
+        dice_count = int(match.group(1) or 0)
+        sides = int(match.group(2) or 0)
+        modifier = int(match.group(3) or 0) if match.group(3) else int(match.group(4) or 0)
+        raw_totals = special_inputs.get("attack_rider_totals")
+        totals = raw_totals if isinstance(raw_totals, dict) else {}
+        if dice_count:
+            reported = totals.get(rider_id)
+            if isinstance(reported, bool) or not isinstance(reported, (int, float)):
+                raise ValueError(f"必须提交攻击附伤 {rider_id} 的伤害骰最终总值（{raw_value}）")
+            total = int(reported)
+            expected_dice = dice_count * (2 if critical_hit else 1)
+            minimum = expected_dice + modifier
+            maximum = expected_dice * sides + modifier
+            if not minimum <= total <= maximum:
+                raise ValueError(
+                    f"攻击附伤 {rider_id} 的伤害骰结果应在 {minimum}–{maximum} 之间"
+                )
+            return total, {
+                "rider_id": rider_id,
+                "expression": raw_value,
+                "reported_total": total,
+                "dice": True,
+            }
+        total = modifier
+        if total < 0:
+            raise ValueError(f"攻击附伤 {rider_id} 的固定值不能为负数")
+        return total, {
+            "rider_id": rider_id,
+            "expression": raw_value,
+            "reported_total": total,
+            "dice": False,
+        }
+
+    @classmethod
+    def _eligible_attack_riders(
+        cls,
+        actor: Combatant,
+        action: dict[str, Any],
+        target: Combatant,
+        *,
+        special_inputs: dict[str, Any],
+        critical_hit: bool,
+        used_this_turn: set[str],
+    ) -> list[dict[str, Any]]:
+        """Return only riders whose trigger is explicit or mechanically known."""
+
+        registry = actor.snapshot_json.get("feature_runtime")
+        raw_riders = registry.get("attack_riders") if isinstance(registry, dict) else None
+        riders = raw_riders if isinstance(raw_riders, list) else []
+        action_text = " ".join(
+            str(action.get(key) or "") for key in ("name", "description", "damage")
+        )
+        attack_ability = str(
+            action.get("attack_ability") or action.get("ability") or ""
+        ).lower()
+        is_strength_attack = attack_ability in {"strength", "力量"} or "力量" in action_text
+        is_weapon_attack = bool(
+            action.get("is_weapon_attack") is True
+            or "武器攻击" in action_text
+            or "近战攻击" in action_text
+            or "远程攻击" in action_text
+        )
+        raw_eligibility = special_inputs.get("attack_rider_eligibility")
+        eligibility = raw_eligibility if isinstance(raw_eligibility, dict) else {}
+        result: list[dict[str, Any]] = []
+        for raw in riders:
+            if not isinstance(raw, dict):
+                continue
+            rider_id = str(raw.get("id") or "").strip()
+            if not rider_id or rider_id in used_this_turn:
+                continue
+            applies_when = str(raw.get("applies_when") or "").strip().lower()
+            if applies_when == "raging_strength_attack":
+                eligible = (
+                    CombatEngineService._has_condition(actor, "raging")
+                    and is_strength_attack
+                    and is_weapon_attack
+                )
+            elif applies_when == "sneak_attack_eligible":
+                explicit = eligibility.get(rider_id, eligibility.get("sneak_attack"))
+                eligible = explicit is True
+            else:
+                explicit = eligibility.get(rider_id)
+                eligible = explicit is True
+            if not eligible:
+                continue
+            total_result = cls._attack_rider_total(
+                raw,
+                special_inputs=special_inputs,
+                critical_hit=critical_hit,
+            )
+            if total_result is None:
+                continue
+            total, metadata = total_result
+            if total <= 0:
+                continue
+            result.append(
+                {
+                    **metadata,
+                    "total": total,
+                    "source": raw.get("feature_name") or raw.get("id"),
+                    "damage_type": raw.get("damage_type") or "weapon_damage_type",
+                    "frequency": raw.get("frequency"),
+                    "target_combatant_id": target.id,
+                }
+            )
+        return result
+
+    @staticmethod
+    def _mark_attack_rider_usage(
+        engine: Engine,
+        actor_id: str,
+        turn_key: str,
+        rider_ids: set[str],
+    ) -> None:
+        if not rider_ids:
+            return
+        with Session(engine) as session, session.begin():
+            actor = session.get(Combatant, actor_id)
+            if actor is None:
+                return
+            snapshot = dict(actor.snapshot_json or {})
+            raw_usage = snapshot.get("attack_rider_uses")
+            usage = dict(raw_usage) if isinstance(raw_usage, dict) else {}
+            turn_usage = set(
+                str(value)
+                for value in (usage.get(turn_key) if isinstance(usage.get(turn_key), list) else [])
+            )
+            turn_usage.update(rider_ids)
+            usage[turn_key] = sorted(turn_usage)
+            # Keep only a small bounded history; older turns cannot affect a
+            # once-per-turn rider and should not grow combat snapshots forever.
+            recent = sorted(usage)[-20:]
+            snapshot["attack_rider_uses"] = {key: usage[key] for key in recent}
+            actor.snapshot_json = snapshot
+            actor.version += 1
+            actor.updated_at = _now()
+
+    @classmethod
+    def _resolve_combat_targets(
+        cls,
+        *,
+        target_rule: TargetBlock,
+        actor: Combatant,
+        primary_target_id: str,
+        requested_target_ids: list[str],
+        fighters: list[Combatant],
+    ) -> tuple[list[Combatant], dict[str, Any]]:
+        requested_ids = list(dict.fromkeys(requested_target_ids or [primary_target_id]))
+        if primary_target_id not in requested_ids:
+            requested_ids.insert(0, primary_target_id)
+        by_id = {fighter.id: fighter for fighter in fighters}
+        candidates = []
+        for fighter in fighters:
+            relation: Literal["self", "ally", "enemy"]
+            if fighter.id == actor.id:
+                relation = "self"
+            elif cls._combatant_faction(fighter) == cls._combatant_faction(actor):
+                relation = "ally"
+            else:
+                relation = "enemy"
+            candidates.append(
+                TargetCandidate(
+                    id=fighter.id,
+                    relation=relation,
+                    active=fighter.is_active and fighter.hp > 0,
+                )
+            )
+        resolution = resolve_target_selection(
+            target_rule,
+            caster_id=actor.id,
+            primary_target_id=primary_target_id,
+            requested_target_ids=requested_ids,
+            candidates=candidates,
+        )
+        if not resolution.accepted:
+            messages = "；".join(issue.message for issue in resolution.issues)
+            raise ValueError(f"目标不符合该法术计划：{messages}")
+        return [by_id[target_id] for target_id in resolution.target_ids], resolution.model_dump(
+            mode="json"
+        )
+
+    def _player_hit_dice(self, campaign_id: str, character_id: str) -> list[dict[str, Any]]:
+        """Return only the bound player's usable hit-die pools."""
+        pools = self.player.rest.list_resources(campaign_id, character_id=character_id)
+        return [
+            {
+                "id": pool["id"],
+                "key": pool["key"],
+                "label": pool["label"],
+                "category": pool["category"],
+                "current": pool["current"],
+                "maximum": pool["maximum"],
+                "die_size": pool["die_size"],
+                "version": pool["version"],
+            }
+            for pool in pools
+            if pool.get("category") == "hit_die"
+        ]
+
+    @staticmethod
     def _campaign(session: Session, campaign_id: str) -> Campaign:
         campaign = session.get(Campaign, campaign_id)
         if campaign is None:
@@ -726,6 +1252,22 @@ class PlayerRoomService:
         return room
 
     @staticmethod
+    def _first_active_scene(session: Session, campaign_id: str) -> Scene | None:
+        return session.scalar(
+            select(Scene)
+            .where(Scene.campaign_id == campaign_id, Scene.status == "active")
+            .order_by(Scene.created_at, Scene.id)
+        )
+
+    def _combat_scene_id(self, principal: PlayerPrincipal, combat_id: str) -> str | None:
+        with Session(self.engine) as session:
+            combat = session.get(Combat, combat_id)
+            if combat is not None and combat.scene_id:
+                return combat.scene_id
+            room = session.get(PlayerRoom, principal.room_id)
+            return room.current_scene_id if room is not None else None
+
+    @staticmethod
     def _active(room: PlayerRoom) -> None:
         if room.status != "active" or _aware(room.expires_at) <= _now():
             raise ValueError("player room is closed or expired")
@@ -736,6 +1278,7 @@ class PlayerRoomService:
         now = _now()
         with Session(self.engine) as session, session.begin():
             self._campaign(session, campaign_id)
+            first_scene = self._first_active_scene(session, campaign_id)
             room = session.scalar(select(PlayerRoom).where(PlayerRoom.campaign_id == campaign_id))
             if room is None:
                 room = PlayerRoom(
@@ -745,6 +1288,7 @@ class PlayerRoomService:
                     join_code_hint=join_code[-2:],
                     status="active",
                     expires_at=now + timedelta(hours=hours),
+                    current_scene_id=first_scene.id if first_scene is not None else None,
                 )
                 session.add(room)
             else:
@@ -753,6 +1297,8 @@ class PlayerRoomService:
                 room.join_code_hint = join_code[-2:]
                 room.status = "active"
                 room.expires_at = now + timedelta(hours=hours)
+                if room.current_scene_id is None and first_scene is not None:
+                    room.current_scene_id = first_scene.id
                 room.version += 1
                 room.updated_at = now
                 for member in session.scalars(
@@ -821,10 +1367,16 @@ class PlayerRoomService:
             return self._room_payload(session, room)
 
     def set_live_state(
-        self, campaign_id: str, scene_id: str | None, combat_id: str | None
+        self,
+        campaign_id: str,
+        scene_id: str | None,
+        combat_id: str | None,
+        expected_version: int | None = None,
     ) -> dict[str, Any]:
         with Session(self.engine) as session, session.begin():
             room = self._room(session, campaign_id)
+            if expected_version is not None and room.version != expected_version:
+                raise VersionConflict("player room", room.id, expected_version, room.version)
             if scene_id is not None:
                 scene = session.get(Scene, scene_id)
                 if scene is None or scene.campaign_id != campaign_id:
@@ -833,6 +1385,8 @@ class PlayerRoomService:
                 combat = session.get(Combat, combat_id)
                 if combat is None or combat.campaign_id != campaign_id:
                     raise StateNotFoundError("combat not found")
+            if room.current_scene_id == scene_id and room.current_combat_id == combat_id:
+                return self._room_payload(session, room)
             room.current_scene_id = scene_id
             room.current_combat_id = combat_id
             room.version += 1
@@ -1011,7 +1565,7 @@ class PlayerRoomService:
             **data,
             "character_id": principal.character_id,
             "character_version": character["version"],
-            "amount": 1,
+            "amount": int(data.get("amount") or 1),
             "preview_token": None,
             "idempotency_key": None,
         }
@@ -1025,35 +1579,79 @@ class PlayerRoomService:
             **data,
             "character_id": principal.character_id,
             "character_version": character["version"],
-            "amount": 1,
+            "amount": int(data.get("amount") or 1),
         }
         return self.economy.equipment_confirm(principal.campaign_id, safe)
+
+    def preview_commerce(self, principal: PlayerPrincipal, data: dict[str, Any]) -> dict[str, Any]:
+        if principal.character_id is None:
+            raise ValueError("请先绑定角色")
+        safe = {
+            **data,
+            "direction": "buy",
+            "price_modifier_bps": 10_000,
+            "preview_token": None,
+            "idempotency_key": None,
+        }
+        return self.economy.player_commerce_preview(
+            principal.campaign_id,
+            principal.room_id,
+            principal.character_id,
+            safe,
+        )
+
+    def confirm_commerce(self, principal: PlayerPrincipal, data: dict[str, Any]) -> dict[str, Any]:
+        if principal.character_id is None:
+            raise ValueError("请先绑定角色")
+        safe = {
+            **data,
+            "direction": "buy",
+            "price_modifier_bps": 10_000,
+        }
+        return self.economy.player_commerce_confirm(
+            principal.campaign_id,
+            principal.room_id,
+            principal.character_id,
+            safe,
+        )
 
     def create_character(self, principal: PlayerPrincipal, data: dict[str, Any]) -> dict[str, Any]:
         race = str(data["race"])
         class_name = str(data["class_name"])
         background = str(data["background"])
-        scores = {key: int(value) for key, value in dict(data["ability_scores"]).items()}
         if (
             race not in CORE_SPECIES
             or class_name not in CORE_CLASSES
             or background not in CORE_BACKGROUNDS
         ):
             raise ValueError("请选择 D&D 5e 2024 核心种族、职业与背景")
-        if sorted(scores.values()) != [8, 10, 12, 13, 14, 15] or set(scores) != {
-            "strength",
-            "dexterity",
-            "constitution",
-            "intelligence",
-            "wisdom",
-            "charisma",
-        }:
-            raise ValueError("属性必须使用标准数组 15/14/13/12/10/8 且每项一次")
-        con_mod = (scores["constitution"] - 10) // 2
-        max_hp = max(1, CLASS_HIT_DIE[class_name] + con_mod)
         species_rule = SPECIES_RULES[race]
         background_rule = BACKGROUND_RULES[background]
+        background_creation_rule = BACKGROUND_CREATION_RULES[background]
         class_rule = CLASS_RULES[class_name]
+        origin_increases = {
+            str(key): int(value)
+            for key, value in dict(data.get("origin_ability_increases") or {}).items()
+        }
+        ability_generation_method = str(data.get("ability_generation_method") or "standard_array")
+        scores = validate_ability_generation(
+            ability_generation_method,
+            data.get("ability_scores"),
+            origin_ability_increases=origin_increases,
+            allowed_origin_abilities=background_creation_rule["ability_options"],
+            ability_rolls=data.get("ability_rolls"),
+        )
+        background_tool = str(data.get("background_tool_proficiency") or "").strip()
+        if background_tool not in background_creation_rule["tool_choices"]:
+            raise ValueError(f"{background}必须选择该背景提供的工具熟练")
+        languages = validate_languages(data.get("languages") or [])
+        if str(data.get("starter_equipment_option") or "fixed_package") != "fixed_package":
+            raise ValueError("玩家规则车卡当前只支持固定起始装备包")
+        requested_equipment = [str(item).strip() for item in data.get("equipment") or []]
+        if any(requested_equipment):
+            raise ValueError("玩家规则车卡不能在起始装备包外追加自定义装备")
+        con_mod = (scores["constitution"] - 10) // 2
+        max_hp = max(1, CLASS_HIT_DIE[class_name] + con_mod)
         requested_skills = [str(item) for item in data.get("skill_proficiencies") or []]
         skill_count, allowed_skills = CLASS_SKILL_SELECTION[class_name]
         background_skills = set(background_rule.get("skills") or [])
@@ -1119,7 +1717,6 @@ class PlayerRoomService:
         initial_equipment = [
             *list(class_rule.get("equipment") or []),
             *list(background_rule.get("equipment") or []),
-            *list(data.get("equipment") or []),
         ]
         dexterity_modifier = (scores["dexterity"] - 10) // 2
         wisdom_modifier = (scores["wisdom"] - 10) // 2
@@ -1215,13 +1812,24 @@ class PlayerRoomService:
                 hp=max_hp,
                 max_hp=max_hp,
                 equipment=initial_equipment,
-                proficiencies=[
-                    *list(class_rule.get("proficiencies") or []),
-                    *[f"{ability}豁免" for ability in list(class_rule.get("saves") or [])],
-                ],
+                proficiencies=list(
+                    dict.fromkeys(
+                        [
+                            *list(class_rule.get("proficiencies") or []),
+                            *[f"{ability}豁免" for ability in list(class_rule.get("saves") or [])],
+                            f"工具：{background_tool}",
+                            *[f"语言：{language}" for language in languages],
+                        ]
+                    )
+                ),
                 skills={skill: {"proficient": True} for skill in sorted(skill_names)},
                 features=[
                     *list(species_rule.get("features") or []),
+                    f"属性生成：{ability_generation_label(ability_generation_method)}",
+                    "背景起源："
+                    + "、".join(
+                        f"{ABILITY_LABELS[key]} +{value}" for key, value in origin_increases.items()
+                    ),
                     f"背景专长：{background_rule['feat']}",
                 ],
                 actions=[dict(action) for action in list(class_rule.get("actions") or [])],
@@ -1269,6 +1877,20 @@ class PlayerRoomService:
                 spellcasting=spellcasting,
                 class_levels={"魔契师" if class_name == "邪术师" else class_name: 1},
                 notes=f"D&D 5e 2024规则角色 · 背景：{background}",
+            )
+            validate_character_state(
+                {
+                    "level": item.level,
+                    "class_name": item.class_name,
+                    "class_levels": item.class_levels,
+                    "subclass_choices": {},
+                    "ability_scores": item.ability_scores,
+                    "hp": item.hp,
+                    "max_hp": item.max_hp,
+                    "resources": item.resources,
+                    "spells": item.spells,
+                },
+                require_complete_abilities=True,
             )
             session.add(item)
             session.flush()
@@ -1321,7 +1943,70 @@ class PlayerRoomService:
             session.flush()
             return serialize(member)
 
+    def _public_shops(self, session: Session, scene: Scene | None) -> list[dict[str, Any]]:
+        """Expose only merchant stock explicitly published in the live Scene."""
+        if scene is None:
+            return []
+        visible_npc_ids = {
+            participant.entity_id
+            for participant in session.scalars(
+                select(SceneParticipant).where(
+                    SceneParticipant.scene_id == scene.id,
+                    SceneParticipant.entity_type == "npc",
+                    SceneParticipant.visible.is_(True),
+                )
+            ).all()
+        }
+        groups: dict[str, dict[str, Any]] = {}
+        for item in session.scalars(
+            select(ShopInventory)
+            .where(ShopInventory.campaign_id == scene.campaign_id)
+            .order_by(ShopInventory.name, ShopInventory.id)
+        ).all():
+            metadata = dict(item.metadata_json)
+            merchant_id = str(metadata.get("merchant_id") or "")
+            merchant_npc_id = str(metadata.get("merchant_npc_id") or "")
+            if (
+                not merchant_id
+                or not merchant_npc_id
+                or str(metadata.get("scene_id") or "") != scene.id
+                or merchant_npc_id not in visible_npc_ids
+            ):
+                continue
+            npc = session.get(NPC, merchant_npc_id)
+            if npc is None or npc.campaign_id != scene.campaign_id:
+                continue
+            group = groups.setdefault(
+                merchant_id,
+                {
+                    "merchant_id": merchant_id,
+                    "name": npc.name,
+                    "description": npc.description,
+                    "stock": [],
+                },
+            )
+            group["stock"].append(
+                {
+                    "id": item.id,
+                    "name": item.name,
+                    "quantity": item.quantity,
+                    "price_copper": item.price_copper,
+                    "version": item.version,
+                    "category": metadata.get("category"),
+                    "item_tier": metadata.get("item_tier"),
+                }
+            )
+        return sorted(
+            groups.values(),
+            key=lambda shop: (str(shop["name"]), str(shop["merchant_id"])),
+        )
+
     def snapshot(self, principal: PlayerPrincipal) -> dict[str, Any]:
+        hit_dice = (
+            self._player_hit_dice(principal.campaign_id, principal.character_id)
+            if principal.character_id
+            else []
+        )
         with Session(self.engine) as session:
             room = session.get(PlayerRoom, principal.room_id)
             if room is None or room.campaign_id != principal.campaign_id:
@@ -1358,6 +2043,73 @@ class PlayerRoomService:
                 if scene.campaign_id != principal.campaign_id:
                     raise ValueError("player room scene is outside its campaign")
                 public["scene"] = self._safe_scene(session, scene, principal)
+            character = (
+                self.player.character_view(principal.campaign_id, principal.character_id)
+                if principal.character_id
+                else None
+            )
+            if character is not None:
+                character["hit_dice"] = hit_dice
+                feature_grants = [
+                    item for item in character.get("features", [])
+                    if isinstance(item, dict)
+                ]
+                scaling_values = {
+                    str(item.get("scaling_key")): item.get("value")
+                    for item in feature_grants
+                    if item.get("kind") == "class_scaling"
+                    and isinstance(item.get("scaling_key"), str)
+                }
+                feature_registry = compile_feature_runtime_registry(
+                    feature_grants,
+                    resources=(character.get("resources") or {})
+                    if isinstance(character.get("resources"), dict)
+                    else {},
+                    scalings={
+                        key: {"value": value}
+                        for key, value in scaling_values.items()
+                    },
+                    class_levels=(character.get("class_levels") or {})
+                    if isinstance(character.get("class_levels"), dict)
+                    else {},
+                    total_level=int(character.get("level") or 0) or None,
+                )
+                character["feature_runtime"] = feature_registry
+                runtime_actions = feature_runtime_action_projections(feature_registry)
+                if runtime_actions:
+                    existing_names = {
+                        str(item.get("name"))
+                        for item in character.get("actions", [])
+                        if isinstance(item, dict)
+                    }
+                    character["actions"] = [
+                        *list(character.get("actions") or []),
+                        *[
+                            item for item in runtime_actions
+                            if str(item.get("name")) not in existing_names
+                        ],
+                    ]
+                character["companions"] = [
+                    {
+                        "id": companion.id,
+                        "name": companion.name,
+                        "companion_type": companion.companion_type,
+                        "source_record_id": companion.source_record_id,
+                        "template_json": companion.template_json,
+                        "hp": companion.hp,
+                        "max_hp": companion.max_hp,
+                        "armor_class": companion.armor_class,
+                        "speed": companion.speed,
+                        "active": companion.active,
+                    }
+                    for companion in session.scalars(
+                        select(CharacterCompanion).where(
+                            CharacterCompanion.campaign_id == principal.campaign_id,
+                            CharacterCompanion.owner_character_id == principal.character_id,
+                            CharacterCompanion.active.is_(True),
+                        )
+                    ).all()
+                ]
             return {
                 "room": {"id": room.id, "status": room.status, "expires_at": room.expires_at},
                 "campaign": {
@@ -1370,16 +2122,13 @@ class PlayerRoomService:
                     "display_name": principal.display_name,
                     "character_id": principal.character_id,
                 },
-                "character": self.player.character_view(
-                    principal.campaign_id, principal.character_id
-                )
-                if principal.character_id
-                else None,
+                "character": character,
                 "available_characters": available_characters,
                 "table": {
                     "scene": public.get("scene"),
                     "handouts": public.get("handouts", []),
                     "shared_log": public.get("shared_log", []),
+                    "shops": self._public_shops(session, scene),
                     "noncombat": self._noncombat_snapshot(session, room, principal),
                 },
                 "combat": self._combat_snapshot(session, room, principal),
@@ -1486,9 +2235,7 @@ class PlayerRoomService:
                     **(
                         {
                             "theme": str(dict(grid.layers_json or {})["theme"]),
-                            "visual_theme": dict(grid.layers_json or {}).get(
-                                "visual_theme", {}
-                            ),
+                            "visual_theme": dict(grid.layers_json or {}).get("visual_theme", {}),
                         }
                         if dict(grid.layers_json or {}).get("theme")
                         else {}
@@ -1545,6 +2292,7 @@ class PlayerRoomService:
                     "width_cells": item.width_cells,
                     "height_cells": item.height_cells,
                     "state": item.state,
+                    "version": item.version,
                     "interaction": {
                         key: value
                         for key, value in (item.interaction_json or {}).items()
@@ -1581,16 +2329,6 @@ class PlayerRoomService:
         }
         origin = origin_override
         if origin is None:
-            token = session.scalar(
-                select(SceneToken).where(
-                    SceneToken.scene_id == scene.id,
-                    SceneToken.entity_type == "character",
-                    SceneToken.entity_id == principal.character_id,
-                )
-            )
-            if token is not None:
-                origin = (token.row, token.col)
-        if origin is None:
             room = session.get(PlayerRoom, principal.room_id)
             combat = (
                 session.get(Combat, room.current_combat_id)
@@ -1608,6 +2346,16 @@ class PlayerRoomService:
                 position = combatant.snapshot_json.get("grid_position") if combatant else None
                 if isinstance(position, dict):
                     origin = (int(position["row"]), int(position["col"]))
+        if origin is None:
+            token = session.scalar(
+                select(SceneToken).where(
+                    SceneToken.scene_id == scene.id,
+                    SceneToken.entity_type == "character",
+                    SceneToken.entity_id == principal.character_id,
+                )
+            )
+            if token is not None:
+                origin = (token.row, token.col)
         if origin is None:
             return {"visible": set(), "explored": explored}
         blockers = {
@@ -1650,6 +2398,17 @@ class PlayerRoomService:
                 "ability": ability,
                 "ability_label": ABILITY_LABELS[ability],
                 "suggested_dc": dc,
+                "rule_plan": compile_rule_blocks_dict(
+                    {
+                        "name": name,
+                        "description": description,
+                        "ability": ability,
+                        "skill": name,
+                        "resolution_kind": "skill_check",
+                        "dc_source": "dm_chosen_dc",
+                    },
+                    source_kind="feature",
+                ),
                 "target_types": (
                     ["npc", "monster"]
                     if name in SOCIAL_SKILLS
@@ -1669,6 +2428,16 @@ class PlayerRoomService:
                 "ability": "dexterity",
                 "ability_label": "敏捷",
                 "suggested_dc": 15,
+                "rule_plan": compile_rule_blocks_dict(
+                    {
+                        "name": "盗贼工具：撬锁/解除机关",
+                        "description": "对公开的门、宝箱或机关提出结构化操作。",
+                        "ability": "dexterity",
+                        "skill": "巧手",
+                        "resolution_kind": "skill_check",
+                    },
+                    source_kind="feature",
+                ),
                 "target_types": ["object"],
             }
         )
@@ -1691,13 +2460,17 @@ class PlayerRoomService:
                     "resource_cost": int(raw.get("resource_cost") or 0),
                     "save_ability": raw.get("save_ability"),
                     "save_dc": raw.get("save_dc"),
-                    "target_types": (
-                        ["self"]
-                        if "隐形" in name
-                        else ["npc", "monster"]
-                        if "命令" in name
-                        else ["self", "npc", "monster", "object", "area"]
+                    "rule_plan": raw.get("rule_plan")
+                    or compile_rule_blocks_dict(
+                        {
+                            **raw,
+                            "name": name,
+                            "description": str(raw.get("description") or ""),
+                            "resolution_kind": str(raw.get("resolution_kind") or "control"),
+                        },
+                        source_kind="spell",
                     ),
+                    "target_types": self._spell_target_types(name),
                 }
             )
         pending = session.scalars(
@@ -1723,6 +2496,282 @@ class PlayerRoomService:
             ],
         }
 
+    @staticmethod
+    def _pr_spell_key(name: str) -> str:
+        """Normalize the small, explicitly supported exploration-spell set."""
+        return re.sub(r"[\s_.-]+", "", name).casefold()
+
+    @classmethod
+    def _pr_spell_effect_kind(cls, name: str) -> str | None:
+        key = cls._pr_spell_key(name)
+        aliases = (
+            ("light", ("光亮术", "不灭明焰", "昼明术", "舞光术", "light")),
+            ("darkness", ("黑暗术", "darkness")),
+            ("detect_magic", ("侦测魔法", "探测魔法", "detectmagic")),
+            ("detect_trap", ("寻找陷阱", "侦测陷阱", "findtraps")),
+            ("locate", ("物件定位术", "生物定位术", "动植物定位术", "定位术", "locate")),
+            ("grant_language", ("通晓语言", "巧言术", "comprehendlanguages")),
+            ("create_supply", ("造粮术", "造水术", "造水/枯水术", "神莓术", "goodberry")),
+            ("knock", ("敲击术", "knock")),
+            ("arcane_lock", ("秘法锁", "奥术锁", "arcanelock")),
+            ("mending", ("修复术", "mending")),
+            ("message", ("传讯", "message")),
+            ("sending", ("短讯", "sending")),
+            ("comprehend_languages", ("通晓语言", "comprehendlanguages")),
+            ("speak_with_animals", ("动物交谈", "speakwithanimals")),
+            (
+                "communicate",
+                ("植物交谈", "动物信使", "心灵感应", "拉瑞心灵联结", "communicate"),
+            ),
+        )
+        return next(
+            (effect for effect, names in aliases if any(alias in key for alias in names)),
+            None,
+        )
+
+    @classmethod
+    def _spell_target_types(cls, name: str) -> list[str]:
+        effect = cls._pr_spell_effect_kind(name)
+        if effect in {"knock", "arcane_lock", "mending"}:
+            return ["object"]
+        if effect in {"light", "darkness"}:
+            return ["self", "object", "area"]
+        if effect in {"detect_magic", "detect_trap", "locate", "create_supply"}:
+            return ["self", "object", "area", "npc", "monster"]
+        if effect == "grant_language":
+            return ["self", "npc", "monster"]
+        if effect in {"message", "sending"}:
+            return ["self", "npc", "monster"]
+        if effect == "comprehend_languages":
+            return ["self"]
+        if effect == "speak_with_animals":
+            return ["self", "npc", "monster"]
+        if "隐形" in name:
+            return ["self"]
+        if "命令" in name:
+            return ["npc", "monster"]
+        return ["self", "npc", "monster", "object", "area"]
+
+    @staticmethod
+    def _manual_automation(reason: str) -> dict[str, Any]:
+        return {
+            "status": "manual",
+            "mode": "manual",
+            "apply_on_dm_accept": False,
+            "requires_dm_confirmation": True,
+            "reason": reason,
+        }
+
+    @classmethod
+    def _safe_pr_spell_execution(
+        cls,
+        *,
+        action: dict[str, Any],
+        target: dict[str, Any],
+        target_object: SceneObject | None,
+    ) -> dict[str, dict[str, Any]] | None:
+        """Return a DM-confirmed operation for a deliberately tiny safe spell set.
+
+        These effects never alter fog of war, creatures, or hidden information.  A
+        proposal is merely ready for the DM inbox; it is applied only by
+        ``PlayerService.resolve_action`` after acceptance.
+        """
+        name = str(action.get("name") or "")
+        effect = cls._pr_spell_effect_kind(name)
+        if effect is None:
+            return None
+
+        def object_operation(
+            operation: str,
+            *,
+            summary: str,
+            extra: dict[str, Any] | None = None,
+        ) -> dict[str, dict[str, Any]]:
+            if target_object is None:
+                raise ValueError(f"{name}必须选择当前公开 Scene 中的物体")
+            proposal: dict[str, Any] = {
+                "kind": "scene_object_operation",
+                "operation": operation,
+                "object_id": target_object.id,
+                "expected_object_type": target_object.object_type,
+                "expected_state": target_object.state,
+                "expected_object_version": target_object.version,
+                "summary": summary,
+            }
+            if extra:
+                proposal.update(extra)
+            return {
+                "resolution": {
+                    "kind": "automatic_effect",
+                    "effect": operation,
+                    "requires_player_roll": False,
+                    "requires_dm_confirmation": True,
+                    "status": "ready",
+                },
+                "proposal": proposal,
+                "automation": {
+                    "status": "ready_for_dm_confirmation",
+                    "mode": "dm_confirmed_object_operation",
+                    "operation": operation,
+                    "apply_on_dm_accept": True,
+                    "requires_dm_confirmation": True,
+                },
+            }
+
+        if effect == "knock":
+            if target_object is None or target_object.object_type != "door":
+                raise ValueError("敲击术只能自动处理当前公开 Scene 中的门")
+            interaction = dict(target_object.interaction_json or {})
+            if interaction.get("locked") is not True:
+                raise ValueError("敲击术只能自动处理明确标记为已锁的门")
+            return object_operation(
+                "unlock_door",
+                summary=f"DM 确认后将解除「{target_object.label}」的锁定，不自动打开门。",
+                extra={"expected_locked": True},
+            )
+
+        if effect == "arcane_lock":
+            if target_object is None or target_object.object_type != "door":
+                raise ValueError("秘法锁只能自动处理当前公开 Scene 中的门")
+            if target_object.state != "closed":
+                raise ValueError("秘法锁只能自动处理关闭的门")
+            interaction = dict(target_object.interaction_json or {})
+            return object_operation(
+                "lock_door",
+                summary=f"DM 确认后将把「{target_object.label}」标记为秘法锁定。",
+                extra={"expected_locked": bool(interaction.get("locked"))},
+            )
+
+        if effect == "mending":
+            return object_operation(
+                "mark_repaired",
+                summary=f"DM 确认后将记录「{target_object.label}」已由修复术修补。",
+            )
+
+        if effect in {"light", "darkness"} and target_object is not None:
+            operation = "illuminate_object" if effect == "light" else "darken_object"
+            spell_name = str(action.get("name") or "")
+            bright_radius = 60 if spell_name == "昼明术" else 10 if spell_name == "舞光术" else 20
+            dim_radius = bright_radius
+            effect_data = (
+                {
+                    "mode": "bright_light",
+                    "bright_radius_ft": bright_radius,
+                    "dim_radius_ft": dim_radius,
+                }
+                if effect == "light"
+                else {"mode": "magical_darkness", "radius_ft": 15}
+            )
+            label = "光照" if effect == "light" else "魔法黑暗"
+            return object_operation(
+                operation,
+                summary=(
+                    f"DM 确认后将把「{target_object.label}」记录为{label}来源；不自动改写战争迷雾。"
+                ),
+                extra={"illumination": effect_data},
+            )
+
+        if effect in {"detect_magic", "detect_trap", "locate", "create_supply"}:
+            descriptions = {
+                "detect_magic": "记录侦测魔法请求；系统不会伪造隐藏物或学派信息。",
+                "detect_trap": "记录寻找陷阱请求；发现与解除仍由 DM 根据公开场景和规则确认。",
+                "locate": "记录定位请求；目标是否存在、方向和距离仍由 DM 确认。",
+                "grant_language": "记录语言理解能力生效；具体交流内容仍由 DM 确认。",
+                "create_supply": "记录补给创造结果；数量按法术原文和 DM 确认，不从名称猜测。",
+            }
+            return {
+                "resolution": {
+                    "kind": "structured_effect",
+                    "effect": effect,
+                    "requires_player_roll": False,
+                    "requires_dm_confirmation": True,
+                    "status": "ready",
+                },
+                "proposal": {
+                    "kind": "structured_result",
+                    "result_type": effect,
+                    "target": target,
+                    "summary": descriptions[effect],
+                },
+                "automation": {
+                    "status": "ready_for_dm_confirmation",
+                    "mode": "dm_confirmed_result",
+                    "operation": "record_structured_result",
+                    "apply_on_dm_accept": False,
+                    "requires_dm_confirmation": True,
+                },
+            }
+
+        if effect in {"light", "darkness"}:
+            label = "光亮术" if effect == "light" else "黑暗术"
+            spell_name = str(action.get("name") or "")
+            light_range = 120 if spell_name == "昼明术" else 20 if spell_name == "舞光术" else 40
+            details = (
+                f"明亮光照{light_range // 2}尺，外加微光光照{light_range // 2}尺。"
+                if effect == "light"
+                else "半径15尺的魔法黑暗区域。"
+            )
+            return {
+                "resolution": {
+                    "kind": "automatic_effect",
+                    "effect": "light_suggestion" if effect == "light" else "darkness_suggestion",
+                    "requires_player_roll": False,
+                    "requires_dm_confirmation": True,
+                    "status": "ready",
+                },
+                "proposal": {
+                    "kind": "lighting_suggestion",
+                    "effect": effect,
+                    "summary": f"{label}：{details} DM 可据场景补充光照、遮蔽和可见性后果。",
+                },
+                "automation": {
+                    "status": "ready_for_dm_confirmation",
+                    "mode": "dm_confirmed_result",
+                    "operation": "record_lighting_suggestion",
+                    "apply_on_dm_accept": False,
+                    "requires_dm_confirmation": True,
+                },
+            }
+
+        communication = {
+            "message": ("message", "传递一段简短讯息"),
+            "sending": ("sending", "向目标发送短讯"),
+            "comprehend_languages": ("comprehend_languages", "获得理解语言的临时能力"),
+            "speak_with_animals": ("speak_with_animals", "获得与动物交谈的临时能力"),
+            "communicate": ("communicate", "建立与目标的结构化沟通窗口"),
+        }
+        if effect == "grant_language":
+            effect = "comprehend_languages"
+        if effect in communication:
+            channel, outcome = communication[effect]
+            return {
+                "resolution": {
+                    "kind": "structured_communication",
+                    "channel": channel,
+                    "requires_player_roll": False,
+                    "requires_dm_confirmation": True,
+                    "status": "ready",
+                },
+                "proposal": {
+                    "kind": "structured_result",
+                    "result_type": channel,
+                    "target": {
+                        "type": target.get("type"),
+                        "id": target.get("id"),
+                        "name": target.get("name"),
+                    },
+                    "summary": f"DM 确认后记录：{outcome}。具体内容、回应与持续时间由 DM 裁定。",
+                },
+                "automation": {
+                    "status": "ready_for_dm_confirmation",
+                    "mode": "dm_confirmed_result",
+                    "operation": "record_structured_result",
+                    "apply_on_dm_accept": False,
+                    "requires_dm_confirmation": True,
+                },
+            }
+        return None
+
     def _combat_snapshot(
         self, session: Session, room: PlayerRoom, principal: PlayerPrincipal
     ) -> dict[str, Any] | None:
@@ -1741,14 +2790,64 @@ class PlayerRoomService:
             )
             else None
         )
-        own = next(
-            (
-                item
-                for item in fighters
-                if item.entity_type == "character" and item.entity_id == principal.character_id
-            ),
-            None,
+        own_ids = {
+            item.id for item in fighters if self._is_player_controlled(item, principal.character_id)
+        }
+        own = next((item for item in fighters if item.id in own_ids), None)
+        death_save: dict[str, Any] | None = None
+        if own is not None and own.entity_type == "character" and own.hp <= 0:
+            death_save_row = session.scalar(
+                select(DeathSave).where(DeathSave.combatant_id == own.id)
+            )
+            death_save = (
+                serialize(death_save_row)
+                if death_save_row is not None
+                else {
+                    "combatant_id": own.id,
+                    "successes": 0,
+                    "failures": 0,
+                    "stable": False,
+                    "dead": False,
+                    "pending_death_confirmation": False,
+                    "last_roll": None,
+                    "version": 1,
+                }
+            )
+        visibility_scene_id = combat.scene_id or room.current_scene_id
+        visibility_scene = (
+            session.get(Scene, visibility_scene_id) if visibility_scene_id is not None else None
         )
+        visibility_grid = (
+            session.scalar(select(SceneGrid).where(SceneGrid.scene_id == visibility_scene.id))
+            if visibility_scene is not None
+            else None
+        )
+        fog_enabled = (
+            principal.character_id is not None
+            and combat.status == "active"
+            and visibility_scene is not None
+            and visibility_grid is not None
+        )
+        visible_cells = (
+            self._visibility_for(session, visibility_scene, principal, visibility_grid)["visible"]
+            if fog_enabled and visibility_scene is not None and visibility_grid is not None
+            else set()
+        )
+
+        def combatant_position(item: Combatant) -> tuple[int, int] | None:
+            raw = item.snapshot_json.get("grid_position")
+            if not isinstance(raw, dict) or "row" not in raw or "col" not in raw:
+                return None
+            return int(raw["row"]), int(raw["col"])
+
+        def combatant_is_visible(item: Combatant) -> bool:
+            return (
+                not fog_enabled or item.id in own_ids or combatant_position(item) in visible_cells
+            )
+
+        visible_fighters = [item for item in fighters if combatant_is_visible(item)]
+        visible_fighter_ids = {item.id for item in visible_fighters}
+        visible_active = active if active is not None and active.id in visible_fighter_ids else None
         actions = session.scalars(
             select(CombatAction)
             .where(CombatAction.combat_id == combat.id)
@@ -1756,13 +2855,36 @@ class PlayerRoomService:
             .limit(80)
         ).all()
         fighters_by_id = {item.id: item for item in fighters}
+        safe_fighters_by_id = {item.id: item for item in visible_fighters}
+        active_effects_by_target: dict[str, list[dict[str, Any]]] = {}
+        for effect in session.scalars(
+            select(CombatEffect).where(
+                CombatEffect.combat_id == combat.id,
+                CombatEffect.status == "active",
+            )
+        ).all():
+            if effect.target_combatant_id not in safe_fighters_by_id:
+                continue
+            details = dict(effect.details_json or {})
+            raw_block = details.get("rule_block")
+            active_effects_by_target.setdefault(effect.target_combatant_id, []).append(
+                {
+                    "id": effect.id,
+                    "name": effect.name,
+                    "effect_type": effect.effect_type,
+                    "duration_unit": effect.duration_unit,
+                    "duration_value": effect.duration_value,
+                    "ends_round": effect.ends_round,
+                    "trigger_timing": effect.trigger_timing,
+                    "rule_block": raw_block if isinstance(raw_block, dict) else None,
+                }
+            )
         pending = []
         for action in actions:
             if (
                 combat.status != "active"
                 or action.status != "previewed"
-                or own is None
-                or own.id not in action.target_combatant_ids
+                or not own_ids.intersection(action.target_combatant_ids)
             ):
                 continue
             if action.request_json.get("resolution_type"):
@@ -1783,11 +2905,79 @@ class PlayerRoomService:
                             action.target_combatant_ids[0] if action.target_combatant_ids else None
                         ),
                         "target_name": action.request_json.get("target_name"),
+                        "effect_target_combatant_id": action.request_json.get(
+                            "effect_target_combatant_id"
+                        ),
+                        "effect_target_name": action.request_json.get("effect_target_name"),
                         "damage_on_success": action.request_json.get("damage_on_success", 0),
                         "damage_on_failure": action.request_json.get("damage_on_failure", 0),
                         "damage_type": action.request_json.get("damage_type"),
+                        "damage_components_on_success": action.request_json.get(
+                            "damage_components_on_success", []
+                        ),
+                        "damage_components_on_failure": action.request_json.get(
+                            "damage_components_on_failure", []
+                        ),
+                        "damage_tags": action.request_json.get("damage_tags", []),
+                        "action_cost": action.request_json.get("action_cost", "none"),
+                        "legendary_cost": action.request_json.get("legendary_cost"),
+                        "legendary_pool_max": action.request_json.get("legendary_pool_max"),
+                        "reaction_trigger": action.request_json.get("reaction_trigger"),
+                        "sequence_step": action.request_json.get("sequence_step"),
+                        "sequence_size": action.request_json.get("sequence_size"),
                     }
                 )
+
+        active_action: dict[str, Any] | None = None
+        if active is not None and active.entity_type == "monster":
+            active_actions = self._combatant_actions(session, active)
+            pending_action_name = next(
+                (
+                    str(item.get("action_name"))
+                    for item in pending
+                    if item.get("actor_combatant_id") == active.id
+                    and item.get("action_name")
+                ),
+                None,
+            )
+            if pending_action_name:
+                active_action = next(
+                    (
+                        dict(item)
+                        for item in active_actions
+                        if isinstance(item, dict)
+                        and str(item.get("name") or "") == pending_action_name
+                    ),
+                    None,
+                )
+            active_action = active_action or self._active_monster_action(
+                active_actions,
+                combat.round_number,
+                active.snapshot_json,
+            )
+
+        def action_is_visible(action: CombatAction) -> bool:
+            if not fog_enabled:
+                return True
+            if own_ids and (
+                action.actor_combatant_id in own_ids
+                or own_ids.intersection(action.target_combatant_ids)
+            ):
+                return True
+            actor = fighters_by_id.get(action.actor_combatant_id or "")
+            if actor is not None and actor.id in visible_fighter_ids:
+                return True
+            for key in ("to_position", "from_position"):
+                raw_position = action.request_json.get(key)
+                if (
+                    isinstance(raw_position, dict)
+                    and "row" in raw_position
+                    and "col" in raw_position
+                ):
+                    if (int(raw_position["row"]), int(raw_position["col"])) in visible_cells:
+                        return True
+            return False
+
         return {
             "id": combat.id,
             "version": combat.version,
@@ -1795,10 +2985,20 @@ class PlayerRoomService:
             "status": combat.status,
             "round_number": combat.round_number,
             "current_turn_index": combat.current_turn_index,
-            "active_combatant_id": active.id if active else None,
-            "is_my_turn": own is not None and active is not None and own.id == active.id,
+            "active_combatant_id": visible_active.id if visible_active else None,
+            "is_my_turn": active is not None and active.id in own_ids,
             "own_combatant_id": own.id if own else None,
-            "combatants": [self._safe_combatant(item, own) for item in fighters],
+            "own_combatant_ids": sorted(own_ids),
+            "combatants": [
+                self._safe_combatant(
+                    session,
+                    item,
+                    own_ids,
+                    active_effects_by_target.get(item.id, []),
+                    active_action if active is not None and item.id == active.id else None,
+                )
+                for item in visible_fighters
+            ],
             "log": [
                 {
                     "id": action.id,
@@ -1813,11 +3013,15 @@ class PlayerRoomService:
                         if action.actor_combatant_id in fighters_by_id
                         else None
                     ),
-                    "target_combatant_ids": action.target_combatant_ids,
-                    "target_names": [
-                        fighters_by_id[target_id].display_name
+                    "target_combatant_ids": [
+                        target_id
                         for target_id in action.target_combatant_ids
-                        if target_id in fighters_by_id
+                        if target_id in safe_fighters_by_id
+                    ],
+                    "target_names": [
+                        safe_fighters_by_id[target_id].display_name
+                        for target_id in action.target_combatant_ids
+                        if target_id in safe_fighters_by_id
                     ],
                     "action_name": action.request_json.get("action_name"),
                     "from_position": action.request_json.get("from_position"),
@@ -1833,13 +3037,21 @@ class PlayerRoomService:
                     "created_at": action.created_at.isoformat(),
                 }
                 for action in actions
+                if action_is_visible(action)
             ],
             "pending_rolls": pending,
+            "death_save": death_save,
         }
 
     @staticmethod
-    def _safe_combatant(item: Combatant, own: Combatant | None) -> dict[str, Any]:
-        is_own = own is not None and item.id == own.id
+    def _safe_combatant(
+        session: Session,
+        item: Combatant,
+        own_ids: set[str],
+        active_effects: list[dict[str, Any]] | None = None,
+        active_action: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        is_own = item.id in own_ids
         ratio = item.hp / max(1, item.max_hp)
         health = (
             "倒地"
@@ -1864,22 +3076,25 @@ class PlayerRoomService:
             "position": position,
             "health_status": health,
             "is_own": is_own,
+            "controller": item.snapshot_json.get("controller"),
+            "owner_character_id": item.snapshot_json.get("owner_character_id"),
+            "disposition": item.snapshot_json.get("disposition"),
             # The shared battle card exposes deterministic combat statistics
             # needed for assisted play. DM notes and unrevealed narrative
             # identity remain outside this snapshot.
             "armor_class": item.armor_class,
             "hp": item.hp,
             "max_hp": item.max_hp,
+            "temporary_hp": item.temporary_hp,
             "conditions": item.conditions,
             "speed_ft": item.speed_ft,
             "ability_scores": json_dict(item.snapshot_json.get("ability_scores")),
-            "actions": (
-                item.snapshot_json.get("actions")
-                if isinstance(item.snapshot_json.get("actions"), list)
-                else []
-            ),
+            "actions": PlayerRoomService._combatant_actions(session, item),
+            "active_action": active_action,
             "damage_resistances": item.damage_resistances,
+            "damage_vulnerabilities": item.damage_vulnerabilities,
             "damage_immunities": item.damage_immunities,
+            "active_effects": active_effects or [],
         }
         if is_own:
             result.update(
@@ -1888,9 +3103,119 @@ class PlayerRoomService:
                     "action_available": item.action_available,
                     "bonus_action_available": item.bonus_action_available,
                     "reaction_available": item.reaction_available,
+                    "extra_action_budget": int(
+                        item.snapshot_json.get("extra_action_budget") or 0
+                    ),
+                    "attack_roll_budget": int(
+                        item.snapshot_json.get("attack_roll_budget") or 0
+                    ),
                 }
             )
+        if item.entity_type == "companion" and "summon_source" in item.snapshot_json:
+            duration = item.snapshot_json.get("summon_duration")
+            result["summon"] = {
+                "source_combatant_id": item.snapshot_json.get("summon_source_combatant_id"),
+                "lifecycle_effect_id": item.snapshot_json.get("summon_lifecycle_effect_id"),
+                "duration": duration if isinstance(duration, dict) else None,
+                "enemy_ai_mode": item.snapshot_json.get("enemy_ai_mode"),
+            }
         return result
+
+    @staticmethod
+    def _active_monster_action(
+        actions: list[Any],
+        round_number: int,
+        snapshot: dict[str, Any],
+    ) -> dict[str, Any] | None:
+        """Expose the same deterministic standard-AI action window to players.
+
+        The DM console may still override the tactic locally, but the default
+        simulation uses the standard round-seeded selection.  Publishing the
+        selected structured action makes the player's range preview stable
+        before a saving-throw prompt exists.
+        """
+        recharge = snapshot.get("recharge_available")
+        recharge_state = recharge if isinstance(recharge, dict) else None
+        eligible: list[dict[str, Any]] = []
+        for index, raw in enumerate(actions):
+            if not isinstance(raw, dict):
+                continue
+            action = dict(raw)
+            if action.get("auto_eligible") is False:
+                continue
+            action_type = action.get("action_type")
+            if action_type not in (None, "action", "bonus_action", "spellcasting"):
+                continue
+            has_damage_dice = bool(re.search(r"\d+\s*d\s*\d+", str(action.get("damage") or "")))
+            if not has_damage_dice and not action.get("multiattack"):
+                continue
+            recharge_value = action.get("recharge")
+            if recharge_state is not None and recharge_value:
+                key = str(action.get("name") or f"action-{index + 1}")
+                if recharge_state.get(key) is not True:
+                    continue
+            eligible.append(action)
+        if not eligible:
+            return None
+        return eligible[abs(round_number) % len(eligible)]
+
+    @staticmethod
+    def _combatant_actions(session: Session, item: Combatant) -> list[Any]:
+        raw_actions = (
+            item.snapshot_json.get("actions") if isinstance(item.snapshot_json, dict) else []
+        )
+        actions = (
+            [dict(raw) if isinstance(raw, dict) else raw for raw in raw_actions]
+            if isinstance(raw_actions, list)
+            else []
+        )
+        registry = item.snapshot_json.get("feature_runtime")
+        if isinstance(registry, dict):
+            existing_names = {
+                str(action.get("name") or "")
+                for action in actions
+                if isinstance(action, dict)
+            }
+            actions.extend(
+                action
+                for action in feature_runtime_action_projections(registry)
+                if str(action.get("name") or "") not in existing_names
+            )
+        if item.entity_type != "character" or not item.entity_id:
+            return actions
+        known_spells = session.scalars(
+            select(KnownSpell).where(KnownSpell.character_id == item.entity_id)
+        ).all()
+        by_name = {spell.name: dict(spell.metadata_json or {}) for spell in known_spells}
+        for action in actions:
+            if not isinstance(action, dict):
+                continue
+            metadata = by_name.get(str(action.get("name") or ""), {})
+            source = metadata.get("character_spell")
+            source_fields = dict(source) if isinstance(source, dict) else metadata
+            for key in (
+                "damage",
+                "damage_expression",
+                "damage_dice",
+                "damage_type",
+                "save_ability",
+                "save_dc",
+                "half_damage_on_save",
+                "range",
+                "description",
+                "cost",
+                "resource_key",
+                "resource_cost",
+                "resolution_kind",
+                "rule_plan",
+            ):
+                if source_fields.get(key) not in (None, ""):
+                    action[key] = source_fields[key]
+            PlayerRoomService._attach_attack_riders(
+                action,
+                registry if isinstance(registry, dict) else None,
+            )
+        return actions
 
     def submit_request(
         self,
@@ -1928,19 +3253,105 @@ class PlayerRoomService:
                 payload = {"schema_version": "1.0", **transition}
                 message = message or f"申请{transition['label']}：{transition['target_level_name']}"
         character = self.player.character_view(principal.campaign_id, principal.character_id)
-        return self.player.submit_action(
-            principal.campaign_id,
-            {
-                "character_id": principal.character_id,
-                "character_version": character["version"],
-                "player_key": principal.session_id,
-                "action_type": action_type,
-                "message": message,
-                "payload_json": payload,
-                "idempotency_key": idempotency_key,
-            },
-            request_id,
-        )
+        if action_type == "rest_request":
+            rest_type = str(payload.get("rest_type") or "")
+            if rest_type not in {"short", "long"}:
+                raise ValueError("休息申请必须选择短休或长休")
+            with Session(self.engine) as session:
+                existing = session.scalar(
+                    select(PlayerActionRequest).where(
+                        PlayerActionRequest.campaign_id == principal.campaign_id,
+                        PlayerActionRequest.character_id == principal.character_id,
+                        PlayerActionRequest.action_type == "rest_request",
+                        PlayerActionRequest.status == "pending",
+                    )
+                )
+            if existing is not None:
+                raise ValueError("已有一条待 DM 处理的休息申请")
+            raw_hit_dice = payload.get("hit_dice", [])
+            if raw_hit_dice is None:
+                raw_hit_dice = []
+            if not isinstance(raw_hit_dice, list):
+                raise ValueError("短休生命骰选择格式无效")
+            pools_by_id = {
+                str(pool["id"]): pool
+                for pool in self._player_hit_dice(principal.campaign_id, principal.character_id)
+            }
+            usage_by_pool: dict[str, int] = {}
+            normalized_hit_dice: list[dict[str, Any]] = []
+            for raw_selection in raw_hit_dice:
+                if not isinstance(raw_selection, dict):
+                    raise ValueError("短休生命骰选择格式无效")
+                pool_id = str(raw_selection.get("resource_pool_id") or "")
+                pool = pools_by_id.get(pool_id)
+                if pool is None:
+                    raise ValueError("只能选择当前角色的生命骰")
+                die_size = int(pool.get("die_size") or 0)
+                raw_roll = raw_selection.get("roll")
+                if raw_roll is None:
+                    raise ValueError("生命骰结果必须是整数")
+                try:
+                    roll = int(str(raw_roll))
+                except (TypeError, ValueError) as exc:
+                    raise ValueError("生命骰结果必须是整数") from exc
+                if roll < 1 or roll > die_size:
+                    raise ValueError(f"生命骰结果必须在 1–{die_size} 之间")
+                usage_by_pool[pool_id] = usage_by_pool.get(pool_id, 0) + 1
+                if usage_by_pool[pool_id] > int(pool["current"]):
+                    raise ValueError("选择的生命骰数量超过当前可用数量")
+                normalized_hit_dice.append({"resource_pool_id": pool_id, "roll": roll})
+            payload = {
+                "schema_version": "1.0",
+                "rest_type": rest_type,
+                "duration_minutes": 60 if rest_type == "short" else 480,
+                "interrupted": False,
+                "fallback_to_short_rest": False,
+                "participants": [
+                    {
+                        "character_id": principal.character_id,
+                        "character_version": int(character["version"]),
+                        "hit_dice": normalized_hit_dice if rest_type == "short" else [],
+                        "excluded_resource_keys": [],
+                    }
+                ],
+            }
+            message = message or f"申请进行{'短休' if rest_type == 'short' else '长休'}。"
+        request_data = {
+            "character_id": principal.character_id,
+            "character_version": character["version"],
+            "player_key": principal.session_id,
+            "action_type": action_type,
+            "message": message,
+            "payload_json": payload,
+            "idempotency_key": idempotency_key,
+        }
+        try:
+            return self.player.submit_action(
+                principal.campaign_id,
+                request_data,
+                request_id,
+            )
+        except IntegrityError as exc:
+            with Session(self.engine) as session:
+                existing = session.scalar(
+                    select(PlayerActionRequest).where(
+                        PlayerActionRequest.campaign_id == principal.campaign_id,
+                        PlayerActionRequest.idempotency_key == idempotency_key,
+                    )
+                )
+                if existing is not None:
+                    return serialize(existing)
+                pending_rest = session.scalar(
+                    select(PlayerActionRequest).where(
+                        PlayerActionRequest.campaign_id == principal.campaign_id,
+                        PlayerActionRequest.character_id == principal.character_id,
+                        PlayerActionRequest.action_type == "rest_request",
+                        PlayerActionRequest.status == "pending",
+                    )
+                )
+            if pending_rest is not None:
+                raise ValueError("已有一条待 DM 处理的休息申请") from exc
+            raise
 
     def plan_noncombat_action(
         self,
@@ -2032,6 +3443,23 @@ class PlayerRoomService:
             range_text = str(action.get("range") or "")
             match = re.search(r"(\d+)\s*(?:ft|feet|foot|尺)", range_text.lower())
             maximum_range = int(match.group(1)) if match else None
+            raw_plan = action.get("rule_plan")
+            target_block = (
+                next(
+                    (
+                        block
+                        for block in raw_plan.get("blocks", [])
+                        if isinstance(block, dict) and block.get("kind") == "target"
+                    ),
+                    None,
+                )
+                if isinstance(raw_plan, dict) and isinstance(raw_plan.get("blocks"), list)
+                else None
+            )
+            if maximum_range is None and isinstance(target_block, dict):
+                plan_range = target_block.get("range_ft")
+                if isinstance(plan_range, int) and plan_range > 0:
+                    maximum_range = plan_range
             if (
                 maximum_range is not None
                 and measured_range is not None
@@ -2062,6 +3490,9 @@ class PlayerRoomService:
                     "kind": "narrative",
                     "summary": "按规则结果推进叙事；具体世界状态由 DM 确认。",
                 },
+                "automation": self._manual_automation(
+                    "默认不自动改变场景、角色或隐藏信息；由 DM 确认具体后果。"
+                ),
                 "narrative_suggestions": [
                     "描述行动造成的直接可见变化。",
                     "给出目标反应，并保留 DM 对隐情与后果的裁量。",
@@ -2107,6 +3538,13 @@ class PlayerRoomService:
                         "to_state": desired_state,
                         "summary": f"成功后将「{target_object.label}」标记为{desired_state}。",
                     }
+                    plan["automation"] = {
+                        "status": "pending_player_roll",
+                        "mode": "dm_confirmed_object_state",
+                        "operation": "set_object_state",
+                        "apply_on_dm_accept": True,
+                        "requires_dm_confirmation": True,
+                    }
             elif kind == "spell":
                 resource_key = action.get("resource_key")
                 resource_cost = int(action.get("resource_cost") or 0)
@@ -2117,7 +3555,14 @@ class PlayerRoomService:
                         raise ValueError("对应法术位或资源不足")
                     plan["cost"]["available_before"] = current
                     plan["cost"]["available_after"] = current - resource_cost
-                if "命令" in str(action["name"]):
+                safe_execution = self._safe_pr_spell_execution(
+                    action=action,
+                    target=target,
+                    target_object=target_object,
+                )
+                if safe_execution is not None:
+                    plan.update(safe_execution)
+                elif "命令" in str(action["name"]):
                     if target_scores is None:
                         raise ValueError("命令术必须选择当前 Scene 中的 NPC 或怪物")
                     dc = int(action.get("save_dc") or 10)
@@ -2139,12 +3584,26 @@ class PlayerRoomService:
                             )
                         ),
                     }
+                    plan["automation"] = {
+                        "status": "ready_for_dm_confirmation",
+                        "mode": "dm_confirmed_result",
+                        "operation": "record_save_result",
+                        "apply_on_dm_accept": False,
+                        "requires_dm_confirmation": True,
+                    }
                 elif "隐形" in str(action["name"]):
                     plan["proposal"] = {
                         "kind": "condition_advice",
                         "condition": "隐形",
                         "concentration": True,
                         "summary": "建议记录目标隐形与施法者专注；具体可见性由 DM 裁定。",
+                    }
+                    plan["automation"] = {
+                        "status": "ready_for_dm_confirmation",
+                        "mode": "dm_confirmed_result",
+                        "operation": "record_condition_advice",
+                        "apply_on_dm_accept": False,
+                        "requires_dm_confirmation": True,
                     }
             item = PlayerActionRequest(
                 campaign_id=principal.campaign_id,
@@ -2210,20 +3669,235 @@ class PlayerRoomService:
             payload["phase"] = "resolved"
             payload["resolution"] = resolution
             proposal = json_dict(payload.get("proposal"))
+            automation = json_dict(payload.get("automation"))
             if not total >= dc and proposal.get("kind") == "object_state":
                 proposal = {
                     "kind": "narrative",
                     "summary": "检定失败；不改变物体状态，DM 可描述代价、时间或暴露风险。",
                 }
+                automation.update(
+                    status="failed",
+                    apply_on_dm_accept=False,
+                    reason="检定失败，已取消待确认的物体状态变更。",
+                )
+            elif total >= dc and automation.get("status") == "pending_player_roll":
+                automation["status"] = "ready_for_dm_confirmation"
             payload["proposal"] = proposal
+            payload["automation"] = automation
             item.payload_json = payload
             item.version += 1
             item.updated_at = _now()
             session.flush()
             return serialize(item)
 
+    def summon(
+        self,
+        principal: PlayerPrincipal,
+        companion_id: str,
+        action_name: str,
+        count: int,
+        position: dict[str, int] | None,
+        idempotency_key: str,
+    ) -> dict[str, Any]:
+        """Use an existing player-owned creature template in the current combat."""
+        if principal.character_id is None:
+            raise ValueError("请先绑定角色")
+        with Session(self.engine) as session:
+            room = session.get(PlayerRoom, principal.room_id)
+            combat = (
+                session.get(Combat, room.current_combat_id)
+                if room and room.current_combat_id
+                else None
+            )
+            if combat is None or combat.status != "active":
+                raise ValueError("当前没有进行中的战斗")
+            companion = session.get(CharacterCompanion, companion_id)
+            if (
+                companion is None
+                or companion.campaign_id != principal.campaign_id
+                or companion.owner_character_id != principal.character_id
+                or not companion.active
+            ):
+                raise ValueError("只能召唤当前角色自己的有效伙伴模板")
+            fighters = self._ordered_fighters(session, combat.id)
+            active = (
+                fighters[combat.current_turn_index]
+                if fighters and combat.current_turn_index < len(fighters)
+                else None
+            )
+            source = self._controlled_actor(fighters, active, principal.character_id)
+            if source is None:
+                raise ValueError("现在还没有轮到你的角色或你的召唤单位")
+            character = session.get(Character, principal.character_id)
+            if character is None:
+                raise StateNotFoundError("character not found")
+            action = (
+                self._action_data(session, character, action_name)
+                if source.entity_type == "character"
+                else self._companion_action_data(source, action_name)
+            )
+            plan = action.get("rule_plan")
+            blocks = plan.get("blocks", []) if isinstance(plan, dict) else []
+            summon_block = next(
+                (
+                    block
+                    for block in blocks
+                    if isinstance(block, dict) and block.get("kind") == "summon"
+                ),
+                None,
+            )
+            if not isinstance(summon_block, dict):
+                raise ValueError("当前动作没有明确的召唤积木")
+            if summon_block.get("controller") not in {None, "caster"}:
+                raise ValueError("该召唤积木不是玩家可直接控制的召唤；请由 DM 按模板处理")
+            declared_count = summon_block.get("count")
+            if isinstance(declared_count, int) and not isinstance(declared_count, bool):
+                if count != declared_count:
+                    raise ValueError("该召唤的数量已在规则积木中明确，必须按明确数量执行")
+            elif summon_block.get("count_expression") and not isinstance(count, int):
+                raise ValueError("数量表达式的召唤必须由玩家明确提交实际数量")
+            raw_initiative_mode = summon_block.get("initiative_mode") or "independent"
+            if raw_initiative_mode == "independent":
+                initiative_mode: Literal["independent", "shared_with_source", "not_applicable"] = (
+                    "independent"
+                )
+            elif raw_initiative_mode == "shared_with_source":
+                initiative_mode = "shared_with_source"
+            elif raw_initiative_mode == "not_applicable":
+                initiative_mode = "not_applicable"
+            else:
+                raise ValueError("召唤积木的先攻模式无效")
+            if summon_block.get("enters_combat") is False or initiative_mode == "not_applicable":
+                raise ValueError("该召唤效果不是独立战斗单位，不能加入先攻")
+            duration_block = next(
+                (
+                    block
+                    for block in blocks
+                    if isinstance(block, dict) and block.get("kind") == "duration"
+                ),
+                None,
+            )
+            raw_duration_unit = (
+                str(duration_block.get("unit") or "until_removed")
+                if isinstance(duration_block, dict)
+                else "until_removed"
+            )
+            raw_duration_value = (
+                int(duration_block.get("value") or 0) if isinstance(duration_block, dict) else 0
+            )
+            duration_unit: Literal["rounds", "minutes", "until_save", "until_removed"]
+            duration_value: int | None
+            if raw_duration_unit == "round":
+                duration_unit, duration_value = "rounds", raw_duration_value
+            elif raw_duration_unit == "minute":
+                duration_unit, duration_value = "minutes", raw_duration_value
+            elif raw_duration_unit == "hour":
+                duration_unit, duration_value = "minutes", raw_duration_value * 60
+            elif raw_duration_unit == "day":
+                duration_unit, duration_value = "minutes", raw_duration_value * 24 * 60
+            elif raw_duration_unit == "until_save":
+                duration_unit, duration_value = "until_save", None
+            else:
+                duration_unit, duration_value = "until_removed", None
+            requires_concentration = bool(action.get("concentration")) or bool(
+                duration_block.get("concentration") if isinstance(duration_block, dict) else False
+            )
+            resource_key = str(action.get("resource_key") or "") or None
+            resource_cost = int(action.get("resource_cost") or 0)
+            combat_id = combat.id
+            source_id = source.id
+        return self.combat.add_summon(
+            principal.campaign_id,
+            combat_id,
+            CombatSummonCommand(
+                companion_id=companion_id,
+                position=position,
+                controller="player",
+                owner_character_id=principal.character_id,
+                disposition="ally",
+                source_combatant_id=source_id,
+                initiative_mode=initiative_mode,
+                count=count,
+                template_json={
+                    "action_name": action_name,
+                    "source_type": source.entity_type,
+                    "rule_template_ref": summon_block.get("template_ref"),
+                    "requires_template_choice": bool(
+                        summon_block.get("requires_template_choice", True)
+                    ),
+                },
+                action_cost="action",
+                resource_key=resource_key,
+                resource_cost=resource_cost,
+                duration_unit=duration_unit,
+                duration_value=duration_value,
+                requires_concentration=requires_concentration,
+            ),
+            idempotency_key=idempotency_key,
+        )
+
+    def dismiss_summon(
+        self,
+        principal: PlayerPrincipal,
+        summon_combatant_id: str,
+        summon_version: int,
+        reason: str,
+        idempotency_key: str,
+    ) -> dict[str, Any]:
+        """Let a player end only their own active summoned unit."""
+        if principal.character_id is None:
+            raise ValueError("请先绑定角色")
+        with Session(self.engine) as session:
+            room = session.get(PlayerRoom, principal.room_id)
+            combat = (
+                session.get(Combat, room.current_combat_id)
+                if room and room.current_combat_id
+                else None
+            )
+            if combat is None or combat.status != "active":
+                raise ValueError("当前没有进行中的战斗")
+            summon = session.get(Combatant, summon_combatant_id)
+            if (
+                summon is None
+                or summon.combat_id != combat.id
+                or summon.entity_type != "companion"
+                or not self._is_player_controlled(summon, principal.character_id)
+            ):
+                raise ValueError("只能结束自己控制的召唤物")
+            fighters = self._ordered_fighters(session, combat.id)
+            active = (
+                fighters[combat.current_turn_index]
+                if fighters and combat.current_turn_index < len(fighters)
+                else None
+            )
+            if self._controlled_actor(fighters, active, principal.character_id) is None:
+                raise ValueError("只能在自己的角色或召唤物回合结束召唤")
+            combat_id = combat.id
+        return self.combat.end_summon(
+            principal.campaign_id,
+            combat_id,
+            summon_combatant_id,
+            CombatSummonEndCommand(summon_version=summon_version, reason=reason, actor="player"),
+            idempotency_key=idempotency_key,
+        )
+
+    @staticmethod
+    def _ordered_fighters(session: Session, combat_id: str) -> list[Combatant]:
+        return list(
+            session.scalars(
+                select(Combatant)
+                .where(Combatant.combat_id == combat_id, Combatant.is_active.is_(True))
+                .order_by(Combatant.initiative.desc(), Combatant.created_at, Combatant.id)
+            ).all()
+        )
+
     def move(
-        self, principal: PlayerPrincipal, row: int, col: int, combatant_version: int
+        self,
+        principal: PlayerPrincipal,
+        row: int,
+        col: int,
+        combatant_version: int,
+        disengage: bool = False,
     ) -> dict[str, Any]:
         if principal.character_id is None:
             raise ValueError("请先绑定角色")
@@ -2241,17 +3915,14 @@ class PlayerRoomService:
                 .where(Combatant.combat_id == combat.id, Combatant.is_active.is_(True))
                 .order_by(Combatant.initiative.desc(), Combatant.created_at, Combatant.id)
             ).all()
-            actor = next(
-                (
-                    item
-                    for item in fighters
-                    if item.entity_type == "character" and item.entity_id == principal.character_id
-                ),
-                None,
-            )
             active = fighters[combat.current_turn_index] if fighters else None
-            if actor is None or active is None or actor.id != active.id:
-                raise ValueError("现在还没有轮到你的角色")
+            actor = self._controlled_actor(fighters, active, principal.character_id)
+            if actor is None:
+                raise ValueError("现在还没有轮到你的角色或你的召唤单位")
+            if CombatEngineService._movement_is_blocked(actor):
+                raise ValueError("当前状态不能移动")
+            if disengage and not actor.action_available:
+                raise ValueError("撤离需要本回合尚未使用的动作")
             if actor.version != combatant_version:
                 raise VersionConflict("combatant", actor.id, combatant_version, actor.version)
             snapshot = dict(actor.snapshot_json)
@@ -2262,7 +3933,7 @@ class PlayerRoomService:
                 if scene_id
                 else None
             )
-            if grid is not None and (row > grid.height or col > grid.width):
+            if grid is not None and not (1 <= row <= grid.height and 1 <= col <= grid.width):
                 raise ValueError("目的地超出当前战斗地图边界")
             if isinstance(current, dict):
                 start = (int(current["row"]), int(current["col"]))
@@ -2281,6 +3952,34 @@ class PlayerRoomService:
                 if token is None:
                     raise ValueError("角色尚未设置战斗地图起始位置")
                 start = (token.row, token.col)
+            # Frightened is not a blanket movement lock: the 2014/2024 rule
+            # forbids willingly moving closer to the structured source.  Do
+            # this check before path/terrain mutation, and fail closed when a
+            # source was not recorded instead of pretending the condition is
+            # harmless.
+            if CombatEngineService._has_condition(actor, "frightened"):
+                frightened_source_ids = CombatEngineService._condition_source_ids(
+                    session, combat.id, actor, "frightened"
+                )
+                if not frightened_source_ids:
+                    raise ValueError("恐慌状态的来源未记录，移动方向需要 DM 裁定")
+                movement_cell_size = grid.cell_size_ft if grid is not None else 5
+                for source in fighters:
+                    if source.id not in frightened_source_ids:
+                        continue
+                    source_position = source.snapshot_json.get("grid_position")
+                    if not isinstance(source_position, dict):
+                        raise ValueError("恐慌来源没有战斗位置，移动方向需要 DM 裁定")
+                    source_point = (
+                        int(source_position["row"]),
+                        int(source_position["col"]),
+                    )
+                    if grid_distance_ft(
+                        (row, col), source_point, cell_size_ft=movement_cell_size
+                    ) < grid_distance_ft(
+                        start, source_point, cell_size_ft=movement_cell_size
+                    ):
+                        raise ValueError("恐慌状态下不能主动靠近恐慌来源")
             objects = (
                 session.scalars(select(SceneObject).where(SceneObject.scene_id == scene_id)).all()
                 if scene_id
@@ -2302,7 +4001,37 @@ class PlayerRoomService:
             if any(cell in blocked for cell in path[1:]):
                 raise ValueError("移动路径被墙壁、关闭的门或障碍物阻挡")
             cell_size = grid.cell_size_ft if grid is not None else 5
-            cost = movement_cost_ft(path, difficult, cell_size_ft=cell_size)
+            standing_cost = 0
+            stood_from_prone = False
+            if self.combat._has_condition(actor, "prone"):
+                standing_cost = (actor.speed_ft + 1) // 2
+                if actor.speed_ft <= 0:
+                    raise ValueError("倒地单位没有足够速度起身")
+                stood_from_prone = True
+                # Ending a structured prone effect also restores any state it
+                # owns.  A hand-entered condition has no effect row and is
+                # simply removed below; neither path invents a free stand.
+                active_effects = session.scalars(
+                    select(CombatEffect).where(
+                        CombatEffect.combat_id == combat.id,
+                        CombatEffect.target_combatant_id == actor.id,
+                        CombatEffect.status == "active",
+                    )
+                ).all()
+                for effect in active_effects:
+                    block = dict(effect.details_json or {}).get("rule_block")
+                    if not isinstance(block, dict) or str(block.get("kind") or "") != "condition":
+                        continue
+                    if self.combat._canonical_condition(block.get("condition")) != "prone":
+                        continue
+                    self.combat._reverse_compiled_effect(session, actor, effect)
+                    effect.status = "ended"
+                    effect.ended_at = _now()
+                    effect.end_reason = "单位起身"
+                    effect.version += 1
+                self.combat._remove_condition(actor, "prone")
+            path_cost = movement_cost_ft(path, difficult, cell_size_ft=cell_size)
+            cost = standing_cost + path_cost
             if cost > actor.movement_remaining_ft:
                 raise ValueError("目的地超出本回合剩余移动范围")
             occupied = {
@@ -2314,18 +4043,171 @@ class PlayerRoomService:
             }
             if (row, col) in occupied:
                 raise ValueError("目的地已被其他单位占据")
-            snapshot["grid_position"] = {"row": row, "col": col}
+            opportunity_requests: list[dict[str, Any]] = []
+            if not disengage and isinstance(current, dict):
+                start_point = start
+                end_point = (row, col)
+                for enemy in fighters:
+                    if enemy.id == actor.id or not enemy.reaction_available:
+                        continue
+                    hostile = self._combatant_faction(enemy) != self._combatant_faction(actor)
+                    if not hostile:
+                        continue
+                    enemy_position = enemy.snapshot_json.get("grid_position")
+                    if not isinstance(enemy_position, dict):
+                        continue
+                    enemy_point = (int(enemy_position["row"]), int(enemy_position["col"]))
+                    if (
+                        grid_distance_ft(start_point, enemy_point, cell_size_ft=cell_size) <= 5
+                        and grid_distance_ft(end_point, enemy_point, cell_size_ft=cell_size) > 5
+                    ):
+                        action = next(
+                            (
+                                item
+                                for item in (enemy.snapshot_json.get("actions") or [])
+                                if isinstance(item, dict) and item.get("damage")
+                            ),
+                            {},
+                        )
+                        damage_expression = str(action.get("damage") or "按 DM 指定")
+                        opportunity_requests.append(
+                            {
+                                "source_combatant_id": enemy.id,
+                                "source_name": enemy.display_name,
+                                "damage_expression": damage_expression,
+                                "damage_type": str(action.get("damage_type") or "slashing"),
+                                "target_combatant_id": actor.id,
+                                "target_name": actor.display_name,
+                            }
+                        )
+            snapshot["grid_position"] = _merge_grid_position(
+                current,
+                row=row,
+                col=col,
+            )
             actor.snapshot_json = snapshot
             actor.movement_remaining_ft -= cost
+            if disengage:
+                actor.action_available = False
+            if start != (row, col):
+                session.add(
+                    CombatAction(
+                        campaign_id=combat.campaign_id,
+                        combat_id=combat.id,
+                        actor_combatant_id=actor.id,
+                        action_type="move",
+                        target_combatant_ids=[actor.id],
+                        request_json={
+                            "action_name": "撤离并移动" if disengage else "移动",
+                            "from_position": {"row": start[0], "col": start[1]},
+                            "to_position": {"row": row, "col": col},
+                            "movement_spent_ft": cost,
+                            "standing_from_prone_ft": standing_cost,
+                            "disengage": disengage,
+                        },
+                        result_json={
+                            "from_position": {"row": start[0], "col": start[1]},
+                            "to_position": {"row": row, "col": col},
+                            "movement_remaining_ft": actor.movement_remaining_ft,
+                        },
+                        explanation="战斗地图移动已公开同步",
+                        round_number=combat.round_number,
+                        turn_index=combat.current_turn_index,
+                        summary=(
+                            f"{actor.display_name} 从"
+                            f"（{start[0]},{start[1]}）移动到（{row},{col}）"
+                            f"；消耗 {cost} 尺移动力"
+                            + (f"（起身消耗 {standing_cost} 尺）" if stood_from_prone else "")
+                            + ("；本次移动不会触发借机攻击" if disengage else "")
+                        ),
+                        idempotency_key=f"combatant-move:{actor.id}:{combatant_version}",
+                        status="confirmed",
+                    )
+                )
+            elif stood_from_prone:
+                session.add(
+                    CombatAction(
+                        campaign_id=combat.campaign_id,
+                        combat_id=combat.id,
+                        actor_combatant_id=actor.id,
+                        action_type="stand",
+                        target_combatant_ids=[actor.id],
+                        request_json={
+                            "action_name": "起身",
+                            "movement_spent_ft": standing_cost,
+                        },
+                        result_json={
+                            "from_position": {"row": start[0], "col": start[1]},
+                            "to_position": {"row": row, "col": col},
+                            "movement_remaining_ft": actor.movement_remaining_ft,
+                        },
+                        explanation="倒地单位起身并消耗一半速度",
+                        round_number=combat.round_number,
+                        turn_index=combat.current_turn_index,
+                        summary=f"{actor.display_name} 起身；消耗 {standing_cost} 尺移动力",
+                        idempotency_key=f"combatant-stand:{actor.id}:{combatant_version}",
+                        status="confirmed",
+                    )
+                )
             actor.version += 1
             actor.updated_at = _now()
-            if scene_id:
-                token = session.scalar(
-                    select(SceneToken).where(
-                        SceneToken.scene_id == scene_id,
-                        SceneToken.entity_type == "character",
-                        SceneToken.entity_id == principal.character_id,
+            ended_movement_effects: list[CombatEffect] = []
+            ended_movement_summons: list[Combatant] = []
+            if start != (row, col) or stood_from_prone:
+                ended_movement_effects, ended_movement_summons = (
+                    self.combat._end_predicated_effects(
+                        session,
+                        combat,
+                        now=_now(),
+                        event_combatant_ids={actor.id},
+                        event_kinds={"movement"},
+                        event_only=True,
                     )
+                )
+                if ended_movement_effects:
+                    result_effect_ids = [
+                        effect.id for effect in ended_movement_effects
+                    ]
+                else:
+                    result_effect_ids = []
+            else:
+                result_effect_ids = []
+            for index, request in enumerate(opportunity_requests):
+                session.add(
+                    PlayerActionRequest(
+                        campaign_id=principal.campaign_id,
+                        character_id=principal.character_id,
+                        player_key=principal.session_id,
+                        action_type="opportunity_attack",
+                        message=(
+                            f"{request['source_name']} 可以对离开其近战范围的"
+                            f"{request['target_name']} 发起借机攻击。"
+                        ),
+                        payload_json={
+                            "schema_version": "1.0",
+                            "phase": "awaiting_dm",
+                            "combat_id": combat.id,
+                            **request,
+                        },
+                        character_version=actor.version,
+                        idempotency_key=(
+                            f"opportunity:{combat.id}:{actor.id}:"
+                            f"{request['source_combatant_id']}:{actor.version}:{index}"
+                        ),
+                        status="pending",
+                    )
+                )
+            if scene_id:
+                token = (
+                    session.scalar(
+                        select(SceneToken).where(
+                            SceneToken.scene_id == scene_id,
+                            SceneToken.entity_type == "character",
+                            SceneToken.entity_id == principal.character_id,
+                        )
+                    )
+                    if actor.entity_type == "character"
+                    else None
                 )
                 if token is not None:
                     token.row = row
@@ -2367,14 +4249,1180 @@ class PlayerRoomService:
                     ]
                     state.updated_at = _now()
             session.flush()
-            return serialize(actor)
+            result = serialize(actor)
+            result["opportunity_attacks"] = opportunity_requests
+            result["ended_predicated_effect_ids"] = result_effect_ids
+            result["ended_predicated_summon_ids"] = [
+                summon.id for summon in ended_movement_summons
+            ]
+            return result
+
+    def maneuver(self, principal: PlayerPrincipal, payload: dict[str, Any]) -> dict[str, Any]:
+        """Execute a typed standard action for the player's current unit.
+
+        The player session selects only public maneuver fields. The server
+        resolves the active character or player-controlled summon and injects
+        its authoritative combatant id/version before using the same engine
+        as the DM maneuver endpoint.
+        """
+
+        if principal.character_id is None:
+            raise ValueError("请先绑定角色")
+        requested_version = int(payload.get("actor_version") or 0)
+        if requested_version < 1:
+            raise ValueError("actor_version is required")
+        command_payload = dict(payload)
+        command_payload.pop("actor_version", None)
+        idempotency_key = str(command_payload.pop("idempotency_key", "") or "")
+        with Session(self.engine) as session:
+            room = session.get(PlayerRoom, principal.room_id)
+            combat = (
+                session.get(Combat, room.current_combat_id)
+                if room and room.current_combat_id
+                else None
+            )
+            if combat is None or combat.status != "active":
+                raise ValueError("当前没有进行中的战斗")
+            fighters = self._ordered_fighters(session, combat.id)
+            active = (
+                fighters[combat.current_turn_index]
+                if fighters and combat.current_turn_index < len(fighters)
+                else None
+            )
+            actor = self._controlled_actor(fighters, active, principal.character_id)
+            if actor is None:
+                raise ValueError("现在还没有轮到你的角色或你的召唤单位")
+            if actor.version != requested_version:
+                raise VersionConflict("combatant", actor.id, requested_version, actor.version)
+            combat_id = combat.id
+            campaign_id = combat.campaign_id
+            actor_id = actor.id
+        command = CombatManeuverCommand(
+            actor_combatant_id=actor_id,
+            actor_version=requested_version,
+            **command_payload,
+        )
+        return self.combat.confirm_maneuver(
+            campaign_id,
+            combat_id,
+            command,
+            idempotency_key=idempotency_key,
+        )
 
     @staticmethod
-    def _action_data(character: Character, action_name: str) -> dict[str, Any]:
-        for raw in [*character.actions, *character.spells]:
+    def _action_data(session: Session, character: Character, action_name: str) -> dict[str, Any]:
+        feature_grants = [
+            item for item in character.features
+            if isinstance(item, dict)
+        ]
+        scaling_values = {
+            str(item.get("scaling_key")): item.get("value")
+            for item in feature_grants
+            if item.get("kind") == "class_scaling"
+            and isinstance(item.get("scaling_key"), str)
+        }
+        feature_registry = compile_feature_runtime_registry(
+            feature_grants,
+            resources=character.resources if isinstance(character.resources, dict) else {},
+            scalings={key: {"value": value} for key, value in scaling_values.items()},
+            class_levels=character.class_levels if isinstance(character.class_levels, dict) else {},
+            total_level=character.level,
+        )
+        runtime_actions = feature_runtime_action_projections(feature_registry)
+        for raw in [*character.actions, *character.spells, *runtime_actions]:
             if isinstance(raw, dict) and str(raw.get("name")) == action_name:
-                return raw
+                action = dict(raw)
+                PlayerRoomService._attach_attack_riders(action, feature_registry)
+                known_spell = session.scalar(
+                    select(KnownSpell).where(
+                        KnownSpell.character_id == character.id,
+                        KnownSpell.name == action_name,
+                    )
+                )
+                if known_spell is not None:
+                    metadata = dict(known_spell.metadata_json or {})
+                    source = metadata.get("character_spell")
+                    source_fields = dict(source) if isinstance(source, dict) else metadata
+                    for key in (
+                        "damage",
+                        "damage_expression",
+                        "damage_dice",
+                        "damage_type",
+                        "save_ability",
+                        "save_dc",
+                        "half_damage_on_save",
+                        "range",
+                        "description",
+                        "cost",
+                        "resource_key",
+                        "resource_cost",
+                        "resolution_kind",
+                        "rule_plan",
+                    ):
+                        if action.get(key) in (None, "") and source_fields.get(key) not in (
+                            None,
+                            "",
+                        ):
+                            action[key] = source_fields[key]
+                return action
         raise ValueError("该动作不在你的角色卡中")
+
+    @staticmethod
+    def _attach_attack_riders(
+        action: dict[str, Any],
+        registry: dict[str, Any] | None,
+    ) -> None:
+        """Expose compiled rider contracts alongside the action they may modify."""
+
+        if not isinstance(registry, dict):
+            return
+        raw_riders = registry.get("attack_riders")
+        if not isinstance(raw_riders, list) or not raw_riders:
+            return
+        action_text = " ".join(
+            str(action.get(key) or "") for key in ("name", "description", "damage")
+        )
+        if not (
+            action.get("is_weapon_attack") is True
+            or "武器攻击" in action_text
+            or "近战攻击" in action_text
+            or "远程攻击" in action_text
+        ):
+            return
+        action["attack_riders"] = [
+            dict(rider) for rider in raw_riders if isinstance(rider, dict)
+        ]
+
+    @staticmethod
+    def _companion_action_data(companion: Combatant, action_name: str) -> dict[str, Any]:
+        raw_actions = companion.snapshot_json.get("actions")
+        actions = raw_actions if isinstance(raw_actions, list) else []
+        for raw in actions:
+            if isinstance(raw, dict) and str(raw.get("name") or "") == action_name:
+                return dict(raw)
+        raise ValueError("该动作不在当前召唤物的战斗模板中")
+
+    @staticmethod
+    def _block_applies_for_outcome(
+        block: dict[str, Any],
+        *,
+        target_id: str,
+        effect_targets: dict[str, bool],
+        target_outcomes: dict[str, str],
+    ) -> bool:
+        """Apply an explicit branch guard without changing legacy block semantics."""
+
+        applies_on = block.get("applies_on")
+        if applies_on is None:
+            return effect_targets.get(target_id, True)
+        if applies_on == "always":
+            return True
+        return target_outcomes.get(target_id) == applies_on
+
+    @staticmethod
+    def _selected_choice_block_ids(
+        blocks: list[dict[str, Any]], execution_inputs: dict[str, Any]
+    ) -> set[str]:
+        """Resolve only player-submitted ChoiceBlock keys; never choose a branch by name."""
+
+        choice_blocks = [block for block in blocks if block.get("kind") == "choice"]
+        if not choice_blocks:
+            return set()
+        raw_selections = execution_inputs.get("choice_selections")
+        if not isinstance(raw_selections, dict):
+            raise ValueError("该动作包含分支效果，必须明确提交 choice_selections")
+        selected_ids: set[str] = set()
+        for choice in choice_blocks:
+            choice_id = str(choice.get("id") or "")
+            raw_value = raw_selections.get(choice_id)
+            values = [raw_value] if isinstance(raw_value, str) else raw_value
+            if not isinstance(values, list) or not all(
+                isinstance(value, str) and value for value in values
+            ):
+                raise ValueError("每个规则分支都必须选择有效选项")
+            keys = list(dict.fromkeys(values))
+            minimum = int(choice.get("minimum_choices") or 1)
+            maximum = int(choice.get("maximum_choices") or 1)
+            if not minimum <= len(keys) <= maximum:
+                raise ValueError("选择的分支数量不符合该规则的限制")
+            options = choice.get("options")
+            if not isinstance(options, list):
+                raise ValueError("规则分支选项无效")
+            by_key = {
+                str(option.get("key")): option
+                for option in options
+                if isinstance(option, dict) and isinstance(option.get("key"), str)
+            }
+            if any(key not in by_key for key in keys):
+                raise ValueError("提交的规则分支选项不存在")
+            for key in keys:
+                option = by_key[key]
+                child_ids = option.get("block_ids")
+                if not isinstance(child_ids, list) or not all(
+                    isinstance(block_id, str) and block_id for block_id in child_ids
+                ):
+                    raise ValueError("规则分支缺少可执行效果")
+                selected_ids.update(child_ids)
+        return selected_ids
+
+    @staticmethod
+    def _reaction_trigger_for_support_cast(
+        action: dict[str, Any],
+        blocks: list[dict[str, Any]],
+        submitted_trigger: str,
+    ) -> str:
+        """Keep the engine's reaction accounting without inventing an event.
+
+        The combat engine requires a non-empty trigger whenever it consumes a
+        reaction.  Legacy self/ally support entries sometimes carry only the
+        UI cost ``反应`` and no trigger contract at all.  They are not allowed
+        to manufacture a fictional event: an explicit contract still requires
+        player input, while the narrow legacy-support case records a stable
+        compatibility marker that says the rule data omitted that contract.
+        """
+
+        trigger = submitted_trigger.strip()
+        if trigger:
+            return trigger
+        if action.get("requires_reaction_trigger") is True:
+            raise ValueError("该反应法术必须明确填写 reaction_trigger")
+        support_kinds = {
+            "target",
+            "duration",
+            "resource",
+            "heal",
+            "condition",
+            "modifier",
+            "defense",
+            "repeat",
+            "choice",
+            "narrative",
+        }
+        if all(str(block.get("kind") or "") in support_kinds for block in blocks):
+            return "legacy_support_without_declared_trigger"
+        raise ValueError("该反应法术必须明确填写 reaction_trigger")
+
+    def _apply_compiled_combat_blocks(
+        self,
+        principal: PlayerPrincipal,
+        combat_id: str,
+        actor_id: str,
+        action: dict[str, Any],
+        target_ids: list[str],
+        effect_targets: dict[str, bool],
+        idempotency_key: str,
+        execution_inputs: dict[str, Any] | None = None,
+        target_outcomes: dict[str, str] | None = None,
+    ) -> list[dict[str, Any]]:
+        """Turn accepted combat blocks into authoritative CombatEffect rows."""
+
+        raw_plan = action.get("rule_plan")
+        execution_inputs = dict(execution_inputs or {})
+        if not isinstance(raw_plan, dict):
+            return []
+        raw_blocks = raw_plan.get("blocks")
+        if not isinstance(raw_blocks, list):
+            return []
+        blocks = [block for block in raw_blocks if isinstance(block, dict)]
+        duration = next((block for block in blocks if block.get("kind") == "duration"), None)
+        by_id = {str(block.get("id")): block for block in blocks if block.get("id")}
+        target_outcomes = dict(target_outcomes or {})
+        selected_choice_ids = self._selected_choice_block_ids(blocks, execution_inputs)
+        choice_child_ids = {
+            str(child_id)
+            for choice in blocks
+            if choice.get("kind") == "choice"
+            for option in (choice.get("options") if isinstance(choice.get("options"), list) else [])
+            if isinstance(option, dict)
+            for child_id in (
+                option.get("block_ids") if isinstance(option.get("block_ids"), list) else []
+            )
+            if isinstance(child_id, str) and child_id
+        }
+        repeat_child_ids = {
+            str(child_id)
+            for repeat in blocks
+            if repeat.get("kind") == "repeat"
+            for child_id in (
+                repeat.get("block_ids") if isinstance(repeat.get("block_ids"), list) else []
+            )
+            if isinstance(child_id, str) and child_id
+        }
+        trigger_child_ids = {
+            str(child_id)
+            for trigger in blocks
+            if trigger.get("kind") == "trigger"
+            for child_id in (
+                trigger.get("block_ids") if isinstance(trigger.get("block_ids"), list) else []
+            )
+            if isinstance(child_id, str) and child_id
+        }
+        area_child_ids = {
+            str(child_id)
+            for area in blocks
+            if area.get("kind") == "area_effect"
+            for child_id in (
+                area.get("effect_block_ids")
+                if isinstance(area.get("effect_block_ids"), list)
+                else []
+            )
+            if isinstance(child_id, str) and child_id
+        }
+
+        def duration_args() -> tuple[str, int | None, bool]:
+            if duration is None:
+                return "until_removed", None, False
+            unit = str(duration.get("unit") or "until_removed")
+            if unit == "round":
+                return (
+                    "rounds",
+                    int(duration.get("value") or 0),
+                    bool(duration.get("concentration")),
+                )
+            if unit == "minute":
+                return (
+                    "minutes",
+                    int(duration.get("value") or 0),
+                    bool(duration.get("concentration")),
+                )
+            if unit == "hour":
+                return (
+                    "minutes",
+                    int(duration.get("value") or 0) * 60,
+                    bool(duration.get("concentration")),
+                )
+            if unit == "day":
+                return (
+                    "minutes",
+                    int(duration.get("value") or 0) * 24 * 60,
+                    bool(duration.get("concentration")),
+                )
+            if unit == "until_save":
+                return "until_save", None, bool(duration.get("concentration"))
+            return "until_removed", None, bool(duration.get("concentration"))
+
+        duration_unit, duration_value, concentration = duration_args()
+        executable: list[dict[str, Any]] = []
+        for block in blocks:
+            kind = str(block.get("kind") or "")
+            block_id = str(block.get("id") or "")
+            if kind in {"condition", "modifier", "defense"} or (
+                kind == "heal" and block.get("temporary_hp") is True
+            ):
+                if block_id in choice_child_ids and block_id not in selected_choice_ids:
+                    continue
+                if block_id in repeat_child_ids | trigger_child_ids | area_child_ids:
+                    continue
+                executable.append(block)
+            elif kind == "repeat":
+                for child_id in block.get("block_ids", []):
+                    child = by_id.get(str(child_id))
+                    if child is not None and child.get("kind") in {
+                        "damage",
+                        "heal",
+                        "condition",
+                        "modifier",
+                        "defense",
+                    }:
+                        executable.append({**child, "repeat": block})
+
+        applied: list[dict[str, Any]] = []
+        movement_results: list[dict[str, Any]] = []
+        for target_id in target_ids:
+            for block in executable:
+                kind = str(block.get("kind") or "")
+                if not self._block_applies_for_outcome(
+                    block,
+                    target_id=target_id,
+                    effect_targets=effect_targets,
+                    target_outcomes=target_outcomes,
+                ):
+                    continue
+                if kind == "condition" and str(block.get("operation") or "apply") == "remove":
+                    effect_type = "condition"
+                elif kind == "condition":
+                    effect_type = "condition"
+                elif kind == "defense":
+                    effect_type = "buff"
+                elif kind == "modifier":
+                    operation = str(block.get("operation") or "")
+                    effect_type = "debuff" if operation == "disadvantage" else "buff"
+                elif kind == "heal" and block.get("temporary_hp") is True:
+                    effect_type = "buff"
+                elif kind in {"damage", "heal"} and isinstance(block.get("repeat"), dict):
+                    effect_type = "damage_over_time" if kind == "damage" else "buff"
+                else:
+                    continue
+                details: dict[str, Any] = {
+                    "rule_block": block,
+                    "rule_plan_source": action.get("name"),
+                }
+                if isinstance(block.get("repeat"), dict):
+                    details["repeat"] = block["repeat"]
+                if kind == "damage":
+                    details["damage_expression"] = block.get("expression")
+                    details["damage_type"] = block.get("damage_type")
+                if kind == "heal":
+                    details["healing_expression"] = block.get("expression")
+                    if block.get("temporary_hp") is True:
+                        details["temporary_hp"] = True
+                save_block = next((item for item in blocks if item.get("kind") == "save"), None)
+                save_dc = int(action.get("save_dc") or 0) or None
+                save_ability = str(action.get("save_ability") or "") or None
+                if isinstance(save_block, dict):
+                    save_ability = save_ability or str(save_block.get("ability") or "") or None
+                    raw_dc = save_block.get("dc")
+                    save_dc = save_dc or (int(raw_dc) if isinstance(raw_dc, int) else None)
+                trigger_timing = None
+                if isinstance(block.get("repeat"), dict):
+                    raw_timing = str(block["repeat"].get("timing") or "")
+                    trigger_timing = (
+                        raw_timing
+                        if raw_timing in {"turn_start", "turn_end", "round_start", "round_end"}
+                        else None
+                    )
+                with Session(self.engine) as session:
+                    target = session.get(Combatant, target_id)
+                    actor = session.get(Combatant, actor_id)
+                    if target is None or actor is None:
+                        continue
+                    condition = str(block.get("condition") or "").strip()
+                    if kind == "defense" and condition:
+                        raw_defense_conditions = execution_inputs.get("defense_conditions")
+                        explicit_active = (
+                            raw_defense_conditions.get(str(block.get("id")))
+                            if isinstance(raw_defense_conditions, dict)
+                            else None
+                        )
+                        if explicit_active is not None and not isinstance(explicit_active, bool):
+                            raise ValueError("defense_conditions values must be booleans")
+                        active_conditions = {str(value) for value in target.conditions or []}
+                        if explicit_active is False or (
+                            explicit_active is None and condition not in active_conditions
+                        ):
+                            continue
+                    command = CombatEffectCommand(
+                        target_combatant_id=target.id,
+                        target_version=target.version,
+                        source_combatant_id=actor.id,
+                        source_version=actor.version,
+                        name=str(action.get("name") or "规则效果"),
+                        effect_type=effect_type,  # type: ignore[arg-type]
+                        details_json=details,
+                        duration_unit=duration_unit,  # type: ignore[arg-type]
+                        duration_value=duration_value,
+                        requires_concentration=concentration,
+                        save_dc=save_dc,
+                        save_ability=save_ability,
+                        trigger_timing=trigger_timing,  # type: ignore[arg-type]
+                    )
+                result = self.combat.confirm_effect(
+                    principal.campaign_id,
+                    combat_id,
+                    command,
+                    idempotency_key=f"{idempotency_key}:effect:{target_id}:{block.get('id')}",
+                )
+                applied.append(
+                    {
+                        "target_combatant_id": target_id,
+                        "block_id": block.get("id"),
+                        "effect": result.get("effect"),
+                    }
+                )
+        for block in blocks:
+            if block.get("kind") != "move":
+                continue
+            block_id = str(block.get("id") or "")
+            if block_id in choice_child_ids and block_id not in selected_choice_ids:
+                continue
+            if block_id in (repeat_child_ids | trigger_child_ids | area_child_ids):
+                continue
+            if block.get("movement_type") != "forced":
+                continue
+            direction = str(block.get("direction") or "chosen")
+            if direction not in {"away", "push", "toward", "pull"}:
+                continue
+            distance_ft = int(block.get("distance_ft") or 0)
+            for target_id in target_ids:
+                if not self._block_applies_for_outcome(
+                    block,
+                    target_id=target_id,
+                    effect_targets=effect_targets,
+                    target_outcomes=target_outcomes,
+                ):
+                    continue
+                with Session(self.engine) as session:
+                    target = session.get(Combatant, target_id)
+                    actor = session.get(Combatant, actor_id)
+                    if target is None or actor is None:
+                        continue
+                    target_version = target.version
+                movement = self.combat.apply_forced_movement(
+                    principal.campaign_id,
+                    combat_id,
+                    target_combatant_id=target_id,
+                    source_combatant_id=actor_id,
+                    distance_ft=distance_ft,
+                    direction=direction,
+                    target_version=target_version,
+                    idempotency_key=(f"{idempotency_key}:move:{target_id}:{block.get('id')}"),
+                )
+                movement_results.append(
+                    {
+                        "target_combatant_id": target_id,
+                        "block_id": block.get("id"),
+                        "result": movement,
+                    }
+                )
+
+        # Destination/form/template-sensitive effects are deterministic only
+        # after the player submits the missing choice.  Do not turn a spell name,
+        # loose prose, or a generic five-foot default into a target or template.
+        special_results: list[dict[str, Any]] = []
+
+        def block_is_selected(block: dict[str, Any]) -> bool:
+            block_id = str(block.get("id") or "")
+            return not (block_id in choice_child_ids and block_id not in selected_choice_ids)
+
+        def applicable_target_ids(block: dict[str, Any]) -> list[str]:
+            return [
+                target_id
+                for target_id in target_ids
+                if self._block_applies_for_outcome(
+                    block,
+                    target_id=target_id,
+                    effect_targets=effect_targets,
+                    target_outcomes=target_outcomes,
+                )
+            ]
+
+        def blocked_cell(grid: SceneGrid, row: int, col: int) -> bool:
+            raw_cells = grid.layers_json.get("cells", [])
+            return bool(
+                isinstance(raw_cells, list)
+                and any(
+                    isinstance(cell, dict)
+                    and cell.get("row") == row
+                    and cell.get("col") == col
+                    and cell.get("kind") in {"wall", "void"}
+                    for cell in raw_cells
+                )
+            )
+
+        for block in blocks:
+            kind = str(block.get("kind") or "")
+            block_id = str(block.get("id") or "")
+            if not block_is_selected(block):
+                continue
+            if kind == "teleport":
+                teleport_input = execution_inputs.get("teleport")
+                if not isinstance(teleport_input, dict):
+                    raise ValueError("该传送效果需要玩家明确选择目的地")
+                active_targets = applicable_target_ids(block)
+                if not active_targets:
+                    continue
+                destination_kind = str(block.get("destination_kind") or "")
+                raw_destinations = teleport_input.get("destinations")
+                destinations = raw_destinations if isinstance(raw_destinations, dict) else None
+                if len(active_targets) > 1 and destinations is None:
+                    raise ValueError("传送多个目标时必须为每个目标明确提交 destinations")
+                scene_id = self._combat_scene_id(principal, combat_id)
+                with Session(self.engine) as session, session.begin():
+                    grid = (
+                        session.scalar(select(SceneGrid).where(SceneGrid.scene_id == scene_id))
+                        if scene_id
+                        else None
+                    )
+                    if grid is None:
+                        raise ValueError("传送需要当前战斗的明确地图网格")
+
+                    common_destination: dict[str, int] | None = None
+                    if destination_kind == "object":
+                        object_id = teleport_input.get("object_id")
+                        scene_object = (
+                            session.get(SceneObject, object_id)
+                            if isinstance(object_id, str)
+                            else None
+                        )
+                        if scene_object is None or scene_object.scene_id != scene_id:
+                            raise ValueError("传送到物件必须明确选择当前场景中的 object_id")
+                        common_destination = {"row": scene_object.row, "col": scene_object.col}
+                    elif destination_kind == "creature":
+                        combatant_id = teleport_input.get("combatant_id")
+                        destination_actor = (
+                            session.get(Combatant, combatant_id)
+                            if isinstance(combatant_id, str)
+                            else None
+                        )
+                        raw_position = (
+                            destination_actor.snapshot_json.get("grid_position")
+                            if destination_actor is not None
+                            else None
+                        )
+                        if (
+                            destination_actor is None
+                            or destination_actor.combat_id != combat_id
+                            or not isinstance(raw_position, dict)
+                            or not isinstance(raw_position.get("row"), int)
+                            or not isinstance(raw_position.get("col"), int)
+                        ):
+                            raise ValueError(
+                                "传送到生物必须明确选择当前战斗中有位置的 combatant_id"
+                            )
+                        common_destination = {
+                            "row": int(raw_position["row"]),
+                            "col": int(raw_position["col"]),
+                        }
+
+                    for target_id in active_targets:
+                        raw_destination = (
+                            destinations.get(target_id)
+                            if destinations is not None
+                            else common_destination
+                        )
+                        if raw_destination is None and destination_kind in {
+                            "chosen_space",
+                            "known_location",
+                        }:
+                            raw_destination = teleport_input
+                        if not isinstance(raw_destination, dict):
+                            raise ValueError("每个传送目标都需要明确的网格目的地")
+                        row = raw_destination.get("row")
+                        col = raw_destination.get("col")
+                        if (
+                            not isinstance(row, int)
+                            or isinstance(row, bool)
+                            or not isinstance(col, int)
+                            or isinstance(col, bool)
+                        ):
+                            raise ValueError("传送目的地必须提供有效的网格行列")
+                        if not (1 <= row <= grid.height and 1 <= col <= grid.width):
+                            raise ValueError("传送目的地不在当前战斗地图内")
+                        if blocked_cell(grid, row, col):
+                            raise ValueError("传送目的地被墙体或不可通行格阻挡")
+                        target = session.get(Combatant, target_id)
+                        if target is None or target.combat_id != combat_id:
+                            raise ValueError("传送目标不存在于当前战斗")
+                        current_position = target.snapshot_json.get("grid_position")
+                        maximum_distance = block.get("max_distance_ft")
+                        if maximum_distance is not None:
+                            if (
+                                not isinstance(current_position, dict)
+                                or not isinstance(current_position.get("row"), int)
+                                or not isinstance(current_position.get("col"), int)
+                            ):
+                                raise ValueError("传送距离已明确，但目标尚未设置地图位置")
+                            distance = grid_distance_ft(
+                                (int(current_position["row"]), int(current_position["col"])),
+                                (row, col),
+                                cell_size_ft=grid.cell_size_ft,
+                            )
+                            if distance > int(maximum_distance):
+                                raise ValueError("传送目的地超出该效果的明确距离")
+                        marker = f"{idempotency_key}:teleport:{block_id}"
+                        snapshot = dict(target.snapshot_json or {})
+                        markers = snapshot.get("compiled_special_effect_keys")
+                        marker_list = list(markers) if isinstance(markers, list) else []
+                        if marker in marker_list:
+                            special_results.append(
+                                {
+                                    "kind": "teleport",
+                                    "target_combatant_id": target.id,
+                                    "row": row,
+                                    "col": col,
+                                    "already_applied": True,
+                                }
+                            )
+                            continue
+                        marker_list.append(marker)
+                        snapshot["compiled_special_effect_keys"] = marker_list[-100:]
+                        snapshot["grid_position"] = _merge_grid_position(
+                            current_position,
+                            row=row,
+                            col=col,
+                            requested=raw_destination,
+                        )
+                        target.snapshot_json = snapshot
+                        target.version += 1
+                        target.updated_at = _now()
+                        special_results.append(
+                            {
+                                "kind": "teleport",
+                                "target_combatant_id": target.id,
+                                "row": row,
+                                "col": col,
+                            }
+                        )
+            elif kind == "transformation":
+                transformation_input = execution_inputs.get("transformation")
+                form = (
+                    transformation_input.get("form")
+                    if isinstance(transformation_input, dict)
+                    else None
+                )
+                if not isinstance(form, dict):
+                    raise ValueError("该变形效果需要明确的形态数据")
+                form_ref = str(form.get("form_ref") or "").strip()
+                if not form_ref or form_ref == "dm_chosen_form":
+                    raise ValueError("变形效果必须提交明确的 form_ref")
+                mode = str(block.get("mode") or "polymorph")
+                if mode in {"polymorph", "shapechange", "alter"}:
+                    required_stats = ("armor_class", "hp", "max_hp", "speed_ft")
+                    if any(
+                        not isinstance(form.get(key), int) or isinstance(form.get(key), bool)
+                        for key in required_stats
+                    ):
+                        raise ValueError("战斗变形必须明确提交 AC、当前 HP、最大 HP 和速度")
+                for target_id in applicable_target_ids(block):
+                    with Session(self.engine) as session:
+                        target = session.get(Combatant, target_id)
+                        actor = session.get(Combatant, actor_id)
+                        if target is None or actor is None:
+                            continue
+                        command = CombatEffectCommand(
+                            target_combatant_id=target.id,
+                            target_version=target.version,
+                            source_combatant_id=actor.id,
+                            source_version=actor.version,
+                            name=str(action.get("name") or "变形效果"),
+                            effect_type="buff",
+                            details_json={
+                                "rule_block": block,
+                                "transformation_form": {**form, "form_ref": form_ref},
+                            },
+                            duration_unit=(
+                                duration_unit
+                                if duration_unit
+                                in {"rounds", "minutes", "until_save", "until_removed"}
+                                else "until_removed"
+                            ),
+                            duration_value=duration_value,
+                            requires_concentration=concentration,
+                        )
+                    result = self.combat.confirm_effect(
+                        principal.campaign_id,
+                        combat_id,
+                        command,
+                        idempotency_key=f"{idempotency_key}:transformation:{target_id}:{block_id}",
+                    )
+                    special_results.append(
+                        {
+                            "kind": "transformation",
+                            "target_combatant_id": target_id,
+                            "result": result,
+                        }
+                    )
+            elif kind == "creation":
+                creation_input = execution_inputs.get("creation")
+                if not isinstance(creation_input, dict):
+                    raise ValueError("该创造效果需要明确选择模板和数量")
+                input_template = str(creation_input.get("template_ref") or "").strip()
+                template_ref = (
+                    input_template
+                    if block.get("requires_template_choice", True)
+                    else input_template or str(block.get("template_ref") or "").strip()
+                )
+                if not template_ref or template_ref == "dm_chosen_template":
+                    raise ValueError("创造效果必须提供明确的模板")
+                count = creation_input.get("count")
+                if count is None and isinstance(block.get("count"), int):
+                    count = block.get("count")
+                if not isinstance(count, int) or isinstance(count, bool) or count < 1:
+                    raise ValueError("创造效果必须提供明确的数量")
+                creation_kind = str(block.get("creation_kind") or "object")
+                if creation_kind == "creature":
+                    raise ValueError("创造生物必须使用明确的召唤模板和召唤入口，不能伪造为场景物件")
+                scene_id = self._combat_scene_id(principal, combat_id)
+                with Session(self.engine) as session, session.begin():
+                    scene = session.get(Scene, scene_id) if scene_id else None
+                    if scene is None:
+                        raise ValueError("当前战斗没有可写入创造物的场景")
+                    marker = f"{idempotency_key}:creation:{block_id}"
+                    if creation_kind == "item":
+                        existing = next(
+                            (
+                                item
+                                for item in session.scalars(
+                                    select(WorldItem).where(
+                                        WorldItem.campaign_id == principal.campaign_id
+                                    )
+                                ).all()
+                                if item.metadata_json.get("compiled_effect_key") == marker
+                            ),
+                            None,
+                        )
+                        if existing is None:
+                            existing = WorldItem(
+                                campaign_id=principal.campaign_id,
+                                name=template_ref,
+                                description=f"由{action.get('name') or '法术'}创造",
+                                category="created",
+                                quantity=count,
+                                location_id=scene.location_id,
+                                source_label="custom",
+                                metadata_json={
+                                    "created_by_spell": action.get("name"),
+                                    "scene_id": scene.id,
+                                    "rule_block_id": block_id,
+                                    "compiled_effect_key": marker,
+                                },
+                            )
+                            session.add(existing)
+                            session.flush()
+                        special_results.append(
+                            {
+                                "kind": "creation",
+                                "entity_type": "world_item",
+                                "entity_id": existing.id,
+                                "count": count,
+                            }
+                        )
+                    else:
+                        row = creation_input.get("row")
+                        col = creation_input.get("col")
+                        if (
+                            not isinstance(row, int)
+                            or isinstance(row, bool)
+                            or not isinstance(col, int)
+                            or isinstance(col, bool)
+                        ):
+                            raise ValueError("创造场景物件必须提供有效的网格位置")
+                        grid = session.scalar(
+                            select(SceneGrid).where(SceneGrid.scene_id == scene.id)
+                        )
+                        if grid is None or not (1 <= row <= grid.height and 1 <= col <= grid.width):
+                            raise ValueError("创造物件的位置不在当前地图内")
+                        if blocked_cell(grid, row, col):
+                            raise ValueError("创造物件不能放置在墙体或不可通行格")
+                        existing = next(
+                            (
+                                item
+                                for item in session.scalars(
+                                    select(SceneObject).where(SceneObject.scene_id == scene.id)
+                                ).all()
+                                if item.metadata_json.get("compiled_effect_key") == marker
+                            ),
+                            None,
+                        )
+                        if existing is None:
+                            object_type = (
+                                creation_kind
+                                if creation_kind in {"portal", "terrain"}
+                                else "furniture"
+                            )
+                            existing = SceneObject(
+                                scene_id=scene.id,
+                                object_type=object_type,
+                                label=template_ref,
+                                row=row,
+                                col=col,
+                                state="active",
+                                visibility="public",
+                                metadata_json={
+                                    "created_by_spell": action.get("name"),
+                                    "count": count,
+                                    "rule_block_id": block_id,
+                                    "compiled_effect_key": marker,
+                                },
+                            )
+                            session.add(existing)
+                            session.flush()
+                        special_results.append(
+                            {
+                                "kind": "creation",
+                                "entity_type": "scene_object",
+                                "entity_id": existing.id,
+                                "count": count,
+                            }
+                        )
+            elif kind == "area_effect":
+                raw_areas = execution_inputs.get("areas")
+                area_input = (
+                    raw_areas.get(block_id)
+                    if isinstance(raw_areas, dict)
+                    else execution_inputs.get("area")
+                )
+                if block.get("origin") == "self" and area_input is None:
+                    # A self-origin zone is already an explicit rule choice.  It
+                    # must not force a redundant coordinate input that can drift
+                    # away from the caster's live position.
+                    area_input = {}
+                if not isinstance(area_input, dict):
+                    raise ValueError("持续区域必须在 areas 中为每个 area_effect 提供明确原点")
+                scene_id = self._combat_scene_id(principal, combat_id)
+                with Session(self.engine) as session, session.begin():
+                    scene = session.get(Scene, scene_id) if scene_id else None
+                    actor = session.get(Combatant, actor_id)
+                    grid = (
+                        session.scalar(select(SceneGrid).where(SceneGrid.scene_id == scene_id))
+                        if scene_id
+                        else None
+                    )
+                    if scene is None or actor is None or grid is None:
+                        raise ValueError("持续区域需要当前战斗的场景、施法者和地图")
+                    if block.get("origin") == "self":
+                        raw_origin = actor.snapshot_json.get("grid_position")
+                    else:
+                        raw_origin = area_input
+                    row = raw_origin.get("row") if isinstance(raw_origin, dict) else None
+                    col = raw_origin.get("col") if isinstance(raw_origin, dict) else None
+                    if (
+                        not isinstance(row, int)
+                        or isinstance(row, bool)
+                        or not isinstance(col, int)
+                        or isinstance(col, bool)
+                    ):
+                        raise ValueError("持续区域原点必须提供有效的网格行列")
+                    if not (1 <= row <= grid.height and 1 <= col <= grid.width) or blocked_cell(
+                        grid, row, col
+                    ):
+                        raise ValueError("持续区域原点不在可用地图格内")
+                    marker = f"{idempotency_key}:area:{block_id}"
+                    scene_object = next(
+                        (
+                            item
+                            for item in session.scalars(
+                                select(SceneObject).where(SceneObject.scene_id == scene.id)
+                            ).all()
+                            if item.metadata_json.get("compiled_effect_key") == marker
+                        ),
+                        None,
+                    )
+                    if scene_object is None:
+                        scene_object = SceneObject(
+                            scene_id=scene.id,
+                            object_type="terrain",
+                            label=f"{action.get('name') or '持续区域'}区域",
+                            row=row,
+                            col=col,
+                            state="active",
+                            visibility="public",
+                            metadata_json={
+                                "compiled_effect_key": marker,
+                                "area_effect": True,
+                                "rule_block_id": block_id,
+                                "shape": block.get("shape"),
+                                "size_ft": block.get("size_ft"),
+                                "width_ft": block.get("width_ft"),
+                                "trigger_timing": block.get("trigger_timing"),
+                                "effect_block_ids": block.get("effect_block_ids"),
+                                "source_combatant_id": actor_id,
+                            },
+                        )
+                        session.add(scene_object)
+                        session.flush()
+                with Session(self.engine) as session:
+                    actor = session.get(Combatant, actor_id)
+                    if actor is None:
+                        raise ValueError("持续区域的施法者已不在当前战斗")
+                    command = CombatEffectCommand(
+                        target_combatant_id=actor.id,
+                        target_version=actor.version,
+                        source_combatant_id=actor.id,
+                        source_version=actor.version,
+                        name=str(action.get("name") or "持续区域"),
+                        effect_type="aura",
+                        details_json={
+                            "rule_block": block,
+                            "rule_plan_source": action.get("name"),
+                            "scene_object_id": scene_object.id,
+                            "area_origin": {"row": row, "col": col},
+                        },
+                        duration_unit=duration_unit,  # type: ignore[arg-type]
+                        duration_value=duration_value,
+                        requires_concentration=concentration,
+                        trigger_timing=(
+                            str(block.get("trigger_timing"))
+                            if str(block.get("trigger_timing"))
+                            in {"turn_start", "turn_end", "round_start", "round_end"}
+                            else None
+                        ),
+                    )
+                result = self.combat.confirm_effect(
+                    principal.campaign_id,
+                    combat_id,
+                    command,
+                    idempotency_key=f"{idempotency_key}:area-effect:{block_id}",
+                )
+                special_results.append(
+                    {
+                        "kind": "area_effect",
+                        "scene_object_id": scene_object.id,
+                        "origin": {"row": row, "col": col},
+                        "effect": result.get("effect"),
+                    }
+                )
+            elif kind == "dispel":
+                effect_ids = execution_inputs.get("effect_ids")
+                if not isinstance(effect_ids, list) or not effect_ids:
+                    raise ValueError("驱散/反制效果必须明确选择要结束的效果")
+                if len(set(effect_ids)) != len(effect_ids) or not all(
+                    isinstance(effect_id, str) and effect_id for effect_id in effect_ids
+                ):
+                    raise ValueError("驱散目标效果 ID 必须是不重复的有效字符串")
+                raw_checks = execution_inputs.get("dispel_checks")
+                for effect_id in effect_ids:
+                    with Session(self.engine) as session:
+                        effect = session.get(CombatEffect, effect_id)
+                        target = (
+                            session.get(Combatant, effect.target_combatant_id) if effect else None
+                        )
+                        details = dict(effect.details_json or {}) if effect else {}
+                    if effect is None or target is None or effect.combat_id != combat_id:
+                        raise ValueError("驱散目标效果不存在或不属于当前战斗")
+                    allowed_types = {
+                        str(value) for value in block.get("effect_types", []) if str(value)
+                    }
+                    is_spell = isinstance(details.get("rule_plan_source"), str)
+                    is_magical = is_spell or details.get("magical_effect") is True
+                    if allowed_types and not (
+                        ("spell" in allowed_types and is_spell)
+                        or ("magical_effect" in allowed_types and is_magical)
+                    ):
+                        raise ValueError("所选效果不符合该驱散/反制积木允许的效果类型")
+                    if block.get("check_required") is True:
+                        check = raw_checks.get(effect_id) if isinstance(raw_checks, dict) else None
+                        if not isinstance(check, dict):
+                            raise ValueError("该驱散需要为每个效果提交明确的检定 total 和 dc")
+                        total = check.get("total")
+                        dc = check.get("dc")
+                        if (
+                            not isinstance(total, int)
+                            or isinstance(total, bool)
+                            or not isinstance(dc, int)
+                            or isinstance(dc, bool)
+                            or total < -100
+                            or dc < 0
+                        ):
+                            raise ValueError("驱散检定 total 和 dc 必须是有效整数")
+                        if total < dc:
+                            special_results.append(
+                                {
+                                    "kind": "dispel",
+                                    "effect_id": effect.id,
+                                    "success": False,
+                                    "total": total,
+                                    "dc": dc,
+                                    "effect_remains": True,
+                                }
+                            )
+                            continue
+                    result = self.combat.end_effect(
+                        principal.campaign_id,
+                        combat_id,
+                        effect.id,
+                        CombatEffectEndCommand(
+                            target_version=target.version,
+                            reason=f"{action.get('name') or '法术'}结束效果",
+                        ),
+                        idempotency_key=f"{idempotency_key}:dispel:{effect.id}:{block_id}",
+                    )
+                    special_results.append(
+                        {
+                            "kind": "dispel",
+                            "effect_id": effect.id,
+                            "success": True,
+                            "result": result,
+                        }
+                    )
+        return [*applied, *movement_results, *special_results]
+
+    def _write_temporary_hp(
+        self,
+        *,
+        action_results: list[dict[str, Any]],
+        amount: int,
+    ) -> list[dict[str, Any]]:
+        """Persist non-stacking temporary HP against the confirmed action rows.
+
+        ``CombatActionCommand`` intentionally models ordinary healing only.  The
+        command still spends the action/resource and gives us an idempotent audit
+        row; this write records the distinct temporary-HP rule on that confirmed
+        action, rather than treating it as normal healing or silently adding it to
+        current HP.
+        """
+
+        applied: list[dict[str, Any]] = []
+        with Session(self.engine) as session, session.begin():
+            for raw_result in action_results:
+                raw_action = raw_result.get("action")
+                action_id = raw_action.get("id") if isinstance(raw_action, dict) else None
+                action = (
+                    session.get(CombatAction, action_id) if isinstance(action_id, str) else None
+                )
+                if action is None or not action.target_combatant_ids:
+                    continue
+                target = session.get(Combatant, action.target_combatant_ids[0])
+                if target is None:
+                    continue
+                result_json = dict(action.result_json or {})
+                existing = result_json.get("temporary_hp_application")
+                if isinstance(existing, dict):
+                    granted = int(existing.get("resulting_temporary_hp") or target.temporary_hp)
+                    applied.append(
+                        {
+                            "target_combatant_id": target.id,
+                            "temporary_hp": granted,
+                            "already_applied": True,
+                        }
+                    )
+                    continue
+                before = target.temporary_hp
+                resulting = max(before, amount)
+                target.temporary_hp = resulting
+                target.version += 1
+                target.updated_at = _now()
+                result_json["temporary_hp_application"] = {
+                    "reported_amount": amount,
+                    "previous_temporary_hp": before,
+                    "resulting_temporary_hp": resulting,
+                    "replaced": amount > before,
+                }
+                action.result_json = result_json
+                action.summary = f"{action.summary}；临时生命 {before} → {resulting}"
+                action.version += 1
+                action.updated_at = _now()
+                if isinstance(raw_result.get("target"), dict):
+                    raw_result["target"] = {
+                        **raw_result["target"],
+                        "temporary_hp": resulting,
+                        "version": target.version,
+                    }
+                applied.append(
+                    {
+                        "target_combatant_id": target.id,
+                        "temporary_hp": resulting,
+                        "replaced": amount > before,
+                    }
+                )
+        return applied
+
+    def _spend_character_resource(
+        self,
+        character_id: str,
+        resource_key: str,
+        resource_cost: int,
+    ) -> None:
+        """Persist a confirmed combat resource cost after its effects are written."""
+
+        if not resource_key or resource_cost <= 0:
+            return
+        with Session(self.engine) as session, session.begin():
+            character = session.get(Character, character_id)
+            if character is None:
+                raise StateNotFoundError("character not found")
+            resources = dict(character.resources or {})
+            resource = json_dict(resources.get(resource_key))
+            resource["current"] = max(0, int(resource.get("current") or 0) - resource_cost)
+            resources[resource_key] = resource
+            # Assign through the loaded row so the JSON value is flushed by the
+            # same session that validated and spent the resource.  A bulk
+            # UPDATE here can be overwritten by a stale JSON attribute when a
+            # concurrent combat-effect transaction expires/refreshes the same
+            # Character row between the cast and the spend.
+            character.resources = resources
+            character.version += 1
+            character.updated_at = _now()
 
     def attack(
         self,
@@ -2382,14 +5430,22 @@ class PlayerRoomService:
         target_id: str,
         target_ids: list[str],
         action_name: str,
+        slot_level: int | None,
         attack_total: int,
         damage_total: int,
         critical_hit: bool,
         end_turn_after: bool,
         idempotency_key: str,
+        damage_component_totals: dict[str, int] | None = None,
+        target_damage_component_totals: dict[str, dict[str, int]] | None = None,
+        reaction_trigger: str | None = None,
+        special_inputs: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         if principal.character_id is None:
             raise ValueError("请先绑定角色")
+        damage_component_totals = dict(damage_component_totals or {})
+        target_damage_component_totals = dict(target_damage_component_totals or {})
+        special_inputs = dict(special_inputs or {})
         with Session(self.engine) as session:
             room = session.get(PlayerRoom, principal.room_id)
             combat = (
@@ -2404,31 +5460,122 @@ class PlayerRoomService:
                 .where(Combatant.combat_id == combat.id, Combatant.is_active.is_(True))
                 .order_by(Combatant.initiative.desc(), Combatant.created_at, Combatant.id)
             ).all()
-            actor = next(
-                (
-                    item
-                    for item in fighters
-                    if item.entity_type == "character" and item.entity_id == principal.character_id
-                ),
-                None,
-            )
             target = next((item for item in fighters if item.id == target_id), None)
             active = fighters[combat.current_turn_index] if fighters else None
             character = session.get(Character, principal.character_id)
-            if (
-                actor is None
-                or target is None
-                or character is None
-                or active is None
-                or actor.id != active.id
-            ):
+            actor = self._controlled_actor(fighters, active, principal.character_id)
+            if actor is None or target is None or character is None:
                 raise ValueError("当前角色、目标或回合无效")
-            if target.entity_type in {"character", "npc"}:
-                raise ValueError("玩家快捷攻击只能选择敌对怪物")
-            action = self._action_data(character, action_name)
-            range_text = str(action.get("range") or "5尺")
-            range_numbers = [int(value) for value in re.findall(r"(\d+)\s*尺", range_text)]
-            maximum_range = range_numbers[0] if range_numbers else 5
+            CombatEngineService._validate_can_act(actor)
+            if CombatEngineService._has_condition(actor, "charmed"):
+                charmer_ids = CombatEngineService._condition_source_ids(
+                    session,
+                    combat.id,
+                    actor,
+                    "charmed",
+                )
+                if target.id in charmer_ids:
+                    raise ValueError("魅惑状态下不能攻击魅惑来源")
+            action = (
+                self._action_data(session, character, action_name)
+                if actor.entity_type == "character"
+                else self._companion_action_data(actor, action_name)
+            )
+            if slot_level is not None:
+                base_level = int(action.get("spell_level") or 0)
+                if base_level <= 0 or slot_level < base_level:
+                    raise ValueError("该动作不是可升环法术，或施法环阶低于法术本环")
+                action = upcast_spell_action(action, slot_level)
+            blocks = self._action_rule_blocks(action)
+            self._selected_choice_block_ids(blocks, special_inputs)
+            range_text = str(action.get("range") or "").strip()
+            target_block = next(
+                (block for block in blocks if block.get("kind") == "target"),
+                None,
+            )
+            if target_block is None:
+                raise ValueError("该动作缺少结构化目标规则，无法自动结算")
+            try:
+                target_rule = TargetBlock.model_validate(target_block)
+            except ValueError as exc:
+                raise ValueError("该动作的目标规则无效，无法自动结算") from exc
+            area_block = next(
+                (block for block in blocks if block.get("kind") == "area_effect"),
+                None,
+            )
+            # Older compiled projections represented an instantaneous area as
+            # `target: point/self` plus a separate area_effect block.  For
+            # damage/save resolution it must behave like one multi-target
+            # area target, otherwise the UI can preview the shape but the
+            # executor rejects every target except the caster.
+            if (
+                target_rule.mode in {"self", "point"}
+                and isinstance(area_block, dict)
+                and any(
+                    block.get("kind") in {"damage", "save", "move"}
+                    and str(block.get("id")) in {
+                        str(child_id)
+                        for child_id in area_block.get("effect_block_ids", [])
+                        if isinstance(child_id, str)
+                    }
+                    for block in blocks
+                )
+            ):
+                target_rule = TargetBlock.model_validate({
+                    **target_block,
+                    "mode": "area",
+                    "shape": area_block.get("shape"),
+                    "size_ft": area_block.get("size_ft"),
+                    "width_ft": area_block.get("width_ft"),
+                    "height_ft": area_block.get("height_ft"),
+                    "anchor_height_ft": area_block.get("anchor_height_ft", 0),
+                    "requires_explicit_elevation": area_block.get(
+                        "requires_explicit_elevation", False
+                    ),
+                })
+            plan_range = target_block.get("range_ft")
+            plan_size = target_rule.size_ft or (
+                area_block.get("size_ft") if isinstance(area_block, dict) else None
+            )
+            plan_height = target_rule.height_ft or (
+                area_block.get("height_ft") if isinstance(area_block, dict) else None
+            )
+            plan_anchor_height = target_rule.anchor_height_ft or (
+                area_block.get("anchor_height_ft", 0) if isinstance(area_block, dict) else 0
+            )
+            requires_explicit_elevation = bool(
+                target_rule.requires_explicit_elevation
+                or (
+                    area_block.get("requires_explicit_elevation", False)
+                    if isinstance(area_block, dict)
+                    else False
+                )
+            )
+            plan_mode = target_rule.mode
+            plan_shape = target_rule.shape or (
+                area_block.get("shape") if isinstance(area_block, dict) else None
+            )
+            if not range_text and isinstance(plan_range, int) and plan_range >= 0:
+                range_text = "自身" if plan_mode == "self" else f"{plan_range}尺"
+            if not range_text:
+                raise ValueError("该动作的攻击范围未明确，请由 DM 裁定后再执行")
+            range_numbers = [
+                int(value)
+                for value in re.findall(
+                    r"(\d+)\s*(?:尺|英尺|ft\.?|feet|foot)",
+                    range_text,
+                    flags=re.IGNORECASE,
+                )
+            ]
+            if not range_numbers and isinstance(plan_range, int) and plan_range >= 0:
+                range_numbers = [plan_range]
+            if not range_numbers:
+                raise ValueError("该动作的攻击范围未明确，请由 DM 裁定后再执行")
+            maximum_range = (
+                None
+                if target_rule.mode == "area" and target_rule.range_ft == 0
+                else range_numbers[0]
+            )
             actor_pos = actor.snapshot_json.get("grid_position")
             target_pos = target.snapshot_json.get("grid_position")
             if not isinstance(actor_pos, dict) or not isinstance(target_pos, dict):
@@ -2439,36 +5586,57 @@ class PlayerRoomService:
                 if scene_id
                 else None
             )
-            distance = grid_distance_ft(
-                (int(actor_pos["row"]), int(actor_pos["col"])),
-                (int(target_pos["row"]), int(target_pos["col"])),
-                cell_size_ft=grid.cell_size_ft if grid is not None else 5,
-            )
-            if distance > maximum_range:
+            aim_pos = target_pos
+            raw_aim = special_inputs.get("aim_point")
+            if target_rule.mode == "area" and raw_aim is not None:
+                if (
+                    not isinstance(raw_aim, dict)
+                    or isinstance(raw_aim.get("row"), bool)
+                    or not isinstance(raw_aim.get("row"), int)
+                    or isinstance(raw_aim.get("col"), bool)
+                    or not isinstance(raw_aim.get("col"), int)
+                ):
+                    raise ValueError("区域法术必须提供有效的 aim_point 行列")
+                aim_pos = raw_aim
+            if grid is None:
+                if target_rule.mode != "self":
+                    raise ValueError("战斗地图网格未明确，不能默认距离结算法术目标")
+                distance = 0
+            else:
+                distance = grid_distance_ft(
+                    (int(actor_pos["row"]), int(actor_pos["col"])),
+                    (int(aim_pos["row"]), int(aim_pos["col"])),
+                    cell_size_ft=grid.cell_size_ft,
+                )
+                if not (
+                    1 <= int(aim_pos["row"]) <= grid.height
+                    and 1 <= int(aim_pos["col"]) <= grid.width
+                ):
+                    raise ValueError("区域法术瞄准点超出当前战斗地图")
+            if maximum_range is not None and distance > maximum_range:
                 raise ValueError("目标超出该动作的合法距离")
             sight_blockers: set[tuple[int, int]] = set()
+            cover_cells: set[tuple[int, int]] = set()
             if grid is not None:
                 raw_cells = grid.layers_json.get("cells", [])
                 if isinstance(raw_cells, list):
-                    sight_blockers.update(
-                        (int(cell["row"]), int(cell["col"]))
-                        for cell in raw_cells
-                        if isinstance(cell, dict)
-                        and (cell.get("kind") == "wall" or cell.get("blocks_sight") is True)
-                        and isinstance(cell.get("row"), int)
-                        and isinstance(cell.get("col"), int)
-                    )
+                    for cell in raw_cells:
+                        if not isinstance(cell, dict):
+                            continue
+                        if not isinstance(cell.get("row"), int) or not isinstance(
+                            cell.get("col"), int
+                        ):
+                            continue
+                        point = (int(cell["row"]), int(cell["col"]))
+                        if cell.get("kind") == "cover" and cell.get("blocks_sight") is not True:
+                            cover_cells.add(point)
+                        if cell.get("kind") == "wall" or cell.get("blocks_sight") is True:
+                            sight_blockers.add(point)
                 scene_objects = session.scalars(
                     select(SceneObject).where(SceneObject.scene_id == grid.scene_id)
                 ).all()
                 for scene_object in scene_objects:
-                    blocks_sight = scene_object.object_type == "wall" or (
-                        scene_object.object_type == "door"
-                        and scene_object.state in {"active", "closed"}
-                    )
-                    if not blocks_sight:
-                        continue
-                    sight_blockers.update(
+                    object_cells = {
                         (row, col)
                         for row in range(
                             scene_object.row,
@@ -2478,11 +5646,72 @@ class PlayerRoomService:
                             scene_object.col,
                             scene_object.col + scene_object.width_cells,
                         )
+                    }
+                    metadata = dict(scene_object.metadata_json or {})
+                    if (scene_object.object_type == "cover" and scene_object.state == "active") or (
+                        scene_object.object_type == "furniture"
+                        and scene_object.state == "active"
+                        and metadata.get("provides_cover") is True
+                    ):
+                        cover_cells.update(object_cells)
+                    blocks_sight = scene_object.object_type == "wall" or (
+                        scene_object.object_type == "door"
+                        and scene_object.state in {"active", "closed"}
                     )
+                    if not blocks_sight:
+                        continue
+                    sight_blockers.update(object_cells)
             actor_point = (int(actor_pos["row"]), int(actor_pos["col"]))
-            target_point = (int(target_pos["row"]), int(target_pos["col"]))
+            target_point = (int(aim_pos["row"]), int(aim_pos["col"]))
+
+            def explicit_elevation(
+                position: dict[str, Any],
+                label: str,
+            ) -> int | None:
+                for key in ("elevation_ft", "height_ft", "z"):
+                    value = position.get(key)
+                    if isinstance(value, int) and not isinstance(value, bool):
+                        return value
+                if requires_explicit_elevation:
+                    raise ValueError(
+                        f"高级三维区域需要{label}记录 grid_position.elevation_ft"
+                    )
+                return None
+
+            actor_elevation = explicit_elevation(actor_pos, "施法者")
+
+            def combatant_position(item: Combatant) -> tuple[int, int] | None:
+                raw_position = item.snapshot_json.get("grid_position")
+                if (
+                    not isinstance(raw_position, dict)
+                    or "row" not in raw_position
+                    or "col" not in raw_position
+                ):
+                    return None
+                return int(raw_position["row"]), int(raw_position["col"])
+
+            visible_cells: set[tuple[int, int]] | None = None
+            if grid is not None and scene_id is not None:
+                scene = session.get(Scene, scene_id)
+                if scene is not None:
+                    visible_cells = self._visibility_for(
+                        session,
+                        scene,
+                        principal,
+                        grid,
+                        origin_override=actor_point,
+                    )["visible"]
+            if visible_cells is not None and target_point not in visible_cells:
+                raise ValueError("目标处于战争迷雾中，当前不可见")
             if not line_of_sight(actor_point, target_point, sight_blockers):
                 raise ValueError("目标被墙体或关闭的门完全遮挡，无法建立攻击视线")
+            cover_kind = cover_between(
+                actor_point,
+                target_point,
+                cover_cells,
+                sight_blockers,
+            )
+            cover_bonus = 2 if cover_kind == "half" else 0
             cost_text = str(action.get("cost") or "动作")
             cost: Literal["action", "bonus_action", "reaction"] = (
                 "bonus_action"
@@ -2491,53 +5720,100 @@ class PlayerRoomService:
                 if "反应" in cost_text
                 else "action"
             )
-            damage_text = str(action.get("damage") or "")
-            known_damage_types = (
-                "挥砍",
-                "穿刺",
-                "钝击",
-                "火焰",
-                "寒冷",
-                "闪电",
-                "雷鸣",
-                "酸蚀",
-                "毒素",
-                "心灵",
-                "黯蚀",
-                "光耀",
-                "力场",
-            )
-            damage_type = next(
-                (kind for kind in known_damage_types if kind in damage_text),
-                str(action.get("damage_type") or "钝击"),
-            )
-            combat_id = combat.id
-            save_ability = str(action.get("save_ability") or "")
-            save_dc = int(action.get("save_dc") or 0)
-            saving_throw_action = bool(save_ability and save_dc)
-            requested_ids = list(dict.fromkeys(target_ids or [target.id]))
-            if target.id not in requested_ids:
-                requested_ids.insert(0, target.id)
-            requested_targets = [
-                item
-                for item in fighters
-                if item.id in requested_ids and item.entity_type == "monster" and item.hp > 0
+            if cost == "reaction" and not (reaction_trigger or "").strip():
+                raise ValueError("反应动作必须由玩家明确填写 reaction_trigger")
+            damage_rules = [
+                DamageBlock.model_validate(block)
+                for block in blocks
+                if block.get("kind") == "damage"
             ]
-            if {item.id for item in requested_targets} != set(requested_ids):
-                raise ValueError("区域目标包含不存在、倒地或非敌对单位")
+            if not damage_rules:
+                raise ValueError("该动作缺少可验证的伤害规则，不能自动结算")
+            shared_damage_rules = [block for block in damage_rules if block.shared_roll]
+            target_damage_rules = [block for block in damage_rules if not block.shared_roll]
+            combat_id = combat.id
+            save_rule = next((block for block in blocks if block.get("kind") == "save"), None)
+            save_ability = str(
+                (save_rule.get("ability") if isinstance(save_rule, dict) else None)
+                or action.get("save_ability")
+                or ""
+            )
+            raw_save_dc = (
+                save_rule.get("dc") if isinstance(save_rule, dict) else action.get("save_dc")
+            )
+            save_dc = int(raw_save_dc) if isinstance(raw_save_dc, int) else 0
+            save_on_success = str(
+                (save_rule.get("on_success") if isinstance(save_rule, dict) else None)
+                or ("half" if action.get("half_damage_on_save") else "none")
+            )
+            if save_on_success not in {"none", "half", "full"}:
+                raise ValueError("该法术的豁免成功效果需要 DM 裁定")
+            saving_throw_action = bool(save_ability and save_dc)
+            auto_hit_action = bool(action.get("auto_hit") is True)
+            requested_targets, target_resolution = self._resolve_combat_targets(
+                target_rule=target_rule,
+                actor=actor,
+                primary_target_id=target.id,
+                requested_target_ids=target_ids,
+                fighters=fighters,
+            )
+            if visible_cells is not None and any(
+                combatant_position(item) not in visible_cells for item in requested_targets
+            ):
+                raise ValueError("区域内有目标处于战争迷雾中，当前不可见")
 
-            if saving_throw_action and len(requested_targets) > 1:
-                aim_point = (int(target_pos["row"]), int(target_pos["col"]))
-                cell_size = grid.cell_size_ft if grid is not None else 5
-                shape = (
-                    "line"
-                    if re.search(r"直线|束", range_text)
-                    else "circle"
-                    if re.search(r"半径|球形|爆发|圆形", range_text)
-                    else "single"
-                )
-                radius = range_numbers[1] if len(range_numbers) > 1 else 20
-                width = range_numbers[1] if len(range_numbers) > 1 else cell_size
+            if target_rule.mode == "multiple":
+                if grid is None:
+                    raise ValueError("多目标法术需要明确的战斗地图网格")
+                if target_rule.range_ft is None:
+                    raise ValueError("多目标法术的首目标距离未明确，请由 DM 裁定")
+                for candidate in requested_targets[1:]:
+                    candidate_pos = candidate.snapshot_json.get("grid_position")
+                    if not isinstance(candidate_pos, dict):
+                        raise ValueError("多目标法术目标尚未设置战斗地图位置")
+                    secondary_point = (int(candidate_pos["row"]), int(candidate_pos["col"]))
+                    if target_rule.secondary_range_ft is not None:
+                        legal_distance = grid_distance_ft(
+                            target_point,
+                            secondary_point,
+                            cell_size_ft=grid.cell_size_ft,
+                        )
+                        legal_maximum = target_rule.secondary_range_ft
+                    else:
+                        legal_distance = grid_distance_ft(
+                            actor_point,
+                            secondary_point,
+                            cell_size_ft=grid.cell_size_ft,
+                        )
+                        legal_maximum = target_rule.range_ft
+                    if legal_distance > legal_maximum:
+                        raise ValueError(f"{candidate.display_name}超出该法术的多目标合法距离")
+                    if target_rule.requires_line_of_sight and not line_of_sight(
+                        actor_point, secondary_point, sight_blockers
+                    ):
+                        raise ValueError(f"{candidate.display_name}无法建立法术视线")
+            elif target_rule.mode == "area":
+                if grid is None:
+                    raise ValueError("区域法术需要明确的战斗地图网格")
+                # ``target_point`` is the explicit map aim point when the UI
+                # sends special_inputs.aim_point. Do not replace it with the
+                # primary affected creature: that would rotate self-origin
+                # cubes toward whichever target happened to be listed first.
+                aim_point = target_point
+                cell_size = grid.cell_size_ft
+                shape = str(plan_shape)
+                if shape not in {"cone", "cube", "line", "sphere", "cylinder"}:
+                    raise ValueError("区域法术的形状未明确，请由 DM 裁定")
+                if not isinstance(plan_size, int) or plan_size <= 0:
+                    raise ValueError("区域法术的尺寸未明确，请由 DM 裁定")
+                if shape == "line" and target_rule.width_ft is None:
+                    raise ValueError("线状区域的宽度未明确，请由 DM 裁定")
+                if shape == "cylinder" and not isinstance(plan_height, int):
+                    raise ValueError("圆柱区域的高度未明确，请由 DM 裁定")
+                radius = plan_size
+                width = target_rule.width_ft if shape == "line" else plan_size
+                if width is None:
+                    raise ValueError("区域法术的宽度未明确，请由 DM 裁定")
                 actor_row, actor_col = actor_point
                 aim_row, aim_col = aim_point
                 vector_row = aim_row - actor_row
@@ -2551,8 +5827,28 @@ class PlayerRoomService:
                         int(candidate_pos["row"]),
                         int(candidate_pos["col"]),
                     )
+                    candidate_elevation = explicit_elevation(
+                        candidate_pos,
+                        f"目标 {candidate.display_name}",
+                    )
+                    candidate_height = candidate_elevation if candidate_elevation is not None else 0
+                    origin_height = actor_elevation if actor_elevation is not None else 0
                     legal = candidate.id == target.id
-                    if shape == "circle":
+                    if shape == "sphere":
+                        horizontal_ft = grid_distance_ft(
+                            aim_point,
+                            candidate_point,
+                            cell_size_ft=cell_size,
+                        )
+                        vertical_ft = candidate_height - int(plan_anchor_height or 0)
+                        legal = (
+                            horizontal_ft**2 + vertical_ft**2
+                        ) ** 0.5 <= radius + 0.01 and line_of_sight(
+                            aim_point,
+                            candidate_point,
+                            sight_blockers,
+                        )
+                    elif shape == "cylinder":
                         legal = grid_distance_ft(
                             aim_point,
                             candidate_point,
@@ -2561,6 +5857,72 @@ class PlayerRoomService:
                             aim_point,
                             candidate_point,
                             sight_blockers,
+                        ) and int(plan_anchor_height or 0) <= candidate_height < int(
+                            plan_anchor_height or 0
+                        ) + int(plan_height)
+                    elif shape == "cube":
+                        size_cells = max(0.5, width / cell_size)
+                        if target_rule.range_ft == 0 and aim_point != actor_point:
+                            direction_row = aim_row - actor_row
+                            direction_col = aim_col - actor_col
+                            direction_length = (direction_row**2 + direction_col**2) ** 0.5
+                            relative_row = candidate_point[0] - actor_row
+                            relative_col = candidate_point[1] - actor_col
+                            forward = (
+                                relative_row * direction_row + relative_col * direction_col
+                            ) / direction_length
+                            lateral = abs(
+                                relative_row * direction_col - relative_col * direction_row
+                            ) / direction_length
+                            legal = (
+                                forward >= -0.01
+                                and forward <= size_cells + 0.01
+                                and lateral <= size_cells / 2 + 0.01
+                                and (
+                                    not requires_explicit_elevation
+                                    or int(plan_anchor_height or 0)
+                                    <= candidate_height
+                                    < int(plan_anchor_height or 0) + width
+                                )
+                                and line_of_sight(actor_point, candidate_point, sight_blockers)
+                            )
+                        else:
+                            center = actor_point if target_rule.range_ft == 0 else aim_point
+                            legal = max(
+                                abs(candidate_point[0] - center[0]),
+                                abs(candidate_point[1] - center[1]),
+                            ) <= size_cells / 2 + 0.01 and (
+                                not requires_explicit_elevation
+                                or int(plan_anchor_height or 0)
+                                <= candidate_height
+                                < int(plan_anchor_height or 0) + width
+                            ) and line_of_sight(
+                                center, candidate_point, sight_blockers
+                            )
+                    elif shape == "cone" and length_squared > 0:
+                        candidate_row = candidate_point[0] - actor_row
+                        candidate_col = candidate_point[1] - actor_col
+                        candidate_distance = (candidate_row**2 + candidate_col**2) ** 0.5
+                        forward = (candidate_row * vector_row + candidate_col * vector_col) / (
+                            length_squared**0.5
+                        )
+                        legal = (
+                            candidate_distance <= width / cell_size + 0.01
+                            and forward >= 0
+                            and (
+                                candidate_distance == 0
+                                or forward / candidate_distance >= 2**-0.5 - 0.01
+                            )
+                            and (
+                                not requires_explicit_elevation
+                                or abs(candidate_height - origin_height)
+                                <= forward * cell_size + 0.01
+                            )
+                            and line_of_sight(
+                                actor_point,
+                                candidate_point,
+                                sight_blockers,
+                            )
                         )
                     elif shape == "line" and length_squared > 0:
                         candidate_range = grid_distance_ft(
@@ -2586,6 +5948,10 @@ class PlayerRoomService:
                             0 <= projection
                             and candidate_range <= maximum_range
                             and perpendicular_ft <= max(cell_size / 2, width / 2)
+                            and (
+                                not requires_explicit_elevation
+                                or abs(candidate_height - origin_height) <= width / 2 + 0.01
+                            )
                             and line_of_sight(
                                 actor_point,
                                 candidate_point,
@@ -2594,84 +5960,676 @@ class PlayerRoomService:
                         )
                     if not legal:
                         raise ValueError(f"{candidate.display_name}不在玩家选择的技能范围内")
-            elif not saving_throw_action:
+            elif target_rule.mode not in {"multiple", "area"} and not saving_throw_action:
                 requested_targets = [target]
 
             resource_key = str(action.get("resource_key") or "")
             resource_cost = int(action.get("resource_cost") or 0)
-            if resource_key and resource_cost:
+            if actor.entity_type != "character":
+                resource_key = ""
+                resource_cost = 0
+            if resource_key and resource_cost and actor.entity_type == "character":
                 resource = (character.resources or {}).get(resource_key)
                 current = int(resource.get("current") or 0) if isinstance(resource, dict) else 0
                 if current < resource_cost:
                     raise ValueError("对应法术位或资源不足")
 
-            commands: list[CombatActionCommand] = []
-            for index, current_target in enumerate(requested_targets):
+            # A shared component is reported once; a non-shared component must
+            # be reported for each resolved target.  No dice total is copied,
+            # split, or inferred from another damage type.
+            try:
+                shared_components = (
+                    resolve_damage_component_totals(
+                        shared_damage_rules,
+                        legacy_total=(
+                            damage_total
+                            if not damage_component_totals and len(shared_damage_rules) == 1
+                            else None
+                        ),
+                        component_totals=damage_component_totals or None,
+                    )
+                    if shared_damage_rules
+                    else ()
+                )
+            except ValueError as exc:
+                raise ValueError(
+                    "共用伤害段必须按 damage_component_totals 为每个伤害积木提交最终总值"
+                ) from exc
+            if target_damage_rules:
+                expected_target_ids = {item.id for item in requested_targets}
+                if set(target_damage_component_totals) != expected_target_ids:
+                    raise ValueError(
+                        "非共用伤害段必须在 target_damage_component_totals 中为每个目标分别提交"
+                    )
+            elif target_damage_component_totals:
+                raise ValueError("该动作没有非共用伤害段，不能提交 target_damage_component_totals")
+
+            def components_for(current_target: Combatant) -> list[Any]:
+                if target_damage_rules:
+                    raw_totals = target_damage_component_totals.get(current_target.id)
+                    if not isinstance(raw_totals, dict):
+                        raise ValueError("每个目标的非共用伤害段必须是对象")
+                    try:
+                        target_components = resolve_damage_component_totals(
+                            target_damage_rules,
+                            component_totals=raw_totals,
+                        )
+                    except ValueError as exc:
+                        raise ValueError("目标伤害段必须精确匹配非共用伤害积木 ID") from exc
+                else:
+                    target_components = ()
+                by_block_id = {
+                    component.block_id: component
+                    for component in (*shared_components, *target_components)
+                }
+                return [by_block_id[rule.id] for rule in damage_rules]
+
+            effect_targets: dict[str, bool] = {}
+            target_outcome_codes: dict[str, str] = {}
+            target_outcomes: list[dict[str, Any]] = []
+            damage_specs: list[dict[str, Any]] = []
+            rider_turn_key = f"{combat.round_number}:{combat.current_turn_index}"
+            raw_rider_usage = actor.snapshot_json.get("attack_rider_uses")
+            rider_usage = (
+                raw_rider_usage.get(rider_turn_key, [])
+                if isinstance(raw_rider_usage, dict)
+                else []
+            )
+            riders_used_this_turn = {
+                str(value) for value in rider_usage if isinstance(value, str)
+            }
+            riders_applied_this_call: set[str] = set()
+            rider_results_by_target: dict[str, list[dict[str, Any]]] = {}
+            attack_bonus, _, _ = self._rule_modifier(
+                actor,
+                "attack_roll",
+                scope="outgoing",
+            )
+            damage_bonus, _, _ = self._rule_modifier(
+                actor,
+                "damage_roll",
+                scope="outgoing",
+            )
+            first_damage_block_id = damage_rules[0].id
+            for current_target in requested_targets:
+                components = components_for(current_target)
+                current_target_position = current_target.snapshot_json.get("grid_position")
+                current_distance = (
+                    grid_distance_ft(
+                        actor_point,
+                        (
+                            int(current_target_position["row"]),
+                            int(current_target_position["col"]),
+                        ),
+                        cell_size_ft=grid.cell_size_ft,
+                    )
+                    if grid is not None
+                    and isinstance(current_target_position, dict)
+                    and isinstance(current_target_position.get("row"), int)
+                    and isinstance(current_target_position.get("col"), int)
+                    else None
+                )
+                attack_roll_mode, _, _, automatic_critical = (
+                    self._condition_attack_context(
+                        actor,
+                        current_target,
+                        distance_ft=current_distance,
+                    )
+                )
+                reported_attack_rolls = special_inputs.get("attack_roll_totals")
+                attack_rolls = (
+                    [int(value) for value in reported_attack_rolls]
+                    if isinstance(reported_attack_rolls, list)
+                    and all(
+                        isinstance(value, (int, float)) and not isinstance(value, bool)
+                        for value in reported_attack_rolls
+                    )
+                    else []
+                )
+                if attack_roll_mode != "normal" and len(attack_rolls) < 2:
+                    raise ValueError(
+                        f"该攻击受到{attack_roll_mode}影响，必须提交 "
+                        "attack_roll_totals 中的两个 d20 结果"
+                    )
+                if attack_roll_mode == "advantage":
+                    effective_attack_roll = max(attack_rolls[:2])
+                elif attack_roll_mode == "disadvantage":
+                    effective_attack_roll = min(attack_rolls[:2])
+                else:
+                    effective_attack_roll = attack_total
+                save: dict[str, Any] | None = None
                 if saving_throw_action:
                     scores = current_target.snapshot_json.get("ability_scores")
+                    save_bonus, save_advantage, save_disadvantage = self._rule_modifier(
+                        current_target,
+                        "saving_throw",
+                        scope="incoming",
+                    )
+                    rolls = [secrets.randbelow(20) + 1, secrets.randbelow(20) + 1]
+                    if save_advantage and not save_disadvantage:
+                        selected_roll = max(rolls)
+                    elif save_disadvantage and not save_advantage:
+                        selected_roll = min(rolls)
+                    else:
+                        selected_roll = rolls[0]
                     save = roll_save(
                         scores if isinstance(scores, dict) else {},
                         save_ability,
                         save_dc,
+                        roller=lambda _low, _high, value=selected_roll: value,
                     )
-                    amount = (
-                        damage_total // 2
-                        if save["success"] and bool(action.get("half_damage_on_save"))
-                        else 0
-                        if save["success"]
-                        else damage_total
-                    )
+                    if save_bonus:
+                        save["modifier"] += save_bonus
+                        save["total"] += save_bonus
+                        save["formula"] += f"{save_bonus:+d}"
+                        save["success"] = save["total"] >= save_dc
+                    if save_advantage != save_disadvantage:
+                        save["rolls"] = rolls
+                        save["advantage"] = save_advantage and not save_disadvantage
+                        save["disadvantage"] = save_disadvantage and not save_advantage
+                    outcome_code = "save_success" if save["success"] else "save_failure"
+                    effect_targets[current_target.id] = not save["success"]
                     note = (
-                        f"玩家报告共用伤害骰 {damage_total}；"
                         f"{current_target.display_name}{save['ability_label']}豁免 "
                         f"{save['raw_roll']} {save['modifier']:+d} = {save['total']} "
                         f"vs DC {save_dc}：{'成功' if save['success'] else '失败'}"
                     )
                 else:
-                    hit = critical_hit or attack_total >= current_target.armor_class
-                    amount = damage_total if hit else 0
+                    effective_armor_class = current_target.armor_class + cover_bonus
+                    effective_attack_total = effective_attack_roll + attack_bonus
+                    hit = (
+                        auto_hit_action
+                        or automatic_critical
+                        or critical_hit
+                        or effective_attack_total >= effective_armor_class
+                    )
+                    outcome_code = "hit" if hit else "miss"
+                    effect_targets[current_target.id] = hit
+                    cover_note = (
+                        f"（基础 AC {current_target.armor_class}；半掩体 +{cover_bonus}）"
+                        if cover_bonus
+                        else ""
+                    )
                     note = (
-                        f"玩家掷骰 {attack_total} 对抗 AC {current_target.armor_class}"
-                        f"{'（天然 20 暴击）' if critical_hit else ''}："
-                        f"{'命中' if hit else '未命中'}"
+                        "特殊技能自动命中："
+                        if auto_hit_action
+                        else (
+                            f"玩家掷骰 {effective_attack_total} 对抗 AC {effective_armor_class}"
+                            f"{cover_note}"
+                            f"{'（自动暴击）' if automatic_critical else ''}"
+                            f"{'（天然 20 暴击）' if critical_hit else ''}："
+                        )
+                    ) + ("命中" if hit else "未命中")
+                target_outcome_codes[current_target.id] = outcome_code
+                component_outcomes: list[dict[str, Any]] = []
+                rider_results: list[dict[str, Any]] = []
+                effective_critical = critical_hit or automatic_critical
+                if outcome_code == "hit":
+                    eligible_riders = self._eligible_attack_riders(
+                        actor,
+                        action,
+                        current_target,
+                        special_inputs=special_inputs,
+                        critical_hit=effective_critical,
+                        used_this_turn=(
+                            riders_used_this_turn | riders_applied_this_call
+                        ),
                     )
-                commands.append(
-                    CombatActionCommand(
-                        action_type="damage",
-                        target_combatant_id=current_target.id,
-                        target_version=current_target.version,
-                        actor_combatant_id=actor.id if index == 0 else None,
-                        actor_version=actor.version if index == 0 else None,
-                        action_cost=cost if index == 0 else "none",
-                        action_name=action_name,
-                        resolution_note=note,
-                        amount=amount,
-                        damage_type=damage_type,
-                        critical_hit=critical_hit and not saving_throw_action,
+                    for rider in eligible_riders:
+                        rider_results.append(rider)
+                        if rider.get("frequency") == "once_per_turn":
+                            riders_applied_this_call.add(str(rider["rider_id"]))
+                rider_results_by_target[current_target.id] = rider_results
+                rider_bonus_by_block: dict[str, int] = {}
+                if rider_results:
+                    rider_bonus_by_block[first_damage_block_id] = sum(
+                        int(item["total"]) for item in rider_results
                     )
+                for component in components:
+                    rule = next(rule for rule in damage_rules if rule.id == component.block_id)
+                    reported_total = max(
+                        0,
+                        component.total
+                        + (damage_bonus if component.block_id == first_damage_block_id else 0)
+                        + rider_bonus_by_block.get(component.block_id, 0),
+                    )
+                    if saving_throw_action:
+                        assert save is not None
+                        amount = (
+                            reported_total // 2
+                            if save["success"] and save_on_success == "half"
+                            else reported_total
+                            if save["success"] and save_on_success == "full"
+                            else 0
+                            if save["success"]
+                            else reported_total
+                        )
+                    else:
+                        amount = reported_total if outcome_code == "hit" else 0
+                    component_outcomes.append(
+                        {
+                            "block_id": component.block_id,
+                            "damage_type": component.damage_type,
+                            "reported_total": component.total,
+                            "adjusted_total": reported_total,
+                            "damage_total": amount,
+                            "shared_roll": rule.shared_roll,
+                            "critical_hit": effective_critical,
+                        }
+                    )
+                    damage_specs.append(
+                        {
+                            "target_id": current_target.id,
+                            "target_version": current_target.version,
+                            "block_id": component.block_id,
+                            "damage_type": component.damage_type,
+                            "amount": amount,
+                            "critical_hit": effective_critical,
+                            "note": (
+                            f"{note}；伤害段 {component.block_id} "
+                                f"({component.damage_type}) 报告 {reported_total}，结算 {amount}"
+                                + (
+                                    "；附伤："
+                                    + "、".join(
+                                        f"{item['source']} {item['expression']} +{item['total']}"
+                                        for item in rider_results
+                                    )
+                                    if component.block_id == first_damage_block_id
+                                    and rider_results
+                                    else ""
+                                )
+                            ),
+                        }
+                    )
+                target_outcomes.append(
+                    {
+                        "target_combatant_id": current_target.id,
+                        "save": save,
+                        "attack_roll_mode": attack_roll_mode if not saving_throw_action else None,
+                        "reported_attack_rolls": attack_rolls if not saving_throw_action else [],
+                        "automatic_critical": (
+                            automatic_critical if not saving_throw_action else False
+                        ),
+                        "save_outcome": ("success" if outcome_code == "save_success" else "failure")
+                        if saving_throw_action
+                        else None,
+                        "attack_outcome": outcome_code if not saving_throw_action else None,
+                        "damage_total": sum(item["damage_total"] for item in component_outcomes),
+                        "damage_components": component_outcomes,
+                        "attack_riders": rider_results,
+                        "effect_applied": effect_targets[current_target.id],
+                    }
                 )
 
-        results = [
-            self.combat.confirm(
-                principal.campaign_id,
-                combat_id,
-                command,
-                idempotency_key=(idempotency_key if index == 0 else f"{idempotency_key}:{index}"),
+        commands: list[tuple[CombatActionCommand, str]] = []
+        target_versions = {item.id: item.version for item in requested_targets}
+        for index, spec in enumerate(damage_specs):
+            target_version = target_versions[spec["target_id"]]
+            command = CombatActionCommand(
+                action_type="damage",
+                target_combatant_id=spec["target_id"],
+                target_version=target_version,
+                actor_combatant_id=actor.id if index == 0 else None,
+                actor_version=actor.version if index == 0 else None,
+                action_cost=cost if index == 0 else "none",
+                action_name=action_name,
+                resolution_note=spec["note"],
+                amount=spec["amount"],
+                damage_type=spec["damage_type"],
+                critical_hit=bool(spec.get("critical_hit")) and not saving_throw_action,
+                damage_tags=[
+                    str(value)
+                    for value in action.get("damage_tags", [])
+                    if isinstance(value, str)
+                ] if isinstance(action.get("damage_tags"), list) else [],
+                reaction_trigger=reaction_trigger.strip()
+                if cost == "reaction" and index == 0
+                else None,
             )
-            for index, command in enumerate(commands)
-        ]
-        if resource_key and resource_cost:
-            with Session(self.engine) as session, session.begin():
-                character = session.get(Character, principal.character_id)
-                if character is None:
-                    raise StateNotFoundError("character not found")
-                resources = dict(character.resources or {})
-                resource = json_dict(resources.get(resource_key))
-                resource["current"] = max(0, int(resource.get("current") or 0) - resource_cost)
-                resources[resource_key] = resource
-                character.resources = resources
-                character.version += 1
-                character.updated_at = _now()
+            command_key = (
+                idempotency_key
+                if index == 0
+                else f"{idempotency_key}:damage:{spec['target_id']}:{spec['block_id']}"
+            )
+            commands.append((command, command_key))
+            target_versions[spec["target_id"]] = target_version + 1
+        results = self.combat.confirm_action_batch(
+            principal.campaign_id,
+            combat_id,
+            commands,
+        )
+        self._mark_attack_rider_usage(
+            self.engine,
+            actor.id,
+            rider_turn_key,
+            riders_applied_this_call,
+        )
+        compiled_effects = self._apply_compiled_combat_blocks(
+            principal,
+            combat_id,
+            actor.id,
+            action,
+            [item.id for item in requested_targets],
+            effect_targets,
+            idempotency_key,
+            special_inputs,
+            target_outcome_codes,
+        )
+        self._spend_character_resource(
+            principal.character_id,
+            resource_key,
+            resource_cost,
+        )
+        turn_advance = (
+            self._advance_player_room_turn(
+                principal,
+                combat_id,
+                f"{idempotency_key}:advance",
+                require_non_character=False,
+            )
+            if end_turn_after
+            else None
+        )
+        return {
+            "action_name": action_name,
+            "target_count": len(requested_targets),
+            "results": results,
+            "target_resolution": target_resolution,
+            "target_outcomes": target_outcomes,
+            "attack_riders": [
+                rider
+                for values in rider_results_by_target.values()
+                for rider in values
+            ],
+            "compiled_effects": compiled_effects,
+            "turn_advance": turn_advance,
+        }
+
+    def cast(
+        self,
+        principal: PlayerPrincipal,
+        target_id: str,
+        target_ids: list[str],
+        action_name: str,
+        slot_level: int | None,
+        healing_total: int,
+        end_turn_after: bool,
+        idempotency_key: str,
+        special_inputs: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        """Resolve a typed non-attack combat spell for the player.
+
+        This endpoint handles friendly effects plus destination/template-sensitive
+        special blocks. Damage/save/forced-movement spells continue through
+        ``attack`` so their enemy targeting and save geometry cannot be bypassed.
+        """
+
+        if principal.character_id is None:
+            raise ValueError("请先绑定角色")
+        special_inputs = dict(special_inputs or {})
+        with Session(self.engine) as session:
+            room = session.get(PlayerRoom, principal.room_id)
+            combat = (
+                session.get(Combat, room.current_combat_id)
+                if room and room.current_combat_id
+                else None
+            )
+            if combat is None or combat.status != "active":
+                raise ValueError("当前没有进行中的战斗")
+            fighters = session.scalars(
+                select(Combatant)
+                .where(Combatant.combat_id == combat.id, Combatant.is_active.is_(True))
+                .order_by(Combatant.initiative.desc(), Combatant.created_at, Combatant.id)
+            ).all()
+            active = fighters[combat.current_turn_index] if fighters else None
+            character = session.get(Character, principal.character_id)
+            actor = self._controlled_actor(fighters, active, principal.character_id)
+            if actor is None or character is None:
+                raise ValueError("当前不是你的可控单位回合")
+            action = (
+                self._action_data(session, character, action_name)
+                if actor.entity_type == "character"
+                else self._companion_action_data(actor, action_name)
+            )
+            if slot_level is not None:
+                base_level = int(action.get("spell_level") or 0)
+                if base_level <= 0 or slot_level < base_level:
+                    raise ValueError("该动作不是可升环法术，或施法环阶低于法术本环")
+                action = upcast_spell_action(action, slot_level)
+            raw_plan = action.get("rule_plan")
+            blocks = (
+                [block for block in raw_plan.get("blocks", []) if isinstance(block, dict)]
+                if isinstance(raw_plan, dict)
+                else []
+            )
+            selected_choice_ids = self._selected_choice_block_ids(blocks, special_inputs)
+            choice_child_ids = {
+                str(child_id)
+                for choice in blocks
+                if choice.get("kind") == "choice"
+                for option in (
+                    choice.get("options") if isinstance(choice.get("options"), list) else []
+                )
+                if isinstance(option, dict)
+                for child_id in (
+                    option.get("block_ids") if isinstance(option.get("block_ids"), list) else []
+                )
+                if isinstance(child_id, str) and child_id
+            }
+            area_child_ids = {
+                str(child_id)
+                for area in blocks
+                if area.get("kind") == "area_effect"
+                for child_id in (
+                    area.get("effect_block_ids")
+                    if isinstance(area.get("effect_block_ids"), list)
+                    else []
+                )
+                if isinstance(child_id, str) and child_id
+            }
+
+            def direct_block(block: dict[str, Any]) -> bool:
+                block_id = str(block.get("id") or "")
+                return block_id not in area_child_ids and (
+                    block_id not in choice_child_ids or block_id in selected_choice_ids
+                )
+
+            supported_kinds = {
+                "heal",
+                "condition",
+                "modifier",
+                "defense",
+                "repeat",
+                "teleport",
+                "transformation",
+                "creation",
+                "dispel",
+                "area_effect",
+                "choice",
+            }
+            if not any(str(block.get("kind") or "") in supported_kinds for block in blocks):
+                raise ValueError("该法术没有可自动执行的友方战斗效果，请由 DM 裁定")
+            if any(
+                str(block.get("kind") or "") in {"damage", "save", "move", "summon"}
+                and direct_block(block)
+                for block in blocks
+            ):
+                raise ValueError("该法术同时包含敌对目标或位移效果，请使用攻击/范围法术入口")
+            direct_heal_blocks = [
+                block
+                for block in blocks
+                if str(block.get("kind") or "") == "heal" and direct_block(block)
+            ]
+            has_heal = bool(direct_heal_blocks)
+            has_temporary_hp = any(
+                block.get("temporary_hp") is True for block in direct_heal_blocks
+            )
+            has_ordinary_heal = any(
+                block.get("temporary_hp") is not True for block in direct_heal_blocks
+            )
+            if has_temporary_hp and has_ordinary_heal:
+                raise ValueError(
+                    "同时恢复生命和给予临时生命的法术需要按积木分别提交总值，请由 DM 裁定"
+                )
+            if has_heal and healing_total <= 0:
+                raise ValueError("请先掷治疗骰，并填写治疗骰最终总值")
+            has_area_effect = any(block.get("kind") == "area_effect" for block in blocks)
+
+            requested_ids = list(dict.fromkeys(target_ids or [target_id]))
+            if target_id not in requested_ids:
+                requested_ids.insert(0, target_id)
+            requested_targets = [item for item in fighters if item.id in requested_ids]
+            if len(requested_targets) != len(requested_ids):
+                raise ValueError("目标包含不存在或不在当前战斗的单位")
+            has_dispel = any(str(block.get("kind") or "") == "dispel" for block in blocks)
+            if has_area_effect and any(item.id != actor.id for item in requested_targets):
+                raise ValueError(
+                    "持续区域不以生物为目标；请以施法者自身作为确认目标并在 areas 中选择原点"
+                )
+            if (
+                not has_dispel
+                and not has_area_effect
+                and any(
+                    self._combatant_faction(item) != self._combatant_faction(actor)
+                    for item in requested_targets
+                )
+            ):
+                raise ValueError("战斗增益和治疗只能选择友方单位")
+
+            target_block = next(
+                (block for block in blocks if str(block.get("kind") or "") == "target"),
+                {},
+            )
+            target_mode = str(target_block.get("mode") or "")
+            if target_mode == "self" and any(item.id != actor.id for item in requested_targets):
+                raise ValueError("该法术只能以施法者自身为目标")
+            range_value = target_block.get("range_ft")
+            range_numbers = [
+                int(value)
+                for value in re.findall(
+                    r"(\d+)\s*(?:尺|英尺|ft\.?|feet|foot)",
+                    str(action.get("range") or ""),
+                    flags=re.IGNORECASE,
+                )
+            ]
+            maximum_range = (
+                int(range_value)
+                if isinstance(range_value, int) and range_value >= 0
+                else range_numbers[0]
+                if range_numbers
+                else None
+            )
+            if maximum_range is None and any(item.id != actor.id for item in requested_targets):
+                raise ValueError("该法术的友方目标距离未明确，请由 DM 裁定")
+            actor_pos = actor.snapshot_json.get("grid_position")
+            if maximum_range is not None and maximum_range > 0:
+                if not isinstance(actor_pos, dict):
+                    raise ValueError("施法者尚未设置战斗地图位置")
+                scene_id = combat.scene_id or (room.current_scene_id if room else None)
+                grid = (
+                    session.scalar(select(SceneGrid).where(SceneGrid.scene_id == scene_id))
+                    if scene_id
+                    else None
+                )
+                cell_size = grid.cell_size_ft if grid is not None else 5
+                actor_point = (int(actor_pos["row"]), int(actor_pos["col"]))
+                for target in requested_targets:
+                    target_pos = target.snapshot_json.get("grid_position")
+                    if not isinstance(target_pos, dict):
+                        raise ValueError("友方目标尚未设置战斗地图位置")
+                    distance = grid_distance_ft(
+                        actor_point,
+                        (int(target_pos["row"]), int(target_pos["col"])),
+                        cell_size_ft=cell_size,
+                    )
+                    if distance > maximum_range:
+                        raise ValueError(f"{target.display_name}超出该法术的合法距离")
+
+            cost_text = str(action.get("cost") or "动作")
+            cost: Literal["action", "bonus_action", "reaction", "none"] = (
+                "bonus_action"
+                if "附赠" in cost_text
+                else "reaction"
+                if "反应" in cost_text
+                else "none"
+                if "无" in cost_text
+                else "action"
+            )
+            reaction_trigger = str(special_inputs.get("reaction_trigger") or "").strip()
+            if cost == "reaction":
+                reaction_trigger = self._reaction_trigger_for_support_cast(
+                    action,
+                    blocks,
+                    reaction_trigger,
+                )
+            resource_key = str(action.get("resource_key") or "")
+            resource_cost = int(action.get("resource_cost") or 0)
+            if actor.entity_type != "character":
+                resource_key = ""
+                resource_cost = 0
+            if resource_key and resource_cost:
+                resource = (character.resources or {}).get(resource_key)
+                current = int(resource.get("current") or 0) if isinstance(resource, dict) else 0
+                if current < resource_cost:
+                    raise ValueError("对应法术位或资源不足")
+            combat_id = combat.id
+            actor_id = actor.id
+
+        commands: list[tuple[CombatActionCommand, str]] = []
+        for index, target in enumerate(requested_targets):
+            command = CombatActionCommand(
+                action_type="heal",
+                target_combatant_id=target.id,
+                target_version=target.version,
+                actor_combatant_id=actor_id if index == 0 else None,
+                actor_version=actor.version if index == 0 else None,
+                action_cost=cost if index == 0 else "none",
+                action_name=action_name,
+                resolution_note=(
+                    f"玩家施放友方效果；{target.display_name}"
+                    + (
+                        f"获得 {healing_total} 点临时生命"
+                        if has_temporary_hp
+                        else f"恢复 {healing_total} 点生命"
+                        if has_ordinary_heal
+                        else "获得规则积木效果"
+                    )
+                ),
+                amount=healing_total if has_ordinary_heal else 0,
+                reaction_trigger=reaction_trigger if cost == "reaction" else None,
+            )
+            commands.append(
+                (
+                    command,
+                    idempotency_key if index == 0 else f"{idempotency_key}:{index}",
+                )
+            )
+        results = self.combat.confirm_action_batch(
+            principal.campaign_id,
+            combat_id,
+            commands,
+        )
+        temporary_hp_results = (
+            self._write_temporary_hp(action_results=results, amount=healing_total)
+            if has_temporary_hp
+            else []
+        )
+        compiled_effects = self._apply_compiled_combat_blocks(
+            principal,
+            combat_id,
+            actor_id,
+            action,
+            [item.id for item in requested_targets],
+            {item.id: True for item in requested_targets},
+            idempotency_key,
+            special_inputs,
+            {item.id: "always" for item in requested_targets},
+        )
+        self._spend_character_resource(
+            principal.character_id,
+            resource_key,
+            resource_cost,
+        )
         turn_advance = (
             self._advance_player_room_turn(
                 principal,
@@ -2686,8 +6644,67 @@ class PlayerRoomService:
             "action_name": action_name,
             "target_count": len(results),
             "results": results,
+            "temporary_hp": temporary_hp_results,
+            "resource_spend": {
+                "resource_key": resource_key or None,
+                "amount": resource_cost,
+            },
+            "compiled_effects": compiled_effects,
             "turn_advance": turn_advance,
         }
+
+    def feature_action(
+        self,
+        principal: PlayerPrincipal,
+        feature_id: str,
+        target_id: str | None,
+        healing_total: int | None,
+        idempotency_key: str,
+    ) -> dict[str, Any]:
+        """Submit a compiled class feature from the player's active unit."""
+
+        if principal.character_id is None:
+            raise ValueError("请先绑定角色")
+        with Session(self.engine) as session:
+            room = session.get(PlayerRoom, principal.room_id)
+            combat = (
+                session.get(Combat, room.current_combat_id)
+                if room and room.current_combat_id
+                else None
+            )
+            if combat is None or combat.status != "active":
+                raise ValueError("当前没有进行中的战斗")
+            fighters = self._ordered_fighters(session, combat.id)
+            active = (
+                fighters[combat.current_turn_index]
+                if fighters and combat.current_turn_index < len(fighters)
+                else None
+            )
+            actor = self._controlled_actor(fighters, active, principal.character_id)
+            if actor is None:
+                raise ValueError("现在还没有轮到你的角色或你的召唤单位")
+            target = next(
+                (item for item in fighters if item.id == target_id),
+                actor,
+            )
+            if target_id is not None and target.id != target_id:
+                raise ValueError("职业特性目标不在当前战斗")
+            command = CombatFeatureActionCommand(
+                actor_combatant_id=actor.id,
+                actor_version=actor.version,
+                feature_id=feature_id,
+                healing_total=healing_total,
+                target_combatant_id=target.id,
+                target_version=target.version,
+            )
+            campaign_id = combat.campaign_id
+            combat_id = combat.id
+        return self.combat.confirm_feature_action(
+            campaign_id,
+            combat_id,
+            command,
+            idempotency_key=idempotency_key,
+        )
 
     def confirm_roll(
         self,
@@ -2707,24 +6724,18 @@ class PlayerRoomService:
                 else None
             )
             action = session.get(CombatAction, action_id)
-            actor = (
-                session.scalar(
-                    select(Combatant).where(
-                        Combatant.combat_id == combat.id,
-                        Combatant.entity_type == "character",
-                        Combatant.entity_id == principal.character_id,
-                    )
-                )
-                if combat
-                else None
-            )
+            fighters = self._ordered_fighters(session, combat.id) if combat else []
+            controlled_ids = {
+                item.id
+                for item in fighters
+                if self._is_player_controlled(item, principal.character_id)
+            }
             if (
                 combat is None
                 or combat.status != "active"
                 or action is None
                 or action.combat_id != combat.id
-                or actor is None
-                or actor.id not in action.target_combatant_ids
+                or not controlled_ids.intersection(action.target_combatant_ids)
             ):
                 raise ValueError("该骰子请求不属于你的当前角色")
             combat_id = combat.id
@@ -2759,6 +6770,122 @@ class PlayerRoomService:
             "turn_advance": turn_advance,
         }
 
+    def get_player_death_save(self, principal: PlayerPrincipal) -> dict[str, Any]:
+        """Expose only the bound character's death-save track to the player."""
+
+        if principal.character_id is None:
+            raise ValueError("请先绑定角色")
+        with Session(self.engine) as session:
+            room = session.get(PlayerRoom, principal.room_id)
+            combat = (
+                session.get(Combat, room.current_combat_id)
+                if room and room.current_combat_id
+                else None
+            )
+            if combat is None or combat.status != "active":
+                raise ValueError("当前没有进行中的战斗")
+            fighters = self._ordered_fighters(session, combat.id)
+            target = next(
+                (
+                    item
+                    for item in fighters
+                    if item.entity_type == "character"
+                    and item.entity_id == principal.character_id
+                    and self._is_player_controlled(item, principal.character_id)
+                ),
+                None,
+            )
+            if target is None:
+                raise ValueError("当前角色没有对应的战斗单位")
+            death_save = session.scalar(
+                select(DeathSave).where(DeathSave.combatant_id == target.id)
+            )
+            return (
+                serialize(death_save)
+                if death_save is not None
+                else {
+                    "combatant_id": target.id,
+                    "successes": 0,
+                    "failures": 0,
+                    "stable": False,
+                    "dead": False,
+                    "pending_death_confirmation": False,
+                    "last_roll": None,
+                    "version": 1,
+                }
+            )
+
+    def submit_player_death_save(
+        self,
+        principal: PlayerPrincipal,
+        target_version: int,
+        roll: int,
+        idempotency_key: str,
+    ) -> dict[str, Any]:
+        """Submit a death save for the bound character and pass the turn onward."""
+
+        if principal.character_id is None:
+            raise ValueError("请先绑定角色")
+        with Session(self.engine) as session:
+            room = session.get(PlayerRoom, principal.room_id)
+            combat = (
+                session.get(Combat, room.current_combat_id)
+                if room and room.current_combat_id
+                else None
+            )
+            if combat is None or combat.status != "active":
+                raise ValueError("当前没有进行中的战斗")
+            fighters = self._ordered_fighters(session, combat.id)
+            active = (
+                fighters[combat.current_turn_index]
+                if fighters and combat.current_turn_index < len(fighters)
+                else None
+            )
+            target = next(
+                (
+                    item
+                    for item in fighters
+                    if item.entity_type == "character"
+                    and item.entity_id == principal.character_id
+                    and self._is_player_controlled(item, principal.character_id)
+                ),
+                None,
+            )
+            if target is None:
+                raise ValueError("当前角色没有对应的战斗单位")
+            if active is None or active.id != target.id:
+                raise ValueError("只有当前角色回合才能进行死亡豁免")
+            if target.version != target_version:
+                raise VersionConflict("combatant", target.id, target_version, target.version)
+            combat_id = combat.id
+            campaign_id = combat.campaign_id
+        result = self.combat.confirm_death_save(
+            campaign_id,
+            combat_id,
+            target.id,
+            DeathSaveCommand(target_version=target_version, roll=roll),
+            idempotency_key=idempotency_key,
+        )
+        death_save = result.get("death_save")
+        turn_advance = None
+        if isinstance(death_save, dict) and not (
+            death_save.get("dead") or death_save.get("pending_death_confirmation")
+        ):
+            with Session(self.engine) as session:
+                combat_row = session.get(Combat, combat_id)
+                if combat_row is not None and combat_row.status == "active":
+                    combat_version = combat_row.version
+                else:
+                    combat_version = None
+            if combat_version is not None:
+                turn_advance = self.combat.advance_turn(
+                    principal.campaign_id,
+                    combat_id,
+                    TurnAdvanceCommand(combat_version=combat_version),
+                    idempotency_key=f"{idempotency_key}:advance",
+                )
+        return {**result, "turn_advance": turn_advance}
+
     def _advance_player_room_turn(
         self,
         principal: PlayerPrincipal,
@@ -2783,11 +6910,10 @@ class PlayerRoomService:
             )
             if active is None:
                 return None
-            if require_non_character and active.entity_type == "character":
+            active_is_player_controlled = self._is_player_controlled(active, principal.character_id)
+            if require_non_character and active_is_player_controlled:
                 return None
-            if not require_non_character and (
-                active.entity_type != "character" or active.entity_id != principal.character_id
-            ):
+            if not require_non_character and (not active_is_player_controlled):
                 return None
             unresolved = session.scalar(
                 select(CombatAction).where(
@@ -2826,12 +6952,8 @@ class PlayerRoomService:
                 .order_by(Combatant.initiative.desc(), Combatant.created_at, Combatant.id)
             ).all()
             active = fighters[combat.current_turn_index] if fighters else None
-            if (
-                active is None
-                or active.entity_type != "character"
-                or active.entity_id != principal.character_id
-            ):
-                raise ValueError("现在还没有轮到你的角色")
+            if active is None or not self._is_player_controlled(active, principal.character_id):
+                raise ValueError("现在还没有轮到你的角色或你的召唤单位")
             combat_id = combat.id
         return self.combat.advance_turn(
             principal.campaign_id,

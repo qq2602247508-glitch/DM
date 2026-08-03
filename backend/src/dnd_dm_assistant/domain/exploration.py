@@ -3,11 +3,186 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
+from dataclasses import dataclass
 from math import ceil, hypot
 
 Point = tuple[int, int]
 
+_SOCIAL_ATTITUDE_VALUES = {"hostile": -1, "indifferent": 0, "friendly": 1}
+_SOCIAL_ATTITUDE_ALIASES = {
+    "hostile": "hostile",
+    "敌对": "hostile",
+    "敌意": "hostile",
+    "indifferent": "indifferent",
+    "neutral": "indifferent",
+    "中立": "indifferent",
+    "冷漠": "indifferent",
+    "friendly": "friendly",
+    "友善": "friendly",
+    "友好": "friendly",
+}
+_SOCIAL_OUTCOME_DELTAS = {"improve": 1, "unchanged": 0, "worsen": -1}
 
+
+@dataclass(frozen=True, slots=True)
+class SocialAttitudeTransition:
+    """A bounded three-step attitude change for a DM-adjudicated interaction."""
+
+    before: str
+    after: str
+    requested_delta: int
+    effective_delta: int
+    normalized_from_nonstandard: bool
+
+
+@dataclass(frozen=True, slots=True)
+class ChaseProgress:
+    """The durable, numeric part of a DM-adjudicated chase."""
+
+    successes: int
+    failures: int
+    target_successes: int
+    target_failures: int
+    status: str
+
+
+@dataclass(frozen=True, slots=True)
+class CharacterEffectResolution:
+    """A bounded HP/max-HP change supplied explicitly by the DM."""
+
+    hp_before: int
+    hp_after: int
+    max_hp_reduction_before: int
+    max_hp_reduction_after: int
+    effective_max_hp_after: int
+
+
+@dataclass(frozen=True, slots=True)
+class DowntimeProgress:
+    """A deterministic day/cost calculation; rewards remain DM supplied."""
+
+    progress_before: int
+    progress_after: int
+    duration_days: int
+    status: str
+    charged_days: int
+    cost_copper: int
+
+
+def resolve_social_attitude(current_attitude: str | None, outcome: str) -> SocialAttitudeTransition:
+    """Resolve a DM outcome without allowing attitude to move beyond the 5e bands.
+
+    Existing campaigns may contain free-form NPC attitude labels.  A blank or
+    non-standard label is treated as indifferent for the first governed social
+    interaction, then persisted as one of the canonical labels.
+    """
+
+    raw = str(current_attitude or "").strip()
+    normalized = _SOCIAL_ATTITUDE_ALIASES.get(raw.casefold())
+    before = normalized or "indifferent"
+    try:
+        requested_delta = _SOCIAL_OUTCOME_DELTAS[outcome]
+    except KeyError as exc:
+        raise ValueError("social outcome must be improve, unchanged, or worsen") from exc
+    before_value = _SOCIAL_ATTITUDE_VALUES[before]
+    after_value = max(-1, min(1, before_value + requested_delta))
+    after = next(
+        attitude for attitude, value in _SOCIAL_ATTITUDE_VALUES.items() if value == after_value
+    )
+    return SocialAttitudeTransition(
+        before=before,
+        after=after,
+        requested_delta=requested_delta,
+        effective_delta=after_value - before_value,
+        normalized_from_nonstandard=normalized is None and raw != "",
+    )
+
+
+def resolve_chase_progress(
+    *,
+    successes: int,
+    failures: int,
+    target_successes: int,
+    target_failures: int,
+    outcome: str,
+) -> ChaseProgress:
+    """Advance one confirmed chase beat without inventing narrative consequences."""
+
+    if target_successes < 1 or target_failures < 1:
+        raise ValueError("chase targets must be positive")
+    if successes < 0 or failures < 0:
+        raise ValueError("chase counters must not be negative")
+    if outcome not in {"success", "failure"}:
+        raise ValueError("chase outcome must be success or failure")
+    next_successes = successes + (1 if outcome == "success" else 0)
+    next_failures = failures + (1 if outcome == "failure" else 0)
+    status = (
+        "escaped"
+        if next_successes >= target_successes
+        else "caught"
+        if next_failures >= target_failures
+        else "active"
+    )
+    return ChaseProgress(
+        successes=next_successes,
+        failures=next_failures,
+        target_successes=target_successes,
+        target_failures=target_failures,
+        status=status,
+    )
+
+
+def resolve_character_effect(
+    *,
+    hp: int,
+    max_hp: int,
+    max_hp_reduction: int,
+    damage: int = 0,
+    max_hp_reduction_delta: int = 0,
+) -> CharacterEffectResolution:
+    """Apply explicit exploration damage without making a hidden saving throw."""
+
+    if min(hp, max_hp, max_hp_reduction, damage, max_hp_reduction_delta) < 0:
+        raise ValueError("character effect values must not be negative")
+    if hp + max_hp_reduction > max_hp:
+        raise ValueError("character HP state is invalid")
+    next_reduction = min(max_hp, max_hp_reduction + max_hp_reduction_delta)
+    effective_max = max_hp - next_reduction
+    next_hp = min(effective_max, max(0, hp - damage))
+    return CharacterEffectResolution(
+        hp_before=hp,
+        hp_after=next_hp,
+        max_hp_reduction_before=max_hp_reduction,
+        max_hp_reduction_after=next_reduction,
+        effective_max_hp_after=effective_max,
+    )
+
+
+def resolve_downtime_progress(
+    *,
+    progress_days: int,
+    duration_days: int,
+    requested_days: int,
+    daily_cost_cp: int,
+) -> DowntimeProgress:
+    """Advance only remaining downtime days and charge exactly those days."""
+
+    if min(progress_days, duration_days, requested_days, daily_cost_cp) < 0:
+        raise ValueError("downtime values must not be negative")
+    if duration_days < 1 or progress_days > duration_days:
+        raise ValueError("downtime progress is invalid")
+    if requested_days < 1:
+        raise ValueError("downtime needs at least one day")
+    charged_days = min(requested_days, duration_days - progress_days)
+    progress_after = progress_days + charged_days
+    return DowntimeProgress(
+        progress_before=progress_days,
+        progress_after=progress_after,
+        duration_days=duration_days,
+        status="completed" if progress_after >= duration_days else "active",
+        charged_days=charged_days,
+        cost_copper=charged_days * daily_cost_cp,
+    )
 def grid_distance_ft(start: Point, end: Point, *, cell_size_ft: int = 5) -> int:
     """5e square-grid distance: each diagonal costs one square."""
     return max(abs(end[0] - start[0]), abs(end[1] - start[1])) * cell_size_ft
@@ -52,8 +227,21 @@ def cover_between(start: Point, end: Point, cover_cells: set[Point], blockers: s
 
 
 def _near_line(point: Point, start: Point, end: Point) -> bool:
-    # A useful grid approximation: a cover object adjoining the ray grants half cover.
-    return hypot(point[0] - end[0], point[1] - end[1]) <= 1.5
+    # A cover object on the ray, or adjoining the target-facing end of it,
+    # grants half cover. Cells behind the target must not affect the attack.
+    vector_row = end[0] - start[0]
+    vector_col = end[1] - start[1]
+    length_squared = vector_row**2 + vector_col**2
+    if length_squared == 0:
+        return False
+    point_row = point[0] - start[0]
+    point_col = point[1] - start[1]
+    projection = (point_row * vector_row + point_col * vector_col) / length_squared
+    if not 0 < projection <= 1.1:
+        return False
+    closest_row = start[0] + projection * vector_row
+    closest_col = start[1] + projection * vector_col
+    return hypot(point[0] - closest_row, point[1] - closest_col) <= 1.0
 
 
 def travel_minutes(distance_miles: float, pace: str) -> int:

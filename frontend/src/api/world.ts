@@ -274,7 +274,7 @@ export function createScene(
 
 export type PersistentSceneGrid = { id: string; width: number; height: number; cell_size_ft: number; mode: "narrative" | "exploration" | "combat"; public_description: string | null; dm_description: string | null; layers_json: Record<string, unknown> };
 export type SceneToken = { id: string; label: string; row: number; col: number; entity_type: string; entity_id?: string | null; visible: boolean };
-export type PersistentSceneObject = { id: string; label: string; row: number; col: number; object_type: string; state: string; visibility: string };
+export type PersistentSceneObject = { id: string; version: number; label: string; row: number; col: number; object_type: string; state: string; visibility: string };
 export function getSceneGrid(campaignId: string, sceneId: string, signal?: AbortSignal): Promise<{ grid: PersistentSceneGrid; tokens: SceneToken[]; objects: PersistentSceneObject[] }> {
   return apiFetch(`/campaigns/${campaignId}/scenes/${sceneId}/grid`, { signal });
 }
@@ -295,13 +295,137 @@ export function previewExploration(campaignId: string, sceneId: string, input: E
 export function confirmExploration(campaignId: string, sceneId: string, input: ExplorationInput): Promise<Record<string, unknown>> {
   return apiFetch(`/campaigns/${campaignId}/scenes/${sceneId}/exploration/confirm`, { method: "POST", body: input });
 }
-export type TravelInput = { to_location_id: string; distance_miles: number; pace: "fast" | "normal" | "slow"; notes?: string | null; preview_token?: string; idempotency_key?: string };
+export type TravelInput = { to_location_id: string; distance_miles: number; pace: "fast" | "normal" | "slow"; encounter?: { title: string; outcome: "avoided" | "resolved" | "evaded"; summary: string; visibility: "dm" | "players" }; notes?: string | null; preview_token?: string; idempotency_key?: string };
 export function previewTravel(campaignId: string, input: TravelInput): Promise<Record<string, unknown>> {
   return apiFetch(`/campaigns/${campaignId}/travel/preview`, { method: "POST", body: input });
 }
 export function confirmTravel(campaignId: string, input: TravelInput): Promise<Record<string, unknown>> {
   return apiFetch(`/campaigns/${campaignId}/travel/confirm`, { method: "POST", body: input });
 }
+
+export type ResolutionVisibility = "dm" | "players";
+export type ExplorationCharacterEffect = {
+  character_id: string;
+  character_version: number;
+  damage?: number;
+  max_hp_reduction?: number;
+  condition_name?: string | null;
+  condition_duration?: string | null;
+  condition_notes?: string | null;
+};
+type ConfirmationFields = { preview_token: string; idempotency_key: string };
+type Confirmed<T> = T & ConfirmationFields;
+
+export type ChaseInput = {
+  chase_event_id?: string | null;
+  chase_version?: number | null;
+  title: string;
+  outcome: "success" | "failure";
+  target_successes?: number;
+  target_failures?: number;
+  minutes?: number;
+  summary: string;
+  visibility?: ResolutionVisibility;
+  character_effects?: ExplorationCharacterEffect[];
+};
+export const listChases = (campaignId: string, signal?: AbortSignal) =>
+  apiFetch<Items<Record<string, unknown>>>(`/campaigns/${campaignId}/chases`, { signal }).then((result) => result.items);
+export const previewChase = (campaignId: string, input: ChaseInput) =>
+  apiFetch<Record<string, unknown>>(`/campaigns/${campaignId}/chases/preview`, { method: "POST", body: input });
+export const confirmChase = (campaignId: string, input: Confirmed<ChaseInput>) =>
+  apiFetch<Record<string, unknown>>(`/campaigns/${campaignId}/chases/confirm`, { method: "POST", body: input });
+
+export type TrapResolutionInput = {
+  trap_version: number;
+  outcome: "triggered" | "disarmed" | "bypassed" | "failed";
+  result_state?: "active" | "disarmed" | "destroyed";
+  minutes?: number;
+  summary: string;
+  visibility?: ResolutionVisibility;
+  character_effects?: ExplorationCharacterEffect[];
+};
+export const previewTrapResolution = (campaignId: string, sceneId: string, trapId: string, input: TrapResolutionInput) =>
+  apiFetch<Record<string, unknown>>(`/campaigns/${campaignId}/scenes/${sceneId}/traps/${trapId}/preview`, { method: "POST", body: input });
+export const confirmTrapResolution = (campaignId: string, sceneId: string, trapId: string, input: Confirmed<TrapResolutionInput>) =>
+  apiFetch<Record<string, unknown>>(`/campaigns/${campaignId}/scenes/${sceneId}/traps/${trapId}/confirm`, { method: "POST", body: input });
+
+export type EnvironmentHazardInput = {
+  name: string;
+  object_id?: string | null;
+  object_version?: number | null;
+  object_state?: "active" | "open" | "closed" | "destroyed" | "disarmed" | "picked_up" | null;
+  minutes?: number;
+  summary: string;
+  visibility?: ResolutionVisibility;
+  character_effects?: ExplorationCharacterEffect[];
+};
+export const previewEnvironmentHazard = (campaignId: string, sceneId: string, input: EnvironmentHazardInput) =>
+  apiFetch<Record<string, unknown>>(`/campaigns/${campaignId}/scenes/${sceneId}/hazards/preview`, { method: "POST", body: input });
+export const confirmEnvironmentHazard = (campaignId: string, sceneId: string, input: Confirmed<EnvironmentHazardInput>) =>
+  apiFetch<Record<string, unknown>>(`/campaigns/${campaignId}/scenes/${sceneId}/hazards/confirm`, { method: "POST", body: input });
+
+export type AfflictionInput = {
+  operation: "apply" | "progress" | "cure";
+  character_id: string;
+  character_version: number;
+  condition_id?: string | null;
+  condition_version?: number | null;
+  affliction_type: "poison" | "disease" | "infection";
+  condition_name: string;
+  source?: string | null;
+  duration?: string | null;
+  summary: string;
+  damage?: number;
+  max_hp_reduction?: number;
+  minutes?: number;
+  visibility?: ResolutionVisibility;
+};
+export const previewAffliction = (campaignId: string, input: AfflictionInput) =>
+  apiFetch<Record<string, unknown>>(`/campaigns/${campaignId}/afflictions/preview`, { method: "POST", body: input });
+export const confirmAffliction = (campaignId: string, input: Confirmed<AfflictionInput>) =>
+  apiFetch<Record<string, unknown>>(`/campaigns/${campaignId}/afflictions/confirm`, { method: "POST", body: input });
+
+export type DowntimeResolutionInput = {
+  activity_version: number;
+  character_version: number;
+  progress_days?: number;
+  xp_award?: number;
+  summary: string;
+  visibility?: ResolutionVisibility;
+};
+export const previewDowntimeResolution = (campaignId: string, activityId: string, input: DowntimeResolutionInput) =>
+  apiFetch<Record<string, unknown>>(`/campaigns/${campaignId}/downtime/${activityId}/preview`, { method: "POST", body: input });
+export const confirmDowntimeResolution = (campaignId: string, activityId: string, input: Confirmed<DowntimeResolutionInput>) =>
+  apiFetch<Record<string, unknown>>(`/campaigns/${campaignId}/downtime/${activityId}/confirm`, { method: "POST", body: input });
+
+export type SocialInteractionInput = {
+  npc_version: number;
+  outcome: "improve" | "unchanged" | "worsen";
+  minutes?: number;
+  summary: string;
+  memory_kind?: "conversation" | "bargain" | "deception" | "intimidation" | "favor" | "other";
+  tags?: string[];
+  secret?: boolean;
+};
+export const previewSocialInteraction = (campaignId: string, npcId: string, input: SocialInteractionInput) =>
+  apiFetch<Record<string, unknown>>(`/campaigns/${campaignId}/npcs/${npcId}/social/preview`, { method: "POST", body: input });
+export const confirmSocialInteraction = (campaignId: string, npcId: string, input: Confirmed<SocialInteractionInput>) =>
+  apiFetch<Record<string, unknown>>(`/campaigns/${campaignId}/npcs/${npcId}/social/confirm`, { method: "POST", body: input });
+
+export type NpcMoraleInput = {
+  npc_version: number;
+  outcome: "hold" | "retreat" | "surrender";
+  combat_id?: string | null;
+  combat_version?: number | null;
+  leave_combat?: boolean;
+  minutes?: number;
+  summary: string;
+  visibility?: ResolutionVisibility;
+};
+export const previewNpcMorale = (campaignId: string, npcId: string, input: NpcMoraleInput) =>
+  apiFetch<Record<string, unknown>>(`/campaigns/${campaignId}/npcs/${npcId}/morale/preview`, { method: "POST", body: input });
+export const confirmNpcMorale = (campaignId: string, npcId: string, input: Confirmed<NpcMoraleInput>) =>
+  apiFetch<Record<string, unknown>>(`/campaigns/${campaignId}/npcs/${npcId}/morale/confirm`, { method: "POST", body: input });
 
 export async function listSceneParticipants(
   campaignId: string,

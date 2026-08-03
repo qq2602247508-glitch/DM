@@ -6,11 +6,12 @@ from datetime import UTC, datetime
 from typing import Any
 
 from sqlalchemy import delete as sa_delete
-from sqlalchemy import select, update
+from sqlalchemy import func, select, update
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
 from dnd_dm_assistant.domain.agent import (
+    CampaignAIMessage,
     ModelRunRecord,
     ProposalDecision,
     ProposalStatus,
@@ -30,8 +31,12 @@ from dnd_dm_assistant.infrastructure.database.campaign_service import (
 from dnd_dm_assistant.infrastructure.database.models import (
     AuditLog,
     Campaign,
+    CampaignAISession,
     Location,
     ModelRun,
+)
+from dnd_dm_assistant.infrastructure.database.models import (
+    CampaignAIMessage as CampaignAIMessageRow,
 )
 from dnd_dm_assistant.infrastructure.database.models import (
     StateChangeProposal as ProposalRow,
@@ -91,6 +96,89 @@ class SqlAlchemyAgentPersistence:
             session.flush()
             self._audit_decision(session, row, "proposal_create", request_id)
             return _proposal(row)
+
+    def conversation_history(
+        self, campaign_id: str, *, limit: int = 12
+    ) -> tuple[CampaignAIMessage, ...]:
+        bounded_limit = max(1, min(limit, 24))
+        with Session(self.engine) as session:
+            self._campaign(session, campaign_id)
+            ai_session = session.scalar(
+                select(CampaignAISession).where(CampaignAISession.campaign_id == campaign_id)
+            )
+            if ai_session is None:
+                return ()
+            rows = list(
+                session.scalars(
+                    select(CampaignAIMessageRow)
+                    .where(CampaignAIMessageRow.session_id == ai_session.id)
+                    .order_by(CampaignAIMessageRow.sequence_number.desc())
+                    .limit(bounded_limit)
+                ).all()
+            )
+            rows.reverse()
+            return tuple(
+                CampaignAIMessage.model_validate(
+                    {
+                        "role": row.role,
+                        "content": row.content,
+                        "message_kind": row.message_kind,
+                        "authoritative": row.authoritative,
+                        "created_at": row.created_at,
+                    }
+                )
+                for row in rows
+            )
+
+    def append_conversation_turn(
+        self,
+        campaign_id: str,
+        *,
+        user_message: str,
+        assistant_message: str,
+        request_id: str,
+    ) -> None:
+        user_message = user_message.strip()
+        assistant_message = assistant_message.strip()
+        if not user_message or not assistant_message:
+            raise ValueError("conversation messages must not be blank")
+        with Session(self.engine) as session, session.begin():
+            self._campaign(session, campaign_id)
+            ai_session = session.scalar(
+                select(CampaignAISession).where(CampaignAISession.campaign_id == campaign_id)
+            )
+            if ai_session is None:
+                ai_session = CampaignAISession(campaign_id=campaign_id)
+                session.add(ai_session)
+                session.flush()
+            last_sequence = session.scalar(
+                select(func.max(CampaignAIMessageRow.sequence_number)).where(
+                    CampaignAIMessageRow.session_id == ai_session.id
+                )
+            )
+            first_sequence = int(last_sequence or 0) + 1
+            session.add_all(
+                (
+                    CampaignAIMessageRow(
+                        session_id=ai_session.id,
+                        role="dm",
+                        content=user_message[:2_000],
+                        message_kind="question",
+                        authoritative=False,
+                        request_id=request_id,
+                        sequence_number=first_sequence,
+                    ),
+                    CampaignAIMessageRow(
+                        session_id=ai_session.id,
+                        role="assistant",
+                        content=assistant_message[:8_000],
+                        message_kind="answer",
+                        authoritative=False,
+                        request_id=request_id,
+                        sequence_number=first_sequence + 1,
+                    ),
+                )
+            )
 
     def list_proposals(
         self, campaign_id: str, *, status: str = "pending", limit: int = 100

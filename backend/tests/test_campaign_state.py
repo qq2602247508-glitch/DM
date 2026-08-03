@@ -385,6 +385,8 @@ def test_scene_reuses_atomic_participants_and_starts_visible_initiative(
                     {"row": 1, "col": 1, "kind": "wall", "label": "外墙"},
                     {"row": 2, "col": 2, "kind": "door", "label": "正门"},
                     {"row": 3, "col": 3, "kind": "floor", "label": "玩家出生区"},
+                    {"row": 4, "col": 4, "kind": "water", "label": "溪流"},
+                    {"row": 5, "col": 5, "kind": "difficult", "label": "碎石"},
                 ],
             },
         },
@@ -394,7 +396,15 @@ def test_scene_reuses_atomic_participants_and_starts_visible_initiative(
     assert {(item["object_type"], item["label"]) for item in public_grid["objects"]} == {
         ("wall", "外墙"),
         ("door", "正门"),
+        ("terrain", "溪流"),
+        ("terrain", "碎石"),
     }
+    terrain = [item for item in public_grid["objects"] if item["object_type"] == "terrain"]
+    assert {item["metadata_json"]["terrain_kind"] for item in terrain} == {
+        "water",
+        "difficult",
+    }
+    assert all(item["metadata_json"]["difficult"] is True for item in terrain)
     for entity_type, entity_id in (("character", character["id"]), ("npc", npc["id"])):
         response = campaign_client.post(
             f"{base}/scenes/{scene['id']}/participants",

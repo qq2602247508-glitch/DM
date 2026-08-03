@@ -8,6 +8,10 @@ export type CampaignCreateInput = {
   current_time?: string | null;
   current_location_id?: string | null;
   status?: string;
+  allow_legacy?: boolean;
+  encumbrance_mode?: "standard" | "variant" | "none";
+  enabled_rule_extensions?: string[];
+  enabled_content_packs?: string[];
 };
 
 export type CampaignPatchInput = Partial<Omit<CampaignCreateInput, "name">> & {

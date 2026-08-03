@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Literal
@@ -15,6 +16,7 @@ class RestResource:
     current: int
     maximum: int
     recovery: ResourceRecovery
+    recovery_events: tuple[Mapping[str, object], ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -73,14 +75,46 @@ def _rest_end(started_at: datetime | None, duration: timedelta) -> datetime | No
 
 
 def _refresh_resources(
-    resources: tuple[RestResource, ...], *, recovery: frozenset[ResourceRecovery]
+    resources: tuple[RestResource, ...],
+    *,
+    rest: Literal["short_rest", "long_rest"],
 ) -> tuple[RestResource, ...]:
-    return tuple(
-        RestResource(resource.key, resource.maximum, resource.maximum, resource.recovery)
-        if resource.recovery in recovery
-        else resource
-        for resource in resources
+    """Apply explicit pool recovery events, retaining legacy timing as a fallback."""
+
+    legacy_recovery = (
+        frozenset({"short_rest"})
+        if rest == "short_rest"
+        else frozenset({"short_rest", "long_rest"})
     )
+    refreshed: list[RestResource] = []
+    for resource in resources:
+        current = resource.current
+        matched_event = False
+        for event in resource.recovery_events:
+            if not isinstance(event, Mapping) or event.get("rest") != rest:
+                continue
+            matched_event = True
+            operation = str(event.get("operation") or "")
+            if operation == "set_to_max":
+                current = resource.maximum
+            elif operation == "restore":
+                try:
+                    amount = int(event.get("amount") or 0)
+                except (TypeError, ValueError):
+                    amount = 0
+                current = min(resource.maximum, current + max(0, amount))
+        if not matched_event and resource.recovery in legacy_recovery:
+            current = resource.maximum
+        refreshed.append(
+            RestResource(
+                resource.key,
+                current,
+                resource.maximum,
+                resource.recovery,
+                resource.recovery_events,
+            )
+        )
+    return tuple(refreshed)
 
 
 def resolve_short_rest(
@@ -135,7 +169,7 @@ def resolve_short_rest(
         current_hp=current_hp + actual_healing,
         hp_gained=actual_healing,
         hit_dice=remaining_dice,
-        resources=_refresh_resources(resources, recovery=frozenset({"short_rest"})),
+        resources=_refresh_resources(resources, rest="short_rest"),
         ends_at=_rest_end(started_at, timedelta(hours=1)),
     )
 
@@ -163,8 +197,6 @@ def resolve_long_rest(
         completed=True,
         current_hp=max_hp,
         fatigue=max(0, fatigue - 1),
-        resources=_refresh_resources(
-            resources, recovery=frozenset({"short_rest", "long_rest"})
-        ),
+        resources=_refresh_resources(resources, rest="long_rest"),
         ends_at=_rest_end(started_at, timedelta(hours=8)),
     )
