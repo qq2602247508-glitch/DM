@@ -418,3 +418,15 @@ backend/.venv/bin/python -m pytest -q backend/tests
 - 可复用浏览器证据：`/private/tmp/dnd-dm-pending-save.jpg`、`/private/tmp/dnd-player-pending-save.jpg`、`/private/tmp/dnd-fireball-result-final.png`、`/private/tmp/dnd-summon-initiative.jpg`、`/private/tmp/dnd-dm-combat-regression-fixed-20260802.png`。复杂战斗日志仍在 `docs/artifacts/dnd-complex-battle-log-20260802.md`。
 
 当前边界不变：复杂多段/复合事务的全部规则例外、完整状态来源/结束/组合、怪物反应/传奇/巢穴动作的所有触发判定、复杂三维遮挡、所有职业 1–20 级特性的完整运行时仍需 DM 或后续执行器；不能把规则字段或 `exact` 统计当成全部自动化。
+
+## 2026-08-03 状态生命周期与直接状态入口统一
+
+- `CombatEngineService` 统一状态组合和限制：昏迷推导失能/倒地，震慑/麻痹/石化推导失能；失能类状态禁用动作、附赠动作、反应；束缚/擒抱把速度与剩余移动设为 0；多来源叠加只在最后一个来源结束后恢复基线。
+- 豁免与防御链已接入状态：震慑、麻痹、石化、昏迷时力量/敏捷豁免自动失败；束缚时敏捷豁免要求两个骰值并取劣势；石化对全部伤害抗性、对毒素免疫；0 HP 昏迷与恢复正 HP 清理链已接入。
+- 浏览器验收发现 DM 快速“加状态”入口原先只改 `conditions`，会出现“昏迷但动作可用”。现已把所有 combatant 条件列表写入接到同一生命周期同步器，直接编辑和结构化效果不再分叉；移除条件也走同一恢复逻辑。
+- 回归新增/更新覆盖状态叠加恢复、状态矩阵豁免/石化伤害、直接条件 PATCH 的限制/恢复。后端全量 `432 passed`（1 个既有 Starlette/httpx 弃用警告），Ruff、`git diff --check` 通过；前端本轮无源码变更，既有 TypeScript、ESLint、Vitest `39 文件/190 项`、生产构建通过。
+- 内置浏览器真实验收：DM 通过“加状态”写入昏迷后显示“动作已用 · 附赠已用 · 反应已用”；移除后恢复三项可用；玩家端同一战斗卡显示“状态：昏迷”；随后重置模拟战斗恢复 HP、状态、资源和日志。控制台 error/warn 为 0。
+- 截图：`/private/tmp/dnd-condition-lifecycle-dm-20260803.png`、`/private/tmp/dnd-condition-lifecycle-player-20260803.png`。
+- `mypy backend/src` 仍有 13 个仓库既存错误，位于本次未改文件，未混入本轮修复。
+
+当前边界保持诚实：复杂状态持续/来源/组合、怪物反应/传奇/巢穴动作的完整触发 UI、复杂三维遮挡、所有职业/子职业 1–20 级运行时和复杂多段复合规则仍未全部自动化。
