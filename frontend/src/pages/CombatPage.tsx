@@ -212,6 +212,34 @@ type EffectSavePrompt = {
   summary?: string;
 };
 
+type ConcentrationPrompt = {
+  actionId: string;
+  damageActionId: string;
+  targetCombatantId: string;
+  dc: number;
+  summary?: string;
+};
+
+function readConcentrationPrompts(actions: CombatAction[]): ConcentrationPrompt[] {
+  return actions.flatMap((action) => {
+    if (action.action_type !== "concentration_check_prompt" || action.status !== "previewed") {
+      return [];
+    }
+    const request = action.request_json;
+    return typeof request.damage_action_id === "string"
+      && typeof request.target_combatant_id === "string"
+      && typeof request.dc === "number"
+      ? [{
+          actionId: action.id,
+          damageActionId: request.damage_action_id,
+          targetCombatantId: request.target_combatant_id,
+          dc: request.dc,
+          summary: typeof request.summary === "string" ? request.summary : undefined,
+        }]
+      : [];
+  });
+}
+
 function readEffectSavePrompts(prompts: unknown[]): EffectSavePrompt[] {
   return prompts.flatMap((prompt) => {
     if (typeof prompt !== "object" || prompt === null) return [];
@@ -239,7 +267,7 @@ function isActiveUntilSaveEffect(effect: CombatEffect): boolean {
     && Boolean(effect.save_ability.trim());
 }
 
-function CombatantRow({ campaignId, combat, fighter, current, character, effects, combatants }: { campaignId: string; combat: Combat; fighter: Combatant; current: boolean; character?: Character; effects: CombatEffect[]; combatants: Combatant[] }): ReactElement {
+function CombatantRow({ campaignId, combat, fighter, current, character, effects, combatants, concentrationPrompt }: { campaignId: string; combat: Combat; fighter: Combatant; current: boolean; character?: Character; effects: CombatEffect[]; combatants: Combatant[]; concentrationPrompt?: ConcentrationPrompt }): ReactElement {
   const client = useQueryClient();
   const { showToast } = useToast();
   const [amount, setAmount] = useState("1");
@@ -254,6 +282,13 @@ function CombatantRow({ campaignId, combat, fighter, current, character, effects
     actionId: string;
     dc: number;
   } | null>(null);
+  useEffect(() => {
+    setPendingConcentration(
+      concentrationPrompt
+        ? { actionId: concentrationPrompt.damageActionId, dc: concentrationPrompt.dc }
+        : null,
+    );
+  }, [concentrationPrompt, concentrationPrompt?.actionId, concentrationPrompt?.damageActionId, concentrationPrompt?.dc]);
   const [pendingAction, setPendingAction] = useState<{
     command: CombatActionCommand;
     preview: CombatActionPreview;
@@ -289,7 +324,15 @@ function CombatantRow({ campaignId, combat, fighter, current, character, effects
       setPendingAction(null);
       invalidate();
       const dc = Number(result.action.result_json.concentration_check_dc ?? 0);
-      if (dc > 0) setPendingConcentration({ actionId: result.action.id, dc });
+      const prompt = result.action.result_json.concentration_prompt;
+      if (dc > 0) {
+        setPendingConcentration({
+          actionId: typeof prompt === "object" && prompt !== null && typeof (prompt as Record<string, unknown>).damage_action_id === "string"
+            ? String((prompt as Record<string, unknown>).damage_action_id)
+            : result.action.id,
+          dc,
+        });
+      }
       showToast(dc > 0 ? `结算完成；需要专注检定 DC ${dc}` : "结算已确认并写入战斗日志");
     },
     onError: () => showToast("确认失败，目标状态可能已变化，请重新预览", "error"),
@@ -1458,6 +1501,17 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
     (action) => action.action_type === "player_roll_prompt" && action.status === "previewed",
   );
   const hasPendingPlayerRoll = pendingPlayerRolls.length > 0;
+  const pendingConcentrationPrompts = useMemo(
+    () => readConcentrationPrompts(combatActions.data ?? []),
+    [combatActions.data],
+  );
+  const hasPendingConcentrationPrompt = pendingConcentrationPrompts.length > 0;
+  const concentrationPromptByTarget = useMemo(
+    () => new Map(
+      pendingConcentrationPrompts.map((prompt) => [prompt.targetCombatantId, prompt]),
+    ),
+    [pendingConcentrationPrompts],
+  );
   const persistedEffectSavePrompts = useMemo(
     () => readEffectSavePrompts(
       (combatActions.data ?? [])
@@ -1614,14 +1668,14 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
     onError: () => showToast("状态重复豁免确认失败，请刷新战斗状态", "error"),
   });
   const advanceTurnIfIdle = useCallback(() => {
-    if (hasPendingPlayerRoll || nextTurn.isPending || nextTurnInFlight.current) return;
+    if (hasPendingPlayerRoll || hasPendingConcentrationPrompt || nextTurn.isPending || nextTurnInFlight.current) return;
     nextTurnInFlight.current = true;
     nextTurn.mutate(undefined, {
       onSettled: () => {
         nextTurnInFlight.current = false;
       },
     });
-  }, [hasPendingPlayerRoll, nextTurn]);
+  }, [hasPendingConcentrationPrompt, hasPendingPlayerRoll, nextTurn]);
   const ordered = [...(fighters.data ?? [])].filter((fighter) => fighter.is_active).sort((a, b) => b.initiative - a.initiative || a.display_name.localeCompare(b.display_name));
   const pendingAdvancedPlayerRolls = pendingPlayerRolls.flatMap((action) => {
     const request = action.request_json;
@@ -1957,6 +2011,20 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
           </div>
         </div>
       ) : null}
+      {hasPendingConcentrationPrompt ? (
+        <div className="mt-3 rounded-lg border border-amber-700/60 bg-amber-950/15 p-3" data-testid="combat-pending-concentration">
+          <strong className="text-xs text-amber-200">专注豁免 · 战斗暂停</strong>
+          <p className="mb-0 mt-1 text-2xs leading-5 text-stone-400">
+            伤害已经写入战斗日志，但对应单位必须提交体质豁免后才能继续推进；请求已持久化，刷新页面不会丢失。
+          </p>
+          <ul className="mb-0 mt-2 grid gap-1 pl-4 text-2xs text-amber-100">
+            {pendingConcentrationPrompts.map((prompt) => {
+              const target = ordered.find((fighter) => fighter.id === prompt.targetCombatantId);
+              return <li key={prompt.actionId}>{target?.display_name ?? "目标"} · 体质 DC {prompt.dc} · 请在对应先攻卡中输入最终豁免总值</li>;
+            })}
+          </ul>
+        </div>
+      ) : null}
       {hasPendingPlayerRoll ? (
         <div className="mt-3 rounded-lg border border-sky-700/60 bg-sky-950/20 px-3 py-2 text-xs text-sky-100" data-testid="combat-pending-player-rolls">
           <strong>玩家待掷骰 · 战斗暂停</strong>
@@ -1982,10 +2050,10 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
           {fighters.isError ? <ErrorState error={fighters.error} onRetry={() => void fighters.refetch()} /> : null}
           {!fighters.isLoading && ordered.length === 0 ? <EmptyState title="尚无参与者" hint="录入先攻与 HP 后即可开始逐回合追踪。" /> : null}
           {ordered.length > 0 && combat.status !== "archived" ? (
-            <details className="mb-3 rounded-lg border border-ink-700 bg-ink-950/40">
+            <details className="mb-3 rounded-lg border border-ink-700 bg-ink-950/40" open={hasPendingConcentrationPrompt || undefined}>
               <summary className="cursor-pointer px-3 py-2 text-xs font-semibold text-stone-300">DM状态调整与高级编辑</summary>
               <ol className="m-0 flex list-none flex-col gap-1.5 border-t border-ink-700 p-3">
-                {ordered.map((fighter, index) => <CombatantRow campaignId={campaignId} character={candidates.find((candidate) => candidate.entityId === fighter.entity_id)?.character} combat={combat} combatants={ordered} current={combat.status === "active" && index === combat.current_turn_index} effects={(combatEffects.data ?? []).filter((effect) => effect.target_combatant_id === fighter.id && effect.status === "active")} fighter={fighter} key={fighter.id} />)}
+                {ordered.map((fighter, index) => <CombatantRow campaignId={campaignId} character={candidates.find((candidate) => candidate.entityId === fighter.entity_id)?.character} concentrationPrompt={concentrationPromptByTarget.get(fighter.id)} combat={combat} combatants={ordered} current={combat.status === "active" && index === combat.current_turn_index} effects={(combatEffects.data ?? []).filter((effect) => effect.target_combatant_id === fighter.id && effect.status === "active")} fighter={fighter} key={fighter.id} />)}
               </ol>
             </details>
           ) : null}
@@ -1993,7 +2061,7 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
             <BattleGrid
               key={`${combat.id}:${resetGeneration}`}
               activeFighterId={activeFighter?.id ?? null}
-              automateEnemies={autoEnemies && !hasPendingPlayerRoll}
+              automateEnemies={autoEnemies && !hasPendingPlayerRoll && !hasPendingConcentrationPrompt}
               campaignId={campaignId}
               candidates={candidates}
               combatId={combat.id}
@@ -2026,6 +2094,7 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
               autoEnemies={autoEnemies}
               automationReady={
                 !hasPendingPlayerRoll
+                && !hasPendingConcentrationPrompt
                 && !nextTurn.isPending
                 && !automaticMovementPending
               }

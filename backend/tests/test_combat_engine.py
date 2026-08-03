@@ -3714,6 +3714,23 @@ def test_failed_concentration_check_ends_effect_from_damage_action(
     )
     assert damaged.status_code == 200
     assert damaged.json()["action"]["result_json"]["concentration_check_dc"] == 10
+    concentration_prompt = damaged.json()["concentration_prompts"][0]
+    assert concentration_prompt["dc"] == 10
+    actions = combat_client.get(
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}/actions"
+    ).json()["items"]
+    pending = next(
+        item for item in actions
+        if item["action_type"] == "concentration_check_prompt"
+    )
+    assert pending["status"] == "previewed"
+    blocked_advance = combat_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}/turns/advance",
+        headers={"X-Request-ID": "concentration-advance-blocked"},
+        json={"combat_version": combat["version"]},
+    )
+    assert blocked_advance.status_code == 400
+    assert "专注豁免请求未结算" in blocked_advance.json()["message"]
 
     resolved = combat_client.post(
         f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}"
@@ -3732,6 +3749,14 @@ def test_failed_concentration_check_ends_effect_from_damage_action(
     assert resolved.json()["dc"] == 10
     assert resolved.json()["target"]["concentration"] == {}
     assert resolved.json()["ended_effects"][0]["status"] == "ended"
+    actions_after = combat_client.get(
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}/actions"
+    ).json()["items"]
+    resolved_prompt = next(
+        item for item in actions_after
+        if item["action_type"] == "concentration_check_prompt"
+    )
+    assert resolved_prompt["status"] == "confirmed"
 
 
 def test_turn_advance_prompts_expired_effect_until_dm_ends_it(

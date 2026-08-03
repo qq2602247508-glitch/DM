@@ -4999,6 +4999,15 @@ class CombatEngineService:
             )
             session.add(action)
             session.flush()
+            concentration_prompts: list[dict[str, object]] = []
+            raw_concentration_dc = result.get("concentration_check_dc")
+            if command.action_type == "damage" and isinstance(raw_concentration_dc, int):
+                concentration_prompts = self._persist_concentration_prompts(
+                    session,
+                    combat,
+                    action,
+                    [(target.id, raw_concentration_dc)],
+                )
             effect_ids = structured_effects.get("effect_ids", [])
             if isinstance(effect_ids, list):
                 for effect_id in effect_ids:
@@ -5014,6 +5023,7 @@ class CombatEngineService:
                     if death_save is not None
                     else None
                 ),
+                "concentration_prompts": concentration_prompts,
                 "end_condition": self._end_condition(session, combat),
             }
 
@@ -5733,6 +5743,23 @@ class CombatEngineService:
             )
             session.add(action)
             session.flush()
+            concentration_prompts = self._persist_concentration_prompts(
+                session,
+                combat,
+                action,
+                [
+                    (
+                        str(item["target_combatant_id"]),
+                        int(item["damage"]["concentration_check_dc"]),
+                    )
+                    for item in target_results
+                    if isinstance(item.get("damage"), dict)
+                    and isinstance(
+                        item["damage"].get("concentration_check_dc"),
+                        int,
+                    )
+                ],
+            )
             for effect_id in effect_ids:
                 effect = session.get(CombatEffect, effect_id)
                 if effect is not None and effect.source_action_id is None:
@@ -5748,6 +5775,7 @@ class CombatEngineService:
                 "ended_predicated_summons": [
                     serialize(summon) for summon in ended_predicated_summons
                 ],
+                "concentration_prompts": concentration_prompts,
                 "already_applied": False,
             }
 
@@ -6843,6 +6871,19 @@ class CombatEngineService:
                     "当前仍有回合末重复豁免请求未结算，不能继续推进战斗："
                     f"{request.get('summary') or unresolved_effect_save.summary}"
                 )
+            unresolved_concentration = session.scalar(
+                select(CombatAction).where(
+                    CombatAction.combat_id == combat_id,
+                    CombatAction.action_type == "concentration_check_prompt",
+                    CombatAction.status == "previewed",
+                )
+            )
+            if unresolved_concentration is not None:
+                request = dict(unresolved_concentration.request_json or {})
+                raise ValueError(
+                    "当前仍有专注豁免请求未结算，不能继续推进战斗："
+                    f"{request.get('summary') or unresolved_concentration.summary}"
+                )
             raw_ordered = session.scalars(
                 select(Combatant)
                 .where(
@@ -7451,6 +7492,93 @@ class CombatEngineService:
                 .order_by(CombatEffect.created_at, CombatEffect.id)
             ).all()
         )
+
+    @staticmethod
+    def _persist_concentration_prompts(
+        session: Session,
+        combat: Combat,
+        damage_action: CombatAction,
+        prompts: list[tuple[str, int]],
+    ) -> list[dict[str, object]]:
+        """Persist concentration checks created by one damage event.
+
+        A damage action is committed before the DM/player can provide the
+        Constitution save. Keeping the request as another ``CombatAction``
+        makes it survive reloads and gives ``advance_turn`` one authoritative
+        pause gate. Area damage may create one prompt per concentrating target,
+        so this accepts a list rather than a single DC.
+        """
+
+        persisted: list[dict[str, object]] = []
+        for target_id, dc in prompts:
+            prompt_key = f"concentration-prompt:{damage_action.id}:{target_id}"
+            existing = session.scalar(
+                select(CombatAction).where(
+                    CombatAction.combat_id == combat.id,
+                    CombatAction.idempotency_key == prompt_key,
+                )
+            )
+            if existing is not None:
+                if existing.status == "previewed":
+                    persisted.append(
+                        {
+                            "pending_action_id": existing.id,
+                            "damage_action_id": damage_action.id,
+                            "target_combatant_id": target_id,
+                            "dc": dc,
+                        }
+                    )
+                continue
+            target = session.get(Combatant, target_id)
+            if target is None:
+                continue
+            summary = (
+                f"{target.display_name} 受到伤害后需要进行体质豁免"
+                f"（DC {dc}）以维持专注"
+            )
+            prompt = CombatAction(
+                campaign_id=combat.campaign_id,
+                combat_id=combat.id,
+                actor_combatant_id=target.id,
+                transaction_id=damage_action.transaction_id,
+                action_type="concentration_check_prompt",
+                target_combatant_ids=[target.id],
+                request_json={
+                    "damage_action_id": damage_action.id,
+                    "combatant_id": target.id,
+                    "target_combatant_id": target.id,
+                    "dc": dc,
+                    "ability": "constitution",
+                    "summary": summary,
+                },
+                result_json={},
+                explanation="伤害已确认；等待 DM/玩家提交专注体质豁免",
+                round_number=combat.round_number,
+                turn_index=combat.current_turn_index,
+                summary=summary,
+                idempotency_key=prompt_key,
+                status="previewed",
+            )
+            session.add(prompt)
+            session.flush()
+            persisted.append(
+                {
+                    "pending_action_id": prompt.id,
+                    "damage_action_id": damage_action.id,
+                    "target_combatant_id": target.id,
+                    "dc": dc,
+                    "summary": summary,
+                }
+            )
+        if persisted:
+            result_json = dict(damage_action.result_json or {})
+            result_json["concentration_prompts"] = persisted
+            if len(persisted) == 1:
+                result_json["concentration_prompt"] = persisted[0]
+            damage_action.result_json = result_json
+            damage_action.version += 1
+            damage_action.updated_at = datetime.now(UTC)
+        return persisted
 
     @staticmethod
     def _apply_rule_block_effect(
@@ -8406,6 +8534,23 @@ class CombatEngineService:
                 or target.id not in damage_action.target_combatant_ids
             ):
                 raise ValueError("action does not require this target's concentration check")
+            pending_prompt = next(
+                (
+                    row
+                    for row in session.scalars(
+                        select(CombatAction).where(
+                            CombatAction.combat_id == combat_id,
+                            CombatAction.action_type == "concentration_check_prompt",
+                            CombatAction.status == "previewed",
+                        )
+                    ).all()
+                    if row.request_json.get("damage_action_id") == damage_action.id
+                    and row.request_json.get("target_combatant_id") == target.id
+                ),
+                None,
+            )
+            if pending_prompt is None:
+                raise ValueError("该伤害事件没有待处理的专注豁免请求")
             raw_dc = damage_action.result_json.get("concentration_check_dc")
             if raw_dc is None and damage_action.action_type == "monster_area_action":
                 raw_target_results = damage_action.result_json.get("target_results")
@@ -8511,6 +8656,15 @@ class CombatEngineService:
             )
             session.add(action)
             session.flush()
+            pending_prompt.status = "confirmed"
+            pending_prompt.result_json = {
+                "resolution_action_id": action.id,
+                "roll_total": command.roll_total,
+                "dc": raw_dc,
+                "success": success,
+            }
+            pending_prompt.version += 1
+            pending_prompt.updated_at = now
             return {
                 "action": serialize(action),
                 "target": serialize(target),

@@ -7555,7 +7555,9 @@ class PlayerRoomService:
                 select(CombatAction).where(
                     CombatAction.combat_id == combat.id,
                     CombatAction.status == "previewed",
-                    CombatAction.action_type == "player_roll_prompt",
+                    CombatAction.action_type.in_(
+                        ["player_roll_prompt", "concentration_check_prompt"]
+                    ),
                 )
             )
             if unresolved is not None:
