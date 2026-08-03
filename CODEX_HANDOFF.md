@@ -509,3 +509,14 @@ backend/.venv/bin/python -m pytest -q backend/tests
 - 新增共用 `actionDamageLabel`：有明确伤害段时显示表达式；召唤、治疗、位移、状态和其他结构化非伤害积木显示“无直接伤害”；真正缺少攻击/伤害资料的未结构化动作仍保留“伤害骰未明确”并交给 DM 裁定。
 - 玩家和 DM 两端动作选择器已统一使用该标签，复合伤害仍显示各段表达式，不改变结算接口。
 - 回归：前端 `combatAutomation` 定向测试 17 项、TypeScript、ESLint 通过；内置浏览器实际看到玩家端“召唤小火元素 · 无直接伤害”和 DM 端同样提示，玩家/DM 页面新增错误均为空。
+
+## 2026-08-04 敌方召唤物基础 AI 边界与双端行动预览
+
+- 前端新增共用 `isEnemyAiControlledCombatant`：只有 `companion + controller=dm + disposition=enemy + enemy_ai_mode=basic` 的敌方召唤物进入自动移动、自动瞄准和自动回合链；玩家召唤物、DM 友方召唤物和 `dm_only` 敌方召唤物不会误入 AI。目标选择改按结构化阵营判断，避免把 DM 友方召唤物当成敌人目标。
+- `CombatPage` 的 AI 移动/瞄准不再写死 `entity_type=monster`；`PlayerRoomService` 的玩家安全快照也对敌方基础 AI 召唤物投影 `active_action`，因此玩家端能看到与 DM 相同的当前技能、可达范围和影响范围。PlayerPage 同步识别该快照边界。
+- DM 召唤面板新增“敌方召唤物 AI”选择：基础 AI / DM 手动，默认基础 AI；调用现有召唤接口传递 `enemy_ai_mode`，没有新增召唤或战斗执行器。
+- 回归新增覆盖：前端 AI 边界与阵营目标 4 条断言；后端玩家快照边界和 `MonsterAIService` 敌方召唤物预览；原有召唤/怪物 AI/玩家房间测试保持通过。
+- 真实浏览器验收：模拟战斗中选择“基础 AI”后加入小火元素，先攻卡显示“敌方召唤物”、动作卡显示“灼热爪击 · 1d6+2 · 5尺”；玩家端同一战斗显示该单位、共享地图和敌方当前行动的橙色可达范围/红色影响范围提示。两端新增 console error/warn 均为空。截图：`/private/tmp/dnd-enemy-summon-dm-20260804.png`、`/private/tmp/dnd-enemy-summon-player-20260804.png`。
+- 最终门禁：后端全量 `442 passed`（1 个既有 Starlette/httpx 弃用警告）；前端 39 个测试文件 / `195 passed`，TypeScript、ESLint、生产构建、Ruff、`git diff --check` 全部通过。
+
+本项完成的是敌方召唤物的 AI opt-in 边界、先攻后的可见性和双端当前行动投影；召唤物所有复杂模板、复杂召唤生命周期、敌方召唤物高级动作（传奇/巢穴/反应）完整触发和复杂状态组合仍不能宣称全自动。
