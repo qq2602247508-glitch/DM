@@ -20,6 +20,7 @@ import {
   previewMyCommerce,
   planMyNoncombatAction,
   rollMyNoncombatAction,
+  resolveMyOpportunityReaction,
   searchPlayerRules,
   submitMyDeathSave,
   submitMyActionRequest,
@@ -1648,6 +1649,14 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
   const isCastAction = !isRuntimeFeatureAction && (isSupportAction || (isSpecialAction && !damageOrSaveBlocks));
   const needsDamageRoll = !isCastAction && selectedDamageBlocks.length > 0;
   const mutation = useMutation({ mutationFn: async (fn: () => Promise<unknown>) => fn(), onSuccess: refresh });
+  const reactionMutation = useMutation({
+    mutationFn: ({ id, version, decision }: { id: string; version: number; decision: "accept" | "reject" }) =>
+      resolveMyOpportunityReaction(id, version, decision),
+    onSuccess: (_result, variables) => {
+      setLastResolution(variables.decision === "accept" ? "已发动借机攻击；系统正在执行一次结构化攻击。" : "已放弃本次借机攻击。" );
+      refresh();
+    },
+  });
   const maneuverMutation = useMutation({
     mutationFn: () => {
       if (!own) throw new Error("当前没有可控单位");
@@ -1910,6 +1919,20 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
               </div>
             </section>
           ) : null}
+          {(combat.pending_reactions ?? []).map((reaction) => (
+            <div className="mb-3 rounded border border-red-700 bg-red-950/25 p-3" data-testid="player-pending-reaction" key={reaction.id}>
+              <div className="flex flex-wrap items-center gap-2">
+                <strong className="text-sm text-red-100">借机攻击提示 · {reaction.source_name ?? "敌人"}</strong>
+                <span className="rounded border border-red-700/70 px-1.5 py-0.5 text-2xs text-red-200">等待你的选择</span>
+              </div>
+              <p className="mb-0 mt-1 text-xs leading-5 text-stone-300">{reaction.message ?? reaction.reaction_trigger ?? "敌人离开了你的近战范围。"}</p>
+              <p className="mb-0 mt-1 text-2xs text-amber-200">使用「{reaction.source_action_name ?? "近战攻击"}」；伤害骰 {reaction.damage_expression ?? "按结构化攻击积木"}{reaction.damage_type ? ` · ${reaction.damage_type}` : ""}。选择发动后，系统会自动掷攻击骰和伤害骰并结算。</p>
+              <div className="mt-2 flex gap-2">
+                <Button disabled={reactionMutation.isPending} loading={reactionMutation.isPending && reactionMutation.variables?.id === reaction.id && reactionMutation.variables.decision === "accept"} onClick={() => reactionMutation.mutate({ id: reaction.id, version: reaction.version, decision: "accept" })} variant="danger">发动借机攻击</Button>
+                <Button disabled={reactionMutation.isPending} loading={reactionMutation.isPending && reactionMutation.variables?.id === reaction.id && reactionMutation.variables.decision === "reject"} onClick={() => reactionMutation.mutate({ id: reaction.id, version: reaction.version, decision: "reject" })}>不发动</Button>
+              </div>
+            </div>
+          ))}
           {combat.pending_rolls.map((roll) => {
             const windowLabel = advancedRollWindowLabel(roll.action_cost);
             const damageSegments = (roll.damage_components_on_failure?.length

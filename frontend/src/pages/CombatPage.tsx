@@ -14,7 +14,7 @@ import type {
 } from "../api/entities";
 import { listCharacters, listCompanions, listLocations, listNpcs, updateCharacter } from "../api/entities";
 import { getSceneGrid, listMonsters, listScenes } from "../api/world";
-import { getPlayerRoom, setPlayerRoomLiveState } from "../api/playerRoom";
+import { getPlayerRoom, moveMonsterCombatant, setPlayerRoomLiveState } from "../api/playerRoom";
 import { isApiError } from "../api/client";
 import type {
   Combat, CombatAction, CombatActionPreview, CombatEffect, CombatSettlementPreview, Combatant,
@@ -787,28 +787,40 @@ function BattleGrid({
       if (automatic && plan.path.length > 0) {
         await new Promise((resolve) => window.setTimeout(resolve, 350));
       }
-      await updateCombatant(
-        campaignId,
-        combatId,
-        fighter.id,
-        {
-          conditions: fleeing
-            ? [...new Set([...fighter.conditions, "撤退中"])]
-            : fighter.conditions,
-          movement_remaining_ft: remainingMovement,
-          snapshot_json: {
-            ...fighter.snapshot_json,
-            // Moving on the horizontal grid must not erase the combatant's
-            // saved altitude; otherwise a later three-dimensional area
-            // preview would silently put a flying unit back on the ground.
-            grid_position: {
-              ...(combatantGridPosition(fighter) ?? {}),
-              ...plan.destination,
+      if (automatic && fighter.entity_type === "monster") {
+        await moveMonsterCombatant(
+          campaignId,
+          combatId,
+          fighter.id,
+          plan.destination.row,
+          plan.destination.col,
+          fighter.version,
+          remainingMovement,
+        );
+      } else {
+        await updateCombatant(
+          campaignId,
+          combatId,
+          fighter.id,
+          {
+            conditions: fleeing
+              ? [...new Set([...fighter.conditions, "撤退中"])]
+              : fighter.conditions,
+            movement_remaining_ft: remainingMovement,
+            snapshot_json: {
+              ...fighter.snapshot_json,
+              // Moving on the horizontal grid must not erase the combatant's
+              // saved altitude; otherwise a later three-dimensional area
+              // preview would silently put a flying unit back on the ground.
+              grid_position: {
+                ...(combatantGridPosition(fighter) ?? {}),
+                ...plan.destination,
+              },
             },
           },
-        },
-        fighter.version,
-      );
+          fighter.version,
+        );
+      }
       setPositions((current) => ({
         ...current,
         [fighter.id]: [plan.destination.row, plan.destination.col],

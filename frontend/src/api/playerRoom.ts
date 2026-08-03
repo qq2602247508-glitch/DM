@@ -309,6 +309,18 @@ export type PlayerPendingRoll = {
   sequence_size?: number | null;
 };
 
+export type PlayerPendingReaction = {
+  id: string;
+  version: number;
+  source_name: string | null;
+  source_action_name: string | null;
+  damage_expression: string | null;
+  damage_type: string | null;
+  target_name: string | null;
+  reaction_trigger: string | null;
+  message: string | null;
+};
+
 export type PlayerDeathSave = {
   combatant_id: string;
   successes: number;
@@ -361,6 +373,7 @@ export type PlayerCombatSnapshot = {
     created_at?: string;
   }>;
   pending_rolls: PlayerPendingRoll[];
+  pending_reactions: PlayerPendingReaction[];
   death_save: PlayerDeathSave | null;
 };
 
@@ -686,6 +699,27 @@ export const moveMyCombatant = (row: number, col: number, combatantVersion: numb
     body: JSON.stringify({ row, col, combatant_version: combatantVersion, disengage }),
   });
 
+export const moveMonsterCombatant = (
+  campaignId: string,
+  combatId: string,
+  combatantId: string,
+  row: number,
+  col: number,
+  combatantVersion: number,
+  movementRemainingFt: number,
+) => apiFetch<Record<string, unknown>>(
+  `/campaigns/${campaignId}/player-room/combat/${combatId}/monster-move/${combatantId}`,
+  {
+    method: "POST",
+    body: {
+      row,
+      col,
+      combatant_version: combatantVersion,
+      movement_remaining_ft: movementRemainingFt,
+    },
+  },
+);
+
 export type PlayerCombatManeuver = {
   action_type:
     | "dash"
@@ -838,6 +872,15 @@ export const submitMyPlayerRoll = (actionId: string, actionVersion: number, roll
       idempotency_key: createClientId("player-roll"),
     }),
   });
+
+export const resolveMyOpportunityReaction = (
+  requestId: string,
+  version: number,
+  decision: "accept" | "reject",
+) => playerFetch<Record<string, unknown>>(`/player-room/me/combat/reactions/${requestId}`, {
+  method: "POST",
+  body: JSON.stringify({ version, decision }),
+});
 
 export const submitMyDeathSave = (targetVersion: number, roll: number) =>
   playerFetch<Record<string, unknown>>("/player-room/me/combat/death-save", {
