@@ -6263,25 +6263,56 @@ class PlayerRoomService:
 
         commands: list[tuple[CombatActionCommand, str]] = []
         target_versions = {item.id: item.version for item in requested_targets}
-        for index, spec in enumerate(damage_specs):
-            target_version = target_versions[spec["target_id"]]
+        action_damage_tags = [
+            str(value)
+            for value in action.get("damage_tags", [])
+            if isinstance(value, str)
+        ] if isinstance(action.get("damage_tags"), list) else []
+
+        # One attack/spell against one target is one damage event, even when
+        # its rule plan contains several independently resisted segments.  The
+        # old path emitted one CombatAction per segment.  That made a single
+        # compound hit apply 0-HP death-save failures, concentration checks,
+        # and damage-triggered effect expiry once per segment.  Keep every
+        # segment typed, but submit them together so the combat engine can
+        # apply the event lifecycle exactly once.
+        grouped_specs = [
+            [spec for spec in damage_specs if spec["target_id"] == current_target.id]
+            for current_target in requested_targets
+        ]
+        for index, target_specs in enumerate(grouped_specs):
+            if not target_specs:
+                continue
+            target_id = str(target_specs[0]["target_id"])
+            target_version = target_versions[target_id]
+            components = [
+                {
+                    "amount": int(spec["amount"]),
+                    "damage_type": str(spec["damage_type"]),
+                    "damage_tags": list(action_damage_tags),
+                }
+                for spec in target_specs
+            ]
+            total_amount = sum(int(component["amount"]) for component in components)
+            critical = any(bool(spec.get("critical_hit")) for spec in target_specs)
             command = CombatActionCommand(
                 action_type="damage",
-                target_combatant_id=spec["target_id"],
+                target_combatant_id=target_id,
                 target_version=target_version,
                 actor_combatant_id=actor.id if index == 0 else None,
                 actor_version=actor.version if index == 0 else None,
                 action_cost=cost if index == 0 else "none",
                 action_name=action_name,
-                resolution_note=spec["note"],
-                amount=spec["amount"],
-                damage_type=spec["damage_type"],
-                critical_hit=bool(spec.get("critical_hit")) and not saving_throw_action,
-                damage_tags=[
-                    str(value)
-                    for value in action.get("damage_tags", [])
-                    if isinstance(value, str)
-                ] if isinstance(action.get("damage_tags"), list) else [],
+                resolution_note="；".join(str(spec["note"]) for spec in target_specs),
+                amount=total_amount,
+                damage_type=(
+                    str(components[0]["damage_type"])
+                    if len(components) == 1
+                    else "mixed"
+                ),
+                damage_components=components if len(components) > 1 else [],
+                critical_hit=critical and not saving_throw_action,
+                damage_tags=action_damage_tags,
                 reaction_trigger=reaction_trigger.strip()
                 if cost == "reaction" and index == 0
                 else None,
@@ -6289,10 +6320,10 @@ class PlayerRoomService:
             command_key = (
                 idempotency_key
                 if index == 0
-                else f"{idempotency_key}:damage:{spec['target_id']}:{spec['block_id']}"
+                else f"{idempotency_key}:damage:{target_id}"
             )
             commands.append((command, command_key))
-            target_versions[spec["target_id"]] = target_version + 1
+            target_versions[target_id] = target_version + 1
         results = self.combat.confirm_action_batch(
             principal.campaign_id,
             combat_id,

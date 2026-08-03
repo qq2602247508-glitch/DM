@@ -1727,6 +1727,117 @@ def test_player_attack_applies_half_cover_to_target_ac(
     assert next(item for item in current_target if item["id"] == target["id"])["hp"] == 20
 
 
+def test_player_compound_damage_is_one_lifecycle_event(
+    campaign_client: TestClient,
+) -> None:
+    campaign = _campaign(campaign_client, "复合伤害生命周期团")
+    compound_plan = compile_rule_blocks_dict(
+        {
+            "name": "元素裂解",
+            "range": "30尺",
+            "damage_components": [
+                {"expression": "1d1", "damage_type": "火焰"},
+                {"expression": "1d1", "damage_type": "寒冷"},
+            ],
+            "resolution_kind": "damage",
+        },
+        source_kind="spell",
+    )
+    character = campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/characters",
+        json={
+            "name": "复合伤害施法者",
+            "hp": 20,
+            "max_hp": 20,
+            "actions": [
+                {
+                    "name": "元素裂解",
+                    "cost": "动作",
+                    "range": "30尺",
+                    "damage_components": [
+                        {"expression": "1d1", "damage_type": "火焰"},
+                        {"expression": "1d1", "damage_type": "寒冷"},
+                    ],
+                    "rule_plan": compound_plan,
+                }
+            ],
+        },
+    ).json()
+    damage_ids = [
+        block["id"]
+        for block in compound_plan["blocks"]
+        if block["kind"] == "damage"
+    ]
+    assert len(damage_ids) == 2
+    scene = campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/scenes",
+        json={"name": "复合伤害靶场"},
+    ).json()
+    assert campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/scenes/{scene['id']}/grid",
+        json={"width": 8, "height": 5, "cell_size_ft": 5, "mode": "combat"},
+    ).status_code == 201
+    combat = campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/combats",
+        json={"name": "复合伤害战斗", "scene_id": scene["id"]},
+    ).json()
+    _actor = campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": character["name"],
+            "entity_type": "character",
+            "entity_id": character["id"],
+            "initiative": 20,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {"grid_position": {"row": 3, "col": 2}},
+        },
+    ).json()
+    target = campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "复合伤害目标",
+            "entity_type": "character",
+            "initiative": 10,
+            "hp": 2,
+            "max_hp": 2,
+            "damage_resistances": ["fire"],
+            "damage_vulnerabilities": ["cold"],
+            "snapshot_json": {"grid_position": {"row": 3, "col": 3}},
+        },
+    ).json()
+    opened = _open(campaign_client, campaign["id"])
+    _join(campaign_client, opened["join_code"])
+    assert campaign_client.post(
+        "/api/v1/player-room/me/bind-character",
+        json={"character_id": character["id"]},
+    ).status_code == 200
+    assert campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/player-room/live-state",
+        json={"scene_id": scene["id"], "combat_id": combat["id"]},
+    ).status_code == 200
+
+    attack = campaign_client.post(
+        "/api/v1/player-room/me/combat/attack",
+        json={
+            "target_combatant_id": target["id"],
+            "action_name": "元素裂解",
+            "attack_total": 20,
+            "damage_total": 2,
+            "damage_component_totals": {damage_ids[0]: 1, damage_ids[1]: 1},
+            "idempotency_key": "compound-lifecycle-001",
+        },
+    )
+    assert attack.status_code == 200, attack.text
+    body = attack.json()
+    assert len(body["results"]) == 1
+    result = body["results"][0]["action"]["result_json"]
+    assert result["damage_type"] == "mixed"
+    assert [item["adjusted_damage"] for item in result["damage_components"]] == [0, 2]
+    assert result["condition_changes"] == ["added:unconscious"]
+    assert body["results"][0]["death_save"]["failures"] == 0
+
+
 def test_player_compiled_forced_movement_is_applied_after_failed_save(
     campaign_client: TestClient,
 ) -> None:
