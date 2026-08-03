@@ -117,6 +117,12 @@ class CombatEngineService:
         "grappled",
         "restrained",
     }
+    _SAVE_AUTO_FAIL_STR_DEX_CONDITIONS = {
+        "stunned",
+        "paralyzed",
+        "petrified",
+        "unconscious",
+    }
     _RUNTIME_STATE_CONDITIONS = {
         "dodge": "闪避",
         "hidden": "隐藏",
@@ -1369,11 +1375,20 @@ class CombatEngineService:
 
     @classmethod
     def _condition_set(cls, target: Combatant) -> set[str]:
-        return {
+        conditions = {
             canonical
             for value in list(target.conditions or [])
             if (canonical := cls._canonical_condition(value))
         }
+        # These are condition consequences, not extra user-applied rows.  A
+        # single source of truth here keeps action gates, attack contexts and
+        # saving throws consistent without making the UI display duplicate
+        # synthetic conditions.
+        if "unconscious" in conditions:
+            conditions.update({"incapacitated", "prone"})
+        if conditions & {"stunned", "paralyzed", "petrified"}:
+            conditions.add("incapacitated")
+        return conditions
 
     @classmethod
     def _has_condition(cls, target: Combatant, condition: str) -> bool:
@@ -1592,20 +1607,135 @@ class CombatEngineService:
         return len(filtered) != len(current)
 
     @classmethod
+    def sync_condition_state(
+        cls,
+        target: Combatant,
+        previous_conditions: list[object] | tuple[object, ...],
+    ) -> None:
+        """Apply lifecycle restrictions after a direct condition-list edit.
+
+        The DM quick editor and movement endpoint persist a complete condition
+        list instead of creating a ``CombatEffect``. They still need the same
+        typed restrictions as structured effects; otherwise the UI could
+        display a condition without changing action economy or speed.
+        """
+
+        previous = {
+            canonical
+            for value in previous_conditions
+            if (canonical := cls._canonical_condition(value))
+        }
+        current = cls._condition_set(target)
+        added = current - previous
+        for condition in added:
+            cls._apply_condition_restrictions(target, condition, {})
+        if added or current != previous:
+            cls._restore_condition_restrictions(target)
+
+    @classmethod
     def _apply_condition_restrictions(
         cls,
         target: Combatant,
         condition: str,
         before: dict[str, object],
     ) -> None:
-        """Apply typed movement restrictions owned by a new condition source."""
+        """Apply typed condition restrictions with a shared baseline.
 
-        if cls._canonical_condition(condition) not in {"restrained", "grappled"}:
+        Multiple effects can own the same restriction (for example
+        ``grappled`` plus ``restrained``).  A per-effect snapshot alone would
+        restore the first effect's value while the second is still active.
+        Keep one baseline on the combatant and restore it only after the last
+        restricting condition ends.
+        """
+
+        canonical = cls._canonical_condition(condition)
+        action_blocked = canonical in cls._ACTION_BLOCKING_CONDITIONS
+        movement_blocked = canonical in {"restrained", "grappled"}
+        if not action_blocked and not movement_blocked:
             return
-        before["speed_ft"] = target.speed_ft
-        before["movement_remaining_ft"] = target.movement_remaining_ft
-        target.speed_ft = 0
-        target.movement_remaining_ft = 0
+        snapshot = dict(target.snapshot_json or {})
+        raw_baseline = snapshot.get("_condition_restriction_baseline")
+        baseline = dict(raw_baseline) if isinstance(raw_baseline, dict) else {}
+        if action_blocked:
+            for field in (
+                "action_available",
+                "bonus_action_available",
+                "reaction_available",
+            ):
+                before[field] = bool(getattr(target, field))
+                baseline.setdefault(field, bool(getattr(target, field)))
+                setattr(target, field, False)
+        if movement_blocked:
+            before["speed_ft"] = target.speed_ft
+            before["movement_remaining_ft"] = target.movement_remaining_ft
+            baseline.setdefault("speed_ft", target.speed_ft)
+            baseline.setdefault("movement_remaining_ft", target.movement_remaining_ft)
+            target.speed_ft = 0
+            target.movement_remaining_ft = 0
+        snapshot["_condition_restriction_baseline"] = baseline
+        target.snapshot_json = snapshot
+
+    @classmethod
+    def _restore_condition_restrictions(
+        cls,
+        target: Combatant,
+        applied_state: dict[str, object] | None = None,
+    ) -> None:
+        """Restore the shared baseline after one condition source ends."""
+
+        conditions = cls._condition_set(target)
+        raw_baseline = (target.snapshot_json or {}).get(
+            "_condition_restriction_baseline"
+        )
+        baseline = dict(raw_baseline) if isinstance(raw_baseline, dict) else {}
+        if conditions & cls._ACTION_BLOCKING_CONDITIONS:
+            for field in (
+                "action_available",
+                "bonus_action_available",
+                "reaction_available",
+            ):
+                setattr(target, field, False)
+        else:
+            for field in (
+                "action_available",
+                "bonus_action_available",
+                "reaction_available",
+            ):
+                value = baseline.get(field)
+                if isinstance(value, bool):
+                    setattr(target, field, value)
+        if conditions & {"restrained", "grappled"}:
+            target.speed_ft = 0
+            target.movement_remaining_ft = 0
+        else:
+            speed_ft = baseline.get("speed_ft")
+            movement_remaining_ft = baseline.get("movement_remaining_ft")
+            if isinstance(speed_ft, int) and speed_ft >= 0:
+                target.speed_ft = speed_ft
+            if isinstance(movement_remaining_ft, int) and movement_remaining_ft >= 0:
+                target.movement_remaining_ft = min(
+                    movement_remaining_ft,
+                    target.speed_ft,
+                )
+            elif isinstance(applied_state, dict):
+                # Compatibility for effects created before the shared
+                # baseline was introduced.
+                fallback_speed = applied_state.get("speed_ft")
+                fallback_movement = applied_state.get("movement_remaining_ft")
+                if isinstance(fallback_speed, int) and fallback_speed >= 0:
+                    target.speed_ft = fallback_speed
+                if isinstance(fallback_movement, int) and fallback_movement >= 0:
+                    target.movement_remaining_ft = min(
+                        fallback_movement,
+                        target.speed_ft,
+                    )
+        if not (
+            conditions & cls._ACTION_BLOCKING_CONDITIONS
+            or conditions & {"restrained", "grappled"}
+        ):
+            snapshot = dict(target.snapshot_json or {})
+            snapshot.pop("_condition_restriction_baseline", None)
+            target.snapshot_json = snapshot
 
     @classmethod
     def _sync_zero_hp_lifecycle(
@@ -1628,9 +1758,11 @@ class CombatEngineService:
         changes: list[str] = []
         if target.hp == 0:
             if cls._add_condition(target, "昏迷"):
+                cls._apply_condition_restrictions(target, "昏迷", {})
                 changes.append("added:unconscious")
         elif before_hp == 0 and target.hp > 0:
             if cls._remove_condition(target, "unconscious"):
+                cls._restore_condition_restrictions(target)
                 changes.append("removed:unconscious")
         return changes
 
@@ -1773,13 +1905,10 @@ class CombatEngineService:
             ):
                 cls._remove_condition(target, condition)
             applied = state.get("applied_state")
-            if isinstance(applied, dict):
-                speed_ft = applied.get("speed_ft")
-                if isinstance(speed_ft, int) and speed_ft >= 0:
-                    target.speed_ft = speed_ft
-                movement_remaining_ft = applied.get("movement_remaining_ft")
-                if isinstance(movement_remaining_ft, int) and movement_remaining_ft >= 0:
-                    target.movement_remaining_ft = movement_remaining_ft
+            cls._restore_condition_restrictions(
+                target,
+                applied if isinstance(applied, dict) else None,
+            )
             target.updated_at = now
         effect.status = "ended"
         effect.ended_at = now
@@ -2037,16 +2166,10 @@ class CombatEngineService:
             # Some structured maneuvers use a condition block as the marker
             # for another reversible state (grapple sets speed to 0). Restore
             # that state from the same effect snapshot when the effect ends.
-            if isinstance(applied, dict):
-                speed_ft = applied.get("speed_ft")
-                if isinstance(speed_ft, int) and speed_ft >= 0:
-                    target.speed_ft = speed_ft
-                    movement_remaining = applied.get("movement_remaining_ft")
-                    target.movement_remaining_ft = (
-                        min(movement_remaining, target.speed_ft)
-                        if isinstance(movement_remaining, int) and movement_remaining >= 0
-                        else min(target.movement_remaining_ft, target.speed_ft)
-                    )
+            cls._restore_condition_restrictions(
+                target,
+                applied if isinstance(applied, dict) else None,
+            )
             return {}
         return cls._apply_rule_block_effect(target, details, remove=True)
 
@@ -2795,6 +2918,28 @@ class CombatEngineService:
         resistance = list(target.damage_resistances or [])
         vulnerability = list(target.damage_vulnerabilities or [])
         immunity = list(target.damage_immunities or [])
+        if cls._has_condition(target, "petrified"):
+            # Petrification grants resistance to all damage and immunity to
+            # poison.  Expand the finite damage type set because the domain
+            # resolver intentionally treats unknown strings as literal types.
+            resistance.extend(
+                [
+                    "acid",
+                    "bludgeoning",
+                    "cold",
+                    "fire",
+                    "force",
+                    "lightning",
+                    "necrotic",
+                    "piercing",
+                    "poison",
+                    "psychic",
+                    "radiant",
+                    "slashing",
+                    "thunder",
+                ]
+            )
+            immunity.append("poison")
         tags = {
             str(value).strip().lower()
             for value in (
@@ -3568,6 +3713,12 @@ class CombatEngineService:
         defenses = dict(raw_defenses) if isinstance(raw_defenses, dict) else {}
         applied: list[str] = []
         rolls = list(roll_totals) if roll_totals else [roll_total]
+        normalized_ability = str(ability or "").strip().lower()
+        condition_set = cls._condition_set(target)
+        condition_save_disadvantage = (
+            normalized_ability in {"dexterity", "敏捷"}
+            and "restrained" in condition_set
+        )
         magic_resistance = bool(
             defenses.get("magic_resistance") or snapshot.get("magic_resistance")
         )
@@ -3618,14 +3769,19 @@ class CombatEngineService:
                 snapshot["feature_saving_throw_rerolls"] = rerolls
                 target.snapshot_json = snapshot
             applied.append("feature_saving_throw_reroll")
-        elif (magic_resistance and is_magical) or feature_advantage or feature_disadvantage:
+        elif (
+            (magic_resistance and is_magical)
+            or feature_advantage
+            or feature_disadvantage
+            or condition_save_disadvantage
+        ):
             if len(rolls) < 2:
                 raise ValueError(
                     "structured saving-throw advantage/disadvantage requires two reported "
                     "save totals; the server will not invent the second roll"
                 )
             has_advantage = (magic_resistance and is_magical) or bool(feature_advantage)
-            has_disadvantage = bool(feature_disadvantage)
+            has_disadvantage = bool(feature_disadvantage) or condition_save_disadvantage
             if has_advantage and has_disadvantage:
                 effective_roll = rolls[0]
                 applied.append("saving_throw_advantage_disadvantage_cancelled")
@@ -3637,16 +3793,21 @@ class CombatEngineService:
             else:
                 effective_roll = min(rolls)
                 applied.extend(f"feature:{source}" for source in feature_disadvantage)
+                if condition_save_disadvantage:
+                    applied.append("restrained_disadvantage_dexterity_save")
+            if condition_save_disadvantage and (
+                "restrained_disadvantage_dexterity_save" not in applied
+            ):
+                applied.append("restrained_disadvantage_dexterity_save")
         else:
             effective_roll = roll_total
-        normalized_ability = str(ability or "").strip().lower()
         auto_fail = (
-            cls._has_condition(target, "unconscious")
+            bool(condition_set & cls._SAVE_AUTO_FAIL_STR_DEX_CONDITIONS)
             and normalized_ability in {"strength", "dexterity", "力量", "敏捷"}
         )
         if auto_fail:
             effective_roll = -100_000
-            applied.append("unconscious_auto_fail_strength_dex_save")
+            applied.append("condition_auto_fail_strength_dex_save")
         succeeded = effective_roll >= dc and not auto_fail
         resource_consumed: dict[str, object] | None = None
         if use_legendary_resistance:
@@ -7262,8 +7423,11 @@ class CombatEngineService:
             operation = str(block.get("operation") or "apply")
             if operation == "remove":
                 changed = cls._remove_condition(target, condition)
+                if changed:
+                    cls._restore_condition_restrictions(target)
                 result["status"] = "removed" if changed else "already_absent"
             elif not cls._has_condition(target, condition):
+                cls._apply_condition_restrictions(target, condition, {})
                 changed = cls._add_condition(target, condition)
                 result["reapplied"] = changed
             result["condition"] = condition

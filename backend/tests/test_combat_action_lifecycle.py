@@ -107,7 +107,9 @@ def test_action_blocking_conditions_reject_real_actions(
     assert blocked.status_code == 400
     assert "cannot take actions" in blocked.json()["message"]
     unchanged = combat_client.get(_combatant_path(campaign, combat, actor["id"])).json()
-    assert unchanged["action_available"] is True
+    # The rejected maneuver does not consume anything; the condition itself
+    # still owns the action restriction until it is removed.
+    assert unchanged["action_available"] is False
     assert unchanged["movement_remaining_ft"] == 30
 
 

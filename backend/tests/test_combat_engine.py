@@ -4368,3 +4368,292 @@ def test_repeating_mixed_damage_uses_conditional_damage_defenses(
     assert [item["adjusted_damage"] for item in tick["damage_components"]] == [2, 3]
     assert tick["conditional_defenses_applied"] == ["rage-resistance:resistance:fire"]
     assert advanced.json()["active_combatant"]["id"] == target["id"]
+
+
+def test_condition_restrictions_stack_and_restore_shared_baseline(
+    combat_client: TestClient,
+) -> None:
+    campaign = _campaign(combat_client, "stacked condition restrictions")
+    combat, target = _combatant(combat_client, campaign["id"])
+    base = f"/api/v1/campaigns/{campaign['id']}"
+    source = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "状态来源",
+            "entity_type": "monster",
+            "initiative": 20,
+            "hp": 20,
+            "max_hp": 20,
+        },
+    ).json()
+
+    def apply_effect(request_id: str, condition: str) -> dict[str, object]:
+        nonlocal target, source
+        response = combat_client.post(
+            f"{base}/combats/{combat['id']}/effects/confirm",
+            headers={"X-Request-ID": request_id},
+            json={
+                "target_combatant_id": target["id"],
+                "target_version": target["version"],
+                "source_combatant_id": source["id"],
+                "source_version": source["version"],
+                "name": request_id,
+                "effect_type": "condition",
+                "details_json": {
+                    "rule_block": {
+                        "kind": "condition",
+                        "condition": condition,
+                        "operation": "apply",
+                    }
+                },
+                "duration_unit": "until_removed",
+            },
+        )
+        assert response.status_code == 200, response.text
+        target = response.json()["target"]
+        source = combat_client.get(
+            _fighter_path(campaign["id"], combat["id"], source["id"])
+        ).json()
+        return response.json()["effect"]
+
+    stunned = apply_effect("stack-stunned", "震慑")
+    assert target["action_available"] is False
+    assert target["bonus_action_available"] is False
+    assert target["reaction_available"] is False
+    paralyzed = apply_effect("stack-paralyzed", "麻痹")
+    assert target["action_available"] is False
+    target = combat_client.get(
+        _fighter_path(campaign["id"], combat["id"], target["id"])
+    ).json()
+
+    ended_stunned = combat_client.post(
+        f"{base}/combats/{combat['id']}/effects/{stunned['id']}/end",
+        headers={"X-Request-ID": "end-stunned"},
+        json={
+            "target_version": target["version"],
+            "source_version": source["version"],
+            "reason": "震慑结束",
+        },
+    )
+    assert ended_stunned.status_code == 200, ended_stunned.text
+    target = ended_stunned.json()["target"]
+    source = ended_stunned.json()["source"]
+    assert target["action_available"] is False
+
+    ended_paralyzed = combat_client.post(
+        f"{base}/combats/{combat['id']}/effects/{paralyzed['id']}/end",
+        headers={"X-Request-ID": "end-paralyzed"},
+        json={
+            "target_version": target["version"],
+            "source_version": source["version"],
+            "reason": "麻痹结束",
+        },
+    )
+    assert ended_paralyzed.status_code == 200, ended_paralyzed.text
+    target = ended_paralyzed.json()["target"]
+    source = ended_paralyzed.json()["source"]
+    assert target["action_available"] is True
+    assert target["bonus_action_available"] is True
+    assert target["reaction_available"] is True
+
+    target = combat_client.patch(
+        _fighter_path(campaign["id"], combat["id"], target["id"]),
+        headers={"If-Match": f'"{target["version"]}"'},
+        json={"movement_remaining_ft": 20},
+    ).json()
+    restrained = apply_effect("stack-restrained", "束缚")
+    grappled = apply_effect("stack-grappled", "擒抱")
+    assert target["speed_ft"] == 0
+    assert target["movement_remaining_ft"] == 0
+
+    ended_restrained = combat_client.post(
+        f"{base}/combats/{combat['id']}/effects/{restrained['id']}/end",
+        headers={"X-Request-ID": "end-restrained"},
+        json={
+            "target_version": target["version"],
+            "source_version": source["version"],
+            "reason": "束缚结束",
+        },
+    )
+    assert ended_restrained.status_code == 200, ended_restrained.text
+    target = ended_restrained.json()["target"]
+    source = ended_restrained.json()["source"]
+    assert target["speed_ft"] == 0
+
+    ended_grappled = combat_client.post(
+        f"{base}/combats/{combat['id']}/effects/{grappled['id']}/end",
+        headers={"X-Request-ID": "end-grappled"},
+        json={
+            "target_version": target["version"],
+            "source_version": source["version"],
+            "reason": "擒抱结束",
+        },
+    )
+    assert ended_grappled.status_code == 200, ended_grappled.text
+    target = ended_grappled.json()["target"]
+    assert target["speed_ft"] == 30
+    assert target["movement_remaining_ft"] == 20
+
+
+def test_condition_matrix_changes_saves_and_petrified_damage(
+    combat_client: TestClient,
+) -> None:
+    campaign = _campaign(combat_client, "condition matrix")
+    combat, target = _combatant(combat_client, campaign["id"])
+    base = f"/api/v1/campaigns/{campaign['id']}"
+    source = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "状态施加者",
+            "entity_type": "monster",
+            "initiative": 20,
+            "hp": 20,
+            "max_hp": 20,
+        },
+    ).json()
+
+    restrained = combat_client.post(
+        f"{base}/combats/{combat['id']}/effects/confirm",
+        headers={"X-Request-ID": "matrix-restrained"},
+        json={
+            "target_combatant_id": target["id"],
+            "target_version": target["version"],
+            "source_combatant_id": source["id"],
+            "source_version": source["version"],
+            "name": "束缚",
+            "effect_type": "condition",
+            "details_json": {
+                "rule_block": {
+                    "kind": "condition",
+                    "condition": "束缚",
+                    "operation": "apply",
+                }
+            },
+            "duration_unit": "until_removed",
+        },
+    )
+    assert restrained.status_code == 200, restrained.text
+    target = restrained.json()["target"]
+    pending = combat_client.post(
+        f"{base}/combats/{combat['id']}/actions/player-rolls/pending",
+        headers={"X-Request-ID": "matrix-dex-save"},
+        json={
+            "actor_combatant_id": source["id"],
+            "actor_version": source["version"],
+            "target_combatant_id": target["id"],
+            "target_version": target["version"],
+            "action_name": "束缚射线",
+            "resolution_type": "saving_throw",
+            "dc": 10,
+            "ability": "dexterity",
+            "damage_on_failure": 4,
+            "damage_on_success": 0,
+            "damage_type": "force",
+            "description": "束缚目标进行敏捷豁免。",
+        },
+    )
+    assert pending.status_code == 200, pending.text
+    prompt = pending.json()["action"]
+    source = pending.json()["actor"]
+    preview = combat_client.post(
+        f"{base}/combats/{combat['id']}/actions/player-rolls/{prompt['id']}/preview",
+        json={
+            "action_version": prompt["version"],
+            "roll_total": 15,
+            "roll_totals": [5, 15],
+        },
+    )
+    assert preview.status_code == 200, preview.text
+    assert preview.json()["resolution"]["roll_total"] == 5
+    assert (
+        "restrained_disadvantage_dexterity_save"
+        in preview.json()["resolution"]["applied_defenses"]
+    )
+    target = combat_client.get(
+        _fighter_path(campaign["id"], combat["id"], target["id"])
+    ).json()
+
+    ended = combat_client.post(
+        f"{base}/combats/{combat['id']}/effects/{restrained.json()['effect']['id']}/end",
+        headers={"X-Request-ID": "matrix-end-restrained"},
+        json={
+            "target_version": target["version"],
+            "source_version": source["version"],
+            "reason": "束缚结束",
+        },
+    )
+    assert ended.status_code == 200, ended.text
+    target = combat_client.get(
+        _fighter_path(campaign["id"], combat["id"], target["id"])
+    ).json()
+    source = combat_client.get(
+        _fighter_path(campaign["id"], combat["id"], source["id"])
+    ).json()
+    petrified = combat_client.post(
+        f"{base}/combats/{combat['id']}/effects/confirm",
+        headers={"X-Request-ID": "matrix-petrified"},
+        json={
+            "target_combatant_id": target["id"],
+            "target_version": target["version"],
+            "source_combatant_id": source["id"],
+            "source_version": source["version"],
+            "name": "石化",
+            "effect_type": "condition",
+            "details_json": {
+                "rule_block": {
+                    "kind": "condition",
+                    "condition": "石化",
+                    "operation": "apply",
+                }
+            },
+            "duration_unit": "until_removed",
+        },
+    )
+    assert petrified.status_code == 200, petrified.text
+    target = petrified.json()["target"]
+    damaged = combat_client.post(
+        f"{base}/combats/{combat['id']}/actions/confirm",
+        headers={"X-Request-ID": "matrix-petrified-damage"},
+        json={
+            "action_type": "damage",
+            "target_combatant_id": target["id"],
+            "target_version": target["version"],
+            "amount": 10,
+            "damage_type": "fire",
+        },
+    )
+    assert damaged.status_code == 200, damaged.text
+    assert damaged.json()["action"]["result_json"]["modifier"] == "resistance"
+    assert damaged.json()["action"]["result_json"]["adjusted_damage"] == 5
+    assert damaged.json()["target"]["hp"] == target["hp"] - 2
+
+
+def test_direct_condition_patch_uses_lifecycle_restrictions(
+    combat_client: TestClient,
+) -> None:
+    campaign = _campaign(combat_client, "direct condition lifecycle")
+    combat, target = _combatant(combat_client, campaign["id"])
+    path = _fighter_path(campaign["id"], combat["id"], target["id"])
+
+    applied = combat_client.patch(
+        path,
+        headers={"If-Match": f'"{target["version"]}"'},
+        json={"conditions": ["昏迷"]},
+    )
+    assert applied.status_code == 200, applied.text
+    target = applied.json()
+    assert target["conditions"] == ["昏迷"]
+    assert target["action_available"] is False
+    assert target["bonus_action_available"] is False
+    assert target["reaction_available"] is False
+
+    removed = combat_client.patch(
+        path,
+        headers={"If-Match": f'"{target["version"]}"'},
+        json={"conditions": []},
+    )
+    assert removed.status_code == 200, removed.text
+    target = removed.json()
+    assert target["action_available"] is True
+    assert target["bonus_action_available"] is True
+    assert target["reaction_available"] is True

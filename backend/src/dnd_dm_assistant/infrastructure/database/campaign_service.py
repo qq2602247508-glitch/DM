@@ -677,6 +677,18 @@ class SqlAlchemyCampaignStateGateway:
             if getattr(result, "rowcount", None) != 1:
                 raise VersionConflict(entity_type, entity_id, expected_version, actual)
             session.refresh(entity)
+            if entity_type == "combatant" and "conditions" in values:
+                # Direct DM/player condition edits must use the same typed
+                # lifecycle path as structured combat effects. The import is
+                # local because CombatEngineService imports this module's
+                # serializer.
+                from dnd_dm_assistant.infrastructure.database.combat_service import (
+                    CombatEngineService,
+                )
+
+                previous_conditions = before.get("conditions", [])
+                if isinstance(previous_conditions, list):
+                    CombatEngineService.sync_condition_state(entity, previous_conditions)
             if entity_type == "campaign" and "enabled_rule_extensions" in values:
                 self._seed_rule_extension_atoms(
                     session,
