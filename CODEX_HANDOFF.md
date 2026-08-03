@@ -2,6 +2,19 @@
 
 更新时间：2026-08-01（Asia/Shanghai）
 
+## 2026-08-03 结构化反应事件执行校验（最新）
+
+- 结构化反应事件已从“预览筛选”接入正式确认/执行链。`CombatActionCommand`、玩家豁免 prompt（含批量 prompt）和怪物区域动作都接受 `reaction_event`；非反应动作携带该字段会被拒绝。
+- 服务端会按怪物快照中的 `action_name` 精确查找结构化 `reaction_event`。资料动作明确写出事件时，缺失事件或事件不匹配会在消耗反应、写入伤害和创建玩家豁免请求前拒绝；旧的未结构化动作继续兼容 DM 自由触发文字。
+- action window 的 request/result/log 都保留 `reaction_event` 与 `reaction_trigger`。DM 高级动作面板会把选择器值传给直接攻击、单目标豁免和多目标豁免路径；后续玩家端日志可见同一结构化事件。
+- 新增回归覆盖：匹配成功、缺失/错误事件不扣资源不写伤害、结构化 prompt 解析后仍保留事件、前端高级动作载荷包含事件。
+- 浏览器真实验收：重启当前运行副本 8000 后，模拟剧本 DM 选择“离开近战威胁范围”、填写目标/攻击总值并执行；DM 与玩家公开日志都显示“反应触发……；结构化事件：离开近战威胁范围”，两端控制台 error/warn 均为空。
+- 截图：`/private/tmp/dnd-reaction-structured-dm-log-20260803.png`、`/private/tmp/dnd-reaction-structured-player-log-20260803.png`；顶部页面截图：`/private/tmp/dnd-reaction-structured-dm-20260803.png`、`/private/tmp/dnd-reaction-structured-player-20260803.png`。
+- 门禁：仓库根目录 `backend/.venv/bin/python -m pytest -ra backend/tests` 为 `437 passed`（1 个既有 Starlette/httpx 弃用警告）；Ruff、前端 TypeScript、ESLint、Vitest 39 文件/190 项、生产构建、`git diff --check` 全部通过。
+- 代码提交：`2c0185a feat: enforce structured reaction events`。本项不改变火球术、雷鸣波、召唤物或复合伤害的既有完成边界。
+
+边界：结构化事件现在会阻止错误事件被执行，但“何时发生事件”仍由 DM/游戏流程确认；DM 仍需确认真实触发、目标、攻击骰和伤害骰。全部反应/传奇/巢穴动作的自动触发矩阵、复杂状态组合、复杂三维遮挡和全职业 1–20 级运行时仍未全部完成。
+
 ## 2026-08-03 结构化怪物反应事件与模拟剧本兼容迁移（最新）
 
 - 怪物资料解析现在只把明确写出的反应触发映射为关闭词表：离开近战范围 `leaves_reach`、进入近战范围 `enters_reach`、受到伤害 `takes_damage`、施法 `casts_spell`、回合结束 `turn_end`；没有明确事件的反应不会被猜测。
