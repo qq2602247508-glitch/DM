@@ -450,3 +450,13 @@ backend/.venv/bin/python -m pytest -q backend/tests
 - 当前证据：DM 日志截图 [dnd-advanced-window-dm-log-current-20260803.png](/private/tmp/dnd-advanced-window-dm-log-current-20260803.png)，玩家日志截图 [dnd-advanced-window-player-log-current-20260803.png](/private/tmp/dnd-advanced-window-player-log-current-20260803.png)，完整视图 [dnd-advanced-window-dm-current-20260803.png](/private/tmp/dnd-advanced-window-dm-current-20260803.png) 与 [dnd-advanced-window-player-current-20260803.png](/private/tmp/dnd-advanced-window-player-current-20260803.png)。
 
 本项闭合的是高级动作确认后的可追溯日志与双端一致性，不等于所有反应/传奇/巢穴动作触发条件、复杂状态组合、复杂三维遮挡或全职业 1–20 级运行时都已自动化；这些仍需后续执行器或 DM 确认。
+
+## 2026-08-03 借机攻击触发动作筛选
+
+- 修复玩家移动离开近战威胁范围时，旧逻辑直接取敌人第一个带伤害动作的问题。现在按结构化动作筛选：排除远程、区域、施法、传奇和巢穴动作；优先明确标记为反应/借机攻击的近战动作；旧资料没有 `range_ft` 时保留兼容回退。
+- 借机攻击请求现在保留实际使用的动作名、动作类型、近战距离和触发文本；DM 确认后的战斗日志显示具体动作，不再把远程攻击或区域技能误报为借机攻击。
+- 回归把“短弓在前、长剑在后”的混合动作表接入真实移动/请求/确认链，确认最终选中长剑、写入触发原因并正确消费反应。
+- 后端全量通过；前端 TypeScript、ESLint、39 个测试文件/190 项、生产构建通过；Ruff 与 `git diff --check` 通过。代码提交：`fe35b0b fix: filter opportunity attack triggers`。
+- 新后端重启后，DM/玩家模拟战斗页面均正常；两端控制台 error/warn 为空。截图：[dnd-opportunity-filter-dm-20260803.png](/private/tmp/dnd-opportunity-filter-dm-20260803.png)、[dnd-opportunity-filter-player-20260803.png](/private/tmp/dnd-opportunity-filter-player-20260803.png)。
+
+本项闭合的是借机攻击候选动作选择与触发上下文，不等于所有怪物反应的事件矩阵、传奇/巢穴自动触发、复杂状态组合或全职业 1–20 级运行时已经完成。
