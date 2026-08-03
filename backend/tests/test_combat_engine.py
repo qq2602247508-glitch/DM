@@ -1780,6 +1780,44 @@ def test_compiled_condition_respects_condition_immunity_without_creating_effect(
     effects = combat_client.get(f"{root}/effects").json()
     assert effects["items"] == []
 
+    unimmune = combat_client.patch(
+        _fighter_path(campaign["id"], combat["id"], target["id"]),
+        headers={"If-Match": f'"{target["version"]}"'},
+        json={"condition_immunities": []},
+    ).json()
+    restrained = combat_client.post(
+        f"{root}/effects/confirm",
+        headers={"X-Request-ID": "compiled-restrained-condition"},
+        json={
+            "target_combatant_id": unimmune["id"],
+            "target_version": unimmune["version"],
+            "name": "束缚",
+            "effect_type": "condition",
+            "details_json": {
+                "rule_block": {
+                    "kind": "condition",
+                    "condition": "束缚",
+                    "operation": "apply",
+                }
+            },
+        },
+    )
+    assert restrained.status_code == 200, restrained.text
+    restrained_target = restrained.json()["target"]
+    assert restrained_target["speed_ft"] == 0
+    assert restrained_target["movement_remaining_ft"] == 0
+    ended = combat_client.post(
+        f"{root}/effects/{restrained.json()['effect']['id']}/end",
+        headers={"X-Request-ID": "compiled-restrained-condition-end"},
+        json={
+            "target_version": restrained_target["version"],
+            "reason": "束缚结束",
+        },
+    )
+    assert ended.status_code == 200, ended.text
+    assert ended.json()["target"]["speed_ft"] == 30
+    assert ended.json()["target"]["movement_remaining_ft"] == 30
+
 
 def test_compiled_timed_effect_is_automatically_reversed_at_expiry(
     combat_client: TestClient,
@@ -1868,14 +1906,16 @@ def test_structured_condition_round_duration_expires_and_restores_previous_state
             "target_version": target["version"],
             "amount": 0,
             "damage_type": "force",
-            "conditions_to_apply": ["倒地"],
+            "conditions_to_apply": ["束缚"],
             "condition_duration": "rounds",
             "condition_duration_value": 1,
         },
     )
     assert applied.status_code == 200, applied.text
     applied_target = applied.json()["target"]
-    assert set(applied_target["conditions"]) == {"中毒", "倒地"}
+    assert set(applied_target["conditions"]) == {"中毒", "束缚"}
+    assert applied_target["speed_ft"] == 0
+    assert applied_target["movement_remaining_ft"] == 0
     effect_ids = applied.json()["action"]["result_json"]["structured_effects"]["effect_ids"]
     assert effect_ids
 
@@ -1893,6 +1933,12 @@ def test_structured_condition_round_duration_expires_and_restores_previous_state
     )
     assert wrapped.status_code == 200, wrapped.text
     assert any(item["id"] in effect_ids for item in wrapped.json()["expired_rule_effects"])
+    restored = combat_client.get(
+        _fighter_path(campaign["id"], combat["id"], target["id"])
+    ).json()
+    assert "束缚" not in restored["conditions"]
+    assert restored["speed_ft"] == 30
+    assert restored["movement_remaining_ft"] == 30
 
 
 def test_explicit_condition_end_trigger_cleans_up_when_source_becomes_unconscious(

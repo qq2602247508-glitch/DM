@@ -1592,6 +1592,22 @@ class CombatEngineService:
         return len(filtered) != len(current)
 
     @classmethod
+    def _apply_condition_restrictions(
+        cls,
+        target: Combatant,
+        condition: str,
+        before: dict[str, object],
+    ) -> None:
+        """Apply typed movement restrictions owned by a new condition source."""
+
+        if cls._canonical_condition(condition) not in {"restrained", "grappled"}:
+            return
+        before["speed_ft"] = target.speed_ft
+        before["movement_remaining_ft"] = target.movement_remaining_ft
+        target.speed_ft = 0
+        target.movement_remaining_ft = 0
+
+    @classmethod
     def _sync_zero_hp_lifecycle(
         cls,
         target: Combatant,
@@ -1695,6 +1711,9 @@ class CombatEngineService:
             raise ValueError(f"combatant already has active {state_name} state")
         condition = cls._RUNTIME_STATE_CONDITIONS[state_name]
         condition_was_present = cls._has_condition(target, condition)
+        applied_state: dict[str, object] = {}
+        if not condition_was_present:
+            cls._apply_condition_restrictions(target, condition, applied_state)
         cls._add_condition(target, condition)
         runtime_state: dict[str, object] = {
             "name": state_name,
@@ -1704,6 +1723,7 @@ class CombatEngineService:
             "expires_combatant_id": expires_combatant_id,
             "created_round": combat.round_number,
             "created_turn_index": combat.current_turn_index,
+            "applied_state": applied_state,
         }
         if details:
             runtime_state.update(details)
@@ -1752,6 +1772,14 @@ class CombatEngineService:
                 condition,
             ):
                 cls._remove_condition(target, condition)
+            applied = state.get("applied_state")
+            if isinstance(applied, dict):
+                speed_ft = applied.get("speed_ft")
+                if isinstance(speed_ft, int) and speed_ft >= 0:
+                    target.speed_ft = speed_ft
+                movement_remaining_ft = applied.get("movement_remaining_ft")
+                if isinstance(movement_remaining_ft, int) and movement_remaining_ft >= 0:
+                    target.movement_remaining_ft = movement_remaining_ft
             target.updated_at = now
         effect.status = "ended"
         effect.ended_at = now
@@ -2099,6 +2127,9 @@ class CombatEngineService:
                         condition,
                     )
                 )
+                applied_state: dict[str, object] = {}
+                if not condition_was_present:
+                    cls._apply_condition_restrictions(target, condition, applied_state)
                 cls._add_condition(target, condition)
                 effect = CombatEffect(
                     campaign_id=combat.campaign_id,
@@ -2117,6 +2148,7 @@ class CombatEngineService:
                             "created_round": combat.round_number,
                             "created_turn_index": combat.current_turn_index,
                             "source": "structured_monster_action",
+                            "applied_state": applied_state,
                         }
                     },
                     started_round=combat.round_number,
@@ -2136,6 +2168,9 @@ class CombatEngineService:
                     )
                 )
                 cls._add_condition(target, condition)
+                applied_state: dict[str, object] = {"conditions": before_conditions}
+                if not condition_was_present:
+                    cls._apply_condition_restrictions(target, condition, applied_state)
                 duration_unit = condition_duration or "until_removed"
                 effect = CombatEffect(
                     campaign_id=combat.campaign_id,
@@ -2150,7 +2185,7 @@ class CombatEngineService:
                             "condition": condition,
                             "operation": "apply",
                         },
-                        "applied_state": {"conditions": before_conditions},
+                        "applied_state": applied_state,
                         "condition_was_present": condition_was_present,
                         "source": "structured_monster_action",
                     },
@@ -7061,6 +7096,7 @@ class CombatEngineService:
                     conditions = [value for value in conditions if value not in values]
                 elif condition not in conditions:
                     conditions.append(condition)
+                    CombatEngineService._apply_condition_restrictions(target, condition, before)
                 target.conditions = conditions
         elif kind == "modifier":
             stat = str(block.get("stat") or "")
