@@ -1590,6 +1590,23 @@ class CombatEngineService:
         return bool(cls._condition_set(actor) & cls._MOVEMENT_BLOCKING_CONDITIONS)
 
     @classmethod
+    def _refresh_new_turn_resources(cls, actor: Combatant) -> None:
+        """Recompute a unit's turn budget after boundary effects settle.
+
+        A turn-start condition can expire while ``advance_turn`` is processing
+        the new active unit. The initial reset happens before that lifecycle
+        pass, so a newly freed unit would otherwise retain a blocked action or
+        zero movement for the whole turn.
+        """
+
+        movement_blocked = cls._movement_is_blocked(actor)
+        actor.movement_remaining_ft = 0 if movement_blocked else actor.speed_ft
+        can_act = not bool(cls._condition_set(actor) & cls._ACTION_BLOCKING_CONDITIONS)
+        actor.action_available = can_act
+        actor.bonus_action_available = can_act
+        actor.reaction_available = can_act
+
+    @classmethod
     def _add_condition(cls, target: Combatant, condition: str) -> bool:
         if cls._has_condition(target, condition):
             return False
@@ -6651,15 +6668,7 @@ class CombatEngineService:
             combat.current_turn_index = next_index
             combat.round_number = next_round
             combat.version += 1
-            active.movement_remaining_ft = (
-                0 if self._movement_is_blocked(active) else active.speed_ft
-            )
-            can_act = not bool(
-                self._condition_set(active) & self._ACTION_BLOCKING_CONDITIONS
-            )
-            active.action_available = can_act
-            active.bonus_action_available = can_act
-            active.reaction_available = can_act
+            self._refresh_new_turn_resources(active)
             active_snapshot = dict(active.snapshot_json or {})
             # Action Surge grants a budget for this turn only.  The budget is
             # consumed by the normal action-economy gate and must never leak
@@ -6863,6 +6872,10 @@ class CombatEngineService:
                 summon_effects,
                 now=now,
             )
+            # A turn-start effect may have removed a condition that blocked
+            # the active unit. Recompute the fresh turn budget after every
+            # lifecycle path (runtime, predicated, and round expiry).
+            self._refresh_new_turn_resources(active)
             expiration_prompts = [
                 serialize(effect)
                 for effect in expiring_effects

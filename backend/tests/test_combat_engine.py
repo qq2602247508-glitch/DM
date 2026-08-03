@@ -1955,6 +1955,69 @@ def test_structured_condition_round_duration_expires_and_restores_previous_state
     assert restored["movement_remaining_ft"] == 30
 
 
+def test_turn_start_condition_expiry_refreshes_new_turn_resources(
+    combat_client: TestClient,
+) -> None:
+    campaign = _campaign(combat_client, "Turn-start condition expiry")
+    base = f"/api/v1/campaigns/{campaign['id']}"
+    combat = combat_client.post(
+        f"{base}/combats", json={"name": "Turn-start condition combat"}
+    ).json()
+    caster = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "Condition caster",
+            "entity_type": "monster",
+            "initiative": 20,
+            "hp": 20,
+            "max_hp": 20,
+        },
+    ).json()
+    target = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "Freed target",
+            "entity_type": "character",
+            "initiative": 10,
+            "hp": 20,
+            "max_hp": 20,
+        },
+    ).json()
+    applied = combat_client.post(
+        f"{base}/combats/{combat['id']}/actions/confirm",
+        headers={"X-Request-ID": "turn-start-condition-apply"},
+        json={
+            "action_type": "damage",
+            "actor_combatant_id": caster["id"],
+            "actor_version": caster["version"],
+            "target_combatant_id": target["id"],
+            "target_version": target["version"],
+            "amount": 0,
+            "damage_type": "force",
+            "conditions_to_apply": ["震慑"],
+            "condition_duration": "target_turn_start",
+        },
+    )
+    assert applied.status_code == 200, applied.text
+    applied_target = applied.json()["target"]
+    assert applied_target["action_available"] is False
+    current = combat_client.get(f"{base}/combats/{combat['id']}").json()
+
+    advanced = combat_client.post(
+        f"{base}/combats/{combat['id']}/turns/advance",
+        headers={"X-Request-ID": "turn-start-condition-expire"},
+        json={"combat_version": current["version"]},
+    )
+    assert advanced.status_code == 200, advanced.text
+    active = advanced.json()["active_combatant"]
+    assert active["id"] == target["id"]
+    assert "震慑" not in active["conditions"]
+    assert active["action_available"] is True
+    assert active["bonus_action_available"] is True
+    assert active["reaction_available"] is True
+    assert active["movement_remaining_ft"] == active["speed_ft"]
+
+
 def test_explicit_condition_end_trigger_cleans_up_when_source_becomes_unconscious(
     combat_client: TestClient,
 ) -> None:
