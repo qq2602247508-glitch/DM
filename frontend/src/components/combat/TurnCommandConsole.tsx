@@ -31,8 +31,10 @@ import {
   chooseEnemyActionIndex,
   executableTargetIds,
   forcedMovementFromAction,
+  combatantFaction,
   expandMonsterAction,
   hasGridPosition,
+  isEnemyAiControlledCombatant,
   isPlayerControlledCombatant,
   isRechargeAvailable,
   isMonsterTurnAction,
@@ -364,6 +366,7 @@ export function TurnCommandConsole({
   // request to advance the same turn.
   const monsterSequenceInFlight = useRef<string | null>(null);
   const activeIsPlayerControlled = isPlayerControlledCombatant(active.entity_type, active.snapshot_json);
+  const activeIsEnemyAiControlled = isEnemyAiControlledCombatant(active.entity_type, active.snapshot_json);
 
   const actions = useMemo(
     () => activeIsPlayerControlled
@@ -522,7 +525,6 @@ export function TurnCommandConsole({
   const saveAbilityLabel = ({ wisdom: "感知", dexterity: "敏捷", constitution: "体质", strength: "力量", intelligence: "智力", charisma: "魅力" } as Record<string, string>)[selectedAction.save_ability ?? ""] ?? selectedAction.save_ability;
   const isNarrativeAction = selectedAction.resolution_kind === "narrative";
   const possibleTargets = fighters.filter((fighter) => {
-    const fighterIsPlayerControlled = isPlayerControlledCombatant(fighter.entity_type, fighter.snapshot_json);
     // When the current combat is map-backed, an unplaced summon/NPC is not a
     // legal automatic target.  Leaving it in this list lets the AI choose it,
     // then areaPromptFields cannot build an authoritative anchor and the
@@ -531,7 +533,8 @@ export function TurnCommandConsole({
     return fighter.id !== active.id
       && fighter.hp > 0
       && (!mapTargetRequired || hasGridPosition(fighter.snapshot_json))
-      && fighterIsPlayerControlled !== activeIsPlayerControlled;
+      && combatantFaction(fighter.entity_type, fighter.snapshot_json)
+        !== combatantFaction(active.entity_type, active.snapshot_json);
   });
   const roundNumber = Number(turnKey.split(":")[0] ?? 1);
   const turnIndex = Number(turnKey.split(":")[1] ?? 0);
@@ -1435,7 +1438,7 @@ export function TurnCommandConsole({
       showToast("目标不在当前技能的合法距离或范围内，请先在战斗地图上选择有效目标", "error");
       return false;
     }
-    if (!activeIsPlayerControlled && fullyAutomaticEnemy) {
+    if (activeIsEnemyAiControlled && fullyAutomaticEnemy) {
       executeMonsterSequence.mutate({ chosenTarget });
       return true;
     }
@@ -1689,7 +1692,7 @@ export function TurnCommandConsole({
   };
   const enemyTarget = chooseEnemyTarget(possibleTargets, tactics);
   const automaticAreaFallbackTarget = useMemo(() => {
-    if (activeIsPlayerControlled || selectedTargeting.shape === "single" || !enemyTarget) return false;
+    if (!activeIsEnemyAiControlled || selectedTargeting.shape === "single" || !enemyTarget) return false;
     const source = active.snapshot_json.grid_position;
     const targetPosition = enemyTarget.snapshot_json.grid_position;
     if (!source || typeof source !== "object" || Array.isArray(source)
@@ -1711,7 +1714,7 @@ export function TurnCommandConsole({
       { row: Number(sourceRecord.row), col: Number(sourceRecord.col) },
       { row: Number(targetRecord.row), col: Number(targetRecord.col) },
     ) <= selectedTargeting.rangeFt;
-  }, [active.snapshot_json.grid_position, activeIsPlayerControlled, enemyTarget, selectedTargeting.rangeFt, selectedTargeting.shape]);
+  }, [active.snapshot_json.grid_position, activeIsEnemyAiControlled, enemyTarget, selectedTargeting.rangeFt, selectedTargeting.shape]);
   const enemyReason = tactics === "instinctive"
     ? "本能型会扑向最先发现的目标。"
     : tactics === "standard"
@@ -1720,7 +1723,7 @@ export function TurnCommandConsole({
         ? "聪明敌人会集中攻击最虚弱的目标并利用自身动作。"
       : "战术敌人优先寻找低 AC、低生命目标，并保留撤退与控制空间。";
   useEffect(() => {
-    if (!autoEnemies || !automationReady || activeIsPlayerControlled) return;
+    if (!autoEnemies || !automationReady || !activeIsEnemyAiControlled) return;
     // Friendly/neutral NPC movement and turn completion are handled by the
     // shared battle grid. They must never enter the monster attack selector.
     if (active.entity_type === "npc") return;
@@ -1829,7 +1832,7 @@ export function TurnCommandConsole({
     turnKey,
     targetIdsForExecution,
     automaticAreaFallbackTarget,
-    activeIsPlayerControlled,
+    activeIsEnemyAiControlled,
   ]);
 
   return (

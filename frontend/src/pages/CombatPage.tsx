@@ -46,7 +46,11 @@ import {
   actionEconomySummary, damageComponentsByTargetSummary, damageComponentsSummary,
   damageModifierLabel, deathSaveSummary,
 } from "../ui/combatPresentation";
-import { chooseEnemyTarget, isPlayerControlledCombatant } from "../ui/combatAutomation";
+import {
+  chooseEnemyTarget,
+  isEnemyAiControlledCombatant,
+  isPlayerControlledCombatant,
+} from "../ui/combatAutomation";
 import { advancedActionPendingRollSummary } from "../ui/advancedMonsterActions";
 import {
   movementCommitKey,
@@ -979,6 +983,7 @@ function BattleGrid({
       }
       return;
     }
+    if (!isEnemyAiControlledCombatant(active.entity_type, active.snapshot_json)) return;
     // The movement planner must pursue the same player-controlled target that
     // the command console will attack.  Previously movement only considered
     // characters while the console could select a lower-HP companion, leaving
@@ -1066,7 +1071,10 @@ function BattleGrid({
     if (!automateEnemies || !targeting || (!targeting.originSelf && targeting.rangeFt <= 0) || !activePosition || !activeFighterId) return;
     if (targetingActorId && targetingActorId !== activeFighterId) return;
     const active = fighters.find((fighter) => fighter.id === activeFighterId);
-    if (!active || active.entity_type !== "monster") return;
+    if (
+      !active
+      || !isEnemyAiControlledCombatant(active.entity_type, active.snapshot_json)
+    ) return;
     // Keep the visual aim point in lockstep with the command console's AI
     // target selection.  Player-controlled summons are valid enemy targets
     // too; limiting this to entity_type=character makes the AI choose a
@@ -1465,6 +1473,7 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
   const [summonCount, setSummonCount] = useState("1");
   const [summonController, setSummonController] = useState<"dm" | "player">("dm");
   const [summonDisposition, setSummonDisposition] = useState<"enemy" | "ally">("enemy");
+  const [summonEnemyAiMode, setSummonEnemyAiMode] = useState<"dm_only" | "basic">("basic");
   const [resetGeneration, setResetGeneration] = useState(0);
   const [effectSavePrompts, setEffectSavePrompts] = useState<EffectSavePrompt[]>([]);
   const [effectSaveRolls, setEffectSaveRolls] = useState<Record<string, string>>({});
@@ -1709,6 +1718,9 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
         controller: summonController,
         owner_character_id: summonController === "player" ? companion.owner_character_id : undefined,
         disposition: summonDisposition,
+        enemy_ai_mode: summonController === "dm" && summonDisposition === "enemy"
+          ? summonEnemyAiMode
+          : "dm_only",
         source_combatant_id: summonController === "player" ? activeFighter?.id : undefined,
       });
     },
@@ -1950,9 +1962,9 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
           <div className="mt-3 rounded border border-violet-800/60 bg-violet-950/15 p-3">
             <strong className="text-xs text-violet-100">召唤物：使用已有战斗模板加入先攻</strong>
             <p className="mb-2 mt-1 text-2xs text-stone-500">法师之手等非生物效果只显示召唤积木，不会凭空生成 HP/先攻；选择有完整模板的伙伴后才会建立战斗单位。</p>
-            <div className="grid gap-2 md:grid-cols-[minmax(0,1fr)_8rem_8rem_auto]">
+            <div className="grid gap-2 md:grid-cols-[minmax(0,1fr)_8rem_8rem_8rem_auto]">
               {(companions.data ?? []).length > 0 ? (
-                <select className={inputCls} onChange={(event) => setSummonCompanionId(event.target.value)} value={summonCompanionId}>
+                <select aria-label="召唤物模板" className={inputCls} onChange={(event) => setSummonCompanionId(event.target.value)} value={summonCompanionId}>
                   <option value="">选择伙伴 / 召唤物模板</option>
                   {(companions.data ?? []).map((item) => <option key={item.id} value={item.id}>{item.name} · HP {item.hp}/{item.max_hp} · AC {item.armor_class}</option>)}
                 </select>
@@ -1962,13 +1974,23 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
                 </p>
               )}
               <label className="text-2xs text-stone-500">数量<input aria-label="DM召唤数量" className={`${inputCls} mt-1`} max="20" min="1" onChange={(event) => setSummonCount(event.target.value)} type="number" value={summonCount} /></label>
-              <select className={inputCls} onChange={(event) => setSummonController(event.target.value as "dm" | "player")} value={summonController}>
+              <select aria-label="召唤物控制方" className={inputCls} onChange={(event) => setSummonController(event.target.value as "dm" | "player")} value={summonController}>
                 <option value="dm">DM / 敌方控制</option>
                 <option value="player">玩家控制</option>
               </select>
-              <select className={inputCls} onChange={(event) => setSummonDisposition(event.target.value as "enemy" | "ally")} value={summonDisposition}>
+              <select aria-label="召唤物阵营" className={inputCls} onChange={(event) => setSummonDisposition(event.target.value as "enemy" | "ally")} value={summonDisposition}>
                 <option value="enemy">敌对</option>
                 <option value="ally">友方</option>
+              </select>
+              <select
+                aria-label="敌方召唤物 AI"
+                className={inputCls}
+                disabled={summonController !== "dm" || summonDisposition !== "enemy"}
+                onChange={(event) => setSummonEnemyAiMode(event.target.value as "dm_only" | "basic")}
+                value={summonEnemyAiMode}
+              >
+                <option value="basic">基础 AI</option>
+                <option value="dm_only">DM 手动</option>
               </select>
               <Button disabled={!summonCompanionId || (summonController === "player" && !activeFighter)} loading={addSummon.isPending} onClick={() => addSummon.mutate()} type="button" variant="primary">加入战斗轮</Button>
             </div>

@@ -1111,6 +1111,28 @@ def test_active_monster_action_preview_uses_structured_damage_action() -> None:
     assert action["name"] == "毒牙"
 
 
+def test_enemy_basic_ai_companion_is_in_the_player_action_preview_boundary() -> None:
+    class Stub:
+        entity_type = "companion"
+        snapshot_json = {
+            "controller": "dm",
+            "disposition": "enemy",
+            "enemy_ai_mode": "basic",
+        }
+
+    assert PlayerRoomService._is_enemy_ai_controlled(Stub()) is True  # type: ignore[arg-type]
+
+    class FriendlyStub:
+        entity_type = "companion"
+        snapshot_json = {
+            "controller": "dm",
+            "disposition": "ally",
+            "enemy_ai_mode": "basic",
+        }
+
+    assert PlayerRoomService._is_enemy_ai_controlled(FriendlyStub()) is False  # type: ignore[arg-type]
+
+
 def test_noncombat_lockpick_uses_raw_roll_and_dm_confirmation(
     campaign_client: TestClient,
 ) -> None:

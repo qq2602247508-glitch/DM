@@ -219,6 +219,69 @@ def test_monster_ai_preview_chooses_live_enemy_and_requires_confirmation(
     assert body["requires_confirmation"] is True
 
 
+def test_enemy_basic_ai_summon_preview_chooses_live_player_target(
+    campaign_client: TestClient,
+) -> None:
+    campaign = campaign_client.post(
+        "/api/v1/campaigns", json={"name": "敌方召唤物 AI 验收团"}
+    ).json()
+    base = f"/api/v1/campaigns/{campaign['id']}"
+    combat = campaign_client.post(f"{base}/combats", json={"name": "敌方召唤物 AI"}).json()
+    summon = campaign_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "敌方火元素",
+            "entity_type": "companion",
+            "initiative": 20,
+            "hp": 18,
+            "max_hp": 18,
+            "snapshot_json": {
+                "controller": "dm",
+                "disposition": "enemy",
+                "enemy_ai_mode": "basic",
+                "grid_position": {"row": 1, "col": 1},
+                "actions": [
+                    {
+                        "name": "灼热爪击",
+                        "action_type": "action",
+                        "damage": "1d6+2",
+                        "damage_type": "fire",
+                        "range": "5尺",
+                    }
+                ],
+            },
+        },
+    ).json()
+    player = campaign_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "冒险者",
+            "entity_type": "character",
+            "initiative": 10,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {
+                "disposition": "ally",
+                "grid_position": {"row": 1, "col": 2},
+            },
+        },
+    ).json()
+
+    response = campaign_client.post(
+        f"{base}/combats/{combat['id']}/monster-ai/preview",
+        json={
+            "actor_combatant_id": summon["id"],
+            "actor_version": summon["version"],
+        },
+    )
+
+    assert response.status_code == 200, response.text
+    body = response.json()
+    assert body["actor_policy"] == "enemy_summon_basic"
+    assert body["plan"]["action_name"] == "灼热爪击"
+    assert body["plan"]["target_ids"] == [player["id"]]
+
+
 def test_advanced_ai_preview_matches_lair_and_legendary_windows(
     campaign_client: TestClient,
 ) -> None:

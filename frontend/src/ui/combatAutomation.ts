@@ -133,6 +133,32 @@ export function isPlayerControlledCombatant(entityType: unknown, snapshot: unkno
 }
 
 /**
+ * Enemy summons opt into the same automatic turn path as monsters only when
+ * the DM explicitly marked them as hostile basic-AI units.  A DM-controlled
+ * friendly companion must remain a manual DM unit; treating every non-player
+ * companion as an enemy is how summons could accidentally attack allies.
+ */
+export function isEnemyAiControlledCombatant(entityType: unknown, snapshot: unknown): boolean {
+  if (entityType === "monster") return true;
+  if (entityType !== "companion" || !snapshot || typeof snapshot !== "object" || Array.isArray(snapshot)) {
+    return false;
+  }
+  const state = snapshot as Record<string, unknown>;
+  return state.controller === "dm"
+    && state.disposition === "enemy"
+    && state.enemy_ai_mode === "basic";
+}
+
+/** Resolve combat hostility from the authoritative disposition first. */
+export function combatantFaction(entityType: unknown, snapshot: unknown): "ally" | "enemy" {
+  if (snapshot && typeof snapshot === "object" && !Array.isArray(snapshot)) {
+    const disposition = (snapshot as Record<string, unknown>).disposition;
+    if (disposition === "ally" || disposition === "enemy") return disposition;
+  }
+  return entityType === "monster" ? "enemy" : "ally";
+}
+
+/**
  * Resolve every explicitly structured damage segment once.  A mixed action
  * must not share one d20/damage total across fire, cold, weapon, and similar
  * segments because each segment can have a different defense.

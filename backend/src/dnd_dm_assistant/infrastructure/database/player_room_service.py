@@ -903,6 +903,24 @@ class PlayerRoomService:
         return "enemy"
 
     @staticmethod
+    def _is_enemy_ai_controlled(combatant: Combatant) -> bool:
+        """Match the DM summon AI opt-in used by MonsterAIService.
+
+        A player-room snapshot must publish the same active action/range that
+        the DM console is previewing.  Do not expose a friendly DM companion
+        as an enemy AI actor merely because it is not player-controlled.
+        """
+        if combatant.entity_type == "monster":
+            return True
+        state = dict(combatant.snapshot_json or {})
+        return (
+            combatant.entity_type == "companion"
+            and state.get("controller") == "dm"
+            and state.get("disposition") == "enemy"
+            and state.get("enemy_ai_mode") == "basic"
+        )
+
+    @staticmethod
     def _rule_modifier(
         combatant: Combatant,
         stat: str,
@@ -2929,7 +2947,7 @@ class PlayerRoomService:
                 )
 
         active_action: dict[str, Any] | None = None
-        if active is not None and active.entity_type == "monster":
+        if active is not None and self._is_enemy_ai_controlled(active):
             active_actions = self._combatant_actions(session, active)
             pending_action_name = next(
                 (

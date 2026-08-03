@@ -3,12 +3,14 @@ import { describe, expect, it } from "vitest";
 import {
   actionDamageLabel,
   abilityModifier,
+  combatantFaction,
   chooseEnemyActionIndex,
   chooseEnemyTarget,
   expandMonsterAction,
   executableTargetIds,
   forcedMovementFromAction,
   hasGridPosition,
+  isEnemyAiControlledCombatant,
   isPlayerControlledCombatant,
   parseDiceExpression,
   parseRechargeRange,
@@ -54,6 +56,31 @@ describe("combat automation helpers", () => {
     expect(isPlayerControlledCombatant("companion", { controller: "player" })).toBe(true);
     expect(isPlayerControlledCombatant("companion", { controller: "dm" })).toBe(false);
     expect(isPlayerControlledCombatant("monster", { controller: "player" })).toBe(true);
+  });
+
+  it("only opts hostile basic-AI summons into the enemy turn", () => {
+    expect(isEnemyAiControlledCombatant("monster", { disposition: "enemy" })).toBe(true);
+    expect(isEnemyAiControlledCombatant("companion", {
+      controller: "dm",
+      disposition: "enemy",
+      enemy_ai_mode: "basic",
+    })).toBe(true);
+    expect(isEnemyAiControlledCombatant("companion", {
+      controller: "dm",
+      disposition: "enemy",
+      enemy_ai_mode: "dm_only",
+    })).toBe(false);
+    expect(isEnemyAiControlledCombatant("companion", {
+      controller: "dm",
+      disposition: "ally",
+      enemy_ai_mode: "basic",
+    })).toBe(false);
+  });
+
+  it("uses disposition instead of controller to separate combat targets", () => {
+    expect(combatantFaction("companion", { controller: "dm", disposition: "ally" })).toBe("ally");
+    expect(combatantFaction("companion", { controller: "dm", disposition: "enemy" })).toBe("enemy");
+    expect(combatantFaction("monster", {})).toBe("enemy");
   });
 
   it("uses the map's horizontal coverage for ordinary 2-D actions after movement", () => {

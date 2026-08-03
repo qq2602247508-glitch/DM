@@ -682,6 +682,7 @@ export type CombatSummonInput = {
   count?: number;
   name?: string;
   controller?: "player" | "dm";
+  enemy_ai_mode?: "dm_only" | "basic";
   owner_character_id?: string;
   disposition?: "ally" | "enemy";
   source_combatant_id?: string;

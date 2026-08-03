@@ -59,7 +59,11 @@ import {
   type TargetingTemplate,
 } from "../ui/gridTargeting";
 import { buildRuleBlockPlan, targetingFromRulePlan } from "../ui/ruleBlocks";
-import { actionDamageLabel, upcastExpression } from "../ui/combatAutomation";
+import {
+  actionDamageLabel,
+  isEnemyAiControlledCombatant,
+  upcastExpression,
+} from "../ui/combatAutomation";
 import { damageComponentsByTargetSummary, damageComponentsSummary } from "../ui/combatPresentation";
 
 const ABILITIES: Record<string, string> = {
@@ -1365,6 +1369,13 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
   const activeCombatant = combat?.combatants.find(
     (item) => item.id === combat.active_combatant_id,
   );
+  const activeEnemyAiControlled = activeCombatant
+    ? isEnemyAiControlledCombatant(activeCombatant.entity_type, {
+        controller: activeCombatant.controller,
+        disposition: activeCombatant.disposition,
+        enemy_ai_mode: activeCombatant.summon?.enemy_ai_mode,
+      })
+    : false;
   const pendingRoll = combat?.pending_rolls[0];
   const pendingActor = combat?.combatants.find(
     (item) => item.id === pendingRoll?.actor_combatant_id,
@@ -1377,8 +1388,8 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
     ),
   );
   const pendingTargeting = targetingForAction(pendingAction);
-  const activeEnemyAction = !combat?.is_my_turn && activeCombatant?.entity_type === "monster"
-    ? activeCombatant.active_action ?? undefined
+  const activeEnemyAction = !combat?.is_my_turn && activeEnemyAiControlled
+    ? activeCombatant?.active_action ?? undefined
     : undefined;
   const activeEnemyTargeting = targetingForAction(activeEnemyAction);
   const presentationType = presentationActor?.entity_type;
@@ -1387,8 +1398,8 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
       ? "正在展示回合切换"
       : presentationType === "npc"
         ? "正在展示 NPC 行动"
-        : presentationType === "monster"
-          ? "正在展示敌方行动"
+      : presentationType === "monster" || presentationType === "companion"
+        ? "正在展示敌方行动"
           : "正在展示玩家行动"
     : null;
   const dangerCellKeys = new Set(
