@@ -1693,6 +1693,43 @@ class CombatEngineService:
         return source_ids
 
     @classmethod
+    def _frightened_source_visibility(
+        cls,
+        session: Session,
+        combat: Combat,
+        actor: Combatant,
+    ) -> bool | None:
+        """Resolve whether at least one structured fear source is visible.
+
+        Frightened imposes attack disadvantage only while the fear source is
+        visible.  Missing source, position, scene, or grid data is deliberately
+        tri-state instead of being treated as visible; the caller can then
+        leave the decision to the DM rather than inventing a penalty.
+        """
+
+        source_ids = cls._condition_source_ids(session, combat.id, actor, "frightened")
+        if not source_ids or combat.scene_id is None:
+            return None
+        actor_point = cls._grid_point(actor)
+        if actor_point is None:
+            return None
+        grid = session.scalar(
+            select(SceneGrid).where(SceneGrid.scene_id == combat.scene_id)
+        )
+        if grid is None:
+            return None
+        blockers, _ = cls._grid_obstacles(session, grid)
+        visible = False
+        for source_id in source_ids:
+            source = session.get(Combatant, source_id)
+            source_point = cls._grid_point(source) if source is not None else None
+            if source_point is None:
+                return None
+            if line_of_sight(actor_point, source_point, blockers):
+                visible = True
+        return visible
+
+    @classmethod
     def _movement_is_blocked(cls, actor: Combatant) -> bool:
         return bool(cls._condition_set(actor) & cls._MOVEMENT_BLOCKING_CONDITIONS)
 
@@ -2900,12 +2937,24 @@ class CombatEngineService:
             ("frightened", "attacker_frightened_source_visibility"),
         ):
             if cls._has_condition(actor, condition):
-                contexts.append(context)
-                adjudication_contexts.append(context)
-                if condition in {"blinded", "poisoned", "restrained"}:
-                    disadvantage_sources.append(context)
-                elif condition == "invisible":
-                    advantage_sources.append(context)
+                if condition == "frightened":
+                    source_visible = cls._frightened_source_visibility(
+                        session, combat, actor
+                    )
+                    if source_visible is True:
+                        contexts.append("attacker_frightened_source_visible")
+                        disadvantage_sources.append("attacker_frightened_source_visible")
+                    elif source_visible is False:
+                        contexts.append("attacker_frightened_source_not_visible")
+                    else:
+                        contexts.append(context)
+                        adjudication_contexts.append(context)
+                else:
+                    contexts.append(context)
+                    if condition in {"blinded", "poisoned", "restrained"}:
+                        disadvantage_sources.append(context)
+                    elif condition == "invisible":
+                        advantage_sources.append(context)
         if cls._has_condition(target, "prone"):
             if geometry is not None:
                 if int(geometry["distance_ft"]) <= 5:

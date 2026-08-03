@@ -494,3 +494,11 @@ backend/.venv/bin/python -m pytest -q backend/tests
 - 代码提交：`e4468db fix: persist concentration checks during combat`。未跟踪的 `backend/tests/integrations/`、`backend/tests/ollama.py` 未加入提交。
 
 本项只收口专注请求的持久化和推进门禁；复杂状态组合、怪物反应/传奇/巢穴完整触发、复杂三维遮挡和全职业 1–20 级运行时仍未全部自动化。
+
+## 2026-08-04 恐惧来源可见性与攻击上下文
+
+- 恐慌/恐惧不再无条件给攻击者添加劣势。战斗引擎会读取结构化状态来源、双方网格位置和场景障碍：恐惧来源可见时真实加入攻击劣势；来源被遮挡时不添加劣势；缺少来源、位置、网格或障碍数据时保留 DM 裁定上下文，不擅自猜测。
+- 新增回归覆盖可见来源与被墙遮挡来源两条路径，验证攻击上下文和最终攻击规则分别正确。
+- 当前工作树验证：后端全量测试通过；`ruff check` 和 `git diff --check` 通过。未跟踪的 `backend/tests/integrations/`、`backend/tests/ollama.py` 仍未纳入提交。
+
+本项只收口恐惧状态的视线条件，不等于完整三维遮挡、所有状态组合或全部职业特性已经自动化。

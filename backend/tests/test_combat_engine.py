@@ -1287,6 +1287,127 @@ def test_condition_attack_contexts_require_explicit_advantage_ruling(
     assert "attack_roll_rule:normal_due_to_cancellation" in contexts
 
 
+def test_frightened_attack_disadvantage_requires_visible_fear_source(
+    combat_client: TestClient,
+) -> None:
+    campaign = _campaign(combat_client, "Frightened source visibility")
+    base = f"/api/v1/campaigns/{campaign['id']}"
+    scene = combat_client.post(f"{base}/scenes", json={"name": "Fear room"}).json()
+    grid = combat_client.post(
+        f"{base}/scenes/{scene['id']}/grid",
+        json={"width": 6, "height": 6, "cell_size_ft": 5, "mode": "combat"},
+    )
+    assert grid.status_code == 201, grid.text
+    combat = combat_client.post(
+        f"{base}/combats", json={"name": "Fear source combat", "scene_id": scene["id"]}
+    ).json()
+    source = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "恐惧来源",
+            "entity_type": "monster",
+            "initiative": 10,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {"grid_position": {"row": 1, "col": 1}},
+        },
+    ).json()
+    actor = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "恐慌冒险者",
+            "entity_type": "character",
+            "initiative": 20,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {"grid_position": {"row": 1, "col": 3}},
+        },
+    ).json()
+    target = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "攻击目标",
+            "entity_type": "monster",
+            "initiative": 5,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {"grid_position": {"row": 3, "col": 3}},
+        },
+    ).json()
+    effect = combat_client.post(
+        f"{base}/combats/{combat['id']}/effects/confirm",
+        headers={"X-Request-ID": "frightened-visible-source"},
+        json={
+            "target_combatant_id": actor["id"],
+            "target_version": actor["version"],
+            "source_combatant_id": source["id"],
+            "source_version": source["version"],
+            "name": "恐慌",
+            "effect_type": "condition",
+            "details_json": {
+                "rule_block": {"kind": "condition", "condition": "frightened"},
+                "applied_state": {"conditions": []},
+            },
+        },
+    )
+    assert effect.status_code == 200, effect.text
+    attack_path = f"{base}/combats/{combat['id']}/actions/confirm"
+    visible_attack = combat_client.post(
+        attack_path,
+        headers={"X-Request-ID": "frightened-visible-attack"},
+        json={
+            "action_type": "damage",
+            "actor_combatant_id": actor["id"],
+            "actor_version": effect.json()["target"]["version"],
+            "action_cost": "none",
+            "target_combatant_id": target["id"],
+            "target_version": target["version"],
+            "amount": 1,
+            "damage_type": "slashing",
+            "is_attack": True,
+            "attack_roll_mode": "disadvantage",
+            "attack_roll_total": 15,
+        },
+    )
+    assert visible_attack.status_code == 200, visible_attack.text
+    visible_contexts = visible_attack.json()["action"]["result_json"]["attack_contexts"]
+    assert "attacker_frightened_source_visible" in visible_contexts
+    assert "attack_roll_rule:disadvantage" in visible_contexts
+
+    wall = combat_client.post(
+        f"{base}/scenes/{scene['id']}/objects",
+        json={"object_type": "wall", "label": "遮挡墙", "row": 1, "col": 2},
+    )
+    assert wall.status_code == 201, wall.text
+    refreshed_actor = combat_client.get(
+        f"{base}/combats/{combat['id']}/combatants/{actor['id']}"
+    ).json()
+    refreshed_target = combat_client.get(
+        f"{base}/combats/{combat['id']}/combatants/{target['id']}"
+    ).json()
+    hidden_attack = combat_client.post(
+        attack_path,
+        headers={"X-Request-ID": "frightened-hidden-attack"},
+        json={
+            "action_type": "damage",
+            "actor_combatant_id": actor["id"],
+            "actor_version": refreshed_actor["version"],
+            "action_cost": "none",
+            "target_combatant_id": target["id"],
+            "target_version": refreshed_target["version"],
+            "amount": 1,
+            "damage_type": "slashing",
+            "is_attack": True,
+            "attack_roll_mode": "normal",
+            "attack_roll_total": 15,
+        },
+    )
+    assert hidden_attack.status_code == 200, hidden_attack.text
+    hidden_contexts = hidden_attack.json()["action"]["result_json"]["attack_contexts"]
+    assert "attacker_frightened_source_not_visible" in hidden_contexts
+    assert "attack_roll_rule:disadvantage" not in hidden_contexts
+
+
 def test_monster_cone_aoe_atomically_applies_distinct_saves_and_defenses(
     combat_client: TestClient,
 ) -> None:
