@@ -706,6 +706,54 @@ def test_turn_start_enforces_stunned_economy_and_turn_end_save_is_a_prompt(
     assert save_effect.json()["effect"]["status"] == "active"
 
 
+def test_feature_condition_respects_condition_immunity(
+    combat_client: TestClient,
+) -> None:
+    campaign, combat, actor = _setup(combat_client)
+    patched = combat_client.patch(
+        _combatant_path(campaign, combat, actor["id"]),
+        headers={"If-Match": f'"{actor["version"]}"'},
+        json={
+            "condition_immunities": ["狂暴"],
+            "snapshot_json": {
+                "feature_runtime": {
+                    "actions": {
+                        "rage": {
+                            "name": "狂暴",
+                            "kind": "feature_action",
+                            "action_cost": "bonus_action",
+                            "target": "self",
+                            "effects": [
+                                {"kind": "activate_condition", "condition": "raging"}
+                            ],
+                        }
+                    }
+                }
+            },
+        },
+    )
+    assert patched.status_code == 200, patched.text
+    actor = patched.json()
+    rejected = combat_client.post(
+        f"{_root(campaign, combat)}/feature-actions/confirm",
+        headers={"X-Request-ID": "immune-feature-condition"},
+        json={
+            "actor_combatant_id": actor["id"],
+            "actor_version": actor["version"],
+            "feature_id": "rage",
+            "target_combatant_id": actor["id"],
+            "target_version": actor["version"],
+        },
+    )
+    assert rejected.status_code == 400, rejected.text
+    assert "免疫状态" in rejected.json()["message"]
+    unchanged = combat_client.get(
+        _combatant_path(campaign, combat, actor["id"])
+    ).json()
+    assert unchanged["conditions"] == []
+    assert unchanged["bonus_action_available"] is True
+
+
 def test_use_item_consumes_owned_inventory_and_spends_action(
     combat_client: TestClient,
 ) -> None:

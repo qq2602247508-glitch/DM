@@ -1380,6 +1380,16 @@ class CombatEngineService:
         return cls._canonical_condition(condition) in cls._condition_set(target)
 
     @classmethod
+    def _condition_is_immune(cls, target: Combatant, condition: str) -> bool:
+        """Return whether a target is explicitly immune to a condition."""
+
+        canonical = cls._canonical_condition(condition)
+        return bool(canonical) and canonical in {
+            cls._canonical_condition(value)
+            for value in list(target.condition_immunities or [])
+        }
+
+    @classmethod
     def _feature_rule_modifiers(
         cls,
         combatant: Combatant,
@@ -4703,6 +4713,10 @@ class CombatEngineService:
                     condition = str(effect.get("condition") or "").strip()
                     if not condition:
                         continue
+                    if self._condition_is_immune(target, condition):
+                        raise ValueError(
+                            f"目标免疫状态「{condition}」，职业特性未写入"
+                        )
                     if condition not in target.conditions:
                         target.conditions = [*target.conditions, condition]
                     result.setdefault("conditions_added", []).append(condition)
@@ -4712,6 +4726,10 @@ class CombatEngineService:
                     if condition != "隐形" or expires not in {"turn_start", "turn_end"}:
                         raise ValueError(
                             "当前职业特性只允许结构化的隐形持续到下一回合边界"
+                        )
+                    if self._condition_is_immune(target, condition):
+                        raise ValueError(
+                            f"目标免疫状态「{condition}」，职业特性未写入"
                         )
                     state_name = "feature_invisible"
                     runtime_effect = self._create_runtime_effect(
@@ -7640,6 +7658,18 @@ class CombatEngineService:
                     command.source_version or 0,
                     source.version,
                 )
+            details_json = dict(command.details_json)
+            raw_rule_block = details_json.get("rule_block")
+            if (
+                isinstance(raw_rule_block, dict)
+                and str(raw_rule_block.get("kind") or "") == "condition"
+                and str(raw_rule_block.get("operation") or "apply") != "remove"
+            ):
+                condition = str(raw_rule_block.get("condition") or "").strip()
+                if condition and self._condition_is_immune(target, condition):
+                    raise ValueError(
+                        f"目标免疫状态「{condition}」，结构化效果未写入"
+                    )
             now = datetime.now(UTC)
             old_effects = (
                 self._active_concentration_effects(session, combat_id, source.id)
@@ -7672,8 +7702,6 @@ class CombatEngineService:
                 command.duration_unit,
                 command.duration_value,
             )
-            details_json = dict(command.details_json)
-            raw_rule_block = details_json.get("rule_block")
             if (
                 isinstance(raw_rule_block, dict)
                 and str(raw_rule_block.get("kind") or "") == "condition"

@@ -1738,6 +1738,49 @@ def test_compiled_modifier_is_applied_and_restored_when_effect_ends(
     assert restored["armor_class"] == target["armor_class"]
 
 
+def test_compiled_condition_respects_condition_immunity_without_creating_effect(
+    combat_client: TestClient,
+) -> None:
+    campaign = _campaign(combat_client, "Condition immunity boundary")
+    combat, target = _combatant(combat_client, campaign["id"])
+    root = f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}"
+    immune = combat_client.patch(
+        _fighter_path(campaign["id"], combat["id"], target["id"]),
+        headers={"If-Match": f'"{target["version"]}"'},
+        json={"condition_immunities": ["poisoned"]},
+    )
+    assert immune.status_code == 200, immune.text
+    target = immune.json()
+
+    rejected = combat_client.post(
+        f"{root}/effects/confirm",
+        headers={"X-Request-ID": "immune-compiled-condition"},
+        json={
+            "target_combatant_id": target["id"],
+            "target_version": target["version"],
+            "name": "毒素诅咒",
+            "effect_type": "condition",
+            "details_json": {
+                "rule_block": {
+                    "kind": "condition",
+                    "condition": "中毒",
+                    "operation": "apply",
+                }
+            },
+        },
+    )
+    assert rejected.status_code == 400, rejected.text
+    assert "免疫状态" in rejected.json()["message"]
+
+    unchanged = combat_client.get(
+        _fighter_path(campaign["id"], combat["id"], target["id"])
+    ).json()
+    assert unchanged["conditions"] == []
+    assert unchanged["version"] == target["version"]
+    effects = combat_client.get(f"{root}/effects").json()
+    assert effects["items"] == []
+
+
 def test_compiled_timed_effect_is_automatically_reversed_at_expiry(
     combat_client: TestClient,
 ) -> None:
