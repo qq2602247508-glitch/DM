@@ -430,3 +430,12 @@ backend/.venv/bin/python -m pytest -q backend/tests
 - `mypy backend/src` 仍有 13 个仓库既存错误，位于本次未改文件，未混入本轮修复。
 
 当前边界保持诚实：复杂状态持续/来源/组合、怪物反应/传奇/巢穴动作的完整触发 UI、复杂三维遮挡、所有职业/子职业 1–20 级运行时和复杂多段复合规则仍未全部自动化。
+
+## 2026-08-03 状态回合开始结束后的行动资源刷新
+
+- 修复 `advance_turn` 的生命周期顺序缺口：回合开始先重置行动资源、再处理 `turn_start` 状态结束时，原先会让刚刚解除震慑/麻痹等限制的单位继续保持动作、附赠动作、反应不可用和 0 移动力一整回合。
+- 新增 `_refresh_new_turn_resources` 共通刷新器，并在运行时状态、显式结束条件、回合/分钟到期等生命周期路径全部处理完后再次刷新当前单位；限制仍存在时继续保持禁止状态，限制解除后恢复速度上限和完整本回合资源。
+- 回归测试：`test_turn_start_condition_expiry_refreshes_new_turn_resources`；验证状态在目标回合开始自动结束后，动作/附赠/反应均恢复、移动恢复到速度上限。原有后端全量测试、Ruff、`git diff --check` 均通过。
+- 浏览器验收：DM 模拟战斗重置回第 1 轮且当前单位显示“动作可用 · 附赠可用 · 反应可用”；玩家端 `/player` 正常显示“加入跑团房间”；两端控制台 error/warn 均为 0。截图：`/private/tmp/dnd-condition-turn-start-dm-20260803.png`、`/private/tmp/dnd-condition-turn-start-player-20260803.png`。
+
+本项仍不是所有状态规则闭环：复杂持续来源组合、传奇/巢穴/反应完整触发、复杂三维遮挡和全职业 1–20 级运行时仍在一级待办中。
