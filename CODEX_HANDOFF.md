@@ -484,3 +484,13 @@ backend/.venv/bin/python -m pytest -q backend/tests
 - 新后端重启后，DM/玩家模拟战斗页面均正常；两端控制台 error/warn 为空。截图：[dnd-opportunity-filter-dm-20260803.png](/private/tmp/dnd-opportunity-filter-dm-20260803.png)、[dnd-opportunity-filter-player-20260803.png](/private/tmp/dnd-opportunity-filter-player-20260803.png)。
 
 本项闭合的是借机攻击候选动作选择与触发上下文，不等于所有怪物反应的事件矩阵、传奇/巢穴自动触发、复杂状态组合或全职业 1–20 级运行时已经完成。
+
+## 2026-08-04 专注豁免持久化与战斗暂停
+
+- 普通伤害、怪物区域伤害和持续伤害事件现在把专注豁免写成持久化 `concentration_check_prompt`；DM/玩家刷新后仍能恢复同一请求，未提交时服务端拒绝推进回合。
+- 专注确认会关闭原请求并写入成功/失败日志；成功保留专注效果，失败结束相关效果和召唤物。玩家端自动结束回合与敌方自动推进也识别该暂停门禁；DM 页显示“专注豁免 · 战斗暂停”。
+- 回归覆盖请求持久化、刷新后读取、未提交禁止推进和确认后 `confirmed` 状态。后端 `test_combat_engine.py` 定向测试通过；前端 39 个测试文件 / 190 项、TypeScript、ESLint 通过；`git diff --check` 通过。
+- 内置浏览器真实验收：伤害确认后出现 DC 10 专注请求；刷新后请求仍显示；点击结束回合仍停在第 1 轮第 1 回合；输入 12 对抗 DC 10 后日志显示“专注检定成功，维持专注”。全新 DM 页面控制台 error/warn 为空。截图：`/private/tmp/dnd-concentration-paused.png`、`/private/tmp/dnd-concentration-success.png`。
+- 代码提交：`e4468db fix: persist concentration checks during combat`。未跟踪的 `backend/tests/integrations/`、`backend/tests/ollama.py` 未加入提交。
+
+本项只收口专注请求的持久化和推进门禁；复杂状态组合、怪物反应/传奇/巢穴完整触发、复杂三维遮挡和全职业 1–20 级运行时仍未全部自动化。
