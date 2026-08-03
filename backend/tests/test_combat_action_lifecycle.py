@@ -703,7 +703,37 @@ def test_turn_start_enforces_stunned_economy_and_turn_end_save_is_a_prompt(
     )
     assert prompt["timing"] == "turn_end"
     assert prompt["save_dc"] == 14
+    assert prompt["pending_action_id"]
     assert save_effect.json()["effect"]["status"] == "active"
+
+    blocked = combat_client.post(
+        f"{_root(campaign, combat)}/turns/advance",
+        headers={"X-Request-ID": "blocked-by-repeat-save"},
+        json={"combat_version": advanced.json()["combat"]["version"]},
+    )
+    assert blocked.status_code == 400, blocked.text
+    assert "回合末重复豁免请求未结算" in blocked.json()["message"]
+
+    resolved = combat_client.post(
+        f"{_root(campaign, combat)}/effects/{save_effect.json()['effect']['id']}"
+        "/save/confirm",
+        headers={"X-Request-ID": "resolve-persisted-repeat-save"},
+        json={
+            "target_combatant_id": first["id"],
+            "target_version": save_effect.json()["target"]["version"],
+            "roll_total": 14,
+        },
+    )
+    assert resolved.status_code == 200, resolved.text
+    assert resolved.json()["success"] is True
+
+    continued = combat_client.post(
+        f"{_root(campaign, combat)}/turns/advance",
+        headers={"X-Request-ID": "after-repeat-save"},
+        json={"combat_version": advanced.json()["combat"]["version"]},
+    )
+    assert continued.status_code == 200, continued.text
+    assert continued.json()["active_combatant"]["id"] == first["id"]
 
 
 def test_feature_condition_respects_condition_immunity(

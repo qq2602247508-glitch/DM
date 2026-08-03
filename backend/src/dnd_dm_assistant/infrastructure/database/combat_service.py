@@ -6411,6 +6411,19 @@ class CombatEngineService:
                 raise ValueError(
                     "当前仍有玩家掷骰请求未结算，不能结束怪物回合"
                 )
+            unresolved_effect_save = session.scalar(
+                select(CombatAction).where(
+                    CombatAction.combat_id == combat_id,
+                    CombatAction.action_type == "effect_save_prompt",
+                    CombatAction.status == "previewed",
+                )
+            )
+            if unresolved_effect_save is not None:
+                request = dict(unresolved_effect_save.request_json or {})
+                raise ValueError(
+                    "当前仍有回合末重复豁免请求未结算，不能继续推进战斗："
+                    f"{request.get('summary') or unresolved_effect_save.summary}"
+                )
             raw_ordered = session.scalars(
                 select(Combatant)
                 .where(
@@ -6713,13 +6726,53 @@ class CombatEngineService:
             )
             session.add(transaction)
             session.flush()
+            persisted_effect_prompts: list[dict[str, object]] = []
+            for prompt in effect_prompts:
+                if (
+                    prompt.get("requires_save") is not True
+                    or not isinstance(prompt.get("effect_id"), str)
+                    or not isinstance(prompt.get("target_combatant_id"), str)
+                ):
+                    continue
+                effect_id = str(prompt["effect_id"])
+                target_id = str(prompt["target_combatant_id"])
+                idempotency = (
+                    f"effect-save-prompt:{effect_id}:{combat.round_number}:{target_id}"
+                )
+                pending = CombatAction(
+                    campaign_id=campaign_id,
+                    combat_id=combat_id,
+                    actor_combatant_id=target_id,
+                    transaction_id=transaction.id,
+                    action_type="effect_save_prompt",
+                    target_combatant_ids=[target_id],
+                    request_json={
+                        "effect_id": effect_id,
+                        "target_combatant_id": target_id,
+                        "save_dc": prompt.get("save_dc"),
+                        "save_ability": prompt.get("save_ability"),
+                        "timing": prompt.get("timing", "turn_end"),
+                        "summary": prompt.get("summary"),
+                    },
+                    result_json={},
+                    explanation="回合末重复豁免待 DM/玩家提交",
+                    round_number=combat.round_number,
+                    turn_index=combat.current_turn_index,
+                    summary=str(prompt.get("summary") or "等待回合末重复豁免"),
+                    idempotency_key=idempotency,
+                    status="previewed",
+                )
+                session.add(pending)
+                session.flush()
+                prompt["pending_action_id"] = pending.id
+                persisted_effect_prompts.append(dict(prompt))
             result: dict[str, Any] = {
                 "active_combatant_id": turn_active.id if turn_active else None,
                 "round_number": combat.round_number,
                 "turn_index": combat.current_turn_index,
                 "expiration_prompts": expiration_prompts,
                 "effect_ticks": effect_ticks,
-                "effect_prompts": effect_prompts,
+                "effect_prompts": persisted_effect_prompts,
                 "status_prompts": status_prompts,
                 "ended_runtime_effects": [
                     serialize(effect) for effect in ended_runtime_effects
@@ -8262,6 +8315,14 @@ class CombatEngineService:
                 raise VersionConflict(
                     "combatant", target.id, command.target_version, target.version
                 )
+            pending_prompt = session.scalar(
+                select(CombatAction).where(
+                    CombatAction.combat_id == combat_id,
+                    CombatAction.action_type == "effect_save_prompt",
+                    CombatAction.status == "previewed",
+                    CombatAction.request_json["effect_id"].as_string() == effect.id,
+                )
+            )
             success = command.roll_total >= effect.save_dc
             now = datetime.now(UTC)
             ended_summons: list[Combatant] = []
@@ -8334,6 +8395,16 @@ class CombatEngineService:
             )
             session.add(action)
             session.flush()
+            if pending_prompt is not None:
+                pending_prompt.status = "confirmed"
+                pending_prompt.result_json = {
+                    "effect_id": effect.id,
+                    "resolution_action_id": action.id,
+                    "success": success,
+                    "roll_total": command.roll_total,
+                }
+                pending_prompt.version += 1
+                pending_prompt.updated_at = now
             return {
                 "action": serialize(action),
                 "effect": serialize(effect),

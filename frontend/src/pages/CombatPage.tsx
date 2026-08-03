@@ -1438,6 +1438,14 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
     (action) => action.action_type === "player_roll_prompt" && action.status === "previewed",
   );
   const hasPendingPlayerRoll = pendingPlayerRolls.length > 0;
+  const persistedEffectSavePrompts = useMemo(
+    () => readEffectSavePrompts(
+      (combatActions.data ?? [])
+        .filter((action) => action.action_type === "effect_save_prompt" && action.status === "previewed")
+        .map((action) => action.request_json),
+    ),
+    [combatActions.data],
+  );
   const combatEffects = useQuery({
     queryKey: ["combat-effects", campaignId, combat.id],
     queryFn: ({ signal }) => listCombatEffects(campaignId, combat.id, signal),
@@ -1454,14 +1462,17 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
   useEffect(() => {
     const activeEffectIds = new Set(activeUntilSaveEffects.map((effect) => effect.id));
     setEffectSavePrompts((current) => {
-      const next = current.filter((prompt) => activeEffectIds.has(prompt.effect_id));
+      const next = [...current, ...persistedEffectSavePrompts].filter((prompt, index, all) => (
+        activeEffectIds.has(prompt.effect_id)
+        && all.findIndex((candidate) => candidate.effect_id === prompt.effect_id) === index
+      ));
       return next.length === current.length ? current : next;
     });
     setEffectSaveRolls((current) => {
       const entries = Object.entries(current).filter(([effectId]) => activeEffectIds.has(effectId));
       return entries.length === Object.keys(current).length ? current : Object.fromEntries(entries);
     });
-  }, [activeUntilSaveEffects]);
+  }, [activeUntilSaveEffects, persistedEffectSavePrompts]);
   const companions = useQuery({
     queryKey: ["companions", campaignId],
     queryFn: ({ signal }) => listCompanions(campaignId, undefined, signal),
@@ -1910,7 +1921,7 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
       {effectSavePrompts.length > 0 ? (
         <div className="mt-3 rounded-lg border border-amber-700/60 bg-amber-950/15 p-3">
           <strong className="text-xs text-amber-200">回合末重复豁免 · DM确认</strong>
-          <p className="mb-2 mt-1 text-2xs text-stone-400">本轮已收到目标回合末的具体豁免请求。填写玩家实际总值；失败时状态继续生效，成功后才会结束。刷新后只恢复上方状态，不会伪造一个新的回合末请求。</p>
+          <p className="mb-2 mt-1 text-2xs text-stone-400">本轮已收到目标回合末的具体豁免请求。填写玩家实际总值；失败时状态继续生效，成功后才会结束。请求已写入战斗日志，刷新后仍会恢复，未结算前不能继续推进回合。</p>
           <div className="grid gap-2">
             {effectSavePrompts.map((prompt) => {
               const target = ordered.find((fighter) => fighter.id === prompt.target_combatant_id);
