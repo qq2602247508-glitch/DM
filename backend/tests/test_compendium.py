@@ -12,7 +12,7 @@ def test_monster_actions_keep_action_economy_and_recharge_metadata() -> None:
 爪击。近战攻击检定：+7，触及5尺，命中造成（2d6+4）挥砍伤害。
 火焰吐息（充能 5-6）。锥形区域内进行DC 15的敏捷豁免，失败受到（8d6）火焰伤害，成功减半。
 反应
-借机攻击。该生物进行一次近战攻击。
+借机攻击。当一个生物离开该生物的近战范围时，该生物进行一次近战攻击。
 传奇动作
 该生物每轮可以进行3个传奇动作。
 尾击。消耗1个传奇动作，触及10尺，命中：受到（2d8）钝击伤害。
@@ -31,6 +31,7 @@ def test_monster_actions_keep_action_economy_and_recharge_metadata() -> None:
     ]
     assert by_name["火焰吐息"]["recharge"] == {"minimum": 5, "maximum": 6}
     assert by_name["借机攻击"]["action_type"] == "reaction"
+    assert by_name["借机攻击"]["reaction_event"] == "leaves_reach"
     assert by_name["尾击"]["action_type"] == "legendary_action"
     assert by_name["尾击"]["legendary_cost"] == 1
     assert by_name["尾击"]["legendary_pool_max"] == 3

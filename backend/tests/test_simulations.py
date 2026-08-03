@@ -3,6 +3,10 @@ from __future__ import annotations
 from typing import Any
 
 from fastapi.testclient import TestClient
+from sqlalchemy import create_engine, select
+from sqlalchemy.orm import Session
+
+from dnd_dm_assistant.infrastructure.database.models import Combatant
 
 
 def test_simulation_fixture_uses_real_combat_and_player_room(campaign_client: TestClient) -> None:
@@ -211,3 +215,49 @@ def test_simulation_fixture_uses_real_combat_and_player_room(campaign_client: Te
     )
     assert actions.status_code == 200, actions.text
     assert actions.json()["items"] == []
+
+
+def test_simulation_prepare_migrates_legacy_reaction_trigger_to_event(
+    campaign_client: TestClient,
+) -> None:
+    prepared = campaign_client.post("/api/v1/simulations/prepare")
+    assert prepared.status_code == 200, prepared.text
+    state = prepared.json()
+    engine = create_engine(campaign_client.database_url)  # type: ignore[attr-defined]
+    with Session(engine) as session, session.begin():
+        mage = session.scalar(
+            select(Combatant).where(
+                Combatant.id == next(
+                    item["id"]
+                    for item in state["combatants"]
+                    if item["display_name"] == "熔火术士·AI"
+                )
+            )
+        )
+        assert mage is not None
+        snapshot = dict(mage.snapshot_json or {})
+        snapshot["actions"] = [
+            *list(snapshot.get("actions") or []),
+            {
+                "name": "借机熔击",
+                "action_type": "reaction",
+                "reaction_trigger": "冒险者离开熔火术士·AI的近战威胁范围",
+                "damage": "1d8",
+                "damage_type": "fire",
+            },
+        ]
+        mage.snapshot_json = snapshot
+
+    repaired = campaign_client.post("/api/v1/simulations/prepare")
+    assert repaired.status_code == 200, repaired.text
+    repaired_mage = next(
+        item
+        for item in repaired.json()["combatants"]
+        if item["display_name"] == "熔火术士·AI"
+    )
+    legacy_reaction = next(
+        item
+        for item in repaired_mage["snapshot_json"]["actions"]
+        if item["name"] == "借机熔击"
+    )
+    assert legacy_reaction["reaction_event"] == "leaves_reach"

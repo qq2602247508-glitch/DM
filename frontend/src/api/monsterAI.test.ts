@@ -88,6 +88,7 @@ describe("monster AI API adapter", () => {
       actorVersion: 7,
       phase: "reaction",
       tactics: "tactical",
+      reactionEvent: "leaves_reach",
     });
 
     expect(fetchMock).toHaveBeenCalledOnce();
@@ -103,6 +104,7 @@ describe("monster AI API adapter", () => {
       actor_version: 7,
       phase: "reaction",
       tactics: "tactical",
+      reaction_event: "leaves_reach",
     });
   });
 

@@ -404,6 +404,9 @@ def _monster_actions(text: str) -> list[dict[str, Any]]:
                         if action_type == "reaction" and "当" in line and "，" in line
                         else None
                     ),
+                    "reaction_event": (
+                        _monster_reaction_event(line) if action_type == "reaction" else None
+                    ),
                     "multiattack": bool("多重攻击" in line),
                     "multiattack_count": multiattack_count_value,
                     "multiattack_components": [],
@@ -445,6 +448,22 @@ def _monster_condition_duration(text: str) -> str | None:
         (r"直到(?:目标|受术者)的?下个回合结束", "target_turn_end"),
     )
     return next((value for pattern, value in patterns if re.search(pattern, text)), None)
+
+
+def _monster_reaction_event(text: str) -> str | None:
+    """Map only unambiguous reaction prose to a closed event vocabulary."""
+
+    if "离开" in text and any(value in text for value in ("触及范围", "近战范围", "威胁范围")):
+        return "leaves_reach"
+    if "进入" in text and any(value in text for value in ("触及范围", "近战范围", "威胁范围")):
+        return "enters_reach"
+    if "受到伤害" in text or "承受伤害" in text or "被命中" in text:
+        return "takes_damage"
+    if "施法" in text or "施展法术" in text:
+        return "casts_spell"
+    if "回合结束" in text:
+        return "turn_end"
+    return None
 
 
 def _link_monster_multiattacks(actions: list[dict[str, Any]]) -> None:

@@ -36,6 +36,7 @@ def test_advanced_phase_previews_execute_through_combat_action_api(
                     {
                         "name": "借机尾击",
                         "action_type": "reaction",
+                        "reaction_event": "leaves_reach",
                         "attack_bonus": 9,
                         "damage": "1d8+5",
                     },
@@ -71,6 +72,11 @@ def test_advanced_phase_previews_execute_through_combat_action_api(
                 "actor_combatant_id": dragon["id"],
                 "actor_version": dragon["version"],
                 "phase": phase,
+                **(
+                    {"reaction_event": "leaves_reach"}
+                    if phase == "reaction"
+                    else {}
+                ),
             },
         )
         assert preview.status_code == 200, preview.text

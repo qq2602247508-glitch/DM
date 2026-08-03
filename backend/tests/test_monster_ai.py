@@ -29,6 +29,30 @@ def test_recharge_action_is_initially_available_then_requires_explicit_recharge(
     ] == ["火焰吐息", "爪击"]
 
 
+def test_reaction_actions_are_filtered_by_explicit_event() -> None:
+    actions = [
+        {
+            "name": "借机攻击",
+            "action_type": "reaction",
+            "reaction_event": "leaves_reach",
+            "damage": "1d8",
+        },
+        {
+            "name": "受击反击",
+            "action_type": "reaction",
+            "reaction_event": "takes_damage",
+            "damage": "2d6",
+        },
+    ]
+
+    assert [
+        item["name"]
+        for item in available_monster_actions(
+            actions, phase="reaction", reaction_event="takes_damage"
+        )
+    ] == ["受击反击"]
+
+
 def test_monster_planner_selects_nearest_enemy_without_resolving_damage() -> None:
     plan = choose_monster_action(
         {

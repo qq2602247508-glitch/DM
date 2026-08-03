@@ -845,6 +845,13 @@ export type MonsterAIPhase = "turn" | "reaction" | "legendary" | "lair";
 
 export type MonsterAITactics = "instinctive" | "standard" | "smart" | "tactical";
 
+export type MonsterReactionEvent =
+  | "leaves_reach"
+  | "enters_reach"
+  | "takes_damage"
+  | "casts_spell"
+  | "turn_end";
+
 export type MonsterAIPlan = {
   actor_id: string;
   action_name: string;
@@ -941,6 +948,7 @@ export type PlayerRollPromptCommand = {
   legendary_cost?: number | null;
   legendary_pool_max?: number | null;
   reaction_trigger?: string | null;
+  reaction_event?: MonsterReactionEvent | null;
   sequence_id?: string | null;
   sequence_step?: number | null;
   sequence_size?: number | null;

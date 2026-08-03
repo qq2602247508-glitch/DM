@@ -19,6 +19,7 @@ import type {
   Combatant,
   MonsterAIPreview,
   MonsterAIPhase,
+  MonsterReactionEvent,
 } from "../../api/types";
 import { useToast } from "../../hooks/toastContext";
 import {
@@ -353,6 +354,7 @@ export function TurnCommandConsole({
   const [advancedTargetId, setAdvancedTargetId] = useState("");
   const [advancedAreaTargetingKey, setAdvancedAreaTargetingKey] = useState<string | null>(null);
   const [reactionTrigger, setReactionTrigger] = useState("");
+  const [reactionEvent, setReactionEvent] = useState<MonsterReactionEvent | "">("");
   const [advancedAttackTotal, setAdvancedAttackTotal] = useState("");
   const processedAutomaticTurn = useRef<string | null>(null);
   // A monster action changes action_available before the query has moved to
@@ -622,6 +624,7 @@ export function TurnCommandConsole({
           phase: selectedAdvancedChoice.availability.phase as MonsterAIPhase,
           tactics,
           rechargeAvailable,
+          reactionEvent: reactionEvent || undefined,
         },
       );
     },
@@ -1865,6 +1868,10 @@ export function TurnCommandConsole({
               setAdvancedPreview(null);
               setAdvancedTargetId("");
               setReactionTrigger("");
+              setReactionEvent(
+                advancedChoices.find((choice) => choice.key === event.target.value)?.action.reaction_event
+                  ?? "",
+              );
               setAdvancedAttackTotal("");
               if (advancedAreaTargetingKey) {
                 setAdvancedAreaTargetingKey(null);
@@ -1884,6 +1891,20 @@ export function TurnCommandConsole({
           </div>
           {selectedAdvancedChoice?.action.action_type === "reaction" ? (
             <label className="mt-2 block text-2xs text-stone-400">
+              资料库触发事件（只匹配明确结构化事件）
+              <select
+                aria-label="怪物反应结构化触发事件"
+                className={`${selectCls} mt-1 w-full`}
+                onChange={(event) => setReactionEvent(event.target.value as MonsterReactionEvent | "")}
+                value={reactionEvent}
+              >
+                <option value="">未结构化事件（仅保留 DM 确认）</option>
+                <option value="leaves_reach">离开近战威胁范围</option>
+                <option value="enters_reach">进入近战威胁范围</option>
+                <option value="takes_damage">受到伤害</option>
+                <option value="casts_spell">施法</option>
+                <option value="turn_end">回合结束</option>
+              </select>
               本次反应的实际触发事件
               <input
                 aria-label="怪物反应触发事件"

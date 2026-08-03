@@ -41,6 +41,7 @@ export type CombatActionLike = {
   legendary_cost?: number | null;
   legendary_pool_max?: number | null;
   reaction_trigger?: string | null;
+  reaction_event?: "leaves_reach" | "enters_reach" | "takes_damage" | "casts_spell" | "turn_end" | null;
   resource_key?: string;
   resource_cost?: number;
   auto_eligible?: boolean;

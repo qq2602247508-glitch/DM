@@ -45,6 +45,7 @@ import type {
   RestPreviewRequest,
   MonsterAIPhase,
   MonsterAITactics,
+  MonsterReactionEvent,
   MonsterAIPreview,
   TurnAdvanceResult,
 } from "./types";
@@ -574,6 +575,7 @@ export const previewMonsterAI = (
     phase?: MonsterAIPhase;
     tactics?: MonsterAITactics;
     rechargeAvailable?: Record<string, boolean>;
+    reactionEvent?: MonsterReactionEvent;
   } = {},
 ) =>
   apiFetch<MonsterAIPreview>(
@@ -589,6 +591,7 @@ export const previewMonsterAI = (
         // The backend treats a missing map as the initial encounter state;
         // an explicit empty object means every recharge action is unavailable.
         recharge_available: options.rechargeAvailable,
+        reaction_event: options.reactionEvent,
       },
       headers: { "X-Request-ID": createClientId("request") },
     },

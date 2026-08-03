@@ -12,6 +12,9 @@ from dataclasses import dataclass
 from typing import Any, Literal
 
 MonsterActionPhase = Literal["turn", "reaction", "legendary", "lair"]
+MonsterReactionEvent = Literal[
+    "leaves_reach", "enters_reach", "takes_damage", "casts_spell", "turn_end"
+]
 
 
 @dataclass(frozen=True)
@@ -102,6 +105,7 @@ def available_monster_actions(
     legendary_actions_remaining: int = 0,
     lair_action_available: bool = False,
     recharge_available: dict[str, bool] | None = None,
+    reaction_event: MonsterReactionEvent | None = None,
 ) -> tuple[dict[str, Any], ...]:
     """Return actions legal in the requested action window.
 
@@ -123,6 +127,9 @@ def available_monster_actions(
             continue
         if action_type == "reaction" and not reaction_available:
             continue
+        if action_type == "reaction" and reaction_event is not None:
+            if raw.get("reaction_event") != reaction_event:
+                continue
         if action_type == "legendary_action":
             cost = _positive_int(raw.get("legendary_cost"), 1)
             if legendary_actions_remaining < cost:
@@ -307,6 +314,7 @@ def choose_monster_action(
     legendary_actions_remaining: int = 0,
     lair_action_available: bool = False,
     recharge_available: dict[str, bool] | None = None,
+    reaction_event: MonsterReactionEvent | None = None,
 ) -> MonsterActionPlan | None:
     """Choose a stable plan while preserving every unresolved rule boundary."""
 
@@ -323,6 +331,7 @@ def choose_monster_action(
         legendary_actions_remaining=legendary_actions_remaining,
         lair_action_available=lair_action_available,
         recharge_available=recharge_available,
+        reaction_event=reaction_event,
     )
     enemies = [
         target

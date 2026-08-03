@@ -21,6 +21,9 @@ class MonsterAIPlanRequest(BaseModel):
     phase: Literal["turn", "reaction", "legendary", "lair"] = "turn"
     tactics: Literal["instinctive", "standard", "smart", "tactical"] = "standard"
     recharge_available: dict[str, bool] | None = None
+    reaction_event: Literal[
+        "leaves_reach", "enters_reach", "takes_damage", "casts_spell", "turn_end"
+    ] | None = None
 
 
 class MonsterAITacticsRequest(BaseModel):
@@ -59,6 +62,7 @@ def preview_monster_ai(
             phase=body.phase,
             tactics=body.tactics,
             recharge_available=body.recharge_available,
+            reaction_event=body.reaction_event,
         )
     except StateNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc

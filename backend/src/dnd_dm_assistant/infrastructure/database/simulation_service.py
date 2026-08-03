@@ -812,6 +812,28 @@ class SimulationService:
                 return raw
             action = deepcopy(raw)
             name = str(action.get("name") or "")
+            action_type = str(action.get("action_type") or "").strip().lower()
+            if action_type in {"reaction", "opportunity_attack"} and not action.get(
+                "reaction_event"
+            ):
+                # Older persisted simulation actions stored the trigger only as
+                # prose.  Migrate only wording that maps unambiguously to the
+                # closed event vocabulary; never infer an event from an action
+                # name or from a missing field.
+                reaction_text = " ".join(
+                    str(action.get(key) or "")
+                    for key in ("reaction_trigger", "description", "notes")
+                )
+                if "离开" in reaction_text and "近战" in reaction_text:
+                    action["reaction_event"] = "leaves_reach"
+                elif "进入" in reaction_text and "近战" in reaction_text:
+                    action["reaction_event"] = "enters_reach"
+                elif "受到" in reaction_text and "伤害" in reaction_text:
+                    action["reaction_event"] = "takes_damage"
+                elif "施法" in reaction_text:
+                    action["reaction_event"] = "casts_spell"
+                elif "回合结束" in reaction_text:
+                    action["reaction_event"] = "turn_end"
             if name == "火焰箭":
                 action["description"] = "远程法术攻击；命中造成 1d10 火焰伤害。"
                 action["damage_type"] = "fire"

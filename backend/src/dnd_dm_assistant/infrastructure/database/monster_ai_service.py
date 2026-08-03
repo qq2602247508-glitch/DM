@@ -9,7 +9,11 @@ from sqlalchemy.orm import Session
 
 from dnd_dm_assistant.api.schemas import CombatManeuverCommand
 from dnd_dm_assistant.domain.campaign_state import StateNotFoundError, VersionConflict
-from dnd_dm_assistant.domain.monster_ai import MonsterActionPhase, choose_monster_action
+from dnd_dm_assistant.domain.monster_ai import (
+    MonsterActionPhase,
+    MonsterReactionEvent,
+    choose_monster_action,
+)
 from dnd_dm_assistant.infrastructure.database.campaign_service import serialize
 from dnd_dm_assistant.infrastructure.database.combat_service import CombatEngineService
 from dnd_dm_assistant.infrastructure.database.models import (
@@ -65,6 +69,7 @@ class MonsterAIService:
         phase: str = "turn",
         tactics: str = "standard",
         recharge_available: dict[str, bool] | None = None,
+        reaction_event: MonsterReactionEvent | None = None,
     ) -> dict[str, Any]:
         with Session(self.engine) as session:
             campaign = session.get(Campaign, campaign_id)
@@ -174,6 +179,7 @@ class MonsterAIService:
                     != combat.round_number
                 ),
                 recharge_available=live_recharge,
+                reaction_event=reaction_event,
             )
             return {
                 "combat": serialize(combat),
