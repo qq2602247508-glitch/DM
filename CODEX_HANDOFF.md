@@ -439,3 +439,14 @@ backend/.venv/bin/python -m pytest -q backend/tests
 - 浏览器验收：DM 模拟战斗重置回第 1 轮且当前单位显示“动作可用 · 附赠可用 · 反应可用”；玩家端 `/player` 正常显示“加入跑团房间”；两端控制台 error/warn 均为 0。截图：`/private/tmp/dnd-condition-turn-start-dm-20260803.png`、`/private/tmp/dnd-condition-turn-start-player-20260803.png`。
 
 本项仍不是所有状态规则闭环：复杂持续来源组合、传奇/巢穴/反应完整触发、复杂三维遮挡和全职业 1–20 级运行时仍在一级待办中。
+
+## 2026-08-03 高级动作确认审计与双端验收
+
+- 修复 `CombatEngineService` 在高级动作确认后丢失审计上下文的问题。传奇动作、巢穴动作和反应现在会把动作窗口写入 `result_json.action_window`，并在普通确认、单目标豁免、批量豁免和玩家最终豁免日志中保留；日志明确显示传奇消耗点数/动作池、巢穴先攻窗口或反应触发事件。
+- 新增回归覆盖：传奇动作消耗与窗口、巢穴窗口、反应触发后的玩家豁免以及后续伤害确认；不会改变已有资源门禁或正式结算链。
+- 代码与测试已拆分提交：`07633f3 fix: preserve advanced action audit windows`。未跟踪的 `backend/tests/integrations/`、`backend/tests/ollama.py` 未加入提交。
+- 当前源码门禁沿用本轮已通过结果：后端全量 421 passed（1 个既有 Starlette/httpx 弃用警告）、前端 39 文件/190 项、TypeScript、ESLint、生产构建、Ruff、`git diff --check` 均通过。
+- 当前代码真实浏览器验收：DM/玩家同一模拟房间均显示“熔火术士·AI 对模拟玩家·奥术师使用「传奇熔击」；命中并造成 2 点 fire 伤害；传奇动作窗口（消耗 1 点；动作池 3）”；两端快照和日志一致，控制台 error/warn 均为空。
+- 当前证据：DM 日志截图 [dnd-advanced-window-dm-log-current-20260803.png](/private/tmp/dnd-advanced-window-dm-log-current-20260803.png)，玩家日志截图 [dnd-advanced-window-player-log-current-20260803.png](/private/tmp/dnd-advanced-window-player-log-current-20260803.png)，完整视图 [dnd-advanced-window-dm-current-20260803.png](/private/tmp/dnd-advanced-window-dm-current-20260803.png) 与 [dnd-advanced-window-player-current-20260803.png](/private/tmp/dnd-advanced-window-player-current-20260803.png)。
+
+本项闭合的是高级动作确认后的可追溯日志与双端一致性，不等于所有反应/传奇/巢穴动作触发条件、复杂状态组合、复杂三维遮挡或全职业 1–20 级运行时都已自动化；这些仍需后续执行器或 DM 确认。
