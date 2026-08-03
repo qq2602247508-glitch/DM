@@ -4,6 +4,8 @@ import type {
   CampaignEvent,
   CharacterCompanion,
   CharacterOptionsCatalog,
+  AdvancementBatchPreview,
+  AdvancementBatchRequest,
   AdvancementPreview,
   AdvancementRequest,
   Character,
@@ -32,6 +34,8 @@ import type {
   Quest,
   NarrativeRecord,
   PlayerRollPromptCommand,
+  PlayerRollPromptBatchCommand,
+  PlayerRollPromptBatchResult,
   PlayerRollPromptResult,
   PlayerRollResolutionCommand,
   PlayerRollResolutionResult,
@@ -39,6 +43,9 @@ import type {
   RestConfirmRequest,
   RestPreview,
   RestPreviewRequest,
+  MonsterAIPhase,
+  MonsterAITactics,
+  MonsterAIPreview,
   TurnAdvanceResult,
 } from "./types";
 
@@ -140,8 +147,11 @@ export const updateCharacter = (cid: string, id: string, input: CharacterInput, 
 export const deleteCharacter = (cid: string, id: string, version: number) =>
   deleteEntity(`/campaigns/${cid}/characters/${id}`, version);
 
-export const getCharacterOptions = (signal?: AbortSignal) =>
-  apiFetch<CharacterOptionsCatalog>("/rules/character-options", { signal });
+export const getCharacterOptions = (signal?: AbortSignal, campaignId?: string) =>
+  apiFetch<CharacterOptionsCatalog>(
+    `/rules/character-options${campaignId ? `?campaign_id=${encodeURIComponent(campaignId)}` : ""}`,
+    { signal },
+  );
 
 export type CharacterOcrResult = {
   engine: string;
@@ -173,6 +183,26 @@ export const confirmAdvancement = (
 ) =>
   apiFetch<AdvancementPreview & { advancement_record_id: string }>(
     `/campaigns/${cid}/characters/${characterId}/advancement/confirm`,
+    { method: "POST", body: input },
+  );
+
+export const previewBatchAdvancement = (
+  cid: string,
+  characterId: string,
+  input: AdvancementBatchRequest,
+) =>
+  apiFetch<AdvancementBatchPreview>(
+    `/campaigns/${cid}/characters/${characterId}/advancement/batch/preview`,
+    { method: "POST", body: input },
+  );
+
+export const confirmBatchAdvancement = (
+  cid: string,
+  characterId: string,
+  input: AdvancementBatchRequest & { preview_token: string; idempotency_key: string },
+) =>
+  apiFetch<AdvancementBatchPreview & { advancement_record_ids: string[] }>(
+    `/campaigns/${cid}/characters/${characterId}/advancement/batch/confirm`,
     { method: "POST", body: input },
   );
 
@@ -535,6 +565,35 @@ export type CombatantInput = {
 export const listCombatants = (cid: string, combatId: string, signal?: AbortSignal) =>
   listEntities<Combatant>(`/campaigns/${cid}/combats/${combatId}/combatants`, signal);
 
+export const previewMonsterAI = (
+  cid: string,
+  combatId: string,
+  actorCombatantId: string,
+  options: {
+    actorVersion?: number;
+    phase?: MonsterAIPhase;
+    tactics?: MonsterAITactics;
+    rechargeAvailable?: Record<string, boolean>;
+  } = {},
+) =>
+  apiFetch<MonsterAIPreview>(
+    `/campaigns/${cid}/combats/${combatId}/monster-ai/preview`,
+    {
+      method: "POST",
+      body: {
+        actor_combatant_id: actorCombatantId,
+        actor_version: options.actorVersion,
+        phase: options.phase ?? "turn",
+        tactics: options.tactics ?? "standard",
+        // Omit the field when the combatant has no persisted recharge map.
+        // The backend treats a missing map as the initial encounter state;
+        // an explicit empty object means every recharge action is unavailable.
+        recharge_available: options.rechargeAvailable,
+      },
+      headers: { "X-Request-ID": createClientId("request") },
+    },
+  );
+
 export const createCombatant = (cid: string, combatId: string, input: CombatantInput) =>
   createEntity<Combatant, CombatantInput>(
     `/campaigns/${cid}/combats/${combatId}/combatants`,
@@ -563,15 +622,106 @@ export type CombatActionCommand = {
   target_version: number;
   actor_combatant_id?: string | null;
   actor_version?: number | null;
-  action_cost?: "action" | "bonus_action" | "reaction" | "none";
+  action_cost?: "action" | "bonus_action" | "reaction" | "legendary_action" | "lair_action" | "none";
   action_name?: string | null;
   resolution_note?: string | null;
   amount: number;
   damage_type?: string | null;
+  damage_components?: Array<{ amount: number; damage_type: string; damage_tags?: string[] }>;
+  damage_tags?: string[];
+  is_attack?: boolean;
+  attack_roll_mode?: "normal" | "advantage" | "disadvantage" | null;
+  attack_roll_total?: number | null;
+  attack_adjudication_note?: string | null;
+  recharge_key?: string | null;
+  recharge_consume?: boolean;
+  legendary_cost?: number | null;
+  legendary_pool_max?: number | null;
+  reaction_trigger?: string | null;
+  sequence_id?: string | null;
+  sequence_step?: number | null;
+  sequence_size?: number | null;
+  conditions_to_apply?: string[];
+  condition_duration?: "actor_turn_start" | "actor_turn_end" | "target_turn_start" | "target_turn_end" | "rounds" | "minutes" | "until_save" | "until_removed" | null;
+  condition_duration_value?: number | null;
+  condition_save_dc?: number | null;
+  condition_save_ability?: string | null;
+  forced_movement_distance_ft?: number | null;
+  forced_movement_direction?: "away" | "toward" | null;
+  area_shape?: "cone" | "line" | "cube" | "sphere" | "cylinder" | null;
+  area_size_ft?: number | null;
+  area_width_ft?: number | null;
+  area_height_ft?: number | null;
+  area_anchor_height_ft?: number | null;
+  area_anchor_row?: number | null;
+  area_anchor_col?: number | null;
+  area_include_actor?: boolean;
+  requires_explicit_elevation?: boolean;
   critical_hit?: boolean;
   dm_override?: boolean;
   override_reason?: string | null;
 };
+
+export type CombatFeatureActionCommand = {
+  actor_combatant_id: string;
+  actor_version: number;
+  feature_id: string;
+  healing_total?: number | null;
+  target_combatant_id?: string | null;
+  target_version?: number | null;
+  dm_override?: boolean;
+  override_reason?: string | null;
+};
+
+export type CombatSummonInput = {
+  companion_id?: string;
+  count?: number;
+  name?: string;
+  controller?: "player" | "dm";
+  owner_character_id?: string;
+  disposition?: "ally" | "enemy";
+  source_combatant_id?: string;
+  hp?: number;
+  max_hp?: number;
+  armor_class?: number;
+  speed_ft?: number;
+  ability_scores?: Record<string, number>;
+  actions?: unknown[];
+  template_json?: Record<string, unknown>;
+  action_cost?: "action" | "bonus_action" | "reaction" | "none";
+  resource_key?: string;
+  resource_cost?: number;
+};
+
+export const addCombatSummon = (
+  cid: string,
+  combatId: string,
+  input: CombatSummonInput,
+) => apiFetch<{ combatant: Combatant; combatants?: Combatant[]; action: CombatAction | null; already_applied: boolean }>(
+  `/campaigns/${cid}/combats/${combatId}/summons`,
+  { method: "POST", body: input },
+);
+
+export const endCombatSummon = (
+  cid: string,
+  combatId: string,
+  summonCombatantId: string,
+  summonVersion: number,
+  reason: string,
+) => apiFetch<{
+  action: CombatAction;
+  combat: Combat;
+  summon: Combatant;
+  ended_effects: CombatEffect[];
+  already_applied: boolean;
+}>(
+  `/campaigns/${cid}/combats/${combatId}/summons/${summonCombatantId}/end`,
+  {
+    method: "POST",
+    body: { summon_version: summonVersion, reason },
+    headers: { "X-Request-ID": createClientId("end-summon") },
+  },
+);
 
 export const previewCombatAction = (
   cid: string,
@@ -597,6 +747,37 @@ export const confirmCombatAction = (
       headers: { "X-Request-ID": requestId },
     },
   );
+
+export type CombatActionBatchCommand = {
+  items: Array<{
+    command: CombatActionCommand;
+    idempotency_key: string;
+  }>;
+};
+
+export const confirmCombatActionBatch = (
+  cid: string,
+  combatId: string,
+  input: CombatActionBatchCommand,
+  requestId: string = createClientId("combat-batch"),
+) => apiFetch<{ items: CombatActionConfirmation[] }>(
+  `/campaigns/${cid}/combats/${combatId}/actions/confirm-batch`,
+  {
+    method: "POST",
+    body: input,
+    headers: { "X-Request-ID": requestId },
+  },
+);
+
+export const confirmCombatFeatureAction = (
+  cid: string,
+  combatId: string,
+  input: CombatFeatureActionCommand,
+  requestId: string = createClientId("feature-action"),
+) => apiFetch<Record<string, unknown>>(
+  `/campaigns/${cid}/combats/${combatId}/feature-actions/confirm`,
+  { method: "POST", body: input, headers: { "X-Request-ID": requestId } },
+);
 
 export const listCombatActions = (
   cid: string,
@@ -626,13 +807,29 @@ export const createPlayerRollPrompt = (
   cid: string,
   combatId: string,
   input: PlayerRollPromptCommand,
+  requestId: string = createClientId("request"),
 ) =>
   apiFetch<PlayerRollPromptResult>(
     `/campaigns/${cid}/combats/${combatId}/actions/player-rolls/pending`,
     {
       method: "POST",
       body: input,
-      headers: { "X-Request-ID": createClientId("request") },
+      headers: { "X-Request-ID": requestId },
+    },
+  );
+
+export const createPlayerRollPromptBatch = (
+  cid: string,
+  combatId: string,
+  input: PlayerRollPromptBatchCommand,
+  requestId: string = createClientId("request"),
+) =>
+  apiFetch<PlayerRollPromptBatchResult>(
+    `/campaigns/${cid}/combats/${combatId}/actions/player-rolls/pending/batch`,
+    {
+      method: "POST",
+      body: input,
+      headers: { "X-Request-ID": requestId },
     },
   );
 
@@ -787,6 +984,28 @@ export const endCombatEffect = (
         reason,
       },
       headers: { "X-Request-ID": createClientId("request") },
+    },
+  );
+
+export const confirmCombatEffectSave = (
+  cid: string,
+  combatId: string,
+  effectId: string,
+  input: { target_combatant_id: string; target_version: number; roll_total: number; dm_note?: string | null },
+) =>
+  apiFetch<{
+    action: CombatAction;
+    effect: CombatEffect;
+    target: Combatant;
+    success: boolean;
+    ended_summons: Combatant[];
+    already_applied: boolean;
+  }>(
+    `/campaigns/${cid}/combats/${combatId}/effects/${effectId}/save/confirm`,
+    {
+      method: "POST",
+      body: input,
+      headers: { "X-Request-ID": createClientId("effect-save") },
     },
   );
 

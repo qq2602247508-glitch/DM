@@ -10,6 +10,7 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field, StringConstraints
 
 from dnd_dm_assistant.api.dependencies import (
+    get_campaign_service,
     get_player_room_service,
     get_player_rules_search,
 )
@@ -41,6 +42,7 @@ class OpenRoomInput(BaseModel):
 class LiveStateInput(BaseModel):
     scene_id: str | None = Field(default=None, max_length=36)
     combat_id: str | None = Field(default=None, max_length=36)
+    expected_version: int | None = Field(default=None, ge=1)
 
 
 class AssignCharacterInput(BaseModel):
@@ -61,6 +63,14 @@ class CharacterCreateInput(BaseModel):
     class_name: str = Field(min_length=1, max_length=100)
     background: str = Field(min_length=1, max_length=100)
     ability_scores: dict[str, int]
+    ability_generation_method: Literal[
+        "standard_array", "point_buy", "rolled_4d6_drop_lowest"
+    ] = "standard_array"
+    ability_rolls: dict[str, list[int]] = Field(default_factory=dict, max_length=6)
+    origin_ability_increases: dict[str, int] = Field(default_factory=dict, max_length=3)
+    background_tool_proficiency: str = Field(min_length=1, max_length=100)
+    languages: list[str] = Field(min_length=2, max_length=2)
+    starter_equipment_option: Literal["fixed_package"] = "fixed_package"
     equipment: list[str] = Field(default_factory=list, max_length=50)
     skill_proficiencies: list[str] = Field(default_factory=list, max_length=4)
     spells: list[dict[str, Any]] = Field(default_factory=list, max_length=30)
@@ -98,16 +108,83 @@ class MoveInput(BaseModel):
     row: int = Field(ge=1, le=100)
     col: int = Field(ge=1, le=100)
     combatant_version: int = Field(ge=1)
+    disengage: bool = False
+
+
+class ManeuverInput(BaseModel):
+    """Player-facing payload for the typed standard-action combat engine."""
+
+    action_type: Literal[
+        "dash",
+        "stand_up",
+        "grapple",
+        "shove",
+        "dodge",
+        "help",
+        "ready",
+        "search",
+        "hide",
+        "disengage",
+        "use_item",
+        "object_interaction",
+    ]
+    actor_version: int = Field(ge=1)
+    target_combatant_id: str | None = Field(default=None, min_length=1, max_length=36)
+    target_version: int | None = Field(default=None, ge=1)
+    outcome: Literal["success", "failure"] | None = None
+    shove_mode: Literal["prone", "push"] | None = None
+    push_distance_ft: int | None = Field(default=None, ge=1, le=1_000)
+    adjudication_note: str | None = Field(default=None, max_length=1_000)
+    help_trigger: str | None = Field(default=None, max_length=500)
+    ready_phase: Literal["prepare", "trigger"] = "prepare"
+    ready_trigger: str | None = Field(default=None, max_length=500)
+    ready_response: str | None = Field(default=None, max_length=500)
+    ready_effect_id: str | None = Field(default=None, min_length=1, max_length=36)
+    ready_effect_version: int | None = Field(default=None, ge=1)
+    item_id: str | None = Field(default=None, min_length=1, max_length=36)
+    item_version: int | None = Field(default=None, ge=1)
+    object_id: str | None = Field(default=None, min_length=1, max_length=36)
+    object_version: int | None = Field(default=None, ge=1)
+    object_state: Literal[
+        "active", "open", "closed", "destroyed", "disarmed", "picked_up"
+    ] | None = None
+    idempotency_key: str = Field(min_length=8, max_length=120)
 
 
 class AttackInput(BaseModel):
     target_combatant_id: str = Field(min_length=1, max_length=36)
     target_combatant_ids: list[str] = Field(default_factory=list, max_length=30)
     action_name: str = Field(min_length=1, max_length=200)
+    slot_level: int | None = Field(default=None, ge=0, le=9)
     attack_total: int = Field(ge=-100, le=1000)
     damage_total: int = Field(ge=0, le=100_000)
+    damage_component_totals: dict[str, int] = Field(default_factory=dict, max_length=20)
+    target_damage_component_totals: dict[str, dict[str, int]] = Field(
+        default_factory=dict,
+        max_length=30,
+    )
+    reaction_trigger: str | None = Field(default=None, max_length=1_000)
+    special_inputs: dict[str, Any] = Field(default_factory=dict, max_length=30)
     critical_hit: bool = False
     end_turn_after: bool = False
+    idempotency_key: str = Field(min_length=8, max_length=120)
+
+
+class CastInput(BaseModel):
+    target_combatant_id: str = Field(min_length=1, max_length=36)
+    target_combatant_ids: list[str] = Field(default_factory=list, max_length=30)
+    action_name: str = Field(min_length=1, max_length=200)
+    slot_level: int | None = Field(default=None, ge=0, le=9)
+    healing_total: int = Field(default=0, ge=0, le=100_000)
+    special_inputs: dict[str, Any] = Field(default_factory=dict, max_length=30)
+    end_turn_after: bool = False
+    idempotency_key: str = Field(min_length=8, max_length=120)
+
+
+class FeatureActionInput(BaseModel):
+    feature_id: str = Field(min_length=1, max_length=120)
+    target_combatant_id: str | None = Field(default=None, min_length=1, max_length=36)
+    healing_total: int | None = Field(default=None, ge=0, le=100_000)
     idempotency_key: str = Field(min_length=8, max_length=120)
 
 
@@ -117,8 +194,30 @@ class RollInput(BaseModel):
     idempotency_key: str = Field(min_length=8, max_length=120)
 
 
+class DeathSaveInput(BaseModel):
+    target_version: int = Field(ge=1)
+    roll: int = Field(ge=1, le=20)
+    idempotency_key: str = Field(min_length=8, max_length=120)
+
+
 class EndTurnInput(BaseModel):
     combat_version: int = Field(ge=1)
+    idempotency_key: str = Field(min_length=8, max_length=120)
+
+
+class SummonInput(BaseModel):
+    companion_id: str = Field(min_length=1, max_length=36)
+    action_name: str = Field(min_length=1, max_length=200)
+    count: int = Field(default=1, ge=1, le=20)
+    position: dict[str, int] | None = None
+    idempotency_key: str = Field(min_length=8, max_length=120)
+
+
+class DismissSummonInput(BaseModel):
+    summon_version: int = Field(ge=1)
+    reason: Annotated[
+        str, StringConstraints(strip_whitespace=True, min_length=1, max_length=1_000)
+    ] = "玩家主动结束召唤"
     idempotency_key: str = Field(min_length=8, max_length=120)
 
 
@@ -129,8 +228,19 @@ class RuleSearchInput(BaseModel):
 
 class PlayerEquipmentInput(BaseModel):
     equipment_id: str = Field(min_length=1, max_length=36)
-    operation: Literal["equip", "unequip", "attune", "unattune"]
+    operation: Literal["equip", "unequip", "consume", "use_charge", "attune", "unattune"]
     slot: Literal["armor", "main_hand", "off_hand", "focus", "worn"] | None = None
+    amount: int = Field(default=1, ge=1)
+    preview_token: str | None = None
+    idempotency_key: str | None = Field(default=None, min_length=8, max_length=120)
+
+
+class PlayerCommerceInput(BaseModel):
+    wallet_id: str = Field(min_length=1, max_length=36)
+    wallet_version: int = Field(ge=1)
+    shop_inventory_id: str = Field(min_length=1, max_length=36)
+    shop_version: int = Field(ge=1)
+    quantity: int = Field(default=1, ge=1, le=100)
     preview_token: str | None = None
     idempotency_key: str | None = Field(default=None, min_length=8, max_length=120)
 
@@ -213,7 +323,14 @@ def set_live_state(
     body: LiveStateInput,
     service: Annotated[PlayerRoomService, Depends(get_player_room_service)],
 ) -> dict[str, Any]:
-    return _safe(lambda: service.set_live_state(campaign_id, body.scene_id, body.combat_id))
+    return _safe(
+        lambda: service.set_live_state(
+            campaign_id,
+            body.scene_id,
+            body.combat_id,
+            body.expected_version,
+        )
+    )
 
 
 @admin_player_room_router.get("/dm/noncombat-actions/{character_id}")
@@ -423,6 +540,26 @@ def confirm_equipment(
     return _safe(lambda: service.confirm_equipment(principal, body.model_dump()))
 
 
+@public_player_room_router.post("/me/commerce/preview")
+def preview_commerce(
+    body: PlayerCommerceInput,
+    principal: Annotated[PlayerPrincipal, Depends(get_player_principal)],
+    service: Annotated[PlayerRoomService, Depends(get_player_room_service)],
+) -> dict[str, Any]:
+    return _safe(lambda: service.preview_commerce(principal, body.model_dump()))
+
+
+@public_player_room_router.post("/me/commerce/confirm")
+def confirm_commerce(
+    body: PlayerCommerceInput,
+    principal: Annotated[PlayerPrincipal, Depends(get_player_principal)],
+    service: Annotated[PlayerRoomService, Depends(get_player_room_service)],
+) -> dict[str, Any]:
+    if not body.preview_token or not body.idempotency_key:
+        raise HTTPException(422, "preview_token and idempotency_key required")
+    return _safe(lambda: service.confirm_commerce(principal, body.model_dump()))
+
+
 @public_player_room_router.post("/me/action-requests", status_code=status.HTTP_201_CREATED)
 def submit_action_request(
     body: ActionRequestInput,
@@ -481,7 +618,20 @@ def move(
     principal: Annotated[PlayerPrincipal, Depends(get_player_principal)],
     service: Annotated[PlayerRoomService, Depends(get_player_room_service)],
 ) -> dict[str, Any]:
-    return _safe(lambda: service.move(principal, body.row, body.col, body.combatant_version))
+    return _safe(
+        lambda: service.move(
+            principal, body.row, body.col, body.combatant_version, body.disengage
+        )
+    )
+
+
+@public_player_room_router.post("/me/combat/maneuver")
+def maneuver(
+    body: ManeuverInput,
+    principal: Annotated[PlayerPrincipal, Depends(get_player_principal)],
+    service: Annotated[PlayerRoomService, Depends(get_player_room_service)],
+) -> dict[str, Any]:
+    return _safe(lambda: service.maneuver(principal, body.model_dump(exclude_none=True)))
 
 
 @public_player_room_router.post("/me/combat/attack")
@@ -496,10 +646,89 @@ def attack(
             body.target_combatant_id,
             body.target_combatant_ids,
             body.action_name,
+            body.slot_level,
             body.attack_total,
             body.damage_total,
             body.critical_hit,
             body.end_turn_after,
+            body.idempotency_key,
+            body.damage_component_totals,
+            body.target_damage_component_totals,
+            body.reaction_trigger,
+            body.special_inputs,
+        )
+    )
+
+
+@public_player_room_router.post("/me/combat/cast")
+def cast(
+    body: CastInput,
+    principal: Annotated[PlayerPrincipal, Depends(get_player_principal)],
+    service: Annotated[PlayerRoomService, Depends(get_player_room_service)],
+) -> dict[str, Any]:
+    return _safe(
+        lambda: service.cast(
+            principal,
+            body.target_combatant_id,
+            body.target_combatant_ids,
+            body.action_name,
+            body.slot_level,
+            body.healing_total,
+            body.end_turn_after,
+            body.idempotency_key,
+            body.special_inputs,
+        )
+    )
+
+
+@public_player_room_router.post("/me/combat/feature-action")
+def feature_action(
+    body: FeatureActionInput,
+    principal: Annotated[PlayerPrincipal, Depends(get_player_principal)],
+    service: Annotated[PlayerRoomService, Depends(get_player_room_service)],
+) -> dict[str, Any]:
+    return _safe(
+        lambda: service.feature_action(
+            principal,
+            body.feature_id,
+            body.target_combatant_id,
+            body.healing_total,
+            body.idempotency_key,
+        )
+    )
+
+
+@public_player_room_router.post("/me/combat/summon")
+def summon(
+    body: SummonInput,
+    principal: Annotated[PlayerPrincipal, Depends(get_player_principal)],
+    service: Annotated[PlayerRoomService, Depends(get_player_room_service)],
+) -> dict[str, Any]:
+    return _safe(
+        lambda: service.summon(
+            principal,
+            body.companion_id,
+            body.action_name,
+            body.count,
+            body.position,
+            body.idempotency_key,
+        )
+    )
+
+
+@public_player_room_router.post("/me/combat/summons/{summon_combatant_id}/dismiss")
+def dismiss_summon(
+    summon_combatant_id: str,
+    body: DismissSummonInput,
+    principal: Annotated[PlayerPrincipal, Depends(get_player_principal)],
+    service: Annotated[PlayerRoomService, Depends(get_player_room_service)],
+) -> dict[str, Any]:
+    return _safe(
+        lambda: service.dismiss_summon(
+            principal,
+            summon_combatant_id,
+            body.summon_version,
+            body.reason,
             body.idempotency_key,
         )
     )
@@ -523,6 +752,30 @@ def confirm_roll(
     )
 
 
+@public_player_room_router.get("/me/combat/death-save")
+def get_my_death_save(
+    principal: Annotated[PlayerPrincipal, Depends(get_player_principal)],
+    service: Annotated[PlayerRoomService, Depends(get_player_room_service)],
+) -> dict[str, Any]:
+    return _safe(lambda: service.get_player_death_save(principal))
+
+
+@public_player_room_router.post("/me/combat/death-save")
+def submit_my_death_save(
+    body: DeathSaveInput,
+    principal: Annotated[PlayerPrincipal, Depends(get_player_principal)],
+    service: Annotated[PlayerRoomService, Depends(get_player_room_service)],
+) -> dict[str, Any]:
+    return _safe(
+        lambda: service.submit_player_death_save(
+            principal,
+            body.target_version,
+            body.roll,
+            body.idempotency_key,
+        )
+    )
+
+
 @public_player_room_router.post("/me/combat/end-turn")
 def end_turn(
     body: EndTurnInput,
@@ -541,7 +794,18 @@ def end_turn(
 @public_player_room_router.post("/me/rules/search")
 def rules_search(
     body: RuleSearchInput,
-    _principal: Annotated[PlayerPrincipal, Depends(get_player_principal)],
+    principal: Annotated[PlayerPrincipal, Depends(get_player_principal)],
     search: Annotated[PlayerRulesSearch, Depends(get_player_rules_search)],
+    campaign_service: Annotated[Any, Depends(get_campaign_service)],
 ) -> dict[str, Any]:
-    return {"items": _safe(lambda: search.search(body.text, limit=body.limit))}
+    campaign = _safe(lambda: campaign_service.get("campaign", principal.campaign_id))
+    enabled_content_packs = campaign.get("enabled_content_packs", [])
+    return {
+        "items": _safe(
+            lambda: search.search(
+                body.text,
+                limit=body.limit,
+                enabled_content_packs=enabled_content_packs,
+            )
+        )
+    }

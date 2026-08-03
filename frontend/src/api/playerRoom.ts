@@ -66,7 +66,34 @@ export type SafePlayerCharacter = {
   spellcasting: Record<string, unknown>;
   class_levels: Record<string, number>;
   subclass_choices: Record<string, string>;
-  wallet: { name: string; copper: number; gp: number } | null;
+  wallet: { id?: string; name: string; copper: number; gp: number; version?: number } | null;
+  conditions?: Array<{ id: string; name: string; source: string | null; duration: string | null; status: string; details: Record<string, unknown>; version: number }>;
+  hit_dice?: PlayerHitDieResource[];
+  version: number;
+  companions?: PlayerCompanion[];
+};
+
+export type PlayerCompanion = {
+  id: string;
+  name: string;
+  companion_type: "familiar" | "animal_companion" | "summon" | "wild_shape" | "form";
+  source_record_id: string | null;
+  template_json: Record<string, unknown>;
+  hp: number;
+  max_hp: number;
+  armor_class: number;
+  speed: number;
+  active: boolean;
+};
+
+export type PlayerHitDieResource = {
+  id: string;
+  key: string;
+  label: string;
+  category: "hit_die";
+  current: number;
+  maximum: number;
+  die_size: number | null;
   version: number;
 };
 
@@ -86,15 +113,32 @@ export type PlayerEquipmentAsset = {
   slot: PlayerEquipmentSlot | null;
   metadata_json: Record<string, unknown>;
   profile: {
-    kind: "armor" | "shield" | "weapon" | "focus" | "worn";
+    kind: "armor" | "shield" | "weapon" | "focus" | "worn" | "consumable";
     allowed_slots: PlayerEquipmentSlot[];
-    default_slot: PlayerEquipmentSlot;
+    default_slot: PlayerEquipmentSlot | null;
     hand_usage: number;
     two_handed: boolean;
     armor_type: "light" | "medium" | "heavy" | null;
     base_armor_class: number | null;
     rule_reference: string;
   };
+};
+
+export type PlayerShopStock = {
+  id: string;
+  name: string;
+  quantity: number;
+  price_copper: number;
+  version: number;
+  category: string | null;
+  item_tier: string | null;
+};
+
+export type PlayerShop = {
+  merchant_id: string;
+  name: string;
+  description: string | null;
+  stock: PlayerShopStock[];
 };
 
 export type AvailablePlayerCharacter = Pick<
@@ -110,6 +154,9 @@ export type PlayerSceneGrid = {
   public_description?: string | null;
   theme?: string | null;
   visual_theme?: Record<string, unknown>;
+  fog_of_war?: boolean;
+  explored_cells?: Array<{ row: number; col: number }>;
+  visible_cells?: Array<{ row: number; col: number }>;
   cells?: Array<{
     row: number;
     col: number;
@@ -139,6 +186,7 @@ export type PlayerSceneObject = {
   width_cells: number;
   height_cells: number;
   state: string;
+  version?: number;
   interaction?: Record<string, unknown>;
 };
 
@@ -155,6 +203,7 @@ export type NoncombatActionOption = {
   concentration?: boolean;
   resource_key?: string | null;
   resource_cost?: number;
+  rule_plan?: Record<string, unknown>;
   target_types: Array<"self" | "npc" | "monster" | "object" | "area">;
 };
 
@@ -187,23 +236,47 @@ export type PlayerCombatant = {
   name: string;
   entity_type: string;
   initiative: number;
-  position: { row: number; col: number } | null;
+  position: { row: number; col: number; elevation_ft?: number } | null;
   health_status: string;
   is_own: boolean;
+  controller?: "player" | "dm" | null;
+  owner_character_id?: string | null;
+  disposition?: "ally" | "enemy" | null;
   version?: number;
   hp?: number;
   max_hp?: number;
+  temporary_hp?: number;
   armor_class?: number;
   conditions?: unknown[];
   movement_remaining_ft?: number;
   action_available?: boolean;
   bonus_action_available?: boolean;
   reaction_available?: boolean;
+  extra_action_budget?: number;
+  attack_roll_budget?: number;
   speed_ft: number;
   ability_scores: Record<string, number>;
   actions: Array<string | Record<string, unknown>>;
+  active_action?: Record<string, unknown> | null;
   damage_resistances: string[];
+  damage_vulnerabilities: string[];
   damage_immunities: string[];
+  active_effects?: Array<{
+    id: string;
+    name: string;
+    effect_type: string;
+    duration_unit: string;
+    duration_value: number | null;
+    ends_round: number | null;
+    trigger_timing: string | null;
+    rule_block: Record<string, unknown> | null;
+  }>;
+  summon?: {
+    source_combatant_id?: string | null;
+    lifecycle_effect_id?: string | null;
+    duration?: { unit?: string; value?: number | null; requires_concentration?: boolean } | null;
+    enemy_ai_mode?: "dm_only" | "basic" | "not_applicable" | null;
+  };
 };
 
 export type PlayerPendingRoll = {
@@ -220,9 +293,31 @@ export type PlayerPendingRoll = {
   actor_name: string | null;
   target_combatant_id: string | null;
   target_name: string | null;
+  effect_target_combatant_id?: string | null;
+  effect_target_name?: string | null;
   damage_on_success: number;
   damage_on_failure: number;
   damage_type: string | null;
+  damage_components_on_success?: Array<{ amount: number; damage_type: string; damage_tags?: string[] }>;
+  damage_components_on_failure?: Array<{ amount: number; damage_type: string; damage_tags?: string[] }>;
+  damage_tags?: string[];
+  action_cost?: "action" | "bonus_action" | "reaction" | "legendary_action" | "lair_action" | "none";
+  legendary_cost?: number | null;
+  legendary_pool_max?: number | null;
+  reaction_trigger?: string | null;
+  sequence_step?: number | null;
+  sequence_size?: number | null;
+};
+
+export type PlayerDeathSave = {
+  combatant_id: string;
+  successes: number;
+  failures: number;
+  stable: boolean;
+  dead: boolean;
+  pending_death_confirmation: boolean;
+  last_roll: number | null;
+  version: number;
 };
 
 export type PlayerCombatSnapshot = {
@@ -235,6 +330,7 @@ export type PlayerCombatSnapshot = {
   active_combatant_id: string | null;
   is_my_turn: boolean;
   own_combatant_id: string | null;
+  own_combatant_ids?: string[];
   combatants: PlayerCombatant[];
   log: Array<{
     id: string;
@@ -258,6 +354,7 @@ export type PlayerCombatSnapshot = {
     created_at?: string;
   }>;
   pending_rolls: PlayerPendingRoll[];
+  death_save: PlayerDeathSave | null;
 };
 
 export type PlayerRoomSnapshot = {
@@ -288,6 +385,7 @@ export type PlayerRoomSnapshot = {
     };
     handouts: Array<{ id: string; title: string; body: string; sort_order: number }>;
     shared_log: Array<{ id: string; event_type: string; title: string; description: string | null; occurred_at: string }>;
+    shops?: PlayerShop[];
     noncombat: {
       available_actions: NoncombatActionOption[];
       pending_actions: NoncombatPendingAction[];
@@ -302,6 +400,12 @@ export type PlayerCharacterDraft = {
   class_name: string;
   background: string;
   ability_scores: Record<string, number>;
+  ability_generation_method: "standard_array" | "point_buy" | "rolled_4d6_drop_lowest";
+  ability_rolls?: Record<string, number[]>;
+  origin_ability_increases: Record<string, number>;
+  background_tool_proficiency: string;
+  languages: string[];
+  starter_equipment_option: "fixed_package";
   equipment: string[];
   skill_proficiencies: string[];
   spells?: Array<Record<string, unknown>>;
@@ -367,9 +471,14 @@ export const setPlayerRoomLiveState = (
   campaignId: string,
   sceneId: string | null,
   combatId: string | null,
+  expectedVersion?: number,
 ) => apiFetch<PlayerRoom>(`/campaigns/${campaignId}/player-room/live-state`, {
   method: "POST",
-  body: { scene_id: sceneId, combat_id: combatId },
+  body: {
+    scene_id: sceneId,
+    combat_id: combatId,
+    ...(expectedVersion === undefined ? {} : { expected_version: expectedVersion }),
+  },
 });
 
 export const kickPlayerRoomMember = (campaignId: string, memberId: string) =>
@@ -395,9 +504,10 @@ export const resolvePlayerActionRequest = (
   requestId: string,
   version: number,
   decision: "accept" | "reject",
+  input: { attack_total?: number; damage_total?: number; critical_hit?: boolean } = {},
 ) => apiFetch<PlayerActionRequest>(
   `/campaigns/${campaignId}/player-action-requests/${requestId}/${decision}`,
-  { method: "POST", body: { version, dm_note: null } },
+  { method: "POST", body: { version, dm_note: null, ...input } },
 );
 
 export const getDmNoncombatActions = (
@@ -482,8 +592,9 @@ export const bindMyCharacter = (characterId: string) =>
 
 export type PlayerEquipmentOperation = {
   equipment_id: string;
-  operation: "equip" | "unequip" | "attune" | "unattune";
+  operation: "equip" | "unequip" | "consume" | "use_charge" | "attune" | "unattune";
   slot?: PlayerEquipmentSlot | null;
+  amount?: number;
   preview_token?: string;
   idempotency_key?: string;
 };
@@ -496,6 +607,28 @@ export const previewMyEquipment = (input: PlayerEquipmentOperation) =>
 
 export const confirmMyEquipment = (input: PlayerEquipmentOperation) =>
   playerFetch<Record<string, unknown>>("/player-room/me/equipment/confirm", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+
+export type PlayerCommerceOperation = {
+  wallet_id: string;
+  wallet_version: number;
+  shop_inventory_id: string;
+  shop_version: number;
+  quantity: number;
+  preview_token?: string;
+  idempotency_key?: string;
+};
+
+export const previewMyCommerce = (input: PlayerCommerceOperation) =>
+  playerFetch<Record<string, unknown>>("/player-room/me/commerce/preview", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+
+export const confirmMyCommerce = (input: PlayerCommerceOperation) =>
+  playerFetch<Record<string, unknown>>("/player-room/me/commerce/confirm", {
     method: "POST",
     body: JSON.stringify(input),
   });
@@ -540,31 +673,152 @@ export const rollMyNoncombatAction = (
   body: JSON.stringify({ version, raw_roll: rawRoll }),
 });
 
-export const moveMyCombatant = (row: number, col: number, combatantVersion: number) =>
+export const moveMyCombatant = (row: number, col: number, combatantVersion: number, disengage = false) =>
   playerFetch<Record<string, unknown>>("/player-room/me/combat/move", {
     method: "POST",
-    body: JSON.stringify({ row, col, combatant_version: combatantVersion }),
+    body: JSON.stringify({ row, col, combatant_version: combatantVersion, disengage }),
+  });
+
+export type PlayerCombatManeuver = {
+  action_type:
+    | "dash"
+    | "stand_up"
+    | "grapple"
+    | "shove"
+    | "dodge"
+    | "help"
+    | "ready"
+    | "search"
+    | "hide"
+    | "disengage"
+    | "use_item"
+    | "object_interaction";
+  actor_version: number;
+  target_combatant_id?: string;
+  target_version?: number;
+  outcome?: "success" | "failure";
+  shove_mode?: "prone" | "push";
+  push_distance_ft?: number;
+  adjudication_note?: string;
+  help_trigger?: string;
+  ready_phase?: "prepare" | "trigger";
+  ready_trigger?: string;
+  ready_response?: string;
+  ready_effect_id?: string;
+  ready_effect_version?: number;
+  item_id?: string;
+  item_version?: number;
+  object_id?: string;
+  object_version?: number;
+  object_state?: "active" | "open" | "closed" | "destroyed" | "disarmed" | "picked_up";
+};
+
+export const performMyCombatManeuver = (input: PlayerCombatManeuver) =>
+  playerFetch<Record<string, unknown>>("/player-room/me/combat/maneuver", {
+    method: "POST",
+    body: JSON.stringify({
+      ...input,
+      idempotency_key: createClientId(`player-maneuver-${input.action_type}`),
+    }),
   });
 
 export const attackWithMyCombatant = (
   targetId: string,
   targetIds: string[],
   actionName: string,
+  slotLevel: number | null,
   attackTotal: number,
   damageTotal: number,
   criticalHit = false,
   endTurnAfter = false,
+  execution: {
+    damageComponentTotals?: Record<string, number>;
+    targetDamageComponentTotals?: Record<string, Record<string, number>>;
+    reactionTrigger?: string;
+    specialInputs?: Record<string, unknown>;
+  } = {},
 ) => playerFetch<Record<string, unknown>>("/player-room/me/combat/attack", {
   method: "POST",
   body: JSON.stringify({
     target_combatant_id: targetId,
     target_combatant_ids: targetIds,
     action_name: actionName,
+    slot_level: slotLevel,
     attack_total: attackTotal,
     damage_total: damageTotal,
+    damage_component_totals: execution.damageComponentTotals ?? {},
+    target_damage_component_totals: execution.targetDamageComponentTotals ?? {},
+    reaction_trigger: execution.reactionTrigger ?? null,
+    special_inputs: execution.specialInputs ?? {},
     critical_hit: criticalHit,
     end_turn_after: endTurnAfter,
     idempotency_key: createClientId("player-attack"),
+  }),
+});
+
+export const castMyCombatAction = (
+  targetId: string,
+  targetIds: string[],
+  actionName: string,
+  slotLevel: number | null,
+  healingTotal: number,
+  endTurnAfter = false,
+  specialInputs: Record<string, unknown> = {},
+) => playerFetch<Record<string, unknown>>("/player-room/me/combat/cast", {
+  method: "POST",
+  body: JSON.stringify({
+    target_combatant_id: targetId,
+    target_combatant_ids: targetIds,
+    action_name: actionName,
+    slot_level: slotLevel,
+    healing_total: healingTotal,
+    special_inputs: specialInputs,
+    end_turn_after: endTurnAfter,
+    idempotency_key: createClientId("player-cast"),
+  }),
+});
+
+export const submitMyFeatureAction = (
+  featureId: string,
+  targetCombatantId: string | null,
+  healingTotal: number | null,
+) => playerFetch<Record<string, unknown>>("/player-room/me/combat/feature-action", {
+  method: "POST",
+  body: JSON.stringify({
+    feature_id: featureId,
+    target_combatant_id: targetCombatantId,
+    healing_total: healingTotal,
+    idempotency_key: createClientId("player-feature-action"),
+  }),
+});
+
+export const summonMyCompanion = (
+  companionId: string,
+  actionName: string,
+  count = 1,
+  position?: { row: number; col: number },
+) =>
+  playerFetch<Record<string, unknown>>("/player-room/me/combat/summon", {
+    method: "POST",
+    body: JSON.stringify({
+      companion_id: companionId,
+      action_name: actionName,
+      count,
+      position: position ?? null,
+      idempotency_key: createClientId("player-summon"),
+    }),
+  });
+
+export const dismissMySummon = (
+  summonCombatantId: string,
+  summonVersion: number,
+  reason = "玩家主动结束召唤",
+) => playerFetch<Record<string, unknown>>(`/player-room/me/combat/summons/${summonCombatantId}/dismiss`, {
+  method: "POST",
+  body: JSON.stringify({
+    summon_version: summonVersion,
+    reason,
+    idempotency_key: createClientId("player-dismiss-summon"),
   }),
 });
 
@@ -575,6 +829,16 @@ export const submitMyPlayerRoll = (actionId: string, actionVersion: number, roll
       action_version: actionVersion,
       roll_total: rollTotal,
       idempotency_key: createClientId("player-roll"),
+    }),
+  });
+
+export const submitMyDeathSave = (targetVersion: number, roll: number) =>
+  playerFetch<Record<string, unknown>>("/player-room/me/combat/death-save", {
+    method: "POST",
+    body: JSON.stringify({
+      target_version: targetVersion,
+      roll,
+      idempotency_key: createClientId("player-death-save"),
     }),
   });
 

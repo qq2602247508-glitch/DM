@@ -1,7 +1,7 @@
 import type { GeneratedAction } from "../api/types";
 import type { CombatActionLike } from "./combatAutomation";
 
-export const MIND_FLAYER_2025_ACTIONS: GeneratedAction[] = [
+export const MIND_FLAYER_2025_ACTIONS: (GeneratedAction & CombatActionLike)[] = [
   {
     name: "触须",
     description: "近战攻击检定 +7，触及5尺。命中造成4d8+4心灵伤害；中型或更小目标被擒抱（逃脱DC14）并在擒抱期间震慑。",
@@ -34,6 +34,11 @@ export const MIND_FLAYER_2025_ACTIONS: GeneratedAction[] = [
     save_ability: "intelligence",
     half_damage_on_save: true,
     recharge: "5–6",
+    action_type: "action",
+    area_shape: "cone",
+    area_size_ft: 60,
+    area_origin_self: true,
+    affects_multiple_targets: true,
   },
 ];
 
@@ -41,7 +46,9 @@ export function monsterActionsForRules(
   displayName: string,
   recordedActions: CombatActionLike[],
 ): CombatActionLike[] {
-  if (/夺心魔|灵吸怪|mind flayer/i.test(displayName)) {
+  // Parsed compendium actions are authoritative.  The small profile remains
+  // a compatibility fallback for old snapshots which stored no action list.
+  if (recordedActions.length === 0 && /夺心魔|灵吸怪|mind flayer/i.test(displayName)) {
     return MIND_FLAYER_2025_ACTIONS;
   }
   return recordedActions;

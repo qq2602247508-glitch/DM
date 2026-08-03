@@ -4,20 +4,128 @@ import {
   abilityModifier,
   chooseEnemyActionIndex,
   chooseEnemyTarget,
+  expandMonsterAction,
+  executableTargetIds,
+  forcedMovementFromAction,
+  hasGridPosition,
+  isPlayerControlledCombatant,
   parseDiceExpression,
+  parseRechargeRange,
   parseRangeFeet,
   proficiencyBonus,
   proposeFreeformCheck,
+  isRechargeAvailable,
   rollDiceExpression,
+  rollStructuredDamage,
 } from "./combatAutomation";
 
 describe("combat automation helpers", () => {
+  it("does not treat an unplaced summon as a map target", () => {
+    expect(hasGridPosition({ grid_position: { row: 5, col: 4 } })).toBe(true);
+    expect(hasGridPosition({ grid_position: null })).toBe(false);
+    expect(hasGridPosition({})).toBe(false);
+  });
+
+  it("keeps player summons out of the enemy AI boundary", () => {
+    expect(isPlayerControlledCombatant("companion", { controller: "player" })).toBe(true);
+    expect(isPlayerControlledCombatant("companion", { controller: "dm" })).toBe(false);
+    expect(isPlayerControlledCombatant("monster", { controller: "player" })).toBe(true);
+  });
+
+  it("uses the map's horizontal coverage for ordinary 2-D actions after movement", () => {
+    const staleVertical = new Set<string>();
+    const horizontal = new Set(["player"]);
+    expect(executableTargetIds(staleVertical, horizontal)).toBe(horizontal);
+    expect(executableTargetIds(staleVertical, horizontal, true)).toBe(staleVertical);
+  });
+
+  it("carries forced movement from compiled spell blocks into the DM combat path", () => {
+    expect(forcedMovementFromAction({
+      name: "雷鸣波",
+      rule_plan: {
+        blocks: [
+          { kind: "damage", expression: "2d8", damage_type: "thunder" },
+          { kind: "move", movement_type: "forced", distance_ft: 10, direction: "away" },
+        ],
+      },
+    })).toEqual({ distance_ft: 10, direction: "away" });
+    expect(forcedMovementFromAction({
+      name: "成功即无位移",
+      movement: { distance_ft: 10, type: "forced", direction: "toward" },
+    })).toEqual({ distance_ft: 10, direction: "toward" });
+    expect(forcedMovementFromAction({ name: "没有明确位移" })).toBeNull();
+  });
+
   it("parses and rolls bounded dice expressions", () => {
     expect(parseDiceExpression("8d6+3 火焰")).toEqual({ count: 8, sides: 6, modifier: 3 });
     expect(rollDiceExpression({ count: 2, sides: 6, modifier: 1 }, () => 0)).toEqual({
       rolls: [1, 1],
       total: 3,
     });
+  });
+
+  it("rolls every typed damage segment independently", () => {
+    expect(rollStructuredDamage({
+      name: "寒火爆裂",
+      damage_components: [
+        { expression: "1d6", damage_type: "fire" },
+        { expression: "1d8+1", damage_type: "cold" },
+      ],
+    }, () => 0)).toEqual({
+      components: [
+        { amount: 1, damage_type: "fire" },
+        { amount: 2, damage_type: "cold" },
+      ],
+      total: 3,
+      damageType: "mixed",
+    });
+  });
+
+  it("keeps recharge actions available initially, then respects the persisted recharge gate", () => {
+    const breath = { name: "火焰吐息", damage: "6d6", recharge: "5–6" };
+    expect(parseRechargeRange(breath.recharge)).toEqual({ minimum: 5, maximum: 6 });
+    expect(parseRechargeRange({ minimum: 5, maximum: 6 })).toEqual({ minimum: 5, maximum: 6 });
+    expect(isRechargeAvailable(breath, undefined)).toBe(true);
+    expect(isRechargeAvailable(breath, { 火焰吐息: false })).toBe(false);
+    expect(isRechargeAvailable(breath, { 火焰吐息: true })).toBe(true);
+    expect(chooseEnemyActionIndex(
+      [breath, { name: "爪击", damage: "1d6" }],
+      "standard",
+      0,
+      { 火焰吐息: false },
+    )).toBe(1);
+  });
+
+  it("expands only fully linked multiattack sequences", () => {
+    const actions = [
+      {
+        name: "多重攻击",
+        multiattack: true,
+        multiattack_count: 3,
+        multiattack_components: [
+          { action_name: "啃咬", count: 1 },
+          { action_name: "爪击", count: 2 },
+        ],
+      },
+      { name: "啃咬", damage: "1d10+4", auto_eligible: true },
+      { name: "爪击", damage: "2d6+4", auto_eligible: true },
+    ];
+    expect(expandMonsterAction(actions, 0)?.map((step) => step.action.name)).toEqual([
+      "啃咬",
+      "爪击",
+      "爪击",
+    ]);
+    expect(expandMonsterAction([{ ...actions[0], multiattack_count: 4 }, ...actions.slice(1)], 0)).toBeNull();
+  });
+
+  it("never selects reactions, legendary actions, or lair actions as a normal turn action", () => {
+    const actions = [
+      { name: "反击", action_type: "reaction" as const, damage: "9d6", auto_eligible: true },
+      { name: "尾击", action_type: "legendary_action" as const, damage: "8d6", auto_eligible: true },
+      { name: "震地", action_type: "lair_action" as const, damage: "7d6", auto_eligible: true },
+      { name: "爪击", action_type: "action" as const, damage: "1d6", auto_eligible: true },
+    ];
+    expect(chooseEnemyActionIndex(actions, "tactical", 0)).toBe(3);
   });
 
   it("derives range and modifiers", () => {

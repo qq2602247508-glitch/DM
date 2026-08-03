@@ -6,14 +6,22 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 
 from dnd_dm_assistant.api.dependencies import get_combat_engine_service
 from dnd_dm_assistant.api.schemas import (
+    CombatActionBatchCommand,
     CombatActionCommand,
     CombatEffectCommand,
     CombatEffectEndCommand,
+    CombatEffectSaveCommand,
+    CombatFeatureActionCommand,
+    CombatManeuverCommand,
     CombatResetCommand,
     CombatSettlementCommand,
+    CombatSummonCommand,
+    CombatSummonEndCommand,
     ConcentrationCheckCommand,
     DeathConfirmationCommand,
     DeathSaveCommand,
+    MonsterAreaActionCommand,
+    PlayerRollPromptBatchCommand,
     PlayerRollPromptCommand,
     PlayerRollResolutionCommand,
     TurnAdvanceCommand,
@@ -64,6 +72,67 @@ def confirm_combat_action(
     )
 
 
+@router.post("/actions/confirm-batch")
+def confirm_combat_action_batch(
+    campaign_id: str,
+    combat_id: str,
+    body: CombatActionBatchCommand,
+    service: Annotated[CombatEngineService, Depends(get_combat_engine_service)],
+) -> dict[str, Any]:
+    """Confirm a multi-target action after the shared preflight barrier."""
+
+    return _safe_call(
+        lambda: {
+            "items": service.confirm_action_batch(
+                campaign_id,
+                combat_id,
+                [
+                    (item.command, item.idempotency_key)
+                    for item in body.items
+                ],
+            )
+        }
+    )
+
+
+@router.post("/maneuvers/confirm")
+def confirm_combat_maneuver(
+    campaign_id: str,
+    combat_id: str,
+    body: CombatManeuverCommand,
+    request: Request,
+    service: Annotated[CombatEngineService, Depends(get_combat_engine_service)],
+) -> dict[str, Any]:
+    request_id = str(getattr(request.state, "request_id", "unknown"))
+    return _safe_call(
+        lambda: service.confirm_maneuver(
+            campaign_id,
+            combat_id,
+            body,
+            idempotency_key=request_id,
+        )
+    )
+
+
+@router.post("/monster-area-actions/confirm")
+def confirm_monster_area_action(
+    campaign_id: str,
+    combat_id: str,
+    body: MonsterAreaActionCommand,
+    request: Request,
+    service: Annotated[CombatEngineService, Depends(get_combat_engine_service)],
+) -> dict[str, Any]:
+    request_id = str(getattr(request.state, "request_id", "unknown"))
+    return _safe_call(
+        lambda: service.confirm_monster_area_action(
+            campaign_id,
+            combat_id,
+            body,
+            idempotency_key=request_id,
+        )
+    )
+
+
 @router.get("/actions")
 def list_combat_actions(
     campaign_id: str,
@@ -71,6 +140,25 @@ def list_combat_actions(
     service: Annotated[CombatEngineService, Depends(get_combat_engine_service)],
 ) -> dict[str, Any]:
     return {"items": _safe_call(lambda: service.list_actions(campaign_id, combat_id))}
+
+
+@router.post("/feature-actions/confirm")
+def confirm_feature_action(
+    campaign_id: str,
+    combat_id: str,
+    body: CombatFeatureActionCommand,
+    request: Request,
+    service: Annotated[CombatEngineService, Depends(get_combat_engine_service)],
+) -> dict[str, Any]:
+    request_id = str(getattr(request.state, "request_id", "unknown"))
+    return _safe_call(
+        lambda: service.confirm_feature_action(
+            campaign_id,
+            combat_id,
+            body,
+            idempotency_key=request_id,
+        )
+    )
 
 
 @router.post("/actions/player-rolls/pending")
@@ -86,6 +174,65 @@ def create_pending_player_roll(
         lambda: service.create_player_roll_prompt(
             campaign_id,
             combat_id,
+            body,
+            idempotency_key=request_id,
+        )
+    )
+
+
+@router.post("/actions/player-rolls/pending/batch")
+def create_pending_player_roll_batch(
+    campaign_id: str,
+    combat_id: str,
+    body: PlayerRollPromptBatchCommand,
+    request: Request,
+    service: Annotated[CombatEngineService, Depends(get_combat_engine_service)],
+) -> dict[str, Any]:
+    request_id = str(getattr(request.state, "request_id", "unknown"))
+    return _safe_call(
+        lambda: service.create_player_roll_prompt_batch(
+            campaign_id,
+            combat_id,
+            body,
+            idempotency_key=request_id,
+        )
+    )
+
+
+@router.post("/summons")
+def add_summon(
+    campaign_id: str,
+    combat_id: str,
+    body: CombatSummonCommand,
+    request: Request,
+    service: Annotated[CombatEngineService, Depends(get_combat_engine_service)],
+) -> dict[str, Any]:
+    request_id = str(getattr(request.state, "request_id", "unknown"))
+    return _safe_call(
+        lambda: service.add_summon(
+            campaign_id,
+            combat_id,
+            body,
+            idempotency_key=request_id,
+        )
+    )
+
+
+@router.post("/summons/{summon_combatant_id}/end")
+def end_summon(
+    campaign_id: str,
+    combat_id: str,
+    summon_combatant_id: str,
+    body: CombatSummonEndCommand,
+    request: Request,
+    service: Annotated[CombatEngineService, Depends(get_combat_engine_service)],
+) -> dict[str, Any]:
+    request_id = str(getattr(request.state, "request_id", "unknown"))
+    return _safe_call(
+        lambda: service.end_summon(
+            campaign_id,
+            combat_id,
+            summon_combatant_id,
             body,
             idempotency_key=request_id,
         )
@@ -303,6 +450,27 @@ def end_effect(
     request_id = str(getattr(request.state, "request_id", "unknown"))
     return _safe_call(
         lambda: service.end_effect(
+            campaign_id,
+            combat_id,
+            effect_id,
+            body,
+            idempotency_key=request_id,
+        )
+    )
+
+
+@router.post("/effects/{effect_id}/save/confirm")
+def confirm_effect_save(
+    campaign_id: str,
+    combat_id: str,
+    effect_id: str,
+    body: CombatEffectSaveCommand,
+    request: Request,
+    service: Annotated[CombatEngineService, Depends(get_combat_engine_service)],
+) -> dict[str, Any]:
+    request_id = str(getattr(request.state, "request_id", "unknown"))
+    return _safe_call(
+        lambda: service.confirm_effect_save(
             campaign_id,
             combat_id,
             effect_id,

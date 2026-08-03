@@ -15,7 +15,7 @@ import type {
 } from "../../api/types";
 import { useToast } from "../../hooks/toastContext";
 import { Badge, Button } from "../../ui/primitives";
-import { inputCls, selectCls } from "../../ui/styles";
+import { inputCls, selectCls, textareaCls } from "../../ui/styles";
 
 const RESOLUTION_LABELS: Record<PlayerRollResolutionType, string> = {
   armor_class: "AC 防御",
@@ -49,6 +49,21 @@ function actionNameOf(raw: unknown): string {
   return "";
 }
 
+function parseDamageSegments(value: string): Array<{ amount: number; damage_type: string }> {
+  return value
+    .split(/[\n,;]+/)
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .map((item) => {
+      const match = item.match(/^(.+?)(?:\s*[:=]\s*|\s+)(\d+)$/);
+      if (!match) throw new Error(`伤害段格式错误：${item}；请写成 fire:7 或 fire 7`);
+      const amount = Number(match[2]);
+      if (!Number.isInteger(amount) || amount < 0) throw new Error(`伤害段数值错误：${item}`);
+      return { damage_type: (match[1] ?? "").trim(), amount };
+    })
+    .filter((item) => item.damage_type.length > 0);
+}
+
 export function PlayerRollPanel({
   activeEnemy,
   actions,
@@ -77,8 +92,11 @@ export function PlayerRollPanel({
   const [skill, setSkill] = useState("");
   const [damageOnSuccess, setDamageOnSuccess] = useState("0");
   const [damageOnFailure, setDamageOnFailure] = useState("0");
-  const [damageType, setDamageType] = useState("physical");
+  const [damageType, setDamageType] = useState("");
+  const [damageSuccessSegments, setDamageSuccessSegments] = useState("");
+  const [damageFailureSegments, setDamageFailureSegments] = useState("");
   const [rolls, setRolls] = useState<Record<string, string>>({});
+  const [useFeatureReroll, setUseFeatureReroll] = useState<Record<string, boolean>>({});
   const [previews, setPreviews] = useState<Record<string, PlayerRollResolutionResult>>({});
 
   const pending = useMemo(
@@ -109,6 +127,12 @@ export function PlayerRollPanel({
     mutationFn: () => {
       const target = fighters.find((fighter) => fighter.id === targetId);
       if (!activeEnemy || !target) throw new Error("请选择动作发起者和玩家目标");
+      if ((Number(damageOnSuccess) > 0 || Number(damageOnFailure) > 0) && !damageType.trim()
+        && !damageSuccessSegments.trim() && !damageFailureSegments.trim()) {
+        throw new Error("请填写明确伤害类型，不能默认当作未分类伤害");
+      }
+      const successSegments = parseDamageSegments(damageSuccessSegments);
+      const failureSegments = parseDamageSegments(damageFailureSegments);
       return createPlayerRollPrompt(campaignId, combatId, {
         actor_combatant_id: activeEnemy.id,
         actor_version: activeEnemy.version,
@@ -123,8 +147,10 @@ export function PlayerRollPanel({
         skill: resolutionType === "skill_check" ? skill : null,
         damage_on_success: Number(damageOnSuccess),
         damage_on_failure: Number(damageOnFailure),
+        damage_components_on_success: successSegments,
+        damage_components_on_failure: failureSegments,
         damage_type: Number(damageOnSuccess) > 0 || Number(damageOnFailure) > 0
-          ? damageType
+          ? damageType.trim() || successSegments[0]?.damage_type || failureSegments[0]?.damage_type
           : null,
         description: `${activeEnemy.display_name} 使用 ${actionName}，等待玩家亲自掷骰。`,
       });
@@ -136,11 +162,20 @@ export function PlayerRollPanel({
     onError: () => showToast("无法生成玩家掷骰请求，请检查动作、DC和伤害类型", "error"),
   });
   const preview = useMutation({
-    mutationFn: (action: CombatAction) =>
-      previewPlayerRoll(campaignId, combatId, action.id, {
+    mutationFn: (action: CombatAction) => {
+      const values = (rolls[action.id] ?? "")
+        .split(/[\s,;]+/)
+        .filter(Boolean)
+        .map(Number);
+      if (values.some((value) => !Number.isFinite(value))) throw new Error("请输入有效骰值");
+      return previewPlayerRoll(campaignId, combatId, action.id, {
         action_version: action.version,
-        roll_total: Number(rolls[action.id]),
-      }),
+        roll_total: values[0] ?? 0,
+        ...(useFeatureReroll[action.id]
+          ? { roll_totals: values, use_feature_reroll: true }
+          : {}),
+      });
+    },
     onSuccess: (result) => {
       setPreviews((current) => ({ ...current, [result.action.id]: result }));
     },
@@ -148,9 +183,17 @@ export function PlayerRollPanel({
   });
   const confirm = useMutation({
     mutationFn: async (action: CombatAction) => {
+      const values = (rolls[action.id] ?? "")
+        .split(/[\s,;]+/)
+        .filter(Boolean)
+        .map(Number);
+      if (values.some((value) => !Number.isFinite(value))) throw new Error("请输入有效骰值");
       const resolution = await confirmPlayerRoll(campaignId, combatId, action.id, {
         action_version: action.version,
-        roll_total: Number(rolls[action.id]),
+        roll_total: values[0] ?? 0,
+        ...(useFeatureReroll[action.id]
+          ? { roll_totals: values, use_feature_reroll: true }
+          : {}),
       });
       const followUp = resolution.resolution.follow_up_damage;
       if (followUp) {
@@ -293,6 +336,26 @@ export function PlayerRollPanel({
             伤害类型
             <input className={`${inputCls} mt-1`} onChange={(event) => setDamageType(event.target.value)} value={damageType} />
           </label>
+          <label className="text-2xs text-stone-400 sm:col-span-2">
+            成功时逐段伤害（可选；每行写 fire:7 或 fire 7）
+            <textarea
+              aria-label="成功时逐段伤害"
+              className={`${textareaCls} mt-1 min-h-12`}
+              onChange={(event) => setDamageSuccessSegments(event.target.value)}
+              placeholder="例如：fire:3\ncold:2"
+              value={damageSuccessSegments}
+            />
+          </label>
+          <label className="text-2xs text-stone-400 sm:col-span-2">
+            失败时逐段伤害（可选；每段会独立应用抗性/易伤/免疫）
+            <textarea
+              aria-label="失败时逐段伤害"
+              className={`${textareaCls} mt-1 min-h-12`}
+              onChange={(event) => setDamageFailureSegments(event.target.value)}
+              placeholder="例如：fire:7\ncold:5"
+              value={damageFailureSegments}
+            />
+          </label>
           <div className="flex items-end">
             <Button
               disabled={!targetId || !actionName.trim() || !activeEnemy.action_available || createPrompt.isPending}
@@ -310,6 +373,11 @@ export function PlayerRollPanel({
         const request = action.request_json;
         const result = previews[action.id];
         const rollValue = rolls[action.id] ?? "";
+        const rollTarget = fighters.find((fighter) => fighter.id === action.target_combatant_ids[0]);
+        const featureRerollAvailable = Array.isArray(rollTarget?.snapshot_json.feature_saving_throw_rerolls)
+          && rollTarget.snapshot_json.feature_saving_throw_rerolls.some(
+            (item) => item && typeof item === "object" && (item as { available?: unknown }).available === true,
+          );
         return (
           <article className="mt-3 rounded border border-sky-800/50 bg-ink-950/70 p-3" key={action.id}>
             <strong className="text-xs text-parchment-100">
@@ -331,10 +399,20 @@ export function PlayerRollPanel({
                 className={`${inputCls} w-36`}
                 onChange={(event) =>
                   setRolls((current) => ({ ...current, [action.id]: event.target.value }))}
-                placeholder="玩家最终总值"
+                placeholder={featureRerollAvailable ? "总值；重掷时写 12,18" : "玩家最终总值"}
                 type="number"
                 value={rollValue}
               />
+              {featureRerollAvailable && request.resolution_type === "saving_throw" ? (
+                <label className="flex items-center gap-1 text-2xs text-violet-200">
+                  <input
+                    checked={useFeatureReroll[action.id] === true}
+                    onChange={(event) => setUseFeatureReroll((current) => ({ ...current, [action.id]: event.target.checked }))}
+                    type="checkbox"
+                  />
+                  使用职业特性重掷（填两次总值）
+                </label>
+              ) : null}
               <Button disabled={rollValue === "" || preview.isPending} onClick={() => preview.mutate(action)}>
                 预览结果
               </Button>

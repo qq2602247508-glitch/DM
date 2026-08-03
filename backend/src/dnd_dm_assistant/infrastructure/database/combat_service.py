@@ -1,7 +1,11 @@
 from __future__ import annotations
 
+import re
+import secrets
 from dataclasses import asdict
 from datetime import UTC, datetime
+from hashlib import sha256
+from math import floor, hypot
 from typing import Any
 
 from sqlalchemy import delete, select
@@ -12,11 +16,18 @@ from dnd_dm_assistant.api.schemas import (
     CombatActionCommand,
     CombatEffectCommand,
     CombatEffectEndCommand,
+    CombatEffectSaveCommand,
+    CombatFeatureActionCommand,
+    CombatManeuverCommand,
     CombatResetCommand,
     CombatSettlementCommand,
+    CombatSummonCommand,
+    CombatSummonEndCommand,
     ConcentrationCheckCommand,
     DeathConfirmationCommand,
     DeathSaveCommand,
+    MonsterAreaActionCommand,
+    PlayerRollPromptBatchCommand,
     PlayerRollPromptCommand,
     PlayerRollResolutionCommand,
     TurnAdvanceCommand,
@@ -27,11 +38,17 @@ from dnd_dm_assistant.domain.combat import (
     resolve_death_save,
     resolve_healing,
 )
+from dnd_dm_assistant.domain.exploration import (
+    cover_between,
+    grid_distance_ft,
+    line_of_sight,
+)
 from dnd_dm_assistant.infrastructure.database.campaign_service import serialize
 from dnd_dm_assistant.infrastructure.database.models import (
     NPC,
     Campaign,
     Character,
+    CharacterCompanion,
     CharacterCondition,
     Combat,
     CombatAction,
@@ -42,15 +59,891 @@ from dnd_dm_assistant.infrastructure.database.models import (
     DeathSave,
     MonsterInstance,
     OperationTransaction,
+    SceneGrid,
+    SceneObject,
     SceneParticipant,
+    SceneToken,
     Wallet,
     WorldItem,
 )
 
 
 class CombatEngineService:
+    _CONDITION_ALIASES = {
+        "incapacitated": "incapacitated",
+        "失能": "incapacitated",
+        "unconscious": "unconscious",
+        "昏迷": "unconscious",
+        "stunned": "stunned",
+        "震慑": "stunned",
+        "paralyzed": "paralyzed",
+        "麻痹": "paralyzed",
+        "petrified": "petrified",
+        "石化": "petrified",
+        "blinded": "blinded",
+        "目盲": "blinded",
+        "deafened": "deafened",
+        "耳聋": "deafened",
+        "poisoned": "poisoned",
+        "中毒": "poisoned",
+        "frightened": "frightened",
+        "恐慌": "frightened",
+        "restrained": "restrained",
+        "束缚": "restrained",
+        "charmed": "charmed",
+        "魅惑": "charmed",
+        "invisible": "invisible",
+        "隐形": "invisible",
+        "prone": "prone",
+        "倒地": "prone",
+        "grappled": "grappled",
+        "擒抱": "grappled",
+        "raging": "raging",
+        "rage": "raging",
+        "狂暴": "raging",
+    }
+    _ACTION_BLOCKING_CONDITIONS = {
+        "incapacitated",
+        "unconscious",
+        "stunned",
+        "paralyzed",
+        "petrified",
+    }
+    _MOVEMENT_BLOCKING_CONDITIONS = {
+        "unconscious",
+        "stunned",
+        "paralyzed",
+        "petrified",
+        "grappled",
+        "restrained",
+    }
+    _RUNTIME_STATE_CONDITIONS = {
+        "dodge": "闪避",
+        "hidden": "隐藏",
+        "help": "受助",
+        "ready": "准备",
+        "disengage": "撤离",
+        "feature_invisible": "隐形",
+    }
+
     def __init__(self, engine: Engine) -> None:
         self.engine = engine
+
+    @staticmethod
+    def _state_int(value: object, default: int = 0) -> int:
+        if isinstance(value, bool):
+            return default
+        if isinstance(value, int):
+            return value
+        if isinstance(value, str):
+            try:
+                return int(value)
+            except ValueError:
+                return default
+        return default
+
+    @staticmethod
+    def _effect_ends_round(
+        started_round: int,
+        duration_unit: str,
+        duration_value: int | None,
+    ) -> int | None:
+        """Translate a combat effect's explicit clock to an initiative clock.
+
+        Combat rounds are six seconds.  A duration expressed in minutes is
+        therefore deterministic in combat (10 rounds per minute); leaving it
+        as a database field without an ``ends_round`` made minute-long buffs
+        live forever.  Narrative/concentration/until-save effects stay open
+        until their dedicated lifecycle endpoint resolves them.
+        """
+
+        if duration_value is None:
+            return None
+        if duration_unit == "rounds":
+            return started_round + int(duration_value)
+        if duration_unit == "minutes":
+            return started_round + int(duration_value) * 10
+        return None
+
+    @staticmethod
+    def _ordered_combatants(session: Session, combat_id: str) -> list[Combatant]:
+        return list(
+            session.scalars(
+                select(Combatant)
+                .where(Combatant.combat_id == combat_id, Combatant.is_active.is_(True))
+                .order_by(Combatant.initiative.desc(), Combatant.created_at, Combatant.id)
+            ).all()
+        )
+
+    @staticmethod
+    def _is_summon(combatant: Combatant) -> bool:
+        return (
+            combatant.entity_type == "companion"
+            and "summon_source" in combatant.snapshot_json
+        )
+
+    @staticmethod
+    def _effect_summon_ids(effect: CombatEffect) -> list[str]:
+        """Read both the original one-summon link and grouped lifecycle links."""
+        details = dict(effect.details_json or {})
+        ids: list[str] = []
+        raw = details.get("ends_summon_combatant_id")
+        if isinstance(raw, str) and raw:
+            ids.append(raw)
+        grouped = details.get("ends_summon_combatant_ids")
+        if isinstance(grouped, list):
+            ids.extend(item for item in grouped if isinstance(item, str) and item)
+        return list(dict.fromkeys(ids))
+
+    @classmethod
+    def _effect_summon_id(cls, effect: CombatEffect) -> str | None:
+        ids = cls._effect_summon_ids(effect)
+        return ids[0] if ids else None
+
+    @classmethod
+    def _deactivate_summons(
+        cls,
+        session: Session,
+        combat: Combat,
+        summon_ids: list[str],
+        *,
+        now: datetime,
+    ) -> list[Combatant]:
+        unique_ids = list(dict.fromkeys(summon_ids))
+        if not unique_ids:
+            return []
+        before_order = cls._ordered_combatants(session, combat.id)
+        current = (
+            before_order[combat.current_turn_index]
+            if 0 <= combat.current_turn_index < len(before_order)
+            else None
+        )
+        deactivated: list[Combatant] = []
+        for summon_id in unique_ids:
+            summon = session.get(Combatant, summon_id)
+            if (
+                summon is None
+                or summon.combat_id != combat.id
+                or not cls._is_summon(summon)
+                or not summon.is_active
+            ):
+                continue
+            summon.is_active = False
+            summon.version += 1
+            summon.updated_at = now
+            deactivated.append(summon)
+        if not deactivated:
+            return []
+
+        session.flush()
+        after_order = cls._ordered_combatants(session, combat.id)
+        after_index = {combatant.id: index for index, combatant in enumerate(after_order)}
+        if current is not None and current.id in after_index:
+            combat.current_turn_index = after_index[current.id]
+        elif current is not None and after_order:
+            current_position = before_order.index(current)
+            successors = before_order[current_position + 1 :] + before_order[:current_position]
+            successor = next(
+                (candidate for candidate in successors if candidate.id in after_index),
+                after_order[0],
+            )
+            combat.current_turn_index = after_index[successor.id]
+        else:
+            combat.current_turn_index = 0
+        combat.version += 1
+        combat.updated_at = now
+        return deactivated
+
+    @classmethod
+    def _deactivate_summons_for_effects(
+        cls,
+        session: Session,
+        combat: Combat,
+        effects: list[CombatEffect],
+        *,
+        now: datetime,
+    ) -> list[Combatant]:
+        return cls._deactivate_summons(
+            session,
+            combat,
+            [
+                summon_id
+                for effect in effects
+                for summon_id in cls._effect_summon_ids(effect)
+            ],
+            now=now,
+        )
+
+    @classmethod
+    def _effect_lifecycle_summon(
+        cls,
+        session: Session,
+        combat_id: str,
+        command: CombatEffectCommand,
+    ) -> Combatant | None:
+        summon_id = command.ends_summon_combatant_id
+        if summon_id is None:
+            return None
+        summon = session.get(Combatant, summon_id)
+        if summon is None or summon.combat_id != combat_id or not cls._is_summon(summon):
+            raise StateNotFoundError("summon combatant not found in combat")
+        if not summon.is_active:
+            raise ValueError("summon is already ended")
+        if summon.version != command.summon_version:
+            raise VersionConflict(
+                "combatant",
+                summon.id,
+                command.summon_version or 0,
+                summon.version,
+            )
+        return summon
+
+    def add_summon(
+        self,
+        campaign_id: str,
+        combat_id: str,
+        command: CombatSummonCommand,
+        *,
+        idempotency_key: str,
+    ) -> dict[str, Any]:
+        """Add a real creature template to an existing combat initiative.
+
+        Rule-plan compilation only describes a summon.  This operation is the
+        explicit, auditable bridge from that description to a combatant.  It
+        deliberately refuses an underspecified inline template instead of
+        inventing HP, AC, or actions.
+        """
+        if not idempotency_key.strip():
+            raise ValueError("idempotency key is required")
+        with Session(self.engine) as session, session.begin():
+            campaign = session.get(Campaign, campaign_id)
+            if campaign is None:
+                raise StateNotFoundError("campaign not found")
+            combat = session.get(Combat, combat_id)
+            if combat is None or combat.campaign_id != campaign_id:
+                raise StateNotFoundError("combat not found in campaign")
+            existing_action = session.scalar(
+                select(CombatAction).where(
+                    CombatAction.combat_id == combat_id,
+                    CombatAction.idempotency_key == idempotency_key,
+                )
+            )
+            if existing_action is not None:
+                raw_ids = existing_action.result_json.get("combatant_ids")
+                existing_ids = (
+                    [item for item in raw_ids if isinstance(item, str)]
+                    if isinstance(raw_ids, list)
+                    else []
+                )
+                if not existing_ids:
+                    existing_id = existing_action.result_json.get("combatant_id")
+                    existing_ids = [existing_id] if isinstance(existing_id, str) else []
+                existing_combatants = [
+                    item
+                    for item_id in existing_ids
+                    if (item := session.get(Combatant, item_id)) is not None
+                ]
+                return {
+                    "action": serialize(existing_action),
+                    "combatant": (
+                        serialize(existing_combatants[0])
+                        if existing_combatants
+                        else None
+                    ),
+                    "combatants": [serialize(item) for item in existing_combatants],
+                    "already_applied": True,
+                }
+            if combat.status != "active":
+                raise ValueError("只能向进行中的战斗加入召唤物")
+
+            source = (
+                session.get(Combatant, command.source_combatant_id)
+                if command.source_combatant_id
+                else None
+            )
+            if source is not None and (
+                source.combat_id != combat_id or not source.is_active
+            ):
+                raise StateNotFoundError("召唤来源不在当前战斗中")
+            if command.initiative_mode == "not_applicable":
+                raise ValueError("initiative_mode=not_applicable 的召唤效果不能加入战斗")
+            if command.initiative_mode == "shared_with_source" and source is None:
+                raise ValueError("shared_with_source 召唤必须提供当前战斗中的来源单位")
+            if command.controller == "player":
+                if source is None or not self._is_player_controlled(source):
+                    raise ValueError("玩家召唤必须由当前玩家控制的单位发起")
+                owner_id = command.owner_character_id
+                if owner_id is None:
+                    raise ValueError("player summon owner is required")
+                if self._combatant_owner(source) != owner_id:
+                    raise ValueError("玩家不能替其他玩家控制召唤物")
+
+            companion = None
+            if command.companion_id is not None:
+                companion = session.get(CharacterCompanion, command.companion_id)
+                if companion is None or companion.campaign_id != campaign_id:
+                    raise StateNotFoundError("companion not found in campaign")
+                if not companion.active:
+                    raise ValueError("该召唤物模板已停用")
+                if (
+                    command.controller == "player"
+                    and companion.owner_character_id != command.owner_character_id
+                ):
+                    raise ValueError("玩家不能召唤其他角色的伙伴")
+                if command.count == 1:
+                    already = session.scalar(
+                        select(Combatant).where(
+                            Combatant.combat_id == combat_id,
+                            Combatant.entity_type == "companion",
+                            Combatant.entity_id == companion.id,
+                            Combatant.is_active.is_(True),
+                        )
+                    )
+                    if already is not None:
+                        return {
+                            "action": None,
+                            "combatant": serialize(already),
+                            "combatants": [serialize(already)],
+                            "already_applied": True,
+                        }
+
+            if command.controller == "player":
+                self._validate_action_economy(
+                    session,
+                    combat,
+                    source,
+                    actor_version=source.version if source is not None else None,
+                    action_cost=command.action_cost,
+                    consume=True,
+                )
+                if command.resource_key and command.resource_cost:
+                    owner_id = command.owner_character_id
+                    character = session.get(Character, owner_id) if owner_id else None
+                    if character is None or character.campaign_id != campaign_id:
+                        raise StateNotFoundError("召唤物主人角色不在当前战役")
+                    resources = dict(character.resources or {})
+                    resource = resources.get(command.resource_key)
+                    current = int(resource.get("current") or 0) if isinstance(resource, dict) else 0
+                    if current < command.resource_cost:
+                        raise ValueError("对应法术位或资源不足")
+                    resources[command.resource_key] = {
+                        **(resource if isinstance(resource, dict) else {}),
+                        "current": current - command.resource_cost,
+                    }
+                    character.resources = resources
+                    character.version += 1
+                    character.updated_at = datetime.now(UTC)
+
+            template = dict(companion.template_json or {}) if companion else {}
+
+            def value(name: str, default: Any = None) -> Any:
+                explicit = getattr(command, name)
+                if explicit is not None and explicit != {} and explicit != []:
+                    return explicit
+                if name in template and template[name] not in (None, "", {}, []):
+                    return template[name]
+                return default
+
+            name = str(value("name", companion.name if companion else "") or "").strip()
+            if not name:
+                raise ValueError("召唤物缺少名称")
+            max_hp_raw = value("max_hp", companion.max_hp if companion else None)
+            hp_raw = value("hp", companion.hp if companion else max_hp_raw)
+            ac_raw = value("armor_class", companion.armor_class if companion else None)
+            speed_raw = value("speed_ft", companion.speed if companion else None)
+            if max_hp_raw is None or ac_raw is None or speed_raw is None:
+                raise ValueError("召唤物战斗模板必须明确 HP、AC 和速度")
+            max_hp = int(max_hp_raw)
+            hp = int(hp_raw)
+            armor_class = int(ac_raw)
+            speed_ft = int(speed_raw)
+            if max_hp < 1 or hp < 0 or hp > max_hp:
+                raise ValueError("召唤物 HP 数值无效")
+            ability_scores_raw = value("ability_scores", {})
+            ability_scores = (
+                {str(key): int(raw) for key, raw in ability_scores_raw.items()}
+                if isinstance(ability_scores_raw, dict)
+                else {}
+            )
+            actions_raw = value("actions", [])
+            actions = list(actions_raw) if isinstance(actions_raw, list) else []
+            template_actions = template.get("actions")
+            if (
+                command.companion_id is not None
+                and not actions
+                and isinstance(template_actions, list)
+            ):
+                actions = list(template_actions)
+
+            before_order = self._ordered_combatants(session, combat_id)
+            current_id = (
+                before_order[combat.current_turn_index].id
+                if before_order and combat.current_turn_index < len(before_order)
+                else None
+            )
+            occupied = {
+                (int(raw["row"]), int(raw["col"]))
+                for raw in (
+                    fighter.snapshot_json.get("grid_position")
+                    for fighter in before_order
+                )
+                if isinstance(raw, dict) and "row" in raw and "col" in raw
+            }
+            scene_id = combat.scene_id
+            grid = (
+                session.scalar(select(SceneGrid).where(SceneGrid.scene_id == scene_id))
+                if scene_id
+                else None
+            )
+            source_position = (
+                source.snapshot_json.get("grid_position")
+                if source is not None and isinstance(source.snapshot_json, dict)
+                else None
+            )
+            candidates: list[tuple[int, int]] = []
+            if grid is not None:
+                candidates = [
+                    (row, col)
+                    for row in range(1, grid.height + 1)
+                    for col in range(1, grid.width + 1)
+                    if (row, col) not in occupied
+                ]
+                if isinstance(source_position, dict):
+                    origin = (
+                        int(source_position.get("row", 1)),
+                        int(source_position.get("col", 1)),
+                    )
+                    candidates.sort(
+                        key=lambda point: (
+                            abs(point[0] - origin[0]) + abs(point[1] - origin[1]),
+                            point,
+                        )
+                    )
+                if command.position is not None:
+                    requested_position = (
+                        int(command.position["row"]),
+                        int(command.position["col"]),
+                    )
+                    if not (
+                        1 <= requested_position[0] <= grid.height
+                        and 1 <= requested_position[1] <= grid.width
+                    ):
+                        raise ValueError("召唤位置超出当前战斗地图边界")
+                    terrain_cells = {
+                        (int(cell["row"]), int(cell["col"]))
+                        for cell in (grid.layers_json.get("cells", []) or [])
+                        if isinstance(cell, dict)
+                        and isinstance(cell.get("row"), int)
+                        and isinstance(cell.get("col"), int)
+                        and (cell.get("kind") == "wall" or cell.get("blocks_sight") is True)
+                    }
+                    scene_objects = session.scalars(
+                        select(SceneObject).where(SceneObject.scene_id == scene_id)
+                    ).all()
+                    object_cells = {
+                        (row, col)
+                        for item in scene_objects
+                        if item.object_type == "wall"
+                        or (item.object_type == "door" and item.state in {"active", "closed"})
+                        for row in range(item.row, item.row + item.height_cells)
+                        for col in range(item.col, item.col + item.width_cells)
+                    }
+                    if requested_position in occupied:
+                        raise ValueError("召唤位置已被其他战斗单位占据")
+                    if requested_position in terrain_cells or requested_position in object_cells:
+                        raise ValueError("召唤位置被墙体或关闭的门阻挡")
+                    candidates = [requested_position] + [
+                        point for point in candidates if point != requested_position
+                    ]
+                    candidates[1:] = sorted(
+                        candidates[1:],
+                        key=lambda point: (
+                            abs(point[0] - requested_position[0])
+                            + abs(point[1] - requested_position[1]),
+                            point,
+                        ),
+                    )
+            elif command.position is not None:
+                raise ValueError("选择召唤位置需要当前战斗地图网格")
+            dexterity = int(ability_scores.get("dexterity", ability_scores.get("敏捷", 10)))
+            disposition = command.disposition
+            owner_id = command.owner_character_id
+            summon_group_id = idempotency_key if command.count > 1 else None
+            combatants: list[Combatant] = []
+            initiative_rolls: list[int] = []
+            for index in range(command.count):
+                position: dict[str, int] | None = None
+                if candidates:
+                    row, col = candidates.pop(0)
+                    position = {"row": row, "col": col}
+                if command.initiative_mode == "independent":
+                    rolled_modifier = int(floor((dexterity - 10) / 2))
+                    rolled_initiative = int(secrets.randbelow(20) + 1)
+                    initiative = rolled_initiative + rolled_modifier
+                    initiative_rolls.append(rolled_initiative)
+                else:
+                    assert source is not None
+                    initiative = source.initiative
+                snapshot: dict[str, object] = {
+                    "ability_scores": ability_scores,
+                    "actions": actions,
+                    "controller": command.controller,
+                    "owner_character_id": owner_id,
+                    "disposition": disposition,
+                    "initiative_mode": command.initiative_mode,
+                    "summon_source_combatant_id": command.source_combatant_id,
+                    "summon_source": dict(command.template_json or {}),
+                    # Enemy summons never opt into autonomous combat merely
+                    # by existing.  A DM must explicitly choose a basic AI
+                    # policy in the DM-owned summon command; player summons
+                    # are always excluded from that boundary.
+                    "enemy_ai_mode": (
+                        command.enemy_ai_mode
+                        if command.controller == "dm" and disposition == "enemy"
+                        else "not_applicable"
+                    ),
+                    "summon_duration": {
+                        "unit": command.duration_unit,
+                        "value": command.duration_value,
+                        "requires_concentration": command.requires_concentration,
+                    },
+                    "combat_start_state": {
+                        "hp": hp,
+                        "temporary_hp": 0,
+                        "max_hp_reduction": 0,
+                        "conditions": [],
+                        "concentration": {},
+                        "is_active": True,
+                    },
+                }
+                if summon_group_id is not None:
+                    snapshot["summon_group_id"] = summon_group_id
+                    snapshot["summon_group_index"] = index + 1
+                if position is not None:
+                    snapshot["grid_position"] = position
+                combatant = Combatant(
+                    combat_id=combat_id,
+                    entity_type="companion",
+                    entity_id=companion.id if companion else None,
+                    display_name=name if command.count == 1 else f"{name} {index + 1}",
+                    initiative=initiative,
+                    armor_class=armor_class,
+                    hp=hp,
+                    max_hp=max_hp,
+                    speed_ft=speed_ft,
+                    movement_remaining_ft=speed_ft,
+                    snapshot_json=snapshot,
+                    is_active=True,
+                )
+                session.add(combatant)
+                combatants.append(combatant)
+            session.flush()
+            if not combatants:
+                raise ValueError("至少需要建立一个召唤单位")
+            # A summon spell may create several combatants.  One lifecycle
+            # effect owns the whole group so ending its duration or breaking
+            # concentration cannot leave orphan initiative cards behind.
+            old_effects: list[CombatEffect] = []
+            ended_summons: list[Combatant] = []
+            lifecycle_effect: CombatEffect | None = None
+            if command.requires_concentration:
+                if source is None:
+                    raise ValueError("专注召唤必须提供来源单位")
+                old_effects = self._active_concentration_effects(session, combat_id, source.id)
+                for old_effect in old_effects:
+                    old_target = session.get(Combatant, old_effect.target_combatant_id)
+                    if old_target is not None:
+                        self._reverse_compiled_effect(session, old_target, old_effect)
+                    old_effect.status = "ended"
+                    old_effect.ended_at = datetime.now(UTC)
+                    old_effect.end_reason = f"开始新专注召唤：{name}"
+                    old_effect.version += 1
+                ended_summons = self._deactivate_summons_for_effects(
+                    session,
+                    combat,
+                    old_effects,
+                    now=datetime.now(UTC),
+                )
+            if command.requires_concentration or command.duration_unit != "until_removed":
+                lifecycle_target = source or combatants[0]
+                ends_round = (
+                    combat.round_number + int(command.duration_value or 0)
+                    if command.duration_unit == "rounds"
+                    else None
+                )
+                lifecycle_effect = CombatEffect(
+                    campaign_id=campaign_id,
+                    combat_id=combat_id,
+                    target_combatant_id=lifecycle_target.id,
+                    source_combatant_id=source.id if source is not None else None,
+                    name=f"{name} 的召唤持续时间",
+                    effect_type="aura",
+                    details_json={
+                        "rule_block": {"kind": "summon_lifecycle"},
+                        "ends_summon_combatant_ids": [item.id for item in combatants],
+                        "source_action": dict(command.template_json or {}),
+                    },
+                    started_round=combat.round_number,
+                    duration_unit=command.duration_unit,
+                    duration_value=command.duration_value,
+                    ends_round=ends_round,
+                    requires_concentration=command.requires_concentration,
+                    status="active",
+                )
+                session.add(lifecycle_effect)
+                session.flush()
+                for combatant in combatants:
+                    snapshot = dict(combatant.snapshot_json or {})
+                    snapshot["summon_lifecycle_effect_id"] = lifecycle_effect.id
+                    combatant.snapshot_json = snapshot
+                if command.requires_concentration and source is not None:
+                    source.concentration = {
+                        "effect_id": lifecycle_effect.id,
+                        "name": lifecycle_effect.name,
+                        "started_round": combat.round_number,
+                    }
+                    source.version += 1
+                    source.updated_at = datetime.now(UTC)
+            after_order = self._ordered_combatants(session, combat_id)
+            if current_id is not None:
+                combat.current_turn_index = next(
+                    index for index, item in enumerate(after_order) if item.id == current_id
+                )
+            else:
+                combat.current_turn_index = 0
+            combat.version += 1
+            combat.updated_at = datetime.now(UTC)
+            result = {
+                "combatant_id": combatants[0].id,
+                "combatant_ids": [item.id for item in combatants],
+                "count": command.count,
+                "initiative_roll": initiative_rolls[0] if len(initiative_rolls) == 1 else None,
+                "initiative_rolls": initiative_rolls,
+                "dexterity_modifier": (
+                    int(floor((dexterity - 10) / 2))
+                    if command.initiative_mode == "independent"
+                    else None
+                ),
+                "initiative": combatants[0].initiative,
+                "initiatives": [item.initiative for item in combatants],
+                "initiative_mode": command.initiative_mode,
+                "controller": command.controller,
+                "owner_character_id": owner_id,
+                "lifecycle_effect_id": (
+                    lifecycle_effect.id if lifecycle_effect is not None else None
+                ),
+                "duration_unit": command.duration_unit,
+                "duration_value": command.duration_value,
+                "requires_concentration": command.requires_concentration,
+                "replaced_concentration_effect_ids": [effect.id for effect in old_effects],
+                "ended_summon_ids": [item.id for item in ended_summons],
+            }
+            action = CombatAction(
+                campaign_id=campaign_id,
+                combat_id=combat_id,
+                actor_combatant_id=source.id if source is not None else None,
+                action_type="summon",
+                target_combatant_ids=[item.id for item in combatants],
+                request_json=command.model_dump(mode="json"),
+                result_json=result,
+                explanation="召唤物已建立战斗模板并加入先攻顺序",
+                round_number=combat.round_number,
+                turn_index=combat.current_turn_index,
+                summary=(
+                    f"{name} 加入战斗（先攻 {combatants[0].initiative}）"
+                    if command.count == 1
+                    else f"{name} ×{command.count} 加入战斗"
+                ),
+                idempotency_key=idempotency_key,
+                dm_override=command.controller == "dm",
+                status="confirmed",
+            )
+            session.add(action)
+            session.flush()
+            return {
+                "action": serialize(action),
+                "combatant": serialize(combatants[0]),
+                "combatants": [serialize(item) for item in combatants],
+                "already_applied": False,
+            }
+
+    def end_summon(
+        self,
+        campaign_id: str,
+        combat_id: str,
+        summon_combatant_id: str,
+        command: CombatSummonEndCommand,
+        *,
+        idempotency_key: str,
+    ) -> dict[str, Any]:
+        """Explicitly remove one summoned combatant from the active turn order."""
+        if not idempotency_key.strip():
+            raise ValueError("idempotency key is required")
+        with Session(self.engine) as session, session.begin():
+            campaign = session.get(Campaign, campaign_id)
+            if campaign is None:
+                raise StateNotFoundError("campaign not found")
+            combat = session.get(Combat, combat_id)
+            if combat is None or combat.campaign_id != campaign_id:
+                raise StateNotFoundError("combat not found in campaign")
+            existing = session.scalar(
+                select(CombatAction).where(
+                    CombatAction.combat_id == combat_id,
+                    CombatAction.idempotency_key == idempotency_key,
+                )
+            )
+            if existing is not None:
+                ended_effect_ids = existing.result_json.get("ended_effect_ids", [])
+                ended_effects = [
+                    effect
+                    for effect_id in (
+                        ended_effect_ids if isinstance(ended_effect_ids, list) else []
+                    )
+                    if isinstance(effect_id, str)
+                    and (effect := session.get(CombatEffect, effect_id)) is not None
+                ]
+                summon = session.get(Combatant, summon_combatant_id)
+                return {
+                    "action": serialize(existing),
+                    "combat": serialize(combat),
+                    "summon": serialize(summon) if summon is not None else None,
+                    "ended_effects": [serialize(effect) for effect in ended_effects],
+                    "already_applied": True,
+                }
+
+            summon = session.get(Combatant, summon_combatant_id)
+            if (
+                summon is None
+                or summon.combat_id != combat_id
+                or not self._is_summon(summon)
+            ):
+                raise StateNotFoundError("summon combatant not found in combat")
+            if not summon.is_active:
+                raise ValueError("summon is already ended")
+            if summon.version != command.summon_version:
+                raise VersionConflict(
+                    "combatant",
+                    summon.id,
+                    command.summon_version,
+                    summon.version,
+                )
+
+            linked_effects = [
+                effect
+                for effect in session.scalars(
+                    select(CombatEffect).where(
+                        CombatEffect.combat_id == combat_id,
+                        CombatEffect.status == "active",
+                    )
+                ).all()
+                if summon.id in self._effect_summon_ids(effect)
+            ]
+            before = {
+                "combat": serialize(combat),
+                "summon": serialize(summon),
+                "linked_effects": [serialize(effect) for effect in linked_effects],
+            }
+            now = datetime.now(UTC)
+            touched_combatants: dict[str, Combatant] = {}
+            for effect in linked_effects:
+                effect.status = "ended"
+                effect.ended_at = now
+                effect.end_reason = command.reason
+                effect.version += 1
+                target = session.get(Combatant, effect.target_combatant_id)
+                if target is not None:
+                    self._reverse_compiled_effect(session, target, effect)
+                    touched_combatants[target.id] = target
+                if effect.source_combatant_id is not None:
+                    source = session.get(Combatant, effect.source_combatant_id)
+                    if source is not None:
+                        if source.concentration.get("effect_id") == effect.id:
+                            source.concentration = {}
+                        touched_combatants[source.id] = source
+            for combatant in touched_combatants.values():
+                if combatant.id != summon.id:
+                    combatant.version += 1
+                    combatant.updated_at = now
+
+            deactivated = self._deactivate_summons(
+                session,
+                combat,
+                [summon.id],
+                now=now,
+            )
+            if not deactivated:
+                raise ValueError("summon is already ended")
+            active_order = self._ordered_combatants(session, combat_id)
+            active = (
+                active_order[combat.current_turn_index]
+                if active_order and combat.current_turn_index < len(active_order)
+                else None
+            )
+            result = {
+                "combatant_id": summon.id,
+                "ended_effect_ids": [effect.id for effect in linked_effects],
+                "current_turn_index": combat.current_turn_index,
+                "active_combatant_id": active.id if active is not None else None,
+                "reason": command.reason,
+            }
+            transaction = OperationTransaction(
+                campaign_id=campaign_id,
+                operation_type="combat_end_summon",
+                idempotency_key=idempotency_key,
+                status="applied",
+                before_snapshot=before,
+                after_snapshot=result,
+                reason=command.reason,
+                source="combat",
+                confirmed_at=now,
+            )
+            session.add(transaction)
+            session.flush()
+            source_id = summon.snapshot_json.get("summon_source_combatant_id")
+            action = CombatAction(
+                campaign_id=campaign_id,
+                combat_id=combat_id,
+                actor_combatant_id=(source_id if isinstance(source_id, str) else None),
+                transaction_id=transaction.id,
+                action_type="end_summon",
+                target_combatant_ids=[summon.id],
+                request_json=command.model_dump(mode="json"),
+                result_json=result,
+                explanation=command.reason,
+                round_number=combat.round_number,
+                turn_index=combat.current_turn_index,
+                summary=f"{summon.display_name} 离开战斗",
+                idempotency_key=idempotency_key,
+                dm_override=command.actor == "dm",
+                override_reason=command.reason if command.actor == "dm" else None,
+                status="confirmed",
+            )
+            session.add(action)
+            session.flush()
+            return {
+                "action": serialize(action),
+                "combat": serialize(combat),
+                "summon": serialize(summon),
+                "ended_effects": [serialize(effect) for effect in linked_effects],
+                "already_applied": False,
+            }
+
+    @staticmethod
+    def _combatant_owner(combatant: Combatant) -> str | None:
+        if combatant.entity_type == "character":
+            return combatant.entity_id
+        raw = combatant.snapshot_json.get("owner_character_id")
+        return str(raw) if raw else None
+
+    @classmethod
+    def _is_player_controlled(cls, combatant: Combatant) -> bool:
+        if combatant.entity_type == "character":
+            return True
+        return (
+            combatant.entity_type == "companion"
+            and combatant.snapshot_json.get("controller") == "player"
+            and cls._combatant_owner(combatant) is not None
+        )
 
     @staticmethod
     def _scope(
@@ -75,8 +968,9 @@ class CombatEngineService:
                 raise StateNotFoundError("actor combatant not found in combat")
         return combat, target, actor
 
-    @staticmethod
+    @classmethod
     def _validate_action_economy(
+        cls,
         session: Session,
         combat: Combat,
         actor: Combatant | None,
@@ -84,9 +978,12 @@ class CombatEngineService:
         actor_version: int | None,
         action_cost: str,
         consume: bool,
-    ) -> None:
+        legendary_cost: int | None = None,
+        legendary_pool_max: int | None = None,
+        reaction_trigger: str | None = None,
+    ) -> bool:
         if action_cost == "none":
-            return
+            return False
         if actor is None or actor_version is None:
             raise ValueError("an actor and actor version are required to spend an action")
         if actor.version != actor_version:
@@ -96,6 +993,7 @@ class CombatEngineService:
                 actor_version,
                 actor.version,
             )
+        cls._validate_can_act(actor)
         ordered = session.scalars(
             select(Combatant)
             .where(
@@ -109,8 +1007,70 @@ class CombatEngineService:
             )
         ).all()
         active = ordered[combat.current_turn_index] if ordered else None
-        if active is None or active.id != actor.id:
+        if action_cost in {"action", "bonus_action"} and (
+            active is None or active.id != actor.id
+        ):
             raise ValueError("only the active combatant can spend actions")
+        if action_cost == "reaction" and not (reaction_trigger or "").strip():
+            raise ValueError("a reaction requires an explicit trigger confirmed by the DM")
+        if action_cost == "legendary_action":
+            if actor.entity_type != "monster":
+                raise ValueError("only monsters can spend legendary actions")
+            if active is None or active.id == actor.id:
+                raise ValueError(
+                    "legendary actions are only available after another creature's turn"
+                )
+            cost = int(legendary_cost or 0)
+            pool_max = int(legendary_pool_max or 0)
+            if cost < 1 or pool_max < cost:
+                raise ValueError("legendary action cost and pool maximum must be explicit")
+            state = dict(actor.snapshot_json or {})
+            stored_max = cls._state_int(state.get("legendary_actions_max"), pool_max)
+            if stored_max != pool_max:
+                raise ValueError("legendary action pool does not match the monster stat block")
+            remaining = cls._state_int(
+                state.get("legendary_actions_remaining"), pool_max
+            )
+            window_key = f"{combat.round_number}:{combat.current_turn_index}"
+            if state.get("legendary_action_window_used") == window_key:
+                raise ValueError("this monster already used a legendary action in this window")
+            if remaining < cost:
+                raise ValueError("not enough legendary actions remain")
+            if consume:
+                actor.snapshot_json = {
+                    **state,
+                    "legendary_actions_max": pool_max,
+                    "legendary_actions_remaining": remaining - cost,
+                    "legendary_action_window_used": window_key,
+                }
+                actor.version += 1
+                actor.updated_at = datetime.now(UTC)
+            return consume
+        if action_cost == "lair_action":
+            if actor.entity_type != "monster":
+                raise ValueError("only monsters can own lair actions")
+            if active is None:
+                raise ValueError("lair actions require an active initiative window")
+            active_index = ordered.index(active)
+            previous_initiative = (
+                ordered[active_index - 1].initiative if active_index > 0 else None
+            )
+            crossed_initiative_twenty = active.initiative <= 20 and (
+                previous_initiative is None or previous_initiative > 20
+            )
+            if not crossed_initiative_twenty:
+                raise ValueError("lair actions are only available at the initiative 20 window")
+            state = dict(actor.snapshot_json or {})
+            if cls._state_int(state.get("lair_action_round")) == combat.round_number:
+                raise ValueError("this monster already used a lair action this round")
+            if consume:
+                actor.snapshot_json = {
+                    **state,
+                    "lair_action_round": combat.round_number,
+                }
+                actor.version += 1
+                actor.updated_at = datetime.now(UTC)
+            return consume
         field = {
             "action": "action_available",
             "bonus_action": "bonus_action_available",
@@ -119,14 +1079,1738 @@ class CombatEngineService:
         if field is None:
             raise ValueError("unsupported action cost")
         if not bool(getattr(actor, field)):
+            if action_cost == "action":
+                snapshot = dict(actor.snapshot_json or {})
+                attack_budget = cls._state_int(snapshot.get("attack_roll_budget"), 0)
+                if attack_budget > 0:
+                    if consume:
+                        snapshot["attack_roll_budget"] = attack_budget - 1
+                        actor.snapshot_json = snapshot
+                        actor.version += 1
+                        actor.updated_at = datetime.now(UTC)
+                    return consume
+                extra_budget = cls._state_int(snapshot.get("extra_action_budget"), 0)
+                if extra_budget > 0:
+                    if consume:
+                        snapshot["extra_action_budget"] = extra_budget - 1
+                        actor.snapshot_json = snapshot
+                        actor.version += 1
+                        actor.updated_at = datetime.now(UTC)
+                    return consume
             raise ValueError(f"{action_cost} has already been spent this turn")
         if consume:
             setattr(actor, field, False)
             actor.version += 1
             actor.updated_at = datetime.now(UTC)
+        return consume
 
     @staticmethod
+    def _recharge_state(actor: Combatant) -> dict[str, bool] | None:
+        raw = (actor.snapshot_json or {}).get("recharge_available")
+        if not isinstance(raw, dict):
+            return None
+        return {
+            str(key): value
+            for key, value in raw.items()
+            if isinstance(key, str) and isinstance(value, bool)
+        }
+
+    @classmethod
+    def _validate_recharge(
+        cls,
+        actor: Combatant | None,
+        *,
+        recharge_key: str | None,
+        consume: bool,
+    ) -> bool:
+        """Validate and optionally consume a structured recharge action.
+
+        An absent recharge map represents the monster's initial state: a
+        recharge action is available on its first turn. Once a map exists,
+        missing or false keys are unavailable until the DM rolls recharge and
+        writes the result back through the combat UI. This prevents the old
+        failure mode where a parsed breath weapon silently refreshed forever.
+        """
+
+        key = (recharge_key or "").strip()
+        if not key:
+            return False
+        if actor is None:
+            raise ValueError("recharge actions require an actor")
+        state = cls._recharge_state(actor)
+        if state is not None and state.get(key) is not True:
+            raise ValueError(f"recharge action {key!r} is not available")
+        if not consume:
+            return False
+        next_state = dict(state or {})
+        next_state[key] = False
+        actor.snapshot_json = {
+            **dict(actor.snapshot_json or {}),
+            "recharge_available": next_state,
+        }
+        # Action economy already increments the actor version for ordinary
+        # actions. A reaction/none action still needs a version bump for this
+        # snapshot-only state transition.
+        return True
+
+    @classmethod
+    def _process_monster_turn_start(
+        cls,
+        monster: Combatant,
+    ) -> tuple[list[dict[str, object]], list[dict[str, object]]]:
+        """Apply only fully structured recharge rolls and turn-start traits."""
+
+        snapshot = dict(monster.snapshot_json or {})
+        actions = snapshot.get("actions")
+        recharge_state = snapshot.get("recharge_available")
+        recharge_rolls: list[dict[str, object]] = []
+        if isinstance(actions, list) and isinstance(recharge_state, dict):
+            next_recharge = {
+                str(key): value
+                for key, value in recharge_state.items()
+                if isinstance(key, str) and isinstance(value, bool)
+            }
+            for raw_action in actions:
+                if not isinstance(raw_action, dict):
+                    continue
+                name = str(raw_action.get("name") or "").strip()
+                recharge = raw_action.get("recharge")
+                if not name or not isinstance(recharge, dict) or next_recharge.get(name) is True:
+                    continue
+                minimum = recharge.get("minimum")
+                maximum = recharge.get("maximum", minimum)
+                if (
+                    not isinstance(minimum, int)
+                    or not isinstance(maximum, int)
+                    or minimum < 1
+                    or maximum > 6
+                    or minimum > maximum
+                ):
+                    continue
+                roll = secrets.randbelow(6) + 1
+                available = minimum <= roll <= maximum
+                next_recharge[name] = available
+                recharge_rolls.append(
+                    {
+                        "action_name": name,
+                        "roll": roll,
+                        "minimum": minimum,
+                        "maximum": maximum,
+                        "available": available,
+                    }
+                )
+            snapshot["recharge_available"] = next_recharge
+
+        trait_results: list[dict[str, object]] = []
+        traits = snapshot.get("turn_start_traits")
+        if isinstance(traits, list):
+            resources_raw = snapshot.get("resources")
+            resources = dict(resources_raw) if isinstance(resources_raw, dict) else {}
+            for raw_trait in traits:
+                if not isinstance(raw_trait, dict):
+                    continue
+                name = str(raw_trait.get("name") or "").strip()
+                kind = str(raw_trait.get("kind") or "").strip()
+                if not name or kind not in {"heal", "condition", "resource"}:
+                    continue
+                disabled = raw_trait.get("disabled_by_conditions", [])
+                disabled_conditions = {
+                    cls._canonical_condition(value)
+                    for value in disabled
+                } if isinstance(disabled, list) else set()
+                if cls._condition_set(monster) & disabled_conditions:
+                    trait_results.append(
+                        {"name": name, "kind": kind, "applied": False, "reason": "disabled"}
+                    )
+                    continue
+                trigger = str(raw_trait.get("trigger") or "always")
+                if trigger == "hp_below_half" and monster.hp * 2 >= monster.max_hp:
+                    continue
+                if trigger not in {"always", "hp_below_half"}:
+                    continue
+                if kind == "heal":
+                    amount = raw_trait.get("amount")
+                    if not isinstance(amount, int) or amount < 1:
+                        continue
+                    before_hp = monster.hp
+                    monster.hp = min(
+                        max(0, monster.max_hp - monster.max_hp_reduction),
+                        monster.hp + amount,
+                    )
+                    trait_results.append(
+                        {
+                            "name": name,
+                            "kind": kind,
+                            "applied": monster.hp != before_hp,
+                            "hp_before": before_hp,
+                            "hp_after": monster.hp,
+                        }
+                    )
+                elif kind == "condition":
+                    condition = str(raw_trait.get("condition") or "").strip()
+                    if not condition:
+                        continue
+                    applied = cls._add_condition(monster, condition)
+                    trait_results.append(
+                        {
+                            "name": name,
+                            "kind": kind,
+                            "applied": applied,
+                            "condition": condition,
+                        }
+                    )
+                else:
+                    resource_key = str(raw_trait.get("resource_key") or "").strip()
+                    restore_to = raw_trait.get("restore_to")
+                    if not resource_key or not isinstance(restore_to, int) or restore_to < 0:
+                        continue
+                    before_resource = resources.get(resource_key)
+                    resources[resource_key] = restore_to
+                    trait_results.append(
+                        {
+                            "name": name,
+                            "kind": kind,
+                            "applied": before_resource != restore_to,
+                            "resource_key": resource_key,
+                            "before": before_resource,
+                            "after": restore_to,
+                        }
+                    )
+            if resources:
+                snapshot["resources"] = resources
+        monster.snapshot_json = snapshot
+        return recharge_rolls, trait_results
+
+    @classmethod
+    def _validate_monster_sequence(
+        cls,
+        session: Session,
+        combat_id: str,
+        actor: Combatant | None,
+        command: CombatActionCommand | PlayerRollPromptCommand,
+    ) -> None:
+        sequence_id = command.sequence_id
+        if sequence_id is None:
+            return
+        if actor is None or actor.entity_type != "monster":
+            raise ValueError("structured monster sequences require a monster actor")
+        assert command.sequence_step is not None
+        assert command.sequence_size is not None
+        rows = list(
+            session.scalars(
+                select(CombatAction).where(
+                    CombatAction.combat_id == combat_id,
+                    CombatAction.actor_combatant_id == actor.id,
+                )
+            ).all()
+        )
+        sequence_rows = [
+            row
+            for row in rows
+            if row.request_json.get("sequence_id") == sequence_id
+        ]
+        if any(
+            cls._state_int(row.request_json.get("sequence_size"), -1)
+            != command.sequence_size
+            for row in sequence_rows
+        ):
+            raise ValueError("monster sequence size does not match its earlier steps")
+        if any(
+            cls._state_int(row.request_json.get("sequence_step"), -1)
+            == command.sequence_step
+            for row in sequence_rows
+        ):
+            raise ValueError("monster sequence step was already recorded with another request")
+        completed_steps = {
+            cls._state_int(row.request_json.get("sequence_step"), -1)
+            for row in sequence_rows
+            if row.status in {"previewed", "confirmed"}
+        }
+        if command.sequence_step > 0 and command.sequence_step - 1 not in completed_steps:
+            raise ValueError("monster sequence steps must be recorded in order")
+
+    @classmethod
+    def _validate_active_actor(
+        cls,
+        session: Session,
+        combat: Combat,
+        actor: Combatant,
+        *,
+        actor_version: int,
+    ) -> None:
+        if actor.version != actor_version:
+            raise VersionConflict(
+                "combatant",
+                actor.id,
+                actor_version,
+                actor.version,
+            )
+        ordered = CombatEngineService._ordered_combatants(session, combat.id)
+        active = ordered[combat.current_turn_index] if ordered else None
+        if active is None or active.id != actor.id:
+            raise ValueError("only the active combatant can use a maneuver")
+        if not actor.is_active:
+            raise ValueError("inactive combatants cannot use maneuvers")
+        cls._validate_can_act(actor)
+
+    @staticmethod
+    def _condition_name(value: object) -> str:
+        if isinstance(value, str):
+            return value.strip()
+        if isinstance(value, dict):
+            raw = value.get("name", value.get("condition_name"))
+            return str(raw).strip() if raw is not None else ""
+        return ""
+
+    @classmethod
+    def _canonical_condition(cls, value: object) -> str:
+        name = cls._condition_name(value).strip().lower().replace("-", "_")
+        return cls._CONDITION_ALIASES.get(name, name)
+
+    @classmethod
+    def _condition_set(cls, target: Combatant) -> set[str]:
+        return {
+            canonical
+            for value in list(target.conditions or [])
+            if (canonical := cls._canonical_condition(value))
+        }
+
+    @classmethod
+    def _has_condition(cls, target: Combatant, condition: str) -> bool:
+        return cls._canonical_condition(condition) in cls._condition_set(target)
+
+    @classmethod
+    def _feature_rule_modifiers(
+        cls,
+        combatant: Combatant,
+        *,
+        stat: str,
+        scope: str | None = None,
+        ability: str | None = None,
+    ) -> list[dict[str, object]]:
+        """Return typed feature modifiers that apply to this combatant.
+
+        Character creation freezes feature facts into ``rule_modifiers``.  The
+        old combat paths retained those facts for audit but did not consume
+        them, so a feature could look structured while having no rules impact.
+        This helper is intentionally fail-closed: only explicit selectors and
+        known condition predicates are applied; prose remains DM-owned.
+        """
+
+        raw = (combatant.snapshot_json or {}).get("rule_modifiers")
+        if not isinstance(raw, dict):
+            return []
+        ability_aliases = {
+            "力量": "strength",
+            "敏捷": "dexterity",
+            "体质": "constitution",
+            "智力": "intelligence",
+            "感知": "wisdom",
+            "魅力": "charisma",
+        }
+        normalized_ability = str(ability or "").strip().lower()
+        normalized_ability = ability_aliases.get(normalized_ability, normalized_ability)
+        conditions = cls._condition_set(combatant)
+        result: list[dict[str, object]] = []
+        for value in raw.values():
+            if not isinstance(value, dict):
+                continue
+            if str(value.get("stat") or "").strip() != stat:
+                continue
+            declared_scope = str(value.get("scope") or "all").strip()
+            if scope is not None and declared_scope not in {"all", scope}:
+                continue
+            declared_ability = value.get("ability")
+            if declared_ability is not None and normalized_ability:
+                declared = str(declared_ability).strip().lower()
+                declared = ability_aliases.get(declared, declared)
+                if declared != normalized_ability:
+                    continue
+            applies_when = str(value.get("applies_when") or "").strip().lower()
+            known_predicates = {
+                "",
+                "always",
+                "not_incapacitated",
+                "not incapacitated",
+                "not_prone",
+                "not prone",
+                "wearing_armor",
+                "wearing armor",
+                "not_wearing_armor",
+                "not wearing armor",
+            }
+            if applies_when not in known_predicates:
+                # A typed modifier with an event predicate (for example
+                # "next attack after a miss") is not a passive combat-start
+                # modifier.  Keep it in the registry for a future event
+                # consumer instead of granting it on every roll.
+                continue
+            if applies_when in {"not_incapacitated", "not incapacitated"} and (
+                conditions & cls._ACTION_BLOCKING_CONDITIONS
+            ):
+                continue
+            if applies_when in {"not_prone", "not prone"} and "prone" in conditions:
+                continue
+            if applies_when in {"not_wearing_armor", "not wearing armor"}:
+                # The equipment snapshot is the only safe source for this
+                # predicate.  Missing equipment data must not grant the
+                # feature accidentally.
+                equipment = (combatant.snapshot_json or {}).get("equipment")
+                if not isinstance(equipment, list) or any(
+                    isinstance(item, dict) and item.get("category") == "armor"
+                    for item in equipment
+                ):
+                    continue
+            if applies_when in {"wearing_armor", "wearing armor"}:
+                equipment = (combatant.snapshot_json or {}).get("equipment")
+                if not isinstance(equipment, list) or not any(
+                    isinstance(item, dict) and item.get("category") == "armor"
+                    for item in equipment
+                ):
+                    continue
+            result.append(value)
+        return result
+
+    @classmethod
+    def _feature_attack_roll_contexts(
+        cls,
+        actor: Combatant,
+        target: Combatant,
+    ) -> tuple[list[str], list[str]]:
+        """Read typed class attack modifiers for the current attack."""
+
+        advantage: list[str] = []
+        disadvantage: list[str] = []
+        for modifier in cls._feature_rule_modifiers(
+            actor, stat="attack_roll", scope="outgoing"
+        ):
+            operation = str(modifier.get("operation") or "")
+            source = str(modifier.get("source") or modifier.get("id") or "职业特性")
+            if operation == "advantage":
+                advantage.append(source)
+            elif operation == "disadvantage":
+                disadvantage.append(source)
+        # Defensive features such as Elusive suppress an incoming advantage
+        # only when their explicit predicate is satisfied.
+        target_conditions = cls._condition_set(target)
+        suppress_incoming = any(
+            str(defense.get("kind") or "") == "suppress_attack_advantage"
+            and not (
+                str(defense.get("applies_when") or "").strip().lower()
+                in {"not_incapacitated", "not incapacitated"}
+                and target_conditions & cls._ACTION_BLOCKING_CONDITIONS
+            )
+            for defense in cls._feature_defenses(target)
+        )
+        if suppress_incoming:
+            advantage.clear()
+        return advantage, disadvantage
+
+    @classmethod
+    def _feature_defenses(cls, combatant: Combatant) -> list[dict[str, object]]:
+        raw = (combatant.snapshot_json or {}).get("feature_runtime")
+        if not isinstance(raw, dict):
+            return []
+        combat_start = raw.get("combat_start")
+        defenses = combat_start.get("defenses") if isinstance(combat_start, dict) else None
+        return [item for item in defenses or () if isinstance(item, dict)]
+
+    @classmethod
+    def _validate_can_act(cls, actor: Combatant) -> None:
+        if not actor.is_active or actor.hp <= 0:
+            raise ValueError("inactive or zero-HP combatants cannot take actions")
+        blocked = sorted(cls._condition_set(actor) & cls._ACTION_BLOCKING_CONDITIONS)
+        if blocked:
+            raise ValueError(
+                f"combatant cannot take actions while affected by {', '.join(blocked)}"
+            )
+
+    @classmethod
+    def _condition_source_ids(
+        cls,
+        session: Session,
+        combat_id: str,
+        target: Combatant,
+        condition: str,
+    ) -> set[str]:
+        """Return structured sources for a condition without guessing prose."""
+
+        canonical = cls._canonical_condition(condition)
+        source_ids: set[str] = set()
+        effects = session.scalars(
+            select(CombatEffect).where(
+                CombatEffect.combat_id == combat_id,
+                CombatEffect.target_combatant_id == target.id,
+                CombatEffect.status == "active",
+            )
+        ).all()
+        for effect in effects:
+            state = cls._runtime_state(effect)
+            if state and cls._canonical_condition(state.get("condition")) == canonical:
+                if effect.source_combatant_id:
+                    source_ids.add(effect.source_combatant_id)
+                continue
+            details = dict(effect.details_json or {})
+            block = details.get("rule_block")
+            if (
+                isinstance(block, dict)
+                and cls._canonical_condition(block.get("condition")) == canonical
+            ):
+                if effect.source_combatant_id:
+                    source_ids.add(effect.source_combatant_id)
+        return source_ids
+
+    @classmethod
+    def _movement_is_blocked(cls, actor: Combatant) -> bool:
+        return bool(cls._condition_set(actor) & cls._MOVEMENT_BLOCKING_CONDITIONS)
+
+    @classmethod
+    def _add_condition(cls, target: Combatant, condition: str) -> bool:
+        if cls._has_condition(target, condition):
+            return False
+        target.conditions = list(target.conditions or []) + [condition]
+        return True
+
+    @classmethod
+    def _remove_condition(cls, target: Combatant, condition: str) -> bool:
+        canonical = cls._canonical_condition(condition)
+        current = list(target.conditions or [])
+        filtered = [
+            value for value in current if cls._canonical_condition(value) != canonical
+        ]
+        target.conditions = filtered
+        return len(filtered) != len(current)
+
+    @classmethod
+    def _sync_zero_hp_lifecycle(
+        cls,
+        target: Combatant,
+        *,
+        before_hp: int,
+    ) -> list[str]:
+        """Keep the combatant's unconscious state tied to its HP.
+
+        Death-save tracking already existed, but HP reaching zero was not
+        reflected in the condition list.  That meant the existing action,
+        movement, and attack-context rules could not see that the combatant
+        was unconscious.  Summons are removed from combat instead and must not
+        enter the death-save/unconscious lifecycle.
+        """
+
+        if cls._is_summon(target):
+            return []
+        changes: list[str] = []
+        if target.hp == 0:
+            if cls._add_condition(target, "昏迷"):
+                changes.append("added:unconscious")
+        elif before_hp == 0 and target.hp > 0:
+            if cls._remove_condition(target, "unconscious"):
+                changes.append("removed:unconscious")
+        return changes
+
+    @classmethod
+    def _deactivate_zero_hp_non_character(
+        cls,
+        target: Combatant,
+        *,
+        now: datetime,
+    ) -> bool:
+        """Remove defeated non-character combatants from initiative.
+
+        Characters at 0 HP stay in the initiative so the existing death-save
+        lifecycle can prompt them.  Monsters and summons do not have that
+        player death-save turn: once their HP reaches 0 they must stop being
+        eligible for AI turns, targets, and movement immediately.
+        """
+
+        if (
+            target.hp > 0
+            or target.entity_type == "character"
+            or not target.is_active
+        ):
+            return False
+        target.is_active = False
+        target.updated_at = now
+        return True
+
+    @staticmethod
+    def _runtime_state(effect: CombatEffect) -> dict[str, object] | None:
+        raw = dict(effect.details_json or {}).get("runtime_state")
+        return dict(raw) if isinstance(raw, dict) else None
+
+    @classmethod
+    def _active_runtime_effects(
+        cls,
+        session: Session,
+        combat_id: str,
+        *,
+        target_id: str | None = None,
+        state_name: str | None = None,
+    ) -> list[CombatEffect]:
+        effects = list(
+            session.scalars(
+                select(CombatEffect).where(
+                    CombatEffect.combat_id == combat_id,
+                    CombatEffect.status == "active",
+                )
+            ).all()
+        )
+        return [
+            effect
+            for effect in effects
+            if (target_id is None or effect.target_combatant_id == target_id)
+            and (state := cls._runtime_state(effect)) is not None
+            and (state_name is None or state.get("name") == state_name)
+        ]
+
+    @classmethod
+    def _create_runtime_effect(
+        cls,
+        session: Session,
+        combat: Combat,
+        *,
+        actor: Combatant,
+        target: Combatant,
+        state_name: str,
+        expires: str,
+        expires_combatant_id: str | None,
+        details: dict[str, object] | None = None,
+    ) -> CombatEffect:
+        if cls._active_runtime_effects(
+            session,
+            combat.id,
+            target_id=target.id,
+            state_name=state_name,
+        ):
+            raise ValueError(f"combatant already has active {state_name} state")
+        condition = cls._RUNTIME_STATE_CONDITIONS[state_name]
+        condition_was_present = cls._has_condition(target, condition)
+        cls._add_condition(target, condition)
+        runtime_state: dict[str, object] = {
+            "name": state_name,
+            "condition": condition,
+            "condition_was_present": condition_was_present,
+            "expires": expires,
+            "expires_combatant_id": expires_combatant_id,
+            "created_round": combat.round_number,
+            "created_turn_index": combat.current_turn_index,
+        }
+        if details:
+            runtime_state.update(details)
+        effect = CombatEffect(
+            campaign_id=combat.campaign_id,
+            combat_id=combat.id,
+            target_combatant_id=target.id,
+            source_combatant_id=actor.id,
+            name=f"{actor.display_name}：{condition}",
+            effect_type="condition",
+            details_json={"runtime_state": runtime_state},
+            started_round=combat.round_number,
+            duration_unit="until_removed",
+            requires_concentration=False,
+            status="active",
+        )
+        session.add(effect)
+        session.flush()
+        return effect
+
+    @classmethod
+    def _end_runtime_effect(
+        cls,
+        session: Session,
+        effect: CombatEffect,
+        *,
+        reason: str,
+        now: datetime,
+    ) -> Combatant | None:
+        if effect.status != "active":
+            return None
+        state = cls._runtime_state(effect)
+        if state is None:
+            return None
+        target = session.get(Combatant, effect.target_combatant_id)
+        condition = state.get("condition")
+        if target is not None and isinstance(condition, str):
+            # A condition is a set of active sources, not a single boolean.
+            # Ending one effect must not erase a second spell, feature, or
+            # monster action that still owns the same condition.
+            condition_was_present = bool(state.get("condition_was_present"))
+            if not condition_was_present and not cls._condition_owned_by_other_effect(
+                session,
+                effect,
+                target,
+                condition,
+            ):
+                cls._remove_condition(target, condition)
+            target.updated_at = now
+        effect.status = "ended"
+        effect.ended_at = now
+        effect.end_reason = reason
+        effect.version += 1
+        return target
+
+    @classmethod
+    def _condition_owned_by_other_effect(
+        cls,
+        session: Session,
+        effect: CombatEffect | None,
+        target: Combatant,
+        condition: str,
+    ) -> bool:
+        """Return whether another active structured effect still owns a condition."""
+
+        canonical = cls._canonical_condition(condition)
+        active_effects = session.scalars(
+            select(CombatEffect).where(
+                CombatEffect.combat_id
+                == (effect.combat_id if effect is not None else target.combat_id),
+                CombatEffect.target_combatant_id == target.id,
+                CombatEffect.status == "active",
+                *(
+                    (CombatEffect.id != effect.id,)
+                    if effect is not None
+                    else ()
+                ),
+            )
+        ).all()
+        for other in active_effects:
+            state = cls._runtime_state(other)
+            if state and cls._canonical_condition(state.get("condition")) == canonical:
+                return True
+            details = dict(other.details_json or {})
+            block = details.get("rule_block")
+            if (
+                isinstance(block, dict)
+                and str(block.get("kind") or "") == "condition"
+                and str(block.get("operation") or "apply") != "remove"
+                and cls._canonical_condition(block.get("condition")) == canonical
+            ):
+                return True
+        return False
+
+    @staticmethod
+    def _effect_end_triggers(effect: CombatEffect) -> tuple[str, ...]:
+        """Read explicit lifecycle predicates from either runtime shape.
+
+        Older compiled effects put their rule block at ``details_json`` root;
+        turn-boundary runtime effects put it under ``runtime_state``.  Keeping
+        the lookup here lets both paths share one safe, fail-closed lifecycle
+        evaluator instead of scattering condition-name heuristics through the
+        turn advance code.
+        """
+
+        details = dict(effect.details_json or {})
+        state = details.get("runtime_state")
+        block = details.get("rule_block")
+        candidates: list[object] = []
+        for container in (state, block, details):
+            if not isinstance(container, dict):
+                continue
+            for key in ("end_triggers", "ends_when"):
+                raw = container.get(key)
+                if isinstance(raw, list):
+                    candidates.extend(raw)
+                elif isinstance(raw, str):
+                    candidates.append(raw)
+        return tuple(
+            dict.fromkeys(
+                str(value).strip().lower().replace("-", "_")
+                for value in candidates
+                if isinstance(value, str) and value.strip()
+            )
+        )
+
+    @classmethod
+    def _lifecycle_end_reason(
+        cls,
+        session: Session,
+        effect: CombatEffect,
+        *,
+        event_combatant_ids: set[str] | None = None,
+        event_kinds: set[str] | None = None,
+        event_only: bool = False,
+    ) -> str | None:
+        """Return the reason when an explicit condition end predicate is true.
+
+        These predicates are deliberately narrow.  We do not infer that every
+        condition ends when a creature is hurt, leaves an area, or changes
+        targets; only a compiler/DM supplied predicate can trigger automatic
+        cleanup.  That keeps narrative effects DM-owned while making common
+        source/target death and concentration lifecycles real.
+        """
+
+        triggers = cls._effect_end_triggers(effect)
+        if not triggers:
+            return None
+        event_ids = event_combatant_ids or set()
+        kinds = event_kinds or set()
+        source = (
+            session.get(Combatant, effect.source_combatant_id)
+            if effect.source_combatant_id
+            else None
+        )
+        target = session.get(Combatant, effect.target_combatant_id)
+        for trigger in triggers:
+            if trigger in {
+                "target_takes_damage",
+                "target_damaged",
+                "on_target_damage",
+            } and "damage" in kinds and target is not None and target.id in event_ids:
+                return "状态目标受到伤害，满足显式结束条件"
+            if trigger in {
+                "source_takes_damage",
+                "source_damaged",
+                "on_source_damage",
+            } and "damage" in kinds and source is not None and source.id in event_ids:
+                return "状态来源受到伤害，满足显式结束条件"
+            if trigger in {"target_moves", "target_moved", "on_target_move"}:
+                if "movement" in kinds and target is not None and target.id in event_ids:
+                    return "状态目标移动，满足显式结束条件"
+            if trigger in {"source_moves", "source_moved", "on_source_move"}:
+                if "movement" in kinds and source is not None and source.id in event_ids:
+                    return "状态来源移动，满足显式结束条件"
+            if event_only:
+                continue
+            if trigger in {"source_inactive", "source_dies", "source_dead"}:
+                if source is None or not source.is_active or source.hp <= 0:
+                    return f"状态来源满足 {trigger}"
+            elif trigger == "source_unconscious":
+                if source is None or cls._has_condition(source, "unconscious"):
+                    return "状态来源陷入昏迷"
+            elif trigger in {"target_inactive", "target_dies", "target_dead"}:
+                if target is None or not target.is_active or target.hp <= 0:
+                    return f"状态目标满足 {trigger}"
+            elif trigger == "target_unconscious":
+                if target is None or cls._has_condition(target, "unconscious"):
+                    return "状态目标陷入昏迷"
+            elif trigger == "concentration_broken":
+                if (
+                    effect.source_combatant_id is None
+                    or source is None
+                    or source.concentration.get("effect_id") != effect.id
+                ):
+                    return "专注已中断"
+        return None
+
+    @classmethod
+    def _end_predicated_effects(
+        cls,
+        session: Session,
+        combat: Combat,
+        *,
+        now: datetime,
+        event_combatant_ids: set[str] | None = None,
+        event_kinds: set[str] | None = None,
+        event_only: bool = False,
+    ) -> tuple[list[CombatEffect], list[Combatant]]:
+        """End only effects with an explicit satisfied lifecycle predicate."""
+
+        ended: list[CombatEffect] = []
+        changed_targets: dict[str, Combatant] = {}
+        for effect in cls._active_runtime_effects(session, combat.id):
+            reason = cls._lifecycle_end_reason(
+                session,
+                effect,
+                event_combatant_ids=event_combatant_ids,
+                event_kinds=event_kinds,
+                event_only=event_only,
+            )
+            if reason is None:
+                continue
+            target = cls._end_runtime_effect(session, effect, reason=reason, now=now)
+            if target is not None:
+                changed_targets[target.id] = target
+            ended.append(effect)
+        for effect in session.scalars(
+            select(CombatEffect).where(
+                CombatEffect.combat_id == combat.id,
+                CombatEffect.status == "active",
+            )
+        ).all():
+            if effect in ended or not cls._effect_end_triggers(effect):
+                continue
+            reason = cls._lifecycle_end_reason(
+                session,
+                effect,
+                event_combatant_ids=event_combatant_ids,
+                event_kinds=event_kinds,
+                event_only=event_only,
+            )
+            if reason is None:
+                continue
+            target = session.get(Combatant, effect.target_combatant_id)
+            details = dict(effect.details_json or {})
+            if target is not None and isinstance(details.get("rule_block"), dict):
+                cls._reverse_compiled_effect(session, target, effect)
+                changed_targets[target.id] = target
+            effect.status = "ended"
+            effect.ended_at = now
+            effect.end_reason = reason
+            effect.version += 1
+            ended.append(effect)
+        for target in changed_targets.values():
+            target.version += 1
+            target.updated_at = now
+        ended_summons = cls._deactivate_summons_for_effects(
+            session,
+            combat,
+            ended,
+            now=now,
+        )
+        return ended, ended_summons
+
+    @classmethod
+    def _reverse_compiled_effect(
+        cls,
+        session: Session,
+        target: Combatant,
+        effect: CombatEffect,
+    ) -> dict[str, object]:
+        """Reverse a structured effect without breaking co-existing sources."""
+
+        details = dict(effect.details_json or {})
+        block = details.get("rule_block")
+        if isinstance(block, dict) and str(block.get("kind") or "") == "condition":
+            condition = str(block.get("condition") or "").strip()
+            condition_was_present = details.get("condition_was_present")
+            applied = details.get("applied_state")
+            prior_conditions = (
+                applied.get("conditions")
+                if isinstance(applied, dict)
+                else None
+            )
+            if (
+                condition
+                and not (
+                    bool(condition_was_present)
+                    if isinstance(condition_was_present, bool)
+                    else (
+                        isinstance(prior_conditions, list)
+                        and any(
+                            cls._canonical_condition(value)
+                            == cls._canonical_condition(condition)
+                            for value in prior_conditions
+                        )
+                    )
+                )
+                and not cls._condition_owned_by_other_effect(session, effect, target, condition)
+            ):
+                cls._remove_condition(target, condition)
+            # Some structured maneuvers use a condition block as the marker
+            # for another reversible state (grapple sets speed to 0). Restore
+            # that state from the same effect snapshot when the effect ends.
+            if isinstance(applied, dict):
+                speed_ft = applied.get("speed_ft")
+                if isinstance(speed_ft, int) and speed_ft >= 0:
+                    target.speed_ft = speed_ft
+                    movement_remaining = applied.get("movement_remaining_ft")
+                    target.movement_remaining_ft = (
+                        min(movement_remaining, target.speed_ft)
+                        if isinstance(movement_remaining, int) and movement_remaining >= 0
+                        else min(target.movement_remaining_ft, target.speed_ft)
+                    )
+            return {}
+        return cls._apply_rule_block_effect(target, details, remove=True)
+
+    @classmethod
+    def _apply_structured_monster_effects(
+        cls,
+        session: Session,
+        combat: Combat,
+        *,
+        actor: Combatant,
+        target: Combatant,
+        conditions: list[str],
+        condition_duration: str | None,
+        condition_duration_value: int | None = None,
+        condition_save_dc: int | None = None,
+        condition_save_ability: str | None = None,
+        movement_distance_ft: int | None = None,
+        movement_direction: str | None = None,
+    ) -> dict[str, object]:
+        """Apply effects whose outcome and complete lifecycle are structured.
+
+        Turn-boundary conditions use the lightweight runtime state used by
+        Dodge/Ready.  Round/minute, until-save, and until-removed conditions
+        use a reversible rule block so expiry and explicit cleanup restore the
+        exact pre-effect condition list instead of merely deleting a string.
+        """
+
+        result: dict[str, object] = {
+            "conditions_applied": [],
+            "conditions_immune": [],
+            "effect_ids": [],
+        }
+        expires_map = {
+            "actor_turn_start": ("turn_start", actor.id),
+            "actor_turn_end": ("turn_end", actor.id),
+            "target_turn_start": ("turn_start", target.id),
+            "target_turn_end": ("turn_end", target.id),
+        }
+        supported_durations = {
+            *expires_map,
+            "rounds",
+            "minutes",
+            "until_save",
+            "until_removed",
+        }
+        if conditions and condition_duration not in supported_durations:
+            raise ValueError("monster condition duration is not safe to automate")
+        if condition_duration in {"rounds", "minutes"} and condition_duration_value is None:
+            raise ValueError("timed condition requires a duration value")
+        if condition_duration == "until_save" and (
+            condition_save_dc is None or not (condition_save_ability or "").strip()
+        ):
+            raise ValueError("until_save condition requires an explicit save DC and ability")
+        expires, expires_combatant_id = expires_map.get(
+            condition_duration or "", ("", None)
+        )
+        immune = {
+            cls._canonical_condition(value)
+            for value in list(target.condition_immunities or [])
+        }
+        for raw_condition in conditions:
+            condition = str(raw_condition).strip()
+            if not condition:
+                continue
+            if cls._canonical_condition(condition) in immune:
+                cast_list = result["conditions_immune"]
+                assert isinstance(cast_list, list)
+                cast_list.append(condition)
+                continue
+            if expires:
+                state_name = f"monster_condition:{condition}"
+                if cls._active_runtime_effects(
+                    session,
+                    combat.id,
+                    target_id=target.id,
+                    state_name=state_name,
+                ):
+                    continue
+                condition_was_present = cls._has_condition(target, condition)
+                cls._add_condition(target, condition)
+                effect = CombatEffect(
+                    campaign_id=combat.campaign_id,
+                    combat_id=combat.id,
+                    target_combatant_id=target.id,
+                    source_combatant_id=actor.id,
+                    name=f"{actor.display_name}：{condition}",
+                    effect_type="condition",
+                    details_json={
+                        "runtime_state": {
+                            "name": state_name,
+                            "condition": condition,
+                            "condition_was_present": condition_was_present,
+                            "expires": expires,
+                            "expires_combatant_id": expires_combatant_id,
+                            "created_round": combat.round_number,
+                            "created_turn_index": combat.current_turn_index,
+                            "source": "structured_monster_action",
+                        }
+                    },
+                    started_round=combat.round_number,
+                    duration_unit="until_removed",
+                    requires_concentration=False,
+                    status="active",
+                )
+            else:
+                before_conditions = list(target.conditions or [])
+                if cls._has_condition(target, condition):
+                    continue
+                cls._add_condition(target, condition)
+                duration_unit = condition_duration or "until_removed"
+                effect = CombatEffect(
+                    campaign_id=combat.campaign_id,
+                    combat_id=combat.id,
+                    target_combatant_id=target.id,
+                    source_combatant_id=actor.id,
+                    name=f"{actor.display_name}：{condition}",
+                    effect_type="condition",
+                    details_json={
+                        "rule_block": {
+                            "kind": "condition",
+                            "condition": condition,
+                            "operation": "apply",
+                        },
+                        "applied_state": {"conditions": before_conditions},
+                        "source": "structured_monster_action",
+                    },
+                    started_round=combat.round_number,
+                    duration_unit=duration_unit,
+                    duration_value=condition_duration_value,
+                    ends_round=cls._effect_ends_round(
+                        combat.round_number,
+                        duration_unit,
+                        condition_duration_value,
+                    ),
+                    save_dc=condition_save_dc,
+                    save_ability=condition_save_ability,
+                    requires_concentration=False,
+                    status="active",
+                )
+            session.add(effect)
+            session.flush()
+            applied = result["conditions_applied"]
+            effect_ids = result["effect_ids"]
+            assert isinstance(applied, list) and isinstance(effect_ids, list)
+            applied.append(condition)
+            effect_ids.append(effect.id)
+        if movement_distance_ft is not None:
+            if movement_direction not in {"away", "toward"}:
+                raise ValueError("structured forced movement direction is required")
+            if combat.scene_id is None or session.scalar(
+                select(SceneGrid).where(SceneGrid.scene_id == combat.scene_id)
+            ) is None:
+                raise ValueError("强制位移需要权威战斗网格，不能默认按5尺网格处理")
+            result["movement"] = cls._move_away_on_grid(
+                session,
+                combat,
+                target=target,
+                source=actor,
+                distance_ft=movement_distance_ft,
+                direction=movement_direction,
+            )
+        return result
+
+    @staticmethod
+    def _grid_point(combatant: Combatant) -> tuple[int, int] | None:
+        raw = (combatant.snapshot_json or {}).get("grid_position")
+        if not isinstance(raw, dict):
+            return None
+        row = raw.get("row")
+        col = raw.get("col")
+        if not isinstance(row, int) or not isinstance(col, int):
+            return None
+        return row, col
+
+    @staticmethod
+    def _grid_obstacles(
+        session: Session,
+        grid: SceneGrid,
+    ) -> tuple[set[tuple[int, int]], set[tuple[int, int]]]:
+        blockers: set[tuple[int, int]] = set()
+        cover_cells: set[tuple[int, int]] = set()
+        raw_cells = (grid.layers_json or {}).get("cells", [])
+        if isinstance(raw_cells, list):
+            for cell in raw_cells:
+                if not isinstance(cell, dict):
+                    continue
+                row = cell.get("row")
+                col = cell.get("col")
+                if not isinstance(row, int) or not isinstance(col, int):
+                    continue
+                point = (row, col)
+                if cell.get("kind") == "cover" and cell.get("blocks_sight") is not True:
+                    cover_cells.add(point)
+                if cell.get("kind") == "wall" or cell.get("blocks_sight") is True:
+                    blockers.add(point)
+        objects = session.scalars(
+            select(SceneObject).where(SceneObject.scene_id == grid.scene_id)
+        ).all()
+        for scene_object in objects:
+            cells = {
+                (row, col)
+                for row in range(
+                    scene_object.row,
+                    scene_object.row + scene_object.height_cells,
+                )
+                for col in range(
+                    scene_object.col,
+                    scene_object.col + scene_object.width_cells,
+                )
+            }
+            metadata = dict(scene_object.metadata_json or {})
+            if (
+                scene_object.object_type == "cover"
+                and scene_object.state == "active"
+            ) or (
+                scene_object.object_type == "furniture"
+                and scene_object.state == "active"
+                and metadata.get("provides_cover") is True
+            ):
+                cover_cells.update(cells)
+            if scene_object.object_type == "wall" or (
+                scene_object.object_type == "door"
+                and scene_object.state in {"active", "closed"}
+            ):
+                blockers.update(cells)
+        return blockers, cover_cells
+
+    @classmethod
+    def _attack_geometry(
+        cls,
+        session: Session,
+        combat: Combat,
+        command: CombatActionCommand,
+        actor: Combatant,
+        target: Combatant,
+    ) -> dict[str, object] | None:
+        """Resolve authoritative range, sight, and cover when a combat grid exists."""
+
+        actor_point = cls._grid_point(actor)
+        target_point = cls._grid_point(target)
+        if combat.scene_id is None or actor_point is None or target_point is None:
+            return None
+        grid = session.scalar(select(SceneGrid).where(SceneGrid.scene_id == combat.scene_id))
+        if grid is None:
+            return None
+        blockers, cover_cells = cls._grid_obstacles(session, grid)
+        distance_ft = grid_distance_ft(
+            actor_point,
+            target_point,
+            cell_size_ft=grid.cell_size_ft,
+        )
+        if command.attack_range_ft is not None and distance_ft > command.attack_range_ft:
+            raise ValueError(
+                f"target is {distance_ft} ft away, beyond the explicit "
+                f"{command.attack_range_ft} ft attack range"
+            )
+        has_sight = line_of_sight(actor_point, target_point, blockers)
+        cover = cover_between(actor_point, target_point, cover_cells, blockers)
+        if (not has_sight or cover == "total") and not command.dm_override:
+            raise ValueError(
+                "target has total cover or no line of sight; an explicit DM override is required"
+            )
+        cover_bonus = 0 if command.ignore_cover else (2 if cover == "half" else 0)
+        effective_armor_class = target.armor_class + cover_bonus
+        if (
+            command.attack_roll_total is not None
+            and command.amount > 0
+            and command.attack_roll_total < effective_armor_class
+            and not command.dm_override
+        ):
+            raise ValueError(
+                f"attack total {command.attack_roll_total} does not reach effective AC "
+                f"{effective_armor_class}"
+            )
+        return {
+            "distance_ft": distance_ft,
+            "line_of_sight": has_sight,
+            "cover": cover,
+            "cover_bonus": cover_bonus,
+            "base_armor_class": target.armor_class,
+            "effective_armor_class": effective_armor_class,
+        }
+
+    @staticmethod
+    def _point_in_monster_area(
+        *,
+        shape: str,
+        origin: tuple[int, int],
+        anchor: tuple[int, int],
+        point: tuple[int, int],
+        size_ft: int,
+        width_ft: int | None,
+        cell_size_ft: int,
+        origin_height_ft: int = 0,
+        anchor_height_ft: int = 0,
+        point_height_ft: int = 0,
+        height_ft: int | None = None,
+    ) -> bool:
+        if shape == "cube":
+            if size_ft % cell_size_ft != 0:
+                raise ValueError("cube size must align to the authoritative grid cell size")
+            side_cells = size_ft // cell_size_ft
+            horizontal = (
+                anchor[0] <= point[0] < anchor[0] + side_cells
+                and anchor[1] <= point[1] < anchor[1] + side_cells
+            )
+            vertical = anchor_height_ft <= point_height_ft < anchor_height_ft + size_ft
+            return horizontal and vertical
+        if shape == "sphere":
+            # The anchor is the sphere's centre. Include elevation when a
+            # combatant supplies it; missing elevation is the ground plane.
+            row_ft = (point[0] - anchor[0]) * cell_size_ft
+            col_ft = (point[1] - anchor[1]) * cell_size_ft
+            vertical_ft = point_height_ft - anchor_height_ft
+            return (row_ft**2 + col_ft**2 + vertical_ft**2) ** 0.5 <= size_ft
+        if shape == "cylinder":
+            row_ft = (point[0] - anchor[0]) * cell_size_ft
+            col_ft = (point[1] - anchor[1]) * cell_size_ft
+            vertical = anchor_height_ft <= point_height_ft < anchor_height_ft + (height_ft or 0)
+            return hypot(row_ft, col_ft) <= size_ft and vertical
+        direction_row = anchor[0] - origin[0]
+        direction_col = anchor[1] - origin[1]
+        direction_length = hypot(direction_row, direction_col)
+        if direction_length == 0:
+            raise ValueError("cone and line areas require an anchor away from the actor")
+        unit_row = direction_row / direction_length
+        unit_col = direction_col / direction_length
+        target_row = (point[0] - origin[0]) * cell_size_ft
+        target_col = (point[1] - origin[1]) * cell_size_ft
+        forward_ft = target_row * unit_row + target_col * unit_col
+        if forward_ft < 0 or forward_ft > size_ft:
+            return False
+        perpendicular_ft = abs(target_row * unit_col - target_col * unit_row)
+        if shape == "line":
+            assert width_ft is not None
+            vertical_ft = abs(point_height_ft - origin_height_ft)
+            return perpendicular_ft <= width_ft / 2 and vertical_ft <= width_ft / 2
+        if shape == "cone":
+            # A 5e cone is represented as a 90-degree wedge on the square grid.
+            vertical_ft = abs(point_height_ft - origin_height_ft)
+            return perpendicular_ft <= forward_ft and vertical_ft <= forward_ft
+        raise ValueError("unsupported monster area shape")
+
+    @classmethod
+    def _monster_area_targets(
+        cls,
+        session: Session,
+        combat: Combat,
+        actor: Combatant,
+        command: MonsterAreaActionCommand,
+    ) -> tuple[SceneGrid, list[Combatant], dict[str, dict[str, object]]]:
+        if combat.scene_id is None:
+            raise ValueError("monster area actions require an authoritative combat scene")
+        grid = session.scalar(select(SceneGrid).where(SceneGrid.scene_id == combat.scene_id))
+        if grid is None:
+            raise ValueError("monster area actions require an authoritative combat grid")
+        origin = cls._grid_point(actor)
+        if origin is None:
+            raise ValueError("monster area actor has no authoritative grid position")
+        anchor = (command.anchor_row, command.anchor_col)
+        origin_height_ft = cls._grid_elevation_ft(actor)
+        if command.requires_explicit_elevation and cls._explicit_grid_elevation_ft(actor) is None:
+            raise ValueError("高级三维区域需要记录施法者的 grid_position.elevation_ft")
+        if not (1 <= anchor[0] <= grid.height and 1 <= anchor[1] <= grid.width):
+            raise ValueError("area anchor is outside the combat grid")
+        if command.shape == "cube":
+            if command.size_ft % grid.cell_size_ft != 0:
+                raise ValueError("cube size must align to the authoritative grid cell size")
+            side_cells = command.size_ft // grid.cell_size_ft
+            if (
+                anchor[0] + side_cells - 1 > grid.height
+                or anchor[1] + side_cells - 1 > grid.width
+            ):
+                raise ValueError("cube area extends outside the combat grid")
+        blockers, _ = cls._grid_obstacles(session, grid)
+        affected: list[Combatant] = []
+        geometry: dict[str, dict[str, object]] = {}
+        for candidate in cls._ordered_combatants(session, combat.id):
+            if candidate.id == actor.id and not command.include_actor:
+                continue
+            point = cls._grid_point(candidate)
+            if (
+                command.requires_explicit_elevation
+                and cls._explicit_grid_elevation_ft(candidate) is None
+            ):
+                raise ValueError(
+                    f"高级三维区域目标 {candidate.display_name} 缺少 grid_position.elevation_ft"
+                )
+            point_height_ft = cls._grid_elevation_ft(candidate)
+            if point is None or not cls._point_in_monster_area(
+                shape=command.shape,
+                origin=origin,
+                anchor=anchor,
+                point=point,
+                size_ft=command.size_ft,
+                width_ft=command.width_ft,
+                cell_size_ft=grid.cell_size_ft,
+                origin_height_ft=origin_height_ft,
+                anchor_height_ft=command.anchor_height_ft,
+                point_height_ft=point_height_ft,
+                height_ft=command.height_ft,
+            ):
+                continue
+            has_sight = line_of_sight(origin, point, blockers)
+            if command.requires_line_of_sight and not has_sight:
+                continue
+            affected.append(candidate)
+            geometry[candidate.id] = {
+                "grid_position": {"row": point[0], "col": point[1]},
+                "elevation_ft": point_height_ft,
+                "vertical_distance_ft": abs(point_height_ft - command.anchor_height_ft),
+                "distance_ft": grid_distance_ft(
+                    origin,
+                    point,
+                    cell_size_ft=grid.cell_size_ft,
+                ),
+                "line_of_sight": has_sight,
+            }
+        requested_ids = {target.target_combatant_id for target in command.targets}
+        affected_ids = {target.id for target in affected}
+        if requested_ids != affected_ids:
+            missing = sorted(affected_ids - requested_ids)
+            extra = sorted(requested_ids - affected_ids)
+            raise ValueError(
+                "area target list does not match authoritative geometry; "
+                f"missing={missing}, outside_or_blocked={extra}"
+            )
+        return grid, affected, geometry
+
+    @classmethod
+    def _validate_player_roll_area_target(
+        cls,
+        session: Session,
+        combat: Combat,
+        actor: Combatant,
+        target: Combatant,
+        command: Any,
+    ) -> dict[str, object]:
+        """Validate one paused save target against the authoritative 3-D area.
+
+        Player-roll prompts are created before the d20 is known, so they cannot
+        use ``MonsterAreaActionCommand`` directly.  This preflight shares the
+        same geometry primitive and rejects a 2-D-only target before a prompt
+        reaches the player.  The later prompt resolution still applies each
+        typed damage segment through the normal damage endpoint.
+        """
+
+        if command.area_shape is None:
+            return {}
+        if combat.scene_id is None:
+            raise ValueError("area player-roll prompts require an authoritative combat scene")
+        grid = session.scalar(select(SceneGrid).where(SceneGrid.scene_id == combat.scene_id))
+        if grid is None:
+            raise ValueError("area player-roll prompts require an authoritative combat grid")
+        origin = cls._grid_point(actor)
+        point = cls._grid_point(target)
+        if origin is None or point is None:
+            raise ValueError("area target and actor both need authoritative grid positions")
+        if command.requires_explicit_elevation and (
+            cls._explicit_grid_elevation_ft(actor) is None
+            or cls._explicit_grid_elevation_ft(target) is None
+        ):
+            raise ValueError(
+                "高级三维区域需要施法者和目标都记录 grid_position.elevation_ft"
+            )
+        assert command.area_size_ft is not None
+        assert command.area_anchor_row is not None
+        assert command.area_anchor_col is not None
+        anchor = (command.area_anchor_row, command.area_anchor_col)
+        if not (1 <= anchor[0] <= grid.height and 1 <= anchor[1] <= grid.width):
+            raise ValueError("area anchor is outside the combat grid")
+        blockers, _ = cls._grid_obstacles(session, grid)
+        if target.id == actor.id and not command.area_include_actor:
+            raise ValueError("area prompt excludes its actor")
+        if not cls._point_in_monster_area(
+            shape=command.area_shape,
+            origin=origin,
+            anchor=anchor,
+            point=point,
+            size_ft=command.area_size_ft,
+            width_ft=command.area_width_ft,
+            cell_size_ft=grid.cell_size_ft,
+            origin_height_ft=cls._grid_elevation_ft(actor),
+            anchor_height_ft=command.area_anchor_height_ft,
+            point_height_ft=cls._grid_elevation_ft(target),
+            height_ft=command.area_height_ft,
+        ):
+            raise ValueError("player roll target is outside the authoritative 3-D area")
+        has_sight = line_of_sight(origin, point, blockers)
+        if not has_sight:
+            raise ValueError("player roll target is behind total cover or outside line of sight")
+        return {
+            "grid_position": {"row": point[0], "col": point[1]},
+            "elevation_ft": cls._grid_elevation_ft(target),
+            "vertical_distance_ft": abs(
+                cls._grid_elevation_ft(target) - command.area_anchor_height_ft
+            ),
+            "distance_ft": grid_distance_ft(
+                origin,
+                point,
+                cell_size_ft=grid.cell_size_ft,
+            ),
+            "line_of_sight": has_sight,
+        }
+
+    @staticmethod
+    def _grid_elevation_ft(combatant: Combatant) -> int:
+        """Read an explicit vertical coordinate without inventing altitude."""
+
+        raw = (combatant.snapshot_json or {}).get("grid_position")
+        if not isinstance(raw, dict):
+            return 0
+        for key in ("elevation_ft", "height_ft", "z"):
+            value = raw.get(key)
+            if isinstance(value, int) and not isinstance(value, bool):
+                return value
+        return 0
+
+    @staticmethod
+    def _explicit_grid_elevation_ft(combatant: Combatant) -> int | None:
+        """Return saved elevation while preserving the difference from missing data."""
+
+        raw = (combatant.snapshot_json or {}).get("grid_position")
+        if not isinstance(raw, dict):
+            return None
+        for key in ("elevation_ft", "height_ft", "z"):
+            value = raw.get(key)
+            if isinstance(value, int) and not isinstance(value, bool):
+                return value
+        return None
+
+    @classmethod
+    def _attack_contexts(
+        cls,
+        session: Session,
+        combat: Combat,
+        command: CombatActionCommand,
+        actor: Combatant | None,
+        target: Combatant,
+    ) -> tuple[list[str], CombatEffect | None]:
+        if not command.is_attack:
+            return [], None
+        if actor is None or command.actor_version is None:
+            raise ValueError("an attack requires an actor and actor version")
+        if actor.version != command.actor_version:
+            raise VersionConflict(
+                "combatant", actor.id, command.actor_version, actor.version
+            )
+        cls._validate_can_act(actor)
+        if cls._has_condition(actor, "charmed") and not command.dm_override:
+            charmer_ids = cls._condition_source_ids(session, combat.id, actor, "charmed")
+            if target.id in charmer_ids:
+                raise ValueError("charmed combatant cannot attack its charmer")
+        contexts: list[str] = []
+        adjudication_contexts: list[str] = []
+        advantage_sources: list[str] = []
+        disadvantage_sources: list[str] = []
+        feature_advantage, feature_disadvantage = cls._feature_attack_roll_contexts(
+            actor, target
+        )
+        if feature_advantage:
+            contexts.append("feature_attack_roll_advantage")
+            advantage_sources.extend(
+                f"feature:{source}" for source in feature_advantage
+            )
+        if feature_disadvantage:
+            contexts.append("feature_attack_roll_disadvantage")
+            disadvantage_sources.extend(
+                f"feature:{source}" for source in feature_disadvantage
+            )
+        geometry = cls._attack_geometry(session, combat, command, actor, target)
+        if geometry is not None:
+            contexts.append(f"distance_ft:{geometry['distance_ft']}")
+            contexts.append(f"line_of_sight:{str(geometry['line_of_sight']).lower()}")
+            contexts.append(f"cover:{geometry['cover']}")
+            contexts.append(f"effective_ac:{geometry['effective_armor_class']}")
+            if geometry["cover"] == "half" and command.attack_roll_total is None:
+                adjudication_contexts.append("target_half_cover_requires_attack_total")
+        if cls._has_condition(actor, "prone"):
+            contexts.append("attacker_prone")
+            adjudication_contexts.append("attacker_prone")
+            disadvantage_sources.append("attacker_prone")
+        for condition, context in (
+            ("blinded", "attacker_blinded"),
+            ("poisoned", "attacker_poisoned"),
+            ("restrained", "attacker_restrained"),
+            ("invisible", "attacker_invisible"),
+            ("frightened", "attacker_frightened_source_visibility"),
+        ):
+            if cls._has_condition(actor, condition):
+                contexts.append(context)
+                adjudication_contexts.append(context)
+                if condition in {"blinded", "poisoned", "restrained"}:
+                    disadvantage_sources.append(context)
+                elif condition == "invisible":
+                    advantage_sources.append(context)
+        if cls._has_condition(target, "prone"):
+            if geometry is not None:
+                if int(geometry["distance_ft"]) <= 5:
+                    contexts.append("target_prone_within_5ft")
+                    advantage_sources.append("target_prone_within_5ft")
+                else:
+                    contexts.append("target_prone_beyond_5ft")
+                    disadvantage_sources.append("target_prone_beyond_5ft")
+            else:
+                contexts.append("target_prone_distance_requires_dm_ruling")
+                adjudication_contexts.append("target_prone_distance_requires_dm_ruling")
+        for condition, context in (
+            ("blinded", "target_blinded"),
+            ("restrained", "target_restrained"),
+            ("stunned", "target_stunned"),
+            ("petrified", "target_petrified"),
+            ("invisible", "target_invisible"),
+            ("paralyzed", "target_paralyzed_auto_critical_within_5ft"),
+            ("unconscious", "target_unconscious_auto_critical_within_5ft"),
+        ):
+            if cls._has_condition(target, condition):
+                contexts.append(context)
+                adjudication_contexts.append(context)
+                if condition in {
+                    "blinded",
+                    "restrained",
+                    "stunned",
+                    "paralyzed",
+                    "petrified",
+                    "unconscious",
+                }:
+                    advantage_sources.append(context)
+                elif condition == "invisible":
+                    disadvantage_sources.append(context)
+        if cls._active_runtime_effects(
+            session, combat.id, target_id=actor.id, state_name="hidden"
+        ):
+            contexts.append("attacker_hidden_visibility_requires_dm_ruling")
+            adjudication_contexts.append("attacker_hidden_visibility_requires_dm_ruling")
+        if (
+            not cls._movement_is_blocked(target)
+            and target.speed_ft > 0
+            and cls._active_runtime_effects(
+                session, combat.id, target_id=target.id, state_name="dodge"
+            )
+        ):
+            contexts.append("target_dodging")
+            adjudication_contexts.append("target_dodging")
+            disadvantage_sources.append("target_dodging")
+        help_effect: CombatEffect | None = None
+        if command.help_effect_id is not None:
+            help_effect = session.get(CombatEffect, command.help_effect_id)
+            if (
+                help_effect is None
+                or help_effect.combat_id != combat.id
+                or help_effect.target_combatant_id != actor.id
+                or help_effect.status != "active"
+                or (state := cls._runtime_state(help_effect)) is None
+                or state.get("name") != "help"
+            ):
+                raise ValueError("Help effect is not active for this attacker")
+            if help_effect.version != command.help_effect_version:
+                raise VersionConflict(
+                    "combat_effect",
+                    help_effect.id,
+                    command.help_effect_version or 0,
+                    help_effect.version,
+                )
+            contexts.append("help_available")
+            adjudication_contexts.append("help_available")
+            advantage_sources.append("help_available")
+        if advantage_sources or disadvantage_sources:
+            expected_roll_mode = (
+                "normal"
+                if advantage_sources and disadvantage_sources
+                else "advantage"
+                if advantage_sources
+                else "disadvantage"
+            )
+            if advantage_sources and disadvantage_sources:
+                contexts.append("attack_roll_rule:normal_due_to_cancellation")
+            elif advantage_sources:
+                contexts.append("attack_roll_rule:advantage")
+            else:
+                contexts.append("attack_roll_rule:disadvantage")
+            contexts.append(
+                "attack_roll_advantage_sources:" + ",".join(advantage_sources)
+                if advantage_sources
+                else "attack_roll_advantage_sources:none"
+            )
+            contexts.append(
+                "attack_roll_disadvantage_sources:" + ",".join(disadvantage_sources)
+                if disadvantage_sources
+                else "attack_roll_disadvantage_sources:none"
+            )
+            if (
+                command.attack_roll_mode is not None
+                and command.attack_roll_mode != expected_roll_mode
+                and not command.dm_override
+            ):
+                raise ValueError(
+                    "attack_roll_mode conflicts with the structured condition matrix; "
+                    f"expected {expected_roll_mode}, got {command.attack_roll_mode}; "
+                    "use a DM override only when another explicit source changes the result"
+                )
+        if adjudication_contexts and not command.dm_override and (
+            command.attack_roll_mode is None
+            or not (command.attack_adjudication_note or "").strip()
+        ):
+            raise ValueError(
+                "attack context requires explicit attack_roll_mode and "
+                "attack_adjudication_note; the engine will not guess advantage, "
+                "distance, or visibility"
+            )
+        return contexts, help_effect
+
+    @classmethod
+    def _damage_defenses(
+        cls,
+        target: Combatant,
+        command: object,
+        damage_types: list[str],
+        *,
+        damage_tags: list[str] | None = None,
+        dm_override: bool | None = None,
+    ) -> tuple[tuple[str, ...], tuple[str, ...], tuple[str, ...], list[str], list[str]]:
+        """Resolve typed and explicitly tagged conditional defenses.
+
+        Conditional monster defenses are stored as data, never inferred from
+        prose.  A matching source tag (for example ``nonmagical``) is required;
+        otherwise the engine pauses unless the DM explicitly overrides it.
+        """
+
+        resistance = list(target.damage_resistances or [])
+        vulnerability = list(target.damage_vulnerabilities or [])
+        immunity = list(target.damage_immunities or [])
+        tags = {
+            str(value).strip().lower()
+            for value in (
+                damage_tags
+                if damage_tags is not None
+                else getattr(command, "damage_tags", [])
+            )
+            if str(value).strip()
+        }
+        effective_dm_override = (
+            bool(getattr(command, "dm_override", False))
+            if dm_override is None
+            else dm_override
+        )
+        normalized_damage_types = {str(value).strip().lower() for value in damage_types}
+        applied: list[str] = []
+        unresolved: list[str] = []
+        raw_conditionals = target.snapshot_json.get("conditional_damage_defenses")
+        conditionals = raw_conditionals if isinstance(raw_conditionals, list) else []
+        for index, raw_defense in enumerate(conditionals):
+            if not isinstance(raw_defense, dict):
+                continue
+            condition = str(raw_defense.get("condition") or "").strip()
+            operation = str(raw_defense.get("operation") or "").strip()
+            raw_types = raw_defense.get("damage_types")
+            types = (
+                [str(value).strip() for value in raw_types if str(value).strip()]
+                if isinstance(raw_types, list)
+                else []
+            )
+            if (
+                not condition
+                or operation not in {"resistance", "vulnerability", "immunity"}
+                or not types
+            ):
+                continue
+            if not any(value.lower() in normalized_damage_types for value in types):
+                continue
+            defense_label = str(raw_defense.get("id") or f"conditional_defense_{index + 1}")
+            automatic_feature_condition = (
+                condition.lower() in {"raging", "rage"}
+                and cls._has_condition(target, "raging")
+            )
+            if condition.lower() not in tags and not automatic_feature_condition:
+                # A typed segment may explicitly identify one source class
+                # while the target carries several mutually exclusive
+                # conditional defenses for the same damage type.  Once a
+                # source tag is present, unrelated conditions are not an
+                # unresolved rule; they simply do not apply to this segment.
+                if tags:
+                    continue
+                unresolved.append(f"{defense_label}:{condition}")
+                continue
+            destination = {
+                "resistance": resistance,
+                "vulnerability": vulnerability,
+                "immunity": immunity,
+            }[operation]
+            destination.extend(types)
+            applied.append(f"{defense_label}:{operation}:{','.join(types)}")
+        if unresolved and not effective_dm_override:
+            raise ValueError(
+                "目标有条件性伤害防御，必须提交 damage_tags 或 DM override："
+                + "、".join(unresolved)
+            )
+        return tuple(resistance), tuple(vulnerability), tuple(immunity), applied, unresolved
+
+    @classmethod
     def _resolve(
+        cls,
         command: CombatActionCommand,
         target: Combatant,
     ) -> dict[str, Any]:
@@ -139,26 +2823,123 @@ class CombatEngineService:
         }
         concentration_check_dc: int | None = None
         if command.action_type == "damage":
-            damage_resolution = resolve_damage(
-                amount=command.amount,
-                current_hp=target.hp,
-                temporary_hp=target.temporary_hp,
-                damage_type=command.damage_type or "",
-                resistances=tuple(target.damage_resistances),
-                vulnerabilities=tuple(target.damage_vulnerabilities),
-                immunities=tuple(target.damage_immunities),
-            )
-            result = asdict(damage_resolution)
-            after = {
-                **before,
-                "hp": damage_resolution.remaining_hp,
-                "temporary_hp": damage_resolution.remaining_temporary_hp,
-            }
-            if damage_resolution.adjusted_damage > 0 and target.concentration:
-                concentration_check_dc = max(
-                    10,
-                    damage_resolution.adjusted_damage // 2,
+            applied_defenses: list[str] = []
+            unresolved_defenses: list[str] = []
+            if command.damage_components:
+                component_results: list[dict[str, Any]] = []
+                current_hp = target.hp
+                current_temporary_hp = target.temporary_hp
+                applied_component_defenses: list[str] = []
+                unresolved_component_defenses: list[str] = []
+                for component in command.damage_components:
+                    (
+                        component_resistances,
+                        component_vulnerabilities,
+                        component_immunities,
+                        component_applied_defenses,
+                        component_unresolved_defenses,
+                    ) = cls._damage_defenses(
+                        target,
+                        command,
+                        [component.damage_type],
+                        damage_tags=component.damage_tags or command.damage_tags,
+                    )
+                    component_resolution = resolve_damage(
+                        amount=component.amount,
+                        current_hp=current_hp,
+                        temporary_hp=current_temporary_hp,
+                        damage_type=component.damage_type,
+                        resistances=component_resistances,
+                        vulnerabilities=component_vulnerabilities,
+                        immunities=component_immunities,
+                    )
+                    current_hp = component_resolution.remaining_hp
+                    current_temporary_hp = component_resolution.remaining_temporary_hp
+                    component_result = asdict(component_resolution)
+                    component_tags = list(component.damage_tags or command.damage_tags)
+                    if component_tags:
+                        component_result["damage_tags"] = component_tags
+                    component_result["conditional_defenses_applied"] = (
+                        component_applied_defenses
+                    )
+                    component_result["conditional_defenses_unresolved"] = (
+                        component_unresolved_defenses
+                    )
+                    component_results.append(component_result)
+                    applied_component_defenses.extend(component_applied_defenses)
+                    unresolved_component_defenses.extend(component_unresolved_defenses)
+                adjusted_damage = sum(item["adjusted_damage"] for item in component_results)
+                modifiers = {item["modifier"] for item in component_results}
+                result = {
+                    "original_damage": sum(item["original_damage"] for item in component_results),
+                    "adjusted_damage": adjusted_damage,
+                    "damage_type": "mixed",
+                    "modifier": next(iter(modifiers)) if len(modifiers) == 1 else "mixed",
+                    "temporary_hp_lost": sum(
+                        item["temporary_hp_lost"] for item in component_results
+                    ),
+                    "hp_lost": sum(item["hp_lost"] for item in component_results),
+                    "remaining_temporary_hp": current_temporary_hp,
+                    "remaining_hp": current_hp,
+                    "unapplied_damage": sum(
+                        item["unapplied_damage"] for item in component_results
+                    ),
+                    "explanation": "；".join(
+                        item["explanation"] for item in component_results
+                    ),
+                    "damage_components": component_results,
+                }
+                if applied_component_defenses:
+                    result["conditional_defenses_applied"] = list(
+                        dict.fromkeys(applied_component_defenses)
+                    )
+                if unresolved_component_defenses:
+                    result["conditional_defenses_unresolved"] = list(
+                        dict.fromkeys(unresolved_component_defenses)
+                    )
+                if adjusted_damage > 0 and target.concentration:
+                    concentration_check_dc = max(10, adjusted_damage // 2)
+                after = {
+                    **before,
+                    "hp": current_hp,
+                    "temporary_hp": current_temporary_hp,
+                }
+            else:
+                (
+                    resistances,
+                    vulnerabilities,
+                    immunities,
+                    applied_defenses,
+                    unresolved_defenses,
+                ) = cls._damage_defenses(
+                    target,
+                    command,
+                    [command.damage_type or ""],
                 )
+                damage_resolution = resolve_damage(
+                    amount=command.amount,
+                    current_hp=target.hp,
+                    temporary_hp=target.temporary_hp,
+                    damage_type=command.damage_type or "",
+                    resistances=resistances,
+                    vulnerabilities=vulnerabilities,
+                    immunities=immunities,
+                )
+                result = asdict(damage_resolution)
+                after = {
+                    **before,
+                    "hp": damage_resolution.remaining_hp,
+                    "temporary_hp": damage_resolution.remaining_temporary_hp,
+                }
+                if damage_resolution.adjusted_damage > 0 and target.concentration:
+                    concentration_check_dc = max(
+                        10,
+                        damage_resolution.adjusted_damage // 2,
+                    )
+            if applied_defenses:
+                result["conditional_defenses_applied"] = applied_defenses
+            if unresolved_defenses:
+                result["conditional_defenses_unresolved"] = unresolved_defenses
         else:
             healing_resolution = resolve_healing(
                 amount=command.amount,
@@ -189,16 +2970,16 @@ class CombatEngineService:
 
     @staticmethod
     def _end_condition(session: Session, combat: Combat) -> dict[str, Any]:
-        hostiles = list(
-            session.scalars(
+        hostiles = [
+            row
+            for row in session.scalars(
                 select(Combatant)
-                .where(
-                    Combatant.combat_id == combat.id,
-                    Combatant.entity_type == "monster",
-                )
+                .where(Combatant.combat_id == combat.id)
                 .order_by(Combatant.initiative.desc(), Combatant.id)
             )
-        )
+            if row.entity_type == "monster"
+            or row.snapshot_json.get("disposition") == "enemy"
+        ]
         defeated = [
             row
             for row in hostiles
@@ -306,13 +3087,50 @@ class CombatEngineService:
                 )
             )
             if existing is not None:
-                return {"action": serialize(existing)}
+                existing_actor = (
+                    session.get(Combatant, existing.actor_combatant_id)
+                    if existing.actor_combatant_id
+                    else None
+                )
+                existing_effect_target = (
+                    session.get(
+                        Combatant,
+                        existing.request_json.get("effect_target_combatant_id"),
+                    )
+                    if existing.request_json.get("effect_target_combatant_id")
+                    else None
+                )
+                return {
+                    "action": serialize(existing),
+                    "actor": serialize(existing_actor) if existing_actor is not None else None,
+                    "effect_target": (
+                        serialize(existing_effect_target)
+                        if existing_effect_target is not None
+                        else None
+                    ),
+                }
             actor = session.get(Combatant, command.actor_combatant_id)
             target = session.get(Combatant, command.target_combatant_id)
             if actor is None or actor.combat_id != combat_id:
                 raise StateNotFoundError("actor combatant not found in combat")
             if target is None or target.combat_id != combat_id:
                 raise StateNotFoundError("target combatant not found in combat")
+            effect_target = target
+            if command.effect_target_combatant_id is not None:
+                effect_target = session.get(Combatant, command.effect_target_combatant_id)
+                if effect_target is None or effect_target.combat_id != combat_id:
+                    raise StateNotFoundError("effect target combatant not found in combat")
+            # Geometry is an authoritative request-shape check, not a turn
+            # mutation. Run it before optimistic-version gates so a stale
+            # retry still receives the actionable area error instead of an
+            # unrelated 409 from an earlier prompt.
+            area_geometry = self._validate_player_roll_area_target(
+                session,
+                combat,
+                actor,
+                target,
+                command,
+            )
             if actor.version != command.actor_version:
                 raise VersionConflict(
                     "combatant",
@@ -327,17 +3145,43 @@ class CombatEngineService:
                     command.target_version,
                     target.version,
                 )
-            self._validate_action_economy(
+            if (
+                command.effect_target_version is not None
+                and effect_target.version != command.effect_target_version
+            ):
+                raise VersionConflict(
+                    "combatant",
+                    effect_target.id,
+                    command.effect_target_version,
+                    effect_target.version,
+                )
+            self._validate_monster_sequence(session, combat_id, actor, command)
+            economy_consumed = self._validate_action_economy(
                 session,
                 combat,
                 actor,
                 actor_version=command.actor_version,
                 action_cost=command.action_cost,
                 consume=True,
+                legendary_cost=command.legendary_cost,
+                legendary_pool_max=command.legendary_pool_max,
+                reaction_trigger=command.reaction_trigger,
             )
+            recharge_consumed = self._validate_recharge(
+                actor,
+                recharge_key=command.recharge_key,
+                consume=command.recharge_consume,
+            )
+            if recharge_consumed and not economy_consumed:
+                assert actor is not None
+                actor.version += 1
+                actor.updated_at = datetime.now(UTC)
             request_json = command.model_dump(mode="json")
+            if area_geometry:
+                request_json["area_geometry"] = area_geometry
             request_json["actor_name"] = actor.display_name
             request_json["target_name"] = target.display_name
+            request_json["effect_target_name"] = effect_target.display_name
             label = {
                 "armor_class": "AC 防御",
                 "saving_throw": f"{command.ability or ''}豁免",
@@ -368,29 +3212,580 @@ class CombatEngineService:
             )
             session.add(action)
             session.flush()
-            return {"action": serialize(action)}
+            return {
+                "action": serialize(action),
+                "actor": serialize(actor),
+                "target": serialize(target),
+                "effect_target": serialize(effect_target),
+            }
 
     @staticmethod
+    def _batch_player_roll_prompt_key(idempotency_key: str, index: int) -> str:
+        """Give every child prompt a stable, collision-resistant request key."""
+
+        digest = sha256(idempotency_key.encode("utf-8")).hexdigest()
+        return f"player-roll-batch:{digest}:{index}"
+
+    def create_player_roll_prompt_batch(
+        self,
+        campaign_id: str,
+        combat_id: str,
+        command: PlayerRollPromptBatchCommand,
+        *,
+        idempotency_key: str,
+    ) -> dict[str, Any]:
+        """Atomically queue all player saves for one multi-target action.
+
+        A multi-target saving throw must not create the first prompt or spend
+        an action if a later target turns out to be stale or outside the
+        authoritative 3-D area.  The complete batch is therefore preflighted
+        against a single session snapshot, then one action resource is spent
+        and all prompt rows are inserted under the same transaction.
+        """
+
+        if not idempotency_key.strip():
+            raise ValueError("idempotency key is required")
+
+        prompt_template = command.model_dump(mode="json", exclude={"targets"})
+        prompts = [
+            PlayerRollPromptCommand(
+                **prompt_template,
+                target_combatant_id=target.target_combatant_id,
+                target_version=target.target_version,
+                effect_target_combatant_id=target.effect_target_combatant_id,
+                effect_target_version=target.effect_target_version,
+            )
+            for target in command.targets
+        ]
+
+        with Session(self.engine) as session, session.begin():
+            campaign = session.get(Campaign, campaign_id)
+            if campaign is None:
+                raise StateNotFoundError("campaign not found")
+            combat = session.get(Combat, combat_id)
+            if combat is None or combat.campaign_id != campaign_id:
+                raise StateNotFoundError("combat not found in campaign")
+
+            existing_transaction = session.scalar(
+                select(OperationTransaction).where(
+                    OperationTransaction.campaign_id == campaign_id,
+                    OperationTransaction.idempotency_key == idempotency_key,
+                )
+            )
+            if existing_transaction is not None:
+                if (
+                    existing_transaction.operation_type
+                    != "combat_player_roll_prompt_batch"
+                    or existing_transaction.after_snapshot.get("combat_id") != combat_id
+                ):
+                    raise ValueError("idempotency key was already used by a different operation")
+                action_ids = existing_transaction.after_snapshot.get("action_ids")
+                target_ids = existing_transaction.after_snapshot.get("target_ids")
+                actor_id = existing_transaction.after_snapshot.get("actor_combatant_id")
+                if (
+                    not isinstance(action_ids, list)
+                    or not isinstance(target_ids, list)
+                    or not isinstance(actor_id, str)
+                ):
+                    raise ValueError("batch player-roll transaction is incomplete")
+                actions: list[CombatAction] = []
+                for action_id in action_ids:
+                    if not isinstance(action_id, str):
+                        raise ValueError("batch player-roll transaction is incomplete")
+                    action = session.get(CombatAction, action_id)
+                    if (
+                        action is None
+                        or action.combat_id != combat_id
+                        or action.transaction_id != existing_transaction.id
+                    ):
+                        raise ValueError("batch player-roll transaction is incomplete")
+                    actions.append(action)
+                actor = session.get(Combatant, actor_id)
+                if actor is None or actor.combat_id != combat_id:
+                    raise StateNotFoundError("prompt actor is no longer in combat")
+                targets: list[Combatant] = []
+                for target_id in target_ids:
+                    if not isinstance(target_id, str):
+                        raise ValueError("batch player-roll transaction is incomplete")
+                    target = session.get(Combatant, target_id)
+                    if target is None or target.combat_id != combat_id:
+                        raise StateNotFoundError("prompt target is no longer in combat")
+                    targets.append(target)
+                return {
+                    "actions": [serialize(action) for action in actions],
+                    "actor": serialize(actor),
+                    "targets": [serialize(target) for target in targets],
+                    "transaction": serialize(existing_transaction),
+                    "already_applied": True,
+                }
+
+            actor = session.get(Combatant, command.actor_combatant_id)
+            if actor is None or actor.combat_id != combat_id:
+                raise StateNotFoundError("actor combatant not found in combat")
+
+            prepared: list[
+                tuple[PlayerRollPromptCommand, Combatant, Combatant, dict[str, object]]
+            ] = []
+            for prompt in prompts:
+                target = session.get(Combatant, prompt.target_combatant_id)
+                if target is None or target.combat_id != combat_id:
+                    raise StateNotFoundError("target combatant not found in combat")
+                effect_target = target
+                if prompt.effect_target_combatant_id is not None:
+                    effect_target = session.get(Combatant, prompt.effect_target_combatant_id)
+                    if effect_target is None or effect_target.combat_id != combat_id:
+                        raise StateNotFoundError("effect target combatant not found in combat")
+                # Match the single-prompt endpoint's order: geometry errors
+                # take precedence over stale versions, and every target is
+                # checked before any resource can be consumed.
+                area_geometry = self._validate_player_roll_area_target(
+                    session,
+                    combat,
+                    actor,
+                    target,
+                    prompt,
+                )
+                prepared.append((prompt, target, effect_target, area_geometry))
+
+            if actor.version != command.actor_version:
+                raise VersionConflict(
+                    "combatant",
+                    actor.id,
+                    command.actor_version,
+                    actor.version,
+                )
+            for prompt, target, effect_target, _ in prepared:
+                if target.version != prompt.target_version:
+                    raise VersionConflict(
+                        "combatant",
+                        target.id,
+                        prompt.target_version,
+                        target.version,
+                    )
+                if (
+                    prompt.effect_target_version is not None
+                    and effect_target.version != prompt.effect_target_version
+                ):
+                    raise VersionConflict(
+                        "combatant",
+                        effect_target.id,
+                        prompt.effect_target_version,
+                        effect_target.version,
+                    )
+
+            self._validate_monster_sequence(session, combat_id, actor, prompts[0])
+            self._validate_action_economy(
+                session,
+                combat,
+                actor,
+                actor_version=command.actor_version,
+                action_cost=command.action_cost,
+                consume=False,
+                legendary_cost=command.legendary_cost,
+                legendary_pool_max=command.legendary_pool_max,
+                reaction_trigger=command.reaction_trigger,
+            )
+            self._validate_recharge(
+                actor,
+                recharge_key=command.recharge_key,
+                consume=False,
+            )
+
+            now = datetime.now(UTC)
+            transaction = OperationTransaction(
+                campaign_id=campaign_id,
+                operation_type="combat_player_roll_prompt_batch",
+                idempotency_key=idempotency_key,
+                status="applied",
+                before_snapshot={
+                    "actor": serialize(actor),
+                    "targets": [serialize(target) for _, target, _, _ in prepared],
+                },
+                after_snapshot={},
+                reason=f"{actor.display_name} queued {len(prepared)} player saving throws",
+                source="combat",
+                confirmed_at=now,
+            )
+            session.add(transaction)
+            session.flush()
+
+            economy_consumed = self._validate_action_economy(
+                session,
+                combat,
+                actor,
+                actor_version=command.actor_version,
+                action_cost=command.action_cost,
+                consume=True,
+                legendary_cost=command.legendary_cost,
+                legendary_pool_max=command.legendary_pool_max,
+                reaction_trigger=command.reaction_trigger,
+            )
+            recharge_consumed = self._validate_recharge(
+                actor,
+                recharge_key=command.recharge_key,
+                consume=command.recharge_consume,
+            )
+            if recharge_consumed and not economy_consumed:
+                actor.version += 1
+                actor.updated_at = now
+
+            label = f"{command.ability or ''}豁免"
+            actions: list[CombatAction] = []
+            for index, (prompt, target, effect_target, area_geometry) in enumerate(prepared):
+                request_json = prompt.model_dump(mode="json")
+                if area_geometry:
+                    request_json["area_geometry"] = area_geometry
+                request_json.update(
+                    {
+                        "actor_name": actor.display_name,
+                        "target_name": target.display_name,
+                        "effect_target_name": effect_target.display_name,
+                        "batch_idempotency_key": idempotency_key,
+                        "batch_index": index,
+                        "batch_size": len(prepared),
+                    }
+                )
+                actions.append(
+                    CombatAction(
+                        campaign_id=campaign_id,
+                        combat_id=combat_id,
+                        actor_combatant_id=actor.id,
+                        transaction_id=transaction.id,
+                        action_type="player_roll_prompt",
+                        target_combatant_ids=[target.id],
+                        request_json=request_json,
+                        result_json={
+                            "phase": "awaiting_player_roll",
+                            "roll_owner": "player",
+                            "batch_index": index,
+                            "batch_size": len(prepared),
+                        },
+                        explanation=prompt.description,
+                        round_number=combat.round_number,
+                        turn_index=combat.current_turn_index,
+                        summary=(
+                            f"{actor.display_name} 对 {target.display_name} 使用"
+                            f"「{prompt.action_name}」；等待玩家进行 {label}"
+                            f"（{prompt.roll_formula}，DC {prompt.dc}）"
+                        ),
+                        idempotency_key=self._batch_player_roll_prompt_key(
+                            idempotency_key,
+                            index,
+                        ),
+                        status="previewed",
+                    )
+                )
+            session.add_all(actions)
+            session.flush()
+            transaction.after_snapshot = {
+                "combat_id": combat_id,
+                "actor_combatant_id": actor.id,
+                "target_ids": [target.id for _, target, _, _ in prepared],
+                "action_ids": [action.id for action in actions],
+                "action_economy_consumed": economy_consumed,
+                "recharge_consumed": recharge_consumed,
+            }
+            return {
+                "actions": [serialize(action) for action in actions],
+                "actor": serialize(actor),
+                "targets": [serialize(target) for _, target, _, _ in prepared],
+                "transaction": serialize(transaction),
+                "already_applied": False,
+            }
+
+    @classmethod
+    def _resolve_save_defenses(
+        cls,
+        target: Combatant,
+        *,
+        dc: int,
+        ability: str | None,
+        roll_total: int,
+        roll_totals: list[int],
+        damage_on_success: int,
+        damage_on_failure: int,
+        is_magical: bool,
+        use_legendary_resistance: bool,
+        use_feature_reroll: bool,
+        consume: bool,
+    ) -> dict[str, object]:
+        snapshot = dict(target.snapshot_json or {})
+        raw_defenses = snapshot.get("advanced_defenses")
+        defenses = dict(raw_defenses) if isinstance(raw_defenses, dict) else {}
+        applied: list[str] = []
+        rolls = list(roll_totals) if roll_totals else [roll_total]
+        magic_resistance = bool(
+            defenses.get("magic_resistance") or snapshot.get("magic_resistance")
+        )
+        feature_modifiers = cls._feature_rule_modifiers(
+            target,
+            stat="saving_throw",
+            ability=ability,
+        )
+        feature_advantage = [
+            str(item.get("source") or "职业豁免优势")
+            for item in feature_modifiers
+            if item.get("operation") == "advantage"
+        ]
+        feature_disadvantage = [
+            str(item.get("source") or "职业豁免劣势")
+            for item in feature_modifiers
+            if item.get("operation") == "disadvantage"
+        ]
+        feature_reroll_consumed: dict[str, object] | None = None
+        if use_feature_reroll:
+            if magic_resistance and is_magical:
+                raise ValueError("魔法抗性与职业特性重掷不能在同一次豁免中叠加")
+            raw_rerolls = snapshot.get("feature_saving_throw_rerolls")
+            rerolls = list(raw_rerolls) if isinstance(raw_rerolls, list) else []
+            available_index = next(
+                (
+                    index
+                    for index, item in enumerate(rerolls)
+                    if isinstance(item, dict) and item.get("available") is True
+                ),
+                None,
+            )
+            if available_index is None:
+                raise ValueError("目标没有可用的职业特性豁免重掷")
+            if len(rolls) < 2:
+                raise ValueError("职业特性重掷需要提交第一次与重掷后的两个总值")
+            effective_roll = max(rolls)
+            feature_reroll_consumed = {
+                "resource": "feature_saving_throw_reroll",
+                "before": len(rerolls),
+                "after": len(rerolls) - 1,
+            }
+            if consume:
+                rerolls[available_index] = {
+                    **rerolls[available_index],
+                    "available": False,
+                }
+                snapshot["feature_saving_throw_rerolls"] = rerolls
+                target.snapshot_json = snapshot
+            applied.append("feature_saving_throw_reroll")
+        elif (magic_resistance and is_magical) or feature_advantage or feature_disadvantage:
+            if len(rolls) < 2:
+                raise ValueError(
+                    "structured saving-throw advantage/disadvantage requires two reported "
+                    "save totals; the server will not invent the second roll"
+                )
+            has_advantage = (magic_resistance and is_magical) or bool(feature_advantage)
+            has_disadvantage = bool(feature_disadvantage)
+            if has_advantage and has_disadvantage:
+                effective_roll = rolls[0]
+                applied.append("saving_throw_advantage_disadvantage_cancelled")
+            elif has_advantage:
+                effective_roll = max(rolls)
+                if magic_resistance and is_magical:
+                    applied.append("magic_resistance")
+                applied.extend(f"feature:{source}" for source in feature_advantage)
+            else:
+                effective_roll = min(rolls)
+                applied.extend(f"feature:{source}" for source in feature_disadvantage)
+        else:
+            effective_roll = roll_total
+        normalized_ability = str(ability or "").strip().lower()
+        auto_fail = (
+            cls._has_condition(target, "unconscious")
+            and normalized_ability in {"strength", "dexterity", "力量", "敏捷"}
+        )
+        if auto_fail:
+            effective_roll = -100_000
+            applied.append("unconscious_auto_fail_strength_dex_save")
+        succeeded = effective_roll >= dc and not auto_fail
+        resource_consumed: dict[str, object] | None = None
+        if use_legendary_resistance:
+            if succeeded:
+                raise ValueError("legendary resistance can only replace a failed saving throw")
+            raw_legendary = defenses.get("legendary_resistance")
+            if not isinstance(raw_legendary, dict):
+                raise ValueError("target has no structured legendary resistance resource")
+            remaining = cls._state_int(raw_legendary.get("remaining"))
+            maximum = cls._state_int(raw_legendary.get("maximum"), remaining)
+            if remaining < 1:
+                raise ValueError("no legendary resistance uses remain")
+            succeeded = True
+            applied.append("legendary_resistance")
+            resource_consumed = {
+                "resource": "legendary_resistance",
+                "before": remaining,
+                "after": remaining - 1,
+            }
+            if consume:
+                defenses["legendary_resistance"] = {
+                    **raw_legendary,
+                    "remaining": remaining - 1,
+                    "maximum": maximum,
+                }
+                snapshot["advanced_defenses"] = defenses
+                target.snapshot_json = snapshot
+        damage = damage_on_success if succeeded else damage_on_failure
+        evasion = bool(defenses.get("evasion") or snapshot.get("evasion"))
+        if evasion and normalized_ability == "dexterity" and (
+            damage_on_success > 0 or damage_on_failure > 0
+        ):
+            damage = 0 if succeeded else damage_on_failure // 2
+            applied.append("evasion")
+        elif isinstance((reflex := defenses.get("reflex_defense")), dict):
+            reflex_ability = str(reflex.get("ability") or "dexterity").lower()
+            success_multiplier = reflex.get("success_multiplier")
+            failure_multiplier = reflex.get("failure_multiplier")
+            if (
+                normalized_ability == reflex_ability
+                and isinstance(success_multiplier, (int, float))
+                and isinstance(failure_multiplier, (int, float))
+                and 0 <= success_multiplier <= 1
+                and 0 <= failure_multiplier <= 1
+            ):
+                multiplier = success_multiplier if succeeded else failure_multiplier
+                base_damage = damage_on_success if succeeded else damage_on_failure
+                damage = floor(base_damage * multiplier)
+                applied.append("reflex_defense")
+        return {
+            "success": succeeded,
+            "effective_roll_total": effective_roll,
+            "reported_roll_totals": rolls,
+            "damage": damage,
+            "applied_defenses": applied,
+            "defense_resource_consumed": resource_consumed,
+            "feature_reroll_consumed": feature_reroll_consumed,
+        }
+
+    @classmethod
     def _resolve_player_roll(
+        cls,
         action: CombatAction,
         target: Combatant,
         command: PlayerRollResolutionCommand,
+        *,
+        consume_defenses: bool = False,
     ) -> dict[str, Any]:
         request = action.request_json
         dc = int(str(request["dc"]))
-        success = command.roll_total >= dc
-        damage_key = "damage_on_success" if success else "damage_on_failure"
-        damage = int(str(request.get(damage_key, 0)))
+        defense = cls._resolve_save_defenses(
+            target,
+            dc=dc,
+            ability=(str(request.get("ability")) if request.get("ability") else None),
+            roll_total=command.roll_total,
+            roll_totals=command.roll_totals,
+            damage_on_success=cls._state_int(request.get("damage_on_success")),
+            damage_on_failure=cls._state_int(request.get("damage_on_failure")),
+            is_magical=bool(request.get("is_magical")),
+            use_legendary_resistance=command.use_legendary_resistance,
+            use_feature_reroll=command.use_feature_reroll,
+            consume=consume_defenses,
+        )
+        success = bool(defense["success"])
+        damage = cls._state_int(defense["damage"])
+        component_key = (
+            "damage_components_on_success"
+            if success
+            else "damage_components_on_failure"
+        )
+        raw_components = request.get(component_key)
+        if isinstance(raw_components, list) and raw_components:
+            damage_components = [
+                {
+                    "amount": cls._state_int(item.get("amount")),
+                    "damage_type": str(item.get("damage_type") or "").strip(),
+                    "damage_tags": [
+                        str(tag).strip()
+                        for tag in item.get("damage_tags", [])
+                        if str(tag).strip()
+                    ]
+                    if isinstance(item.get("damage_tags"), list)
+                    else [],
+                }
+                for item in raw_components
+                if isinstance(item, dict)
+                and cls._state_int(item.get("amount")) >= 0
+                and str(item.get("damage_type") or "").strip()
+            ]
+        else:
+            raw_damage = cls._state_int(
+                request.get("damage_on_success" if success else "damage_on_failure")
+            )
+            damage_components = [
+                {
+                    "amount": raw_damage,
+                    "damage_type": str(request.get("damage_type") or "").strip(),
+                    "damage_tags": [
+                        str(tag).strip()
+                        for tag in request.get("damage_tags", [])
+                        if str(tag).strip()
+                    ]
+                    if isinstance(request.get("damage_tags"), list)
+                    else [],
+                }
+            ] if raw_damage > 0 else []
+        for component in damage_components:
+            if not component.get("damage_tags"):
+                component.pop("damage_tags", None)
+
+        # Save defenses such as Evasion and a structured reflex profile modify
+        # the save outcome before the follow-up damage transaction.  Apply that
+        # multiplier to every typed segment, then let the normal damage
+        # endpoint apply resistance/vulnerability/immunity independently to
+        # each segment.  This prevents a fire + piercing save from collapsing
+        # back into one untyped number.
+        applied_defenses = set(str(value) for value in defense["applied_defenses"])
+        if "evasion" in applied_defenses:
+            damage_components = [
+                {
+                    **component,
+                    "amount": (
+                        0
+                        if success
+                        else int(component["amount"]) // 2
+                    ),
+                }
+                for component in damage_components
+            ]
+        elif "reflex_defense" in applied_defenses:
+            raw_defenses = dict(target.snapshot_json or {}).get("advanced_defenses")
+            reflex = (
+                dict(raw_defenses).get("reflex_defense")
+                if isinstance(raw_defenses, dict)
+                else None
+            )
+            if isinstance(reflex, dict):
+                multiplier_key = "success_multiplier" if success else "failure_multiplier"
+                multiplier = reflex.get(multiplier_key)
+                if isinstance(multiplier, (int, float)) and 0 <= multiplier <= 1:
+                    damage_components = [
+                        {
+                            **component,
+                            "amount": floor(int(component["amount"]) * multiplier),
+                        }
+                        for component in damage_components
+                    ]
+        damage = sum(int(component["amount"]) for component in damage_components)
+        damage_components = [
+            component for component in damage_components if component["amount"] > 0
+        ]
+        damage_type = (
+            damage_components[0]["damage_type"]
+            if len(damage_components) == 1
+            else "mixed"
+            if len(damage_components) > 1
+            else request.get("damage_type")
+        )
         result: dict[str, Any] = {
             "phase": "resolved",
             "roll_owner": "player",
-            "roll_total": command.roll_total,
+            "roll_total": defense["effective_roll_total"],
+            "reported_roll_totals": defense["reported_roll_totals"],
             "dc": dc,
             "success": success,
             "outcome": "success" if success else "failure",
             "damage": damage,
-            "damage_type": request.get("damage_type"),
+            "damage_type": damage_type,
+            "damage_components": damage_components,
             "dm_note": command.dm_note,
+            "applied_defenses": defense["applied_defenses"],
+            "defense_resource_consumed": defense["defense_resource_consumed"],
+            "feature_reroll_consumed": defense["feature_reroll_consumed"],
         }
         result["follow_up_damage"] = (
             {
@@ -399,14 +3794,16 @@ class CombatEngineService:
                 "action_cost": "none",
                 "action_name": request["action_name"],
                 "resolution_note": (
-                    f"{target.display_name} 的玩家骰总值 {command.roll_total}"
+                    f"{target.display_name} 的玩家骰总值 {defense['effective_roll_total']}"
                     f" 对抗 DC {dc}，{'成功' if success else '失败'}；"
                     f"结算 {damage} 点{request.get('damage_type') or ''}伤害"
                 ),
                 "target_combatant_id": target.id,
                 "target_version": target.version,
                 "amount": damage,
-                "damage_type": request.get("damage_type"),
+                "damage_type": damage_type,
+                "damage_components": damage_components,
+                "damage_tags": request.get("damage_tags", []),
             }
             if damage > 0
             else None
@@ -421,7 +3818,7 @@ class CombatEngineService:
         command: PlayerRollResolutionCommand,
     ) -> dict[str, Any]:
         with Session(self.engine) as session:
-            _, action, actor, target = self._player_roll_scope(
+            combat, action, actor, target = self._player_roll_scope(
                 session, campaign_id, combat_id, action_id
             )
             if action.version != command.action_version:
@@ -452,7 +3849,7 @@ class CombatEngineService:
         if not idempotency_key.strip():
             raise ValueError("idempotency key is required")
         with Session(self.engine) as session, session.begin():
-            _, action, actor, target = self._player_roll_scope(
+            combat, action, actor, target = self._player_roll_scope(
                 session, campaign_id, combat_id, action_id
             )
             if action.status == "confirmed":
@@ -460,6 +3857,7 @@ class CombatEngineService:
                     "action": serialize(action),
                     "actor": serialize(actor),
                     "target": serialize(target),
+                    "effect_target": serialize(target),
                     "resolution": action.result_json,
                 }
             if action.version != command.action_version:
@@ -469,7 +3867,89 @@ class CombatEngineService:
                     command.action_version,
                     action.version,
                 )
-            resolution = self._resolve_player_roll(action, target, command)
+            resolution = self._resolve_player_roll(
+                action,
+                target,
+                command,
+                consume_defenses=True,
+            )
+            request = dict(action.request_json or {})
+            effect_target = target
+            raw_effect_target_id = request.get("effect_target_combatant_id")
+            if isinstance(raw_effect_target_id, str) and raw_effect_target_id != target.id:
+                effect_target = session.get(Combatant, raw_effect_target_id)
+                if effect_target is None or effect_target.combat_id != combat.id:
+                    raise StateNotFoundError("effect target combatant not found in combat")
+            succeeded = bool(resolution["success"])
+            target_state_changed = (
+                resolution.get("defense_resource_consumed") is not None
+                or resolution.get("feature_reroll_consumed") is not None
+            )
+            raw_conditions = request.get(
+                "conditions_on_success" if succeeded else "conditions_on_failure",
+                [],
+            )
+            conditions = [
+                str(value).strip()
+                for value in raw_conditions
+                if isinstance(value, str) and value.strip()
+            ] if isinstance(raw_conditions, list) else []
+            movement_raw = request.get(
+                "movement_on_success_ft" if succeeded else "movement_on_failure_ft"
+            )
+            movement_distance = int(movement_raw) if isinstance(movement_raw, int) else None
+            structured_effects: dict[str, object] = {}
+            if conditions or movement_distance is not None:
+                structured_effects = self._apply_structured_monster_effects(
+                    session,
+                    combat,
+                    actor=actor,
+                    target=effect_target,
+                    conditions=conditions,
+                    condition_duration=(
+                        str(request["condition_duration"])
+                        if request.get("condition_duration") is not None
+                        else None
+                    ),
+                    condition_duration_value=(
+                        self._state_int(request.get("condition_duration_value"))
+                        if request.get("condition_duration_value") is not None
+                        else None
+                    ),
+                    condition_save_dc=(
+                        self._state_int(request.get("condition_save_dc"))
+                        if request.get("condition_save_dc") is not None
+                        else None
+                    ),
+                    condition_save_ability=(
+                        str(request["condition_save_ability"])
+                        if request.get("condition_save_ability") is not None
+                        else None
+                    ),
+                    movement_distance_ft=movement_distance,
+                    movement_direction=(
+                        str(request["movement_direction"])
+                        if request.get("movement_direction") is not None
+                        else None
+                    ),
+                )
+                if effect_target.id != target.id:
+                    effect_target.version += 1
+                    effect_target.updated_at = datetime.now(UTC)
+                else:
+                    target_state_changed = True
+            if target_state_changed:
+                target.version += 1
+                target.updated_at = datetime.now(UTC)
+            if structured_effects:
+                resolution["structured_effects"] = structured_effects
+                follow_up = resolution.get("follow_up_damage")
+                if isinstance(follow_up, dict) and effect_target.id == target.id:
+                    follow_up["target_version"] = target.version
+            elif target_state_changed:
+                follow_up = resolution.get("follow_up_damage")
+                if isinstance(follow_up, dict):
+                    follow_up["target_version"] = target.version
             action.result_json = {
                 **resolution,
                 "confirmation_idempotency_key": idempotency_key,
@@ -480,14 +3960,21 @@ class CombatEngineService:
             action.summary = (
                 f"{actor.display_name} 对 {target.display_name} 使用"
                 f"「{action.request_json['action_name']}」；"
-                f"{target.display_name} 掷骰 {command.roll_total} 对抗"
+                f"{target.display_name} 掷骰 {resolution['roll_total']} 对抗"
                 f" DC {action.request_json['dc']}，"
                 f"{'成功' if resolution['success'] else '失败'}"
             )
+            effect_ids = structured_effects.get("effect_ids", [])
+            if isinstance(effect_ids, list):
+                for effect_id in effect_ids:
+                    effect = session.get(CombatEffect, effect_id)
+                    if effect is not None and effect.source_action_id is None:
+                        effect.source_action_id = action.id
             return {
                 "action": serialize(action),
                 "actor": serialize(actor),
                 "target": serialize(target),
+                "effect_target": serialize(effect_target),
                 "resolution": action.result_json,
             }
 
@@ -508,6 +3995,7 @@ class CombatEngineService:
                     command.target_version,
                     target.version,
                 )
+            self._validate_monster_sequence(session, combat_id, actor, command)
             self._validate_action_economy(
                 session,
                 combat,
@@ -515,7 +4003,26 @@ class CombatEngineService:
                 actor_version=command.actor_version,
                 action_cost=command.action_cost,
                 consume=False,
+                legendary_cost=command.legendary_cost,
+                legendary_pool_max=command.legendary_pool_max,
+                reaction_trigger=command.reaction_trigger,
             )
+            self._validate_recharge(
+                actor,
+                recharge_key=command.recharge_key,
+                consume=command.recharge_consume,
+            )
+            attack_contexts, _ = self._attack_contexts(
+                session, combat, command, actor, target
+            )
+            if actor is not None and command.area_shape is not None:
+                self._validate_player_roll_area_target(
+                    session,
+                    combat,
+                    actor,
+                    target,
+                    command,
+                )
             if command.action_type == "heal" and target.hp == 0:
                 death_save = session.scalar(
                     select(DeathSave).where(DeathSave.combatant_id == target.id)
@@ -529,7 +4036,147 @@ class CombatEngineService:
                         "ordinary healing cannot restore a dead combatant; "
                         "use a DM override for a resurrection effect"
                     )
-            return self._resolve(command, target)
+            resolved = self._resolve(command, target)
+            if attack_contexts:
+                resolved["attack_contexts"] = attack_contexts
+            return resolved
+
+    def preflight_action_batch(
+        self,
+        campaign_id: str,
+        combat_id: str,
+        commands: list[tuple[CombatActionCommand, str]],
+    ) -> None:
+        """Validate a player multi-target action before any row is mutated.
+
+        Player spell/weapon projections can contain several independently
+        resisted damage segments.  The legacy endpoint confirmed those
+        segments one at a time, so an invalid later segment could leave the
+        first segment committed.  This preflight walks the complete command
+        list against one read-only snapshot, including optimistic versions,
+        action economy, sequence gates, and conditional damage defenses.
+
+        The actual confirmations still use the normal authoritative endpoint;
+        this method is deliberately a validation barrier, not a second
+        resolver.  Every failure that can be caused by the submitted batch is
+        therefore raised before the first write.
+        """
+
+        with Session(self.engine) as session:
+            campaign = session.get(Campaign, campaign_id)
+            if campaign is None:
+                raise StateNotFoundError("campaign not found")
+            combat = session.get(Combat, combat_id)
+            if combat is None or combat.campaign_id != campaign_id:
+                raise StateNotFoundError("combat not found in campaign")
+            if combat.status != "active":
+                raise ValueError("only an active combat can confirm actions")
+
+            simulated_versions: dict[str, int] = {}
+            for command, idempotency_key in commands:
+                if not idempotency_key.strip():
+                    raise ValueError("idempotency key is required")
+                existing = session.scalar(
+                    select(CombatAction).where(
+                        CombatAction.combat_id == combat_id,
+                        CombatAction.idempotency_key == idempotency_key,
+                    )
+                )
+                if existing is not None:
+                    continue
+                current_target = session.get(Combatant, command.target_combatant_id)
+                if current_target is None or current_target.combat_id != combat_id:
+                    raise StateNotFoundError("target combatant not found in combat")
+                expected_target_version = simulated_versions.get(
+                    current_target.id,
+                    current_target.version,
+                )
+                if command.target_version != expected_target_version:
+                    raise VersionConflict(
+                        "combatant",
+                        current_target.id,
+                        command.target_version,
+                        expected_target_version,
+                    )
+                actor = (
+                    session.get(Combatant, command.actor_combatant_id)
+                    if command.actor_combatant_id is not None
+                    else None
+                )
+                if actor is not None:
+                    expected_actor_version = simulated_versions.get(actor.id, actor.version)
+                    if command.actor_version != expected_actor_version:
+                        raise VersionConflict(
+                            "combatant",
+                            actor.id,
+                            command.actor_version or 0,
+                            expected_actor_version,
+                        )
+                self._validate_monster_sequence(session, combat_id, actor, command)
+                self._validate_action_economy(
+                    session,
+                    combat,
+                    actor,
+                    actor_version=command.actor_version,
+                    action_cost=command.action_cost,
+                    consume=False,
+                    legendary_cost=command.legendary_cost,
+                    legendary_pool_max=command.legendary_pool_max,
+                    reaction_trigger=command.reaction_trigger,
+                )
+                if actor is not None and command.area_shape is not None:
+                    # The normal confirmation path performs this same
+                    # authoritative 3-D geometry check immediately before
+                    # writing.  The batch barrier must perform it for every
+                    # target as well, otherwise a valid first target could be
+                    # committed before a later target is rejected.
+                    self._validate_player_roll_area_target(
+                        session,
+                        combat,
+                        actor,
+                        current_target,
+                        command,
+                    )
+                if command.action_type == "heal" and current_target.hp == 0:
+                    death_save = session.scalar(
+                        select(DeathSave).where(
+                            DeathSave.combatant_id == current_target.id
+                        )
+                    )
+                    if death_save is not None and death_save.dead and not command.dm_override:
+                        raise ValueError(
+                            "ordinary healing cannot restore a dead combatant; "
+                            "use a DM override for a resurrection effect"
+                        )
+                # _resolve is pure with respect to the ORM row.  It is the
+                # same typed damage/defense gate used by confirm(), so mixed
+                # damage, immunity, resistance, vulnerability and unresolved
+                # conditional defenses are all checked before writes.
+                self._resolve(command, current_target)
+                if actor is not None and command.action_cost != "none":
+                    simulated_versions[actor.id] = expected_actor_version + 1
+                simulated_versions[current_target.id] = (
+                    simulated_versions.get(current_target.id, expected_target_version) + 1
+                )
+
+    def confirm_action_batch(
+        self,
+        campaign_id: str,
+        combat_id: str,
+        commands: list[tuple[CombatActionCommand, str]],
+    ) -> list[dict[str, Any]]:
+        """Confirm a preflighted batch through the ordinary combat resolver."""
+
+        self.preflight_action_batch(campaign_id, combat_id, commands)
+        return [
+            self.confirm(
+                campaign_id,
+                combat_id,
+                command,
+                idempotency_key=idempotency_key,
+            )
+            for command, idempotency_key in commands
+        ]
 
     def confirm(
         self,
@@ -567,6 +4214,7 @@ class CombatEngineService:
                 )
                 return {
                     "action": serialize(existing),
+                    "actor": serialize(actor) if actor is not None else None,
                     "target": serialize(existing_target) if existing_target is not None else None,
                     "end_condition": self._end_condition(session, combat),
                 }
@@ -577,14 +4225,38 @@ class CombatEngineService:
                     command.target_version,
                     target.version,
                 )
-            self._validate_action_economy(
+            self._validate_monster_sequence(session, combat_id, actor, command)
+            attack_contexts, help_effect = self._attack_contexts(
+                session, combat, command, actor, target
+            )
+            if actor is not None and command.area_shape is not None:
+                self._validate_player_roll_area_target(
+                    session,
+                    combat,
+                    actor,
+                    target,
+                    command,
+                )
+            economy_consumed = self._validate_action_economy(
                 session,
                 combat,
                 actor,
                 actor_version=command.actor_version,
                 action_cost=command.action_cost,
                 consume=True,
+                legendary_cost=command.legendary_cost,
+                legendary_pool_max=command.legendary_pool_max,
+                reaction_trigger=command.reaction_trigger,
             )
+            recharge_consumed = self._validate_recharge(
+                actor,
+                recharge_key=command.recharge_key,
+                consume=command.recharge_consume,
+            )
+            if recharge_consumed and not economy_consumed:
+                assert actor is not None
+                actor.version += 1
+                actor.updated_at = datetime.now(UTC)
             if command.action_type == "heal" and target.hp == 0:
                 current_death_save = session.scalar(
                     select(DeathSave).where(DeathSave.combatant_id == target.id)
@@ -604,48 +4276,133 @@ class CombatEngineService:
             target.hp = int(after["hp"])
             target.temporary_hp = int(after["temporary_hp"])
             target.version += 1
-            target.updated_at = datetime.now(UTC)
-            death_save_result: dict[str, Any] | None = None
-            if command.action_type == "damage" and target.hp == 0:
-                death_save = self._death_save(session, target)
-                was_at_zero = int(resolved["before"]["hp"]) == 0
-                massive_damage = (
-                    int(resolved["result"]["unapplied_damage"]) >= target.max_hp
-                    and target.max_hp > 0
+            now = datetime.now(UTC)
+            target.updated_at = now
+            condition_changes = self._sync_zero_hp_lifecycle(
+                target,
+                before_hp=int(resolved["before"]["hp"]),
+            )
+            structured_effects: dict[str, object] = {}
+            if actor is not None and (
+                command.conditions_to_apply
+                or command.forced_movement_distance_ft is not None
+            ):
+                structured_effects = self._apply_structured_monster_effects(
+                    session,
+                    combat,
+                    actor=actor,
+                    target=target,
+                    conditions=command.conditions_to_apply,
+                    condition_duration=command.condition_duration,
+                    condition_duration_value=command.condition_duration_value,
+                    condition_save_dc=command.condition_save_dc,
+                    condition_save_ability=command.condition_save_ability,
+                    movement_distance_ft=command.forced_movement_distance_ft,
+                    movement_direction=command.forced_movement_direction,
                 )
-                if massive_damage:
-                    death_save.failures = 3
-                    death_save.successes = 0
-                    death_save.stable = False
-                    death_save.dead = True
-                    death_save.pending_death_confirmation = False
-                    death_save.version += 1
-                    death_save_result = {
-                        "failures_added": 3,
-                        "massive_damage": True,
-                        "dead": True,
-                        "explanation": "剩余伤害达到最大生命值，角色立即死亡",
-                    }
-                elif was_at_zero and int(resolved["result"]["adjusted_damage"]) > 0:
-                    failures_added = 2 if command.critical_hit else 1
-                    death_save.failures = min(
-                        3, death_save.failures + failures_added
+            extra_attack_budget = 0
+            if command.is_attack and command.action_cost == "action" and actor is not None:
+                runtime = actor.snapshot_json.get("feature_runtime")
+                combat_start = runtime.get("combat_start") if isinstance(runtime, dict) else None
+                attack_count = (
+                    int(combat_start.get("attack_action_count") or 1)
+                    if isinstance(combat_start, dict)
+                    else 1
+                )
+                if attack_count > 1:
+                    snapshot = dict(actor.snapshot_json or {})
+                    extra_attack_budget = attack_count - 1
+                    snapshot["attack_roll_budget"] = extra_attack_budget
+                    actor.snapshot_json = snapshot
+            consumed_attack_effects: list[CombatEffect] = []
+            if command.is_attack and actor is not None:
+                actor_hidden = self._active_runtime_effects(
+                    session,
+                    combat.id,
+                    target_id=actor.id,
+                    state_name="hidden",
+                )
+                for state_effect in [*actor_hidden, help_effect]:
+                    if state_effect is None or state_effect in consumed_attack_effects:
+                        continue
+                    ended_target = self._end_runtime_effect(
+                        session,
+                        state_effect,
+                        reason="state consumed by confirmed attack",
+                        now=now,
                     )
-                    death_save.successes = 0
-                    death_save.stable = False
-                    death_save.dead = death_save.failures >= 3
-                    death_save.pending_death_confirmation = False
-                    death_save.version += 1
-                    death_save_result = {
-                        "failures_added": failures_added,
-                        "massive_damage": False,
-                        "dead": death_save.dead,
-                        "explanation": (
-                            f"0 HP 时受到{'暴击' if command.critical_hit else ''}伤害，"
-                            f"累计 {failures_added} 次死亡豁免失败"
-                        ),
-                    }
-            elif command.action_type == "heal":
+                    if ended_target is not None:
+                        consumed_attack_effects.append(state_effect)
+                if (
+                    consumed_attack_effects
+                    and command.action_cost == "none"
+                    and actor.id != target.id
+                ):
+                    actor.version += 1
+                    actor.updated_at = now
+            death_save_result: dict[str, Any] | None = None
+            death_save: DeathSave | None = None
+            summon_ended = False
+            combatant_deactivated = False
+            if command.action_type == "damage" and target.hp == 0:
+                if self._is_summon(target):
+                    deactivated = self._deactivate_summons(
+                        session,
+                        combat,
+                        [target.id],
+                        now=now,
+                    )
+                    summon_ended = bool(deactivated)
+                else:
+                    combatant_deactivated = self._deactivate_zero_hp_non_character(
+                        target,
+                        now=now,
+                    )
+                    # Keep a death-save record for every non-summon zero-HP
+                    # target, even when a non-character is immediately removed
+                    # from initiative.  The record is not an invitation for an
+                    # NPC turn; it preserves the authoritative result shape for
+                    # generic combat clients and lets audit/history explain how
+                    # zero-HP damage was resolved.
+                    death_save = self._death_save(session, target)
+                    was_at_zero = int(resolved["before"]["hp"]) == 0
+                    massive_damage = (
+                        int(resolved["result"]["unapplied_damage"]) >= target.max_hp
+                        and target.max_hp > 0
+                    )
+                    if massive_damage:
+                        death_save.failures = 3
+                        death_save.successes = 0
+                        death_save.stable = False
+                        death_save.dead = True
+                        death_save.pending_death_confirmation = False
+                        death_save.version += 1
+                        death_save_result = {
+                            "failures_added": 3,
+                            "massive_damage": True,
+                            "dead": True,
+                            "explanation": "剩余伤害达到最大生命值，角色立即死亡",
+                        }
+                    elif was_at_zero and int(resolved["result"]["adjusted_damage"]) > 0:
+                        failures_added = 2 if command.critical_hit else 1
+                        death_save.failures = min(
+                            3, death_save.failures + failures_added
+                        )
+                        death_save.successes = 0
+                        death_save.stable = False
+                        death_save.dead = death_save.failures >= 3
+                        death_save.pending_death_confirmation = False
+                        death_save.version += 1
+                        death_save_result = {
+                            "failures_added": failures_added,
+                            "massive_damage": False,
+                            "dead": death_save.dead,
+                            "explanation": (
+                                f"0 HP 时受到{'暴击' if command.critical_hit else ''}伤害，"
+                                f"累计 {failures_added} 次死亡豁免失败"
+                            ),
+                        }
+            elif command.action_type == "heal" and int(resolved["result"].get("hp_gained", 0)) > 0:
                 existing_death_save = session.scalar(
                     select(DeathSave).where(DeathSave.combatant_id == target.id)
                 )
@@ -657,6 +4414,22 @@ class CombatEngineService:
                     existing_death_save.pending_death_confirmation = False
                     existing_death_save.last_roll = None
                     existing_death_save.version += 1
+            damaged_combatant_ids = {
+                target.id
+            } if (
+                command.action_type == "damage"
+                and int(resolved["result"].get("adjusted_damage", 0)) > 0
+            ) else set()
+            ended_predicated_effects, ended_predicated_summons = (
+                self._end_predicated_effects(
+                    session,
+                    combat,
+                    now=now,
+                    event_combatant_ids=damaged_combatant_ids,
+                    event_kinds={"damage"} if damaged_combatant_ids else set(),
+                    event_only=True,
+                )
+            )
             transaction = OperationTransaction(
                 campaign_id=campaign_id,
                 operation_type=f"combat_{command.action_type}",
@@ -677,15 +4450,49 @@ class CombatEngineService:
             session.add(transaction)
             session.flush()
             result = dict(resolved["result"])
+            if structured_effects:
+                result["structured_effects"] = structured_effects
+            if extra_attack_budget:
+                result["attack_roll_budget"] = extra_attack_budget
+            if attack_contexts:
+                result["attack_contexts"] = attack_contexts
+                result["attack_roll_mode"] = command.attack_roll_mode
+                result["attack_adjudication_note"] = command.attack_adjudication_note
+            if consumed_attack_effects:
+                result["consumed_effect_ids"] = [
+                    effect.id for effect in consumed_attack_effects
+                ]
+            if summon_ended:
+                result["summon_ended"] = True
+                result["summon_end_reason"] = "生命值降至0"
+            if combatant_deactivated:
+                result["combatant_deactivated"] = True
+                result["deactivation_reason"] = "非角色单位生命值降至0，已离开先攻轨道"
+            if condition_changes:
+                result["condition_changes"] = condition_changes
+            if ended_predicated_effects:
+                result["ended_predicated_effect_ids"] = [
+                    effect.id for effect in ended_predicated_effects
+                ]
+            if ended_predicated_summons:
+                result["ended_predicated_summon_ids"] = [
+                    summon.id for summon in ended_predicated_summons
+                ]
             if death_save_result is not None:
                 result["death_save"] = death_save_result
             if resolved["concentration_check_dc"] is not None:
                 result["concentration_check_dc"] = resolved["concentration_check_dc"]
+            if recharge_consumed:
+                result["recharge_consumed"] = command.recharge_key
             if command.action_type == "damage" and actor is not None:
                 action_result = command.resolution_note or (
                     f"造成 {result['adjusted_damage']} 点"
                     f"{command.damage_type or ''}伤害"
                 )
+                if summon_ended:
+                    action_result += "；召唤物生命归零，已离开战斗"
+                if combatant_deactivated:
+                    action_result += "；单位生命归零，已离开先攻轨道"
                 action_summary = (
                     f"{actor.display_name} 对 {target.display_name} 使用"
                     f"「{command.action_name or '攻击'}」；{action_result}"
@@ -695,6 +4502,8 @@ class CombatEngineService:
                     f"{target.display_name} 受到 {result['adjusted_damage']} 点"
                     f"{command.damage_type or ''}伤害"
                 )
+                if summon_ended:
+                    action_summary += "；召唤物生命归零，已离开战斗"
             else:
                 action_summary = (
                     f"{target.display_name} 恢复 {result['hp_gained']} 点生命"
@@ -719,16 +4528,1503 @@ class CombatEngineService:
             )
             session.add(action)
             session.flush()
+            effect_ids = structured_effects.get("effect_ids", [])
+            if isinstance(effect_ids, list):
+                for effect_id in effect_ids:
+                    effect = session.get(CombatEffect, effect_id)
+                    if effect is not None and effect.source_action_id is None:
+                        effect.source_action_id = action.id
             return {
                 "action": serialize(action),
+                "actor": serialize(actor) if actor is not None else None,
                 "target": serialize(target),
                 "death_save": (
                     serialize(death_save)
-                    if command.action_type == "damage" and target.hp == 0
+                    if death_save is not None
                     else None
                 ),
                 "end_condition": self._end_condition(session, combat),
             }
+
+    def confirm_feature_action(
+        self,
+        campaign_id: str,
+        combat_id: str,
+        command: CombatFeatureActionCommand,
+        *,
+        idempotency_key: str,
+    ) -> dict[str, Any]:
+        """Apply a class feature whose registry has an executable contract.
+
+        Class advancement records are intentionally not executable by name.
+        Combat receives a frozen ``feature_runtime`` registry when the unit is
+        created; this endpoint resolves only an entry from that registry and
+        records the resource/effect transition as one combat action.
+        """
+
+        if not idempotency_key.strip():
+            raise ValueError("idempotency key is required")
+        with Session(self.engine) as session, session.begin():
+            campaign = session.get(Campaign, campaign_id)
+            if campaign is None:
+                raise StateNotFoundError("campaign not found")
+            combat = session.get(Combat, combat_id)
+            if combat is None or combat.campaign_id != campaign_id:
+                raise StateNotFoundError("combat not found in campaign")
+            existing = session.scalar(
+                select(CombatAction).where(
+                    CombatAction.combat_id == combat_id,
+                    CombatAction.idempotency_key == idempotency_key,
+                )
+            )
+            if existing is not None:
+                actor = (
+                    session.get(Combatant, existing.actor_combatant_id)
+                    if existing.actor_combatant_id
+                    else None
+                )
+                return {
+                    "action": serialize(existing),
+                    "actor": serialize(actor) if actor is not None else None,
+                    "already_applied": True,
+                }
+            actor = session.get(Combatant, command.actor_combatant_id)
+            if actor is None or actor.combat_id != combat_id or not actor.is_active:
+                raise StateNotFoundError("feature action actor not found in combat")
+            if actor.version != command.actor_version:
+                raise VersionConflict(
+                    "combatant", actor.id, command.actor_version, actor.version
+                )
+            ordered = self._ordered_combatants(session, combat_id)
+            active = (
+                ordered[combat.current_turn_index]
+                if 0 <= combat.current_turn_index < len(ordered)
+                else None
+            )
+            if active is None or active.id != actor.id:
+                raise ValueError("职业特性只能在该单位的当前回合使用")
+            self._validate_can_act(actor)
+            registry = actor.snapshot_json.get("feature_runtime")
+            registry_data = dict(registry) if isinstance(registry, dict) else {}
+            raw_actions = registry_data.get("actions")
+            action = (
+                dict(raw_actions.get(command.feature_id))
+                if isinstance(raw_actions, dict)
+                and isinstance(raw_actions.get(command.feature_id), dict)
+                else None
+            )
+            if action is None or action.get("kind") != "feature_action":
+                raise ValueError("该职业特性没有可执行的运行时积木")
+            action_cost = str(action.get("action_cost") or "none")
+            if action_cost not in {"action", "bonus_action", "reaction", "none"}:
+                raise ValueError("职业特性的动作经济类型无效")
+            if action_cost == "reaction":
+                raise ValueError("该职业特性需要 DM 明确实现反应触发条件")
+            target = actor
+            if command.target_combatant_id is not None:
+                target = session.get(Combatant, command.target_combatant_id)
+                if target is None or target.combat_id != combat_id or not target.is_active:
+                    raise StateNotFoundError("feature action target not found in combat")
+                if command.target_version != target.version:
+                    raise VersionConflict(
+                        "combatant", target.id, command.target_version or 0, target.version
+                    )
+            if action.get("target") == "self" and target.id != actor.id:
+                raise ValueError("该职业特性只能以自身为目标")
+            if action_cost == "none" and actor.version != command.actor_version:
+                raise VersionConflict(
+                    "combatant", actor.id, command.actor_version, actor.version
+                )
+            if action_cost != "none":
+                self._validate_action_economy(
+                    session,
+                    combat,
+                    actor,
+                    actor_version=command.actor_version,
+                    action_cost=action_cost,
+                    consume=True,
+                )
+
+            character = (
+                session.get(Character, actor.entity_id)
+                if actor.entity_type == "character" and actor.entity_id
+                else None
+            )
+            resource_key = str(action.get("resource_key") or "").strip()
+            resource_cost = int(action.get("resource_cost") or 0)
+            if action.get("resource_cost_mode") == "amount":
+                if command.healing_total is None or command.healing_total < 1:
+                    raise ValueError("该职业特性需要填写本次实际消耗的资源数量")
+                resource_cost = command.healing_total
+            resource_before: int | None = None
+            resource_after: int | None = None
+            if resource_key and resource_cost:
+                if character is None:
+                    raise ValueError("职业特性资源只能由角色单位消耗")
+                resources = dict(character.resources or {})
+                raw_resource = resources.get(resource_key)
+                resource = dict(raw_resource) if isinstance(raw_resource, dict) else {}
+                resource_before = self._state_int(resource.get("current"))
+                if resource_before < resource_cost:
+                    raise ValueError(f"职业特性资源不足：{resource_key}")
+                resource_after = resource_before - resource_cost
+                resource["current"] = resource_after
+                resources[resource_key] = resource
+                character.resources = resources
+                character.version += 1
+                character.updated_at = datetime.now(UTC)
+
+            before = serialize(target)
+            result: dict[str, Any] = {
+                "feature_id": command.feature_id,
+                "feature_name": action.get("name"),
+                "action_cost": action_cost,
+                "resource_key": resource_key or None,
+                "resource_cost": resource_cost,
+                "resource_before": resource_before,
+                "resource_after": resource_after,
+            }
+            effects = action.get("effects")
+            effect_list = effects if isinstance(effects, list) else []
+            for effect in effect_list:
+                if not isinstance(effect, dict):
+                    continue
+                kind = str(effect.get("kind") or "")
+                if kind == "activate_condition":
+                    condition = str(effect.get("condition") or "").strip()
+                    if not condition:
+                        continue
+                    if condition not in target.conditions:
+                        target.conditions = [*target.conditions, condition]
+                    result.setdefault("conditions_added", []).append(condition)
+                elif kind == "activate_timed_condition":
+                    condition = str(effect.get("condition") or "").strip()
+                    expires = str(effect.get("expires") or "turn_start")
+                    if condition != "隐形" or expires not in {"turn_start", "turn_end"}:
+                        raise ValueError(
+                            "当前职业特性只允许结构化的隐形持续到下一回合边界"
+                        )
+                    state_name = "feature_invisible"
+                    runtime_effect = self._create_runtime_effect(
+                        session,
+                        combat,
+                        actor=actor,
+                        target=target,
+                        state_name=state_name,
+                        expires=expires,
+                        expires_combatant_id=target.id,
+                        details={"source": "compiled_feature_action"},
+                    )
+                    result.setdefault("conditions_added", []).append(condition)
+                    result["effect_id"] = runtime_effect.id
+                elif kind == "grant_action_budget":
+                    amount = self._state_int(effect.get("amount"), 0)
+                    if amount < 1:
+                        continue
+                    snapshot = dict(actor.snapshot_json or {})
+                    previous = self._state_int(snapshot.get("extra_action_budget"), 0)
+                    snapshot["extra_action_budget"] = previous + amount
+                    actor.snapshot_json = snapshot
+                    result["extra_action_budget"] = previous + amount
+                elif kind == "grant_saving_throw_reroll":
+                    snapshot = dict(actor.snapshot_json or {})
+                    pending = snapshot.get("feature_saving_throw_rerolls")
+                    rerolls = list(pending) if isinstance(pending, list) else []
+                    rerolls.append(
+                        {
+                            "feature_id": command.feature_id,
+                            "source": action.get("name"),
+                            "scope": effect.get("scope") or "self",
+                            "available": True,
+                        }
+                    )
+                    snapshot["feature_saving_throw_rerolls"] = rerolls
+                    actor.snapshot_json = snapshot
+                    result["saving_throw_reroll_granted"] = True
+                elif kind == "grant_roll_die":
+                    die_key = str(effect.get("die_key") or "").strip()
+                    if not die_key:
+                        raise ValueError("职业特性的骰子效果缺少 die_key")
+                    registry_resources = registry_data.get("resources")
+                    die_value = None
+                    if isinstance(registry_resources, dict):
+                        raw_die = registry_resources.get(die_key)
+                        if isinstance(raw_die, dict):
+                            die_value = raw_die.get("value") or raw_die.get("label")
+                    snapshot = dict(actor.snapshot_json or {})
+                    feature_dice = dict(
+                        snapshot.get("feature_dice")
+                        if isinstance(snapshot.get("feature_dice"), dict)
+                        else {}
+                    )
+                    feature_dice[die_key] = {
+                        "source": action.get("name"),
+                        "value": die_value,
+                        "target_combatant_id": target.id,
+                        "available": True,
+                    }
+                    snapshot["feature_dice"] = feature_dice
+                    actor.snapshot_json = snapshot
+                    result["roll_die_granted"] = {"die_key": die_key, "value": die_value}
+                elif kind == "requires_dm_choice":
+                    raise ValueError(str(effect.get("reason") or "该职业特性需要 DM 选择分支"))
+
+            if action.get("resolution_kind") == "healing":
+                total = command.healing_total
+                if total is None:
+                    raise ValueError("该职业特性需要填写治疗骰最终总值")
+                formula = str(action.get("healing") or action.get("healing_formula") or "")
+                match = re.search(r"1d(\d+)\s*\+\s*(\d+)", formula, re.IGNORECASE)
+                if match and not command.dm_override:
+                    minimum = 1 + int(match.group(2))
+                    maximum = int(match.group(1)) + int(match.group(2))
+                    if not minimum <= total <= maximum:
+                        raise ValueError(f"治疗骰结果应在 {minimum}–{maximum} 之间")
+                healing = resolve_healing(
+                    amount=total,
+                    current_hp=target.hp,
+                    max_hp=target.max_hp,
+                    max_hp_reduction=target.max_hp_reduction,
+                )
+                target.hp = healing.remaining_hp
+                result["healing"] = {
+                    "formula": formula,
+                    "reported_total": total,
+                    **asdict(healing),
+                }
+            elif action.get("resolution_kind") == "temporary_healing":
+                total = command.healing_total
+                if total is None or total < 1:
+                    raise ValueError("该职业特性需要填写本次临时生命骰最终总值")
+                before_temporary = target.temporary_hp
+                target.temporary_hp = max(target.temporary_hp, total)
+                result["temporary_healing"] = {
+                    "reported_total": total,
+                    "temporary_hp_before": before_temporary,
+                    "temporary_hp_after": target.temporary_hp,
+                    "replaced": total > before_temporary,
+                }
+
+            # A feature with no action cost (Action Surge) still changes the
+            # combat snapshot and therefore needs a new CAS version.
+            target.version += 1
+            target.updated_at = datetime.now(UTC)
+            if target.id != actor.id:
+                actor.version += 1
+                actor.updated_at = datetime.now(UTC)
+            actor_snapshot = dict(actor.snapshot_json or {})
+            if character is not None:
+                actor_snapshot["resources"] = dict(character.resources or {})
+            actor.snapshot_json = actor_snapshot
+            transaction = OperationTransaction(
+                campaign_id=campaign_id,
+                operation_type="combat_feature_action",
+                idempotency_key=idempotency_key,
+                status="applied",
+                before_snapshot={"actor": before},
+                after_snapshot={"actor": serialize(target), "result": result},
+                reason=command.override_reason or "compiled class feature confirmed",
+                source="combat",
+                confirmed_at=datetime.now(UTC),
+            )
+            session.add(transaction)
+            session.flush()
+            summary = (
+                f"{actor.display_name} 使用职业特性"
+                f"「{action.get('name') or command.feature_id}」"
+            )
+            if isinstance(result.get("healing"), dict):
+                summary += f"；恢复 {result['healing'].get('hp_gained', 0)} 点生命"
+            if result.get("conditions_added"):
+                summary += "；获得 " + "、".join(result["conditions_added"])
+            if result.get("extra_action_budget"):
+                summary += f"；额外动作预算 +{result['extra_action_budget']}"
+            combat_action = CombatAction(
+                campaign_id=campaign_id,
+                combat_id=combat_id,
+                actor_combatant_id=actor.id,
+                transaction_id=transaction.id,
+                action_type="feature_action",
+                target_combatant_ids=[target.id],
+                request_json=command.model_dump(mode="json"),
+                result_json=result,
+                explanation=summary,
+                round_number=combat.round_number,
+                turn_index=combat.current_turn_index,
+                summary=summary,
+                idempotency_key=idempotency_key,
+                dm_override=command.dm_override,
+                override_reason=command.override_reason,
+                status="confirmed",
+            )
+            session.add(combat_action)
+            session.flush()
+            return {
+                "action": serialize(combat_action),
+                "actor": serialize(actor),
+                "target": serialize(target),
+                "result": result,
+                "already_applied": False,
+            }
+
+    def confirm_monster_area_action(
+        self,
+        campaign_id: str,
+        combat_id: str,
+        command: MonsterAreaActionCommand,
+        *,
+        idempotency_key: str,
+    ) -> dict[str, Any]:
+        """Atomically resolve one structured monster AoE against every grid target."""
+
+        if not idempotency_key.strip():
+            raise ValueError("idempotency key is required")
+        with Session(self.engine) as session, session.begin():
+            campaign = session.get(Campaign, campaign_id)
+            if campaign is None:
+                raise StateNotFoundError("campaign not found")
+            combat = session.get(Combat, combat_id)
+            if combat is None or combat.campaign_id != campaign_id:
+                raise StateNotFoundError("combat not found in campaign")
+            existing = session.scalar(
+                select(CombatAction).where(
+                    CombatAction.combat_id == combat_id,
+                    CombatAction.idempotency_key == idempotency_key,
+                )
+            )
+            if existing is not None:
+                targets = [
+                    target
+                    for target_id in existing.target_combatant_ids
+                    if (target := session.get(Combatant, target_id)) is not None
+                ]
+                actor = (
+                    session.get(Combatant, existing.actor_combatant_id)
+                    if existing.actor_combatant_id
+                    else None
+                )
+                return {
+                    "action": serialize(existing),
+                    "actor": serialize(actor) if actor is not None else None,
+                    "targets": [serialize(target) for target in targets],
+                    "already_applied": True,
+                }
+            actor = session.get(Combatant, command.actor_combatant_id)
+            if actor is None or actor.combat_id != combat.id or actor.entity_type != "monster":
+                raise StateNotFoundError("monster area actor not found in combat")
+            _, affected, geometry = self._monster_area_targets(
+                session,
+                combat,
+                actor,
+                command,
+            )
+            target_commands = {
+                target.target_combatant_id: target for target in command.targets
+            }
+            for target in affected:
+                target_command = target_commands[target.id]
+                if target.version != target_command.target_version:
+                    raise VersionConflict(
+                        "combatant",
+                        target.id,
+                        target_command.target_version,
+                        target.version,
+                    )
+            before_actor = serialize(actor)
+            before_targets = {target.id: serialize(target) for target in affected}
+            economy_consumed = self._validate_action_economy(
+                session,
+                combat,
+                actor,
+                actor_version=command.actor_version,
+                action_cost=command.action_cost,
+                consume=True,
+                legendary_cost=command.legendary_cost,
+                legendary_pool_max=command.legendary_pool_max,
+                reaction_trigger=command.reaction_trigger,
+            )
+            recharge_consumed = self._validate_recharge(
+                actor,
+                recharge_key=command.recharge_key,
+                consume=command.recharge_consume,
+            )
+            if recharge_consumed and not economy_consumed:
+                actor.version += 1
+                actor.updated_at = datetime.now(UTC)
+            now = datetime.now(UTC)
+            target_results: list[dict[str, object]] = []
+            effect_ids: list[str] = []
+            summon_ids_to_end: list[str] = []
+            deactivated_non_character_ids: list[str] = []
+            damage_on_success = (
+                command.damage_total // 2 if command.half_damage_on_save else 0
+            )
+            explicit_damage_components = bool(command.damage_components)
+            damage_components = [
+                {
+                    "amount": component.amount,
+                    "damage_type": component.damage_type,
+                    "damage_tags": list(component.damage_tags),
+                }
+                for component in command.damage_components
+            ] or [
+                {
+                    "amount": command.damage_total,
+                    "damage_type": command.damage_type,
+                    "damage_tags": list(command.damage_tags),
+                }
+            ]
+            for target in affected:
+                target_command = target_commands[target.id]
+                defense = self._resolve_save_defenses(
+                    target,
+                    dc=command.save_dc,
+                    ability=command.save_ability,
+                    roll_total=target_command.roll_total,
+                    roll_totals=target_command.roll_totals,
+                    damage_on_success=damage_on_success,
+                    damage_on_failure=command.damage_total,
+                        is_magical=command.is_magical,
+                        use_legendary_resistance=target_command.use_legendary_resistance,
+                        use_feature_reroll=False,
+                        consume=True,
+                )
+                succeeded = bool(defense["success"])
+                component_results: list[dict[str, object]] = []
+                applied_conditional_defenses: list[str] = []
+                unresolved_conditional_defenses: list[str] = []
+                current_hp = target.hp
+                current_temporary_hp = target.temporary_hp
+                for component in damage_components:
+                    (
+                        resistances,
+                        vulnerabilities,
+                        immunities,
+                        component_applied_defenses,
+                        component_unresolved_defenses,
+                    ) = self._damage_defenses(
+                        target,
+                        command,
+                        [str(component["damage_type"])],
+                        damage_tags=(
+                            list(component.get("damage_tags") or [])
+                            or command.damage_tags
+                        ),
+                    )
+                    component_amount = int(component["amount"])
+                    # Apply the save result to every independently resisted
+                    # segment.  This matters for fire + piercing effects:
+                    # resistance/immune/vulnerability is never allowed to
+                    # leak from one segment into another.
+                    if not explicit_damage_components:
+                        component_amount = self._state_int(defense["damage"])
+                    elif defense["success"]:
+                        component_amount = (
+                            component_amount // 2
+                            if command.half_damage_on_save
+                            else 0
+                        )
+                    if explicit_damage_components:
+                        # _resolve_save_defenses calculates Evasion and other
+                        # reflex profiles for the aggregate damage as well as
+                        # recording the applied defense.  Re-apply that same
+                        # multiplier to every typed segment here; otherwise a
+                        # fire + force area would bypass Evasion merely because
+                        # the spell was represented as mixed damage.
+                        applied_save_defenses = {
+                            str(value) for value in defense["applied_defenses"]
+                        }
+                        if "evasion" in applied_save_defenses:
+                            component_amount = (
+                                0 if defense["success"] else component_amount // 2
+                            )
+                        elif "reflex_defense" in applied_save_defenses:
+                            raw_defenses = dict(target.snapshot_json or {}).get(
+                                "advanced_defenses"
+                            )
+                            reflex = (
+                                dict(raw_defenses).get("reflex_defense")
+                                if isinstance(raw_defenses, dict)
+                                else None
+                            )
+                            if isinstance(reflex, dict):
+                                multiplier_key = (
+                                    "success_multiplier"
+                                    if defense["success"]
+                                    else "failure_multiplier"
+                                )
+                                multiplier = reflex.get(multiplier_key)
+                                if isinstance(multiplier, (int, float)) and 0 <= multiplier <= 1:
+                                    component_amount = floor(component_amount * multiplier)
+                    component_resolution = resolve_damage(
+                        amount=component_amount,
+                        current_hp=current_hp,
+                        temporary_hp=current_temporary_hp,
+                        damage_type=str(component["damage_type"]),
+                        resistances=resistances,
+                        vulnerabilities=vulnerabilities,
+                        immunities=immunities,
+                    )
+                    current_hp = component_resolution.remaining_hp
+                    current_temporary_hp = component_resolution.remaining_temporary_hp
+                    component_result = asdict(component_resolution)
+                    component_result["damage_tags"] = list(component.get("damage_tags") or [])
+                    component_result["conditional_defenses_applied"] = (
+                        component_applied_defenses
+                    )
+                    component_result["conditional_defenses_unresolved"] = (
+                        component_unresolved_defenses
+                    )
+                    component_results.append(component_result)
+                    applied_conditional_defenses.extend(component_applied_defenses)
+                    unresolved_conditional_defenses.extend(component_unresolved_defenses)
+                modifiers = {str(item["modifier"]) for item in component_results}
+                damage_result: dict[str, object] = {
+                    "original_damage": sum(
+                        int(item["original_damage"]) for item in component_results
+                    ),
+                    "adjusted_damage": sum(
+                        int(item["adjusted_damage"]) for item in component_results
+                    ),
+                    "damage_type": "mixed" if len(damage_components) > 1 else command.damage_type,
+                    "modifier": next(iter(modifiers)) if len(modifiers) == 1 else "mixed",
+                    "temporary_hp_lost": sum(
+                        int(item["temporary_hp_lost"]) for item in component_results
+                    ),
+                    "hp_lost": sum(int(item["hp_lost"]) for item in component_results),
+                    "remaining_temporary_hp": current_temporary_hp,
+                    "remaining_hp": current_hp,
+                    "unapplied_damage": sum(
+                        int(item["unapplied_damage"]) for item in component_results
+                    ),
+                    "explanation": "；".join(
+                        str(item["explanation"]) for item in component_results
+                    ),
+                    "damage_components": component_results,
+                }
+                if damage_result["adjusted_damage"] > 0 and target.concentration:
+                    damage_result["concentration_check_dc"] = max(
+                        10,
+                        int(damage_result["adjusted_damage"]) // 2,
+                    )
+                target.hp = current_hp
+                target.temporary_hp = current_temporary_hp
+                condition_changes = self._sync_zero_hp_lifecycle(
+                    target,
+                    before_hp=int(before_targets[target.id]["hp"]),
+                )
+                conditions = (
+                    command.conditions_on_success
+                    if succeeded
+                    else command.conditions_on_failure
+                )
+                structured_effects: dict[str, object] = {}
+                if conditions:
+                    structured_effects = self._apply_structured_monster_effects(
+                        session,
+                        combat,
+                        actor=actor,
+                        target=target,
+                        conditions=conditions,
+                        condition_duration=command.condition_duration,
+                        condition_duration_value=command.condition_duration_value,
+                        condition_save_dc=command.condition_save_dc,
+                        condition_save_ability=command.condition_save_ability,
+                        movement_distance_ft=None,
+                        movement_direction=None,
+                    )
+                    raw_effect_ids = structured_effects.get("effect_ids")
+                    if isinstance(raw_effect_ids, list):
+                        effect_ids.extend(
+                            value for value in raw_effect_ids if isinstance(value, str)
+                        )
+                target.version += 1
+                target.updated_at = now
+                if target.hp == 0:
+                    if self._is_summon(target):
+                        summon_ids_to_end.append(target.id)
+                    elif self._deactivate_zero_hp_non_character(target, now=now):
+                        deactivated_non_character_ids.append(target.id)
+                    else:
+                        self._death_save(session, target)
+                target_results.append(
+                    {
+                        "target_combatant_id": target.id,
+                        "target_name": target.display_name,
+                        "roll_total": defense["effective_roll_total"],
+                        "reported_roll_totals": defense["reported_roll_totals"],
+                        "success": succeeded,
+                        "applied_defenses": defense["applied_defenses"],
+                        "conditional_defenses_applied": applied_conditional_defenses,
+                        "conditional_defenses_unresolved": unresolved_conditional_defenses,
+                        "defense_resource_consumed": defense[
+                            "defense_resource_consumed"
+                        ],
+                        "damage": damage_result,
+                        "structured_effects": structured_effects,
+                        "condition_changes": condition_changes,
+                        "combatant_deactivated": target.id in deactivated_non_character_ids,
+                        "geometry": geometry[target.id],
+                    }
+                )
+            ended_summons = self._deactivate_summons(
+                session,
+                combat,
+                summon_ids_to_end,
+                now=now,
+            )
+            damaged_combatant_ids = {
+                str(item["target_combatant_id"])
+                for item in target_results
+                if isinstance(item.get("damage"), dict)
+                and self._state_int(item["damage"].get("adjusted_damage")) > 0
+            }
+            ended_predicated_effects, ended_predicated_summons = (
+                self._end_predicated_effects(
+                    session,
+                    combat,
+                    now=now,
+                    event_combatant_ids=damaged_combatant_ids,
+                    event_kinds={"damage"} if damaged_combatant_ids else set(),
+                    event_only=True,
+                )
+            )
+            transaction = OperationTransaction(
+                campaign_id=campaign_id,
+                operation_type="combat_monster_area_action",
+                idempotency_key=idempotency_key,
+                status="applied",
+                before_snapshot={"actor": before_actor, "targets": before_targets},
+                after_snapshot={
+                    "actor": serialize(actor),
+                    "targets": {target.id: serialize(target) for target in affected},
+                    "ended_summon_ids": [target.id for target in ended_summons],
+                    "ended_predicated_effect_ids": [
+                        effect.id for effect in ended_predicated_effects
+                    ],
+                    "ended_predicated_summon_ids": [
+                        summon.id for summon in ended_predicated_summons
+                    ],
+                },
+                reason=command.dm_geometry_note,
+                source="combat",
+                confirmed_at=now,
+            )
+            session.add(transaction)
+            session.flush()
+            action_result: dict[str, object] = {
+                "shape": command.shape,
+                "size_ft": command.size_ft,
+                "width_ft": command.width_ft,
+                "height_ft": command.height_ft,
+                "anchor": {"row": command.anchor_row, "col": command.anchor_col},
+                "anchor_height_ft": command.anchor_height_ft,
+                "damage_components": damage_components,
+                "target_results": target_results,
+                "recharge_consumed": command.recharge_key if recharge_consumed else None,
+                "ended_summon_ids": [target.id for target in ended_summons],
+                "deactivated_non_character_ids": deactivated_non_character_ids,
+                "ended_predicated_effect_ids": [
+                    effect.id for effect in ended_predicated_effects
+                ],
+                "ended_predicated_summon_ids": [
+                    summon.id for summon in ended_predicated_summons
+                ],
+            }
+            action = CombatAction(
+                campaign_id=campaign_id,
+                combat_id=combat_id,
+                actor_combatant_id=actor.id,
+                transaction_id=transaction.id,
+                action_type="monster_area_action",
+                target_combatant_ids=[target.id for target in affected],
+                request_json=command.model_dump(mode="json"),
+                result_json=action_result,
+                explanation=command.dm_geometry_note,
+                round_number=combat.round_number,
+                turn_index=combat.current_turn_index,
+                summary=(
+                    f"{actor.display_name} 使用「{command.action_name}」，"
+                    f"按 {command.shape} 区域结算 {len(affected)} 个目标"
+                ),
+                idempotency_key=idempotency_key,
+                status="confirmed",
+            )
+            session.add(action)
+            session.flush()
+            for effect_id in effect_ids:
+                effect = session.get(CombatEffect, effect_id)
+                if effect is not None and effect.source_action_id is None:
+                    effect.source_action_id = action.id
+            return {
+                "action": serialize(action),
+                "actor": serialize(actor),
+                "targets": [serialize(target) for target in affected],
+                "ended_summons": [serialize(target) for target in ended_summons],
+                "ended_predicated_effects": [
+                    serialize(effect) for effect in ended_predicated_effects
+                ],
+                "ended_predicated_summons": [
+                    serialize(summon) for summon in ended_predicated_summons
+                ],
+                "already_applied": False,
+            }
+
+    def confirm_maneuver(
+        self,
+        campaign_id: str,
+        combat_id: str,
+        command: CombatManeuverCommand,
+        *,
+        idempotency_key: str,
+    ) -> dict[str, Any]:
+        """Execute movement/control maneuvers without inventing contested rolls.
+
+        Dash and standing up are deterministic. Grapple and shove deliberately
+        require an explicit DM-adjudicated outcome because the combat snapshot
+        does not always contain reach, size, proficiency, or save DC data.
+        Once adjudicated, their state and grid consequences are authoritative.
+        """
+
+        if not idempotency_key.strip():
+            raise ValueError("idempotency key is required")
+        with Session(self.engine) as session, session.begin():
+            campaign = session.get(Campaign, campaign_id)
+            if campaign is None:
+                raise StateNotFoundError("campaign not found")
+            combat = session.get(Combat, combat_id)
+            if combat is None or combat.campaign_id != campaign_id:
+                raise StateNotFoundError("combat not found in campaign")
+            existing = session.scalar(
+                select(CombatAction).where(
+                    CombatAction.combat_id == combat_id,
+                    CombatAction.idempotency_key == idempotency_key,
+                )
+            )
+            if existing is not None:
+                actor = (
+                    session.get(Combatant, existing.actor_combatant_id)
+                    if existing.actor_combatant_id
+                    else None
+                )
+                target_id = (
+                    existing.target_combatant_ids[0]
+                    if existing.target_combatant_ids
+                    else None
+                )
+                target = session.get(Combatant, target_id) if target_id else None
+                effect_id = existing.result_json.get("effect_id")
+                existing_effect = (
+                    session.get(CombatEffect, effect_id)
+                    if isinstance(effect_id, str)
+                    else None
+                )
+                return {
+                    "action": serialize(existing),
+                    "actor": serialize(actor) if actor is not None else None,
+                    "target": serialize(target) if target is not None else None,
+                    "effect": (
+                        serialize(existing_effect) if existing_effect is not None else None
+                    ),
+                    "already_applied": True,
+                }
+            if combat.status != "active":
+                raise ValueError("maneuvers require an active combat")
+            actor = session.get(Combatant, command.actor_combatant_id)
+            if actor is None or actor.combat_id != combat_id:
+                raise StateNotFoundError("actor combatant not found in combat")
+            target = (
+                session.get(Combatant, command.target_combatant_id)
+                if command.target_combatant_id is not None
+                else None
+            )
+            if command.target_combatant_id is not None and (
+                target is None or target.combat_id != combat_id
+            ):
+                raise StateNotFoundError("target combatant not found in combat")
+            if target is not None and target.id == actor.id:
+                raise ValueError(f"a combatant cannot use {command.action_type} on itself")
+            ready_effect: CombatEffect | None = None
+            if command.action_type == "ready" and command.ready_phase == "trigger":
+                if not actor.is_active:
+                    raise ValueError("inactive combatants cannot trigger Ready")
+                if actor.version != command.actor_version:
+                    raise VersionConflict(
+                        "combatant",
+                        actor.id,
+                        command.actor_version,
+                        actor.version,
+                    )
+                self._validate_can_act(actor)
+                ready_effect = session.get(CombatEffect, command.ready_effect_id)
+                if (
+                    ready_effect is None
+                    or ready_effect.combat_id != combat.id
+                    or ready_effect.target_combatant_id != actor.id
+                    or ready_effect.status != "active"
+                    or (ready_state := self._runtime_state(ready_effect)) is None
+                    or ready_state.get("name") != "ready"
+                ):
+                    raise ValueError("Ready effect is not active for this combatant")
+                if ready_effect.version != command.ready_effect_version:
+                    raise VersionConflict(
+                        "combat_effect",
+                        ready_effect.id,
+                        command.ready_effect_version or 0,
+                        ready_effect.version,
+                    )
+            else:
+                self._validate_active_actor(
+                    session,
+                    combat,
+                    actor,
+                    actor_version=command.actor_version,
+                )
+            if target is not None and target.version != command.target_version:
+                raise VersionConflict(
+                    "combatant",
+                    target.id,
+                    command.target_version or 0,
+                    target.version,
+                )
+            if (
+                command.action_type == "grapple"
+                and command.outcome == "success"
+                and target is not None
+            ):
+                immunity_names = {
+                    str(value).strip().lower()
+                    for value in list(target.condition_immunities or [])
+                }
+                if {"擒抱", "grappled"} & immunity_names:
+                    raise ValueError("目标免疫擒抱；如有例外需由 DM 改判为失败或另行裁定")
+                if self._has_condition(target, "擒抱"):
+                    raise ValueError("目标已经处于擒抱状态")
+            if (
+                command.action_type == "shove"
+                and command.shove_mode == "prone"
+                and command.outcome == "success"
+                and target is not None
+            ):
+                immunity_names = {
+                    str(value).strip().lower()
+                    for value in list(target.condition_immunities or [])
+                }
+                if {"倒地", "prone"} & immunity_names:
+                    raise ValueError("目标免疫倒地；如有例外需由 DM 改判为失败或另行裁定")
+
+            before_actor = serialize(actor)
+            before_target = serialize(target) if target is not None else None
+            before_item: dict[str, Any] | None = None
+            after_item: dict[str, Any] | None = None
+            before_object: dict[str, Any] | None = None
+            after_object: dict[str, Any] | None = None
+            used_item: WorldItem | None = None
+            interacted_object: SceneObject | None = None
+            effect: CombatEffect | None = None
+            result: dict[str, object] = {
+                "outcome": command.outcome or "success",
+                "adjudication_note": command.adjudication_note,
+            }
+            if command.action_type == "ready" and command.ready_phase == "trigger":
+                effect = ready_effect
+                if command.outcome == "success":
+                    self._validate_action_economy(
+                        session,
+                        combat,
+                        actor,
+                        actor_version=command.actor_version,
+                        action_cost="reaction",
+                        consume=True,
+                        reaction_trigger=(
+                            str(ready_state.get("trigger") or "Ready trigger confirmed by DM")
+                            if isinstance(ready_state, dict)
+                            else "Ready trigger confirmed by DM"
+                        ),
+                    )
+                    if effect is not None:
+                        self._end_runtime_effect(
+                            session,
+                            effect,
+                            reason="DM confirmed the prepared trigger occurred",
+                            now=datetime.now(UTC),
+                        )
+                    result.update(
+                        {
+                            "effect_id": effect.id if effect is not None else None,
+                            "reaction_spent": True,
+                            "prepared_response": (
+                                ready_state.get("response")
+                                if isinstance(ready_state, dict)
+                                else None
+                            ),
+                        }
+                    )
+                else:
+                    result.update(
+                        {
+                            "effect_id": effect.id if effect is not None else None,
+                            "reaction_spent": False,
+                            "state_remains_active": True,
+                        }
+                    )
+            elif command.action_type == "dash":
+                self._validate_action_economy(
+                    session,
+                    combat,
+                    actor,
+                    actor_version=command.actor_version,
+                    action_cost="action",
+                    consume=True,
+                )
+                gained = actor.speed_ft
+                actor.movement_remaining_ft += gained
+                result.update(
+                    {
+                        "movement_gained_ft": gained,
+                        "movement_remaining_ft": actor.movement_remaining_ft,
+                    }
+                )
+            elif command.action_type == "stand_up":
+                if not self._has_condition(actor, "倒地"):
+                    raise ValueError("combatant is not prone")
+                movement_cost = (actor.speed_ft + 1) // 2
+                if movement_cost <= 0 or actor.movement_remaining_ft < movement_cost:
+                    raise ValueError("起身需要消耗速度的一半；当前移动额度不足，需 DM 裁定")
+                self._remove_condition(actor, "倒地")
+                actor.movement_remaining_ft -= movement_cost
+                actor.version += 1
+                actor.updated_at = datetime.now(UTC)
+                result.update(
+                    {
+                        "movement_cost_ft": movement_cost,
+                        "movement_remaining_ft": actor.movement_remaining_ft,
+                        "condition_removed": "倒地",
+                    }
+                )
+            elif command.action_type in {
+                "dodge",
+                "help",
+                "ready",
+                "search",
+                "hide",
+                "disengage",
+                "use_item",
+                "object_interaction",
+            }:
+                self._validate_action_economy(
+                    session,
+                    combat,
+                    actor,
+                    actor_version=command.actor_version,
+                    action_cost="action",
+                    consume=True,
+                )
+                if command.action_type == "dodge":
+                    if actor.speed_ft <= 0 or self._movement_is_blocked(actor):
+                        raise ValueError(
+                            "Dodge provides no benefit while speed is 0 or movement is blocked"
+                        )
+                    effect = self._create_runtime_effect(
+                        session,
+                        combat,
+                        actor=actor,
+                        target=actor,
+                        state_name="dodge",
+                        expires="turn_start",
+                        expires_combatant_id=actor.id,
+                    )
+                    result["effect_id"] = effect.id
+                elif command.action_type == "help":
+                    assert target is not None
+                    effect = self._create_runtime_effect(
+                        session,
+                        combat,
+                        actor=actor,
+                        target=target,
+                        state_name="help",
+                        expires="turn_start",
+                        expires_combatant_id=actor.id,
+                        details={"trigger": command.help_trigger or ""},
+                    )
+                    target.version += 1
+                    target.updated_at = datetime.now(UTC)
+                    result.update(
+                        {
+                            "effect_id": effect.id,
+                            "help_trigger": command.help_trigger,
+                        }
+                    )
+                elif command.action_type == "ready":
+                    effect = self._create_runtime_effect(
+                        session,
+                        combat,
+                        actor=actor,
+                        target=actor,
+                        state_name="ready",
+                        expires="turn_start",
+                        expires_combatant_id=actor.id,
+                        details={
+                            "trigger": command.ready_trigger or "",
+                            "response": command.ready_response or "",
+                        },
+                    )
+                    result.update(
+                        {
+                            "effect_id": effect.id,
+                            "ready_trigger": command.ready_trigger,
+                            "ready_response": command.ready_response,
+                            "reaction_required_when_triggered": True,
+                        }
+                    )
+                elif command.action_type == "search":
+                    assert target is not None
+                    ended_hidden: list[CombatEffect] = []
+                    if command.outcome == "success":
+                        for hidden_effect in self._active_runtime_effects(
+                            session,
+                            combat.id,
+                            target_id=target.id,
+                            state_name="hidden",
+                        ):
+                            if self._end_runtime_effect(
+                                session,
+                                hidden_effect,
+                                reason="DM confirmed Search revealed the hidden combatant",
+                                now=datetime.now(UTC),
+                            ) is not None:
+                                ended_hidden.append(hidden_effect)
+                        if ended_hidden:
+                            target.version += 1
+                            target.updated_at = datetime.now(UTC)
+                    result.update(
+                        {
+                            "revealed": bool(ended_hidden),
+                            "ended_effect_ids": [row.id for row in ended_hidden],
+                        }
+                    )
+                elif command.action_type == "hide":
+                    if command.outcome == "success":
+                        effect = self._create_runtime_effect(
+                            session,
+                            combat,
+                            actor=actor,
+                            target=actor,
+                            state_name="hidden",
+                            expires="triggered",
+                            expires_combatant_id=None,
+                        )
+                        result["effect_id"] = effect.id
+                    result["hidden"] = command.outcome == "success"
+                elif command.action_type == "disengage":
+                    effect = self._create_runtime_effect(
+                        session,
+                        combat,
+                        actor=actor,
+                        target=actor,
+                        state_name="disengage",
+                        expires="turn_end",
+                        expires_combatant_id=actor.id,
+                    )
+                    result["effect_id"] = effect.id
+                elif command.action_type == "use_item":
+                    used_item = session.get(WorldItem, command.item_id)
+                    if (
+                        used_item is None
+                        or used_item.campaign_id != campaign_id
+                        or used_item.owner_character_id != actor.entity_id
+                    ):
+                        raise StateNotFoundError("item not found in the actor's inventory")
+                    if used_item.version != command.item_version:
+                        raise VersionConflict(
+                            "world_item",
+                            used_item.id,
+                            command.item_version or 0,
+                            used_item.version,
+                        )
+                    before_item = serialize(used_item)
+                    if used_item.quantity <= 1:
+                        session.delete(used_item)
+                        result.update(
+                            {
+                                "item_consumed": True,
+                                "item_id": used_item.id,
+                                "item_name": used_item.name,
+                                "quantity_after": 0,
+                            }
+                        )
+                    else:
+                        used_item.quantity -= 1
+                        used_item.version += 1
+                        used_item.updated_at = datetime.now(UTC)
+                        after_item = serialize(used_item)
+                        result.update(
+                            {
+                                "item_consumed": True,
+                                "item_id": used_item.id,
+                                "item_name": used_item.name,
+                                "quantity_after": used_item.quantity,
+                            }
+                        )
+                else:
+                    if combat.scene_id is None:
+                        raise ValueError("object interaction requires a scene-backed combat")
+                    interacted_object = session.get(SceneObject, command.object_id)
+                    if (
+                        interacted_object is None
+                        or interacted_object.scene_id != combat.scene_id
+                    ):
+                        raise StateNotFoundError("scene object not found in combat scene")
+                    if interacted_object.version != command.object_version:
+                        raise VersionConflict(
+                            "scene_object",
+                            interacted_object.id,
+                            command.object_version or 0,
+                            interacted_object.version,
+                        )
+                    before_object = serialize(interacted_object)
+                    if interacted_object.state == command.object_state:
+                        raise ValueError("object is already in the requested state")
+                    interacted_object.state = command.object_state or interacted_object.state
+                    interacted_object.version += 1
+                    interacted_object.updated_at = datetime.now(UTC)
+                    after_object = serialize(interacted_object)
+                    result.update(
+                        {
+                            "object_id": interacted_object.id,
+                            "object_label": interacted_object.label,
+                            "object_state_before": before_object["state"],
+                            "object_state_after": interacted_object.state,
+                        }
+                    )
+            else:
+                self._validate_action_economy(
+                    session,
+                    combat,
+                    actor,
+                    actor_version=command.actor_version,
+                    action_cost="action",
+                    consume=True,
+                )
+                if command.outcome == "success" and target is not None:
+                    if command.action_type == "grapple":
+                        applied_state = {
+                            "conditions": list(target.conditions or []),
+                            "speed_ft": target.speed_ft,
+                            "movement_remaining_ft": target.movement_remaining_ft,
+                        }
+                        conditions = list(target.conditions or [])
+                        conditions.append("擒抱")
+                        target.conditions = conditions
+                        target.speed_ft = 0
+                        target.movement_remaining_ft = 0
+                        effect = CombatEffect(
+                            campaign_id=campaign_id,
+                            combat_id=combat_id,
+                            target_combatant_id=target.id,
+                            source_combatant_id=actor.id,
+                            name=f"被 {actor.display_name} 擒抱",
+                            effect_type="condition",
+                            details_json={
+                                "maneuver": "grapple",
+                                "rule_block": {
+                                    "kind": "condition",
+                                    "condition": "擒抱",
+                                },
+                                "applied_state": applied_state,
+                                "dm_adjudication": command.adjudication_note,
+                            },
+                            started_round=combat.round_number,
+                            duration_unit="until_removed",
+                            requires_concentration=False,
+                            status="active",
+                        )
+                        session.add(effect)
+                        session.flush()
+                        result.update(
+                            {
+                                "condition_applied": "擒抱",
+                                "speed_ft": 0,
+                                "effect_id": effect.id,
+                            }
+                        )
+                    elif command.shove_mode == "prone":
+                        if not self._has_condition(target, "倒地"):
+                            target.conditions = list(target.conditions or []) + ["倒地"]
+                        result["condition_applied"] = "倒地"
+                    else:
+                        result.update(
+                            self._move_away_on_grid(
+                                session,
+                                combat,
+                                target=target,
+                                source=actor,
+                                distance_ft=command.push_distance_ft or 0,
+                                direction="away",
+                            )
+                        )
+                    target.version += 1
+                    target.updated_at = datetime.now(UTC)
+
+            now = datetime.now(UTC)
+            transaction = OperationTransaction(
+                campaign_id=campaign_id,
+                operation_type=f"combat_maneuver_{command.action_type}",
+                idempotency_key=idempotency_key,
+                status="applied",
+                before_snapshot={
+                    "actor": before_actor,
+                    "target": before_target,
+                    "item": before_item,
+                    "object": before_object,
+                },
+                after_snapshot={
+                    "actor": serialize(actor),
+                    "target": serialize(target) if target is not None else None,
+                    "item": after_item,
+                    "object": after_object,
+                    "result": result,
+                },
+                reason=(
+                    command.adjudication_note
+                    or f"{command.action_type} resolved by combat rules"
+                ),
+                source="combat",
+                confirmed_at=now,
+            )
+            session.add(transaction)
+            session.flush()
+            label = {
+                "dash": "疾走",
+                "stand_up": "起身",
+                "grapple": "擒抱",
+                "shove": "推撞",
+                "dodge": "闪避",
+                "help": "协助",
+                "ready": "准备",
+                "search": "搜索",
+                "hide": "躲藏",
+                "disengage": "撤离",
+                "use_item": "使用物品",
+                "object_interaction": "物件互动",
+            }[command.action_type]
+            outcome_label = "成功" if result["outcome"] == "success" else "失败"
+            summary = f"{actor.display_name} 使用{label}"
+            if target is not None:
+                summary += f"对抗 {target.display_name}，{outcome_label}"
+            action = CombatAction(
+                campaign_id=campaign_id,
+                combat_id=combat_id,
+                actor_combatant_id=actor.id,
+                transaction_id=transaction.id,
+                action_type=command.action_type,
+                target_combatant_ids=[target.id] if target is not None else [],
+                request_json=command.model_dump(mode="json"),
+                result_json=result,
+                explanation=command.adjudication_note,
+                round_number=combat.round_number,
+                turn_index=combat.current_turn_index,
+                summary=summary,
+                idempotency_key=idempotency_key,
+                status="confirmed",
+            )
+            session.add(action)
+            session.flush()
+            if effect is not None and effect.source_action_id is None:
+                effect.source_action_id = action.id
+            return {
+                "action": serialize(action),
+                "actor": serialize(actor),
+                "target": serialize(target) if target is not None else None,
+                "effect": serialize(effect) if effect is not None else None,
+                "item": (
+                    serialize(used_item)
+                    if used_item is not None and after_item is not None
+                    else None
+                ),
+                "object": serialize(interacted_object) if interacted_object is not None else None,
+                "already_applied": False,
+            }
+
+    @classmethod
+    def _move_away_on_grid(
+        cls,
+        session: Session,
+        combat: Combat,
+        *,
+        target: Combatant,
+        source: Combatant,
+        distance_ft: int,
+        direction: str = "away",
+    ) -> dict[str, object]:
+        raw_target = target.snapshot_json.get("grid_position")
+        raw_source = source.snapshot_json.get("grid_position")
+        if not isinstance(raw_target, dict):
+            raise ValueError("强制位移目标尚未设置战斗地图位置，需 DM 裁定")
+        if not isinstance(raw_source, dict):
+            raise ValueError("强制位移来源尚未设置战斗地图位置，需 DM 裁定")
+        target_point = (int(raw_target.get("row", 0)), int(raw_target.get("col", 0)))
+        source_point = (int(raw_source.get("row", 0)), int(raw_source.get("col", 0)))
+        delta_row = target_point[0] - source_point[0]
+        delta_col = target_point[1] - source_point[1]
+        if direction in {"toward", "pull"}:
+            delta_row, delta_col = -delta_row, -delta_col
+        step_row = 0 if delta_row == 0 else (1 if delta_row > 0 else -1)
+        step_col = 0 if delta_col == 0 else (1 if delta_col > 0 else -1)
+        if step_row == 0 and step_col == 0:
+            raise ValueError("强制位移无法确定方向，需 DM 裁定")
+        grid = (
+            session.scalar(select(SceneGrid).where(SceneGrid.scene_id == combat.scene_id))
+            if combat.scene_id
+            else None
+        )
+        blocked: set[tuple[int, int]] = set()
+        if combat.scene_id:
+            for obj in session.scalars(
+                select(SceneObject).where(SceneObject.scene_id == combat.scene_id)
+            ).all():
+                if obj.object_type == "wall" or (
+                    obj.object_type == "door" and obj.state in {"active", "closed"}
+                ):
+                    blocked.update(
+                        {
+                            (row, col)
+                            for row in range(obj.row, obj.row + obj.height_cells)
+                            for col in range(obj.col, obj.col + obj.width_cells)
+                        }
+                    )
+        occupied = {
+            (int(pos["row"]), int(pos["col"]))
+            for item in cls._ordered_combatants(session, combat.id)
+            if item.id != target.id
+            for pos in [item.snapshot_json.get("grid_position")]
+            if isinstance(pos, dict) and "row" in pos and "col" in pos
+        }
+        cell_size = grid.cell_size_ft if grid is not None else 5
+        if distance_ft % cell_size != 0:
+            raise ValueError(
+                f"强制位移距离必须与当前 {cell_size} 尺网格对齐，需 DM 裁定"
+            )
+        steps = distance_ft // cell_size
+        current = target_point
+        moved_steps = 0
+        for _ in range(steps):
+            candidate = (current[0] + step_row, current[1] + step_col)
+            if grid is not None and not (
+                1 <= candidate[0] <= grid.height and 1 <= candidate[1] <= grid.width
+            ):
+                break
+            if candidate in blocked or candidate in occupied:
+                break
+            current = candidate
+            moved_steps += 1
+        moved_ft = moved_steps * cell_size
+        snapshot = dict(target.snapshot_json)
+        position = dict(raw_target)
+        position.update({"row": current[0], "col": current[1]})
+        snapshot["grid_position"] = position
+        target.snapshot_json = snapshot
+        return {
+            "moved_ft": moved_ft,
+            "requested_ft": distance_ft,
+            "direction": direction,
+            "blocked": moved_ft < distance_ft,
+            "from": {"row": target_point[0], "col": target_point[1]},
+            "to": {"row": current[0], "col": current[1]},
+        }
+
+    def apply_forced_movement(
+        self,
+        campaign_id: str,
+        combat_id: str,
+        *,
+        target_combatant_id: str,
+        source_combatant_id: str | None,
+        distance_ft: int,
+        direction: str,
+        target_version: int,
+        idempotency_key: str,
+    ) -> dict[str, Any]:
+        """Move a target along the combat grid without teleporting through blockers."""
+
+        if distance_ft < 0:
+            raise ValueError("forced movement distance cannot be negative")
+        with Session(self.engine) as session, session.begin():
+            combat = session.get(Combat, combat_id)
+            if combat is None or combat.campaign_id != campaign_id:
+                raise StateNotFoundError("combat not found in campaign")
+            existing = session.scalar(
+                select(CombatAction).where(
+                    CombatAction.combat_id == combat_id,
+                    CombatAction.idempotency_key == idempotency_key,
+                )
+            )
+            if existing is not None:
+                target = session.get(Combatant, target_combatant_id)
+                return {
+                    "action": serialize(existing),
+                    "target": serialize(target) if target is not None else None,
+                    "moved_ft": existing.result_json.get("moved_ft", 0),
+                }
+            target = session.get(Combatant, target_combatant_id)
+            if target is None or target.combat_id != combat_id:
+                raise StateNotFoundError("target combatant not found in combat")
+            if target.version != target_version:
+                raise VersionConflict("combatant", target.id, target_version, target.version)
+            source = (
+                session.get(Combatant, source_combatant_id)
+                if source_combatant_id
+                else None
+            )
+            if source is None or source.combat_id != combat_id:
+                raise StateNotFoundError("source combatant not found in combat")
+            before_target = serialize(target)
+            result = self._move_away_on_grid(
+                session,
+                combat,
+                target=target,
+                source=source,
+                distance_ft=distance_ft,
+                direction=direction,
+            )
+            target.version += 1
+            target.updated_at = datetime.now(UTC)
+            transaction = OperationTransaction(
+                campaign_id=campaign_id,
+                operation_type="combat_forced_movement",
+                idempotency_key=idempotency_key,
+                status="applied",
+                before_snapshot={"target": before_target, "from": result["from"]},
+                after_snapshot={"target": serialize(target), "result": result},
+                reason="按规则积木执行强制位移",
+                source="combat",
+                confirmed_at=datetime.now(UTC),
+            )
+            session.add(transaction)
+            session.flush()
+            action = CombatAction(
+                campaign_id=campaign_id,
+                combat_id=combat_id,
+                actor_combatant_id=source.id if source is not None else None,
+                transaction_id=transaction.id,
+                action_type="forced_movement",
+                target_combatant_ids=[target.id],
+                request_json={
+                    "distance_ft": distance_ft,
+                    "direction": direction,
+                    "source_combatant_id": source_combatant_id,
+                },
+                result_json=result,
+                explanation="强制位移遇到地图边界、障碍物或其他单位时停止",
+                round_number=combat.round_number,
+                turn_index=combat.current_turn_index,
+                summary=f"{target.display_name} 被强制移动 {result['moved_ft']} 尺",
+                idempotency_key=idempotency_key,
+                status="confirmed",
+            )
+            session.add(action)
+            session.flush()
+            return {"action": serialize(action), "target": serialize(target), **result}
 
     def get_death_save(
         self,
@@ -831,6 +6127,10 @@ class CombatEngineService:
             death_save.version += 1
             if resolution.hp_restored:
                 target.hp = resolution.hp_restored
+            condition_changes = self._sync_zero_hp_lifecycle(
+                target,
+                before_hp=int(before_target["hp"]),
+            )
             target.version += 1
             transaction = OperationTransaction(
                 campaign_id=campaign_id,
@@ -858,6 +6158,8 @@ class CombatEngineService:
             session.add(transaction)
             session.flush()
             result = asdict(resolution)
+            if condition_changes:
+                result["condition_changes"] = condition_changes
             action = CombatAction(
                 campaign_id=campaign_id,
                 combat_id=combat_id,
@@ -1009,6 +6311,23 @@ class CombatEngineService:
                         "expiration_prompts",
                         [],
                     ),
+                    "effect_ticks": existing.result_json.get("effect_ticks", []),
+                    "effect_prompts": existing.result_json.get("effect_prompts", []),
+                    "status_prompts": existing.result_json.get("status_prompts", []),
+                    "ended_runtime_effects": existing.result_json.get(
+                        "ended_runtime_effects", []
+                    ),
+                    "predicated_effects": existing.result_json.get(
+                        "predicated_effects", []
+                    ),
+                    "predicated_summons": existing.result_json.get(
+                        "predicated_summons", []
+                    ),
+                    "expired_rule_effects": existing.result_json.get(
+                        "expired_rule_effects", []
+                    ),
+                    "recharge_rolls": existing.result_json.get("recharge_rolls", []),
+                    "trait_results": existing.result_json.get("trait_results", []),
                 }
             if combat.version != command.combat_version:
                 raise VersionConflict(
@@ -1030,7 +6349,7 @@ class CombatEngineService:
                 raise ValueError(
                     "当前仍有玩家掷骰请求未结算，不能结束怪物回合"
                 )
-            ordered = session.scalars(
+            raw_ordered = session.scalars(
                 select(Combatant)
                 .where(
                     Combatant.combat_id == combat_id,
@@ -1042,26 +6361,204 @@ class CombatEngineService:
                     Combatant.id,
                 )
             ).all()
-            if not ordered:
+            if not raw_ordered:
                 raise ValueError("combat has no active combatants")
             before = serialize(combat)
-            next_index = combat.current_turn_index + 1
+            previous_round = combat.round_number
+            previous_raw_index = (
+                combat.current_turn_index
+                if 0 <= combat.current_turn_index < len(raw_ordered)
+                else 0
+            )
+            previous_active = raw_ordered[previous_raw_index]
+            now = datetime.now(UTC)
+            for row in raw_ordered:
+                if row.hp <= 0 and row.entity_type != "character":
+                    if row.is_active:
+                        row.is_active = False
+                        row.version += 1
+                        row.updated_at = now
+            ordered = [row for row in raw_ordered if row.is_active]
+            if not ordered:
+                raise ValueError("combat has no active combatants")
             next_round = combat.round_number
-            if next_index >= len(ordered):
-                next_index = 0
+            active: Combatant | None = None
+            wrapped = False
+            for offset in range(1, len(raw_ordered) + 1):
+                candidate = raw_ordered[(previous_raw_index + offset) % len(raw_ordered)]
+                if not candidate.is_active:
+                    continue
+                active = candidate
+                wrapped = previous_raw_index + offset >= len(raw_ordered)
+                break
+            if active is None:
+                raise ValueError("combat has no next active combatant")
+            next_index = ordered.index(active)
+            if wrapped:
                 next_round += 1
-            active = ordered[next_index]
             combat.current_turn_index = next_index
             combat.round_number = next_round
             combat.version += 1
-            active.movement_remaining_ft = active.speed_ft
-            active.action_available = True
-            active.bonus_action_available = True
-            active.reaction_available = True
+            active.movement_remaining_ft = (
+                0 if self._movement_is_blocked(active) else active.speed_ft
+            )
+            can_act = not bool(
+                self._condition_set(active) & self._ACTION_BLOCKING_CONDITIONS
+            )
+            active.action_available = can_act
+            active.bonus_action_available = can_act
+            active.reaction_available = can_act
+            active_snapshot = dict(active.snapshot_json or {})
+            # Action Surge grants a budget for this turn only.  The budget is
+            # consumed by the normal action-economy gate and must never leak
+            # into the next initiative turn.
+            active_snapshot.pop("extra_action_budget", None)
+            active_snapshot.pop("attack_roll_budget", None)
+            active.snapshot_json = active_snapshot
+            recharge_rolls: list[dict[str, object]] = []
+            trait_results: list[dict[str, object]] = []
+            if active.entity_type == "monster":
+                snapshot = dict(active.snapshot_json or {})
+                actions = snapshot.get("actions")
+                legendary_pools = {
+                    int(item["legendary_pool_max"])
+                    for item in actions
+                    if isinstance(actions, list)
+                    and isinstance(item, dict)
+                    and isinstance(item.get("legendary_pool_max"), int)
+                    and int(item["legendary_pool_max"]) > 0
+                } if isinstance(actions, list) else set()
+                if len(legendary_pools) == 1:
+                    pool_max = legendary_pools.pop()
+                    snapshot["legendary_actions_max"] = pool_max
+                    snapshot["legendary_actions_remaining"] = pool_max
+                    snapshot.pop("legendary_action_window_used", None)
+                    active.snapshot_json = snapshot
+                recharge_rolls, trait_results = self._process_monster_turn_start(active)
             active.version += 1
-            now = datetime.now(UTC)
             active.updated_at = now
             combat.updated_at = now
+            effect_ticks: list[dict[str, object]] = []
+            effect_prompts: list[dict[str, object]] = []
+            status_prompts: list[dict[str, object]] = []
+            ended_runtime_effects: list[CombatEffect] = []
+            changed_runtime_targets: dict[str, Combatant] = {}
+            for effect in self._active_runtime_effects(session, combat.id):
+                state = self._runtime_state(effect)
+                if state is None:
+                    continue
+                expires = state.get("expires")
+                expires_combatant_id = state.get("expires_combatant_id")
+                due = (
+                    expires == "turn_end"
+                    and previous_active is not None
+                    and expires_combatant_id == previous_active.id
+                ) or (
+                    expires == "turn_start"
+                    and expires_combatant_id == active.id
+                )
+                if not due:
+                    continue
+                changed = self._end_runtime_effect(
+                    session,
+                    effect,
+                    reason=f"runtime state ended at {str(expires).replace('_', ' ')}",
+                    now=now,
+                )
+                if changed is not None:
+                    changed_runtime_targets[changed.id] = changed
+                    ended_runtime_effects.append(effect)
+            for changed in changed_runtime_targets.values():
+                if changed.id != active.id:
+                    changed.version += 1
+                    changed.updated_at = now
+            predicated_effects, predicated_summons = self._end_predicated_effects(
+                session,
+                combat,
+                now=now,
+            )
+            due_effects = session.scalars(
+                select(CombatEffect).where(
+                    CombatEffect.combat_id == combat_id,
+                    CombatEffect.status == "active",
+                    CombatEffect.trigger_timing.is_not(None),
+                )
+            ).all()
+            for effect in due_effects:
+                timing = effect.trigger_timing
+                due = (
+                    timing == "turn_end"
+                    and previous_active is not None
+                    and effect.target_combatant_id == previous_active.id
+                ) or (
+                    timing == "turn_start"
+                    and effect.target_combatant_id == active.id
+                ) or (
+                    timing == "round_end"
+                    and next_round > previous_round
+                ) or (
+                    timing == "round_start"
+                    and next_round > previous_round
+                )
+                if not due:
+                    continue
+                tick = self._tick_rule_effect(session, combat, effect, now=now)
+                if tick is None:
+                    continue
+                if tick.get("requires_save") or tick.get("requires_dm_review"):
+                    effect_prompts.append(tick)
+                else:
+                    effect_ticks.append(tick)
+            existing_prompt_ids = {
+                str(prompt.get("effect_id"))
+                for prompt in effect_prompts
+                if prompt.get("effect_id") is not None
+            }
+            if previous_active is not None:
+                save_effects = session.scalars(
+                    select(CombatEffect).where(
+                        CombatEffect.combat_id == combat.id,
+                        CombatEffect.target_combatant_id == previous_active.id,
+                        CombatEffect.status == "active",
+                        CombatEffect.duration_unit == "until_save",
+                        CombatEffect.save_dc.is_not(None),
+                        CombatEffect.save_ability.is_not(None),
+                    )
+                ).all()
+                for effect in save_effects:
+                    if effect.id in existing_prompt_ids:
+                        continue
+                    effect_prompts.append(
+                        {
+                            "effect_id": effect.id,
+                            "target_combatant_id": previous_active.id,
+                            "requires_save": True,
+                            "save_dc": effect.save_dc,
+                            "save_ability": effect.save_ability,
+                            "timing": "turn_end",
+                            "summary": (
+                                f"{previous_active.display_name} 回合结束时需要进行 "
+                                f"{effect.save_ability} 豁免（DC {effect.save_dc}）；"
+                                "等待 DM/玩家提交结果"
+                            ),
+                        }
+                    )
+            if active.hp == 0 and not self._is_summon(active):
+                death_save = session.scalar(
+                    select(DeathSave).where(DeathSave.combatant_id == active.id)
+                )
+                if death_save is None or (
+                    not death_save.dead
+                    and not death_save.stable
+                    and not death_save.pending_death_confirmation
+                ):
+                    status_prompts.append(
+                        {
+                            "type": "death_save_required",
+                            "combatant_id": active.id,
+                            "summary": f"{active.display_name} 需要进行死亡豁免",
+                        }
+                    )
             expiring_effects = session.scalars(
                 select(CombatEffect)
                 .where(
@@ -1072,7 +6569,59 @@ class CombatEngineService:
                 )
                 .order_by(CombatEffect.ends_round, CombatEffect.created_at, CombatEffect.id)
             ).all()
-            expiration_prompts = [serialize(effect) for effect in expiring_effects]
+            summon_effects: list[CombatEffect] = []
+            expired_rule_effects: list[CombatEffect] = []
+            expired_targets: dict[str, Combatant] = {}
+            for effect in expiring_effects:
+                effect_target = session.get(Combatant, effect.target_combatant_id)
+                details = dict(effect.details_json or {})
+                is_summon_effect = self._effect_summon_id(effect) is not None
+                has_compiled_rule = isinstance(details.get("rule_block"), dict)
+                if is_summon_effect:
+                    summon_effects.append(effect)
+                # Compiler-produced effects are authoritative: their reverse
+                # operation is safe to execute at expiry.  Free-form DM
+                # effects still remain prompts because the engine cannot infer
+                # what a prose-only effect changed.
+                if has_compiled_rule and effect_target is not None:
+                    self._reverse_compiled_effect(session, effect_target, effect)
+                    expired_targets[effect_target.id] = effect_target
+                    expired_rule_effects.append(effect)
+                if is_summon_effect or has_compiled_rule:
+                    effect.status = "ended"
+                    effect.ended_at = now
+                    effect.end_reason = (
+                        "召唤持续时间结束" if is_summon_effect else "结构化效果持续时间结束"
+                    )
+                    effect.version += 1
+                    source = (
+                        session.get(Combatant, effect.source_combatant_id)
+                        if effect.source_combatant_id else None
+                    )
+                    if source is not None and source.concentration.get("effect_id") == effect.id:
+                        source.concentration = {}
+                        source.version += 1
+                        source.updated_at = now
+            for effect_target in expired_targets.values():
+                effect_target.version += 1
+                effect_target.updated_at = now
+            ended_summons = self._deactivate_summons_for_effects(
+                session,
+                combat,
+                summon_effects,
+                now=now,
+            )
+            expiration_prompts = [
+                serialize(effect)
+                for effect in expiring_effects
+                if effect.status == "active"
+            ]
+            active_order = self._ordered_combatants(session, combat_id)
+            turn_active = (
+                active_order[combat.current_turn_index]
+                if active_order and combat.current_turn_index < len(active_order)
+                else None
+            )
             transaction = OperationTransaction(
                 campaign_id=campaign_id,
                 operation_type="combat_advance_turn",
@@ -1083,7 +6632,18 @@ class CombatEngineService:
                     "combat_id": combat.id,
                     "round_number": combat.round_number,
                     "current_turn_index": combat.current_turn_index,
-                    "active_combatant_id": active.id,
+                    "active_combatant_id": turn_active.id if turn_active else None,
+                    "ended_summon_ids": [summon.id for summon in ended_summons],
+                    "expired_rule_effect_ids": [effect.id for effect in expired_rule_effects],
+                    "effect_ticks": effect_ticks,
+                    "effect_prompts": effect_prompts,
+                    "status_prompts": status_prompts,
+                    "ended_runtime_effect_ids": [
+                        effect.id for effect in ended_runtime_effects
+                    ],
+                    "predicated_effect_ids": [effect.id for effect in predicated_effects],
+                    "recharge_rolls": recharge_rolls,
+                    "trait_results": trait_results,
                 },
                 reason="DM advanced combat turn",
                 source="combat",
@@ -1092,25 +6652,37 @@ class CombatEngineService:
             session.add(transaction)
             session.flush()
             result: dict[str, Any] = {
-                "active_combatant_id": active.id,
+                "active_combatant_id": turn_active.id if turn_active else None,
                 "round_number": combat.round_number,
                 "turn_index": combat.current_turn_index,
                 "expiration_prompts": expiration_prompts,
+                "effect_ticks": effect_ticks,
+                "effect_prompts": effect_prompts,
+                "status_prompts": status_prompts,
+                "ended_runtime_effects": [
+                    serialize(effect) for effect in ended_runtime_effects
+                ],
+                "ended_summon_ids": [summon.id for summon in ended_summons],
+                "expired_rule_effects": [serialize(effect) for effect in expired_rule_effects],
+                "recharge_rolls": recharge_rolls,
+                "trait_results": trait_results,
             }
             action = CombatAction(
                 campaign_id=campaign_id,
                 combat_id=combat_id,
-                actor_combatant_id=active.id,
+                actor_combatant_id=turn_active.id if turn_active else None,
                 transaction_id=transaction.id,
                 action_type="advance_turn",
-                target_combatant_ids=[active.id],
+                target_combatant_ids=[turn_active.id] if turn_active else [],
                 request_json=command.model_dump(mode="json"),
                 result_json=result,
                 explanation="恢复新回合角色的动作、附赠动作、反应与移动",
                 round_number=combat.round_number,
                 turn_index=combat.current_turn_index,
                 summary=(
-                    f"第 {combat.round_number} 轮：轮到 {active.display_name}"
+                    f"第 {combat.round_number} 轮：轮到 {turn_active.display_name}"
+                    if turn_active is not None
+                    else f"第 {combat.round_number} 轮：当前没有活动战斗单位"
                 ),
                 idempotency_key=idempotency_key,
                 status="confirmed",
@@ -1120,8 +6692,22 @@ class CombatEngineService:
             return {
                 "action": serialize(action),
                 "combat": serialize(combat),
-                "active_combatant": serialize(active),
+                "active_combatant": serialize(turn_active) if turn_active else None,
                 "expiration_prompts": expiration_prompts,
+                "effect_ticks": effect_ticks,
+                "effect_prompts": effect_prompts,
+                "status_prompts": status_prompts,
+                "ended_runtime_effects": [
+                    serialize(effect) for effect in ended_runtime_effects
+                ],
+                "predicated_effects": [serialize(effect) for effect in predicated_effects],
+                "predicated_summons": [serialize(summon) for summon in predicated_summons],
+                "ended_summons": [serialize(summon) for summon in ended_summons],
+                "expired_rule_effects": [
+                    serialize(effect) for effect in expired_rule_effects
+                ],
+                "recharge_rolls": recharge_rolls,
+                "trait_results": trait_results,
             }
 
     def reset_combat(
@@ -1165,6 +6751,26 @@ class CombatEngineService:
                 "combat": serialize(combat),
                 "combatants": [serialize(fighter) for fighter in combatants],
             }
+            # A reset returns the initiative track to its starting fixture.
+            # Summoned units are created during the combat and therefore must
+            # not survive the reset as inactive/position-less stale targets.
+            # Keeping them in the track is especially dangerous for AI area
+            # actions: target selection can choose the stale unit, while the
+            # authoritative map has no position with which to resolve it.
+            summon_ids = [
+                fighter.id
+                for fighter in combatants
+                if fighter.entity_type == "companion"
+                or self._is_summon(fighter)
+                or (
+                    isinstance(fighter.snapshot_json, dict)
+                    and bool(fighter.snapshot_json.get("summon_source_combatant_id"))
+                )
+            ]
+            if summon_ids:
+                session.execute(delete(SceneToken).where(SceneToken.entity_id.in_(summon_ids)))
+                session.execute(delete(Combatant).where(Combatant.id.in_(summon_ids)))
+                combatants = [fighter for fighter in combatants if fighter.id not in summon_ids]
             combatant_ids = [fighter.id for fighter in combatants]
             session.execute(
                 delete(DeathSave).where(DeathSave.combatant_id.in_(combatant_ids))
@@ -1217,8 +6823,27 @@ class CombatEngineService:
                 fighter.action_available = True
                 fighter.bonus_action_available = True
                 fighter.reaction_available = True
+                snapshot.pop("extra_action_budget", None)
+                snapshot.pop("attack_roll_budget", None)
                 fighter.is_active = bool(baseline.get("is_active", True))
-                snapshot.pop("grid_position", None)
+                starting_snapshot = baseline.get("snapshot_json")
+                starting_position = (
+                    starting_snapshot.get("grid_position")
+                    if isinstance(starting_snapshot, dict)
+                    else None
+                )
+                if (
+                    isinstance(starting_position, dict)
+                    and isinstance(starting_position.get("row"), int)
+                    and isinstance(starting_position.get("col"), int)
+                ):
+                    snapshot["grid_position"] = {
+                        key: value
+                        for key, value in starting_position.items()
+                        if key in {"row", "col", "elevation_ft", "height_ft", "z"}
+                    }
+                else:
+                    snapshot.pop("grid_position", None)
                 fighter.snapshot_json = snapshot
                 fighter.version += 1
                 fighter.updated_at = now
@@ -1297,6 +6922,564 @@ class CombatEngineService:
             ).all()
         )
 
+    @staticmethod
+    def _apply_rule_block_effect(
+        target: Combatant,
+        details: dict[str, object],
+        *,
+        remove: bool = False,
+    ) -> dict[str, object]:
+        """Apply or reverse a compiler-produced combat block.
+
+        DM-created effects without ``rule_block`` remain untouched.  This keeps
+        the existing free-form effect API compatible while making compiled
+        spell effects authoritative once accepted.
+        """
+
+        raw_block = details.get("rule_block")
+        block = raw_block if isinstance(raw_block, dict) else None
+        if block is None:
+            return {}
+        applied = details.get("applied_state")
+        if remove:
+            transformation_before = details.get("transformation_before")
+            if isinstance(transformation_before, dict):
+                for field in ("armor_class", "hp", "max_hp", "speed_ft"):
+                    value = transformation_before.get(field)
+                    if isinstance(value, int):
+                        setattr(target, field, value)
+                previous_snapshot = transformation_before.get("snapshot_json")
+                if isinstance(previous_snapshot, dict):
+                    target.snapshot_json = dict(previous_snapshot)
+            if isinstance(applied, dict):
+                for key, value in applied.items():
+                    if key == "conditions" and isinstance(value, list):
+                        target.conditions = list(value)
+                    elif key == "damage_resistances" and isinstance(value, list):
+                        target.damage_resistances = list(value)
+                    elif key == "damage_vulnerabilities" and isinstance(value, list):
+                        target.damage_vulnerabilities = list(value)
+                    elif key == "damage_immunities" and isinstance(value, list):
+                        target.damage_immunities = list(value)
+                    elif key == "armor_class" and isinstance(value, int):
+                        target.armor_class = value
+                    elif key == "speed_ft" and isinstance(value, int):
+                        target.speed_ft = value
+                        target.movement_remaining_ft = min(
+                            target.movement_remaining_ft,
+                            target.speed_ft,
+                        )
+                    elif key in {
+                        "action_available",
+                        "bonus_action_available",
+                        "reaction_available",
+                    } and isinstance(value, bool):
+                        setattr(target, key, value)
+                    elif key == "rule_modifiers" and isinstance(value, dict):
+                        snapshot = dict(target.snapshot_json or {})
+                        if value:
+                            snapshot["rule_modifiers"] = dict(value)
+                        else:
+                            snapshot.pop("rule_modifiers", None)
+                        target.snapshot_json = snapshot
+            return {}
+
+        kind = str(block.get("kind") or "")
+        before: dict[str, object] = {}
+        if kind == "transformation":
+            form = details.get("transformation_form")
+            if not isinstance(form, dict):
+                return {}
+            before = {
+                "armor_class": target.armor_class,
+                "hp": target.hp,
+                "max_hp": target.max_hp,
+                "speed_ft": target.speed_ft,
+                "snapshot_json": dict(target.snapshot_json),
+            }
+            armor_class = form.get("armor_class")
+            max_hp = form.get("max_hp")
+            hp = form.get("hp")
+            speed_ft = form.get("speed_ft")
+            if isinstance(armor_class, int) and 0 <= armor_class <= 99:
+                target.armor_class = armor_class
+            if isinstance(max_hp, int) and max_hp >= 0:
+                target.max_hp = max_hp
+            if isinstance(hp, int) and hp >= 0:
+                target.hp = min(hp, target.max_hp)
+            if isinstance(speed_ft, int) and speed_ft >= 0:
+                target.speed_ft = speed_ft
+                target.movement_remaining_ft = min(target.movement_remaining_ft, speed_ft)
+            snapshot = dict(target.snapshot_json or {})
+            for key in ("actions", "ability_scores", "size", "movement_modes"):
+                value = form.get(key)
+                if isinstance(value, (list, dict, str, int, float, bool)):
+                    snapshot[key] = value
+            snapshot["active_transformation"] = {
+                "form_ref": form.get("form_ref") or block.get("form_ref"),
+                "mode": block.get("mode"),
+            }
+            target.snapshot_json = snapshot
+            details["transformation_before"] = before
+        elif kind == "condition":
+            condition = str(block.get("condition") or "").strip()
+            if condition:
+                before["conditions"] = list(target.conditions or [])
+                conditions = list(target.conditions or [])
+                if condition.startswith("移除："):
+                    values = [
+                        value.strip()
+                        for value in condition.removeprefix("移除：").split("/")
+                    ]
+                    conditions = [value for value in conditions if value not in values]
+                elif condition not in conditions:
+                    conditions.append(condition)
+                target.conditions = conditions
+        elif kind == "modifier":
+            stat = str(block.get("stat") or "")
+            operation = str(block.get("operation") or "")
+            value = block.get("value")
+            if stat == "armor_class" and isinstance(value, int):
+                before["armor_class"] = target.armor_class
+                source = str(block.get("source") or "")
+                target.armor_class = (
+                    max(target.armor_class, value)
+                    if operation == "set" and "低于" in source
+                    else value
+                    if operation == "set"
+                    else target.armor_class + value
+                )
+            elif stat == "speed_ft" and isinstance(value, int):
+                before["speed_ft"] = target.speed_ft
+                target.speed_ft = value if operation == "set" else max(0, target.speed_ft + value)
+                target.movement_remaining_ft = min(target.movement_remaining_ft, target.speed_ft)
+            elif stat in {"action", "bonus_action", "reaction"} and operation == "grant":
+                field = f"{stat}_available"
+                before[field] = bool(getattr(target, field))
+                setattr(target, field, True)
+            else:
+                raw_modifiers = target.snapshot_json.get("rule_modifiers")
+                modifiers = dict(raw_modifiers) if isinstance(raw_modifiers, dict) else {}
+                key = ":".join(
+                    str(value)
+                    for value in (stat, block.get("scope") or "all", block.get("skill") or "")
+                )
+                before["rule_modifiers"] = dict(modifiers)
+                modifiers[key] = {
+                    "operation": operation,
+                    "value": value,
+                    "expression": block.get("expression"),
+                    "source": block.get("source"),
+                }
+                snapshot = dict(target.snapshot_json)
+                snapshot["rule_modifiers"] = modifiers
+                target.snapshot_json = snapshot
+        elif kind == "defense":
+            operation = str(block.get("operation") or "")
+            types = [str(value) for value in block.get("damage_types", []) if str(value)]
+            field_name = {
+                "resistance": "damage_resistances",
+                "vulnerability": "damage_vulnerabilities",
+                "immunity": "damage_immunities",
+            }.get(operation)
+            if field_name and types:
+                current = list(getattr(target, field_name) or [])
+                before[field_name] = current
+                setattr(target, field_name, sorted(set(current).union(types)))
+        return before
+
+    @staticmethod
+    def _roll_rule_expression(expression: object) -> int | None:
+        raw = str(expression or "").replace(" ", "")
+        match = re.fullmatch(r"(\d*)d(\d+)([+-]\d+)?", raw, re.IGNORECASE)
+        if not match:
+            if raw.isdigit():
+                return int(raw)
+            return None
+        count = int(match.group(1) or "1")
+        sides = int(match.group(2))
+        modifier = int(match.group(3) or "0")
+        return sum(secrets.randbelow(sides) + 1 for _ in range(count)) + modifier
+
+    @classmethod
+    def _reapply_rule_state_effect(
+        cls,
+        target: Combatant,
+        details: dict[str, object],
+    ) -> dict[str, object] | None:
+        """Reconcile a repeating state without stacking it on every tick."""
+
+        raw_block = details.get("rule_block")
+        block = raw_block if isinstance(raw_block, dict) else None
+        if block is None:
+            return None
+        kind = str(block.get("kind") or "")
+        if kind not in {"condition", "modifier", "defense"}:
+            return None
+
+        changed = False
+        result: dict[str, object] = {
+            "rule_block_kind": kind,
+            "reapplied": False,
+            "status": "active",
+        }
+        if kind == "condition":
+            condition = str(block.get("condition") or "").strip()
+            if not condition:
+                return {**result, "status": "invalid"}
+            operation = str(block.get("operation") or "apply")
+            if operation == "remove":
+                changed = cls._remove_condition(target, condition)
+                result["status"] = "removed" if changed else "already_absent"
+            elif not cls._has_condition(target, condition):
+                changed = cls._add_condition(target, condition)
+                result["reapplied"] = changed
+            result["condition"] = condition
+        elif kind == "defense":
+            operation = str(block.get("operation") or "")
+            field_name = {
+                "resistance": "damage_resistances",
+                "vulnerability": "damage_vulnerabilities",
+                "immunity": "damage_immunities",
+            }.get(operation)
+            types = [str(value) for value in block.get("damage_types", []) if str(value)]
+            if field_name is None or not types:
+                return {**result, "status": "invalid"}
+            current = {str(value) for value in getattr(target, field_name) or []}
+            if any(value not in current for value in types):
+                cls._apply_rule_block_effect(target, details)
+                changed = True
+                result["reapplied"] = True
+            result["defense"] = operation
+            result["damage_types"] = types
+        else:
+            stat = str(block.get("stat") or "")
+            operation = str(block.get("operation") or "")
+            value = block.get("value")
+            applied = details.get("applied_state")
+            baseline = applied if isinstance(applied, dict) else {}
+            if stat in {"armor_class", "speed_ft"} and isinstance(value, int):
+                field_name = "armor_class" if stat == "armor_class" else "speed_ft"
+                current = int(getattr(target, field_name))
+                before = baseline.get(field_name)
+                source = str(block.get("source") or "")
+                expected = (
+                    max(int(before), value)
+                    if operation == "set" and "低于" in source and isinstance(before, int)
+                    else value
+                    if operation == "set"
+                    else int(before) + value
+                    if operation == "add" and isinstance(before, int)
+                    else None
+                )
+                if expected is None:
+                    return {**result, "status": "requires_dm_review", "stat": stat}
+                if current == expected:
+                    pass
+                elif isinstance(before, int) and current == before:
+                    cls._apply_rule_block_effect(target, details)
+                    changed = True
+                    result["reapplied"] = True
+                else:
+                    result["status"] = "requires_dm_review"
+                    result["current"] = current
+                    result["expected"] = expected
+                result["stat"] = stat
+            elif stat in {"action", "bonus_action", "reaction"} and operation == "grant":
+                field_name = f"{stat}_available"
+                if not bool(getattr(target, field_name)):
+                    cls._apply_rule_block_effect(target, details)
+                    changed = True
+                    result["reapplied"] = True
+                result["stat"] = stat
+            else:
+                raw_modifiers = target.snapshot_json.get("rule_modifiers")
+                modifiers = raw_modifiers if isinstance(raw_modifiers, dict) else {}
+                modifier_key = ":".join(
+                    str(item)
+                    for item in (stat, block.get("scope") or "all", block.get("skill") or "")
+                )
+                if modifier_key not in modifiers:
+                    cls._apply_rule_block_effect(target, details)
+                    changed = True
+                    result["reapplied"] = True
+                result["stat"] = stat
+
+        result["changed"] = changed
+        return result
+
+    def _tick_rule_effect(
+        self,
+        session: Session,
+        combat: Combat,
+        effect: CombatEffect,
+        *,
+        now: datetime,
+    ) -> dict[str, object] | None:
+        """Resolve one explicit recurring rule at a turn boundary."""
+
+        target = session.get(Combatant, effect.target_combatant_id)
+        if target is None or not target.is_active or target.hp <= 0:
+            return None
+        details = dict(effect.details_json or {})
+        before = serialize(target)
+        state_result = self._reapply_rule_state_effect(target, details)
+        if state_result is not None:
+            changed = bool(state_result.pop("changed", False))
+            state_result["expression"] = None
+            if changed:
+                target.version += 1
+                target.updated_at = now
+            transaction = OperationTransaction(
+                campaign_id=combat.campaign_id,
+                operation_type="combat_effect_tick",
+                idempotency_key=f"effect-tick:{effect.id}:{combat.round_number}:{combat.current_turn_index}",
+                status="applied",
+                before_snapshot={"combatant": before, "effect_id": effect.id},
+                after_snapshot={"combatant": serialize(target), "result": state_result},
+                reason=f"{effect.name} 按回合维持状态",
+                source="combat",
+                confirmed_at=now,
+            )
+            session.add(transaction)
+            session.flush()
+            action = CombatAction(
+                campaign_id=combat.campaign_id,
+                combat_id=combat.id,
+                actor_combatant_id=effect.source_combatant_id,
+                transaction_id=transaction.id,
+                action_type="effect_tick",
+                target_combatant_ids=[target.id],
+                request_json={"effect_id": effect.id, "trigger_timing": effect.trigger_timing},
+                result_json=state_result,
+                explanation=f"{effect.name} 自动维持状态",
+                round_number=combat.round_number,
+                turn_index=combat.current_turn_index,
+                summary=(
+                    f"{target.display_name} 重新获得 {state_result.get('condition')} 状态"
+                    if state_result.get("reapplied") and state_result.get("condition")
+                    else f"{target.display_name} 维持 {effect.name}"
+                ),
+                idempotency_key=f"effect-tick:{effect.id}:{combat.round_number}:{combat.current_turn_index}",
+                status="confirmed",
+            )
+            session.add(action)
+            session.flush()
+            return {
+                "effect_id": effect.id,
+                "target_combatant_id": target.id,
+                "result": state_result,
+            }
+        raw_components = details.get("damage_components")
+        damage_components = (
+            [item for item in raw_components if isinstance(item, dict)]
+            if isinstance(raw_components, list)
+            else []
+        )
+        is_component_damage = bool(damage_components)
+        expression = details.get("damage_expression") or details.get("healing_expression")
+        amount = self._roll_rule_expression(expression)
+        if is_component_damage and not all(
+            self._roll_rule_expression(item.get("expression", item.get("amount"))) is not None
+            and str(item.get("damage_type") or "").strip()
+            for item in damage_components
+        ):
+            # A recurring mixed effect must describe every segment explicitly;
+            # silently collapsing a missing segment into the legacy scalar
+            # would change resistance/immunity semantics.  Surface the
+            # malformed effect as a DM review prompt instead of dropping the
+            # tick from the turn result.
+            return {
+                "effect_id": effect.id,
+                "target_combatant_id": target.id,
+                "requires_dm_review": True,
+                "summary": (
+                    f"{effect.name} 的持续复合伤害缺少明确表达式或伤害类型，"
+                    "本次未自动结算"
+                ),
+            }
+        if amount is None and not is_component_damage:
+            if effect.save_dc is not None and effect.save_ability:
+                return {
+                    "effect_id": effect.id,
+                    "target_combatant_id": target.id,
+                    "requires_save": True,
+                    "save_dc": effect.save_dc,
+                    "save_ability": effect.save_ability,
+                    "summary": (
+                        f"{target.display_name} 需要进行 {effect.save_ability}"
+                        f" 豁免（DC {effect.save_dc}）"
+                    ),
+                }
+            return {
+                "effect_id": effect.id,
+                "target_combatant_id": target.id,
+                "requires_dm_review": True,
+                "summary": f"{effect.name} 缺少可解析的持续效果表达式，本次未自动结算",
+            }
+
+        result: dict[str, object]
+        death_save: DeathSave | None = None
+        if details.get("damage_expression") or is_component_damage:
+            component_results: list[dict[str, object]] = []
+            current_hp = target.hp
+            current_temporary_hp = target.temporary_hp
+            applied_conditional_defenses: list[str] = []
+            unresolved_conditional_defenses: list[str] = []
+            components = damage_components or [
+                {
+                    "expression": expression,
+                    "damage_type": str(details.get("damage_type") or ""),
+                }
+            ]
+            for component in components:
+                component_expression = component.get("expression", component.get("amount"))
+                component_amount = self._roll_rule_expression(component_expression)
+                if component_amount is None:
+                    return None
+                component_type = str(component.get("damage_type") or "").strip()
+                component_tags = [
+                    str(tag).strip()
+                    for tag in component.get("damage_tags", details.get("damage_tags", []))
+                    if str(tag).strip()
+                ] if isinstance(
+                    component.get("damage_tags", details.get("damage_tags", [])), list
+                ) else []
+                (
+                    resistances,
+                    vulnerabilities,
+                    immunities,
+                    component_applied_defenses,
+                    component_unresolved_defenses,
+                ) = self._damage_defenses(
+                    target,
+                    details,
+                    [component_type],
+                    damage_tags=component_tags,
+                    dm_override=bool(details.get("dm_override")),
+                )
+                resolution = resolve_damage(
+                    amount=component_amount,
+                    current_hp=current_hp,
+                    temporary_hp=current_temporary_hp,
+                    damage_type=component_type,
+                    resistances=resistances,
+                    vulnerabilities=vulnerabilities,
+                    immunities=immunities,
+                )
+                current_hp = resolution.remaining_hp
+                current_temporary_hp = resolution.remaining_temporary_hp
+                component_results.append(
+                    {
+                        **asdict(resolution),
+                        "expression": component_expression,
+                        "damage_type": component_type,
+                        "damage_tags": component_tags,
+                        "conditional_defenses_applied": component_applied_defenses,
+                        "conditional_defenses_unresolved": component_unresolved_defenses,
+                    }
+                )
+                applied_conditional_defenses.extend(component_applied_defenses)
+                unresolved_conditional_defenses.extend(component_unresolved_defenses)
+            modifiers = {str(item["modifier"]) for item in component_results}
+            result = {
+                "original_damage": sum(int(item["original_damage"]) for item in component_results),
+                "adjusted_damage": sum(int(item["adjusted_damage"]) for item in component_results),
+                "damage_type": (
+                    component_results[0]["damage_type"]
+                    if len(component_results) == 1
+                    else "mixed"
+                ),
+                "modifier": next(iter(modifiers)) if len(modifiers) == 1 else "mixed",
+                "temporary_hp_lost": sum(
+                    int(item["temporary_hp_lost"]) for item in component_results
+                ),
+                "hp_lost": sum(int(item["hp_lost"]) for item in component_results),
+                "remaining_temporary_hp": current_temporary_hp,
+                "remaining_hp": current_hp,
+                "unapplied_damage": sum(
+                    int(item["unapplied_damage"]) for item in component_results
+                ),
+                "explanation": "；".join(str(item["explanation"]) for item in component_results),
+                "damage_components": component_results,
+                "expression": expression if not is_component_damage else None,
+            }
+            if applied_conditional_defenses:
+                result["conditional_defenses_applied"] = list(
+                    dict.fromkeys(applied_conditional_defenses)
+                )
+            if unresolved_conditional_defenses:
+                result["conditional_defenses_unresolved"] = list(
+                    dict.fromkeys(unresolved_conditional_defenses)
+                )
+            if result["adjusted_damage"] > 0 and target.concentration:
+                result["concentration_check_dc"] = max(
+                    10,
+                    int(result["adjusted_damage"]) // 2,
+                )
+            target.hp = current_hp
+            target.temporary_hp = current_temporary_hp
+        else:
+            healing_resolution = resolve_healing(
+                amount=amount,
+                current_hp=target.hp,
+                max_hp=target.max_hp,
+                max_hp_reduction=target.max_hp_reduction,
+            )
+            target.hp = healing_resolution.remaining_hp
+            result = {**asdict(healing_resolution), "expression": expression}
+        condition_changes = self._sync_zero_hp_lifecycle(
+            target,
+            before_hp=int(before["hp"]),
+        )
+        target.version += 1
+        target.updated_at = now
+        if (details.get("damage_expression") or is_component_damage) and target.hp == 0:
+            if self._is_summon(target):
+                self._deactivate_summons(session, combat, [target.id], now=now)
+            else:
+                death_save = self._death_save(session, target)
+        if condition_changes:
+            result["condition_changes"] = condition_changes
+        if death_save is not None:
+            result["death_save"] = serialize(death_save)
+        transaction = OperationTransaction(
+            campaign_id=combat.campaign_id,
+            operation_type="combat_effect_tick",
+            idempotency_key=f"effect-tick:{effect.id}:{combat.round_number}:{combat.current_turn_index}",
+            status="applied",
+            before_snapshot={"combatant": before, "effect_id": effect.id},
+            after_snapshot={"combatant": serialize(target), "result": result},
+            reason=f"{effect.name} 按回合自动结算",
+            source="combat",
+            confirmed_at=now,
+        )
+        session.add(transaction)
+        session.flush()
+        action = CombatAction(
+            campaign_id=combat.campaign_id,
+            combat_id=combat.id,
+            actor_combatant_id=effect.source_combatant_id,
+            transaction_id=transaction.id,
+            action_type="effect_tick",
+            target_combatant_ids=[target.id],
+            request_json={"effect_id": effect.id, "trigger_timing": effect.trigger_timing},
+            result_json=result,
+            explanation=f"{effect.name} 自动结算 {expression}",
+            round_number=combat.round_number,
+            turn_index=combat.current_turn_index,
+            summary=(
+                f"{target.display_name} 受到 {result.get('adjusted_damage', 0)} 点持续伤害"
+                if details.get("damage_expression") or is_component_damage
+                else f"{target.display_name} 恢复 {result.get('hp_gained', 0)} 点持续治疗"
+            ),
+            idempotency_key=f"effect-tick:{effect.id}:{combat.round_number}:{combat.current_turn_index}",
+            status="confirmed",
+        )
+        session.add(action)
+        session.flush()
+        return {"effect_id": effect.id, "target_combatant_id": target.id, "result": result}
+
     def preview_effect(
         self,
         campaign_id: str,
@@ -1328,15 +7511,20 @@ class CombatEngineService:
                     command.source_version or 0,
                     source.version,
                 )
+            lifecycle_summon = self._effect_lifecycle_summon(
+                session,
+                combat_id,
+                command,
+            )
             old_effects = (
                 self._active_concentration_effects(session, combat_id, source.id)
                 if command.requires_concentration and source is not None
                 else []
             )
-            ends_round = (
-                combat.round_number + int(command.duration_value or 0)
-                if command.duration_unit == "rounds"
-                else None
+            ends_round = self._effect_ends_round(
+                combat.round_number,
+                command.duration_unit,
+                command.duration_value,
             )
             return {
                 "effect": {
@@ -1348,6 +7536,11 @@ class CombatEngineService:
                 "effects_to_end": [serialize(effect) for effect in old_effects],
                 "target": serialize(target),
                 "source": serialize(source) if source is not None else None,
+                "lifecycle_summon": (
+                    serialize(lifecycle_summon)
+                    if lifecycle_summon is not None
+                    else None
+                ),
             }
 
     def confirm_effect(
@@ -1393,13 +7586,33 @@ class CombatEngineService:
                     if isinstance(effect_id_value, str)
                     and (row := session.get(CombatEffect, effect_id_value)) is not None
                 ]
+                ended_summon_ids_raw = existing_action.result_json.get(
+                    "ended_summon_ids",
+                    [],
+                )
+                ended_summons = [
+                    summon_row
+                    for summon_id in (
+                        ended_summon_ids_raw
+                        if isinstance(ended_summon_ids_raw, list)
+                        else []
+                    )
+                    if isinstance(summon_id, str)
+                    and (summon_row := session.get(Combatant, summon_id)) is not None
+                ]
                 return {
                     "action": serialize(existing_action),
                     "effect": serialize(effect),
                     "ended_effects": [serialize(row) for row in ended_effects],
+                    "ended_summons": [serialize(row) for row in ended_summons],
                     "target": serialize(target),
                     "source": serialize(source) if source is not None else None,
                 }
+            lifecycle_summon = self._effect_lifecycle_summon(
+                session,
+                combat_id,
+                command,
+            )
             if target.version != command.target_version:
                 raise VersionConflict(
                     "combatant",
@@ -1430,15 +7643,49 @@ class CombatEngineService:
                 "effects_to_end": [serialize(row) for row in old_effects],
             }
             for old_effect in old_effects:
+                old_target = session.get(Combatant, old_effect.target_combatant_id)
+                if old_target is not None:
+                    self._reverse_compiled_effect(session, old_target, old_effect)
                 old_effect.status = "ended"
                 old_effect.ended_at = now
                 old_effect.end_reason = f"开始新专注：{command.name}"
                 old_effect.version += 1
-            ends_round = (
-                combat.round_number + int(command.duration_value or 0)
-                if command.duration_unit == "rounds"
-                else None
+            ended_summons = self._deactivate_summons_for_effects(
+                session,
+                combat,
+                old_effects,
+                now=now,
             )
+            if lifecycle_summon is not None and not lifecycle_summon.is_active:
+                raise ValueError("summon lifecycle effect cannot replace its ended effect")
+            ends_round = self._effect_ends_round(
+                combat.round_number,
+                command.duration_unit,
+                command.duration_value,
+            )
+            details_json = dict(command.details_json)
+            raw_rule_block = details_json.get("rule_block")
+            if (
+                isinstance(raw_rule_block, dict)
+                and str(raw_rule_block.get("kind") or "") == "condition"
+                and str(raw_rule_block.get("operation") or "apply") != "remove"
+            ):
+                condition = str(raw_rule_block.get("condition") or "").strip()
+                details_json["condition_was_present"] = bool(
+                    condition
+                    and self._has_condition(target, condition)
+                    and not self._condition_owned_by_other_effect(
+                        session,
+                        None,
+                        target,
+                        condition,
+                    )
+                )
+            if lifecycle_summon is not None:
+                details_json["ends_summon_combatant_id"] = lifecycle_summon.id
+            applied_state = self._apply_rule_block_effect(target, details_json)
+            if applied_state:
+                details_json["applied_state"] = applied_state
             effect = CombatEffect(
                 campaign_id=campaign_id,
                 combat_id=combat_id,
@@ -1446,7 +7693,7 @@ class CombatEngineService:
                 source_combatant_id=source.id if source is not None else None,
                 name=command.name,
                 effect_type=command.effect_type,
-                details_json=command.details_json,
+                details_json=details_json,
                 started_round=combat.round_number,
                 duration_unit=command.duration_unit,
                 duration_value=command.duration_value,
@@ -1465,11 +7712,11 @@ class CombatEngineService:
                     "name": effect.name,
                     "started_round": combat.round_number,
                 }
+                if source.id != target.id:
+                    source.version += 1
+                    source.updated_at = now
             target.version += 1
             target.updated_at = now
-            if source is not None and source.id != target.id:
-                source.version += 1
-                source.updated_at = now
             transaction = OperationTransaction(
                 campaign_id=campaign_id,
                 operation_type="combat_add_effect",
@@ -1479,6 +7726,7 @@ class CombatEngineService:
                 after_snapshot={
                     "effect": serialize(effect),
                     "ended_effect_ids": [row.id for row in old_effects],
+                    "ended_summon_ids": [row.id for row in ended_summons],
                 },
                 reason=f"DM confirmed effect: {command.name}",
                 source="combat",
@@ -1489,6 +7737,7 @@ class CombatEngineService:
             result = {
                 "effect_id": effect.id,
                 "ended_effect_ids": [row.id for row in old_effects],
+                "ended_summon_ids": [row.id for row in ended_summons],
                 "requires_concentration": command.requires_concentration,
             }
             action = CombatAction(
@@ -1517,6 +7766,7 @@ class CombatEngineService:
                 "action": serialize(action),
                 "effect": serialize(effect),
                 "ended_effects": [serialize(row) for row in old_effects],
+                "ended_summons": [serialize(row) for row in ended_summons],
                 "target": serialize(target),
                 "source": serialize(source) if source is not None else None,
             }
@@ -1572,6 +7822,20 @@ class CombatEngineService:
                     if isinstance(effect_id, str)
                     and (row := session.get(CombatEffect, effect_id)) is not None
                 ]
+                ended_summon_ids_raw = existing.result_json.get(
+                    "ended_summon_ids",
+                    [],
+                )
+                existing_ended_summons = [
+                    summon_row
+                    for summon_id in (
+                        ended_summon_ids_raw
+                        if isinstance(ended_summon_ids_raw, list)
+                        else []
+                    )
+                    if isinstance(summon_id, str)
+                    and (summon_row := session.get(Combatant, summon_id)) is not None
+                ]
                 return {
                     "action": serialize(existing),
                     "target": serialize(target),
@@ -1579,6 +7843,9 @@ class CombatEngineService:
                     "roll_total": existing.result_json.get("roll_total"),
                     "success": existing.result_json.get("success"),
                     "ended_effects": [serialize(row) for row in existing_ended],
+                    "ended_summons": [
+                        serialize(row) for row in existing_ended_summons
+                    ],
                 }
             if target.version != command.target_version:
                 raise VersionConflict(
@@ -1591,11 +7858,30 @@ class CombatEngineService:
             if damage_action is None or damage_action.combat_id != combat_id:
                 raise StateNotFoundError("damage action not found in combat")
             if (
-                damage_action.action_type != "damage"
+                damage_action.action_type not in {"damage", "monster_area_action", "effect_tick"}
                 or target.id not in damage_action.target_combatant_ids
             ):
                 raise ValueError("action does not require this target's concentration check")
             raw_dc = damage_action.result_json.get("concentration_check_dc")
+            if raw_dc is None and damage_action.action_type == "monster_area_action":
+                raw_target_results = damage_action.result_json.get("target_results")
+                if isinstance(raw_target_results, list):
+                    matching_result = next(
+                        (
+                            item
+                            for item in raw_target_results
+                            if isinstance(item, dict)
+                            and item.get("target_combatant_id") == target.id
+                        ),
+                        None,
+                    )
+                    matching_damage = (
+                        matching_result.get("damage")
+                        if isinstance(matching_result, dict)
+                        else None
+                    )
+                    if isinstance(matching_damage, dict):
+                        raw_dc = matching_damage.get("concentration_check_dc")
             if not isinstance(raw_dc, int) or raw_dc <= 0:
                 raise ValueError("damage action has no concentration check")
             success = command.roll_total >= raw_dc
@@ -1612,6 +7898,7 @@ class CombatEngineService:
             now = datetime.now(UTC)
             if not success:
                 for effect in active_effects:
+                    self._reverse_compiled_effect(session, target, effect)
                     effect.status = "ended"
                     effect.ended_at = now
                     effect.end_reason = (
@@ -1622,6 +7909,12 @@ class CombatEngineService:
                 target.concentration = {}
                 target.version += 1
                 target.updated_at = now
+            ended_summons = self._deactivate_summons_for_effects(
+                session,
+                combat,
+                ended,
+                now=now,
+            )
             transaction = OperationTransaction(
                 campaign_id=campaign_id,
                 operation_type="combat_concentration_check",
@@ -1634,6 +7927,7 @@ class CombatEngineService:
                     "roll_total": command.roll_total,
                     "success": success,
                     "ended_effect_ids": [row.id for row in ended],
+                    "ended_summon_ids": [row.id for row in ended_summons],
                 },
                 reason="DM confirmed concentration check",
                 source="combat",
@@ -1646,6 +7940,7 @@ class CombatEngineService:
                 "roll_total": command.roll_total,
                 "success": success,
                 "ended_effect_ids": [row.id for row in ended],
+                "ended_summon_ids": [row.id for row in ended_summons],
                 "damage_action_id": damage_action.id,
             }
             action = CombatAction(
@@ -1679,6 +7974,7 @@ class CombatEngineService:
                 "roll_total": command.roll_total,
                 "success": success,
                 "ended_effects": [serialize(row) for row in ended],
+                "ended_summons": [serialize(row) for row in ended_summons],
             }
 
     def end_effect(
@@ -1712,11 +8008,27 @@ class CombatEngineService:
                 )
             )
             if existing is not None:
+                ended_summon_ids_raw = existing.result_json.get(
+                    "ended_summon_ids",
+                    [],
+                )
+                ended_summons = [
+                    row
+                    for summon_id in (
+                        ended_summon_ids_raw
+                        if isinstance(ended_summon_ids_raw, list)
+                        else []
+                    )
+                    if isinstance(summon_id, str)
+                    and (row := session.get(Combatant, summon_id)) is not None
+                ]
                 return {
                     "action": serialize(existing),
                     "effect": serialize(effect),
                     "target": serialize(target),
                     "source": serialize(source) if source is not None else None,
+                    "ended_summons": [serialize(row) for row in ended_summons],
+                    "combat": serialize(combat),
                 }
             if effect.status != "active":
                 raise ValueError("effect is already ended")
@@ -1744,10 +8056,19 @@ class CombatEngineService:
                 "source": serialize(source) if source is not None else None,
             }
             now = datetime.now(UTC)
-            effect.status = "ended"
-            effect.ended_at = now
-            effect.end_reason = command.reason
-            effect.version += 1
+            if self._runtime_state(effect) is not None:
+                self._end_runtime_effect(
+                    session,
+                    effect,
+                    reason=command.reason,
+                    now=now,
+                )
+            else:
+                self._reverse_compiled_effect(session, target, effect)
+                effect.status = "ended"
+                effect.ended_at = now
+                effect.end_reason = command.reason
+                effect.version += 1
             target.version += 1
             target.updated_at = now
             if source is not None:
@@ -1757,6 +8078,12 @@ class CombatEngineService:
                 if source.id != target.id:
                     source.version += 1
                     source.updated_at = now
+            ended_summons = self._deactivate_summons_for_effects(
+                session,
+                combat,
+                [effect],
+                now=now,
+            )
             transaction = OperationTransaction(
                 campaign_id=campaign_id,
                 operation_type="combat_end_effect",
@@ -1767,6 +8094,7 @@ class CombatEngineService:
                     "effect_id": effect.id,
                     "status": effect.status,
                     "end_reason": effect.end_reason,
+                    "ended_summon_ids": [row.id for row in ended_summons],
                 },
                 reason=command.reason,
                 source="combat",
@@ -1786,6 +8114,7 @@ class CombatEngineService:
                     "effect_id": effect.id,
                     "effect_name": effect.name,
                     "reason": command.reason,
+                    "ended_summon_ids": [row.id for row in ended_summons],
                 },
                 explanation=command.reason,
                 round_number=combat.round_number,
@@ -1801,6 +8130,144 @@ class CombatEngineService:
                 "effect": serialize(effect),
                 "target": serialize(target),
                 "source": serialize(source) if source is not None else None,
+                "ended_summons": [serialize(row) for row in ended_summons],
+                "combat": serialize(combat),
+            }
+
+    def confirm_effect_save(
+        self,
+        campaign_id: str,
+        combat_id: str,
+        effect_id: str,
+        command: CombatEffectSaveCommand,
+        *,
+        idempotency_key: str,
+    ) -> dict[str, Any]:
+        """Resolve a condition's explicit repeat-save lifecycle.
+
+        ``until_save`` effects used to surface a prompt at the turn boundary
+        but had no authoritative endpoint to consume it.  A successful save
+        now reverses the compiled rule block and ends linked summon effects;
+        a failed save records the result while leaving the effect active.
+        """
+
+        if not idempotency_key.strip():
+            raise ValueError("idempotency key is required")
+        with Session(self.engine) as session, session.begin():
+            combat = session.get(Combat, combat_id)
+            if combat is None or combat.campaign_id != campaign_id:
+                raise StateNotFoundError("combat not found in campaign")
+            effect = session.get(CombatEffect, effect_id)
+            if effect is None or effect.combat_id != combat_id:
+                raise StateNotFoundError("effect not found in combat")
+            target = session.get(Combatant, command.target_combatant_id)
+            if target is None or target.combat_id != combat_id:
+                raise StateNotFoundError("effect target not found in combat")
+            if effect.target_combatant_id != target.id:
+                raise ValueError("effect save target does not match effect target")
+            existing = session.scalar(
+                select(CombatAction).where(
+                    CombatAction.combat_id == combat_id,
+                    CombatAction.idempotency_key == idempotency_key,
+                )
+            )
+            if existing is not None:
+                return {
+                    "action": serialize(existing),
+                    "effect": serialize(effect),
+                    "target": serialize(target),
+                    "success": bool(existing.result_json.get("success")),
+                    "already_applied": True,
+                }
+            if effect.status != "active":
+                raise ValueError("effect is already ended")
+            if effect.duration_unit != "until_save":
+                raise ValueError("only until_save effects accept a repeat save")
+            if effect.save_dc is None or not effect.save_ability:
+                raise ValueError("effect has no structured save DC and ability")
+            if target.version != command.target_version:
+                raise VersionConflict(
+                    "combatant", target.id, command.target_version, target.version
+                )
+            success = command.roll_total >= effect.save_dc
+            now = datetime.now(UTC)
+            ended_summons: list[Combatant] = []
+            if success:
+                self._reverse_compiled_effect(session, target, effect)
+                effect.status = "ended"
+                effect.ended_at = now
+                effect.end_reason = (
+                    f"重复豁免成功：{command.roll_total} >= DC {effect.save_dc}"
+                )
+                effect.version += 1
+                target.version += 1
+                target.updated_at = now
+                source = (
+                    session.get(Combatant, effect.source_combatant_id)
+                    if effect.source_combatant_id else None
+                )
+                if source is not None and source.concentration.get("effect_id") == effect.id:
+                    source.concentration = {}
+                    source.version += 1
+                    source.updated_at = now
+                ended_summons = self._deactivate_summons_for_effects(
+                    session, combat, [effect], now=now
+                )
+            result = {
+                "effect_id": effect.id,
+                "target_combatant_id": target.id,
+                "roll_total": command.roll_total,
+                "save_dc": effect.save_dc,
+                "save_ability": effect.save_ability,
+                "success": success,
+                "ended_summon_ids": [row.id for row in ended_summons],
+                "dm_note": command.dm_note,
+            }
+            transaction = OperationTransaction(
+                campaign_id=campaign_id,
+                operation_type="combat_effect_save",
+                idempotency_key=idempotency_key,
+                status="applied",
+                before_snapshot={"effect_id": effect.id, "target": serialize(target)},
+                after_snapshot={"result": result, "effect": serialize(effect)},
+                reason="DM confirmed repeat save",
+                source="combat",
+                confirmed_at=now,
+            )
+            session.add(transaction)
+            session.flush()
+            action = CombatAction(
+                campaign_id=campaign_id,
+                combat_id=combat_id,
+                actor_combatant_id=target.id,
+                transaction_id=transaction.id,
+                action_type="effect_save",
+                target_combatant_ids=[target.id],
+                request_json={**command.model_dump(mode="json"), "effect_id": effect.id},
+                result_json=result,
+                explanation=(
+                    f"{target.display_name} 进行 {effect.save_ability} 豁免"
+                    f" {command.roll_total} 对抗 DC {effect.save_dc}："
+                    f"{'成功，效果结束' if success else '失败，效果继续'}"
+                ),
+                round_number=combat.round_number,
+                turn_index=combat.current_turn_index,
+                summary=(
+                    f"{target.display_name} 的 {effect.name} 重复豁免"
+                    f"{'成功' if success else '失败'}"
+                ),
+                idempotency_key=idempotency_key,
+                status="confirmed",
+            )
+            session.add(action)
+            session.flush()
+            return {
+                "action": serialize(action),
+                "effect": serialize(effect),
+                "target": serialize(target),
+                "success": success,
+                "ended_summons": [serialize(row) for row in ended_summons],
+                "already_applied": False,
             }
 
     @staticmethod

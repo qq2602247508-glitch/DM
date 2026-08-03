@@ -43,4 +43,31 @@ describe("SceneMap", () => {
     expect(onTargetSelect).toHaveBeenCalledWith("monster:m1");
     expect(screen.getByRole("img", { name: "格子 1,2 · 店主" })).toBeInTheDocument();
   });
+
+  it("renders unexplored and explored-but-hidden fog as visibly different states", () => {
+    render(
+      <SceneMap
+        grid={{
+          width: 3,
+          height: 1,
+          cell_size_ft: 5,
+          fog_of_war: true,
+          explored_cells: [{ row: 1, col: 1 }, { row: 1, col: 2 }],
+          visible_cells: [{ row: 1, col: 1 }],
+          cells: [
+            { row: 1, col: 1, kind: "floor", label: "地面" },
+            { row: 1, col: 2, kind: "room", label: "已探索房间" },
+          ],
+        }}
+        objects={[]}
+        tokens={[]}
+      />,
+    );
+
+    expect(screen.getByText("战争迷雾：黑色为未探索，暗色为已探索但当前不可见")).toBeInTheDocument();
+    const cells = [...document.querySelectorAll("[data-grid-row]")];
+    expect(cells).toHaveLength(3);
+    expect(cells[1]).toHaveClass("brightness-[.35]");
+    expect(cells[2]).toHaveClass("bg-black");
+  });
 });

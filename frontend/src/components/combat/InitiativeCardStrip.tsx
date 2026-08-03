@@ -13,6 +13,9 @@ const ABILITY_LABELS = [
 function entityLabel(fighter: Combatant): string {
   if (fighter.entity_type === "character") return "玩家";
   if (fighter.entity_type === "npc") return "NPC";
+  if (fighter.entity_type === "companion") {
+    return fighter.snapshot_json.controller === "player" ? "玩家召唤物" : "敌方召唤物";
+  }
   return "怪物";
 }
 
@@ -87,7 +90,7 @@ export function InitiativeCardStrip({
         <div className="mt-2 rounded-lg border border-sky-800/50 bg-sky-950/10 p-3" data-testid="initiative-card-detail">
           <div className="flex flex-wrap items-center gap-2">
             <strong className="text-sm text-sky-100">{expanded.display_name} · 详细战斗卡</strong>
-            <Badge tone={expanded.entity_type === "character" ? "ok" : "danger"}>
+            <Badge tone={expanded.entity_type === "character" || (expanded.entity_type === "companion" && expanded.snapshot_json.controller === "player") ? "ok" : "danger"}>
               {entityLabel(expanded)}
             </Badge>
             <span className="text-2xs text-stone-500">

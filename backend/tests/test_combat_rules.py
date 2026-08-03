@@ -78,6 +78,22 @@ def test_resistance_and_vulnerability_cancel_each_other() -> None:
     assert result.modifier == "normal"
 
 
+def test_chinese_damage_type_aliases_use_the_same_resistance_pipeline() -> None:
+    result = resolve_damage(
+        amount=9,
+        current_hp=20,
+        temporary_hp=0,
+        damage_type="力场",
+        resistances=("force",),
+        vulnerabilities=(),
+        immunities=(),
+    )
+
+    assert result.damage_type == "force"
+    assert result.adjusted_damage == 4
+    assert result.modifier == "resistance"
+
+
 def test_damage_cannot_reduce_hp_below_zero() -> None:
     result = resolve_damage(
         amount=50,

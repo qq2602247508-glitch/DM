@@ -20,6 +20,24 @@ _DAMAGE_TYPE_LABELS = {
     "slashing": "挥砍",
     "thunder": "雷鸣",
 }
+_DAMAGE_TYPE_ALIASES = {
+    **{label.lower(): key for key, label in _DAMAGE_TYPE_LABELS.items()},
+    "酸蚀": "acid",
+    "强酸": "acid",
+    "黯蚀": "necrotic",
+    "暗蚀": "necrotic",
+    "闪电": "lightning",
+    "力场": "force",
+    "穿刺": "piercing",
+    "毒素": "poison",
+    "心灵": "psychic",
+    "光耀": "radiant",
+    "挥砍": "slashing",
+    "钝击": "bludgeoning",
+    "寒冷": "cold",
+    "火焰": "fire",
+    "雷鸣": "thunder",
+}
 
 
 @dataclass(frozen=True, slots=True)
@@ -72,7 +90,11 @@ def _non_negative(name: str, value: int) -> None:
 
 
 def _normalized_types(values: tuple[str, ...]) -> frozenset[str]:
-    return frozenset(value.strip().lower() for value in values if value.strip())
+    return frozenset(
+        _DAMAGE_TYPE_ALIASES.get(value.strip().lower(), value.strip().lower())
+        for value in values
+        if value.strip()
+    )
 
 
 def resolve_damage(
@@ -88,7 +110,9 @@ def resolve_damage(
     _non_negative("amount", amount)
     _non_negative("current_hp", current_hp)
     _non_negative("temporary_hp", temporary_hp)
-    normalized_type = damage_type.strip().lower()
+    normalized_type = _DAMAGE_TYPE_ALIASES.get(
+        damage_type.strip().lower(), damage_type.strip().lower()
+    )
     if not normalized_type:
         raise ValueError("damage_type must not be blank")
 

@@ -1,7 +1,7 @@
 import type { SceneGrid } from "../api/types";
 
 export type GridPoint = { row: number; col: number };
-export type TargetShape = "single" | "circle" | "cone" | "line";
+export type TargetShape = "single" | "circle" | "cone" | "line" | "cube" | "cylinder";
 
 export type TargetingTemplate = {
   shape: TargetShape;
@@ -11,10 +11,174 @@ export type TargetingTemplate = {
   sizeFt?: number;
   /** Line width in feet. Defaults to one grid cell. */
   widthFt?: number;
+  /** Vertical height of a cylinder or explicit 3-D area, in feet. */
+  heightFt?: number;
+  /** Height of the selected area anchor, in feet. */
+  anchorHeightFt?: number;
+  /**
+   * An advanced monster area has to fail closed when its vertical geometry is
+   * not recorded.  Ordinary legacy spell previews leave this off so their
+   * established two-dimensional behaviour is unchanged.
+   */
+  requiresElevation?: boolean;
+  /** Area is centered on the caster; no remote aim point is required. */
+  originSelf?: boolean;
+};
+
+export type TargetingElevationResult = {
+  applies: boolean;
+  valid: boolean;
+  status:
+    | "not_applicable"
+    | "within_volume"
+    | "outside_volume"
+    | "missing_height"
+    | "missing_size"
+    | "missing_target_elevation"
+    | "missing_origin_elevation";
 };
 
 type TargetingGrid = Pick<SceneGrid, "width" | "height" | "cell_size_ft">
   & { cells?: Array<{ row: number; col: number; kind: string; blocks_sight?: boolean }> };
+
+function finiteNumber(value: unknown): number | null {
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+function positiveNumber(value: unknown): number | null {
+  const parsed = finiteNumber(value);
+  return parsed !== null && parsed > 0 ? parsed : null;
+}
+
+/**
+ * Read only an explicitly saved combat elevation.  In particular, this does
+ * not silently turn a missing value into ground level: callers that need a
+ * three-dimensional confirmation can then fail closed instead of selecting a
+ * flying or otherwise unmeasured target by mistake.
+ */
+export function explicitElevationFt(gridPosition: unknown): number | null {
+  if (!gridPosition || typeof gridPosition !== "object" || Array.isArray(gridPosition)) {
+    return null;
+  }
+  return finiteNumber((gridPosition as Record<string, unknown>).elevation_ft);
+}
+
+/** Always expose ground plus every saved combatant height as selectable map layers. */
+export function availableElevationLayers(gridPositions: Iterable<unknown>): number[] {
+  return [...new Set([
+    0,
+    ...Array.from(gridPositions)
+      .map(explicitElevationFt)
+      .filter((elevation): elevation is number => elevation !== null),
+  ])].sort((left, right) => left - right);
+}
+
+function verticalTargetingApplies(template: TargetingTemplate): boolean {
+  return template.requiresElevation === true
+    || template.shape === "cylinder"
+    || finiteNumber(template.heightFt) !== null
+    || finiteNumber(template.anchorHeightFt) !== null;
+}
+
+function elevationResult(
+  valid: boolean,
+  status: Exclude<TargetingElevationResult["status"], "not_applicable">,
+): TargetingElevationResult {
+  return { applies: true, valid, status };
+}
+
+/**
+ * Mirrors the vertical component of the server's authoritative area checks.
+ * Horizontal shape membership remains the responsibility of getTargetingCells;
+ * this helper deliberately only answers whether one elevation can occupy the
+ * already selected horizontal point.
+ */
+export function evaluateTargetingElevation(
+  grid: Pick<SceneGrid, "cell_size_ft">,
+  origin: GridPoint,
+  aim: GridPoint,
+  point: GridPoint,
+  template: TargetingTemplate,
+  originElevationFt: number | null,
+  targetElevationFt: number | null,
+): TargetingElevationResult {
+  if (!verticalTargetingApplies(template)) {
+    return { applies: false, valid: true, status: "not_applicable" };
+  }
+  if (targetElevationFt === null) {
+    return elevationResult(false, "missing_target_elevation");
+  }
+
+  const cellSizeFt = grid.cell_size_ft;
+  const anchorHeightFt = finiteNumber(template.anchorHeightFt) ?? 0;
+  const sizeFt = positiveNumber(template.sizeFt);
+  if (template.shape === "cylinder") {
+    const heightFt = positiveNumber(template.heightFt);
+    if (heightFt === null) return elevationResult(false, "missing_height");
+    return elevationResult(
+      targetElevationFt >= anchorHeightFt && targetElevationFt < anchorHeightFt + heightFt,
+      targetElevationFt >= anchorHeightFt && targetElevationFt < anchorHeightFt + heightFt
+        ? "within_volume"
+        : "outside_volume",
+    );
+  }
+
+  if (template.shape === "cube") {
+    const heightFt = positiveNumber(template.heightFt) ?? sizeFt;
+    if (heightFt === null) return elevationResult(false, "missing_size");
+    return elevationResult(
+      targetElevationFt >= anchorHeightFt && targetElevationFt < anchorHeightFt + heightFt,
+      targetElevationFt >= anchorHeightFt && targetElevationFt < anchorHeightFt + heightFt
+        ? "within_volume"
+        : "outside_volume",
+    );
+  }
+
+  if (template.shape === "circle") {
+    if (sizeFt === null) return elevationResult(false, "missing_size");
+    // Sphere/circle membership is Euclidean in the authoritative backend.
+    // Keep this separate from movement/range distance (which uses the 5e
+    // one-square diagonal rule), otherwise the preview can select a corner
+    // target that the server correctly rejects as outside the volume.
+    const horizontalFt = Math.hypot(
+      (point.row - aim.row) * cellSizeFt,
+      (point.col - aim.col) * cellSizeFt,
+    );
+    const inVolume = Math.hypot(horizontalFt, targetElevationFt - anchorHeightFt) <= sizeFt + 0.01;
+    return elevationResult(inVolume, inVolume ? "within_volume" : "outside_volume");
+  }
+
+  if (originElevationFt === null) {
+    return elevationResult(false, "missing_origin_elevation");
+  }
+
+  if (template.shape === "line") {
+    const halfWidthFt = (positiveNumber(template.widthFt) ?? cellSizeFt) / 2;
+    const inVolume = Math.abs(targetElevationFt - originElevationFt) <= halfWidthFt + 0.01;
+    return elevationResult(inVolume, inVolume ? "within_volume" : "outside_volume");
+  }
+
+  if (template.shape === "cone") {
+    const directionRow = aim.row - origin.row;
+    const directionCol = aim.col - origin.col;
+    const directionLength = Math.hypot(directionRow, directionCol);
+    if (directionLength === 0) {
+      const inVolume = targetElevationFt === originElevationFt;
+      return elevationResult(inVolume, inVolume ? "within_volume" : "outside_volume");
+    }
+    const forwardFt = (
+      ((point.row - origin.row) * directionRow + (point.col - origin.col) * directionCol)
+      / directionLength
+    ) * cellSizeFt;
+    const inVolume = Math.abs(targetElevationFt - originElevationFt) <= forwardFt + 0.01;
+    return elevationResult(inVolume, inVolume ? "within_volume" : "outside_volume");
+  }
+
+  const heightFt = positiveNumber(template.heightFt);
+  if (heightFt === null) return elevationResult(false, "missing_height");
+  const inVolume = targetElevationFt >= anchorHeightFt && targetElevationFt < anchorHeightFt + heightFt;
+  return elevationResult(inVolume, inVolume ? "within_volume" : "outside_volume");
+}
 
 function cellsForGrid(grid: Pick<SceneGrid, "width" | "height">): GridPoint[] {
   return Array.from({ length: grid.height }, (_, row) => (
@@ -45,10 +209,6 @@ function vector(from: GridPoint, to: GridPoint): [number, number] {
   return [to.col - from.col, to.row - from.row];
 }
 
-function vectorLength([x, y]: [number, number]): number {
-  return Math.hypot(x, y);
-}
-
 function distanceToSegment(point: GridPoint, start: GridPoint, end: GridPoint): number {
   const [segmentX, segmentY] = vector(start, end);
   const [pointX, pointY] = vector(start, point);
@@ -65,16 +225,48 @@ export function getTargetingCells(
   template: TargetingTemplate,
 ): GridPoint[] {
   const cellSizeFt = grid.cell_size_ft;
-  if (!isAimPointInRange(origin, aim, template.rangeFt, cellSizeFt)) return [];
+  const aimRangeFt = template.originSelf
+    ? Math.max(template.rangeFt, template.sizeFt ?? 0)
+    : template.rangeFt;
+  if (!isAimPointInRange(origin, aim, aimRangeFt, cellSizeFt)) return [];
   if (!hasLineOfSight(grid, origin, aim)) return [];
   if (template.shape === "single") return [aim];
 
   const cells = cellsForGrid(grid);
   const sizeCells = Math.max(0, (template.sizeFt ?? template.rangeFt) / cellSizeFt);
-  if (template.shape === "circle") {
+  if (template.shape === "circle" || template.shape === "cylinder") {
+    const radiusFt = template.sizeFt ?? template.rangeFt;
     return cells.filter((cell) => (
-      vectorLength(vector(aim, cell)) <= sizeCells + 0.01
+      Math.hypot(
+        (cell.row - aim.row) * cellSizeFt,
+        (cell.col - aim.col) * cellSizeFt,
+      ) <= radiusFt + 0.01
       && hasLineOfSight(grid, aim, cell)
+    ));
+  }
+
+  if (template.shape === "cube") {
+    const halfSizeCells = Math.max(0.5, sizeCells / 2);
+    if (template.originSelf && (aim.row !== origin.row || aim.col !== origin.col)) {
+      const directionRow = aim.row - origin.row;
+      const directionCol = aim.col - origin.col;
+      const directionLength = Math.hypot(directionRow, directionCol);
+      return cells.filter((cell) => {
+        const relativeRow = cell.row - origin.row;
+        const relativeCol = cell.col - origin.col;
+        const forward = (relativeRow * directionRow + relativeCol * directionCol) / directionLength;
+        const lateral = Math.abs(relativeRow * directionCol - relativeCol * directionRow) / directionLength;
+        return forward >= -0.01
+          && forward <= sizeCells + 0.01
+          && lateral <= halfSizeCells + 0.01
+          && hasLineOfSight(grid, origin, cell);
+      });
+    }
+    const center = template.originSelf ? origin : aim;
+    return cells.filter((cell) => (
+      Math.max(Math.abs(cell.row - center.row), Math.abs(cell.col - center.col))
+        <= halfSizeCells + 0.01
+      && hasLineOfSight(grid, center, cell)
     ));
   }
 

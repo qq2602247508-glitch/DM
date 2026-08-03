@@ -50,8 +50,11 @@ export function SceneMap({
   dangerCellKeys = new Set(),
   movementCellKeys = new Set(),
   rangeCellKeys = new Set(),
+  enemyRangeCellKeys = new Set(),
   onTargetSelect,
+  onAimSelect,
   onCellSelect,
+  canSelectAimCell,
   canSelectCell,
   title = "统一场景地图",
   compactCells = false,
@@ -66,8 +69,11 @@ export function SceneMap({
   dangerCellKeys?: ReadonlySet<string>;
   movementCellKeys?: ReadonlySet<string>;
   rangeCellKeys?: ReadonlySet<string>;
+  enemyRangeCellKeys?: ReadonlySet<string>;
   onTargetSelect?: (targetKey: string) => void;
+  onAimSelect?: (row: number, col: number) => void;
   onCellSelect?: (row: number, col: number) => void;
+  canSelectAimCell?: (row: number, col: number) => boolean;
   canSelectCell?: (row: number, col: number) => boolean;
   title?: string;
   compactCells?: boolean;
@@ -75,12 +81,20 @@ export function SceneMap({
   const tokensByCell = new Map(tokens.map((item) => [`${item.row}:${item.col}`, item]));
   const objectsByCell = new Map(objects.map((item) => [`${item.row}:${item.col}`, item]));
   const terrainByCell = new Map((grid.cells ?? []).map((item) => [`${item.row}:${item.col}`, item]));
+  const exploredKeys = new Set(
+    (grid.explored_cells ?? []).map((item) => `${item.row}:${item.col}`),
+  );
+  const visibleKeys = new Set(
+    (grid.visible_cells ?? []).map((item) => `${item.row}:${item.col}`),
+  );
   return (
     <div className="overflow-auto rounded border border-ink-700 bg-ink-950 p-2">
       <div className="mb-2 flex flex-wrap items-center gap-2 text-2xs text-stone-500">
         <strong className="text-stone-300">{title}</strong>
         <span>{grid.width}×{grid.height} · 每格 {grid.cell_size_ft} 尺</span>
-        {grid.fog_of_war ? <span className="text-violet-300">战争迷雾：未探索区域由服务端隐藏</span> : null}
+        {grid.fog_of_war ? <span className="text-violet-300">战争迷雾：黑色为未探索，暗色为已探索但当前不可见</span> : null}
+        {rangeCellKeys.size ? <span className="text-sky-300">蓝色格：法术瞄准范围；点击蓝色格选择落点或方向</span> : null}
+        {enemyRangeCellKeys.size ? <span className="text-orange-300">橙色格：敌方当前动作可达范围</span> : null}
         {selectableTargetKeys.size ? <span className="text-emerald-300">绿色虚线：可以点击的目标</span> : null}
         {selectedTargetKey ? <span className="text-emerald-200">绿色实框：当前目标</span> : null}
         {movementCellKeys.size ? <span className="text-lime-300">绿色格：本回合剩余可移动范围</span> : null}
@@ -101,6 +115,11 @@ export function SceneMap({
           const token = tokensByCell.get(key);
           const object = objectsByCell.get(key);
           const terrain = terrainByCell.get(key);
+          const fogEnabled = Boolean(grid.fog_of_war);
+          const explored = !fogEnabled || exploredKeys.has(key);
+          const visible = !fogEnabled || visibleKeys.has(key);
+          const unexplored = fogEnabled && !explored;
+          const obscured = fogEnabled && explored && !visible;
           const targetKey = token?.targetKey ?? object?.targetKey;
           const selectable = Boolean(targetKey && selectableTargetKeys.has(targetKey));
           const selected = Boolean(
@@ -111,21 +130,27 @@ export function SceneMap({
           const dangerous = dangerCellKeys.has(key);
           const movable = movementCellKeys.has(key);
           const inRange = rangeCellKeys.has(key);
+          const enemyInRange = enemyRangeCellKeys.has(key);
           const blocked = terrain?.kind === "wall"
             || object?.object_type === "wall"
             || (object?.object_type === "door" && object.state !== "open");
           const cellSelectable = Boolean(
-            !token && !object && onCellSelect && canSelectCell?.(row, col),
+            !unexplored && !token && !object && onCellSelect && canSelectCell?.(row, col),
           );
-          const terrainClass = terrainCellClass(terrain, grid.theme);
+          const aimCellSelectable = Boolean(
+            !unexplored && !blocked && onAimSelect && canSelectAimCell?.(row, col),
+          );
+          const terrainClass = unexplored
+            ? "bg-black border-black/90"
+            : `${terrainCellClass(terrain, grid.theme)} ${obscured ? "brightness-[.35] saturate-50" : ""}`;
           const isVoid = isMapVoidCell(terrain);
           const isDoor = terrain?.kind === "door" || object?.object_type === "door";
           const doorOrientation = isDoor
             ? getDoorOrientation(grid.cells ?? [], row, col)
             : null;
-          const interactive = selectable || cellSelectable;
-          const cellClass = `relative aspect-square border border-ink-800 text-[9px] transition duration-200 ${terrainClass} ${movable ? "bg-emerald-950/75 ring-1 ring-inset ring-emerald-400/75" : ""} ${inRange ? "bg-sky-950/60 ring-1 ring-inset ring-sky-500/50" : ""} ${affected ? "bg-fuchsia-900/70 ring-2 ring-inset ring-fuchsia-400/80" : ""} ${dangerous ? "bg-red-950/65 outline outline-2 outline-inset outline-red-500 shadow-[inset_0_0_10px_rgba(239,68,68,.35)]" : ""} ${selectable ? "cursor-pointer outline outline-2 outline-dashed outline-emerald-500/70 hover:bg-emerald-950/60" : ""} ${selected ? "z-10 ring-4 ring-inset ring-emerald-300 shadow-[0_0_12px_rgba(110,231,183,.8)]" : ""} ${cellSelectable ? "cursor-pointer hover:bg-emerald-950/70" : ""}`;
-          const cellContent = (
+          const interactive = selectable || cellSelectable || aimCellSelectable;
+          const cellClass = `relative aspect-square border border-ink-800 text-[9px] transition duration-200 ${terrainClass} ${movable ? "bg-emerald-950/75 ring-1 ring-inset ring-emerald-400/75" : ""} ${inRange ? "bg-sky-950/60 ring-1 ring-inset ring-sky-500/50" : ""} ${enemyInRange ? "bg-orange-950/55 ring-1 ring-inset ring-orange-400/60" : ""} ${affected ? "bg-fuchsia-900/70 ring-2 ring-inset ring-fuchsia-400/80" : ""} ${dangerous ? "bg-red-950/65 outline outline-2 outline-inset outline-red-500 shadow-[inset_0_0_10px_rgba(239,68,68,.35)]" : ""} ${selectable ? "cursor-pointer outline outline-2 outline-dashed outline-emerald-500/70 hover:bg-emerald-950/60" : ""} ${selected ? "z-10 ring-4 ring-inset ring-emerald-300 shadow-[0_0_12px_rgba(110,231,183,.8)]" : ""} ${cellSelectable || aimCellSelectable ? "cursor-pointer hover:bg-emerald-950/70" : ""}`;
+          const cellContent = explored ? (
             <>
               {isDoor ? (
                 <>
@@ -150,7 +175,12 @@ export function SceneMap({
                 </span>
               ) : null}
             </>
-          );
+          ) : null;
+          const fogLayer = unexplored ? (
+            <span aria-hidden className="pointer-events-none absolute inset-0 bg-black/95 shadow-[inset_0_0_8px_rgba(0,0,0,.95)]" />
+          ) : obscured ? (
+            <span aria-hidden className="pointer-events-none absolute inset-0 bg-black/55 shadow-[inset_0_0_8px_rgba(0,0,0,.75)]" />
+          ) : null;
           if (!interactive) {
             return (
               <div
@@ -165,6 +195,7 @@ export function SceneMap({
                 title={token?.label ?? object?.label ?? terrain?.label ?? `${row},${col}`}
               >
                 {cellContent}
+                {fogLayer}
               </div>
             );
           }
@@ -178,13 +209,15 @@ export function SceneMap({
               disabled={blocked}
               key={key}
               onClick={() => {
-                if (selectable && targetKey) onTargetSelect?.(targetKey);
+                if (aimCellSelectable) onAimSelect?.(row, col);
+                else if (selectable && targetKey) onTargetSelect?.(targetKey);
                 else if (cellSelectable) onCellSelect?.(row, col);
               }}
               title={token?.label ?? object?.label ?? terrain?.label ?? `${row},${col}`}
               type="button"
             >
               {cellContent}
+              {fogLayer}
             </button>
           );
         })}

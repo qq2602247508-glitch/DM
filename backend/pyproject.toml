@@ -38,6 +38,7 @@ packages = ["src/dnd_dm_assistant"]
 [tool.pytest.ini_options]
 addopts = "-q"
 testpaths = ["tests"]
+pythonpath = ["..", "src"]
 
 [tool.ruff]
 target-version = "py312"

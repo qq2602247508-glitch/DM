@@ -2,56 +2,57 @@ import { describe, expect, it } from "vitest";
 
 import { resolveAreaSavingThrows } from "./areaSpellResolution";
 
-function sequence(values: number[]): () => number {
-  let index = 0;
-  return () => values[index++] ?? 0;
-}
-
 describe("area spell resolution", () => {
-  it("rolls 8d6 once and gives every target an independent save", () => {
+  it("keeps mixed damage segments independent for save halves", () => {
     const result = resolveAreaSavingThrows({
       targets: [
-        { id: "a", name: "夺心魔A", abilityScores: { dexterity: 12 } },
-        { id: "b", name: "夺心魔B", abilityScores: { dexterity: 12 } },
-        { id: "c", name: "夺心魔C", abilityScores: { dexterity: 12 } },
+        { id: "failed", name: "失败者", savingThrows: { dexterity: 0 } },
+        { id: "saved", name: "成功者", savingThrows: { dexterity: 0 } },
       ],
-      damageExpression: "8d6",
-      saveDc: 17,
+      damageExpression: "1d6 + 1d8",
+      damageType: "mixed",
+      saveDc: 12,
       saveAbility: "dexterity",
       halfDamageOnSave: true,
-      // Eight damage dice = 4 each (32); saves = 20, 10, 17 before +1.
-      random: sequence([
-        0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5,
-        0.95, 0.45, 0.8,
-      ]),
+      damageComponents: [
+        { amount: 5, damage_type: "fire" },
+        { amount: 7, damage_type: "force" },
+      ],
+      random: (() => {
+        let index = 0;
+        return () => [0.1, 0.7][index++] ?? 0.1;
+      })(),
     });
 
-    expect(result.damageRolls).toEqual([4, 4, 4, 4, 4, 4, 4, 4]);
-    expect(result.sharedDamage).toBe(32);
-    expect(result.targets.map((target) => target.saveTotal)).toEqual([21, 11, 18]);
-    expect(result.targets.map((target) => target.damage)).toEqual([16, 32, 16]);
+    expect(result.damageComponents).toEqual([
+      { amount: 5, damageType: "fire" },
+      { amount: 7, damageType: "force" },
+    ]);
+    expect(result.targets[0]?.damage).toBe(12);
+    expect(result.targets[0]?.damageComponents).toEqual([
+      { amount: 5, damageType: "fire" },
+      { amount: 7, damageType: "force" },
+    ]);
+    expect(result.targets[1]?.damage).toBe(5);
+    expect(result.targets[1]?.damageComponents).toEqual([
+      { amount: 2, damageType: "fire" },
+      { amount: 3, damageType: "force" },
+    ]);
   });
 
-  it("uses an explicit monster saving-throw modifier when available", () => {
+  it("preserves the legacy single damage input", () => {
     const result = resolveAreaSavingThrows({
-      targets: [{
-        id: "a",
-        name: "敏捷熟练怪物",
-        abilityScores: { dexterity: 10 },
-        savingThrows: { dexterity: 5 },
-      }],
-      damageExpression: "1d6",
-      saveDc: 15,
-      saveAbility: "敏捷",
+      targets: [{ id: "target", name: "目标", abilityScores: { dexterity: 10 } }],
+      damageExpression: "8d6",
+      damageType: "fire",
+      saveDc: 10,
+      saveAbility: "dexterity",
       halfDamageOnSave: false,
-      random: sequence([0.5, 0.45]),
+      sharedDamage: 14,
+      random: () => 0,
     });
-
-    expect(result.targets[0]).toMatchObject({
-      modifier: 5,
-      saveTotal: 15,
-      success: true,
-      damage: 0,
-    });
+    expect(result.sharedDamage).toBe(14);
+    expect(result.damageType).toBe("fire");
+    expect(result.targets[0]?.damage).toBe(14);
   });
 });

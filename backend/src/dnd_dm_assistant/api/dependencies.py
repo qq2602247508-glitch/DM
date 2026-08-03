@@ -27,6 +27,7 @@ from dnd_dm_assistant.infrastructure.database.compendium_service import Compendi
 from dnd_dm_assistant.infrastructure.database.encounter_service import EncounterAdjustmentService
 from dnd_dm_assistant.infrastructure.database.exploration_service import ExplorationService
 from dnd_dm_assistant.infrastructure.database.merchant_service import MerchantService
+from dnd_dm_assistant.infrastructure.database.monster_ai_service import MonsterAIService
 from dnd_dm_assistant.infrastructure.database.narrative_service import NarrativeService
 from dnd_dm_assistant.infrastructure.database.player_room_service import PlayerRoomService
 from dnd_dm_assistant.infrastructure.database.player_service import PlayerService
@@ -35,6 +36,7 @@ from dnd_dm_assistant.infrastructure.database.rest_service import RestService
 from dnd_dm_assistant.infrastructure.database.session_checkpoint_service import (
     SessionCheckpointService,
 )
+from dnd_dm_assistant.infrastructure.database.simulation_service import SimulationService
 from dnd_dm_assistant.infrastructure.database.site_service import SiteService
 from dnd_dm_assistant.infrastructure.database.spell_economy_service import SpellEconomyService
 from dnd_dm_assistant.infrastructure.database.world_service import WorldService
@@ -105,6 +107,10 @@ def get_combat_engine_service(request: Request) -> CombatEngineService:
     return CombatEngineService(cast(Engine, request.app.state.database_engine))
 
 
+def get_monster_ai_service(request: Request) -> MonsterAIService:
+    return MonsterAIService(cast(Engine, request.app.state.database_engine))
+
+
 def get_compendium_service(request: Request) -> CompendiumService:
     return CompendiumService(
         cast(Engine, request.app.state.database_engine),
@@ -165,3 +171,7 @@ def get_prep_import_service(request: Request) -> PrepImportService:
 
 def get_player_rules_search(request: Request) -> PlayerRulesSearch:
     return PlayerRulesSearch(get_app_settings(request).rag_corpus_json_root)
+
+
+def get_simulation_service(request: Request) -> SimulationService:
+    return SimulationService(cast(Engine, request.app.state.database_engine))

@@ -1,11 +1,48 @@
 import type { SceneGrid } from "../api/types";
-import { isBlockedCell, type GridPoint } from "./gridTargeting";
+import {
+  getTargetingCells,
+  gridDistanceFt,
+  isBlockedCell,
+  type GridPoint,
+  type TargetingTemplate,
+} from "./gridTargeting";
 
 export type MovementPlan = {
   path: GridPoint[];
   destination: GridPoint;
   spentFt: number;
 };
+
+/**
+ * Stable identity for one persisted movement request.
+ *
+ * React state is intentionally not used for this identity: an effect can run
+ * twice before the state update from the first animation is rendered.  The
+ * combatant version and initiative slot make a request from a later snapshot
+ * a new request, while duplicate effects for the same snapshot collapse to
+ * one write.
+ */
+export function movementCommitKey(
+  turnKey: string,
+  fighterId: string,
+  fighterVersion: number,
+  plan: MovementPlan,
+  automatic: boolean,
+  exhaustMovement: boolean,
+  fleeing: boolean,
+): string {
+  return [
+    turnKey,
+    fighterId,
+    fighterVersion,
+    plan.destination.row,
+    plan.destination.col,
+    plan.spentFt,
+    automatic ? "auto" : "manual",
+    exhaustMovement ? "exhaust" : "preserve",
+    fleeing ? "flee" : "fight",
+  ].join(":");
+}
 
 const pointKey = (point: GridPoint): string => `${point.row}:${point.col}`;
 
@@ -116,6 +153,85 @@ export function planApproachPath(
       queue.push(next);
     }
   }
+  const path: GridPoint[] = [];
+  let cursor: GridPoint | null = best;
+  while (cursor && pointKey(cursor) !== pointKey(origin)) {
+    path.unshift(cursor);
+    cursor = previous.get(pointKey(cursor)) ?? null;
+  }
+  return {
+    path,
+    destination: best,
+    spentFt: path.length * grid.cell_size_ft,
+  };
+}
+
+/**
+ * Find a legal attack position for an area or directional action.
+ *
+ * Numeric range alone is not enough for cones, lines, cubes, and line-of-sight
+ * checks.  The old AI stopped at the numeric range boundary, then the command
+ * console rejected the target because the actual shape did not cover it.  This
+ * planner searches the same targeting template used by the map and console,
+ * so movement and attack resolve against one authoritative predicate.
+ */
+export function planTargetingPath(
+  grid: SceneGrid,
+  origin: GridPoint,
+  target: GridPoint,
+  occupied: ReadonlySet<string>,
+  movementRemainingFt: number,
+  targeting: TargetingTemplate,
+): MovementPlan {
+  const maximumSteps = Math.max(0, Math.floor(movementRemainingFt / grid.cell_size_ft));
+  const queue: GridPoint[] = [origin];
+  const previous = new Map<string, GridPoint | null>([[pointKey(origin), null]]);
+  const depth = new Map<string, number>([[pointKey(origin), 0]]);
+  let best = origin;
+  const targetCovered = (point: GridPoint) => getTargetingCells(
+    grid,
+    point,
+    target,
+    targeting,
+  ).some((cell) => cell.row === target.row && cell.col === target.col);
+  const isCloser = (candidate: GridPoint, current: GridPoint) => (
+    gridDistanceFt(candidate, target, grid.cell_size_ft)
+      < gridDistanceFt(current, target, grid.cell_size_ft)
+  );
+
+  while (queue.length > 0) {
+    const current = queue.shift();
+    if (!current) break;
+    const currentDepth = depth.get(pointKey(current)) ?? 0;
+    if (targetCovered(current)) {
+      let cursor: GridPoint | null = current;
+      const path: GridPoint[] = [];
+      while (cursor && pointKey(cursor) !== pointKey(origin)) {
+        path.unshift(cursor);
+        cursor = previous.get(pointKey(cursor)) ?? null;
+      }
+      return {
+        path,
+        destination: current,
+        spentFt: path.length * grid.cell_size_ft,
+      };
+    }
+    if (isCloser(current, best)) best = current;
+    if (currentDepth >= maximumSteps) continue;
+    for (const next of neighbors(grid, current)) {
+      const key = pointKey(next);
+      if (
+        previous.has(key)
+        || key === pointKey(target)
+        || isBlockedCell(grid, next)
+        || occupied.has(key)
+      ) continue;
+      previous.set(key, current);
+      depth.set(key, currentDepth + 1);
+      queue.push(next);
+    }
+  }
+
   const path: GridPoint[] = [];
   let cursor: GridPoint | null = best;
   while (cursor && pointKey(cursor) !== pointKey(origin)) {

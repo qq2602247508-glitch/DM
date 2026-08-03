@@ -1,7 +1,7 @@
 import type { ErrorEnvelope } from "./types";
 
-const apiBaseUrl =
-  import.meta.env.VITE_API_BASE_URL ?? "http://127.0.0.1:8000/api/v1";
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL
+  ?? (import.meta.env.MODE === "test" ? "http://127.0.0.1:8000/api/v1" : "/api/v1");
 
 export class ApiError extends Error {
   readonly status: number;

@@ -204,6 +204,8 @@ export type Campaign = Versioned & {
   primary_rules_year: 2024;
   allow_legacy: boolean;
   encumbrance_mode: "standard" | "variant" | "none";
+  enabled_rule_extensions: string[];
+  enabled_content_packs: string[];
 };
 
 export type Character = Versioned & {
@@ -283,6 +285,8 @@ export type ClassLevelOption = {
   progression: Record<string, string>;
   choice_requirements?: AdvancementChoiceRequirement[];
   resource_updates?: Record<string, Record<string, unknown>>;
+  scaling_updates?: Record<string, Record<string, unknown>>;
+  feature_grants?: SheetFeatureGrant[];
 };
 
 export type ClassOption = CharacterOptionSummary & {
@@ -302,6 +306,27 @@ export type CharacterOptionsCatalog = {
   skills: string[];
   languages: string[];
   tools: string[];
+  enabled_content_packs?: string[];
+  content_packs?: Array<Record<string, unknown>>;
+  extension_character_options?: Array<CharacterOptionSummary & {
+    content_pack_key: string;
+    content_pack_label: string;
+    kind: "class" | "subclass" | "feat";
+    parent_class: string | null;
+    normalization_status: "needs_normalization";
+    automation_status: "dm_only";
+    selectable_for_automatic_advancement: false;
+    requires_dm_adjudication: true;
+    reason: string;
+  }>;
+  enabled_rule_extensions: string[];
+  rule_extensions: Array<{
+    key: string;
+    label: string;
+    category: string;
+    summary: string;
+    automation_status: "full" | "partial" | "dm_only";
+  }>;
 };
 
 export type AdvancementRequest = {
@@ -318,6 +343,30 @@ export type AdvancementRequest = {
   dm_override_reason?: string | null;
 };
 
+export type AdvancementStepRequest = Omit<AdvancementRequest, "character_version">;
+
+export type AdvancementBatchRequest = {
+  character_version: number;
+  steps: AdvancementStepRequest[];
+};
+
+export type SheetFeatureGrant = {
+  name: string;
+  kind?: string;
+  class_name?: string;
+  class_level?: number;
+  source_record_id?: string;
+  source_path?: string;
+  rule_year?: 2024;
+  runtime?: {
+    automation_status?: "full" | "partial" | "dm_only";
+    requires_dm_adjudication?: boolean;
+    tracked_resource_keys?: string[];
+    tracked_scaling_keys?: string[];
+    note?: string;
+  };
+};
+
 export type AdvancementPreview = {
   preview_token: string;
   character_id: string;
@@ -332,20 +381,35 @@ export type AdvancementPreview = {
   hp_gain: number;
   before: Record<string, unknown>;
   after: Record<string, unknown>;
-  features_gained: Array<{
-    name: string;
-    class_name: string;
-    class_level: number;
-    source_record_id: string;
-    rule_year: 2024;
-  }>;
+  features_gained: SheetFeatureGrant[];
   feat_choice: string | null;
   warnings: string[];
   choice_requirements?: AdvancementChoiceRequirement[];
   resource_updates?: Record<string, Record<string, unknown>>;
+  scaling_updates?: Record<string, Record<string, unknown>>;
   rule_reference: {
     year: 2024;
-    source_record_id: string;
+    source_record_id?: string;
+    source_path: string;
+  };
+};
+
+export type AdvancementBatchPreview = {
+  kind: "batch";
+  preview_token: string;
+  character_id: string;
+  character_name: string;
+  from_level: number;
+  to_level: number;
+  before: Record<string, unknown>;
+  after: Record<string, unknown>;
+  steps: Array<Omit<AdvancementPreview, "preview_token"> & { batch_index: number }>;
+  features_gained: SheetFeatureGrant[];
+  resource_updates: Record<string, Record<string, unknown>>;
+  scaling_updates: Record<string, Record<string, unknown>>;
+  warnings: string[];
+  rule_reference: {
+    year: 2024;
     source_path: string;
   };
 };
@@ -777,6 +841,42 @@ export type Combatant = Versioned & {
   is_active: boolean;
 };
 
+export type MonsterAIPhase = "turn" | "reaction" | "legendary" | "lair";
+
+export type MonsterAITactics = "instinctive" | "standard" | "smart" | "tactical";
+
+export type MonsterAIPlan = {
+  actor_id: string;
+  action_name: string;
+  action_type: string;
+  target_ids: string[];
+  reason: string;
+  steps: {
+    action_name: string;
+    action_index: number;
+    action_type: string;
+    target_ids: string[];
+    requires_player_roll: boolean;
+    auto_eligible: boolean;
+    reason: string;
+  }[];
+  legendary_cost: number;
+  requires_player_roll: boolean;
+  requires_dm_confirmation: boolean;
+  confirmation_reasons: string[];
+  tactical_intent?: string;
+  movement_mode?: string;
+  focus_target_id?: string | null;
+};
+
+export type MonsterAIPreview = {
+  combat: Combat;
+  actor: Combatant;
+  actor_policy?: string;
+  plan: MonsterAIPlan | null;
+  requires_confirmation: boolean;
+};
+
 export type CombatAction = Versioned & {
   campaign_id: string;
   combat_id: string;
@@ -805,6 +905,7 @@ export type CombatActionPreview = {
 
 export type CombatActionConfirmation = {
   action: CombatAction;
+  actor: Combatant | null;
   target: Combatant;
 };
 
@@ -817,9 +918,11 @@ export type PlayerRollResolutionType =
 export type PlayerRollPromptCommand = {
   actor_combatant_id: string;
   actor_version: number;
-  action_cost?: "action" | "bonus_action" | "reaction" | "none";
+  action_cost?: "action" | "bonus_action" | "reaction" | "legendary_action" | "lair_action" | "none";
   target_combatant_id: string;
   target_version: number;
+  effect_target_combatant_id?: string | null;
+  effect_target_version?: number | null;
   action_name: string;
   resolution_type: PlayerRollResolutionType;
   dc: number;
@@ -828,13 +931,67 @@ export type PlayerRollPromptCommand = {
   roll_formula?: string;
   damage_on_success?: number;
   damage_on_failure?: number;
+  damage_components_on_success?: Array<{ amount: number; damage_type: string; damage_tags?: string[] }>;
+  damage_components_on_failure?: Array<{ amount: number; damage_type: string; damage_tags?: string[] }>;
   damage_type?: string | null;
+  damage_tags?: string[];
   description?: string | null;
+  recharge_key?: string | null;
+  recharge_consume?: boolean;
+  legendary_cost?: number | null;
+  legendary_pool_max?: number | null;
+  reaction_trigger?: string | null;
+  sequence_id?: string | null;
+  sequence_step?: number | null;
+  sequence_size?: number | null;
+  conditions_on_success?: string[];
+  conditions_on_failure?: string[];
+  condition_duration?: "actor_turn_start" | "actor_turn_end" | "target_turn_start" | "target_turn_end" | "rounds" | "minutes" | "until_save" | "until_removed" | null;
+  condition_duration_value?: number | null;
+  condition_save_dc?: number | null;
+  condition_save_ability?: string | null;
+  movement_on_success_ft?: number | null;
+  movement_on_failure_ft?: number | null;
+  movement_direction?: "away" | "toward" | null;
+  area_shape?: "cone" | "line" | "cube" | "sphere" | "cylinder" | null;
+  area_size_ft?: number | null;
+  area_width_ft?: number | null;
+  area_height_ft?: number | null;
+  area_anchor_height_ft?: number | null;
+  area_anchor_row?: number | null;
+  area_anchor_col?: number | null;
+  area_include_actor?: boolean;
+  requires_explicit_elevation?: boolean;
+};
+
+export type PlayerRollPromptBatchTarget = {
+  target_combatant_id: string;
+  target_version: number;
+  effect_target_combatant_id?: string | null;
+  effect_target_version?: number | null;
+};
+
+export type PlayerRollPromptBatchCommand = Omit<
+  PlayerRollPromptCommand,
+  "target_combatant_id" | "target_version" | "effect_target_combatant_id" | "effect_target_version"
+> & {
+  targets: PlayerRollPromptBatchTarget[];
+};
+
+export type PlayerRollPromptBatchResult = {
+  actions: CombatAction[];
+  actor: Combatant;
+  targets: Combatant[];
+  transaction: Record<string, unknown>;
+  already_applied: boolean;
 };
 
 export type PlayerRollResolutionCommand = {
   action_version: number;
   roll_total: number;
+  roll_totals?: number[];
+  use_legendary_resistance?: boolean;
+  use_feature_reroll?: boolean;
   dm_note?: string | null;
 };
 
@@ -847,6 +1004,7 @@ export type PlayerRollResolution = {
   outcome?: "success" | "failure";
   damage?: number;
   damage_type?: string | null;
+  damage_components?: Array<{ amount: number; damage_type: string; damage_tags?: string[] }>;
   dm_note?: string | null;
   follow_up_damage?: {
     action_type: "damage";
@@ -855,11 +1013,13 @@ export type PlayerRollResolution = {
     target_version: number;
     amount: number;
     damage_type: string;
+    damage_components?: Array<{ amount: number; damage_type: string; damage_tags?: string[] }>;
   } | null;
 };
 
 export type PlayerRollPromptResult = {
   action: CombatAction;
+  actor: Combatant;
 };
 
 export type PlayerRollResolutionResult = {
@@ -890,6 +1050,16 @@ export type TurnAdvanceResult = {
   combat: Combat;
   active_combatant: Combatant | null;
   expiration_prompts: unknown[];
+  effect_prompts: Array<{
+    effect_id: string;
+    target_combatant_id: string;
+    save_dc: number;
+    save_ability: string;
+    summary?: string;
+    requires_save?: boolean;
+  }>;
+  effect_ticks?: unknown[];
+  status_prompts?: unknown[];
 };
 
 export type CombatResetResult = {
@@ -1087,11 +1257,23 @@ export type ProposalDecision = {
 
 export type DmHint = {
   visibility: "dm_private";
+  request_understanding: string;
+  response_plan: string;
+  delivery_mode: "read_aloud" | "spoken_line" | "dm_guidance" | "explanation" | "revision" | "other";
+  audience_handoff: string;
   text: string;
   assumptions: string[];
   uncertainties: string[];
   citations: Citation[];
   proposed_changes: string[];
+};
+
+export type AssistantConversationMessage = {
+  role: "dm" | "assistant";
+  content: string;
+  message_kind: "question" | "answer" | "confirmed_progress";
+  authoritative: boolean;
+  created_at: string;
 };
 
 export type AgentResponse = {

@@ -15,6 +15,7 @@ export type RoutePath =
   | "/scenes"
   | "/events"
   | "/quests"
+  | "/simulation"
   | "/combat"
   | "/proposals"
   | "/settings"
@@ -35,6 +36,7 @@ const ROUTES: readonly RoutePath[] = [
   "/scenes",
   "/events",
   "/quests",
+  "/simulation",
   "/combat",
   "/proposals",
   "/settings",
@@ -43,7 +45,8 @@ const ROUTES: readonly RoutePath[] = [
 
 function parseHash(): RoutePath {
   const raw = window.location.hash.replace(/^#/, "");
-  const path = raw.startsWith("/") ? raw : `/${raw}`;
+  const rawPath = raw.split("?", 1)[0] ?? "";
+  const path = rawPath.startsWith("/") ? rawPath : `/${rawPath}`;
   return (ROUTES as readonly string[]).includes(path) ? (path as RoutePath) : "/";
 }
 

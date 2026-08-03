@@ -17,6 +17,7 @@ from dnd_dm_assistant.api.routes.encounters import router as encounters_router
 from dnd_dm_assistant.api.routes.health import router as health_router
 from dnd_dm_assistant.api.routes.knowledge import router as knowledge_router
 from dnd_dm_assistant.api.routes.merchants import router as merchants_router
+from dnd_dm_assistant.api.routes.monster_ai import router as monster_ai_router
 from dnd_dm_assistant.api.routes.narrative import router as narrative_router
 from dnd_dm_assistant.api.routes.player import dm_router as player_dm_router
 from dnd_dm_assistant.api.routes.player import player_router
@@ -28,7 +29,9 @@ from dnd_dm_assistant.api.routes.prep_imports import router as prep_imports_rout
 from dnd_dm_assistant.api.routes.realtime import router as realtime_router
 from dnd_dm_assistant.api.routes.reliability import router as reliability_router
 from dnd_dm_assistant.api.routes.rests import router as rests_router
+from dnd_dm_assistant.api.routes.rule_extensions import router as rule_extensions_router
 from dnd_dm_assistant.api.routes.session_checkpoints import router as session_checkpoints_router
+from dnd_dm_assistant.api.routes.simulations import router as simulations_router
 from dnd_dm_assistant.api.routes.spells_economy import router as spells_economy_router
 from dnd_dm_assistant.api.routes.world import router as world_router
 from dnd_dm_assistant.config import Settings, get_settings
@@ -66,16 +69,19 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     install_error_handlers(app)
     app.include_router(health_router, prefix=app_settings.api_prefix)
     app.include_router(reliability_router, prefix=app_settings.api_prefix)
+    app.include_router(rule_extensions_router, prefix=app_settings.api_prefix)
     app.include_router(realtime_router, prefix=app_settings.api_prefix)
     app.include_router(advancement_router, prefix=app_settings.api_prefix)
     app.include_router(knowledge_router, prefix=app_settings.api_prefix)
     app.include_router(campaigns_router, prefix=app_settings.api_prefix)
     app.include_router(combat_engine_router, prefix=app_settings.api_prefix)
+    app.include_router(monster_ai_router, prefix=app_settings.api_prefix)
     app.include_router(compendium_router, prefix=app_settings.api_prefix)
     app.include_router(merchants_router, prefix=app_settings.api_prefix)
     app.include_router(encounters_router, prefix=app_settings.api_prefix)
     app.include_router(rests_router, prefix=app_settings.api_prefix)
     app.include_router(session_checkpoints_router, prefix=app_settings.api_prefix)
+    app.include_router(simulations_router, prefix=app_settings.api_prefix)
     app.include_router(spells_economy_router, prefix=app_settings.api_prefix)
     app.include_router(narrative_router, prefix=app_settings.api_prefix)
     app.include_router(assistant_router, prefix=app_settings.api_prefix)

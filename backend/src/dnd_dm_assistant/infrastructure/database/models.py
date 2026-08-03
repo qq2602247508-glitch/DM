@@ -79,6 +79,12 @@ class Campaign(Timestamped, Base):
     encumbrance_mode: Mapped[str] = mapped_column(
         String(30), nullable=False, default="standard", server_default="standard"
     )
+    enabled_rule_extensions: Mapped[list[object]] = mapped_column(
+        JSON, nullable=False, default=list, server_default="[]"
+    )
+    enabled_content_packs: Mapped[list[object]] = mapped_column(
+        JSON, nullable=False, default=list, server_default="[]"
+    )
     __table_args__ = (
         CheckConstraint("length(trim(name)) > 0", name="ck_campaign_name_nonempty"),
         CheckConstraint("ruleset = 'dnd5e'", name="ck_campaign_ruleset"),
@@ -88,6 +94,42 @@ class Campaign(Timestamped, Base):
             name="ck_campaign_encumbrance",
         ),
         Index("ix_campaigns_status_created", "status", "created_at"),
+    )
+
+
+class CampaignAISession(Timestamped, Base):
+    __tablename__ = "campaign_ai_sessions"
+    campaign_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("campaigns.id", ondelete="CASCADE"), nullable=False, unique=True
+    )
+    summary_text: Mapped[str | None] = mapped_column(Text)
+
+
+class CampaignAIMessage(Base):
+    __tablename__ = "campaign_ai_messages"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_id)
+    session_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("campaign_ai_sessions.id", ondelete="CASCADE"), nullable=False
+    )
+    role: Mapped[str] = mapped_column(String(20), nullable=False)
+    content: Mapped[str] = mapped_column(Text, nullable=False)
+    message_kind: Mapped[str] = mapped_column(String(30), nullable=False)
+    authoritative: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False, server_default="0"
+    )
+    request_id: Mapped[str] = mapped_column(String(120), nullable=False)
+    sequence_number: Mapped[int] = mapped_column(Integer, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.current_timestamp(), nullable=False
+    )
+    __table_args__ = (
+        CheckConstraint("role IN ('dm','assistant')", name="ck_campaign_ai_message_role"),
+        CheckConstraint(
+            "message_kind IN ('question','answer','confirmed_progress')",
+            name="ck_campaign_ai_message_kind",
+        ),
+        UniqueConstraint("session_id", "sequence_number", name="uq_campaign_ai_message_sequence"),
+        Index("ix_campaign_ai_messages_session_created", "session_id", "created_at", "id"),
     )
 
 
@@ -1586,7 +1628,7 @@ class CompendiumEntry(Timestamped, Base):
     __table_args__ = (
         CheckConstraint(
             "entry_type IN "
-            "('spell','feature','monster','equipment','item','npc','location','scene')",
+            "('spell','feature','monster','equipment','item','npc','location','scene','rule')",
             name="ck_compendium_entry_type",
         ),
         CheckConstraint(
@@ -1630,6 +1672,18 @@ class MonsterInstance(Timestamped, Base):
     )
     challenge_rating: Mapped[str | None] = mapped_column(String(30))
     actions: Mapped[list[object]] = mapped_column(
+        JSON, nullable=False, default=list, server_default="[]"
+    )
+    damage_resistances: Mapped[list[str]] = mapped_column(
+        JSON, nullable=False, default=list, server_default="[]"
+    )
+    damage_vulnerabilities: Mapped[list[str]] = mapped_column(
+        JSON, nullable=False, default=list, server_default="[]"
+    )
+    damage_immunities: Mapped[list[str]] = mapped_column(
+        JSON, nullable=False, default=list, server_default="[]"
+    )
+    condition_immunities: Mapped[list[str]] = mapped_column(
         JSON, nullable=False, default=list, server_default="[]"
     )
     notes: Mapped[str | None] = mapped_column(Text)
@@ -1927,6 +1981,13 @@ class PlayerActionRequest(Timestamped, Base):
             "campaign_id", "idempotency_key", name="uq_player_action_campaign_idempotency"
         ),
         Index("ix_player_action_campaign_status", "campaign_id", "status", "created_at", "id"),
+        Index(
+            "uq_player_pending_rest_per_character",
+            "campaign_id",
+            "character_id",
+            unique=True,
+            sqlite_where=text("action_type = 'rest_request' AND status = 'pending'"),
+        ),
     )
 
 

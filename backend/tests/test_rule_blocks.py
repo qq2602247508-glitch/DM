@@ -12,13 +12,71 @@ from dnd_dm_assistant.application.rule_block_compiler import (
 from dnd_dm_assistant.domain.rule_blocks import (
     ChoiceBlock,
     ChoiceOption,
+    CreationBlock,
     DamageBlock,
+    DefenseBlock,
+    DispelBlock,
+    ExplorationEffectBlock,
+    HealBlock,
+    ModifierBlock,
     NarrativeBlock,
+    ObjectStateBlock,
     RulePlan,
     TargetBlock,
+    TeleportBlock,
+    TransformationBlock,
     build_execution_plan,
     validate_rule_plan,
 )
+
+
+def test_compiles_destination_sensitive_special_spell_blocks_without_guessing() -> None:
+    plan = compile_rule_blocks(
+        {
+            "name": "传送与变形测试",
+            "spell_level": 5,
+            "range": "30尺",
+            "description": "选择一个目标。",
+            "teleport": {
+                "destination_kind": "known_location",
+                "max_distance_ft": 1_000,
+                "can_take_creatures": True,
+            },
+            "transformation": {
+                "mode": "polymorph",
+                "form_ref": "dm_chosen_form",
+            },
+            "creation": {
+                "creation_kind": "object",
+                "template_ref": "dm_chosen_template",
+                "count": 2,
+            },
+            "dispel": {
+                "mode": "dispel",
+                "effect_types": ["spell"],
+                "check_required": True,
+                "check_dc_source": "法术等级",
+            },
+        },
+        source_kind="spell",
+    )
+
+    assert isinstance(
+        next(block for block in plan.blocks if block.kind == "teleport"),
+        TeleportBlock,
+    )
+    assert isinstance(
+        next(block for block in plan.blocks if block.kind == "transformation"),
+        TransformationBlock,
+    )
+    assert isinstance(
+        next(block for block in plan.blocks if block.kind == "creation"),
+        CreationBlock,
+    )
+    assert isinstance(
+        next(block for block in plan.blocks if block.kind == "dispel"),
+        DispelBlock,
+    )
 
 
 def test_compiles_area_save_damage_resource_and_duration() -> None:
@@ -160,6 +218,121 @@ def test_compiles_weapon_modifier_and_healing_without_eval() -> None:
     assert heal.expression == "1d10+1"
 
 
+def test_compiles_temporary_hit_points_as_a_distinct_heal_block() -> None:
+    plan = compile_rule_blocks(
+        {
+            "name": "虚假生命",
+            "range": "自身",
+            "healing": "1d4+4",
+            "temporary_hp": True,
+            "resolution_kind": "heal",
+        }
+    )
+
+    heal = next(block for block in plan.blocks if block.kind == "heal")
+    assert isinstance(heal, HealBlock)
+    assert heal.temporary_hp is True
+
+
+def test_compiles_typed_damage_defenses_as_first_class_blocks() -> None:
+    plan = compile_rule_blocks(
+        {
+            "name": "毒虫罗斯魔",
+            "source_record_id": "monster-roth-moth",
+            "damage_resistances": ["bludgeoning", "cold", "fire"],
+            "damage_immunities": ["acid", "poison"],
+            "damage_vulnerabilities": ["radiant"],
+        },
+        source_kind="monster",
+    )
+
+    defenses = [block for block in plan.blocks if block.kind == "defense"]
+    assert len(defenses) == 3
+    assert all(isinstance(block, DefenseBlock) for block in defenses)
+    assert plan.automation_ready is True
+
+
+def test_named_combat_and_exploration_effects_are_typed_not_plain_text() -> None:
+    haste = compile_rule_blocks_dict(
+        {
+            "name": "加速术",
+            "spell_level": 3,
+            "range": "30尺",
+            "duration": "1分钟",
+            "description": "目标速度增加20尺，敏捷豁免具有优势，并获得额外动作。",
+            "resolution_kind": "control",
+        },
+        source_kind="spell",
+    )
+    haste_blocks = haste["blocks"]
+    assert sum(block["kind"] == "modifier" for block in haste_blocks) == 3
+    assert sum(isinstance(block, ModifierBlock) for block in validate_rule_plan(haste).blocks) == 3
+    assert haste["automation_ready"] is True
+
+    knock = compile_rule_blocks_dict(
+        {
+            "name": "敲击术",
+            "spell_level": 2,
+            "range": "60尺",
+            "description": "打开一个被锁住的门或物件。",
+            "resolution_kind": "control",
+        },
+        source_kind="spell",
+    )
+    assert any(isinstance(block, ObjectStateBlock) for block in validate_rule_plan(knock).blocks)
+
+    detect = compile_rule_blocks_dict(
+        {
+            "name": "侦测魔法",
+            "spell_level": 1,
+            "range": "自身",
+            "description": "感知30尺内的魔法，并辨认其所属学派。",
+            "resolution_kind": "control",
+        },
+        source_kind="spell",
+    )
+    assert any(
+        isinstance(block, ExplorationEffectBlock)
+        and block.operation == "detect_magic"
+        for block in validate_rule_plan(detect).blocks
+    )
+
+
+def test_compiles_skill_check_without_inventing_a_dc() -> None:
+    plan = compile_rule_blocks(
+        {
+            "name": "调查",
+            "description": "寻找线索、机关或隐藏结构。",
+            "ability": "intelligence",
+            "skill": "调查",
+            "resolution_kind": "skill_check",
+        },
+        source_kind="feature",
+    )
+
+    roll = next(block for block in plan.blocks if block.kind == "roll")
+    assert roll.roll_type == "ability_check"
+    assert roll.skill == "调查"
+    assert roll.ability == "intelligence"
+    assert roll.dc is None
+    assert roll.dc_source == "dm_chosen_dc"
+    assert plan.automation_ready is False
+
+
+def test_compiles_explicit_monster_attack_without_defaulting_missing_range() -> None:
+    plan = compile_rule_blocks(
+        {
+            "name": "多重攻击",
+            "description": "该生物进行两次攻击。",
+            "resolution_kind": "control",
+        },
+        source_kind="monster_action",
+    )
+    target = next(block for block in plan.blocks if block.kind == "target")
+    assert target.range_ft is None
+    assert not any(block.kind == "damage" for block in plan.blocks)
+
+
 def test_structured_condition_move_summon_and_control_blocks_compile() -> None:
     plan = compile_rule_blocks(
         {
@@ -227,6 +400,80 @@ def test_execution_plan_is_deterministic_and_contains_no_roll_results() -> None:
     serialized = first.model_dump_json()
     assert "roll_result" not in serialized
     assert "random" not in serialized
+
+
+def test_execution_plan_resolves_verified_upcast_dice_and_slot_resource() -> None:
+    plan = compile_rule_blocks(
+        {
+            "name": "火球术",
+            "spell_level": 3,
+            "range": "150尺",
+            "damage_expression": "8d6",
+            "damage_type": "火焰",
+            "upcast_damage_dice": 1,
+            "resource_key": "spell_slots_3",
+            "resource_cost": 1,
+            "resolution_kind": "damage",
+        },
+        source_kind="spell",
+    )
+
+    source_damage = next(block for block in plan.blocks if block.kind == "damage")
+    assert isinstance(source_damage, DamageBlock)
+    assert source_damage.expression == "8d6"
+    assert source_damage.spell_slot_scaling is not None
+    assert source_damage.spell_slot_scaling.base_spell_level == 3
+    assert source_damage.spell_slot_scaling.dice_per_level == 1
+
+    execution = build_execution_plan(plan, slot_level=5)
+    resolved_damage = next(step.block for step in execution.steps if step.block.kind == "damage")
+    resolved_resource = next(
+        step.block for step in execution.steps if step.block.kind == "resource"
+    )
+    assert execution.selected_slot_level == 5
+    assert resolved_damage.expression == "10d6"
+    assert resolved_resource.resource_key == "spell_slots_5"
+    assert source_damage.expression == "8d6"
+
+
+def test_execution_plan_resolves_healing_modifiers_and_rejects_invalid_slots() -> None:
+    plan = compile_rule_blocks(
+        {
+            "name": "治愈真言",
+            "spell_level": 1,
+            "range": "60尺",
+            "healing": "2d4+3",
+            "upcast_healing_dice": 2,
+            "resource_key": "spell_slots_1",
+            "resource_cost": 1,
+            "resolution_kind": "heal",
+        },
+        source_kind="spell",
+    )
+
+    execution = build_execution_plan(plan, slot_level=3)
+    resolved_heal = next(step.block for step in execution.steps if step.block.kind == "heal")
+    assert resolved_heal.expression == "6d4+3"
+    with pytest.raises(ValueError, match="integer between 1 and 9"):
+        build_execution_plan(plan, slot_level=0)
+
+
+def test_upcast_metadata_without_a_base_spell_level_stays_unresolved() -> None:
+    plan = compile_rule_blocks(
+        {
+            "name": "缺少环阶的升环伤害",
+            "damage_expression": "2d6",
+            "damage_type": "火焰",
+            "upcast_damage_dice": 1,
+            "resolution_kind": "damage",
+        },
+        source_kind="spell",
+    )
+
+    damage = next(block for block in plan.blocks if block.kind == "damage")
+    assert damage.spell_slot_scaling is None
+    assert plan.automation_ready is False
+    assert "升环增量缺少明确的基础法术环阶，未绑定效果积木" in plan.unresolved_reasons
 
 
 def test_strict_validation_rejects_extra_fields_and_bad_dice() -> None:

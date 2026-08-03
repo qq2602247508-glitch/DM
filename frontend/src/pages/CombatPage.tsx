@@ -4,17 +4,18 @@ import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent, type
 import {
   advanceCombatTurn, confirmCombatAction, confirmCombatEffect,
   confirmCombatSettlement, confirmCombatantDeath, confirmConcentrationCheck,
-  confirmDeathSave, createCombat, createCombatant, deleteCombatant, endCombatEffect,
-  createEvent, getCombatEndCondition, getDeathSave, listCombatActions, listCombatEffects, listCombatants, listCombats,
-  listEncounterAdjustments, listEvents, previewCombatAction,
+  confirmDeathSave, confirmCombatEffectSave, createCombat, createCombatant, deleteCombatant, endCombatEffect,
+  createEvent, endCombatSummon, getCombatEndCondition, getDeathSave, listCombatActions, listCombatEffects, listCombatants, listCombats,
+  listEncounterAdjustments, listEvents, previewCombatAction, previewMonsterAI, addCombatSummon,
   previewCombatSettlement, resetCombat, revertEncounterAdjustment, updateCombat, updateCombatant,
 } from "../api/entities";
 import type {
   CombatActionCommand, CombatEffectCommand, CombatSettlementCommand,
 } from "../api/entities";
-import { listCharacters, listLocations, listNpcs, updateCharacter } from "../api/entities";
+import { listCharacters, listCompanions, listLocations, listNpcs, updateCharacter } from "../api/entities";
 import { getSceneGrid, listMonsters, listScenes } from "../api/world";
-import { setPlayerRoomLiveState } from "../api/playerRoom";
+import { getPlayerRoom, setPlayerRoomLiveState } from "../api/playerRoom";
+import { isApiError } from "../api/client";
 import type {
   Combat, CombatAction, CombatActionPreview, CombatEffect, CombatSettlementPreview, Combatant,
   Character, EncounterAdjustment, Monster, Npc, SceneGrid,
@@ -32,6 +33,7 @@ import { InitiativeCardStrip } from "../components/combat/InitiativeCardStrip";
 import {
   TurnCommandConsole,
   type CombatTargeting,
+  type CombatTargetingValidity,
 } from "../components/combat/TurnCommandConsole";
 import {
   DIFFICULTY_LABELS, encounterDifficulty, shiftDifficulty, xpForChallengeRating,
@@ -43,25 +45,38 @@ import {
 import {
   actionEconomySummary, damageModifierLabel, deathSaveSummary,
 } from "../ui/combatPresentation";
+import { chooseEnemyTarget, isPlayerControlledCombatant } from "../ui/combatAutomation";
+import { advancedActionPendingRollSummary } from "../ui/advancedMonsterActions";
 import {
+  movementCommitKey,
   planApproachPath,
+  planTargetingPath,
   planRetreatPath,
   shortestMovementPath,
   type MovementPlan,
 } from "../ui/combatMovement";
 import {
+  availableElevationLayers,
+  evaluateTargetingElevation,
+  explicitElevationFt,
   getTargetingCells,
   gridDistanceFt,
   hasLineOfSight,
   isAimPointInRange,
   isBlockedCell,
   type GridPoint,
+  type TargetingElevationResult,
 } from "../ui/gridTargeting";
 import {
   findSceneSpawnCells,
   generateTacticalSceneGrid,
 } from "../ui/sceneGridGenerator";
-import { getDoorOrientation, isMapVoidCell, terrainCellClass } from "../ui/mapPresentation";
+import {
+  getDoorOrientation,
+  isMapVoidCell,
+  shouldShowTerrainLabel,
+  terrainCellClass,
+} from "../ui/mapPresentation";
 
 type CombatCandidate = {
   key: string;
@@ -86,6 +101,39 @@ function readSceneGrid(notes: string | null): SceneGrid | null {
   } catch {
     return null;
   }
+}
+
+type ElevationLayer = number | "unknown";
+
+function combatantGridPosition(fighter: Combatant): Record<string, unknown> | null {
+  const position = fighter.snapshot_json.grid_position;
+  return position && typeof position === "object" && !Array.isArray(position)
+    ? position as Record<string, unknown>
+    : null;
+}
+
+function combatantElevationFt(fighter: Combatant | undefined): number | null {
+  return fighter ? explicitElevationFt(fighter.snapshot_json.grid_position) : null;
+}
+
+function elevationLayerLabel(layer: ElevationLayer): string {
+  return layer === "unknown" ? "高度未记录" : `${layer}尺`;
+}
+
+function targetingElevationMessage(
+  fighter: Combatant,
+  result: TargetingElevationResult,
+): string {
+  if (result.status === "missing_target_elevation") {
+    return `${fighter.display_name}没有记录 grid_position.elevation_ft，不能自动作为三维区域目标。`;
+  }
+  if (result.status === "missing_origin_elevation") {
+    return "区域来源单位没有记录 grid_position.elevation_ft，不能自动判定上下层目标。";
+  }
+  if (result.status === "missing_height" || result.status === "missing_size") {
+    return "该区域缺少可靠的高度或尺寸数据，不能自动判定上下层目标。";
+  }
+  return `${fighter.display_name}不在当前技能的垂直影响范围内。`;
 }
 
 function CombatLogPanel({ actions }: { actions: CombatAction[] }): ReactElement {
@@ -129,6 +177,61 @@ function displayValue(value: unknown, fallback = "0"): string {
     : fallback;
 }
 
+function compiledEffectSummary(effect: CombatEffect): string | null {
+  const block = effect.details_json.rule_block;
+  if (!block || typeof block !== "object") return null;
+  const raw = block as Record<string, unknown>;
+  const kind = displayValue(raw.kind, "");
+  if (kind === "modifier") {
+    const value = raw.value == null ? "" : ` ${displayValue(raw.value)}`;
+    return `${displayValue(raw.stat, "修正")} ${displayValue(raw.operation, "")} ${value}`.trim();
+  }
+  if (kind === "defense") {
+    const types = Array.isArray(raw.damage_types)
+      ? raw.damage_types.filter((item): item is string | number => typeof item === "string" || typeof item === "number").map(String).join("、")
+      : "";
+    return `${displayValue(raw.operation, "防御")}：${types}`;
+  }
+  if (kind === "condition") return `${displayValue(raw.operation, "状态")}：${displayValue(raw.condition, "")}`;
+  if (kind === "damage") return `${displayValue(raw.expression, "伤害")} ${displayValue(raw.damage_type, "")}`.trim();
+  return null;
+}
+
+type EffectSavePrompt = {
+  effect_id: string;
+  target_combatant_id: string;
+  save_dc: number;
+  save_ability: string;
+  summary?: string;
+};
+
+function readEffectSavePrompts(prompts: unknown[]): EffectSavePrompt[] {
+  return prompts.flatMap((prompt) => {
+    if (typeof prompt !== "object" || prompt === null) return [];
+    const candidate = prompt as Record<string, unknown>;
+    return typeof candidate.effect_id === "string"
+      && typeof candidate.target_combatant_id === "string"
+      && typeof candidate.save_dc === "number"
+      && typeof candidate.save_ability === "string"
+      ? [{
+          effect_id: candidate.effect_id,
+          target_combatant_id: candidate.target_combatant_id,
+          save_dc: candidate.save_dc,
+          save_ability: candidate.save_ability,
+          summary: typeof candidate.summary === "string" ? candidate.summary : undefined,
+        }]
+      : [];
+  });
+}
+
+function isActiveUntilSaveEffect(effect: CombatEffect): boolean {
+  return effect.status === "active"
+    && effect.duration_unit === "until_save"
+    && typeof effect.save_dc === "number"
+    && typeof effect.save_ability === "string"
+    && Boolean(effect.save_ability.trim());
+}
+
 function CombatantRow({ campaignId, combat, fighter, current, character, effects, combatants }: { campaignId: string; combat: Combat; fighter: Combatant; current: boolean; character?: Character; effects: CombatEffect[]; combatants: Combatant[] }): ReactElement {
   const client = useQueryClient();
   const { showToast } = useToast();
@@ -147,6 +250,11 @@ function CombatantRow({ campaignId, combat, fighter, current, character, effects
   const [pendingAction, setPendingAction] = useState<{
     command: CombatActionCommand;
     preview: CombatActionPreview;
+  } | null>(null);
+  const [monsterPlan, setMonsterPlan] = useState<{
+    action_name: string;
+    target_ids: string[];
+    reason: string;
   } | null>(null);
   const invalidate = () => {
     void client.invalidateQueries({ queryKey: ["combatants", campaignId, combat.id] });
@@ -178,6 +286,30 @@ function CombatantRow({ campaignId, combat, fighter, current, character, effects
       showToast(dc > 0 ? `结算完成；需要专注检定 DC ${dc}` : "结算已确认并写入战斗日志");
     },
     onError: () => showToast("确认失败，目标状态可能已变化，请重新预览", "error"),
+  });
+  const previewMonsterPlan = useMutation({
+    mutationFn: () => {
+      const raw = fighter.snapshot_json.recharge_available;
+      const rechargeAvailable = raw && typeof raw === "object" && !Array.isArray(raw)
+        ? Object.fromEntries(
+            Object.entries(raw).filter(([, value]) => typeof value === "boolean"),
+          ) as Record<string, boolean>
+        : undefined;
+      return previewMonsterAI(
+        campaignId,
+        combat.id,
+        fighter.id,
+        {
+          actorVersion: fighter.version,
+          rechargeAvailable,
+        },
+      );
+    },
+    onSuccess: (result) => {
+      setMonsterPlan(result.plan);
+      showToast(result.plan ? "怪物行动计划已生成，仍需 DM 确认" : "当前没有可用的怪物行动");
+    },
+    onError: () => showToast("怪物行动计划生成失败，请刷新战斗状态", "error"),
   });
   const deathSave = useQuery({
     queryKey: ["death-save", campaignId, combat.id, fighter.id],
@@ -253,6 +385,22 @@ function CombatantRow({ campaignId, combat, fighter, current, character, effects
     },
     onError: () => showToast("效果结束失败，请刷新后重试", "error"),
   });
+  const endSummon = useMutation({
+    mutationFn: () => endCombatSummon(
+      campaignId,
+      combat.id,
+      fighter.id,
+      fighter.version,
+      "DM在战斗台确认召唤物离场",
+    ),
+    onSuccess: (result) => {
+      invalidate();
+      showToast(result.ended_effects.length > 0
+        ? `召唤物已离场，并结束 ${result.ended_effects.length} 个关联效果`
+        : "召唤物已离开战斗轮");
+    },
+    onError: () => showToast("召唤物结束失败，请刷新后重试", "error"),
+  });
   const resolveConcentration = useMutation({
     mutationFn: () => {
       if (!pendingConcentration) throw new Error("没有待处理专注检定");
@@ -306,7 +454,7 @@ function CombatantRow({ campaignId, combat, fighter, current, character, effects
       <span className="text-center"><strong className="block font-mono text-sm text-ember-300">{fighter.initiative}</strong><span className="block text-2xs text-stone-600">先攻</span></span>
       <div className="min-w-0">
         <p className="m-0 truncate text-sm text-parchment-100">{fighter.display_name}</p>
-        <p className="mb-0 mt-0.5 text-2xs text-stone-500">护甲 AC {fighter.armor_class} · {fighter.entity_type === "character" ? "玩家" : fighter.entity_type === "npc" ? "NPC" : "怪物"} · {actionEconomySummary(fighter)}</p>
+        <p className="mb-0 mt-0.5 text-2xs text-stone-500">护甲 AC {fighter.armor_class} · {isPlayerControlledCombatant(fighter.entity_type, fighter.snapshot_json) ? (fighter.entity_type === "companion" ? "玩家召唤物" : "玩家") : fighter.entity_type === "npc" ? "NPC" : fighter.entity_type === "companion" ? "敌方召唤物" : "怪物"} · {actionEconomySummary(fighter)}</p>
         <p className="mb-0 mt-0.5 text-2xs text-stone-600">
           {fighter.temporary_hp > 0 ? `临时生命 ${fighter.temporary_hp} · ` : ""}
           {fighter.max_hp_reduction > 0 ? `有效生命上限 ${effectiveMaxHp}（下降 ${fighter.max_hp_reduction}） · ` : ""}
@@ -331,8 +479,30 @@ function CombatantRow({ campaignId, combat, fighter, current, character, effects
         <Button disabled={previewAction.isPending || fighter.hp >= effectiveMaxHp || Number(amount) < 1} onClick={() => requestPreview("heal")} size="sm">预览治疗</Button>
         <input aria-label={`${fighter.display_name} 条件`} className="w-20 rounded border border-ink-600 bg-ink-950 px-1.5 py-1 text-xs text-parchment-100" onChange={(event) => setCondition(event.target.value)} placeholder="条件" value={condition} />
         <Button disabled={!condition.trim() || change.isPending} onClick={() => { change.mutate({ conditions: [...fighter.conditions, condition.trim()] }); setCondition(""); }} size="sm">加状态</Button>
+        {fighter.entity_type === "companion" && typeof fighter.snapshot_json.summon_source === "object" ? <Button disabled={endSummon.isPending} loading={endSummon.isPending} onClick={() => endSummon.mutate()} size="sm" variant="danger">结束召唤</Button> : null}
         <Button disabled={remove.isPending} onClick={() => remove.mutate()} size="sm" variant="danger">移除</Button>
       </div>
+      {fighter.entity_type === "monster" ? (
+        <div className="rounded border border-cyan-900/60 bg-cyan-950/10 p-2 md:col-span-4">
+          <div className="flex flex-wrap items-center gap-2">
+            <strong className="mr-auto text-xs text-cyan-200">怪物行动计划</strong>
+            <Button
+              disabled={previewMonsterPlan.isPending || !current || !fighter.is_active}
+              loading={previewMonsterPlan.isPending}
+              onClick={() => previewMonsterPlan.mutate()}
+              size="sm"
+            >
+              生成 DM 预览
+            </Button>
+          </div>
+          {monsterPlan ? (
+            <p className="mb-0 mt-1 text-2xs text-stone-300">
+              建议「{monsterPlan.action_name}」→ {monsterPlan.target_ids.map((id) => combatants.find((item) => item.id === id)?.display_name ?? id).join("、")}
+              <span className="ml-2 text-stone-500">{monsterPlan.reason}</span>
+            </p>
+          ) : <p className="mb-0 mt-1 text-2xs text-stone-600">计划只选择目标与动作，不会自动掷骰或写入伤害。</p>}
+        </div>
+      ) : null}
       {pendingAction ? (
         <div className="rounded border border-ember-700/60 bg-ember-950/10 p-2 md:col-span-4">
           <div className="flex flex-wrap items-center gap-2">
@@ -362,7 +532,7 @@ function CombatantRow({ campaignId, combat, fighter, current, character, effects
           <label className="flex items-center gap-1 text-2xs text-stone-400"><input checked={effectConcentration} onChange={(event) => setEffectConcentration(event.target.checked)} type="checkbox" />需要专注</label>
           <Button disabled={!effectName.trim() || addEffect.isPending} loading={addEffect.isPending} onClick={() => addEffect.mutate()} size="sm">DM确认添加</Button>
         </div>
-        {effects.length > 0 ? <div className="mt-2 flex flex-wrap gap-1.5">{effects.map((effect) => <span className="inline-flex items-center gap-1 rounded border border-violet-800/60 px-2 py-1 text-2xs text-stone-300" key={effect.id}>{effect.name}{effect.requires_concentration ? " · 专注" : effect.ends_round !== null ? ` · 至第${effect.ends_round}轮` : ""}<Button disabled={endEffect.isPending} onClick={() => endEffect.mutate(effect)} size="sm">结束</Button></span>)}</div> : <p className="mb-0 mt-1 text-2xs text-stone-600">当前没有活动效果。</p>}
+        {effects.length > 0 ? <div className="mt-2 flex flex-wrap gap-1.5">{effects.map((effect) => <span className="inline-flex items-center gap-1 rounded border border-violet-800/60 px-2 py-1 text-2xs text-stone-300" key={effect.id}>{effect.name}{compiledEffectSummary(effect) ? ` · ${compiledEffectSummary(effect)}` : ""}{effect.requires_concentration ? " · 专注" : effect.ends_round !== null ? ` · 至第${effect.ends_round}轮` : ""}<Button disabled={endEffect.isPending} onClick={() => endEffect.mutate(effect)} size="sm">结束</Button></span>)}</div> : <p className="mb-0 mt-1 text-2xs text-stone-600">当前没有活动效果。</p>}
       </div>
       {pendingConcentration ? (
         <div className="rounded border border-amber-700/60 bg-amber-950/10 p-2 md:col-span-4">
@@ -418,6 +588,7 @@ function BattleGrid({
   onAutomationMovementChange,
   onTargetSelect,
   onTargetValidityChange,
+  targetingActorId,
 }: {
   campaignId: string;
   combatId: string;
@@ -432,7 +603,8 @@ function BattleGrid({
   onEndTurn: () => void;
   onAutomationMovementChange: (moving: boolean) => void;
   onTargetSelect: (fighterId: string) => void;
-  onTargetValidityChange: (fighterIds: ReadonlySet<string>) => void;
+  onTargetValidityChange: (validity: CombatTargetingValidity) => void;
+  targetingActorId: string | null;
 }): ReactElement {
   const client = useQueryClient();
   const { showToast } = useToast();
@@ -448,10 +620,25 @@ function BattleGrid({
   const [targetingMessage, setTargetingMessage] = useState("");
   const [aimPoint, setAimPoint] = useState<GridPoint | null>(null);
   const [interactionMode, setInteractionMode] = useState<"move" | "target">("move");
+  const [fogPreview, setFogPreview] = useState(false);
   const [movingFighterId, setMovingFighterId] = useState<string | null>(null);
+  const movementRequestInFlight = useRef<string | null>(null);
   const [impactFighterId, setImpactFighterId] = useState<string | null>(null);
+  const [elevationLayer, setElevationLayer] = useState<ElevationLayer>(0);
   const processedAiTurn = useRef<string | null>(null);
   const previousHp = useRef<Record<string, number>>({});
+  const targetingSourceId = targeting ? targetingActorId ?? activeFighterId : activeFighterId;
+  const targetingSource = fighters.find((fighter) => fighter.id === targetingSourceId);
+  const targetingOriginElevationFt = combatantElevationFt(targetingSource);
+  const elevationLayers = useMemo(
+    () => availableElevationLayers(fighters.map((fighter) => fighter.snapshot_json.grid_position)),
+    [fighters],
+  );
+  const hasUnknownElevation = fighters.some((fighter) => combatantElevationFt(fighter) === null);
+  const targetingSignature = targeting
+    ? `${targeting.shape}:${targeting.rangeFt}:${targeting.sizeFt ?? ""}:${targeting.widthFt ?? ""}:${targeting.heightFt ?? ""}:${targeting.anchorHeightFt ?? ""}:${targeting.requiresElevation ? "3d" : "2d"}:${targeting.originSelf ? "self" : "point"}`
+    : "awaiting-targeting";
+  const automationPlanKey = `${turnKey}:${targetingSignature}`;
   useEffect(() => {
     setPositions((current) => {
       const next: Record<string, [number, number]> = {};
@@ -459,7 +646,7 @@ function BattleGrid({
       const enemySpawns = findSceneSpawnCells(tacticalGrid, "enemy");
       const occupied = new Set<string>();
       fighters.forEach((fighter) => {
-        const stored = fighter.snapshot_json.grid_position as { row?: unknown; col?: unknown } | undefined;
+        const stored = combatantGridPosition(fighter);
         const local = current[fighter.id];
         const row = movingFighterId === fighter.id && local ? local[0] : Number(stored?.row);
         const col = movingFighterId === fighter.id && local ? local[1] : Number(stored?.col);
@@ -522,6 +709,18 @@ function BattleGrid({
     if (activeFighterId) setSelected(activeFighterId);
   }, [activeFighterId]);
   useEffect(() => {
+    const sourceElevationFt = combatantElevationFt(targetingSource);
+    if (sourceElevationFt !== null) setElevationLayer(sourceElevationFt);
+  }, [targetingSource]);
+  useEffect(() => {
+    if (elevationLayer !== "unknown" && !elevationLayers.includes(elevationLayer)) {
+      setElevationLayer(elevationLayers[0] ?? 0);
+    }
+    if (elevationLayer === "unknown" && !hasUnknownElevation) {
+      setElevationLayer(elevationLayers[0] ?? 0);
+    }
+  }, [elevationLayer, elevationLayers, hasUnknownElevation]);
+  useEffect(() => {
     const changed = fighters.find((fighter) => (
       previousHp.current[fighter.id] !== undefined
       && previousHp.current[fighter.id] !== fighter.hp
@@ -536,7 +735,9 @@ function BattleGrid({
     setAimPoint(null);
     setInteractionMode(targeting ? "target" : "move");
     setTargetingMessage(targeting
-      ? `先在地图上选择${targeting.shape === "circle" ? "爆发中心" : "目标或方向"}；浅蓝色是施法距离，紫色是实际影响范围。`
+      ? targeting.originSelf
+        ? "自身为区域起点；蓝色表示可选施法范围，紫色表示以自身为中心的实际影响范围。"
+        : `先在地图上选择${targeting.shape === "circle" ? "爆发中心" : "目标或方向"}；浅蓝色是施法距离，紫色是实际影响范围。`
       : "");
   }, [targeting]);
   const commitMove = useCallback(async (
@@ -547,6 +748,20 @@ function BattleGrid({
     fleeing = false,
   ) => {
     if ((plan.spentFt <= 0 && !exhaustMovement) || movingFighterId) return;
+    const requestKey = movementCommitKey(
+      turnKey,
+      fighter.id,
+      fighter.version,
+      plan,
+      automatic,
+      exhaustMovement,
+      fleeing,
+    );
+    // `setMovingFighterId` is asynchronous.  This ref closes the window in
+    // which StrictMode or two dependent effects can submit the same version
+    // twice before React renders the first state update.
+    if (movementRequestInFlight.current === requestKey) return;
+    movementRequestInFlight.current = requestKey;
     setMovingFighterId(fighter.id);
     if (automatic) onAutomationMovementChange(true);
     const remainingMovement = exhaustMovement
@@ -575,7 +790,13 @@ function BattleGrid({
           movement_remaining_ft: remainingMovement,
           snapshot_json: {
             ...fighter.snapshot_json,
-            grid_position: plan.destination,
+            // Moving on the horizontal grid must not erase the combatant's
+            // saved altitude; otherwise a later three-dimensional area
+            // preview would silently put a flying unit back on the ground.
+            grid_position: {
+              ...(combatantGridPosition(fighter) ?? {}),
+              ...plan.destination,
+            },
           },
         },
         fighter.version,
@@ -584,6 +805,9 @@ function BattleGrid({
         ...current,
         [fighter.id]: [plan.destination.row, plan.destination.col],
       }));
+      // Automatic movement is only the first stage of an enemy turn.  Let the
+      // next render hand the now-positioned unit to the attack executor.
+      if (automatic) processedAiTurn.current = null;
       await client.invalidateQueries({ queryKey: ["combatants", campaignId, combatId] });
       if (!automatic) showToast(`${fighter.display_name}移动 ${plan.spentFt} 尺，剩余 ${remainingMovement} 尺`);
       if (fleeing) {
@@ -591,12 +815,50 @@ function BattleGrid({
         onEndTurn();
       }
     } catch {
+      // Enemy automation can publish a fresh combatant snapshot while the
+      // movement animation is still settling.  If another invocation already
+      // wrote this exact destination, the version conflict means the move is
+      // complete rather than failed; refresh the authoritative position and
+      // avoid showing a misleading error to the DM.
+      try {
+        const latestCombatants = await client.fetchQuery({
+          queryKey: ["combatants", campaignId, combatId],
+          queryFn: ({ signal }) => listCombatants(campaignId, combatId, signal),
+          staleTime: 0,
+        });
+        const latest = latestCombatants.find((item) => item.id === fighter.id);
+        const latestPosition = latest?.snapshot_json.grid_position;
+        const latestPositionRecord = latestPosition && typeof latestPosition === "object"
+          ? latestPosition as { row?: unknown; col?: unknown }
+          : null;
+        if (
+          latestPositionRecord
+          && Number(latestPositionRecord.row) === plan.destination.row
+          && Number(latestPositionRecord.col) === plan.destination.col
+        ) {
+          setPositions((current) => ({
+            ...current,
+            [fighter.id]: [plan.destination.row, plan.destination.col],
+          }));
+          // The authoritative write already exists.  Keep the current turn
+          // eligible for the next action, but do not release a second write
+          // for this same movement request.
+          if (automatic) processedAiTurn.current = null;
+          return;
+        }
+      } catch {
+        // Preserve the original movement error below when the refresh itself
+        // is unavailable.
+      }
       if (startPosition) {
         setPositions((current) => ({ ...current, [fighter.id]: startPosition }));
       }
       if (automatic) processedAiTurn.current = null;
       showToast(`${fighter.display_name}移动保存失败，请刷新战斗状态`, "error");
     } finally {
+      if (movementRequestInFlight.current === requestKey) {
+        movementRequestInFlight.current = null;
+      }
       setMovingFighterId(null);
       if (automatic) onAutomationMovementChange(false);
     }
@@ -605,17 +867,27 @@ function BattleGrid({
     client,
     combatId,
     movingFighterId,
+    movementRequestInFlight,
     onAutomationMovementChange,
     onEndTurn,
     positions,
     showToast,
+    turnKey,
   ]);
   useEffect(() => {
     if (!automateEnemies) return;
     if (!activeFighterId) return;
-    if (processedAiTurn.current === turnKey || movingFighterId) return;
+    // A legendary/reaction area can temporarily use another monster as the
+    // map's targeting source.  It is a DM-directed preview, not permission
+    // for the current monster's automatic movement loop to run against it.
+    if (targetingActorId && targetingActorId !== activeFighterId) return;
+    // Wait for the command console to publish the current action's targeting
+    // template.  Running the movement planner once against the previous
+    // action's range is what allowed a later action to leave the AI stranded.
+    if (!targeting || (!targeting.originSelf && targeting.rangeFt <= 0)) return;
+    if (processedAiTurn.current === automationPlanKey || movingFighterId) return;
     const active = fighters.find((fighter) => fighter.id === activeFighterId);
-    if (!active || active.entity_type === "character" || active.hp <= 0) return;
+    if (!active || isPlayerControlledCombatant(active.entity_type, active.snapshot_json) || active.hp <= 0) return;
     const from = positions[active.id];
     if (!from) return;
     if (active.entity_type === "npc") {
@@ -644,24 +916,23 @@ function BattleGrid({
       }
       return;
     }
-    const target = fighters
-      .filter((fighter) => fighter.entity_type === "character" && fighter.hp > 0)
-      .map((fighter) => ({ fighter, position: positions[fighter.id] }))
-      .filter((item): item is { fighter: Combatant; position: [number, number] } => Boolean(item.position))
-      .sort((a, b) => {
-        if (!from) return 0;
-        return gridDistanceFt(
-          { row: from[0], col: from[1] },
-          { row: a.position[0], col: a.position[1] },
-          tacticalGrid.cell_size_ft,
-        ) - gridDistanceFt(
-          { row: from[0], col: from[1] },
-          { row: b.position[0], col: b.position[1] },
-          tacticalGrid.cell_size_ft,
-        );
-      })[0];
-    if (!target) return;
-    processedAiTurn.current = turnKey;
+    // The movement planner must pursue the same player-controlled target that
+    // the command console will attack.  Previously movement only considered
+    // characters while the console could select a lower-HP companion, leaving
+    // the monster beside one unit and waiting forever for a different unit.
+    const playerTargets = fighters.filter((fighter) => (
+      fighter.hp > 0
+      && (
+        fighter.entity_type === "character"
+        || fighter.snapshot_json.controller === "player"
+      )
+      && positions[fighter.id]
+    ));
+    const selectedTarget = chooseEnemyTarget(playerTargets, "standard");
+    const targetPosition = selectedTarget ? positions[selectedTarget.id] : undefined;
+    if (!selectedTarget || !targetPosition) return;
+    const target = { fighter: selectedTarget, position: targetPosition };
+    processedAiTurn.current = automationPlanKey;
     const occupied = new Set(Object.entries(positions)
       .filter(([id]) => id !== active.id)
       .map(([, position]) => `${position[0]}:${position[1]}`));
@@ -671,25 +942,43 @@ function BattleGrid({
       { row: target.position[0], col: target.position[1] },
       occupied,
       active.movement_remaining_ft,
-      targeting?.rangeFt ?? 5,
+      targeting.rangeFt,
     );
+    const targetPoint = { row: target.position[0], col: target.position[1] };
+    const targetCoveredByAction = getTargetingCells(
+      tacticalGrid,
+      { row: from[0], col: from[1] },
+      targetPoint,
+      targeting,
+    ).some((cell) => cell.row === targetPoint.row && cell.col === targetPoint.col);
     if (plan.spentFt <= 0) {
-      const alreadyInRange = gridDistanceFt(
-        { row: from[0], col: from[1] },
-        { row: target.position[0], col: target.position[1] },
-        tacticalGrid.cell_size_ft,
-      ) <= (targeting?.rangeFt ?? 5);
-      setLastAiMove(alreadyInRange
-        ? `${active.display_name}已在${target.fighter.display_name}的攻击范围内，保留剩余移动 ${active.movement_remaining_ft} 尺。`
-        : `${active.display_name}本回合没有足够移动力到达合法攻击范围。`);
-      if (!alreadyInRange && active.movement_remaining_ft > 0) {
-        void commitMove(active, plan, true, true);
+      if (targetCoveredByAction) {
+        setLastAiMove(`${active.display_name}已在${target.fighter.display_name}的合法技能范围内，保留剩余移动 ${active.movement_remaining_ft} 尺。`);
+      } else if (active.movement_remaining_ft > 0) {
+        // Being inside the numeric range is not enough for a cone, line, cube,
+        // or a target behind a wall. Search for a destination where the exact
+        // action template covers the target, then spend movement toward it.
+        const approachPlan = planTargetingPath(
+          tacticalGrid,
+          { row: from[0], col: from[1] },
+          targetPoint,
+          occupied,
+          active.movement_remaining_ft,
+          targeting,
+        );
+        if (approachPlan.spentFt > 0) {
+          setLastAiMove(`${active.display_name}当前距离虽在数值范围内，但尚未覆盖合法技能模板；正寻找视线/范围位置，移动 ${approachPlan.spentFt} 尺。`);
+          void commitMove(active, approachPlan, true);
+        } else {
+          setLastAiMove(`${active.display_name}无法在当前地图上建立该技能的合法范围或视线，结束本回合。`);
+          void commitMove(active, plan, true, true);
+        }
       }
       return;
     }
     setLastAiMove(`${active.display_name}按规则向${target.fighter.display_name}寻路移动 ${plan.spentFt} 尺；剩余 ${Math.max(0, active.movement_remaining_ft - plan.spentFt)} 尺。`);
     void commitMove(active, plan, true);
-  }, [activeFighterId, automateEnemies, commitMove, fighters, movingFighterId, onEndTurn, positions, tacticalGrid, targeting?.rangeFt, turnKey]);
+  }, [activeFighterId, automateEnemies, automationPlanKey, commitMove, fighters, movingFighterId, onEndTurn, positions, tacticalGrid, targeting, targetingActorId, turnKey]);
   const selectedPosition = selected ? positions[selected] : null;
   const selectedFighter = fighters.find((fighter) => fighter.id === selected);
   const selectedSpeed = selectedFighter?.speed_ft
@@ -703,7 +992,7 @@ function BattleGrid({
         tacticalGrid.cell_size_ft,
       )
     : null;
-  const activePositionTuple = activeFighterId ? positions[activeFighterId] : null;
+  const activePositionTuple = targetingSourceId ? positions[targetingSourceId] : null;
   const activePosition = useMemo(
     () => activePositionTuple
       ? { row: activePositionTuple[0], col: activePositionTuple[1] }
@@ -711,13 +1000,25 @@ function BattleGrid({
     [activePositionTuple],
   );
   useEffect(() => {
-    if (!automateEnemies || !targeting || !activePosition || !activeFighterId) return;
+    if (!automateEnemies || !targeting || (!targeting.originSelf && targeting.rangeFt <= 0) || !activePosition || !activeFighterId) return;
+    if (targetingActorId && targetingActorId !== activeFighterId) return;
     const active = fighters.find((fighter) => fighter.id === activeFighterId);
     if (!active || active.entity_type !== "monster") return;
-    const target = fighters
-      .filter((fighter) => fighter.entity_type === "character" && fighter.hp > 0)
-      .map((fighter) => positions[fighter.id])
-      .find((position): position is [number, number] => Boolean(position));
+    // Keep the visual aim point in lockstep with the command console's AI
+    // target selection.  Player-controlled summons are valid enemy targets
+    // too; limiting this to entity_type=character makes the AI choose a
+    // summon while the grid still paints the player, leaving validTargetIds
+    // without the chosen target and the turn waiting forever.
+    const playerTargets = fighters.filter((fighter) => (
+      fighter.hp > 0
+      && (
+        fighter.entity_type === "character"
+        || fighter.snapshot_json.controller === "player"
+      )
+      && positions[fighter.id]
+    ));
+    const selectedTarget = chooseEnemyTarget(playerTargets, "standard");
+    const target = selectedTarget ? positions[selectedTarget.id] : undefined;
     if (!target) return;
     setAimPoint((current) => (
       current?.row === target[0] && current.col === target[1]
@@ -735,11 +1036,12 @@ function BattleGrid({
     fighters,
     positions,
     targeting,
+    targetingActorId,
     turnKey,
   ]);
   const areaCells = useMemo(
-    () => targeting && activePosition && aimPoint
-      ? getTargetingCells(tacticalGrid, activePosition, aimPoint, targeting)
+    () => targeting && activePosition && (aimPoint || targeting.originSelf)
+      ? getTargetingCells(tacticalGrid, activePosition, aimPoint ?? activePosition, targeting)
       : [],
     [activePosition, aimPoint, tacticalGrid, targeting],
   );
@@ -747,17 +1049,70 @@ function BattleGrid({
     () => new Set(areaCells.map((cell) => `${cell.row}:${cell.col}`)),
     [areaCells],
   );
+  const elevationAtPoint = useCallback((point: GridPoint, targetElevationFt: number | null): TargetingElevationResult => {
+    if (!targeting || !activePosition) {
+      return { applies: false, valid: true, status: "not_applicable" };
+    }
+    return evaluateTargetingElevation(
+      tacticalGrid,
+      activePosition,
+      targeting.shape === "single" ? point : aimPoint ?? activePosition,
+      point,
+      targeting,
+      targetingOriginElevationFt,
+      targetElevationFt,
+    );
+  }, [activePosition, aimPoint, tacticalGrid, targeting, targetingOriginElevationFt]);
+  const fogPreviewKeys = useMemo(() => {
+    if (!fogPreview) return new Set<string>();
+    const playerPositions = fighters
+      .filter((fighter) => fighter.entity_type === "character")
+      .map((fighter) => positions[fighter.id])
+      .filter((position): position is [number, number] => Boolean(position));
+    if (!playerPositions.length) {
+      return new Set(
+        Array.from({ length: width * height }, (_, index) => {
+          const row = Math.floor(index / width) + 1;
+          const col = index % width + 1;
+          return `${row}:${col}`;
+        }),
+      );
+    }
+    return new Set(
+      Array.from({ length: width * height }, (_, index) => {
+        const row = Math.floor(index / width) + 1;
+        const col = index % width + 1;
+        const visible = playerPositions.some(([anchorRow, anchorCol]) => (
+          gridDistanceFt(
+            { row: anchorRow, col: anchorCol },
+            { row, col },
+            tacticalGrid.cell_size_ft,
+          ) <= 8 * tacticalGrid.cell_size_ft
+          && hasLineOfSight(tacticalGrid, { row: anchorRow, col: anchorCol }, { row, col })
+        ));
+        return visible ? null : `${row}:${col}`;
+      }).filter((key): key is string => key !== null),
+    );
+  }, [fighters, fogPreview, height, positions, tacticalGrid, width]);
   useEffect(() => {
     if (!targeting || !activePosition) {
-      onTargetValidityChange(new Set());
+      onTargetValidityChange({
+        anchorPoint: null,
+        horizontalTargetIds: new Set(),
+        validTargetIds: new Set(),
+        missingElevationTargetIds: new Set(),
+      });
       return;
     }
-    const valid = new Set(fighters.filter((fighter) => {
-      if (fighter.id === activeFighterId || fighter.hp <= 0) return false;
+    const horizontalTargetIds = new Set<string>();
+    const validTargetIds = new Set<string>();
+    const missingElevationTargetIds = new Set<string>();
+    fighters.forEach((fighter) => {
+      if (fighter.id === targetingSourceId || fighter.hp <= 0) return;
       const position = positions[fighter.id];
-      if (!position) return false;
-      if (targeting.shape === "single") {
-        return isAimPointInRange(
+      if (!position) return;
+      const horizontallyCovered = targeting.shape === "single"
+        ? isAimPointInRange(
           activePosition,
           { row: position[0], col: position[1] },
           targeting.rangeFt,
@@ -766,25 +1121,56 @@ function BattleGrid({
           tacticalGrid,
           activePosition,
           { row: position[0], col: position[1] },
-        );
+        )
+        : areaKeys.has(`${position[0]}:${position[1]}`);
+      if (!horizontallyCovered) return;
+      horizontalTargetIds.add(fighter.id);
+      const elevation = elevationAtPoint(
+        { row: position[0], col: position[1] },
+        combatantElevationFt(fighter),
+      );
+      if (elevation.valid) {
+        validTargetIds.add(fighter.id);
+      } else if (
+        elevation.status === "missing_target_elevation"
+        || elevation.status === "missing_origin_elevation"
+      ) {
+        missingElevationTargetIds.add(fighter.id);
       }
-      return areaKeys.has(`${position[0]}:${position[1]}`);
-    }).map((fighter) => fighter.id));
-    onTargetValidityChange(valid);
+    });
+    onTargetValidityChange({
+      anchorPoint: aimPoint ?? (targeting.originSelf ? activePosition : null),
+      horizontalTargetIds,
+      validTargetIds,
+      missingElevationTargetIds,
+    });
   }, [
-    activeFighterId,
     activePosition,
+    aimPoint,
     areaKeys,
     fighters,
     onTargetValidityChange,
     positions,
     tacticalGrid,
     targeting,
+    elevationAtPoint,
+    targetingOriginElevationFt,
+    targetingSourceId,
   ]);
   const tokenAt = (row: number, col: number) => fighters.find((fighter) => {
     const position = positions[fighter.id];
-    return position?.[0] === row && position[1] === col;
+    const elevationFt = combatantElevationFt(fighter);
+    return position?.[0] === row
+      && position[1] === col
+      && (elevationLayer === "unknown" ? elevationFt === null : elevationFt === elevationLayer);
   });
+  if (!grid) {
+    return (
+      <div className="mt-4 rounded-lg border border-ink-700 bg-ink-950/50 p-4 text-sm text-stone-400">
+        正在读取当前 Scene 的持久化地图；地图加载完成后才会显示战斗网格。
+      </div>
+    );
+  }
   return (
     <div className="mt-4 rounded-lg border border-ink-700 bg-ink-950/50 p-3">
       <div className="mb-2 flex flex-wrap items-center gap-2">
@@ -793,7 +1179,38 @@ function BattleGrid({
         {interactionMode === "move" && selected === activeFighterId ? (
           <Badge tone="ok">绿色范围：本回合剩余可移动区域</Badge>
         ) : null}
-        {targeting ? <Badge tone="ai">施法指示：{targeting.label}</Badge> : null}
+        {targeting ? <Badge tone="ai">施法指示：{targeting.label}{targeting.heightFt ? ` · 高度 ${targeting.heightFt}尺` : ""}{targeting.anchorHeightFt !== undefined ? ` · 锚点 ${targeting.anchorHeightFt}尺` : ""}</Badge> : null}
+        <div aria-label="地图高度层" className="flex flex-wrap items-center gap-1 rounded border border-ink-700 bg-ink-950/60 p-1">
+          <span className="px-1 text-2xs text-stone-500">高度层</span>
+          {elevationLayers.map((layer) => (
+            <button
+              aria-pressed={elevationLayer === layer}
+              className={`rounded px-1.5 py-0.5 text-2xs ${elevationLayer === layer ? "bg-violet-700 text-white" : "text-stone-400 hover:bg-ink-800"}`}
+              key={layer}
+              onClick={() => setElevationLayer(layer)}
+              type="button"
+            >
+              {layer}尺
+            </button>
+          ))}
+          {hasUnknownElevation ? (
+            <button
+              aria-pressed={elevationLayer === "unknown"}
+              className={`rounded px-1.5 py-0.5 text-2xs ${elevationLayer === "unknown" ? "bg-amber-700 text-white" : "text-stone-400 hover:bg-ink-800"}`}
+              onClick={() => setElevationLayer("unknown")}
+              type="button"
+            >
+              未记录
+            </button>
+          ) : null}
+        </div>
+        <button
+          className={`rounded border px-2 py-1 text-2xs ${fogPreview ? "border-violet-500 bg-violet-950/70 text-violet-100" : "border-ink-700 text-stone-400"}`}
+          onClick={() => setFogPreview((current) => !current)}
+          type="button"
+        >
+          战争迷雾：预览{fogPreview ? "开启" : "关闭"}
+        </button>
         <div className="flex rounded border border-ink-700 p-0.5">
           <button className={`rounded px-2 py-1 text-2xs ${interactionMode === "move" ? "bg-ember-700 text-white" : "text-stone-500"}`} onClick={() => setInteractionMode("move")} type="button">移动</button>
           <button className={`rounded px-2 py-1 text-2xs ${interactionMode === "target" ? "bg-sky-700 text-white" : "text-stone-500"}`} disabled={!targeting} onClick={() => setInteractionMode("target")} type="button">技能范围</button>
@@ -836,11 +1253,17 @@ function BattleGrid({
           const inCastRange = Boolean(targeting && activePosition && isAimPointInRange(
             activePosition,
             point,
-            targeting.rangeFt,
+            targeting.originSelf ? (targeting.sizeFt ?? tacticalGrid.cell_size_ft) : targeting.rangeFt,
             tacticalGrid.cell_size_ft,
           ) && hasLineOfSight(tacticalGrid, activePosition, point));
-          const affected = areaKeys.has(`${rowNumber}:${colNumber}`);
-          const terrainClass = terrainCellClass(sceneCell);
+          const horizontallyAffected = areaKeys.has(`${rowNumber}:${colNumber}`);
+          const layerElevation = elevationLayer === "unknown" ? null : elevationLayer;
+          const layerElevationResult = elevationAtPoint(point, layerElevation);
+          const affected = horizontallyAffected && layerElevationResult.valid;
+          const fogged = fogPreviewKeys.has(`${rowNumber}:${colNumber}`);
+          const terrainClass = fogged
+            ? "bg-black border-black/90"
+            : terrainCellClass(sceneCell, tacticalGrid.theme);
           const isVoid = isMapVoidCell(sceneCell);
           const isDoor = sceneCell?.kind === "door";
           const doorOrientation = isDoor
@@ -848,10 +1271,11 @@ function BattleGrid({
             : null;
           return (
             <button
-              className={`relative aspect-square border border-ink-800 text-[9px] transition duration-200 ${terrainClass} ${inCastRange && !blocked && interactionMode === "target" ? "bg-sky-950/60 ring-1 ring-inset ring-sky-500/50" : ""} ${affected && !blocked && interactionMode === "target" ? "bg-fuchsia-900/70 ring-2 ring-inset ring-fuchsia-400/80" : ""} ${aimPoint?.row === rowNumber && aimPoint.col === colNumber ? "outline outline-2 outline-amber-300" : ""} ${canMove && interactionMode === "move" ? "bg-emerald-950/75 ring-1 ring-inset ring-emerald-400/75 hover:bg-emerald-950/60" : ""}`}
+              className={`relative aspect-square border border-ink-800 text-[9px] transition duration-200 ${terrainClass} ${inCastRange && !blocked && interactionMode === "target" ? "bg-sky-950/60 ring-1 ring-inset ring-sky-500/50" : ""} ${affected && !blocked && interactionMode === "target" ? "!bg-fuchsia-900/70 !ring-2 !ring-inset !ring-fuchsia-400/80" : ""} ${aimPoint?.row === rowNumber && aimPoint.col === colNumber ? "outline outline-2 outline-amber-300" : ""} ${canMove && interactionMode === "move" ? "bg-emerald-950/75 ring-1 ring-inset ring-emerald-400/75 hover:bg-emerald-950/60" : ""}`}
               data-grid-col={colNumber}
               data-grid-row={rowNumber}
               data-token-id={fighter?.id}
+              disabled={fogged}
               key={`${rowNumber}-${colNumber}`}
               onClick={() => {
                 if (interactionMode === "target" && targeting && activePosition && activeFighterId) {
@@ -865,16 +1289,27 @@ function BattleGrid({
                   }
                   setAimPoint(point);
                   const affectedNow = getTargetingCells(tacticalGrid, activePosition, point, targeting);
-                  if (fighter && fighter.id !== activeFighterId) {
-                    if (affectedNow.some((cell) => cell.row === rowNumber && cell.col === colNumber)) {
+                  const verticalNow = evaluateTargetingElevation(
+                    tacticalGrid,
+                    activePosition,
+                    point,
+                    point,
+                    targeting,
+                    targetingOriginElevationFt,
+                    combatantElevationFt(fighter),
+                  );
+                  if (fighter && fighter.id !== targetingSourceId) {
+                    if (!verticalNow.valid) {
+                      setTargetingMessage(targetingElevationMessage(fighter, verticalNow));
+                    } else if (affectedNow.some((cell) => cell.row === rowNumber && cell.col === colNumber)) {
                       onTargetSelect(fighter.id);
                       setSelected(fighter.id);
-                      setTargetingMessage(`${fighter.display_name}位于合法范围内，已选为目标。`);
+                      setTargetingMessage(`${fighter.display_name}位于合法范围内，已选为目标（高度层 ${elevationLayerLabel(elevationLayer)}）。`);
                     } else {
                       setTargetingMessage(`${fighter.display_name}不在当前技能的实际影响范围内。`);
                     }
                   } else {
-                    setTargetingMessage(`已选择范围中心（${rowNumber}, ${colNumber}）；紫色区域内的单位会受到影响。`);
+                    setTargetingMessage(`已选择范围中心（${rowNumber}, ${colNumber}）；紫色区域会按当前 ${elevationLayerLabel(elevationLayer)} 与动作高度显示。`);
                   }
                   return;
                 }
@@ -885,7 +1320,9 @@ function BattleGrid({
                   void commitMove(selectedFighter, manualPlan, false);
                 }
               }}
-              title={canMove && manualPlan
+              title={fogged
+                ? "战争迷雾：玩家尚未探索"
+                : canMove && manualPlan
                 ? `可移动到这里 · 消耗 ${manualPlan.spentFt} 尺（${manualPlan.path.length} 格）`
                 : sceneCell?.label ?? (moveDistance === null ? "选择一个单位" : `${moveDistance} 尺`)}
               type="button"
@@ -903,8 +1340,9 @@ function BattleGrid({
                   <span className="absolute right-0 top-0 rounded-bl bg-amber-500 px-0.5 font-bold text-ink-950">门</span>
                 </>
               ) : null}
-              {sceneCell?.label && sceneCell.kind !== "wall" && !isVoid && !isDoor ? <span className="absolute left-0 top-0 max-w-full truncate text-stone-500">{sceneCell.label.slice(0, 2)}</span> : null}
-              {fighter ? <span className={`flex h-full items-center justify-center rounded-full px-1 text-center transition duration-300 ${impactFighterId === fighter.id ? "scale-110 bg-red-500 text-white ring-4 ring-red-300/80" : selected === fighter.id && fighter.id !== activeFighterId ? "bg-emerald-400 text-ink-950 ring-4 ring-emerald-300/70" : fighter.entity_type === "monster" ? "bg-red-500/30 text-red-100" : fighter.entity_type === "npc" ? "bg-violet-500/25 text-violet-100" : "bg-amber-500/35 text-amber-100"}`}>{fighter.display_name.slice(0, 4)}</span> : null}
+              {!fighter && shouldShowTerrainLabel(sceneCell) && !isVoid && !isDoor ? <span className="absolute inset-x-0 bottom-0 truncate px-0.5 text-[8px] text-stone-500">{sceneCell?.label?.slice(0, 5)}</span> : null}
+              {fighter ? <span className={`flex h-full flex-col items-center justify-center rounded-full px-1 text-center leading-none transition duration-300 ${impactFighterId === fighter.id ? "scale-110 bg-red-500 text-white ring-4 ring-red-300/80" : selected === fighter.id && fighter.id !== activeFighterId ? "bg-emerald-400 text-ink-950 ring-4 ring-emerald-300/70" : fighter.entity_type === "monster" ? "bg-red-500/30 text-red-100" : fighter.entity_type === "npc" ? "bg-violet-500/25 text-violet-100" : "bg-amber-500/35 text-amber-100"}`}><span>{fighter.display_name.slice(0, 4)}</span><span className="mt-0.5 text-[7px] opacity-80">{elevationLayerLabel(elevationLayer)}</span></span> : null}
+              {fogged ? <span aria-hidden className="pointer-events-none absolute inset-0 bg-black/95 shadow-[inset_0_0_10px_rgba(0,0,0,.95)]" /> : null}
             </button>
           );
         }))}
@@ -917,6 +1355,8 @@ function BattleGrid({
         <span><i className="mr-1 inline-block h-2 w-2 rounded border border-emerald-400 bg-emerald-900" />本回合可移动范围</span>
         <span><i className="mr-1 inline-block h-2 w-2 rounded border border-sky-400" />施法距离</span>
         <span><i className="mr-1 inline-block h-2 w-2 rounded bg-fuchsia-700 ring-1 ring-fuchsia-400" />实际影响范围</span>
+        <span>当前显示高度层：{elevationLayerLabel(elevationLayer)}；切换层可查看同一格的不同单位，带高度的区域会在不相交楼层隐藏紫色预览。</span>
+        {fogPreview ? <span><i className="mr-1 inline-block h-2 w-2 rounded bg-black ring-1 ring-violet-400" />战争迷雾预览：玩家视野外</span> : null}
         <span>速度上限：{selected ? `${selectedSpeed}尺` : "—"} · 本回合剩余：{selected ? `${selectedRemaining}尺（${Math.floor(selectedRemaining / tacticalGrid.cell_size_ft)}格）` : "选择当前单位后显示"}；每次移动后会从新位置重新计算绿色范围</span>
       </div>
     </div>
@@ -933,7 +1373,10 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
   const [selectedKey, setSelectedKey] = useState("");
   const autoEnemiesStorageKey = `dnd-dm-auto-enemies:${campaignId}:${combat.id}`;
   const [autoEnemies, setAutoEnemies] = useState(
-    () => localStorage.getItem(autoEnemiesStorageKey) !== "false",
+    // Automatic enemy turns are opt-in until the action has passed the
+    // compiler quality gate. A missing preference must never imply consent
+    // to guessed monster values or ranges.
+    () => localStorage.getItem(autoEnemiesStorageKey) === "true",
   );
   const [xpOverride, setXpOverride] = useState("");
   const [goldPerCharacter, setGoldPerCharacter] = useState("0");
@@ -943,18 +1386,35 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
   const [lootWeight, setLootWeight] = useState("0");
   const [lootPriceGp, setLootPriceGp] = useState("0");
   const [targetingRange, setTargetingRange] = useState<CombatTargeting | null>(null);
+  const [targetingActorId, setTargetingActorId] = useState<string | null>(null);
   const [selectedMapTargetId, setSelectedMapTargetId] = useState("");
-  const [targetableFighterIds, setTargetableFighterIds] = useState<ReadonlySet<string>>(new Set());
+  const [targetingValidity, setTargetingValidity] = useState<CombatTargetingValidity>({
+    anchorPoint: null,
+    horizontalTargetIds: new Set(),
+    validTargetIds: new Set(),
+    missingElevationTargetIds: new Set(),
+  });
   const [automaticMovementPending, setAutomaticMovementPending] = useState(false);
   const [expandedFighterId, setExpandedFighterId] = useState<string | null>(null);
   const [resetConfirmation, setResetConfirmation] = useState(false);
   const [archiveConfirmation, setArchiveConfirmation] = useState(false);
+  const [summonCompanionId, setSummonCompanionId] = useState("");
+  const [summonCount, setSummonCount] = useState("1");
+  const [summonController, setSummonController] = useState<"dm" | "player">("dm");
+  const [summonDisposition, setSummonDisposition] = useState<"enemy" | "ally">("enemy");
   const [resetGeneration, setResetGeneration] = useState(0);
-  const updateTargetableFighterIds = useCallback((next: ReadonlySet<string>) => {
-    setTargetableFighterIds((current) => {
-      const currentKey = [...current].sort().join("|");
-      const nextKey = [...next].sort().join("|");
-      return currentKey === nextKey ? current : next;
+  const [effectSavePrompts, setEffectSavePrompts] = useState<EffectSavePrompt[]>([]);
+  const [effectSaveRolls, setEffectSaveRolls] = useState<Record<string, string>>({});
+  const nextTurnInFlight = useRef(false);
+  const updateTargetingValidity = useCallback((next: CombatTargetingValidity) => {
+    setTargetingValidity((current) => {
+      const keyFor = (value: CombatTargetingValidity) => [
+        value.anchorPoint ? `${value.anchorPoint.row}:${value.anchorPoint.col}` : "",
+        [...value.horizontalTargetIds].sort().join("|"),
+        [...value.validTargetIds].sort().join("|"),
+        [...value.missingElevationTargetIds].sort().join("|"),
+      ].join("/");
+      return keyFor(current) === keyFor(next) ? current : next;
     });
   }, []);
   const [settlementPreview, setSettlementPreview] = useState<{
@@ -974,13 +1434,37 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
     queryFn: ({ signal }) => listCombatActions(campaignId, combat.id, signal),
     refetchInterval: combat.status === "active" ? 15_000 : false,
   });
-  const hasPendingPlayerRoll = (combatActions.data ?? []).some(
+  const pendingPlayerRolls = (combatActions.data ?? []).filter(
     (action) => action.action_type === "player_roll_prompt" && action.status === "previewed",
   );
+  const hasPendingPlayerRoll = pendingPlayerRolls.length > 0;
   const combatEffects = useQuery({
     queryKey: ["combat-effects", campaignId, combat.id],
     queryFn: ({ signal }) => listCombatEffects(campaignId, combat.id, signal),
     refetchInterval: combat.status === "active" ? 15_000 : false,
+  });
+  const activeUntilSaveEffects = useMemo(
+    () => (combatEffects.data ?? []).filter(isActiveUntilSaveEffect),
+    [combatEffects.data],
+  );
+  // A turn-boundary prompt is ephemeral, but the underlying until-save effect
+  // is persisted.  Keep a local prompt only while it is still active; after a
+  // reload/poll the separate persisted-status panel below can explain the
+  // state without inventing a new, out-of-window roll request.
+  useEffect(() => {
+    const activeEffectIds = new Set(activeUntilSaveEffects.map((effect) => effect.id));
+    setEffectSavePrompts((current) => {
+      const next = current.filter((prompt) => activeEffectIds.has(prompt.effect_id));
+      return next.length === current.length ? current : next;
+    });
+    setEffectSaveRolls((current) => {
+      const entries = Object.entries(current).filter(([effectId]) => activeEffectIds.has(effectId));
+      return entries.length === Object.keys(current).length ? current : Object.fromEntries(entries);
+    });
+  }, [activeUntilSaveEffects]);
+  const companions = useQuery({
+    queryKey: ["companions", campaignId],
+    queryFn: ({ signal }) => listCompanions(campaignId, undefined, signal),
   });
   const endCondition = useQuery({
     queryKey: ["combat-end-condition", campaignId, combat.id],
@@ -1038,8 +1522,16 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
       setAutoEnemies(false);
       setResetGeneration((value) => value + 1);
       setSelectedMapTargetId("");
-      setTargetableFighterIds(new Set());
+      setTargetingValidity({
+        anchorPoint: null,
+        horizontalTargetIds: new Set(),
+        validTargetIds: new Set(),
+        missingElevationTargetIds: new Set(),
+      });
       setTargetingRange(null);
+      setTargetingActorId(null);
+      setEffectSavePrompts([]);
+      setEffectSaveRolls({});
       void client.invalidateQueries({ queryKey: ["combats", campaignId] });
       void client.invalidateQueries({ queryKey: ["combatants", campaignId, combat.id] });
       void client.invalidateQueries({ queryKey: ["combat-actions", campaignId, combat.id] });
@@ -1054,8 +1546,17 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
   });
   const nextTurn = useMutation({
     mutationFn: () => advanceCombatTurn(campaignId, combat.id, combat.version),
-    onSuccess: (result) => {
+    onSuccess: async (result) => {
+      setEffectSavePrompts(readEffectSavePrompts(result.effect_prompts));
       invalidate();
+      // Keep the AI gate closed until both the turn cursor and the newly
+      // active combatant snapshot have been refetched.  Without this barrier
+      // the console can see the new active unit while still holding its old
+      // combatant version, producing an immediate version conflict.
+      await Promise.all([
+        client.refetchQueries({ queryKey: ["combats", campaignId], type: "active" }),
+        client.refetchQueries({ queryKey: ["combatants", campaignId, combat.id], type: "active" }),
+      ]);
       showToast(result.expiration_prompts.length > 0
         ? `回合已结束；有 ${result.expiration_prompts.length} 个效果等待 DM 确认结束`
         : result.active_combatant
@@ -1067,7 +1568,42 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
       "error",
     ),
   });
+  const confirmEffectSave = useMutation({
+    mutationFn: (prompt: { effect_id: string; target_combatant_id: string; target_version: number; roll_total: number }) =>
+      confirmCombatEffectSave(campaignId, combat.id, prompt.effect_id, {
+        target_combatant_id: prompt.target_combatant_id,
+        target_version: prompt.target_version,
+        roll_total: prompt.roll_total,
+      }),
+    onSuccess: (result) => {
+      setEffectSavePrompts((current) => current.filter((prompt) => prompt.effect_id !== result.effect.id));
+      invalidate();
+      showToast(result.success ? "重复豁免成功，状态已结束" : "重复豁免失败，状态继续");
+    },
+    onError: () => showToast("状态重复豁免确认失败，请刷新战斗状态", "error"),
+  });
+  const advanceTurnIfIdle = useCallback(() => {
+    if (hasPendingPlayerRoll || nextTurn.isPending || nextTurnInFlight.current) return;
+    nextTurnInFlight.current = true;
+    nextTurn.mutate(undefined, {
+      onSettled: () => {
+        nextTurnInFlight.current = false;
+      },
+    });
+  }, [hasPendingPlayerRoll, nextTurn]);
   const ordered = [...(fighters.data ?? [])].filter((fighter) => fighter.is_active).sort((a, b) => b.initiative - a.initiative || a.display_name.localeCompare(b.display_name));
+  const pendingAdvancedPlayerRolls = pendingPlayerRolls.flatMap((action) => {
+    const request = action.request_json;
+    const summary = advancedActionPendingRollSummary({
+      actorName: ordered.find((fighter) => fighter.id === action.actor_combatant_id)?.display_name,
+      actionName: request.action_name,
+      actionCost: request.action_cost,
+      legendaryCost: request.legendary_cost,
+      legendaryPoolMax: request.legendary_pool_max,
+      reactionTrigger: request.reaction_trigger,
+    });
+    return summary ? [{ id: action.id, summary }] : [];
+  });
   const activeFighter = combat.status === "active"
     ? ordered[combat.current_turn_index] ?? ordered[0]
     : undefined;
@@ -1078,6 +1614,26 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
   const activeCharacter = activeFighter?.entity_type === "character" && activeFighter.entity_id
     ? candidates.find((candidate) => candidate.entityType === "character" && candidate.entityId === activeFighter.entity_id)?.character
     : undefined;
+  const addSummon = useMutation({
+    mutationFn: () => {
+      const companion = (companions.data ?? []).find((item) => item.id === summonCompanionId);
+      if (!companion) throw new Error("请选择召唤物模板");
+      return addCombatSummon(campaignId, combat.id, {
+        companion_id: companion.id,
+        count: Math.max(1, Math.min(20, Number(summonCount) || 1)),
+        controller: summonController,
+        owner_character_id: summonController === "player" ? companion.owner_character_id : undefined,
+        disposition: summonDisposition,
+        source_combatant_id: summonController === "player" ? activeFighter?.id : undefined,
+      });
+    },
+    onSuccess: (result) => {
+      invalidate();
+      setSummonCompanionId("");
+      showToast(`${result.combatants?.length ?? 1} 个召唤单位已加入先攻轨道`);
+    },
+    onError: (error) => showToast(error instanceof Error ? error.message : "召唤物加入战斗失败", "error"),
+  });
   const monstersInCombat = ordered.filter((fighter) => fighter.entity_type === "monster");
   const allMonstersDefeated = endCondition.data?.can_end ?? (
     monstersInCombat.length > 0
@@ -1306,12 +1862,79 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
             <label className="text-2xs text-stone-500">生命 HP<input className={`${inputCls} mt-1`} min="1" onChange={(event) => setHp(event.target.value)} type="number" value={hp} /></label>
             <Button disabled={!name.trim() || Number(hp) < 1} icon="plus" loading={add.isPending} type="submit">添加</Button>
           </form>
+          <div className="mt-3 rounded border border-violet-800/60 bg-violet-950/15 p-3">
+            <strong className="text-xs text-violet-100">召唤物：使用已有战斗模板加入先攻</strong>
+            <p className="mb-2 mt-1 text-2xs text-stone-500">法师之手等非生物效果只显示召唤积木，不会凭空生成 HP/先攻；选择有完整模板的伙伴后才会建立战斗单位。</p>
+            <div className="grid gap-2 md:grid-cols-[minmax(0,1fr)_8rem_8rem_auto]">
+              {(companions.data ?? []).length > 0 ? (
+                <select className={inputCls} onChange={(event) => setSummonCompanionId(event.target.value)} value={summonCompanionId}>
+                  <option value="">选择伙伴 / 召唤物模板</option>
+                  {(companions.data ?? []).map((item) => <option key={item.id} value={item.id}>{item.name} · HP {item.hp}/{item.max_hp} · AC {item.armor_class}</option>)}
+                </select>
+              ) : (
+                <p className="mb-0 rounded border border-amber-800/50 bg-amber-950/15 px-3 py-2 text-2xs leading-5 text-amber-200 md:col-span-4">
+                  当前战役还没有伙伴模板。请先在角色 / 伙伴管理中建立明确的 HP、AC、速度和动作模板；系统不会根据法术名称猜战斗数据。
+                </p>
+              )}
+              <label className="text-2xs text-stone-500">数量<input aria-label="DM召唤数量" className={`${inputCls} mt-1`} max="20" min="1" onChange={(event) => setSummonCount(event.target.value)} type="number" value={summonCount} /></label>
+              <select className={inputCls} onChange={(event) => setSummonController(event.target.value as "dm" | "player")} value={summonController}>
+                <option value="dm">DM / 敌方控制</option>
+                <option value="player">玩家控制</option>
+              </select>
+              <select className={inputCls} onChange={(event) => setSummonDisposition(event.target.value as "enemy" | "ally")} value={summonDisposition}>
+                <option value="enemy">敌对</option>
+                <option value="ally">友方</option>
+              </select>
+              <Button disabled={!summonCompanionId || (summonController === "player" && !activeFighter)} loading={addSummon.isPending} onClick={() => addSummon.mutate()} type="button" variant="primary">加入战斗轮</Button>
+            </div>
+          </div>
         </>
       ) : null}
       <CombatLogPanel actions={combatActions.data ?? []} />
+      {activeUntilSaveEffects.length > 0 ? (
+        <section className="mt-3 rounded-lg border border-amber-800/60 bg-amber-950/10 p-3" data-testid="combat-until-save-status">
+          <strong className="text-xs text-amber-200">持续状态 · 等待重复豁免</strong>
+          <p className="mb-2 mt-1 text-2xs leading-5 text-stone-400">这些效果从持久化战斗状态恢复，因此刷新或轮询后仍会显示。它们只说明状态仍生效；只有目标回合边界返回具体豁免请求时，才会在下方开放确认输入。</p>
+          <div className="grid gap-2 md:grid-cols-2">
+            {activeUntilSaveEffects.map((effect) => {
+              const target = ordered.find((fighter) => fighter.id === effect.target_combatant_id);
+              return (
+                <p className="m-0 rounded border border-amber-900/60 bg-ink-950/40 px-2 py-1.5 text-2xs text-stone-300" key={effect.id}>
+                  <strong>{target?.display_name ?? "目标已离场"}</strong> · {effect.name} · {effect.save_ability} 豁免 DC {effect.save_dc} · 状态仍生效
+                </p>
+              );
+            })}
+          </div>
+        </section>
+      ) : null}
+      {effectSavePrompts.length > 0 ? (
+        <div className="mt-3 rounded-lg border border-amber-700/60 bg-amber-950/15 p-3">
+          <strong className="text-xs text-amber-200">回合末重复豁免 · DM确认</strong>
+          <p className="mb-2 mt-1 text-2xs text-stone-400">本轮已收到目标回合末的具体豁免请求。填写玩家实际总值；失败时状态继续生效，成功后才会结束。刷新后只恢复上方状态，不会伪造一个新的回合末请求。</p>
+          <div className="grid gap-2">
+            {effectSavePrompts.map((prompt) => {
+              const target = ordered.find((fighter) => fighter.id === prompt.target_combatant_id);
+              const roll = effectSaveRolls[prompt.effect_id] ?? "";
+              return (
+                <div className="flex flex-wrap items-center gap-2 rounded border border-amber-900/60 bg-ink-950/40 px-2 py-1.5 text-2xs" key={prompt.effect_id}>
+                  <span className="mr-auto text-stone-300">{prompt.summary ?? "状态重复豁免"} · {prompt.save_ability} DC {prompt.save_dc}{target ? ` · ${target.display_name}` : " · 目标已离场"}</span>
+                  <input aria-label={`${prompt.effect_id} 回合末豁免`} className={`${inputCls} w-20`} min="-100" onChange={(event) => setEffectSaveRolls((current) => ({ ...current, [prompt.effect_id]: event.target.value }))} type="number" value={roll} />
+                  <Button disabled={!target || !roll.trim() || !Number.isFinite(Number(roll)) || confirmEffectSave.isPending} loading={confirmEffectSave.isPending} onClick={() => { if (target) confirmEffectSave.mutate({ effect_id: prompt.effect_id, target_combatant_id: target.id, target_version: target.version, roll_total: Number(roll) }); }} size="sm" variant="primary">确认玩家实际豁免</Button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ) : null}
       {hasPendingPlayerRoll ? (
-        <div className="mt-3 rounded-lg border border-sky-700/60 bg-sky-950/20 px-3 py-2 text-xs text-sky-100">
-          等待玩家完成当前豁免或检定；怪物行动队列已暂停，结算后才会轮到下一单位。
+        <div className="mt-3 rounded-lg border border-sky-700/60 bg-sky-950/20 px-3 py-2 text-xs text-sky-100" data-testid="combat-pending-player-rolls">
+          <strong>玩家待掷骰 · 战斗暂停</strong>
+          <p className="mb-0 mt-1 leading-5">请求已经创建，但玩家提交前不表示伤害、状态或后续回合已经完成；怪物行动队列会保持暂停。</p>
+          {pendingAdvancedPlayerRolls.length > 0 ? (
+            <ul className="mb-0 mt-2 grid gap-1 pl-4 text-2xs text-sky-50">
+              {pendingAdvancedPlayerRolls.map((item) => <li key={item.id}>{item.summary}</li>)}
+            </ul>
+          ) : null}
         </div>
       ) : null}
       {ordered.length > 0 ? (
@@ -1347,11 +1970,12 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
               fighters={ordered}
               grid={grid}
               onEndTurn={() => {
-                if (!hasPendingPlayerRoll) nextTurn.mutate();
+                advanceTurnIfIdle();
               }}
               onAutomationMovementChange={setAutomaticMovementPending}
               onTargetSelect={setSelectedMapTargetId}
-              onTargetValidityChange={updateTargetableFighterIds}
+              onTargetValidityChange={updateTargetingValidity}
+              targetingActorId={targetingActorId}
               targeting={targetingRange}
               turnKey={`${combat.round_number}:${combat.current_turn_index}:${activeFighter?.id ?? "none"}`}
             />
@@ -1379,13 +2003,17 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
               fighters={ordered}
               onAutoEnemiesChange={setAutoEnemies}
               onEnemyTurnComplete={() => {
-                if (!hasPendingPlayerRoll && !nextTurn.isPending) nextTurn.mutate();
+                advanceTurnIfIdle();
               }}
-              onRangeChange={setTargetingRange}
+              onRangeChange={(range, actorId) => {
+                setTargetingRange(range);
+                setTargetingActorId(range ? actorId ?? activeFighter.id : null);
+                setSelectedMapTargetId("");
+              }}
               onTargetChange={setSelectedMapTargetId}
               selectedTargetId={selectedMapTargetId}
+              targetingValidity={targetingValidity}
               turnKey={`${combat.round_number}:${combat.current_turn_index}:${activeFighter.id}`}
-              validTargetIds={targetableFighterIds}
             />
           ) : (
             <p className="text-xs text-stone-500">当前没有可行动单位。</p>
@@ -1398,8 +2026,8 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
             combatId={combat.id}
             fighters={ordered}
             onResolved={() => {
-              if (autoEnemies && activeFighter?.entity_type !== "character" && !nextTurn.isPending) {
-                nextTurn.mutate();
+              if (autoEnemies && activeFighter?.entity_type !== "character") {
+                advanceTurnIfIdle();
               }
             }}
           />
@@ -1454,6 +2082,11 @@ function CombatContent({ campaignId }: { campaignId: string }): ReactElement {
     () => sessionStorage.getItem(`dnd-dm-active-combat:${campaignId}`) ?? "",
   );
   const combats = useQuery({ queryKey: ["combats", campaignId], queryFn: ({ signal }) => listCombats(campaignId, signal), refetchInterval: 15_000 });
+  const playerRoom = useQuery({
+    queryKey: ["player-room-admin", campaignId],
+    queryFn: ({ signal }) => getPlayerRoom(campaignId, signal),
+    retry: false,
+  });
   const scenes = useQuery({ queryKey: ["scenes", campaignId], queryFn: ({ signal }) => listScenes(campaignId, signal) });
   const characters = useQuery({ queryKey: ["characters", campaignId], queryFn: ({ signal }) => listCharacters(campaignId, signal) });
   const locations = useQuery({ queryKey: ["locations", campaignId], queryFn: ({ signal }) => listLocations(campaignId, signal) });
@@ -1461,6 +2094,29 @@ function CombatContent({ campaignId }: { campaignId: string }): ReactElement {
   const monsters = useQuery({ queryKey: ["monsters", campaignId], queryFn: ({ signal }) => listMonsters(campaignId, signal) });
   const events = useQuery({ queryKey: ["events", campaignId], queryFn: ({ signal }) => listEvents(campaignId, signal) });
   const encounterAdjustments = useQuery({ queryKey: ["encounter-adjustments", campaignId], queryFn: ({ signal }) => listEncounterAdjustments(campaignId, undefined, signal) });
+  const syncPlayerRoomToCombat = (combat: Combat | undefined): void => {
+    if (!combat?.scene_id) return;
+    void (async () => {
+      let room = playerRoom.data;
+      for (let attempt = 0; attempt < 2; attempt += 1) {
+        try {
+          room ??= await getPlayerRoom(campaignId);
+          if (room.status !== "active") return;
+          const result = await setPlayerRoomLiveState(
+            campaignId,
+            combat.scene_id,
+            combat.id,
+            room.version,
+          );
+          client.setQueryData(["player-room-admin", campaignId], result);
+          return;
+        } catch (error: unknown) {
+          if (!isApiError(error, 409) || attempt === 1) return;
+          room = undefined;
+        }
+      }
+    })();
+  };
   const candidates: CombatCandidate[] = [
     ...(characters.data ?? []).map((entity: Character) => ({ key: `character:${entity.id}`, entityType: "character" as const, entityId: entity.id, name: entity.name, armorClass: entity.armor_class, hp: entity.hp, maxHp: entity.max_hp, dexterity: entity.ability_scores.dexterity ?? 10, speed: entity.speed, actions: [...entity.actions, ...entity.spells], abilityScores: entity.ability_scores, character: entity })),
     ...(npcs.data ?? []).map((entity: Npc) => ({ key: `npc:${entity.id}`, entityType: "npc" as const, entityId: entity.id, name: entity.name, armorClass: entity.armor_class, hp: entity.hp, maxHp: entity.max_hp, dexterity: entity.ability_scores.dexterity ?? 10, speed: entity.speed, actions: entity.actions, abilityScores: entity.ability_scores, challengeRating: entity.challenge_rating })),
@@ -1473,6 +2129,7 @@ function CombatContent({ campaignId }: { campaignId: string }): ReactElement {
       setSelectedCombatId(created.id);
       sessionStorage.setItem(`dnd-dm-active-combat:${campaignId}`, created.id);
       void client.invalidateQueries({ queryKey: ["combats", campaignId] });
+      syncPlayerRoomToCombat(created);
       showToast("战斗已创建并加载场景网格");
     },
     onError: () => showToast("创建战斗失败", "error"),
@@ -1492,20 +2149,11 @@ function CombatContent({ campaignId }: { campaignId: string }): ReactElement {
   }, [campaignId, combats.data, combats.isFetching, selectedCombatId]);
   const selectedCombat = combats.data?.find((combat) => combat.id === selectedCombatId);
   const selectedCombatSceneId = selectedCombat?.scene_id ?? null;
-  const liveCombatId = selectedCombat?.id ?? null;
   const persistentSceneGrid = useQuery({
     queryKey: ["scene-grid", campaignId, selectedCombatSceneId],
     queryFn: ({ signal }) => getSceneGrid(campaignId, selectedCombatSceneId ?? "", signal),
     enabled: Boolean(selectedCombatSceneId),
   });
-  useEffect(() => {
-    if (!liveCombatId) return;
-    void setPlayerRoomLiveState(
-      campaignId,
-      selectedCombatSceneId,
-      liveCombatId,
-    ).catch(() => undefined);
-  }, [campaignId, liveCombatId, selectedCombatSceneId]);
   return (
     <div className="mx-auto max-w-[1500px] p-4 lg:p-6">
       <Panel eyebrow="遭遇" title="战斗辅助">
@@ -1523,6 +2171,7 @@ function CombatContent({ campaignId }: { campaignId: string }): ReactElement {
               onChange={(event) => {
                 setSelectedCombatId(event.target.value);
                 sessionStorage.setItem(`dnd-dm-active-combat:${campaignId}`, event.target.value);
+                syncPlayerRoomToCombat(combats.data?.find((combat) => combat.id === event.target.value));
               }}
               value={selectedCombatId}
             >
@@ -1587,13 +2236,17 @@ function CombatContent({ campaignId }: { campaignId: string }): ReactElement {
             cells: [...layerCells, ...objectCells],
           } : null;
           const storedGrid = scene ? readSceneGrid(scene.notes) : null;
-          const sceneGrid = serviceGrid ?? storedGrid ?? (scene
-            ? generateTacticalSceneGrid(
-                scene.name,
-                scene.description ?? "",
-                `${location?.name ?? ""} ${location?.description ?? ""}`,
-              )
-            : null);
+          const sceneGrid = persistentSceneGrid.data
+            ? serviceGrid
+            : persistentSceneGrid.isLoading
+              ? null
+              : storedGrid ?? (scene
+                ? generateTacticalSceneGrid(
+                    scene.name,
+                    scene.description ?? "",
+                    `${location?.name ?? ""} ${location?.description ?? ""}`,
+                  )
+                : null);
           const sceneAdjustments = (events.data ?? [])
             .filter((event) => event.metadata_json.scene_id === selectedCombat.scene_id && Number(event.metadata_json.encounter_adjustment ?? 0) !== 0)
             .map((event) => {

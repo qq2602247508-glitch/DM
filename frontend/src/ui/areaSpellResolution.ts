@@ -19,12 +19,30 @@ export type AreaSpellTargetResolution = {
   saveTotal: number;
   success: boolean;
   damage: number;
+  damageComponents: Array<{
+    amount: number;
+    damageType: string;
+    damageTags?: string[];
+  }>;
+};
+
+export type AreaSpellDamageComponent = {
+  amount?: number;
+  expression?: string;
+  damage_type: string;
+  damage_tags?: string[];
 };
 
 export type AreaSpellResolution = {
   damageExpression: string;
   damageRolls: number[];
   sharedDamage: number;
+  damageComponents: Array<{
+    amount: number;
+    damageType: string;
+    damageTags?: string[];
+  }>;
+  damageType: string;
   saveAbility: string;
   saveDc: number;
   targets: AreaSpellTargetResolution[];
@@ -64,6 +82,8 @@ export function resolveAreaSavingThrows({
   saveAbility,
   halfDamageOnSave,
   sharedDamage,
+  damageComponents,
+  damageType,
   random = Math.random,
 }: {
   targets: AreaSpellTarget[];
@@ -72,21 +92,54 @@ export function resolveAreaSavingThrows({
   saveAbility: string;
   halfDamageOnSave: boolean;
   sharedDamage?: number;
+  damageComponents?: AreaSpellDamageComponent[];
+  damageType?: string;
   random?: () => number;
 }): AreaSpellResolution {
-  const expression = parseDiceExpression(damageExpression);
-  if (!expression) throw new Error("区域法术缺少有效伤害骰");
+  const rawComponents = damageComponents?.length
+    ? damageComponents
+    : [{ expression: damageExpression, damage_type: damageType ?? "" }];
+  const resolvedComponents: AreaSpellResolution["damageComponents"] = [];
+  const damageRolls: number[] = [];
+  const usesReportedSharedDamage = !damageComponents?.length && sharedDamage !== undefined;
+  for (const component of rawComponents) {
+    const type = component.damage_type.trim();
+    if (!type) throw new Error("区域法术的每段伤害都必须有明确伤害类型");
+    const amount = component.amount;
+    const hasExplicitAmount = Number.isFinite(amount) && Number(amount) >= 0;
+    const expression = hasExplicitAmount
+      ? null
+      : component.expression ? parseDiceExpression(component.expression) : null;
+    if (!usesReportedSharedDamage && !expression && !hasExplicitAmount) {
+      throw new Error(`区域法术缺少有效的${type}伤害骰或最终数值`);
+    }
+    const roll = usesReportedSharedDamage
+      ? { rolls: [], total: Number(sharedDamage) }
+      : hasExplicitAmount
+      ? { rolls: [], total: Number(amount) }
+      : expression
+      ? rollDiceExpression(expression, random)
+      : { rolls: [], total: Number(amount) };
+    damageRolls.push(...roll.rolls);
+    resolvedComponents.push({
+      amount: roll.total,
+      damageType: type,
+      ...(component.damage_tags?.length ? { damageTags: component.damage_tags } : {}),
+    });
+  }
   if (sharedDamage !== undefined && (!Number.isFinite(sharedDamage) || sharedDamage < 0)) {
     throw new Error("玩家伤害骰总值必须是非负数字");
   }
-  const damageRoll = sharedDamage === undefined
-    ? rollDiceExpression(expression, random)
-    : { rolls: [], total: sharedDamage };
+  const resolvedTotal = resolvedComponents.reduce((sum, component) => sum + component.amount, 0);
   const normalizedSaveAbility = normalizedAbility(saveAbility);
   return {
     damageExpression,
-    damageRolls: damageRoll.rolls,
-    sharedDamage: damageRoll.total,
+    damageRolls,
+    sharedDamage: resolvedTotal,
+    damageComponents: resolvedComponents,
+    damageType: resolvedComponents.length === 1
+      ? resolvedComponents[0]!.damageType
+      : "mixed",
     saveAbility: normalizedSaveAbility,
     saveDc,
     targets: targets.map((target) => {
@@ -94,6 +147,10 @@ export function resolveAreaSavingThrows({
       const modifier = savingThrowModifier(target, normalizedSaveAbility);
       const saveTotal = d20 + modifier;
       const success = saveTotal >= saveDc;
+      const targetComponents = resolvedComponents.map((component) => ({
+        ...component,
+        amount: success && halfDamageOnSave ? Math.floor(component.amount / 2) : success ? 0 : component.amount,
+      }));
       return {
         targetId: target.id,
         targetName: target.name,
@@ -101,9 +158,8 @@ export function resolveAreaSavingThrows({
         modifier,
         saveTotal,
         success,
-        damage: success
-          ? (halfDamageOnSave ? Math.floor(damageRoll.total / 2) : 0)
-          : damageRoll.total,
+        damage: targetComponents.reduce((sum, component) => sum + component.amount, 0),
+        damageComponents: targetComponents,
       };
     }),
   };

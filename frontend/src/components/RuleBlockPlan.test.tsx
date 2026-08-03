@@ -116,4 +116,50 @@ describe("rule block plans", () => {
       sizeFt: 20,
     });
   });
+
+  it("keeps a self-origin cube as an area targeting template", () => {
+    expect(targetingFromRulePlan({
+      rule_plan: {
+        blocks: [{
+          kind: "target",
+          mode: "self",
+          range_ft: 0,
+          shape: "cube",
+          size_ft: 15,
+        }],
+      },
+    })).toEqual({
+      shape: "cube",
+      rangeFt: 0,
+      sizeFt: 15,
+      originSelf: true,
+    });
+  });
+
+  it("lets legacy self-only plans fall back to the action description", () => {
+    expect(targetingFromRulePlan({
+      rule_plan: {
+        blocks: [{ kind: "target", mode: "self", range_ft: 0 }],
+      },
+    })).toBeNull();
+  });
+
+  it("derives an instantaneous area target from legacy area-effect blocks", () => {
+    expect(targetingFromRulePlan({
+      rule_plan: {
+        blocks: [
+          { kind: "target", mode: "point", range_ft: 150 },
+          { kind: "area_effect", shape: "sphere", size_ft: 20 },
+        ],
+      },
+    })).toEqual({ shape: "circle", rangeFt: 150, sizeFt: 20 });
+  });
+
+  it("does not convert an unresolved range into a self or point-blank template", () => {
+    expect(targetingFromRulePlan({
+      rule_plan: {
+        blocks: [{ kind: "target", mode: "single", range_ft: null }],
+      },
+    })).toBeNull();
+  });
 });

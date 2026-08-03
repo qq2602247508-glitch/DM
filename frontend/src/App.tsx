@@ -13,6 +13,7 @@ const RulesPage = lazy(() => import("./pages/RulesPage").then((module) => ({ def
 const ProposalsPage = lazy(() => import("./pages/ProposalsPage").then((module) => ({ default: module.ProposalsPage })));
 const ManagementPage = lazy(() => import("./pages/ManagementPage").then((module) => ({ default: module.ManagementPage })));
 const CombatPage = lazy(() => import("./pages/CombatPage").then((module) => ({ default: module.CombatPage })));
+const SimulationPage = lazy(() => import("./pages/SimulationPage").then((module) => ({ default: module.SimulationPage })));
 const StoryManagementPage = lazy(() => import("./pages/StoryManagementPage").then((module) => ({ default: module.StoryManagementPage })));
 const SettingsPage = lazy(() => import("./pages/SettingsPage").then((module) => ({ default: module.SettingsPage })));
 const NpcPage = lazy(() => import("./pages/NpcPage").then((module) => ({ default: module.NpcPage })));
@@ -66,6 +67,8 @@ function RoutedPage(): ReactElement {
       return <StoryManagementPage />;
     case "/combat":
       return <CombatPage />;
+    case "/simulation":
+      return <SimulationPage />;
     case "/settings":
       return <SettingsPage />;
     case "/player":
