@@ -3958,6 +3958,45 @@ class PlayerRoomService:
             ).all()
         )
 
+    @staticmethod
+    def _opportunity_attack_action(actions: object) -> dict[str, Any] | None:
+        """Choose a structured melee action eligible for an opportunity attack.
+
+        Older imported monsters often omit ``range_ft``; those actions remain
+        usable as a compatibility fallback.  Once a range or area is declared,
+        fail closed for ranged/area actions instead of borrowing the first
+        damage-bearing action (which could be a bow, spell, or breath attack).
+        """
+
+        if not isinstance(actions, list):
+            return None
+        candidates: list[tuple[int, int, dict[str, Any]]] = []
+        for index, raw in enumerate(actions):
+            if not isinstance(raw, dict) or not raw.get("damage"):
+                continue
+            action_type = str(raw.get("action_type") or "action").strip().lower()
+            if action_type in {"lair_action", "legendary_action", "spellcasting"}:
+                continue
+            if raw.get("area_shape") or raw.get("affects_multiple_targets"):
+                continue
+            if raw.get("ranged") is True or str(raw.get("attack_type") or "").lower() == "ranged":
+                continue
+            raw_range = raw.get("range_ft")
+            if isinstance(raw_range, bool):
+                continue
+            if raw_range is not None:
+                try:
+                    if int(raw_range) > 5:
+                        continue
+                except (TypeError, ValueError):
+                    continue
+            explicit_reaction = action_type in {"reaction", "opportunity_attack"}
+            candidates.append((0 if explicit_reaction else 1, index, raw))
+        if not candidates:
+            return None
+        candidates.sort(key=lambda item: (item[0], item[1]))
+        return candidates[0][2]
+
     def move(
         self,
         principal: PlayerPrincipal,
@@ -4128,23 +4167,30 @@ class PlayerRoomService:
                         grid_distance_ft(start_point, enemy_point, cell_size_ft=cell_size) <= 5
                         and grid_distance_ft(end_point, enemy_point, cell_size_ft=cell_size) > 5
                     ):
-                        action = next(
-                            (
-                                item
-                                for item in (enemy.snapshot_json.get("actions") or [])
-                                if isinstance(item, dict) and item.get("damage")
-                            ),
-                            {},
+                        action = self._opportunity_attack_action(
+                            enemy.snapshot_json.get("actions")
                         )
+                        if action is None:
+                            continue
                         damage_expression = str(action.get("damage") or "按 DM 指定")
                         opportunity_requests.append(
                             {
                                 "source_combatant_id": enemy.id,
                                 "source_name": enemy.display_name,
+                                "source_action_name": str(
+                                    action.get("name") or "近战攻击"
+                                ),
+                                "source_action_type": str(
+                                    action.get("action_type") or "action"
+                                ),
+                                "source_attack_range_ft": action.get("range_ft"),
                                 "damage_expression": damage_expression,
                                 "damage_type": str(action.get("damage_type") or "slashing"),
                                 "target_combatant_id": actor.id,
                                 "target_name": actor.display_name,
+                                "reaction_trigger": (
+                                    f"{actor.display_name} 离开 {enemy.display_name} 的近战威胁范围"
+                                ),
                             }
                         )
             snapshot["grid_position"] = _merge_grid_position(

@@ -871,7 +871,9 @@ class PlayerService:
             if not source.reaction_available:
                 raise ValueError("该敌人的反应已经被使用")
             target_version = target.version
-            action_name = f"借机攻击 · {source.display_name}"
+            action_name = str(
+                payload.get("source_action_name") or f"借机攻击 · {source.display_name}"
+            )
             damage_type = str(payload.get("damage_type") or "slashing")
             hit = critical_hit or attack_total >= target.armor_class
         amount = int(damage_total) if hit else 0
@@ -884,9 +886,9 @@ class PlayerService:
                 target_version=target_version,
                 actor_combatant_id=source_id,
                 action_cost="none",
-                action_name=action_name,
+                action_name=f"借机攻击 · {action_name}",
                 resolution_note=(
-                    f"攻击总值 {attack_total} 对抗 AC {target.armor_class}："
+                    f"{action_name}；攻击总值 {attack_total} 对抗 AC {target.armor_class}："
                     f"{'命中' if hit else '未命中'}；伤害骰 {damage_total}"
                 ),
                 amount=amount,

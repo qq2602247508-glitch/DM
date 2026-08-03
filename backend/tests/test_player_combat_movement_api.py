@@ -219,7 +219,22 @@ def test_leaving_melee_range_creates_dm_opportunity_request_and_resolves_attack(
             "max_hp": 20,
             "snapshot_json": {
                 "grid_position": {"row": 2, "col": 3},
-                "actions": [{"name": "长剑", "damage": "1d8+3", "damage_type": "slashing"}],
+                "actions": [
+                    {
+                        "name": "短弓",
+                        "damage": "1d6",
+                        "damage_type": "piercing",
+                        "range_ft": 80,
+                        "attack_type": "ranged",
+                    },
+                    {
+                        "name": "长剑",
+                        "damage": "1d8+3",
+                        "damage_type": "slashing",
+                        "range_ft": 5,
+                        "attack_type": "melee",
+                    },
+                ],
             },
         },
     ).json()
@@ -260,6 +275,10 @@ def test_leaving_melee_range_creates_dm_opportunity_request_and_resolves_attack(
         )
         assert opportunity["payload_json"]["source_combatant_id"] == enemy["id"]
         assert opportunity["payload_json"]["target_combatant_id"] == actor["id"]
+        assert opportunity["payload_json"]["source_action_name"] == "长剑"
+        assert opportunity["payload_json"]["reaction_trigger"] == (
+            "撤离者 离开 近战守卫 的近战威胁范围"
+        )
 
         resolved = campaign_client.post(
             f"/api/v1/campaigns/{campaign_id}/player-action-requests/{opportunity['id']}/accept",
