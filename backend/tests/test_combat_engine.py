@@ -3982,6 +3982,139 @@ def test_until_save_effect_has_authoritative_repeat_save_lifecycle(
     assert "震慑" not in saved.json()["target"]["conditions"]
 
 
+def test_structured_condition_sources_keep_independent_lifecycles(
+    combat_client: TestClient,
+) -> None:
+    """Repeated save outcomes must not collapse the second condition source."""
+
+    campaign = _campaign(combat_client, "structured condition sources")
+    base = f"/api/v1/campaigns/{campaign['id']}"
+    combat = combat_client.post(
+        f"{base}/combats", json={"name": "structured condition sources"}
+    ).json()
+    actor = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "状态施加者",
+            "entity_type": "monster",
+            "initiative": 20,
+            "hp": 20,
+            "max_hp": 20,
+        },
+    ).json()
+    target = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "重复中毒目标",
+            "entity_type": "character",
+            "initiative": 10,
+            "hp": 20,
+            "max_hp": 20,
+        },
+    ).json()
+    prompt_payload = {
+        "actor_combatant_id": actor["id"],
+        "actor_version": actor["version"],
+        "action_cost": "none",
+        "action_name": "毒素脉冲",
+        "resolution_type": "saving_throw",
+        "dc": 12,
+        "ability": "constitution",
+        "conditions_on_failure": ["中毒"],
+        "condition_duration": "rounds",
+        "condition_duration_value": 2,
+        "damage_type": "poison",
+        "description": "结构化状态来源回归",
+    }
+    first_prompt = combat_client.post(
+        f"{base}/combats/{combat['id']}/actions/player-rolls/pending",
+        headers={"X-Request-ID": "structured-condition-prompt-1"},
+        json={
+            **prompt_payload,
+            "target_combatant_id": target["id"],
+            "target_version": target["version"],
+        },
+    )
+    assert first_prompt.status_code == 200, first_prompt.text
+    first_action = first_prompt.json()["action"]
+    first_result = combat_client.post(
+        f"{base}/combats/{combat['id']}/actions/player-rolls/{first_action['id']}/confirm",
+        headers={"X-Request-ID": "structured-condition-roll-1"},
+        json={
+            "action_version": first_action["version"],
+            "roll_total": 1,
+            "dm_note": "第一个状态来源",
+        },
+    )
+    assert first_result.status_code == 200, first_result.text
+    target = combat_client.get(
+        f"{base}/combats/{combat['id']}/combatants/{target['id']}"
+    ).json()
+    assert "中毒" in target["conditions"]
+    first_effect_id = first_result.json()["resolution"]["structured_effects"]["effect_ids"][0]
+
+    second_prompt = combat_client.post(
+        f"{base}/combats/{combat['id']}/actions/player-rolls/pending",
+        headers={"X-Request-ID": "structured-condition-prompt-2"},
+        json={
+            **prompt_payload,
+            "target_combatant_id": target["id"],
+            "target_version": target["version"],
+        },
+    )
+    assert second_prompt.status_code == 200, second_prompt.text
+    second_action = second_prompt.json()["action"]
+    second_result = combat_client.post(
+        f"{base}/combats/{combat['id']}/actions/player-rolls/{second_action['id']}/confirm",
+        headers={"X-Request-ID": "structured-condition-roll-2"},
+        json={
+            "action_version": second_action["version"],
+            "roll_total": 1,
+            "dm_note": "第二个状态来源",
+        },
+    )
+    assert second_result.status_code == 200, second_result.text
+    target = combat_client.get(
+        f"{base}/combats/{combat['id']}/combatants/{target['id']}"
+    ).json()
+    second_effect_id = second_result.json()["resolution"]["structured_effects"]["effect_ids"][0]
+    actor = combat_client.get(
+        f"{base}/combats/{combat['id']}/combatants/{actor['id']}"
+    ).json()
+    assert first_effect_id != second_effect_id
+    assert "中毒" in target["conditions"]
+
+    ended_first = combat_client.post(
+        f"{base}/combats/{combat['id']}/effects/{first_effect_id}/end",
+        headers={"X-Request-ID": "structured-condition-end-1"},
+        json={
+            "target_version": target["version"],
+            "source_version": actor["version"],
+            "reason": "第一个来源结束",
+        },
+    )
+    assert ended_first.status_code == 200, ended_first.text
+    assert "中毒" in ended_first.json()["target"]["conditions"]
+    target = combat_client.get(
+        f"{base}/combats/{combat['id']}/combatants/{target['id']}"
+    ).json()
+    actor = combat_client.get(
+        f"{base}/combats/{combat['id']}/combatants/{actor['id']}"
+    ).json()
+
+    ended_second = combat_client.post(
+        f"{base}/combats/{combat['id']}/effects/{second_effect_id}/end",
+        headers={"X-Request-ID": "structured-condition-end-2"},
+        json={
+            "target_version": target["version"],
+            "source_version": actor["version"],
+            "reason": "第二个来源结束",
+        },
+    )
+    assert ended_second.status_code == 200, ended_second.text
+    assert "中毒" not in ended_second.json()["target"]["conditions"]
+
+
 def test_mixed_monster_area_damage_applies_evasion_to_each_segment(
     combat_client: TestClient,
 ) -> None:

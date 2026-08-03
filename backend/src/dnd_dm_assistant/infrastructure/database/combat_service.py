@@ -2080,14 +2080,15 @@ class CombatEngineService:
                 continue
             if expires:
                 state_name = f"monster_condition:{condition}"
-                if cls._active_runtime_effects(
-                    session,
-                    combat.id,
-                    target_id=target.id,
-                    state_name=state_name,
-                ):
-                    continue
-                condition_was_present = cls._has_condition(target, condition)
+                condition_was_present = bool(
+                    cls._has_condition(target, condition)
+                    and not cls._condition_owned_by_other_effect(
+                        session,
+                        None,
+                        target,
+                        condition,
+                    )
+                )
                 cls._add_condition(target, condition)
                 effect = CombatEffect(
                     campaign_id=combat.campaign_id,
@@ -2115,8 +2116,15 @@ class CombatEngineService:
                 )
             else:
                 before_conditions = list(target.conditions or [])
-                if cls._has_condition(target, condition):
-                    continue
+                condition_was_present = bool(
+                    cls._has_condition(target, condition)
+                    and not cls._condition_owned_by_other_effect(
+                        session,
+                        None,
+                        target,
+                        condition,
+                    )
+                )
                 cls._add_condition(target, condition)
                 duration_unit = condition_duration or "until_removed"
                 effect = CombatEffect(
@@ -2133,6 +2141,7 @@ class CombatEngineService:
                             "operation": "apply",
                         },
                         "applied_state": {"conditions": before_conditions},
+                        "condition_was_present": condition_was_present,
                         "source": "structured_monster_action",
                     },
                     started_round=combat.round_number,
