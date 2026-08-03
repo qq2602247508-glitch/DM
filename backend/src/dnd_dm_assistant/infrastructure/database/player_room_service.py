@@ -3044,6 +3044,32 @@ class PlayerRoomService:
                     details["damage_components_by_target"] = by_target
             return details
 
+        pending_reactions: list[dict[str, Any]] = []
+        if principal.character_id is not None:
+            for request in session.scalars(
+                select(PlayerActionRequest).where(
+                    PlayerActionRequest.campaign_id == room.campaign_id,
+                    PlayerActionRequest.character_id == principal.character_id,
+                    PlayerActionRequest.player_key == principal.session_id,
+                    PlayerActionRequest.action_type == "opportunity_reaction",
+                    PlayerActionRequest.status == "pending",
+                ).order_by(PlayerActionRequest.created_at)
+            ).all():
+                payload = dict(request.payload_json or {})
+                pending_reactions.append(
+                    {
+                        "id": request.id,
+                        "version": request.version,
+                        "source_name": payload.get("source_name"),
+                        "source_action_name": payload.get("source_action_name"),
+                        "damage_expression": payload.get("damage_expression"),
+                        "damage_type": payload.get("damage_type"),
+                        "target_name": payload.get("target_name"),
+                        "reaction_trigger": payload.get("reaction_trigger"),
+                        "message": request.message,
+                    }
+                )
+
         return {
             "id": combat.id,
             "version": combat.version,
@@ -3107,6 +3133,7 @@ class PlayerRoomService:
                 if action_is_visible(action)
             ],
             "pending_rolls": pending,
+            "pending_reactions": pending_reactions,
             "death_save": death_save,
         }
 
@@ -3959,6 +3986,14 @@ class PlayerRoomService:
         )
 
     @staticmethod
+    def _opportunity_damage_expression(action: dict[str, Any]) -> object:
+        for key in ("damage", "damage_expression", "damage_dice"):
+            value = action.get(key)
+            if value not in (None, ""):
+                return value
+        return None
+
+    @staticmethod
     def _opportunity_attack_action(actions: object) -> dict[str, Any] | None:
         """Choose a structured melee action eligible for an opportunity attack.
 
@@ -3972,7 +4007,10 @@ class PlayerRoomService:
             return None
         candidates: list[tuple[int, int, dict[str, Any]]] = []
         for index, raw in enumerate(actions):
-            if not isinstance(raw, dict) or not raw.get("damage"):
+            if (
+                not isinstance(raw, dict)
+                or PlayerRoomService._opportunity_damage_expression(raw) is None
+            ):
                 continue
             action_type = str(raw.get("action_type") or "action").strip().lower()
             if action_type in {"lair_action", "legendary_action", "spellcasting"}:
@@ -3996,6 +4034,165 @@ class PlayerRoomService:
             return None
         candidates.sort(key=lambda item: (item[0], item[1]))
         return candidates[0][2]
+
+    @staticmethod
+    def _rule_expression_supported(expression: object) -> bool:
+        """Validate a dice expression without consuming a random roll."""
+
+        raw = str(expression or "").replace(" ", "")
+        if raw.isdigit():
+            return True
+        match = re.fullmatch(r"(\d*)d(\d+)([+-]\d+)?", raw, re.IGNORECASE)
+        if not match:
+            return False
+        count = int(match.group(1) or "1")
+        sides = int(match.group(2))
+        modifier = int(match.group(3) or "0")
+        return count > 0 and sides > 0 and count + modifier >= 0
+
+    @classmethod
+    def _automatic_opportunity_supported(cls, action: dict[str, Any]) -> bool:
+        """Return whether an opportunity attack can be fully auto-resolved.
+
+        This is intentionally a pure qualification check.  Calling the roll
+        implementation here would consume random dice before the attack is
+        actually executed, changing gameplay results for no user-visible
+        reason.
+        """
+
+        attack_bonus = action.get("attack_bonus")
+        if not isinstance(attack_bonus, int) or isinstance(attack_bonus, bool):
+            return False
+        raw_components = action.get("damage_components")
+        if isinstance(raw_components, list) and raw_components:
+            for raw in raw_components:
+                if not isinstance(raw, dict):
+                    return False
+                expression = raw.get("expression") or cls._opportunity_damage_expression(raw)
+                damage_type = str(raw.get("damage_type") or "").strip()
+                if not cls._rule_expression_supported(expression) or not damage_type:
+                    return False
+            return True
+        return cls._rule_expression_supported(
+            cls._opportunity_damage_expression(action)
+        ) and bool(
+            str(action.get("damage_type") or "").strip()
+        )
+
+    @classmethod
+    def _automatic_opportunity_roll(cls, action: dict[str, Any]) -> dict[str, Any] | None:
+        """Roll only a completely structured one-target melee attack.
+
+        Opportunity attacks must not guess an attack bonus, damage type, or a
+        dice expression.  Imported actions that do not satisfy this contract
+        remain on the existing DM adjudication path.
+        """
+
+        if not cls._automatic_opportunity_supported(action):
+            return None
+        attack_bonus = action["attack_bonus"]
+        raw_components = action.get("damage_components")
+        components: list[dict[str, Any]] = []
+        if isinstance(raw_components, list) and raw_components:
+            for raw in raw_components:
+                if not isinstance(raw, dict):
+                    return None
+                expression = raw.get("expression") or cls._opportunity_damage_expression(raw)
+                damage_type = str(raw.get("damage_type") or "").strip()
+                amount = CombatEngineService._roll_rule_expression(expression)
+                if amount is None or amount < 0 or not damage_type:
+                    return None
+                components.append(
+                    {
+                        "amount": amount,
+                        "damage_type": damage_type,
+                        "damage_tags": [
+                            str(tag).strip()
+                            for tag in raw.get("damage_tags", [])
+                            if str(tag).strip()
+                        ]
+                        if isinstance(raw.get("damage_tags"), list)
+                        else [],
+                    }
+                )
+        else:
+            amount = CombatEngineService._roll_rule_expression(
+                cls._opportunity_damage_expression(action)
+            )
+            damage_type = str(action.get("damage_type") or "").strip()
+            if amount is None or amount < 0 or not damage_type:
+                return None
+            components = [{"amount": amount, "damage_type": damage_type, "damage_tags": []}]
+        attack_roll = secrets.randbelow(20) + 1
+        attack_total = attack_roll + attack_bonus
+        return {
+            "attack_roll": attack_roll,
+            "attack_total": attack_total,
+            "damage_total": sum(int(item["amount"]) for item in components),
+            "damage_components": components,
+        }
+
+    def _confirm_automatic_opportunity(
+        self,
+        campaign_id: str,
+        request: dict[str, Any],
+        *,
+        idempotency_key: str,
+    ) -> dict[str, Any]:
+        action = request.get("action")
+        if not isinstance(action, dict):
+            raise ValueError("借机攻击缺少结构化攻击积木")
+        roll = self._automatic_opportunity_roll(action)
+        if roll is None:
+            raise ValueError("借机攻击缺少可靠的攻击加值、伤害骰或伤害类型")
+        source_id = str(request["source_combatant_id"])
+        target_id = str(request["target_combatant_id"])
+        with Session(self.engine) as session:
+            source = session.get(Combatant, source_id)
+            target = session.get(Combatant, target_id)
+            if source is None or target is None or source.combat_id != target.combat_id:
+                raise StateNotFoundError("借机攻击的战斗单位已不存在")
+            action_name = str(action.get("name") or request.get("source_action_name") or "近战攻击")
+            damage_type = (
+                roll["damage_components"][0]["damage_type"]
+                if len(roll["damage_components"]) == 1
+                else "mixed"
+            )
+            command = CombatActionCommand(
+                action_type="damage",
+                target_combatant_id=target.id,
+                target_version=target.version,
+                actor_combatant_id=source.id,
+                actor_version=source.version,
+                action_cost="reaction",
+                action_name=action_name,
+                resolution_note=(
+                    f"d20({roll['attack_roll']}) + {action.get('attack_bonus')} = "
+                    f"{roll['attack_total']}；"
+                    f"{'命中' if roll['attack_total'] >= target.armor_class else '未命中'}"
+                    f" AC {target.armor_class}"
+                ),
+                amount=(roll["damage_total"] if roll["attack_total"] >= target.armor_class else 0),
+                damage_type=damage_type,
+                damage_components=(
+                    roll["damage_components"]
+                    if roll["attack_total"] >= target.armor_class
+                    else []
+                ),
+                is_attack=True,
+                attack_roll_mode="normal",
+                attack_roll_total=roll["attack_total"],
+                attack_adjudication_note="结构化借机攻击自动结算",
+                reaction_trigger=str(request["reaction_trigger"]),
+                reaction_event="leaves_reach",
+            )
+            combat_id = source.combat_id
+        return self.combat.confirm(
+            campaign_id,
+            combat_id,
+            command,
+            idempotency_key=idempotency_key,
+        )
 
     def move(
         self,
@@ -4150,6 +4347,7 @@ class PlayerRoomService:
             if (row, col) in occupied:
                 raise ValueError("目的地已被其他单位占据")
             opportunity_requests: list[dict[str, Any]] = []
+            automatic_opportunities: list[dict[str, Any]] = []
             if not disengage and isinstance(current, dict):
                 start_point = start
                 end_point = (row, col)
@@ -4168,13 +4366,14 @@ class PlayerRoomService:
                         and grid_distance_ft(end_point, enemy_point, cell_size_ft=cell_size) > 5
                     ):
                         action = self._opportunity_attack_action(
-                            enemy.snapshot_json.get("actions")
+                            self._combatant_actions(session, enemy)
                         )
                         if action is None:
                             continue
-                        damage_expression = str(action.get("damage") or "按 DM 指定")
-                        opportunity_requests.append(
-                            {
+                        damage_expression = str(
+                            self._opportunity_damage_expression(action) or "按 DM 指定"
+                        )
+                        opportunity = {
                                 "source_combatant_id": enemy.id,
                                 "source_name": enemy.display_name,
                                 "source_action_name": str(
@@ -4191,8 +4390,12 @@ class PlayerRoomService:
                                 "reaction_trigger": (
                                     f"{actor.display_name} 离开 {enemy.display_name} 的近战威胁范围"
                                 ),
+                                "action": action,
                             }
-                        )
+                        if not self._automatic_opportunity_supported(action):
+                            opportunity_requests.append(opportunity)
+                        else:
+                            automatic_opportunities.append(opportunity)
             snapshot["grid_position"] = _merge_grid_position(
                 current,
                 row=row,
@@ -4363,12 +4566,293 @@ class PlayerRoomService:
                     state.updated_at = _now()
             session.flush()
             result = serialize(actor)
-            result["opportunity_attacks"] = opportunity_requests
-            result["ended_predicated_effect_ids"] = result_effect_ids
-            result["ended_predicated_summon_ids"] = [
-                summon.id for summon in ended_movement_summons
-            ]
-            return result
+        automatic_results: list[dict[str, Any]] = []
+        for index, opportunity in enumerate(automatic_opportunities):
+            resolved = self._confirm_automatic_opportunity(
+                principal.campaign_id,
+                opportunity,
+                idempotency_key=(
+                    f"opportunity-auto:{opportunity['source_combatant_id']}"
+                    f":{opportunity['target_combatant_id']}:{combatant_version}:{index}"
+                ),
+            )
+            automatic_results.append(
+                {
+                    **opportunity,
+                    "automatic": True,
+                    "attack_result": resolved,
+                }
+            )
+        result["opportunity_attacks"] = [*opportunity_requests, *automatic_results]
+        result["automatic_opportunity_attacks"] = automatic_results
+        result["ended_predicated_effect_ids"] = result_effect_ids
+        result["ended_predicated_summon_ids"] = [
+            summon.id for summon in ended_movement_summons
+        ]
+        return result
+
+    def move_monster(
+        self,
+        campaign_id: str,
+        combat_id: str,
+        combatant_id: str,
+        row: int,
+        col: int,
+        combatant_version: int,
+        movement_remaining_ft: int,
+        request_id: str,
+    ) -> dict[str, Any]:
+        """Persist an AI monster step and open player reaction choices.
+
+        The DM grid used to patch a monster directly, which meant movement
+        never passed through the reaction rules.  This endpoint is deliberately
+        narrow: only the AI movement writer calls it, and only a structured
+        melee attack can create a player-facing opportunity choice.
+        """
+
+        if movement_remaining_ft < 0:
+            raise ValueError("剩余移动力不能为负数")
+        with Session(self.engine) as session, session.begin():
+            room = self._room(session, campaign_id)
+            combat = session.get(Combat, combat_id)
+            if combat is None or combat.campaign_id != campaign_id or combat.status != "active":
+                raise ValueError("当前没有进行中的战斗")
+            monster = session.get(Combatant, combatant_id)
+            if (
+                monster is None
+                or monster.combat_id != combat_id
+                or monster.entity_type != "monster"
+                or not monster.is_active
+            ):
+                raise ValueError("只能由战斗 AI 移动活跃怪物")
+            if monster.version != combatant_version:
+                raise VersionConflict("combatant", monster.id, combatant_version, monster.version)
+            current = monster.snapshot_json.get("grid_position")
+            if not isinstance(current, dict):
+                raise ValueError("怪物没有战斗地图位置")
+            start = (int(current["row"]), int(current["col"]))
+            grid = (
+                session.scalar(select(SceneGrid).where(SceneGrid.scene_id == combat.scene_id))
+                if combat.scene_id
+                else None
+            )
+            if grid is not None and not (1 <= row <= grid.height and 1 <= col <= grid.width):
+                raise ValueError("怪物目的地超出当前战斗地图边界")
+            if start == (row, col):
+                return {**serialize(monster), "reaction_requests": []}
+            previous_movement_remaining = int(monster.movement_remaining_ft)
+            fighters = list(
+                session.scalars(
+                    select(Combatant).where(
+                        Combatant.combat_id == combat_id,
+                        Combatant.is_active.is_(True),
+                    )
+                ).all()
+            )
+            cell_size = grid.cell_size_ft if grid is not None else 5
+            snapshot = dict(monster.snapshot_json or {})
+            snapshot["grid_position"] = _merge_grid_position(current, row=row, col=col)
+            monster.snapshot_json = snapshot
+            monster.movement_remaining_ft = movement_remaining_ft
+            monster.version += 1
+            monster.updated_at = _now()
+            session.add(
+                CombatAction(
+                    campaign_id=campaign_id,
+                    combat_id=combat_id,
+                    actor_combatant_id=monster.id,
+                    action_type="move",
+                    target_combatant_ids=[monster.id],
+                    request_json={
+                        "action_name": "移动",
+                        "from_position": {"row": start[0], "col": start[1]},
+                        "to_position": {"row": row, "col": col},
+                        "movement_spent_ft": max(
+                            0, previous_movement_remaining - movement_remaining_ft
+                        ),
+                    },
+                    result_json={
+                        "from_position": {"row": start[0], "col": start[1]},
+                        "to_position": {"row": row, "col": col},
+                        "movement_remaining_ft": movement_remaining_ft,
+                    },
+                    explanation="怪物 AI 移动已公开同步",
+                    round_number=combat.round_number,
+                    turn_index=combat.current_turn_index,
+                    summary=(
+                        f"{monster.display_name} 从（{start[0]},{start[1]}）移动到"
+                        f"（{row},{col}）；剩余 {movement_remaining_ft} 尺移动力"
+                    ),
+                    idempotency_key=f"monster-move:{monster.id}:{combatant_version}",
+                    status="confirmed",
+                )
+            )
+            reaction_requests: list[dict[str, Any]] = []
+            for target in fighters:
+                    if target.id == monster.id or target.hp <= 0:
+                        continue
+                    if self._combatant_faction(target) == self._combatant_faction(monster):
+                        continue
+                    target_position = target.snapshot_json.get("grid_position")
+                    if not isinstance(target_position, dict):
+                        continue
+                    target_point = (int(target_position["row"]), int(target_position["col"]))
+                    if not (
+                        grid_distance_ft(start, target_point, cell_size_ft=cell_size) <= 5
+                        and grid_distance_ft((row, col), target_point, cell_size_ft=cell_size) > 5
+                    ):
+                        continue
+                    character_id = self._combatant_owner(target)
+                    if character_id is None:
+                        continue
+                    character = session.get(Character, character_id)
+                    player_session = session.scalar(
+                        select(PlayerSession).where(
+                            PlayerSession.room_id == room.id,
+                            PlayerSession.character_id == character_id,
+                            PlayerSession.status == "active",
+                        )
+                    )
+                    if character is None or player_session is None:
+                        continue
+                    action = self._opportunity_attack_action(
+                        self._combatant_actions(session, target)
+                    )
+                    if action is None or not self._automatic_opportunity_supported(action):
+                        continue
+                    payload = {
+                        "schema_version": "1.0",
+                        "phase": "awaiting_player_choice",
+                        "combat_id": combat_id,
+                        "source_combatant_id": target.id,
+                        "source_name": target.display_name,
+                        "source_action_name": str(action.get("name") or "近战攻击"),
+                        "damage_expression": str(
+                            self._opportunity_damage_expression(action) or "分段伤害"
+                        ),
+                        "damage_type": str(action.get("damage_type") or ""),
+                        "target_combatant_id": monster.id,
+                        "target_name": monster.display_name,
+                        "reaction_trigger": (
+                            f"{monster.display_name} 离开 {target.display_name} 的近战威胁范围"
+                        ),
+                        "action": action,
+                    }
+                    idempotency_key = (
+                        f"opportunity-choice:{combat_id}:{monster.id}:{target.id}:"
+                        f"{combatant_version}"
+                    )
+                    existing = session.scalar(
+                        select(PlayerActionRequest).where(
+                            PlayerActionRequest.campaign_id == campaign_id,
+                            PlayerActionRequest.idempotency_key == idempotency_key,
+                        )
+                    )
+                    if existing is not None:
+                        reaction_requests.append(serialize(existing))
+                        continue
+                    item = PlayerActionRequest(
+                        campaign_id=campaign_id,
+                        character_id=character_id,
+                        player_key=player_session.id,
+                        action_type="opportunity_reaction",
+                        message=(
+                            f"{monster.display_name} 离开你的近战范围；是否发动一次借机攻击？"
+                        ),
+                        payload_json=payload,
+                        character_version=character.version,
+                        idempotency_key=idempotency_key,
+                        status="pending",
+                    )
+                    session.add(item)
+                    session.flush()
+                    reaction_requests.append(serialize(item))
+            session.flush()
+            result = serialize(monster)
+        result["reaction_requests"] = reaction_requests
+        return result
+
+    def resolve_player_reaction(
+        self,
+        principal: PlayerPrincipal,
+        request_id_value: str,
+        expected_version: int,
+        decision: str,
+        request_id: str,
+    ) -> dict[str, Any]:
+        if principal.character_id is None:
+            raise ValueError("请先绑定角色")
+        with Session(self.engine) as session:
+            item = session.get(PlayerActionRequest, request_id_value)
+            if (
+                item is None
+                or item.campaign_id != principal.campaign_id
+                or item.character_id != principal.character_id
+                or item.player_key != principal.session_id
+                or item.action_type != "opportunity_reaction"
+            ):
+                raise StateNotFoundError("玩家借机攻击请求不存在")
+            if item.version != expected_version:
+                raise VersionConflict(
+                    "player_action_request", item.id, expected_version, item.version
+                )
+            if item.status != "pending":
+                return serialize(item)
+            if decision == "reject":
+                session.rollback()
+                session.begin()
+                try:
+                    item.status = "rejected"
+                    item.dm_note = "玩家选择不发动借机攻击"
+                    item.resolved_at = _now()
+                    item.version += 1
+                    item.updated_at = _now()
+                    self.player._audit(
+                        session,
+                        principal.campaign_id,
+                        "player_reaction_rejected",
+                        item,
+                        request_id,
+                    )
+                    session.commit()
+                except Exception:
+                    session.rollback()
+                    raise
+                return serialize(item)
+            payload = dict(item.payload_json or {})
+        if decision != "accept":
+            raise ValueError("借机攻击选择必须是 accept 或 reject")
+        attack_result = self._confirm_automatic_opportunity(
+            principal.campaign_id,
+            payload,
+            idempotency_key=f"player-reaction:{request_id_value}",
+        )
+        with Session(self.engine) as session, session.begin():
+            item = session.get(PlayerActionRequest, request_id_value)
+            if item is None:
+                raise StateNotFoundError("玩家借机攻击请求不存在")
+            if item.status != "pending":
+                return serialize(item)
+            item.status = "accepted"
+            item.dm_note = "玩家选择发动；系统自动执行结构化攻击积木"
+            item.payload_json = {
+                **dict(item.payload_json or {}),
+                "phase": "confirmed",
+                "choice": "accept",
+                "attack_result": attack_result,
+            }
+            item.resolved_at = _now()
+            item.version += 1
+            item.updated_at = _now()
+            self.player._audit(
+                session,
+                principal.campaign_id,
+                "player_reaction_accepted",
+                item,
+                request_id,
+            )
+            session.flush()
+            return serialize(item)
 
     def maneuver(self, principal: PlayerPrincipal, payload: dict[str, Any]) -> dict[str, Any]:
         """Execute a typed standard action for the player's current unit.

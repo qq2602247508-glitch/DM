@@ -111,6 +111,18 @@ class MoveInput(BaseModel):
     disengage: bool = False
 
 
+class MonsterMoveInput(BaseModel):
+    row: int = Field(ge=1, le=100)
+    col: int = Field(ge=1, le=100)
+    combatant_version: int = Field(ge=1)
+    movement_remaining_ft: int = Field(ge=0, le=10_000)
+
+
+class ReactionDecisionInput(BaseModel):
+    version: int = Field(ge=1)
+    decision: Literal["accept", "reject"]
+
+
 class ManeuverInput(BaseModel):
     """Player-facing payload for the typed standard-action combat engine."""
 
@@ -329,6 +341,29 @@ def set_live_state(
             body.scene_id,
             body.combat_id,
             body.expected_version,
+        )
+    )
+
+
+@admin_player_room_router.post("/combat/{combat_id}/monster-move/{combatant_id}")
+def move_monster(
+    campaign_id: str,
+    combat_id: str,
+    combatant_id: str,
+    body: MonsterMoveInput,
+    request: Request,
+    service: Annotated[PlayerRoomService, Depends(get_player_room_service)],
+) -> dict[str, Any]:
+    return _safe(
+        lambda: service.move_monster(
+            campaign_id,
+            combat_id,
+            combatant_id,
+            body.row,
+            body.col,
+            body.combatant_version,
+            body.movement_remaining_ft,
+            _request_id(request),
         )
     )
 
@@ -574,6 +609,25 @@ def submit_action_request(
             body.message or "",
             body.payload_json,
             body.idempotency_key,
+            _request_id(request),
+        )
+    )
+
+
+@public_player_room_router.post("/me/combat/reactions/{request_id_value}")
+def resolve_player_reaction(
+    request_id_value: str,
+    body: ReactionDecisionInput,
+    request: Request,
+    principal: Annotated[PlayerPrincipal, Depends(get_player_principal)],
+    service: Annotated[PlayerRoomService, Depends(get_player_room_service)],
+) -> dict[str, Any]:
+    return _safe(
+        lambda: service.resolve_player_reaction(
+            principal,
+            request_id_value,
+            body.version,
+            body.decision,
             _request_id(request),
         )
     )

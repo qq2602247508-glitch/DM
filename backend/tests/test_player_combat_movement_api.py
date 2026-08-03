@@ -302,3 +302,212 @@ def test_leaving_melee_range_creates_dm_opportunity_request_and_resolves_attack(
         assert current_actor["hp"] == 4
     finally:
         player.close()
+
+
+def test_structured_player_escape_auto_resolves_opportunity_attack(
+    campaign_client: TestClient,
+) -> None:
+    campaign = campaign_client.post("/api/v1/campaigns", json={"name": "自动借机攻击"}).json()
+    campaign_id = campaign["id"]
+    character = campaign_client.post(
+        f"/api/v1/campaigns/{campaign_id}/characters",
+        json={"name": "自动撤离者", "class_name": "战士", "hp": 10, "max_hp": 10},
+    ).json()
+    combat = campaign_client.post(
+        f"/api/v1/campaigns/{campaign_id}/combats", json={"name": "自动借机战斗"}
+    ).json()
+    actor = campaign_client.post(
+        f"/api/v1/campaigns/{campaign_id}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": character["name"],
+            "entity_type": "character",
+            "entity_id": character["id"],
+            "initiative": 20,
+            "hp": 10,
+            "max_hp": 10,
+            "snapshot_json": {
+                "grid_position": {"row": 2, "col": 2},
+                "actions": [
+                    {
+                        "name": "短剑",
+                        "damage": "1d1",
+                        "damage_type": "piercing",
+                        "range_ft": 5,
+                        "attack_type": "melee",
+                        "attack_bonus": 100,
+                    }
+                ],
+            },
+        },
+    ).json()
+    enemy = campaign_client.post(
+        f"/api/v1/campaigns/{campaign_id}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "结构化守卫",
+            "entity_type": "monster",
+            "initiative": 10,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {
+                "grid_position": {"row": 2, "col": 3},
+                "actions": [
+                    {
+                        "name": "长剑",
+                        "damage_expression": "1d1",
+                        "damage_type": "slashing",
+                        "range_ft": 5,
+                        "attack_type": "melee",
+                        "action_type": "reaction",
+                        "attack_bonus": 100,
+                    }
+                ],
+            },
+        },
+    ).json()
+    opened = campaign_client.post(
+        f"/api/v1/campaigns/{campaign_id}/player-room/open", json={"hours": 4}
+    ).json()
+    player = TestClient(campaign_client.app)
+    try:
+        assert player.post(
+            "/api/v1/player-room/join",
+            json={"join_code": opened["join_code"], "display_name": "自动撤离客户端"},
+        ).status_code == 201
+        assert player.post(
+            "/api/v1/player-room/me/bind-character",
+            json={"character_id": character["id"]},
+        ).status_code == 200
+        assert campaign_client.post(
+            f"/api/v1/campaigns/{campaign_id}/player-room/live-state",
+            json={"combat_id": combat["id"]},
+        ).status_code == 200
+        moved = player.post(
+            "/api/v1/player-room/me/combat/move",
+            json={"row": 2, "col": 5, "combatant_version": actor["version"]},
+        )
+        assert moved.status_code == 200, moved.text
+        body = moved.json()
+        assert len(body["automatic_opportunity_attacks"]) == 1
+        assert body["opportunity_attacks"][0]["automatic"] is True
+        assert campaign_client.get(
+            f"/api/v1/campaigns/{campaign_id}/combats/{combat['id']}/combatants/{enemy['id']}"
+        ).json()["reaction_available"] is False
+        assert campaign_client.get(
+            f"/api/v1/campaigns/{campaign_id}/player-action-requests?status=pending"
+        ).json()["items"] == []
+    finally:
+        player.close()
+
+
+def test_monster_move_prompts_player_and_player_can_accept_structured_reaction(
+    campaign_client: TestClient,
+) -> None:
+    campaign = campaign_client.post("/api/v1/campaigns", json={"name": "玩家借机选择"}).json()
+    campaign_id = campaign["id"]
+    character = campaign_client.post(
+        f"/api/v1/campaigns/{campaign_id}/characters",
+        json={"name": "反应玩家", "class_name": "战士", "hp": 10, "max_hp": 10},
+    ).json()
+    combat = campaign_client.post(
+        f"/api/v1/campaigns/{campaign_id}/combats", json={"name": "怪物离场反应"}
+    ).json()
+    campaign_client.post(
+        f"/api/v1/campaigns/{campaign_id}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": character["name"],
+            "entity_type": "character",
+            "entity_id": character["id"],
+            "initiative": 20,
+            "hp": 10,
+            "max_hp": 10,
+            "snapshot_json": {
+                "grid_position": {"row": 2, "col": 2},
+                "actions": [
+                    {
+                        "name": "短剑",
+                        "damage_expression": "1d1",
+                        "damage_type": "piercing",
+                        "range_ft": 5,
+                        "attack_type": "melee",
+                        "action_type": "reaction",
+                        "attack_bonus": 100,
+                    }
+                ],
+            },
+        },
+    )
+    enemy = campaign_client.post(
+        f"/api/v1/campaigns/{campaign_id}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "离场怪物",
+            "entity_type": "monster",
+            "initiative": 10,
+            "hp": 20,
+            "max_hp": 20,
+            "movement_remaining_ft": 30,
+            "snapshot_json": {
+                "grid_position": {"row": 2, "col": 3},
+                "actions": [
+                    {
+                        "name": "利爪",
+                        "damage": "1d1",
+                        "damage_type": "slashing",
+                        "range_ft": 5,
+                        "attack_type": "melee",
+                        "attack_bonus": 100,
+                    }
+                ],
+            },
+        },
+    ).json()
+    opened = campaign_client.post(
+        f"/api/v1/campaigns/{campaign_id}/player-room/open", json={"hours": 4}
+    ).json()
+    player = TestClient(campaign_client.app)
+    try:
+        assert player.post(
+            "/api/v1/player-room/join",
+            json={"join_code": opened["join_code"], "display_name": "反应客户端"},
+        ).status_code == 201
+        assert player.post(
+            "/api/v1/player-room/me/bind-character",
+            json={"character_id": character["id"]},
+        ).status_code == 200
+        assert campaign_client.post(
+            f"/api/v1/campaigns/{campaign_id}/player-room/live-state",
+            json={"combat_id": combat["id"]},
+        ).status_code == 200
+        moved = campaign_client.post(
+            f"/api/v1/campaigns/{campaign_id}/player-room/combat/{combat['id']}/monster-move/{enemy['id']}",
+            json={
+                "row": 2,
+                "col": 5,
+                "combatant_version": enemy["version"],
+                "movement_remaining_ft": 20,
+            },
+        )
+        assert moved.status_code == 200, moved.text
+        request = moved.json()["reaction_requests"][0]
+        pending = player.get("/api/v1/player-room/me").json()["combat"]["pending_reactions"]
+        assert pending[0]["id"] == request["id"]
+        accepted = player.post(
+            f"/api/v1/player-room/me/combat/reactions/{request['id']}",
+            json={"version": request["version"], "decision": "accept"},
+        )
+        assert accepted.status_code == 200, accepted.text
+        assert accepted.json()["status"] == "accepted"
+        current_enemy = campaign_client.get(
+            f"/api/v1/campaigns/{campaign_id}/combats/{combat['id']}/combatants/{enemy['id']}"
+        ).json()
+        current_actor = next(
+            item
+            for item in campaign_client.get(
+                f"/api/v1/campaigns/{campaign_id}/combats/{combat['id']}/combatants"
+            ).json()["items"]
+            if item["entity_type"] == "character"
+        )
+        assert current_enemy["reaction_available"] is True
+        assert current_actor["reaction_available"] is False
+        assert current_enemy["hp"] < current_enemy["max_hp"]
+    finally:
+        player.close()
