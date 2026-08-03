@@ -59,7 +59,7 @@ import {
   type TargetingTemplate,
 } from "../ui/gridTargeting";
 import { buildRuleBlockPlan, targetingFromRulePlan } from "../ui/ruleBlocks";
-import { upcastExpression } from "../ui/combatAutomation";
+import { actionDamageLabel, upcastExpression } from "../ui/combatAutomation";
 import { damageComponentsByTargetSummary, damageComponentsSummary } from "../ui/combatPresentation";
 
 const ABILITIES: Record<string, string> = {
@@ -184,7 +184,9 @@ function damageFormulaForAction(action: Record<string, unknown> | undefined): st
 
 function damageInstructionForAction(action: Record<string, unknown> | undefined): string {
   const formula = damageFormulaForAction(action);
-  if (!formula) return "伤害骰未记录，请查看角色卡或询问 DM";
+  if (!formula) {
+    return actionDamageLabel(action);
+  }
   const typeLabels: Record<string, string> = {
     slashing: "挥砍", piercing: "穿刺", bludgeoning: "钝击", fire: "火焰",
     cold: "寒冷", lightning: "闪电", thunder: "雷鸣", acid: "酸蚀",

@@ -54,6 +54,68 @@ export type CombatActionLike = {
 
 export type RolledDamageComponent = { amount: number; damage_type: string; damage_tags?: string[] };
 
+const NON_DAMAGE_RULE_KINDS = new Set([
+  "condition",
+  "creation",
+  "defense",
+  "dispel",
+  "heal",
+  "modifier",
+  "move",
+  "narrative",
+  "summon",
+  "teleport",
+  "transformation",
+]);
+
+/**
+ * Describe the damage input without turning a non-damaging action into a
+ * fake missing-dice warning.  Summons, movement and condition effects still
+ * need a useful action label, but they do not ask the player to invent a
+ * damage roll.
+ */
+export function actionDamageLabel(raw: unknown): string {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return "伤害骰未明确";
+  const action = raw as Record<string, unknown>;
+  const directComponents = Array.isArray(action.damage_components)
+    ? action.damage_components.filter((item): item is Record<string, unknown> => (
+      item !== null && typeof item === "object" && !Array.isArray(item)
+    ))
+    : [];
+  const directExpressions = directComponents.map((component) => (
+    typeof component.expression === "string" && component.expression.trim()
+      ? component.expression.trim()
+      : typeof component.damage === "string" && component.damage.trim()
+        ? component.damage.trim()
+        : typeof component.amount === "number" ? String(component.amount) : ""
+  )).filter(Boolean);
+  if (directExpressions.length > 0) return directExpressions.join("+");
+  for (const key of ["damage", "damage_expression", "damage_dice"]) {
+    const value = action[key];
+    if (typeof value === "string" && value.trim()) return value.trim();
+  }
+  const plan = action.rule_plan;
+  const blocks = plan && typeof plan === "object" && !Array.isArray(plan)
+    && Array.isArray((plan as Record<string, unknown>).blocks)
+    ? ((plan as Record<string, unknown>).blocks as unknown[])
+    : [];
+  const damageExpressions = blocks.flatMap((item) => {
+    if (!item || typeof item !== "object" || Array.isArray(item)) return [];
+    const block = item as Record<string, unknown>;
+    if (block.kind !== "damage") return [];
+    const expression = typeof block.expression === "string" && block.expression.trim()
+      ? block.expression.trim()
+      : typeof block.damage === "string" && block.damage.trim() ? block.damage.trim() : "";
+    return expression ? [expression] : [];
+  });
+  if (damageExpressions.length > 0) return damageExpressions.join("+");
+  const hasNonDamageRule = blocks.some((item) => (
+    item !== null && typeof item === "object" && !Array.isArray(item)
+      && NON_DAMAGE_RULE_KINDS.has(String((item as Record<string, unknown>).kind))
+  )) || ["heal", "healing", "control", "ability_check", "narrative"].includes(String(action.resolution_kind));
+  return hasNonDamageRule ? "无直接伤害" : "伤害骰未明确";
+}
+
 /** A grid-backed combat action cannot target a unit with no map coordinate. */
 export function hasGridPosition(snapshot: unknown): boolean {
   if (!snapshot || typeof snapshot !== "object" || Array.isArray(snapshot)) return false;

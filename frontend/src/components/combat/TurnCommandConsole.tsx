@@ -26,6 +26,7 @@ import {
   ENEMY_TACTICS_LABELS,
   abilityModifier,
   actionRangeSummary,
+  actionDamageLabel,
   chooseEnemyTarget,
   chooseEnemyActionIndex,
   executableTargetIds,
@@ -2024,7 +2025,7 @@ export function TurnCommandConsole({
             <div className="mt-2 grid gap-2 sm:grid-cols-2">
               <select className={selectCls} onChange={(event) => selectAction(event.target.value)} value={actionIndex}>
                 {actions.length === 0 ? <option value="0">未结构化动作 · 伤害骰未明确 · 范围未明确</option> : null}
-                {actions.map((action, index) => <option disabled={!hasActionEconomy(active, actionCost(action))} key={`${action.name}-${index}`} value={index}>{action.name ?? `动作${index + 1}`} · {action.damage ?? "伤害骰未明确"} · {action.range ?? "范围未明确"}{!hasActionEconomy(active, actionCost(action)) ? " · 本回合已用" : ""}</option>)}
+                {actions.map((action, index) => <option disabled={!hasActionEconomy(active, actionCost(action))} key={`${action.name}-${index}`} value={index}>{action.name ?? `动作${index + 1}`} · {actionDamageLabel(action)} · {action.range ?? "范围未明确"}{!hasActionEconomy(active, actionCost(action)) ? " · 本回合已用" : ""}</option>)}
               </select>
               {selectedSpellLevel > 0 ? (
                 <label className="text-2xs text-stone-400">
@@ -2213,12 +2214,12 @@ export function TurnCommandConsole({
                   key={`${action.name}-${index}`}
                   value={index}
                 >
-                  {action.name ?? `动作${index + 1}`} · {action.damage ?? "按规则描述"} · {actionRangeSummary(action)}
+                  {action.name ?? `动作${index + 1}`} · {actionDamageLabel(action)} · {actionRangeSummary(action)}
                 </option>
               ))}
             </select>
           </label>
-          <p className="mb-2 mt-0 text-2xs text-stone-500">建议动作：{selectedAction.name ?? "未结构化动作"} · {selectedAction.damage ?? "伤害骰未明确"} · {actionRangeSummary(selectedAction)}。地图会先按剩余速度寻路；攻击检定由怪物自动掷，怪物能力要求豁免时会在右侧等待玩家输入骰值。</p>
+          <p className="mb-2 mt-0 text-2xs text-stone-500">建议动作：{selectedAction.name ?? "未结构化动作"} · {actionDamageLabel(selectedAction)} · {actionRangeSummary(selectedAction)}。地图会先按剩余速度寻路；攻击检定由怪物自动掷，怪物能力要求豁免时会在右侧等待玩家输入骰值。</p>
           {selectedRechargeRange ? (
             <div className="mb-2 rounded border border-cyan-800/60 bg-cyan-950/15 p-2 text-2xs text-cyan-100">
               <strong>充能 {selectedRechargeRange.minimum}–{selectedRechargeRange.maximum}</strong>

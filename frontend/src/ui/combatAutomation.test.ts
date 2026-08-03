@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  actionDamageLabel,
   abilityModifier,
   chooseEnemyActionIndex,
   chooseEnemyTarget,
@@ -18,6 +19,29 @@ import {
   rollDiceExpression,
   rollStructuredDamage,
 } from "./combatAutomation";
+
+describe("actionDamageLabel", () => {
+  it("does not request damage dice for a summon with no damage block", () => {
+    expect(actionDamageLabel({
+      name: "召唤小火元素",
+      resolution_kind: "control",
+      rule_plan: { blocks: [{ kind: "summon", creature_ref: "小火元素" }] },
+    })).toBe("无直接伤害");
+  });
+
+  it("keeps an unstructured attacking action visible as a DM review item", () => {
+    expect(actionDamageLabel({ name: "未知攻击", cost: "动作" })).toBe("伤害骰未明确");
+  });
+
+  it("projects explicit compound damage expressions", () => {
+    expect(actionDamageLabel({
+      damage_components: [
+        { expression: "2d6", damage_type: "fire" },
+        { expression: "1d6", damage_type: "force" },
+      ],
+    })).toBe("2d6+1d6");
+  });
+});
 
 describe("combat automation helpers", () => {
   it("does not treat an unplaced summon as a map target", () => {
