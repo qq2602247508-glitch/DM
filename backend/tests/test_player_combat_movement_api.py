@@ -180,3 +180,106 @@ def test_player_movement_enforces_remaining_distance_obstacles_and_sync(
     finally:
         player_a.close()
         player_b.close()
+
+
+def test_leaving_melee_range_creates_dm_opportunity_request_and_resolves_attack(
+    campaign_client: TestClient,
+) -> None:
+    campaign = campaign_client.post(
+        "/api/v1/campaigns", json={"name": "借机攻击触发链路"}
+    ).json()
+    campaign_id = campaign["id"]
+    character = campaign_client.post(
+        f"/api/v1/campaigns/{campaign_id}/characters",
+        json={"name": "撤离者", "class_name": "战士", "hp": 10, "max_hp": 10},
+    ).json()
+    combat = campaign_client.post(
+        f"/api/v1/campaigns/{campaign_id}/combats", json={"name": "借机战斗"}
+    ).json()
+    actor = campaign_client.post(
+        f"/api/v1/campaigns/{campaign_id}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "撤离者",
+            "entity_type": "character",
+            "entity_id": character["id"],
+            "initiative": 20,
+            "hp": 10,
+            "max_hp": 10,
+            "snapshot_json": {"grid_position": {"row": 2, "col": 2}},
+        },
+    ).json()
+    enemy = campaign_client.post(
+        f"/api/v1/campaigns/{campaign_id}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "近战守卫",
+            "entity_type": "monster",
+            "initiative": 10,
+            "armor_class": 12,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {
+                "grid_position": {"row": 2, "col": 3},
+                "actions": [{"name": "长剑", "damage": "1d8+3", "damage_type": "slashing"}],
+            },
+        },
+    ).json()
+    opened = campaign_client.post(
+        f"/api/v1/campaigns/{campaign_id}/player-room/open", json={"hours": 4}
+    ).json()
+    player = TestClient(campaign_client.app)
+    try:
+        joined = player.post(
+            "/api/v1/player-room/join",
+            json={"join_code": opened["join_code"], "display_name": "撤离者客户端"},
+        )
+        assert joined.status_code == 201, joined.text
+        assert player.post(
+            "/api/v1/player-room/me/bind-character",
+            json={"character_id": character["id"]},
+        ).status_code == 200
+        assert campaign_client.post(
+            f"/api/v1/campaigns/{campaign_id}/player-room/live-state",
+            json={"combat_id": combat["id"]},
+        ).status_code == 200
+
+        moved = player.post(
+            "/api/v1/player-room/me/combat/move",
+            json={
+                "row": 2,
+                "col": 5,
+                "combatant_version": actor["version"],
+            },
+        )
+        assert moved.status_code == 200, moved.text
+
+        requests = campaign_client.get(
+            f"/api/v1/campaigns/{campaign_id}/player-action-requests?status=pending"
+        ).json()["items"]
+        opportunity = next(
+            item for item in requests if item["action_type"] == "opportunity_attack"
+        )
+        assert opportunity["payload_json"]["source_combatant_id"] == enemy["id"]
+        assert opportunity["payload_json"]["target_combatant_id"] == actor["id"]
+
+        resolved = campaign_client.post(
+            f"/api/v1/campaigns/{campaign_id}/player-action-requests/{opportunity['id']}/accept",
+            json={
+                "version": opportunity["version"],
+                "attack_total": 15,
+                "damage_total": 6,
+                "dm_note": "守卫确认使用长剑借机攻击",
+            },
+        )
+        assert resolved.status_code == 200, resolved.text
+        assert resolved.json()["status"] == "accepted"
+        assert resolved.json()["payload_json"]["hit"] is True
+        current_enemy = campaign_client.get(
+            f"/api/v1/campaigns/{campaign_id}/combats/{combat['id']}/combatants/{enemy['id']}"
+        ).json()
+        current_actor = campaign_client.get(
+            f"/api/v1/campaigns/{campaign_id}/combats/{combat['id']}/combatants/{actor['id']}"
+        ).json()
+        assert current_enemy["reaction_available"] is False
+        assert current_actor["hp"] == 4
+    finally:
+        player.close()
