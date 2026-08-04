@@ -685,7 +685,23 @@ class CombatEngineService:
                     name=f"{name} 的召唤持续时间",
                     effect_type="aura",
                     details_json={
-                        "rule_block": {"kind": "summon_lifecycle"},
+                        "rule_block": {
+                            "kind": "summon_lifecycle",
+                            # Concentration ends immediately when its source
+                            # becomes unconscious, dies, or leaves the
+                            # combat.  Keep these predicates explicit so the
+                            # generic lifecycle evaluator can clean every
+                            # member of a summon group in one transaction.
+                            "end_triggers": (
+                                [
+                                    "source_unconscious",
+                                    "source_dead",
+                                    "source_inactive",
+                                ]
+                                if command.requires_concentration
+                                else []
+                            ),
+                        },
                         "ends_summon_combatant_ids": [item.id for item in combatants],
                         "source_action": dict(command.template_json or {}),
                     },
@@ -2276,9 +2292,55 @@ class CombatEngineService:
             effect.end_reason = reason
             effect.version += 1
             ended.append(effect)
+        # Losing consciousness, dying, or leaving the combat ends every
+        # concentration effect owned by that source, not only effects that
+        # happened to declare a summon-specific predicate.  The event IDs
+        # make this fail closed: an unrelated unconscious combatant cannot
+        # clear another unit's concentration.
+        lifecycle_event_ids = event_combatant_ids or set()
+        if not event_only and lifecycle_event_ids:
+            for effect in session.scalars(
+                select(CombatEffect).where(
+                    CombatEffect.combat_id == combat.id,
+                    CombatEffect.status == "active",
+                    CombatEffect.requires_concentration.is_(True),
+                )
+            ).all():
+                if effect in ended or effect.source_combatant_id not in lifecycle_event_ids:
+                    continue
+                source = session.get(Combatant, effect.source_combatant_id)
+                if (
+                    source is not None
+                    and source.is_active
+                    and source.hp > 0
+                    and not cls._has_condition(source, "unconscious")
+                ):
+                    continue
+                target = session.get(Combatant, effect.target_combatant_id)
+                details = dict(effect.details_json or {})
+                if target is not None and isinstance(details.get("rule_block"), dict):
+                    cls._reverse_compiled_effect(session, target, effect)
+                    changed_targets[target.id] = target
+                effect.status = "ended"
+                effect.ended_at = now
+                effect.end_reason = "专注来源失去意识或离开战斗"
+                effect.version += 1
+                ended.append(effect)
+        changed_sources: dict[str, Combatant] = {}
+        for effect in ended:
+            if not effect.source_combatant_id:
+                continue
+            source = session.get(Combatant, effect.source_combatant_id)
+            if source is not None and source.concentration.get("effect_id") == effect.id:
+                source.concentration = {}
+                changed_sources[source.id] = source
         for target in changed_targets.values():
             target.version += 1
             target.updated_at = now
+        for source in changed_sources.values():
+            if source.id not in changed_targets:
+                source.version += 1
+            source.updated_at = now
         ended_summons = cls._deactivate_summons_for_effects(
             session,
             combat,
@@ -4904,7 +4966,13 @@ class CombatEngineService:
                     now=now,
                     event_combatant_ids=damaged_combatant_ids,
                     event_kinds={"damage"} if damaged_combatant_ids else set(),
-                    event_only=True,
+                    # A zero-HP transition also changes the source lifecycle
+                    # (unconscious/dead/inactive).  Evaluate those explicit
+                    # predicates in the same transaction so concentration
+                    # summons do not linger until the next turn or check.
+                    event_only=not (
+                        command.action_type == "damage" and target.hp <= 0
+                    ),
                 )
             )
             transaction = OperationTransaction(
@@ -5050,7 +5118,14 @@ class CombatEngineService:
             session.flush()
             concentration_prompts: list[dict[str, object]] = []
             raw_concentration_dc = result.get("concentration_check_dc")
-            if command.action_type == "damage" and isinstance(raw_concentration_dc, int):
+            if (
+                command.action_type == "damage"
+                and isinstance(raw_concentration_dc, int)
+                and bool(target.concentration)
+                and target.hp > 0
+                and target.is_active
+                and not self._has_condition(target, "unconscious")
+            ):
                 concentration_prompts = self._persist_concentration_prompts(
                     session,
                     combat,

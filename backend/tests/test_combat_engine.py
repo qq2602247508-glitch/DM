@@ -2289,17 +2289,8 @@ def test_explicit_condition_end_trigger_cleans_up_when_source_becomes_unconsciou
         },
     )
     assert dropped.status_code == 200, dropped.text
-    current_combat = combat_client.get(
-        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}"
-    ).json()
-    advanced = combat_client.post(
-        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}/turns/advance",
-        headers={"X-Request-ID": "predicated-condition-turn"},
-        json={"combat_version": current_combat["version"]},
-    )
-    assert advanced.status_code == 200, advanced.text
-    body = advanced.json()
-    assert body["predicated_effects"][0]["end_reason"] == "状态来源陷入昏迷"
+    dropped_result = dropped.json()["action"]["result_json"]
+    assert dropped_result["ended_predicated_effect_ids"] == [created.json()["effect"]["id"]]
     refreshed_target = combat_client.get(
         f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}/combatants/{target['id']}"
     ).json()

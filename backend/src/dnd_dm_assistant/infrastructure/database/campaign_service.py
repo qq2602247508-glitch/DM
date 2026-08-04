@@ -689,6 +689,26 @@ class SqlAlchemyCampaignStateGateway:
                 previous_conditions = before.get("conditions", [])
                 if isinstance(previous_conditions, list):
                     CombatEngineService.sync_condition_state(entity, previous_conditions)
+            if entity_type == "combatant" and (
+                "conditions" in values or "hp" in values or "is_active" in values
+            ):
+                # A DM may apply unconscious/dead/inactive state through the
+                # direct combatant editor rather than a combat action.  Run
+                # the same explicit lifecycle predicates used by combat
+                # damage so concentration summons are removed immediately.
+                combat = session.get(Combat, entity.combat_id)
+                if combat is not None:
+                    from dnd_dm_assistant.infrastructure.database.combat_service import (
+                        CombatEngineService,
+                    )
+
+                    CombatEngineService._end_predicated_effects(
+                        session,
+                        combat,
+                        now=datetime.now(UTC),
+                        event_combatant_ids={entity.id},
+                        event_kinds={"condition"},
+                    )
             if entity_type == "campaign" and "enabled_rule_extensions" in values:
                 self._seed_rule_extension_atoms(
                     session,

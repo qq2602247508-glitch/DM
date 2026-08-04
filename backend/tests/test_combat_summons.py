@@ -834,3 +834,153 @@ def test_summon_linked_duration_ends_summon_on_turn_advance(
     assert ended_summons[0]["is_active"] is False
     assert current["current_turn_index"] >= 0
     assert payload["active_combatant"]["display_name"] == source["display_name"]
+
+
+def test_concentration_source_zero_hp_immediately_ends_all_summons(
+    campaign_client: TestClient,
+) -> None:
+    campaign = campaign_client.post(
+        "/api/v1/campaigns", json={"name": "专注来源归零清理"}
+    ).json()
+    base = f"/api/v1/campaigns/{campaign['id']}"
+    combat = campaign_client.post(
+        f"{base}/combats", json={"name": "专注召唤来源归零"}
+    ).json()
+    source = campaign_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "专注施法者",
+            "entity_type": "character",
+            "initiative": 20,
+            "hp": 10,
+            "max_hp": 10,
+        },
+    ).json()
+    created = campaign_client.post(
+        f"{base}/combats/{combat['id']}/summons",
+        headers={"X-Request-ID": "concentration-summon-group"},
+        json={
+            "name": "专注灵体",
+            "count": 2,
+            "controller": "dm",
+            "disposition": "ally",
+            "source_combatant_id": source["id"],
+            "initiative_mode": "shared_with_source",
+            "hp": 6,
+            "max_hp": 6,
+            "armor_class": 12,
+            "speed_ft": 30,
+            "requires_concentration": True,
+            "duration_unit": "until_removed",
+        },
+    )
+    assert created.status_code == 200, created.text
+    summon_ids = [row["id"] for row in created.json()["combatants"]]
+    lifecycle_id = created.json()["action"]["result_json"]["lifecycle_effect_id"]
+
+    refreshed_source = campaign_client.get(
+        f"{base}/combats/{combat['id']}/combatants/{source['id']}"
+    ).json()
+    damaged = campaign_client.post(
+        f"{base}/combats/{combat['id']}/actions/confirm",
+        headers={"X-Request-ID": "concentration-source-zero"},
+        json={
+            "action_type": "damage",
+            "target_combatant_id": source["id"],
+            "target_version": refreshed_source["version"],
+            "amount": 10,
+            "damage_type": "force",
+            "action_cost": "none",
+        },
+    )
+    assert damaged.status_code == 200, damaged.text
+    result = damaged.json()["action"]["result_json"]
+    assert result["ended_predicated_effect_ids"] == [lifecycle_id]
+    assert set(result["ended_predicated_summon_ids"]) == set(summon_ids)
+    assert "concentration_prompts" not in damaged.json() or not damaged.json()[
+        "concentration_prompts"
+    ]
+
+    rows = campaign_client.get(
+        f"{base}/combats/{combat['id']}/combatants"
+    ).json()["items"]
+    assert all(not row["is_active"] for row in rows if row["id"] in summon_ids)
+    active_rows = [row for row in rows if row["is_active"]]
+    current = campaign_client.get(f"{base}/combats/{combat['id']}").json()
+    ordered = sorted(
+        active_rows,
+        key=lambda row: (-row["initiative"], row["created_at"], row["id"]),
+    )
+    assert ordered[current["current_turn_index"]]["id"] == source["id"]
+
+    effects = campaign_client.get(f"{base}/combats/{combat['id']}/effects").json()
+    lifecycle = next(row for row in effects["items"] if row["id"] == lifecycle_id)
+    assert lifecycle["status"] == "ended"
+    assert lifecycle["end_reason"] == "状态来源陷入昏迷"
+
+
+def test_direct_unconscious_edit_ends_concentration_summons(
+    campaign_client: TestClient,
+) -> None:
+    campaign = campaign_client.post(
+        "/api/v1/campaigns", json={"name": "直接昏迷清理"}
+    ).json()
+    base = f"/api/v1/campaigns/{campaign['id']}"
+    combat = campaign_client.post(
+        f"{base}/combats", json={"name": "DM 状态编辑清理"}
+    ).json()
+    source = campaign_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "被 DM 设置昏迷的施法者",
+            "entity_type": "character",
+            "initiative": 20,
+            "hp": 10,
+            "max_hp": 10,
+            "conditions": [],
+        },
+    ).json()
+    created = campaign_client.post(
+        f"{base}/combats/{combat['id']}/summons",
+        headers={"X-Request-ID": "direct-unconscious-summon"},
+        json={
+            "name": "状态编辑灵体",
+            "count": 2,
+            "controller": "dm",
+            "disposition": "ally",
+            "source_combatant_id": source["id"],
+            "initiative_mode": "shared_with_source",
+            "hp": 4,
+            "max_hp": 4,
+            "armor_class": 11,
+            "speed_ft": 30,
+            "requires_concentration": True,
+            "duration_unit": "until_removed",
+        },
+    )
+    assert created.status_code == 200, created.text
+    summon_ids = [row["id"] for row in created.json()["combatants"]]
+    lifecycle_id = created.json()["action"]["result_json"]["lifecycle_effect_id"]
+
+    refreshed_source = campaign_client.get(
+        f"{base}/combats/{combat['id']}/combatants/{source['id']}"
+    ).json()
+    patched = campaign_client.patch(
+        f"{base}/combats/{combat['id']}/combatants/{source['id']}",
+        headers={"X-Request-ID": "direct-unconscious-source"},
+        json={
+            "conditions": ["unconscious"],
+            "version": refreshed_source["version"],
+        },
+    )
+    assert patched.status_code == 200, patched.text
+    assert "unconscious" in patched.json()["conditions"]
+
+    rows = campaign_client.get(
+        f"{base}/combats/{combat['id']}/combatants"
+    ).json()["items"]
+    assert all(not row["is_active"] for row in rows if row["id"] in summon_ids)
+    effects = campaign_client.get(f"{base}/combats/{combat['id']}/effects").json()
+    lifecycle = next(row for row in effects["items"] if row["id"] == lifecycle_id)
+    assert lifecycle["status"] == "ended"
+    assert lifecycle["end_reason"] == "状态来源陷入昏迷"
