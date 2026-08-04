@@ -3766,6 +3766,65 @@ def test_repeating_compiled_state_ticks_reconcile_without_stacking(
     assert updated["armor_class"] == 15
 
 
+def test_repeating_condition_tick_respects_immunity_gained_mid_effect(
+    combat_client: TestClient,
+) -> None:
+    campaign = _campaign(combat_client, "Repeating condition immunity")
+    combat, target = _combatant(combat_client, campaign["id"])
+    root = f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}"
+    created = combat_client.post(
+        f"{root}/effects/confirm",
+        headers={"X-Request-ID": "repeating-condition-immunity-create"},
+        json={
+            "target_combatant_id": target["id"],
+            "target_version": target["version"],
+            "name": "持续中毒",
+            "effect_type": "condition",
+            "details_json": {
+                "rule_block": {
+                    "kind": "condition",
+                    "condition": "中毒",
+                    "operation": "apply",
+                },
+                "repeat": {"timing": "turn_start"},
+            },
+            "duration_unit": "rounds",
+            "duration_value": 3,
+            "trigger_timing": "turn_start",
+        },
+    )
+    assert created.status_code == 200, created.text
+    target = created.json()["target"]
+    assert "中毒" in target["conditions"]
+
+    immune = combat_client.patch(
+        _fighter_path(campaign["id"], combat["id"], target["id"]),
+        headers={"If-Match": f'"{target["version"]}"'},
+        json={"condition_immunities": ["poisoned"], "conditions": []},
+    )
+    assert immune.status_code == 200, immune.text
+    target = immune.json()
+    assert target["conditions"] == []
+
+    current = combat_client.get(root).json()
+    advanced = combat_client.post(
+        f"{root}/turns/advance",
+        headers={"X-Request-ID": "repeating-condition-immunity-tick"},
+        json={"combat_version": current["version"]},
+    )
+    assert advanced.status_code == 200, advanced.text
+    ticks = advanced.json()["effect_ticks"]
+    assert len(ticks) == 1
+    assert ticks[0]["result"]["status"] == "immune"
+    assert ticks[0]["result"]["reapplied"] is False
+
+    updated = combat_client.get(
+        _fighter_path(campaign["id"], combat["id"], target["id"])
+    ).json()
+    assert updated["conditions"] == []
+    assert updated["condition_immunities"] == ["poisoned"]
+
+
 def test_player_roll_prompt_records_actor_target_action_and_dm_confirmation(
     combat_client: TestClient,
 ) -> None:

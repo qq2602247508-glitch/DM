@@ -9541,6 +9541,11 @@ class CombatEngineService:
                 if changed:
                     cls._restore_condition_restrictions(target)
                 result["status"] = "removed" if changed else "already_absent"
+            elif cls._condition_is_immune(target, condition):
+                # The initial effect path rejects immune conditions. Repeat
+                # ticks must use the same gate; otherwise gaining immunity
+                # between turns would be undone by the next reapplication.
+                result["status"] = "immune"
             elif not cls._has_condition(target, condition):
                 cls._apply_condition_restrictions(target, condition, {})
                 changed = cls._add_condition(target, condition)
