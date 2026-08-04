@@ -2206,6 +2206,83 @@ def test_attack_line_of_sight_uses_explicit_wall_height_or_conservative_2d_fallb
     assert "no line of sight" in missing_height.json()["message"]
 
 
+def test_attack_geometry_uses_visible_square_pair_for_large_combatants(
+    combat_client: TestClient,
+) -> None:
+    campaign = _campaign(combat_client, "Large creature sight")
+    base = f"/api/v1/campaigns/{campaign['id']}"
+    scene = combat_client.post(f"{base}/scenes", json={"name": "Large creature room"}).json()
+    grid = combat_client.post(
+        f"{base}/scenes/{scene['id']}/grid",
+        json={"width": 8, "height": 8, "cell_size_ft": 5, "mode": "combat"},
+    )
+    assert grid.status_code == 201, grid.text
+    wall = combat_client.post(
+        f"{base}/scenes/{scene['id']}/objects",
+        json={"object_type": "wall", "label": "高墙格", "row": 2, "col": 3},
+    )
+    assert wall.status_code == 201, wall.text
+    combat = combat_client.post(
+        f"{base}/combats",
+        json={"name": "Large creature sight combat", "scene_id": scene["id"]},
+    ).json()
+    attacker = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "大型攻击者",
+            "entity_type": "monster",
+            "initiative": 20,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {
+                "size": "Large",
+                "grid_position": {"row": 2, "col": 1},
+            },
+        },
+    ).json()
+    target = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "大型目标",
+            "entity_type": "character",
+            "initiative": 10,
+            "armor_class": 10,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {
+                "size_cells": 2,
+                "grid_position": {"row": 2, "col": 5},
+            },
+        },
+    ).json()
+    response = combat_client.post(
+        f"{base}/combats/{combat['id']}/actions/confirm",
+        headers={"X-Request-ID": "large-creature-visible-square-pair"},
+        json={
+            "action_type": "damage",
+            "is_attack": True,
+            "action_cost": "none",
+            "action_name": "大型生物攻击",
+            "actor_combatant_id": attacker["id"],
+            "actor_version": attacker["version"],
+            "target_combatant_id": target["id"],
+            "target_version": target["version"],
+            "amount": 1,
+            "damage_type": "slashing",
+            "attack_roll_total": 20,
+            "attack_range_ft": 20,
+            "attack_roll_mode": "normal",
+        },
+    )
+    assert response.status_code == 200, response.text
+    contexts = response.json()["action"]["result_json"]["attack_contexts"]
+    assert "distance_ft:15" in contexts
+    assert "line_of_sight:true" in contexts
+    assert "attacker_footprint_size_cells:2" in contexts
+    assert "target_footprint_size_cells:2" in contexts
+    assert any(context.startswith("line_of_sight_pair:3,1->") for context in contexts)
+
+
 def test_condition_attack_contexts_require_explicit_advantage_ruling(
     combat_client: TestClient,
 ) -> None:

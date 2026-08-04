@@ -6310,6 +6310,7 @@ class PlayerRoomService:
                 end: tuple[int, int],
                 end_position: dict[str, Any],
                 label: str,
+                end_combatant: Combatant | None = None,
             ) -> tuple[bool, str]:
                 """Use the combat engine's authoritative 2-D/3-D sight rule."""
 
@@ -6321,6 +6322,21 @@ class PlayerRoomService:
                     if requires_explicit_elevation
                     else None
                 )
+                if (
+                    end_combatant is not None
+                    and start == actor_point
+                    and end == CombatEngineService._grid_point(end_combatant)
+                ):
+                    has_sight, sight_mode, _ = CombatEngineService._grid_footprint_line_of_sight(
+                        session,
+                        grid,
+                        CombatEngineService._grid_footprint(actor),
+                        CombatEngineService._grid_footprint(end_combatant),
+                        sight_blockers,
+                        start_height_ft=start_elevation,
+                        end_height_ft=end_elevation,
+                    )
+                    return has_sight, sight_mode
                 return CombatEngineService._grid_line_of_sight(
                     session,
                     grid,
@@ -6359,6 +6375,7 @@ class PlayerRoomService:
                 target_point,
                 target_pos,
                 f"目标 {target.display_name}",
+                target,
             )
             if not has_sight:
                 raise ValueError("目标被墙体或关闭的门完全遮挡，无法建立攻击视线")
@@ -6450,6 +6467,7 @@ class PlayerRoomService:
                         secondary_point,
                         candidate_pos,
                         f"目标 {candidate.display_name}",
+                        candidate,
                     )
                     if target_rule.requires_line_of_sight and not secondary_sight:
                         raise ValueError(f"{candidate.display_name}无法建立法术视线")

@@ -3818,6 +3818,64 @@ class CombatEngineService:
         return row, col
 
     @staticmethod
+    def _grid_size_cells(combatant: Combatant) -> int:
+        """Read a combatant's authoritative square footprint without guessing.
+
+        Combat snapshots may carry the persistent map value directly as
+        ``size_cells`` or the compendium size label. Medium and smaller
+        creatures occupy one square; larger labels use the standard 5e square
+        footprint. Unknown values deliberately fall back to one square so
+        legacy combats keep their existing geometry.
+        """
+
+        raw = combatant.snapshot_json or {}
+        explicit_size = raw.get("size_cells")
+        if isinstance(explicit_size, int) and not isinstance(explicit_size, bool):
+            return max(1, min(4, explicit_size))
+        size_label = str(raw.get("size") or "").strip().casefold()
+        return {
+            "tiny": 1,
+            "微型": 1,
+            "small": 1,
+            "小型": 1,
+            "medium": 1,
+            "中型": 1,
+            "large": 2,
+            "大型": 2,
+            "huge": 3,
+            "巨型": 3,
+            "gargantuan": 4,
+            "超巨型": 4,
+        }.get(size_label, 1)
+
+    @classmethod
+    def _grid_footprint(cls, combatant: Combatant) -> tuple[tuple[int, int], ...]:
+        point = cls._grid_point(combatant)
+        if point is None:
+            return ()
+        size_cells = cls._grid_size_cells(combatant)
+        return tuple(
+            (point[0] + row_offset, point[1] + col_offset)
+            for row_offset in range(size_cells)
+            for col_offset in range(size_cells)
+        )
+
+    @staticmethod
+    def _grid_footprint_distance_ft(
+        start: tuple[tuple[int, int], ...],
+        end: tuple[tuple[int, int], ...],
+        *,
+        cell_size_ft: int,
+    ) -> int:
+        if not start or not end:
+            raise ValueError("combatants need authoritative grid footprints")
+        return min(
+            grid_distance_ft(source, target, cell_size_ft=cell_size_ft)
+            for source in start
+            for target in end
+        )
+
+    @staticmethod
     def _grid_obstacles(
         session: Session,
         grid: SceneGrid,
@@ -4000,6 +4058,37 @@ class CombatEngineService:
         )
 
     @classmethod
+    def _grid_footprint_line_of_sight(
+        cls,
+        session: Session,
+        grid: SceneGrid,
+        start: tuple[tuple[int, int], ...],
+        end: tuple[tuple[int, int], ...],
+        blockers: set[tuple[int, int]],
+        *,
+        start_height_ft: int | None,
+        end_height_ft: int | None,
+    ) -> tuple[bool, str, tuple[tuple[int, int], tuple[int, int]] | None]:
+        """Use any visible pair of occupied squares for large combatants."""
+
+        modes: list[str] = []
+        for source in start:
+            for target in end:
+                has_sight, mode = cls._grid_line_of_sight(
+                    session,
+                    grid,
+                    source,
+                    target,
+                    blockers,
+                    start_height_ft=start_height_ft,
+                    end_height_ft=end_height_ft,
+                )
+                modes.append(mode)
+                if has_sight:
+                    return has_sight, mode, (source, target)
+        return False, ("3d" if modes and all(mode == "3d" for mode in modes) else "2d"), None
+
+    @classmethod
     def _attack_geometry(
         cls,
         session: Session,
@@ -4012,15 +4101,23 @@ class CombatEngineService:
 
         actor_point = cls._grid_point(actor)
         target_point = cls._grid_point(target)
-        if combat.scene_id is None or actor_point is None or target_point is None:
+        actor_footprint = cls._grid_footprint(actor)
+        target_footprint = cls._grid_footprint(target)
+        if (
+            combat.scene_id is None
+            or actor_point is None
+            or target_point is None
+            or not actor_footprint
+            or not target_footprint
+        ):
             return None
         grid = session.scalar(select(SceneGrid).where(SceneGrid.scene_id == combat.scene_id))
         if grid is None:
             return None
         blockers, cover_cells = cls._grid_obstacles(session, grid)
-        horizontal_distance_ft = grid_distance_ft(
-            actor_point,
-            target_point,
+        horizontal_distance_ft = cls._grid_footprint_distance_ft(
+            actor_footprint,
+            target_footprint,
             cell_size_ft=grid.cell_size_ft,
         )
         actor_elevation_ft = cls._explicit_grid_elevation_ft(actor)
@@ -4039,11 +4136,11 @@ class CombatEngineService:
                 f"target is {distance_ft} ft away, beyond the explicit "
                 f"{command.attack_range_ft} ft attack range"
             )
-        has_sight, line_of_sight_mode = cls._grid_line_of_sight(
+        has_sight, line_of_sight_mode, sight_pair = cls._grid_footprint_line_of_sight(
             session,
             grid,
-            actor_point,
-            target_point,
+            actor_footprint,
+            target_footprint,
             blockers,
             start_height_ft=actor_elevation_ft,
             end_height_ft=target_elevation_ft,
@@ -4052,9 +4149,10 @@ class CombatEngineService:
         # total cover merely because the legacy 2-D cell ray intersects it.
         # Keep ordinary cover cells in the calculation, while retaining the
         # conservative 2-D blocker result whenever height data is incomplete.
+        cover_start, cover_end = sight_pair or (actor_point, target_point)
         cover = cover_between(
-            actor_point,
-            target_point,
+            cover_start,
+            cover_end,
             cover_cells,
             blockers if line_of_sight_mode == "2d" else set(),
         )
@@ -4081,6 +4179,12 @@ class CombatEngineService:
             "distance_mode": "3d" if vertical_distance_ft is not None else "2d",
             "line_of_sight": has_sight,
             "line_of_sight_mode": line_of_sight_mode,
+            "line_of_sight_pair": {
+                "from": {"row": cover_start[0], "col": cover_start[1]},
+                "to": {"row": cover_end[0], "col": cover_end[1]},
+            },
+            "attacker_footprint_size_cells": cls._grid_size_cells(actor),
+            "target_footprint_size_cells": cls._grid_size_cells(target),
             "cover": cover,
             "cover_bonus": cover_bonus,
             "base_armor_class": target.armor_class,
@@ -4161,7 +4265,8 @@ class CombatEngineService:
         if grid is None:
             raise ValueError("monster area actions require an authoritative combat grid")
         origin = cls._grid_point(actor)
-        if origin is None:
+        origin_footprint = cls._grid_footprint(actor)
+        if origin is None or not origin_footprint:
             raise ValueError("monster area actor has no authoritative grid position")
         anchor = (command.anchor_row, command.anchor_col)
         origin_height_ft = cls._grid_elevation_ft(actor)
@@ -4207,11 +4312,12 @@ class CombatEngineService:
                 height_ft=command.height_ft,
             ):
                 continue
-            has_sight, line_of_sight_mode = cls._grid_line_of_sight(
+            candidate_footprint = cls._grid_footprint(candidate)
+            has_sight, line_of_sight_mode, sight_pair = cls._grid_footprint_line_of_sight(
                 session,
                 grid,
-                origin,
-                point,
+                origin_footprint,
+                candidate_footprint,
                 blockers,
                 start_height_ft=cls._explicit_grid_elevation_ft(actor),
                 end_height_ft=cls._explicit_grid_elevation_ft(candidate),
@@ -4230,6 +4336,14 @@ class CombatEngineService:
                 ),
                 "line_of_sight": has_sight,
                 "line_of_sight_mode": line_of_sight_mode,
+                "line_of_sight_pair": (
+                    {
+                        "from": {"row": sight_pair[0][0], "col": sight_pair[0][1]},
+                        "to": {"row": sight_pair[1][0], "col": sight_pair[1][1]},
+                    }
+                    if sight_pair is not None
+                    else None
+                ),
             }
         requested_ids = {target.target_combatant_id for target in command.targets}
         affected_ids = {target.id for target in affected}
@@ -4404,6 +4518,24 @@ class CombatEngineService:
                 contexts.append("distance_mode:3d")
             contexts.append(f"line_of_sight:{str(geometry['line_of_sight']).lower()}")
             contexts.append(f"line_of_sight_mode:{geometry['line_of_sight_mode']}")
+            contexts.append(
+                "attacker_footprint_size_cells:"
+                f"{geometry['attacker_footprint_size_cells']}"
+            )
+            contexts.append(
+                "target_footprint_size_cells:"
+                f"{geometry['target_footprint_size_cells']}"
+            )
+            sight_pair = geometry.get("line_of_sight_pair")
+            if isinstance(sight_pair, dict):
+                sight_from = sight_pair.get("from")
+                sight_to = sight_pair.get("to")
+                if isinstance(sight_from, dict) and isinstance(sight_to, dict):
+                    contexts.append(
+                        "line_of_sight_pair:"
+                        f"{sight_from.get('row')},{sight_from.get('col')}"
+                        f"->{sight_to.get('row')},{sight_to.get('col')}"
+                    )
             contexts.append(f"cover:{geometry['cover']}")
             contexts.append(f"effective_ac:{geometry['effective_armor_class']}")
             if geometry["cover"] == "half" and command.attack_roll_total is None:
