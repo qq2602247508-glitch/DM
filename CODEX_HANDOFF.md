@@ -1,3 +1,14 @@
+# 2026-08-05 普通攻击三维射程校验
+
+- 提交 `51067da`：攻击者与目标都拥有权威 `grid_position.elevation_ft` 时，攻击距离按 5e 方格规则
+  使用水平/垂直轴距离的较大值；缺少任一高度则保持既有二维距离，不猜高度。攻击上下文额外记录
+  `horizontal_distance_ft`、`vertical_distance_ft` 和 `distance_mode:3d`。
+- 新增 `test_attack_range_uses_authoritative_vertical_distance_when_available`：水平 15 尺、垂直 20 尺
+  的目标不能用 15 尺射程攻击，20 尺射程可以正常结算。
+- 验证：三维射程/视线/闪避定向 3/3、后端全量测试、Ruff、`git diff --check` 通过；仅有既存
+  Starlette/httpx 弃用警告。本轮修改后端攻击几何，未改前端，因此未重复浏览器验收。
+- 代码与文档拆分提交：代码 `51067da`；本交接文档为后续独立文档提交。
+
 # 2026-08-05 RepeatBlock 显式次数执行
 
 - 提交 `4166e2a`：持续伤害/治疗的 `RepeatBlock.count` 现在由回合执行器真实记录并消耗；达到次数后
