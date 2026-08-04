@@ -2080,6 +2080,55 @@ def test_compiled_timed_effect_is_automatically_reversed_at_expiry(
     assert effects[0]["status"] == "ended"
 
 
+def test_condition_alias_does_not_duplicate_or_remove_existing_state(
+    combat_client: TestClient,
+) -> None:
+    """Chinese and English condition names share one lifecycle slot."""
+
+    campaign = _campaign(combat_client, "Condition alias lifecycle")
+    combat, target = _combatant(combat_client, campaign["id"])
+    root = f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}"
+    seeded = combat_client.patch(
+        _fighter_path(campaign["id"], combat["id"], target["id"]),
+        headers={"If-Match": f'"{target["version"]}"'},
+        json={"conditions": ["中毒"]},
+    )
+    assert seeded.status_code == 200, seeded.text
+    target = seeded.json()
+
+    applied = combat_client.post(
+        f"{root}/effects/confirm",
+        headers={"X-Request-ID": "condition-alias-apply"},
+        json={
+            "target_combatant_id": target["id"],
+            "target_version": target["version"],
+            "name": "Poisoned alias",
+            "effect_type": "condition",
+            "details_json": {
+                "rule_block": {
+                    "kind": "condition",
+                    "condition": "poisoned",
+                    "operation": "apply",
+                }
+            },
+            "duration_unit": "until_removed",
+        },
+    )
+    assert applied.status_code == 200, applied.text
+    assert applied.json()["target"]["conditions"] == ["中毒"]
+
+    ended = combat_client.post(
+        f"{root}/effects/{applied.json()['effect']['id']}/end",
+        headers={"X-Request-ID": "condition-alias-end"},
+        json={
+            "target_version": applied.json()["target"]["version"],
+            "reason": "别名来源结束",
+        },
+    )
+    assert ended.status_code == 200, ended.text
+    assert ended.json()["target"]["conditions"] == ["中毒"]
+
+
 def test_structured_condition_round_duration_expires_and_restores_previous_states(
     combat_client: TestClient,
 ) -> None:

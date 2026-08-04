@@ -7807,17 +7807,16 @@ class CombatEngineService:
             condition = str(block.get("condition") or "").strip()
             if condition:
                 before["conditions"] = list(target.conditions or [])
-                conditions = list(target.conditions or [])
                 if condition.startswith("移除："):
                     values = [
                         value.strip()
                         for value in condition.removeprefix("移除：").split("/")
                     ]
-                    conditions = [value for value in conditions if value not in values]
-                elif condition not in conditions:
-                    conditions.append(condition)
+                    for value in values:
+                        CombatEngineService._remove_condition(target, value)
+                elif not CombatEngineService._has_condition(target, condition):
                     CombatEngineService._apply_condition_restrictions(target, condition, before)
-                target.conditions = conditions
+                    CombatEngineService._add_condition(target, condition)
         elif kind == "modifier":
             stat = str(block.get("stat") or "")
             operation = str(block.get("operation") or "")
