@@ -2778,6 +2778,152 @@ def test_compiled_modifier_is_applied_and_restored_when_effect_ends(
     assert restored["armor_class"] == target["armor_class"]
 
 
+def test_compiled_state_sources_stack_and_end_independently(
+    combat_client: TestClient,
+) -> None:
+    """Ending one source must not erase a co-existing source's state."""
+
+    campaign = _campaign(combat_client, "Stacked state sources")
+    combat, target = _combatant(combat_client, campaign["id"])
+    root = f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}"
+
+    def add_effect(request_id: str, block: dict[str, Any]) -> dict[str, Any]:
+        nonlocal target
+        response = combat_client.post(
+            f"{root}/effects/confirm",
+            headers={"X-Request-ID": request_id},
+            json={
+                "target_combatant_id": target["id"],
+                "target_version": target["version"],
+                "name": request_id,
+                "effect_type": "buff",
+                "details_json": {"rule_block": block},
+                "duration_unit": "until_removed",
+            },
+        )
+        assert response.status_code == 200, response.text
+        target = response.json()["target"]
+        return response.json()["effect"]
+
+    ac_one = add_effect(
+        "stacked-ac-one",
+        {
+            "id": "same-ac-block",
+            "kind": "modifier",
+            "stat": "armor_class",
+            "operation": "add",
+            "value": 2,
+        },
+    )
+    ac_two = add_effect(
+        "stacked-ac-two",
+        {
+            "id": "same-ac-block",
+            "kind": "modifier",
+            "stat": "armor_class",
+            "operation": "add",
+            "value": 3,
+        },
+    )
+    assert target["armor_class"] == 15
+
+    ended = combat_client.post(
+        f"{root}/effects/{ac_one['id']}/end",
+        headers={"X-Request-ID": "stacked-ac-one-end"},
+        json={"target_version": target["version"], "reason": "第一层结束"},
+    )
+    assert ended.status_code == 200, ended.text
+    target = ended.json()["target"]
+    assert target["armor_class"] == 13
+
+    ended = combat_client.post(
+        f"{root}/effects/{ac_two['id']}/end",
+        headers={"X-Request-ID": "stacked-ac-two-end"},
+        json={"target_version": target["version"], "reason": "第二层结束"},
+    )
+    assert ended.status_code == 200, ended.text
+    target = ended.json()["target"]
+    assert target["armor_class"] == 10
+
+    resistance_one = add_effect(
+        "stacked-resistance-one",
+        {
+            "kind": "defense",
+            "operation": "resistance",
+            "damage_types": ["cold"],
+        },
+    )
+    resistance_two = add_effect(
+        "stacked-resistance-two",
+        {
+            "kind": "defense",
+            "operation": "resistance",
+            "damage_types": ["cold", "lightning"],
+        },
+    )
+    assert target["damage_resistances"] == ["cold", "fire", "lightning"]
+
+    ended = combat_client.post(
+        f"{root}/effects/{resistance_one['id']}/end",
+        headers={"X-Request-ID": "stacked-resistance-one-end"},
+        json={"target_version": target["version"], "reason": "第一层抗性结束"},
+    )
+    assert ended.status_code == 200, ended.text
+    target = ended.json()["target"]
+    assert target["damage_resistances"] == ["cold", "fire", "lightning"]
+
+    ended = combat_client.post(
+        f"{root}/effects/{resistance_two['id']}/end",
+        headers={"X-Request-ID": "stacked-resistance-two-end"},
+        json={"target_version": target["version"], "reason": "第二层抗性结束"},
+    )
+    assert ended.status_code == 200, ended.text
+    target = ended.json()["target"]
+    assert target["damage_resistances"] == ["fire"]
+
+    modifier_one = add_effect(
+        "stacked-rule-modifier-one",
+        {
+            "id": "same-rule-modifier",
+            "kind": "modifier",
+            "stat": "attack_roll",
+            "scope": "all",
+            "operation": "add",
+            "value": 1,
+        },
+    )
+    modifier_two = add_effect(
+        "stacked-rule-modifier-two",
+        {
+            "id": "same-rule-modifier",
+            "kind": "modifier",
+            "stat": "attack_roll",
+            "scope": "all",
+            "operation": "add",
+            "value": 2,
+        },
+    )
+    rule_modifiers = target["snapshot_json"]["rule_modifiers"]
+    assert len(rule_modifiers) == 2
+
+    ended = combat_client.post(
+        f"{root}/effects/{modifier_one['id']}/end",
+        headers={"X-Request-ID": "stacked-rule-modifier-one-end"},
+        json={"target_version": target["version"], "reason": "第一条规则结束"},
+    )
+    assert ended.status_code == 200, ended.text
+    target = ended.json()["target"]
+    assert len(target["snapshot_json"]["rule_modifiers"]) == 1
+
+    ended = combat_client.post(
+        f"{root}/effects/{modifier_two['id']}/end",
+        headers={"X-Request-ID": "stacked-rule-modifier-two-end"},
+        json={"target_version": target["version"], "reason": "第二条规则结束"},
+    )
+    assert ended.status_code == 200, ended.text
+    assert "rule_modifiers" not in ended.json()["target"]["snapshot_json"]
+
+
 def test_compiled_condition_respects_condition_immunity_without_creating_effect(
     combat_client: TestClient,
 ) -> None:

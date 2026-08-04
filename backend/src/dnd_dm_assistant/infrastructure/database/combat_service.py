@@ -3326,7 +3326,207 @@ class CombatEngineService:
                 applied if isinstance(applied, dict) else None,
             )
             return {}
-        return cls._apply_rule_block_effect(target, details, remove=True)
+        return cls._apply_rule_block_effect(
+            target,
+            details,
+            remove=True,
+            session=session,
+            effect=effect,
+        )
+
+    @staticmethod
+    def _rule_modifier_key(
+        block: dict[str, object],
+        details: dict[str, object] | None = None,
+    ) -> str:
+        """Build a source-specific key for a compiled rule modifier.
+
+        The old key only used ``stat:scope:skill``.  That is useful for a
+        character's static feature registry, but it is not enough for two
+        simultaneous combat effects with the same shape: the second effect
+        overwrote the first one and ending either effect restored both.  An
+        effect-instance suffix keeps the existing lookup shape while making
+        temporary combat modifiers independently reversible.
+        """
+
+        base = ":".join(
+            str(value)
+            for value in (
+                block.get("stat") or "",
+                block.get("scope") or "all",
+                block.get("skill") or "",
+            )
+        )
+        instance = (
+            str((details or {}).get("_effect_instance_key") or "").strip()
+        )
+        if instance:
+            return f"{base}:effect:{instance}"
+        block_id = str(block.get("id") or "").strip()
+        return f"{base}:block:{block_id}" if block_id else base
+
+    @classmethod
+    def _active_effects_for_rule_field(
+        cls,
+        session: Session,
+        target: Combatant,
+        *,
+        kind: str,
+        field: str,
+    ) -> list[CombatEffect]:
+        """Return compiled effects and history for one concrete field.
+
+        Ended rows are retained only to recover the earliest baseline when a
+        later stacked effect ends; the replay methods apply only rows whose
+        status is still active.
+        """
+
+        effects = session.scalars(
+            select(CombatEffect).where(
+                CombatEffect.combat_id == target.combat_id,
+                CombatEffect.target_combatant_id == target.id,
+            )
+        ).all()
+        matched: list[CombatEffect] = []
+        for effect in effects:
+            details = dict(effect.details_json or {})
+            block = details.get("rule_block")
+            if not isinstance(block, dict) or str(block.get("kind") or "") != kind:
+                continue
+            if kind == "modifier" and str(block.get("stat") or "") != field:
+                continue
+            if kind == "defense":
+                defense_field = {
+                    "resistance": "damage_resistances",
+                    "vulnerability": "damage_vulnerabilities",
+                    "immunity": "damage_immunities",
+                }.get(str(block.get("operation") or ""))
+                if defense_field != field:
+                    continue
+            matched.append(effect)
+        def order_key(row: CombatEffect) -> tuple[object, str, str]:
+            raw_order = dict(row.details_json or {}).get("_effect_instance_order")
+            order = (
+                (0, int(raw_order))
+                if isinstance(raw_order, int) and not isinstance(raw_order, bool)
+                else (1, row.started_round)
+            )
+            return (
+                order,
+                row.created_at.isoformat() if row.created_at is not None else "",
+                row.id,
+            )
+
+        return sorted(matched, key=order_key)
+
+    @classmethod
+    def _rebuild_numeric_rule_field(
+        cls,
+        session: Session,
+        target: Combatant,
+        effect: CombatEffect,
+        *,
+        field: str,
+    ) -> bool:
+        """Recompute a stacked AC/speed field after one effect ends.
+
+        Replaying the remaining active effects from the earliest captured
+        baseline handles both ``add`` and ``set`` effects, including ending
+        the oldest effect while newer effects remain active.
+        """
+
+        effects = cls._active_effects_for_rule_field(
+            session, target, kind="modifier", field=field
+        )
+        if not effects:
+            return False
+        first_details = dict(effects[0].details_json or {})
+        first_applied = first_details.get("applied_state")
+        baseline = (
+            first_applied.get(field)
+            if isinstance(first_applied, dict)
+            else None
+        )
+        if not isinstance(baseline, int):
+            return False
+        value = baseline
+        for row in effects:
+            if row.id == effect.id or row.status != "active":
+                continue
+            details = dict(row.details_json or {})
+            block = details.get("rule_block")
+            if not isinstance(block, dict):
+                continue
+            row_applied = details.get("applied_state")
+            if isinstance(row_applied, dict):
+                row_applied = dict(row_applied)
+                row_applied[field] = value
+                details["applied_state"] = row_applied
+                row.details_json = details
+            raw_value = block.get("value")
+            if not isinstance(raw_value, int):
+                return False
+            operation = str(block.get("operation") or "")
+            if operation == "add":
+                value = value + raw_value
+            elif operation == "set":
+                source = str(block.get("source") or "")
+                value = max(value, raw_value) if "低于" in source else raw_value
+            else:
+                return False
+        setattr(target, field, max(0, value) if field == "speed_ft" else value)
+        if field == "speed_ft":
+            target.movement_remaining_ft = min(
+                target.movement_remaining_ft,
+                target.speed_ft,
+            )
+        return True
+
+    @classmethod
+    def _rebuild_defense_rule_field(
+        cls,
+        session: Session,
+        target: Combatant,
+        effect: CombatEffect,
+        *,
+        field: str,
+    ) -> bool:
+        """Recompute one resistance/vulnerability/immunity field by source."""
+
+        effects = cls._active_effects_for_rule_field(
+            session, target, kind="defense", field=field
+        )
+        if not effects:
+            return False
+        first_details = dict(effects[0].details_json or {})
+        first_applied = first_details.get("applied_state")
+        baseline = (
+            first_applied.get(field)
+            if isinstance(first_applied, dict)
+            else None
+        )
+        if not isinstance(baseline, list):
+            return False
+        values = {str(item) for item in baseline}
+        for row in effects:
+            if row.id == effect.id or row.status != "active":
+                continue
+            details = dict(row.details_json or {})
+            block = details.get("rule_block")
+            if not isinstance(block, dict):
+                continue
+            row_applied = details.get("applied_state")
+            if isinstance(row_applied, dict):
+                row_applied = dict(row_applied)
+                row_applied[field] = sorted(values)
+                details["applied_state"] = row_applied
+                row.details_json = details
+            raw_types = block.get("damage_types")
+            if not isinstance(raw_types, list):
+                return False
+            values.update(str(item) for item in raw_types if str(item))
+        setattr(target, field, sorted(values))
+        return True
 
     @classmethod
     def _apply_structured_monster_effects(
@@ -8952,6 +9152,8 @@ class CombatEngineService:
         details: dict[str, object],
         *,
         remove: bool = False,
+        session: Session | None = None,
+        effect: CombatEffect | None = None,
     ) -> dict[str, object]:
         """Apply or reverse a compiler-produced combat block.
 
@@ -8966,6 +9168,64 @@ class CombatEngineService:
             return {}
         applied = details.get("applied_state")
         if remove:
+            kind = str(block.get("kind") or "")
+            if kind == "modifier":
+                stat = str(block.get("stat") or "")
+                operation = str(block.get("operation") or "")
+                if stat in {"armor_class", "speed_ft"} and operation in {"add", "set"}:
+                    # Rebuild from the earliest captured baseline instead of
+                    # restoring this effect's stale "before" value.  That
+                    # keeps a second active buff/debuff in place.
+                    if (
+                        session is not None
+                        and effect is not None
+                        and CombatEngineService._rebuild_numeric_rule_field(
+                            session,
+                            target,
+                            effect,
+                            field=stat,
+                        )
+                    ):
+                        return {}
+                elif isinstance(applied, dict):
+                    raw_key = applied.get("rule_modifier_key")
+                    modifier_key = (
+                        str(raw_key)
+                        if isinstance(raw_key, str) and raw_key
+                        else CombatEngineService._rule_modifier_key(block, details)
+                    )
+                    snapshot = dict(target.snapshot_json or {})
+                    raw_modifiers = snapshot.get("rule_modifiers")
+                    modifiers = (
+                        dict(raw_modifiers) if isinstance(raw_modifiers, dict) else {}
+                    )
+                    if modifier_key in modifiers:
+                        modifiers.pop(modifier_key, None)
+                        if modifiers:
+                            snapshot["rule_modifiers"] = modifiers
+                        else:
+                            snapshot.pop("rule_modifiers", None)
+                        target.snapshot_json = snapshot
+                        return {}
+            elif kind == "defense":
+                operation = str(block.get("operation") or "")
+                field = {
+                    "resistance": "damage_resistances",
+                    "vulnerability": "damage_vulnerabilities",
+                    "immunity": "damage_immunities",
+                }.get(operation)
+                if (
+                    field
+                    and session is not None
+                    and effect is not None
+                    and CombatEngineService._rebuild_defense_rule_field(
+                        session,
+                        target,
+                        effect,
+                        field=field,
+                    )
+                ):
+                    return {}
             transformation_before = details.get("transformation_before")
             if isinstance(transformation_before, dict):
                 for field in ("armor_class", "hp", "max_hp", "speed_ft"):
@@ -9075,6 +9335,7 @@ class CombatEngineService:
                 )
             elif stat == "speed_ft" and isinstance(value, int):
                 before["speed_ft"] = target.speed_ft
+                before["movement_remaining_ft"] = target.movement_remaining_ft
                 target.speed_ft = value if operation == "set" else max(0, target.speed_ft + value)
                 target.movement_remaining_ft = min(target.movement_remaining_ft, target.speed_ft)
             elif stat in {"action", "bonus_action", "reaction"} and operation == "grant":
@@ -9084,11 +9345,9 @@ class CombatEngineService:
             else:
                 raw_modifiers = target.snapshot_json.get("rule_modifiers")
                 modifiers = dict(raw_modifiers) if isinstance(raw_modifiers, dict) else {}
-                key = ":".join(
-                    str(value)
-                    for value in (stat, block.get("scope") or "all", block.get("skill") or "")
-                )
+                key = CombatEngineService._rule_modifier_key(block, details)
                 before["rule_modifiers"] = dict(modifiers)
+                before["rule_modifier_key"] = key
                 modifiers[key] = {
                     "operation": operation,
                     "value": value,
@@ -9222,10 +9481,7 @@ class CombatEngineService:
             else:
                 raw_modifiers = target.snapshot_json.get("rule_modifiers")
                 modifiers = raw_modifiers if isinstance(raw_modifiers, dict) else {}
-                modifier_key = ":".join(
-                    str(item)
-                    for item in (stat, block.get("scope") or "all", block.get("skill") or "")
-                )
+                modifier_key = cls._rule_modifier_key(block, details)
                 if modifier_key not in modifiers:
                     cls._apply_rule_block_effect(target, details)
                     changed = True
@@ -9733,6 +9989,29 @@ class CombatEngineService:
                 )
             if lifecycle_summon is not None:
                 details_json["ends_summon_combatant_id"] = lifecycle_summon.id
+            # Keep simultaneous same-shaped rule modifiers source-specific.
+            # This is internal metadata and does not change the public rule
+            # block contract.
+            details_json.setdefault("_effect_instance_key", idempotency_key)
+            prior_effects = session.scalars(
+                select(CombatEffect).where(
+                    CombatEffect.combat_id == combat_id,
+                    CombatEffect.target_combatant_id == target.id,
+                )
+            ).all()
+            prior_orders = [
+                int(order)
+                for prior_effect in prior_effects
+                for order in [
+                    dict(prior_effect.details_json or {}).get(
+                        "_effect_instance_order"
+                    )
+                ]
+                if isinstance(order, int) and not isinstance(order, bool)
+            ]
+            details_json["_effect_instance_order"] = (
+                max(prior_orders, default=0) + 1
+            )
             applied_state = self._apply_rule_block_effect(target, details_json)
             if applied_state:
                 details_json["applied_state"] = applied_state
