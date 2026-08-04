@@ -1151,6 +1151,107 @@ def test_structured_turn_end_reaction_window_excludes_reaction_owner_turn(
     ) == 1
 
 
+def test_structured_takes_damage_reaction_window_is_one_per_damage_event(
+    combat_client: TestClient,
+) -> None:
+    campaign = _campaign(combat_client, "Structured damage reaction")
+    base = f"/api/v1/campaigns/{campaign['id']}"
+    combat = combat_client.post(
+        f"{base}/combats", json={"name": "Structured damage reaction combat"}
+    ).json()
+    attacker = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "伤害来源",
+            "entity_type": "character",
+            "initiative": 20,
+            "hp": 20,
+            "max_hp": 20,
+        },
+    ).json()
+    monster = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "受伤反应怪",
+            "entity_type": "monster",
+            "initiative": 10,
+            "hp": 30,
+            "max_hp": 30,
+            "snapshot_json": {
+                "actions": [
+                    {
+                        "name": "受伤反击",
+                        "action_type": "reaction",
+                        "reaction_event": "takes_damage",
+                        "reaction_trigger": "受到伤害时",
+                    }
+                ]
+            },
+        },
+    ).json()
+    path = f"{base}/combats/{combat['id']}/actions/confirm"
+    response = combat_client.post(
+        path,
+        headers={"X-Request-ID": "structured-damage-reaction"},
+        json={
+            "action_type": "damage",
+            "actor_combatant_id": attacker["id"],
+            "actor_version": attacker["version"],
+            "action_cost": "none",
+            "action_name": "元素裂解",
+            "target_combatant_id": monster["id"],
+            "target_version": monster["version"],
+            "amount": 11,
+            "damage_components": [
+                {"amount": 5, "damage_type": "fire"},
+                {"amount": 6, "damage_type": "force"},
+            ],
+        },
+    )
+    assert response.status_code == 200, response.text
+    actions = combat_client.get(f"{base}/combats/{combat['id']}/actions").json()["items"]
+    windows = [
+        item["result_json"]["action_window"]
+        for item in actions
+        if item["action_type"] == "eligible_action_window"
+    ]
+    assert len(windows) == 1
+    assert windows[0]["reaction_event"] == "takes_damage"
+    assert windows[0]["trigger"] == "takes_damage"
+    assert windows[0]["eligible_action_names"] == ["受伤反击"]
+    assert windows[0]["trigger_combatant_id"] == attacker["id"]
+    assert windows[0]["damaged_combatant_id"] == monster["id"]
+    assert windows[0]["adjusted_damage"] == 11
+    assert actions[-1]["request_json"]["damage_action_id"] == response.json()["action"]["id"]
+
+    repeated = combat_client.post(
+        path,
+        headers={"X-Request-ID": "structured-damage-reaction"},
+        json={
+            "action_type": "damage",
+            "actor_combatant_id": attacker["id"],
+            "actor_version": attacker["version"],
+            "action_cost": "none",
+            "action_name": "元素裂解",
+            "target_combatant_id": monster["id"],
+            "target_version": monster["version"],
+            "amount": 11,
+            "damage_components": [
+                {"amount": 5, "damage_type": "fire"},
+                {"amount": 6, "damage_type": "force"},
+            ],
+        },
+    )
+    assert repeated.status_code == 200, repeated.text
+    actions_after_repeat = combat_client.get(
+        f"{base}/combats/{combat['id']}/actions"
+    ).json()["items"]
+    assert sum(
+        item["action_type"] == "eligible_action_window"
+        for item in actions_after_repeat
+    ) == 1
+
+
 def test_structured_reaction_event_must_match_monster_action(
     combat_client: TestClient,
 ) -> None:
@@ -2781,6 +2882,71 @@ def test_repeating_mixed_damage_ticks_keep_each_segment_and_defense(
     # Fire resistance applies only to the fire segment; cold remains full.
     assert [item["adjusted_damage"] for item in result["damage_components"]] == [1, 4]
     assert result["adjusted_damage"] == 5
+
+
+def test_repeating_damage_tick_opens_takes_damage_reaction_window(
+    combat_client: TestClient,
+) -> None:
+    campaign = _campaign(combat_client, "Repeating damage reaction")
+    base = f"/api/v1/campaigns/{campaign['id']}"
+    combat = combat_client.post(
+        f"{base}/combats", json={"name": "Repeating damage reaction combat"}
+    ).json()
+    target = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "持续受伤反应怪",
+            "entity_type": "monster",
+            "initiative": 10,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {
+                "actions": [
+                    {
+                        "name": "持续反击",
+                        "action_type": "reaction",
+                        "reaction_event": "takes_damage",
+                    }
+                ]
+            },
+        },
+    ).json()
+    effect = combat_client.post(
+        f"{base}/combats/{combat['id']}/effects/confirm",
+        headers={"X-Request-ID": "repeating-damage-reaction-effect"},
+        json={
+            "target_combatant_id": target["id"],
+            "target_version": target["version"],
+            "name": "持续火焰",
+            "effect_type": "damage_over_time",
+            "details_json": {
+                "damage_expression": "4",
+                "damage_type": "fire",
+                "repeat": {"timing": "turn_start"},
+            },
+            "duration_unit": "rounds",
+            "duration_value": 2,
+            "trigger_timing": "turn_start",
+        },
+    )
+    assert effect.status_code == 200, effect.text
+    current = combat_client.get(f"{base}/combats/{combat['id']}").json()
+    advanced = combat_client.post(
+        f"{base}/combats/{combat['id']}/turns/advance",
+        headers={"X-Request-ID": "repeating-damage-reaction-advance"},
+        json={"combat_version": current["version"]},
+    )
+    assert advanced.status_code == 200, advanced.text
+    assert advanced.json()["effect_ticks"][0]["result"]["adjusted_damage"] == 4
+    actions = combat_client.get(f"{base}/combats/{combat['id']}/actions").json()["items"]
+    windows = [
+        item["result_json"]["action_window"]
+        for item in actions
+        if item["action_type"] == "eligible_action_window"
+    ]
+    assert len(windows) == 1
+    assert windows[0]["trigger_action_type"] == "effect_tick"
+    assert windows[0]["damaged_combatant_id"] == target["id"]
 
 
 def test_repeating_compiled_state_ticks_reconcile_without_stacking(
@@ -4519,12 +4685,22 @@ def test_monster_area_action_resolves_mixed_damage_and_vertical_geometry(
         f"{base}/combats/{combat['id']}/combatants",
         json={
             "display_name": "地面目标",
-            "entity_type": "character",
+            "entity_type": "monster",
             "initiative": 10,
             "hp": 30,
             "max_hp": 30,
             "damage_resistances": ["fire"],
-            "snapshot_json": {"grid_position": {"row": 5, "col": 5, "elevation_ft": 10}},
+            "snapshot_json": {
+                "grid_position": {"row": 5, "col": 5, "elevation_ft": 10},
+                "actions": [
+                    {
+                        "name": "区域受伤反击",
+                        "action_type": "reaction",
+                        "reaction_event": "takes_damage",
+                        "reaction_trigger": "受到伤害时",
+                    }
+                ],
+            },
         },
     ).json()
     high = combat_client.post(
@@ -4575,6 +4751,15 @@ def test_monster_area_action_resolves_mixed_damage_and_vertical_geometry(
     ] == ["fire", "force"]
     # fire resistance halves only the fire component; force remains full.
     assert body["targets"][0]["hp"] == 21
+    actions = combat_client.get(f"{base}/combats/{combat['id']}/actions").json()["items"]
+    area_windows = [
+        item["result_json"]["action_window"]
+        for item in actions
+        if item["action_type"] == "eligible_action_window"
+    ]
+    assert len(area_windows) == 1
+    assert area_windows[0]["reaction_event"] == "takes_damage"
+    assert area_windows[0]["damaged_combatant_id"] == low["id"]
     assert (
         combat_client.get(
             f"{base}/combats/{combat['id']}/combatants/{high['id']}"

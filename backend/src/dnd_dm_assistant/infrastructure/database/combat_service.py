@@ -1341,6 +1341,113 @@ class CombatEngineService:
                 )
 
     @classmethod
+    def _persist_eligible_damage_reaction_windows(
+        cls,
+        session: Session,
+        *,
+        combat: Combat,
+        transaction: OperationTransaction,
+        damage_action: CombatAction,
+        damaged_targets: list[tuple[Combatant, int]],
+    ) -> None:
+        """Open explicit ``takes_damage`` reaction windows after one damage event.
+
+        The damage action is already authoritative when this helper runs: all
+        typed segments have been resolved, HP/lifecycle changes have been
+        written, and the action has been flushed.  Consequently one compound
+        event creates at most one window per damaged monster, rather than one
+        window per damage segment.  This records eligibility only; the normal
+        DM confirmation path still owns target selection, rolls, execution and
+        reaction consumption.
+        """
+
+        if not damaged_targets:
+            return
+        trigger_id = damage_action.actor_combatant_id
+        trigger = session.get(Combatant, trigger_id) if trigger_id else None
+        trigger_name = trigger.display_name if trigger is not None else "未指定来源"
+        for target, adjusted_damage in damaged_targets:
+            if (
+                target.entity_type != "monster"
+                or target.hp <= 0
+                or not target.reaction_available
+            ):
+                continue
+            reaction_actions = cls._structured_reaction_actions(
+                target,
+                "takes_damage",
+            )
+            if not reaction_actions:
+                continue
+            idempotency_key = (
+                f"rw:{combat.id}:damage:{damage_action.id}:{target.id}:takes_damage"
+            )
+            existing = session.scalar(
+                select(CombatAction).where(
+                    CombatAction.combat_id == combat.id,
+                    CombatAction.idempotency_key == idempotency_key,
+                )
+            )
+            if existing is not None:
+                continue
+            reaction_metadata: dict[str, object] = {
+                "action_cost": "reaction",
+                "status": "eligible",
+                "window_key": f"damage:{damage_action.id}:{target.id}",
+                "trigger": "takes_damage",
+                "reaction_event": "takes_damage",
+                "eligible_action_names": [
+                    action["name"] for action in reaction_actions
+                ],
+                "trigger_action_id": damage_action.id,
+                "trigger_action_type": damage_action.action_type,
+                "trigger_combatant_id": trigger_id,
+                "trigger_combatant_name": trigger_name,
+                "damaged_combatant_id": target.id,
+                "damaged_combatant_name": target.display_name,
+                "adjusted_damage": adjusted_damage,
+            }
+            reaction_triggers = {
+                action["name"]: action["trigger"]
+                for action in reaction_actions
+                if action.get("trigger")
+            }
+            if reaction_triggers:
+                reaction_metadata["reaction_triggers"] = reaction_triggers
+            session.add(
+                CombatAction(
+                    campaign_id=combat.campaign_id,
+                    combat_id=combat.id,
+                    actor_combatant_id=target.id,
+                    transaction_id=transaction.id,
+                    action_type="eligible_action_window",
+                    target_combatant_ids=[],
+                    request_json={
+                        "source_action_type": damage_action.action_type,
+                        "damage_action_id": damage_action.id,
+                        "reaction_event": "takes_damage",
+                        "trigger_combatant_id": trigger_id,
+                        "damaged_combatant_id": target.id,
+                    },
+                    result_json={"action_window": reaction_metadata},
+                    explanation=(
+                        "仅记录结构化受伤反应的可触发时机；不会自动选择目标、"
+                        "掷骰、消耗反应或执行动作。"
+                    ),
+                    round_number=combat.round_number,
+                    turn_index=combat.current_turn_index,
+                    summary=(
+                        f"{target.display_name}：受到伤害反应窗口已开放"
+                        f"（{trigger_name} 造成 {adjusted_damage} 点实际伤害；"
+                        "等待 DM 确认）"
+                    ),
+                    idempotency_key=idempotency_key,
+                    status="confirmed",
+                )
+            )
+        session.flush()
+
+    @classmethod
     def _validate_action_economy(
         cls,
         session: Session,
@@ -5396,6 +5503,19 @@ class CombatEngineService:
             )
             session.add(action)
             session.flush()
+            if (
+                command.action_type == "damage"
+                and int(result.get("adjusted_damage", 0)) > 0
+            ):
+                self._persist_eligible_damage_reaction_windows(
+                    session,
+                    combat=combat,
+                    transaction=transaction,
+                    damage_action=action,
+                    damaged_targets=[
+                        (target, int(result["adjusted_damage"]))
+                    ],
+                )
             concentration_prompts: list[dict[str, object]] = []
             raw_concentration_dc = result.get("concentration_check_dc")
             if (
@@ -6147,6 +6267,28 @@ class CombatEngineService:
             )
             session.add(action)
             session.flush()
+            damaged_targets_for_reactions: list[tuple[Combatant, int]] = []
+            affected_by_id = {target.id: target for target in affected}
+            for target_result in target_results:
+                if not isinstance(target_result.get("damage"), dict):
+                    continue
+                adjusted_damage = self._state_int(
+                    target_result["damage"].get("adjusted_damage")
+                )
+                damaged_target = affected_by_id.get(
+                    str(target_result.get("target_combatant_id"))
+                )
+                if damaged_target is not None and adjusted_damage > 0:
+                    damaged_targets_for_reactions.append(
+                        (damaged_target, adjusted_damage)
+                    )
+            self._persist_eligible_damage_reaction_windows(
+                session,
+                combat=combat,
+                transaction=transaction,
+                damage_action=action,
+                damaged_targets=damaged_targets_for_reactions,
+            )
             concentration_prompts = self._persist_concentration_prompts(
                 session,
                 combat,
@@ -8551,6 +8693,19 @@ class CombatEngineService:
         )
         session.add(action)
         session.flush()
+        if (
+            (details.get("damage_expression") or is_component_damage)
+            and int(result.get("adjusted_damage", 0)) > 0
+        ):
+            self._persist_eligible_damage_reaction_windows(
+                session,
+                combat=combat,
+                transaction=transaction,
+                damage_action=action,
+                damaged_targets=[
+                    (target, int(result["adjusted_damage"]))
+                ],
+            )
         return {"effect_id": effect.id, "target_combatant_id": target.id, "result": result}
 
     def preview_effect(
