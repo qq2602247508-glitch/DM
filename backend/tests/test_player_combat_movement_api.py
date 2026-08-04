@@ -540,6 +540,14 @@ def test_leaving_melee_range_creates_dm_opportunity_request_and_resolves_attack(
                         "range_ft": 5,
                         "attack_type": "melee",
                     },
+                    {
+                        "name": "离开凝视",
+                        "action_type": "reaction",
+                        "reaction_event": "leaves_reach",
+                        "reaction_trigger": "当生物离开近战威胁范围时",
+                        "save_dc": 13,
+                        "save_ability": "wisdom",
+                    },
                 ],
             },
         },
@@ -572,6 +580,20 @@ def test_leaving_melee_range_creates_dm_opportunity_request_and_resolves_attack(
             },
         )
         assert moved.status_code == 200, moved.text
+
+        actions = campaign_client.get(
+            f"/api/v1/campaigns/{campaign_id}/combats/{combat['id']}/actions"
+        ).json()["items"]
+        leaves_window = next(
+            item
+            for item in actions
+            if item["action_type"] == "eligible_action_window"
+            and item["result_json"]["action_window"].get("reaction_event") == "leaves_reach"
+        )
+        leaves_metadata = leaves_window["result_json"]["action_window"]
+        assert leaves_metadata["trigger_combatant_id"] == actor["id"]
+        assert leaves_metadata["eligible_action_names"] == ["离开凝视"]
+        assert leaves_window["target_combatant_ids"] == [actor["id"]]
 
         requests = campaign_client.get(
             f"/api/v1/campaigns/{campaign_id}/player-action-requests?status=pending"

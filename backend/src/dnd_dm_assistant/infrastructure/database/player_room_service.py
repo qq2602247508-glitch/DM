@@ -4566,6 +4566,14 @@ class PlayerRoomService:
                     to_position=(row, col),
                     movement_key=f"combatant-move:{actor.id}:{combatant_version}",
                 )
+                self.combat._persist_eligible_leaves_reach_reaction_windows(
+                    session,
+                    combat=combat,
+                    moving_combatant=actor,
+                    from_position=start,
+                    to_position=(row, col),
+                    movement_key=f"combatant-move:{actor.id}:{combatant_version}",
+                )
             ended_movement_effects: list[CombatEffect] = []
             ended_movement_summons: list[Combatant] = []
             if start != (row, col) or stood_from_prone:
@@ -4794,6 +4802,14 @@ class PlayerRoomService:
                 )
             )
             self.combat._persist_eligible_enters_reach_reaction_windows(
+                session,
+                combat=combat,
+                moving_combatant=monster,
+                from_position=start,
+                to_position=(row, col),
+                movement_key=f"monster-move:{monster.id}:{combatant_version}",
+            )
+            self.combat._persist_eligible_leaves_reach_reaction_windows(
                 session,
                 combat=combat,
                 moving_combatant=monster,

@@ -1590,6 +1590,174 @@ class CombatEngineService:
                 )
             )
 
+    @classmethod
+    def _persist_eligible_leaves_reach_reaction_windows(
+        cls,
+        session: Session,
+        *,
+        combat: Combat,
+        moving_combatant: Combatant,
+        from_position: tuple[int, int],
+        to_position: tuple[int, int],
+        movement_key: str,
+        transaction: OperationTransaction | None = None,
+    ) -> None:
+        """Open explicit monster reaction windows when a unit leaves reach."""
+
+        if from_position == to_position or moving_combatant.hp <= 0:
+            return
+        grid = (
+            session.scalar(select(SceneGrid).where(SceneGrid.scene_id == combat.scene_id))
+            if combat.scene_id
+            else None
+        )
+        cell_size = grid.cell_size_ft if grid is not None else 5
+
+        def faction(item: Combatant) -> str:
+            disposition = (item.snapshot_json or {}).get("disposition")
+            if disposition in {"ally", "enemy"}:
+                return str(disposition)
+            return "ally" if item.entity_type in {"character", "companion"} else "enemy"
+
+        for reactor in cls._ordered_combatants(session, combat.id):
+            if (
+                reactor.id == moving_combatant.id
+                or reactor.entity_type != "monster"
+                or reactor.hp <= 0
+                or not reactor.reaction_available
+                or faction(reactor) == faction(moving_combatant)
+            ):
+                continue
+            raw_position = (reactor.snapshot_json or {}).get("grid_position")
+            if not isinstance(raw_position, dict):
+                continue
+            try:
+                reactor_position = (int(raw_position["row"]), int(raw_position["col"]))
+            except (KeyError, TypeError, ValueError):
+                continue
+            raw_actions = (reactor.snapshot_json or {}).get("actions")
+            if not isinstance(raw_actions, list):
+                continue
+            eligible: list[tuple[dict[str, Any], int]] = []
+            for raw in raw_actions:
+                if not isinstance(raw, dict):
+                    continue
+                if str(raw.get("action_type") or "").strip() != "reaction":
+                    continue
+                if str(raw.get("reaction_event") or "").strip() != "leaves_reach":
+                    continue
+                if raw.get("area_shape") or raw.get("affects_multiple_targets"):
+                    continue
+                if raw.get("ranged") is True or (
+                    str(raw.get("attack_type") or "").lower() == "ranged"
+                ):
+                    continue
+                name = str(raw.get("name") or "").strip()
+                if not name:
+                    continue
+                raw_range = raw.get("reach_ft", raw.get("range_ft", 5))
+                if isinstance(raw_range, bool):
+                    continue
+                try:
+                    reach_ft = int(raw_range)
+                except (TypeError, ValueError):
+                    continue
+                if reach_ft > 0 and (
+                    grid_distance_ft(from_position, reactor_position, cell_size_ft=cell_size)
+                    <= reach_ft
+                    and grid_distance_ft(to_position, reactor_position, cell_size_ft=cell_size)
+                    > reach_ft
+                ):
+                    eligible.append((raw, reach_ft))
+            if not eligible:
+                continue
+
+            open_window = False
+            for existing in session.scalars(
+                select(CombatAction).where(
+                    CombatAction.combat_id == combat.id,
+                    CombatAction.actor_combatant_id == reactor.id,
+                    CombatAction.action_type == "eligible_action_window",
+                    CombatAction.status == "confirmed",
+                )
+            ).all():
+                existing_metadata = (existing.result_json or {}).get("action_window")
+                if (
+                    isinstance(existing_metadata, dict)
+                    and existing_metadata.get("status") == "eligible"
+                    and existing_metadata.get("action_cost") == "reaction"
+                    and existing_metadata.get("reaction_event") == "leaves_reach"
+                ):
+                    open_window = True
+                    break
+            if open_window:
+                continue
+
+            key_material = f"{combat.id}:{movement_key}:{reactor.id}:leaves_reach"
+            idempotency_key = f"rw:leaves_reach:{sha256(key_material.encode()).hexdigest()}"
+            if session.scalar(
+                select(CombatAction).where(
+                    CombatAction.combat_id == combat.id,
+                    CombatAction.idempotency_key == idempotency_key,
+                )
+            ) is not None:
+                continue
+
+            reaction_actions = [raw for raw, _ in eligible]
+            triggers = {
+                str(raw.get("name") or ""): str(raw.get("reaction_trigger") or "")
+                for raw in reaction_actions
+                if str(raw.get("reaction_trigger") or "").strip()
+            }
+            metadata: dict[str, object] = {
+                "action_cost": "reaction",
+                "status": "eligible",
+                "window_key": f"leaves_reach:{movement_key}:{reactor.id}",
+                "trigger": next(iter(triggers.values()), "离开近战威胁范围"),
+                "reaction_event": "leaves_reach",
+                "eligible_action_names": [str(raw.get("name") or "") for raw in reaction_actions],
+                "reaction_ranges_ft": {
+                    str(raw.get("name") or ""): reach_ft for raw, reach_ft in eligible
+                },
+                "trigger_combatant_id": moving_combatant.id,
+                "trigger_combatant_name": moving_combatant.display_name,
+                "from_position": {"row": from_position[0], "col": from_position[1]},
+                "to_position": {"row": to_position[0], "col": to_position[1]},
+            }
+            if triggers:
+                metadata["reaction_triggers"] = triggers
+            session.add(
+                CombatAction(
+                    campaign_id=combat.campaign_id,
+                    combat_id=combat.id,
+                    actor_combatant_id=reactor.id,
+                    transaction_id=transaction.id if transaction is not None else None,
+                    action_type="eligible_action_window",
+                    target_combatant_ids=[moving_combatant.id],
+                    request_json={
+                        "source_action_type": "move",
+                        "reaction_event": "leaves_reach",
+                        "moving_combatant_id": moving_combatant.id,
+                        "from_position": metadata["from_position"],
+                        "to_position": metadata["to_position"],
+                    },
+                    result_json={"action_window": metadata},
+                    explanation=(
+                        "记录明确结构化离开威胁范围反应的可触发时机；不会自动掷骰、"
+                        "消耗反应或执行动作。"
+                    ),
+                    round_number=combat.round_number,
+                    turn_index=combat.current_turn_index,
+                    summary=(
+                        f"{reactor.display_name}：离开近战威胁范围反应窗口已开放"
+                        f"（{moving_combatant.display_name} 离开；等待 DM 确认）"
+                    ),
+                    idempotency_key=idempotency_key,
+                    status="confirmed",
+                )
+            )
+        session.flush()
+
     @staticmethod
     def _is_structured_spell_action(
         combatant: Combatant,
@@ -7747,6 +7915,21 @@ class CombatEngineService:
             movement = structured_effects.get("movement")
             if isinstance(movement, dict) and int(movement.get("moved_ft") or 0) > 0:
                 self._persist_eligible_enters_reach_reaction_windows(
+                    session,
+                    combat=combat,
+                    moving_combatant=target,
+                    from_position=(
+                        int(movement["from"]["row"]),
+                        int(movement["from"]["col"]),
+                    ),
+                    to_position=(
+                        int(movement["to"]["row"]),
+                        int(movement["to"]["col"]),
+                    ),
+                    movement_key=idempotency_key,
+                    transaction=transaction,
+                )
+                self._persist_eligible_leaves_reach_reaction_windows(
                     session,
                     combat=combat,
                     moving_combatant=target,
