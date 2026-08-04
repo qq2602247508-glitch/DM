@@ -2532,6 +2532,49 @@ class CombatEngineService:
         return bool(cls._condition_set(actor) & cls._MOVEMENT_BLOCKING_CONDITIONS)
 
     @classmethod
+    def _validate_frightened_movement(
+        cls,
+        session: Session,
+        combat: Combat,
+        actor: Combatant,
+        from_position: tuple[int, int],
+        to_position: tuple[int, int],
+    ) -> None:
+        """Reject movement that knowingly brings a frightened unit closer.
+
+        This rule is shared by player movement and the AI movement writer.  A
+        missing source, scene, or authoritative grid is intentionally a DM
+        decision rather than permission to move: distance cannot safely be
+        inferred from a free-form snapshot or a fallback grid size.
+        """
+
+        if not cls._has_condition(actor, "frightened"):
+            return
+        source_ids = cls._condition_source_ids(
+            session, combat.id, actor, "frightened"
+        )
+        if not source_ids:
+            raise ValueError("恐慌状态的来源未记录，移动方向需要 DM 裁定")
+        if combat.scene_id is None:
+            raise ValueError("恐慌状态缺少权威战斗场景，移动方向需要 DM 裁定")
+        grid = session.scalar(
+            select(SceneGrid).where(SceneGrid.scene_id == combat.scene_id)
+        )
+        if grid is None:
+            raise ValueError("恐慌状态缺少权威战斗网格，移动方向需要 DM 裁定")
+        for source_id in source_ids:
+            source = session.get(Combatant, source_id)
+            source_position = cls._grid_point(source) if source is not None else None
+            if source_position is None:
+                raise ValueError("恐慌来源没有战斗位置，移动方向需要 DM 裁定")
+            if grid_distance_ft(
+                to_position, source_position, cell_size_ft=grid.cell_size_ft
+            ) < grid_distance_ft(
+                from_position, source_position, cell_size_ft=grid.cell_size_ft
+            ):
+                raise ValueError("恐慌状态下不能主动靠近恐慌来源")
+
+    @classmethod
     def _refresh_new_turn_resources(cls, actor: Combatant) -> None:
         """Recompute a unit's turn budget after boundary effects settle.
 

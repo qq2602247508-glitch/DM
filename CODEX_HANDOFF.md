@@ -2,6 +2,23 @@
 
 更新时间：2026-08-04（Asia/Shanghai）
 
+## 2026-08-04 恐慌状态覆盖怪物 AI 移动（本项最新）
+
+- 把“恐慌状态不能主动靠近结构化恐慌来源”的距离判定提取为
+  `CombatEngineService._validate_frightened_movement()`，玩家移动和怪物 AI
+  `move_monster()` 共用同一入口，避免 AI 绕过状态规则。
+- 只有目标位置比起点更接近来源时拒绝；远离或保持距离允许。来源、战斗场景或权威
+  `SceneGrid` 缺失时 fail-closed，返回“需要 DM 裁定”，不使用自由快照或默认网格猜距离。
+- 新增回归覆盖：怪物靠近被拒、远离成功并更新网格位置；缺少权威场景时拒绝。
+- 验证：后端全量 `454 passed`；定向恐慌/移动测试通过；Ruff、`git diff --check`、
+  TypeScript、ESLint、前端 `39 files / 196 tests`、生产构建全部通过。
+- 内置浏览器刷新现有模拟战斗 DM/玩家页面：两端正常显示当前战斗、共享地图和 AI 当前行动；
+  新增控制台 `error/warn` 均为空。截图：
+  `/private/tmp/dnd-frightened-ai-movement-dm-20260804.png`、
+  `/private/tmp/dnd-frightened-ai-movement-player-20260804.png`。
+- 本项不改变火球术、雷鸣波、复合伤害、召唤物生命周期或既有反应执行链；复杂状态组合
+  仍有其他未覆盖的规则例外，完整三维遮挡和全职业/子职业 1–20 级运行时仍未完成。
+
 ## 2026-08-04 结构化反应窗口真实执行闭环（最新）
 
 - 上一项“进入近战威胁范围”不再只是提示窗口。`CombatActionCommand` 新增

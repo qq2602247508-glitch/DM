@@ -551,6 +551,183 @@ def test_monster_move_prompts_player_and_player_can_accept_structured_reaction(
         player.close()
 
 
+def test_monster_move_respects_structured_frightened_direction(
+    campaign_client: TestClient,
+) -> None:
+    campaign = campaign_client.post(
+        "/api/v1/campaigns", json={"name": "怪物恐慌移动"}
+    ).json()
+    campaign_id = campaign["id"]
+    scene = campaign_client.post(
+        f"/api/v1/campaigns/{campaign_id}/scenes", json={"name": "恐慌移动场景"}
+    ).json()
+    grid = campaign_client.post(
+        f"/api/v1/campaigns/{campaign_id}/scenes/{scene['id']}/grid",
+        json={
+            "width": 10,
+            "height": 10,
+            "cell_size_ft": 5,
+            "mode": "combat",
+            "layers_json": {"cells": []},
+        },
+    )
+    assert grid.status_code == 201, grid.text
+    combat = campaign_client.post(
+        f"/api/v1/campaigns/{campaign_id}/combats",
+        json={"name": "恐慌 AI 战斗", "scene_id": scene["id"]},
+    ).json()
+    source = campaign_client.post(
+        f"/api/v1/campaigns/{campaign_id}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "恐慌来源",
+            "entity_type": "monster",
+            "initiative": 20,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {"grid_position": {"row": 2, "col": 2}},
+        },
+    ).json()
+    target = campaign_client.post(
+        f"/api/v1/campaigns/{campaign_id}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "恐慌 AI",
+            "entity_type": "monster",
+            "initiative": 10,
+            "hp": 20,
+            "max_hp": 20,
+            "movement_remaining_ft": 30,
+            "snapshot_json": {"grid_position": {"row": 2, "col": 4}},
+        },
+    ).json()
+    effect = campaign_client.post(
+        f"/api/v1/campaigns/{campaign_id}/combats/{combat['id']}/effects/confirm",
+        headers={"X-Request-ID": "frightened-monster-effect"},
+        json={
+            "target_combatant_id": target["id"],
+            "target_version": target["version"],
+            "source_combatant_id": source["id"],
+            "source_version": source["version"],
+            "name": "恐慌",
+            "effect_type": "condition",
+            "details_json": {
+                "rule_block": {
+                    "kind": "condition",
+                    "condition": "frightened",
+                    "operation": "apply",
+                }
+            },
+        },
+    )
+    assert effect.status_code == 200, effect.text
+    target = effect.json()["target"]
+    opened = campaign_client.post(
+        f"/api/v1/campaigns/{campaign_id}/player-room/open", json={"hours": 4}
+    )
+    assert opened.status_code in {200, 201}, opened.text
+
+    toward = campaign_client.post(
+        f"/api/v1/campaigns/{campaign_id}/player-room/combat/"
+        f"{combat['id']}/monster-move/{target['id']}",
+        headers={"X-Request-ID": "frightened-monster-toward"},
+        json={
+            "row": 2,
+            "col": 3,
+            "combatant_version": target["version"],
+            "movement_remaining_ft": 25,
+        },
+    )
+    assert toward.status_code == 400, toward.text
+    assert "不能主动靠近" in toward.json()["message"]
+
+    away = campaign_client.post(
+        f"/api/v1/campaigns/{campaign_id}/player-room/combat/"
+        f"{combat['id']}/monster-move/{target['id']}",
+        headers={"X-Request-ID": "frightened-monster-away"},
+        json={
+            "row": 2,
+            "col": 5,
+            "combatant_version": target["version"],
+            "movement_remaining_ft": 25,
+        },
+    )
+    assert away.status_code == 200, away.text
+    assert away.json()["snapshot_json"]["grid_position"] == {"row": 2, "col": 5}
+
+
+def test_frightened_monster_move_fails_closed_without_authoritative_grid(
+    campaign_client: TestClient,
+) -> None:
+    campaign = campaign_client.post(
+        "/api/v1/campaigns", json={"name": "恐慌移动裁定"}
+    ).json()
+    campaign_id = campaign["id"]
+    combat = campaign_client.post(
+        f"/api/v1/campaigns/{campaign_id}/combats",
+        json={"name": "缺少网格的恐慌战斗"},
+    ).json()
+    source = campaign_client.post(
+        f"/api/v1/campaigns/{campaign_id}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "无网格恐慌来源",
+            "entity_type": "monster",
+            "initiative": 20,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {"grid_position": {"row": 2, "col": 2}},
+        },
+    ).json()
+    target = campaign_client.post(
+        f"/api/v1/campaigns/{campaign_id}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "无网格恐慌 AI",
+            "entity_type": "monster",
+            "initiative": 10,
+            "hp": 20,
+            "max_hp": 20,
+            "movement_remaining_ft": 30,
+            "snapshot_json": {"grid_position": {"row": 2, "col": 4}},
+        },
+    ).json()
+    effect = campaign_client.post(
+        f"/api/v1/campaigns/{campaign_id}/combats/{combat['id']}/effects/confirm",
+        headers={"X-Request-ID": "frightened-monster-no-grid-effect"},
+        json={
+            "target_combatant_id": target["id"],
+            "target_version": target["version"],
+            "source_combatant_id": source["id"],
+            "source_version": source["version"],
+            "name": "恐慌",
+            "effect_type": "condition",
+            "details_json": {
+                "rule_block": {
+                    "kind": "condition",
+                    "condition": "frightened",
+                    "operation": "apply",
+                }
+            },
+        },
+    )
+    assert effect.status_code == 200, effect.text
+    target = effect.json()["target"]
+    opened = campaign_client.post(
+        f"/api/v1/campaigns/{campaign_id}/player-room/open", json={"hours": 4}
+    )
+    assert opened.status_code in {200, 201}, opened.text
+    moved = campaign_client.post(
+        f"/api/v1/campaigns/{campaign_id}/player-room/combat/"
+        f"{combat['id']}/monster-move/{target['id']}",
+        headers={"X-Request-ID": "frightened-monster-no-grid"},
+        json={
+            "row": 2,
+            "col": 3,
+            "combatant_version": target["version"],
+            "movement_remaining_ft": 25,
+        },
+    )
+    assert moved.status_code == 400, moved.text
+    assert "权威战斗场景" in moved.json()["message"]
+
+
 def test_entering_monster_reach_opens_one_structured_dm_window_for_player_move(
     campaign_client: TestClient,
 ) -> None:

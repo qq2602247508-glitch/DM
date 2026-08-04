@@ -4274,33 +4274,15 @@ class PlayerRoomService:
                     raise ValueError("角色尚未设置战斗地图起始位置")
                 start = (token.row, token.col)
             # Frightened is not a blanket movement lock: the 2014/2024 rule
-            # forbids willingly moving closer to the structured source.  Do
-            # this check before path/terrain mutation, and fail closed when a
-            # source was not recorded instead of pretending the condition is
-            # harmless.
-            if CombatEngineService._has_condition(actor, "frightened"):
-                frightened_source_ids = CombatEngineService._condition_source_ids(
-                    session, combat.id, actor, "frightened"
-                )
-                if not frightened_source_ids:
-                    raise ValueError("恐慌状态的来源未记录，移动方向需要 DM 裁定")
-                movement_cell_size = grid.cell_size_ft if grid is not None else 5
-                for source in fighters:
-                    if source.id not in frightened_source_ids:
-                        continue
-                    source_position = source.snapshot_json.get("grid_position")
-                    if not isinstance(source_position, dict):
-                        raise ValueError("恐慌来源没有战斗位置，移动方向需要 DM 裁定")
-                    source_point = (
-                        int(source_position["row"]),
-                        int(source_position["col"]),
-                    )
-                    if grid_distance_ft(
-                        (row, col), source_point, cell_size_ft=movement_cell_size
-                    ) < grid_distance_ft(
-                        start, source_point, cell_size_ft=movement_cell_size
-                    ):
-                        raise ValueError("恐慌状态下不能主动靠近恐慌来源")
+            # forbids willingly moving closer to the structured source.  Keep
+            # this before path/terrain mutation and share it with AI movement.
+            CombatEngineService._validate_frightened_movement(
+                session,
+                combat,
+                actor,
+                start,
+                (row, col),
+            )
             objects = (
                 session.scalars(select(SceneObject).where(SceneObject.scene_id == scene_id)).all()
                 if scene_id
@@ -4667,6 +4649,13 @@ class PlayerRoomService:
                 raise ValueError("怪物目的地超出当前战斗地图边界")
             if start == (row, col):
                 return {**serialize(monster), "reaction_requests": []}
+            CombatEngineService._validate_frightened_movement(
+                session,
+                combat,
+                monster,
+                start,
+                (row, col),
+            )
             previous_movement_remaining = int(monster.movement_remaining_ft)
             fighters = list(
                 session.scalars(
