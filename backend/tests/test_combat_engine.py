@@ -1903,6 +1903,114 @@ def test_attack_geometry_enforces_range_line_of_sight_and_half_cover_ac(
     assert "no line of sight" in no_sight.json()["message"]
 
 
+def test_dodge_disadvantage_requires_authoritative_visibility(
+    combat_client: TestClient,
+) -> None:
+    campaign = _campaign(combat_client, "Dodge visibility")
+    base = f"/api/v1/campaigns/{campaign['id']}"
+    scene = combat_client.post(f"{base}/scenes", json={"name": "Dodge room"}).json()
+    grid = combat_client.post(
+        f"{base}/scenes/{scene['id']}/grid",
+        json={"width": 8, "height": 8, "cell_size_ft": 5, "mode": "combat"},
+    )
+    assert grid.status_code == 201, grid.text
+    combat = combat_client.post(
+        f"{base}/combats",
+        json={"name": "Dodge visibility combat", "scene_id": scene["id"]},
+    ).json()
+    defender = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "闪避者",
+            "entity_type": "character",
+            "initiative": 20,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {"grid_position": {"row": 1, "col": 4}},
+        },
+    ).json()
+    attacker = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "攻击者",
+            "entity_type": "monster",
+            "initiative": 10,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {"grid_position": {"row": 1, "col": 1}},
+        },
+    ).json()
+
+    dodged = combat_client.post(
+        f"{base}/combats/{combat['id']}/maneuvers/confirm",
+        headers={"X-Request-ID": "dodge-visible-target"},
+        json={
+            "action_type": "dodge",
+            "actor_combatant_id": defender["id"],
+            "actor_version": defender["version"],
+        },
+    )
+    assert dodged.status_code == 200, dodged.text
+    defender = dodged.json()["actor"]
+
+    advanced = combat_client.post(
+        f"{base}/combats/{combat['id']}/turns/advance",
+        headers={"X-Request-ID": "dodge-visible-advance"},
+        json={"combat_version": combat["version"]},
+    )
+    assert advanced.status_code == 200, advanced.text
+    attacker = advanced.json()["active_combatant"]
+    attack_path = f"{base}/combats/{combat['id']}/actions/confirm"
+    attack = {
+        "action_type": "damage",
+        "is_attack": True,
+        "action_cost": "none",
+        "actor_combatant_id": attacker["id"],
+        "actor_version": attacker["version"],
+        "target_combatant_id": defender["id"],
+        "target_version": defender["version"],
+        "amount": 1,
+        "damage_type": "slashing",
+        "attack_roll_total": 10,
+        "attack_roll_mode": "disadvantage",
+        "attack_adjudication_note": "权威网格确认闪避者看得见攻击者",
+        "attack_range_ft": 30,
+    }
+    visible = combat_client.post(
+        attack_path,
+        headers={"X-Request-ID": "dodge-visible-applies"},
+        json=attack,
+    )
+    assert visible.status_code == 200, visible.text
+    visible_contexts = visible.json()["action"]["result_json"]["attack_contexts"]
+    assert "target_dodging" in visible_contexts
+    assert "attack_roll_rule:disadvantage" in visible_contexts
+
+    wall = combat_client.post(
+        f"{base}/scenes/{scene['id']}/objects",
+        json={"object_type": "wall", "label": "遮挡墙", "row": 1, "col": 2},
+    )
+    assert wall.status_code == 201, wall.text
+    hidden = combat_client.post(
+        attack_path,
+        headers={"X-Request-ID": "dodge-hidden-no-effect"},
+        json={
+            **attack,
+            "target_version": visible.json()["target"]["version"],
+            "dm_override": True,
+            "override_reason": "DM确认隔墙攻击仍可结算",
+            "attack_roll_mode": "normal",
+            "attack_adjudication_note": None,
+        },
+    )
+    assert hidden.status_code == 200, hidden.text
+    hidden_contexts = hidden.json()["action"]["result_json"]["attack_contexts"]
+    assert "line_of_sight:false" in hidden_contexts
+    assert "target_dodge_no_effect_attacker_not_visible" in hidden_contexts
+    assert "target_dodging" not in hidden_contexts
+    assert "attack_roll_rule:disadvantage" not in hidden_contexts
+
+
 def test_condition_attack_contexts_require_explicit_advantage_ruling(
     combat_client: TestClient,
 ) -> None:

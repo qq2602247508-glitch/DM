@@ -4300,9 +4300,18 @@ class CombatEngineService:
                 session, combat.id, target_id=target.id, state_name="dodge"
             )
         ):
-            contexts.append("target_dodging")
-            adjudication_contexts.append("target_dodging")
-            disadvantage_sources.append("target_dodging")
+            # D&D Dodge imposes disadvantage only while the defender can see
+            # the attacker.  A missing geometry result remains a DM ruling;
+            # authoritative geometry must not be replaced by a guess.
+            if geometry is None:
+                contexts.append("target_dodging")
+                adjudication_contexts.append("target_dodging")
+                disadvantage_sources.append("target_dodging")
+            elif geometry["line_of_sight"]:
+                contexts.append("target_dodging")
+                disadvantage_sources.append("target_dodging")
+            else:
+                contexts.append("target_dodge_no_effect_attacker_not_visible")
         help_effect: CombatEffect | None = None
         if command.help_effect_id is not None:
             help_effect = session.get(CombatEffect, command.help_effect_id)
