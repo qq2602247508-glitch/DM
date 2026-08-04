@@ -12,6 +12,7 @@ from dnd_dm_assistant.api.routes.player_rooms import _clear_join_failures
 from dnd_dm_assistant.application.rule_block_compiler import compile_rule_blocks_dict
 from dnd_dm_assistant.infrastructure.database.models import (
     NPC,
+    Combatant,
     EquipmentInstance,
     Event,
     PlayerRoom,
@@ -29,6 +30,27 @@ from dnd_dm_assistant.infrastructure.database.player_room_service import (
     _code_digest,
 )
 from dnd_dm_assistant.infrastructure.database.player_service import PlayerService
+
+
+def test_player_attack_context_keeps_automatic_critical_for_only_unconscious_target() -> None:
+    attacker = Combatant(conditions=[], snapshot_json={})
+    target = Combatant(conditions=["昏迷"], snapshot_json={})
+
+    mode, has_advantage, has_disadvantage, automatic_critical = (
+        PlayerRoomService._condition_attack_context(
+            attacker,
+            target,
+            distance_ft=5,
+        )
+    )
+
+    # Unconscious also implies prone in the shared condition matrix, so a
+    # nearby attack has advantage as well as the independent auto-critical
+    # rule.
+    assert mode == "advantage"
+    assert has_advantage is True
+    assert has_disadvantage is False
+    assert automatic_critical is True
 
 
 def _campaign(client: TestClient, name: str = "LAN团") -> dict[str, Any]:

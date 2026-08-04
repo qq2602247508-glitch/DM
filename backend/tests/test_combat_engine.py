@@ -1971,6 +1971,69 @@ def test_condition_attack_contexts_require_explicit_advantage_ruling(
     assert "attack_roll_rule:normal_due_to_cancellation" in contexts
 
 
+def test_unconscious_target_within_five_feet_is_recorded_as_automatic_critical(
+    combat_client: TestClient,
+) -> None:
+    campaign = _campaign(combat_client, "Automatic critical lifecycle")
+    base = f"/api/v1/campaigns/{campaign['id']}"
+    scene = combat_client.post(f"{base}/scenes", json={"name": "Critical room"}).json()
+    grid = combat_client.post(
+        f"{base}/scenes/{scene['id']}/grid",
+        json={"width": 4, "height": 4, "cell_size_ft": 5, "mode": "combat"},
+    )
+    assert grid.status_code == 201, grid.text
+    combat = combat_client.post(
+        f"{base}/combats", json={"name": "Critical combat", "scene_id": scene["id"]}
+    ).json()
+    attacker = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "近战攻击者",
+            "entity_type": "monster",
+            "initiative": 20,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {"grid_position": {"row": 1, "col": 1}},
+        },
+    ).json()
+    target = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "昏迷角色",
+            "entity_type": "character",
+            "initiative": 10,
+            "armor_class": 10,
+            "hp": 0,
+            "max_hp": 20,
+            "conditions": ["昏迷"],
+            "snapshot_json": {"grid_position": {"row": 1, "col": 2}},
+        },
+    ).json()
+    response = combat_client.post(
+        f"{base}/combats/{combat['id']}/actions/confirm",
+        headers={"X-Request-ID": "automatic-critical-unconscious"},
+        json={
+            "action_type": "damage",
+            "actor_combatant_id": attacker["id"],
+            "actor_version": attacker["version"],
+            "target_combatant_id": target["id"],
+            "target_version": target["version"],
+            "amount": 3,
+            "damage_type": "slashing",
+            "is_attack": True,
+            "attack_roll_total": 15,
+            "attack_roll_mode": "advantage",
+            "attack_adjudication_note": "DM确认近战攻击命中昏迷目标",
+        },
+    )
+
+    assert response.status_code == 200, response.text
+    result = response.json()["action"]["result_json"]
+    assert result["automatic_critical"] is True
+    assert result["critical_hit"] is True
+    assert result["death_save"]["failures_added"] == 2
+
+
 def test_frightened_attack_disadvantage_requires_visible_fear_source(
     combat_client: TestClient,
 ) -> None:

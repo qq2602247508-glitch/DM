@@ -4209,6 +4209,20 @@ class CombatEngineService:
             contexts.append(f"effective_ac:{geometry['effective_armor_class']}")
             if geometry["cover"] == "half" and command.attack_roll_total is None:
                 adjudication_contexts.append("target_half_cover_requires_attack_total")
+        # Paralyzed and unconscious targets turn a hit from within 5 feet into
+        # a critical hit.  The core DM action API receives the final damage
+        # total rather than individual damage dice, so this marker is kept in
+        # the authoritative result for audit/death-save handling; it must not
+        # silently multiply a DM-supplied final damage number.
+        if (
+            geometry is not None
+            and int(geometry["distance_ft"]) <= 5
+            and (
+                cls._has_condition(target, "paralyzed")
+                or cls._has_condition(target, "unconscious")
+            )
+        ):
+            contexts.append("automatic_critical:target_within_5ft")
         if cls._has_condition(actor, "prone"):
             contexts.append("attacker_prone")
             adjudication_contexts.append("attacker_prone")
@@ -5860,6 +5874,7 @@ class CombatEngineService:
             attack_contexts, _ = self._attack_contexts(
                 session, combat, command, actor, target
             )
+            automatic_critical = "automatic_critical:target_within_5ft" in attack_contexts
             if actor is not None and self._combat_action_is_harmful(command):
                 self._validate_charmed_harm_targets(
                     session,
@@ -5892,6 +5907,9 @@ class CombatEngineService:
             resolved = self._resolve(command, target)
             if attack_contexts:
                 resolved["attack_contexts"] = attack_contexts
+            if command.is_attack:
+                resolved["automatic_critical"] = automatic_critical
+                resolved["critical_hit"] = command.critical_hit or automatic_critical
             return resolved
 
     def preflight_action_batch(
@@ -6106,6 +6124,8 @@ class CombatEngineService:
             attack_contexts, help_effect = self._attack_contexts(
                 session, combat, command, actor, target
             )
+            automatic_critical = "automatic_critical:target_within_5ft" in attack_contexts
+            effective_critical_hit = command.critical_hit or automatic_critical
             if actor is not None and self._combat_action_is_harmful(command):
                 self._validate_charmed_harm_targets(
                     session,
@@ -6271,7 +6291,7 @@ class CombatEngineService:
                             "explanation": "剩余伤害达到最大生命值，角色立即死亡",
                         }
                     elif was_at_zero and int(resolved["result"]["adjusted_damage"]) > 0:
-                        failures_added = 2 if command.critical_hit else 1
+                        failures_added = 2 if effective_critical_hit else 1
                         death_save.failures = min(
                             3, death_save.failures + failures_added
                         )
@@ -6285,7 +6305,7 @@ class CombatEngineService:
                             "massive_damage": False,
                             "dead": death_save.dead,
                             "explanation": (
-                                f"0 HP 时受到{'暴击' if command.critical_hit else ''}伤害，"
+                                f"0 HP 时受到{'暴击' if effective_critical_hit else ''}伤害，"
                                 f"累计 {failures_added} 次死亡豁免失败"
                             ),
                         }
@@ -6374,6 +6394,9 @@ class CombatEngineService:
                 result["attack_contexts"] = attack_contexts
                 result["attack_roll_mode"] = command.attack_roll_mode
                 result["attack_adjudication_note"] = command.attack_adjudication_note
+            if command.is_attack:
+                result["automatic_critical"] = automatic_critical
+                result["critical_hit"] = effective_critical_hit
             if consumed_attack_effects:
                 result["consumed_effect_ids"] = [
                     effect.id for effect in consumed_attack_effects

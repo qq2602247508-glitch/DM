@@ -1013,8 +1013,11 @@ class PlayerRoomService:
             mode = "advantage"
         elif disadvantage and not advantage:
             mode = "disadvantage"
-        reasons = [*advantage, *disadvantage]
-        return mode, bool(advantage), bool(disadvantage), automatic_critical if reasons else False
+        # Unconscious is not itself an advantage source in the condition
+        # matrix, but it still makes a hit from within 5 feet a critical hit.
+        # Do not gate this independent rule on ``reasons``; otherwise a lone
+        # unconscious target silently loses the automatic-critical rule.
+        return mode, bool(advantage), bool(disadvantage), automatic_critical
 
     @staticmethod
     def _action_rule_blocks(action: dict[str, Any]) -> list[dict[str, Any]]:
