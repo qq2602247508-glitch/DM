@@ -760,6 +760,7 @@ class CombatActionCommand(BaseModel):
     legendary_cost: int | None = Field(default=None, ge=1, le=10)
     legendary_pool_max: int | None = Field(default=None, ge=1, le=10)
     reaction_trigger: str | None = Field(default=None, max_length=1_000)
+    reaction_window_id: str | None = Field(default=None, min_length=1, max_length=36)
     reaction_event: Literal[
         "leaves_reach",
         "enters_reach",
@@ -826,6 +827,8 @@ class CombatActionCommand(BaseModel):
             raise ValueError("reaction_trigger is required for a monster reaction")
         if self.action_cost != "reaction" and self.reaction_trigger is not None:
             raise ValueError("reaction_trigger is only valid for a reaction")
+        if self.action_cost != "reaction" and self.reaction_window_id is not None:
+            raise ValueError("reaction_window_id is only valid for a reaction")
         if self.action_cost != "reaction" and self.reaction_event is not None:
             raise ValueError("reaction_event is only valid for a reaction")
         sequence_values = (self.sequence_id, self.sequence_step, self.sequence_size)

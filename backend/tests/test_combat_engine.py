@@ -4790,6 +4790,75 @@ def test_generic_dm_action_applies_structured_forced_movement(
     assert enters_windows[0]["to_position"] == {"row": 4, "col": 6}
     assert reactor["id"] != target["id"]
 
+    listed = combat_client.get(f"{base}/combats/{combat['id']}/actions").json()["items"]
+    window_action = next(
+        item
+        for item in listed
+        if item["action_type"] == "eligible_action_window"
+        and item["result_json"]["action_window"]["reaction_event"] == "enters_reach"
+    )
+    current_reactor = combat_client.get(
+        f"{base}/combats/{combat['id']}/combatants/{reactor['id']}"
+    ).json()
+    current_target = combat_client.get(
+        f"{base}/combats/{combat['id']}/combatants/{target['id']}"
+    ).json()
+    reaction = combat_client.post(
+        f"{base}/combats/{combat['id']}/actions/confirm",
+        headers={"X-Request-ID": "enters-reach-reaction-confirm"},
+        json={
+            "action_type": "damage",
+            "actor_combatant_id": current_reactor["id"],
+            "actor_version": current_reactor["version"],
+            "action_cost": "reaction",
+            "action_name": "近身震击",
+            "reaction_trigger": "雷鸣波强制移动后进入近身震击的威胁范围",
+            "reaction_event": "enters_reach",
+            "reaction_window_id": window_action["id"],
+            "target_combatant_id": current_target["id"],
+            "target_version": current_target["version"],
+            "amount": 7,
+            "damage_type": "bludgeoning",
+            "is_attack": True,
+            "attack_roll_total": 20,
+            "attack_roll_mode": "normal",
+        },
+    )
+    assert reaction.status_code == 200, reaction.text
+    assert reaction.json()["target"]["hp"] == 13
+    assert reaction.json()["actor"]["reaction_available"] is False
+    resolved_window = next(
+        item
+        for item in combat_client.get(f"{base}/combats/{combat['id']}/actions").json()["items"]
+        if item["id"] == window_action["id"]
+    )
+    assert resolved_window["result_json"]["action_window"]["status"] == "resolved"
+    assert (
+        resolved_window["result_json"]["action_window"]["resolved_action_id"]
+        == reaction.json()["action"]["id"]
+    )
+    duplicate_window = combat_client.post(
+        f"{base}/combats/{combat['id']}/actions/confirm",
+        headers={"X-Request-ID": "enters-reach-reaction-duplicate"},
+        json={
+            "action_type": "damage",
+            "actor_combatant_id": current_reactor["id"],
+            "actor_version": reaction.json()["actor"]["version"],
+            "action_cost": "reaction",
+            "action_name": "近身震击",
+            "reaction_trigger": "重复尝试",
+            "reaction_event": "enters_reach",
+            "reaction_window_id": window_action["id"],
+            "target_combatant_id": current_target["id"],
+            "target_version": reaction.json()["target"]["version"],
+            "amount": 7,
+            "damage_type": "bludgeoning",
+            "is_attack": True,
+            "attack_roll_total": 20,
+        },
+    )
+    assert duplicate_window.status_code == 400, duplicate_window.text
+
 
 def test_monster_area_action_resolves_mixed_damage_and_vertical_geometry(
     combat_client: TestClient,

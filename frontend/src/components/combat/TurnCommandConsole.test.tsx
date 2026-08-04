@@ -3,7 +3,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import type { Combatant, MonsterAIPreview } from "../../api/types";
+import type { CombatAction, Combatant, MonsterAIPreview } from "../../api/types";
 import { ToastProvider } from "../ToastProvider";
 import { TurnCommandConsole } from "./TurnCommandConsole";
 
@@ -93,6 +93,24 @@ const DRAGON = fighter({
   version: 7,
 });
 
+const ENTERING_REACH_DRAGON = fighter({
+  ...DRAGON,
+  snapshot_json: {
+    ...DRAGON.snapshot_json,
+    actions: [
+      {
+        name: "借机尾击",
+        action_type: "reaction",
+        reaction_event: "enters_reach",
+        reaction_trigger: "目标进入近战威胁范围",
+        attack_bonus: 9,
+        damage: "1d8+5",
+        damage_type: "bludgeoning",
+      },
+    ],
+  },
+});
+
 function preview(planActionType = "reaction"): MonsterAIPreview {
   return {
     combat: {
@@ -130,7 +148,7 @@ function preview(planActionType = "reaction"): MonsterAIPreview {
   };
 }
 
-function renderConsole(): void {
+function renderConsole(combatActions: CombatAction[] = [], fighters: Combatant[] = [HERO, DRAGON]): void {
   const client = new QueryClient({
     defaultOptions: { mutations: { retry: false }, queries: { retry: false } },
   });
@@ -143,7 +161,8 @@ function renderConsole(): void {
           automationReady
           campaignId="campaign-1"
           combatId="combat-1"
-          fighters={[HERO, DRAGON]}
+          combatActions={combatActions}
+          fighters={fighters}
           onAutoEnemiesChange={() => undefined}
           onEnemyTurnComplete={() => undefined}
           onRangeChange={() => undefined}
@@ -243,6 +262,71 @@ describe("TurnCommandConsole advanced monster action window", () => {
         reaction_trigger: "冒险者离开黑龙的近战威胁范围",
         attack_roll_total: 18,
       },
+    });
+  });
+
+  it("uses an eligible entering-reach window target and carries its id into confirmation", async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.fn<(input: RequestInfo | URL, init?: RequestInit) => Promise<Response>>(
+      (input) => {
+        const path = requestUrl(input).pathname;
+        if (path.endsWith("/actions/confirm")) {
+          return Promise.resolve(new Response(JSON.stringify({
+            action: { id: "reaction-action-1" },
+            actor: { ...DRAGON, reaction_available: false, version: 8 },
+            target: { ...HERO, hp: 34, version: 2 },
+          }), { status: 200, headers: { "Content-Type": "application/json" } }));
+        }
+        throw new Error(`unexpected request: ${path}`);
+      },
+    );
+    vi.stubGlobal("fetch", fetchMock);
+    const windowAction: CombatAction = {
+      id: "reaction-window-1",
+      campaign_id: "campaign-1",
+      combat_id: "combat-1",
+      actor_combatant_id: DRAGON.id,
+      transaction_id: null,
+      action_type: "eligible_action_window",
+      target_combatant_ids: [HERO.id],
+      request_json: { reaction_event: "enters_reach" },
+      result_json: {
+        action_window: {
+          action_cost: "reaction",
+          status: "eligible",
+          reaction_event: "enters_reach",
+          trigger: "冒险者进入黑龙的近战威胁范围",
+          trigger_combatant_id: HERO.id,
+          eligible_action_names: ["借机尾击"],
+        },
+      },
+      explanation: "等待 DM 确认",
+      round_number: 1,
+      turn_index: 0,
+      summary: "黑龙：进入近战威胁范围反应窗口已开放",
+      idempotency_key: "window-1",
+      dm_override: false,
+      override_reason: null,
+      status: "confirmed",
+      version: 1,
+      created_at: NOW,
+      updated_at: NOW,
+    };
+    renderConsole([windowAction], [HERO, ENTERING_REACH_DRAGON]);
+
+    await user.selectOptions(screen.getByRole("combobox", { name: "怪物高级动作" }), "dragon-1:0");
+    await waitFor(() => expect(screen.getByRole("combobox", { name: "怪物高级动作目标" })).toHaveValue(HERO.id));
+    expect(screen.getByRole("textbox", { name: "怪物反应触发事件" })).toHaveValue("冒险者进入黑龙的近战威胁范围");
+    await user.type(screen.getByRole("spinbutton", { name: "怪物高级动作攻击总值" }), "18");
+    await user.click(screen.getByRole("button", { name: "DM确认并执行高级动作" }));
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    expect(requestBody(fetchMock.mock.calls[0]?.[1])).toMatchObject({
+      action_cost: "reaction",
+      target_combatant_id: HERO.id,
+      reaction_event: "enters_reach",
+      reaction_window_id: "reaction-window-1",
+      reaction_trigger: "冒险者进入黑龙的近战威胁范围",
     });
   });
 });

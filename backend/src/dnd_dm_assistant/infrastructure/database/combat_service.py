@@ -1125,6 +1125,70 @@ class CombatEngineService:
         return result
 
     @classmethod
+    def _validate_reaction_window(
+        cls,
+        session: Session,
+        *,
+        combat: Combat,
+        actor: Combatant | None,
+        target: Combatant,
+        command: CombatActionCommand,
+    ) -> CombatAction | None:
+        """Validate and return the eligible window consumed by a reaction.
+
+        A structured reaction window is an authoritative event boundary, not
+        merely a UI hint.  Once the DM supplies its id, the confirmation must
+        use the same reactor, event, and trigger target that opened the
+        window.  The window is marked resolved by ``confirm`` after the
+        damage action is flushed, so a second request cannot spend the same
+        reaction twice.
+        """
+
+        window_id = (command.reaction_window_id or "").strip()
+        if not window_id:
+            return None
+        if command.action_cost != "reaction":
+            raise ValueError("reaction_window_id is only valid for a reaction")
+        if actor is None:
+            raise ValueError("a reaction window requires an actor")
+        window = session.get(CombatAction, window_id)
+        if (
+            window is None
+            or window.combat_id != combat.id
+            or window.action_type != "eligible_action_window"
+            or window.status != "confirmed"
+        ):
+            raise ValueError("reaction window not found or no longer eligible")
+        metadata = (window.result_json or {}).get("action_window")
+        if not isinstance(metadata, dict) or metadata.get("status") != "eligible":
+            raise ValueError("reaction window is already resolved")
+        if window.actor_combatant_id != actor.id:
+            raise ValueError("reaction window belongs to another reactor")
+        event = str(metadata.get("reaction_event") or "").strip()
+        if not event or event != (command.reaction_event or "").strip():
+            raise ValueError("reaction event does not match the eligible window")
+        action_name = (command.action_name or "").strip()
+        eligible_names = metadata.get("eligible_action_names")
+        if (
+            action_name
+            and isinstance(eligible_names, list)
+            and action_name not in {str(name).strip() for name in eligible_names}
+        ):
+            raise ValueError("action is not one of the actions opened by this reaction window")
+        allowed_target_ids = {
+            str(item)
+            for item in (window.target_combatant_ids or [])
+            if isinstance(item, str)
+        }
+        for key in ("trigger_combatant_id", "moving_combatant_id", "damaged_combatant_id"):
+            value = metadata.get(key)
+            if isinstance(value, str):
+                allowed_target_ids.add(value)
+        if target.id not in allowed_target_ids:
+            raise ValueError("reaction target does not match the event that opened the window")
+        return window
+
+    @classmethod
     def _persist_eligible_enters_reach_reaction_windows(
         cls,
         session: Session,
@@ -1293,6 +1357,9 @@ class CombatEngineService:
             }
             if reaction_triggers:
                 reaction_metadata["reaction_triggers"] = reaction_triggers
+                reaction_metadata["trigger"] = next(iter(reaction_triggers.values()))
+            else:
+                reaction_metadata["trigger"] = "进入近战威胁范围"
             session.add(
                 CombatAction(
                     campaign_id=combat.campaign_id,
@@ -5256,6 +5323,13 @@ class CombatEngineService:
                     command.target_version,
                     target.version,
                 )
+            self._validate_reaction_window(
+                session,
+                combat=combat,
+                actor=actor,
+                target=target,
+                command=command,
+            )
             self._validate_monster_sequence(session, combat_id, actor, command)
             self._validate_action_economy(
                 session,
@@ -5373,8 +5447,15 @@ class CombatEngineService:
                             "combatant",
                             actor.id,
                             command.actor_version or 0,
-                            expected_actor_version,
-                        )
+                        expected_actor_version,
+                    )
+                self._validate_reaction_window(
+                    session,
+                    combat=combat,
+                    actor=actor,
+                    target=current_target,
+                    command=command,
+                )
                 self._validate_monster_sequence(session, combat_id, actor, command)
                 self._validate_action_economy(
                     session,
@@ -5490,6 +5571,13 @@ class CombatEngineService:
                     command.target_version,
                     target.version,
                 )
+            reaction_window = self._validate_reaction_window(
+                session,
+                combat=combat,
+                actor=actor,
+                target=target,
+                command=command,
+            )
             self._validate_monster_sequence(session, combat_id, actor, command)
             attack_contexts, help_effect = self._attack_contexts(
                 session, combat, command, actor, target
@@ -5843,6 +5931,23 @@ class CombatEngineService:
                 status="confirmed",
             )
             session.add(action)
+            session.flush()
+            if reaction_window is not None:
+                window_result = dict(reaction_window.result_json or {})
+                window_metadata = dict(window_result.get("action_window") or {})
+                window_metadata.update(
+                    {
+                        "status": "resolved",
+                        "resolved_action_id": action.id,
+                        "resolved_target_combatant_id": target.id,
+                    }
+                )
+                reaction_window.result_json = {
+                    **window_result,
+                    "action_window": window_metadata,
+                }
+                reaction_window.version += 1
+                reaction_window.updated_at = now
             movement = structured_effects.get("movement")
             if isinstance(movement, dict) and int(movement.get("moved_ft") or 0) > 0:
                 self._persist_eligible_enters_reach_reaction_windows(

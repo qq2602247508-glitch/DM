@@ -2129,6 +2129,7 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
               }
               campaignId={campaignId}
               combatId={combat.id}
+              combatActions={combatActions.data ?? []}
               fighters={ordered}
               onAutoEnemiesChange={setAutoEnemies}
               onEnemyTurnComplete={() => {

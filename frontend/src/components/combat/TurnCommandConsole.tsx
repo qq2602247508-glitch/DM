@@ -15,6 +15,7 @@ import {
 } from "../../api/entities";
 import type {
   Character,
+  CombatAction,
   CombatActionPreview,
   Combatant,
   MonsterAIPreview,
@@ -312,6 +313,7 @@ export function TurnCommandConsole({
   activeCharacter,
   campaignId,
   combatId,
+  combatActions,
   fighters,
   autoEnemies,
   automationReady,
@@ -328,6 +330,7 @@ export function TurnCommandConsole({
   activeCharacter?: Character;
   campaignId: string;
   combatId: string;
+  combatActions?: CombatAction[];
   fighters: Combatant[];
   autoEnemies: boolean;
   automationReady: boolean;
@@ -557,6 +560,24 @@ export function TurnCommandConsole({
     return rawActions.flatMap((action, index) => {
       const phase = advancedActionPhase(action);
       if (!phase) return [];
+      const reactionWindow = phase === "reaction"
+        ? (combatActions ?? []).find((entry) => {
+            if (entry.action_type !== "eligible_action_window" || entry.status !== "confirmed") return false;
+            if (entry.actor_combatant_id !== fighter.id) return false;
+            const rawWindow = entry.result_json.action_window;
+            if (!rawWindow || typeof rawWindow !== "object" || Array.isArray(rawWindow)) return false;
+            const window = rawWindow as Record<string, unknown>;
+            const names = Array.isArray(window.eligible_action_names) ? window.eligible_action_names : [];
+            return window.status === "eligible"
+              && window.reaction_event === action.reaction_event
+              && names.some((name) => String(name) === String(action.name ?? ""));
+          })
+        : undefined;
+      const rawWindow = reactionWindow?.result_json.action_window;
+      const rawWindowTrigger = rawWindow && typeof rawWindow === "object" && !Array.isArray(rawWindow)
+        ? (rawWindow as Record<string, unknown>).trigger
+        : null;
+      const reactionWindowTrigger = typeof rawWindowTrigger === "string" ? rawWindowTrigger.trim() : "";
       const availability = evaluateAdvancedActionAvailability(
         fighter,
         action,
@@ -564,7 +585,7 @@ export function TurnCommandConsole({
         roundNumber,
         turnIndex,
         lairWindow,
-        reactionTrigger,
+        reactionTrigger || reactionWindowTrigger,
       );
       if (!availability) return [];
       return [{
@@ -579,6 +600,44 @@ export function TurnCommandConsole({
   const selectedAdvancedChoice = advancedChoices.find((choice) => choice.key === advancedChoiceKey)
     ?? advancedChoices.find((choice) => choice.availability.available)
     ?? advancedChoices[0];
+  const selectedReactionWindow = useMemo(() => {
+    if (!selectedAdvancedChoice || advancedActionPhase(selectedAdvancedChoice.action) !== "reaction") return null;
+    return (combatActions ?? []).find((entry) => {
+      if (entry.action_type !== "eligible_action_window" || entry.status !== "confirmed") return false;
+      if (entry.actor_combatant_id !== selectedAdvancedChoice.actor.id) return false;
+      const rawWindow = entry.result_json.action_window;
+      if (!rawWindow || typeof rawWindow !== "object" || Array.isArray(rawWindow)) return false;
+      const window = rawWindow as Record<string, unknown>;
+      const names = Array.isArray(window.eligible_action_names) ? window.eligible_action_names : [];
+      return window.status === "eligible"
+        && window.reaction_event === selectedAdvancedChoice.action.reaction_event
+        && names.some((name) => String(name) === String(selectedAdvancedChoice.action.name ?? ""));
+    }) ?? null;
+  }, [combatActions, selectedAdvancedChoice]);
+  const selectedReactionWindowData = selectedReactionWindow?.result_json.action_window;
+  const selectedReactionWindowMeta = selectedReactionWindowData && typeof selectedReactionWindowData === "object" && !Array.isArray(selectedReactionWindowData)
+    ? selectedReactionWindowData as Record<string, unknown>
+    : null;
+  const effectiveReactionTrigger = reactionTrigger.trim()
+    || (typeof selectedReactionWindowMeta?.trigger === "string" ? selectedReactionWindowMeta.trigger.trim() : "");
+  const effectiveReactionEvent = reactionEvent
+    || (typeof selectedReactionWindowMeta?.reaction_event === "string"
+      ? selectedReactionWindowMeta.reaction_event as MonsterReactionEvent
+      : "");
+  useEffect(() => {
+    if (!selectedReactionWindowMeta) return;
+    if (!reactionTrigger.trim() && typeof selectedReactionWindowMeta.trigger === "string") {
+      setReactionTrigger(selectedReactionWindowMeta.trigger);
+    }
+    if (!reactionEvent && typeof selectedReactionWindowMeta.reaction_event === "string") {
+      setReactionEvent(selectedReactionWindowMeta.reaction_event as MonsterReactionEvent);
+    }
+    const triggerId = selectedReactionWindowMeta.trigger_combatant_id;
+    if (typeof triggerId === "string") {
+      setAdvancedTargetId(triggerId);
+      onTargetChange?.(triggerId);
+    }
+  }, [onTargetChange, reactionEvent, reactionTrigger, selectedReactionWindowMeta]);
   const selectedAdvancedIsAreaAction = selectedAdvancedChoice
     ? isAdvancedAreaAction(selectedAdvancedChoice.action)
     : false;
@@ -630,7 +689,7 @@ export function TurnCommandConsole({
           phase: selectedAdvancedChoice.availability.phase as MonsterAIPhase,
           tactics,
           rechargeAvailable,
-          reactionEvent: reactionEvent || undefined,
+          reactionEvent: effectiveReactionEvent || undefined,
         },
       );
     },
@@ -1107,7 +1166,7 @@ export function TurnCommandConsole({
       if (!(["legendary_action", "lair_action", "reaction"] as ActionCost[]).includes(cost)) {
         throw new Error("该动作不属于传奇、巢穴或反应窗口");
       }
-      if (cost === "reaction" && !reactionTrigger.trim()) {
+      if (cost === "reaction" && !effectiveReactionTrigger) {
         throw new Error("怪物反应必须由 DM 写明本次触发事件");
       }
       if ((action.conditions_on_failure?.length || action.conditions_on_hit?.length) && !action.condition_duration) {
@@ -1143,7 +1202,7 @@ export function TurnCommandConsole({
         actionCost: cost,
         legendaryCost: action.legendary_cost,
         legendaryPoolMax: action.legendary_pool_max,
-        reactionTrigger,
+        reactionTrigger: effectiveReactionTrigger,
       }) ?? "DM 已创建玩家待掷骰请求；提交骰子前，此动作尚未完成结算。";
       let actorVersion = actor.version;
       let pendingRollCount = 0;
@@ -1164,8 +1223,8 @@ export function TurnCommandConsole({
           target_version: firstTarget.version,
           legendary_cost: cost === "legendary_action" ? Number(action.legendary_cost ?? 1) : null,
           legendary_pool_max: cost === "legendary_action" ? Number(action.legendary_pool_max) : null,
-          reaction_trigger: cost === "reaction" ? reactionTrigger.trim() : null,
-          reaction_event: cost === "reaction" ? reactionEvent || null : null,
+          reaction_trigger: cost === "reaction" ? effectiveReactionTrigger : null,
+          reaction_event: cost === "reaction" ? effectiveReactionEvent || null : null,
           sequence_id: sequenceId,
           sequence_step: 0,
           sequence_size: affectedTargets.length,
@@ -1225,8 +1284,8 @@ export function TurnCommandConsole({
           target_version: affectedTarget.version,
           legendary_cost: actionCostValue === "legendary_action" ? Number(action.legendary_cost ?? 1) : null,
           legendary_pool_max: actionCostValue === "legendary_action" ? Number(action.legendary_pool_max) : null,
-          reaction_trigger: actionCostValue === "reaction" ? reactionTrigger.trim() : null,
-          reaction_event: actionCostValue === "reaction" ? reactionEvent || null : null,
+          reaction_trigger: actionCostValue === "reaction" ? effectiveReactionTrigger : null,
+          reaction_event: actionCostValue === "reaction" ? effectiveReactionEvent || null : null,
           sequence_id: sequenceId,
           sequence_step: index,
           sequence_size: affectedTargets.length,
@@ -1312,6 +1371,7 @@ export function TurnCommandConsole({
             condition_save_ability: hit ? action.condition_save_ability ?? null : null,
             forced_movement_distance_ft: hit ? action.movement?.distance_ft ?? null : null,
             forced_movement_direction: hit ? action.movement?.direction ?? null : null,
+            reaction_window_id: selectedReactionWindow?.id ?? null,
           }, requestId);
           actorVersion = response.actor?.version ?? actorVersion;
         }
@@ -1927,7 +1987,7 @@ export function TurnCommandConsole({
                 </option>
               ))}
             </select>
-            <select aria-label="怪物高级动作目标" className={selectCls} disabled={selectedAdvancedIsAreaAction && !advancedAreaTargeting?.ready} onChange={(event) => setAdvancedTargetId(event.target.value)} value={selectedAdvancedTarget?.id ?? ""}>
+            <select aria-label="怪物高级动作目标" className={selectCls} disabled={Boolean(selectedReactionWindow) || (selectedAdvancedIsAreaAction && !advancedAreaTargeting?.ready)} onChange={(event) => setAdvancedTargetId(event.target.value)} value={selectedAdvancedTarget?.id ?? ""}>
               <option value="">{selectedAdvancedIsAreaAction ? "地图已覆盖目标（可选查看）" : "选择明确目标"}</option>
               {advancedTargets.map((fighter) => <option key={fighter.id} value={fighter.id}>{fighter.display_name} · AC {fighter.armor_class} · HP {fighter.hp}/{fighter.max_hp}</option>)}
             </select>
@@ -1978,6 +2038,7 @@ export function TurnCommandConsole({
               <p className="m-0">窗口：{selectedAdvancedChoice.availability.windowLabel}</p>
               <p className="m-0">资源：{selectedAdvancedChoice.availability.resourceLabel}</p>
               <p className="m-0">触发：{selectedAdvancedChoice.availability.triggerLabel ?? (selectedAdvancedChoice.availability.phase === "reaction" ? "需 DM 明示事件" : "按窗口触发")}</p>
+              {selectedReactionWindow ? <p className="m-0 text-emerald-200 sm:col-span-2">已匹配真实反应窗口：目标与触发事件已由战斗日志锁定；确认后执行一次攻击并消耗该反应。</p> : null}
               <p className="m-0">范围：{actionRangeSummary(selectedAdvancedChoice.action)}</p>
               {selectedAdvancedIsAreaAction ? (
                 <>
@@ -2036,7 +2097,7 @@ export function TurnCommandConsole({
               读取后端窗口预览
             </Button>
           <Button
-            disabled={!selectedAdvancedChoice?.availability.available || (selectedAdvancedIsAreaAction ? !advancedTargets.length : !selectedAdvancedTarget) || (selectedAdvancedChoice?.availability.phase === "reaction" && !reactionTrigger.trim()) || (selectedAdvancedIsAreaAction && (!advancedAreaTargeting?.ready || advancedAreaTargetingKey !== selectedAdvancedChoice?.key)) || executeAdvancedMonsterAction.isPending}
+            disabled={!selectedAdvancedChoice?.availability.available || (selectedAdvancedIsAreaAction ? !advancedTargets.length : !selectedAdvancedTarget) || (selectedAdvancedChoice?.availability.phase === "reaction" && !effectiveReactionTrigger) || (selectedAdvancedIsAreaAction && (!advancedAreaTargeting?.ready || advancedAreaTargetingKey !== selectedAdvancedChoice?.key)) || executeAdvancedMonsterAction.isPending}
             loading={executeAdvancedMonsterAction.isPending}
             onClick={() => executeAdvancedMonsterAction.mutate()}
             size="sm"
