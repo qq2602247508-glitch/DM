@@ -39,7 +39,7 @@ export type TargetingElevationResult = {
 };
 
 type TargetingGrid = Pick<SceneGrid, "width" | "height" | "cell_size_ft">
-  & { cells?: Array<{ row: number; col: number; kind: string; blocks_sight?: boolean }> };
+  & { cells?: Array<{ row: number; col: number; kind: string; blocks_sight?: boolean; sight_transparency?: string }> };
 
 function finiteNumber(value: unknown): number | null {
   return typeof value === "number" && Number.isFinite(value) ? value : null;
@@ -312,14 +312,27 @@ export function hasLineOfSight(
       col: number;
       kind: string;
       blocks_sight?: boolean;
+      sight_transparency?: string;
     }>;
   },
   start: GridPoint,
   end: GridPoint,
 ): boolean {
+  const sightBehavior = (cell: {
+    kind: string;
+    blocks_sight?: boolean;
+    sight_transparency?: string;
+  }): "transparent" | "translucent" | "opaque" => {
+    if (cell.blocks_sight === false) return "transparent";
+    const raw = cell.sight_transparency?.trim().toLowerCase();
+    if (raw === "transparent" || raw === "clear" || raw === "透明") return "transparent";
+    if (raw === "translucent" || raw === "semi_transparent" || raw === "半透明") return "translucent";
+    if (raw === "opaque" || raw === "不透明") return "opaque";
+    return cell.kind === "wall" || cell.blocks_sight === true ? "opaque" : "transparent";
+  };
   const blockers = new Set(
     (grid.cells ?? [])
-      .filter((cell) => cell.kind === "wall" || cell.blocks_sight === true)
+      .filter((cell) => sightBehavior(cell) === "opaque")
       .map((cell) => `${cell.row}:${cell.col}`),
   );
   let row = start.row;

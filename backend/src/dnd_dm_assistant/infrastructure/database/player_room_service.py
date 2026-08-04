@@ -2383,15 +2383,25 @@ class PlayerRoomService:
         blockers = {
             (int(cell["row"]), int(cell["col"]))
             for cell in public_cells(grid.layers_json)
-            if bool(cell.get("blocks_sight"))
+            if CombatEngineService._sight_transparency(
+                cell,
+                default="opaque" if cell.get("blocks_sight") is True else "transparent",
+            )
+            == "opaque"
         }
         for item in session.scalars(
             select(SceneObject).where(SceneObject.scene_id == scene.id)
         ).all():
+            if item.state in {"destroyed", "picked_up"}:
+                continue
             if item.object_type == "wall" or (
                 item.object_type == "door" and item.state in {"active", "closed"}
             ):
-                blockers.update(_object_cells(item))
+                if CombatEngineService._sight_transparency(
+                    item.metadata_json,
+                    default="opaque",
+                ) == "opaque":
+                    blockers.update(_object_cells(item))
         radius = 8
         visible = {
             (row, col)
@@ -6253,14 +6263,28 @@ class PlayerRoomService:
                         ):
                             continue
                         point = (int(cell["row"]), int(cell["col"]))
-                        if cell.get("kind") == "cover" and cell.get("blocks_sight") is not True:
+                        cover_default = (
+                            "translucent" if cell.get("kind") == "cover" else "transparent"
+                        )
+                        behavior = CombatEngineService._sight_transparency(
+                            cell,
+                            default=(
+                                "opaque"
+                                if cell.get("kind") == "wall"
+                                or cell.get("blocks_sight") is True
+                                else cover_default
+                            ),
+                        )
+                        if behavior == "translucent":
                             cover_cells.add(point)
-                        if cell.get("kind") == "wall" or cell.get("blocks_sight") is True:
+                        if behavior == "opaque":
                             sight_blockers.add(point)
                 scene_objects = session.scalars(
                     select(SceneObject).where(SceneObject.scene_id == grid.scene_id)
                 ).all()
                 for scene_object in scene_objects:
+                    if scene_object.state in {"destroyed", "picked_up"}:
+                        continue
                     object_cells = {
                         (row, col)
                         for row in range(
@@ -6278,14 +6302,25 @@ class PlayerRoomService:
                         and scene_object.state == "active"
                         and metadata.get("provides_cover") is True
                     ):
-                        cover_cells.update(object_cells)
+                        if CombatEngineService._sight_transparency(
+                            metadata,
+                            default="translucent",
+                        ) != "transparent":
+                            cover_cells.update(object_cells)
                     blocks_sight = scene_object.object_type == "wall" or (
                         scene_object.object_type == "door"
                         and scene_object.state in {"active", "closed"}
                     )
                     if not blocks_sight:
                         continue
-                    sight_blockers.update(object_cells)
+                    behavior = CombatEngineService._sight_transparency(
+                        metadata,
+                        default="opaque",
+                    )
+                    if behavior == "translucent":
+                        cover_cells.update(object_cells)
+                    elif behavior == "opaque":
+                        sight_blockers.update(object_cells)
             actor_point = (int(actor_pos["row"]), int(actor_pos["col"]))
             target_point = (int(aim_pos["row"]), int(aim_pos["col"]))
 

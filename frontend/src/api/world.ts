@@ -35,7 +35,14 @@ export type SiteGenerationInput = {
   generate_loot: boolean;
   seed?: number;
 };
-export type SiteCell = { row: number; col: number; kind: string; label: string; blocks_sight?: boolean };
+export type SiteCell = {
+  row: number;
+  col: number;
+  kind: string;
+  label: string;
+  blocks_sight?: boolean;
+  sight_transparency?: string;
+};
 export type SiteRoomPlan = {
   room_index: number;
   name: string;

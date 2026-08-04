@@ -163,6 +163,7 @@ export type PlayerSceneGrid = {
     kind: string;
     label?: string;
     blocks_sight?: boolean;
+    sight_transparency?: string;
   }>;
 };
 

@@ -702,6 +702,7 @@ export type SceneGrid = {
     kind: "floor" | "wall" | "cover" | "door" | "object" | "water" | "difficult" | "terrain" | "light" | "trap" | "treasure" | "furniture" | "portal";
     label: string;
     blocks_sight?: boolean;
+    sight_transparency?: string;
   }[];
 };
 

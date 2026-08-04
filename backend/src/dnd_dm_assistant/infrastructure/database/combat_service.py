@@ -3876,6 +3876,28 @@ class CombatEngineService:
         )
 
     @staticmethod
+    def _sight_transparency(metadata: object, *, default: str) -> str:
+        """Normalize explicit transparent/translucent/opaque object metadata."""
+
+        if not isinstance(metadata, dict):
+            return default
+        if metadata.get("blocks_sight") is False:
+            return "transparent"
+        raw = metadata.get("sight_transparency")
+        if not isinstance(raw, str):
+            return default
+        return {
+            "transparent": "transparent",
+            "clear": "transparent",
+            "透明": "transparent",
+            "translucent": "translucent",
+            "semi_transparent": "translucent",
+            "半透明": "translucent",
+            "opaque": "opaque",
+            "不透明": "opaque",
+        }.get(raw.strip().casefold(), default)
+
+    @staticmethod
     def _grid_obstacles(
         session: Session,
         grid: SceneGrid,
@@ -3892,14 +3914,23 @@ class CombatEngineService:
                 if not isinstance(row, int) or not isinstance(col, int):
                     continue
                 point = (row, col)
-                if cell.get("kind") == "cover" and cell.get("blocks_sight") is not True:
+                cover_default = "translucent" if cell.get("kind") == "cover" else "transparent"
+                behavior = CombatEngineService._sight_transparency(
+                    cell,
+                    default="opaque"
+                    if cell.get("kind") == "wall" or cell.get("blocks_sight") is True
+                    else cover_default,
+                )
+                if behavior == "translucent":
                     cover_cells.add(point)
-                if cell.get("kind") == "wall" or cell.get("blocks_sight") is True:
+                if behavior == "opaque":
                     blockers.add(point)
         objects = session.scalars(
             select(SceneObject).where(SceneObject.scene_id == grid.scene_id)
         ).all()
         for scene_object in objects:
+            if scene_object.state in {"destroyed", "picked_up"}:
+                continue
             cells = {
                 (row, col)
                 for row in range(
@@ -3920,12 +3951,23 @@ class CombatEngineService:
                 and scene_object.state == "active"
                 and metadata.get("provides_cover") is True
             ):
-                cover_cells.update(cells)
+                if CombatEngineService._sight_transparency(
+                    metadata,
+                    default="translucent",
+                ) != "transparent":
+                    cover_cells.update(cells)
             if scene_object.object_type == "wall" or (
                 scene_object.object_type == "door"
                 and scene_object.state in {"active", "closed"}
             ):
-                blockers.update(cells)
+                behavior = CombatEngineService._sight_transparency(
+                    metadata,
+                    default="opaque",
+                )
+                if behavior == "translucent":
+                    cover_cells.update(cells)
+                elif behavior == "opaque":
+                    blockers.update(cells)
         return blockers, cover_cells
 
     @staticmethod
@@ -3988,7 +4030,13 @@ class CombatEngineService:
             for cell in raw_cells:
                 if not isinstance(cell, dict):
                     continue
-                if cell.get("kind") != "wall" and cell.get("blocks_sight") is not True:
+                behavior = cls._sight_transparency(
+                    cell,
+                    default="opaque"
+                    if cell.get("kind") == "wall" or cell.get("blocks_sight") is True
+                    else "transparent",
+                )
+                if behavior != "opaque":
                     continue
                 row, col = cell.get("row"), cell.get("col")
                 if isinstance(row, int) and isinstance(col, int):
@@ -3998,6 +4046,8 @@ class CombatEngineService:
             select(SceneObject).where(SceneObject.scene_id == grid.scene_id)
         ).all()
         for scene_object in objects:
+            if scene_object.state in {"destroyed", "picked_up"}:
+                continue
             if not (
                 scene_object.object_type == "wall"
                 or (
@@ -4005,6 +4055,8 @@ class CombatEngineService:
                     and scene_object.state in {"active", "closed"}
                 )
             ):
+                continue
+            if cls._sight_transparency(scene_object.metadata_json, default="opaque") != "opaque":
                 continue
             cells = {
                 (row, col)
@@ -4252,6 +4304,41 @@ class CombatEngineService:
         raise ValueError("unsupported monster area shape")
 
     @classmethod
+    def _footprint_in_monster_area(
+        cls,
+        *,
+        shape: str,
+        origin: tuple[int, int],
+        anchor: tuple[int, int],
+        footprint: tuple[tuple[int, int], ...],
+        size_ft: int,
+        width_ft: int | None,
+        cell_size_ft: int,
+        origin_height_ft: int = 0,
+        anchor_height_ft: int = 0,
+        point_height_ft: int = 0,
+        height_ft: int | None = None,
+    ) -> bool:
+        """Treat an area as affecting a creature when any occupied square intersects it."""
+
+        return any(
+            cls._point_in_monster_area(
+                shape=shape,
+                origin=origin,
+                anchor=anchor,
+                point=point,
+                size_ft=size_ft,
+                width_ft=width_ft,
+                cell_size_ft=cell_size_ft,
+                origin_height_ft=origin_height_ft,
+                anchor_height_ft=anchor_height_ft,
+                point_height_ft=point_height_ft,
+                height_ft=height_ft,
+            )
+            for point in footprint
+        )
+
+    @classmethod
     def _monster_area_targets(
         cls,
         session: Session,
@@ -4298,11 +4385,12 @@ class CombatEngineService:
                     f"高级三维区域目标 {candidate.display_name} 缺少 grid_position.elevation_ft"
                 )
             point_height_ft = cls._grid_elevation_ft(candidate)
-            if point is None or not cls._point_in_monster_area(
+            candidate_footprint = cls._grid_footprint(candidate)
+            if point is None or not candidate_footprint or not cls._footprint_in_monster_area(
                 shape=command.shape,
                 origin=origin,
                 anchor=anchor,
-                point=point,
+                footprint=candidate_footprint,
                 size_ft=command.size_ft,
                 width_ft=command.width_ft,
                 cell_size_ft=grid.cell_size_ft,
@@ -4312,7 +4400,6 @@ class CombatEngineService:
                 height_ft=command.height_ft,
             ):
                 continue
-            candidate_footprint = cls._grid_footprint(candidate)
             has_sight, line_of_sight_mode, sight_pair = cls._grid_footprint_line_of_sight(
                 session,
                 grid,
@@ -4329,9 +4416,9 @@ class CombatEngineService:
                 "grid_position": {"row": point[0], "col": point[1]},
                 "elevation_ft": point_height_ft,
                 "vertical_distance_ft": abs(point_height_ft - command.anchor_height_ft),
-                "distance_ft": grid_distance_ft(
-                    origin,
-                    point,
+                "distance_ft": cls._grid_footprint_distance_ft(
+                    origin_footprint,
+                    candidate_footprint,
                     cell_size_ft=grid.cell_size_ft,
                 ),
                 "line_of_sight": has_sight,
@@ -4383,7 +4470,9 @@ class CombatEngineService:
             raise ValueError("area player-roll prompts require an authoritative combat grid")
         origin = cls._grid_point(actor)
         point = cls._grid_point(target)
-        if origin is None or point is None:
+        origin_footprint = cls._grid_footprint(actor)
+        target_footprint = cls._grid_footprint(target)
+        if origin is None or point is None or not origin_footprint or not target_footprint:
             raise ValueError("area target and actor both need authoritative grid positions")
         if command.requires_explicit_elevation and (
             cls._explicit_grid_elevation_ft(actor) is None
@@ -4401,11 +4490,11 @@ class CombatEngineService:
         blockers, _ = cls._grid_obstacles(session, grid)
         if target.id == actor.id and not command.area_include_actor:
             raise ValueError("area prompt excludes its actor")
-        if not cls._point_in_monster_area(
+        if not cls._footprint_in_monster_area(
             shape=command.area_shape,
             origin=origin,
             anchor=anchor,
-            point=point,
+            footprint=target_footprint,
             size_ft=command.area_size_ft,
             width_ft=command.area_width_ft,
             cell_size_ft=grid.cell_size_ft,
@@ -4415,11 +4504,11 @@ class CombatEngineService:
             height_ft=command.area_height_ft,
         ):
             raise ValueError("player roll target is outside the authoritative 3-D area")
-        has_sight, line_of_sight_mode = cls._grid_line_of_sight(
+        has_sight, line_of_sight_mode, sight_pair = cls._grid_footprint_line_of_sight(
             session,
             grid,
-            origin,
-            point,
+            origin_footprint,
+            target_footprint,
             blockers,
             start_height_ft=cls._explicit_grid_elevation_ft(actor),
             end_height_ft=cls._explicit_grid_elevation_ft(target),
@@ -4432,13 +4521,21 @@ class CombatEngineService:
             "vertical_distance_ft": abs(
                 cls._grid_elevation_ft(target) - command.area_anchor_height_ft
             ),
-            "distance_ft": grid_distance_ft(
-                origin,
-                point,
+            "distance_ft": cls._grid_footprint_distance_ft(
+                origin_footprint,
+                target_footprint,
                 cell_size_ft=grid.cell_size_ft,
             ),
             "line_of_sight": has_sight,
             "line_of_sight_mode": line_of_sight_mode,
+            "line_of_sight_pair": (
+                {
+                    "from": {"row": sight_pair[0][0], "col": sight_pair[0][1]},
+                    "to": {"row": sight_pair[1][0], "col": sight_pair[1][1]},
+                }
+                if sight_pair is not None
+                else None
+            ),
         }
 
     @staticmethod

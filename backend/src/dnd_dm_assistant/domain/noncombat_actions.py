@@ -129,6 +129,9 @@ def public_cells(layers_json: dict[str, object]) -> list[dict[str, Any]]:
         }
         if cell.get("blocks_sight") is True:
             public_cell["blocks_sight"] = True
+        sight_transparency = cell.get("sight_transparency")
+        if isinstance(sight_transparency, str):
+            public_cell["sight_transparency"] = sight_transparency
         result.append(public_cell)
     return result
 

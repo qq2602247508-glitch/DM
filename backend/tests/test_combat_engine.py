@@ -2283,6 +2283,112 @@ def test_attack_geometry_uses_visible_square_pair_for_large_combatants(
     assert any(context.startswith("line_of_sight_pair:3,1->") for context in contexts)
 
 
+def test_explicit_transparent_and_translucent_objects_change_sight_without_guessing(
+    combat_client: TestClient,
+) -> None:
+    campaign = _campaign(combat_client, "Transparent sight objects")
+    base = f"/api/v1/campaigns/{campaign['id']}"
+    scene = combat_client.post(f"{base}/scenes", json={"name": "Transparent room"}).json()
+    grid = combat_client.post(
+        f"{base}/scenes/{scene['id']}/grid",
+        json={"width": 8, "height": 8, "cell_size_ft": 5, "mode": "combat"},
+    )
+    assert grid.status_code == 201, grid.text
+    for row, transparency in ((1, "transparent"), (3, "translucent")):
+        wall = combat_client.post(
+            f"{base}/scenes/{scene['id']}/objects",
+            json={
+                "object_type": "wall",
+                "label": f"{transparency} wall",
+                "row": row,
+                "col": 2,
+                "metadata_json": {"sight_transparency": transparency},
+            },
+        )
+        assert wall.status_code == 201, wall.text
+    combat = combat_client.post(
+        f"{base}/combats",
+        json={"name": "Transparent sight combat", "scene_id": scene["id"]},
+    ).json()
+
+    def add_pair(row: int, label: str) -> tuple[dict[str, object], dict[str, object]]:
+        attacker = combat_client.post(
+            f"{base}/combats/{combat['id']}/combatants",
+            json={
+                "display_name": f"{label} attacker",
+                "entity_type": "monster",
+                "initiative": 20,
+                "hp": 20,
+                "max_hp": 20,
+                "snapshot_json": {"grid_position": {"row": row, "col": 1}},
+            },
+        ).json()
+        target = combat_client.post(
+            f"{base}/combats/{combat['id']}/combatants",
+            json={
+                "display_name": f"{label} target",
+                "entity_type": "character",
+                "initiative": 10,
+                "armor_class": 10,
+                "hp": 20,
+                "max_hp": 20,
+                "snapshot_json": {"grid_position": {"row": row, "col": 4}},
+            },
+        ).json()
+        return attacker, target
+
+    transparent_attacker, transparent_target = add_pair(1, "透明")
+    translucent_attacker, translucent_target = add_pair(3, "半透明")
+
+    def attack(
+        attacker: dict[str, object],
+        target: dict[str, object],
+        attack_roll_total: int,
+        request_id: str,
+    ):
+        return combat_client.post(
+            f"{base}/combats/{combat['id']}/actions/confirm",
+            headers={"X-Request-ID": request_id},
+            json={
+                "action_type": "damage",
+                "is_attack": True,
+                "action_cost": "none",
+                "action_name": "穿透测试",
+                "actor_combatant_id": attacker["id"],
+                "actor_version": attacker["version"],
+                "target_combatant_id": target["id"],
+                "target_version": target["version"],
+                "amount": 1,
+                "damage_type": "piercing",
+                "attack_roll_total": attack_roll_total,
+                "attack_range_ft": 30,
+                "attack_roll_mode": "normal",
+            },
+        )
+
+    transparent = attack(
+        transparent_attacker,
+        transparent_target,
+        10,
+        "transparent-object-sight",
+    )
+    assert transparent.status_code == 200, transparent.text
+    transparent_contexts = transparent.json()["action"]["result_json"]["attack_contexts"]
+    assert "line_of_sight:true" in transparent_contexts
+    assert "cover:none" in transparent_contexts
+
+    translucent = attack(
+        translucent_attacker,
+        translucent_target,
+        12,
+        "translucent-object-cover",
+    )
+    assert translucent.status_code == 200, translucent.text
+    translucent_contexts = translucent.json()["action"]["result_json"]["attack_contexts"]
+    assert "line_of_sight:true" in translucent_contexts
+    assert "cover:half" in translucent_contexts
+
+
 def test_condition_attack_contexts_require_explicit_advantage_ruling(
     combat_client: TestClient,
 ) -> None:
@@ -6018,6 +6124,76 @@ def test_monster_area_action_resolves_mixed_damage_and_vertical_geometry(
         ).json()["hp"]
         == 30
     )
+
+
+def test_monster_area_action_uses_any_square_of_large_target_for_area_boundary(
+    combat_client: TestClient,
+) -> None:
+    campaign = _campaign(combat_client, "Large area boundary")
+    base = f"/api/v1/campaigns/{campaign['id']}"
+    scene = combat_client.post(f"{base}/scenes", json={"name": "Large area room"}).json()
+    grid = combat_client.post(
+        f"{base}/scenes/{scene['id']}/grid",
+        json={"width": 8, "height": 8, "cell_size_ft": 5, "mode": "combat"},
+    )
+    assert grid.status_code == 201, grid.text
+    combat = combat_client.post(
+        f"{base}/combats",
+        json={"name": "Large area boundary combat", "scene_id": scene["id"]},
+    ).json()
+    actor = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "区域施法者",
+            "entity_type": "monster",
+            "initiative": 20,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {"grid_position": {"row": 5, "col": 2}},
+        },
+    ).json()
+    target = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "大型边界目标",
+            "entity_type": "character",
+            "initiative": 10,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {
+                "size_cells": 2,
+                "grid_position": {"row": 1, "col": 3},
+            },
+        },
+    ).json()
+    response = combat_client.post(
+        f"{base}/combats/{combat['id']}/monster-area-actions/confirm",
+        headers={"X-Request-ID": "large-area-any-occupied-square"},
+        json={
+            "actor_combatant_id": actor["id"],
+            "actor_version": actor["version"],
+            "action_name": "边界立方体",
+            "action_cost": "action",
+            "shape": "cube",
+            "size_ft": 10,
+            "anchor_row": 2,
+            "anchor_col": 2,
+            "save_dc": 10,
+            "save_ability": "dexterity",
+            "damage_total": 1,
+            "damage_type": "force",
+            "targets": [
+                {
+                    "target_combatant_id": target["id"],
+                    "target_version": target["version"],
+                    "roll_total": 1,
+                }
+            ],
+            "dm_geometry_note": "大型目标的第二行占用格进入立方体边界",
+        },
+    )
+    assert response.status_code == 200, response.text
+    assert response.json()["targets"][0]["hp"] == 19
 
 
 def test_player_roll_prompt_rejects_target_outside_authoritative_3d_area(

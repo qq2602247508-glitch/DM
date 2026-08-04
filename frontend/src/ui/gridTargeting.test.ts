@@ -223,6 +223,31 @@ describe("grid targeting helpers", () => {
     expect(hasLineOfSight(coverGrid, { row: 4, col: 2 }, { row: 4, col: 8 })).toBe(false);
   });
 
+  it("allows explicitly transparent walls and sees through translucent ones", () => {
+    const transparentGrid = {
+      ...grid,
+      cells: [{
+        row: 4,
+        col: 5,
+        kind: "wall" as const,
+        label: "玻璃墙",
+        sight_transparency: "transparent",
+      }],
+    };
+    const translucentGrid = {
+      ...grid,
+      cells: [{
+        row: 4,
+        col: 5,
+        kind: "wall" as const,
+        label: "薄雾屏障",
+        sight_transparency: "translucent",
+      }],
+    };
+    expect(hasLineOfSight(transparentGrid, { row: 4, col: 2 }, { row: 4, col: 8 })).toBe(true);
+    expect(hasLineOfSight(translucentGrid, { row: 4, col: 2 }, { row: 4, col: 8 })).toBe(true);
+  });
+
   it("prevents an area effect from reaching cells behind a hard wall", () => {
     const walledGrid = {
       ...grid,
