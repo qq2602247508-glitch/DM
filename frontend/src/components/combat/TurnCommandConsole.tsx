@@ -319,6 +319,7 @@ export function TurnCommandConsole({
   onEnemyTurnComplete,
   onRangeChange,
   onTargetChange,
+  resumeMonsterSequence,
   selectedTargetId,
   targetingValidity,
   turnKey,
@@ -334,6 +335,7 @@ export function TurnCommandConsole({
   onEnemyTurnComplete: () => void;
   onRangeChange: (range: CombatTargeting | null, actorId?: string | null) => void;
   onTargetChange?: (targetId: string) => void;
+  resumeMonsterSequence?: { sequenceId: string; nextStep: number } | null;
   selectedTargetId?: string;
   targetingValidity?: CombatTargetingValidity;
   turnKey: string;
@@ -831,7 +833,15 @@ export function TurnCommandConsole({
     },
   });
   const executeMonsterSequence = useMutation({
-    mutationFn: async ({ chosenTarget }: { chosenTarget: Combatant }) => {
+    mutationFn: async ({
+      chosenTarget,
+      startStep = 0,
+      existingSequenceId,
+    }: {
+      chosenTarget: Combatant;
+      startStep?: number;
+      existingSequenceId?: string;
+    }) => {
       const steps = expandMonsterAction(actions, Number(actionIndex));
       if (!steps?.length) {
         throw new Error("多重攻击的子动作与次数没有可靠解析，请由 DM 裁定");
@@ -841,6 +851,7 @@ export function TurnCommandConsole({
       }
       type RecordToExecute = {
         kind: "attack" | "save";
+        sequenceStep: number;
         action: CombatActionLike;
         target: Combatant;
         damage: number;
@@ -850,7 +861,8 @@ export function TurnCommandConsole({
       };
       const records: RecordToExecute[] = [];
       let currentTarget = chosenTarget;
-      for (const step of steps) {
+      for (const [sequenceStep, step] of steps.entries()) {
+        if (sequenceStep < startStep) continue;
         const action = step.action;
         const rolledDamage = rollStructuredDamage(action);
         const damageType = rolledDamage?.damageType ?? String(action.damage_type ?? "").trim();
@@ -870,6 +882,7 @@ export function TurnCommandConsole({
           for (const affectedTarget of affected) {
             records.push({
               kind: "save",
+              sequenceStep,
               action,
               target: affectedTarget,
               damage: rolledDamage.total,
@@ -888,6 +901,7 @@ export function TurnCommandConsole({
         const damage = hit ? rolledDamage.total : 0;
         records.push({
           kind: "attack",
+          sequenceStep,
           action,
           target: currentTarget,
           damage,
@@ -902,18 +916,23 @@ export function TurnCommandConsole({
       // combatant version so the same initiative slot in a fresh reset is a
       // new execution window, while duplicate requests in one window still
       // share the same idempotency key.
-      const sequenceId = `monster:${combatId.slice(0, 8)}:${turnKey}:${active.id.slice(0, 8)}:${active.version}:${actionIndex}`;
+      const sequenceId = existingSequenceId
+        ?? `monster:${combatId.slice(0, 8)}:${turnKey}:${active.id.slice(0, 8)}:${active.version}:${actionIndex}`;
       let actorVersion = active.version;
       const targetVersions = new Map(fighters.map((fighter) => [fighter.id, fighter.version]));
       let pendingRollCount = 0;
-      if (records.length > 1 && records.every((record) => record.kind === "save")) {
+      if (
+        records.length > 1
+        && records.every((record) => record.kind === "save")
+        && !selectedAction.multiattack
+      ) {
         const first = records[0];
         if (!first) throw new Error("怪物区域豁免动作缺少首个目标");
         const firstAreaFields = areaPromptFields(first.action, active, first.target);
         const batchBase = {
           actor_combatant_id: active.id,
           actor_version: actorVersion,
-          action_cost: selectedActionCost,
+          action_cost: startStep === 0 ? selectedActionCost : "none",
           action_name: selectedAction.multiattack
             ? `${selectedAction.name ?? "多重攻击"} · 区域豁免`
             : first.action.name ?? "怪物区域动作",
@@ -938,8 +957,8 @@ export function TurnCommandConsole({
           recharge_key: selectedRechargeKey,
           recharge_consume: Boolean(selectedRechargeKey),
           sequence_id: sequenceId,
-          sequence_step: 0,
-          sequence_size: records.length,
+          sequence_step: records[0]?.sequenceStep ?? startStep,
+          sequence_size: steps.length,
           description: `${active.display_name}使用「${first.action.name ?? "怪物区域动作"}」；向 ${records.length} 名玩家发出豁免请求。`,
         };
         const batchResponse = await createPlayerRollPromptBatch(
@@ -958,24 +977,24 @@ export function TurnCommandConsole({
         actorVersion = batchResponse.actor.version;
         return { pendingRollCount, recordCount: records.length };
       }
-      for (const [index, record] of records.entries()) {
-        const cost = index === 0 ? selectedActionCost : "none";
+      for (const record of records) {
+        const cost = record.sequenceStep === 0 ? selectedActionCost : "none";
         const common = {
           actor_combatant_id: active.id,
           actor_version: actorVersion,
           action_cost: cost,
           action_name: selectedAction.multiattack
-            ? `${selectedAction.name ?? "多重攻击"} · ${record.action.name ?? `第${index + 1}击`}`
+            ? `${selectedAction.name ?? "多重攻击"} · ${record.action.name ?? `第${record.sequenceStep + 1}击`}`
             : record.action.name ?? "怪物动作",
           target_combatant_id: record.target.id,
           target_version: targetVersions.get(record.target.id) ?? record.target.version,
-          recharge_key: index === 0 ? selectedRechargeKey : null,
-          recharge_consume: index === 0 && Boolean(selectedRechargeKey),
+          recharge_key: record.sequenceStep === 0 ? selectedRechargeKey : null,
+          recharge_consume: record.sequenceStep === 0 && Boolean(selectedRechargeKey),
           sequence_id: sequenceId,
-          sequence_step: index,
-          sequence_size: records.length,
+          sequence_step: record.sequenceStep,
+          sequence_size: steps.length,
         } as const;
-        const requestId = `${sequenceId}:${index}`;
+        const requestId = `${sequenceId}:${record.sequenceStep}:${record.target.id}`;
         if (record.kind === "save") {
           const areaFields = areaPromptFields(record.action, active, record.target);
           if (record.action.area_shape && record.action.area_shape !== "single" && Object.keys(areaFields).length === 0) {
@@ -1015,6 +1034,9 @@ export function TurnCommandConsole({
           }, requestId);
           actorVersion = response.actor.version;
           pendingRollCount += 1;
+          // A saving-throw child pauses the sequence.  The player-roll
+          // confirmation callback will provide the next sequence_step.
+          break;
         } else {
           const response = await confirmCombatAction(campaignId, combatId, {
             ...common,
@@ -1049,6 +1071,7 @@ export function TurnCommandConsole({
       return { pendingRollCount, recordCount: records.length };
     },
     onSuccess: async ({ pendingRollCount, recordCount }) => {
+      monsterSequenceInFlight.current = null;
       invalidate();
       if (pendingRollCount > 0) {
         showToast(`怪物动作序列已记录 ${recordCount} 步；等待 ${pendingRollCount} 个玩家豁免后恢复`);
@@ -1256,6 +1279,10 @@ export function TurnCommandConsole({
             actorVersion = response.actor.version;
             pendingRollCount += 1;
           }
+          // A save-based child is a hard pause point.  Do not enqueue later
+          // attacks until the player has supplied and the DM has confirmed
+          // this roll; the next render resumes from its sequence_step.
+          break;
         } else {
           if (action.attack_bonus === undefined) {
             throw new Error("该高级动作没有明确攻击加值，保留给 DM 裁定");
@@ -1413,13 +1440,14 @@ export function TurnCommandConsole({
     automatic: boolean,
     forcedTarget?: Combatant,
     fullyAutomaticEnemy = false,
+    continueSequence = false,
   ): boolean => {
     if (!targetingRangeKnown) {
       showToast("该动作没有明确施法/触及距离，不能按默认距离自动结算；请由 DM 裁定", "error");
       return false;
     }
     const chosenTarget = forcedTarget ?? target;
-    if (!selectedActionAvailable) {
+    if (!selectedActionAvailable && !(fullyAutomaticEnemy && continueSequence)) {
       showToast(
         selectedActionCost === "bonus_action"
           ? "本回合附赠动作已经使用"
@@ -1439,7 +1467,11 @@ export function TurnCommandConsole({
       return false;
     }
     if (activeIsEnemyAiControlled && fullyAutomaticEnemy) {
-      executeMonsterSequence.mutate({ chosenTarget });
+      executeMonsterSequence.mutate({
+        chosenTarget,
+        startStep: continueSequence ? resumeMonsterSequence?.nextStep ?? 0 : 0,
+        existingSequenceId: continueSequence ? resumeMonsterSequence?.sequenceId : undefined,
+      });
       return true;
     }
     const damagePreview = rollStructuredDamage(selectedAction);
@@ -1756,9 +1788,11 @@ export function TurnCommandConsole({
       selectedTargeting.rangeFt,
       selectedActionAvailable ? "available" : "unavailable",
       targetingRangeKnown ? "range-known" : "range-unknown",
+      resumeMonsterSequence?.sequenceId ?? "no-resume",
+      resumeMonsterSequence?.nextStep ?? 0,
     ].join(":");
     if (processedAutomaticTurn.current === automaticActionKey) return;
-    if (!selectedActionAvailable) {
+    if (!selectedActionAvailable && !resumeMonsterSequence) {
       // The action economy is also updated immediately after an automatic
       // sequence is submitted.  Do not end the turn from this intermediate
       // render; the sequence's onSuccess owns the single advance call.
@@ -1806,7 +1840,7 @@ export function TurnCommandConsole({
     if (targetIdsForExecution?.has(enemyTarget.id) || automaticAreaFallbackTarget) {
       setTargetId(enemyTarget.id);
       monsterSequenceInFlight.current = turnKey;
-      const started = prepareAttack(true, enemyTarget, true);
+      const started = prepareAttack(true, enemyTarget, true, Boolean(resumeMonsterSequence));
       processedAutomaticTurn.current = started ? automaticActionKey : null;
       if (!started) monsterSequenceInFlight.current = null;
       return;
@@ -1833,6 +1867,8 @@ export function TurnCommandConsole({
     targetIdsForExecution,
     automaticAreaFallbackTarget,
     activeIsEnemyAiControlled,
+    resumeMonsterSequence?.sequenceId,
+    resumeMonsterSequence?.nextStep,
   ]);
 
   return (

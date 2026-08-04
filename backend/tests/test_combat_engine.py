@@ -1113,6 +1113,110 @@ def test_multiattack_sequence_records_independent_hits_and_targets(
     assert hit_b.json()["actor"]["action_available"] is False
 
 
+def test_multiattack_pauses_before_next_step_until_player_roll_is_confirmed(
+    combat_client: TestClient,
+) -> None:
+    campaign = _campaign(combat_client, "Multiattack save pause")
+    base = f"/api/v1/campaigns/{campaign['id']}"
+    combat = combat_client.post(f"{base}/combats", json={"name": "Save pause"}).json()
+    monster = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "多重攻击怪物",
+            "entity_type": "monster",
+            "initiative": 20,
+            "hp": 30,
+            "max_hp": 30,
+        },
+    ).json()
+    target = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "豁免目标",
+            "entity_type": "character",
+            "initiative": 10,
+            "hp": 20,
+            "max_hp": 20,
+        },
+    ).json()
+    sequence_id = "multiattack-save-pause"
+    prompt = combat_client.post(
+        f"{base}/combats/{combat['id']}/actions/player-rolls/pending",
+        headers={"X-Request-ID": "multiattack-save-step-0"},
+        json={
+            "actor_combatant_id": monster["id"],
+            "actor_version": monster["version"],
+            "action_cost": "action",
+            "action_name": "多重攻击 · 特殊击",
+            "resolution_type": "saving_throw",
+            "dc": 12,
+            "ability": "dexterity",
+            "damage_on_failure": 0,
+            "sequence_id": sequence_id,
+            "sequence_step": 0,
+            "sequence_size": 2,
+            "target_combatant_id": target["id"],
+            "target_version": target["version"],
+            "description": "第 1 击需要玩家进行敏捷豁免",
+        },
+    )
+    assert prompt.status_code == 200, prompt.text
+    prompt_action = prompt.json()["action"]
+
+    blocked = combat_client.post(
+        f"{base}/combats/{combat['id']}/actions/confirm",
+        headers={"X-Request-ID": "multiattack-step-1-blocked"},
+        json={
+            "action_type": "damage",
+            "actor_combatant_id": monster["id"],
+            "actor_version": prompt.json()["actor"]["version"],
+            "action_cost": "none",
+            "action_name": "多重攻击 · 普通击",
+            "target_combatant_id": target["id"],
+            "target_version": target["version"],
+            "amount": 5,
+            "damage_type": "piercing",
+            "sequence_id": sequence_id,
+            "sequence_step": 1,
+            "sequence_size": 2,
+        },
+    )
+    assert blocked.status_code == 400, blocked.text
+    assert "previous player roll" in blocked.json()["message"]
+
+    resolved = combat_client.post(
+        f"{base}/combats/{combat['id']}/actions/player-rolls/{prompt_action['id']}/confirm",
+        headers={"X-Request-ID": "multiattack-save-step-0-confirm"},
+        json={
+            "action_version": prompt_action["version"],
+            "roll_total": 12,
+        },
+    )
+    assert resolved.status_code == 200, resolved.text
+    assert resolved.json()["action"]["status"] == "confirmed"
+
+    continued = combat_client.post(
+        f"{base}/combats/{combat['id']}/actions/confirm",
+        headers={"X-Request-ID": "multiattack-step-1-after-save"},
+        json={
+            "action_type": "damage",
+            "actor_combatant_id": monster["id"],
+            "actor_version": prompt.json()["actor"]["version"],
+            "action_cost": "none",
+            "action_name": "多重攻击 · 普通击",
+            "target_combatant_id": target["id"],
+            "target_version": target["version"],
+            "amount": 5,
+            "damage_type": "piercing",
+            "sequence_id": sequence_id,
+            "sequence_step": 1,
+            "sequence_size": 2,
+        },
+    )
+    assert continued.status_code == 200, continued.text
+    assert continued.json()["target"]["hp"] == 15
+
+
 def test_attack_geometry_enforces_range_line_of_sight_and_half_cover_ac(
     combat_client: TestClient,
 ) -> None:

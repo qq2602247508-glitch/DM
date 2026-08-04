@@ -79,7 +79,7 @@ export function PlayerRollPanel({
   campaignId: string;
   combatId: string;
   fighters: Combatant[];
-  onResolved?: () => void;
+  onResolved?: (action: CombatAction) => void;
 }): ReactElement | null {
   const client = useQueryClient();
   const { showToast } = useToast();
@@ -206,10 +206,10 @@ export function PlayerRollPanel({
       }
       return resolution;
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
       invalidate();
       showToast("玩家骰结果已由 DM 确认并写入战斗日志");
-      onResolved?.();
+      onResolved?.(result.action);
     },
     onError: () => showToast("确认失败：目标状态可能已变化，请重新预览", "error"),
   });

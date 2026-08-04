@@ -1453,9 +1453,18 @@ class CombatEngineService:
         completed_steps = {
             cls._state_int(row.request_json.get("sequence_step"), -1)
             for row in sequence_rows
-            if row.status in {"previewed", "confirmed"}
+            if row.status == "confirmed"
         }
         if command.sequence_step > 0 and command.sequence_step - 1 not in completed_steps:
+            pending_step = command.sequence_step - 1
+            if any(
+                cls._state_int(row.request_json.get("sequence_step"), -1) == pending_step
+                and row.status == "previewed"
+                for row in sequence_rows
+            ):
+                raise ValueError(
+                    "monster sequence is paused until the previous player roll is confirmed"
+                )
             raise ValueError("monster sequence steps must be recorded in order")
 
     @classmethod

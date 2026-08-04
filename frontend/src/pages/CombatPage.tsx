@@ -1477,6 +1477,10 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
   const [resetGeneration, setResetGeneration] = useState(0);
   const [effectSavePrompts, setEffectSavePrompts] = useState<EffectSavePrompt[]>([]);
   const [effectSaveRolls, setEffectSaveRolls] = useState<Record<string, string>>({});
+  const [resumeMonsterSequence, setResumeMonsterSequence] = useState<{
+    sequenceId: string;
+    nextStep: number;
+  } | null>(null);
   const nextTurnInFlight = useRef(false);
   const updateTargetingValidity = useCallback((next: CombatTargetingValidity) => {
     setTargetingValidity((current) => {
@@ -1496,6 +1500,9 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
   useEffect(() => {
     localStorage.setItem(autoEnemiesStorageKey, String(autoEnemies));
   }, [autoEnemies, autoEnemiesStorageKey]);
+  useEffect(() => {
+    setResumeMonsterSequence(null);
+  }, [combat.id, combat.current_turn_index]);
   const fighters = useQuery({
     queryKey: ["combatants", campaignId, combat.id],
     queryFn: ({ signal }) => listCombatants(campaignId, combat.id, signal),
@@ -2127,6 +2134,7 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
               onEnemyTurnComplete={() => {
                 advanceTurnIfIdle();
               }}
+              resumeMonsterSequence={resumeMonsterSequence}
               onRangeChange={(range, actorId) => {
                 setTargetingRange(range);
                 setTargetingActorId(range ? actorId ?? activeFighter.id : null);
@@ -2147,7 +2155,25 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
             campaignId={campaignId}
             combatId={combat.id}
             fighters={ordered}
-            onResolved={() => {
+            onResolved={(action) => {
+              const request = action?.request_json ?? {};
+              const sequenceId = typeof request.sequence_id === "string"
+                ? request.sequence_id
+                : null;
+              const sequenceStep = Number(request.sequence_step);
+              const sequenceSize = Number(request.sequence_size);
+              if (
+                autoEnemies
+                && activeFighter?.entity_type !== "character"
+                && sequenceId
+                && Number.isInteger(sequenceStep)
+                && Number.isInteger(sequenceSize)
+                && sequenceStep + 1 < sequenceSize
+              ) {
+                setResumeMonsterSequence({ sequenceId, nextStep: sequenceStep + 1 });
+                return;
+              }
+              setResumeMonsterSequence(null);
               if (autoEnemies && activeFighter?.entity_type !== "character") {
                 advanceTurnIfIdle();
               }
