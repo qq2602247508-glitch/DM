@@ -3553,6 +3553,61 @@ def test_repeating_compiled_damage_ticks_at_turn_start_and_is_returned_to_client
     assert updated["hp"] <= target["hp"]
 
 
+def test_repeating_damage_count_stops_after_declared_ticks(
+    combat_client: TestClient,
+) -> None:
+    campaign = _campaign(combat_client, "Repeating damage count")
+    combat, target = _combatant(combat_client, campaign["id"])
+    root = f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}"
+    confirmed = combat_client.post(
+        f"{root}/effects/confirm",
+        headers={"X-Request-ID": "compiled-dot-count-effect"},
+        json={
+            "target_combatant_id": target["id"],
+            "target_version": target["version"],
+            "name": "一次持续灼烧",
+            "effect_type": "damage_over_time",
+            "details_json": {
+                "rule_block": {
+                    "id": "b100-counted-damage",
+                    "kind": "damage",
+                    "expression": "1",
+                    "damage_type": "fire",
+                },
+                "damage_expression": "1",
+                "damage_type": "fire",
+                "repeat": {"count": 1, "timing": "turn_start"},
+            },
+            "duration_unit": "rounds",
+            "duration_value": 3,
+            "trigger_timing": "turn_start",
+        },
+    )
+    assert confirmed.status_code == 200, confirmed.text
+    current = combat_client.get(root).json()
+    first = combat_client.post(
+        f"{root}/turns/advance",
+        headers={"X-Request-ID": "compiled-dot-count-first"},
+        json={"combat_version": current["version"]},
+    )
+    assert first.status_code == 200, first.text
+    assert first.json()["effect_ticks"][0]["result"]["repeat_completed"] is True
+    assert first.json()["effect_ticks"][0]["result"]["repeat_ticks_completed"] == 1
+
+    current = combat_client.get(root).json()
+    second = combat_client.post(
+        f"{root}/turns/advance",
+        headers={"X-Request-ID": "compiled-dot-count-second"},
+        json={"combat_version": current["version"]},
+    )
+    assert second.status_code == 200, second.text
+    assert second.json()["effect_ticks"] == []
+    effects = combat_client.get(f"{root}/effects").json()["items"]
+    counted = next(item for item in effects if item["name"] == "一次持续灼烧")
+    assert counted["status"] == "ended"
+    assert counted["end_reason"] == "重复次数已用尽"
+
+
 def test_repeating_mixed_damage_ticks_keep_each_segment_and_defense(
     combat_client: TestClient,
 ) -> None:

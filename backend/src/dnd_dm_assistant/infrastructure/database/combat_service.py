@@ -9635,6 +9635,36 @@ class CombatEngineService:
         if target is None or not target.is_active or target.hp <= 0:
             return None
         details = dict(effect.details_json or {})
+        repeat = details.get("repeat")
+        repeat_count = (
+            repeat.get("count")
+            if isinstance(repeat, dict)
+            and isinstance(repeat.get("count"), int)
+            and not isinstance(repeat.get("count"), bool)
+            else None
+        )
+        if isinstance(repeat, dict) and repeat.get("count") is not None:
+            if repeat_count is None or repeat_count < 1:
+                return {
+                    "effect_id": effect.id,
+                    "target_combatant_id": target.id,
+                    "requires_dm_review": True,
+                    "summary": f"{effect.name} 的重复次数无效，本次未自动结算",
+                }
+            completed = details.get("_repeat_ticks_completed", 0)
+            if not isinstance(completed, int) or isinstance(completed, bool):
+                return {
+                    "effect_id": effect.id,
+                    "target_combatant_id": target.id,
+                    "requires_dm_review": True,
+                    "summary": f"{effect.name} 的重复次数记录无效，本次未自动结算",
+                }
+            if completed >= repeat_count:
+                effect.status = "ended"
+                effect.ended_at = now
+                effect.end_reason = "重复次数已用尽"
+                effect.version += 1
+                return None
         before = serialize(target)
         state_result = self._reapply_rule_state_effect(target, details)
         if state_result is not None:
@@ -9841,6 +9871,18 @@ class CombatEngineService:
             )
             target.hp = healing_resolution.remaining_hp
             result = {**asdict(healing_resolution), "expression": expression}
+        if repeat_count is not None:
+            completed = int(details.get("_repeat_ticks_completed", 0)) + 1
+            details["_repeat_ticks_completed"] = completed
+            effect.details_json = details
+            result["repeat_count"] = repeat_count
+            result["repeat_ticks_completed"] = completed
+            if completed >= repeat_count:
+                effect.status = "ended"
+                effect.ended_at = now
+                effect.end_reason = "重复次数已用尽"
+                effect.version += 1
+                result["repeat_completed"] = True
         condition_changes = self._sync_zero_hp_lifecycle(
             target,
             before_hp=int(before["hp"]),
