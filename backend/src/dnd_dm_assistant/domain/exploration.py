@@ -202,14 +202,20 @@ def movement_cost_ft(path: Iterable[Point], difficult: set[Point], *, cell_size_
 
 def line_of_sight(start: Point, end: Point, blockers: set[Point]) -> bool:
     """Bresenham line; endpoints themselves never block sight."""
+    return not any(point in blockers for point in line_cells(start, end))
+
+
+def line_cells(start: Point, end: Point) -> tuple[Point, ...]:
+    """Return the Bresenham cells strictly between two endpoints."""
     x0, y0 = start
     x1, y1 = end
     dx, dy = abs(x1 - x0), abs(y1 - y0)
     sx, sy = (1 if x0 < x1 else -1), (1 if y0 < y1 else -1)
     err = dx - dy
+    cells: list[Point] = []
     while (x0, y0) != (x1, y1):
-        if (x0, y0) != start and (x0, y0) in blockers:
-            return False
+        if (x0, y0) != start:
+            cells.append((x0, y0))
         twice = 2 * err
         if twice > -dy:
             err -= dy
@@ -217,6 +223,39 @@ def line_of_sight(start: Point, end: Point, blockers: set[Point]) -> bool:
         if twice < dx:
             err += dx
             y0 += sy
+    return tuple(cells)
+
+
+def line_of_sight_3d(
+    start: Point,
+    end: Point,
+    blockers: set[Point],
+    obstacle_heights: dict[Point, tuple[tuple[int, int], ...]],
+    *,
+    start_height_ft: int,
+    end_height_ft: int,
+) -> bool:
+    """Check a grid ray against explicitly measured vertical blocker spans.
+
+    ``obstacle_heights`` must already be complete for every blocker on the
+    ray. Each span is ``(base_ft, top_ft)`` and represents a solid blocker
+    from its base up to, but not including, its top. Callers should fall back
+    to the conservative 2-D result when a blocker has no authoritative height.
+    """
+
+    cells = line_cells(start, end)
+    steps = max(abs(end[0] - start[0]), abs(end[1] - start[1]))
+    if steps == 0:
+        return True
+    for index, point in enumerate(cells, start=1):
+        if point not in blockers:
+            continue
+        ray_height_ft = start_height_ft + (
+            (end_height_ft - start_height_ft) * index / steps
+        )
+        for base_ft, top_ft in obstacle_heights[point]:
+            if base_ft <= ray_height_ft < top_ft:
+                return False
     return True
 
 

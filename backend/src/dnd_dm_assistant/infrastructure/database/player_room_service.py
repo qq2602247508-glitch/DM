@@ -6305,6 +6305,32 @@ class PlayerRoomService:
 
             actor_elevation = explicit_elevation(actor_pos, "施法者")
 
+            def sight_check(
+                start: tuple[int, int],
+                end: tuple[int, int],
+                end_position: dict[str, Any],
+                label: str,
+            ) -> tuple[bool, str]:
+                """Use the combat engine's authoritative 2-D/3-D sight rule."""
+
+                if grid is None:
+                    return line_of_sight(start, end, sight_blockers), "2d"
+                end_elevation = explicit_elevation(end_position, label)
+                start_elevation = actor_elevation if start == actor_point else (
+                    int(plan_anchor_height or 0)
+                    if requires_explicit_elevation
+                    else None
+                )
+                return CombatEngineService._grid_line_of_sight(
+                    session,
+                    grid,
+                    start,
+                    end,
+                    sight_blockers,
+                    start_height_ft=start_elevation,
+                    end_height_ft=end_elevation,
+                )
+
             def combatant_position(item: Combatant) -> tuple[int, int] | None:
                 raw_position = item.snapshot_json.get("grid_position")
                 if (
@@ -6328,13 +6354,19 @@ class PlayerRoomService:
                     )["visible"]
             if visible_cells is not None and target_point not in visible_cells:
                 raise ValueError("目标处于战争迷雾中，当前不可见")
-            if not line_of_sight(actor_point, target_point, sight_blockers):
+            has_sight, sight_mode = sight_check(
+                actor_point,
+                target_point,
+                target_pos,
+                f"目标 {target.display_name}",
+            )
+            if not has_sight:
                 raise ValueError("目标被墙体或关闭的门完全遮挡，无法建立攻击视线")
             cover_kind = cover_between(
                 actor_point,
                 target_point,
                 cover_cells,
-                sight_blockers,
+                sight_blockers if sight_mode == "2d" else set(),
             )
             cover_bonus = 2 if cover_kind == "half" else 0
             cost_text = str(action.get("cost") or "动作")
@@ -6413,9 +6445,13 @@ class PlayerRoomService:
                         legal_maximum = target_rule.range_ft
                     if legal_distance > legal_maximum:
                         raise ValueError(f"{candidate.display_name}超出该法术的多目标合法距离")
-                    if target_rule.requires_line_of_sight and not line_of_sight(
-                        actor_point, secondary_point, sight_blockers
-                    ):
+                    secondary_sight, _ = sight_check(
+                        actor_point,
+                        secondary_point,
+                        candidate_pos,
+                        f"目标 {candidate.display_name}",
+                    )
+                    if target_rule.requires_line_of_sight and not secondary_sight:
                         raise ValueError(f"{candidate.display_name}无法建立法术视线")
             elif target_rule.mode == "area":
                 if grid is None:
@@ -6468,21 +6504,23 @@ class PlayerRoomService:
                         vertical_ft = candidate_height - int(plan_anchor_height or 0)
                         legal = (
                             horizontal_ft**2 + vertical_ft**2
-                        ) ** 0.5 <= radius + 0.01 and line_of_sight(
+                        ) ** 0.5 <= radius + 0.01 and sight_check(
                             aim_point,
                             candidate_point,
-                            sight_blockers,
-                        )
+                            candidate_pos,
+                            f"目标 {candidate.display_name}",
+                        )[0]
                     elif shape == "cylinder":
                         legal = grid_distance_ft(
                             aim_point,
                             candidate_point,
                             cell_size_ft=cell_size,
-                        ) <= radius and line_of_sight(
+                        ) <= radius and sight_check(
                             aim_point,
                             candidate_point,
-                            sight_blockers,
-                        ) and int(plan_anchor_height or 0) <= candidate_height < int(
+                            candidate_pos,
+                            f"目标 {candidate.display_name}",
+                        )[0] and int(plan_anchor_height or 0) <= candidate_height < int(
                             plan_anchor_height or 0
                         ) + int(plan_height)
                     elif shape == "cube":
@@ -6509,7 +6547,12 @@ class PlayerRoomService:
                                     <= candidate_height
                                     < int(plan_anchor_height or 0) + width
                                 )
-                                and line_of_sight(actor_point, candidate_point, sight_blockers)
+                                and sight_check(
+                                    actor_point,
+                                    candidate_point,
+                                    candidate_pos,
+                                    f"目标 {candidate.display_name}",
+                                )[0]
                             )
                         else:
                             center = actor_point if target_rule.range_ft == 0 else aim_point
@@ -6521,9 +6564,12 @@ class PlayerRoomService:
                                 or int(plan_anchor_height or 0)
                                 <= candidate_height
                                 < int(plan_anchor_height or 0) + width
-                            ) and line_of_sight(
-                                center, candidate_point, sight_blockers
-                            )
+                            ) and sight_check(
+                                center,
+                                candidate_point,
+                                candidate_pos,
+                                f"目标 {candidate.display_name}",
+                            )[0]
                     elif shape == "cone" and length_squared > 0:
                         candidate_row = candidate_point[0] - actor_row
                         candidate_col = candidate_point[1] - actor_col
@@ -6543,11 +6589,12 @@ class PlayerRoomService:
                                 or abs(candidate_height - origin_height)
                                 <= forward * cell_size + 0.01
                             )
-                            and line_of_sight(
+                            and sight_check(
                                 actor_point,
                                 candidate_point,
-                                sight_blockers,
-                            )
+                                candidate_pos,
+                                f"目标 {candidate.display_name}",
+                            )[0]
                         )
                     elif shape == "line" and length_squared > 0:
                         candidate_range = grid_distance_ft(
@@ -6577,11 +6624,12 @@ class PlayerRoomService:
                                 not requires_explicit_elevation
                                 or abs(candidate_height - origin_height) <= width / 2 + 0.01
                             )
-                            and line_of_sight(
+                            and sight_check(
                                 actor_point,
                                 candidate_point,
-                                sight_blockers,
-                            )
+                                candidate_pos,
+                                f"目标 {candidate.display_name}",
+                            )[0]
                         )
                     if not legal:
                         raise ValueError(f"{candidate.display_name}不在玩家选择的技能范围内")

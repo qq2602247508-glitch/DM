@@ -41,7 +41,9 @@ from dnd_dm_assistant.domain.combat import (
 from dnd_dm_assistant.domain.exploration import (
     cover_between,
     grid_distance_ft,
+    line_cells,
     line_of_sight,
+    line_of_sight_3d,
 )
 from dnd_dm_assistant.infrastructure.database.campaign_service import serialize
 from dnd_dm_assistant.infrastructure.database.models import (
@@ -2603,7 +2605,20 @@ class CombatEngineService:
             source_point = cls._grid_point(source) if source is not None else None
             if source_point is None:
                 return None
-            if line_of_sight(actor_point, source_point, blockers):
+            has_sight, _ = cls._grid_line_of_sight(
+                session,
+                grid,
+                actor_point,
+                source_point,
+                blockers,
+                start_height_ft=cls._explicit_grid_elevation_ft(actor),
+                end_height_ft=(
+                    cls._explicit_grid_elevation_ft(source)
+                    if source is not None
+                    else None
+                ),
+            )
+            if has_sight:
                 visible = True
         return visible
 
@@ -3855,6 +3870,135 @@ class CombatEngineService:
                 blockers.update(cells)
         return blockers, cover_cells
 
+    @staticmethod
+    def _explicit_obstacle_height_interval(
+        metadata: object,
+    ) -> tuple[int, int] | None:
+        """Read a wall's measured vertical span without inventing its height."""
+
+        if not isinstance(metadata, dict):
+            return None
+
+        def integer_value(*keys: str) -> int | None:
+            for key in keys:
+                value = metadata.get(key)
+                if isinstance(value, int) and not isinstance(value, bool):
+                    return value
+            return None
+
+        base_ft = integer_value(
+            "base_elevation_ft",
+            "bottom_elevation_ft",
+            "floor_elevation_ft",
+        )
+        base_ft = 0 if base_ft is None else base_ft
+        top_ft = integer_value("top_elevation_ft")
+        if top_ft is not None:
+            return (base_ft, top_ft) if top_ft > base_ft else None
+        height_ft = integer_value("height_ft", "wall_height_ft")
+        if height_ft is None or height_ft <= 0:
+            return None
+        return base_ft, base_ft + height_ft
+
+    @classmethod
+    def _grid_obstacle_height_profiles(
+        cls,
+        session: Session,
+        grid: SceneGrid,
+    ) -> tuple[dict[tuple[int, int], tuple[tuple[int, int], ...]], set[tuple[int, int]]]:
+        """Return explicit wall spans and cells whose height remains unknown.
+
+        A cell is marked unresolved when any sight-blocking source covering it
+        lacks an explicit height. This lets callers use 3-D sight only when
+        the complete ray is authoritative, while preserving the existing
+        conservative 2-D behavior for legacy maps.
+        """
+
+        profiles: dict[tuple[int, int], list[tuple[int, int]]] = {}
+        unresolved: set[tuple[int, int]] = set()
+
+        def add_profile(cells: set[tuple[int, int]], metadata: object) -> None:
+            interval = cls._explicit_obstacle_height_interval(metadata)
+            for point in cells:
+                if interval is None:
+                    unresolved.add(point)
+                else:
+                    profiles.setdefault(point, []).append(interval)
+
+        raw_cells = (grid.layers_json or {}).get("cells", [])
+        if isinstance(raw_cells, list):
+            for cell in raw_cells:
+                if not isinstance(cell, dict):
+                    continue
+                if cell.get("kind") != "wall" and cell.get("blocks_sight") is not True:
+                    continue
+                row, col = cell.get("row"), cell.get("col")
+                if isinstance(row, int) and isinstance(col, int):
+                    add_profile({(row, col)}, cell)
+
+        objects = session.scalars(
+            select(SceneObject).where(SceneObject.scene_id == grid.scene_id)
+        ).all()
+        for scene_object in objects:
+            if not (
+                scene_object.object_type == "wall"
+                or (
+                    scene_object.object_type == "door"
+                    and scene_object.state in {"active", "closed"}
+                )
+            ):
+                continue
+            cells = {
+                (row, col)
+                for row in range(
+                    scene_object.row,
+                    scene_object.row + scene_object.height_cells,
+                )
+                for col in range(
+                    scene_object.col,
+                    scene_object.col + scene_object.width_cells,
+                )
+            }
+            add_profile(cells, scene_object.metadata_json)
+
+        return {
+            point: tuple(intervals) for point, intervals in profiles.items()
+        }, unresolved
+
+    @classmethod
+    def _grid_line_of_sight(
+        cls,
+        session: Session,
+        grid: SceneGrid,
+        start: tuple[int, int],
+        end: tuple[int, int],
+        blockers: set[tuple[int, int]],
+        *,
+        start_height_ft: int | None,
+        end_height_ft: int | None,
+    ) -> tuple[bool, str]:
+        """Resolve sight and identify whether the result used 2-D or 3-D data."""
+
+        two_d_result = line_of_sight(start, end, blockers)
+        if start_height_ft is None or end_height_ft is None:
+            return two_d_result, "2d"
+
+        ray_blockers = set(line_cells(start, end)) & blockers
+        profiles, unresolved = cls._grid_obstacle_height_profiles(session, grid)
+        if any(point in unresolved or point not in profiles for point in ray_blockers):
+            return two_d_result, "2d"
+        return (
+            line_of_sight_3d(
+                start,
+                end,
+                blockers,
+                profiles,
+                start_height_ft=start_height_ft,
+                end_height_ft=end_height_ft,
+            ),
+            "3d",
+        )
+
     @classmethod
     def _attack_geometry(
         cls,
@@ -3895,8 +4039,25 @@ class CombatEngineService:
                 f"target is {distance_ft} ft away, beyond the explicit "
                 f"{command.attack_range_ft} ft attack range"
             )
-        has_sight = line_of_sight(actor_point, target_point, blockers)
-        cover = cover_between(actor_point, target_point, cover_cells, blockers)
+        has_sight, line_of_sight_mode = cls._grid_line_of_sight(
+            session,
+            grid,
+            actor_point,
+            target_point,
+            blockers,
+            start_height_ft=actor_elevation_ft,
+            end_height_ft=target_elevation_ft,
+        )
+        # A 3-D ray that passes above an explicitly measured wall is not
+        # total cover merely because the legacy 2-D cell ray intersects it.
+        # Keep ordinary cover cells in the calculation, while retaining the
+        # conservative 2-D blocker result whenever height data is incomplete.
+        cover = cover_between(
+            actor_point,
+            target_point,
+            cover_cells,
+            blockers if line_of_sight_mode == "2d" else set(),
+        )
         if (not has_sight or cover == "total") and not command.dm_override:
             raise ValueError(
                 "target has total cover or no line of sight; an explicit DM override is required"
@@ -3919,6 +4080,7 @@ class CombatEngineService:
             "vertical_distance_ft": vertical_distance_ft,
             "distance_mode": "3d" if vertical_distance_ft is not None else "2d",
             "line_of_sight": has_sight,
+            "line_of_sight_mode": line_of_sight_mode,
             "cover": cover,
             "cover_bonus": cover_bonus,
             "base_armor_class": target.armor_class,
@@ -4045,7 +4207,15 @@ class CombatEngineService:
                 height_ft=command.height_ft,
             ):
                 continue
-            has_sight = line_of_sight(origin, point, blockers)
+            has_sight, line_of_sight_mode = cls._grid_line_of_sight(
+                session,
+                grid,
+                origin,
+                point,
+                blockers,
+                start_height_ft=cls._explicit_grid_elevation_ft(actor),
+                end_height_ft=cls._explicit_grid_elevation_ft(candidate),
+            )
             if command.requires_line_of_sight and not has_sight:
                 continue
             affected.append(candidate)
@@ -4059,6 +4229,7 @@ class CombatEngineService:
                     cell_size_ft=grid.cell_size_ft,
                 ),
                 "line_of_sight": has_sight,
+                "line_of_sight_mode": line_of_sight_mode,
             }
         requested_ids = {target.target_combatant_id for target in command.targets}
         affected_ids = {target.id for target in affected}
@@ -4130,7 +4301,15 @@ class CombatEngineService:
             height_ft=command.area_height_ft,
         ):
             raise ValueError("player roll target is outside the authoritative 3-D area")
-        has_sight = line_of_sight(origin, point, blockers)
+        has_sight, line_of_sight_mode = cls._grid_line_of_sight(
+            session,
+            grid,
+            origin,
+            point,
+            blockers,
+            start_height_ft=cls._explicit_grid_elevation_ft(actor),
+            end_height_ft=cls._explicit_grid_elevation_ft(target),
+        )
         if not has_sight:
             raise ValueError("player roll target is behind total cover or outside line of sight")
         return {
@@ -4145,6 +4324,7 @@ class CombatEngineService:
                 cell_size_ft=grid.cell_size_ft,
             ),
             "line_of_sight": has_sight,
+            "line_of_sight_mode": line_of_sight_mode,
         }
 
     @staticmethod
@@ -4223,6 +4403,7 @@ class CombatEngineService:
                 contexts.append(f"vertical_distance_ft:{geometry['vertical_distance_ft']}")
                 contexts.append("distance_mode:3d")
             contexts.append(f"line_of_sight:{str(geometry['line_of_sight']).lower()}")
+            contexts.append(f"line_of_sight_mode:{geometry['line_of_sight_mode']}")
             contexts.append(f"cover:{geometry['cover']}")
             contexts.append(f"effective_ac:{geometry['effective_armor_class']}")
             if geometry["cover"] == "half" and command.attack_roll_total is None:

@@ -2087,6 +2087,125 @@ def test_attack_range_uses_authoritative_vertical_distance_when_available(
     assert accepted.json()["target"]["hp"] == 19
 
 
+def test_attack_line_of_sight_uses_explicit_wall_height_or_conservative_2d_fallback(
+    combat_client: TestClient,
+) -> None:
+    campaign = _campaign(combat_client, "3-D line of sight")
+    base = f"/api/v1/campaigns/{campaign['id']}"
+    scene = combat_client.post(f"{base}/scenes", json={"name": "Vertical sight room"}).json()
+    grid = combat_client.post(
+        f"{base}/scenes/{scene['id']}/grid",
+        json={"width": 8, "height": 8, "cell_size_ft": 5, "mode": "combat"},
+    )
+    assert grid.status_code == 201, grid.text
+    combat = combat_client.post(
+        f"{base}/combats",
+        json={"name": "3-D line of sight combat", "scene_id": scene["id"]},
+    ).json()
+
+    def add_pair(
+        *,
+        row: int,
+        elevation_ft: int,
+        wall_metadata: dict[str, int],
+        label: str,
+    ) -> tuple[dict[str, object], dict[str, object]]:
+        wall = combat_client.post(
+            f"{base}/scenes/{scene['id']}/objects",
+            json={
+                "object_type": "wall",
+                "label": f"{label} wall",
+                "row": row,
+                "col": 2,
+                "metadata_json": wall_metadata,
+            },
+        )
+        assert wall.status_code == 201, wall.text
+        attacker = combat_client.post(
+            f"{base}/combats/{combat['id']}/combatants",
+            json={
+                "display_name": f"{label} attacker",
+                "entity_type": "monster",
+                "initiative": 20,
+                "hp": 20,
+                "max_hp": 20,
+                "snapshot_json": {
+                    "grid_position": {"row": row, "col": 1, "elevation_ft": elevation_ft}
+                },
+            },
+        ).json()
+        target = combat_client.post(
+            f"{base}/combats/{combat['id']}/combatants",
+            json={
+                "display_name": f"{label} target",
+                "entity_type": "character",
+                "initiative": 10,
+                "armor_class": 10,
+                "hp": 20,
+                "max_hp": 20,
+                "snapshot_json": {
+                    "grid_position": {"row": row, "col": 4, "elevation_ft": elevation_ft}
+                },
+            },
+        ).json()
+        return attacker, target
+
+    high_attacker, high_target = add_pair(
+        row=1,
+        elevation_ft=20,
+        wall_metadata={"height_ft": 10},
+        label="高于矮墙",
+    )
+    low_attacker, low_target = add_pair(
+        row=3,
+        elevation_ft=0,
+        wall_metadata={"height_ft": 10},
+        label="低于高墙",
+    )
+    missing_attacker, missing_target = add_pair(
+        row=5,
+        elevation_ft=20,
+        wall_metadata={},
+        label="缺少墙高",
+    )
+    path = f"{base}/combats/{combat['id']}/actions/confirm"
+
+    def attack(attacker: dict[str, object], target: dict[str, object], request_id: str):
+        return combat_client.post(
+            path,
+            headers={"X-Request-ID": request_id},
+            json={
+                "action_type": "damage",
+                "is_attack": True,
+                "action_cost": "none",
+                "action_name": "高低差射击",
+                "actor_combatant_id": attacker["id"],
+                "actor_version": attacker["version"],
+                "target_combatant_id": target["id"],
+                "target_version": target["version"],
+                "amount": 1,
+                "damage_type": "piercing",
+                "attack_roll_total": 20,
+                "attack_range_ft": 30,
+                "attack_roll_mode": "normal",
+            },
+        )
+
+    above_wall = attack(high_attacker, high_target, "3d-sight-above-wall")
+    assert above_wall.status_code == 200, above_wall.text
+    above_contexts = above_wall.json()["action"]["result_json"]["attack_contexts"]
+    assert "line_of_sight:true" in above_contexts
+    assert "line_of_sight_mode:3d" in above_contexts
+
+    below_wall = attack(low_attacker, low_target, "3d-sight-below-wall")
+    assert below_wall.status_code == 400, below_wall.text
+    assert "no line of sight" in below_wall.json()["message"]
+
+    missing_height = attack(missing_attacker, missing_target, "3d-sight-missing-wall-height")
+    assert missing_height.status_code == 400, missing_height.text
+    assert "no line of sight" in missing_height.json()["message"]
+
+
 def test_condition_attack_contexts_require_explicit_advantage_ruling(
     combat_client: TestClient,
 ) -> None:
