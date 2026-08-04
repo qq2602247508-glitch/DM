@@ -2380,6 +2380,157 @@ def test_grapple_requires_dm_outcome_applies_real_effect_and_can_end(
     assert "擒抱" not in restored["conditions"]
 
 
+def test_grapple_ends_when_grappler_becomes_unconscious(
+    combat_client: TestClient,
+) -> None:
+    campaign = _campaign(combat_client, "Grapple source lifecycle")
+    combat, actor = _combatant(combat_client, campaign["id"])
+    actor = combat_client.patch(
+        _fighter_path(campaign["id"], combat["id"], actor["id"]),
+        headers={"If-Match": f'"{actor["version"]}"'},
+        json={"initiative": 20},
+    ).json()
+    target = combat_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "被擒抱目标",
+            "initiative": 0,
+            "hp": 10,
+            "max_hp": 10,
+            "speed_ft": 30,
+        },
+    ).json()
+    root = f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}"
+    grappled = combat_client.post(
+        f"{root}/maneuvers/confirm",
+        headers={"X-Request-ID": "grapple-source-lifecycle"},
+        json={
+            "action_type": "grapple",
+            "actor_combatant_id": actor["id"],
+            "actor_version": actor["version"],
+            "target_combatant_id": target["id"],
+            "target_version": target["version"],
+            "outcome": "success",
+            "adjudication_note": "DM确认擒抱成功",
+        },
+    )
+    assert grappled.status_code == 200, grappled.text
+    grapple_body = grappled.json()
+
+    source_damage = combat_client.post(
+        f"{root}/actions/confirm",
+        headers={"X-Request-ID": "grapple-source-zero-hp"},
+        json={
+            "action_type": "damage",
+            "actor_combatant_id": grapple_body["actor"]["id"],
+            "actor_version": grapple_body["actor"]["version"],
+            "action_cost": "none",
+            "target_combatant_id": grapple_body["actor"]["id"],
+            "target_version": grapple_body["actor"]["version"],
+            "amount": 30,
+            "damage_type": "force",
+        },
+    )
+    assert source_damage.status_code == 200, source_damage.text
+    body = source_damage.json()
+    assert body["target"]["hp"] == 0
+    assert "昏迷" in body["target"]["conditions"]
+    assert grapple_body["effect"]["id"] in body["action"]["result_json"][
+        "ended_predicated_effect_ids"
+    ]
+    released = combat_client.get(
+        _fighter_path(campaign["id"], combat["id"], target["id"])
+    ).json()
+    assert "擒抱" not in released["conditions"]
+    assert released["speed_ft"] == 30
+
+
+def test_grapple_ends_when_forced_movement_leaves_reach(
+    combat_client: TestClient,
+) -> None:
+    campaign = _campaign(combat_client, "Grapple movement lifecycle")
+    scene = combat_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/scenes",
+        json={"name": "擒抱测试场景"},
+    ).json()
+    grid = combat_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/scenes/{scene['id']}/grid",
+        json={"width": 8, "height": 8, "cell_size_ft": 5, "mode": "combat"},
+    )
+    assert grid.status_code == 201, grid.text
+    combat = combat_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/combats",
+        json={"name": "擒抱位移战斗", "scene_id": scene["id"]},
+    ).json()
+    actor = combat_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "擒抱者",
+            "initiative": 20,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {"grid_position": {"row": 2, "col": 2}},
+        },
+    ).json()
+    target = combat_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "被推离者",
+            "initiative": 0,
+            "hp": 20,
+            "max_hp": 20,
+            "speed_ft": 30,
+            "snapshot_json": {"grid_position": {"row": 2, "col": 3}},
+        },
+    ).json()
+    root = f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}"
+    grappled = combat_client.post(
+        f"{root}/maneuvers/confirm",
+        headers={"X-Request-ID": "grapple-movement-lifecycle"},
+        json={
+            "action_type": "grapple",
+            "actor_combatant_id": actor["id"],
+            "actor_version": actor["version"],
+            "target_combatant_id": target["id"],
+            "target_version": target["version"],
+            "outcome": "success",
+            "adjudication_note": "DM确认擒抱成功",
+        },
+    )
+    assert grappled.status_code == 200, grappled.text
+    grapple_body = grappled.json()
+    target = grapple_body["target"]
+
+    pushed = combat_client.post(
+        f"{root}/actions/confirm",
+        headers={"X-Request-ID": "grapple-target-forced-away"},
+        json={
+            "action_type": "damage",
+            "actor_combatant_id": grapple_body["actor"]["id"],
+            "actor_version": grapple_body["actor"]["version"],
+            "action_cost": "none",
+            "target_combatant_id": target["id"],
+            "target_version": target["version"],
+            "amount": 0,
+            "damage_type": "force",
+            "forced_movement_distance_ft": 10,
+            "forced_movement_direction": "away",
+        },
+    )
+    assert pushed.status_code == 200, pushed.text
+    body = pushed.json()
+    assert body["action"]["result_json"]["structured_effects"]["movement"]["moved_ft"] == 10
+    assert grapple_body["effect"]["id"] in body["action"]["result_json"][
+        "ended_predicated_effect_ids"
+    ]
+    released = combat_client.get(
+        _fighter_path(campaign["id"], combat["id"], target["id"])
+    ).json()
+    assert released["snapshot_json"]["grid_position"] == {"row": 2, "col": 5}
+    assert "擒抱" not in released["conditions"]
+    assert released["speed_ft"] == 30
+
+
 def test_shove_push_uses_explicit_distance_and_updates_grid_position(
     combat_client: TestClient,
 ) -> None:

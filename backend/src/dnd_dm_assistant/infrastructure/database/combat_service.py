@@ -2976,6 +2976,7 @@ class CombatEngineService:
             else None
         )
         target = session.get(Combatant, effect.target_combatant_id)
+        combat = session.get(Combat, effect.combat_id)
         for trigger in triggers:
             if trigger in {
                 "target_takes_damage",
@@ -2995,6 +2996,41 @@ class CombatEngineService:
             if trigger in {"source_moves", "source_moved", "on_source_move"}:
                 if "movement" in kinds and source is not None and source.id in event_ids:
                     return "状态来源移动，满足显式结束条件"
+            if trigger in {"target_out_of_reach", "grapple_target_out_of_reach"}:
+                # Grapple is a relationship, not merely a condition string.
+                # If forced movement separates the target from its grappler,
+                # end it only when both positions and the authoritative grid
+                # are available; missing geometry remains DM-owned.
+                if (
+                    "movement" not in kinds
+                    or target is None
+                    or target.id not in event_ids
+                    or source is None
+                    or combat is None
+                    or combat.scene_id is None
+                ):
+                    continue
+                source_point = cls._grid_point(source)
+                target_point = cls._grid_point(target)
+                grid = session.scalar(
+                    select(SceneGrid).where(SceneGrid.scene_id == combat.scene_id)
+                )
+                if source_point is None or target_point is None or grid is None:
+                    continue
+                distance_ft = grid_distance_ft(
+                    source_point,
+                    target_point,
+                    cell_size_ft=grid.cell_size_ft,
+                )
+                details = dict(effect.details_json or {})
+                block = details.get("rule_block")
+                reach_ft = (
+                    cls._state_int(block.get("reach_ft"), 5)
+                    if isinstance(block, dict)
+                    else 5
+                )
+                if distance_ft > max(5, reach_ft):
+                    return f"擒抱目标被强制移动到 {distance_ft} 尺外"
             if event_only:
                 continue
             if trigger in {"source_inactive", "source_dies", "source_dead"}:
@@ -3009,6 +3045,14 @@ class CombatEngineService:
             elif trigger == "target_unconscious":
                 if target is None or cls._has_condition(target, "unconscious"):
                     return "状态目标陷入昏迷"
+            elif trigger in {"source_incapacitated", "grappler_incapacitated"}:
+                if (
+                    source is None
+                    or not source.is_active
+                    or source.hp <= 0
+                    or cls._has_condition(source, "incapacitated")
+                ):
+                    return "擒抱来源失能、昏迷或离开战斗"
             elif trigger == "concentration_broken":
                 if (
                     effect.source_combatant_id is None
@@ -5269,6 +5313,27 @@ class CombatEngineService:
                 target.updated_at = datetime.now(UTC)
             if structured_effects:
                 resolution["structured_effects"] = structured_effects
+                movement = structured_effects.get("movement")
+                if (
+                    isinstance(movement, dict)
+                    and self._state_int(movement.get("moved_ft")) > 0
+                ):
+                    ended_effects, ended_summons = self._end_predicated_effects(
+                        session,
+                        combat,
+                        now=datetime.now(UTC),
+                        event_combatant_ids={effect_target.id},
+                        event_kinds={"movement"},
+                        event_only=True,
+                    )
+                    if ended_effects:
+                        resolution["ended_predicated_effect_ids"] = [
+                            effect.id for effect in ended_effects
+                        ]
+                    if ended_summons:
+                        resolution["ended_predicated_summon_ids"] = [
+                            summon.id for summon in ended_summons
+                        ]
                 follow_up = resolution.get("follow_up_damage")
                 if isinstance(follow_up, dict) and effect_target.id == target.id:
                     follow_up["target_version"] = target.version
@@ -5775,13 +5840,27 @@ class CombatEngineService:
                 command.action_type == "damage"
                 and int(resolved["result"].get("adjusted_damage", 0)) > 0
             ) else set()
+            moved_combatant_ids = {
+                target.id
+            } if (
+                isinstance(structured_effects.get("movement"), dict)
+                and self._state_int(
+                    structured_effects["movement"].get("moved_ft")
+                ) > 0
+            ) else set()
+            lifecycle_event_ids = damaged_combatant_ids | moved_combatant_ids
+            lifecycle_event_kinds: set[str] = set()
+            if damaged_combatant_ids:
+                lifecycle_event_kinds.add("damage")
+            if moved_combatant_ids:
+                lifecycle_event_kinds.add("movement")
             ended_predicated_effects, ended_predicated_summons = (
                 self._end_predicated_effects(
                     session,
                     combat,
                     now=now,
-                    event_combatant_ids=damaged_combatant_ids,
-                    event_kinds={"damage"} if damaged_combatant_ids else set(),
+                    event_combatant_ids=lifecycle_event_ids,
+                    event_kinds=lifecycle_event_kinds,
                     # A zero-HP transition also changes the source lifecycle
                     # (unconscious/dead/inactive).  Evaluate those explicit
                     # predicates in the same transaction so concentration
@@ -7243,11 +7322,14 @@ class CombatEngineService:
                             "speed_ft": target.speed_ft,
                             "movement_remaining_ft": target.movement_remaining_ft,
                         }
-                        conditions = list(target.conditions or [])
-                        conditions.append("擒抱")
-                        target.conditions = conditions
-                        target.speed_ft = 0
-                        target.movement_remaining_ft = 0
+                        self._apply_condition_restrictions(
+                            target,
+                            "grappled",
+                            applied_state,
+                        )
+                        # Preserve the existing public Chinese label while
+                        # _condition_set canonicalizes it to ``grappled``.
+                        self._add_condition(target, "擒抱")
                         effect = CombatEffect(
                             campaign_id=campaign_id,
                             combat_id=combat_id,
@@ -7260,6 +7342,11 @@ class CombatEngineService:
                                 "rule_block": {
                                     "kind": "condition",
                                     "condition": "擒抱",
+                                    "end_triggers": [
+                                        "source_incapacitated",
+                                        "target_out_of_reach",
+                                    ],
+                                    "reach_ft": 5,
                                 },
                                 "applied_state": applied_state,
                                 "dm_adjudication": command.adjudication_note,
@@ -7297,6 +7384,30 @@ class CombatEngineService:
                     target.updated_at = datetime.now(UTC)
 
             now = datetime.now(UTC)
+            if (
+                command.action_type == "shove"
+                and isinstance(result.get("moved_ft"), int)
+                and int(result["moved_ft"]) > 0
+                and target is not None
+            ):
+                ended_predicated_effects, ended_predicated_summons = (
+                    self._end_predicated_effects(
+                        session,
+                        combat,
+                        now=now,
+                        event_combatant_ids={target.id},
+                        event_kinds={"movement"},
+                        event_only=True,
+                    )
+                )
+                if ended_predicated_effects:
+                    result["ended_predicated_effect_ids"] = [
+                        effect.id for effect in ended_predicated_effects
+                    ]
+                if ended_predicated_summons:
+                    result["ended_predicated_summon_ids"] = [
+                        summon.id for summon in ended_predicated_summons
+                    ]
             transaction = OperationTransaction(
                 campaign_id=campaign_id,
                 operation_type=f"combat_maneuver_{command.action_type}",
@@ -7519,6 +7630,25 @@ class CombatEngineService:
             )
             target.version += 1
             target.updated_at = datetime.now(UTC)
+            now = datetime.now(UTC)
+            ended_predicated_effects, ended_predicated_summons = (
+                self._end_predicated_effects(
+                    session,
+                    combat,
+                    now=now,
+                    event_combatant_ids={target.id},
+                    event_kinds={"movement"} if result["moved_ft"] > 0 else set(),
+                    event_only=True,
+                )
+            )
+            if ended_predicated_effects:
+                result["ended_predicated_effect_ids"] = [
+                    effect.id for effect in ended_predicated_effects
+                ]
+            if ended_predicated_summons:
+                result["ended_predicated_summon_ids"] = [
+                    summon.id for summon in ended_predicated_summons
+                ]
             transaction = OperationTransaction(
                 campaign_id=campaign_id,
                 operation_type="combat_forced_movement",
@@ -7528,7 +7658,7 @@ class CombatEngineService:
                 after_snapshot={"target": serialize(target), "result": result},
                 reason="按规则积木执行强制位移",
                 source="combat",
-                confirmed_at=datetime.now(UTC),
+                confirmed_at=now,
             )
             session.add(transaction)
             session.flush()

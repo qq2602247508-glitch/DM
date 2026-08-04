@@ -620,3 +620,13 @@ backend/.venv/bin/python -m pytest -q backend/tests
 - 最终门禁：后端全量 `442 passed`（1 个既有 Starlette/httpx 弃用警告）；前端 39 个测试文件 / `195 passed`，TypeScript、ESLint、生产构建、Ruff、`git diff --check` 全部通过。
 
 本项完成的是敌方召唤物的 AI opt-in 边界、先攻后的可见性和双端当前行动投影；召唤物所有复杂模板、复杂召唤生命周期、敌方召唤物高级动作（传奇/巢穴/反应）完整触发和复杂状态组合仍不能宣称全自动。
+
+## 2026-08-04 擒抱关系生命周期与位移解除
+
+- 擒抱现在不是只写入一个中文状态字符串：效果保存 `source_incapacitated` 与 `target_out_of_reach` 结束谓词，并统一使用 `grappled` 的状态限制器；公开状态仍显示“擒抱”。被擒抱目标的速度和剩余移动归零，效果结束时恢复施加前的基线。
+- 擒抱来源失能、昏迷、HP 归零或离开战斗时，效果在同一事务中自动结束；被擒抱目标被普通强制位移、玩家豁免后的位移、推撞或直接强制位移推到来源近战范围（默认 5 尺）外时，也自动结束。没有完整网格/位置数据时不猜测距离，交给 DM 裁定。
+- 新增回归 `test_grapple_ends_when_grappler_becomes_unconscious`、`test_grapple_ends_when_forced_movement_leaves_reach`；定向擒抱/位移/状态测试 19 passed。
+- 全量门禁：后端 `454 passed`（1 个既有 Starlette/httpx 弃用警告）；前端 39 个测试文件 / `196 passed`；TypeScript、ESLint、生产构建、Ruff、`git diff --check` 全通过。
+- 内置浏览器真实验收：玩家端成功施加擒抱后，DM/玩家公开日志一致；来源改为昏迷后，目标两端均恢复 30 尺且擒抱解除；第二次擒抱被强制推离 10 尺后，目标地图位置同步为（4,1），两端状态均不再有擒抱。DM/玩家控制台 error/warn 均为空。
+- 截图：[dnd-grapple-lifecycle-dm-20260804.png](/private/tmp/dnd-grapple-lifecycle-dm-20260804.png)、[dnd-grapple-lifecycle-player-20260804.png](/private/tmp/dnd-grapple-lifecycle-player-20260804.png)。
+- 本项没有改变火球术、雷鸣波、复合伤害、召唤物生命周期或基础怪物 AI。复杂状态组合、复杂三维遮挡、怪物高级动作完整自动触发矩阵和全职业/子职业 1–20 级运行时仍未全部完成。
