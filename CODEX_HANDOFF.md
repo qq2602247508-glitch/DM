@@ -2,6 +2,26 @@
 
 更新时间：2026-08-04（Asia/Shanghai）
 
+## 2026-08-04 结构化反应窗口真实执行闭环（最新）
+
+- 上一项“进入近战威胁范围”不再只是提示窗口。`CombatActionCommand` 新增
+  `reaction_window_id`；确认时服务端校验窗口仍为 eligible、反应者、结构化事件、
+  动作名和触发目标完全一致，确认后执行一次普通攻击结算，并将窗口标为 `resolved`
+  （记录 `resolved_action_id`），从而阻止同一事件重复消耗反应。
+- DM 高级动作面板读取公开战斗日志中的 eligible window：自动带入结构化事件和触发文本、
+  锁定事件触发单位为目标、提交窗口 ID；DM 仍必须填写实际攻击总值。真实伤害、抗性/易伤/免疫、
+  HP 和反应资源仍统一走已有 CombatEngine，不另造结算路径。
+- 新增回归覆盖：进入范围窗口确认后 HP 20→13、反应变为不可用、窗口变为 resolved，
+  重复使用同一窗口被拒绝；前端覆盖窗口自动目标、事件和 `reaction_window_id` 载荷。
+- 全量门禁：后端 `453 passed`（仅既有 Starlette/httpx 弃用警告）；前端 39 文件/196 项；
+  TypeScript、ESLint、生产构建、Ruff、`git diff --check` 全通过。
+- 内置浏览器实战：模拟战斗中熔火术士对进入范围的模拟玩家执行“借机熔击”，DM/玩家两端
+  日志一致，玩家 HP `28→18`，反应资源已用，控制台 error/warn 均为空。截图：
+  `/private/tmp/dnd-reaction-execution-dm-20260804.png`、
+  `/private/tmp/dnd-reaction-execution-player-20260804.png`。
+- 本项没有改变火球术、雷鸣波、复合伤害、召唤物生命周期或基础怪物 AI。仍未完成：
+  反应事件的全矩阵自动发现、复杂状态组合、复杂三维遮挡和全职业/子职业 1–20 级运行时。
+
 ## 2026-08-04 进入近战威胁范围反应窗口与全量门禁（最新）
 
 - 新增共享 `_persist_eligible_enters_reach_reaction_windows`，统一接入玩家移动、怪物 AI 移动和结构化强制位移；只有快照明确声明 `action_type=reaction`、`reaction_event=enters_reach` 的近战反应，且移动前在范围外、移动后进入范围时才开放窗口。
