@@ -1,3 +1,13 @@
+# 2026-08-05 RepeatBlock 显式次数执行
+
+- 提交 `4166e2a`：持续伤害/治疗的 `RepeatBlock.count` 现在由回合执行器真实记录并消耗；达到次数后
+  效果结束，后续回合不再 tick。无效的显式次数返回 DM review，不猜测；`count_expression` 仍未自动解析。
+- 新增 `test_repeating_damage_count_stops_after_declared_ticks`：`count=1` 首次 tick 后效果结束，第二次
+  推进没有第二次伤害，并保留“重复次数已用尽”审计。
+- 验证：定向重复效果测试 2/2、后端全量测试、Ruff、`git diff --check` 通过；仅有既存
+  Starlette/httpx 弃用警告。本轮未改前端，因此不重复浏览器验收。
+- 代码与文档拆分提交：代码 `4166e2a`；本交接文档为后续独立文档提交。
+
 # 2026-08-05 持续状态 tick 尊重后置条件免疫
 
 - 提交 `85ff996`：持续条件在回合 tick 重新施加前，现在复用初次施加的条件免疫门禁；单位在效果
