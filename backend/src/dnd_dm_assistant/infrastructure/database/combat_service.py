@@ -1069,6 +1069,178 @@ class CombatEngineService:
             )
         return "巢穴动作窗口（本轮先攻20）"
 
+    @staticmethod
+    def _structured_advanced_action_names(
+        combatant: Combatant,
+        action_cost: str,
+    ) -> list[str]:
+        """Return names from explicitly structured advanced monster actions.
+
+        A prose mention of a legendary or lair action is not enough to open a
+        durable window.  The compendium/import pipeline records structured
+        actions in the combatant snapshot, so use that same source that the
+        action console and confirmation path already consume.
+        """
+
+        raw_actions = dict(combatant.snapshot_json or {}).get("actions")
+        if not isinstance(raw_actions, list):
+            return []
+        label = "传奇动作" if action_cost == "legendary_action" else "巢穴动作"
+        names: list[str] = []
+        for index, raw in enumerate(raw_actions):
+            if not isinstance(raw, dict):
+                continue
+            if str(raw.get("action_type") or "").strip() != action_cost:
+                continue
+            name = str(raw.get("name") or "").strip()
+            names.append(name or f"未命名{label} {index + 1}")
+        return names
+
+    @classmethod
+    def _persist_eligible_advanced_action_windows(
+        cls,
+        session: Session,
+        *,
+        combat: Combat,
+        transaction: OperationTransaction,
+        previous_active: Combatant | None,
+        active: Combatant | None,
+        ordered: list[Combatant],
+    ) -> None:
+        """Persist the temporal boundary for DM-confirmed advanced actions.
+
+        These are audit events, not action executions: each row records when a
+        structured legendary/lair action became eligible, while the existing
+        CombatAction confirmation flow still owns target selection, rolls and
+        resource consumption.
+        """
+
+        if active is None:
+            return
+        active_index = next(
+            (index for index, row in enumerate(ordered) if row.id == active.id),
+            None,
+        )
+        previous_initiative = (
+            ordered[active_index - 1].initiative
+            if active_index is not None and active_index > 0
+            else None
+        )
+        lair_window = active.initiative <= 20 and (
+            previous_initiative is None or previous_initiative > 20
+        )
+        window_key = f"{combat.round_number}:{combat.current_turn_index}"
+
+        for actor in ordered:
+            if actor.entity_type != "monster" or actor.hp <= 0:
+                continue
+            state = dict(actor.snapshot_json or {})
+            for action_cost in ("legendary_action", "lair_action"):
+                action_names = cls._structured_advanced_action_names(actor, action_cost)
+                if not action_names:
+                    continue
+                if action_cost == "legendary_action":
+                    if (
+                        previous_active is None
+                        or actor.id == previous_active.id
+                        or actor.id == active.id
+                    ):
+                        continue
+                    trigger = "other_turn_end"
+                else:
+                    if (
+                        not lair_window
+                        or cls._state_int(state.get("lair_action_round"))
+                        == combat.round_number
+                    ):
+                        continue
+                    trigger = "initiative_20"
+
+                idempotency_key = (
+                    f"aw:{combat.id}:{actor.id}:{combat.round_number}:"
+                    f"{combat.current_turn_index}:{action_cost}"
+                )
+                existing = session.scalar(
+                    select(CombatAction).where(
+                        CombatAction.combat_id == combat.id,
+                        CombatAction.idempotency_key == idempotency_key,
+                    )
+                )
+                if existing is not None:
+                    continue
+
+                metadata: dict[str, object] = {
+                    "action_cost": action_cost,
+                    "status": "eligible",
+                    "window_key": window_key,
+                    "trigger": trigger,
+                    "eligible_action_names": action_names,
+                    "active_combatant_id": active.id,
+                }
+                if action_cost == "legendary_action":
+                    metadata["trigger_combatant_id"] = previous_active.id
+                    metadata["trigger_combatant_name"] = previous_active.display_name
+                    pool_max = cls._state_int(state.get("legendary_actions_max"))
+                    raw_actions = state.get("actions")
+                    inferred_pools = {
+                        raw["legendary_pool_max"]
+                        for raw in raw_actions
+                        if isinstance(raw, dict)
+                        and isinstance(raw.get("legendary_pool_max"), int)
+                        and not isinstance(raw.get("legendary_pool_max"), bool)
+                        and raw["legendary_pool_max"] > 0
+                    } if isinstance(raw_actions, list) else set()
+                    if pool_max <= 0 and len(inferred_pools) == 1:
+                        pool_max = inferred_pools.pop()
+                    remaining = cls._state_int(
+                        state.get("legendary_actions_remaining"),
+                        pool_max,
+                    )
+                    if remaining <= 0:
+                        continue
+                    if pool_max > 0:
+                        metadata["legendary_pool_max"] = pool_max
+                    metadata["legendary_actions_remaining"] = remaining
+                    summary = (
+                        f"{actor.display_name}：传奇动作窗口已开放"
+                        f"（{previous_active.display_name} 回合结束后；等待 DM 确认）"
+                    )
+                else:
+                    metadata["initiative"] = active.initiative
+                    metadata["eligible_round"] = combat.round_number
+                    summary = (
+                        f"{actor.display_name}：巢穴动作窗口已开放"
+                        f"（第 {combat.round_number} 轮先攻20；等待 DM 确认）"
+                    )
+
+                session.add(
+                    CombatAction(
+                        campaign_id=combat.campaign_id,
+                        combat_id=combat.id,
+                        actor_combatant_id=actor.id,
+                        transaction_id=transaction.id,
+                        action_type="eligible_action_window",
+                        target_combatant_ids=[],
+                        request_json={
+                            "source_action_type": "advance_turn",
+                            "previous_active_combatant_id": (
+                                previous_active.id if previous_active is not None else None
+                            ),
+                            "active_combatant_id": active.id,
+                        },
+                        result_json={"action_window": metadata},
+                        explanation=(
+                            "仅记录本次可触发时机；不会自动掷攻击或伤害骰，"
+                            "也不会自动执行动作。"
+                        ),
+                        round_number=combat.round_number,
+                        turn_index=combat.current_turn_index,
+                        summary=summary,
+                        idempotency_key=idempotency_key,
+                        status="confirmed",
+                    )
+                )
+
     @classmethod
     def _validate_action_economy(
         cls,
@@ -7315,6 +7487,14 @@ class CombatEngineService:
             )
             session.add(transaction)
             session.flush()
+            self._persist_eligible_advanced_action_windows(
+                session,
+                combat=combat,
+                transaction=transaction,
+                previous_active=previous_active,
+                active=turn_active,
+                ordered=active_order,
+            )
             persisted_effect_prompts: list[dict[str, object]] = []
             for prompt in effect_prompts:
                 if (

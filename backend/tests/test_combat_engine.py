@@ -925,6 +925,135 @@ def test_monster_sequence_and_legendary_action_spend_exactly_once(
     assert lair.json()["actor"]["snapshot_json"]["lair_action_round"] == 1
 
 
+def test_advanced_action_windows_are_persisted_only_at_legal_turn_boundaries(
+    combat_client: TestClient,
+) -> None:
+    campaign = _campaign(combat_client, "Advanced action timing")
+    base = f"/api/v1/campaigns/{campaign['id']}"
+    combat = combat_client.post(
+        f"{base}/combats", json={"name": "Advanced action timing combat"}
+    ).json()
+    high_guard = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "高先攻守卫",
+            "entity_type": "character",
+            "initiative": 25,
+            "hp": 20,
+            "max_hp": 20,
+        },
+    ).json()
+    dragon = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "窗口龙",
+            "entity_type": "monster",
+            "initiative": 15,
+            "hp": 40,
+            "max_hp": 40,
+            "snapshot_json": {
+                "actions": [
+                    {
+                        "name": "传奇尾击",
+                        "action_type": "legendary_action",
+                        "legendary_cost": 1,
+                        "legendary_pool_max": 3,
+                        "damage": "1d8",
+                    },
+                    {
+                        "name": "巢穴震击",
+                        "action_type": "lair_action",
+                        "damage": "1d6",
+                    },
+                ],
+                "legendary_actions_remaining": 3,
+            },
+        },
+    ).json()
+    low_guard = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "低先攻冒险者",
+            "entity_type": "character",
+            "initiative": 10,
+            "hp": 20,
+            "max_hp": 20,
+        },
+    ).json()
+    advance_path = f"{base}/combats/{combat['id']}/turns/advance"
+    first = combat_client.post(
+        advance_path,
+        headers={"X-Request-ID": "advanced-window-lair"},
+        json={"combat_version": combat["version"]},
+    )
+    assert first.status_code == 200, first.text
+    assert first.json()["active_combatant"]["id"] == dragon["id"]
+    first_actions = combat_client.get(f"{base}/combats/{combat['id']}/actions").json()["items"]
+    first_windows = [
+        item["result_json"]["action_window"]
+        for item in first_actions
+        if item["action_type"] == "eligible_action_window"
+    ]
+    assert len(first_windows) == 1
+    assert first_windows[0]["action_cost"] == "lair_action"
+    assert first_windows[0]["trigger"] == "initiative_20"
+    assert first_windows[0]["eligible_action_names"] == ["巢穴震击"]
+    assert not any(window["action_cost"] == "legendary_action" for window in first_windows)
+
+    current = combat_client.get(f"{base}/combats/{combat['id']}").json()
+    second = combat_client.post(
+        advance_path,
+        headers={"X-Request-ID": "advanced-window-to-low"},
+        json={"combat_version": current["version"]},
+    )
+    assert second.status_code == 200, second.text
+    assert second.json()["active_combatant"]["id"] == low_guard["id"]
+    second_actions = combat_client.get(f"{base}/combats/{combat['id']}/actions").json()["items"]
+    second_windows = [
+        item["result_json"]["action_window"]
+        for item in second_actions
+        if item["action_type"] == "eligible_action_window"
+    ]
+    assert len(second_windows) == 1
+    assert not any(window["action_cost"] == "legendary_action" for window in second_windows)
+
+    current = combat_client.get(f"{base}/combats/{combat['id']}").json()
+    third = combat_client.post(
+        advance_path,
+        headers={"X-Request-ID": "advanced-window-legendary"},
+        json={"combat_version": current["version"]},
+    )
+    assert third.status_code == 200, third.text
+    assert third.json()["active_combatant"]["id"] == high_guard["id"]
+    third_actions = combat_client.get(f"{base}/combats/{combat['id']}/actions").json()["items"]
+    third_windows = [
+        item["result_json"]["action_window"]
+        for item in third_actions
+        if item["action_type"] == "eligible_action_window"
+    ]
+    assert len(third_windows) == 2
+    legendary_windows = [
+        window for window in third_windows
+        if window["action_cost"] == "legendary_action"
+    ]
+    assert len(legendary_windows) == 1
+    assert legendary_windows[0]["trigger"] == "other_turn_end"
+    assert legendary_windows[0]["trigger_combatant_id"] == low_guard["id"]
+    assert legendary_windows[0]["active_combatant_id"] == high_guard["id"]
+
+    repeated = combat_client.post(
+        advance_path,
+        headers={"X-Request-ID": "advanced-window-legendary"},
+        json={"combat_version": current["version"]},
+    )
+    assert repeated.status_code == 200, repeated.text
+    repeated_actions = combat_client.get(f"{base}/combats/{combat['id']}/actions").json()["items"]
+    assert sum(
+        item["action_type"] == "eligible_action_window"
+        for item in repeated_actions
+    ) == 2
+
+
 def test_structured_reaction_event_must_match_monster_action(
     combat_client: TestClient,
 ) -> None:
