@@ -14,6 +14,27 @@ _DICE_EXPRESSION = re.compile(
     r"^(?:\d+|(?:\d*)d\d+)(?:[+-](?:\d+|@[a-z][a-z0-9_]*))*$",
     re.IGNORECASE,
 )
+_DICE_TERM = re.compile(r"(?P<count>\d*)d(?P<sides>\d+)", re.IGNORECASE)
+
+
+def critical_damage_expression(expression: str) -> str:
+    """Double only the dice terms for a critical hit.
+
+    Modifiers (including ability-score placeholders) are not doubled.  The
+    rule-block validator is intentionally reused here so callers cannot turn
+    arbitrary text into a dice expression while preparing the player-facing
+    critical-damage instruction.
+    """
+
+    normalized = expression.replace(" ", "")
+    if not _DICE_EXPRESSION.fullmatch(normalized):
+        raise ValueError("damage expression must be deterministic dice notation")
+
+    def double_term(match: re.Match[str]) -> str:
+        count = int(match.group("count") or "1")
+        return f"{count * 2}d{match.group('sides')}"
+
+    return _DICE_TERM.sub(double_term, normalized)
 
 
 class RuleSchema(BaseModel):

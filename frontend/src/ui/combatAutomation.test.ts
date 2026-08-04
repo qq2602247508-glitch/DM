@@ -6,6 +6,7 @@ import {
   combatantFaction,
   chooseEnemyActionIndex,
   chooseEnemyTarget,
+  criticalDamageExpression,
   expandMonsterAction,
   executableTargetIds,
   forcedMovementFromAction,
@@ -21,6 +22,12 @@ import {
   rollDiceExpression,
   rollStructuredDamage,
 } from "./combatAutomation";
+
+describe("criticalDamageExpression", () => {
+  it("doubles dice terms without doubling modifiers", () => {
+    expect(criticalDamageExpression("1d8+2d6+3")).toBe("2d8+4d6+3");
+  });
+});
 
 describe("actionDamageLabel", () => {
   it("does not request damage dice for a summon with no damage block", () => {

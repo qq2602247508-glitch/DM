@@ -62,6 +62,7 @@ from dnd_dm_assistant.domain.rule_blocks import (
     DamageBlock,
     TargetBlock,
     TargetCandidate,
+    critical_damage_expression,
     resolve_damage_component_totals,
     resolve_target_selection,
 )
@@ -6693,12 +6694,25 @@ class PlayerRoomService:
                     and isinstance(current_target_position.get("col"), int)
                     else None
                 )
-                attack_roll_mode, _, _, automatic_critical = (
+                condition_attack_roll_mode, _, _, condition_automatic_critical = (
                     self._condition_attack_context(
                         actor,
                         current_target,
                         distance_ft=current_distance,
                     )
+                )
+                # Saving throws and auto-hit effects do not make attack rolls;
+                # conditions on their targets must not force two d20 inputs or
+                # turn Magic Missile-style damage into a critical hit.
+                attack_roll_mode = (
+                    condition_attack_roll_mode
+                    if not saving_throw_action and not auto_hit_action
+                    else "normal"
+                )
+                automatic_critical = (
+                    condition_automatic_critical
+                    if not saving_throw_action and not auto_hit_action
+                    else False
                 )
                 reported_attack_rolls = special_inputs.get("attack_roll_totals")
                 attack_rolls = (
@@ -6811,6 +6825,11 @@ class PlayerRoomService:
                     )
                 for component in components:
                     rule = next(rule for rule in damage_rules if rule.id == component.block_id)
+                    critical_expression = (
+                        critical_damage_expression(rule.expression)
+                        if effective_critical
+                        else None
+                    )
                     reported_total = max(
                         0,
                         component.total
@@ -6834,11 +6853,17 @@ class PlayerRoomService:
                         {
                             "block_id": component.block_id,
                             "damage_type": component.damage_type,
+                            "damage_expression": rule.expression,
                             "reported_total": component.total,
                             "adjusted_total": reported_total,
                             "damage_total": amount,
                             "shared_roll": rule.shared_roll,
                             "critical_hit": effective_critical,
+                            **(
+                                {"critical_damage_expression": critical_expression}
+                                if critical_expression is not None
+                                else {}
+                            ),
                         }
                     )
                     damage_specs.append(
@@ -6853,6 +6878,11 @@ class PlayerRoomService:
                             "note": (
                             f"{note}；伤害段 {component.block_id} "
                                 f"({component.damage_type}) 报告 {reported_total}，结算 {amount}"
+                                + (
+                                    f"；暴击伤害骰应为 {critical_expression}"
+                                    if critical_expression is not None
+                                    else ""
+                                )
                                 + (
                                     "；附伤："
                                     + "、".join(

@@ -26,8 +26,14 @@ from dnd_dm_assistant.domain.rule_blocks import (
     TeleportBlock,
     TransformationBlock,
     build_execution_plan,
+    critical_damage_expression,
     validate_rule_plan,
 )
+
+
+def test_critical_damage_expression_doubles_dice_but_not_modifiers() -> None:
+    assert critical_damage_expression("1d8+@strength") == "2d8+@strength"
+    assert critical_damage_expression("8d6") == "16d6"
 
 
 def test_compiles_destination_sensitive_special_spell_blocks_without_guessing() -> None:

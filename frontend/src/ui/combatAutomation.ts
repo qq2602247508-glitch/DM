@@ -116,6 +116,14 @@ export function actionDamageLabel(raw: unknown): string {
   return hasNonDamageRule ? "无直接伤害" : "伤害骰未明确";
 }
 
+/** Double only dice terms for the player-facing critical-hit instruction. */
+export function criticalDamageExpression(expression: string): string {
+  return expression.replace(/(\d*)d(\d+)/gi, (_match, rawCount: string, sides: string) => {
+    const count = Number(rawCount || 1);
+    return `${count * 2}d${sides}`;
+  });
+}
+
 /** A grid-backed combat action cannot target a unit with no map coordinate. */
 export function hasGridPosition(snapshot: unknown): boolean {
   if (!snapshot || typeof snapshot !== "object" || Array.isArray(snapshot)) return false;

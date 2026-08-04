@@ -61,6 +61,7 @@ import {
 import { buildRuleBlockPlan, targetingFromRulePlan } from "../ui/ruleBlocks";
 import {
   actionDamageLabel,
+  criticalDamageExpression,
   isEnemyAiControlledCombatant,
   upcastExpression,
 } from "../ui/combatAutomation";
@@ -205,6 +206,21 @@ function damageInstructionForAction(action: Record<string, unknown> | undefined)
     ? formula.replace(new RegExp(`\\b${formulaType}\\b`, "i"), "").trim()
     : formula;
   return `${cleanedFormula} ${damageType}伤害`;
+}
+
+function hasAutomaticCriticalCondition(target: PlayerCombatant | undefined): boolean {
+  if (!target || !Array.isArray(target.conditions)) return false;
+  return target.conditions.some((raw) => {
+    const value = raw && typeof raw === "object" && !Array.isArray(raw)
+      ? (raw as { name?: unknown; condition_name?: unknown }).name
+        ?? (raw as { condition_name?: unknown }).condition_name
+      : raw;
+    const normalized = typeof value === "string"
+      ? value.trim().toLowerCase().replaceAll("-", "_")
+      : "";
+    return normalized === "paralyzed" || normalized === "麻痹"
+      || normalized === "unconscious" || normalized === "昏迷";
+  });
 }
 
 function actionCategoryLabel(action: Record<string, unknown>): string {
@@ -1219,6 +1235,8 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
   const hasHealingBlock = selectedRuleBlocks.some((block) => block.kind === "heal");
   const isAutoHitAction = selectedAction?.auto_hit === true
     || selectedRuleBlocks.some((block) => block.kind === "auto_hit");
+  const savingThrow = savingThrowForAction(selectedAction);
+  const isSavingThrowAction = Boolean(savingThrow);
   const usesLegacyDamageTotal = sharedDamageBlocks.length === 1 && targetDamageBlocks.length === 0;
   const requiresComponentTotals = selectedDamageBlocks.length > 0 && !usesLegacyDamageTotal;
   const damageOrSaveBlocks = selectedRuleBlocks.some((block) => ["damage", "save", "move"].includes(String(block.kind)));
@@ -1250,9 +1268,21 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
     ? NaN
     : Number(rawAttackBonus);
   const attackBonus = Number.isFinite(parsedAttackBonus) ? parsedAttackBonus : null;
-  const damageInstruction = damageInstructionForAction(selectedAction);
   const actorPosition = own?.position;
   const grid = snapshot.table.scene?.grid;
+  const automaticCriticalForSelectedTarget = Boolean(
+    !isSavingThrowAction
+    && !isAutoHitAction
+    && targeting?.shape === "single"
+    && actorPosition
+    && selectedTarget?.position
+    && grid
+    && gridDistanceFt(actorPosition, selectedTarget.position, grid.cell_size_ft) <= 5
+    && hasAutomaticCriticalCondition(selectedTarget)
+  );
+  const damageInstruction = automaticCriticalForSelectedTarget
+    ? criticalDamageExpression(damageInstructionForAction(selectedAction))
+    : damageInstructionForAction(selectedAction);
   const aimPosition = aimPoint ?? selectedTarget?.position ?? (targeting?.originSelf ? actorPosition : undefined);
   const rangeCellKeys = new Set<string>();
   if (grid && actorPosition && targeting) {
@@ -1491,8 +1521,6 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
       }
     }
   }
-  const savingThrow = savingThrowForAction(selectedAction);
-  const isSavingThrowAction = Boolean(savingThrow);
   const selectedResourceKey = typeof selectedAction?.resource_key === "string"
     ? selectedAction.resource_key
     : undefined;
@@ -2054,8 +2082,9 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
                     ? <>该能力不需要玩家掷命中；请掷伤害骰 {damageInstruction}，把骰子结果相加后填入“伤害骰最终总值”。系统会让范围内的每个目标分别进行 {display(savingThrow?.ability)} 豁免（DC {display(savingThrow?.dc)}）。</>
                     : isAutoHitAction
                       ? <>这是自动命中的特殊技能，不需要 d20 命中骰；请按提示掷伤害骰 {damageInstruction}，系统会按力场等明确伤害类型结算。</>
-                    : <>先掷 d20{attackBonus === null ? "，再加入角色卡命中调整值" : ` + ${attackBonus} 命中加值`}；最终总值需要达到 AC {selectedTarget.armor_class}（≥ {selectedTarget.armor_class}）才命中。命中后掷伤害骰 {damageInstruction}，把骰子结果相加后填入“伤害骰最终总值”。</>}
+                  : <>先掷 d20{attackBonus === null ? "，再加入角色卡命中调整值" : ` + ${attackBonus} 命中加值`}；最终总值需要达到 AC {selectedTarget.armor_class}（≥ {selectedTarget.armor_class}）才命中。命中后掷伤害骰 {damageInstruction}，把骰子结果相加后填入“伤害骰最终总值”。</>}
                 </span>
+                {automaticCriticalForSelectedTarget ? <p className="mb-0 mt-2 rounded border border-red-800/70 bg-red-950/30 p-2 text-2xs text-red-200">自动暴击已由 5 尺内的麻痹/昏迷状态触发。请按显示的双倍伤害骰（{damageInstruction}）重新掷骰；系统不会把你提交的最终总值再次翻倍。</p> : null}
               </>
             ) : (
               <span>先选择攻击/技能和目标；这里会明确显示命中所需 AC、命中加值与伤害骰。</span>
