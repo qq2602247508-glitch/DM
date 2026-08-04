@@ -8,7 +8,7 @@ import {
   createEvent, endCombatSummon, getCombatEndCondition, getDeathSave, listCombatActions, listCombatEffects, listCombatants, listCombats,
   listEncounterAdjustments, listEvents, previewCombatAction, previewMonsterAI, addCombatSummon,
   previewCombatSettlement, resetCombat, revertEncounterAdjustment, updateCombat, updateCombatant,
-  resolveCombatPreDamageReaction,
+  resolveCombatPreDamageReaction, resolveCombatDeflectRedirect,
 } from "../api/entities";
 import type {
   CombatActionCommand, CombatEffectCommand, CombatSettlementCommand,
@@ -1479,6 +1479,7 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
   const [effectSavePrompts, setEffectSavePrompts] = useState<EffectSavePrompt[]>([]);
   const [effectSaveRolls, setEffectSaveRolls] = useState<Record<string, string>>({});
   const [preDamageReductionRolls, setPreDamageReductionRolls] = useState<Record<string, string>>({});
+  const [deflectRedirectInputs, setDeflectRedirectInputs] = useState<Record<string, { targetId: string; saveRoll: string; damageRolls: string[] }>>({});
   const [resumeMonsterSequence, setResumeMonsterSequence] = useState<{
     sequenceId: string;
     nextStep: number;
@@ -1526,7 +1527,18 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
       && (metadata as Record<string, unknown>).status === "pending",
     );
   });
-  const hasPendingPreDamageReaction = preDamageWindows.length > 0;
+  const deflectRedirectWindows = (combatActions.data ?? []).filter((action) => {
+    if (action.action_type !== "eligible_action_window" || action.status !== "confirmed") return false;
+    const metadata = action.result_json?.action_window;
+    return Boolean(
+      metadata
+      && typeof metadata === "object"
+      && !Array.isArray(metadata)
+      && (metadata as Record<string, unknown>).phase === "deflect_redirect"
+      && (metadata as Record<string, unknown>).status === "pending",
+    );
+  });
+  const hasPendingPreDamageReaction = preDamageWindows.length > 0 || deflectRedirectWindows.length > 0;
   const pendingPlayerRolls = (combatActions.data ?? []).filter(
     (action) => action.action_type === "player_roll_prompt" && action.status === "previewed",
   );
@@ -1716,6 +1728,23 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
       }
     },
     onError: (error) => showToast(error instanceof Error ? error.message : "伤害前反应确认失败，请刷新战斗", "error"),
+  });
+  const resolveDeflectRedirect = useMutation({
+    mutationFn: (input: { windowId: string; version: number; decision: "accept" | "reject"; targetId?: string; targetVersion?: number; saveRoll?: number; damageRolls?: number[] }) =>
+      resolveCombatDeflectRedirect(campaignId, combat.id, {
+        redirect_window_id: input.windowId,
+        redirect_window_version: input.version,
+        decision: input.decision,
+        target_combatant_id: input.targetId ?? null,
+        target_version: input.targetVersion ?? null,
+        saving_throw_roll: input.saveRoll ?? null,
+        damage_rolls: input.damageRolls ?? [],
+      }),
+    onSuccess: (_result, input) => {
+      invalidate();
+      showToast(input.decision === "accept" ? "已消耗 Focus，偏转攻击反击已结算" : "已放弃偏转攻击反击");
+    },
+    onError: (error) => showToast(error instanceof Error ? error.message : "偏转攻击反击确认失败，请刷新战斗", "error"),
   });
   const advanceTurnIfIdle = useCallback(() => {
     if (hasPendingPlayerRoll || hasPendingConcentrationPrompt || hasPendingPreDamageReaction || nextTurn.isPending || nextTurnInFlight.current) return;
@@ -2116,6 +2145,39 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
                   ) : null}
                   <Button disabled={resolvePreDamageReaction.isPending || (requiresReductionRoll && (!reductionRoll.trim() || !Number.isInteger(Number(reductionRoll)) || Number(reductionRoll) < 1 || Number(reductionRoll) > 10))} loading={resolvePreDamageReaction.isPending} onClick={() => resolvePreDamageReaction.mutate({ windowId: action.id, version: action.version, decision: "accept", featureId, reductionRoll: requiresReductionRoll ? Number(reductionRoll) : undefined })} size="sm" variant="danger">确认{featureName}</Button>
                   <Button disabled={resolvePreDamageReaction.isPending} onClick={() => resolvePreDamageReaction.mutate({ windowId: action.id, version: action.version, decision: "reject" })} size="sm">放弃反应</Button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ) : null}
+      {deflectRedirectWindows.length > 0 ? (
+        <div className="mt-3 rounded-lg border border-fuchsia-700/60 bg-fuchsia-950/20 p-3" data-testid="combat-pending-deflect-redirect">
+          <strong className="text-xs text-fuchsia-200">偏转攻击反击 · 战斗暂停</strong>
+          <p className="mb-2 mt-1 text-2xs text-stone-400">减伤已把攻击降为 0。DM/玩家必须明确选择目标、输入敏捷豁免总值和两枚武艺骰；没有权威位置时不会自动猜测 5 尺范围。</p>
+          <div className="grid gap-2">
+            {deflectRedirectWindows.map((action) => {
+              const metadata = action.result_json.action_window as Record<string, unknown>;
+              const candidateIds = Array.isArray(metadata.candidate_target_ids) ? metadata.candidate_target_ids.filter((value): value is string => typeof value === "string") : [];
+              const candidates = candidateIds.map((id) => ordered.find((fighter) => fighter.id === id)).filter((fighter): fighter is Combatant => Boolean(fighter));
+              const current = deflectRedirectInputs[action.id] ?? { targetId: "", saveRoll: "", damageRolls: ["", ""] };
+              const sides = Number(metadata.damage_die_sides ?? 0);
+              const selected = ordered.find((fighter) => fighter.id === current.targetId);
+              const canAccept = Boolean(selected && current.saveRoll && current.damageRolls.length === 2 && current.damageRolls.every((value) => Number.isInteger(Number(value)) && Number(value) >= 1 && (!sides || Number(value) <= sides)));
+              const metadataText = (value: unknown, fallback: string) => typeof value === "string" || typeof value === "number" ? String(value) : fallback;
+              const update = (next: Partial<typeof current>) => setDeflectRedirectInputs((state) => ({ ...state, [action.id]: { ...current, ...next } }));
+              return (
+                <div className="rounded border border-fuchsia-900/60 bg-ink-950/40 px-2 py-2 text-2xs" key={action.id}>
+                  <div className="flex flex-wrap items-center gap-2"><span className="mr-auto text-stone-300">{metadataText(metadata.reactor_combatant_name, "武僧")} · 可消耗 {metadataText(metadata.resource_cost, "1")} 点 {metadataText(metadata.resource_key, "Focus")} · {metadataText(metadata.source_action_name, "攻击")} 已被偏转</span><span className="rounded border border-fuchsia-700/70 px-1.5 py-0.5 text-fuchsia-200">伤害归零</span></div>
+                  <div className="mt-2 flex flex-wrap items-center gap-2">
+                    <label className="text-fuchsia-100">目标<select aria-label={`${action.id} 偏转反击目标`} className="ml-1 rounded border border-fuchsia-800 bg-ink-950 px-1.5 py-1" onChange={(event) => update({ targetId: event.target.value })} value={current.targetId}><option value="">请选择 5 尺内目标</option>{candidates.map((fighter) => <option key={fighter.id} value={fighter.id}>{fighter.display_name} · HP {fighter.hp}/{fighter.max_hp}</option>)}</select></label>
+                    <label className="text-fuchsia-100">敏捷豁免<input aria-label={`${action.id} 偏转反击敏捷豁免`} className="ml-1 w-16 rounded border border-fuchsia-800 bg-ink-950 px-1.5 py-1" onChange={(event) => update({ saveRoll: event.target.value })} type="number" value={current.saveRoll} /><span className="ml-1 text-stone-400">vs DC {metadataText(metadata.save_dc, "—")}</span></label>
+                    <span className="text-fuchsia-100">武艺骰 {metadataText(metadata.damage_die_expression, `d${sides || "?"}`)}</span>
+                    {[0, 1].map((index) => <input aria-label={`${action.id} 偏转反击武艺骰${index + 1}`} className="w-16 rounded border border-fuchsia-800 bg-ink-950 px-1.5 py-1" key={index} max={sides || undefined} min="1" onChange={(event) => update({ damageRolls: current.damageRolls.map((value, itemIndex) => itemIndex === index ? event.target.value : value) })} type="number" value={current.damageRolls[index] ?? ""} />)}
+                  </div>
+                  <p className="mb-2 mt-1 text-2xs text-fuchsia-200">豁免成功半伤，失败全额；伤害类型 {metadataText(metadata.damage_type, "force")}。</p>
+                  <Button disabled={resolveDeflectRedirect.isPending || !canAccept} loading={resolveDeflectRedirect.isPending} onClick={() => resolveDeflectRedirect.mutate({ windowId: action.id, version: action.version, decision: "accept", targetId: current.targetId, targetVersion: selected?.version, saveRoll: Number(current.saveRoll), damageRolls: current.damageRolls.map(Number) })} size="sm" variant="danger">消耗 Focus 并执行反击</Button>
+                  <Button className="ml-2" disabled={resolveDeflectRedirect.isPending} onClick={() => resolveDeflectRedirect.mutate({ windowId: action.id, version: action.version, decision: "reject" })} size="sm">放弃反击</Button>
                 </div>
               );
             })}

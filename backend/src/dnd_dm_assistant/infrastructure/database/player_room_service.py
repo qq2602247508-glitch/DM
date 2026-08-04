@@ -16,6 +16,7 @@ from sqlalchemy.orm import Session
 
 from dnd_dm_assistant.api.schemas import (
     CombatActionCommand,
+    CombatDeflectRedirectCommand,
     CombatEffectCommand,
     CombatEffectEndCommand,
     CombatFeatureActionCommand,
@@ -3110,7 +3111,46 @@ class PlayerRoomService:
                 ).order_by(CombatAction.created_at, CombatAction.id)
             ).all():
                 metadata = dict((window.result_json or {}).get("action_window") or {})
-                if metadata.get("phase") != "pre_damage" or metadata.get("status") != "pending":
+                if (
+                    metadata.get("phase") not in {"pre_damage", "deflect_redirect"}
+                    or metadata.get("status") != "pending"
+                ):
+                    continue
+                if metadata.get("phase") == "deflect_redirect":
+                    candidate_ids = [
+                        str(item)
+                        for item in metadata.get("candidate_target_ids", [])
+                        if isinstance(item, str) and item in safe_fighters_by_id
+                    ]
+                    candidate_names = {
+                        candidate_id: safe_fighters_by_id[candidate_id].display_name
+                        for candidate_id in candidate_ids
+                    }
+                    pending_reactions.append(
+                        {
+                            "id": window.id,
+                            "version": window.version,
+                            "kind": "deflect_redirect",
+                            "feature_id": metadata.get("feature_id"),
+                            "feature_name": metadata.get("feature_name"),
+                            "source_name": metadata.get("trigger_combatant_name"),
+                            "source_action_name": metadata.get("source_action_name"),
+                            "target_name": metadata.get("reactor_combatant_name"),
+                            "reaction_trigger": "偏转攻击伤害归零",
+                            "message": window.summary,
+                            "candidate_target_ids": candidate_ids,
+                            "candidate_target_names": candidate_names,
+                            "save_ability": metadata.get("save_ability"),
+                            "save_dc": metadata.get("save_dc"),
+                            "damage_die_expression": metadata.get("damage_die_expression"),
+                            "damage_die_sides": metadata.get("damage_die_sides"),
+                            "damage_dice_count": metadata.get("damage_dice_count"),
+                            "damage_modifier": metadata.get("damage_modifier"),
+                            "damage_type": metadata.get("damage_type"),
+                            "resource_key": metadata.get("resource_key"),
+                            "resource_cost": metadata.get("resource_cost"),
+                        }
+                    )
                     continue
                 pending_reactions.append(
                     {
@@ -7501,6 +7541,7 @@ class PlayerRoomService:
         window_version: int,
         decision: Literal["accept", "reject"],
         feature_id: str | None,
+        reduction_roll: int | None,
         request_id: str,
     ) -> dict[str, Any]:
         """Resolve only a pre-damage window belonging to this player."""
@@ -7538,6 +7579,61 @@ class PlayerRoomService:
                 reaction_window_version=window_version,
                 decision=decision,
                 feature_id=feature_id,
+                reduction_roll=reduction_roll,
+            ),
+            idempotency_key=request_id,
+        )
+
+    def resolve_deflect_redirect(
+        self,
+        principal: PlayerPrincipal,
+        window_id: str,
+        window_version: int,
+        decision: Literal["accept", "reject"],
+        target_id: str | None,
+        target_version: int | None,
+        saving_throw_roll: int | None,
+        damage_rolls: list[int],
+        request_id: str,
+    ) -> dict[str, Any]:
+        """Resolve a zero-damage Deflect Attacks branch for the owning player."""
+
+        if principal.character_id is None:
+            raise ValueError("请先绑定角色")
+        with Session(self.engine) as session:
+            room = session.get(PlayerRoom, principal.room_id)
+            combat = (
+                session.get(Combat, room.current_combat_id)
+                if room and room.current_combat_id
+                else None
+            )
+            if combat is None or combat.status != "active":
+                raise ValueError("当前没有进行中的战斗")
+            window = session.get(CombatAction, window_id)
+            fighters = self._ordered_fighters(session, combat.id)
+            if (
+                window is None
+                or window.combat_id != combat.id
+                or window.actor_combatant_id is None
+                or not any(
+                    item.id == window.actor_combatant_id
+                    and self._is_player_controlled(item, principal.character_id)
+                    for item in fighters
+                )
+            ):
+                raise ValueError("该偏转攻击反击不属于你的可控单位")
+            combat_id = combat.id
+        return self.combat.resolve_deflect_redirect(
+            principal.campaign_id,
+            combat_id,
+            CombatDeflectRedirectCommand(
+                redirect_window_id=window_id,
+                redirect_window_version=window_version,
+                decision=decision,
+                target_combatant_id=target_id,
+                target_version=target_version,
+                saving_throw_roll=saving_throw_roll,
+                damage_rolls=damage_rolls,
             ),
             idempotency_key=request_id,
         )

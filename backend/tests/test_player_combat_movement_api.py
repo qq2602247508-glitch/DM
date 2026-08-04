@@ -116,6 +116,199 @@ def test_player_snapshot_exposes_and_resolves_pre_damage_reaction(
         player.close()
 
 
+def test_player_deflect_redirect_reaction_uses_reduction_roll_and_focus_branch(
+    campaign_client: TestClient,
+) -> None:
+    campaign = campaign_client.post(
+        "/api/v1/campaigns", json={"name": "玩家偏转反击窗口"}
+    ).json()
+    campaign_id = campaign["id"]
+    character = campaign_client.post(
+        f"/api/v1/campaigns/{campaign_id}/characters",
+        json={
+            "name": "玩家武僧",
+            "class_name": "武僧",
+            "hp": 20,
+            "max_hp": 20,
+            "resources": {"focus": {"current": 2, "max": 2}},
+        },
+    ).json()
+    scene = campaign_client.post(
+        f"/api/v1/campaigns/{campaign_id}/scenes", json={"name": "玩家反击训练场"}
+    ).json()
+    grid = campaign_client.post(
+        f"/api/v1/campaigns/{campaign_id}/scenes/{scene['id']}/grid",
+        json={"width": 8, "height": 4, "cell_size_ft": 5, "mode": "combat"},
+    )
+    assert grid.status_code == 201, grid.text
+    combat = campaign_client.post(
+        f"/api/v1/campaigns/{campaign_id}/combats",
+        json={"name": "玩家反击战斗", "scene_id": scene["id"]},
+    ).json()
+    base = f"/api/v1/campaigns/{campaign_id}"
+    attacker = campaign_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "玩家端攻击者",
+            "entity_type": "monster",
+            "initiative": 20,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {"grid_position": {"row": 1, "col": 1}},
+        },
+    ).json()
+    monk = campaign_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": character["name"],
+            "entity_type": "character",
+            "entity_id": character["id"],
+            "initiative": 10,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {
+                "ability_scores": {"dexterity": 16},
+                "grid_position": {"row": 1, "col": 2},
+                "feature_runtime": {
+                    "progression": {
+                        "class_levels": {"武僧": 5},
+                        "total_level": 5,
+                        "proficiency_bonus": 3,
+                    },
+                    "resources": {"martial_arts_die": {"value": "d8"}},
+                    "actions": {
+                        "deflect_attacks": {
+                            "name": "偏转攻击",
+                            "kind": "feature_action",
+                            "action_cost": "reaction",
+                            "damage_reduction_formula": "1d10+dexterity_modifier+class_level",
+                            "eligible_damage_types": [
+                                "bludgeoning",
+                                "piercing",
+                                "slashing",
+                            ],
+                            "trigger": {
+                                "event": "attacker_hits_self",
+                                "timing": "before_damage",
+                            },
+                            "redirect": {
+                                "resource_key": "focus",
+                                "resource_cost": 1,
+                                "range_ft": 5,
+                                "save_ability": "dexterity",
+                                "damage_die_expression": "d8",
+                                "damage_die_sides": 8,
+                                "damage_dice_count": 2,
+                                "damage_type": "force",
+                            },
+                        }
+                    },
+                },
+            },
+        },
+    ).json()
+    nearby = campaign_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "玩家端反击目标",
+            "entity_type": "monster",
+            "initiative": 5,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {"grid_position": {"row": 1, "col": 3}},
+        },
+    ).json()
+    opened = campaign_client.post(
+        f"{base}/player-room/open", json={"hours": 4}
+    ).json()
+    player = TestClient(campaign_client.app)
+    try:
+        assert player.post(
+            "/api/v1/player-room/join",
+            json={"join_code": opened["join_code"], "display_name": "偏转反击玩家"},
+        ).status_code == 201
+        assert player.post(
+            "/api/v1/player-room/me/bind-character",
+            json={"character_id": character["id"]},
+        ).status_code == 200
+        assert campaign_client.post(
+            f"{base}/player-room/live-state",
+            json={"combat_id": combat["id"]},
+        ).status_code == 200
+
+        paused = campaign_client.post(
+            f"{base}/combats/{combat['id']}/actions/confirm",
+            headers={"X-Request-ID": "player-deflect-hit"},
+            json={
+                "action_type": "damage",
+                "actor_combatant_id": attacker["id"],
+                "actor_version": attacker["version"],
+                "target_combatant_id": monk["id"],
+                "target_version": monk["version"],
+                "action_cost": "none",
+                "action_name": "长剑",
+                "amount": 12,
+                "damage_type": "slashing",
+                "is_attack": True,
+                "attack_roll_total": 18,
+            },
+        )
+        assert paused.status_code == 200, paused.text
+        pre_window = paused.json()["pending_reaction"]
+        snapshot = player.get("/api/v1/player-room/me")
+        assert snapshot.status_code == 200, snapshot.text
+        pending = snapshot.json()["combat"]["pending_reactions"]
+        assert len(pending) == 1
+        assert pending[0]["kind"] == "pre_damage"
+        assert pending[0]["requires_reduction_roll"] is True
+
+        reduced = player.post(
+            f"/api/v1/player-room/me/combat/pre-damage-reactions/{pre_window['id']}",
+            json={
+                "version": pre_window["version"],
+                "decision": "accept",
+                "feature_id": "deflect_attacks",
+                "reduction_roll": 10,
+            },
+        )
+        assert reduced.status_code == 200, reduced.text
+        assert reduced.json()["target"]["hp"] == 20
+
+        actions = campaign_client.get(f"{base}/combats/{combat['id']}/actions").json()["items"]
+        redirect_window = next(
+            item
+            for item in actions
+            if item["action_type"] == "eligible_action_window"
+            and item["result_json"]["action_window"].get("phase") == "deflect_redirect"
+        )
+        player_snapshot = player.get("/api/v1/player-room/me").json()["combat"]
+        pending = player_snapshot["pending_reactions"]
+        assert len(pending) == 1
+        assert pending[0]["kind"] == "deflect_redirect"
+        assert nearby["id"] in pending[0]["candidate_target_ids"]
+
+        redirected = player.post(
+            f"/api/v1/player-room/me/combat/deflect-redirect/{redirect_window['id']}",
+            json={
+                "version": redirect_window["version"],
+                "decision": "accept",
+                "target_combatant_id": nearby["id"],
+                "target_version": nearby["version"],
+                "saving_throw_roll": 10,
+                "damage_rolls": [4, 6],
+            },
+        )
+        assert redirected.status_code == 200, redirected.text
+        assert redirected.json()["target"]["hp"] == 7
+        assert player.get("/api/v1/player-room/me").json()["combat"]["pending_reactions"] == []
+        character_after = campaign_client.get(
+            f"{base}/characters/{character['id']}"
+        ).json()
+        assert character_after["resources"]["focus"]["current"] == 1
+    finally:
+        player.close()
+
+
 def test_player_movement_enforces_remaining_distance_obstacles_and_sync(
     campaign_client: TestClient,
 ) -> None:

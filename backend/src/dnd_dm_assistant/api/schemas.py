@@ -769,6 +769,8 @@ class CombatActionCommand(BaseModel):
         "casts_spell",
         "turn_end",
     ] | None = None
+    resource_key: str | None = Field(default=None, max_length=120)
+    resource_cost: int = Field(default=0, ge=0, le=100)
     sequence_id: str | None = Field(default=None, max_length=120)
     sequence_step: int | None = Field(default=None, ge=0, le=50)
     sequence_size: int | None = Field(default=None, ge=1, le=50)
@@ -814,6 +816,10 @@ class CombatActionCommand(BaseModel):
             raise ValueError("override_reason is required for a DM override")
         if self.recharge_consume and not (self.recharge_key or "").strip():
             raise ValueError("recharge_key is required when consuming a recharge action")
+        if self.resource_cost and not (self.resource_key or "").strip():
+            raise ValueError("resource_key is required when consuming a feature resource")
+        if self.resource_key is not None and not self.resource_cost:
+            raise ValueError("resource_cost is required with resource_key")
         if self.action_cost == "legendary_action" and (
             self.legendary_cost is None or self.legendary_pool_max is None
         ):
@@ -1115,6 +1121,44 @@ class CombatPreDamageReactionCommand(BaseModel):
             raise ValueError("使用偏转攻击时必须提交 d10 减伤骰结果")
         if self.feature_id != "deflect_attacks" and self.reduction_roll is not None:
             raise ValueError("减伤骰结果只适用于偏转攻击")
+        return self
+
+
+class CombatDeflectRedirectCommand(BaseModel):
+    """Resolve the second, zero-damage branch of Deflect Attacks."""
+
+    redirect_window_id: str = Field(min_length=1, max_length=36)
+    redirect_window_version: int = Field(ge=1)
+    decision: Literal["accept", "reject"]
+    target_combatant_id: str | None = Field(default=None, min_length=1, max_length=36)
+    target_version: int | None = Field(default=None, ge=1)
+    saving_throw_roll: int | None = Field(default=None, ge=-100, le=1_000)
+    damage_rolls: list[int] = Field(default_factory=list, min_length=0, max_length=2)
+    dm_override: bool = False
+    override_reason: str | None = Field(default=None, max_length=1_000)
+
+    @model_validator(mode="after")
+    def validate_redirect(self) -> CombatDeflectRedirectCommand:
+        if self.dm_override and not (self.override_reason or "").strip():
+            raise ValueError("override_reason is required for a DM override")
+        if self.decision == "accept":
+            if (self.target_combatant_id is None) != (self.target_version is None):
+                raise ValueError("target_combatant_id and target_version are required together")
+            if self.target_combatant_id is None:
+                raise ValueError("反击分支必须选择目标")
+            if self.saving_throw_roll is None:
+                raise ValueError("反击分支必须提交目标的敏捷豁免总值")
+            if len(self.damage_rolls) != 2:
+                raise ValueError("反击分支必须提交两枚武艺骰")
+        elif any(
+            value is not None
+            for value in (
+                self.target_combatant_id,
+                self.target_version,
+                self.saving_throw_roll,
+            )
+        ) or self.damage_rolls:
+            raise ValueError("放弃反击分支时不能携带目标或骰值")
         return self
 
 

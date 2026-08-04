@@ -770,7 +770,12 @@ def test_rogue_and_monk_event_bound_features_keep_explicit_dm_boundaries() -> No
     assert energy_deflect["runtime_execution"] == {
         "status": "partial",
         "consumer": "combat_feature_action",
-        "blocked_by": "redirect_choice_after_zero_damage",
+        "consumer_steps": [
+            "focus_consumption",
+            "target_selection_within_range",
+            "dexterity_save",
+            "redirect_damage",
+        ],
     }
     assert "deflect_attacks" not in {
         item["feature_id"] for item in feature_runtime_action_projections(monk_13)

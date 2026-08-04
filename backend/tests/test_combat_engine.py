@@ -1892,6 +1892,155 @@ def test_deflect_attacks_uses_player_d10_and_leaves_zero_damage_for_dm_redirect(
     assert reaction["redirect_available"] is False
 
 
+def test_deflect_attacks_zero_damage_opens_and_resolves_focus_redirect(
+    combat_client: TestClient,
+) -> None:
+    campaign = _campaign(combat_client, "Deflect redirect branch")
+    base = f"/api/v1/campaigns/{campaign['id']}"
+    character = combat_client.post(
+        f"{base}/characters",
+        json={
+            "name": "反击武僧",
+            "hp": 20,
+            "max_hp": 20,
+            "resources": {"focus": {"current": 2, "max": 2}},
+        },
+    ).json()
+    scene = combat_client.post(f"{base}/scenes", json={"name": "反击训练场"}).json()
+    grid = combat_client.post(
+        f"{base}/scenes/{scene['id']}/grid",
+        json={"width": 8, "height": 4, "cell_size_ft": 5, "mode": "combat"},
+    )
+    assert grid.status_code == 201, grid.text
+    combat = combat_client.post(
+        f"{base}/combats", json={"name": "反击分支战斗", "scene_id": scene["id"]}
+    ).json()
+    attacker = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "攻击者",
+            "entity_type": "monster",
+            "initiative": 20,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {"grid_position": {"row": 1, "col": 1}},
+        },
+    ).json()
+    monk = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "反击武僧",
+            "entity_type": "character",
+            "entity_id": character["id"],
+            "initiative": 10,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {
+                "ability_scores": {"dexterity": 16},
+                "grid_position": {"row": 1, "col": 2},
+                "feature_runtime": {
+                    "progression": {
+                        "class_levels": {"武僧": 5},
+                        "total_level": 5,
+                        "proficiency_bonus": 3,
+                    },
+                    "resources": {"martial_arts_die": {"value": "d8"}},
+                    "actions": {
+                        "deflect_attacks": {
+                            "name": "偏转攻击",
+                            "kind": "feature_action",
+                            "action_cost": "reaction",
+                            "damage_reduction_formula": "1d10+dexterity_modifier+class_level",
+                            "eligible_damage_types": ["bludgeoning", "piercing", "slashing"],
+                            "trigger": {"event": "attacker_hits_self", "timing": "before_damage"},
+                            "redirect": {
+                                "resource_key": "focus",
+                                "resource_cost": 1,
+                                "range_ft": 5,
+                                "save_ability": "dexterity",
+                                "damage_die_expression": "d8",
+                                "damage_die_sides": 8,
+                                "damage_dice_count": 2,
+                                "damage_type": "force",
+                            },
+                        }
+                    },
+                },
+            },
+        },
+    ).json()
+    nearby = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "反击目标",
+            "entity_type": "monster",
+            "initiative": 5,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {"grid_position": {"row": 1, "col": 3}},
+        },
+    ).json()
+    path = f"{base}/combats/{combat['id']}/actions/confirm"
+    paused = combat_client.post(
+        path,
+        headers={"X-Request-ID": "deflect-redirect-hit"},
+        json={
+            "action_type": "damage",
+            "actor_combatant_id": attacker["id"],
+            "actor_version": attacker["version"],
+            "target_combatant_id": monk["id"],
+            "target_version": monk["version"],
+            "action_cost": "none",
+            "action_name": "长剑",
+            "amount": 12,
+            "damage_type": "slashing",
+            "is_attack": True,
+            "attack_roll_total": 18,
+        },
+    )
+    assert paused.status_code == 200, paused.text
+    pre_window = paused.json()["pending_reaction"]
+    resolved = combat_client.post(
+        f"{base}/combats/{combat['id']}/reactions/pre-damage/resolve",
+        headers={"X-Request-ID": "deflect-redirect-choice"},
+        json={
+            "reaction_window_id": pre_window["id"],
+            "reaction_window_version": pre_window["version"],
+            "decision": "accept",
+            "feature_id": "deflect_attacks",
+            "reduction_roll": 10,
+        },
+    )
+    assert resolved.status_code == 200, resolved.text
+    assert resolved.json()["target"]["hp"] == 20
+    actions = combat_client.get(f"{base}/combats/{combat['id']}/actions").json()["items"]
+    redirect_window = next(
+        item
+        for item in actions
+        if item["action_type"] == "eligible_action_window"
+        and item["result_json"]["action_window"].get("phase") == "deflect_redirect"
+    )
+    assert nearby["id"] in redirect_window["result_json"]["action_window"]["candidate_target_ids"]
+    redirected = combat_client.post(
+        f"{base}/combats/{combat['id']}/reactions/deflect-redirect/resolve",
+        headers={"X-Request-ID": "deflect-redirect-resolve"},
+        json={
+            "redirect_window_id": redirect_window["id"],
+            "redirect_window_version": redirect_window["version"],
+            "decision": "accept",
+            "target_combatant_id": nearby["id"],
+            "target_version": nearby["version"],
+            "saving_throw_roll": 10,
+            "damage_rolls": [4, 6],
+        },
+    )
+    assert redirected.status_code == 200, redirected.text
+    assert redirected.json()["target"]["hp"] == 7
+    assert redirected.json()["redirect"]["save_success"] is False
+    character_after = combat_client.get(f"{base}/characters/{character['id']}").json()
+    assert character_after["resources"]["focus"]["current"] == 1
+
+
 def test_multiattack_sequence_records_independent_hits_and_targets(
     combat_client: TestClient,
 ) -> None:

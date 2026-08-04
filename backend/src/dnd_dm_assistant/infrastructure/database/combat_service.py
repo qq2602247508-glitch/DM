@@ -14,6 +14,7 @@ from sqlalchemy.orm import Session
 
 from dnd_dm_assistant.api.schemas import (
     CombatActionCommand,
+    CombatDeflectRedirectCommand,
     CombatEffectCommand,
     CombatEffectEndCommand,
     CombatEffectSaveCommand,
@@ -1172,6 +1173,24 @@ class CombatEngineService:
                 class_level_values
                 or [int(progression.get("total_level") or 1)]
             )
+            proficiency_bonus = int(progression.get("proficiency_bonus") or 0)
+            redirect = raw.get("redirect")
+            redirect_data = dict(redirect) if isinstance(redirect, dict) else None
+            if redirect_data is not None:
+                resources = runtime.get("resources") if isinstance(runtime, dict) else None
+                resources = resources if isinstance(resources, dict) else {}
+                die_key = str(redirect_data.get("damage_die_key") or "").strip()
+                die_entry = resources.get(die_key)
+                die_expression = (
+                    str(die_entry.get("value") or "")
+                    if isinstance(die_entry, dict)
+                    else ""
+                )
+                die_match = re.search(r"d(\d+)", die_expression, re.IGNORECASE)
+                if die_match:
+                    redirect_data["damage_die_expression"] = die_expression
+                    redirect_data["damage_die_sides"] = int(die_match.group(1))
+                redirect_data["proficiency_bonus"] = proficiency_bonus
             eligible_damage_types = raw.get("eligible_damage_types")
             if eligible_damage_types != "all" and not isinstance(eligible_damage_types, list):
                 eligible_damage_types = []
@@ -1185,6 +1204,7 @@ class CombatEngineService:
                     "dexterity_modifier": floor((dexterity - 10) / 2),
                     "class_level": class_level,
                     "requires_reduction_roll": feature_id == "deflect_attacks",
+                    "redirect": redirect_data,
                     "trigger": trigger,
                 }
             )
@@ -6872,6 +6892,7 @@ class CombatEngineService:
             "dexterity_modifier": candidate.get("dexterity_modifier"),
             "class_level": candidate.get("class_level"),
             "requires_reduction_roll": candidate.get("requires_reduction_roll", False),
+            "redirect": candidate.get("redirect"),
             "trigger_action_type": command.action_type,
             "trigger_action_name": command.action_name or "攻击",
             "trigger_combatant_id": attacker.id,
@@ -6913,6 +6934,129 @@ class CombatEngineService:
                 f"伤害前反应已暂停（{feature_name}）"
             ),
             idempotency_key=cls._pre_damage_window_key(source_idempotency_key),
+            status="confirmed",
+        )
+        session.add(window)
+        session.flush()
+        return window
+
+    @staticmethod
+    def _deflect_redirect_window_key(action_id: str) -> str:
+        return f"deflect-redirect:{action_id}"
+
+    @classmethod
+    def _open_deflect_redirect_window(
+        cls,
+        session: Session,
+        *,
+        combat: Combat,
+        transaction: OperationTransaction,
+        action: CombatAction,
+        reactor: Combatant,
+        attacker: Combatant,
+        pre_damage_metadata: dict[str, object],
+    ) -> CombatAction | None:
+        redirect = pre_damage_metadata.get("redirect")
+        if not isinstance(redirect, dict):
+            return None
+        range_ft = int(redirect.get("range_ft") or 5)
+        grid = (
+            session.scalar(select(SceneGrid).where(SceneGrid.scene_id == combat.scene_id))
+            if combat.scene_id
+            else None
+        )
+        candidate_ids: list[str] = []
+        candidate_names: dict[str, str] = {}
+        geometry_authoritative = False
+        reactor_footprint = cls._grid_footprint(reactor)
+        if grid is not None and reactor_footprint:
+            geometry_authoritative = True
+            blockers, _ = cls._grid_obstacles(session, grid)
+            reactor_elevation = cls._explicit_grid_elevation_ft(reactor)
+            for candidate in cls._ordered_combatants(session, combat.id):
+                if (
+                    candidate.id == reactor.id
+                    or not candidate.is_active
+                    or candidate.hp <= 0
+                ):
+                    continue
+                footprint = cls._grid_footprint(candidate)
+                if not footprint:
+                    continue
+                distance_ft = cls._grid_footprint_distance_ft(
+                    reactor_footprint,
+                    footprint,
+                    cell_size_ft=grid.cell_size_ft,
+                )
+                if distance_ft > range_ft:
+                    continue
+                visible, _mode, _pair = cls._grid_footprint_line_of_sight(
+                    session,
+                    grid,
+                    reactor_footprint,
+                    footprint,
+                    blockers,
+                    start_height_ft=reactor_elevation,
+                    end_height_ft=cls._explicit_grid_elevation_ft(candidate),
+                )
+                if not visible:
+                    continue
+                candidate_ids.append(candidate.id)
+                candidate_names[candidate.id] = candidate.display_name
+        metadata: dict[str, object] = {
+            "phase": "deflect_redirect",
+            "status": "pending",
+            "action_cost": "none",
+            "feature_id": "deflect_attacks",
+            "feature_name": pre_damage_metadata.get("feature_name") or "偏转攻击",
+            "source_action_id": action.id,
+            "source_action_name": pre_damage_metadata.get("trigger_action_name") or "攻击",
+            "trigger_combatant_id": attacker.id,
+            "trigger_combatant_name": attacker.display_name,
+            "reactor_combatant_id": reactor.id,
+            "reactor_combatant_name": reactor.display_name,
+            "reactor_version": reactor.version,
+            "candidate_target_ids": candidate_ids,
+            "candidate_target_names": candidate_names,
+            "range_ft": range_ft,
+            "geometry_authoritative": geometry_authoritative,
+            "redirect": redirect,
+            "save_ability": redirect.get("save_ability") or "dexterity",
+            "save_dc": 8 + int(pre_damage_metadata.get("dexterity_modifier") or 0) + int(
+                redirect.get("proficiency_bonus") or 0
+            ),
+            "damage_die_expression": redirect.get("damage_die_expression"),
+            "damage_die_sides": redirect.get("damage_die_sides"),
+            "damage_dice_count": int(redirect.get("damage_dice_count") or 2),
+            "damage_type": redirect.get("damage_type") or "force",
+            "damage_modifier": int(pre_damage_metadata.get("dexterity_modifier") or 0),
+            "resource_key": redirect.get("resource_key") or "focus",
+            "resource_cost": int(redirect.get("resource_cost") or 1),
+        }
+        window = CombatAction(
+            campaign_id=combat.campaign_id,
+            combat_id=combat.id,
+            actor_combatant_id=reactor.id,
+            transaction_id=transaction.id,
+            action_type="eligible_action_window",
+            target_combatant_ids=candidate_ids,
+            request_json={
+                "source_action_id": action.id,
+                "source_action_name": metadata["source_action_name"],
+                "reaction_event": "deflect_damage_zero",
+            },
+            result_json={"action_window": metadata},
+            explanation=(
+                f"{reactor.display_name} 的偏转攻击将伤害降为 0；"
+                "等待是否消耗 Focus 进行反击。"
+            ),
+            round_number=combat.round_number,
+            turn_index=combat.current_turn_index,
+            summary=(
+                f"{reactor.display_name}：偏转攻击伤害归零，"
+                "反击分支等待目标与骰值"
+            ),
+            idempotency_key=cls._deflect_redirect_window_key(action.id),
             status="confirmed",
         )
         session.add(window)
@@ -7130,6 +7274,32 @@ class CombatEngineService:
             )
             if recharge_consumed and not economy_consumed:
                 assert actor is not None
+                actor.version += 1
+                actor.updated_at = datetime.now(UTC)
+            feature_resource_before: int | None = None
+            feature_resource_after: int | None = None
+            feature_resource_key = (command.resource_key or "").strip()
+            if command.resource_cost:
+                if actor is None or actor.entity_type != "character" or not actor.entity_id:
+                    raise ValueError("职业特性资源只能由角色单位消耗")
+                character = session.get(Character, actor.entity_id)
+                if character is None:
+                    raise StateNotFoundError("feature resource character not found")
+                resources = dict(character.resources or {})
+                raw_resource = resources.get(feature_resource_key)
+                resource = dict(raw_resource) if isinstance(raw_resource, dict) else {}
+                feature_resource_before = self._state_int(resource.get("current"))
+                if feature_resource_before < command.resource_cost:
+                    raise ValueError(f"职业特性资源不足：{feature_resource_key}")
+                feature_resource_after = feature_resource_before - command.resource_cost
+                resource["current"] = feature_resource_after
+                resources[feature_resource_key] = resource
+                character.resources = resources
+                character.version += 1
+                character.updated_at = datetime.now(UTC)
+                actor_snapshot = dict(actor.snapshot_json or {})
+                actor_snapshot["resources"] = resources
+                actor.snapshot_json = actor_snapshot
                 actor.version += 1
                 actor.updated_at = datetime.now(UTC)
             if command.action_type == "heal" and target.hp == 0:
@@ -7391,6 +7561,13 @@ class CombatEngineService:
                 result["concentration_check_dc"] = resolved["concentration_check_dc"]
             if recharge_consumed:
                 result["recharge_consumed"] = command.recharge_key
+            if command.resource_cost:
+                result["feature_resource"] = {
+                    "key": feature_resource_key,
+                    "cost": command.resource_cost,
+                    "before": feature_resource_before,
+                    "after": feature_resource_after,
+                }
             if command.action_type == "damage" and actor is not None:
                 action_result = command.resolution_note or (
                     f"造成 {result['adjusted_damage']} 点"
@@ -7485,6 +7662,7 @@ class CombatEngineService:
                         "damage_reduction_roll": pre_damage_metadata.get("damage_reduction_roll"),
                         "damage_reduction_total": pre_damage_metadata.get("damage_reduction_total"),
                         "redirect_available": pre_damage_metadata.get("redirect_available", False),
+                        "redirect_window_id": None,
                         "applied": pre_damage_metadata.get("applied", False),
                     },
                 }
@@ -7501,9 +7679,32 @@ class CombatEngineService:
                         if pre_damage_metadata.get("feature_id") == "deflect_attacks"
                         else "；直觉闪避生效，伤害按每段向下取整减半"
                     )
-                )
+            )
             session.add(action)
             session.flush()
+            redirect_window: CombatAction | None = None
+            if (
+                pre_damage_window is not None
+                and pre_damage_reaction_decision == "accept"
+                and pre_damage_metadata.get("feature_id") == "deflect_attacks"
+                and pre_damage_metadata.get("redirect_available") is True
+                and actor is not None
+            ):
+                redirect_window = self._open_deflect_redirect_window(
+                    session,
+                    combat=combat,
+                    transaction=transaction,
+                    action=action,
+                    reactor=target,
+                    attacker=actor,
+                    pre_damage_metadata=pre_damage_metadata,
+                )
+                if redirect_window is not None:
+                    action.result_json = {
+                        **dict(action.result_json or {}),
+                        "deflect_redirect_window_id": redirect_window.id,
+                    }
+                    pre_damage_metadata["redirect_window_id"] = redirect_window.id
             if pre_damage_window is not None:
                 pre_damage_metadata.update(
                     {
@@ -7709,6 +7910,204 @@ class CombatEngineService:
                         window.version += 1
                         window.updated_at = datetime.now(UTC)
             raise
+        return result
+
+    def resolve_deflect_redirect(
+        self,
+        campaign_id: str,
+        combat_id: str,
+        command: CombatDeflectRedirectCommand,
+        *,
+        idempotency_key: str,
+    ) -> dict[str, Any]:
+        """Resolve the durable zero-damage Deflect Attacks branch.
+
+        The reduction reaction and the redirect are separate windows.  The
+        first one spends the character's reaction; this one only spends Focus
+        after the player/DM explicitly chooses a visible target and submits
+        the Dexterity save and two Martial Arts die results.
+        """
+
+        if not idempotency_key.strip():
+            raise ValueError("idempotency key is required")
+        if command.decision == "reject":
+            with Session(self.engine) as session, session.begin():
+                window = session.get(CombatAction, command.redirect_window_id)
+                if window is None or window.combat_id != combat_id:
+                    raise StateNotFoundError("偏转攻击反击窗口不存在")
+                if window.version != command.redirect_window_version:
+                    raise VersionConflict(
+                        "combat_action",
+                        window.id,
+                        command.redirect_window_version,
+                        window.version,
+                    )
+                metadata = dict((window.result_json or {}).get("action_window") or {})
+                if (
+                    metadata.get("phase") != "deflect_redirect"
+                    or metadata.get("status") != "pending"
+                ):
+                    raise ValueError("偏转攻击反击窗口已处理")
+                metadata.update({"status": "resolved", "decision": "reject"})
+                window.result_json = {"action_window": metadata}
+                window.version += 1
+                window.updated_at = datetime.now(UTC)
+                return {
+                    "phase": "resolved",
+                    "redirect": metadata,
+                    "window": serialize(window),
+                }
+
+        with Session(self.engine) as session, session.begin():
+            window = session.get(CombatAction, command.redirect_window_id)
+            if window is None or window.combat_id != combat_id:
+                raise StateNotFoundError("偏转攻击反击窗口不存在")
+            if window.version != command.redirect_window_version:
+                raise VersionConflict(
+                    "combat_action",
+                    window.id,
+                    command.redirect_window_version,
+                    window.version,
+                )
+            metadata = dict((window.result_json or {}).get("action_window") or {})
+            if metadata.get("phase") != "deflect_redirect" or metadata.get("status") != "pending":
+                raise ValueError("偏转攻击反击窗口已处理")
+            reactor = session.get(Combatant, window.actor_combatant_id)
+            target = session.get(Combatant, command.target_combatant_id)
+            if reactor is None or target is None or not reactor.is_active:
+                raise StateNotFoundError("偏转攻击反击单位不存在或已离场")
+            if reactor.id == target.id or not target.is_active or target.hp <= 0:
+                raise ValueError("偏转攻击反击必须选择一个仍在场的其他单位")
+            if target.version != command.target_version:
+                raise VersionConflict(
+                    "combatant",
+                    target.id,
+                    command.target_version or 0,
+                    target.version,
+                )
+            allowed_ids = {
+                str(item)
+                for item in metadata.get("candidate_target_ids", [])
+                if isinstance(item, str)
+            }
+            if not command.dm_override and target.id not in allowed_ids:
+                raise ValueError("目标不在偏转攻击的可见范围内，或缺少权威位置")
+            die_sides = int(metadata.get("damage_die_sides") or 0)
+            if die_sides < 2 and not command.dm_override:
+                raise ValueError("本次反击缺少权威武艺骰大小，需由 DM 明确裁定")
+            if die_sides >= 2 and any(
+                roll < 1 or roll > die_sides for roll in command.damage_rolls
+            ):
+                raise ValueError(f"武艺骰结果必须在 1–{die_sides} 之间")
+            save_dc = int(metadata.get("save_dc") or 0)
+            if save_dc <= 0:
+                raise ValueError("偏转攻击反击缺少有效的敏捷豁免 DC")
+            resource_key = str(metadata.get("resource_key") or "focus")
+            resource_cost = int(metadata.get("resource_cost") or 1)
+            if reactor.entity_type != "character" or not reactor.entity_id:
+                raise ValueError("只有角色单位可以消耗 Focus 进行偏转反击")
+            character = session.get(Character, reactor.entity_id)
+            if character is None:
+                raise StateNotFoundError("偏转攻击反击角色不存在")
+            raw_resource = (character.resources or {}).get(resource_key)
+            resource = dict(raw_resource) if isinstance(raw_resource, dict) else {}
+            if self._state_int(resource.get("current")) < resource_cost:
+                raise ValueError(f"职业特性资源不足：{resource_key}")
+            metadata.update(
+                {
+                    "status": "resolving",
+                    "decision": "accept",
+                    "target_combatant_id": target.id,
+                    "target_version": target.version,
+                    "saving_throw_roll": command.saving_throw_roll,
+                    "save_success": command.saving_throw_roll >= save_dc,
+                    "damage_rolls": list(command.damage_rolls),
+                    "resolver_idempotency_key": idempotency_key,
+                }
+            )
+            window.result_json = {"action_window": metadata}
+            window.version += 1
+            window.updated_at = datetime.now(UTC)
+            reactor_id = reactor.id
+            target_id = target.id
+            redirect_action_idempotency = self._deflect_redirect_window_key(window.id)
+            reactor_version = reactor.version
+            target_version = target.version
+            damage_modifier = int(metadata.get("damage_modifier") or 0)
+            save_success = command.saving_throw_roll >= save_dc
+            base_damage = sum(command.damage_rolls) + damage_modifier
+            damage_total = base_damage if not save_success else base_damage // 2
+            damage_type = str(metadata.get("damage_type") or "force")
+
+        try:
+            result = self.confirm(
+                campaign_id,
+                combat_id,
+                CombatActionCommand(
+                    action_type="damage",
+                    target_combatant_id=target_id,
+                    target_version=target_version,
+                    actor_combatant_id=reactor_id,
+                    actor_version=reactor_version,
+                    action_cost="none",
+                    action_name="偏转攻击反击",
+                    resolution_note=(
+                        f"偏转攻击反击：目标敏捷豁免 {'成功' if save_success else '失败'} "
+                        f"（{command.saving_throw_roll} vs DC {save_dc}），"
+                        f"武艺骰 {list(command.damage_rolls)} + 敏捷调整值"
+                    ),
+                    amount=damage_total,
+                    damage_type=damage_type,
+                    resource_key=resource_key,
+                    resource_cost=resource_cost,
+                    dm_override=command.dm_override,
+                    override_reason=command.override_reason,
+                ),
+                idempotency_key=redirect_action_idempotency,
+                skip_pre_damage_reaction=True,
+            )
+        except Exception:
+            with Session(self.engine) as session, session.begin():
+                window = session.get(CombatAction, command.redirect_window_id)
+                if window is not None:
+                    metadata = dict((window.result_json or {}).get("action_window") or {})
+                    if metadata.get("status") == "resolving":
+                        metadata["status"] = "pending"
+                        for key in (
+                            "decision",
+                            "target_combatant_id",
+                            "target_version",
+                            "saving_throw_roll",
+                            "save_success",
+                            "damage_rolls",
+                            "resolver_idempotency_key",
+                        ):
+                            metadata.pop(key, None)
+                        window.result_json = {"action_window": metadata}
+                        window.version += 1
+                        window.updated_at = datetime.now(UTC)
+            raise
+        with Session(self.engine) as session, session.begin():
+            window = session.get(CombatAction, command.redirect_window_id)
+            if window is not None:
+                metadata = dict((window.result_json or {}).get("action_window") or {})
+                metadata.update(
+                    {
+                        "status": "resolved",
+                        "resolved_action_id": result["action"]["id"],
+                        "resolved_damage": damage_total,
+                        "resource_consumed": resource_cost,
+                    }
+                )
+                window.result_json = {"action_window": metadata}
+                window.version += 1
+                window.updated_at = datetime.now(UTC)
+                return {
+                    **result,
+                    "phase": "resolved",
+                    "redirect": metadata,
+                    "window": serialize(window),
+                }
         return result
 
     def confirm_feature_action(

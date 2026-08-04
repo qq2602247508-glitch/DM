@@ -658,16 +658,34 @@ def feature_runtime_definition(
             ),
             "redirect_resource_key": "focus",
             "redirect_resource_cost": 1,
+            "redirect": {
+                "resource_key": "focus",
+                "resource_cost": 1,
+                "range_ft": 5,
+                "save_ability": "dexterity",
+                "save_dc_formula": "8+dexterity_modifier+proficiency_bonus",
+                "damage_formula": "2x martial_arts_die+dexterity_modifier",
+                "damage_die_key": "martial_arts_die",
+                "damage_dice_count": 2,
+                "damage_type": "force",
+                "successful_save_multiplier": 0.5,
+            },
             "runtime_execution": {
                 "status": "partial",
                 "consumer": "combat_feature_action",
-                "blocked_by": "redirect_choice_after_zero_damage",
+                "consumer_steps": [
+                    "focus_consumption",
+                    "target_selection_within_range",
+                    "dexterity_save",
+                    "redirect_damage",
+                ],
             },
             "automation_status": "partial",
             "requires_dm_adjudication": True,
             "partial_reason": (
                 "命中后减伤骰和伤害扣除已自动执行；"
-                "伤害归零后的 Focus 消耗与反击目标选择仍需 DM 确认。"
+                "伤害归零后的 Focus 消耗、目标选择、敏捷豁免和反击伤害骰"
+                "由第二个持久化窗口收集。"
             ),
             **source,
         }

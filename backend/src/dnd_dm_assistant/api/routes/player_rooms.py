@@ -127,6 +127,16 @@ class PreDamageReactionInput(BaseModel):
     version: int = Field(ge=1)
     decision: Literal["accept", "reject"]
     feature_id: str | None = Field(default=None, min_length=1, max_length=120)
+    reduction_roll: int | None = Field(default=None, ge=1, le=10)
+
+
+class DeflectRedirectInput(BaseModel):
+    version: int = Field(ge=1)
+    decision: Literal["accept", "reject"]
+    target_combatant_id: str | None = Field(default=None, min_length=1, max_length=36)
+    target_version: int | None = Field(default=None, ge=1)
+    saving_throw_roll: int | None = Field(default=None, ge=-100, le=1_000)
+    damage_rolls: list[int] = Field(default_factory=list, max_length=2)
 
 
 class ManeuverInput(BaseModel):
@@ -654,6 +664,30 @@ def resolve_player_pre_damage_reaction(
             body.version,
             body.decision,
             body.feature_id,
+            body.reduction_roll,
+            _request_id(request),
+        )
+    )
+
+
+@public_player_room_router.post("/me/combat/deflect-redirect/{window_id}")
+def resolve_player_deflect_redirect(
+    window_id: str,
+    body: DeflectRedirectInput,
+    request: Request,
+    principal: Annotated[PlayerPrincipal, Depends(get_player_principal)],
+    service: Annotated[PlayerRoomService, Depends(get_player_room_service)],
+) -> dict[str, Any]:
+    return _safe(
+        lambda: service.resolve_deflect_redirect(
+            principal,
+            window_id,
+            body.version,
+            body.decision,
+            body.target_combatant_id,
+            body.target_version,
+            body.saving_throw_roll,
+            body.damage_rolls,
             _request_id(request),
         )
     )

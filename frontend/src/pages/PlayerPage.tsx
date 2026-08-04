@@ -21,6 +21,7 @@ import {
   planMyNoncombatAction,
   rollMyNoncombatAction,
   resolveMyOpportunityReaction,
+  resolveMyDeflectRedirect,
   resolveMyPreDamageReaction,
   searchPlayerRules,
   submitMyDeathSave,
@@ -1033,6 +1034,9 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
   const [summonPosition, setSummonPosition] = useState<GridPoint | null>(null);
   const [reactionTrigger, setReactionTrigger] = useState("");
   const [preDamageReductionRolls, setPreDamageReductionRolls] = useState<Record<string, string>>({});
+  const [deflectRedirectTargets, setDeflectRedirectTargets] = useState<Record<string, string>>({});
+  const [deflectRedirectSaves, setDeflectRedirectSaves] = useState<Record<string, string>>({});
+  const [deflectRedirectDamageRolls, setDeflectRedirectDamageRolls] = useState<Record<string, string[]>>({});
   const [criticalHit, setCriticalHit] = useState(false);
   const [rolls, setRolls] = useState<Record<string, string>>({});
   const [deathSaveRoll, setDeathSaveRoll] = useState("");
@@ -1708,6 +1712,20 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
       refresh();
     },
   });
+  const deflectRedirectMutation = useMutation({
+    mutationFn: (input: { id: string; version: number; decision: "accept" | "reject"; targetId?: string; targetVersion?: number; savingThrowRoll?: number; damageRolls?: number[] }) =>
+      resolveMyDeflectRedirect(input.id, input.version, {
+        decision: input.decision,
+        target_combatant_id: input.targetId ?? null,
+        target_version: input.targetVersion ?? null,
+        saving_throw_roll: input.savingThrowRoll ?? null,
+        damage_rolls: input.damageRolls ?? [],
+      }),
+    onSuccess: (_result, variables) => {
+      setLastResolution(variables.decision === "accept" ? "已消耗 Focus；偏转攻击反击正在结算。" : "已放弃偏转攻击反击。" );
+      refresh();
+    },
+  });
   const maneuverMutation = useMutation({
     mutationFn: () => {
       if (!own) throw new Error("当前没有可控单位");
@@ -1971,7 +1989,48 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
             </section>
           ) : null}
           {(combat.pending_reactions ?? []).map((reaction) => (
-            reaction.kind === "pre_damage" ? (
+            reaction.kind === "deflect_redirect" ? (
+              <div className="mb-3 rounded border border-fuchsia-700 bg-fuchsia-950/25 p-3" data-testid="player-pending-deflect-redirect" key={reaction.id}>
+                {(() => {
+                  const targetId = deflectRedirectTargets[reaction.id] ?? "";
+                  const target = (combat.combatants ?? []).find((item) => item.id === targetId);
+                  const rolls = deflectRedirectDamageRolls[reaction.id] ?? ["", ""];
+                  const sides = reaction.damage_die_sides ?? 0;
+                  const saveRoll = deflectRedirectSaves[reaction.id] ?? "";
+                  const canAccept = Boolean(target && target.version && saveRoll && rolls.length === 2 && rolls.every((value) => Number.isInteger(Number(value)) && Number(value) >= 1 && (!sides || Number(value) <= sides)));
+                  return (
+                    <div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <strong className="text-sm text-fuchsia-100">偏转攻击反击 · 等待选择</strong>
+                        <span className="rounded border border-fuchsia-700/70 px-1.5 py-0.5 text-2xs text-fuchsia-200">伤害已归零</span>
+                      </div>
+                      <p className="mb-2 mt-1 text-xs leading-5 text-stone-300">{reaction.message ?? "偏转攻击将伤害降为 0；可消耗 1 点 Focus 反击。"}</p>
+                      <div className="grid gap-2 sm:grid-cols-2">
+                        <label className="text-2xs text-fuchsia-100">反击目标
+                          <select aria-label={`${reaction.id} 偏转攻击反击目标`} className="ml-2 rounded border border-fuchsia-800 bg-ink-950 px-1.5 py-1" onChange={(event) => setDeflectRedirectTargets((current) => ({ ...current, [reaction.id]: event.target.value }))} value={targetId}>
+                            <option value="">请选择 5 尺内目标</option>
+                            {(reaction.candidate_target_ids ?? []).map((candidateId) => <option key={candidateId} value={candidateId}>{reaction.candidate_target_names?.[candidateId] ?? combat.combatants.find((item) => item.id === candidateId)?.name ?? candidateId}</option>)}
+                          </select>
+                        </label>
+                        <label className="text-2xs text-fuchsia-100">敏捷豁免总值
+                          <input aria-label={`${reaction.id} 偏转反击敏捷豁免`} className="ml-2 w-20 rounded border border-fuchsia-800 bg-ink-950 px-1.5 py-1" onChange={(event) => setDeflectRedirectSaves((current) => ({ ...current, [reaction.id]: event.target.value }))} placeholder="d20+加值" type="number" value={saveRoll} />
+                          <span className="ml-1 text-stone-400">vs DC {reaction.save_dc ?? "—"}</span>
+                        </label>
+                      </div>
+                      <div className="mt-2 flex flex-wrap items-center gap-2 text-2xs text-fuchsia-100">
+                        <span>反击伤害：{reaction.damage_dice_count ?? 2}×{reaction.damage_die_expression ?? "武艺骰"} + 敏捷调整值（{reaction.damage_modifier ?? 0}）</span>
+                        {[0, 1].map((index) => <input aria-label={`${reaction.id} 偏转反击武艺骰${index + 1}`} className="w-16 rounded border border-fuchsia-800 bg-ink-950 px-1.5 py-1" key={index} max={sides || undefined} min="1" onChange={(event) => setDeflectRedirectDamageRolls((current) => ({ ...current, [reaction.id]: (current[reaction.id] ?? ["", ""]).map((value, itemIndex) => itemIndex === index ? event.target.value : value) }))} placeholder={`d${sides || "?"}`} type="number" value={rolls[index] ?? ""} />)}
+                      </div>
+                      <p className="mb-0 mt-1 text-2xs text-fuchsia-200">豁免成功造成一半伤害；失败造成全额伤害。消耗 {reaction.resource_cost ?? 1} 点 {reaction.resource_key ?? "Focus"}。</p>
+                      <div className="mt-2 flex gap-2">
+                        <Button disabled={deflectRedirectMutation.isPending || !canAccept} loading={deflectRedirectMutation.isPending && deflectRedirectMutation.variables?.id === reaction.id && deflectRedirectMutation.variables.decision === "accept"} onClick={() => deflectRedirectMutation.mutate({ id: reaction.id, version: reaction.version, decision: "accept", targetId, targetVersion: target?.version, savingThrowRoll: Number(saveRoll), damageRolls: rolls.map(Number) })} variant="danger">消耗 Focus 并反击</Button>
+                        <Button disabled={deflectRedirectMutation.isPending} loading={deflectRedirectMutation.isPending && deflectRedirectMutation.variables?.id === reaction.id && deflectRedirectMutation.variables.decision === "reject"} onClick={() => deflectRedirectMutation.mutate({ id: reaction.id, version: reaction.version, decision: "reject" })}>放弃反击</Button>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+            ) : reaction.kind === "pre_damage" ? (
               <div className="mb-3 rounded border border-amber-700 bg-amber-950/25 p-3" data-testid="player-pending-pre-damage-reaction" key={reaction.id}>
                 {(() => {
                   const requiresReductionRoll = reaction.requires_reduction_roll === true;
@@ -1986,7 +2045,7 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
                   {requiresReductionRoll ? <label className="flex items-center gap-1 text-2xs text-amber-100">d10减伤骰<input aria-label={`${reaction.id} 偏转攻击减伤骰`} className="w-16 rounded border border-amber-800 bg-ink-950 px-1.5 py-1" max="10" min="1" onChange={(event) => setPreDamageReductionRolls((current) => ({ ...current, [reaction.id]: event.target.value }))} type="number" value={reductionRoll} /><span className="text-stone-400">+{reductionBonus}</span></label> : null}
                 </div>
                 <p className="mb-0 mt-1 text-xs leading-5 text-stone-300">{reaction.message ?? "你被攻击命中；请选择是否使用反应。"}</p>
-                <p className="mb-0 mt-1 text-2xs text-amber-200">「{reaction.source_action_name ?? "攻击"}」命中你。{requiresReductionRoll ? `使用偏转攻击会用 d10 + 敏捷调整值 + 职业等级（固定加值 ${reductionBonus}）从攻击伤害中扣除；伤害归零后的反击分支仍需 DM 确认。` : "使用直觉闪避会在抗性/免疫结算前将本次攻击每段伤害向下取整减半。"}</p>
+                <p className="mb-0 mt-1 text-2xs text-amber-200">「{reaction.source_action_name ?? "攻击"}」命中你。{requiresReductionRoll ? `使用偏转攻击会用 d10 + 敏捷调整值 + 职业等级（固定加值 ${reductionBonus}）从攻击伤害中扣除；若归零，随后会打开独立的 Focus 反击窗口。` : "使用直觉闪避会在抗性/免疫结算前将本次攻击每段伤害向下取整减半。"}</p>
                 <div className="mt-2 flex gap-2">
                   <Button disabled={preDamageReactionMutation.isPending || !canAccept} loading={preDamageReactionMutation.isPending && preDamageReactionMutation.variables?.id === reaction.id && preDamageReactionMutation.variables.decision === "accept"} onClick={() => preDamageReactionMutation.mutate({ id: reaction.id, version: reaction.version, decision: "accept", featureId: reaction.feature_id ?? "uncanny_dodge", reductionRoll: requiresReductionRoll ? Number(reductionRoll) : undefined })} variant="danger">使用{reaction.feature_name ?? "直觉闪避"}</Button>
                   <Button disabled={preDamageReactionMutation.isPending} loading={preDamageReactionMutation.isPending && preDamageReactionMutation.variables?.id === reaction.id && preDamageReactionMutation.variables.decision === "reject"} onClick={() => preDamageReactionMutation.mutate({ id: reaction.id, version: reaction.version, decision: "reject" })}>不使用</Button>

@@ -770,6 +770,24 @@ export const resolveCombatPreDamageReaction = (
   { method: "POST", body: input, headers: { "X-Request-ID": requestId } },
 );
 
+export const resolveCombatDeflectRedirect = (
+  cid: string,
+  combatId: string,
+  input: {
+    redirect_window_id: string;
+    redirect_window_version: number;
+    decision: "accept" | "reject";
+    target_combatant_id?: string | null;
+    target_version?: number | null;
+    saving_throw_roll?: number | null;
+    damage_rolls?: number[];
+  },
+  requestId: string = createClientId("deflect-redirect"),
+) => apiFetch<Record<string, unknown>>(
+  `/campaigns/${cid}/combats/${combatId}/reactions/deflect-redirect/resolve`,
+  { method: "POST", body: input, headers: { "X-Request-ID": requestId } },
+);
+
 export type CombatActionBatchCommand = {
   items: Array<{
     command: CombatActionCommand;

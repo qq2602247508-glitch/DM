@@ -8,6 +8,7 @@ from dnd_dm_assistant.api.dependencies import get_combat_engine_service
 from dnd_dm_assistant.api.schemas import (
     CombatActionBatchCommand,
     CombatActionCommand,
+    CombatDeflectRedirectCommand,
     CombatEffectCommand,
     CombatEffectEndCommand,
     CombatEffectSaveCommand,
@@ -173,6 +174,25 @@ def confirm_feature_action(
     request_id = str(getattr(request.state, "request_id", "unknown"))
     return _safe_call(
         lambda: service.confirm_feature_action(
+            campaign_id,
+            combat_id,
+            body,
+            idempotency_key=request_id,
+        )
+    )
+
+
+@router.post("/reactions/deflect-redirect/resolve")
+def resolve_deflect_redirect(
+    campaign_id: str,
+    combat_id: str,
+    body: CombatDeflectRedirectCommand,
+    request: Request,
+    service: Annotated[CombatEngineService, Depends(get_combat_engine_service)],
+) -> dict[str, Any]:
+    request_id = str(getattr(request.state, "request_id", "unknown"))
+    return _safe_call(
+        lambda: service.resolve_deflect_redirect(
             campaign_id,
             combat_id,
             body,

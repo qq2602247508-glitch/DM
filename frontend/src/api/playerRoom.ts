@@ -313,7 +313,7 @@ export type PlayerPendingRoll = {
 export type PlayerPendingReaction = {
   id: string;
   version: number;
-  kind?: "opportunity" | "pre_damage";
+  kind?: "opportunity" | "pre_damage" | "deflect_redirect";
   feature_id?: string | null;
   feature_name?: string | null;
   requires_reduction_roll?: boolean;
@@ -327,6 +327,16 @@ export type PlayerPendingReaction = {
   target_name: string | null;
   reaction_trigger: string | null;
   message: string | null;
+  candidate_target_ids?: string[];
+  candidate_target_names?: Record<string, string>;
+  save_ability?: string | null;
+  save_dc?: number | null;
+  damage_die_expression?: string | null;
+  damage_die_sides?: number | null;
+  damage_dice_count?: number | null;
+  damage_modifier?: number | null;
+  resource_key?: string | null;
+  resource_cost?: number | null;
 };
 
 export type PlayerDeathSave = {
@@ -899,6 +909,22 @@ export const resolveMyPreDamageReaction = (
 ) => playerFetch<Record<string, unknown>>(`/player-room/me/combat/pre-damage-reactions/${windowId}`, {
   method: "POST",
   body: JSON.stringify({ version, decision, feature_id: featureId ?? null, reduction_roll: reductionRoll ?? null }),
+});
+
+export const resolveMyDeflectRedirect = (
+  windowId: string,
+  version: number,
+  input: {
+    decision: "accept" | "reject";
+    target_combatant_id?: string | null;
+    target_version?: number | null;
+    saving_throw_roll?: number | null;
+    damage_rolls?: number[];
+  },
+) => playerFetch<Record<string, unknown>>(`/player-room/me/combat/deflect-redirect/${windowId}`, {
+  method: "POST",
+  body: JSON.stringify({ version, ...input }),
+  headers: { "X-Request-ID": createClientId("player-deflect-redirect") },
 });
 
 export const submitMyDeathSave = (targetVersion: number, roll: number) =>
