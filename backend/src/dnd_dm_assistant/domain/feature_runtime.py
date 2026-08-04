@@ -659,13 +659,16 @@ def feature_runtime_definition(
             "redirect_resource_key": "focus",
             "redirect_resource_cost": 1,
             "runtime_execution": {
-                "status": "blocked",
+                "status": "partial",
                 "consumer": "combat_feature_action",
-                "blocked_by": "post_hit_reaction_roll_and_redirect_choice",
+                "blocked_by": "redirect_choice_after_zero_damage",
             },
             "automation_status": "partial",
             "requires_dm_adjudication": True,
-            "partial_reason": "现有确认接口不能在攻击命中后插入反应窗口或结算可选反击。",
+            "partial_reason": (
+                "命中后减伤骰和伤害扣除已自动执行；"
+                "伤害归零后的 Focus 消耗与反击目标选择仍需 DM 确认。"
+            ),
             **source,
         }
 

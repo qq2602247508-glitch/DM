@@ -1478,6 +1478,7 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
   const [resetGeneration, setResetGeneration] = useState(0);
   const [effectSavePrompts, setEffectSavePrompts] = useState<EffectSavePrompt[]>([]);
   const [effectSaveRolls, setEffectSaveRolls] = useState<Record<string, string>>({});
+  const [preDamageReductionRolls, setPreDamageReductionRolls] = useState<Record<string, string>>({});
   const [resumeMonsterSequence, setResumeMonsterSequence] = useState<{
     sequenceId: string;
     nextStep: number;
@@ -1646,6 +1647,7 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
       setTargetingActorId(null);
       setEffectSavePrompts([]);
       setEffectSaveRolls({});
+      setPreDamageReductionRolls({});
       void client.invalidateQueries({ queryKey: ["combats", campaignId] });
       void client.invalidateQueries({ queryKey: ["combatants", campaignId, combat.id] });
       void client.invalidateQueries({ queryKey: ["combat-actions", campaignId, combat.id] });
@@ -1697,16 +1699,21 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
     onError: () => showToast("状态重复豁免确认失败，请刷新战斗状态", "error"),
   });
   const resolvePreDamageReaction = useMutation({
-    mutationFn: (input: { windowId: string; version: number; decision: "accept" | "reject"; featureId?: string }) =>
+    mutationFn: (input: { windowId: string; version: number; decision: "accept" | "reject"; featureId?: string; reductionRoll?: number }) =>
       resolveCombatPreDamageReaction(campaignId, combat.id, {
         reaction_window_id: input.windowId,
         reaction_window_version: input.version,
         decision: input.decision,
         feature_id: input.featureId ?? null,
+        reduction_roll: input.reductionRoll ?? null,
       }),
     onSuccess: (_result, input) => {
       invalidate();
-      showToast(input.decision === "accept" ? "直觉闪避已确认，攻击正在按减半伤害结算" : "已放弃伤害前反应，攻击正在正常结算");
+      if (input.decision === "accept" && input.featureId === "deflect_attacks") {
+        showToast("偏转攻击已确认，攻击正在按减伤骰结算");
+      } else {
+        showToast(input.decision === "accept" ? "直觉闪避已确认，攻击正在按减半伤害结算" : "已放弃伤害前反应，攻击正在正常结算");
+      }
     },
     onError: (error) => showToast(error instanceof Error ? error.message : "伤害前反应确认失败，请刷新战斗", "error"),
   });
@@ -2089,13 +2096,25 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
             {preDamageWindows.map((action) => {
               const metadata = action.result_json.action_window as Record<string, unknown>;
               const featureId = typeof metadata.feature_id === "string" ? metadata.feature_id : "uncanny_dodge";
+              const featureName = typeof metadata.feature_name === "string" ? metadata.feature_name : featureId === "deflect_attacks" ? "偏转攻击" : "直觉闪避";
               const triggerName = typeof metadata.trigger_combatant_name === "string" ? metadata.trigger_combatant_name : "攻击者";
               const actionName = typeof metadata.trigger_action_name === "string" ? metadata.trigger_action_name : "攻击";
               const hitName = typeof metadata.hit_combatant_name === "string" ? metadata.hit_combatant_name : "目标";
+              const requiresReductionRoll = metadata.requires_reduction_roll === true;
+              const reductionRoll = preDamageReductionRolls[action.id] ?? "";
+              const reductionBonus = Number(metadata.dexterity_modifier ?? 0) + Number(metadata.class_level ?? 1);
+              const reductionFormula = typeof metadata.damage_reduction_formula === "string" ? metadata.damage_reduction_formula : "1d10+敏捷调整值+职业等级";
               return (
                 <div className="flex flex-wrap items-center gap-2 rounded border border-amber-900/60 bg-ink-950/40 px-2 py-1.5 text-2xs" key={action.id}>
-                  <span className="mr-auto text-stone-300">{triggerName} 使用「{actionName}」命中 {hitName} · 伤害未落地</span>
-                  <Button disabled={resolvePreDamageReaction.isPending} loading={resolvePreDamageReaction.isPending} onClick={() => resolvePreDamageReaction.mutate({ windowId: action.id, version: action.version, decision: "accept", featureId })} size="sm" variant="danger">确认直觉闪避</Button>
+                  <span className="mr-auto text-stone-300">{triggerName} 使用「{actionName}」命中 {hitName} · 伤害未落地 · {featureName}</span>
+                  {requiresReductionRoll ? (
+                    <label className="flex items-center gap-1 text-2xs text-amber-100">
+                      d10减伤骰
+                      <input aria-label={`${action.id} 偏转攻击减伤骰`} className="w-16 rounded border border-amber-800 bg-ink-950 px-1.5 py-1" max="10" min="1" onChange={(event) => setPreDamageReductionRolls((current) => ({ ...current, [action.id]: event.target.value }))} type="number" value={reductionRoll} />
+                      <span className="text-stone-400">{reductionFormula}（固定加值 {reductionBonus}）</span>
+                    </label>
+                  ) : null}
+                  <Button disabled={resolvePreDamageReaction.isPending || (requiresReductionRoll && (!reductionRoll.trim() || !Number.isInteger(Number(reductionRoll)) || Number(reductionRoll) < 1 || Number(reductionRoll) > 10))} loading={resolvePreDamageReaction.isPending} onClick={() => resolvePreDamageReaction.mutate({ windowId: action.id, version: action.version, decision: "accept", featureId, reductionRoll: requiresReductionRoll ? Number(reductionRoll) : undefined })} size="sm" variant="danger">确认{featureName}</Button>
                   <Button disabled={resolvePreDamageReaction.isPending} onClick={() => resolvePreDamageReaction.mutate({ windowId: action.id, version: action.version, decision: "reject" })} size="sm">放弃反应</Button>
                 </div>
               );

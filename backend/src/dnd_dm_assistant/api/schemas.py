@@ -1099,6 +1099,7 @@ class CombatPreDamageReactionCommand(BaseModel):
     reaction_window_version: int = Field(ge=1)
     decision: Literal["accept", "reject"]
     feature_id: str | None = Field(default=None, min_length=1, max_length=120)
+    reduction_roll: int | None = Field(default=None, ge=1, le=10)
 
     @model_validator(mode="after")
     def validate_pre_damage_reaction(self) -> CombatPreDamageReactionCommand:
@@ -1106,6 +1107,14 @@ class CombatPreDamageReactionCommand(BaseModel):
             raise ValueError("使用伤害前反应时必须选择职业特性")
         if self.decision == "reject" and self.feature_id is not None:
             raise ValueError("放弃伤害前反应时不能携带职业特性")
+        if (
+            self.decision == "accept"
+            and self.feature_id == "deflect_attacks"
+            and self.reduction_roll is None
+        ):
+            raise ValueError("使用偏转攻击时必须提交 d10 减伤骰结果")
+        if self.feature_id != "deflect_attacks" and self.reduction_roll is not None:
+            raise ValueError("减伤骰结果只适用于偏转攻击")
         return self
 
 

@@ -762,6 +762,7 @@ export const resolveCombatPreDamageReaction = (
     reaction_window_version: number;
     decision: "accept" | "reject";
     feature_id?: string | null;
+    reduction_roll?: number | null;
   },
   requestId: string = createClientId("pre-damage-reaction"),
 ) => apiFetch<Record<string, unknown>>(

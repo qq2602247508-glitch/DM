@@ -3119,6 +3119,15 @@ class PlayerRoomService:
                         "kind": "pre_damage",
                         "feature_id": metadata.get("feature_id"),
                         "feature_name": metadata.get("feature_name"),
+                        "requires_reduction_roll": metadata.get("requires_reduction_roll", False),
+                        "damage_reduction_formula": metadata.get("damage_reduction_formula"),
+                        "damage_reduction_bonus": (
+                            int(metadata.get("dexterity_modifier") or 0)
+                            + int(metadata.get("class_level") or 1)
+                            if metadata.get("requires_reduction_roll")
+                            else None
+                        ),
+                        "eligible_damage_types": metadata.get("eligible_damage_types"),
                         "source_name": metadata.get("trigger_combatant_name"),
                         "source_action_name": metadata.get("trigger_action_name"),
                         "damage_expression": None,

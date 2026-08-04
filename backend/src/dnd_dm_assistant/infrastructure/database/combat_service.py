@@ -1155,16 +1155,36 @@ class CombatEngineService:
                 continue
             if trigger.get("event") not in {"attacker_hits_self", "hit_by_attack"}:
                 continue
-            # This is the first real pre-damage feature executor.  Deflect
-            # attacks needs a player d10 and a separate redirect branch; it
-            # stays visible in the registry but must not block an attack yet.
-            if feature_id != "uncanny_dodge":
+            if feature_id not in {"uncanny_dodge", "deflect_attacks"}:
                 continue
+            ability_scores = (combatant.snapshot_json or {}).get("ability_scores")
+            scores = ability_scores if isinstance(ability_scores, dict) else {}
+            dexterity = int(scores.get("dexterity", scores.get("敏捷", 10)) or 10)
+            progression = runtime.get("progression") if isinstance(runtime, dict) else None
+            progression = progression if isinstance(progression, dict) else {}
+            class_levels = progression.get("class_levels")
+            class_level_values = (
+                [int(value) for value in class_levels.values() if isinstance(value, (int, float))]
+                if isinstance(class_levels, dict)
+                else []
+            )
+            class_level = max(
+                class_level_values
+                or [int(progression.get("total_level") or 1)]
+            )
+            eligible_damage_types = raw.get("eligible_damage_types")
+            if eligible_damage_types != "all" and not isinstance(eligible_damage_types, list):
+                eligible_damage_types = []
             result.append(
                 {
                     "feature_id": feature_id,
                     "name": str(raw.get("name") or feature_id),
                     "damage_multiplier": raw.get("damage_multiplier"),
+                    "damage_reduction_formula": raw.get("damage_reduction_formula"),
+                    "eligible_damage_types": eligible_damage_types,
+                    "dexterity_modifier": floor((dexterity - 10) / 2),
+                    "class_level": class_level,
+                    "requires_reduction_roll": feature_id == "deflect_attacks",
                     "trigger": trigger,
                 }
             )
@@ -1207,7 +1227,17 @@ class CombatEngineService:
             hit_basis = "dm_override"
         else:
             return None
+        incoming_damage_types = {
+            str(component.damage_type).strip().lower()
+            for component in command.damage_components
+        } or {str(command.damage_type or "").strip().lower()}
         for feature in cls._pre_damage_feature_reactions(target):
+            if feature.get("feature_id") == "deflect_attacks":
+                eligible = feature.get("eligible_damage_types")
+                if eligible != "all" and not incoming_damage_types.issubset(
+                    {str(item).strip().lower() for item in eligible or []}
+                ):
+                    continue
             trigger = feature.get("trigger")
             if (
                 isinstance(trigger, dict)
@@ -1240,6 +1270,38 @@ class CombatEngineService:
                 }
             )
         return command.model_copy(update={"amount": command.amount // 2})
+
+    @staticmethod
+    def _deflect_damage_command(
+        command: CombatActionCommand,
+        *,
+        reduction_roll: int,
+        dexterity_modifier: int,
+        class_level: int,
+    ) -> tuple[CombatActionCommand, int]:
+        """Apply Deflect Attacks before the normal defense/HP pipeline."""
+
+        reduction_total = max(0, int(reduction_roll) + int(dexterity_modifier) + int(class_level))
+        if command.damage_components:
+            remaining_reduction = reduction_total
+            components = []
+            for component in command.damage_components:
+                reduced_amount = max(
+                    0,
+                    component.amount - min(component.amount, remaining_reduction),
+                )
+                remaining_reduction = max(0, remaining_reduction - component.amount)
+                components.append(component.model_copy(update={"amount": reduced_amount}))
+            return command.model_copy(
+                update={
+                    "amount": sum(component.amount for component in components),
+                    "damage_components": components,
+                }
+            ), reduction_total
+        return (
+            command.model_copy(update={"amount": max(0, command.amount - reduction_total)}),
+            reduction_total,
+        )
 
     @classmethod
     def _validate_reaction_window(
@@ -6795,14 +6857,21 @@ class CombatEngineService:
         candidate: dict[str, object],
         source_idempotency_key: str,
     ) -> CombatAction:
+        feature_id = str(candidate["feature_id"])
+        feature_name = str(candidate["name"])
         metadata: dict[str, object] = {
             "phase": "pre_damage",
             "status": "pending",
             "action_cost": "reaction",
             "reaction_event": "hit_by_attack",
-            "feature_id": candidate["feature_id"],
-            "feature_name": candidate["name"],
+            "feature_id": feature_id,
+            "feature_name": feature_name,
             "damage_multiplier": candidate.get("damage_multiplier"),
+            "damage_reduction_formula": candidate.get("damage_reduction_formula"),
+            "eligible_damage_types": candidate.get("eligible_damage_types"),
+            "dexterity_modifier": candidate.get("dexterity_modifier"),
+            "class_level": candidate.get("class_level"),
+            "requires_reduction_roll": candidate.get("requires_reduction_roll", False),
             "trigger_action_type": command.action_type,
             "trigger_action_name": command.action_name or "攻击",
             "trigger_combatant_id": attacker.id,
@@ -6834,13 +6903,14 @@ class CombatEngineService:
             },
             result_json={"action_window": metadata},
             explanation=(
-                "攻击已确认命中，但伤害尚未落地；等待受击单位选择直觉闪避。"
+                "攻击已确认命中，但伤害尚未落地；等待受击单位选择"
+                f"{feature_name}。"
             ),
             round_number=combat.round_number,
             turn_index=combat.current_turn_index,
             summary=(
                 f"{target.display_name}：{attacker.display_name} 命中，"
-                "伤害前反应已暂停（直觉闪避）"
+                f"伤害前反应已暂停（{feature_name}）"
             ),
             idempotency_key=cls._pre_damage_window_key(source_idempotency_key),
             status="confirmed",
@@ -6859,6 +6929,7 @@ class CombatEngineService:
         skip_pre_damage_reaction: bool = False,
         pre_damage_reaction_window_id: str | None = None,
         pre_damage_reaction_decision: str | None = None,
+        pre_damage_reduction_roll: int | None = None,
     ) -> dict[str, Any]:
         if not idempotency_key.strip():
             raise ValueError("idempotency key is required")
@@ -6941,17 +7012,42 @@ class CombatEngineService:
                     raise ValueError("伤害前反应窗口不存在、已处理或来源不匹配")
                 if pre_damage_reaction_decision == "accept":
                     feature_id = str(pre_damage_metadata.get("feature_id") or "")
-                    if feature_id != "uncanny_dodge":
-                        raise ValueError("该伤害前反应暂未接入真实结算")
                     if not target.reaction_available:
                         raise ValueError("该单位的反应已经用过")
                     target.reaction_available = False
                     target.version += 1
                     target.updated_at = datetime.now(UTC)
-                    command = self._halve_damage_command(command)
-                    pre_damage_metadata["applied"] = True
-                    pre_damage_metadata["applied_feature_id"] = feature_id
-                    pre_damage_metadata["applied_rule"] = "每个伤害段在防御前向下取整为一半"
+                    if feature_id == "uncanny_dodge":
+                        command = self._halve_damage_command(command)
+                        pre_damage_metadata["applied"] = True
+                        pre_damage_metadata["applied_feature_id"] = feature_id
+                        pre_damage_metadata["applied_rule"] = "每个伤害段在防御前向下取整为一半"
+                    elif feature_id == "deflect_attacks":
+                        if pre_damage_reduction_roll is None:
+                            raise ValueError("使用偏转攻击时必须提交 d10 减伤骰结果")
+                        command, reduction_total = self._deflect_damage_command(
+                            command,
+                            reduction_roll=pre_damage_reduction_roll,
+                            dexterity_modifier=int(
+                                pre_damage_metadata.get("dexterity_modifier") or 0
+                            ),
+                            class_level=int(pre_damage_metadata.get("class_level") or 1),
+                        )
+                        pre_damage_metadata["applied"] = True
+                        pre_damage_metadata["applied_feature_id"] = feature_id
+                        pre_damage_metadata["damage_reduction_roll"] = pre_damage_reduction_roll
+                        pre_damage_metadata["damage_reduction_total"] = reduction_total
+                        pre_damage_metadata["damage_after_reduction"] = command.amount
+                        pre_damage_metadata["redirect_available"] = command.amount == 0
+                        pre_damage_metadata["redirect_status"] = (
+                            "dm_review_required" if command.amount == 0 else "not_applicable"
+                        )
+                        pre_damage_metadata["applied_rule"] = (
+                            "d10 + 敏捷调整值 + 职业等级；"
+                            "在防御前从攻击伤害中扣除"
+                        )
+                    else:
+                        raise ValueError("该伤害前反应暂未接入真实结算")
                 else:
                     pre_damage_metadata["applied"] = False
             self._validate_monster_sequence(session, combat_id, actor, command)
@@ -7386,13 +7482,25 @@ class CombatEngineService:
                         "window_id": pre_damage_window.id,
                         "decision": pre_damage_reaction_decision,
                         "feature_id": pre_damage_metadata.get("feature_id"),
+                        "damage_reduction_roll": pre_damage_metadata.get("damage_reduction_roll"),
+                        "damage_reduction_total": pre_damage_metadata.get("damage_reduction_total"),
+                        "redirect_available": pre_damage_metadata.get("redirect_available", False),
                         "applied": pre_damage_metadata.get("applied", False),
                     },
                 }
                 action.summary += (
-                    "；直觉闪避生效，伤害按每段向下取整减半"
-                    if pre_damage_reaction_decision == "accept"
-                    else "；受击者未使用伤害前反应"
+                    "；受击者未使用伤害前反应"
+                    if pre_damage_reaction_decision != "accept"
+                    else (
+                        "；偏转攻击生效，已按 d10+敏捷调整值+职业等级减伤"
+                        + (
+                            "；伤害归零，等待 DM 处理反击分支"
+                            if pre_damage_metadata.get("redirect_available")
+                            else ""
+                        )
+                        if pre_damage_metadata.get("feature_id") == "deflect_attacks"
+                        else "；直觉闪避生效，伤害按每段向下取整减半"
+                    )
                 )
             session.add(action)
             session.flush()
@@ -7552,7 +7660,7 @@ class CombatEngineService:
                 expected_feature = str(metadata.get("feature_id") or "")
                 if command.feature_id != expected_feature:
                     raise ValueError("所选反应与伤害前窗口不匹配")
-                if command.feature_id != "uncanny_dodge":
+                if command.feature_id not in {"uncanny_dodge", "deflect_attacks"}:
                     raise ValueError("该伤害前反应暂未接入真实结算")
             target = session.get(Combatant, window.actor_combatant_id)
             if target is None or target.version != int(metadata.get("target_version") or 0):
@@ -7585,6 +7693,7 @@ class CombatEngineService:
                 skip_pre_damage_reaction=True,
                 pre_damage_reaction_window_id=command.reaction_window_id,
                 pre_damage_reaction_decision=command.decision,
+                pre_damage_reduction_roll=command.reduction_roll,
             )
         except Exception:
             with Session(self.engine) as session, session.begin():

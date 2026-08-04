@@ -768,9 +768,9 @@ def test_rogue_and_monk_event_bound_features_keep_explicit_dm_boundaries() -> No
     assert energy_deflect["eligible_damage_types"] == "all"
     assert energy_deflect["damage_reduction"] == "1d10+dexterity_modifier+13"
     assert energy_deflect["runtime_execution"] == {
-        "status": "blocked",
+        "status": "partial",
         "consumer": "combat_feature_action",
-        "blocked_by": "post_hit_reaction_roll_and_redirect_choice",
+        "blocked_by": "redirect_choice_after_zero_damage",
     }
     assert "deflect_attacks" not in {
         item["feature_id"] for item in feature_runtime_action_projections(monk_13)

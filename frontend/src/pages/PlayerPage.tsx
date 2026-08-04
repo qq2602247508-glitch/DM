@@ -1032,6 +1032,7 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
   const [aimPoint, setAimPoint] = useState<GridPoint | null>(null);
   const [summonPosition, setSummonPosition] = useState<GridPoint | null>(null);
   const [reactionTrigger, setReactionTrigger] = useState("");
+  const [preDamageReductionRolls, setPreDamageReductionRolls] = useState<Record<string, string>>({});
   const [criticalHit, setCriticalHit] = useState(false);
   const [rolls, setRolls] = useState<Record<string, string>>({});
   const [deathSaveRoll, setDeathSaveRoll] = useState("");
@@ -1700,10 +1701,10 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
     },
   });
   const preDamageReactionMutation = useMutation({
-    mutationFn: ({ id, version, decision, featureId }: { id: string; version: number; decision: "accept" | "reject"; featureId?: string }) =>
-      resolveMyPreDamageReaction(id, version, decision, featureId),
+    mutationFn: ({ id, version, decision, featureId, reductionRoll }: { id: string; version: number; decision: "accept" | "reject"; featureId?: string; reductionRoll?: number }) =>
+      resolveMyPreDamageReaction(id, version, decision, featureId, reductionRoll),
     onSuccess: (_result, variables) => {
-      setLastResolution(variables.decision === "accept" ? "已使用直觉闪避；原攻击正在按减半伤害结算。" : "已放弃伤害前反应；原攻击正在正常结算。");
+      setLastResolution(variables.decision === "accept" && variables.featureId === "deflect_attacks" ? "已使用偏转攻击；原攻击正在按减伤骰结算。" : variables.decision === "accept" ? "已使用直觉闪避；原攻击正在按减半伤害结算。" : "已放弃伤害前反应；原攻击正在正常结算。");
       refresh();
     },
   });
@@ -1972,16 +1973,27 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
           {(combat.pending_reactions ?? []).map((reaction) => (
             reaction.kind === "pre_damage" ? (
               <div className="mb-3 rounded border border-amber-700 bg-amber-950/25 p-3" data-testid="player-pending-pre-damage-reaction" key={reaction.id}>
+                {(() => {
+                  const requiresReductionRoll = reaction.requires_reduction_roll === true;
+                  const reductionRoll = preDamageReductionRolls[reaction.id] ?? "";
+                  const reductionBonus = reaction.damage_reduction_bonus ?? 0;
+                  const canAccept = !requiresReductionRoll || (Number.isInteger(Number(reductionRoll)) && Number(reductionRoll) >= 1 && Number(reductionRoll) <= 10);
+                  return (
+                <div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <strong className="text-sm text-amber-100">伤害前反应暂停 · {reaction.source_name ?? "攻击者"}</strong>
+                  <strong className="text-sm text-amber-100">伤害前反应暂停 · {reaction.source_name ?? "攻击者"} · {reaction.feature_name ?? "直觉闪避"}</strong>
                   <span className="rounded border border-amber-700/70 px-1.5 py-0.5 text-2xs text-amber-200">伤害尚未落地</span>
+                  {requiresReductionRoll ? <label className="flex items-center gap-1 text-2xs text-amber-100">d10减伤骰<input aria-label={`${reaction.id} 偏转攻击减伤骰`} className="w-16 rounded border border-amber-800 bg-ink-950 px-1.5 py-1" max="10" min="1" onChange={(event) => setPreDamageReductionRolls((current) => ({ ...current, [reaction.id]: event.target.value }))} type="number" value={reductionRoll} /><span className="text-stone-400">+{reductionBonus}</span></label> : null}
                 </div>
                 <p className="mb-0 mt-1 text-xs leading-5 text-stone-300">{reaction.message ?? "你被攻击命中；请选择是否使用反应。"}</p>
-                <p className="mb-0 mt-1 text-2xs text-amber-200">「{reaction.source_action_name ?? "攻击"}」命中你。使用「{reaction.feature_name ?? "直觉闪避"}」会在抗性/免疫结算前将本次攻击每段伤害向下取整减半。</p>
+                <p className="mb-0 mt-1 text-2xs text-amber-200">「{reaction.source_action_name ?? "攻击"}」命中你。{requiresReductionRoll ? `使用偏转攻击会用 d10 + 敏捷调整值 + 职业等级（固定加值 ${reductionBonus}）从攻击伤害中扣除；伤害归零后的反击分支仍需 DM 确认。` : "使用直觉闪避会在抗性/免疫结算前将本次攻击每段伤害向下取整减半。"}</p>
                 <div className="mt-2 flex gap-2">
-                  <Button disabled={preDamageReactionMutation.isPending} loading={preDamageReactionMutation.isPending && preDamageReactionMutation.variables?.id === reaction.id && preDamageReactionMutation.variables.decision === "accept"} onClick={() => preDamageReactionMutation.mutate({ id: reaction.id, version: reaction.version, decision: "accept", featureId: reaction.feature_id ?? "uncanny_dodge" })} variant="danger">使用直觉闪避</Button>
+                  <Button disabled={preDamageReactionMutation.isPending || !canAccept} loading={preDamageReactionMutation.isPending && preDamageReactionMutation.variables?.id === reaction.id && preDamageReactionMutation.variables.decision === "accept"} onClick={() => preDamageReactionMutation.mutate({ id: reaction.id, version: reaction.version, decision: "accept", featureId: reaction.feature_id ?? "uncanny_dodge", reductionRoll: requiresReductionRoll ? Number(reductionRoll) : undefined })} variant="danger">使用{reaction.feature_name ?? "直觉闪避"}</Button>
                   <Button disabled={preDamageReactionMutation.isPending} loading={preDamageReactionMutation.isPending && preDamageReactionMutation.variables?.id === reaction.id && preDamageReactionMutation.variables.decision === "reject"} onClick={() => preDamageReactionMutation.mutate({ id: reaction.id, version: reaction.version, decision: "reject" })}>不使用</Button>
                 </div>
+                </div>
+                  );
+                })()}
               </div>
             ) : (
               <div className="mb-3 rounded border border-red-700 bg-red-950/25 p-3" data-testid="player-pending-reaction" key={reaction.id}>

@@ -1804,6 +1804,94 @@ def test_uncanny_dodge_pauses_damage_then_halves_before_defenses(
     assert replay.json()["action"]["id"] == rejected.json()["action"]["id"]
 
 
+def test_deflect_attacks_uses_player_d10_and_leaves_zero_damage_for_dm_redirect(
+    combat_client: TestClient,
+) -> None:
+    campaign = _campaign(combat_client, "Deflect attacks reaction")
+    base = f"/api/v1/campaigns/{campaign['id']}"
+    combat = combat_client.post(
+        f"{base}/combats", json={"name": "Deflect attacks combat"}
+    ).json()
+    attacker = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "偏转攻击者",
+            "entity_type": "monster",
+            "initiative": 20,
+            "hp": 20,
+            "max_hp": 20,
+        },
+    ).json()
+    monk = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "武僧",
+            "entity_type": "character",
+            "initiative": 10,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {
+                "ability_scores": {"dexterity": 16},
+                "feature_runtime": {
+                    "progression": {"class_levels": {"武僧": 5}, "total_level": 5},
+                    "actions": {
+                        "deflect_attacks": {
+                            "name": "偏转攻击",
+                            "kind": "feature_action",
+                            "action_cost": "reaction",
+                            "damage_reduction_formula": "1d10+敏捷调整值+职业等级",
+                            "eligible_damage_types": ["bludgeoning", "piercing", "slashing"],
+                            "trigger": {"event": "attacker_hits_self", "timing": "before_damage"},
+                        }
+                    },
+                },
+            },
+        },
+    ).json()
+    path = f"{base}/combats/{combat['id']}/actions/confirm"
+    attack = combat_client.post(
+        path,
+        headers={"X-Request-ID": "deflect-attacks-hit"},
+        json={
+            "action_type": "damage",
+            "actor_combatant_id": attacker["id"],
+            "actor_version": attacker["version"],
+            "target_combatant_id": monk["id"],
+            "target_version": monk["version"],
+            "action_cost": "none",
+            "action_name": "长剑",
+            "amount": 27,
+            "damage_type": "slashing",
+            "is_attack": True,
+            "attack_roll_total": 18,
+        },
+    )
+    assert attack.status_code == 200, attack.text
+    assert attack.json()["phase"] == "awaiting_reaction"
+    window = attack.json()["pending_reaction"]
+    assert window["result_json"]["action_window"]["feature_id"] == "deflect_attacks"
+    assert window["result_json"]["action_window"]["dexterity_modifier"] == 3
+    assert window["result_json"]["action_window"]["class_level"] == 5
+    resolved = combat_client.post(
+        f"{base}/combats/{combat['id']}/reactions/pre-damage/resolve",
+        headers={"X-Request-ID": "deflect-attacks-choice"},
+        json={
+            "reaction_window_id": window["id"],
+            "reaction_window_version": window["version"],
+            "decision": "accept",
+            "feature_id": "deflect_attacks",
+            "reduction_roll": 4,
+        },
+    )
+    assert resolved.status_code == 200, resolved.text
+    assert resolved.json()["target"]["hp"] == 5
+    assert resolved.json()["target"]["reaction_available"] is False
+    reaction = resolved.json()["action"]["result_json"]["pre_damage_reaction"]
+    assert reaction["damage_reduction_roll"] == 4
+    assert reaction["damage_reduction_total"] == 12
+    assert reaction["redirect_available"] is False
+
+
 def test_multiattack_sequence_records_independent_hits_and_targets(
     combat_client: TestClient,
 ) -> None:
