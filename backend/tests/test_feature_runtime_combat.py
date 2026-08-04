@@ -45,6 +45,23 @@ def test_typed_feature_saving_throw_advantage_is_consumed_by_save_resolution() -
     assert result["success"] is True
     assert "feature:危险感知" in result["applied_defenses"]
 
+    target.conditions = ["失能"]
+    blocked = CombatEngineService._resolve_save_defenses(
+        target,
+        dc=15,
+        ability="敏捷",
+        roll_total=8,
+        roll_totals=[8, 17],
+        damage_on_success=0,
+        damage_on_failure=0,
+        is_magical=True,
+        use_legendary_resistance=False,
+        use_feature_reroll=False,
+        consume=False,
+    )
+    assert blocked["effective_roll_total"] == 8
+    assert "feature:危险感知" not in blocked["applied_defenses"]
+
 
 def test_rage_strength_saving_throw_advantage_requires_active_raging_condition() -> None:
     raging_target = Combatant(

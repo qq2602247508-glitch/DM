@@ -1019,7 +1019,7 @@ def test_2024_deterministic_feature_contracts_are_explicit_but_partial_when_even
     )
     assert danger_sense["operation"] == "advantage"
     assert danger_sense["ability"] == "dexterity"
-    assert danger_sense["automation_status"] == "partial"
+    assert danger_sense["automation_status"] == "full"
 
     reliable_talent = next(
         item

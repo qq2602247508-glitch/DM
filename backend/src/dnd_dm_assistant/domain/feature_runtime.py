@@ -1032,9 +1032,9 @@ def feature_runtime_definition(
                 "ability": "dexterity",
                 "scope": "self",
                 "applies_when": "not_incapacitated",
-                "automation_status": "partial",
-                "requires_dm_adjudication": True,
-                "partial_reason": "豁免优势规则已结构化；状态门槛仍待统一条件求值。",
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+                "summary": "未处于失能状态时，敏捷豁免具有优势。",
                 **source,
             }
         )
