@@ -1096,6 +1096,34 @@ class CombatEngineService:
             names.append(name or f"未命名{label} {index + 1}")
         return names
 
+    @staticmethod
+    def _structured_reaction_actions(
+        combatant: Combatant,
+        reaction_event: str,
+    ) -> list[dict[str, str]]:
+        """Return explicitly structured reactions for one event boundary."""
+
+        raw_actions = dict(combatant.snapshot_json or {}).get("actions")
+        if not isinstance(raw_actions, list):
+            return []
+        result: list[dict[str, str]] = []
+        for raw in raw_actions:
+            if not isinstance(raw, dict):
+                continue
+            if str(raw.get("action_type") or "").strip() != "reaction":
+                continue
+            if str(raw.get("reaction_event") or "").strip() != reaction_event:
+                continue
+            name = str(raw.get("name") or "").strip()
+            if not name:
+                continue
+            action = {"name": name}
+            trigger = str(raw.get("reaction_trigger") or "").strip()
+            if trigger:
+                action["trigger"] = trigger
+            result.append(action)
+        return result
+
     @classmethod
     def _persist_eligible_advanced_action_windows(
         cls,
@@ -1117,6 +1145,10 @@ class CombatEngineService:
 
         if active is None:
             return
+        previous_active_id = previous_active.id if previous_active is not None else None
+        previous_active_name = (
+            previous_active.display_name if previous_active is not None else "上一行动单位"
+        )
         active_index = next(
             (index for index, row in enumerate(ordered) if row.id == active.id),
             None,
@@ -1135,14 +1167,81 @@ class CombatEngineService:
             if actor.entity_type != "monster" or actor.hp <= 0:
                 continue
             state = dict(actor.snapshot_json or {})
+            reaction_actions = cls._structured_reaction_actions(actor, "turn_end")
+            if (
+                reaction_actions
+                and actor.reaction_available
+                and previous_active_id is not None
+                and actor.id != previous_active_id
+            ):
+                idempotency_key = (
+                    f"rw:{combat.id}:{actor.id}:{combat.round_number}:"
+                    f"{combat.current_turn_index}:turn_end"
+                )
+                existing = session.scalar(
+                    select(CombatAction).where(
+                        CombatAction.combat_id == combat.id,
+                        CombatAction.idempotency_key == idempotency_key,
+                    )
+                )
+                if existing is None:
+                    reaction_metadata: dict[str, object] = {
+                        "action_cost": "reaction",
+                        "status": "eligible",
+                        "window_key": window_key,
+                        "trigger": "other_turn_end",
+                        "reaction_event": "turn_end",
+                        "eligible_action_names": [
+                            action["name"] for action in reaction_actions
+                        ],
+                        "active_combatant_id": active.id,
+                        "trigger_combatant_id": previous_active_id,
+                        "trigger_combatant_name": previous_active_name,
+                    }
+                    reaction_triggers = {
+                        action["name"]: action["trigger"]
+                        for action in reaction_actions
+                        if action.get("trigger")
+                    }
+                    if reaction_triggers:
+                        reaction_metadata["reaction_triggers"] = reaction_triggers
+                    session.add(
+                        CombatAction(
+                            campaign_id=combat.campaign_id,
+                            combat_id=combat.id,
+                            actor_combatant_id=actor.id,
+                            transaction_id=transaction.id,
+                            action_type="eligible_action_window",
+                            target_combatant_ids=[],
+                            request_json={
+                                "source_action_type": "advance_turn",
+                                "reaction_event": "turn_end",
+                                "previous_active_combatant_id": previous_active_id,
+                                "active_combatant_id": active.id,
+                            },
+                            result_json={"action_window": reaction_metadata},
+                            explanation=(
+                                "仅记录结构化回合结束反应的可触发时机；不会自动掷骰、"
+                                "消耗反应或执行动作。"
+                            ),
+                            round_number=combat.round_number,
+                            turn_index=combat.current_turn_index,
+                            summary=(
+                                f"{actor.display_name}：回合结束反应窗口已开放"
+                                f"（{previous_active_name} 回合结束后；等待 DM 确认）"
+                            ),
+                            idempotency_key=idempotency_key,
+                            status="confirmed",
+                        )
+                    )
             for action_cost in ("legendary_action", "lair_action"):
                 action_names = cls._structured_advanced_action_names(actor, action_cost)
                 if not action_names:
                     continue
                 if action_cost == "legendary_action":
                     if (
-                        previous_active is None
-                        or actor.id == previous_active.id
+                        previous_active_id is None
+                        or actor.id == previous_active_id
                         or actor.id == active.id
                     ):
                         continue
@@ -1178,8 +1277,8 @@ class CombatEngineService:
                     "active_combatant_id": active.id,
                 }
                 if action_cost == "legendary_action":
-                    metadata["trigger_combatant_id"] = previous_active.id
-                    metadata["trigger_combatant_name"] = previous_active.display_name
+                    metadata["trigger_combatant_id"] = previous_active_id
+                    metadata["trigger_combatant_name"] = previous_active_name
                     pool_max = cls._state_int(state.get("legendary_actions_max"))
                     raw_actions = state.get("actions")
                     inferred_pools = {
@@ -1203,7 +1302,7 @@ class CombatEngineService:
                     metadata["legendary_actions_remaining"] = remaining
                     summary = (
                         f"{actor.display_name}：传奇动作窗口已开放"
-                        f"（{previous_active.display_name} 回合结束后；等待 DM 确认）"
+                        f"（{previous_active_name} 回合结束后；等待 DM 确认）"
                     )
                 else:
                     metadata["initiative"] = active.initiative

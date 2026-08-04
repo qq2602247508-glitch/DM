@@ -1054,6 +1054,103 @@ def test_advanced_action_windows_are_persisted_only_at_legal_turn_boundaries(
     ) == 2
 
 
+def test_structured_turn_end_reaction_window_excludes_reaction_owner_turn(
+    combat_client: TestClient,
+) -> None:
+    campaign = _campaign(combat_client, "Structured turn-end reaction")
+    base = f"/api/v1/campaigns/{campaign['id']}"
+    combat = combat_client.post(
+        f"{base}/combats", json={"name": "Structured turn-end reaction combat"}
+    ).json()
+    high_guard = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "高先攻守卫",
+            "entity_type": "character",
+            "initiative": 25,
+            "hp": 20,
+            "max_hp": 20,
+        },
+    ).json()
+    monster = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "回合末反应怪",
+            "entity_type": "monster",
+            "initiative": 15,
+            "hp": 30,
+            "max_hp": 30,
+            "snapshot_json": {
+                "actions": [
+                    {
+                        "name": "回合末凝视",
+                        "action_type": "reaction",
+                        "reaction_event": "turn_end",
+                        "reaction_trigger": "当另一个生物回合结束时",
+                        "damage": "1d6",
+                    }
+                ]
+            },
+        },
+    ).json()
+    low_guard = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "低先攻冒险者",
+            "entity_type": "character",
+            "initiative": 10,
+            "hp": 20,
+            "max_hp": 20,
+        },
+    ).json()
+    advance_path = f"{base}/combats/{combat['id']}/turns/advance"
+    first = combat_client.post(
+        advance_path,
+        headers={"X-Request-ID": "turn-end-reaction-first"},
+        json={"combat_version": combat["version"]},
+    )
+    assert first.status_code == 200, first.text
+    assert first.json()["active_combatant"]["id"] == monster["id"]
+    first_actions = combat_client.get(f"{base}/combats/{combat['id']}/actions").json()["items"]
+    first_windows = [
+        item["result_json"]["action_window"]
+        for item in first_actions
+        if item["action_type"] == "eligible_action_window"
+    ]
+    assert len(first_windows) == 1
+    assert first_windows[0]["action_cost"] == "reaction"
+    assert first_windows[0]["reaction_event"] == "turn_end"
+    assert first_windows[0]["trigger"] == "other_turn_end"
+    assert first_windows[0]["eligible_action_names"] == ["回合末凝视"]
+    assert first_windows[0]["trigger_combatant_id"] == high_guard["id"]
+
+    repeated = combat_client.post(
+        advance_path,
+        headers={"X-Request-ID": "turn-end-reaction-first"},
+        json={"combat_version": combat["version"]},
+    )
+    assert repeated.status_code == 200, repeated.text
+    repeated_actions = combat_client.get(f"{base}/combats/{combat['id']}/actions").json()["items"]
+    assert sum(
+        item["action_type"] == "eligible_action_window"
+        for item in repeated_actions
+    ) == 1
+
+    current = combat_client.get(f"{base}/combats/{combat['id']}").json()
+    second = combat_client.post(
+        advance_path,
+        headers={"X-Request-ID": "turn-end-reaction-owner"},
+        json={"combat_version": current["version"]},
+    )
+    assert second.status_code == 200, second.text
+    assert second.json()["active_combatant"]["id"] == low_guard["id"]
+    second_actions = combat_client.get(f"{base}/combats/{combat['id']}/actions").json()["items"]
+    assert sum(
+        item["action_type"] == "eligible_action_window"
+        for item in second_actions
+    ) == 1
+
+
 def test_structured_reaction_event_must_match_monster_action(
     combat_client: TestClient,
 ) -> None:
