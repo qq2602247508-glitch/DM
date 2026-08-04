@@ -3874,11 +3874,22 @@ class CombatEngineService:
         if grid is None:
             return None
         blockers, cover_cells = cls._grid_obstacles(session, grid)
-        distance_ft = grid_distance_ft(
+        horizontal_distance_ft = grid_distance_ft(
             actor_point,
             target_point,
             cell_size_ft=grid.cell_size_ft,
         )
+        actor_elevation_ft = cls._explicit_grid_elevation_ft(actor)
+        target_elevation_ft = cls._explicit_grid_elevation_ft(target)
+        vertical_distance_ft = (
+            abs(actor_elevation_ft - target_elevation_ft)
+            if actor_elevation_ft is not None and target_elevation_ft is not None
+            else None
+        )
+        # On an authoritative 3-D grid, 5e's cube-style distance uses the
+        # greatest axis distance. Missing altitude deliberately keeps the
+        # established 2-D behavior instead of inventing a height.
+        distance_ft = max(horizontal_distance_ft, vertical_distance_ft or 0)
         if command.attack_range_ft is not None and distance_ft > command.attack_range_ft:
             raise ValueError(
                 f"target is {distance_ft} ft away, beyond the explicit "
@@ -3904,6 +3915,9 @@ class CombatEngineService:
             )
         return {
             "distance_ft": distance_ft,
+            "horizontal_distance_ft": horizontal_distance_ft,
+            "vertical_distance_ft": vertical_distance_ft,
+            "distance_mode": "3d" if vertical_distance_ft is not None else "2d",
             "line_of_sight": has_sight,
             "cover": cover,
             "cover_bonus": cover_bonus,
@@ -4204,6 +4218,10 @@ class CombatEngineService:
         geometry = cls._attack_geometry(session, combat, command, actor, target)
         if geometry is not None:
             contexts.append(f"distance_ft:{geometry['distance_ft']}")
+            if geometry["distance_mode"] == "3d":
+                contexts.append(f"horizontal_distance_ft:{geometry['horizontal_distance_ft']}")
+                contexts.append(f"vertical_distance_ft:{geometry['vertical_distance_ft']}")
+                contexts.append("distance_mode:3d")
             contexts.append(f"line_of_sight:{str(geometry['line_of_sight']).lower()}")
             contexts.append(f"cover:{geometry['cover']}")
             contexts.append(f"effective_ac:{geometry['effective_armor_class']}")

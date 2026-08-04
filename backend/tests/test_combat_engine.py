@@ -2011,6 +2011,82 @@ def test_dodge_disadvantage_requires_authoritative_visibility(
     assert "attack_roll_rule:disadvantage" not in hidden_contexts
 
 
+def test_attack_range_uses_authoritative_vertical_distance_when_available(
+    combat_client: TestClient,
+) -> None:
+    campaign = _campaign(combat_client, "3-D attack range")
+    base = f"/api/v1/campaigns/{campaign['id']}"
+    scene = combat_client.post(f"{base}/scenes", json={"name": "Vertical room"}).json()
+    grid = combat_client.post(
+        f"{base}/scenes/{scene['id']}/grid",
+        json={"width": 8, "height": 8, "cell_size_ft": 5, "mode": "combat"},
+    )
+    assert grid.status_code == 201, grid.text
+    combat = combat_client.post(
+        f"{base}/combats",
+        json={"name": "3-D attack range combat", "scene_id": scene["id"]},
+    ).json()
+    target = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "高处目标",
+            "entity_type": "character",
+            "initiative": 20,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {
+                "grid_position": {"row": 1, "col": 4, "elevation_ft": 20}
+            },
+        },
+    ).json()
+    attacker = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "地面攻击者",
+            "entity_type": "monster",
+            "initiative": 10,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {
+                "grid_position": {"row": 1, "col": 1, "elevation_ft": 0}
+            },
+        },
+    ).json()
+    path = f"{base}/combats/{combat['id']}/actions/confirm"
+    common = {
+        "action_type": "damage",
+        "is_attack": True,
+        "action_cost": "none",
+        "actor_combatant_id": attacker["id"],
+        "actor_version": attacker["version"],
+        "target_combatant_id": target["id"],
+        "target_version": target["version"],
+        "amount": 1,
+        "damage_type": "piercing",
+        "attack_roll_total": 10,
+        "attack_roll_mode": "normal",
+        "attack_adjudication_note": "DM确认三维网格高度",
+    }
+    too_short = combat_client.post(
+        path,
+        headers={"X-Request-ID": "3d-attack-range-too-short"},
+        json={**common, "attack_range_ft": 15},
+    )
+    assert too_short.status_code == 400, too_short.text
+    assert "beyond the explicit 15 ft attack range" in too_short.json()["message"]
+
+    accepted = combat_client.post(
+        path,
+        headers={"X-Request-ID": "3d-attack-range-accepted"},
+        json={**common, "attack_range_ft": 20},
+    )
+    assert accepted.status_code == 200, accepted.text
+    contexts = accepted.json()["action"]["result_json"]["attack_contexts"]
+    assert "distance_ft:20" in contexts
+    assert "line_of_sight:true" in contexts
+    assert accepted.json()["target"]["hp"] == 19
+
+
 def test_condition_attack_contexts_require_explicit_advantage_ruling(
     combat_client: TestClient,
 ) -> None:
