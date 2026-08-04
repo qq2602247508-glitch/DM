@@ -2,6 +2,15 @@
 
 更新时间：2026-08-04（Asia/Shanghai）
 
+## 2026-08-04 施法事件结构化反应自动开窗（最新）
+
+- 普通施法结算、怪物区域施法和需要玩家豁免的施法 prompt，在施法 action/prompt 建立后统一检查其他存活怪物快照中明确声明的 `reaction_event=casts_spell` 反应。
+- 施法必须与快照中明确的 `spellcasting`、法术环级、法术位资源或 `is_spell` 动作匹配；普通攻击或自由文本不会猜成法术。施法者自身不会给自己开反应窗口，反应已用或未结构化时不提示。
+- 窗口记录施法 action、施法者、法术名、可用反应动作和资料库触发文本，稳定幂等；仍只记录合法触发时机，不自动反制、不自动选择目标、不掷骰或消耗反应。
+- 新增回归覆盖怪物施法等待玩家豁免、区域施法与既有受伤窗口并存；后端全量、Ruff、前端 39 文件/195 项、TypeScript、ESLint、生产构建和 `git diff --check` 通过。
+- 内置浏览器实际刷新 DM `/#/combat` 与玩家模拟房间 `/#/player?simulation_join_code=D6A76S...`，两端战斗快照/先攻/地图正常，控制台 error/warn 均为空。截图：`/private/tmp/dnd-casts-spell-reaction-dm-20260804.jpg`、`/private/tmp/dnd-casts-spell-reaction-player-20260804.jpg`。
+- 仍未完成：进入范围等其他反应事件自动开窗、反应的自动目标/骰值/执行、复杂状态组合、三维遮挡和全职业 1–20 级运行时。
+
 ## 2026-08-04 受伤事件结构化反应自动开窗（最新）
 
 - 普通/玩家伤害、怪物区域伤害和持续效果 tick 在正式伤害 action 落库、逐段防御结算和 HP 更新后，统一检查受伤怪物快照中明确声明的 `reaction_event=takes_damage` 反应。
