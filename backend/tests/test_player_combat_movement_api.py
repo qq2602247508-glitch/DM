@@ -460,6 +460,29 @@ def test_monster_move_prompts_player_and_player_can_accept_structured_reaction(
             },
         },
     ).json()
+    reactor = campaign_client.post(
+        f"/api/v1/campaigns/{campaign_id}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "进入范围守卫",
+            "entity_type": "monster",
+            "initiative": 5,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {
+                "disposition": "ally",
+                "grid_position": {"row": 2, "col": 6},
+                "actions": [
+                    {
+                        "name": "近身拦截",
+                        "action_type": "reaction",
+                        "reaction_event": "enters_reach",
+                        "reaction_trigger": "当生物进入近战威胁范围时",
+                        "range_ft": 5,
+                    }
+                ],
+            },
+        },
+    ).json()
     opened = campaign_client.post(
         f"/api/v1/campaigns/{campaign_id}/player-room/open", json={"hours": 4}
     ).json()
@@ -488,6 +511,21 @@ def test_monster_move_prompts_player_and_player_can_accept_structured_reaction(
         )
         assert moved.status_code == 200, moved.text
         request = moved.json()["reaction_requests"][0]
+        actions = campaign_client.get(
+            f"/api/v1/campaigns/{campaign_id}/combats/{combat['id']}/actions"
+        ).json()["items"]
+        enters_window_items = [
+            item
+            for item in actions
+            if item["action_type"] == "eligible_action_window"
+            and item["result_json"].get("action_window", {}).get("reaction_event")
+            == "enters_reach"
+        ]
+        assert len(enters_window_items) == 1
+        assert enters_window_items[0]["actor_combatant_id"] == reactor["id"]
+        assert enters_window_items[0]["result_json"]["action_window"][
+            "trigger_combatant_id"
+        ] == enemy["id"]
         pending = player.get("/api/v1/player-room/me").json()["combat"]["pending_reactions"]
         assert pending[0]["id"] == request["id"]
         accepted = player.post(
@@ -509,5 +547,136 @@ def test_monster_move_prompts_player_and_player_can_accept_structured_reaction(
         assert current_enemy["reaction_available"] is True
         assert current_actor["reaction_available"] is False
         assert current_enemy["hp"] < current_enemy["max_hp"]
+    finally:
+        player.close()
+
+
+def test_entering_monster_reach_opens_one_structured_dm_window_for_player_move(
+    campaign_client: TestClient,
+) -> None:
+    campaign = campaign_client.post(
+        "/api/v1/campaigns", json={"name": "进入威胁范围反应"}
+    ).json()
+    campaign_id = campaign["id"]
+    character = campaign_client.post(
+        f"/api/v1/campaigns/{campaign_id}/characters",
+        json={"name": "进入者", "class_name": "战士", "hp": 20, "max_hp": 20},
+    ).json()
+    combat = campaign_client.post(
+        f"/api/v1/campaigns/{campaign_id}/combats", json={"name": "进入范围战斗"}
+    ).json()
+    actor = campaign_client.post(
+        f"/api/v1/campaigns/{campaign_id}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": character["name"],
+            "entity_type": "character",
+            "entity_id": character["id"],
+            "initiative": 20,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {"grid_position": {"row": 2, "col": 2}},
+        },
+    ).json()
+    monster = campaign_client.post(
+        f"/api/v1/campaigns/{campaign_id}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "范围守卫",
+            "entity_type": "monster",
+            "initiative": 10,
+            "hp": 30,
+            "max_hp": 30,
+            "snapshot_json": {
+                "grid_position": {"row": 2, "col": 4},
+                "actions": [
+                    {
+                        "name": "进入反击",
+                        "action_type": "reaction",
+                        "reaction_event": "enters_reach",
+                        "reaction_trigger": "当生物进入近战威胁范围时",
+                        "range_ft": 5,
+                    }
+                ],
+            },
+        },
+    ).json()
+    opened = campaign_client.post(
+        f"/api/v1/campaigns/{campaign_id}/player-room/open", json={"hours": 4}
+    ).json()
+    player = TestClient(campaign_client.app)
+    try:
+        assert player.post(
+            "/api/v1/player-room/join",
+            json={"join_code": opened["join_code"], "display_name": "进入范围客户端"},
+        ).status_code == 201
+        assert player.post(
+            "/api/v1/player-room/me/bind-character",
+            json={"character_id": character["id"]},
+        ).status_code == 200
+        assert campaign_client.post(
+            f"/api/v1/campaigns/{campaign_id}/player-room/live-state",
+            json={"combat_id": combat["id"]},
+        ).status_code == 200
+
+        moved = player.post(
+            "/api/v1/player-room/me/combat/move",
+            json={
+                "row": 2,
+                "col": 3,
+                "combatant_version": actor["version"],
+            },
+        )
+        assert moved.status_code == 200, moved.text
+        actions = campaign_client.get(
+            f"/api/v1/campaigns/{campaign_id}/combats/{combat['id']}/actions"
+        ).json()["items"]
+        windows = [
+            item["result_json"]["action_window"]
+            for item in actions
+            if item["action_type"] == "eligible_action_window"
+            and item["result_json"].get("action_window", {}).get("reaction_event")
+            == "enters_reach"
+        ]
+        assert len(windows) == 1
+        assert windows[0]["eligible_action_names"] == ["进入反击"]
+        assert windows[0]["trigger_combatant_id"] == actor["id"]
+        assert windows[0]["from_position"] == {"row": 2, "col": 2}
+        assert windows[0]["to_position"] == {"row": 2, "col": 3}
+        assert windows[0]["reaction_ranges_ft"] == {"进入反击": 5}
+        assert monster["id"] != actor["id"]
+        inside = player.get("/api/v1/player-room/me").json()["combat"]
+        inside_actor = next(
+            item for item in inside["combatants"] if item["id"] == inside["own_combatant_id"]
+        )
+        moved_out = player.post(
+            "/api/v1/player-room/me/combat/move",
+            json={
+                "row": 2,
+                "col": 2,
+                "combatant_version": inside_actor["version"],
+            },
+        )
+        assert moved_out.status_code == 200, moved_out.text
+        outside = player.get("/api/v1/player-room/me").json()["combat"]
+        outside_actor = next(
+            item for item in outside["combatants"] if item["id"] == outside["own_combatant_id"]
+        )
+        moved_back = player.post(
+            "/api/v1/player-room/me/combat/move",
+            json={
+                "row": 2,
+                "col": 3,
+                "combatant_version": outside_actor["version"],
+            },
+        )
+        assert moved_back.status_code == 200, moved_back.text
+        actions_after_reentry = campaign_client.get(
+            f"/api/v1/campaigns/{campaign_id}/combats/{combat['id']}/actions"
+        ).json()["items"]
+        assert sum(
+            item["action_type"] == "eligible_action_window"
+            and item["result_json"].get("action_window", {}).get("reaction_event")
+            == "enters_reach"
+            for item in actions_after_reentry
+        ) == 1
     finally:
         player.close()

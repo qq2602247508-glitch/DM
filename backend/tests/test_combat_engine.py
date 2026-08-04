@@ -4731,6 +4731,29 @@ def test_generic_dm_action_applies_structured_forced_movement(
             "snapshot_json": {"grid_position": {"row": 4, "col": 4}},
         },
     ).json()
+    reactor = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "进入范围反应怪",
+            "entity_type": "monster",
+            "initiative": 5,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {
+                "disposition": "ally",
+                "grid_position": {"row": 4, "col": 7},
+                "actions": [
+                    {
+                        "name": "近身震击",
+                        "action_type": "reaction",
+                        "reaction_event": "enters_reach",
+                        "reaction_trigger": "当生物进入近战威胁范围时",
+                        "range_ft": 5,
+                    }
+                ],
+            },
+        },
+    ).json()
     response = combat_client.post(
         f"{base}/combats/{combat['id']}/actions/confirm",
         headers={"X-Request-ID": "dm-thunderwave-compiled-move"},
@@ -4752,6 +4775,20 @@ def test_generic_dm_action_applies_structured_forced_movement(
     movement = response.json()["action"]["result_json"]["structured_effects"]["movement"]
     assert movement["moved_ft"] == 10
     assert response.json()["target"]["snapshot_json"]["grid_position"] == {"row": 4, "col": 6}
+    actions = combat_client.get(f"{base}/combats/{combat['id']}/actions").json()["items"]
+    enters_windows = [
+        item["result_json"]["action_window"]
+        for item in actions
+        if item["action_type"] == "eligible_action_window"
+        and item["result_json"].get("action_window", {}).get("reaction_event")
+        == "enters_reach"
+    ]
+    assert len(enters_windows) == 1, actions
+    assert enters_windows[0]["eligible_action_names"] == ["近身震击"]
+    assert enters_windows[0]["trigger_combatant_id"] == target["id"]
+    assert enters_windows[0]["from_position"] == {"row": 4, "col": 4}
+    assert enters_windows[0]["to_position"] == {"row": 4, "col": 6}
+    assert reactor["id"] != target["id"]
 
 
 def test_monster_area_action_resolves_mixed_damage_and_vertical_geometry(

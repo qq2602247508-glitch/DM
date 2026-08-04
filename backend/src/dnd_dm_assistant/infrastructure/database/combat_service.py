@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 import secrets
 from dataclasses import asdict
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from hashlib import sha256
 from math import floor, hypot
 from typing import Any
@@ -1124,6 +1124,206 @@ class CombatEngineService:
             result.append(action)
         return result
 
+    @classmethod
+    def _persist_eligible_enters_reach_reaction_windows(
+        cls,
+        session: Session,
+        *,
+        combat: Combat,
+        moving_combatant: Combatant,
+        from_position: tuple[int, int],
+        to_position: tuple[int, int],
+        movement_key: str,
+        transaction: OperationTransaction | None = None,
+    ) -> None:
+        """Open explicit monster reaction windows when a unit enters reach.
+
+        Movement is written by three different callers (player movement, AI
+        movement, and forced movement).  Keep the temporal rule here so all
+        callers use the same before/after snapshot and idempotency semantics.
+        This only records an eligible window; the existing advanced-action
+        confirmation path still owns the DM's trigger confirmation, target,
+        rolls, and reaction consumption.
+        """
+
+        if from_position == to_position or moving_combatant.hp <= 0:
+            return
+
+        grid = (
+            session.scalar(select(SceneGrid).where(SceneGrid.scene_id == combat.scene_id))
+            if combat.scene_id
+            else None
+        )
+        cell_size = grid.cell_size_ft if grid is not None else 5
+
+        def faction(item: Combatant) -> str:
+            disposition = (item.snapshot_json or {}).get("disposition")
+            if disposition in {"ally", "enemy"}:
+                return str(disposition)
+            return "ally" if item.entity_type in {"character", "companion"} else "enemy"
+
+        for reactor in cls._ordered_combatants(session, combat.id):
+            if (
+                reactor.id == moving_combatant.id
+                or reactor.entity_type != "monster"
+                or reactor.hp <= 0
+                or not reactor.reaction_available
+                or faction(reactor) == faction(moving_combatant)
+            ):
+                continue
+            raw_position = (reactor.snapshot_json or {}).get("grid_position")
+            if not isinstance(raw_position, dict):
+                continue
+            try:
+                reactor_position = (
+                    int(raw_position["row"]),
+                    int(raw_position["col"]),
+                )
+            except (KeyError, TypeError, ValueError):
+                continue
+
+            raw_actions = (reactor.snapshot_json or {}).get("actions")
+            if not isinstance(raw_actions, list):
+                continue
+            eligible: list[tuple[dict[str, Any], int]] = []
+            for raw in raw_actions:
+                if not isinstance(raw, dict):
+                    continue
+                if str(raw.get("action_type") or "").strip() != "reaction":
+                    continue
+                if str(raw.get("reaction_event") or "").strip() != "enters_reach":
+                    continue
+                if raw.get("area_shape") or raw.get("affects_multiple_targets"):
+                    continue
+                if raw.get("ranged") is True or (
+                    str(raw.get("attack_type") or "").lower() == "ranged"
+                ):
+                    continue
+                name = str(raw.get("name") or "").strip()
+                if not name:
+                    continue
+                raw_range = raw.get("reach_ft", raw.get("range_ft", 5))
+                if isinstance(raw_range, bool):
+                    continue
+                try:
+                    reach_ft = int(raw_range)
+                except (TypeError, ValueError):
+                    continue
+                if reach_ft <= 0:
+                    continue
+                if (
+                    grid_distance_ft(
+                        from_position,
+                        reactor_position,
+                        cell_size_ft=cell_size,
+                    ) > reach_ft
+                    and grid_distance_ft(
+                        to_position,
+                        reactor_position,
+                        cell_size_ft=cell_size,
+                    ) <= reach_ft
+                ):
+                    eligible.append((raw, reach_ft))
+            if not eligible:
+                continue
+
+            # A pending window already reserves this unit's one reaction.  Do
+            # not create a second prompt when the mover crosses another cell
+            # before the DM resolves the first one.
+            open_window = False
+            for existing in session.scalars(
+                select(CombatAction).where(
+                    CombatAction.combat_id == combat.id,
+                    CombatAction.actor_combatant_id == reactor.id,
+                    CombatAction.action_type == "eligible_action_window",
+                    CombatAction.status == "confirmed",
+                )
+            ).all():
+                window = (existing.result_json or {}).get("action_window")
+                if (
+                    isinstance(window, dict)
+                    and window.get("status") == "eligible"
+                    and window.get("action_cost") == "reaction"
+                    and window.get("reaction_event") == "enters_reach"
+                ):
+                    open_window = True
+                    break
+            if open_window:
+                continue
+
+            key_material = f"{combat.id}:{movement_key}:{reactor.id}:enters_reach"
+            idempotency_key = f"rw:enters_reach:{sha256(key_material.encode()).hexdigest()}"
+            if session.scalar(
+                select(CombatAction).where(
+                    CombatAction.combat_id == combat.id,
+                    CombatAction.idempotency_key == idempotency_key,
+                )
+            ) is not None:
+                continue
+
+            reaction_actions = [raw for raw, _ in eligible]
+            reaction_metadata: dict[str, object] = {
+                "action_cost": "reaction",
+                "status": "eligible",
+                "window_key": f"enters_reach:{movement_key}:{reactor.id}",
+                "trigger": "enters_reach",
+                "reaction_event": "enters_reach",
+                "eligible_action_names": [
+                    str(raw.get("name") or "") for raw in reaction_actions
+                ],
+                "reaction_ranges_ft": {
+                    str(raw.get("name") or ""): reach_ft
+                    for raw, reach_ft in eligible
+                },
+                "trigger_combatant_id": moving_combatant.id,
+                "trigger_combatant_name": moving_combatant.display_name,
+                "from_position": {
+                    "row": from_position[0],
+                    "col": from_position[1],
+                },
+                "to_position": {
+                    "row": to_position[0],
+                    "col": to_position[1],
+                },
+            }
+            reaction_triggers = {
+                str(raw.get("name") or ""): str(raw.get("reaction_trigger") or "")
+                for raw in reaction_actions
+                if str(raw.get("reaction_trigger") or "").strip()
+            }
+            if reaction_triggers:
+                reaction_metadata["reaction_triggers"] = reaction_triggers
+            session.add(
+                CombatAction(
+                    campaign_id=combat.campaign_id,
+                    combat_id=combat.id,
+                    actor_combatant_id=reactor.id,
+                    transaction_id=transaction.id if transaction is not None else None,
+                    action_type="eligible_action_window",
+                    target_combatant_ids=[moving_combatant.id],
+                    request_json={
+                        "source_action_type": "move",
+                        "reaction_event": "enters_reach",
+                        "moving_combatant_id": moving_combatant.id,
+                        "from_position": reaction_metadata["from_position"],
+                        "to_position": reaction_metadata["to_position"],
+                    },
+                    result_json={"action_window": reaction_metadata},
+                    explanation=(
+                        "仅记录明确结构化进入威胁范围反应的可触发时机；不会自动"
+                        "掷骰、消耗反应或执行动作。"
+                    ),
+                    round_number=combat.round_number,
+                    turn_index=combat.current_turn_index,
+                    summary=(
+                        f"{reactor.display_name}：进入近战威胁范围反应窗口已开放"
+                        f"（{moving_combatant.display_name} 进入；等待 DM 确认）"
+                    ),
+                    idempotency_key=idempotency_key,
+                    status="confirmed",
+                )
+            )
+
     @staticmethod
     def _is_structured_spell_action(
         combatant: Combatant,
@@ -1469,6 +1669,11 @@ class CombatEngineService:
                     ),
                     idempotency_key=idempotency_key,
                     status="confirmed",
+                    # SQLite's server-side current_timestamp has only second
+                    # precision. Preserve the causal order in the audit
+                    # stream when the reaction window is opened in the same
+                    # transaction as its damage action.
+                    created_at=damage_action.created_at + timedelta(seconds=1),
                 )
             )
         session.flush()
@@ -5638,6 +5843,23 @@ class CombatEngineService:
                 status="confirmed",
             )
             session.add(action)
+            movement = structured_effects.get("movement")
+            if isinstance(movement, dict) and int(movement.get("moved_ft") or 0) > 0:
+                self._persist_eligible_enters_reach_reaction_windows(
+                    session,
+                    combat=combat,
+                    moving_combatant=target,
+                    from_position=(
+                        int(movement["from"]["row"]),
+                        int(movement["from"]["col"]),
+                    ),
+                    to_position=(
+                        int(movement["to"]["row"]),
+                        int(movement["to"]["col"]),
+                    ),
+                    movement_key=idempotency_key,
+                    transaction=transaction,
+                )
             session.flush()
             if (
                 command.action_type == "damage"
@@ -7226,6 +7448,22 @@ class CombatEngineService:
                 status="confirmed",
             )
             session.add(action)
+            if result["moved_ft"] > 0:
+                self._persist_eligible_enters_reach_reaction_windows(
+                    session,
+                    combat=combat,
+                    moving_combatant=target,
+                    from_position=(
+                        int(result["from"]["row"]),
+                        int(result["from"]["col"]),
+                    ),
+                    to_position=(
+                        int(result["to"]["row"]),
+                        int(result["to"]["col"]),
+                    ),
+                    movement_key=idempotency_key,
+                    transaction=transaction,
+                )
             session.flush()
             return {"action": serialize(action), "target": serialize(target), **result}
 
