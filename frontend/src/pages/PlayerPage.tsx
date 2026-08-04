@@ -21,6 +21,7 @@ import {
   planMyNoncombatAction,
   rollMyNoncombatAction,
   resolveMyOpportunityReaction,
+  resolveMyPreDamageReaction,
   searchPlayerRules,
   submitMyDeathSave,
   submitMyActionRequest,
@@ -1698,6 +1699,14 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
       refresh();
     },
   });
+  const preDamageReactionMutation = useMutation({
+    mutationFn: ({ id, version, decision, featureId }: { id: string; version: number; decision: "accept" | "reject"; featureId?: string }) =>
+      resolveMyPreDamageReaction(id, version, decision, featureId),
+    onSuccess: (_result, variables) => {
+      setLastResolution(variables.decision === "accept" ? "已使用直觉闪避；原攻击正在按减半伤害结算。" : "已放弃伤害前反应；原攻击正在正常结算。");
+      refresh();
+    },
+  });
   const maneuverMutation = useMutation({
     mutationFn: () => {
       if (!own) throw new Error("当前没有可控单位");
@@ -1961,18 +1970,33 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
             </section>
           ) : null}
           {(combat.pending_reactions ?? []).map((reaction) => (
-            <div className="mb-3 rounded border border-red-700 bg-red-950/25 p-3" data-testid="player-pending-reaction" key={reaction.id}>
-              <div className="flex flex-wrap items-center gap-2">
-                <strong className="text-sm text-red-100">借机攻击提示 · {reaction.source_name ?? "敌人"}</strong>
-                <span className="rounded border border-red-700/70 px-1.5 py-0.5 text-2xs text-red-200">等待你的选择</span>
+            reaction.kind === "pre_damage" ? (
+              <div className="mb-3 rounded border border-amber-700 bg-amber-950/25 p-3" data-testid="player-pending-pre-damage-reaction" key={reaction.id}>
+                <div className="flex flex-wrap items-center gap-2">
+                  <strong className="text-sm text-amber-100">伤害前反应暂停 · {reaction.source_name ?? "攻击者"}</strong>
+                  <span className="rounded border border-amber-700/70 px-1.5 py-0.5 text-2xs text-amber-200">伤害尚未落地</span>
+                </div>
+                <p className="mb-0 mt-1 text-xs leading-5 text-stone-300">{reaction.message ?? "你被攻击命中；请选择是否使用反应。"}</p>
+                <p className="mb-0 mt-1 text-2xs text-amber-200">「{reaction.source_action_name ?? "攻击"}」命中你。使用「{reaction.feature_name ?? "直觉闪避"}」会在抗性/免疫结算前将本次攻击每段伤害向下取整减半。</p>
+                <div className="mt-2 flex gap-2">
+                  <Button disabled={preDamageReactionMutation.isPending} loading={preDamageReactionMutation.isPending && preDamageReactionMutation.variables?.id === reaction.id && preDamageReactionMutation.variables.decision === "accept"} onClick={() => preDamageReactionMutation.mutate({ id: reaction.id, version: reaction.version, decision: "accept", featureId: reaction.feature_id ?? "uncanny_dodge" })} variant="danger">使用直觉闪避</Button>
+                  <Button disabled={preDamageReactionMutation.isPending} loading={preDamageReactionMutation.isPending && preDamageReactionMutation.variables?.id === reaction.id && preDamageReactionMutation.variables.decision === "reject"} onClick={() => preDamageReactionMutation.mutate({ id: reaction.id, version: reaction.version, decision: "reject" })}>不使用</Button>
+                </div>
               </div>
-              <p className="mb-0 mt-1 text-xs leading-5 text-stone-300">{reaction.message ?? reaction.reaction_trigger ?? "敌人离开了你的近战范围。"}</p>
-              <p className="mb-0 mt-1 text-2xs text-amber-200">使用「{reaction.source_action_name ?? "近战攻击"}」；伤害骰 {reaction.damage_expression ?? "按结构化攻击积木"}{reaction.damage_type ? ` · ${reaction.damage_type}` : ""}。选择发动后，系统会自动掷攻击骰和伤害骰并结算。</p>
-              <div className="mt-2 flex gap-2">
-                <Button disabled={reactionMutation.isPending} loading={reactionMutation.isPending && reactionMutation.variables?.id === reaction.id && reactionMutation.variables.decision === "accept"} onClick={() => reactionMutation.mutate({ id: reaction.id, version: reaction.version, decision: "accept" })} variant="danger">发动借机攻击</Button>
-                <Button disabled={reactionMutation.isPending} loading={reactionMutation.isPending && reactionMutation.variables?.id === reaction.id && reactionMutation.variables.decision === "reject"} onClick={() => reactionMutation.mutate({ id: reaction.id, version: reaction.version, decision: "reject" })}>不发动</Button>
+            ) : (
+              <div className="mb-3 rounded border border-red-700 bg-red-950/25 p-3" data-testid="player-pending-reaction" key={reaction.id}>
+                <div className="flex flex-wrap items-center gap-2">
+                  <strong className="text-sm text-red-100">借机攻击提示 · {reaction.source_name ?? "敌人"}</strong>
+                  <span className="rounded border border-red-700/70 px-1.5 py-0.5 text-2xs text-red-200">等待你的选择</span>
+                </div>
+                <p className="mb-0 mt-1 text-xs leading-5 text-stone-300">{reaction.message ?? reaction.reaction_trigger ?? "敌人离开了你的近战范围。"}</p>
+                <p className="mb-0 mt-1 text-2xs text-amber-200">使用「{reaction.source_action_name ?? "近战攻击"}」；伤害骰 {reaction.damage_expression ?? "按结构化攻击积木"}{reaction.damage_type ? ` · ${reaction.damage_type}` : ""}。选择发动后，系统会自动掷攻击骰和伤害骰并结算。</p>
+                <div className="mt-2 flex gap-2">
+                  <Button disabled={reactionMutation.isPending} loading={reactionMutation.isPending && reactionMutation.variables?.id === reaction.id && reactionMutation.variables.decision === "accept"} onClick={() => reactionMutation.mutate({ id: reaction.id, version: reaction.version, decision: "accept" })} variant="danger">发动借机攻击</Button>
+                  <Button disabled={reactionMutation.isPending} loading={reactionMutation.isPending && reactionMutation.variables?.id === reaction.id && reactionMutation.variables.decision === "reject"} onClick={() => reactionMutation.mutate({ id: reaction.id, version: reaction.version, decision: "reject" })}>不发动</Button>
+                </div>
               </div>
-            </div>
+            )
           ))}
           {combat.pending_rolls.map((roll) => {
             const windowLabel = advancedRollWindowLabel(roll.action_cost);

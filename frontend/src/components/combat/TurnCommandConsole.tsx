@@ -996,6 +996,7 @@ export function TurnCommandConsole({
       let actorVersion = active.version;
       const targetVersions = new Map(fighters.map((fighter) => [fighter.id, fighter.version]));
       let pendingRollCount = 0;
+      let pendingPreDamageReaction = false;
       if (
         records.length > 1
         && records.every((record) => record.kind === "save")
@@ -1133,6 +1134,10 @@ export function TurnCommandConsole({
             forced_movement_distance_ft: record.hit ? record.action.movement?.distance_ft ?? null : null,
             forced_movement_direction: record.hit ? record.action.movement?.direction ?? null : null,
           }, requestId);
+          if (response.phase === "awaiting_reaction") {
+            pendingPreDamageReaction = true;
+            break;
+          }
           actorVersion = response.actor?.version ?? actorVersion;
           targetVersions.set(record.target.id, response.target.version);
           if (response.target.hp <= 0) {
@@ -1143,11 +1148,15 @@ export function TurnCommandConsole({
           }
         }
       }
-      return { pendingRollCount, recordCount: records.length };
+      return { pendingRollCount, recordCount: records.length, pendingPreDamageReaction };
     },
-    onSuccess: async ({ pendingRollCount, recordCount }) => {
+    onSuccess: async ({ pendingRollCount, recordCount, pendingPreDamageReaction }) => {
       monsterSequenceInFlight.current = null;
       invalidate();
+      if (pendingPreDamageReaction) {
+        showToast("怪物攻击命中，已暂停等待玩家处理伤害前反应");
+        return;
+      }
       if (pendingRollCount > 0) {
         showToast(`怪物动作序列已记录 ${recordCount} 步；等待 ${pendingRollCount} 个玩家豁免后恢复`);
         return;
@@ -1222,6 +1231,7 @@ export function TurnCommandConsole({
       }) ?? "DM 已创建玩家待掷骰请求；提交骰子前，此动作尚未完成结算。";
       let actorVersion = actor.version;
       let pendingRollCount = 0;
+      let pendingPreDamageReaction = false;
       let batchedSave = false;
       if (action.save_dc && action.save_ability && affectedTargets.length > 1) {
         const firstTarget = affectedTargets[0];
@@ -1390,14 +1400,22 @@ export function TurnCommandConsole({
             forced_movement_direction: hit ? action.movement?.direction ?? null : null,
             reaction_window_id: selectedReactionWindow?.id ?? null,
           }, requestId);
+          if (response.phase === "awaiting_reaction") {
+            pendingPreDamageReaction = true;
+            break;
+          }
           actorVersion = response.actor?.version ?? actorVersion;
         }
         }
       }
-      return { pendingRollCount, targetCount: affectedTargets.length, cost };
+      return { pendingRollCount, targetCount: affectedTargets.length, cost, pendingPreDamageReaction };
     },
-    onSuccess: ({ pendingRollCount, targetCount, cost }) => {
+    onSuccess: ({ pendingRollCount, targetCount, cost, pendingPreDamageReaction }) => {
       invalidate();
+      if (pendingPreDamageReaction) {
+        showToast("怪物攻击命中，已暂停等待玩家处理伤害前反应");
+        return;
+      }
       setReactionTrigger("");
       setReactionEvent("");
       setAdvancedAttackTotal("");
@@ -1420,8 +1438,13 @@ export function TurnCommandConsole({
   const autoResolve = useMutation({
     mutationFn: (command: CombatActionCommand) =>
       confirmCombatAction(campaignId, combatId, command),
-    onSuccess: async () => {
+    onSuccess: async (response) => {
       invalidate();
+      if (response.phase === "awaiting_reaction") {
+        processedAutomaticTurn.current = null;
+        showToast("怪物攻击命中，已暂停等待玩家处理伤害前反应");
+        return;
+      }
       showToast(`${active.display_name}已完成攻击；正在展示命中与伤害效果`);
       await new Promise((resolve) => window.setTimeout(resolve, 900));
       onEnemyTurnComplete();

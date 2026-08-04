@@ -313,6 +313,9 @@ export type PlayerPendingRoll = {
 export type PlayerPendingReaction = {
   id: string;
   version: number;
+  kind?: "opportunity" | "pre_damage";
+  feature_id?: string | null;
+  feature_name?: string | null;
   source_name: string | null;
   source_action_name: string | null;
   damage_expression: string | null;
@@ -881,6 +884,16 @@ export const resolveMyOpportunityReaction = (
 ) => playerFetch<Record<string, unknown>>(`/player-room/me/combat/reactions/${requestId}`, {
   method: "POST",
   body: JSON.stringify({ version, decision }),
+});
+
+export const resolveMyPreDamageReaction = (
+  windowId: string,
+  version: number,
+  decision: "accept" | "reject",
+  featureId?: string,
+) => playerFetch<Record<string, unknown>>(`/player-room/me/combat/pre-damage-reactions/${windowId}`, {
+  method: "POST",
+  body: JSON.stringify({ version, decision, feature_id: featureId ?? null }),
 });
 
 export const submitMyDeathSave = (targetVersion: number, roll: number) =>

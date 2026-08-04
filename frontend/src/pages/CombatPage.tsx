@@ -8,6 +8,7 @@ import {
   createEvent, endCombatSummon, getCombatEndCondition, getDeathSave, listCombatActions, listCombatEffects, listCombatants, listCombats,
   listEncounterAdjustments, listEvents, previewCombatAction, previewMonsterAI, addCombatSummon,
   previewCombatSettlement, resetCombat, revertEncounterAdjustment, updateCombat, updateCombatant,
+  resolveCombatPreDamageReaction,
 } from "../api/entities";
 import type {
   CombatActionCommand, CombatEffectCommand, CombatSettlementCommand,
@@ -1513,6 +1514,18 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
     queryFn: ({ signal }) => listCombatActions(campaignId, combat.id, signal),
     refetchInterval: combat.status === "active" ? 15_000 : false,
   });
+  const preDamageWindows = (combatActions.data ?? []).filter((action) => {
+    if (action.action_type !== "eligible_action_window" || action.status !== "confirmed") return false;
+    const metadata = action.result_json?.action_window;
+    return Boolean(
+      metadata
+      && typeof metadata === "object"
+      && !Array.isArray(metadata)
+      && (metadata as Record<string, unknown>).phase === "pre_damage"
+      && (metadata as Record<string, unknown>).status === "pending",
+    );
+  });
+  const hasPendingPreDamageReaction = preDamageWindows.length > 0;
   const pendingPlayerRolls = (combatActions.data ?? []).filter(
     (action) => action.action_type === "player_roll_prompt" && action.status === "previewed",
   );
@@ -1683,15 +1696,29 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
     },
     onError: () => showToast("状态重复豁免确认失败，请刷新战斗状态", "error"),
   });
+  const resolvePreDamageReaction = useMutation({
+    mutationFn: (input: { windowId: string; version: number; decision: "accept" | "reject"; featureId?: string }) =>
+      resolveCombatPreDamageReaction(campaignId, combat.id, {
+        reaction_window_id: input.windowId,
+        reaction_window_version: input.version,
+        decision: input.decision,
+        feature_id: input.featureId ?? null,
+      }),
+    onSuccess: (_result, input) => {
+      invalidate();
+      showToast(input.decision === "accept" ? "直觉闪避已确认，攻击正在按减半伤害结算" : "已放弃伤害前反应，攻击正在正常结算");
+    },
+    onError: (error) => showToast(error instanceof Error ? error.message : "伤害前反应确认失败，请刷新战斗", "error"),
+  });
   const advanceTurnIfIdle = useCallback(() => {
-    if (hasPendingPlayerRoll || hasPendingConcentrationPrompt || nextTurn.isPending || nextTurnInFlight.current) return;
+    if (hasPendingPlayerRoll || hasPendingConcentrationPrompt || hasPendingPreDamageReaction || nextTurn.isPending || nextTurnInFlight.current) return;
     nextTurnInFlight.current = true;
     nextTurn.mutate(undefined, {
       onSettled: () => {
         nextTurnInFlight.current = false;
       },
     });
-  }, [hasPendingConcentrationPrompt, hasPendingPlayerRoll, nextTurn]);
+  }, [hasPendingConcentrationPrompt, hasPendingPlayerRoll, hasPendingPreDamageReaction, nextTurn]);
   const ordered = [...(fighters.data ?? [])].filter((fighter) => fighter.is_active).sort((a, b) => b.initiative - a.initiative || a.display_name.localeCompare(b.display_name));
   const pendingAdvancedPlayerRolls = pendingPlayerRolls.flatMap((action) => {
     const request = action.request_json;
@@ -2054,6 +2081,28 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
           </ul>
         </div>
       ) : null}
+      {hasPendingPreDamageReaction ? (
+        <div className="mt-3 rounded-lg border border-amber-700/60 bg-amber-950/20 p-3" data-testid="combat-pending-pre-damage-reaction">
+          <strong className="text-xs text-amber-200">伤害前反应 · 战斗暂停</strong>
+          <p className="mb-2 mt-1 text-2xs text-stone-400">攻击已确认命中，但尚未写入 HP。玩家端会看到同一窗口；DM 也可以代玩家确认直觉闪避或放弃。</p>
+          <div className="grid gap-2">
+            {preDamageWindows.map((action) => {
+              const metadata = action.result_json.action_window as Record<string, unknown>;
+              const featureId = typeof metadata.feature_id === "string" ? metadata.feature_id : "uncanny_dodge";
+              const triggerName = typeof metadata.trigger_combatant_name === "string" ? metadata.trigger_combatant_name : "攻击者";
+              const actionName = typeof metadata.trigger_action_name === "string" ? metadata.trigger_action_name : "攻击";
+              const hitName = typeof metadata.hit_combatant_name === "string" ? metadata.hit_combatant_name : "目标";
+              return (
+                <div className="flex flex-wrap items-center gap-2 rounded border border-amber-900/60 bg-ink-950/40 px-2 py-1.5 text-2xs" key={action.id}>
+                  <span className="mr-auto text-stone-300">{triggerName} 使用「{actionName}」命中 {hitName} · 伤害未落地</span>
+                  <Button disabled={resolvePreDamageReaction.isPending} loading={resolvePreDamageReaction.isPending} onClick={() => resolvePreDamageReaction.mutate({ windowId: action.id, version: action.version, decision: "accept", featureId })} size="sm" variant="danger">确认直觉闪避</Button>
+                  <Button disabled={resolvePreDamageReaction.isPending} onClick={() => resolvePreDamageReaction.mutate({ windowId: action.id, version: action.version, decision: "reject" })} size="sm">放弃反应</Button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ) : null}
       {hasPendingPlayerRoll ? (
         <div className="mt-3 rounded-lg border border-sky-700/60 bg-sky-950/20 px-3 py-2 text-xs text-sky-100" data-testid="combat-pending-player-rolls">
           <strong>玩家待掷骰 · 战斗暂停</strong>
@@ -2090,7 +2139,7 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
             <BattleGrid
               key={`${combat.id}:${resetGeneration}`}
               activeFighterId={activeFighter?.id ?? null}
-              automateEnemies={autoEnemies && !hasPendingPlayerRoll && !hasPendingConcentrationPrompt}
+              automateEnemies={autoEnemies && !hasPendingPlayerRoll && !hasPendingConcentrationPrompt && !hasPendingPreDamageReaction}
               campaignId={campaignId}
               candidates={candidates}
               combatId={combat.id}
@@ -2124,6 +2173,7 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
               automationReady={
                 !hasPendingPlayerRoll
                 && !hasPendingConcentrationPrompt
+                && !hasPendingPreDamageReaction
                 && !nextTurn.isPending
                 && !automaticMovementPending
               }

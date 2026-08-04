@@ -19,6 +19,7 @@ from dnd_dm_assistant.api.schemas import (
     CombatEffectSaveCommand,
     CombatFeatureActionCommand,
     CombatManeuverCommand,
+    CombatPreDamageReactionCommand,
     CombatResetCommand,
     CombatSettlementCommand,
     CombatSummonCommand,
@@ -1126,6 +1127,119 @@ class CombatEngineService:
                 action["trigger"] = trigger
             result.append(action)
         return result
+
+    @staticmethod
+    def _pre_damage_feature_reactions(combatant: Combatant) -> list[dict[str, object]]:
+        """Return supported character reactions that must pause before damage.
+
+        These actions live in ``feature_runtime`` rather than the monster
+        action list.  Keep this list deliberately narrow: an unsupported
+        feature must remain DM-owned instead of opening a window that the
+        server cannot safely finish.
+        """
+
+        runtime = (combatant.snapshot_json or {}).get("feature_runtime")
+        actions = runtime.get("actions") if isinstance(runtime, dict) else None
+        if not isinstance(actions, dict):
+            return []
+        result: list[dict[str, object]] = []
+        for feature_id, raw in actions.items():
+            if not isinstance(feature_id, str) or not isinstance(raw, dict):
+                continue
+            if raw.get("kind") != "feature_action" or raw.get("action_cost") != "reaction":
+                continue
+            trigger = raw.get("trigger")
+            if not isinstance(trigger, dict):
+                continue
+            if trigger.get("timing") != "before_damage":
+                continue
+            if trigger.get("event") not in {"attacker_hits_self", "hit_by_attack"}:
+                continue
+            # This is the first real pre-damage feature executor.  Deflect
+            # attacks needs a player d10 and a separate redirect branch; it
+            # stays visible in the registry but must not block an attack yet.
+            if feature_id != "uncanny_dodge":
+                continue
+            result.append(
+                {
+                    "feature_id": feature_id,
+                    "name": str(raw.get("name") or feature_id),
+                    "damage_multiplier": raw.get("damage_multiplier"),
+                    "trigger": trigger,
+                }
+            )
+        return result
+
+    @classmethod
+    def _pre_damage_reaction_candidate(
+        cls,
+        target: Combatant,
+        command: CombatActionCommand,
+        attack_contexts: list[str],
+    ) -> dict[str, object] | None:
+        if (
+            command.action_type != "damage"
+            or not command.is_attack
+            or target.hp <= 0
+            or not target.is_active
+            or not target.reaction_available
+        ):
+            return None
+        effective_ac = target.armor_class
+        line_of_sight: bool | None = None
+        for context in attack_contexts:
+            if context.startswith("effective_ac:"):
+                try:
+                    effective_ac = int(context.split(":", 1)[1])
+                except (TypeError, ValueError):
+                    pass
+            if context == "line_of_sight:true":
+                line_of_sight = True
+            elif context == "line_of_sight:false":
+                line_of_sight = False
+        if command.attack_roll_total is not None:
+            if command.attack_roll_total < effective_ac:
+                return None
+            hit_basis = "attack_roll"
+        elif command.critical_hit:
+            hit_basis = "explicit_critical"
+        elif command.dm_override and command.amount > 0:
+            hit_basis = "dm_override"
+        else:
+            return None
+        for feature in cls._pre_damage_feature_reactions(target):
+            trigger = feature.get("trigger")
+            if (
+                isinstance(trigger, dict)
+                and "attacker_visible" in (trigger.get("requirements") or [])
+            ):
+                if line_of_sight is False:
+                    continue
+            return {
+                **feature,
+                "effective_armor_class": effective_ac,
+                "hit_basis": hit_basis,
+                "attack_roll_total": command.attack_roll_total,
+                "line_of_sight": line_of_sight,
+            }
+        return None
+
+    @staticmethod
+    def _halve_damage_command(command: CombatActionCommand) -> CombatActionCommand:
+        """Apply Uncanny Dodge before the normal resistance/HP pipeline."""
+
+        if command.damage_components:
+            components = [
+                component.model_copy(update={"amount": component.amount // 2})
+                for component in command.damage_components
+            ]
+            return command.model_copy(
+                update={
+                    "amount": sum(component.amount for component in components),
+                    "damage_components": components,
+                }
+            )
+        return command.model_copy(update={"amount": command.amount // 2})
 
     @classmethod
     def _validate_reaction_window(
@@ -6575,6 +6689,20 @@ class CombatEngineService:
                     action_name=command.action_name,
                     reaction_event=command.reaction_event,
                 )
+                attack_contexts, _ = self._attack_contexts(
+                    session, combat, command, actor, current_target
+                )
+                if (
+                    self._pre_damage_reaction_candidate(
+                        current_target,
+                        command,
+                        attack_contexts,
+                    )
+                    is not None
+                ):
+                    raise ValueError(
+                        "命中触发了伤害前反应；请先以单目标攻击确认并等待反应选择"
+                    )
                 if actor is not None and command.area_shape is not None:
                     # The normal confirmation path performs this same
                     # authoritative 3-D geometry check immediately before
@@ -6629,6 +6757,98 @@ class CombatEngineService:
             for command, idempotency_key in commands
         ]
 
+    @staticmethod
+    def _pre_damage_window_key(idempotency_key: str) -> str:
+        return f"pre-damage:{idempotency_key}"
+
+    @classmethod
+    def _pending_pre_damage_window(
+        cls,
+        session: Session,
+        combat_id: str,
+        idempotency_key: str,
+    ) -> CombatAction | None:
+        window = session.scalar(
+            select(CombatAction).where(
+                CombatAction.combat_id == combat_id,
+                CombatAction.idempotency_key == cls._pre_damage_window_key(idempotency_key),
+                CombatAction.action_type == "eligible_action_window",
+            )
+        )
+        if window is None:
+            return None
+        metadata = (window.result_json or {}).get("action_window")
+        if not isinstance(metadata, dict) or metadata.get("phase") != "pre_damage":
+            return None
+        return window
+
+    @classmethod
+    def _open_pre_damage_reaction_window(
+        cls,
+        session: Session,
+        *,
+        combat: Combat,
+        transaction: OperationTransaction,
+        command: CombatActionCommand,
+        attacker: Combatant,
+        target: Combatant,
+        candidate: dict[str, object],
+        source_idempotency_key: str,
+    ) -> CombatAction:
+        metadata: dict[str, object] = {
+            "phase": "pre_damage",
+            "status": "pending",
+            "action_cost": "reaction",
+            "reaction_event": "hit_by_attack",
+            "feature_id": candidate["feature_id"],
+            "feature_name": candidate["name"],
+            "damage_multiplier": candidate.get("damage_multiplier"),
+            "trigger_action_type": command.action_type,
+            "trigger_action_name": command.action_name or "攻击",
+            "trigger_combatant_id": attacker.id,
+            "trigger_combatant_name": attacker.display_name,
+            "hit_combatant_id": target.id,
+            "hit_combatant_name": target.display_name,
+            "attack_roll_total": candidate.get("attack_roll_total"),
+            "effective_armor_class": candidate.get("effective_armor_class"),
+            "hit_basis": candidate.get("hit_basis"),
+            "line_of_sight": candidate.get("line_of_sight"),
+            "source_idempotency_key": source_idempotency_key,
+            "target_version": target.version,
+            "attacker_version": attacker.version,
+            "original_command": command.model_dump(mode="json"),
+            "candidate_features": [candidate["feature_id"]],
+        }
+        window = CombatAction(
+            campaign_id=combat.campaign_id,
+            combat_id=combat.id,
+            actor_combatant_id=target.id,
+            transaction_id=transaction.id,
+            action_type="eligible_action_window",
+            target_combatant_ids=[attacker.id],
+            request_json={
+                "source_action_type": command.action_type,
+                "source_idempotency_key": source_idempotency_key,
+                "original_command": command.model_dump(mode="json"),
+                "reaction_event": "hit_by_attack",
+            },
+            result_json={"action_window": metadata},
+            explanation=(
+                "攻击已确认命中，但伤害尚未落地；等待受击单位选择直觉闪避。"
+            ),
+            round_number=combat.round_number,
+            turn_index=combat.current_turn_index,
+            summary=(
+                f"{target.display_name}：{attacker.display_name} 命中，"
+                "伤害前反应已暂停（直觉闪避）"
+            ),
+            idempotency_key=cls._pre_damage_window_key(source_idempotency_key),
+            status="confirmed",
+        )
+        session.add(window)
+        session.flush()
+        return window
+
     def confirm(
         self,
         campaign_id: str,
@@ -6636,6 +6856,9 @@ class CombatEngineService:
         command: CombatActionCommand,
         *,
         idempotency_key: str,
+        skip_pre_damage_reaction: bool = False,
+        pre_damage_reaction_window_id: str | None = None,
+        pre_damage_reaction_decision: str | None = None,
     ) -> dict[str, Any]:
         if not idempotency_key.strip():
             raise ValueError("idempotency key is required")
@@ -6669,6 +6892,17 @@ class CombatEngineService:
                     "target": serialize(existing_target) if existing_target is not None else None,
                     "end_condition": self._end_condition(session, combat),
                 }
+            pending_window = self._pending_pre_damage_window(
+                session, combat_id, idempotency_key
+            )
+            if pending_window is not None and not skip_pre_damage_reaction:
+                return {
+                    "phase": "awaiting_reaction",
+                    "pending_reaction": serialize(pending_window),
+                    "actor": serialize(actor) if actor is not None else None,
+                    "target": serialize(target),
+                    "end_condition": self._end_condition(session, combat),
+                }
             if target.version != command.target_version:
                 raise VersionConflict(
                     "combatant",
@@ -6683,6 +6917,43 @@ class CombatEngineService:
                 target=target,
                 command=command,
             )
+            pre_damage_window: CombatAction | None = None
+            pre_damage_metadata: dict[str, object] = {}
+            if pre_damage_reaction_window_id is not None:
+                pre_damage_window = session.get(
+                    CombatAction, pre_damage_reaction_window_id
+                )
+                pre_damage_metadata = dict(
+                    (pre_damage_window.result_json if pre_damage_window else {}).get(
+                        "action_window"
+                    )
+                    or {}
+                )
+                if (
+                    pre_damage_window is None
+                    or pre_damage_window.combat_id != combat.id
+                    or pre_damage_window.actor_combatant_id != target.id
+                    or pre_damage_metadata.get("phase") != "pre_damage"
+                    or pre_damage_metadata.get("status") != "resolving"
+                    or pre_damage_metadata.get("source_idempotency_key") != idempotency_key
+                    or pre_damage_reaction_decision not in {"accept", "reject"}
+                ):
+                    raise ValueError("伤害前反应窗口不存在、已处理或来源不匹配")
+                if pre_damage_reaction_decision == "accept":
+                    feature_id = str(pre_damage_metadata.get("feature_id") or "")
+                    if feature_id != "uncanny_dodge":
+                        raise ValueError("该伤害前反应暂未接入真实结算")
+                    if not target.reaction_available:
+                        raise ValueError("该单位的反应已经用过")
+                    target.reaction_available = False
+                    target.version += 1
+                    target.updated_at = datetime.now(UTC)
+                    command = self._halve_damage_command(command)
+                    pre_damage_metadata["applied"] = True
+                    pre_damage_metadata["applied_feature_id"] = feature_id
+                    pre_damage_metadata["applied_rule"] = "每个伤害段在防御前向下取整为一半"
+                else:
+                    pre_damage_metadata["applied"] = False
             self._validate_monster_sequence(session, combat_id, actor, command)
             attack_contexts, help_effect = self._attack_contexts(
                 session, combat, command, actor, target
@@ -6705,6 +6976,44 @@ class CombatEngineService:
                     target,
                     command,
                 )
+            if (
+                not skip_pre_damage_reaction
+                and pre_damage_reaction_window_id is None
+                and actor is not None
+            ):
+                candidate = self._pre_damage_reaction_candidate(
+                    target,
+                    command,
+                    attack_contexts,
+                )
+                if candidate is not None:
+                    transaction = OperationTransaction(
+                        campaign_id=combat.campaign_id,
+                        operation_type="combat_pre_damage_reaction",
+                        idempotency_key=self._pre_damage_window_key(idempotency_key),
+                        status="applied",
+                        source="combat",
+                        confirmed_at=datetime.now(UTC),
+                    )
+                    session.add(transaction)
+                    session.flush()
+                    window = self._open_pre_damage_reaction_window(
+                        session,
+                        combat=combat,
+                        transaction=transaction,
+                        command=command,
+                        attacker=actor,
+                        target=target,
+                        candidate=candidate,
+                        source_idempotency_key=idempotency_key,
+                    )
+                    return {
+                        "phase": "awaiting_reaction",
+                        "pending_reaction": serialize(window),
+                        "actor": serialize(actor),
+                        "target": serialize(target),
+                        "end_condition": self._end_condition(session, combat),
+                    }
             economy_consumed = self._validate_action_economy(
                 session,
                 combat,
@@ -7062,8 +7371,41 @@ class CombatEngineService:
                 override_reason=command.override_reason,
                 status="confirmed",
             )
+            if pre_damage_window is not None:
+                action.request_json = {
+                    **dict(action.request_json or {}),
+                    "pre_damage_reaction": {
+                        "window_id": pre_damage_window.id,
+                        "decision": pre_damage_reaction_decision,
+                        "feature_id": pre_damage_metadata.get("feature_id"),
+                    },
+                }
+                action.result_json = {
+                    **dict(action.result_json or {}),
+                    "pre_damage_reaction": {
+                        "window_id": pre_damage_window.id,
+                        "decision": pre_damage_reaction_decision,
+                        "feature_id": pre_damage_metadata.get("feature_id"),
+                        "applied": pre_damage_metadata.get("applied", False),
+                    },
+                }
+                action.summary += (
+                    "；直觉闪避生效，伤害按每段向下取整减半"
+                    if pre_damage_reaction_decision == "accept"
+                    else "；受击者未使用伤害前反应"
+                )
             session.add(action)
             session.flush()
+            if pre_damage_window is not None:
+                pre_damage_metadata.update(
+                    {
+                        "status": "resolved",
+                        "resolved_action_id": action.id,
+                    }
+                )
+                pre_damage_window.result_json = {"action_window": pre_damage_metadata}
+                pre_damage_window.version += 1
+                pre_damage_window.updated_at = now
             if command.action_type == "damage" and command.is_attack and actor is not None:
                 self._persist_eligible_hit_reaction_windows(
                     session,
@@ -7164,6 +7506,101 @@ class CombatEngineService:
                 "concentration_prompts": concentration_prompts,
                 "end_condition": self._end_condition(session, combat),
             }
+
+    def resolve_pre_damage_reaction(
+        self,
+        campaign_id: str,
+        combat_id: str,
+        command: CombatPreDamageReactionCommand,
+        *,
+        idempotency_key: str,
+    ) -> dict[str, Any]:
+        """Choose a persisted pre-damage reaction and resume its attack.
+
+        The first transaction only claims the durable window.  The second
+        transaction is the ordinary combat confirmation transaction and owns
+        reaction consumption, damage, HP, concentration and death state.
+        This keeps the database transaction closed while a player is deciding.
+        """
+
+        if not idempotency_key.strip():
+            raise ValueError("idempotency key is required")
+        with Session(self.engine) as session, session.begin():
+            window = session.get(CombatAction, command.reaction_window_id)
+            if window is None or window.combat_id != combat_id:
+                raise StateNotFoundError("伤害前反应窗口不存在")
+            if window.version != command.reaction_window_version:
+                raise VersionConflict(
+                    "combat_action",
+                    window.id,
+                    command.reaction_window_version,
+                    window.version,
+                )
+            metadata = dict((window.result_json or {}).get("action_window") or {})
+            if (
+                window.action_type != "eligible_action_window"
+                or metadata.get("phase") != "pre_damage"
+                or metadata.get("status") != "pending"
+            ):
+                raise ValueError("伤害前反应窗口已处理或不是可处理窗口")
+            source_idempotency_key = str(metadata.get("source_idempotency_key") or "")
+            original_raw = metadata.get("original_command")
+            if not source_idempotency_key or not isinstance(original_raw, dict):
+                raise ValueError("伤害前反应窗口缺少冻结的原始攻击")
+            original = CombatActionCommand.model_validate(original_raw)
+            if command.decision == "accept":
+                expected_feature = str(metadata.get("feature_id") or "")
+                if command.feature_id != expected_feature:
+                    raise ValueError("所选反应与伤害前窗口不匹配")
+                if command.feature_id != "uncanny_dodge":
+                    raise ValueError("该伤害前反应暂未接入真实结算")
+            target = session.get(Combatant, window.actor_combatant_id)
+            if target is None or target.version != int(metadata.get("target_version") or 0):
+                raise VersionConflict(
+                    "combatant",
+                    window.actor_combatant_id or "",
+                    int(metadata.get("target_version") or 0),
+                    target.version if target is not None else 0,
+                )
+            if original.target_combatant_id != target.id:
+                raise ValueError("原始攻击目标与反应目标不一致")
+            metadata.update(
+                {
+                    "status": "resolving",
+                    "decision": command.decision,
+                    "selected_feature_id": command.feature_id,
+                    "resolver_idempotency_key": idempotency_key,
+                }
+            )
+            window.result_json = {"action_window": metadata}
+            window.version += 1
+            window.updated_at = datetime.now(UTC)
+
+        try:
+            result = self.confirm(
+                campaign_id,
+                combat_id,
+                original,
+                idempotency_key=source_idempotency_key,
+                skip_pre_damage_reaction=True,
+                pre_damage_reaction_window_id=command.reaction_window_id,
+                pre_damage_reaction_decision=command.decision,
+            )
+        except Exception:
+            with Session(self.engine) as session, session.begin():
+                window = session.get(CombatAction, command.reaction_window_id)
+                if window is not None:
+                    metadata = dict((window.result_json or {}).get("action_window") or {})
+                    if metadata.get("status") == "resolving":
+                        metadata["status"] = "pending"
+                        metadata.pop("decision", None)
+                        metadata.pop("selected_feature_id", None)
+                        metadata.pop("resolver_idempotency_key", None)
+                        window.result_json = {"action_window": metadata}
+                        window.version += 1
+                        window.updated_at = datetime.now(UTC)
+            raise
+        return result
 
     def confirm_feature_action(
         self,

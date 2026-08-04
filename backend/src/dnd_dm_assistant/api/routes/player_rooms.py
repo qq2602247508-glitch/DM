@@ -123,6 +123,12 @@ class ReactionDecisionInput(BaseModel):
     decision: Literal["accept", "reject"]
 
 
+class PreDamageReactionInput(BaseModel):
+    version: int = Field(ge=1)
+    decision: Literal["accept", "reject"]
+    feature_id: str | None = Field(default=None, min_length=1, max_length=120)
+
+
 class ManeuverInput(BaseModel):
     """Player-facing payload for the typed standard-action combat engine."""
 
@@ -628,6 +634,26 @@ def resolve_player_reaction(
             request_id_value,
             body.version,
             body.decision,
+            _request_id(request),
+        )
+    )
+
+
+@public_player_room_router.post("/me/combat/pre-damage-reactions/{window_id}")
+def resolve_player_pre_damage_reaction(
+    window_id: str,
+    body: PreDamageReactionInput,
+    request: Request,
+    principal: Annotated[PlayerPrincipal, Depends(get_player_principal)],
+    service: Annotated[PlayerRoomService, Depends(get_player_room_service)],
+) -> dict[str, Any]:
+    return _safe(
+        lambda: service.resolve_pre_damage_reaction(
+            principal,
+            window_id,
+            body.version,
+            body.decision,
+            body.feature_id,
             _request_id(request),
         )
     )

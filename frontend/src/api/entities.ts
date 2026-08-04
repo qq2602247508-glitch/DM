@@ -754,6 +754,21 @@ export const confirmCombatAction = (
     },
   );
 
+export const resolveCombatPreDamageReaction = (
+  cid: string,
+  combatId: string,
+  input: {
+    reaction_window_id: string;
+    reaction_window_version: number;
+    decision: "accept" | "reject";
+    feature_id?: string | null;
+  },
+  requestId: string = createClientId("pre-damage-reaction"),
+) => apiFetch<Record<string, unknown>>(
+  `/campaigns/${cid}/combats/${combatId}/reactions/pre-damage/resolve`,
+  { method: "POST", body: input, headers: { "X-Request-ID": requestId } },
+);
+
 export type CombatActionBatchCommand = {
   items: Array<{
     command: CombatActionCommand;

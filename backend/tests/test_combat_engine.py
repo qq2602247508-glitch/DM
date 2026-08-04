@@ -1684,6 +1684,126 @@ def test_attack_hit_opens_only_structured_hit_reaction_window(
     assert windows[0]["eligible_action_names"] == ["护体反击"]
 
 
+def test_uncanny_dodge_pauses_damage_then_halves_before_defenses(
+    combat_client: TestClient,
+) -> None:
+    campaign = _campaign(combat_client, "Pre damage reaction")
+    base = f"/api/v1/campaigns/{campaign['id']}"
+    combat = combat_client.post(
+        f"{base}/combats", json={"name": "Uncanny dodge combat"}
+    ).json()
+    attacker = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "怪物攻击者",
+            "entity_type": "monster",
+            "initiative": 20,
+            "hp": 20,
+            "max_hp": 20,
+        },
+    ).json()
+    rogue = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "游荡者",
+            "entity_type": "character",
+            "initiative": 10,
+            "hp": 30,
+            "max_hp": 30,
+            "snapshot_json": {
+                "feature_runtime": {
+                    "actions": {
+                        "uncanny_dodge": {
+                            "name": "直觉闪避",
+                            "kind": "feature_action",
+                            "action_cost": "reaction",
+                            "damage_multiplier": 0.5,
+                            "trigger": {
+                                "event": "attacker_hits_self",
+                                "timing": "before_damage",
+                                "requirements": ["attacker_visible"],
+                            },
+                        }
+                    }
+                }
+            },
+        },
+    ).json()
+    path = f"{base}/combats/{combat['id']}/actions/confirm"
+    attack = {
+        "action_type": "damage",
+        "actor_combatant_id": attacker["id"],
+        "actor_version": attacker["version"],
+        "target_combatant_id": rogue["id"],
+        "target_version": rogue["version"],
+        "action_cost": "none",
+        "action_name": "长剑",
+        "amount": 9,
+        "damage_type": "slashing",
+        "is_attack": True,
+        "attack_roll_total": 18,
+    }
+    paused = combat_client.post(
+        path,
+        headers={"X-Request-ID": "uncanny-dodge-attack"},
+        json=attack,
+    )
+    assert paused.status_code == 200, paused.text
+    assert paused.json()["phase"] == "awaiting_reaction"
+    window = paused.json()["pending_reaction"]
+    assert paused.json()["target"]["hp"] == 30
+
+    rejected = combat_client.post(
+        f"{base}/combats/{combat['id']}/reactions/pre-damage/resolve",
+        headers={"X-Request-ID": "uncanny-dodge-reject"},
+        json={
+            "reaction_window_id": window["id"],
+            "reaction_window_version": window["version"],
+            "decision": "reject",
+        },
+    )
+    assert rejected.status_code == 200, rejected.text
+    assert rejected.json()["target"]["hp"] == 21
+    assert rejected.json()["target"]["reaction_available"] is True
+    assert rejected.json()["action"]["result_json"]["pre_damage_reaction"]["applied"] is False
+
+    second_attack = {
+        **attack,
+        "actor_version": rejected.json()["actor"]["version"],
+        "target_version": rejected.json()["target"]["version"],
+    }
+    paused_again = combat_client.post(
+        path,
+        headers={"X-Request-ID": "uncanny-dodge-attack-again"},
+        json=second_attack,
+    )
+    assert paused_again.status_code == 200, paused_again.text
+    assert paused_again.json()["phase"] == "awaiting_reaction"
+    second_window = paused_again.json()["pending_reaction"]
+    resolved = combat_client.post(
+        f"{base}/combats/{combat['id']}/reactions/pre-damage/resolve",
+        headers={"X-Request-ID": "uncanny-dodge-choice"},
+        json={
+            "reaction_window_id": second_window["id"],
+            "reaction_window_version": second_window["version"],
+            "decision": "accept",
+            "feature_id": "uncanny_dodge",
+        },
+    )
+    assert resolved.status_code == 200, resolved.text
+    assert resolved.json()["target"]["hp"] == 17
+    assert resolved.json()["target"]["reaction_available"] is False
+    assert resolved.json()["action"]["result_json"]["pre_damage_reaction"]["applied"] is True
+
+    replay = combat_client.post(
+        path,
+        headers={"X-Request-ID": "uncanny-dodge-attack"},
+        json=attack,
+    )
+    assert replay.status_code == 200, replay.text
+    assert replay.json()["action"]["id"] == rejected.json()["action"]["id"]
+
+
 def test_multiattack_sequence_records_independent_hits_and_targets(
     combat_client: TestClient,
 ) -> None:

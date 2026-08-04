@@ -618,13 +618,15 @@ def feature_runtime_definition(
             },
             "damage_multiplier": 0.5,
             "runtime_execution": {
-                "status": "blocked",
+                "status": "implemented",
                 "consumer": "combat_feature_action",
-                "blocked_by": "post_hit_reaction_window",
             },
-            "automation_status": "partial",
-            "requires_dm_adjudication": True,
-            "partial_reason": "现有确认接口没有攻击命中后的反应窗口，也不能在确认前改写该次伤害。",
+            "automation_status": "implemented",
+            "requires_dm_adjudication": False,
+            "partial_reason": (
+                "玩家仍需在伤害落地前选择是否使用反应；"
+                "服务端负责冻结攻击并按规则减半。"
+            ),
             **source,
         }
 

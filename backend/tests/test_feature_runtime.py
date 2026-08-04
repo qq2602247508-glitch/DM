@@ -716,7 +716,6 @@ def test_rogue_and_monk_event_bound_features_keep_explicit_dm_boundaries() -> No
     blocked = {
         "cunning_action": "standard_action_choice_forwarding",
         "steady_aim": "movement_and_next_attack_event_state",
-        "uncanny_dodge": "post_hit_reaction_window",
     }
     for feature_id, reason in blocked.items():
         action = rogue["actions"][feature_id]
@@ -727,6 +726,14 @@ def test_rogue_and_monk_event_bound_features_keep_explicit_dm_boundaries() -> No
         }
         assert action["automation_status"] == "partial"
         assert action["requires_dm_adjudication"] is True
+
+    uncanny_dodge = rogue["actions"]["uncanny_dodge"]
+    assert uncanny_dodge["runtime_execution"] == {
+        "status": "implemented",
+        "consumer": "combat_feature_action",
+    }
+    assert uncanny_dodge["automation_status"] == "implemented"
+    assert uncanny_dodge["requires_dm_adjudication"] is False
 
     rogue_projections = {
         item["feature_id"] for item in feature_runtime_action_projections(rogue)

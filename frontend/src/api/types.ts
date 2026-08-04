@@ -916,6 +916,8 @@ export type CombatActionConfirmation = {
   action: CombatAction;
   actor: Combatant | null;
   target: Combatant;
+  phase?: string;
+  pending_reaction?: Record<string, unknown> | null;
 };
 
 export type PlayerRollResolutionType =

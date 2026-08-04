@@ -1092,6 +1092,23 @@ class CombatFeatureActionCommand(BaseModel):
         return self
 
 
+class CombatPreDamageReactionCommand(BaseModel):
+    """Resolve a persisted reaction window before the triggering damage lands."""
+
+    reaction_window_id: str = Field(min_length=1, max_length=36)
+    reaction_window_version: int = Field(ge=1)
+    decision: Literal["accept", "reject"]
+    feature_id: str | None = Field(default=None, min_length=1, max_length=120)
+
+    @model_validator(mode="after")
+    def validate_pre_damage_reaction(self) -> CombatPreDamageReactionCommand:
+        if self.decision == "accept" and not (self.feature_id or "").strip():
+            raise ValueError("使用伤害前反应时必须选择职业特性")
+        if self.decision == "reject" and self.feature_id is not None:
+            raise ValueError("放弃伤害前反应时不能携带职业特性")
+        return self
+
+
 class _PlayerRollPromptBase(BaseModel):
     actor_combatant_id: str = Field(min_length=1, max_length=36)
     actor_version: int = Field(ge=1)

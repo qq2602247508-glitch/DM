@@ -13,6 +13,7 @@ from dnd_dm_assistant.api.schemas import (
     CombatEffectSaveCommand,
     CombatFeatureActionCommand,
     CombatManeuverCommand,
+    CombatPreDamageReactionCommand,
     CombatResetCommand,
     CombatSettlementCommand,
     CombatSummonCommand,
@@ -92,6 +93,25 @@ def confirm_combat_action_batch(
                 ],
             )
         }
+    )
+
+
+@router.post("/reactions/pre-damage/resolve")
+def resolve_pre_damage_reaction(
+    campaign_id: str,
+    combat_id: str,
+    body: CombatPreDamageReactionCommand,
+    request: Request,
+    service: Annotated[CombatEngineService, Depends(get_combat_engine_service)],
+) -> dict[str, Any]:
+    request_id = str(getattr(request.state, "request_id", "unknown"))
+    return _safe_call(
+        lambda: service.resolve_pre_damage_reaction(
+            campaign_id,
+            combat_id,
+            body,
+            idempotency_key=request_id,
+        )
     )
 
 

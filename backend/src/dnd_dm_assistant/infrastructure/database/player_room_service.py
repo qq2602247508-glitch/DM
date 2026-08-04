@@ -20,6 +20,7 @@ from dnd_dm_assistant.api.schemas import (
     CombatEffectEndCommand,
     CombatFeatureActionCommand,
     CombatManeuverCommand,
+    CombatPreDamageReactionCommand,
     CombatSummonCommand,
     CombatSummonEndCommand,
     DeathSaveCommand,
@@ -3099,6 +3100,32 @@ class PlayerRoomService:
                         "target_name": payload.get("target_name"),
                         "reaction_trigger": payload.get("reaction_trigger"),
                         "message": request.message,
+                    }
+                )
+            for window in session.scalars(
+                select(CombatAction).where(
+                    CombatAction.combat_id == combat.id,
+                    CombatAction.action_type == "eligible_action_window",
+                    CombatAction.actor_combatant_id.in_(own_ids),
+                ).order_by(CombatAction.created_at, CombatAction.id)
+            ).all():
+                metadata = dict((window.result_json or {}).get("action_window") or {})
+                if metadata.get("phase") != "pre_damage" or metadata.get("status") != "pending":
+                    continue
+                pending_reactions.append(
+                    {
+                        "id": window.id,
+                        "version": window.version,
+                        "kind": "pre_damage",
+                        "feature_id": metadata.get("feature_id"),
+                        "feature_name": metadata.get("feature_name"),
+                        "source_name": metadata.get("trigger_combatant_name"),
+                        "source_action_name": metadata.get("trigger_action_name"),
+                        "damage_expression": None,
+                        "damage_type": None,
+                        "target_name": metadata.get("hit_combatant_name"),
+                        "reaction_trigger": "被攻击命中（伤害尚未落地）",
+                        "message": window.summary,
                     }
                 )
 
@@ -7075,6 +7102,17 @@ class PlayerRoomService:
                 ),
                 damage_components=components if len(components) > 1 else [],
                 critical_hit=critical and not saving_throw_action,
+                is_attack=not saving_throw_action and not auto_hit_action,
+                attack_roll_total=(
+                    attack_total
+                    if not saving_throw_action and not auto_hit_action
+                    else None
+                ),
+                attack_roll_mode=(
+                    attack_roll_mode
+                    if not saving_throw_action and not auto_hit_action
+                    else None
+                ),
                 damage_tags=action_damage_tags,
                 reaction_trigger=reaction_trigger.strip()
                 if cost == "reaction" and index == 0
@@ -7446,6 +7484,54 @@ class PlayerRoomService:
             "compiled_effects": compiled_effects,
             "turn_advance": turn_advance,
         }
+
+    def resolve_pre_damage_reaction(
+        self,
+        principal: PlayerPrincipal,
+        window_id: str,
+        window_version: int,
+        decision: Literal["accept", "reject"],
+        feature_id: str | None,
+        request_id: str,
+    ) -> dict[str, Any]:
+        """Resolve only a pre-damage window belonging to this player."""
+
+        if principal.character_id is None:
+            raise ValueError("请先绑定角色")
+        with Session(self.engine) as session:
+            room = session.get(PlayerRoom, principal.room_id)
+            combat = (
+                session.get(Combat, room.current_combat_id)
+                if room and room.current_combat_id
+                else None
+            )
+            if combat is None or combat.status != "active":
+                raise ValueError("当前没有进行中的战斗")
+            window = session.get(CombatAction, window_id)
+            fighters = self._ordered_fighters(session, combat.id)
+            if (
+                window is None
+                or window.combat_id != combat.id
+                or window.actor_combatant_id is None
+                or not any(
+                    item.id == window.actor_combatant_id
+                    and self._is_player_controlled(item, principal.character_id)
+                    for item in fighters
+                )
+            ):
+                raise ValueError("该伤害前反应不属于你的可控单位")
+            combat_id = combat.id
+        return self.combat.resolve_pre_damage_reaction(
+            principal.campaign_id,
+            combat_id,
+            CombatPreDamageReactionCommand(
+                reaction_window_id=window_id,
+                reaction_window_version=window_version,
+                decision=decision,
+                feature_id=feature_id,
+            ),
+            idempotency_key=request_id,
+        )
 
     def feature_action(
         self,

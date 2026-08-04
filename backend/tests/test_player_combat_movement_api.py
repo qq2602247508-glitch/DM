@@ -3,6 +3,119 @@ from __future__ import annotations
 from fastapi.testclient import TestClient
 
 
+def test_player_snapshot_exposes_and_resolves_pre_damage_reaction(
+    campaign_client: TestClient,
+) -> None:
+    campaign = campaign_client.post(
+        "/api/v1/campaigns", json={"name": "玩家直觉闪避快照"}
+    ).json()
+    campaign_id = campaign["id"]
+    character = campaign_client.post(
+        f"/api/v1/campaigns/{campaign_id}/characters",
+        json={"name": "快照游荡者", "class_name": "游荡者", "hp": 30, "max_hp": 30},
+    ).json()
+    combat = campaign_client.post(
+        f"/api/v1/campaigns/{campaign_id}/combats",
+        json={"name": "玩家伤害前窗口"},
+    ).json()
+    base = f"/api/v1/campaigns/{campaign_id}"
+    attacker = campaign_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "快照攻击者",
+            "entity_type": "monster",
+            "initiative": 20,
+            "hp": 20,
+            "max_hp": 20,
+        },
+    ).json()
+    rogue = campaign_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": character["name"],
+            "entity_type": "character",
+            "entity_id": character["id"],
+            "initiative": 10,
+            "hp": 30,
+            "max_hp": 30,
+            "snapshot_json": {
+                "feature_runtime": {
+                    "actions": {
+                        "uncanny_dodge": {
+                            "name": "直觉闪避",
+                            "kind": "feature_action",
+                            "action_cost": "reaction",
+                            "damage_multiplier": 0.5,
+                            "trigger": {
+                                "event": "attacker_hits_self",
+                                "timing": "before_damage",
+                            },
+                        }
+                    }
+                }
+            },
+        },
+    ).json()
+    opened = campaign_client.post(
+        f"/api/v1/campaigns/{campaign_id}/player-room/open", json={"hours": 4}
+    ).json()
+    player = TestClient(campaign_client.app)
+    try:
+        assert player.post(
+            "/api/v1/player-room/join",
+            json={"join_code": opened["join_code"], "display_name": "直觉闪避玩家"},
+        ).status_code == 201
+        assert player.post(
+            "/api/v1/player-room/me/bind-character",
+            json={"character_id": character["id"]},
+        ).status_code == 200
+        assert campaign_client.post(
+            f"/api/v1/campaigns/{campaign_id}/player-room/live-state",
+            json={"combat_id": combat["id"]},
+        ).status_code == 200
+
+        paused = campaign_client.post(
+            f"{base}/combats/{combat['id']}/actions/confirm",
+            headers={"X-Request-ID": "player-snapshot-pre-damage"},
+            json={
+                "action_type": "damage",
+                "actor_combatant_id": attacker["id"],
+                "actor_version": attacker["version"],
+                "target_combatant_id": rogue["id"],
+                "target_version": rogue["version"],
+                "action_cost": "none",
+                "action_name": "长剑",
+                "amount": 9,
+                "damage_type": "slashing",
+                "is_attack": True,
+                "attack_roll_total": 18,
+            },
+        )
+        assert paused.status_code == 200, paused.text
+        assert paused.json()["phase"] == "awaiting_reaction"
+        window = paused.json()["pending_reaction"]
+        snapshot = player.get("/api/v1/player-room/me")
+        assert snapshot.status_code == 200, snapshot.text
+        pending = snapshot.json()["combat"]["pending_reactions"]
+        assert len(pending) == 1
+        assert pending[0]["kind"] == "pre_damage"
+        assert pending[0]["id"] == window["id"]
+
+        resolved = player.post(
+            f"/api/v1/player-room/me/combat/pre-damage-reactions/{window['id']}",
+            json={
+                "version": window["version"],
+                "decision": "accept",
+                "feature_id": "uncanny_dodge",
+            },
+        )
+        assert resolved.status_code == 200, resolved.text
+        assert resolved.json()["target"]["hp"] == 26
+        assert player.get("/api/v1/player-room/me").json()["combat"]["pending_reactions"] == []
+    finally:
+        player.close()
+
+
 def test_player_movement_enforces_remaining_distance_obstacles_and_sync(
     campaign_client: TestClient,
 ) -> None:
