@@ -2,6 +2,18 @@
 
 更新时间：2026-08-04（Asia/Shanghai）
 
+## 2026-08-04 进入近战威胁范围反应窗口与全量门禁（最新）
+
+- 新增共享 `_persist_eligible_enters_reach_reaction_windows`，统一接入玩家移动、怪物 AI 移动和结构化强制位移；只有快照明确声明 `action_type=reaction`、`reaction_event=enters_reach` 的近战反应，且移动前在范围外、移动后进入范围时才开放窗口。
+- 窗口记录触发单位、前后坐标、反应名称、反应距离、资料库触发文本和稳定幂等键；反应已用、单位同阵营、目标死亡、远程/区域反应、重复进入或已有未处理窗口时不会重复生成。
+- 该项只记录合法触发时机，不自动掷攻击/伤害骰、不自动选择目标、不消耗反应；DM 仍通过现有高级动作确认链填写实际事件、目标和骰值。
+- 修复同一事务内伤害 action 与 `takes_damage` 窗口的 SQLite 秒级时间排序：窗口的审计时间明确晚于原伤害 action，避免日志列表随机把窗口排在伤害之前。
+- 回归覆盖玩家进入范围、怪物移动进入范围、强制位移进入范围、重复离开再进入幂等、已有窗口不重复和受伤反应审计顺序。
+- 门禁：后端 `452 passed`（1 个既有 Starlette/httpx 弃用警告）；前端 39 文件/195 项；TypeScript、ESLint、生产构建、Ruff、`git diff --check` 均通过。
+- 内置浏览器干净 DM/玩家页面实际验证：玩家从 `(6,2)` 移到 `(6,3)` 后，两端均显示“熔火术士·AI：进入近战威胁范围反应窗口已开放（模拟玩家·奥术师进入；等待 DM 确认）”；两端控制台 error/warn 均为空。截图：`/private/tmp/dnd-enters-reach-reaction-dm-clean-20260804.png`、`/private/tmp/dnd-enters-reach-reaction-player-clean-20260804.png`。
+- 当前工作树另有用户原有未跟踪目录 `backend/tests/integrations/`、`backend/tests/ollama.py`，未纳入本项提交。
+- 仍未完成：反应窗口自动目标/骰值/执行、复杂状态组合、完整三维遮挡、所有职业/子职业 1–20 级运行时；复杂高级动作的真实触发仍需 DM 确认。
+
 ## 2026-08-04 施法事件结构化反应自动开窗（最新）
 
 - 普通施法结算、怪物区域施法和需要玩家豁免的施法 prompt，在施法 action/prompt 建立后统一检查其他存活怪物快照中明确声明的 `reaction_event=casts_spell` 反应。
