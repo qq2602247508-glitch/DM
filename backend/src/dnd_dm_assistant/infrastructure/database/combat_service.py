@@ -1053,6 +1053,7 @@ class CombatEngineService:
                 "leaves_reach": "离开近战威胁范围",
                 "enters_reach": "进入近战威胁范围",
                 "takes_damage": "受到伤害",
+                "hit_by_attack": "被攻击命中",
                 "casts_spell": "施法",
                 "turn_end": "回合结束",
             }.get(str(event), event)
@@ -1745,6 +1746,131 @@ class CombatEngineService:
                     created_at=damage_action.created_at + timedelta(seconds=1),
                 )
             )
+        session.flush()
+
+    @classmethod
+    def _persist_eligible_hit_reaction_windows(
+        cls,
+        session: Session,
+        *,
+        combat: Combat,
+        transaction: OperationTransaction,
+        attack_action: CombatAction,
+        attacker: Combatant,
+        target: Combatant,
+        command: CombatActionCommand,
+        attack_contexts: list[str],
+        target_was_active: bool,
+        target_was_alive: bool,
+    ) -> None:
+        """Open a reaction window after an authoritative attack hit.
+
+        This is deliberately separate from ``takes_damage``.  A hit can be
+        resisted or immune and still trigger a reaction that says "when hit";
+        conversely, non-attack damage must not trigger that reaction.  The
+        attack roll (or an explicit DM critical/override) is the required
+        evidence, so a free-text damage report without hit proof stays DM-only.
+        """
+
+        if (
+            command.action_type != "damage"
+            or not command.is_attack
+            or not target_was_active
+            or not target_was_alive
+            or target.entity_type != "monster"
+            or not target.reaction_available
+        ):
+            return
+        effective_ac = target.armor_class
+        for context in attack_contexts:
+            if not context.startswith("effective_ac:"):
+                continue
+            try:
+                effective_ac = int(context.split(":", 1)[1])
+            except (TypeError, ValueError):
+                pass
+            break
+        if command.attack_roll_total is not None:
+            attack_hit = command.attack_roll_total >= effective_ac
+            hit_basis = "attack_roll"
+        elif command.critical_hit:
+            attack_hit = True
+            hit_basis = "explicit_critical"
+        elif command.dm_override and command.amount > 0:
+            attack_hit = True
+            hit_basis = "dm_override"
+        else:
+            return
+        if not attack_hit:
+            return
+        reaction_actions = cls._structured_reaction_actions(target, "hit_by_attack")
+        if not reaction_actions:
+            return
+        idempotency_key = (
+            f"rw:{combat.id}:hit:{attack_action.id}:{target.id}:hit_by_attack"
+        )
+        if session.scalar(
+            select(CombatAction).where(
+                CombatAction.combat_id == combat.id,
+                CombatAction.idempotency_key == idempotency_key,
+            )
+        ) is not None:
+            return
+        reaction_metadata: dict[str, object] = {
+            "action_cost": "reaction",
+            "status": "eligible",
+            "window_key": f"hit:{attack_action.id}:{target.id}",
+            "trigger": "hit_by_attack",
+            "reaction_event": "hit_by_attack",
+            "eligible_action_names": [action["name"] for action in reaction_actions],
+            "trigger_action_id": attack_action.id,
+            "trigger_action_type": attack_action.action_type,
+            "trigger_action_name": command.action_name or "攻击",
+            "trigger_combatant_id": attacker.id,
+            "trigger_combatant_name": attacker.display_name,
+            "hit_combatant_id": target.id,
+            "hit_combatant_name": target.display_name,
+            "attack_roll_total": command.attack_roll_total,
+            "effective_armor_class": effective_ac,
+            "hit_basis": hit_basis,
+        }
+        reaction_triggers = {
+            action["name"]: action["trigger"]
+            for action in reaction_actions
+            if action.get("trigger")
+        }
+        if reaction_triggers:
+            reaction_metadata["reaction_triggers"] = reaction_triggers
+        session.add(
+            CombatAction(
+                campaign_id=combat.campaign_id,
+                combat_id=combat.id,
+                actor_combatant_id=target.id,
+                transaction_id=transaction.id,
+                action_type="eligible_action_window",
+                target_combatant_ids=[attacker.id],
+                request_json={
+                    "source_action_type": attack_action.action_type,
+                    "attack_action_id": attack_action.id,
+                    "reaction_event": "hit_by_attack",
+                    "trigger_combatant_id": attacker.id,
+                    "hit_combatant_id": target.id,
+                },
+                result_json={"action_window": reaction_metadata},
+                explanation=(
+                    "记录结构化被攻击命中反应的可触发时机；不会自动选择反应、"
+                    "掷骰、消耗反应或改写已经确认的伤害。"
+                ),
+                round_number=combat.round_number,
+                turn_index=combat.current_turn_index,
+                summary=(
+                    f"{target.display_name}：被 {attacker.display_name} 攻击命中，"
+                    "反应窗口已开放（等待 DM 确认）"
+                ),
+                idempotency_key=idempotency_key,
+                status="confirmed",
+            )
+        )
         session.flush()
 
     @classmethod
@@ -6938,6 +7064,19 @@ class CombatEngineService:
             )
             session.add(action)
             session.flush()
+            if command.action_type == "damage" and command.is_attack and actor is not None:
+                self._persist_eligible_hit_reaction_windows(
+                    session,
+                    combat=combat,
+                    transaction=transaction,
+                    attack_action=action,
+                    attacker=actor,
+                    target=target,
+                    command=command,
+                    attack_contexts=attack_contexts,
+                    target_was_active=bool(before.get("is_active", True)),
+                    target_was_alive=int(before.get("hp", 0)) > 0,
+                )
             if reaction_window is not None:
                 window_result = dict(reaction_window.result_json or {})
                 window_metadata = dict(window_result.get("action_window") or {})

@@ -843,6 +843,8 @@ class SimulationService:
                     action["reaction_event"] = "leaves_reach"
                 elif "进入" in reaction_text and "近战" in reaction_text:
                     action["reaction_event"] = "enters_reach"
+                elif "被命中" in reaction_text or "被攻击命中" in reaction_text:
+                    action["reaction_event"] = "hit_by_attack"
                 elif "受到" in reaction_text and "伤害" in reaction_text:
                     action["reaction_event"] = "takes_damage"
                 elif "施法" in reaction_text:

@@ -457,7 +457,9 @@ def _monster_reaction_event(text: str) -> str | None:
         return "leaves_reach"
     if "进入" in text and any(value in text for value in ("触及范围", "近战范围", "威胁范围")):
         return "enters_reach"
-    if "受到伤害" in text or "承受伤害" in text or "被命中" in text:
+    if "被命中" in text or "被攻击命中" in text:
+        return "hit_by_attack"
+    if "受到伤害" in text or "承受伤害" in text:
         return "takes_damage"
     if "施法" in text or "施展法术" in text:
         return "casts_spell"

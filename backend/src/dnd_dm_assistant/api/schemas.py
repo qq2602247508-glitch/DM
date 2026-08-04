@@ -765,6 +765,7 @@ class CombatActionCommand(BaseModel):
         "leaves_reach",
         "enters_reach",
         "takes_damage",
+        "hit_by_attack",
         "casts_spell",
         "turn_end",
     ] | None = None
@@ -1131,6 +1132,7 @@ class _PlayerRollPromptBase(BaseModel):
         "leaves_reach",
         "enters_reach",
         "takes_damage",
+        "hit_by_attack",
         "casts_spell",
         "turn_end",
     ] | None = None
@@ -1403,6 +1405,7 @@ class MonsterAreaActionCommand(BaseModel):
         "leaves_reach",
         "enters_reach",
         "takes_damage",
+        "hit_by_attack",
         "casts_spell",
         "turn_end",
     ] | None = None

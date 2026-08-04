@@ -1585,6 +1585,105 @@ def test_structured_reaction_event_must_match_monster_action(
     assert confirmed.json()["target"]["hp"] == 16
 
 
+def test_attack_hit_opens_only_structured_hit_reaction_window(
+    combat_client: TestClient,
+) -> None:
+    campaign = _campaign(combat_client, "Hit reaction window")
+    base = f"/api/v1/campaigns/{campaign['id']}"
+    combat = combat_client.post(
+        f"{base}/combats", json={"name": "Hit reaction combat"}
+    ).json()
+    attacker = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "攻击者",
+            "entity_type": "character",
+            "initiative": 20,
+            "hp": 20,
+            "max_hp": 20,
+        },
+    ).json()
+    target = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "护体怪物",
+            "entity_type": "monster",
+            "initiative": 10,
+            "armor_class": 13,
+            "hp": 30,
+            "max_hp": 30,
+            "snapshot_json": {
+                "actions": [
+                    {
+                        "name": "护体反击",
+                        "action_type": "reaction",
+                        "reaction_event": "hit_by_attack",
+                        "reaction_trigger": "被攻击命中时",
+                    }
+                ]
+            },
+        },
+    ).json()
+    path = f"{base}/combats/{combat['id']}/actions/confirm"
+    miss = combat_client.post(
+        path,
+        headers={"X-Request-ID": "hit-reaction-miss"},
+        json={
+            "action_type": "damage",
+            "actor_combatant_id": attacker["id"],
+            "actor_version": attacker["version"],
+            "target_combatant_id": target["id"],
+            "target_version": target["version"],
+            "action_cost": "none",
+            "action_name": "短剑",
+            "amount": 0,
+            "damage_type": "piercing",
+            "is_attack": True,
+            "attack_roll_total": 5,
+        },
+    )
+    assert miss.status_code == 200, miss.text
+    target_after_miss = miss.json()["target"]
+    actions_after_miss = combat_client.get(f"{base}/combats/{combat['id']}/actions").json()["items"]
+    assert not any(
+        item["action_type"] == "eligible_action_window"
+        and item["result_json"]["action_window"].get("reaction_event") == "hit_by_attack"
+        for item in actions_after_miss
+    )
+
+    hit = combat_client.post(
+        path,
+        headers={"X-Request-ID": "hit-reaction-hit"},
+        json={
+            "action_type": "damage",
+            "actor_combatant_id": attacker["id"],
+            "actor_version": attacker["version"],
+            "target_combatant_id": target["id"],
+            "target_version": target_after_miss["version"],
+            "action_cost": "none",
+            "action_name": "短剑",
+            "amount": 5,
+            "damage_type": "piercing",
+            "is_attack": True,
+            "attack_roll_total": 18,
+        },
+    )
+    assert hit.status_code == 200, hit.text
+    actions = combat_client.get(f"{base}/combats/{combat['id']}/actions").json()["items"]
+    windows = [
+        item["result_json"]["action_window"]
+        for item in actions
+        if item["action_type"] == "eligible_action_window"
+        and item["result_json"]["action_window"].get("reaction_event") == "hit_by_attack"
+    ]
+    assert len(windows) == 1
+    assert windows[0]["trigger_combatant_id"] == attacker["id"]
+    assert windows[0]["hit_combatant_id"] == target["id"]
+    assert windows[0]["attack_roll_total"] == 18
+    assert windows[0]["effective_armor_class"] == 13
+    assert windows[0]["eligible_action_names"] == ["护体反击"]
+
+
 def test_multiattack_sequence_records_independent_hits_and_targets(
     combat_client: TestClient,
 ) -> None:

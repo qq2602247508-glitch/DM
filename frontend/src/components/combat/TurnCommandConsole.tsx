@@ -2024,6 +2024,7 @@ export function TurnCommandConsole({
                 <option value="leaves_reach">离开近战威胁范围</option>
                 <option value="enters_reach">进入近战威胁范围</option>
                 <option value="takes_damage">受到伤害</option>
+                <option value="hit_by_attack">被攻击命中</option>
                 <option value="casts_spell">施法</option>
                 <option value="turn_end">回合结束</option>
               </select>

@@ -22,7 +22,12 @@ class MonsterAIPlanRequest(BaseModel):
     tactics: Literal["instinctive", "standard", "smart", "tactical"] = "standard"
     recharge_available: dict[str, bool] | None = None
     reaction_event: Literal[
-        "leaves_reach", "enters_reach", "takes_damage", "casts_spell", "turn_end"
+        "leaves_reach",
+        "enters_reach",
+        "takes_damage",
+        "hit_by_attack",
+        "casts_spell",
+        "turn_end",
     ] | None = None
 
 

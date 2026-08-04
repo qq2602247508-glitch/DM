@@ -850,6 +850,7 @@ export type MonsterReactionEvent =
   | "leaves_reach"
   | "enters_reach"
   | "takes_damage"
+  | "hit_by_attack"
   | "casts_spell"
   | "turn_end";
 
