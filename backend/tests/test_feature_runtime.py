@@ -229,6 +229,12 @@ def test_rage_and_sneak_attack_keep_exact_scaling_and_conditions() -> None:
     )
     assert rage_damage["value"] == "+4"
     assert rage_damage["applies_when"] == "raging_strength_attack"
+    rage_save = next(
+        item
+        for item in barbarian["combat_start"]["modifiers"]
+        if item["id"] == "rage:strength_saving_throw_advantage"
+    )
+    assert rage_save["automation_status"] == "full"
 
     sneak_attack = next(
         item for item in rogue["attack_riders"] if item["id"] == "sneak_attack:bonus_damage"

@@ -2873,6 +2873,7 @@ class CombatEngineService:
                 "not incapacitated",
                 "not_prone",
                 "not prone",
+                "raging",
                 "wearing_armor",
                 "wearing armor",
                 "not_wearing_armor",
@@ -2889,6 +2890,8 @@ class CombatEngineService:
             ):
                 continue
             if applies_when in {"not_prone", "not prone"} and "prone" in conditions:
+                continue
+            if applies_when == "raging" and "raging" not in conditions:
                 continue
             if applies_when in {"not_wearing_armor", "not wearing armor"}:
                 # The equipment snapshot is the only safe source for this

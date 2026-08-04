@@ -45,6 +45,69 @@ def test_typed_feature_saving_throw_advantage_is_consumed_by_save_resolution() -
     assert "feature:危险感知" in result["applied_defenses"]
 
 
+def test_rage_strength_saving_throw_advantage_requires_active_raging_condition() -> None:
+    raging_target = Combatant(
+        id="raging-save",
+        entity_type="character",
+        display_name="狂暴者",
+        hp=20,
+        max_hp=20,
+        conditions=["狂暴"],
+        snapshot_json={
+            "rule_modifiers": {
+                "saving_throw:self::rage": {
+                    "stat": "saving_throw",
+                    "scope": "self",
+                    "ability": "strength",
+                    "operation": "advantage",
+                    "source": "狂暴",
+                    "applies_when": "raging",
+                }
+            }
+        },
+    )
+    ended_target = Combatant(
+        id="ended-rage-save",
+        entity_type="character",
+        display_name="狂暴结束者",
+        hp=20,
+        max_hp=20,
+        snapshot_json=raging_target.snapshot_json,
+    )
+
+    active = CombatEngineService._resolve_save_defenses(
+        raging_target,
+        dc=15,
+        ability="strength",
+        roll_total=5,
+        roll_totals=[5, 18],
+        damage_on_success=0,
+        damage_on_failure=0,
+        is_magical=False,
+        use_legendary_resistance=False,
+        use_feature_reroll=False,
+        consume=False,
+    )
+    ended = CombatEngineService._resolve_save_defenses(
+        ended_target,
+        dc=15,
+        ability="strength",
+        roll_total=5,
+        roll_totals=[5, 18],
+        damage_on_success=0,
+        damage_on_failure=0,
+        is_magical=False,
+        use_legendary_resistance=False,
+        use_feature_reroll=False,
+        consume=False,
+    )
+
+    assert active["effective_roll_total"] == 18
+    assert "feature:狂暴" in active["applied_defenses"]
+    assert ended["effective_roll_total"] == 5
+    assert ended["applied_defenses"] == []
+
+
 def test_event_predicate_feature_modifier_does_not_grant_passive_advantage() -> None:
     actor = Combatant(
         id="studied-attacks",
