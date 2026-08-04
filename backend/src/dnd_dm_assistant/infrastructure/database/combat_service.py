@@ -3275,6 +3275,32 @@ class CombatEngineService:
                 effect.end_reason = "专注来源失能、失去意识或离开战斗"
                 effect.version += 1
                 ended.append(effect)
+        # The Dodge benefit ends as soon as its owner becomes incapacitated.
+        # Keep this tied to the same condition event used by direct DM edits
+        # and structured save outcomes; merely displaying ``incapacitated``
+        # must not leave an old Dodge runtime effect granting disadvantage.
+        if not event_only and event_kinds and "condition" in event_kinds:
+            for combatant_id in lifecycle_event_ids:
+                subject = session.get(Combatant, combatant_id)
+                if subject is None or not (
+                    cls._condition_set(subject) & cls._ACTION_BLOCKING_CONDITIONS
+                ):
+                    continue
+                for effect in cls._active_runtime_effects(
+                    session,
+                    combat.id,
+                    target_id=subject.id,
+                    state_name="dodge",
+                ):
+                    changed = cls._end_runtime_effect(
+                        session,
+                        effect,
+                        reason="闪避因失能结束",
+                        now=now,
+                    )
+                    if changed is not None:
+                        changed_targets[changed.id] = changed
+                    ended.append(effect)
         changed_sources: dict[str, Combatant] = {}
         for effect in ended:
             if not effect.source_combatant_id:
@@ -4253,7 +4279,8 @@ class CombatEngineService:
             contexts.append("attacker_hidden_visibility_requires_dm_ruling")
             adjudication_contexts.append("attacker_hidden_visibility_requires_dm_ruling")
         if (
-            not cls._movement_is_blocked(target)
+            not (cls._condition_set(target) & cls._ACTION_BLOCKING_CONDITIONS)
+            and not cls._movement_is_blocked(target)
             and target.speed_ft > 0
             and cls._active_runtime_effects(
                 session, combat.id, target_id=target.id, state_name="dodge"

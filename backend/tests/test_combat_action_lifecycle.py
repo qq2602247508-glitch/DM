@@ -202,6 +202,68 @@ def test_dodge_and_prone_force_explicit_attack_ruling_then_dodge_expires(
     )
 
 
+def test_incapacitation_ends_dodge_before_the_next_attack(
+    combat_client: TestClient,
+) -> None:
+    campaign, combat, defender = _setup(combat_client)
+    attacker = _add_combatant(combat_client, campaign, combat, name="攻击者", initiative=10)
+    dodged = combat_client.post(
+        f"{_root(campaign, combat)}/maneuvers/confirm",
+        headers={"X-Request-ID": "dodge-before-incapacitation"},
+        json={
+            "action_type": "dodge",
+            "actor_combatant_id": defender["id"],
+            "actor_version": defender["version"],
+        },
+    )
+    assert dodged.status_code == 200, dodged.text
+    defender = dodged.json()["actor"]
+    dodge_effect_id = dodged.json()["effect"]["id"]
+    assert "闪避" in defender["conditions"]
+
+    incapacitated = combat_client.patch(
+        _combatant_path(campaign, combat, defender["id"]),
+        headers={"If-Match": f'"{defender["version"]}"'},
+        json={"conditions": ["失能"]},
+    )
+    assert incapacitated.status_code == 200, incapacitated.text
+    defender = incapacitated.json()
+    assert defender["conditions"] == ["失能"]
+    effects = combat_client.get(f"{_root(campaign, combat)}/effects").json()["items"]
+    dodge_effect = next(item for item in effects if item["id"] == dodge_effect_id)
+    assert dodge_effect["status"] == "ended"
+    assert dodge_effect["end_reason"] == "闪避因失能结束"
+
+    advanced = combat_client.post(
+        f"{_root(campaign, combat)}/turns/advance",
+        headers={"X-Request-ID": "advance-after-dodge-break"},
+        json={"combat_version": combat["version"]},
+    )
+    assert advanced.status_code == 200, advanced.text
+    attacker = advanced.json()["active_combatant"]
+    attack = combat_client.post(
+        f"{_root(campaign, combat)}/actions/confirm",
+        headers={"X-Request-ID": "attack-after-dodge-break"},
+        json={
+            "action_type": "damage",
+            "is_attack": True,
+            "action_cost": "action",
+            "actor_combatant_id": attacker["id"],
+            "actor_version": attacker["version"],
+            "target_combatant_id": defender["id"],
+            "target_version": defender["version"],
+            "amount": 3,
+            "damage_type": "slashing",
+            "attack_roll_total": 15,
+        },
+    )
+    assert attack.status_code == 200, attack.text
+    assert "target_dodging" not in attack.json()["action"]["result_json"].get(
+        "attack_contexts",
+        [],
+    )
+
+
 def test_same_condition_from_two_effect_sources_has_independent_lifecycles(
     combat_client: TestClient,
 ) -> None:
