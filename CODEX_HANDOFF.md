@@ -1,3 +1,16 @@
+# 2026-08-05 闪避可见性规则闭环
+
+- 提交 `e7446b2`：攻击上下文现在读取权威战斗网格的 `line_of_sight`，只有防御者看得见攻击者时，
+  闪避才真实加入攻击劣势；有权威几何但攻击者不可见时，写入
+  `target_dodge_no_effect_attacker_not_visible` 审计上下文，不再错误施加劣势。
+- 缺少可靠几何时保留 DM 裁定，不猜测可见性；隔墙攻击仍必须由 DM 明确 override，且不会把闪避效果
+  当作有效劣势。没有改动火球术、雷鸣波、复合伤害、召唤生命周期或基础 AI。
+- 新增 `test_dodge_disadvantage_requires_authoritative_visibility`，覆盖可见生效、不可见不生效、
+  DM 放行以及上下文审计。
+- 验证：定向 combat engine/action lifecycle 测试通过；后端全量测试通过；Ruff 和
+  `git diff --check` 通过。仅有既存 Starlette/httpx 弃用警告。
+- 代码和文档拆分提交：代码 `e7446b2`；本交接文档为后续独立文档提交。
+
 # 2026-08-04 传奇抗性豁免 UI 接入
 
 - 提交待记录：DM 的玩家豁免面板现在读取目标 `advanced_defenses.legendary_resistance`，显示剩余次数，并允许在玩家骰结果预览/确认时选择“失败时使用传奇抗性”。预览与确认都把 `use_legendary_resistance` 传给已有后端结算链；不改变后端规则。
