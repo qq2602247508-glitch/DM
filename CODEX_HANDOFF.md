@@ -2,6 +2,16 @@
 
 更新时间：2026-08-01（Asia/Shanghai）
 
+## 2026-08-04 多重攻击逐击暂停与恢复（最新）
+
+- 怪物多重攻击现在按绝对 `sequence_step` 写入；前一步只是 `previewed`（通常是等待玩家豁免）时，服务端拒绝后续击次，返回“previous player roll is confirmed”，不会提前扣血、消耗后续资源或推进回合。
+- 怪物动作执行器遇到豁免型子动作会在当前击次停下，不再预先提交后续击次。玩家/DM 确认豁免后，前端从同一 `sequence_id` 的下一步恢复，后续击次使用 `action_cost=none`，最后一击才允许结束怪物回合；已确认击次不会重复执行。
+- 新增后端回归 `test_multiattack_pauses_before_next_step_until_player_roll_is_confirmed`，覆盖“首击豁免 → 后续击次被拒绝 → 确认后继续 → HP 20→15”。
+- 当前门禁：后端 `445 passed`（仅既有 Starlette/httpx 弃用警告）；前端 `39 files / 195 tests`；TypeScript、ESLint、生产构建、Ruff、`git diff --check` 全通过。
+- 内置浏览器干净页面实际刷新 DM `/#/combat` 与玩家 `/#/player?simulation_join_code=D6A76S...`：两端加载正常，新的控制台 error/warn 均为空。当前模拟剧本没有普通多重攻击模板，只有传奇/巢穴/反应窗口，所以多重攻击 UI 的逐击暂停由 API/组件回归覆盖，不把当前页面冒充成多重攻击实战。
+- 截图：`/private/tmp/dnd-multiattack-stability-dm-20260804.png`、`/private/tmp/dnd-multiattack-stability-player-20260804.png`。
+- 本项不重做火球术、雷鸣波、基础复合伤害和召唤物生命周期；复杂多段/复合伤害、完整状态组合、三维遮挡、传奇/巢穴/反应自动触发矩阵和全职业 1–20 级运行时仍按既有边界处理。
+
 ## 2026-08-04 状态别名与来源生命周期收口（最新）
 
 - 结构化状态积木现在通过统一规范名写入和移除状态。中文资料的“中毒”和英文积木的 `poisoned` 会共用同一个状态，不再产生两条重复状态记录。
