@@ -588,14 +588,13 @@ def feature_runtime_definition(
                 "duration": "current_turn",
             },
             "runtime_execution": {
-                "status": "blocked",
+                "status": "ready",
                 "consumer": "combat_feature_action",
-                "blocked_by": "movement_and_next_attack_event_state",
+                "effect_kinds": ["activate_timed_condition"],
             },
-            "automation_status": "partial",
-            "requires_dm_adjudication": True,
-            "partial_reason": "状态可写入；移动归零和下一次攻击优势仍需条件求值器执行。",
-            "summary": "本回合未移动时：速度归零，下一次攻击获得优势",
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+            "summary": "本回合未移动时，速度归零；本回合下一次攻击掷骰具有优势。",
             **source,
         }
 
@@ -1902,7 +1901,7 @@ def _feature_action_executor_ready(action: Mapping[str, Any]) -> bool:
         if not isinstance(effect, Mapping):
             return False
         if effect.get("kind") == "activate_timed_condition" and not (
-            effect.get("condition") in {"隐形", "reckless_attack"}
+            effect.get("condition") in {"隐形", "reckless_attack", "steady_aim"}
             and effect.get("expires") in {"turn_start", "turn_end"}
         ):
             return False

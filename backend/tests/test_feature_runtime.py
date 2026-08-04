@@ -719,19 +719,23 @@ def test_rogue_and_monk_event_bound_features_keep_explicit_dm_boundaries() -> No
     monk_3 = _registry_at(rules["武僧"], 3)
     monk_13 = _registry_at(rules["武僧"], 13)
 
-    blocked = {
-        "cunning_action": "standard_action_choice_forwarding",
-        "steady_aim": "movement_and_next_attack_event_state",
+    action = rogue["actions"]["cunning_action"]
+    assert action["runtime_execution"] == {
+        "status": "blocked",
+        "consumer": "combat_feature_action",
+        "blocked_by": "standard_action_choice_forwarding",
     }
-    for feature_id, reason in blocked.items():
-        action = rogue["actions"][feature_id]
-        assert action["runtime_execution"] == {
-            "status": "blocked",
-            "consumer": "combat_feature_action",
-            "blocked_by": reason,
-        }
-        assert action["automation_status"] == "partial"
-        assert action["requires_dm_adjudication"] is True
+    assert action["automation_status"] == "partial"
+    assert action["requires_dm_adjudication"] is True
+
+    steady_aim = rogue["actions"]["steady_aim"]
+    assert steady_aim["runtime_execution"] == {
+        "status": "ready",
+        "consumer": "combat_feature_action",
+        "effect_kinds": ["activate_timed_condition"],
+    }
+    assert steady_aim["automation_status"] == "full"
+    assert steady_aim["requires_dm_adjudication"] is False
 
     uncanny_dodge = rogue["actions"]["uncanny_dodge"]
     assert uncanny_dodge["runtime_execution"] == {
@@ -744,7 +748,8 @@ def test_rogue_and_monk_event_bound_features_keep_explicit_dm_boundaries() -> No
     rogue_projections = {
         item["feature_id"] for item in feature_runtime_action_projections(rogue)
     }
-    assert not set(blocked) & rogue_projections
+    assert "cunning_action" not in rogue_projections
+    assert "steady_aim" in rogue_projections
 
     evasion = next(
         item
@@ -1083,12 +1088,12 @@ def test_2024_deterministic_feature_contracts_are_explicit_but_partial_when_even
         item["feature_id"]: item for item in feature_runtime_action_projections(registry)
     }
     assert "reckless_attack" in projections
-    assert "steady_aim" not in projections
+    assert "steady_aim" in projections
     partial_contracts = {
         item["name"]: item for item in registry["feature_contracts"]
     }
     assert partial_contracts["鲁莽攻击"]["automation_status"] == "full"
-    assert partial_contracts["稳定瞄准"]["automation_status"] == "partial"
+    assert partial_contracts["稳定瞄准"]["automation_status"] == "full"
 
 
 def test_attack_riders_require_explicit_dice_and_are_not_reused_in_same_turn() -> None:

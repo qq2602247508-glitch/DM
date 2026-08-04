@@ -700,6 +700,193 @@ def test_reckless_feature_action_expires_at_actor_turn_start(
     assert any(item["id"] == effect_id for item in expired.json()["ended_runtime_effects"])
 
 
+def test_steady_aim_zeroes_movement_and_is_consumed_by_next_attack(
+    combat_client: TestClient,
+) -> None:
+    campaign, combat, actor = _setup(combat_client)
+    enemy = _add_combatant(combat_client, campaign, combat, name="稳定瞄准目标", initiative=10)
+    patched = combat_client.patch(
+        _combatant_path(campaign, combat, actor["id"]),
+        headers={"If-Match": f'"{actor["version"]}"'},
+        json={
+            "snapshot_json": {
+                "feature_runtime": {
+                    "actions": {
+                        "steady_aim": {
+                            "name": "稳定瞄准",
+                            "kind": "feature_action",
+                            "action_cost": "bonus_action",
+                            "target": "self",
+                            "resolution_kind": "condition",
+                            "runtime_execution": {
+                                "status": "ready",
+                                "consumer": "combat_feature_action",
+                                "effect_kinds": ["activate_timed_condition"],
+                            },
+                            "effects": [
+                                {
+                                    "kind": "activate_timed_condition",
+                                    "condition": "steady_aim",
+                                    "expires": "turn_end",
+                                }
+                            ],
+                        }
+                    }
+                }
+            }
+        },
+    )
+    assert patched.status_code == 200, patched.text
+    actor = patched.json()
+
+    activated = combat_client.post(
+        f"{_root(campaign, combat)}/feature-actions/confirm",
+        headers={"X-Request-ID": "steady-aim-activate"},
+        json={
+            "actor_combatant_id": actor["id"],
+            "actor_version": actor["version"],
+            "feature_id": "steady_aim",
+            "target_combatant_id": actor["id"],
+            "target_version": actor["version"],
+        },
+    )
+    assert activated.status_code == 200, activated.text
+    actor = activated.json()["actor"]
+    assert "steady_aim" in actor["conditions"]
+    assert actor["movement_remaining_ft"] == 0
+    assert actor["bonus_action_available"] is False
+
+    first_attack = combat_client.post(
+        f"{_root(campaign, combat)}/actions/confirm",
+        headers={"X-Request-ID": "steady-aim-attack-1"},
+        json={
+            "action_type": "damage",
+            "actor_combatant_id": actor["id"],
+            "actor_version": actor["version"],
+            "action_cost": "action",
+            "target_combatant_id": enemy["id"],
+            "target_version": enemy["version"],
+            "amount": 3,
+            "damage_type": "piercing",
+            "is_attack": True,
+            "attack_roll_mode": "advantage",
+            "attack_roll_total": 12,
+        },
+    )
+    assert first_attack.status_code == 200, first_attack.text
+    first_result = first_attack.json()["action"]["result_json"]
+    assert "feature:稳定瞄准" in next(
+        item
+        for item in first_result["attack_contexts"]
+        if item.startswith("attack_roll_advantage_sources:")
+    )
+    assert first_result["consumed_effect_ids"] == [
+        activated.json()["result"]["effect_id"]
+    ]
+    actor = first_attack.json()["actor"]
+    enemy = first_attack.json()["target"]
+    assert "steady_aim" not in actor["conditions"]
+
+    second_attack = combat_client.post(
+        f"{_root(campaign, combat)}/actions/confirm",
+        headers={"X-Request-ID": "steady-aim-attack-2"},
+        json={
+            "action_type": "damage",
+            "actor_combatant_id": actor["id"],
+            "actor_version": actor["version"],
+            "action_cost": "none",
+            "target_combatant_id": enemy["id"],
+            "target_version": enemy["version"],
+            "amount": 3,
+            "damage_type": "piercing",
+            "is_attack": True,
+            "attack_roll_mode": "normal",
+            "attack_roll_total": 12,
+        },
+    )
+    assert second_attack.status_code == 200, second_attack.text
+    second_result = second_attack.json()["action"]["result_json"]
+    assert "feature:稳定瞄准" not in " ".join(second_result.get("attack_contexts", []))
+
+
+def test_steady_aim_requires_unspent_movement_and_expires_at_turn_end(
+    combat_client: TestClient,
+) -> None:
+    campaign, combat, actor = _setup(combat_client)
+    _add_combatant(combat_client, campaign, combat, name="稳定瞄准回合目标", initiative=10)
+    registry = {
+        "actions": {
+            "steady_aim": {
+                "name": "稳定瞄准",
+                "kind": "feature_action",
+                "action_cost": "bonus_action",
+                "target": "self",
+                "effects": [
+                    {
+                        "kind": "activate_timed_condition",
+                        "condition": "steady_aim",
+                        "expires": "turn_end",
+                    }
+                ],
+            }
+        }
+    }
+    patched = combat_client.patch(
+        _combatant_path(campaign, combat, actor["id"]),
+        headers={"If-Match": f'"{actor["version"]}"'},
+        json={"movement_remaining_ft": 25, "snapshot_json": {"feature_runtime": registry}},
+    )
+    assert patched.status_code == 200, patched.text
+    actor = patched.json()
+    rejected = combat_client.post(
+        f"{_root(campaign, combat)}/feature-actions/confirm",
+        headers={"X-Request-ID": "steady-aim-after-move"},
+        json={
+            "actor_combatant_id": actor["id"],
+            "actor_version": actor["version"],
+            "feature_id": "steady_aim",
+            "target_combatant_id": actor["id"],
+            "target_version": actor["version"],
+        },
+    )
+    assert rejected.status_code == 400
+    assert "尚未移动" in rejected.text
+
+    restored = combat_client.patch(
+        _combatant_path(campaign, combat, actor["id"]),
+        headers={"If-Match": f'"{actor["version"]}"'},
+        json={"movement_remaining_ft": 30},
+    )
+    assert restored.status_code == 200, restored.text
+    actor = restored.json()
+    activated = combat_client.post(
+        f"{_root(campaign, combat)}/feature-actions/confirm",
+        headers={"X-Request-ID": "steady-aim-expiry-activate"},
+        json={
+            "actor_combatant_id": actor["id"],
+            "actor_version": actor["version"],
+            "feature_id": "steady_aim",
+            "target_combatant_id": actor["id"],
+            "target_version": actor["version"],
+        },
+    )
+    assert activated.status_code == 200, activated.text
+    actor = activated.json()["actor"]
+    first_next = combat_client.post(
+        f"{_root(campaign, combat)}/turns/advance",
+        headers={"X-Request-ID": "steady-aim-expiry-next-unit"},
+        json={"combat_version": combat["version"]},
+    )
+    assert first_next.status_code == 200, first_next.text
+    second_next = combat_client.post(
+        f"{_root(campaign, combat)}/turns/advance",
+        headers={"X-Request-ID": "steady-aim-expiry-next-round"},
+        json={"combat_version": first_next.json()["combat"]["version"]},
+    )
+    assert second_next.status_code == 200, second_next.text
+    assert "steady_aim" not in second_next.json()["active_combatant"]["conditions"]
+
+
 def test_hide_requires_dm_result_and_search_reveals_runtime_state(
     combat_client: TestClient,
 ) -> None:

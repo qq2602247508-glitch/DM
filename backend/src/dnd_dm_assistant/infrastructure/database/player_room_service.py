@@ -969,6 +969,8 @@ class PlayerRoomService:
         distance_ft: int | None,
         target_dodging: bool = False,
         action: dict[str, Any] | None = None,
+        session: Session | None = None,
+        combat_id: str | None = None,
     ) -> tuple[str, bool, bool, bool]:
         """Resolve the deterministic attack consequences of core conditions."""
 
@@ -1004,6 +1006,18 @@ class PlayerRoomService:
             )
             if attack_ability in {"strength", "力量"} and is_weapon_attack:
                 advantage.append("攻击者鲁莽攻击")
+        steady_aim_active = (
+            session is not None
+            and combat_id is not None
+            and CombatEngineService._active_runtime_effects(
+                session,
+                combat_id,
+                target_id=actor.id,
+                state_name="steady_aim",
+            )
+        )
+        if steady_aim_active:
+            advantage.append("攻击者稳定瞄准")
         for condition, label in (
             ("blinded", "目标目盲"),
             ("restrained", "目标束缚"),
@@ -6913,6 +6927,8 @@ class PlayerRoomService:
                         current_target,
                         distance_ft=current_distance,
                         action=action,
+                        session=session,
+                        combat_id=combat.id,
                     )
                 )
                 # Saving throws and auto-hit effects do not make attack rolls;

@@ -137,6 +137,7 @@ class CombatEngineService:
         "disengage": "撤离",
         "feature_invisible": "隐形",
         "feature_reckless_attack": "reckless_attack",
+        "steady_aim": "steady_aim",
     }
 
     def __init__(self, engine: Engine) -> None:
@@ -2921,6 +2922,9 @@ class CombatEngineService:
         cls,
         actor: Combatant,
         target: Combatant,
+        *,
+        session: Session | None = None,
+        combat_id: str | None = None,
     ) -> tuple[list[str], list[str]]:
         """Read typed class attack modifiers for the current attack."""
 
@@ -2935,6 +2939,14 @@ class CombatEngineService:
                 advantage.append(source)
             elif operation == "disadvantage":
                 disadvantage.append(source)
+        if session is not None and combat_id is not None:
+            if cls._active_runtime_effects(
+                session,
+                combat_id,
+                target_id=actor.id,
+                state_name="steady_aim",
+            ):
+                advantage.append("稳定瞄准")
         # Defensive features such as Elusive suppress an incoming advantage
         # only when their explicit predicate is satisfied.
         target_conditions = cls._condition_set(target)
@@ -5090,7 +5102,10 @@ class CombatEngineService:
         advantage_sources: list[str] = []
         disadvantage_sources: list[str] = []
         feature_advantage, feature_disadvantage = cls._feature_attack_roll_contexts(
-            actor, target
+            actor,
+            target,
+            session=session,
+            combat_id=combat.id,
         )
         if feature_advantage:
             contexts.append("feature_attack_roll_advantage")
@@ -7567,7 +7582,13 @@ class CombatEngineService:
                     target_id=actor.id,
                     state_name="hidden",
                 )
-                for state_effect in [*actor_hidden, help_effect]:
+                steady_aim_effects = self._active_runtime_effects(
+                    session,
+                    combat.id,
+                    target_id=actor.id,
+                    state_name="steady_aim",
+                )
+                for state_effect in [*actor_hidden, help_effect, *steady_aim_effects]:
                     if state_effect is None or state_effect in consumed_attack_effects:
                         continue
                     ended_target = self._end_runtime_effect(
@@ -8410,6 +8431,10 @@ class CombatEngineService:
                     )
             if action.get("target") == "self" and target.id != actor.id:
                 raise ValueError("该职业特性只能以自身为目标")
+            if command.feature_id == "steady_aim" and (
+                actor.movement_remaining_ft != actor.speed_ft
+            ):
+                raise ValueError("稳定瞄准要求本回合尚未移动")
             if action_cost == "none" and actor.version != command.actor_version:
                 raise VersionConflict(
                     "combatant", actor.id, command.actor_version, actor.version
@@ -8488,12 +8513,16 @@ class CombatEngineService:
                 elif kind == "activate_timed_condition":
                     condition = str(effect.get("condition") or "").strip()
                     expires = str(effect.get("expires") or "turn_start")
-                    if condition not in {"隐形", "reckless_attack"} or expires not in {
+                    if condition not in {
+                        "隐形",
+                        "reckless_attack",
+                        "steady_aim",
+                    } or expires not in {
                         "turn_start",
                         "turn_end",
                     }:
                         raise ValueError(
-                            "当前职业特性只允许结构化的隐形或鲁莽攻击持续到回合边界"
+                            "当前职业特性只允许结构化的隐形、鲁莽攻击或稳定瞄准持续到回合边界"
                         )
                     if self._condition_is_immune(target, condition):
                         raise ValueError(
@@ -8502,6 +8531,7 @@ class CombatEngineService:
                     state_name = {
                         "隐形": "feature_invisible",
                         "reckless_attack": "feature_reckless_attack",
+                        "steady_aim": "steady_aim",
                     }[condition]
                     runtime_effect = self._create_runtime_effect(
                         session,
@@ -8515,6 +8545,9 @@ class CombatEngineService:
                     )
                     result.setdefault("conditions_added", []).append(condition)
                     result["effect_id"] = runtime_effect.id
+                    if condition == "steady_aim":
+                        target.movement_remaining_ft = 0
+                        result["movement_remaining_after_use"] = 0
                 elif kind == "grant_action_budget":
                     amount = self._state_int(effect.get("amount"), 0)
                     if amount < 1:
