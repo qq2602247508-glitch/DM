@@ -1124,6 +1124,32 @@ class CombatEngineService:
             result.append(action)
         return result
 
+    @staticmethod
+    def _is_structured_spell_action(
+        combatant: Combatant,
+        action_name: str | None,
+    ) -> bool:
+        """Require an explicit spell-shaped action before opening spell reactions."""
+
+        name = (action_name or "").strip()
+        if not name:
+            return False
+        raw_actions = dict(combatant.snapshot_json or {}).get("actions")
+        if not isinstance(raw_actions, list):
+            return False
+        for raw in raw_actions:
+            if not isinstance(raw, dict) or str(raw.get("name") or "").strip() != name:
+                continue
+            action_type = str(raw.get("action_type") or "").strip().lower()
+            if action_type == "spellcasting" or raw.get("is_spell") is True:
+                return True
+            resource_key = str(raw.get("resource_key") or "").strip().lower()
+            if resource_key.startswith("spell_slots_"):
+                return True
+            if isinstance(raw.get("spell_level"), int) and raw["spell_level"] >= 0:
+                return True
+        return False
+
     @classmethod
     def _persist_eligible_advanced_action_windows(
         cls,
@@ -1440,6 +1466,103 @@ class CombatEngineService:
                         f"{target.display_name}：受到伤害反应窗口已开放"
                         f"（{trigger_name} 造成 {adjusted_damage} 点实际伤害；"
                         "等待 DM 确认）"
+                    ),
+                    idempotency_key=idempotency_key,
+                    status="confirmed",
+                )
+            )
+        session.flush()
+
+    @classmethod
+    def _persist_eligible_cast_spell_reaction_windows(
+        cls,
+        session: Session,
+        *,
+        combat: Combat,
+        transaction: OperationTransaction | None,
+        spell_action: CombatAction,
+    ) -> None:
+        """Open explicit ``casts_spell`` windows when a structured spell starts."""
+
+        caster = (
+            session.get(Combatant, spell_action.actor_combatant_id)
+            if spell_action.actor_combatant_id
+            else None
+        )
+        action_name = str(spell_action.request_json.get("action_name") or "").strip()
+        if caster is None or not cls._is_structured_spell_action(caster, action_name):
+            return
+        monsters = session.scalars(
+            select(Combatant).where(
+                Combatant.combat_id == combat.id,
+                Combatant.entity_type == "monster",
+                Combatant.is_active.is_(True),
+            )
+        ).all()
+        for monster in monsters:
+            if monster.id == caster.id or monster.hp <= 0 or not monster.reaction_available:
+                continue
+            reaction_actions = cls._structured_reaction_actions(monster, "casts_spell")
+            if not reaction_actions:
+                continue
+            idempotency_key = (
+                f"rw:{combat.id}:spell:{spell_action.id}:{monster.id}:casts_spell"
+            )
+            existing = session.scalar(
+                select(CombatAction).where(
+                    CombatAction.combat_id == combat.id,
+                    CombatAction.idempotency_key == idempotency_key,
+                )
+            )
+            if existing is not None:
+                continue
+            reaction_metadata: dict[str, object] = {
+                "action_cost": "reaction",
+                "status": "eligible",
+                "window_key": f"spell:{spell_action.id}:{monster.id}",
+                "trigger": "casts_spell",
+                "reaction_event": "casts_spell",
+                "eligible_action_names": [
+                    action["name"] for action in reaction_actions
+                ],
+                "trigger_action_id": spell_action.id,
+                "trigger_action_type": spell_action.action_type,
+                "trigger_action_name": action_name,
+                "trigger_combatant_id": caster.id,
+                "trigger_combatant_name": caster.display_name,
+            }
+            reaction_triggers = {
+                action["name"]: action["trigger"]
+                for action in reaction_actions
+                if action.get("trigger")
+            }
+            if reaction_triggers:
+                reaction_metadata["reaction_triggers"] = reaction_triggers
+            session.add(
+                CombatAction(
+                    campaign_id=combat.campaign_id,
+                    combat_id=combat.id,
+                    actor_combatant_id=monster.id,
+                    transaction_id=transaction.id if transaction is not None else None,
+                    action_type="eligible_action_window",
+                    target_combatant_ids=[],
+                    request_json={
+                        "source_action_type": spell_action.action_type,
+                        "spell_action_id": spell_action.id,
+                        "spell_action_name": action_name,
+                        "reaction_event": "casts_spell",
+                        "trigger_combatant_id": caster.id,
+                    },
+                    result_json={"action_window": reaction_metadata},
+                    explanation=(
+                        "仅记录结构化施法反应的可触发时机；不会自动选择目标、"
+                        "掷骰、消耗反应或执行动作。"
+                    ),
+                    round_number=combat.round_number,
+                    turn_index=combat.current_turn_index,
+                    summary=(
+                        f"{monster.display_name}：施法反应窗口已开放"
+                        f"（{caster.display_name} 开始施放「{action_name}」；等待 DM 确认）"
                     ),
                     idempotency_key=idempotency_key,
                     status="confirmed",
@@ -4051,6 +4174,12 @@ class CombatEngineService:
             )
             session.add(action)
             session.flush()
+            self._persist_eligible_cast_spell_reaction_windows(
+                session,
+                combat=combat,
+                transaction=None,
+                spell_action=action,
+            )
             return {
                 "action": serialize(action),
                 "actor": serialize(actor),
@@ -4340,6 +4469,13 @@ class CombatEngineService:
                 )
             session.add_all(actions)
             session.flush()
+            if actions:
+                self._persist_eligible_cast_spell_reaction_windows(
+                    session,
+                    combat=combat,
+                    transaction=transaction,
+                    spell_action=actions[0],
+                )
             transaction.after_snapshot = {
                 "combat_id": combat_id,
                 "actor_combatant_id": actor.id,
@@ -5516,6 +5652,12 @@ class CombatEngineService:
                         (target, int(result["adjusted_damage"]))
                     ],
                 )
+            self._persist_eligible_cast_spell_reaction_windows(
+                session,
+                combat=combat,
+                transaction=transaction,
+                spell_action=action,
+            )
             concentration_prompts: list[dict[str, object]] = []
             raw_concentration_dc = result.get("concentration_check_dc")
             if (
@@ -6288,6 +6430,12 @@ class CombatEngineService:
                 transaction=transaction,
                 damage_action=action,
                 damaged_targets=damaged_targets_for_reactions,
+            )
+            self._persist_eligible_cast_spell_reaction_windows(
+                session,
+                combat=combat,
+                transaction=transaction,
+                spell_action=action,
             )
             concentration_prompts = self._persist_concentration_prompts(
                 session,

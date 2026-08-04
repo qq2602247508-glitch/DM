@@ -1252,6 +1252,104 @@ def test_structured_takes_damage_reaction_window_is_one_per_damage_event(
     ) == 1
 
 
+def test_structured_casts_spell_reaction_window_opens_before_player_save(
+    combat_client: TestClient,
+) -> None:
+    campaign = _campaign(combat_client, "Structured spell reaction")
+    base = f"/api/v1/campaigns/{campaign['id']}"
+    combat = combat_client.post(
+        f"{base}/combats", json={"name": "Structured spell reaction combat"}
+    ).json()
+    caster = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "施法怪物",
+            "entity_type": "monster",
+            "initiative": 20,
+            "hp": 24,
+            "max_hp": 24,
+            "snapshot_json": {
+                "actions": [
+                    {
+                        "name": "震爆术",
+                        "action_type": "spellcasting",
+                        "spell_level": 2,
+                        "range_ft": 60,
+                        "damage": "3d6",
+                        "damage_type": "force",
+                    }
+                ]
+            },
+        },
+    ).json()
+    counterer = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "反制反应怪",
+            "entity_type": "monster",
+            "initiative": 15,
+            "hp": 24,
+            "max_hp": 24,
+            "snapshot_json": {
+                "actions": [
+                    {
+                        "name": "反制施法",
+                        "action_type": "reaction",
+                        "reaction_event": "casts_spell",
+                        "reaction_trigger": "看到生物施放法术时",
+                    }
+                ]
+            },
+        },
+    ).json()
+    target = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "施法目标",
+            "entity_type": "character",
+            "initiative": 10,
+            "hp": 20,
+            "max_hp": 20,
+        },
+    ).json()
+    pending = combat_client.post(
+        f"{base}/combats/{combat['id']}/actions/player-rolls/pending",
+        headers={"X-Request-ID": "structured-casts-spell-prompt"},
+        json={
+            "actor_combatant_id": caster["id"],
+            "actor_version": caster["version"],
+            "target_combatant_id": target["id"],
+            "target_version": target["version"],
+            "action_cost": "action",
+            "action_name": "震爆术",
+            "resolution_type": "saving_throw",
+            "dc": 14,
+            "ability": "dexterity",
+            "damage_on_failure": 11,
+            "damage_type": "force",
+            "description": "施法怪物开始施放震爆术。",
+        },
+    )
+    assert pending.status_code == 200, pending.text
+    actions = combat_client.get(f"{base}/combats/{combat['id']}/actions").json()["items"]
+    windows = [
+        item["result_json"]["action_window"]
+        for item in actions
+        if item["action_type"] == "eligible_action_window"
+    ]
+    assert len(windows) == 1
+    assert windows[0]["reaction_event"] == "casts_spell"
+    assert windows[0]["trigger_action_type"] == "player_roll_prompt"
+    assert windows[0]["trigger_action_name"] == "震爆术"
+    assert windows[0]["trigger_combatant_id"] == caster["id"]
+    assert windows[0]["eligible_action_names"] == ["反制施法"]
+    window_action = next(
+        item for item in actions if item["action_type"] == "eligible_action_window"
+    )
+    assert window_action["request_json"]["spell_action_id"] == pending.json()["action"]["id"]
+    assert counterer["id"] != caster["id"]
+
+
 def test_structured_reaction_event_must_match_monster_action(
     combat_client: TestClient,
 ) -> None:
@@ -4678,7 +4776,16 @@ def test_monster_area_action_resolves_mixed_damage_and_vertical_geometry(
             "initiative": 20,
             "hp": 30,
             "max_hp": 30,
-            "snapshot_json": {"grid_position": {"row": 5, "col": 2, "elevation_ft": 10}},
+            "snapshot_json": {
+                "grid_position": {"row": 5, "col": 2, "elevation_ft": 10},
+                "actions": [
+                    {
+                        "name": "熔火柱",
+                        "action_type": "spellcasting",
+                        "spell_level": 3,
+                    }
+                ],
+            },
         },
     ).json()
     low = combat_client.post(
@@ -4712,6 +4819,26 @@ def test_monster_area_action_resolves_mixed_damage_and_vertical_geometry(
             "hp": 30,
             "max_hp": 30,
             "snapshot_json": {"grid_position": {"row": 5, "col": 5, "elevation_ft": 30}},
+        },
+    ).json()
+    counterer = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "区域反制怪",
+            "entity_type": "monster",
+            "initiative": 5,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {
+                "grid_position": {"row": 1, "col": 1, "elevation_ft": 0},
+                "actions": [
+                    {
+                        "name": "反制施法",
+                        "action_type": "reaction",
+                        "reaction_event": "casts_spell",
+                    }
+                ],
+            },
         },
     ).json()
     path = f"{base}/combats/{combat['id']}/monster-area-actions/confirm"
@@ -4757,9 +4884,19 @@ def test_monster_area_action_resolves_mixed_damage_and_vertical_geometry(
         for item in actions
         if item["action_type"] == "eligible_action_window"
     ]
-    assert len(area_windows) == 1
-    assert area_windows[0]["reaction_event"] == "takes_damage"
-    assert area_windows[0]["damaged_combatant_id"] == low["id"]
+    assert len(area_windows) == 2
+    damage_windows = [
+        window for window in area_windows if window["reaction_event"] == "takes_damage"
+    ]
+    spell_windows = [
+        window for window in area_windows if window["reaction_event"] == "casts_spell"
+    ]
+    assert len(damage_windows) == 1
+    assert damage_windows[0]["damaged_combatant_id"] == low["id"]
+    assert len(spell_windows) == 1
+    assert spell_windows[0]["trigger_combatant_id"] == actor["id"]
+    assert spell_windows[0]["eligible_action_names"] == ["反制施法"]
+    assert counterer["id"] != actor["id"]
     assert (
         combat_client.get(
             f"{base}/combats/{combat['id']}/combatants/{high['id']}"
