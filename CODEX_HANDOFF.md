@@ -12,6 +12,16 @@
 - 截图：`/private/tmp/dnd-advanced-action-window-dm-20260804.png`、`/private/tmp/dnd-advanced-action-window-player-20260804.png`。
 - 本项不重做已经完成的火球术、雷鸣波、复合伤害、召唤物生命周期、多重攻击暂停恢复或结构化反应事件；高级动作的真实执行仍需 DM 确认，复杂触发矩阵、复杂状态组合、三维遮挡和全职业 1–20 级运行时仍未全部完成。
 
+## 2026-08-04 回合结束反应自动开窗（最新）
+
+- 结构化怪物反应现在在回合边界也进入正式可审计窗口：当其他单位回合结束，且怪物快照明确声明 `reaction_event=turn_end`、反应资源可用时，回合推进器写入 `eligible_action_window`。
+- 窗口保留反应动作名、结构化事件、触发单位、触发单位名称和资料库触发文本；怪物自己的回合结束不会给自己开窗，重复推进不会重复写入。
+- 这一步只记录“可以触发”，不自动选择目标、不自动掷攻击/伤害骰、不消耗反应；DM 继续使用现有高级动作确认链提交实际触发、目标和骰值。借机攻击的离开范围移动链不在本项重做范围内。
+- 新增回归 `test_structured_turn_end_reaction_window_excludes_reaction_owner_turn`；后端全量 `447 passed`，前端 39 文件/195 项，TypeScript、ESLint、生产构建、Ruff、`git diff --check` 通过。严格 mypy 仍有仓库既有类型错误，本项新增的窗口代码未再增加对应位置的错误。
+- 浏览器刷新 DM `/#/combat` 与玩家 `/#/player?simulation_join_code=D6A76S...`：DM 高级动作窗口、传奇/巢穴选项和玩家端先攻/地图/公开快照正常；两端新增控制台 `error/warn` 均为空。
+- 截图：`/private/tmp/dnd-turn-end-reaction-window-dm-20260804.png`、`/private/tmp/dnd-turn-end-reaction-window-player-20260804.png`。
+- 仍未完成：受到伤害、施法、进入范围等反应事件的自动开窗矩阵，以及复杂状态组合、三维遮挡和全职业 1–20 级运行时；不把本项的回合结束事件支持说成全部反应自动化。
+
 ## 2026-08-04 多重攻击逐击暂停与恢复（最新）
 
 - 怪物多重攻击现在按绝对 `sequence_step` 写入；前一步只是 `previewed`（通常是等待玩家豁免）时，服务端拒绝后续击次，返回“previous player roll is confirmed”，不会提前扣血、消耗后续资源或推进回合。
