@@ -149,3 +149,38 @@ def test_compiled_evasion_contract_is_consumed_by_save_damage_resolution() -> No
     assert failed["damage"] == 10
     assert succeeded["applied_defenses"] == ["evasion"]
     assert failed["applied_defenses"] == ["evasion"]
+
+
+def test_evasion_requires_half_damage_save_and_non_incapacitated_state() -> None:
+    def resolve(*, conditions: list[str], damage_on_success: int) -> dict[str, object]:
+        target = Combatant(
+            id="evasion-boundary",
+            entity_type="character",
+            display_name="反射闪避边界",
+            hp=30,
+            max_hp=30,
+            conditions=conditions,
+            snapshot_json={"advanced_defenses": {"evasion": True}},
+        )
+        return CombatEngineService._resolve_save_defenses(
+            target,
+            dc=15,
+            ability="dexterity",
+            roll_total=8,
+            roll_totals=None,
+            damage_on_success=damage_on_success,
+            damage_on_failure=20,
+            is_magical=True,
+            use_legendary_resistance=False,
+            use_feature_reroll=False,
+            consume=False,
+        )
+
+    full_damage_save = resolve(conditions=[], damage_on_success=0)
+    incapacitated = resolve(conditions=["震慑"], damage_on_success=10)
+
+    assert full_damage_save["damage"] == 20
+    assert full_damage_save["applied_defenses"] == []
+    assert incapacitated["damage"] == 20
+    assert "evasion" not in incapacitated["applied_defenses"]
+    assert "condition_auto_fail_strength_dex_save" in incapacitated["applied_defenses"]

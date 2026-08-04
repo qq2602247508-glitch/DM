@@ -1005,17 +1005,10 @@ def feature_runtime_definition(
                 "runtime_execution": {
                     "status": "ready",
                     "consumer": "saving_throw_damage_resolution",
-                    "remaining_dm_boundaries": [
-                        "half_damage_save_eligibility",
-                        "incapacitated_state_requirement",
-                    ],
                 },
-                "automation_status": "partial",
-                "requires_dm_adjudication": True,
-                "partial_reason": (
-                    "成功无伤与失败半伤已接入；仍需确认原效果允许成功半伤，且战斗快照的"
-                    " Evasion 布尔值尚未校验失能状态。"
-                ),
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+                "summary": "仅对成功豁免减半伤害的敏捷豁免生效；失能时不生效。",
                 "source": feature_name,
                 **source,
             }

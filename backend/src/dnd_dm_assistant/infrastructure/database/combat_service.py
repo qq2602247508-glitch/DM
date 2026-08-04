@@ -6314,9 +6314,19 @@ class CombatEngineService:
                 target.snapshot_json = snapshot
         damage = damage_on_success if succeeded else damage_on_failure
         evasion = bool(defenses.get("evasion") or snapshot.get("evasion"))
-        if evasion and normalized_ability == "dexterity" and (
-            damage_on_success > 0 or damage_on_failure > 0
-        ):
+        # Evasion only applies to a Dexterity save against an effect that
+        # explicitly deals half damage on a successful save.  It also stops
+        # working while the creature is incapacitated (including the
+        # synthetic incapacitated state derived from stunned/paralyzed/
+        # petrified/unconscious).  Do not let a stale defense flag turn a
+        # full-damage save or an incapacitated character into an evasion.
+        evasion_eligible = (
+            evasion
+            and normalized_ability == "dexterity"
+            and damage_on_success > 0
+            and not (condition_set & cls._ACTION_BLOCKING_CONDITIONS)
+        )
+        if evasion_eligible:
             damage = 0 if succeeded else damage_on_failure // 2
             applied.append("evasion")
         elif isinstance((reflex := defenses.get("reflex_defense")), dict):

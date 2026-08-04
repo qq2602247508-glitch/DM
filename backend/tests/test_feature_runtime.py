@@ -750,12 +750,8 @@ def test_rogue_and_monk_event_bound_features_keep_explicit_dm_boundaries() -> No
     assert evasion["runtime_execution"] == {
         "status": "ready",
         "consumer": "saving_throw_damage_resolution",
-        "remaining_dm_boundaries": [
-            "half_damage_save_eligibility",
-            "incapacitated_state_requirement",
-        ],
     }
-    assert evasion["automation_status"] == "partial"
+    assert evasion["automation_status"] == "full"
 
     early_deflect = monk_3["actions"]["deflect_attacks"]
     energy_deflect = monk_13["actions"]["deflect_attacks"]

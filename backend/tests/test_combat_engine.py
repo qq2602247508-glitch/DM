@@ -7092,6 +7092,7 @@ def test_mixed_monster_area_damage_applies_evasion_to_each_segment(
             "save_ability": "dexterity",
             "damage_total": 14,
             "damage_type": "mixed",
+            "half_damage_on_save": True,
             "damage_components": [
                 {"amount": 8, "damage_type": "fire"},
                 {"amount": 6, "damage_type": "force"},
