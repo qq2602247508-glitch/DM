@@ -2,6 +2,17 @@
 
 更新时间：2026-08-01（Asia/Shanghai）
 
+## 2026-08-04 专注来源失活/死亡时即时清理召唤物（最新）
+
+- 专注召唤生命周期现在明确监听 `source_unconscious`、`source_dead`、`source_inactive`。来源单位受到伤害降至 0 HP 时，在同一战斗事务中结束其全部专注效果并让关联召唤物立即离场，不再等到下一回合或下一次推进。
+- 多个共享生命周期召唤物会整组清理；召唤物从 DM/玩家先攻投影中移除后，先攻游标会自动落到仍然有效的单位。
+- DM 通过直接战斗单位编辑器把来源改成昏迷、死亡或失活时，也复用同一生命周期清理路径；来源清空专注字段，不会错误生成专注豁免请求。
+- 新增回归覆盖：伤害归零清理多个专注召唤物、直接编辑来源状态即时清理、专注状态清空、先攻游标合法性和无专注提示。
+- 浏览器已在真实 DM/玩家模拟战斗中验收：来源 HP `28 → 0` 后，两个召唤物从两端先攻轨道消失，来源显示昏迷，专注状态为空，`concentration_prompts: []`；两端控制台 error/warn 均为空。
+- 浏览器截图：`/private/tmp/dnd-summon-lifecycle-final-dm-20260804.png`、`/private/tmp/dnd-summon-lifecycle-final-player-20260804.png`；修复前对照：`/private/tmp/dnd-summon-lifecycle-before-dm-20260804.png`、`/private/tmp/dnd-summon-lifecycle-before-player-20260804.png`。
+- 最新门禁：后端 `444 passed`（1 个既存弃用警告）；前端 39 文件/195 tests、TypeScript、ESLint、生产构建、Ruff、`git diff --check` 全通过。
+- 本项只收口“专注来源生命周期 → 召唤物清理”，不改变已经完成的火球术、雷鸣波、复合伤害、基础怪物 AI 和敌方召唤物 AI 边界。
+
 ## 2026-08-03 结构化反应事件执行校验（最新）
 
 - 结构化反应事件已从“预览筛选”接入正式确认/执行链。`CombatActionCommand`、玩家豁免 prompt（含批量 prompt）和怪物区域动作都接受 `reaction_event`；非反应动作携带该字段会被拒绝。
