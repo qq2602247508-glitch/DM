@@ -1159,6 +1159,8 @@ class _PlayerRollPromptBase(BaseModel):
     area_anchor_col: int | None = Field(default=None, ge=1, le=1_000)
     area_include_actor: bool = False
     requires_explicit_elevation: bool = False
+    dm_override: bool = False
+    override_reason: str | None = Field(default=None, max_length=1_000)
 
     @model_validator(mode="after")
     def validate_roll_prompt(self) -> _PlayerRollPromptBase:
@@ -1268,6 +1270,8 @@ class _PlayerRollPromptBase(BaseModel):
             raise ValueError("area_height_ft is only valid for cylinder prompts")
         if self.requires_explicit_elevation and self.area_shape is None:
             raise ValueError("explicit elevation is only valid for an area prompt")
+        if self.dm_override and not (self.override_reason or "").strip():
+            raise ValueError("override_reason is required for a DM override")
         return self
 
 
@@ -1402,6 +1406,8 @@ class MonsterAreaActionCommand(BaseModel):
         "casts_spell",
         "turn_end",
     ] | None = None
+    dm_override: bool = False
+    override_reason: str | None = Field(default=None, max_length=1_000)
     dm_geometry_note: Annotated[
         str,
         StringConstraints(strip_whitespace=True, min_length=1, max_length=1_000),
@@ -1409,6 +1415,8 @@ class MonsterAreaActionCommand(BaseModel):
 
     @model_validator(mode="after")
     def validate_area_action(self) -> MonsterAreaActionCommand:
+        if self.dm_override and not (self.override_reason or "").strip():
+            raise ValueError("override_reason is required for a DM override")
         if self.shape == "line" and self.width_ft is None:
             raise ValueError("line areas require width_ft")
         if self.shape != "line" and self.width_ft is not None:

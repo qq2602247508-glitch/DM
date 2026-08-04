@@ -92,6 +92,151 @@ def test_damage_preview_is_read_only(combat_client: TestClient) -> None:
     assert unchanged["version"] == 1
 
 
+def test_charmed_actor_cannot_harm_charmer_through_non_attack_damage(
+    combat_client: TestClient,
+) -> None:
+    campaign = _campaign(combat_client, "Charmed harm gate")
+    combat = combat_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/combats",
+        json={"name": "Charmed harm combat"},
+    ).json()
+    root = f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}"
+    charmer = combat_client.post(
+        f"{root}/combatants",
+        json={"display_name": "魅惑来源", "hp": 20, "max_hp": 20},
+    ).json()
+    actor = combat_client.post(
+        f"{root}/combatants",
+        json={"display_name": "被魅惑者", "hp": 20, "max_hp": 20},
+    ).json()
+    effect = combat_client.post(
+        f"{root}/effects/confirm",
+        headers={"X-Request-ID": "charmed-harm-source"},
+        json={
+            "target_combatant_id": actor["id"],
+            "target_version": actor["version"],
+            "source_combatant_id": charmer["id"],
+            "source_version": charmer["version"],
+            "name": "魅惑",
+            "effect_type": "condition",
+            "details_json": {
+                "rule_block": {
+                    "kind": "condition",
+                    "condition": "魅惑",
+                    "operation": "apply",
+                },
+                "applied_state": {"conditions": ["魅惑"]},
+            },
+        },
+    )
+    assert effect.status_code == 200, effect.text
+    actor = effect.json()["target"]
+    payload = {
+        "action_type": "damage",
+        "target_combatant_id": charmer["id"],
+        "target_version": charmer["version"],
+        "actor_combatant_id": actor["id"],
+        "actor_version": actor["version"],
+        "amount": 5,
+        "damage_type": "psychic",
+    }
+    rejected = combat_client.post(f"{root}/actions/preview", json=payload)
+    assert rejected.status_code == 400, rejected.text
+    assert "魅惑来源" in rejected.json()["message"]
+
+    overridden = combat_client.post(
+        f"{root}/actions/confirm",
+        headers={"X-Request-ID": "charmed-harm-dm-override"},
+        json={
+            **payload,
+            "dm_override": True,
+            "override_reason": "DM 裁定该效果不受魅惑限制",
+        },
+    )
+    assert overridden.status_code == 200, overridden.text
+    assert overridden.json()["target"]["hp"] == 15
+
+
+def test_charmed_save_prompt_cannot_damage_charmer_and_missing_source_fails_closed(
+    combat_client: TestClient,
+) -> None:
+    campaign = _campaign(combat_client, "Charmed prompt gate")
+    combat = combat_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/combats",
+        json={"name": "Charmed prompt combat"},
+    ).json()
+    root = f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}"
+    charmer = combat_client.post(
+        f"{root}/combatants",
+        json={"display_name": "魅惑来源", "hp": 20, "max_hp": 20},
+    ).json()
+    actor = combat_client.post(
+        f"{root}/combatants",
+        json={
+            "display_name": "来源缺失的被魅惑者",
+            "hp": 20,
+            "max_hp": 20,
+            "conditions": ["魅惑"],
+        },
+    ).json()
+    direct = combat_client.post(
+        f"{root}/actions/preview",
+        json={
+            "action_type": "damage",
+            "target_combatant_id": charmer["id"],
+            "target_version": charmer["version"],
+            "actor_combatant_id": actor["id"],
+            "actor_version": actor["version"],
+            "amount": 1,
+            "damage_type": "psychic",
+        },
+    )
+    assert direct.status_code == 400, direct.text
+    assert "来源未记录" in direct.json()["message"]
+
+    source_actor = combat_client.post(
+        f"{root}/combatants",
+        json={"display_name": "结构化被魅惑者", "hp": 20, "max_hp": 20},
+    ).json()
+    effect = combat_client.post(
+        f"{root}/effects/confirm",
+        headers={"X-Request-ID": "charmed-prompt-source"},
+        json={
+            "target_combatant_id": source_actor["id"],
+            "target_version": source_actor["version"],
+            "source_combatant_id": charmer["id"],
+            "source_version": charmer["version"],
+            "name": "魅惑",
+            "effect_type": "condition",
+            "details_json": {
+                "rule_block": {"kind": "condition", "condition": "魅惑"},
+                "applied_state": {"conditions": ["魅惑"]},
+            },
+        },
+    )
+    assert effect.status_code == 200, effect.text
+    source_actor = effect.json()["target"]
+    pending = combat_client.post(
+        f"{root}/actions/player-rolls/pending",
+        headers={"X-Request-ID": "charmed-prompt-rejected"},
+        json={
+            "actor_combatant_id": source_actor["id"],
+            "actor_version": source_actor["version"],
+            "target_combatant_id": charmer["id"],
+            "target_version": charmer["version"],
+            "action_name": "魅惑爆裂",
+            "resolution_type": "saving_throw",
+            "dc": 12,
+            "ability": "dexterity",
+            "damage_on_failure": 6,
+            "damage_on_success": 3,
+            "damage_type": "fire",
+        },
+    )
+    assert pending.status_code == 400, pending.text
+    assert "魅惑来源" in pending.json()["message"]
+
+
 def test_mixed_damage_components_apply_defenses_independently(
     combat_client: TestClient,
 ) -> None:

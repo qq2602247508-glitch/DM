@@ -2491,6 +2491,69 @@ class CombatEngineService:
         return source_ids
 
     @classmethod
+    def _validate_charmed_harm_targets(
+        cls,
+        session: Session,
+        combat: Combat,
+        actor: Combatant | None,
+        target_ids: list[str],
+        *,
+        dm_override: bool = False,
+    ) -> None:
+        """Prevent structured harmful effects from targeting a charmer.
+
+        The ordinary attack path used to enforce this rule, while damage,
+        save prompts, area effects, conditions, and forced movement could use
+        different paths.  Keep the rule at the shared service boundary and
+        fail closed when the source of ``charmed`` is not structured: the
+        engine must not guess who the charmer is.
+        """
+
+        if actor is None or dm_override or not cls._has_condition(actor, "charmed"):
+            return
+        source_ids = cls._condition_source_ids(session, combat.id, actor, "charmed")
+        if not source_ids:
+            raise ValueError("魅惑状态的来源未记录；该有害效果需要 DM 裁定")
+        if source_ids.intersection(target_ids):
+            raise ValueError("魅惑状态下不能对魅惑来源造成伤害、施加状态或强制移动")
+
+    @staticmethod
+    def _player_roll_is_harmful(command: object) -> bool:
+        """Return whether a save prompt can damage or control its target."""
+
+        def value(name: str, default: object = None) -> object:
+            if isinstance(command, dict):
+                return command.get(name, default)
+            return getattr(command, name, default)
+
+        damage = int(value("damage_on_success", 0) or 0) + int(
+            value("damage_on_failure", 0) or 0
+        )
+        for field_name in ("damage_components_on_success", "damage_components_on_failure"):
+            for component in value(field_name, []) or []:
+                if isinstance(component, dict):
+                    damage += int(component.get("amount", 0) or 0)
+                else:
+                    damage += int(getattr(component, "amount", 0) or 0)
+        return bool(
+            damage
+            or value("conditions_on_success", [])
+            or value("conditions_on_failure", [])
+            or value("movement_on_success_ft") is not None
+            or value("movement_on_failure_ft") is not None
+        )
+
+    @staticmethod
+    def _combat_action_is_harmful(command: CombatActionCommand) -> bool:
+        """Identify direct damage or structured hostile side effects."""
+
+        return bool(
+            command.action_type == "damage"
+            or command.conditions_to_apply
+            or command.forced_movement_distance_ft is not None
+        )
+
+    @classmethod
     def _frightened_source_visibility(
         cls,
         session: Session,
@@ -3827,10 +3890,13 @@ class CombatEngineService:
                 "combatant", actor.id, command.actor_version, actor.version
             )
         cls._validate_can_act(actor)
-        if cls._has_condition(actor, "charmed") and not command.dm_override:
-            charmer_ids = cls._condition_source_ids(session, combat.id, actor, "charmed")
-            if target.id in charmer_ids:
-                raise ValueError("charmed combatant cannot attack its charmer")
+        cls._validate_charmed_harm_targets(
+            session,
+            combat,
+            actor,
+            [target.id],
+            dm_override=command.dm_override,
+        )
         contexts: list[str] = []
         adjudication_contexts: list[str] = []
         advantage_sources: list[str] = []
@@ -4423,6 +4489,14 @@ class CombatEngineService:
                 effect_target = session.get(Combatant, command.effect_target_combatant_id)
                 if effect_target is None or effect_target.combat_id != combat_id:
                     raise StateNotFoundError("effect target combatant not found in combat")
+            if self._player_roll_is_harmful(command):
+                self._validate_charmed_harm_targets(
+                    session,
+                    combat,
+                    actor,
+                    list(dict.fromkeys([target.id, effect_target.id])),
+                    dm_override=command.dm_override,
+                )
             # Geometry is an authoritative request-shape check, not a turn
             # mutation. Run it before optimistic-version gates so a stale
             # retry still receives the actionable area error instead of an
@@ -4673,6 +4747,21 @@ class CombatEngineService:
                     prompt,
                 )
                 prepared.append((prompt, target, effect_target, area_geometry))
+
+            if any(self._player_roll_is_harmful(prompt) for prompt in prompts):
+                self._validate_charmed_harm_targets(
+                    session,
+                    combat,
+                    actor,
+                    list(
+                        dict.fromkeys(
+                            target_id
+                            for _, target, effect_target, _ in prepared
+                            for target_id in (target.id, effect_target.id)
+                        )
+                    ),
+                    dm_override=command.dm_override,
+                )
 
             if actor.version != command.actor_version:
                 raise VersionConflict(
@@ -5204,6 +5293,21 @@ class CombatEngineService:
                 )
             if action.status != "previewed":
                 raise ValueError("player roll prompt has already been resolved")
+            request = dict(action.request_json or {})
+            effect_target = target
+            raw_effect_target_id = request.get("effect_target_combatant_id")
+            if isinstance(raw_effect_target_id, str) and raw_effect_target_id != target.id:
+                effect_target = session.get(Combatant, raw_effect_target_id)
+                if effect_target is None or effect_target.combat_id != combat.id:
+                    raise StateNotFoundError("effect target combatant not found in combat")
+            if self._player_roll_is_harmful(action.request_json):
+                self._validate_charmed_harm_targets(
+                    session,
+                    combat,
+                    actor,
+                    list(dict.fromkeys([target.id, effect_target.id])),
+                    dm_override=bool(request.get("dm_override")),
+                )
             return {
                 "action": serialize(action),
                 "actor": serialize(actor),
@@ -5241,13 +5345,27 @@ class CombatEngineService:
                     command.action_version,
                     action.version,
                 )
+            request = dict(action.request_json or {})
+            effect_target = target
+            raw_effect_target_id = request.get("effect_target_combatant_id")
+            if isinstance(raw_effect_target_id, str) and raw_effect_target_id != target.id:
+                effect_target = session.get(Combatant, raw_effect_target_id)
+                if effect_target is None or effect_target.combat_id != combat.id:
+                    raise StateNotFoundError("effect target combatant not found in combat")
+            if self._player_roll_is_harmful(request):
+                self._validate_charmed_harm_targets(
+                    session,
+                    combat,
+                    actor,
+                    list(dict.fromkeys([target.id, effect_target.id])),
+                    dm_override=bool(request.get("dm_override")),
+                )
             resolution = self._resolve_player_roll(
                 action,
                 target,
                 command,
                 consume_defenses=True,
             )
-            request = dict(action.request_json or {})
             request_action_cost = (
                 str(request.get("action_cost"))
                 if request.get("action_cost") is not None
@@ -5287,12 +5405,6 @@ class CombatEngineService:
                 reaction_trigger=request_reaction_trigger,
                 reaction_event=request_reaction_event,
             )
-            effect_target = target
-            raw_effect_target_id = request.get("effect_target_combatant_id")
-            if isinstance(raw_effect_target_id, str) and raw_effect_target_id != target.id:
-                effect_target = session.get(Combatant, raw_effect_target_id)
-                if effect_target is None or effect_target.combat_id != combat.id:
-                    raise StateNotFoundError("effect target combatant not found in combat")
             succeeded = bool(resolution["success"])
             target_state_changed = (
                 resolution.get("defense_resource_consumed") is not None
@@ -5460,6 +5572,14 @@ class CombatEngineService:
             attack_contexts, _ = self._attack_contexts(
                 session, combat, command, actor, target
             )
+            if actor is not None and self._combat_action_is_harmful(command):
+                self._validate_charmed_harm_targets(
+                    session,
+                    combat,
+                    actor,
+                    [target.id],
+                    dm_override=command.dm_override,
+                )
             if actor is not None and command.area_shape is not None:
                 self._validate_player_roll_area_target(
                     session,
@@ -5564,6 +5684,14 @@ class CombatEngineService:
                     target=current_target,
                     command=command,
                 )
+                if actor is not None and self._combat_action_is_harmful(command):
+                    self._validate_charmed_harm_targets(
+                        session,
+                        combat,
+                        actor,
+                        [current_target.id],
+                        dm_override=command.dm_override,
+                    )
                 self._validate_monster_sequence(session, combat_id, actor, command)
                 self._validate_action_economy(
                     session,
@@ -5690,6 +5818,14 @@ class CombatEngineService:
             attack_contexts, help_effect = self._attack_contexts(
                 session, combat, command, actor, target
             )
+            if actor is not None and self._combat_action_is_harmful(command):
+                self._validate_charmed_harm_targets(
+                    session,
+                    combat,
+                    actor,
+                    [target.id],
+                    dm_override=command.dm_override,
+                )
             if actor is not None and command.area_shape is not None:
                 self._validate_player_roll_area_target(
                     session,
@@ -6522,6 +6658,18 @@ class CombatEngineService:
                 actor,
                 command,
             )
+            if (
+                command.damage_total > 0
+                or command.conditions_on_success
+                or command.conditions_on_failure
+            ):
+                self._validate_charmed_harm_targets(
+                    session,
+                    combat,
+                    actor,
+                    [target.id for target in affected],
+                    dm_override=command.dm_override,
+                )
             target_commands = {
                 target.target_combatant_id: target for target in command.targets
             }
