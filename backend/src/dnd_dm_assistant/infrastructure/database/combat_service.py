@@ -105,6 +105,8 @@ class CombatEngineService:
         "raging": "raging",
         "rage": "raging",
         "狂暴": "raging",
+        "reckless_attack": "reckless_attack",
+        "鲁莽攻击": "reckless_attack",
     }
     _ACTION_BLOCKING_CONDITIONS = {
         "incapacitated",
@@ -134,6 +136,7 @@ class CombatEngineService:
         "ready": "准备",
         "disengage": "撤离",
         "feature_invisible": "隐形",
+        "feature_reckless_attack": "reckless_attack",
     }
 
     def __init__(self, engine: Engine) -> None:
@@ -5174,6 +5177,19 @@ class CombatEngineService:
                         disadvantage_sources.append(context)
                     elif condition == "invisible":
                         advantage_sources.append(context)
+        if cls._has_condition(actor, "reckless_attack"):
+            if (
+                str(command.attack_ability or "").strip().lower()
+                in {"strength", "力量"}
+                and command.is_weapon_attack
+            ):
+                contexts.append("attacker_reckless_attack")
+                advantage_sources.append("attacker_reckless_attack")
+            else:
+                contexts.append("attacker_reckless_attack_requires_strength_weapon_attack")
+                adjudication_contexts.append(
+                    "attacker_reckless_attack_requires_strength_weapon_attack"
+                )
         if cls._has_condition(target, "prone"):
             if geometry is not None:
                 if int(geometry["distance_ft"]) <= 5:
@@ -5208,6 +5224,9 @@ class CombatEngineService:
                     advantage_sources.append(context)
                 elif condition == "invisible":
                     disadvantage_sources.append(context)
+        if cls._has_condition(target, "reckless_attack"):
+            contexts.append("target_reckless_attack")
+            advantage_sources.append("target_reckless_attack")
         if cls._active_runtime_effects(
             session, combat.id, target_id=actor.id, state_name="hidden"
         ):
@@ -8469,15 +8488,21 @@ class CombatEngineService:
                 elif kind == "activate_timed_condition":
                     condition = str(effect.get("condition") or "").strip()
                     expires = str(effect.get("expires") or "turn_start")
-                    if condition != "隐形" or expires not in {"turn_start", "turn_end"}:
+                    if condition not in {"隐形", "reckless_attack"} or expires not in {
+                        "turn_start",
+                        "turn_end",
+                    }:
                         raise ValueError(
-                            "当前职业特性只允许结构化的隐形持续到下一回合边界"
+                            "当前职业特性只允许结构化的隐形或鲁莽攻击持续到回合边界"
                         )
                     if self._condition_is_immune(target, condition):
                         raise ValueError(
                             f"目标免疫状态「{condition}」，职业特性未写入"
                         )
-                    state_name = "feature_invisible"
+                    state_name = {
+                        "隐形": "feature_invisible",
+                        "reckless_attack": "feature_reckless_attack",
+                    }[condition]
                     runtime_effect = self._create_runtime_effect(
                         session,
                         combat,

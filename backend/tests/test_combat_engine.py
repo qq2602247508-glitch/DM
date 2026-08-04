@@ -2913,6 +2913,72 @@ def test_condition_attack_contexts_require_explicit_advantage_ruling(
     assert "attack_roll_rule:normal_due_to_cancellation" in contexts
 
 
+def test_reckless_attack_context_requires_and_records_strength_weapon_metadata(
+    combat_client: TestClient,
+) -> None:
+    campaign = _campaign(combat_client, "Reckless attack contexts")
+    combat, actor = _combatant(combat_client, campaign["id"])
+    actor_response = combat_client.patch(
+        _fighter_path(campaign["id"], combat["id"], actor["id"]),
+        headers={"If-Match": f'"{actor["version"]}"'},
+        json={"initiative": 20, "conditions": ["鲁莽攻击"]},
+    )
+    assert actor_response.status_code == 200, actor_response.text
+    actor = actor_response.json()
+    target_response = combat_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "鲁莽目标",
+            "entity_type": "monster",
+            "initiative": 10,
+            "hp": 20,
+            "max_hp": 20,
+            "conditions": ["reckless_attack"],
+        },
+    )
+    assert target_response.status_code == 201, target_response.text
+    target = target_response.json()
+    path = (
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}"
+        "/actions/confirm"
+    )
+    attack = {
+        "action_type": "damage",
+        "actor_combatant_id": actor["id"],
+        "actor_version": actor["version"],
+        "action_cost": "none",
+        "target_combatant_id": target["id"],
+        "target_version": target["version"],
+        "amount": 4,
+        "damage_type": "slashing",
+        "is_attack": True,
+        "attack_roll_total": 15,
+    }
+    refused = combat_client.post(
+        path,
+        headers={"X-Request-ID": "reckless-metadata-refused"},
+        json=attack,
+    )
+    assert refused.status_code == 400
+    assert "will not guess" in refused.json()["message"]
+
+    resolved = combat_client.post(
+        path,
+        headers={"X-Request-ID": "reckless-metadata-resolved"},
+        json={
+            **attack,
+            "attack_ability": "strength",
+            "is_weapon_attack": True,
+            "attack_roll_mode": "advantage",
+        },
+    )
+    assert resolved.status_code == 200, resolved.text
+    contexts = resolved.json()["action"]["result_json"]["attack_contexts"]
+    assert "attacker_reckless_attack" in contexts
+    assert "target_reckless_attack" in contexts
+    assert "attack_roll_rule:advantage" in contexts
+
+
 def test_unconscious_target_within_five_feet_is_recorded_as_automatic_critical(
     combat_client: TestClient,
 ) -> None:

@@ -993,8 +993,9 @@ def test_2024_deterministic_feature_contracts_are_explicit_but_partial_when_even
             "expires": "turn_start",
         }
     ]
-    assert reckless["automation_status"] == "partial"
-    assert reckless["requires_dm_adjudication"] is True
+    assert reckless["automation_status"] == "full"
+    assert reckless["requires_dm_adjudication"] is False
+    assert reckless["runtime_execution"]["consumer"] == "combat_feature_action"
 
     cunning = registry["actions"]["cunning_action"]
     assert cunning["kind"] == "feature_action"
@@ -1081,12 +1082,12 @@ def test_2024_deterministic_feature_contracts_are_explicit_but_partial_when_even
     projections = {
         item["feature_id"]: item for item in feature_runtime_action_projections(registry)
     }
-    assert "reckless_attack" not in projections
+    assert "reckless_attack" in projections
     assert "steady_aim" not in projections
     partial_contracts = {
         item["name"]: item for item in registry["feature_contracts"]
     }
-    assert partial_contracts["鲁莽攻击"]["automation_status"] == "partial"
+    assert partial_contracts["鲁莽攻击"]["automation_status"] == "full"
     assert partial_contracts["稳定瞄准"]["automation_status"] == "partial"
 
 

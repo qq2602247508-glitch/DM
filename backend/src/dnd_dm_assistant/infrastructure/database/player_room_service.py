@@ -968,6 +968,7 @@ class PlayerRoomService:
         *,
         distance_ft: int | None,
         target_dodging: bool = False,
+        action: dict[str, Any] | None = None,
     ) -> tuple[str, bool, bool, bool]:
         """Resolve the deterministic attack consequences of core conditions."""
 
@@ -986,6 +987,23 @@ class PlayerRoomService:
                 disadvantage.append(label)
         if CombatEngineService._has_condition(actor, "invisible"):
             advantage.append("攻击者隐形")
+        if CombatEngineService._has_condition(actor, "reckless_attack"):
+            action_data = action if isinstance(action, dict) else {}
+            attack_ability = str(
+                action_data.get("attack_ability") or action_data.get("ability") or ""
+            ).strip().lower()
+            action_text = " ".join(
+                str(action_data.get(key) or "")
+                for key in ("name", "description", "action_name")
+            ).lower()
+            is_weapon_attack = bool(
+                action_data.get("is_weapon_attack") is True
+                or "武器攻击" in action_text
+                or "近战攻击" in action_text
+                or "weapon attack" in action_text
+            )
+            if attack_ability in {"strength", "力量"} and is_weapon_attack:
+                advantage.append("攻击者鲁莽攻击")
         for condition, label in (
             ("blinded", "目标目盲"),
             ("restrained", "目标束缚"),
@@ -1002,6 +1020,8 @@ class PlayerRoomService:
                 disadvantage.append("远距离攻击倒地目标")
         if target_dodging:
             disadvantage.append("目标闪避")
+        if CombatEngineService._has_condition(target, "reckless_attack"):
+            advantage.append("目标鲁莽攻击")
         if (
             distance_ft is not None
             and distance_ft <= 5
@@ -6892,6 +6912,7 @@ class PlayerRoomService:
                         actor,
                         current_target,
                         distance_ft=current_distance,
+                        action=action,
                     )
                 )
                 # Saving throws and auto-hit effects do not make attack rolls;
@@ -7168,6 +7189,15 @@ class PlayerRoomService:
                 damage_components=components if len(components) > 1 else [],
                 critical_hit=critical and not saving_throw_action,
                 is_attack=not saving_throw_action and not auto_hit_action,
+                attack_ability=(
+                    str(action.get("attack_ability") or action.get("ability") or "").strip()
+                    or None
+                ),
+                is_weapon_attack=bool(
+                    action.get("is_weapon_attack") is True
+                    or "武器攻击" in str(action.get("description") or "")
+                    or "近战攻击" in str(action.get("name") or "")
+                ),
                 attack_roll_total=(
                     attack_total
                     if not saving_throw_action and not auto_hit_action

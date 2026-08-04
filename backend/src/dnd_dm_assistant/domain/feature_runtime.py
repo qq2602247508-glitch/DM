@@ -525,10 +525,14 @@ def feature_runtime_definition(
                 "duration": "until_next_turn",
             },
             "incoming_attack_advantage": True,
-            "automation_status": "partial",
-            "requires_dm_adjudication": True,
-            "partial_reason": "状态可写入；攻击优势和被攻击优势仍需条件求值器执行。",
-            "summary": "本回合力量攻击获得优势；直到下回合开始，攻击你也有优势",
+            "runtime_execution": {
+                "status": "ready",
+                "consumer": "combat_feature_action",
+                "effect_kinds": ["activate_timed_condition"],
+            },
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+            "summary": "本回合力量武器攻击具有优势；直到下回合开始，攻击你也具有优势。",
             **source,
         }
 
@@ -1898,7 +1902,7 @@ def _feature_action_executor_ready(action: Mapping[str, Any]) -> bool:
         if not isinstance(effect, Mapping):
             return False
         if effect.get("kind") == "activate_timed_condition" and not (
-            effect.get("condition") == "隐形"
+            effect.get("condition") in {"隐形", "reckless_attack"}
             and effect.get("expires") in {"turn_start", "turn_end"}
         ):
             return False

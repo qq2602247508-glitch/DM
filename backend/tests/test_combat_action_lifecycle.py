@@ -630,6 +630,76 @@ def test_rage_feature_automatically_applies_physical_resistance(
     assert damage.json()["action"]["result_json"]["adjusted_damage"] == 4
 
 
+def test_reckless_feature_action_expires_at_actor_turn_start(
+    combat_client: TestClient,
+) -> None:
+    campaign, combat, actor = _setup(combat_client)
+    _add_combatant(combat_client, campaign, combat, name="目标", initiative=10)
+    patched = combat_client.patch(
+        _combatant_path(campaign, combat, actor["id"]),
+        headers={"If-Match": f'"{actor["version"]}"'},
+        json={
+            "snapshot_json": {
+                "feature_runtime": {
+                    "actions": {
+                        "reckless_attack": {
+                            "name": "鲁莽攻击",
+                            "kind": "feature_action",
+                            "action_cost": "none",
+                            "target": "self",
+                            "resolution_kind": "condition",
+                            "runtime_execution": {
+                                "status": "ready",
+                                "consumer": "combat_feature_action",
+                                "effect_kinds": ["activate_timed_condition"],
+                            },
+                            "effects": [
+                                {
+                                    "kind": "activate_timed_condition",
+                                    "condition": "reckless_attack",
+                                    "expires": "turn_start",
+                                }
+                            ],
+                        }
+                    }
+                }
+            }
+        },
+    )
+    assert patched.status_code == 200, patched.text
+    actor = patched.json()
+    activated = combat_client.post(
+        f"{_root(campaign, combat)}/feature-actions/confirm",
+        headers={"X-Request-ID": "reckless-feature"},
+        json={
+            "actor_combatant_id": actor["id"],
+            "actor_version": actor["version"],
+            "feature_id": "reckless_attack",
+            "target_combatant_id": actor["id"],
+            "target_version": actor["version"],
+        },
+    )
+    assert activated.status_code == 200, activated.text
+    actor = activated.json()["actor"]
+    assert "reckless_attack" in actor["conditions"]
+    effect_id = activated.json()["action"]["result_json"]["effect_id"]
+
+    next_turn = combat_client.post(
+        f"{_root(campaign, combat)}/turns/advance",
+        headers={"X-Request-ID": "reckless-next-unit"},
+        json={"combat_version": combat["version"]},
+    )
+    assert next_turn.status_code == 200, next_turn.text
+    expired = combat_client.post(
+        f"{_root(campaign, combat)}/turns/advance",
+        headers={"X-Request-ID": "reckless-next-round"},
+        json={"combat_version": next_turn.json()["combat"]["version"]},
+    )
+    assert expired.status_code == 200, expired.text
+    assert "reckless_attack" not in expired.json()["active_combatant"]["conditions"]
+    assert any(item["id"] == effect_id for item in expired.json()["ended_runtime_effects"])
+
+
 def test_hide_requires_dm_result_and_search_reveals_runtime_state(
     combat_client: TestClient,
 ) -> None:

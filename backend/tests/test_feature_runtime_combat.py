@@ -3,6 +3,7 @@ from __future__ import annotations
 from dnd_dm_assistant.domain.feature_runtime import compile_feature_runtime_registry
 from dnd_dm_assistant.infrastructure.database.combat_service import CombatEngineService
 from dnd_dm_assistant.infrastructure.database.models import Combatant
+from dnd_dm_assistant.infrastructure.database.player_room_service import PlayerRoomService
 
 
 def test_typed_feature_saving_throw_advantage_is_consumed_by_save_resolution() -> None:
@@ -106,6 +107,40 @@ def test_rage_strength_saving_throw_advantage_requires_active_raging_condition()
     assert "feature:狂暴" in active["applied_defenses"]
     assert ended["effective_roll_total"] == 5
     assert ended["applied_defenses"] == []
+
+
+def test_player_attack_context_applies_reckless_attack_to_both_sides() -> None:
+    actor = Combatant(
+        id="reckless-attacker",
+        entity_type="character",
+        display_name="鲁莽攻击者",
+        hp=20,
+        max_hp=20,
+        conditions=["鲁莽攻击"],
+    )
+    target = Combatant(
+        id="reckless-target",
+        entity_type="monster",
+        display_name="被鲁莽攻击者",
+        hp=20,
+        max_hp=20,
+        conditions=["reckless_attack"],
+    )
+
+    mode, has_advantage, has_disadvantage, _ = PlayerRoomService._condition_attack_context(
+        actor,
+        target,
+        distance_ft=5,
+        action={
+            "name": "巨斧武器攻击",
+            "attack_ability": "strength",
+            "is_weapon_attack": True,
+        },
+    )
+
+    assert mode == "advantage"
+    assert has_advantage is True
+    assert has_disadvantage is False
 
 
 def test_event_predicate_feature_modifier_does_not_grant_passive_advantage() -> None:

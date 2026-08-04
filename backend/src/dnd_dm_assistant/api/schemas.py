@@ -746,6 +746,8 @@ class CombatActionCommand(BaseModel):
     damage_tags: list[str] = Field(default_factory=list, max_length=20)
     critical_hit: bool = False
     is_attack: bool = False
+    attack_ability: str | None = Field(default=None, max_length=30)
+    is_weapon_attack: bool = False
     attack_roll_total: int | None = Field(default=None, ge=-100, le=1_000)
     attack_range_ft: int | None = Field(default=None, ge=0, le=10_000)
     ignore_cover: bool = False
@@ -906,6 +908,9 @@ class CombatActionCommand(BaseModel):
                 "actor_combatant_id and actor_version are required for an attack"
             )
         if not self.is_attack and (
+            self.attack_ability is not None
+            or self.is_weapon_attack
+            or
             self.attack_roll_total is not None
             or self.attack_range_ft is not None
             or self.ignore_cover
