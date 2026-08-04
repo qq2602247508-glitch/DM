@@ -5624,6 +5624,95 @@ def test_until_save_effect_has_authoritative_repeat_save_lifecycle(
     assert "震慑" not in saved.json()["target"]["conditions"]
 
 
+def test_structured_incapacitation_ends_concentration_immediately(
+    combat_client: TestClient,
+) -> None:
+    """A direct stun outcome must break concentration in the same transaction."""
+
+    campaign = _campaign(combat_client, "condition breaks concentration")
+    combat = combat_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/combats",
+        json={"name": "condition breaks concentration"},
+    ).json()
+    root = f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}"
+    caster = combat_client.post(
+        f"{root}/combatants",
+        json={
+            "display_name": "专注施法者",
+            "entity_type": "character",
+            "initiative": 20,
+            "hp": 20,
+            "max_hp": 20,
+        },
+    ).json()
+    victim = combat_client.post(
+        f"{root}/combatants",
+        json={
+            "display_name": "持续效果目标",
+            "entity_type": "monster",
+            "initiative": 10,
+            "hp": 20,
+            "max_hp": 20,
+        },
+    ).json()
+    concentration = combat_client.post(
+        f"{root}/effects/confirm",
+        headers={"X-Request-ID": "condition-breaks-concentration-start"},
+        json={
+            "target_combatant_id": victim["id"],
+            "target_version": victim["version"],
+            "source_combatant_id": caster["id"],
+            "source_version": caster["version"],
+            "name": "专注持续效果",
+            "effect_type": "condition",
+            "details_json": {
+                "rule_block": {
+                    "kind": "condition",
+                    "condition": "中毒",
+                    "operation": "apply",
+                }
+            },
+            "requires_concentration": True,
+            "duration_unit": "until_removed",
+        },
+    )
+    assert concentration.status_code == 200, concentration.text
+    caster = concentration.json()["source"]
+    victim = concentration.json()["target"]
+    concentration_effect_id = concentration.json()["effect"]["id"]
+    assert caster["concentration"]["effect_id"] == concentration_effect_id
+
+    incapacitated = combat_client.post(
+        f"{root}/effects/confirm",
+        headers={"X-Request-ID": "condition-breaks-concentration-stun"},
+        json={
+            "target_combatant_id": caster["id"],
+            "target_version": caster["version"],
+            "source_combatant_id": victim["id"],
+            "source_version": victim["version"],
+            "name": "震慑",
+            "effect_type": "condition",
+            "details_json": {
+                "rule_block": {
+                    "kind": "condition",
+                    "condition": "震慑",
+                    "operation": "apply",
+                }
+            },
+            "duration_unit": "until_removed",
+        },
+    )
+    assert incapacitated.status_code == 200, incapacitated.text
+    body = incapacitated.json()
+    assert body["target"]["concentration"] == {}
+    assert concentration_effect_id in body["action"]["result_json"]["ended_effect_ids"]
+    effects = combat_client.get(f"{root}/effects").json()["items"]
+    ended = next(item for item in effects if item["id"] == concentration_effect_id)
+    assert ended["status"] == "ended"
+    assert ended["end_reason"] == "专注来源失能、失去意识或离开战斗"
+    assert "中毒" not in body["target"]["conditions"]
+
+
 def test_structured_condition_sources_keep_independent_lifecycles(
     combat_client: TestClient,
 ) -> None:

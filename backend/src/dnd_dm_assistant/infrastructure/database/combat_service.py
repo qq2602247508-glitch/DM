@@ -3262,7 +3262,7 @@ class CombatEngineService:
                     source is not None
                     and source.is_active
                     and source.hp > 0
-                    and not cls._has_condition(source, "unconscious")
+                    and not cls._has_condition(source, "incapacitated")
                 ):
                     continue
                 target = session.get(Combatant, effect.target_combatant_id)
@@ -3272,7 +3272,7 @@ class CombatEngineService:
                     changed_targets[target.id] = target
                 effect.status = "ended"
                 effect.ended_at = now
-                effect.end_reason = "专注来源失去意识或离开战斗"
+                effect.end_reason = "专注来源失能、失去意识或离开战斗"
                 effect.version += 1
                 ended.append(effect)
         changed_sources: dict[str, Combatant] = {}
@@ -3297,6 +3297,35 @@ class CombatEngineService:
             now=now,
         )
         return ended, ended_summons
+
+    @classmethod
+    def _end_lifecycles_after_condition_change(
+        cls,
+        session: Session,
+        combat: Combat,
+        *,
+        target: Combatant,
+        now: datetime,
+    ) -> tuple[list[CombatEffect], list[Combatant]]:
+        """End lifecycles immediately after a structured condition is added.
+
+        Damage already evaluates this path in the same transaction.  A direct
+        condition outcome (for example, a failed stun save) must do the same:
+        an incapacitated concentrating creature loses concentration at once,
+        and grapple relationships with an incapacitated source end at once.
+        The generic predicate evaluator remains the single lifecycle authority.
+        """
+
+        if not cls._condition_set(target) & cls._ACTION_BLOCKING_CONDITIONS:
+            return [], []
+        return cls._end_predicated_effects(
+            session,
+            combat,
+            now=now,
+            event_combatant_ids={target.id},
+            event_kinds={"condition"},
+            event_only=False,
+        )
 
     @classmethod
     def _reverse_compiled_effect(
@@ -3704,6 +3733,21 @@ class CombatEngineService:
             assert isinstance(applied, list) and isinstance(effect_ids, list)
             applied.append(condition)
             effect_ids.append(effect.id)
+        if result["conditions_applied"]:
+            ended_effects, ended_summons = cls._end_lifecycles_after_condition_change(
+                session,
+                combat,
+                target=target,
+                now=datetime.now(UTC),
+            )
+            if ended_effects:
+                result["ended_predicated_effect_ids"] = [
+                    effect.id for effect in ended_effects
+                ]
+            if ended_summons:
+                result["ended_predicated_summon_ids"] = [
+                    summon.id for summon in ended_summons
+                ]
         if movement_distance_ft is not None:
             if movement_direction not in {"away", "toward"}:
                 raise ValueError("structured forced movement direction is required")
@@ -10034,9 +10078,38 @@ class CombatEngineService:
             details_json["_effect_instance_order"] = (
                 max(prior_orders, default=0) + 1
             )
+            condition_added = False
+            if (
+                isinstance(raw_rule_block, dict)
+                and str(raw_rule_block.get("kind") or "") == "condition"
+                and str(raw_rule_block.get("operation") or "apply") != "remove"
+            ):
+                condition = str(raw_rule_block.get("condition") or "").strip()
+                condition_added = bool(condition) and not self._has_condition(
+                    target,
+                    condition,
+                )
             applied_state = self._apply_rule_block_effect(target, details_json)
             if applied_state:
                 details_json["applied_state"] = applied_state
+            condition_ended_effects: list[CombatEffect] = []
+            condition_ended_summons: list[Combatant] = []
+            if condition_added:
+                (
+                    condition_ended_effects,
+                    condition_ended_summons,
+                ) = self._end_lifecycles_after_condition_change(
+                    session,
+                    combat,
+                    target=target,
+                    now=now,
+                )
+            lifecycle_ended_effects = list(
+                dict.fromkeys([*old_effects, *condition_ended_effects])
+            )
+            lifecycle_ended_summons = list(
+                dict.fromkeys([*ended_summons, *condition_ended_summons])
+            )
             effect = CombatEffect(
                 campaign_id=campaign_id,
                 combat_id=combat_id,
@@ -10076,8 +10149,8 @@ class CombatEngineService:
                 before_snapshot=before,
                 after_snapshot={
                     "effect": serialize(effect),
-                    "ended_effect_ids": [row.id for row in old_effects],
-                    "ended_summon_ids": [row.id for row in ended_summons],
+                    "ended_effect_ids": [row.id for row in lifecycle_ended_effects],
+                    "ended_summon_ids": [row.id for row in lifecycle_ended_summons],
                 },
                 reason=f"DM confirmed effect: {command.name}",
                 source="combat",
@@ -10087,8 +10160,8 @@ class CombatEngineService:
             session.flush()
             result = {
                 "effect_id": effect.id,
-                "ended_effect_ids": [row.id for row in old_effects],
-                "ended_summon_ids": [row.id for row in ended_summons],
+                "ended_effect_ids": [row.id for row in lifecycle_ended_effects],
+                "ended_summon_ids": [row.id for row in lifecycle_ended_summons],
                 "requires_concentration": command.requires_concentration,
             }
             action = CombatAction(
@@ -10101,8 +10174,8 @@ class CombatEngineService:
                 request_json=command.model_dump(mode="json"),
                 result_json=result,
                 explanation=(
-                    f"结束 {len(old_effects)} 个旧专注效果"
-                    if old_effects
+                    f"结束 {len(lifecycle_ended_effects)} 个生命周期效果"
+                    if lifecycle_ended_effects
                     else "建立结构化战斗效果"
                 ),
                 round_number=combat.round_number,
@@ -10116,8 +10189,8 @@ class CombatEngineService:
             return {
                 "action": serialize(action),
                 "effect": serialize(effect),
-                "ended_effects": [serialize(row) for row in old_effects],
-                "ended_summons": [serialize(row) for row in ended_summons],
+                "ended_effects": [serialize(row) for row in lifecycle_ended_effects],
+                "ended_summons": [serialize(row) for row in lifecycle_ended_summons],
                 "target": serialize(target),
                 "source": serialize(source) if source is not None else None,
             }
