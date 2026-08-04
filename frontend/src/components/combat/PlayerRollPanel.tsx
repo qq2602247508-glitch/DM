@@ -97,6 +97,7 @@ export function PlayerRollPanel({
   const [damageFailureSegments, setDamageFailureSegments] = useState("");
   const [rolls, setRolls] = useState<Record<string, string>>({});
   const [useFeatureReroll, setUseFeatureReroll] = useState<Record<string, boolean>>({});
+  const [useLegendaryResistance, setUseLegendaryResistance] = useState<Record<string, boolean>>({});
   const [previews, setPreviews] = useState<Record<string, PlayerRollResolutionResult>>({});
 
   const pending = useMemo(
@@ -174,6 +175,9 @@ export function PlayerRollPanel({
         ...(useFeatureReroll[action.id]
           ? { roll_totals: values, use_feature_reroll: true }
           : {}),
+        ...(useLegendaryResistance[action.id]
+          ? { use_legendary_resistance: true }
+          : {}),
       });
     },
     onSuccess: (result) => {
@@ -193,6 +197,9 @@ export function PlayerRollPanel({
         roll_total: values[0] ?? 0,
         ...(useFeatureReroll[action.id]
           ? { roll_totals: values, use_feature_reroll: true }
+          : {}),
+        ...(useLegendaryResistance[action.id]
+          ? { use_legendary_resistance: true }
           : {}),
       });
       const followUp = resolution.resolution.follow_up_damage;
@@ -378,6 +385,20 @@ export function PlayerRollPanel({
           && rollTarget.snapshot_json.feature_saving_throw_rerolls.some(
             (item) => item && typeof item === "object" && (item as { available?: unknown }).available === true,
           );
+        const rawLegendaryResistance = rollTarget?.snapshot_json.advanced_defenses;
+        const legendaryResistance = rawLegendaryResistance
+          && typeof rawLegendaryResistance === "object"
+          && !Array.isArray(rawLegendaryResistance)
+          && typeof (rawLegendaryResistance as { legendary_resistance?: unknown }).legendary_resistance === "object"
+          && !Array.isArray((rawLegendaryResistance as { legendary_resistance?: unknown }).legendary_resistance)
+          ? (rawLegendaryResistance as { legendary_resistance: { remaining?: unknown; maximum?: unknown } }).legendary_resistance
+          : null;
+        const legendaryResistanceRemaining = legendaryResistance
+          ? Number(legendaryResistance.remaining ?? 0)
+          : 0;
+        const legendaryResistanceAvailable = request.resolution_type === "saving_throw"
+          && Number.isFinite(legendaryResistanceRemaining)
+          && legendaryResistanceRemaining > 0;
         return (
           <article className="mt-3 rounded border border-sky-800/50 bg-ink-950/70 p-3" key={action.id}>
             <strong className="text-xs text-parchment-100">
@@ -411,6 +432,16 @@ export function PlayerRollPanel({
                     type="checkbox"
                   />
                   使用职业特性重掷（填两次总值）
+                </label>
+              ) : null}
+              {legendaryResistanceAvailable ? (
+                <label className="flex items-center gap-1 text-2xs text-fuchsia-200">
+                  <input
+                    checked={useLegendaryResistance[action.id] === true}
+                    onChange={(event) => setUseLegendaryResistance((current) => ({ ...current, [action.id]: event.target.checked }))}
+                    type="checkbox"
+                  />
+                  失败时使用传奇抗性（剩余 {legendaryResistanceRemaining} 次；将本次豁免视为成功）
                 </label>
               ) : null}
               <Button disabled={rollValue === "" || preview.isPending} onClick={() => preview.mutate(action)}>

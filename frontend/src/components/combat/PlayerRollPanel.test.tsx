@@ -105,6 +105,19 @@ const PENDING: CombatAction = {
   version: 1,
 };
 
+const LEGENDARY_RESISTANCE_FIGHTERS = FIGHTERS.map((fighter) => (
+  fighter.id === "player-1"
+    ? {
+        ...fighter,
+        snapshot_json: {
+          advanced_defenses: {
+            legendary_resistance: { remaining: 2, maximum: 3 },
+          },
+        },
+      }
+    : fighter
+));
+
 describe("PlayerRollPanel", () => {
   it("makes actor, target, action, roll and DC explicit", () => {
     const client = new QueryClient({
@@ -153,5 +166,27 @@ describe("PlayerRollPanel", () => {
     expect(screen.getByText("相位蜘蛛 正在自动行动")).toBeInTheDocument();
     expect(screen.getByText(/普通攻击由怪物自动掷攻击骰/)).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "要求玩家掷骰" })).not.toBeInTheDocument();
+  });
+
+  it("offers legendary resistance only for a saving-throw target", () => {
+    const client = new QueryClient({
+      defaultOptions: { mutations: { retry: false }, queries: { retry: false } },
+    });
+    render(
+      <QueryClientProvider client={client}>
+        <ToastProvider>
+          <PlayerRollPanel
+            activeEnemy={LEGENDARY_RESISTANCE_FIGHTERS[0]}
+            actions={[PENDING]}
+            campaignId="campaign-1"
+            combatId="combat-1"
+            fighters={LEGENDARY_RESISTANCE_FIGHTERS}
+          />
+        </ToastProvider>
+      </QueryClientProvider>,
+    );
+
+    expect(screen.getByText(/失败时使用传奇抗性（剩余 2 次/)).toBeInTheDocument();
+    expect(screen.getByRole("checkbox", { name: /失败时使用传奇抗性/ })).not.toBeChecked();
   });
 });
