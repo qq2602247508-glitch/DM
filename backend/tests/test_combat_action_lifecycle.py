@@ -78,12 +78,19 @@ def _add_combatant(
 
 
 @pytest.mark.parametrize(
-    "condition",
-    ["incapacitated", "昏迷", "stunned", "麻痹", "petrified"],
+    ("condition", "expected_movement"),
+    [
+        ("incapacitated", 30),
+        ("昏迷", 0),
+        ("stunned", 0),
+        ("麻痹", 0),
+        ("petrified", 0),
+    ],
 )
 def test_action_blocking_conditions_reject_real_actions(
     combat_client: TestClient,
     condition: str,
+    expected_movement: int,
 ) -> None:
     campaign, combat, actor = _setup(combat_client)
     patched = combat_client.patch(
@@ -110,7 +117,7 @@ def test_action_blocking_conditions_reject_real_actions(
     # The rejected maneuver does not consume anything; the condition itself
     # still owns the action restriction until it is removed.
     assert unchanged["action_available"] is False
-    assert unchanged["movement_remaining_ft"] == 30
+    assert unchanged["movement_remaining_ft"] == expected_movement
 
 
 def test_dodge_and_prone_force_explicit_attack_ruling_then_dodge_expires(
@@ -431,6 +438,58 @@ def test_compiled_feature_actions_change_combat_state_and_use_extra_action_budge
     )
     assert extra_attack.status_code == 200, extra_attack.text
     assert extra_attack.json()["actor"]["snapshot_json"]["extra_action_budget"] == 0
+
+
+def test_compiled_feature_condition_updates_action_economy(
+    combat_client: TestClient,
+) -> None:
+    campaign, combat, actor = _setup(combat_client)
+    patched = combat_client.patch(
+        _combatant_path(campaign, combat, actor["id"]),
+        headers={"If-Match": f'"{actor["version"]}"'},
+        json={
+            "snapshot_json": {
+                "feature_runtime": {
+                    "actions": {
+                        "stun_self": {
+                            "name": "震慑自己（测试）",
+                            "kind": "feature_action",
+                            "action_cost": "none",
+                            "target": "self",
+                            "effects": [
+                                {
+                                    "kind": "activate_condition",
+                                    "condition": "震慑",
+                                }
+                            ],
+                        }
+                    }
+                }
+            }
+        },
+    )
+    assert patched.status_code == 200, patched.text
+    actor = patched.json()
+
+    applied = combat_client.post(
+        f"{_root(campaign, combat)}/feature-actions/confirm",
+        headers={"X-Request-ID": "feature-condition-restrictions"},
+        json={
+            "actor_combatant_id": actor["id"],
+            "actor_version": actor["version"],
+            "feature_id": "stun_self",
+            "target_combatant_id": actor["id"],
+            "target_version": actor["version"],
+        },
+    )
+    assert applied.status_code == 200, applied.text
+    updated = applied.json()["actor"]
+    assert "震慑" in updated["conditions"]
+    assert updated["action_available"] is False
+    assert updated["bonus_action_available"] is False
+    assert updated["reaction_available"] is False
+    assert updated["speed_ft"] == 0
+    assert updated["movement_remaining_ft"] == 0
 
 
 def test_rage_feature_automatically_applies_physical_resistance(

@@ -2152,6 +2152,23 @@ class CombatEngineService:
                     condition = str(raw_trait.get("condition") or "").strip()
                     if not condition:
                         continue
+                    if cls._condition_is_immune(monster, condition):
+                        trait_results.append(
+                            {
+                                "name": name,
+                                "kind": kind,
+                                "applied": False,
+                                "reason": "condition_immune",
+                                "condition": condition,
+                            }
+                        )
+                        continue
+                    if not cls._has_condition(monster, condition):
+                        cls._apply_condition_restrictions(
+                            monster,
+                            condition,
+                            {},
+                        )
                     applied = cls._add_condition(monster, condition)
                     trait_results.append(
                         {
@@ -2715,7 +2732,7 @@ class CombatEngineService:
 
         canonical = cls._canonical_condition(condition)
         action_blocked = canonical in cls._ACTION_BLOCKING_CONDITIONS
-        movement_blocked = canonical in {"restrained", "grappled"}
+        movement_blocked = canonical in cls._MOVEMENT_BLOCKING_CONDITIONS
         if not action_blocked and not movement_blocked:
             return
         snapshot = dict(target.snapshot_json or {})
@@ -2769,7 +2786,7 @@ class CombatEngineService:
                 value = baseline.get(field)
                 if isinstance(value, bool):
                     setattr(target, field, value)
-        if conditions & {"restrained", "grappled"}:
+        if conditions & cls._MOVEMENT_BLOCKING_CONDITIONS:
             target.speed_ft = 0
             target.movement_remaining_ft = 0
         else:
@@ -2796,7 +2813,7 @@ class CombatEngineService:
                     )
         if not (
             conditions & cls._ACTION_BLOCKING_CONDITIONS
-            or conditions & {"restrained", "grappled"}
+            or conditions & cls._MOVEMENT_BLOCKING_CONDITIONS
         ):
             snapshot = dict(target.snapshot_json or {})
             snapshot.pop("_condition_restriction_baseline", None)
@@ -6630,9 +6647,14 @@ class CombatEngineService:
                         raise ValueError(
                             f"目标免疫状态「{condition}」，职业特性未写入"
                         )
-                    if condition not in target.conditions:
-                        target.conditions = [*target.conditions, condition]
-                    result.setdefault("conditions_added", []).append(condition)
+                    if not self._has_condition(target, condition):
+                        self._apply_condition_restrictions(
+                            target,
+                            condition,
+                            {},
+                        )
+                        if self._add_condition(target, condition):
+                            result.setdefault("conditions_added", []).append(condition)
                 elif kind == "activate_timed_condition":
                     condition = str(effect.get("condition") or "").strip()
                     expires = str(effect.get("expires") or "turn_start")

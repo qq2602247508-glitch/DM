@@ -954,6 +954,12 @@ def test_monster_turn_start_rolls_recharge_and_applies_structured_traits(
                         "trigger": "always",
                     },
                     {
+                        "name": "Stunning aura",
+                        "kind": "condition",
+                        "condition": "震慑",
+                        "trigger": "always",
+                    },
+                    {
                         "name": "Renew ward",
                         "kind": "resource",
                         "resource_key": "ward",
@@ -974,6 +980,9 @@ def test_monster_turn_start_rolls_recharge_and_applies_structured_traits(
     assert body["active_combatant"]["id"] == monster["id"]
     assert body["active_combatant"]["hp"] == 11
     assert "狂暴" in body["active_combatant"]["conditions"]
+    assert "震慑" in body["active_combatant"]["conditions"]
+    assert body["active_combatant"]["action_available"] is False
+    assert body["active_combatant"]["movement_remaining_ft"] == 0
     assert body["active_combatant"]["snapshot_json"]["resources"]["ward"] == 2
     assert body["active_combatant"]["snapshot_json"]["recharge_available"]["Breath"] is True
     assert body["recharge_rolls"] == [
@@ -988,6 +997,7 @@ def test_monster_turn_start_rolls_recharge_and_applies_structured_traits(
     assert {result["name"] for result in body["trait_results"]} == {
         "Regeneration",
         "Bloodied frenzy",
+        "Stunning aura",
         "Renew ward",
     }
 
