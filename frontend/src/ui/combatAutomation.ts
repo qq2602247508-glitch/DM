@@ -124,6 +124,23 @@ export function criticalDamageExpression(expression: string): string {
   });
 }
 
+/** Conditions that make a nearby attack an automatic critical hit. */
+export function hasAutomaticCriticalCondition(conditions: unknown): boolean {
+  if (!Array.isArray(conditions)) return false;
+  const values = conditions as unknown[];
+  return values.some((raw) => {
+    const value = raw && typeof raw === "object" && !Array.isArray(raw)
+      ? (raw as { name?: unknown; condition_name?: unknown }).name
+        ?? (raw as { condition_name?: unknown }).condition_name
+      : raw;
+    const normalized = typeof value === "string"
+      ? value.trim().toLowerCase().replaceAll("-", "_")
+      : "";
+    return normalized === "paralyzed" || normalized === "麻痹"
+      || normalized === "unconscious" || normalized === "昏迷";
+  });
+}
+
 /** A grid-backed combat action cannot target a unit with no map coordinate. */
 export function hasGridPosition(snapshot: unknown): boolean {
   if (!snapshot || typeof snapshot !== "object" || Array.isArray(snapshot)) return false;
@@ -174,6 +191,7 @@ export function combatantFaction(entityType: unknown, snapshot: unknown): "ally"
 export function rollStructuredDamage(
   action: CombatActionLike,
   random: () => number = Math.random,
+  criticalHit = false,
 ): { components: RolledDamageComponent[]; total: number; damageType: string } | null {
   const direct = Array.isArray(action.damage_components) ? action.damage_components : [];
   const planBlocks = action.rule_plan && typeof action.rule_plan === "object"
@@ -200,7 +218,10 @@ export function rollStructuredDamage(
     const expression = parseDiceExpression(action.damage);
     const damageType = String(action.damage_type ?? "").trim();
     if (!expression || !damageType) return null;
-    const rolled = rollDiceExpression(expression, random).total;
+    const rolled = rollDiceExpression(
+      criticalHit ? parseDiceExpression(criticalDamageExpression(action.damage ?? "")) ?? expression : expression,
+      random,
+    ).total;
     return { components: [{ amount: rolled, damage_type: damageType }], total: rolled, damageType };
   }
   const components: RolledDamageComponent[] = [];
@@ -213,7 +234,7 @@ export function rollStructuredDamage(
           ? String(segment.amount)
           : "";
     const damageType = String(segment.damage_type ?? "").trim();
-    const parsed = parseDiceExpression(expression);
+    const parsed = parseDiceExpression(criticalHit ? criticalDamageExpression(expression) : expression);
     if (!parsed || !damageType) return null;
     components.push({
       amount: rollDiceExpression(parsed, random).total,

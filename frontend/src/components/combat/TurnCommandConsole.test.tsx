@@ -111,6 +111,30 @@ const ENTERING_REACH_DRAGON = fighter({
   },
 });
 
+const PARALYZED_HERO = fighter({
+  ...HERO,
+  conditions: ["麻痹"],
+  snapshot_json: { grid_position: { row: 1, col: 2 } },
+});
+
+const CRITICAL_DRAGON = fighter({
+  ...DRAGON,
+  snapshot_json: {
+    disposition: "enemy",
+    legendary_actions_remaining: 3,
+    grid_position: { row: 1, col: 1 },
+    actions: [{
+      name: "传奇尾击",
+      action_type: "legendary_action",
+      legendary_cost: 1,
+      legendary_pool_max: 3,
+      attack_bonus: 9,
+      damage: "2d8+5",
+      damage_type: "bludgeoning",
+    }],
+  },
+});
+
 function preview(planActionType = "reaction"): MonsterAIPreview {
   return {
     combat: {
@@ -186,6 +210,7 @@ function requestBody(init: RequestInit | undefined): Record<string, unknown> {
 describe("TurnCommandConsole advanced monster action window", () => {
   afterEach(() => {
     vi.unstubAllGlobals();
+    vi.restoreAllMocks();
   });
 
   it("offers reaction, legendary and lair actions as distinct live windows", () => {
@@ -327,6 +352,39 @@ describe("TurnCommandConsole advanced monster action window", () => {
       reaction_event: "enters_reach",
       reaction_window_id: "reaction-window-1",
       reaction_trigger: "冒险者进入黑龙的近战威胁范围",
+    });
+  });
+
+  it("automatically rolls critical damage for a nearby paralyzed target", async () => {
+    const user = userEvent.setup();
+    vi.spyOn(Math, "random").mockReturnValue(0);
+    const fetchMock = vi.fn<(input: RequestInfo | URL, init?: RequestInit) => Promise<Response>>(
+      (input) => {
+        const path = requestUrl(input).pathname;
+        if (path.endsWith("/actions/confirm")) {
+          return Promise.resolve(new Response(JSON.stringify({
+            action: { id: "critical-action-1" },
+            actor: { ...CRITICAL_DRAGON, version: 8 },
+            target: { ...PARALYZED_HERO, hp: 31, version: 2 },
+          }), { status: 200, headers: { "Content-Type": "application/json" } }));
+        }
+        throw new Error(`unexpected request: ${path}`);
+      },
+    );
+    vi.stubGlobal("fetch", fetchMock);
+    renderConsole([], [PARALYZED_HERO, CRITICAL_DRAGON]);
+
+    await user.selectOptions(screen.getByRole("combobox", { name: "怪物高级动作" }), "dragon-1:0");
+    await user.selectOptions(screen.getByRole("combobox", { name: "怪物高级动作目标" }), PARALYZED_HERO.id);
+    expect(screen.getByText(/本次按暴击自动掷骰：4d8\+5/)).toBeInTheDocument();
+    await user.type(screen.getByRole("spinbutton", { name: "怪物高级动作攻击总值" }), "18");
+    await user.click(screen.getByRole("button", { name: "DM确认并执行高级动作" }));
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    expect(requestBody(fetchMock.mock.calls[0]?.[1])).toMatchObject({
+      critical_hit: true,
+      amount: 9,
+      damage_components: [{ amount: 9, damage_type: "bludgeoning" }],
     });
   });
 });

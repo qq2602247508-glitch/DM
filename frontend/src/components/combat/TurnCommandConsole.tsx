@@ -30,8 +30,10 @@ import {
   actionDamageLabel,
   chooseEnemyTarget,
   chooseEnemyActionIndex,
+  criticalDamageExpression,
   executableTargetIds,
   forcedMovementFromAction,
+  hasAutomaticCriticalCondition,
   combatantFaction,
   expandMonsterAction,
   hasGridPosition,
@@ -364,6 +366,7 @@ export function TurnCommandConsole({
   const [reactionTrigger, setReactionTrigger] = useState("");
   const [reactionEvent, setReactionEvent] = useState<MonsterReactionEvent | "">("");
   const [advancedAttackTotal, setAdvancedAttackTotal] = useState("");
+  const [advancedCriticalHit, setAdvancedCriticalHit] = useState(false);
   const processedAutomaticTurn = useRef<string | null>(null);
   // A monster action changes action_available before the query has moved to
   // the next initiative slot.  Keep the current sequence marked in-flight so
@@ -670,6 +673,19 @@ export function TurnCommandConsole({
   // Keep target choice explicit. A candidate list is not permission to
   // invent the first target, especially for a reaction or DM-directed action.
   const selectedAdvancedTarget = advancedTargets.find((fighter) => fighter.id === advancedTargetId);
+  const advancedAutomaticCritical = Boolean(
+    selectedAdvancedChoice
+    && selectedAdvancedTarget
+    && !selectedAdvancedChoice.action.save_dc
+    && hasAutomaticCriticalCondition(selectedAdvancedTarget.conditions)
+    && hasGridPosition(selectedAdvancedChoice.actor.snapshot_json)
+    && hasGridPosition(selectedAdvancedTarget.snapshot_json)
+    && gridDistanceFt(
+      selectedAdvancedChoice.actor.snapshot_json.grid_position as { row: number; col: number },
+      selectedAdvancedTarget.snapshot_json.grid_position as { row: number; col: number },
+    ) <= 5,
+  );
+  const effectiveAdvancedCritical = advancedCriticalHit || advancedAutomaticCritical;
   const [advancedPreview, setAdvancedPreview] = useState<MonsterAIPreview | null>(null);
   const previewAdvancedAction = useMutation({
     mutationFn: () => {
@@ -1181,7 +1197,7 @@ export function TurnCommandConsole({
             || "请先在地图定位高级区域，并完成后端权威三维复核前的高度数据检查",
         );
       }
-      const rolledDamage = rollStructuredDamage(action);
+      const rolledDamage = rollStructuredDamage(action, Math.random, effectiveAdvancedCritical);
       const damageType = rolledDamage?.damageType ?? String(action.damage_type ?? "").trim();
       const hasStructuredDamage = Boolean(rolledDamage);
       if (!hasStructuredDamage && !action.save_dc && action.attack_bonus === undefined) {
@@ -1358,6 +1374,7 @@ export function TurnCommandConsole({
             damage_type: hasStructuredDamage ? damageType : null,
             damage_components: hit ? sharedDamageComponents : [],
             is_attack: true,
+            critical_hit: effectiveAdvancedCritical,
             attack_roll_mode: "normal",
             attack_roll_total: attackTotalValue,
             attack_adjudication_note: `DM确认高级动作窗口；报告攻击总值 ${attackTotalValue}（动作加值 ${action.attack_bonus}）`,
@@ -1384,6 +1401,7 @@ export function TurnCommandConsole({
       setReactionTrigger("");
       setReactionEvent("");
       setAdvancedAttackTotal("");
+      setAdvancedCriticalHit(false);
       setAdvancedAreaTargetingKey(null);
       onRangeChange(targetingForAction(targetingAction), active.id);
       const phase = advancedActionPhaseFromCost(cost);
@@ -1976,6 +1994,7 @@ export function TurnCommandConsole({
                   ?? "",
               );
               setAdvancedAttackTotal("");
+              setAdvancedCriticalHit(false);
               if (advancedAreaTargetingKey) {
                 setAdvancedAreaTargetingKey(null);
                 onRangeChange(targetingForAction(targetingAction), active.id);
@@ -2049,6 +2068,23 @@ export function TurnCommandConsole({
               ) : null}
               {selectedAdvancedChoice.action.save_dc && selectedAdvancedChoice.action.save_ability ? <p className="m-0">豁免：{selectedAdvancedChoice.action.save_ability} DC {selectedAdvancedChoice.action.save_dc}</p> : null}
               {selectedAdvancedChoice.action.damage ? <p className="m-0">伤害：{selectedAdvancedChoice.action.damage} {selectedAdvancedChoice.action.damage_type ?? "类型未明确"}</p> : null}
+              {selectedAdvancedChoice && !selectedAdvancedChoice.action.save_dc ? (
+                <>
+                  <label className="mt-1 flex items-center gap-2 text-amber-200 sm:col-span-2">
+                    <input
+                      checked={advancedCriticalHit}
+                      onChange={(event) => setAdvancedCriticalHit(event.target.checked)}
+                      type="checkbox"
+                    />
+                    DM确认本次攻击为暴击（天然 20 或规则裁定）
+                  </label>
+                  {effectiveAdvancedCritical ? (
+                    <p className="m-0 rounded border border-red-800/70 bg-red-950/30 p-2 text-red-200 sm:col-span-2">
+                      本次按暴击自动掷骰：{criticalDamageExpression(actionDamageLabel(selectedAdvancedChoice.action))}；只翻倍伤害骰，固定修正不翻倍，DM 不需要再填最终伤害总值。
+                    </p>
+                  ) : null}
+                </>
+              ) : null}
               {selectedAdvancedChoice.action.conditions_on_failure?.length ? <p className="m-0">失败状态：{selectedAdvancedChoice.action.conditions_on_failure.join("、")}</p> : null}
               {selectedAdvancedChoice.availability.blockingReasons.length > 0 ? (
                 <p className="m-0 text-amber-200 sm:col-span-2">当前限制：{selectedAdvancedChoice.availability.blockingReasons.join("；")}</p>

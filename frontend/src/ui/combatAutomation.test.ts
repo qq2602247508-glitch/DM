@@ -7,6 +7,7 @@ import {
   chooseEnemyActionIndex,
   chooseEnemyTarget,
   criticalDamageExpression,
+  hasAutomaticCriticalCondition,
   expandMonsterAction,
   executableTargetIds,
   forcedMovementFromAction,
@@ -26,6 +27,30 @@ import {
 describe("criticalDamageExpression", () => {
   it("doubles dice terms without doubling modifiers", () => {
     expect(criticalDamageExpression("1d8+2d6+3")).toBe("2d8+4d6+3");
+  });
+
+  it("rolls doubled dice per damage segment without doubling fixed modifiers", () => {
+    expect(rollStructuredDamage({
+      damage_components: [
+        { expression: "1d6+3", damage_type: "fire" },
+        { expression: "1d8+2", damage_type: "force" },
+      ],
+    }, () => 0, true)).toEqual({
+      components: [
+        { amount: 5, damage_type: "fire" },
+        { amount: 4, damage_type: "force" },
+      ],
+      total: 9,
+      damageType: "mixed",
+    });
+  });
+});
+
+describe("hasAutomaticCriticalCondition", () => {
+  it("recognizes structured and localized paralyzed/unconscious conditions", () => {
+    expect(hasAutomaticCriticalCondition(["麻痹"])).toBe(true);
+    expect(hasAutomaticCriticalCondition([{ condition_name: "unconscious" }])).toBe(true);
+    expect(hasAutomaticCriticalCondition(["prone"])).toBe(false);
   });
 });
 
