@@ -3277,6 +3277,7 @@ class CombatEngineService:
         session: Session | None = None,
         combat: Combat | None = None,
         condition_names: Iterable[object] = (),
+        selected_reactor_id: str | None = None,
     ) -> list[dict[str, object]]:
         """Return explicit saving-throw rerolls available to this combatant.
 
@@ -3413,8 +3414,30 @@ class CombatEngineService:
                     "distance_ft": distance_ft,
                 }
             )
-        if len(countercharm_candidates) == 1:
+        selected_reactor = str(selected_reactor_id or "").strip()
+        if selected_reactor:
+            selected = next(
+                (
+                    candidate
+                    for candidate in countercharm_candidates
+                    if str(candidate.get("reaction_combatant_id") or "") == selected_reactor
+                ),
+                None,
+            )
+            if selected is not None:
+                options.insert(0, selected)
+        elif len(countercharm_candidates) == 1:
             options.append(countercharm_candidates[0])
+        elif countercharm_candidates:
+            options.append(
+                {
+                    "kind": "countercharm_selection",
+                    "feature_id": "countercharm",
+                    "source": "反迷惑",
+                    "reroll_mode": "advantage",
+                    "reaction_candidates": countercharm_candidates,
+                }
+            )
         return options
 
     @classmethod
@@ -7135,6 +7158,7 @@ class CombatEngineService:
         session: Session | None = None,
         combat: Combat | None = None,
         condition_names: Iterable[object] = (),
+        selected_reactor_id: str | None = None,
     ) -> dict[str, object]:
         snapshot = dict(target.snapshot_json or {})
         raw_defenses = snapshot.get("advanced_defenses")
@@ -7176,12 +7200,15 @@ class CombatEngineService:
                         session=session,
                         combat=combat,
                         condition_names=condition_names,
+                        selected_reactor_id=selected_reactor_id,
                     )
                 ),
                 None,
             )
             if reroll_option is None:
                 raise ValueError("目标没有可用的职业特性豁免重掷")
+            if reroll_option.get("kind") == "countercharm_selection":
+                raise ValueError("反迷惑有多个候选反应者，必须指定反应者")
             if len(rolls) < 2:
                 raise ValueError("职业特性重掷需要提交第一次与重掷后的两个总值")
             effective_roll = (
@@ -7416,6 +7443,8 @@ class CombatEngineService:
         combat: Combat | None = None,
     ) -> dict[str, Any]:
         request = action.request_json
+        if command.feature_reroll_reactor_id and not command.use_feature_reroll:
+            raise ValueError("指定反应者时必须确认使用职业特性重掷")
         dc = int(str(request["dc"]))
         resolution_type = str(request.get("resolution_type") or "saving_throw")
         if resolution_type in {"ability_check", "skill_check"}:
@@ -7553,6 +7582,7 @@ class CombatEngineService:
                 session=session,
                 combat=combat,
                 condition_names=request.get("conditions_on_failure", []),
+                selected_reactor_id=command.feature_reroll_reactor_id,
             )
         success = bool(defense["success"])
         damage = cls._state_int(defense["damage"])
@@ -7568,6 +7598,7 @@ class CombatEngineService:
                         session=session,
                         combat=combat,
                         condition_names=request.get("conditions_on_failure", []),
+                        selected_reactor_id=command.feature_reroll_reactor_id,
                     )
                 ),
                 None,
@@ -7612,6 +7643,15 @@ class CombatEngineService:
                                 "reaction_before": available_reroll.get("reaction_before"),
                             }
                             if available_reroll.get("reaction_combatant_id")
+                            else {}
+                        ),
+                        **(
+                            {
+                                "reaction_candidates": available_reroll.get(
+                                    "reaction_candidates"
+                                )
+                            }
+                            if available_reroll.get("reaction_candidates")
                             else {}
                         ),
                     },

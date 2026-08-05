@@ -1431,6 +1431,7 @@ class PlayerRollResolutionCommand(BaseModel):
     roll_totals: list[int] = Field(default_factory=list, min_length=0, max_length=2)
     use_legendary_resistance: bool = False
     use_feature_reroll: bool = False
+    feature_reroll_reactor_id: str | None = Field(default=None, min_length=1, max_length=36)
     dm_note: str | None = Field(default=None, max_length=1_000)
 
     @model_validator(mode="after")

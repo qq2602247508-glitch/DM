@@ -501,6 +501,115 @@ def test_lay_on_hands_heals_adjacent_ally_and_spends_pool_amount(
     assert updated_character["resources"]["lay_on_hands"]["current"] == 10
 
 
+def test_countercharm_requires_and_honors_selected_reactor_when_two_are_eligible(
+    combat_client: TestClient,
+) -> None:
+    campaign, combat, actor = _setup(combat_client)
+    target_response = combat_client.post(
+        f"{_root(campaign, combat)}/combatants",
+        json={
+            "display_name": "多重反迷惑目标",
+            "entity_type": "character",
+            "initiative": 10,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {
+                "disposition": "ally",
+                "grid_position": {"row": 1, "col": 1},
+            },
+        },
+    )
+    assert target_response.status_code == 201, target_response.text
+    target = target_response.json()
+    reactor_ids: list[str] = []
+    for index, initiative in enumerate((5, 4), start=1):
+        response = combat_client.post(
+            f"{_root(campaign, combat)}/combatants",
+            json={
+                "display_name": f"候选吟游诗人{index}",
+                "entity_type": "character",
+                "initiative": initiative,
+                "hp": 20,
+                "max_hp": 20,
+                "snapshot_json": {
+                    "disposition": "ally",
+                    "grid_position": {"row": 1, "col": index + 1},
+                    "feature_runtime": {
+                        "actions": {
+                            "countercharm": {
+                                "id": "countercharm",
+                                "name": "反迷惑",
+                                "kind": "feature_action",
+                                "action_cost": "reaction",
+                                "resolution_kind": "saving_throw_reroll",
+                                "activation_window": "after_failed_saving_throw",
+                            }
+                        }
+                    },
+                },
+            },
+        )
+        assert response.status_code == 201, response.text
+        reactor_ids.append(response.json()["id"])
+
+    prompt = combat_client.post(
+        f"{_root(campaign, combat)}/actions/player-rolls/pending",
+        headers={"X-Request-ID": "countercharm-multiple-prompt"},
+        json={
+            "actor_combatant_id": actor["id"],
+            "actor_version": actor["version"],
+            "target_combatant_id": target["id"],
+            "target_version": target["version"],
+            "action_name": "魅惑凝视",
+            "resolution_type": "saving_throw",
+            "dc": 15,
+            "ability": "wisdom",
+            "damage_on_failure": 12,
+            "damage_type": "psychic",
+            "conditions_on_failure": ["魅惑"],
+            "condition_duration": "rounds",
+            "condition_duration_value": 1,
+        },
+    )
+    assert prompt.status_code == 200, prompt.text
+    action = prompt.json()["action"]
+    first = combat_client.post(
+        f"{_root(campaign, combat)}/actions/player-rolls/{action['id']}/confirm",
+        headers={"X-Request-ID": "countercharm-multiple-first"},
+        json={"action_version": action["version"], "roll_total": 5},
+    )
+    assert first.status_code == 200, first.text
+    window = first.json()["resolution"]["feature_reroll_window"]
+    assert {item["reaction_combatant_id"] for item in window["reaction_candidates"]} == set(
+        reactor_ids
+    )
+
+    second = combat_client.post(
+        f"{_root(campaign, combat)}/actions/player-rolls/{action['id']}/confirm",
+        headers={"X-Request-ID": "countercharm-multiple-second"},
+        json={
+            "action_version": first.json()["action"]["version"],
+            "roll_total": 18,
+            "roll_totals": [5, 18],
+            "use_feature_reroll": True,
+            "feature_reroll_reactor_id": reactor_ids[1],
+        },
+    )
+    assert second.status_code == 200, second.text
+    assert second.json()["resolution"]["success"] is True
+    assert second.json()["resolution"]["feature_reroll_consumed"][
+        "reaction_combatant_id"
+    ] == reactor_ids[1]
+    first_reactor = combat_client.get(
+        _combatant_path(campaign, combat, reactor_ids[0])
+    ).json()
+    second_reactor = combat_client.get(
+        _combatant_path(campaign, combat, reactor_ids[1])
+    ).json()
+    assert first_reactor["reaction_available"] is True
+    assert second_reactor["reaction_available"] is False
+
+
 def test_poisoned_skill_check_cancels_structured_advantage_through_api(
     combat_client: TestClient,
 ) -> None:
