@@ -74,6 +74,79 @@ def resource_recovery_events(
     return []
 
 
+def apply_initiative_start_resource_recovery(
+    resources: Mapping[str, Mapping[str, Any]],
+    feature_registry: Mapping[str, Any],
+) -> tuple[dict[str, dict[str, Any]], list[dict[str, Any]]]:
+    """Apply only unambiguous ``initiative_start`` resource events.
+
+    This helper intentionally consumes the typed event contract instead of
+    matching feature names. Events with missing numeric state or an unknown
+    condition are ignored and remain available for DM adjudication.
+    """
+
+    updated = {
+        str(key): deepcopy(dict(value))
+        for key, value in resources.items()
+        if isinstance(value, Mapping)
+    }
+    applied: list[dict[str, Any]] = []
+    registry_resources = feature_registry.get("resources")
+    if not isinstance(registry_resources, Mapping):
+        return updated, applied
+
+    for key, raw_entry in registry_resources.items():
+        if not isinstance(raw_entry, Mapping):
+            continue
+        current_entry = updated.get(str(key))
+        if current_entry is None:
+            continue
+        current = current_entry.get("current")
+        if not isinstance(current, int) or isinstance(current, bool):
+            continue
+        for raw_event in raw_entry.get("recovery_events") or ():
+            if not isinstance(raw_event, Mapping) or raw_event.get("trigger") != (
+                "initiative_start"
+            ):
+                continue
+            condition = raw_event.get("condition")
+            operation = raw_event.get("operation")
+            next_value: int | None = None
+            if (
+                condition == "current_below_2"
+                and operation == "set_to_minimum"
+                and isinstance(raw_event.get("minimum"), int)
+                and current < int(raw_event["minimum"])
+            ):
+                next_value = int(raw_event["minimum"])
+            elif (
+                condition == "current_zero"
+                and operation == "restore"
+                and current == 0
+                and isinstance(raw_event.get("amount"), int)
+            ):
+                next_value = current + int(raw_event["amount"])
+            if next_value is None:
+                continue
+            maximum = current_entry.get("max")
+            if isinstance(maximum, int) and not isinstance(maximum, bool):
+                next_value = min(next_value, maximum)
+            if next_value == current:
+                continue
+            current_entry["current"] = next_value
+            applied.append(
+                {
+                    "resource_key": str(key),
+                    "before": current,
+                    "after": next_value,
+                    "operation": str(operation),
+                    "condition": str(condition),
+                }
+            )
+            current = next_value
+    return updated, applied
+
+
 def _identity(value: object) -> str:
     return re.sub(r"[\s_：:（）()\-]", "", str(value or "")).casefold()
 
@@ -274,9 +347,9 @@ def feature_runtime_definition(
             ]
             resource.update(
                 {
-                    "automation_status": "partial",
-                    "requires_dm_adjudication": True,
-                    "note": "先攻时至少恢复至 2 次已结构化；当前先攻入口尚未执行该事件。",
+                    "automation_status": "full",
+                    "requires_dm_adjudication": False,
+                    "note": "先攻开始时，次数低于 2 会自动恢复至 2。",
                 }
             )
 
@@ -315,9 +388,9 @@ def feature_runtime_definition(
             ]
             resource.update(
                 {
-                    "automation_status": "partial",
-                    "requires_dm_adjudication": True,
-                    "note": "先攻且次数为零时恢复一次已结构化；当前先攻入口尚未执行该事件。",
+                    "automation_status": "full",
+                    "requires_dm_adjudication": False,
+                    "note": "先攻开始时，野性形态次数为零会自动恢复一次。",
                 }
             )
 

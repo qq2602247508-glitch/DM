@@ -21,6 +21,7 @@ from dnd_dm_assistant.domain.advancement_choices import (
 )
 from dnd_dm_assistant.domain.feature_runtime import (
     FEATURE_RUNTIME_SCHEMA_VERSION,
+    apply_initiative_start_resource_recovery,
     compile_feature_runtime_registry,
     feature_runtime_action_projections,
 )
@@ -798,6 +799,64 @@ def test_feral_instinct_publishes_executable_initiative_advantage() -> None:
     assert modifier["operation"] == "advantage"
     assert modifier["automation_status"] == "full"
     assert modifier["requires_dm_adjudication"] is False
+
+
+def test_initiative_start_resource_recovery_applies_only_exact_conditions() -> None:
+    registry = compile_feature_runtime_registry(
+        [
+            {
+                "name": "先发激励",
+                "class_name": "吟游诗人",
+                "class_level": 18,
+                "runtime": {
+                    "registry": {
+                        "combat_start": {"modifiers": [], "defenses": []},
+                        "resources": {
+                            "bardic_inspiration": {
+                                "recovery_events": [
+                                    {
+                                        "trigger": "initiative_start",
+                                        "operation": "set_to_minimum",
+                                        "minimum": 2,
+                                        "condition": "current_below_2",
+                                    }
+                                ]
+                            },
+                            "unknown": {
+                                "recovery_events": [
+                                    {
+                                        "trigger": "initiative_start",
+                                        "operation": "restore",
+                                        "amount": 99,
+                                        "condition": "dm_judgment",
+                                    }
+                                ]
+                            },
+                        },
+                    },
+                    "automation_status": "full",
+                },
+            }
+        ]
+    )
+    updated, applied = apply_initiative_start_resource_recovery(
+        {
+            "bardic_inspiration": {"current": 0, "max": 5},
+            "unknown": {"current": 0, "max": 5},
+        },
+        registry,
+    )
+    assert updated["bardic_inspiration"]["current"] == 2
+    assert updated["unknown"]["current"] == 0
+    assert applied == [
+        {
+            "resource_key": "bardic_inspiration",
+            "before": 0,
+            "after": 2,
+            "operation": "set_to_minimum",
+            "condition": "current_below_2",
+        }
+    ]
 
 
 def test_unarmored_defense_formulas_are_class_specific_and_explicitly_partial() -> None:

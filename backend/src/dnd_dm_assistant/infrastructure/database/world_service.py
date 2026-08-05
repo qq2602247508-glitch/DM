@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 
 from dnd_dm_assistant.domain.campaign_state import StateNotFoundError, VersionConflict
 from dnd_dm_assistant.domain.feature_runtime import (
+    apply_initiative_start_resource_recovery,
     compile_feature_runtime_registry,
     feature_runtime_action_projections,
 )
@@ -529,7 +530,25 @@ class WorldService:
                         total_level=entity.level,
                     )
                     snapshot["feature_runtime"] = feature_registry
-                    snapshot["resources"] = dict(entity.resources or {})
+                    current_resources = dict(entity.resources or {})
+                    resolved_resources, recovery_events = (
+                        apply_initiative_start_resource_recovery(
+                            current_resources,
+                            feature_registry,
+                        )
+                    )
+                    if recovery_events:
+                        entity.resources = resolved_resources
+                        snapshot["resources"] = resolved_resources
+                        snapshot["initiative_start_resource_recovery"] = recovery_events
+                        for resource_key, resource_value in resolved_resources.items():
+                            registry_resource = feature_registry.get("resources", {}).get(
+                                resource_key
+                            )
+                            if isinstance(registry_resource, dict):
+                                registry_resource["current"] = resource_value.get("current")
+                    else:
+                        snapshot["resources"] = current_resources
                     runtime_actions = feature_runtime_action_projections(feature_registry)
                     if runtime_actions:
                         snapshot["actions"] = [

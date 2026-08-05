@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session
 
 from dnd_dm_assistant.api.app import create_app
 from dnd_dm_assistant.config import Settings
+from dnd_dm_assistant.domain.feature_runtime import feature_runtime_definition
 from dnd_dm_assistant.infrastructure.database import world_service
 from dnd_dm_assistant.infrastructure.database.models import AuditLog
 
@@ -507,3 +508,66 @@ def test_scene_combat_applies_feral_instinct_initiative_advantage(
         "advantage_sources": ["野性直觉"],
         "disadvantage_sources": [],
     }
+
+
+def test_scene_combat_applies_initiative_start_resource_recovery(
+    campaign_client: TestClient,
+    monkeypatch: Any,
+) -> None:
+    campaign = _campaign(campaign_client, "Initiative resource recovery")
+    base = f"/api/v1/campaigns/{campaign['id']}"
+    definition = feature_runtime_definition(
+        feature_name="先发激励",
+        class_name="吟游诗人",
+        class_level=18,
+        resources={"bardic_inspiration": {"current": 0, "max": 5}},
+        tracked_resource_keys=["bardic_inspiration"],
+    )
+    character = campaign_client.post(
+        f"{base}/characters",
+        json={
+            "name": "先攻诗人",
+            "class_name": "吟游诗人",
+            "level": 18,
+            "resources": {"bardic_inspiration": {"current": 0, "max": 5}},
+            "features": [
+                {
+                    "name": "先发激励",
+                    "kind": "class_feature",
+                    "class_name": "吟游诗人",
+                    "class_level": 18,
+                    "runtime": {
+                        "automation_status": "full",
+                        "registry": definition,
+                    },
+                }
+            ],
+            "hp": 20,
+            "max_hp": 20,
+        },
+    ).json()
+    scene = campaign_client.post(f"{base}/scenes", json={"name": "资源先攻场"}).json()
+    assert campaign_client.post(
+        f"{base}/scenes/{scene['id']}/participants",
+        json={"entity_type": "character", "entity_id": character["id"]},
+    ).status_code == 201
+    monkeypatch.setattr(world_service.secrets, "randbelow", lambda _upper: 9)
+
+    started = campaign_client.post(f"{base}/scenes/{scene['id']}/start-combat", json={})
+    assert started.status_code == 201, started.text
+    combat_id = started.json()["combat"]["id"]
+    combatant = campaign_client.get(f"{base}/combats/{combat_id}/combatants").json()[
+        "items"
+    ][0]
+    assert combatant["snapshot_json"]["resources"]["bardic_inspiration"]["current"] == 2
+    assert combatant["snapshot_json"]["initiative_start_resource_recovery"] == [
+        {
+            "resource_key": "bardic_inspiration",
+            "before": 0,
+            "after": 2,
+            "operation": "set_to_minimum",
+            "condition": "current_below_2",
+        }
+    ]
+    persisted = campaign_client.get(f"{base}/characters/{character['id']}").json()
+    assert persisted["resources"]["bardic_inspiration"]["current"] == 2
