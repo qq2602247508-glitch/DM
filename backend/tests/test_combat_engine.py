@@ -1196,6 +1196,53 @@ def test_advanced_action_windows_are_persisted_only_at_legal_turn_boundaries(
     assert legendary_windows[0]["trigger_combatant_id"] == low_guard["id"]
     assert legendary_windows[0]["active_combatant_id"] == high_guard["id"]
 
+    dragon_current = combat_client.get(
+        f"{base}/combats/{combat['id']}/combatants/{dragon['id']}"
+    ).json()
+    high_guard_current = combat_client.get(
+        f"{base}/combats/{combat['id']}/combatants/{high_guard['id']}"
+    ).json()
+    legendary_action = combat_client.post(
+        f"{base}/combats/{combat['id']}/actions/confirm",
+        headers={"X-Request-ID": "advanced-legendary-window-confirm"},
+        json={
+            "action_type": "damage",
+            "actor_combatant_id": dragon["id"],
+            "actor_version": dragon_current["version"],
+            "action_cost": "legendary_action",
+            "action_window_id": next(
+                item["id"] for item in third_actions
+                if item["action_type"] == "eligible_action_window"
+                and item["result_json"]["action_window"]["action_cost"] == "legendary_action"
+            ),
+            "legendary_cost": 1,
+            "legendary_pool_max": 3,
+            "action_name": "传奇尾击",
+            "target_combatant_id": high_guard["id"],
+            "target_version": high_guard_current["version"],
+            "amount": 5,
+            "damage_type": "bludgeoning",
+        },
+    )
+    assert legendary_action.status_code == 200, legendary_action.text
+    assert legendary_action.json()["actor"]["snapshot_json"]["legendary_actions_remaining"] == 2
+    resolved_window = combat_client.get(
+        f"{base}/combats/{combat['id']}/actions"
+    ).json()["items"]
+    resolved = next(
+        item for item in resolved_window
+        if item["id"] == next(
+            candidate["id"] for candidate in third_actions
+            if candidate["action_type"] == "eligible_action_window"
+            and candidate["result_json"]["action_window"]["action_cost"] == "legendary_action"
+        )
+    )
+    assert resolved["result_json"]["action_window"]["status"] == "resolved"
+    assert (
+        resolved["result_json"]["action_window"]["resolved_action_id"]
+        == legendary_action.json()["action"]["id"]
+    )
+
     repeated = combat_client.post(
         advance_path,
         headers={"X-Request-ID": "advanced-window-legendary"},

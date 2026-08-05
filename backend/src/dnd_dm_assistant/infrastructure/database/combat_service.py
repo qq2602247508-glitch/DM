@@ -1392,6 +1392,76 @@ class CombatEngineService:
         return window
 
     @classmethod
+    def _validate_advanced_action_window(
+        cls,
+        session: Session,
+        *,
+        combat: Combat,
+        actor: Combatant | None,
+        action_cost: str,
+        action_name: str | None,
+        action_window_id: str | None,
+    ) -> CombatAction | None:
+        """Validate a persisted legendary/lair eligibility window.
+
+        The timing gate in ``_validate_action_economy`` is intentionally kept
+        for old, manually-created actions.  Structured advanced actions from
+        the combat UI must additionally consume the exact eligible window so
+        a stale panel cannot spend a legendary point or lair action outside
+        the event that opened it.
+        """
+
+        window_id = (action_window_id or "").strip()
+        if not window_id:
+            return None
+        if action_cost not in {"legendary_action", "lair_action"}:
+            raise ValueError("action_window_id is only valid for legendary or lair actions")
+        if actor is None:
+            raise ValueError("an advanced action window requires an actor")
+        window = session.get(CombatAction, window_id)
+        if (
+            window is None
+            or window.combat_id != combat.id
+            or window.action_type != "eligible_action_window"
+            or window.status != "confirmed"
+        ):
+            raise ValueError("advanced action window not found or no longer eligible")
+        metadata = (window.result_json or {}).get("action_window")
+        if not isinstance(metadata, dict) or metadata.get("status") != "eligible":
+            raise ValueError("advanced action window is already resolved")
+        if metadata.get("action_cost") != action_cost:
+            raise ValueError("advanced action cost does not match the eligible window")
+        if window.actor_combatant_id != actor.id:
+            raise ValueError("advanced action window belongs to another actor")
+        eligible_names = metadata.get("eligible_action_names")
+        name = (action_name or "").strip()
+        if (
+            name
+            and isinstance(eligible_names, list)
+            and name not in {str(item).strip() for item in eligible_names}
+        ):
+            raise ValueError("action is not one of the actions opened by this advanced window")
+        return window
+
+    @staticmethod
+    def _resolve_action_window(
+        window: CombatAction | None,
+        *,
+        action_id: str,
+        target_id: str | None = None,
+    ) -> None:
+        if window is None:
+            return
+        result = dict(window.result_json or {})
+        metadata = dict(result.get("action_window") or {})
+        metadata.update({"status": "resolved", "resolved_action_id": action_id})
+        if target_id is not None:
+            metadata["resolved_target_combatant_id"] = target_id
+        window.result_json = {**result, "action_window": metadata}
+        window.version += 1
+        window.updated_at = datetime.now(UTC)
+
+    @classmethod
     def _persist_eligible_enters_reach_reaction_windows(
         cls,
         session: Session,
@@ -7463,6 +7533,14 @@ class CombatEngineService:
                 target=target,
                 command=command,
             )
+            advanced_action_window = self._validate_advanced_action_window(
+                session,
+                combat=combat,
+                actor=actor,
+                action_cost=command.action_cost,
+                action_name=command.action_name,
+                action_window_id=command.action_window_id,
+            )
             pre_damage_window: CombatAction | None = None
             pre_damage_metadata: dict[str, object] = {}
             if pre_damage_reaction_window_id is not None:
@@ -8019,6 +8097,11 @@ class CombatEngineService:
             )
             session.add(action)
             session.flush()
+            self._resolve_action_window(
+                advanced_action_window,
+                action_id=action.id,
+                target_id=target.id,
+            )
             redirect_window: CombatAction | None = None
             if (
                 pre_damage_window is not None

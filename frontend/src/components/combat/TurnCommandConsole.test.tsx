@@ -135,6 +135,36 @@ const CRITICAL_DRAGON = fighter({
   },
 });
 
+const CRITICAL_WINDOW: CombatAction = {
+  id: "legendary-window-1",
+  campaign_id: "campaign-1",
+  combat_id: "combat-1",
+  actor_combatant_id: CRITICAL_DRAGON.id,
+  transaction_id: null,
+  action_type: "eligible_action_window",
+  target_combatant_ids: [],
+  request_json: { source_action_type: "advance_turn" },
+  result_json: {
+    action_window: {
+      action_cost: "legendary_action",
+      status: "eligible",
+      eligible_action_names: ["传奇尾击"],
+      trigger: "其他单位回合结束",
+    },
+  },
+  explanation: "等待 DM 确认",
+  round_number: 1,
+  turn_index: 0,
+  summary: "黑龙：传奇动作窗口已开放",
+  idempotency_key: "legendary-window-1",
+  dm_override: false,
+  override_reason: null,
+  status: "confirmed",
+  version: 1,
+  created_at: NOW,
+  updated_at: NOW,
+};
+
 function preview(planActionType = "reaction"): MonsterAIPreview {
   return {
     combat: {
@@ -372,7 +402,7 @@ describe("TurnCommandConsole advanced monster action window", () => {
       },
     );
     vi.stubGlobal("fetch", fetchMock);
-    renderConsole([], [PARALYZED_HERO, CRITICAL_DRAGON]);
+    renderConsole([CRITICAL_WINDOW], [PARALYZED_HERO, CRITICAL_DRAGON]);
 
     await user.selectOptions(screen.getByRole("combobox", { name: "怪物高级动作" }), "dragon-1:0");
     await user.selectOptions(screen.getByRole("combobox", { name: "怪物高级动作目标" }), PARALYZED_HERO.id);
@@ -383,6 +413,7 @@ describe("TurnCommandConsole advanced monster action window", () => {
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
     expect(requestBody(fetchMock.mock.calls[0]?.[1])).toMatchObject({
       critical_hit: true,
+      action_window_id: CRITICAL_WINDOW.id,
       amount: 9,
       damage_components: [{ amount: 9, damage_type: "bludgeoning" }],
     });

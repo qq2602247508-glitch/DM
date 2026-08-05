@@ -621,6 +621,23 @@ export function TurnCommandConsole({
   const selectedReactionWindowMeta = selectedReactionWindowData && typeof selectedReactionWindowData === "object" && !Array.isArray(selectedReactionWindowData)
     ? selectedReactionWindowData as Record<string, unknown>
     : null;
+  const selectedAdvancedWindow = useMemo(() => {
+    if (!selectedAdvancedChoice) return null;
+    const cost = monsterActionCost(selectedAdvancedChoice.action);
+    if (cost === "reaction") return selectedReactionWindow;
+    if (cost !== "legendary_action" && cost !== "lair_action") return null;
+    return (combatActions ?? []).find((entry) => {
+      if (entry.action_type !== "eligible_action_window" || entry.status !== "confirmed") return false;
+      if (entry.actor_combatant_id !== selectedAdvancedChoice.actor.id) return false;
+      const rawWindow = entry.result_json.action_window;
+      if (!rawWindow || typeof rawWindow !== "object" || Array.isArray(rawWindow)) return false;
+      const window = rawWindow as Record<string, unknown>;
+      const names = Array.isArray(window.eligible_action_names) ? window.eligible_action_names : [];
+      return window.status === "eligible"
+        && window.action_cost === cost
+        && names.some((name) => String(name) === String(selectedAdvancedChoice.action.name ?? ""));
+    }) ?? null;
+  }, [combatActions, selectedAdvancedChoice, selectedReactionWindow]);
   const effectiveReactionTrigger = reactionTrigger.trim()
     || (typeof selectedReactionWindowMeta?.trigger === "string" ? selectedReactionWindowMeta.trigger.trim() : "");
   const effectiveReactionEvent = reactionEvent
@@ -1194,6 +1211,9 @@ export function TurnCommandConsole({
       if (cost === "reaction" && !effectiveReactionTrigger) {
         throw new Error("怪物反应必须由 DM 写明本次触发事件");
       }
+      if ((cost === "legendary_action" || cost === "lair_action") && !selectedAdvancedWindow) {
+        throw new Error("该高级动作没有对应的可用窗口，请先推进到合法触发边界");
+      }
       if ((action.conditions_on_failure?.length || action.conditions_on_hit?.length) && !action.condition_duration) {
         throw new Error("该动作的状态持续时间未可靠解析，请由 DM 在高级编辑中裁定");
       }
@@ -1249,6 +1269,8 @@ export function TurnCommandConsole({
           target_version: firstTarget.version,
           legendary_cost: cost === "legendary_action" ? Number(action.legendary_cost ?? 1) : null,
           legendary_pool_max: cost === "legendary_action" ? Number(action.legendary_pool_max) : null,
+          action_window_id: cost !== "reaction" ? selectedAdvancedWindow?.id ?? null : null,
+          reaction_window_id: cost === "reaction" ? selectedReactionWindow?.id ?? null : null,
           reaction_trigger: cost === "reaction" ? effectiveReactionTrigger : null,
           reaction_event: cost === "reaction" ? effectiveReactionEvent || null : null,
           sequence_id: sequenceId,
@@ -1310,6 +1332,12 @@ export function TurnCommandConsole({
           target_version: affectedTarget.version,
           legendary_cost: actionCostValue === "legendary_action" ? Number(action.legendary_cost ?? 1) : null,
           legendary_pool_max: actionCostValue === "legendary_action" ? Number(action.legendary_pool_max) : null,
+          action_window_id: index === 0 && actionCostValue !== "reaction"
+            ? selectedAdvancedWindow?.id ?? null
+            : null,
+          reaction_window_id: index === 0 && actionCostValue === "reaction"
+            ? selectedReactionWindow?.id ?? null
+            : null,
           reaction_trigger: actionCostValue === "reaction" ? effectiveReactionTrigger : null,
           reaction_event: actionCostValue === "reaction" ? effectiveReactionEvent || null : null,
           sequence_id: sequenceId,

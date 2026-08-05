@@ -951,6 +951,8 @@ export type PlayerRollPromptCommand = {
   recharge_consume?: boolean;
   legendary_cost?: number | null;
   legendary_pool_max?: number | null;
+  action_window_id?: string | null;
+  reaction_window_id?: string | null;
   reaction_trigger?: string | null;
   reaction_event?: MonsterReactionEvent | null;
   sequence_id?: string | null;

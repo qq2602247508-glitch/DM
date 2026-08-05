@@ -761,6 +761,7 @@ class CombatActionCommand(BaseModel):
     recharge_consume: bool = False
     legendary_cost: int | None = Field(default=None, ge=1, le=10)
     legendary_pool_max: int | None = Field(default=None, ge=1, le=10)
+    action_window_id: str | None = Field(default=None, min_length=1, max_length=36)
     reaction_trigger: str | None = Field(default=None, max_length=1_000)
     reaction_window_id: str | None = Field(default=None, min_length=1, max_length=36)
     reaction_event: Literal[
@@ -832,6 +833,11 @@ class CombatActionCommand(BaseModel):
             self.legendary_cost is not None or self.legendary_pool_max is not None
         ):
             raise ValueError("legendary fields are only valid for a legendary action")
+        if (
+            self.action_cost not in {"legendary_action", "lair_action"}
+            and self.action_window_id is not None
+        ):
+            raise ValueError("action_window_id is only valid for legendary or lair actions")
         if self.action_cost == "reaction" and not (self.reaction_trigger or "").strip():
             raise ValueError("reaction_trigger is required for a monster reaction")
         if self.action_cost != "reaction" and self.reaction_trigger is not None:
@@ -1202,6 +1208,7 @@ class _PlayerRollPromptBase(BaseModel):
     recharge_consume: bool = False
     legendary_cost: int | None = Field(default=None, ge=1, le=10)
     legendary_pool_max: int | None = Field(default=None, ge=1, le=10)
+    action_window_id: str | None = Field(default=None, min_length=1, max_length=36)
     reaction_trigger: str | None = Field(default=None, max_length=1_000)
     reaction_event: Literal[
         "leaves_reach",
@@ -1279,6 +1286,11 @@ class _PlayerRollPromptBase(BaseModel):
             )
         if self.action_cost == "reaction" and not (self.reaction_trigger or "").strip():
             raise ValueError("reaction_trigger is required for a monster reaction")
+        if (
+            self.action_cost not in {"legendary_action", "lair_action"}
+            and self.action_window_id is not None
+        ):
+            raise ValueError("action_window_id is only valid for legendary or lair actions")
         if self.action_cost != "reaction" and self.reaction_trigger is not None:
             raise ValueError("reaction_trigger is only valid for a reaction")
         if self.action_cost != "reaction" and self.reaction_event is not None:
@@ -1475,6 +1487,7 @@ class MonsterAreaActionCommand(BaseModel):
     recharge_consume: bool = False
     legendary_cost: int | None = Field(default=None, ge=1, le=10)
     legendary_pool_max: int | None = Field(default=None, ge=1, le=10)
+    action_window_id: str | None = Field(default=None, min_length=1, max_length=36)
     reaction_trigger: str | None = Field(default=None, max_length=1_000)
     reaction_event: Literal[
         "leaves_reach",
@@ -1552,6 +1565,11 @@ class MonsterAreaActionCommand(BaseModel):
             raise ValueError("reaction_trigger is only valid for reactions")
         if self.action_cost != "reaction" and self.reaction_event is not None:
             raise ValueError("reaction_event is only valid for reactions")
+        if (
+            self.action_cost not in {"legendary_action", "lair_action"}
+            and self.action_window_id is not None
+        ):
+            raise ValueError("action_window_id is only valid for legendary or lair actions")
         return self
 
 
