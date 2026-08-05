@@ -1306,3 +1306,11 @@ backend/.venv/bin/python -m pytest -q backend/tests
 - 代码提交 `b48e9e4`：上一项已完成真实执行，但残留的 `end_turn_condition_removal` 防御条目仍为 `partial`，导致职业特性总合同可能错误显示为部分自动。现在该条目与实际状态选择/移除执行器一致标为 `full`，并明确不需要 DM 裁定。
 - 新增合同回归，确认返本还元整体 `automation_status=full`、`requires_dm_adjudication=false` 且没有遗留原因。后端全量 pytest、Ruff、compileall、`git diff --check` 通过；未修改前端，沿用上一项已通过的前端门禁与浏览器页面基线。
 - 这是上一项的收口修复，不新增缺口；固定范围仍只有 4 个大项，高级三维战斗继续跳过。
+
+# 2026-08-06 吟游诗人万事通属性检定半熟练加值
+
+- 代码提交 `2a1fe8d`：吟游诗人「万事通」从结构化描述接入玩家属性检定结算。属性检定请求新增显式 `ability_check_proficient`；明确为未熟练时，从角色 `feature_runtime.progression.proficiency_bonus` 取 `floor(PB / 2)`，真实加入最终检定总值并写入 `feature:万事通半熟练加值` 审计来源。
+- 明确已熟练时不加万事通；字段缺失时拒绝结算而不是猜测；缺少权威熟练加值时拒绝结算；技能检定和豁免不能误用该字段。战役快照编译也会在存在权威熟练加值时把半熟练值展开到 `rule_modifiers`，没有权威值则保持不可执行。
+- 运行时合同升级为 `full`，`runtime_execution.consumer=player_roll_resolution`，`requires_dm_adjudication=false`。新增回归覆盖未熟练 +2、已熟练不加、未知熟练状态、缺 PB 和 schema 边界。
+- 验证：定向回归通过；后端全量 pytest 通过；Ruff、compileall、`git diff --check` 通过。浏览器验收未通过加载边界：5173/8000 HTTP 服务正常，但内置浏览器对 `/combat` 的导航、DOM 和控制台读取均超时，未生成或伪造截图。
+- 用户原有未跟踪文件 `backend/tests/integrations/`、`backend/tests/ollama.py` 仍保留，未纳入提交。这是固定大项“职业/子职业 1–20 级运行时闭环”的内部切片，不新增缺口；固定范围仍只有 4 个大项，高级三维战斗继续跳过。
