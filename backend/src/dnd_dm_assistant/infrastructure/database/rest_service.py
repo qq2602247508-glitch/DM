@@ -10,7 +10,10 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
 from dnd_dm_assistant.domain.campaign_state import StateNotFoundError, VersionConflict
-from dnd_dm_assistant.domain.feature_runtime import resource_recovery_events
+from dnd_dm_assistant.domain.feature_runtime import (
+    compile_feature_runtime_registry,
+    resource_recovery_events,
+)
 from dnd_dm_assistant.domain.rests import (
     HitDieSpend,
     ResourceRecovery,
@@ -136,6 +139,47 @@ class RestService:
             return max(0, min(6, int(cast(Any, raw))))
         except (TypeError, ValueError):
             return 1
+
+    @staticmethod
+    def _short_rest_fatigue_reduction(character: Character) -> int:
+        """Read an explicit feature contract before reducing exhaustion."""
+
+        grants = [item for item in (character.features or []) if isinstance(item, dict)]
+        if not grants:
+            return 0
+        scaling_values = {
+            str(item.get("scaling_key")): item.get("value")
+            for item in grants
+            if item.get("kind") == "class_scaling"
+            and isinstance(item.get("scaling_key"), str)
+        }
+        registry = compile_feature_runtime_registry(
+            grants,
+            resources=(character.resources or {})
+            if isinstance(character.resources, dict)
+            else {},
+            scalings={key: {"value": value} for key, value in scaling_values.items()},
+            class_levels=(character.class_levels or {})
+            if isinstance(character.class_levels, dict)
+            else {},
+            total_level=character.level,
+        )
+        actions = registry.get("actions")
+        tireless = actions.get("tireless") if isinstance(actions, dict) else None
+        effects = tireless.get("rest_effects") if isinstance(tireless, dict) else None
+        if not isinstance(effects, list):
+            return 0
+        reduction = 0
+        for effect in effects:
+            if not isinstance(effect, dict) or effect.get("kind") != "reduce_exhaustion":
+                continue
+            if effect.get("rest") != "short_rest":
+                continue
+            try:
+                reduction = max(reduction, int(effect.get("amount") or 0))
+            except (TypeError, ValueError):
+                continue
+        return reduction
 
     def _sync_pools(self, session: Session, character: Character) -> list[ResourcePool]:
         pools = list(
@@ -375,6 +419,7 @@ class RestService:
                 after_hit_dice = hit_dice
                 completed = False
             elif effective_type == "short":
+                fatigue_reduction = self._short_rest_fatigue_reduction(character)
                 resolution = resolve_short_rest(
                     current_hp=character.hp,
                     max_hp=character.max_hp,
@@ -382,10 +427,12 @@ class RestService:
                     hit_dice=hit_dice,
                     spends=tuple(spends),
                     resources=resources,
+                    fatigue=fatigue,
+                    fatigue_reduction=fatigue_reduction,
                     started_at=world_before,
                 )
                 after_hp = resolution.current_hp
-                after_fatigue = fatigue
+                after_fatigue = resolution.fatigue
                 after_resources = resolution.resources
                 after_hit_dice = resolution.hit_dice
                 completed = True

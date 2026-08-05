@@ -706,7 +706,8 @@ def test_choice_bound_feature_actions_are_partial_and_explicit() -> None:
     )
     assert ranger_resources["tireless"]["max"] == 3
     assert ranger_resources["nature_veil"]["max"] == 3
-    assert ranger_resources["tireless"]["requires_dm_adjudication"] is True
+    assert ranger_resources["tireless"]["requires_dm_adjudication"] is False
+    assert ranger_resources["tireless"]["automation_status"] == "full"
     assert ranger_resources["nature_veil"]["requires_dm_adjudication"] is False
     assert ranger_resources["nature_veil"]["automation_status"] == "full"
 
@@ -774,10 +775,13 @@ def test_ranger_tireless_and_nature_veil_have_executable_runtime_contracts() -> 
     assert registry["actions"]["tireless"]["resource_cost"] == 1
     assert registry["actions"]["tireless"]["runtime_execution"] == {
         "status": "ready",
-        "consumer": "combat_feature_action",
-        "effect_kinds": ["temporary_healing"],
+        "consumer": "combat_feature_action_and_rest_resolution",
+        "effect_kinds": ["temporary_healing", "reduce_exhaustion"],
     }
-    assert registry["actions"]["tireless"]["automation_status"] == "partial"
+    assert registry["actions"]["tireless"]["automation_status"] == "full"
+    assert registry["actions"]["tireless"]["rest_effects"] == [
+        {"kind": "reduce_exhaustion", "rest": "short_rest", "amount": 1}
+    ]
     assert registry["actions"]["nature_veil"]["effects"] == [
         {
             "kind": "activate_timed_condition",

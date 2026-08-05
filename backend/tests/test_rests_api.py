@@ -262,3 +262,79 @@ def test_long_rest_recovers_long_term_reductions_and_enforces_cooldown(
     )
     assert too_soon.status_code == 400
     assert "16 hours" in too_soon.text
+
+
+def test_tireless_ranger_short_rest_reduces_exhaustion_without_consuming_resource(
+    rest_client: TestClient,
+) -> None:
+    campaign = _campaign(rest_client)
+    created = rest_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/characters",
+        json={
+            "name": "不知疲倦游侠",
+            "class_name": "游侠",
+            "level": 10,
+            "hp": 8,
+            "max_hp": 20,
+            "ability_scores": {"constitution": 12, "wisdom": 16},
+            "class_levels": {"游侠": 10},
+            "features": [
+                {
+                    "name": "不知疲倦",
+                    "class_name": "游侠",
+                    "class_level": 10,
+                    "kind": "feature",
+                    "runtime": {"tracked_resource_keys": ["tireless"]},
+                }
+            ],
+            "resources": {
+                "tireless": {
+                    "label": "不知疲倦",
+                    "current": 1,
+                    "max": 3,
+                    "recovery": "long_rest",
+                }
+            },
+        },
+    ).json()
+    condition = rest_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/characters/{created['id']}/conditions",
+        json={"condition_name": "力竭", "details": {"level": 3}},
+    )
+    assert condition.status_code == 201, condition.text
+
+    body = {
+        "rest_type": "short",
+        "duration_minutes": 60,
+        "participants": [
+            {"character_id": created["id"], "character_version": created["version"]}
+        ],
+    }
+    preview = rest_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/rests/preview", json=body
+    )
+    assert preview.status_code == 200, preview.text
+    participant = preview.json()["participants"][0]
+    assert participant["after"]["fatigue"] == 2
+    assert any(
+        change["type"] == "condition" and change["before"] == 3 and change["after"] == 2
+        for change in participant["changes"]
+    )
+
+    confirm = rest_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/rests/confirm",
+        json={
+            **body,
+            "preview_token": preview.json()["preview_token"],
+            "idempotency_key": "tireless-short-rest-1",
+        },
+    )
+    assert confirm.status_code == 200, confirm.text
+    updated = rest_client.get(
+        f"/api/v1/campaigns/{campaign['id']}/characters/{created['id']}"
+    ).json()
+    assert updated["resources"]["tireless"]["current"] == 1
+    fatigue = rest_client.get(
+        f"/api/v1/campaigns/{campaign['id']}/characters/{created['id']}/conditions"
+    ).json()["items"]
+    assert fatigue[0]["details"]["level"] == 2

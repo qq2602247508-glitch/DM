@@ -39,6 +39,33 @@ def test_short_rest_spends_each_hit_die_and_caps_healing() -> None:
     assert result.resources == (RestResource("focus", 3, 3, "short_rest"),)
 
 
+def test_short_rest_explicitly_reduces_fatigue_and_interruption_does_not() -> None:
+    result = resolve_short_rest(
+        current_hp=10,
+        max_hp=10,
+        constitution_modifier=0,
+        hit_dice={},
+        spends=(),
+        resources=(),
+        fatigue=3,
+        fatigue_reduction=1,
+    )
+    assert result.fatigue == 2
+
+    interrupted = resolve_short_rest(
+        current_hp=10,
+        max_hp=10,
+        constitution_modifier=0,
+        hit_dice={},
+        spends=(),
+        resources=(),
+        fatigue=3,
+        fatigue_reduction=1,
+        interrupted=True,
+    )
+    assert interrupted.fatigue == 3
+
+
 def test_short_rest_rejects_spending_more_hit_dice_than_available() -> None:
     with pytest.raises(ValueError, match="not available"):
         resolve_short_rest(

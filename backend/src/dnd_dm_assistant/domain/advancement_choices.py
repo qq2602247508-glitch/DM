@@ -840,8 +840,9 @@ def progression_resource_updates(
                 "max_formula": "max(1, wisdom_modifier)",
                 "recovery": "long_rest",
                 "source": source,
-                "requires_dm_adjudication": True,
-                "note": "只追踪临时生命值使用次数；临时生命值与短休减轻力竭仍需 DM 结算。",
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+                "note": "只追踪临时生命值使用次数；短休结束时力竭自动降低 1 级。",
             }
             if wisdom_modifier is not None:
                 updates["tireless"]["max"] = max(1, wisdom_modifier)

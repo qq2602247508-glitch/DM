@@ -1192,17 +1192,21 @@ def feature_runtime_definition(
             "resolution_kind": "temporary_healing",
             "healing_formula": "1d8+wisdom_modifier",
             "minimum_healing": 1,
+            "rest_effects": [
+                {
+                    "kind": "reduce_exhaustion",
+                    "rest": "short_rest",
+                    "amount": 1,
+                }
+            ],
             "runtime_execution": {
                 "status": "ready",
-                "consumer": "combat_feature_action",
-                "effect_kinds": ["temporary_healing"],
+                "consumer": "combat_feature_action_and_rest_resolution",
+                "effect_kinds": ["temporary_healing", "reduce_exhaustion"],
             },
-            "automation_status": "partial",
-            "requires_dm_adjudication": True,
-            "partial_reason": (
-                "临时生命值与感知调整值已由执行器结算；"
-                "短休减轻力竭分支仍需专用结算。"
-            ),
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+            "summary": "短休结束时力竭降低 1 级；也可消耗次数获得临时生命值。",
             **source,
         }
 

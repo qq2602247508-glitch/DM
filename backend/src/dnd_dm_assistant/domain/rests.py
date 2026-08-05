@@ -30,6 +30,7 @@ class ShortRestResolution:
     completed: bool
     current_hp: int
     hp_gained: int
+    fatigue: int
     hit_dice: dict[str, int]
     resources: tuple[RestResource, ...]
     ends_at: datetime | None
@@ -125,6 +126,8 @@ def resolve_short_rest(
     hit_dice: dict[str, int],
     spends: tuple[HitDieSpend, ...],
     resources: tuple[RestResource, ...],
+    fatigue: int = 0,
+    fatigue_reduction: int = 0,
     interrupted: bool = False,
     started_at: datetime | None = None,
 ) -> ShortRestResolution:
@@ -137,6 +140,8 @@ def resolve_short_rest(
     _validate_hp(current_hp, max_hp)
     if current_hp < 1:
         raise ValueError("a creature needs at least 1 HP to begin a short rest")
+    _non_negative("fatigue", fatigue)
+    _non_negative("fatigue_reduction", fatigue_reduction)
     _validate_resources(resources)
     remaining_dice = dict(hit_dice)
     for die, count in remaining_dice.items():
@@ -149,6 +154,7 @@ def resolve_short_rest(
             completed=False,
             current_hp=current_hp,
             hp_gained=0,
+            fatigue=fatigue,
             hit_dice=remaining_dice,
             resources=resources,
             ends_at=_rest_end(started_at, timedelta(hours=1)),
@@ -168,6 +174,7 @@ def resolve_short_rest(
         completed=True,
         current_hp=current_hp + actual_healing,
         hp_gained=actual_healing,
+        fatigue=max(0, fatigue - fatigue_reduction),
         hit_dice=remaining_dice,
         resources=_refresh_resources(resources, rest="short_rest"),
         ends_at=_rest_end(started_at, timedelta(hours=1)),
