@@ -120,6 +120,73 @@ def test_action_blocking_conditions_reject_real_actions(
     assert unchanged["movement_remaining_ft"] == expected_movement
 
 
+def test_failed_player_save_persists_feature_reroll_window_before_resolution(
+    combat_client: TestClient,
+) -> None:
+    campaign, combat, actor = _setup(combat_client)
+    target_response = combat_client.post(
+        f"{_root(campaign, combat)}/combatants",
+        json={
+            "display_name": "不屈目标",
+            "initiative": 10,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {
+                "feature_saving_throw_rerolls": [
+                    {"feature_id": "indomitable", "source": "不屈", "available": True}
+                ]
+            },
+        },
+    )
+    assert target_response.status_code == 201, target_response.text
+    target = target_response.json()
+    prompt = combat_client.post(
+        f"{_root(campaign, combat)}/actions/player-rolls/pending",
+        headers={"X-Request-ID": "reroll-window-prompt"},
+        json={
+            "actor_combatant_id": actor["id"],
+            "actor_version": actor["version"],
+            "target_combatant_id": target["id"],
+            "target_version": target["version"],
+            "action_name": "恐惧波动",
+            "resolution_type": "saving_throw",
+            "dc": 15,
+            "ability": "wisdom",
+            "damage_on_failure": 12,
+            "damage_type": "psychic",
+        },
+    )
+    assert prompt.status_code == 200, prompt.text
+    action = prompt.json()["action"]
+
+    first = combat_client.post(
+        f"{_root(campaign, combat)}/actions/player-rolls/{action['id']}/confirm",
+        headers={"X-Request-ID": "reroll-window-first"},
+        json={"action_version": action["version"], "roll_total": 5},
+    )
+    assert first.status_code == 200, first.text
+    assert first.json()["resolution"]["phase"] == "awaiting_feature_reroll"
+    assert first.json()["action"]["status"] == "previewed"
+    assert first.json()["target"]["hp"] == 20
+    assert first.json()["action"]["result_json"]["feature_reroll_window"]["source"] == "不屈"
+
+    second = combat_client.post(
+        f"{_root(campaign, combat)}/actions/player-rolls/{action['id']}/confirm",
+        headers={"X-Request-ID": "reroll-window-second"},
+        json={
+            "action_version": first.json()["action"]["version"],
+            "roll_total": 5,
+            "roll_totals": [5, 18],
+            "use_feature_reroll": True,
+        },
+    )
+    assert second.status_code == 200, second.text
+    assert second.json()["resolution"]["phase"] == "resolved"
+    assert second.json()["resolution"]["success"] is True
+    assert second.json()["resolution"]["feature_reroll_consumed"]["after"] == 0
+    assert second.json()["target"]["hp"] == 20
+
+
 def test_dodge_and_prone_force_explicit_attack_ruling_then_dodge_expires(
     combat_client: TestClient,
 ) -> None:

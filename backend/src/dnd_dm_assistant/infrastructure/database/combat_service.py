@@ -6798,6 +6798,46 @@ class CombatEngineService:
             )
         success = bool(defense["success"])
         damage = cls._state_int(defense["damage"])
+        if (
+            resolution_type == "saving_throw"
+            and not success
+            and not command.use_feature_reroll
+        ):
+            raw_rerolls = dict(target.snapshot_json or {}).get(
+                "feature_saving_throw_rerolls"
+            )
+            available_reroll = next(
+                (
+                    item
+                    for item in raw_rerolls
+                    if isinstance(item, dict) and item.get("available") is True
+                ),
+                None,
+            ) if isinstance(raw_rerolls, list) else None
+            if available_reroll is not None:
+                return {
+                    "phase": "awaiting_feature_reroll",
+                    "roll_owner": "player",
+                    "roll_total": defense["effective_roll_total"],
+                    "reported_roll_totals": defense["reported_roll_totals"],
+                    "dc": dc,
+                    "success": False,
+                    "outcome": "failure",
+                    "damage": 0,
+                    "damage_type": None,
+                    "damage_components": [],
+                    "applied_defenses": defense["applied_defenses"],
+                    "feature_reroll_window": {
+                        "feature_id": available_reroll.get("feature_id"),
+                        "source": available_reroll.get("source"),
+                        "original_roll_total": defense["effective_roll_total"],
+                        "dc": dc,
+                        "requires_second_roll": True,
+                    },
+                    "feature_reroll_consumed": None,
+                    "defense_resource_consumed": None,
+                    "dm_note": command.dm_note,
+                }
         component_key = (
             "damage_components_on_success"
             if success
@@ -7023,6 +7063,28 @@ class CombatEngineService:
                 command,
                 consume_defenses=True,
             )
+            if resolution.get("phase") == "awaiting_feature_reroll":
+                action.result_json = {
+                    **resolution,
+                    "confirmation_idempotency_key": idempotency_key,
+                }
+                action.request_json = {
+                    **request,
+                    "feature_reroll_window": resolution.get("feature_reroll_window"),
+                }
+                action.version += 1
+                action.updated_at = datetime.now(UTC)
+                action.summary = (
+                    f"{actor.display_name} 对 {target.display_name} 的豁免失败；"
+                    "已打开职业特性重掷窗口，等待第二枚豁免骰"
+                )
+                return {
+                    "action": serialize(action),
+                    "actor": serialize(actor),
+                    "target": serialize(target),
+                    "effect_target": serialize(effect_target),
+                    "resolution": action.result_json,
+                }
             request_action_cost = (
                 str(request.get("action_cost"))
                 if request.get("action_cost") is not None

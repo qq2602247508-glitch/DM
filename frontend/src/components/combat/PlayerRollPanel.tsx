@@ -215,7 +215,12 @@ export function PlayerRollPanel({
     },
     onSuccess: (result) => {
       invalidate();
-      showToast("玩家骰结果已由 DM 确认并写入战斗日志");
+      showToast(
+        result.resolution.phase === "awaiting_feature_reroll"
+          ? "豁免失败，已打开职业特性重掷窗口；请填写两枚豁免总值"
+          : "玩家骰结果已由 DM 确认并写入战斗日志",
+        result.resolution.phase === "awaiting_feature_reroll" ? "error" : "success",
+      );
       onResolved?.(result.action);
     },
     onError: () => showToast("确认失败：目标状态可能已变化，请重新预览", "error"),
@@ -421,7 +426,7 @@ export function PlayerRollPanel({
                 onChange={(event) =>
                   setRolls((current) => ({ ...current, [action.id]: event.target.value }))}
                 placeholder={featureRerollAvailable ? "总值；重掷时写 12,18" : "玩家最终总值"}
-                type="number"
+                type={featureRerollAvailable ? "text" : "number"}
                 value={rollValue}
               />
               {featureRerollAvailable && request.resolution_type === "saving_throw" ? (
@@ -457,10 +462,14 @@ export function PlayerRollPanel({
               </Button>
             </div>
             {result ? (
-              <p className={`mb-0 mt-2 text-xs ${result.resolution.success ? "text-emerald-300" : "text-amber-300"}`}>
-                {textField(request.target_name)} 的结果 {result.resolution.roll_total}
+              <p className={`mb-0 mt-2 text-xs ${result.resolution.phase === "awaiting_feature_reroll" ? "text-violet-300" : result.resolution.success ? "text-emerald-300" : "text-amber-300"}`}>
+                {result.resolution.phase === "awaiting_feature_reroll"
+                  ? `${textField(request.target_name)} 首次豁免失败，等待职业特性重掷`
+                  : `${textField(request.target_name)} 的结果 ${result.resolution.roll_total}`}
                 {" / DC "}{result.resolution.dc}：
-                {result.resolution.success ? "成功" : "失败"}
+                {result.resolution.phase === "awaiting_feature_reroll"
+                  ? "需要第二枚骰"
+                  : result.resolution.success ? "成功" : "失败"}
                 {result.resolution.damage
                   ? `；将结算 ${result.resolution.damage} 点 ${result.resolution.damage_type ?? ""}伤害`
                   : "；无伤害"}

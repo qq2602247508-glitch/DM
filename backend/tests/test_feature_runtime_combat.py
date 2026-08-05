@@ -329,6 +329,74 @@ def test_reliable_talent_only_floors_a_proficient_noncombat_check() -> None:
     assert PlayerRoomService._reliable_talent_applies(untrained, "运动") is False
 
 
+def test_failed_save_opens_feature_reroll_window_before_damage() -> None:
+    action = CombatAction(
+        campaign_id="campaign",
+        combat_id="combat",
+        action_type="player_roll_prompt",
+        target_combatant_ids=["reroll-target"],
+        request_json={
+            "resolution_type": "saving_throw",
+            "dc": 15,
+            "ability": "wisdom",
+            "action_name": "恐惧波动",
+            "damage_on_success": 0,
+            "damage_on_failure": 12,
+            "damage_type": "psychic",
+        },
+        result_json={},
+        round_number=1,
+        turn_index=0,
+        summary="等待豁免",
+        idempotency_key="feature-reroll-window",
+    )
+    target = Combatant(
+        id="reroll-target",
+        entity_type="character",
+        display_name="可重掷者",
+        hp=20,
+        max_hp=20,
+        snapshot_json={
+            "feature_saving_throw_rerolls": [
+                {"feature_id": "indomitable", "source": "不屈", "available": True}
+            ]
+        },
+    )
+    first = CombatEngineService._resolve_player_roll(
+        action,
+        target,
+        PlayerRollResolutionCommand(action_version=1, roll_total=5),
+    )
+    assert first["phase"] == "awaiting_feature_reroll"
+    assert first["damage"] == 0
+    assert first["feature_reroll_window"] == {
+        "feature_id": "indomitable",
+        "source": "不屈",
+        "original_roll_total": 5,
+        "dc": 15,
+        "requires_second_roll": True,
+    }
+    assert target.hp == 20
+
+    final = CombatEngineService._resolve_player_roll(
+        action,
+        target,
+        PlayerRollResolutionCommand(
+            action_version=1,
+            roll_total=5,
+            roll_totals=[5, 18],
+            use_feature_reroll=True,
+        ),
+        consume_defenses=True,
+    )
+    assert final["phase"] == "resolved"
+    assert final["success"] is True
+    assert final["feature_reroll_consumed"]["resource"] == (
+        "feature_saving_throw_reroll"
+    )
+    assert target.snapshot_json["feature_saving_throw_rerolls"][0]["available"] is False
+
+
 def test_elusive_suppresses_condition_advantage_unless_incapacitated() -> None:
     actor = Combatant(
         id="elusive-attacker",

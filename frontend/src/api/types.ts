@@ -1010,7 +1010,7 @@ export type PlayerRollResolutionCommand = {
 };
 
 export type PlayerRollResolution = {
-  phase: "awaiting_player_roll" | "resolved";
+  phase: "awaiting_player_roll" | "awaiting_feature_reroll" | "resolved";
   roll_owner: "player";
   roll_total?: number;
   dc?: number;
@@ -1019,6 +1019,13 @@ export type PlayerRollResolution = {
   damage?: number;
   damage_type?: string | null;
   damage_components?: Array<{ amount: number; damage_type: string; damage_tags?: string[] }>;
+  feature_reroll_window?: {
+    feature_id?: string;
+    source?: string;
+    original_roll_total: number;
+    dc: number;
+    requires_second_roll: boolean;
+  } | null;
   dm_note?: string | null;
   follow_up_damage?: {
     action_type: "damage";
