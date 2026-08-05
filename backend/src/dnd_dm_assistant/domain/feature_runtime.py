@@ -1064,12 +1064,25 @@ def feature_runtime_definition(
                 "resource_key": "lay_on_hands",
                 "resource_cost": 0,
                 "resource_cost_mode": "amount",
-                "target": "ally_or_self",
-                "resolution_kind": "healing",
-                "healing_formula": "lay_on_hands_pool",
-                "automation_status": "partial",
-                "requires_dm_adjudication": True,
-                "partial_reason": "资源池治疗量可结算；接触距离和治疗/解除状态的分支仍需 DM 确认。",
+            "target": "ally_or_self",
+            "resolution_kind": "healing",
+            "healing_formula": "lay_on_hands_pool",
+            "effects": [{"kind": "healing"}],
+            "runtime_execution": {
+                "status": "ready",
+                "consumer": "combat_feature_action",
+                "effect_kinds": ["healing"],
+                "remaining_dm_boundaries": [
+                    "condition_cure_choice",
+                    "contact_distance_requires_authoritative_position",
+                ],
+            },
+            "automation_status": "partial",
+            "requires_dm_adjudication": True,
+            "partial_reason": (
+                "资源池治疗量和明确 5 尺同阵营目标可结算；"
+                "解除中毒/疾病的分支仍需 DM 选择。"
+            ),
                 **source,
             }
 

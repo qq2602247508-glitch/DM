@@ -401,6 +401,106 @@ def test_countercharm_opens_unique_ally_reaction_and_consumes_reaction_on_advant
     assert bard_after["reaction_available"] is False
 
 
+def test_lay_on_hands_heals_adjacent_ally_and_spends_pool_amount(
+    combat_client: TestClient,
+) -> None:
+    campaign, combat, _ = _setup(combat_client)
+    character_response = combat_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/characters",
+        json={
+            "name": "圣疗圣武士",
+            "class_name": "圣武士",
+            "level": 5,
+            "hp": 20,
+            "max_hp": 20,
+            "resources": {
+                "lay_on_hands": {
+                    "label": "圣疗",
+                    "current": 20,
+                    "max": 25,
+                    "recovery": "long_rest",
+                }
+            },
+        },
+    )
+    assert character_response.status_code == 201, character_response.text
+    character = character_response.json()
+    paladin_response = combat_client.post(
+        f"{_root(campaign, combat)}/combatants",
+        json={
+            "display_name": "圣疗圣武士",
+            "entity_type": "character",
+            "entity_id": character["id"],
+            "initiative": 30,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {
+                "disposition": "ally",
+                "grid_position": {"row": 1, "col": 1},
+                "feature_runtime": {
+                    "actions": {
+                        "lay_on_hands": {
+                            "id": "lay_on_hands",
+                            "name": "圣疗",
+                            "kind": "feature_action",
+                            "action_cost": "bonus_action",
+                            "resource_key": "lay_on_hands",
+                            "resource_cost": 0,
+                            "resource_cost_mode": "amount",
+                            "target": "ally_or_self",
+                            "resolution_kind": "healing",
+                            "healing_formula": "lay_on_hands_pool",
+                            "effects": [{"kind": "healing"}],
+                        }
+                    }
+                },
+            },
+        },
+    )
+    assert paladin_response.status_code == 201, paladin_response.text
+    paladin = paladin_response.json()
+    ally_response = combat_client.post(
+        f"{_root(campaign, combat)}/combatants",
+        json={
+            "display_name": "受伤盟友",
+            "entity_type": "character",
+            "initiative": 10,
+            "hp": 5,
+            "max_hp": 20,
+            "snapshot_json": {
+                "disposition": "ally",
+                "grid_position": {"row": 1, "col": 2},
+            },
+        },
+    )
+    assert ally_response.status_code == 201, ally_response.text
+    ally = ally_response.json()
+
+    confirmed = combat_client.post(
+        f"{_root(campaign, combat)}/feature-actions/confirm",
+        headers={"X-Request-ID": "lay-on-hands-adjacent"},
+        json={
+            "actor_combatant_id": paladin["id"],
+            "actor_version": paladin["version"],
+            "feature_id": "lay_on_hands",
+            "healing_total": 10,
+            "target_combatant_id": ally["id"],
+            "target_version": ally["version"],
+        },
+    )
+    assert confirmed.status_code == 200, confirmed.text
+    result = confirmed.json()["result"]
+    assert result["healing"]["hp_gained"] == 10
+    assert result["healing"]["remaining_hp"] == 15
+    assert result["resource_before"] == 20
+    assert result["resource_after"] == 10
+    assert confirmed.json()["target"]["hp"] == 15
+    updated_character = combat_client.get(
+        f"/api/v1/campaigns/{campaign['id']}/characters/{character['id']}"
+    ).json()
+    assert updated_character["resources"]["lay_on_hands"]["current"] == 10
+
+
 def test_poisoned_skill_check_cancels_structured_advantage_through_api(
     combat_client: TestClient,
 ) -> None:

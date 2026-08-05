@@ -9784,6 +9784,36 @@ class CombatEngineService:
                     )
             if action.get("target") == "self" and target.id != actor.id:
                 raise ValueError("该职业特性只能以自身为目标")
+            if command.feature_id == "lay_on_hands" and target.id != actor.id:
+                if self._combatant_faction(actor) != self._combatant_faction(target):
+                    raise ValueError("圣疗只能以自身或同阵营目标为目标")
+                raw_actor_position = (actor.snapshot_json or {}).get("grid_position")
+                raw_target_position = (target.snapshot_json or {}).get("grid_position")
+                if not isinstance(raw_actor_position, dict) or not isinstance(
+                    raw_target_position, dict
+                ):
+                    raise ValueError("圣疗接触距离缺少权威网格位置，需由 DM 裁定")
+                try:
+                    actor_position = (
+                        int(raw_actor_position["row"]),
+                        int(raw_actor_position["col"]),
+                    )
+                    target_position = (
+                        int(raw_target_position["row"]),
+                        int(raw_target_position["col"]),
+                    )
+                except (KeyError, TypeError, ValueError) as exc:
+                    raise ValueError("圣疗接触距离的网格位置无效，需由 DM 裁定") from exc
+                grid = (
+                    session.scalar(
+                        select(SceneGrid).where(SceneGrid.scene_id == combat.scene_id)
+                    )
+                    if combat.scene_id
+                    else None
+                )
+                cell_size = grid.cell_size_ft if grid is not None else 5
+                if grid_distance_ft(actor_position, target_position, cell_size_ft=cell_size) > 5:
+                    raise ValueError("圣疗目标必须在 5 尺接触范围内")
             if command.feature_id == "steady_aim" and (
                 actor.movement_remaining_ft != actor.speed_ft
             ):

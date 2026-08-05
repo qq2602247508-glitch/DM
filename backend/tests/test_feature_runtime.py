@@ -691,6 +691,20 @@ def test_choice_bound_feature_actions_are_partial_and_explicit() -> None:
     )
     assert divine_intervention["actions"]["divine_intervention"]["resource_cost"] == 1
 
+    lay_on_hands = _registry_at(rules["圣武士"], 5)["actions"]["lay_on_hands"]
+    assert lay_on_hands["resolution_kind"] == "healing"
+    assert lay_on_hands["resource_cost_mode"] == "amount"
+    assert lay_on_hands["runtime_execution"] == {
+        "status": "ready",
+        "consumer": "combat_feature_action",
+        "effect_kinds": ["healing"],
+        "remaining_dm_boundaries": [
+            "condition_cure_choice",
+            "contact_distance_requires_authoritative_position",
+        ],
+    }
+    assert lay_on_hands["automation_status"] == "partial"
+
     sorcerous_restoration = progression_resource_updates(rules["术士"], 5)
     assert sorcerous_restoration["sorcery_restoration"]["max"] == 1
     assert sorcerous_restoration["sorcery_restoration"]["requires_dm_adjudication"] is True
