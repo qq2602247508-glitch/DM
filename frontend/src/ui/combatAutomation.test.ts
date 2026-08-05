@@ -222,7 +222,27 @@ describe("combat automation helpers", () => {
       skill: "游说",
       modifier: 6,
       dc: 12,
+      conditionsOnSuccess: [],
+      effectLabel: null,
     });
+  });
+
+  it("compiles common freeform combat effects into safe rule-block fields", () => {
+    expect(proposeFreeformCheck("我撒泡尿让怪物滑倒", { strength: 16 }, 5, ["运动"]))
+      .toMatchObject({
+        skill: "运动",
+        conditionsOnSuccess: ["prone"],
+        conditionDuration: "target_turn_end",
+        movementOnSuccessFt: null,
+        effectLabel: "倒地",
+      });
+    expect(proposeFreeformCheck("我用盾牌把怪物推开", { strength: 16 }, 5, []))
+      .toMatchObject({
+        conditionsOnSuccess: [],
+        movementOnSuccessFt: 5,
+        movementDirection: "away",
+        effectLabel: "推离 5 尺",
+      });
   });
 
   it("changes enemy target priorities by tactics", () => {

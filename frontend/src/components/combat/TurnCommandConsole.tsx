@@ -842,9 +842,7 @@ export function TurnCommandConsole({
       "error",
     ),
   });
-  const freeformConditions = /滑倒|摔倒|绊倒|失去平衡|推倒/.test(freeform)
-    ? ["prone"]
-    : [];
+  const freeformConditions = check?.conditionsOnSuccess ?? [];
   const executeFreeform = useMutation({
     mutationFn: () => {
       if (!activeCharacter || !check || !target || !freeform.trim()) {
@@ -870,7 +868,9 @@ export function TurnCommandConsole({
         roll_formula: "1d20",
         conditions_on_success: freeformConditions,
         condition_duration: freeformConditions.length ? "target_turn_end" : null,
-        description: `规则助手建议：${check.skill}（${check.abilityLabel}）d20 + ${check.modifier >= 0 ? "+" : ""}${check.modifier}，对抗 DC ${check.dc}。${check.explanation}。${freeformConditions.length ? "成功后目标获得倒地状态，持续到目标回合结束。" : "成功后的叙事效果由 DM 根据输入确认。"}`,
+        movement_on_success_ft: check.movementOnSuccessFt ?? undefined,
+        movement_direction: check.movementDirection ?? undefined,
+        description: `规则助手建议：${check.skill}（${check.abilityLabel}）d20 + ${check.modifier >= 0 ? "+" : ""}${check.modifier}，对抗 DC ${check.dc}。${check.explanation}。${check.effectLabel ? `成功后结构化效果：${check.effectLabel}。` : "成功后的叙事效果由 DM 根据输入确认。"}`,
       });
     },
     onSuccess: () => {
@@ -2366,7 +2366,7 @@ export function TurnCommandConsole({
                 <div className="mt-2 flex flex-wrap gap-2">
                   <select className={selectCls} onChange={(event) => setTargetId(event.target.value)} value={targetId}><option value="">效果目标</option>{possibleTargets.map((fighter) => <option key={fighter.id} value={fighter.id}>{fighter.display_name}</option>)}</select>
                 </div>
-                <p className="mb-0 mt-2 text-amber-200">点击执行后，玩家端会弹出 d20 输入；玩家提交后系统自动计算加值、DC 和积木效果。{freeformConditions.length ? "本例成功会给目标写入倒地状态。" : "没有明确结构化状态时只记录检定结果，DM再做叙事描述。"}</p>
+                <p className="mb-0 mt-2 text-amber-200">点击执行后，玩家端会弹出 d20 输入；玩家提交后系统自动计算加值、DC 和积木效果。{check?.effectLabel ? `本例成功会执行：${check.effectLabel}。` : "没有明确结构化效果时只记录检定结果，DM再做叙事描述。"}</p>
                 <Button className="mt-2" disabled={!target || executeFreeform.isPending} loading={executeFreeform.isPending} onClick={() => executeFreeform.mutate()} size="sm" variant="primary">执行建议并请求玩家掷骰</Button>
               </div>
             ) : null}

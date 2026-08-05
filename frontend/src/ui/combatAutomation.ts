@@ -484,6 +484,11 @@ export function proposeFreeformCheck(
   modifier: number;
   dc: number;
   explanation: string;
+  conditionsOnSuccess: string[];
+  conditionDuration: CombatActionLike["condition_duration"];
+  movementOnSuccessFt: number | null;
+  movementDirection: "away" | "toward" | null;
+  effectLabel: string | null;
 } {
   const rule = CHECK_RULES.find((item) => item.pattern.test(text)) ?? {
     skill: "临场判断",
@@ -500,6 +505,15 @@ export function proposeFreeformCheck(
       : /容易|简单|熟悉/.test(text)
         ? 10
         : 12;
+  const structuredEffect = /滑倒|摔倒|绊倒|失去平衡|推倒/.test(text)
+    ? { conditionsOnSuccess: ["prone"], conditionDuration: "target_turn_end" as const, movementOnSuccessFt: null, movementDirection: null, effectLabel: "倒地" }
+    : /擒抱|抓住|抱住|钳制/.test(text)
+      ? { conditionsOnSuccess: ["grappled"], conditionDuration: "target_turn_end" as const, movementOnSuccessFt: null, movementDirection: null, effectLabel: "擒抱" }
+      : /束缚|捆住|绑住|缠住/.test(text)
+        ? { conditionsOnSuccess: ["restrained"], conditionDuration: "target_turn_end" as const, movementOnSuccessFt: null, movementDirection: null, effectLabel: "束缚" }
+        : /推开|击退|撞飞|吹飞/.test(text)
+          ? { conditionsOnSuccess: [], conditionDuration: null, movementOnSuccessFt: 5, movementDirection: "away" as const, effectLabel: "推离 5 尺" }
+          : { conditionsOnSuccess: [], conditionDuration: null, movementOnSuccessFt: null, movementDirection: null, effectLabel: null };
   return {
     skill: rule.skill,
     ability: rule.ability,
@@ -509,6 +523,7 @@ export function proposeFreeformCheck(
     explanation: proficient
       ? `${rule.label}调整值并加入熟练加值`
       : `${rule.label}调整值；角色卡未标记该技能熟练`,
+    ...structuredEffect,
   };
 }
 
