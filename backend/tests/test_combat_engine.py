@@ -1290,6 +1290,156 @@ def test_advanced_action_windows_are_persisted_only_at_legal_turn_boundaries(
     ) == 2
 
 
+def test_unconsumed_advanced_windows_are_invalidated_at_next_turn_boundary(
+    combat_client: TestClient,
+) -> None:
+    campaign = _campaign(combat_client, "Invalidate advanced windows")
+    base = f"/api/v1/campaigns/{campaign['id']}"
+    combat = combat_client.post(
+        f"{base}/combats", json={"name": "Advanced window expiry"}
+    ).json()
+    high_guard = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "高先攻守卫",
+            "entity_type": "character",
+            "initiative": 25,
+            "hp": 20,
+            "max_hp": 20,
+        },
+    ).json()
+    dragon = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "过期窗口龙",
+            "entity_type": "monster",
+            "initiative": 15,
+            "hp": 40,
+            "max_hp": 40,
+            "snapshot_json": {
+                "actions": [
+                    {
+                        "name": "传奇尾击",
+                        "action_type": "legendary_action",
+                        "legendary_cost": 1,
+                        "legendary_pool_max": 3,
+                        "damage": "1d8",
+                    },
+                    {
+                        "name": "巢穴震击",
+                        "action_type": "lair_action",
+                        "damage": "1d6",
+                    },
+                ],
+                "legendary_actions_remaining": 3,
+            },
+        },
+    ).json()
+    low_guard = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "低先攻冒险者",
+            "entity_type": "character",
+            "initiative": 10,
+            "hp": 20,
+            "max_hp": 20,
+        },
+    ).json()
+    advance_path = f"{base}/combats/{combat['id']}/turns/advance"
+
+    first = combat_client.post(
+        advance_path,
+        headers={"X-Request-ID": "advanced-expiry-lair-open"},
+        json={"combat_version": combat["version"]},
+    )
+    assert first.status_code == 200, first.text
+    first_actions = combat_client.get(f"{base}/combats/{combat['id']}/actions").json()["items"]
+    lair_window = next(
+        item
+        for item in first_actions
+        if item["action_type"] == "eligible_action_window"
+        and item["result_json"]["action_window"]["action_cost"] == "lair_action"
+    )
+
+    current = combat_client.get(f"{base}/combats/{combat['id']}").json()
+    second = combat_client.post(
+        advance_path,
+        headers={"X-Request-ID": "advanced-expiry-close-lair"},
+        json={"combat_version": current["version"]},
+    )
+    assert second.status_code == 200, second.text
+    actions_after_lair_close = combat_client.get(
+        f"{base}/combats/{combat['id']}/actions"
+    ).json()["items"]
+    closed_lair = next(item for item in actions_after_lair_close if item["id"] == lair_window["id"])
+    assert closed_lair["result_json"]["action_window"]["status"] == "invalidated"
+    assert closed_lair["result_json"]["action_window"]["invalidation_reason"] == (
+        "turn_window_closed"
+    )
+
+    current = combat_client.get(f"{base}/combats/{combat['id']}").json()
+    third = combat_client.post(
+        advance_path,
+        headers={"X-Request-ID": "advanced-expiry-legendary-open"},
+        json={"combat_version": current["version"]},
+    )
+    assert third.status_code == 200, third.text
+    third_actions = combat_client.get(f"{base}/combats/{combat['id']}/actions").json()["items"]
+    legendary_window = next(
+        item
+        for item in third_actions
+        if item["action_type"] == "eligible_action_window"
+        and item["result_json"]["action_window"]["action_cost"] == "legendary_action"
+    )
+
+    current = combat_client.get(f"{base}/combats/{combat['id']}").json()
+    fourth = combat_client.post(
+        advance_path,
+        headers={"X-Request-ID": "advanced-expiry-close-legendary"},
+        json={"combat_version": current["version"]},
+    )
+    assert fourth.status_code == 200, fourth.text
+    actions_after_legendary_close = combat_client.get(
+        f"{base}/combats/{combat['id']}/actions"
+    ).json()["items"]
+    closed_legendary = next(
+        item for item in actions_after_legendary_close if item["id"] == legendary_window["id"]
+    )
+    assert closed_legendary["result_json"]["action_window"]["status"] == "invalidated"
+
+    dragon_current = combat_client.get(
+        f"{base}/combats/{combat['id']}/combatants/{dragon['id']}"
+    ).json()
+    guard_current = combat_client.get(
+        f"{base}/combats/{combat['id']}/combatants/{high_guard['id']}"
+    ).json()
+    stale_confirm = combat_client.post(
+        f"{base}/combats/{combat['id']}/actions/confirm",
+        headers={"X-Request-ID": "advanced-expiry-reject-stale"},
+        json={
+            "action_type": "damage",
+            "actor_combatant_id": dragon["id"],
+            "actor_version": dragon_current["version"],
+            "action_cost": "legendary_action",
+            "action_window_id": legendary_window["id"],
+            "legendary_cost": 1,
+            "legendary_pool_max": 3,
+            "action_name": "传奇尾击",
+            "target_combatant_id": high_guard["id"],
+            "target_version": guard_current["version"],
+            "amount": 5,
+            "damage_type": "bludgeoning",
+        },
+    )
+    assert stale_confirm.status_code == 400, stale_confirm.text
+    assert "no longer eligible" in stale_confirm.json()["message"]
+    dragon_after = combat_client.get(
+        f"{base}/combats/{combat['id']}/combatants/{dragon['id']}"
+    ).json()
+    assert dragon_after["snapshot_json"]["legendary_actions_remaining"] == 3
+    assert low_guard["id"] != high_guard["id"]
+
+
 def test_lair_action_player_roll_prompt_consumes_its_window_once(
     combat_client: TestClient,
 ) -> None:

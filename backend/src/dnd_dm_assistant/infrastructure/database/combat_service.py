@@ -1498,7 +1498,11 @@ class CombatEngineService:
         ):
             raise ValueError("advanced action window not found or no longer eligible")
         metadata = (window.result_json or {}).get("action_window")
-        if not isinstance(metadata, dict) or metadata.get("status") != "eligible":
+        if not isinstance(metadata, dict):
+            raise ValueError("advanced action window is already resolved")
+        if metadata.get("status") != "eligible":
+            if metadata.get("status") == "invalidated":
+                raise ValueError("advanced action window is no longer eligible")
             raise ValueError("advanced action window is already resolved")
         if metadata.get("action_cost") != action_cost:
             raise ValueError("advanced action cost does not match the eligible window")
@@ -1996,6 +2000,11 @@ class CombatEngineService:
 
         if active is None:
             return
+        cls._invalidate_stale_advanced_action_windows(
+            session,
+            combat=combat,
+            active=active,
+        )
         previous_active_id = previous_active.id if previous_active is not None else None
         previous_active_name = (
             previous_active.display_name if previous_active is not None else "上一行动单位"
@@ -2190,6 +2199,60 @@ class CombatEngineService:
                         status="confirmed",
                     )
                 )
+
+    @staticmethod
+    def _invalidate_stale_advanced_action_windows(
+        session: Session,
+        *,
+        combat: Combat,
+        active: Combatant,
+    ) -> None:
+        """Close unconsumed legendary/lair windows at the next turn boundary.
+
+        A structured advanced-action window represents one temporal trigger,
+        not a standing permission.  Legendary actions are available only at
+        the end of the specific creature turn that opened the window, and a
+        lair action belongs to the specific initiative-20 boundary.  Keeping
+        an old row selectable after ``advance_turn`` would allow a stale DM or
+        player panel to spend a resource for an event that has already passed.
+        """
+
+        current_window_key = f"{combat.round_number}:{combat.current_turn_index}"
+        windows = session.scalars(
+            select(CombatAction).where(
+                CombatAction.combat_id == combat.id,
+                CombatAction.action_type == "eligible_action_window",
+                CombatAction.status == "confirmed",
+            )
+        ).all()
+        for window in windows:
+            result = dict(window.result_json or {})
+            metadata = result.get("action_window")
+            if not isinstance(metadata, dict):
+                continue
+            if metadata.get("status") != "eligible":
+                continue
+            if metadata.get("action_cost") not in {
+                "legendary_action",
+                "lair_action",
+            }:
+                continue
+            if (
+                metadata.get("window_key") == current_window_key
+                and metadata.get("active_combatant_id") == active.id
+            ):
+                continue
+            window.result_json = {
+                **result,
+                "action_window": {
+                    **metadata,
+                    "status": "invalidated",
+                    "invalidation_reason": "turn_window_closed",
+                    "closed_by_window_key": current_window_key,
+                },
+            }
+            window.version += 1
+            window.updated_at = datetime.now(UTC)
 
     @classmethod
     def _persist_eligible_damage_reaction_windows(
