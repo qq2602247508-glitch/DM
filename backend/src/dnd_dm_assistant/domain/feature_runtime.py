@@ -1183,9 +1183,17 @@ def feature_runtime_definition(
             "resolution_kind": "temporary_healing",
             "healing_formula": "1d8+wisdom_modifier",
             "minimum_healing": 1,
+            "runtime_execution": {
+                "status": "ready",
+                "consumer": "combat_feature_action",
+                "effect_kinds": ["temporary_healing"],
+            },
             "automation_status": "partial",
             "requires_dm_adjudication": True,
-            "partial_reason": "临时生命值可写入；感知调整值和短休减轻力竭分支仍需专用结算。",
+            "partial_reason": (
+                "临时生命值与感知调整值已由执行器结算；"
+                "短休减轻力竭分支仍需专用结算。"
+            ),
             **source,
         }
 
@@ -2167,6 +2175,7 @@ def _feature_action_executor_ready(action: Mapping[str, Any]) -> bool:
         "grant_saving_throw_reroll",
         "grant_roll_die",
         "cunning_action_choice",
+        "temporary_healing",
     }
     if not effect_kinds or not effect_kinds <= supported:
         return False

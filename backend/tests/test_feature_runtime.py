@@ -766,6 +766,12 @@ def test_ranger_tireless_and_nature_veil_have_executable_runtime_contracts() -> 
     registry = _registry(_core_rules()["游侠"])
     assert registry["actions"]["tireless"]["resolution_kind"] == "temporary_healing"
     assert registry["actions"]["tireless"]["resource_cost"] == 1
+    assert registry["actions"]["tireless"]["runtime_execution"] == {
+        "status": "ready",
+        "consumer": "combat_feature_action",
+        "effect_kinds": ["temporary_healing"],
+    }
+    assert registry["actions"]["tireless"]["automation_status"] == "partial"
     assert registry["actions"]["nature_veil"]["effects"] == [
         {
             "kind": "activate_timed_condition",

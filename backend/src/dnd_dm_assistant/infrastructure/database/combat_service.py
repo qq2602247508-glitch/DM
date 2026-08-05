@@ -9913,6 +9913,8 @@ class CombatEngineService:
                     snapshot["feature_dice"] = feature_dice
                     actor.snapshot_json = snapshot
                     result["roll_die_granted"] = {"die_key": die_key, "value": die_value}
+                elif kind == "temporary_healing":
+                    result["temporary_healing_effect"] = True
                 elif kind == "requires_dm_choice":
                     raise ValueError(str(effect.get("reason") or "该职业特性需要 DM 选择分支"))
 
@@ -9943,9 +9945,23 @@ class CombatEngineService:
                 total = command.healing_total
                 if total is None or total < 1:
                     raise ValueError("该职业特性需要填写本次临时生命骰最终总值")
+                formula = str(action.get("healing") or action.get("healing_formula") or "")
+                if formula == "1d8+wisdom_modifier" and not command.dm_override:
+                    scores = dict(character.ability_scores or {}) if character is not None else {}
+                    raw_wisdom = scores.get("wisdom", scores.get("感知"))
+                    if not isinstance(raw_wisdom, int):
+                        raise ValueError("不知疲倦缺少权威感知值，需由 DM 裁定")
+                    wisdom_modifier = floor((raw_wisdom - 10) / 2)
+                    minimum = max(1, 1 + wisdom_modifier)
+                    maximum = 8 + wisdom_modifier
+                    if not minimum <= total <= maximum:
+                        raise ValueError(
+                            f"临时生命骰结果应在 {minimum}–{maximum} 之间"
+                        )
                 before_temporary = target.temporary_hp
                 target.temporary_hp = max(target.temporary_hp, total)
                 result["temporary_healing"] = {
+                    "formula": formula,
                     "reported_total": total,
                     "temporary_hp_before": before_temporary,
                     "temporary_hp_after": target.temporary_hp,

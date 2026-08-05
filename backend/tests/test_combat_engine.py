@@ -8572,6 +8572,101 @@ def test_nature_veil_spends_resource_and_expires_at_next_turn_start(
     )["conditions"]
 
 
+def test_tireless_validates_wisdom_healing_and_writes_temporary_hp(
+    combat_client: TestClient,
+) -> None:
+    campaign = _campaign(combat_client, "Tireless runtime")
+    base = f"/api/v1/campaigns/{campaign['id']}"
+    character = combat_client.post(
+        f"{base}/characters",
+        json={
+            "name": "不知疲倦游侠",
+            "hp": 20,
+            "max_hp": 20,
+            "ability_scores": {"wisdom": 16},
+            "resources": {"tireless": {"current": 2, "max": 3}},
+        },
+    ).json()
+    definition = feature_runtime_definition(
+        feature_name="不知疲倦",
+        class_name="游侠",
+        class_level=10,
+        resources={"tireless": {"current": 2, "max": 3}},
+        tracked_resource_keys=["tireless"],
+    )
+    registry = compile_feature_runtime_registry(
+        [
+            {
+                "name": "不知疲倦",
+                "class_name": "游侠",
+                "class_level": 10,
+                "runtime": {"registry": definition},
+            }
+        ]
+    )
+    combat = combat_client.post(
+        f"{base}/combats", json={"name": "不知疲倦测试战斗"}
+    ).json()
+    actor = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "不知疲倦游侠",
+            "entity_type": "character",
+            "entity_id": character["id"],
+            "initiative": 20,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {"feature_runtime": registry},
+        },
+    ).json()
+    combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "训练木桩",
+            "entity_type": "monster",
+            "initiative": 10,
+            "hp": 10,
+            "max_hp": 10,
+        },
+    )
+
+    invalid = combat_client.post(
+        f"{base}/combats/{combat['id']}/feature-actions/confirm",
+        headers={"X-Request-ID": "tireless-invalid"},
+        json={
+            "actor_combatant_id": actor["id"],
+            "actor_version": actor["version"],
+            "feature_id": "tireless",
+            "healing_total": 12,
+            "target_combatant_id": actor["id"],
+            "target_version": actor["version"],
+        },
+    )
+    assert invalid.status_code == 400
+    assert "4–11" in invalid.json()["message"]
+
+    confirmed = combat_client.post(
+        f"{base}/combats/{combat['id']}/feature-actions/confirm",
+        headers={"X-Request-ID": "tireless-valid"},
+        json={
+            "actor_combatant_id": actor["id"],
+            "actor_version": actor["version"],
+            "feature_id": "tireless",
+            "healing_total": 7,
+            "target_combatant_id": actor["id"],
+            "target_version": actor["version"],
+        },
+    )
+    assert confirmed.status_code == 200, confirmed.text
+    assert confirmed.json()["result"]["temporary_healing"]["formula"] == (
+        "1d8+wisdom_modifier"
+    )
+    assert confirmed.json()["result"]["temporary_healing"]["temporary_hp_after"] == 7
+    assert confirmed.json()["actor"]["temporary_hp"] == 7
+    assert confirmed.json()["result"]["resource_before"] == 2
+    assert confirmed.json()["result"]["resource_after"] == 1
+
+
 def test_condition_matrix_changes_saves_and_petrified_damage(
     combat_client: TestClient,
 ) -> None:
