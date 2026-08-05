@@ -187,6 +187,110 @@ def test_failed_player_save_persists_feature_reroll_window_before_resolution(
     assert second.json()["target"]["hp"] == 20
 
 
+def test_feature_resource_reroll_opens_after_failure_and_uses_second_roll(
+    combat_client: TestClient,
+) -> None:
+    campaign, combat, actor = _setup(combat_client)
+    character_response = combat_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/characters",
+        json={
+            "name": "不屈资源角色",
+            "class_name": "战士",
+            "level": 9,
+            "hp": 20,
+            "max_hp": 20,
+            "resources": {"indomitable": {"current": 1, "max": 1}},
+        },
+    )
+    assert character_response.status_code == 201, character_response.text
+    character = character_response.json()
+    target_response = combat_client.post(
+        f"{_root(campaign, combat)}/combatants",
+        json={
+            "display_name": "自动不屈目标",
+            "initiative": 10,
+            "hp": 20,
+            "max_hp": 20,
+        },
+    )
+    assert target_response.status_code == 201, target_response.text
+    target = target_response.json()
+    registry = {
+        "resources": {"indomitable": {"current": 1, "max": 1}},
+        "actions": {
+            "indomitable": {
+                "id": "indomitable",
+                "name": "不屈",
+                "kind": "feature_action",
+                "resource_key": "indomitable",
+                "resource_cost": 1,
+                "resolution_kind": "saving_throw_reroll",
+                "activation_window": "after_failed_saving_throw",
+            }
+        },
+    }
+    patched = combat_client.patch(
+        _combatant_path(campaign, combat, target["id"]),
+        headers={"If-Match": f'"{target["version"]}"'},
+        json={
+            "entity_type": "character",
+            "entity_id": character["id"],
+            "snapshot_json": {"feature_runtime": registry},
+        },
+    )
+    assert patched.status_code == 200, patched.text
+    target = patched.json()
+    prompt = combat_client.post(
+        f"{_root(campaign, combat)}/actions/player-rolls/pending",
+        headers={"X-Request-ID": "resource-reroll-prompt"},
+        json={
+            "actor_combatant_id": actor["id"],
+            "actor_version": actor["version"],
+            "target_combatant_id": target["id"],
+            "target_version": target["version"],
+            "action_name": "恐惧波动",
+            "resolution_type": "saving_throw",
+            "dc": 15,
+            "ability": "wisdom",
+            "damage_on_failure": 12,
+            "damage_type": "psychic",
+        },
+    )
+    assert prompt.status_code == 200, prompt.text
+    action = prompt.json()["action"]
+    first = combat_client.post(
+        f"{_root(campaign, combat)}/actions/player-rolls/{action['id']}/confirm",
+        headers={"X-Request-ID": "resource-reroll-first"},
+        json={"action_version": action["version"], "roll_total": 5},
+    )
+    assert first.status_code == 200, first.text
+    window = first.json()["resolution"]["feature_reroll_window"]
+    assert window["feature_id"] == "indomitable"
+    assert window["resource_key"] == "indomitable"
+    second = combat_client.post(
+        f"{_root(campaign, combat)}/actions/player-rolls/{action['id']}/confirm",
+        headers={"X-Request-ID": "resource-reroll-second"},
+        json={
+            "action_version": first.json()["action"]["version"],
+            "roll_total": 18,
+            "roll_totals": [18, 5],
+            "use_feature_reroll": True,
+        },
+    )
+    assert second.status_code == 200, second.text
+    resolution = second.json()["resolution"]
+    assert resolution["phase"] == "resolved"
+    assert resolution["success"] is False
+    assert resolution["roll_total"] == 5
+    assert resolution["feature_reroll_consumed"]["resource"] == "indomitable"
+    assert resolution["damage"] == 12
+    character_after = combat_client.get(
+        f"/api/v1/campaigns/{campaign['id']}/characters/{character['id']}"
+    )
+    assert character_after.status_code == 200, character_after.text
+    assert character_after.json()["resources"]["indomitable"]["current"] == 0
+
+
 def test_poisoned_skill_check_cancels_structured_advantage_through_api(
     combat_client: TestClient,
 ) -> None:

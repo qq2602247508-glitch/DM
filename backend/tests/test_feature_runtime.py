@@ -409,6 +409,9 @@ def test_common_feature_contracts_expose_typed_effects_and_passive_defense() -> 
     assert indomitable["actions"]["indomitable"]["effects"] == [
         {"kind": "grant_saving_throw_reroll", "scope": "self"}
     ]
+    assert indomitable["actions"]["indomitable"]["automation_status"] == "full"
+    assert indomitable["actions"]["indomitable"]["requires_dm_adjudication"] is False
+    assert feature_runtime_action_projections(indomitable) == []
 
     evasion = compile_feature_runtime_registry(
         [

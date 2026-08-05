@@ -3242,6 +3242,78 @@ class CombatEngineService:
         return [item for item in defenses or () if isinstance(item, dict)]
 
     @classmethod
+    def _feature_saving_throw_reroll_options(
+        cls,
+        target: Combatant,
+        *,
+        session: Session | None = None,
+    ) -> list[dict[str, object]]:
+        """Return explicit saving-throw rerolls available to this combatant.
+
+        Older combat snapshots stored a temporary reroll token.  Newer
+        snapshots retain the compiled feature action and the character's
+        authoritative resource instead.  Support both representations while
+        keeping the trigger fail-closed: only actions explicitly marked for a
+        failed saving throw are considered.
+        """
+
+        snapshot = dict(target.snapshot_json or {})
+        options: list[dict[str, object]] = []
+        raw_tokens = snapshot.get("feature_saving_throw_rerolls")
+        if isinstance(raw_tokens, list):
+            for item in raw_tokens:
+                if not isinstance(item, dict) or item.get("available") is not True:
+                    continue
+                options.append(
+                    {
+                        "kind": "token",
+                        "feature_id": str(item.get("feature_id") or ""),
+                        "source": str(item.get("source") or "职业特性重掷"),
+                    }
+                )
+
+        if session is None or target.entity_type != "character" or not target.entity_id:
+            return options
+        runtime = snapshot.get("feature_runtime")
+        actions = runtime.get("actions") if isinstance(runtime, dict) else None
+        if not isinstance(actions, dict):
+            return options
+        character = session.get(Character, target.entity_id)
+        if character is None:
+            return options
+        resources = character.resources if isinstance(character.resources, dict) else {}
+        for feature_id, raw_action in actions.items():
+            if not isinstance(raw_action, dict):
+                continue
+            if (
+                raw_action.get("kind") != "feature_action"
+                or raw_action.get("resolution_kind") != "saving_throw_reroll"
+                or raw_action.get("activation_window") != "after_failed_saving_throw"
+            ):
+                continue
+            resource_key = str(raw_action.get("resource_key") or "").strip()
+            resource_cost = cls._state_int(raw_action.get("resource_cost"), 1)
+            raw_resource = resources.get(resource_key)
+            current = (
+                cls._state_int(raw_resource.get("current"))
+                if isinstance(raw_resource, dict)
+                else 0
+            )
+            if not resource_key or resource_cost < 1 or current < resource_cost:
+                continue
+            options.append(
+                {
+                    "kind": "resource",
+                    "feature_id": str(feature_id),
+                    "source": str(raw_action.get("name") or feature_id),
+                    "resource_key": resource_key,
+                    "resource_cost": resource_cost,
+                    "resource_before": current,
+                }
+            )
+        return options
+
+    @classmethod
     def _suppresses_incoming_attack_advantage(cls, combatant: Combatant) -> bool:
         """Return whether a typed defense cancels all incoming advantage."""
 
@@ -6763,6 +6835,7 @@ class CombatEngineService:
         use_legendary_resistance: bool,
         use_feature_reroll: bool,
         consume: bool,
+        session: Session | None = None,
     ) -> dict[str, object]:
         snapshot = dict(target.snapshot_json or {})
         raw_defenses = snapshot.get("advanced_defenses")
@@ -6797,34 +6870,99 @@ class CombatEngineService:
         if use_feature_reroll:
             if magic_resistance and is_magical:
                 raise ValueError("魔法抗性与职业特性重掷不能在同一次豁免中叠加")
-            raw_rerolls = snapshot.get("feature_saving_throw_rerolls")
-            rerolls = list(raw_rerolls) if isinstance(raw_rerolls, list) else []
-            available_index = next(
-                (
-                    index
-                    for index, item in enumerate(rerolls)
-                    if isinstance(item, dict) and item.get("available") is True
-                ),
+            reroll_option = next(
+                iter(cls._feature_saving_throw_reroll_options(target, session=session)),
                 None,
             )
-            if available_index is None:
+            if reroll_option is None:
                 raise ValueError("目标没有可用的职业特性豁免重掷")
             if len(rolls) < 2:
                 raise ValueError("职业特性重掷需要提交第一次与重掷后的两个总值")
-            effective_roll = max(rolls)
+            effective_roll = rolls[1]
             feature_reroll_consumed = {
-                "resource": "feature_saving_throw_reroll",
-                "before": len(rerolls),
-                "after": len(rerolls) - 1,
+                "feature_id": reroll_option.get("feature_id"),
+                "resource": (
+                    "feature_saving_throw_reroll"
+                    if reroll_option.get("kind") == "token"
+                    else reroll_option.get("resource_key")
+                ),
+                "before": (
+                    len(
+                        [
+                            item
+                            for item in snapshot.get("feature_saving_throw_rerolls", [])
+                            if isinstance(item, dict) and item.get("available") is True
+                        ]
+                    )
+                    if reroll_option.get("kind") == "token"
+                    else reroll_option.get("resource_before")
+                ),
+                "after": None,
             }
             if consume:
-                rerolls[available_index] = {
-                    **rerolls[available_index],
-                    "available": False,
-                }
-                snapshot["feature_saving_throw_rerolls"] = rerolls
-                target.snapshot_json = snapshot
-            applied.append("feature_saving_throw_reroll")
+                if reroll_option.get("kind") == "token":
+                    raw_rerolls = snapshot.get("feature_saving_throw_rerolls")
+                    rerolls = list(raw_rerolls) if isinstance(raw_rerolls, list) else []
+                    available_index = next(
+                        (
+                            index
+                            for index, item in enumerate(rerolls)
+                            if isinstance(item, dict)
+                            and item.get("available") is True
+                            and str(item.get("feature_id") or "")
+                            == str(reroll_option.get("feature_id") or "")
+                        ),
+                        None,
+                    )
+                    if available_index is None:
+                        raise ValueError("目标的职业特性重掷已被其他操作消费")
+                    rerolls[available_index] = {
+                        **rerolls[available_index],
+                        "available": False,
+                    }
+                    snapshot["feature_saving_throw_rerolls"] = rerolls
+                    feature_reroll_consumed["after"] = feature_reroll_consumed["before"] - 1
+                    target.snapshot_json = snapshot
+                else:
+                    if session is None or not target.entity_id:
+                        raise ValueError("职业特性资源重掷缺少角色资源上下文")
+                    character = session.get(Character, target.entity_id)
+                    if character is None:
+                        raise ValueError("职业特性资源重掷的角色不存在")
+                    resource_key = str(reroll_option.get("resource_key") or "")
+                    raw_resource = (character.resources or {}).get(resource_key)
+                    resource = dict(raw_resource) if isinstance(raw_resource, dict) else {}
+                    before = cls._state_int(resource.get("current"))
+                    cost = cls._state_int(reroll_option.get("resource_cost"), 1)
+                    if before < cost:
+                        raise ValueError(f"职业特性资源不足：{resource_key}")
+                    resource["current"] = before - cost
+                    resources = dict(character.resources or {})
+                    resources[resource_key] = resource
+                    character.resources = resources
+                    character.version += 1
+                    character.updated_at = datetime.now(UTC)
+                    runtime = snapshot.get("feature_runtime")
+                    if isinstance(runtime, dict):
+                        runtime = dict(runtime)
+                        runtime_resources = runtime.get("resources")
+                        if isinstance(runtime_resources, dict):
+                            runtime_resources = dict(runtime_resources)
+                            runtime_resource = runtime_resources.get(resource_key)
+                            if isinstance(runtime_resource, dict):
+                                runtime_resources[resource_key] = {
+                                    **runtime_resource,
+                                    "current": before - cost,
+                                }
+                                runtime["resources"] = runtime_resources
+                        snapshot["feature_runtime"] = runtime
+                    feature_reroll_consumed["after"] = before - cost
+                    target.snapshot_json = snapshot
+            else:
+                feature_reroll_consumed["after"] = feature_reroll_consumed["before"]
+            applied.append(
+                f"feature:{reroll_option.get('feature_id') or 'saving_throw_reroll'}"
+            )
         elif (
             (magic_resistance and is_magical)
             or feature_advantage
@@ -7079,6 +7217,7 @@ class CombatEngineService:
                 use_legendary_resistance=command.use_legendary_resistance,
                 use_feature_reroll=command.use_feature_reroll,
                 consume=consume_defenses,
+                session=session,
             )
         success = bool(defense["success"])
         damage = cls._state_int(defense["damage"])
@@ -7087,17 +7226,10 @@ class CombatEngineService:
             and not success
             and not command.use_feature_reroll
         ):
-            raw_rerolls = dict(target.snapshot_json or {}).get(
-                "feature_saving_throw_rerolls"
-            )
             available_reroll = next(
-                (
-                    item
-                    for item in raw_rerolls
-                    if isinstance(item, dict) and item.get("available") is True
-                ),
+                iter(cls._feature_saving_throw_reroll_options(target, session=session)),
                 None,
-            ) if isinstance(raw_rerolls, list) else None
+            )
             if available_reroll is not None:
                 return {
                     "phase": "awaiting_feature_reroll",
@@ -7117,6 +7249,14 @@ class CombatEngineService:
                         "original_roll_total": defense["effective_roll_total"],
                         "dc": dc,
                         "requires_second_roll": True,
+                        **(
+                            {
+                                "resource_key": available_reroll.get("resource_key"),
+                                "resource_before": available_reroll.get("resource_before"),
+                            }
+                            if available_reroll.get("resource_key")
+                            else {}
+                        ),
                     },
                     "feature_reroll_consumed": None,
                     "defense_resource_consumed": None,
@@ -9179,6 +9319,8 @@ class CombatEngineService:
             )
             if action is None or action.get("kind") != "feature_action":
                 raise ValueError("该职业特性没有可执行的运行时积木")
+            if action.get("activation_window") == "after_failed_saving_throw":
+                raise ValueError("该职业特性只能在失败豁免后通过重掷窗口使用")
             if command.feature_id == "action_surge":
                 turn_key = f"{combat.round_number}:{combat.current_turn_index}"
                 if (actor.snapshot_json or {}).get("action_surge_turn_key") == turn_key:

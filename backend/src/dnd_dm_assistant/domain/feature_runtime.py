@@ -964,9 +964,14 @@ def feature_runtime_definition(
                 "resolution_kind": "saving_throw_reroll",
                 "activation_window": "after_failed_saving_throw",
                 "effects": [{"kind": "grant_saving_throw_reroll", "scope": "self"}],
-                "automation_status": "partial",
-                "requires_dm_adjudication": True,
-                "partial_reason": "需要在失败豁免后打开即时重掷窗口；当前执行器只能登记重掷资格。",
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "saving_throw_resolution",
+                    "effect_kinds": ["grant_saving_throw_reroll"],
+                    "remaining_dm_boundaries": [],
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
                 **source,
             }
 
@@ -2105,6 +2110,9 @@ def feature_runtime_action_projections(
     projections: list[dict[str, Any]] = []
     for feature_id, raw in raw_actions.items():
         if not isinstance(raw, Mapping) or raw.get("kind") != "feature_action":
+            continue
+        if raw.get("activation_window") == "after_failed_saving_throw":
+            # Event-driven prompt, not a free-standing combat button.
             continue
         effects = raw.get("effects")
         needs_dm_choice = any(
