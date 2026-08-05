@@ -4314,6 +4314,119 @@ def test_structured_condition_round_duration_expires_and_restores_previous_state
     assert restored["movement_remaining_ft"] == 30
 
 
+def test_condition_end_triggers_fire_at_turn_and_round_boundaries(
+    combat_client: TestClient,
+) -> None:
+    """Explicit boundary predicates end structured conditions automatically."""
+
+    campaign = _campaign(combat_client, "Condition boundary triggers")
+    base = f"/api/v1/campaigns/{campaign['id']}"
+    combat = combat_client.post(
+        f"{base}/combats", json={"name": "Condition boundary combat"}
+    ).json()
+    source = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "状态来源",
+            "initiative": 20,
+            "hp": 20,
+            "max_hp": 20,
+        },
+    ).json()
+    target_a = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "目标 A",
+            "initiative": 10,
+            "hp": 20,
+            "max_hp": 20,
+        },
+    ).json()
+    target_b = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "目标 B",
+            "initiative": 5,
+            "hp": 20,
+            "max_hp": 20,
+        },
+    ).json()
+    effect_path = f"{base}/combats/{combat['id']}/effects/confirm"
+
+    def apply_condition(
+        target: dict[str, Any],
+        request_id: str,
+        end_trigger: str,
+    ) -> dict[str, Any]:
+        response = combat_client.post(
+            effect_path,
+            headers={"X-Request-ID": request_id},
+            json={
+                "target_combatant_id": target["id"],
+                "target_version": target["version"],
+                "source_combatant_id": source["id"],
+                "source_version": source["version"],
+                "name": request_id,
+                "effect_type": "condition",
+                "details_json": {
+                    "rule_block": {
+                        "kind": "condition",
+                        "condition": "中毒",
+                        "operation": "apply",
+                        "end_triggers": [end_trigger],
+                    }
+                },
+                "duration_unit": "until_removed",
+            },
+        )
+        assert response.status_code == 200, response.text
+        return response.json()
+
+    target_a_effect = apply_condition(target_a, "target-turn-end", "target_turn_end")
+    target_b_effect = apply_condition(target_b, "source-turn-start", "source_turn_start")
+    assert "中毒" in target_a_effect["target"]["conditions"]
+    assert "中毒" in target_b_effect["target"]["conditions"]
+
+    first = combat_client.post(
+        f"{base}/combats/{combat['id']}/turns/advance",
+        headers={"X-Request-ID": "condition-boundary-to-a"},
+        json={"combat_version": combat["version"]},
+    )
+    assert first.status_code == 200, first.text
+    assert first.json()["active_combatant"]["id"] == target_a["id"]
+    assert "中毒" in first.json()["active_combatant"]["conditions"]
+
+    second = combat_client.post(
+        f"{base}/combats/{combat['id']}/turns/advance",
+        headers={"X-Request-ID": "condition-boundary-to-b"},
+        json={"combat_version": first.json()["combat"]["version"]},
+    )
+    assert second.status_code == 200, second.text
+    assert second.json()["active_combatant"]["id"] == target_b["id"]
+    assert target_a_effect["effect"]["id"] in {
+        item["id"] for item in second.json()["predicated_effects"]
+    }
+    target_a_after = combat_client.get(
+        f"{base}/combats/{combat['id']}/combatants/{target_a['id']}"
+    ).json()
+    assert "中毒" not in target_a_after["conditions"]
+
+    third = combat_client.post(
+        f"{base}/combats/{combat['id']}/turns/advance",
+        headers={"X-Request-ID": "condition-boundary-to-source"},
+        json={"combat_version": second.json()["combat"]["version"]},
+    )
+    assert third.status_code == 200, third.text
+    assert third.json()["active_combatant"]["id"] == source["id"]
+    assert target_b_effect["effect"]["id"] in {
+        item["id"] for item in third.json()["predicated_effects"]
+    }
+    target_b_after = combat_client.get(
+        f"{base}/combats/{combat['id']}/combatants/{target_b['id']}"
+    ).json()
+    assert "中毒" not in target_b_after["conditions"]
+
+
 def test_turn_start_condition_expiry_refreshes_new_turn_resources(
     combat_client: TestClient,
 ) -> None:

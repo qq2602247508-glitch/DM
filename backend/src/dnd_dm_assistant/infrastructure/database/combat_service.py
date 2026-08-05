@@ -3714,6 +3714,30 @@ class CombatEngineService:
         combat = session.get(Combat, effect.combat_id)
         for trigger in triggers:
             if trigger in {
+                "target_turn_end",
+                "on_target_turn_end",
+            } and "turn_end" in kinds and target is not None and target.id in event_ids:
+                return "状态目标回合结束，满足显式结束条件"
+            if trigger in {
+                "source_turn_end",
+                "on_source_turn_end",
+            } and "turn_end" in kinds and source is not None and source.id in event_ids:
+                return "状态来源回合结束，满足显式结束条件"
+            if trigger in {
+                "target_turn_start",
+                "on_target_turn_start",
+            } and "turn_start" in kinds and target is not None and target.id in event_ids:
+                return "状态目标回合开始，满足显式结束条件"
+            if trigger in {
+                "source_turn_start",
+                "on_source_turn_start",
+            } and "turn_start" in kinds and source is not None and source.id in event_ids:
+                return "状态来源回合开始，满足显式结束条件"
+            if trigger in {"round_end", "on_round_end"} and "round_end" in kinds:
+                return "轮次结束，满足显式结束条件"
+            if trigger in {"round_start", "on_round_start"} and "round_start" in kinds:
+                return "轮次开始，满足显式结束条件"
+            if trigger in {
                 "target_takes_damage",
                 "target_damaged",
                 "on_target_damage",
@@ -10544,6 +10568,33 @@ class CombatEngineService:
                 session,
                 combat,
                 now=now,
+            )
+            boundary_predicated_effects: list[CombatEffect] = []
+            boundary_predicated_summons: list[Combatant] = []
+            boundary_events: list[tuple[set[str], set[str]]] = []
+            if previous_active is not None:
+                boundary_events.append(({previous_active.id}, {"turn_end"}))
+            if wrapped:
+                boundary_events.append((set(), {"round_end"}))
+            boundary_events.append(({active.id}, {"turn_start"}))
+            if wrapped:
+                boundary_events.append((set(), {"round_start"}))
+            for event_combatant_ids, event_kinds in boundary_events:
+                ended, ended_summons = self._end_predicated_effects(
+                    session,
+                    combat,
+                    now=now,
+                    event_combatant_ids=event_combatant_ids,
+                    event_kinds=event_kinds,
+                    event_only=True,
+                )
+                boundary_predicated_effects.extend(ended)
+                boundary_predicated_summons.extend(ended_summons)
+            predicated_effects = list(
+                dict.fromkeys([*predicated_effects, *boundary_predicated_effects])
+            )
+            predicated_summons = list(
+                dict.fromkeys([*predicated_summons, *boundary_predicated_summons])
             )
             due_effects = session.scalars(
                 select(CombatEffect).where(
