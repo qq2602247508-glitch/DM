@@ -206,6 +206,48 @@ def test_advancement_preview_confirm_and_idempotency(
     assert replay.json()["advancement_record_id"] == result["advancement_record_id"]
 
 
+def test_advancement_materializes_all_prior_class_feature_levels(
+    advancement_client: TestClient,
+) -> None:
+    campaign = _campaign(advancement_client)
+    created = advancement_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/characters",
+        json={
+            "name": "补齐职业运行时",
+            "class_name": "战士",
+            "level": 1,
+            "experience": 900,
+            "hp": 12,
+            "max_hp": 12,
+            "ability_scores": {"constitution": 14, "strength": 16},
+            "class_levels": {"战士": 1},
+        },
+    ).json()
+
+    response = advancement_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/characters/{created['id']}"
+        "/advancement/preview",
+        json={
+            "character_version": created["version"],
+            "class_name": "战士",
+            "dm_override_reason": "运行时物化夹具不重复构造法术选择",
+        },
+    )
+    assert response.status_code == 200, response.text
+    preview = response.json()
+    class_features = [
+        item
+        for item in preview["after"]["features"]
+        if isinstance(item, dict)
+        and item.get("kind") == "class_feature"
+        and item.get("class_name") == "战士"
+    ]
+    assert {int(item["class_level"]) for item in class_features} == {1, 2}
+    assert preview["after"]["feature_runtime"]["progression"]["class_levels"] == {
+        "战士": 2
+    }
+
+
 def test_level_three_requires_valid_subclass(
     advancement_client: TestClient,
 ) -> None:

@@ -334,6 +334,39 @@ class AdvancementService:
             known.add(identity)
         return result
 
+    @staticmethod
+    def _replace_class_progression_grants(
+        existing: list[Any],
+        *,
+        class_name: str,
+        grants: list[dict[str, Any]],
+    ) -> list[Any]:
+        """Rebuild one class's derived grants without touching user choices.
+
+        Advancement records written before the runtime registry existed can
+        contain only the feature gained on the latest level.  Keeping those
+        rows forever makes a level-6 character behave as if its level-1/2
+        features were never granted.  Replacing only derived entries lets a
+        preview repair that omission while preserving feats, feature choices,
+        ability-score grants, DM notes and entries owned by another class.
+        """
+
+        derived_kinds = {
+            "class_feature",
+            "class_scaling",
+            "proficiency_bonus",
+        }
+        preserved = [
+            deepcopy(item)
+            for item in existing
+            if not (
+                isinstance(item, dict)
+                and str(item.get("class_name") or "") == class_name
+                and str(item.get("kind") or "") in derived_kinds
+            )
+        ]
+        return AdvancementService._merge_feature_grants(preserved, grants)
+
     def _validate_spell_choices(
         self,
         *,
@@ -984,6 +1017,40 @@ class AdvancementService:
             }
             for key, update in scaling_updates.items()
         ]
+        # Materialize the complete class progression in the character
+        # snapshot.  A character imported at level 5, or one upgraded from a
+        # legacy snapshot that stored only the latest grant, must still expose
+        # every level-1..5 runtime contract to combat hydration.
+        all_core_features = [
+            grant
+            for class_level in range(1, target_class_level + 1)
+            for grant in core_feature_grants(
+                rule,
+                class_level,
+                ability_scores=ability_scores,
+            )
+        ]
+        all_scaling_features = [
+            {
+                "name": str(update["label"]),
+                "kind": "class_scaling",
+                "class_name": class_name,
+                "class_level": class_level,
+                "scaling_key": key,
+                "value": update["value"],
+                "value_kind": update["value_kind"],
+                "source_record_id": rule.source_record_id,
+                "source_path": rule.source_path,
+                "rule_year": rule.rule_year,
+                "runtime": {
+                    "automation_status": "partial",
+                    "requires_dm_adjudication": True,
+                    "note": "成长表数值已写入车卡；其对具体检定或伤害的影响由 DM 裁定。",
+                },
+            }
+            for class_level in range(1, target_class_level + 1)
+            for key, update in progression_scaling_updates(rule, class_level).items()
+        ]
         ability_score_grant = (
             {
                 "name": "属性值提升",
@@ -1008,6 +1075,22 @@ class AdvancementService:
             if ability_increases
             else None
         )
+        chosen_features = [
+            {
+                "name": str(choice),
+                "kind": "feature_choice",
+                "class_name": class_name,
+                "class_level": target_class_level,
+                "source_record_id": rule.source_record_id,
+                "rule_year": rule.rule_year,
+                "runtime": {
+                    "automation_status": "dm_only",
+                    "requires_dm_adjudication": True,
+                    "note": "成长表只确认选择数量；具体选项前置条件和效果由 DM 复核。",
+                },
+            }
+            for choice in requested_feature_choices
+        ]
         proficiency_bonus_grant = {
             "name": "熟练加值",
             "kind": "proficiency_bonus",
@@ -1029,25 +1112,9 @@ class AdvancementService:
                 "note": "熟练加值由总角色等级确定，并可由运行时 registry 直接读取。",
             },
         }
-        chosen_features = [
-            {
-                "name": str(choice),
-                "kind": "feature_choice",
-                "class_name": class_name,
-                "class_level": target_class_level,
-                "source_record_id": rule.source_record_id,
-                "rule_year": rule.rule_year,
-                "runtime": {
-                    "automation_status": "dm_only",
-                    "requires_dm_adjudication": True,
-                    "note": "成长表只确认选择数量；具体选项前置条件和效果由 DM 复核。",
-                },
-            }
-            for choice in requested_feature_choices
-        ]
         grants_to_persist = [
-            *new_features,
-            *scaling_features,
+            *all_core_features,
+            *all_scaling_features,
             *([ability_score_grant] if ability_score_grant is not None else []),
             proficiency_bonus_grant,
             *list(subclass_runtime["grants"]),
@@ -1055,14 +1122,20 @@ class AdvancementService:
         ]
         if feat_grant:
             grants_to_persist.append(dict(feat_grant))
-        after_features = self._merge_feature_grants(
+        after_features = self._replace_class_progression_grants(
             list(character.features or []),
-            grants_to_persist,
+            class_name=class_name,
+            grants=grants_to_persist,
         )
+        all_core_actions = [
+            action
+            for class_level in range(1, target_class_level + 1)
+            for action in core_runtime_actions(rule, class_level)
+        ]
         after_actions = self._merge_runtime_actions(
             list(character.actions or []),
             [
-                *core_runtime_actions(rule, target_class_level),
+                *all_core_actions,
                 *list(subclass_runtime["actions"]),
             ],
         )
