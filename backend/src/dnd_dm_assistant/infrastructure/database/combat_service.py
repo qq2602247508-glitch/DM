@@ -6861,6 +6861,8 @@ class CombatEngineService:
         command: PlayerRollResolutionCommand,
         *,
         consume_defenses: bool = False,
+        session: Session | None = None,
+        combat: Combat | None = None,
     ) -> dict[str, Any]:
         request = action.request_json
         dc = int(str(request["dc"]))
@@ -6884,21 +6886,42 @@ class CombatEngineService:
                 if item.get("operation") == "disadvantage"
             ]
             poisoned_disadvantage = cls._has_condition(target, "poisoned")
+            frightened_disadvantage = False
+            if (
+                session is not None
+                and combat is not None
+                and cls._has_condition(target, "frightened")
+            ):
+                frightened_disadvantage = (
+                    cls._frightened_source_visibility(session, combat, target) is True
+                )
             rolls = list(command.roll_totals) if command.roll_totals else [command.roll_total]
-            if feature_advantage or feature_disadvantage or poisoned_disadvantage:
+            if (
+                feature_advantage
+                or feature_disadvantage
+                or poisoned_disadvantage
+                or frightened_disadvantage
+            ):
                 if len(rolls) < 2:
                     raise ValueError(
                         "structured ability-check advantage/disadvantage requires two "
                         "reported roll totals; the server will not invent the second roll"
                     )
                 has_advantage = bool(feature_advantage)
-                has_disadvantage = bool(feature_disadvantage) or poisoned_disadvantage
+                has_disadvantage = (
+                    bool(feature_disadvantage)
+                    or poisoned_disadvantage
+                    or frightened_disadvantage
+                )
                 poisoned_source = "condition:poisoned_disadvantage_check"
+                frightened_source = "condition:frightened_disadvantage_check"
                 if has_advantage and has_disadvantage:
                     effective_roll = rolls[0]
                     applied = ["ability_check_advantage_disadvantage_cancelled"]
                     if poisoned_disadvantage:
                         applied.append(poisoned_source)
+                    if frightened_disadvantage:
+                        applied.append(frightened_source)
                 elif has_advantage:
                     effective_roll = max(rolls[:2])
                     applied = [f"feature:{source}" for source in feature_advantage]
@@ -6907,6 +6930,8 @@ class CombatEngineService:
                     applied = [f"feature:{source}" for source in feature_disadvantage]
                     if poisoned_disadvantage:
                         applied.append(poisoned_source)
+                    if frightened_disadvantage:
+                        applied.append(frightened_source)
             else:
                 effective_roll = command.roll_total
                 applied = []
@@ -7146,7 +7171,13 @@ class CombatEngineService:
                 "action": serialize(action),
                 "actor": serialize(actor),
                 "target": serialize(target),
-                "resolution": self._resolve_player_roll(action, target, command),
+                "resolution": self._resolve_player_roll(
+                    action,
+                    target,
+                    command,
+                    session=session,
+                    combat=combat,
+                ),
             }
 
     def confirm_player_roll(
@@ -7199,6 +7230,8 @@ class CombatEngineService:
                 target,
                 command,
                 consume_defenses=True,
+                session=session,
+                combat=combat,
             )
             if resolution.get("phase") == "awaiting_feature_reroll":
                 action.result_json = {

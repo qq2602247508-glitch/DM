@@ -371,6 +371,78 @@ def test_poisoned_check_disadvantage_cancels_feature_advantage() -> None:
     ]
 
 
+def test_frightened_check_disadvantage_requires_visible_fear_source(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    action = CombatAction(
+        campaign_id="campaign",
+        combat_id="combat",
+        action_type="player_roll_prompt",
+        target_combatant_ids=["frightened-checker"],
+        request_json={
+            "resolution_type": "skill_check",
+            "dc": 15,
+            "skill": "察觉",
+            "action_name": "观察环境",
+        },
+        result_json={},
+        round_number=1,
+        turn_index=0,
+        summary="等待察觉检定",
+        idempotency_key="frightened-skill-check",
+    )
+    target = Combatant(
+        id="frightened-checker",
+        entity_type="character",
+        display_name="恐慌检定者",
+        hp=20,
+        max_hp=20,
+        conditions=["恐慌"],
+    )
+    monkeypatch.setattr(
+        CombatEngineService,
+        "_frightened_source_visibility",
+        lambda *args: True,
+    )
+
+    visible = CombatEngineService._resolve_player_roll(
+        action,
+        target,
+        PlayerRollResolutionCommand(
+            action_version=1,
+            roll_total=5,
+            roll_totals=[5, 18],
+        ),
+        session=object(),
+        combat=object(),
+    )
+    assert visible["roll_total"] == 5
+    assert visible["success"] is False
+    assert visible["applied_defenses"] == [
+        "condition:frightened_disadvantage_check"
+    ]
+
+    monkeypatch.setattr(
+        CombatEngineService,
+        "_frightened_source_visibility",
+        lambda *args: False,
+    )
+    hidden = CombatEngineService._resolve_player_roll(
+        action,
+        target,
+        PlayerRollResolutionCommand(
+            action_version=1,
+            roll_total=18,
+            roll_totals=[18, 5],
+        ),
+        session=object(),
+        combat=object(),
+    )
+    assert hidden["roll_total"] == 18
+    assert hidden["success"] is True
+    assert hidden["applied_defenses"] == []
+
+
 def test_reliable_talent_only_floors_a_proficient_noncombat_check() -> None:
     character = SimpleNamespace(
         features=["可靠才能"],
