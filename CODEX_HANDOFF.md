@@ -1314,3 +1314,10 @@ backend/.venv/bin/python -m pytest -q backend/tests
 - 运行时合同升级为 `full`，`runtime_execution.consumer=player_roll_resolution`，`requires_dm_adjudication=false`。新增回归覆盖未熟练 +2、已熟练不加、未知熟练状态、缺 PB 和 schema 边界。
 - 验证：定向回归通过；后端全量 pytest 通过；Ruff、compileall、`git diff --check` 通过。浏览器验收未通过加载边界：5173/8000 HTTP 服务正常，但内置浏览器对 `/combat` 的导航、DOM 和控制台读取均超时，未生成或伪造截图。
 - 用户原有未跟踪文件 `backend/tests/integrations/`、`backend/tests/ollama.py` 仍保留，未纳入提交。这是固定大项“职业/子职业 1–20 级运行时闭环”的内部切片，不新增缺口；固定范围仍只有 4 个大项，高级三维战斗继续跳过。
+
+# 2026-08-06 光耀打击攻击附伤自动触发
+
+- 代码提交 `cdc8ff6`：光耀打击的攻击附伤不再要求额外的手工 eligibility。攻击动作明确为武器攻击或徒手攻击时，自动进入已有攻击附伤/逐段伤害链；玩家或 DM 仍需提交 `1d8` 伤害骰结果，服务端校验骰值范围并按 `radiant` 伤害类型结算。
+- 保留 `once_per_turn` 防重；非攻击动作不会触发；没有伤害骰输入时不猜测。运行时合同升级为 `full`，消费者为 `attack_damage_resolution`。
+- 验证：光耀打击定向回归、合同回归和后端全量 pytest 通过；Ruff、compileall、`git diff --check` 通过。本项只修改后端运行时与测试，沿用前一项浏览器加载阻塞记录，未重复伪造浏览器验收或截图。
+- 用户原有未跟踪文件 `backend/tests/integrations/`、`backend/tests/ollama.py` 仍保留，未纳入提交。这是固定大项“职业/子职业 1–20 级运行时闭环”的内部切片，不新增缺口；固定范围仍只有 4 个大项，高级三维战斗继续跳过。
