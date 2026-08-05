@@ -735,7 +735,12 @@ def test_new_passive_and_attack_contracts_are_typed_but_not_automatic() -> None:
     )
     assert saving_aura["value_source"] == "charisma_modifier"
     assert saving_aura["minimum"] == 1
-    assert saving_aura["requires_dm_adjudication"] is True
+    assert saving_aura["automation_status"] == "full"
+    assert saving_aura["requires_dm_adjudication"] is False
+    assert saving_aura["runtime_execution"] == {
+        "status": "ready",
+        "consumer": "saving_throw_resolution",
+    }
     courage = compile_feature_runtime_registry(
         core_feature_grants(rules["圣武士"], 10),
         resources=progression_resource_updates(rules["圣武士"], 10),

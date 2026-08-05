@@ -1317,3 +1317,44 @@ def test_saving_throw_proficiency_contract_is_full_and_explicit() -> None:
     assert grants["slippery_mind:saving_throw_proficiencies"]["requires_dm_adjudication"] is False
     assert grants["disciplined_survivor:all_save_proficiency"]["automation_status"] == "full"
     assert grants["disciplined_survivor:all_save_proficiency"]["requires_dm_adjudication"] is False
+
+
+def test_paladin_protection_aura_adds_charisma_modifier_to_self_save() -> None:
+    paladin = Combatant(
+        id="protection-aura-paladin",
+        entity_type="character",
+        display_name="守护灵光圣武士",
+        hp=20,
+        max_hp=20,
+        snapshot_json={
+            "ability_scores": {"charisma": 16},
+            "rule_modifiers": {
+                "saving_throw:self_and_allies_within_10ft::aura": {
+                    "stat": "saving_throw",
+                    "scope": "self_and_allies_within_10ft",
+                    "operation": "add",
+                    "value_source": "charisma_modifier",
+                    "minimum": 1,
+                    "applies_when": "within_aura_of_protection",
+                }
+            },
+        },
+    )
+    weak_paladin = Combatant(
+        id="weak-protection-aura-paladin",
+        entity_type="character",
+        display_name="低魅力圣武士",
+        hp=20,
+        max_hp=20,
+        snapshot_json={
+            "ability_scores": {"charisma": 8},
+            "rule_modifiers": paladin.snapshot_json["rule_modifiers"],
+        },
+    )
+
+    assert PlayerRoomService._rule_modifier(
+        paladin, "saving_throw", scope="self", skill="wisdom"
+    )[0] == 3
+    assert PlayerRoomService._rule_modifier(
+        weak_paladin, "saving_throw", scope="self", skill="wisdom"
+    )[0] == 1

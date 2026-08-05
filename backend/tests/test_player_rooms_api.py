@@ -2031,6 +2031,163 @@ def test_player_compiled_forced_movement_is_applied_after_failed_save(
     assert moved_target["hp"] == 12
 
 
+def test_player_automatic_save_receives_paladin_aura_within_ten_feet(
+    campaign_client: TestClient,
+) -> None:
+    campaign = _campaign(campaign_client, "守护灵光自动豁免团")
+    caster = campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/characters",
+        json={
+            "name": "测试施法者",
+            "class_name": "法师",
+            "hp": 20,
+            "max_hp": 20,
+            "actions": [
+                {
+                    "name": "灵光豁免测试",
+                    "cost": "动作",
+                    "range": "60尺",
+                    "damage": "1d6力场",
+                    "damage_type": "力场",
+                    "save_ability": "wisdom",
+                    "save_dc": 12,
+                    "rule_plan": compile_rule_blocks_dict(
+                        {
+                            "name": "灵光豁免测试",
+                            "range": "60尺",
+                            "description": "目标进行感知豁免。",
+                            "damage_expression": "1d6",
+                            "damage_type": "力场",
+                            "save_ability": "wisdom",
+                            "save_dc": 12,
+                            "resolution_kind": "damage",
+                        },
+                        source_kind="spell",
+                    ),
+                }
+            ],
+        },
+    ).json()
+    paladin = campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/characters",
+        json={
+            "name": "灵光圣武士",
+            "class_name": "圣武士",
+            "hp": 20,
+            "max_hp": 20,
+            "ability_scores": {"charisma": 18},
+        },
+    ).json()
+    target_character = campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/characters",
+        json={
+            "name": "灵光目标",
+            "class_name": "战士",
+            "hp": 20,
+            "max_hp": 20,
+            "ability_scores": {"wisdom": 10},
+        },
+    ).json()
+    scene = campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/scenes", json={"name": "灵光测试场"}
+    ).json()
+    assert campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/scenes/{scene['id']}/grid",
+        json={"width": 8, "height": 4, "cell_size_ft": 5, "mode": "combat"},
+    ).status_code == 201
+    combat = campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/combats",
+        json={"name": "灵光战斗", "scene_id": scene["id"]},
+    ).json()
+    base = f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}"
+    campaign_client.post(
+        f"{base}/combatants",
+        json={
+            "display_name": caster["name"],
+            "entity_type": "character",
+            "entity_id": caster["id"],
+            "initiative": 20,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {"grid_position": {"row": 1, "col": 1}},
+        },
+    ).json()
+    aura_owner = campaign_client.post(
+        f"{base}/combatants",
+        json={
+            "display_name": paladin["name"],
+            "entity_type": "character",
+            "entity_id": paladin["id"],
+            "initiative": 15,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {
+                "ability_scores": {"charisma": 18},
+                "grid_position": {"row": 2, "col": 2},
+                "feature_runtime": {
+                    "combat_start": {
+                        "modifiers": [
+                            {
+                                "id": "aura_of_protection:saving_throw",
+                                "stat": "saving_throw",
+                                "operation": "add",
+                                "scope": "self_and_allies_within_10ft",
+                                "value_source": "charisma_modifier",
+                                "minimum": 1,
+                                "applies_when": "within_aura_of_protection",
+                                "automation_status": "full",
+                                "requires_dm_adjudication": False,
+                            }
+                        ]
+                    }
+                },
+            },
+        },
+    ).json()
+    assert aura_owner["snapshot_json"].get("feature_runtime")
+    target = campaign_client.post(
+        f"{base}/combatants",
+        json={
+            "display_name": target_character["name"],
+            "entity_type": "character",
+            "entity_id": target_character["id"],
+            "initiative": 10,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {
+                "ability_scores": {"wisdom": 10},
+                "grid_position": {"row": 2, "col": 3},
+            },
+        },
+    ).json()
+    opened = _open(campaign_client, campaign["id"])
+    _join(campaign_client, opened["join_code"])
+    assert campaign_client.post(
+        "/api/v1/player-room/me/bind-character",
+        json={"character_id": caster["id"]},
+    ).status_code == 200
+    assert campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/player-room/live-state",
+        json={"scene_id": scene["id"], "combat_id": combat["id"]},
+    ).status_code == 200
+
+    result = campaign_client.post(
+        "/api/v1/player-room/me/combat/attack",
+        json={
+            "target_combatant_id": target["id"],
+            "target_combatant_ids": [target["id"]],
+            "action_name": "灵光豁免测试",
+            "attack_total": 0,
+            "damage_total": 6,
+            "idempotency_key": "paladin-aura-save-001",
+        },
+    )
+    assert result.status_code == 200, result.text
+    save = result.json()["target_outcomes"][0]["save"]
+    assert save["modifier"] == 4
+    assert save["note"] == "已应用结构化豁免熟练/修正 +4。"
+
+
 def test_player_cast_applies_friendly_modifier_and_spends_slot(
     campaign_client: TestClient,
 ) -> None:

@@ -1646,7 +1646,16 @@ def feature_runtime_definition(
                 "value_source": "charisma_modifier",
                 "minimum": 1,
                 "applies_when": "within_aura_of_protection",
-                "requires_dm_adjudication": True,
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "saving_throw_resolution",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+                "summary": (
+                    "同阵营单位在圣武士 10 尺内进行豁免时，"
+                    "加入圣武士魅力调整值（最低 +1）。"
+                ),
                 **source,
             }
         )

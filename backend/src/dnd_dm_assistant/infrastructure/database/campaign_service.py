@@ -494,6 +494,8 @@ class SqlAlchemyCampaignStateGateway:
                         "skill": skill or None,
                         "ability": modifier.get("ability"),
                         "abilities": modifier.get("abilities"),
+                        "value_source": modifier.get("value_source"),
+                        "minimum": modifier.get("minimum"),
                         "operation": operation,
                         "value": value,
                         "source": modifier.get("source_feature")
