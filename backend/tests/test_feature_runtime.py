@@ -268,8 +268,8 @@ def test_executable_partial_actions_project_without_claiming_full_automation() -
     rage = barbarian["actions"]["rage"]
     assert rage["runtime_execution"]["status"] == "ready"
     assert rage["runtime_execution"]["consumer"] == "combat_feature_action"
-    assert rage["automation_status"] == "partial"
-    assert rage["requires_dm_adjudication"] is True
+    assert rage["automation_status"] == "full"
+    assert rage["requires_dm_adjudication"] is False
 
     projected_fighter = {
         item["feature_id"]: item
@@ -282,7 +282,7 @@ def test_executable_partial_actions_project_without_claiming_full_automation() -
     assert projected_fighter["action_surge"]["runtime_feature"] is True
     assert projected_fighter["action_surge"]["automation_status"] == "full"
     assert projected_barbarian["rage"]["runtime_feature"] is True
-    assert projected_barbarian["rage"]["automation_status"] == "partial"
+    assert projected_barbarian["rage"]["automation_status"] == "full"
 
     contracts = {item["name"]: item for item in fighter_17["feature_contracts"]}
     assert contracts["动作如潮（两次）"]["automation_status"] == "full"

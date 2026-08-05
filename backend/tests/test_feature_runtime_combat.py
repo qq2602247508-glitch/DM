@@ -7,7 +7,7 @@ import pytest
 from dnd_dm_assistant.api.schemas import PlayerRollResolutionCommand
 from dnd_dm_assistant.domain.feature_runtime import compile_feature_runtime_registry
 from dnd_dm_assistant.infrastructure.database.combat_service import CombatEngineService
-from dnd_dm_assistant.infrastructure.database.models import CombatAction, Combatant
+from dnd_dm_assistant.infrastructure.database.models import CombatAction, Combatant, CombatEffect
 from dnd_dm_assistant.infrastructure.database.player_room_service import PlayerRoomService
 
 
@@ -307,13 +307,34 @@ def test_raging_strength_check_uses_reported_advantage_rolls() -> None:
     assert resolved["roll_total"] == 18
     assert resolved["success"] is True
     assert resolved["applied_defenses"] == ["feature:狂暴"]
-
     with pytest.raises(ValueError, match="two reported roll totals"):
         CombatEngineService._resolve_player_roll(
             action,
             target,
             PlayerRollResolutionCommand(action_version=1, roll_total=5),
         )
+
+
+def test_rage_activity_keeps_effect_alive_only_after_explicit_activity() -> None:
+    target = Combatant(
+        id="rage-lifecycle",
+        entity_type="character",
+        display_name="狂暴生命周期",
+        conditions=["raging"],
+        snapshot_json={
+            "rage_activity": {
+                "effect_id": "rage-effect",
+                "attacked": False,
+                "damaged": False,
+            }
+        },
+    )
+    effect = CombatEffect(id="rage-effect")
+    assert CombatEngineService._rage_activity_should_end(target, effect) is True
+    assert CombatEngineService._mark_rage_activity(target, attacked=True) is True
+    assert CombatEngineService._rage_activity_should_end(target, effect) is False
+    assert CombatEngineService._reset_rage_activity(target, effect) is True
+    assert CombatEngineService._rage_activity_should_end(target, effect) is True
 
 
 def test_indomitable_might_floors_strength_check_at_strength_score() -> None:

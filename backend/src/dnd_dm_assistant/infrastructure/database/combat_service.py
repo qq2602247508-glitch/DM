@@ -4010,6 +4010,61 @@ class CombatEngineService:
         return effect
 
     @classmethod
+    def _mark_rage_activity(
+        cls,
+        target: Combatant,
+        *,
+        attacked: bool = False,
+        damaged: bool = False,
+    ) -> bool:
+        """Record the explicit activity that keeps a rage alive."""
+
+        snapshot = dict(target.snapshot_json or {})
+        raw_activity = snapshot.get("rage_activity")
+        if not isinstance(raw_activity, dict):
+            return False
+        changed = False
+        activity = dict(raw_activity)
+        if attacked and activity.get("attacked") is not True:
+            activity["attacked"] = True
+            changed = True
+        if damaged and activity.get("damaged") is not True:
+            activity["damaged"] = True
+            changed = True
+        if changed:
+            snapshot["rage_activity"] = activity
+            target.snapshot_json = snapshot
+        return changed
+
+    @classmethod
+    def _rage_activity_should_end(
+        cls,
+        target: Combatant,
+        effect: CombatEffect,
+    ) -> bool:
+        snapshot = dict(target.snapshot_json or {})
+        activity = snapshot.get("rage_activity")
+        if not isinstance(activity, dict):
+            return False
+        if str(activity.get("effect_id") or "") != effect.id:
+            return False
+        return not bool(activity.get("attacked") or activity.get("damaged"))
+
+    @classmethod
+    def _reset_rage_activity(cls, target: Combatant, effect: CombatEffect) -> bool:
+        snapshot = dict(target.snapshot_json or {})
+        activity = snapshot.get("rage_activity")
+        if not isinstance(activity, dict) or str(activity.get("effect_id") or "") != effect.id:
+            return False
+        snapshot["rage_activity"] = {
+            **activity,
+            "attacked": False,
+            "damaged": False,
+        }
+        target.snapshot_json = snapshot
+        return True
+
+    @classmethod
     def _end_runtime_effect(
         cls,
         session: Session,
@@ -4042,6 +4097,10 @@ class CombatEngineService:
                 target,
                 applied if isinstance(applied, dict) else None,
             )
+            if state.get("name") == "feature_raging":
+                snapshot = dict(target.snapshot_json or {})
+                snapshot.pop("rage_activity", None)
+                target.snapshot_json = snapshot
             target.updated_at = now
         effect.status = "ended"
         effect.ended_at = now
@@ -8437,6 +8496,15 @@ class CombatEngineService:
             target.version += 1
             now = datetime.now(UTC)
             target.updated_at = now
+            if command.action_type == "damage" and int(
+                resolved["result"].get("adjusted_damage", 0)
+            ) > 0:
+                self._mark_rage_activity(target, damaged=True)
+            if command.is_attack and actor is not None and self._has_condition(actor, "raging"):
+                changed = self._mark_rage_activity(actor, attacked=True)
+                if changed and actor.id != target.id:
+                    actor.version += 1
+                    actor.updated_at = now
             condition_changes = self._sync_zero_hp_lifecycle(
                 target,
                 before_hp=int(resolved["before"]["hp"]),
@@ -9474,6 +9542,18 @@ class CombatEngineService:
                         "value": duration_value,
                         "ends_round": runtime_effect.ends_round,
                     }
+                    if condition == "raging":
+                        snapshot = dict(actor.snapshot_json or {})
+                        snapshot["rage_activity"] = {
+                            "effect_id": runtime_effect.id,
+                            "attacked": False,
+                            "damaged": False,
+                        }
+                        actor.snapshot_json = snapshot
+                        result["rage_activity"] = {
+                            "attacked": False,
+                            "damaged": False,
+                        }
                 elif kind == "activate_timed_condition":
                     condition = str(effect.get("condition") or "").strip()
                     expires = str(effect.get("expires") or "turn_start")
@@ -9952,6 +10032,8 @@ class CombatEngineService:
                     damage_result["remaining_hp"] = 1
                 target.hp = current_hp
                 target.temporary_hp = current_temporary_hp
+                if self._state_int(damage_result.get("adjusted_damage")) > 0:
+                    self._mark_rage_activity(target, damaged=True)
                 condition_changes = self._sync_zero_hp_lifecycle(
                     target,
                     before_hp=int(before_targets[target.id]["hp"]),
@@ -11440,12 +11522,25 @@ class CombatEngineService:
                     expires == "turn_start"
                     and expires_combatant_id == active.id
                 )
+                end_reason = f"runtime state ended at {str(expires).replace('_', ' ')}"
+                if (
+                    state.get("name") == "feature_raging"
+                    and previous_active is not None
+                    and previous_active.id == effect.target_combatant_id
+                    and expires == "duration"
+                ):
+                    if self._rage_activity_should_end(previous_active, effect):
+                        due = True
+                        end_reason = "狂暴者本回合未攻击敌对目标且未受到伤害"
+                    elif self._reset_rage_activity(previous_active, effect):
+                        previous_active.version += 1
+                        previous_active.updated_at = now
                 if not due:
                     continue
                 changed = self._end_runtime_effect(
                     session,
                     effect,
-                    reason=f"runtime state ended at {str(expires).replace('_', ' ')}",
+                    reason=end_reason,
                     now=now,
                 )
                 if changed is not None:
@@ -12684,6 +12779,8 @@ class CombatEngineService:
                 result["remaining_hp"] = 1
             target.hp = current_hp
             target.temporary_hp = current_temporary_hp
+            if self._state_int(result.get("adjusted_damage")) > 0:
+                self._mark_rage_activity(target, damaged=True)
         else:
             healing_resolution = resolve_healing(
                 amount=amount,

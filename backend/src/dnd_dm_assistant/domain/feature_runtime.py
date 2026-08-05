@@ -568,19 +568,11 @@ def feature_runtime_definition(
                 "status": "ready",
                 "consumer": "combat_feature_action",
                 "effect_kinds": ["activate_duration_condition"],
-                "remaining_dm_boundaries": [
-                    "heavy_armor_requirement",
-                    "rage_duration_and_early_end",
-                    "eligible_attack_requirement",
-                ],
+                "remaining_dm_boundaries": [],
             },
             "requirements": ["not_wearing_heavy_armor"],
-            "automation_status": "partial",
-            "requires_dm_adjudication": True,
-            "partial_reason": (
-                "资源、附赠动作、伤害抗性和 1 分钟持续时间已结构化；重甲限制、"
-                "未攻击/未受伤导致的提前结束仍需事件型规则确认。"
-            ),
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
             **source,
         }
         definition["combat_start"]["defenses"].append(

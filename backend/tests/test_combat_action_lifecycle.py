@@ -974,7 +974,7 @@ def test_rage_feature_automatically_applies_physical_resistance(
     assert damage.json()["action"]["result_json"]["adjusted_damage"] == 4
 
 
-def test_rage_feature_expires_after_one_minute_without_leaking_condition(
+def test_rage_feature_ends_when_turn_has_no_attack_or_damage(
     combat_client: TestClient,
 ) -> None:
     campaign, combat, actor = _setup(combat_client)
@@ -1045,23 +1045,34 @@ def test_rage_feature_expires_after_one_minute_without_leaking_condition(
         "value": 1,
         "ends_round": 11,
     }
-    effect_id = activated_body["result"]["effect_id"]
 
-    combat_version = combat["version"]
-    last_advance: dict[str, Any] | None = None
-    for index in range(20):
-        advanced = combat_client.post(
-            f"{_root(campaign, combat)}/turns/advance",
-            headers={"X-Request-ID": f"rage-duration-turn-{index}"},
-            json={"combat_version": combat_version},
-        )
-        assert advanced.status_code == 200, advanced.text
-        last_advance = advanced.json()
-        combat_version = last_advance["combat"]["version"]
-
-    assert last_advance is not None
-    assert "raging" not in last_advance["active_combatant"]["conditions"]
-    assert any(item["id"] == effect_id for item in last_advance["ended_runtime_effects"])
+    first_advance = combat_client.post(
+        f"{_root(campaign, combat)}/turns/advance",
+        headers={"X-Request-ID": "rage-start-turn"},
+        json={"combat_version": combat["version"]},
+    )
+    assert first_advance.status_code == 200, first_advance.text
+    second_advance = combat_client.post(
+        f"{_root(campaign, combat)}/turns/advance",
+        headers={"X-Request-ID": "rage-middle-turn"},
+        json={"combat_version": first_advance.json()["combat"]["version"]},
+    )
+    assert second_advance.status_code == 200, second_advance.text
+    advanced = combat_client.post(
+        f"{_root(campaign, combat)}/turns/advance",
+        headers={"X-Request-ID": "rage-no-activity-turn"},
+        json={"combat_version": second_advance.json()["combat"]["version"]},
+    )
+    assert advanced.status_code == 200, advanced.text
+    body = advanced.json()
+    assert body["active_combatant"] is not None
+    actor_after = combat_client.get(
+        _combatant_path(campaign, combat, actor["id"])
+    )
+    assert actor_after.status_code == 200, actor_after.text
+    actor_state = actor_after.json()
+    assert "raging" not in actor_state["conditions"], actor_state["snapshot_json"]
+    assert "rage_activity" not in actor_state["snapshot_json"]
 
 
 def test_innate_sorcery_consumes_resource_and_expires_after_one_minute(
