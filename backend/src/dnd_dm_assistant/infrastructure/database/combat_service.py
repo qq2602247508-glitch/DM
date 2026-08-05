@@ -8974,6 +8974,14 @@ class CombatEngineService:
                     )
             before_actor = serialize(actor)
             before_targets = {target.id: serialize(target) for target in affected}
+            advanced_action_window = self._validate_advanced_action_window(
+                session,
+                combat=combat,
+                actor=actor,
+                action_cost=command.action_cost,
+                action_name=command.action_name,
+                action_window_id=command.action_window_id,
+            )
             economy_consumed = self._validate_action_economy(
                 session,
                 combat,
@@ -9296,6 +9304,10 @@ class CombatEngineService:
             )
             session.add(action)
             session.flush()
+            self._resolve_action_window(
+                advanced_action_window,
+                action_id=action.id,
+            )
             damaged_targets_for_reactions: list[tuple[Combatant, int]] = []
             affected_by_id = {target.id: target for target in affected}
             for target_result in target_results:

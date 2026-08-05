@@ -1155,6 +1155,40 @@ def test_advanced_action_windows_are_persisted_only_at_legal_turn_boundaries(
     assert first_windows[0]["eligible_action_names"] == ["巢穴震击"]
     assert not any(window["action_cost"] == "legendary_action" for window in first_windows)
 
+    dragon_current = combat_client.get(
+        f"{base}/combats/{combat['id']}/combatants/{dragon['id']}"
+    ).json()
+    high_guard_current = combat_client.get(
+        f"{base}/combats/{combat['id']}/combatants/{high_guard['id']}"
+    ).json()
+    lair_window_action = next(
+        item for item in first_actions
+        if item["action_type"] == "eligible_action_window"
+    )
+    lair_action = combat_client.post(
+        f"{base}/combats/{combat['id']}/actions/confirm",
+        headers={"X-Request-ID": "advanced-lair-window-confirm"},
+        json={
+            "action_type": "damage",
+            "actor_combatant_id": dragon["id"],
+            "actor_version": dragon_current["version"],
+            "action_cost": "lair_action",
+            "action_window_id": lair_window_action["id"],
+            "action_name": "巢穴震击",
+            "target_combatant_id": high_guard["id"],
+            "target_version": high_guard_current["version"],
+            "amount": 4,
+            "damage_type": "thunder",
+        },
+    )
+    assert lair_action.status_code == 200, lair_action.text
+    assert lair_action.json()["actor"]["snapshot_json"]["lair_action_round"] == 1
+    lair_window_after = next(
+        item for item in combat_client.get(f"{base}/combats/{combat['id']}/actions").json()["items"]
+        if item["id"] == lair_window_action["id"]
+    )
+    assert lair_window_after["result_json"]["action_window"]["status"] == "resolved"
+
     current = combat_client.get(f"{base}/combats/{combat['id']}").json()
     second = combat_client.post(
         advance_path,
