@@ -52,7 +52,13 @@ def advancement_client(tmp_path: Path, monkeypatch: Any) -> Iterator[TestClient]
             "champion-2024",
             "玩家手册2024/角色职业/战士/勇士.htm",
         ),
-        "content_markdown": "# 勇士",
+        "content_markdown": (
+            "# 勇士\n"
+            "### 3级 战斗专精\n"
+            "作为附赠动作，你可以使用此特性 2 次，每次短休恢复。\n"
+            "### 6级 勇气\n"
+            "你可以作为动作使用此特性。"
+        ),
     }
     (classes / "fighter.json").write_text(
         json.dumps(fighter, ensure_ascii=False), encoding="utf-8"
@@ -287,6 +293,54 @@ def test_level_three_requires_valid_subclass(
     )
     assert valid.status_code == 200
     assert valid.json()["subclass_name"] == "勇士"
+
+
+def test_subclass_runtime_materializes_prior_and_current_feature_levels(
+    advancement_client: TestClient,
+) -> None:
+    campaign = _campaign(advancement_client)
+    created = advancement_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/characters",
+        json={
+            "name": "补齐子职运行时",
+            "class_name": "战士",
+            "level": 2,
+            "experience": 14_000,
+            "hp": 20,
+            "max_hp": 20,
+            "ability_scores": {"constitution": 14, "strength": 16},
+            "class_levels": {"战士": 2},
+        },
+    ).json()
+    steps = [
+        {"class_name": "战士", "subclass_name": "勇士"},
+        {"class_name": "战士", "ability_increases": {"strength": 2}},
+        {"class_name": "战士"},
+        {"class_name": "战士"},
+    ]
+    response = advancement_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/characters/{created['id']}"
+        "/advancement/batch/preview",
+        json={
+            "character_version": created["version"],
+            "steps": [
+                {
+                    **step,
+                    "dm_override_reason": "子职运行时回填夹具不重复构造选择",
+                }
+                for step in steps
+            ],
+        },
+    )
+    assert response.status_code == 200, response.text
+    preview = response.json()
+    subclass_features = [
+        item
+        for item in preview["after"]["features"]
+        if isinstance(item, dict) and item.get("kind") == "subclass_feature"
+    ]
+    assert {int(item["class_level"]) for item in subclass_features} == {3, 6}
+    assert all(item.get("feature_id") for item in subclass_features)
 
 
 def test_wizard_advancement_rejects_wrong_class_level_and_preparation(

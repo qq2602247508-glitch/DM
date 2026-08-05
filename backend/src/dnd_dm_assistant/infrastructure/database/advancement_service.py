@@ -354,6 +354,7 @@ class AdvancementService:
         derived_kinds = {
             "class_feature",
             "class_scaling",
+            "subclass_feature",
             "proficiency_bonus",
         }
         preserved = [
@@ -366,6 +367,26 @@ class AdvancementService:
             )
         ]
         return AdvancementService._merge_feature_grants(preserved, grants)
+
+    @staticmethod
+    def _replace_subclass_runtime_actions(
+        existing: list[Any],
+        *,
+        class_name: str,
+        additions: list[dict[str, Any]],
+    ) -> list[Any]:
+        """Replace derived actions for one subclass while retaining custom actions."""
+
+        preserved = [
+            deepcopy(item)
+            for item in existing
+            if not (
+                isinstance(item, dict)
+                and str(item.get("kind") or "") == "subclass_feature_action"
+                and str(item.get("class_name") or "") == class_name
+            )
+        ]
+        return AdvancementService._merge_runtime_actions(preserved, additions)
 
     def _validate_spell_choices(
         self,
@@ -625,6 +646,15 @@ class AdvancementService:
             if not override:
                 raise ValueError("selected subclass is not available for this class")
             warnings.append("DM 已覆盖本地子职目录限制。")
+        previous_subclass_name = str(subclass_choices.get(class_name) or "").strip()
+        if (
+            previous_subclass_name
+            and subclass_name
+            and previous_subclass_name != subclass_name
+        ):
+            if not override:
+                raise ValueError("cannot change an existing subclass without a DM override")
+            warnings.append("DM 已覆盖既有子职不可更换限制。")
         selected_subclass = available_subclasses.get(subclass_name)
         if (
             selected_subclass is not None
@@ -932,17 +962,48 @@ class AdvancementService:
         }
         if len(selected_subclass_choices) != len(raw_subclass_choices):
             raise ValueError("each subclass feature choice must be a list of text choices")
-        subclass_runtime = (
-            subclass_runtime_grants(
-                selected_subclass,
-                class_name=class_name,
-                target_class_level=target_class_level,
-                ability_scores=ability_scores,
-                selected_choices=selected_subclass_choices,
-            )
-            if selected_subclass is not None
-            else {"grants": [], "resources": {}, "actions": [], "choice_requirements": []}
-        )
+        # Recover choices stored by earlier advancement records before merging
+        # the current request.  This keeps a later level-up from forgetting a
+        # branch selected when the subclass was first granted.
+        for existing in character.features or []:
+            if not isinstance(existing, dict):
+                continue
+            if (
+                str(existing.get("kind") or "") != "subclass_feature"
+                or str(existing.get("class_name") or "") != class_name
+            ):
+                continue
+            feature_id = str(existing.get("feature_id") or "").strip()
+            choices = existing.get("selected_choices")
+            if (
+                feature_id
+                and feature_id not in selected_subclass_choices
+                and isinstance(choices, list)
+            ):
+                selected_subclass_choices[feature_id] = [
+                    str(choice).strip() for choice in choices if str(choice).strip()
+                ]
+        subclass_runtime = {
+            "grants": [],
+            "resources": {},
+            "actions": [],
+            "choice_requirements": [],
+        }
+        if selected_subclass is not None:
+            for subclass_level in range(1, target_class_level + 1):
+                level_runtime = subclass_runtime_grants(
+                    selected_subclass,
+                    class_name=class_name,
+                    target_class_level=subclass_level,
+                    ability_scores=ability_scores,
+                    selected_choices=selected_subclass_choices,
+                )
+                subclass_runtime["grants"].extend(level_runtime["grants"])
+                subclass_runtime["actions"].extend(level_runtime["actions"])
+                subclass_runtime["choice_requirements"].extend(
+                    level_runtime["choice_requirements"]
+                )
+                subclass_runtime["resources"].update(level_runtime["resources"])
         known_subclass_choice_ids = {
             str(item.get("feature_id") or "")
             for item in subclass_runtime["choice_requirements"]
@@ -1132,12 +1193,14 @@ class AdvancementService:
             for class_level in range(1, target_class_level + 1)
             for action in core_runtime_actions(rule, class_level)
         ]
-        after_actions = self._merge_runtime_actions(
+        after_actions = self._replace_subclass_runtime_actions(
             list(character.actions or []),
-            [
-                *all_core_actions,
-                *list(subclass_runtime["actions"]),
-            ],
+            class_name=class_name,
+            additions=list(subclass_runtime["actions"]),
+        )
+        after_actions = self._merge_runtime_actions(
+            after_actions,
+            all_core_actions,
         )
         all_resource_updates = {**resource_updates, **subclass_resource_updates}
         runtime_scalings = {

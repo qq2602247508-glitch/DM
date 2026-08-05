@@ -1157,6 +1157,7 @@ def subclass_runtime_grants(
             actions.append(action)
         grants.append(
             {
+                "feature_id": feature_id,
                 "name": str(definition["name"]),
                 "kind": "subclass_feature",
                 "class_name": class_name,
