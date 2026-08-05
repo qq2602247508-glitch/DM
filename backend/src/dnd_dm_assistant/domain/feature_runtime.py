@@ -1133,7 +1133,8 @@ def feature_runtime_definition(
             "kind": "feature_action",
             "action_cost": "reaction",
             "target": "self_or_ally_within_30ft",
-            "resolution_kind": "choice_required",
+            "resolution_kind": "saving_throw_reroll",
+            "activation_window": "after_failed_saving_throw",
             "trigger": {
                 "event": "saving_throw_failed",
                 "conditions": ["charmed", "frightened"],
@@ -1146,9 +1147,21 @@ def feature_runtime_definition(
                     "reason": "反迷惑需要在魅惑或恐慌豁免失败后插入反应重骰窗口。",
                 }
             ],
+            "runtime_execution": {
+                "status": "ready",
+                "consumer": "saving_throw_resolution",
+                "effect_kinds": ["saving_throw_reroll"],
+                "remaining_dm_boundaries": [
+                    "multiple_eligible_reactors_require_dm_selection",
+                    "missing_authoritative_grid_position",
+                ],
+            },
             "automation_status": "partial",
             "requires_dm_adjudication": True,
-            "partial_reason": "现有职业特性接口拒绝反应动作，尚不能接管失败豁免。",
+            "partial_reason": (
+                "唯一符合距离和反应条件的吟游诗人可自动打开重骰窗口；"
+                "多个候选者或缺少权威位置仍需 DM 选择。"
+            ),
             **source,
         }
 

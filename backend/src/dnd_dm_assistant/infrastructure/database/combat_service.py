@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 import secrets
+from collections.abc import Iterable
 from dataclasses import asdict
 from datetime import UTC, datetime, timedelta
 from hashlib import sha256
@@ -3274,6 +3275,8 @@ class CombatEngineService:
         target: Combatant,
         *,
         session: Session | None = None,
+        combat: Combat | None = None,
+        condition_names: Iterable[object] = (),
     ) -> list[dict[str, object]]:
         """Return explicit saving-throw rerolls available to this combatant.
 
@@ -3299,45 +3302,119 @@ class CombatEngineService:
                     }
                 )
 
-        if session is None or target.entity_type != "character" or not target.entity_id:
+        if session is None:
             return options
         runtime = snapshot.get("feature_runtime")
         actions = runtime.get("actions") if isinstance(runtime, dict) else None
-        if not isinstance(actions, dict):
+        if isinstance(actions, dict) and target.entity_type == "character" and target.entity_id:
+            character = session.get(Character, target.entity_id)
+            resources = character.resources if character is not None else {}
+            resources = resources if isinstance(resources, dict) else {}
+            for feature_id, raw_action in actions.items():
+                if not isinstance(raw_action, dict):
+                    continue
+                if (
+                    raw_action.get("kind") != "feature_action"
+                    or raw_action.get("resolution_kind") != "saving_throw_reroll"
+                    or raw_action.get("activation_window") != "after_failed_saving_throw"
+                ):
+                    continue
+                resource_key = str(raw_action.get("resource_key") or "").strip()
+                resource_cost = cls._state_int(raw_action.get("resource_cost"), 1)
+                raw_resource = resources.get(resource_key)
+                current = (
+                    cls._state_int(raw_resource.get("current"))
+                    if isinstance(raw_resource, dict)
+                    else 0
+                )
+                if not resource_key or resource_cost < 1 or current < resource_cost:
+                    continue
+                options.append(
+                    {
+                        "kind": "resource",
+                        "feature_id": str(feature_id),
+                        "source": str(raw_action.get("name") or feature_id),
+                        "resource_key": resource_key,
+                        "resource_cost": resource_cost,
+                        "resource_before": current,
+                    }
+                )
+
+        requested_conditions = {
+            cls._canonical_condition(value) for value in condition_names
+        }
+        if combat is None or not requested_conditions & {"charmed", "frightened"}:
             return options
-        character = session.get(Character, target.entity_id)
-        if character is None:
-            return options
-        resources = character.resources if isinstance(character.resources, dict) else {}
-        for feature_id, raw_action in actions.items():
-            if not isinstance(raw_action, dict):
-                continue
+        target_faction = cls._combatant_faction(target)
+        grid = (
+            session.scalar(select(SceneGrid).where(SceneGrid.scene_id == combat.scene_id))
+            if combat.scene_id
+            else None
+        )
+        cell_size = grid.cell_size_ft if grid is not None else 5
+        countercharm_candidates: list[dict[str, object]] = []
+        for reactor in cls._ordered_combatants(session, combat.id):
             if (
-                raw_action.get("kind") != "feature_action"
-                or raw_action.get("resolution_kind") != "saving_throw_reroll"
-                or raw_action.get("activation_window") != "after_failed_saving_throw"
+                reactor.entity_type != "character"
+                or reactor.hp <= 0
+                or not reactor.reaction_available
+                or cls._combatant_faction(reactor) != target_faction
+                or cls._condition_set(reactor) & cls._ACTION_BLOCKING_CONDITIONS
             ):
                 continue
-            resource_key = str(raw_action.get("resource_key") or "").strip()
-            resource_cost = cls._state_int(raw_action.get("resource_cost"), 1)
-            raw_resource = resources.get(resource_key)
-            current = (
-                cls._state_int(raw_resource.get("current"))
-                if isinstance(raw_resource, dict)
-                else 0
+            reactor_runtime = (reactor.snapshot_json or {}).get("feature_runtime")
+            reactor_actions = (
+                reactor_runtime.get("actions")
+                if isinstance(reactor_runtime, dict)
+                else None
             )
-            if not resource_key or resource_cost < 1 or current < resource_cost:
+            action = (
+                reactor_actions.get("countercharm")
+                if isinstance(reactor_actions, dict)
+                else None
+            )
+            if not isinstance(action, dict):
                 continue
-            options.append(
+            if action.get("activation_window") != "after_failed_saving_throw":
+                continue
+            if reactor.id != target.id:
+                raw_reactor_position = (reactor.snapshot_json or {}).get("grid_position")
+                raw_target_position = (target.snapshot_json or {}).get("grid_position")
+                if not isinstance(raw_reactor_position, dict) or not isinstance(
+                    raw_target_position, dict
+                ):
+                    continue
+                try:
+                    reactor_position = (
+                        int(raw_reactor_position["row"]),
+                        int(raw_reactor_position["col"]),
+                    )
+                    target_position = (
+                        int(raw_target_position["row"]),
+                        int(raw_target_position["col"]),
+                    )
+                except (KeyError, TypeError, ValueError):
+                    continue
+                distance_ft = grid_distance_ft(
+                    reactor_position, target_position, cell_size_ft=cell_size
+                )
+                if distance_ft > 30:
+                    continue
+            else:
+                distance_ft = 0
+            countercharm_candidates.append(
                 {
-                    "kind": "resource",
-                    "feature_id": str(feature_id),
-                    "source": str(raw_action.get("name") or feature_id),
-                    "resource_key": resource_key,
-                    "resource_cost": resource_cost,
-                    "resource_before": current,
+                    "kind": "countercharm",
+                    "feature_id": "countercharm",
+                    "source": str(action.get("name") or "反迷惑"),
+                    "reroll_mode": "advantage",
+                    "reaction_combatant_id": reactor.id,
+                    "reaction_before": True,
+                    "distance_ft": distance_ft,
                 }
             )
+        if len(countercharm_candidates) == 1:
+            options.append(countercharm_candidates[0])
         return options
 
     @classmethod
@@ -7056,6 +7133,8 @@ class CombatEngineService:
         use_feature_reroll: bool,
         consume: bool,
         session: Session | None = None,
+        combat: Combat | None = None,
+        condition_names: Iterable[object] = (),
     ) -> dict[str, object]:
         snapshot = dict(target.snapshot_json or {})
         raw_defenses = snapshot.get("advanced_defenses")
@@ -7091,14 +7170,25 @@ class CombatEngineService:
             if magic_resistance and is_magical:
                 raise ValueError("魔法抗性与职业特性重掷不能在同一次豁免中叠加")
             reroll_option = next(
-                iter(cls._feature_saving_throw_reroll_options(target, session=session)),
+                iter(
+                    cls._feature_saving_throw_reroll_options(
+                        target,
+                        session=session,
+                        combat=combat,
+                        condition_names=condition_names,
+                    )
+                ),
                 None,
             )
             if reroll_option is None:
                 raise ValueError("目标没有可用的职业特性豁免重掷")
             if len(rolls) < 2:
                 raise ValueError("职业特性重掷需要提交第一次与重掷后的两个总值")
-            effective_roll = rolls[1]
+            effective_roll = (
+                max(rolls[:2])
+                if reroll_option.get("reroll_mode") == "advantage"
+                else rolls[1]
+            )
             feature_reroll_consumed = {
                 "feature_id": reroll_option.get("feature_id"),
                 "resource": (
@@ -7119,8 +7209,31 @@ class CombatEngineService:
                 ),
                 "after": None,
             }
+            if reroll_option.get("kind") == "countercharm":
+                feature_reroll_consumed.update(
+                    {
+                        "resource": "reaction",
+                        "reaction_combatant_id": reroll_option.get(
+                            "reaction_combatant_id"
+                        ),
+                        "before": True,
+                    }
+                )
             if consume:
-                if reroll_option.get("kind") == "token":
+                if reroll_option.get("kind") == "countercharm":
+                    if session is None:
+                        raise ValueError("反迷惑反应缺少战斗上下文")
+                    reactor = session.get(
+                        Combatant, str(reroll_option.get("reaction_combatant_id") or "")
+                    )
+                    if reactor is None or not reactor.reaction_available:
+                        raise ValueError("反迷惑反应已被其他操作消费")
+                    reactor.reaction_available = False
+                    if reactor.id != target.id:
+                        reactor.version += 1
+                        reactor.updated_at = datetime.now(UTC)
+                    feature_reroll_consumed["after"] = False
+                elif reroll_option.get("kind") == "token":
                     raw_rerolls = snapshot.get("feature_saving_throw_rerolls")
                     rerolls = list(raw_rerolls) if isinstance(raw_rerolls, list) else []
                     available_index = next(
@@ -7438,6 +7551,8 @@ class CombatEngineService:
                 use_feature_reroll=command.use_feature_reroll,
                 consume=consume_defenses,
                 session=session,
+                combat=combat,
+                condition_names=request.get("conditions_on_failure", []),
             )
         success = bool(defense["success"])
         damage = cls._state_int(defense["damage"])
@@ -7447,7 +7562,14 @@ class CombatEngineService:
             and not command.use_feature_reroll
         ):
             available_reroll = next(
-                iter(cls._feature_saving_throw_reroll_options(target, session=session)),
+                iter(
+                    cls._feature_saving_throw_reroll_options(
+                        target,
+                        session=session,
+                        combat=combat,
+                        condition_names=request.get("conditions_on_failure", []),
+                    )
+                ),
                 None,
             )
             if available_reroll is not None:
@@ -7470,11 +7592,26 @@ class CombatEngineService:
                         "dc": dc,
                         "requires_second_roll": True,
                         **(
+                            {"reroll_mode": available_reroll["reroll_mode"]}
+                            if available_reroll.get("reroll_mode")
+                            else {}
+                        ),
+                        **(
                             {
                                 "resource_key": available_reroll.get("resource_key"),
                                 "resource_before": available_reroll.get("resource_before"),
                             }
                             if available_reroll.get("resource_key")
+                            else {}
+                        ),
+                        **(
+                            {
+                                "reaction_combatant_id": available_reroll.get(
+                                    "reaction_combatant_id"
+                                ),
+                                "reaction_before": available_reroll.get("reaction_before"),
+                            }
+                            if available_reroll.get("reaction_combatant_id")
                             else {}
                         ),
                     },

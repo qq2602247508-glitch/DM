@@ -291,6 +291,116 @@ def test_feature_resource_reroll_opens_after_failure_and_uses_second_roll(
     assert character_after.json()["resources"]["indomitable"]["current"] == 0
 
 
+def test_countercharm_opens_unique_ally_reaction_and_consumes_reaction_on_advantage(
+    combat_client: TestClient,
+) -> None:
+    campaign, combat, actor = _setup(combat_client)
+    target_response = combat_client.post(
+        f"{_root(campaign, combat)}/combatants",
+        json={
+            "display_name": "魅惑目标",
+            "entity_type": "character",
+            "initiative": 10,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {
+                "disposition": "ally",
+                "grid_position": {"row": 1, "col": 1},
+            },
+        },
+    )
+    assert target_response.status_code == 201, target_response.text
+    target = target_response.json()
+    bard_response = combat_client.post(
+        f"{_root(campaign, combat)}/combatants",
+        json={
+            "display_name": "反迷惑吟游诗人",
+            "entity_type": "character",
+            "initiative": 5,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {
+                "disposition": "ally",
+                "grid_position": {"row": 1, "col": 2},
+                "feature_runtime": {
+                    "actions": {
+                        "countercharm": {
+                            "id": "countercharm",
+                            "name": "反迷惑",
+                            "kind": "feature_action",
+                            "action_cost": "reaction",
+                            "resolution_kind": "saving_throw_reroll",
+                            "activation_window": "after_failed_saving_throw",
+                        }
+                    }
+                },
+            },
+        },
+    )
+    assert bard_response.status_code == 201, bard_response.text
+    bard = bard_response.json()
+
+    prompt = combat_client.post(
+        f"{_root(campaign, combat)}/actions/player-rolls/pending",
+        headers={"X-Request-ID": "countercharm-prompt"},
+        json={
+            "actor_combatant_id": actor["id"],
+            "actor_version": actor["version"],
+            "target_combatant_id": target["id"],
+            "target_version": target["version"],
+            "action_name": "魅惑凝视",
+            "resolution_type": "saving_throw",
+            "dc": 15,
+            "ability": "wisdom",
+            "damage_on_failure": 12,
+            "damage_type": "psychic",
+            "conditions_on_failure": ["魅惑"],
+            "condition_duration": "rounds",
+            "condition_duration_value": 1,
+        },
+    )
+    assert prompt.status_code == 200, prompt.text
+    action = prompt.json()["action"]
+    first = combat_client.post(
+        f"{_root(campaign, combat)}/actions/player-rolls/{action['id']}/confirm",
+        headers={"X-Request-ID": "countercharm-first"},
+        json={"action_version": action["version"], "roll_total": 5},
+    )
+    assert first.status_code == 200, first.text
+    window = first.json()["resolution"]["feature_reroll_window"]
+    assert window["feature_id"] == "countercharm"
+    assert window["reroll_mode"] == "advantage"
+    assert window["reaction_combatant_id"] == bard["id"]
+    assert first.json()["target"]["hp"] == 20
+
+    second = combat_client.post(
+        f"{_root(campaign, combat)}/actions/player-rolls/{action['id']}/confirm",
+        headers={"X-Request-ID": "countercharm-second"},
+        json={
+            "action_version": first.json()["action"]["version"],
+            "roll_total": 18,
+            "roll_totals": [5, 18],
+            "use_feature_reroll": True,
+        },
+    )
+    assert second.status_code == 200, second.text
+    resolution = second.json()["resolution"]
+    assert resolution["success"] is True
+    assert resolution["roll_total"] == 18
+    assert resolution["damage"] == 0
+    assert resolution["feature_reroll_consumed"] == {
+        "feature_id": "countercharm",
+        "resource": "reaction",
+        "before": True,
+        "after": False,
+        "reaction_combatant_id": bard["id"],
+    }
+    bard_after = combat_client.get(
+        _combatant_path(campaign, combat, bard["id"])
+    ).json()
+    assert bard_after["reaction_available"] is False
+
+
 def test_poisoned_skill_check_cancels_structured_advantage_through_api(
     combat_client: TestClient,
 ) -> None:

@@ -1057,6 +1057,17 @@ def test_reactions_and_monk_defenses_publish_typed_contracts() -> None:
     assert countercharm["action_cost"] == "reaction"
     assert countercharm["trigger"]["conditions"] == ["charmed", "frightened"]
     assert countercharm["reroll_mode"] == "advantage"
+    assert countercharm["resolution_kind"] == "saving_throw_reroll"
+    assert countercharm["activation_window"] == "after_failed_saving_throw"
+    assert countercharm["runtime_execution"] == {
+        "status": "ready",
+        "consumer": "saving_throw_resolution",
+        "effect_kinds": ["saving_throw_reroll"],
+        "remaining_dm_boundaries": [
+            "multiple_eligible_reactors_require_dm_selection",
+            "missing_authoritative_grid_position",
+        ],
+    }
     assert countercharm["automation_status"] == "partial"
     assert countercharm["effects"][0]["kind"] == "requires_dm_choice"
 
