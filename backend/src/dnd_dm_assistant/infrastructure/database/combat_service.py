@@ -6055,6 +6055,14 @@ class CombatEngineService:
                 reaction_window_id=command.reaction_window_id,
                 target_ids=[target.id],
             )
+            advanced_action_window = self._validate_advanced_action_window(
+                session,
+                combat=combat,
+                actor=actor,
+                action_cost=command.action_cost,
+                action_name=command.action_name,
+                action_window_id=command.action_window_id,
+            )
             self._validate_monster_sequence(session, combat_id, actor, command)
             economy_consumed = self._validate_action_economy(
                 session,
@@ -6132,6 +6140,11 @@ class CombatEngineService:
             session.flush()
             self._resolve_action_window(
                 reaction_window,
+                action_id=action.id,
+                target_id=target.id,
+            )
+            self._resolve_action_window(
+                advanced_action_window,
                 action_id=action.id,
                 target_id=target.id,
             )
@@ -6327,6 +6340,14 @@ class CombatEngineService:
                 reaction_window_id=command.reaction_window_id,
                 target_ids=[target.id for _, target, _, _ in prepared],
             )
+            advanced_action_window = self._validate_advanced_action_window(
+                session,
+                combat=combat,
+                actor=actor,
+                action_cost=command.action_cost,
+                action_name=command.action_name,
+                action_window_id=command.action_window_id,
+            )
             self._validate_monster_sequence(session, combat_id, actor, prompts[0])
             self._validate_action_economy(
                 session,
@@ -6458,6 +6479,11 @@ class CombatEngineService:
             if actions:
                 self._resolve_action_window(
                     reaction_window,
+                    action_id=actions[0].id,
+                    target_id=prepared[0][1].id,
+                )
+                self._resolve_action_window(
+                    advanced_action_window,
                     action_id=actions[0].id,
                     target_id=prepared[0][1].id,
                 )

@@ -1290,6 +1290,88 @@ def test_advanced_action_windows_are_persisted_only_at_legal_turn_boundaries(
     ) == 2
 
 
+def test_lair_action_player_roll_prompt_consumes_its_window_once(
+    combat_client: TestClient,
+) -> None:
+    campaign = _campaign(combat_client, "Lair prompt window")
+    base = f"/api/v1/campaigns/{campaign['id']}"
+    combat = combat_client.post(
+        f"{base}/combats", json={"name": "Lair prompt combat"}
+    ).json()
+    guard = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "高先攻守卫",
+            "entity_type": "character",
+            "initiative": 25,
+            "hp": 20,
+            "max_hp": 20,
+        },
+    ).json()
+    lair_owner = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "巢穴领主",
+            "entity_type": "monster",
+            "initiative": 15,
+            "hp": 40,
+            "max_hp": 40,
+            "snapshot_json": {
+                "actions": [
+                    {
+                        "name": "地火喷涌",
+                        "action_type": "lair_action",
+                        "save_dc": 14,
+                        "save_ability": "dexterity",
+                        "damage": "2d6",
+                        "damage_type": "fire",
+                    }
+                ]
+            },
+        },
+    ).json()
+    advance = combat_client.post(
+        f"{base}/combats/{combat['id']}/turns/advance",
+        headers={"X-Request-ID": "lair-prompt-advance"},
+        json={"combat_version": combat["version"]},
+    )
+    assert advance.status_code == 200, advance.text
+    window = next(
+        item for item in combat_client.get(f"{base}/combats/{combat['id']}/actions").json()["items"]
+        if item["action_type"] == "eligible_action_window"
+        and item["result_json"]["action_window"]["action_cost"] == "lair_action"
+    )
+    owner_current = combat_client.get(
+        f"{base}/combats/{combat['id']}/combatants/{lair_owner['id']}"
+    ).json()
+    prompt = combat_client.post(
+        f"{base}/combats/{combat['id']}/actions/player-rolls/pending",
+        headers={"X-Request-ID": "lair-prompt-create"},
+        json={
+            "actor_combatant_id": lair_owner["id"],
+            "actor_version": owner_current["version"],
+            "target_combatant_id": guard["id"],
+            "target_version": guard["version"],
+            "action_cost": "lair_action",
+            "action_window_id": window["id"],
+            "action_name": "地火喷涌",
+            "resolution_type": "saving_throw",
+            "dc": 14,
+            "ability": "dexterity",
+            "damage_on_failure": 7,
+            "damage_type": "fire",
+            "description": "DM确认巢穴动作窗口，等待玩家豁免。",
+        },
+    )
+    assert prompt.status_code == 200, prompt.text
+    assert prompt.json()["actor"]["snapshot_json"]["lair_action_round"] == 1
+    resolved_window = next(
+        item for item in combat_client.get(f"{base}/combats/{combat['id']}/actions").json()["items"]
+        if item["id"] == window["id"]
+    )
+    assert resolved_window["result_json"]["action_window"]["status"] == "resolved"
+
+
 def test_structured_turn_end_reaction_window_excludes_reaction_owner_turn(
     combat_client: TestClient,
 ) -> None:
