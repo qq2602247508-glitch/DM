@@ -3,6 +3,7 @@ from __future__ import annotations
 from fastapi.testclient import TestClient
 
 from dnd_dm_assistant.application.official_compendium import _monster_actions
+from dnd_dm_assistant.application.rule_block_compiler import compile_rule_blocks_dict
 
 
 def test_monster_actions_keep_action_economy_and_recharge_metadata() -> None:
@@ -54,6 +55,46 @@ def test_monster_action_parser_keeps_area_and_exact_condition_duration() -> None
     assert blast["affects_multiple_targets"] is True
     assert blast["conditions_on_failure"] == ["震慑"]
     assert blast["condition_duration"] == "actor_turn_end"
+
+
+def test_monster_action_parser_normalizes_digit_spacing_before_area_compilation() -> None:
+    actions = _monster_actions(
+        """
+动作
+恶咒爆裂Hex Blast（充能5~6）。恐怖之物释放出3 0 尺锥状暗蚀能量。
+每个区域内的生物必须进行DC 15 的体质豁免，失败的生物受到4 5 （7d 12 ）暗蚀伤害，
+成功的生物则受到一半伤害。
+"""
+    )
+
+    blast = actions[0]
+    assert blast["area_shape"] == "cone"
+    assert blast["area_size_ft"] == 30
+    plan = compile_rule_blocks_dict(
+        {
+            "name": blast["name"],
+            **blast,
+            "resolution_kind": "damage",
+        },
+        source_kind="monster_action",
+    )
+    assert plan["automation_confidence"] in {"exact", "partial", "manual"}
+    target = next(block for block in plan["blocks"] if block["kind"] == "target")
+    assert target["shape"] == "cone"
+    assert target["size_ft"] == 30
+
+    line_plan = compile_rule_blocks_dict(
+        {
+            "name": "棘丛喷发",
+            "area_shape": "line",
+            "area_size_ft": 90,
+            "description": "90 尺长、1 0 尺宽的线状区域。",
+        },
+        source_kind="monster_action",
+    )
+    line_target = next(block for block in line_plan["blocks"] if block["kind"] == "target")
+    assert line_target["size_ft"] == 90
+    assert line_target["width_ft"] == 10
 
 
 def test_official_compendium_filters_before_pagination_and_only_returns_atoms(

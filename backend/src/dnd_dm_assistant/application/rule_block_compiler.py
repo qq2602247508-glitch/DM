@@ -155,7 +155,10 @@ def _damage_type(value: object, damage_text: str) -> str | None:
 
 def _target_block(block_id: str, data: Mapping[str, Any], description: str) -> TargetBlock:
     raw_range = _text(data.get("range") or data.get("range_ft"))
-    combined = f"{raw_range} {description}"
+    # Imported Chinese stat blocks may separate digits while decoding, e.g.
+    # ``1 0 尺宽``.  Normalize only the parser input so geometry extraction
+    # cannot capture the trailing zero as a width or area size.
+    combined = re.sub(r"(?<=\d)\s+(?=\d)", "", f"{raw_range} {description}")
     range_ft: int | None
     if "自身" in raw_range or raw_range.lower() == "self":
         mode = "self"

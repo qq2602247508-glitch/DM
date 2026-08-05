@@ -250,7 +250,12 @@ def _monster_actions(text: str) -> list[dict[str, Any]]:
         legendary_pool_max = (
             _chinese_count(legendary_pool.group(1)) if legendary_pool else None
         )
-        for line in (part.strip(" *#") for part in raw.splitlines()):
+        for source_line in (part.strip(" *#") for part in raw.splitlines()):
+            # A subset of imported Chinese stat blocks separates digits while
+            # decoding (for example ``3 0 尺`` or ``1 0 d 6``).  Normalize the
+            # parsing copy so an area regex cannot capture only the trailing
+            # zero as its size.  The original line remains the audit text.
+            line = re.sub(r"(?<=\d)\s+(?=\d)", "", source_line)
             if not line or not re.search(
                 r"命中|攻击|伤害|豁免|多重攻击|充能|传奇动作|巢穴|施法|移动", line
             ):
@@ -349,7 +354,7 @@ def _monster_actions(text: str) -> list[dict[str, Any]]:
             actions.append(
                 {
                     "name": (name_match.group(1) if name_match else line[:30]).strip(),
-                    "description": line[:900],
+                    "description": source_line[:900],
                     "damage": damage_expression.replace(" ", "") if damage_expression else None,
                     "damage_type": damage_type,
                     "attack_bonus": int(bonus.group(1) or bonus.group(2)) if bonus else None,
