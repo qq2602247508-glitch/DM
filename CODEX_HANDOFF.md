@@ -1007,3 +1007,18 @@ backend/.venv/bin/python -m pytest -q backend/tests
 - `572853a feat: execute reliable talent check floor`：非战斗技能检定真实识别可靠才能与技能熟练，玩家报告 d20 小于 10 时按 10 计算，并同时保留 `reported_raw_roll` 和实际 `raw_roll` 审计字段；非熟练检定不触发。
 - 验证：每项均独立提交；后端全量测试通过，定向特性/生命周期回归通过，Ruff、compileall、`git diff --check` 通过。未修改前端，未重复前端构建；浏览器本地 URL 安全策略仍限制本轮后端-only 浏览器验收。
 - 工作树中 `backend/tests/integrations/`、`backend/tests/ollama.py` 是用户原有未跟踪文件，未纳入提交。
+# 2026-08-05 失败豁免后的职业特性即时重掷窗口
+
+- 代码提交 `ee67f64`：玩家豁免第一次失败且目标拥有可用的结构化
+  `feature_saving_throw_rerolls` 时，不再立即扣血或消耗资源，而是把动作保持为
+  `previewed`，持久化 `awaiting_feature_reroll` 窗口、原始骰值、DC、特性来源和第二次骰值要求。
+- 第二次确认必须显式传入 `use_feature_reroll=true` 和两枚豁免总值；运行时取较高值，成功后真实消耗
+  一次重掷资格，再沿用原有伤害、状态和战斗日志事务。没有可用资格、缺失第二枚骰或未明确选择时不猜测，
+  仍停在 DM/玩家输入边界。
+- 玩家豁免面板支持显示“等待职业特性重掷”，并允许填写 `12,18`；打开窗口不会误报为已完成结算。
+- 新增后端纯运行时和真实两阶段 API 回归，覆盖窗口持久化、HP 不变、取高值、资格消耗和最终推进。
+- 验证：定向后端测试通过；后端全量 `511 passed`；前端 Vitest `39 文件 / 203 项`、TypeScript、ESLint、
+  生产构建、Ruff、compileall、`git diff --check` 全部通过。仅有既有 Starlette/httpx 弃用警告。
+- 当前工作树保留用户既有未跟踪文件 `backend/tests/integrations/` 和 `backend/tests/ollama.py`，未纳入本提交。
+- 本轮未做浏览器实战验收；当前浏览器标签的本地 URL 仍受既有 URL 安全策略影响，不能用代码门禁冒充浏览器通过。
+- 仍未完成：复杂状态组合其他例外、完整传奇/巢穴/反应触发矩阵、复杂三维规则边界、全职业/子职业 1–20 级运行时。
