@@ -222,6 +222,7 @@ class FeatureActionInput(BaseModel):
 class RollInput(BaseModel):
     action_version: int = Field(ge=1)
     roll_total: int = Field(ge=-100, le=1000)
+    bardic_inspiration_total: int | None = Field(default=None, ge=1, le=1000)
     idempotency_key: str = Field(min_length=8, max_length=120)
 
 
@@ -867,6 +868,7 @@ def confirm_roll(
             action_id,
             body.action_version,
             body.roll_total,
+            body.bardic_inspiration_total,
             body.idempotency_key,
         )
     )

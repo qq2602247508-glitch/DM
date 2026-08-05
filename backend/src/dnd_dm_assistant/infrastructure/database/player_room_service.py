@@ -3086,6 +3086,26 @@ class PlayerRoomService:
             ):
                 continue
             if action.request_json.get("resolution_type"):
+                target = (
+                    safe_fighters_by_id.get(action.target_combatant_ids[0])
+                    if action.target_combatant_ids
+                    else None
+                )
+                raw_dice = target.snapshot_json.get("feature_dice") if target else None
+                raw_bardic_die = (
+                    raw_dice.get("bardic_inspiration_die")
+                    if isinstance(raw_dice, dict)
+                    else None
+                )
+                bardic_inspiration_die = (
+                    {
+                        "value": raw_bardic_die.get("value"),
+                        "source": raw_bardic_die.get("source"),
+                    }
+                    if isinstance(raw_bardic_die, dict)
+                    and raw_bardic_die.get("available") is True
+                    else None
+                )
                 pending.append(
                     {
                         "id": action.id,
@@ -3123,6 +3143,7 @@ class PlayerRoomService:
                         "reaction_trigger": action.request_json.get("reaction_trigger"),
                         "sequence_step": action.request_json.get("sequence_step"),
                         "sequence_size": action.request_json.get("sequence_size"),
+                        "bardic_inspiration_die": bardic_inspiration_die,
                     }
                 )
 
@@ -3474,6 +3495,28 @@ class PlayerRoomService:
                     ),
                     "attack_roll_budget": int(
                         item.snapshot_json.get("attack_roll_budget") or 0
+                    ),
+                    "bardic_inspiration_die": (
+                        {
+                            "value": item.snapshot_json.get("feature_dice", {})
+                            .get("bardic_inspiration_die", {})
+                            .get("value"),
+                            "source": item.snapshot_json.get("feature_dice", {})
+                            .get("bardic_inspiration_die", {})
+                            .get("source"),
+                        }
+                        if isinstance(item.snapshot_json.get("feature_dice"), dict)
+                        and isinstance(
+                            item.snapshot_json.get("feature_dice", {}).get(
+                                "bardic_inspiration_die"
+                            ),
+                            dict,
+                        )
+                        and item.snapshot_json.get("feature_dice", {})
+                        .get("bardic_inspiration_die", {})
+                        .get("available")
+                        is True
+                        else None
                     ),
                 }
             )
@@ -6336,6 +6379,24 @@ class PlayerRoomService:
             character.version += 1
             character.updated_at = _now()
 
+    def _consume_bardic_inspiration_after_attack(
+        self,
+        actor_id: str,
+        context: dict[str, Any],
+        operation_id: str,
+    ) -> dict[str, Any]:
+        """Consume an attack-roll die after the authoritative damage event succeeds."""
+
+        with Session(self.engine) as session, session.begin():
+            actor = session.get(Combatant, actor_id)
+            if actor is None:
+                raise StateNotFoundError("攻击者不存在")
+            return CombatEngineService._consume_bardic_inspiration(
+                actor,
+                context,
+                operation_id=operation_id,
+            )
+
     def attack(
         self,
         principal: PlayerPrincipal,
@@ -6743,6 +6804,25 @@ class PlayerRoomService:
                 raise ValueError("该法术的豁免成功效果需要 DM 裁定")
             saving_throw_action = bool(save_ability and save_dc)
             auto_hit_action = bool(action.get("auto_hit") is True)
+            bardic_inspiration: dict[str, Any] | None = None
+            raw_bardic_total = special_inputs.get("bardic_inspiration_total")
+            if raw_bardic_total is not None:
+                if (
+                    isinstance(raw_bardic_total, bool)
+                    or not isinstance(raw_bardic_total, int)
+                ):
+                    raise ValueError("吟游诗人激励骰结果必须是整数")
+                if saving_throw_action or auto_hit_action:
+                    raise ValueError("吟游诗人激励骰只能用于攻击检定")
+                bardic_inspiration = CombatEngineService._bardic_inspiration_context(
+                    actor,
+                    PlayerRollResolutionCommand(
+                        action_version=1,
+                        roll_total=0,
+                        bardic_inspiration_total=raw_bardic_total,
+                    ),
+                    operation_id=idempotency_key,
+                )
             requested_targets, target_resolution = self._resolve_combat_targets(
                 target_rule=target_rule,
                 actor=actor,
@@ -7123,6 +7203,8 @@ class PlayerRoomService:
                     effective_attack_roll = min(attack_rolls[:2])
                 else:
                     effective_attack_roll = attack_total
+                if bardic_inspiration is not None:
+                    effective_attack_roll += int(bardic_inspiration["value"])
                 save: dict[str, Any] | None = None
                 if saving_throw_action:
                     scores = current_target.snapshot_json.get("ability_scores")
@@ -7290,6 +7372,18 @@ class PlayerRoomService:
                         "save": save,
                         "attack_roll_mode": attack_roll_mode if not saving_throw_action else None,
                         "reported_attack_rolls": attack_rolls if not saving_throw_action else [],
+                        "attack_roll_bonus": (
+                            {
+                                "source": bardic_inspiration["source"],
+                                "die": bardic_inspiration["die"],
+                                "value": bardic_inspiration["value"],
+                            }
+                            if bardic_inspiration is not None and not saving_throw_action
+                            else None
+                        ),
+                        "effective_attack_roll": (
+                            effective_attack_roll if not saving_throw_action else None
+                        ),
                         "automatic_critical": (
                             automatic_critical if not saving_throw_action else False
                         ),
@@ -7409,7 +7503,13 @@ class PlayerRoomService:
                     in {"术士", "sorcerer"}
                 ),
                 attack_roll_total=(
-                    attack_total
+                    int(
+                        next(
+                            outcome["effective_attack_roll"]
+                            for outcome in target_outcomes
+                            if outcome["target_combatant_id"] == target_id
+                        )
+                    )
                     if not saving_throw_action and not auto_hit_action
                     else None
                 ),
@@ -7435,6 +7535,13 @@ class PlayerRoomService:
             combat_id,
             commands,
         )
+        bardic_inspiration_consumed = None
+        if bardic_inspiration is not None:
+            bardic_inspiration_consumed = self._consume_bardic_inspiration_after_attack(
+                actor.id,
+                bardic_inspiration,
+                idempotency_key,
+            )
         self._mark_attack_rider_usage(
             self.engine,
             actor.id,
@@ -7486,6 +7593,7 @@ class PlayerRoomService:
                 for values in rider_results_by_target.values()
                 for rider in values
             ],
+            "bardic_inspiration_consumed": bardic_inspiration_consumed,
             "compiled_effects": compiled_effects,
             "turn_advance": turn_advance,
         }
@@ -7967,6 +8075,7 @@ class PlayerRoomService:
         action_id: str,
         action_version: int,
         roll_total: int,
+        bardic_inspiration_total: int | None,
         idempotency_key: str,
     ) -> dict[str, Any]:
         if principal.character_id is None:
@@ -7999,7 +8108,10 @@ class PlayerRoomService:
             combat_id,
             action_id,
             PlayerRollResolutionCommand(
-                action_version=action_version, roll_total=roll_total, dm_note="由局域网玩家提交"
+                action_version=action_version,
+                roll_total=roll_total,
+                bardic_inspiration_total=bardic_inspiration_total,
+                dm_note="由局域网玩家提交",
             ),
             idempotency_key=idempotency_key,
         )

@@ -1004,6 +1004,7 @@ export type PlayerRollResolutionCommand = {
   action_version: number;
   roll_total: number;
   roll_totals?: number[];
+  bardic_inspiration_total?: number;
   use_legendary_resistance?: boolean;
   use_feature_reroll?: boolean;
   dm_note?: string | null;
@@ -1025,6 +1026,14 @@ export type PlayerRollResolution = {
     original_roll_total: number;
     dc: number;
     requires_second_roll: boolean;
+  } | null;
+  feature_dice_consumed?: {
+    die_key?: string;
+    source?: string;
+    die?: string | null;
+    value?: number;
+    sides?: number;
+    consumed?: boolean;
   } | null;
   dm_note?: string | null;
   follow_up_damage?: {

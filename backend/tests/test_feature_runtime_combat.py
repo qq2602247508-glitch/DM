@@ -11,6 +11,146 @@ from dnd_dm_assistant.infrastructure.database.models import CombatAction, Combat
 from dnd_dm_assistant.infrastructure.database.player_room_service import PlayerRoomService
 
 
+@pytest.mark.parametrize(
+    ("resolution_type", "request_fields"),
+    [
+        ("saving_throw", {"ability": "wisdom"}),
+        ("ability_check", {"ability": "strength"}),
+        ("skill_check", {"skill": "运动"}),
+    ],
+)
+def test_bardic_inspiration_is_added_after_roll_selection_and_consumed_once(
+    resolution_type: str,
+    request_fields: dict[str, str],
+) -> None:
+    action = CombatAction(
+        id=f"bardic-{resolution_type}",
+        campaign_id="campaign",
+        combat_id="combat",
+        action_type="player_roll_prompt",
+        target_combatant_ids=[f"bardic-target-{resolution_type}"],
+        request_json={
+            "resolution_type": resolution_type,
+            "dc": 15,
+            "action_name": "关键一掷",
+            "damage_on_failure": 0,
+            **request_fields,
+        },
+        result_json={},
+        round_number=1,
+        turn_index=0,
+        summary="等待玩家骰",
+        idempotency_key=f"bardic-{resolution_type}",
+    )
+    target = Combatant(
+        id=f"bardic-target-{resolution_type}",
+        entity_type="character",
+        display_name="受激励者",
+        hp=20,
+        max_hp=20,
+        snapshot_json={
+            "feature_dice": {
+                "bardic_inspiration_die": {
+                    "source": "吟游诗人激励",
+                    "value": "D6",
+                    "target_combatant_id": f"bardic-target-{resolution_type}",
+                    "available": True,
+                }
+            }
+        },
+    )
+    command = PlayerRollResolutionCommand(
+        action_version=1,
+        roll_total=10,
+        bardic_inspiration_total=5,
+    )
+
+    preview = CombatEngineService._resolve_player_roll(action, target, command)
+    assert preview["roll_total"] == 15
+    assert preview["success"] is True
+    assert preview["feature_dice_consumed"]["consumed"] is False
+    assert target.snapshot_json["feature_dice"]["bardic_inspiration_die"]["available"] is True
+
+    confirmed = CombatEngineService._resolve_player_roll(
+        action,
+        target,
+        command,
+        consume_defenses=True,
+    )
+    assert confirmed["roll_total"] == 15
+    assert confirmed["success"] is True
+    assert confirmed["feature_dice_consumed"] == {
+        "die_key": "bardic_inspiration_die",
+        "source": "吟游诗人激励",
+        "die": "D6",
+        "value": 5,
+        "sides": 6,
+        "consumed_for_action_id": action.id,
+    }
+    assert target.snapshot_json["feature_dice"]["bardic_inspiration_die"]["available"] is False
+
+    with pytest.raises(ValueError, match="已被其他操作消费"):
+        CombatEngineService._resolve_player_roll(action, target, command)
+
+
+def test_bardic_inspiration_validates_die_range_and_rejects_reroll_stacking() -> None:
+    action = CombatAction(
+        id="bardic-validation",
+        campaign_id="campaign",
+        combat_id="combat",
+        action_type="player_roll_prompt",
+        target_combatant_ids=["bardic-validation-target"],
+        request_json={
+            "resolution_type": "saving_throw",
+            "dc": 15,
+            "ability": "wisdom",
+            "action_name": "检定",
+        },
+        result_json={},
+        round_number=1,
+        turn_index=0,
+        summary="等待玩家骰",
+        idempotency_key="bardic-validation",
+    )
+    target = Combatant(
+        id="bardic-validation-target",
+        entity_type="character",
+        display_name="激励骰校验",
+        hp=20,
+        max_hp=20,
+        snapshot_json={
+            "feature_dice": {
+                "bardic_inspiration_die": {
+                    "source": "吟游诗人激励",
+                    "value": "D6",
+                    "available": True,
+                }
+            }
+        },
+    )
+    with pytest.raises(ValueError, match="1–6"):
+        CombatEngineService._resolve_player_roll(
+            action,
+            target,
+            PlayerRollResolutionCommand(
+                action_version=1,
+                roll_total=10,
+                bardic_inspiration_total=7,
+            ),
+        )
+    with pytest.raises(ValueError, match="不能与职业特性重掷"):
+        CombatEngineService._resolve_player_roll(
+            action,
+            target,
+            PlayerRollResolutionCommand(
+                action_version=1,
+                roll_total=10,
+                bardic_inspiration_total=4,
+                use_feature_reroll=True,
+            ),
+        )
+
+
 def test_typed_feature_saving_throw_advantage_is_consumed_by_save_resolution() -> None:
     target = Combatant(
         id="danger-sense",

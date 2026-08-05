@@ -1012,6 +1012,7 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
   const [slotLevel, setSlotLevel] = useState(0);
   const [targetId, setTargetId] = useState("");
   const [attackTotal, setAttackTotal] = useState("");
+  const [bardicAttackTotal, setBardicAttackTotal] = useState("");
   const [damageTotal, setDamageTotal] = useState("");
   const [useDivineSmite, setUseDivineSmite] = useState(false);
   const [divineSmiteSlotLevel, setDivineSmiteSlotLevel] = useState("1");
@@ -1045,6 +1046,7 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
   const [deflectRedirectDamageRolls, setDeflectRedirectDamageRolls] = useState<Record<string, string[]>>({});
   const [criticalHit, setCriticalHit] = useState(false);
   const [rolls, setRolls] = useState<Record<string, string>>({});
+  const [bardicInspirationRolls, setBardicInspirationRolls] = useState<Record<string, string>>({});
   const [deathSaveRoll, setDeathSaveRoll] = useState("");
   const [endTurnAfterAttack, setEndTurnAfterAttack] = useState(true);
   const [disengage, setDisengage] = useState(false);
@@ -1678,6 +1680,15 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
       }
     }
     if (reactionTrigger.trim()) result.reaction_trigger = reactionTrigger.trim();
+    if (
+      bardicAttackTotal.trim()
+      && !isCastAction
+      && !isSavingThrowAction
+      && !isAutoHitAction
+      && !isRuntimeFeatureAction
+    ) {
+      result.bardic_inspiration_total = Number(bardicAttackTotal);
+    }
     if (useDivineSmite && divineSmiteRider) {
       result.attack_rider_eligibility = { "divine_smite:bonus_damage": true };
       result.attack_rider_totals = { "divine_smite:bonus_damage": divineSmiteReportedTotal };
@@ -2107,6 +2118,9 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
           ))}
           {combat.pending_rolls.map((roll) => {
             const windowLabel = advancedRollWindowLabel(roll.action_cost);
+            const inspirationDie = roll.bardic_inspiration_die;
+            const inspirationSides = Number(inspirationDie?.value?.match(/\d+/)?.[0] ?? 0);
+            const inspirationRoll = bardicInspirationRolls[roll.id] ?? "";
             const damageSegments = (roll.damage_components_on_failure?.length
               ? roll.damage_components_on_failure
               : roll.damage_components_on_success) ?? [];
@@ -2128,8 +2142,14 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
               {dangerCellKeys.size ? <p className="text-2xs text-red-300">地图上的红色描边为「{roll.action_name}」当前影响范围。</p> : null}
               <div className="mt-2 flex gap-2">
                 <input aria-label={`${roll.action_name}骰值`} className={inputCls} onChange={(event) => setRolls((current) => ({ ...current, [roll.id]: event.target.value }))} type="number" value={rolls[roll.id] ?? ""} />
+                {inspirationDie ? <label className="flex items-center gap-1 text-2xs text-fuchsia-200">激励骰 {inspirationDie.value ?? ""}<input aria-label={`${roll.action_name}吟游诗人激励骰`} className="w-16 rounded border border-fuchsia-800 bg-ink-950 px-1.5 py-1 text-parchment-100" max={inspirationSides || undefined} min="1" onChange={(event) => setBardicInspirationRolls((current) => ({ ...current, [roll.id]: event.target.value }))} placeholder="可选" type="number" value={inspirationRoll} /></label> : null}
                 <Button disabled={!rolls[roll.id] || mutation.isPending} loading={mutation.isPending} onClick={() => mutation.mutate(async () => {
-                  const result = await submitMyPlayerRoll(roll.id, roll.version, Number(rolls[roll.id]));
+                  const result = await submitMyPlayerRoll(
+                    roll.id,
+                    roll.version,
+                    Number(rolls[roll.id]),
+                    inspirationRoll.trim() ? Number(inspirationRoll) : undefined,
+                  );
                   const next = (result as { turn_advance?: { active_combatant?: { display_name?: string } } }).turn_advance?.active_combatant?.display_name;
                   setLastResolution(`已提交「${roll.action_name}」的检定${next ? `；服务器已推进到 ${next} 的回合` : "；服务器已同步本次结果。若仍有其他待掷骰请求或 DM 确认，战斗会继续保持等待"}。`);
                   return result;
@@ -2223,7 +2243,7 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
               <span>先选择攻击/技能和目标；这里会明确显示命中所需 AC、命中加值与伤害骰。</span>
             )}
           </div>
-          <div className="mt-2 grid grid-cols-2 gap-2"><label className="text-xs text-stone-400">d20命中总值<input className={`${inputCls} mt-1`} disabled={isAutoHitAction || isCastAction || isRuntimeFeatureAction || isSavingThrowAction} onChange={(event) => setAttackTotal(event.target.value)} placeholder={isAutoHitAction || isRuntimeFeatureAction ? "该特性无需命中" : isCastAction || isSavingThrowAction ? "该效果无需命中" : ""} type="number" value={attackTotal} /></label>{featureNeedsHealingRoll || hasHealingBlock || usesLegacyDamageTotal ? <label className="text-xs text-stone-400">{featureNeedsHealingRoll || hasHealingBlock ? "治疗骰最终总值" : "伤害骰最终总值"}<input className={`${inputCls} mt-1`} disabled={(isCastAction && !hasHealingBlock) || (isSpecialAction && !hasHealingBlock)} onChange={(event) => setDamageTotal(event.target.value)} type="number" value={damageTotal} /></label> : <span className="self-end pb-2 text-xs text-stone-400">此动作须在下方逐伤害段填写最终总值。</span>}</div>
+          <div className="mt-2 grid grid-cols-2 gap-2"><label className="text-xs text-stone-400">d20命中总值<input className={`${inputCls} mt-1`} disabled={isAutoHitAction || isCastAction || isRuntimeFeatureAction || isSavingThrowAction} onChange={(event) => setAttackTotal(event.target.value)} placeholder={isAutoHitAction || isRuntimeFeatureAction ? "该特性无需命中" : isCastAction || isSavingThrowAction ? "该效果无需命中" : ""} type="number" value={attackTotal} /></label>{!isAutoHitAction && !isCastAction && !isRuntimeFeatureAction && !isSavingThrowAction && own?.bardic_inspiration_die ? <label className="text-xs text-fuchsia-200">激励骰（{own.bardic_inspiration_die.value ?? ""}）<input aria-label="攻击骰吟游诗人激励骰" className={`${inputCls} mt-1`} min="1" onChange={(event) => setBardicAttackTotal(event.target.value)} placeholder="可选" type="number" value={bardicAttackTotal} /></label> : null}{featureNeedsHealingRoll || hasHealingBlock || usesLegacyDamageTotal ? <label className="text-xs text-stone-400">{featureNeedsHealingRoll || hasHealingBlock ? "治疗骰最终总值" : "伤害骰最终总值"}<input className={`${inputCls} mt-1`} disabled={(isCastAction && !hasHealingBlock) || (isSpecialAction && !hasHealingBlock)} onChange={(event) => setDamageTotal(event.target.value)} type="number" value={damageTotal} /></label> : <span className="self-end pb-2 text-xs text-stone-400">此动作须在下方逐伤害段填写最终总值。</span>}</div>
           {requiresComponentTotals ? <fieldset className="mt-2 rounded border border-amber-800/60 bg-amber-950/15 p-3 text-xs text-amber-100"><legend className="px-1 text-2xs">逐伤害段掷骰总值</legend><p className="mb-2 mt-0 text-2xs leading-5 text-stone-300">每段都会独立提交给战斗引擎，因此抗性、易伤与免疫会按伤害类型分别结算；系统不会从总伤害中猜测分配。</p>{sharedDamageBlocks.map((block) => <label className="mt-2 block" key={String(block.id)}>{ruleFieldText(block, "damage_type", "未标注类型")} · {ruleFieldText(block, "expression", "伤害段")}<input className={`${inputCls} mt-1`} min="0" onChange={(event) => setDamageComponentTotals((current) => ({ ...current, [String(block.id)]: event.target.value }))} type="number" value={damageComponentTotals[String(block.id)] ?? ""} /></label>)}{targetDamageBlocks.length ? <div className="mt-2 space-y-2">{affectedEnemies.map((target) => <div className="rounded border border-ink-700 p-2" key={target.id}><strong className="text-2xs text-stone-200">{target.name} 的分别伤害</strong>{targetDamageBlocks.map((block) => { const key = `${target.id}:${String(block.id)}`; return <label className="mt-1 block text-2xs text-stone-300" key={String(block.id)}>{ruleFieldText(block, "damage_type", "未标注类型")} · {ruleFieldText(block, "expression", "伤害段")}<input className={`${inputCls} mt-1`} min="0" onChange={(event) => setTargetDamageComponentTotals((current) => ({ ...current, [key]: event.target.value }))} type="number" value={targetDamageComponentTotals[key] ?? ""} /></label>; })}</div>)}</div> : null}</fieldset> : null}
           {!isCastAction && !isSavingThrowAction ? <label className="mt-2 flex items-center gap-2 text-xs text-amber-200"><input checked={criticalHit} onChange={(event) => setCriticalHit(event.target.checked)} type="checkbox" />天然 20 暴击（每个伤害段请使用对应的暴击骰总值）</label> : null}
           <label className="mt-2 flex items-start gap-2 rounded border border-ink-700 p-2 text-xs text-stone-400"><input checked={endTurnAfterAttack} disabled={selectedActionCost === "reaction"} onChange={(event) => setEndTurnAfterAttack(event.target.checked)} type="checkbox" /><span>{selectedActionCost === "reaction" ? "反应不会自动结束你的当前回合。" : "攻击结算后自动结束回合并切到下一位。取消勾选可在攻击后继续使用剩余移动或附赠动作。"}</span></label>

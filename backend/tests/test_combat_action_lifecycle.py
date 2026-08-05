@@ -187,6 +187,70 @@ def test_failed_player_save_persists_feature_reroll_window_before_resolution(
     assert second.json()["target"]["hp"] == 20
 
 
+def test_bardic_inspiration_player_roll_api_adds_and_consumes_die(
+    combat_client: TestClient,
+) -> None:
+    campaign, combat, actor = _setup(combat_client)
+    target_response = combat_client.post(
+        f"{_root(campaign, combat)}/combatants",
+        json={
+            "display_name": "激励骰玩家",
+            "entity_type": "character",
+            "initiative": 10,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {
+                "feature_dice": {
+                    "bardic_inspiration_die": {
+                        "source": "吟游诗人激励",
+                        "value": "D6",
+                        "available": True,
+                    }
+                }
+            },
+        },
+    )
+    assert target_response.status_code == 201, target_response.text
+    target = target_response.json()
+    prompt = combat_client.post(
+        f"{_root(campaign, combat)}/actions/player-rolls/pending",
+        headers={"X-Request-ID": "bardic-api-prompt"},
+        json={
+            "actor_combatant_id": actor["id"],
+            "actor_version": actor["version"],
+            "target_combatant_id": target["id"],
+            "target_version": target["version"],
+            "action_name": "关键说服",
+            "resolution_type": "ability_check",
+            "dc": 15,
+            "ability": "charisma",
+        },
+    )
+    assert prompt.status_code == 200, prompt.text
+    action = prompt.json()["action"]
+
+    confirmed = combat_client.post(
+        f"{_root(campaign, combat)}/actions/player-rolls/{action['id']}/confirm",
+        headers={"X-Request-ID": "bardic-api-confirm"},
+        json={
+            "action_version": action["version"],
+            "roll_total": 10,
+            "bardic_inspiration_total": 5,
+        },
+    )
+    assert confirmed.status_code == 200, confirmed.text
+    body = confirmed.json()
+    assert body["resolution"]["roll_total"] == 15
+    assert body["resolution"]["success"] is True
+    assert body["resolution"]["feature_dice_consumed"]["value"] == 5
+    assert (
+        body["target"]["snapshot_json"]["feature_dice"]["bardic_inspiration_die"][
+            "available"
+        ]
+        is False
+    )
+
+
 def test_feature_resource_reroll_opens_after_failure_and_uses_second_roll(
     combat_client: TestClient,
 ) -> None:

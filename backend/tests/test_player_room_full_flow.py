@@ -321,3 +321,117 @@ def test_two_independent_player_sessions_share_table_combat_and_settlement(
     finally:
         player_a.close()
         player_b.close()
+
+
+def test_player_attack_bardic_inspiration_is_consumed_once_and_idempotent(
+    campaign_client: TestClient,
+) -> None:
+    campaign = campaign_client.post(
+        "/api/v1/campaigns", json={"name": "攻击激励骰幂等验收"}
+    ).json()
+    campaign_id = campaign["id"]
+    hero = _character(campaign_client, campaign_id, "激励攻击者")
+    scene = campaign_client.post(
+        f"/api/v1/campaigns/{campaign_id}/scenes", json={"name": "激励骰靶场"}
+    ).json()
+    assert campaign_client.post(
+        f"/api/v1/campaigns/{campaign_id}/scenes/{scene['id']}/grid",
+        json={"width": 8, "height": 4, "cell_size_ft": 5, "mode": "combat"},
+    ).status_code == 201
+    monster = campaign_client.post(
+        f"/api/v1/campaigns/{campaign_id}/monsters",
+        json={"name": "激励骰假人", "armor_class": 12, "hp": 20, "max_hp": 20},
+    ).json()
+    for entity_type, entity_id in (("character", hero["id"]), ("monster", monster["id"])):
+        assert campaign_client.post(
+            f"/api/v1/campaigns/{campaign_id}/scenes/{scene['id']}/participants",
+            json={"entity_type": entity_type, "entity_id": entity_id},
+        ).status_code == 201
+    started = campaign_client.post(
+        f"/api/v1/campaigns/{campaign_id}/scenes/{scene['id']}/start-combat",
+        json={"name": "激励骰攻击战斗"},
+    )
+    assert started.status_code == 201, started.text
+    combat = started.json()["combat"]
+    fighters = campaign_client.get(
+        f"/api/v1/campaigns/{campaign_id}/combats/{combat['id']}/combatants"
+    ).json()["items"]
+    by_entity = {item["entity_id"]: item for item in fighters}
+    actor = campaign_client.patch(
+        f"/api/v1/campaigns/{campaign_id}/combats/{combat['id']}/combatants/{by_entity[hero['id']]['id']}",
+        headers={"If-Match": f'"{by_entity[hero["id"]]["version"]}"'},
+        json={
+            "initiative": 20,
+            "snapshot_json": {
+                **by_entity[hero["id"]]["snapshot_json"],
+                "grid_position": {"row": 2, "col": 2},
+                "feature_dice": {
+                    "bardic_inspiration_die": {
+                        "source": "吟游诗人激励",
+                        "value": "D6",
+                        "target_combatant_id": by_entity[hero["id"]]["id"],
+                        "available": True,
+                    }
+                },
+            },
+        },
+    )
+    assert actor.status_code == 200, actor.text
+    target = campaign_client.patch(
+        f"/api/v1/campaigns/{campaign_id}/combats/{combat['id']}/combatants/{by_entity[monster['id']]['id']}",
+        headers={"If-Match": f'"{by_entity[monster["id"]]["version"]}"'},
+        json={
+            "initiative": 10,
+            "snapshot_json": {
+                **by_entity[monster["id"]]["snapshot_json"],
+                "grid_position": {"row": 2, "col": 3},
+            },
+        },
+    )
+    assert target.status_code == 200, target.text
+    opened = campaign_client.post(
+        f"/api/v1/campaigns/{campaign_id}/player-room/open", json={"hours": 4}
+    ).json()
+    player = TestClient(campaign_client.app)
+    try:
+        assert player.post(
+            "/api/v1/player-room/join",
+            json={"join_code": opened["join_code"], "display_name": "激励骰玩家"},
+        ).status_code == 201
+        assert player.post(
+            "/api/v1/player-room/me/bind-character",
+            json={"character_id": hero["id"]},
+        ).status_code == 200
+        assert campaign_client.post(
+            f"/api/v1/campaigns/{campaign_id}/player-room/live-state",
+            json={"scene_id": scene["id"], "combat_id": combat["id"]},
+        ).status_code == 200
+
+        payload = {
+            "target_combatant_id": target.json()["id"],
+            "action_name": "长剑",
+            "attack_total": 8,
+            "damage_total": 4,
+            "special_inputs": {"bardic_inspiration_total": 4},
+            "end_turn_after": False,
+            "idempotency_key": "bardic-attack-idempotent",
+        }
+        first = player.post("/api/v1/player-room/me/combat/attack", json=payload)
+        assert first.status_code == 200, first.text
+        assert first.json()["bardic_inspiration_consumed"]["value"] == 4
+        assert first.json()["results"][0]["target"]["hp"] == 16
+
+        replay = player.post("/api/v1/player-room/me/combat/attack", json=payload)
+        assert replay.status_code == 200, replay.text
+        assert replay.json()["bardic_inspiration_consumed"]["value"] == 4
+        assert replay.json()["results"][0]["target"]["hp"] == 16
+        snapshot = player.get("/api/v1/player-room/me")
+        assert snapshot.status_code == 200, snapshot.text
+        combatant = next(
+            item
+            for item in snapshot.json()["combat"]["combatants"]
+            if item["id"] == actor.json()["id"]
+        )
+        assert combatant["bardic_inspiration_die"] is None
+    finally:
+        player.close()

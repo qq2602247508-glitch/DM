@@ -1429,6 +1429,7 @@ class PlayerRollResolutionCommand(BaseModel):
     action_version: int = Field(ge=1)
     roll_total: int = Field(ge=-100, le=1_000)
     roll_totals: list[int] = Field(default_factory=list, min_length=0, max_length=2)
+    bardic_inspiration_total: int | None = Field(default=None, ge=1, le=1_000)
     use_legendary_resistance: bool = False
     use_feature_reroll: bool = False
     feature_reroll_reactor_id: str | None = Field(default=None, min_length=1, max_length=36)

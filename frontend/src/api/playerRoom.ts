@@ -255,6 +255,7 @@ export type PlayerCombatant = {
   reaction_available?: boolean;
   extra_action_budget?: number;
   attack_roll_budget?: number;
+  bardic_inspiration_die?: { value?: string | null; source?: string | null } | null;
   speed_ft: number;
   ability_scores: Record<string, number>;
   actions: Array<string | Record<string, unknown>>;
@@ -308,6 +309,7 @@ export type PlayerPendingRoll = {
   reaction_trigger?: string | null;
   sequence_step?: number | null;
   sequence_size?: number | null;
+  bardic_inspiration_die?: { value?: string | null; source?: string | null } | null;
 };
 
 export type PlayerPendingReaction = {
@@ -887,12 +889,20 @@ export const dismissMySummon = (
   }),
 });
 
-export const submitMyPlayerRoll = (actionId: string, actionVersion: number, rollTotal: number) =>
+export const submitMyPlayerRoll = (
+  actionId: string,
+  actionVersion: number,
+  rollTotal: number,
+  bardicInspirationTotal?: number,
+) =>
   playerFetch<Record<string, unknown>>(`/player-room/me/combat/player-rolls/${actionId}`, {
     method: "POST",
     body: JSON.stringify({
       action_version: actionVersion,
       roll_total: rollTotal,
+      ...(bardicInspirationTotal !== undefined
+        ? { bardic_inspiration_total: bardicInspirationTotal }
+        : {}),
       idempotency_key: createClientId("player-roll"),
     }),
   });

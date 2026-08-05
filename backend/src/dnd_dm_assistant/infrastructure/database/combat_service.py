@@ -161,6 +161,114 @@ class CombatEngineService:
         return default
 
     @staticmethod
+    def _feature_die_sides(value: object) -> int | None:
+        """Parse a stored feature die without guessing an absent die size."""
+
+        normalized = str(value or "").strip().casefold().replace(" ", "")
+        match = re.fullmatch(r"(?:1d|d)?(\d+)", normalized)
+        if match is None:
+            return None
+        sides = int(match.group(1))
+        return sides if sides >= 2 else None
+
+    @classmethod
+    def _bardic_inspiration_context(
+        cls,
+        target: Combatant,
+        command: PlayerRollResolutionCommand,
+        *,
+        operation_id: str | None = None,
+    ) -> dict[str, Any] | None:
+        """Validate a player's explicit Bardic Inspiration die submission.
+
+        The die is granted to the roller and lives in that combatant's
+        snapshot.  It is never inferred from class/name text, and merely
+        previewing a result does not consume it.
+        """
+
+        submitted = command.bardic_inspiration_total
+        if submitted is None:
+            return None
+        if command.use_feature_reroll:
+            raise ValueError(
+                "吟游诗人激励骰不能与职业特性重掷在同一次提交中叠加"
+            )
+        snapshot = dict(target.snapshot_json or {})
+        raw_dice = snapshot.get("feature_dice")
+        dice = raw_dice if isinstance(raw_dice, dict) else {}
+        raw_die = dice.get("bardic_inspiration_die")
+        if not isinstance(raw_die, dict):
+            raise ValueError("目标没有可用的吟游诗人激励骰")
+        if raw_die.get("available") is not True:
+            consumed = raw_die.get("consumed")
+            if (
+                operation_id
+                and isinstance(consumed, dict)
+                and consumed.get("consumed_for_action_id") == operation_id
+            ):
+                return {
+                    **consumed,
+                    "available": True,
+                    "replayed": True,
+                }
+            raise ValueError("吟游诗人激励骰已被其他操作消费")
+        stored_target_id = raw_die.get("target_combatant_id")
+        if stored_target_id is not None and str(stored_target_id) != target.id:
+            raise ValueError("吟游诗人激励骰不属于当前掷骰角色")
+        sides = cls._feature_die_sides(raw_die.get("value"))
+        if sides is None:
+            raise ValueError("吟游诗人激励骰缺少可验证的骰面数")
+        if submitted > sides:
+            raise ValueError(f"吟游诗人激励骰结果必须在 1–{sides} 之间")
+        return {
+            "die_key": "bardic_inspiration_die",
+            "source": raw_die.get("source") or "吟游诗人激励",
+            "value": submitted,
+            "die": raw_die.get("value"),
+            "sides": sides,
+            "available": True,
+        }
+
+    @classmethod
+    def _consume_bardic_inspiration(
+        cls,
+        target: Combatant,
+        context: dict[str, Any],
+        *,
+        operation_id: str,
+    ) -> dict[str, Any]:
+        snapshot = dict(target.snapshot_json or {})
+        raw_dice = snapshot.get("feature_dice")
+        dice = dict(raw_dice) if isinstance(raw_dice, dict) else {}
+        raw_die = dice.get("bardic_inspiration_die")
+        if not isinstance(raw_die, dict):
+            raise ValueError("吟游诗人激励骰已被其他操作消费")
+        if raw_die.get("available") is not True:
+            consumed = raw_die.get("consumed")
+            if (
+                isinstance(consumed, dict)
+                and consumed.get("consumed_for_action_id") == operation_id
+            ):
+                return dict(consumed)
+            raise ValueError("吟游诗人激励骰已被其他操作消费")
+        consumed = {
+            "die_key": context["die_key"],
+            "source": context["source"],
+            "die": context["die"],
+            "value": context["value"],
+            "sides": context["sides"],
+            "consumed_for_action_id": operation_id,
+        }
+        dice["bardic_inspiration_die"] = {
+            **raw_die,
+            "available": False,
+            "consumed": consumed,
+        }
+        snapshot["feature_dice"] = dice
+        target.snapshot_json = snapshot
+        return consumed
+
+    @staticmethod
     def _effect_ends_round(
         started_round: int,
         duration_unit: str,
@@ -7159,6 +7267,8 @@ class CombatEngineService:
         combat: Combat | None = None,
         condition_names: Iterable[object] = (),
         selected_reactor_id: str | None = None,
+        roll_bonus: int = 0,
+        roll_bonus_source: str | None = None,
     ) -> dict[str, object]:
         snapshot = dict(target.snapshot_json or {})
         raw_defenses = snapshot.get("advanced_defenses")
@@ -7359,9 +7469,14 @@ class CombatEngineService:
             bool(condition_set & cls._SAVE_AUTO_FAIL_STR_DEX_CONDITIONS)
             and normalized_ability in {"strength", "dexterity", "力量", "敏捷"}
         )
+        roll_bonus_applied = False
         if auto_fail:
             effective_roll = -100_000
             applied.append("condition_auto_fail_strength_dex_save")
+        elif roll_bonus:
+            effective_roll += roll_bonus
+            roll_bonus_applied = True
+            applied.append(roll_bonus_source or "feature:bardic_inspiration")
         succeeded = effective_roll >= dc and not auto_fail
         resource_consumed: dict[str, object] | None = None
         if use_legendary_resistance:
@@ -7429,6 +7544,7 @@ class CombatEngineService:
             "applied_defenses": applied,
             "defense_resource_consumed": resource_consumed,
             "feature_reroll_consumed": feature_reroll_consumed,
+            "roll_bonus_applied": roll_bonus_applied,
         }
 
     @classmethod
@@ -7447,6 +7563,7 @@ class CombatEngineService:
             raise ValueError("指定反应者时必须确认使用职业特性重掷")
         dc = int(str(request["dc"]))
         resolution_type = str(request.get("resolution_type") or "saving_throw")
+        bardic_inspiration = cls._bardic_inspiration_context(target, command)
         if resolution_type in {"ability_check", "skill_check"}:
             stat = "ability_check" if resolution_type == "ability_check" else "skill_check"
             feature_modifiers = cls._feature_rule_modifiers(
@@ -7557,6 +7674,11 @@ class CombatEngineService:
                     if isinstance(strength_score, int) and effective_roll < strength_score:
                         effective_roll = strength_score
                         applied.append("feature:不屈勇武最低力量检定总值")
+            if bardic_inspiration is not None:
+                if any(item.startswith("condition_auto_fail") for item in applied):
+                    raise ValueError("自动失败的检定不能使用吟游诗人激励骰改变结果")
+                effective_roll += int(bardic_inspiration["value"])
+                applied.append("feature:bardic_inspiration")
             defense = {
                 "success": effective_roll >= dc,
                 "effective_roll_total": effective_roll,
@@ -7583,6 +7705,28 @@ class CombatEngineService:
                 combat=combat,
                 condition_names=request.get("conditions_on_failure", []),
                 selected_reactor_id=command.feature_reroll_reactor_id,
+                roll_bonus=(
+                    int(bardic_inspiration["value"])
+                    if bardic_inspiration is not None
+                    else 0
+                ),
+                roll_bonus_source="feature:bardic_inspiration",
+            )
+        feature_dice_consumed = None
+        if bardic_inspiration is not None:
+            if not defense.get("roll_bonus_applied", True):
+                raise ValueError("自动失败的豁免不能使用吟游诗人激励骰改变结果")
+            feature_dice_consumed = (
+                cls._consume_bardic_inspiration(
+                    target,
+                    bardic_inspiration,
+                    operation_id=action.id,
+                )
+                if consume_defenses
+                else {
+                    **bardic_inspiration,
+                    "consumed": False,
+                }
             )
         success = bool(defense["success"])
         damage = cls._state_int(defense["damage"])
@@ -7657,6 +7801,7 @@ class CombatEngineService:
                     },
                     "feature_reroll_consumed": None,
                     "defense_resource_consumed": None,
+                    "feature_dice_consumed": feature_dice_consumed,
                     "dm_note": command.dm_note,
                 }
         component_key = (
@@ -7767,6 +7912,7 @@ class CombatEngineService:
             "applied_defenses": defense["applied_defenses"],
             "defense_resource_consumed": defense["defense_resource_consumed"],
             "feature_reroll_consumed": defense["feature_reroll_consumed"],
+            "feature_dice_consumed": feature_dice_consumed,
         }
         result["follow_up_damage"] = (
             {
