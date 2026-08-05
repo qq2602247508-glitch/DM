@@ -3140,6 +3140,7 @@ class CombatEngineService:
                 "not_prone",
                 "not prone",
                 "raging",
+                "strength_ability_check_total_below_strength_score",
                 "innate_sorcery_active",
                 "innate_sorcery_active_and_sorcerer_spell",
                 "wearing_armor",
@@ -6942,6 +6943,41 @@ class CombatEngineService:
             else:
                 effective_roll = command.roll_total
                 applied = []
+            if resolution_type == "ability_check":
+                ability_aliases = {
+                    "力量": "strength",
+                    "敏捷": "dexterity",
+                    "体质": "constitution",
+                    "智力": "intelligence",
+                    "感知": "wisdom",
+                    "魅力": "charisma",
+                }
+                normalized_ability = str(request.get("ability") or "").strip().lower()
+                normalized_ability = ability_aliases.get(
+                    normalized_ability, normalized_ability
+                )
+                minimum_total_modifier = next(
+                    (
+                        item
+                        for item in feature_modifiers
+                        if item.get("operation") == "set_minimum_total_from_ability"
+                        and ability_aliases.get(
+                            str(item.get("ability") or "").strip().lower(),
+                            str(item.get("ability") or "").strip().lower(),
+                        )
+                        == normalized_ability
+                        and str(item.get("applies_when") or "").strip().lower()
+                        == "strength_ability_check_total_below_strength_score"
+                    ),
+                    None,
+                )
+                if minimum_total_modifier is not None and normalized_ability == "strength":
+                    raw_scores = (target.snapshot_json or {}).get("ability_scores")
+                    scores = raw_scores if isinstance(raw_scores, dict) else {}
+                    strength_score = scores.get("strength", scores.get("力量"))
+                    if isinstance(strength_score, int) and effective_roll < strength_score:
+                        effective_roll = strength_score
+                        applied.append("feature:不屈勇武最低力量检定总值")
             defense = {
                 "success": effective_roll >= dc,
                 "effective_roll_total": effective_roll,

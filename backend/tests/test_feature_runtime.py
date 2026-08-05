@@ -1341,6 +1341,8 @@ def test_2024_deterministic_feature_contracts_are_explicit_but_partial_when_even
     )
     assert indomitable_might["operation"] == "set_minimum_total_from_ability"
     assert indomitable_might["ability"] == "strength"
+    assert indomitable_might["automation_status"] == "full"
+    assert indomitable_might["requires_dm_adjudication"] is False
 
     projections = {
         item["feature_id"]: item for item in feature_runtime_action_projections(registry)

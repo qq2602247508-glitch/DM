@@ -1452,9 +1452,14 @@ def feature_runtime_definition(
                 "ability": "strength",
                 "scope": "self",
                 "applies_when": "strength_ability_check_total_below_strength_score",
-                "automation_status": "partial",
-                "requires_dm_adjudication": True,
-                "partial_reason": "最低总值规则已结构化；检定引擎尚未读取能力值下限。",
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "player_roll_resolution",
+                    "operation": "set_minimum_total_from_ability",
+                },
+                "summary": "力量属性检定总值低于力量值时，按力量值结算。",
                 **source,
             }
         )

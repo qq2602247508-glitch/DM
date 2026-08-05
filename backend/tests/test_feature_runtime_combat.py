@@ -316,6 +316,81 @@ def test_raging_strength_check_uses_reported_advantage_rolls() -> None:
         )
 
 
+def test_indomitable_might_floors_strength_check_at_strength_score() -> None:
+    action = CombatAction(
+        campaign_id="campaign",
+        combat_id="combat",
+        action_type="player_roll_prompt",
+        target_combatant_ids=["indomitable-checker"],
+        request_json={
+            "resolution_type": "ability_check",
+            "dc": 17,
+            "ability": "strength",
+            "action_name": "掰断铁栅栏",
+        },
+        result_json={},
+        round_number=1,
+        turn_index=0,
+        summary="等待力量属性检定",
+        idempotency_key="indomitable-might-check",
+    )
+    target = Combatant(
+        id="indomitable-checker",
+        entity_type="character",
+        display_name="不屈勇武检定者",
+        hp=20,
+        max_hp=20,
+        snapshot_json={
+            "ability_scores": {"strength": 18},
+            "rule_modifiers": {
+                "indomitable_might:strength_check_floor": {
+                    "stat": "ability_check",
+                    "scope": "self",
+                    "ability": "strength",
+                    "operation": "set_minimum_total_from_ability",
+                    "applies_when": "strength_ability_check_total_below_strength_score",
+                    "source": "不屈勇武",
+                }
+            },
+        },
+    )
+
+    resolved = CombatEngineService._resolve_player_roll(
+        action,
+        target,
+        PlayerRollResolutionCommand(action_version=1, roll_total=5),
+    )
+
+    assert resolved["roll_total"] == 18
+    assert resolved["success"] is True
+    assert resolved["applied_defenses"] == ["feature:不屈勇武最低力量检定总值"]
+
+    non_strength_action = CombatAction(
+        campaign_id="campaign",
+        combat_id="combat",
+        action_type="player_roll_prompt",
+        target_combatant_ids=["indomitable-checker"],
+        request_json={
+            "resolution_type": "ability_check",
+            "dc": 17,
+            "ability": "dexterity",
+            "action_name": "翻越栅栏",
+        },
+        result_json={},
+        round_number=1,
+        turn_index=0,
+        summary="等待敏捷属性检定",
+        idempotency_key="indomitable-might-dexterity-check",
+    )
+    unchanged = CombatEngineService._resolve_player_roll(
+        non_strength_action,
+        target,
+        PlayerRollResolutionCommand(action_version=1, roll_total=5),
+    )
+    assert unchanged["roll_total"] == 5
+    assert unchanged["success"] is False
+
+
 def test_poisoned_check_disadvantage_cancels_feature_advantage() -> None:
     action = CombatAction(
         campaign_id="campaign",
