@@ -1,3 +1,12 @@
+# 2026-08-05 野性直觉先攻优势闭环
+
+- 代码提交 `f9a6447`：场景开始战斗时读取角色 `feature_runtime.combat_start.modifiers` 的先攻优势；只有明确的 `stat=initiative`、`operation=advantage`、`scope=self` 修正才会触发，真实投掷两枚 d20 并取较高值。
+- 先攻结果和不可变战斗快照同时记录 `mode`、全部 `dice`、`selected_die`、优势/劣势来源；既有 `die` 和 `total` 字段保持兼容。优势与劣势同时存在时按规则抵消，保留单骰，不猜测冲突裁定。
+- 运行时合同从 `partial` 提升为 `full`；新增编译器回归和真实 `start-combat` API 回归，覆盖 `[4,18]` 取 18、敏捷修正和快照持久化。
+- 验证：定向回归通过；当前源码全量后端 `505 passed`；Ruff、compileall、`git diff --check` 通过。仅有既有 Starlette/httpx 弃用警告。
+- 本轮未修改前端源码；不重复宣称浏览器验收，当前本地浏览器地址仍受既有安全策略限制。
+- 当前仍未完成：无甲防御装备条件 AC 求值、复杂状态组合其他例外、完整传奇/巢穴/反应触发矩阵、复杂三维规则边界、全职业/子职业 1–20 级运行时。
+
 # 2026-08-05 危险感知敏捷豁免优势闭环
 
 - 本轮未提交修改将 `danger_sense:dexterity_saving_throw_advantage` 从 `partial` 提升为 `full`：未处于失能状态时，敏捷豁免真实取两枚报告骰的较高值；处于失能状态时不生效。
