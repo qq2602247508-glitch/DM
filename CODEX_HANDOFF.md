@@ -970,3 +970,11 @@ backend/.venv/bin/python -m pytest -q backend/tests
 - 浏览器仍未能验收：现有 5173 页面被内置浏览器 URL 安全策略拦截；没有把代码测试冒充浏览器结果，也没有生成虚假截图。
 
 本项把偏转攻击从“完全阻塞”推进到“减伤分支可执行、归零后反击仍需 DM”。复杂反应触发矩阵、完整反击分支、复杂状态组合、复杂三维遮挡和所有职业/子职业 1–20 级运行时仍未全部自动化。
+
+## 2026-08-05 先天术法与职业检定运行时
+
+- `b5451d3 feat: execute innate sorcery runtime effect`：先天术法可由职业特性动作真实扣除 1 次资源，写入 `innate_sorcery`，持续 1 分钟（10 轮）后自动清理；激活期间只有明确标记为术士法术的攻击获得优势，法术豁免 DC 在玩家攻击/法术路径实际加 1；缺少状态或施法来源时不套用。
+- `3e51a04 feat: resolve raging strength check advantage`：战斗玩家检定提示现在消费 `ability_check`/`skill_check` 的结构化条件优势；狂暴力量检定要求玩家报告两枚 d20，取高值，缺第二枚时暂停并报错，不猜骰。
+- `572853a feat: execute reliable talent check floor`：非战斗技能检定真实识别可靠才能与技能熟练，玩家报告 d20 小于 10 时按 10 计算，并同时保留 `reported_raw_roll` 和实际 `raw_roll` 审计字段；非熟练检定不触发。
+- 验证：每项均独立提交；后端全量测试通过，定向特性/生命周期回归通过，Ruff、compileall、`git diff --check` 通过。未修改前端，未重复前端构建；浏览器本地 URL 安全策略仍限制本轮后端-only 浏览器验收。
+- 工作树中 `backend/tests/integrations/`、`backend/tests/ollama.py` 是用户原有未跟踪文件，未纳入提交。
