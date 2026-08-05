@@ -471,7 +471,12 @@ class SqlAlchemyCampaignStateGateway:
                     stat = str(modifier.get("stat") or "").strip()
                     operation = str(modifier.get("operation") or "").strip()
                     value = modifier.get("value")
-                    if not stat or operation not in {"add", "advantage", "disadvantage"}:
+                    if not stat or operation not in {
+                        "add",
+                        "advantage",
+                        "disadvantage",
+                        "grant_proficiency",
+                    }:
                         continue
                     if not isinstance(value, int) and operation == "add":
                         continue
@@ -488,6 +493,7 @@ class SqlAlchemyCampaignStateGateway:
                         "scope": scope,
                         "skill": skill or None,
                         "ability": modifier.get("ability"),
+                        "abilities": modifier.get("abilities"),
                         "operation": operation,
                         "value": value,
                         "source": modifier.get("source_feature")

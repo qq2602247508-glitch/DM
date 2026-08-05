@@ -1377,9 +1377,13 @@ def feature_runtime_definition(
                 "operation": "grant_proficiency",
                 "abilities": ["wisdom", "charisma"],
                 "scope": "self",
-                "automation_status": "partial",
-                "requires_dm_adjudication": True,
-                "partial_reason": "豁免熟练已结构化；战斗快照尚未从职业修正补算熟练加值。",
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "saving_throw_resolution",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+                "summary": "系统自动替目标进行豁免时，对感知和魅力豁免加入一次权威熟练加值。",
                 **source,
             }
         )
@@ -1478,9 +1482,13 @@ def feature_runtime_definition(
                 "operation": "grant_proficiency",
                 "abilities": "all",
                 "scope": "self",
-                "automation_status": "partial",
-                "requires_dm_adjudication": True,
-                "partial_reason": "全豁免熟练已结构化；战斗快照尚未从职业修正补算熟练加值。",
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "saving_throw_resolution",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+                "summary": "系统自动替目标进行任意属性豁免时，加入一次权威熟练加值。",
                 **source,
             }
         )

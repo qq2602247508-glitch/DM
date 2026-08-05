@@ -939,6 +939,7 @@ class PlayerRoomService:
         numeric = 0
         advantage = False
         disadvantage = False
+        proficiency_applied = False
         for key, value in raw.items():
             if not isinstance(value, dict):
                 continue
@@ -947,6 +948,12 @@ class PlayerRoomService:
                 continue
             modifier_scope = parts[1] if len(parts) > 1 else "all"
             modifier_skill = parts[2] if len(parts) > 2 else ""
+            if modifier_skill.startswith(":"):
+                # Hydrated feature keys reserve the third segment for an
+                # optional skill and put the projection index after it:
+                # ``saving_throw:self::0``.  That is a self-wide modifier,
+                # not a skill named ``:0``.
+                modifier_skill = ""
             if modifier_scope not in {"all", scope}:
                 continue
             if skill is not None and modifier_skill not in {"", skill}:
@@ -968,6 +975,19 @@ class PlayerRoomService:
             raw_value = value.get("value")
             if operation == "add" and isinstance(raw_value, int):
                 numeric += raw_value
+            elif operation == "grant_proficiency" and stat == "saving_throw":
+                if proficiency_applied:
+                    continue
+                runtime = combatant.snapshot_json.get("feature_runtime")
+                progression = runtime.get("progression") if isinstance(runtime, dict) else None
+                proficiency_bonus = (
+                    progression.get("proficiency_bonus")
+                    if isinstance(progression, dict)
+                    else None
+                )
+                if isinstance(proficiency_bonus, int) and proficiency_bonus > 0:
+                    numeric += proficiency_bonus
+                    proficiency_applied = True
             elif operation == "advantage":
                 advantage = True
             elif operation == "disadvantage":
@@ -7211,7 +7231,8 @@ class PlayerRoomService:
                     save_bonus, save_advantage, save_disadvantage = self._rule_modifier(
                         current_target,
                         "saving_throw",
-                        scope="incoming",
+                        scope="self",
+                        skill=save_ability,
                     )
                     rolls = [secrets.randbelow(20) + 1, secrets.randbelow(20) + 1]
                     if save_advantage and not save_disadvantage:
@@ -7231,6 +7252,7 @@ class PlayerRoomService:
                         save["total"] += save_bonus
                         save["formula"] += f"{save_bonus:+d}"
                         save["success"] = save["total"] >= save_dc
+                        save["note"] = f"已应用结构化豁免熟练/修正 {save_bonus:+d}。"
                     if save_advantage != save_disadvantage:
                         save["rolls"] = rolls
                         save["advantage"] = save_advantage and not save_disadvantage

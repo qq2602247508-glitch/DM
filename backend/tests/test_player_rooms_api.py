@@ -1982,6 +1982,15 @@ def test_player_compiled_forced_movement_is_applied_after_failed_save(
             "snapshot_json": {
                 "grid_position": {"row": 5, "col": 6},
                 "ability_scores": {"constitution": 10},
+                "feature_runtime": {"progression": {"proficiency_bonus": 3}},
+                "rule_modifiers": {
+                    "saving_throw:self::disciplined": {
+                        "stat": "saving_throw",
+                        "scope": "self",
+                        "abilities": "all",
+                        "operation": "grant_proficiency",
+                    }
+                },
             },
         },
     ).json()
@@ -2008,6 +2017,9 @@ def test_player_compiled_forced_movement_is_applied_after_failed_save(
         },
     )
     assert attack.status_code == 200, attack.text
+    save = attack.json()["target_outcomes"][0]["save"]
+    assert save["modifier"] == 3
+    assert save["note"] == "已应用结构化豁免熟练/修正 +3。"
     compiled = attack.json()["compiled_effects"]
     movement = next(item for item in compiled if item["block_id"].endswith("move"))
     assert movement["result"]["moved_ft"] == 10

@@ -3265,6 +3265,17 @@ class CombatEngineService:
                 declared = ability_aliases.get(declared, declared)
                 if declared != normalized_ability:
                     continue
+            declared_abilities = value.get("abilities")
+            if declared_abilities is not None and normalized_ability:
+                if str(declared_abilities).strip().lower() != "all":
+                    if not isinstance(declared_abilities, (list, tuple, set)):
+                        continue
+                    normalized_abilities = {
+                        ability_aliases.get(str(item).strip().lower(), str(item).strip().lower())
+                        for item in declared_abilities
+                    }
+                    if normalized_ability not in normalized_abilities:
+                        continue
             applies_when = str(value.get("applies_when") or "").strip().lower()
             known_predicates = {
                 "",

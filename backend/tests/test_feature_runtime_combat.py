@@ -1248,3 +1248,72 @@ def test_evasion_requires_half_damage_save_and_non_incapacitated_state() -> None
     assert incapacitated["damage"] == 20
     assert "evasion" not in incapacitated["applied_defenses"]
     assert "condition_auto_fail_strength_dex_save" in incapacitated["applied_defenses"]
+
+
+def test_saving_throw_proficiency_is_applied_once_on_automatic_player_action_path() -> None:
+    target = Combatant(
+        id="proficient-save-target",
+        entity_type="character",
+        display_name="圆融自在角色",
+        hp=20,
+        max_hp=20,
+        snapshot_json={
+            "ability_scores": {"wisdom": 10, "charisma": 10, "dexterity": 10},
+            "feature_runtime": {"progression": {"proficiency_bonus": 4}},
+            "rule_modifiers": {
+                "saving_throw:self::slippery": {
+                    "stat": "saving_throw",
+                    "scope": "self",
+                    "abilities": ["wisdom", "charisma"],
+                    "operation": "grant_proficiency",
+                },
+                "saving_throw:self::disciplined": {
+                    "stat": "saving_throw",
+                    "scope": "self",
+                    "abilities": "all",
+                    "operation": "grant_proficiency",
+                },
+            },
+        },
+    )
+
+    wisdom_bonus = PlayerRoomService._rule_modifier(
+        target, "saving_throw", scope="self", skill="wisdom"
+    )[0]
+    dexterity_bonus = PlayerRoomService._rule_modifier(
+        target, "saving_throw", scope="self", skill="dexterity"
+    )[0]
+
+    assert wisdom_bonus == 4
+    assert dexterity_bonus == 4
+
+
+def test_saving_throw_proficiency_contract_is_full_and_explicit() -> None:
+    registry = compile_feature_runtime_registry(
+        [
+            {
+                "name": "圆滑心智",
+                "class_name": "游荡者",
+                "class_level": 15,
+                "kind": "feature",
+            },
+            {
+                "name": "圆融自在",
+                "class_name": "游侠",
+                "class_level": 18,
+                "kind": "feature",
+            },
+        ],
+        total_level=18,
+        scalings={},
+    )
+    grants = {
+        item["id"]: item
+        for item in registry["combat_start"]["modifiers"]
+        if item["operation"] == "grant_proficiency"
+    }
+
+    assert grants["slippery_mind:saving_throw_proficiencies"]["automation_status"] == "full"
+    assert grants["slippery_mind:saving_throw_proficiencies"]["requires_dm_adjudication"] is False
+    assert grants["disciplined_survivor:all_save_proficiency"]["automation_status"] == "full"
+    assert grants["disciplined_survivor:all_save_proficiency"]["requires_dm_adjudication"] is False
