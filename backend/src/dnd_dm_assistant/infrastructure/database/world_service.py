@@ -10,10 +10,12 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
 from dnd_dm_assistant.domain.campaign_state import StateNotFoundError, VersionConflict
+from dnd_dm_assistant.domain.equipment_rules import equipment_profile
 from dnd_dm_assistant.domain.feature_runtime import (
     apply_initiative_start_resource_recovery,
     compile_feature_runtime_registry,
     feature_runtime_action_projections,
+    resolve_unarmored_defense_ac,
 )
 from dnd_dm_assistant.domain.world import GeneratedLocationNode
 from dnd_dm_assistant.infrastructure.database.campaign_service import serialize
@@ -27,6 +29,7 @@ from dnd_dm_assistant.infrastructure.database.models import (
     Character,
     Combat,
     Combatant,
+    EquipmentInstance,
     Location,
     MonsterInstance,
     Scene,
@@ -449,6 +452,7 @@ class WorldService:
                 initiative_dice = [secrets.randbelow(20) + 1]
                 initiative_advantage_sources: list[str] = []
                 initiative_disadvantage_sources: list[str] = []
+                effective_armor_class = int(getattr(entity, "armor_class", 10))
                 position = spawn_position(participant.entity_type)
                 snapshot = {
                     "speed_ft": int(getattr(entity, "speed", 30)),
@@ -589,6 +593,36 @@ class WorldService:
                     if advanced_defenses:
                         snapshot["advanced_defenses"] = advanced_defenses
                     snapshot["feature_grants"] = feature_grants
+                    equipment_rows = session.scalars(
+                        select(EquipmentInstance).where(
+                            EquipmentInstance.character_id == entity.id,
+                            EquipmentInstance.campaign_id == campaign_id,
+                        )
+                    ).all()
+                    equipped_profiles = [
+                        equipment_profile(
+                            row.name,
+                            row.category,
+                            dict(row.metadata_json or {}),
+                            row.armor_class,
+                        )
+                        for row in equipment_rows
+                        if row.equipped
+                    ]
+                    effective_armor_class, armor_resolution = resolve_unarmored_defense_ac(
+                        effective_armor_class,
+                        dict(entity.ability_scores or {}),
+                        feature_registry,
+                        equipment_state_authoritative=bool(equipment_rows),
+                        wearing_armor=any(
+                            profile.get("kind") == "armor" for profile in equipped_profiles
+                        ),
+                        wielding_shield=any(
+                            profile.get("kind") == "shield" for profile in equipped_profiles
+                        ),
+                    )
+                    if armor_resolution is not None:
+                        snapshot["armor_class_resolution"] = armor_resolution
                     combat_start = feature_registry.get("combat_start")
                     raw_initiative_modifiers = (
                         combat_start.get("modifiers")
@@ -648,7 +682,7 @@ class WorldService:
                     entity_id=participant.entity_id,
                     display_name=entity.name,
                     initiative=total,
-                    armor_class=int(getattr(entity, "armor_class", 10)),
+                    armor_class=effective_armor_class,
                     hp=int(getattr(entity, "hp", 1)),
                     max_hp=int(getattr(entity, "max_hp", 1)),
                     speed_ft=int(getattr(entity, "speed", 30)),

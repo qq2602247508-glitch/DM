@@ -24,6 +24,7 @@ from dnd_dm_assistant.domain.feature_runtime import (
     apply_initiative_start_resource_recovery,
     compile_feature_runtime_registry,
     feature_runtime_action_projections,
+    resolve_unarmored_defense_ac,
 )
 from dnd_dm_assistant.domain.rests import RestResource, resolve_long_rest, resolve_short_rest
 from dnd_dm_assistant.infrastructure.database.models import Combatant
@@ -872,8 +873,8 @@ def test_unarmored_defense_formulas_are_class_specific_and_explicitly_partial() 
     assert barbarian_ac["formula"] == "10+dexterity_modifier+constitution_modifier"
     assert barbarian_ac["requirements"] == ["not_wearing_armor"]
     assert barbarian_ac["shield_allowed"] is True
-    assert barbarian_ac["automation_status"] == "partial"
-    assert barbarian_ac["requires_dm_adjudication"] is True
+    assert barbarian_ac["automation_status"] == "full"
+    assert barbarian_ac["requires_dm_adjudication"] is False
 
     monk_ac = next(
         item
@@ -883,7 +884,35 @@ def test_unarmored_defense_formulas_are_class_specific_and_explicitly_partial() 
     assert monk_ac["formula"] == "10+dexterity_modifier+wisdom_modifier"
     assert monk_ac["requirements"] == ["not_wearing_armor", "not_wielding_shield"]
     assert monk_ac["shield_allowed"] is False
-    assert monk_ac["automation_status"] == "partial"
+    assert monk_ac["automation_status"] == "full"
+
+
+def test_unarmored_defense_resolves_only_with_authoritative_equipment_state() -> None:
+    rules = _core_rules()
+    barbarian = _registry_at(rules["野蛮人"], 1)
+    resolved, details = resolve_unarmored_defense_ac(
+        10,
+        {"dexterity": 16, "constitution": 18},
+        barbarian,
+        equipment_state_authoritative=True,
+        wearing_armor=False,
+        wielding_shield=True,
+    )
+    assert resolved == 19
+    assert details is not None
+    assert details["mode"] == "unarmored_defense"
+    assert details["wielding_shield"] is True
+
+    unchanged, no_details = resolve_unarmored_defense_ac(
+        16,
+        {"dexterity": 16, "constitution": 18},
+        barbarian,
+        equipment_state_authoritative=False,
+        wearing_armor=False,
+        wielding_shield=False,
+    )
+    assert unchanged == 16
+    assert no_details is None
 
 
 def test_reactions_and_monk_defenses_publish_typed_partial_contracts() -> None:

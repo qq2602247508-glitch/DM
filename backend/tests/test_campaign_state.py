@@ -15,7 +15,7 @@ from dnd_dm_assistant.api.app import create_app
 from dnd_dm_assistant.config import Settings
 from dnd_dm_assistant.domain.feature_runtime import feature_runtime_definition
 from dnd_dm_assistant.infrastructure.database import world_service
-from dnd_dm_assistant.infrastructure.database.models import AuditLog
+from dnd_dm_assistant.infrastructure.database.models import AuditLog, EquipmentInstance
 
 
 @pytest.fixture
@@ -571,3 +571,77 @@ def test_scene_combat_applies_initiative_start_resource_recovery(
     ]
     persisted = campaign_client.get(f"{base}/characters/{character['id']}").json()
     assert persisted["resources"]["bardic_inspiration"]["current"] == 2
+
+
+def test_scene_combat_resolves_unarmored_defense_from_equipped_items(
+    campaign_client: TestClient,
+    monkeypatch: Any,
+) -> None:
+    campaign = _campaign(campaign_client, "Unarmored defense")
+    base = f"/api/v1/campaigns/{campaign['id']}"
+    definition = feature_runtime_definition(
+        feature_name="无甲防御",
+        class_name="野蛮人",
+        class_level=1,
+    )
+    character = campaign_client.post(
+        f"{base}/characters",
+        json={
+            "name": "无甲狂战士",
+            "class_name": "野蛮人",
+            "level": 1,
+            "armor_class": 10,
+            "ability_scores": {"dexterity": 16, "constitution": 18},
+            "features": [
+                {
+                    "name": "无甲防御",
+                    "kind": "class_feature",
+                    "class_name": "野蛮人",
+                    "class_level": 1,
+                    "runtime": {"automation_status": "full", "registry": definition},
+                }
+            ],
+            "hp": 20,
+            "max_hp": 20,
+        },
+    ).json()
+    equipment = campaign_client.post(
+        f"{base}/characters/assets/equipment",
+        json={
+            "character_id": character["id"],
+            "character_version": character["version"],
+            "name": "盾牌",
+            "category": "shield",
+            "metadata_json": {"equipment_kind": "shield"},
+        },
+    )
+    assert equipment.status_code == 201, equipment.text
+    engine = create_engine(campaign_client.database_url)  # type: ignore[attr-defined]
+    with Session(engine) as session:
+        shield = session.get(EquipmentInstance, equipment.json()["id"])
+        assert shield is not None
+        shield.equipped = True
+        session.commit()
+    scene = campaign_client.post(f"{base}/scenes", json={"name": "无甲防御场"}).json()
+    assert campaign_client.post(
+        f"{base}/scenes/{scene['id']}/participants",
+        json={"entity_type": "character", "entity_id": character["id"]},
+    ).status_code == 201
+    monkeypatch.setattr(world_service.secrets, "randbelow", lambda _upper: 9)
+
+    started = campaign_client.post(f"{base}/scenes/{scene['id']}/start-combat", json={})
+    assert started.status_code == 201, started.text
+    combatants = campaign_client.get(
+        f"{base}/combats/{started.json()['combat']['id']}/combatants"
+    ).json()["items"]
+    combatant = combatants[0]
+    assert combatant["armor_class"] == 19
+    assert combatant["snapshot_json"]["armor_class_resolution"] == {
+        "mode": "unarmored_defense",
+        "formula": "10+dexterity_modifier+constitution_modifier",
+        "feature_id": "野蛮人:unarmored_defense",
+        "wearing_armor": False,
+        "wielding_shield": True,
+        "shield_allowed": True,
+        "ability_scores": {"dexterity": 16, "constitution": 18},
+    }

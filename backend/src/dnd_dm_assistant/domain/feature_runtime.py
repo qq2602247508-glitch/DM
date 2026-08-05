@@ -3,6 +3,7 @@ from __future__ import annotations
 import re
 from collections.abc import Iterable, Mapping
 from copy import deepcopy
+from math import floor
 from typing import Any
 
 FEATURE_RUNTIME_SCHEMA_VERSION = "1.2"
@@ -145,6 +146,72 @@ def apply_initiative_start_resource_recovery(
             )
             current = next_value
     return updated, applied
+
+
+def resolve_unarmored_defense_ac(
+    current_armor_class: int,
+    ability_scores: Mapping[str, Any],
+    feature_registry: Mapping[str, Any],
+    *,
+    equipment_state_authoritative: bool,
+    wearing_armor: bool,
+    wielding_shield: bool,
+) -> tuple[int, dict[str, Any] | None]:
+    """Resolve a typed unarmored-defense formula when equipment is known."""
+
+    if not equipment_state_authoritative or wearing_armor:
+        return current_armor_class, None
+    combat_start = feature_registry.get("combat_start")
+    modifiers = combat_start.get("modifiers") if isinstance(combat_start, Mapping) else ()
+    for raw_modifier in modifiers or ():
+        if not isinstance(raw_modifier, Mapping):
+            continue
+        if (
+            raw_modifier.get("stat") != "armor_class"
+            or raw_modifier.get("operation") != "set_base_formula"
+        ):
+            continue
+        formula = raw_modifier.get("formula")
+        if formula == "10+dexterity_modifier+constitution_modifier":
+            constitution_key = "constitution"
+        elif formula == "10+dexterity_modifier+wisdom_modifier":
+            constitution_key = "wisdom"
+        else:
+            continue
+        shield_allowed = raw_modifier.get("shield_allowed") is True
+        if wielding_shield and not shield_allowed:
+            continue
+        dexterity = int(
+            ability_scores.get(
+                "dexterity",
+                ability_scores.get("dex", ability_scores.get("敏捷", 10)),
+            )
+        )
+        secondary = int(
+            ability_scores.get(
+                constitution_key,
+                ability_scores.get(
+                    "体质" if constitution_key == "constitution" else "感知",
+                    10,
+                ),
+            )
+        )
+        resolved = 10 + floor((dexterity - 10) / 2) + floor((secondary - 10) / 2)
+        if wielding_shield:
+            resolved += 2
+        return resolved, {
+            "mode": "unarmored_defense",
+            "formula": formula,
+            "feature_id": raw_modifier.get("id"),
+            "wearing_armor": False,
+            "wielding_shield": wielding_shield,
+            "shield_allowed": shield_allowed,
+            "ability_scores": {
+                "dexterity": dexterity,
+                constitution_key: secondary,
+            },
+        }
+    return current_armor_class, None
 
 
 def _identity(value: object) -> str:
@@ -308,12 +375,8 @@ def feature_runtime_definition(
                     "scope": "self",
                     "requirements": requirements,
                     "shield_allowed": shield_allowed,
-                    "automation_status": "partial",
-                    "requires_dm_adjudication": True,
-                    "partial_reason": (
-                        "基础 AC 公式已结构化；战斗创建器尚不能根据装备状态求值"
-                        "并与其他 AC 公式择优。"
-                    ),
+                    "automation_status": "full",
+                    "requires_dm_adjudication": False,
                     **source,
                 }
             )
