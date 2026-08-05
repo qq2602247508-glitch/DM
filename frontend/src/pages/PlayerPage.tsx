@@ -154,6 +154,25 @@ function display(value: unknown): string {
   return JSON.stringify(value);
 }
 
+function combatantHasCondition(combatant: PlayerCombatant | undefined, wanted: "poisoned" | "diseased"): boolean {
+  const aliases: Record<string, string> = {
+    poisoned: "poisoned",
+    中毒: "poisoned",
+    diseased: "diseased",
+    disease: "diseased",
+    疾病: "diseased",
+  };
+  return (combatant?.conditions ?? []).some((value) => {
+    const rawName = value && typeof value === "object" && "name" in value
+      ? (value as { name?: unknown }).name
+      : value;
+    const name = typeof rawName === "string" || typeof rawName === "number"
+      ? String(rawName)
+      : "";
+    return aliases[name.trim().toLowerCase()] === wanted;
+  });
+}
+
 function advancedRollWindowLabel(actionCost: unknown): string | null {
   if (actionCost === "reaction") return "反应窗口";
   if (actionCost === "legendary_action") return "传奇动作窗口";
@@ -1036,6 +1055,7 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
   const [cunningActionChoice, setCunningActionChoice] = useState<"dash" | "disengage" | "hide">("dash");
   const [featureActionOutcome, setFeatureActionOutcome] = useState<"" | "success" | "failure">("");
   const [featureActionNote, setFeatureActionNote] = useState("");
+  const [conditionToCure, setConditionToCure] = useState<"" | "poisoned" | "diseased">("");
   const [areaOrigins, setAreaOrigins] = useState<Record<string, { row: string; col: string }>>({});
   const [aimPoint, setAimPoint] = useState<GridPoint | null>(null);
   const [summonPosition, setSummonPosition] = useState<GridPoint | null>(null);
@@ -1195,11 +1215,13 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
     ? selectedActionBase.feature_id
     : "";
   const isCunningAction = isRuntimeFeatureAction && selectedFeatureId === "cunning_action";
+  const isLayOnHands = isRuntimeFeatureAction && selectedFeatureId === "lay_on_hands";
   const featureActionNeedsAdjudication = isCunningAction && cunningActionChoice === "hide";
   const featureActionValid = !featureActionNeedsAdjudication
     || (Boolean(featureActionOutcome) && Boolean(featureActionNote.trim()));
   const featureNeedsHealingRoll = isRuntimeFeatureAction
-    && selectedActionBase?.resolution_kind === "healing";
+    && selectedActionBase?.resolution_kind === "healing"
+    && !conditionToCure;
   const divineSmiteRider = Array.isArray(selectedActionBase?.attack_riders)
     ? selectedActionBase.attack_riders.find((item): item is Record<string, unknown> => (
         typeof item === "object"
@@ -1291,7 +1313,9 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
   const targeting = targetingForAction(selectedAction);
   const isAreaTargeting = Boolean(targeting && targeting.shape !== "single");
   const targetCandidates = isRuntimeFeatureAction
-    ? (activeOwn ? [activeOwn] : [])
+    ? isLayOnHands
+      ? friendlyTargets
+      : (activeOwn ? [activeOwn] : [])
     : isAreaTargeting
     ? enemies
     : hasAreaEffect
@@ -2160,10 +2184,11 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
           })}
           {ended ? <p className="rounded border border-amber-800/60 bg-amber-950/20 p-3 text-sm text-amber-100">战斗已由 DM 结束。你仍可查看地图和完整公开日志；奖励请到“我的角色”查看。</p> : null}
           {companionTurn && activeOwn ? <section className="mb-3 rounded border border-violet-700/70 bg-violet-950/20 p-3 text-xs text-violet-100" data-testid="player-summon-turn-panel"><strong>{activeOwn.name} · 独立召唤物回合</strong><p className="mb-0 mt-1 leading-5 text-stone-300">现在控制的是该召唤物本身：移动、动作、附赠动作和结束回合都会写入它自己的 Combatant 与先攻位置，不会代替施法者行动。</p></section> : null}
-          <label className="block text-xs text-stone-400">{companionTurn ? "召唤物动作" : "攻击 / 技能 / 特殊效果"}<select className={`${inputCls} mt-1`} disabled={ended || !combat.is_my_turn} onChange={(event) => { const next = event.target.value; setCombatMode("action"); setActionName(next); const action = actions.find((item) => display(item.name) === next); setTargetId(action?.runtime_feature === true ? (activeOwn?.id ?? own?.id ?? "") : ""); setAimPoint(null); setSummonPosition(null); setSlotLevel(Number(action?.spell_level ?? 0)); setDamageComponentTotals({}); setTargetDamageComponentTotals({}); setChoiceSelections({}); setAreaOrigins({}); setSpecialEffectIds(""); setReactionTrigger(""); setUseDivineSmite(false); setDivineSmiteDamageTotal(""); setDivineSmiteSlotLevel("1"); }} value={actionName}><option value="">{companionTurn ? "选择该召唤物的模板动作" : "选择角色卡动作或法术/特殊技能"}</option>{actions.map((action, index) => { const cost = playerActionCost(action); const available = playerHasActionEconomy(own, cost); return <option disabled={!available} key={`${display(action.name)}-${index}`} value={display(action.name)}>{playerActionCostLabel(cost)} · {actionCategoryLabel(action)} · {display(action.name)} · {damageInstructionForAction(action)}{available ? "" : " · 资源已用"}</option>; })}</select></label>
+          <label className="block text-xs text-stone-400">{companionTurn ? "召唤物动作" : "攻击 / 技能 / 特殊效果"}<select className={`${inputCls} mt-1`} disabled={ended || !combat.is_my_turn} onChange={(event) => { const next = event.target.value; setCombatMode("action"); setActionName(next); const action = actions.find((item) => display(item.name) === next); setTargetId(action?.runtime_feature === true ? (activeOwn?.id ?? own?.id ?? "") : ""); setAimPoint(null); setSummonPosition(null); setSlotLevel(Number(action?.spell_level ?? 0)); setDamageComponentTotals({}); setTargetDamageComponentTotals({}); setChoiceSelections({}); setAreaOrigins({}); setSpecialEffectIds(""); setReactionTrigger(""); setUseDivineSmite(false); setDivineSmiteDamageTotal(""); setDivineSmiteSlotLevel("1"); setConditionToCure(""); }} value={actionName}><option value="">{companionTurn ? "选择该召唤物的模板动作" : "选择角色卡动作或法术/特殊技能"}</option>{actions.map((action, index) => { const cost = playerActionCost(action); const available = playerHasActionEconomy(own, cost); return <option disabled={!available} key={`${display(action.name)}-${index}`} value={display(action.name)}>{playerActionCostLabel(cost)} · {actionCategoryLabel(action)} · {display(action.name)} · {damageInstructionForAction(action)}{available ? "" : " · 资源已用"}</option>; })}</select></label>
           {selectedSpellLevel > 0 ? <label className="mt-2 block text-xs text-stone-400">使用法术环阶<select aria-label="玩家使用法术环阶" className={`${inputCls} mt-1`} onChange={(event) => setSlotLevel(Number(event.target.value))} value={Math.max(selectedSpellLevel, slotLevel)}>{(availableSlotLevels.length ? availableSlotLevels : [selectedSpellLevel]).map((level) => { const slot = snapshot.character?.resources?.[`spell_slots_${level}`] as { label?: string; current?: number; max?: number } | undefined; return <option disabled={Number(slot?.current ?? 0) < 1} key={level} value={level}>{level}环 · {slot?.label ?? `法术位${level}`} · 可用 {Number(slot?.current ?? 0)}/{Number(slot?.max ?? 0)}</option>; })}</select><span className="mt-1 block text-2xs text-amber-200">当前施法：{Math.max(selectedSpellLevel, slotLevel)}环；伤害骰会按升环规则增加。</span></label> : null}
           {selectedAction ? <p className="mb-0 mt-2 text-2xs text-stone-400" data-testid="player-selected-action-constraints">资源/窗口：{playerActionCostLabel(selectedActionCost)} · {selectedActionCost === "reaction" ? "填写实际触发事件；不自动结束当前回合" : selectedActionCost === "legendary_action" ? "仅限传奇动作窗口" : selectedActionCost === "lair_action" ? "仅限巢穴动作窗口" : "当前回合"}{selectedResourceKey ? ` · ${selectedResource?.label ?? selectedResourceKey} ${Number(selectedResource?.current ?? 0)}/${Number(selectedResource?.max ?? 0)}` : ""}{!selectedActionAvailable ? " · 当前不可用" : ""}{targeting?.requiresElevation ? ` · 三维区域：锚点 ${targeting.anchorHeightFt ?? "未记录"}尺；目标必须有 elevation_ft` : ""}</p> : null}
           {isCunningAction ? <div className="mt-2 rounded border border-cyan-800/60 bg-cyan-950/20 p-2 text-xs text-cyan-100" data-testid="player-cunning-action-choice"><label className="block">附赠动作分支<select aria-label="灵巧动作分支" className={`${inputCls} mt-1`} onChange={(event) => { setCunningActionChoice(event.target.value as "dash" | "disengage" | "hide"); setFeatureActionOutcome(""); setFeatureActionNote(""); }} value={cunningActionChoice}><option value="dash">疾走：增加一次速度的移动力</option><option value="disengage">撤离：本回合移动不触发借机攻击</option><option value="hide">躲藏：需要 DM 确认隐匿结果</option></select></label>{featureActionNeedsAdjudication ? <div className="mt-2 grid gap-2 sm:grid-cols-2"><label>DM 裁定结果<select aria-label="灵巧动作躲藏结果" className={`${inputCls} mt-1`} onChange={(event) => setFeatureActionOutcome(event.target.value as "" | "success" | "failure")} value={featureActionOutcome}><option value="">等待 DM 裁定</option><option value="success">成功</option><option value="failure">失败</option></select></label><label>裁定说明<input aria-label="灵巧动作躲藏裁定说明" className={`${inputCls} mt-1`} onChange={(event) => setFeatureActionNote(event.target.value)} placeholder="例如：隐匿检定超过敌方被动察觉" value={featureActionNote} /></label></div> : <p className="mb-0 mt-1 text-2xs text-stone-300">疾走和撤离会直接复用标准动作引擎，真实改变本回合移动力或借机攻击状态。</p>}</div> : null}
+          {isLayOnHands ? <div className="mt-2 rounded border border-emerald-800/60 bg-emerald-950/20 p-2 text-xs text-emerald-100" data-testid="player-lay-on-hands-choice"><label className="block">圣疗分支<select aria-label="圣疗分支" className={`${inputCls} mt-1`} onChange={(event) => setConditionToCure(event.target.value as "" | "poisoned" | "diseased")} value={conditionToCure}><option value="">治疗：填写本次消耗的圣疗池点数</option><option disabled={!combatantHasCondition(selectedTarget, "poisoned")} value="poisoned">解除中毒：消耗 5 点圣疗池</option><option disabled={!combatantHasCondition(selectedTarget, "diseased")} value="diseased">解除疾病：消耗 5 点圣疗池</option></select></label>{conditionToCure ? <p className="mb-0 mt-1 text-2xs text-emerald-200">当前选择会真实移除目标对应状态，并固定消耗 5 点圣疗池；不能同时填写治疗骰。</p> : <p className="mb-0 mt-1 text-2xs text-stone-300">圣疗可以恢复生命，或选择一个目标当前存在的中毒/疾病状态进行解除。</p>}</div> : null}
           {divineSmiteRider ? <div className="mt-2 rounded border border-yellow-800/60 bg-yellow-950/20 p-3 text-xs text-yellow-100" data-testid="player-divine-smite-input"><label className="flex items-center gap-2"><input checked={useDivineSmite} onChange={(event) => setUseDivineSmite(event.target.checked)} type="checkbox" />命中后使用圣武斩</label>{useDivineSmite ? <><label className="mt-2 block">消耗法术位环阶<select aria-label="圣武斩法术位环阶" className={`${inputCls} mt-1`} onChange={(event) => setDivineSmiteSlotLevel(event.target.value)} value={divineSmiteSlotLevel}>{(divineSmiteSlotOptions.length ? divineSmiteSlotOptions : [1]).map((level) => { const resource = snapshot.character?.resources?.[`spell_slots_${level}`] as { label?: string; current?: number; max?: number } | undefined; return <option disabled={Number(resource?.current ?? 0) < 1} key={level} value={level}>{level}环 · 可用 {Number(resource?.current ?? 0)}/{Number(resource?.max ?? 0)}</option>; })}</select></label><label className="mt-2 block">圣武斩光耀伤害骰总值（{divineSmiteDiceCount}d8{criticalHit ? "×2" : ""}）<input aria-label="圣武斩伤害骰总值" className={`${inputCls} mt-1`} min={divineSmiteDiceCount * (criticalHit ? 2 : 1)} onChange={(event) => setDivineSmiteDamageTotal(event.target.value)} type="number" value={divineSmiteDamageTotal} /></label></> : <p className="mb-0 mt-1 text-2xs text-stone-300">只在近战武器或徒手攻击命中后使用；不选择则不消耗法术位。</p>}</div> : null}
           {selectedSummonBlock ? <div className="mt-2 rounded border border-violet-800/60 bg-violet-950/20 p-3 text-xs text-violet-100">
             <strong>召唤积木：{typeof selectedSummonBlock.creature_ref === "string" ? selectedSummonBlock.creature_ref : "召唤物"}</strong>
@@ -2250,10 +2275,10 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
           <Button className="mt-3 w-full" disabled={Boolean(selectedSummonBlock) || ended || !combat.is_my_turn || !actionName || !targetId || (!isAutoHitAction && !isCastAction && !isRuntimeFeatureAction && !isSavingThrowAction && !attackTotal) || (needsDamageRoll && usesLegacyDamageTotal && !damageTotal) || (featureNeedsHealingRoll && !damageTotal) || !divineSmiteDamageValid || !componentInputValid || !specialInputValid || !selectedActionAvailable || !featureActionValid} loading={mutation.isPending} onClick={() => mutation.mutate(async () => {
             if (isRuntimeFeatureAction) {
               const featureId = typeof selectedAction?.feature_id === "string" ? selectedAction.feature_id : "";
-              const result = await submitMyFeatureAction(featureId, targetId, featureNeedsHealingRoll ? Number(damageTotal) : null, isCunningAction ? cunningActionChoice : undefined, isCunningAction && featureActionOutcome ? featureActionOutcome : undefined, isCunningAction ? featureActionNote.trim() || undefined : undefined) as { result?: { feature_name?: string; healing?: { hp_gained?: number; }; selected_action?: string; } };
+              const result = await submitMyFeatureAction(featureId, targetId, featureNeedsHealingRoll ? Number(damageTotal) : null, isCunningAction ? cunningActionChoice : undefined, isCunningAction && featureActionOutcome ? featureActionOutcome : undefined, isCunningAction ? featureActionNote.trim() || undefined : undefined, conditionToCure || undefined) as { result?: { feature_name?: string; healing?: { hp_gained?: number; }; condition_cure?: { condition?: string }; selected_action?: string; } };
               setAttackTotal("");
               setDamageTotal("");
-              setLastResolution(`${result.result?.feature_name ?? actionName}已执行${result.result?.selected_action ? `：${result.result.selected_action}` : ""}${result.result?.healing ? `；恢复 ${result.result.healing.hp_gained ?? 0} 点生命` : ""}。`);
+              setLastResolution(`${result.result?.feature_name ?? actionName}已执行${result.result?.selected_action ? `：${result.result.selected_action}` : ""}${result.result?.healing ? `；恢复 ${result.result.healing.hp_gained ?? 0} 点生命` : ""}${result.result?.condition_cure ? `；已解除${result.result.condition_cure.condition === "poisoned" ? "中毒" : "疾病"}` : ""}。`);
               return result;
             }
             if (isCastAction) {

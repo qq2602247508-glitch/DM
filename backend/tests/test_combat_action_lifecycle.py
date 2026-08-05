@@ -55,6 +55,84 @@ def _combatant_path(campaign: dict[str, Any], combat: dict[str, Any], combatant_
     return f"{_root(campaign, combat)}/combatants/{combatant_id}"
 
 
+def _lay_on_hands_fixture(
+    client: TestClient,
+    *,
+    target_conditions: list[str],
+) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any], dict[str, Any], dict[str, Any]]:
+    campaign, combat, _ = _setup(client)
+    character_response = client.post(
+        f"/api/v1/campaigns/{campaign['id']}/characters",
+        json={
+            "name": "圣疗状态测试者",
+            "class_name": "圣武士",
+            "level": 5,
+            "hp": 20,
+            "max_hp": 20,
+            "resources": {
+                "lay_on_hands": {
+                    "label": "圣疗",
+                    "current": 20,
+                    "max": 25,
+                    "recovery": "long_rest",
+                }
+            },
+        },
+    )
+    assert character_response.status_code == 201, character_response.text
+    character = character_response.json()
+    runtime_action = {
+        "id": "lay_on_hands",
+        "name": "圣疗",
+        "kind": "feature_action",
+        "action_cost": "bonus_action",
+        "resource_key": "lay_on_hands",
+        "resource_cost": 0,
+        "resource_cost_mode": "amount_or_condition",
+        "condition_cure_cost": 5,
+        "condition_cure_options": ["poisoned", "diseased"],
+        "target": "ally_or_self",
+        "resolution_kind": "healing",
+        "healing_formula": "lay_on_hands_pool",
+        "effects": [{"kind": "healing"}, {"kind": "condition_cure"}],
+    }
+    paladin_response = client.post(
+        f"{_root(campaign, combat)}/combatants",
+        json={
+            "display_name": "圣疗状态测试者",
+            "entity_type": "character",
+            "entity_id": character["id"],
+            "initiative": 30,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {
+                "disposition": "ally",
+                "grid_position": {"row": 1, "col": 1},
+                "feature_runtime": {"actions": {"lay_on_hands": runtime_action}},
+            },
+        },
+    )
+    assert paladin_response.status_code == 201, paladin_response.text
+    paladin = paladin_response.json()
+    target_response = client.post(
+        f"{_root(campaign, combat)}/combatants",
+        json={
+            "display_name": "待解除状态盟友",
+            "entity_type": "character",
+            "initiative": 10,
+            "hp": 20,
+            "max_hp": 20,
+            "conditions": target_conditions,
+            "snapshot_json": {
+                "disposition": "ally",
+                "grid_position": {"row": 1, "col": 2},
+            },
+        },
+    )
+    assert target_response.status_code == 201, target_response.text
+    return campaign, combat, paladin, target_response.json(), character
+
+
 def _add_combatant(
     client: TestClient,
     campaign: dict[str, Any],
@@ -563,6 +641,82 @@ def test_lay_on_hands_heals_adjacent_ally_and_spends_pool_amount(
         f"/api/v1/campaigns/{campaign['id']}/characters/{character['id']}"
     ).json()
     assert updated_character["resources"]["lay_on_hands"]["current"] == 10
+
+
+def test_lay_on_hands_cures_poison_and_spends_fixed_pool_amount_idempotently(
+    combat_client: TestClient,
+) -> None:
+    campaign, combat, paladin, target, character = _lay_on_hands_fixture(
+        combat_client,
+        target_conditions=["中毒"],
+    )
+    payload = {
+        "actor_combatant_id": paladin["id"],
+        "actor_version": paladin["version"],
+        "feature_id": "lay_on_hands",
+        "condition_to_cure": "poisoned",
+        "target_combatant_id": target["id"],
+        "target_version": target["version"],
+    }
+    confirmed = combat_client.post(
+        f"{_root(campaign, combat)}/feature-actions/confirm",
+        headers={"X-Request-ID": "lay-on-hands-cure-poison"},
+        json=payload,
+    )
+    assert confirmed.status_code == 200, confirmed.text
+    result = confirmed.json()["result"]
+    assert result["condition_cure"] == {
+        "condition": "poisoned",
+        "removed": True,
+        "ended_effect_ids": [],
+    }
+    assert result["resource_before"] == 20
+    assert result["resource_after"] == 15
+    assert "中毒" not in confirmed.json()["target"]["conditions"]
+    updated_character = combat_client.get(
+        f"/api/v1/campaigns/{campaign['id']}/characters/{character['id']}"
+    ).json()
+    assert updated_character["resources"]["lay_on_hands"]["current"] == 15
+
+    replay = combat_client.post(
+        f"{_root(campaign, combat)}/feature-actions/confirm",
+        headers={"X-Request-ID": "lay-on-hands-cure-poison"},
+        json=payload,
+    )
+    assert replay.status_code == 200, replay.text
+    assert replay.json()["already_applied"] is True
+    assert combat_client.get(
+        f"/api/v1/campaigns/{campaign['id']}/characters/{character['id']}"
+    ).json()["resources"]["lay_on_hands"]["current"] == 15
+
+
+def test_lay_on_hands_rejects_curing_absent_condition_without_spending_pool(
+    combat_client: TestClient,
+) -> None:
+    campaign, combat, paladin, target, character = _lay_on_hands_fixture(
+        combat_client,
+        target_conditions=["疾病"],
+    )
+    rejected = combat_client.post(
+        f"{_root(campaign, combat)}/feature-actions/confirm",
+        headers={"X-Request-ID": "lay-on-hands-cure-absent"},
+        json={
+            "actor_combatant_id": paladin["id"],
+            "actor_version": paladin["version"],
+            "feature_id": "lay_on_hands",
+            "condition_to_cure": "poisoned",
+            "target_combatant_id": target["id"],
+            "target_version": target["version"],
+        },
+    )
+    assert rejected.status_code == 400, rejected.text
+    assert "没有要解除" in rejected.text
+    assert combat_client.get(
+        f"/api/v1/campaigns/{campaign['id']}/characters/{character['id']}"
+    ).json()["resources"]["lay_on_hands"]["current"] == 20
+    assert "疾病" in combat_client.get(
+        _combatant_path(campaign, combat, target["id"])
+    ).json()["conditions"]
 
 
 def test_countercharm_requires_and_honors_selected_reactor_when_two_are_eligible(

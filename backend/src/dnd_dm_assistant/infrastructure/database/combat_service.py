@@ -91,6 +91,9 @@ class CombatEngineService:
         "耳聋": "deafened",
         "poisoned": "poisoned",
         "中毒": "poisoned",
+        "diseased": "diseased",
+        "disease": "diseased",
+        "疾病": "diseased",
         "frightened": "frightened",
         "恐慌": "frightened",
         "restrained": "restrained",
@@ -9931,6 +9934,7 @@ class CombatEngineService:
                     raise ValueError("灵巧动作的躲藏需要 DM 提交成功/失败和裁定说明")
             elif selected_action is not None or command.outcome is not None:
                 raise ValueError("selected_action/outcome 只适用于灵巧动作")
+            condition_to_cure = command.condition_to_cure
             if action.get("activation_window") == "after_failed_saving_throw":
                 raise ValueError("该职业特性只能在失败豁免后通过重掷窗口使用")
             if command.feature_id == "action_surge":
@@ -10000,6 +10004,21 @@ class CombatEngineService:
                 cell_size = grid.cell_size_ft if grid is not None else 5
                 if grid_distance_ft(actor_position, target_position, cell_size_ft=cell_size) > 5:
                     raise ValueError("圣疗目标必须在 5 尺接触范围内")
+            if condition_to_cure is not None:
+                if command.feature_id != "lay_on_hands":
+                    raise ValueError("condition_to_cure 只适用于圣疗")
+                cure_options = {
+                    str(value).strip()
+                    for value in action.get("condition_cure_options") or ()
+                }
+                if condition_to_cure not in cure_options:
+                    raise ValueError("圣疗不支持解除该状态")
+                if command.healing_total is not None:
+                    raise ValueError("圣疗一次只能选择治疗或解除状态")
+                if not self._has_condition(target, condition_to_cure):
+                    raise ValueError("目标当前没有要解除的中毒或疾病状态")
+            elif command.feature_id == "lay_on_hands" and command.healing_total is None:
+                raise ValueError("圣疗必须填写治疗骰总值，或明确选择要解除的状态")
             if command.feature_id == "steady_aim" and (
                 actor.movement_remaining_ft != actor.speed_ft
             ):
@@ -10032,7 +10051,16 @@ class CombatEngineService:
             )
             resource_key = str(action.get("resource_key") or "").strip()
             resource_cost = int(action.get("resource_cost") or 0)
-            if action.get("resource_cost_mode") == "amount":
+            if action.get("resource_cost_mode") == "amount_or_condition":
+                if condition_to_cure is not None:
+                    resource_cost = self._state_int(action.get("condition_cure_cost"), 0)
+                    if resource_cost < 1:
+                        raise ValueError("圣疗解除状态缺少明确资源消耗")
+                else:
+                    if command.healing_total is None or command.healing_total < 1:
+                        raise ValueError("该职业特性需要填写本次实际消耗的资源数量")
+                    resource_cost = command.healing_total
+            elif action.get("resource_cost_mode") == "amount":
                 if command.healing_total is None or command.healing_total < 1:
                     raise ValueError("该职业特性需要填写本次实际消耗的资源数量")
                 resource_cost = command.healing_total
@@ -10064,6 +10092,8 @@ class CombatEngineService:
                 "resource_before": resource_before,
                 "resource_after": resource_after,
             }
+            if condition_to_cure is not None:
+                result["condition_to_cure"] = condition_to_cure
             effects = action.get("effects")
             effect_list = effects if isinstance(effects, list) else []
             for effect in effect_list:
@@ -10273,7 +10303,45 @@ class CombatEngineService:
                 elif kind == "requires_dm_choice":
                     raise ValueError(str(effect.get("reason") or "该职业特性需要 DM 选择分支"))
 
-            if action.get("resolution_kind") == "healing":
+            if action.get("resolution_kind") == "healing" and condition_to_cure is not None:
+                removed = self._remove_condition(target, condition_to_cure)
+                if not removed:
+                    raise ValueError("目标当前没有要解除的中毒或疾病状态")
+                cured_effect_ids: list[str] = []
+                for effect in session.scalars(
+                    select(CombatEffect).where(
+                        CombatEffect.combat_id == combat.id,
+                        CombatEffect.target_combatant_id == target.id,
+                        CombatEffect.status == "active",
+                    )
+                ).all():
+                    state = self._runtime_state(effect)
+                    rule_block = dict(effect.details_json or {}).get("rule_block")
+                    effect_condition = (
+                        state.get("condition")
+                        if isinstance(state, dict)
+                        else None
+                    )
+                    if not effect_condition and isinstance(rule_block, dict):
+                        effect_condition = rule_block.get("condition")
+                    if self._canonical_condition(effect_condition) != self._canonical_condition(
+                        condition_to_cure
+                    ):
+                        continue
+                    self._end_runtime_effect(
+                        session,
+                        effect,
+                        reason="condition_cured_by_lay_on_hands",
+                        now=datetime.now(UTC),
+                    )
+                    cured_effect_ids.append(effect.id)
+                self._restore_condition_restrictions(target)
+                result["condition_cure"] = {
+                    "condition": condition_to_cure,
+                    "removed": True,
+                    "ended_effect_ids": cured_effect_ids,
+                }
+            elif action.get("resolution_kind") == "healing":
                 total = command.healing_total
                 if total is None:
                     raise ValueError("该职业特性需要填写治疗骰最终总值")

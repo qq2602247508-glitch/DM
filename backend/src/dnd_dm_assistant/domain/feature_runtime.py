@@ -1063,26 +1063,21 @@ def feature_runtime_definition(
                 "action_cost": "bonus_action",
                 "resource_key": "lay_on_hands",
                 "resource_cost": 0,
-                "resource_cost_mode": "amount",
+                "resource_cost_mode": "amount_or_condition",
+                "condition_cure_cost": 5,
+                "condition_cure_options": ["poisoned", "diseased"],
             "target": "ally_or_self",
             "resolution_kind": "healing",
             "healing_formula": "lay_on_hands_pool",
-            "effects": [{"kind": "healing"}],
+            "effects": [{"kind": "healing"}, {"kind": "condition_cure"}],
             "runtime_execution": {
                 "status": "ready",
                 "consumer": "combat_feature_action",
-                "effect_kinds": ["healing"],
-                "remaining_dm_boundaries": [
-                    "condition_cure_choice",
-                    "contact_distance_requires_authoritative_position",
-                ],
+                "effect_kinds": ["healing", "condition_cure"],
+                "remaining_dm_boundaries": ["contact_distance_requires_authoritative_position"],
             },
-            "automation_status": "partial",
-            "requires_dm_adjudication": True,
-            "partial_reason": (
-                "资源池治疗量和明确 5 尺同阵营目标可结算；"
-                "解除中毒/疾病的分支仍需 DM 选择。"
-            ),
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
                 **source,
             }
 
@@ -2216,6 +2211,7 @@ def _feature_action_executor_ready(action: Mapping[str, Any]) -> bool:
         "cunning_action_choice",
         "temporary_healing",
         "healing",
+        "condition_cure",
     }
     if not effect_kinds or not effect_kinds <= supported:
         return False
@@ -2288,7 +2284,9 @@ def feature_runtime_action_projections(
         if action.get("resolution_kind") == "healing":
             healing = str(action.get("healing") or action.get("healing_formula") or "")
             action["healing"] = healing
-            if action.get("resource_cost_mode") == "amount":
+            if action.get("resource_cost_mode") == "amount_or_condition":
+                action["description"] = "职业特性：从资源池治疗，或消耗 5 点解除中毒/疾病"
+            elif action.get("resource_cost_mode") == "amount":
                 action["description"] = "职业特性：从资源池中消耗本次治疗数量并恢复生命"
             else:
                 action["description"] = f"职业特性：恢复 {healing} 生命"

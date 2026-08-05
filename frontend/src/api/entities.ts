@@ -673,6 +673,7 @@ export type CombatFeatureActionCommand = {
   actor_version: number;
   feature_id: string;
   healing_total?: number | null;
+  condition_to_cure?: "poisoned" | "diseased" | null;
   target_combatant_id?: string | null;
   target_version?: number | null;
   dm_override?: boolean;

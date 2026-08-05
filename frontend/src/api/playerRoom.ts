@@ -846,6 +846,7 @@ export const submitMyFeatureAction = (
   selectedAction?: "dash" | "disengage" | "hide",
   outcome?: "success" | "failure",
   adjudicationNote?: string,
+  conditionToCure?: "poisoned" | "diseased",
 ) => playerFetch<Record<string, unknown>>("/player-room/me/combat/feature-action", {
   method: "POST",
   body: JSON.stringify({
@@ -855,6 +856,7 @@ export const submitMyFeatureAction = (
     outcome: outcome ?? null,
     adjudication_note: adjudicationNote ?? null,
     healing_total: healingTotal,
+    condition_to_cure: conditionToCure ?? null,
     idempotency_key: createClientId("player-feature-action"),
   }),
 });

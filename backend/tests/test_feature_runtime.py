@@ -397,7 +397,7 @@ def test_common_feature_contracts_expose_typed_effects_and_passive_defense() -> 
         ],
         resources={"lay_on_hands": {"label": "圣疗", "max": 5}},
     )
-    assert lay_on_hands["actions"]["lay_on_hands"]["resource_cost_mode"] == "amount"
+    assert lay_on_hands["actions"]["lay_on_hands"]["resource_cost_mode"] == "amount_or_condition"
     assert lay_on_hands["actions"]["lay_on_hands"]["action_cost"] == "bonus_action"
     assert lay_on_hands["actions"]["lay_on_hands"]["target"] == "ally_or_self"
 
@@ -693,17 +693,14 @@ def test_choice_bound_feature_actions_are_partial_and_explicit() -> None:
 
     lay_on_hands = _registry_at(rules["圣武士"], 5)["actions"]["lay_on_hands"]
     assert lay_on_hands["resolution_kind"] == "healing"
-    assert lay_on_hands["resource_cost_mode"] == "amount"
+    assert lay_on_hands["resource_cost_mode"] == "amount_or_condition"
     assert lay_on_hands["runtime_execution"] == {
         "status": "ready",
         "consumer": "combat_feature_action",
-        "effect_kinds": ["healing"],
-        "remaining_dm_boundaries": [
-            "condition_cure_choice",
-            "contact_distance_requires_authoritative_position",
-        ],
+        "effect_kinds": ["healing", "condition_cure"],
+        "remaining_dm_boundaries": ["contact_distance_requires_authoritative_position"],
     }
-    assert lay_on_hands["automation_status"] == "partial"
+    assert lay_on_hands["automation_status"] == "full"
 
     sorcerous_restoration = progression_resource_updates(rules["术士"], 5)
     assert sorcerous_restoration["sorcery_restoration"]["max"] == 1

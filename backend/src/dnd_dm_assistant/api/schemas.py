@@ -1104,6 +1104,7 @@ class CombatFeatureActionCommand(BaseModel):
     outcome: Literal["success", "failure"] | None = None
     adjudication_note: str | None = Field(default=None, max_length=1_000)
     healing_total: int | None = Field(default=None, ge=0, le=100_000)
+    condition_to_cure: Literal["poisoned", "diseased"] | None = None
     target_combatant_id: str | None = Field(default=None, min_length=1, max_length=36)
     target_version: int | None = Field(default=None, ge=1)
     dm_override: bool = False

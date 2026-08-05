@@ -8019,6 +8019,7 @@ class PlayerRoomService:
         outcome: str | None,
         adjudication_note: str | None,
         healing_total: int | None,
+        condition_to_cure: str | None,
         idempotency_key: str,
     ) -> dict[str, Any]:
         """Submit a compiled class feature from the player's active unit."""
@@ -8057,6 +8058,7 @@ class PlayerRoomService:
                 outcome=outcome,
                 adjudication_note=adjudication_note,
                 healing_total=healing_total,
+                condition_to_cure=condition_to_cure,
                 target_combatant_id=target.id,
                 target_version=target.version,
             )
