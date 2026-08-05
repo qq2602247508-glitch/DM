@@ -1668,7 +1668,16 @@ def feature_runtime_definition(
                 "condition": "frightened",
                 "scope": "self_and_allies_within_10ft",
                 "applies_when": "within_aura_of_courage",
-                "requires_dm_adjudication": True,
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "condition_immunity_resolution",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+                "summary": (
+                    "同阵营单位在圣武士 10 尺内获得恐慌免疫；"
+                    "距离或阵营变化后即时重新判断。"
+                ),
                 **source,
             }
         )

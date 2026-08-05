@@ -3804,6 +3804,128 @@ def test_frightened_attack_disadvantage_requires_visible_fear_source(
     assert "attack_roll_rule:disadvantage" not in hidden_contexts
 
 
+def test_paladin_courage_aura_blocks_frightened_condition_only_for_nearby_allies(
+    combat_client: TestClient,
+) -> None:
+    campaign = _campaign(combat_client, "Aura of courage condition immunity")
+    base = f"/api/v1/campaigns/{campaign['id']}"
+    scene = combat_client.post(f"{base}/scenes", json={"name": "Courage room"}).json()
+    grid = combat_client.post(
+        f"{base}/scenes/{scene['id']}/grid",
+        json={"width": 8, "height": 8, "cell_size_ft": 5, "mode": "combat"},
+    )
+    assert grid.status_code == 201, grid.text
+    combat = combat_client.post(
+        f"{base}/combats", json={"name": "Courage combat", "scene_id": scene["id"]}
+    ).json()
+    paladin = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "勇气圣武士",
+            "entity_type": "character",
+            "initiative": 20,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {
+                "disposition": "ally",
+                "grid_position": {"row": 2, "col": 2},
+                "feature_runtime": {
+                    "combat_start": {
+                        "defenses": [
+                            {
+                                "id": "aura_of_courage:frightened_immunity",
+                                "kind": "condition_immunity",
+                                "condition": "frightened",
+                                "scope": "self_and_allies_within_10ft",
+                                "applies_when": "within_aura_of_courage",
+                                "automation_status": "full",
+                                "requires_dm_adjudication": False,
+                            }
+                        ]
+                    }
+                },
+            },
+        },
+    ).json()
+    assert paladin["snapshot_json"]["feature_runtime"]["combat_start"]["defenses"]
+    nearby_ally = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "灵光内盟友",
+            "entity_type": "character",
+            "initiative": 15,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {
+                "disposition": "ally",
+                "grid_position": {"row": 2, "col": 3},
+            },
+        },
+    ).json()
+    distant_ally = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "灵光外盟友",
+            "entity_type": "character",
+            "initiative": 10,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {
+                "disposition": "ally",
+                "grid_position": {"row": 2, "col": 5},
+            },
+        },
+    ).json()
+    nearby_enemy = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "灵光内敌人",
+            "entity_type": "monster",
+            "initiative": 5,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {
+                "disposition": "enemy",
+                "grid_position": {"row": 3, "col": 2},
+            },
+        },
+    ).json()
+
+    def apply_frightened(target: dict[str, Any], request_id: str) -> Any:
+        return combat_client.post(
+            f"{base}/combats/{combat['id']}/effects/confirm",
+            headers={"X-Request-ID": request_id},
+            json={
+                "target_combatant_id": target["id"],
+                "target_version": target["version"],
+                "name": "恐慌",
+                "effect_type": "condition",
+                "details_json": {
+                    "rule_block": {
+                        "kind": "condition",
+                        "condition": "frightened",
+                        "operation": "apply",
+                    }
+                },
+            },
+        )
+
+    blocked = apply_frightened(nearby_ally, "courage-nearby-ally")
+    assert blocked.status_code == 400, blocked.text
+    assert "免疫状态" in blocked.json()["message"]
+    assert "frightened" not in combat_client.get(
+        f"{base}/combats/{combat['id']}/combatants/{nearby_ally['id']}"
+    ).json()["conditions"]
+
+    distant = apply_frightened(distant_ally, "courage-distant-ally")
+    assert distant.status_code == 200, distant.text
+    assert "frightened" in distant.json()["target"]["conditions"]
+
+    enemy = apply_frightened(nearby_enemy, "courage-nearby-enemy")
+    assert enemy.status_code == 200, enemy.text
+    assert "frightened" in enemy.json()["target"]["conditions"]
+
+
 def test_monster_cone_aoe_atomically_applies_distinct_saves_and_defenses(
     combat_client: TestClient,
 ) -> None:

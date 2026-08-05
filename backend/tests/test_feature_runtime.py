@@ -745,7 +745,18 @@ def test_new_passive_and_attack_contracts_are_typed_but_not_automatic() -> None:
         core_feature_grants(rules["圣武士"], 10),
         resources=progression_resource_updates(rules["圣武士"], 10),
     )
-    assert courage["combat_start"]["defenses"][0]["condition"] == "frightened"
+    courage_immunity = next(
+        item
+        for item in courage["combat_start"]["defenses"]
+        if item["id"] == "aura_of_courage:frightened_immunity"
+    )
+    assert courage_immunity["condition"] == "frightened"
+    assert courage_immunity["automation_status"] == "full"
+    assert courage_immunity["requires_dm_adjudication"] is False
+    assert courage_immunity["runtime_execution"] == {
+        "status": "ready",
+        "consumer": "condition_immunity_resolution",
+    }
 
     jack = compile_feature_runtime_registry(core_feature_grants(rules["吟游诗人"], 2))
     assert jack["combat_start"]["modifiers"] == [

@@ -3209,14 +3209,104 @@ class CombatEngineService:
         return cls._canonical_condition(condition) in cls._condition_set(target)
 
     @classmethod
-    def _condition_is_immune(cls, target: Combatant, condition: str) -> bool:
-        """Return whether a target is explicitly immune to a condition."""
+    def _condition_is_immune(
+        cls,
+        target: Combatant,
+        condition: str,
+        *,
+        session: Session | None = None,
+        combat_id: str | None = None,
+    ) -> bool:
+        """Return whether a target is explicitly or aura-immune to a condition."""
 
         canonical = cls._canonical_condition(condition)
-        return bool(canonical) and canonical in {
+        if not canonical:
+            return False
+        if canonical in {
             cls._canonical_condition(value)
             for value in list(target.condition_immunities or [])
-        }
+        }:
+            return True
+        return cls._aura_condition_immunity(
+            target,
+            canonical,
+            session=session,
+            combat_id=combat_id,
+        )
+
+    @classmethod
+    def _aura_condition_immunity(
+        cls,
+        target: Combatant,
+        condition: str,
+        *,
+        session: Session | None,
+        combat_id: str | None,
+    ) -> bool:
+        """Resolve explicit, position-aware condition immunity auras."""
+
+        if cls._canonical_condition(condition) != "frightened":
+            return False
+        target_snapshot = dict(target.snapshot_json or {})
+        candidates = [target]
+        grid: SceneGrid | None = None
+        resolved_combat_id = combat_id or target.combat_id
+        if session is not None and resolved_combat_id:
+            combat = session.get(Combat, resolved_combat_id)
+            if combat is not None and combat.scene_id:
+                grid = session.scalar(
+                    select(SceneGrid).where(SceneGrid.scene_id == combat.scene_id)
+                )
+            candidates = list(
+                session.scalars(
+                    select(Combatant).where(
+                        Combatant.combat_id == resolved_combat_id,
+                        Combatant.is_active.is_(True),
+                    )
+                ).all()
+            )
+        target_faction = cls._combatant_faction(target)
+        target_position = target_snapshot.get("grid_position")
+        for source in candidates:
+            if (
+                source.id != target.id
+                and cls._combatant_faction(source) != target_faction
+            ):
+                continue
+            runtime = (source.snapshot_json or {}).get("feature_runtime")
+            combat_start = runtime.get("combat_start") if isinstance(runtime, dict) else None
+            defenses = combat_start.get("defenses") if isinstance(combat_start, dict) else None
+            aura_entries = [
+                item
+                for item in (defenses if isinstance(defenses, list) else [])
+                if isinstance(item, dict)
+                and item.get("kind") == "condition_immunity"
+                and item.get("condition") == "frightened"
+                and item.get("scope") == "self_and_allies_within_10ft"
+                and item.get("applies_when") == "within_aura_of_courage"
+            ]
+            if not aura_entries:
+                continue
+            if source.id != target.id:
+                source_position = (source.snapshot_json or {}).get("grid_position")
+                if (
+                    grid is None
+                    or not isinstance(source_position, dict)
+                    or not isinstance(target_position, dict)
+                ):
+                    continue
+                try:
+                    distance_ft = grid_distance_ft(
+                        (int(source_position["row"]), int(source_position["col"])),
+                        (int(target_position["row"]), int(target_position["col"])),
+                        cell_size_ft=grid.cell_size_ft,
+                    )
+                except (KeyError, TypeError, ValueError):
+                    continue
+                if distance_ft > 10:
+                    continue
+            return True
+        return False
 
     @classmethod
     def _feature_rule_modifiers(
@@ -3987,7 +4077,12 @@ class CombatEngineService:
                     and state.get("condition_was_present") is False
                 ):
                     canonical = cls._canonical_condition(condition)
-                    if canonical and not cls._condition_is_immune(target, canonical):
+                    if canonical and not cls._condition_is_immune(
+                        target,
+                        canonical,
+                        session=session,
+                        combat_id=target.combat_id,
+                    ):
                         owned.setdefault(canonical, condition.strip())
                 continue
 
@@ -4008,7 +4103,12 @@ class CombatEngineService:
             )
             if explicit_owned or inferred_owned:
                 canonical = cls._canonical_condition(condition)
-                if canonical and not cls._condition_is_immune(target, canonical):
+                if canonical and not cls._condition_is_immune(
+                    target,
+                    canonical,
+                    session=session,
+                    combat_id=target.combat_id,
+                ):
                     owned.setdefault(canonical, condition)
         return owned
 
@@ -10447,7 +10547,12 @@ class CombatEngineService:
                     condition = str(effect.get("condition") or "").strip()
                     if not condition:
                         continue
-                    if self._condition_is_immune(target, condition):
+                    if self._condition_is_immune(
+                        target,
+                        condition,
+                        session=session,
+                        combat_id=combat.id,
+                    ):
                         raise ValueError(
                             f"目标免疫状态「{condition}」，职业特性未写入"
                         )
@@ -10472,7 +10577,12 @@ class CombatEngineService:
                         raise ValueError(
                             "当前职业特性只允许狂暴、先天术法或无懈可击使用明确的回合或分钟持续时间"
                         )
-                    if self._condition_is_immune(target, condition):
+                    if self._condition_is_immune(
+                        target,
+                        condition,
+                        session=session,
+                        combat_id=combat.id,
+                    ):
                         raise ValueError(f"目标免疫状态「{condition}」，职业特性未写入")
                     state_name = {
                         "raging": "feature_raging",
@@ -10524,7 +10634,12 @@ class CombatEngineService:
                         raise ValueError(
                             "当前职业特性只允许结构化的隐形、鲁莽攻击或稳定瞄准持续到回合边界"
                         )
-                    if self._condition_is_immune(target, condition):
+                    if self._condition_is_immune(
+                        target,
+                        condition,
+                        session=session,
+                        combat_id=combat.id,
+                    ):
                         raise ValueError(
                             f"目标免疫状态「{condition}」，职业特性未写入"
                         )
@@ -13487,6 +13602,9 @@ class CombatEngineService:
         cls,
         target: Combatant,
         details: dict[str, object],
+        *,
+        session: Session | None = None,
+        combat_id: str | None = None,
     ) -> dict[str, object] | None:
         """Reconcile a repeating state without stacking it on every tick."""
 
@@ -13514,7 +13632,12 @@ class CombatEngineService:
                 if changed:
                     cls._restore_condition_restrictions(target)
                 result["status"] = "removed" if changed else "already_absent"
-            elif cls._condition_is_immune(target, condition):
+            elif cls._condition_is_immune(
+                target,
+                condition,
+                session=session,
+                combat_id=combat_id,
+            ):
                 # The initial effect path rejects immune conditions. Repeat
                 # ticks must use the same gate; otherwise gaining immunity
                 # between turns would be undone by the next reapplication.
@@ -13639,7 +13762,12 @@ class CombatEngineService:
                 effect.version += 1
                 return None
         before = serialize(target)
-        state_result = self._reapply_rule_state_effect(target, details)
+        state_result = self._reapply_rule_state_effect(
+            target,
+            details,
+            session=session,
+            combat_id=combat.id,
+        )
         if state_result is not None:
             changed = bool(state_result.pop("changed", False))
             state_result["expression"] = None
@@ -14092,7 +14220,12 @@ class CombatEngineService:
                 and str(raw_rule_block.get("operation") or "apply") != "remove"
             ):
                 condition = str(raw_rule_block.get("condition") or "").strip()
-                if condition and self._condition_is_immune(target, condition):
+                if condition and self._condition_is_immune(
+                    target,
+                    condition,
+                    session=session,
+                    combat_id=combat_id,
+                ):
                     raise ValueError(
                         f"目标免疫状态「{condition}」，结构化效果未写入"
                     )
