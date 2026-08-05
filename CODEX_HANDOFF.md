@@ -1254,3 +1254,9 @@ backend/.venv/bin/python -m pytest -q backend/tests
 - 验证：返本还元定向 2 项通过；后端全量 pytest 通过；前端 Vitest `39 文件 / 203 项`、TypeScript、ESLint、生产构建、Ruff、compileall、`git diff --check` 全部通过。仅有既有 Starlette/httpx 弃用警告。
 - 内置浏览器实际加载 DM 模拟战斗页，页面、地图、技能入口正常；控制台 error/warn 均为空。验收截图：`/private/tmp/dnd-self-restoration-browser-check-20260806.png`。当前模拟角色是法师，页面未暴露返本还元按钮，因此该职业特性的实际执行由后端 API 回归覆盖，没有把法师页面冒充特性控件验收。
 - 用户原有未跟踪文件 `backend/tests/integrations/`、`backend/tests/ollama.py` 仍保留，未纳入提交。固定范围仍只有 4 个大项，高级三维战斗继续跳过。
+
+# 2026-08-06 返本还元合同状态一致性修复
+
+- 代码提交 `b48e9e4`：上一项已完成真实执行，但残留的 `end_turn_condition_removal` 防御条目仍为 `partial`，导致职业特性总合同可能错误显示为部分自动。现在该条目与实际状态选择/移除执行器一致标为 `full`，并明确不需要 DM 裁定。
+- 新增合同回归，确认返本还元整体 `automation_status=full`、`requires_dm_adjudication=false` 且没有遗留原因。后端全量 pytest、Ruff、compileall、`git diff --check` 通过；未修改前端，沿用上一项已通过的前端门禁与浏览器页面基线。
+- 这是上一项的收口修复，不新增缺口；固定范围仍只有 4 个大项，高级三维战斗继续跳过。
