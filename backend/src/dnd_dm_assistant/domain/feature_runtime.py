@@ -1340,9 +1340,15 @@ def feature_runtime_definition(
             "resolution_kind": "saving_throw_reroll",
             "activation_window": "after_failed_saving_throw",
             "effects": [{"kind": "grant_saving_throw_reroll", "scope": "self"}],
-            "automation_status": "partial",
-            "requires_dm_adjudication": True,
-            "partial_reason": "现有执行器可登记并消耗重骰资格，但尚无失败豁免后的即时特性窗口。",
+            "runtime_execution": {
+                "status": "ready",
+                "consumer": "saving_throw_resolution",
+                "effect_kinds": ["grant_saving_throw_reroll"],
+                "remaining_dm_boundaries": [],
+            },
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+            "summary": "失败豁免后打开即时重掷窗口；确认后真实消耗 1 点专注并以第二枚骰结算。",
             **source,
         }
 

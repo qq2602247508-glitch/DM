@@ -771,6 +771,67 @@ def test_failed_save_opens_feature_reroll_window_before_damage() -> None:
     assert target.snapshot_json["feature_saving_throw_rerolls"][0]["available"] is False
 
 
+def test_disciplined_survivor_uses_focus_for_failed_save_reroll() -> None:
+    class FakeSession:
+        def __init__(self) -> None:
+            self.character = SimpleNamespace(
+                resources={"focus": {"current": 1, "max": 4}},
+                version=1,
+                updated_at=None,
+            )
+
+        def get(self, _model: object, _entity_id: str) -> object:
+            return self.character
+
+    target = Combatant(
+        id="disciplined-survivor",
+        entity_type="character",
+        entity_id="monk-character",
+        display_name="圆融自在者",
+        hp=20,
+        max_hp=20,
+        snapshot_json={
+            "feature_runtime": {
+                "actions": {
+                    "disciplined_survivor": {
+                        "kind": "feature_action",
+                        "name": "圆融自在",
+                        "resolution_kind": "saving_throw_reroll",
+                        "activation_window": "after_failed_saving_throw",
+                        "resource_key": "focus",
+                        "resource_cost": 1,
+                    }
+                },
+                "resources": {"focus": {"current": 1, "max": 4}},
+            }
+        },
+    )
+
+    result = CombatEngineService._resolve_save_defenses(
+        target,
+        dc=15,
+        ability="wisdom",
+        roll_total=5,
+        roll_totals=[5, 18],
+        damage_on_success=0,
+        damage_on_failure=10,
+        is_magical=False,
+        use_legendary_resistance=False,
+        use_feature_reroll=True,
+        consume=True,
+        session=FakeSession(),
+    )
+
+    assert result["success"] is True
+    assert result["effective_roll_total"] == 18
+    assert result["feature_reroll_consumed"] == {
+        "feature_id": "disciplined_survivor",
+        "resource": "focus",
+        "before": 1,
+        "after": 0,
+    }
+
+
 def test_elusive_suppresses_condition_advantage_unless_incapacitated() -> None:
     actor = Combatant(
         id="elusive-attacker",

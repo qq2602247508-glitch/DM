@@ -915,7 +915,7 @@ def test_unarmored_defense_resolves_only_with_authoritative_equipment_state() ->
     assert no_details is None
 
 
-def test_reactions_and_monk_defenses_publish_typed_partial_contracts() -> None:
+def test_reactions_and_monk_defenses_publish_typed_contracts() -> None:
     rules = _core_rules()
     bard = _registry(rules["吟游诗人"])
     monk = _registry(rules["武僧"])
@@ -940,7 +940,14 @@ def test_reactions_and_monk_defenses_publish_typed_partial_contracts() -> None:
     assert survivor["effects"] == [
         {"kind": "grant_saving_throw_reroll", "scope": "self"}
     ]
-    assert survivor["automation_status"] == "partial"
+    assert survivor["automation_status"] == "full"
+    assert survivor["requires_dm_adjudication"] is False
+    assert survivor["runtime_execution"] == {
+        "status": "ready",
+        "consumer": "saving_throw_resolution",
+        "effect_kinds": ["grant_saving_throw_reroll"],
+        "remaining_dm_boundaries": [],
+    }
 
     superior = next(
         item
