@@ -701,7 +701,8 @@ def test_choice_bound_feature_actions_are_partial_and_explicit() -> None:
     assert ranger_resources["tireless"]["max"] == 3
     assert ranger_resources["nature_veil"]["max"] == 3
     assert ranger_resources["tireless"]["requires_dm_adjudication"] is True
-    assert ranger_resources["nature_veil"]["requires_dm_adjudication"] is True
+    assert ranger_resources["nature_veil"]["requires_dm_adjudication"] is False
+    assert ranger_resources["nature_veil"]["automation_status"] == "full"
 
 
 def test_new_passive_and_attack_contracts_are_typed_but_not_automatic() -> None:
@@ -772,6 +773,12 @@ def test_ranger_tireless_and_nature_veil_have_executable_runtime_contracts() -> 
             "expires": "turn_start",
         }
     ]
+    assert registry["actions"]["nature_veil"]["runtime_execution"] == {
+        "status": "ready",
+        "consumer": "combat_feature_action",
+        "effect_kinds": ["activate_timed_condition"],
+    }
+    assert registry["actions"]["nature_veil"]["automation_status"] == "full"
 
 
 def test_base_rage_contract_does_not_leak_into_named_rage_upgrades() -> None:

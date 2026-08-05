@@ -851,8 +851,9 @@ def progression_resource_updates(
                 "max_formula": "max(1, wisdom_modifier)",
                 "recovery": "long_rest",
                 "source": source,
-                "requires_dm_adjudication": True,
-                "note": "只追踪隐形使用次数；隐形持续到下一回合的生命周期仍需 DM/回合执行器确认。",
+                "requires_dm_adjudication": False,
+                "automation_status": "full",
+                "note": "隐形状态与下一回合开始的生命周期由战斗运行时真实执行。",
             }
             if wisdom_modifier is not None:
                 updates["nature_veil"]["max"] = max(1, wisdom_modifier)

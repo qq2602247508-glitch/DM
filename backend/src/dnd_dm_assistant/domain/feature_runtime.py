@@ -1160,6 +1160,14 @@ def feature_runtime_definition(
                     "expires": "turn_start",
                 }
             ],
+            "runtime_execution": {
+                "status": "ready",
+                "consumer": "combat_feature_action",
+                "effect_kinds": ["activate_timed_condition"],
+            },
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+            "summary": "消耗一次自然面纱，在下一回合开始前保持隐形。",
             **source,
         }
 

@@ -8465,6 +8465,113 @@ def test_superior_defense_spends_focus_and_resists_non_force_damage(
     assert character_after["resources"]["focus"]["current"] == 0
 
 
+def test_nature_veil_spends_resource_and_expires_at_next_turn_start(
+    combat_client: TestClient,
+) -> None:
+    campaign = _campaign(combat_client, "Nature veil runtime")
+    base = f"/api/v1/campaigns/{campaign['id']}"
+    character = combat_client.post(
+        f"{base}/characters",
+        json={
+            "name": "面纱游侠",
+            "hp": 24,
+            "max_hp": 24,
+            "resources": {"nature_veil": {"current": 1, "max": 1}},
+        },
+    ).json()
+    definition = feature_runtime_definition(
+        feature_name="自然面纱",
+        class_name="游侠",
+        class_level=14,
+        resources={"nature_veil": {"current": 1, "max": 1}},
+        tracked_resource_keys=["nature_veil"],
+    )
+    registry = compile_feature_runtime_registry(
+        [
+            {
+                "name": "自然面纱",
+                "class_name": "游侠",
+                "class_level": 14,
+                "runtime": {"registry": definition},
+            }
+        ]
+    )
+    combat = combat_client.post(
+        f"{base}/combats", json={"name": "自然面纱测试战斗"}
+    ).json()
+    actor = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "面纱游侠",
+            "entity_type": "character",
+            "entity_id": character["id"],
+            "initiative": 20,
+            "hp": 24,
+            "max_hp": 24,
+            "speed_ft": 30,
+            "movement_remaining_ft": 30,
+            "snapshot_json": {"feature_runtime": registry},
+        },
+    ).json()
+    combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "观察者",
+            "entity_type": "monster",
+            "initiative": 10,
+            "hp": 10,
+            "max_hp": 10,
+        },
+    )
+
+    activated = combat_client.post(
+        f"{base}/combats/{combat['id']}/feature-actions/confirm",
+        headers={"X-Request-ID": "nature-veil-activate"},
+        json={
+            "actor_combatant_id": actor["id"],
+            "actor_version": actor["version"],
+            "feature_id": "nature_veil",
+            "target_combatant_id": actor["id"],
+            "target_version": actor["version"],
+        },
+    )
+    assert activated.status_code == 200, activated.text
+    assert activated.json()["result"]["resource_before"] == 1
+    assert activated.json()["result"]["resource_after"] == 0
+    assert activated.json()["actor"]["bonus_action_available"] is False
+    assert "隐形" in activated.json()["actor"]["conditions"]
+
+    first_advance = combat_client.post(
+        f"{base}/combats/{combat['id']}/turns/advance",
+        headers={"X-Request-ID": "nature-veil-advance-observer"},
+        json={"combat_version": combat["version"]},
+    )
+    assert first_advance.status_code == 200, first_advance.text
+    first_combatants = combat_client.get(
+        f"{base}/combats/{combat['id']}/combatants"
+    ).json()["items"]
+    assert "隐形" in next(
+        item
+        for item in first_combatants
+        if item["id"] == actor["id"]
+    )["conditions"]
+
+    second_advance = combat_client.post(
+        f"{base}/combats/{combat['id']}/turns/advance",
+        headers={"X-Request-ID": "nature-veil-advance-ranger"},
+        json={"combat_version": first_advance.json()["combat"]["version"]},
+    )
+    assert second_advance.status_code == 200, second_advance.text
+    second_combatants = combat_client.get(
+        f"{base}/combats/{combat['id']}/combatants"
+    ).json()["items"]
+    assert "隐形" not in next(
+        item
+        for item in second_combatants
+        if item["id"] == actor["id"]
+    )["conditions"]
+
+
 def test_condition_matrix_changes_saves_and_petrified_damage(
     combat_client: TestClient,
 ) -> None:
