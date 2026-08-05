@@ -1434,6 +1434,8 @@ class PlayerRollResolutionCommand(BaseModel):
     bardic_inspiration_total: int | None = Field(default=None, ge=1, le=1_000)
     use_legendary_resistance: bool = False
     use_feature_reroll: bool = False
+    use_stroke_of_luck: bool = False
+    stroke_of_luck_total: int | None = Field(default=None, ge=-100, le=1_000)
     feature_reroll_reactor_id: str | None = Field(default=None, min_length=1, max_length=36)
     dm_note: str | None = Field(default=None, max_length=1_000)
 
@@ -1443,6 +1445,16 @@ class PlayerRollResolutionCommand(BaseModel):
             raise ValueError("roll_totals entries must be between -100 and 1000")
         if self.roll_totals and self.roll_total not in self.roll_totals:
             raise ValueError("roll_total must be one of roll_totals when both are provided")
+        if self.use_stroke_of_luck and self.use_feature_reroll:
+            raise ValueError("幸运一击不能与职业特性重掷叠加")
+        if self.use_stroke_of_luck and self.use_legendary_resistance:
+            raise ValueError("幸运一击不能与传奇抗性叠加")
+        if self.use_stroke_of_luck and self.bardic_inspiration_total is not None:
+            raise ValueError("幸运一击不能与吟游诗人激励骰在同一次提交中叠加")
+        if self.stroke_of_luck_total is not None and not self.use_stroke_of_luck:
+            raise ValueError("stroke_of_luck_total 只适用于确认使用幸运一击")
+        if self.use_stroke_of_luck and self.stroke_of_luck_total is None:
+            raise ValueError("使用幸运一击时必须提交天然 20 加调整值后的最终总值")
         return self
 
 

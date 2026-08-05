@@ -265,6 +265,145 @@ def test_failed_player_save_persists_feature_reroll_window_before_resolution(
     assert second.json()["target"]["hp"] == 20
 
 
+def test_stroke_of_luck_replaces_failed_d20_and_consumes_authoritative_resource(
+    combat_client: TestClient,
+) -> None:
+    campaign, combat, actor = _setup(combat_client)
+    character_response = combat_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/characters",
+        json={
+            "name": "幸运一击测试者",
+            "class_name": "游荡者",
+            "level": 20,
+            "resources": {"stroke_of_luck": {"current": 1, "max": 1}},
+        },
+    )
+    assert character_response.status_code == 201, character_response.text
+    character = character_response.json()
+    runtime_action = {
+        "id": "stroke_of_luck",
+        "name": "幸运一击",
+        "kind": "feature_action",
+        "action_cost": "none",
+        "resource_key": "stroke_of_luck",
+        "resource_cost": 1,
+        "target": "self",
+        "resolution_kind": "d20_replacement",
+        "activation_window": "after_failed_d20_test",
+        "trigger": {"event": "d20_test_failed", "timing": "after_result"},
+        "replacement": {"d20_roll": 20},
+        "effects": [{"kind": "replace_d20_roll", "replacement": 20}],
+        "runtime_execution": {
+            "status": "ready",
+            "consumer": "player_roll_resolution",
+        },
+    }
+    target_response = combat_client.post(
+        f"{_root(campaign, combat)}/combatants",
+        json={
+            "display_name": "幸运一击测试者",
+            "entity_type": "character",
+            "entity_id": character["id"],
+            "initiative": 10,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {
+                "feature_runtime": {
+                    "actions": {"stroke_of_luck": runtime_action},
+                    "resources": {"stroke_of_luck": {"current": 1, "max": 1}},
+                }
+            },
+        },
+    )
+    assert target_response.status_code == 201, target_response.text
+    target = target_response.json()
+    prompt_body = {
+        "actor_combatant_id": actor["id"],
+        "actor_version": actor["version"],
+        "target_combatant_id": target["id"],
+        "target_version": target["version"],
+        "action_cost": "none",
+        "action_name": "困难检定",
+        "resolution_type": "ability_check",
+        "dc": 15,
+        "ability": "dexterity",
+    }
+    prompt = combat_client.post(
+        f"{_root(campaign, combat)}/actions/player-rolls/pending",
+        headers={"X-Request-ID": "stroke-prompt"},
+        json=prompt_body,
+    )
+    assert prompt.status_code == 200, prompt.text
+    action = prompt.json()["action"]
+
+    first = combat_client.post(
+        f"{_root(campaign, combat)}/actions/player-rolls/{action['id']}/confirm",
+        headers={"X-Request-ID": "stroke-first"},
+        json={"action_version": action["version"], "roll_total": 5},
+    )
+    assert first.status_code == 200, first.text
+    first_body = first.json()
+    assert first_body["resolution"]["phase"] == "awaiting_stroke_of_luck"
+    assert first_body["resolution"]["stroke_of_luck_window"]["original_roll_total"] == 5
+    assert first_body["target"]["hp"] == 20
+
+    second = combat_client.post(
+        f"{_root(campaign, combat)}/actions/player-rolls/{action['id']}/confirm",
+        headers={"X-Request-ID": "stroke-second"},
+        json={
+            "action_version": first_body["action"]["version"],
+            "roll_total": 5,
+            "use_stroke_of_luck": True,
+            "stroke_of_luck_total": 18,
+        },
+    )
+    assert second.status_code == 200, second.text
+    body = second.json()
+    assert body["resolution"]["phase"] == "resolved"
+    assert body["resolution"]["success"] is True
+    assert body["resolution"]["roll_total"] == 18
+    assert body["resolution"]["reported_roll_totals"] == [5]
+    assert body["resolution"]["stroke_of_luck_total"] == 18
+    assert body["resolution"]["stroke_of_luck_consumed"]["before"] == 1
+    assert body["resolution"]["stroke_of_luck_consumed"]["after"] == 0
+
+    character_after = combat_client.get(
+        f"/api/v1/campaigns/{campaign['id']}/characters/{character['id']}"
+    )
+    assert character_after.status_code == 200, character_after.text
+    assert character_after.json()["resources"]["stroke_of_luck"]["current"] == 0
+
+    replay = combat_client.post(
+        f"{_root(campaign, combat)}/actions/player-rolls/{action['id']}/confirm",
+        headers={"X-Request-ID": "stroke-second-replay"},
+        json={
+            "action_version": first_body["action"]["version"],
+            "roll_total": 5,
+            "use_stroke_of_luck": True,
+            "stroke_of_luck_total": 18,
+        },
+    )
+    assert replay.status_code == 200, replay.text
+    assert replay.json()["resolution"]["stroke_of_luck_consumed"]["after"] == 0
+    assert replay.json()["target"]["hp"] == 20
+
+    no_resource_prompt = combat_client.post(
+        f"{_root(campaign, combat)}/actions/player-rolls/pending",
+        headers={"X-Request-ID": "stroke-no-resource-prompt"},
+        json={**prompt_body, "target_version": target["version"]},
+    )
+    assert no_resource_prompt.status_code == 200, no_resource_prompt.text
+    no_resource_action = no_resource_prompt.json()["action"]
+    no_resource = combat_client.post(
+        f"{_root(campaign, combat)}/actions/player-rolls/{no_resource_action['id']}/confirm",
+        headers={"X-Request-ID": "stroke-no-resource-confirm"},
+        json={"action_version": no_resource_action["version"], "roll_total": 5},
+    )
+    assert no_resource.status_code == 200, no_resource.text
+    assert no_resource.json()["resolution"]["phase"] == "resolved"
+    assert no_resource.json()["resolution"].get("stroke_of_luck_window") is None
+
+
 def test_bardic_inspiration_player_roll_api_adds_and_consumes_die(
     combat_client: TestClient,
 ) -> None:

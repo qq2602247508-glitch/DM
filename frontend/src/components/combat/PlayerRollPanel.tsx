@@ -96,8 +96,11 @@ export function PlayerRollPanel({
   const [damageSuccessSegments, setDamageSuccessSegments] = useState("");
   const [damageFailureSegments, setDamageFailureSegments] = useState("");
   const [rolls, setRolls] = useState<Record<string, string>>({});
+  const [strokeTotals, setStrokeTotals] = useState<Record<string, string>>({});
+  const [strokeOriginalRolls, setStrokeOriginalRolls] = useState<Record<string, number>>({});
   const [useFeatureReroll, setUseFeatureReroll] = useState<Record<string, boolean>>({});
   const [useLegendaryResistance, setUseLegendaryResistance] = useState<Record<string, boolean>>({});
+  const [useStrokeOfLuck, setUseStrokeOfLuck] = useState<Record<string, boolean>>({});
   const [previews, setPreviews] = useState<Record<string, PlayerRollResolutionResult>>({});
 
   const pending = useMemo(
@@ -169,19 +172,40 @@ export function PlayerRollPanel({
         .filter(Boolean)
         .map(Number);
       if (values.some((value) => !Number.isFinite(value))) throw new Error("请输入有效骰值");
+      const strokeEnabled = useStrokeOfLuck[action.id] === true;
+      const persistedWindow = action.result_json.stroke_of_luck_window as
+        | { original_roll_total?: unknown }
+        | undefined;
+      const persistedOriginal = Number(persistedWindow?.original_roll_total);
+      const originalRoll = strokeOriginalRolls[action.id]
+        ?? (Number.isFinite(persistedOriginal) ? persistedOriginal : values[0] ?? 0);
+      const strokeTotal = Number(strokeTotals[action.id]);
+      if (strokeEnabled && !Number.isFinite(strokeTotal)) {
+        throw new Error("请输入天然 20 加调整值后的最终总值");
+      }
       return previewPlayerRoll(campaignId, combatId, action.id, {
         action_version: action.version,
-        roll_total: values[0] ?? 0,
+        roll_total: strokeEnabled ? originalRoll : values[0] ?? 0,
         ...(useFeatureReroll[action.id]
           ? { roll_totals: values, use_feature_reroll: true }
           : {}),
         ...(useLegendaryResistance[action.id]
           ? { use_legendary_resistance: true }
           : {}),
+        ...(strokeEnabled
+          ? { use_stroke_of_luck: true, stroke_of_luck_total: strokeTotal }
+          : {}),
       });
     },
     onSuccess: (result) => {
       setPreviews((current) => ({ ...current, [result.action.id]: result }));
+      const window = result.resolution.stroke_of_luck_window;
+      if (window) {
+        setStrokeOriginalRolls((current) => ({
+          ...current,
+          [result.action.id]: window.original_roll_total,
+        }));
+      }
     },
     onError: () => showToast("无法预览玩家骰结果", "error"),
   });
@@ -192,14 +216,28 @@ export function PlayerRollPanel({
         .filter(Boolean)
         .map(Number);
       if (values.some((value) => !Number.isFinite(value))) throw new Error("请输入有效骰值");
+      const strokeEnabled = useStrokeOfLuck[action.id] === true;
+      const persistedWindow = action.result_json.stroke_of_luck_window as
+        | { original_roll_total?: unknown }
+        | undefined;
+      const persistedOriginal = Number(persistedWindow?.original_roll_total);
+      const originalRoll = strokeOriginalRolls[action.id]
+        ?? (Number.isFinite(persistedOriginal) ? persistedOriginal : values[0] ?? 0);
+      const strokeTotal = Number(strokeTotals[action.id]);
+      if (strokeEnabled && !Number.isFinite(strokeTotal)) {
+        throw new Error("请输入天然 20 加调整值后的最终总值");
+      }
       const resolution = await confirmPlayerRoll(campaignId, combatId, action.id, {
         action_version: action.version,
-        roll_total: values[0] ?? 0,
+        roll_total: strokeEnabled ? originalRoll : values[0] ?? 0,
         ...(useFeatureReroll[action.id]
           ? { roll_totals: values, use_feature_reroll: true }
           : {}),
         ...(useLegendaryResistance[action.id]
           ? { use_legendary_resistance: true }
+          : {}),
+        ...(strokeEnabled
+          ? { use_stroke_of_luck: true, stroke_of_luck_total: strokeTotal }
           : {}),
       });
       const followUp = resolution.resolution.follow_up_damage;
@@ -218,8 +256,11 @@ export function PlayerRollPanel({
       showToast(
         result.resolution.phase === "awaiting_feature_reroll"
           ? "豁免失败，已打开职业特性重掷窗口；请填写两枚豁免总值"
+          : result.resolution.phase === "awaiting_stroke_of_luck"
+            ? "D20 检定失败，已打开幸运一击窗口；请填写天然 20 加调整值后的最终总值"
           : "玩家骰结果已由 DM 确认并写入战斗日志",
-        result.resolution.phase === "awaiting_feature_reroll" ? "error" : "success",
+        result.resolution.phase === "awaiting_feature_reroll"
+          || result.resolution.phase === "awaiting_stroke_of_luck" ? "error" : "success",
       );
       onResolved?.(result.action);
     },
@@ -404,6 +445,33 @@ export function PlayerRollPanel({
         const legendaryResistanceAvailable = request.resolution_type === "saving_throw"
           && Number.isFinite(legendaryResistanceRemaining)
           && legendaryResistanceRemaining > 0;
+        const featureRuntime = rollTarget?.snapshot_json.feature_runtime as {
+          actions?: Record<string, {
+            kind?: unknown;
+            resolution_kind?: unknown;
+            activation_window?: unknown;
+            resource_key?: unknown;
+          }>;
+          resources?: Record<string, { current?: unknown }>;
+        } | undefined;
+        const strokeAction = featureRuntime?.actions?.stroke_of_luck;
+        const strokeResourceCurrent = Number(featureRuntime?.resources?.stroke_of_luck?.current ?? 0);
+        const strokeOfLuckAvailable = request.resolution_type !== "armor_class"
+          && strokeAction?.kind === "feature_action"
+          && strokeAction.resolution_kind === "d20_replacement"
+          && strokeAction.activation_window === "after_failed_d20_test"
+          && Number.isFinite(strokeResourceCurrent)
+          && strokeResourceCurrent > 0;
+        const persistedStrokeWindow = action.result_json.stroke_of_luck_window as {
+          original_roll_total?: unknown;
+          resource_before?: unknown;
+        } | undefined;
+        const resultStrokeWindow = result?.resolution.stroke_of_luck_window;
+        const strokeWindowOpen = result?.resolution.phase === "awaiting_stroke_of_luck"
+          || action.result_json.phase === "awaiting_stroke_of_luck";
+        const originalStrokeRoll = resultStrokeWindow?.original_roll_total
+          ?? Number(persistedStrokeWindow?.original_roll_total);
+        const strokeChoiceVisible = strokeWindowOpen && strokeOfLuckAvailable;
         return (
           <article className="mt-3 rounded border border-sky-800/50 bg-ink-950/70 p-3" key={action.id}>
             <strong className="text-xs text-parchment-100">
@@ -429,6 +497,44 @@ export function PlayerRollPanel({
                 type={featureRerollAvailable ? "text" : "number"}
                 value={rollValue}
               />
+              {strokeChoiceVisible ? (
+                <>
+                  <label className="flex items-center gap-1 text-2xs text-amber-200">
+                    <input
+                      checked={useStrokeOfLuck[action.id] === true}
+                      onChange={(event) => {
+                        const checked = event.target.checked;
+                        setUseStrokeOfLuck((current) => ({ ...current, [action.id]: checked }));
+                        if (checked) {
+                          setUseFeatureReroll((current) => ({ ...current, [action.id]: false }));
+                          setUseLegendaryResistance((current) => ({ ...current, [action.id]: false }));
+                          if (Number.isFinite(originalStrokeRoll)) {
+                            setStrokeOriginalRolls((current) => ({
+                              ...current,
+                              [action.id]: Number(originalStrokeRoll),
+                            }));
+                          }
+                        }
+                      }}
+                      type="checkbox"
+                    />
+                    使用幸运一击（资源剩余 {strokeResourceCurrent} 次；天然 20）
+                  </label>
+                  {useStrokeOfLuck[action.id] === true ? (
+                    <input
+                      aria-label={`${textField(request.target_name)}幸运一击最终总值`}
+                      className={`${inputCls} w-44`}
+                      onChange={(event) => setStrokeTotals((current) => ({
+                        ...current,
+                        [action.id]: event.target.value,
+                      }))}
+                      placeholder="天然20 + 调整值后的最终总值"
+                      type="number"
+                      value={strokeTotals[action.id] ?? ""}
+                    />
+                  ) : null}
+                </>
+              ) : null}
               {featureRerollAvailable && request.resolution_type === "saving_throw" ? (
                 <label className="flex items-center gap-1 text-2xs text-violet-200">
                   <input
@@ -449,7 +555,12 @@ export function PlayerRollPanel({
                   失败时使用传奇抗性（剩余 {legendaryResistanceRemaining} 次；将本次豁免视为成功）
                 </label>
               ) : null}
-              <Button disabled={rollValue === "" || preview.isPending} onClick={() => preview.mutate(action)}>
+              <Button
+                disabled={rollValue === ""
+                  || (useStrokeOfLuck[action.id] === true && strokeTotals[action.id] === "")
+                  || preview.isPending}
+                onClick={() => preview.mutate(action)}
+              >
                 预览结果
               </Button>
               <Button
@@ -462,13 +573,17 @@ export function PlayerRollPanel({
               </Button>
             </div>
             {result ? (
-              <p className={`mb-0 mt-2 text-xs ${result.resolution.phase === "awaiting_feature_reroll" ? "text-violet-300" : result.resolution.success ? "text-emerald-300" : "text-amber-300"}`}>
+              <p className={`mb-0 mt-2 text-xs ${result.resolution.phase === "awaiting_feature_reroll" ? "text-violet-300" : result.resolution.phase === "awaiting_stroke_of_luck" ? "text-amber-300" : result.resolution.success ? "text-emerald-300" : "text-amber-300"}`}>
                 {result.resolution.phase === "awaiting_feature_reroll"
                   ? `${textField(request.target_name)} 首次豁免失败，等待职业特性重掷`
+                  : result.resolution.phase === "awaiting_stroke_of_luck"
+                    ? `${textField(request.target_name)} D20 检定失败，等待幸运一击确认`
                   : `${textField(request.target_name)} 的结果 ${result.resolution.roll_total}`}
                 {" / DC "}{result.resolution.dc}：
                 {result.resolution.phase === "awaiting_feature_reroll"
                   ? "需要第二枚骰"
+                  : result.resolution.phase === "awaiting_stroke_of_luck"
+                    ? "可替换为天然 20，并提交最终总值"
                   : result.resolution.success ? "成功" : "失败"}
                 {result.resolution.damage
                   ? `；将结算 ${result.resolution.damage} 点 ${result.resolution.damage_type ?? ""}伤害`

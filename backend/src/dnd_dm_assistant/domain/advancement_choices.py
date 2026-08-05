@@ -133,6 +133,7 @@ FEATURE_RESOURCE_MARKERS: dict[str, str] = {
     "契约魔法": "pact_slots",
     "奥术回想": "arcane_recovery",
     "魔能恢复": "arcane_recovery",
+    "幸运一击": "stroke_of_luck",
     "玄奥秘法（六环）": "mystic_arcanum_6",
     "玄奥秘法（七环）": "mystic_arcanum_7",
     "玄奥秘法（八环）": "mystic_arcanum_8",
@@ -811,6 +812,13 @@ def progression_resource_updates(
             "label": "魔能恢复",
             "max": 1,
             "recovery": "long_rest",
+            "source": source,
+        }
+    elif rule.name == "游荡者" and target_class_level >= 20:
+        updates["stroke_of_luck"] = {
+            "label": "幸运一击",
+            "max": 1,
+            "recovery": "short_rest",
             "source": source,
         }
 

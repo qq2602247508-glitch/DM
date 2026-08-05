@@ -3552,6 +3552,140 @@ class CombatEngineService:
         return options
 
     @classmethod
+    def _stroke_of_luck_option(
+        cls,
+        target: Combatant,
+        *,
+        session: Session | None = None,
+    ) -> dict[str, object] | None:
+        """Return an authoritative, explicitly compiled Stroke of Luck option.
+
+        This is deliberately stricter than checking a class name or a resource
+        label.  The combat snapshot must contain the typed event action and the
+        character row must contain the live resource.  If either side is
+        missing, the feature is not offered and cannot be consumed.
+        """
+
+        if session is None or target.entity_type != "character" or not target.entity_id:
+            return None
+        character = session.get(Character, target.entity_id)
+        if character is None:
+            return None
+        runtime = (target.snapshot_json or {}).get("feature_runtime")
+        actions = runtime.get("actions") if isinstance(runtime, dict) else None
+        if not isinstance(actions, dict):
+            return None
+        raw_action = actions.get("stroke_of_luck")
+        if not isinstance(raw_action, dict):
+            return None
+        trigger = raw_action.get("trigger")
+        replacement = raw_action.get("replacement")
+        effects = raw_action.get("effects")
+        typed_effect = any(
+            isinstance(effect, dict)
+            and effect.get("kind") == "replace_d20_roll"
+            and effect.get("replacement") == 20
+            for effect in effects or ()
+        )
+        if not (
+            raw_action.get("kind") == "feature_action"
+            and raw_action.get("resolution_kind") == "d20_replacement"
+            and raw_action.get("activation_window") == "after_failed_d20_test"
+            and isinstance(trigger, dict)
+            and trigger.get("event") == "d20_test_failed"
+            and trigger.get("timing") == "after_result"
+            and isinstance(replacement, dict)
+            and replacement.get("d20_roll") == 20
+            and typed_effect
+            and isinstance(raw_action.get("runtime_execution"), dict)
+            and raw_action["runtime_execution"].get("status") == "ready"
+            and raw_action["runtime_execution"].get("consumer")
+            == "player_roll_resolution"
+        ):
+            return None
+        resource_key = str(raw_action.get("resource_key") or "").strip()
+        resource_cost = cls._state_int(raw_action.get("resource_cost"), 1)
+        resources = character.resources if isinstance(character.resources, dict) else {}
+        raw_resource = resources.get(resource_key)
+        current = (
+            cls._state_int(raw_resource.get("current"))
+            if isinstance(raw_resource, dict)
+            else 0
+        )
+        if not resource_key or resource_cost < 1 or current < resource_cost:
+            return None
+        return {
+            "feature_id": "stroke_of_luck",
+            "source": str(raw_action.get("name") or "幸运一击"),
+            "resource_key": resource_key,
+            "resource_cost": resource_cost,
+            "resource_before": current,
+            "replacement_d20": 20,
+        }
+
+    @classmethod
+    def _consume_stroke_of_luck(
+        cls,
+        target: Combatant,
+        option: dict[str, object],
+        *,
+        session: Session | None,
+        operation_id: str,
+    ) -> dict[str, object]:
+        if session is None or not target.entity_id:
+            raise ValueError("幸运一击缺少角色资源上下文")
+        character = session.get(Character, target.entity_id)
+        if character is None:
+            raise ValueError("幸运一击的角色资源不存在")
+        resource_key = str(option.get("resource_key") or "")
+        cost = cls._state_int(option.get("resource_cost"), 1)
+        resources = dict(character.resources or {})
+        raw_resource = resources.get(resource_key)
+        resource = dict(raw_resource) if isinstance(raw_resource, dict) else {}
+        before = cls._state_int(resource.get("current"))
+        last_consumed = resource.get("last_consumed")
+        if (
+            isinstance(last_consumed, dict)
+            and last_consumed.get("consumed_for_action_id") == operation_id
+        ):
+            return dict(last_consumed)
+        if before < cost:
+            raise ValueError("幸运一击资源不足")
+        consumed = {
+            "feature_id": option.get("feature_id"),
+            "source": option.get("source"),
+            "resource": resource_key,
+            "before": before,
+            "after": before - cost,
+            "replacement_d20": option.get("replacement_d20", 20),
+            "consumed_for_action_id": operation_id,
+        }
+        resource["current"] = before - cost
+        resource["last_consumed"] = consumed
+        resources[resource_key] = resource
+        character.resources = resources
+        character.version += 1
+        character.updated_at = datetime.now(UTC)
+
+        snapshot = dict(target.snapshot_json or {})
+        runtime = snapshot.get("feature_runtime")
+        if isinstance(runtime, dict):
+            runtime = dict(runtime)
+            runtime_resources = runtime.get("resources")
+            if isinstance(runtime_resources, dict):
+                runtime_resources = dict(runtime_resources)
+                runtime_resource = runtime_resources.get(resource_key)
+                if isinstance(runtime_resource, dict):
+                    runtime_resources[resource_key] = {
+                        **runtime_resource,
+                        "current": before - cost,
+                    }
+                    runtime["resources"] = runtime_resources
+            snapshot["feature_runtime"] = runtime
+            target.snapshot_json = snapshot
+        return consumed
+
+    @classmethod
     def _suppresses_incoming_attack_advantage(cls, combatant: Combatant) -> bool:
         """Return whether a typed defense cancels all incoming advantage."""
 
@@ -7272,6 +7406,7 @@ class CombatEngineService:
         selected_reactor_id: str | None = None,
         roll_bonus: int = 0,
         roll_bonus_source: str | None = None,
+        roll_total_override: int | None = None,
     ) -> dict[str, object]:
         snapshot = dict(target.snapshot_json or {})
         raw_defenses = snapshot.get("advanced_defenses")
@@ -7468,6 +7603,9 @@ class CombatEngineService:
                 applied.append("restrained_disadvantage_dexterity_save")
         else:
             effective_roll = roll_total
+        if roll_total_override is not None:
+            effective_roll = roll_total_override
+            applied.append("feature:stroke_of_luck")
         auto_fail = (
             bool(condition_set & cls._SAVE_AUTO_FAIL_STR_DEX_CONDITIONS)
             and normalized_ability in {"strength", "dexterity", "力量", "敏捷"}
@@ -7567,6 +7705,16 @@ class CombatEngineService:
         dc = int(str(request["dc"]))
         resolution_type = str(request.get("resolution_type") or "saving_throw")
         bardic_inspiration = cls._bardic_inspiration_context(target, command)
+        stroke_option = (
+            cls._stroke_of_luck_option(target, session=session)
+            if command.use_stroke_of_luck
+            else None
+        )
+        if command.use_stroke_of_luck:
+            if resolution_type == "armor_class":
+                raise ValueError("幸运一击只能替换属性检定或属性豁免的 D20")
+            if stroke_option is None:
+                raise ValueError("目标没有可用且已结构化的幸运一击")
         if resolution_type in {"ability_check", "skill_check"}:
             stat = "ability_check" if resolution_type == "ability_check" else "skill_check"
             feature_modifiers = cls._feature_rule_modifiers(
@@ -7731,12 +7879,77 @@ class CombatEngineService:
                     "consumed": False,
                 }
             )
+        stroke_of_luck_consumed: dict[str, object] | None = None
         success = bool(defense["success"])
+        if command.use_stroke_of_luck:
+            if success:
+                raise ValueError("幸运一击只能在 D20 检定失败后使用")
+            if any(
+                str(item).startswith("condition_auto_fail")
+                for item in defense["applied_defenses"]
+            ):
+                raise ValueError("自动失败的检定不能使用幸运一击改变结果")
+            assert stroke_option is not None
+            replacement_total = command.stroke_of_luck_total
+            if replacement_total is None:
+                raise ValueError("幸运一击必须提交天然 20 加调整值后的最终总值")
+            reported_roll_totals_before_stroke = list(
+                defense.get("reported_roll_totals", [])
+            )
+            if resolution_type == "saving_throw":
+                defense = cls._resolve_save_defenses(
+                    target,
+                    dc=dc,
+                    ability=(str(request.get("ability")) if request.get("ability") else None),
+                    roll_total=replacement_total,
+                    roll_totals=[replacement_total, replacement_total],
+                    damage_on_success=cls._state_int(request.get("damage_on_success")),
+                    damage_on_failure=cls._state_int(request.get("damage_on_failure")),
+                    is_magical=bool(request.get("is_magical")),
+                    use_legendary_resistance=False,
+                    use_feature_reroll=False,
+                    consume=False,
+                    session=session,
+                    combat=combat,
+                    condition_names=request.get("conditions_on_failure", []),
+                    roll_total_override=replacement_total,
+                )
+                # The submitted first roll remains the audit source; the
+                # replacement total is recorded separately below.
+                defense["reported_roll_totals"] = reported_roll_totals_before_stroke
+            else:
+                defense = {
+                    **defense,
+                    "effective_roll_total": replacement_total,
+                    "success": replacement_total >= dc,
+                    "reported_roll_totals": reported_roll_totals_before_stroke,
+                    "applied_defenses": [
+                        *list(defense.get("applied_defenses", [])),
+                        "feature:stroke_of_luck",
+                    ],
+                }
+            success = bool(defense["success"])
+            stroke_of_luck_consumed = (
+                cls._consume_stroke_of_luck(
+                    target,
+                    stroke_option,
+                    session=session,
+                    operation_id=action.id,
+                )
+                if consume_defenses
+                else {
+                    **stroke_option,
+                    "after": stroke_option["resource_before"],
+                    "consumed": False,
+                }
+            )
+            stroke_of_luck_consumed["final_total"] = replacement_total
         damage = cls._state_int(defense["damage"])
         if (
             resolution_type == "saving_throw"
             and not success
             and not command.use_feature_reroll
+            and not command.use_stroke_of_luck
         ):
             available_reroll = next(
                 iter(
@@ -7803,10 +8016,55 @@ class CombatEngineService:
                         ),
                     },
                     "feature_reroll_consumed": None,
+                    "stroke_of_luck_consumed": None,
                     "defense_resource_consumed": None,
                     "feature_dice_consumed": feature_dice_consumed,
                     "dm_note": command.dm_note,
                 }
+        if (
+            resolution_type in {"saving_throw", "ability_check", "skill_check"}
+            and not success
+            and not command.use_feature_reroll
+            and not command.use_stroke_of_luck
+            and stroke_option is None
+        ):
+            stroke_option = cls._stroke_of_luck_option(target, session=session)
+        if (
+            resolution_type in {"saving_throw", "ability_check", "skill_check"}
+            and not success
+            and not command.use_feature_reroll
+            and not command.use_stroke_of_luck
+            and stroke_option is not None
+        ):
+            return {
+                "phase": "awaiting_stroke_of_luck",
+                "roll_owner": "player",
+                "roll_total": defense["effective_roll_total"],
+                "reported_roll_totals": defense["reported_roll_totals"],
+                "dc": dc,
+                "success": False,
+                "outcome": "failure",
+                "damage": 0,
+                "damage_type": None,
+                "damage_components": [],
+                "applied_defenses": defense["applied_defenses"],
+                "stroke_of_luck_window": {
+                    "feature_id": stroke_option.get("feature_id"),
+                    "source": stroke_option.get("source"),
+                    "original_roll_total": defense["effective_roll_total"],
+                    "dc": dc,
+                    "replacement_d20": stroke_option.get("replacement_d20", 20),
+                    "requires_final_total": True,
+                    "resource_key": stroke_option.get("resource_key"),
+                    "resource_before": stroke_option.get("resource_before"),
+                },
+                "stroke_of_luck_total": None,
+                "feature_reroll_consumed": None,
+                "stroke_of_luck_consumed": None,
+                "defense_resource_consumed": None,
+                "feature_dice_consumed": feature_dice_consumed,
+                "dm_note": command.dm_note,
+            }
         component_key = (
             "damage_components_on_success"
             if success
@@ -7915,6 +8173,12 @@ class CombatEngineService:
             "applied_defenses": defense["applied_defenses"],
             "defense_resource_consumed": defense["defense_resource_consumed"],
             "feature_reroll_consumed": defense["feature_reroll_consumed"],
+            "stroke_of_luck_consumed": stroke_of_luck_consumed,
+            "stroke_of_luck_total": (
+                command.stroke_of_luck_total
+                if command.use_stroke_of_luck
+                else None
+            ),
             "feature_dice_consumed": feature_dice_consumed,
         }
         result["follow_up_damage"] = (
@@ -8041,21 +8305,39 @@ class CombatEngineService:
                 session=session,
                 combat=combat,
             )
-            if resolution.get("phase") == "awaiting_feature_reroll":
+            if resolution.get("phase") in {
+                "awaiting_feature_reroll",
+                "awaiting_stroke_of_luck",
+            }:
                 action.result_json = {
                     **resolution,
                     "confirmation_idempotency_key": idempotency_key,
                 }
                 action.request_json = {
                     **request,
-                    "feature_reroll_window": resolution.get("feature_reroll_window"),
+                    **(
+                        {"feature_reroll_window": resolution.get("feature_reroll_window")}
+                        if resolution.get("feature_reroll_window") is not None
+                        else {}
+                    ),
+                    **(
+                        {"stroke_of_luck_window": resolution.get("stroke_of_luck_window")}
+                        if resolution.get("stroke_of_luck_window") is not None
+                        else {}
+                    ),
                 }
                 action.version += 1
                 action.updated_at = datetime.now(UTC)
-                action.summary = (
-                    f"{actor.display_name} 对 {target.display_name} 的豁免失败；"
-                    "已打开职业特性重掷窗口，等待第二枚豁免骰"
-                )
+                if resolution.get("phase") == "awaiting_feature_reroll":
+                    action.summary = (
+                        f"{actor.display_name} 对 {target.display_name} 的豁免失败；"
+                        "已打开职业特性重掷窗口，等待第二枚豁免骰"
+                    )
+                else:
+                    action.summary = (
+                        f"{actor.display_name} 对 {target.display_name} 的 D20 检定失败；"
+                        "已打开幸运一击窗口，等待天然 20 的最终总值"
+                    )
                 return {
                     "action": serialize(action),
                     "actor": serialize(actor),

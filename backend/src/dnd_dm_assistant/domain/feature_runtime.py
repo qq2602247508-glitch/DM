@@ -1409,9 +1409,8 @@ def feature_runtime_definition(
                 "label": feature_name,
                 "max": 1,
                 "recovery": "short_rest",
-                "automation_status": "partial",
-                "requires_dm_adjudication": True,
-                "note": "固定使用次数与休息恢复已结构化；角色资源持久化尚未自动创建该资源。",
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
             },
         )
         definition["actions"]["stroke_of_luck"] = {
@@ -1422,18 +1421,19 @@ def feature_runtime_definition(
             "resource_key": "stroke_of_luck",
             "resource_cost": 1,
             "target": "self",
-            "resolution_kind": "choice_required",
+            "resolution_kind": "d20_replacement",
+            "activation_window": "after_failed_d20_test",
             "trigger": {"event": "d20_test_failed", "timing": "after_result"},
             "replacement": {"d20_roll": 20},
-            "effects": [
-                {
-                    "kind": "requires_dm_choice",
-                    "reason": "幸运一击必须在一次 D20 检定失败后替换该次骰值。",
-                }
-            ],
-            "automation_status": "partial",
-            "requires_dm_adjudication": True,
-            "partial_reason": "资源已结构化；现有执行器没有通用 D20 失败后的改骰窗口。",
+            "effects": [{"kind": "replace_d20_roll", "replacement": 20}],
+            "runtime_execution": {
+                "status": "ready",
+                "consumer": "player_roll_resolution",
+                "effect_kinds": ["replace_d20_roll"],
+                "remaining_dm_boundaries": [],
+            },
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
             **source,
         }
 
@@ -2278,7 +2278,10 @@ def feature_runtime_action_projections(
     for feature_id, raw in raw_actions.items():
         if not isinstance(raw, Mapping) or raw.get("kind") != "feature_action":
             continue
-        if raw.get("activation_window") == "after_failed_saving_throw":
+        if raw.get("activation_window") in {
+            "after_failed_saving_throw",
+            "after_failed_d20_test",
+        }:
             # Event-driven prompt, not a free-standing combat button.
             continue
         effects = raw.get("effects")

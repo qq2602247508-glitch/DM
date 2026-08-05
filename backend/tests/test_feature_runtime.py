@@ -1242,8 +1242,14 @@ def test_fixed_feature_resources_expose_recovery_without_claiming_full_automatio
     ]
     stroke_action = rogue["actions"]["stroke_of_luck"]
     assert stroke_action["replacement"] == {"d20_roll": 20}
-    assert stroke_action["automation_status"] == "partial"
-    assert stroke_action["requires_dm_adjudication"] is True
+    assert stroke_action["automation_status"] == "full"
+    assert stroke_action["requires_dm_adjudication"] is False
+    assert stroke_action["runtime_execution"] == {
+        "status": "ready",
+        "consumer": "player_roll_resolution",
+        "effect_kinds": ["replace_d20_roll"],
+        "remaining_dm_boundaries": [],
+    }
 
     slippery = next(
         item

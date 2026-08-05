@@ -1007,11 +1007,13 @@ export type PlayerRollResolutionCommand = {
   bardic_inspiration_total?: number;
   use_legendary_resistance?: boolean;
   use_feature_reroll?: boolean;
+  use_stroke_of_luck?: boolean;
+  stroke_of_luck_total?: number;
   dm_note?: string | null;
 };
 
 export type PlayerRollResolution = {
-  phase: "awaiting_player_roll" | "awaiting_feature_reroll" | "resolved";
+  phase: "awaiting_player_roll" | "awaiting_feature_reroll" | "awaiting_stroke_of_luck" | "resolved";
   roll_owner: "player";
   roll_total?: number;
   dc?: number;
@@ -1027,6 +1029,27 @@ export type PlayerRollResolution = {
     dc: number;
     requires_second_roll: boolean;
   } | null;
+  stroke_of_luck_window?: {
+    feature_id?: string;
+    source?: string;
+    original_roll_total: number;
+    dc: number;
+    replacement_d20: number;
+    requires_final_total: boolean;
+    resource_key?: string;
+    resource_before?: number;
+  } | null;
+  stroke_of_luck_consumed?: {
+    feature_id?: string;
+    source?: string;
+    resource?: string;
+    before?: number;
+    after?: number;
+    replacement_d20?: number;
+    consumed_for_action_id?: string;
+    consumed?: boolean;
+  } | null;
+  stroke_of_luck_total?: number | null;
   feature_dice_consumed?: {
     die_key?: string;
     source?: string;
