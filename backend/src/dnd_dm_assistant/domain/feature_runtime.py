@@ -1464,9 +1464,8 @@ def feature_runtime_definition(
                 "kind": "end_turn_condition_removal",
                 "conditions": ["charmed", "frightened", "poisoned"],
                 "frequency": "one_at_each_turn_end",
-                "automation_status": "partial",
-                "requires_dm_adjudication": True,
-                "partial_reason": "回合末可移除状态已结构化；多状态时仍需玩家选择。",
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
                 **source,
             }
         )

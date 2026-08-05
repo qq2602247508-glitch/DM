@@ -24,6 +24,7 @@ from dnd_dm_assistant.domain.feature_runtime import (
     apply_initiative_start_resource_recovery,
     compile_feature_runtime_registry,
     feature_runtime_action_projections,
+    feature_runtime_contract,
     feature_runtime_definition,
     resolve_feature_speed,
     resolve_unarmored_defense_ac,
@@ -1553,6 +1554,15 @@ def test_self_restoration_is_an_executable_turn_end_condition_choice() -> None:
     assert action["runtime_execution"]["effect_kinds"] == ["condition_removal"]
     projection = feature_runtime_action_projections(registry)
     assert any(item["feature_id"] == "self_restoration" for item in projection)
+    contract = feature_runtime_contract(
+        feature_name="返本还元",
+        class_name="武僧",
+        class_level=10,
+        definition=registry,
+    )
+    assert contract["automation_status"] == "full"
+    assert contract["requires_dm_adjudication"] is False
+    assert contract["reasons"] == []
 
 
 def test_attack_riders_require_explicit_dice_and_are_not_reused_in_same_turn() -> None:
