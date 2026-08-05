@@ -337,6 +337,35 @@ def test_rage_activity_keeps_effect_alive_only_after_explicit_activity() -> None
     assert CombatEngineService._rage_activity_should_end(target, effect) is True
 
 
+def test_rage_activity_counts_only_attacks_against_hostile_targets() -> None:
+    raging_character = Combatant(
+        id="raging-character",
+        entity_type="character",
+        display_name="狂暴者",
+        conditions=["raging"],
+    )
+    ally = Combatant(
+        id="ally",
+        entity_type="companion",
+        display_name="友军召唤物",
+        snapshot_json={"disposition": "ally"},
+    )
+    hostile = Combatant(
+        id="hostile",
+        entity_type="monster",
+        display_name="敌人",
+    )
+    assert CombatEngineService._rage_attack_counts_as_activity(raging_character, ally) is False
+    assert CombatEngineService._rage_attack_counts_as_activity(raging_character, hostile) is True
+    assert (
+        CombatEngineService._rage_attack_counts_as_activity(
+            raging_character,
+            raging_character,
+        )
+        is False
+    )
+
+
 def test_indomitable_might_floors_strength_check_at_strength_score() -> None:
     action = CombatAction(
         campaign_id="campaign",

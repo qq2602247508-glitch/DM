@@ -199,6 +199,25 @@ class CombatEngineService:
         )
 
     @staticmethod
+    def _combatant_faction(combatant: Combatant) -> str:
+        disposition = (combatant.snapshot_json or {}).get("disposition")
+        if disposition in {"ally", "enemy"}:
+            return str(disposition)
+        return "ally" if combatant.entity_type in {"character", "companion"} else "enemy"
+
+    @classmethod
+    def _rage_attack_counts_as_activity(
+        cls,
+        actor: Combatant,
+        target: Combatant,
+    ) -> bool:
+        """Only an attack against a hostile creature keeps rage active."""
+
+        return actor.id != target.id and cls._combatant_faction(
+            actor
+        ) != cls._combatant_faction(target)
+
+    @staticmethod
     def _effect_summon_ids(effect: CombatEffect) -> list[str]:
         """Read both the original one-summon link and grouped lifecycle links."""
         details = dict(effect.details_json or {})
@@ -8500,7 +8519,12 @@ class CombatEngineService:
                 resolved["result"].get("adjusted_damage", 0)
             ) > 0:
                 self._mark_rage_activity(target, damaged=True)
-            if command.is_attack and actor is not None and self._has_condition(actor, "raging"):
+            if (
+                command.is_attack
+                and actor is not None
+                and self._has_condition(actor, "raging")
+                and self._rage_attack_counts_as_activity(actor, target)
+            ):
                 changed = self._mark_rage_activity(actor, attacked=True)
                 if changed and actor.id != target.id:
                     actor.version += 1
