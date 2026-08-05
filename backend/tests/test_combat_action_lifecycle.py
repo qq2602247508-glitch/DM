@@ -2397,3 +2397,84 @@ def test_object_interaction_changes_scene_object_state_with_version_check(
     assert response.status_code == 200, response.text
     assert response.json()["action"]["result_json"]["object_state_after"] == "open"
     assert response.json()["object"]["state"] == "open"
+
+
+def test_self_restoration_removes_one_selected_condition_idempotently(
+    combat_client: TestClient,
+) -> None:
+    campaign, combat, generic_actor = _setup(combat_client)
+    character_response = combat_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/characters",
+        json={"name": "返本还元测试者", "class_name": "武僧", "level": 10},
+    )
+    assert character_response.status_code == 201, character_response.text
+    character = character_response.json()
+    registry = {
+        "actions": {
+            "self_restoration": {
+                "id": "self_restoration",
+                "name": "返本还元",
+                "kind": "feature_action",
+                "action_cost": "none",
+                "target": "self",
+                "resolution_kind": "condition_removal",
+                "activation_window": "turn_end",
+                "allowed_conditions": ["charmed", "frightened", "poisoned"],
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "combat_feature_action",
+                    "effect_kinds": ["condition_removal"],
+                },
+                "effects": [{"kind": "condition_removal"}],
+            }
+        }
+    }
+    patched = combat_client.patch(
+        _combatant_path(campaign, combat, generic_actor["id"]),
+        headers={"If-Match": f'"{generic_actor["version"]}"'},
+        json={
+            "entity_type": "character",
+            "entity_id": character["id"],
+            "conditions": ["中毒", "恐慌"],
+            "snapshot_json": {"feature_runtime": registry},
+        },
+    )
+    assert patched.status_code == 200, patched.text
+    actor = patched.json()
+    payload = {
+        "actor_combatant_id": actor["id"],
+        "actor_version": actor["version"],
+        "feature_id": "self_restoration",
+        "condition_to_remove": "poisoned",
+        "target_combatant_id": actor["id"],
+        "target_version": actor["version"],
+    }
+    confirmed = combat_client.post(
+        f"{_root(campaign, combat)}/feature-actions/confirm",
+        headers={"X-Request-ID": "self-restoration-poisoned"},
+        json=payload,
+    )
+    assert confirmed.status_code == 200, confirmed.text
+    assert confirmed.json()["result"]["condition_removal"] == {
+        "condition": "poisoned",
+        "removed": True,
+        "ended_effect_ids": [],
+    }
+    assert confirmed.json()["target"]["conditions"] == ["恐慌"]
+    replay = combat_client.post(
+        f"{_root(campaign, combat)}/feature-actions/confirm",
+        headers={"X-Request-ID": "self-restoration-poisoned"},
+        json=payload,
+    )
+    assert replay.status_code == 200, replay.text
+    assert replay.json()["already_applied"] is True
+    absent = combat_client.post(
+        f"{_root(campaign, combat)}/feature-actions/confirm",
+        headers={"X-Request-ID": "self-restoration-absent"},
+        json={
+            **payload,
+            "actor_version": confirmed.json()["actor"]["version"],
+            "target_version": confirmed.json()["target"]["version"],
+        },
+    )
+    assert absent.status_code == 400, absent.text

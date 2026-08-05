@@ -1540,6 +1540,21 @@ def test_2024_deterministic_feature_contracts_are_explicit_but_partial_when_even
     assert partial_contracts["稳定瞄准"]["automation_status"] == "full"
 
 
+def test_self_restoration_is_an_executable_turn_end_condition_choice() -> None:
+    registry = feature_runtime_definition(
+        feature_name="返本还元",
+        class_name="武僧",
+        class_level=10,
+    )
+    action = registry["actions"]["self_restoration"]
+    assert action["activation_window"] == "turn_end"
+    assert action["allowed_conditions"] == ["charmed", "frightened", "poisoned"]
+    assert action["automation_status"] == "full"
+    assert action["runtime_execution"]["effect_kinds"] == ["condition_removal"]
+    projection = feature_runtime_action_projections(registry)
+    assert any(item["feature_id"] == "self_restoration" for item in projection)
+
+
 def test_attack_riders_require_explicit_dice_and_are_not_reused_in_same_turn() -> None:
     actor = Combatant(
         id="barbarian",

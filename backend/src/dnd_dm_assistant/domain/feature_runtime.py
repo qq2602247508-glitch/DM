@@ -1438,6 +1438,26 @@ def feature_runtime_definition(
         }
 
     if identity in {"返本还元", "selfrestoration"}:
+        definition["actions"]["self_restoration"] = {
+            "id": "self_restoration",
+            "name": feature_name,
+            "kind": "feature_action",
+            "action_cost": "none",
+            "target": "self",
+            "resolution_kind": "condition_removal",
+            "activation_window": "turn_end",
+            "allowed_conditions": ["charmed", "frightened", "poisoned"],
+            "effects": [{"kind": "condition_removal"}],
+            "runtime_execution": {
+                "status": "ready",
+                "consumer": "combat_feature_action",
+                "effect_kinds": ["condition_removal"],
+                "remaining_dm_boundaries": [],
+            },
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+            **source,
+        }
         definition["combat_start"]["defenses"].append(
             {
                 "id": "self_restoration:end_turn_condition_removal",
@@ -2212,6 +2232,7 @@ def _feature_action_executor_ready(action: Mapping[str, Any]) -> bool:
         "temporary_healing",
         "healing",
         "condition_cure",
+        "condition_removal",
     }
     if not effect_kinds or not effect_kinds <= supported:
         return False
@@ -2300,6 +2321,8 @@ def feature_runtime_action_projections(
             action["description"] = "职业特性：消耗一次资源，获得下一次失败豁免的重掷资格"
         elif action.get("resolution_kind") == "grant_dice":
             action["description"] = "职业特性：消耗资源，为目标记录一枚可在后续检定使用的激励骰"
+        elif action.get("resolution_kind") == "condition_removal":
+            action["description"] = "职业特性：回合结束时选择并移除一个已有的魅惑、恐慌或中毒状态"
         elif action.get("resolution_kind") == "choice_required":
             action["description"] = "职业特性：需要 DM 选择具体分支后执行"
         effects = action.get("effects")

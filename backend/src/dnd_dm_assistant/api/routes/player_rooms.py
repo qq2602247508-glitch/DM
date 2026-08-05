@@ -217,6 +217,7 @@ class FeatureActionInput(BaseModel):
     adjudication_note: str | None = Field(default=None, max_length=1_000)
     healing_total: int | None = Field(default=None, ge=0, le=100_000)
     condition_to_cure: Literal["poisoned", "diseased"] | None = None
+    condition_to_remove: Literal["charmed", "frightened", "poisoned"] | None = None
     idempotency_key: str = Field(min_length=8, max_length=120)
 
 
@@ -816,6 +817,7 @@ def feature_action(
             body.adjudication_note,
             body.healing_total,
             body.condition_to_cure,
+            body.condition_to_remove,
             body.idempotency_key,
         )
     )

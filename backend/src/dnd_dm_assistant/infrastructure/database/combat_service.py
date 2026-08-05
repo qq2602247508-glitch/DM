@@ -9921,6 +9921,7 @@ class CombatEngineService:
             if action is None or action.get("kind") != "feature_action":
                 raise ValueError("该职业特性没有可执行的运行时积木")
             selected_action = command.selected_action
+            condition_to_remove = command.condition_to_remove
             if command.feature_id == "cunning_action":
                 allowed_actions = {
                     str(value) for value in action.get("allowed_actions") or ()
@@ -9934,6 +9935,17 @@ class CombatEngineService:
                     raise ValueError("灵巧动作的躲藏需要 DM 提交成功/失败和裁定说明")
             elif selected_action is not None or command.outcome is not None:
                 raise ValueError("selected_action/outcome 只适用于灵巧动作")
+            if command.feature_id == "self_restoration":
+                allowed_conditions = {
+                    str(value).strip()
+                    for value in action.get("allowed_conditions") or ()
+                }
+                if condition_to_remove not in allowed_conditions:
+                    raise ValueError("返本还元必须选择魅惑、恐慌或中毒状态")
+                if not self._has_condition(actor, condition_to_remove):
+                    raise ValueError("目标当前没有要移除的返本还元状态")
+            elif condition_to_remove is not None:
+                raise ValueError("condition_to_remove 只适用于返本还元")
             condition_to_cure = command.condition_to_cure
             if action.get("activation_window") == "after_failed_saving_throw":
                 raise ValueError("该职业特性只能在失败豁免后通过重掷窗口使用")
@@ -10300,6 +10312,8 @@ class CombatEngineService:
                     result["temporary_healing_effect"] = True
                 elif kind == "healing":
                     result["healing_effect"] = True
+                elif kind == "condition_removal":
+                    result["condition_removal_effect"] = True
                 elif kind == "requires_dm_choice":
                     raise ValueError(str(effect.get("reason") or "该职业特性需要 DM 选择分支"))
 
@@ -10340,6 +10354,40 @@ class CombatEngineService:
                     "condition": condition_to_cure,
                     "removed": True,
                     "ended_effect_ids": cured_effect_ids,
+                }
+            elif action.get("resolution_kind") == "condition_removal":
+                removed = self._remove_condition(target, condition_to_remove or "")
+                if not removed:
+                    raise ValueError("目标当前没有要移除的返本还元状态")
+                ended_effect_ids: list[str] = []
+                for effect in session.scalars(
+                    select(CombatEffect).where(
+                        CombatEffect.combat_id == combat.id,
+                        CombatEffect.target_combatant_id == target.id,
+                        CombatEffect.status == "active",
+                    )
+                ).all():
+                    state = self._runtime_state(effect)
+                    rule_block = dict(effect.details_json or {}).get("rule_block")
+                    effect_condition = state.get("condition") if isinstance(state, dict) else None
+                    if not effect_condition and isinstance(rule_block, dict):
+                        effect_condition = rule_block.get("condition")
+                    if self._canonical_condition(effect_condition) != self._canonical_condition(
+                        condition_to_remove
+                    ):
+                        continue
+                    self._end_runtime_effect(
+                        session,
+                        effect,
+                        reason="condition_removed_by_self_restoration",
+                        now=datetime.now(UTC),
+                    )
+                    ended_effect_ids.append(effect.id)
+                self._restore_condition_restrictions(target)
+                result["condition_removal"] = {
+                    "condition": condition_to_remove,
+                    "removed": True,
+                    "ended_effect_ids": ended_effect_ids,
                 }
             elif action.get("resolution_kind") == "healing":
                 total = command.healing_total
@@ -10425,6 +10473,8 @@ class CombatEngineService:
                 summary += "；获得 " + "、".join(result["conditions_added"])
             if result.get("extra_action_budget"):
                 summary += f"；额外动作预算 +{result['extra_action_budget']}"
+            if isinstance(result.get("condition_removal"), dict):
+                summary += f"；移除 {result['condition_removal'].get('condition')} 状态"
             combat_action = CombatAction(
                 campaign_id=campaign_id,
                 combat_id=combat_id,
