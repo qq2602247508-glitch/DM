@@ -1312,7 +1312,7 @@ def test_2024_deterministic_feature_contracts_are_explicit_but_partial_when_even
             "label": "圣武斩伤害骰总值",
         },
     ]
-    assert divine_smite["automation_status"] == "partial"
+    assert divine_smite["automation_status"] == "full"
 
     relentless_rage = next(
         item

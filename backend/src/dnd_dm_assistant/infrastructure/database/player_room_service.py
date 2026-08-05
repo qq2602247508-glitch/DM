@@ -1262,13 +1262,36 @@ class PlayerRoomService:
             elif applies_when == "sneak_attack_eligible":
                 explicit = eligibility.get(rider_id, eligibility.get("sneak_attack"))
                 eligible = explicit is True
+            elif applies_when == "divine_smite_selected_after_melee_weapon_or_unarmed_hit":
+                explicit = eligibility.get(rider_id, eligibility.get("divine_smite"))
+                melee_weapon_attack = bool(
+                    action.get("melee_weapon_attack") is True
+                    or ("近战" in action_text and "攻击" in action_text)
+                )
+                eligible = explicit is True and is_weapon_attack and melee_weapon_attack
             else:
                 explicit = eligibility.get(rider_id)
                 eligible = explicit is True
             if not eligible:
                 continue
+            rider_for_total = raw
+            selected_slot_level: int | None = None
+            if rider_id == "divine_smite:bonus_damage":
+                raw_slot = special_inputs.get("divine_smite_slot_level")
+                if isinstance(raw_slot, bool) or not isinstance(raw_slot, (int, float)):
+                    raise ValueError("圣武斩必须选择要消耗的法术位环阶")
+                selected_slot_level = int(raw_slot)
+                minimum_slot_level = int(raw.get("minimum_spell_slot_level") or 1)
+                if selected_slot_level < minimum_slot_level or selected_slot_level > 5:
+                    raise ValueError("圣武斩法术位环阶必须为 1–5 环")
+                dice_count = min(5, selected_slot_level + 1)
+                rider_for_total = {
+                    **raw,
+                    "value": f"{dice_count}d8",
+                    "expression": f"{dice_count}d8",
+                }
             total_result = cls._attack_rider_total(
-                raw,
+                rider_for_total,
                 special_inputs=special_inputs,
                 critical_hit=critical_hit,
             )
@@ -1285,6 +1308,15 @@ class PlayerRoomService:
                     "damage_type": raw.get("damage_type") or "weapon_damage_type",
                     "frequency": raw.get("frequency"),
                     "target_combatant_id": target.id,
+                    **(
+                        {
+                            "resource_key": f"spell_slots_{selected_slot_level}",
+                            "resource_cost": 1,
+                            "selected_spell_slot_level": selected_slot_level,
+                        }
+                        if selected_slot_level is not None
+                        else {}
+                    ),
                 }
             )
         return result
@@ -7260,6 +7292,22 @@ class PlayerRoomService:
                     }
                 )
 
+        divine_smite_riders = [
+            rider
+            for riders in rider_results_by_target.values()
+            for rider in riders
+            if rider.get("rider_id") == "divine_smite:bonus_damage"
+        ]
+        if len(divine_smite_riders) > 1:
+            raise ValueError("一次攻击只能使用一次圣武斩")
+        if divine_smite_riders:
+            divine_smite = divine_smite_riders[0]
+            resource_key = str(divine_smite.get("resource_key") or "")
+            resource = character.resources.get(resource_key)
+            current = int(resource.get("current") or 0) if isinstance(resource, dict) else 0
+            if current < int(divine_smite.get("resource_cost") or 1):
+                raise ValueError(f"对应法术位不足：{resource_key}")
+
         commands: list[tuple[CombatActionCommand, str]] = []
         target_versions = {item.id: item.version for item in requested_targets}
         action_damage_tags = [
@@ -7381,6 +7429,14 @@ class PlayerRoomService:
             rider_turn_key,
             riders_applied_this_call,
         )
+        if divine_smite_riders:
+            divine_smite = divine_smite_riders[0]
+            resource_key = str(divine_smite.get("resource_key") or "")
+            self._spend_character_resource(
+                principal.character_id,
+                resource_key,
+                int(divine_smite.get("resource_cost") or 1),
+            )
         compiled_effects = self._apply_compiled_combat_blocks(
             principal,
             combat_id,

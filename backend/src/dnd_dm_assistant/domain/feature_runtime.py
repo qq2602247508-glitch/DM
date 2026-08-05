@@ -852,8 +852,8 @@ def feature_runtime_definition(
         definition["actions"]["divine_smite"] = {
             "id": "divine_smite",
             "name": feature_name,
-            "kind": "feature_action",
-            "action_cost": "bonus_action",
+            "kind": "attack_rider_contract",
+            "action_cost": "none",
             "target": "hit_target",
             "resolution_kind": "choice_required",
             "trigger": "after_melee_weapon_or_unarmed_hit",
@@ -871,15 +871,16 @@ def feature_runtime_definition(
                     "label": "圣武斩伤害骰总值",
                 },
             ],
-            "effects": [
-                {
-                    "kind": "requires_dm_choice",
-                    "reason": "圣武斩需要玩家选择法术位并报告本次光耀伤害骰总值。",
-                }
-            ],
-            "automation_status": "partial",
-            "requires_dm_adjudication": True,
-            "partial_reason": "现有确认接口不能原子地扣除可选法术位并附加玩家报告的伤害骰。",
+            "runtime_execution": {
+                "status": "ready",
+                "consumer": "attack_rider_resolver",
+            },
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+            "summary": (
+                "命中近战武器或徒手攻击后，可选择法术位并提交圣武斩伤害骰；"
+                "服务端校验并消耗对应法术位。"
+            ),
             **source,
         }
         definition["attack_riders"].append(
@@ -907,9 +908,8 @@ def feature_runtime_definition(
                         "label": "圣武斩伤害骰总值",
                     },
                 ],
-                "automation_status": "partial",
-                "requires_dm_adjudication": True,
-                "partial_reason": "通用攻击附伤可保存玩家报告总值；法术位选择与扣除仍待专用结算。",
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
                 **source,
             }
         )

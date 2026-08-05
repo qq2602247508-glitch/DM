@@ -366,6 +366,63 @@ def test_rage_activity_counts_only_attacks_against_hostile_targets() -> None:
     )
 
 
+def test_divine_smite_rider_requires_melee_hit_and_selected_slot() -> None:
+    actor = Combatant(
+        id="paladin",
+        entity_type="character",
+        snapshot_json={
+            "feature_runtime": {
+                "attack_riders": [
+                    {
+                        "id": "divine_smite:bonus_damage",
+                        "value": "2d8",
+                        "damage_type": "radiant",
+                        "applies_when": "divine_smite_selected_after_melee_weapon_or_unarmed_hit",
+                        "minimum_spell_slot_level": 1,
+                    }
+                ]
+            }
+        },
+    )
+    target = Combatant(id="undead", entity_type="monster")
+    melee = {
+        "name": "长剑",
+        "description": "近战武器攻击",
+        "damage": "1d8+力量 挥砍",
+        "is_weapon_attack": True,
+    }
+    riders = PlayerRoomService._eligible_attack_riders(
+        actor,
+        melee,
+        target,
+        special_inputs={
+            "attack_rider_eligibility": {"divine_smite:bonus_damage": True},
+            "divine_smite_slot_level": 3,
+            "attack_rider_totals": {"divine_smite:bonus_damage": 20},
+        },
+        critical_hit=False,
+        used_this_turn=set(),
+    )
+    assert riders[0]["expression"] == "4d8"
+    assert riders[0]["total"] == 20
+    assert riders[0]["resource_key"] == "spell_slots_3"
+    assert riders[0]["selected_spell_slot_level"] == 3
+
+    with pytest.raises(ValueError, match="圣武斩法术位环阶"):
+        PlayerRoomService._eligible_attack_riders(
+            actor,
+            melee,
+            target,
+            special_inputs={
+                "attack_rider_eligibility": {"divine_smite:bonus_damage": True},
+                "divine_smite_slot_level": 6,
+                "attack_rider_totals": {"divine_smite:bonus_damage": 20},
+            },
+            critical_hit=False,
+            used_this_turn=set(),
+        )
+
+
 def test_indomitable_might_floors_strength_check_at_strength_score() -> None:
     action = CombatAction(
         campaign_id="campaign",
