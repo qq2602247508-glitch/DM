@@ -1137,3 +1137,10 @@ backend/.venv/bin/python -m pytest -q backend/tests
 - 验证：后端定向/全量 pytest 通过；前端 39 个测试文件、203 项通过；TypeScript、ESLint、生产构建、
   Ruff、compileall、`git diff --check` 全部通过。仅有既有 Starlette/httpx 弃用警告。
 - 这是固定大项“职业/子职业 1–20 级运行时闭环”的内部切片，不是新增缺口；固定范围仍只有 4 个大项。
+# 2026-08-05 武僧圆融自在失败豁免重掷闭环
+
+- 代码提交 `607b03b`：武僧“圆融自在”从仅有结构化描述提升为可执行职业特性。它复用失败豁免重掷统一结算器，失败后打开即时重掷窗口，提交第二枚骰后以第二次报告值结算，并真实扣除 1 点 `focus`；资源不足、缺少角色资源上下文或重复消费仍 fail-closed。
+- 运行时合同新增 `runtime_execution.consumer=saving_throw_resolution`，`automation_status=full`、`requires_dm_adjudication=false`；没有新造一套重掷逻辑，继续与“不屈”共用窗口、资源同步和审计字段。
+- 新增回归覆盖：武僧运行时合同、失败豁免 5/18 取 18、Focus 1→0、特性 ID 与资源审计一致。
+- 验证：定向特性测试 50 项通过；后端全量 `backend/.venv/bin/pytest -q backend/tests` 通过；Ruff、compileall、`git diff --check` 通过。浏览器本轮只做了模拟战斗重置后的 DM/玩家同步检查；固定演练角色是法师，不暴露武僧特性控件，因此没有把浏览器基线冒充为该职业特性的 UI 验收。
+- 这是固定大项“职业/子职业 1–20 级运行时闭环”的内部切片，不是新增第五个缺口。固定范围仍只有 4 个大项；高级三维战斗继续跳过。
