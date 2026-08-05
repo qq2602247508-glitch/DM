@@ -4,6 +4,8 @@ import json
 from pathlib import Path
 from typing import Any
 
+from fastapi.testclient import TestClient
+
 from dnd_dm_assistant.domain.advancement import (
     ClassProgression,
     class_progression_from_record,
@@ -441,6 +443,145 @@ def test_table_scalars_include_bardic_die_and_chinese_pact_slot_level() -> None:
     registry = _registry(bard)
     assert registry["resources"]["bardic_inspiration_die"]["value"] == "D12"
     assert registry["actions"]["bardic_inspiration"]["dice"] == "D12"
+
+
+def test_bardic_inspiration_projection_consumes_resource_and_records_granted_die(
+    campaign_client: TestClient,
+) -> None:
+    registry = compile_feature_runtime_registry(
+        [
+            {
+                "name": "吟游诗人激励",
+                "kind": "class_feature",
+                "class_name": "吟游诗人",
+                "class_level": 1,
+                "runtime": {
+                    "tracked_resource_keys": ["bardic_inspiration"],
+                    "tracked_scaling_keys": ["bardic_inspiration_die"],
+                },
+            }
+        ],
+        resources={
+            "bardic_inspiration": {
+                "label": "吟游诗人激励",
+                "current": 2,
+                "max": 2,
+                "recovery": "long_rest",
+            }
+        },
+        scalings={
+            "bardic_inspiration_die": {
+                "label": "诗人激励骰",
+                "value": "D6",
+                "value_kind": "die",
+            }
+        },
+        class_levels={"吟游诗人": 1},
+        total_level=1,
+    )
+
+    inspiration = registry["actions"]["bardic_inspiration"]
+    assert inspiration["automation_status"] == "partial"
+    assert inspiration["runtime_execution"] == {
+        "status": "ready",
+        "consumer": "combat_feature_action",
+        "effect_kinds": ["grant_roll_die"],
+        "remaining_dm_boundaries": [
+            "target_range_visibility_and_audibility",
+            "one_die_per_target",
+            "failed_d20_consumption_window",
+        ],
+    }
+    projections = {
+        action["feature_id"]: action
+        for action in feature_runtime_action_projections(registry)
+    }
+    assert projections["bardic_inspiration"]["runtime_feature"] is True
+
+    campaign_response = campaign_client.post(
+        "/api/v1/campaigns",
+        json={"name": "吟游诗人激励运行时"},
+    )
+    assert campaign_response.status_code == 201, campaign_response.text
+    campaign = campaign_response.json()
+    base = f"/api/v1/campaigns/{campaign['id']}"
+    character_response = campaign_client.post(
+        f"{base}/characters",
+        json={
+            "name": "激励者",
+            "class_name": "吟游诗人",
+            "hp": 20,
+            "max_hp": 20,
+            "resources": {"bardic_inspiration": {"current": 2, "max": 2}},
+        },
+    )
+    assert character_response.status_code == 201, character_response.text
+    character = character_response.json()
+    combat_response = campaign_client.post(
+        f"{base}/combats",
+        json={"name": "激励骰战斗"},
+    )
+    assert combat_response.status_code == 201, combat_response.text
+    combat = combat_response.json()
+    combat_root = f"{base}/combats/{combat['id']}"
+    bard_response = campaign_client.post(
+        f"{combat_root}/combatants",
+        json={
+            "display_name": "激励者",
+            "entity_type": "character",
+            "entity_id": character["id"],
+            "initiative": 20,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {"feature_runtime": registry},
+        },
+    )
+    assert bard_response.status_code == 201, bard_response.text
+    bard = bard_response.json()
+    ally_response = campaign_client.post(
+        f"{combat_root}/combatants",
+        json={
+            "display_name": "受激励盟友",
+            "entity_type": "character",
+            "initiative": 10,
+            "hp": 20,
+            "max_hp": 20,
+        },
+    )
+    assert ally_response.status_code == 201, ally_response.text
+    ally = ally_response.json()
+
+    confirmed = campaign_client.post(
+        f"{combat_root}/feature-actions/confirm",
+        headers={"X-Request-ID": "bardic-inspiration-runtime"},
+        json={
+            "actor_combatant_id": bard["id"],
+            "actor_version": bard["version"],
+            "feature_id": "bardic_inspiration",
+            "target_combatant_id": ally["id"],
+            "target_version": ally["version"],
+        },
+    )
+    assert confirmed.status_code == 200, confirmed.text
+    result = confirmed.json()
+    assert result["result"]["resource_before"] == 2
+    assert result["result"]["resource_after"] == 1
+    assert result["result"]["roll_die_granted"] == {
+        "die_key": "bardic_inspiration_die",
+        "value": "D6",
+    }
+    assert result["actor"]["bonus_action_available"] is False
+    assert result["actor"]["snapshot_json"]["feature_dice"] == {
+        "bardic_inspiration_die": {
+            "source": "吟游诗人激励",
+            "value": "D6",
+            "target_combatant_id": ally["id"],
+            "available": True,
+        }
+    }
+    persisted = campaign_client.get(f"{base}/characters/{character['id']}")
+    assert persisted.status_code == 200, persisted.text
+    assert persisted.json()["resources"]["bardic_inspiration"]["current"] == 1
 
 
 def test_resource_recovery_contracts_distinguish_one_use_and_full_pool() -> None:
