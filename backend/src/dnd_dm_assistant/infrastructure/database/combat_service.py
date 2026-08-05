@@ -8744,6 +8744,23 @@ class CombatEngineService:
             )
             if action is None or action.get("kind") != "feature_action":
                 raise ValueError("该职业特性没有可执行的运行时积木")
+            requirements = action.get("requirements")
+            if isinstance(requirements, list) and "not_wearing_heavy_armor" in requirements:
+                equipment = (actor.snapshot_json or {}).get("equipment")
+                if not isinstance(equipment, list):
+                    raise ValueError("狂暴的装备限制缺少装备快照，需由 DM 裁定")
+                wearing_heavy_armor = any(
+                    isinstance(item, dict)
+                    and item.get("category") == "armor"
+                    and (
+                        item.get("armor_type") == "heavy"
+                        or isinstance(item.get("equipment_profile"), dict)
+                        and item["equipment_profile"].get("armor_type") == "heavy"
+                    )
+                    for item in equipment
+                )
+                if wearing_heavy_armor:
+                    raise ValueError("穿着重甲时不能进入狂暴")
             action_cost = str(action.get("action_cost") or "none")
             if action_cost not in {"action", "bonus_action", "reaction", "none"}:
                 raise ValueError("职业特性的动作经济类型无效")

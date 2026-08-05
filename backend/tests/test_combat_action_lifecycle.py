@@ -584,10 +584,12 @@ def test_rage_feature_automatically_applies_physical_resistance(
                             "resource_key": "rage",
                             "resource_cost": 1,
                             "target": "self",
+                            "requirements": ["not_wearing_heavy_armor"],
                             "effects": [{"kind": "activate_condition", "condition": "raging"}],
                         }
                     }
                 },
+                "equipment": [],
                 "conditional_damage_defenses": [
                     {
                         "id": "rage:physical_resistance",
@@ -718,6 +720,61 @@ def test_rage_feature_expires_after_one_minute_without_leaking_condition(
     assert last_advance is not None
     assert "raging" not in last_advance["active_combatant"]["conditions"]
     assert any(item["id"] == effect_id for item in last_advance["ended_runtime_effects"])
+
+
+def test_rage_feature_rejects_explicit_heavy_armor(
+    combat_client: TestClient,
+) -> None:
+    campaign, combat, actor = _setup(combat_client)
+    character_response = combat_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/characters",
+        json={"name": "重甲狂战士", "class_name": "野蛮人"},
+    )
+    assert character_response.status_code == 201, character_response.text
+    character = character_response.json()
+    patched = combat_client.patch(
+        _combatant_path(campaign, combat, actor["id"]),
+        headers={"If-Match": f'"{actor["version"]}"'},
+        json={
+            "entity_type": "character",
+            "entity_id": character["id"],
+            "snapshot_json": {
+                "feature_runtime": {
+                    "actions": {
+                        "rage": {
+                            "name": "狂暴",
+                            "kind": "feature_action",
+                            "action_cost": "bonus_action",
+                            "target": "self",
+                            "requirements": ["not_wearing_heavy_armor"],
+                            "effects": [{
+                                "kind": "activate_condition",
+                                "condition": "raging",
+                            }],
+                        }
+                    }
+                },
+                "equipment": [{
+                    "category": "armor",
+                    "equipment_profile": {"armor_type": "heavy"},
+                }],
+            },
+        },
+    )
+    assert patched.status_code == 200, patched.text
+    rejected = combat_client.post(
+        f"{_root(campaign, combat)}/feature-actions/confirm",
+        headers={"X-Request-ID": "rage-heavy-armor"},
+        json={
+            "actor_combatant_id": actor["id"],
+            "actor_version": patched.json()["version"],
+            "feature_id": "rage",
+            "target_combatant_id": actor["id"],
+            "target_version": patched.json()["version"],
+        },
+    )
+    assert rejected.status_code == 400, rejected.text
+    assert "重甲" in rejected.text
 
 
 def test_reckless_feature_action_expires_at_actor_turn_start(
