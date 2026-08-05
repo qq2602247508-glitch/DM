@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import pytest
+
+from dnd_dm_assistant.api.schemas import PlayerRollResolutionCommand
 from dnd_dm_assistant.domain.feature_runtime import compile_feature_runtime_registry
 from dnd_dm_assistant.infrastructure.database.combat_service import CombatEngineService
-from dnd_dm_assistant.infrastructure.database.models import Combatant
+from dnd_dm_assistant.infrastructure.database.models import CombatAction, Combatant
 from dnd_dm_assistant.infrastructure.database.player_room_service import PlayerRoomService
 
 
@@ -249,6 +252,66 @@ def test_innate_sorcery_advantage_requires_active_state_and_sorcerer_spell() -> 
         "spell_save_dc",
         scope="outgoing",
     ) == 0
+
+
+def test_raging_strength_check_uses_reported_advantage_rolls() -> None:
+    action = CombatAction(
+        campaign_id="campaign",
+        combat_id="combat",
+        action_type="player_roll_prompt",
+        target_combatant_ids=["raging-checker"],
+        request_json={
+            "resolution_type": "ability_check",
+            "dc": 15,
+            "ability": "strength",
+            "action_name": "推开石门",
+        },
+        result_json={},
+        round_number=1,
+        turn_index=0,
+        summary="等待力量属性检定",
+        idempotency_key="raging-strength-check",
+    )
+    target = Combatant(
+        id="raging-checker",
+        entity_type="character",
+        display_name="狂暴检定者",
+        hp=20,
+        max_hp=20,
+        conditions=["raging"],
+        snapshot_json={
+            "rule_modifiers": {
+                "ability_check:self:strength": {
+                    "stat": "ability_check",
+                    "scope": "self",
+                    "ability": "strength",
+                    "operation": "advantage",
+                    "source": "狂暴",
+                    "applies_when": "raging",
+                }
+            }
+        },
+    )
+
+    resolved = CombatEngineService._resolve_player_roll(
+        action,
+        target,
+        PlayerRollResolutionCommand(
+            action_version=1,
+            roll_total=5,
+            roll_totals=[5, 18],
+        ),
+    )
+    assert resolved["roll_total"] == 18
+    assert resolved["success"] is True
+    assert resolved["applied_defenses"] == ["feature:狂暴"]
+
+    with pytest.raises(ValueError, match="two reported roll totals"):
+        CombatEngineService._resolve_player_roll(
+            action,
+            target,
+            PlayerRollResolutionCommand(action_version=1, roll_total=5),
+        )
 
 
 def test_elusive_suppresses_condition_advantage_unless_incapacitated() -> None:

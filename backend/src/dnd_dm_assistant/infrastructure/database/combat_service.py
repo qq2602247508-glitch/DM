@@ -6735,19 +6735,67 @@ class CombatEngineService:
     ) -> dict[str, Any]:
         request = action.request_json
         dc = int(str(request["dc"]))
-        defense = cls._resolve_save_defenses(
-            target,
-            dc=dc,
-            ability=(str(request.get("ability")) if request.get("ability") else None),
-            roll_total=command.roll_total,
-            roll_totals=command.roll_totals,
-            damage_on_success=cls._state_int(request.get("damage_on_success")),
-            damage_on_failure=cls._state_int(request.get("damage_on_failure")),
-            is_magical=bool(request.get("is_magical")),
-            use_legendary_resistance=command.use_legendary_resistance,
-            use_feature_reroll=command.use_feature_reroll,
-            consume=consume_defenses,
-        )
+        resolution_type = str(request.get("resolution_type") or "saving_throw")
+        if resolution_type in {"ability_check", "skill_check"}:
+            stat = "ability_check" if resolution_type == "ability_check" else "skill_check"
+            feature_modifiers = cls._feature_rule_modifiers(
+                target,
+                stat=stat,
+                scope="self",
+                ability=(str(request.get("ability")) if request.get("ability") else None),
+            )
+            feature_advantage = [
+                str(item.get("source") or "职业特性优势")
+                for item in feature_modifiers
+                if item.get("operation") == "advantage"
+            ]
+            feature_disadvantage = [
+                str(item.get("source") or "职业特性劣势")
+                for item in feature_modifiers
+                if item.get("operation") == "disadvantage"
+            ]
+            rolls = list(command.roll_totals) if command.roll_totals else [command.roll_total]
+            if feature_advantage or feature_disadvantage:
+                if len(rolls) < 2:
+                    raise ValueError(
+                        "structured ability-check advantage/disadvantage requires two "
+                        "reported roll totals; the server will not invent the second roll"
+                    )
+                if feature_advantage and feature_disadvantage:
+                    effective_roll = rolls[0]
+                    applied = ["ability_check_advantage_disadvantage_cancelled"]
+                elif feature_advantage:
+                    effective_roll = max(rolls[:2])
+                    applied = [f"feature:{source}" for source in feature_advantage]
+                else:
+                    effective_roll = min(rolls[:2])
+                    applied = [f"feature:{source}" for source in feature_disadvantage]
+            else:
+                effective_roll = command.roll_total
+                applied = []
+            defense = {
+                "success": effective_roll >= dc,
+                "effective_roll_total": effective_roll,
+                "reported_roll_totals": rolls,
+                "damage": 0,
+                "applied_defenses": applied,
+                "defense_resource_consumed": None,
+                "feature_reroll_consumed": None,
+            }
+        else:
+            defense = cls._resolve_save_defenses(
+                target,
+                dc=dc,
+                ability=(str(request.get("ability")) if request.get("ability") else None),
+                roll_total=command.roll_total,
+                roll_totals=command.roll_totals,
+                damage_on_success=cls._state_int(request.get("damage_on_success")),
+                damage_on_failure=cls._state_int(request.get("damage_on_failure")),
+                is_magical=bool(request.get("is_magical")),
+                use_legendary_resistance=command.use_legendary_resistance,
+                use_feature_reroll=command.use_feature_reroll,
+                consume=consume_defenses,
+            )
         success = bool(defense["success"])
         damage = cls._state_int(defense["damage"])
         component_key = (

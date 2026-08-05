@@ -469,9 +469,9 @@ def feature_runtime_definition(
                     "ability": "strength",
                     "scope": "self",
                     "applies_when": "raging",
-                    "automation_status": "partial",
-                    "requires_dm_adjudication": True,
-                    "partial_reason": "狂暴状态已结构化；属性检定入口尚未读取条件优势。",
+                    "automation_status": "full",
+                    "requires_dm_adjudication": False,
+                    "summary": "狂暴期间力量属性检定具有优势。",
                     **source,
                 },
                 {
