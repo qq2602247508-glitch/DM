@@ -1392,6 +1392,67 @@ class CombatEngineService:
         return window
 
     @classmethod
+    def _validate_reaction_window_fields(
+        cls,
+        session: Session,
+        *,
+        combat: Combat,
+        actor: Combatant | None,
+        action_cost: str,
+        action_name: str | None,
+        reaction_event: str | None,
+        reaction_window_id: str | None,
+        target_ids: list[str] | None,
+    ) -> CombatAction | None:
+        """Validate a persisted reaction event for prompt and area paths."""
+
+        window_id = (reaction_window_id or "").strip()
+        if not window_id:
+            return None
+        if action_cost != "reaction":
+            raise ValueError("reaction_window_id is only valid for a reaction")
+        if actor is None:
+            raise ValueError("a reaction window requires an actor")
+        window = session.get(CombatAction, window_id)
+        if (
+            window is None
+            or window.combat_id != combat.id
+            or window.action_type != "eligible_action_window"
+            or window.status != "confirmed"
+        ):
+            raise ValueError("reaction window not found or no longer eligible")
+        metadata = (window.result_json or {}).get("action_window")
+        if not isinstance(metadata, dict) or metadata.get("status") != "eligible":
+            raise ValueError("reaction window is already resolved")
+        if window.actor_combatant_id != actor.id:
+            raise ValueError("reaction window belongs to another reactor")
+        event = str(metadata.get("reaction_event") or "").strip()
+        if not event or event != (reaction_event or "").strip():
+            raise ValueError("reaction event does not match the eligible window")
+        action_name_value = (action_name or "").strip()
+        eligible_names = metadata.get("eligible_action_names")
+        if (
+            action_name_value
+            and isinstance(eligible_names, list)
+            and action_name_value not in {str(name).strip() for name in eligible_names}
+        ):
+            raise ValueError("action is not one of the actions opened by this reaction window")
+        allowed_target_ids = {
+            str(item)
+            for item in (window.target_combatant_ids or [])
+            if isinstance(item, str)
+        }
+        for key in ("trigger_combatant_id", "moving_combatant_id", "damaged_combatant_id"):
+            value = metadata.get(key)
+            if isinstance(value, str):
+                allowed_target_ids.add(value)
+        if target_ids is not None and allowed_target_ids and not (
+            set(target_ids) & allowed_target_ids
+        ):
+            raise ValueError("reaction target does not match the event that opened the window")
+        return window
+
+    @classmethod
     def _validate_advanced_action_window(
         cls,
         session: Session,
@@ -5984,6 +6045,16 @@ class CombatEngineService:
                     command.effect_target_version,
                     effect_target.version,
                 )
+            reaction_window = self._validate_reaction_window_fields(
+                session,
+                combat=combat,
+                actor=actor,
+                action_cost=command.action_cost,
+                action_name=command.action_name,
+                reaction_event=command.reaction_event,
+                reaction_window_id=command.reaction_window_id,
+                target_ids=[target.id],
+            )
             self._validate_monster_sequence(session, combat_id, actor, command)
             economy_consumed = self._validate_action_economy(
                 session,
@@ -6059,6 +6130,11 @@ class CombatEngineService:
             )
             session.add(action)
             session.flush()
+            self._resolve_action_window(
+                reaction_window,
+                action_id=action.id,
+                target_id=target.id,
+            )
             self._persist_eligible_cast_spell_reaction_windows(
                 session,
                 combat=combat,
@@ -6241,6 +6317,16 @@ class CombatEngineService:
                         effect_target.version,
                     )
 
+            reaction_window = self._validate_reaction_window_fields(
+                session,
+                combat=combat,
+                actor=actor,
+                action_cost=command.action_cost,
+                action_name=command.action_name,
+                reaction_event=command.reaction_event,
+                reaction_window_id=command.reaction_window_id,
+                target_ids=[target.id for _, target, _, _ in prepared],
+            )
             self._validate_monster_sequence(session, combat_id, actor, prompts[0])
             self._validate_action_economy(
                 session,
@@ -6369,6 +6455,12 @@ class CombatEngineService:
                 )
             session.add_all(actions)
             session.flush()
+            if actions:
+                self._resolve_action_window(
+                    reaction_window,
+                    action_id=actions[0].id,
+                    target_id=prepared[0][1].id,
+                )
             if actions:
                 self._persist_eligible_cast_spell_reaction_windows(
                     session,
@@ -8982,6 +9074,16 @@ class CombatEngineService:
                 action_name=command.action_name,
                 action_window_id=command.action_window_id,
             )
+            reaction_window = self._validate_reaction_window_fields(
+                session,
+                combat=combat,
+                actor=actor,
+                action_cost=command.action_cost,
+                action_name=command.action_name,
+                reaction_event=command.reaction_event,
+                reaction_window_id=command.reaction_window_id,
+                target_ids=[target.id for target in affected],
+            )
             economy_consumed = self._validate_action_economy(
                 session,
                 combat,
@@ -9307,6 +9409,11 @@ class CombatEngineService:
             self._resolve_action_window(
                 advanced_action_window,
                 action_id=action.id,
+            )
+            self._resolve_action_window(
+                reaction_window,
+                action_id=action.id,
+                target_id=affected[0].id if affected else None,
             )
             damaged_targets_for_reactions: list[tuple[Combatant, int]] = []
             affected_by_id = {target.id: target for target in affected}

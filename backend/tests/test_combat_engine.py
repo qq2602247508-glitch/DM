@@ -1585,6 +1585,48 @@ def test_structured_casts_spell_reaction_window_opens_before_player_save(
     assert window_action["request_json"]["spell_action_id"] == pending.json()["action"]["id"]
     assert counterer["id"] != caster["id"]
 
+    counterer_current = combat_client.get(
+        f"{base}/combats/{combat['id']}/combatants/{counterer['id']}"
+    ).json()
+    caster_current = combat_client.get(
+        f"{base}/combats/{combat['id']}/combatants/{caster['id']}"
+    ).json()
+    reaction_prompt = combat_client.post(
+        f"{base}/combats/{combat['id']}/actions/player-rolls/pending",
+        headers={"X-Request-ID": "structured-casts-spell-reaction-confirm"},
+        json={
+            "actor_combatant_id": counterer["id"],
+            "actor_version": counterer_current["version"],
+            "target_combatant_id": caster["id"],
+            "target_version": caster_current["version"],
+            "action_cost": "reaction",
+            "action_name": "反制施法",
+            "reaction_trigger": "看到生物施放法术时",
+            "reaction_event": "casts_spell",
+            "reaction_window_id": window_action["id"],
+            "resolution_type": "ability_check",
+            "dc": 14,
+            "ability": "intelligence",
+            "description": "DM确认反制施法触发，等待玩家提交反制检定。",
+        },
+    )
+    assert reaction_prompt.status_code == 200, reaction_prompt.text
+    reaction_action = reaction_prompt.json()["action"]
+    assert reaction_action["request_json"]["reaction_window_id"] == window_action["id"]
+    assert reaction_prompt.json()["actor"]["reaction_available"] is False
+    resolved_window = next(
+        item for item in combat_client.get(f"{base}/combats/{combat['id']}/actions").json()["items"]
+        if item["id"] == window_action["id"]
+    )
+    assert resolved_window["result_json"]["action_window"]["status"] == "resolved"
+    resolved_roll = combat_client.post(
+        f"{base}/combats/{combat['id']}/actions/player-rolls/{reaction_action['id']}/confirm",
+        headers={"X-Request-ID": "structured-casts-spell-reaction-roll"},
+        json={"action_version": reaction_action["version"], "roll_total": 16},
+    )
+    assert resolved_roll.status_code == 200, resolved_roll.text
+    assert resolved_roll.json()["action"]["status"] == "confirmed"
+
 
 def test_structured_reaction_event_must_match_monster_action(
     combat_client: TestClient,
