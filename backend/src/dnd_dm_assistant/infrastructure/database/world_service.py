@@ -445,8 +445,9 @@ class WorldService:
                     abilities.get("dexterity", abilities.get("dex", abilities.get("敏捷", 10)))
                 )
                 modifier = floor((dexterity - 10) / 2)
-                die = secrets.randbelow(20) + 1
-                total = die + modifier
+                initiative_dice = [secrets.randbelow(20) + 1]
+                initiative_advantage_sources: list[str] = []
+                initiative_disadvantage_sources: list[str] = []
                 position = spawn_position(participant.entity_type)
                 snapshot = {
                     "speed_ft": int(getattr(entity, "speed", 30)),
@@ -569,6 +570,57 @@ class WorldService:
                     if advanced_defenses:
                         snapshot["advanced_defenses"] = advanced_defenses
                     snapshot["feature_grants"] = feature_grants
+                    combat_start = feature_registry.get("combat_start")
+                    raw_initiative_modifiers = (
+                        combat_start.get("modifiers")
+                        if isinstance(combat_start, dict)
+                        else []
+                    )
+                    for raw_modifier in raw_initiative_modifiers or []:
+                        if not isinstance(raw_modifier, dict):
+                            continue
+                        if raw_modifier.get("stat") != "initiative":
+                            continue
+                        if raw_modifier.get("scope", "self") != "self":
+                            continue
+                        source_name = str(
+                            raw_modifier.get("feature_name")
+                            or raw_modifier.get("source_feature")
+                            or raw_modifier.get("id")
+                            or "结构化职业特性"
+                        )
+                        operation = raw_modifier.get("operation")
+                        if operation == "advantage":
+                            initiative_advantage_sources.append(source_name)
+                        elif operation == "disadvantage":
+                            initiative_disadvantage_sources.append(source_name)
+
+                # Multiple advantages do not stack.  If a future feature
+                # supplies both advantage and disadvantage, they cancel and
+                # the normal single roll is retained instead of inventing a
+                # preference between the two rules.
+                initiative_mode = "normal"
+                if initiative_advantage_sources and not initiative_disadvantage_sources:
+                    initiative_dice.append(secrets.randbelow(20) + 1)
+                    initiative_mode = "advantage"
+                elif initiative_disadvantage_sources and not initiative_advantage_sources:
+                    initiative_dice.append(secrets.randbelow(20) + 1)
+                    initiative_mode = "disadvantage"
+                die = (
+                    max(initiative_dice)
+                    if initiative_mode == "advantage"
+                    else min(initiative_dice)
+                    if initiative_mode == "disadvantage"
+                    else initiative_dice[0]
+                )
+                total = die + modifier
+                snapshot["initiative_roll"] = {
+                    "mode": initiative_mode,
+                    "dice": initiative_dice,
+                    "selected_die": die,
+                    "advantage_sources": initiative_advantage_sources,
+                    "disadvantage_sources": initiative_disadvantage_sources,
+                }
                 if position is not None:
                     snapshot["grid_position"] = position
                 combatant = Combatant(
@@ -605,6 +657,10 @@ class WorldService:
                         "entity_id": participant.entity_id,
                         "name": entity.name,
                         "die": die,
+                        "dice": initiative_dice,
+                        "mode": initiative_mode,
+                        "advantage_sources": initiative_advantage_sources,
+                        "disadvantage_sources": initiative_disadvantage_sources,
                         "dexterity_modifier": modifier,
                         "total": total,
                     }

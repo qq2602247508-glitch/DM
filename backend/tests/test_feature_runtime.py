@@ -786,6 +786,20 @@ def test_base_rage_contract_does_not_leak_into_named_rage_upgrades() -> None:
     )
 
 
+def test_feral_instinct_publishes_executable_initiative_advantage() -> None:
+    rules = _core_rules()["野蛮人"]
+    registry = _registry_at(rules, 7)
+    modifier = next(
+        item
+        for item in registry["combat_start"]["modifiers"]
+        if item["id"] == "feral_instinct:initiative_advantage"
+    )
+    assert modifier["stat"] == "initiative"
+    assert modifier["operation"] == "advantage"
+    assert modifier["automation_status"] == "full"
+    assert modifier["requires_dm_adjudication"] is False
+
+
 def test_unarmored_defense_formulas_are_class_specific_and_explicitly_partial() -> None:
     rules = _core_rules()
     barbarian = _registry(rules["野蛮人"])

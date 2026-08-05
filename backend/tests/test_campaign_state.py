@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session
 
 from dnd_dm_assistant.api.app import create_app
 from dnd_dm_assistant.config import Settings
+from dnd_dm_assistant.infrastructure.database import world_service
 from dnd_dm_assistant.infrastructure.database.models import AuditLog
 
 
@@ -448,3 +449,61 @@ def test_scene_reuses_atomic_participants_and_starts_visible_initiative(
         f"{imported_base}/scenes/{imported_scenes[0]['id']}/participants"
     ).json()["items"]
     assert len(imported_participants) == 2
+
+
+def test_scene_combat_applies_feral_instinct_initiative_advantage(
+    campaign_client: TestClient,
+    monkeypatch: Any,
+) -> None:
+    campaign = _campaign(campaign_client, "Feral initiative")
+    base = f"/api/v1/campaigns/{campaign['id']}"
+    feral = campaign_client.post(
+        f"{base}/characters",
+        json={
+            "name": "先发狂战士",
+            "class_name": "野蛮人",
+            "level": 7,
+            "ability_scores": {"dexterity": 14},
+            "features": [
+                {
+                    "name": "野性直觉",
+                    "kind": "class_feature",
+                    "class_name": "野蛮人",
+                    "class_level": 7,
+                    "runtime": {"automation_status": "full"},
+                }
+            ],
+            "hp": 20,
+            "max_hp": 20,
+        },
+    ).json()
+    scene = campaign_client.post(f"{base}/scenes", json={"name": "先攻测试场"}).json()
+    assert campaign_client.post(
+        f"{base}/scenes/{scene['id']}/participants",
+        json={"entity_type": "character", "entity_id": feral["id"]},
+    ).status_code == 201
+
+    rolls = iter((3, 17))
+    monkeypatch.setattr(world_service.secrets, "randbelow", lambda _upper: next(rolls))
+    started = campaign_client.post(f"{base}/scenes/{scene['id']}/start-combat", json={})
+    assert started.status_code == 201, started.text
+    feral_roll = next(
+        item for item in started.json()["initiative_rolls"] if item["entity_id"] == feral["id"]
+    )
+    assert feral_roll["mode"] == "advantage"
+    assert feral_roll["dice"] == [4, 18]
+    assert feral_roll["die"] == 18
+    assert feral_roll["total"] == 20
+    assert feral_roll["advantage_sources"] == ["野性直觉"]
+
+    combat_id = started.json()["combat"]["id"]
+    combatants = campaign_client.get(f"{base}/combats/{combat_id}/combatants").json()["items"]
+    feral_combatant = next(item for item in combatants if item["entity_id"] == feral["id"])
+    assert feral_combatant["initiative"] == 20
+    assert feral_combatant["snapshot_json"]["initiative_roll"] == {
+        "mode": "advantage",
+        "dice": [4, 18],
+        "selected_die": 18,
+        "advantage_sources": ["野性直觉"],
+        "disadvantage_sources": [],
+    }

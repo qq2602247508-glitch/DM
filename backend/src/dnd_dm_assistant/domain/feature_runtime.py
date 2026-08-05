@@ -1066,9 +1066,9 @@ def feature_runtime_definition(
                 "stat": "initiative",
                 "operation": "advantage",
                 "scope": "self",
-                "automation_status": "partial",
-                "requires_dm_adjudication": True,
-                "partial_reason": "先攻优势已结构化；先攻掷骰入口尚未统一读取职业修正。",
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+                "summary": "先攻时投掷两枚 d20，取较高值。",
                 **source,
             }
         )
