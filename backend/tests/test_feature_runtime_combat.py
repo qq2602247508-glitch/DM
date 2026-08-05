@@ -443,6 +443,71 @@ def test_frightened_check_disadvantage_requires_visible_fear_source(
     assert hidden["applied_defenses"] == []
 
 
+def test_blinded_explicit_sight_check_fails_without_inventing_visual_context() -> None:
+    action = CombatAction(
+        campaign_id="campaign",
+        combat_id="combat",
+        action_type="player_roll_prompt",
+        target_combatant_ids=["blinded-checker"],
+        request_json={
+            "resolution_type": "skill_check",
+            "dc": 15,
+            "skill": "察觉",
+            "requires_sight": True,
+            "action_name": "读取唇语",
+        },
+        result_json={},
+        round_number=1,
+        turn_index=0,
+        summary="等待视觉检定",
+        idempotency_key="blinded-sight-check",
+    )
+    target = Combatant(
+        id="blinded-checker",
+        entity_type="character",
+        display_name="目盲检定者",
+        hp=20,
+        max_hp=20,
+        conditions=["目盲"],
+    )
+
+    sight_check = CombatEngineService._resolve_player_roll(
+        action,
+        target,
+        PlayerRollResolutionCommand(action_version=1, roll_total=20),
+    )
+    assert sight_check["roll_total"] == -100_000
+    assert sight_check["success"] is False
+    assert sight_check["applied_defenses"] == ["condition_auto_fail_sight_check"]
+
+    non_sight_action = CombatAction(
+        campaign_id="campaign",
+        combat_id="combat",
+        action_type="player_roll_prompt",
+        target_combatant_ids=["blinded-checker"],
+        request_json={
+            "resolution_type": "skill_check",
+            "dc": 15,
+            "skill": "察觉",
+            "requires_sight": False,
+            "action_name": "听见动静",
+        },
+        result_json={},
+        round_number=1,
+        turn_index=0,
+        summary="等待非视觉检定",
+        idempotency_key="blinded-non-sight-check",
+    )
+    non_sight = CombatEngineService._resolve_player_roll(
+        non_sight_action,
+        target,
+        PlayerRollResolutionCommand(action_version=1, roll_total=20),
+    )
+    assert non_sight["roll_total"] == 20
+    assert non_sight["success"] is True
+    assert non_sight["applied_defenses"] == []
+
+
 def test_reliable_talent_only_floors_a_proficient_noncombat_check() -> None:
     character = SimpleNamespace(
         features=["可靠才能"],

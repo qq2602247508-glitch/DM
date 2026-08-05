@@ -6885,6 +6885,10 @@ class CombatEngineService:
                 for item in feature_modifiers
                 if item.get("operation") == "disadvantage"
             ]
+            blinded_sight_auto_fail = bool(
+                request.get("requires_sight") is True
+                and cls._has_condition(target, "blinded")
+            )
             poisoned_disadvantage = cls._has_condition(target, "poisoned")
             frightened_disadvantage = False
             if (
@@ -6896,7 +6900,10 @@ class CombatEngineService:
                     cls._frightened_source_visibility(session, combat, target) is True
                 )
             rolls = list(command.roll_totals) if command.roll_totals else [command.roll_total]
-            if (
+            if blinded_sight_auto_fail:
+                effective_roll = -100_000
+                applied = ["condition_auto_fail_sight_check"]
+            elif (
                 feature_advantage
                 or feature_disadvantage
                 or poisoned_disadvantage

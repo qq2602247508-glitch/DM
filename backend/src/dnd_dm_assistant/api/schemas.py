@@ -1198,6 +1198,7 @@ class _PlayerRollPromptBase(BaseModel):
     dc: int = Field(ge=0, le=99)
     ability: str | None = Field(default=None, max_length=30)
     skill: str | None = Field(default=None, max_length=80)
+    requires_sight: bool = False
     roll_formula: str = Field(default="1d20", min_length=1, max_length=50)
     damage_on_success: int = Field(default=0, ge=0, le=100_000)
     damage_on_failure: int = Field(default=0, ge=0, le=100_000)
