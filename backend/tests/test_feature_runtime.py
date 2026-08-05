@@ -1070,7 +1070,18 @@ def test_reactions_and_monk_defenses_publish_typed_contracts() -> None:
         superior["damage_types"]
     )
     assert superior["applies_when"] == "superior_defense_active"
-    assert superior["automation_status"] == "partial"
+    assert superior["automation_status"] == "full"
+    assert superior["requires_dm_adjudication"] is False
+
+    action = monk["actions"]["superior_defense"]
+    assert action["resolution_kind"] == "condition"
+    assert action["runtime_execution"] == {
+        "status": "ready",
+        "consumer": "combat_feature_action",
+        "effect_kinds": ["activate_duration_condition"],
+    }
+    assert action["automation_status"] == "full"
+    assert action["requires_dm_adjudication"] is False
 
 
 def test_rogue_and_monk_event_bound_features_keep_explicit_dm_boundaries() -> None:

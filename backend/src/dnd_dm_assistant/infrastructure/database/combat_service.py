@@ -140,6 +140,7 @@ class CombatEngineService:
         "feature_reckless_attack": "reckless_attack",
         "steady_aim": "steady_aim",
         "feature_innate_sorcery": "innate_sorcery",
+        "superior_defense": "superior_defense",
     }
 
     def __init__(self, engine: Engine) -> None:
@@ -6143,6 +6144,12 @@ class CombatEngineService:
                 ]
             )
             immunity.append("poison")
+        if cls._has_condition(target, "superior_defense"):
+            resistance.extend(
+                damage_type
+                for damage_type in damage_types
+                if str(damage_type).strip().lower() != "force"
+            )
         tags = {
             str(value).strip().lower()
             for value in (
@@ -6185,6 +6192,9 @@ class CombatEngineService:
             automatic_feature_condition = (
                 condition.lower() in {"raging", "rage"}
                 and cls._has_condition(target, "raging")
+            ) or (
+                condition.lower() in {"superior_defense", "superior_defense_active"}
+                and cls._has_condition(target, "superior_defense")
             )
             if condition.lower() not in tags and not automatic_feature_condition:
                 # A typed segment may explicitly identify one source class
@@ -9641,6 +9651,13 @@ class CombatEngineService:
                 actor.movement_remaining_ft != actor.speed_ft
             ):
                 raise ValueError("稳定瞄准要求本回合尚未移动")
+            if command.feature_id == "superior_defense" and (
+                actor.movement_remaining_ft != actor.speed_ft
+                or not actor.action_available
+                or not actor.bonus_action_available
+                or not actor.reaction_available
+            ):
+                raise ValueError("无懈可击只能在本回合开始时激活")
             if action_cost == "none" and actor.version != command.actor_version:
                 raise VersionConflict(
                     "combatant", actor.id, command.actor_version, actor.version
@@ -9759,18 +9776,20 @@ class CombatEngineService:
                     duration_unit = str(effect.get("duration_unit") or "").strip()
                     duration_value = self._state_int(effect.get("duration_value"), 0)
                     if (
-                        condition not in {"raging", "innate_sorcery"}
+                        condition
+                        not in {"raging", "innate_sorcery", "superior_defense"}
                         or duration_unit not in {"rounds", "minutes"}
                         or duration_value < 1
                     ):
                         raise ValueError(
-                            "当前职业特性只允许狂暴或先天术法使用明确的回合或分钟持续时间"
+                            "当前职业特性只允许狂暴、先天术法或无懈可击使用明确的回合或分钟持续时间"
                         )
                     if self._condition_is_immune(target, condition):
                         raise ValueError(f"目标免疫状态「{condition}」，职业特性未写入")
                     state_name = {
                         "raging": "feature_raging",
                         "innate_sorcery": "feature_innate_sorcery",
+                        "superior_defense": "superior_defense",
                     }[condition]
                     runtime_effect = self._create_runtime_effect(
                         session,

@@ -1448,17 +1448,24 @@ def feature_runtime_definition(
             "resource_cost": 3,
             "target": "self",
             "activation_window": "turn_start",
-            "resolution_kind": "choice_required",
+            "resolution_kind": "condition",
             "duration": "1_minute_or_until_incapacitated",
             "effects": [
                 {
-                    "kind": "requires_dm_choice",
-                    "reason": "无懈可击需要创建一分钟或直至失能的条件性抗性状态。",
+                    "kind": "activate_duration_condition",
+                    "condition": "superior_defense",
+                    "duration_unit": "minutes",
+                    "duration_value": 1,
                 }
             ],
-            "automation_status": "partial",
-            "requires_dm_adjudication": True,
-            "partial_reason": "现有特性执行器不能创建该持续抗性状态。",
+            "runtime_execution": {
+                "status": "ready",
+                "consumer": "combat_feature_action",
+                "effect_kinds": ["activate_duration_condition"],
+            },
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+            "summary": "回合开始消耗 3 点专注；持续 1 分钟或直到失能，除力场外的伤害获得抗性。",
             **source,
         }
         definition["combat_start"]["defenses"].append(
@@ -1469,9 +1476,9 @@ def feature_runtime_definition(
                 "applies_when": "superior_defense_active",
                 "resource_key": "focus",
                 "activation_cost": 3,
-                "automation_status": "partial",
-                "requires_dm_adjudication": True,
-                "partial_reason": "伤害引擎可消费显式条件标签；状态激活与到期仍需 DM 确认。",
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+                "summary": "无懈可击激活期间由伤害引擎真实应用除力场外的抗性。",
                 **source,
             }
         )
@@ -2164,7 +2171,7 @@ def _feature_action_executor_ready(action: Mapping[str, Any]) -> bool:
         ):
             return False
         if effect.get("kind") == "activate_duration_condition" and not (
-            effect.get("condition") in {"raging", "innate_sorcery"}
+            effect.get("condition") in {"raging", "innate_sorcery", "superior_defense"}
             and effect.get("duration_unit") in {"rounds", "minutes"}
             and isinstance(effect.get("duration_value"), int)
             and effect.get("duration_value") >= 1

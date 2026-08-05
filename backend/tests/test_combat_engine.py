@@ -8352,6 +8352,119 @@ def test_cunning_action_forwards_bonus_action_choices_into_real_combat_state(
     assert hidden.json()["actor"]["bonus_action_available"] is False
 
 
+def test_superior_defense_spends_focus_and_resists_non_force_damage(
+    combat_client: TestClient,
+) -> None:
+    campaign = _campaign(combat_client, "Superior defense runtime")
+    base = f"/api/v1/campaigns/{campaign['id']}"
+    character = combat_client.post(
+        f"{base}/characters",
+        json={
+            "name": "专注武僧",
+            "hp": 30,
+            "max_hp": 30,
+            "resources": {"focus": {"current": 3, "max": 4}},
+        },
+    ).json()
+    definition = feature_runtime_definition(
+        feature_name="无懈可击",
+        class_name="武僧",
+        class_level=13,
+    )
+    registry = compile_feature_runtime_registry(
+        [
+            {
+                "name": "无懈可击",
+                "class_name": "武僧",
+                "class_level": 13,
+                "runtime": {"registry": definition},
+            }
+        ]
+    )
+    combat = combat_client.post(
+        f"{base}/combats", json={"name": "无懈可击测试战斗"}
+    ).json()
+    actor = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "专注武僧",
+            "entity_type": "character",
+            "entity_id": character["id"],
+            "initiative": 20,
+            "hp": 30,
+            "max_hp": 30,
+            "speed_ft": 30,
+            "movement_remaining_ft": 30,
+            "snapshot_json": {"feature_runtime": registry},
+        },
+    ).json()
+    combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "训练木桩",
+            "entity_type": "monster",
+            "initiative": 10,
+            "hp": 20,
+            "max_hp": 20,
+        },
+    )
+
+    activated = combat_client.post(
+        f"{base}/combats/{combat['id']}/feature-actions/confirm",
+        headers={"X-Request-ID": "superior-defense-activate"},
+        json={
+            "actor_combatant_id": actor["id"],
+            "actor_version": actor["version"],
+            "feature_id": "superior_defense",
+            "target_combatant_id": actor["id"],
+            "target_version": actor["version"],
+        },
+    )
+    assert activated.status_code == 200, activated.text
+    assert activated.json()["result"]["resource_before"] == 3
+    assert activated.json()["result"]["resource_after"] == 0
+    assert activated.json()["result"]["duration"] == {
+        "unit": "minutes",
+        "value": 1,
+        "ends_round": 11,
+    }
+    assert "superior_defense" in activated.json()["actor"]["conditions"]
+
+    fire = combat_client.post(
+        f"{base}/combats/{combat['id']}/actions/confirm",
+        headers={"X-Request-ID": "superior-defense-fire"},
+        json={
+            "action_type": "damage",
+            "target_combatant_id": actor["id"],
+            "target_version": activated.json()["actor"]["version"],
+            "amount": 8,
+            "damage_type": "fire",
+        },
+    )
+    assert fire.status_code == 200, fire.text
+    assert fire.json()["target"]["hp"] == 26
+    applied_defenses = fire.json()["action"]["result_json"][
+        "conditional_defenses_applied"
+    ]
+    assert "superior_defense" in applied_defenses[0]
+
+    force = combat_client.post(
+        f"{base}/combats/{combat['id']}/actions/confirm",
+        headers={"X-Request-ID": "superior-defense-force"},
+        json={
+            "action_type": "damage",
+            "target_combatant_id": actor["id"],
+            "target_version": fire.json()["target"]["version"],
+            "amount": 8,
+            "damage_type": "force",
+        },
+    )
+    assert force.status_code == 200, force.text
+    assert force.json()["target"]["hp"] == 18
+    character_after = combat_client.get(f"{base}/characters/{character['id']}").json()
+    assert character_after["resources"]["focus"]["current"] == 0
+
+
 def test_condition_matrix_changes_saves_and_petrified_damage(
     combat_client: TestClient,
 ) -> None:
