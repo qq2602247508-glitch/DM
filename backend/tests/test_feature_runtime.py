@@ -768,6 +768,13 @@ def test_new_passive_and_attack_contracts_are_typed_but_not_automatic() -> None:
             "applies_when": "ability_check_without_proficiency",
         }
     ]
+    jack_modifier = jack["combat_start"]["modifiers"][0]
+    assert jack_modifier["automation_status"] == "full"
+    assert jack_modifier["requires_dm_adjudication"] is False
+    assert jack_modifier["runtime_execution"] == {
+        "status": "ready",
+        "consumer": "player_roll_resolution",
+    }
 
 
     martial_arts = _registry(rules["武僧"])

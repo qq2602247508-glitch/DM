@@ -1202,6 +1202,10 @@ class _PlayerRollPromptBase(BaseModel):
     ]
     dc: int = Field(ge=0, le=99)
     ability: str | None = Field(default=None, max_length=30)
+    # Jack of All Trades only applies when the caller explicitly confirms
+    # that this is an ability check without proficiency.  ``None`` is
+    # intentionally distinct from ``False`` so the server never guesses.
+    ability_check_proficient: bool | None = None
     skill: str | None = Field(default=None, max_length=80)
     requires_sight: bool = False
     roll_formula: str = Field(default="1d20", min_length=1, max_length=50)
@@ -1263,6 +1267,13 @@ class _PlayerRollPromptBase(BaseModel):
     def validate_roll_prompt(self) -> _PlayerRollPromptBase:
         if self.resolution_type == "saving_throw" and not (self.ability or "").strip():
             raise ValueError("ability is required for a saving throw")
+        if (
+            self.ability_check_proficient is not None
+            and self.resolution_type != "ability_check"
+        ):
+            raise ValueError(
+                "ability_check_proficient is only valid for ability checks"
+            )
         if self.resolution_type == "skill_check" and not (self.skill or "").strip():
             raise ValueError("skill is required for a skill check")
         for field_name in ("success", "failure"):

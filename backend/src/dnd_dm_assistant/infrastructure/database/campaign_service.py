@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
+from math import floor
 from typing import Any, TypeVar
 
 from sqlalchemy import delete as sa_delete
@@ -479,7 +480,22 @@ class SqlAlchemyCampaignStateGateway:
                     }:
                         continue
                     if not isinstance(value, int) and operation == "add":
-                        continue
+                        if modifier.get("value_source") == "half_proficiency_bonus":
+                            progression = registry.get("progression")
+                            raw_proficiency_bonus = (
+                                progression.get("proficiency_bonus")
+                                if isinstance(progression, dict)
+                                else None
+                            )
+                            if isinstance(raw_proficiency_bonus, int) and raw_proficiency_bonus > 0:
+                                value = floor(raw_proficiency_bonus / 2)
+                            else:
+                                # Keep the registry visible, but do not create
+                                # an executable flattened modifier without the
+                                # authoritative proficiency bonus.
+                                continue
+                        else:
+                            continue
                     scope = str(modifier.get("scope") or "all")
                     skill = str(modifier.get("skill") or "")
                     key = f"{stat}:{scope}:{skill}:{index}"

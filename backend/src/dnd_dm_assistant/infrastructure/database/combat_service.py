@@ -3375,6 +3375,7 @@ class CombatEngineService:
                 "not_prone",
                 "not prone",
                 "raging",
+                "ability_check_without_proficiency",
                 "strength_ability_check_total_below_strength_score",
                 "innate_sorcery_active",
                 "innate_sorcery_active_and_sorcerer_spell",
@@ -7936,6 +7937,47 @@ class CombatEngineService:
                     if isinstance(strength_score, int) and effective_roll < strength_score:
                         effective_roll = strength_score
                         applied.append("feature:不屈勇武最低力量检定总值")
+                if command is not None:
+                    jack_modifiers = [
+                        item
+                        for item in feature_modifiers
+                        if item.get("operation") == "add"
+                        and str(item.get("value_source") or "").strip()
+                        == "half_proficiency_bonus"
+                        and str(item.get("applies_when") or "").strip().lower()
+                        == "ability_check_without_proficiency"
+                    ]
+                    if jack_modifiers:
+                        proficient = request.get("ability_check_proficient")
+                        if proficient is None:
+                            raise ValueError(
+                                "万事通需要明确说明该力量/属性检定是否包含熟练加值"
+                            )
+                        if proficient is False:
+                            runtime = (target.snapshot_json or {}).get("feature_runtime")
+                            progression = (
+                                runtime.get("progression")
+                                if isinstance(runtime, dict)
+                                else None
+                            )
+                            raw_proficiency_bonus = (
+                                progression.get("proficiency_bonus")
+                                if isinstance(progression, dict)
+                                else None
+                            )
+                            if not isinstance(raw_proficiency_bonus, int) or (
+                                raw_proficiency_bonus < 1
+                            ):
+                                raise ValueError(
+                                    "万事通缺少权威熟练加值，不能猜测半熟练加值"
+                                )
+                            half_bonus = floor(raw_proficiency_bonus / 2)
+                            if half_bonus > 0:
+                                effective_roll += half_bonus
+                                applied.extend(
+                                    "feature:万事通半熟练加值"
+                                    for _ in jack_modifiers
+                                )
             if bardic_inspiration is not None:
                 if any(item.startswith("condition_auto_fail") for item in applied):
                     raise ValueError("自动失败的检定不能使用吟游诗人激励骰改变结果")

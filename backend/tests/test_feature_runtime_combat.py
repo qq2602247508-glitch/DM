@@ -4,11 +4,120 @@ from types import SimpleNamespace
 
 import pytest
 
-from dnd_dm_assistant.api.schemas import PlayerRollResolutionCommand
+from dnd_dm_assistant.api.schemas import PlayerRollPromptCommand, PlayerRollResolutionCommand
 from dnd_dm_assistant.domain.feature_runtime import compile_feature_runtime_registry
 from dnd_dm_assistant.infrastructure.database.combat_service import CombatEngineService
 from dnd_dm_assistant.infrastructure.database.models import CombatAction, Combatant, CombatEffect
 from dnd_dm_assistant.infrastructure.database.player_room_service import PlayerRoomService
+
+
+def _jack_of_all_trades_check_action(*, proficient: bool | None = None) -> CombatAction:
+    request = {
+        "resolution_type": "ability_check",
+        "dc": 12,
+        "ability": "dexterity",
+        "action_name": "翻过矮墙",
+    }
+    if proficient is not None:
+        request["ability_check_proficient"] = proficient
+    return CombatAction(
+        id=f"jack-check-{proficient}",
+        campaign_id="campaign",
+        combat_id="combat",
+        action_type="player_roll_prompt",
+        target_combatant_ids=["jack-checker"],
+        request_json=request,
+        result_json={},
+        round_number=1,
+        turn_index=0,
+        summary="等待属性检定",
+        idempotency_key=f"jack-check-{proficient}",
+    )
+
+
+def _jack_of_all_trades_target(*, proficiency_bonus: int | None = 5) -> Combatant:
+    snapshot = {
+        "rule_modifiers": {
+            "ability_check:self::jack": {
+                "id": "jack_of_all_trades:ability_check",
+                "stat": "ability_check",
+                "scope": "self",
+                "operation": "add",
+                "value_source": "half_proficiency_bonus",
+                "applies_when": "ability_check_without_proficiency",
+                "source": "万事通",
+            }
+        },
+        "feature_runtime": {
+            "progression": (
+                {"proficiency_bonus": proficiency_bonus}
+                if proficiency_bonus is not None
+                else {}
+            )
+        },
+    }
+    return Combatant(
+        id="jack-checker",
+        entity_type="character",
+        display_name="万事通检定者",
+        hp=20,
+        max_hp=20,
+        snapshot_json=snapshot,
+    )
+
+
+def test_jack_of_all_trades_adds_half_proficiency_only_when_explicitly_unproficient() -> None:
+    action = _jack_of_all_trades_check_action(proficient=False)
+    resolved = CombatEngineService._resolve_player_roll(
+        action,
+        _jack_of_all_trades_target(),
+        PlayerRollResolutionCommand(action_version=1, roll_total=10),
+    )
+
+    assert resolved["roll_total"] == 12
+    assert resolved["success"] is True
+    assert resolved["applied_defenses"] == ["feature:万事通半熟练加值"]
+
+
+def test_jack_of_all_trades_does_not_apply_to_proficient_or_unknown_checks() -> None:
+    proficient = CombatEngineService._resolve_player_roll(
+        _jack_of_all_trades_check_action(proficient=True),
+        _jack_of_all_trades_target(),
+        PlayerRollResolutionCommand(action_version=1, roll_total=10),
+    )
+    assert proficient["roll_total"] == 10
+    assert proficient["applied_defenses"] == []
+
+    with pytest.raises(ValueError, match="明确说明.*熟练加值"):
+        CombatEngineService._resolve_player_roll(
+            _jack_of_all_trades_check_action(),
+            _jack_of_all_trades_target(),
+            PlayerRollResolutionCommand(action_version=1, roll_total=10),
+        )
+
+
+def test_jack_of_all_trades_requires_authoritative_proficiency_bonus() -> None:
+    with pytest.raises(ValueError, match="缺少权威熟练加值"):
+        CombatEngineService._resolve_player_roll(
+            _jack_of_all_trades_check_action(proficient=False),
+            _jack_of_all_trades_target(proficiency_bonus=None),
+            PlayerRollResolutionCommand(action_version=1, roll_total=10),
+        )
+
+
+def test_jack_of_all_trades_prompt_field_is_only_for_ability_checks() -> None:
+    with pytest.raises(ValueError, match="only valid for ability checks"):
+        PlayerRollPromptCommand(
+            actor_combatant_id="actor",
+            actor_version=1,
+            target_combatant_id="target",
+            target_version=1,
+            action_name="检定",
+            resolution_type="skill_check",
+            skill="隐匿",
+            dc=12,
+            ability_check_proficient=False,
+        )
 
 
 @pytest.mark.parametrize(

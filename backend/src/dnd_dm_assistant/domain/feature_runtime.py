@@ -1691,7 +1691,12 @@ def feature_runtime_definition(
                 "scope": "self",
                 "value_source": "half_proficiency_bonus",
                 "applies_when": "ability_check_without_proficiency",
-                "requires_dm_adjudication": True,
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "player_roll_resolution",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
                 **source,
             }
         )
