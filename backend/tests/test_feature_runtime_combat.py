@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from types import SimpleNamespace
+
 import pytest
 
 from dnd_dm_assistant.api.schemas import PlayerRollResolutionCommand
@@ -312,6 +314,19 @@ def test_raging_strength_check_uses_reported_advantage_rolls() -> None:
             target,
             PlayerRollResolutionCommand(action_version=1, roll_total=5),
         )
+
+
+def test_reliable_talent_only_floors_a_proficient_noncombat_check() -> None:
+    character = SimpleNamespace(
+        features=["可靠才能"],
+        skills={"运动": {"proficient": True}},
+    )
+    untrained = SimpleNamespace(
+        features=["可靠才能"],
+        skills={"运动": {"proficient": False}},
+    )
+    assert PlayerRoomService._reliable_talent_applies(character, "运动") is True
+    assert PlayerRoomService._reliable_talent_applies(untrained, "运动") is False
 
 
 def test_elusive_suppresses_condition_advantage_unless_incapacitated() -> None:

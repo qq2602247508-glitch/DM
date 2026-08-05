@@ -1099,9 +1099,9 @@ def feature_runtime_definition(
                 "minimum": 10,
                 "scope": "self",
                 "applies_when": "proficient_ability_check",
-                "automation_status": "partial",
-                "requires_dm_adjudication": True,
-                "partial_reason": "最低 d20 规则已结构化；非战斗检定尚未统一读取职业修正。",
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+                "summary": "对熟练的属性/技能检定，d20 结果低于 10 时按 10 处理。",
                 **source,
             }
         )

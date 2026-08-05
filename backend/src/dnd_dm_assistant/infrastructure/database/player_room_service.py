@@ -995,6 +995,29 @@ class PlayerRoomService:
         )
 
     @staticmethod
+    def _reliable_talent_applies(character: Character, skill: str) -> bool:
+        """Return whether Reliable Talent can floor this skill check's d20."""
+
+        feature_names = {
+            "可靠才能",
+            "可靠天赋",
+            "reliabletalent",
+        }
+        for raw_feature in character.features or []:
+            name = (
+                raw_feature.get("name")
+                if isinstance(raw_feature, dict)
+                else str(raw_feature)
+            )
+            normalized = str(name or "").strip().lower().replace(" ", "")
+            if normalized in {item.lower() for item in feature_names}:
+                skill_data = (character.skills or {}).get(skill)
+                return isinstance(skill_data, dict) and bool(
+                    skill_data.get("proficient")
+                )
+        return False
+
+    @staticmethod
     def _condition_attack_context(
         actor: Combatant,
         target: Combatant,
@@ -3955,13 +3978,34 @@ class PlayerRoomService:
             resolution = json_dict(payload.get("resolution"))
             modifier = int(resolution.get("modifier") or 0)
             dc = int(resolution.get("dc") or 10)
+            reported_raw_roll = raw_roll
+            skill_name = str(resolution.get("skill") or "")
+            character = session.get(Character, item.character_id)
+            reliable_talent = bool(
+                character is not None
+                and skill_name
+                and self._reliable_talent_applies(character, skill_name)
+            )
+            if reliable_talent:
+                raw_roll = max(raw_roll, 10)
             total = raw_roll + modifier
             resolution.update(
                 raw_roll=raw_roll,
+                reported_raw_roll=reported_raw_roll,
+                **(
+                    {"applied_features": ["可靠才能"]}
+                    if reliable_talent
+                    else {}
+                ),
                 total=total,
                 success=total >= dc,
                 instruction=(
-                    f"裸骰 {raw_roll} {modifier:+d} = {total}；"
+                    (
+                        f"报告裸骰 {reported_raw_roll}；可靠才能按 10 计入；"
+                        if reliable_talent
+                        else f"裸骰 {raw_roll} "
+                    )
+                    + f"{modifier:+d} = {total}；"
                     f"DC {dc}，{'成功' if total >= dc else '失败'}。"
                 ),
             )
