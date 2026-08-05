@@ -3218,8 +3218,70 @@ class CombatEngineService:
         return len(filtered) != len(current)
 
     @classmethod
+    def _owned_condition_labels(
+        cls,
+        session: Session,
+        target: Combatant,
+    ) -> dict[str, str]:
+        """Return conditions still owned by active structured effects.
+
+        A direct condition-list edit is only one source of truth.  An active
+        spell, maneuver, or feature effect is another source.  Rebuilding the
+        list from the editor must not silently erase the latter; the condition
+        remains until its owning effect ends.  We only restore effects that
+        explicitly recorded that they added the condition, so an effect that
+        overlapped a pre-existing DM condition does not resurrect a condition
+        the DM intentionally removed.
+        """
+
+        owned: dict[str, str] = {}
+        effects = session.scalars(
+            select(CombatEffect).where(
+                CombatEffect.combat_id == target.combat_id,
+                CombatEffect.target_combatant_id == target.id,
+                CombatEffect.status == "active",
+            )
+        ).all()
+        for effect in effects:
+            details = dict(effect.details_json or {})
+            state = details.get("runtime_state")
+            if isinstance(state, dict):
+                condition = state.get("condition")
+                if (
+                    isinstance(condition, str)
+                    and condition.strip()
+                    and state.get("condition_was_present") is False
+                ):
+                    canonical = cls._canonical_condition(condition)
+                    if canonical and not cls._condition_is_immune(target, canonical):
+                        owned.setdefault(canonical, condition.strip())
+                continue
+
+            block = details.get("rule_block")
+            if not isinstance(block, dict) or str(block.get("kind") or "") != "condition":
+                continue
+            if str(block.get("operation") or "apply") == "remove":
+                continue
+            condition = str(block.get("condition") or "").strip()
+            if not condition:
+                continue
+            explicit_owned = details.get("condition_was_present") is False
+            applied = details.get("applied_state")
+            prior_conditions = applied.get("conditions") if isinstance(applied, dict) else None
+            inferred_owned = isinstance(prior_conditions, list) and not any(
+                cls._canonical_condition(value) == cls._canonical_condition(condition)
+                for value in prior_conditions
+            )
+            if explicit_owned or inferred_owned:
+                canonical = cls._canonical_condition(condition)
+                if canonical and not cls._condition_is_immune(target, canonical):
+                    owned.setdefault(canonical, condition)
+        return owned
+
+    @classmethod
     def sync_condition_state(
         cls,
+        session: Session,
         target: Combatant,
         previous_conditions: list[object] | tuple[object, ...],
     ) -> None:
@@ -3236,12 +3298,33 @@ class CombatEngineService:
             for value in previous_conditions
             if (canonical := cls._canonical_condition(value))
         }
+        # Keep one persisted label per canonical condition.  This prevents a
+        # Chinese/English alias pair from becoming two rows and makes later
+        # source-aware removal deterministic without changing the first label
+        # chosen by the DM/player.
+        normalized: list[object] = []
+        seen: set[str] = set()
+        for value in list(target.conditions or []):
+            canonical = cls._canonical_condition(value)
+            if canonical:
+                if canonical in seen:
+                    continue
+                seen.add(canonical)
+            normalized.append(value)
+        for canonical, label in cls._owned_condition_labels(session, target).items():
+            if canonical not in seen:
+                normalized.append(label)
+                seen.add(canonical)
+        target.conditions = normalized
         current = cls._condition_set(target)
         added = current - previous
         for condition in added:
             cls._apply_condition_restrictions(target, condition, {})
-        if added or current != previous:
-            cls._restore_condition_restrictions(target)
+        # Always reconcile after a direct edit.  The requested list may have
+        # removed an owned effect and then had it restored above; action and
+        # movement fields must still be corrected even when the canonical set
+        # ends up equal to the previous one.
+        cls._restore_condition_restrictions(target)
 
     @classmethod
     def _apply_condition_restrictions(

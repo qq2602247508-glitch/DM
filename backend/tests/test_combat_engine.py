@@ -4181,6 +4181,63 @@ def test_condition_alias_does_not_duplicate_or_remove_existing_state(
     assert ended.json()["target"]["conditions"] == ["中毒"]
 
 
+def test_direct_condition_edit_preserves_active_effect_owner_and_normalizes_aliases(
+    combat_client: TestClient,
+) -> None:
+    """Direct edits cannot erase an active source or duplicate its alias."""
+
+    campaign = _campaign(combat_client, "Direct condition source merge")
+    combat, target = _combatant(combat_client, campaign["id"])
+    root = f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}"
+    applied = combat_client.post(
+        f"{root}/effects/confirm",
+        headers={"X-Request-ID": "direct-edit-owned-condition"},
+        json={
+            "target_combatant_id": target["id"],
+            "target_version": target["version"],
+            "name": "束缚来源",
+            "effect_type": "condition",
+            "details_json": {
+                "rule_block": {
+                    "kind": "condition",
+                    "condition": "束缚",
+                    "operation": "apply",
+                }
+            },
+            "duration_unit": "until_removed",
+        },
+    )
+    assert applied.status_code == 200, applied.text
+    target = applied.json()["target"]
+    assert target["conditions"] == ["束缚"]
+    assert target["speed_ft"] == 0
+
+    edited = combat_client.patch(
+        _fighter_path(campaign["id"], combat["id"], target["id"]),
+        headers={"If-Match": f'"{target["version"]}"'},
+        json={"conditions": ["中毒", "poisoned", "倒地", "prone"]},
+    )
+    assert edited.status_code == 200, edited.text
+    target = edited.json()
+    assert target["conditions"] == ["中毒", "倒地", "束缚"]
+    assert target["speed_ft"] == 0
+    assert target["movement_remaining_ft"] == 0
+
+    ended = combat_client.post(
+        f"{root}/effects/{applied.json()['effect']['id']}/end",
+        headers={"X-Request-ID": "direct-edit-owned-condition-end"},
+        json={
+            "target_version": target["version"],
+            "reason": "束缚来源结束",
+        },
+    )
+    assert ended.status_code == 200, ended.text
+    target = ended.json()["target"]
+    assert target["conditions"] == ["中毒", "倒地"]
+    assert target["speed_ft"] == 30
+    assert target["movement_remaining_ft"] == 30
+
+
 def test_structured_condition_round_duration_expires_and_restores_previous_states(
     combat_client: TestClient,
 ) -> None:

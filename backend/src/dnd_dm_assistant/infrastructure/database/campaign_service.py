@@ -688,7 +688,11 @@ class SqlAlchemyCampaignStateGateway:
 
                 previous_conditions = before.get("conditions", [])
                 if isinstance(previous_conditions, list):
-                    CombatEngineService.sync_condition_state(entity, previous_conditions)
+                    CombatEngineService.sync_condition_state(
+                        session,
+                        entity,
+                        previous_conditions,
+                    )
             if entity_type == "combatant" and (
                 "conditions" in values or "hp" in values or "is_active" in values
             ):
