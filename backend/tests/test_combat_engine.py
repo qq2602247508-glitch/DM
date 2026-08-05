@@ -1561,6 +1561,125 @@ def test_structured_takes_damage_reaction_window_is_one_per_damage_event(
         },
     )
     assert repeated.status_code == 200, repeated.text
+
+
+def test_spending_reaction_elsewhere_invalidates_other_eligible_windows(
+    combat_client: TestClient,
+) -> None:
+    campaign = _campaign(combat_client, "Invalidate stale reaction windows")
+    base = f"/api/v1/campaigns/{campaign['id']}"
+    combat = combat_client.post(
+        f"{base}/combats", json={"name": "Stale reaction windows"}
+    ).json()
+    attacker = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "伤害来源",
+            "entity_type": "character",
+            "initiative": 20,
+            "hp": 20,
+            "max_hp": 20,
+        },
+    ).json()
+    reactor = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "有反应的怪物",
+            "entity_type": "monster",
+            "initiative": 10,
+            "hp": 30,
+            "max_hp": 30,
+            "snapshot_json": {
+                "actions": [
+                    {
+                        "name": "受伤反击",
+                        "action_type": "reaction",
+                        "reaction_event": "takes_damage",
+                        "reaction_trigger": "受到伤害时",
+                    }
+                ]
+            },
+        },
+    ).json()
+    damage = combat_client.post(
+        f"{base}/combats/{combat['id']}/actions/confirm",
+        headers={"X-Request-ID": "stale-reaction-open"},
+        json={
+            "action_type": "damage",
+            "actor_combatant_id": attacker["id"],
+            "actor_version": attacker["version"],
+            "action_cost": "none",
+            "target_combatant_id": reactor["id"],
+            "target_version": reactor["version"],
+            "amount": 4,
+            "damage_type": "fire",
+        },
+    )
+    assert damage.status_code == 200, damage.text
+    actions = combat_client.get(f"{base}/combats/{combat['id']}/actions").json()["items"]
+    window = next(
+        item
+        for item in actions
+        if item["action_type"] == "eligible_action_window"
+        and item["result_json"]["action_window"]["reaction_event"] == "takes_damage"
+    )
+
+    reactor_current = combat_client.get(
+        f"{base}/combats/{combat['id']}/combatants/{reactor['id']}"
+    ).json()
+    attacker_current = combat_client.get(
+        f"{base}/combats/{combat['id']}/combatants/{attacker['id']}"
+    ).json()
+    direct_reaction = combat_client.post(
+        f"{base}/combats/{combat['id']}/actions/confirm",
+        headers={"X-Request-ID": "stale-reaction-spend"},
+        json={
+            "action_type": "damage",
+            "actor_combatant_id": reactor["id"],
+            "actor_version": reactor_current["version"],
+            "action_cost": "reaction",
+            "reaction_trigger": "DM确认其他反应先触发",
+            "action_name": "其他反应",
+            "target_combatant_id": attacker["id"],
+            "target_version": attacker_current["version"],
+            "amount": 1,
+            "damage_type": "psychic",
+        },
+    )
+    assert direct_reaction.status_code == 200, direct_reaction.text
+    refreshed_window = next(
+        item
+        for item in combat_client.get(f"{base}/combats/{combat['id']}/actions").json()["items"]
+        if item["id"] == window["id"]
+    )
+    assert refreshed_window["result_json"]["action_window"] == {
+        **window["result_json"]["action_window"],
+        "status": "invalidated",
+        "invalidation_reason": "reaction_spent_elsewhere",
+    }
+
+    stale_prompt = combat_client.post(
+        f"{base}/combats/{combat['id']}/actions/player-rolls/pending",
+        headers={"X-Request-ID": "stale-reaction-prompt"},
+        json={
+            "actor_combatant_id": reactor["id"],
+            "actor_version": direct_reaction.json()["actor"]["version"],
+            "target_combatant_id": attacker["id"],
+            "target_version": direct_reaction.json()["target"]["version"],
+            "action_cost": "reaction",
+            "reaction_trigger": "受到伤害时",
+            "reaction_event": "takes_damage",
+            "reaction_window_id": window["id"],
+            "action_name": "受伤反击",
+            "resolution_type": "saving_throw",
+            "dc": 12,
+            "ability": "dexterity",
+            "damage_on_failure": 3,
+            "damage_type": "psychic",
+        },
+    )
+    assert stale_prompt.status_code == 400
+    assert "no longer eligible" in stale_prompt.json()["message"]
     actions_after_repeat = combat_client.get(
         f"{base}/combats/{combat['id']}/actions"
     ).json()["items"]

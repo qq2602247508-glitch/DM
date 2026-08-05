@@ -1365,7 +1365,11 @@ class CombatEngineService:
         ):
             raise ValueError("reaction window not found or no longer eligible")
         metadata = (window.result_json or {}).get("action_window")
-        if not isinstance(metadata, dict) or metadata.get("status") != "eligible":
+        if not isinstance(metadata, dict):
+            raise ValueError("reaction window is already resolved")
+        if metadata.get("status") != "eligible":
+            if metadata.get("status") == "invalidated":
+                raise ValueError("reaction window is no longer eligible")
             raise ValueError("reaction window is already resolved")
         if window.actor_combatant_id != actor.id:
             raise ValueError("reaction window belongs to another reactor")
@@ -1424,7 +1428,11 @@ class CombatEngineService:
         ):
             raise ValueError("reaction window not found or no longer eligible")
         metadata = (window.result_json or {}).get("action_window")
-        if not isinstance(metadata, dict) or metadata.get("status") != "eligible":
+        if not isinstance(metadata, dict):
+            raise ValueError("reaction window is already resolved")
+        if metadata.get("status") != "eligible":
+            if metadata.get("status") == "invalidated":
+                raise ValueError("reaction window is no longer eligible")
             raise ValueError("reaction window is already resolved")
         if window.actor_combatant_id != actor.id:
             raise ValueError("reaction window belongs to another reactor")
@@ -1523,6 +1531,52 @@ class CombatEngineService:
         window.result_json = {**result, "action_window": metadata}
         window.version += 1
         window.updated_at = datetime.now(UTC)
+
+    @classmethod
+    def _invalidate_open_reaction_windows(
+        cls,
+        session: Session,
+        *,
+        combat: Combat,
+        actor: Combatant,
+    ) -> None:
+        """Close stale reaction prompts after the reactor spends its reaction.
+
+        A reaction can be spent through a direct DM action, a pre-damage
+        response, or a prompt created from one of the eligible windows.  The
+        other windows must not remain selectable after that transaction.
+        The window being consumed is harmlessly overwritten as ``resolved``
+        by its caller after the action is persisted.
+        """
+
+        windows = session.scalars(
+            select(CombatAction).where(
+                CombatAction.combat_id == combat.id,
+                CombatAction.actor_combatant_id == actor.id,
+                CombatAction.action_type == "eligible_action_window",
+                CombatAction.status == "confirmed",
+            )
+        ).all()
+        for window in windows:
+            result = dict(window.result_json or {})
+            metadata = result.get("action_window")
+            if not isinstance(metadata, dict):
+                continue
+            if (
+                metadata.get("status") != "eligible"
+                or metadata.get("action_cost") != "reaction"
+            ):
+                continue
+            window.result_json = {
+                **result,
+                "action_window": {
+                    **metadata,
+                    "status": "invalidated",
+                    "invalidation_reason": "reaction_spent_elsewhere",
+                },
+            }
+            window.version += 1
+            window.updated_at = datetime.now(UTC)
 
     @classmethod
     def _persist_eligible_enters_reach_reaction_windows(
@@ -2633,6 +2687,12 @@ class CombatEngineService:
             setattr(actor, field, False)
             actor.version += 1
             actor.updated_at = datetime.now(UTC)
+            if action_cost == "reaction":
+                cls._invalidate_open_reaction_windows(
+                    session,
+                    combat=combat,
+                    actor=actor,
+                )
         return consume
 
     @staticmethod
