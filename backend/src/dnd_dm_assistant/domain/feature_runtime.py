@@ -1415,8 +1415,8 @@ def feature_runtime_definition(
                 "label": feature_name,
                 "max": 1,
                 "recovery": "long_rest",
-                "automation_status": "partial",
-                "requires_dm_adjudication": True,
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
             },
         )
         definition["combat_start"]["defenses"].append(
@@ -1426,8 +1426,13 @@ def feature_runtime_definition(
                 "resource_cost": 1,
                 "trigger": "would_drop_to_zero_hit_points",
                 "on_success": {"hit_points": 1},
-                "automation_status": "partial",
-                "requires_dm_adjudication": True,
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "zero_hp_damage_resolution",
+                    "does_not_apply_when": "dies_outright",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
                 **source,
             }
         )

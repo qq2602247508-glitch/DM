@@ -3740,6 +3740,83 @@ class CombatEngineService:
         return changes
 
     @classmethod
+    def _consume_zero_hp_feature_defense(
+        cls,
+        session: Session,
+        target: Combatant,
+        *,
+        resulting_hp: int,
+        unapplied_damage: int,
+    ) -> dict[str, object] | None:
+        """Consume a typed once-per-rest feature that prevents zero HP.
+
+        This is deliberately evaluated after resistance, vulnerability,
+        immunity, and temporary HP, but before the unconscious/death-save
+        lifecycle.  ``unapplied_damage`` is the remaining damage after HP
+        reaches zero, so a value at least equal to max HP is the explicit
+        massive-damage exception and cannot be intercepted.
+        """
+
+        if resulting_hp != 0 or unapplied_damage >= target.max_hp:
+            return None
+        if target.entity_type != "character" or not target.entity_id:
+            return None
+        defense = next(
+            (
+                item
+                for item in cls._feature_defenses(target)
+                if item.get("id") == "relentless_endurance:drop_to_one_hit_point"
+                and item.get("trigger") == "would_drop_to_zero_hit_points"
+            ),
+            None,
+        )
+        if defense is None:
+            return None
+        resource_key = str(defense.get("resource_key") or "").strip()
+        if not resource_key:
+            return None
+        character = session.get(Character, target.entity_id)
+        if character is None:
+            return None
+        resources = dict(character.resources or {})
+        raw_resource = resources.get(resource_key)
+        resource = dict(raw_resource) if isinstance(raw_resource, dict) else {}
+        before = cls._state_int(resource.get("current"))
+        cost = cls._state_int(defense.get("resource_cost"), 1)
+        if cost < 1 or before < cost:
+            return None
+        after = before - cost
+        resource["current"] = after
+        resources[resource_key] = resource
+        character.resources = resources
+        character.version += 1
+        character.updated_at = datetime.now(UTC)
+        snapshot = dict(target.snapshot_json or {})
+        runtime = snapshot.get("feature_runtime")
+        if isinstance(runtime, dict):
+            runtime = dict(runtime)
+            runtime_resources = runtime.get("resources")
+            if isinstance(runtime_resources, dict):
+                runtime_resources = dict(runtime_resources)
+                runtime_resource = runtime_resources.get(resource_key)
+                if isinstance(runtime_resource, dict):
+                    runtime_resources[resource_key] = {
+                        **runtime_resource,
+                        "current": after,
+                    }
+                    runtime["resources"] = runtime_resources
+            snapshot["feature_runtime"] = runtime
+        target.snapshot_json = snapshot
+        return {
+            "feature_id": str(defense.get("id")),
+            "resource": resource_key,
+            "resource_before": before,
+            "resource_after": after,
+            "hit_points": 1,
+            "massive_damage": False,
+        }
+
+    @classmethod
     def _deactivate_zero_hp_non_character(
         cls,
         target: Combatant,
@@ -8199,6 +8276,22 @@ class CombatEngineService:
             resolved = self._resolve(command, target)
             before = serialize(target)
             after = resolved["after"]
+            zero_hp_feature = self._consume_zero_hp_feature_defense(
+                session,
+                target,
+                resulting_hp=int(after["hp"]),
+                unapplied_damage=self._state_int(
+                    resolved["result"].get("unapplied_damage")
+                ),
+            )
+            if zero_hp_feature is not None:
+                after = {**after, "hp": 1}
+                resolved["after"] = after
+                resolved["result"] = {
+                    **resolved["result"],
+                    "feature_defense": zero_hp_feature,
+                    "remaining_hp": 1,
+                }
             target.hp = int(after["hp"])
             target.temporary_hp = int(after["temporary_hp"])
             target.version += 1
@@ -9703,6 +9796,18 @@ class CombatEngineService:
                         10,
                         int(damage_result["adjusted_damage"]) // 2,
                     )
+                zero_hp_feature = self._consume_zero_hp_feature_defense(
+                    session,
+                    target,
+                    resulting_hp=current_hp,
+                    unapplied_damage=self._state_int(
+                        damage_result.get("unapplied_damage")
+                    ),
+                )
+                if zero_hp_feature is not None:
+                    current_hp = 1
+                    damage_result["feature_defense"] = zero_hp_feature
+                    damage_result["remaining_hp"] = 1
                 target.hp = current_hp
                 target.temporary_hp = current_temporary_hp
                 condition_changes = self._sync_zero_hp_lifecycle(
@@ -12425,6 +12530,16 @@ class CombatEngineService:
                     10,
                     int(result["adjusted_damage"]) // 2,
                 )
+            zero_hp_feature = self._consume_zero_hp_feature_defense(
+                session,
+                target,
+                resulting_hp=current_hp,
+                unapplied_damage=self._state_int(result.get("unapplied_damage")),
+            )
+            if zero_hp_feature is not None:
+                current_hp = 1
+                result["feature_defense"] = zero_hp_feature
+                result["remaining_hp"] = 1
             target.hp = current_hp
             target.temporary_hp = current_temporary_hp
         else:

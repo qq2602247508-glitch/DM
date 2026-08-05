@@ -1327,9 +1327,19 @@ def test_2024_deterministic_feature_contracts_are_explicit_but_partial_when_even
 
     relentless_endurance = registry["resources"]["relentless_endurance"]
     assert relentless_endurance["max"] == 1
+    assert relentless_endurance["automation_status"] == "full"
+    assert relentless_endurance["requires_dm_adjudication"] is False
     assert relentless_endurance["recovery_events"] == [
         {"rest": "long_rest", "operation": "set_to_max"}
     ]
+
+    relentless_endurance_defense = next(
+        item
+        for item in registry["combat_start"]["defenses"]
+        if item["id"] == "relentless_endurance:drop_to_one_hit_point"
+    )
+    assert relentless_endurance_defense["automation_status"] == "full"
+    assert relentless_endurance_defense["requires_dm_adjudication"] is False
 
     indomitable_might = next(
         item

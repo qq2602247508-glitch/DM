@@ -665,6 +665,81 @@ def test_compiled_feature_actions_change_combat_state_and_use_extra_action_budge
     assert extra_attack.json()["actor"]["snapshot_json"]["extra_action_budget"] == 0
 
 
+def test_relentless_endurance_prevents_zero_hp_and_consumes_long_rest_resource(
+    combat_client: TestClient,
+) -> None:
+    campaign, combat, defender = _setup(combat_client)
+    character_response = combat_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/characters",
+        json={
+            "name": "不屈耐力测试者",
+            "species": "兽人",
+            "resources": {"relentless_endurance": {"current": 1, "max": 1}},
+        },
+    )
+    assert character_response.status_code == 201, character_response.text
+    character = character_response.json()
+    defense_registry = {
+        "resources": {
+            "relentless_endurance": {"current": 1, "max": 1},
+        },
+        "combat_start": {
+            "defenses": [
+                {
+                    "id": "relentless_endurance:drop_to_one_hit_point",
+                    "resource_key": "relentless_endurance",
+                    "resource_cost": 1,
+                    "trigger": "would_drop_to_zero_hit_points",
+                    "on_success": {"hit_points": 1},
+                }
+            ]
+        },
+    }
+    patched = combat_client.patch(
+        _combatant_path(campaign, combat, defender["id"]),
+        headers={"If-Match": f'"{defender["version"]}"'},
+        json={
+            "entity_type": "character",
+            "entity_id": character["id"],
+            "snapshot_json": {"feature_runtime": defense_registry},
+        },
+    )
+    assert patched.status_code == 200, patched.text
+    defender = patched.json()
+    attacker = _add_combatant(
+        combat_client,
+        campaign,
+        combat,
+        name="致命攻击者",
+        initiative=10,
+    )
+    damage = combat_client.post(
+        f"{_root(campaign, combat)}/actions/confirm",
+        headers={"X-Request-ID": "relentless-endurance-damage"},
+        json={
+            "action_type": "damage",
+            "actor_combatant_id": attacker["id"],
+            "actor_version": attacker["version"],
+            "action_cost": "none",
+            "action_name": "巨斧",
+            "target_combatant_id": defender["id"],
+            "target_version": defender["version"],
+            "amount": 30,
+            "damage_type": "slashing",
+        },
+    )
+    assert damage.status_code == 200, damage.text
+    body = damage.json()
+    assert body["target"]["hp"] == 1
+    assert "昏迷" not in body["target"]["conditions"]
+    assert body["action"]["result_json"]["feature_defense"]["resource_after"] == 0
+    character_after = combat_client.get(
+        f"/api/v1/campaigns/{campaign['id']}/characters/{character['id']}"
+    )
+    assert character_after.status_code == 200, character_after.text
+    assert character_after.json()["resources"]["relentless_endurance"]["current"] == 0
+
+
 def test_compiled_feature_condition_updates_action_economy(
     combat_client: TestClient,
 ) -> None:
