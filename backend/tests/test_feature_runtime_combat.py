@@ -224,6 +224,55 @@ def test_elusive_suppresses_condition_advantage_unless_incapacitated() -> None:
     assert has_disadvantage is False
 
 
+def test_player_attack_context_matches_dm_for_invisible_and_unconscious_targets() -> None:
+    actor = Combatant(
+        id="player-attack-context-actor",
+        entity_type="character",
+        display_name="玩家攻击者",
+        hp=20,
+        max_hp=20,
+    )
+    invisible_target = Combatant(
+        id="player-attack-context-invisible",
+        entity_type="monster",
+        display_name="隐形目标",
+        hp=20,
+        max_hp=20,
+        conditions=["隐形"],
+    )
+    mode, has_advantage, has_disadvantage, automatic_critical = (
+        PlayerRoomService._condition_attack_context(
+            actor,
+            invisible_target,
+            distance_ft=5,
+        )
+    )
+    assert mode == "disadvantage"
+    assert has_advantage is False
+    assert has_disadvantage is True
+    assert automatic_critical is False
+
+    unconscious_target = Combatant(
+        id="player-attack-context-unconscious",
+        entity_type="monster",
+        display_name="昏迷目标",
+        hp=0,
+        max_hp=20,
+        conditions=["昏迷"],
+    )
+    mode, has_advantage, has_disadvantage, automatic_critical = (
+        PlayerRoomService._condition_attack_context(
+            actor,
+            unconscious_target,
+            distance_ft=5,
+        )
+    )
+    assert mode == "advantage"
+    assert has_advantage is True
+    assert has_disadvantage is False
+    assert automatic_critical is True
+
+
 def test_event_predicate_feature_modifier_does_not_grant_passive_advantage() -> None:
     actor = Combatant(
         id="studied-attacks",

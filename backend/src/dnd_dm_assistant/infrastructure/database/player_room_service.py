@@ -1024,9 +1024,12 @@ class PlayerRoomService:
             ("stunned", "目标震慑"),
             ("paralyzed", "目标麻痹"),
             ("petrified", "目标石化"),
+            ("unconscious", "目标昏迷"),
         ):
             if CombatEngineService._has_condition(target, condition):
                 advantage.append(label)
+        if CombatEngineService._has_condition(target, "invisible"):
+            disadvantage.append("目标隐形")
         if CombatEngineService._has_condition(target, "prone"):
             if distance_ft is not None and distance_ft <= 5:
                 advantage.append("近距离攻击倒地目标")
