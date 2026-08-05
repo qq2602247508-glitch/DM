@@ -645,3 +645,80 @@ def test_scene_combat_resolves_unarmored_defense_from_equipped_items(
         "shield_allowed": True,
         "ability_scores": {"dexterity": 16, "constitution": 18},
     }
+
+
+def test_scene_combat_applies_feature_speed_to_real_movement_budget(
+    campaign_client: TestClient,
+    monkeypatch: Any,
+) -> None:
+    campaign = _campaign(campaign_client, "Feature speed runtime")
+    base = f"/api/v1/campaigns/{campaign['id']}"
+    definition = feature_runtime_definition(
+        feature_name="快速移动",
+        class_name="野蛮人",
+        class_level=5,
+        modifiers=[
+            {
+                "stat": "speed_ft",
+                "operation": "add",
+                "scope": "self",
+                "value": 10,
+                "applies_when": "not_wearing_heavy_armor",
+            }
+        ],
+    )
+    character = campaign_client.post(
+        f"{base}/characters",
+        json={
+            "name": "快速移动战士",
+            "class_name": "野蛮人",
+            "level": 5,
+            "speed": 30,
+            "features": [
+                {
+                    "name": "快速移动",
+                    "kind": "class_feature",
+                    "class_name": "野蛮人",
+                    "class_level": 5,
+                    "runtime": {"automation_status": "full", "registry": definition},
+                }
+            ],
+            "hp": 20,
+            "max_hp": 20,
+        },
+    ).json()
+    equipment = campaign_client.post(
+        f"{base}/characters/assets/equipment",
+        json={
+            "character_id": character["id"],
+            "character_version": character["version"],
+            "name": "旅行斗篷",
+            "category": "gear",
+            "metadata_json": {"equipment_kind": "worn"},
+        },
+    )
+    assert equipment.status_code == 201, equipment.text
+    engine = create_engine(campaign_client.database_url)  # type: ignore[attr-defined]
+    with Session(engine) as session:
+        item = session.get(EquipmentInstance, equipment.json()["id"])
+        assert item is not None
+        item.equipped = True
+        session.commit()
+
+    scene = campaign_client.post(f"{base}/scenes", json={"name": "速度验证场"}).json()
+    assert campaign_client.post(
+        f"{base}/scenes/{scene['id']}/participants",
+        json={"entity_type": "character", "entity_id": character["id"]},
+    ).status_code == 201
+    monkeypatch.setattr(world_service.secrets, "randbelow", lambda _upper: 9)
+
+    started = campaign_client.post(f"{base}/scenes/{scene['id']}/start-combat", json={})
+    assert started.status_code == 201, started.text
+    combatant = campaign_client.get(
+        f"{base}/combats/{started.json()['combat']['id']}/combatants"
+    ).json()["items"][0]
+    assert combatant["speed_ft"] == 40
+    assert combatant["movement_remaining_ft"] == 40
+    assert combatant["snapshot_json"]["speed_ft"] == 40
+    assert combatant["snapshot_json"]["speed_resolution"]["resolved_speed_ft"] == 40
+    assert combatant["snapshot_json"]["speed_resolution"]["applied"][0]["value"] == 10

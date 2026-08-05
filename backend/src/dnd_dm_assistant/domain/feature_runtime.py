@@ -214,6 +214,92 @@ def resolve_unarmored_defense_ac(
     return current_armor_class, None
 
 
+def resolve_feature_speed(
+    current_speed_ft: int,
+    feature_registry: Mapping[str, Any],
+    *,
+    equipment_state_authoritative: bool,
+    wearing_armor: bool,
+    wielding_shield: bool,
+    wearing_heavy_armor: bool | None = None,
+) -> tuple[int, dict[str, Any] | None]:
+    """Apply only typed, equipment-gated speed modifiers.
+
+    Speed is stored on the combatant because movement, Dash, standing from
+    prone, and turn refresh all consume that value.  Do not infer equipment
+    from a character's name, class, or starter-equipment prose: without an
+    authoritative equipment instance set, the safe result is the base speed.
+    """
+
+    combat_start = feature_registry.get("combat_start")
+    modifiers = combat_start.get("modifiers") if isinstance(combat_start, Mapping) else ()
+    speed_modifiers = [
+        raw
+        for raw in modifiers or ()
+        if isinstance(raw, Mapping)
+        and raw.get("stat") == "speed_ft"
+        and raw.get("operation") == "add"
+        and raw.get("scope", "self") == "self"
+    ]
+    if not speed_modifiers:
+        return current_speed_ft, None
+
+    resolved = int(current_speed_ft)
+    applied: list[dict[str, Any]] = []
+    skipped: list[dict[str, Any]] = []
+    for modifier in speed_modifiers:
+        value = modifier.get("value")
+        source = str(
+            modifier.get("feature_name")
+            or modifier.get("source_feature")
+            or modifier.get("id")
+            or "结构化速度特性"
+        )
+        record = {
+            "id": modifier.get("id"),
+            "source": source,
+            "value": value,
+            "condition": modifier.get("applies_when"),
+        }
+        if not isinstance(value, int) or isinstance(value, bool):
+            skipped.append({**record, "reason": "speed_modifier_value_unresolved"})
+            continue
+        if not equipment_state_authoritative:
+            skipped.append({**record, "reason": "equipment_state_not_authoritative"})
+            continue
+        condition = modifier.get("applies_when")
+        if condition == "not_wearing_heavy_armor":
+            if wearing_heavy_armor is True:
+                skipped.append({**record, "reason": "wearing_heavy_armor"})
+                continue
+            if wearing_armor and wearing_heavy_armor is None:
+                skipped.append({**record, "reason": "armor_type_not_explicit"})
+                continue
+        elif condition == "unarmored_and_not_using_shield":
+            if wearing_armor or wielding_shield:
+                skipped.append({
+                    **record,
+                    "reason": "wearing_armor_or_wielding_shield",
+                })
+                continue
+        else:
+            skipped.append({**record, "reason": "speed_condition_not_supported"})
+            continue
+        resolved += value
+        applied.append({**record, "applied": True})
+
+    return resolved, {
+        "mode": "feature_speed",
+        "base_speed_ft": int(current_speed_ft),
+        "resolved_speed_ft": resolved,
+        "equipment_state_authoritative": equipment_state_authoritative,
+        "wearing_armor": wearing_armor,
+        "wielding_shield": wielding_shield,
+        "applied": applied,
+        "skipped": skipped,
+    }
+
+
 def _identity(value: object) -> str:
     return re.sub(r"[\s_：:（）()\-]", "", str(value or "")).casefold()
 
@@ -323,17 +409,6 @@ def feature_runtime_definition(
             # legacy modifier on the grant for existing snapshot consumers,
             # but do not make a new consumer apply the same damage twice.
             continue
-        if identity in {"快速移动", "fastmovement", "无甲移动", "unarmoredmovement"}:
-            modifier.update(
-                {
-                    "automation_status": "partial",
-                    "requires_dm_adjudication": True,
-                    "partial_reason": (
-                        "数值与装备门槛已结构化；战斗快照会保留 applies_when，"
-                        "但当前移动结算尚未校验护甲和盾牌状态。"
-                    ),
-                }
-            )
         modifier.setdefault("id", f"{_identity(feature_name)}:modifier:{index + 1}")
         modifier.update(source)
         definition["combat_start"]["modifiers"].append(modifier)

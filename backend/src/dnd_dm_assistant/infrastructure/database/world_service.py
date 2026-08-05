@@ -15,6 +15,7 @@ from dnd_dm_assistant.domain.feature_runtime import (
     apply_initiative_start_resource_recovery,
     compile_feature_runtime_registry,
     feature_runtime_action_projections,
+    resolve_feature_speed,
     resolve_unarmored_defense_ac,
 )
 from dnd_dm_assistant.domain.world import GeneratedLocationNode
@@ -453,9 +454,10 @@ class WorldService:
                 initiative_advantage_sources: list[str] = []
                 initiative_disadvantage_sources: list[str] = []
                 effective_armor_class = int(getattr(entity, "armor_class", 10))
+                effective_speed_ft = int(getattr(entity, "speed", 30))
                 position = spawn_position(participant.entity_type)
                 snapshot = {
-                    "speed_ft": int(getattr(entity, "speed", 30)),
+                    "speed_ft": effective_speed_ft,
                     "ability_scores": dict(entity.ability_scores or {}),
                     "actions": list(getattr(entity, "actions", []) or []),
                     "combat_start_state": {
@@ -609,20 +611,51 @@ class WorldService:
                         for row in equipment_rows
                         if row.equipped
                     ]
+                    armor_profiles = [
+                        profile
+                        for profile in equipped_profiles
+                        if profile.get("kind") == "armor"
+                    ]
+                    wearing_armor = bool(armor_profiles)
+                    armor_types = {
+                        str(profile.get("armor_type") or "")
+                        for profile in armor_profiles
+                    }
+                    wearing_heavy_armor: bool | None = (
+                        True
+                        if "heavy" in armor_types
+                        else False
+                        if armor_profiles and armor_types.issubset({"light", "medium"})
+                        else None
+                        if wearing_armor
+                        else False
+                    )
                     effective_armor_class, armor_resolution = resolve_unarmored_defense_ac(
                         effective_armor_class,
                         dict(entity.ability_scores or {}),
                         feature_registry,
                         equipment_state_authoritative=bool(equipment_rows),
-                        wearing_armor=any(
-                            profile.get("kind") == "armor" for profile in equipped_profiles
-                        ),
+                        wearing_armor=wearing_armor,
                         wielding_shield=any(
                             profile.get("kind") == "shield" for profile in equipped_profiles
                         ),
                     )
                     if armor_resolution is not None:
                         snapshot["armor_class_resolution"] = armor_resolution
+                    effective_speed_ft, speed_resolution = resolve_feature_speed(
+                        effective_speed_ft,
+                        feature_registry,
+                        equipment_state_authoritative=bool(equipment_rows),
+                        wearing_armor=wearing_armor,
+                        wielding_shield=any(
+                            profile.get("kind") == "shield"
+                            for profile in equipped_profiles
+                        ),
+                        wearing_heavy_armor=wearing_heavy_armor,
+                    )
+                    if speed_resolution is not None:
+                        snapshot["speed_resolution"] = speed_resolution
+                        snapshot["speed_ft"] = effective_speed_ft
                     combat_start = feature_registry.get("combat_start")
                     raw_initiative_modifiers = (
                         combat_start.get("modifiers")
@@ -685,8 +718,8 @@ class WorldService:
                     armor_class=effective_armor_class,
                     hp=int(getattr(entity, "hp", 1)),
                     max_hp=int(getattr(entity, "max_hp", 1)),
-                    speed_ft=int(getattr(entity, "speed", 30)),
-                    movement_remaining_ft=int(getattr(entity, "speed", 30)),
+                    speed_ft=effective_speed_ft,
+                    movement_remaining_ft=effective_speed_ft,
                     damage_resistances=list(
                         getattr(entity, "damage_resistances", []) or []
                     ),

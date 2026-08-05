@@ -24,6 +24,8 @@ from dnd_dm_assistant.domain.feature_runtime import (
     apply_initiative_start_resource_recovery,
     compile_feature_runtime_registry,
     feature_runtime_action_projections,
+    feature_runtime_definition,
+    resolve_feature_speed,
     resolve_unarmored_defense_ac,
 )
 from dnd_dm_assistant.domain.rests import RestResource, resolve_long_rest, resolve_short_rest
@@ -913,6 +915,114 @@ def test_unarmored_defense_resolves_only_with_authoritative_equipment_state() ->
     )
     assert unchanged == 16
     assert no_details is None
+
+
+def test_speed_features_resolve_only_from_explicit_equipment_state() -> None:
+    fast_movement = feature_runtime_definition(
+        feature_name="快速移动",
+        class_name="野蛮人",
+        class_level=5,
+        modifiers=[
+            {
+                "stat": "speed_ft",
+                "operation": "add",
+                "scope": "self",
+                "value": 10,
+                "applies_when": "not_wearing_heavy_armor",
+            }
+        ],
+    )
+    registry = compile_feature_runtime_registry(
+        [
+            {
+                "name": "快速移动",
+                "class_name": "野蛮人",
+                "class_level": 5,
+                "runtime": {"registry": fast_movement},
+            }
+        ]
+    )
+
+    resolved, details = resolve_feature_speed(
+        30,
+        registry,
+        equipment_state_authoritative=True,
+        wearing_armor=False,
+        wielding_shield=False,
+        wearing_heavy_armor=False,
+    )
+    assert resolved == 40
+    assert details is not None
+    assert [item["source"] for item in details["applied"]] == ["快速移动"]
+
+    heavy, heavy_details = resolve_feature_speed(
+        30,
+        registry,
+        equipment_state_authoritative=True,
+        wearing_armor=True,
+        wielding_shield=False,
+        wearing_heavy_armor=True,
+    )
+    assert heavy == 30
+    assert heavy_details is not None
+    assert heavy_details["skipped"][0]["reason"] == "wearing_heavy_armor"
+
+    unknown, unknown_details = resolve_feature_speed(
+        30,
+        registry,
+        equipment_state_authoritative=False,
+        wearing_armor=False,
+        wielding_shield=False,
+    )
+    assert unknown == 30
+    assert unknown_details is not None
+    assert unknown_details["skipped"][0]["reason"] == "equipment_state_not_authoritative"
+
+
+def test_unarmored_movement_requires_no_armor_and_no_shield() -> None:
+    definition = feature_runtime_definition(
+        feature_name="无甲移动",
+        class_name="武僧",
+        class_level=2,
+        modifiers=[
+            {
+                "stat": "speed_ft",
+                "operation": "add",
+                "scope": "self",
+                "value": 10,
+                "applies_when": "unarmored_and_not_using_shield",
+            }
+        ],
+    )
+    registry = compile_feature_runtime_registry(
+        [
+            {
+                "name": "无甲移动",
+                "class_name": "武僧",
+                "class_level": 2,
+                "runtime": {"registry": definition},
+            }
+        ]
+    )
+    assert resolve_feature_speed(
+        30,
+        registry,
+        equipment_state_authoritative=True,
+        wearing_armor=False,
+        wielding_shield=False,
+        wearing_heavy_armor=False,
+    )[0] == 40
+    shielded, details = resolve_feature_speed(
+        30,
+        registry,
+        equipment_state_authoritative=True,
+        wearing_armor=False,
+        wielding_shield=True,
+        wearing_heavy_armor=False,
+    )
+    assert shielded == 30
+    assert details is not None
+    assert details["skipped"][0]["reason"] == "wearing_armor_or_wielding_shield"
 
 
 def test_reactions_and_monk_defenses_publish_typed_contracts() -> None:
