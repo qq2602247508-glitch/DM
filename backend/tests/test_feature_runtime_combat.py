@@ -316,6 +316,61 @@ def test_raging_strength_check_uses_reported_advantage_rolls() -> None:
         )
 
 
+def test_poisoned_check_disadvantage_cancels_feature_advantage() -> None:
+    action = CombatAction(
+        campaign_id="campaign",
+        combat_id="combat",
+        action_type="player_roll_prompt",
+        target_combatant_ids=["poisoned-checker"],
+        request_json={
+            "resolution_type": "skill_check",
+            "dc": 15,
+            "skill": "隐匿",
+            "action_name": "潜行",
+        },
+        result_json={},
+        round_number=1,
+        turn_index=0,
+        summary="等待技能检定",
+        idempotency_key="poisoned-skill-check",
+    )
+    target = Combatant(
+        id="poisoned-checker",
+        entity_type="character",
+        display_name="中毒检定者",
+        hp=20,
+        max_hp=20,
+        conditions=["中毒"],
+        snapshot_json={
+            "rule_modifiers": {
+                "skill_check:self:stealth": {
+                    "stat": "skill_check",
+                    "scope": "self",
+                    "operation": "advantage",
+                    "source": "可靠协助",
+                }
+            }
+        },
+    )
+
+    resolved = CombatEngineService._resolve_player_roll(
+        action,
+        target,
+        PlayerRollResolutionCommand(
+            action_version=1,
+            roll_total=5,
+            roll_totals=[5, 18],
+        ),
+    )
+
+    assert resolved["roll_total"] == 5
+    assert resolved["success"] is False
+    assert resolved["applied_defenses"] == [
+        "ability_check_advantage_disadvantage_cancelled",
+        "condition:poisoned_disadvantage_check",
+    ]
+
+
 def test_reliable_talent_only_floors_a_proficient_noncombat_check() -> None:
     character = SimpleNamespace(
         features=["可靠才能"],

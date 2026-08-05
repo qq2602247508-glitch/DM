@@ -187,6 +187,67 @@ def test_failed_player_save_persists_feature_reroll_window_before_resolution(
     assert second.json()["target"]["hp"] == 20
 
 
+def test_poisoned_skill_check_cancels_structured_advantage_through_api(
+    combat_client: TestClient,
+) -> None:
+    campaign, combat, actor = _setup(combat_client)
+    target_response = combat_client.post(
+        f"{_root(campaign, combat)}/combatants",
+        json={
+            "display_name": "中毒检定者",
+            "initiative": 10,
+            "hp": 20,
+            "max_hp": 20,
+            "conditions": ["poisoned"],
+            "snapshot_json": {
+                "rule_modifiers": {
+                    "skill_check:self:stealth": {
+                        "stat": "skill_check",
+                        "scope": "self",
+                        "operation": "advantage",
+                        "source": "可靠协助",
+                    }
+                }
+            },
+        },
+    )
+    assert target_response.status_code == 201, target_response.text
+    target = target_response.json()
+    prompt = combat_client.post(
+        f"{_root(campaign, combat)}/actions/player-rolls/pending",
+        headers={"X-Request-ID": "poisoned-skill-check-api"},
+        json={
+            "actor_combatant_id": actor["id"],
+            "actor_version": actor["version"],
+            "target_combatant_id": target["id"],
+            "target_version": target["version"],
+            "action_name": "潜行",
+            "resolution_type": "skill_check",
+            "skill": "隐匿",
+            "dc": 15,
+        },
+    )
+    assert prompt.status_code == 200, prompt.text
+    action = prompt.json()["action"]
+    confirmed = combat_client.post(
+        f"{_root(campaign, combat)}/actions/player-rolls/{action['id']}/confirm",
+        headers={"X-Request-ID": "poisoned-skill-check-roll"},
+        json={
+            "action_version": action["version"],
+            "roll_total": 5,
+            "roll_totals": [5, 18],
+        },
+    )
+    assert confirmed.status_code == 200, confirmed.text
+    resolution = confirmed.json()["resolution"]
+    assert resolution["roll_total"] == 5
+    assert resolution["success"] is False
+    assert resolution["applied_defenses"] == [
+        "ability_check_advantage_disadvantage_cancelled",
+        "condition:poisoned_disadvantage_check",
+    ]
+
+
 def test_dodge_and_prone_force_explicit_attack_ruling_then_dodge_expires(
     combat_client: TestClient,
 ) -> None:

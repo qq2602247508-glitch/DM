@@ -6754,22 +6754,30 @@ class CombatEngineService:
                 for item in feature_modifiers
                 if item.get("operation") == "disadvantage"
             ]
+            poisoned_disadvantage = cls._has_condition(target, "poisoned")
             rolls = list(command.roll_totals) if command.roll_totals else [command.roll_total]
-            if feature_advantage or feature_disadvantage:
+            if feature_advantage or feature_disadvantage or poisoned_disadvantage:
                 if len(rolls) < 2:
                     raise ValueError(
                         "structured ability-check advantage/disadvantage requires two "
                         "reported roll totals; the server will not invent the second roll"
                     )
-                if feature_advantage and feature_disadvantage:
+                has_advantage = bool(feature_advantage)
+                has_disadvantage = bool(feature_disadvantage) or poisoned_disadvantage
+                poisoned_source = "condition:poisoned_disadvantage_check"
+                if has_advantage and has_disadvantage:
                     effective_roll = rolls[0]
                     applied = ["ability_check_advantage_disadvantage_cancelled"]
-                elif feature_advantage:
+                    if poisoned_disadvantage:
+                        applied.append(poisoned_source)
+                elif has_advantage:
                     effective_roll = max(rolls[:2])
                     applied = [f"feature:{source}" for source in feature_advantage]
                 else:
                     effective_roll = min(rolls[:2])
                     applied = [f"feature:{source}" for source in feature_disadvantage]
+                    if poisoned_disadvantage:
+                        applied.append(poisoned_source)
             else:
                 effective_roll = command.roll_total
                 applied = []
