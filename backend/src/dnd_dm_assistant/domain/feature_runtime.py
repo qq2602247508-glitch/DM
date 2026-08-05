@@ -938,18 +938,12 @@ def feature_runtime_definition(
                 "status": "ready",
                 "consumer": "combat_feature_action",
                 "effect_kinds": ["grant_action_budget"],
-                "remaining_dm_boundaries": [
-                    "once_per_turn_limit",
-                    "magic_action_exclusion",
-                ],
+                "remaining_dm_boundaries": [],
             },
             "limits": ["once_per_turn"],
-            "automation_status": "partial",
-            "requires_dm_adjudication": True,
-            "partial_reason": (
-                "额外动作预算可写入；每回合一次和不得用于魔法动作的限制"
-                "尚未由特性执行器强制校验。"
-            ),
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+            "summary": "每回合只能使用一次；额外动作不能用于施放法术。",
             **source,
         }
 

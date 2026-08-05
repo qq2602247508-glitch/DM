@@ -544,6 +544,10 @@ def test_compiled_feature_actions_change_combat_state_and_use_extra_action_budge
             "snapshot_json": {
                 "feature_runtime": registry,
                 "conditional_damage_defenses": registry["combat_start"]["defenses"],
+                "actions": [
+                    {"name": "火球术", "is_spell": True},
+                    {"name": "挥砍", "action_type": "action"},
+                ],
             },
         },
     )
@@ -612,6 +616,37 @@ def test_compiled_feature_actions_change_combat_state_and_use_extra_action_budge
     assert surged.status_code == 200, surged.text
     actor = surged.json()["actor"]
     assert actor["snapshot_json"]["extra_action_budget"] == 1
+    assert actor["snapshot_json"]["action_surge_turn_key"] == "1:0"
+    repeated_surge = combat_client.post(
+        feature_path,
+        headers={"X-Request-ID": "feature-action-surge-repeat"},
+        json={
+            "actor_combatant_id": actor["id"],
+            "actor_version": actor["version"],
+            "feature_id": "action_surge",
+            "target_combatant_id": actor["id"],
+            "target_version": actor["version"],
+        },
+    )
+    assert repeated_surge.status_code == 400
+    assert "每回合只能使用一次" in repeated_surge.json()["message"]
+    magic_action = combat_client.post(
+        f"{_root(campaign, combat)}/actions/confirm",
+        headers={"X-Request-ID": "feature-extra-magic-action"},
+        json={
+            "action_type": "damage",
+            "actor_combatant_id": actor["id"],
+            "actor_version": actor["version"],
+            "action_cost": "action",
+            "action_name": "火球术",
+            "target_combatant_id": enemy["id"],
+            "target_version": enemy["version"],
+            "amount": 2,
+            "damage_type": "fire",
+        },
+    )
+    assert magic_action.status_code == 400
+    assert "不能用于施放法术" in magic_action.json()["message"]
     extra_attack = combat_client.post(
         f"{_root(campaign, combat)}/actions/confirm",
         headers={"X-Request-ID": "feature-extra-action"},

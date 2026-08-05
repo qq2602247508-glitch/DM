@@ -259,10 +259,7 @@ def test_executable_partial_actions_project_without_claiming_full_automation() -
         "status": "ready",
         "consumer": "combat_feature_action",
         "effect_kinds": ["grant_action_budget"],
-        "remaining_dm_boundaries": [
-            "once_per_turn_limit",
-            "magic_action_exclusion",
-        ],
+        "remaining_dm_boundaries": [],
     }
     assert fighter_2["resources"]["action_surge"]["max"] == 1
     assert fighter_17["resources"]["action_surge"]["max"] == 2
@@ -283,13 +280,13 @@ def test_executable_partial_actions_project_without_claiming_full_automation() -
         for item in feature_runtime_action_projections(barbarian)
     }
     assert projected_fighter["action_surge"]["runtime_feature"] is True
-    assert projected_fighter["action_surge"]["automation_status"] == "partial"
+    assert projected_fighter["action_surge"]["automation_status"] == "full"
     assert projected_barbarian["rage"]["runtime_feature"] is True
     assert projected_barbarian["rage"]["automation_status"] == "partial"
 
     contracts = {item["name"]: item for item in fighter_17["feature_contracts"]}
-    assert contracts["动作如潮（两次）"]["automation_status"] == "partial"
-    assert contracts["动作如潮（两次）"]["requires_dm_adjudication"] is True
+    assert contracts["动作如潮（两次）"]["automation_status"] == "full"
+    assert contracts["动作如潮（两次）"]["requires_dm_adjudication"] is False
 
 
 def test_rage_runtime_scaling_tracks_current_level_without_freezing_level_one() -> None:

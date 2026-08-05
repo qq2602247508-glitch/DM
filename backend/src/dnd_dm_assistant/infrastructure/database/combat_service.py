@@ -2745,6 +2745,8 @@ class CombatEngineService:
                     return consume
                 extra_budget = cls._state_int(snapshot.get("extra_action_budget"), 0)
                 if extra_budget > 0:
+                    if action_name and cls._is_structured_spell_action(actor, action_name):
+                        raise ValueError("动作如潮的额外动作不能用于施放法术")
                     if consume:
                         snapshot["extra_action_budget"] = extra_budget - 1
                         actor.snapshot_json = snapshot
@@ -9084,6 +9086,10 @@ class CombatEngineService:
             )
             if action is None or action.get("kind") != "feature_action":
                 raise ValueError("该职业特性没有可执行的运行时积木")
+            if command.feature_id == "action_surge":
+                turn_key = f"{combat.round_number}:{combat.current_turn_index}"
+                if (actor.snapshot_json or {}).get("action_surge_turn_key") == turn_key:
+                    raise ValueError("动作如潮每回合只能使用一次")
             requirements = action.get("requirements")
             if isinstance(requirements, list) and "not_wearing_heavy_armor" in requirements:
                 equipment = (actor.snapshot_json or {}).get("equipment")
@@ -9278,6 +9284,10 @@ class CombatEngineService:
                     snapshot = dict(actor.snapshot_json or {})
                     previous = self._state_int(snapshot.get("extra_action_budget"), 0)
                     snapshot["extra_action_budget"] = previous + amount
+                    if command.feature_id == "action_surge":
+                        snapshot["action_surge_turn_key"] = (
+                            f"{combat.round_number}:{combat.current_turn_index}"
+                        )
                     actor.snapshot_json = snapshot
                     result["extra_action_budget"] = previous + amount
                 elif kind == "grant_saving_throw_reroll":
