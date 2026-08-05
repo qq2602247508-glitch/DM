@@ -6,7 +6,7 @@
 - 新增回归：自身光环、真实玩家自动豁免 API（魅力 18、目标在 10 尺内得到 +4）均通过；目标豁免日志记录结构化修正说明。
 - 验证：定向测试 2 项通过；后端全量 `pytest -q backend/tests` 通过；Ruff、compileall、`git diff --check` 通过。仅有既有 Starlette/httpx 弃用警告。
 - 当前切片完成度：守护灵光自动豁免 `100%`。它属于固定大项“职业/子职业 1–20 级运行时闭环”，不新增第五类缺口；跳过高级三维战斗后的固定四大项整体粗略完成度仍约 `70%`。
-- 内置浏览器实际加载 `http://127.0.0.1:5173/#/combat` 的 DM 战斗辅助页；模拟战斗、法术/召唤入口和战斗轨道正常，应用控制台 `error/warn` 均为空。视口验收截图：`/private/tmp/dnd-protection-aura-browser-check-20260806-viewport.png`。
+- 内置浏览器实际加载 `http://127.0.0.1:5173/#/combat` 的 DM 战斗辅助页；模拟战斗、法术/召唤入口和战斗轨道正常，应用控制台 `error/warn` 均为空。视口验收截图：`/private/tmp/dnd-protection-aura-browser-check-20260806.jpg`。
 
 # 2026-08-06 职业豁免熟练自动结算闭环
 
