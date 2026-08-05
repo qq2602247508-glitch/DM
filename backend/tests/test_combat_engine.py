@@ -5592,6 +5592,72 @@ def test_zero_hp_creates_death_track_and_natural_twenty_recovers(
     ]
 
 
+def test_direct_hp_edit_uses_zero_hp_and_death_save_lifecycle(
+    combat_client: TestClient,
+) -> None:
+    """The DM editor cannot bypass unconsciousness or stale death saves."""
+
+    campaign = _campaign(combat_client, "Direct HP lifecycle")
+    combat = combat_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/combats",
+        json={"name": "Direct HP lifecycle combat"},
+    ).json()
+    fighter = combat_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "可倒地角色",
+            "entity_type": "character",
+            "hp": 20,
+            "max_hp": 20,
+        },
+    ).json()
+    fighter_path = _fighter_path(campaign["id"], combat["id"], fighter["id"])
+    death_save_path = f"{fighter_path}/death-save"
+
+    dropped = combat_client.patch(
+        fighter_path,
+        headers={"If-Match": f'"{fighter["version"]}"'},
+        json={"hp": 0},
+    )
+    assert dropped.status_code == 200, dropped.text
+    target = dropped.json()
+    assert target["conditions"] == ["昏迷"]
+    assert target["action_available"] is False
+    assert target["bonus_action_available"] is False
+    assert target["reaction_available"] is False
+    assert target["movement_remaining_ft"] == 0
+    death_track = combat_client.get(death_save_path)
+    assert death_track.status_code == 200, death_track.text
+    assert death_track.json()["successes"] == 0
+    assert death_track.json()["failures"] == 0
+
+    failed = combat_client.post(
+        f"{death_save_path}/confirm",
+        headers={"X-Request-ID": "direct-hp-death-save"},
+        json={"target_version": target["version"], "roll": 2},
+    )
+    assert failed.status_code == 200, failed.text
+    target = failed.json()["target"]
+    assert failed.json()["death_save"]["failures"] == 1
+
+    awakened = combat_client.patch(
+        fighter_path,
+        headers={"If-Match": f'"{target["version"]}"'},
+        json={"hp": 5},
+    )
+    assert awakened.status_code == 200, awakened.text
+    target = awakened.json()
+    assert target["conditions"] == []
+    assert target["action_available"] is True
+    assert target["movement_remaining_ft"] == target["speed_ft"]
+    reset = combat_client.get(death_save_path)
+    assert reset.status_code == 200, reset.text
+    assert reset.json()["successes"] == 0
+    assert reset.json()["failures"] == 0
+    assert reset.json()["stable"] is False
+    assert reset.json()["dead"] is False
+
+
 def test_healing_removes_unconscious_and_resets_death_track(
     combat_client: TestClient,
 ) -> None:

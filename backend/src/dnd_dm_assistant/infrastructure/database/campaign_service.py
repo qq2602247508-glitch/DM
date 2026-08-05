@@ -36,6 +36,7 @@ from dnd_dm_assistant.infrastructure.database.models import (
     CombatAction,
     Combatant,
     CompendiumEntry,
+    DeathSave,
     DowntimeActivity,
     Event,
     KnownSpell,
@@ -693,6 +694,37 @@ class SqlAlchemyCampaignStateGateway:
                         entity,
                         previous_conditions,
                     )
+            if entity_type == "combatant" and "hp" in values:
+                # Direct DM/player HP edits must share the same zero-HP
+                # lifecycle as damage and healing actions.  Otherwise an
+                # editor-created 0 HP unit could still act or move until its
+                # first death-save request, and waking it would retain stale
+                # death-save failures.
+                from dnd_dm_assistant.infrastructure.database.combat_service import (
+                    CombatEngineService,
+                )
+
+                before_hp = before.get("hp")
+                before_hp_value = int(before_hp) if isinstance(before_hp, int) else entity.hp
+                CombatEngineService._sync_zero_hp_lifecycle(
+                    entity,
+                    before_hp=before_hp_value,
+                )
+                if entity.entity_type == "character":
+                    death_save = session.scalar(
+                        select(DeathSave).where(DeathSave.combatant_id == entity.id)
+                    )
+                    if entity.hp == 0:
+                        if death_save is None:
+                            CombatEngineService._death_save(session, entity)
+                    elif before_hp_value == 0 and entity.hp > 0 and death_save is not None:
+                        death_save.successes = 0
+                        death_save.failures = 0
+                        death_save.stable = False
+                        death_save.dead = False
+                        death_save.pending_death_confirmation = False
+                        death_save.last_roll = None
+                        death_save.version += 1
             if entity_type == "combatant" and (
                 "conditions" in values or "hp" in values or "is_active" in values
             ):
