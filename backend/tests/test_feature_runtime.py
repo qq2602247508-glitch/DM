@@ -827,7 +827,11 @@ def test_fixed_feature_resources_expose_recovery_without_claiming_full_automatio
         for item in rogue["combat_start"]["defenses"]
         if item["id"] == "elusive:suppress_incoming_advantage"
     )
-    assert elusive["automation_status"] == "partial"
+    assert elusive["automation_status"] == "full"
+    assert elusive["runtime_execution"] == {
+        "status": "ready",
+        "consumer": "attack_context_resolver",
+    }
 
 
 def test_ranger_hunters_mark_upgrades_require_explicit_state_and_feed_attack_riders() -> None:

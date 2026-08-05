@@ -1107,9 +1107,13 @@ def feature_runtime_definition(
                 "kind": "suppress_attack_advantage",
                 "scope": "incoming",
                 "applies_when": "not_incapacitated",
-                "automation_status": "partial",
-                "requires_dm_adjudication": True,
-                "partial_reason": "被攻击优势的条件合并器尚未读取职业防御。",
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "attack_context_resolver",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+                "summary": "未处于失能状态时，针对你的攻击不会因规则获得优势。",
                 **source,
             }
         )

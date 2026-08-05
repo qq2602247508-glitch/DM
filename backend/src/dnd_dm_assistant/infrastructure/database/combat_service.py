@@ -2949,17 +2949,7 @@ class CombatEngineService:
                 advantage.append("稳定瞄准")
         # Defensive features such as Elusive suppress an incoming advantage
         # only when their explicit predicate is satisfied.
-        target_conditions = cls._condition_set(target)
-        suppress_incoming = any(
-            str(defense.get("kind") or "") == "suppress_attack_advantage"
-            and not (
-                str(defense.get("applies_when") or "").strip().lower()
-                in {"not_incapacitated", "not incapacitated"}
-                and target_conditions & cls._ACTION_BLOCKING_CONDITIONS
-            )
-            for defense in cls._feature_defenses(target)
-        )
-        if suppress_incoming:
+        if cls._suppresses_incoming_attack_advantage(target):
             advantage.clear()
         return advantage, disadvantage
 
@@ -2971,6 +2961,22 @@ class CombatEngineService:
         combat_start = raw.get("combat_start")
         defenses = combat_start.get("defenses") if isinstance(combat_start, dict) else None
         return [item for item in defenses or () if isinstance(item, dict)]
+
+    @classmethod
+    def _suppresses_incoming_attack_advantage(cls, combatant: Combatant) -> bool:
+        """Return whether a typed defense cancels all incoming advantage."""
+
+        conditions = cls._condition_set(combatant)
+        for defense in cls._feature_defenses(combatant):
+            if str(defense.get("kind") or "") != "suppress_attack_advantage":
+                continue
+            applies_when = str(defense.get("applies_when") or "").strip().lower()
+            if applies_when in {"not_incapacitated", "not incapacitated"} and (
+                conditions & cls._ACTION_BLOCKING_CONDITIONS
+            ):
+                continue
+            return True
+        return False
 
     @classmethod
     def _validate_can_act(cls, actor: Combatant) -> None:
@@ -5242,6 +5248,9 @@ class CombatEngineService:
         if cls._has_condition(target, "reckless_attack"):
             contexts.append("target_reckless_attack")
             advantage_sources.append("target_reckless_attack")
+        if cls._suppresses_incoming_attack_advantage(target):
+            contexts.append("target_feature_suppresses_incoming_advantage")
+            advantage_sources.clear()
         if cls._active_runtime_effects(
             session, combat.id, target_id=actor.id, state_name="hidden"
         ):

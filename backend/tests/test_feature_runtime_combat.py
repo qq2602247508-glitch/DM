@@ -160,6 +160,70 @@ def test_player_attack_context_applies_reckless_attack_to_both_sides() -> None:
     assert has_disadvantage is False
 
 
+def test_elusive_suppresses_condition_advantage_unless_incapacitated() -> None:
+    actor = Combatant(
+        id="elusive-attacker",
+        entity_type="monster",
+        display_name="攻击者",
+        hp=20,
+        max_hp=20,
+        snapshot_json={
+            "rule_modifiers": {
+                "attack_roll:outgoing:marked": {
+                    "stat": "attack_roll",
+                    "scope": "outgoing",
+                    "operation": "advantage",
+                    "source": "标记优势",
+                }
+            }
+        },
+    )
+    target = Combatant(
+        id="elusive-target",
+        entity_type="character",
+        display_name="飘忽不定者",
+        hp=20,
+        max_hp=20,
+        conditions=["倒地"],
+        snapshot_json={
+            "feature_runtime": {
+                "combat_start": {
+                    "defenses": [
+                        {
+                            "kind": "suppress_attack_advantage",
+                            "applies_when": "not_incapacitated",
+                        }
+                    ]
+                }
+            }
+        },
+    )
+
+    advantage, disadvantage = CombatEngineService._feature_attack_roll_contexts(
+        actor, target
+    )
+    assert advantage == []
+    assert disadvantage == []
+    mode, has_advantage, has_disadvantage, _ = PlayerRoomService._condition_attack_context(
+        actor,
+        target,
+        distance_ft=5,
+    )
+    assert mode == "normal"
+    assert has_advantage is False
+    assert has_disadvantage is False
+
+    target.conditions = ["倒地", "震慑"]
+    mode, has_advantage, has_disadvantage, _ = PlayerRoomService._condition_attack_context(
+        actor,
+        target,
+        distance_ft=5,
+    )
+    assert mode == "advantage"
+    assert has_advantage is True
+    assert has_disadvantage is False
+
+
 def test_event_predicate_feature_modifier_does_not_grant_passive_advantage() -> None:
     actor = Combatant(
         id="studied-attacks",

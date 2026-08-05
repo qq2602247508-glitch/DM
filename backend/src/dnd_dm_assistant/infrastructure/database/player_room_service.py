@@ -1036,6 +1036,8 @@ class PlayerRoomService:
             disadvantage.append("目标闪避")
         if CombatEngineService._has_condition(target, "reckless_attack"):
             advantage.append("目标鲁莽攻击")
+        if CombatEngineService._suppresses_incoming_attack_advantage(target):
+            advantage.clear()
         if (
             distance_ft is not None
             and distance_ft <= 5
