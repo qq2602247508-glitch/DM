@@ -160,6 +160,65 @@ class AdvancementService:
             }
         return merged
 
+    def _rebuild_multiclass_progression_resources(
+        self,
+        *,
+        class_levels: dict[str, int],
+        subclass_choices: dict[str, str],
+        ability_scores: dict[str, int],
+        enabled_content_packs: object,
+        allow_legacy: bool,
+        existing_resources: dict[str, Any],
+    ) -> tuple[dict[str, Any], dict[str, dict[str, Any]]]:
+        """Recalculate every owned class resource after an advancement.
+
+        Shared spell slots were already recalculated during advancement, but
+        class-specific pools were previously updated only for the class being
+        leveled.  That left imported or newly-created multiclass sheets with a
+        missing pool for the other class.  Pool keys remain shared where the
+        sheet contract defines one; the merge preserves spent current values.
+        """
+
+        resources = merge_spell_slot_resources(
+            dict(existing_resources),
+            class_levels,
+            subclass_choices,
+        )
+        updates: dict[str, dict[str, Any]] = {}
+        for owned_class, class_level in sorted(class_levels.items()):
+            class_rule = self._class_rule(
+                owned_class,
+                enabled_content_packs=enabled_content_packs,
+                allow_legacy=allow_legacy,
+            )
+            updates.update(
+                progression_resource_updates(
+                    class_rule,
+                    int(class_level),
+                    ability_scores=ability_scores,
+                )
+            )
+            selected_subclass_name = str(subclass_choices.get(owned_class) or "").strip()
+            selected_subclass = next(
+                (
+                    dict(item)
+                    for item in class_rule.subclasses
+                    if str(item.get("name") or "") == selected_subclass_name
+                ),
+                None,
+            )
+            if selected_subclass is None:
+                continue
+            for subclass_level in range(1, int(class_level) + 1):
+                subclass_update = subclass_runtime_grants(
+                    selected_subclass,
+                    class_name=owned_class,
+                    target_class_level=subclass_level,
+                    ability_scores=ability_scores,
+                )
+                updates.update(dict(subclass_update["resources"]))
+        return self._merge_progression_resources(resources, updates), updates
+
     @staticmethod
     def _state_from_character(character: Character) -> SimpleNamespace:
         """Copy just the persisted character state needed by a sequential preview."""
@@ -1031,26 +1090,7 @@ class AdvancementService:
                 if not override:
                     raise ValueError(message)
                 warnings.append("DM 已覆盖：" + message)
-        after_resources = merge_spell_slot_resources(
-            dict(character.resources or {}),
-            class_levels,
-            subclass_choices,
-        )
-        resource_updates = progression_resource_updates(
-            rule,
-            target_class_level,
-            ability_scores=ability_scores,
-        )
         scaling_updates = progression_scaling_updates(rule, target_class_level)
-        after_resources = self._merge_progression_resources(
-            after_resources,
-            resource_updates,
-        )
-        subclass_resource_updates = dict(subclass_runtime["resources"])
-        after_resources = self._merge_progression_resources(
-            after_resources,
-            subclass_resource_updates,
-        )
         new_features = list(
             core_feature_grants(
                 rule,
@@ -1202,7 +1242,14 @@ class AdvancementService:
             after_actions,
             all_core_actions,
         )
-        all_resource_updates = {**resource_updates, **subclass_resource_updates}
+        after_resources, all_resource_updates = self._rebuild_multiclass_progression_resources(
+            class_levels=class_levels,
+            subclass_choices=subclass_choices,
+            ability_scores=ability_scores,
+            enabled_content_packs=enabled_content_packs,
+            allow_legacy=allow_legacy,
+            existing_resources=dict(character.resources or {}),
+        )
         runtime_scalings = {
             str(item.get("scaling_key")): {"value": item.get("value")}
             for item in after_features

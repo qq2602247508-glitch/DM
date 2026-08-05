@@ -77,6 +77,7 @@ def _create_character(
     suffix: str,
     spells: list[dict[str, Any]] | None = None,
     subclass_name: str | None = None,
+    class_levels: dict[str, int] | None = None,
 ) -> dict[str, Any]:
     body: dict[str, Any] = {
         "name": f"{class_name}-{suffix}",
@@ -86,7 +87,7 @@ def _create_character(
         "hp": 12,
         "max_hp": 12,
         "ability_scores": _abilities(),
-        "class_levels": {class_name: level},
+        "class_levels": class_levels or {class_name: level},
     }
     if spells is not None:
         body["spells"] = spells
@@ -371,6 +372,43 @@ def test_multiclass_preview_requires_the_campaign_extension(
         },
     )
     assert allowed.status_code == 200, allowed.text
+
+
+def test_multiclass_upgrade_rebuilds_resources_for_every_owned_class(
+    matrix_client: TestClient,
+) -> None:
+    campaign = matrix_client.post(
+        "/api/v1/campaigns",
+        json={
+            "name": "兼职资源联动",
+            "enabled_rule_extensions": ["multiclassing"],
+        },
+    ).json()
+    character = _create_character(
+        matrix_client,
+        campaign["id"],
+        class_name="战士",
+        level=2,
+        experience=900,
+        suffix="跨职业资源",
+        class_levels={"战士": 1, "法师": 1},
+    )
+    current = matrix_client.get(
+        f"/api/v1/campaigns/{campaign['id']}/characters/{character['id']}"
+    ).json()
+    response = matrix_client.post(
+        _preview_path(campaign["id"], character["id"]),
+        json={
+            "character_version": current["version"],
+            "class_name": "法师",
+            "dm_override_reason": "验证升级时回填另一职业资源",
+        },
+    )
+    assert response.status_code == 200, response.text
+    resources = response.json()["after"]["resources"]
+    assert resources["second_wind"]["max"] >= 1
+    assert resources["arcane_recovery"]["max"] == 1
+    assert resources["spell_slots_1"]["max"] == 3
 
 
 @pytest.mark.parametrize("class_name", ["野蛮人", "战士", "游荡者"])
