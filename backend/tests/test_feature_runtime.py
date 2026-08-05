@@ -940,11 +940,22 @@ def test_fixed_feature_resources_expose_recovery_without_claiming_full_automatio
     assert innate["recovery_events"] == [
         {"rest": "long_rest", "operation": "set_to_max"}
     ]
-    assert innate["automation_status"] == "partial"
-    assert sorcerer["actions"]["innate_sorcery"]["effects"][0]["kind"] == (
-        "requires_dm_choice"
-    )
-    assert sorcerer["actions"]["innate_sorcery"]["automation_status"] == "partial"
+    assert innate["automation_status"] == "full"
+    assert sorcerer["actions"]["innate_sorcery"]["effects"] == [
+        {
+            "kind": "activate_duration_condition",
+            "condition": "innate_sorcery",
+            "duration_unit": "minutes",
+            "duration_value": 1,
+        }
+    ]
+    assert sorcerer["actions"]["innate_sorcery"]["automation_status"] == "full"
+    assert sorcerer["actions"]["innate_sorcery"]["runtime_execution"]["status"] == "ready"
+    projected = {
+        item["feature_id"]: item
+        for item in feature_runtime_action_projections(sorcerer)
+    }
+    assert projected["innate_sorcery"]["runtime_feature"] is True
 
     stroke = rogue["resources"]["stroke_of_luck"]
     assert stroke["max"] == 1

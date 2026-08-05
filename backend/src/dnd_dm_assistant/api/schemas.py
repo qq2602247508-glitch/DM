@@ -748,6 +748,8 @@ class CombatActionCommand(BaseModel):
     is_attack: bool = False
     attack_ability: str | None = Field(default=None, max_length=30)
     is_weapon_attack: bool = False
+    is_spell_attack: bool = False
+    is_sorcerer_spell: bool = False
     attack_roll_total: int | None = Field(default=None, ge=-100, le=1_000)
     attack_range_ft: int | None = Field(default=None, ge=0, le=10_000)
     ignore_cover: bool = False
@@ -916,6 +918,8 @@ class CombatActionCommand(BaseModel):
         if not self.is_attack and (
             self.attack_ability is not None
             or self.is_weapon_attack
+            or self.is_spell_attack
+            or self.is_sorcerer_spell
             or
             self.attack_roll_total is not None
             or self.attack_range_ft is not None
@@ -926,6 +930,8 @@ class CombatActionCommand(BaseModel):
             or self.help_effect_version is not None
         ):
             raise ValueError("attack adjudication and Help are only valid for an attack")
+        if self.is_sorcerer_spell and not self.is_spell_attack:
+            raise ValueError("is_sorcerer_spell requires is_spell_attack")
         if self.ignore_cover and not self.dm_override:
             raise ValueError("ignoring cover requires an explicit DM override")
         if (self.help_effect_id is None) != (self.help_effect_version is None):

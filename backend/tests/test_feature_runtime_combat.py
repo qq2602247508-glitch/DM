@@ -160,6 +160,97 @@ def test_player_attack_context_applies_reckless_attack_to_both_sides() -> None:
     assert has_disadvantage is False
 
 
+def test_innate_sorcery_advantage_requires_active_state_and_sorcerer_spell() -> None:
+    modifiers = {
+        "attack_roll:outgoing:innate": {
+            "stat": "attack_roll",
+            "scope": "outgoing",
+            "operation": "advantage",
+            "source": "先天术法",
+            "applies_when": "innate_sorcery_active_and_sorcerer_spell",
+        },
+        "spell_save_dc:outgoing:innate": {
+            "stat": "spell_save_dc",
+            "scope": "outgoing",
+            "operation": "add",
+            "value": 1,
+            "source": "先天术法",
+            "applies_when": "innate_sorcery_active",
+        },
+    }
+    actor = Combatant(
+        id="innate-sorcerer",
+        entity_type="character",
+        display_name="术士",
+        hp=20,
+        max_hp=20,
+        conditions=["innate_sorcery"],
+        snapshot_json={"rule_modifiers": modifiers},
+    )
+    target = Combatant(
+        id="innate-target",
+        entity_type="monster",
+        display_name="目标",
+        hp=20,
+        max_hp=20,
+    )
+
+    spell_advantage, spell_disadvantage = CombatEngineService._feature_attack_roll_contexts(
+        actor,
+        target,
+        is_spell_attack=True,
+        is_sorcerer_spell=True,
+    )
+    assert spell_advantage == ["先天术法"]
+    assert spell_disadvantage == []
+    weapon_advantage, _ = CombatEngineService._feature_attack_roll_contexts(
+        actor,
+        target,
+        is_spell_attack=False,
+        is_sorcerer_spell=False,
+    )
+    assert weapon_advantage == []
+
+    inactive = Combatant(
+        id="inactive-innate-sorcerer",
+        entity_type="character",
+        display_name="未激活术士",
+        hp=20,
+        max_hp=20,
+        snapshot_json={"rule_modifiers": modifiers},
+    )
+    inactive_advantage, _ = CombatEngineService._feature_attack_roll_contexts(
+        inactive,
+        target,
+        is_spell_attack=True,
+        is_sorcerer_spell=True,
+    )
+    assert inactive_advantage == []
+
+    active_dc = CombatEngineService._feature_rule_modifiers(
+        actor,
+        stat="spell_save_dc",
+        scope="outgoing",
+    )
+    inactive_dc = CombatEngineService._feature_rule_modifiers(
+        inactive,
+        stat="spell_save_dc",
+        scope="outgoing",
+    )
+    assert [item["value"] for item in active_dc] == [1]
+    assert inactive_dc == []
+    assert PlayerRoomService._feature_additive_modifier(
+        actor,
+        "spell_save_dc",
+        scope="outgoing",
+    ) == 1
+    assert PlayerRoomService._feature_additive_modifier(
+        inactive,
+        "spell_save_dc",
+        scope="outgoing",
+    ) == 0
+
+
 def test_elusive_suppresses_condition_advantage_unless_incapacitated() -> None:
     actor = Combatant(
         id="elusive-attacker",

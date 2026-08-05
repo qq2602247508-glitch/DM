@@ -328,9 +328,8 @@ def feature_runtime_definition(
                 "label": feature_name,
                 "max": 2,
                 "recovery": "long_rest",
-                "automation_status": "partial",
-                "requires_dm_adjudication": True,
-                "note": "固定使用次数已结构化；角色资源持久化尚未自动创建该资源。",
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
             },
         )
         definition["actions"]["innate_sorcery"] = {
@@ -341,17 +340,23 @@ def feature_runtime_definition(
             "resource_key": "innate_sorcery",
             "resource_cost": 1,
             "target": "self",
-            "resolution_kind": "choice_required",
+            "resolution_kind": "condition",
             "duration": "1_minute",
             "effects": [
                 {
-                    "kind": "requires_dm_choice",
-                    "reason": "先天术法需要持续状态来限定法术攻击优势与法术豁免 DC 加值。",
+                    "kind": "activate_duration_condition",
+                    "condition": "innate_sorcery",
+                    "duration_unit": "minutes",
+                    "duration_value": 1,
                 }
             ],
-            "automation_status": "partial",
-            "requires_dm_adjudication": True,
-            "partial_reason": "资源与增益已结构化；现有特性执行器不支持一分钟持续状态。",
+            "runtime_execution": {
+                "status": "ready",
+                "consumer": "combat_feature_action",
+                "effect_kinds": ["activate_duration_condition"],
+            },
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
             **source,
         }
         definition["combat_start"]["modifiers"].extend(
@@ -363,9 +368,8 @@ def feature_runtime_definition(
                     "value": 1,
                     "scope": "outgoing",
                     "applies_when": "innate_sorcery_active",
-                    "automation_status": "partial",
-                    "requires_dm_adjudication": True,
-                    "partial_reason": "法术豁免 DC 尚未读取职业特性的条件修正。",
+                    "automation_status": "full",
+                    "requires_dm_adjudication": False,
                     **source,
                 },
                 {
@@ -374,9 +378,8 @@ def feature_runtime_definition(
                     "operation": "advantage",
                     "scope": "outgoing",
                     "applies_when": "innate_sorcery_active_and_sorcerer_spell",
-                    "automation_status": "partial",
-                    "requires_dm_adjudication": True,
-                    "partial_reason": "攻击优势尚未读取职业特性的条件修正。",
+                    "automation_status": "full",
+                    "requires_dm_adjudication": False,
                     **source,
                 },
             ]
@@ -1929,7 +1932,7 @@ def _feature_action_executor_ready(action: Mapping[str, Any]) -> bool:
         ):
             return False
         if effect.get("kind") == "activate_duration_condition" and not (
-            effect.get("condition") == "raging"
+            effect.get("condition") in {"raging", "innate_sorcery"}
             and effect.get("duration_unit") in {"rounds", "minutes"}
             and isinstance(effect.get("duration_value"), int)
             and effect.get("duration_value") >= 1

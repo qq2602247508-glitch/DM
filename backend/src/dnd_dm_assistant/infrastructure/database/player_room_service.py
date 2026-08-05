@@ -951,6 +951,19 @@ class PlayerRoomService:
                 continue
             if skill is not None and modifier_skill not in {"", skill}:
                 continue
+            # Typed feature modifiers carry their own state predicate.  The
+            # legacy player helper used to consume the flattened dictionary
+            # without evaluating that predicate, which made conditional
+            # bonuses permanent on the player endpoint.
+            if isinstance(value.get("stat"), str):
+                eligible = CombatEngineService._feature_rule_modifiers(
+                    combatant,
+                    stat=stat,
+                    scope=scope,
+                    ability=skill if stat == "saving_throw" else None,
+                )
+                if not any(item is value for item in eligible):
+                    continue
             operation = str(value.get("operation") or "")
             raw_value = value.get("value")
             if operation == "add" and isinstance(raw_value, int):
@@ -960,6 +973,26 @@ class PlayerRoomService:
             elif operation == "disadvantage":
                 disadvantage = True
         return numeric, advantage, disadvantage
+
+    @staticmethod
+    def _feature_additive_modifier(
+        combatant: Combatant,
+        stat: str,
+        *,
+        scope: str,
+    ) -> int:
+        """Consume an active typed numeric feature modifier on the player path."""
+
+        return sum(
+            int(item.get("value") or 0)
+            for item in CombatEngineService._feature_rule_modifiers(
+                combatant,
+                stat=stat,
+                scope=scope,
+            )
+            if item.get("operation") == "add"
+            and isinstance(item.get("value"), int)
+        )
 
     @staticmethod
     def _condition_attack_context(
@@ -977,6 +1010,7 @@ class PlayerRoomService:
         advantage: list[str] = []
         disadvantage: list[str] = []
         automatic_critical = False
+        action_data = action if isinstance(action, dict) else {}
         if CombatEngineService._has_condition(actor, "prone"):
             disadvantage.append("攻击者倒地")
         for condition, label in (
@@ -990,7 +1024,6 @@ class PlayerRoomService:
         if CombatEngineService._has_condition(actor, "invisible"):
             advantage.append("攻击者隐形")
         if CombatEngineService._has_condition(actor, "reckless_attack"):
-            action_data = action if isinstance(action, dict) else {}
             attack_ability = str(
                 action_data.get("attack_ability") or action_data.get("ability") or ""
             ).strip().lower()
@@ -1006,6 +1039,31 @@ class PlayerRoomService:
             )
             if attack_ability in {"strength", "力量"} and is_weapon_attack:
                 advantage.append("攻击者鲁莽攻击")
+        is_spell_attack = bool(
+            action_data.get("is_spell_attack") is True
+            or action_data.get("is_spell") is True
+            or action_data.get("kind") == "spell"
+            or action_data.get("spell_level") is not None
+        )
+        spellcasting_class = str(
+            action_data.get("spellcasting_class")
+            or action_data.get("class_name")
+            or ""
+        ).strip().lower()
+        is_sorcerer_spell = spellcasting_class in {"术士", "sorcerer"}
+        for modifier in CombatEngineService._feature_rule_modifiers(
+            actor,
+            stat="attack_roll",
+            scope="outgoing",
+        ):
+            if (
+                str(modifier.get("applies_when") or "").strip().lower()
+                == "innate_sorcery_active_and_sorcerer_spell"
+                and is_spell_attack
+                and is_sorcerer_spell
+                and modifier.get("operation") == "advantage"
+            ):
+                advantage.append(str(modifier.get("source") or "先天术法"))
         steady_aim_active = (
             session is not None
             and combat_id is not None
@@ -6582,6 +6640,13 @@ class PlayerRoomService:
                 save_rule.get("dc") if isinstance(save_rule, dict) else action.get("save_dc")
             )
             save_dc = int(raw_save_dc) if isinstance(raw_save_dc, int) else 0
+            spell_save_dc_bonus = self._feature_additive_modifier(
+                actor,
+                "spell_save_dc",
+                scope="outgoing",
+            )
+            if spell_save_dc_bonus:
+                save_dc += spell_save_dc_bonus
             save_on_success = str(
                 (save_rule.get("on_success") if isinstance(save_rule, dict) else None)
                 or ("half" if action.get("half_damage_on_save") else "none")
@@ -7218,6 +7283,26 @@ class PlayerRoomService:
                     action.get("is_weapon_attack") is True
                     or "武器攻击" in str(action.get("description") or "")
                     or "近战攻击" in str(action.get("name") or "")
+                ),
+                is_spell_attack=bool(
+                    not saving_throw_action
+                    and not auto_hit_action
+                    and (
+                        action.get("is_spell_attack") is True
+                        or action.get("is_spell") is True
+                        or action.get("kind") == "spell"
+                        or action.get("spell_level") is not None
+                    )
+                ),
+                is_sorcerer_spell=bool(
+                    not saving_throw_action
+                    and not auto_hit_action
+                    and str(
+                        action.get("spellcasting_class")
+                        or action.get("class_name")
+                        or (character.class_name if actor.entity_type == "character" else "")
+                    ).strip().lower()
+                    in {"术士", "sorcerer"}
                 ),
                 attack_roll_total=(
                     attack_total

@@ -139,6 +139,7 @@ class CombatEngineService:
         "feature_raging": "raging",
         "feature_reckless_attack": "reckless_attack",
         "steady_aim": "steady_aim",
+        "feature_innate_sorcery": "innate_sorcery",
     }
 
     def __init__(self, engine: Engine) -> None:
@@ -3010,6 +3011,8 @@ class CombatEngineService:
                 "not_prone",
                 "not prone",
                 "raging",
+                "innate_sorcery_active",
+                "innate_sorcery_active_and_sorcerer_spell",
                 "wearing_armor",
                 "wearing armor",
                 "not_wearing_armor",
@@ -3028,6 +3031,10 @@ class CombatEngineService:
             if applies_when in {"not_prone", "not prone"} and "prone" in conditions:
                 continue
             if applies_when == "raging" and "raging" not in conditions:
+                continue
+            if applies_when.startswith("innate_sorcery_active") and (
+                "innate_sorcery" not in conditions
+            ):
                 continue
             if applies_when in {"not_wearing_armor", "not wearing armor"}:
                 # The equipment snapshot is the only safe source for this
@@ -3057,6 +3064,8 @@ class CombatEngineService:
         *,
         session: Session | None = None,
         combat_id: str | None = None,
+        is_spell_attack: bool = False,
+        is_sorcerer_spell: bool = False,
     ) -> tuple[list[str], list[str]]:
         """Read typed class attack modifiers for the current attack."""
 
@@ -3066,6 +3075,12 @@ class CombatEngineService:
             actor, stat="attack_roll", scope="outgoing"
         ):
             operation = str(modifier.get("operation") or "")
+            if (
+                str(modifier.get("applies_when") or "").strip().lower()
+                == "innate_sorcery_active_and_sorcerer_spell"
+                and not (is_spell_attack and is_sorcerer_spell)
+            ):
+                continue
             source = str(modifier.get("source") or modifier.get("id") or "职业特性")
             if operation == "advantage":
                 advantage.append(source)
@@ -5362,6 +5377,8 @@ class CombatEngineService:
             target,
             session=session,
             combat_id=combat.id,
+            is_spell_attack=command.is_spell_attack,
+            is_sorcerer_spell=command.is_sorcerer_spell,
         )
         if feature_advantage:
             contexts.append("feature_attack_roll_advantage")
@@ -8861,21 +8878,25 @@ class CombatEngineService:
                     duration_unit = str(effect.get("duration_unit") or "").strip()
                     duration_value = self._state_int(effect.get("duration_value"), 0)
                     if (
-                        condition != "raging"
+                        condition not in {"raging", "innate_sorcery"}
                         or duration_unit not in {"rounds", "minutes"}
                         or duration_value < 1
                     ):
                         raise ValueError(
-                            "当前职业特性只允许狂暴状态使用明确的回合或分钟持续时间"
+                            "当前职业特性只允许狂暴或先天术法使用明确的回合或分钟持续时间"
                         )
                     if self._condition_is_immune(target, condition):
                         raise ValueError(f"目标免疫状态「{condition}」，职业特性未写入")
+                    state_name = {
+                        "raging": "feature_raging",
+                        "innate_sorcery": "feature_innate_sorcery",
+                    }[condition]
                     runtime_effect = self._create_runtime_effect(
                         session,
                         combat,
                         actor=actor,
                         target=target,
-                        state_name="feature_raging",
+                        state_name=state_name,
                         expires="duration",
                         expires_combatant_id=None,
                         duration_unit=duration_unit,

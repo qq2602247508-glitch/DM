@@ -722,6 +722,100 @@ def test_rage_feature_expires_after_one_minute_without_leaking_condition(
     assert any(item["id"] == effect_id for item in last_advance["ended_runtime_effects"])
 
 
+def test_innate_sorcery_consumes_resource_and_expires_after_one_minute(
+    combat_client: TestClient,
+) -> None:
+    campaign, combat, actor = _setup(combat_client)
+    character_response = combat_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/characters",
+        json={
+            "name": "先天术法测试者",
+            "class_name": "术士",
+            "resources": {"innate_sorcery": {"current": 1, "max": 2}},
+        },
+    )
+    assert character_response.status_code == 201, character_response.text
+    character = character_response.json()
+    patched = combat_client.patch(
+        _combatant_path(campaign, combat, actor["id"]),
+        headers={"If-Match": f'"{actor["version"]}"'},
+        json={
+            "entity_type": "character",
+            "entity_id": character["id"],
+            "snapshot_json": {
+                "feature_runtime": {
+                    "actions": {
+                        "innate_sorcery": {
+                            "name": "先天术法",
+                            "kind": "feature_action",
+                            "action_cost": "bonus_action",
+                            "resource_key": "innate_sorcery",
+                            "resource_cost": 1,
+                            "target": "self",
+                            "resolution_kind": "condition",
+                            "runtime_execution": {
+                                "status": "ready",
+                                "consumer": "combat_feature_action",
+                                "effect_kinds": ["activate_duration_condition"],
+                            },
+                            "effects": [
+                                {
+                                    "kind": "activate_duration_condition",
+                                    "condition": "innate_sorcery",
+                                    "duration_unit": "minutes",
+                                    "duration_value": 1,
+                                }
+                            ],
+                        }
+                    }
+                }
+            },
+        },
+    )
+    assert patched.status_code == 200, patched.text
+    actor = patched.json()
+    activated = combat_client.post(
+        f"{_root(campaign, combat)}/feature-actions/confirm",
+        headers={"X-Request-ID": "innate-sorcery-duration"},
+        json={
+            "actor_combatant_id": actor["id"],
+            "actor_version": actor["version"],
+            "feature_id": "innate_sorcery",
+            "target_combatant_id": actor["id"],
+            "target_version": actor["version"],
+        },
+    )
+    assert activated.status_code == 200, activated.text
+    body = activated.json()
+    assert body["result"]["resource_before"] == 1
+    assert body["result"]["resource_after"] == 0
+    assert "innate_sorcery" in body["actor"]["conditions"]
+    assert body["result"]["duration"] == {
+        "unit": "minutes",
+        "value": 1,
+        "ends_round": 11,
+    }
+
+    combat_version = combat["version"]
+    last_advance: dict[str, Any] | None = None
+    for index in range(10):
+        advanced = combat_client.post(
+            f"{_root(campaign, combat)}/turns/advance",
+            headers={"X-Request-ID": f"innate-sorcery-turn-{index}"},
+            json={"combat_version": combat_version},
+        )
+        assert advanced.status_code == 200, advanced.text
+        last_advance = advanced.json()
+        combat_version = last_advance["combat"]["version"]
+
+    assert last_advance is not None
+    assert "innate_sorcery" not in last_advance["active_combatant"]["conditions"]
+    assert any(
+        item["id"] == body["result"]["effect_id"]
+        for item in last_advance["ended_runtime_effects"]
+    )
+
+
 def test_rage_feature_rejects_explicit_heavy_armor(
     combat_client: TestClient,
 ) -> None:
