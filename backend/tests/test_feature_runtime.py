@@ -1081,9 +1081,10 @@ def test_rogue_and_monk_event_bound_features_keep_explicit_dm_boundaries() -> No
 
     action = rogue["actions"]["cunning_action"]
     assert action["runtime_execution"] == {
-        "status": "blocked",
+        "status": "ready",
         "consumer": "combat_feature_action",
-        "blocked_by": "standard_action_choice_forwarding",
+        "effect_kinds": ["cunning_action_choice"],
+        "remaining_dm_boundaries": ["hide_requires_explicit_outcome"],
     }
     assert action["automation_status"] == "partial"
     assert action["requires_dm_adjudication"] is True
@@ -1108,7 +1109,7 @@ def test_rogue_and_monk_event_bound_features_keep_explicit_dm_boundaries() -> No
     rogue_projections = {
         item["feature_id"] for item in feature_runtime_action_projections(rogue)
     }
-    assert "cunning_action" not in rogue_projections
+    assert "cunning_action" in rogue_projections
     assert "steady_aim" in rogue_projections
 
     evasion = next(
@@ -1380,7 +1381,7 @@ def test_2024_deterministic_feature_contracts_are_explicit_but_partial_when_even
     cunning = registry["actions"]["cunning_action"]
     assert cunning["kind"] == "feature_action"
     assert cunning["allowed_actions"] == ["dash", "disengage", "hide"]
-    assert cunning["effects"][0]["kind"] == "requires_dm_choice"
+    assert cunning["effects"][0]["kind"] == "cunning_action_choice"
 
     steady_aim = registry["actions"]["steady_aim"]
     assert steady_aim["requirements"] == ["not_moved_this_turn"]

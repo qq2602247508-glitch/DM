@@ -9584,6 +9584,20 @@ class CombatEngineService:
             )
             if action is None or action.get("kind") != "feature_action":
                 raise ValueError("该职业特性没有可执行的运行时积木")
+            selected_action = command.selected_action
+            if command.feature_id == "cunning_action":
+                allowed_actions = {
+                    str(value) for value in action.get("allowed_actions") or ()
+                }
+                if selected_action not in allowed_actions:
+                    raise ValueError("灵巧动作必须选择疾走、撤离或躲藏")
+                if selected_action == "hide" and (
+                    command.outcome is None
+                    or not (command.adjudication_note or "").strip()
+                ):
+                    raise ValueError("灵巧动作的躲藏需要 DM 提交成功/失败和裁定说明")
+            elif selected_action is not None or command.outcome is not None:
+                raise ValueError("selected_action/outcome 只适用于灵巧动作")
             if action.get("activation_window") == "after_failed_saving_throw":
                 raise ValueError("该职业特性只能在失败豁免后通过重掷窗口使用")
             if command.feature_id == "action_surge":
@@ -9686,6 +9700,44 @@ class CombatEngineService:
                 if not isinstance(effect, dict):
                     continue
                 kind = str(effect.get("kind") or "")
+                if kind == "cunning_action_choice":
+                    assert selected_action is not None
+                    result["selected_action"] = selected_action
+                    if selected_action == "dash":
+                        gained = actor.speed_ft
+                        actor.movement_remaining_ft += gained
+                        result["movement_gained_ft"] = gained
+                        result["movement_remaining_ft"] = actor.movement_remaining_ft
+                    elif selected_action == "disengage":
+                        runtime_effect = self._create_runtime_effect(
+                            session,
+                            combat,
+                            actor=actor,
+                            target=actor,
+                            state_name="disengage",
+                            expires="turn_end",
+                            expires_combatant_id=actor.id,
+                        )
+                        result["effect_id"] = runtime_effect.id
+                    elif selected_action == "hide":
+                        if command.outcome == "success":
+                            runtime_effect = self._create_runtime_effect(
+                                session,
+                                combat,
+                                actor=actor,
+                                target=actor,
+                                state_name="hidden",
+                                expires="triggered",
+                                expires_combatant_id=None,
+                                details={
+                                    "adjudication_note": command.adjudication_note,
+                                },
+                            )
+                            result["effect_id"] = runtime_effect.id
+                        result["hidden"] = command.outcome == "success"
+                        result["outcome"] = command.outcome
+                        result["adjudication_note"] = command.adjudication_note
+                    continue
                 if kind == "activate_condition":
                     condition = str(effect.get("condition") or "").strip()
                     if not condition:

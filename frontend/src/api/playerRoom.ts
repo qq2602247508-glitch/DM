@@ -841,11 +841,17 @@ export const submitMyFeatureAction = (
   featureId: string,
   targetCombatantId: string | null,
   healingTotal: number | null,
+  selectedAction?: "dash" | "disengage" | "hide",
+  outcome?: "success" | "failure",
+  adjudicationNote?: string,
 ) => playerFetch<Record<string, unknown>>("/player-room/me/combat/feature-action", {
   method: "POST",
   body: JSON.stringify({
     feature_id: featureId,
     target_combatant_id: targetCombatantId,
+    selected_action: selectedAction ?? null,
+    outcome: outcome ?? null,
+    adjudication_note: adjudicationNote ?? null,
     healing_total: healingTotal,
     idempotency_key: createClientId("player-feature-action"),
   }),

@@ -13,6 +13,10 @@ from dnd_dm_assistant.api.app import create_app
 from dnd_dm_assistant.api.schemas import CombatActionCommand
 from dnd_dm_assistant.config import Settings
 from dnd_dm_assistant.domain.campaign_state import VersionConflict
+from dnd_dm_assistant.domain.feature_runtime import (
+    compile_feature_runtime_registry,
+    feature_runtime_definition,
+)
 from dnd_dm_assistant.infrastructure.database.combat_service import CombatEngineService
 
 
@@ -8213,6 +8217,7 @@ def test_condition_restrictions_stack_and_restore_shared_baseline(
     assert target["bonus_action_available"] is True
     assert target["reaction_available"] is True
 
+
     target = combat_client.patch(
         _fighter_path(campaign["id"], combat["id"], target["id"]),
         headers={"If-Match": f'"{target["version"]}"'},
@@ -8250,6 +8255,101 @@ def test_condition_restrictions_stack_and_restore_shared_baseline(
     target = ended_grappled.json()["target"]
     assert target["speed_ft"] == 30
     assert target["movement_remaining_ft"] == 20
+
+
+def test_cunning_action_forwards_bonus_action_choices_into_real_combat_state(
+    combat_client: TestClient,
+) -> None:
+    campaign = _campaign(combat_client, "Cunning action runtime")
+    base = f"/api/v1/campaigns/{campaign['id']}"
+    definition = feature_runtime_definition(
+        feature_name="灵巧动作",
+        class_name="游荡者",
+        class_level=2,
+    )
+    registry = compile_feature_runtime_registry(
+        [
+            {
+                "name": "灵巧动作",
+                "class_name": "游荡者",
+                "class_level": 2,
+                "runtime": {"registry": definition},
+            }
+        ]
+    )
+
+    def submit_choice(
+        choice: str,
+        *,
+        outcome: str | None = None,
+        note: str | None = None,
+        request_id: str,
+    ) -> Any:
+        combat = combat_client.post(
+            f"{base}/combats", json={"name": f"灵巧动作 · {choice}"}
+        ).json()
+        actor = combat_client.post(
+            f"{base}/combats/{combat['id']}/combatants",
+            json={
+                "display_name": f"游荡者 · {choice}",
+                "entity_type": "character",
+                "initiative": 20,
+                "hp": 20,
+                "max_hp": 20,
+                "speed_ft": 30,
+                "movement_remaining_ft": 30,
+                "snapshot_json": {"feature_runtime": registry},
+            },
+        ).json()
+        combat_client.post(
+            f"{base}/combats/{combat['id']}/combatants",
+            json={
+                "display_name": "敌人",
+                "initiative": 10,
+                "hp": 20,
+                "max_hp": 20,
+            },
+        )
+        return combat_client.post(
+            f"{base}/combats/{combat['id']}/feature-actions/confirm",
+            headers={"X-Request-ID": request_id},
+            json={
+                "actor_combatant_id": actor["id"],
+                "actor_version": actor["version"],
+                "feature_id": "cunning_action",
+                "selected_action": choice,
+                "outcome": outcome,
+                "adjudication_note": note,
+                "target_combatant_id": actor["id"],
+                "target_version": actor["version"],
+            },
+        )
+
+    dashed = submit_choice("dash", request_id="cunning-dash")
+    assert dashed.status_code == 200, dashed.text
+    assert dashed.json()["result"]["selected_action"] == "dash"
+    assert dashed.json()["actor"]["movement_remaining_ft"] == 60
+    assert dashed.json()["actor"]["bonus_action_available"] is False
+
+    disengaged = submit_choice("disengage", request_id="cunning-disengage")
+    assert disengaged.status_code == 200, disengaged.text
+    assert disengaged.json()["result"]["selected_action"] == "disengage"
+    assert disengaged.json()["result"]["effect_id"]
+    assert disengaged.json()["actor"]["bonus_action_available"] is False
+
+    missing_hide = submit_choice("hide", request_id="cunning-hide-missing")
+    assert missing_hide.status_code == 400
+    assert "成功/失败" in missing_hide.json()["message"]
+
+    hidden = submit_choice(
+        "hide",
+        outcome="success",
+        note="DM 已确认隐匿检定成功",
+        request_id="cunning-hide-success",
+    )
+    assert hidden.status_code == 200, hidden.text
+    assert hidden.json()["result"]["hidden"] is True
+    assert hidden.json()["actor"]["bonus_action_available"] is False
 
 
 def test_condition_matrix_changes_saves_and_petrified_damage(

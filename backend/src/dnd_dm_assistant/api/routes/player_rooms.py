@@ -212,6 +212,9 @@ class CastInput(BaseModel):
 class FeatureActionInput(BaseModel):
     feature_id: str = Field(min_length=1, max_length=120)
     target_combatant_id: str | None = Field(default=None, min_length=1, max_length=36)
+    selected_action: Literal["dash", "disengage", "hide"] | None = None
+    outcome: Literal["success", "failure"] | None = None
+    adjudication_note: str | None = Field(default=None, max_length=1_000)
     healing_total: int | None = Field(default=None, ge=0, le=100_000)
     idempotency_key: str = Field(min_length=8, max_length=120)
 
@@ -806,6 +809,9 @@ def feature_action(
             principal,
             body.feature_id,
             body.target_combatant_id,
+            body.selected_action,
+            body.outcome,
+            body.adjudication_note,
             body.healing_total,
             body.idempotency_key,
         )

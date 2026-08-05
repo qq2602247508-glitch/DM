@@ -759,18 +759,21 @@ def feature_runtime_definition(
             "allowed_actions": ["dash", "disengage", "hide"],
             "effects": [
                 {
-                    "kind": "requires_dm_choice",
-                    "reason": "灵巧动作需要在疾走、撤离、躲藏中选择一项附赠动作。",
+                    "kind": "cunning_action_choice",
                 }
             ],
             "runtime_execution": {
-                "status": "blocked",
+                "status": "ready",
                 "consumer": "combat_feature_action",
-                "blocked_by": "standard_action_choice_forwarding",
+                "effect_kinds": ["cunning_action_choice"],
+                "remaining_dm_boundaries": ["hide_requires_explicit_outcome"],
             },
             "automation_status": "partial",
             "requires_dm_adjudication": True,
-            "partial_reason": "已结构化附赠动作选项；现有确认接口不能把特性选择转发为标准动作。",
+            "partial_reason": (
+                "疾走和撤离由标准动作引擎真实执行；"
+                "躲藏仍需 DM 提交明确成功/失败裁定。"
+            ),
             **source,
         }
 
@@ -2130,7 +2133,9 @@ def _feature_action_executor_ready(action: Mapping[str, Any]) -> bool:
         return False
     if action.get("action_cost") == "reaction":
         return False
-    if action.get("resolution_kind") == "choice_required":
+    if action.get("resolution_kind") == "choice_required" and action.get("id") != (
+        "cunning_action"
+    ):
         return False
     effects = action.get("effects")
     effect_list = effects if isinstance(effects, list) else []
@@ -2146,6 +2151,7 @@ def _feature_action_executor_ready(action: Mapping[str, Any]) -> bool:
         "grant_action_budget",
         "grant_saving_throw_reroll",
         "grant_roll_die",
+        "cunning_action_choice",
     }
     if not effect_kinds or not effect_kinds <= supported:
         return False
