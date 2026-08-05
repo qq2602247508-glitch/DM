@@ -59,17 +59,18 @@ def test_monster_action_parser_keeps_area_and_exact_condition_duration() -> None
 
 def test_monster_action_parser_normalizes_digit_spacing_before_area_compilation() -> None:
     actions = _monster_actions(
-        """
-动作
-恶咒爆裂Hex Blast（充能5~6）。恐怖之物释放出3 0 尺锥状暗蚀能量。
-每个区域内的生物必须进行DC 15 的体质豁免，失败的生物受到4 5 （7d 12 ）暗蚀伤害，
-成功的生物则受到一半伤害。
-"""
+        "动作\n"
+        "恶咒爆裂Hex Blast（充能5~6）。恐怖之物释放出3 0 尺锥状暗蚀能量。"
+        "每个区域内的生物必须进行DC 15 的体质豁免，"
+        "失败的生物受到4 5 （7d 12 ）暗蚀伤害，成功的生物则受到一半伤害。"
     )
 
     blast = actions[0]
     assert blast["area_shape"] == "cone"
     assert blast["area_size_ft"] == 30
+    assert blast["damage"] == "7d12"
+    assert blast["damage_type"] == "暗蚀"
+    assert blast["save_dc"] == 15
     plan = compile_rule_blocks_dict(
         {
             "name": blast["name"],
@@ -78,7 +79,7 @@ def test_monster_action_parser_normalizes_digit_spacing_before_area_compilation(
         },
         source_kind="monster_action",
     )
-    assert plan["automation_confidence"] in {"exact", "partial", "manual"}
+    assert plan["automation_confidence"] == "exact"
     target = next(block for block in plan["blocks"] if block["kind"] == "target")
     assert target["shape"] == "cone"
     assert target["size_ft"] == 30

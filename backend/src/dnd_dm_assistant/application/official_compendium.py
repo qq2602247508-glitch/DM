@@ -256,6 +256,8 @@ def _monster_actions(text: str) -> list[dict[str, Any]]:
             # parsing copy so an area regex cannot capture only the trailing
             # zero as its size.  The original line remains the audit text.
             line = re.sub(r"(?<=\d)\s+(?=\d)", "", source_line)
+            line = re.sub(r"(?i)d\s+c\s*(?=\d)", "DC", line)
+            line = re.sub(r"(?i)d\s+(?=\d)", "d", line)
             if not line or not re.search(
                 r"命中|攻击|伤害|豁免|多重攻击|充能|传奇动作|巢穴|施法|移动", line
             ):
@@ -331,7 +333,7 @@ def _monster_actions(text: str) -> list[dict[str, Any]]:
                     damage_type
                     for damage_type in (
                         "强酸", "酸蚀", "钝击", "寒冷", "火焰", "力场", "闪电", "黯蚀",
-                        "穿刺", "毒素", "心灵", "光耀", "挥砍", "雷鸣",
+                        "穿刺", "毒素", "心灵", "光耀", "挥砍", "雷鸣", "暗蚀",
                     )
                     if damage_type in line
                 ),
