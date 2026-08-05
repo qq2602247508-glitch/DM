@@ -1210,9 +1210,17 @@ def feature_runtime_definition(
                 "applies_when": "next_attack_against_same_target_after_miss",
                 "expires": "next_turn_end",
                 "frequency": "next_attack",
-                "automation_status": "partial",
-                "requires_dm_adjudication": True,
-                "partial_reason": "失手事件与同目标的下一次攻击尚未由条件求值器关联。",
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "attack_context_resolver",
+                    "producer": "attack_miss_event",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+                "summary": (
+                    "明确失手后，为同一目标的下一次攻击真实提供优势，"
+                    "并在下一回合结束时清理。"
+                ),
                 **source,
             }
         )

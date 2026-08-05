@@ -1099,6 +1099,18 @@ class PlayerRoomService:
         )
         if steady_aim_active:
             advantage.append("攻击者稳定瞄准")
+        if (
+            session is not None
+            and combat_id is not None
+            and CombatEngineService._active_studied_attack_effect(
+                session,
+                combat_id,
+                actor_id=actor.id,
+                target_id=target.id,
+            )
+            is not None
+        ):
+            advantage.append("究明攻击")
         for condition, label in (
             ("blinded", "目标目盲"),
             ("restrained", "目标束缚"),

@@ -3245,6 +3245,13 @@ class CombatEngineService:
                 state_name="steady_aim",
             ):
                 advantage.append("稳定瞄准")
+            if cls._active_studied_attack_effect(
+                session,
+                combat_id,
+                actor_id=actor.id,
+                target_id=target.id,
+            ) is not None:
+                advantage.append("究明攻击")
         # Defensive features such as Elusive suppress an incoming advantage
         # only when their explicit predicate is satisfied.
         if cls._suppresses_incoming_attack_advantage(target):
@@ -3961,6 +3968,131 @@ class CombatEngineService:
             and (state := cls._runtime_state(effect)) is not None
             and (state_name is None or state.get("name") == state_name)
         ]
+
+    @classmethod
+    def _active_studied_attack_effect(
+        cls,
+        session: Session,
+        combat_id: str,
+        *,
+        actor_id: str,
+        target_id: str,
+    ) -> CombatEffect | None:
+        """Return the one-shot studied-attack advantage for this target."""
+
+        for effect in cls._active_runtime_effects(
+            session,
+            combat_id,
+            target_id=actor_id,
+        ):
+            state = cls._runtime_state(effect)
+            if (
+                state is not None
+                and state.get("name") == "studied_attacks"
+                and state.get("studied_target_id") == target_id
+            ):
+                return effect
+        return None
+
+    @staticmethod
+    def _has_studied_attacks_feature(actor: Combatant) -> bool:
+        """Require the immutable compiled feature fact before granting it."""
+
+        raw_modifiers = (actor.snapshot_json or {}).get("rule_modifiers")
+        if not isinstance(raw_modifiers, dict):
+            return False
+        for modifier in raw_modifiers.values():
+            if not isinstance(modifier, dict):
+                continue
+            if modifier.get("id") == "studied_attacks:next_attack_advantage":
+                return True
+            if (
+                str(modifier.get("source") or "").strip().lower()
+                in {"究明攻击", "studied attacks"}
+                and modifier.get("applies_when")
+                == "next_attack_against_same_target_after_miss"
+            ):
+                return True
+        return False
+
+    @classmethod
+    def _create_studied_attack_effect(
+        cls,
+        session: Session,
+        combat: Combat,
+        *,
+        actor: Combatant,
+        target: Combatant,
+    ) -> CombatEffect:
+        """Persist the advantage granted by a confirmed miss."""
+
+        for existing in cls._active_runtime_effects(
+            session,
+            combat.id,
+            target_id=actor.id,
+        ):
+            state = cls._runtime_state(existing)
+            if (
+                state is not None
+                and state.get("name") == "studied_attacks"
+                and state.get("studied_target_id") == target.id
+            ):
+                cls._end_runtime_effect(
+                    session,
+                    existing,
+                    reason="later miss refreshed studied attack",
+                    now=datetime.now(UTC),
+                )
+        effect = CombatEffect(
+            campaign_id=combat.campaign_id,
+            combat_id=combat.id,
+            target_combatant_id=actor.id,
+            source_combatant_id=actor.id,
+            name=f"{actor.display_name}：究明攻击",
+            effect_type="feature_modifier",
+            details_json={
+                "runtime_state": {
+                    "name": "studied_attacks",
+                    "condition": None,
+                    "studied_target_id": target.id,
+                    "expires": "next_turn_end",
+                    "expires_combatant_id": actor.id,
+                    "created_round": combat.round_number,
+                    "created_turn_index": combat.current_turn_index,
+                    "source": "compiled_feature_modifier",
+                }
+            },
+            started_round=combat.round_number,
+            duration_unit="until_removed",
+            requires_concentration=False,
+            status="active",
+        )
+        session.add(effect)
+        session.flush()
+        return effect
+
+    @staticmethod
+    def _attack_hit_status(
+        command: CombatActionCommand,
+        target: Combatant,
+        attack_contexts: list[str],
+    ) -> bool | None:
+        """Resolve hit/miss only when an authoritative attack total exists."""
+
+        if not command.is_attack or command.attack_roll_total is None:
+            return None
+        if command.critical_hit or "automatic_critical:target_within_5ft" in attack_contexts:
+            return True
+        effective_ac = target.armor_class
+        for context in attack_contexts:
+            if not context.startswith("effective_ac:"):
+                continue
+            try:
+                effective_ac = int(context.split(":", 1)[1])
+            except (TypeError, ValueError):
+                pass
+            break
+        return command.attack_roll_total >= effective_ac
 
     @classmethod
     def _create_runtime_effect(
@@ -8376,6 +8508,11 @@ class CombatEngineService:
             )
             automatic_critical = "automatic_critical:target_within_5ft" in attack_contexts
             effective_critical_hit = command.critical_hit or automatic_critical
+            attack_hit_status = self._attack_hit_status(
+                command,
+                target,
+                attack_contexts,
+            )
             if actor is not None and self._combat_action_is_harmful(command):
                 self._validate_charmed_harm_targets(
                     session,
@@ -8579,7 +8716,18 @@ class CombatEngineService:
                     target_id=actor.id,
                     state_name="steady_aim",
                 )
-                for state_effect in [*actor_hidden, help_effect, *steady_aim_effects]:
+                studied_attack_effect = self._active_studied_attack_effect(
+                    session,
+                    combat.id,
+                    actor_id=actor.id,
+                    target_id=target.id,
+                )
+                for state_effect in [
+                    *actor_hidden,
+                    help_effect,
+                    *steady_aim_effects,
+                    studied_attack_effect,
+                ]:
                     if state_effect is None or state_effect in consumed_attack_effects:
                         continue
                     ended_target = self._end_runtime_effect(
@@ -8894,6 +9042,31 @@ class CombatEngineService:
             )
             session.add(action)
             session.flush()
+            if (
+                attack_hit_status is False
+                and actor is not None
+                and command.is_attack
+                and self._has_studied_attacks_feature(actor)
+            ):
+                studied_effect = self._create_studied_attack_effect(
+                    session,
+                    combat,
+                    actor=actor,
+                    target=target,
+                )
+                studied_effect.source_action_id = action.id
+                result = {
+                    **dict(result),
+                    "studied_attack": {
+                        "status": "granted",
+                        "target_combatant_id": target.id,
+                        "effect_id": studied_effect.id,
+                        "expires": "next_turn_end",
+                    },
+                }
+                action.result_json = result
+                action.version += 1
+                action.updated_at = datetime.now(UTC)
             self._resolve_action_window(
                 advanced_action_window,
                 action_id=action.id,
@@ -11559,6 +11732,22 @@ class CombatEngineService:
                     elif self._reset_rage_activity(previous_active, effect):
                         previous_active.version += 1
                         previous_active.updated_at = now
+                if (
+                    state.get("name") == "studied_attacks"
+                    and expires == "next_turn_end"
+                    and previous_active is not None
+                    and previous_active.id == effect.target_combatant_id
+                    and (
+                        combat.round_number > int(state.get("created_round") or 0)
+                        or (
+                            combat.round_number == int(state.get("created_round") or 0)
+                            and previous_raw_index
+                            > int(state.get("created_turn_index") or -1)
+                        )
+                    )
+                ):
+                    due = True
+                    end_reason = "究明攻击效果在下一回合结束时到期"
                 if not due:
                     continue
                 changed = self._end_runtime_effect(

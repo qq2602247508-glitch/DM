@@ -2178,6 +2178,149 @@ def test_attack_hit_opens_only_structured_hit_reaction_window(
     assert windows[0]["eligible_action_names"] == ["护体反击"]
 
 
+def test_studied_attacks_grants_same_target_advantage_after_miss_and_expires(
+    combat_client: TestClient,
+) -> None:
+    campaign = _campaign(combat_client, "Studied attacks runtime")
+    base = f"/api/v1/campaigns/{campaign['id']}"
+    combat = combat_client.post(
+        f"{base}/combats", json={"name": "Studied attacks combat"}
+    ).json()
+    modifier = {
+        "stat": "attack_roll",
+        "scope": "outgoing",
+        "operation": "advantage",
+        "source": "究明攻击",
+        "applies_when": "next_attack_against_same_target_after_miss",
+    }
+    attacker = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "究明游荡者",
+            "entity_type": "character",
+            "initiative": 20,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {
+                "rule_modifiers": {"attack_roll:outgoing::studied": modifier}
+            },
+        },
+    ).json()
+    target = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "训练目标",
+            "entity_type": "monster",
+            "initiative": 10,
+            "armor_class": 13,
+            "hp": 30,
+            "max_hp": 30,
+        },
+    ).json()
+    confirm_path = f"{base}/combats/{combat['id']}/actions/confirm"
+    miss = combat_client.post(
+        confirm_path,
+        headers={"X-Request-ID": "studied-attacks-miss"},
+        json={
+            "action_type": "damage",
+            "actor_combatant_id": attacker["id"],
+            "actor_version": attacker["version"],
+            "target_combatant_id": target["id"],
+            "target_version": target["version"],
+            "action_name": "短剑",
+            "amount": 0,
+            "damage_type": "piercing",
+            "is_attack": True,
+            "is_weapon_attack": True,
+            "attack_ability": "dexterity",
+            "attack_roll_total": 5,
+        },
+    )
+    assert miss.status_code == 200, miss.text
+    miss_body = miss.json()
+    assert miss_body["action"]["result_json"]["studied_attack"]["status"] == "granted"
+    effect_id = miss_body["action"]["result_json"]["studied_attack"]["effect_id"]
+    effects = combat_client.get(f"{base}/combats/{combat['id']}/effects").json()["items"]
+    assert next(item for item in effects if item["id"] == effect_id)["status"] == "active"
+
+    preview = combat_client.post(
+        f"{base}/combats/{combat['id']}/actions/preview",
+        json={
+            "action_type": "damage",
+            "actor_combatant_id": attacker["id"],
+            "actor_version": miss_body["actor"]["version"],
+            "target_combatant_id": target["id"],
+            "target_version": miss_body["target"]["version"],
+            "action_name": "短剑",
+            "amount": 5,
+            "damage_type": "piercing",
+            "is_attack": True,
+            "is_weapon_attack": True,
+            "attack_ability": "dexterity",
+            "attack_roll_total": 10,
+            "attack_roll_mode": "advantage",
+        },
+    )
+    assert preview.status_code == 200, preview.text
+    assert "feature_attack_roll_advantage" in preview.json()["attack_contexts"]
+
+    hit = combat_client.post(
+        confirm_path,
+        headers={"X-Request-ID": "studied-attacks-consume"},
+        json={
+            "action_type": "damage",
+            "actor_combatant_id": attacker["id"],
+            "actor_version": miss_body["actor"]["version"],
+            "target_combatant_id": target["id"],
+            "target_version": miss_body["target"]["version"],
+            "action_name": "短剑",
+            "amount": 5,
+            "damage_type": "piercing",
+            "is_attack": True,
+            "is_weapon_attack": True,
+            "attack_ability": "dexterity",
+            "attack_roll_total": 18,
+            "attack_roll_mode": "advantage",
+        },
+    )
+    assert hit.status_code == 200, hit.text
+    assert effect_id in hit.json()["action"]["result_json"]["consumed_effect_ids"]
+    consumed = combat_client.get(f"{base}/combats/{combat['id']}/effects").json()["items"]
+    assert next(item for item in consumed if item["id"] == effect_id)["status"] == "ended"
+
+    second_miss = combat_client.post(
+        confirm_path,
+        headers={"X-Request-ID": "studied-attacks-miss-again"},
+        json={
+            "action_type": "damage",
+            "actor_combatant_id": attacker["id"],
+            "actor_version": hit.json()["actor"]["version"],
+            "target_combatant_id": target["id"],
+            "target_version": hit.json()["target"]["version"],
+            "action_name": "短剑",
+            "amount": 0,
+            "damage_type": "piercing",
+            "is_attack": True,
+            "is_weapon_attack": True,
+            "attack_ability": "dexterity",
+            "attack_roll_total": 5,
+        },
+    )
+    assert second_miss.status_code == 200, second_miss.text
+    refreshed_id = second_miss.json()["action"]["result_json"]["studied_attack"]["effect_id"]
+    combat_version = combat["version"]
+    for index in range(3):
+        advanced = combat_client.post(
+            f"{base}/combats/{combat['id']}/turns/advance",
+            headers={"X-Request-ID": f"studied-attacks-advance-{index}"},
+            json={"combat_version": combat_version},
+        )
+        assert advanced.status_code == 200, advanced.text
+        combat_version = advanced.json()["combat"]["version"]
+    expired = combat_client.get(f"{base}/combats/{combat['id']}/effects").json()["items"]
+    assert next(item for item in expired if item["id"] == refreshed_id)["status"] == "ended"
+
+
 def test_uncanny_dodge_pauses_damage_then_halves_before_defenses(
     combat_client: TestClient,
 ) -> None:

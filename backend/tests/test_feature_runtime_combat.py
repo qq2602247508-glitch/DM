@@ -980,6 +980,30 @@ def test_event_predicate_feature_modifier_does_not_grant_passive_advantage() -> 
     assert disadvantage == []
 
 
+def test_studied_attacks_contract_is_runtime_executable() -> None:
+    registry = compile_feature_runtime_registry(
+        [
+            {
+                "name": "究明攻击",
+                "kind": "class_feature",
+                "class_name": "游荡者",
+                "class_level": 13,
+                "runtime": {},
+            }
+        ],
+        class_levels={"游荡者": 13},
+        total_level=13,
+    )
+    modifier = next(
+        item
+        for item in registry["combat_start"]["modifiers"]
+        if item["id"] == "studied_attacks:next_attack_advantage"
+    )
+    assert modifier["automation_status"] == "full"
+    assert modifier["requires_dm_adjudication"] is False
+    assert modifier["runtime_execution"]["producer"] == "attack_miss_event"
+
+
 def test_compiled_evasion_contract_is_consumed_by_save_damage_resolution() -> None:
     registry = compile_feature_runtime_registry(
         [
