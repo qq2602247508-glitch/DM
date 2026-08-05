@@ -419,11 +419,16 @@ def feature_runtime_definition(
             "resource_key": "rage",
             "resource_cost": 1,
             "target": "self",
-            "effects": [{"kind": "activate_condition", "condition": "raging"}],
+            "effects": [{
+                "kind": "activate_duration_condition",
+                "condition": "raging",
+                "duration_unit": "minutes",
+                "duration_value": 1,
+            }],
             "runtime_execution": {
                 "status": "ready",
                 "consumer": "combat_feature_action",
-                "effect_kinds": ["activate_condition"],
+                "effect_kinds": ["activate_duration_condition"],
                 "remaining_dm_boundaries": [
                     "heavy_armor_requirement",
                     "rage_duration_and_early_end",
@@ -434,8 +439,8 @@ def feature_runtime_definition(
             "automation_status": "partial",
             "requires_dm_adjudication": True,
             "partial_reason": (
-                "资源、附赠动作与伤害抗性已结构化；重甲限制、持续时间和攻击限制"
-                "尚未由统一条件求值器完整执行。"
+                "资源、附赠动作、伤害抗性和 1 分钟持续时间已结构化；重甲限制、"
+                "未攻击/未受伤导致的提前结束仍需事件型规则确认。"
             ),
             **source,
         }
@@ -1907,6 +1912,7 @@ def _feature_action_executor_ready(action: Mapping[str, Any]) -> bool:
     }
     supported = {
         "activate_condition",
+        "activate_duration_condition",
         "activate_timed_condition",
         "grant_action_budget",
         "grant_saving_throw_reroll",
@@ -1920,6 +1926,13 @@ def _feature_action_executor_ready(action: Mapping[str, Any]) -> bool:
         if effect.get("kind") == "activate_timed_condition" and not (
             effect.get("condition") in {"隐形", "reckless_attack", "steady_aim"}
             and effect.get("expires") in {"turn_start", "turn_end"}
+        ):
+            return False
+        if effect.get("kind") == "activate_duration_condition" and not (
+            effect.get("condition") == "raging"
+            and effect.get("duration_unit") in {"rounds", "minutes"}
+            and isinstance(effect.get("duration_value"), int)
+            and effect.get("duration_value") >= 1
         ):
             return False
     declared = execution.get("effect_kinds")

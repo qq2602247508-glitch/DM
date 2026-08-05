@@ -136,6 +136,7 @@ class CombatEngineService:
         "ready": "准备",
         "disengage": "撤离",
         "feature_invisible": "隐形",
+        "feature_raging": "raging",
         "feature_reckless_attack": "reckless_attack",
         "steady_aim": "steady_aim",
     }
@@ -3658,6 +3659,8 @@ class CombatEngineService:
         expires: str,
         expires_combatant_id: str | None,
         details: dict[str, object] | None = None,
+        duration_unit: str = "until_removed",
+        duration_value: int | None = None,
     ) -> CombatEffect:
         if cls._active_runtime_effects(
             session,
@@ -3684,6 +3687,9 @@ class CombatEngineService:
         }
         if details:
             runtime_state.update(details)
+        runtime_state["duration_unit"] = duration_unit
+        if duration_value is not None:
+            runtime_state["duration_value"] = duration_value
         effect = CombatEffect(
             campaign_id=combat.campaign_id,
             combat_id=combat.id,
@@ -3693,7 +3699,13 @@ class CombatEngineService:
             effect_type="condition",
             details_json={"runtime_state": runtime_state},
             started_round=combat.round_number,
-            duration_unit="until_removed",
+            duration_unit=duration_unit,
+            duration_value=duration_value,
+            ends_round=cls._effect_ends_round(
+                combat.round_number,
+                duration_unit,
+                duration_value,
+            ),
             requires_concentration=False,
             status="active",
         )
@@ -8827,6 +8839,39 @@ class CombatEngineService:
                         )
                         if self._add_condition(target, condition):
                             result.setdefault("conditions_added", []).append(condition)
+                elif kind == "activate_duration_condition":
+                    condition = str(effect.get("condition") or "").strip()
+                    duration_unit = str(effect.get("duration_unit") or "").strip()
+                    duration_value = self._state_int(effect.get("duration_value"), 0)
+                    if (
+                        condition != "raging"
+                        or duration_unit not in {"rounds", "minutes"}
+                        or duration_value < 1
+                    ):
+                        raise ValueError(
+                            "当前职业特性只允许狂暴状态使用明确的回合或分钟持续时间"
+                        )
+                    if self._condition_is_immune(target, condition):
+                        raise ValueError(f"目标免疫状态「{condition}」，职业特性未写入")
+                    runtime_effect = self._create_runtime_effect(
+                        session,
+                        combat,
+                        actor=actor,
+                        target=target,
+                        state_name="feature_raging",
+                        expires="duration",
+                        expires_combatant_id=None,
+                        duration_unit=duration_unit,
+                        duration_value=duration_value,
+                        details={"source": "compiled_feature_action"},
+                    )
+                    result.setdefault("conditions_added", []).append(condition)
+                    result["effect_id"] = runtime_effect.id
+                    result["duration"] = {
+                        "unit": duration_unit,
+                        "value": duration_value,
+                        "ends_round": runtime_effect.ends_round,
+                    }
                 elif kind == "activate_timed_condition":
                     condition = str(effect.get("condition") or "").strip()
                     expires = str(effect.get("expires") or "turn_start")
@@ -10923,7 +10968,19 @@ class CombatEngineService:
                 effect_target = session.get(Combatant, effect.target_combatant_id)
                 details = dict(effect.details_json or {})
                 is_summon_effect = self._effect_summon_id(effect) is not None
+                runtime_state = self._runtime_state(effect)
                 has_compiled_rule = isinstance(details.get("rule_block"), dict)
+                if runtime_state is not None:
+                    changed = self._end_runtime_effect(
+                        session,
+                        effect,
+                        reason="运行时状态持续时间结束",
+                        now=now,
+                    )
+                    if changed is not None:
+                        expired_targets[changed.id] = changed
+                    ended_runtime_effects.append(effect)
+                    continue
                 if is_summon_effect:
                     summon_effects.append(effect)
                 # Compiler-produced effects are authoritative: their reverse
