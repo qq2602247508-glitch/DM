@@ -672,6 +672,89 @@ def test_divine_smite_rider_requires_melee_hit_and_selected_slot() -> None:
         )
 
 
+def test_radiant_strikes_auto_selects_structured_weapon_attack_once_per_turn() -> None:
+    actor = Combatant(
+        id="radiant-paladin",
+        entity_type="character",
+        snapshot_json={
+            "feature_runtime": {
+                "attack_riders": [
+                    {
+                        "id": "radiant_strikes:bonus_damage",
+                        "value": "1d8",
+                        "damage_type": "radiant",
+                        "applies_when": "radiant_strikes_eligible",
+                        "frequency": "once_per_turn",
+                    }
+                ]
+            }
+        },
+    )
+    target = Combatant(id="radiant-target", entity_type="monster")
+    weapon_attack = {
+        "name": "长剑",
+        "description": "近战武器攻击",
+        "damage": "1d8+力量 挥砍",
+        "is_weapon_attack": True,
+    }
+
+    riders = PlayerRoomService._eligible_attack_riders(
+        actor,
+        weapon_attack,
+        target,
+        special_inputs={
+            "attack_rider_totals": {"radiant_strikes:bonus_damage": 6},
+        },
+        critical_hit=False,
+        used_this_turn=set(),
+    )
+    assert len(riders) == 1
+    assert riders[0]["rider_id"] == "radiant_strikes:bonus_damage"
+    assert riders[0]["total"] == 6
+    assert riders[0]["damage_type"] == "radiant"
+
+    assert PlayerRoomService._eligible_attack_riders(
+        actor,
+        weapon_attack,
+        target,
+        special_inputs={
+            "attack_rider_totals": {"radiant_strikes:bonus_damage": 6},
+        },
+        critical_hit=False,
+        used_this_turn={"radiant_strikes:bonus_damage"},
+    ) == []
+
+
+def test_radiant_strikes_does_not_guess_non_attack_eligibility() -> None:
+    actor = Combatant(
+        id="radiant-paladin-no-attack",
+        entity_type="character",
+        snapshot_json={
+            "feature_runtime": {
+                "attack_riders": [
+                    {
+                        "id": "radiant_strikes:bonus_damage",
+                        "value": "1d8",
+                        "damage_type": "radiant",
+                        "applies_when": "radiant_strikes_eligible",
+                    }
+                ]
+            }
+        },
+    )
+    target = Combatant(id="radiant-target-no-attack", entity_type="monster")
+    assert PlayerRoomService._eligible_attack_riders(
+        actor,
+        {"name": "圣光祷告", "description": "一个动作"},
+        target,
+        special_inputs={
+            "attack_rider_totals": {"radiant_strikes:bonus_damage": 8},
+        },
+        critical_hit=False,
+        used_this_turn=set(),
+    ) == []
+
+
 def test_indomitable_might_floors_strength_check_at_strength_score() -> None:
     action = CombatAction(
         campaign_id="campaign",

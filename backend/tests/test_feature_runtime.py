@@ -787,6 +787,18 @@ def test_new_passive_and_attack_contracts_are_typed_but_not_automatic() -> None:
     assert martial_die["value"] == "1d12"
     assert martial_die["requires_dm_adjudication"] is True
 
+    radiant_strikes = next(
+        item
+        for item in _registry(rules["圣武士"])["attack_riders"]
+        if item["id"] == "radiant_strikes:bonus_damage"
+    )
+    assert radiant_strikes["automation_status"] == "full"
+    assert radiant_strikes["requires_dm_adjudication"] is False
+    assert radiant_strikes["runtime_execution"] == {
+        "status": "ready",
+        "consumer": "attack_damage_resolution",
+    }
+
     paladin_rider = _registry(rules["圣武士"])["attack_riders"]
     assert next(item for item in paladin_rider if item["id"] == "radiant_strikes:bonus_damage") == {
         **next(item for item in paladin_rider if item["id"] == "radiant_strikes:bonus_damage"),

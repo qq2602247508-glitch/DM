@@ -1724,7 +1724,12 @@ def feature_runtime_definition(
                 "damage_type": "radiant",
                 "applies_when": "radiant_strikes_eligible",
                 "frequency": "once_per_turn",
-                "requires_dm_adjudication": True,
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "attack_damage_resolution",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
                 **source,
             }
         )

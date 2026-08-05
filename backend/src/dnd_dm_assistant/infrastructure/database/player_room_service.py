@@ -1411,6 +1411,15 @@ class PlayerRoomService:
                     or ("近战" in action_text and "攻击" in action_text)
                 )
                 eligible = explicit is True and is_weapon_attack and melee_weapon_attack
+            elif applies_when == "radiant_strikes_eligible":
+                # 光耀打击 applies to a structurally identified weapon or
+                # unarmed attack.  Damage dice are still supplied by the
+                # player/DM; the trigger itself must not require a guessed
+                # eligibility flag.
+                eligible = bool(
+                    action.get("is_unarmed_attack") is True
+                    or is_weapon_attack
+                )
             else:
                 explicit = eligibility.get(rider_id)
                 eligible = explicit is True
