@@ -8667,6 +8667,98 @@ def test_tireless_validates_wisdom_healing_and_writes_temporary_hp(
     assert confirmed.json()["result"]["resource_after"] == 1
 
 
+def test_second_wind_validates_level_healing_and_restores_hp(
+    combat_client: TestClient,
+) -> None:
+    campaign = _campaign(combat_client, "Second wind runtime")
+    base = f"/api/v1/campaigns/{campaign['id']}"
+    character = combat_client.post(
+        f"{base}/characters",
+        json={
+            "name": "回气战士",
+            "hp": 10,
+            "max_hp": 20,
+            "resources": {"second_wind": {"current": 1, "max": 4}},
+        },
+    ).json()
+    definition = feature_runtime_definition(
+        feature_name="回气",
+        class_name="战士",
+        class_level=5,
+        resources={"second_wind": {"current": 1, "max": 4}},
+        tracked_resource_keys=["second_wind"],
+    )
+    registry = compile_feature_runtime_registry(
+        [
+            {
+                "name": "回气",
+                "class_name": "战士",
+                "class_level": 5,
+                "runtime": {"registry": definition},
+            }
+        ]
+    )
+    combat = combat_client.post(
+        f"{base}/combats", json={"name": "回气测试战斗"}
+    ).json()
+    actor = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "回气战士",
+            "entity_type": "character",
+            "entity_id": character["id"],
+            "initiative": 20,
+            "hp": 10,
+            "max_hp": 20,
+            "snapshot_json": {"feature_runtime": registry},
+        },
+    ).json()
+    combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "训练木桩",
+            "entity_type": "monster",
+            "initiative": 10,
+            "hp": 10,
+            "max_hp": 10,
+        },
+    )
+
+    invalid = combat_client.post(
+        f"{base}/combats/{combat['id']}/feature-actions/confirm",
+        headers={"X-Request-ID": "second-wind-invalid"},
+        json={
+            "actor_combatant_id": actor["id"],
+            "actor_version": actor["version"],
+            "feature_id": "second_wind",
+            "healing_total": 5,
+            "target_combatant_id": actor["id"],
+            "target_version": actor["version"],
+        },
+    )
+    assert invalid.status_code == 400
+    assert "6–15" in invalid.json()["message"]
+
+    confirmed = combat_client.post(
+        f"{base}/combats/{combat['id']}/feature-actions/confirm",
+        headers={"X-Request-ID": "second-wind-valid"},
+        json={
+            "actor_combatant_id": actor["id"],
+            "actor_version": actor["version"],
+            "feature_id": "second_wind",
+            "healing_total": 10,
+            "target_combatant_id": actor["id"],
+            "target_version": actor["version"],
+        },
+    )
+    assert confirmed.status_code == 200, confirmed.text
+    assert confirmed.json()["result"]["healing"]["formula"] == "1d10+5"
+    assert confirmed.json()["result"]["healing"]["hp_gained"] == 10
+    assert confirmed.json()["actor"]["hp"] == 20
+    assert confirmed.json()["result"]["resource_before"] == 1
+    assert confirmed.json()["result"]["resource_after"] == 0
+
+
 def test_condition_matrix_changes_saves_and_petrified_damage(
     combat_client: TestClient,
 ) -> None:

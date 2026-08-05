@@ -9915,6 +9915,8 @@ class CombatEngineService:
                     result["roll_die_granted"] = {"die_key": die_key, "value": die_value}
                 elif kind == "temporary_healing":
                     result["temporary_healing_effect"] = True
+                elif kind == "healing":
+                    result["healing_effect"] = True
                 elif kind == "requires_dm_choice":
                     raise ValueError(str(effect.get("reason") or "该职业特性需要 DM 选择分支"))
 

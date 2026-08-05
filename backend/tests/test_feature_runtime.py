@@ -209,6 +209,12 @@ def test_fighter_registry_exposes_attack_count_second_wind_and_action_surge() ->
         "healing_formula": "1d10+class_level",
         "healing": "1d10+20",
     }
+    assert registry["actions"]["second_wind"]["runtime_execution"] == {
+        "status": "ready",
+        "consumer": "combat_feature_action",
+        "effect_kinds": ["healing"],
+    }
+    assert registry["actions"]["second_wind"]["automation_status"] == "full"
     surge = registry["actions"]["action_surge"]
     assert surge["resource_key"] == "action_surge"
     assert surge["effects"] == [

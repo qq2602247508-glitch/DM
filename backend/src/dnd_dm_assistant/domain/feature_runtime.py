@@ -614,6 +614,15 @@ def feature_runtime_definition(
             "target": "self",
             "resolution_kind": "healing",
             "healing_formula": "1d10+class_level",
+            "effects": [{"kind": "healing"}],
+            "runtime_execution": {
+                "status": "ready",
+                "consumer": "combat_feature_action",
+                "effect_kinds": ["healing"],
+            },
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+            "summary": "消耗一次回气资源，掷 1d10+战士等级恢复生命。",
             **source,
         }
 
@@ -2176,6 +2185,7 @@ def _feature_action_executor_ready(action: Mapping[str, Any]) -> bool:
         "grant_roll_die",
         "cunning_action_choice",
         "temporary_healing",
+        "healing",
     }
     if not effect_kinds or not effect_kinds <= supported:
         return False
