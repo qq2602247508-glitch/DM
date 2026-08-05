@@ -1007,6 +1007,7 @@ export type PlayerRollResolutionCommand = {
   bardic_inspiration_total?: number;
   use_legendary_resistance?: boolean;
   use_feature_reroll?: boolean;
+  feature_reroll_reactor_id?: string;
   use_stroke_of_luck?: boolean;
   stroke_of_luck_total?: number;
   dm_note?: string | null;
@@ -1028,6 +1029,14 @@ export type PlayerRollResolution = {
     original_roll_total: number;
     dc: number;
     requires_second_roll: boolean;
+    reroll_mode?: string;
+    reaction_combatant_id?: string;
+    reaction_before?: boolean;
+    reaction_candidates?: Array<{
+      reaction_combatant_id: string;
+      source?: string;
+      distance_ft?: number;
+    }>;
   } | null;
   stroke_of_luck_window?: {
     feature_id?: string;

@@ -99,6 +99,7 @@ export function PlayerRollPanel({
   const [strokeTotals, setStrokeTotals] = useState<Record<string, string>>({});
   const [strokeOriginalRolls, setStrokeOriginalRolls] = useState<Record<string, number>>({});
   const [useFeatureReroll, setUseFeatureReroll] = useState<Record<string, boolean>>({});
+  const [featureRerollReactors, setFeatureRerollReactors] = useState<Record<string, string>>({});
   const [useLegendaryResistance, setUseLegendaryResistance] = useState<Record<string, boolean>>({});
   const [useStrokeOfLuck, setUseStrokeOfLuck] = useState<Record<string, boolean>>({});
   const [previews, setPreviews] = useState<Record<string, PlayerRollResolutionResult>>({});
@@ -189,6 +190,9 @@ export function PlayerRollPanel({
         ...(useFeatureReroll[action.id]
           ? { roll_totals: values, use_feature_reroll: true }
           : {}),
+        ...(useFeatureReroll[action.id] && featureRerollReactors[action.id]
+          ? { feature_reroll_reactor_id: featureRerollReactors[action.id] }
+          : {}),
         ...(useLegendaryResistance[action.id]
           ? { use_legendary_resistance: true }
           : {}),
@@ -232,6 +236,9 @@ export function PlayerRollPanel({
         roll_total: strokeEnabled ? originalRoll : values[0] ?? 0,
         ...(useFeatureReroll[action.id]
           ? { roll_totals: values, use_feature_reroll: true }
+          : {}),
+        ...(useFeatureReroll[action.id] && featureRerollReactors[action.id]
+          ? { feature_reroll_reactor_id: featureRerollReactors[action.id] }
           : {}),
         ...(useLegendaryResistance[action.id]
           ? { use_legendary_resistance: true }
@@ -431,6 +438,31 @@ export function PlayerRollPanel({
           && rollTarget.snapshot_json.feature_saving_throw_rerolls.some(
             (item) => item && typeof item === "object" && (item as { available?: unknown }).available === true,
           );
+        const persistedFeatureWindow = action.result_json.feature_reroll_window as {
+          feature_id?: unknown;
+          reaction_combatant_id?: unknown;
+          reaction_candidates?: unknown;
+        } | undefined;
+        const resultFeatureWindow = result?.resolution.feature_reroll_window;
+        const featureWindow = resultFeatureWindow ?? persistedFeatureWindow;
+        const countercharmWindow = featureWindow?.feature_id === "countercharm";
+        const rawCountercharmCandidates = featureWindow?.reaction_candidates;
+        const countercharmCandidates = Array.isArray(rawCountercharmCandidates)
+          ? rawCountercharmCandidates.filter(
+            (item): item is { reaction_combatant_id: string } => (
+              item !== null
+              && typeof item === "object"
+              && typeof (item as { reaction_combatant_id?: unknown }).reaction_combatant_id === "string"
+            ),
+          )
+          : [];
+        const defaultReactorId = typeof featureWindow?.reaction_combatant_id === "string"
+          ? featureWindow.reaction_combatant_id
+          : countercharmCandidates.length === 1
+            ? countercharmCandidates[0]?.reaction_combatant_id ?? ""
+            : "";
+        const selectedReactorId = featureRerollReactors[action.id] || defaultReactorId;
+        const featureRerollWindowAvailable = featureRerollAvailable || countercharmWindow;
         const rawLegendaryResistance = rollTarget?.snapshot_json.advanced_defenses;
         const legendaryResistance = rawLegendaryResistance
           && typeof rawLegendaryResistance === "object"
@@ -535,14 +567,44 @@ export function PlayerRollPanel({
                   ) : null}
                 </>
               ) : null}
-              {featureRerollAvailable && request.resolution_type === "saving_throw" ? (
+              {featureRerollWindowAvailable && request.resolution_type === "saving_throw" ? (
                 <label className="flex items-center gap-1 text-2xs text-violet-200">
                   <input
                     checked={useFeatureReroll[action.id] === true}
-                    onChange={(event) => setUseFeatureReroll((current) => ({ ...current, [action.id]: event.target.checked }))}
+                    onChange={(event) => {
+                      const checked = event.target.checked;
+                      setUseFeatureReroll((current) => ({ ...current, [action.id]: checked }));
+                      if (checked && defaultReactorId && !featureRerollReactors[action.id]) {
+                        setFeatureRerollReactors((current) => ({ ...current, [action.id]: defaultReactorId }));
+                      }
+                    }}
                     type="checkbox"
                   />
-                  使用职业特性重掷（填两次总值）
+                  {countercharmWindow ? "使用反迷惑反应重骰（填两次总值）" : "使用职业特性重掷（填两次总值）"}
+                </label>
+              ) : null}
+              {countercharmWindow && useFeatureReroll[action.id] === true && countercharmCandidates.length > 1 ? (
+                <label className="flex items-center gap-1 text-2xs text-violet-200">
+                  选择反应者
+                  <select
+                    aria-label={`${textField(request.target_name)}反迷惑反应者`}
+                    className={`${selectCls} ml-1`}
+                    onChange={(event) => setFeatureRerollReactors((current) => ({
+                      ...current,
+                      [action.id]: event.target.value,
+                    }))}
+                    value={selectedReactorId}
+                  >
+                    <option value="">请选择吟游诗人</option>
+                    {countercharmCandidates.map((candidate) => {
+                      const reactor = fighters.find((fighter) => fighter.id === candidate.reaction_combatant_id);
+                      return (
+                        <option key={candidate.reaction_combatant_id} value={candidate.reaction_combatant_id}>
+                          {reactor?.display_name ?? candidate.reaction_combatant_id}
+                        </option>
+                      );
+                    })}
+                  </select>
                 </label>
               ) : null}
               {legendaryResistanceAvailable ? (
@@ -558,6 +620,10 @@ export function PlayerRollPanel({
               <Button
                 disabled={rollValue === ""
                   || (useStrokeOfLuck[action.id] === true && strokeTotals[action.id] === "")
+                  || (countercharmWindow
+                    && useFeatureReroll[action.id] === true
+                    && countercharmCandidates.length > 1
+                    && !selectedReactorId)
                   || preview.isPending}
                 onClick={() => preview.mutate(action)}
               >

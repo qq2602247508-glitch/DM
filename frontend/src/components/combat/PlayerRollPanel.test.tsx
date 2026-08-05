@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
 import type { CombatAction, Combatant } from "../../api/types";
@@ -118,6 +118,44 @@ const LEGENDARY_RESISTANCE_FIGHTERS = FIGHTERS.map((fighter) => (
     : fighter
 ));
 
+const COUNTERCHARM_FIGHTERS: Combatant[] = [
+  ...FIGHTERS,
+  {
+    ...FIGHTERS[1]!,
+    id: "bard-1",
+    display_name: "吟游诗人甲",
+    entity_id: "bard-character-1",
+    initiative: 10,
+  },
+  {
+    ...FIGHTERS[1]!,
+    id: "bard-2",
+    display_name: "吟游诗人乙",
+    entity_id: "bard-character-2",
+    initiative: 9,
+  },
+];
+
+const COUNTERCHARM_PENDING: CombatAction = {
+  ...PENDING,
+  result_json: {
+    phase: "awaiting_feature_reroll",
+    feature_reroll_window: {
+      feature_id: "countercharm",
+      source: "反迷惑",
+      original_roll_total: 5,
+      dc: 15,
+      requires_second_roll: true,
+      reroll_mode: "advantage",
+      reaction_candidates: [
+        { reaction_combatant_id: "bard-1", source: "反迷惑", distance_ft: 5 },
+        { reaction_combatant_id: "bard-2", source: "反迷惑", distance_ft: 10 },
+      ],
+    },
+  },
+  version: 2,
+};
+
 describe("PlayerRollPanel", () => {
   it("makes actor, target, action, roll and DC explicit", () => {
     const client = new QueryClient({
@@ -188,5 +226,39 @@ describe("PlayerRollPanel", () => {
 
     expect(screen.getByText(/失败时使用传奇抗性（剩余 2 次/)).toBeInTheDocument();
     expect(screen.getByRole("checkbox", { name: /失败时使用传奇抗性/ })).not.toBeChecked();
+  });
+
+  it("requires the DM to select one countercharm reactor when multiple are eligible", () => {
+    const client = new QueryClient({
+      defaultOptions: { mutations: { retry: false }, queries: { retry: false } },
+    });
+    render(
+      <QueryClientProvider client={client}>
+        <ToastProvider>
+          <PlayerRollPanel
+            activeEnemy={COUNTERCHARM_FIGHTERS[0]}
+            actions={[COUNTERCHARM_PENDING]}
+            campaignId="campaign-1"
+            combatId="combat-1"
+            fighters={COUNTERCHARM_FIGHTERS}
+          />
+        </ToastProvider>
+      </QueryClientProvider>,
+    );
+
+    const checkbox = screen.getByRole("checkbox", { name: /使用反迷惑反应重骰/ });
+    expect(checkbox).not.toBeChecked();
+    fireEvent.click(checkbox);
+    expect(screen.getByRole("combobox", { name: "艾琳反迷惑反应者" })).toHaveValue("");
+    expect(screen.getByRole("option", { name: "吟游诗人甲" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "吟游诗人乙" })).toBeInTheDocument();
+    fireEvent.change(screen.getByRole("spinbutton", { name: "艾琳玩家骰结果" }), {
+      target: { value: "5" },
+    });
+    expect(screen.getByRole("button", { name: "预览结果" })).toBeDisabled();
+    fireEvent.change(screen.getByRole("combobox", { name: "艾琳反迷惑反应者" }), {
+      target: { value: "bard-1" },
+    });
+    expect(screen.getByRole("button", { name: "预览结果" })).not.toBeDisabled();
   });
 });
