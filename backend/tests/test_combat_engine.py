@@ -1330,6 +1330,13 @@ def test_unconsumed_advanced_windows_are_invalidated_at_next_turn_boundary(
                         "action_type": "lair_action",
                         "damage": "1d6",
                     },
+                    {
+                        "name": "回合末反击",
+                        "action_type": "reaction",
+                        "reaction_event": "turn_end",
+                        "reaction_trigger": "其他单位回合结束时",
+                        "damage": "1d4",
+                    },
                 ],
                 "legendary_actions_remaining": 3,
             },
@@ -1360,6 +1367,12 @@ def test_unconsumed_advanced_windows_are_invalidated_at_next_turn_boundary(
         if item["action_type"] == "eligible_action_window"
         and item["result_json"]["action_window"]["action_cost"] == "lair_action"
     )
+    turn_end_window = next(
+        item
+        for item in first_actions
+        if item["action_type"] == "eligible_action_window"
+        and item["result_json"]["action_window"].get("reaction_event") == "turn_end"
+    )
 
     current = combat_client.get(f"{base}/combats/{combat['id']}").json()
     second = combat_client.post(
@@ -1374,6 +1387,13 @@ def test_unconsumed_advanced_windows_are_invalidated_at_next_turn_boundary(
     closed_lair = next(item for item in actions_after_lair_close if item["id"] == lair_window["id"])
     assert closed_lair["result_json"]["action_window"]["status"] == "invalidated"
     assert closed_lair["result_json"]["action_window"]["invalidation_reason"] == (
+        "turn_window_closed"
+    )
+    closed_turn_end = next(
+        item for item in actions_after_lair_close if item["id"] == turn_end_window["id"]
+    )
+    assert closed_turn_end["result_json"]["action_window"]["status"] == "invalidated"
+    assert closed_turn_end["result_json"]["action_window"]["invalidation_reason"] == (
         "turn_window_closed"
     )
 

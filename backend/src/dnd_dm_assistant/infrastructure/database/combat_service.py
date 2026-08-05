@@ -2000,7 +2000,7 @@ class CombatEngineService:
 
         if active is None:
             return
-        cls._invalidate_stale_advanced_action_windows(
+        cls._invalidate_stale_turn_windows(
             session,
             combat=combat,
             active=active,
@@ -2201,20 +2201,22 @@ class CombatEngineService:
                 )
 
     @staticmethod
-    def _invalidate_stale_advanced_action_windows(
+    def _invalidate_stale_turn_windows(
         session: Session,
         *,
         combat: Combat,
         active: Combatant,
     ) -> None:
-        """Close unconsumed legendary/lair windows at the next turn boundary.
+        """Close unconsumed event windows at the next turn boundary.
 
-        A structured advanced-action window represents one temporal trigger,
-        not a standing permission.  Legendary actions are available only at
-        the end of the specific creature turn that opened the window, and a
-        lair action belongs to the specific initiative-20 boundary.  Keeping
-        an old row selectable after ``advance_turn`` would allow a stale DM or
-        player panel to spend a resource for an event that has already passed.
+        A structured advanced-action or reaction window represents one
+        temporal trigger, not a standing permission.  Legendary actions are
+        available only at the end of the specific creature turn that opened
+        the window, a lair action belongs to the specific initiative-20
+        boundary, and an event reaction belongs to the turn in which its
+        trigger occurred.  Keeping an old row selectable after
+        ``advance_turn`` would allow a stale DM or player panel to spend a
+        resource for an event that has already passed.
         """
 
         current_window_key = f"{combat.round_number}:{combat.current_turn_index}"
@@ -2232,15 +2234,19 @@ class CombatEngineService:
                 continue
             if metadata.get("status") != "eligible":
                 continue
-            if metadata.get("action_cost") not in {
-                "legendary_action",
-                "lair_action",
-            }:
+            action_cost = metadata.get("action_cost")
+            if action_cost not in {"legendary_action", "lair_action", "reaction"}:
                 continue
-            if (
+            is_current_advanced_window = (
                 metadata.get("window_key") == current_window_key
                 and metadata.get("active_combatant_id") == active.id
-            ):
+            )
+            is_current_event_window = (
+                action_cost == "reaction"
+                and window.round_number == combat.round_number
+                and window.turn_index == combat.current_turn_index
+            )
+            if is_current_advanced_window or is_current_event_window:
                 continue
             window.result_json = {
                 **result,
