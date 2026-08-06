@@ -879,6 +879,121 @@ def test_monster_move_prompts_player_and_player_can_accept_structured_reaction(
         player.close()
 
 
+def test_monster_move_prompts_player_character_for_structured_opportunity_attack(
+    campaign_client: TestClient,
+) -> None:
+    campaign = campaign_client.post(
+        "/api/v1/campaigns", json={"name": "玩家借机攻击"}
+    ).json()
+    campaign_id = campaign["id"]
+    character = campaign_client.post(
+        f"/api/v1/campaigns/{campaign_id}/characters",
+        json={"name": "玩家借机者", "class_name": "战士", "hp": 10, "max_hp": 10},
+    ).json()
+    combat = campaign_client.post(
+        f"/api/v1/campaigns/{campaign_id}/combats", json={"name": "玩家借机战斗"}
+    ).json()
+    reactor = campaign_client.post(
+        f"/api/v1/campaigns/{campaign_id}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": character["name"],
+            "entity_type": "character",
+            "entity_id": character["id"],
+            "initiative": 20,
+            "hp": 10,
+            "max_hp": 10,
+            "snapshot_json": {
+                "grid_position": {"row": 2, "col": 2},
+                "actions": [
+                    {
+                        "name": "短剑",
+                        "damage_expression": "1d1",
+                        "damage_type": "piercing",
+                        "range_ft": 5,
+                        "attack_type": "melee",
+                        "action_type": "reaction",
+                        "reaction_event": "leaves_reach",
+                        "reaction_trigger": "当生物离开近战威胁范围时",
+                        "attack_bonus": 100,
+                    }
+                ],
+            },
+        },
+    ).json()
+    enemy = campaign_client.post(
+        f"/api/v1/campaigns/{campaign_id}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "离开范围的怪物",
+            "entity_type": "monster",
+            "initiative": 10,
+            "hp": 20,
+            "max_hp": 20,
+            "movement_remaining_ft": 30,
+            "snapshot_json": {"grid_position": {"row": 2, "col": 3}},
+        },
+    ).json()
+    opened = campaign_client.post(
+        f"/api/v1/campaigns/{campaign_id}/player-room/open", json={"hours": 4}
+    ).json()
+    player = TestClient(campaign_client.app)
+    try:
+        assert player.post(
+            "/api/v1/player-room/join",
+            json={"join_code": opened["join_code"], "display_name": "借机客户端"},
+        ).status_code == 201
+        assert player.post(
+            "/api/v1/player-room/me/bind-character",
+            json={"character_id": character["id"]},
+        ).status_code == 200
+        assert campaign_client.post(
+            f"/api/v1/campaigns/{campaign_id}/player-room/live-state",
+            json={"combat_id": combat["id"]},
+        ).status_code == 200
+        moved = campaign_client.post(
+            f"/api/v1/campaigns/{campaign_id}/player-room/combat/{combat['id']}"
+            f"/monster-move/{enemy['id']}",
+            json={
+                "row": 2,
+                "col": 5,
+                "combatant_version": enemy["version"],
+                "movement_remaining_ft": 20,
+            },
+        )
+        assert moved.status_code == 200, moved.text
+        request = moved.json()["reaction_requests"][0]
+        actions = campaign_client.get(
+            f"/api/v1/campaigns/{campaign_id}/combats/{combat['id']}/actions"
+        ).json()["items"]
+        windows = [
+            item
+            for item in actions
+            if item["action_type"] == "eligible_action_window"
+            and item["result_json"].get("action_window", {}).get("reaction_event")
+            == "leaves_reach"
+        ]
+        assert len(windows) == 1
+        assert windows[0]["actor_combatant_id"] == reactor["id"]
+        pending = player.get("/api/v1/player-room/me").json()["combat"][
+            "pending_reactions"
+        ]
+        assert pending[0]["id"] == request["id"]
+        accepted = player.post(
+            f"/api/v1/player-room/me/combat/reactions/{request['id']}",
+            json={"version": request["version"], "decision": "accept"},
+        )
+        assert accepted.status_code == 200, accepted.text
+        current_enemy = campaign_client.get(
+            f"/api/v1/campaigns/{campaign_id}/combats/{combat['id']}/combatants/{enemy['id']}"
+        ).json()
+        current_reactor = campaign_client.get(
+            f"/api/v1/campaigns/{campaign_id}/combats/{combat['id']}/combatants/{reactor['id']}"
+        ).json()
+        assert current_enemy["hp"] < current_enemy["max_hp"]
+        assert current_reactor["reaction_available"] is False
+    finally:
+        player.close()
+
+
 def test_monster_move_respects_structured_frightened_direction(
     campaign_client: TestClient,
 ) -> None:

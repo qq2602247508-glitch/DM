@@ -1804,7 +1804,7 @@ class CombatEngineService:
         movement_key: str,
         transaction: OperationTransaction | None = None,
     ) -> None:
-        """Open explicit monster reaction windows when a unit enters reach.
+        """Open explicit reaction windows when a unit enters reach.
 
         Movement is written by three different callers (player movement, AI
         movement, and forced movement).  Keep the temporal rule here so all
@@ -1833,9 +1833,7 @@ class CombatEngineService:
         for reactor in cls._ordered_combatants(session, combat.id):
             if (
                 reactor.id == moving_combatant.id
-                or reactor.entity_type != "monster"
-                or reactor.hp <= 0
-                or not reactor.reaction_available
+                or not cls._can_open_structured_reaction_window(reactor)
                 or faction(reactor) == faction(moving_combatant)
             ):
                 continue
@@ -2007,7 +2005,7 @@ class CombatEngineService:
         movement_key: str,
         transaction: OperationTransaction | None = None,
     ) -> None:
-        """Open explicit monster reaction windows when a unit leaves reach."""
+        """Open explicit reaction windows when a unit leaves reach."""
 
         if from_position == to_position or moving_combatant.hp <= 0:
             return
@@ -2027,9 +2025,7 @@ class CombatEngineService:
         for reactor in cls._ordered_combatants(session, combat.id):
             if (
                 reactor.id == moving_combatant.id
-                or reactor.entity_type != "monster"
-                or reactor.hp <= 0
-                or not reactor.reaction_available
+                or not cls._can_open_structured_reaction_window(reactor)
                 or faction(reactor) == faction(moving_combatant)
             ):
                 continue
