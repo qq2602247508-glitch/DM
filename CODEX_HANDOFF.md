@@ -1442,3 +1442,11 @@ backend/.venv/bin/python -m pytest -q backend/tests
 - 新增纯执行器回归：两个不同配置/不同显示身份复用同一执行器；既有直觉闪避、偏转减伤/归零反击、玩家 API 和 feature runtime 回归均通过。
 - 验证：`pytest -q backend/tests`（项目根目录）全量通过；Ruff、compileall、`git diff --check` 通过。仅有既有 Starlette/httpx 弃用警告。本轮无前端源码变更，未做浏览器验收。
 - 当前边界：通用积木真实改变伤害命令并保持既有结算顺序；玩家/DM 仍需选择反应、提交偏转骰和后续反击输入；AoE/持续伤害仍不触发 attack-only 伤害前窗口；多候选反应选择策略和 resolving 崩溃租约恢复仍是后续开放问题。用户未跟踪的 `backend/tests/integrations/`、`backend/tests/ollama.py` 未纳入提交。
+
+# 2026-08-07 伤害前反应选择与输入强化
+
+- 代码提交 `a13d604`：伤害前窗口冻结全部合格候选，允许 API 显式选择任一候选；非法候选不会消费反应。相同 resolver 请求在窗口处于 resolving/resolved 时可幂等重放，降低响应丢失后的卡死风险；缺少公式实际引用的敏捷/等级权威数据时 fail-closed。
+- 代码提交 `5094c71`：`CombatPreDamageReactionCommand` 增加通用 `inputs` 映射，`reduction_roll` 仅作为旧 API 兼容别名；执行器拒绝未声明输入、未知输入类型、未知取整方式和未知分段分配方式，并记录实际输入。新增真实 API fixture 使用第二个不同配置和 `ward_roll` 输入。
+- 代码提交 `d317db4`：删除已废弃的直觉闪避/偏转攻击专用伤害 helper，源码中实际伤害变换仅剩通用执行器。
+- 验证：伤害前相关整文件、后端全量 `pytest -q backend/tests`、Ruff、compileall、`git diff --check` 均通过；无前端改动，无浏览器验收声明。
+- 边界更新：多候选已在后端窗口/API 支持，但玩家页面仍显示主候选，尚未做前端候选选择控件；偏转归零后的 follow-up 仍是明确隔离的专用适配器。用户未跟踪文件继续保留、未提交。
