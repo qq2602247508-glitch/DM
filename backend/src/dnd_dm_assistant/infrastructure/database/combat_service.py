@@ -1571,55 +1571,6 @@ class CombatEngineService:
             },
         }
 
-    @staticmethod
-    def _halve_damage_command(command: CombatActionCommand) -> CombatActionCommand:
-        """Apply Uncanny Dodge before the normal resistance/HP pipeline."""
-
-        if command.damage_components:
-            components = [
-                component.model_copy(update={"amount": component.amount // 2})
-                for component in command.damage_components
-            ]
-            return command.model_copy(
-                update={
-                    "amount": sum(component.amount for component in components),
-                    "damage_components": components,
-                }
-            )
-        return command.model_copy(update={"amount": command.amount // 2})
-
-    @staticmethod
-    def _deflect_damage_command(
-        command: CombatActionCommand,
-        *,
-        reduction_roll: int,
-        dexterity_modifier: int,
-        class_level: int,
-    ) -> tuple[CombatActionCommand, int]:
-        """Apply Deflect Attacks before the normal defense/HP pipeline."""
-
-        reduction_total = max(0, int(reduction_roll) + int(dexterity_modifier) + int(class_level))
-        if command.damage_components:
-            remaining_reduction = reduction_total
-            components = []
-            for component in command.damage_components:
-                reduced_amount = max(
-                    0,
-                    component.amount - min(component.amount, remaining_reduction),
-                )
-                remaining_reduction = max(0, remaining_reduction - component.amount)
-                components.append(component.model_copy(update={"amount": reduced_amount}))
-            return command.model_copy(
-                update={
-                    "amount": sum(component.amount for component in components),
-                    "damage_components": components,
-                }
-            ), reduction_total
-        return (
-            command.model_copy(update={"amount": max(0, command.amount - reduction_total)}),
-            reduction_total,
-        )
-
     @classmethod
     def _validate_reaction_window(
         cls,
