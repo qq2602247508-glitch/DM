@@ -898,7 +898,11 @@ def feature_runtime_definition(
             },
             "pre_damage_intervention": {
                 "kind": "pre_damage_intervention",
-                "eligibility": {"damage_types": "all"},
+                "eligibility": {
+                    "entity_types": ["character"],
+                    "damage_types": "all",
+                    "forbidden_conditions": ["incapacitated"],
+                },
                 "input_requirements": [],
                 "damage_transform": {
                     "operation": "multiply_each_component",
@@ -944,9 +948,11 @@ def feature_runtime_definition(
             "pre_damage_intervention": {
                 "kind": "pre_damage_intervention",
                 "eligibility": {
+                    "entity_types": ["character"],
                     "damage_types": (
                         "all" if deflects_all_damage else ["bludgeoning", "piercing", "slashing"]
-                    )
+                    ),
+                    "forbidden_conditions": ["incapacitated"],
                 },
                 "input_requirements": [
                     {"key": "reduction_roll", "kind": "die_roll", "die_sides": 10}

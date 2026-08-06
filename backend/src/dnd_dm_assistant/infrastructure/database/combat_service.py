@@ -1390,6 +1390,7 @@ class CombatEngineService:
                     continue
             ability_scores = (combatant.snapshot_json or {}).get("ability_scores")
             scores = ability_scores if isinstance(ability_scores, dict) else {}
+            has_dexterity = "dexterity" in scores or "敏捷" in scores
             dexterity = int(scores.get("dexterity", scores.get("敏捷", 10)) or 10)
             progression = runtime.get("progression") if isinstance(runtime, dict) else None
             progression = progression if isinstance(progression, dict) else {}
@@ -1399,7 +1400,14 @@ class CombatEngineService:
                 if isinstance(class_levels, dict)
                 else []
             )
-            class_level = max(class_level_values or [int(progression.get("total_level") or 1)])
+            class_level = max(class_level_values or [int(progression.get("total_level") or 0)])
+            transform = intervention.get("damage_transform")
+            if (
+                isinstance(transform, dict)
+                and transform.get("operation") == "subtract_total"
+                and (class_level <= 0 or not has_dexterity)
+            ):
+                continue
             proficiency_bonus = int(progression.get("proficiency_bonus") or 0)
             redirect = raw.get("redirect")
             redirect_data = dict(redirect) if isinstance(redirect, dict) else None
@@ -1486,7 +1494,37 @@ class CombatEngineService:
         incoming_damage_types = {
             str(component.damage_type).strip().lower() for component in command.damage_components
         } or {str(command.damage_type or "").strip().lower()}
+        target_conditions = cls._condition_set(target)
+        candidates: list[dict[str, object]] = []
         for feature in cls._pre_damage_feature_reactions(target):
+            intervention = feature.get("intervention")
+            eligibility = (
+                intervention.get("eligibility")
+                if isinstance(intervention, dict)
+                else None
+            )
+            eligibility = eligibility if isinstance(eligibility, dict) else {}
+            entity_types = {
+                str(item).strip().lower()
+                for item in eligibility.get("entity_types", [])
+                if str(item).strip()
+            }
+            if entity_types and target.entity_type.lower() not in entity_types:
+                continue
+            required_conditions = {
+                cls._normalize_condition_name(str(item))
+                for item in eligibility.get("required_conditions", [])
+                if str(item).strip()
+            }
+            forbidden_conditions = {
+                cls._normalize_condition_name(str(item))
+                for item in eligibility.get("forbidden_conditions", [])
+                if str(item).strip()
+            }
+            if not required_conditions.issubset(target_conditions):
+                continue
+            if forbidden_conditions & target_conditions:
+                continue
             eligible = feature.get("eligible_damage_types")
             if eligible is not None:
                 if eligible != "all" and not incoming_damage_types.issubset(
@@ -1499,14 +1537,33 @@ class CombatEngineService:
             ):
                 if line_of_sight is False:
                     continue
-            return {
+            candidates.append(
+                {
                 **feature,
                 "effective_armor_class": effective_ac,
                 "hit_basis": hit_basis,
                 "attack_roll_total": command.attack_roll_total,
                 "line_of_sight": line_of_sight,
-            }
-        return None
+                }
+            )
+        if not candidates:
+            return None
+        primary = candidates[0]
+        return {
+            **primary,
+            "candidate_features": [item["feature_id"] for item in candidates],
+            "candidate_interventions": {
+                str(item["feature_id"]): {
+                    "feature_id": item["feature_id"],
+                    "feature_name": item["name"],
+                    "intervention": item["intervention"],
+                    "dexterity_modifier": item["dexterity_modifier"],
+                    "class_level": item["class_level"],
+                    "redirect": item["redirect"],
+                }
+                for item in candidates
+            },
+        }
 
     @staticmethod
     def _halve_damage_command(command: CombatActionCommand) -> CombatActionCommand:
@@ -9273,7 +9330,10 @@ class CombatEngineService:
             "target_version": target.version,
             "attacker_version": attacker.version,
             "original_command": command.model_dump(mode="json"),
-            "candidate_features": [candidate["feature_id"]],
+            "candidate_features": candidate.get(
+                "candidate_features", [candidate["feature_id"]]
+            ),
+            "candidate_interventions": candidate.get("candidate_interventions", {}),
         }
         window = CombatAction(
             campaign_id=combat.campaign_id,
@@ -10307,18 +10367,22 @@ class CombatEngineService:
             window = session.get(CombatAction, command.reaction_window_id)
             if window is None or window.combat_id != combat_id:
                 raise StateNotFoundError("伤害前反应窗口不存在")
-            if window.version != command.reaction_window_version:
+            metadata = dict((window.result_json or {}).get("action_window") or {})
+            replay_claim = (
+                metadata.get("status") in {"resolving", "resolved"}
+                and metadata.get("resolver_idempotency_key") == idempotency_key
+            )
+            if not replay_claim and window.version != command.reaction_window_version:
                 raise VersionConflict(
                     "combat_action",
                     window.id,
                     command.reaction_window_version,
                     window.version,
                 )
-            metadata = dict((window.result_json or {}).get("action_window") or {})
             if (
                 window.action_type != "eligible_action_window"
                 or metadata.get("phase") != "pre_damage"
-                or metadata.get("status") != "pending"
+                or (metadata.get("status") != "pending" and not replay_claim)
             ):
                 raise ValueError("伤害前反应窗口已处理或不是可处理窗口")
             source_idempotency_key = str(metadata.get("source_idempotency_key") or "")
@@ -10326,11 +10390,21 @@ class CombatEngineService:
             if not source_idempotency_key or not isinstance(original_raw, dict):
                 raise ValueError("伤害前反应窗口缺少冻结的原始攻击")
             original = CombatActionCommand.model_validate(original_raw)
+            if replay_claim and (
+                metadata.get("decision") != command.decision
+                or metadata.get("selected_feature_id") != command.feature_id
+                or metadata.get("reduction_roll") != command.reduction_roll
+            ):
+                raise ValueError("幂等重放与已认领的伤害前反应不一致")
             if command.decision == "accept":
-                expected_feature = str(metadata.get("feature_id") or "")
-                if command.feature_id != expected_feature:
+                candidates = metadata.get("candidate_interventions")
+                candidates = candidates if isinstance(candidates, dict) else {}
+                selected = candidates.get(command.feature_id or "")
+                if not candidates and command.feature_id == metadata.get("feature_id"):
+                    selected = metadata
+                if not isinstance(selected, dict):
                     raise ValueError("所选反应与伤害前窗口不匹配")
-                intervention = metadata.get("intervention")
+                intervention = selected.get("intervention")
                 if not isinstance(intervention, dict):
                     raise ValueError("伤害前反应窗口缺少通用执行配置")
                 validate_intervention_input(
@@ -10339,8 +10413,11 @@ class CombatEngineService:
                     if command.reduction_roll is not None
                     else {},
                 )
+                metadata.update(selected)
             target = session.get(Combatant, window.actor_combatant_id)
-            if target is None or target.version != int(metadata.get("target_version") or 0):
+            if target is None:
+                raise StateNotFoundError("伤害前反应目标不存在")
+            if not replay_claim and target.version != int(metadata.get("target_version") or 0):
                 raise VersionConflict(
                     "combatant",
                     window.actor_combatant_id or "",
@@ -10349,17 +10426,19 @@ class CombatEngineService:
                 )
             if original.target_combatant_id != target.id:
                 raise ValueError("原始攻击目标与反应目标不一致")
-            metadata.update(
-                {
-                    "status": "resolving",
-                    "decision": command.decision,
-                    "selected_feature_id": command.feature_id,
-                    "resolver_idempotency_key": idempotency_key,
-                }
-            )
-            window.result_json = {"action_window": metadata}
-            window.version += 1
-            window.updated_at = datetime.now(UTC)
+            if not replay_claim:
+                metadata.update(
+                    {
+                        "status": "resolving",
+                        "decision": command.decision,
+                        "selected_feature_id": command.feature_id,
+                        "reduction_roll": command.reduction_roll,
+                        "resolver_idempotency_key": idempotency_key,
+                    }
+                )
+                window.result_json = {"action_window": metadata}
+                window.version += 1
+                window.updated_at = datetime.now(UTC)
 
         try:
             result = self.confirm(
@@ -10377,10 +10456,14 @@ class CombatEngineService:
                 window = session.get(CombatAction, command.reaction_window_id)
                 if window is not None:
                     metadata = dict((window.result_json or {}).get("action_window") or {})
-                    if metadata.get("status") == "resolving":
+                    if (
+                        metadata.get("status") == "resolving"
+                        and metadata.get("resolver_idempotency_key") == idempotency_key
+                    ):
                         metadata["status"] = "pending"
                         metadata.pop("decision", None)
                         metadata.pop("selected_feature_id", None)
+                        metadata.pop("reduction_roll", None)
                         metadata.pop("resolver_idempotency_key", None)
                         window.result_json = {"action_window": metadata}
                         window.version += 1

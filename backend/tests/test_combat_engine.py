@@ -66,6 +66,132 @@ def _fighter_path(campaign_id: str, combat_id: str, fighter_id: str) -> str:
     )
 
 
+def test_generic_pre_damage_configuration_runs_through_real_api(
+    combat_client: TestClient,
+) -> None:
+    campaign = _campaign(combat_client, "Generic pre-damage configuration")
+    base = f"/api/v1/campaigns/{campaign['id']}"
+    combat = combat_client.post(f"{base}/combats", json={"name": "Generic reaction"}).json()
+    attacker = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "攻击者",
+            "entity_type": "monster",
+            "hp": 20,
+            "max_hp": 20,
+            "initiative": 20,
+        },
+    ).json()
+    target = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "测试守卫",
+            "entity_type": "character",
+            "hp": 20,
+            "max_hp": 20,
+            "initiative": 10,
+            "snapshot_json": {
+                "feature_runtime": {
+                    "actions": {
+                        "test_guard_three_quarters": {
+                            "name": "测试四分之一减伤",
+                            "kind": "feature_action",
+                            "action_cost": "reaction",
+                            "trigger": {"event": "hit_by_attack", "timing": "before_damage"},
+                            "pre_damage_intervention": {
+                                "kind": "pre_damage_intervention",
+                                "eligibility": {"damage_types": "all"},
+                                "input_requirements": [],
+                                "damage_transform": {
+                                    "operation": "multiply_each_component",
+                                    "multiplier": 0.75,
+                                    "rounding": "floor",
+                                },
+                            },
+                        },
+                        "test_guard_half": {
+                            "name": "测试减伤",
+                            "kind": "feature_action",
+                            "action_cost": "reaction",
+                            "trigger": {"event": "hit_by_attack", "timing": "before_damage"},
+                            "pre_damage_intervention": {
+                                "kind": "pre_damage_intervention",
+                                "eligibility": {"damage_types": "all"},
+                                "input_requirements": [],
+                                "damage_transform": {
+                                    "operation": "multiply_each_component",
+                                    "multiplier": 0.5,
+                                    "rounding": "floor",
+                                },
+                            },
+                        }
+                    }
+                }
+            },
+        },
+    ).json()
+    attack = combat_client.post(
+        f"{base}/combats/{combat['id']}/actions/confirm",
+        headers={"X-Request-ID": "generic-pre-damage-source"},
+        json={
+            "action_type": "damage",
+            "actor_combatant_id": attacker["id"],
+            "actor_version": attacker["version"],
+            "target_combatant_id": target["id"],
+            "target_version": target["version"],
+            "action_cost": "none",
+            "amount": 9,
+            "damage_type": "slashing",
+            "is_attack": True,
+            "attack_roll_total": 18,
+        },
+    )
+    assert attack.status_code == 200, attack.text
+    window = attack.json()["pending_reaction"]
+    metadata = window["result_json"]["action_window"]
+    assert metadata["feature_id"] == "test_guard_three_quarters"
+    assert metadata["candidate_features"] == [
+        "test_guard_three_quarters",
+        "test_guard_half",
+    ]
+    invalid = combat_client.post(
+        f"{base}/combats/{combat['id']}/reactions/pre-damage/resolve",
+        headers={"X-Request-ID": "generic-pre-damage-invalid-choice"},
+        json={
+            "reaction_window_id": window["id"],
+            "reaction_window_version": window["version"],
+            "decision": "accept",
+            "feature_id": "not_a_candidate",
+        },
+    )
+    assert invalid.status_code == 400, invalid.text
+    resolved = combat_client.post(
+        f"{base}/combats/{combat['id']}/reactions/pre-damage/resolve",
+        headers={"X-Request-ID": "generic-pre-damage-choice"},
+        json={
+            "reaction_window_id": window["id"],
+            "reaction_window_version": window["version"],
+            "decision": "accept",
+            "feature_id": "test_guard_half",
+        },
+    )
+    assert resolved.status_code == 200, resolved.text
+    assert resolved.json()["target"]["hp"] == 16
+    replay = combat_client.post(
+        f"{base}/combats/{combat['id']}/reactions/pre-damage/resolve",
+        headers={"X-Request-ID": "generic-pre-damage-choice"},
+        json={
+            "reaction_window_id": window["id"],
+            "reaction_window_version": window["version"],
+            "decision": "accept",
+            "feature_id": "test_guard_half",
+        },
+    )
+    assert replay.status_code == 200, replay.text
+    assert replay.json()["action"]["id"] == resolved.json()["action"]["id"]
+    assert replay.json()["target"]["hp"] == 16
+
+
 def test_damage_preview_is_read_only(combat_client: TestClient) -> None:
     campaign = _campaign(combat_client)
     combat, fighter = _combatant(combat_client, campaign["id"])

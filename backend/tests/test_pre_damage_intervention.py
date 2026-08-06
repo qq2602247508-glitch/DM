@@ -1,5 +1,7 @@
 from types import SimpleNamespace
 
+import pytest
+
 from dnd_dm_assistant.domain.pre_damage_intervention import (
     apply_pre_damage_intervention,
 )
@@ -50,3 +52,23 @@ def test_two_feature_ids_reuse_the_same_configuration_executor() -> None:
     assert first_result["operation"] == "multiply_each_component"
     assert [part.amount for part in second.damage_components] == [3, 5]
     assert second_result["delta"] == 7
+
+
+def test_generic_executor_fails_closed_on_missing_bindings_and_invalid_rolls() -> None:
+    spec = {
+        "kind": "pre_damage_intervention",
+        "damage_transform": {
+            "operation": "subtract_total",
+            "amount": "roll+class_level",
+        },
+        "input_requirements": [{"key": "roll", "kind": "die_roll", "die_sides": 6}],
+    }
+    with pytest.raises(ValueError, match="减伤公式"):
+        apply_pre_damage_intervention(_command(10), spec, inputs={"roll": 4})
+    with pytest.raises(ValueError, match="骰子范围"):
+        apply_pre_damage_intervention(
+            _command(10),
+            spec,
+            inputs={"roll": 7},
+            bindings={"class_level": 3},
+        )
