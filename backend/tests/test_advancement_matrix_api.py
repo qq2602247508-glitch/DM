@@ -409,6 +409,9 @@ def test_multiclass_upgrade_rebuilds_resources_for_every_owned_class(
     assert resources["second_wind"]["max"] >= 1
     assert resources["arcane_recovery"]["max"] == 1
     assert resources["spell_slots_1"]["max"] == 3
+    runtime = response.json()["runtime_registry"]
+    assert runtime["progression"]["class_levels"] == {"战士": 1, "法师": 2}
+    assert runtime["progression"]["spell_slots"]["spell_slots_1"]["max"] == 3
 
 
 @pytest.mark.parametrize("class_name", ["野蛮人", "战士", "游荡者"])
