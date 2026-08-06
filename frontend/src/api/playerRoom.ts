@@ -318,6 +318,13 @@ export type PlayerPendingReaction = {
   kind?: "opportunity" | "pre_damage" | "deflect_redirect";
   feature_id?: string | null;
   feature_name?: string | null;
+  candidate_features?: Array<{
+    id: string;
+    name: string;
+    requires_reduction_roll?: boolean;
+    damage_reduction_formula?: string | null;
+    damage_reduction_bonus?: number | null;
+  }>;
   requires_reduction_roll?: boolean;
   damage_reduction_formula?: string | null;
   damage_reduction_bonus?: number | null;

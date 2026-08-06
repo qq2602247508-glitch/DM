@@ -3489,6 +3489,39 @@ class PlayerRoomService:
                         }
                     )
                     continue
+                raw_candidates = metadata.get("candidate_interventions")
+                candidate_features = []
+                if isinstance(raw_candidates, dict):
+                    for candidate_id, raw_candidate in raw_candidates.items():
+                        if not isinstance(raw_candidate, dict):
+                            continue
+                        raw_intervention = raw_candidate.get("intervention")
+                        raw_requirements = (
+                            raw_intervention.get("input_requirements")
+                            if isinstance(raw_intervention, dict)
+                            else []
+                        )
+                        requires_roll = any(
+                            isinstance(item, dict)
+                            and item.get("key") == "reduction_roll"
+                            for item in raw_requirements or []
+                        )
+                        candidate_features.append(
+                            {
+                                "id": str(candidate_id),
+                                "name": raw_candidate.get("feature_name") or candidate_id,
+                                "requires_reduction_roll": requires_roll,
+                                "damage_reduction_formula": metadata.get(
+                                    "damage_reduction_formula"
+                                ),
+                                "damage_reduction_bonus": (
+                                    int(raw_candidate.get("dexterity_modifier") or 0)
+                                    + int(raw_candidate.get("class_level") or 1)
+                                    if requires_roll
+                                    else None
+                                ),
+                            }
+                        )
                 pending_reactions.append(
                     {
                         "id": window.id,
@@ -3496,6 +3529,7 @@ class PlayerRoomService:
                         "kind": "pre_damage",
                         "feature_id": metadata.get("feature_id"),
                         "feature_name": metadata.get("feature_name"),
+                        "candidate_features": candidate_features,
                         "requires_reduction_roll": metadata.get("requires_reduction_roll", False),
                         "damage_reduction_formula": metadata.get("damage_reduction_formula"),
                         "damage_reduction_bonus": (

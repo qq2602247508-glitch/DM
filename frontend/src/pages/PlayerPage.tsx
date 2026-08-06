@@ -1066,6 +1066,7 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
   const [summonPosition, setSummonPosition] = useState<GridPoint | null>(null);
   const [reactionTrigger, setReactionTrigger] = useState("");
   const [preDamageReductionRolls, setPreDamageReductionRolls] = useState<Record<string, string>>({});
+  const [preDamageSelectedFeatures, setPreDamageSelectedFeatures] = useState<Record<string, string>>({});
   const [deflectRedirectTargets, setDeflectRedirectTargets] = useState<Record<string, string>>({});
   const [deflectRedirectSaves, setDeflectRedirectSaves] = useState<Record<string, string>>({});
   const [deflectRedirectDamageRolls, setDeflectRedirectDamageRolls] = useState<Record<string, string[]>>({});
@@ -1785,7 +1786,7 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
     mutationFn: ({ id, version, decision, featureId, reductionRoll }: { id: string; version: number; decision: "accept" | "reject"; featureId?: string; reductionRoll?: number }) =>
       resolveMyPreDamageReaction(id, version, decision, featureId, reductionRoll),
     onSuccess: (_result, variables) => {
-      setLastResolution(variables.decision === "accept" && variables.featureId === "deflect_attacks" ? "已使用偏转攻击；原攻击正在按减伤骰结算。" : variables.decision === "accept" ? "已使用直觉闪避；原攻击正在按减半伤害结算。" : "已放弃伤害前反应；原攻击正在正常结算。");
+      setLastResolution(variables.decision === "accept" ? `已使用${variables.featureId ?? "伤害前反应"}；原攻击正在结算。` : "已放弃伤害前反应；原攻击正在正常结算。");
       refresh();
     },
   });
@@ -2110,21 +2111,26 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
             ) : reaction.kind === "pre_damage" ? (
               <div className="mb-3 rounded border border-amber-700 bg-amber-950/25 p-3" data-testid="player-pending-pre-damage-reaction" key={reaction.id}>
                 {(() => {
-                  const requiresReductionRoll = reaction.requires_reduction_roll === true;
+                  const defaultFeature = { id: reaction.feature_id ?? "uncanny_dodge", name: reaction.feature_name ?? "伤害前反应", requires_reduction_roll: reaction.requires_reduction_roll, damage_reduction_bonus: reaction.damage_reduction_bonus };
+                  const candidateOptions = reaction.candidate_features?.length ? reaction.candidate_features : [defaultFeature];
+                  const selectedFeatureId = preDamageSelectedFeatures[reaction.id] ?? candidateOptions[0]?.id ?? defaultFeature.id;
+                  const selectedFeature = candidateOptions.find((candidate) => candidate.id === selectedFeatureId) ?? candidateOptions[0] ?? defaultFeature;
+                  const requiresReductionRoll = selectedFeature.requires_reduction_roll === true;
                   const reductionRoll = preDamageReductionRolls[reaction.id] ?? "";
-                  const reductionBonus = reaction.damage_reduction_bonus ?? 0;
+                  const reductionBonus = selectedFeature.damage_reduction_bonus ?? 0;
                   const canAccept = !requiresReductionRoll || (Number.isInteger(Number(reductionRoll)) && Number(reductionRoll) >= 1 && Number(reductionRoll) <= 10);
                   return (
                 <div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <strong className="text-sm text-amber-100">伤害前反应暂停 · {reaction.source_name ?? "攻击者"} · {reaction.feature_name ?? "直觉闪避"}</strong>
+                  <strong className="text-sm text-amber-100">伤害前反应暂停 · {reaction.source_name ?? "攻击者"} · {selectedFeature.name}</strong>
                   <span className="rounded border border-amber-700/70 px-1.5 py-0.5 text-2xs text-amber-200">伤害尚未落地</span>
+                  {candidateOptions.length > 1 ? <label className="flex items-center gap-1 text-2xs text-amber-100">选择反应<select aria-label={`${reaction.id} 伤害前反应`} className="rounded border border-amber-800 bg-ink-950 px-1.5 py-1" onChange={(event) => setPreDamageSelectedFeatures((current) => ({ ...current, [reaction.id]: event.target.value }))} value={selectedFeatureId}>{candidateOptions.map((candidate) => <option key={candidate.id} value={candidate.id}>{candidate.name}</option>)}</select></label> : null}
                   {requiresReductionRoll ? <label className="flex items-center gap-1 text-2xs text-amber-100">d10减伤骰<input aria-label={`${reaction.id} 偏转攻击减伤骰`} className="w-16 rounded border border-amber-800 bg-ink-950 px-1.5 py-1" max="10" min="1" onChange={(event) => setPreDamageReductionRolls((current) => ({ ...current, [reaction.id]: event.target.value }))} type="number" value={reductionRoll} /><span className="text-stone-400">+{reductionBonus}</span></label> : null}
                 </div>
                 <p className="mb-0 mt-1 text-xs leading-5 text-stone-300">{reaction.message ?? "你被攻击命中；请选择是否使用反应。"}</p>
-                <p className="mb-0 mt-1 text-2xs text-amber-200">「{reaction.source_action_name ?? "攻击"}」命中你。{requiresReductionRoll ? `使用偏转攻击会用 d10 + 敏捷调整值 + 职业等级（固定加值 ${reductionBonus}）从攻击伤害中扣除；若归零，随后会打开独立的 Focus 反击窗口。` : "使用直觉闪避会在抗性/免疫结算前将本次攻击每段伤害向下取整减半。"}</p>
+                <p className="mb-0 mt-1 text-2xs text-amber-200">「{reaction.source_action_name ?? "攻击"}」命中你。{requiresReductionRoll ? `使用${selectedFeature.name}会提交减伤骰，并按配置加值 ${reductionBonus} 从攻击伤害中扣除。` : `使用${selectedFeature.name}会在抗性/免疫结算前应用配置的伤害变换。`}</p>
                 <div className="mt-2 flex gap-2">
-                  <Button disabled={preDamageReactionMutation.isPending || !canAccept} loading={preDamageReactionMutation.isPending && preDamageReactionMutation.variables?.id === reaction.id && preDamageReactionMutation.variables.decision === "accept"} onClick={() => preDamageReactionMutation.mutate({ id: reaction.id, version: reaction.version, decision: "accept", featureId: reaction.feature_id ?? "uncanny_dodge", reductionRoll: requiresReductionRoll ? Number(reductionRoll) : undefined })} variant="danger">使用{reaction.feature_name ?? "直觉闪避"}</Button>
+                  <Button disabled={preDamageReactionMutation.isPending || !canAccept} loading={preDamageReactionMutation.isPending && preDamageReactionMutation.variables?.id === reaction.id && preDamageReactionMutation.variables.decision === "accept"} onClick={() => preDamageReactionMutation.mutate({ id: reaction.id, version: reaction.version, decision: "accept", featureId: selectedFeatureId, reductionRoll: requiresReductionRoll ? Number(reductionRoll) : undefined })} variant="danger">使用{selectedFeature.name}</Button>
                   <Button disabled={preDamageReactionMutation.isPending} loading={preDamageReactionMutation.isPending && preDamageReactionMutation.variables?.id === reaction.id && preDamageReactionMutation.variables.decision === "reject"} onClick={() => preDamageReactionMutation.mutate({ id: reaction.id, version: reaction.version, decision: "reject" })}>不使用</Button>
                 </div>
                 </div>
