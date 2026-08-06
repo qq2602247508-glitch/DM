@@ -41,6 +41,50 @@ _DAMAGE_TYPES_EXCEPT_FORCE = [
 ]
 _AUTOMATION_STATUSES = frozenset({"full", "partial", "dm_only"})
 
+# One source of truth for feature-condition lifecycle blocks.  The compiler
+# gate and combat executor both consume this table, so a newly added feature
+# state cannot become a UI button without a matching cleanup policy.
+FEATURE_CONDITION_RUNTIME_SPECS: dict[str, dict[str, dict[str, Any]]] = {
+    "activate_duration_condition": {
+        "raging": {
+            "state_name": "feature_raging",
+            "duration_units": ["rounds", "minutes"],
+        },
+        "innate_sorcery": {
+            "state_name": "feature_innate_sorcery",
+            "duration_units": ["rounds", "minutes"],
+        },
+        "superior_defense": {
+            "state_name": "superior_defense",
+            "duration_units": ["rounds", "minutes"],
+        },
+    },
+    "activate_timed_condition": {
+        "隐形": {
+            "state_name": "feature_invisible",
+            "expires": ["turn_start", "turn_end"],
+        },
+        "reckless_attack": {
+            "state_name": "feature_reckless_attack",
+            "expires": ["turn_start", "turn_end"],
+        },
+        "steady_aim": {
+            "state_name": "steady_aim",
+            "expires": ["turn_start", "turn_end"],
+        },
+    },
+}
+
+
+def feature_condition_runtime_spec(
+    effect_kind: str,
+    condition: str,
+) -> dict[str, Any] | None:
+    """Return a copied lifecycle spec for one typed feature condition effect."""
+
+    raw = FEATURE_CONDITION_RUNTIME_SPECS.get(effect_kind, {}).get(condition)
+    return deepcopy(raw) if isinstance(raw, Mapping) else None
+
 
 def resource_recovery_events(
     key: str,
@@ -2427,14 +2471,16 @@ def _feature_action_executor_ready(action: Mapping[str, Any]) -> bool:
     for effect in effect_list:
         if not isinstance(effect, Mapping):
             return False
-        if effect.get("kind") == "activate_timed_condition" and not (
-            effect.get("condition") in {"隐形", "reckless_attack", "steady_aim"}
-            and effect.get("expires") in {"turn_start", "turn_end"}
+        effect_kind = str(effect.get("kind") or "")
+        condition = str(effect.get("condition") or "")
+        spec = feature_condition_runtime_spec(effect_kind, condition)
+        if effect_kind == "activate_timed_condition" and not (
+            spec is not None and effect.get("expires") in spec.get("expires", ())
         ):
             return False
-        if effect.get("kind") == "activate_duration_condition" and not (
-            effect.get("condition") in {"raging", "innate_sorcery", "superior_defense"}
-            and effect.get("duration_unit") in {"rounds", "minutes"}
+        if effect_kind == "activate_duration_condition" and not (
+            spec is not None
+            and effect.get("duration_unit") in spec.get("duration_units", ())
             and isinstance(effect.get("duration_value"), int)
             and effect.get("duration_value") >= 1
         ):

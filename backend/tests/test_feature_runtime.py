@@ -24,6 +24,7 @@ from dnd_dm_assistant.domain.feature_runtime import (
     apply_initiative_start_resource_recovery,
     compile_feature_runtime_registry,
     feature_block_payloads,
+    feature_condition_runtime_spec,
     feature_runtime_action_projections,
     feature_runtime_contract,
     feature_runtime_definition,
@@ -138,6 +139,23 @@ def test_feature_runtime_compiles_one_stable_canonical_block_set() -> None:
         item.get("id") == "radiant_strikes:bonus_damage"
         for item in feature_block_payloads(registry, "attack_rider")
     )
+
+
+def test_feature_condition_lifecycle_spec_is_shared_and_fail_closed() -> None:
+    timed = feature_condition_runtime_spec("activate_timed_condition", "steady_aim")
+    assert timed == {
+        "state_name": "steady_aim",
+        "expires": ["turn_start", "turn_end"],
+    }
+    assert feature_condition_runtime_spec(
+        "activate_timed_condition", "unstructured_condition"
+    ) is None
+    assert feature_condition_runtime_spec(
+        "activate_duration_condition", "raging"
+    ) == {
+        "state_name": "feature_raging",
+        "duration_units": ["rounds", "minutes"],
+    }
 
 
 def test_level_by_level_contract_covers_every_named_core_feature() -> None:

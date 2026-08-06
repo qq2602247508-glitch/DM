@@ -48,7 +48,10 @@ from dnd_dm_assistant.domain.exploration import (
     line_of_sight,
     line_of_sight_3d,
 )
-from dnd_dm_assistant.domain.feature_runtime import feature_block_payloads
+from dnd_dm_assistant.domain.feature_runtime import (
+    feature_block_payloads,
+    feature_condition_runtime_spec,
+)
 from dnd_dm_assistant.infrastructure.database.campaign_service import serialize
 from dnd_dm_assistant.infrastructure.database.models import (
     NPC,
@@ -10696,14 +10699,14 @@ class CombatEngineService:
                     condition = str(effect.get("condition") or "").strip()
                     duration_unit = str(effect.get("duration_unit") or "").strip()
                     duration_value = self._state_int(effect.get("duration_value"), 0)
+                    spec = feature_condition_runtime_spec(kind, condition)
                     if (
-                        condition
-                        not in {"raging", "innate_sorcery", "superior_defense"}
-                        or duration_unit not in {"rounds", "minutes"}
+                        spec is None
+                        or duration_unit not in spec.get("duration_units", ())
                         or duration_value < 1
                     ):
                         raise ValueError(
-                            "当前职业特性只允许狂暴、先天术法或无懈可击使用明确的回合或分钟持续时间"
+                            "职业特性状态积木缺少受支持的持续时间规格"
                         )
                     if self._condition_is_immune(
                         target,
@@ -10712,11 +10715,7 @@ class CombatEngineService:
                         combat_id=combat.id,
                     ):
                         raise ValueError(f"目标免疫状态「{condition}」，职业特性未写入")
-                    state_name = {
-                        "raging": "feature_raging",
-                        "innate_sorcery": "feature_innate_sorcery",
-                        "superior_defense": "superior_defense",
-                    }[condition]
+                    state_name = str(spec["state_name"])
                     runtime_effect = self._create_runtime_effect(
                         session,
                         combat,
@@ -10736,7 +10735,7 @@ class CombatEngineService:
                         "value": duration_value,
                         "ends_round": runtime_effect.ends_round,
                     }
-                    if condition == "raging":
+                    if state_name == "feature_raging":
                         snapshot = dict(actor.snapshot_json or {})
                         snapshot["rage_activity"] = {
                             "effect_id": runtime_effect.id,
@@ -10751,16 +10750,10 @@ class CombatEngineService:
                 elif kind == "activate_timed_condition":
                     condition = str(effect.get("condition") or "").strip()
                     expires = str(effect.get("expires") or "turn_start")
-                    if condition not in {
-                        "隐形",
-                        "reckless_attack",
-                        "steady_aim",
-                    } or expires not in {
-                        "turn_start",
-                        "turn_end",
-                    }:
+                    spec = feature_condition_runtime_spec(kind, condition)
+                    if spec is None or expires not in spec.get("expires", ()):
                         raise ValueError(
-                            "当前职业特性只允许结构化的隐形、鲁莽攻击或稳定瞄准持续到回合边界"
+                            "职业特性状态积木缺少受支持的回合边界规格"
                         )
                     if self._condition_is_immune(
                         target,
@@ -10771,11 +10764,7 @@ class CombatEngineService:
                         raise ValueError(
                             f"目标免疫状态「{condition}」，职业特性未写入"
                         )
-                    state_name = {
-                        "隐形": "feature_invisible",
-                        "reckless_attack": "feature_reckless_attack",
-                        "steady_aim": "steady_aim",
-                    }[condition]
+                    state_name = str(spec["state_name"])
                     runtime_effect = self._create_runtime_effect(
                         session,
                         combat,
