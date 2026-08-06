@@ -1330,3 +1330,11 @@ backend/.venv/bin/python -m pytest -q backend/tests
 - 验证：后端全量 `pytest -q backend/tests` 通过，当前收集 `485` 项；定向规则/职业/战斗回归通过；Ruff、compileall、`git diff --check` 通过。仅有既有 Starlette/httpx 弃用警告。本轮没有前端改动，未宣称浏览器验收。
 - 用户原有未跟踪文件 `backend/tests/integrations/`、`backend/tests/ollama.py` 和 `docs/superpowers/specs/2026-08-06-dnd-terrain-generation-takeover.md` 未纳入提交。
 - 这一切片完成度：职业特性“统一积木编译与兼容消费层” `100%`；它属于固定大项“职业/子职业 1–20 级运行时闭环”，不新增第五个缺口。具体职业特性的未结构化分支、复杂反应触发仍按既有四大项边界处理。
+# 2026-08-06 职业特性目标策略通用执行器
+
+- 代码提交 `d8e3d2d`：职业动作积木新增通用 `target_policy` 执行器，支持 `self`、`ally_or_self`、`enemy`、`any` 模式、同阵营约束和结构化距离校验；执行器按积木字段工作，不按职业/技能名称分支。
+- 吟游诗人激励积木现在声明同阵营、60 尺目标策略；确认时真实校验双方权威网格位置。超距、敌方目标、缺少/非法位置都会拒绝，资源和附赠动作不会被错误消费。其余职业动作可复用同一策略，不需要再造专用校验。
+- 新增纯运行时回归覆盖同阵营、60 尺范围和 fail-closed 边界；既有吟游诗人激励 API 回归同步补充权威位置并通过。
+- 验证：后端全量 `pytest -q backend/tests` 485 项通过；Ruff、compileall、`git diff --check` 通过。仅有既有 Starlette/httpx 弃用警告。本轮没有前端源码改动，因此未宣称浏览器验收。
+- 本轮只提交后端四个任务相关文件。用户/其他任务的 `frontend/src/ui/sceneGridGenerator.ts`、对应测试、`backend/tests/integrations/`、`backend/tests/ollama.py` 和 terrain takeover 文档均未纳入提交。
+- 这一切片完成度：职业特性“通用目标策略执行” `100%`；仍属于固定大项“职业/子职业 1–20 级运行时闭环”，不新增第五个缺口。
