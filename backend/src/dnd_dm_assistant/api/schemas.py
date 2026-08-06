@@ -1126,6 +1126,7 @@ class CombatPreDamageReactionCommand(BaseModel):
     decision: Literal["accept", "reject"]
     feature_id: str | None = Field(default=None, min_length=1, max_length=120)
     reduction_roll: int | None = Field(default=None, ge=1, le=100)
+    inputs: dict[str, int] = Field(default_factory=dict)
 
     @model_validator(mode="after")
     def validate_pre_damage_reaction(self) -> CombatPreDamageReactionCommand:
@@ -1133,6 +1134,14 @@ class CombatPreDamageReactionCommand(BaseModel):
             raise ValueError("使用伤害前反应时必须选择职业特性")
         if self.decision == "reject" and self.feature_id is not None:
             raise ValueError("放弃伤害前反应时不能携带职业特性")
+        if self.decision == "reject" and (self.reduction_roll is not None or self.inputs):
+            raise ValueError("放弃伤害前反应时不能携带执行输入")
+        if (
+            self.reduction_roll is not None
+            and "reduction_roll" in self.inputs
+            and self.inputs["reduction_roll"] != self.reduction_roll
+        ):
+            raise ValueError("兼容减伤骰字段与通用输入不一致")
         return self
 
 

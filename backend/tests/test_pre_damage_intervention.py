@@ -72,3 +72,30 @@ def test_generic_executor_fails_closed_on_missing_bindings_and_invalid_rolls() -
             inputs={"roll": 7},
             bindings={"class_level": 3},
         )
+    with pytest.raises(ValueError, match="未声明输入"):
+        apply_pre_damage_intervention(
+            _command(10),
+            {
+                "kind": "pre_damage_intervention",
+                "damage_transform": {
+                    "operation": "multiply_each_component",
+                    "multiplier": 0.5,
+                },
+                "input_requirements": [],
+            },
+            inputs={"roll": 1},
+        )
+    with pytest.raises(ValueError, match="取整方式"):
+        apply_pre_damage_intervention(
+            _command(10),
+            {
+                "kind": "pre_damage_intervention",
+                "damage_transform": {
+                    "operation": "multiply_each_component",
+                    "multiplier": 0.5,
+                    "rounding": "ceiling",
+                },
+                "input_requirements": [],
+            },
+            inputs={},
+        )

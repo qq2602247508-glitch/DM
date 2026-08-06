@@ -38,10 +38,14 @@ def validate_intervention_input(spec: Mapping[str, object], inputs: Mapping[str,
     requirements = spec.get("input_requirements")
     if not isinstance(requirements, list):
         requirements = []
+    expected_keys: set[str] = set()
     for requirement in requirements:
         if not isinstance(requirement, Mapping):
             raise ValueError("伤害前反应输入要求格式无效")
         key = str(requirement.get("key") or "").strip()
+        if key in expected_keys:
+            raise ValueError(f"伤害前反应重复声明输入：{key}")
+        expected_keys.add(key)
         value = _number(inputs.get(key))
         if not key or value is None:
             raise ValueError(f"伤害前反应缺少输入：{key or 'unknown'}")
@@ -49,6 +53,15 @@ def validate_intervention_input(spec: Mapping[str, object], inputs: Mapping[str,
             sides = _number(requirement.get("die_sides"))
             if sides is None or value < 1 or value > sides:
                 raise ValueError(f"伤害前反应输入超出骰子范围：{key}")
+        else:
+            raise ValueError(f"暂未接入该伤害前反应输入类型：{key}")
+    unexpected = {
+        str(key).strip()
+        for key, value in inputs.items()
+        if value is not None and str(key).strip() not in expected_keys
+    }
+    if unexpected:
+        raise ValueError(f"伤害前反应包含未声明输入：{', '.join(sorted(unexpected))}")
 
 
 def apply_pre_damage_intervention(
@@ -74,8 +87,14 @@ def apply_pre_damage_intervention(
         multiplier = transform.get("multiplier")
         if not isinstance(multiplier, (int, float)) or multiplier < 0:
             raise ValueError("伤害前反应倍率配置无效")
+        if transform.get("rounding", "floor") != "floor":
+            raise ValueError("暂未接入该伤害前反应取整方式")
         values = [max(0, int(amount * multiplier)) for amount in values]
     elif operation == "subtract_total":
+        if transform.get("distribution", "components_in_order") != "components_in_order":
+            raise ValueError("暂未接入该伤害前反应分段分配方式")
+        if _number(transform.get("minimum", 0)) != 0:
+            raise ValueError("伤害前反应当前只支持伤害下限为 0")
         names = {key: value for key, value in (bindings or {}).items() if isinstance(value, int)}
         names.update({key: value for key, value in inputs.items() if isinstance(value, int)})
         amount = _expression(transform.get("amount"), names)

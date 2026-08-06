@@ -1402,10 +1402,16 @@ class CombatEngineService:
             )
             class_level = max(class_level_values or [int(progression.get("total_level") or 0)])
             transform = intervention.get("damage_transform")
+            amount_expression = (
+                str(transform.get("amount") or "") if isinstance(transform, dict) else ""
+            )
             if (
                 isinstance(transform, dict)
                 and transform.get("operation") == "subtract_total"
-                and (class_level <= 0 or not has_dexterity)
+                and (
+                    ("class_level" in amount_expression and class_level <= 0)
+                    or ("dexterity_modifier" in amount_expression and not has_dexterity)
+                )
             ):
                 continue
             proficiency_bonus = int(progression.get("proficiency_bonus") or 0)
@@ -9489,6 +9495,7 @@ class CombatEngineService:
         pre_damage_reaction_window_id: str | None = None,
         pre_damage_reaction_decision: str | None = None,
         pre_damage_reduction_roll: int | None = None,
+        pre_damage_inputs: dict[str, int] | None = None,
     ) -> dict[str, Any]:
         if not idempotency_key.strip():
             raise ValueError("idempotency key is required")
@@ -9580,7 +9587,7 @@ class CombatEngineService:
                     spec = pre_damage_metadata.get("intervention")
                     if not isinstance(spec, dict):
                         raise ValueError("伤害前反应窗口缺少通用执行配置")
-                    inputs = {}
+                    inputs = dict(pre_damage_inputs or {})
                     if pre_damage_reduction_roll is not None:
                         inputs["reduction_roll"] = pre_damage_reduction_roll
                     command, transform_result = apply_pre_damage_intervention(
@@ -9596,6 +9603,7 @@ class CombatEngineService:
                     )
                     pre_damage_metadata.update(transform_result)
                     pre_damage_metadata["applied"] = True
+                    pre_damage_metadata["inputs"] = inputs
                     pre_damage_metadata["applied_feature_id"] = pre_damage_metadata.get(
                         "feature_id"
                     )
@@ -10129,6 +10137,7 @@ class CombatEngineService:
                         "decision": pre_damage_reaction_decision,
                         "feature_id": pre_damage_metadata.get("feature_id"),
                         "damage_reduction_roll": pre_damage_metadata.get("damage_reduction_roll"),
+                        "inputs": pre_damage_metadata.get("inputs", {}),
                         "damage_reduction_total": pre_damage_metadata.get("damage_reduction_total"),
                         "redirect_available": pre_damage_metadata.get("redirect_available", False),
                         "redirect_window_id": None,
@@ -10363,6 +10372,9 @@ class CombatEngineService:
 
         if not idempotency_key.strip():
             raise ValueError("idempotency key is required")
+        provided_inputs = dict(command.inputs)
+        if command.reduction_roll is not None:
+            provided_inputs["reduction_roll"] = command.reduction_roll
         with Session(self.engine) as session, session.begin():
             window = session.get(CombatAction, command.reaction_window_id)
             if window is None or window.combat_id != combat_id:
@@ -10390,10 +10402,17 @@ class CombatEngineService:
             if not source_idempotency_key or not isinstance(original_raw, dict):
                 raise ValueError("伤害前反应窗口缺少冻结的原始攻击")
             original = CombatActionCommand.model_validate(original_raw)
+            stored_inputs = metadata.get("inputs")
+            if not isinstance(stored_inputs, dict):
+                stored_inputs = (
+                    {"reduction_roll": metadata["reduction_roll"]}
+                    if metadata.get("reduction_roll") is not None
+                    else {}
+                )
             if replay_claim and (
                 metadata.get("decision") != command.decision
                 or metadata.get("selected_feature_id") != command.feature_id
-                or metadata.get("reduction_roll") != command.reduction_roll
+                or stored_inputs != provided_inputs
             ):
                 raise ValueError("幂等重放与已认领的伤害前反应不一致")
             if command.decision == "accept":
@@ -10409,9 +10428,7 @@ class CombatEngineService:
                     raise ValueError("伤害前反应窗口缺少通用执行配置")
                 validate_intervention_input(
                     intervention,
-                    {"reduction_roll": command.reduction_roll}
-                    if command.reduction_roll is not None
-                    else {},
+                    provided_inputs,
                 )
                 metadata.update(selected)
             target = session.get(Combatant, window.actor_combatant_id)
@@ -10433,6 +10450,7 @@ class CombatEngineService:
                         "decision": command.decision,
                         "selected_feature_id": command.feature_id,
                         "reduction_roll": command.reduction_roll,
+                        "inputs": provided_inputs,
                         "resolver_idempotency_key": idempotency_key,
                     }
                 )
@@ -10450,6 +10468,7 @@ class CombatEngineService:
                 pre_damage_reaction_window_id=command.reaction_window_id,
                 pre_damage_reaction_decision=command.decision,
                 pre_damage_reduction_roll=command.reduction_roll,
+                pre_damage_inputs=provided_inputs,
             )
         except Exception:
             with Session(self.engine) as session, session.begin():
@@ -10464,6 +10483,7 @@ class CombatEngineService:
                         metadata.pop("decision", None)
                         metadata.pop("selected_feature_id", None)
                         metadata.pop("reduction_roll", None)
+                        metadata.pop("inputs", None)
                         metadata.pop("resolver_idempotency_key", None)
                         window.result_json = {"action_window": metadata}
                         window.version += 1

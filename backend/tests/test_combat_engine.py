@@ -109,19 +109,26 @@ def test_generic_pre_damage_configuration_runs_through_real_api(
                                 },
                             },
                         },
-                        "test_guard_half": {
-                            "name": "测试减伤",
+                        "test_guard_subtract": {
+                            "name": "测试骰值减伤",
                             "kind": "feature_action",
                             "action_cost": "reaction",
                             "trigger": {"event": "hit_by_attack", "timing": "before_damage"},
                             "pre_damage_intervention": {
                                 "kind": "pre_damage_intervention",
                                 "eligibility": {"damage_types": "all"},
-                                "input_requirements": [],
+                                "input_requirements": [
+                                    {
+                                        "key": "ward_roll",
+                                        "kind": "die_roll",
+                                        "die_sides": 6,
+                                    }
+                                ],
                                 "damage_transform": {
-                                    "operation": "multiply_each_component",
-                                    "multiplier": 0.5,
-                                    "rounding": "floor",
+                                    "operation": "subtract_total",
+                                    "amount": "ward_roll",
+                                    "distribution": "components_in_order",
+                                    "minimum": 0,
                                 },
                             },
                         }
@@ -152,7 +159,7 @@ def test_generic_pre_damage_configuration_runs_through_real_api(
     assert metadata["feature_id"] == "test_guard_three_quarters"
     assert metadata["candidate_features"] == [
         "test_guard_three_quarters",
-        "test_guard_half",
+        "test_guard_subtract",
     ]
     invalid = combat_client.post(
         f"{base}/combats/{combat['id']}/reactions/pre-damage/resolve",
@@ -172,11 +179,15 @@ def test_generic_pre_damage_configuration_runs_through_real_api(
             "reaction_window_id": window["id"],
             "reaction_window_version": window["version"],
             "decision": "accept",
-            "feature_id": "test_guard_half",
+            "feature_id": "test_guard_subtract",
+            "inputs": {"ward_roll": 5},
         },
     )
     assert resolved.status_code == 200, resolved.text
     assert resolved.json()["target"]["hp"] == 16
+    assert resolved.json()["action"]["result_json"]["pre_damage_reaction"]["inputs"] == {
+        "ward_roll": 5
+    }
     replay = combat_client.post(
         f"{base}/combats/{combat['id']}/reactions/pre-damage/resolve",
         headers={"X-Request-ID": "generic-pre-damage-choice"},
@@ -184,7 +195,8 @@ def test_generic_pre_damage_configuration_runs_through_real_api(
             "reaction_window_id": window["id"],
             "reaction_window_version": window["version"],
             "decision": "accept",
-            "feature_id": "test_guard_half",
+            "feature_id": "test_guard_subtract",
+            "inputs": {"ward_roll": 5},
         },
     )
     assert replay.status_code == 200, replay.text
