@@ -372,12 +372,31 @@ def test_subclass_actions_enter_canonical_runtime_blocks_without_becoming_fake_b
     )
     assert response.status_code == 200, response.text
     registry = response.json()["runtime_registry"]
+    repeat_response = advancement_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/characters/{created['id']}"
+        "/advancement/preview",
+        json={
+            "character_version": created["version"],
+            "class_name": "战士",
+            "subclass_name": "勇士",
+        },
+    )
+    assert repeat_response.status_code == 200, repeat_response.text
+    assert [
+        block["id"] for block in registry["feature_blocks"]
+    ] == [
+        block["id"] for block in repeat_response.json()["runtime_registry"]["feature_blocks"]
+    ]
 
     subclass_action = next(
         item
         for item in registry["actions"].values()
         if item.get("kind") == "subclass_feature_action"
     )
+    assert subclass_action["id"] == (
+        f"subclass_feature_action:{subclass_action['feature_id']}"
+    )
+    assert subclass_action["feature_id"]
     assert subclass_action["runtime"]["automation_status"] == "partial"
     canonical = next(
         block

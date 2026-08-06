@@ -1096,6 +1096,7 @@ def _subclass_resource_update(
 
 def _subclass_action(definition: dict[str, Any], resource_key: str | None) -> dict[str, Any] | None:
     description = str(definition.get("description") or "")
+    feature_id = str(definition.get("id") or definition.get("name") or "").strip()
     action_cost = (
         "bonus_action"
         if "附赠动作" in description
@@ -1108,6 +1109,8 @@ def _subclass_action(definition: dict[str, Any], resource_key: str | None) -> di
     if action_cost is None:
         return None
     return {
+        "id": f"subclass_feature_action:{feature_id}",
+        "feature_id": feature_id,
         "name": str(definition["name"]),
         "kind": "subclass_feature_action",
         "class_name": str(definition.get("class_name") or ""),
