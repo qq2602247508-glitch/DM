@@ -1737,6 +1737,141 @@ def test_structured_takes_damage_reaction_window_is_one_per_damage_event(
     assert repeated.status_code == 200, repeated.text
 
 
+def test_character_structured_takes_damage_reaction_window_is_not_monster_only(
+    combat_client: TestClient,
+) -> None:
+    campaign = _campaign(combat_client, "Character damage reaction")
+    base = f"/api/v1/campaigns/{campaign['id']}"
+    combat = combat_client.post(
+        f"{base}/combats", json={"name": "Character damage reaction combat"}
+    ).json()
+    attacker = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "角色攻击者",
+            "entity_type": "monster",
+            "initiative": 20,
+            "hp": 20,
+            "max_hp": 20,
+        },
+    ).json()
+    character = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "角色反应者",
+            "entity_type": "character",
+            "initiative": 10,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {
+                "actions": [
+                    {
+                        "name": "地狱反击",
+                        "action_type": "reaction",
+                        "reaction_event": "takes_damage",
+                        "reaction_trigger": "受到伤害时",
+                    }
+                ]
+            },
+        },
+    ).json()
+    response = combat_client.post(
+        f"{base}/combats/{combat['id']}/actions/confirm",
+        headers={"X-Request-ID": "character-damage-reaction"},
+        json={
+            "action_type": "damage",
+            "actor_combatant_id": attacker["id"],
+            "actor_version": attacker["version"],
+            "action_cost": "none",
+            "action_name": "火焰攻击",
+            "target_combatant_id": character["id"],
+            "target_version": character["version"],
+            "amount": 6,
+            "damage_type": "fire",
+        },
+    )
+    assert response.status_code == 200, response.text
+    actions = combat_client.get(f"{base}/combats/{combat['id']}/actions").json()["items"]
+    windows = [
+        item["result_json"]["action_window"]
+        for item in actions
+        if item["action_type"] == "eligible_action_window"
+    ]
+    assert len(windows) == 1
+    assert windows[0]["reaction_event"] == "takes_damage"
+    assert windows[0]["damaged_combatant_id"] == character["id"]
+    assert windows[0]["eligible_action_names"] == ["地狱反击"]
+
+
+def test_character_structured_hit_reaction_window_is_not_monster_only(
+    combat_client: TestClient,
+) -> None:
+    campaign = _campaign(combat_client, "Character hit reaction")
+    base = f"/api/v1/campaigns/{campaign['id']}"
+    combat = combat_client.post(
+        f"{base}/combats", json={"name": "Character hit reaction combat"}
+    ).json()
+    attacker = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "角色攻击者",
+            "entity_type": "monster",
+            "initiative": 20,
+            "hp": 20,
+            "max_hp": 20,
+        },
+    ).json()
+    character = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "角色护体者",
+            "entity_type": "character",
+            "initiative": 10,
+            "armor_class": 13,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {
+                "actions": [
+                    {
+                        "name": "护盾",
+                        "action_type": "reaction",
+                        "reaction_event": "hit_by_attack",
+                        "reaction_trigger": "被攻击命中时",
+                    }
+                ]
+            },
+        },
+    ).json()
+    response = combat_client.post(
+        f"{base}/combats/{combat['id']}/actions/confirm",
+        headers={"X-Request-ID": "character-hit-reaction"},
+        json={
+            "action_type": "damage",
+            "actor_combatant_id": attacker["id"],
+            "actor_version": attacker["version"],
+            "action_cost": "none",
+            "action_name": "长剑",
+            "target_combatant_id": character["id"],
+            "target_version": character["version"],
+            "amount": 4,
+            "damage_type": "slashing",
+            "is_attack": True,
+            "attack_roll_total": 18,
+        },
+    )
+    assert response.status_code == 200, response.text
+    actions = combat_client.get(f"{base}/combats/{combat['id']}/actions").json()["items"]
+    windows = [
+        item["result_json"]["action_window"]
+        for item in actions
+        if item["action_type"] == "eligible_action_window"
+        and item["result_json"]["action_window"].get("reaction_event") == "hit_by_attack"
+    ]
+    assert len(windows) == 1
+    assert windows[0]["hit_combatant_id"] == character["id"]
+    assert windows[0]["eligible_action_names"] == ["护盾"]
+
+
 def test_spending_reaction_elsewhere_invalidates_other_eligible_windows(
     combat_client: TestClient,
 ) -> None:

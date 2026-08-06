@@ -1325,6 +1325,26 @@ class CombatEngineService:
             result.append(action)
         return result
 
+    @classmethod
+    def _can_open_structured_reaction_window(cls, combatant: Combatant) -> bool:
+        """Return whether a living combatant may answer an explicit reaction.
+
+        Structured reactions are not limited to monsters: character actions
+        such as a spell or feature reaction use the same combat snapshot
+        contract.  Keep the eligibility gate deterministic and shared by all
+        event windows; a dead or incapacitated unit cannot be offered a stale
+        reaction choice.
+        """
+
+        return bool(
+            combatant.is_active
+            and combatant.hp > 0
+            and combatant.reaction_available
+            and not (
+                cls._condition_set(combatant) & cls._ACTION_BLOCKING_CONDITIONS
+            )
+        )
+
     @staticmethod
     def _pre_damage_feature_reactions(combatant: Combatant) -> list[dict[str, object]]:
         """Return supported character reactions that must pause before damage.
@@ -2478,9 +2498,7 @@ class CombatEngineService:
         trigger_name = trigger.display_name if trigger is not None else "未指定来源"
         for target, adjusted_damage in damaged_targets:
             if (
-                target.entity_type != "monster"
-                or target.hp <= 0
-                or not target.reaction_available
+                not cls._can_open_structured_reaction_window(target)
             ):
                 continue
             reaction_actions = cls._structured_reaction_actions(
@@ -2591,8 +2609,7 @@ class CombatEngineService:
             or not command.is_attack
             or not target_was_active
             or not target_was_alive
-            or target.entity_type != "monster"
-            or not target.reaction_available
+            or not cls._can_open_structured_reaction_window(target)
         ):
             return
         effective_ac = target.armor_class
