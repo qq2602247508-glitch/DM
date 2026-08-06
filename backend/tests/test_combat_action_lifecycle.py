@@ -468,6 +468,177 @@ def test_bardic_inspiration_player_roll_api_adds_and_consumes_die(
     )
 
 
+def test_bardic_inspiration_rejects_duplicate_available_die_without_spending(
+    combat_client: TestClient,
+) -> None:
+    campaign, combat, _ = _setup(combat_client)
+    character_response = combat_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/characters",
+        json={
+            "name": "重复激励测试诗人",
+            "class_name": "吟游诗人",
+            "level": 5,
+            "hp": 20,
+            "max_hp": 20,
+            "resources": {
+                "bardic_inspiration": {
+                    "label": "吟游诗人激励",
+                    "current": 2,
+                    "max": 2,
+                }
+            },
+        },
+    )
+    assert character_response.status_code == 201, character_response.text
+    character = character_response.json()
+    action = {
+        "id": "bardic_inspiration",
+        "name": "吟游诗人激励",
+        "kind": "feature_action",
+        "action_cost": "bonus_action",
+        "resource_key": "bardic_inspiration",
+        "resource_cost": 1,
+        "target": "ally_or_self",
+        "target_policy": {
+            "mode": "ally_or_self",
+            "same_faction": True,
+            "range_ft": 60,
+        },
+        "resolution_kind": "grant_dice",
+        "effects": [{"kind": "grant_roll_die", "die_key": "bardic_inspiration_die"}],
+    }
+    registry = {
+        "resources": {
+            "bardic_inspiration_die": {"value": "D8"},
+        },
+        "actions": {"bardic_inspiration": action},
+    }
+    bard_response = combat_client.post(
+        f"{_root(campaign, combat)}/combatants",
+        json={
+            "display_name": "重复激励测试诗人",
+            "entity_type": "character",
+            "entity_id": character["id"],
+            "initiative": 30,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {
+                "disposition": "ally",
+                "grid_position": {"row": 1, "col": 1},
+                "feature_runtime": registry,
+            },
+        },
+    )
+    assert bard_response.status_code == 201, bard_response.text
+    bard = bard_response.json()
+    existing_target_response = combat_client.post(
+        f"{_root(campaign, combat)}/combatants",
+        json={
+            "display_name": "已有激励骰目标",
+            "entity_type": "character",
+            "initiative": 10,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {
+                "disposition": "ally",
+                "grid_position": {"row": 1, "col": 2},
+                "feature_dice": {
+                    "bardic_inspiration_die": {
+                        "source": "先前吟游诗人",
+                        "value": "D8",
+                        "available": True,
+                    }
+                },
+            },
+        },
+    )
+    assert existing_target_response.status_code == 201, existing_target_response.text
+    existing_target = existing_target_response.json()
+
+    rejected = combat_client.post(
+        f"{_root(campaign, combat)}/feature-actions/confirm",
+        headers={"X-Request-ID": "bardic-duplicate-die"},
+        json={
+            "actor_combatant_id": bard["id"],
+            "actor_version": bard["version"],
+            "feature_id": "bardic_inspiration",
+            "target_combatant_id": existing_target["id"],
+            "target_version": existing_target["version"],
+        },
+    )
+    assert rejected.status_code == 400, rejected.text
+    assert "不能同时持有两枚同类职业骰" in rejected.text
+
+    unchanged_bard = combat_client.get(
+        _combatant_path(campaign, combat, bard["id"])
+    ).json()
+    assert unchanged_bard["version"] == bard["version"]
+    assert unchanged_bard["bonus_action_available"] is True
+    unchanged_character = combat_client.get(
+        f"/api/v1/campaigns/{campaign['id']}/characters/{character['id']}"
+    ).json()
+    assert unchanged_character["resources"]["bardic_inspiration"]["current"] == 2
+    unchanged_target = combat_client.get(
+        _combatant_path(campaign, combat, existing_target["id"])
+    ).json()
+    assert (
+        unchanged_target["snapshot_json"]["feature_dice"]["bardic_inspiration_die"][
+            "available"
+        ]
+        is True
+    )
+
+    consumed_target_response = combat_client.post(
+        f"{_root(campaign, combat)}/combatants",
+        json={
+            "display_name": "已消费激励骰目标",
+            "entity_type": "character",
+            "initiative": 5,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {
+                "disposition": "ally",
+                "grid_position": {"row": 1, "col": 3},
+                "feature_dice": {
+                    "bardic_inspiration_die": {
+                        "source": "先前吟游诗人",
+                        "value": "D8",
+                        "available": False,
+                    }
+                },
+            },
+        },
+    )
+    assert consumed_target_response.status_code == 201, consumed_target_response.text
+    consumed_target = consumed_target_response.json()
+    granted = combat_client.post(
+        f"{_root(campaign, combat)}/feature-actions/confirm",
+        headers={"X-Request-ID": "bardic-grant-after-consumed"},
+        json={
+            "actor_combatant_id": bard["id"],
+            "actor_version": bard["version"],
+            "feature_id": "bardic_inspiration",
+            "target_combatant_id": consumed_target["id"],
+            "target_version": consumed_target["version"],
+        },
+    )
+    assert granted.status_code == 200, granted.text
+    assert granted.json()["result"]["roll_die_granted"] == {
+        "die_key": "bardic_inspiration_die",
+        "value": "D8",
+    }
+    assert granted.json()["actor"]["bonus_action_available"] is False
+    assert combat_client.get(
+        f"/api/v1/campaigns/{campaign['id']}/characters/{character['id']}"
+    ).json()["resources"]["bardic_inspiration"]["current"] == 1
+    assert (
+        granted.json()["target"]["snapshot_json"]["feature_dice"][
+            "bardic_inspiration_die"
+        ]["available"]
+        is True
+    )
+
+
 def test_feature_resource_reroll_opens_after_failure_and_uses_second_roll(
     combat_client: TestClient,
 ) -> None:

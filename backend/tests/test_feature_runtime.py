@@ -634,7 +634,8 @@ def test_bardic_inspiration_projection_consumes_resource_and_records_granted_die
         "value": "D6",
     }
     assert result["actor"]["bonus_action_available"] is False
-    assert result["actor"]["snapshot_json"]["feature_dice"] == {
+    assert "feature_dice" not in result["actor"]["snapshot_json"]
+    assert result["target"]["snapshot_json"]["feature_dice"] == {
         "bardic_inspiration_die": {
             "source": "吟游诗人激励",
             "value": "D6",

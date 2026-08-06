@@ -10830,12 +10830,20 @@ class CombatEngineService:
                         raw_die = registry_resources.get(die_key)
                         if isinstance(raw_die, dict):
                             die_value = raw_die.get("value") or raw_die.get("label")
-                    snapshot = dict(actor.snapshot_json or {})
+                    snapshot = dict(target.snapshot_json or {})
                     feature_dice = dict(
                         snapshot.get("feature_dice")
                         if isinstance(snapshot.get("feature_dice"), dict)
                         else {}
                     )
+                    existing_die = feature_dice.get(die_key)
+                    if (
+                        isinstance(existing_die, dict)
+                        and existing_die.get("available") is True
+                    ):
+                        raise ValueError(
+                            f"目标已经持有可用的{die_key}，不能同时持有两枚同类职业骰"
+                        )
                     feature_dice[die_key] = {
                         "source": action.get("name"),
                         "value": die_value,
@@ -10843,7 +10851,7 @@ class CombatEngineService:
                         "available": True,
                     }
                     snapshot["feature_dice"] = feature_dice
-                    actor.snapshot_json = snapshot
+                    target.snapshot_json = snapshot
                     result["roll_die_granted"] = {"die_key": die_key, "value": die_value}
                 elif kind == "temporary_healing":
                     result["temporary_healing_effect"] = True
