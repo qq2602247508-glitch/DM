@@ -1433,3 +1433,12 @@ backend/.venv/bin/python -m pytest -q backend/tests
 - 重复升级预览会生成相同的 canonical action block ID，便于战斗快照、DM 审计和未来统一执行器追踪来源；动作仍保持 `partial`/DM 裁定，不代表具体子职业规则效果已自动执行。
 - 验证：子职业动作定向回归通过；后端全量 `pytest -q backend/tests`、Ruff、compileall、`git diff --check` 全部通过。只改后端和测试，未新增浏览器验收声明。
 - 这是职业特性积木基础设施加固，不新增缺口；固定四大项和高级三维战斗跳过范围不变。
+
+# 2026-08-07 伤害前反应通用积木化
+
+- 代码提交 `bcdc9af`：新增 `domain/pre_damage_intervention.py`，提供与特性 ID 无关的配置驱动伤害变换执行器，支持逐段倍率、总量顺序扣减、输入要求/骰值范围校验和 fail-closed。
+- 直觉闪避、偏转攻击配置现在发布 `pre_damage_intervention` 合同；战斗候选扫描和确认结算读取合同，不再用 `uncanny_dodge` / `deflect_attacks` 决定真实伤害变换。旧快照字段仅作为兼容适配器；`feature_id` 仍保留在窗口/API/UI 投影中用于显示和选择绑定。
+- 偏转攻击归零后的目标选择、Focus、敏捷豁免和反击伤害仍由 `deflect_redirect` 专用兼容适配器执行；本轮没有把它误报成通用 follow-up 积木。其窗口创建已改为依据配置存在 redirect 合同，而非特性 ID。
+- 新增纯执行器回归：两个不同配置/不同显示身份复用同一执行器；既有直觉闪避、偏转减伤/归零反击、玩家 API 和 feature runtime 回归均通过。
+- 验证：`pytest -q backend/tests`（项目根目录）全量通过；Ruff、compileall、`git diff --check` 通过。仅有既有 Starlette/httpx 弃用警告。本轮无前端源码变更，未做浏览器验收。
+- 当前边界：通用积木真实改变伤害命令并保持既有结算顺序；玩家/DM 仍需选择反应、提交偏转骰和后续反击输入；AoE/持续伤害仍不触发 attack-only 伤害前窗口；多候选反应选择策略和 resolving 崩溃租约恢复仍是后续开放问题。用户未跟踪的 `backend/tests/integrations/`、`backend/tests/ollama.py` 未纳入提交。
