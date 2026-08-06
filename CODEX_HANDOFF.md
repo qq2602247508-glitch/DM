@@ -1354,3 +1354,9 @@ backend/.venv/bin/python -m pytest -q backend/tests
 - 新增真实升级 API 回归：子职业动作进入 runtime registry、进入 canonical action block、仍为 partial/DM 边界且不生成假按钮；多职业资源/法术位定向回归继续通过。
 - 验证：后端全量 `pytest -q backend/tests` 通过；Ruff、compileall、`git diff --check` 通过。仅有既有 Starlette/httpx 弃用警告。本轮只改后端，没有新增浏览器验收声明或截图。
 - 当前切片完成度：子职业动作的统一 registry/积木接入 `100%`；子职业动作的具体目标、检定、伤害和文本例外仍按积木状态保留 DM 裁定，不把它们误报为全职业效果已完成。固定范围仍是原四大项，高级三维战斗继续跳过。
+
+# 2026-08-06 多职业运行时等级与法术位回归锁定
+
+- 测试提交 `16879b3`：多职业升级回归现在同时断言运行时 registry 保留所有已拥有职业等级（战士 1 / 法师 2），以及共享施法者等级对应的一环法术位为 3 格；此前只断言资源表，未锁定快照/积木层。
+- 验证：后端全量 `pytest -q backend/tests` 通过；Ruff、compileall、`git diff --check` 通过。没有修改前端，因此没有新增浏览器验收声明。
+- 这是对既有多职业资源/法术位实现的验收加固，不新增缺口；职业/子职业四大项边界保持不变。
