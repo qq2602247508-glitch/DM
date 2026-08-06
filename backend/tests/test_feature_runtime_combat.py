@@ -1312,6 +1312,38 @@ def test_event_predicate_feature_modifier_does_not_grant_passive_advantage() -> 
     assert disadvantage == []
 
 
+def test_hunters_mark_target_binding_limits_attack_advantage_to_bound_target() -> None:
+    actor = Combatant(
+        id="marked-ranger",
+        entity_type="character",
+        display_name="猎人",
+        hp=20,
+        max_hp=20,
+        snapshot_json={
+            "current_hunters_mark_target_id": "marked-target",
+            "rule_modifiers": {
+                "precise_hunter:marked_target_advantage": {
+                    "stat": "attack_roll",
+                    "scope": "outgoing",
+                    "operation": "advantage",
+                    "source": "致命猎杀",
+                    "applies_when": "target_is_current_hunters_mark",
+                }
+            },
+        },
+    )
+    marked = Combatant(id="marked-target", entity_type="monster", hp=20, max_hp=20)
+    other = Combatant(id="other-target", entity_type="monster", hp=20, max_hp=20)
+
+    marked_advantage, _ = CombatEngineService._feature_attack_roll_contexts(
+        actor, marked
+    )
+    other_advantage, _ = CombatEngineService._feature_attack_roll_contexts(actor, other)
+
+    assert marked_advantage == ["致命猎杀"]
+    assert other_advantage == []
+
+
 def test_studied_attacks_contract_is_runtime_executable() -> None:
     registry = compile_feature_runtime_registry(
         [

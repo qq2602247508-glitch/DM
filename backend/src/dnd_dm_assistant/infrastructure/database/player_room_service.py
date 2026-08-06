@@ -1427,6 +1427,12 @@ class PlayerRoomService:
                     action.get("is_unarmed_attack") is True
                     or is_weapon_attack
                 )
+            elif applies_when == "target_is_current_hunters_mark":
+                current_mark = (actor.snapshot_json or {}).get(
+                    "current_hunters_mark_target_id"
+                )
+                explicit = eligibility.get(rider_id)
+                eligible = current_mark == target.id or explicit is True
             else:
                 explicit = eligibility.get(rider_id)
                 eligible = explicit is True

@@ -3469,6 +3469,7 @@ class CombatEngineService:
                 "wearing armor",
                 "not_wearing_armor",
                 "not wearing armor",
+                "target_is_current_hunters_mark",
             }
             if applies_when not in known_predicates:
                 # A typed modifier with an event predicate (for example
@@ -3527,12 +3528,17 @@ class CombatEngineService:
             actor, stat="attack_roll", scope="outgoing"
         ):
             operation = str(modifier.get("operation") or "")
-            if (
-                str(modifier.get("applies_when") or "").strip().lower()
-                == "innate_sorcery_active_and_sorcerer_spell"
-                and not (is_spell_attack and is_sorcerer_spell)
+            applies_when = str(modifier.get("applies_when") or "").strip().lower()
+            if applies_when == "innate_sorcery_active_and_sorcerer_spell" and not (
+                is_spell_attack and is_sorcerer_spell
             ):
                 continue
+            if applies_when == "target_is_current_hunters_mark":
+                current_mark = (actor.snapshot_json or {}).get(
+                    "current_hunters_mark_target_id"
+                )
+                if not isinstance(current_mark, str) or current_mark != target.id:
+                    continue
             source = str(modifier.get("source") or modifier.get("id") or "职业特性")
             if operation == "advantage":
                 advantage.append(source)

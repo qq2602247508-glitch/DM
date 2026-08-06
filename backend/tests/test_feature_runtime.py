@@ -1385,7 +1385,10 @@ def test_ranger_hunters_mark_upgrades_require_explicit_state_and_feed_attack_rid
     actor = Combatant(
         id="ranger",
         entity_type="character",
-        snapshot_json={"feature_runtime": ranger},
+        snapshot_json={
+            "feature_runtime": ranger,
+            "current_hunters_mark_target_id": "marked",
+        },
     )
     resolved = PlayerRoomService._eligible_attack_riders(
         actor,
@@ -1397,7 +1400,6 @@ def test_ranger_hunters_mark_upgrades_require_explicit_state_and_feed_attack_rid
         },
         Combatant(id="marked", entity_type="monster"),
         special_inputs={
-            "attack_rider_eligibility": {"foe_slayer:hunter_mark_damage": True},
             "attack_rider_totals": {"foe_slayer:hunter_mark_damage": 8},
         },
         critical_hit=False,

@@ -1828,7 +1828,10 @@ def feature_runtime_definition(
                 "applies_when": "target_is_current_hunters_mark",
                 "automation_status": "partial",
                 "requires_dm_adjudication": True,
-                "partial_reason": "攻击优势已结构化；攻击引擎尚未自动关联当前猎人印记目标。",
+                "partial_reason": (
+                    "攻击优势仅在快照明确绑定 current_hunters_mark_target_id 时自动关联；"
+                    "缺少绑定仍需 DM 裁定。"
+                ),
                 **source,
             }
         )
@@ -1845,7 +1848,8 @@ def feature_runtime_definition(
                 "automation_status": "partial",
                 "requires_dm_adjudication": True,
                 "partial_reason": (
-                    "攻击附伤可结算；当前猎人印记目标仍需通过显式 eligibility 输入确认。"
+                    "伤害骰仍需输入；目标资格可由快照明确绑定的 "
+                    "current_hunters_mark_target_id 自动确认。"
                 ),
                 **source,
             }
