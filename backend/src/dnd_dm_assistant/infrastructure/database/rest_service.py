@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 from dnd_dm_assistant.domain.campaign_state import StateNotFoundError, VersionConflict
 from dnd_dm_assistant.domain.feature_runtime import (
     compile_feature_runtime_registry,
+    feature_block_payloads,
     resource_recovery_events,
 )
 from dnd_dm_assistant.domain.rests import (
@@ -20,6 +21,10 @@ from dnd_dm_assistant.domain.rests import (
     RestResource,
     resolve_long_rest,
     resolve_short_rest,
+)
+from dnd_dm_assistant.domain.zero_hp_intervention import (
+    adapt_legacy_zero_hp_intervention,
+    reset_zero_hp_intervention_states,
 )
 from dnd_dm_assistant.infrastructure.database.campaign_service import serialize
 from dnd_dm_assistant.infrastructure.database.models import (
@@ -118,6 +123,7 @@ class RestService:
         session: Session,
         *,
         character_id: str,
+        rest_event: str,
     ) -> list[str]:
         """Reset rest-scoped feature state in active combat snapshots."""
 
@@ -133,18 +139,42 @@ class RestService:
         reset_ids: list[str] = []
         for combatant in combatants:
             snapshot = dict(combatant.snapshot_json or {})
-            state = snapshot.get("relentless_rage_state")
-            if not isinstance(state, dict) or "current_dc" not in state:
-                continue
-            state = dict(state)
-            state.update(
-                {
-                    "current_dc": 10,
-                    "reset_reason": "short_or_long_rest",
-                }
+            runtime = snapshot.get("feature_runtime")
+            defenses: list[dict[str, object]] = []
+            if isinstance(runtime, dict):
+                defenses = [
+                    dict(item)
+                    for item in feature_block_payloads(runtime, "defense")
+                    if isinstance(item, dict)
+                ]
+                if not defenses:
+                    combat_start = runtime.get("combat_start")
+                    raw_defenses = (
+                        combat_start.get("defenses")
+                        if isinstance(combat_start, dict)
+                        else None
+                    )
+                    defenses = [
+                        dict(item)
+                        for item in (raw_defenses or [])
+                        if isinstance(item, dict)
+                    ]
+            updated, reset_state_keys = reset_zero_hp_intervention_states(
+                snapshot,
+                [adapt_legacy_zero_hp_intervention(item) for item in defenses],
+                rest_event=rest_event,
             )
-            snapshot["relentless_rage_state"] = state
-            combatant.snapshot_json = snapshot
+            if not reset_state_keys:
+                # Adapter for snapshots created before contracts were frozen.
+                legacy_state = snapshot.get("relentless_rage_state")
+                if not isinstance(legacy_state, dict) or "current_dc" not in legacy_state:
+                    continue
+                legacy_state = dict(legacy_state)
+                legacy_state.update(
+                    {"current_dc": 10, "reset_reason": "short_or_long_rest"}
+                )
+                updated["relentless_rage_state"] = legacy_state
+            combatant.snapshot_json = updated
             combatant.version += 1
             combatant.updated_at = datetime.now(UTC)
             reset_ids.append(combatant.id)
@@ -808,6 +838,12 @@ class RestService:
                 feature_runtime_resets = self._reset_combat_feature_states(
                     session,
                     character_id=character.id,
+                    rest_event=(
+                        "short_rest"
+                        if bool(request_data.get("fallback_to_short_rest"))
+                        or str(request_data.get("rest_type") or "") == "short"
+                        else "long_rest"
+                    ),
                 )
             if feature_runtime_resets:
                 participant["feature_runtime_resets"] = feature_runtime_resets

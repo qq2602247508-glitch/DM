@@ -52,6 +52,10 @@ from dnd_dm_assistant.domain.feature_runtime import (
     feature_block_payloads,
     feature_condition_runtime_spec,
 )
+from dnd_dm_assistant.domain.zero_hp_intervention import (
+    adapt_legacy_zero_hp_intervention,
+    resolve_zero_hp_intervention,
+)
 from dnd_dm_assistant.infrastructure.database.campaign_service import serialize
 from dnd_dm_assistant.infrastructure.database.models import (
     NPC,
@@ -4411,11 +4415,9 @@ class CombatEngineService:
             return None
         if target.entity_type != "character" or not target.entity_id:
             return None
-        # Relentless Rage is a player-decision save, not another automatic
-        # zero-HP prevention.  When both features are present, open the save
-        # window first and do not silently consume Relentless Endurance in
-        # the same damage event.
-        if cls._relentless_rage_defense(
+        # Decision-based interventions take precedence over automatic zero-HP
+        # prevention. The ordering depends on the shared contract, not an ID.
+        if cls._zero_hp_intervention(
             session,
             target,
             resulting_hp=resulting_hp,
@@ -4478,7 +4480,7 @@ class CombatEngineService:
         }
 
     @classmethod
-    def _relentless_rage_defense(
+    def _zero_hp_intervention(
         cls,
         session: Session,
         target: Combatant,
@@ -4486,38 +4488,14 @@ class CombatEngineService:
         resulting_hp: int,
         unapplied_damage: int,
     ) -> dict[str, object] | None:
-        """Return an authoritative Relentless Rage save contract, if eligible.
+        """Resolve the first eligible shared zero-HP intervention contract."""
 
-        The feature is intentionally resolved from the frozen combat snapshot
-        and the character's authoritative class levels.  Text, a barbarian
-        name, or a missing level is never enough to open the window.
-        """
-
-        if (
-            resulting_hp != 0
-            or unapplied_damage >= target.max_hp
-            or target.entity_type != "character"
-            or not target.entity_id
-            or not cls._has_condition(target, "raging")
-        ):
-            return None
-        defense = next(
-            (
-                item
-                for item in cls._feature_defenses(target)
-                if item.get("id") == "relentless_rage:zero_hit_points_save"
-                and item.get("kind") == "zero_hit_points_save"
-                and item.get("trigger")
-                == "self_would_drop_to_zero_hit_points_while_raging"
-            ),
-            None,
+        character = (
+            session.get(Character, target.entity_id)
+            if target.entity_type == "character" and target.entity_id
+            else None
         )
-        if defense is None:
-            return None
-        character = session.get(Character, target.entity_id)
-        if character is None:
-            return None
-        raw_levels = character.class_levels
+        raw_levels = character.class_levels if character is not None else {}
         levels: dict[str, object] = (
             dict(raw_levels) if isinstance(raw_levels, dict) else {}
         )
@@ -4534,37 +4512,26 @@ class CombatEngineService:
                 if isinstance(raw_runtime_levels, dict)
                 else {}
             )
-        barbarian_level = 0
-        for key in ("野蛮人", "barbarian", "Barbarian"):
-            value = levels.get(key)
-            if isinstance(value, int):
-                barbarian_level = max(barbarian_level, value)
-        if barbarian_level < 1:
-            return None
-        raw_save = defense.get("saving_throw")
-        save = dict(raw_save) if isinstance(raw_save, dict) else {}
-        initial_dc = cls._state_int(save.get("initial_dc"), 10)
-        increase = cls._state_int(save.get("increase_after_each_success"), 5)
-        if initial_dc < 1 or increase < 0:
-            return None
-        raw_state = (target.snapshot_json or {}).get("relentless_rage_state")
-        state = dict(raw_state) if isinstance(raw_state, dict) else {}
-        current_dc = cls._state_int(state.get("current_dc"), initial_dc)
-        if current_dc < initial_dc:
-            current_dc = initial_dc
-        return {
-            "feature_id": str(defense.get("id")),
-            "ability": str(save.get("ability") or "constitution"),
-            "dc": current_dc,
-            "initial_dc": initial_dc,
-            "increase_after_each_success": increase,
-            "barbarian_level": barbarian_level,
-            "hit_points_on_success": 2 * barbarian_level,
-            "massive_damage": False,
-        }
+        resources = character.resources if character is not None else {}
+        defenses = [
+            adapt_legacy_zero_hp_intervention(item)
+            for item in cls._feature_defenses(target)
+        ]
+        return resolve_zero_hp_intervention(
+            defenses,
+            resulting_hp=resulting_hp,
+            unapplied_damage=unapplied_damage,
+            max_hp=target.max_hp,
+            entity_type=target.entity_type,
+            faction=cls._combatant_faction(target),
+            conditions=cls._condition_set(target),
+            class_levels=levels,
+            resources=resources if isinstance(resources, dict) else {},
+            snapshot=target.snapshot_json or {},
+        )
 
     @classmethod
-    def _open_relentless_rage_save_prompt(
+    def _open_zero_hp_intervention_prompt(
         cls,
         session: Session,
         *,
@@ -4573,9 +4540,14 @@ class CombatEngineService:
         target: Combatant,
         defense: dict[str, object],
     ) -> CombatAction:
-        """Persist the player-owned save window as a normal roll prompt."""
+        """Persist a configured intervention's player-owned saving throw."""
 
-        prompt_key = f"relentless-rage-save:{parent_action.id}"
+        presentation = dict(defense.get("presentation") or {})
+        prefix = str(
+            presentation.get("prompt_idempotency_prefix")
+            or "zero-hp-intervention"
+        )
+        prompt_key = f"{prefix}:{parent_action.id}"
         existing = session.scalar(
             select(CombatAction).where(
                 CombatAction.combat_id == combat.id,
@@ -4584,22 +4556,25 @@ class CombatEngineService:
         )
         if existing is not None:
             return existing
+        action_name = str(presentation.get("action_name") or "0 HP 干预")
+        description = str(
+            presentation.get("description")
+            or "降至 0 HP；请进行豁免以决定后续生命状态。"
+        )
         request = {
             "actor_combatant_id": target.id,
             "actor_version": target.version,
             "target_combatant_id": target.id,
             "target_version": target.version,
-            "action_name": "坚韧狂暴",
+            "action_name": action_name,
             "resolution_type": "saving_throw",
             "dc": int(defense["dc"]),
-            "ability": "constitution",
+            "ability": str(defense["ability"]),
             "roll_formula": "1d20",
-            "description": (
-                f"{target.display_name} 降至 0 HP 且处于狂暴；"
-                "请进行体质豁免以维持生命。"
-            ),
+            "description": f"{target.display_name} {description}",
             "actor_name": target.display_name,
             "target_name": target.display_name,
+            "zero_hp_intervention": dict(defense),
             "zero_hp_feature": dict(defense),
             "source_action_id": parent_action.id,
         }
@@ -4614,14 +4589,15 @@ class CombatEngineService:
             result_json={
                 "phase": "awaiting_player_roll",
                 "roll_owner": "player",
+                "zero_hp_intervention": dict(defense),
                 "zero_hp_feature": dict(defense),
             },
             explanation=str(request["description"]),
             round_number=combat.round_number,
             turn_index=combat.current_turn_index,
             summary=(
-                f"{target.display_name} 触发坚韧狂暴；"
-                f"等待体质豁免（DC {defense['dc']}）"
+                f"{target.display_name} 触发{action_name}；"
+                f"等待{defense['ability']}豁免（DC {defense['dc']}）"
             ),
             idempotency_key=prompt_key,
             status="previewed",
@@ -4629,6 +4605,23 @@ class CombatEngineService:
         session.add(prompt)
         session.flush()
         return prompt
+
+    @staticmethod
+    def _zero_hp_intervention_prompt_id_key(defense: dict[str, object]) -> str:
+        presentation = dict(defense.get("presentation") or {})
+        return str(
+            presentation.get("prompt_result_id_key")
+            or "zero_hp_intervention_prompt_id"
+        )
+
+    @staticmethod
+    def _zero_hp_intervention_summary(defense: dict[str, object]) -> str:
+        presentation = dict(defense.get("presentation") or {})
+        action_name = str(presentation.get("action_name") or "0 HP 干预")
+        return (
+            f"触发{action_name}，等待{defense['ability']}豁免"
+            f"（DC {defense['dc']}）"
+        )
 
     @classmethod
     def _deactivate_zero_hp_non_character(
@@ -8070,19 +8063,22 @@ class CombatEngineService:
         combat: Combat | None = None,
     ) -> dict[str, Any]:
         request = action.request_json
-        zero_hp_feature = request.get("zero_hp_feature")
-        if isinstance(zero_hp_feature, dict):
+        zero_hp_intervention = request.get("zero_hp_intervention")
+        if isinstance(zero_hp_intervention, dict):
             if command.use_legendary_resistance or command.use_feature_reroll:
-                raise ValueError("坚韧狂暴豁免不能叠加传奇抗性或职业特性重掷")
+                raise ValueError("0 HP 干预豁免不能叠加传奇抗性或职业特性重掷")
             if command.use_stroke_of_luck or command.bardic_inspiration_total is not None:
-                raise ValueError("坚韧狂暴豁免不能叠加幸运一击或吟游诗人激励骰")
+                raise ValueError("0 HP 干预豁免不能叠加幸运一击或吟游诗人激励骰")
             if target.hp != 0:
-                raise ValueError("坚韧狂暴豁免窗口只在目标仍为 0 HP 时有效")
+                raise ValueError("0 HP 干预豁免窗口只在目标仍为 0 HP 时有效")
             if str(request.get("resolution_type") or "") != "saving_throw":
-                raise ValueError("坚韧狂暴窗口必须是豁免骰")
-            ability = str(request.get("ability") or "constitution").strip().lower()
-            if ability != "constitution":
-                raise ValueError("坚韧狂暴窗口必须进行体质豁免")
+                raise ValueError("0 HP 干预窗口必须是豁免骰")
+            expected_ability = str(
+                zero_hp_intervention.get("ability") or ""
+            ).strip().lower()
+            ability = str(request.get("ability") or "").strip().lower()
+            if not expected_ability or ability != expected_ability:
+                raise ValueError("0 HP 干预窗口的豁免属性与结构化配置不一致")
             defense = cls._resolve_save_defenses(
                 target,
                 dc=int(str(request["dc"])),
@@ -8115,7 +8111,8 @@ class CombatEngineService:
                 "feature_reroll_consumed": None,
                 "stroke_of_luck_consumed": None,
                 "feature_dice_consumed": None,
-                "zero_hp_feature": dict(zero_hp_feature),
+                "zero_hp_intervention": dict(zero_hp_intervention),
+                "zero_hp_feature": dict(zero_hp_intervention),
                 "dm_note": command.dm_note,
             }
         if command.feature_reroll_reactor_id and not command.use_feature_reroll:
@@ -8711,7 +8708,7 @@ class CombatEngineService:
                 ),
             }
 
-    def _confirm_relentless_rage_save(
+    def _confirm_zero_hp_intervention(
         self,
         session: Session,
         *,
@@ -8722,32 +8719,38 @@ class CombatEngineService:
         resolution: dict[str, Any],
         idempotency_key: str,
     ) -> dict[str, Any]:
-        """Apply the one decision point opened by a Relentless Rage trigger."""
+        """Apply a shared zero-HP intervention without feature-ID branches."""
 
         if target.hp != 0:
-            raise ValueError("坚韧狂暴豁免窗口的目标生命值已经变化")
+            raise ValueError("0 HP 干预豁免窗口的目标生命值已经变化")
         death_save = self._death_save(session, target)
         if death_save.dead or death_save.stable:
-            raise ValueError("坚韧狂暴豁免窗口已不再处于濒死状态")
-        feature = dict(action.request_json.get("zero_hp_feature") or {})
+            raise ValueError("0 HP 干预豁免窗口已不再处于濒死状态")
+        feature = dict(action.request_json.get("zero_hp_intervention") or {})
         dc = self._state_int(feature.get("dc"), 10)
-        increase = self._state_int(feature.get("increase_after_each_success"), 5)
-        barbarian_level = self._state_int(feature.get("barbarian_level"))
-        if barbarian_level < 1:
-            raise ValueError("坚韧狂暴缺少权威野蛮人等级")
+        increase = self._state_int(feature.get("increase_after_success"))
+        restore_hit_points = self._state_int(feature.get("restore_hit_points"))
+        raw_state_spec = feature.get("state")
+        state_spec = dict(raw_state_spec) if isinstance(raw_state_spec, dict) else {}
+        state_key = str(state_spec.get("key") or "").strip()
+        current_dc_field = str(
+            state_spec.get("current_dc_field") or "current_dc"
+        ).strip()
+        if dc < 1 or increase < 0 or restore_hit_points < 1 or not state_key:
+            raise ValueError("0 HP 干预缺少完整的结构化结算字段")
         succeeded = bool(resolution.get("success"))
         now = datetime.now(UTC)
         before_target = serialize(target)
         result = dict(resolution)
-        result["relentless_rage"] = {
-            "feature_id": "relentless_rage:zero_hit_points_save",
+        intervention_result: dict[str, object] = {
+            "feature_id": str(feature.get("feature_id") or ""),
             "dc_before": dc,
-            "barbarian_level": barbarian_level,
-            "hit_points_on_success": 2 * barbarian_level,
+            **dict(feature.get("bindings") or {}),
+            "hit_points_on_success": restore_hit_points,
             "success": succeeded,
         }
         if succeeded:
-            restored = min(target.max_hp, 2 * barbarian_level)
+            restored = min(target.max_hp, restore_hit_points)
             target.hp = restored
             target.version += 1
             target.updated_at = now
@@ -8763,21 +8766,21 @@ class CombatEngineService:
             death_save.last_roll = None
             death_save.version += 1
             snapshot = dict(target.snapshot_json or {})
-            previous_state = snapshot.get("relentless_rage_state")
+            previous_state = snapshot.get(state_key)
             state = dict(previous_state) if isinstance(previous_state, dict) else {}
             next_dc = dc + increase
             state.update(
                 {
-                    "current_dc": next_dc,
+                    current_dc_field: next_dc,
                     "last_result": "success",
                     "last_dc": dc,
                     "last_action_id": action.id,
                 }
             )
-            snapshot["relentless_rage_state"] = state
+            snapshot[state_key] = state
             target.snapshot_json = snapshot
-            result["relentless_rage"] = {
-                **dict(result["relentless_rage"]),
+            intervention_result = {
+                **intervention_result,
                 "hit_points_restored": restored,
                 "dc_after_success": next_dc,
                 "state": state,
@@ -8793,12 +8796,18 @@ class CombatEngineService:
                 target.version += 1
                 target.updated_at = now
                 result["condition_changes"] = condition_changes
-            result["relentless_rage"] = {
-                **dict(result["relentless_rage"]),
+            intervention_result = {
+                **intervention_result,
                 "hit_points_restored": 0,
                 "dc_after_failure": dc,
                 "death_save_unchanged": True,
             }
+        result["zero_hp_intervention"] = intervention_result
+        presentation = dict(feature.get("presentation") or {})
+        result_key = str(presentation.get("result_key") or "").strip()
+        if result_key:
+            # Configured compatibility projection; the executor knows no ID.
+            result[result_key] = intervention_result
         action.result_json = {
             **result,
             "confirmation_idempotency_key": idempotency_key,
@@ -8807,12 +8816,13 @@ class CombatEngineService:
         action.status = "confirmed"
         action.version += 1
         action.updated_at = now
+        action_name = str(presentation.get("action_name") or "0 HP 干预")
         action.summary = (
-            f"{target.display_name} 进行坚韧狂暴体质豁免；"
+            f"{target.display_name} 进行{action_name}{feature.get('ability')}豁免；"
             f"掷骰 {result['roll_total']} 对抗 DC {dc}，"
             + (
-                f"成功，恢复 {result['relentless_rage']['hit_points_restored']} HP；"
-                f"下次 DC {result['relentless_rage']['dc_after_success']}"
+                f"成功，恢复 {intervention_result['hit_points_restored']} HP；"
+                f"下次 DC {intervention_result['dc_after_success']}"
                 if succeeded
                 else "失败，保持 0 HP；未额外增加死亡豁免失败"
             )
@@ -8879,8 +8889,8 @@ class CombatEngineService:
                 session=session,
                 combat=combat,
             )
-            if isinstance(request.get("zero_hp_feature"), dict):
-                return self._confirm_relentless_rage_save(
+            if isinstance(request.get("zero_hp_intervention"), dict):
+                return self._confirm_zero_hp_intervention(
                     session,
                     combat=combat,
                     action=action,
@@ -9833,7 +9843,7 @@ class CombatEngineService:
             resolved = self._resolve(command, target)
             before = serialize(target)
             after = resolved["after"]
-            relentless_rage_feature = self._relentless_rage_defense(
+            zero_hp_intervention = self._zero_hp_intervention(
                 session,
                 target,
                 resulting_hp=int(after["hp"]),
@@ -10252,22 +10262,26 @@ class CombatEngineService:
                 )
             session.add(action)
             session.flush()
-            relentless_rage_prompt: CombatAction | None = None
-            if relentless_rage_feature is not None and target.hp == 0:
-                relentless_rage_prompt = self._open_relentless_rage_save_prompt(
+            zero_hp_intervention_prompt: CombatAction | None = None
+            if zero_hp_intervention is not None and target.hp == 0:
+                zero_hp_intervention_prompt = self._open_zero_hp_intervention_prompt(
                     session,
                     combat=combat,
                     parent_action=action,
                     target=target,
-                    defense=relentless_rage_feature,
+                    defense=zero_hp_intervention,
+                )
+                prompt_id_key = self._zero_hp_intervention_prompt_id_key(
+                    zero_hp_intervention
                 )
                 action.result_json = {
                     **dict(action.result_json or {}),
                     "phase": "awaiting_feature_save",
-                    "relentless_rage_save_prompt_id": relentless_rage_prompt.id,
+                    "zero_hp_intervention_prompt_id": zero_hp_intervention_prompt.id,
+                    prompt_id_key: zero_hp_intervention_prompt.id,
                 }
                 action.summary += (
-                    f"；触发坚韧狂暴，等待体质豁免（DC {relentless_rage_feature['dc']}）"
+                    f"；{self._zero_hp_intervention_summary(zero_hp_intervention)}"
                 )
                 action.version += 1
                 action.updated_at = now
@@ -10452,9 +10466,9 @@ class CombatEngineService:
                 "concentration_prompts": concentration_prompts,
                 "end_condition": self._end_condition(session, combat),
             }
-            if relentless_rage_prompt is not None:
+            if zero_hp_intervention_prompt is not None:
                 response["phase"] = "awaiting_feature_save"
-                response["feature_save_prompt"] = serialize(relentless_rage_prompt)
+                response["feature_save_prompt"] = serialize(zero_hp_intervention_prompt)
             return response
 
     def resolve_pre_damage_reaction(
@@ -11546,7 +11560,7 @@ class CombatEngineService:
             effect_ids: list[str] = []
             summon_ids_to_end: list[str] = []
             deactivated_non_character_ids: list[str] = []
-            relentless_rage_features: dict[str, dict[str, object]] = {}
+            zero_hp_interventions: dict[str, dict[str, object]] = {}
             damage_on_success = (
                 command.damage_total // 2 if command.half_damage_on_save else 0
             )
@@ -11710,7 +11724,7 @@ class CombatEngineService:
                     current_hp = 1
                     damage_result["feature_defense"] = zero_hp_feature
                     damage_result["remaining_hp"] = 1
-                relentless_rage_feature = self._relentless_rage_defense(
+                zero_hp_intervention = self._zero_hp_intervention(
                     session,
                     target,
                     resulting_hp=current_hp,
@@ -11718,8 +11732,8 @@ class CombatEngineService:
                         damage_result.get("unapplied_damage")
                     ),
                 )
-                if relentless_rage_feature is not None:
-                    relentless_rage_features[target.id] = relentless_rage_feature
+                if zero_hp_intervention is not None:
+                    zero_hp_interventions[target.id] = zero_hp_intervention
                 target.hp = current_hp
                 target.temporary_hp = current_temporary_hp
                 if self._state_int(damage_result.get("adjusted_damage")) > 0:
@@ -11868,17 +11882,17 @@ class CombatEngineService:
             session.add(action)
             session.flush()
             affected_by_id = {target.id: target for target in affected}
-            relentless_rage_prompts: list[CombatAction] = []
-            for target_id, defense in relentless_rage_features.items():
+            zero_hp_intervention_prompts: list[CombatAction] = []
+            for target_id, defense in zero_hp_interventions.items():
                 rage_target = affected_by_id[target_id]
-                prompt = self._open_relentless_rage_save_prompt(
+                prompt = self._open_zero_hp_intervention_prompt(
                     session,
                     combat=combat,
                     parent_action=action,
                     target=rage_target,
                     defense=defense,
                 )
-                relentless_rage_prompts.append(prompt)
+                zero_hp_intervention_prompts.append(prompt)
                 target_result = next(
                     item
                     for item in target_results
@@ -11887,11 +11901,14 @@ class CombatEngineService:
                 damage_result = target_result.get("damage")
                 if isinstance(damage_result, dict):
                     damage_result["phase"] = "awaiting_feature_save"
-                    damage_result["relentless_rage_save_prompt_id"] = prompt.id
-            if relentless_rage_prompts:
+                    damage_result["zero_hp_intervention_prompt_id"] = prompt.id
+                    damage_result[
+                        self._zero_hp_intervention_prompt_id_key(defense)
+                    ] = prompt.id
+            if zero_hp_intervention_prompts:
                 action_result["phase"] = "awaiting_feature_save"
                 action_result["feature_save_prompt_ids"] = [
-                    prompt.id for prompt in relentless_rage_prompts
+                    prompt.id for prompt in zero_hp_intervention_prompts
                 ]
                 action.result_json = action_result
                 action.version += 1
@@ -11967,10 +11984,10 @@ class CombatEngineService:
                 "concentration_prompts": concentration_prompts,
                 "already_applied": False,
             }
-            if relentless_rage_prompts:
+            if zero_hp_intervention_prompts:
                 response["phase"] = "awaiting_feature_save"
                 response["feature_save_prompts"] = [
-                    serialize(prompt) for prompt in relentless_rage_prompts
+                    serialize(prompt) for prompt in zero_hp_intervention_prompts
                 ]
             return response
 
@@ -14520,7 +14537,7 @@ class CombatEngineService:
                     10,
                     int(result["adjusted_damage"]) // 2,
                 )
-            relentless_rage_feature = self._relentless_rage_defense(
+            zero_hp_intervention = self._zero_hp_intervention(
                 session,
                 target,
                 resulting_hp=current_hp,
@@ -14611,20 +14628,23 @@ class CombatEngineService:
         )
         session.add(action)
         session.flush()
-        relentless_rage_prompt: CombatAction | None = None
-        if relentless_rage_feature is not None and target.hp == 0:
-            relentless_rage_prompt = self._open_relentless_rage_save_prompt(
+        zero_hp_intervention_prompt: CombatAction | None = None
+        if zero_hp_intervention is not None and target.hp == 0:
+            zero_hp_intervention_prompt = self._open_zero_hp_intervention_prompt(
                 session,
                 combat=combat,
                 parent_action=action,
                 target=target,
-                defense=relentless_rage_feature,
+                defense=zero_hp_intervention,
             )
             result["phase"] = "awaiting_feature_save"
-            result["relentless_rage_save_prompt_id"] = relentless_rage_prompt.id
+            result["zero_hp_intervention_prompt_id"] = zero_hp_intervention_prompt.id
+            result[
+                self._zero_hp_intervention_prompt_id_key(zero_hp_intervention)
+            ] = zero_hp_intervention_prompt.id
             action.result_json = result
             action.summary += (
-                f"；触发坚韧狂暴，等待体质豁免（DC {relentless_rage_feature['dc']}）"
+                f"；{self._zero_hp_intervention_summary(zero_hp_intervention)}"
             )
             action.version += 1
             action.updated_at = now
@@ -14642,9 +14662,9 @@ class CombatEngineService:
                 ],
             )
         response = {"effect_id": effect.id, "target_combatant_id": target.id, "result": result}
-        if relentless_rage_prompt is not None:
+        if zero_hp_intervention_prompt is not None:
             response["phase"] = "awaiting_feature_save"
-            response["feature_save_prompt"] = serialize(relentless_rage_prompt)
+            response["feature_save_prompt"] = serialize(zero_hp_intervention_prompt)
         return response
 
     def preview_effect(

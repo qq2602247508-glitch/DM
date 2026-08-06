@@ -190,7 +190,29 @@ def test_rest_resets_relentless_rage_dc_in_active_combat_snapshot(
                 "relentless_rage_state": {
                     "current_dc": 25,
                     "last_result": "success",
-                }
+                },
+                "feature_runtime": {
+                    "combat_start": {
+                        "defenses": [
+                            {
+                                "id": "relentless_rage:zero_hit_points_save",
+                                "kind": "zero_hp_intervention",
+                                "trigger": "would_drop_to_zero_hit_points",
+                                "saving_throw": {
+                                    "ability": "constitution",
+                                    "initial_dc": 10,
+                                    "increase_after_success": 5,
+                                },
+                                "state": {
+                                    "key": "relentless_rage_state",
+                                    "current_dc_field": "current_dc",
+                                    "reset_reason": "short_or_long_rest",
+                                },
+                                "resets": ["short_rest", "long_rest"],
+                            }
+                        ]
+                    }
+                },
             },
         },
     )

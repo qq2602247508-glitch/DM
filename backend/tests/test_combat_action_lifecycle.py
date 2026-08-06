@@ -55,6 +55,43 @@ def _combatant_path(campaign: dict[str, Any], combat: dict[str, Any], combatant_
     return f"{_root(campaign, combat)}/combatants/{combatant_id}"
 
 
+def _relentless_rage_intervention() -> dict[str, Any]:
+    return {
+        "id": "relentless_rage:zero_hit_points_save",
+        "kind": "zero_hp_intervention",
+        "trigger": "would_drop_to_zero_hit_points",
+        "eligibility": {
+            "entity_types": ["character"],
+            "required_conditions": ["raging"],
+            "level": {
+                "class_names": ["野蛮人", "barbarian"],
+                "minimum": 1,
+                "bind_as": "barbarian_level",
+            },
+        },
+        "saving_throw": {
+            "ability": "constitution",
+            "initial_dc": 10,
+            "increase_after_success": 5,
+        },
+        "success": {"kind": "restore_hit_points", "amount": "2*barbarian_level"},
+        "failure": {"kind": "continue_zero_hp_lifecycle"},
+        "exceptions": ["outright_death"],
+        "state": {
+            "key": "relentless_rage_state",
+            "current_dc_field": "current_dc",
+            "reset_reason": "short_or_long_rest",
+        },
+        "resets": ["short_rest", "long_rest"],
+        "presentation": {
+            "action_name": "坚韧狂暴",
+            "result_key": "relentless_rage",
+            "prompt_idempotency_prefix": "relentless-rage-save",
+            "prompt_result_id_key": "relentless_rage_save_prompt_id",
+        },
+    }
+
+
 def _lay_on_hands_fixture(
     client: TestClient,
     *,
@@ -1708,17 +1745,7 @@ def test_relentless_rage_opens_save_restores_hp_increases_dc_and_preserves_death
     )
     assert character_response.status_code == 201, character_response.text
     character = character_response.json()
-    defense = {
-        "id": "relentless_rage:zero_hit_points_save",
-        "kind": "zero_hit_points_save",
-        "trigger": "self_would_drop_to_zero_hit_points_while_raging",
-        "saving_throw": {
-            "ability": "constitution",
-            "initial_dc": 10,
-            "increase_after_each_success": 5,
-            "reset": "short_or_long_rest",
-        },
-    }
+    defense = _relentless_rage_intervention()
     target_response = combat_client.post(
         f"{_root(campaign, combat)}/combatants",
         json={
@@ -1846,16 +1873,7 @@ def test_relentless_rage_does_not_open_on_massive_damage(
                     "progression": {"class_levels": {"野蛮人": 5}},
                     "combat_start": {
                         "defenses": [
-                            {
-                                "id": "relentless_rage:zero_hit_points_save",
-                                "kind": "zero_hit_points_save",
-                                "trigger": "self_would_drop_to_zero_hit_points_while_raging",
-                                "saving_throw": {
-                                    "ability": "constitution",
-                                    "initial_dc": 10,
-                                    "increase_after_each_success": 5,
-                                },
-                            }
+                            _relentless_rage_intervention()
                         ]
                     },
                 }
@@ -1891,6 +1909,117 @@ def test_relentless_rage_does_not_open_on_massive_damage(
     assert body["target"]["hp"] == 0
     assert body["death_save"]["dead"] is True
     assert body["death_save"]["failures"] == 3
+
+
+def test_zero_hp_intervention_executor_accepts_a_second_configuration(
+    combat_client: TestClient,
+) -> None:
+    campaign, combat, _ = _setup(combat_client)
+    character_response = combat_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/characters",
+        json={
+            "name": "通用干预测试者",
+            "class_name": "战士",
+            "level": 1,
+            "class_levels": {"战士": 1},
+            "hp": 12,
+            "max_hp": 12,
+            "resources": {
+                "fixture_resolve": {"label": "测试干预次数", "current": 1, "max": 1}
+            },
+        },
+    )
+    assert character_response.status_code == 201, character_response.text
+    character = character_response.json()
+    test_intervention = {
+        "id": "fixture:last_stand_save",
+        "kind": "zero_hp_intervention",
+        "trigger": "would_drop_to_zero_hit_points",
+        "eligibility": {
+            "entity_types": ["character"],
+            "factions": ["ally"],
+            "required_conditions": ["focused"],
+            "resource": {"key": "fixture_resolve", "minimum": 1},
+        },
+        "saving_throw": {
+            "ability": "wisdom",
+            "initial_dc": 12,
+            "increase_after_success": 2,
+        },
+        "success": {"kind": "restore_hit_points", "amount": "3"},
+        "failure": {"kind": "continue_zero_hp_lifecycle"},
+        "exceptions": ["outright_death"],
+        "state": {"key": "fixture_last_stand_state", "current_dc_field": "save_dc"},
+        "resets": ["long_rest"],
+        "presentation": {
+            "action_name": "测试背水一战",
+            "result_key": "fixture_last_stand",
+            "prompt_idempotency_prefix": "fixture-last-stand",
+        },
+    }
+    target_response = combat_client.post(
+        f"{_root(campaign, combat)}/combatants",
+        json={
+            "display_name": "通用干预测试者",
+            "entity_type": "character",
+            "entity_id": character["id"],
+            "initiative": 10,
+            "hp": 6,
+            "max_hp": 12,
+            "conditions": ["focused"],
+            "snapshot_json": {
+                "feature_runtime": {"combat_start": {"defenses": [test_intervention]}},
+            },
+        },
+    )
+    assert target_response.status_code == 201, target_response.text
+    target = target_response.json()
+    attacker = _add_combatant(
+        combat_client, campaign, combat, name="通用干预攻击者", initiative=20
+    )
+    damage = combat_client.post(
+        f"{_root(campaign, combat)}/actions/confirm",
+        headers={"X-Request-ID": "fixture-zero-hp-damage"},
+        json={
+            "action_type": "damage",
+            "actor_combatant_id": attacker["id"],
+            "actor_version": attacker["version"],
+            "action_cost": "none",
+            "action_name": "测试伤害",
+            "target_combatant_id": target["id"],
+            "target_version": target["version"],
+            "amount": 6,
+            "damage_type": "force",
+        },
+    )
+    assert damage.status_code == 200, damage.text
+    prompt = damage.json()["feature_save_prompt"]
+    assert prompt["request_json"]["action_name"] == "测试背水一战"
+    assert prompt["request_json"]["ability"] == "wisdom"
+    assert prompt["request_json"]["dc"] == 12
+    request = {"action_version": prompt["version"], "roll_total": 12}
+    save = combat_client.post(
+        f"{_root(campaign, combat)}/actions/player-rolls/{prompt['id']}/confirm",
+        headers={"X-Request-ID": "fixture-zero-hp-save"},
+        json=request,
+    )
+    assert save.status_code == 200, save.text
+    save_body = save.json()
+    assert save_body["target"]["hp"] == 3
+    assert save_body["resolution"]["zero_hp_intervention"]["feature_id"] == (
+        "fixture:last_stand_save"
+    )
+    assert save_body["resolution"]["fixture_last_stand"]["dc_after_success"] == 14
+    assert save_body["target"]["snapshot_json"]["fixture_last_stand_state"][
+        "save_dc"
+    ] == 14
+    replay = combat_client.post(
+        f"{_root(campaign, combat)}/actions/player-rolls/{prompt['id']}/confirm",
+        headers={"X-Request-ID": "fixture-zero-hp-save"},
+        json=request,
+    )
+    assert replay.status_code == 200, replay.text
+    assert replay.json()["target"]["hp"] == 3
 
 
 def test_compiled_feature_condition_updates_action_economy(

@@ -32,6 +32,9 @@ from dnd_dm_assistant.domain.feature_runtime import (
     resolve_unarmored_defense_ac,
 )
 from dnd_dm_assistant.domain.rests import RestResource, resolve_long_rest, resolve_short_rest
+from dnd_dm_assistant.domain.zero_hp_intervention import (
+    adapt_legacy_zero_hp_intervention,
+)
 from dnd_dm_assistant.infrastructure.database.models import Combatant
 from dnd_dm_assistant.infrastructure.database.player_room_service import PlayerRoomService
 
@@ -1590,13 +1593,30 @@ def test_2024_deterministic_feature_contracts_are_explicit_but_partial_when_even
         for item in registry["combat_start"]["defenses"]
         if item["id"] == "relentless_rage:zero_hit_points_save"
     )
+    assert relentless_rage["kind"] == "zero_hp_intervention"
+    assert relentless_rage["trigger"] == "would_drop_to_zero_hit_points"
+    assert relentless_rage["eligibility"] == {
+        "entity_types": ["character"],
+        "required_conditions": ["raging"],
+        "level": {
+            "class_names": ["野蛮人", "barbarian"],
+            "minimum": 1,
+            "bind_as": "barbarian_level",
+        },
+    }
     assert relentless_rage["saving_throw"] == {
         "ability": "constitution",
         "initial_dc": 10,
-        "increase_after_each_success": 5,
-        "reset": "short_or_long_rest",
+        "increase_after_success": 5,
     }
-    assert relentless_rage["hit_points_on_success"] == "2*barbarian_level"
+    assert relentless_rage["success"] == {
+        "kind": "restore_hit_points",
+        "amount": "2*barbarian_level",
+    }
+    assert relentless_rage["failure"] == {
+        "kind": "continue_zero_hp_lifecycle"
+    }
+    assert relentless_rage["exceptions"] == ["outright_death"]
     assert relentless_rage["automation_status"] == "full"
     assert relentless_rage["requires_dm_adjudication"] is False
 
@@ -1636,6 +1656,31 @@ def test_2024_deterministic_feature_contracts_are_explicit_but_partial_when_even
     }
     assert partial_contracts["鲁莽攻击"]["automation_status"] == "full"
     assert partial_contracts["稳定瞄准"]["automation_status"] == "full"
+
+
+def test_legacy_zero_hp_save_snapshot_is_only_a_compatibility_adapter() -> None:
+    adapted = adapt_legacy_zero_hp_intervention(
+        {
+            "id": "legacy:any-id",
+            "kind": "zero_hit_points_save",
+            "trigger": "self_would_drop_to_zero_hit_points_while_raging",
+            "saving_throw": {
+                "ability": "constitution",
+                "initial_dc": 10,
+                "increase_after_each_success": 5,
+            },
+            "hit_points_on_success": "2*barbarian_level",
+        }
+    )
+    assert adapted["id"] == "legacy:any-id"
+    assert adapted["kind"] == "zero_hp_intervention"
+    assert adapted["trigger"] == "would_drop_to_zero_hit_points"
+    assert adapted["saving_throw"] == {
+        "ability": "constitution",
+        "initial_dc": 10,
+        "increase_after_success": 5,
+    }
+    assert adapted["failure"] == {"kind": "continue_zero_hp_lifecycle"}
 
 
 def test_self_restoration_is_an_executable_turn_end_condition_choice() -> None:
