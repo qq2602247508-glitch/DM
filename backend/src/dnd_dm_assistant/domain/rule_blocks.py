@@ -18,6 +18,23 @@ _DICE_EXPRESSION = re.compile(
 _DICE_TERM = re.compile(r"(?P<count>\d*)d(?P<sides>\d+)", re.IGNORECASE)
 
 
+def explicit_count_outcomes(expression: str) -> tuple[int, ...]:
+    """Return explicitly listed finite outcomes from a count expression.
+
+    Some source rules describe a dice result as a finite table, for example
+    ``1d6：2/4/8只``.  The parser only accepts the explicit slash-separated
+    numeric list; ordinary expressions such as ``1d6`` remain DM/player-roll
+    input rather than being guessed or evaluated here.
+    """
+
+    text = str(expression or "").replace("：", ":")
+    match = re.search(r":\s*(\d+(?:\s*/\s*\d+)+)", text)
+    if match is None:
+        return ()
+    values = tuple(dict.fromkeys(int(item) for item in re.findall(r"\d+", match.group(1))))
+    return tuple(value for value in values if value >= 1)
+
+
 def critical_damage_expression(expression: str) -> str:
     """Double only the dice terms for a critical hit.
 

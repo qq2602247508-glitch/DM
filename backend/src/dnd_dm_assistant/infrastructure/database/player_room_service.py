@@ -66,6 +66,7 @@ from dnd_dm_assistant.domain.rule_blocks import (
     TargetBlock,
     TargetCandidate,
     critical_damage_expression,
+    explicit_count_outcomes,
     resolve_damage_component_totals,
     resolve_target_selection,
 )
@@ -4331,6 +4332,13 @@ class PlayerRoomService:
                     raise ValueError("该召唤的数量已在规则积木中明确，必须按明确数量执行")
             elif summon_block.get("count_expression") and not isinstance(count, int):
                 raise ValueError("数量表达式的召唤必须由玩家明确提交实际数量")
+            elif summon_block.get("count_expression"):
+                allowed_counts = explicit_count_outcomes(
+                    str(summon_block["count_expression"])
+                )
+                if allowed_counts and count not in allowed_counts:
+                    formatted = "、".join(str(value) for value in allowed_counts)
+                    raise ValueError(f"该召唤的明确数量只能是：{formatted}")
             raw_initiative_mode = summon_block.get("initiative_mode") or "independent"
             if raw_initiative_mode == "independent":
                 initiative_mode: Literal["independent", "shared_with_source", "not_applicable"] = (

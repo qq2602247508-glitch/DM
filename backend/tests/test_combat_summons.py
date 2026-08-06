@@ -296,22 +296,30 @@ def test_summon_enters_initiative_once_and_keeps_controller_boundary(
 def test_player_summon_uses_initiative_mode_from_rule_block(
     campaign_client: TestClient,
 ) -> None:
-    def summon_plan(name: str, initiative_mode: str, enters_combat: bool) -> dict:
+    def summon_plan(
+        name: str,
+        initiative_mode: str,
+        enters_combat: bool,
+        *,
+        count_expression: str | None = None,
+    ) -> dict:
+        block = {
+            "id": "summon-0",
+            "kind": "summon",
+            "creature_ref": name,
+            "count": 1,
+            "controller": "caster",
+            "enters_combat": enters_combat,
+            "initiative_mode": initiative_mode,
+        }
+        if count_expression is not None:
+            block.pop("count")
+            block["count_expression"] = count_expression
         return {
             "schema_version": "1.0",
             "source_kind": "action",
             "source_name": name,
-            "blocks": [
-                {
-                    "id": "summon-0",
-                    "kind": "summon",
-                    "creature_ref": name,
-                    "count": 1,
-                    "controller": "caster",
-                    "enters_combat": enters_combat,
-                    "initiative_mode": initiative_mode,
-                }
-            ],
+            "blocks": [block],
             "root_block_ids": ["summon-0"],
             "automation_confidence": "exact",
             "automation_ready": True,
@@ -341,6 +349,15 @@ def test_player_summon_uses_initiative_mode_from_rule_block(
                     "name": "共享先攻召唤",
                     "rule_plan": summon_plan(
                         "共享先攻召唤", "shared_with_source", True
+                    ),
+                },
+                {
+                    "name": "离散数量召唤",
+                    "rule_plan": summon_plan(
+                        "离散数量召唤",
+                        "independent",
+                        True,
+                        count_expression="1d6：2/4/8只（按法术表决定）",
                     ),
                 },
             ],
@@ -416,6 +433,17 @@ def test_player_summon_uses_initiative_mode_from_rule_block(
         )
         assert rejected.status_code == 400
         assert "不是独立战斗单位" in rejected.text
+        invalid_count = player.post(
+            "/api/v1/player-room/me/combat/summon",
+            json={
+                "companion_id": shared_companion["id"],
+                "action_name": "离散数量召唤",
+                "count": 3,
+                "idempotency_key": "player-invalid-summon-count",
+            },
+        )
+        assert invalid_count.status_code == 400
+        assert "2、4、8" in invalid_count.text
         source_after_rejection = next(
             row
             for row in campaign_client.get(

@@ -28,6 +28,7 @@ from dnd_dm_assistant.domain.rule_blocks import (
     TransformationBlock,
     build_execution_plan,
     critical_damage_expression,
+    explicit_count_outcomes,
     validate_rule_plan,
 )
 
@@ -35,6 +36,12 @@ from dnd_dm_assistant.domain.rule_blocks import (
 def test_critical_damage_expression_doubles_dice_but_not_modifiers() -> None:
     assert critical_damage_expression("1d8+@strength") == "2d8+@strength"
     assert critical_damage_expression("8d6") == "16d6"
+
+
+def test_explicit_count_outcomes_only_accepts_finite_source_tables() -> None:
+    assert explicit_count_outcomes("1d6：2/4/8只（按法术表决定）") == (2, 4, 8)
+    assert explicit_count_outcomes("1d6") == ()
+    assert explicit_count_outcomes("按 DM 选择") == ()
 
 
 def test_class_feature_block_rejects_full_contracts_that_still_need_dm() -> None:
