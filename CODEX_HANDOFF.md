@@ -1346,3 +1346,11 @@ backend/.venv/bin/python -m pytest -q backend/tests
 - 验证：后端全量 `pytest -q backend/tests` 通过（当前 485 项）；Ruff、compileall、`git diff --check` 通过。仅有既有 Starlette/httpx 弃用警告。本轮只有后端改动，未宣称浏览器验收。
 - 用户/其他任务的 `frontend/src/ui/sceneGridGenerator.ts`、对应测试、`backend/tests/integrations/`、`backend/tests/ollama.py` 和 terrain takeover 文档未纳入提交。
 - 这一切片完成度：职业特性“共享状态生命周期规格与执行门禁” `100%`；仍属于固定大项“职业/子职业 1–20 级运行时闭环”，不新增第五个缺口。
+# 2026-08-06 子职业动作进入统一职业积木 registry
+
+- 代码提交 `2b38d5e`：升级预览/多职业资源重建现在把已校验的 `after_actions` 传入 `compile_feature_runtime_registry(actions=...)`；子职业动作不再只停留在角色 `actions` 字段，而会进入运行时 `actions` 和 canonical `feature_blocks`。
+- 子职业动作继续使用通用 `action` 积木，不按子职业名称新增执行器。当前 `_subclass_action` 只有动作经济、资源和来源等可验证字段，因此保持 `partial`、`requires_dm_adjudication=true`，不会被 `feature_runtime_action_projections()` 投影成会失败的可执行按钮。
+- 编译器现在同时读取顶层和嵌套 `runtime` 合同中的 `automation_status` / `requires_dm_adjudication`，避免嵌套合同被错误提升为 `full`。
+- 新增真实升级 API 回归：子职业动作进入 runtime registry、进入 canonical action block、仍为 partial/DM 边界且不生成假按钮；多职业资源/法术位定向回归继续通过。
+- 验证：后端全量 `pytest -q backend/tests` 通过；Ruff、compileall、`git diff --check` 通过。仅有既有 Starlette/httpx 弃用警告。本轮只改后端，没有新增浏览器验收声明或截图。
+- 当前切片完成度：子职业动作的统一 registry/积木接入 `100%`；子职业动作的具体目标、检定、伤害和文本例外仍按积木状态保留 DM 裁定，不把它们误报为全职业效果已完成。固定范围仍是原四大项，高级三维战斗继续跳过。
