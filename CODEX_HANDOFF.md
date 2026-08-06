@@ -1321,3 +1321,12 @@ backend/.venv/bin/python -m pytest -q backend/tests
 - 保留 `once_per_turn` 防重；非攻击动作不会触发；没有伤害骰输入时不猜测。运行时合同升级为 `full`，消费者为 `attack_damage_resolution`。
 - 验证：光耀打击定向回归、合同回归和后端全量 pytest 通过；Ruff、compileall、`git diff --check` 通过。本项只修改后端运行时与测试，沿用前一项浏览器加载阻塞记录，未重复伪造浏览器验收或截图。
 - 用户原有未跟踪文件 `backend/tests/integrations/`、`backend/tests/ollama.py` 仍保留，未纳入提交。这是固定大项“职业/子职业 1–20 级运行时闭环”的内部切片，不新增缺口；固定范围仍只有 4 个大项，高级三维战斗继续跳过。
+# 2026-08-06 职业特性统一积木编译层
+
+- 代码提交 `5589f7a`：建立统一 `ClassFeatureBlock` 合同，覆盖 `modifier`、`defense`、`resource`、`action`、`attack_rider` 五类职业特性积木；严格校验类型、来源、等级、自动化状态和 DM 边界，`full` 不允许携带 `requires_dm_adjudication=true`。
+- `compile_feature_runtime_registry()` 现在批量生成 `feature_blocks` 和 `feature_block_schema_version`；块 ID 根据职业/等级/特性/类型/来源稳定生成，payload 保留既有 runtime 字段，不逐个技能另造结构。
+- 战斗修正、职业防御、攻击附伤、职业动作投影和职业特性确认优先读取 canonical blocks；旧 `combat_start/actions/attack_riders/rule_modifiers` 保留兼容，非职业 legacy 修正不会被覆盖。缺失或非法 canonical block 会 fail-closed，并继续使用旧快照路径。
+- 新增回归：五类积木批量生成、ID 稳定、完整自动化与 DM 边界校验、仅保留 canonical blocks 的战斗防御消费者；既有万事通、光耀打击和全职业运行时测试继续通过。
+- 验证：后端全量 `pytest -q backend/tests` 通过，当前收集 `485` 项；定向规则/职业/战斗回归通过；Ruff、compileall、`git diff --check` 通过。仅有既有 Starlette/httpx 弃用警告。本轮没有前端改动，未宣称浏览器验收。
+- 用户原有未跟踪文件 `backend/tests/integrations/`、`backend/tests/ollama.py` 和 `docs/superpowers/specs/2026-08-06-dnd-terrain-generation-takeover.md` 未纳入提交。
+- 这一切片完成度：职业特性“统一积木编译与兼容消费层” `100%`；它属于固定大项“职业/子职业 1–20 级运行时闭环”，不新增第五个缺口。具体职业特性的未结构化分支、复杂反应触发仍按既有四大项边界处理。
