@@ -1261,6 +1261,7 @@ class AdvancementService:
             [item for item in after_features if isinstance(item, dict)],
             resources=after_resources,
             scalings=runtime_scalings,
+            actions=after_actions,
             class_levels=class_levels,
             total_level=character.level + 1,
         )

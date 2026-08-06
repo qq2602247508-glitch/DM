@@ -12,6 +12,7 @@ from fastapi.testclient import TestClient
 
 from dnd_dm_assistant.api.app import create_app
 from dnd_dm_assistant.config import Settings
+from dnd_dm_assistant.domain.feature_runtime import feature_runtime_action_projections
 
 
 def _class_record(name: str, stable_id: str, path: str) -> dict[str, Any]:
@@ -341,6 +342,55 @@ def test_subclass_runtime_materializes_prior_and_current_feature_levels(
     ]
     assert {int(item["class_level"]) for item in subclass_features} == {3, 6}
     assert all(item.get("feature_id") for item in subclass_features)
+
+
+def test_subclass_actions_enter_canonical_runtime_blocks_without_becoming_fake_buttons(
+    advancement_client: TestClient,
+) -> None:
+    campaign = _campaign(advancement_client)
+    created = advancement_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/characters",
+        json={
+            "name": "子职动作积木",
+            "class_name": "战士",
+            "level": 2,
+            "experience": 900,
+            "hp": 20,
+            "max_hp": 20,
+            "ability_scores": {"constitution": 14, "strength": 16},
+            "class_levels": {"战士": 2},
+        },
+    ).json()
+    response = advancement_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/characters/{created['id']}"
+        "/advancement/preview",
+        json={
+            "character_version": created["version"],
+            "class_name": "战士",
+            "subclass_name": "勇士",
+        },
+    )
+    assert response.status_code == 200, response.text
+    registry = response.json()["runtime_registry"]
+
+    subclass_action = next(
+        item
+        for item in registry["actions"].values()
+        if item.get("kind") == "subclass_feature_action"
+    )
+    assert subclass_action["runtime"]["automation_status"] == "partial"
+    canonical = next(
+        block
+        for block in registry["feature_blocks"]
+        if block["block_type"] == "action"
+        and block["payload"].get("kind") == "subclass_feature_action"
+    )
+    assert canonical["automation_status"] == "partial"
+    assert canonical["requires_dm_adjudication"] is True
+    assert not any(
+        action.get("name") == subclass_action.get("name")
+        for action in feature_runtime_action_projections(registry)
+    )
 
 
 def test_wizard_advancement_rejects_wrong_class_level_and_preparation(

@@ -1857,7 +1857,13 @@ def feature_runtime_definition(
 def _entry_automation_status(entry: Mapping[str, Any]) -> str:
     """Return the conservative status for one typed runtime entry."""
 
-    status = str(entry.get("automation_status") or "full")
+    runtime = entry.get("runtime")
+    runtime_data = runtime if isinstance(runtime, Mapping) else {}
+    status = str(
+        entry.get("automation_status")
+        or runtime_data.get("automation_status")
+        or "full"
+    )
     if status not in _AUTOMATION_STATUSES:
         status = "partial"
     effects = entry.get("effects")
@@ -1865,7 +1871,11 @@ def _entry_automation_status(entry: Mapping[str, Any]) -> str:
         isinstance(effect, Mapping) and effect.get("kind") == "requires_dm_choice"
         for effect in (effects if isinstance(effects, list) else ())
     )
-    if (entry.get("requires_dm_adjudication") or needs_choice) and status == "full":
+    if (
+        entry.get("requires_dm_adjudication")
+        or runtime_data.get("requires_dm_adjudication")
+        or needs_choice
+    ) and status == "full":
         return "partial"
     return status
 
