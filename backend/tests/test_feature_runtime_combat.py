@@ -1583,3 +1583,63 @@ def test_combat_consumers_accept_a_snapshot_with_only_canonical_feature_blocks()
     defenses = CombatEngineService._feature_defenses(target)
 
     assert any(item.get("kind") == "evasion" for item in defenses)
+
+
+def test_feature_target_policy_enforces_faction_and_range_without_feature_names() -> None:
+    actor = Combatant(
+        id="feature-target-actor",
+        entity_type="character",
+        display_name="吟游诗人",
+        hp=20,
+        max_hp=20,
+        snapshot_json={
+            "disposition": "ally",
+            "grid_position": {"row": 1, "col": 1},
+        },
+    )
+    ally = Combatant(
+        id="feature-target-ally",
+        entity_type="character",
+        display_name="盟友",
+        hp=20,
+        max_hp=20,
+        snapshot_json={
+            "disposition": "ally",
+            "grid_position": {"row": 1, "col": 7},
+        },
+    )
+    enemy = Combatant(
+        id="feature-target-enemy",
+        entity_type="monster",
+        display_name="敌人",
+        hp=20,
+        max_hp=20,
+        snapshot_json={
+            "disposition": "enemy",
+            "grid_position": {"row": 1, "col": 2},
+        },
+    )
+    action = {
+        "target_policy": {
+            "mode": "ally_or_self",
+            "same_faction": True,
+            "range_ft": 60,
+        }
+    }
+    combat = SimpleNamespace(scene_id=None)
+
+    CombatEngineService._validate_feature_target_policy(
+        None, combat, actor, ally, action
+    )
+    with pytest.raises(ValueError, match="同阵营"):
+        CombatEngineService._validate_feature_target_policy(
+            None, combat, actor, enemy, action
+        )
+    ally.snapshot_json = {
+        "disposition": "ally",
+        "grid_position": {"row": 1, "col": 14},
+    }
+    with pytest.raises(ValueError, match="60 尺"):
+        CombatEngineService._validate_feature_target_policy(
+            None, combat, actor, ally, action
+        )

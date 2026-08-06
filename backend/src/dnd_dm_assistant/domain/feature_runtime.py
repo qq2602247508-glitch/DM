@@ -1117,6 +1117,11 @@ def feature_runtime_definition(
                 "resource_key": "bardic_inspiration",
                 "resource_cost": 1,
                 "target": "ally_or_self",
+                "target_policy": {
+                    "mode": "ally_or_self",
+                    "same_faction": True,
+                    "range_ft": 60,
+                },
                 "resolution_kind": "grant_dice",
                 "dice_key": "bardic_inspiration_die",
                 "effects": [

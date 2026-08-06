@@ -570,7 +570,11 @@ def test_bardic_inspiration_projection_consumes_resource_and_records_granted_die
             "initiative": 20,
             "hp": 20,
             "max_hp": 20,
-            "snapshot_json": {"feature_runtime": registry},
+            "snapshot_json": {
+                "disposition": "ally",
+                "grid_position": {"row": 1, "col": 1},
+                "feature_runtime": registry,
+            },
         },
     )
     assert bard_response.status_code == 201, bard_response.text
@@ -583,6 +587,10 @@ def test_bardic_inspiration_projection_consumes_resource_and_records_granted_die
             "initiative": 10,
             "hp": 20,
             "max_hp": 20,
+            "snapshot_json": {
+                "disposition": "ally",
+                "grid_position": {"row": 1, "col": 2},
+            },
         },
     )
     assert ally_response.status_code == 201, ally_response.text

@@ -320,6 +320,60 @@ class CombatEngineService:
         return "ally" if combatant.entity_type in {"character", "companion"} else "enemy"
 
     @classmethod
+    def _validate_feature_target_policy(
+        cls,
+        session: Session | None,
+        combat: Combat,
+        actor: Combatant,
+        target: Combatant,
+        action: dict[str, Any],
+    ) -> None:
+        """Apply a typed target policy shared by every feature action.
+
+        Feature-specific code may still add stricter rules, but common ally,
+        faction and range checks belong to the action block itself.  Missing
+        authoritative positions fail closed instead of turning a range rule
+        into a text-only hint.
+        """
+
+        policy = action.get("target_policy")
+        if not isinstance(policy, dict):
+            return
+        mode = str(policy.get("mode") or "").strip()
+        if mode not in {"self", "ally_or_self", "enemy", "any"}:
+            raise ValueError("职业特性目标积木的 mode 无效")
+        if mode == "self" and target.id != actor.id:
+            raise ValueError("该职业特性只能以自身为目标")
+        if mode == "enemy" and cls._combatant_faction(actor) == cls._combatant_faction(target):
+            raise ValueError("该职业特性只能以敌方为目标")
+        if policy.get("same_faction") is True and (
+            cls._combatant_faction(actor) != cls._combatant_faction(target)
+        ):
+            raise ValueError("该职业特性只能选择同阵营目标")
+        raw_range = policy.get("range_ft")
+        if raw_range is None or target.id == actor.id:
+            return
+        if isinstance(raw_range, bool) or not isinstance(raw_range, int) or raw_range < 0:
+            raise ValueError("职业特性目标积木的 range_ft 无效")
+        actor_position = (actor.snapshot_json or {}).get("grid_position")
+        target_position = (target.snapshot_json or {}).get("grid_position")
+        if not isinstance(actor_position, dict) or not isinstance(target_position, dict):
+            raise ValueError("职业特性目标距离缺少权威网格位置，需由 DM 裁定")
+        try:
+            actor_cell = (int(actor_position["row"]), int(actor_position["col"]))
+            target_cell = (int(target_position["row"]), int(target_position["col"]))
+        except (KeyError, TypeError, ValueError) as exc:
+            raise ValueError("职业特性目标距离的网格位置无效，需由 DM 裁定") from exc
+        cell_size = 5
+        if session is not None and combat.scene_id:
+            grid = session.scalar(select(SceneGrid).where(SceneGrid.scene_id == combat.scene_id))
+            if grid is not None:
+                cell_size = grid.cell_size_ft
+        distance = grid_distance_ft(actor_cell, target_cell, cell_size_ft=cell_size)
+        if distance > raw_range:
+            raise ValueError(f"职业特性目标必须在 {raw_range} 尺范围内")
+
+    @classmethod
     def _rage_attack_counts_as_activity(
         cls,
         actor: Combatant,
@@ -10446,6 +10500,13 @@ class CombatEngineService:
                     )
             if action.get("target") == "self" and target.id != actor.id:
                 raise ValueError("该职业特性只能以自身为目标")
+            self._validate_feature_target_policy(
+                session,
+                combat,
+                actor,
+                target,
+                action,
+            )
             if command.feature_id == "lay_on_hands" and target.id != actor.id:
                 if self._combatant_faction(actor) != self._combatant_faction(target):
                     raise ValueError("圣疗只能以自身或同阵营目标为目标")
