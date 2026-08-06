@@ -1872,6 +1872,82 @@ def test_character_structured_hit_reaction_window_is_not_monster_only(
     assert windows[0]["eligible_action_names"] == ["护盾"]
 
 
+def test_character_structured_cast_spell_reaction_window_is_not_monster_only(
+    combat_client: TestClient,
+) -> None:
+    campaign = _campaign(combat_client, "Character spell reaction")
+    base = f"/api/v1/campaigns/{campaign['id']}"
+    combat = combat_client.post(
+        f"{base}/combats", json={"name": "Character spell reaction combat"}
+    ).json()
+    caster = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "敌方法师",
+            "entity_type": "monster",
+            "initiative": 20,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {
+                "actions": [
+                    {
+                        "name": "寒冰箭",
+                        "action_type": "spellcasting",
+                        "spell_level": 1,
+                    }
+                ]
+            },
+        },
+    ).json()
+    character = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "角色反制者",
+            "entity_type": "character",
+            "initiative": 10,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {
+                "actions": [
+                    {
+                        "name": "反制法术",
+                        "action_type": "reaction",
+                        "reaction_event": "casts_spell",
+                        "reaction_trigger": "看到生物施放法术时",
+                    }
+                ]
+            },
+        },
+    ).json()
+    spell = combat_client.post(
+        f"{base}/combats/{combat['id']}/actions/confirm",
+        headers={"X-Request-ID": "character-cast-spell-reaction"},
+        json={
+            "action_type": "damage",
+            "actor_combatant_id": caster["id"],
+            "actor_version": caster["version"],
+            "action_cost": "none",
+            "action_name": "寒冰箭",
+            "target_combatant_id": character["id"],
+            "target_version": character["version"],
+            "amount": 0,
+            "damage_type": "cold",
+            "is_spell": True,
+        },
+    )
+    assert spell.status_code == 200, spell.text
+    actions = combat_client.get(f"{base}/combats/{combat['id']}/actions").json()["items"]
+    windows = [
+        item["result_json"]["action_window"]
+        for item in actions
+        if item["action_type"] == "eligible_action_window"
+        and item["result_json"]["action_window"].get("reaction_event") == "casts_spell"
+    ]
+    assert len(windows) == 1
+    assert windows[0]["trigger_combatant_id"] == caster["id"]
+    assert windows[0]["eligible_action_names"] == ["反制法术"]
+
+
 def test_spending_reaction_elsewhere_invalidates_other_eligible_windows(
     combat_client: TestClient,
 ) -> None:

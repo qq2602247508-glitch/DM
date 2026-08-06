@@ -2723,21 +2723,20 @@ class CombatEngineService:
         action_name = str(spell_action.request_json.get("action_name") or "").strip()
         if caster is None or not cls._is_structured_spell_action(caster, action_name):
             return
-        monsters = session.scalars(
+        reactors = session.scalars(
             select(Combatant).where(
                 Combatant.combat_id == combat.id,
-                Combatant.entity_type == "monster",
                 Combatant.is_active.is_(True),
             )
         ).all()
-        for monster in monsters:
-            if monster.id == caster.id or monster.hp <= 0 or not monster.reaction_available:
+        for reactor in reactors:
+            if reactor.id == caster.id or not cls._can_open_structured_reaction_window(reactor):
                 continue
-            reaction_actions = cls._structured_reaction_actions(monster, "casts_spell")
+            reaction_actions = cls._structured_reaction_actions(reactor, "casts_spell")
             if not reaction_actions:
                 continue
             idempotency_key = (
-                f"rw:{combat.id}:spell:{spell_action.id}:{monster.id}:casts_spell"
+                f"rw:{combat.id}:spell:{spell_action.id}:{reactor.id}:casts_spell"
             )
             existing = session.scalar(
                 select(CombatAction).where(
@@ -2750,7 +2749,7 @@ class CombatEngineService:
             reaction_metadata: dict[str, object] = {
                 "action_cost": "reaction",
                 "status": "eligible",
-                "window_key": f"spell:{spell_action.id}:{monster.id}",
+                "window_key": f"spell:{spell_action.id}:{reactor.id}",
                 "trigger": "casts_spell",
                 "reaction_event": "casts_spell",
                 "eligible_action_names": [
@@ -2773,7 +2772,7 @@ class CombatEngineService:
                 CombatAction(
                     campaign_id=combat.campaign_id,
                     combat_id=combat.id,
-                    actor_combatant_id=monster.id,
+                    actor_combatant_id=reactor.id,
                     transaction_id=transaction.id if transaction is not None else None,
                     action_type="eligible_action_window",
                     target_combatant_ids=[],
@@ -2792,7 +2791,7 @@ class CombatEngineService:
                     round_number=combat.round_number,
                     turn_index=combat.current_turn_index,
                     summary=(
-                        f"{monster.display_name}：施法反应窗口已开放"
+                        f"{reactor.display_name}：施法反应窗口已开放"
                         f"（{caster.display_name} 开始施放「{action_name}」；等待 DM 确认）"
                     ),
                     idempotency_key=idempotency_key,
