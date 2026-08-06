@@ -26,6 +26,8 @@ from dnd_dm_assistant.infrastructure.database.models import (
     Campaign,
     Character,
     CharacterCondition,
+    Combat,
+    Combatant,
     OperationTransaction,
     ResourcePool,
     RestRecord,
@@ -110,6 +112,43 @@ class RestService:
         if character is None or character.campaign_id != campaign_id:
             raise StateNotFoundError("character not found in campaign")
         return character
+
+    @staticmethod
+    def _reset_combat_feature_states(
+        session: Session,
+        *,
+        character_id: str,
+    ) -> list[str]:
+        """Reset rest-scoped feature state in active combat snapshots."""
+
+        combatants = session.scalars(
+            select(Combatant)
+            .join(Combat, Combat.id == Combatant.combat_id)
+            .where(
+                Combat.status == "active",
+                Combatant.entity_type == "character",
+                Combatant.entity_id == character_id,
+            )
+        ).all()
+        reset_ids: list[str] = []
+        for combatant in combatants:
+            snapshot = dict(combatant.snapshot_json or {})
+            state = snapshot.get("relentless_rage_state")
+            if not isinstance(state, dict) or "current_dc" not in state:
+                continue
+            state = dict(state)
+            state.update(
+                {
+                    "current_dc": 10,
+                    "reset_reason": "short_or_long_rest",
+                }
+            )
+            snapshot["relentless_rage_state"] = state
+            combatant.snapshot_json = snapshot
+            combatant.version += 1
+            combatant.updated_at = datetime.now(UTC)
+            reset_ids.append(combatant.id)
+        return reset_ids
 
     @staticmethod
     def _fatigue_condition(
@@ -761,6 +800,17 @@ class RestService:
                 participant["after"]["ability_score_reductions"]
             )
             character.death_saves = dict(participant["after"]["death_saves"])
+            feature_runtime_resets: list[str] = []
+            if participant.get("completed") and (
+                bool(request_data.get("fallback_to_short_rest"))
+                or str(request_data.get("rest_type") or "") in {"short", "long"}
+            ):
+                feature_runtime_resets = self._reset_combat_feature_states(
+                    session,
+                    character_id=character.id,
+                )
+            if feature_runtime_resets:
+                participant["feature_runtime_resets"] = feature_runtime_resets
             before_fatigue = int(participant["before"]["fatigue"])
             after_fatigue = int(participant["after"]["fatigue"])
             if after_fatigue != before_fatigue:

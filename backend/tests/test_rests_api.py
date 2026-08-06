@@ -167,6 +167,69 @@ def test_team_rest_rejects_stale_participant_without_partial_changes(
     ).json()["hp"] == 4
 
 
+def test_rest_resets_relentless_rage_dc_in_active_combat_snapshot(
+    rest_client: TestClient,
+) -> None:
+    campaign = _campaign(rest_client)
+    character = _character(rest_client, campaign["id"], "狂暴 DC 重置者")
+    combat_response = rest_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/combats",
+        json={"name": "休息中的战斗快照"},
+    )
+    assert combat_response.status_code == 201, combat_response.text
+    combat = combat_response.json()
+    combatant_response = rest_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": character["name"],
+            "entity_type": "character",
+            "entity_id": character["id"],
+            "hp": 18,
+            "max_hp": 18,
+            "snapshot_json": {
+                "relentless_rage_state": {
+                    "current_dc": 25,
+                    "last_result": "success",
+                }
+            },
+        },
+    )
+    assert combatant_response.status_code == 201, combatant_response.text
+    combatant = combatant_response.json()
+    body = {
+        "rest_type": "short",
+        "duration_minutes": 60,
+        "participants": [
+            {
+                "character_id": character["id"],
+                "character_version": character["version"],
+            }
+        ],
+    }
+    preview = rest_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/rests/preview",
+        json=body,
+    )
+    assert preview.status_code == 200, preview.text
+    confirm = rest_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/rests/confirm",
+        json={
+            **body,
+            "preview_token": preview.json()["preview_token"],
+            "idempotency_key": "relentless-rage-rest-reset",
+        },
+    )
+    assert confirm.status_code == 200, confirm.text
+    assert combatant["id"] in confirm.json()["participants"][0]["feature_runtime_resets"]
+    refreshed = rest_client.get(
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}/combatants/{combatant['id']}"
+    )
+    assert refreshed.status_code == 200, refreshed.text
+    state = refreshed.json()["snapshot_json"]["relentless_rage_state"]
+    assert state["current_dc"] == 10
+    assert state["reset_reason"] == "short_or_long_rest"
+
+
 def test_interrupted_short_rest_has_no_benefit_and_null_time_is_preserved(
     rest_client: TestClient,
 ) -> None:

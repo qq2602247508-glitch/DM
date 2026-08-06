@@ -1691,6 +1691,208 @@ def test_relentless_endurance_prevents_zero_hp_and_consumes_long_rest_resource(
     assert character_after.json()["resources"]["relentless_endurance"]["current"] == 0
 
 
+def test_relentless_rage_opens_save_restores_hp_increases_dc_and_preserves_death_save(
+    combat_client: TestClient,
+) -> None:
+    campaign, combat, _ = _setup(combat_client)
+    character_response = combat_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/characters",
+        json={
+            "name": "坚韧狂暴测试者",
+            "class_name": "野蛮人",
+            "level": 5,
+            "class_levels": {"野蛮人": 5},
+            "hp": 20,
+            "max_hp": 20,
+        },
+    )
+    assert character_response.status_code == 201, character_response.text
+    character = character_response.json()
+    defense = {
+        "id": "relentless_rage:zero_hit_points_save",
+        "kind": "zero_hit_points_save",
+        "trigger": "self_would_drop_to_zero_hit_points_while_raging",
+        "saving_throw": {
+            "ability": "constitution",
+            "initial_dc": 10,
+            "increase_after_each_success": 5,
+            "reset": "short_or_long_rest",
+        },
+    }
+    target_response = combat_client.post(
+        f"{_root(campaign, combat)}/combatants",
+        json={
+            "display_name": "坚韧狂暴测试者",
+            "entity_type": "character",
+            "entity_id": character["id"],
+            "initiative": 10,
+            "hp": 10,
+            "max_hp": 20,
+            "conditions": ["raging"],
+            "snapshot_json": {
+                "feature_runtime": {
+                    "progression": {"class_levels": {"野蛮人": 5}},
+                    "combat_start": {"defenses": [defense]},
+                }
+            },
+        },
+    )
+    assert target_response.status_code == 201, target_response.text
+    target = target_response.json()
+    attacker = _add_combatant(
+        combat_client,
+        campaign,
+        combat,
+        name="坚韧狂暴攻击者",
+        initiative=20,
+    )
+
+    first_damage = combat_client.post(
+        f"{_root(campaign, combat)}/actions/confirm",
+        headers={"X-Request-ID": "relentless-rage-damage-1"},
+        json={
+            "action_type": "damage",
+            "actor_combatant_id": attacker["id"],
+            "actor_version": attacker["version"],
+            "action_cost": "none",
+            "action_name": "重击",
+            "target_combatant_id": target["id"],
+            "target_version": target["version"],
+            "amount": 10,
+            "damage_type": "slashing",
+        },
+    )
+    assert first_damage.status_code == 200, first_damage.text
+    first_body = first_damage.json()
+    assert first_body["phase"] == "awaiting_feature_save"
+    assert first_body["target"]["hp"] == 0
+    assert "昏迷" in first_body["target"]["conditions"]
+    prompt = first_body["feature_save_prompt"]
+    assert prompt["action_type"] == "player_roll_prompt"
+    assert prompt["request_json"]["dc"] == 10
+
+    success = combat_client.post(
+        f"{_root(campaign, combat)}/actions/player-rolls/{prompt['id']}/confirm",
+        headers={"X-Request-ID": "relentless-rage-save-1"},
+        json={"action_version": prompt["version"], "roll_total": 15},
+    )
+    assert success.status_code == 200, success.text
+    success_body = success.json()
+    assert success_body["target"]["hp"] == 10
+    assert "昏迷" not in success_body["target"]["conditions"]
+    assert success_body["resolution"]["relentless_rage"]["hit_points_restored"] == 10
+    assert success_body["resolution"]["relentless_rage"]["dc_after_success"] == 15
+    assert success_body["death_save"]["failures"] == 0
+    target = success_body["target"]
+
+    second_damage = combat_client.post(
+        f"{_root(campaign, combat)}/actions/confirm",
+        headers={"X-Request-ID": "relentless-rage-damage-2"},
+        json={
+            "action_type": "damage",
+            "actor_combatant_id": attacker["id"],
+            "actor_version": attacker["version"],
+            "action_cost": "none",
+            "action_name": "重击",
+            "target_combatant_id": target["id"],
+            "target_version": target["version"],
+            "amount": 10,
+            "damage_type": "slashing",
+        },
+    )
+    assert second_damage.status_code == 200, second_damage.text
+    second_prompt = second_damage.json()["feature_save_prompt"]
+    assert second_prompt["request_json"]["dc"] == 15
+    second_failure = combat_client.post(
+        f"{_root(campaign, combat)}/actions/player-rolls/{second_prompt['id']}/confirm",
+        headers={"X-Request-ID": "relentless-rage-save-2"},
+        json={"action_version": second_prompt["version"], "roll_total": 14},
+    )
+    assert second_failure.status_code == 200, second_failure.text
+    second_body = second_failure.json()
+    assert second_body["target"]["hp"] == 0
+    assert second_body["resolution"]["relentless_rage"]["death_save_unchanged"] is True
+    assert second_body["death_save"]["failures"] == 0
+
+
+def test_relentless_rage_does_not_open_on_massive_damage(
+    combat_client: TestClient,
+) -> None:
+    campaign, combat, _ = _setup(combat_client)
+    character_response = combat_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/characters",
+        json={
+            "name": "坚韧狂暴致死测试者",
+            "class_name": "野蛮人",
+            "level": 5,
+            "class_levels": {"野蛮人": 5},
+            "hp": 20,
+            "max_hp": 20,
+        },
+    )
+    character = character_response.json()
+    target_response = combat_client.post(
+        f"{_root(campaign, combat)}/combatants",
+        json={
+            "display_name": "坚韧狂暴致死测试者",
+            "entity_type": "character",
+            "entity_id": character["id"],
+            "initiative": 10,
+            "hp": 1,
+            "max_hp": 20,
+            "conditions": ["raging"],
+            "snapshot_json": {
+                "feature_runtime": {
+                    "progression": {"class_levels": {"野蛮人": 5}},
+                    "combat_start": {
+                        "defenses": [
+                            {
+                                "id": "relentless_rage:zero_hit_points_save",
+                                "kind": "zero_hit_points_save",
+                                "trigger": "self_would_drop_to_zero_hit_points_while_raging",
+                                "saving_throw": {
+                                    "ability": "constitution",
+                                    "initial_dc": 10,
+                                    "increase_after_each_success": 5,
+                                },
+                            }
+                        ]
+                    },
+                }
+            },
+        },
+    )
+    target = target_response.json()
+    attacker = _add_combatant(
+        combat_client,
+        campaign,
+        combat,
+        name="致死攻击者",
+        initiative=20,
+    )
+    damage = combat_client.post(
+        f"{_root(campaign, combat)}/actions/confirm",
+        headers={"X-Request-ID": "relentless-rage-massive"},
+        json={
+            "action_type": "damage",
+            "actor_combatant_id": attacker["id"],
+            "actor_version": attacker["version"],
+            "action_cost": "none",
+            "action_name": "致死重击",
+            "target_combatant_id": target["id"],
+            "target_version": target["version"],
+            "amount": 21,
+            "damage_type": "slashing",
+        },
+    )
+    assert damage.status_code == 200, damage.text
+    body = damage.json()
+    assert "phase" not in body
+    assert body["target"]["hp"] == 0
+    assert body["death_save"]["dead"] is True
+    assert body["death_save"]["failures"] == 3
+
+
 def test_compiled_feature_condition_updates_action_economy(
     combat_client: TestClient,
 ) -> None:

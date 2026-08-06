@@ -1597,7 +1597,8 @@ def test_2024_deterministic_feature_contracts_are_explicit_but_partial_when_even
         "reset": "short_or_long_rest",
     }
     assert relentless_rage["hit_points_on_success"] == "2*barbarian_level"
-    assert relentless_rage["automation_status"] == "partial"
+    assert relentless_rage["automation_status"] == "full"
+    assert relentless_rage["requires_dm_adjudication"] is False
 
     relentless_endurance = registry["resources"]["relentless_endurance"]
     assert relentless_endurance["max"] == 1

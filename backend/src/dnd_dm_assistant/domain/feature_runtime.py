@@ -1630,9 +1630,14 @@ def feature_runtime_definition(
                 },
                 "hit_points_on_success": "2*barbarian_level",
                 "does_not_apply_when": "dies_outright",
-                "automation_status": "partial",
-                "requires_dm_adjudication": True,
-                "partial_reason": "濒死拦截、递增 DC 与短休重置需要事件型伤害结算支持。",
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "zero_hp_damage_resolution",
+                    "effect_kinds": ["zero_hp_save_prompt", "restore_hit_points"],
+                    "does_not_apply_when": "dies_outright",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
                 **source,
             }
         )
