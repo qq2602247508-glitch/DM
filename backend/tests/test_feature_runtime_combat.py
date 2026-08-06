@@ -1550,3 +1550,36 @@ def test_paladin_protection_aura_adds_charisma_modifier_to_self_save() -> None:
     assert PlayerRoomService._rule_modifier(
         weak_paladin, "saving_throw", scope="self", skill="wisdom"
     )[0] == 1
+
+
+def test_combat_consumers_accept_a_snapshot_with_only_canonical_feature_blocks() -> None:
+    registry = compile_feature_runtime_registry(
+        [
+            {
+                "name": "反射闪避",
+                "kind": "class_feature",
+                "class_name": "游荡者",
+                "class_level": 7,
+                "runtime": {},
+            }
+        ],
+        class_levels={"游荡者": 7},
+        total_level=7,
+    )
+    canonical_only_runtime = {
+        "feature_block_schema_version": registry["feature_block_schema_version"],
+        "feature_blocks": registry["feature_blocks"],
+        "progression": registry["progression"],
+    }
+    target = Combatant(
+        id="canonical-feature-target",
+        entity_type="character",
+        display_name="canonical 特性目标",
+        hp=20,
+        max_hp=20,
+        snapshot_json={"feature_runtime": canonical_only_runtime},
+    )
+
+    defenses = CombatEngineService._feature_defenses(target)
+
+    assert any(item.get("kind") == "evasion" for item in defenses)

@@ -48,6 +48,7 @@ from dnd_dm_assistant.domain.exploration import (
     line_of_sight,
     line_of_sight_3d,
 )
+from dnd_dm_assistant.domain.feature_runtime import feature_block_payloads
 from dnd_dm_assistant.infrastructure.database.campaign_service import serialize
 from dnd_dm_assistant.infrastructure.database.models import (
     NPC,
@@ -3326,9 +3327,25 @@ class CombatEngineService:
         known condition predicates are applied; prose remains DM-owned.
         """
 
-        raw = (combatant.snapshot_json or {}).get("rule_modifiers")
+        snapshot = combatant.snapshot_json or {}
+        raw = snapshot.get("rule_modifiers")
         if not isinstance(raw, dict):
-            return []
+            raw = {}
+        feature_runtime = snapshot.get("feature_runtime")
+        canonical_modifiers = (
+            feature_block_payloads(feature_runtime, "modifier")
+            if isinstance(feature_runtime, dict)
+            else []
+        )
+        if canonical_modifiers:
+            merged = dict(raw)
+            merged.update(
+                {
+                    str(item.get("id") or index): item
+                    for index, item in enumerate(canonical_modifiers)
+                }
+            )
+            raw = merged
         ability_aliases = {
             "力量": "strength",
             "敏捷": "dexterity",
@@ -3478,8 +3495,10 @@ class CombatEngineService:
         raw = (combatant.snapshot_json or {}).get("feature_runtime")
         if not isinstance(raw, dict):
             return []
-        combat_start = raw.get("combat_start")
-        defenses = combat_start.get("defenses") if isinstance(combat_start, dict) else None
+        defenses = feature_block_payloads(raw, "defense")
+        if not defenses:
+            combat_start = raw.get("combat_start")
+            defenses = combat_start.get("defenses") if isinstance(combat_start, dict) else None
         return [item for item in defenses or () if isinstance(item, dict)]
 
     @classmethod
@@ -10347,6 +10366,12 @@ class CombatEngineService:
             registry = actor.snapshot_json.get("feature_runtime")
             registry_data = dict(registry) if isinstance(registry, dict) else {}
             raw_actions = registry_data.get("actions")
+            canonical_actions = feature_block_payloads(registry_data, "action")
+            if canonical_actions:
+                raw_actions = {
+                    str(item.get("id") or item.get("resource_key") or index): item
+                    for index, item in enumerate(canonical_actions)
+                }
             action = (
                 dict(raw_actions.get(command.feature_id))
                 if isinstance(raw_actions, dict)

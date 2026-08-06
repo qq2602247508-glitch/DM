@@ -23,6 +23,7 @@ from dnd_dm_assistant.domain.feature_runtime import (
     FEATURE_RUNTIME_SCHEMA_VERSION,
     apply_initiative_start_resource_recovery,
     compile_feature_runtime_registry,
+    feature_block_payloads,
     feature_runtime_action_projections,
     feature_runtime_contract,
     feature_runtime_definition,
@@ -112,6 +113,31 @@ def test_all_core_class_grants_compile_for_levels_one_through_twenty() -> None:
             assert registry["combat_start"]["attack_action_count"] >= 1
             assert isinstance(registry["dm_only"], list)
             assert len(registry["feature_contracts"]) == len(grants)
+
+
+def test_feature_runtime_compiles_one_stable_canonical_block_set() -> None:
+    registry = _registry(_core_rules()["圣武士"])
+    rebuilt = _registry(_core_rules()["圣武士"])
+
+    blocks = registry["feature_blocks"]
+    assert blocks
+    assert {item["kind"] for item in blocks} == {"class_feature"}
+    assert {item["block_type"] for item in blocks} >= {
+        "modifier",
+        "defense",
+        "resource",
+        "action",
+        "attack_rider",
+    }
+    assert [item["id"] for item in blocks] == [item["id"] for item in rebuilt["feature_blocks"]]
+    assert all(
+        not (item["automation_status"] == "full" and item["requires_dm_adjudication"])
+        for item in blocks
+    )
+    assert any(
+        item.get("id") == "radiant_strikes:bonus_damage"
+        for item in feature_block_payloads(registry, "attack_rider")
+    )
 
 
 def test_level_by_level_contract_covers_every_named_core_feature() -> None:

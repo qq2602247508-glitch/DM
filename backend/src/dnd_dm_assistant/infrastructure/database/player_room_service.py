@@ -47,6 +47,7 @@ from dnd_dm_assistant.domain.exploration import (
 )
 from dnd_dm_assistant.domain.feature_runtime import (
     compile_feature_runtime_registry,
+    feature_block_payloads,
     feature_runtime_action_projections,
 )
 from dnd_dm_assistant.domain.noncombat_actions import (
@@ -1371,7 +1372,12 @@ class PlayerRoomService:
 
         registry = actor.snapshot_json.get("feature_runtime")
         raw_riders = registry.get("attack_riders") if isinstance(registry, dict) else None
-        riders = raw_riders if isinstance(raw_riders, list) else []
+        canonical_riders = (
+            feature_block_payloads(registry, "attack_rider")
+            if isinstance(registry, dict)
+            else []
+        )
+        riders = canonical_riders or (raw_riders if isinstance(raw_riders, list) else [])
         action_text = " ".join(
             str(action.get(key) or "") for key in ("name", "description", "damage")
         )

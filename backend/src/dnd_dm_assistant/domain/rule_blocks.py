@@ -10,6 +10,7 @@ from typing import Annotated, Any, Literal
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 RULE_SCHEMA_VERSION = "1.0"
+CLASS_FEATURE_BLOCK_SCHEMA_VERSION = "1.0"
 _DICE_EXPRESSION = re.compile(
     r"^(?:\d+|(?:\d*)d\d+)(?:[+-](?:\d+|@[a-z][a-z0-9_]*))*$",
     re.IGNORECASE,
@@ -724,6 +725,35 @@ class NarrativeBlock(RuleSchema):
     kind: Literal["narrative"] = "narrative"
     text: str = Field(min_length=1, max_length=10_000)
     requires_dm_adjudication: bool = True
+
+
+class ClassFeatureBlock(RuleSchema):
+    """Canonical envelope for one executable or auditable class feature.
+
+    The payload deliberately keeps the feature-specific fields intact.  The
+    envelope is the stable contract used by compilers, snapshots and runtime
+    consumers; it prevents each consumer from inventing another projection of
+    ``combat_start``/``actions``/``attack_riders``.
+    """
+
+    schema_version: Literal["1.0"] = "1.0"
+    id: str = Field(min_length=1, max_length=160)
+    kind: Literal["class_feature"] = "class_feature"
+    block_type: Literal["modifier", "defense", "resource", "action", "attack_rider"]
+    feature_name: str = Field(min_length=1, max_length=240)
+    class_name: str = Field(min_length=1, max_length=120)
+    class_level: int = Field(ge=0, le=20)
+    payload: dict[str, Any] = Field(min_length=1)
+    automation_status: Literal["full", "partial", "dm_only"]
+    requires_dm_adjudication: bool
+    runtime_execution: dict[str, Any] | None = None
+    source_record_id: str | None = Field(default=None, max_length=500)
+
+    @model_validator(mode="after")
+    def validate_automation_contract(self) -> ClassFeatureBlock:
+        if self.automation_status == "full" and self.requires_dm_adjudication:
+            raise ValueError("fully automated class feature blocks cannot require DM adjudication")
+        return self
 
 
 RuleBlock = Annotated[

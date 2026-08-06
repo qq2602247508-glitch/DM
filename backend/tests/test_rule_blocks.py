@@ -12,6 +12,7 @@ from dnd_dm_assistant.application.rule_block_compiler import (
 from dnd_dm_assistant.domain.rule_blocks import (
     ChoiceBlock,
     ChoiceOption,
+    ClassFeatureBlock,
     CreationBlock,
     DamageBlock,
     DefenseBlock,
@@ -34,6 +35,20 @@ from dnd_dm_assistant.domain.rule_blocks import (
 def test_critical_damage_expression_doubles_dice_but_not_modifiers() -> None:
     assert critical_damage_expression("1d8+@strength") == "2d8+@strength"
     assert critical_damage_expression("8d6") == "16d6"
+
+
+def test_class_feature_block_rejects_full_contracts_that_still_need_dm() -> None:
+    with pytest.raises(ValidationError, match="cannot require DM adjudication"):
+        ClassFeatureBlock(
+            id="class-feature:test",
+            block_type="action",
+            feature_name="未完成特性",
+            class_name="测试职业",
+            class_level=1,
+            payload={"id": "test-action"},
+            automation_status="full",
+            requires_dm_adjudication=True,
+        )
 
 
 def test_compiles_destination_sensitive_special_spell_blocks_without_guessing() -> None:

@@ -1,10 +1,17 @@
 from __future__ import annotations
 
+import hashlib
+import json
 import re
 from collections.abc import Iterable, Mapping
 from copy import deepcopy
 from math import floor
 from typing import Any
+
+from dnd_dm_assistant.domain.rule_blocks import (
+    CLASS_FEATURE_BLOCK_SCHEMA_VERSION,
+    ClassFeatureBlock,
+)
 
 FEATURE_RUNTIME_SCHEMA_VERSION = "1.2"
 
@@ -1976,6 +1983,144 @@ def _has_runtime_entries(definition: Mapping[str, Any]) -> bool:
     )
 
 
+def _class_feature_block_identity(
+    block_type: str,
+    key: str,
+    payload: Mapping[str, Any],
+) -> tuple[str, str, int, str | None]:
+    """Extract stable feature metadata without inferring rules from prose."""
+
+    feature_name = str(
+        payload.get("feature_name") or payload.get("name") or key
+    ).strip() or key
+    class_name = str(payload.get("class_name") or "unclassified").strip() or "unclassified"
+    raw_level = payload.get("class_level", 0)
+    try:
+        class_level = max(0, min(20, int(raw_level)))
+    except (TypeError, ValueError):
+        class_level = 0
+    source_record_id = payload.get("source_record_id")
+    source = str(source_record_id).strip() if source_record_id is not None else None
+    return feature_name, class_name, class_level, source or None
+
+
+def _stable_class_feature_block_id(
+    block_type: str,
+    key: str,
+    payload: Mapping[str, Any],
+) -> str:
+    feature_name, class_name, class_level, source_record_id = _class_feature_block_identity(
+        block_type, key, payload
+    )
+    identity = json.dumps(
+        {
+            "block_type": block_type,
+            "key": key,
+            "feature_name": feature_name,
+            "class_name": class_name,
+            "class_level": class_level,
+            "source_record_id": source_record_id,
+        },
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    )
+    digest = hashlib.sha256(identity.encode("utf-8")).hexdigest()[:20]
+    return f"class-feature:{block_type}:{digest}"
+
+
+def compile_class_feature_blocks(registry: Mapping[str, Any]) -> list[dict[str, Any]]:
+    """Compile all legacy feature sections into one canonical block list.
+
+    This is a transport/compiler boundary, not a second executor.  Each block
+    retains the original typed payload so existing runtime consumers and the
+    audit UI can migrate independently while receiving the same rule facts.
+    """
+
+    sources: list[tuple[str, str, Mapping[str, Any]]] = []
+    combat_start = registry.get("combat_start")
+    if isinstance(combat_start, Mapping):
+        for index, raw in enumerate(combat_start.get("modifiers") or ()):
+            if isinstance(raw, Mapping):
+                sources.append(("modifier", str(raw.get("id") or index), raw))
+        for index, raw in enumerate(combat_start.get("defenses") or ()):
+            if isinstance(raw, Mapping):
+                sources.append(("defense", str(raw.get("id") or index), raw))
+
+    raw_resources = registry.get("resources")
+    if isinstance(raw_resources, Mapping):
+        for key, raw in raw_resources.items():
+            if isinstance(raw, Mapping):
+                sources.append(("resource", str(key), raw))
+
+    raw_actions = registry.get("actions")
+    if isinstance(raw_actions, Mapping):
+        for key, raw in raw_actions.items():
+            if isinstance(raw, Mapping):
+                sources.append(("action", str(key), raw))
+
+    for index, raw in enumerate(registry.get("attack_riders") or ()):
+        if isinstance(raw, Mapping):
+            sources.append(("attack_rider", str(raw.get("id") or index), raw))
+
+    blocks: list[dict[str, Any]] = []
+    seen_ids: set[str] = set()
+    for block_type, key, raw in sources:
+        payload = deepcopy(dict(raw))
+        feature_name, class_name, class_level, source_record_id = _class_feature_block_identity(
+            block_type, key, payload
+        )
+        block_id = _stable_class_feature_block_id(block_type, key, payload)
+        if block_id in seen_ids:
+            continue
+        seen_ids.add(block_id)
+        status = _entry_automation_status(payload)
+        block = ClassFeatureBlock(
+            id=block_id,
+            block_type=block_type,  # type: ignore[arg-type]
+            feature_name=feature_name,
+            class_name=class_name,
+            class_level=class_level,
+            payload=payload,
+            automation_status=status,  # type: ignore[arg-type]
+            requires_dm_adjudication=status != "full",
+            runtime_execution=(
+                deepcopy(dict(payload["runtime_execution"]))
+                if isinstance(payload.get("runtime_execution"), Mapping)
+                else None
+            ),
+            source_record_id=source_record_id,
+        )
+        blocks.append(block.model_dump(mode="json"))
+    return blocks
+
+
+def feature_block_payloads(
+    registry: Mapping[str, Any],
+    block_type: str,
+) -> list[dict[str, Any]]:
+    """Read validated canonical payloads for a runtime consumer.
+
+    Invalid or unknown blocks are ignored deliberately.  A malformed snapshot
+    must not grant a feature effect merely because it contains a matching key.
+    """
+
+    raw_blocks = registry.get("feature_blocks")
+    if not isinstance(raw_blocks, list):
+        return []
+    payloads: list[dict[str, Any]] = []
+    for raw in raw_blocks:
+        if not isinstance(raw, Mapping):
+            continue
+        try:
+            block = ClassFeatureBlock.model_validate(dict(raw), strict=True)
+        except Exception:
+            continue
+        if block.block_type == block_type:
+            payloads.append(deepcopy(dict(block.payload)))
+    return payloads
+
+
 def _latest_scalings(
     grants: Iterable[Mapping[str, Any]],
     explicit: Mapping[str, Mapping[str, Any]] | None,
@@ -2202,8 +2347,9 @@ def compile_feature_runtime_registry(
         if key.startswith("spell_slots_")
     }
 
-    return {
+    registry = {
         "schema_version": FEATURE_RUNTIME_SCHEMA_VERSION,
+        "feature_block_schema_version": CLASS_FEATURE_BLOCK_SCHEMA_VERSION,
         "progression": {
             "class_levels": dict(effective_class_levels),
             "total_level": effective_total_level or None,
@@ -2225,6 +2371,8 @@ def compile_feature_runtime_registry(
         "feature_contracts": contracts,
         "dm_only": dm_only,
     }
+    registry["feature_blocks"] = compile_class_feature_blocks(registry)
+    return registry
 
 
 def _feature_action_executor_ready(action: Mapping[str, Any]) -> bool:
@@ -2308,7 +2456,15 @@ def feature_runtime_action_projections(
     """
 
     raw_actions = registry.get("actions")
-    if not isinstance(raw_actions, Mapping):
+    canonical_actions = feature_block_payloads(registry, "action")
+    if canonical_actions:
+        raw_actions = {
+            str(item.get("id") or item.get("resource_key") or index): item
+            for index, item in enumerate(canonical_actions)
+        }
+    elif not isinstance(raw_actions, Mapping):
+        raw_actions = {}
+    if not raw_actions:
         return []
     projections: list[dict[str, Any]] = []
     for feature_id, raw in raw_actions.items():
