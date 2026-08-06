@@ -1360,3 +1360,10 @@ backend/.venv/bin/python -m pytest -q backend/tests
 - 测试提交 `16879b3`：多职业升级回归现在同时断言运行时 registry 保留所有已拥有职业等级（战士 1 / 法师 2），以及共享施法者等级对应的一环法术位为 3 格；此前只断言资源表，未锁定快照/积木层。
 - 验证：后端全量 `pytest -q backend/tests` 通过；Ruff、compileall、`git diff --check` 通过。没有修改前端，因此没有新增浏览器验收声明。
 - 这是对既有多职业资源/法术位实现的验收加固，不新增缺口；职业/子职业四大项边界保持不变。
+
+# 2026-08-06 子职业动作积木稳定身份
+
+- 代码提交 `03b172f`：通用子职业动作积木现在携带稳定的 `id` 和 `feature_id`，格式为 `subclass_feature_action:<feature_id>`；不再依赖显示名称作为运行时绑定键。
+- 重复升级预览会生成相同的 canonical action block ID，便于战斗快照、DM 审计和未来统一执行器追踪来源；动作仍保持 `partial`/DM 裁定，不代表具体子职业规则效果已自动执行。
+- 验证：子职业动作定向回归通过；后端全量 `pytest -q backend/tests`、Ruff、compileall、`git diff --check` 全部通过。只改后端和测试，未新增浏览器验收声明。
+- 这是职业特性积木基础设施加固，不新增缺口；固定四大项和高级三维战斗跳过范围不变。
