@@ -328,10 +328,12 @@ def resolve_feature_speed(
                 continue
         elif condition == "unarmored_and_not_using_shield":
             if wearing_armor or wielding_shield:
-                skipped.append({
-                    **record,
-                    "reason": "wearing_armor_or_wielding_shield",
-                })
+                skipped.append(
+                    {
+                        **record,
+                        "reason": "wearing_armor_or_wielding_shield",
+                    }
+                )
                 continue
         else:
             skipped.append({**record, "reason": "speed_condition_not_supported"})
@@ -532,7 +534,7 @@ def feature_runtime_definition(
                     "operation": "set_to_minimum",
                     "minimum": 2,
                     "condition": "current_below_2",
-                }
+                },
             ]
             resource.update(
                 {
@@ -553,7 +555,7 @@ def feature_runtime_definition(
                     "value": 4,
                     "condition": "current_at_most_3_and_not_using_focus_feature",
                     "requires_dm_adjudication": True,
-                }
+                },
             ]
             resource.update(
                 {
@@ -573,7 +575,7 @@ def feature_runtime_definition(
                     "operation": "restore",
                     "amount": 1,
                     "condition": "current_zero",
-                }
+                },
             ]
             resource.update(
                 {
@@ -693,12 +695,14 @@ def feature_runtime_definition(
             "resource_key": "rage",
             "resource_cost": 1,
             "target": "self",
-            "effects": [{
-                "kind": "activate_duration_condition",
-                "condition": "raging",
-                "duration_unit": "minutes",
-                "duration_value": 1,
-            }],
+            "effects": [
+                {
+                    "kind": "activate_duration_condition",
+                    "condition": "raging",
+                    "duration_unit": "minutes",
+                    "duration_value": 1,
+                }
+            ],
             "runtime_execution": {
                 "status": "ready",
                 "consumer": "combat_feature_action",
@@ -831,8 +835,7 @@ def feature_runtime_definition(
             "automation_status": "partial",
             "requires_dm_adjudication": True,
             "partial_reason": (
-                "疾走和撤离由标准动作引擎真实执行；"
-                "躲藏仍需 DM 提交明确成功/失败裁定。"
+                "疾走和撤离由标准动作引擎真实执行；躲藏仍需 DM 提交明确成功/失败裁定。"
             ),
             **source,
         }
@@ -893,6 +896,16 @@ def feature_runtime_definition(
                 "timing": "before_damage",
                 "requirements": ["attacker_visible"],
             },
+            "pre_damage_intervention": {
+                "kind": "pre_damage_intervention",
+                "eligibility": {"damage_types": "all"},
+                "input_requirements": [],
+                "damage_transform": {
+                    "operation": "multiply_each_component",
+                    "multiplier": 0.5,
+                    "rounding": "floor",
+                },
+            },
             "damage_multiplier": 0.5,
             "runtime_execution": {
                 "status": "implemented",
@@ -901,8 +914,7 @@ def feature_runtime_definition(
             "automation_status": "implemented",
             "requires_dm_adjudication": False,
             "partial_reason": (
-                "玩家仍需在伤害落地前选择是否使用反应；"
-                "服务端负责冻结攻击并按规则减半。"
+                "玩家仍需在伤害落地前选择是否使用反应；服务端负责冻结攻击并按规则减半。"
             ),
             **source,
         }
@@ -929,6 +941,24 @@ def feature_runtime_definition(
                 }
             ],
             "trigger": {"event": "attacker_hits_self", "timing": "before_damage"},
+            "pre_damage_intervention": {
+                "kind": "pre_damage_intervention",
+                "eligibility": {
+                    "damage_types": (
+                        "all" if deflects_all_damage else ["bludgeoning", "piercing", "slashing"]
+                    )
+                },
+                "input_requirements": [
+                    {"key": "reduction_roll", "kind": "die_roll", "die_sides": 10}
+                ],
+                "damage_transform": {
+                    "operation": "subtract_total",
+                    "amount": "reduction_roll+dexterity_modifier+class_level",
+                    "distribution": "components_in_order",
+                    "minimum": 0,
+                },
+                "follow_up": {"kind": "deflect_redirect_adapter"},
+            },
             "damage_reduction_formula": "1d10+dexterity_modifier+class_level",
             "eligible_damage_types": (
                 "all" if deflects_all_damage else ["bludgeoning", "piercing", "slashing"]
@@ -1061,9 +1091,7 @@ def feature_runtime_definition(
             "resource_key": "action_surge",
             "resource_cost": 1,
             "target": "self",
-            "effects": [
-                {"kind": "grant_action_budget", "amount": 1, "excludes": ["magic_action"]}
-            ],
+            "effects": [{"kind": "grant_action_budget", "amount": 1, "excludes": ["magic_action"]}],
             "runtime_execution": {
                 "status": "ready",
                 "consumer": "combat_feature_action",
@@ -1117,18 +1145,18 @@ def feature_runtime_definition(
                 "resource_cost_mode": "amount_or_condition",
                 "condition_cure_cost": 5,
                 "condition_cure_options": ["poisoned", "diseased"],
-            "target": "ally_or_self",
-            "resolution_kind": "healing",
-            "healing_formula": "lay_on_hands_pool",
-            "effects": [{"kind": "healing"}, {"kind": "condition_cure"}],
-            "runtime_execution": {
-                "status": "ready",
-                "consumer": "combat_feature_action",
-                "effect_kinds": ["healing", "condition_cure"],
-                "remaining_dm_boundaries": ["contact_distance_requires_authoritative_position"],
-            },
-            "automation_status": "full",
-            "requires_dm_adjudication": False,
+                "target": "ally_or_self",
+                "resolution_kind": "healing",
+                "healing_formula": "lay_on_hands_pool",
+                "effects": [{"kind": "healing"}, {"kind": "condition_cure"}],
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "combat_feature_action",
+                    "effect_kinds": ["healing", "condition_cure"],
+                    "remaining_dm_boundaries": ["contact_distance_requires_authoritative_position"],
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
                 **source,
             }
 
@@ -1168,9 +1196,7 @@ def feature_runtime_definition(
                 },
                 "resolution_kind": "grant_dice",
                 "dice_key": "bardic_inspiration_die",
-                "effects": [
-                    {"kind": "grant_roll_die", "die_key": "bardic_inspiration_die"}
-                ],
+                "effects": [{"kind": "grant_roll_die", "die_key": "bardic_inspiration_die"}],
                 "runtime_execution": {
                     "status": "ready",
                     "consumer": "combat_feature_action",
@@ -1332,9 +1358,7 @@ def feature_runtime_definition(
             {
                 "id": "evasion",
                 "kind": "evasion",
-                "applies_when": (
-                    "dexterity_saving_throw_for_half_damage_and_not_incapacitated"
-                ),
+                "applies_when": ("dexterity_saving_throw_for_half_damage_and_not_incapacitated"),
                 "success_damage_multiplier": 0,
                 "failure_damage_multiplier": 0.5,
                 "runtime_execution": {
@@ -1402,8 +1426,7 @@ def feature_runtime_definition(
                 "automation_status": "full",
                 "requires_dm_adjudication": False,
                 "summary": (
-                    "明确失手后，为同一目标的下一次攻击真实提供优势，"
-                    "并在下一回合结束时清理。"
+                    "明确失手后，为同一目标的下一次攻击真实提供优势，并在下一回合结束时清理。"
                 ),
                 **source,
             }
@@ -1739,8 +1762,7 @@ def feature_runtime_definition(
                 "automation_status": "full",
                 "requires_dm_adjudication": False,
                 "summary": (
-                    "同阵营单位在圣武士 10 尺内进行豁免时，"
-                    "加入圣武士魅力调整值（最低 +1）。"
+                    "同阵营单位在圣武士 10 尺内进行豁免时，加入圣武士魅力调整值（最低 +1）。"
                 ),
                 **source,
             }
@@ -1761,8 +1783,7 @@ def feature_runtime_definition(
                 "automation_status": "full",
                 "requires_dm_adjudication": False,
                 "summary": (
-                    "同阵营单位在圣武士 10 尺内获得恐慌免疫；"
-                    "距离或阵营变化后即时重新判断。"
+                    "同阵营单位在圣武士 10 尺内获得恐慌免疫；距离或阵营变化后即时重新判断。"
                 ),
                 **source,
             }
@@ -1893,11 +1914,7 @@ def _entry_automation_status(entry: Mapping[str, Any]) -> str:
 
     runtime = entry.get("runtime")
     runtime_data = runtime if isinstance(runtime, Mapping) else {}
-    status = str(
-        entry.get("automation_status")
-        or runtime_data.get("automation_status")
-        or "full"
-    )
+    status = str(entry.get("automation_status") or runtime_data.get("automation_status") or "full")
     if status not in _AUTOMATION_STATUSES:
         status = "partial"
     effects = entry.get("effects")
@@ -2019,9 +2036,7 @@ def feature_runtime_contract(
         if isinstance(raw, Mapping):
             statuses.append(_entry_automation_status(raw))
 
-    normalized_declared = (
-        declared_status if declared_status in _AUTOMATION_STATUSES else None
-    )
+    normalized_declared = declared_status if declared_status in _AUTOMATION_STATUSES else None
     if not statuses:
         status = normalized_declared or "dm_only"
     elif any(value in {"partial", "dm_only"} for value in statuses):
@@ -2070,9 +2085,7 @@ def _has_runtime_entries(definition: Mapping[str, Any]) -> bool:
         if combat_start.get("modifiers") or combat_start.get("defenses"):
             return True
     return bool(
-        definition.get("resources")
-        or definition.get("actions")
-        or definition.get("attack_riders")
+        definition.get("resources") or definition.get("actions") or definition.get("attack_riders")
     )
 
 
@@ -2083,9 +2096,7 @@ def _class_feature_block_identity(
 ) -> tuple[str, str, int, str | None]:
     """Extract stable feature metadata without inferring rules from prose."""
 
-    feature_name = str(
-        payload.get("feature_name") or payload.get("name") or key
-    ).strip() or key
+    feature_name = str(payload.get("feature_name") or payload.get("name") or key).strip() or key
     class_name = str(payload.get("class_name") or "unclassified").strip() or "unclassified"
     raw_level = payload.get("class_level", 0)
     try:
@@ -2267,8 +2278,8 @@ def compile_feature_runtime_registry(
             explicit_class_levels[name] = level
     effective_class_levels = explicit_class_levels or current_class_levels
     explicit_total = int(total_level or 0)
-    effective_total_level = explicit_total if explicit_total > 0 else sum(
-        effective_class_levels.values()
+    effective_total_level = (
+        explicit_total if explicit_total > 0 else sum(effective_class_levels.values())
     )
 
     modifiers: dict[str, dict[str, Any]] = {}
@@ -2311,9 +2322,7 @@ def compile_feature_runtime_registry(
                 else None
             ),
             source_path=(
-                str(grant["source_path"])
-                if grant.get("source_path") is not None
-                else None
+                str(grant["source_path"]) if grant.get("source_path") is not None else None
             ),
             definition=definition,
             declared_status=(
@@ -2321,11 +2330,7 @@ def compile_feature_runtime_registry(
                 if runtime_data.get("automation_status") is not None
                 else None
             ),
-            note=(
-                str(runtime_data.get("note"))
-                if runtime_data.get("note") is not None
-                else None
-            ),
+            note=(str(runtime_data.get("note")) if runtime_data.get("note") is not None else None),
         )
         feature_contracts[contract["id"]] = contract
 
@@ -2391,8 +2396,7 @@ def compile_feature_runtime_registry(
                         == "1d10+dexterity_modifier+class_level"
                     ):
                         entry["damage_reduction"] = (
-                            "1d10+dexterity_modifier+"
-                            f"{current_class_levels.get(class_name, 0)}"
+                            f"1d10+dexterity_modifier+{current_class_levels.get(class_name, 0)}"
                         )
                     dice_key = entry.get("dice_key")
                     if isinstance(dice_key, str):
@@ -2429,11 +2433,7 @@ def compile_feature_runtime_registry(
         action_registry.setdefault(key, entry)
 
     contracts = list(feature_contracts.values())
-    dm_only = [
-        contract
-        for contract in contracts
-        if contract["automation_status"] == "dm_only"
-    ]
+    dm_only = [contract for contract in contracts if contract["automation_status"] == "dm_only"]
     spell_slots = {
         key: deepcopy(value)
         for key, value in resource_registry.items()
@@ -2447,9 +2447,7 @@ def compile_feature_runtime_registry(
             "class_levels": dict(effective_class_levels),
             "total_level": effective_total_level or None,
             "proficiency_bonus": (
-                2 + (min(20, effective_total_level) - 1) // 4
-                if effective_total_level > 0
-                else None
+                2 + (min(20, effective_total_level) - 1) // 4 if effective_total_level > 0 else None
             ),
             "spell_slots": spell_slots,
         },
@@ -2480,9 +2478,7 @@ def _feature_action_executor_ready(action: Mapping[str, Any]) -> bool:
     execution = action.get("runtime_execution")
     if not isinstance(execution, Mapping):
         return False
-    if execution.get("status") != "ready" or execution.get("consumer") != (
-        "combat_feature_action"
-    ):
+    if execution.get("status") != "ready" or execution.get("consumer") != ("combat_feature_action"):
         return False
     if action.get("action_cost") == "reaction":
         return False
@@ -2493,9 +2489,7 @@ def _feature_action_executor_ready(action: Mapping[str, Any]) -> bool:
     effects = action.get("effects")
     effect_list = effects if isinstance(effects, list) else []
     effect_kinds = {
-        str(effect.get("kind") or "")
-        for effect in effect_list
-        if isinstance(effect, Mapping)
+        str(effect.get("kind") or "") for effect in effect_list if isinstance(effect, Mapping)
     }
     supported = {
         "activate_condition",
@@ -2577,9 +2571,7 @@ def feature_runtime_action_projections(
             for effect in (effects if isinstance(effects, list) else ())
         )
         executable_partial = _feature_action_executor_ready(raw)
-        if needs_dm_choice or (
-            raw.get("requires_dm_adjudication") and not executable_partial
-        ):
+        if needs_dm_choice or (raw.get("requires_dm_adjudication") and not executable_partial):
             continue
         action = deepcopy(dict(raw))
         action["feature_id"] = str(feature_id)

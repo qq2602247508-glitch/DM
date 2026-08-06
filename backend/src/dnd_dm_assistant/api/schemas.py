@@ -766,24 +766,36 @@ class CombatActionCommand(BaseModel):
     action_window_id: str | None = Field(default=None, min_length=1, max_length=36)
     reaction_window_id: str | None = Field(default=None, min_length=1, max_length=36)
     reaction_trigger: str | None = Field(default=None, max_length=1_000)
-    reaction_event: Literal[
-        "leaves_reach",
-        "enters_reach",
-        "takes_damage",
-        "hit_by_attack",
-        "casts_spell",
-        "turn_end",
-    ] | None = None
+    reaction_event: (
+        Literal[
+            "leaves_reach",
+            "enters_reach",
+            "takes_damage",
+            "hit_by_attack",
+            "casts_spell",
+            "turn_end",
+        ]
+        | None
+    ) = None
     resource_key: str | None = Field(default=None, max_length=120)
     resource_cost: int = Field(default=0, ge=0, le=100)
     sequence_id: str | None = Field(default=None, max_length=120)
     sequence_step: int | None = Field(default=None, ge=0, le=50)
     sequence_size: int | None = Field(default=None, ge=1, le=50)
     conditions_to_apply: list[str] = Field(default_factory=list, max_length=20)
-    condition_duration: Literal[
-        "actor_turn_start", "actor_turn_end", "target_turn_start", "target_turn_end",
-        "rounds", "minutes", "until_save", "until_removed"
-    ] | None = None
+    condition_duration: (
+        Literal[
+            "actor_turn_start",
+            "actor_turn_end",
+            "target_turn_start",
+            "target_turn_end",
+            "rounds",
+            "minutes",
+            "until_save",
+            "until_removed",
+        ]
+        | None
+    ) = None
     condition_duration_value: int | None = Field(default=None, ge=1, le=10_000)
     condition_save_dc: int | None = Field(default=None, ge=0, le=99)
     condition_save_ability: str | None = Field(default=None, max_length=30)
@@ -812,9 +824,7 @@ class CombatActionCommand(BaseModel):
             elif not (self.damage_type or "").strip():
                 raise ValueError("damage_type is required for damage")
             elif self.damage_type.strip().lower() in {"mixed", "复合", "多种"}:
-                raise ValueError(
-                    "mixed damage requires explicit damage_components for each type"
-                )
+                raise ValueError("mixed damage requires explicit damage_components for each type")
         elif self.damage_components:
             raise ValueError("damage_components are only valid for damage actions")
         if self.dm_override and not (self.override_reason or "").strip():
@@ -884,9 +894,7 @@ class CombatActionCommand(BaseModel):
             self.condition_save_dc is not None or self.condition_save_ability is not None
         ):
             raise ValueError("condition save fields are only valid for until_save")
-        if (self.forced_movement_distance_ft is None) != (
-            self.forced_movement_direction is None
-        ):
+        if (self.forced_movement_distance_ft is None) != (self.forced_movement_direction is None):
             raise ValueError("forced movement distance and direction are required together")
         area_fields = (
             self.area_shape,
@@ -899,8 +907,7 @@ class CombatActionCommand(BaseModel):
         ):
             raise ValueError("area_shape, area_size_ft and area anchor are required together")
         if self.area_shape is None and any(
-            value is not None
-            for value in (self.area_width_ft, self.area_height_ft)
+            value is not None for value in (self.area_width_ft, self.area_height_ft)
         ):
             raise ValueError("area width and height require area_shape")
         if self.action_cost != "none" and (
@@ -909,19 +916,14 @@ class CombatActionCommand(BaseModel):
             raise ValueError(
                 "actor_combatant_id and actor_version are required when an action is spent"
             )
-        if self.is_attack and (
-            self.actor_combatant_id is None or self.actor_version is None
-        ):
-            raise ValueError(
-                "actor_combatant_id and actor_version are required for an attack"
-            )
+        if self.is_attack and (self.actor_combatant_id is None or self.actor_version is None):
+            raise ValueError("actor_combatant_id and actor_version are required for an attack")
         if not self.is_attack and (
             self.attack_ability is not None
             or self.is_weapon_attack
             or self.is_spell_attack
             or self.is_sorcerer_spell
-            or
-            self.attack_roll_total is not None
+            or self.attack_roll_total is not None
             or self.attack_range_ft is not None
             or self.ignore_cover
             or self.attack_roll_mode is not None
@@ -998,16 +1000,14 @@ class CombatManeuverCommand(BaseModel):
     item_version: int | None = Field(default=None, ge=1)
     object_id: str | None = Field(default=None, min_length=1, max_length=36)
     object_version: int | None = Field(default=None, ge=1)
-    object_state: Literal[
-        "active", "open", "closed", "destroyed", "disarmed", "picked_up"
-    ] | None = None
+    object_state: (
+        Literal["active", "open", "closed", "destroyed", "disarmed", "picked_up"] | None
+    ) = None
 
     @model_validator(mode="after")
     def validate_maneuver(self) -> CombatManeuverCommand:
         targeted = self.action_type in {"grapple", "shove", "help", "search"}
-        if targeted and (
-            self.target_combatant_id is None or self.target_version is None
-        ):
+        if targeted and (self.target_combatant_id is None or self.target_version is None):
             raise ValueError(
                 "target_combatant_id and target_version are required for grapple/shove/help/search"
             )
@@ -1016,18 +1016,19 @@ class CombatManeuverCommand(BaseModel):
         ):
             raise ValueError(f"{self.action_type} does not accept a target")
         adjudicated = self.action_type in {
-            "grapple", "shove", "search", "hide", "use_item", "object_interaction"
+            "grapple",
+            "shove",
+            "search",
+            "hide",
+            "use_item",
+            "object_interaction",
         }
         if adjudicated and self.outcome is None:
-            raise ValueError(
-                f"{self.action_type} requires an explicit DM-adjudicated outcome"
-            )
+            raise ValueError(f"{self.action_type} requires an explicit DM-adjudicated outcome")
         if (adjudicated or self.action_type in {"help", "ready"}) and not (
             self.adjudication_note or ""
         ).strip():
-            raise ValueError(
-                "adjudication_note is required for this DM-adjudicated action"
-            )
+            raise ValueError("adjudication_note is required for this DM-adjudicated action")
         if self.action_type == "shove" and self.shove_mode is None:
             raise ValueError("shove_mode is required for shove")
         if self.action_type != "shove" and self.shove_mode is not None:
@@ -1046,9 +1047,10 @@ class CombatManeuverCommand(BaseModel):
             raise ValueError("help_trigger is only valid for Help")
         if self.action_type == "ready":
             if self.ready_phase == "prepare":
-                if not (self.ready_trigger or "").strip() or not (
-                    self.ready_response or ""
-                ).strip():
+                if (
+                    not (self.ready_trigger or "").strip()
+                    or not (self.ready_response or "").strip()
+                ):
                     raise ValueError(
                         "ready_trigger and ready_response are required to prepare Ready"
                     )
@@ -1077,11 +1079,7 @@ class CombatManeuverCommand(BaseModel):
         elif self.item_id is not None or self.item_version is not None:
             raise ValueError("item fields are only valid for use_item")
         if self.action_type == "object_interaction":
-            if (
-                self.object_id is None
-                or self.object_version is None
-                or self.object_state is None
-            ):
+            if self.object_id is None or self.object_version is None or self.object_state is None:
                 raise ValueError(
                     "object_interaction requires object_id, object_version and object_state"
                 )
@@ -1127,7 +1125,7 @@ class CombatPreDamageReactionCommand(BaseModel):
     reaction_window_version: int = Field(ge=1)
     decision: Literal["accept", "reject"]
     feature_id: str | None = Field(default=None, min_length=1, max_length=120)
-    reduction_roll: int | None = Field(default=None, ge=1, le=10)
+    reduction_roll: int | None = Field(default=None, ge=1, le=100)
 
     @model_validator(mode="after")
     def validate_pre_damage_reaction(self) -> CombatPreDamageReactionCommand:
@@ -1135,14 +1133,6 @@ class CombatPreDamageReactionCommand(BaseModel):
             raise ValueError("使用伤害前反应时必须选择职业特性")
         if self.decision == "reject" and self.feature_id is not None:
             raise ValueError("放弃伤害前反应时不能携带职业特性")
-        if (
-            self.decision == "accept"
-            and self.feature_id == "deflect_attacks"
-            and self.reduction_roll is None
-        ):
-            raise ValueError("使用偏转攻击时必须提交 d10 减伤骰结果")
-        if self.feature_id != "deflect_attacks" and self.reduction_roll is not None:
-            raise ValueError("减伤骰结果只适用于偏转攻击")
         return self
 
 
@@ -1172,14 +1162,17 @@ class CombatDeflectRedirectCommand(BaseModel):
                 raise ValueError("反击分支必须提交目标的敏捷豁免总值")
             if len(self.damage_rolls) != 2:
                 raise ValueError("反击分支必须提交两枚武艺骰")
-        elif any(
-            value is not None
-            for value in (
-                self.target_combatant_id,
-                self.target_version,
-                self.saving_throw_roll,
+        elif (
+            any(
+                value is not None
+                for value in (
+                    self.target_combatant_id,
+                    self.target_version,
+                    self.saving_throw_roll,
+                )
             )
-        ) or self.damage_rolls:
+            or self.damage_rolls
+        ):
             raise ValueError("放弃反击分支时不能携带目标或骰值")
         return self
 
@@ -1227,23 +1220,35 @@ class _PlayerRollPromptBase(BaseModel):
     action_window_id: str | None = Field(default=None, min_length=1, max_length=36)
     reaction_window_id: str | None = Field(default=None, min_length=1, max_length=36)
     reaction_trigger: str | None = Field(default=None, max_length=1_000)
-    reaction_event: Literal[
-        "leaves_reach",
-        "enters_reach",
-        "takes_damage",
-        "hit_by_attack",
-        "casts_spell",
-        "turn_end",
-    ] | None = None
+    reaction_event: (
+        Literal[
+            "leaves_reach",
+            "enters_reach",
+            "takes_damage",
+            "hit_by_attack",
+            "casts_spell",
+            "turn_end",
+        ]
+        | None
+    ) = None
     sequence_id: str | None = Field(default=None, max_length=120)
     sequence_step: int | None = Field(default=None, ge=0, le=50)
     sequence_size: int | None = Field(default=None, ge=1, le=50)
     conditions_on_success: list[str] = Field(default_factory=list, max_length=20)
     conditions_on_failure: list[str] = Field(default_factory=list, max_length=20)
-    condition_duration: Literal[
-        "actor_turn_start", "actor_turn_end", "target_turn_start", "target_turn_end",
-        "rounds", "minutes", "until_save", "until_removed"
-    ] | None = None
+    condition_duration: (
+        Literal[
+            "actor_turn_start",
+            "actor_turn_end",
+            "target_turn_start",
+            "target_turn_end",
+            "rounds",
+            "minutes",
+            "until_save",
+            "until_removed",
+        ]
+        | None
+    ) = None
     condition_duration_value: int | None = Field(default=None, ge=1, le=10_000)
     condition_save_dc: int | None = Field(default=None, ge=0, le=99)
     condition_save_ability: str | None = Field(default=None, max_length=30)
@@ -1267,13 +1272,8 @@ class _PlayerRollPromptBase(BaseModel):
     def validate_roll_prompt(self) -> _PlayerRollPromptBase:
         if self.resolution_type == "saving_throw" and not (self.ability or "").strip():
             raise ValueError("ability is required for a saving throw")
-        if (
-            self.ability_check_proficient is not None
-            and self.resolution_type != "ability_check"
-        ):
-            raise ValueError(
-                "ability_check_proficient is only valid for ability checks"
-            )
+        if self.ability_check_proficient is not None and self.resolution_type != "ability_check":
+            raise ValueError("ability_check_proficient is only valid for ability checks")
         if self.resolution_type == "skill_check" and not (self.skill or "").strip():
             raise ValueError("skill is required for a skill check")
         for field_name in ("success", "failure"):
@@ -1288,15 +1288,19 @@ class _PlayerRollPromptBase(BaseModel):
                     )
                 setattr(self, scalar_name, component_total)
         if (
-            self.damage_on_success > 0
-            or self.damage_on_failure > 0
-            or self.damage_components_on_success
-            or self.damage_components_on_failure
-        ) and not (self.damage_type or "").strip() and not all(
-            component.damage_type.strip()
-            for component in (
-                *self.damage_components_on_success,
-                *self.damage_components_on_failure,
+            (
+                self.damage_on_success > 0
+                or self.damage_on_failure > 0
+                or self.damage_components_on_success
+                or self.damage_components_on_failure
+            )
+            and not (self.damage_type or "").strip()
+            and not all(
+                component.damage_type.strip()
+                for component in (
+                    *self.damage_components_on_success,
+                    *self.damage_components_on_failure,
+                )
             )
         ):
             raise ValueError("damage_type is required when the roll can deal damage")
@@ -1516,10 +1520,19 @@ class MonsterAreaActionCommand(BaseModel):
     targets: list[MonsterAreaTargetResolution] = Field(min_length=1, max_length=100)
     conditions_on_success: list[str] = Field(default_factory=list, max_length=20)
     conditions_on_failure: list[str] = Field(default_factory=list, max_length=20)
-    condition_duration: Literal[
-        "actor_turn_start", "actor_turn_end", "target_turn_start", "target_turn_end",
-        "rounds", "minutes", "until_save", "until_removed"
-    ] | None = None
+    condition_duration: (
+        Literal[
+            "actor_turn_start",
+            "actor_turn_end",
+            "target_turn_start",
+            "target_turn_end",
+            "rounds",
+            "minutes",
+            "until_save",
+            "until_removed",
+        ]
+        | None
+    ) = None
     condition_duration_value: int | None = Field(default=None, ge=1, le=10_000)
     condition_save_dc: int | None = Field(default=None, ge=0, le=99)
     condition_save_ability: str | None = Field(default=None, max_length=30)
@@ -1530,14 +1543,17 @@ class MonsterAreaActionCommand(BaseModel):
     action_window_id: str | None = Field(default=None, min_length=1, max_length=36)
     reaction_window_id: str | None = Field(default=None, min_length=1, max_length=36)
     reaction_trigger: str | None = Field(default=None, max_length=1_000)
-    reaction_event: Literal[
-        "leaves_reach",
-        "enters_reach",
-        "takes_damage",
-        "hit_by_attack",
-        "casts_spell",
-        "turn_end",
-    ] | None = None
+    reaction_event: (
+        Literal[
+            "leaves_reach",
+            "enters_reach",
+            "takes_damage",
+            "hit_by_attack",
+            "casts_spell",
+            "turn_end",
+        ]
+        | None
+    ) = None
     dm_override: bool = False
     override_reason: str | None = Field(default=None, max_length=1_000)
     dm_geometry_note: Annotated[
@@ -1561,9 +1577,7 @@ class MonsterAreaActionCommand(BaseModel):
             if sum(component.amount for component in self.damage_components) != self.damage_total:
                 raise ValueError("damage_total must equal the sum of damage_components")
         elif self.damage_type.strip().lower() in {"mixed", "复合", "多种"}:
-            raise ValueError(
-                "mixed area damage requires explicit damage_components for each type"
-            )
+            raise ValueError("mixed area damage requires explicit damage_components for each type")
         if len({target.target_combatant_id for target in self.targets}) != len(self.targets):
             raise ValueError("area targets must be unique")
         if (self.conditions_on_success or self.conditions_on_failure) and (
@@ -1644,9 +1658,7 @@ class CombatSummonCommand(BaseModel):
     disposition: Literal["ally", "enemy"] = "enemy"
     source_combatant_id: str | None = Field(default=None, min_length=1, max_length=36)
     position: dict[str, int] | None = None
-    initiative_mode: Literal[
-        "independent", "shared_with_source", "not_applicable"
-    ] = "independent"
+    initiative_mode: Literal["independent", "shared_with_source", "not_applicable"] = "independent"
     action_cost: Literal["action", "bonus_action", "reaction", "none"] = "action"
     resource_key: str | None = Field(default=None, max_length=120)
     resource_cost: int = Field(default=0, ge=0, le=100)
@@ -2295,9 +2307,7 @@ class ExplorationConfirmRequest(ExplorationPreviewRequest):
 class TravelEncounterInput(BaseModel):
     """A DM-adjudicated event that is persisted with a confirmed travel leg."""
 
-    title: Annotated[
-        str, StringConstraints(strip_whitespace=True, min_length=1, max_length=200)
-    ]
+    title: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=200)]
     outcome: Literal["avoided", "resolved", "evaded"] = "resolved"
     summary: Annotated[
         str, StringConstraints(strip_whitespace=True, min_length=1, max_length=2_000)
@@ -2498,9 +2508,9 @@ class EnvironmentHazardPreviewRequest(BaseModel):
     name: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=200)]
     object_id: str | None = Field(default=None, min_length=1, max_length=36)
     object_version: int | None = Field(default=None, ge=1)
-    object_state: Literal[
-        "active", "open", "closed", "destroyed", "disarmed", "picked_up"
-    ] | None = None
+    object_state: (
+        Literal["active", "open", "closed", "destroyed", "disarmed", "picked_up"] | None
+    ) = None
     minutes: int = Field(default=1, ge=1, le=1_440)
     summary: Annotated[
         str, StringConstraints(strip_whitespace=True, min_length=1, max_length=2_000)

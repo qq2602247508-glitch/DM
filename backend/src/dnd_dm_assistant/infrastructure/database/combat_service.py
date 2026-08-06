@@ -52,6 +52,10 @@ from dnd_dm_assistant.domain.feature_runtime import (
     feature_block_payloads,
     feature_condition_runtime_spec,
 )
+from dnd_dm_assistant.domain.pre_damage_intervention import (
+    apply_pre_damage_intervention,
+    validate_intervention_input,
+)
 from dnd_dm_assistant.domain.zero_hp_intervention import (
     adapt_legacy_zero_hp_intervention,
     resolve_zero_hp_intervention,
@@ -201,9 +205,7 @@ class CombatEngineService:
         if submitted is None:
             return None
         if command.use_feature_reroll:
-            raise ValueError(
-                "吟游诗人激励骰不能与职业特性重掷在同一次提交中叠加"
-            )
+            raise ValueError("吟游诗人激励骰不能与职业特性重掷在同一次提交中叠加")
         snapshot = dict(target.snapshot_json or {})
         raw_dice = snapshot.get("feature_dice")
         dice = raw_dice if isinstance(raw_dice, dict) else {}
@@ -314,10 +316,7 @@ class CombatEngineService:
 
     @staticmethod
     def _is_summon(combatant: Combatant) -> bool:
-        return (
-            combatant.entity_type == "companion"
-            and "summon_source" in combatant.snapshot_json
-        )
+        return combatant.entity_type == "companion" and "summon_source" in combatant.snapshot_json
 
     @staticmethod
     def _combatant_faction(combatant: Combatant) -> str:
@@ -388,9 +387,9 @@ class CombatEngineService:
     ) -> bool:
         """Only an attack against a hostile creature keeps rage active."""
 
-        return actor.id != target.id and cls._combatant_faction(
-            actor
-        ) != cls._combatant_faction(target)
+        return actor.id != target.id and cls._combatant_faction(actor) != cls._combatant_faction(
+            target
+        )
 
     @staticmethod
     def _effect_summon_ids(effect: CombatEffect) -> list[str]:
@@ -476,11 +475,7 @@ class CombatEngineService:
         return cls._deactivate_summons(
             session,
             combat,
-            [
-                summon_id
-                for effect in effects
-                for summon_id in cls._effect_summon_ids(effect)
-            ],
+            [summon_id for effect in effects for summon_id in cls._effect_summon_ids(effect)],
             now=now,
         )
 
@@ -556,9 +551,7 @@ class CombatEngineService:
                 return {
                     "action": serialize(existing_action),
                     "combatant": (
-                        serialize(existing_combatants[0])
-                        if existing_combatants
-                        else None
+                        serialize(existing_combatants[0]) if existing_combatants else None
                     ),
                     "combatants": [serialize(item) for item in existing_combatants],
                     "already_applied": True,
@@ -571,9 +564,7 @@ class CombatEngineService:
                 if command.source_combatant_id
                 else None
             )
-            if source is not None and (
-                source.combat_id != combat_id or not source.is_active
-            ):
+            if source is not None and (source.combat_id != combat_id or not source.is_active):
                 raise StateNotFoundError("召唤来源不在当前战斗中")
             if command.initiative_mode == "not_applicable":
                 raise ValueError("initiative_mode=not_applicable 的召唤效果不能加入战斗")
@@ -693,10 +684,7 @@ class CombatEngineService:
             )
             occupied = {
                 (int(raw["row"]), int(raw["col"]))
-                for raw in (
-                    fighter.snapshot_json.get("grid_position")
-                    for fighter in before_order
-                )
+                for raw in (fighter.snapshot_json.get("grid_position") for fighter in before_order)
                 if isinstance(raw, dict) and "row" in raw and "col" in raw
             }
             scene_id = combat.scene_id
@@ -1038,11 +1026,7 @@ class CombatEngineService:
                 }
 
             summon = session.get(Combatant, summon_combatant_id)
-            if (
-                summon is None
-                or summon.combat_id != combat_id
-                or not self._is_summon(summon)
-            ):
+            if summon is None or summon.combat_id != combat_id or not self._is_summon(summon):
                 raise StateNotFoundError("summon combatant not found in combat")
             if not summon.is_active:
                 raise ValueError("summon is already ended")
@@ -1260,10 +1244,7 @@ class CombatEngineService:
                 "turn_end": "回合结束",
             }.get(str(event), event)
             event_text = f"；结构化事件：{event_label}" if event_label else ""
-            return (
-                f"反应触发：{metadata.get('reaction_trigger', 'DM已确认的实际事件')}"
-                f"{event_text}"
-            )
+            return f"反应触发：{metadata.get('reaction_trigger', 'DM已确认的实际事件')}{event_text}"
         if cost == "legendary_action":
             cost_label = metadata.get("legendary_cost")
             pool_label = metadata.get("legendary_pool_max")
@@ -1344,9 +1325,7 @@ class CombatEngineService:
             combatant.is_active
             and combatant.hp > 0
             and combatant.reaction_available
-            and not (
-                cls._condition_set(combatant) & cls._ACTION_BLOCKING_CONDITIONS
-            )
+            and not (cls._condition_set(combatant) & cls._ACTION_BLOCKING_CONDITIONS)
         )
 
     @staticmethod
@@ -1376,8 +1355,39 @@ class CombatEngineService:
                 continue
             if trigger.get("event") not in {"attacker_hits_self", "hit_by_attack"}:
                 continue
-            if feature_id not in {"uncanny_dodge", "deflect_attacks"}:
-                continue
+            intervention = raw.get("pre_damage_intervention")
+            if (
+                not isinstance(intervention, dict)
+                or intervention.get("kind") != "pre_damage_intervention"
+            ):
+                # Compatibility adapter for snapshots created before the generic contract.
+                if "damage_multiplier" in raw:
+                    intervention = {
+                        "kind": "pre_damage_intervention",
+                        "eligibility": {"damage_types": "all"},
+                        "input_requirements": [],
+                        "damage_transform": {
+                            "operation": "multiply_each_component",
+                            "multiplier": raw.get("damage_multiplier"),
+                            "rounding": "floor",
+                        },
+                    }
+                elif "damage_reduction_formula" in raw:
+                    intervention = {
+                        "kind": "pre_damage_intervention",
+                        "eligibility": {"damage_types": raw.get("eligible_damage_types", [])},
+                        "input_requirements": [
+                            {"key": "reduction_roll", "kind": "die_roll", "die_sides": 10}
+                        ],
+                        "damage_transform": {
+                            "operation": "subtract_total",
+                            "amount": "reduction_roll+dexterity_modifier+class_level",
+                            "distribution": "components_in_order",
+                            "minimum": 0,
+                        },
+                    }
+                else:
+                    continue
             ability_scores = (combatant.snapshot_json or {}).get("ability_scores")
             scores = ability_scores if isinstance(ability_scores, dict) else {}
             dexterity = int(scores.get("dexterity", scores.get("敏捷", 10)) or 10)
@@ -1389,10 +1399,7 @@ class CombatEngineService:
                 if isinstance(class_levels, dict)
                 else []
             )
-            class_level = max(
-                class_level_values
-                or [int(progression.get("total_level") or 1)]
-            )
+            class_level = max(class_level_values or [int(progression.get("total_level") or 1)])
             proficiency_bonus = int(progression.get("proficiency_bonus") or 0)
             redirect = raw.get("redirect")
             redirect_data = dict(redirect) if isinstance(redirect, dict) else None
@@ -1402,28 +1409,37 @@ class CombatEngineService:
                 die_key = str(redirect_data.get("damage_die_key") or "").strip()
                 die_entry = resources.get(die_key)
                 die_expression = (
-                    str(die_entry.get("value") or "")
-                    if isinstance(die_entry, dict)
-                    else ""
+                    str(die_entry.get("value") or "") if isinstance(die_entry, dict) else ""
                 )
                 die_match = re.search(r"d(\d+)", die_expression, re.IGNORECASE)
                 if die_match:
                     redirect_data["damage_die_expression"] = die_expression
                     redirect_data["damage_die_sides"] = int(die_match.group(1))
                 redirect_data["proficiency_bonus"] = proficiency_bonus
-            eligible_damage_types = raw.get("eligible_damage_types")
+            generic_eligibility = intervention.get("eligibility")
+            generic_eligibility = (
+                generic_eligibility if isinstance(generic_eligibility, dict) else {}
+            )
+            eligible_damage_types = generic_eligibility.get(
+                "damage_types", raw.get("eligible_damage_types")
+            )
             if eligible_damage_types != "all" and not isinstance(eligible_damage_types, list):
                 eligible_damage_types = []
             result.append(
                 {
                     "feature_id": feature_id,
                     "name": str(raw.get("name") or feature_id),
+                    "intervention": intervention,
                     "damage_multiplier": raw.get("damage_multiplier"),
                     "damage_reduction_formula": raw.get("damage_reduction_formula"),
                     "eligible_damage_types": eligible_damage_types,
                     "dexterity_modifier": floor((dexterity - 10) / 2),
                     "class_level": class_level,
-                    "requires_reduction_roll": feature_id == "deflect_attacks",
+                    "input_requirements": intervention.get("input_requirements", []),
+                    "requires_reduction_roll": any(
+                        isinstance(item, dict) and item.get("key") == "reduction_roll"
+                        for item in intervention.get("input_requirements", [])
+                    ),
                     "redirect": redirect_data,
                     "trigger": trigger,
                 }
@@ -1468,20 +1484,18 @@ class CombatEngineService:
         else:
             return None
         incoming_damage_types = {
-            str(component.damage_type).strip().lower()
-            for component in command.damage_components
+            str(component.damage_type).strip().lower() for component in command.damage_components
         } or {str(command.damage_type or "").strip().lower()}
         for feature in cls._pre_damage_feature_reactions(target):
-            if feature.get("feature_id") == "deflect_attacks":
-                eligible = feature.get("eligible_damage_types")
+            eligible = feature.get("eligible_damage_types")
+            if eligible is not None:
                 if eligible != "all" and not incoming_damage_types.issubset(
                     {str(item).strip().lower() for item in eligible or []}
                 ):
                     continue
             trigger = feature.get("trigger")
-            if (
-                isinstance(trigger, dict)
-                and "attacker_visible" in (trigger.get("requirements") or [])
+            if isinstance(trigger, dict) and "attacker_visible" in (
+                trigger.get("requirements") or []
             ):
                 if line_of_sight is False:
                     continue
@@ -1599,9 +1613,7 @@ class CombatEngineService:
         ):
             raise ValueError("action is not one of the actions opened by this reaction window")
         allowed_target_ids = {
-            str(item)
-            for item in (window.target_combatant_ids or [])
-            if isinstance(item, str)
+            str(item) for item in (window.target_combatant_ids or []) if isinstance(item, str)
         }
         for key in ("trigger_combatant_id", "moving_combatant_id", "damaged_combatant_id"):
             value = metadata.get(key)
@@ -1662,16 +1674,16 @@ class CombatEngineService:
         ):
             raise ValueError("action is not one of the actions opened by this reaction window")
         allowed_target_ids = {
-            str(item)
-            for item in (window.target_combatant_ids or [])
-            if isinstance(item, str)
+            str(item) for item in (window.target_combatant_ids or []) if isinstance(item, str)
         }
         for key in ("trigger_combatant_id", "moving_combatant_id", "damaged_combatant_id"):
             value = metadata.get(key)
             if isinstance(value, str):
                 allowed_target_ids.add(value)
-        if target_ids is not None and allowed_target_ids and not (
-            set(target_ids) & allowed_target_ids
+        if (
+            target_ids is not None
+            and allowed_target_ids
+            and not (set(target_ids) & allowed_target_ids)
         ):
             raise ValueError("reaction target does not match the event that opened the window")
         return window
@@ -1781,7 +1793,7 @@ class CombatEngineService:
             if not isinstance(metadata, dict):
                 continue
             if (
-                metadata.get("status") != "eligible"
+                metadata.get("status") not in {"eligible", "pending"}
                 or metadata.get("action_cost") != "reaction"
             ):
                 continue
@@ -1886,12 +1898,14 @@ class CombatEngineService:
                         from_position,
                         reactor_position,
                         cell_size_ft=cell_size,
-                    ) > reach_ft
+                    )
+                    > reach_ft
                     and grid_distance_ft(
                         to_position,
                         reactor_position,
                         cell_size_ft=cell_size,
-                    ) <= reach_ft
+                    )
+                    <= reach_ft
                 ):
                     eligible.append((raw, reach_ft))
             if not eligible:
@@ -1923,12 +1937,15 @@ class CombatEngineService:
 
             key_material = f"{combat.id}:{movement_key}:{reactor.id}:enters_reach"
             idempotency_key = f"rw:enters_reach:{sha256(key_material.encode()).hexdigest()}"
-            if session.scalar(
-                select(CombatAction).where(
-                    CombatAction.combat_id == combat.id,
-                    CombatAction.idempotency_key == idempotency_key,
+            if (
+                session.scalar(
+                    select(CombatAction).where(
+                        CombatAction.combat_id == combat.id,
+                        CombatAction.idempotency_key == idempotency_key,
+                    )
                 )
-            ) is not None:
+                is not None
+            ):
                 continue
 
             reaction_actions = [raw for raw, _ in eligible]
@@ -1938,12 +1955,9 @@ class CombatEngineService:
                 "window_key": f"enters_reach:{movement_key}:{reactor.id}",
                 "trigger": "enters_reach",
                 "reaction_event": "enters_reach",
-                "eligible_action_names": [
-                    str(raw.get("name") or "") for raw in reaction_actions
-                ],
+                "eligible_action_names": [str(raw.get("name") or "") for raw in reaction_actions],
                 "reaction_ranges_ft": {
-                    str(raw.get("name") or ""): reach_ft
-                    for raw, reach_ft in eligible
+                    str(raw.get("name") or ""): reach_ft for raw, reach_ft in eligible
                 },
                 "trigger_combatant_id": moving_combatant.id,
                 "trigger_combatant_name": moving_combatant.display_name,
@@ -2100,12 +2114,15 @@ class CombatEngineService:
 
             key_material = f"{combat.id}:{movement_key}:{reactor.id}:leaves_reach"
             idempotency_key = f"rw:leaves_reach:{sha256(key_material.encode()).hexdigest()}"
-            if session.scalar(
-                select(CombatAction).where(
-                    CombatAction.combat_id == combat.id,
-                    CombatAction.idempotency_key == idempotency_key,
+            if (
+                session.scalar(
+                    select(CombatAction).where(
+                        CombatAction.combat_id == combat.id,
+                        CombatAction.idempotency_key == idempotency_key,
+                    )
                 )
-            ) is not None:
+                is not None
+            ):
                 continue
 
             reaction_actions = [raw for raw, _ in eligible]
@@ -2261,9 +2278,7 @@ class CombatEngineService:
                         "window_key": window_key,
                         "trigger": "other_turn_end",
                         "reaction_event": "turn_end",
-                        "eligible_action_names": [
-                            action["name"] for action in reaction_actions
-                        ],
+                        "eligible_action_names": [action["name"] for action in reaction_actions],
                         "active_combatant_id": active.id,
                         "trigger_combatant_id": previous_active_id,
                         "trigger_combatant_name": previous_active_name,
@@ -2319,8 +2334,7 @@ class CombatEngineService:
                 else:
                     if (
                         not lair_window
-                        or cls._state_int(state.get("lair_action_round"))
-                        == combat.round_number
+                        or cls._state_int(state.get("lair_action_round")) == combat.round_number
                     ):
                         continue
                     trigger = "initiative_20"
@@ -2351,14 +2365,18 @@ class CombatEngineService:
                     metadata["trigger_combatant_name"] = previous_active_name
                     pool_max = cls._state_int(state.get("legendary_actions_max"))
                     raw_actions = state.get("actions")
-                    inferred_pools = {
-                        raw["legendary_pool_max"]
-                        for raw in raw_actions
-                        if isinstance(raw, dict)
-                        and isinstance(raw.get("legendary_pool_max"), int)
-                        and not isinstance(raw.get("legendary_pool_max"), bool)
-                        and raw["legendary_pool_max"] > 0
-                    } if isinstance(raw_actions, list) else set()
+                    inferred_pools = (
+                        {
+                            raw["legendary_pool_max"]
+                            for raw in raw_actions
+                            if isinstance(raw, dict)
+                            and isinstance(raw.get("legendary_pool_max"), int)
+                            and not isinstance(raw.get("legendary_pool_max"), bool)
+                            and raw["legendary_pool_max"] > 0
+                        }
+                        if isinstance(raw_actions, list)
+                        else set()
+                    )
                     if pool_max <= 0 and len(inferred_pools) == 1:
                         pool_max = inferred_pools.pop()
                     remaining = cls._state_int(
@@ -2399,8 +2417,7 @@ class CombatEngineService:
                         },
                         result_json={"action_window": metadata},
                         explanation=(
-                            "仅记录本次可触发时机；不会自动掷攻击或伤害骰，"
-                            "也不会自动执行动作。"
+                            "仅记录本次可触发时机；不会自动掷攻击或伤害骰，也不会自动执行动作。"
                         ),
                         round_number=combat.round_number,
                         turn_index=combat.current_turn_index,
@@ -2497,9 +2514,7 @@ class CombatEngineService:
         trigger = session.get(Combatant, trigger_id) if trigger_id else None
         trigger_name = trigger.display_name if trigger is not None else "未指定来源"
         for target, adjusted_damage in damaged_targets:
-            if (
-                not cls._can_open_structured_reaction_window(target)
-            ):
+            if not cls._can_open_structured_reaction_window(target):
                 continue
             reaction_actions = cls._structured_reaction_actions(
                 target,
@@ -2507,9 +2522,7 @@ class CombatEngineService:
             )
             if not reaction_actions:
                 continue
-            idempotency_key = (
-                f"rw:{combat.id}:damage:{damage_action.id}:{target.id}:takes_damage"
-            )
+            idempotency_key = f"rw:{combat.id}:damage:{damage_action.id}:{target.id}:takes_damage"
             existing = session.scalar(
                 select(CombatAction).where(
                     CombatAction.combat_id == combat.id,
@@ -2524,9 +2537,7 @@ class CombatEngineService:
                 "window_key": f"damage:{damage_action.id}:{target.id}",
                 "trigger": "takes_damage",
                 "reaction_event": "takes_damage",
-                "eligible_action_names": [
-                    action["name"] for action in reaction_actions
-                ],
+                "eligible_action_names": [action["name"] for action in reaction_actions],
                 "trigger_action_id": damage_action.id,
                 "trigger_action_type": damage_action.action_type,
                 "trigger_combatant_id": trigger_id,
@@ -2637,15 +2648,16 @@ class CombatEngineService:
         reaction_actions = cls._structured_reaction_actions(target, "hit_by_attack")
         if not reaction_actions:
             return
-        idempotency_key = (
-            f"rw:{combat.id}:hit:{attack_action.id}:{target.id}:hit_by_attack"
-        )
-        if session.scalar(
-            select(CombatAction).where(
-                CombatAction.combat_id == combat.id,
-                CombatAction.idempotency_key == idempotency_key,
+        idempotency_key = f"rw:{combat.id}:hit:{attack_action.id}:{target.id}:hit_by_attack"
+        if (
+            session.scalar(
+                select(CombatAction).where(
+                    CombatAction.combat_id == combat.id,
+                    CombatAction.idempotency_key == idempotency_key,
+                )
             )
-        ) is not None:
+            is not None
+        ):
             return
         reaction_metadata: dict[str, object] = {
             "action_cost": "reaction",
@@ -2735,9 +2747,7 @@ class CombatEngineService:
             reaction_actions = cls._structured_reaction_actions(reactor, "casts_spell")
             if not reaction_actions:
                 continue
-            idempotency_key = (
-                f"rw:{combat.id}:spell:{spell_action.id}:{reactor.id}:casts_spell"
-            )
+            idempotency_key = f"rw:{combat.id}:spell:{spell_action.id}:{reactor.id}:casts_spell"
             existing = session.scalar(
                 select(CombatAction).where(
                     CombatAction.combat_id == combat.id,
@@ -2752,9 +2762,7 @@ class CombatEngineService:
                 "window_key": f"spell:{spell_action.id}:{reactor.id}",
                 "trigger": "casts_spell",
                 "reaction_event": "casts_spell",
-                "eligible_action_names": [
-                    action["name"] for action in reaction_actions
-                ],
+                "eligible_action_names": [action["name"] for action in reaction_actions],
                 "trigger_action_id": spell_action.id,
                 "trigger_action_type": spell_action.action_type,
                 "trigger_action_name": action_name,
@@ -2841,9 +2849,7 @@ class CombatEngineService:
             )
         ).all()
         active = ordered[combat.current_turn_index] if ordered else None
-        if action_cost in {"action", "bonus_action"} and (
-            active is None or active.id != actor.id
-        ):
+        if action_cost in {"action", "bonus_action"} and (active is None or active.id != actor.id):
             raise ValueError("only the active combatant can spend actions")
         if action_cost == "reaction" and not (reaction_trigger or "").strip():
             raise ValueError("a reaction requires an explicit trigger confirmed by the DM")
@@ -2888,9 +2894,7 @@ class CombatEngineService:
             stored_max = cls._state_int(state.get("legendary_actions_max"), pool_max)
             if stored_max != pool_max:
                 raise ValueError("legendary action pool does not match the monster stat block")
-            remaining = cls._state_int(
-                state.get("legendary_actions_remaining"), pool_max
-            )
+            remaining = cls._state_int(state.get("legendary_actions_remaining"), pool_max)
             window_key = f"{combat.round_number}:{combat.current_turn_index}"
             if state.get("legendary_action_window_used") == window_key:
                 raise ValueError("this monster already used a legendary action in this window")
@@ -2912,9 +2916,7 @@ class CombatEngineService:
             if active is None:
                 raise ValueError("lair actions require an active initiative window")
             active_index = ordered.index(active)
-            previous_initiative = (
-                ordered[active_index - 1].initiative if active_index > 0 else None
-            )
+            previous_initiative = ordered[active_index - 1].initiative if active_index > 0 else None
             crossed_initiative_twenty = active.initiative <= 20 and (
                 previous_initiative is None or previous_initiative > 20
             )
@@ -3082,10 +3084,11 @@ class CombatEngineService:
                 if not name or kind not in {"heal", "condition", "resource"}:
                     continue
                 disabled = raw_trait.get("disabled_by_conditions", [])
-                disabled_conditions = {
-                    cls._canonical_condition(value)
-                    for value in disabled
-                } if isinstance(disabled, list) else set()
+                disabled_conditions = (
+                    {cls._canonical_condition(value) for value in disabled}
+                    if isinstance(disabled, list)
+                    else set()
+                )
                 if cls._condition_set(monster) & disabled_conditions:
                     trait_results.append(
                         {"name": name, "kind": kind, "applied": False, "reason": "disabled"}
@@ -3189,20 +3192,14 @@ class CombatEngineService:
                 )
             ).all()
         )
-        sequence_rows = [
-            row
-            for row in rows
-            if row.request_json.get("sequence_id") == sequence_id
-        ]
+        sequence_rows = [row for row in rows if row.request_json.get("sequence_id") == sequence_id]
         if any(
-            cls._state_int(row.request_json.get("sequence_size"), -1)
-            != command.sequence_size
+            cls._state_int(row.request_json.get("sequence_size"), -1) != command.sequence_size
             for row in sequence_rows
         ):
             raise ValueError("monster sequence size does not match its earlier steps")
         if any(
-            cls._state_int(row.request_json.get("sequence_step"), -1)
-            == command.sequence_step
+            cls._state_int(row.request_json.get("sequence_step"), -1) == command.sequence_step
             for row in sequence_rows
         ):
             raise ValueError("monster sequence step was already recorded with another request")
@@ -3297,8 +3294,7 @@ class CombatEngineService:
         if not canonical:
             return False
         if canonical in {
-            cls._canonical_condition(value)
-            for value in list(target.condition_immunities or [])
+            cls._canonical_condition(value) for value in list(target.condition_immunities or [])
         }:
             return True
         return cls._aura_condition_immunity(
@@ -3342,10 +3338,7 @@ class CombatEngineService:
         target_faction = cls._combatant_faction(target)
         target_position = target_snapshot.get("grid_position")
         for source in candidates:
-            if (
-                source.id != target.id
-                and cls._combatant_faction(source) != target_faction
-            ):
+            if source.id != target.id and cls._combatant_faction(source) != target_faction:
                 continue
             runtime = (source.snapshot_json or {}).get("feature_runtime")
             combat_start = runtime.get("combat_start") if isinstance(runtime, dict) else None
@@ -3499,15 +3492,13 @@ class CombatEngineService:
                 # feature accidentally.
                 equipment = (combatant.snapshot_json or {}).get("equipment")
                 if not isinstance(equipment, list) or any(
-                    isinstance(item, dict) and item.get("category") == "armor"
-                    for item in equipment
+                    isinstance(item, dict) and item.get("category") == "armor" for item in equipment
                 ):
                     continue
             if applies_when in {"wearing_armor", "wearing armor"}:
                 equipment = (combatant.snapshot_json or {}).get("equipment")
                 if not isinstance(equipment, list) or not any(
-                    isinstance(item, dict) and item.get("category") == "armor"
-                    for item in equipment
+                    isinstance(item, dict) and item.get("category") == "armor" for item in equipment
                 ):
                     continue
             result.append(value)
@@ -3528,9 +3519,7 @@ class CombatEngineService:
 
         advantage: list[str] = []
         disadvantage: list[str] = []
-        for modifier in cls._feature_rule_modifiers(
-            actor, stat="attack_roll", scope="outgoing"
-        ):
+        for modifier in cls._feature_rule_modifiers(actor, stat="attack_roll", scope="outgoing"):
             operation = str(modifier.get("operation") or "")
             applies_when = str(modifier.get("applies_when") or "").strip().lower()
             if applies_when == "innate_sorcery_active_and_sorcerer_spell" and not (
@@ -3538,9 +3527,7 @@ class CombatEngineService:
             ):
                 continue
             if applies_when == "target_is_current_hunters_mark":
-                current_mark = (actor.snapshot_json or {}).get(
-                    "current_hunters_mark_target_id"
-                )
+                current_mark = (actor.snapshot_json or {}).get("current_hunters_mark_target_id")
                 if not isinstance(current_mark, str) or current_mark != target.id:
                     continue
             source = str(modifier.get("source") or modifier.get("id") or "职业特性")
@@ -3556,12 +3543,15 @@ class CombatEngineService:
                 state_name="steady_aim",
             ):
                 advantage.append("稳定瞄准")
-            if cls._active_studied_attack_effect(
-                session,
-                combat_id,
-                actor_id=actor.id,
-                target_id=target.id,
-            ) is not None:
+            if (
+                cls._active_studied_attack_effect(
+                    session,
+                    combat_id,
+                    actor_id=actor.id,
+                    target_id=target.id,
+                )
+                is not None
+            ):
                 advantage.append("究明攻击")
         # Defensive features such as Elusive suppress an incoming advantage
         # only when their explicit predicate is satisfied.
@@ -3652,9 +3642,7 @@ class CombatEngineService:
                     }
                 )
 
-        requested_conditions = {
-            cls._canonical_condition(value) for value in condition_names
-        }
+        requested_conditions = {cls._canonical_condition(value) for value in condition_names}
         if combat is None or not requested_conditions & {"charmed", "frightened"}:
             return options
         target_faction = cls._combatant_faction(target)
@@ -3676,14 +3664,10 @@ class CombatEngineService:
                 continue
             reactor_runtime = (reactor.snapshot_json or {}).get("feature_runtime")
             reactor_actions = (
-                reactor_runtime.get("actions")
-                if isinstance(reactor_runtime, dict)
-                else None
+                reactor_runtime.get("actions") if isinstance(reactor_runtime, dict) else None
             )
             action = (
-                reactor_actions.get("countercharm")
-                if isinstance(reactor_actions, dict)
-                else None
+                reactor_actions.get("countercharm") if isinstance(reactor_actions, dict) else None
             )
             if not isinstance(action, dict):
                 continue
@@ -3799,8 +3783,7 @@ class CombatEngineService:
             and typed_effect
             and isinstance(raw_action.get("runtime_execution"), dict)
             and raw_action["runtime_execution"].get("status") == "ready"
-            and raw_action["runtime_execution"].get("consumer")
-            == "player_roll_resolution"
+            and raw_action["runtime_execution"].get("consumer") == "player_roll_resolution"
         ):
             return None
         resource_key = str(raw_action.get("resource_key") or "").strip()
@@ -3808,9 +3791,7 @@ class CombatEngineService:
         resources = character.resources if isinstance(character.resources, dict) else {}
         raw_resource = resources.get(resource_key)
         current = (
-            cls._state_int(raw_resource.get("current"))
-            if isinstance(raw_resource, dict)
-            else 0
+            cls._state_int(raw_resource.get("current")) if isinstance(raw_resource, dict) else 0
         )
         if not resource_key or resource_cost < 1 or current < resource_cost:
             return None
@@ -3982,9 +3963,7 @@ class CombatEngineService:
                 return command.get(name, default)
             return getattr(command, name, default)
 
-        damage = int(value("damage_on_success", 0) or 0) + int(
-            value("damage_on_failure", 0) or 0
-        )
+        damage = int(value("damage_on_success", 0) or 0) + int(value("damage_on_failure", 0) or 0)
         for field_name in ("damage_components_on_success", "damage_components_on_failure"):
             for component in value(field_name, []) or []:
                 if isinstance(component, dict):
@@ -4030,9 +4009,7 @@ class CombatEngineService:
         actor_point = cls._grid_point(actor)
         if actor_point is None:
             return None
-        grid = session.scalar(
-            select(SceneGrid).where(SceneGrid.scene_id == combat.scene_id)
-        )
+        grid = session.scalar(select(SceneGrid).where(SceneGrid.scene_id == combat.scene_id))
         if grid is None:
             return None
         blockers, _ = cls._grid_obstacles(session, grid)
@@ -4050,9 +4027,7 @@ class CombatEngineService:
                 blockers,
                 start_height_ft=cls._explicit_grid_elevation_ft(actor),
                 end_height_ft=(
-                    cls._explicit_grid_elevation_ft(source)
-                    if source is not None
-                    else None
+                    cls._explicit_grid_elevation_ft(source) if source is not None else None
                 ),
             )
             if has_sight:
@@ -4082,16 +4057,12 @@ class CombatEngineService:
 
         if not cls._has_condition(actor, "frightened"):
             return
-        source_ids = cls._condition_source_ids(
-            session, combat.id, actor, "frightened"
-        )
+        source_ids = cls._condition_source_ids(session, combat.id, actor, "frightened")
         if not source_ids:
             raise ValueError("恐慌状态的来源未记录，移动方向需要 DM 裁定")
         if combat.scene_id is None:
             raise ValueError("恐慌状态缺少权威战斗场景，移动方向需要 DM 裁定")
-        grid = session.scalar(
-            select(SceneGrid).where(SceneGrid.scene_id == combat.scene_id)
-        )
+        grid = session.scalar(select(SceneGrid).where(SceneGrid.scene_id == combat.scene_id))
         if grid is None:
             raise ValueError("恐慌状态缺少权威战斗网格，移动方向需要 DM 裁定")
         for source_id in source_ids:
@@ -4101,9 +4072,7 @@ class CombatEngineService:
                 raise ValueError("恐慌来源没有战斗位置，移动方向需要 DM 裁定")
             if grid_distance_ft(
                 to_position, source_position, cell_size_ft=grid.cell_size_ft
-            ) < grid_distance_ft(
-                from_position, source_position, cell_size_ft=grid.cell_size_ft
-            ):
+            ) < grid_distance_ft(from_position, source_position, cell_size_ft=grid.cell_size_ft):
                 raise ValueError("恐慌状态下不能主动靠近恐慌来源")
 
     @classmethod
@@ -4134,9 +4103,7 @@ class CombatEngineService:
     def _remove_condition(cls, target: Combatant, condition: str) -> bool:
         canonical = cls._canonical_condition(condition)
         current = list(target.conditions or [])
-        filtered = [
-            value for value in current if cls._canonical_condition(value) != canonical
-        ]
+        filtered = [value for value in current if cls._canonical_condition(value) != canonical]
         target.conditions = filtered
         return len(filtered) != len(current)
 
@@ -4311,9 +4278,7 @@ class CombatEngineService:
         """Restore the shared baseline after one condition source ends."""
 
         conditions = cls._condition_set(target)
-        raw_baseline = (target.snapshot_json or {}).get(
-            "_condition_restriction_baseline"
-        )
+        raw_baseline = (target.snapshot_json or {}).get("_condition_restriction_baseline")
         baseline = dict(raw_baseline) if isinstance(raw_baseline, dict) else {}
         if conditions & cls._ACTION_BLOCKING_CONDITIONS:
             for field in (
@@ -4417,12 +4382,15 @@ class CombatEngineService:
             return None
         # Decision-based interventions take precedence over automatic zero-HP
         # prevention. The ordering depends on the shared contract, not an ID.
-        if cls._zero_hp_intervention(
-            session,
-            target,
-            resulting_hp=resulting_hp,
-            unapplied_damage=unapplied_damage,
-        ) is not None:
+        if (
+            cls._zero_hp_intervention(
+                session,
+                target,
+                resulting_hp=resulting_hp,
+                unapplied_damage=unapplied_damage,
+            )
+            is not None
+        ):
             return None
         defense = next(
             (
@@ -4496,26 +4464,17 @@ class CombatEngineService:
             else None
         )
         raw_levels = character.class_levels if character is not None else {}
-        levels: dict[str, object] = (
-            dict(raw_levels) if isinstance(raw_levels, dict) else {}
-        )
+        levels: dict[str, object] = dict(raw_levels) if isinstance(raw_levels, dict) else {}
         if not levels:
             runtime = (target.snapshot_json or {}).get("feature_runtime")
             progression = runtime.get("progression") if isinstance(runtime, dict) else None
             raw_runtime_levels = (
-                progression.get("class_levels")
-                if isinstance(progression, dict)
-                else None
+                progression.get("class_levels") if isinstance(progression, dict) else None
             )
-            levels = (
-                dict(raw_runtime_levels)
-                if isinstance(raw_runtime_levels, dict)
-                else {}
-            )
+            levels = dict(raw_runtime_levels) if isinstance(raw_runtime_levels, dict) else {}
         resources = character.resources if character is not None else {}
         defenses = [
-            adapt_legacy_zero_hp_intervention(item)
-            for item in cls._feature_defenses(target)
+            adapt_legacy_zero_hp_intervention(item) for item in cls._feature_defenses(target)
         ]
         return resolve_zero_hp_intervention(
             defenses,
@@ -4543,10 +4502,7 @@ class CombatEngineService:
         """Persist a configured intervention's player-owned saving throw."""
 
         presentation = dict(defense.get("presentation") or {})
-        prefix = str(
-            presentation.get("prompt_idempotency_prefix")
-            or "zero-hp-intervention"
-        )
+        prefix = str(presentation.get("prompt_idempotency_prefix") or "zero-hp-intervention")
         prompt_key = f"{prefix}:{parent_action.id}"
         existing = session.scalar(
             select(CombatAction).where(
@@ -4558,8 +4514,7 @@ class CombatEngineService:
             return existing
         action_name = str(presentation.get("action_name") or "0 HP 干预")
         description = str(
-            presentation.get("description")
-            or "降至 0 HP；请进行豁免以决定后续生命状态。"
+            presentation.get("description") or "降至 0 HP；请进行豁免以决定后续生命状态。"
         )
         request = {
             "actor_combatant_id": target.id,
@@ -4609,19 +4564,13 @@ class CombatEngineService:
     @staticmethod
     def _zero_hp_intervention_prompt_id_key(defense: dict[str, object]) -> str:
         presentation = dict(defense.get("presentation") or {})
-        return str(
-            presentation.get("prompt_result_id_key")
-            or "zero_hp_intervention_prompt_id"
-        )
+        return str(presentation.get("prompt_result_id_key") or "zero_hp_intervention_prompt_id")
 
     @staticmethod
     def _zero_hp_intervention_summary(defense: dict[str, object]) -> str:
         presentation = dict(defense.get("presentation") or {})
         action_name = str(presentation.get("action_name") or "0 HP 干预")
-        return (
-            f"触发{action_name}，等待{defense['ability']}豁免"
-            f"（DC {defense['dc']}）"
-        )
+        return f"触发{action_name}，等待{defense['ability']}豁免（DC {defense['dc']}）"
 
     @classmethod
     def _deactivate_zero_hp_non_character(
@@ -4638,11 +4587,7 @@ class CombatEngineService:
         eligible for AI turns, targets, and movement immediately.
         """
 
-        if (
-            target.hp > 0
-            or target.entity_type == "character"
-            or not target.is_active
-        ):
+        if target.hp > 0 or target.entity_type == "character" or not target.is_active:
             return False
         target.is_active = False
         target.updated_at = now
@@ -4716,10 +4661,8 @@ class CombatEngineService:
             if modifier.get("id") == "studied_attacks:next_attack_advantage":
                 return True
             if (
-                str(modifier.get("source") or "").strip().lower()
-                in {"究明攻击", "studied attacks"}
-                and modifier.get("applies_when")
-                == "next_attack_against_same_target_after_miss"
+                str(modifier.get("source") or "").strip().lower() in {"究明攻击", "studied attacks"}
+                and modifier.get("applies_when") == "next_attack_against_same_target_after_miss"
             ):
                 return True
         return False
@@ -4985,11 +4928,7 @@ class CombatEngineService:
                 == (effect.combat_id if effect is not None else target.combat_id),
                 CombatEffect.target_combatant_id == target.id,
                 CombatEffect.status == "active",
-                *(
-                    (CombatEffect.id != effect.id,)
-                    if effect is not None
-                    else ()
-                ),
+                *((CombatEffect.id != effect.id,) if effect is not None else ()),
             )
         ).all()
         for other in active_effects:
@@ -5071,41 +5010,77 @@ class CombatEngineService:
         target = session.get(Combatant, effect.target_combatant_id)
         combat = session.get(Combat, effect.combat_id)
         for trigger in triggers:
-            if trigger in {
-                "target_turn_end",
-                "on_target_turn_end",
-            } and "turn_end" in kinds and target is not None and target.id in event_ids:
+            if (
+                trigger
+                in {
+                    "target_turn_end",
+                    "on_target_turn_end",
+                }
+                and "turn_end" in kinds
+                and target is not None
+                and target.id in event_ids
+            ):
                 return "状态目标回合结束，满足显式结束条件"
-            if trigger in {
-                "source_turn_end",
-                "on_source_turn_end",
-            } and "turn_end" in kinds and source is not None and source.id in event_ids:
+            if (
+                trigger
+                in {
+                    "source_turn_end",
+                    "on_source_turn_end",
+                }
+                and "turn_end" in kinds
+                and source is not None
+                and source.id in event_ids
+            ):
                 return "状态来源回合结束，满足显式结束条件"
-            if trigger in {
-                "target_turn_start",
-                "on_target_turn_start",
-            } and "turn_start" in kinds and target is not None and target.id in event_ids:
+            if (
+                trigger
+                in {
+                    "target_turn_start",
+                    "on_target_turn_start",
+                }
+                and "turn_start" in kinds
+                and target is not None
+                and target.id in event_ids
+            ):
                 return "状态目标回合开始，满足显式结束条件"
-            if trigger in {
-                "source_turn_start",
-                "on_source_turn_start",
-            } and "turn_start" in kinds and source is not None and source.id in event_ids:
+            if (
+                trigger
+                in {
+                    "source_turn_start",
+                    "on_source_turn_start",
+                }
+                and "turn_start" in kinds
+                and source is not None
+                and source.id in event_ids
+            ):
                 return "状态来源回合开始，满足显式结束条件"
             if trigger in {"round_end", "on_round_end"} and "round_end" in kinds:
                 return "轮次结束，满足显式结束条件"
             if trigger in {"round_start", "on_round_start"} and "round_start" in kinds:
                 return "轮次开始，满足显式结束条件"
-            if trigger in {
-                "target_takes_damage",
-                "target_damaged",
-                "on_target_damage",
-            } and "damage" in kinds and target is not None and target.id in event_ids:
+            if (
+                trigger
+                in {
+                    "target_takes_damage",
+                    "target_damaged",
+                    "on_target_damage",
+                }
+                and "damage" in kinds
+                and target is not None
+                and target.id in event_ids
+            ):
                 return "状态目标受到伤害，满足显式结束条件"
-            if trigger in {
-                "source_takes_damage",
-                "source_damaged",
-                "on_source_damage",
-            } and "damage" in kinds and source is not None and source.id in event_ids:
+            if (
+                trigger
+                in {
+                    "source_takes_damage",
+                    "source_damaged",
+                    "on_source_damage",
+                }
+                and "damage" in kinds
+                and source is not None
+                and source.id in event_ids
+            ):
                 return "状态来源受到伤害，满足显式结束条件"
             if trigger in {"target_moves", "target_moved", "on_target_move"}:
                 if "movement" in kinds and target is not None and target.id in event_ids:
@@ -5142,9 +5117,7 @@ class CombatEngineService:
                 details = dict(effect.details_json or {})
                 block = details.get("rule_block")
                 reach_ft = (
-                    cls._state_int(block.get("reach_ft"), 5)
-                    if isinstance(block, dict)
-                    else 5
+                    cls._state_int(block.get("reach_ft"), 5) if isinstance(block, dict) else 5
                 )
                 if distance_ft > max(5, reach_ft):
                     return f"擒抱目标被强制移动到 {distance_ft} 尺外"
@@ -5362,11 +5335,7 @@ class CombatEngineService:
             condition = str(block.get("condition") or "").strip()
             condition_was_present = details.get("condition_was_present")
             applied = details.get("applied_state")
-            prior_conditions = (
-                applied.get("conditions")
-                if isinstance(applied, dict)
-                else None
-            )
+            prior_conditions = applied.get("conditions") if isinstance(applied, dict) else None
             if (
                 condition
                 and not (
@@ -5375,8 +5344,7 @@ class CombatEngineService:
                     else (
                         isinstance(prior_conditions, list)
                         and any(
-                            cls._canonical_condition(value)
-                            == cls._canonical_condition(condition)
+                            cls._canonical_condition(value) == cls._canonical_condition(condition)
                             for value in prior_conditions
                         )
                     )
@@ -5423,9 +5391,7 @@ class CombatEngineService:
                 block.get("skill") or "",
             )
         )
-        instance = (
-            str((details or {}).get("_effect_instance_key") or "").strip()
-        )
+        instance = str((details or {}).get("_effect_instance_key") or "").strip()
         if instance:
             return f"{base}:effect:{instance}"
         block_id = str(block.get("id") or "").strip()
@@ -5470,6 +5436,7 @@ class CombatEngineService:
                 if defense_field != field:
                     continue
             matched.append(effect)
+
         def order_key(row: CombatEffect) -> tuple[object, str, str]:
             raw_order = dict(row.details_json or {}).get("_effect_instance_order")
             order = (
@@ -5501,18 +5468,12 @@ class CombatEngineService:
         the oldest effect while newer effects remain active.
         """
 
-        effects = cls._active_effects_for_rule_field(
-            session, target, kind="modifier", field=field
-        )
+        effects = cls._active_effects_for_rule_field(session, target, kind="modifier", field=field)
         if not effects:
             return False
         first_details = dict(effects[0].details_json or {})
         first_applied = first_details.get("applied_state")
-        baseline = (
-            first_applied.get(field)
-            if isinstance(first_applied, dict)
-            else None
-        )
+        baseline = first_applied.get(field) if isinstance(first_applied, dict) else None
         if not isinstance(baseline, int):
             return False
         value = baseline
@@ -5559,18 +5520,12 @@ class CombatEngineService:
     ) -> bool:
         """Recompute one resistance/vulnerability/immunity field by source."""
 
-        effects = cls._active_effects_for_rule_field(
-            session, target, kind="defense", field=field
-        )
+        effects = cls._active_effects_for_rule_field(session, target, kind="defense", field=field)
         if not effects:
             return False
         first_details = dict(effects[0].details_json or {})
         first_applied = first_details.get("applied_state")
-        baseline = (
-            first_applied.get(field)
-            if isinstance(first_applied, dict)
-            else None
-        )
+        baseline = first_applied.get(field) if isinstance(first_applied, dict) else None
         if not isinstance(baseline, list):
             return False
         values = {str(item) for item in baseline}
@@ -5644,12 +5599,9 @@ class CombatEngineService:
             condition_save_dc is None or not (condition_save_ability or "").strip()
         ):
             raise ValueError("until_save condition requires an explicit save DC and ability")
-        expires, expires_combatant_id = expires_map.get(
-            condition_duration or "", ("", None)
-        )
+        expires, expires_combatant_id = expires_map.get(condition_duration or "", ("", None))
         immune = {
-            cls._canonical_condition(value)
-            for value in list(target.condition_immunities or [])
+            cls._canonical_condition(value) for value in list(target.condition_immunities or [])
         }
         for raw_condition in conditions:
             condition = str(raw_condition).strip()
@@ -5761,19 +5713,17 @@ class CombatEngineService:
                 now=datetime.now(UTC),
             )
             if ended_effects:
-                result["ended_predicated_effect_ids"] = [
-                    effect.id for effect in ended_effects
-                ]
+                result["ended_predicated_effect_ids"] = [effect.id for effect in ended_effects]
             if ended_summons:
-                result["ended_predicated_summon_ids"] = [
-                    summon.id for summon in ended_summons
-                ]
+                result["ended_predicated_summon_ids"] = [summon.id for summon in ended_summons]
         if movement_distance_ft is not None:
             if movement_direction not in {"away", "toward"}:
                 raise ValueError("structured forced movement direction is required")
-            if combat.scene_id is None or session.scalar(
-                select(SceneGrid).where(SceneGrid.scene_id == combat.scene_id)
-            ) is None:
+            if (
+                combat.scene_id is None
+                or session.scalar(select(SceneGrid).where(SceneGrid.scene_id == combat.scene_id))
+                is None
+            ):
                 raise ValueError("强制位移需要权威战斗网格，不能默认按5尺网格处理")
             result["movement"] = cls._move_away_on_grid(
                 session,
@@ -5922,22 +5872,21 @@ class CombatEngineService:
                 )
             }
             metadata = dict(scene_object.metadata_json or {})
-            if (
-                scene_object.object_type == "cover"
-                and scene_object.state == "active"
-            ) or (
+            if (scene_object.object_type == "cover" and scene_object.state == "active") or (
                 scene_object.object_type == "furniture"
                 and scene_object.state == "active"
                 and metadata.get("provides_cover") is True
             ):
-                if CombatEngineService._sight_transparency(
-                    metadata,
-                    default="translucent",
-                ) != "transparent":
+                if (
+                    CombatEngineService._sight_transparency(
+                        metadata,
+                        default="translucent",
+                    )
+                    != "transparent"
+                ):
                     cover_cells.update(cells)
             if scene_object.object_type == "wall" or (
-                scene_object.object_type == "door"
-                and scene_object.state in {"active", "closed"}
+                scene_object.object_type == "door" and scene_object.state in {"active", "closed"}
             ):
                 behavior = CombatEngineService._sight_transparency(
                     metadata,
@@ -6050,9 +5999,7 @@ class CombatEngineService:
             }
             add_profile(cells, scene_object.metadata_json)
 
-        return {
-            point: tuple(intervals) for point, intervals in profiles.items()
-        }, unresolved
+        return {point: tuple(intervals) for point, intervals in profiles.items()}, unresolved
 
     @classmethod
     def _grid_line_of_sight(
@@ -6344,10 +6291,7 @@ class CombatEngineService:
             if command.size_ft % grid.cell_size_ft != 0:
                 raise ValueError("cube size must align to the authoritative grid cell size")
             side_cells = command.size_ft // grid.cell_size_ft
-            if (
-                anchor[0] + side_cells - 1 > grid.height
-                or anchor[1] + side_cells - 1 > grid.width
-            ):
+            if anchor[0] + side_cells - 1 > grid.height or anchor[1] + side_cells - 1 > grid.width:
                 raise ValueError("cube area extends outside the combat grid")
         blockers, _ = cls._grid_obstacles(session, grid)
         affected: list[Combatant] = []
@@ -6365,18 +6309,22 @@ class CombatEngineService:
                 )
             point_height_ft = cls._grid_elevation_ft(candidate)
             candidate_footprint = cls._grid_footprint(candidate)
-            if point is None or not candidate_footprint or not cls._footprint_in_monster_area(
-                shape=command.shape,
-                origin=origin,
-                anchor=anchor,
-                footprint=candidate_footprint,
-                size_ft=command.size_ft,
-                width_ft=command.width_ft,
-                cell_size_ft=grid.cell_size_ft,
-                origin_height_ft=origin_height_ft,
-                anchor_height_ft=command.anchor_height_ft,
-                point_height_ft=point_height_ft,
-                height_ft=command.height_ft,
+            if (
+                point is None
+                or not candidate_footprint
+                or not cls._footprint_in_monster_area(
+                    shape=command.shape,
+                    origin=origin,
+                    anchor=anchor,
+                    footprint=candidate_footprint,
+                    size_ft=command.size_ft,
+                    width_ft=command.width_ft,
+                    cell_size_ft=grid.cell_size_ft,
+                    origin_height_ft=origin_height_ft,
+                    anchor_height_ft=command.anchor_height_ft,
+                    point_height_ft=point_height_ft,
+                    height_ft=command.height_ft,
+                )
             ):
                 continue
             has_sight, line_of_sight_mode, sight_pair = cls._grid_footprint_line_of_sight(
@@ -6457,9 +6405,7 @@ class CombatEngineService:
             cls._explicit_grid_elevation_ft(actor) is None
             or cls._explicit_grid_elevation_ft(target) is None
         ):
-            raise ValueError(
-                "高级三维区域需要施法者和目标都记录 grid_position.elevation_ft"
-            )
+            raise ValueError("高级三维区域需要施法者和目标都记录 grid_position.elevation_ft")
         assert command.area_size_ft is not None
         assert command.area_anchor_row is not None
         assert command.area_anchor_col is not None
@@ -6557,9 +6503,7 @@ class CombatEngineService:
         if actor is None or command.actor_version is None:
             raise ValueError("an attack requires an actor and actor version")
         if actor.version != command.actor_version:
-            raise VersionConflict(
-                "combatant", actor.id, command.actor_version, actor.version
-            )
+            raise VersionConflict("combatant", actor.id, command.actor_version, actor.version)
         cls._validate_can_act(actor)
         cls._validate_charmed_harm_targets(
             session,
@@ -6582,14 +6526,10 @@ class CombatEngineService:
         )
         if feature_advantage:
             contexts.append("feature_attack_roll_advantage")
-            advantage_sources.extend(
-                f"feature:{source}" for source in feature_advantage
-            )
+            advantage_sources.extend(f"feature:{source}" for source in feature_advantage)
         if feature_disadvantage:
             contexts.append("feature_attack_roll_disadvantage")
-            disadvantage_sources.extend(
-                f"feature:{source}" for source in feature_disadvantage
-            )
+            disadvantage_sources.extend(f"feature:{source}" for source in feature_disadvantage)
         geometry = cls._attack_geometry(session, combat, command, actor, target)
         if geometry is not None:
             contexts.append(f"distance_ft:{geometry['distance_ft']}")
@@ -6600,12 +6540,10 @@ class CombatEngineService:
             contexts.append(f"line_of_sight:{str(geometry['line_of_sight']).lower()}")
             contexts.append(f"line_of_sight_mode:{geometry['line_of_sight_mode']}")
             contexts.append(
-                "attacker_footprint_size_cells:"
-                f"{geometry['attacker_footprint_size_cells']}"
+                f"attacker_footprint_size_cells:{geometry['attacker_footprint_size_cells']}"
             )
             contexts.append(
-                "target_footprint_size_cells:"
-                f"{geometry['target_footprint_size_cells']}"
+                f"target_footprint_size_cells:{geometry['target_footprint_size_cells']}"
             )
             sight_pair = geometry.get("line_of_sight_pair")
             if isinstance(sight_pair, dict):
@@ -6630,8 +6568,7 @@ class CombatEngineService:
             geometry is not None
             and int(geometry["distance_ft"]) <= 5
             and (
-                cls._has_condition(target, "paralyzed")
-                or cls._has_condition(target, "unconscious")
+                cls._has_condition(target, "paralyzed") or cls._has_condition(target, "unconscious")
             )
         ):
             contexts.append("automatic_critical:target_within_5ft")
@@ -6648,9 +6585,7 @@ class CombatEngineService:
         ):
             if cls._has_condition(actor, condition):
                 if condition == "frightened":
-                    source_visible = cls._frightened_source_visibility(
-                        session, combat, actor
-                    )
+                    source_visible = cls._frightened_source_visibility(session, combat, actor)
                     if source_visible is True:
                         contexts.append("attacker_frightened_source_visible")
                         disadvantage_sources.append("attacker_frightened_source_visible")
@@ -6667,8 +6602,7 @@ class CombatEngineService:
                         advantage_sources.append(context)
         if cls._has_condition(actor, "reckless_attack"):
             if (
-                str(command.attack_ability or "").strip().lower()
-                in {"strength", "力量"}
+                str(command.attack_ability or "").strip().lower() in {"strength", "力量"}
                 and command.is_weapon_attack
             ):
                 contexts.append("attacker_reckless_attack")
@@ -6718,9 +6652,7 @@ class CombatEngineService:
         if cls._suppresses_incoming_attack_advantage(target):
             contexts.append("target_feature_suppresses_incoming_advantage")
             advantage_sources.clear()
-        if cls._active_runtime_effects(
-            session, combat.id, target_id=actor.id, state_name="hidden"
-        ):
+        if cls._active_runtime_effects(session, combat.id, target_id=actor.id, state_name="hidden"):
             contexts.append("attacker_hidden_visibility_requires_dm_ruling")
             adjudication_contexts.append("attacker_hidden_visibility_requires_dm_ruling")
         if (
@@ -6799,9 +6731,13 @@ class CombatEngineService:
                     f"expected {expected_roll_mode}, got {command.attack_roll_mode}; "
                     "use a DM override only when another explicit source changes the result"
                 )
-        if adjudication_contexts and not command.dm_override and (
-            command.attack_roll_mode is None
-            or not (command.attack_adjudication_note or "").strip()
+        if (
+            adjudication_contexts
+            and not command.dm_override
+            and (
+                command.attack_roll_mode is None
+                or not (command.attack_adjudication_note or "").strip()
+            )
         ):
             raise ValueError(
                 "attack context requires explicit attack_roll_mode and "
@@ -6861,16 +6797,12 @@ class CombatEngineService:
         tags = {
             str(value).strip().lower()
             for value in (
-                damage_tags
-                if damage_tags is not None
-                else getattr(command, "damage_tags", [])
+                damage_tags if damage_tags is not None else getattr(command, "damage_tags", [])
             )
             if str(value).strip()
         }
         effective_dm_override = (
-            bool(getattr(command, "dm_override", False))
-            if dm_override is None
-            else dm_override
+            bool(getattr(command, "dm_override", False)) if dm_override is None else dm_override
         )
         normalized_damage_types = {str(value).strip().lower() for value in damage_types}
         applied: list[str] = []
@@ -6898,8 +6830,7 @@ class CombatEngineService:
                 continue
             defense_label = str(raw_defense.get("id") or f"conditional_defense_{index + 1}")
             automatic_feature_condition = (
-                condition.lower() in {"raging", "rage"}
-                and cls._has_condition(target, "raging")
+                condition.lower() in {"raging", "rage"} and cls._has_condition(target, "raging")
             ) or (
                 condition.lower() in {"superior_defense", "superior_defense_active"}
                 and cls._has_condition(target, "superior_defense")
@@ -6979,9 +6910,7 @@ class CombatEngineService:
                     component_tags = list(component.damage_tags or command.damage_tags)
                     if component_tags:
                         component_result["damage_tags"] = component_tags
-                    component_result["conditional_defenses_applied"] = (
-                        component_applied_defenses
-                    )
+                    component_result["conditional_defenses_applied"] = component_applied_defenses
                     component_result["conditional_defenses_unresolved"] = (
                         component_unresolved_defenses
                     )
@@ -7001,12 +6930,8 @@ class CombatEngineService:
                     "hp_lost": sum(item["hp_lost"] for item in component_results),
                     "remaining_temporary_hp": current_temporary_hp,
                     "remaining_hp": current_hp,
-                    "unapplied_damage": sum(
-                        item["unapplied_damage"] for item in component_results
-                    ),
-                    "explanation": "；".join(
-                        item["explanation"] for item in component_results
-                    ),
+                    "unapplied_damage": sum(item["unapplied_damage"] for item in component_results),
+                    "explanation": "；".join(item["explanation"] for item in component_results),
                     "damage_components": component_results,
                 }
                 if applied_component_defenses:
@@ -7079,9 +7004,7 @@ class CombatEngineService:
 
     @staticmethod
     def _death_save(session: Session, target: Combatant) -> DeathSave:
-        death_save = session.scalar(
-            select(DeathSave).where(DeathSave.combatant_id == target.id)
-        )
+        death_save = session.scalar(select(DeathSave).where(DeathSave.combatant_id == target.id))
         if death_save is None:
             death_save = DeathSave(combatant_id=target.id)
             session.add(death_save)
@@ -7097,14 +7020,9 @@ class CombatEngineService:
                 .where(Combatant.combat_id == combat.id)
                 .order_by(Combatant.initiative.desc(), Combatant.id)
             )
-            if row.entity_type == "monster"
-            or row.snapshot_json.get("disposition") == "enemy"
+            if row.entity_type == "monster" or row.snapshot_json.get("disposition") == "enemy"
         ]
-        defeated = [
-            row
-            for row in hostiles
-            if row.hp <= 0 or not row.is_active
-        ]
+        defeated = [row for row in hostiles if row.hp <= 0 or not row.is_active]
         remaining = [row for row in hostiles if row not in defeated]
         can_end = bool(hostiles) and not remaining and combat.status == "active"
         return {
@@ -7164,16 +7082,8 @@ class CombatEngineService:
             if action.actor_combatant_id is not None
             else None
         )
-        target_id = (
-            action.target_combatant_ids[0]
-            if action.target_combatant_ids
-            else None
-        )
-        target = (
-            session.get(Combatant, target_id)
-            if isinstance(target_id, str)
-            else None
-        )
+        target_id = action.target_combatant_ids[0] if action.target_combatant_ids else None
+        target = session.get(Combatant, target_id) if isinstance(target_id, str) else None
         if (
             actor is None
             or actor.combat_id != combat_id
@@ -7454,8 +7364,7 @@ class CombatEngineService:
             )
             if existing_transaction is not None:
                 if (
-                    existing_transaction.operation_type
-                    != "combat_player_roll_prompt_batch"
+                    existing_transaction.operation_type != "combat_player_roll_prompt_batch"
                     or existing_transaction.after_snapshot.get("combat_id") != combat_id
                 ):
                     raise ValueError("idempotency key was already used by a different operation")
@@ -7779,8 +7688,7 @@ class CombatEngineService:
         normalized_ability = str(ability or "").strip().lower()
         condition_set = cls._condition_set(target)
         condition_save_disadvantage = (
-            normalized_ability in {"dexterity", "敏捷"}
-            and "restrained" in condition_set
+            normalized_ability in {"dexterity", "敏捷"} and "restrained" in condition_set
         )
         magic_resistance = bool(
             defenses.get("magic_resistance") or snapshot.get("magic_resistance")
@@ -7823,9 +7731,7 @@ class CombatEngineService:
             if len(rolls) < 2:
                 raise ValueError("职业特性重掷需要提交第一次与重掷后的两个总值")
             effective_roll = (
-                max(rolls[:2])
-                if reroll_option.get("reroll_mode") == "advantage"
-                else rolls[1]
+                max(rolls[:2]) if reroll_option.get("reroll_mode") == "advantage" else rolls[1]
             )
             feature_reroll_consumed = {
                 "feature_id": reroll_option.get("feature_id"),
@@ -7851,9 +7757,7 @@ class CombatEngineService:
                 feature_reroll_consumed.update(
                     {
                         "resource": "reaction",
-                        "reaction_combatant_id": reroll_option.get(
-                            "reaction_combatant_id"
-                        ),
+                        "reaction_combatant_id": reroll_option.get("reaction_combatant_id"),
                         "before": True,
                     }
                 )
@@ -7931,9 +7835,7 @@ class CombatEngineService:
                     target.snapshot_json = snapshot
             else:
                 feature_reroll_consumed["after"] = feature_reroll_consumed["before"]
-            applied.append(
-                f"feature:{reroll_option.get('feature_id') or 'saving_throw_reroll'}"
-            )
+            applied.append(f"feature:{reroll_option.get('feature_id') or 'saving_throw_reroll'}")
         elif (
             (magic_resistance and is_magical)
             or feature_advantage
@@ -7969,10 +7871,9 @@ class CombatEngineService:
         if roll_total_override is not None:
             effective_roll = roll_total_override
             applied.append("feature:stroke_of_luck")
-        auto_fail = (
-            bool(condition_set & cls._SAVE_AUTO_FAIL_STR_DEX_CONDITIONS)
-            and normalized_ability in {"strength", "dexterity", "力量", "敏捷"}
-        )
+        auto_fail = bool(
+            condition_set & cls._SAVE_AUTO_FAIL_STR_DEX_CONDITIONS
+        ) and normalized_ability in {"strength", "dexterity", "力量", "敏捷"}
         roll_bonus_applied = False
         if auto_fail:
             effective_roll = -100_000
@@ -8073,9 +7974,7 @@ class CombatEngineService:
                 raise ValueError("0 HP 干预豁免窗口只在目标仍为 0 HP 时有效")
             if str(request.get("resolution_type") or "") != "saving_throw":
                 raise ValueError("0 HP 干预窗口必须是豁免骰")
-            expected_ability = str(
-                zero_hp_intervention.get("ability") or ""
-            ).strip().lower()
+            expected_ability = str(zero_hp_intervention.get("ability") or "").strip().lower()
             ability = str(request.get("ability") or "").strip().lower()
             if not expected_ability or ability != expected_ability:
                 raise ValueError("0 HP 干预窗口的豁免属性与结构化配置不一致")
@@ -8149,8 +8048,7 @@ class CombatEngineService:
                 if item.get("operation") == "disadvantage"
             ]
             blinded_sight_auto_fail = bool(
-                request.get("requires_sight") is True
-                and cls._has_condition(target, "blinded")
+                request.get("requires_sight") is True and cls._has_condition(target, "blinded")
             )
             poisoned_disadvantage = cls._has_condition(target, "poisoned")
             frightened_disadvantage = False
@@ -8179,9 +8077,7 @@ class CombatEngineService:
                     )
                 has_advantage = bool(feature_advantage)
                 has_disadvantage = (
-                    bool(feature_disadvantage)
-                    or poisoned_disadvantage
-                    or frightened_disadvantage
+                    bool(feature_disadvantage) or poisoned_disadvantage or frightened_disadvantage
                 )
                 poisoned_source = "condition:poisoned_disadvantage_check"
                 frightened_source = "condition:frightened_disadvantage_check"
@@ -8215,9 +8111,7 @@ class CombatEngineService:
                     "魅力": "charisma",
                 }
                 normalized_ability = str(request.get("ability") or "").strip().lower()
-                normalized_ability = ability_aliases.get(
-                    normalized_ability, normalized_ability
-                )
+                normalized_ability = ability_aliases.get(normalized_ability, normalized_ability)
                 minimum_total_modifier = next(
                     (
                         item
@@ -8245,23 +8139,18 @@ class CombatEngineService:
                         item
                         for item in feature_modifiers
                         if item.get("operation") == "add"
-                        and str(item.get("value_source") or "").strip()
-                        == "half_proficiency_bonus"
+                        and str(item.get("value_source") or "").strip() == "half_proficiency_bonus"
                         and str(item.get("applies_when") or "").strip().lower()
                         == "ability_check_without_proficiency"
                     ]
                     if jack_modifiers:
                         proficient = request.get("ability_check_proficient")
                         if proficient is None:
-                            raise ValueError(
-                                "万事通需要明确说明该力量/属性检定是否包含熟练加值"
-                            )
+                            raise ValueError("万事通需要明确说明该力量/属性检定是否包含熟练加值")
                         if proficient is False:
                             runtime = (target.snapshot_json or {}).get("feature_runtime")
                             progression = (
-                                runtime.get("progression")
-                                if isinstance(runtime, dict)
-                                else None
+                                runtime.get("progression") if isinstance(runtime, dict) else None
                             )
                             raw_proficiency_bonus = (
                                 progression.get("proficiency_bonus")
@@ -8271,16 +8160,11 @@ class CombatEngineService:
                             if not isinstance(raw_proficiency_bonus, int) or (
                                 raw_proficiency_bonus < 1
                             ):
-                                raise ValueError(
-                                    "万事通缺少权威熟练加值，不能猜测半熟练加值"
-                                )
+                                raise ValueError("万事通缺少权威熟练加值，不能猜测半熟练加值")
                             half_bonus = floor(raw_proficiency_bonus / 2)
                             if half_bonus > 0:
                                 effective_roll += half_bonus
-                                applied.extend(
-                                    "feature:万事通半熟练加值"
-                                    for _ in jack_modifiers
-                                )
+                                applied.extend("feature:万事通半熟练加值" for _ in jack_modifiers)
             if bardic_inspiration is not None:
                 if any(item.startswith("condition_auto_fail") for item in applied):
                     raise ValueError("自动失败的检定不能使用吟游诗人激励骰改变结果")
@@ -8313,9 +8197,7 @@ class CombatEngineService:
                 condition_names=request.get("conditions_on_failure", []),
                 selected_reactor_id=command.feature_reroll_reactor_id,
                 roll_bonus=(
-                    int(bardic_inspiration["value"])
-                    if bardic_inspiration is not None
-                    else 0
+                    int(bardic_inspiration["value"]) if bardic_inspiration is not None else 0
                 ),
                 roll_bonus_source="feature:bardic_inspiration",
             )
@@ -8341,17 +8223,14 @@ class CombatEngineService:
             if success:
                 raise ValueError("幸运一击只能在 D20 检定失败后使用")
             if any(
-                str(item).startswith("condition_auto_fail")
-                for item in defense["applied_defenses"]
+                str(item).startswith("condition_auto_fail") for item in defense["applied_defenses"]
             ):
                 raise ValueError("自动失败的检定不能使用幸运一击改变结果")
             assert stroke_option is not None
             replacement_total = command.stroke_of_luck_total
             if replacement_total is None:
                 raise ValueError("幸运一击必须提交天然 20 加调整值后的最终总值")
-            reported_roll_totals_before_stroke = list(
-                defense.get("reported_roll_totals", [])
-            )
+            reported_roll_totals_before_stroke = list(defense.get("reported_roll_totals", []))
             if resolution_type == "saving_throw":
                 defense = cls._resolve_save_defenses(
                     target,
@@ -8462,11 +8341,7 @@ class CombatEngineService:
                             else {}
                         ),
                         **(
-                            {
-                                "reaction_candidates": available_reroll.get(
-                                    "reaction_candidates"
-                                )
-                            }
+                            {"reaction_candidates": available_reroll.get("reaction_candidates")}
                             if available_reroll.get("reaction_candidates")
                             else {}
                         ),
@@ -8522,9 +8397,7 @@ class CombatEngineService:
                 "dm_note": command.dm_note,
             }
         component_key = (
-            "damage_components_on_success"
-            if success
-            else "damage_components_on_failure"
+            "damage_components_on_success" if success else "damage_components_on_failure"
         )
         raw_components = request.get(component_key)
         if isinstance(raw_components, list) and raw_components:
@@ -8533,9 +8406,7 @@ class CombatEngineService:
                     "amount": cls._state_int(item.get("amount")),
                     "damage_type": str(item.get("damage_type") or "").strip(),
                     "damage_tags": [
-                        str(tag).strip()
-                        for tag in item.get("damage_tags", [])
-                        if str(tag).strip()
+                        str(tag).strip() for tag in item.get("damage_tags", []) if str(tag).strip()
                     ]
                     if isinstance(item.get("damage_tags"), list)
                     else [],
@@ -8549,19 +8420,23 @@ class CombatEngineService:
             raw_damage = cls._state_int(
                 request.get("damage_on_success" if success else "damage_on_failure")
             )
-            damage_components = [
-                {
-                    "amount": raw_damage,
-                    "damage_type": str(request.get("damage_type") or "").strip(),
-                    "damage_tags": [
-                        str(tag).strip()
-                        for tag in request.get("damage_tags", [])
-                        if str(tag).strip()
-                    ]
-                    if isinstance(request.get("damage_tags"), list)
-                    else [],
-                }
-            ] if raw_damage > 0 else []
+            damage_components = (
+                [
+                    {
+                        "amount": raw_damage,
+                        "damage_type": str(request.get("damage_type") or "").strip(),
+                        "damage_tags": [
+                            str(tag).strip()
+                            for tag in request.get("damage_tags", [])
+                            if str(tag).strip()
+                        ]
+                        if isinstance(request.get("damage_tags"), list)
+                        else [],
+                    }
+                ]
+                if raw_damage > 0
+                else []
+            )
         for component in damage_components:
             if not component.get("damage_tags"):
                 component.pop("damage_tags", None)
@@ -8577,20 +8452,14 @@ class CombatEngineService:
             damage_components = [
                 {
                     **component,
-                    "amount": (
-                        0
-                        if success
-                        else int(component["amount"]) // 2
-                    ),
+                    "amount": (0 if success else int(component["amount"]) // 2),
                 }
                 for component in damage_components
             ]
         elif "reflex_defense" in applied_defenses:
             raw_defenses = dict(target.snapshot_json or {}).get("advanced_defenses")
             reflex = (
-                dict(raw_defenses).get("reflex_defense")
-                if isinstance(raw_defenses, dict)
-                else None
+                dict(raw_defenses).get("reflex_defense") if isinstance(raw_defenses, dict) else None
             )
             if isinstance(reflex, dict):
                 multiplier_key = "success_multiplier" if success else "failure_multiplier"
@@ -8631,9 +8500,7 @@ class CombatEngineService:
             "feature_reroll_consumed": defense["feature_reroll_consumed"],
             "stroke_of_luck_consumed": stroke_of_luck_consumed,
             "stroke_of_luck_total": (
-                command.stroke_of_luck_total
-                if command.use_stroke_of_luck
-                else None
+                command.stroke_of_luck_total if command.use_stroke_of_luck else None
             ),
             "feature_dice_consumed": feature_dice_consumed,
         }
@@ -8733,9 +8600,7 @@ class CombatEngineService:
         raw_state_spec = feature.get("state")
         state_spec = dict(raw_state_spec) if isinstance(raw_state_spec, dict) else {}
         state_key = str(state_spec.get("key") or "").strip()
-        current_dc_field = str(
-            state_spec.get("current_dc_field") or "current_dc"
-        ).strip()
+        current_dc_field = str(state_spec.get("current_dc_field") or "current_dc").strip()
         if dc < 1 or increase < 0 or restore_hit_points < 1 or not state_key:
             raise ValueError("0 HP 干预缺少完整的结构化结算字段")
         succeeded = bool(resolution.get("success"))
@@ -8940,9 +8805,7 @@ class CombatEngineService:
                     "resolution": action.result_json,
                 }
             request_action_cost = (
-                str(request.get("action_cost"))
-                if request.get("action_cost") is not None
-                else None
+                str(request.get("action_cost")) if request.get("action_cost") is not None else None
             )
             request_legendary_cost = (
                 request.get("legendary_cost")
@@ -8987,11 +8850,15 @@ class CombatEngineService:
                 "conditions_on_success" if succeeded else "conditions_on_failure",
                 [],
             )
-            conditions = [
-                str(value).strip()
-                for value in raw_conditions
-                if isinstance(value, str) and value.strip()
-            ] if isinstance(raw_conditions, list) else []
+            conditions = (
+                [
+                    str(value).strip()
+                    for value in raw_conditions
+                    if isinstance(value, str) and value.strip()
+                ]
+                if isinstance(raw_conditions, list)
+                else []
+            )
             movement_raw = request.get(
                 "movement_on_success_ft" if succeeded else "movement_on_failure_ft"
             )
@@ -9042,10 +8909,7 @@ class CombatEngineService:
             if structured_effects:
                 resolution["structured_effects"] = structured_effects
                 movement = structured_effects.get("movement")
-                if (
-                    isinstance(movement, dict)
-                    and self._state_int(movement.get("moved_ft")) > 0
-                ):
+                if isinstance(movement, dict) and self._state_int(movement.get("moved_ft")) > 0:
                     ended_effects, ended_summons = self._end_predicated_effects(
                         session,
                         combat,
@@ -9106,9 +8970,7 @@ class CombatEngineService:
         command: CombatActionCommand,
     ) -> dict[str, Any]:
         with Session(self.engine) as session:
-            combat, target, actor = self._scope(
-                session, campaign_id, combat_id, command
-            )
+            combat, target, actor = self._scope(session, campaign_id, combat_id, command)
             if target.version != command.target_version:
                 raise VersionConflict(
                     "combatant",
@@ -9142,9 +9004,7 @@ class CombatEngineService:
                 recharge_key=command.recharge_key,
                 consume=command.recharge_consume,
             )
-            attack_contexts, _ = self._attack_contexts(
-                session, combat, command, actor, target
-            )
+            attack_contexts, _ = self._attack_contexts(session, combat, command, actor, target)
             automatic_critical = "automatic_critical:target_within_5ft" in attack_contexts
             if actor is not None and self._combat_action_is_harmful(command):
                 self._validate_charmed_harm_targets(
@@ -9166,11 +9026,7 @@ class CombatEngineService:
                 death_save = session.scalar(
                     select(DeathSave).where(DeathSave.combatant_id == target.id)
                 )
-                if (
-                    death_save is not None
-                    and death_save.dead
-                    and not command.dm_override
-                ):
+                if death_save is not None and death_save.dead and not command.dm_override:
                     raise ValueError(
                         "ordinary healing cannot restore a dead combatant; "
                         "use a DM override for a resurrection effect"
@@ -9252,8 +9108,8 @@ class CombatEngineService:
                             "combatant",
                             actor.id,
                             command.actor_version or 0,
-                        expected_actor_version,
-                    )
+                            expected_actor_version,
+                        )
                 self._validate_reaction_window(
                     session,
                     combat=combat,
@@ -9294,9 +9150,7 @@ class CombatEngineService:
                     )
                     is not None
                 ):
-                    raise ValueError(
-                        "命中触发了伤害前反应；请先以单目标攻击确认并等待反应选择"
-                    )
+                    raise ValueError("命中触发了伤害前反应；请先以单目标攻击确认并等待反应选择")
                 if actor is not None and command.area_shape is not None:
                     # The normal confirmation path performs this same
                     # authoritative 3-D geometry check immediately before
@@ -9312,9 +9166,7 @@ class CombatEngineService:
                     )
                 if command.action_type == "heal" and current_target.hp == 0:
                     death_save = session.scalar(
-                        select(DeathSave).where(
-                            DeathSave.combatant_id == current_target.id
-                        )
+                        select(DeathSave).where(DeathSave.combatant_id == current_target.id)
                     )
                     if death_save is not None and death_save.dead and not command.dm_override:
                         raise ValueError(
@@ -9400,6 +9252,8 @@ class CombatEngineService:
             "feature_name": feature_name,
             "damage_multiplier": candidate.get("damage_multiplier"),
             "damage_reduction_formula": candidate.get("damage_reduction_formula"),
+            "intervention": candidate.get("intervention"),
+            "input_requirements": candidate.get("input_requirements", []),
             "eligible_damage_types": candidate.get("eligible_damage_types"),
             "dexterity_modifier": candidate.get("dexterity_modifier"),
             "class_level": candidate.get("class_level"),
@@ -9435,10 +9289,7 @@ class CombatEngineService:
                 "reaction_event": "hit_by_attack",
             },
             result_json={"action_window": metadata},
-            explanation=(
-                "攻击已确认命中，但伤害尚未落地；等待受击单位选择"
-                f"{feature_name}。"
-            ),
+            explanation=(f"攻击已确认命中，但伤害尚未落地；等待受击单位选择{feature_name}。"),
             round_number=combat.round_number,
             turn_index=combat.current_turn_index,
             summary=(
@@ -9486,11 +9337,7 @@ class CombatEngineService:
             blockers, _ = cls._grid_obstacles(session, grid)
             reactor_elevation = cls._explicit_grid_elevation_ft(reactor)
             for candidate in cls._ordered_combatants(session, combat.id):
-                if (
-                    candidate.id == reactor.id
-                    or not candidate.is_active
-                    or candidate.hp <= 0
-                ):
+                if candidate.id == reactor.id or not candidate.is_active or candidate.hp <= 0:
                     continue
                 footprint = cls._grid_footprint(candidate)
                 if not footprint:
@@ -9534,9 +9381,9 @@ class CombatEngineService:
             "geometry_authoritative": geometry_authoritative,
             "redirect": redirect,
             "save_ability": redirect.get("save_ability") or "dexterity",
-            "save_dc": 8 + int(pre_damage_metadata.get("dexterity_modifier") or 0) + int(
-                redirect.get("proficiency_bonus") or 0
-            ),
+            "save_dc": 8
+            + int(pre_damage_metadata.get("dexterity_modifier") or 0)
+            + int(redirect.get("proficiency_bonus") or 0),
             "damage_die_expression": redirect.get("damage_die_expression"),
             "damage_die_sides": redirect.get("damage_die_sides"),
             "damage_dice_count": int(redirect.get("damage_dice_count") or 2),
@@ -9559,15 +9406,11 @@ class CombatEngineService:
             },
             result_json={"action_window": metadata},
             explanation=(
-                f"{reactor.display_name} 的偏转攻击将伤害降为 0；"
-                "等待是否消耗 Focus 进行反击。"
+                f"{reactor.display_name} 的偏转攻击将伤害降为 0；等待是否消耗 Focus 进行反击。"
             ),
             round_number=combat.round_number,
             turn_index=combat.current_turn_index,
-            summary=(
-                f"{reactor.display_name}：偏转攻击伤害归零，"
-                "反击分支等待目标与骰值"
-            ),
+            summary=(f"{reactor.display_name}：偏转攻击伤害归零，反击分支等待目标与骰值"),
             idempotency_key=cls._deflect_redirect_window_key(action.id),
             status="confirmed",
         )
@@ -9604,9 +9447,7 @@ class CombatEngineService:
             )
             if existing is not None:
                 existing_target_id = (
-                    existing.target_combatant_ids[0]
-                    if existing.target_combatant_ids
-                    else None
+                    existing.target_combatant_ids[0] if existing.target_combatant_ids else None
                 )
                 existing_target = (
                     session.get(Combatant, existing_target_id)
@@ -9619,9 +9460,7 @@ class CombatEngineService:
                     "target": serialize(existing_target) if existing_target is not None else None,
                     "end_condition": self._end_condition(session, combat),
                 }
-            pending_window = self._pending_pre_damage_window(
-                session, combat_id, idempotency_key
-            )
+            pending_window = self._pending_pre_damage_window(session, combat_id, idempotency_key)
             if pending_window is not None and not skip_pre_damage_reaction:
                 return {
                     "phase": "awaiting_reaction",
@@ -9655,9 +9494,7 @@ class CombatEngineService:
             pre_damage_window: CombatAction | None = None
             pre_damage_metadata: dict[str, object] = {}
             if pre_damage_reaction_window_id is not None:
-                pre_damage_window = session.get(
-                    CombatAction, pre_damage_reaction_window_id
-                )
+                pre_damage_window = session.get(CombatAction, pre_damage_reaction_window_id)
                 pre_damage_metadata = dict(
                     (pre_damage_window.result_json if pre_damage_window else {}).get(
                         "action_window"
@@ -9675,43 +9512,50 @@ class CombatEngineService:
                 ):
                     raise ValueError("伤害前反应窗口不存在、已处理或来源不匹配")
                 if pre_damage_reaction_decision == "accept":
-                    feature_id = str(pre_damage_metadata.get("feature_id") or "")
                     if not target.reaction_available:
                         raise ValueError("该单位的反应已经用过")
                     target.reaction_available = False
                     target.version += 1
                     target.updated_at = datetime.now(UTC)
-                    if feature_id == "uncanny_dodge":
-                        command = self._halve_damage_command(command)
-                        pre_damage_metadata["applied"] = True
-                        pre_damage_metadata["applied_feature_id"] = feature_id
-                        pre_damage_metadata["applied_rule"] = "每个伤害段在防御前向下取整为一半"
-                    elif feature_id == "deflect_attacks":
-                        if pre_damage_reduction_roll is None:
-                            raise ValueError("使用偏转攻击时必须提交 d10 减伤骰结果")
-                        command, reduction_total = self._deflect_damage_command(
-                            command,
-                            reduction_roll=pre_damage_reduction_roll,
-                            dexterity_modifier=int(
+                    spec = pre_damage_metadata.get("intervention")
+                    if not isinstance(spec, dict):
+                        raise ValueError("伤害前反应窗口缺少通用执行配置")
+                    inputs = {}
+                    if pre_damage_reduction_roll is not None:
+                        inputs["reduction_roll"] = pre_damage_reduction_roll
+                    command, transform_result = apply_pre_damage_intervention(
+                        command,
+                        spec,
+                        inputs=inputs,
+                        bindings={
+                            "dexterity_modifier": int(
                                 pre_damage_metadata.get("dexterity_modifier") or 0
                             ),
-                            class_level=int(pre_damage_metadata.get("class_level") or 1),
+                            "class_level": int(pre_damage_metadata.get("class_level") or 0),
+                        },
+                    )
+                    pre_damage_metadata.update(transform_result)
+                    pre_damage_metadata["applied"] = True
+                    pre_damage_metadata["applied_feature_id"] = pre_damage_metadata.get(
+                        "feature_id"
+                    )
+                    pre_damage_metadata["damage_reduction_roll"] = pre_damage_reduction_roll
+                    if (
+                        pre_damage_reduction_roll is not None
+                        and transform_result.get("operation") == "subtract_total"
+                    ):
+                        pre_damage_metadata["damage_reduction_total"] = transform_result.get(
+                            "delta"
                         )
-                        pre_damage_metadata["applied"] = True
-                        pre_damage_metadata["applied_feature_id"] = feature_id
-                        pre_damage_metadata["damage_reduction_roll"] = pre_damage_reduction_roll
-                        pre_damage_metadata["damage_reduction_total"] = reduction_total
-                        pre_damage_metadata["damage_after_reduction"] = command.amount
-                        pre_damage_metadata["redirect_available"] = command.amount == 0
-                        pre_damage_metadata["redirect_status"] = (
-                            "dm_review_required" if command.amount == 0 else "not_applicable"
-                        )
-                        pre_damage_metadata["applied_rule"] = (
-                            "d10 + 敏捷调整值 + 职业等级；"
-                            "在防御前从攻击伤害中扣除"
-                        )
-                    else:
-                        raise ValueError("该伤害前反应暂未接入真实结算")
+                    pre_damage_metadata["damage_after_reduction"] = command.amount
+                    pre_damage_metadata["redirect_available"] = (
+                        transform_result.get("zero_damage") is True
+                    )
+                    pre_damage_metadata["redirect_status"] = (
+                        "dm_review_required"
+                        if pre_damage_metadata["redirect_available"]
+                        else "not_applicable"
+                    )
                 else:
                     pre_damage_metadata["applied"] = False
             self._validate_monster_sequence(session, combat_id, actor, command)
@@ -9847,17 +9691,13 @@ class CombatEngineService:
                 session,
                 target,
                 resulting_hp=int(after["hp"]),
-                unapplied_damage=self._state_int(
-                    resolved["result"].get("unapplied_damage")
-                ),
+                unapplied_damage=self._state_int(resolved["result"].get("unapplied_damage")),
             )
             zero_hp_feature = self._consume_zero_hp_feature_defense(
                 session,
                 target,
                 resulting_hp=int(after["hp"]),
-                unapplied_damage=self._state_int(
-                    resolved["result"].get("unapplied_damage")
-                ),
+                unapplied_damage=self._state_int(resolved["result"].get("unapplied_damage")),
             )
             if zero_hp_feature is not None:
                 after = {**after, "hp": 1}
@@ -9872,9 +9712,10 @@ class CombatEngineService:
             target.version += 1
             now = datetime.now(UTC)
             target.updated_at = now
-            if command.action_type == "damage" and int(
-                resolved["result"].get("adjusted_damage", 0)
-            ) > 0:
+            if (
+                command.action_type == "damage"
+                and int(resolved["result"].get("adjusted_damage", 0)) > 0
+            ):
                 self._mark_rage_activity(target, damaged=True)
             if (
                 command.is_attack
@@ -9892,8 +9733,7 @@ class CombatEngineService:
             )
             structured_effects: dict[str, object] = {}
             if actor is not None and (
-                command.conditions_to_apply
-                or command.forced_movement_distance_ft is not None
+                command.conditions_to_apply or command.forced_movement_distance_ft is not None
             ):
                 structured_effects = self._apply_structured_monster_effects(
                     session,
@@ -10010,9 +9850,7 @@ class CombatEngineService:
                         }
                     elif was_at_zero and int(resolved["result"]["adjusted_damage"]) > 0:
                         failures_added = 2 if effective_critical_hit else 1
-                        death_save.failures = min(
-                            3, death_save.failures + failures_added
-                        )
+                        death_save.failures = min(3, death_save.failures + failures_added)
                         death_save.successes = 0
                         death_save.stable = False
                         death_save.dead = death_save.failures >= 3
@@ -10039,41 +9877,39 @@ class CombatEngineService:
                     existing_death_save.pending_death_confirmation = False
                     existing_death_save.last_roll = None
                     existing_death_save.version += 1
-            damaged_combatant_ids = {
-                target.id
-            } if (
-                command.action_type == "damage"
-                and int(resolved["result"].get("adjusted_damage", 0)) > 0
-            ) else set()
-            moved_combatant_ids = {
-                target.id
-            } if (
-                isinstance(structured_effects.get("movement"), dict)
-                and self._state_int(
-                    structured_effects["movement"].get("moved_ft")
-                ) > 0
-            ) else set()
+            damaged_combatant_ids = (
+                {target.id}
+                if (
+                    command.action_type == "damage"
+                    and int(resolved["result"].get("adjusted_damage", 0)) > 0
+                )
+                else set()
+            )
+            moved_combatant_ids = (
+                {target.id}
+                if (
+                    isinstance(structured_effects.get("movement"), dict)
+                    and self._state_int(structured_effects["movement"].get("moved_ft")) > 0
+                )
+                else set()
+            )
             lifecycle_event_ids = damaged_combatant_ids | moved_combatant_ids
             lifecycle_event_kinds: set[str] = set()
             if damaged_combatant_ids:
                 lifecycle_event_kinds.add("damage")
             if moved_combatant_ids:
                 lifecycle_event_kinds.add("movement")
-            ended_predicated_effects, ended_predicated_summons = (
-                self._end_predicated_effects(
-                    session,
-                    combat,
-                    now=now,
-                    event_combatant_ids=lifecycle_event_ids,
-                    event_kinds=lifecycle_event_kinds,
-                    # A zero-HP transition also changes the source lifecycle
-                    # (unconscious/dead/inactive).  Evaluate those explicit
-                    # predicates in the same transaction so concentration
-                    # summons do not linger until the next turn or check.
-                    event_only=not (
-                        command.action_type == "damage" and target.hp <= 0
-                    ),
-                )
+            ended_predicated_effects, ended_predicated_summons = self._end_predicated_effects(
+                session,
+                combat,
+                now=now,
+                event_combatant_ids=lifecycle_event_ids,
+                event_kinds=lifecycle_event_kinds,
+                # A zero-HP transition also changes the source lifecycle
+                # (unconscious/dead/inactive).  Evaluate those explicit
+                # predicates in the same transaction so concentration
+                # summons do not linger until the next turn or check.
+                event_only=not (command.action_type == "damage" and target.hp <= 0),
             )
             transaction = OperationTransaction(
                 campaign_id=campaign_id,
@@ -10116,9 +9952,7 @@ class CombatEngineService:
                 result["automatic_critical"] = automatic_critical
                 result["critical_hit"] = effective_critical_hit
             if consumed_attack_effects:
-                result["consumed_effect_ids"] = [
-                    effect.id for effect in consumed_attack_effects
-                ]
+                result["consumed_effect_ids"] = [effect.id for effect in consumed_attack_effects]
             if summon_ended:
                 result["summon_ended"] = True
                 result["summon_end_reason"] = "生命值降至0"
@@ -10150,16 +9984,14 @@ class CombatEngineService:
                 }
             if command.action_type == "damage" and actor is not None:
                 action_result = command.resolution_note or (
-                    f"造成 {result['adjusted_damage']} 点"
-                    f"{command.damage_type or ''}伤害"
+                    f"造成 {result['adjusted_damage']} 点{command.damage_type or ''}伤害"
                 )
                 if command.damage_components:
                     reported_damage = int(result.get("original_damage", 0))
                     adjusted_damage = int(result.get("adjusted_damage", 0))
                     if reported_damage != adjusted_damage:
                         action_result += (
-                            f"；实际扣除 {adjusted_damage} 点"
-                            f"（原始报告 {reported_damage} 点）"
+                            f"；实际扣除 {adjusted_damage} 点（原始报告 {reported_damage} 点）"
                         )
                 if summon_ended:
                     action_result += "；召唤物生命归零，已离开战斗"
@@ -10188,8 +10020,7 @@ class CombatEngineService:
                     adjusted_damage = int(result.get("adjusted_damage", 0))
                     if reported_damage != adjusted_damage:
                         action_summary += (
-                            f"；实际扣除 {adjusted_damage} 点"
-                            f"（原始报告 {reported_damage} 点）"
+                            f"；实际扣除 {adjusted_damage} 点（原始报告 {reported_damage} 点）"
                         )
                 if summon_ended:
                     action_summary += "；召唤物生命归零，已离开战斗"
@@ -10203,9 +10034,7 @@ class CombatEngineService:
                 if window_summary:
                     action_summary += f"；{window_summary}"
             else:
-                action_summary = (
-                    f"{target.display_name} 恢复 {result['hp_gained']} 点生命"
-                )
+                action_summary = f"{target.display_name} 恢复 {result['hp_gained']} 点生命"
             action = CombatAction(
                 campaign_id=campaign_id,
                 combat_id=combat_id,
@@ -10250,14 +10079,12 @@ class CombatEngineService:
                     "；受击者未使用伤害前反应"
                     if pre_damage_reaction_decision != "accept"
                     else (
-                        "；偏转攻击生效，已按 d10+敏捷调整值+职业等级减伤"
+                        "；伤害前通用变换生效"
                         + (
-                            "；伤害归零，等待 DM 处理反击分支"
+                            "，伤害归零，等待 DM 处理后续分支"
                             if pre_damage_metadata.get("redirect_available")
                             else ""
                         )
-                        if pre_damage_metadata.get("feature_id") == "deflect_attacks"
-                        else "；直觉闪避生效，伤害按每段向下取整减半"
                     )
                 )
             session.add(action)
@@ -10271,18 +10098,14 @@ class CombatEngineService:
                     target=target,
                     defense=zero_hp_intervention,
                 )
-                prompt_id_key = self._zero_hp_intervention_prompt_id_key(
-                    zero_hp_intervention
-                )
+                prompt_id_key = self._zero_hp_intervention_prompt_id_key(zero_hp_intervention)
                 action.result_json = {
                     **dict(action.result_json or {}),
                     "phase": "awaiting_feature_save",
                     "zero_hp_intervention_prompt_id": zero_hp_intervention_prompt.id,
                     prompt_id_key: zero_hp_intervention_prompt.id,
                 }
-                action.summary += (
-                    f"；{self._zero_hp_intervention_summary(zero_hp_intervention)}"
-                )
+                action.summary += f"；{self._zero_hp_intervention_summary(zero_hp_intervention)}"
                 action.version += 1
                 action.updated_at = now
             if (
@@ -10322,7 +10145,7 @@ class CombatEngineService:
             if (
                 pre_damage_window is not None
                 and pre_damage_reaction_decision == "accept"
-                and pre_damage_metadata.get("feature_id") == "deflect_attacks"
+                and isinstance(pre_damage_metadata.get("redirect"), dict)
                 and pre_damage_metadata.get("redirect_available") is True
                 and actor is not None
             ):
@@ -10413,18 +10236,13 @@ class CombatEngineService:
                     transaction=transaction,
                 )
             session.flush()
-            if (
-                command.action_type == "damage"
-                and int(result.get("adjusted_damage", 0)) > 0
-            ):
+            if command.action_type == "damage" and int(result.get("adjusted_damage", 0)) > 0:
                 self._persist_eligible_damage_reaction_windows(
                     session,
                     combat=combat,
                     transaction=transaction,
                     damage_action=action,
-                    damaged_targets=[
-                        (target, int(result["adjusted_damage"]))
-                    ],
+                    damaged_targets=[(target, int(result["adjusted_damage"]))],
                 )
             self._persist_eligible_cast_spell_reaction_windows(
                 session,
@@ -10458,11 +10276,7 @@ class CombatEngineService:
                 "action": serialize(action),
                 "actor": serialize(actor) if actor is not None else None,
                 "target": serialize(target),
-                "death_save": (
-                    serialize(death_save)
-                    if death_save is not None
-                    else None
-                ),
+                "death_save": (serialize(death_save) if death_save is not None else None),
                 "concentration_prompts": concentration_prompts,
                 "end_condition": self._end_condition(session, combat),
             }
@@ -10516,8 +10330,15 @@ class CombatEngineService:
                 expected_feature = str(metadata.get("feature_id") or "")
                 if command.feature_id != expected_feature:
                     raise ValueError("所选反应与伤害前窗口不匹配")
-                if command.feature_id not in {"uncanny_dodge", "deflect_attacks"}:
-                    raise ValueError("该伤害前反应暂未接入真实结算")
+                intervention = metadata.get("intervention")
+                if not isinstance(intervention, dict):
+                    raise ValueError("伤害前反应窗口缺少通用执行配置")
+                validate_intervention_input(
+                    intervention,
+                    {"reduction_roll": command.reduction_roll}
+                    if command.reduction_roll is not None
+                    else {},
+                )
             target = session.get(Combatant, window.actor_combatant_id)
             if target is None or target.version != int(metadata.get("target_version") or 0):
                 raise VersionConflict(
@@ -10811,9 +10632,7 @@ class CombatEngineService:
             if actor is None or actor.combat_id != combat_id or not actor.is_active:
                 raise StateNotFoundError("feature action actor not found in combat")
             if actor.version != command.actor_version:
-                raise VersionConflict(
-                    "combatant", actor.id, command.actor_version, actor.version
-                )
+                raise VersionConflict("combatant", actor.id, command.actor_version, actor.version)
             ordered = self._ordered_combatants(session, combat_id)
             active = (
                 ordered[combat.current_turn_index]
@@ -10843,22 +10662,18 @@ class CombatEngineService:
             selected_action = command.selected_action
             condition_to_remove = command.condition_to_remove
             if command.feature_id == "cunning_action":
-                allowed_actions = {
-                    str(value) for value in action.get("allowed_actions") or ()
-                }
+                allowed_actions = {str(value) for value in action.get("allowed_actions") or ()}
                 if selected_action not in allowed_actions:
                     raise ValueError("灵巧动作必须选择疾走、撤离或躲藏")
                 if selected_action == "hide" and (
-                    command.outcome is None
-                    or not (command.adjudication_note or "").strip()
+                    command.outcome is None or not (command.adjudication_note or "").strip()
                 ):
                     raise ValueError("灵巧动作的躲藏需要 DM 提交成功/失败和裁定说明")
             elif selected_action is not None or command.outcome is not None:
                 raise ValueError("selected_action/outcome 只适用于灵巧动作")
             if command.feature_id == "self_restoration":
                 allowed_conditions = {
-                    str(value).strip()
-                    for value in action.get("allowed_conditions") or ()
+                    str(value).strip() for value in action.get("allowed_conditions") or ()
                 }
                 if condition_to_remove not in allowed_conditions:
                     raise ValueError("返本还元必须选择魅惑、恐慌或中毒状态")
@@ -10934,9 +10749,7 @@ class CombatEngineService:
                 except (KeyError, TypeError, ValueError) as exc:
                     raise ValueError("圣疗接触距离的网格位置无效，需由 DM 裁定") from exc
                 grid = (
-                    session.scalar(
-                        select(SceneGrid).where(SceneGrid.scene_id == combat.scene_id)
-                    )
+                    session.scalar(select(SceneGrid).where(SceneGrid.scene_id == combat.scene_id))
                     if combat.scene_id
                     else None
                 )
@@ -10947,8 +10760,7 @@ class CombatEngineService:
                 if command.feature_id != "lay_on_hands":
                     raise ValueError("condition_to_cure 只适用于圣疗")
                 cure_options = {
-                    str(value).strip()
-                    for value in action.get("condition_cure_options") or ()
+                    str(value).strip() for value in action.get("condition_cure_options") or ()
                 }
                 if condition_to_cure not in cure_options:
                     raise ValueError("圣疗不支持解除该状态")
@@ -10970,9 +10782,7 @@ class CombatEngineService:
             ):
                 raise ValueError("无懈可击只能在本回合开始时激活")
             if action_cost == "none" and actor.version != command.actor_version:
-                raise VersionConflict(
-                    "combatant", actor.id, command.actor_version, actor.version
-                )
+                raise VersionConflict("combatant", actor.id, command.actor_version, actor.version)
             if action_cost != "none":
                 self._validate_action_economy(
                     session,
@@ -11087,9 +10897,7 @@ class CombatEngineService:
                         session=session,
                         combat_id=combat.id,
                     ):
-                        raise ValueError(
-                            f"目标免疫状态「{condition}」，职业特性未写入"
-                        )
+                        raise ValueError(f"目标免疫状态「{condition}」，职业特性未写入")
                     if not self._has_condition(target, condition):
                         self._apply_condition_restrictions(
                             target,
@@ -11108,9 +10916,7 @@ class CombatEngineService:
                         or duration_unit not in spec.get("duration_units", ())
                         or duration_value < 1
                     ):
-                        raise ValueError(
-                            "职业特性状态积木缺少受支持的持续时间规格"
-                        )
+                        raise ValueError("职业特性状态积木缺少受支持的持续时间规格")
                     if self._condition_is_immune(
                         target,
                         condition,
@@ -11155,18 +10961,14 @@ class CombatEngineService:
                     expires = str(effect.get("expires") or "turn_start")
                     spec = feature_condition_runtime_spec(kind, condition)
                     if spec is None or expires not in spec.get("expires", ()):
-                        raise ValueError(
-                            "职业特性状态积木缺少受支持的回合边界规格"
-                        )
+                        raise ValueError("职业特性状态积木缺少受支持的回合边界规格")
                     if self._condition_is_immune(
                         target,
                         condition,
                         session=session,
                         combat_id=combat.id,
                     ):
-                        raise ValueError(
-                            f"目标免疫状态「{condition}」，职业特性未写入"
-                        )
+                        raise ValueError(f"目标免疫状态「{condition}」，职业特性未写入")
                     state_name = str(spec["state_name"])
                     runtime_effect = self._create_runtime_effect(
                         session,
@@ -11228,13 +11030,8 @@ class CombatEngineService:
                         else {}
                     )
                     existing_die = feature_dice.get(die_key)
-                    if (
-                        isinstance(existing_die, dict)
-                        and existing_die.get("available") is True
-                    ):
-                        raise ValueError(
-                            f"目标已经持有可用的{die_key}，不能同时持有两枚同类职业骰"
-                        )
+                    if isinstance(existing_die, dict) and existing_die.get("available") is True:
+                        raise ValueError(f"目标已经持有可用的{die_key}，不能同时持有两枚同类职业骰")
                     feature_dice[die_key] = {
                         "source": action.get("name"),
                         "value": die_value,
@@ -11267,11 +11064,7 @@ class CombatEngineService:
                 ).all():
                     state = self._runtime_state(effect)
                     rule_block = dict(effect.details_json or {}).get("rule_block")
-                    effect_condition = (
-                        state.get("condition")
-                        if isinstance(state, dict)
-                        else None
-                    )
+                    effect_condition = state.get("condition") if isinstance(state, dict) else None
                     if not effect_condition and isinstance(rule_block, dict):
                         effect_condition = rule_block.get("condition")
                     if self._canonical_condition(effect_condition) != self._canonical_condition(
@@ -11362,9 +11155,7 @@ class CombatEngineService:
                     minimum = max(1, 1 + wisdom_modifier)
                     maximum = 8 + wisdom_modifier
                     if not minimum <= total <= maximum:
-                        raise ValueError(
-                            f"临时生命骰结果应在 {minimum}–{maximum} 之间"
-                        )
+                        raise ValueError(f"临时生命骰结果应在 {minimum}–{maximum} 之间")
                 before_temporary = target.temporary_hp
                 target.temporary_hp = max(target.temporary_hp, total)
                 result["temporary_healing"] = {
@@ -11400,8 +11191,7 @@ class CombatEngineService:
             session.add(transaction)
             session.flush()
             summary = (
-                f"{actor.display_name} 使用职业特性"
-                f"「{action.get('name') or command.feature_id}」"
+                f"{actor.display_name} 使用职业特性「{action.get('name') or command.feature_id}」"
             )
             if isinstance(result.get("healing"), dict):
                 summary += f"；恢复 {result['healing'].get('hp_gained', 0)} 点生命"
@@ -11502,9 +11292,7 @@ class CombatEngineService:
                     [target.id for target in affected],
                     dm_override=command.dm_override,
                 )
-            target_commands = {
-                target.target_combatant_id: target for target in command.targets
-            }
+            target_commands = {target.target_combatant_id: target for target in command.targets}
             for target in affected:
                 target_command = target_commands[target.id]
                 if target.version != target_command.target_version:
@@ -11561,9 +11349,7 @@ class CombatEngineService:
             summon_ids_to_end: list[str] = []
             deactivated_non_character_ids: list[str] = []
             zero_hp_interventions: dict[str, dict[str, object]] = {}
-            damage_on_success = (
-                command.damage_total // 2 if command.half_damage_on_save else 0
-            )
+            damage_on_success = command.damage_total // 2 if command.half_damage_on_save else 0
             explicit_damage_components = bool(command.damage_components)
             damage_components = [
                 {
@@ -11589,10 +11375,10 @@ class CombatEngineService:
                     roll_totals=target_command.roll_totals,
                     damage_on_success=damage_on_success,
                     damage_on_failure=command.damage_total,
-                        is_magical=command.is_magical,
-                        use_legendary_resistance=target_command.use_legendary_resistance,
-                        use_feature_reroll=False,
-                        consume=True,
+                    is_magical=command.is_magical,
+                    use_legendary_resistance=target_command.use_legendary_resistance,
+                    use_feature_reroll=False,
+                    consume=True,
                 )
                 succeeded = bool(defense["success"])
                 component_results: list[dict[str, object]] = []
@@ -11612,8 +11398,7 @@ class CombatEngineService:
                         command,
                         [str(component["damage_type"])],
                         damage_tags=(
-                            list(component.get("damage_tags") or [])
-                            or command.damage_tags
+                            list(component.get("damage_tags") or []) or command.damage_tags
                         ),
                     )
                     component_amount = int(component["amount"])
@@ -11625,9 +11410,7 @@ class CombatEngineService:
                         component_amount = self._state_int(defense["damage"])
                     elif defense["success"]:
                         component_amount = (
-                            component_amount // 2
-                            if command.half_damage_on_save
-                            else 0
+                            component_amount // 2 if command.half_damage_on_save else 0
                         )
                     if explicit_damage_components:
                         # _resolve_save_defenses calculates Evasion and other
@@ -11640,13 +11423,9 @@ class CombatEngineService:
                             str(value) for value in defense["applied_defenses"]
                         }
                         if "evasion" in applied_save_defenses:
-                            component_amount = (
-                                0 if defense["success"] else component_amount // 2
-                            )
+                            component_amount = 0 if defense["success"] else component_amount // 2
                         elif "reflex_defense" in applied_save_defenses:
-                            raw_defenses = dict(target.snapshot_json or {}).get(
-                                "advanced_defenses"
-                            )
+                            raw_defenses = dict(target.snapshot_json or {}).get("advanced_defenses")
                             reflex = (
                                 dict(raw_defenses).get("reflex_defense")
                                 if isinstance(raw_defenses, dict)
@@ -11674,9 +11453,7 @@ class CombatEngineService:
                     current_temporary_hp = component_resolution.remaining_temporary_hp
                     component_result = asdict(component_resolution)
                     component_result["damage_tags"] = list(component.get("damage_tags") or [])
-                    component_result["conditional_defenses_applied"] = (
-                        component_applied_defenses
-                    )
+                    component_result["conditional_defenses_applied"] = component_applied_defenses
                     component_result["conditional_defenses_unresolved"] = (
                         component_unresolved_defenses
                     )
@@ -11716,9 +11493,7 @@ class CombatEngineService:
                     session,
                     target,
                     resulting_hp=current_hp,
-                    unapplied_damage=self._state_int(
-                        damage_result.get("unapplied_damage")
-                    ),
+                    unapplied_damage=self._state_int(damage_result.get("unapplied_damage")),
                 )
                 if zero_hp_feature is not None:
                     current_hp = 1
@@ -11728,9 +11503,7 @@ class CombatEngineService:
                     session,
                     target,
                     resulting_hp=current_hp,
-                    unapplied_damage=self._state_int(
-                        damage_result.get("unapplied_damage")
-                    ),
+                    unapplied_damage=self._state_int(damage_result.get("unapplied_damage")),
                 )
                 if zero_hp_intervention is not None:
                     zero_hp_interventions[target.id] = zero_hp_intervention
@@ -11743,9 +11516,7 @@ class CombatEngineService:
                     before_hp=int(before_targets[target.id]["hp"]),
                 )
                 conditions = (
-                    command.conditions_on_success
-                    if succeeded
-                    else command.conditions_on_failure
+                    command.conditions_on_success if succeeded else command.conditions_on_failure
                 )
                 structured_effects: dict[str, object] = {}
                 if conditions:
@@ -11786,9 +11557,7 @@ class CombatEngineService:
                         "applied_defenses": defense["applied_defenses"],
                         "conditional_defenses_applied": applied_conditional_defenses,
                         "conditional_defenses_unresolved": unresolved_conditional_defenses,
-                        "defense_resource_consumed": defense[
-                            "defense_resource_consumed"
-                        ],
+                        "defense_resource_consumed": defense["defense_resource_consumed"],
                         "damage": damage_result,
                         "structured_effects": structured_effects,
                         "condition_changes": condition_changes,
@@ -11808,15 +11577,13 @@ class CombatEngineService:
                 if isinstance(item.get("damage"), dict)
                 and self._state_int(item["damage"].get("adjusted_damage")) > 0
             }
-            ended_predicated_effects, ended_predicated_summons = (
-                self._end_predicated_effects(
-                    session,
-                    combat,
-                    now=now,
-                    event_combatant_ids=damaged_combatant_ids,
-                    event_kinds={"damage"} if damaged_combatant_ids else set(),
-                    event_only=True,
-                )
+            ended_predicated_effects, ended_predicated_summons = self._end_predicated_effects(
+                session,
+                combat,
+                now=now,
+                event_combatant_ids=damaged_combatant_ids,
+                event_kinds={"damage"} if damaged_combatant_ids else set(),
+                event_only=True,
             )
             transaction = OperationTransaction(
                 campaign_id=campaign_id,
@@ -11853,12 +11620,8 @@ class CombatEngineService:
                 "recharge_consumed": command.recharge_key if recharge_consumed else None,
                 "ended_summon_ids": [target.id for target in ended_summons],
                 "deactivated_non_character_ids": deactivated_non_character_ids,
-                "ended_predicated_effect_ids": [
-                    effect.id for effect in ended_predicated_effects
-                ],
-                "ended_predicated_summon_ids": [
-                    summon.id for summon in ended_predicated_summons
-                ],
+                "ended_predicated_effect_ids": [effect.id for effect in ended_predicated_effects],
+                "ended_predicated_summon_ids": [summon.id for summon in ended_predicated_summons],
             }
             action = CombatAction(
                 campaign_id=campaign_id,
@@ -11894,17 +11657,13 @@ class CombatEngineService:
                 )
                 zero_hp_intervention_prompts.append(prompt)
                 target_result = next(
-                    item
-                    for item in target_results
-                    if item.get("target_combatant_id") == target_id
+                    item for item in target_results if item.get("target_combatant_id") == target_id
                 )
                 damage_result = target_result.get("damage")
                 if isinstance(damage_result, dict):
                     damage_result["phase"] = "awaiting_feature_save"
                     damage_result["zero_hp_intervention_prompt_id"] = prompt.id
-                    damage_result[
-                        self._zero_hp_intervention_prompt_id_key(defense)
-                    ] = prompt.id
+                    damage_result[self._zero_hp_intervention_prompt_id_key(defense)] = prompt.id
             if zero_hp_intervention_prompts:
                 action_result["phase"] = "awaiting_feature_save"
                 action_result["feature_save_prompt_ids"] = [
@@ -11926,16 +11685,10 @@ class CombatEngineService:
             for target_result in target_results:
                 if not isinstance(target_result.get("damage"), dict):
                     continue
-                adjusted_damage = self._state_int(
-                    target_result["damage"].get("adjusted_damage")
-                )
-                damaged_target = affected_by_id.get(
-                    str(target_result.get("target_combatant_id"))
-                )
+                adjusted_damage = self._state_int(target_result["damage"].get("adjusted_damage"))
+                damaged_target = affected_by_id.get(str(target_result.get("target_combatant_id")))
                 if damaged_target is not None and adjusted_damage > 0:
-                    damaged_targets_for_reactions.append(
-                        (damaged_target, adjusted_damage)
-                    )
+                    damaged_targets_for_reactions.append((damaged_target, adjusted_damage))
             self._persist_eligible_damage_reaction_windows(
                 session,
                 combat=combat,
@@ -12029,24 +11782,18 @@ class CombatEngineService:
                     else None
                 )
                 target_id = (
-                    existing.target_combatant_ids[0]
-                    if existing.target_combatant_ids
-                    else None
+                    existing.target_combatant_ids[0] if existing.target_combatant_ids else None
                 )
                 target = session.get(Combatant, target_id) if target_id else None
                 effect_id = existing.result_json.get("effect_id")
                 existing_effect = (
-                    session.get(CombatEffect, effect_id)
-                    if isinstance(effect_id, str)
-                    else None
+                    session.get(CombatEffect, effect_id) if isinstance(effect_id, str) else None
                 )
                 return {
                     "action": serialize(existing),
                     "actor": serialize(actor) if actor is not None else None,
                     "target": serialize(target) if target is not None else None,
-                    "effect": (
-                        serialize(existing_effect) if existing_effect is not None else None
-                    ),
+                    "effect": (serialize(existing_effect) if existing_effect is not None else None),
                     "already_applied": True,
                 }
             if combat.status != "active":
@@ -12114,8 +11861,7 @@ class CombatEngineService:
                 and target is not None
             ):
                 immunity_names = {
-                    str(value).strip().lower()
-                    for value in list(target.condition_immunities or [])
+                    str(value).strip().lower() for value in list(target.condition_immunities or [])
                 }
                 if {"擒抱", "grappled"} & immunity_names:
                     raise ValueError("目标免疫擒抱；如有例外需由 DM 改判为失败或另行裁定")
@@ -12128,8 +11874,7 @@ class CombatEngineService:
                 and target is not None
             ):
                 immunity_names = {
-                    str(value).strip().lower()
-                    for value in list(target.condition_immunities or [])
+                    str(value).strip().lower() for value in list(target.condition_immunities or [])
                 }
                 if {"倒地", "prone"} & immunity_names:
                     raise ValueError("目标免疫倒地；如有例外需由 DM 改判为失败或另行裁定")
@@ -12308,12 +12053,15 @@ class CombatEngineService:
                             target_id=target.id,
                             state_name="hidden",
                         ):
-                            if self._end_runtime_effect(
-                                session,
-                                hidden_effect,
-                                reason="DM confirmed Search revealed the hidden combatant",
-                                now=datetime.now(UTC),
-                            ) is not None:
+                            if (
+                                self._end_runtime_effect(
+                                    session,
+                                    hidden_effect,
+                                    reason="DM confirmed Search revealed the hidden combatant",
+                                    now=datetime.now(UTC),
+                                )
+                                is not None
+                            ):
                                 ended_hidden.append(hidden_effect)
                         if ended_hidden:
                             target.version += 1
@@ -12391,10 +12139,7 @@ class CombatEngineService:
                     if combat.scene_id is None:
                         raise ValueError("object interaction requires a scene-backed combat")
                     interacted_object = session.get(SceneObject, command.object_id)
-                    if (
-                        interacted_object is None
-                        or interacted_object.scene_id != combat.scene_id
-                    ):
+                    if interacted_object is None or interacted_object.scene_id != combat.scene_id:
                         raise StateNotFoundError("scene object not found in combat scene")
                     if interacted_object.version != command.object_version:
                         raise VersionConflict(
@@ -12502,15 +12247,13 @@ class CombatEngineService:
                 and int(result["moved_ft"]) > 0
                 and target is not None
             ):
-                ended_predicated_effects, ended_predicated_summons = (
-                    self._end_predicated_effects(
-                        session,
-                        combat,
-                        now=now,
-                        event_combatant_ids={target.id},
-                        event_kinds={"movement"},
-                        event_only=True,
-                    )
+                ended_predicated_effects, ended_predicated_summons = self._end_predicated_effects(
+                    session,
+                    combat,
+                    now=now,
+                    event_combatant_ids={target.id},
+                    event_kinds={"movement"},
+                    event_only=True,
                 )
                 if ended_predicated_effects:
                     result["ended_predicated_effect_ids"] = [
@@ -12539,8 +12282,7 @@ class CombatEngineService:
                     "result": result,
                 },
                 reason=(
-                    command.adjudication_note
-                    or f"{command.action_type} resolved by combat rules"
+                    command.adjudication_note or f"{command.action_type} resolved by combat rules"
                 ),
                 source="combat",
                 confirmed_at=now,
@@ -12655,9 +12397,7 @@ class CombatEngineService:
         }
         cell_size = grid.cell_size_ft if grid is not None else 5
         if distance_ft % cell_size != 0:
-            raise ValueError(
-                f"强制位移距离必须与当前 {cell_size} 尺网格对齐，需 DM 裁定"
-            )
+            raise ValueError(f"强制位移距离必须与当前 {cell_size} 尺网格对齐，需 DM 裁定")
         steps = distance_ft // cell_size
         current = target_point
         moved_steps = 0
@@ -12724,11 +12464,7 @@ class CombatEngineService:
                 raise StateNotFoundError("target combatant not found in combat")
             if target.version != target_version:
                 raise VersionConflict("combatant", target.id, target_version, target.version)
-            source = (
-                session.get(Combatant, source_combatant_id)
-                if source_combatant_id
-                else None
-            )
+            source = session.get(Combatant, source_combatant_id) if source_combatant_id else None
             if source is None or source.combat_id != combat_id:
                 raise StateNotFoundError("source combatant not found in combat")
             before_target = serialize(target)
@@ -12743,15 +12479,13 @@ class CombatEngineService:
             target.version += 1
             target.updated_at = datetime.now(UTC)
             now = datetime.now(UTC)
-            ended_predicated_effects, ended_predicated_summons = (
-                self._end_predicated_effects(
-                    session,
-                    combat,
-                    now=now,
-                    event_combatant_ids={target.id},
-                    event_kinds={"movement"} if result["moved_ft"] > 0 else set(),
-                    event_only=True,
-                )
+            ended_predicated_effects, ended_predicated_summons = self._end_predicated_effects(
+                session,
+                combat,
+                now=now,
+                event_combatant_ids={target.id},
+                event_kinds={"movement"} if result["moved_ft"] > 0 else set(),
+                event_only=True,
             )
             if ended_predicated_effects:
                 result["ended_predicated_effect_ids"] = [
@@ -12891,11 +12625,7 @@ class CombatEngineService:
             if target.hp != 0:
                 raise ValueError("death saves are only available at 0 HP")
             death_save = self._death_save(session, target)
-            if (
-                death_save.dead
-                or death_save.stable
-                or death_save.pending_death_confirmation
-            ):
+            if death_save.dead or death_save.stable or death_save.pending_death_confirmation:
                 raise ValueError("death save track cannot advance in its current state")
             resolution = resolve_death_save(
                 roll=command.roll,
@@ -12908,9 +12638,7 @@ class CombatEngineService:
             death_save.failures = resolution.failures
             death_save.stable = resolution.stable
             death_save.dead = resolution.dead
-            death_save.pending_death_confirmation = (
-                resolution.pending_death_confirmation
-            )
+            death_save.pending_death_confirmation = resolution.pending_death_confirmation
             death_save.last_roll = command.roll
             death_save.version += 1
             if resolution.hp_restored:
@@ -12935,9 +12663,7 @@ class CombatEngineService:
                     "successes": death_save.successes,
                     "failures": death_save.failures,
                     "stable": death_save.stable,
-                    "pending_death_confirmation": (
-                        death_save.pending_death_confirmation
-                    ),
+                    "pending_death_confirmation": (death_save.pending_death_confirmation),
                 },
                 reason="DM confirmed death save roll",
                 source="combat",
@@ -13084,17 +12810,11 @@ class CombatEngineService:
             )
             if existing is not None:
                 active_id = existing.result_json.get("active_combatant_id")
-                active = (
-                    session.get(Combatant, active_id)
-                    if isinstance(active_id, str)
-                    else None
-                )
+                active = session.get(Combatant, active_id) if isinstance(active_id, str) else None
                 return {
                     "action": serialize(existing),
                     "combat": serialize(combat),
-                    "active_combatant": (
-                        serialize(active) if active is not None else None
-                    ),
+                    "active_combatant": (serialize(active) if active is not None else None),
                     "expiration_prompts": existing.result_json.get(
                         "expiration_prompts",
                         [],
@@ -13102,18 +12822,10 @@ class CombatEngineService:
                     "effect_ticks": existing.result_json.get("effect_ticks", []),
                     "effect_prompts": existing.result_json.get("effect_prompts", []),
                     "status_prompts": existing.result_json.get("status_prompts", []),
-                    "ended_runtime_effects": existing.result_json.get(
-                        "ended_runtime_effects", []
-                    ),
-                    "predicated_effects": existing.result_json.get(
-                        "predicated_effects", []
-                    ),
-                    "predicated_summons": existing.result_json.get(
-                        "predicated_summons", []
-                    ),
-                    "expired_rule_effects": existing.result_json.get(
-                        "expired_rule_effects", []
-                    ),
+                    "ended_runtime_effects": existing.result_json.get("ended_runtime_effects", []),
+                    "predicated_effects": existing.result_json.get("predicated_effects", []),
+                    "predicated_summons": existing.result_json.get("predicated_summons", []),
+                    "expired_rule_effects": existing.result_json.get("expired_rule_effects", []),
                     "recharge_rolls": existing.result_json.get("recharge_rolls", []),
                     "trait_results": existing.result_json.get("trait_results", []),
                 }
@@ -13134,9 +12846,7 @@ class CombatEngineService:
                 )
             )
             if unresolved_player_roll is not None:
-                raise ValueError(
-                    "当前仍有玩家掷骰请求未结算，不能结束怪物回合"
-                )
+                raise ValueError("当前仍有玩家掷骰请求未结算，不能结束怪物回合")
             unresolved_effect_save = session.scalar(
                 select(CombatAction).where(
                     CombatAction.combat_id == combat_id,
@@ -13226,14 +12936,18 @@ class CombatEngineService:
             if active.entity_type == "monster":
                 snapshot = dict(active.snapshot_json or {})
                 actions = snapshot.get("actions")
-                legendary_pools = {
-                    int(item["legendary_pool_max"])
-                    for item in actions
+                legendary_pools = (
+                    {
+                        int(item["legendary_pool_max"])
+                        for item in actions
+                        if isinstance(actions, list)
+                        and isinstance(item, dict)
+                        and isinstance(item.get("legendary_pool_max"), int)
+                        and int(item["legendary_pool_max"]) > 0
+                    }
                     if isinstance(actions, list)
-                    and isinstance(item, dict)
-                    and isinstance(item.get("legendary_pool_max"), int)
-                    and int(item["legendary_pool_max"]) > 0
-                } if isinstance(actions, list) else set()
+                    else set()
+                )
                 if len(legendary_pools) == 1:
                     pool_max = legendary_pools.pop()
                     snapshot["legendary_actions_max"] = pool_max
@@ -13259,10 +12973,7 @@ class CombatEngineService:
                     expires == "turn_end"
                     and previous_active is not None
                     and expires_combatant_id == previous_active.id
-                ) or (
-                    expires == "turn_start"
-                    and expires_combatant_id == active.id
-                )
+                ) or (expires == "turn_start" and expires_combatant_id == active.id)
                 end_reason = f"runtime state ended at {str(expires).replace('_', ' ')}"
                 if (
                     state.get("name") == "feature_raging"
@@ -13285,8 +12996,7 @@ class CombatEngineService:
                         combat.round_number > int(state.get("created_round") or 0)
                         or (
                             combat.round_number == int(state.get("created_round") or 0)
-                            and previous_raw_index
-                            > int(state.get("created_turn_index") or -1)
+                            and previous_raw_index > int(state.get("created_turn_index") or -1)
                         )
                     )
                 ):
@@ -13349,18 +13059,14 @@ class CombatEngineService:
             for effect in due_effects:
                 timing = effect.trigger_timing
                 due = (
-                    timing == "turn_end"
-                    and previous_active is not None
-                    and effect.target_combatant_id == previous_active.id
-                ) or (
-                    timing == "turn_start"
-                    and effect.target_combatant_id == active.id
-                ) or (
-                    timing == "round_end"
-                    and next_round > previous_round
-                ) or (
-                    timing == "round_start"
-                    and next_round > previous_round
+                    (
+                        timing == "turn_end"
+                        and previous_active is not None
+                        and effect.target_combatant_id == previous_active.id
+                    )
+                    or (timing == "turn_start" and effect.target_combatant_id == active.id)
+                    or (timing == "round_end" and next_round > previous_round)
+                    or (timing == "round_start" and next_round > previous_round)
                 )
                 if not due:
                     continue
@@ -13470,7 +13176,8 @@ class CombatEngineService:
                     effect.version += 1
                     source = (
                         session.get(Combatant, effect.source_combatant_id)
-                        if effect.source_combatant_id else None
+                        if effect.source_combatant_id
+                        else None
                     )
                     if source is not None and source.concentration.get("effect_id") == effect.id:
                         source.concentration = {}
@@ -13490,9 +13197,7 @@ class CombatEngineService:
             # lifecycle path (runtime, predicated, and round expiry).
             self._refresh_new_turn_resources(active)
             expiration_prompts = [
-                serialize(effect)
-                for effect in expiring_effects
-                if effect.status == "active"
+                serialize(effect) for effect in expiring_effects if effect.status == "active"
             ]
             active_order = self._ordered_combatants(session, combat_id)
             turn_active = (
@@ -13516,9 +13221,7 @@ class CombatEngineService:
                     "effect_ticks": effect_ticks,
                     "effect_prompts": effect_prompts,
                     "status_prompts": status_prompts,
-                    "ended_runtime_effect_ids": [
-                        effect.id for effect in ended_runtime_effects
-                    ],
+                    "ended_runtime_effect_ids": [effect.id for effect in ended_runtime_effects],
                     "predicated_effect_ids": [effect.id for effect in predicated_effects],
                     "recharge_rolls": recharge_rolls,
                     "trait_results": trait_results,
@@ -13547,9 +13250,7 @@ class CombatEngineService:
                     continue
                 effect_id = str(prompt["effect_id"])
                 target_id = str(prompt["target_combatant_id"])
-                idempotency = (
-                    f"effect-save-prompt:{effect_id}:{combat.round_number}:{target_id}"
-                )
+                idempotency = f"effect-save-prompt:{effect_id}:{combat.round_number}:{target_id}"
                 pending = CombatAction(
                     campaign_id=campaign_id,
                     combat_id=combat_id,
@@ -13585,9 +13286,7 @@ class CombatEngineService:
                 "effect_ticks": effect_ticks,
                 "effect_prompts": persisted_effect_prompts,
                 "status_prompts": status_prompts,
-                "ended_runtime_effects": [
-                    serialize(effect) for effect in ended_runtime_effects
-                ],
+                "ended_runtime_effects": [serialize(effect) for effect in ended_runtime_effects],
                 "ended_summon_ids": [summon.id for summon in ended_summons],
                 "expired_rule_effects": [serialize(effect) for effect in expired_rule_effects],
                 "recharge_rolls": recharge_rolls,
@@ -13623,15 +13322,11 @@ class CombatEngineService:
                 "effect_ticks": effect_ticks,
                 "effect_prompts": effect_prompts,
                 "status_prompts": status_prompts,
-                "ended_runtime_effects": [
-                    serialize(effect) for effect in ended_runtime_effects
-                ],
+                "ended_runtime_effects": [serialize(effect) for effect in ended_runtime_effects],
                 "predicated_effects": [serialize(effect) for effect in predicated_effects],
                 "predicated_summons": [serialize(summon) for summon in predicated_summons],
                 "ended_summons": [serialize(summon) for summon in ended_summons],
-                "expired_rule_effects": [
-                    serialize(effect) for effect in expired_rule_effects
-                ],
+                "expired_rule_effects": [serialize(effect) for effect in expired_rule_effects],
                 "recharge_rolls": recharge_rolls,
                 "trait_results": trait_results,
             }
@@ -13698,25 +13393,15 @@ class CombatEngineService:
                 session.execute(delete(Combatant).where(Combatant.id.in_(summon_ids)))
                 combatants = [fighter for fighter in combatants if fighter.id not in summon_ids]
             combatant_ids = [fighter.id for fighter in combatants]
-            session.execute(
-                delete(DeathSave).where(DeathSave.combatant_id.in_(combatant_ids))
-            )
-            session.execute(
-                delete(CombatEffect).where(CombatEffect.combat_id == combat_id)
-            )
-            session.execute(
-                delete(CombatAction).where(CombatAction.combat_id == combat_id)
-            )
+            session.execute(delete(DeathSave).where(DeathSave.combatant_id.in_(combatant_ids)))
+            session.execute(delete(CombatEffect).where(CombatEffect.combat_id == combat_id))
+            session.execute(delete(CombatAction).where(CombatAction.combat_id == combat_id))
 
             now = datetime.now(UTC)
             for fighter in combatants:
                 snapshot = dict(fighter.snapshot_json or {})
                 baseline_raw = snapshot.get("combat_start_state")
-                baseline = (
-                    baseline_raw
-                    if isinstance(baseline_raw, dict)
-                    else {}
-                )
+                baseline = baseline_raw if isinstance(baseline_raw, dict) else {}
                 fighter.hp = max(
                     0,
                     min(
@@ -13741,9 +13426,7 @@ class CombatEngineService:
                 concentration = baseline.get("concentration", {})
                 fighter.conditions = list(conditions) if isinstance(conditions, list) else []
                 fighter.concentration = (
-                    dict(concentration)
-                    if isinstance(concentration, dict)
-                    else {}
+                    dict(concentration) if isinstance(concentration, dict) else {}
                 )
                 fighter.movement_remaining_ft = fighter.speed_ft
                 fighter.action_available = True
@@ -13887,10 +13570,7 @@ class CombatEngineService:
             target = session.get(Combatant, target_id)
             if target is None:
                 continue
-            summary = (
-                f"{target.display_name} 受到伤害后需要进行体质豁免"
-                f"（DC {dc}）以维持专注"
-            )
+            summary = f"{target.display_name} 受到伤害后需要进行体质豁免（DC {dc}）以维持专注"
             prompt = CombatAction(
                 campaign_id=combat.campaign_id,
                 combat_id=combat.id,
@@ -13985,9 +13665,7 @@ class CombatEngineService:
                     )
                     snapshot = dict(target.snapshot_json or {})
                     raw_modifiers = snapshot.get("rule_modifiers")
-                    modifiers = (
-                        dict(raw_modifiers) if isinstance(raw_modifiers, dict) else {}
-                    )
+                    modifiers = dict(raw_modifiers) if isinstance(raw_modifiers, dict) else {}
                     if modifier_key in modifiers:
                         modifiers.pop(modifier_key, None)
                         if modifiers:
@@ -14100,8 +13778,7 @@ class CombatEngineService:
                 before["conditions"] = list(target.conditions or [])
                 if condition.startswith("移除："):
                     values = [
-                        value.strip()
-                        for value in condition.removeprefix("移除：").split("/")
+                        value.strip() for value in condition.removeprefix("移除：").split("/")
                     ]
                     for value in values:
                         CombatEngineService._remove_condition(target, value)
@@ -14414,8 +14091,7 @@ class CombatEngineService:
                 "target_combatant_id": target.id,
                 "requires_dm_review": True,
                 "summary": (
-                    f"{effect.name} 的持续复合伤害缺少明确表达式或伤害类型，"
-                    "本次未自动结算"
+                    f"{effect.name} 的持续复合伤害缺少明确表达式或伤害类型，本次未自动结算"
                 ),
             }
         if amount is None and not is_component_damage:
@@ -14458,13 +14134,17 @@ class CombatEngineService:
                 if component_amount is None:
                     return None
                 component_type = str(component.get("damage_type") or "").strip()
-                component_tags = [
-                    str(tag).strip()
-                    for tag in component.get("damage_tags", details.get("damage_tags", []))
-                    if str(tag).strip()
-                ] if isinstance(
-                    component.get("damage_tags", details.get("damage_tags", [])), list
-                ) else []
+                component_tags = (
+                    [
+                        str(tag).strip()
+                        for tag in component.get("damage_tags", details.get("damage_tags", []))
+                        if str(tag).strip()
+                    ]
+                    if isinstance(
+                        component.get("damage_tags", details.get("damage_tags", [])), list
+                    )
+                    else []
+                )
                 (
                     resistances,
                     vulnerabilities,
@@ -14506,9 +14186,7 @@ class CombatEngineService:
                 "original_damage": sum(int(item["original_damage"]) for item in component_results),
                 "adjusted_damage": sum(int(item["adjusted_damage"]) for item in component_results),
                 "damage_type": (
-                    component_results[0]["damage_type"]
-                    if len(component_results) == 1
-                    else "mixed"
+                    component_results[0]["damage_type"] if len(component_results) == 1 else "mixed"
                 ),
                 "modifier": next(iter(modifiers)) if len(modifiers) == 1 else "mixed",
                 "temporary_hp_lost": sum(
@@ -14639,27 +14317,22 @@ class CombatEngineService:
             )
             result["phase"] = "awaiting_feature_save"
             result["zero_hp_intervention_prompt_id"] = zero_hp_intervention_prompt.id
-            result[
-                self._zero_hp_intervention_prompt_id_key(zero_hp_intervention)
-            ] = zero_hp_intervention_prompt.id
-            action.result_json = result
-            action.summary += (
-                f"；{self._zero_hp_intervention_summary(zero_hp_intervention)}"
+            result[self._zero_hp_intervention_prompt_id_key(zero_hp_intervention)] = (
+                zero_hp_intervention_prompt.id
             )
+            action.result_json = result
+            action.summary += f"；{self._zero_hp_intervention_summary(zero_hp_intervention)}"
             action.version += 1
             action.updated_at = now
-        if (
-            (details.get("damage_expression") or is_component_damage)
-            and int(result.get("adjusted_damage", 0)) > 0
-        ):
+        if (details.get("damage_expression") or is_component_damage) and int(
+            result.get("adjusted_damage", 0)
+        ) > 0:
             self._persist_eligible_damage_reaction_windows(
                 session,
                 combat=combat,
                 transaction=transaction,
                 damage_action=action,
-                damaged_targets=[
-                    (target, int(result["adjusted_damage"]))
-                ],
+                damaged_targets=[(target, int(result["adjusted_damage"]))],
             )
         response = {"effect_id": effect.id, "target_combatant_id": target.id, "result": result}
         if zero_hp_intervention_prompt is not None:
@@ -14724,9 +14397,7 @@ class CombatEngineService:
                 "target": serialize(target),
                 "source": serialize(source) if source is not None else None,
                 "lifecycle_summon": (
-                    serialize(lifecycle_summon)
-                    if lifecycle_summon is not None
-                    else None
+                    serialize(lifecycle_summon) if lifecycle_summon is not None else None
                 ),
             }
 
@@ -14754,9 +14425,7 @@ class CombatEngineService:
             if existing_action is not None:
                 effect_id = existing_action.result_json.get("effect_id")
                 effect = (
-                    session.get(CombatEffect, effect_id)
-                    if isinstance(effect_id, str)
-                    else None
+                    session.get(CombatEffect, effect_id) if isinstance(effect_id, str) else None
                 )
                 if effect is None:
                     raise ValueError("confirmed effect record is missing")
@@ -14764,9 +14433,7 @@ class CombatEngineService:
                     "ended_effect_ids",
                     [],
                 )
-                ended_ids = (
-                    ended_ids_raw if isinstance(ended_ids_raw, list) else []
-                )
+                ended_ids = ended_ids_raw if isinstance(ended_ids_raw, list) else []
                 ended_effects = [
                     row
                     for effect_id_value in ended_ids
@@ -14780,9 +14447,7 @@ class CombatEngineService:
                 ended_summons = [
                     summon_row
                     for summon_id in (
-                        ended_summon_ids_raw
-                        if isinstance(ended_summon_ids_raw, list)
-                        else []
+                        ended_summon_ids_raw if isinstance(ended_summon_ids_raw, list) else []
                     )
                     if isinstance(summon_id, str)
                     and (summon_row := session.get(Combatant, summon_id)) is not None
@@ -14832,9 +14497,7 @@ class CombatEngineService:
                     session=session,
                     combat_id=combat_id,
                 ):
-                    raise ValueError(
-                        f"目标免疫状态「{condition}」，结构化效果未写入"
-                    )
+                    raise ValueError(f"目标免疫状态「{condition}」，结构化效果未写入")
             now = datetime.now(UTC)
             old_effects = (
                 self._active_concentration_effects(session, combat_id, source.id)
@@ -14898,16 +14561,10 @@ class CombatEngineService:
             prior_orders = [
                 int(order)
                 for prior_effect in prior_effects
-                for order in [
-                    dict(prior_effect.details_json or {}).get(
-                        "_effect_instance_order"
-                    )
-                ]
+                for order in [dict(prior_effect.details_json or {}).get("_effect_instance_order")]
                 if isinstance(order, int) and not isinstance(order, bool)
             ]
-            details_json["_effect_instance_order"] = (
-                max(prior_orders, default=0) + 1
-            )
+            details_json["_effect_instance_order"] = max(prior_orders, default=0) + 1
             condition_added = False
             if (
                 isinstance(raw_rule_block, dict)
@@ -14934,9 +14591,7 @@ class CombatEngineService:
                     target=target,
                     now=now,
                 )
-            lifecycle_ended_effects = list(
-                dict.fromkeys([*old_effects, *condition_ended_effects])
-            )
+            lifecycle_ended_effects = list(dict.fromkeys([*old_effects, *condition_ended_effects]))
             lifecycle_ended_summons = list(
                 dict.fromkeys([*ended_summons, *condition_ended_summons])
             )
@@ -15067,9 +14722,7 @@ class CombatEngineService:
             )
             if existing is not None:
                 ended_ids_raw = existing.result_json.get("ended_effect_ids", [])
-                ended_ids = (
-                    ended_ids_raw if isinstance(ended_ids_raw, list) else []
-                )
+                ended_ids = ended_ids_raw if isinstance(ended_ids_raw, list) else []
                 existing_ended = [
                     row
                     for effect_id in ended_ids
@@ -15083,9 +14736,7 @@ class CombatEngineService:
                 existing_ended_summons = [
                     summon_row
                     for summon_id in (
-                        ended_summon_ids_raw
-                        if isinstance(ended_summon_ids_raw, list)
-                        else []
+                        ended_summon_ids_raw if isinstance(ended_summon_ids_raw, list) else []
                     )
                     if isinstance(summon_id, str)
                     and (summon_row := session.get(Combatant, summon_id)) is not None
@@ -15097,9 +14748,7 @@ class CombatEngineService:
                     "roll_total": existing.result_json.get("roll_total"),
                     "success": existing.result_json.get("success"),
                     "ended_effects": [serialize(row) for row in existing_ended],
-                    "ended_summons": [
-                        serialize(row) for row in existing_ended_summons
-                    ],
+                    "ended_summons": [serialize(row) for row in existing_ended_summons],
                 }
             if target.version != command.target_version:
                 raise VersionConflict(
@@ -15147,9 +14796,7 @@ class CombatEngineService:
                         None,
                     )
                     matching_damage = (
-                        matching_result.get("damage")
-                        if isinstance(matching_result, dict)
-                        else None
+                        matching_result.get("damage") if isinstance(matching_result, dict) else None
                     )
                     if isinstance(matching_damage, dict):
                         raw_dc = matching_damage.get("concentration_check_dc")
@@ -15172,9 +14819,7 @@ class CombatEngineService:
                     self._reverse_compiled_effect(session, target, effect)
                     effect.status = "ended"
                     effect.ended_at = now
-                    effect.end_reason = (
-                        f"专注检定失败：{command.roll_total} < DC {raw_dc}"
-                    )
+                    effect.end_reason = f"专注检定失败：{command.roll_total} < DC {raw_dc}"
                     effect.version += 1
                     ended.append(effect)
                 target.concentration = {}
@@ -15229,10 +14874,7 @@ class CombatEngineService:
                 ),
                 round_number=combat.round_number,
                 turn_index=combat.current_turn_index,
-                summary=(
-                    f"{target.display_name} 专注检定"
-                    f"{'成功' if success else '失败'}"
-                ),
+                summary=(f"{target.display_name} 专注检定{'成功' if success else '失败'}"),
                 idempotency_key=idempotency_key,
                 status="confirmed",
             )
@@ -15295,9 +14937,7 @@ class CombatEngineService:
                 ended_summons = [
                     row
                     for summon_id in (
-                        ended_summon_ids_raw
-                        if isinstance(ended_summon_ids_raw, list)
-                        else []
+                        ended_summon_ids_raw if isinstance(ended_summon_ids_raw, list) else []
                     )
                     if isinstance(summon_id, str)
                     and (row := session.get(Combatant, summon_id)) is not None
@@ -15484,15 +15124,14 @@ class CombatEngineService:
                 self._reverse_compiled_effect(session, target, effect)
                 effect.status = "ended"
                 effect.ended_at = now
-                effect.end_reason = (
-                    f"重复豁免成功：{command.roll_total} >= DC {effect.save_dc}"
-                )
+                effect.end_reason = f"重复豁免成功：{command.roll_total} >= DC {effect.save_dc}"
                 effect.version += 1
                 target.version += 1
                 target.updated_at = now
                 source = (
                     session.get(Combatant, effect.source_combatant_id)
-                    if effect.source_combatant_id else None
+                    if effect.source_combatant_id
+                    else None
                 )
                 if source is not None and source.concentration.get("effect_id") == effect.id:
                     source.concentration = {}
@@ -15608,15 +15247,12 @@ class CombatEngineService:
             )
         if combat.status != "ended":
             raise ValueError("combat must be ended before settlement")
-        xp_by_character = {
-            award.character_id: award.xp for award in command.xp_awards
-        }
+        xp_by_character = {award.character_id: award.xp for award in command.xp_awards}
         writeback_by_character = {
             writeback.character_id: writeback for writeback in command.writebacks
         }
         currency_by_character = {
-            award.character_id: award.copper
-            for award in command.currency_awards
+            award.character_id: award.copper for award in command.currency_awards
         }
         loot_by_character: dict[str, list[Any]] = {}
         for award in command.loot_awards:
@@ -15656,15 +15292,11 @@ class CombatEngineService:
                     or combatant.entity_type != "character"
                     or combatant.entity_id != character_id
                 ):
-                    raise ValueError(
-                        "writeback combatant must reference the selected character"
-                    )
+                    raise ValueError("writeback combatant must reference the selected character")
                 if writeback.write_hp:
                     after["hp"] = min(character.max_hp, combatant.hp)
                 if writeback.write_conditions:
-                    condition_names = CombatEngineService._condition_names(
-                        combatant.conditions
-                    )
+                    condition_names = CombatEngineService._condition_names(combatant.conditions)
             after["version"] = character.version + 1
             changes.append(
                 {
@@ -15692,10 +15324,7 @@ class CombatEngineService:
                         "wallet_will_be_created": wallet is None,
                         "before_copper": wallet.copper if wallet is not None else 0,
                         "award_copper": copper,
-                        "after_copper": (
-                            wallet.copper if wallet is not None else 0
-                        )
-                        + copper,
+                        "after_copper": (wallet.copper if wallet is not None else 0) + copper,
                     }
                 )
             for award in loot_by_character.get(character_id, []):
@@ -15722,9 +15351,7 @@ class CombatEngineService:
     ) -> dict[str, Any]:
         with Session(self.engine) as session:
             existing = session.scalar(
-                select(CombatSettlement).where(
-                    CombatSettlement.combat_id == combat_id
-                )
+                select(CombatSettlement).where(CombatSettlement.combat_id == combat_id)
             )
             if existing is not None:
                 raise ValueError("combat is already settled")
@@ -15749,9 +15376,7 @@ class CombatEngineService:
                 "loot_changes": loot_changes,
                 "scene_entity_changes": scene_changes,
                 "total_xp": sum(award.xp for award in command.xp_awards),
-                "total_copper": sum(
-                    award.copper for award in command.currency_awards
-                ),
+                "total_copper": sum(award.copper for award in command.currency_awards),
                 "notes": command.notes,
             }
 
@@ -15791,7 +15416,9 @@ class CombatEngineService:
                 if command.resolution_type == "victory"
                 and combatant.entity_type == "monster"
                 and combatant.hp <= 0
-                else participant.role if participant is not None else None
+                else participant.role
+                if participant is not None
+                else None
             )
             if entity.hp == combatant.hp and (
                 participant is None or participant.role == after_role
@@ -15834,11 +15461,7 @@ class CombatEngineService:
             )
             if existing is not None:
                 character_ids_raw = existing.result_json.get("character_ids", [])
-                character_ids = (
-                    character_ids_raw
-                    if isinstance(character_ids_raw, list)
-                    else []
-                )
+                character_ids = character_ids_raw if isinstance(character_ids_raw, list) else []
                 existing_characters: list[Character] = []
                 for character_id in character_ids:
                     if isinstance(character_id, str):
@@ -15846,9 +15469,7 @@ class CombatEngineService:
                         if character is not None:
                             existing_characters.append(character)
                 wallet_ids_raw = existing.result_json.get("wallet_ids", [])
-                wallet_ids = (
-                    wallet_ids_raw if isinstance(wallet_ids_raw, list) else []
-                )
+                wallet_ids = wallet_ids_raw if isinstance(wallet_ids_raw, list) else []
                 existing_wallets: list[Wallet] = []
                 for wallet_id in wallet_ids:
                     if isinstance(wallet_id, str):
@@ -15873,9 +15494,7 @@ class CombatEngineService:
                     "loot_items": [serialize(row) for row in existing_items],
                 }
             other_settlement = session.scalar(
-                select(CombatSettlement).where(
-                    CombatSettlement.combat_id == combat_id
-                )
+                select(CombatSettlement).where(CombatSettlement.combat_id == combat_id)
             )
             if other_settlement is not None:
                 raise ValueError("combat is already settled")
@@ -15953,9 +15572,7 @@ class CombatEngineService:
                         wallet_id=wallet.id,
                         amount_copper=award_copper,
                         kind="adjustment",
-                        idempotency_key=(
-                            f"combat-settlement:{combat.id}:{character_id}"
-                        ),
+                        idempotency_key=(f"combat-settlement:{combat.id}:{character_id}"),
                         metadata_json={
                             "source": "combat_settlement",
                             "combat_id": combat.id,
@@ -15995,9 +15612,7 @@ class CombatEngineService:
                         NPC, scene_change["entity_id"]
                     )
                 else:
-                    scene_entity = session.get(
-                        MonsterInstance, scene_change["entity_id"]
-                    )
+                    scene_entity = session.get(MonsterInstance, scene_change["entity_id"])
                 if scene_entity is None:
                     continue
                 scene_entity.hp = int(scene_change["after"]["hp"])
@@ -16046,20 +15661,13 @@ class CombatEngineService:
                 transaction_id=transaction.id,
                 status="confirmed",
                 resolution_type=command.resolution_type,
-                xp_allocations=[
-                    award.model_dump(mode="json") for award in command.xp_awards
-                ],
-                writebacks=[
-                    writeback.model_dump(mode="json")
-                    for writeback in command.writebacks
-                ],
+                xp_allocations=[award.model_dump(mode="json") for award in command.xp_awards],
+                writebacks=[writeback.model_dump(mode="json") for writeback in command.writebacks],
                 result_json={
                     "character_ids": list(characters),
                     "condition_ids": [condition.id for condition in created_conditions],
                     "total_xp": sum(award.xp for award in command.xp_awards),
-                    "total_copper": sum(
-                        award.copper for award in command.currency_awards
-                    ),
+                    "total_copper": sum(award.copper for award in command.currency_awards),
                     "currency_changes": currency_changes,
                     "wallet_ids": [wallet.id for wallet in updated_wallets],
                     "loot_changes": loot_changes,
@@ -16076,12 +15684,9 @@ class CombatEngineService:
                 "settlement": serialize(settlement),
                 "combat": serialize(combat),
                 "characters": [
-                    serialize(characters[character_id])
-                    for character_id in sorted(characters)
+                    serialize(characters[character_id]) for character_id in sorted(characters)
                 ],
-                "conditions": [
-                    serialize(condition) for condition in created_conditions
-                ],
+                "conditions": [serialize(condition) for condition in created_conditions],
                 "wallets": [serialize(wallet) for wallet in updated_wallets],
                 "loot_items": [serialize(item) for item in created_items],
             }
