@@ -1338,3 +1338,11 @@ backend/.venv/bin/python -m pytest -q backend/tests
 - 验证：后端全量 `pytest -q backend/tests` 485 项通过；Ruff、compileall、`git diff --check` 通过。仅有既有 Starlette/httpx 弃用警告。本轮没有前端源码改动，因此未宣称浏览器验收。
 - 本轮只提交后端四个任务相关文件。用户/其他任务的 `frontend/src/ui/sceneGridGenerator.ts`、对应测试、`backend/tests/integrations/`、`backend/tests/ollama.py` 和 terrain takeover 文档均未纳入提交。
 - 这一切片完成度：职业特性“通用目标策略执行” `100%`；仍属于固定大项“职业/子职业 1–20 级运行时闭环”，不新增第五个缺口。
+# 2026-08-06 职业状态生命周期共享积木规格
+
+- 代码提交 `e67f771`：把职业特性状态积木的生命周期规格集中到 `FEATURE_CONDITION_RUNTIME_SPECS`，统一声明状态到运行时 effect 的映射、分钟/回合持续单位和回合边界；编译器门禁与战斗执行器共同消费，避免状态名和清理策略分散在特性分支中。
+- 狂暴、先天术法、无懈可击、隐形、鲁莽攻击、稳定瞄准继续复用现有通用 runtime effect 生命周期：重复激活拒绝、状态所有权保留、回合/持续时间结束自动清理；非法或未注册状态积木 fail-closed。
+- 没有新增第六类职业积木，仍复用 `action` 积木中的结构化状态效果；新增共享规格回归覆盖有效持续规格和未知状态拒绝。
+- 验证：后端全量 `pytest -q backend/tests` 通过（当前 485 项）；Ruff、compileall、`git diff --check` 通过。仅有既有 Starlette/httpx 弃用警告。本轮只有后端改动，未宣称浏览器验收。
+- 用户/其他任务的 `frontend/src/ui/sceneGridGenerator.ts`、对应测试、`backend/tests/integrations/`、`backend/tests/ollama.py` 和 terrain takeover 文档未纳入提交。
+- 这一切片完成度：职业特性“共享状态生命周期规格与执行门禁” `100%`；仍属于固定大项“职业/子职业 1–20 级运行时闭环”，不新增第五个缺口。
