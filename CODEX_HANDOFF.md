@@ -1,3 +1,13 @@
+# 2026-08-07 post-hit / pre-damage 通用执行器生产闭环
+
+- 代码提交 `97f7432`：将命中后后续链接入真实玩家攻击 API：权威命中 → `_eligible_attack_riders()` → 持久化 `PlayerActionRequest` → 玩家/DM 输入 → 目标豁免 → 请求版本 CAS → 角色资源 CAS → condition/modifier 效果提交 → 一次性效果消费与幂等重放。公共 generic action request 拒绝保留的 `post_hit_rider` 类型和 `post-hit:` 幂等键；内部请求带 `created_by=combat_engine`，解析器校验来源、配置 ID、战斗/角色/目标边界。
+- 真正通用积木：`attack_rider` 的可选发动、持久化 pending activation/choice/save、通用 DC/输入/资源提交、生命周期（来源/目标回合边界、下一次攻击/豁免）和 condition/modifier 真实写入；`pre_damage_intervention` 的标签触发、表达式绑定（如 `class_level*5`）和通用伤害变换。执行器不识别 `stunning_strike`、`slow_fall` 等特性 ID；权威攻击标签随请求保存，不能由客户端 `special_inputs` 伪造扩张。
+- 生产配置使用者：震慑拳（每回合一次、功力、体质豁免、DC 8+PB+WIS、失败震慑/成功减速+下一次攻击优势）与轻身坠（坠落伤害前、武僧等级×5 减伤）。额外测试 fixture 使用不同 ID、不同豁免和中毒效果，和生产配置共用同一持久化/效果执行器；fixture 不是生产特性。
+- 真实状态行为：震慑拳会原子扣功力、写入速度减半/震慑/一次性攻击优势并在消费后结束；轻身坠真实把 40 点坠落伤害变为 15 点并消耗反应。请求跨当前回合、目标/战斗失效或资源不足时 fail-closed；有待处理 post-hit 窗口时不推进 `end_turn_after`，避免延迟结算错误计算生命周期。
+- 自动化数量（固定分母 258）：`full 112→117`、`partial 42→39`、`dm_only 104→102`，完整自动化率 `43.4%→45.3%`，净增 5。新增 full 为震慑拳、轻身坠；直觉闪避、拨挡攻击、拨挡能量是已有真实反应链的账面纠正（`partial→full`），不重复称为新积木。只有配置驱动、真实消费者、状态/资源写入、输入链、持久化和幂等同时成立才计 full。
+- 仍需玩家/DM 输入：是否发动、选择分支、目标豁免总值以及任何实际骰值；系统不替玩家掷骰。仍未自动化：带伤害骰的 post-hit rider 持久化伤害提交（当前 fail-closed）、凶蛮打击/诡诈打击完整多选和移动、受祝击/元素之怒升级分支、未结构化的职业/子职业规则。不能把领域解析器、旧专用适配器、测试 fixture 或“字段已支持但无真实消费者”误报为通用积木/full。
+- 验证：相关 attack rider、feature runtime、progression、combat engine、player-room API 定向回归通过；后端全量 `pytest -q backend/tests`、Ruff、compileall、`git diff --check` 全部通过；仅有既有 Starlette/httpx 弃用警告。代码与本交接文档分开提交；用户未跟踪的 `backend/tests/integrations/` 与 `backend/tests/ollama.py` 保持未暂存。本轮无前端源码变更，未做也未声称浏览器验收。
+
 # 2026-08-07 通用掷骰干预与首份 post-hit rider 生产接线
 
 - 代码提交 `9e3dcd6`。`PlayerRollResolutionCommand` 新增通用 `roll_intervention_id/inputs`；失败 D20 检定会从角色冻结的 `feature_runtime.actions` 中按触发和结构化资格筛选配置，持久化进入 `awaiting_roll_intervention`，第二次确认调用 ID 无关的 `apply_roll_intervention()`，并在同一确认事务中按返回的资源提交计划扣除角色资源、同步战斗快照。动作已确认后重放直接返回原结果，不会再次消费。
