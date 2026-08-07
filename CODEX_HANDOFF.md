@@ -1631,3 +1631,12 @@ backend/.venv/bin/python -m pytest -q backend/tests
 - 仅提升“选择/授予行”状态；明确排除“子职特性/子职业特性”占位行，具体 241 条子职效果仍由各自运行时积木独立审计，不会因为选择已持久化而误升。
 - 固定分母 499 的审计从 `full 170 / partial 238 / dm_only 91` 变为 `full 182 / partial 238 / dm_only 79`，本批真实净增 `full +12`；距离用户目标 `full≥223` 还差 41。预审 readiness 为 `already_full 182 / missing_runtime_contract 208 / consumer_partial 49 / needs_contract_review 14 / manual_boundary 11 / missing_source 35`。
 - 验证：升级/子职矩阵定向回归、后端全量 `backend/.venv/bin/pytest -q backend/tests`、Ruff、compileall、`git diff --check` 全部通过（仅既有 Starlette/httpx 弃用警告）。未跟踪的 `backend/tests/integrations/`、`backend/tests/ollama.py` 保持不动。
+# 2026-08-08 长执行续批：第三施法者、类型化熟练、20级属性与心灵防御
+
+- 本轮代码提交（与交接文档分开）：`60140bc`、`68d16ef`、`5c9defc`、`d190a42`、`f3112e7`；对应文档提交：`98fab4e`、`98ba404`、`95538e5`、`1caf440`、`4164e11`。
+- 固定分母 499 的最新严格审计：`full 189 / partial 233 / dm_only 77`。相对接管时 `full 182`，本轮真实净增 7；不能把配置候选数或选择持久化本身当成 full。
+- 新增第三施法者 `施法` 子职合同：奥法骑士、诡术师的既有第三施法者法术位、准备法术校验和 `spell_economy_service` 消费被显式登记为 full；没有伪造法术列表。
+- 新增类型化选择熟练合同：逸闻学院附赠熟练的三项技能写入 `Character.skills` 并进入真实技能检定；战斗大师战争学者使用 `skill:<名称>` 与 `tool:<名称>` 分组选择，写入技能/工具熟练；未知、重复、错误分组选项 fail-closed。
+- 新增固定属性提升合同：野蛮人原初斗士、武僧天人合一在升级事务中真实应用 +4 与 25 上限，体质变化沿既有 HP 调整链计算；后续属性提升读取已持有的类型化属性上限。
+- 新增心灵防御：心灵伤害抗性由权威伤害防御链消费；只有对抗/终止魅惑或恐慌的豁免才获得优势，普通豁免不会误加。
+- 本轮定向测试、后端全量测试、Ruff、compileall、`git diff --check` 已通过；仅有既有 Starlette/httpx 弃用警告。`backend/tests/integrations/` 与 `backend/tests/ollama.py` 仍未跟踪、未纳入提交。
