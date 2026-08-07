@@ -2266,6 +2266,8 @@ def _runtime_sections(definition: Mapping[str, Any]) -> tuple[str, ...]:
         sections.append("spellcasting")
     if definition.get("proficiencies"):
         sections.append("proficiencies")
+    if isinstance(definition.get("advancement"), Mapping):
+        sections.append("advancement")
     return tuple(sections)
 
 
@@ -2296,6 +2298,7 @@ def _runtime_entry_reasons(definition: Mapping[str, Any]) -> tuple[str, ...]:
         definition.get("triggers") or (),
         definition.get("attack_riders") or (),
         definition.get("proficiencies") or (),
+        (definition.get("advancement"),),
     )
     for entries in entry_groups:
         for raw in entries or ():
@@ -2370,6 +2373,9 @@ def feature_runtime_contract(
     for raw in definition.get("proficiencies") or ():
         if isinstance(raw, Mapping):
             statuses.append(_entry_automation_status(raw))
+    advancement = definition.get("advancement")
+    if isinstance(advancement, Mapping):
+        statuses.append(_entry_automation_status(advancement))
     prepared_spell_list = definition.get("prepared_spell_list")
     if isinstance(prepared_spell_list, Mapping):
         statuses.append(_entry_automation_status(prepared_spell_list))

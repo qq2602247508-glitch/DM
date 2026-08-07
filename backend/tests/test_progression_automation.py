@@ -93,8 +93,22 @@ def test_core_contract_counts_move_only_to_evidence_backed_statuses() -> None:
             status.update(
                 item["automation_status"] for item in contract["feature_contracts"]
             )
-    assert status == {"full": 132, "partial": 35, "dm_only": 91}
+    assert status == {"full": 144, "partial": 35, "dm_only": 79}
     assert sum(status.values()) == 258
+
+
+def test_subclass_table_grant_is_full_without_promoting_subclass_effects() -> None:
+    bard = next(rule for rule in _core_rules() if rule.name == "吟游诗人")
+    contract = core_class_level_runtime_contract(bard, 3)
+    subclass = next(
+        item for item in contract["feature_contracts"] if item["name"] == "吟游诗人子职"
+    )
+    assert subclass["automation_status"] == "full"
+    assert "advancement" in subclass["runtime_sections"]
+    assert subclass["requires_dm_adjudication"] is False
+    assert any(
+        item["key"] == "subclass" for item in contract["choice_requirements"]
+    )
 
 
 def test_typed_choices_separate_same_level_requirements_and_apply_generic_grants() -> None:

@@ -2348,6 +2348,24 @@ def core_feature_grants(
             tracked_scaling_keys=scaling_keys,
             modifiers=modifier_profiles,
         )
+        if (
+            ("子职" in feature or "子职业" in feature)
+            and "子职特性" not in feature
+            and "子职业特性" not in feature
+        ):
+            # The class-table row is the subclass-selection grant itself.
+            # Concrete subclass features are separate persisted grants and
+            # remain independently audited.
+            registry["advancement"] = {
+                "kind": "subclass_selection",
+                "choice_key": "subclass",
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "advancement_service",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
         progression_profile = progression_automation_profile(feature)
         contract = feature_runtime_contract(
             feature_name=feature,
