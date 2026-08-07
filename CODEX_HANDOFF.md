@@ -1625,3 +1625,9 @@ backend/.venv/bin/python -m pytest -q backend/tests
 - 固定分母 499 的审计从 `full 168 / partial 240 / dm_only 91` 变为 `full 170 / partial 238 / dm_only 91`，本批真实净增 `full +2`；距离用户目标 `full≥223` 还差 53。预审 readiness 为 `already_full 170 / missing_runtime_contract 220 / consumer_partial 49 / needs_contract_review 14 / manual_boundary 11 / missing_source 35`，仍不是可直接承诺的新增数。
 - 仍未自动化：其他骑手的资源/豁免/多分支组合、狂热者 14 级复生反应、魂刃撕裂心智、刺客致命袭杀等复杂特性；本批没有改动前端，也没有把 DM/选择边界误报为 full。
 - 验证：后端全量 `backend/.venv/bin/pytest -q backend/tests`、Ruff、compileall、`git diff --check` 通过。未跟踪的 `backend/tests/integrations/`、`backend/tests/ollama.py` 保持不动。
+# 2026-08-08 长执行续批：核心职业子职选择授予合同
+
+- 核心职业表中 12 条“获得子职/子职业”选择授予行接入通用 `advancement` contract：选择键为 `subclass`，消费者为现有 `advancement_service`，实际候选校验和 `Character.subclass_choices` 持久化沿用既有升级事务。
+- 仅提升“选择/授予行”状态；明确排除“子职特性/子职业特性”占位行，具体 241 条子职效果仍由各自运行时积木独立审计，不会因为选择已持久化而误升。
+- 固定分母 499 的审计从 `full 170 / partial 238 / dm_only 91` 变为 `full 182 / partial 238 / dm_only 79`，本批真实净增 `full +12`；距离用户目标 `full≥223` 还差 41。预审 readiness 为 `already_full 182 / missing_runtime_contract 208 / consumer_partial 49 / needs_contract_review 14 / manual_boundary 11 / missing_source 35`。
+- 验证：升级/子职矩阵定向回归、后端全量 `backend/.venv/bin/pytest -q backend/tests`、Ruff、compileall、`git diff --check` 全部通过（仅既有 Starlette/httpx 弃用警告）。未跟踪的 `backend/tests/integrations/`、`backend/tests/ollama.py` 保持不动。
