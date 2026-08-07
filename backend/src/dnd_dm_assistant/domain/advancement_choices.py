@@ -1001,6 +1001,33 @@ _SUBCLASS_ABILITY_NAMES = {
 # adapter/configuration layer; the consumer only reads typed defense fields and
 # never dispatches on a subclass or feature identifier.
 SUBCLASS_FEATURE_RUNTIME_CONFIGS: dict[str, dict[str, Any]] = {
+    # Assassin's Tools is a fixed proficiency grant.  It uses the same
+    # persisted proficiency list as class/background grants; the compiler and
+    # advancement transaction consume only typed entries, never this feature
+    # name.
+    "刺客工具": {
+        "combat_start": {"modifiers": [], "defenses": []},
+        "proficiencies": [
+            {
+                "kind": "tool",
+                "name": "易容工具",
+                "operation": "grant",
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            },
+            {
+                "kind": "tool",
+                "name": "毒药工具",
+                "operation": "grant",
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            },
+        ],
+        "resources": {},
+        "actions": {},
+        "triggers": [],
+        "attack_riders": [],
+    },
     # These two entries use the same roll-intervention and resource-lifecycle
     # consumers as core features.  The feature name is only the source-side
     # configuration selector; the executor consumes typed trigger, eligibility,
@@ -1474,6 +1501,9 @@ def subclass_feature_runtime_definition(
             if not isinstance(entries, list):
                 continue
             block[group] = [{**dict(entry), **source} for entry in entries]
+    entries = runtime.get("proficiencies")
+    if isinstance(entries, list):
+        runtime["proficiencies"] = [{**dict(entry), **source} for entry in entries]
     return runtime
 
 

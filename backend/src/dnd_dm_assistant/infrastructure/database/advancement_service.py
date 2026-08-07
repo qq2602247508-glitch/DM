@@ -1214,6 +1214,22 @@ class AdvancementService:
                 if not override:
                     raise ValueError(message)
                 warnings.append("DM 已覆盖：" + message)
+
+        # Fixed typed subclass grants (for example tool proficiencies) are
+        # applied to the same authoritative sheet list as class choices.
+        # Choice-bound grants remain unresolved until the existing explicit
+        # subclass choice request is supplied.
+        subclass_proficiencies = list(progression_choice_result["proficiencies"])
+        for grant in subclass_runtime["grants"]:
+            runtime = grant.get("runtime") if isinstance(grant, dict) else None
+            registry = runtime.get("registry") if isinstance(runtime, dict) else None
+            entries = registry.get("proficiencies") if isinstance(registry, dict) else None
+            for entry in entries if isinstance(entries, list) else ():
+                if not isinstance(entry, dict) or entry.get("operation") != "grant":
+                    continue
+                name = str(entry.get("name") or "").strip()
+                if name and name not in subclass_proficiencies:
+                    subclass_proficiencies.append(name)
         scaling_updates = progression_scaling_updates(rule, target_class_level)
         new_features = list(
             core_feature_grants(
@@ -1409,7 +1425,7 @@ class AdvancementService:
                 "resources": after_resources,
                 "features": after_features,
                 "actions": after_actions,
-                "proficiencies": list(progression_choice_result["proficiencies"]),
+                "proficiencies": subclass_proficiencies,
                 "skills": dict(progression_choice_result["skills"]),
                 "feature_runtime": runtime_registry,
             },

@@ -2253,6 +2253,8 @@ def _runtime_sections(definition: Mapping[str, Any]) -> tuple[str, ...]:
         sections.append("attack_riders")
     if definition.get("spellcasting"):
         sections.append("spellcasting")
+    if definition.get("proficiencies"):
+        sections.append("proficiencies")
     return tuple(sections)
 
 
@@ -2282,6 +2284,7 @@ def _runtime_entry_reasons(definition: Mapping[str, Any]) -> tuple[str, ...]:
         else (),
         definition.get("triggers") or (),
         definition.get("attack_riders") or (),
+        definition.get("proficiencies") or (),
     )
     for entries in entry_groups:
         for raw in entries or ():
@@ -2613,6 +2616,7 @@ def compile_feature_runtime_registry(
     spellcasting_registry: list[dict[str, Any]] = []
     trigger_registry: list[dict[str, Any]] = []
     riders: dict[str, dict[str, Any]] = {}
+    proficiency_registry: list[dict[str, Any]] = []
     feature_contracts: dict[str, dict[str, Any]] = {}
     attack_action_count = 1
 
@@ -2735,6 +2739,10 @@ def compile_feature_runtime_registry(
         if isinstance(raw_spellcasting, Mapping):
             spellcasting_registry.append(deepcopy(dict(raw_spellcasting)))
 
+        for raw_proficiency in definition.get("proficiencies") or ():
+            if isinstance(raw_proficiency, Mapping):
+                proficiency_registry.append(deepcopy(dict(raw_proficiency)))
+
         for raw_trigger in definition.get("triggers") or ():
             if isinstance(raw_trigger, Mapping):
                 trigger_registry.append(deepcopy(dict(raw_trigger)))
@@ -2793,6 +2801,7 @@ def compile_feature_runtime_registry(
         "resources": resource_registry,
         "actions": action_registry,
         "spellcasting": spellcasting_registry,
+        "proficiencies": proficiency_registry,
         "triggers": trigger_registry,
         "attack_riders": list(riders.values()),
         "feature_contracts": contracts,

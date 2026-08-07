@@ -5,10 +5,19 @@ from pathlib import Path
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 AUDIT_PATH = REPOSITORY_ROOT / "scripts/audit-class-feature-coverage.py"
+PLANNER_PATH = REPOSITORY_ROOT / "scripts/plan-feature-automation-migrations.py"
 
 
 def _audit_module():
     spec = importlib.util.spec_from_file_location("class_feature_audit", AUDIT_PATH)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _planner_module():
+    spec = importlib.util.spec_from_file_location("feature_migration_planner", PLANNER_PATH)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
@@ -42,3 +51,41 @@ def test_source_audit_does_not_hide_complete_rules_in_dm_only_bucket() -> None:
     assert set(rows) == {"创生圣言", "弃绝众敌", "复原之触", "德鲁伊语", "原初职能"}
     assert all(row["source_parse"] == "description_located" for row in rows.values())
     assert all(row["runtime_status"] == "dm_only" for row in rows.values())
+
+
+def test_migration_planner_keeps_fixed_scope_and_status_counts() -> None:
+    report = _planner_module().plan()
+    assert report["audit_scope"]["total_features"] == 499
+    assert report["audit_status_counts"] == {
+        "full": 162,
+        "partial": 245,
+        "dm_only": 92,
+    }
+    assert report["readiness_counts"] == {
+        "consumer_partial": 50,
+        "already_full": 162,
+        "missing_runtime_contract": 227,
+        "missing_source": 35,
+        "manual_boundary": 11,
+        "needs_contract_review": 14,
+    }
+
+
+def test_migration_planner_never_promotes_non_full_rows() -> None:
+    report = _planner_module().plan()
+    for row in report["rows"]:
+        if row["runtime_status"] != "full":
+            assert row["readiness"] != "already_full"
+        if row["readiness"] == "already_full":
+            assert row["runtime_status"] == "full"
+
+
+def test_migration_planner_declares_a_consumer_for_every_template() -> None:
+    report = _planner_module().plan()
+    assert report["templates"]
+    for template in report["templates"].values():
+        assert template["consumer_status"] in {
+            "production_closed",
+            "production_partial",
+            "manual_only",
+        }

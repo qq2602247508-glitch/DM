@@ -193,6 +193,31 @@ def test_subclass_aura_resistance_uses_ranged_damage_consumer() -> None:
     assert defense["ranged_passive"]["effect_kind"] == "damage_resistance"
 
 
+def test_fixed_subclass_tool_proficiency_uses_typed_sheet_consumer() -> None:
+    result = subclass_runtime_grants(
+        {
+            "name": "刺客",
+            "feature_definitions": [
+                {
+                    "id": "assassin-tools",
+                    "name": "刺客工具 Assassin's Tools",
+                    "class_level": 3,
+                    "description": "你获得一套易容工具和一套毒药工具，并获得这些工具的熟练。",
+                    "source_record_id": "assassin-tools",
+                }
+            ],
+        },
+        class_name="游荡者",
+        target_class_level=3,
+    )
+    grant = result["grants"][0]
+    assert grant["runtime"]["automation_status"] == "full"
+    assert [item["name"] for item in grant["runtime"]["registry"]["proficiencies"]] == [
+        "易容工具",
+        "毒药工具",
+    ]
+
+
 def test_open_hand_wholeness_uses_generic_healing_and_lifecycle_blocks() -> None:
     result = subclass_runtime_grants(
         {

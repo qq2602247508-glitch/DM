@@ -293,6 +293,63 @@ def test_asi_is_an_atomic_sheet_grant_and_preview_exposes_runtime_registry(
     )
 
 
+def test_fixed_assassin_tools_proficiency_persists_through_level_up(
+    matrix_client: TestClient,
+    matrix_campaign: dict[str, Any],
+    character_options: dict[str, Any],
+) -> None:
+    assassin = next(
+        item["name"]
+        for item in _class_option(character_options, "游荡者")["subclasses"]
+        if "刺客" in item["name"]
+    )
+    rogue = _create_character(
+        matrix_client,
+        matrix_campaign["id"],
+        class_name="游荡者",
+        level=3,
+        experience=2_700,
+        suffix="刺客工具真实授予",
+        subclass_name=assassin,
+    )
+    path = _preview_path(matrix_campaign["id"], rogue["id"])
+    response = matrix_client.post(
+        path,
+        json={
+            "character_version": rogue["version"],
+            "class_name": "游荡者",
+            "ability_increases": {"dexterity": 2},
+        },
+    )
+    assert response.status_code == 200, response.text
+    preview = response.json()
+    assert "易容工具" in preview["after"]["proficiencies"]
+    assert "毒药工具" in preview["after"]["proficiencies"]
+    grant = next(
+        item
+        for item in preview["features_gained"]
+        if item.get("name", "").startswith("刺客工具")
+    )
+    assert grant["runtime"]["automation_status"] == "full"
+
+    confirmed = matrix_client.post(
+        path.replace("/preview", "/confirm"),
+        json={
+            "character_version": rogue["version"],
+            "class_name": "游荡者",
+            "ability_increases": {"dexterity": 2},
+            "preview_token": preview["preview_token"],
+            "idempotency_key": "assassin-tools-proficiency-0001",
+        },
+    )
+    assert confirmed.status_code == 200, confirmed.text
+    persisted = matrix_client.get(
+        f"/api/v1/campaigns/{matrix_campaign['id']}/characters/{rogue['id']}"
+    ).json()
+    assert "易容工具" in persisted["proficiencies"]
+    assert "毒药工具" in persisted["proficiencies"]
+
+
 def test_typed_expertise_choice_persists_and_changes_real_skill_modifier(
     matrix_client: TestClient,
     matrix_campaign: dict[str, Any],
