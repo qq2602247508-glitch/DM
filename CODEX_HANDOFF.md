@@ -1,3 +1,15 @@
+# 2026-08-07 资源生命周期第二批：表达式治疗与天然 d20 暴击阈值
+
+- 代码提交：`7c2751d feat: migrate reusable subclass healing and critical blocks`；本轮无前端源码变更。
+- 通用执行器扩展：`CombatFeatureActionCommand` 接受权威 `attack_d20`；攻击结算只读取通用 `attack_critical_threshold` 修正并生成 `automatic_critical:feature_threshold`，缺天然 d20 时 fail-closed。执行器不识别勇士或“精通重击”特性 ID。
+- 通用治疗扩展：职业动作治疗表达式按配置解析 `1dN`、动态骰面（如 `martial_arts_die`）和六项属性调整值，未知表达式继续要求 DM 输入；范围校验仍在真实 `combat_feature_action` 确认事务内执行。
+- 真实迁移的生产配置：散打武者「混元体」使用附赠动作、感知调整值次数资源、武艺骰+感知调整值治疗、长休 `set_to_max` 恢复；勇士「精通重击」使用 19 暴击阈值并要求玩家/DM 提交天然 d20。资源 key 和生命周期 key 在配置编译层绑定，执行器不依赖特性 ID。
+- 真实状态行为：混元体确认时消费角色资源 CAS、校验治疗总值、写入 HP、记录幂等动作；精通重击在权威攻击路径把天然 19/20 记为暴击，后续伤害和 0 HP 逻辑沿用既有结算链。两者均有定向运行时测试；不是只改审计字段。
+- 固定分母 499 的审计从 `full 157 / partial 250 / dm_only 92` 变为 `full 159 / partial 248 / dm_only 92`，真实净增 `full +2`，距离 `full≥223` 还差 64。资源候选覆盖 195 仍是重叠候选数，不能把它当成完成数。
+- 仍需玩家/DM 输入：混元体的实际治疗骰总值、攻击的天然 d20（系统不替玩家掷骰）；精通重击只有在角色快照存在该配置时生效。
+- 仍未自动化：星辰形态激活状态尚未建立，因此“灿若繁星”没有被误报为 full；神之勇者/治疗之光多骰池、吟游诗人激励可听性和失败消费、复杂攻击骑手以及其他资源型子职仍需后续完整消费者。
+- 门禁：定向相关测试、全量 `backend/.venv/bin/pytest -q backend/tests`、Ruff、compileall、`git diff --check` 全部通过（仅既有 Starlette/httpx 弃用警告）。用户未跟踪的 `backend/tests/integrations/` 与 `backend/tests/ollama.py` 未纳入提交。
+
 # 2026-08-07 资源生命周期积木第一批真实接线
 
 - 代码提交：`ea09d4c feat: add reusable resource lifecycle blocks`；无前端源码变更。
