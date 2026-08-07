@@ -27,6 +27,12 @@ TRIGGER_EVENTS = frozenset({"after_feature_action"})
 TRIGGER_EFFECT_KINDS = frozenset(
     {"grant_movement_budget", "grant_disengage", "remove_conditions"}
 )
+RESOURCE_LIFECYCLE_EVENTS = frozenset(
+    {"short_rest", "long_rest", "initiative_start", "turn_start", "turn_end"}
+)
+RESOURCE_LIFECYCLE_OPERATIONS = frozenset(
+    {"restore", "set_to", "set_to_max", "set_to_minimum"}
+)
 
 
 def _mapping(value: object) -> dict[str, Any]:
@@ -85,6 +91,18 @@ def feature_action_block_errors(action: Mapping[str, Any]) -> tuple[str, ...]:
     effects = action.get("effects")
     if effects is not None and not isinstance(effects, list):
         errors.append("effects must be a list")
+    lifecycle = action.get("resource_lifecycle")
+    if lifecycle is not None:
+        lifecycle_map = _mapping(lifecycle)
+        events = lifecycle_map.get("events")
+        if not isinstance(events, list) or not events:
+            errors.append("resource_lifecycle.events must be a non-empty list")
+        else:
+            errors.extend(
+                resource_lifecycle_block_errors(
+                    {"key": resource_key, "lifecycle_events": events}
+                )
+            )
     return tuple(errors)
 
 
@@ -159,6 +177,45 @@ def resource_recovery_block_ready(resource: Mapping[str, Any]) -> bool:
         ):
             return False
     return True
+
+
+def resource_lifecycle_block_errors(resource: Mapping[str, Any]) -> tuple[str, ...]:
+    """Validate the reusable resource lifecycle contract.
+
+    This contract is deliberately independent of a class or feature name.  It
+    describes only a resource key, a lifecycle event, and a bounded mutation.
+    Rest services and combat-start services may consume it; malformed or
+    unknown events fail closed instead of being guessed from prose.
+    """
+
+    errors: list[str] = []
+    key = str(resource.get("key") or "").strip()
+    if not key:
+        errors.append("resource lifecycle key is required")
+    events = resource.get("lifecycle_events", resource.get("recovery_events"))
+    if events is None:
+        return tuple(errors)
+    if not isinstance(events, list):
+        return (*errors, "resource lifecycle events must be a list")
+    for event in events:
+        if not isinstance(event, Mapping):
+            errors.append("resource lifecycle event must be an object")
+            continue
+        trigger = str(event.get("rest") or event.get("trigger") or "")
+        operation = str(event.get("operation") or "")
+        if trigger not in RESOURCE_LIFECYCLE_EVENTS:
+            errors.append("resource lifecycle event is invalid")
+        if operation not in RESOURCE_LIFECYCLE_OPERATIONS:
+            errors.append("resource lifecycle operation is invalid")
+        if operation in {"restore", "set_to", "set_to_minimum"} and not _positive_int(
+            event.get("amount", event.get("value", event.get("minimum")))
+        ):
+            errors.append("resource lifecycle operation needs a positive amount")
+    return tuple(errors)
+
+
+def resource_lifecycle_block_ready(resource: Mapping[str, Any]) -> bool:
+    return not resource_lifecycle_block_errors(resource)
 
 
 def structured_target_save_status(action: Mapping[str, Any]) -> bool:

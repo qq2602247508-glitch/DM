@@ -1001,6 +1001,101 @@ _SUBCLASS_ABILITY_NAMES = {
 # adapter/configuration layer; the consumer only reads typed defense fields and
 # never dispatches on a subclass or feature identifier.
 SUBCLASS_FEATURE_RUNTIME_CONFIGS: dict[str, dict[str, Any]] = {
+    # These two entries use the same roll-intervention and resource-lifecycle
+    # consumers as core features.  The feature name is only the source-side
+    # configuration selector; the executor consumes typed trigger, eligibility,
+    # die and resource fields and never dispatches on either feature ID.
+    "黑暗强运": {
+        "combat_start": {"modifiers": [], "defenses": []},
+        "resources": {},
+        "actions": {
+            "dark_ones_own_luck": {
+                "id": "dark_ones_own_luck",
+                "name": "黑暗强运",
+                "kind": "roll_intervention",
+                "trigger": "after_failed_d20_test",
+                "eligibility": {
+                    "test_kinds": ["ability_check", "skill_check", "saving_throw"],
+                    "resource": {
+                        "key": "$feature_resource",
+                        "minimum": 1,
+                    },
+                },
+                "operation": {
+                    "kind": "add_die",
+                    "input_key": "die_roll",
+                    "die_sides": 10,
+                },
+                "input_requirements": [
+                    {"key": "die_roll", "kind": "die_roll", "die_sides": 10}
+                ],
+                "resource": {"key": "$feature_resource", "cost": 1},
+                "resource_lifecycle": {
+                    "events": [
+                        {
+                            "trigger": "long_rest",
+                            "operation": "set_to_max",
+                        }
+                    ]
+                },
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "player_roll_resolution",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        },
+        "triggers": [],
+        "attack_riders": [],
+    },
+    "超凡技艺": {
+        "combat_start": {"modifiers": [], "defenses": []},
+        "resources": {},
+        "actions": {
+            "peerless_skill": {
+                "id": "peerless_skill",
+                "name": "超凡技艺",
+                "kind": "roll_intervention",
+                "trigger": "after_failed_d20_test",
+                "eligibility": {
+                    "test_kinds": ["ability_check", "skill_check"],
+                    "resource": {
+                        "key": "bardic_inspiration",
+                        "minimum": 1,
+                        "value_bind_as": "die_sides",
+                    },
+                },
+                "operation": {
+                    "kind": "add_die",
+                    "input_key": "die_roll",
+                    "die_sides_expression": "die_sides",
+                },
+                "input_requirements": [{"key": "die_roll", "kind": "integer"}],
+                "resource": {"key": "bardic_inspiration", "cost": 1},
+                "resource_lifecycle": {
+                    "events": [
+                        {
+                            "trigger": "short_rest",
+                            "operation": "set_to_max",
+                        },
+                        {
+                            "trigger": "long_rest",
+                            "operation": "set_to_max",
+                        },
+                    ]
+                },
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "player_roll_resolution",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        },
+        "triggers": [],
+        "attack_riders": [],
+    },
     "战争化身": {
         "combat_start": {
             "modifiers": [],
@@ -1371,11 +1466,15 @@ def _subclass_resource_update(
         description,
     )
     ability_match = re.search(
-        r"使用次数(?:等于|为)你的?(力量|敏捷|体质|智力|感知|魅力)(?:调整值|调整)",
+        r"(?:使用次数|使用(?:此|该)特性的次数)(?:等于|为)你的?"
+        r"(力量|敏捷|体质|智力|感知|魅力)(?:调整值|调整)",
         description,
     )
     proficiency = bool(
-        re.search(r"使用次数(?:等于|为)你的?熟练加值", description)
+        re.search(
+            r"(?:使用次数|使用(?:此|该)特性的次数)(?:等于|为)你的?熟练加值",
+            description,
+        )
     )
     update: dict[str, Any] = {
         "label": str(definition["name"]),
@@ -1484,6 +1583,28 @@ def subclass_runtime_grants(
         if action is not None:
             actions.append(action)
         runtime_registry = subclass_feature_runtime_definition(definition)
+        if runtime_registry is not None and resource_key:
+            # Bind a generic resource-lifecycle action to the resource parsed
+            # from this feature's source description.  The shared executor sees
+            # only the resulting key; this adapter is kept at configuration
+            # compilation and is not a feature-ID branch in the executor.
+            runtime_registry = deepcopy(runtime_registry)
+            raw_actions = runtime_registry.get("actions")
+            if isinstance(raw_actions, dict):
+                for raw_action in raw_actions.values():
+                    if not isinstance(raw_action, dict):
+                        continue
+                    for field in ("resource", "eligibility"):
+                        value = raw_action.get(field)
+                        if isinstance(value, dict) and value.get("key") == "$feature_resource":
+                            value["key"] = resource_key
+                        if field == "eligibility" and isinstance(value, dict):
+                            nested = value.get("resource")
+                            if (
+                                isinstance(nested, dict)
+                                and nested.get("key") == "$feature_resource"
+                            ):
+                                nested["key"] = resource_key
         spell_contract = _subclass_prepared_spell_contract(str(definition.get("description") or ""))
         if spell_contract is not None:
             runtime_registry = {

@@ -5,6 +5,8 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Literal
 
+from dnd_dm_assistant.domain.feature_runtime import resolve_resource_lifecycle_value
+
 ResourceRecovery = Literal["short_rest", "long_rest", "dawn", "special"] | None
 
 
@@ -95,15 +97,13 @@ def _refresh_resources(
             if not isinstance(event, Mapping) or event.get("rest") != rest:
                 continue
             matched_event = True
-            operation = str(event.get("operation") or "")
-            if operation == "set_to_max":
-                current = resource.maximum
-            elif operation == "restore":
-                try:
-                    amount = int(event.get("amount") or 0)
-                except (TypeError, ValueError):
-                    amount = 0
-                current = min(resource.maximum, current + max(0, amount))
+            resolved = resolve_resource_lifecycle_value(
+                current,
+                maximum=resource.maximum,
+                event=event,
+            )
+            if resolved is not None:
+                current = resolved
         if not matched_event and resource.recovery in legacy_recovery:
             current = resource.maximum
         refreshed.append(

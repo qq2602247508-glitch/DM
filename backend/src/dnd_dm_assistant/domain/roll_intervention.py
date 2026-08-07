@@ -178,6 +178,13 @@ def _eligible_bindings(
         binding = str(resource_spec.get("bind_as") or "").strip()
         if binding:
             bindings[binding] = resource_current
+        value_binding = str(resource_spec.get("value_bind_as") or "").strip()
+        raw_resource = resources.get(key)
+        raw_value = raw_resource.get("value") if isinstance(raw_resource, Mapping) else None
+        if value_binding and isinstance(raw_value, str):
+            match = re.fullmatch(r"[dD](\d+)", raw_value.strip())
+            if match:
+                bindings[value_binding] = int(match.group(1))
     return bindings
 
 
@@ -401,10 +408,17 @@ def _natural_roll(
 
 
 def _add_die_amount(
-    operation: Mapping[str, object], *, inputs: Mapping[str, object]
+    operation: Mapping[str, object],
+    *,
+    inputs: Mapping[str, object],
+    bindings: Mapping[str, int],
 ) -> int:
     input_key = str(operation.get("input_key") or "die_roll").strip()
     sides = _integer(operation.get("die_sides"))
+    if sides is None and operation.get("die_sides_expression") is not None:
+        sides = evaluate_roll_intervention_amount(
+            operation.get("die_sides_expression"), bindings=bindings, inputs=inputs
+        )
     value = _integer(inputs.get(input_key))
     if not input_key or sides is None or sides < 1 or value is None or not 1 <= value <= sides:
         raise ValueError("掷骰干预加骰输入无效")
@@ -459,7 +473,7 @@ def _apply_operation(
         details["amount"] = amount
         return original_total + amount, details
     if kind == "add_die":
-        amount = _add_die_amount(operation, inputs=inputs)
+        amount = _add_die_amount(operation, inputs=inputs, bindings=bindings)
         details["die_roll"] = amount
         details["die_sides"] = _integer(operation.get("die_sides"))
         return original_total + amount, details

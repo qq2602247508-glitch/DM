@@ -11,6 +11,7 @@ from typing import Any
 from dnd_dm_assistant.domain.feature_blocks import (
     feature_action_block_ready,
     feature_trigger_block_errors,
+    resource_lifecycle_block_ready,
     resource_recovery_block_ready,
     structured_target_save_status,
 )
@@ -182,26 +183,14 @@ def apply_initiative_start_resource_recovery(
                 continue
             condition = raw_event.get("condition")
             operation = raw_event.get("operation")
-            next_value: int | None = None
-            if (
-                condition == "current_below_2"
-                and operation == "set_to_minimum"
-                and isinstance(raw_event.get("minimum"), int)
-                and current < int(raw_event["minimum"])
-            ):
-                next_value = int(raw_event["minimum"])
-            elif (
-                condition == "current_zero"
-                and operation == "restore"
-                and current == 0
-                and isinstance(raw_event.get("amount"), int)
-            ):
-                next_value = current + int(raw_event["amount"])
+            next_value = resolve_resource_lifecycle_value(
+                current,
+                maximum=current_entry.get("max"),
+                event=raw_event,
+                condition=condition,
+            )
             if next_value is None:
                 continue
-            maximum = current_entry.get("max")
-            if isinstance(maximum, int) and not isinstance(maximum, bool):
-                next_value = min(next_value, maximum)
             if next_value == current:
                 continue
             current_entry["current"] = next_value
@@ -216,6 +205,62 @@ def apply_initiative_start_resource_recovery(
             )
             current = next_value
     return updated, applied
+
+
+def resolve_resource_lifecycle_value(
+    current: int,
+    *,
+    maximum: object,
+    event: Mapping[str, Any],
+    condition: object = None,
+) -> int | None:
+    """Apply one typed lifecycle event without mutating a resource store.
+
+    Conditions are optional but, when present, are intentionally limited to
+    state predicates used by the existing rules.  The resolver is generic:
+    it does not branch on a class or feature identifier.
+    """
+
+    if not isinstance(current, int) or isinstance(current, bool) or current < 0:
+        return None
+    operation = str(event.get("operation") or "")
+    if not resource_lifecycle_block_ready(
+        {"key": "resource", "lifecycle_events": [{**dict(event), "trigger": "initiative_start"}]}
+    ):
+        return None
+    if condition == "current_zero" and current != 0:
+        return None
+    if condition == "current_below_2":
+        minimum = event.get("minimum")
+        if not isinstance(minimum, int) or current >= minimum:
+            return None
+    if condition == "current_at_most_3":
+        if current > 3:
+            return None
+    if condition not in {None, "current_zero", "current_below_2", "current_at_most_3"}:
+        return None
+    if operation == "set_to_max":
+        next_value = maximum if isinstance(maximum, int) and not isinstance(maximum, bool) else None
+    elif operation == "restore":
+        amount = event.get("amount")
+        next_value = (
+            current + amount
+            if isinstance(amount, int) and not isinstance(amount, bool)
+            else None
+        )
+    elif operation == "set_to":
+        value = event.get("value")
+        next_value = value if isinstance(value, int) and not isinstance(value, bool) else None
+    elif operation == "set_to_minimum":
+        minimum = event.get("minimum")
+        next_value = minimum if isinstance(minimum, int) and not isinstance(minimum, bool) else None
+    else:
+        return None
+    if next_value is None:
+        return None
+    if isinstance(maximum, int) and not isinstance(maximum, bool):
+        next_value = min(next_value, maximum)
+    return max(0, next_value)
 
 
 def resolve_unarmored_defense_ac(
@@ -2293,7 +2338,10 @@ def feature_runtime_contract(
                     continue
                 entry_status = _entry_automation_status(raw)
                 resources_section = raw_resources is definition.get("resources")
-                if resources_section and not resource_recovery_block_ready(raw):
+                if resources_section and (
+                    not resource_recovery_block_ready(raw)
+                    or not resource_lifecycle_block_ready(raw)
+                ):
                     entry_status = "partial"
                 if not resources_section and not structured_target_save_status(raw):
                     entry_status = "partial"

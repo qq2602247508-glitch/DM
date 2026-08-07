@@ -18,6 +18,8 @@ from dnd_dm_assistant.domain.advancement_choices import (
     core_runtime_actions,
     progression_resource_updates,
     progression_scaling_updates,
+    subclass_feature_runtime_definition,
+    subclass_runtime_grants,
 )
 from dnd_dm_assistant.domain.feature_runtime import (
     FEATURE_RUNTIME_SCHEMA_VERSION,
@@ -268,6 +270,45 @@ def test_structured_recovery_events_restore_one_use_on_short_rest_and_full_on_lo
         resources=(short.resources[0],),
     )
     assert long.resources[0].current == int(rage["max"])
+
+
+def test_resource_lifecycle_roll_feature_configs_are_reusable_without_feature_branches() -> None:
+    dark = subclass_feature_runtime_definition(
+        {
+            "name": "黑暗强运 Dark One's Own Luck",
+            "class_name": "魔契师",
+            "class_level": 6,
+            "description": "你可以使用此特性的次数等于你的魅力调整值，完成长休恢复所有次数。",
+        }
+    )
+    assert dark is not None
+    dark_action = dark["actions"]["dark_ones_own_luck"]
+    assert dark_action["kind"] == "roll_intervention"
+    assert dark_action["resource_lifecycle"]["events"] == [
+        {"trigger": "long_rest", "operation": "set_to_max"}
+    ]
+
+    bard_subclass = {
+        "name": "逸闻学院",
+        "feature_definitions": [
+            {
+                "id": "lore:14:peerless",
+                "name": "超凡技艺 Peerless Skill",
+                "class_level": 14,
+                "description": "你可以消耗一次诗人激励使用次数，投掷诗人激励骰并加到失败的检定。",
+                "source_record_id": "fixture",
+            }
+        ],
+    }
+    grants = subclass_runtime_grants(
+        bard_subclass,
+        class_name="吟游诗人",
+        target_class_level=14,
+    )
+    assert grants["grants"][0]["runtime"]["automation_status"] == "full"
+    runtime_action = grants["grants"][0]["runtime"]["registry"]["actions"]["peerless_skill"]
+    assert runtime_action["resource"]["key"] == "bardic_inspiration"
+    assert runtime_action["operation"]["die_sides_expression"] == "die_sides"
 
 
 def test_fighter_registry_exposes_attack_count_second_wind_and_action_surge() -> None:
