@@ -170,6 +170,29 @@ def test_subclass_aura_immunity_uses_ranged_passive_consumer() -> None:
     assert defense["ranged_passive"]["effect_kind"] == "condition_immunity"
 
 
+def test_subclass_aura_resistance_uses_ranged_damage_consumer() -> None:
+    result = subclass_runtime_grants(
+        {
+            "name": "古贤之誓",
+            "feature_definitions": [
+                {
+                    "id": "warding-aura",
+                    "name": "守御灵光 Aura of Warding",
+                    "class_level": 7,
+                    "description": "你和灵光内的盟友获得对暗蚀、心灵以及光耀伤害的抗性。",
+                    "source_record_id": "warding-aura",
+                }
+            ],
+        },
+        class_name="圣武士",
+        target_class_level=7,
+    )
+    grant = result["grants"][0]
+    assert grant["runtime"]["automation_status"] == "full"
+    defense = grant["runtime"]["registry"]["combat_start"]["defenses"][0]
+    assert defense["ranged_passive"]["effect_kind"] == "damage_resistance"
+
+
 def test_mindless_rage_declares_conditional_immunity_and_clear_trigger() -> None:
     result = subclass_runtime_grants(
         {

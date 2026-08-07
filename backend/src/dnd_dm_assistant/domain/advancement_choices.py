@@ -1056,6 +1056,39 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS: dict[str, dict[str, Any]] = {
         "actions": {},
         "attack_riders": [],
     },
+    "守御灵光": {
+        "combat_start": {
+            "modifiers": [],
+            "defenses": [
+                {
+                    "id": "subclass:aura_of_warding:outer_planar_resistance",
+                    "kind": "damage_resistance",
+                    "damage_types": ["necrotic", "psychic", "radiant"],
+                    "scope": "self_and_allies_within_10ft",
+                    "applies_when": "within_aura_of_warding",
+                    "ranged_passive": {
+                        "range_group": "paladin_aura_radius",
+                        "source_scope": "self",
+                        "target_relation": "self_and_allies",
+                        "range_ft": 10,
+                        "requires_grid_position_for_others": True,
+                        "source_forbidden_conditions": ["incapacitated"],
+                        "stacking": "unique_source",
+                        "effect_kind": "damage_resistance",
+                    },
+                    "runtime_execution": {
+                        "status": "ready",
+                        "consumer": "damage_defense_resolver",
+                    },
+                    "automation_status": "full",
+                    "requires_dm_adjudication": False,
+                }
+            ],
+        },
+        "resources": {},
+        "actions": {},
+        "attack_riders": [],
+    },
     "无我狂暴": {
         "combat_start": {
             "modifiers": [],

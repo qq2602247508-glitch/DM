@@ -1790,6 +1790,77 @@ def test_generic_ranged_passive_resolves_range_override_and_stacking_groups() ->
     ) == 6
 
 
+def test_ranged_passive_damage_resistance_is_consumed_by_damage_resolver() -> None:
+    target = Combatant(
+        id="warded-ally",
+        combat_id="combat",
+        entity_type="character",
+        display_name="灵光盟友",
+        hp=20,
+        max_hp=20,
+        snapshot_json={
+            "disposition": "ally",
+            "grid_position": {"row": 0, "col": 1},
+        },
+    )
+    source = Combatant(
+        id="warding-paladin",
+        combat_id="combat",
+        entity_type="character",
+        display_name="守御圣武士",
+        hp=20,
+        max_hp=20,
+        snapshot_json={
+            "disposition": "ally",
+            "grid_position": {"row": 0, "col": 0},
+            "feature_runtime": {
+                "combat_start": {
+                    "defenses": [
+                        {
+                            "id": "fixture:warding",
+                            "kind": "damage_resistance",
+                            "damage_types": ["psychic"],
+                            "ranged_passive": {
+                                "range_group": "warding",
+                                "target_relation": "self_and_allies",
+                                "range_ft": 10,
+                                "effect_kind": "damage_resistance",
+                            },
+                        }
+                    ]
+                }
+            },
+        },
+    )
+
+    class Rows:
+        def all(self) -> list[Combatant]:
+            return [source, target]
+
+    class FakeSession:
+        def get(self, _model: object, _entity_id: str) -> object:
+            return SimpleNamespace(id="combat", scene_id="scene")
+
+        def scalar(self, _query: object) -> object:
+            return SimpleNamespace(cell_size_ft=5)
+
+        def scalars(self, _query: object) -> Rows:
+            return Rows()
+
+    resistances, _vulnerabilities, _immunities, applied, unresolved = (
+        CombatEngineService._damage_defenses(
+            target,
+            SimpleNamespace(damage_tags=[]),
+            ["psychic"],
+            session=FakeSession(),
+            combat_id="combat",
+        )
+    )
+    assert "psychic" in resistances
+    assert any("ranged_resistance" in value for value in applied)
+    assert unresolved == []
+
+
 def test_tactical_mind_uses_generic_failure_recovery_and_consumes_only_on_success() -> None:
     action = CombatAction(
         id="tactical-check",

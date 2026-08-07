@@ -7681,6 +7681,8 @@ class CombatEngineService:
         *,
         damage_tags: list[str] | None = None,
         dm_override: bool | None = None,
+        session: Session | None = None,
+        combat_id: str | None = None,
     ) -> tuple[tuple[str, ...], tuple[str, ...], tuple[str, ...], list[str], list[str]]:
         """Resolve typed and explicitly tagged conditional defenses.
 
@@ -7740,6 +7742,32 @@ class CombatEngineService:
             resistance.extend(types)
             defense_id = str(defense.get("id") or "feature_damage_resistance")
             applied.append(f"{defense_id}:resistance:{','.join(types)}")
+        if session is not None:
+            normalized_types = {str(value).strip().lower() for value in damage_types}
+            for defense in cls._ranged_passive_effects(
+                target,
+                effect_kind="damage_resistance",
+                session=session,
+                combat_id=combat_id or target.combat_id,
+            ):
+                effect = defense.get("effect")
+                raw_types = effect.get("damage_types") if isinstance(effect, dict) else None
+                if not isinstance(raw_types, list):
+                    continue
+                types = [
+                    str(value).strip().lower()
+                    for value in raw_types
+                    if str(value).strip()
+                ]
+                if not types or not normalized_types.intersection(types):
+                    continue
+                resistance.extend(types)
+                defense_id = (
+                    str(effect.get("id") or "ranged_passive_damage_resistance")
+                    if isinstance(effect, dict)
+                    else "ranged_passive_damage_resistance"
+                )
+                applied.append(f"{defense_id}:ranged_resistance:{','.join(types)}")
         tags = {
             str(value).strip().lower()
             for value in (
@@ -12535,6 +12563,8 @@ class CombatEngineService:
                         damage_tags=(
                             list(component.get("damage_tags") or []) or command.damage_tags
                         ),
+                        session=session,
+                        combat_id=combat.id,
                     )
                     component_amount = int(component["amount"])
                     # Apply the save result to every independently resisted
@@ -15296,6 +15326,8 @@ class CombatEngineService:
                     [component_type],
                     damage_tags=component_tags,
                     dm_override=bool(details.get("dm_override")),
+                    session=session,
+                    combat_id=combat.id,
                 )
                 resolution = resolve_damage(
                     amount=component_amount,
