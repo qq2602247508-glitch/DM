@@ -1584,6 +1584,150 @@ def test_paladin_protection_aura_adds_charisma_modifier_to_self_save() -> None:
     )[0] == 1
 
 
+def test_ranged_passive_condition_immunity_suppresses_but_does_not_delete_state() -> None:
+    target = Combatant(
+        id="generic-courage-source",
+        entity_type="character",
+        display_name="范围免疫来源",
+        hp=20,
+        max_hp=20,
+        conditions=["frightened"],
+        snapshot_json={
+            "feature_runtime": {
+                "combat_start": {
+                    "defenses": [
+                        {
+                            "condition": "frightened",
+                            "ranged_passive": {
+                                "range_group": "test_immunity",
+                                "source_scope": "self",
+                                "target_relation": "self_and_allies",
+                                "range_ft": 10,
+                                "source_forbidden_conditions": ["incapacitated"],
+                                "effect_kind": "condition_immunity",
+                            },
+                        }
+                    ]
+                }
+            }
+        },
+    )
+
+    assert CombatEngineService._effective_condition_set(
+        target, session=None, combat_id=None
+    ) == set()
+    assert target.conditions == ["frightened"]
+
+    target.conditions = ["frightened", "stunned"]
+    effective = CombatEngineService._effective_condition_set(
+        target, session=None, combat_id=None
+    )
+    assert "frightened" in effective
+    assert "stunned" in effective
+
+
+def test_generic_ranged_passive_resolves_range_override_and_stacking_groups() -> None:
+    target = Combatant(
+        id="range-target",
+        combat_id="combat",
+        entity_type="character",
+        display_name="范围目标",
+        hp=20,
+        max_hp=20,
+        snapshot_json={
+            "disposition": "ally",
+            "grid_position": {"row": 0, "col": 5},
+        },
+    )
+    source = Combatant(
+        id="range-source",
+        combat_id="combat",
+        entity_type="character",
+        display_name="范围来源",
+        hp=20,
+        max_hp=20,
+        snapshot_json={
+            "disposition": "ally",
+            "ability_scores": {"charisma": 18},
+            "grid_position": {"row": 0, "col": 0},
+            "feature_runtime": {
+                "combat_start": {
+                    "modifiers": [
+                        {
+                            "stat": "saving_throw",
+                            "operation": "add",
+                            "value_source": "charisma_modifier",
+                            "ranged_passive": {
+                                "range_group": "expanded_group",
+                                "stacking_group": "best_group",
+                                "target_relation": "self_and_allies",
+                                "range_ft": 10,
+                                "effect_kind": "numeric_modifier",
+                                "stacking": "best",
+                            },
+                        },
+                        {
+                            "stat": "saving_throw",
+                            "operation": "add",
+                            "value": 2,
+                            "ranged_passive": {
+                                "range_group": "expanded_group",
+                                "stacking_group": "independent_group",
+                                "target_relation": "self_and_allies",
+                                "range_ft": 10,
+                                "effect_kind": "numeric_modifier",
+                                "stacking": "best",
+                            },
+                        },
+                        {
+                            "stat": "saving_throw",
+                            "operation": "add",
+                            "value": 99,
+                            "ranged_passive": {
+                                "range_group": "unrelated_group",
+                                "stacking_group": "unrelated_group",
+                                "target_relation": "self_and_allies",
+                                "range_ft": 10,
+                                "effect_kind": "numeric_modifier",
+                                "stacking": "best",
+                            },
+                        },
+                    ],
+                    "defenses": [
+                        {
+                            "kind": "ranged_passive_range_override",
+                            "applies_to": "range_group",
+                            "target_range_group": "expanded_group",
+                            "range_ft": 30,
+                        }
+                    ],
+                }
+            },
+        },
+    )
+
+    class Rows:
+        def all(self) -> list[Combatant]:
+            return [source, target]
+
+    class FakeSession:
+        def get(self, _model: object, _entity_id: str) -> object:
+            return SimpleNamespace(id="combat", scene_id="scene")
+
+        def scalar(self, _query: object) -> object:
+            return SimpleNamespace(cell_size_ft=5)
+
+        def scalars(self, _query: object) -> Rows:
+            return Rows()
+
+    assert CombatEngineService._ranged_passive_numeric_modifier(
+        target,
+        stat="saving_throw",
+        session=FakeSession(),
+        combat_id="combat",
+    ) == 6
+
+
 def test_combat_consumers_accept_a_snapshot_with_only_canonical_feature_blocks() -> None:
     registry = compile_feature_runtime_registry(
         [

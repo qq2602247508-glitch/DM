@@ -1761,6 +1761,17 @@ def feature_runtime_definition(
                 "value_source": "charisma_modifier",
                 "minimum": 1,
                 "applies_when": "within_aura_of_protection",
+                "ranged_passive": {
+                    "range_group": "paladin_aura_radius",
+                    "stacking_group": "aura_of_protection_saving_throw",
+                    "source_scope": "self",
+                    "target_relation": "self_and_allies",
+                    "range_ft": 10,
+                    "requires_grid_position_for_others": True,
+                    "source_forbidden_conditions": ["incapacitated"],
+                    "stacking": "best",
+                    "effect_kind": "numeric_modifier",
+                },
                 "runtime_execution": {
                     "status": "ready",
                     "consumer": "saving_throw_resolution",
@@ -1782,6 +1793,16 @@ def feature_runtime_definition(
                 "condition": "frightened",
                 "scope": "self_and_allies_within_10ft",
                 "applies_when": "within_aura_of_courage",
+                "ranged_passive": {
+                    "range_group": "paladin_aura_radius",
+                    "source_scope": "self",
+                    "target_relation": "self_and_allies",
+                    "range_ft": 10,
+                    "requires_grid_position_for_others": True,
+                    "source_forbidden_conditions": ["incapacitated"],
+                    "stacking": "unique_source",
+                    "effect_kind": "condition_immunity",
+                },
                 "runtime_execution": {
                     "status": "ready",
                     "consumer": "condition_immunity_resolution",
@@ -1791,6 +1812,25 @@ def feature_runtime_definition(
                 "summary": (
                     "同阵营单位在圣武士 10 尺内获得恐慌免疫；距离或阵营变化后即时重新判断。"
                 ),
+                **source,
+            }
+        )
+
+    if identity in {"灵光增效", "auraexpansion", "auraenhancement"}:
+        definition["combat_start"]["defenses"].append(
+            {
+                "id": "aura_enhancement:range_override",
+                "kind": "ranged_passive_range_override",
+                "applies_to": "range_group",
+                "target_range_group": "paladin_aura_radius",
+                "range_ft": 30,
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "ranged_passive_resolver",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+                "summary": "由通用范围被动执行器将该来源的结构化灵光范围扩大到30尺。",
                 **source,
             }
         )

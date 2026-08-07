@@ -797,6 +797,17 @@ def test_new_passive_and_attack_contracts_are_typed_but_not_automatic() -> None:
         "status": "ready",
         "consumer": "saving_throw_resolution",
     }
+    assert saving_aura["ranged_passive"] == {
+        "range_group": "paladin_aura_radius",
+        "stacking_group": "aura_of_protection_saving_throw",
+        "source_scope": "self",
+        "target_relation": "self_and_allies",
+        "range_ft": 10,
+        "requires_grid_position_for_others": True,
+        "source_forbidden_conditions": ["incapacitated"],
+        "stacking": "best",
+        "effect_kind": "numeric_modifier",
+    }
     courage = compile_feature_runtime_registry(
         core_feature_grants(rules["圣武士"], 10),
         resources=progression_resource_updates(rules["圣武士"], 10),
@@ -813,6 +824,21 @@ def test_new_passive_and_attack_contracts_are_typed_but_not_automatic() -> None:
         "status": "ready",
         "consumer": "condition_immunity_resolution",
     }
+    assert courage_immunity["ranged_passive"]["range_group"] == "paladin_aura_radius"
+
+    expanded = compile_feature_runtime_registry(
+        core_feature_grants(rules["圣武士"], 18),
+        resources=progression_resource_updates(rules["圣武士"], 18),
+    )
+    override = next(
+        item
+        for item in expanded["combat_start"]["defenses"]
+        if item["kind"] == "ranged_passive_range_override"
+    )
+    assert override["applies_to"] == "range_group"
+    assert override["target_range_group"] == "paladin_aura_radius"
+    assert override["range_ft"] == 30
+    assert override["automation_status"] == "full"
 
     jack = compile_feature_runtime_registry(core_feature_grants(rules["吟游诗人"], 2))
     assert jack["combat_start"]["modifiers"] == [

@@ -1011,100 +1011,12 @@ class PlayerRoomService:
         session: Session | None,
         combat_id: str | None,
     ) -> int:
-        """Resolve explicit Paladin aura bonuses for an automatic save.
-
-        Aura range is a combat fact, not a text fact.  The target itself is
-        always inside its owner's aura; an ally requires an authoritative
-        combat grid, matching faction, and a distance of at most 10 feet.
-        Missing positions or a missing grid fail closed rather than granting
-        a global aura bonus.
-        """
-
-        target_snapshot = dict(target.snapshot_json or {})
-        candidates = [target]
-        grid: SceneGrid | None = None
-        if session is not None and combat_id:
-            combat = session.get(Combat, combat_id)
-            if combat is not None and combat.scene_id:
-                grid = session.scalar(
-                    select(SceneGrid).where(SceneGrid.scene_id == combat.scene_id)
-                )
-            candidates = list(
-                session.scalars(
-                    select(Combatant).where(
-                        Combatant.combat_id == combat_id,
-                        Combatant.is_active.is_(True),
-                    )
-                ).all()
-            )
-
-        target_faction = PlayerRoomService._combatant_faction(target)
-        target_position = target_snapshot.get("grid_position")
-        best_bonus = 0
-        for source in candidates:
-            if (
-                source.id != target.id
-                and PlayerRoomService._combatant_faction(source) != target_faction
-            ):
-                continue
-            source_modifiers = (source.snapshot_json or {}).get("rule_modifiers")
-            if not isinstance(source_modifiers, dict):
-                runtime = (source.snapshot_json or {}).get("feature_runtime")
-                combat_start = runtime.get("combat_start") if isinstance(runtime, dict) else None
-                raw_runtime_modifiers = (
-                    combat_start.get("modifiers") if isinstance(combat_start, dict) else None
-                )
-                source_modifiers = {
-                    str(index): item
-                    for index, item in enumerate(raw_runtime_modifiers or [])
-                    if isinstance(item, dict)
-                }
-            aura_entries = [
-                item
-                for item in source_modifiers.values()
-                if isinstance(item, dict)
-                and item.get("stat") == "saving_throw"
-                and item.get("operation") == "add"
-                and item.get("scope") == "self_and_allies_within_10ft"
-                and item.get("applies_when") == "within_aura_of_protection"
-                and item.get("value_source") == "charisma_modifier"
-            ]
-            if not aura_entries:
-                continue
-            if source.id != target.id:
-                source_position = (source.snapshot_json or {}).get("grid_position")
-                if (
-                    grid is None
-                    or not isinstance(source_position, dict)
-                    or not isinstance(target_position, dict)
-                ):
-                    continue
-                try:
-                    distance_ft = grid_distance_ft(
-                        (int(source_position["row"]), int(source_position["col"])),
-                        (int(target_position["row"]), int(target_position["col"])),
-                        cell_size_ft=grid.cell_size_ft,
-                    )
-                except (KeyError, TypeError, ValueError):
-                    continue
-                if distance_ft > 10:
-                    continue
-            ability_scores = (source.snapshot_json or {}).get("ability_scores")
-            if not isinstance(ability_scores, dict):
-                continue
-            raw_charisma = ability_scores.get(
-                "charisma", ability_scores.get("魅力")
-            )
-            if not isinstance(raw_charisma, int):
-                continue
-            for entry in aura_entries:
-                minimum = entry.get("minimum")
-                minimum_bonus = minimum if isinstance(minimum, int) else 1
-                best_bonus = max(
-                    best_bonus,
-                    max(minimum_bonus, (raw_charisma - 10) // 2),
-                )
-        return best_bonus
+        return CombatEngineService._ranged_passive_numeric_modifier(
+            target,
+            stat="saving_throw",
+            session=session,
+            combat_id=combat_id,
+        )
 
     @staticmethod
     def _feature_additive_modifier(

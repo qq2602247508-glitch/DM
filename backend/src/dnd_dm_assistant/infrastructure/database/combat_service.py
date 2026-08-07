@@ -3327,10 +3327,62 @@ class CombatEngineService:
         session: Session | None,
         combat_id: str | None,
     ) -> bool:
-        """Resolve explicit, position-aware condition immunity auras."""
+        """Resolve any configured position-aware condition immunity passive."""
 
-        if cls._canonical_condition(condition) != "frightened":
-            return False
+        canonical = cls._canonical_condition(condition)
+        return any(
+            cls._canonical_condition(str(item["effect"].get("condition") or ""))
+            == canonical
+            for item in cls._ranged_passive_effects(
+                target,
+                effect_kind="condition_immunity",
+                session=session,
+                combat_id=combat_id,
+            )
+        )
+
+    @classmethod
+    def _effective_condition_set(
+        cls,
+        target: Combatant,
+        *,
+        session: Session | None,
+        combat_id: str | None,
+    ) -> set[str]:
+        """Return stored conditions after dynamic immunity suppression.
+
+        Conditions stay persisted so leaving a passive range restores them;
+        consumers use this view when authoritative combat context is present.
+        """
+
+        stored = cls._condition_set(target)
+        return {
+            condition
+            for condition in stored
+            if not cls._aura_condition_immunity(
+                target,
+                condition,
+                session=session,
+                combat_id=combat_id,
+            )
+        }
+
+    @classmethod
+    def _ranged_passive_effects(
+        cls,
+        target: Combatant,
+        *,
+        effect_kind: str,
+        session: Session | None,
+        combat_id: str | None,
+    ) -> list[dict[str, object]]:
+        """Return generic configured ranged passives that currently reach target.
+
+        The resolver knows relations, factions, positions, distance and range
+        overrides.  It deliberately knows no class, feature id, aura name,
+        affected stat or condition.
+        """
+
         target_snapshot = dict(target.snapshot_json or {})
         candidates = [target]
         grid: SceneGrid | None = None
@@ -3351,43 +3403,184 @@ class CombatEngineService:
             )
         target_faction = cls._combatant_faction(target)
         target_position = target_snapshot.get("grid_position")
+        resolved: list[dict[str, object]] = []
         for source in candidates:
-            if source.id != target.id and cls._combatant_faction(source) != target_faction:
-                continue
             runtime = (source.snapshot_json or {}).get("feature_runtime")
             combat_start = runtime.get("combat_start") if isinstance(runtime, dict) else None
+            modifiers = combat_start.get("modifiers") if isinstance(combat_start, dict) else None
             defenses = combat_start.get("defenses") if isinstance(combat_start, dict) else None
-            aura_entries = [
-                item
-                for item in (defenses if isinstance(defenses, list) else [])
-                if isinstance(item, dict)
-                and item.get("kind") == "condition_immunity"
-                and item.get("condition") == "frightened"
-                and item.get("scope") == "self_and_allies_within_10ft"
-                and item.get("applies_when") == "within_aura_of_courage"
-            ]
-            if not aura_entries:
-                continue
-            if source.id != target.id:
-                source_position = (source.snapshot_json or {}).get("grid_position")
+            legacy_rule_modifiers = (source.snapshot_json or {}).get("rule_modifiers")
+            if not isinstance(modifiers, list) and isinstance(legacy_rule_modifiers, dict):
+                modifiers = [
+                    item for item in legacy_rule_modifiers.values() if isinstance(item, dict)
+                ]
+            if isinstance(runtime, dict):
+                canonical_modifiers = feature_block_payloads(runtime, "modifier")
+                canonical_defenses = feature_block_payloads(runtime, "defense")
+                if canonical_modifiers:
+                    modifiers = canonical_modifiers
+                if canonical_defenses:
+                    defenses = canonical_defenses
+            entries = []
+            for item in [*(modifiers or []), *(defenses or [])]:
+                if not isinstance(item, dict):
+                    continue
+                config = item.get("ranged_passive")
+                # Compatibility adapter for snapshots written before the
+                # generic ranged_passive contract existed.  The executor
+                # remains ID-agnostic; this only translates legacy fields.
+                if not isinstance(config, dict):
+                    if (
+                        item.get("scope") == "self_and_allies_within_10ft"
+                        and item.get("applies_when") in {
+                            "within_aura_of_protection",
+                            "within_aura_of_courage",
+                        }
+                    ):
+                        config = {
+                            "range_group": "paladin_aura_radius",
+                            "stacking_group": (
+                                "aura_of_protection_saving_throw"
+                                if item.get("applies_when")
+                                == "within_aura_of_protection"
+                                else "aura_of_courage_immunity"
+                            ),
+                            "source_scope": "self",
+                            "target_relation": "self_and_allies",
+                            "range_ft": 10,
+                            "requires_grid_position_for_others": True,
+                            "source_forbidden_conditions": ["incapacitated"],
+                            "stacking": "best",
+                            "effect_kind": "numeric_modifier"
+                            if item.get("stat") == "saving_throw"
+                            else "condition_immunity",
+                        }
+                        item = {**item, "ranged_passive": config}
                 if (
-                    grid is None
-                    or not isinstance(source_position, dict)
-                    or not isinstance(target_position, dict)
+                    isinstance(config, dict)
+                    and config.get("effect_kind") == effect_kind
                 ):
+                    entries.append(item)
+            if not entries:
+                continue
+            overrides = [
+                item
+                for item in (defenses or [])
+                if isinstance(item, dict)
+                and item.get("kind") == "ranged_passive_range_override"
+                and isinstance(item.get("range_ft"), int)
+            ]
+            for effect in entries:
+                config = dict(effect["ranged_passive"])
+                forbidden_source_conditions = {
+                    cls._canonical_condition(value)
+                    for value in config.get("source_forbidden_conditions", [])
+                }
+                if forbidden_source_conditions & cls._condition_set(source):
                     continue
-                try:
-                    distance_ft = grid_distance_ft(
-                        (int(source_position["row"]), int(source_position["col"])),
-                        (int(target_position["row"]), int(target_position["col"])),
-                        cell_size_ft=grid.cell_size_ft,
+                relation = str(config.get("target_relation") or "self")
+                if source.id == target.id:
+                    if relation not in {"self", "self_and_allies", "all_creatures"}:
+                        continue
+                    distance_ft = 0
+                else:
+                    same_faction = cls._combatant_faction(source) == target_faction
+                    if relation == "self" or (
+                        relation == "self_and_allies" and not same_faction
+                    ) or (relation == "enemies" and same_faction):
+                        continue
+                    source_position = (source.snapshot_json or {}).get("grid_position")
+                    if (
+                        grid is None
+                        or not isinstance(source_position, dict)
+                        or not isinstance(target_position, dict)
+                    ):
+                        continue
+                    try:
+                        distance_ft = grid_distance_ft(
+                            (int(source_position["row"]), int(source_position["col"])),
+                            (int(target_position["row"]), int(target_position["col"])),
+                            cell_size_ft=grid.cell_size_ft,
+                        )
+                    except (KeyError, TypeError, ValueError):
+                        continue
+                base_range = int(config.get("range_ft") or 0)
+                group = str(config.get("range_group") or "")
+                applicable_overrides = [
+                    int(item["range_ft"])
+                    for item in overrides
+                    if item.get("applies_to") == "ranged_passive"
+                    or (
+                        item.get("applies_to") == "range_group"
+                        and item.get("target_range_group") == group
                     )
-                except (KeyError, TypeError, ValueError):
+                ]
+                effective_range = max([base_range, *applicable_overrides])
+                if distance_ft > effective_range:
                     continue
-                if distance_ft > 10:
-                    continue
-            return True
-        return False
+                resolved.append(
+                    {
+                        "source": source,
+                        "effect": effect,
+                        "config": config,
+                        "distance_ft": distance_ft,
+                        "effective_range_ft": effective_range,
+                    }
+                )
+        return resolved
+
+    @classmethod
+    def _ranged_passive_numeric_modifier(
+        cls,
+        target: Combatant,
+        *,
+        stat: str,
+        session: Session | None,
+        combat_id: str | None,
+    ) -> int:
+        """Resolve configured numeric ranged passives with declared stacking."""
+
+        best_by_group: dict[str, int] = {}
+        summed = 0
+        for resolved in cls._ranged_passive_effects(
+            target,
+            effect_kind="numeric_modifier",
+            session=session,
+            combat_id=combat_id,
+        ):
+            source = resolved["source"]
+            effect = resolved["effect"]
+            config = resolved["config"]
+            if (
+                not isinstance(source, Combatant)
+                or not isinstance(effect, dict)
+                or not isinstance(config, dict)
+                or effect.get("stat") != stat
+                or effect.get("operation") != "add"
+            ):
+                continue
+            value: int | None = None
+            raw_value = effect.get("value")
+            if isinstance(raw_value, int):
+                value = raw_value
+            value_source = str(effect.get("value_source") or "")
+            if value_source.endswith("_modifier"):
+                ability = value_source.removesuffix("_modifier")
+                scores = (source.snapshot_json or {}).get("ability_scores")
+                raw_score = scores.get(ability) if isinstance(scores, dict) else None
+                if isinstance(raw_score, int):
+                    value = (raw_score - 10) // 2
+            if value is None:
+                continue
+            minimum = effect.get("minimum")
+            if isinstance(minimum, int):
+                value = max(minimum, value)
+            if str(config.get("stacking") or "best") == "sum":
+                summed += value
+            else:
+                group = str(config.get("stacking_group") or config.get("range_group") or "default")
+                best_by_group[group] = max(best_by_group.get(group, 0), value)
+        return summed + sum(best_by_group.values())
 
     @classmethod
     def _feature_rule_modifiers(
@@ -7700,7 +7893,11 @@ class CombatEngineService:
         applied: list[str] = []
         rolls = list(roll_totals) if roll_totals else [roll_total]
         normalized_ability = str(ability or "").strip().lower()
-        condition_set = cls._condition_set(target)
+        condition_set = cls._effective_condition_set(
+            target,
+            session=session,
+            combat_id=getattr(combat, "id", None) or target.combat_id,
+        )
         condition_save_disadvantage = (
             normalized_ability in {"dexterity", "敏捷"} and "restrained" in condition_set
         )
@@ -7885,6 +8082,15 @@ class CombatEngineService:
         if roll_total_override is not None:
             effective_roll = roll_total_override
             applied.append("feature:stroke_of_luck")
+        aura_bonus = cls._ranged_passive_numeric_modifier(
+            target,
+            stat="saving_throw",
+            session=session,
+            combat_id=combat.id if combat is not None else target.combat_id,
+        )
+        if aura_bonus:
+            effective_roll += aura_bonus
+            applied.append(f"ranged_passive:saving_throw:{aura_bonus:+d}")
         auto_fail = bool(
             condition_set & cls._SAVE_AUTO_FAIL_STR_DEX_CONDITIONS
         ) and normalized_ability in {"strength", "dexterity", "力量", "敏捷"}
@@ -8069,7 +8275,12 @@ class CombatEngineService:
             if (
                 session is not None
                 and combat is not None
-                and cls._has_condition(target, "frightened")
+                and "frightened"
+                in cls._effective_condition_set(
+                    target,
+                    session=session,
+                    combat_id=getattr(combat, "id", None) or target.combat_id,
+                )
             ):
                 frightened_disadvantage = (
                     cls._frightened_source_visibility(session, combat, target) is True
