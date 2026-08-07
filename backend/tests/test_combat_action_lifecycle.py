@@ -1101,13 +1101,19 @@ def test_countercharm_requires_and_honors_selected_reactor_when_two_are_eligible
                     "grid_position": {"row": 1, "col": index + 1},
                     "feature_runtime": {
                         "actions": {
-                            "countercharm": {
-                                "id": "countercharm",
-                                "name": "反迷惑",
+                            ("countercharm" if index == 1 else "fearward"): {
+                                "id": "countercharm" if index == 1 else "fearward",
+                                "name": "反迷惑" if index == 1 else "恐惧守望",
                                 "kind": "feature_action",
                                 "action_cost": "reaction",
                                 "resolution_kind": "saving_throw_reroll",
                                 "activation_window": "after_failed_saving_throw",
+                                "trigger": {
+                                    "event": "saving_throw_failed",
+                                    "conditions": ["charmed", "frightened"],
+                                    "range_ft": 30,
+                                },
+                                "reroll_mode": "advantage",
                             }
                         }
                     },

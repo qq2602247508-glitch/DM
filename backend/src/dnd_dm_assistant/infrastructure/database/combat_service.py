@@ -49,6 +49,7 @@ from dnd_dm_assistant.domain.exploration import (
     line_of_sight,
     line_of_sight_3d,
 )
+from dnd_dm_assistant.domain.feature_blocks import feature_action_block_errors
 from dnd_dm_assistant.domain.feature_runtime import (
     feature_block_payloads,
     feature_condition_runtime_spec,
@@ -3997,49 +3998,83 @@ class CombatEngineService:
             reactor_actions = (
                 reactor_runtime.get("actions") if isinstance(reactor_runtime, dict) else None
             )
-            action = (
-                reactor_actions.get("countercharm") if isinstance(reactor_actions, dict) else None
-            )
-            if not isinstance(action, dict):
+            if not isinstance(reactor_actions, dict):
                 continue
-            if action.get("activation_window") != "after_failed_saving_throw":
-                continue
-            if reactor.id != target.id:
-                raw_reactor_position = (reactor.snapshot_json or {}).get("grid_position")
-                raw_target_position = (target.snapshot_json or {}).get("grid_position")
-                if not isinstance(raw_reactor_position, dict) or not isinstance(
-                    raw_target_position, dict
+            # This is a generic failed-save reaction window.  The old code
+            # looked up ``countercharm`` by name, which made the adapter
+            # impossible to reuse.  Select any structured reaction action
+            # whose trigger declares the relevant conditions and range.
+            candidate_actions: list[tuple[str, dict[str, object], dict[str, object]]] = []
+            for raw_feature_id, raw_action in reactor_actions.items():
+                if not isinstance(raw_action, dict):
+                    continue
+                if (
+                    raw_action.get("kind") != "feature_action"
+                    or raw_action.get("action_cost") != "reaction"
+                    or raw_action.get("resolution_kind") != "saving_throw_reroll"
+                    or raw_action.get("activation_window") != "after_failed_saving_throw"
                 ):
                     continue
-                try:
-                    reactor_position = (
-                        int(raw_reactor_position["row"]),
-                        int(raw_reactor_position["col"]),
-                    )
-                    target_position = (
-                        int(raw_target_position["row"]),
-                        int(raw_target_position["col"]),
-                    )
-                except (KeyError, TypeError, ValueError):
+                feature_id = str(raw_feature_id)
+                raw_trigger = raw_action.get("trigger")
+                if isinstance(raw_trigger, dict):
+                    trigger = dict(raw_trigger)
+                elif feature_id == "countercharm":
+                    # Explicit legacy snapshot adapter.  New configurations
+                    # must carry trigger.conditions and trigger.range_ft.
+                    trigger = {
+                        "conditions": ["charmed", "frightened"],
+                        "range_ft": 30,
+                    }
+                    raw_action = {**raw_action, "reroll_mode": "advantage"}
+                else:
                     continue
-                distance_ft = grid_distance_ft(
-                    reactor_position, target_position, cell_size_ft=cell_size
+                if not requested_conditions & {
+                    cls._canonical_condition(value)
+                    for value in trigger.get("conditions", [])
+                }:
+                    continue
+                candidate_actions.append((feature_id, raw_action, trigger))
+            for feature_id, action, trigger in candidate_actions:
+                raw_range = trigger.get("range_ft")
+                if not isinstance(raw_range, int) or raw_range < 0:
+                    continue
+                if reactor.id != target.id:
+                    raw_reactor_position = (reactor.snapshot_json or {}).get("grid_position")
+                    raw_target_position = (target.snapshot_json or {}).get("grid_position")
+                    if not isinstance(raw_reactor_position, dict) or not isinstance(
+                        raw_target_position, dict
+                    ):
+                        continue
+                    try:
+                        reactor_position = (
+                            int(raw_reactor_position["row"]),
+                            int(raw_reactor_position["col"]),
+                        )
+                        target_position = (
+                            int(raw_target_position["row"]),
+                            int(raw_target_position["col"]),
+                        )
+                    except (KeyError, TypeError, ValueError):
+                        continue
+                    distance_ft = grid_distance_ft(
+                        reactor_position, target_position, cell_size_ft=cell_size
+                    )
+                    if distance_ft > raw_range:
+                        continue
+                else:
+                    distance_ft = 0
+                countercharm_candidates.append(
+                    {
+                        "kind": "reaction_reroll",
+                        "feature_id": feature_id,
+                        "source": str(action.get("name") or feature_id),
+                        "reroll_mode": str(action.get("reroll_mode") or "reroll"),
+                        "reaction_combatant_id": reactor.id,
+                        "reaction_before": True,
+                        "distance_ft": distance_ft,
+                    }
                 )
-                if distance_ft > 30:
-                    continue
-            else:
-                distance_ft = 0
-            countercharm_candidates.append(
-                {
-                    "kind": "countercharm",
-                    "feature_id": "countercharm",
-                    "source": str(action.get("name") or "反迷惑"),
-                    "reroll_mode": "advantage",
-                    "reaction_combatant_id": reactor.id,
-                    "reaction_before": True,
-                    "distance_ft": distance_ft,
-                }
-            )
         selected_reactor = str(selected_reactor_id or "").strip()
         if selected_reactor:
             selected = next(
@@ -4055,10 +4090,18 @@ class CombatEngineService:
         elif len(countercharm_candidates) == 1:
             options.append(countercharm_candidates[0])
         elif countercharm_candidates:
+            candidate_feature_ids = {
+                str(candidate.get("feature_id") or "")
+                for candidate in countercharm_candidates
+            }
             options.append(
                 {
-                    "kind": "countercharm_selection",
-                    "feature_id": "countercharm",
+                    "kind": "reaction_reroll_selection",
+                    "feature_id": (
+                        next(iter(candidate_feature_ids))
+                        if len(candidate_feature_ids) == 1
+                        else "saving_throw_reaction_selection"
+                    ),
                     "source": "反迷惑",
                     "reroll_mode": "advantage",
                     "reaction_candidates": countercharm_candidates,
@@ -8464,8 +8507,8 @@ class CombatEngineService:
             )
             if reroll_option is None:
                 raise ValueError("目标没有可用的职业特性豁免重掷")
-            if reroll_option.get("kind") == "countercharm_selection":
-                raise ValueError("反迷惑有多个候选反应者，必须指定反应者")
+            if reroll_option.get("kind") == "reaction_reroll_selection":
+                raise ValueError("失败豁免有多个候选反应者，必须指定反应者")
             if len(rolls) < 2:
                 raise ValueError("职业特性重掷需要提交第一次与重掷后的两个总值")
             effective_roll = (
@@ -8491,7 +8534,7 @@ class CombatEngineService:
                 ),
                 "after": None,
             }
-            if reroll_option.get("kind") == "countercharm":
+            if reroll_option.get("kind") == "reaction_reroll":
                 feature_reroll_consumed.update(
                     {
                         "resource": "reaction",
@@ -8500,7 +8543,7 @@ class CombatEngineService:
                     }
                 )
             if consume:
-                if reroll_option.get("kind") == "countercharm":
+                if reroll_option.get("kind") == "reaction_reroll":
                     if session is None:
                         raise ValueError("反迷惑反应缺少战斗上下文")
                     reactor = session.get(
@@ -11556,6 +11599,9 @@ class CombatEngineService:
             )
             if action is None or action.get("kind") != "feature_action":
                 raise ValueError("该职业特性没有可执行的运行时积木")
+            block_errors = feature_action_block_errors(action)
+            if block_errors:
+                raise ValueError("职业特性动作积木无效：" + "；".join(block_errors))
             selected_action = command.selected_action
             condition_to_remove = command.condition_to_remove
             if command.feature_id == "cunning_action":

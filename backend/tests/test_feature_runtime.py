@@ -1198,15 +1198,12 @@ def test_reactions_and_monk_defenses_publish_typed_contracts() -> None:
     assert countercharm["activation_window"] == "after_failed_saving_throw"
     assert countercharm["runtime_execution"] == {
         "status": "ready",
-        "consumer": "saving_throw_resolution",
+        "consumer": "saving_throw_reaction_window",
         "effect_kinds": ["saving_throw_reroll"],
-        "remaining_dm_boundaries": [
-            "multiple_eligible_reactors_require_dm_selection",
-            "missing_authoritative_grid_position",
-        ],
     }
-    assert countercharm["automation_status"] == "partial"
-    assert countercharm["effects"][0]["kind"] == "requires_dm_choice"
+    assert countercharm["automation_status"] == "full"
+    assert countercharm["requires_dm_adjudication"] is False
+    assert "effects" not in countercharm
 
     deflect = monk["actions"]["deflect_attacks"]
     assert deflect["name"] == "拨挡能量"
@@ -1406,7 +1403,13 @@ def test_ranger_hunters_mark_upgrades_require_explicit_state_and_feed_attack_rid
         if item["id"] == "precise_hunter:marked_target_advantage"
     )
     assert precise["operation"] == "advantage"
-    assert precise["automation_status"] == "partial"
+    assert precise["automation_status"] == "full"
+    assert precise["requires_dm_adjudication"] is False
+    assert precise["runtime_execution"] == {
+        "status": "ready",
+        "consumer": "attack_context_resolver",
+        "eligibility": "actor_state_target_id",
+    }
 
     rider = next(
         item

@@ -8,6 +8,11 @@ from copy import deepcopy
 from math import floor
 from typing import Any
 
+from dnd_dm_assistant.domain.feature_blocks import (
+    feature_action_block_ready,
+    resource_recovery_block_ready,
+    structured_target_save_status,
+)
 from dnd_dm_assistant.domain.rule_blocks import (
     CLASS_FEATURE_BLOCK_SCHEMA_VERSION,
     ClassFeatureBlock,
@@ -1172,6 +1177,11 @@ def feature_runtime_definition(
                 "condition_cure_cost": 5,
                 "condition_cure_options": ["poisoned", "diseased"],
                 "target": "ally_or_self",
+                "target_policy": {
+                    "mode": "ally_or_self",
+                    "same_faction": True,
+                    "range_ft": 5,
+                },
                 "resolution_kind": "healing",
                 "healing_formula": "lay_on_hands_pool",
                 "effects": [{"kind": "healing"}, {"kind": "condition_cure"}],
@@ -1257,27 +1267,13 @@ def feature_runtime_definition(
                 "range_ft": 30,
             },
             "reroll_mode": "advantage",
-            "effects": [
-                {
-                    "kind": "requires_dm_choice",
-                    "reason": "反迷惑需要在魅惑或恐慌豁免失败后插入反应重骰窗口。",
-                }
-            ],
             "runtime_execution": {
                 "status": "ready",
-                "consumer": "saving_throw_resolution",
+                "consumer": "saving_throw_reaction_window",
                 "effect_kinds": ["saving_throw_reroll"],
-                "remaining_dm_boundaries": [
-                    "multiple_eligible_reactors_require_dm_selection",
-                    "missing_authoritative_grid_position",
-                ],
             },
-            "automation_status": "partial",
-            "requires_dm_adjudication": True,
-            "partial_reason": (
-                "唯一符合距离和反应条件的吟游诗人可自动打开重骰窗口；"
-                "多个候选者或缺少权威位置仍需 DM 选择。"
-            ),
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
             **source,
         }
 
@@ -2040,11 +2036,16 @@ def feature_runtime_definition(
                 "operation": "advantage",
                 "scope": "outgoing",
                 "applies_when": "target_is_current_hunters_mark",
-                "automation_status": "partial",
-                "requires_dm_adjudication": True,
-                "partial_reason": (
-                    "攻击优势仅在快照明确绑定 current_hunters_mark_target_id 时自动关联；"
-                    "缺少绑定仍需 DM 裁定。"
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "attack_context_resolver",
+                    "eligibility": "actor_state_target_id",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+                "summary": (
+                    "仅当权威快照绑定的猎人印记目标一致时，攻击自动获得优势；"
+                    "缺少绑定则不生效。"
                 ),
                 **source,
             }
@@ -2200,11 +2201,16 @@ def feature_runtime_contract(
             statuses.append("full")
     for raw_resources in (definition.get("resources"), definition.get("actions")):
         if isinstance(raw_resources, Mapping):
-            statuses.extend(
-                _entry_automation_status(raw)
-                for raw in raw_resources.values()
-                if isinstance(raw, Mapping)
-            )
+            for raw in raw_resources.values():
+                if not isinstance(raw, Mapping):
+                    continue
+                entry_status = _entry_automation_status(raw)
+                resources_section = raw_resources is definition.get("resources")
+                if resources_section and not resource_recovery_block_ready(raw):
+                    entry_status = "partial"
+                if not resources_section and not structured_target_save_status(raw):
+                    entry_status = "partial"
+                statuses.append(entry_status)
     for raw in definition.get("attack_riders") or ():
         if isinstance(raw, Mapping):
             statuses.append(_entry_automation_status(raw))
@@ -2648,6 +2654,8 @@ def _feature_action_executor_ready(action: Mapping[str, Any]) -> bool:
     registry cannot expose an action button that the endpoint will reject.
     """
 
+    if not feature_action_block_ready(action):
+        return False
     execution = action.get("runtime_execution")
     if not isinstance(execution, Mapping):
         return False
@@ -2696,6 +2704,9 @@ def _feature_action_executor_ready(action: Mapping[str, Any]) -> bool:
             and effect.get("duration_value") >= 1
         ):
             return False
+    resource = action.get("resource")
+    if isinstance(resource, Mapping) and not resource_recovery_block_ready(resource):
+        return False
     declared = execution.get("effect_kinds")
     if isinstance(declared, list) and set(map(str, declared)) != effect_kinds:
         return False

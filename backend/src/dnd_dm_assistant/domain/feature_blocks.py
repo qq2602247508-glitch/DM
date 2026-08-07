@@ -1,0 +1,132 @@
+"""Small, configuration-driven contracts shared by class-feature executors.
+
+This module validates the *shape* of a feature block.  It deliberately does
+not know class or feature identifiers and it never mutates combat state.  The
+database services remain responsible for action economy, resource CAS,
+effects, prompts and idempotency.
+"""
+
+from __future__ import annotations
+
+from collections.abc import Mapping
+from typing import Any
+
+ACTION_COSTS = frozenset({"action", "bonus_action", "reaction", "none"})
+TARGET_MODES = frozenset({"self", "ally_or_self", "enemy", "any"})
+TRIGGER_WINDOWS = frozenset(
+    {
+        "turn_start",
+        "turn_end",
+        "after_failed_saving_throw",
+        "after_failed_d20_test",
+        "after_hit",
+        "before_damage",
+    }
+)
+
+
+def _mapping(value: object) -> dict[str, Any]:
+    return dict(value) if isinstance(value, Mapping) else {}
+
+
+def _positive_int(value: object) -> bool:
+    return isinstance(value, int) and not isinstance(value, bool) and value > 0
+
+
+def feature_action_block_errors(action: Mapping[str, Any]) -> tuple[str, ...]:
+    """Return structural errors for an action block, fail-closed.
+
+    The checks are intentionally data-only: an executor can use this contract
+    for a fighter, spell, condition, or test fixture without branching on an
+    identifier.
+    """
+
+    errors: list[str] = []
+    if action.get("kind") != "feature_action":
+        errors.append("kind must be feature_action")
+    cost = str(action.get("action_cost") or "none")
+    if cost not in ACTION_COSTS:
+        errors.append("action_cost is invalid")
+    trigger = action.get("trigger")
+    window = action.get("activation_window")
+    if window is not None and str(window) not in TRIGGER_WINDOWS:
+        errors.append("activation_window is invalid")
+    if trigger is not None and not isinstance(trigger, (str, Mapping)):
+        errors.append("trigger must be a string or object")
+    resource_key = str(action.get("resource_key") or "").strip()
+    resource_cost = action.get("resource_cost", 0)
+    if resource_key and (not isinstance(resource_cost, int) or resource_cost < 0):
+        errors.append("resource_cost must be a non-negative integer")
+    if resource_cost and not resource_key:
+        errors.append("resource_key is required when resource_cost is non-zero")
+    target_policy = action.get("target_policy")
+    if target_policy is not None:
+        policy = _mapping(target_policy)
+        if not policy or str(policy.get("mode") or "") not in TARGET_MODES:
+            errors.append("target_policy.mode is invalid")
+        range_ft = policy.get("range_ft")
+        if range_ft is not None and (
+            not isinstance(range_ft, int) or isinstance(range_ft, bool) or range_ft < 0
+        ):
+            errors.append("target_policy.range_ft is invalid")
+    saving_throw = action.get("saving_throw")
+    if saving_throw is not None:
+        save = _mapping(saving_throw)
+        if not str(save.get("ability") or save.get("dc_ability") or "").strip():
+            errors.append("saving_throw ability is required")
+        if save.get("initial_dc") is not None and not _positive_int(save.get("initial_dc")):
+            errors.append("saving_throw.initial_dc is invalid")
+        if save.get("dc_source") is not None and not str(save.get("dc_source") or "").strip():
+            errors.append("saving_throw.dc_source is invalid")
+    effects = action.get("effects")
+    if effects is not None and not isinstance(effects, list):
+        errors.append("effects must be a list")
+    return tuple(errors)
+
+
+def feature_action_block_ready(action: Mapping[str, Any]) -> bool:
+    """Whether the generic action/trigger/resource/target contract is valid."""
+
+    return not feature_action_block_errors(action)
+
+
+def resource_recovery_block_ready(resource: Mapping[str, Any]) -> bool:
+    """Validate explicit short/long-rest recovery fields without guessing."""
+
+    events = resource.get("recovery_events")
+    if events is None:
+        return True
+    if not isinstance(events, list):
+        return False
+    for event in events:
+        if not isinstance(event, Mapping):
+            return False
+        rest = str(event.get("rest") or "")
+        trigger = str(event.get("trigger") or "")
+        operation = str(event.get("operation") or "")
+        if rest not in {"short_rest", "long_rest"} and trigger != "initiative_start":
+            return False
+        if operation not in {"restore", "set_to", "set_to_max", "set_to_minimum"}:
+            return False
+        if operation in {"restore", "set_to", "set_to_minimum"} and not _positive_int(
+            event.get("amount", event.get("value", event.get("minimum")))
+        ):
+            return False
+    return True
+
+
+def structured_target_save_status(action: Mapping[str, Any]) -> bool:
+    """True when target, save and status outcome fields are all structured."""
+
+    policy = action.get("target_policy")
+    save = action.get("saving_throw")
+    outcomes = action.get("on_save_failure") or action.get("on_save_success")
+    if policy is None and save is None and outcomes is None:
+        return True
+    if policy is not None and not feature_action_block_ready(action):
+        return False
+    if save is not None and not isinstance(save, Mapping):
+        return False
+    if outcomes is not None and not isinstance(outcomes, list):
+        return False
+    return True
