@@ -752,6 +752,7 @@ class CombatActionCommand(BaseModel):
     is_spell_attack: bool = False
     is_sorcerer_spell: bool = False
     attack_roll_total: int | None = Field(default=None, ge=-100, le=1_000)
+    attack_d20: int | None = Field(default=None, ge=1, le=20)
     attack_range_ft: int | None = Field(default=None, ge=0, le=10_000)
     ignore_cover: bool = False
     attack_roll_mode: Literal["normal", "advantage", "disadvantage"] | None = None
@@ -925,6 +926,7 @@ class CombatActionCommand(BaseModel):
             or self.is_spell_attack
             or self.is_sorcerer_spell
             or self.attack_roll_total is not None
+            or self.attack_d20 is not None
             or self.attack_range_ft is not None
             or self.ignore_cover
             or self.attack_roll_mode is not None

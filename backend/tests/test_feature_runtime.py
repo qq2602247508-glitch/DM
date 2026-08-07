@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
 
 from fastapi.testclient import TestClient
@@ -37,6 +38,7 @@ from dnd_dm_assistant.domain.rests import RestResource, resolve_long_rest, resol
 from dnd_dm_assistant.domain.zero_hp_intervention import (
     adapt_legacy_zero_hp_intervention,
 )
+from dnd_dm_assistant.infrastructure.database.combat_service import CombatEngineService
 from dnd_dm_assistant.infrastructure.database.models import Combatant
 from dnd_dm_assistant.infrastructure.database.player_room_service import PlayerRoomService
 
@@ -309,6 +311,20 @@ def test_resource_lifecycle_roll_feature_configs_are_reusable_without_feature_br
     runtime_action = grants["grants"][0]["runtime"]["registry"]["actions"]["peerless_skill"]
     assert runtime_action["resource"]["key"] == "bardic_inspiration"
     assert runtime_action["operation"]["die_sides_expression"] == "die_sides"
+
+
+def test_generic_healing_formula_bounds_bind_die_and_ability_modifier() -> None:
+    actor = SimpleNamespace(snapshot_json={"ability_scores": {"wisdom": 16}})
+    action = {
+        "healing_formula": "martial_arts_die+wisdom_modifier",
+        "dice": "D6",
+        "minimum_healing": 1,
+    }
+    assert CombatEngineService._feature_healing_total_bounds(
+        action,
+        actor=actor,
+        character=None,
+    ) == (4, 9)
 
 
 def test_fighter_registry_exposes_attack_count_second_wind_and_action_surge() -> None:

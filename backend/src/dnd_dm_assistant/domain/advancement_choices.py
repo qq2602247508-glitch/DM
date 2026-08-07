@@ -1285,6 +1285,67 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS: dict[str, dict[str, Any]] = {
         ],
         "attack_riders": [],
     },
+    # Open Hand's healing feature is a plain bonus-action self-heal.  The
+    # generated subclass resource key is bound below at compilation time;
+    # this configuration intentionally contains no Open Hand/feature-ID
+    # branch in the executor itself.
+    "混元体": {
+        "combat_start": {"modifiers": [], "defenses": []},
+        "resources": {},
+        "actions": {
+            "wholeness_of_body": {
+                "id": "wholeness_of_body",
+                "name": "混元体",
+                "kind": "feature_action",
+                "action_cost": "bonus_action",
+                "resource_key": "$feature_resource",
+                "resource_cost": 1,
+                "target": "self",
+                "resolution_kind": "healing",
+                "healing_formula": "martial_arts_die+wisdom_modifier",
+                "dice_key": "martial_arts_die",
+                "minimum_healing": 1,
+                "resource_lifecycle": {
+                    "events": [{"trigger": "long_rest", "operation": "set_to_max"}]
+                },
+                "effects": [{"kind": "healing"}],
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "combat_feature_action",
+                    "effect_kinds": ["healing"],
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        },
+        "triggers": [],
+        "attack_riders": [],
+    },
+    "精通重击": {
+        "combat_start": {
+            "modifiers": [
+                {
+                    "id": "subclass:improved_critical:threshold",
+                    "stat": "attack_critical_threshold",
+                    "operation": "set",
+                    "scope": "outgoing",
+                    "value": 19,
+                    "applies_when": "always",
+                    "runtime_execution": {
+                        "status": "ready",
+                        "consumer": "attack_resolution",
+                    },
+                    "automation_status": "full",
+                    "requires_dm_adjudication": False,
+                }
+            ],
+            "defenses": [],
+        },
+        "resources": {},
+        "actions": {},
+        "triggers": [],
+        "attack_riders": [],
+    },
 }
 
 
@@ -1466,7 +1527,7 @@ def _subclass_resource_update(
         description,
     )
     ability_match = re.search(
-        r"(?:使用次数|使用(?:此|该)特性的次数)(?:等于|为)你的?"
+        r"(?:使用次数|使用(?:这|此|该)?(?:个)?特性的次数)(?:等于|为|相当于)你的?"
         r"(力量|敏捷|体质|智力|感知|魅力)(?:调整值|调整)",
         description,
     )
@@ -1594,6 +1655,11 @@ def subclass_runtime_grants(
                 for raw_action in raw_actions.values():
                     if not isinstance(raw_action, dict):
                         continue
+                    if raw_action.get("resource_key") == "$feature_resource":
+                        raw_action["resource_key"] = resource_key
+                    lifecycle = raw_action.get("resource_lifecycle")
+                    if isinstance(lifecycle, dict):
+                        lifecycle["key"] = resource_key
                     for field in ("resource", "eligibility"):
                         value = raw_action.get(field)
                         if isinstance(value, dict) and value.get("key") == "$feature_resource":

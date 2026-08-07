@@ -193,6 +193,36 @@ def test_subclass_aura_resistance_uses_ranged_damage_consumer() -> None:
     assert defense["ranged_passive"]["effect_kind"] == "damage_resistance"
 
 
+def test_open_hand_wholeness_uses_generic_healing_and_lifecycle_blocks() -> None:
+    result = subclass_runtime_grants(
+        {
+            "name": "散打武者",
+            "feature_definitions": [
+                {
+                    "id": "open-hand-wholeness",
+                    "name": "混元体 Wholeness of Body",
+                    "class_level": 6,
+                    "description": (
+                        "你可以使用这个特性的次数相当于你的感知调整值（至少一次），"
+                        "在你完成一次长休时，你重获全部已消耗使用次数。"
+                    ),
+                    "source_record_id": "open-hand",
+                }
+            ],
+        },
+        class_name="武僧",
+        target_class_level=6,
+        ability_scores={"wisdom": 16},
+    )
+    grant = result["grants"][0]
+    assert grant["runtime"]["automation_status"] == "full"
+    action = grant["runtime"]["registry"]["actions"]["wholeness_of_body"]
+    resource_key = next(iter(result["resources"]))
+    assert action["resource_key"] == resource_key
+    assert action["resource_lifecycle"]["key"] == resource_key
+    assert result["resources"][resource_key]["max"] == 3
+
+
 def test_spell_resistance_config_covers_magical_saves_and_damage() -> None:
     result = subclass_runtime_grants(
         {

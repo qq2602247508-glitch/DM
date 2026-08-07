@@ -4,7 +4,11 @@ from types import SimpleNamespace
 
 import pytest
 
-from dnd_dm_assistant.api.schemas import PlayerRollPromptCommand, PlayerRollResolutionCommand
+from dnd_dm_assistant.api.schemas import (
+    CombatActionCommand,
+    PlayerRollPromptCommand,
+    PlayerRollResolutionCommand,
+)
 from dnd_dm_assistant.domain.feature_runtime import compile_feature_runtime_registry
 from dnd_dm_assistant.infrastructure.database.combat_service import CombatEngineService
 from dnd_dm_assistant.infrastructure.database.models import CombatAction, Combatant, CombatEffect
@@ -126,6 +130,59 @@ def test_typed_feature_damage_resistance_is_consumed_without_feature_name_branch
     assert "bludgeoning" in resistances
     assert applied
     assert unresolved == []
+
+
+def test_critical_threshold_block_uses_authoritative_natural_d20() -> None:
+    actor = Combatant(
+        id="champion",
+        entity_type="character",
+        display_name="勇士",
+        snapshot_json={
+            "rule_modifiers": {
+                "test:critical_threshold": {
+                    "id": "test:critical_threshold",
+                    "stat": "attack_critical_threshold",
+                    "operation": "set",
+                    "scope": "outgoing",
+                    "value": 19,
+                    "applies_when": "always",
+                }
+            },
+            "feature_runtime": {
+                "combat_start": {
+                    "modifiers": [
+                        {
+                            "id": "test:critical_threshold",
+                            "stat": "attack_critical_threshold",
+                            "operation": "set",
+                            "scope": "outgoing",
+                            "value": 19,
+                            "applies_when": "always",
+                        }
+                    ]
+                }
+            }
+        },
+    )
+    assert CombatEngineService._critical_attack_context(actor, attack_d20=19) == (
+        "automatic_critical:feature_threshold"
+    )
+    assert CombatEngineService._critical_attack_context(actor, attack_d20=18) is None
+    with pytest.raises(ValueError, match="天然 d20"):
+        CombatEngineService._critical_attack_context(actor, attack_d20=None)
+    command = CombatActionCommand(
+        action_type="damage",
+        target_combatant_id="target",
+        target_version=1,
+        actor_combatant_id="champion",
+        actor_version=1,
+        amount=1,
+        damage_type="slashing",
+        is_attack=True,
+        attack_roll_total=19,
+        attack_d20=19,
+    )
+    assert command.attack_d20 == 19
 
 
 def test_jack_of_all_trades_adds_half_proficiency_only_when_explicitly_unproficient() -> None:

@@ -131,6 +131,89 @@ class CombatEngineService:
         "reckless_attack": "reckless_attack",
         "鲁莽攻击": "reckless_attack",
     }
+
+    @staticmethod
+    def _feature_healing_total_bounds(
+        action: Mapping[str, Any],
+        *,
+        actor: Combatant,
+        character: Character | None,
+    ) -> tuple[int, int] | None:
+        """Resolve bounds for configuration-driven healing expressions.
+
+        The executor accepts a small typed expression vocabulary rather than
+        branching on a feature name.  Unknown formulas remain DM-supplied and
+        therefore return ``None`` instead of being guessed.
+        """
+
+        formula = str(action.get("healing") or action.get("healing_formula") or "").strip()
+        if not formula or formula in {"lay_on_hands_pool", "amount"}:
+            return None
+        scores: Mapping[str, Any] = {}
+        snapshot_scores = (actor.snapshot_json or {}).get("ability_scores")
+        if isinstance(snapshot_scores, Mapping):
+            scores = snapshot_scores
+        elif character is not None and isinstance(character.ability_scores, Mapping):
+            scores = character.ability_scores
+        minimum = 0
+        maximum = 0
+        saw_typed_term = False
+        for raw_term in formula.split("+"):
+            term = raw_term.strip()
+            die_match = re.fullmatch(r"(?:1d|d)(\d+)", term, re.IGNORECASE)
+            if die_match:
+                sides = int(die_match.group(1))
+                if sides < 1:
+                    return None
+                minimum += 1
+                maximum += sides
+                saw_typed_term = True
+                continue
+            if term in {"martial_arts_die", "die", "dice"}:
+                raw_die = action.get("dice") or action.get("die")
+                match = re.fullmatch(r"d(\d+)", str(raw_die or ""), re.IGNORECASE)
+                if match is None:
+                    return None
+                sides = int(match.group(1))
+                minimum += 1
+                maximum += sides
+                saw_typed_term = True
+                continue
+            ability_match = re.fullmatch(
+                r"(strength|dexterity|constitution|intelligence|wisdom|charisma)_modifier",
+                term,
+            )
+            if ability_match:
+                ability = ability_match.group(1)
+                raw_score = scores.get(ability)
+                if raw_score is None:
+                    raw_score = scores.get({
+                        "strength": "力量",
+                        "dexterity": "敏捷",
+                        "constitution": "体质",
+                        "intelligence": "智力",
+                        "wisdom": "感知",
+                        "charisma": "魅力",
+                    }[ability])
+                if not isinstance(raw_score, int):
+                    return None
+                modifier = floor((raw_score - 10) / 2)
+                minimum += modifier
+                maximum += modifier
+                saw_typed_term = True
+                continue
+            literal = re.fullmatch(r"\d+", term)
+            if literal:
+                value = int(term)
+                minimum += value
+                maximum += value
+                saw_typed_term = True
+                continue
+            return None
+        if not saw_typed_term:
+            return None
+        minimum = max(1, minimum, int(action.get("minimum_healing") or 1))
+        return minimum, max(minimum, maximum)
     _ACTION_BLOCKING_CONDITIONS = {
         "incapacitated",
         "unconscious",
@@ -3902,6 +3985,33 @@ class CombatEngineService:
         return advantage, disadvantage
 
     @classmethod
+    def _critical_attack_context(
+        cls,
+        actor: Combatant,
+        *,
+        attack_d20: int | None,
+    ) -> str | None:
+        """Resolve a typed natural-d20 critical threshold, if configured."""
+
+        modifiers = cls._feature_rule_modifiers(
+            actor,
+            stat="attack_critical_threshold",
+            scope="outgoing",
+        )
+        if not modifiers:
+            return None
+        thresholds = [
+            int(item["value"])
+            for item in modifiers
+            if isinstance(item.get("value"), int)
+        ]
+        if not thresholds:
+            return None
+        if attack_d20 is None:
+            raise ValueError("该攻击需要提交天然 d20 点数以结算暴击阈值")
+        return "automatic_critical:feature_threshold" if attack_d20 >= min(thresholds) else None
+
+    @classmethod
     def _feature_defenses(cls, combatant: Combatant) -> list[dict[str, object]]:
         raw = (combatant.snapshot_json or {}).get("feature_runtime")
         if not isinstance(raw, dict):
@@ -7442,6 +7552,12 @@ class CombatEngineService:
         if feature_disadvantage:
             contexts.append("feature_attack_roll_disadvantage")
             disadvantage_sources.extend(f"feature:{source}" for source in feature_disadvantage)
+        critical_context = cls._critical_attack_context(
+            actor,
+            attack_d20=command.attack_d20,
+        )
+        if critical_context is not None:
+            contexts.append(critical_context)
         geometry = cls._attack_geometry(session, combat, command, actor, target)
         if geometry is not None:
             contexts.append(f"distance_ft:{geometry['distance_ft']}")
@@ -12318,10 +12434,13 @@ class CombatEngineService:
                 if total is None:
                     raise ValueError("该职业特性需要填写治疗骰最终总值")
                 formula = str(action.get("healing") or action.get("healing_formula") or "")
-                match = re.search(r"1d(\d+)\s*\+\s*(\d+)", formula, re.IGNORECASE)
-                if match and not command.dm_override:
-                    minimum = 1 + int(match.group(2))
-                    maximum = int(match.group(1)) + int(match.group(2))
+                bounds = self._feature_healing_total_bounds(
+                    action,
+                    actor=actor,
+                    character=character,
+                )
+                if bounds is not None and not command.dm_override:
+                    minimum, maximum = bounds
                     if not minimum <= total <= maximum:
                         raise ValueError(f"治疗骰结果应在 {minimum}–{maximum} 之间")
                 healing = resolve_healing(
