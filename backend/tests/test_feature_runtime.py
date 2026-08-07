@@ -212,6 +212,36 @@ def test_runtime_progression_includes_current_resources_proficiency_and_spell_sl
     assert registry["progression"]["spell_slots"]["spell_slots_5"]["max"] == 2
 
 
+def test_spellcasting_capability_block_uses_existing_spell_economy_consumer() -> None:
+    definition = feature_runtime_definition(
+        feature_name="施法",
+        class_name="法师",
+        class_level=1,
+    )
+    contract = feature_runtime_contract(
+        feature_name="施法",
+        class_name="法师",
+        class_level=1,
+        definition=definition,
+    )
+    assert contract["automation_status"] == "full"
+    assert contract["runtime_sections"] == ["spellcasting"]
+    registry = compile_feature_runtime_registry(
+        [
+            {
+                "name": "施法",
+                "kind": "class_feature",
+                "class_name": "法师",
+                "class_level": 1,
+                "runtime": {"registry": definition},
+            }
+        ],
+        class_levels={"法师": 1},
+        total_level=1,
+    )
+    assert registry["spellcasting"][0]["consumer"] == "spell_economy_service"
+
+
 def test_structured_recovery_events_restore_one_use_on_short_rest_and_full_on_long_rest() -> None:
     rage = progression_resource_updates(_core_rules()["野蛮人"], 15)["rage"]
     exhausted = RestResource(

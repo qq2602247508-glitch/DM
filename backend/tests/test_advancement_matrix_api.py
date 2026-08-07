@@ -354,6 +354,35 @@ def test_typed_expertise_choice_persists_and_changes_real_skill_modifier(
     assert "专精 +8" in reasons
 
 
+def test_subclass_fixed_spell_table_is_persisted_as_always_prepared(
+    matrix_client: TestClient,
+    matrix_campaign: dict[str, Any],
+) -> None:
+    paladin = _create_character(
+        matrix_client,
+        matrix_campaign["id"],
+        class_name="圣武士",
+        level=2,
+        experience=900,
+        suffix="誓言法术自动授予",
+    )
+    request = {
+        "character_version": paladin["version"],
+        "class_name": "圣武士",
+        "subclass_name": "荣耀之誓",
+        "dm_override_reason": "回归仅验证固定誓言法术表的自动准备，不覆盖法术目录规则",
+    }
+    preview = matrix_client.post(
+        _preview_path(matrix_campaign["id"], paladin["id"]),
+        json=request,
+    )
+    assert preview.status_code == 200, preview.text
+    spells = preview.json()["after"]["spells"]
+    by_name = {str(item.get("name")): item for item in spells}
+    assert by_name["光导箭"]["always_prepared"] is True
+    assert by_name["英雄气概"]["always_prepared"] is True
+
+
 @pytest.mark.parametrize("class_name", ["战士", "法师", "牧师"])
 def test_level_three_requires_and_accepts_a_catalog_subclass(
     matrix_client: TestClient,

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from copy import deepcopy
 from datetime import UTC, datetime
 from types import SimpleNamespace
@@ -69,6 +70,61 @@ XP_THRESHOLDS = (
     305000,
     355000,
 )
+
+
+def _fixed_subclass_spell_additions(
+    subclass: dict[str, Any] | None,
+    *,
+    class_name: str,
+    target_class_level: int,
+    spell_catalog: tuple[dict[str, Any], ...],
+) -> list[dict[str, Any]]:
+    """Resolve fixed subclass spell tables against the authoritative catalog.
+
+    The source parser identifies only ``always prepared`` contracts.  This
+    resolver then matches exact catalog names in those source descriptions;
+    no spell is guessed from a feature identifier or free-form client input.
+    """
+
+    if not isinstance(subclass, dict):
+        return []
+    additions: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for raw in subclass.get("feature_definitions") or ():
+        if not isinstance(raw, dict) or int(raw.get("class_level") or 0) > target_class_level:
+            continue
+        description = str(raw.get("description") or "")
+        if "你选择的这些法术" in description or "自选法术" in description:
+            continue
+        if not re.search(r"(?:始终|总是)准备着(?:特定的)?法术", description):
+            continue
+        if not re.search(r"(?:法术表|Spells|准备法术)", description, re.IGNORECASE):
+            continue
+        feature_id = str(raw.get("id") or raw.get("name") or "")
+        for spell in spell_catalog:
+            name = str(spell.get("name") or "").strip()
+            source_id = str(spell.get("source_record_id") or "").strip()
+            if len(name) < 2 or name not in description:
+                continue
+            identity = source_id or name
+            if identity in seen:
+                continue
+            seen.add(identity)
+            additions.append(
+                {
+                    **dict(spell),
+                    "name": name,
+                    "source_record_id": source_id or None,
+                    "spell_level": int(spell.get("level") or 0),
+                    "classes": list(spell.get("classes") or []),
+                    "class_name": class_name,
+                    "prepared": True,
+                    "always_prepared": True,
+                    "source_feature_id": feature_id,
+                    "source_feature_name": str(raw.get("name") or ""),
+                }
+            )
+    return additions
 
 
 class AdvancementService:
@@ -574,6 +630,7 @@ class AdvancementService:
         prepared_count = sum(
             int(spell.get("spell_level", spell.get("level", 0)) or 0) > 0
             and spell.get("prepared") is True
+            and spell.get("always_prepared") is not True
             for spell in class_spells
         )
         if target_cantrips is not None and cantrip_count != target_cantrips:
@@ -881,9 +938,24 @@ class AdvancementService:
                 enabled_content_packs=enabled_content_packs,
                 allow_legacy=allow_legacy,
             )
-            if spell_additions
+            if spell_additions or selected_subclass is not None
             else ()
         )
+        automatic_subclass_spells = _fixed_subclass_spell_additions(
+            selected_subclass,
+            class_name=class_name,
+            target_class_level=target_class_level,
+            spell_catalog=spell_catalog,
+        )
+        existing_addition_ids = {
+            str(item.get("source_record_id") or item.get("name") or "")
+            for item in spell_additions
+        }
+        for automatic in automatic_subclass_spells:
+            identity = str(automatic.get("source_record_id") or automatic.get("name") or "")
+            if identity and identity not in existing_addition_ids:
+                spell_additions.append(automatic)
+                existing_addition_ids.add(identity)
         spell_by_id = {
             str(item.get("source_record_id") or ""): item
             for item in spell_catalog
@@ -1090,6 +1162,7 @@ class AdvancementService:
             "grants": [],
             "resources": {},
             "actions": [],
+            "prepared_spell_features": [],
             "choice_requirements": [],
         }
         if selected_subclass is not None:
@@ -1103,6 +1176,9 @@ class AdvancementService:
                 )
                 subclass_runtime["grants"].extend(level_runtime["grants"])
                 subclass_runtime["actions"].extend(level_runtime["actions"])
+                subclass_runtime["prepared_spell_features"].extend(
+                    level_runtime.get("prepared_spell_features", [])
+                )
                 subclass_runtime["choice_requirements"].extend(
                     level_runtime["choice_requirements"]
                 )

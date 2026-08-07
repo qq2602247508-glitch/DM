@@ -46,6 +46,19 @@ _DAMAGE_TYPES_EXCEPT_FORCE = [
     "thunder",
 ]
 _AUTOMATION_STATUSES = frozenset({"full", "partial", "dm_only"})
+_SPELLCASTING_CLASSES = frozenset(
+    {
+        "吟游诗人",
+        "牧师",
+        "德鲁伊",
+        "术士",
+        "法师",
+        "圣武士",
+        "游侠",
+        "奇械师",
+        "魔契师",
+    }
+)
 
 # One source of truth for feature-condition lifecycle blocks.  The compiler
 # gate and combat executor both consume this table, so a newly added feature
@@ -452,6 +465,18 @@ def feature_runtime_definition(
         "triggers": [],
         "attack_riders": [],
     }
+    if identity == "施法" and class_identity in _SPELLCASTING_CLASSES:
+        # Spell slots, spell selection, and spell execution already share the
+        # character spell-economy service.  This typed capability block records
+        # that the class feature is the source of that capability; it does not
+        # infer a spell list or bypass the existing slot/selection validators.
+        definition["spellcasting"] = {
+            "kind": "spellcasting_capability",
+            "class_name": class_name,
+            "consumer": "spell_economy_service",
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+        }
     resource_values = resources or {}
     for key in tracked_resource_keys:
         value = resource_values.get(key)
@@ -2180,6 +2205,8 @@ def _runtime_sections(definition: Mapping[str, Any]) -> tuple[str, ...]:
         sections.append("triggers")
     if definition.get("attack_riders"):
         sections.append("attack_riders")
+    if definition.get("spellcasting"):
+        sections.append("spellcasting")
     return tuple(sections)
 
 
@@ -2277,6 +2304,9 @@ def feature_runtime_contract(
     for raw in definition.get("attack_riders") or ():
         if isinstance(raw, Mapping):
             statuses.append(_entry_automation_status(raw))
+    spellcasting = definition.get("spellcasting")
+    if isinstance(spellcasting, Mapping):
+        statuses.append(_entry_automation_status(spellcasting))
 
     normalized_declared = declared_status if declared_status in _AUTOMATION_STATUSES else None
     if not statuses:
@@ -2327,7 +2357,10 @@ def _has_runtime_entries(definition: Mapping[str, Any]) -> bool:
         if combat_start.get("modifiers") or combat_start.get("defenses"):
             return True
     return bool(
-        definition.get("resources") or definition.get("actions") or definition.get("attack_riders")
+        definition.get("resources")
+        or definition.get("actions")
+        or definition.get("attack_riders")
+        or definition.get("spellcasting")
     )
 
 
@@ -2528,6 +2561,7 @@ def compile_feature_runtime_registry(
     defenses: dict[str, dict[str, Any]] = {}
     resource_registry: dict[str, dict[str, Any]] = {}
     action_registry: dict[str, dict[str, Any]] = {}
+    spellcasting_registry: list[dict[str, Any]] = []
     trigger_registry: list[dict[str, Any]] = []
     riders: dict[str, dict[str, Any]] = {}
     feature_contracts: dict[str, dict[str, Any]] = {}
@@ -2648,6 +2682,10 @@ def compile_feature_runtime_registry(
                             entry["dice"] = dice["value"]
                     action_registry[str(key)] = entry
 
+        raw_spellcasting = definition.get("spellcasting")
+        if isinstance(raw_spellcasting, Mapping):
+            spellcasting_registry.append(deepcopy(dict(raw_spellcasting)))
+
         for raw_trigger in definition.get("triggers") or ():
             if isinstance(raw_trigger, Mapping):
                 trigger_registry.append(deepcopy(dict(raw_trigger)))
@@ -2705,6 +2743,7 @@ def compile_feature_runtime_registry(
         },
         "resources": resource_registry,
         "actions": action_registry,
+        "spellcasting": spellcasting_registry,
         "triggers": trigger_registry,
         "attack_riders": list(riders.values()),
         "feature_contracts": contracts,

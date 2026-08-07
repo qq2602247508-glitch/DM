@@ -1205,6 +1205,18 @@ def subclass_feature_runtime_definition(
             if name.startswith(prefix):
                 config = candidate
                 break
+    spell_contract = _subclass_prepared_spell_contract(
+        str(definition.get("description") or "")
+    )
+    if config is None and spell_contract is not None:
+        return {
+            "combat_start": {"modifiers": [], "defenses": []},
+            "resources": {},
+            "actions": {},
+            "triggers": [],
+            "attack_riders": [],
+            "prepared_spell_list": spell_contract,
+        }
     if config is None:
         return None
     runtime = deepcopy(config)
@@ -1307,6 +1319,35 @@ def _subclass_choice_schema(description: str) -> dict[str, Any] | None:
         "options_source": "subclass.feature.description",
         "requires_dm_selection": True,
         "reason": "来源文本要求选择，但选项全集或前置条件未可靠结构化；请由 DM 选择并记录。",
+    }
+
+
+def _subclass_prepared_spell_contract(description: str) -> dict[str, Any] | None:
+    """Recognise only fixed, always-prepared spell lists.
+
+    This is deliberately narrower than the generic word ``法术``.  A list is
+    eligible only when the source explicitly says the spells are always
+    prepared; choice-bound lists (for example, ``你选择的这些法术``) remain
+    DM/partial until their selection is persisted by a separate choice block.
+    The executor later resolves names against the authoritative spell catalog.
+    """
+
+    text = str(description or "")
+    if "你选择的这些法术" in text or "自选法术" in text:
+        return None
+    if not re.search(r"(?:始终|总是)准备着(?:特定的)?法术", text):
+        return None
+    if not re.search(r"(?:法术表|Spells|准备法术)", text, re.IGNORECASE):
+        return None
+    return {
+        "kind": "always_prepared_spell_list",
+        "source": "subclass_feature_description",
+        "runtime_execution": {
+            "status": "ready",
+            "consumer": "spell_selection_and_preparation",
+        },
+        "automation_status": "full",
+        "requires_dm_adjudication": False,
     }
 
 
@@ -1425,6 +1466,7 @@ def subclass_runtime_grants(
     grants: list[dict[str, Any]] = []
     resources: dict[str, dict[str, Any]] = {}
     actions: list[dict[str, Any]] = []
+    prepared_spell_features: list[dict[str, Any]] = []
     requirements: list[dict[str, Any]] = []
     choices = selected_choices or {}
     for definition in definitions:
@@ -1442,6 +1484,22 @@ def subclass_runtime_grants(
         if action is not None:
             actions.append(action)
         runtime_registry = subclass_feature_runtime_definition(definition)
+        spell_contract = _subclass_prepared_spell_contract(str(definition.get("description") or ""))
+        if spell_contract is not None:
+            runtime_registry = {
+                **(runtime_registry or {"combat_start": {"modifiers": [], "defenses": []}}),
+                "prepared_spell_list": spell_contract,
+            }
+            prepared_spell_features.append(
+                {
+                    "feature_id": feature_id,
+                    "feature_name": str(definition.get("name") or ""),
+                    "class_name": class_name,
+                    "class_level": target_class_level,
+                    "source_record_id": definition.get("source_record_id"),
+                    "description": str(definition.get("description") or ""),
+                }
+            )
         runtime_status = (
             "full"
             if runtime_registry is not None
@@ -1484,6 +1542,7 @@ def subclass_runtime_grants(
         "grants": grants,
         "resources": resources,
         "actions": actions,
+        "prepared_spell_features": prepared_spell_features,
         "choice_requirements": requirements,
     }
 

@@ -219,6 +219,56 @@ def test_spell_resistance_config_covers_magical_saves_and_damage() -> None:
     }
 
 
+def test_fixed_subclass_spell_list_is_a_generic_always_prepared_block() -> None:
+    result = subclass_runtime_grants(
+        {
+            "name": "荣耀之誓",
+            "feature_definitions": [
+                {
+                    "id": "glory-spells",
+                    "name": "荣耀之誓法术 Oath of Glory Spells",
+                    "class_level": 3,
+                    "description": (
+                        "你誓言具有的魔法使你始终准备着特定的法术。"
+                        "| 圣武士等级 | 准备法术 |\n"
+                        "| 3 | 光导箭Guiding Bolt，英雄气概Heroism |"
+                    ),
+                    "source_record_id": "glory-spells",
+                }
+            ],
+        },
+        class_name="圣武士",
+        target_class_level=3,
+    )
+    grant = result["grants"][0]
+    assert grant["runtime"]["automation_status"] == "full"
+    assert grant["runtime"]["registry"]["prepared_spell_list"]["kind"] == (
+        "always_prepared_spell_list"
+    )
+    assert result["prepared_spell_features"][0]["feature_id"] == "glory-spells"
+
+
+def test_choice_bound_subclass_spell_list_does_not_become_always_prepared() -> None:
+    result = subclass_runtime_grants(
+        {
+            "name": "逸闻学院",
+            "feature_definitions": [
+                {
+                    "id": "magical-discoveries",
+                    "name": "魔法探秘 Magical Discoveries",
+                    "class_level": 6,
+                    "description": "你习得两道自选法术，并始终准备着你选择的这些法术。",
+                    "source_record_id": "magical-discoveries",
+                }
+            ],
+        },
+        class_name="吟游诗人",
+        target_class_level=6,
+    )
+    assert result["grants"][0]["runtime"]["automation_status"] == "dm_only"
+    assert result["prepared_spell_features"] == []
+
+
 def test_mindless_rage_declares_conditional_immunity_and_clear_trigger() -> None:
     result = subclass_runtime_grants(
         {
