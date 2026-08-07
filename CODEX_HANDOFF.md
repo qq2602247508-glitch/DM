@@ -1,3 +1,12 @@
+# 2026-08-07 通用掷骰干预与首份 post-hit rider 生产接线
+
+- 代码提交 `9e3dcd6`。`PlayerRollResolutionCommand` 新增通用 `roll_intervention_id/inputs`；失败 D20 检定会从角色冻结的 `feature_runtime.actions` 中按触发和结构化资格筛选配置，持久化进入 `awaiting_roll_intervention`，第二次确认调用 ID 无关的 `apply_roll_intervention()`，并在同一确认事务中按返回的资源提交计划扣除角色资源、同步战斗快照。动作已确认后重放直接返回原结果，不会再次消费。
+- 战术思维是第一份生产配置：仅适用于失败属性检定，要求权威 `second_wind` 资源，玩家输入 1d10；补救成功才消耗一次回气，仍失败则资源保持不变。真实 API 回归覆盖开窗、12+4 对 DC15 成功、资源 2→1 和幂等重放；执行器不识别 `tactical_mind` ID。
+- 屠灭众敌迁移为第一份生产 `post_hit_rider` 配置：`after_hit`、敌对目标、攻击标签、`actor_state_target_id_keys`、1d10 力场伤害输入全部由配置声明；玩家攻击消费者调用通用 `resolve_post_hit_rider()`，只有权威 `current_hunters_mark_target_id` 与当前目标一致时校验骰值并加入真实伤害。旧 `attack_rider_totals` 只由输入兼容适配器翻译到新 input key；适配器不是积木。
+- 自动化数量：上一提交为 `full 110 / partial 43 / dm_only 105`；现在为 `full 112 / partial 42 / dm_only 104`（总数 258）。净增 `full +2`：战术思维 `dm_only→full`，屠灭众敌 `partial→full`；完整自动化率 `42.6%→43.4%`。已有 full 的不屈/可靠才能/幸运一击等不会因通用积木存在而重复计数。
+- 玩家仍必须输入实际 d10；系统不替玩家掷骰。仍未自动化：震慑拳成功/失败两分支、凶蛮打击的放弃优势和移动/持续效果、诡诈打击的偷袭骰牺牲与多选项、受祝击/元素之怒的升级分支，以及通用 post-hit rider 的持久化目标豁免 prompt/资源/状态写入链。仅有领域执行器或测试配置的条目继续保持 partial/dm_only。
+- 验证：相关职业/战斗整文件回归通过；后端全量 `pytest -q backend/tests`、Ruff、compileall、`git diff --check` 通过；仅有既有 Starlette/httpx 弃用警告。本轮无前端源码变化，未做也未声称浏览器验收。用户未跟踪的 `backend/tests/integrations/` 与 `backend/tests/ollama.py` 仍保持未暂存。
+
 # 2026-08-07 掷骰干预、命中后骑手与范围被动通用积木
 
 - 代码提交 `46d439c`。新增两个不识别职业或特性 ID 的领域执行器：`roll_intervention.py` 只按触发、资格、操作、输入、资源策略和幂等字段执行重掷、加值/加骰、优势/劣势、最低值、替换 d20 与失败补救；`attack_rider.py` 只按 `after_hit`、实体/阵营/状态/动作标签/等级资格、频率、资源、附伤、目标豁免和成功/失败效果执行，并可生成 condition/move/modifier 兼容 RuleBlock。
