@@ -96,7 +96,9 @@ def _fixed_subclass_spell_additions(
         description = str(raw.get("description") or "")
         if "你选择的这些法术" in description or "自选法术" in description:
             continue
-        if not re.search(r"(?:始终|总是)准备着(?:特定的)?法术", description):
+        if not re.search(
+            r"(?:始终|总是)准备着(?:特定的法术|表中对应的法术)", description
+        ):
             continue
         if not re.search(r"(?:法术表|Spells|准备法术)", description, re.IGNORECASE):
             continue

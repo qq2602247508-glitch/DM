@@ -1335,7 +1335,7 @@ def _subclass_prepared_spell_contract(description: str) -> dict[str, Any] | None
     text = str(description or "")
     if "你选择的这些法术" in text or "自选法术" in text:
         return None
-    if not re.search(r"(?:始终|总是)准备着(?:特定的)?法术", text):
+    if not re.search(r"(?:始终|总是)准备着(?:特定的法术|表中对应的法术)", text):
         return None
     if not re.search(r"(?:法术表|Spells|准备法术)", text, re.IGNORECASE):
         return None

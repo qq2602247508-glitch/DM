@@ -229,7 +229,7 @@ def test_fixed_subclass_spell_list_is_a_generic_always_prepared_block() -> None:
                     "name": "荣耀之誓法术 Oath of Glory Spells",
                     "class_level": 3,
                     "description": (
-                        "你誓言具有的魔法使你始终准备着特定的法术。"
+                        "你誓言具有的魔法使你始终准备着表中对应的法术。"
                         "| 圣武士等级 | 准备法术 |\n"
                         "| 3 | 光导箭Guiding Bolt，英雄气概Heroism |"
                     ),
