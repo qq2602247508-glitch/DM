@@ -1028,6 +1028,39 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS: dict[str, dict[str, Any]] = {
         "triggers": [],
         "attack_riders": [],
     },
+    # Mercy's Implements is another fixed proficiency-only grant.  It reuses
+    # the exact same typed sheet consumer as Assassin's Tools; the executor
+    # has no monk/subclass-specific branch.
+    "操命本事": {
+        "combat_start": {"modifiers": [], "defenses": []},
+        "proficiencies": [
+            {
+                "kind": "skill",
+                "name": "洞悉",
+                "operation": "grant",
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            },
+            {
+                "kind": "skill",
+                "name": "医药",
+                "operation": "grant",
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            },
+            {
+                "kind": "tool",
+                "name": "草药工具",
+                "operation": "grant",
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            },
+        ],
+        "resources": {},
+        "actions": {},
+        "triggers": [],
+        "attack_riders": [],
+    },
     # These two entries use the same roll-intervention and resource-lifecycle
     # consumers as core features.  The feature name is only the source-side
     # configuration selector; the executor consumes typed trigger, eligibility,

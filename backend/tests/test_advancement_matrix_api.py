@@ -293,23 +293,34 @@ def test_asi_is_an_atomic_sheet_grant_and_preview_exposes_runtime_registry(
     )
 
 
-def test_fixed_assassin_tools_proficiency_persists_through_level_up(
+@pytest.mark.parametrize(
+    ("class_name", "subclass_marker", "feature_marker", "expected_proficiencies"),
+    [
+        ("游荡者", "刺客", "刺客工具", ("易容工具", "毒药工具")),
+        ("武僧", "命流武者", "操命本事", ("洞悉", "医药", "草药工具")),
+    ],
+)
+def test_fixed_subclass_proficiencies_persist_through_level_up(
     matrix_client: TestClient,
     matrix_campaign: dict[str, Any],
     character_options: dict[str, Any],
+    class_name: str,
+    subclass_marker: str,
+    feature_marker: str,
+    expected_proficiencies: tuple[str, ...],
 ) -> None:
     assassin = next(
         item["name"]
-        for item in _class_option(character_options, "游荡者")["subclasses"]
-        if "刺客" in item["name"]
+        for item in _class_option(character_options, class_name)["subclasses"]
+        if subclass_marker in item["name"]
     )
     rogue = _create_character(
         matrix_client,
         matrix_campaign["id"],
-        class_name="游荡者",
+        class_name=class_name,
         level=3,
         experience=2_700,
-        suffix="刺客工具真实授予",
+        suffix=f"{subclass_marker}固定熟练真实授予",
         subclass_name=assassin,
     )
     path = _preview_path(matrix_campaign["id"], rogue["id"])
@@ -317,18 +328,18 @@ def test_fixed_assassin_tools_proficiency_persists_through_level_up(
         path,
         json={
             "character_version": rogue["version"],
-            "class_name": "游荡者",
+            "class_name": class_name,
             "ability_increases": {"dexterity": 2},
         },
     )
     assert response.status_code == 200, response.text
     preview = response.json()
-    assert "易容工具" in preview["after"]["proficiencies"]
-    assert "毒药工具" in preview["after"]["proficiencies"]
+    for proficiency in expected_proficiencies:
+        assert proficiency in preview["after"]["proficiencies"]
     grant = next(
         item
         for item in preview["features_gained"]
-        if item.get("name", "").startswith("刺客工具")
+        if item.get("name", "").startswith(feature_marker)
     )
     assert grant["runtime"]["automation_status"] == "full"
 
@@ -336,18 +347,18 @@ def test_fixed_assassin_tools_proficiency_persists_through_level_up(
         path.replace("/preview", "/confirm"),
         json={
             "character_version": rogue["version"],
-            "class_name": "游荡者",
+            "class_name": class_name,
             "ability_increases": {"dexterity": 2},
             "preview_token": preview["preview_token"],
-            "idempotency_key": "assassin-tools-proficiency-0001",
+            "idempotency_key": f"{subclass_marker}-fixed-proficiency-0001",
         },
     )
     assert confirmed.status_code == 200, confirmed.text
     persisted = matrix_client.get(
         f"/api/v1/campaigns/{matrix_campaign['id']}/characters/{rogue['id']}"
     ).json()
-    assert "易容工具" in persisted["proficiencies"]
-    assert "毒药工具" in persisted["proficiencies"]
+    for proficiency in expected_proficiencies:
+        assert proficiency in persisted["proficiencies"]
 
 
 def test_typed_expertise_choice_persists_and_changes_real_skill_modifier(

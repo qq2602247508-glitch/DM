@@ -218,6 +218,32 @@ def test_fixed_subclass_tool_proficiency_uses_typed_sheet_consumer() -> None:
     ]
 
 
+def test_fixed_mercy_proficiencies_reuse_the_same_typed_consumer() -> None:
+    result = subclass_runtime_grants(
+        {
+            "name": "命流武者",
+            "feature_definitions": [
+                {
+                    "id": "mercy-implements",
+                    "name": "操命本事 Implements of Mercy",
+                    "class_level": 3,
+                    "description": "你获得洞悉和医药的熟练，并且获得草药工具的熟练。",
+                    "source_record_id": "mercy-implements",
+                }
+            ],
+        },
+        class_name="武僧",
+        target_class_level=3,
+    )
+    grant = result["grants"][0]
+    assert grant["runtime"]["automation_status"] == "full"
+    assert [item["name"] for item in grant["runtime"]["registry"]["proficiencies"]] == [
+        "洞悉",
+        "医药",
+        "草药工具",
+    ]
+
+
 def test_open_hand_wholeness_uses_generic_healing_and_lifecycle_blocks() -> None:
     result = subclass_runtime_grants(
         {
