@@ -1571,3 +1571,12 @@ backend/.venv/bin/python -m pytest -q backend/tests
 - 代码提交 `49dbd5c`：玩家房间投影现在安全暴露伤害前窗口的候选特性及其减伤输入要求；玩家页在多个候选时显示选择框，提交所选 `feature_id`，单候选旧行为保持不变。提示文案改为配置中性描述，不把任意配置误称为直觉闪避或偏转攻击。
 - 验证：前端 Vitest `39 文件 / 204 项`、TypeScript、ESLint、生产构建全部通过；本地后端/前端启动后，浏览器实际加载 DM 首页和 `#/player` 玩家入口，后端状态正常，控制台 error/warn 为空。没有伪造具体反应窗口截图；当前数据库没有可直接投影的多候选玩家战斗窗口。
 - 用户未跟踪的 `backend/tests/integrations/`、`backend/tests/ollama.py` 仍未纳入提交。
+
+# 2026-08-07 自动化迁移工厂首批：固定子职工具熟练
+
+- 代码提交 `65ed1ac`：新增迁移预审器 `scripts/plan-feature-automation-migrations.py`。它固定审计范围 499 条，区分 `already_full`、缺运行时合同、消费者不完整、人工边界、缺源码和待合同复核；预审候选不会自动改成 `full`。
+- 新增通用 `proficiencies` 运行时合同与注册表消费。生产配置只声明工具种类、名称和 `grant` 操作；升级事务把固定、结构化的子职工具熟练写入角色权威 `proficiencies`，不按执行器中的特性 ID 分支。
+- 首个真实使用者：游荡者·刺客「刺客工具」固定授予易容工具、毒药工具熟练。预览、确认和持久化升级 API 回归均验证状态真实写入；499 条审计从 `full 161 / partial 246 / dm_only 92` 变为 `full 162 / partial 245 / dm_only 92`，真实净增 `+1`。
+- 当前迁移预审状态：`already_full 162`、`missing_runtime_contract 227`、`needs_contract_review 14`、`consumer_partial 50`、`manual_boundary 11`、`missing_source 35`。这些是执行准备状态，不是可承诺的新增 full 数量。
+- 仍需玩家/DM 输入：选择型附赠熟练、战斗风格、武器精通和其他开放分支仍保持原边界；本批没有把选择字段或特性名称误报为完整效果。
+- 验证：相关定向测试、`backend/.venv/bin/pytest -q backend/tests` 全量通过；Ruff、compileall、`git diff --check` 通过。文档与审计产物另行提交；用户未跟踪的 `backend/tests/integrations/`、`backend/tests/ollama.py` 未纳入提交。本轮无前端源码变更。

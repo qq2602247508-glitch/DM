@@ -5,7 +5,7 @@
 - 总条目：499
 - 核心职业：12 个，特性 258 条
 - 子职业：56 个，显式等级特性 241 条
-- 运行时状态：`{'partial': 246, 'full': 161, 'dm_only': 92}`
+- 运行时状态：`{'partial': 245, 'full': 162, 'dm_only': 92}`
 - 源码读取状态：`{'description_located': 415, 'structural_placeholder': 35, 'description_reused': 49}`
 
 ## 积木覆盖（允许重叠）
