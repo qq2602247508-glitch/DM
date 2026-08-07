@@ -5,7 +5,7 @@
 - 总条目：499
 - 核心职业：12 个，特性 258 条
 - 子职业：56 个，显式等级特性 241 条
-- 运行时状态：`{'partial': 271, 'dm_only': 99, 'full': 129}`
+- 运行时状态：`{'partial': 259, 'full': 148, 'dm_only': 92}`
 - 源码读取状态：`{'description_located': 415, 'structural_placeholder': 35, 'description_reused': 49}`
 
 ## 积木覆盖（允许重叠）
@@ -13,13 +13,13 @@
 | 积木 | 源码候选 | full | partial | dm_only |
 |---|---:|---:|---:|---:|
 | 成长授予/升级选择 | 86 | 57 | 28 | 1 |
-| 施法框架/法术修改 | 126 | 8 | 92 | 26 |
+| 施法框架/法术修改 | 126 | 27 | 80 | 19 |
 | 法术框架详细修改 | 1 | 0 | 0 | 1 |
-| 法术选择/准备 | 58 | 3 | 41 | 14 |
+| 法术选择/准备 | 58 | 22 | 29 | 7 |
 | 动作经济 | 72 | 8 | 63 | 1 |
-| 动作经济与触发条件 | 225 | 34 | 161 | 30 |
-| 资源/恢复/频率 | 195 | 28 | 141 | 26 |
-| 资源/恢复绑定 | 66 | 8 | 44 | 14 |
+| 动作经济与触发条件 | 225 | 53 | 149 | 23 |
+| 资源/恢复/频率 | 195 | 35 | 141 | 19 |
+| 资源/恢复绑定 | 66 | 15 | 44 | 7 |
 | 伤害/治疗 | 135 | 20 | 101 | 14 |
 | 伤害前/防御干预 | 17 | 3 | 13 | 1 |
 | 光环/范围被动 | 83 | 5 | 74 | 4 |
@@ -29,9 +29,9 @@
 | 目标/范围/豁免组合 | 82 | 4 | 73 | 5 |
 | 移动/位移 | 38 | 2 | 35 | 1 |
 | 0 HP/死亡生命周期 | 8 | 2 | 5 | 1 |
-| 状态生命周期 | 90 | 19 | 67 | 4 |
-| 召唤/伙伴 | 19 | 1 | 17 | 1 |
-| 创造物/世界状态 | 20 | 1 | 16 | 3 |
+| 状态生命周期 | 90 | 23 | 64 | 3 |
+| 召唤/伙伴 | 19 | 3 | 15 | 1 |
+| 创造物/世界状态 | 20 | 3 | 16 | 1 |
 | 语言/开放叙事 | 1 | 0 | 0 | 1 |
 | 多分支选择 | 6 | 0 | 4 | 2 |
 
@@ -39,7 +39,6 @@
 
 | 范围 | 职业 | 子职业 | 等级 | 特性 | 源码状态 | 运行时 | 检测积木 |
 |---|---|---|---:|---|---|---|---|
-| core | 吟游诗人 | — | 1 | 施法 | description_located | dm_only | 施法框架/法术修改、法术选择/准备、动作经济与触发条件、资源/恢复/频率、资源/恢复绑定、状态生命周期 |
 | core | 吟游诗人 | — | 3 | 吟游诗人子职 | description_located | dm_only | 未检测到 |
 | core | 吟游诗人 | — | 6 | 子职特性 | structural_placeholder | dm_only | 未检测到 |
 | core | 吟游诗人 | — | 8 | 属性值提升 | description_reused | full | 成长授予/升级选择 |
@@ -49,7 +48,6 @@
 | core | 吟游诗人 | — | 14 | 子职特性 | structural_placeholder | dm_only | 未检测到 |
 | core | 吟游诗人 | — | 16 | 属性值提升 | description_reused | full | 成长授予/升级选择 |
 | core | 吟游诗人 | — | 20 | 创生圣言 | description_located | dm_only | 施法框架/法术修改、法术框架详细修改、法术选择/准备、动作经济与触发条件、光环/范围被动、目标/范围/豁免组合 |
-| core | 圣武士 | — | 1 | 施法 | description_located | dm_only | 施法框架/法术修改、法术选择/准备、动作经济与触发条件、资源/恢复/频率、资源/恢复绑定 |
 | core | 圣武士 | — | 3 | 圣武士子职 | description_located | dm_only | 资源/恢复/频率 |
 | core | 圣武士 | — | 5 | 信实坐骑 | description_located | dm_only | 施法框架/法术修改、法术选择/准备、资源/恢复/频率 |
 | core | 圣武士 | — | 7 | 子职特性 | structural_placeholder | dm_only | 未检测到 |
@@ -62,7 +60,6 @@
 | core | 圣武士 | — | 20 | 子职特性 | structural_placeholder | dm_only | 未检测到 |
 | core | 德鲁伊 | — | 1 | 德鲁伊语 | description_located | dm_only | 施法框架/法术修改、法术选择/准备、豁免/DC、语言/开放叙事 |
 | core | 德鲁伊 | — | 1 | 原初职能 | description_located | dm_only | 施法框架/法术修改、法术选择/准备、多分支选择 |
-| core | 德鲁伊 | — | 1 | 施法 | description_located | dm_only | 施法框架/法术修改、法术选择/准备、动作经济与触发条件、资源/恢复/频率、资源/恢复绑定 |
 | core | 德鲁伊 | — | 2 | 荒野伙伴 | description_located | dm_only | 施法框架/法术修改、动作经济、动作经济与触发条件、资源/恢复/频率、资源/恢复绑定、召唤/伙伴 |
 | core | 德鲁伊 | — | 3 | 德鲁伊子职 | description_located | dm_only | 未检测到 |
 | core | 德鲁伊 | — | 5 | 荒野复苏 | description_located | dm_only | 施法框架/法术修改、资源/恢复/频率、资源/恢复绑定 |
@@ -89,7 +86,6 @@
 | core | 战士 | — | 17 | 动作如潮（两次） | description_reused | full | 资源/恢复/频率 |
 | core | 战士 | — | 17 | 不屈（三次） | description_reused | full | 动作经济与触发条件、资源/恢复/频率、掷骰干预、豁免/DC |
 | core | 战士 | — | 18 | 子职特性 | structural_placeholder | dm_only | 未检测到 |
-| core | 术士 | — | 1 | 施法 | description_located | dm_only | 施法框架/法术修改、法术选择/准备、动作经济与触发条件、资源/恢复/频率、资源/恢复绑定 |
 | core | 术士 | — | 2 | 超魔法 | description_located | dm_only | 动作经济与触发条件、资源/恢复/频率 |
 | core | 术士 | — | 3 | 术士子职 | description_located | dm_only | 未检测到 |
 | core | 术士 | — | 6 | 子职特性 | structural_placeholder | dm_only | 未检测到 |
@@ -114,7 +110,6 @@
 | core | 武僧 | — | 16 | 属性值提升 | description_reused | full | 成长授予/升级选择 |
 | core | 武僧 | — | 17 | 子职特性 | structural_placeholder | dm_only | 未检测到 |
 | core | 武僧 | — | 20 | 天人合一 | description_located | dm_only | 未检测到 |
-| core | 法师 | — | 1 | 施法 | description_located | dm_only | 施法框架/法术修改、法术选择/准备、动作经济与触发条件、资源/恢复/频率、资源/恢复绑定、创造物/世界状态 |
 | core | 法师 | — | 1 | 仪式学家 | description_located | dm_only | 施法框架/法术修改 |
 | core | 法师 | — | 3 | 法师子职 | description_located | dm_only | 未检测到 |
 | core | 法师 | — | 5 | 记忆法术 | description_located | dm_only | 施法框架/法术修改、动作经济与触发条件、资源/恢复/频率 |
@@ -126,7 +121,6 @@
 | core | 法师 | — | 16 | 属性值提升 | description_reused | full | 成长授予/升级选择 |
 | core | 法师 | — | 18 | 法术精通 | description_located | dm_only | 施法框架/法术修改、动作经济与触发条件、资源/恢复/频率、资源/恢复绑定 |
 | core | 法师 | — | 20 | 招牌法术 | description_located | dm_only | 施法框架/法术修改、资源/恢复/频率、资源/恢复绑定 |
-| core | 游侠 | — | 1 | 施法 | description_located | dm_only | 施法框架/法术修改、法术选择/准备、动作经济与触发条件、资源/恢复/频率、资源/恢复绑定、创造物/世界状态 |
 | core | 游侠 | — | 2 | 熟练探险家 | description_located | dm_only | 成长授予/升级选择 |
 | core | 游侠 | — | 3 | 游侠子职业 | description_located | dm_only | 未检测到 |
 | core | 游侠 | — | 6 | 越野 | description_located | dm_only | 未检测到 |
@@ -150,7 +144,6 @@
 | core | 游荡者 | — | 14 | 凶狡打击 | description_located | dm_only | 伤害/治疗、豁免/DC、目标/范围/豁免组合、0 HP/死亡生命周期、状态生命周期 |
 | core | 游荡者 | — | 16 | 属性值提升 | description_reused | full | 成长授予/升级选择 |
 | core | 游荡者 | — | 17 | 子职特性 | structural_placeholder | dm_only | 未检测到 |
-| core | 牧师 | — | 1 | 施法 | description_located | dm_only | 施法框架/法术修改、法术选择/准备、动作经济与触发条件、资源/恢复/频率、资源/恢复绑定 |
 | core | 牧师 | — | 1 | 圣职 | description_located | dm_only | 施法框架/法术修改、法术选择/准备 |
 | core | 牧师 | — | 3 | 牧师子职 | description_located | dm_only | 未检测到 |
 | core | 牧师 | — | 5 | 灼净亡灵 | description_located | dm_only | 动作经济与触发条件、伤害/治疗、豁免/DC |
