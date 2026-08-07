@@ -5,7 +5,7 @@
 - 总条目：499
 - 核心职业：12 个，特性 258 条
 - 子职业：56 个，显式等级特性 241 条
-- 运行时状态：`{'partial': 275, 'dm_only': 101, 'full': 123}`
+- 运行时状态：`{'partial': 271, 'dm_only': 99, 'full': 129}`
 - 源码读取状态：`{'description_located': 415, 'structural_placeholder': 35, 'description_reused': 49}`
 
 ## 积木覆盖（允许重叠）
@@ -17,19 +17,19 @@
 | 法术框架详细修改 | 1 | 0 | 0 | 1 |
 | 法术选择/准备 | 58 | 3 | 41 | 14 |
 | 动作经济 | 72 | 8 | 63 | 1 |
-| 动作经济与触发条件 | 225 | 32 | 162 | 31 |
+| 动作经济与触发条件 | 225 | 34 | 161 | 30 |
 | 资源/恢复/频率 | 195 | 28 | 141 | 26 |
 | 资源/恢复绑定 | 66 | 8 | 44 | 14 |
-| 伤害/治疗 | 135 | 18 | 103 | 14 |
+| 伤害/治疗 | 135 | 20 | 101 | 14 |
 | 伤害前/防御干预 | 17 | 3 | 13 | 1 |
 | 光环/范围被动 | 83 | 5 | 74 | 4 |
-| 掷骰干预 | 49 | 14 | 35 | 0 |
+| 掷骰干预 | 49 | 15 | 34 | 0 |
 | 命中后骑手 | 13 | 1 | 10 | 2 |
-| 豁免/DC | 82 | 17 | 58 | 7 |
+| 豁免/DC | 82 | 18 | 57 | 7 |
 | 目标/范围/豁免组合 | 82 | 4 | 73 | 5 |
 | 移动/位移 | 38 | 2 | 35 | 1 |
 | 0 HP/死亡生命周期 | 8 | 2 | 5 | 1 |
-| 状态生命周期 | 90 | 17 | 69 | 4 |
+| 状态生命周期 | 90 | 19 | 67 | 4 |
 | 召唤/伙伴 | 19 | 1 | 17 | 1 |
 | 创造物/世界状态 | 20 | 1 | 16 | 3 |
 | 语言/开放叙事 | 1 | 0 | 0 | 1 |
@@ -76,7 +76,6 @@
 | core | 德鲁伊 | — | 16 | 属性值提升 | description_reused | full | 成长授予/升级选择 |
 | core | 德鲁伊 | — | 18 | 兽形施法 | description_located | dm_only | 施法框架/法术修改、资源/恢复/频率 |
 | core | 战士 | — | 3 | 战士子职 | description_located | dm_only | 未检测到 |
-| core | 战士 | — | 5 | 战术转进 | description_located | dm_only | 动作经济与触发条件 |
 | core | 战士 | — | 6 | 属性值提升 | description_reused | full | 成长授予/升级选择 |
 | core | 战士 | — | 7 | 子职特性 | structural_placeholder | dm_only | 未检测到 |
 | core | 战士 | — | 8 | 属性值提升 | description_reused | full | 成长授予/升级选择 |
@@ -165,7 +164,6 @@
 | core | 野蛮人 | — | 3 | 野蛮人子职 | description_located | dm_only | 创造物/世界状态 |
 | core | 野蛮人 | — | 3 | 原初学识 | description_located | dm_only | 动作经济与触发条件 |
 | core | 野蛮人 | — | 6 | 子职特性 | structural_placeholder | dm_only | 未检测到 |
-| core | 野蛮人 | — | 7 | 莽驰 | description_located | dm_only | 未检测到 |
 | core | 野蛮人 | — | 8 | 属性值提升 | description_reused | full | 成长授予/升级选择 |
 | core | 野蛮人 | — | 10 | 子职特性 | structural_placeholder | dm_only | 未检测到 |
 | core | 野蛮人 | — | 12 | 属性值提升 | description_reused | full | 成长授予/升级选择 |
