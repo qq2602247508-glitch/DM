@@ -1,3 +1,15 @@
+# 2026-08-07 资源生命周期积木第一批真实接线
+
+- 代码提交：`ea09d4c feat: add reusable resource lifecycle blocks`；无前端源码变更。
+- 新增通用 `resource_lifecycle` 合同与解析器：只读取资源 key、短休/长休/先攻/回合事件、restore/set_to/set_to_max/set_to_minimum 和显式条件；休息服务与先攻开始恢复共用同一解析器，未知事件 fail-closed。执行器不识别职业或特性 ID。
+- 新增通用动态骰面绑定：掷骰干预可从资源 `value`（如 D6/D8/D12）绑定骰面，不把固定骰面写死在执行器；仍由玩家/DM 提交实际骰值，服务端负责范围校验、资源 CAS 和幂等。
+- 两个生产配置使用者迁入现有持久化 `after_failed_d20_test` 窗口：邪魔宗主“黑暗强运”（魅力调整值次数，长休全恢复，d10 加骰）与逸闻学院“超凡技艺”（消费吟游诗人激励骰，按权威骰面加骰，短休/长休恢复）。配置使用 `$feature_resource` 绑定适配只发生在配置编译层；通用掷骰执行器不识别这些 ID。
+- 真实状态行为：失败属性/技能检定或豁免后持久化干预窗口；玩家/DM 提交骰值；确认时按现有事务扣除资源并记录结果；相同操作幂等重放不重复消费。缺资源、缺骰值或不满足资格时 fail-closed。
+- 固定分母 499 的审计从 `full 155 / partial 252 / dm_only 92` 变为 `full 157 / partial 250 / dm_only 92`，真实净增 `full +2`，不是候选覆盖数。距离 `full≥223` 还差 66。
+- 定向资源/休息/掷骰/运行时回归通过；全量 `backend/.venv/bin/pytest -q backend/tests`、Ruff、compileall、`git diff --check` 通过（仅既有 Starlette/httpx 弃用警告）。
+- 仍需玩家/DM 输入：所有实际骰值；超凡技艺的具体失败检定由玩家选择是否发动；缺少权威角色资源或骰面时系统拒绝。仍未自动化：其余资源型子职的复杂目标、状态、传送、反应和多分支效果；资源字段本身不能替代完整特性效果。
+- 用户未跟踪 `backend/tests/integrations/`、`backend/tests/ollama.py` 保持未暂存、未纳入提交。
+
 # 2026-08-07 高扇出施法能力与子职业固定法术表批量自动化
 
 - 代码提交：`816ca46 feat: automate reusable spell capability and subclass spell lists`；本轮没有前端源码变更。
