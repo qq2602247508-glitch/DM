@@ -7,6 +7,7 @@ from dnd_dm_assistant.domain.advancement_choices import (
     core_feature_grants,
     maximum_class_spell_level,
     progression_resource_updates,
+    subclass_feature_runtime_definition,
     subclass_runtime_grants,
 )
 
@@ -58,6 +59,31 @@ def test_progression_compiles_subclass_asi_and_spell_totals() -> None:
     assert next(item for item in asi if item.key == "prepared_spells").target_total == 7
     spellbook = next(item for item in asi if item.key == "spellbook_additions")
     assert (spellbook.minimum, spellbook.maximum) == (2, 2)
+
+
+def test_third_caster_subclass_spellcasting_uses_existing_spell_economy_contract() -> None:
+    for class_name, feature_name in (
+        ("战士", "施法 Spellcasting"),
+        ("游荡者", "施法 Spellcasting"),
+    ):
+        runtime = subclass_feature_runtime_definition(
+            {
+                "name": feature_name,
+                "class_name": class_name,
+                "class_level": 3,
+                "source_record_id": f"fixture:{class_name}:spellcasting",
+            }
+        )
+        assert runtime is not None
+        assert runtime["spellcasting"] == {
+            "kind": "spellcasting_capability",
+            "consumer": "spell_economy_service",
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+            "class_name": class_name,
+            "class_level": 3,
+            "source_record_id": f"fixture:{class_name}:spellcasting",
+        }
 
 
 def test_spell_level_uses_class_level_not_shared_multiclass_slots() -> None:

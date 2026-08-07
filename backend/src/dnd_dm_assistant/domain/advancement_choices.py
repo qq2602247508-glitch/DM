@@ -1002,6 +1002,26 @@ _SUBCLASS_ABILITY_NAMES = {
 # adapter/configuration layer; the consumer only reads typed defense fields and
 # never dispatches on a subclass or feature identifier.
 SUBCLASS_FEATURE_RUNTIME_CONFIGS: dict[str, dict[str, Any]] = {
+    # Eldritch Knight and Arcane Trickster obtain their spellcasting from this
+    # subclass grant rather than their base class.  Their third-caster slot
+    # progression, spell preparation validation, and spell-economy spending
+    # are already calculated from the selected subclass by the advancement
+    # and spell-economy services.  This contract makes that existing runtime
+    # capability explicit in the feature registry; it does not manufacture a
+    # spell list or let a non-selected subclass cast spells.
+    "施法": {
+        "combat_start": {"modifiers": [], "defenses": []},
+        "resources": {},
+        "actions": {},
+        "triggers": [],
+        "attack_riders": [],
+        "spellcasting": {
+            "kind": "spellcasting_capability",
+            "consumer": "spell_economy_service",
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+        },
+    },
     # Extra Attack is a subclass grant in several source tables, but the
     # execution contract is the same typed attack-action-count consumer used
     # by core class grants.  The executor does not branch on a subclass ID.
@@ -1830,6 +1850,18 @@ def subclass_feature_runtime_definition(
     entries = runtime.get("proficiencies")
     if isinstance(entries, list):
         runtime["proficiencies"] = [{**dict(entry), **source} for entry in entries]
+    spellcasting = runtime.get("spellcasting")
+    if isinstance(spellcasting, Mapping):
+        # A shared source-side config intentionally has no class name of its
+        # own.  Bind the selected subclass's owning class here, at compilation
+        # time, so downstream consumers receive the same typed source identity
+        # as core spellcasting grants without feature-ID branching.
+        runtime["spellcasting"] = {
+            **dict(spellcasting),
+            "class_name": source["class_name"],
+            "class_level": source["class_level"],
+            "source_record_id": source["source_record_id"],
+        }
     return runtime
 
 
