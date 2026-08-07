@@ -5,7 +5,7 @@
 - 总条目：499
 - 核心职业：12 个，特性 258 条
 - 子职业：56 个，显式等级特性 241 条
-- 运行时状态：`{'partial': 235, 'full': 185, 'dm_only': 79}`
+- 运行时状态：`{'partial': 235, 'full': 187, 'dm_only': 77}`
 - 源码读取状态：`{'description_located': 415, 'structural_placeholder': 35, 'description_reused': 49}`
 
 ## 积木覆盖（允许重叠）
@@ -102,7 +102,6 @@
 | core | 武僧 | — | 12 | 属性值提升 | description_reused | full | 成长授予/升级选择 |
 | core | 武僧 | — | 16 | 属性值提升 | description_reused | full | 成长授予/升级选择 |
 | core | 武僧 | — | 17 | 子职特性 | structural_placeholder | dm_only | 未检测到 |
-| core | 武僧 | — | 20 | 天人合一 | description_located | dm_only | 未检测到 |
 | core | 法师 | — | 1 | 仪式学家 | description_located | dm_only | 施法框架/法术修改 |
 | core | 法师 | — | 5 | 记忆法术 | description_located | dm_only | 施法框架/法术修改、动作经济与触发条件、资源/恢复/频率 |
 | core | 法师 | — | 6 | 子职特性 | structural_placeholder | dm_only | 未检测到 |
@@ -152,7 +151,6 @@
 | core | 野蛮人 | — | 14 | 子职特性 | structural_placeholder | dm_only | 未检测到 |
 | core | 野蛮人 | — | 16 | 属性值提升 | description_reused | full | 成长授予/升级选择 |
 | core | 野蛮人 | — | 17 | 强化凶蛮打击 | description_located | dm_only | 动作经济与触发条件、伤害/治疗 |
-| core | 野蛮人 | — | 20 | 原初斗士 | description_located | dm_only | 未检测到 |
 | core | 魔契师 | — | 1 | 魔能祈唤 | description_located | dm_only | 动作经济与触发条件 |
 | core | 魔契师 | — | 6 | 子职特性 | structural_placeholder | dm_only | 未检测到 |
 | core | 魔契师 | — | 8 | 属性值提升 | description_reused | full | 成长授予/升级选择 |
