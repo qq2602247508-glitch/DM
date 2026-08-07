@@ -3,15 +3,15 @@
 这份报告只规划迁移，不修改运行时状态，也不把候选行直接升级为 `full`。
 
 - 总条目：499
-- 当前状态：`{'partial': 240, 'full': 168, 'dm_only': 91}`
-- 预审状态：`{'consumer_partial': 49, 'already_full': 168, 'missing_runtime_contract': 222, 'missing_source': 35, 'manual_boundary': 11, 'needs_contract_review': 14}`
+- 当前状态：`{'partial': 239, 'full': 169, 'dm_only': 91}`
+- 预审状态：`{'consumer_partial': 49, 'already_full': 169, 'missing_runtime_contract': 221, 'missing_source': 35, 'manual_boundary': 11, 'needs_contract_review': 14}`
 
 ## 模板分组
 
 | 模板 | 条目 | 已 full | 缺运行时合同 | 待合同复核 | 消费者不完整 | 人工边界 | 缺源码 |
 |---|---:|---:|---:|---:|---:|---:|---:|
 | 掷骰干预 (`roll_intervention`) | 46 | 16 | 0 | 0 | 30 | 0 | 0 |
-| 状态生命周期 (`state_lifecycle`) | 34 | 15 | 18 | 1 | 0 | 0 | 0 |
+| 状态生命周期 (`state_lifecycle`) | 34 | 16 | 17 | 1 | 0 | 0 | 0 |
 | 动作经济与触发条件 (`action_trigger`) | 34 | 21 | 12 | 0 | 0 | 1 | 0 |
 | 通用被动/数值修正 (`passive_modifier`) | 79 | 14 | 29 | 0 | 0 | 1 | 35 |
 | 成长授予/升级选择 (`progression_grant`) | 67 | 53 | 13 | 0 | 0 | 1 | 0 |

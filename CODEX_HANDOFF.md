@@ -1599,3 +1599,13 @@ backend/.venv/bin/python -m pytest -q backend/tests
 - 当前迁移预审状态：`already_full 162`、`missing_runtime_contract 227`、`needs_contract_review 14`、`consumer_partial 50`、`manual_boundary 11`、`missing_source 35`。这些是执行准备状态，不是可承诺的新增 full 数量。
 - 仍需玩家/DM 输入：选择型附赠熟练、战斗风格、武器精通和其他开放分支仍保持原边界；本批没有把选择字段或特性名称误报为完整效果。
 - 验证：相关定向测试、`backend/.venv/bin/pytest -q backend/tests` 全量通过；Ruff、compileall、`git diff --check` 通过。文档与审计产物另行提交；用户未跟踪的 `backend/tests/integrations/`、`backend/tests/ollama.py` 未纳入提交。本轮无前端源码变更。
+# 2026-08-08 长执行：命流武者命中后伤害积木与治疗动作底座
+
+- 代码已提交为 `e261197`；本交接文档与审计报告单独提交，必须保留的两个未跟踪测试路径未加入提交。
+- 新增通用命中后伤害绑定：`post_hit_rider` 的 `@binding` 可绑定权威 `dN` 骰面或属性调整值；服务端只校验玩家/DM 提交的最终骰值范围，不替玩家掷骰。
+- 新增通用命中后骑手资源提交回写：立即结算的骑手把声明的资源消费计划传回攻击流水线，在攻击确认后通过现有角色资源 CAS/幂等链扣除；旧骑手没有资源计划时行为不变。
+- 真实生产配置：命流武者「夺命之手」接入每回合一次、徒手/武僧武器命中后、消耗 1 Focus、`武艺骰+感知调整值` 暗蚀附伤；动态武艺骰与感知值来自权威战斗快照。真实 API 回归覆盖命中、附伤、Focus `2→1`、目标 HP 变化。
+- 新增通用 `attack_rider_overlays` / `action_overlays` 配置编译层，允许后续子职用 typed ID 叠加已有骑手或动作，不把子职 ID 写进执行器。
+- 「予命之手」已接入普通魔法动作治疗动作底座（Focus、5 尺同阵营目标、武艺骰+感知调整值边界），但疾风连击免费替换仍 partial；「生死之触」已接入命中后中毒覆盖和予命之手状态解除选项，但因予命之手完整免费替换/解除链未完，整体保持 partial，未为了数字误报 full。
+- 审计固定分母 499：`full 167→168`、`partial 241→240`、`dm_only 91`，本轮净增 `full +1`；`予命之手`与`生死之触`仍 partial。
+- 验证：命流运行时单测、真实攻击 API、运行时/推进/审计定向测试、后端全量 pytest、Ruff、compileall、`git diff --check` 已通过（仅既有 Starlette/httpx 弃用警告）。未跟踪的 `backend/tests/integrations/`、`backend/tests/ollama.py` 未加入提交。
