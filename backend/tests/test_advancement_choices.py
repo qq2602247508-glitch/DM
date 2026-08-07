@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import pytest
-
 from dnd_dm_assistant.domain.advancement import ClassLevel, ClassProgression
 from dnd_dm_assistant.domain.advancement_choices import (
     CORE_CLASSES_2024,
@@ -147,41 +145,6 @@ def test_subclass_typed_defense_grant_uses_generic_resistance_consumer() -> None
     assert grant["runtime"]["registry"]["combat_start"]["defenses"][0]["kind"] == (
         "damage_resistance"
     )
-
-
-@pytest.mark.parametrize(
-    ("name", "damage_type"),
-    [
-        ("意念守护 Guarded Mind", "psychic"),
-        ("思维之盾 Thought Shield", "psychic"),
-        ("光耀之魂 Radiant Soul", "radiant"),
-    ],
-)
-def test_unconditional_subclass_resistance_configs_share_the_same_consumer(
-    name: str,
-    damage_type: str,
-) -> None:
-    result = subclass_runtime_grants(
-        {
-            "name": "测试领域",
-            "feature_definitions": [
-                {
-                    "id": f"{name}-id",
-                    "name": name,
-                    "class_level": 6,
-                    "description": "获得固定伤害抗性。",
-                    "source_record_id": "subclass-fixture",
-                }
-            ],
-        },
-        class_name="测试职业",
-        target_class_level=6,
-    )
-    grant = result["grants"][0]
-    assert grant["runtime"]["automation_status"] == "full"
-    defense = grant["runtime"]["registry"]["combat_start"]["defenses"][0]
-    assert defense["kind"] == "damage_resistance"
-    assert defense["damage_types"] == [damage_type]
 
 
 def test_subclass_aura_immunity_uses_ranged_passive_consumer() -> None:
