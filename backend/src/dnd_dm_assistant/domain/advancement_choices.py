@@ -1022,7 +1022,109 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS: dict[str, dict[str, Any]] = {
         "resources": {},
         "actions": {},
         "attack_riders": [],
-    }
+    },
+    # These subclasses state one unconditional damage resistance.  They use
+    # the same typed defense consumer as Avatar of Battle; the consumer does
+    # not dispatch on any of these names.
+    "意念守护": {
+        "combat_start": {
+            "modifiers": [],
+            "defenses": [
+                {
+                    "id": "subclass:guarded_mind:psychic_resistance",
+                    "kind": "damage_resistance",
+                    "damage_types": ["psychic"],
+                    "applies_when": "always",
+                    "runtime_execution": {
+                        "status": "ready",
+                        "consumer": "damage_defense_resolver",
+                    },
+                    "automation_status": "full",
+                    "requires_dm_adjudication": False,
+                }
+            ],
+        },
+        "resources": {},
+        "actions": {},
+        "attack_riders": [],
+    },
+    "思维之盾": {
+        "combat_start": {
+            "modifiers": [],
+            "defenses": [
+                {
+                    "id": "subclass:thought_shield:psychic_resistance",
+                    "kind": "damage_resistance",
+                    "damage_types": ["psychic"],
+                    "applies_when": "always",
+                    "runtime_execution": {
+                        "status": "ready",
+                        "consumer": "damage_defense_resolver",
+                    },
+                    "automation_status": "full",
+                    "requires_dm_adjudication": False,
+                }
+            ],
+        },
+        "resources": {},
+        "actions": {},
+        "attack_riders": [],
+    },
+    "光耀之魂": {
+        "combat_start": {
+            "modifiers": [],
+            "defenses": [
+                {
+                    "id": "subclass:radiant_soul:radiant_resistance",
+                    "kind": "damage_resistance",
+                    "damage_types": ["radiant"],
+                    "applies_when": "always",
+                    "runtime_execution": {
+                        "status": "ready",
+                        "consumer": "damage_defense_resolver",
+                    },
+                    "automation_status": "full",
+                    "requires_dm_adjudication": False,
+                }
+            ],
+        },
+        "resources": {},
+        "actions": {},
+        "attack_riders": [],
+    },
+    "奉献灵光": {
+        "combat_start": {
+            "modifiers": [],
+            "defenses": [
+                {
+                    "id": "subclass:aura_of_devotion:charmed_immunity",
+                    "kind": "condition_immunity",
+                    "condition": "charmed",
+                    "scope": "self_and_allies_within_10ft",
+                    "applies_when": "within_aura_of_devotion",
+                    "ranged_passive": {
+                        "range_group": "paladin_aura_radius",
+                        "source_scope": "self",
+                        "target_relation": "self_and_allies",
+                        "range_ft": 10,
+                        "requires_grid_position_for_others": True,
+                        "source_forbidden_conditions": ["incapacitated"],
+                        "stacking": "unique_source",
+                        "effect_kind": "condition_immunity",
+                    },
+                    "runtime_execution": {
+                        "status": "ready",
+                        "consumer": "condition_immunity_resolution",
+                    },
+                    "automation_status": "full",
+                    "requires_dm_adjudication": False,
+                }
+            ],
+        },
+        "resources": {},
+        "actions": {},
+        "attack_riders": [],
+    },
 }
 
 
@@ -1033,8 +1135,11 @@ def subclass_feature_runtime_definition(
 
     name = str(definition.get("name") or "").strip()
     config = SUBCLASS_FEATURE_RUNTIME_CONFIGS.get(name)
-    if config is None and name.startswith("战争化身"):
-        config = SUBCLASS_FEATURE_RUNTIME_CONFIGS["战争化身"]
+    if config is None:
+        for prefix, candidate in SUBCLASS_FEATURE_RUNTIME_CONFIGS.items():
+            if name.startswith(prefix):
+                config = candidate
+                break
     if config is None:
         return None
     runtime = deepcopy(config)
