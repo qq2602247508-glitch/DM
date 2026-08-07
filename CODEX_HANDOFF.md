@@ -1616,3 +1616,12 @@ backend/.venv/bin/python -m pytest -q backend/tests
 - 这是通用持久化消费者，不识别震慑拳、夺命之手等特性 ID；新增回归把通用命中后豁免失败骑手配置为 `1d4` 毒素伤害并真实验证目标 HP `36→33`、中毒状态仍写入。
 - 本续批没有误升审计状态；固定分母仍 `full 168 / partial 240 / dm_only 91`。`予命之手`普通治疗和「生死之触」覆盖仍因疾风连击免费替换/治疗状态分支保持 partial。
 - 门禁：后端命中后/命流定向回归、运行时/审计定向回归、Ruff、compileall 已通过；需在提交前再跑后端全量 pytest 与 diff check。未跟踪测试目录和 `backend/tests/ollama.py` 保持不动。
+- 本批全量后端 pytest、Ruff、compileall、`git diff --check` 已通过（仅既有 Starlette/httpx 弃用警告）。
+# 2026-08-08 长执行续批：狂热者/妖精漫游者命中后附伤
+
+- 新增两个生产配置使用者，共用持久化 `post_hit_rider` 消费者：狂热者道途「神性之怒」在狂暴期间每回合首次武器/徒手命中附加 `1d6 + ⌊野蛮人等级/2⌋`，每次由玩家选择光耀或暗蚀；妖精漫游者「哀惧灵袭」对武器命中目标每目标每回合附加 1d4 心灵伤害，游侠 11 级绑定为 d6。
+- 骑手输入链新增权威等级绑定（`barbarian_level_half`、`dreadful_strikes_die`）和结构化伤害类型选择；绑定值从冻结战斗快照的 `progression.class_levels` 生成，持久化后续结算再次使用同一绑定，未知/缺失值 fail-closed。执行器不识别狂热者或妖精漫游者 ID。
+- 真实通用状态行为：命中确认后生成可审计骑手窗口；玩家提交选择与伤害总值后，沿既有伤害防御、抗性、临时生命、0 HP 生命周期和幂等链结算。新增域回归覆盖动态骰面、伤害类型选择和一次/每目标频率；现有持久化骑手 API 回归继续覆盖 HP 写入与重放。
+- 固定分母 499 的审计从 `full 168 / partial 240 / dm_only 91` 变为 `full 170 / partial 238 / dm_only 91`，本批真实净增 `full +2`；距离用户目标 `full≥223` 还差 53。预审 readiness 为 `already_full 170 / missing_runtime_contract 220 / consumer_partial 49 / needs_contract_review 14 / manual_boundary 11 / missing_source 35`，仍不是可直接承诺的新增数。
+- 仍未自动化：其他骑手的资源/豁免/多分支组合、狂热者 14 级复生反应、魂刃撕裂心智、刺客致命袭杀等复杂特性；本批没有改动前端，也没有把 DM/选择边界误报为 full。
+- 验证：后端全量 `backend/.venv/bin/pytest -q backend/tests`、Ruff、compileall、`git diff --check` 通过。未跟踪的 `backend/tests/integrations/`、`backend/tests/ollama.py` 保持不动。
