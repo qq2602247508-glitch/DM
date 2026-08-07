@@ -1,3 +1,14 @@
+# 2026-08-07 升级选择、专精与被动授予批量积木
+
+- 代码提交 `9015129`：建立三件套。`progression_automation.py` 提供特性分类器、配置迁移表和机器可验收矩阵；目标五类共 `76` 个职业表命名条目，结构化需求共 `92` 个实际选择槽位：属性值提升51、传奇恩惠12、战斗风格3、武器精通16、专精10。
+- 真正通用积木是 `assign_progression_choices()` + `apply_progression_choice_grants()`：它们只识别 requirement/operation 类型与字段，不识别战士、游侠、专精等职业/特性 ID。新 API 使用 `feature_choices_by_key`，能在战士1级正确分开 `fighting_style:1` 与 `weapon_mastery:3`；旧 `feature_choices` 只作为明确标注的顺序兼容适配器，不得称为积木。
+- 真实角色状态写入已打通：属性提升原子写 `ability_scores`；专精先验证已熟练技能，再写 `skills[skill].expertise=true`；武器精通写入结构化 `proficiencies` 记录；战斗风格和其他选择写入带 grant/effect 分层状态的 `advancement_choice_grant`。preview、批量 preview、confirm、CAS 和幂等链均传递 `skills/proficiencies`。
+- 真实消费证据：专精确认后，玩家技能检定消费者按双倍熟练计算；“防御”战斗风格授予会进入既有战斗 registry，穿甲时提供 AC +1；武器精通授予会被熟练/前置系统读取，但精通词条本身尚未进入攻击结算。
+- 覆盖率从原始 `full 53 / partial 23 / dm_only 182` 提升为 `full 109 / partial 43 / dm_only 106`（总数仍为258）。`full` 增加56，即属性值提升51个+专精5个；完整自动化率从 `20.5%` 升至 `42.2%`。传奇恩惠12、战斗风格3、武器精通5只从 `dm_only` 升为 `partial`，没有被虚报为 full。
+- 分层口径：属性提升的选择/授予效果已 full；如选专长，该专长的具体效果是独立 contract，不随属性提升伪装成已自动化。传奇恩惠只完成目录/前置/授予，具体恩惠效果仍 DM-only。战斗风格只有已结构化的选项（当前明确包括防御）有真实消费者，整类仍 partial。武器精通授予层 full，攻击词条效果 dm_only，整类 partial。不能把这些兼容适配器或单独真实效果称为通用积木。
+- 玩家/DM 仍需输入具体选项；未结构化的选项前置可由 DM override，并留下警告。仍未自动化：传奇恩惠逐项效果、防御之外的全部战斗风格效果、武器精通词条攻击结算、未入本地目录的选项合法性。
+- 验收：新增分类/迁移/矩阵回归固定 `76` 条、`92` 选择槽位和 `109/43/106`统计；真实 API 回归覆盖属性、武器精通、专精持久化及技能消费；后端全量 `pytest -q backend/tests`、Ruff、compileall、`git diff --check` 全部通过。本轮无前端源码变更，未做也未声称浏览器验收。
+
 # 2026-08-07 通用 zero_hp_intervention 积木与坚韧狂暴迁移
 
 - 代码提交 `89fcb2a`：新增真正通用的 `zero_hp_intervention` 执行器。执行器只消费结构化字段：`would_drop_to_zero_hit_points` 触发、实体类型/阵营/状态/资源/职业等级资格、豁免属性与递增 DC、受限生命恢复表达式、失败后继续 0 HP 生命周期、`outright_death` 例外、独立状态键以及短休/长休重置；战斗执行器不识别 `relentless_rage` 特性 ID。
