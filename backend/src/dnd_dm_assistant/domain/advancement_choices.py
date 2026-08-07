@@ -14,6 +14,9 @@ from dnd_dm_assistant.domain.feature_runtime import (
     feature_runtime_definition,
     resource_recovery_events,
 )
+from dnd_dm_assistant.domain.progression_automation import (
+    progression_automation_profile,
+)
 
 CORE_CLASSES_2024 = (
     "野蛮人",
@@ -62,6 +65,16 @@ PROGRESSION_CHOICE_COLUMNS: dict[str, str] = {
     "魔能祈唤": "eldritch_invocation",
     "已知注法": "artificer_infusions",
     "注法": "artificer_infusions",
+}
+
+# Three 2024 class tables name Weapon Mastery but omit its total-count column.
+# Their feature prose explicitly grants two initial choices.  This is data
+# configuration for the same generic weapon_mastery choice executor, not a
+# branch in that executor.
+INITIAL_WEAPON_MASTERY_COUNTS: dict[str, int] = {
+    "圣武士": 2,
+    "游侠": 2,
+    "游荡者": 2,
 }
 
 # The resource key is part of the persisted character-sheet contract.  In
@@ -654,6 +667,28 @@ def advancement_choice_requirements(
                     target_total=target,
                 )
             )
+
+    if (
+        any("武器精通" in feature for feature in level_rule.features)
+        and not any(item.key == "weapon_mastery" for item in requirements)
+        and rule.name in INITIAL_WEAPON_MASTERY_COUNTS
+    ):
+        count = INITIAL_WEAPON_MASTERY_COUNTS[rule.name]
+        requirements.append(
+            ChoiceRequirement(
+                key="weapon_mastery",
+                kind="feature_option",
+                minimum=count,
+                maximum=count,
+                strict=False,
+                options_source="feature:武器精通",
+                reason=(
+                    f"{rule.name}的2024武器精通特性授予{count}项初始选择；"
+                    "具体武器的熟练与词条效果分层验收。"
+                ),
+                target_total=count,
+            )
+        )
 
     cantrips = _progression_number(rule, target_class_level, "戏法")
     previous_cantrips = _progression_number(rule, previous_level, "戏法") or 0
@@ -1289,6 +1324,7 @@ def core_feature_grants(
             tracked_scaling_keys=scaling_keys,
             modifiers=modifier_profiles,
         )
+        progression_profile = progression_automation_profile(feature)
         contract = feature_runtime_contract(
             feature_name=feature,
             class_name=rule.name,
@@ -1297,6 +1333,16 @@ def core_feature_grants(
             source_record_id=rule.source_record_id,
             source_path=rule.source_path,
             definition=registry,
+            declared_status=(
+                progression_profile.overall_status
+                if progression_profile is not None
+                else None
+            ),
+            note=(
+                progression_profile.dm_boundary
+                if progression_profile is not None
+                else None
+            ),
         )
         tracked = contract["automation_status"] != "dm_only"
         grants.append(
@@ -1321,6 +1367,11 @@ def core_feature_grants(
                     "tracked_scaling_keys": scaling_keys,
                     "modifiers": modifier_profiles,
                     "registry": registry,
+                    "advancement_automation": (
+                        progression_profile.as_dict()
+                        if progression_profile is not None
+                        else None
+                    ),
                     "requires_dm_adjudication": contract["requires_dm_adjudication"],
                     "note": (
                         "该特性有可验证的运行时 contract；未覆盖的触发、目标或分支"

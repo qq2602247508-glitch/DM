@@ -34,6 +34,10 @@ from dnd_dm_assistant.domain.advancement_choices import (
 )
 from dnd_dm_assistant.domain.campaign_state import StateNotFoundError, VersionConflict
 from dnd_dm_assistant.domain.feature_runtime import compile_feature_runtime_registry
+from dnd_dm_assistant.domain.progression_automation import (
+    apply_progression_choice_grants,
+    assign_progression_choices,
+)
 from dnd_dm_assistant.infrastructure.database.campaign_service import serialize
 from dnd_dm_assistant.infrastructure.database.models import (
     AdvancementRecord,
@@ -240,6 +244,7 @@ class AdvancementService:
             features=deepcopy(list(character.features or [])),
             actions=deepcopy(list(character.actions or [])),
             proficiencies=deepcopy(list(character.proficiencies or [])),
+            skills=deepcopy(dict(character.skills or {})),
         )
 
     @staticmethod
@@ -257,6 +262,10 @@ class AdvancementService:
         state.resources = deepcopy(dict(after["resources"]))
         state.features = deepcopy(list(after.get("features", state.features)))
         state.actions = deepcopy(list(after.get("actions", state.actions)))
+        state.proficiencies = deepcopy(
+            list(after.get("proficiencies", state.proficiencies))
+        )
+        state.skills = deepcopy(dict(after.get("skills", state.skills)))
         state.version += 1
 
     @staticmethod
@@ -279,6 +288,10 @@ class AdvancementService:
         character.resources = dict(after["resources"])
         character.features = list(after.get("features", character.features or []))
         character.actions = list(after.get("actions", character.actions or []))
+        character.proficiencies = list(
+            after.get("proficiencies", character.proficiencies or [])
+        )
+        character.skills = dict(after.get("skills", character.skills or {}))
         character.version += 1
         character.updated_at = updated_at
 
@@ -343,6 +356,10 @@ class AdvancementService:
                 resources=dict(after["resources"]),
                 features=list(after.get("features", character.features or [])),
                 actions=list(after.get("actions", character.actions or [])),
+                proficiencies=list(
+                    after.get("proficiencies", character.proficiencies or [])
+                ),
+                skills=dict(after.get("skills", character.skills or {})),
                 version=expected_version + 1,
                 updated_at=updated_at,
             )
@@ -974,29 +991,45 @@ class AdvancementService:
             warnings=warnings,
         )
 
-        requested_feature_choices = [
-            str(item).strip()
-            for item in data.get("feature_choices", [])
-            if str(item).strip()
-        ]
-        feature_requirements = [
-            item for item in requirements if item.kind == "feature_option"
-        ]
-        maximum_feature_choices = sum(item.maximum for item in feature_requirements)
-        minimum_feature_choices = sum(item.minimum for item in feature_requirements)
-        if len(set(requested_feature_choices)) != len(requested_feature_choices):
-            if not override:
-                raise ValueError("class feature choices cannot contain duplicates")
-            warnings.append("DM 已覆盖重复职业选项限制。")
-        if requested_feature_choices and not feature_requirements and not override:
-            raise ValueError("this level does not grant a class feature option")
-        if len(requested_feature_choices) < minimum_feature_choices and not override:
-            raise ValueError(
-                f"this level requires {minimum_feature_choices} feature choices"
+        feature_requirements = [item for item in requirements if item.kind == "feature_option"]
+        try:
+            requested_feature_choices_by_key, used_legacy_choice_adapter = (
+                assign_progression_choices(
+                    requirements,
+                    choices_by_key=data.get("feature_choices_by_key") or {},
+                    legacy_choices=data.get("feature_choices") or (),
+                )
             )
-        if len(requested_feature_choices) > maximum_feature_choices and not override:
-            raise ValueError(
-                f"this level allows at most {maximum_feature_choices} feature choices"
+        except ValueError:
+            if not override:
+                raise
+            requested_feature_choices_by_key = {
+                str(key): [str(item).strip() for item in values if str(item).strip()]
+                for key, values in dict(data.get("feature_choices_by_key") or {}).items()
+            }
+            legacy_override_choices = [
+                str(item).strip()
+                for item in data.get("feature_choices") or ()
+                if str(item).strip()
+            ]
+            if legacy_override_choices and not requested_feature_choices_by_key:
+                cursor = 0
+                for requirement in feature_requirements:
+                    end = cursor + int(requirement.maximum)
+                    selected = legacy_override_choices[cursor:end]
+                    if selected:
+                        requested_feature_choices_by_key[str(requirement.key)] = selected
+                    cursor = end
+                if cursor < len(legacy_override_choices):
+                    requested_feature_choices_by_key["dm_override"] = (
+                        legacy_override_choices[cursor:]
+                    )
+            used_legacy_choice_adapter = bool(data.get("feature_choices"))
+            warnings.append("DM 已覆盖职业选项的结构化数量或分类限制。")
+        if used_legacy_choice_adapter:
+            warnings.append(
+                "feature_choices 旧扁平数组已由兼容适配器按 requirement 顺序分配；"
+                "新请求应使用 feature_choices_by_key。"
             )
         unresolved_feature_requirements = [
             item for item in feature_requirements if not item.strict
@@ -1007,6 +1040,17 @@ class AdvancementService:
                 "本地规则条目或DM复核："
                 + "、".join(item.key for item in unresolved_feature_requirements)
             )
+
+        progression_choice_result = apply_progression_choice_grants(
+            choices_by_key=requested_feature_choices_by_key,
+            skills=dict(character.skills or {}),
+            proficiencies=list(character.proficiencies or []),
+            class_name=class_name,
+            class_level=target_class_level,
+            total_level=character.level + 1,
+            source_record_id=rule.source_record_id,
+            rule_year=rule.rule_year,
+        )
 
         class_levels[class_name] = target_class_level
         if subclass_name:
@@ -1176,22 +1220,7 @@ class AdvancementService:
             if ability_increases
             else None
         )
-        chosen_features = [
-            {
-                "name": str(choice),
-                "kind": "feature_choice",
-                "class_name": class_name,
-                "class_level": target_class_level,
-                "source_record_id": rule.source_record_id,
-                "rule_year": rule.rule_year,
-                "runtime": {
-                    "automation_status": "dm_only",
-                    "requires_dm_adjudication": True,
-                    "note": "成长表只确认选择数量；具体选项前置条件和效果由 DM 复核。",
-                },
-            }
-            for choice in requested_feature_choices
-        ]
+        chosen_features = list(progression_choice_result["grants"])
         proficiency_bonus_grant = {
             "name": "熟练加值",
             "kind": "proficiency_bonus",
@@ -1287,6 +1316,8 @@ class AdvancementService:
                 "resources": dict(character.resources or {}),
                 "features": list(character.features or []),
                 "actions": list(character.actions or []),
+                "proficiencies": list(character.proficiencies or []),
+                "skills": dict(character.skills or {}),
             },
             "after": {
                 "hp": character.hp + hp_gain,
@@ -1298,6 +1329,8 @@ class AdvancementService:
                 "resources": after_resources,
                 "features": after_features,
                 "actions": after_actions,
+                "proficiencies": list(progression_choice_result["proficiencies"]),
+                "skills": dict(progression_choice_result["skills"]),
                 "feature_runtime": runtime_registry,
             },
             "features_gained": [
@@ -1317,6 +1350,7 @@ class AdvancementService:
             "resource_updates": all_resource_updates,
             "scaling_updates": scaling_updates,
             "runtime_registry": runtime_registry,
+            "progression_choices": requested_feature_choices_by_key,
             "warnings": warnings,
             "rule_reference": {
                 "year": rule.rule_year,

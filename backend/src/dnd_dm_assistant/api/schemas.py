@@ -315,6 +315,7 @@ class AdvancementStepRequest(BaseModel):
     ability_increases: dict[str, int] = Field(default_factory=dict)
     feat_choice: str | None = Field(default=None, max_length=200)
     feature_choices: list[str] = Field(default_factory=list, max_length=30)
+    feature_choices_by_key: dict[str, list[str]] = Field(default_factory=dict)
     subclass_feature_choices: dict[str, list[str]] = Field(default_factory=dict)
     spell_additions: list[dict[str, Any]] = Field(default_factory=list, max_length=100)
     spell_removals: list[str] = Field(default_factory=list, max_length=100)

@@ -13,6 +13,7 @@ from fastapi.testclient import TestClient
 from dnd_dm_assistant.api.app import create_app
 from dnd_dm_assistant.config import Settings
 from dnd_dm_assistant.domain.advancement_choices import CORE_CLASSES_2024
+from dnd_dm_assistant.domain.noncombat_actions import skill_modifier
 
 
 @pytest.fixture(scope="module")
@@ -247,7 +248,7 @@ def test_asi_is_an_atomic_sheet_grant_and_preview_exposes_runtime_registry(
             "character_version": fighter["version"],
             "class_name": "战士",
             "ability_increases": {"strength": 2},
-            "feature_choices": ["长剑"],
+            "feature_choices_by_key": {"weapon_mastery": ["长剑"]},
         },
     )
     assert preview_response.status_code == 200, preview_response.text
@@ -269,7 +270,7 @@ def test_asi_is_an_atomic_sheet_grant_and_preview_exposes_runtime_registry(
             "character_version": fighter["version"],
             "class_name": "战士",
             "ability_increases": {"strength": 2},
-            "feature_choices": ["长剑"],
+            "feature_choices_by_key": {"weapon_mastery": ["长剑"]},
             "preview_token": preview["preview_token"],
             "idempotency_key": "asi-runtime-registry-0001",
         },
@@ -280,10 +281,77 @@ def test_asi_is_an_atomic_sheet_grant_and_preview_exposes_runtime_registry(
     ).json()
     assert persisted["ability_scores"]["strength"] == 16
     assert any(
+        isinstance(item, dict)
+        and item.get("kind") == "weapon_mastery"
+        and item.get("name") == "长剑"
+        for item in persisted["proficiencies"]
+    )
+    assert any(
         item.get("kind") == "ability_score_increase"
         for item in persisted["features"]
         if isinstance(item, dict)
     )
+
+
+def test_typed_expertise_choice_persists_and_changes_real_skill_modifier(
+    matrix_client: TestClient,
+    matrix_campaign: dict[str, Any],
+    character_options: dict[str, Any],
+) -> None:
+    subclass = _class_option(character_options, "游侠")["subclasses"][0]["name"]
+    ranger = _create_character(
+        matrix_client,
+        matrix_campaign["id"],
+        class_name="游侠",
+        level=8,
+        experience=48_000,
+        suffix="专精真实消费",
+        subclass_name=subclass,
+    )
+    patched = matrix_client.patch(
+        f"/api/v1/campaigns/{matrix_campaign['id']}/characters/{ranger['id']}",
+        headers={"If-Match": str(ranger["version"])},
+        json={
+            "skills": {
+                "调查": {"proficient": True},
+                "察觉": {"proficient": True},
+            }
+        },
+    )
+    assert patched.status_code == 200, patched.text
+    ranger = patched.json()
+    request = {
+        "character_version": ranger["version"],
+        "class_name": "游侠",
+        "feature_choices_by_key": {"expertise": ["调查", "察觉"]},
+        "dm_override_reason": "此回归只隔离专精授予，法术选择由DM覆盖",
+    }
+    path = _preview_path(matrix_campaign["id"], ranger["id"])
+    preview_response = matrix_client.post(path, json=request)
+    assert preview_response.status_code == 200, preview_response.text
+    preview = preview_response.json()
+    assert preview["progression_choices"] == {"expertise": ["调查", "察觉"]}
+    assert preview["after"]["skills"]["调查"]["expertise"] is True
+    assert preview["after"]["skills"]["察觉"]["expertise"] is True
+
+    confirmed = matrix_client.post(
+        path.replace("/preview", "/confirm"),
+        json={
+            **request,
+            "preview_token": preview["preview_token"],
+            "idempotency_key": "typed-expertise-persistence-0001",
+        },
+    )
+    assert confirmed.status_code == 200, confirmed.text
+    persisted = matrix_client.get(
+        f"/api/v1/campaigns/{matrix_campaign['id']}/characters/{ranger['id']}"
+    ).json()
+    assert persisted["skills"]["调查"]["expertise"] is True
+    modifier, reasons = skill_modifier(
+        type("Sheet", (), persisted), "调查", "intelligence"
+    )
+    assert modifier == 10  # INT +2 and level-9 expertise +8
+    assert "专精 +8" in reasons
 
 
 @pytest.mark.parametrize("class_name", ["战士", "法师", "牧师"])
