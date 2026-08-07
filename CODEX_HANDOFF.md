@@ -1572,6 +1572,14 @@ backend/.venv/bin/python -m pytest -q backend/tests
 - 验证：前端 Vitest `39 文件 / 204 项`、TypeScript、ESLint、生产构建全部通过；本地后端/前端启动后，浏览器实际加载 DM 首页和 `#/player` 玩家入口，后端状态正常，控制台 error/warn 为空。没有伪造具体反应窗口截图；当前数据库没有可直接投影的多候选玩家战斗窗口。
 - 用户未跟踪的 `backend/tests/integrations/`、`backend/tests/ollama.py` 仍未纳入提交。
 
+# 2026-08-08 固定子职熟练批量接线第二批
+
+- 继续复用 `65ed1ac` 的通用 `proficiencies` 合同和升级事务消费者，新增命流武者「操命本事」的洞悉、医药、草药工具固定熟练配置；没有新增特性 ID 执行分支。
+- 刺客工具与操命本事均通过真实升级预览、确认和持久化 API 回归，证明同一执行器可被两个不同子职业复用。
+- 499 条审计现在为 `full 163 / partial 244 / dm_only 92`，相对 `full 161` 基线真实净增 `+2`；当前完成率约 `32.7%`。预审状态更新为 `already_full 163`、`missing_runtime_contract 226`、`consumer_partial 50`、`needs_contract_review 14`、`manual_boundary 11`、`missing_source 35`。
+- 仍未接入：附赠熟练、战争学者、钢铁意志等选择型熟练；含额外法术/动作/资源分支的特性不能因其中一条熟练字段而标 `full`。
+- 定向测试已通过；随后必须继续跑全量后端 pytest、Ruff、compileall、`git diff --check`，代码与文档分开提交。用户未跟踪的 `backend/tests/integrations/`、`backend/tests/ollama.py` 继续保留。
+
 # 2026-08-07 自动化迁移工厂首批：固定子职工具熟练
 
 - 代码提交 `65ed1ac`：新增迁移预审器 `scripts/plan-feature-automation-migrations.py`。它固定审计范围 499 条，区分 `already_full`、缺运行时合同、消费者不完整、人工边界、缺源码和待合同复核；预审候选不会自动改成 `full`。
