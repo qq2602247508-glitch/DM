@@ -1609,3 +1609,10 @@ backend/.venv/bin/python -m pytest -q backend/tests
 - 「予命之手」已接入普通魔法动作治疗动作底座（Focus、5 尺同阵营目标、武艺骰+感知调整值边界），但疾风连击免费替换仍 partial；「生死之触」已接入命中后中毒覆盖和予命之手状态解除选项，但因予命之手完整免费替换/解除链未完，整体保持 partial，未为了数字误报 full。
 - 审计固定分母 499：`full 167→168`、`partial 241→240`、`dm_only 91`，本轮净增 `full +1`；`予命之手`与`生死之触`仍 partial。
 - 验证：命流运行时单测、真实攻击 API、运行时/推进/审计定向测试、后端全量 pytest、Ruff、compileall、`git diff --check` 已通过（仅既有 Starlette/httpx 弃用警告）。未跟踪的 `backend/tests/integrations/`、`backend/tests/ollama.py` 未加入提交。
+# 2026-08-08 长执行续批：持久化命中后骑手伤害提交
+
+- 追加代码尚未提交；上一批代码 `e261197` 已提交，文档提交 `a20027a` 已记录前一批状态。
+- `resolve_post_hit_rider_request` 现在支持已验证的 `damage` 结果在同一事务内结算：读取骑手报告的伤害段、复用既有伤害防御/临时生命/0 HP 生命周期，随后再写入骑手效果、资源 CAS、角色快照版本与幂等审计。
+- 这是通用持久化消费者，不识别震慑拳、夺命之手等特性 ID；新增回归把通用命中后豁免失败骑手配置为 `1d4` 毒素伤害并真实验证目标 HP `36→33`、中毒状态仍写入。
+- 本续批没有误升审计状态；固定分母仍 `full 168 / partial 240 / dm_only 91`。`予命之手`普通治疗和「生死之触」覆盖仍因疾风连击免费替换/治疗状态分支保持 partial。
+- 门禁：后端命中后/命流定向回归、运行时/审计定向回归、Ruff、compileall 已通过；需在提交前再跑后端全量 pytest 与 diff check。未跟踪测试目录和 `backend/tests/ollama.py` 保持不动。
