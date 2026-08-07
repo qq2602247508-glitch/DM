@@ -1678,6 +1678,81 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS: dict[str, dict[str, Any]] = {
         "requires_dm_adjudication": True,
         "note": "已接入命中后中毒覆盖；予命之手的状态解除/疾风连击替换仍需独立动作积木。",
     },
+    # Divine Fury and Dreadful Strikes share the persisted post-hit rider
+    # consumer.  Their only dynamic values are authoritative class-level
+    # bindings; the executor does not branch on either subclass identity.
+    "神性之怒": {
+        "combat_start": {"modifiers": [], "defenses": []},
+        "resources": {},
+        "actions": {},
+        "triggers": [],
+        "attack_riders": [
+            {
+                "id": "divine_fury:bonus_damage",
+                "kind": "post_hit_rider",
+                "trigger": "after_hit",
+                "frequency": "once_per_turn",
+                "eligibility": {
+                    "actor_entity_types": ["character"],
+                    "actor_conditions_all": ["raging"],
+                    "target_relations": ["enemy"],
+                    "action_tags_any": ["weapon", "unarmed"],
+                },
+                "choice": {
+                    "input_key": "divine_fury_damage_type",
+                    "options": [
+                        {"key": "radiant", "label": "光耀"},
+                        {"key": "necrotic", "label": "暗蚀"},
+                    ],
+                },
+                "damage": {
+                    "id": "divine_fury:damage",
+                    "expression": "1d6+@barbarian_level_half",
+                    "damage_type": "radiant",
+                    "damage_type_source": "divine_fury_damage_type",
+                    "damage_type_options": ["radiant", "necrotic"],
+                    "input_key": "divine_fury_total",
+                },
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "post_hit_rider_resolver",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        ],
+    },
+    "哀惧灵袭": {
+        "combat_start": {"modifiers": [], "defenses": []},
+        "resources": {},
+        "actions": {},
+        "triggers": [],
+        "attack_riders": [
+            {
+                "id": "dreadful_strikes:bonus_damage",
+                "kind": "post_hit_rider",
+                "trigger": "after_hit",
+                "frequency": "once_per_target_per_turn",
+                "eligibility": {
+                    "actor_entity_types": ["character"],
+                    "target_relations": ["enemy"],
+                    "action_tags_all": ["weapon"],
+                },
+                "damage": {
+                    "id": "dreadful_strikes:psychic",
+                    "expression": "@dreadful_strikes_die",
+                    "damage_type": "psychic",
+                    "input_key": "dreadful_strikes_total",
+                },
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "post_hit_rider_resolver",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        ],
+    },
     "精通重击": {
         "combat_start": {
             "modifiers": [
@@ -2168,7 +2243,7 @@ def subclass_runtime_grants(
                     "requires_dm_adjudication": runtime_status != "full",
                     "registry": runtime_registry,
                     "note": (
-                        "该子职特性已接入通用伤害防御积木并写入战斗快照。"
+                        "该子职特性已接入通用运行时积木并写入战斗快照。"
                         if runtime_status == "full"
                         else
                         "已同步可验证的资源或动作经济；其余文本效果由 DM 裁定。"

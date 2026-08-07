@@ -1381,6 +1381,36 @@ class PlayerRoomService:
                     registry.get("progression") if isinstance(registry, dict) else None
                 )
                 bindings: dict[str, int | str] = {}
+                class_levels = (
+                    runtime_progression.get("class_levels", {})
+                    if isinstance(runtime_progression, dict)
+                    else {}
+                )
+                normalized_levels = {
+                    re.sub(r"[\s_：:（）()\-]", "", str(key)).casefold(): int(value)
+                    for key, value in class_levels.items()
+                    if isinstance(value, int) and not isinstance(value, bool)
+                }
+                barbarian_level = max(
+                    (
+                        level
+                        for key, level in normalized_levels.items()
+                        if key in {"野蛮人", "barbarian"}
+                    ),
+                    default=0,
+                )
+                ranger_level = max(
+                    (
+                        level
+                        for key, level in normalized_levels.items()
+                        if key in {"游侠", "ranger"}
+                    ),
+                    default=0,
+                )
+                if barbarian_level:
+                    bindings["barbarian_level_half"] = barbarian_level // 2
+                if ranger_level:
+                    bindings["dreadful_strikes_die"] = "d6" if ranger_level >= 11 else "d4"
                 # Bind only authoritative snapshot values for generic rider
                 # expressions.  Dice bindings remain as ``dN`` strings so the
                 # domain resolver can validate reported totals and critical

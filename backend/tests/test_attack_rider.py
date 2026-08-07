@@ -384,3 +384,62 @@ def test_optional_post_hit_rider_waits_then_declines_without_commit() -> None:
     save = resolve_post_hit_rider(config, **common, inputs={"activate": True})
     assert save is not None
     assert save["status"] == "pending_save"
+
+
+def test_level_bound_damage_and_choice_are_resolved_by_generic_rider() -> None:
+    config = {
+        "id": "fixture:level-bound-rider",
+        "kind": "post_hit_rider",
+        "trigger": "after_hit",
+        "frequency": "once_per_turn",
+        "eligibility": {
+            "actor_conditions_all": ["raging"],
+            "target_relations": ["enemy"],
+            "action_tags_any": ["weapon", "unarmed"],
+        },
+        "choice": {
+            "input_key": "damage_type_choice",
+            "options": [
+                {"key": "radiant", "label": "光耀"},
+                {"key": "necrotic", "label": "暗蚀"},
+            ],
+        },
+        "damage": {
+            "id": "level-bound-damage",
+            "expression": "1d6+@class_level_half",
+            "damage_type": "radiant",
+            "damage_type_source": "damage_type_choice",
+            "damage_type_options": ["radiant", "necrotic"],
+            "input_key": "damage_total",
+        },
+    }
+    actor, resources = _actor(conditions=["raging"])
+    actor["class_levels"] = {"fixture_class": 9}
+    pending = resolve_post_hit_rider(
+        config,
+        hit=True,
+        actor=actor,
+        target=_target(),
+        action={"tags": ["weapon"]},
+        resources=resources,
+        event_id="attack-level-bound",
+        turn_id="1:1",
+        bindings={"class_level_half": 4},
+    )
+    assert pending is not None and pending["status"] == "pending_choice"
+    resolved = resolve_post_hit_rider(
+        config,
+        hit=True,
+        actor=actor,
+        target=_target(),
+        action={"tags": ["weapon"]},
+        resources=resources,
+        event_id="attack-level-bound",
+        turn_id="1:1",
+        bindings={"class_level_half": 4},
+        inputs={"damage_type_choice": "necrotic", "damage_total": 8},
+    )
+    assert resolved is not None and resolved["status"] == "resolved"
+    assert resolved["damage"][0]["damage_type"] == "necrotic"
+    assert resolved["damage"][0]["minimum"] == 5
+    assert resolved["damage"][0]["maximum"] == 10

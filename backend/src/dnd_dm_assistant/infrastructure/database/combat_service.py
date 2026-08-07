@@ -5753,6 +5753,40 @@ class CombatEngineService:
             snapshot = dict(actor.snapshot_json or {})
             runtime = snapshot.get("feature_runtime")
             resources = runtime.get("resources", {}) if isinstance(runtime, dict) else {}
+            progression = runtime.get("progression", {}) if isinstance(runtime, dict) else {}
+            class_levels = (
+                progression.get("class_levels", {})
+                if isinstance(progression, dict)
+                else {}
+            )
+            normalized_levels = {
+                re.sub(r"[\s_：:（）()\-]", "", str(key)).casefold(): int(value)
+                for key, value in class_levels.items()
+                if isinstance(value, int) and not isinstance(value, bool)
+            }
+            barbarian_level = max(
+                (
+                    level
+                    for key, level in normalized_levels.items()
+                    if key in {"野蛮人", "barbarian"}
+                ),
+                default=0,
+            )
+            ranger_level = max(
+                (
+                    level
+                    for key, level in normalized_levels.items()
+                    if key in {"游侠", "ranger"}
+                ),
+                default=0,
+            )
+            rider_bindings = dict(payload.get("bindings") or {})
+            if barbarian_level:
+                rider_bindings.setdefault("barbarian_level_half", barbarian_level // 2)
+            if ranger_level:
+                rider_bindings.setdefault(
+                    "dreadful_strikes_die", "d6" if ranger_level >= 11 else "d4"
+                )
             used_tokens = snapshot.get("post_hit_usage_tokens")
             action_context = payload.get("action_context")
             if not isinstance(action_context, dict):
@@ -5789,7 +5823,7 @@ class CombatEngineService:
                 event_id=str(payload.get("event_id") or request.id),
                 turn_id=str(payload.get("turn_id") or "") or None,
                 inputs=accumulated,
-                bindings=dict(payload.get("bindings") or {}),
+                bindings=rider_bindings,
                 used_tokens=used_tokens if isinstance(used_tokens, list) else [],
             )
             if resolved is None:

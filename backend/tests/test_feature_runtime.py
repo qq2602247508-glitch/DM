@@ -1699,6 +1699,54 @@ def test_choice_bound_blessed_and_elemental_fury_features_remain_dm_only() -> No
     )
 
 
+def test_divine_fury_and_dreadful_strikes_use_persisted_rider_consumer() -> None:
+    divine = subclass_feature_runtime_definition(
+        {
+            "name": "神性之怒 Divine Fury",
+            "class_name": "野蛮人",
+            "class_level": 3,
+            "source_record_id": "zealot-divine-fury",
+        }
+    )
+    dreadful = subclass_feature_runtime_definition(
+        {
+            "name": "哀惧灵袭 Dreadful Strikes",
+            "class_name": "游侠",
+            "class_level": 3,
+            "source_record_id": "fey-dreadful-strikes",
+        }
+    )
+    assert divine is not None and dreadful is not None
+    registry = compile_feature_runtime_registry(
+        [
+            {
+                "name": "神性之怒 Divine Fury",
+                "class_name": "野蛮人",
+                "class_level": 3,
+                "runtime": {"registry": divine},
+            },
+            {
+                "name": "哀惧灵袭 Dreadful Strikes",
+                "class_name": "游侠",
+                "class_level": 3,
+                "runtime": {"registry": dreadful},
+            },
+        ],
+        class_levels={"野蛮人": 3, "游侠": 11},
+        total_level=14,
+    )
+    riders = {item["id"]: item for item in registry["attack_riders"]}
+    assert riders["divine_fury:bonus_damage"]["damage"]["damage_type_source"] == (
+        "divine_fury_damage_type"
+    )
+    assert riders["dreadful_strikes:bonus_damage"]["damage"]["expression"] == (
+        "@dreadful_strikes_die"
+    )
+    contracts = {item["name"]: item for item in registry["feature_contracts"]}
+    assert contracts["神性之怒 Divine Fury"]["automation_status"] == "full"
+    assert contracts["哀惧灵袭 Dreadful Strikes"]["automation_status"] == "full"
+
+
 def test_2024_deterministic_feature_contracts_are_explicit_but_partial_when_events_are_missing(
 ) -> None:
     registry = compile_feature_runtime_registry(

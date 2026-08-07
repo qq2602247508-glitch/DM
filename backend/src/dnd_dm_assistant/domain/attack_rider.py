@@ -334,6 +334,23 @@ def _normalize_damage_components(
         seen_ids.add(component_id)
         expression = _text(component.get("expression"))
         damage_type = _text(component.get("damage_type"))
+        damage_type_source = _text(component.get("damage_type_source"))
+        damage_type_options = [
+            _text(value)
+            for value in component.get("damage_type_options", [])
+            if _text(value)
+        ]
+        if damage_type_source:
+            _identifier(damage_type_source, "damage type input key")
+            if len(damage_type_options) < 2 or len(set(damage_type_options)) != len(
+                damage_type_options
+            ):
+                raise ValueError("damage type options must contain at least two unique values")
+            selected_damage_type = _text(inputs.get(damage_type_source))
+            if require_totals:
+                if selected_damage_type not in damage_type_options:
+                    raise ValueError(f"damage type choice is invalid: {damage_type_source}")
+                damage_type = selected_damage_type
         input_key = _identifier(
             component.get("input_key") or f"{rider_id}:{component_id}:total",
             "damage input key",
@@ -359,6 +376,9 @@ def _normalize_damage_components(
             "maximum": maximum,
             "critical_doubles_dice": doubles,
         }
+        if damage_type_source:
+            entry["damage_type_source"] = damage_type_source
+            entry["damage_type_options"] = list(damage_type_options)
         if require_totals:
             reported = _integer(inputs.get(input_key))
             if reported is None:
