@@ -1835,6 +1835,41 @@ def feature_runtime_definition(
             }
         )
 
+    if identity in {"战术思维", "tacticalmind"}:
+        definition["actions"]["tactical_mind"] = {
+            "id": "tactical_mind",
+            "name": feature_name,
+            "kind": "roll_intervention",
+            "trigger": "after_failed_d20_test",
+            "eligibility": {
+                "entity_types": ["character"],
+                "test_kinds": ["ability_check"],
+                "resource": {"key": "second_wind", "minimum": 1},
+            },
+            "input_requirements": [
+                {"key": "tactical_die", "kind": "die_roll", "die_sides": 10}
+            ],
+            "operation": {
+                "kind": "failure_recovery",
+                "recovery": {
+                    "kind": "add_die",
+                    "input_key": "tactical_die",
+                    "die_sides": 10,
+                },
+                "consume_when": "on_success",
+            },
+            "resource": {"key": "second_wind", "cost": 1},
+            "idempotency": {"prefix": "roll-intervention"},
+            "runtime_execution": {
+                "status": "ready",
+                "consumer": "player_roll_resolution",
+            },
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+            "summary": "属性检定失败后输入1d10；仅补救成功时消耗一次回气。",
+            **source,
+        }
+
     if identity in {"万事通", "jackofalltrades"}:
         definition["combat_start"]["modifiers"].append(
             {
@@ -1937,17 +1972,27 @@ def feature_runtime_definition(
         definition["attack_riders"].append(
             {
                 "id": "foe_slayer:hunter_mark_damage",
-                "kind": "bonus_damage",
-                "value": "1d10",
-                "damage_type": "force",
-                "applies_when": "target_is_current_hunters_mark",
+                "kind": "post_hit_rider",
+                "trigger": "after_hit",
                 "frequency": "each_eligible_hit",
-                "automation_status": "partial",
-                "requires_dm_adjudication": True,
-                "partial_reason": (
-                    "伤害骰仍需输入；目标资格可由快照明确绑定的 "
-                    "current_hunters_mark_target_id 自动确认。"
-                ),
+                "eligibility": {
+                    "target_relations": ["enemy"],
+                    "action_tags_any": ["attack", "weapon", "unarmed", "spell_attack"],
+                    "actor_state_target_id_keys": ["current_hunters_mark_target_id"],
+                },
+                "damage": {
+                    "id": "hunter_mark_damage",
+                    "expression": "1d10",
+                    "damage_type": "force",
+                    "input_key": "foe_slayer_total",
+                },
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "post_hit_rider_resolver",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+                "summary": "命中已由权威状态绑定的猎人印记目标后，校验并加入1d10力场伤害。",
                 **source,
             }
         )

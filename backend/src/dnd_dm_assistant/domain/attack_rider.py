@@ -418,6 +418,7 @@ def _validate_eligibility(raw_eligibility: object) -> dict[str, Any]:
         "attack_abilities",
         "target_relations",
         "actor_level",
+        "actor_state_target_id_keys",
     }
     unknown = sorted(set(eligibility) - allowed)
     if unknown:
@@ -476,6 +477,16 @@ def _eligible(
         return False
     if tags_none & action_tags:
         return False
+    state_keys = _string_set(eligibility.get("actor_state_target_id_keys"))
+    if state_keys:
+        actor_state = _mapping(actor.get("state"))
+        target_id = _text(target.get("id"))
+        if not target_id or not any(
+            _text(value) == target_id
+            for key, value in actor_state.items()
+            if _text(key).casefold() in state_keys
+        ):
+            return False
 
     raw_level = eligibility.get("actor_level")
     if raw_level is not None:

@@ -31,6 +31,7 @@ from dnd_dm_assistant.api.schemas import (
 from dnd_dm_assistant.application.rule_block_compiler import (
     compile_rule_blocks_dict,
 )
+from dnd_dm_assistant.domain.attack_rider import resolve_post_hit_rider
 from dnd_dm_assistant.domain.campaign_state import StateNotFoundError, VersionConflict
 from dnd_dm_assistant.domain.character_creation import (
     ability_generation_label,
@@ -1312,6 +1313,111 @@ class PlayerRoomService:
                 continue
             rider_id = str(raw.get("id") or "").strip()
             if not rider_id or rider_id in used_this_turn:
+                continue
+            if raw.get("kind") == "post_hit_rider":
+                raw_inputs_by_rider = special_inputs.get("post_hit_rider_inputs")
+                inputs_by_rider = (
+                    raw_inputs_by_rider if isinstance(raw_inputs_by_rider, dict) else {}
+                )
+                raw_inputs = inputs_by_rider.get(rider_id)
+                rider_inputs = dict(raw_inputs) if isinstance(raw_inputs, dict) else {}
+                # Compatibility adapter for clients that submitted the old
+                # flat attack_rider_totals shape.  It translates input only;
+                # eligibility and execution remain in the generic resolver.
+                legacy_totals = special_inputs.get("attack_rider_totals")
+                legacy_total = (
+                    legacy_totals.get(rider_id)
+                    if isinstance(legacy_totals, dict)
+                    else None
+                )
+                raw_damage = raw.get("damage")
+                damage_entries = raw_damage if isinstance(raw_damage, list) else [raw_damage]
+                if legacy_total is not None and not rider_inputs:
+                    for damage_entry in damage_entries:
+                        if isinstance(damage_entry, dict):
+                            input_key = str(damage_entry.get("input_key") or "").strip()
+                            if input_key:
+                                rider_inputs[input_key] = legacy_total
+                action_tags = {"attack"}
+                if is_weapon_attack:
+                    action_tags.add("weapon")
+                if action.get("is_unarmed_attack") is True:
+                    action_tags.add("unarmed")
+                if action.get("is_spell_attack") is True or action.get("kind") == "spell":
+                    action_tags.add("spell_attack")
+                if action.get("melee_weapon_attack") is True or "近战" in action_text:
+                    action_tags.add("melee")
+                if "远程" in action_text:
+                    action_tags.add("ranged")
+                runtime_progression = (
+                    registry.get("progression") if isinstance(registry, dict) else None
+                )
+                resolved = resolve_post_hit_rider(
+                    raw,
+                    hit=True,
+                    actor={
+                        "id": actor.id,
+                        "entity_type": actor.entity_type,
+                        "faction": CombatEngineService._combatant_faction(actor),
+                        "conditions": sorted(CombatEngineService._condition_set(actor)),
+                        "class_levels": (
+                            runtime_progression.get("class_levels", {})
+                            if isinstance(runtime_progression, dict)
+                            else {}
+                        ),
+                        "state": dict(actor.snapshot_json or {}),
+                    },
+                    target={
+                        "id": target.id,
+                        "entity_type": target.entity_type,
+                        "faction": CombatEngineService._combatant_faction(target),
+                        "relation": (
+                            "ally"
+                            if CombatEngineService._combatant_faction(actor)
+                            == CombatEngineService._combatant_faction(target)
+                            else "enemy"
+                        ),
+                        "conditions": sorted(CombatEngineService._condition_set(target)),
+                    },
+                    action={"tags": sorted(action_tags), "attack_ability": attack_ability},
+                    resources=(
+                        registry.get("resources", {}) if isinstance(registry, dict) else {}
+                    ),
+                    event_id=f"attack:{actor.id}:{target.id}",
+                    inputs=rider_inputs,
+                    critical_hit=critical_hit,
+                )
+                if resolved is None or resolved.get("status") == "already_used":
+                    continue
+                if resolved.get("status") != "resolved":
+                    raise ValueError(f"攻击骑手 {rider_id} 仍需完整输入后才能结算")
+                if resolved.get("saving_throw") is not None or resolved.get("effects"):
+                    raise ValueError("该命中后骑手需要持久化豁免/效果确认链")
+                damage = resolved.get("damage")
+                components = damage if isinstance(damage, list) else []
+                total = sum(int(item.get("reported_total") or 0) for item in components)
+                if total <= 0:
+                    continue
+                result.append(
+                    {
+                        "rider_id": rider_id,
+                        "expression": "+".join(
+                            str(item.get("expression") or "") for item in components
+                        ),
+                        "reported_total": total,
+                        "dice": True,
+                        "total": total,
+                        "source": raw.get("feature_name") or rider_id,
+                        "damage_type": (
+                            components[0].get("damage_type")
+                            if len(components) == 1
+                            else "mixed"
+                        ),
+                        "frequency": raw.get("frequency"),
+                        "target_combatant_id": target.id,
+                        "post_hit_resolution_key": resolved.get("resolution_key"),
+                    }
+                )
                 continue
             applies_when = str(raw.get("applies_when") or "").strip().lower()
             if applies_when == "raging_strength_attack":

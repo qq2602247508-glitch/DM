@@ -1728,6 +1728,132 @@ def test_generic_ranged_passive_resolves_range_override_and_stacking_groups() ->
     ) == 6
 
 
+def test_tactical_mind_uses_generic_failure_recovery_and_consumes_only_on_success() -> None:
+    action = CombatAction(
+        id="tactical-check",
+        campaign_id="campaign",
+        combat_id="combat",
+        action_type="player_roll_prompt",
+        target_combatant_ids=["tactical-fighter"],
+        request_json={
+            "resolution_type": "ability_check",
+            "ability": "strength",
+            "ability_check_proficient": True,
+            "dc": 15,
+            "action_name": "战术检定",
+        },
+        result_json={},
+        round_number=1,
+        turn_index=0,
+        summary="等待检定",
+        idempotency_key="tactical-check",
+    )
+
+    def target() -> Combatant:
+        return Combatant(
+            id="tactical-fighter",
+            entity_type="character",
+            entity_id="fighter-character",
+            display_name="战术战士",
+            hp=20,
+            max_hp=20,
+            snapshot_json={
+                "feature_runtime": {
+                    "actions": {
+                        "tactical_mind": {
+                            "id": "tactical_mind",
+                            "name": "战术思维",
+                            "kind": "roll_intervention",
+                            "trigger": "after_failed_d20_test",
+                            "eligibility": {
+                                "entity_types": ["character"],
+                                "test_kinds": ["ability_check"],
+                                "resource": {"key": "second_wind", "minimum": 1},
+                            },
+                            "input_requirements": [
+                                {
+                                    "key": "tactical_die",
+                                    "kind": "die_roll",
+                                    "die_sides": 10,
+                                }
+                            ],
+                            "operation": {
+                                "kind": "failure_recovery",
+                                "recovery": {
+                                    "kind": "add_die",
+                                    "input_key": "tactical_die",
+                                    "die_sides": 10,
+                                },
+                                "consume_when": "on_success",
+                            },
+                            "resource": {"key": "second_wind", "cost": 1},
+                        }
+                    },
+                    "resources": {"second_wind": {"current": 2, "max": 2}},
+                }
+            },
+        )
+
+    class FakeSession:
+        def __init__(self) -> None:
+            self.character = SimpleNamespace(
+                resources={"second_wind": {"current": 2, "max": 2}},
+                version=1,
+                updated_at=None,
+            )
+
+        def get(self, _model: object, _entity_id: str) -> object:
+            return self.character
+
+    opened = CombatEngineService._resolve_player_roll(
+        action,
+        target(),
+        PlayerRollResolutionCommand(action_version=1, roll_total=12),
+        session=FakeSession(),
+    )
+    assert opened["phase"] == "awaiting_roll_intervention"
+    assert opened["roll_intervention_window"][0]["id"] == "tactical_mind"
+
+    failed_session = FakeSession()
+    failed = CombatEngineService._resolve_player_roll(
+        action,
+        target(),
+        PlayerRollResolutionCommand(
+            action_version=1,
+            roll_total=12,
+            roll_intervention_id="tactical_mind",
+            roll_intervention_inputs={"tactical_die": 2},
+        ),
+        consume_defenses=True,
+        session=failed_session,
+    )
+    assert failed["success"] is False
+    assert failed["generic_resource_consumed"] is None
+    assert failed_session.character.resources["second_wind"]["current"] == 2
+
+    success_session = FakeSession()
+    succeeded = CombatEngineService._resolve_player_roll(
+        action,
+        target(),
+        PlayerRollResolutionCommand(
+            action_version=1,
+            roll_total=12,
+            roll_intervention_id="tactical_mind",
+            roll_intervention_inputs={"tactical_die": 4},
+        ),
+        consume_defenses=True,
+        session=success_session,
+    )
+    assert succeeded["success"] is True
+    assert succeeded["roll_total"] == 16
+    assert succeeded["generic_resource_consumed"] == {
+        "key": "second_wind",
+        "cost": 1,
+        "before": 2,
+        "after": 1,
+    }
+
+
 def test_combat_consumers_accept_a_snapshot_with_only_canonical_feature_blocks() -> None:
     registry = compile_feature_runtime_registry(
         [

@@ -56,6 +56,10 @@ from dnd_dm_assistant.domain.pre_damage_intervention import (
     apply_pre_damage_intervention,
     validate_intervention_input,
 )
+from dnd_dm_assistant.domain.roll_intervention import (
+    apply_roll_intervention,
+    resolve_roll_interventions,
+)
 from dnd_dm_assistant.domain.zero_hp_intervention import (
     adapt_legacy_zero_hp_intervention,
     resolve_zero_hp_intervention,
@@ -3581,6 +3585,97 @@ class CombatEngineService:
                 group = str(config.get("stacking_group") or config.get("range_group") or "default")
                 best_by_group[group] = max(best_by_group.get(group, 0), value)
         return summed + sum(best_by_group.values())
+
+    @classmethod
+    def _generic_roll_intervention_options(
+        cls,
+        target: Combatant,
+        *,
+        trigger: str,
+        resolution_type: str,
+        request: dict[str, Any],
+        session: Session | None,
+    ) -> list[dict[str, object]]:
+        snapshot = dict(target.snapshot_json or {})
+        runtime = snapshot.get("feature_runtime")
+        if not isinstance(runtime, dict):
+            return []
+        raw_actions = runtime.get("actions")
+        actions = list(raw_actions.values()) if isinstance(raw_actions, dict) else []
+        specs = [item for item in actions if isinstance(item, dict)]
+        progression = runtime.get("progression")
+        class_levels = (
+            dict(progression.get("class_levels") or {})
+            if isinstance(progression, dict)
+            else {}
+        )
+        resources = dict(runtime.get("resources") or {})
+        if session is not None and target.entity_type == "character" and target.entity_id:
+            character = session.get(Character, target.entity_id)
+            if character is not None:
+                resources.update(dict(character.resources or {}))
+        return resolve_roll_interventions(
+            specs,
+            trigger=trigger,
+            context={
+                "entity_type": target.entity_type,
+                "faction": cls._combatant_faction(target),
+                "test_kind": resolution_type,
+                "ability": request.get("ability"),
+                "skill": request.get("skill"),
+                "conditions": sorted(cls._condition_set(target)),
+                "class_levels": class_levels,
+                "resources": resources,
+            },
+        )
+
+    @classmethod
+    def _consume_generic_roll_intervention_resource(
+        cls,
+        target: Combatant,
+        result: dict[str, object],
+        *,
+        session: Session | None,
+    ) -> dict[str, object] | None:
+        if result.get("resource_should_consume") is not True:
+            return None
+        resource = result.get("resource")
+        if not isinstance(resource, dict):
+            raise ValueError("掷骰干预缺少资源提交计划")
+        key = str(resource.get("key") or "").strip()
+        cost = cls._state_int(resource.get("cost"), 1)
+        if session is None or target.entity_type != "character" or not target.entity_id:
+            raise ValueError("确认掷骰干预需要权威角色资源上下文")
+        character = session.get(Character, target.entity_id)
+        if character is None:
+            raise ValueError("掷骰干预对应角色不存在")
+        resources = dict(character.resources or {})
+        raw_entry = resources.get(key)
+        entry = dict(raw_entry) if isinstance(raw_entry, dict) else {}
+        before = cls._state_int(entry.get("current"))
+        if not key or cost < 1 or before < cost:
+            raise ValueError(f"掷骰干预资源不足：{key}")
+        after = before - cost
+        entry["current"] = after
+        resources[key] = entry
+        character.resources = resources
+        character.version += 1
+        character.updated_at = datetime.now(UTC)
+
+        snapshot = dict(target.snapshot_json or {})
+        runtime = snapshot.get("feature_runtime")
+        if isinstance(runtime, dict):
+            runtime = dict(runtime)
+            runtime_resources = runtime.get("resources")
+            if isinstance(runtime_resources, dict):
+                runtime_resources = dict(runtime_resources)
+                runtime_entry = runtime_resources.get(key)
+                if isinstance(runtime_entry, dict):
+                    runtime_resources[key] = {**runtime_entry, "current": after}
+                    runtime["resources"] = runtime_resources
+                    snapshot["feature_runtime"] = runtime
+                    target.snapshot_json = snapshot
+        return {"key": key, "cost": cost, "before": before, "after": after}
 
     @classmethod
     def _feature_rule_modifiers(
@@ -8504,6 +8599,84 @@ class CombatEngineService:
                 }
             )
             stroke_of_luck_consumed["final_total"] = replacement_total
+        generic_roll_intervention: dict[str, object] | None = None
+        generic_resource_consumed: dict[str, object] | None = None
+        generic_options: list[dict[str, object]] = []
+        if not success and not any(
+            str(item).startswith("condition_auto_fail")
+            for item in defense["applied_defenses"]
+        ):
+            generic_options = cls._generic_roll_intervention_options(
+                target,
+                trigger="after_failed_d20_test",
+                resolution_type=resolution_type,
+                request=request,
+                session=session,
+            )
+        if command.roll_intervention_id is not None:
+            if success:
+                raise ValueError("通用掷骰干预只能用于失败的检定")
+            selected = next(
+                (
+                    item
+                    for item in generic_options
+                    if item.get("id") == command.roll_intervention_id
+                ),
+                None,
+            )
+            if selected is None:
+                raise ValueError("所选通用掷骰干预当前不可用")
+            generic_roll_intervention = apply_roll_intervention(
+                selected,
+                roll_total=int(defense["effective_roll_total"]),
+                inputs=command.roll_intervention_inputs,
+                dc=dc,
+                operation_id=action.id,
+            )
+            defense["effective_roll_total"] = generic_roll_intervention["effective_total"]
+            defense["success"] = generic_roll_intervention["success"]
+            defense["applied_defenses"] = [
+                *list(defense["applied_defenses"]),
+                f"roll_intervention:{command.roll_intervention_id}",
+            ]
+            success = bool(defense["success"])
+            if consume_defenses:
+                generic_resource_consumed = cls._consume_generic_roll_intervention_resource(
+                    target,
+                    generic_roll_intervention,
+                    session=session,
+                )
+        elif generic_options:
+            return {
+                "phase": "awaiting_roll_intervention",
+                "roll_owner": "player",
+                "roll_total": defense["effective_roll_total"],
+                "reported_roll_totals": defense["reported_roll_totals"],
+                "dc": dc,
+                "success": False,
+                "outcome": "failure",
+                "damage": 0,
+                "damage_type": None,
+                "damage_components": [],
+                "applied_defenses": defense["applied_defenses"],
+                "roll_intervention_window": [
+                    {
+                        "id": item.get("id"),
+                        "name": item.get("name"),
+                        "operation": item.get("operation"),
+                        "input_requirements": item.get("input_requirements", []),
+                        "resource": item.get("resource"),
+                    }
+                    for item in generic_options
+                ],
+                "generic_roll_intervention": None,
+                "generic_resource_consumed": None,
+                "feature_reroll_consumed": None,
+                "stroke_of_luck_consumed": None,
+                "defense_resource_consumed": None,
+                "feature_dice_consumed": feature_dice_consumed,
+                "dm_note": command.dm_note,
+            }
         damage = cls._state_int(defense["damage"])
         if (
             resolution_type == "saving_throw"
@@ -8728,6 +8901,8 @@ class CombatEngineService:
                 command.stroke_of_luck_total if command.use_stroke_of_luck else None
             ),
             "feature_dice_consumed": feature_dice_consumed,
+            "generic_roll_intervention": generic_roll_intervention,
+            "generic_resource_consumed": generic_resource_consumed,
         }
         result["follow_up_damage"] = (
             {
@@ -8992,6 +9167,7 @@ class CombatEngineService:
             if resolution.get("phase") in {
                 "awaiting_feature_reroll",
                 "awaiting_stroke_of_luck",
+                "awaiting_roll_intervention",
             }:
                 action.result_json = {
                     **resolution,
@@ -9009,6 +9185,15 @@ class CombatEngineService:
                         if resolution.get("stroke_of_luck_window") is not None
                         else {}
                     ),
+                    **(
+                        {
+                            "roll_intervention_window": resolution.get(
+                                "roll_intervention_window"
+                            )
+                        }
+                        if resolution.get("roll_intervention_window") is not None
+                        else {}
+                    ),
                 }
                 action.version += 1
                 action.updated_at = datetime.now(UTC)
@@ -9017,10 +9202,15 @@ class CombatEngineService:
                         f"{actor.display_name} 对 {target.display_name} 的豁免失败；"
                         "已打开职业特性重掷窗口，等待第二枚豁免骰"
                     )
-                else:
+                elif resolution.get("phase") == "awaiting_stroke_of_luck":
                     action.summary = (
                         f"{actor.display_name} 对 {target.display_name} 的 D20 检定失败；"
                         "已打开幸运一击窗口，等待天然 20 的最终总值"
+                    )
+                else:
+                    action.summary = (
+                        f"{actor.display_name} 对 {target.display_name} 的 D20 检定失败；"
+                        "已打开通用掷骰干预窗口，等待补救骰输入"
                     )
                 return {
                     "action": serialize(action),

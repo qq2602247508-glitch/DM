@@ -268,6 +268,13 @@ def test_fighter_registry_exposes_attack_count_second_wind_and_action_surge() ->
     assert surge["effects"] == [
         {"kind": "grant_action_budget", "amount": 1, "excludes": ["magic_action"]}
     ]
+    tactical = registry["actions"]["tactical_mind"]
+    assert tactical["kind"] == "roll_intervention"
+    assert tactical["trigger"] == "after_failed_d20_test"
+    assert tactical["operation"]["kind"] == "failure_recovery"
+    assert tactical["operation"]["consume_when"] == "on_success"
+    assert tactical["resource"] == {"key": "second_wind", "cost": 1}
+    assert tactical["automation_status"] == "full"
 
 
 def test_rage_and_sneak_attack_keep_exact_scaling_and_conditions() -> None:
@@ -425,9 +432,10 @@ def test_channel_divinity_focus_and_unknown_features_preserve_their_contracts() 
         "max": 20,
         "recovery": "short_rest",
     }
-    tactical_mind = next(item for item in fighter["dm_only"] if item["name"] == "战术思维")
-    assert tactical_mind["automation_status"] == "dm_only"
-    assert tactical_mind["requires_dm_adjudication"] is True
+    tactical_mind = fighter["actions"]["tactical_mind"]
+    assert tactical_mind["kind"] == "roll_intervention"
+    assert tactical_mind["automation_status"] == "full"
+    assert tactical_mind["requires_dm_adjudication"] is False
 
 
 def test_common_feature_contracts_expose_typed_effects_and_passive_defense() -> None:
@@ -1402,14 +1410,20 @@ def test_ranger_hunters_mark_upgrades_require_explicit_state_and_feed_attack_rid
         for item in ranger["attack_riders"]
         if item["id"] == "foe_slayer:hunter_mark_damage"
     )
-    assert rider == {
-        **rider,
-        "value": "1d10",
+    assert rider["kind"] == "post_hit_rider"
+    assert rider["trigger"] == "after_hit"
+    assert rider["damage"] == {
+        "id": "hunter_mark_damage",
+        "expression": "1d10",
         "damage_type": "force",
-        "frequency": "each_eligible_hit",
-        "automation_status": "partial",
-        "requires_dm_adjudication": True,
+        "input_key": "foe_slayer_total",
     }
+    assert rider["eligibility"]["actor_state_target_id_keys"] == [
+        "current_hunters_mark_target_id"
+    ]
+    assert rider["frequency"] == "each_eligible_hit"
+    assert rider["automation_status"] == "full"
+    assert rider["requires_dm_adjudication"] is False
 
     actor = Combatant(
         id="ranger",
@@ -1445,6 +1459,9 @@ def test_ranger_hunters_mark_upgrades_require_explicit_state_and_feed_attack_rid
             "damage_type": "force",
             "frequency": "each_eligible_hit",
             "target_combatant_id": "marked",
+            "post_hit_resolution_key": (
+                "post-hit:attack:ranger:marked:foe_slayer:hunter_mark_damage"
+            ),
         }
     ]
 

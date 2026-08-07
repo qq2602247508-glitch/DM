@@ -9230,6 +9230,121 @@ def test_second_wind_validates_level_healing_and_restores_hp(
     assert confirmed.json()["result"]["resource_after"] == 0
 
 
+def test_tactical_mind_persists_generic_failure_recovery_and_resource_consumption(
+    combat_client: TestClient,
+) -> None:
+    campaign = _campaign(combat_client, "Tactical mind runtime")
+    base = f"/api/v1/campaigns/{campaign['id']}"
+    character = combat_client.post(
+        f"{base}/characters",
+        json={
+            "name": "战术思维战士",
+            "class_name": "战士",
+            "hp": 20,
+            "max_hp": 20,
+            "resources": {"second_wind": {"current": 2, "max": 2}},
+        },
+    ).json()
+    definition = feature_runtime_definition(
+        feature_name="战术思维",
+        class_name="战士",
+        class_level=2,
+        resources={"second_wind": {"current": 2, "max": 2}},
+        tracked_resource_keys=["second_wind"],
+    )
+    registry = compile_feature_runtime_registry(
+        [
+            {
+                "name": "战术思维",
+                "class_name": "战士",
+                "class_level": 2,
+                "runtime": {"registry": definition},
+            }
+        ],
+        resources={"second_wind": {"current": 2, "max": 2}},
+        class_levels={"战士": 2},
+        total_level=2,
+    )
+    combat = combat_client.post(
+        f"{base}/combats", json={"name": "战术思维检定"}
+    ).json()
+    actor = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "战术思维战士",
+            "entity_type": "character",
+            "entity_id": character["id"],
+            "initiative": 20,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {"feature_runtime": registry},
+        },
+    ).json()
+    root = f"{base}/combats/{combat['id']}"
+    pending = combat_client.post(
+        f"{root}/actions/player-rolls/pending",
+        headers={"X-Request-ID": "tactical-mind-prompt"},
+        json={
+            "actor_combatant_id": actor["id"],
+            "actor_version": actor["version"],
+            "target_combatant_id": actor["id"],
+            "target_version": actor["version"],
+            "action_cost": "none",
+            "action_name": "撬开闸门",
+            "resolution_type": "ability_check",
+            "ability": "strength",
+            "ability_check_proficient": True,
+            "dc": 15,
+        },
+    )
+    assert pending.status_code == 200, pending.text
+    action = pending.json()["action"]
+
+    opened = combat_client.post(
+        f"{root}/actions/player-rolls/{action['id']}/confirm",
+        headers={"X-Request-ID": "tactical-mind-open"},
+        json={"action_version": action["version"], "roll_total": 12},
+    )
+    assert opened.status_code == 200, opened.text
+    assert opened.json()["resolution"]["phase"] == "awaiting_roll_intervention"
+    assert opened.json()["resolution"]["roll_intervention_window"][0]["id"] == (
+        "tactical_mind"
+    )
+
+    resolved = combat_client.post(
+        f"{root}/actions/player-rolls/{action['id']}/confirm",
+        headers={"X-Request-ID": "tactical-mind-confirm"},
+        json={
+            "action_version": opened.json()["action"]["version"],
+            "roll_total": 12,
+            "roll_intervention_id": "tactical_mind",
+            "roll_intervention_inputs": {"tactical_die": 4},
+        },
+    )
+    assert resolved.status_code == 200, resolved.text
+    resolution = resolved.json()["resolution"]
+    assert resolution["success"] is True
+    assert resolution["roll_total"] == 16
+    assert resolution["generic_resource_consumed"] == {
+        "key": "second_wind",
+        "cost": 1,
+        "before": 2,
+        "after": 1,
+    }
+    replay = combat_client.post(
+        f"{root}/actions/player-rolls/{action['id']}/confirm",
+        headers={"X-Request-ID": "tactical-mind-confirm"},
+        json={
+            "action_version": opened.json()["action"]["version"],
+            "roll_total": 12,
+            "roll_intervention_id": "tactical_mind",
+            "roll_intervention_inputs": {"tactical_die": 4},
+        },
+    )
+    assert replay.status_code == 200, replay.text
+    assert replay.json()["resolution"] == resolution
+
+
 def test_condition_matrix_changes_saves_and_petrified_damage(
     combat_client: TestClient,
 ) -> None:

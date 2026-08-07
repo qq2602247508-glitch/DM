@@ -1462,6 +1462,8 @@ class PlayerRollResolutionCommand(BaseModel):
     use_stroke_of_luck: bool = False
     stroke_of_luck_total: int | None = Field(default=None, ge=-100, le=1_000)
     feature_reroll_reactor_id: str | None = Field(default=None, min_length=1, max_length=36)
+    roll_intervention_id: str | None = Field(default=None, min_length=1, max_length=120)
+    roll_intervention_inputs: dict[str, int] = Field(default_factory=dict)
     dm_note: str | None = Field(default=None, max_length=1_000)
 
     @model_validator(mode="after")
@@ -1476,6 +1478,14 @@ class PlayerRollResolutionCommand(BaseModel):
             raise ValueError("幸运一击不能与传奇抗性叠加")
         if self.use_stroke_of_luck and self.bardic_inspiration_total is not None:
             raise ValueError("幸运一击不能与吟游诗人激励骰在同一次提交中叠加")
+        if self.roll_intervention_inputs and self.roll_intervention_id is None:
+            raise ValueError("roll_intervention_inputs 需要 roll_intervention_id")
+        if self.roll_intervention_id is not None and (
+            self.use_feature_reroll
+            or self.use_stroke_of_luck
+            or self.bardic_inspiration_total is not None
+        ):
+            raise ValueError("通用掷骰干预不能与旧职业骰适配器在同一次提交中叠加")
         if self.stroke_of_luck_total is not None and not self.use_stroke_of_luck:
             raise ValueError("stroke_of_luck_total 只适用于确认使用幸运一击")
         if self.use_stroke_of_luck and self.stroke_of_luck_total is None:
