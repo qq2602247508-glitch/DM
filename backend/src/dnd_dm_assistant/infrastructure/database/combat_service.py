@@ -3345,6 +3345,16 @@ class CombatEngineService:
             cls._canonical_condition(value) for value in list(target.condition_immunities or [])
         }:
             return True
+        for defense in cls._feature_defenses(target):
+            if defense.get("kind") != "condition_immunity":
+                continue
+            if cls._canonical_condition(defense.get("condition")) != canonical:
+                continue
+            applies_when = str(defense.get("applies_when") or "always").strip().lower()
+            if applies_when in {"always", ""}:
+                return True
+            if applies_when == "raging" and cls._has_condition(target, "raging"):
+                return True
         return cls._aura_condition_immunity(
             target,
             canonical,
@@ -5332,6 +5342,20 @@ class CombatEngineService:
                         reused = False
                     trigger_result["effects"].append(
                         {"kind": kind, "effect_id": effect_id, "reused": reused}
+                    )
+                elif kind == "remove_conditions":
+                    removed: list[str] = []
+                    raw_conditions = raw_effect.get("conditions")
+                    for raw_condition in raw_conditions if isinstance(raw_conditions, list) else ():
+                        condition = str(raw_condition or "").strip()
+                        if not condition:
+                            continue
+                        if cls._remove_condition(actor, condition):
+                            removed.append(condition)
+                    if removed:
+                        cls._restore_condition_restrictions(actor)
+                    trigger_result["effects"].append(
+                        {"kind": kind, "conditions_removed": removed}
                     )
                 else:
                     raise ValueError(f"职业特性触发器效果类型不受支持：{kind or 'unknown'}")

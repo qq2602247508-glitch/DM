@@ -24,7 +24,9 @@ TRIGGER_WINDOWS = frozenset(
     }
 )
 TRIGGER_EVENTS = frozenset({"after_feature_action"})
-TRIGGER_EFFECT_KINDS = frozenset({"grant_movement_budget", "grant_disengage"})
+TRIGGER_EFFECT_KINDS = frozenset(
+    {"grant_movement_budget", "grant_disengage", "remove_conditions"}
+)
 
 
 def _mapping(value: object) -> dict[str, Any]:
@@ -121,6 +123,12 @@ def feature_trigger_block_errors(trigger: Mapping[str, Any]) -> tuple[str, ...]:
                 and str(effect.get("expires") or "turn_end") != "turn_end"
             ):
                 errors.append("disengage trigger only supports turn_end")
+            elif kind == "remove_conditions":
+                conditions = effect.get("conditions")
+                if not isinstance(conditions, list) or not conditions or not all(
+                    str(item).strip() for item in conditions
+                ):
+                    errors.append("remove_conditions needs a non-empty conditions list")
     return tuple(errors)
 
 

@@ -205,3 +205,25 @@ def test_subclass_aura_immunity_uses_ranged_passive_consumer() -> None:
     assert grant["runtime"]["automation_status"] == "full"
     defense = grant["runtime"]["registry"]["combat_start"]["defenses"][0]
     assert defense["ranged_passive"]["effect_kind"] == "condition_immunity"
+
+
+def test_mindless_rage_declares_conditional_immunity_and_clear_trigger() -> None:
+    result = subclass_runtime_grants(
+        {
+            "name": "狂战士道途",
+            "feature_definitions": [
+                {
+                    "id": "mindless-rage",
+                    "name": "无我狂暴 Mindless Rage",
+                    "class_level": 6,
+                    "description": "狂暴激活期间，你具有魅惑与恐慌状态的免疫。",
+                    "source_record_id": "mindless-rage",
+                }
+            ],
+        },
+        class_name="野蛮人",
+        target_class_level=6,
+    )
+    grant = result["grants"][0]
+    assert grant["runtime"]["automation_status"] == "full"
+    assert grant["runtime"]["registry"]["triggers"][0]["action_id"] == "rage"

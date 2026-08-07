@@ -1125,6 +1125,60 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS: dict[str, dict[str, Any]] = {
         "actions": {},
         "attack_riders": [],
     },
+    "无我狂暴": {
+        "combat_start": {
+            "modifiers": [],
+            "defenses": [
+                {
+                    "id": "subclass:mindless_rage:condition_immunity",
+                    "kind": "condition_immunity",
+                    "condition": "charmed",
+                    "applies_when": "raging",
+                    "runtime_execution": {
+                        "status": "ready",
+                        "consumer": "condition_immunity_resolution",
+                    },
+                    "automation_status": "full",
+                    "requires_dm_adjudication": False,
+                },
+                {
+                    "id": "subclass:mindless_rage:frightened_immunity",
+                    "kind": "condition_immunity",
+                    "condition": "frightened",
+                    "applies_when": "raging",
+                    "runtime_execution": {
+                        "status": "ready",
+                        "consumer": "condition_immunity_resolution",
+                    },
+                    "automation_status": "full",
+                    "requires_dm_adjudication": False,
+                },
+            ],
+        },
+        "resources": {},
+        "actions": {},
+        "triggers": [
+            {
+                "id": "mindless_rage:clear_control_conditions",
+                "event": "after_feature_action",
+                "action_id": "rage",
+                "effects": [
+                    {
+                        "kind": "remove_conditions",
+                        "conditions": ["charmed", "frightened"],
+                    }
+                ],
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "feature_action_trigger_resolver",
+                    "effect_kinds": ["remove_conditions"],
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        ],
+        "attack_riders": [],
+    },
 }
 
 
