@@ -587,6 +587,28 @@ def feature_runtime_definition(
                 }
             )
 
+    fixed_ability_adjustments = {
+        "原初斗士": {"strength": 4, "constitution": 4},
+        "天人合一": {"dexterity": 4, "wisdom": 4},
+    }.get(identity)
+    if fixed_ability_adjustments is not None:
+        # These level-20 grants are not player choices or combat-only
+        # modifiers.  The advancement transaction applies the declared
+        # adjustments and raised caps to the authoritative character sheet;
+        # downstream HP, attack, saving-throw, and skill consumers then read
+        # the resulting ability scores normally.
+        definition["advancement"] = {
+            "kind": "fixed_ability_score_adjustment",
+            "adjustments": fixed_ability_adjustments,
+            "caps": {ability: 25 for ability in fixed_ability_adjustments},
+            "runtime_execution": {
+                "status": "ready",
+                "consumer": "advancement_service",
+            },
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+        }
+
     scaling_keys = set(tracked_scaling_keys)
     resource_keys = set(tracked_resource_keys)
 

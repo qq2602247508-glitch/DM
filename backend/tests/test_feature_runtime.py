@@ -38,6 +38,7 @@ from dnd_dm_assistant.domain.rests import RestResource, resolve_long_rest, resol
 from dnd_dm_assistant.domain.zero_hp_intervention import (
     adapt_legacy_zero_hp_intervention,
 )
+from dnd_dm_assistant.infrastructure.database.advancement_service import AdvancementService
 from dnd_dm_assistant.infrastructure.database.combat_service import CombatEngineService
 from dnd_dm_assistant.infrastructure.database.models import Combatant
 from dnd_dm_assistant.infrastructure.database.player_room_service import PlayerRoomService
@@ -576,6 +577,40 @@ def test_common_feature_contracts_expose_typed_effects_and_passive_defense() -> 
         ]
     )
     assert any(item["kind"] == "evasion" for item in evasion["combat_start"]["defenses"])
+
+
+def test_level_twenty_fixed_ability_adjustments_are_typed_and_capped() -> None:
+    rules = _core_rules()
+    barbarian_grant = next(
+        item for item in core_feature_grants(rules["野蛮人"], 20) if item["name"] == "原初斗士"
+    )
+    monk_grant = next(
+        item for item in core_feature_grants(rules["武僧"], 20) if item["name"] == "天人合一"
+    )
+    assert barbarian_grant["runtime"]["automation_status"] == "full"
+    assert monk_grant["runtime"]["automation_status"] == "full"
+    assert barbarian_grant["runtime"]["registry"]["advancement"] == {
+        "kind": "fixed_ability_score_adjustment",
+        "adjustments": {"strength": 4, "constitution": 4},
+        "caps": {"strength": 25, "constitution": 25},
+        "runtime_execution": {"status": "ready", "consumer": "advancement_service"},
+        "automation_status": "full",
+        "requires_dm_adjudication": False,
+    }
+    updated, applied = AdvancementService._apply_fixed_ability_score_adjustments(
+        [barbarian_grant],
+        ability_scores={
+            "strength": 23,
+            "dexterity": 10,
+            "constitution": 18,
+            "intelligence": 10,
+            "wisdom": 10,
+            "charisma": 10,
+        },
+    )
+    assert updated["strength"] == 25
+    assert updated["constitution"] == 22
+    assert applied == {"strength": 2, "constitution": 4}
 
 
 def test_table_scalars_include_bardic_die_and_chinese_pact_slot_level() -> None:

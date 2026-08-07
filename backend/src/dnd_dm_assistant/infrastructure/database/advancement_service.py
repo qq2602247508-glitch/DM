@@ -528,6 +528,61 @@ class AdvancementService:
         return after
 
     @staticmethod
+    def _ability_score_caps(grants: list[dict[str, Any]]) -> dict[str, int]:
+        """Collect typed ability caps already owned by the character."""
+
+        caps: dict[str, int] = {}
+        for grant in grants:
+            runtime = grant.get("runtime")
+            registry = runtime.get("registry") if isinstance(runtime, dict) else None
+            advancement = registry.get("advancement") if isinstance(registry, dict) else None
+            raw_caps = advancement.get("caps") if isinstance(advancement, dict) else None
+            if not isinstance(raw_caps, dict):
+                continue
+            for ability, raw_cap in raw_caps.items():
+                if isinstance(raw_cap, int) and not isinstance(raw_cap, bool):
+                    caps[str(ability)] = max(caps.get(str(ability), 20), raw_cap)
+        return caps
+
+    @staticmethod
+    def _apply_fixed_ability_score_adjustments(
+        grants: list[dict[str, Any]],
+        *,
+        ability_scores: dict[str, int],
+    ) -> tuple[dict[str, int], dict[str, int]]:
+        """Apply typed fixed adjustments using their declared score caps."""
+
+        after = dict(ability_scores)
+        applied: dict[str, int] = {}
+        for grant in grants:
+            runtime = grant.get("runtime")
+            registry = runtime.get("registry") if isinstance(runtime, dict) else None
+            advancement = registry.get("advancement") if isinstance(registry, dict) else None
+            if not isinstance(advancement, dict):
+                continue
+            if advancement.get("kind") != "fixed_ability_score_adjustment":
+                continue
+            adjustments = advancement.get("adjustments")
+            caps = advancement.get("caps")
+            if not isinstance(adjustments, dict) or not isinstance(caps, dict):
+                raise ValueError("固定属性提升缺少调整值或上限合同")
+            for ability, raw_delta in adjustments.items():
+                if (
+                    not isinstance(raw_delta, int)
+                    or isinstance(raw_delta, bool)
+                    or raw_delta < 1
+                    or not isinstance(caps.get(ability), int)
+                ):
+                    raise ValueError("固定属性提升合同包含非法数值")
+                if ability not in after:
+                    raise ValueError(f"固定属性提升引用未知属性：{ability}")
+                cap = int(caps[ability])
+                before = int(after[ability])
+                after[ability] = min(cap, before + raw_delta)
+                applied[ability] = applied.get(ability, 0) + (after[ability] - before)
+        return after, applied
+
+    @staticmethod
     def _replace_class_progression_grants(
         existing: list[Any],
         *,
@@ -875,6 +930,21 @@ class AdvancementService:
             raise ValueError("hp_mode must be fixed or roll")
 
         ability_scores = dict(character.ability_scores or {})
+        target_core_grants = list(
+            core_feature_grants(
+                rule,
+                target_class_level,
+                ability_scores=ability_scores,
+            )
+        )
+        existing_ability_caps = self._ability_score_caps(
+            [item for item in character.features or () if isinstance(item, dict)]
+        )
+        target_ability_caps = self._ability_score_caps(target_core_grants)
+        ability_caps = {
+            ability: max(existing_ability_caps.get(ability, 20), cap)
+            for ability, cap in {**existing_ability_caps, **target_ability_caps}.items()
+        }
         ability_increases = {
             str(key): int(value)
             for key, value in dict(data.get("ability_increases") or {}).items()
@@ -909,9 +979,19 @@ class AdvancementService:
                 for ability, increase in ability_increases.items():
                     if ability not in ability_scores:
                         raise ValueError(f"unknown ability score: {ability}")
-                    if ability_scores[ability] + increase > 20 and not override:
-                        raise ValueError("ability score cannot exceed 20 without a DM override")
+                    maximum = ability_caps.get(ability, 20)
+                    if ability_scores[ability] + increase > maximum and not override:
+                        raise ValueError(
+                            f"ability score cannot exceed {maximum} without a DM override"
+                        )
                     ability_scores[ability] += increase
+
+        ability_scores, fixed_ability_adjustments = (
+            self._apply_fixed_ability_score_adjustments(
+                target_core_grants,
+                ability_scores=ability_scores,
+            )
+        )
 
         feat_grant: dict[str, Any] | None = None
         if feat_choice:
@@ -1295,13 +1375,7 @@ class AdvancementService:
                 if name and name not in subclass_proficiencies:
                     subclass_proficiencies.append(name)
         scaling_updates = progression_scaling_updates(rule, target_class_level)
-        new_features = list(
-            core_feature_grants(
-                rule,
-                target_class_level,
-                ability_scores=ability_scores,
-            )
-        )
+        new_features = list(target_core_grants)
         scaling_features = [
             {
                 "name": str(update["label"]),
@@ -1491,6 +1565,7 @@ class AdvancementService:
                 "actions": after_actions,
                 "proficiencies": subclass_proficiencies,
                 "skills": subclass_skills,
+                "fixed_ability_adjustments": fixed_ability_adjustments,
                 "feature_runtime": runtime_registry,
             },
             "features_gained": [
