@@ -1055,6 +1055,76 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS: dict[str, dict[str, Any]] = {
             "requires_dm_adjudication": False,
         },
     },
+    # Student of War grants two independently typed choices.  The request
+    # format keeps the existing flat subclass-choice API while making each
+    # selection unambiguous (``skill:<name>`` and ``tool:<name>``); the
+    # advancement service validates each group's local option set and writes
+    # skill proficiency or tool proficiency to the authoritative sheet.
+    "战争学者": {
+        "combat_start": {"modifiers": [], "defenses": []},
+        "resources": {},
+        "actions": {},
+        "triggers": [],
+        "attack_riders": [],
+        "advancement": {
+            "kind": "typed_proficiency_choice",
+            "choice_groups": [
+                {
+                    "prefix": "skill",
+                    "kind": "skill",
+                    "minimum": 1,
+                    "maximum": 1,
+                    "allowed_options": [
+                        "杂技",
+                        "驯兽",
+                        "运动",
+                        "历史",
+                        "洞悉",
+                        "威吓",
+                        "察觉",
+                        "生存",
+                    ],
+                },
+                {
+                    "prefix": "tool",
+                    "kind": "tool",
+                    "minimum": 1,
+                    "maximum": 1,
+                    "allowed_options": [
+                        "木匠工具",
+                        "铁匠工具",
+                        "皮匠工具",
+                        "石匠工具",
+                        "陶匠工具",
+                        "织工工具",
+                        "玻璃工工具",
+                        "珠宝匠工具",
+                        "制图工具",
+                        "书法工具",
+                        "画家工具",
+                    ],
+                },
+            ],
+            "choice_requirement": {
+                "key": "subclass_typed_proficiency",
+                "minimum": 2,
+                "maximum": 2,
+                "strict": True,
+                "options_source": "typed_subclass_choice_groups",
+                "requires_dm_selection": False,
+                "reason": (
+                    "战争学者要求选择一项工匠工具和一项战士技能；"
+                    "使用 skill:<名称>、tool:<名称> 提交。"
+                ),
+            },
+            "runtime_execution": {
+                "status": "ready",
+                "consumer": "advancement_service",
+            },
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+        },
+    },
     # Extra Attack is a subclass grant in several source tables, but the
     # execution contract is the same typed attack-action-count consumer used
     # by core class grants.  The executor does not branch on a subclass ID.

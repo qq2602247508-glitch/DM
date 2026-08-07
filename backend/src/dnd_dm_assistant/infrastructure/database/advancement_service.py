@@ -528,6 +528,81 @@ class AdvancementService:
         return after
 
     @staticmethod
+    def _apply_subclass_typed_proficiency_choices(
+        grants: list[dict[str, Any]],
+        *,
+        selected_choices: dict[str, list[str]],
+        skills: dict[str, Any],
+        proficiencies: list[Any],
+    ) -> tuple[dict[str, dict[str, Any]], list[Any]]:
+        """Apply grouped skill/tool choices from a typed subclass contract."""
+
+        after_skills = deepcopy(skills)
+        after_proficiencies = deepcopy(proficiencies)
+        for grant in grants:
+            runtime = grant.get("runtime")
+            registry = runtime.get("registry") if isinstance(runtime, dict) else None
+            advancement = registry.get("advancement") if isinstance(registry, dict) else None
+            if (
+                not isinstance(advancement, dict)
+                or advancement.get("kind") != "typed_proficiency_choice"
+            ):
+                continue
+            feature_id = str(grant.get("feature_id") or "").strip()
+            groups = advancement.get("choice_groups")
+            if not feature_id or not isinstance(groups, list):
+                raise ValueError("子职类型化熟练选择缺少特性或分组选项合同")
+            choices = [
+                str(choice).strip()
+                for choice in selected_choices.get(feature_id, [])
+                if str(choice).strip()
+            ]
+            if len(set(choices)) != len(choices):
+                raise ValueError("子职类型化熟练选择不能重复")
+            consumed: set[str] = set()
+            for group in groups:
+                if not isinstance(group, dict):
+                    raise ValueError("子职类型化熟练选择分组无效")
+                prefix = str(group.get("prefix") or "").strip()
+                kind = str(group.get("kind") or "").strip()
+                allowed = group.get("allowed_options")
+                minimum = int(group.get("minimum") or 0)
+                maximum = int(group.get("maximum") or 0)
+                if not prefix or kind not in {"skill", "tool"} or not isinstance(allowed, list):
+                    raise ValueError("子职类型化熟练选择分组不受支持")
+                selected = [
+                    choice.split(":", 1)[1].strip()
+                    for choice in choices
+                    if choice.startswith(prefix + ":") and choice.split(":", 1)[1].strip()
+                ]
+                consumed.update(prefix + ":" + name for name in selected)
+                if not minimum <= len(selected) <= maximum:
+                    raise ValueError(
+                        f"子职特性{feature_id}必须选择 {minimum} 至 {maximum} 项{kind}，"
+                        f"当前为 {len(selected)} 项"
+                    )
+                invalid = sorted(set(selected) - {str(item) for item in allowed})
+                if invalid:
+                    raise ValueError(
+                        f"子职特性{feature_id}包含不允许的{kind}：" + "、".join(invalid)
+                    )
+                if kind == "skill":
+                    unsupported = sorted(set(selected) - set(SKILL_RULES))
+                    if unsupported:
+                        raise ValueError("子职技能熟练包含不支持的技能：" + "、".join(unsupported))
+                    for skill in selected:
+                        current = after_skills.get(skill)
+                        existing = dict(current) if isinstance(current, dict) else {}
+                        after_skills[skill] = {**existing, "proficient": True}
+                else:
+                    for tool in selected:
+                        if tool not in after_proficiencies:
+                            after_proficiencies.append(tool)
+            if set(choices) != consumed:
+                raise ValueError("子职类型化熟练选择必须使用 <类型>:<名称> 格式")
+        return after_skills, after_proficiencies
+
+    @staticmethod
     def _ability_score_caps(grants: list[dict[str, Any]]) -> dict[str, int]:
         """Collect typed ability caps already owned by the character."""
 
@@ -1374,6 +1449,12 @@ class AdvancementService:
                 name = str(entry.get("name") or "").strip()
                 if name and name not in subclass_proficiencies:
                     subclass_proficiencies.append(name)
+        subclass_skills, subclass_proficiencies = self._apply_subclass_typed_proficiency_choices(
+            list(subclass_runtime["grants"]),
+            selected_choices=selected_subclass_choices,
+            skills=subclass_skills,
+            proficiencies=subclass_proficiencies,
+        )
         scaling_updates = progression_scaling_updates(rule, target_class_level)
         new_features = list(target_core_grants)
         scaling_features = [

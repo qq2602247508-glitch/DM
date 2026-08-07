@@ -145,6 +145,47 @@ def test_lore_bonus_proficiencies_are_persisted_into_skill_check_state() -> None
         )
 
 
+def test_student_of_war_typed_skill_and_tool_choices_are_persisted() -> None:
+    feature_id = "battle-master:3:student-of-war"
+    runtime = subclass_runtime_grants(
+        {
+            "name": "战斗大师",
+            "feature_definitions": [
+                {
+                    "id": feature_id,
+                    "name": "战争学者 Student of War",
+                    "class_level": 3,
+                    "source_record_id": "fixture:battle-master:student-of-war",
+                    "description": (
+                        "你选择一种工匠工具并获得其熟练。此外，你选择一项战士1级可用的技能，"
+                        "并获得该技能的熟练。"
+                    ),
+                }
+            ],
+        },
+        class_name="战士",
+        target_class_level=3,
+        selected_choices={feature_id: ["skill:洞悉", "tool:铁匠工具"]},
+    )
+    grant = runtime["grants"][0]
+    assert grant["runtime"]["automation_status"] == "full"
+    skills, proficiencies = AdvancementService._apply_subclass_typed_proficiency_choices(
+        runtime["grants"],
+        selected_choices={feature_id: ["skill:洞悉", "tool:铁匠工具"]},
+        skills={},
+        proficiencies=[],
+    )
+    assert skills == {"洞悉": {"proficient": True}}
+    assert proficiencies == ["铁匠工具"]
+    with pytest.raises(ValueError, match="不允许的tool"):
+        AdvancementService._apply_subclass_typed_proficiency_choices(
+            runtime["grants"],
+            selected_choices={feature_id: ["skill:洞悉", "tool:盗贼工具"]},
+            skills={},
+            proficiencies=[],
+        )
+
+
 def test_spell_level_uses_class_level_not_shared_multiclass_slots() -> None:
     assert maximum_class_spell_level("法师", 5) == 3
     assert maximum_class_spell_level("圣武士", 5) == 2
