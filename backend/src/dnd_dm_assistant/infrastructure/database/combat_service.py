@@ -7839,6 +7839,9 @@ class CombatEngineService:
         cls,
         command: CombatActionCommand,
         target: Combatant,
+        *,
+        session: Session | None = None,
+        combat_id: str | None = None,
     ) -> dict[str, Any]:
         before = {
             "hp": target.hp,
@@ -7869,6 +7872,8 @@ class CombatEngineService:
                         command,
                         [component.damage_type],
                         damage_tags=component.damage_tags or command.damage_tags,
+                        session=session,
+                        combat_id=combat_id,
                     )
                     component_resolution = resolve_damage(
                         amount=component.amount,
@@ -7939,6 +7944,8 @@ class CombatEngineService:
                     target,
                     command,
                     [command.damage_type or ""],
+                    session=session,
+                    combat_id=combat_id,
                 )
                 damage_resolution = resolve_damage(
                     amount=command.amount,
@@ -10134,7 +10141,12 @@ class CombatEngineService:
                         "ordinary healing cannot restore a dead combatant; "
                         "use a DM override for a resurrection effect"
                     )
-            resolved = self._resolve(command, target)
+            resolved = self._resolve(
+                command,
+                target,
+                session=session,
+                combat_id=combat_id,
+            )
             if attack_contexts:
                 resolved["attack_contexts"] = attack_contexts
             if command.is_attack:
@@ -10280,7 +10292,12 @@ class CombatEngineService:
                 # same typed damage/defense gate used by confirm(), so mixed
                 # damage, immunity, resistance, vulnerability and unresolved
                 # conditional defenses are all checked before writes.
-                self._resolve(command, current_target)
+                self._resolve(
+                    command,
+                    current_target,
+                    session=session,
+                    combat_id=combat_id,
+                )
                 if actor is not None and command.action_cost != "none":
                     simulated_versions[actor.id] = expected_actor_version + 1
                 simulated_versions[current_target.id] = (
@@ -10789,7 +10806,12 @@ class CombatEngineService:
                         "ordinary healing cannot restore a dead combatant; "
                         "use a DM override for a resurrection effect"
                     )
-            resolved = self._resolve(command, target)
+            resolved = self._resolve(
+                command,
+                target,
+                session=session,
+                combat_id=combat_id,
+            )
             before = serialize(target)
             after = resolved["after"]
             zero_hp_intervention = self._zero_hp_intervention(
