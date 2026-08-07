@@ -9927,6 +9927,12 @@ def test_generic_post_hit_follow_up_persists_save_spends_resource_and_applies_ef
             "dc": 99,
             "input_key": "fixture_save_total",
         },
+        "damage": {
+            "id": "fixture:generic-post-hit-save:damage",
+            "expression": "1d4",
+            "damage_type": "poison",
+            "input_key": "fixture_damage_total",
+        },
         "on_save_failure": [
             {
                 "id": "fixture:generic-post-hit-save:poisoned",
@@ -10120,7 +10126,7 @@ def test_generic_post_hit_follow_up_persists_save_spends_resource_and_applies_ef
         f"{base}/post-hit-rider-requests/{fixture_request['id']}/resolve",
         json={
             "version": fixture_request["version"],
-            "inputs": {"fixture_save_total": 1},
+            "inputs": {"fixture_save_total": 1, "fixture_damage_total": 3},
         },
     )
     assert fixture_resolved.status_code == 200, fixture_resolved.text
@@ -10130,6 +10136,7 @@ def test_generic_post_hit_follow_up_persists_save_spends_resource_and_applies_ef
     ).json()["items"]
     fixture_target = next(item for item in fighters if item["id"] == target["id"])
     assert "poisoned" in fixture_target["conditions"]
+    assert fixture_target["hp"] == 33
 
 
 def test_condition_matrix_changes_saves_and_petrified_damage(

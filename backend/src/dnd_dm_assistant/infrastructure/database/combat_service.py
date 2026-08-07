@@ -5838,8 +5838,58 @@ class CombatEngineService:
             if character is None or character.campaign_id != campaign_id:
                 raise StateNotFoundError("post-hit rider character not found")
             commit = dict(resolved.get("commit") or {})
-            if resolved.get("damage"):
-                raise ValueError("post-hit rider damage commit is not supported")
+            rider_damage_result: dict[str, Any] | None = None
+            raw_damage = resolved.get("damage")
+            if isinstance(raw_damage, list) and raw_damage:
+                components = [
+                    item for item in raw_damage if isinstance(item, dict)
+                ]
+                total_damage = sum(int(item.get("reported_total") or 0) for item in components)
+                if total_damage > 0:
+                    damage_type = (
+                        str(components[0].get("damage_type") or "")
+                        if len(components) == 1
+                        else "mixed"
+                    )
+                    damage_command = CombatActionCommand(
+                        action_type="damage",
+                        target_combatant_id=target.id,
+                        target_version=target.version,
+                        actor_combatant_id=actor.id,
+                        actor_version=actor.version,
+                        action_cost="none",
+                        amount=total_damage,
+                        damage_type=damage_type or "mixed",
+                        is_attack=False,
+                        damage_components=(
+                            [
+                                {
+                                    "amount": int(item.get("reported_total") or 0),
+                                    "damage_type": str(item.get("damage_type") or "mixed"),
+                                }
+                                for item in components
+                            ]
+                            if len(components) > 1
+                            else []
+                        ),
+                    )
+                    resolved_damage = self._resolve(
+                        damage_command,
+                        target,
+                        session=session,
+                        combat_id=combat.id,
+                    )
+                    target.hp = int(resolved_damage["after"]["hp"])
+                    target.temporary_hp = int(resolved_damage["after"]["temporary_hp"])
+                    rider_damage_result = {
+                        "reported_total": total_damage,
+                        "damage_type": damage_type,
+                        **dict(resolved_damage["result"]),
+                    }
+                    self._sync_zero_hp_lifecycle(
+                        target,
+                        before_hp=int(resolved_damage["before"]["hp"]),
+                    )
             spent: list[dict[str, int]] = []
             character_resources = dict(character.resources or {})
             runtime_resources = dict(resources) if isinstance(resources, dict) else {}
@@ -5907,6 +5957,7 @@ class CombatEngineService:
                 "resource_spends": spent,
                 "effect_ids": effect_ids,
                 "usage_token": usage_token,
+                **({"damage": rider_damage_result} if rider_damage_result is not None else {}),
             }
             request.payload_json = payload
             session.flush()
