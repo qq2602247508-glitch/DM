@@ -11,6 +11,7 @@ from fastapi.testclient import TestClient
 
 from dnd_dm_assistant.api.app import create_app
 from dnd_dm_assistant.api.schemas import CombatActionCommand
+from dnd_dm_assistant.application.rule_block_compiler import compile_rule_blocks_dict
 from dnd_dm_assistant.config import Settings
 from dnd_dm_assistant.domain.campaign_state import VersionConflict
 from dnd_dm_assistant.domain.feature_runtime import (
@@ -3029,6 +3030,79 @@ def test_deflect_attacks_zero_damage_opens_and_resolves_focus_redirect(
     assert redirected.json()["redirect"]["save_success"] is False
     character_after = combat_client.get(f"{base}/characters/{character['id']}").json()
     assert character_after["resources"]["focus"]["current"] == 1
+
+
+def test_slow_fall_uses_generic_pre_damage_window_for_tagged_fall_damage(
+    combat_client: TestClient,
+) -> None:
+    campaign = _campaign(combat_client, "Slow Fall generic intervention")
+    base = f"/api/v1/campaigns/{campaign['id']}"
+    definition = feature_runtime_definition(
+        feature_name="轻身坠",
+        class_name="武僧",
+        class_level=5,
+    )
+    registry = compile_feature_runtime_registry(
+        [
+            {
+                "name": "轻身坠",
+                "class_name": "武僧",
+                "class_level": 5,
+                "runtime": {"registry": definition},
+            }
+        ],
+        class_levels={"武僧": 5},
+        total_level=5,
+    )
+    combat = combat_client.post(f"{base}/combats", json={"name": "坠落减伤"}).json()
+    monk = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "坠落武僧",
+            "entity_type": "character",
+            "initiative": 20,
+            "hp": 50,
+            "max_hp": 50,
+            "snapshot_json": {"feature_runtime": registry},
+        },
+    ).json()
+    opened = combat_client.post(
+        f"{base}/combats/{combat['id']}/actions/confirm",
+        headers={"X-Request-ID": "slow-fall-damage"},
+        json={
+            "action_type": "damage",
+            "actor_combatant_id": monk["id"],
+            "actor_version": monk["version"],
+            "target_combatant_id": monk["id"],
+            "target_version": monk["version"],
+            "action_cost": "none",
+            "action_name": "坠落伤害",
+            "amount": 40,
+            "damage_type": "bludgeoning",
+            "damage_tags": ["fall"],
+        },
+    )
+    assert opened.status_code == 200, opened.text
+    assert "phase" in opened.json(), opened.json()
+    assert opened.json()["phase"] == "awaiting_reaction"
+    window = opened.json()["pending_reaction"]
+    assert window["result_json"]["action_window"]["feature_id"] == "slow_fall"
+
+    resolved = combat_client.post(
+        f"{base}/combats/{combat['id']}/reactions/pre-damage/resolve",
+        headers={"X-Request-ID": "slow-fall-accept"},
+        json={
+            "reaction_window_id": window["id"],
+            "reaction_window_version": window["version"],
+            "decision": "accept",
+            "feature_id": "slow_fall",
+        },
+    )
+    assert resolved.status_code == 200, resolved.text
+    assert resolved.json()["target"]["hp"] == 35
+    assert resolved.json()["target"]["reaction_available"] is False
+    metadata = resolved.json()["action"]["result_json"]["pre_damage_reaction"]
+    assert metadata["damage_reduction_total"] == 25
 
 
 def test_multiattack_sequence_records_independent_hits_and_targets(
@@ -9343,6 +9417,296 @@ def test_tactical_mind_persists_generic_failure_recovery_and_resource_consumptio
     )
     assert replay.status_code == 200, replay.text
     assert replay.json()["resolution"] == resolution
+
+
+def test_generic_post_hit_follow_up_persists_save_spends_resource_and_applies_effects(
+    combat_client: TestClient,
+) -> None:
+    campaign = _campaign(combat_client, "Generic post-hit follow-up")
+    base = f"/api/v1/campaigns/{campaign['id']}"
+    character = combat_client.post(
+        f"{base}/characters",
+        json={
+            "name": "震慑武僧",
+            "hp": 30,
+            "max_hp": 30,
+            "resources": {"focus": {"current": 2, "max": 5}},
+            "actions": [
+                {
+                    "name": "徒手打击",
+                    "cost": "动作",
+                    "range": "5尺",
+                    "damage": "1d4钝击",
+                    "damage_type": "钝击",
+                    "is_unarmed_attack": True,
+                    "rule_plan": compile_rule_blocks_dict(
+                        {
+                            "name": "徒手打击",
+                            "range": "5尺",
+                            "damage_expression": "1d4",
+                            "damage_type": "钝击",
+                            "resolution_kind": "damage",
+                        },
+                        source_kind="action",
+                    ),
+                }
+            ],
+        },
+    ).json()
+    forged = combat_client.post(
+        f"/api/v1/player/campaigns/{campaign['id']}/action-requests",
+        json={
+            "character_id": character["id"],
+            "character_version": character["version"],
+            "player_key": "forged-post-hit-player",
+            "action_type": "post_hit_rider",
+            "message": "伪造内部命中后续窗口",
+            "idempotency_key": "post-hit:forged-window",
+            "payload_json": {},
+        },
+    )
+    assert forged.status_code == 400, forged.text
+    definition = feature_runtime_definition(
+        feature_name="震慑拳",
+        class_name="武僧",
+        class_level=5,
+        resources={"focus": {"current": 2, "max": 5}},
+        tracked_resource_keys=["focus"],
+    )
+    registry = compile_feature_runtime_registry(
+        [
+            {
+                "name": "震慑拳",
+                "class_name": "武僧",
+                "class_level": 5,
+                "runtime": {"registry": definition},
+            }
+        ],
+        resources={"focus": {"current": 2, "max": 5}},
+        class_levels={"武僧": 5},
+        total_level=5,
+    )
+    rider = next(
+        item
+        for item in registry["attack_riders"]
+        if item["id"] == "stunning_strike:post_hit_save"
+    )
+    fixture_rider = {
+        "id": "fixture:generic-post-hit-save",
+        "kind": "post_hit_rider",
+        "trigger": "after_hit",
+        "frequency": "once_per_turn",
+        "eligibility": {
+            "action_tags_all": ["unarmed"],
+        },
+        "saving_throw": {
+            "ability": "dexterity",
+            "dc": 99,
+            "input_key": "fixture_save_total",
+        },
+        "on_save_failure": [
+            {
+                "id": "fixture:generic-post-hit-save:poisoned",
+                "kind": "condition",
+                "condition": "poisoned",
+                "duration": {"unit": "until_source_turn_end"},
+            }
+        ],
+    }
+    registry["attack_riders"].append(fixture_rider)
+    scene = combat_client.post(f"{base}/scenes", json={"name": "震慑拳测试场"}).json()
+    grid = combat_client.post(
+        f"{base}/scenes/{scene['id']}/grid",
+        json={"width": 8, "height": 8, "cell_size_ft": 5, "mode": "combat"},
+    )
+    assert grid.status_code == 201, grid.text
+    combat = combat_client.post(
+        f"{base}/combats", json={"name": "震慑拳结算", "scene_id": scene["id"]}
+    ).json()
+    actor = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "震慑武僧",
+            "entity_type": "character",
+            "entity_id": character["id"],
+            "initiative": 20,
+            "hp": 30,
+            "max_hp": 30,
+            "snapshot_json": {
+                "ability_scores": {"wisdom": 16},
+                "feature_runtime": registry,
+                "grid_position": {"row": 2, "col": 2},
+            },
+        },
+    ).json()
+    target = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "训练目标",
+            "entity_type": "monster",
+            "initiative": 10,
+            "armor_class": 12,
+            "hp": 40,
+            "max_hp": 40,
+            "speed_ft": 30,
+            "snapshot_json": {"grid_position": {"row": 2, "col": 3}},
+        },
+    ).json()
+    opened = combat_client.post(f"{base}/player-room/open", json={"hours": 4})
+    assert opened.status_code == 200, opened.text
+    joined = combat_client.post(
+        "/api/v1/player-room/join",
+        json={"join_code": opened.json()["join_code"], "display_name": "震慑武僧玩家"},
+    )
+    assert joined.status_code == 201, joined.text
+    bound = combat_client.post(
+        "/api/v1/player-room/me/bind-character", json={"character_id": character["id"]}
+    )
+    assert bound.status_code == 200, bound.text
+    live = combat_client.post(
+        f"{base}/player-room/live-state",
+        json={"scene_id": scene["id"], "combat_id": combat["id"]},
+    )
+    assert live.status_code == 200, live.text
+    current_actor = next(
+        item
+        for item in combat_client.get(
+            f"{base}/combats/{combat['id']}/combatants"
+        ).json()["items"]
+        if item["id"] == actor["id"]
+    )
+    patched_actor = combat_client.patch(
+        f"{base}/combats/{combat['id']}/combatants/{actor['id']}",
+        headers={"If-Match": f'"{current_actor["version"]}"'},
+        json={
+            "snapshot_json": {
+                **current_actor["snapshot_json"],
+                "ability_scores": {"wisdom": 16},
+                "feature_runtime": registry,
+            }
+        },
+    )
+    assert patched_actor.status_code == 200, patched_actor.text
+    assert fixture_rider in patched_actor.json()["snapshot_json"]["feature_runtime"][
+        "attack_riders"
+    ]
+
+    attacked = combat_client.post(
+        "/api/v1/player-room/me/combat/attack",
+        json={
+            "target_combatant_id": target["id"],
+            "action_name": "徒手打击",
+            "attack_total": 20,
+            "damage_total": 4,
+            "idempotency_key": "post-hit-stunning-test-1",
+        },
+    )
+    assert attacked.status_code == 200, attacked.text
+    requests = attacked.json()["post_hit_rider_requests"]
+    assert len(requests) == 2, [
+        item.get("rider_id") for item in attacked.json()["attack_riders"]
+    ]
+    request = next(
+        item
+        for item in requests
+        if item["payload_json"]["rider_id"] == rider["id"]
+    )
+    fixture_request = next(
+        item
+        for item in requests
+        if item["payload_json"]["rider_id"] == fixture_rider["id"]
+    )
+    assert request["payload_json"]["created_by"] == "combat_engine"
+    assert request["payload_json"]["action_context"]["tags"] == [
+        "attack",
+        "unarmed",
+    ]
+
+    activated = combat_client.post(
+        f"/api/v1/player-room/me/combat/post-hit-riders/{request['id']}/resolve",
+        json={
+            "version": request["version"],
+            "inputs": {"activate_stunning_strike": True},
+        },
+    )
+    assert activated.status_code == 200, activated.text
+    assert activated.json()["payload_json"]["phase"] == "pending_save"
+    assert activated.json()["status"] == "pending"
+
+    resolved = combat_client.post(
+        f"{base}/post-hit-rider-requests/{request['id']}/resolve",
+        json={
+            "version": activated.json()["version"],
+            "inputs": {"stunning_strike_save_total": 14},
+        },
+    )
+    assert resolved.status_code == 200, resolved.text
+    assert resolved.json()["status"] == "accepted"
+    commit = resolved.json()["payload_json"]["commit_result"]
+    assert commit["resource_spends"] == [{"key": "focus", "before": 2, "after": 1}]
+    assert len(commit["effect_ids"]) == 2
+
+    character_after = combat_client.get(f"{base}/characters/{character['id']}").json()
+    assert character_after["resources"]["focus"]["current"] == 1
+    fighters = combat_client.get(
+        f"{base}/combats/{combat['id']}/combatants"
+    ).json()["items"]
+    actor_after = next(item for item in fighters if item["id"] == actor["id"])
+    target_after = next(item for item in fighters if item["id"] == target["id"])
+    assert actor_after["snapshot_json"]["feature_runtime"]["resources"]["focus"][
+        "current"
+    ] == 1
+    assert target_after["speed_ft"] == 15
+
+    attack = combat_client.post(
+        f"{base}/combats/{combat['id']}/actions/confirm",
+        headers={"X-Request-ID": "post-hit-next-attack"},
+        json={
+            "action_type": "damage",
+            "actor_combatant_id": actor_after["id"],
+            "actor_version": actor_after["version"],
+            "target_combatant_id": target_after["id"],
+            "target_version": target_after["version"],
+            "action_cost": "none",
+            "action_name": "下一次攻击",
+            "amount": 0,
+            "damage_type": "bludgeoning",
+            "is_attack": True,
+            "attack_roll_total": 1,
+        },
+    )
+    assert attack.status_code == 200, attack.text
+    assert "post_hit_modifier:incoming_attack_advantage" in attack.json()[
+        "action"
+    ]["result_json"]["attack_contexts"]
+    assert len(attack.json()["action"]["result_json"]["consumed_effect_ids"]) == 1
+
+    replay = combat_client.post(
+        f"{base}/post-hit-rider-requests/{request['id']}/resolve",
+        json={
+            "version": activated.json()["version"],
+            "inputs": {"stunning_strike_save_total": 14},
+        },
+    )
+    assert replay.status_code == 200
+    assert replay.json()["id"] == resolved.json()["id"]
+    unchanged = combat_client.get(f"{base}/characters/{character['id']}").json()
+    assert unchanged["resources"]["focus"]["current"] == 1
+
+    fixture_resolved = combat_client.post(
+        f"{base}/post-hit-rider-requests/{fixture_request['id']}/resolve",
+        json={
+            "version": fixture_request["version"],
+            "inputs": {"fixture_save_total": 1},
+        },
+    )
+    assert fixture_resolved.status_code == 200, fixture_resolved.text
+    assert fixture_resolved.json()["status"] == "accepted"
+    fighters = combat_client.get(
+        f"{base}/combats/{combat['id']}/combatants"
+    ).json()["items"]
+    fixture_target = next(item for item in fighters if item["id"] == target["id"])
+    assert "poisoned" in fixture_target["conditions"]
 
 
 def test_condition_matrix_changes_saves_and_petrified_damage(

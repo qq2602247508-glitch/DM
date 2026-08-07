@@ -54,6 +54,11 @@ class ResolveActionInput(BaseModel):
     critical_hit: bool = False
 
 
+class ResolvePostHitRiderInput(BaseModel):
+    version: int = Field(ge=1)
+    inputs: dict[str, Any] = Field(default_factory=dict, max_length=30)
+
+
 def _safe(fn: Any) -> Any:
     try:
         return fn()
@@ -176,5 +181,22 @@ def reject_player_action(
             "rejected",
             body.dm_note,
             _request_id(request),
+        )
+    )
+
+
+@dm_router.post("/post-hit-rider-requests/{action_request_id}/resolve")
+def resolve_post_hit_rider_request(
+    campaign_id: str,
+    action_request_id: str,
+    body: ResolvePostHitRiderInput,
+    service: Annotated[PlayerService, Depends(get_player_service)],
+) -> dict[str, Any]:
+    return _safe(
+        lambda: service.resolve_post_hit_rider(
+            campaign_id,
+            action_request_id,
+            body.version,
+            body.inputs,
         )
     )

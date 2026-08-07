@@ -114,8 +114,8 @@ def test_runtime_grants_keep_unstructured_effects_in_dm_adjudication() -> None:
     }
     grants = core_feature_grants(monk, 2)
     tracked = next(item for item in grants if item["name"] == "功力")
-    unresolved = next(item for item in grants if item["name"] == "偏转攻击")
+    structured = next(item for item in grants if item["name"] == "偏转攻击")
     assert tracked["runtime"]["automation_status"] == "full"
     assert tracked["runtime"]["tracked_resource_keys"] == ["focus"]
-    assert unresolved["runtime"]["automation_status"] == "partial"
-    assert unresolved["runtime"]["requires_dm_adjudication"] is True
+    assert structured["runtime"]["automation_status"] == "full"
+    assert structured["runtime"]["requires_dm_adjudication"] is False

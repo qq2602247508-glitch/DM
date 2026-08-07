@@ -58,7 +58,38 @@ _DURATION_UNITS = {
     "until_save",
     "until_removed",
     "permanent",
+    "until_source_turn_start",
+    "until_source_turn_end",
+    "until_target_turn_start",
+    "until_target_turn_end",
+    "until_next_attack",
+    "until_next_save",
 }
+
+
+def _normalize_activation(
+    raw_activation: object,
+    *,
+    inputs: Mapping[str, object],
+) -> tuple[dict[str, Any] | None, bool | None]:
+    """Normalize an optional yes/no activation without naming a feature."""
+
+    if raw_activation is None:
+        return None, True
+    activation = _mapping(raw_activation)
+    if not activation:
+        raise ValueError("post-hit rider activation must be an object")
+    input_key = _identifier(
+        activation.get("input_key") or "activate_rider",
+        "activation input key",
+    )
+    label = _text(activation.get("label") or "发动命中后效果")
+    if input_key not in inputs:
+        return {"input_key": input_key, "label": label}, None
+    selected = inputs.get(input_key)
+    if not isinstance(selected, bool):
+        raise ValueError(f"post-hit rider activation must be a boolean: {input_key}")
+    return {"input_key": input_key, "label": label, "selected": selected}, selected
 
 
 def _integer(value: object) -> int | None:
@@ -179,14 +210,25 @@ def _normalize_effects(
             stat = _text(effect.get("stat"))
             operation = _text(effect.get("operation"))
             value = _integer(effect.get("value"))
+            value_source = _text(effect.get("value_source"))
             if stat not in _MODIFIER_STATS or operation not in _MODIFIER_OPERATIONS:
                 raise ValueError(f"{branch} modifier effect is invalid")
             needs_value = operation in {"add", "set"}
-            if needs_value != (value is not None):
+            has_value = value is not None or bool(value_source)
+            if needs_value != has_value:
                 raise ValueError(f"{branch} modifier value does not match its operation")
             normalized.update({"stat": stat, "operation": operation})
             if value is not None:
                 normalized["value"] = value
+            if value_source:
+                if value is not None or value_source not in {"half_current"}:
+                    raise ValueError(f"{branch} modifier value_source is invalid")
+                normalized["value_source"] = value_source
+            scope = _text(effect.get("scope"))
+            if scope:
+                if scope not in {"self", "incoming", "outgoing"}:
+                    raise ValueError(f"{branch} modifier scope is invalid")
+                normalized["scope"] = scope
             duration = _validate_duration(effect.get("duration"), f"{branch} modifier duration")
             if duration is not None:
                 normalized["duration"] = duration
@@ -336,12 +378,17 @@ def _normalize_save(
         raise ValueError("post-hit rider saving_throw needs exactly one of dc or dc_source")
     if dc_source:
         _identifier(dc_source, "saving throw dc_source")
+    dc_ability = _text(save.get("dc_ability"))
+    if dc_ability:
+        _identifier(dc_ability, "saving throw dc_ability")
     dc = raw_dc if raw_dc is not None else bindings.get(dc_source)
     if dc is None and allow_missing_dc_source and dc_source:
         dc = 1
     if not ability or not isinstance(dc, int) or not 1 <= dc <= 100:
         raise ValueError("post-hit rider saving_throw is invalid")
     result: dict[str, Any] = {"ability": ability, "dc": dc, "input_key": input_key}
+    if dc_ability:
+        result["dc_ability"] = dc_ability
     if input_key not in inputs or inputs.get(input_key) is None:
         return result, None
     total = _integer(inputs.get(input_key))
@@ -593,6 +640,7 @@ def validate_post_hit_rider(spec: Mapping[str, object]) -> dict[str, Any]:
         config.get("on_save_failure"), rider_id=rider_id, branch="on-save-failure"
     )
     _normalize_choice(config.get("choice"), rider_id=rider_id, inputs={})
+    _normalize_activation(config.get("activation"), inputs={})
     return config
 
 
@@ -616,6 +664,15 @@ def post_hit_rider_input_requirements(
         if _text(key) and (value := _integer(raw_value)) is not None
     }
     requirements: list[dict[str, Any]] = []
+    activation, _ = _normalize_activation(config.get("activation"), inputs={})
+    if activation is not None:
+        requirements.append(
+            {
+                "key": activation["input_key"],
+                "kind": "boolean_choice",
+                "label": activation["label"],
+            }
+        )
     choice, _, _ = _normalize_choice(config.get("choice"), rider_id=config["id"], inputs={})
     if choice is not None:
         requirements.append(
@@ -717,6 +774,28 @@ def resolve_post_hit_rider(
         for key, raw_value in (bindings or {}).items()
         if _text(key) and (value := _integer(raw_value)) is not None
     }
+    activation, activated = _normalize_activation(
+        config.get("activation"), inputs=supplied_inputs
+    )
+    if activated is None:
+        assert activation is not None
+        return {
+            "status": "pending_activation",
+            "rider_id": rider_id,
+            "resolution_key": resolution_key,
+            "usage_token": usage_token,
+            "activation": activation,
+            "commit": None,
+        }
+    if activated is False:
+        return {
+            "status": "declined",
+            "rider_id": rider_id,
+            "resolution_key": resolution_key,
+            "usage_token": usage_token,
+            "commit": None,
+        }
+
     choice, choice_effects, choice_pending = _normalize_choice(
         config.get("choice"), rider_id=rider_id, inputs=supplied_inputs
     )

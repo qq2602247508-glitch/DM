@@ -341,3 +341,46 @@ def test_post_hit_rider_requirements_adapter_and_fail_closed_boundaries() -> Non
             "duration_block_id": "stun-effect:duration",
         },
     ]
+
+
+def test_optional_post_hit_rider_waits_then_declines_without_commit() -> None:
+    config = {
+        "id": "optional-save-rider",
+        "kind": "post_hit_rider",
+        "trigger": "after_hit",
+        "frequency": "once_per_turn",
+        "activation": {"input_key": "activate", "label": "发动效果"},
+        "saving_throw": {"ability": "constitution", "dc": 15},
+        "resource": {"key": "focus", "amount": 1},
+        "on_save_failure": [
+            {
+                "id": "optional-save-rider:stunned",
+                "kind": "condition",
+                "condition": "stunned",
+                "duration": {"unit": "until_source_turn_start"},
+            }
+        ],
+    }
+    common = {
+        "hit": True,
+        "actor": {"id": "a", "entity_type": "character"},
+        "target": {"id": "t", "entity_type": "monster"},
+        "action": {},
+        "resources": {"focus": {"current": 2}},
+        "event_id": "attack-1",
+        "turn_id": "turn-1",
+    }
+
+    pending = resolve_post_hit_rider(config, **common)
+    assert pending is not None
+    assert pending["status"] == "pending_activation"
+    assert pending["commit"] is None
+
+    declined = resolve_post_hit_rider(config, **common, inputs={"activate": False})
+    assert declined is not None
+    assert declined["status"] == "declined"
+    assert declined["commit"] is None
+
+    save = resolve_post_hit_rider(config, **common, inputs={"activate": True})
+    assert save is not None
+    assert save["status"] == "pending_save"

@@ -198,6 +198,11 @@ class AttackInput(BaseModel):
     idempotency_key: str = Field(min_length=8, max_length=120)
 
 
+class PostHitRiderResolutionInput(BaseModel):
+    version: int = Field(ge=1)
+    inputs: dict[str, Any] = Field(default_factory=dict, max_length=30)
+
+
 class CastInput(BaseModel):
     target_combatant_id: str = Field(min_length=1, max_length=36)
     target_combatant_ids: list[str] = Field(default_factory=list, max_length=30)
@@ -776,6 +781,23 @@ def attack(
             body.target_damage_component_totals,
             body.reaction_trigger,
             body.special_inputs,
+        )
+    )
+
+
+@public_player_room_router.post("/me/combat/post-hit-riders/{request_id}/resolve")
+def resolve_post_hit_rider(
+    request_id: str,
+    body: PostHitRiderResolutionInput,
+    principal: Annotated[PlayerPrincipal, Depends(get_player_principal)],
+    service: Annotated[PlayerRoomService, Depends(get_player_room_service)],
+) -> dict[str, Any]:
+    return _safe(
+        lambda: service.resolve_post_hit_rider(
+            principal,
+            request_id,
+            body.version,
+            body.inputs,
         )
     )
 

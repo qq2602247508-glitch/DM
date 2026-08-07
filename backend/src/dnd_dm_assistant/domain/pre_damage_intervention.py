@@ -23,6 +23,16 @@ def _expression(expression: object, bindings: Mapping[str, int]) -> int | None:
         return None
     total = 0
     for part in parts:
+        factors = part.split("*")
+        if len(factors) > 1:
+            product = 1
+            for factor in factors:
+                value = int(factor) if factor.isdigit() else bindings.get(factor)
+                if not isinstance(value, int):
+                    return None
+                product *= value
+            total += product
+            continue
         if part.isdigit():
             total += int(part)
             continue

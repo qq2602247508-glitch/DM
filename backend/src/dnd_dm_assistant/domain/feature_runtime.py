@@ -883,14 +883,7 @@ def feature_runtime_definition(
             "action_cost": "reaction",
             "target": "self",
             "resolution_kind": "choice_required",
-            "effects": [
-                {
-                    "kind": "requires_dm_choice",
-                    "reason": (
-                        "直觉闪避只能在可见攻击者命中后、伤害结算前触发，并将该次攻击伤害减半。"
-                    ),
-                }
-            ],
+            "effects": [],
             "trigger": {
                 "event": "attacker_hits_self",
                 "timing": "before_damage",
@@ -912,14 +905,12 @@ def feature_runtime_definition(
             },
             "damage_multiplier": 0.5,
             "runtime_execution": {
-                "status": "implemented",
-                "consumer": "combat_feature_action",
+                "status": "ready",
+                "consumer": "pre_damage_reaction_window",
             },
-            "automation_status": "implemented",
+            "automation_status": "full",
             "requires_dm_adjudication": False,
-            "partial_reason": (
-                "玩家仍需在伤害落地前选择是否使用反应；服务端负责冻结攻击并按规则减半。"
-            ),
+            "summary": "可见攻击者命中后打开玩家反应窗口；接受时逐段减半并消费反应。",
             **source,
         }
 
@@ -938,12 +929,7 @@ def feature_runtime_definition(
             "action_cost": "reaction",
             "target": "self",
             "resolution_kind": "choice_required",
-            "effects": [
-                {
-                    "kind": "requires_dm_choice",
-                    "reason": "偏转攻击需要在命中后输入减伤骰；伤害归零后的反击分支仍需选择。",
-                }
-            ],
+            "effects": [],
             "trigger": {"event": "attacker_hits_self", "timing": "before_damage"},
             "pre_damage_intervention": {
                 "kind": "pre_damage_intervention",
@@ -984,8 +970,8 @@ def feature_runtime_definition(
                 "successful_save_multiplier": 0.5,
             },
             "runtime_execution": {
-                "status": "partial",
-                "consumer": "combat_feature_action",
+                "status": "ready",
+                "consumer": "pre_damage_reaction_window",
                 "consumer_steps": [
                     "focus_consumption",
                     "target_selection_within_range",
@@ -993,13 +979,47 @@ def feature_runtime_definition(
                     "redirect_damage",
                 ],
             },
-            "automation_status": "partial",
-            "requires_dm_adjudication": True,
-            "partial_reason": (
-                "命中后减伤骰和伤害扣除已自动执行；"
-                "伤害归零后的 Focus 消耗、目标选择、敏捷豁免和反击伤害骰"
-                "由第二个持久化窗口收集。"
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+            "summary": (
+                "命中后持久化收集减伤骰；归零时继续收集反击目标、豁免与伤害骰，"
+                "并原子消费反应和功力。"
             ),
+            **source,
+        }
+
+    if identity in {"轻身坠", "slowfall"}:
+        definition["actions"]["slow_fall"] = {
+            "id": "slow_fall",
+            "name": feature_name,
+            "kind": "feature_action",
+            "action_cost": "reaction",
+            "target": "self",
+            "resolution_kind": "choice_required",
+            "effects": [],
+            "trigger": {"event": "takes_fall_damage", "timing": "before_damage"},
+            "pre_damage_intervention": {
+                "kind": "pre_damage_intervention",
+                "eligibility": {
+                    "entity_types": ["character"],
+                    "damage_tags_all": ["fall"],
+                    "forbidden_conditions": ["incapacitated"],
+                },
+                "input_requirements": [],
+                "damage_transform": {
+                    "operation": "subtract_total",
+                    "amount": "class_level*5",
+                    "distribution": "components_in_order",
+                    "minimum": 0,
+                },
+            },
+            "runtime_execution": {
+                "status": "ready",
+                "consumer": "pre_damage_reaction_window",
+            },
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+            "summary": "坠落伤害落地前打开反应窗口，并按武僧等级×5减少伤害。",
             **source,
         }
 
@@ -1899,6 +1919,68 @@ def feature_runtime_definition(
                 "scaling_key": "martial_arts_die",
                 "applies_when": "unarmored_martial_arts_attack",
                 "requires_dm_adjudication": True,
+                **source,
+            }
+        )
+
+    if identity in {"震慑拳", "stunningstrike"}:
+        definition["attack_riders"].append(
+            {
+                "id": "stunning_strike:post_hit_save",
+                "kind": "post_hit_rider",
+                "trigger": "after_hit",
+                "frequency": "once_per_turn",
+                "activation": {
+                    "input_key": "activate_stunning_strike",
+                    "label": "消耗1点功力发动震慑拳",
+                },
+                "eligibility": {
+                    "actor_entity_types": ["character"],
+                    "target_relations": ["enemy"],
+                    "action_tags_any": ["unarmed", "monk_weapon"],
+                    "actor_level": {"class_names": ["武僧", "monk"], "minimum": 5},
+                },
+                "resource": {"key": "focus", "amount": 1},
+                "saving_throw": {
+                    "ability": "constitution",
+                    "dc_source": "feature_save_dc",
+                    "dc_ability": "wisdom",
+                    "input_key": "stunning_strike_save_total",
+                },
+                "on_save_failure": [
+                    {
+                        "id": "stunning_strike:stunned",
+                        "kind": "condition",
+                        "operation": "apply",
+                        "condition": "stunned",
+                        "duration": {"unit": "until_source_turn_start"},
+                    }
+                ],
+                "on_save_success": [
+                    {
+                        "id": "stunning_strike:half_speed",
+                        "kind": "modifier",
+                        "stat": "speed_ft",
+                        "operation": "set",
+                        "value_source": "half_current",
+                        "duration": {"unit": "until_source_turn_start"},
+                    },
+                    {
+                        "id": "stunning_strike:next_attack_advantage",
+                        "kind": "modifier",
+                        "stat": "attack_roll",
+                        "scope": "incoming",
+                        "operation": "advantage",
+                        "duration": {"unit": "until_next_attack"},
+                    },
+                ],
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "post_hit_rider_follow_up",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+                "summary": "命中后持久化发动与体质豁免窗口，并原子消费功力和写入结果。",
                 **source,
             }
         )

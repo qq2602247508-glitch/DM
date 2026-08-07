@@ -42,6 +42,9 @@ from dnd_dm_assistant.infrastructure.database.rest_service import RestService
 class PlayerService:
     """Separate read boundary for player-safe projections and request inboxes."""
 
+    _INTERNAL_ACTION_TYPES = frozenset({"post_hit_rider"})
+    _INTERNAL_IDEMPOTENCY_PREFIXES = ("post-hit:",)
+
     def __init__(self, engine: Engine) -> None:
         self.engine = engine
         self.rest = RestService(engine)
@@ -368,6 +371,11 @@ class PlayerService:
     def submit_action(
         self, campaign_id: str, data: dict[str, Any], request_id: str
     ) -> dict[str, Any]:
+        if str(data.get("action_type") or "") in self._INTERNAL_ACTION_TYPES:
+            raise ValueError("action type is reserved for the combat engine")
+        idempotency_key = str(data.get("idempotency_key") or "")
+        if idempotency_key.startswith(self._INTERNAL_IDEMPOTENCY_PREFIXES):
+            raise ValueError("idempotency key is reserved for the combat engine")
         with Session(self.engine) as session, session.begin():
             self._campaign(session, campaign_id)
             existing = session.scalar(
@@ -837,6 +845,20 @@ class PlayerService:
             session.flush()
             self._audit(session, campaign_id, f"player_request_{status}", item, request_id)
             return serialize(item)
+
+    def resolve_post_hit_rider(
+        self,
+        campaign_id: str,
+        request_id: str,
+        expected_version: int,
+        inputs: dict[str, Any],
+    ) -> dict[str, Any]:
+        return CombatEngineService(self.engine).resolve_post_hit_rider_request(
+            campaign_id,
+            request_id,
+            expected_version=expected_version,
+            inputs=inputs,
+        )
 
     def _resolve_opportunity_action(
         self,

@@ -7,10 +7,10 @@ from dataclasses import asdict
 from datetime import UTC, datetime, timedelta
 from hashlib import sha256
 from math import floor, hypot
-from typing import Any
+from typing import Any, cast
 
-from sqlalchemy import delete, select
-from sqlalchemy.engine import Engine
+from sqlalchemy import delete, select, update
+from sqlalchemy.engine import CursorResult, Engine
 from sqlalchemy.orm import Session
 
 from dnd_dm_assistant.api.schemas import (
@@ -35,6 +35,7 @@ from dnd_dm_assistant.api.schemas import (
     PlayerRollResolutionCommand,
     TurnAdvanceCommand,
 )
+from dnd_dm_assistant.domain.attack_rider import resolve_post_hit_rider
 from dnd_dm_assistant.domain.campaign_state import StateNotFoundError, VersionConflict
 from dnd_dm_assistant.domain.combat import (
     resolve_damage,
@@ -80,6 +81,7 @@ from dnd_dm_assistant.infrastructure.database.models import (
     DeathSave,
     MonsterInstance,
     OperationTransaction,
+    PlayerActionRequest,
     SceneGrid,
     SceneObject,
     SceneParticipant,
@@ -1357,7 +1359,11 @@ class CombatEngineService:
                 continue
             if trigger.get("timing") != "before_damage":
                 continue
-            if trigger.get("event") not in {"attacker_hits_self", "hit_by_attack"}:
+            if trigger.get("event") not in {
+                "attacker_hits_self",
+                "hit_by_attack",
+                "takes_fall_damage",
+            }:
                 continue
             intervention = raw.get("pre_damage_intervention")
             if (
@@ -1439,7 +1445,7 @@ class CombatEngineService:
                 generic_eligibility if isinstance(generic_eligibility, dict) else {}
             )
             eligible_damage_types = generic_eligibility.get(
-                "damage_types", raw.get("eligible_damage_types")
+                "damage_types", raw.get("eligible_damage_types", "all")
             )
             if eligible_damage_types != "all" and not isinstance(eligible_damage_types, list):
                 eligible_damage_types = []
@@ -1473,7 +1479,6 @@ class CombatEngineService:
     ) -> dict[str, object] | None:
         if (
             command.action_type != "damage"
-            or not command.is_attack
             or target.hp <= 0
             or not target.is_active
             or not target.reaction_available
@@ -1491,14 +1496,22 @@ class CombatEngineService:
                 line_of_sight = True
             elif context == "line_of_sight:false":
                 line_of_sight = False
-        if command.attack_roll_total is not None:
-            if command.attack_roll_total < effective_ac:
+        is_fall_damage = "fall" in {
+            str(value).strip().lower() for value in command.damage_tags
+        }
+        if command.is_attack:
+            if command.attack_roll_total is not None:
+                if command.attack_roll_total < effective_ac:
+                    return None
+                hit_basis = "attack_roll"
+            elif command.critical_hit:
+                hit_basis = "explicit_critical"
+            elif command.dm_override and command.amount > 0:
+                hit_basis = "dm_override"
+            else:
                 return None
-            hit_basis = "attack_roll"
-        elif command.critical_hit:
-            hit_basis = "explicit_critical"
-        elif command.dm_override and command.amount > 0:
-            hit_basis = "dm_override"
+        elif is_fall_damage and command.amount > 0:
+            hit_basis = "fall_damage"
         else:
             return None
         incoming_damage_types = {
@@ -1522,12 +1535,12 @@ class CombatEngineService:
             if entity_types and target.entity_type.lower() not in entity_types:
                 continue
             required_conditions = {
-                cls._normalize_condition_name(str(item))
+                cls._canonical_condition(str(item))
                 for item in eligibility.get("required_conditions", [])
                 if str(item).strip()
             }
             forbidden_conditions = {
-                cls._normalize_condition_name(str(item))
+                cls._canonical_condition(str(item))
                 for item in eligibility.get("forbidden_conditions", [])
                 if str(item).strip()
             }
@@ -1542,6 +1555,22 @@ class CombatEngineService:
                 ):
                     continue
             trigger = feature.get("trigger")
+            trigger_event = (
+                str(trigger.get("event") or "") if isinstance(trigger, dict) else ""
+            )
+            if trigger_event == "takes_fall_damage" and not is_fall_damage:
+                continue
+            if trigger_event in {"attacker_hits_self", "hit_by_attack"} and not command.is_attack:
+                continue
+            damage_tags_all = {
+                str(item).strip().lower()
+                for item in eligibility.get("damage_tags_all", [])
+                if str(item).strip()
+            }
+            if damage_tags_all and not damage_tags_all.issubset(
+                {str(value).strip().lower() for value in command.damage_tags}
+            ):
+                continue
             if isinstance(trigger, dict) and "attacker_visible" in (
                 trigger.get("requirements") or []
             ):
@@ -4926,6 +4955,34 @@ class CombatEngineService:
         ]
 
     @classmethod
+    def _active_runtime_modifier_effects(
+        cls,
+        session: Session,
+        combat_id: str,
+        *,
+        target_id: str,
+        stat: str,
+        scope: str,
+    ) -> list[CombatEffect]:
+        """Return ID-agnostic one-shot/timed modifiers stored as runtime state."""
+
+        result: list[CombatEffect] = []
+        for effect in cls._active_runtime_effects(
+            session,
+            combat_id,
+            target_id=target_id,
+        ):
+            state = cls._runtime_state(effect)
+            modifier = state.get("modifier") if isinstance(state, dict) else None
+            if (
+                isinstance(modifier, dict)
+                and modifier.get("stat") == stat
+                and modifier.get("scope") == scope
+            ):
+                result.append(effect)
+        return result
+
+    @classmethod
     def _active_studied_attack_effect(
         cls,
         session: Session,
@@ -5115,6 +5172,364 @@ class CombatEngineService:
         return effect
 
     @classmethod
+    def _apply_post_hit_rider_effects(
+        cls,
+        session: Session,
+        combat: Combat,
+        *,
+        actor: Combatant,
+        target: Combatant,
+        effects: list[dict[str, Any]],
+    ) -> list[str]:
+        """Apply only the generic effect shapes emitted by the rider executor."""
+
+        effect_ids: list[str] = []
+        turn_duration = {
+            "until_source_turn_start": ("turn_start", actor.id),
+            "until_source_turn_end": ("turn_end", actor.id),
+            "until_target_turn_start": ("turn_start", target.id),
+            "until_target_turn_end": ("turn_end", target.id),
+        }
+        for effect in effects:
+            kind = str(effect.get("kind") or "")
+            duration = effect.get("duration")
+            duration_data = dict(duration) if isinstance(duration, dict) else {}
+            duration_unit = str(duration_data.get("unit") or "instant")
+            if kind == "condition":
+                mapped_duration = {
+                    "until_source_turn_start": "actor_turn_start",
+                    "until_source_turn_end": "actor_turn_end",
+                    "until_target_turn_start": "target_turn_start",
+                    "until_target_turn_end": "target_turn_end",
+                    "until_save": "until_save",
+                    "until_removed": "until_removed",
+                }.get(duration_unit)
+                if mapped_duration is None:
+                    raise ValueError("post-hit condition duration is not executable")
+                applied = cls._apply_structured_monster_effects(
+                    session,
+                    combat,
+                    actor=actor,
+                    target=target,
+                    conditions=[str(effect.get("condition") or "")],
+                    condition_duration=mapped_duration,
+                )
+                effect_ids.extend(str(value) for value in applied.get("effect_ids", []))
+                continue
+            if kind != "modifier":
+                raise ValueError("post-hit effect kind is not executable")
+            stat = str(effect.get("stat") or "")
+            operation = str(effect.get("operation") or "")
+            scope = str(effect.get("scope") or "self")
+            if duration_unit == "until_next_attack":
+                if not (stat == "attack_roll" and scope == "incoming"):
+                    raise ValueError("next-attack post-hit modifier is invalid")
+                row = CombatEffect(
+                    campaign_id=combat.campaign_id,
+                    combat_id=combat.id,
+                    target_combatant_id=target.id,
+                    source_combatant_id=actor.id,
+                    name=str(effect.get("source") or effect.get("id") or "命中后修正"),
+                    effect_type="feature_modifier",
+                    details_json={
+                        "runtime_state": {
+                            "name": "post_hit_modifier",
+                            "condition": None,
+                            "modifier": {
+                                "stat": stat,
+                                "scope": scope,
+                                "operation": operation,
+                            },
+                            "expires": "triggered",
+                            "created_round": combat.round_number,
+                            "created_turn_index": combat.current_turn_index,
+                            "source": "post_hit_rider",
+                        }
+                    },
+                    started_round=combat.round_number,
+                    duration_unit="until_removed",
+                    status="active",
+                )
+                session.add(row)
+                session.flush()
+                effect_ids.append(row.id)
+                continue
+            expiry = turn_duration.get(duration_unit)
+            if expiry is None:
+                raise ValueError("post-hit modifier duration is not executable")
+            value = effect.get("value")
+            if effect.get("value_source") == "half_current" and stat == "speed_ft":
+                value = target.speed_ft // 2
+            if not isinstance(value, int):
+                raise ValueError("post-hit modifier value is unresolved")
+            block = {
+                "id": str(effect.get("id") or "post_hit_modifier"),
+                "kind": "modifier",
+                "stat": stat,
+                "operation": operation,
+                "value": value,
+                "scope": scope,
+                "source": str(effect.get("source") or effect.get("id") or "post-hit rider"),
+            }
+            details: dict[str, object] = {
+                "rule_block": block,
+                "runtime_state": {
+                    "name": "post_hit_modifier",
+                    "condition": None,
+                    "modifier": {
+                        "stat": stat,
+                        "scope": scope,
+                        "operation": operation,
+                    },
+                    "expires": expiry[0],
+                    "expires_combatant_id": expiry[1],
+                    "created_round": combat.round_number,
+                    "created_turn_index": combat.current_turn_index,
+                    "source": "post_hit_rider",
+                },
+                "_effect_instance_key": str(effect.get("id") or "post_hit_modifier"),
+            }
+            cls._apply_rule_block_effect(target, details, session=session)
+            row = CombatEffect(
+                campaign_id=combat.campaign_id,
+                combat_id=combat.id,
+                target_combatant_id=target.id,
+                source_combatant_id=actor.id,
+                name=str(effect.get("source") or effect.get("id") or "命中后修正"),
+                effect_type="feature_modifier",
+                details_json=details,
+                started_round=combat.round_number,
+                duration_unit="until_removed",
+                status="active",
+            )
+            session.add(row)
+            session.flush()
+            effect_ids.append(row.id)
+        return effect_ids
+
+    def resolve_post_hit_rider_request(
+        self,
+        campaign_id: str,
+        request_id: str,
+        *,
+        expected_version: int,
+        inputs: dict[str, Any],
+        character_id: str | None = None,
+    ) -> dict[str, Any]:
+        """Advance and atomically commit a persisted post-hit rider window."""
+
+        with Session(self.engine) as session, session.begin():
+            request = session.get(PlayerActionRequest, request_id)
+            if (
+                request is None
+                or request.campaign_id != campaign_id
+                or request.action_type != "post_hit_rider"
+            ):
+                raise StateNotFoundError("post-hit rider request not found")
+            if character_id is not None and request.character_id != character_id:
+                raise StateNotFoundError("post-hit rider request not found")
+            if request.status != "pending":
+                return serialize(request)
+            if request.version != expected_version:
+                raise VersionConflict(
+                    "player_action_request", request.id, expected_version, request.version
+                )
+            payload = dict(request.payload_json or {})
+            if payload.get("created_by") != "combat_engine":
+                raise StateNotFoundError("post-hit rider request not found")
+            rider_config = payload.get("rider_config")
+            if (
+                payload.get("schema_version") != "1.0"
+                or not isinstance(rider_config, dict)
+                or str(rider_config.get("id") or "") != str(payload.get("rider_id") or "")
+            ):
+                raise ValueError("post-hit rider request payload is invalid")
+            combat = session.get(Combat, str(payload.get("combat_id") or ""))
+            actor = session.get(Combatant, str(payload.get("actor_combatant_id") or ""))
+            target = session.get(Combatant, str(payload.get("target_combatant_id") or ""))
+            if (
+                combat is None
+                or combat.campaign_id != campaign_id
+                or combat.status != "active"
+                or actor is None
+                or target is None
+                or not actor.is_active
+                or not target.is_active
+                or actor.combat_id != combat.id
+                or target.combat_id != combat.id
+            ):
+                raise ValueError("post-hit rider combat context is no longer active")
+            if str(payload.get("turn_id") or "") != (
+                f"{combat.round_number}:{combat.current_turn_index}"
+            ):
+                raise ValueError("post-hit rider window has expired")
+            if self._combatant_owner(actor) != request.character_id:
+                raise ValueError("post-hit rider actor ownership changed")
+            accumulated = dict(payload.get("inputs") or {})
+            accumulated.update(inputs)
+            snapshot = dict(actor.snapshot_json or {})
+            runtime = snapshot.get("feature_runtime")
+            resources = runtime.get("resources", {}) if isinstance(runtime, dict) else {}
+            used_tokens = snapshot.get("post_hit_usage_tokens")
+            action_context = payload.get("action_context")
+            if not isinstance(action_context, dict):
+                raise ValueError("post-hit rider action context is invalid")
+            resolved = resolve_post_hit_rider(
+                dict(payload.get("rider_config") or {}),
+                hit=True,
+                actor={
+                    "id": actor.id,
+                    "entity_type": actor.entity_type,
+                    "faction": self._combatant_faction(actor),
+                    "conditions": sorted(self._condition_set(actor)),
+                    "class_levels": (
+                        runtime.get("progression", {}).get("class_levels", {})
+                        if isinstance(runtime, dict)
+                        and isinstance(runtime.get("progression"), dict)
+                        else {}
+                    ),
+                    "state": snapshot,
+                },
+                target={
+                    "id": target.id,
+                    "entity_type": target.entity_type,
+                    "faction": self._combatant_faction(target),
+                    "relation": (
+                        "ally"
+                        if self._combatant_faction(actor) == self._combatant_faction(target)
+                        else "enemy"
+                    ),
+                    "conditions": sorted(self._condition_set(target)),
+                },
+                action=action_context,
+                resources=resources if isinstance(resources, dict) else {},
+                event_id=str(payload.get("event_id") or request.id),
+                turn_id=str(payload.get("turn_id") or "") or None,
+                inputs=accumulated,
+                bindings=dict(payload.get("bindings") or {}),
+                used_tokens=used_tokens if isinstance(used_tokens, list) else [],
+            )
+            if resolved is None:
+                raise ValueError("post-hit rider is no longer eligible")
+            status = str(resolved.get("status") or "")
+            payload["inputs"] = accumulated
+            payload["phase"] = status
+            payload["resolution"] = resolved
+            now = datetime.now(UTC)
+            terminal = status in {"declined", "resolved"}
+            claimed = cast(
+                CursorResult[Any],
+                session.execute(
+                    update(PlayerActionRequest)
+                    .where(
+                        PlayerActionRequest.id == request.id,
+                        PlayerActionRequest.campaign_id == campaign_id,
+                        PlayerActionRequest.action_type == "post_hit_rider",
+                        PlayerActionRequest.status == "pending",
+                        PlayerActionRequest.version == expected_version,
+                    )
+                    .values(
+                        payload_json=payload,
+                        version=PlayerActionRequest.version + 1,
+                        updated_at=now,
+                        status="accepted" if terminal else "pending",
+                        resolved_at=now if terminal else None,
+                    )
+                ),
+            )
+            if claimed.rowcount != 1:
+                session.expire(request)
+                if request.status != "pending":
+                    return serialize(request)
+                raise VersionConflict(
+                    "player_action_request", request.id, expected_version, request.version
+                )
+            session.expire(request)
+            if status in {"pending_activation", "pending_choice", "pending_save"}:
+                return serialize(request)
+            if status == "declined":
+                return serialize(request)
+            if status != "resolved":
+                raise ValueError("post-hit rider did not resolve")
+            character = session.get(Character, request.character_id)
+            if character is None or character.campaign_id != campaign_id:
+                raise StateNotFoundError("post-hit rider character not found")
+            commit = dict(resolved.get("commit") or {})
+            if resolved.get("damage"):
+                raise ValueError("post-hit rider damage commit is not supported")
+            spent: list[dict[str, int]] = []
+            character_resources = dict(character.resources or {})
+            runtime_resources = dict(resources) if isinstance(resources, dict) else {}
+            for spend in commit.get("resource_spends", []):
+                if not isinstance(spend, dict):
+                    continue
+                key = str(spend.get("key") or "")
+                amount = int(spend.get("amount") or 0)
+                character_pool = dict(character_resources.get(key) or {})
+                runtime_pool = dict(runtime_resources.get(key) or {})
+                before = int(character_pool.get("current") or 0)
+                if not key or amount < 1 or before < amount:
+                    raise ValueError(f"post-hit rider resource is insufficient: {key}")
+                character_pool["current"] = before - amount
+                runtime_pool["current"] = before - amount
+                character_resources[key] = character_pool
+                runtime_resources[key] = runtime_pool
+                spent.append({"key": key, "before": before, "after": before - amount})
+            character_version = character.version
+            character_claim = cast(
+                CursorResult[Any],
+                session.execute(
+                    update(Character)
+                    .where(
+                        Character.id == character.id,
+                        Character.campaign_id == campaign_id,
+                        Character.version == character_version,
+                    )
+                    .values(
+                        resources=character_resources,
+                        version=Character.version + 1,
+                        updated_at=datetime.now(UTC),
+                    )
+                ),
+            )
+            if character_claim.rowcount != 1:
+                raise VersionConflict(
+                    "character", character.id, character_version, character_version + 1
+                )
+            session.expire(character)
+            effect_ids = self._apply_post_hit_rider_effects(
+                session,
+                combat,
+                actor=actor,
+                target=target,
+                effects=[item for item in resolved.get("effects", []) if isinstance(item, dict)],
+            )
+            usage_token = commit.get("usage_token")
+            tokens = [str(value) for value in (used_tokens or []) if str(value)]
+            if isinstance(usage_token, str) and usage_token:
+                tokens.append(usage_token)
+            if isinstance(runtime, dict):
+                runtime = dict(runtime)
+                runtime["resources"] = runtime_resources
+                snapshot["feature_runtime"] = runtime
+            snapshot["post_hit_usage_tokens"] = list(dict.fromkeys(tokens))[-100:]
+            actor.snapshot_json = snapshot
+            actor.version += 1
+            actor.updated_at = datetime.now(UTC)
+            if target.id != actor.id:
+                target.version += 1
+                target.updated_at = datetime.now(UTC)
+            payload["phase"] = "resolved"
+            payload["commit_result"] = {
+                "resource_spends": spent,
+                "effect_ids": effect_ids,
+                "usage_token": usage_token,
+            }
+            request.payload_json = payload
+            session.flush()
+            return serialize(request)
+
+    @classmethod
     def _mark_rage_activity(
         cls,
         target: Combatant,
@@ -5185,6 +5600,9 @@ class CombatEngineService:
             return None
         target = session.get(Combatant, effect.target_combatant_id)
         condition = state.get("condition")
+        details = dict(effect.details_json or {})
+        if target is not None and isinstance(details.get("rule_block"), dict):
+            cls._reverse_compiled_effect(session, target, effect)
         if target is not None and isinstance(condition, str):
             # A condition is a set of active sources, not a single boolean.
             # Ending one effect must not erase a second spell, feature, or
@@ -6951,6 +7369,20 @@ class CombatEngineService:
         if cls._has_condition(target, "reckless_attack"):
             contexts.append("target_reckless_attack")
             advantage_sources.append("target_reckless_attack")
+        incoming_advantage = cls._active_runtime_modifier_effects(
+            session,
+            combat.id,
+            target_id=target.id,
+            stat="attack_roll",
+            scope="incoming",
+        )
+        if any(
+            (cls._runtime_state(effect) or {}).get("modifier", {}).get("operation")
+            == "advantage"
+            for effect in incoming_advantage
+        ):
+            contexts.append("post_hit_modifier:incoming_attack_advantage")
+            advantage_sources.append("post_hit_modifier:incoming_attack_advantage")
         if cls._suppresses_incoming_attack_advantage(target):
             contexts.append("target_feature_suppresses_incoming_advantage")
             advantage_sources.clear()
@@ -9960,10 +10392,7 @@ class CombatEngineService:
                         "feature_id"
                     )
                     pre_damage_metadata["damage_reduction_roll"] = pre_damage_reduction_roll
-                    if (
-                        pre_damage_reduction_roll is not None
-                        and transform_result.get("operation") == "subtract_total"
-                    ):
+                    if transform_result.get("operation") == "subtract_total":
                         pre_damage_metadata["damage_reduction_total"] = transform_result.get(
                             "delta"
                         )
@@ -10202,11 +10631,24 @@ class CombatEngineService:
                     actor_id=actor.id,
                     target_id=target.id,
                 )
+                incoming_attack_effects = self._active_runtime_modifier_effects(
+                    session,
+                    combat.id,
+                    target_id=target.id,
+                    stat="attack_roll",
+                    scope="incoming",
+                )
+                incoming_attack_effects = [
+                    effect
+                    for effect in incoming_attack_effects
+                    if (self._runtime_state(effect) or {}).get("expires") == "triggered"
+                ]
                 for state_effect in [
                     *actor_hidden,
                     help_effect,
                     *steady_aim_effects,
                     studied_attack_effect,
+                    *incoming_attack_effects,
                 ]:
                     if state_effect is None or state_effect in consumed_attack_effects:
                         continue

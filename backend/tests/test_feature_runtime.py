@@ -1213,7 +1213,8 @@ def test_reactions_and_monk_defenses_publish_typed_contracts() -> None:
     assert deflect["action_cost"] == "reaction"
     assert deflect["eligible_damage_types"] == "all"
     assert deflect["redirect_resource_key"] == "focus"
-    assert deflect["automation_status"] == "partial"
+    assert deflect["automation_status"] == "full"
+    assert deflect["requires_dm_adjudication"] is False
 
     survivor = monk["actions"]["disciplined_survivor"]
     assert survivor["resource_key"] == "focus"
@@ -1282,10 +1283,10 @@ def test_rogue_and_monk_event_bound_features_keep_explicit_dm_boundaries() -> No
 
     uncanny_dodge = rogue["actions"]["uncanny_dodge"]
     assert uncanny_dodge["runtime_execution"] == {
-        "status": "implemented",
-        "consumer": "combat_feature_action",
+        "status": "ready",
+        "consumer": "pre_damage_reaction_window",
     }
-    assert uncanny_dodge["automation_status"] == "implemented"
+    assert uncanny_dodge["automation_status"] == "full"
     assert uncanny_dodge["requires_dm_adjudication"] is False
 
     rogue_projections = {
@@ -1318,8 +1319,8 @@ def test_rogue_and_monk_event_bound_features_keep_explicit_dm_boundaries() -> No
     assert energy_deflect["eligible_damage_types"] == "all"
     assert energy_deflect["damage_reduction"] == "1d10+dexterity_modifier+13"
     assert energy_deflect["runtime_execution"] == {
-        "status": "partial",
-        "consumer": "combat_feature_action",
+        "status": "ready",
+        "consumer": "pre_damage_reaction_window",
         "consumer_steps": [
             "focus_consumption",
             "target_selection_within_range",
@@ -1327,7 +1328,9 @@ def test_rogue_and_monk_event_bound_features_keep_explicit_dm_boundaries() -> No
             "redirect_damage",
         ],
     }
-    assert "deflect_attacks" not in {
+    assert energy_deflect["automation_status"] == "full"
+    assert energy_deflect["requires_dm_adjudication"] is False
+    assert "deflect_attacks" in {
         item["feature_id"] for item in feature_runtime_action_projections(monk_13)
     }
 
@@ -1421,9 +1424,6 @@ def test_ranger_hunters_mark_upgrades_require_explicit_state_and_feed_attack_rid
     assert rider["eligibility"]["actor_state_target_id_keys"] == [
         "current_hunters_mark_target_id"
     ]
-    assert rider["frequency"] == "each_eligible_hit"
-    assert rider["automation_status"] == "full"
-    assert rider["requires_dm_adjudication"] is False
 
     actor = Combatant(
         id="ranger",
@@ -1465,6 +1465,52 @@ def test_ranger_hunters_mark_upgrades_require_explicit_state_and_feed_attack_rid
         }
     ]
 
+
+def test_stunning_strike_uses_generic_persisted_post_hit_contract() -> None:
+    monk = _registry_at(_core_rules()["武僧"], 5)
+    contract = next(
+        item for item in monk["feature_contracts"] if item["name"] == "震慑拳"
+    )
+    assert contract["automation_status"] == "full"
+    rider = next(
+        item
+        for item in monk["attack_riders"]
+        if item["id"] == "stunning_strike:post_hit_save"
+    )
+    assert rider["kind"] == "post_hit_rider"
+    assert rider["runtime_execution"] == {
+        "status": "ready",
+        "consumer": "post_hit_rider_follow_up",
+    }
+    actor = Combatant(
+        id="monk",
+        entity_type="character",
+        snapshot_json={
+            "ability_scores": {"wisdom": 16},
+            "feature_runtime": monk,
+        },
+    )
+    target = Combatant(id="enemy", entity_type="monster")
+    pending = PlayerRoomService._eligible_attack_riders(
+        actor,
+        {
+            "name": "徒手打击",
+            "description": "近战攻击",
+            "is_unarmed_attack": True,
+        },
+        target,
+        special_inputs={},
+        critical_hit=False,
+        used_this_turn=set(),
+        event_id="attack-stunning-1",
+        turn_id="round-1-turn-0",
+    )
+    assert len(pending) == 1
+    assert pending[0]["post_hit_status"] == "pending_activation"
+    assert pending[0]["post_hit_bindings"] == {"feature_save_dc": 14}
+    assert rider["frequency"] == "once_per_turn"
+    assert rider["automation_status"] == "full"
+    assert rider["requires_dm_adjudication"] is False
 
 def test_choice_bound_blessed_and_elemental_fury_features_remain_dm_only() -> None:
     rules = _core_rules()
@@ -1590,7 +1636,7 @@ def test_2024_deterministic_feature_contracts_are_explicit_but_partial_when_even
     uncanny_dodge = registry["actions"]["uncanny_dodge"]
     assert uncanny_dodge["action_cost"] == "reaction"
     assert uncanny_dodge["damage_multiplier"] == 0.5
-    assert uncanny_dodge["effects"][0]["kind"] == "requires_dm_choice"
+    assert uncanny_dodge["effects"] == []
 
     danger_sense = next(
         item

@@ -1156,6 +1156,22 @@ class PlayerRoomService:
             is not None
         ):
             advantage.append("究明攻击")
+        if session is not None and combat_id is not None:
+            incoming_advantage = CombatEngineService._active_runtime_modifier_effects(
+                session,
+                combat_id,
+                target_id=target.id,
+                stat="attack_roll",
+                scope="incoming",
+            )
+            if any(
+                (CombatEngineService._runtime_state(effect) or {})
+                .get("modifier", {})
+                .get("operation")
+                == "advantage"
+                for effect in incoming_advantage
+            ):
+                advantage.append("命中后效果：下一次攻击具有优势")
         for condition, label in (
             ("blinded", "目标目盲"),
             ("restrained", "目标束缚"),
@@ -1281,6 +1297,8 @@ class PlayerRoomService:
         special_inputs: dict[str, Any],
         critical_hit: bool,
         used_this_turn: set[str],
+        event_id: str | None = None,
+        turn_id: str | None = None,
     ) -> list[dict[str, Any]]:
         """Return only riders whose trigger is explicit or mechanically known."""
 
@@ -1291,7 +1309,15 @@ class PlayerRoomService:
             if isinstance(registry, dict)
             else []
         )
-        riders = canonical_riders or (raw_riders if isinstance(raw_riders, list) else [])
+        riders = list(canonical_riders)
+        canonical_ids = {
+            str(item.get("id") or "") for item in canonical_riders if isinstance(item, dict)
+        }
+        riders.extend(
+            item
+            for item in (raw_riders if isinstance(raw_riders, list) else [])
+            if isinstance(item, dict) and str(item.get("id") or "") not in canonical_ids
+        )
         action_text = " ".join(
             str(action.get(key) or "") for key in ("name", "description", "damage")
         )
@@ -1343,6 +1369,8 @@ class PlayerRoomService:
                     action_tags.add("weapon")
                 if action.get("is_unarmed_attack") is True:
                     action_tags.add("unarmed")
+                if action.get("is_monk_weapon") is True:
+                    action_tags.add("monk_weapon")
                 if action.get("is_spell_attack") is True or action.get("kind") == "spell":
                     action_tags.add("spell_attack")
                 if action.get("melee_weapon_attack") is True or "近战" in action_text:
@@ -1352,6 +1380,28 @@ class PlayerRoomService:
                 runtime_progression = (
                     registry.get("progression") if isinstance(registry, dict) else None
                 )
+                bindings: dict[str, int] = {}
+                raw_save = raw.get("saving_throw")
+                if isinstance(raw_save, dict) and raw_save.get("dc_source"):
+                    dc_source = str(raw_save.get("dc_source") or "").strip()
+                    dc_ability = str(raw_save.get("dc_ability") or "").strip()
+                    ability_scores = (actor.snapshot_json or {}).get("ability_scores")
+                    proficiency_bonus = (
+                        runtime_progression.get("proficiency_bonus")
+                        if isinstance(runtime_progression, dict)
+                        else None
+                    )
+                    ability_score = (
+                        ability_scores.get(dc_ability)
+                        if isinstance(ability_scores, dict)
+                        else None
+                    )
+                    if (
+                        dc_source
+                        and isinstance(proficiency_bonus, int)
+                        and isinstance(ability_score, int)
+                    ):
+                        bindings[dc_source] = 8 + proficiency_bonus + (ability_score - 10) // 2
                 resolved = resolve_post_hit_rider(
                     raw,
                     hit=True,
@@ -1383,16 +1433,45 @@ class PlayerRoomService:
                     resources=(
                         registry.get("resources", {}) if isinstance(registry, dict) else {}
                     ),
-                    event_id=f"attack:{actor.id}:{target.id}",
+                    event_id=event_id or f"attack:{actor.id}:{target.id}",
+                    turn_id=turn_id,
                     inputs=rider_inputs,
+                    bindings=bindings,
                     critical_hit=critical_hit,
                 )
                 if resolved is None or resolved.get("status") == "already_used":
                     continue
+                if resolved.get("status") in {
+                    "pending_activation",
+                    "pending_choice",
+                    "pending_save",
+                }:
+                    result.append(
+                        {
+                            "rider_id": rider_id,
+                            "source": raw.get("feature_name") or rider_id,
+                            "frequency": raw.get("frequency"),
+                            "target_combatant_id": target.id,
+                            "post_hit_status": resolved.get("status"),
+                            "post_hit_resolution": resolved,
+                            "post_hit_config": dict(raw),
+                            "post_hit_action_context": {
+                                "tags": sorted(action_tags),
+                                "attack_ability": attack_ability,
+                            },
+                            "post_hit_inputs": rider_inputs,
+                            "post_hit_bindings": bindings,
+                            "post_hit_event_id": event_id or f"attack:{actor.id}:{target.id}",
+                            "post_hit_turn_id": turn_id,
+                        }
+                    )
+                    continue
+                if resolved.get("status") == "declined":
+                    continue
                 if resolved.get("status") != "resolved":
-                    raise ValueError(f"攻击骑手 {rider_id} 仍需完整输入后才能结算")
+                    raise ValueError(f"攻击骑手 {rider_id} 无法结算")
                 if resolved.get("saving_throw") is not None or resolved.get("effects"):
-                    raise ValueError("该命中后骑手需要持久化豁免/效果确认链")
+                    raise ValueError("该命中后骑手必须通过持久化后续动作提交效果")
                 damage = resolved.get("damage")
                 components = damage if isinstance(damage, list) else []
                 total = sum(int(item.get("reported_total") or 0) for item in components)
@@ -1532,6 +1611,123 @@ class PlayerRoomService:
             actor.snapshot_json = snapshot
             actor.version += 1
             actor.updated_at = _now()
+
+    def _persist_post_hit_rider_requests(
+        self,
+        principal: PlayerPrincipal,
+        *,
+        combat_id: str,
+        actor_id: str,
+        rider_results_by_target: dict[str, list[dict[str, Any]]],
+        attack_idempotency_key: str,
+    ) -> list[dict[str, Any]]:
+        """Persist generic follow-ups produced by the post-hit executor."""
+
+        pending = [
+            rider
+            for riders in rider_results_by_target.values()
+            for rider in riders
+            if rider.get("post_hit_status")
+        ]
+        if not pending or principal.character_id is None:
+            return []
+        created: list[dict[str, Any]] = []
+        with Session(self.engine) as session, session.begin():
+            character = session.get(Character, principal.character_id)
+            combat = session.get(Combat, combat_id)
+            actor = session.get(Combatant, actor_id)
+            if (
+                character is None
+                or character.campaign_id != principal.campaign_id
+                or combat is None
+                or combat.campaign_id != principal.campaign_id
+                or combat.status != "active"
+                or actor is None
+                or not actor.is_active
+                or actor.combat_id != combat_id
+                or CombatEngineService._combatant_owner(actor) != principal.character_id
+            ):
+                raise StateNotFoundError("post-hit rider actor not found")
+            open_requests = session.scalars(
+                select(PlayerActionRequest).where(
+                    PlayerActionRequest.campaign_id == principal.campaign_id,
+                    PlayerActionRequest.character_id == principal.character_id,
+                    PlayerActionRequest.action_type == "post_hit_rider",
+                    PlayerActionRequest.status == "pending",
+                )
+            ).all()
+            for rider in pending:
+                rider_id = str(rider.get("rider_id") or "")
+                target_id = str(rider.get("target_combatant_id") or "")
+                target = session.get(Combatant, target_id)
+                if target is None or not target.is_active or target.combat_id != combat_id:
+                    raise StateNotFoundError("post-hit rider target not found")
+                turn_id = str(rider.get("post_hit_turn_id") or "")
+                digest = hashlib.sha256(
+                    f"{attack_idempotency_key}:{target_id}:{rider_id}".encode()
+                ).hexdigest()[:32]
+                request_key = f"post-hit:{digest}"
+                if any(
+                    existing.idempotency_key != request_key
+                    and isinstance(existing.payload_json, dict)
+                    and existing.payload_json.get("created_by") == "combat_engine"
+                    and existing.payload_json.get("rider_id") == rider_id
+                    and existing.payload_json.get("turn_id") == turn_id
+                    for existing in open_requests
+                ):
+                    continue
+                existing = session.scalar(
+                    select(PlayerActionRequest).where(
+                        PlayerActionRequest.campaign_id == principal.campaign_id,
+                        PlayerActionRequest.idempotency_key == request_key,
+                    )
+                )
+                if existing is not None:
+                    existing_payload = dict(existing.payload_json or {})
+                    if (
+                        existing.action_type != "post_hit_rider"
+                        or existing.character_id != principal.character_id
+                        or existing_payload.get("created_by") != "combat_engine"
+                        or existing_payload.get("combat_id") != combat_id
+                        or existing_payload.get("actor_combatant_id") != actor_id
+                        or existing_payload.get("target_combatant_id") != target_id
+                        or existing_payload.get("rider_id") != rider_id
+                    ):
+                        raise ValueError("post-hit rider request key collision")
+                    created.append(serialize(existing))
+                    continue
+                resolution = rider.get("post_hit_resolution")
+                phase = str(rider.get("post_hit_status") or "")
+                item = PlayerActionRequest(
+                    campaign_id=principal.campaign_id,
+                    character_id=principal.character_id,
+                    player_key=principal.session_id,
+                    action_type="post_hit_rider",
+                    message=f"{rider.get('source') or rider_id}命中后续结算",
+                    payload_json={
+                        "schema_version": "1.0",
+                        "created_by": "combat_engine",
+                        "phase": phase,
+                        "combat_id": combat_id,
+                        "actor_combatant_id": actor_id,
+                        "target_combatant_id": target_id,
+                        "rider_id": rider_id,
+                        "rider_config": rider.get("post_hit_config") or {},
+                        "action_context": rider.get("post_hit_action_context") or {},
+                        "inputs": rider.get("post_hit_inputs") or {},
+                        "bindings": rider.get("post_hit_bindings") or {},
+                        "event_id": rider.get("post_hit_event_id"),
+                        "turn_id": rider.get("post_hit_turn_id"),
+                        "resolution": resolution if isinstance(resolution, dict) else {},
+                    },
+                    character_version=character.version,
+                    idempotency_key=request_key,
+                    status="pending",
+                )
+                session.add(item)
+                session.flush()
+                created.append(serialize(item))
+        return created
 
     @classmethod
     def _resolve_combat_targets(
@@ -7497,16 +7693,21 @@ class PlayerRoomService:
                         used_this_turn=(
                             riders_used_this_turn | riders_applied_this_call
                         ),
+                        event_id=f"{idempotency_key}:{current_target.id}",
+                        turn_id=rider_turn_key,
                     )
                     for rider in eligible_riders:
                         rider_results.append(rider)
-                        if rider.get("frequency") == "once_per_turn":
+                        if (
+                            rider.get("frequency") == "once_per_turn"
+                            and rider.get("post_hit_status") is None
+                        ):
                             riders_applied_this_call.add(str(rider["rider_id"]))
                 rider_results_by_target[current_target.id] = rider_results
                 rider_bonus_by_block: dict[str, int] = {}
                 if rider_results:
                     rider_bonus_by_block[first_damage_block_id] = sum(
-                        int(item["total"]) for item in rider_results
+                        int(item.get("total") or 0) for item in rider_results
                     )
                 for component in components:
                     rule = next(rule for rule in damage_rules if rule.id == component.block_id)
@@ -7573,6 +7774,7 @@ class PlayerRoomService:
                                     + "、".join(
                                         f"{item['source']} {item['expression']} +{item['total']}"
                                         for item in rider_results
+                                        if item.get("total")
                                     )
                                     if component.block_id == first_damage_block_id
                                     and rider_results
@@ -7782,6 +7984,13 @@ class PlayerRoomService:
             special_inputs,
             target_outcome_codes,
         )
+        post_hit_rider_requests = self._persist_post_hit_rider_requests(
+            principal,
+            combat_id=combat_id,
+            actor_id=actor.id,
+            rider_results_by_target=rider_results_by_target,
+            attack_idempotency_key=idempotency_key,
+        )
         self._spend_character_resource(
             principal.character_id,
             resource_key,
@@ -7794,7 +8003,7 @@ class PlayerRoomService:
                 f"{idempotency_key}:advance",
                 require_non_character=False,
             )
-            if end_turn_after
+            if end_turn_after and not post_hit_rider_requests
             else None
         )
         return {
@@ -7808,10 +8017,28 @@ class PlayerRoomService:
                 for values in rider_results_by_target.values()
                 for rider in values
             ],
+            "post_hit_rider_requests": post_hit_rider_requests,
             "bardic_inspiration_consumed": bardic_inspiration_consumed,
             "compiled_effects": compiled_effects,
             "turn_advance": turn_advance,
         }
+
+    def resolve_post_hit_rider(
+        self,
+        principal: PlayerPrincipal,
+        request_id: str,
+        expected_version: int,
+        inputs: dict[str, Any],
+    ) -> dict[str, Any]:
+        if principal.character_id is None:
+            raise ValueError("请先绑定角色")
+        return self.combat.resolve_post_hit_rider_request(
+            principal.campaign_id,
+            request_id,
+            expected_version=expected_version,
+            inputs=inputs,
+            character_id=principal.character_id,
+        )
 
     def cast(
         self,
