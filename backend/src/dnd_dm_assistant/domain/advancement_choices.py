@@ -1089,6 +1089,53 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS: dict[str, dict[str, Any]] = {
         "actions": {},
         "attack_riders": [],
     },
+    "法术抗性": {
+        "combat_start": {
+            "modifiers": [],
+            "defenses": [
+                {
+                    "id": "subclass:spell_resistance:magical_saves",
+                    "kind": "saving_throw_advantage",
+                    "applies_when": "magical",
+                    "runtime_execution": {
+                        "status": "ready",
+                        "consumer": "saving_throw_resolution",
+                    },
+                    "automation_status": "full",
+                    "requires_dm_adjudication": False,
+                },
+                {
+                    "id": "subclass:spell_resistance:magical_damage",
+                    "kind": "damage_resistance",
+                    "damage_types": [
+                        "acid",
+                        "bludgeoning",
+                        "cold",
+                        "fire",
+                        "force",
+                        "lightning",
+                        "necrotic",
+                        "piercing",
+                        "poison",
+                        "psychic",
+                        "radiant",
+                        "slashing",
+                        "thunder",
+                    ],
+                    "applies_when": "magical",
+                    "runtime_execution": {
+                        "status": "ready",
+                        "consumer": "damage_defense_resolver",
+                    },
+                    "automation_status": "full",
+                    "requires_dm_adjudication": False,
+                },
+            ],
+        },
+        "resources": {},
+        "actions": {},
+        "attack_riders": [],
+    },
     "无我狂暴": {
         "combat_start": {
             "modifiers": [],

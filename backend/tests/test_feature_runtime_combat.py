@@ -1861,6 +1861,61 @@ def test_ranged_passive_damage_resistance_is_consumed_by_damage_resolver() -> No
     assert unresolved == []
 
 
+def test_magical_spell_resistance_defense_is_data_driven() -> None:
+    target = Combatant(
+        id="spell-resistant",
+        entity_type="character",
+        display_name="法术抗性",
+        hp=20,
+        max_hp=20,
+        snapshot_json={
+            "feature_runtime": {
+                "combat_start": {
+                    "defenses": [
+                        {
+                            "id": "fixture:magic-save",
+                            "kind": "saving_throw_advantage",
+                            "applies_when": "magical",
+                            "source": "fixture magic resistance",
+                        },
+                        {
+                            "id": "fixture:magic-damage",
+                            "kind": "damage_resistance",
+                            "damage_types": ["fire"],
+                            "applies_when": "magical",
+                        },
+                    ]
+                }
+            }
+        },
+    )
+    save = CombatEngineService._resolve_save_defenses(
+        target,
+        dc=10,
+        ability="wisdom",
+        roll_total=5,
+        roll_totals=[5, 15],
+        damage_on_success=0,
+        damage_on_failure=0,
+        is_magical=True,
+        use_legendary_resistance=False,
+        use_feature_reroll=False,
+        consume=False,
+    )
+    assert save["success"] is True
+    assert "feature:fixture magic resistance" in save["applied_defenses"]
+    resistances, _vulnerabilities, _immunities, applied, unresolved = (
+        CombatEngineService._damage_defenses(
+            target,
+            SimpleNamespace(damage_tags=[], is_magical=True),
+            ["fire"],
+        )
+    )
+    assert "fire" in resistances
+    assert any("fixture:magic-damage" in value for value in applied)
+    assert unresolved == []
+
+
 def test_tactical_mind_uses_generic_failure_recovery_and_consumes_only_on_success() -> None:
     action = CombatAction(
         id="tactical-check",

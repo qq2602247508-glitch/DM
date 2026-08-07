@@ -7731,7 +7731,10 @@ class CombatEngineService:
             if defense.get("kind") != "damage_resistance":
                 continue
             applies_when = str(defense.get("applies_when") or "always").strip()
-            if applies_when != "always":
+            if applies_when == "magical":
+                if getattr(command, "is_magical", False) is not True:
+                    continue
+            elif applies_when != "always":
                 continue
             raw_types = defense.get("damage_types")
             if not isinstance(raw_types, list):
@@ -8687,6 +8690,13 @@ class CombatEngineService:
             for item in feature_modifiers
             if item.get("operation") == "advantage"
         ]
+        if is_magical:
+            feature_advantage.extend(
+                str(defense.get("source") or "法术抗性")
+                for defense in cls._feature_defenses(target)
+                if defense.get("kind") == "saving_throw_advantage"
+                and str(defense.get("applies_when") or "") == "magical"
+            )
         feature_disadvantage = [
             str(item.get("source") or "职业豁免劣势")
             for item in feature_modifiers

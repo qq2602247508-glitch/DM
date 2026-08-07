@@ -193,6 +193,32 @@ def test_subclass_aura_resistance_uses_ranged_damage_consumer() -> None:
     assert defense["ranged_passive"]["effect_kind"] == "damage_resistance"
 
 
+def test_spell_resistance_config_covers_magical_saves_and_damage() -> None:
+    result = subclass_runtime_grants(
+        {
+            "name": "防护师",
+            "feature_definitions": [
+                {
+                    "id": "spell-resistance",
+                    "name": "法术抗性 Spell Resistance",
+                    "class_level": 14,
+                    "description": "抵抗法术时豁免具有优势且对法术伤害具有抗性。",
+                    "source_record_id": "spell-resistance",
+                }
+            ],
+        },
+        class_name="法师",
+        target_class_level=14,
+    )
+    grant = result["grants"][0]
+    assert grant["runtime"]["automation_status"] == "full"
+    defenses = grant["runtime"]["registry"]["combat_start"]["defenses"]
+    assert {item["kind"] for item in defenses} == {
+        "saving_throw_advantage",
+        "damage_resistance",
+    }
+
+
 def test_mindless_rage_declares_conditional_immunity_and_clear_trigger() -> None:
     result = subclass_runtime_grants(
         {
