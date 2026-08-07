@@ -214,6 +214,62 @@ class CombatEngineService:
             return None
         minimum = max(1, minimum, int(action.get("minimum_healing") or 1))
         return minimum, max(minimum, maximum)
+
+    @staticmethod
+    def _feature_healing_dice_bounds(
+        action: Mapping[str, Any],
+        *,
+        actor: Combatant,
+        character: Character | None,
+        dice_count: int,
+    ) -> tuple[int, int, int] | None:
+        """Resolve a configuration-driven healing dice pool.
+
+        The executor only understands typed pool fields.  It never derives a
+        pool from a feature name: die size and the per-use cap come from the
+        action block, while an ability-based cap reads the authoritative
+        character snapshot.
+        """
+
+        dice = action.get("healing_dice")
+        if not isinstance(dice, Mapping):
+            return None
+        raw_die_size = dice.get("die_size")
+        if not isinstance(raw_die_size, int) or raw_die_size < 1:
+            return None
+        raw_max = dice.get("max_dice")
+        if isinstance(raw_max, int):
+            max_dice = raw_max
+        else:
+            formula = str(dice.get("max_dice_formula") or "").strip()
+            match = re.fullmatch(r"max\(1,\s*(\w+)_modifier\)", formula)
+            if match is None:
+                return None
+            scores: Mapping[str, Any] = {}
+            snapshot_scores = (actor.snapshot_json or {}).get("ability_scores")
+            if isinstance(snapshot_scores, Mapping):
+                scores = snapshot_scores
+            elif character is not None and isinstance(character.ability_scores, Mapping):
+                scores = character.ability_scores
+            ability = match.group(1)
+            raw_score = scores.get(ability)
+            if raw_score is None:
+                raw_score = scores.get(
+                    {
+                        "strength": "力量",
+                        "dexterity": "敏捷",
+                        "constitution": "体质",
+                        "intelligence": "智力",
+                        "wisdom": "感知",
+                        "charisma": "魅力",
+                    }.get(ability, ability)
+                )
+            if not isinstance(raw_score, int):
+                return None
+            max_dice = max(1, (raw_score - 10) // 2)
+        if max_dice < 1 or dice_count < 1 or dice_count > max_dice:
+            return None
+        return dice_count, dice_count * raw_die_size, max_dice
     _ACTION_BLOCKING_CONDITIONS = {
         "incapacitated",
         "unconscious",
@@ -12110,6 +12166,14 @@ class CombatEngineService:
                     if command.healing_total is None or command.healing_total < 1:
                         raise ValueError("该职业特性需要填写本次实际消耗的资源数量")
                     resource_cost = command.healing_total
+            elif action.get("resource_cost_mode") == "dice_count":
+                if action.get("resolution_kind") != "healing":
+                    raise ValueError("骰子资源消耗只能用于治疗积木")
+                if condition_to_cure is not None:
+                    raise ValueError("骰子治疗不能同时解除状态")
+                if command.healing_dice_count is None:
+                    raise ValueError("该职业特性需要填写本次消耗的治疗骰数量")
+                resource_cost = command.healing_dice_count
             elif action.get("resource_cost_mode") == "amount":
                 if command.healing_total is None or command.healing_total < 1:
                     raise ValueError("该职业特性需要填写本次实际消耗的资源数量")
@@ -12434,11 +12498,33 @@ class CombatEngineService:
                 if total is None:
                     raise ValueError("该职业特性需要填写治疗骰最终总值")
                 formula = str(action.get("healing") or action.get("healing_formula") or "")
-                bounds = self._feature_healing_total_bounds(
-                    action,
-                    actor=actor,
-                    character=character,
-                )
+                bounds: tuple[int, int] | None = None
+                if action.get("resource_cost_mode") == "dice_count":
+                    dice_count = command.healing_dice_count
+                    if dice_count is None:
+                        raise ValueError("该职业特性需要填写本次消耗的治疗骰数量")
+                    dice_bounds = self._feature_healing_dice_bounds(
+                        action,
+                        actor=actor,
+                        character=character,
+                        dice_count=dice_count,
+                    )
+                    if dice_bounds is None:
+                        raise ValueError("治疗骰池积木缺少有效骰面或每次最大骰数")
+                    minimum, maximum, _ = dice_bounds
+                    if not command.dm_override and not minimum <= total <= maximum:
+                        raise ValueError(f"治疗骰结果应在 {minimum}–{maximum} 之间")
+                    result["healing_dice"] = {
+                        "count": dice_count,
+                        "die_size": int(action["healing_dice"]["die_size"]),
+                        "pool_resource_key": resource_key,
+                    }
+                else:
+                    bounds = self._feature_healing_total_bounds(
+                        action,
+                        actor=actor,
+                        character=character,
+                    )
                 if bounds is not None and not command.dm_override:
                     minimum, maximum = bounds
                     if not minimum <= total <= maximum:

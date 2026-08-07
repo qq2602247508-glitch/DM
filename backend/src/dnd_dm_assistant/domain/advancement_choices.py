@@ -1321,6 +1321,85 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS: dict[str, dict[str, Any]] = {
         "triggers": [],
         "attack_riders": [],
     },
+    # Healing-dice pools are a reusable action contract.  The pool key is
+    # bound from the subclass resource compiler; the combat executor only
+    # consumes the declared die size, per-use cap, target policy and lifecycle.
+    "神之勇者": {
+        "combat_start": {"modifiers": [], "defenses": []},
+        "resources": {},
+        "actions": {
+            "warrior_of_the_gods": {
+                "id": "warrior_of_the_gods",
+                "name": "神之勇者",
+                "kind": "feature_action",
+                "action_cost": "bonus_action",
+                "resource_key": "$feature_resource",
+                "resource_cost": 0,
+                "resource_cost_mode": "dice_count",
+                "target": "self",
+                "target_policy": {"mode": "self"},
+                "resolution_kind": "healing",
+                "healing_formula": "healing_dice_pool",
+                "healing_dice": {
+                    "die_size": 12,
+                    "max_dice": 4,
+                },
+                "resource_lifecycle": {
+                    "events": [{"trigger": "long_rest", "operation": "set_to_max"}]
+                },
+                "effects": [{"kind": "healing"}],
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "combat_feature_action",
+                    "effect_kinds": ["healing"],
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        },
+        "triggers": [],
+        "attack_riders": [],
+    },
+    "治疗之光": {
+        "combat_start": {"modifiers": [], "defenses": []},
+        "resources": {},
+        "actions": {
+            "healing_light": {
+                "id": "healing_light",
+                "name": "治疗之光",
+                "kind": "feature_action",
+                "action_cost": "bonus_action",
+                "resource_key": "$feature_resource",
+                "resource_cost": 0,
+                "resource_cost_mode": "dice_count",
+                "target": "ally_or_self",
+                "target_policy": {
+                    "mode": "ally_or_self",
+                    "same_faction": True,
+                    "range_ft": 60,
+                },
+                "resolution_kind": "healing",
+                "healing_formula": "healing_dice_pool",
+                "healing_dice": {
+                    "die_size": 6,
+                    "max_dice_formula": "max(1, charisma_modifier)",
+                },
+                "resource_lifecycle": {
+                    "events": [{"trigger": "long_rest", "operation": "set_to_max"}]
+                },
+                "effects": [{"kind": "healing"}],
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "combat_feature_action",
+                    "effect_kinds": ["healing"],
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        },
+        "triggers": [],
+        "attack_riders": [],
+    },
     "精通重击": {
         "combat_start": {
             "modifiers": [
@@ -1347,6 +1426,10 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS: dict[str, dict[str, Any]] = {
         "attack_riders": [],
     },
 }
+# The source pack uses both translated labels for Healing Light.  Keep the
+# same configuration contract for the alias; the executor remains completely
+# unaware of either feature name.
+SUBCLASS_FEATURE_RUNTIME_CONFIGS["治愈之光"] = SUBCLASS_FEATURE_RUNTIME_CONFIGS["治疗之光"]
 
 
 def subclass_feature_runtime_definition(
@@ -1511,8 +1594,48 @@ def _subclass_resource_update(
     definition: dict[str, Any],
     *,
     ability_scores: dict[str, int] | None,
+    current_class_level: int | None = None,
 ) -> tuple[str, dict[str, Any]] | None:
     description = str(definition.get("description") or "")
+    healing_pool = re.search(
+        r"(?:有着|拥有)\s*(\d+)\s*枚\s*d(\d+)\s*(?:骰子|骰)?的治疗池",
+        description,
+        re.IGNORECASE,
+    )
+    scaling_healing_pool = re.search(
+        r"(?:有着|拥有)\s*1\s*\+\s*你的[^。；;]{0,24}?等级\s*枚\s*d(\d+)\s*骰子?的骰池",
+        description,
+        re.IGNORECASE,
+    )
+    if healing_pool or scaling_healing_pool:
+        source_id = str(definition.get("source_record_id") or definition.get("id") or "")
+        fingerprint = re.sub(r"[^a-z0-9]+", "", source_id.casefold())[-18:]
+        if not fingerprint:
+            fingerprint = hashlib.sha256(
+                str(definition.get("id") or "").encode()
+            ).hexdigest()[:18]
+        die_size = int((healing_pool or scaling_healing_pool).group(2 if healing_pool else 1))
+        level = int(current_class_level or definition.get("class_level") or 0)
+        maximum = (
+            int(healing_pool.group(1))
+            if healing_pool
+            else 1 + max(0, level)
+        )
+        return f"subclass_{fingerprint}_{int(definition['class_level'])}", {
+            "label": str(definition["name"]),
+            "max": maximum,
+            "max_formula": "fixed_pool" if healing_pool else "1+class_level",
+            "die_size": die_size,
+            "resource_kind": "healing_dice_pool",
+            "recovery": "long_rest",
+            "recovery_events": [{"rest": "long_rest", "operation": "set_to_max"}],
+            "source": (
+                f"{definition.get('source_path') or definition.get('source_record_id')}"
+                f" · {definition['class_level']}级{definition['name']}"
+            ),
+            "requires_dm_adjudication": False,
+            "automation_status": "full",
+        }
     if "使用" not in description or "次" not in description:
         return None
     source_id = str(definition.get("source_record_id") or definition.get("id") or "")
@@ -1609,6 +1732,7 @@ def subclass_runtime_grants(
     target_class_level: int,
     ability_scores: dict[str, int] | None = None,
     selected_choices: dict[str, list[str]] | None = None,
+    current_class_level: int | None = None,
 ) -> dict[str, Any]:
     """Compile a selected subclass's grants, sheet actions and resources.
 
@@ -1636,7 +1760,11 @@ def subclass_runtime_grants(
         selected = [str(item).strip() for item in choices.get(feature_id, []) if str(item).strip()]
         if isinstance(requirement, dict):
             requirements.append({"feature_id": feature_id, **requirement})
-        resource = _subclass_resource_update(definition, ability_scores=ability_scores)
+        resource = _subclass_resource_update(
+            definition,
+            ability_scores=ability_scores,
+            current_class_level=current_class_level,
+        )
         resource_key = resource[0] if resource else None
         if resource is not None:
             resources[resource[0]] = resource[1]

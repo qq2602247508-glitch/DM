@@ -277,6 +277,7 @@ class AdvancementService:
                     class_name=owned_class,
                     target_class_level=subclass_level,
                     ability_scores=ability_scores,
+                    current_class_level=int(class_level),
                 )
                 updates.update(dict(subclass_update["resources"]))
         return self._merge_progression_resources(resources, updates), updates
@@ -1175,6 +1176,7 @@ class AdvancementService:
                     target_class_level=subclass_level,
                     ability_scores=ability_scores,
                     selected_choices=selected_subclass_choices,
+                    current_class_level=target_class_level,
                 )
                 subclass_runtime["grants"].extend(level_runtime["grants"])
                 subclass_runtime["actions"].extend(level_runtime["actions"])

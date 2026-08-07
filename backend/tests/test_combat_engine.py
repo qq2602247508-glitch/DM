@@ -13,6 +13,7 @@ from dnd_dm_assistant.api.app import create_app
 from dnd_dm_assistant.api.schemas import CombatActionCommand
 from dnd_dm_assistant.application.rule_block_compiler import compile_rule_blocks_dict
 from dnd_dm_assistant.config import Settings
+from dnd_dm_assistant.domain.advancement_choices import subclass_runtime_grants
 from dnd_dm_assistant.domain.campaign_state import VersionConflict
 from dnd_dm_assistant.domain.feature_runtime import (
     compile_feature_runtime_registry,
@@ -9370,6 +9371,147 @@ def test_tireless_validates_wisdom_healing_and_writes_temporary_hp(
     assert confirmed.json()["actor"]["temporary_hp"] == 7
     assert confirmed.json()["result"]["resource_before"] == 2
     assert confirmed.json()["result"]["resource_after"] == 1
+
+
+def test_generic_healing_dice_pool_consumes_resource_and_heals_target(
+    combat_client: TestClient,
+) -> None:
+    campaign = _campaign(combat_client, "Healing dice pool runtime")
+    base = f"/api/v1/campaigns/{campaign['id']}"
+    runtime = subclass_runtime_grants(
+        {
+            "name": "天界宗主",
+            "feature_definitions": [
+                {
+                    "id": "healing-light",
+                    "name": "治疗之光",
+                    "class_level": 3,
+                    "description": (
+                        "你获得一个有着1+你的魔契师等级枚d6骰的骰池。"
+                        "以一个附赠动作，你可以消耗骰子治疗。"
+                    ),
+                    "source_record_id": "healing-light-runtime",
+                }
+            ],
+        },
+        class_name="魔契师",
+        target_class_level=3,
+        ability_scores={"charisma": 16},
+        current_class_level=3,
+    )
+    grant = runtime["grants"][0]
+    resource_key = next(iter(runtime["resources"]))
+    resource = dict(runtime["resources"][resource_key])
+    resource.update({"current": 4, "max": 4})
+    registry = compile_feature_runtime_registry(
+        [
+            {
+                "name": "治疗之光",
+                "kind": "subclass_feature",
+                "class_name": "魔契师",
+                "class_level": 3,
+                "runtime": {"registry": grant["runtime"]["registry"]},
+            }
+        ],
+        resources={resource_key: resource},
+        class_levels={"魔契师": 3},
+    )
+    actor_character = combat_client.post(
+        f"{base}/characters",
+        json={
+            "name": "天界术士",
+            "hp": 20,
+            "max_hp": 20,
+            "ability_scores": {"charisma": 16},
+            "resources": {resource_key: resource},
+        },
+    ).json()
+    target_character = combat_client.post(
+        f"{base}/characters",
+        json={"name": "受伤盟友", "hp": 5, "max_hp": 20},
+    ).json()
+    combat = combat_client.post(f"{base}/combats", json={"name": "治疗骰测试"}).json()
+    actor = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "天界术士",
+            "entity_type": "character",
+            "entity_id": actor_character["id"],
+            "initiative": 20,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {
+                "feature_runtime": registry,
+                "disposition": "ally",
+                "grid_position": {"row": 0, "col": 0},
+            },
+        },
+    ).json()
+    target = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "受伤盟友",
+            "entity_type": "character",
+            "entity_id": target_character["id"],
+            "initiative": 10,
+            "hp": 5,
+            "max_hp": 20,
+            "snapshot_json": {
+                "disposition": "ally",
+                "grid_position": {"row": 0, "col": 6},
+            },
+        },
+    ).json()
+    combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "敌人",
+            "entity_type": "monster",
+            "initiative": 1,
+            "hp": 10,
+            "max_hp": 10,
+        },
+    )
+
+    response = combat_client.post(
+        f"{base}/combats/{combat['id']}/feature-actions/confirm",
+        headers={"X-Request-ID": "healing-light-runtime-1"},
+        json={
+            "actor_combatant_id": actor["id"],
+            "actor_version": actor["version"],
+            "feature_id": "healing_light",
+            "healing_dice_count": 2,
+            "healing_total": 7,
+            "target_combatant_id": target["id"],
+            "target_version": target["version"],
+        },
+    )
+    assert response.status_code == 200, response.text
+    payload = response.json()
+    assert payload["result"]["resource_before"] == 4
+    assert payload["result"]["resource_after"] == 2
+    assert payload["result"]["healing_dice"] == {
+        "count": 2,
+        "die_size": 6,
+        "pool_resource_key": resource_key,
+    }
+    assert payload["target"]["hp"] == 12
+
+    replay = combat_client.post(
+        f"{base}/combats/{combat['id']}/feature-actions/confirm",
+        headers={"X-Request-ID": "healing-light-runtime-1"},
+        json={
+            "actor_combatant_id": actor["id"],
+            "actor_version": payload["actor"]["version"],
+            "feature_id": "healing_light",
+            "healing_dice_count": 2,
+            "healing_total": 7,
+            "target_combatant_id": target["id"],
+            "target_version": payload["target"]["version"],
+        },
+    )
+    assert replay.status_code == 200
+    assert replay.json()["already_applied"] is True
 
 
 def test_second_wind_validates_level_healing_and_restores_hp(

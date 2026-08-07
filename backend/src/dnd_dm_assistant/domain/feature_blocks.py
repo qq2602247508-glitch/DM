@@ -12,6 +12,7 @@ from collections.abc import Mapping
 from typing import Any
 
 ACTION_COSTS = frozenset({"action", "bonus_action", "reaction", "none"})
+RESOURCE_COST_MODES = frozenset({"fixed", "amount", "amount_or_condition", "dice_count"})
 TARGET_MODES = frozenset({"self", "ally_or_self", "enemy", "any"})
 TRIGGER_WINDOWS = frozenset(
     {
@@ -69,6 +70,20 @@ def feature_action_block_errors(action: Mapping[str, Any]) -> tuple[str, ...]:
         errors.append("resource_cost must be a non-negative integer")
     if resource_cost and not resource_key:
         errors.append("resource_key is required when resource_cost is non-zero")
+    resource_cost_mode = str(action.get("resource_cost_mode") or "fixed")
+    if resource_cost_mode not in RESOURCE_COST_MODES:
+        errors.append("resource_cost_mode is invalid")
+    if resource_cost_mode == "dice_count":
+        dice = _mapping(action.get("healing_dice"))
+        die_size = dice.get("die_size")
+        if not _positive_int(die_size):
+            errors.append("healing_dice.die_size is required for dice_count")
+        max_dice = dice.get("max_dice")
+        max_formula = str(dice.get("max_dice_formula") or "").strip()
+        if max_dice is not None and not _positive_int(max_dice):
+            errors.append("healing_dice.max_dice is invalid")
+        if max_dice is None and not max_formula:
+            errors.append("healing_dice.max_dice or max_dice_formula is required")
     target_policy = action.get("target_policy")
     if target_policy is not None:
         policy = _mapping(target_policy)

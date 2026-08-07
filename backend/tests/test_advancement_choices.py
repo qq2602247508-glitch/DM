@@ -223,6 +223,61 @@ def test_open_hand_wholeness_uses_generic_healing_and_lifecycle_blocks() -> None
     assert result["resources"][resource_key]["max"] == 3
 
 
+def test_healing_dice_pool_configs_are_reusable_and_level_bound() -> None:
+    warrior = subclass_runtime_grants(
+        {
+            "name": "狂热者道途",
+            "feature_definitions": [
+                {
+                    "id": "warrior-of-gods",
+                    "name": "神之勇者",
+                    "class_level": 3,
+                    "description": (
+                        "你获得一个有着4枚d12的治疗池。以一个附赠动作，"
+                        "你可以消耗骰子恢复生命值。"
+                    ),
+                    "source_record_id": "warrior-of-gods",
+                }
+            ],
+        },
+        class_name="野蛮人",
+        target_class_level=3,
+    )
+    light = subclass_runtime_grants(
+        {
+            "name": "天界宗主",
+            "feature_definitions": [
+                {
+                    "id": "healing-light",
+                    "name": "治疗之光",
+                    "class_level": 3,
+                    "description": (
+                        "你获得一个有着1+你的魔契师等级枚d6骰的骰池。"
+                        "以一个附赠动作，你可以消耗骰子治疗。"
+                    ),
+                    "source_record_id": "healing-light",
+                }
+            ],
+        },
+        class_name="魔契师",
+        target_class_level=3,
+        current_class_level=10,
+    )
+
+    warrior_action = warrior["grants"][0]["runtime"]["registry"]["actions"][
+        "warrior_of_the_gods"
+    ]
+    light_action = light["grants"][0]["runtime"]["registry"]["actions"]["healing_light"]
+    assert warrior["grants"][0]["runtime"]["automation_status"] == "full"
+    assert warrior_action["resource_cost_mode"] == "dice_count"
+    assert warrior_action["healing_dice"] == {"die_size": 12, "max_dice": 4}
+    resource = next(iter(light["resources"].values()))
+    assert resource["max"] == 11
+    assert resource["die_size"] == 6
+    assert light_action["target_policy"]["range_ft"] == 60
+    assert light_action["healing_dice"]["max_dice_formula"] == "max(1, charisma_modifier)"
+
+
 def test_spell_resistance_config_covers_magical_saves_and_damage() -> None:
     result = subclass_runtime_grants(
         {

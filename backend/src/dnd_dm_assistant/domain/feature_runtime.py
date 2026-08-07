@@ -449,8 +449,9 @@ def _resource_entry(key: str, value: Mapping[str, Any]) -> dict[str, Any]:
         "note",
         "value",
         "value_kind",
-        "automation_status",
+        "die_size",
         "resource_kind",
+        "automation_status",
     }
     entry = {"key": key, **{name: deepcopy(value[name]) for name in allowed if name in value}}
     if "recovery_events" not in entry:
