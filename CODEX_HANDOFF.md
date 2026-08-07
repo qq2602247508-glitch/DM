@@ -5,7 +5,7 @@
 - 新增通用 `always_prepared_spell_list` 积木：只接受来源明确写出“始终/总是准备着特定法术”且不是“你选择的法术”的固定表；升级服务按权威本地法术目录匹配名称，自动写入 `spells[*]` 的 `prepared=true`、`always_prepared=true`，现有施法服务直接消费。固定誓言/领域/宗主法术表共新增 12 条 full。
 - 选择绑定的“魔法探秘”等仍保持 DM-only/partial；未匹配权威法术目录时不会猜测或写入。测试覆盖通用配置复用、选择绑定排除、真实升级 preview 持久化和现有施法能力消费者。
 - 固定分母 499 的审计从 `full 129 / partial 271 / dm_only 99` 变为 `full 148 / partial 259 / dm_only 92`，真实净增 `full +19`，距离用户目标 `full≥223` 仍差 75。候选积木命中数仍是重叠统计，不能把理论命中直接当 full。
-- 定向验证：施法运行时、升级选择、子职业运行时、499 条审计和升级 API 回归全部通过；Ruff、compileall、`git diff --check` 通过。全量后端 pytest 待本轮最终提交前执行。
+- 定向验证：施法运行时、升级选择、子职业运行时、499 条审计和升级 API 回归全部通过；全量后端 `pytest -q backend/tests` 通过（仅既有 Starlette/httpx 弃用警告）；Ruff、compileall、`git diff --check` 通过。
 - 用户未跟踪文件 `backend/tests/integrations/`、`backend/tests/ollama.py` 保持未暂存、未纳入提交。
 
 # 2026-08-07 三组通用积木批量迁移（最新）
