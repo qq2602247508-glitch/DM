@@ -134,6 +134,7 @@ FEATURE_RESOURCE_MARKERS: dict[str, str] = {
     "武僧武功": "focus",
     "功力": "focus",
     "圣疗": "lay_on_hands",
+    "复原之触": "lay_on_hands",
     "宿敌": "favored_enemy",
     "持久狂暴": "rage",
     "先发激励": "bardic_inspiration",
@@ -1555,6 +1556,128 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS: dict[str, dict[str, Any]] = {
         "triggers": [],
         "attack_riders": [],
     },
+    # Hand of Harm is a generic opt-in post-hit damage rider.  The resolver
+    # binds the current martial-arts die and Wisdom modifier from the
+    # authoritative combat snapshot; the player/DM still supplies the actual
+    # reported damage total.
+    "夺命之手": {
+        "combat_start": {"modifiers": [], "defenses": []},
+        "resources": {},
+        "actions": {},
+        "triggers": [],
+        "attack_riders": [
+            {
+                "id": "hand_of_harm:bonus_damage",
+                "kind": "post_hit_rider",
+                "trigger": "after_hit",
+                "frequency": "once_per_turn",
+                "activation": {
+                    "input_key": "activate_hand_of_harm",
+                    "label": "消耗1点功力发动夺命之手",
+                },
+                "eligibility": {
+                    "actor_entity_types": ["character"],
+                    "target_relations": ["enemy"],
+                    "action_tags_any": ["unarmed", "monk_weapon"],
+                },
+                "resource": {"key": "focus", "amount": 1},
+                "damage": {
+                    "id": "hand_of_harm:necrotic",
+                    "expression": "@martial_arts_die+@wisdom_modifier",
+                    "damage_type": "necrotic",
+                    "input_key": "hand_of_harm_total",
+                },
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "post_hit_rider_resolver",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        ],
+    },
+    # Hand of Healing is exposed as the same typed healing action used by
+    # other feature resources.  Its free Flurry replacement is intentionally
+    # left as a separate partial boundary until Flurry has a structured action
+    # window; the ordinary magic-action use is nevertheless executable.
+    "予命之手": {
+        "combat_start": {"modifiers": [], "defenses": []},
+        "resources": {},
+        "actions": {
+            "hand_of_healing": {
+                "id": "hand_of_healing",
+                "name": "予命之手",
+                "kind": "feature_action",
+                "action_cost": "action",
+                "resource_key": "$feature_resource",
+                "resource_cost": 1,
+                "target": "ally_or_self",
+                "target_policy": {
+                    "mode": "ally_or_self",
+                    "same_faction": True,
+                    "range_ft": 5,
+                },
+                "resolution_kind": "healing",
+                "healing_formula": "martial_arts_die+wisdom_modifier",
+                "dice_key": "martial_arts_die",
+                "condition_cure_options": [],
+                "effects": [{"kind": "healing"}],
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "combat_feature_action",
+                    "effect_kinds": ["healing"],
+                },
+                "automation_status": "partial",
+                "requires_dm_adjudication": False,
+                "note": "普通魔法动作治疗已闭环；疾风连击替换时免费使用仍需动作窗口积木。",
+            }
+        },
+        "triggers": [],
+        "attack_riders": [],
+    },
+    # Physician's Touch is an overlay on the already executable Hand of Harm
+    # rider.  Overlays are applied by the compiler using declared typed IDs;
+    # the combat executor remains unaware of subclass names.
+    "生死之触": {
+        "combat_start": {"modifiers": [], "defenses": []},
+        "resources": {},
+        "actions": {},
+        "triggers": [],
+        "attack_riders": [],
+        "attack_rider_overlays": [
+            {
+                "target_id": "hand_of_harm:bonus_damage",
+                "on_hit": [
+                    {
+                        "id": "hand_of_harm:poisoned",
+                        "kind": "condition",
+                        "operation": "apply",
+                        "condition": "poisoned",
+                        "duration": {"unit": "until_source_turn_end"},
+                    }
+                ],
+            }
+        ],
+        "action_overlays": [
+            {
+                "target_id": "hand_of_healing",
+                "condition_cure_options": [
+                    "blinded",
+                    "deafened",
+                    "paralyzed",
+                    "poisoned",
+                    "stunned",
+                ],
+            }
+        ],
+        "runtime_execution": {
+            "status": "ready",
+            "consumer": "attack_rider_resolver",
+        },
+        "automation_status": "partial",
+        "requires_dm_adjudication": True,
+        "note": "已接入命中后中毒覆盖；予命之手的状态解除/疾风连击替换仍需独立动作积木。",
+    },
     "精通重击": {
         "combat_start": {
             "modifiers": [
@@ -1636,7 +1759,32 @@ def subclass_feature_runtime_definition(
 
 
 def subclass_feature_automation_status(definition: Mapping[str, Any]) -> str | None:
-    return "full" if subclass_feature_runtime_definition(definition) is not None else None
+    runtime = subclass_feature_runtime_definition(definition)
+    if runtime is None:
+        return None
+    contract = feature_runtime_contract(
+        feature_name=str(definition.get("name") or ""),
+        class_name=str(definition.get("class_name") or ""),
+        class_level=int(definition.get("class_level") or 0),
+        definition=runtime,
+        kind="subclass_feature",
+        source_record_id=(
+            str(definition.get("source_record_id"))
+            if definition.get("source_record_id") is not None
+            else None
+        ),
+        source_path=(
+            str(definition.get("source_path"))
+            if definition.get("source_path") is not None
+            else None
+        ),
+        declared_status=(
+            str(runtime.get("automation_status"))
+            if runtime.get("automation_status") is not None
+            else None
+        ),
+    )
+    return str(contract["automation_status"])
 
 
 def _strip_feature_title(value: str) -> str:
@@ -1973,13 +2121,32 @@ def subclass_runtime_grants(
                     "description": str(definition.get("description") or ""),
                 }
             )
-        runtime_status = (
-            "full"
-            if runtime_registry is not None
-            else "partial"
-            if (resource or action)
-            else "dm_only"
-        )
+        if isinstance(runtime_registry, dict):
+            runtime_contract = feature_runtime_contract(
+                feature_name=str(definition.get("name") or ""),
+                class_name=class_name,
+                class_level=target_class_level,
+                definition=runtime_registry,
+                kind="subclass_feature",
+                source_record_id=(
+                    str(definition.get("source_record_id"))
+                    if definition.get("source_record_id") is not None
+                    else None
+                ),
+                source_path=(
+                    str(definition.get("source_path"))
+                    if definition.get("source_path") is not None
+                    else None
+                ),
+                declared_status=(
+                    str(runtime_registry.get("automation_status"))
+                    if runtime_registry.get("automation_status") is not None
+                    else None
+                ),
+            )
+            runtime_status = str(runtime_contract["automation_status"])
+        else:
+            runtime_status = "partial" if (resource or action) else "dm_only"
         grants.append(
             {
                 "feature_id": feature_id,

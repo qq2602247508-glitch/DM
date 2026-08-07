@@ -853,7 +853,7 @@ export const submitMyFeatureAction = (
   selectedAction?: "dash" | "disengage" | "hide",
   outcome?: "success" | "failure",
   adjudicationNote?: string,
-  conditionToCure?: "poisoned" | "diseased",
+  conditionToCure?: "blinded" | "charmed" | "deafened" | "diseased" | "frightened" | "paralyzed" | "poisoned" | "stunned",
   conditionToRemove?: "charmed" | "frightened" | "poisoned",
 ) => playerFetch<Record<string, unknown>>("/player-room/me/combat/feature-action", {
   method: "POST",

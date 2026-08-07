@@ -10294,3 +10294,170 @@ def test_direct_condition_patch_uses_lifecycle_restrictions(
     assert target["action_available"] is True
     assert target["bonus_action_available"] is True
     assert target["reaction_available"] is True
+
+
+def test_mercy_hand_of_harm_attack_rider_spends_focus_and_adds_damage(
+    combat_client: TestClient,
+) -> None:
+    campaign = _campaign(combat_client, "Mercy Hand of Harm")
+    base = f"/api/v1/campaigns/{campaign['id']}"
+    character = combat_client.post(
+        f"{base}/characters",
+        json={
+            "name": "命流武者",
+            "hp": 30,
+            "max_hp": 30,
+            "resources": {"focus": {"current": 2, "max": 6}},
+            "ability_scores": {"wisdom": 16},
+            "actions": [
+                {
+                    "name": "徒手打击",
+                    "cost": "动作",
+                    "damage": "1d4钝击",
+                    "damage_type": "钝击",
+                    "is_unarmed_attack": True,
+                    "rule_plan": compile_rule_blocks_dict(
+                        {
+                            "name": "徒手打击",
+                            "range": "5尺",
+                            "damage_expression": "1d4",
+                            "damage_type": "bludgeoning",
+                            "resolution_kind": "damage",
+                        },
+                        source_kind="action",
+                    ),
+                }
+            ],
+        },
+    ).json()
+    harm = subclass_feature_runtime_definition(
+        {
+            "name": "夺命之手 Hand of Harm",
+            "class_name": "武僧",
+            "class_level": 3,
+            "source_record_id": "mercy-harm-api",
+        }
+    )
+    assert harm is not None
+    registry = compile_feature_runtime_registry(
+        [
+            {
+                "name": "夺命之手 Hand of Harm",
+                "class_name": "武僧",
+                "class_level": 3,
+                "runtime": {
+                    "registry": harm,
+                    "tracked_scaling_keys": ["martial_arts_die"],
+                },
+            }
+        ],
+        resources=character["resources"],
+        scalings={"martial_arts_die": {"value": "d8"}},
+        class_levels={"武僧": 3},
+        total_level=3,
+    )
+    scene = combat_client.post(f"{base}/scenes", json={"name": "命流测试场"}).json()
+    grid = combat_client.post(
+        f"{base}/scenes/{scene['id']}/grid",
+        json={"width": 8, "height": 8, "cell_size_ft": 5, "mode": "combat"},
+    )
+    assert grid.status_code == 201, grid.text
+    combat = combat_client.post(
+        f"{base}/combats", json={"name": "命流结算", "scene_id": scene["id"]}
+    ).json()
+    actor = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "命流武者",
+            "entity_type": "character",
+            "entity_id": character["id"],
+            "initiative": 20,
+            "hp": 30,
+            "max_hp": 30,
+            "snapshot_json": {
+                "ability_scores": {"wisdom": 16},
+                "feature_runtime": registry,
+                "grid_position": {"row": 2, "col": 2},
+            },
+        },
+    ).json()
+    target = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "训练目标",
+            "entity_type": "monster",
+            "initiative": 10,
+            "armor_class": 10,
+            "hp": 40,
+            "max_hp": 40,
+            "snapshot_json": {"grid_position": {"row": 2, "col": 3}},
+        },
+    ).json()
+    opened = combat_client.post(f"{base}/player-room/open", json={"hours": 4})
+    assert opened.status_code == 200, opened.text
+    joined = combat_client.post(
+        "/api/v1/player-room/join",
+        json={"join_code": opened.json()["join_code"], "display_name": "命流玩家"},
+    )
+    assert joined.status_code == 201, joined.text
+    bound = combat_client.post(
+        "/api/v1/player-room/me/bind-character", json={"character_id": character["id"]}
+    )
+    assert bound.status_code == 200, bound.text
+    live = combat_client.post(
+        f"{base}/player-room/live-state",
+        json={"scene_id": scene["id"], "combat_id": combat["id"]},
+    )
+    assert live.status_code == 200, live.text
+    current_actor = next(
+        item
+        for item in combat_client.get(f"{base}/combats/{combat['id']}/combatants").json()["items"]
+        if item["id"] == actor["id"]
+    )
+    patched = combat_client.patch(
+        f"{base}/combats/{combat['id']}/combatants/{actor['id']}",
+        headers={"If-Match": f'"{current_actor["version"]}"'},
+        json={
+            "snapshot_json": {
+                **current_actor["snapshot_json"],
+                "ability_scores": {"wisdom": 16},
+                "feature_runtime": registry,
+            }
+        },
+    )
+    assert patched.status_code == 200, patched.text
+    attacked = combat_client.post(
+        "/api/v1/player-room/me/combat/attack",
+        json={
+            "target_combatant_id": target["id"],
+            "action_name": "徒手打击",
+            "attack_total": 20,
+            "damage_total": 4,
+            "idempotency_key": "mercy-hand-of-harm-1",
+            "special_inputs": {
+                "post_hit_rider_inputs": {
+                    "hand_of_harm:bonus_damage": {
+                        "activate_hand_of_harm": True,
+                        "hand_of_harm_total": 7,
+                    }
+                }
+            },
+        },
+    )
+    assert attacked.status_code == 200, attacked.text
+    payload = attacked.json()
+    rider = next(
+        item
+        for item in payload["attack_riders"]
+        if item["rider_id"] == "hand_of_harm:bonus_damage"
+    )
+    assert rider["total"] == 7
+    assert rider["resource_spends"] == [{"key": "focus", "amount": 1}]
+    character_after = combat_client.get(f"{base}/characters/{character['id']}").json()
+    assert character_after["resources"]["focus"]["current"] == 1
+    target_after = next(
+        item
+        for item in combat_client.get(f"{base}/combats/{combat['id']}/combatants").json()["items"]
+        if item["id"] == target["id"]
+    )
+    assert target_after["hp"] == 29

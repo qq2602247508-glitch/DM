@@ -50,21 +50,26 @@ def test_source_audit_does_not_hide_complete_rules_in_dm_only_bucket() -> None:
     }
     assert set(rows) == {"创生圣言", "弃绝众敌", "复原之触", "德鲁伊语", "原初职能"}
     assert all(row["source_parse"] == "description_located" for row in rows.values())
-    assert all(row["runtime_status"] == "dm_only" for row in rows.values())
+    assert rows["复原之触"]["runtime_status"] == "full"
+    assert all(
+        row["runtime_status"] == "dm_only"
+        for name, row in rows.items()
+        if name != "复原之触"
+    )
 
 
 def test_migration_planner_keeps_fixed_scope_and_status_counts() -> None:
     report = _planner_module().plan()
     assert report["audit_scope"]["total_features"] == 499
     assert report["audit_status_counts"] == {
-        "full": 166,
-        "partial": 241,
-        "dm_only": 92,
+        "full": 168,
+        "partial": 240,
+        "dm_only": 91,
     }
     assert report["readiness_counts"] == {
         "consumer_partial": 49,
-        "already_full": 166,
-        "missing_runtime_contract": 224,
+                "already_full": 168,
+            "missing_runtime_contract": 222,
         "missing_source": 35,
         "manual_boundary": 11,
         "needs_contract_review": 14,

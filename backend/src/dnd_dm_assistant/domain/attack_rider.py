@@ -274,11 +274,26 @@ def _damage_bounds(
         else:
             binding = str(match.group("binding"))
             value = bindings.get(binding)
-            if not isinstance(value, int):
+            if isinstance(value, str):
+                die_match = re.fullmatch(r"d(?P<sides>\d+)", value.strip(), re.IGNORECASE)
+                if die_match is not None:
+                    sides = int(die_match.group("sides"))
+                    if sides < 1:
+                        raise ValueError("post-hit rider damage binding die is invalid")
+                    count = 2 if critical_hit and critical_doubles_dice else 1
+                    low, high = count, count * sides
+                else:
+                    value = None
+            if isinstance(value, int):
+                low = high = value
+            elif not isinstance(value, str):
                 if not allow_missing_bindings:
                     raise ValueError(f"post-hit rider damage binding is missing: {binding}")
-                value = 0
-            low = high = value
+                low = high = 0
+            elif not re.fullmatch(r"d\d+", value.strip(), re.IGNORECASE):
+                if not allow_missing_bindings:
+                    raise ValueError(f"post-hit rider damage binding is missing: {binding}")
+                low = high = 0
         if sign > 0:
             minimum += low
             maximum += high
@@ -658,11 +673,17 @@ def post_hit_rider_input_requirements(
     """
 
     config = validate_post_hit_rider(spec)
-    numeric_bindings = {
-        _text(key): value
-        for key, raw_value in (bindings or {}).items()
-        if _text(key) and (value := _integer(raw_value)) is not None
-    }
+    numeric_bindings: dict[str, object] = {}
+    for key, raw_value in (bindings or {}).items():
+        normalized_key = _text(key)
+        if not normalized_key:
+            continue
+        integer_value = _integer(raw_value)
+        if integer_value is not None:
+            numeric_bindings[normalized_key] = integer_value
+            continue
+        if isinstance(raw_value, str) and re.fullmatch(r"d\d+", raw_value.strip(), re.IGNORECASE):
+            numeric_bindings[normalized_key] = raw_value.strip()
     requirements: list[dict[str, Any]] = []
     activation, _ = _normalize_activation(config.get("activation"), inputs={})
     if activation is not None:
@@ -769,11 +790,18 @@ def resolve_post_hit_rider(
         }
 
     supplied_inputs = dict(inputs or {})
-    numeric_bindings = {
-        _text(key): value
-        for key, raw_value in (bindings or {}).items()
-        if _text(key) and (value := _integer(raw_value)) is not None
-    }
+    numeric_bindings: dict[str, object] = {}
+    for key, raw_value in (bindings or {}).items():
+        normalized_key = _text(key)
+        if not normalized_key:
+            continue
+        integer_value = _integer(raw_value)
+        if integer_value is not None:
+            numeric_bindings[normalized_key] = integer_value
+        elif isinstance(raw_value, str) and re.fullmatch(
+            r"d\d+", raw_value.strip(), re.IGNORECASE
+        ):
+            numeric_bindings[normalized_key] = raw_value.strip()
     activation, activated = _normalize_activation(
         config.get("activation"), inputs=supplied_inputs
     )

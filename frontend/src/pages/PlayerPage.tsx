@@ -154,14 +154,35 @@ function display(value: unknown): string {
   return JSON.stringify(value);
 }
 
-function combatantHasCondition(combatant: PlayerCombatant | undefined, wanted: "charmed" | "frightened" | "poisoned" | "diseased"): boolean {
+type CureCondition = "blinded" | "charmed" | "deafened" | "diseased" | "frightened" | "paralyzed" | "poisoned" | "stunned";
+
+const CURE_CONDITION_LABELS: Record<CureCondition, string> = {
+  blinded: "目盲",
+  charmed: "魅惑",
+  deafened: "耳聋",
+  diseased: "疾病",
+  frightened: "恐慌",
+  paralyzed: "麻痹",
+  poisoned: "中毒",
+  stunned: "震慑",
+};
+
+function combatantHasCondition(combatant: PlayerCombatant | undefined, wanted: CureCondition): boolean {
   const aliases: Record<string, string> = {
     charmed: "charmed",
     魅惑: "charmed",
+    blinded: "blinded",
+    目盲: "blinded",
+    deafened: "deafened",
+    耳聋: "deafened",
     frightened: "frightened",
     恐慌: "frightened",
+    paralyzed: "paralyzed",
+    麻痹: "paralyzed",
     poisoned: "poisoned",
     中毒: "poisoned",
+    stunned: "stunned",
+    震慑: "stunned",
     diseased: "diseased",
     disease: "diseased",
     疾病: "diseased",
@@ -1059,7 +1080,7 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
   const [cunningActionChoice, setCunningActionChoice] = useState<"dash" | "disengage" | "hide">("dash");
   const [featureActionOutcome, setFeatureActionOutcome] = useState<"" | "success" | "failure">("");
   const [featureActionNote, setFeatureActionNote] = useState("");
-  const [conditionToCure, setConditionToCure] = useState<"" | "poisoned" | "diseased">("");
+  const [conditionToCure, setConditionToCure] = useState<"" | CureCondition>("");
   const [conditionToRemove, setConditionToRemove] = useState<"" | "charmed" | "frightened" | "poisoned">("");
   const [areaOrigins, setAreaOrigins] = useState<Record<string, { row: string; col: string }>>({});
   const [aimPoint, setAimPoint] = useState<GridPoint | null>(null);
@@ -1223,6 +1244,10 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
   const isCunningAction = isRuntimeFeatureAction && selectedFeatureId === "cunning_action";
   const isLayOnHands = isRuntimeFeatureAction && selectedFeatureId === "lay_on_hands";
   const isSelfRestoration = isRuntimeFeatureAction && selectedFeatureId === "self_restoration";
+  const conditionCureOptions = (Array.isArray(selectedActionBase?.condition_cure_options)
+    ? selectedActionBase.condition_cure_options
+    : ["poisoned", "diseased"])
+    .filter((value): value is CureCondition => typeof value === "string" && value in CURE_CONDITION_LABELS);
   const featureActionNeedsAdjudication = isCunningAction && cunningActionChoice === "hide";
   const featureActionValid = !featureActionNeedsAdjudication
     || (Boolean(featureActionOutcome) && Boolean(featureActionNote.trim()));
@@ -2200,7 +2225,7 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
           {selectedSpellLevel > 0 ? <label className="mt-2 block text-xs text-stone-400">使用法术环阶<select aria-label="玩家使用法术环阶" className={`${inputCls} mt-1`} onChange={(event) => setSlotLevel(Number(event.target.value))} value={Math.max(selectedSpellLevel, slotLevel)}>{(availableSlotLevels.length ? availableSlotLevels : [selectedSpellLevel]).map((level) => { const slot = snapshot.character?.resources?.[`spell_slots_${level}`] as { label?: string; current?: number; max?: number } | undefined; return <option disabled={Number(slot?.current ?? 0) < 1} key={level} value={level}>{level}环 · {slot?.label ?? `法术位${level}`} · 可用 {Number(slot?.current ?? 0)}/{Number(slot?.max ?? 0)}</option>; })}</select><span className="mt-1 block text-2xs text-amber-200">当前施法：{Math.max(selectedSpellLevel, slotLevel)}环；伤害骰会按升环规则增加。</span></label> : null}
           {selectedAction ? <p className="mb-0 mt-2 text-2xs text-stone-400" data-testid="player-selected-action-constraints">资源/窗口：{playerActionCostLabel(selectedActionCost)} · {selectedActionCost === "reaction" ? "填写实际触发事件；不自动结束当前回合" : selectedActionCost === "legendary_action" ? "仅限传奇动作窗口" : selectedActionCost === "lair_action" ? "仅限巢穴动作窗口" : "当前回合"}{selectedResourceKey ? ` · ${selectedResource?.label ?? selectedResourceKey} ${Number(selectedResource?.current ?? 0)}/${Number(selectedResource?.max ?? 0)}` : ""}{!selectedActionAvailable ? " · 当前不可用" : ""}{targeting?.requiresElevation ? ` · 三维区域：锚点 ${targeting.anchorHeightFt ?? "未记录"}尺；目标必须有 elevation_ft` : ""}</p> : null}
           {isCunningAction ? <div className="mt-2 rounded border border-cyan-800/60 bg-cyan-950/20 p-2 text-xs text-cyan-100" data-testid="player-cunning-action-choice"><label className="block">附赠动作分支<select aria-label="灵巧动作分支" className={`${inputCls} mt-1`} onChange={(event) => { setCunningActionChoice(event.target.value as "dash" | "disengage" | "hide"); setFeatureActionOutcome(""); setFeatureActionNote(""); }} value={cunningActionChoice}><option value="dash">疾走：增加一次速度的移动力</option><option value="disengage">撤离：本回合移动不触发借机攻击</option><option value="hide">躲藏：需要 DM 确认隐匿结果</option></select></label>{featureActionNeedsAdjudication ? <div className="mt-2 grid gap-2 sm:grid-cols-2"><label>DM 裁定结果<select aria-label="灵巧动作躲藏结果" className={`${inputCls} mt-1`} onChange={(event) => setFeatureActionOutcome(event.target.value as "" | "success" | "failure")} value={featureActionOutcome}><option value="">等待 DM 裁定</option><option value="success">成功</option><option value="failure">失败</option></select></label><label>裁定说明<input aria-label="灵巧动作躲藏裁定说明" className={`${inputCls} mt-1`} onChange={(event) => setFeatureActionNote(event.target.value)} placeholder="例如：隐匿检定超过敌方被动察觉" value={featureActionNote} /></label></div> : <p className="mb-0 mt-1 text-2xs text-stone-300">疾走和撤离会直接复用标准动作引擎，真实改变本回合移动力或借机攻击状态。</p>}</div> : null}
-          {isLayOnHands ? <div className="mt-2 rounded border border-emerald-800/60 bg-emerald-950/20 p-2 text-xs text-emerald-100" data-testid="player-lay-on-hands-choice"><label className="block">圣疗分支<select aria-label="圣疗分支" className={`${inputCls} mt-1`} onChange={(event) => setConditionToCure(event.target.value as "" | "poisoned" | "diseased")} value={conditionToCure}><option value="">治疗：填写本次消耗的圣疗池点数</option><option disabled={!combatantHasCondition(selectedTarget, "poisoned")} value="poisoned">解除中毒：消耗 5 点圣疗池</option><option disabled={!combatantHasCondition(selectedTarget, "diseased")} value="diseased">解除疾病：消耗 5 点圣疗池</option></select></label>{conditionToCure ? <p className="mb-0 mt-1 text-2xs text-emerald-200">当前选择会真实移除目标对应状态，并固定消耗 5 点圣疗池；不能同时填写治疗骰。</p> : <p className="mb-0 mt-1 text-2xs text-stone-300">圣疗可以恢复生命，或选择一个目标当前存在的中毒/疾病状态进行解除。</p>}</div> : null}
+          {isLayOnHands ? <div className="mt-2 rounded border border-emerald-800/60 bg-emerald-950/20 p-2 text-xs text-emerald-100" data-testid="player-lay-on-hands-choice"><label className="block">圣疗分支<select aria-label="圣疗分支" className={`${inputCls} mt-1`} onChange={(event) => setConditionToCure(event.target.value as "" | CureCondition)} value={conditionToCure}><option value="">治疗：填写本次消耗的圣疗池点数</option>{conditionCureOptions.map((condition) => <option disabled={!combatantHasCondition(selectedTarget, condition)} key={condition} value={condition}>解除{CURE_CONDITION_LABELS[condition]}：消耗 5 点圣疗池</option>)}</select></label>{conditionToCure ? <p className="mb-0 mt-1 text-2xs text-emerald-200">当前选择会真实移除目标对应状态，并固定消耗 5 点圣疗池；不能同时填写治疗骰。</p> : <p className="mb-0 mt-1 text-2xs text-stone-300">圣疗可以恢复生命，或选择一个目标当前存在的结构化状态进行解除。</p>}</div> : null}
           {isSelfRestoration ? <div className="mt-2 rounded border border-amber-800/60 bg-amber-950/20 p-2 text-xs text-amber-100" data-testid="player-self-restoration-choice"><label className="block">回合末移除状态<select aria-label="返本还元状态" className={`${inputCls} mt-1`} onChange={(event) => setConditionToRemove(event.target.value as "" | "charmed" | "frightened" | "poisoned")} value={conditionToRemove}><option value="">选择当前要移除的状态</option><option disabled={!combatantHasCondition(activeOwn ?? own, "charmed")} value="charmed">解除魅惑</option><option disabled={!combatantHasCondition(activeOwn ?? own, "frightened")} value="frightened">解除恐慌</option><option disabled={!combatantHasCondition(activeOwn ?? own, "poisoned")} value="poisoned">解除中毒</option></select></label><p className="mb-0 mt-1 text-2xs text-amber-200">提交后会真实移除所选状态，并结束该状态对应的结构化效果；没有该状态的选项不可用。</p></div> : null}
           {divineSmiteRider ? <div className="mt-2 rounded border border-yellow-800/60 bg-yellow-950/20 p-3 text-xs text-yellow-100" data-testid="player-divine-smite-input"><label className="flex items-center gap-2"><input checked={useDivineSmite} onChange={(event) => setUseDivineSmite(event.target.checked)} type="checkbox" />命中后使用圣武斩</label>{useDivineSmite ? <><label className="mt-2 block">消耗法术位环阶<select aria-label="圣武斩法术位环阶" className={`${inputCls} mt-1`} onChange={(event) => setDivineSmiteSlotLevel(event.target.value)} value={divineSmiteSlotLevel}>{(divineSmiteSlotOptions.length ? divineSmiteSlotOptions : [1]).map((level) => { const resource = snapshot.character?.resources?.[`spell_slots_${level}`] as { label?: string; current?: number; max?: number } | undefined; return <option disabled={Number(resource?.current ?? 0) < 1} key={level} value={level}>{level}环 · 可用 {Number(resource?.current ?? 0)}/{Number(resource?.max ?? 0)}</option>; })}</select></label><label className="mt-2 block">圣武斩光耀伤害骰总值（{divineSmiteDiceCount}d8{criticalHit ? "×2" : ""}）<input aria-label="圣武斩伤害骰总值" className={`${inputCls} mt-1`} min={divineSmiteDiceCount * (criticalHit ? 2 : 1)} onChange={(event) => setDivineSmiteDamageTotal(event.target.value)} type="number" value={divineSmiteDamageTotal} /></label></> : <p className="mb-0 mt-1 text-2xs text-stone-300">只在近战武器或徒手攻击命中后使用；不选择则不消耗法术位。</p>}</div> : null}
           {selectedSummonBlock ? <div className="mt-2 rounded border border-violet-800/60 bg-violet-950/20 p-3 text-xs text-violet-100">
@@ -2292,7 +2317,7 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
               setAttackTotal("");
               setDamageTotal("");
               setConditionToRemove("");
-              setLastResolution(`${result.result?.feature_name ?? actionName}已执行${result.result?.selected_action ? `：${result.result.selected_action}` : ""}${result.result?.healing ? `；恢复 ${result.result.healing.hp_gained ?? 0} 点生命` : ""}${result.result?.condition_cure ? `；已解除${result.result.condition_cure.condition === "poisoned" ? "中毒" : "疾病"}` : ""}${result.result?.condition_removal ? `；已解除${result.result.condition_removal.condition}` : ""}。`);
+              setLastResolution(`${result.result?.feature_name ?? actionName}已执行${result.result?.selected_action ? `：${result.result.selected_action}` : ""}${result.result?.healing ? `；恢复 ${result.result.healing.hp_gained ?? 0} 点生命` : ""}${result.result?.condition_cure ? `；已解除${CURE_CONDITION_LABELS[result.result.condition_cure.condition as CureCondition] ?? result.result.condition_cure.condition}` : ""}${result.result?.condition_removal ? `；已解除${result.result.condition_removal.condition}` : ""}。`);
               return result;
             }
             if (isCastAction) {

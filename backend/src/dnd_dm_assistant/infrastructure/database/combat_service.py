@@ -12158,15 +12158,13 @@ class CombatEngineService:
                 if grid_distance_ft(actor_position, target_position, cell_size_ft=cell_size) > 5:
                     raise ValueError("圣疗目标必须在 5 尺接触范围内")
             if condition_to_cure is not None:
-                if command.feature_id != "lay_on_hands":
-                    raise ValueError("condition_to_cure 只适用于圣疗")
                 cure_options = {
                     str(value).strip() for value in action.get("condition_cure_options") or ()
                 }
                 if condition_to_cure not in cure_options:
-                    raise ValueError("圣疗不支持解除该状态")
+                    raise ValueError("该职业特性不支持解除该状态")
                 if command.healing_total is not None:
-                    raise ValueError("圣疗一次只能选择治疗或解除状态")
+                    raise ValueError("该职业特性一次只能选择治疗或解除状态")
                 if not self._has_condition(target, condition_to_cure):
                     raise ValueError("目标当前没有要解除的中毒或疾病状态")
             elif command.feature_id == "lay_on_hands" and command.healing_total is None:
@@ -12493,7 +12491,7 @@ class CombatEngineService:
                     self._end_runtime_effect(
                         session,
                         effect,
-                        reason="condition_cured_by_lay_on_hands",
+                        reason="condition_cured_by_feature_action",
                         now=datetime.now(UTC),
                     )
                     cured_effect_ids.append(effect.id)

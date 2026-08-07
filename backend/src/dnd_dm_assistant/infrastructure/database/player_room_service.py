@@ -1380,7 +1380,43 @@ class PlayerRoomService:
                 runtime_progression = (
                     registry.get("progression") if isinstance(registry, dict) else None
                 )
-                bindings: dict[str, int] = {}
+                bindings: dict[str, int | str] = {}
+                # Bind only authoritative snapshot values for generic rider
+                # expressions.  Dice bindings remain as ``dN`` strings so the
+                # domain resolver can validate reported totals and critical
+                # doubling without guessing a roll.
+                runtime_resources = (
+                    registry.get("resources") if isinstance(registry, dict) else None
+                )
+                if isinstance(runtime_resources, dict):
+                    for key in ("martial_arts_die", "bardic_inspiration_die"):
+                        raw_die = runtime_resources.get(key)
+                        if isinstance(raw_die, dict):
+                            die_value = raw_die.get("value") or raw_die.get("label")
+                            if isinstance(die_value, str) and re.fullmatch(
+                                r"d\d+", die_value.strip(), re.IGNORECASE
+                            ):
+                                bindings[key] = die_value.strip()
+                ability_scores = (actor.snapshot_json or {}).get("ability_scores")
+                if isinstance(ability_scores, dict):
+                    for ability, binding_key in (
+                        ("strength", "strength_modifier"),
+                        ("dexterity", "dexterity_modifier"),
+                        ("constitution", "constitution_modifier"),
+                        ("intelligence", "intelligence_modifier"),
+                        ("wisdom", "wisdom_modifier"),
+                        ("charisma", "charisma_modifier"),
+                    ):
+                        raw_score = ability_scores.get(ability, ability_scores.get({
+                            "strength": "力量",
+                            "dexterity": "敏捷",
+                            "constitution": "体质",
+                            "intelligence": "智力",
+                            "wisdom": "感知",
+                            "charisma": "魅力",
+                        }[ability]))
+                        if isinstance(raw_score, int):
+                            bindings[binding_key] = (raw_score - 10) // 2
                 raw_save = raw.get("saving_throw")
                 if isinstance(raw_save, dict) and raw_save.get("dc_source"):
                     dc_source = str(raw_save.get("dc_source") or "").strip()
@@ -1495,6 +1531,9 @@ class PlayerRoomService:
                         "frequency": raw.get("frequency"),
                         "target_combatant_id": target.id,
                         "post_hit_resolution_key": resolved.get("resolution_key"),
+                        "resource_spends": list(
+                            (resolved.get("commit") or {}).get("resource_spends") or []
+                        ),
                     }
                 )
                 continue
@@ -7973,6 +8012,22 @@ class PlayerRoomService:
                 resource_key,
                 int(divine_smite.get("resource_cost") or 1),
             )
+        generic_rider_spends: dict[str, int] = {}
+        for rider in (
+            item
+            for values in rider_results_by_target.values()
+            for item in values
+            if isinstance(item, dict)
+        ):
+            for spend in rider.get("resource_spends") or ():
+                if not isinstance(spend, dict):
+                    continue
+                key = str(spend.get("key") or "").strip()
+                amount = int(spend.get("amount") or 0)
+                if key and amount > 0:
+                    generic_rider_spends[key] = generic_rider_spends.get(key, 0) + amount
+        for key, amount in generic_rider_spends.items():
+            self._spend_character_resource(principal.character_id, key, amount)
         compiled_effects = self._apply_compiled_combat_blocks(
             principal,
             combat_id,

@@ -875,6 +875,26 @@ def test_choice_bound_feature_actions_are_partial_and_explicit() -> None:
     assert ranger_resources["nature_veil"]["automation_status"] == "full"
 
 
+def test_paladin_restoring_touch_extends_lay_on_hands_condition_contract() -> None:
+    rules = _core_rules()
+    registry = _registry_at(rules["圣武士"], 14)
+    action = registry["actions"]["lay_on_hands"]
+    assert action["condition_cure_options"] == [
+        "blinded",
+        "charmed",
+        "deafened",
+        "frightened",
+        "paralyzed",
+        "poisoned",
+        "stunned",
+    ]
+    contract = next(
+        item for item in registry["feature_contracts"] if item["name"] == "复原之触"
+    )
+    assert contract["automation_status"] == "full"
+    assert contract["requires_dm_adjudication"] is False
+
+
 def test_new_passive_and_attack_contracts_are_typed_but_not_automatic() -> None:
     rules = _core_rules()
 
@@ -1548,11 +1568,12 @@ def test_ranger_hunters_mark_upgrades_require_explicit_state_and_feed_attack_rid
             "damage_type": "force",
             "frequency": "each_eligible_hit",
             "target_combatant_id": "marked",
-            "post_hit_resolution_key": (
-                "post-hit:attack:ranger:marked:foe_slayer:hunter_mark_damage"
-            ),
-        }
-    ]
+                "post_hit_resolution_key": (
+                    "post-hit:attack:ranger:marked:foe_slayer:hunter_mark_damage"
+                ),
+                "resource_spends": [],
+            }
+        ]
 
 
 def test_stunning_strike_uses_generic_persisted_post_hit_contract() -> None:
@@ -1596,10 +1617,66 @@ def test_stunning_strike_uses_generic_persisted_post_hit_contract() -> None:
     )
     assert len(pending) == 1
     assert pending[0]["post_hit_status"] == "pending_activation"
-    assert pending[0]["post_hit_bindings"] == {"feature_save_dc": 14}
+    assert pending[0]["post_hit_bindings"] == {
+        "feature_save_dc": 14,
+        "wisdom_modifier": 3,
+    }
     assert rider["frequency"] == "once_per_turn"
     assert rider["automation_status"] == "full"
     assert rider["requires_dm_adjudication"] is False
+
+
+def test_mercy_harm_rider_binds_die_modifier_and_physician_overlay() -> None:
+    harm = subclass_feature_runtime_definition(
+        {
+            "name": "夺命之手 Hand of Harm",
+            "class_name": "武僧",
+            "class_level": 3,
+            "source_record_id": "mercy-harm",
+        }
+    )
+    touch = subclass_feature_runtime_definition(
+        {
+            "name": "生死之触 Physician's Touch",
+            "class_name": "武僧",
+            "class_level": 6,
+            "source_record_id": "mercy-touch",
+        }
+    )
+    assert harm is not None and touch is not None
+    registry = compile_feature_runtime_registry(
+        [
+            {
+                "name": "夺命之手 Hand of Harm",
+                "class_name": "武僧",
+                "class_level": 3,
+                "runtime": {
+                    "registry": harm,
+                    "tracked_scaling_keys": ["martial_arts_die"],
+                },
+            },
+            {
+                "name": "生死之触 Physician's Touch",
+                "class_name": "武僧",
+                "class_level": 6,
+                "runtime": {"registry": touch},
+            },
+        ],
+        resources={"focus": {"current": 2, "max": 6}},
+        scalings={"martial_arts_die": {"value": "d8"}},
+        class_levels={"武僧": 6},
+        total_level=6,
+    )
+    rider = next(
+        item
+        for item in registry["attack_riders"]
+        if item["id"] == "hand_of_harm:bonus_damage"
+    )
+    assert rider["damage"]["expression"] == "@martial_arts_die+@wisdom_modifier"
+    assert rider["on_hit"][0]["condition"] == "poisoned"
+    contracts = {item["name"]: item for item in registry["feature_contracts"]}
+    assert contracts["夺命之手 Hand of Harm"]["automation_status"] == "full"
+    assert contracts["生死之触 Physician's Touch"]["automation_status"] == "partial"
 
 def test_choice_bound_blessed_and_elemental_fury_features_remain_dm_only() -> None:
     rules = _core_rules()

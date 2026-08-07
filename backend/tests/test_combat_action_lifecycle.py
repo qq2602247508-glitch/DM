@@ -127,7 +127,16 @@ def _lay_on_hands_fixture(
         "resource_cost": 0,
         "resource_cost_mode": "amount_or_condition",
         "condition_cure_cost": 5,
-        "condition_cure_options": ["poisoned", "diseased"],
+        "condition_cure_options": [
+            "blinded",
+            "charmed",
+            "deafened",
+            "diseased",
+            "frightened",
+            "paralyzed",
+            "poisoned",
+            "stunned",
+        ],
         "target": "ally_or_self",
         "resolution_kind": "healing",
         "healing_formula": "lay_on_hands_pool",
@@ -1064,6 +1073,41 @@ def test_lay_on_hands_rejects_curing_absent_condition_without_spending_pool(
     assert "疾病" in combat_client.get(
         _combatant_path(campaign, combat, target["id"])
     ).json()["conditions"]
+
+
+def test_lay_on_hands_cures_extended_condition_from_restoring_touch(
+    combat_client: TestClient,
+) -> None:
+    campaign, combat, paladin, target, character = _lay_on_hands_fixture(
+        combat_client,
+        target_conditions=["震慑"],
+    )
+    payload = {
+        "actor_combatant_id": paladin["id"],
+        "actor_version": paladin["version"],
+        "feature_id": "lay_on_hands",
+        "condition_to_cure": "stunned",
+        "target_combatant_id": target["id"],
+        "target_version": target["version"],
+    }
+    confirmed = combat_client.post(
+        f"{_root(campaign, combat)}/feature-actions/confirm",
+        headers={"X-Request-ID": "lay-on-hands-cure-stunned"},
+        json=payload,
+    )
+    assert confirmed.status_code == 200, confirmed.text
+    result = confirmed.json()["result"]
+    assert result["condition_cure"] == {
+        "condition": "stunned",
+        "removed": True,
+        "ended_effect_ids": [],
+    }
+    assert result["resource_before"] == 20
+    assert result["resource_after"] == 15
+    assert "震慑" not in confirmed.json()["target"]["conditions"]
+    assert combat_client.get(
+        f"/api/v1/campaigns/{campaign['id']}/characters/{character['id']}"
+    ).json()["resources"]["lay_on_hands"]["current"] == 15
 
 
 def test_countercharm_requires_and_honors_selected_reactor_when_two_are_eligible(

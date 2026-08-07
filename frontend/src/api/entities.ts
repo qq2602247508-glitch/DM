@@ -673,7 +673,7 @@ export type CombatFeatureActionCommand = {
   actor_version: number;
   feature_id: string;
   healing_total?: number | null;
-  condition_to_cure?: "poisoned" | "diseased" | null;
+  condition_to_cure?: "blinded" | "charmed" | "deafened" | "diseased" | "frightened" | "paralyzed" | "poisoned" | "stunned" | null;
   condition_to_remove?: "charmed" | "frightened" | "poisoned" | null;
   target_combatant_id?: string | null;
   target_version?: number | null;

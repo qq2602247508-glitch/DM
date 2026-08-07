@@ -1285,8 +1285,19 @@ def feature_runtime_definition(
                 **source,
             }
 
-    if "圣疗" in identity or "layonhands" in identity:
+    if "圣疗" in identity or "复原之触" in identity or "layonhands" in identity:
         if "lay_on_hands" in resource_keys:
+            condition_cure_options = ["poisoned", "diseased"]
+            if "复原之触" in identity:
+                condition_cure_options = [
+                    "blinded",
+                    "charmed",
+                    "deafened",
+                    "frightened",
+                    "paralyzed",
+                    "poisoned",
+                    "stunned",
+                ]
             definition["actions"]["lay_on_hands"] = {
                 "id": "lay_on_hands",
                 "name": feature_name,
@@ -1296,7 +1307,7 @@ def feature_runtime_definition(
                 "resource_cost": 0,
                 "resource_cost_mode": "amount_or_condition",
                 "condition_cure_cost": 5,
-                "condition_cure_options": ["poisoned", "diseased"],
+                "condition_cure_options": condition_cure_options,
                 "target": "ally_or_self",
                 "target_policy": {
                     "mode": "ally_or_self",
@@ -2356,6 +2367,12 @@ def feature_runtime_contract(
     for raw in definition.get("attack_riders") or ():
         if isinstance(raw, Mapping):
             statuses.append(_entry_automation_status(raw))
+    for raw in definition.get("proficiencies") or ():
+        if isinstance(raw, Mapping):
+            statuses.append(_entry_automation_status(raw))
+    prepared_spell_list = definition.get("prepared_spell_list")
+    if isinstance(prepared_spell_list, Mapping):
+        statuses.append(_entry_automation_status(prepared_spell_list))
     spellcasting = definition.get("spellcasting")
     if isinstance(spellcasting, Mapping):
         statuses.append(_entry_automation_status(spellcasting))
@@ -2616,6 +2633,8 @@ def compile_feature_runtime_registry(
     spellcasting_registry: list[dict[str, Any]] = []
     trigger_registry: list[dict[str, Any]] = []
     riders: dict[str, dict[str, Any]] = {}
+    rider_overlays: list[dict[str, Any]] = []
+    action_overlays: list[dict[str, Any]] = []
     proficiency_registry: list[dict[str, Any]] = []
     feature_contracts: dict[str, dict[str, Any]] = {}
     attack_action_count = 1
@@ -2658,7 +2677,11 @@ def compile_feature_runtime_registry(
             declared_status=(
                 str(runtime_data.get("automation_status"))
                 if runtime_data.get("automation_status") is not None
-                else None
+                else (
+                    str(definition.get("automation_status"))
+                    if definition.get("automation_status") is not None
+                    else None
+                )
             ),
             note=(str(runtime_data.get("note")) if runtime_data.get("note") is not None else None),
         )
@@ -2755,6 +2778,59 @@ def compile_feature_runtime_registry(
             if isinstance(scaling_key, str) and scaling_key in scaling_values:
                 entry["value"] = scaling_values[scaling_key]
             riders[str(entry.get("id") or len(riders))] = entry
+        for raw_overlay in definition.get("attack_rider_overlays") or ():
+            if isinstance(raw_overlay, Mapping):
+                rider_overlays.append(deepcopy(dict(raw_overlay)))
+        for raw_overlay in definition.get("action_overlays") or ():
+            if isinstance(raw_overlay, Mapping):
+                action_overlays.append(deepcopy(dict(raw_overlay)))
+
+    # Apply declared typed overlays after all feature grants have been merged.
+    # This supports subclass enhancements such as adding a condition to an
+    # existing rider without introducing feature-ID branches in the executor.
+    for overlay in rider_overlays:
+        target_id = str(overlay.get("target_id") or "").strip()
+        target = riders.get(target_id)
+        if not target_id or target is None:
+            continue
+        for field in ("on_hit", "on_save_success", "on_save_failure"):
+            additions = overlay.get(field)
+            if not isinstance(additions, list):
+                continue
+            existing = target.get(field)
+            merged = list(existing) if isinstance(existing, list) else []
+            existing_ids = {
+                str(item.get("id") or "")
+                for item in merged
+                if isinstance(item, Mapping)
+            }
+            for item in additions:
+                if not isinstance(item, Mapping):
+                    continue
+                item_id = str(item.get("id") or "").strip()
+                if item_id and item_id in existing_ids:
+                    continue
+                merged.append(deepcopy(dict(item)))
+                if item_id:
+                    existing_ids.add(item_id)
+            target[field] = merged
+
+    for overlay in action_overlays:
+        target_id = str(overlay.get("target_id") or "").strip()
+        target = action_registry.get(target_id)
+        if not target_id or target is None:
+            continue
+        for field in ("condition_cure_options",):
+            additions = overlay.get(field)
+            if not isinstance(additions, list):
+                continue
+            existing = target.get(field)
+            merged = list(existing) if isinstance(existing, list) else []
+            for item in additions:
+                value = str(item).strip()
+                if value and value not in merged:
+                    merged.append(value)
+            target[field] = merged
 
     for key, value in current_resources.items():
         entry = _resource_entry(key, value)
