@@ -3,17 +3,17 @@
 这份报告只规划迁移，不修改运行时状态，也不把候选行直接升级为 `full`。
 
 - 总条目：499
-- 当前状态：`{'partial': 244, 'full': 163, 'dm_only': 92}`
-- 预审状态：`{'consumer_partial': 50, 'already_full': 163, 'missing_runtime_contract': 226, 'missing_source': 35, 'manual_boundary': 11, 'needs_contract_review': 14}`
+- 当前状态：`{'partial': 241, 'full': 166, 'dm_only': 92}`
+- 预审状态：`{'consumer_partial': 49, 'already_full': 166, 'missing_runtime_contract': 224, 'missing_source': 35, 'manual_boundary': 11, 'needs_contract_review': 14}`
 
 ## 模板分组
 
 | 模板 | 条目 | 已 full | 缺运行时合同 | 待合同复核 | 消费者不完整 | 人工边界 | 缺源码 |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| 掷骰干预 (`roll_intervention`) | 46 | 15 | 0 | 0 | 31 | 0 | 0 |
+| 掷骰干预 (`roll_intervention`) | 46 | 16 | 0 | 0 | 30 | 0 | 0 |
 | 状态生命周期 (`state_lifecycle`) | 34 | 14 | 19 | 1 | 0 | 0 | 0 |
-| 动作经济与触发条件 (`action_trigger`) | 34 | 20 | 13 | 0 | 0 | 1 | 0 |
-| 通用被动/数值修正 (`passive_modifier`) | 79 | 13 | 30 | 0 | 0 | 1 | 35 |
+| 动作经济与触发条件 (`action_trigger`) | 34 | 21 | 12 | 0 | 0 | 1 | 0 |
+| 通用被动/数值修正 (`passive_modifier`) | 79 | 14 | 29 | 0 | 0 | 1 | 35 |
 | 成长授予/升级选择 (`progression_grant`) | 67 | 53 | 13 | 0 | 0 | 1 | 0 |
 | 资源/恢复/频率 (`resource_lifecycle`) | 64 | 16 | 32 | 9 | 0 | 7 | 0 |
 | 光环/范围被动 (`aura_passive`) | 48 | 4 | 43 | 1 | 0 | 0 | 0 |
