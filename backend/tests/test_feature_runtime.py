@@ -579,6 +579,50 @@ def test_common_feature_contracts_expose_typed_effects_and_passive_defense() -> 
     assert any(item["kind"] == "evasion" for item in evasion["combat_start"]["defenses"])
 
 
+def test_psychic_defenses_consumes_resistance_and_condition_save_advantage() -> None:
+    runtime = subclass_feature_runtime_definition(
+        {
+            "name": "心灵防御 Psychic Defenses",
+            "class_name": "术士",
+            "class_level": 6,
+            "source_record_id": "fixture:psychic-defenses",
+        }
+    )
+    assert runtime is not None
+    registry = compile_feature_runtime_registry(
+        [
+            {
+                "name": "心灵防御 Psychic Defenses",
+                "kind": "subclass_feature",
+                "class_name": "术士",
+                "class_level": 6,
+                "runtime": {"registry": runtime},
+            }
+        ]
+    )
+    target = Combatant(
+        id="psychic-defender",
+        entity_type="character",
+        snapshot_json={"feature_runtime": registry},
+    )
+    assert CombatEngineService._feature_rule_modifiers(
+        target,
+        stat="saving_throw",
+        condition_names=("charmed",),
+    )
+    assert not CombatEngineService._feature_rule_modifiers(
+        target,
+        stat="saving_throw",
+        condition_names=("poisoned",),
+    )
+    defenses = CombatEngineService._damage_defenses(
+        target,
+        SimpleNamespace(is_magical=False, damage_tags=[], dm_override=False),
+        ["psychic"],
+    )
+    assert "psychic" in defenses[0]
+
+
 def test_level_twenty_fixed_ability_adjustments_are_typed_and_capped() -> None:
     rules = _core_rules()
     barbarian_grant = next(

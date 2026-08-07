@@ -3865,6 +3865,7 @@ class CombatEngineService:
         scope: str | None = None,
         ability: str | None = None,
         skill: str | None = None,
+        condition_names: Iterable[object] = (),
     ) -> list[dict[str, object]]:
         """Return typed feature modifiers that apply to this combatant.
 
@@ -3905,6 +3906,11 @@ class CombatEngineService:
         normalized_ability = str(ability or "").strip().lower()
         normalized_ability = ability_aliases.get(normalized_ability, normalized_ability)
         conditions = cls._condition_set(combatant)
+        saving_condition_names = {
+            str(item).strip().lower().replace(" ", "_")
+            for item in condition_names
+            if str(item).strip()
+        }
         result: list[dict[str, object]] = []
         for value in raw.values():
             if not isinstance(value, dict):
@@ -3953,6 +3959,7 @@ class CombatEngineService:
                 "not_wearing_armor",
                 "not wearing armor",
                 "target_is_current_hunters_mark",
+                "saving_throw_against_charmed_or_frightened",
             }
             if applies_when not in known_predicates:
                 # A typed modifier with an event predicate (for example
@@ -3967,6 +3974,10 @@ class CombatEngineService:
             if applies_when in {"not_prone", "not prone"} and "prone" in conditions:
                 continue
             if applies_when == "raging" and "raging" not in conditions:
+                continue
+            if applies_when == "saving_throw_against_charmed_or_frightened" and not (
+                saving_condition_names & {"charmed", "frightened", "魅惑", "恐慌"}
+            ):
                 continue
             if applies_when.startswith("innate_sorcery_active") and (
                 "innate_sorcery" not in conditions
@@ -8973,6 +8984,7 @@ class CombatEngineService:
             target,
             stat="saving_throw",
             ability=ability,
+            condition_names=condition_names,
         )
         feature_advantage = [
             str(item.get("source") or "职业豁免优势")

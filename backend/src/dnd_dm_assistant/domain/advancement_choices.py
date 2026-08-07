@@ -1125,6 +1125,44 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS: dict[str, dict[str, Any]] = {
             "requires_dm_adjudication": False,
         },
     },
+    # Psychic Defenses is a pair of passive consumers already present in the
+    # authoritative damage and saving-throw paths.  The saving-throw
+    # predicate is evaluated against the condition being avoided/ended, so it
+    # does not grant unconditional advantage on every save.
+    "心灵防御": {
+        "combat_start": {
+            "modifiers": [
+                {
+                    "id": "psychic_defenses:condition_save_advantage",
+                    "stat": "saving_throw",
+                    "operation": "advantage",
+                    "scope": "self",
+                    "applies_when": "saving_throw_against_charmed_or_frightened",
+                    "source": "对抗或终止魅惑/恐慌的豁免具有优势",
+                    "automation_status": "full",
+                    "requires_dm_adjudication": False,
+                }
+            ],
+            "defenses": [
+                {
+                    "id": "psychic_defenses:psychic_resistance",
+                    "kind": "damage_resistance",
+                    "damage_types": ["psychic"],
+                    "applies_when": "always",
+                    "runtime_execution": {
+                        "status": "ready",
+                        "consumer": "damage_defense_resolver",
+                    },
+                    "automation_status": "full",
+                    "requires_dm_adjudication": False,
+                }
+            ],
+        },
+        "resources": {},
+        "actions": {},
+        "triggers": [],
+        "attack_riders": [],
+    },
     # Extra Attack is a subclass grant in several source tables, but the
     # execution contract is the same typed attack-action-count consumer used
     # by core class grants.  The executor does not branch on a subclass ID.
