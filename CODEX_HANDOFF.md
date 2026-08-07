@@ -7,7 +7,7 @@
 - 生产配置使用者：反迷惑（现为配置驱动的 `saving_throw_reaction_window`）和致命猎杀的权威猎人印记目标优势；圣疗补充结构化 `target_policy`；先发激励的先攻恢复事件通过通用恢复校验。没有新增第二套战斗引擎。
 - 自动化数量（固定分母 499）：`full 117→119`、`partial 280→278`、`dm_only 102`；核心职业分母 258 为 `119 / 37 / 102`。净增 2 条真实 full，不能把候选覆盖 322 条或字段校验数冒充完成数。
 - 仍需玩家/DM 输入：反应者选择（多候选时）、实际重骰总值、目标位置缺失时的 DM 明确裁定以及所有未结构化分支；系统不替玩家掷骰。仍未自动化：子职业 241 条的大量具体效果、吟游诗人激励的可听性/失败消费完整窗口、荒野变形/引导神力/传奇恩惠具体分支、武器精通词条攻击结算。
-- 验证：通用积木、职业运行时、战斗生命周期、反应窗口、进度统计和 499 条审计定向回归通过；代码与本交接文档分开提交。待运行全量后端 pytest、Ruff、compileall 和 `git diff --check`。
+- 验证：通用积木、职业运行时、战斗生命周期、反应窗口、进度统计和 499 条审计定向回归通过；全量后端 `pytest -q backend/tests`、本轮改动范围 Ruff、compileall、`git diff --check` 均通过。全仓库旧 scripts 仍有与本轮无关的模块命名/权限诊断，不影响本轮文件门禁。代码与本交接文档分开提交。
 
 - 代码提交 `97f7432`：将命中后后续链接入真实玩家攻击 API：权威命中 → `_eligible_attack_riders()` → 持久化 `PlayerActionRequest` → 玩家/DM 输入 → 目标豁免 → 请求版本 CAS → 角色资源 CAS → condition/modifier 效果提交 → 一次性效果消费与幂等重放。公共 generic action request 拒绝保留的 `post_hit_rider` 类型和 `post-hit:` 幂等键；内部请求带 `created_by=combat_engine`，解析器校验来源、配置 ID、战斗/角色/目标边界。
 - 真正通用积木：`attack_rider` 的可选发动、持久化 pending activation/choice/save、通用 DC/输入/资源提交、生命周期（来源/目标回合边界、下一次攻击/豁免）和 condition/modifier 真实写入；`pre_damage_intervention` 的标签触发、表达式绑定（如 `class_level*5`）和通用伤害变换。执行器不识别 `stunning_strike`、`slow_fall` 等特性 ID；权威攻击标签随请求保存，不能由客户端 `special_inputs` 伪造扩张。
