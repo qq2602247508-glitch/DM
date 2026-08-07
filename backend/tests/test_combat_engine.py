@@ -4527,6 +4527,72 @@ def test_monster_cone_aoe_atomically_applies_distinct_saves_and_defenses(
     )
     assert replay.status_code == 200, replay.text
     assert replay.json()["already_applied"] is True
+
+    barbarian = combat_client.post(
+        f"{base}/characters",
+        json={
+            "name": "莽驰野蛮人",
+            "hp": 30,
+            "max_hp": 30,
+            "resources": {"rage": {"current": 1, "max": 1}},
+        },
+    ).json()
+    rage = feature_runtime_definition(feature_name="狂暴", class_name="野蛮人", class_level=5)
+    pounce = feature_runtime_definition(
+        feature_name="莽驰", class_name="野蛮人", class_level=5
+    )
+    rage_registry = compile_feature_runtime_registry(
+        [
+            {
+                "name": "狂暴",
+                "class_name": "野蛮人",
+                "class_level": 5,
+                "runtime": {"registry": rage},
+            },
+            {
+                "name": "莽驰",
+                "class_name": "野蛮人",
+                "class_level": 5,
+                "runtime": {"registry": pounce},
+            },
+        ]
+    )
+    rage_combat = combat_client.post(f"{base}/combats", json={"name": "莽驰触发"}).json()
+    rage_actor = combat_client.post(
+        f"{base}/combats/{rage_combat['id']}/combatants",
+        json={
+            "display_name": "莽驰野蛮人",
+            "entity_type": "character",
+            "entity_id": barbarian["id"],
+            "initiative": 20,
+            "hp": 30,
+            "max_hp": 30,
+            "speed_ft": 35,
+            "movement_remaining_ft": 0,
+            "snapshot_json": {
+                "feature_runtime": rage_registry,
+                "equipment": [],
+            },
+        },
+    ).json()
+    combat_client.post(
+        f"{base}/combats/{rage_combat['id']}/combatants",
+        json={"display_name": "敌人", "initiative": 10, "hp": 20, "max_hp": 20},
+    )
+    raged = combat_client.post(
+        f"{base}/combats/{rage_combat['id']}/feature-actions/confirm",
+        headers={"X-Request-ID": "instinctive-pounce-trigger"},
+        json={
+            "actor_combatant_id": rage_actor["id"],
+            "actor_version": rage_actor["version"],
+            "feature_id": "rage",
+            "target_combatant_id": rage_actor["id"],
+            "target_version": rage_actor["version"],
+        },
+    )
+    assert raged.status_code == 200, raged.text
+    assert raged.json()["actor"]["movement_remaining_ft"] == 18
+    assert raged.json()["result"]["triggers"][0]["action_id"] == "rage"
     replay_by_name = {
         target["display_name"]: target for target in replay.json()["targets"]
     }
@@ -8895,6 +8961,100 @@ def test_cunning_action_forwards_bonus_action_choices_into_real_combat_state(
     assert hidden.status_code == 200, hidden.text
     assert hidden.json()["result"]["hidden"] is True
     assert hidden.json()["actor"]["bonus_action_available"] is False
+
+
+def test_feature_action_trigger_grants_movement_and_disengage_from_configuration(
+    combat_client: TestClient,
+) -> None:
+    """Different actions consume one generic after-action trigger executor."""
+
+    campaign = _campaign(combat_client, "Feature action triggers")
+    base = f"/api/v1/campaigns/{campaign['id']}"
+    character = combat_client.post(
+        f"{base}/characters",
+        json={
+            "name": "转进战士",
+            "hp": 30,
+            "max_hp": 30,
+            "resources": {"second_wind": {"current": 1, "max": 1}},
+        },
+    ).json()
+    second_wind = feature_runtime_definition(
+        feature_name="回气", class_name="战士", class_level=5
+    )
+    tactical_shift = feature_runtime_definition(
+        feature_name="战术转进", class_name="战士", class_level=5
+    )
+    registry = compile_feature_runtime_registry(
+        [
+            {
+                "name": "回气",
+                "class_name": "战士",
+                "class_level": 5,
+                "runtime": {"registry": second_wind},
+            },
+            {
+                "name": "战术转进",
+                "class_name": "战士",
+                "class_level": 5,
+                "runtime": {"registry": tactical_shift},
+            },
+        ]
+    )
+    combat = combat_client.post(f"{base}/combats", json={"name": "转进触发"}).json()
+    actor = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "转进战士",
+            "entity_type": "character",
+            "entity_id": character["id"],
+            "initiative": 20,
+            "hp": 20,
+            "max_hp": 20,
+            "speed_ft": 30,
+            "movement_remaining_ft": 5,
+            "snapshot_json": {"feature_runtime": registry},
+        },
+    ).json()
+    combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={"display_name": "敌人", "initiative": 10, "hp": 20, "max_hp": 20},
+    )
+
+    confirmed = combat_client.post(
+        f"{base}/combats/{combat['id']}/feature-actions/confirm",
+        headers={"X-Request-ID": "tactical-shift-trigger"},
+        json={
+            "actor_combatant_id": actor["id"],
+            "actor_version": actor["version"],
+            "feature_id": "second_wind",
+            "healing_total": 10,
+            "target_combatant_id": actor["id"],
+            "target_version": actor["version"],
+        },
+    )
+    assert confirmed.status_code == 200, confirmed.text
+    body = confirmed.json()
+    assert body["result"]["triggers"][0]["action_id"] == "second_wind"
+    assert body["result"]["triggers"][0]["effects"][0]["amount"] == 15
+    assert body["actor"]["movement_remaining_ft"] == 20
+    assert body["result"]["triggers"][0]["effects"][1]["effect_id"]
+    assert body["actor"]["bonus_action_available"] is False
+
+    replay = combat_client.post(
+        f"{base}/combats/{combat['id']}/feature-actions/confirm",
+        headers={"X-Request-ID": "tactical-shift-trigger"},
+        json={
+            "actor_combatant_id": actor["id"],
+            "actor_version": actor["version"],
+            "feature_id": "second_wind",
+            "healing_total": 10,
+            "target_combatant_id": actor["id"],
+            "target_version": actor["version"],
+        },
+    )
+    assert replay.status_code == 200, replay.text
+    assert replay.json()["already_applied"] is True
 
 
 def test_superior_defense_spends_focus_and_resists_non_force_damage(

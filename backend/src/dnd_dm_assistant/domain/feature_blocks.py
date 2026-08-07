@@ -23,6 +23,8 @@ TRIGGER_WINDOWS = frozenset(
         "before_damage",
     }
 )
+TRIGGER_EVENTS = frozenset({"after_feature_action"})
+TRIGGER_EFFECT_KINDS = frozenset({"grant_movement_budget", "grant_disengage"})
 
 
 def _mapping(value: object) -> dict[str, Any]:
@@ -88,6 +90,42 @@ def feature_action_block_ready(action: Mapping[str, Any]) -> bool:
     """Whether the generic action/trigger/resource/target contract is valid."""
 
     return not feature_action_block_errors(action)
+
+
+def feature_trigger_block_errors(trigger: Mapping[str, Any]) -> tuple[str, ...]:
+    """Validate a reusable post-action trigger and its supported effects."""
+
+    errors: list[str] = []
+    if str(trigger.get("event") or "") not in TRIGGER_EVENTS:
+        errors.append("event is invalid")
+    if not str(trigger.get("action_id") or "").strip():
+        errors.append("action_id is required")
+    effects = trigger.get("effects")
+    if not isinstance(effects, list) or not effects:
+        errors.append("effects must be a non-empty list")
+    else:
+        for effect in effects:
+            if not isinstance(effect, Mapping):
+                errors.append("trigger effect must be an object")
+                continue
+            kind = str(effect.get("kind") or "")
+            if kind not in TRIGGER_EFFECT_KINDS:
+                errors.append("trigger effect kind is invalid")
+            elif kind == "grant_movement_budget":
+                source = str(effect.get("amount_source") or "")
+                amount = effect.get("amount")
+                if source != "half_current_speed" and not _positive_int(amount):
+                    errors.append("movement budget needs amount or half_current_speed")
+            elif (
+                kind == "grant_disengage"
+                and str(effect.get("expires") or "turn_end") != "turn_end"
+            ):
+                errors.append("disengage trigger only supports turn_end")
+    return tuple(errors)
+
+
+def feature_trigger_block_ready(trigger: Mapping[str, Any]) -> bool:
+    return not feature_trigger_block_errors(trigger)
 
 
 def resource_recovery_block_ready(resource: Mapping[str, Any]) -> bool:

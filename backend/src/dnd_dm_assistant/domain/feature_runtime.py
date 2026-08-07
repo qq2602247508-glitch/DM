@@ -10,6 +10,7 @@ from typing import Any
 
 from dnd_dm_assistant.domain.feature_blocks import (
     feature_action_block_ready,
+    feature_trigger_block_errors,
     resource_recovery_block_ready,
     structured_target_save_status,
 )
@@ -448,6 +449,7 @@ def feature_runtime_definition(
         "combat_start": {"modifiers": [], "defenses": []},
         "resources": {},
         "actions": {},
+        "triggers": [],
         "attack_riders": [],
     }
     resource_values = resources or {}
@@ -849,6 +851,49 @@ def feature_runtime_definition(
             "summary": "三个分支均由配置驱动；躲藏的成功/失败由 DM 输入后写入真实隐匿状态。",
             **source,
         }
+
+    if identity in {"战术转进", "tacticalshift"}:
+        definition["triggers"].append(
+            {
+                "id": "tactical_shift:after_second_wind",
+                "event": "after_feature_action",
+                "action_id": "second_wind",
+                "effects": [
+                    {"kind": "grant_movement_budget", "amount_source": "half_current_speed"},
+                    {"kind": "grant_disengage", "expires": "turn_end"},
+                ],
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "feature_action_trigger_resolver",
+                    "effect_kinds": ["grant_movement_budget", "grant_disengage"],
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+                "summary": "使用回气后获得半速移动且不引发借机攻击。",
+                **source,
+            }
+        )
+
+    if identity in {"莽驰", "instinctivepounce"}:
+        definition["triggers"].append(
+            {
+                "id": "instinctive_pounce:after_rage",
+                "event": "after_feature_action",
+                "action_id": "rage",
+                "effects": [
+                    {"kind": "grant_movement_budget", "amount_source": "half_current_speed"}
+                ],
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "feature_action_trigger_resolver",
+                    "effect_kinds": ["grant_movement_budget"],
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+                "summary": "进入狂暴时获得至多半速移动。",
+                **source,
+            }
+        )
 
     if "稳定瞄准" in identity or "稳固瞄准" in identity or "steadyaim" in identity:
         definition["actions"]["steady_aim"] = {
@@ -2096,6 +2141,8 @@ def feature_runtime_definition(
 def _entry_automation_status(entry: Mapping[str, Any]) -> str:
     """Return the conservative status for one typed runtime entry."""
 
+    if entry.get("event") is not None and feature_trigger_block_errors(entry):
+        return "partial"
     runtime = entry.get("runtime")
     runtime_data = runtime if isinstance(runtime, Mapping) else {}
     status = str(entry.get("automation_status") or runtime_data.get("automation_status") or "full")
@@ -2129,6 +2176,8 @@ def _runtime_sections(definition: Mapping[str, Any]) -> tuple[str, ...]:
         sections.append("resources")
     if definition.get("actions"):
         sections.append("actions")
+    if definition.get("triggers"):
+        sections.append("triggers")
     if definition.get("attack_riders"):
         sections.append("attack_riders")
     return tuple(sections)
@@ -2158,6 +2207,7 @@ def _runtime_entry_reasons(definition: Mapping[str, Any]) -> tuple[str, ...]:
         (definition.get("actions") or {}).values()
         if isinstance(definition.get("actions"), Mapping)
         else (),
+        definition.get("triggers") or (),
         definition.get("attack_riders") or (),
     )
     for entries in entry_groups:
@@ -2221,6 +2271,9 @@ def feature_runtime_contract(
                 if not resources_section and not structured_target_save_status(raw):
                     entry_status = "partial"
                 statuses.append(entry_status)
+    for raw_trigger in definition.get("triggers") or ():
+        if isinstance(raw_trigger, Mapping):
+            statuses.append(_entry_automation_status(raw_trigger))
     for raw in definition.get("attack_riders") or ():
         if isinstance(raw, Mapping):
             statuses.append(_entry_automation_status(raw))
@@ -2475,6 +2528,7 @@ def compile_feature_runtime_registry(
     defenses: dict[str, dict[str, Any]] = {}
     resource_registry: dict[str, dict[str, Any]] = {}
     action_registry: dict[str, dict[str, Any]] = {}
+    trigger_registry: list[dict[str, Any]] = []
     riders: dict[str, dict[str, Any]] = {}
     feature_contracts: dict[str, dict[str, Any]] = {}
     attack_action_count = 1
@@ -2594,6 +2648,10 @@ def compile_feature_runtime_registry(
                             entry["dice"] = dice["value"]
                     action_registry[str(key)] = entry
 
+        for raw_trigger in definition.get("triggers") or ():
+            if isinstance(raw_trigger, Mapping):
+                trigger_registry.append(deepcopy(dict(raw_trigger)))
+
         for raw in definition.get("attack_riders") or ():
             if not isinstance(raw, Mapping):
                 continue
@@ -2647,6 +2705,7 @@ def compile_feature_runtime_registry(
         },
         "resources": resource_registry,
         "actions": action_registry,
+        "triggers": trigger_registry,
         "attack_riders": list(riders.values()),
         "feature_contracts": contracts,
         "dm_only": dm_only,

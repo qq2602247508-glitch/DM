@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 import secrets
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
 from dataclasses import asdict
 from datetime import UTC, datetime, timedelta
 from hashlib import sha256
@@ -5243,6 +5243,101 @@ class CombatEngineService:
         session.add(effect)
         session.flush()
         return effect
+
+    @classmethod
+    def _apply_feature_action_triggers(
+        cls,
+        session: Session,
+        combat: Combat,
+        *,
+        actor: Combatant,
+        action: Mapping[str, Any],
+        triggers: object,
+    ) -> list[dict[str, Any]]:
+        """Apply configuration-driven effects emitted after a feature action.
+
+        Trigger entries are deliberately matched only by their declared event
+        and action id.  No class/feature identifier is interpreted here; the
+        same executor can therefore be reused by any action that declares the
+        supported effect shapes.
+        """
+
+        if not isinstance(triggers, list):
+            return []
+        action_ids = {
+            str(value).strip()
+            for value in (action.get("id"), action.get("action_id"))
+            if str(value or "").strip()
+        }
+        applied: list[dict[str, Any]] = []
+        for raw_trigger in triggers:
+            if not isinstance(raw_trigger, Mapping):
+                continue
+            if str(raw_trigger.get("event") or "") != "after_feature_action":
+                continue
+            trigger_action_id = str(raw_trigger.get("action_id") or "").strip()
+            if not trigger_action_id or trigger_action_id not in action_ids:
+                continue
+            trigger_result: dict[str, Any] = {
+                "trigger_id": raw_trigger.get("id"),
+                "action_id": trigger_action_id,
+                "effects": [],
+            }
+            raw_effects = raw_trigger.get("effects")
+            for raw_effect in raw_effects if isinstance(raw_effects, list) else ():
+                if not isinstance(raw_effect, Mapping):
+                    continue
+                kind = str(raw_effect.get("kind") or "").strip()
+                if kind == "grant_movement_budget":
+                    source = str(raw_effect.get("amount_source") or "").strip()
+                    if source == "half_current_speed":
+                        amount = (int(actor.speed_ft) + 1) // 2
+                    else:
+                        amount = cls._state_int(raw_effect.get("amount"), 0)
+                    if amount < 1:
+                        raise ValueError("触发器移动额度必须是正整数或 half_current_speed")
+                    actor.movement_remaining_ft += amount
+                    trigger_result["effects"].append(
+                        {
+                            "kind": kind,
+                            "amount": amount,
+                            "movement_remaining_ft": actor.movement_remaining_ft,
+                        }
+                    )
+                elif kind == "grant_disengage":
+                    expires = str(raw_effect.get("expires") or "turn_end").strip()
+                    if expires != "turn_end":
+                        raise ValueError("触发器撤离效果只支持 turn_end 生命周期")
+                    active = cls._active_runtime_effects(
+                        session,
+                        combat.id,
+                        target_id=actor.id,
+                        state_name="disengage",
+                    )
+                    if active:
+                        effect_id = active[0].id
+                        reused = True
+                    else:
+                        effect = cls._create_runtime_effect(
+                            session,
+                            combat,
+                            actor=actor,
+                            target=actor,
+                            state_name="disengage",
+                            expires=expires,
+                            expires_combatant_id=actor.id,
+                            details={"source": "feature_action_trigger"},
+                        )
+                        effect_id = effect.id
+                        reused = False
+                    trigger_result["effects"].append(
+                        {"kind": kind, "effect_id": effect_id, "reused": reused}
+                    )
+                else:
+                    raise ValueError(f"职业特性触发器效果类型不受支持：{kind or 'unknown'}")
+            if trigger_result["effects"]:
+                applied.append(trigger_result)
+        return applied
 
     @classmethod
     def _apply_post_hit_rider_effects(
@@ -12055,6 +12150,16 @@ class CombatEngineService:
                     result["condition_removal_effect"] = True
                 elif kind == "requires_dm_choice":
                     raise ValueError(str(effect.get("reason") or "该职业特性需要 DM 选择分支"))
+
+            trigger_results = self._apply_feature_action_triggers(
+                session,
+                combat,
+                actor=actor,
+                action=action,
+                triggers=registry_data.get("triggers"),
+            )
+            if trigger_results:
+                result["triggers"] = trigger_results
 
             if action.get("resolution_kind") == "healing" and condition_to_cure is not None:
                 removed = self._remove_condition(target, condition_to_cure)
