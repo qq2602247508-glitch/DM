@@ -13,7 +13,10 @@ from dnd_dm_assistant.api.app import create_app
 from dnd_dm_assistant.api.schemas import CombatActionCommand
 from dnd_dm_assistant.application.rule_block_compiler import compile_rule_blocks_dict
 from dnd_dm_assistant.config import Settings
-from dnd_dm_assistant.domain.advancement_choices import subclass_runtime_grants
+from dnd_dm_assistant.domain.advancement_choices import (
+    subclass_feature_runtime_definition,
+    subclass_runtime_grants,
+)
 from dnd_dm_assistant.domain.campaign_state import VersionConflict
 from dnd_dm_assistant.domain.feature_runtime import (
     compile_feature_runtime_registry,
@@ -9056,6 +9059,124 @@ def test_feature_action_trigger_grants_movement_and_disengage_from_configuration
     )
     assert replay.status_code == 200, replay.text
     assert replay.json()["already_applied"] is True
+
+
+def test_after_attack_trigger_requires_critical_hit_and_is_idempotent(
+    combat_client: TestClient,
+) -> None:
+    """A multi-effect post-attack block closes through the normal attack API."""
+
+    campaign = _campaign(combat_client, "After attack trigger")
+    base = f"/api/v1/campaigns/{campaign['id']}"
+    combat = combat_client.post(f"{base}/combats", json={"name": "暴击触发"}).json()
+    runtime = subclass_feature_runtime_definition(
+        {
+            "name": "运动健将",
+            "class_name": "战士",
+            "class_level": 10,
+            "source_record_id": "test-remarkable-athlete",
+        }
+    )
+    assert runtime is not None
+    actor = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "运动健将",
+            "entity_type": "character",
+            "initiative": 20,
+            "hp": 20,
+            "max_hp": 20,
+            "speed_ft": 30,
+            "movement_remaining_ft": 5,
+            "snapshot_json": {"feature_runtime": runtime},
+        },
+    ).json()
+    target = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "目标",
+            "initiative": 10,
+            "hp": 20,
+            "max_hp": 20,
+            "armor_class": 10,
+        },
+    ).json()
+
+    ordinary = combat_client.post(
+        f"{base}/combats/{combat['id']}/actions/confirm",
+        headers={"X-Request-ID": "remarkable-ordinary-hit"},
+        json={
+            "action_type": "damage",
+            "is_attack": True,
+            "action_cost": "none",
+            "actor_combatant_id": actor["id"],
+            "actor_version": actor["version"],
+            "target_combatant_id": target["id"],
+            "target_version": target["version"],
+            "amount": 1,
+            "damage_type": "slashing",
+            "attack_roll_total": 15,
+            "critical_hit": False,
+        },
+    )
+    assert ordinary.status_code == 200, ordinary.text
+    ordinary_body = ordinary.json()
+    assert "attack_triggers" not in ordinary_body["action"]["result_json"]
+    actor = ordinary_body["actor"]
+    target = ordinary_body["target"]
+
+    critical = combat_client.post(
+        f"{base}/combats/{combat['id']}/actions/confirm",
+        headers={"X-Request-ID": "remarkable-critical-hit"},
+        json={
+            "action_type": "damage",
+            "is_attack": True,
+            "action_cost": "none",
+            "actor_combatant_id": actor["id"],
+            "actor_version": actor["version"],
+            "target_combatant_id": target["id"],
+            "target_version": target["version"],
+            "amount": 1,
+            "damage_type": "slashing",
+            "attack_roll_total": 20,
+            "critical_hit": True,
+            "attack_d20": 20,
+        },
+    )
+    assert critical.status_code == 200, critical.text
+    critical_body = critical.json()
+    result = critical_body["action"]["result_json"]
+    assert result["critical_hit"] is True
+    assert len(result["attack_triggers"]) == 1
+    effects = result["attack_triggers"][0]["effects"]
+    assert effects[0]["kind"] == "grant_movement_budget"
+    assert effects[0]["amount"] == 15
+    assert effects[0]["movement_remaining_ft"] == 20
+    assert effects[1]["kind"] == "grant_disengage"
+    assert "撤离" in critical_body["actor"]["conditions"]
+
+    replay = combat_client.post(
+        f"{base}/combats/{combat['id']}/actions/confirm",
+        headers={"X-Request-ID": "remarkable-critical-hit"},
+        json={
+            "action_type": "damage",
+            "is_attack": True,
+            "action_cost": "none",
+            "actor_combatant_id": actor["id"],
+            "actor_version": actor["version"],
+            "target_combatant_id": target["id"],
+            "target_version": target["version"],
+            "amount": 1,
+            "damage_type": "slashing",
+            "attack_roll_total": 20,
+            "critical_hit": True,
+            "attack_d20": 20,
+        },
+    )
+    assert replay.status_code == 200, replay.text
+    replay_body = replay.json()
+    assert replay_body["action"]["result_json"] == result
+    assert replay_body["actor"]["movement_remaining_ft"] == 20
 
 
 def test_superior_defense_spends_focus_and_resists_non_force_damage(

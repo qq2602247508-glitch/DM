@@ -3864,6 +3864,7 @@ class CombatEngineService:
         stat: str,
         scope: str | None = None,
         ability: str | None = None,
+        skill: str | None = None,
     ) -> list[dict[str, object]]:
         """Return typed feature modifiers that apply to this combatant.
 
@@ -3918,6 +3919,10 @@ class CombatEngineService:
                 declared = str(declared_ability).strip().lower()
                 declared = ability_aliases.get(declared, declared)
                 if declared != normalized_ability:
+                    continue
+            declared_skill = value.get("skill")
+            if declared_skill is not None:
+                if skill is None or str(declared_skill).strip() != str(skill).strip():
                     continue
             declared_abilities = value.get("abilities")
             if declared_abilities is not None and normalized_ability:
@@ -5429,6 +5434,8 @@ class CombatEngineService:
         actor: Combatant,
         action: Mapping[str, Any],
         triggers: object,
+        event: str = "after_feature_action",
+        event_context: Mapping[str, Any] | None = None,
     ) -> list[dict[str, Any]]:
         """Apply configuration-driven effects emitted after a feature action.
 
@@ -5449,11 +5456,22 @@ class CombatEngineService:
         for raw_trigger in triggers:
             if not isinstance(raw_trigger, Mapping):
                 continue
-            if str(raw_trigger.get("event") or "") != "after_feature_action":
+            if str(raw_trigger.get("event") or "") != event:
                 continue
             trigger_action_id = str(raw_trigger.get("action_id") or "").strip()
-            if not trigger_action_id or trigger_action_id not in action_ids:
+            if event == "after_feature_action" and (
+                not trigger_action_id or trigger_action_id not in action_ids
+            ):
                 continue
+            if event == "after_attack":
+                context = dict(event_context or {})
+                conditions = raw_trigger.get("when")
+                if isinstance(conditions, Mapping) and any(
+                    context.get(str(key)) is not value
+                    for key, value in conditions.items()
+                    if isinstance(value, bool)
+                ):
+                    continue
             trigger_result: dict[str, Any] = {
                 "trigger_id": raw_trigger.get("id"),
                 "action_id": trigger_action_id,
@@ -5527,6 +5545,13 @@ class CombatEngineService:
                     raise ValueError(f"职业特性触发器效果类型不受支持：{kind or 'unknown'}")
             if trigger_result["effects"]:
                 applied.append(trigger_result)
+        if applied:
+            # Trigger effects mutate the actor independently of the target's
+            # damage row (movement budget and runtime conditions).  Advance
+            # the actor version so subsequent commands cannot reuse a stale
+            # snapshot; idempotent replays return before this block.
+            actor.version += 1
+            actor.updated_at = datetime.now(UTC)
         return applied
 
     @classmethod
@@ -9218,6 +9243,7 @@ class CombatEngineService:
                 stat=stat,
                 scope="self",
                 ability=(str(request.get("ability")) if request.get("ability") else None),
+                skill=(str(request.get("skill")) if request.get("skill") else None),
             )
             feature_advantage = [
                 str(item.get("source") or "职业特性优势")
@@ -11047,6 +11073,22 @@ class CombatEngineService:
                     movement_distance_ft=command.forced_movement_distance_ft,
                     movement_direction=command.forced_movement_direction,
                 )
+            attack_trigger_results: list[dict[str, Any]] = []
+            if command.is_attack and actor is not None and attack_hit_status is True:
+                runtime = actor.snapshot_json.get("feature_runtime")
+                triggers = runtime.get("triggers") if isinstance(runtime, dict) else None
+                attack_trigger_results = self._apply_feature_action_triggers(
+                    session,
+                    combat,
+                    actor=actor,
+                    action={},
+                    triggers=triggers,
+                    event="after_attack",
+                    event_context={
+                        "hit": True,
+                        "critical_hit": bool(effective_critical_hit),
+                    },
+                )
             extra_attack_budget = 0
             if command.is_attack and command.action_cost == "action" and actor is not None:
                 runtime = actor.snapshot_json.get("feature_runtime")
@@ -11254,6 +11296,8 @@ class CombatEngineService:
                 result["action_window"] = action_window
             if structured_effects:
                 result["structured_effects"] = structured_effects
+            if attack_trigger_results:
+                result["attack_triggers"] = attack_trigger_results
             if extra_attack_budget:
                 result["attack_roll_budget"] = extra_attack_budget
             if attack_contexts:

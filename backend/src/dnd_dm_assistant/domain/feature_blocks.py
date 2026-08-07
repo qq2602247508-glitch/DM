@@ -24,7 +24,7 @@ TRIGGER_WINDOWS = frozenset(
         "before_damage",
     }
 )
-TRIGGER_EVENTS = frozenset({"after_feature_action"})
+TRIGGER_EVENTS = frozenset({"after_feature_action", "after_attack"})
 TRIGGER_EFFECT_KINDS = frozenset(
     {"grant_movement_budget", "grant_disengage", "remove_conditions"}
 )
@@ -133,8 +133,22 @@ def feature_trigger_block_errors(trigger: Mapping[str, Any]) -> tuple[str, ...]:
     errors: list[str] = []
     if str(trigger.get("event") or "") not in TRIGGER_EVENTS:
         errors.append("event is invalid")
-    if not str(trigger.get("action_id") or "").strip():
+    event = str(trigger.get("event") or "")
+    if event == "after_feature_action" and not str(trigger.get("action_id") or "").strip():
         errors.append("action_id is required")
+    if event == "after_attack":
+        when = trigger.get("when")
+        if not isinstance(when, Mapping):
+            errors.append("after_attack.when is required")
+        else:
+            unsupported = set(when) - {"hit", "critical_hit"}
+            if unsupported:
+                errors.append("after_attack.when contains unsupported conditions")
+            if not any(key in when for key in ("hit", "critical_hit")):
+                errors.append("after_attack.when requires hit or critical_hit")
+            for key in ("hit", "critical_hit"):
+                if key in when and not isinstance(when[key], bool):
+                    errors.append(f"after_attack.when.{key} must be boolean")
     effects = trigger.get("effects")
     if not isinstance(effects, list) or not effects:
         errors.append("effects must be a non-empty list")

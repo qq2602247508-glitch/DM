@@ -244,6 +244,53 @@ def test_fixed_mercy_proficiencies_reuse_the_same_typed_consumer() -> None:
     ]
 
 
+def test_superior_critical_reuses_generic_critical_threshold_consumer() -> None:
+    result = subclass_runtime_grants(
+        {
+            "name": "勇士",
+            "feature_definitions": [
+                {
+                    "id": "superior-critical",
+                    "name": "高效重击 Superior Critical",
+                    "class_level": 15,
+                    "description": "你的攻击检定在掷出18-20时造成重击。",
+                    "source_record_id": "superior-critical",
+                }
+            ],
+        },
+        class_name="战士",
+        target_class_level=15,
+    )
+    grant = result["grants"][0]
+    assert grant["runtime"]["automation_status"] == "full"
+    modifier = grant["runtime"]["registry"]["combat_start"]["modifiers"][0]
+    assert modifier["stat"] == "attack_critical_threshold"
+    assert modifier["value"] == 18
+
+
+def test_subclass_extra_attack_reuses_attack_action_count_consumer() -> None:
+    result = subclass_runtime_grants(
+        {
+            "name": "勇气学院",
+            "feature_definitions": [
+                {
+                    "id": "college-extra-attack",
+                    "name": "额外攻击 Extra Attack",
+                    "class_level": 6,
+                    "description": "你可以在执行攻击动作时攻击两次，而非一次。",
+                    "source_record_id": "college-extra-attack",
+                }
+            ],
+        },
+        class_name="吟游诗人",
+        target_class_level=6,
+    )
+    grant = result["grants"][0]
+    assert grant["runtime"]["automation_status"] == "full"
+    registry = grant["runtime"]["registry"]
+    assert registry["combat_start"]["attack_action_count"] == 2
+
+
 def test_open_hand_wholeness_uses_generic_healing_and_lifecycle_blocks() -> None:
     result = subclass_runtime_grants(
         {

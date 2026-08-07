@@ -1001,6 +1001,20 @@ _SUBCLASS_ABILITY_NAMES = {
 # adapter/configuration layer; the consumer only reads typed defense fields and
 # never dispatches on a subclass or feature identifier.
 SUBCLASS_FEATURE_RUNTIME_CONFIGS: dict[str, dict[str, Any]] = {
+    # Extra Attack is a subclass grant in several source tables, but the
+    # execution contract is the same typed attack-action-count consumer used
+    # by core class grants.  The executor does not branch on a subclass ID.
+    "额外攻击": {
+        "combat_start": {
+            "attack_action_count": 2,
+            "modifiers": [],
+            "defenses": [],
+        },
+        "resources": {},
+        "actions": {},
+        "triggers": [],
+        "attack_riders": [],
+    },
     # Assassin's Tools is a fixed proficiency grant.  It uses the same
     # persisted proficiency list as class/background grants; the compiler and
     # advancement transaction consume only typed entries, never this feature
@@ -1059,6 +1073,87 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS: dict[str, dict[str, Any]] = {
         "resources": {},
         "actions": {},
         "triggers": [],
+        "attack_riders": [],
+    },
+    # Superior Critical is a pure threshold modifier.  It reuses the same
+    # attack-resolution consumer as the existing generic critical block; the
+    # executor reads only the typed stat/value pair.
+    "高效重击": {
+        "combat_start": {
+            "modifiers": [
+                {
+                    "id": "critical_threshold:18",
+                    "stat": "attack_critical_threshold",
+                    "operation": "set",
+                    "scope": "outgoing",
+                    "value": 18,
+                    "applies_when": "always",
+                    "runtime_execution": {
+                        "status": "ready",
+                        "consumer": "attack_resolution",
+                    },
+                    "automation_status": "full",
+                    "requires_dm_adjudication": False,
+                }
+            ],
+            "defenses": [],
+        },
+        "proficiencies": [],
+        "resources": {},
+        "actions": {},
+        "triggers": [],
+        "attack_riders": [],
+    },
+    # Remarkable Athlete combines two passive roll modifiers with a critical
+    # hit follow-up.  The trigger is generic and keyed only by the declared
+    # event/conditions, so another feature can reuse the same after-attack
+    # movement contract.
+    "运动健将": {
+        "combat_start": {
+            "modifiers": [
+                {
+                    "id": "remarkable_athlete:initiative_advantage",
+                    "stat": "initiative",
+                    "operation": "advantage",
+                    "scope": "self",
+                    "applies_when": "always",
+                    "automation_status": "full",
+                    "requires_dm_adjudication": False,
+                },
+                {
+                    "id": "remarkable_athlete:athletics_advantage",
+                    "stat": "skill_check",
+                    "skill": "运动",
+                    "operation": "advantage",
+                    "scope": "self",
+                    "applies_when": "always",
+                    "automation_status": "full",
+                    "requires_dm_adjudication": False,
+                },
+            ],
+            "defenses": [],
+        },
+        "proficiencies": [],
+        "resources": {},
+        "actions": {},
+        "triggers": [
+            {
+                "id": "remarkable_athlete:critical_movement",
+                "event": "after_attack",
+                "when": {"hit": True, "critical_hit": True},
+                "effects": [
+                    {"kind": "grant_movement_budget", "amount_source": "half_current_speed"},
+                    {"kind": "grant_disengage", "expires": "turn_end"},
+                ],
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "attack_trigger_resolver",
+                    "effect_kinds": ["grant_movement_budget", "grant_disengage"],
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        ],
         "attack_riders": [],
     },
     # These two entries use the same roll-intervention and resource-lifecycle
