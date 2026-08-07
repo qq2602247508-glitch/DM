@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import hashlib
 import re
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
+from copy import deepcopy
 from dataclasses import asdict, dataclass
 from typing import Any
 
@@ -53,6 +54,9 @@ FEATURE_CHOICE_COUNTS: dict[str, tuple[str, int]] = {
     "元素狂怒": ("elemental_fury_improvement", 1),
     "受祝击": ("blessed_strikes", 1),
     "专精": ("expertise", 2),
+    # Scholar is a one-skill expertise grant.  It intentionally reuses the
+    # same generic expertise executor as Rogue/Bard expertise.
+    "学者": ("expertise", 1),
     "魔法奥秘": ("magical_secrets", 2),
     "法术精通": ("spell_mastery", 2),
     "招牌法术": ("signature_spells", 2),
@@ -992,6 +996,70 @@ _SUBCLASS_ABILITY_NAMES = {
 }
 
 
+# A small, explicit set of subclass configurations whose effect is already
+# represented by the shared combat defense consumer.  This table is an
+# adapter/configuration layer; the consumer only reads typed defense fields and
+# never dispatches on a subclass or feature identifier.
+SUBCLASS_FEATURE_RUNTIME_CONFIGS: dict[str, dict[str, Any]] = {
+    "战争化身": {
+        "combat_start": {
+            "modifiers": [],
+            "defenses": [
+                {
+                    "id": "subclass:avatar_of_battle:physical_resistance",
+                    "kind": "damage_resistance",
+                    "damage_types": ["bludgeoning", "piercing", "slashing"],
+                    "applies_when": "always",
+                    "runtime_execution": {
+                        "status": "ready",
+                        "consumer": "damage_defense_resolver",
+                    },
+                    "automation_status": "full",
+                    "requires_dm_adjudication": False,
+                }
+            ],
+        },
+        "resources": {},
+        "actions": {},
+        "attack_riders": [],
+    }
+}
+
+
+def subclass_feature_runtime_definition(
+    definition: Mapping[str, Any],
+) -> dict[str, Any] | None:
+    """Return a typed runtime registry for an explicitly supported subclass effect."""
+
+    name = str(definition.get("name") or "").strip()
+    config = SUBCLASS_FEATURE_RUNTIME_CONFIGS.get(name)
+    if config is None and name.startswith("战争化身"):
+        config = SUBCLASS_FEATURE_RUNTIME_CONFIGS["战争化身"]
+    if config is None:
+        return None
+    runtime = deepcopy(config)
+    source = {
+        "feature_name": name,
+        "class_name": str(definition.get("class_name") or ""),
+        "class_level": int(definition.get("class_level") or 0),
+        "source_record_id": definition.get("source_record_id"),
+    }
+    for section in ("combat_start",):
+        block = runtime.get(section)
+        if not isinstance(block, dict):
+            continue
+        for group in ("modifiers", "defenses"):
+            entries = block.get(group)
+            if not isinstance(entries, list):
+                continue
+            block[group] = [{**dict(entry), **source} for entry in entries]
+    return runtime
+
+
+def subclass_feature_automation_status(definition: Mapping[str, Any]) -> str | None:
+    return "full" if subclass_feature_runtime_definition(definition) is not None else None
+
+
 def _strip_feature_title(value: str) -> str:
     normalized = re.sub(r"\s+", " ", value.replace("**", "")).strip()
     return re.sub(r"[。．.:：\s]+$", "", normalized)
@@ -1203,6 +1271,14 @@ def subclass_runtime_grants(
         action = _subclass_action(definition, resource_key)
         if action is not None:
             actions.append(action)
+        runtime_registry = subclass_feature_runtime_definition(definition)
+        runtime_status = (
+            "full"
+            if runtime_registry is not None
+            else "partial"
+            if (resource or action)
+            else "dm_only"
+        )
         grants.append(
             {
                 "feature_id": feature_id,
@@ -1218,11 +1294,15 @@ def subclass_runtime_grants(
                 "description": definition.get("description"),
                 "selected_choices": selected,
                 "runtime": {
-                    "automation_status": "partial" if (resource or action) else "dm_only",
+                    "automation_status": runtime_status,
                     "tracked_resource_keys": [resource_key] if resource_key else [],
                     "action_name": action.get("name") if action else None,
-                    "requires_dm_adjudication": True,
+                    "requires_dm_adjudication": runtime_status != "full",
+                    "registry": runtime_registry,
                     "note": (
+                        "该子职特性已接入通用伤害防御积木并写入战斗快照。"
+                        if runtime_status == "full"
+                        else
                         "已同步可验证的资源或动作经济；其余文本效果由 DM 裁定。"
                         if (resource or action)
                         else "该子职特性已自动授予；具体效果由 DM 根据来源文本裁定。"

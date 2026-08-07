@@ -66,6 +66,68 @@ def _jack_of_all_trades_target(*, proficiency_bonus: int | None = 5) -> Combatan
     )
 
 
+def test_concentration_damage_immunity_is_data_driven_by_effect_name() -> None:
+    target = Combatant(
+        id="marked-hunter",
+        entity_type="character",
+        display_name="猎人",
+        hp=20,
+        max_hp=20,
+        concentration={"name": "猎人印记", "effect_id": "mark-1"},
+        snapshot_json={
+            "feature_runtime": {
+                "combat_start": {
+                    "defenses": [
+                        {
+                            "kind": "concentration_damage_immunity",
+                            "applies_when": "concentrating_on_hunters_mark",
+                            "effect_names": ["猎人印记", "hunter's mark"],
+                        }
+                    ]
+                }
+            }
+        },
+    )
+
+    assert CombatEngineService._concentration_damage_immunity(target) is True
+    target.concentration = {"name": "专注法术", "effect_id": "spell-1"}
+    assert CombatEngineService._concentration_damage_immunity(target) is False
+
+
+def test_typed_feature_damage_resistance_is_consumed_without_feature_name_branch() -> None:
+    target = Combatant(
+        id="avatar",
+        entity_type="character",
+        display_name="战争化身",
+        hp=20,
+        max_hp=20,
+        snapshot_json={
+            "feature_runtime": {
+                "combat_start": {
+                    "defenses": [
+                        {
+                            "kind": "damage_resistance",
+                            "damage_types": ["bludgeoning"],
+                            "applies_when": "always",
+                        }
+                    ]
+                }
+            }
+        },
+    )
+
+    resistances, _vulnerabilities, _immunities, applied, unresolved = (
+        CombatEngineService._damage_defenses(
+            target,
+            SimpleNamespace(damage_tags=[]),
+            ["bludgeoning"],
+        )
+    )
+    assert "bludgeoning" in resistances
+    assert applied
+    assert unresolved == []
+
+
 def test_jack_of_all_trades_adds_half_proficiency_only_when_explicitly_unproficient() -> None:
     action = _jack_of_all_trades_check_action(proficient=False)
     resolved = CombatEngineService._resolve_player_roll(

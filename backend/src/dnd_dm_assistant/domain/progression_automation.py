@@ -80,6 +80,20 @@ PROGRESSION_AUTOMATION_PROFILES: dict[str, ProgressionAutomationProfile] = {
         persisted_state=("skills", "features"),
         consumers=("noncombat_skill_modifier", "player_skill_checks"),
     ),
+    # Wizard's Scholar is the same typed expertise grant as the class-table
+    # Expertise feature.  Keeping it as a profile entry makes the class name
+    # and feature name configuration-only; the grant executor still operates
+    # on the generic ``expertise`` choice key.
+    "学者": ProgressionAutomationProfile(
+        category="expertise_choice",
+        choice_key="expertise",
+        executor_kind="advancement_choice_grant",
+        grant_status="full",
+        effect_status="full",
+        overall_status="full",
+        persisted_state=("skills", "features"),
+        consumers=("noncombat_skill_modifier", "player_skill_checks"),
+    ),
 }
 
 

@@ -7,6 +7,7 @@ from dnd_dm_assistant.domain.advancement_choices import (
     core_feature_grants,
     maximum_class_spell_level,
     progression_resource_updates,
+    subclass_runtime_grants,
 )
 
 
@@ -119,3 +120,28 @@ def test_runtime_grants_keep_unstructured_effects_in_dm_adjudication() -> None:
     assert tracked["runtime"]["tracked_resource_keys"] == ["focus"]
     assert structured["runtime"]["automation_status"] == "full"
     assert structured["runtime"]["requires_dm_adjudication"] is False
+
+
+def test_subclass_typed_defense_grant_uses_generic_resistance_consumer() -> None:
+    result = subclass_runtime_grants(
+        {
+            "name": "战争领域",
+            "feature_definitions": [
+                {
+                    "id": "war-avatar",
+                    "name": "战争化身 Avatar of",
+                    "class_level": 17,
+                    "description": "你获得对钝击、穿刺、挥砍伤害的抗性。",
+                    "source_record_id": "war-domain",
+                }
+            ],
+        },
+        class_name="牧师",
+        target_class_level=17,
+    )
+    grant = result["grants"][0]
+    assert grant["runtime"]["automation_status"] == "full"
+    assert grant["runtime"]["requires_dm_adjudication"] is False
+    assert grant["runtime"]["registry"]["combat_start"]["defenses"][0]["kind"] == (
+        "damage_resistance"
+    )

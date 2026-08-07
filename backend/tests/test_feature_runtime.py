@@ -1264,10 +1264,9 @@ def test_rogue_and_monk_event_bound_features_keep_explicit_dm_boundaries() -> No
         "status": "ready",
         "consumer": "combat_feature_action",
         "effect_kinds": ["cunning_action_choice"],
-        "remaining_dm_boundaries": ["hide_requires_explicit_outcome"],
     }
-    assert action["automation_status"] == "partial"
-    assert action["requires_dm_adjudication"] is True
+    assert action["automation_status"] == "full"
+    assert action["requires_dm_adjudication"] is False
 
     steady_aim = rogue["actions"]["steady_aim"]
     assert steady_aim["runtime_execution"] == {

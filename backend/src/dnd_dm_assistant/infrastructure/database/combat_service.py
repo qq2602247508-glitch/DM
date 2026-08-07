@@ -3903,6 +3903,36 @@ class CombatEngineService:
         return [item for item in defenses or () if isinstance(item, dict)]
 
     @classmethod
+    def _concentration_damage_immunity(cls, target: Combatant) -> bool:
+        """Return whether a typed feature suppresses concentration checks.
+
+        The predicate is data-driven: a defense declares the concentration
+        effect names it protects and the executor only compares those fields.
+        It never branches on a class or feature identifier.
+        """
+
+        concentration = target.concentration if isinstance(target.concentration, dict) else {}
+        if not concentration:
+            return False
+        active_name = str(concentration.get("name") or "").strip().casefold()
+        active_feature = str(concentration.get("feature") or "").strip().casefold()
+        if not active_name and not active_feature:
+            return False
+        for defense in cls._feature_defenses(target):
+            if defense.get("kind") != "concentration_damage_immunity":
+                continue
+            if defense.get("applies_when") != "concentrating_on_hunters_mark":
+                continue
+            names = defense.get("effect_names")
+            if not isinstance(names, list):
+                continue
+            for raw_name in names:
+                candidate = str(raw_name or "").strip().casefold()
+                if candidate and candidate in {active_name, active_feature}:
+                    return True
+        return False
+
+    @classmethod
     def _feature_saving_throw_reroll_options(
         cls,
         target: Combatant,
@@ -7543,6 +7573,8 @@ class CombatEngineService:
         resistance = list(target.damage_resistances or [])
         vulnerability = list(target.damage_vulnerabilities or [])
         immunity = list(target.damage_immunities or [])
+        applied: list[str] = []
+        unresolved: list[str] = []
         if cls._has_condition(target, "petrified"):
             # Petrification grants resistance to all damage and immunity to
             # poison.  Expand the finite damage type set because the domain
@@ -7571,6 +7603,24 @@ class CombatEngineService:
                 for damage_type in damage_types
                 if str(damage_type).strip().lower() != "force"
             )
+        # Generic subclass/class defense blocks can contribute unconditional
+        # typed resistances.  Conditions are evaluated from the block fields;
+        # no feature or subclass identifier is consulted here.
+        for defense in cls._feature_defenses(target):
+            if defense.get("kind") != "damage_resistance":
+                continue
+            applies_when = str(defense.get("applies_when") or "always").strip()
+            if applies_when != "always":
+                continue
+            raw_types = defense.get("damage_types")
+            if not isinstance(raw_types, list):
+                continue
+            types = [str(value).strip().lower() for value in raw_types if str(value).strip()]
+            if not types:
+                continue
+            resistance.extend(types)
+            defense_id = str(defense.get("id") or "feature_damage_resistance")
+            applied.append(f"{defense_id}:resistance:{','.join(types)}")
         tags = {
             str(value).strip().lower()
             for value in (
@@ -7582,8 +7632,6 @@ class CombatEngineService:
             bool(getattr(command, "dm_override", False)) if dm_override is None else dm_override
         )
         normalized_damage_types = {str(value).strip().lower() for value in damage_types}
-        applied: list[str] = []
-        unresolved: list[str] = []
         raw_conditionals = target.snapshot_json.get("conditional_damage_defenses")
         conditionals = raw_conditionals if isinstance(raw_conditionals, list) else []
         for index, raw_defense in enumerate(conditionals):
@@ -7719,7 +7767,11 @@ class CombatEngineService:
                     result["conditional_defenses_unresolved"] = list(
                         dict.fromkeys(unresolved_component_defenses)
                     )
-                if adjusted_damage > 0 and target.concentration:
+                if (
+                    adjusted_damage > 0
+                    and target.concentration
+                    and not cls._concentration_damage_immunity(target)
+                ):
                     concentration_check_dc = max(10, adjusted_damage // 2)
                 after = {
                     **before,
@@ -7753,7 +7805,11 @@ class CombatEngineService:
                     "hp": damage_resolution.remaining_hp,
                     "temporary_hp": damage_resolution.remaining_temporary_hp,
                 }
-                if damage_resolution.adjusted_damage > 0 and target.concentration:
+                if (
+                    damage_resolution.adjusted_damage > 0
+                    and target.concentration
+                    and not cls._concentration_damage_immunity(target)
+                ):
                     concentration_check_dc = max(
                         10,
                         damage_resolution.adjusted_damage // 2,
@@ -11604,14 +11660,21 @@ class CombatEngineService:
                 raise ValueError("职业特性动作积木无效：" + "；".join(block_errors))
             selected_action = command.selected_action
             condition_to_remove = command.condition_to_remove
-            if command.feature_id == "cunning_action":
-                allowed_actions = {str(value) for value in action.get("allowed_actions") or ()}
+            allowed_actions = {
+                str(value) for value in action.get("allowed_actions") or () if str(value).strip()
+            }
+            if allowed_actions:
                 if selected_action not in allowed_actions:
-                    raise ValueError("灵巧动作必须选择疾走、撤离或躲藏")
-                if selected_action == "hide" and (
+                    raise ValueError("该职业特性必须选择一个已声明的动作分支")
+                adjudicated_actions = {
+                    str(value)
+                    for value in action.get("adjudicated_actions") or ()
+                    if str(value).strip()
+                }
+                if selected_action in adjudicated_actions and (
                     command.outcome is None or not (command.adjudication_note or "").strip()
                 ):
-                    raise ValueError("灵巧动作的躲藏需要 DM 提交成功/失败和裁定说明")
+                    raise ValueError("该动作分支需要 DM 提交成功/失败和裁定说明")
             elif selected_action is not None or command.outcome is not None:
                 raise ValueError("selected_action/outcome 只适用于灵巧动作")
             if command.feature_id == "self_restoration":
@@ -12427,7 +12490,11 @@ class CombatEngineService:
                     ),
                     "damage_components": component_results,
                 }
-                if damage_result["adjusted_damage"] > 0 and target.concentration:
+                if (
+                    damage_result["adjusted_damage"] > 0
+                    and target.concentration
+                    and not self._concentration_damage_immunity(target)
+                ):
                     damage_result["concentration_check_dc"] = max(
                         10,
                         int(damage_result["adjusted_damage"]) // 2,
@@ -15153,7 +15220,11 @@ class CombatEngineService:
                 result["conditional_defenses_unresolved"] = list(
                     dict.fromkeys(unresolved_conditional_defenses)
                 )
-            if result["adjusted_damage"] > 0 and target.concentration:
+            if (
+                result["adjusted_damage"] > 0
+                and target.concentration
+                and not self._concentration_damage_immunity(target)
+            ):
                 result["concentration_check_dc"] = max(
                     10,
                     int(result["adjusted_damage"]) // 2,

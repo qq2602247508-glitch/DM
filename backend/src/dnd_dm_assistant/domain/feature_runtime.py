@@ -826,6 +826,14 @@ def feature_runtime_definition(
             "resolution_kind": "choice_required",
             "choices": ["dash", "disengage", "hide"],
             "allowed_actions": ["dash", "disengage", "hide"],
+            "adjudicated_actions": ["hide"],
+            "input_requirements": [
+                {
+                    "key": "outcome",
+                    "kind": "dm_outcome",
+                    "required_for": ["hide"],
+                }
+            ],
             "effects": [
                 {
                     "kind": "cunning_action_choice",
@@ -835,13 +843,10 @@ def feature_runtime_definition(
                 "status": "ready",
                 "consumer": "combat_feature_action",
                 "effect_kinds": ["cunning_action_choice"],
-                "remaining_dm_boundaries": ["hide_requires_explicit_outcome"],
             },
-            "automation_status": "partial",
-            "requires_dm_adjudication": True,
-            "partial_reason": (
-                "疾走和撤离由标准动作引擎真实执行；躲藏仍需 DM 提交明确成功/失败裁定。"
-            ),
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+            "summary": "三个分支均由配置驱动；躲藏的成功/失败由 DM 输入后写入真实隐匿状态。",
             **source,
         }
 
@@ -2021,9 +2026,14 @@ def feature_runtime_definition(
                 "kind": "concentration_damage_immunity",
                 "applies_when": "concentrating_on_hunters_mark",
                 "trigger": "damage_received",
-                "automation_status": "partial",
-                "requires_dm_adjudication": True,
-                "partial_reason": "猎人印记的专注来源尚未与通用专注检定事件关联。",
+                "effect_names": ["猎人印记", "hunter's mark", "hunters_mark"],
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "concentration_check_resolver",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+                "summary": "专注于结构化猎人印记时，受到伤害不会创建专注豁免窗口。",
                 **source,
             }
         )
@@ -2663,9 +2673,7 @@ def _feature_action_executor_ready(action: Mapping[str, Any]) -> bool:
         return False
     if action.get("action_cost") == "reaction":
         return False
-    if action.get("resolution_kind") == "choice_required" and action.get("id") != (
-        "cunning_action"
-    ):
+    if action.get("resolution_kind") == "choice_required" and not action.get("allowed_actions"):
         return False
     effects = action.get("effects")
     effect_list = effects if isinstance(effects, list) else []

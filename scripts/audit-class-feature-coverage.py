@@ -23,6 +23,7 @@ from dnd_dm_assistant.application.character_catalog import CharacterCatalog
 from dnd_dm_assistant.domain.advancement_choices import (
     CORE_CLASSES_2024,
     core_class_level_runtime_contract,
+    subclass_feature_automation_status,
 )
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -295,6 +296,10 @@ def audit() -> dict[str, Any]:
             for definition in subclass.get("feature_definitions") or ():
                 description = str(definition.get("description") or "")
                 keys = _blocks(description, str(definition.get("name") or ""))
+                configured_status = subclass_feature_automation_status(definition)
+                runtime_status = configured_status or (
+                    "partial" if subclass.get("automation_status") == "partial" else "dm_only"
+                )
                 rows.append(
                     {
                         "scope": "subclass",
@@ -309,12 +314,12 @@ def audit() -> dict[str, Any]:
                         "source_description": description,
                         "detected_blocks": keys,
                         "detected_block_labels": _block_labels(keys),
-                        "runtime_status": "partial"
-                        if subclass.get("automation_status") == "partial"
-                        else "dm_only",
+                        "runtime_status": runtime_status,
                         "runtime_sections": [],
                         "runtime_reasons": [
                             "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+                            if configured_status is None
+                            else "已接入通用伤害防御积木并写入战斗快照。"
                         ],
                     }
                 )

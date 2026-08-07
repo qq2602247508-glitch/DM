@@ -48,16 +48,17 @@ def _core_rules() -> list[ClassProgression]:
 def test_classifier_migration_table_and_acceptance_matrix_are_complete() -> None:
     rules = _core_rules()
     matrix = progression_acceptance_matrix(rules)
-    assert len(matrix) == 76
+    assert len(matrix) == 77
     assert Counter(item["feature_name"] for item in matrix) == {
         "属性值提升": 51,
         "传奇恩惠": 12,
         "武器精通": 5,
         "专精": 5,
+        "学者": 1,
         "战斗风格": 3,
     }
     assert Counter(item["overall_status"] for item in matrix) == {
-        "full": 56,
+        "full": 57,
         "partial": 20,
     }
     assert all(
@@ -79,9 +80,9 @@ def test_classifier_migration_table_and_acceptance_matrix_are_complete() -> None
         "epic_boon": 12,
         "fighting_style": 3,
         "weapon_mastery": 16,
-        "expertise": 10,
+        "expertise": 11,
     }
-    assert sum(choice_slots.values()) == 92
+    assert sum(choice_slots.values()) == 93
 
 
 def test_core_contract_counts_move_only_to_evidence_backed_statuses() -> None:
@@ -92,7 +93,7 @@ def test_core_contract_counts_move_only_to_evidence_backed_statuses() -> None:
             status.update(
                 item["automation_status"] for item in contract["feature_contracts"]
             )
-    assert status == {"full": 119, "partial": 37, "dm_only": 102}
+    assert status == {"full": 122, "partial": 35, "dm_only": 101}
     assert sum(status.values()) == 258
 
 
