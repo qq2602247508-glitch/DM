@@ -1022,6 +1022,39 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS: dict[str, dict[str, Any]] = {
             "requires_dm_adjudication": False,
         },
     },
+    # Lore's Bonus Proficiencies is a typed, player-selected skill grant.  The
+    # generic advancement consumer validates selections against the supported
+    # skill registry and writes them into Character.skills, which is the state
+    # used by actual skill checks.  This deliberately does not match other
+    # vaguely named proficiency features with different option sets.
+    "附赠熟练": {
+        "combat_start": {"modifiers": [], "defenses": []},
+        "resources": {},
+        "actions": {},
+        "triggers": [],
+        "attack_riders": [],
+        "advancement": {
+            "kind": "proficiency_choice",
+            "option_kind": "skill",
+            "operation": "grant_proficiency",
+            "allowed_options": "supported_skills",
+            "choice_requirement": {
+                "key": "subclass_skill_proficiency",
+                "minimum": 3,
+                "maximum": 3,
+                "strict": True,
+                "options_source": "supported_skill_registry",
+                "requires_dm_selection": False,
+                "reason": "逸闻学院附赠熟练要求选择三项技能熟练。",
+            },
+            "runtime_execution": {
+                "status": "ready",
+                "consumer": "advancement_service",
+            },
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+        },
+    },
     # Extra Attack is a subclass grant in several source tables, but the
     # execution contract is the same typed attack-action-count consumer used
     # by core class grants.  The executor does not branch on a subclass ID.
@@ -1862,6 +1895,9 @@ def subclass_feature_runtime_definition(
             "class_level": source["class_level"],
             "source_record_id": source["source_record_id"],
         }
+    advancement = runtime.get("advancement")
+    if isinstance(advancement, Mapping):
+        runtime["advancement"] = {**dict(advancement), **source}
     return runtime
 
 
@@ -2169,10 +2205,8 @@ def subclass_runtime_grants(
     for definition in definitions:
         definition["class_name"] = class_name
         feature_id = str(definition.get("id") or definition.get("name") or "")
-        requirement = definition.get("choice_requirement")
+        declared_requirement = definition.get("choice_requirement")
         selected = [str(item).strip() for item in choices.get(feature_id, []) if str(item).strip()]
-        if isinstance(requirement, dict):
-            requirements.append({"feature_id": feature_id, **requirement})
         resource = _subclass_resource_update(
             definition,
             ability_scores=ability_scores,
@@ -2229,6 +2263,19 @@ def subclass_runtime_grants(
                 }
             )
         if isinstance(runtime_registry, dict):
+            advancement = runtime_registry.get("advancement")
+            configured_requirement = (
+                advancement.get("choice_requirement")
+                if isinstance(advancement, Mapping)
+                else None
+            )
+            requirement = (
+                configured_requirement
+                if isinstance(configured_requirement, Mapping)
+                else declared_requirement
+            )
+            if isinstance(requirement, Mapping):
+                requirements.append({"feature_id": feature_id, **dict(requirement)})
             runtime_contract = feature_runtime_contract(
                 feature_name=str(definition.get("name") or ""),
                 class_name=class_name,
@@ -2253,6 +2300,8 @@ def subclass_runtime_grants(
             )
             runtime_status = str(runtime_contract["automation_status"])
         else:
+            if isinstance(declared_requirement, Mapping):
+                requirements.append({"feature_id": feature_id, **dict(declared_requirement)})
             runtime_status = "partial" if (resource or action) else "dm_only"
         grants.append(
             {

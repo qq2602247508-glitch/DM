@@ -35,6 +35,7 @@ from dnd_dm_assistant.domain.advancement_choices import (
 )
 from dnd_dm_assistant.domain.campaign_state import StateNotFoundError, VersionConflict
 from dnd_dm_assistant.domain.feature_runtime import compile_feature_runtime_registry
+from dnd_dm_assistant.domain.noncombat_actions import SKILL_RULES
 from dnd_dm_assistant.domain.progression_automation import (
     apply_progression_choice_grants,
     assign_progression_choices,
@@ -468,6 +469,63 @@ class AdvancementService:
             result.append(deepcopy(grant))
             known.add(identity)
         return result
+
+    @staticmethod
+    def _apply_subclass_proficiency_choices(
+        grants: list[dict[str, Any]],
+        *,
+        selected_choices: dict[str, list[str]],
+        skills: dict[str, Any],
+    ) -> dict[str, dict[str, Any]]:
+        """Apply configuration-driven subclass skill-proficiency selections.
+
+        The choice request is already persisted on the subclass feature grant.
+        This method additionally performs the consequential sheet mutation so
+        the same choice is consumed by ``skill_modifier`` and player skill
+        checks.  It reads only the typed advancement contract, never a
+        subclass or feature name.
+        """
+
+        after = deepcopy(skills)
+        for grant in grants:
+            runtime = grant.get("runtime")
+            registry = runtime.get("registry") if isinstance(runtime, dict) else None
+            advancement = registry.get("advancement") if isinstance(registry, dict) else None
+            if not isinstance(advancement, dict):
+                continue
+            if (
+                advancement.get("kind") != "proficiency_choice"
+                or advancement.get("option_kind") != "skill"
+                or advancement.get("operation") != "grant_proficiency"
+                or advancement.get("allowed_options") != "supported_skills"
+            ):
+                continue
+            feature_id = str(grant.get("feature_id") or "").strip()
+            requirement = advancement.get("choice_requirement")
+            if not feature_id or not isinstance(requirement, dict):
+                raise ValueError("子职技能熟练选择缺少可验证的特性或数量合同")
+            choices = [
+                str(choice).strip()
+                for choice in selected_choices.get(feature_id, [])
+                if str(choice).strip()
+            ]
+            minimum = int(requirement.get("minimum") or 0)
+            maximum = int(requirement.get("maximum") or 0)
+            if not minimum <= len(choices) <= maximum:
+                raise ValueError(
+                    f"子职特性{feature_id}必须选择 {minimum} 至 {maximum} 项技能，"
+                    f"当前为 {len(choices)} 项"
+                )
+            if len(set(choices)) != len(choices):
+                raise ValueError("子职技能熟练选择不能重复")
+            invalid = sorted(set(choices) - set(SKILL_RULES))
+            if invalid:
+                raise ValueError("子职技能熟练包含不支持的技能：" + "、".join(invalid))
+            for skill in choices:
+                current = after.get(skill)
+                existing = dict(current) if isinstance(current, dict) else {}
+                after[skill] = {**existing, "proficient": True}
+        return after
 
     @staticmethod
     def _replace_class_progression_grants(
@@ -1215,6 +1273,12 @@ class AdvancementService:
                     raise ValueError(message)
                 warnings.append("DM 已覆盖：" + message)
 
+        subclass_skills = self._apply_subclass_proficiency_choices(
+            list(subclass_runtime["grants"]),
+            selected_choices=selected_subclass_choices,
+            skills=dict(progression_choice_result["skills"]),
+        )
+
         # Fixed typed subclass grants (for example tool proficiencies) are
         # applied to the same authoritative sheet list as class choices.
         # Choice-bound grants remain unresolved until the existing explicit
@@ -1426,7 +1490,7 @@ class AdvancementService:
                 "features": after_features,
                 "actions": after_actions,
                 "proficiencies": subclass_proficiencies,
-                "skills": dict(progression_choice_result["skills"]),
+                "skills": subclass_skills,
                 "feature_runtime": runtime_registry,
             },
             "features_gained": [

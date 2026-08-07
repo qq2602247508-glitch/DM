@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+from types import SimpleNamespace
+
+import pytest
+
 from dnd_dm_assistant.domain.advancement import ClassLevel, ClassProgression
 from dnd_dm_assistant.domain.advancement_choices import (
     CORE_CLASSES_2024,
@@ -10,6 +14,8 @@ from dnd_dm_assistant.domain.advancement_choices import (
     subclass_feature_runtime_definition,
     subclass_runtime_grants,
 )
+from dnd_dm_assistant.domain.noncombat_actions import skill_modifier
+from dnd_dm_assistant.infrastructure.database.advancement_service import AdvancementService
 
 
 def _rule(name: str) -> ClassProgression:
@@ -84,6 +90,59 @@ def test_third_caster_subclass_spellcasting_uses_existing_spell_economy_contract
             "class_level": 3,
             "source_record_id": f"fixture:{class_name}:spellcasting",
         }
+
+
+def test_lore_bonus_proficiencies_are_persisted_into_skill_check_state() -> None:
+    feature_id = "lore:3:bonus-proficiencies"
+    runtime = subclass_runtime_grants(
+        {
+            "name": "逸闻学院",
+            "feature_definitions": [
+                {
+                    "id": feature_id,
+                    "name": "附赠熟练 Bonus Proficiencies",
+                    "class_level": 3,
+                    "source_record_id": "fixture:lore:bonus-proficiencies",
+                    "description": "你获得三项由你选择的技能的熟练。",
+                }
+            ],
+        },
+        class_name="吟游诗人",
+        target_class_level=3,
+        selected_choices={feature_id: ["奥秘", "历史", "洞悉"]},
+    )
+    grant = runtime["grants"][0]
+    assert grant["runtime"]["automation_status"] == "full"
+    assert runtime["choice_requirements"] == [
+        {
+            "feature_id": feature_id,
+            "key": "subclass_skill_proficiency",
+            "minimum": 3,
+            "maximum": 3,
+            "strict": True,
+            "options_source": "supported_skill_registry",
+            "requires_dm_selection": False,
+            "reason": "逸闻学院附赠熟练要求选择三项技能熟练。",
+        }
+    ]
+    skills = AdvancementService._apply_subclass_proficiency_choices(
+        runtime["grants"],
+        selected_choices={feature_id: ["奥秘", "历史", "洞悉"]},
+        skills={},
+    )
+    assert all(skills[name]["proficient"] is True for name in ("奥秘", "历史", "洞悉"))
+    character = SimpleNamespace(
+        ability_scores={"intelligence": 14},
+        skills=skills,
+        level=3,
+    )
+    assert skill_modifier(character, "奥秘", "intelligence")[0] == 4
+    with pytest.raises(ValueError, match="不能重复"):
+        AdvancementService._apply_subclass_proficiency_choices(
+            runtime["grants"],
+            selected_choices={feature_id: ["奥秘", "奥秘", "洞悉"]},
+            skills={},
+        )
 
 
 def test_spell_level_uses_class_level_not_shared_multiclass_slots() -> None:
