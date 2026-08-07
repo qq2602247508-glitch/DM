@@ -1,5 +1,14 @@
 # 2026-08-07 post-hit / pre-damage 通用执行器生产闭环
 
+# 2026-08-07 1/2/3 通用触发、资源、目标豁免积木第一切片
+
+- 代码提交 `043c033`：新增 `domain/feature_blocks.py`，提供不识别职业/特性 ID 的动作触发、资源绑定/恢复、目标/豁免/状态结构校验；`confirm_feature_action()` 与运行时合同门禁共用该合同。它只验证配置形状，真实动作经济、资源写入、CombatEffect 生命周期和幂等仍由现有 CombatEngineService 负责。
+- 失败豁免反应窗口改为遍历任意带 `after_failed_saving_throw`、触发条件交集、`range_ft` 和 reaction action 的配置；候选反应者选择、反应消费和第二骰结算沿用现有持久化链。旧无 trigger 的 `countercharm` 快照只走明确兼容适配器，适配器不是积木。
+- 生产配置使用者：反迷惑（现为配置驱动的 `saving_throw_reaction_window`）和致命猎杀的权威猎人印记目标优势；圣疗补充结构化 `target_policy`；先发激励的先攻恢复事件通过通用恢复校验。没有新增第二套战斗引擎。
+- 自动化数量（固定分母 499）：`full 117→119`、`partial 280→278`、`dm_only 102`；核心职业分母 258 为 `119 / 37 / 102`。净增 2 条真实 full，不能把候选覆盖 322 条或字段校验数冒充完成数。
+- 仍需玩家/DM 输入：反应者选择（多候选时）、实际重骰总值、目标位置缺失时的 DM 明确裁定以及所有未结构化分支；系统不替玩家掷骰。仍未自动化：子职业 241 条的大量具体效果、吟游诗人激励的可听性/失败消费完整窗口、荒野变形/引导神力/传奇恩惠具体分支、武器精通词条攻击结算。
+- 验证：通用积木、职业运行时、战斗生命周期、反应窗口、进度统计和 499 条审计定向回归通过；代码与本交接文档分开提交。待运行全量后端 pytest、Ruff、compileall 和 `git diff --check`。
+
 - 代码提交 `97f7432`：将命中后后续链接入真实玩家攻击 API：权威命中 → `_eligible_attack_riders()` → 持久化 `PlayerActionRequest` → 玩家/DM 输入 → 目标豁免 → 请求版本 CAS → 角色资源 CAS → condition/modifier 效果提交 → 一次性效果消费与幂等重放。公共 generic action request 拒绝保留的 `post_hit_rider` 类型和 `post-hit:` 幂等键；内部请求带 `created_by=combat_engine`，解析器校验来源、配置 ID、战斗/角色/目标边界。
 - 真正通用积木：`attack_rider` 的可选发动、持久化 pending activation/choice/save、通用 DC/输入/资源提交、生命周期（来源/目标回合边界、下一次攻击/豁免）和 condition/modifier 真实写入；`pre_damage_intervention` 的标签触发、表达式绑定（如 `class_level*5`）和通用伤害变换。执行器不识别 `stunning_strike`、`slow_fall` 等特性 ID；权威攻击标签随请求保存，不能由客户端 `special_inputs` 伪造扩张。
 - 生产配置使用者：震慑拳（每回合一次、功力、体质豁免、DC 8+PB+WIS、失败震慑/成功减速+下一次攻击优势）与轻身坠（坠落伤害前、武僧等级×5 减伤）。额外测试 fixture 使用不同 ID、不同豁免和中毒效果，和生产配置共用同一持久化/效果执行器；fixture 不是生产特性。
