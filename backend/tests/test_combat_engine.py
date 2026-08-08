@@ -10578,3 +10578,134 @@ def test_mercy_hand_of_harm_attack_rider_spends_focus_and_adds_damage(
         if item["id"] == target["id"]
     )
     assert target_after["hp"] == 29
+
+
+def test_portent_is_armed_before_roll_consumed_once_and_replayed_idempotently(
+    combat_client: TestClient,
+) -> None:
+    campaign = _campaign(combat_client, "Portent pre-roll")
+    base = f"/api/v1/campaigns/{campaign['id']}"
+    character_response = combat_client.post(
+        f"{base}/characters",
+        json={
+            "name": "预兆法师",
+            "class_name": "法师",
+            "level": 3,
+            "ability_scores": {"intelligence": 10},
+            "resources": {
+                "portent_dice": {
+                    "label": "预兆骰",
+                    "current": 2,
+                    "max": 2,
+                    "available_values": [4, 17],
+                }
+            },
+        },
+    )
+    assert character_response.status_code == 201, character_response.text
+    character = character_response.json()
+    runtime = {
+        "resources": {
+            "portent_dice": {
+                "key": "portent_dice",
+                "current": 2,
+                "max": 2,
+                "available_values": [4, 17],
+            }
+        },
+        "actions": {
+            "portent_pool": {
+                "id": "portent_pool",
+                "name": "预兆",
+                "kind": "roll_intervention",
+                "trigger": "before_d20_test",
+                "eligibility": {
+                    "entity_types": ["character"],
+                    "test_kinds": ["ability_check"],
+                    "resource": {"key": "portent_dice", "minimum": 1},
+                },
+                "operation": {"kind": "replace_d20_from_pool", "input_key": "pool_value"},
+                "input_requirements": [{"key": "pool_value", "kind": "d20_roll"}],
+                "resource": {"key": "portent_dice", "cost": 1},
+                "target_policy": {"mode": "any", "requires_visible_or_audible": True},
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "player_roll_prompt_and_resolution",
+                },
+                "automation_status": "full",
+            }
+        },
+        "combat_start": {"modifiers": [], "defenses": []},
+        "triggers": [],
+        "attack_riders": [],
+    }
+    combat = combat_client.post(f"{base}/combats", json={"name": "预兆战斗"}).json()
+    combatant_response = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "预兆法师",
+            "entity_type": "character",
+            "entity_id": character["id"],
+            "initiative": 10,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {
+                "ability_scores": {"intelligence": 10},
+                "feature_runtime": runtime,
+            },
+        },
+    )
+    assert combatant_response.status_code == 201, combatant_response.text
+    actor = combatant_response.json()
+    root = f"{base}/combats/{combat['id']}"
+    prompt = combat_client.post(
+        f"{root}/actions/player-rolls/pending",
+        headers={"X-Request-ID": "portent-prompt"},
+        json={
+            "actor_combatant_id": actor["id"],
+            "actor_version": actor["version"],
+            "target_combatant_id": actor["id"],
+            "target_version": actor["version"],
+            "action_cost": "none",
+            "action_name": "察觉未来",
+            "resolution_type": "ability_check",
+            "ability": "intelligence",
+            "dc": 10,
+            "pre_roll_intervention_id": "portent_pool",
+            "pre_roll_intervention_reactor_id": actor["id"],
+            "pre_roll_intervention_die_index": 0,
+            "pre_roll_intervention_roll_index": 0,
+        },
+    )
+    assert prompt.status_code == 200, prompt.text
+    action = prompt.json()["action"]
+    assert action["result_json"]["pre_roll_intervention_window"][0][
+        "available_pool_values"
+    ] == [4, 17]
+    resolved = combat_client.post(
+        f"{root}/actions/player-rolls/{action['id']}/confirm",
+        headers={"X-Request-ID": "portent-confirm"},
+        json={
+            "action_version": action["version"],
+            "roll_total": 19,
+            "natural_roll": 19,
+        },
+    )
+    assert resolved.status_code == 200, resolved.text
+    resolution = resolved.json()["resolution"]
+    assert resolution["roll_total"] == 4
+    assert resolution["success"] is False
+    character_after = combat_client.get(f"{base}/characters/{character['id']}").json()
+    assert character_after["resources"]["portent_dice"]["current"] == 1
+    assert character_after["resources"]["portent_dice"]["available_values"] == [17]
+    replay = combat_client.post(
+        f"{root}/actions/player-rolls/{action['id']}/confirm",
+        headers={"X-Request-ID": "portent-confirm"},
+        json={
+            "action_version": action["version"],
+            "roll_total": 19,
+            "natural_roll": 19,
+        },
+    )
+    assert replay.status_code == 200, replay.text
+    assert replay.json()["resolution"] == resolution

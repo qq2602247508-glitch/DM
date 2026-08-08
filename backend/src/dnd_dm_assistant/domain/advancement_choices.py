@@ -1503,6 +1503,86 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS: dict[str, dict[str, Any]] = {
             "requires_dm_adjudication": False,
         },
     },
+    # Portent and Greater Portent share one pre-roll replacement pool.  The
+    # pool values are supplied by the player/DM when a long rest is confirmed;
+    # combat only consumes one persisted value after the player arms it before
+    # the d20 is rolled.  The runtime never invents a die result.
+    "预兆": {
+        "combat_start": {"modifiers": [], "defenses": []},
+        "resources": {},
+        "actions": {
+            "portent_pool": {
+                "id": "portent_pool",
+                "name": "预兆",
+                "kind": "roll_intervention",
+                "trigger": "before_d20_test",
+                "eligibility": {
+                    "entity_types": ["character"],
+                    "test_kinds": ["ability_check", "skill_check", "saving_throw", "armor_class"],
+                    "resource": {"key": "$feature_resource", "minimum": 1},
+                },
+                "operation": {
+                    "kind": "replace_d20_from_pool",
+                    "input_key": "pool_value",
+                },
+                "target_policy": {
+                    "mode": "any",
+                    "requires_visible_or_audible": True,
+                },
+                "input_requirements": [{"key": "pool_value", "kind": "d20_roll"}],
+                "resource": {"key": "$feature_resource", "cost": 1},
+                "pool_resource": True,
+                "idempotency": {"prefix": "roll-intervention"},
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "player_roll_prompt_and_resolution",
+                    "rest_producer": "long_rest_submitted_d20_values",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        },
+        "triggers": [],
+        "attack_riders": [],
+    },
+    "高等预兆": {
+        "combat_start": {"modifiers": [], "defenses": []},
+        "resources": {},
+        "actions": {
+            "portent_pool": {
+                "id": "portent_pool",
+                "name": "高等预兆",
+                "kind": "roll_intervention",
+                "trigger": "before_d20_test",
+                "eligibility": {
+                    "entity_types": ["character"],
+                    "test_kinds": ["ability_check", "skill_check", "saving_throw", "armor_class"],
+                    "resource": {"key": "$feature_resource", "minimum": 1},
+                },
+                "operation": {
+                    "kind": "replace_d20_from_pool",
+                    "input_key": "pool_value",
+                },
+                "target_policy": {
+                    "mode": "any",
+                    "requires_visible_or_audible": True,
+                },
+                "input_requirements": [{"key": "pool_value", "kind": "d20_roll"}],
+                "resource": {"key": "$feature_resource", "cost": 1},
+                "pool_resource": True,
+                "idempotency": {"prefix": "roll-intervention"},
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "player_roll_prompt_and_resolution",
+                    "rest_producer": "long_rest_submitted_d20_values",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        },
+        "triggers": [],
+        "attack_riders": [],
+    },
     # A selected spell grant is an advancement effect, not an informal note.
     # The advancement service validates the selected catalog entries against
     # this typed source/class/school/level contract and persists them on the
@@ -3389,6 +3469,36 @@ def _subclass_resource_update(
 ) -> tuple[str, dict[str, Any]] | None:
     description = str(definition.get("description") or "")
     feature_name = str(definition.get("name") or "").strip()
+    if feature_name.startswith("预兆"):
+        return "portent_dice", {
+            "label": "预兆骰",
+            "max": 2,
+            "max_formula": "submitted_long_rest_pool",
+            "resource_kind": "d20_pool",
+            "recovery": "long_rest",
+            "recovery_events": [{"rest": "long_rest", "operation": "set_to_max"}],
+            "source": (
+                f"{definition.get('source_path') or definition.get('source_record_id')}"
+                f" · {definition.get('class_level')}级{feature_name}"
+            ),
+            "requires_dm_adjudication": False,
+            "automation_status": "full",
+        }
+    if feature_name.startswith("高等预兆"):
+        return "portent_dice", {
+            "label": "高等预兆骰",
+            "max": 3,
+            "max_formula": "submitted_long_rest_pool",
+            "resource_kind": "d20_pool",
+            "recovery": "long_rest",
+            "recovery_events": [{"rest": "long_rest", "operation": "set_to_max"}],
+            "source": (
+                f"{definition.get('source_path') or definition.get('source_record_id')}"
+                f" · {definition.get('class_level')}级{feature_name}"
+            ),
+            "requires_dm_adjudication": False,
+            "automation_status": "full",
+        }
     if feature_name.startswith("自然恢复"):
         return "natural_recovery", {
             "label": feature_name,

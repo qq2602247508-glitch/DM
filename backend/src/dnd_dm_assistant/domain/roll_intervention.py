@@ -26,6 +26,7 @@ ROLL_INTERVENTION_OPERATIONS = frozenset(
         "set_minimum",
         "set_minimum_d20",
         "replace_d20",
+        "replace_d20_from_pool",
         "cancel_advantage_disadvantage",
         "failure_recovery",
     }
@@ -687,6 +688,19 @@ def _apply_operation(
             }
         )
         return original_total + after - before, details
+    if kind == "replace_d20_from_pool":
+        replacement = _integer(inputs.get(str(operation.get("input_key") or "pool_value")))
+        if replacement is None or not 1 <= replacement <= 20:
+            raise ValueError("预置 d20 池替换值必须在 1 到 20 之间")
+        before = _natural_roll(operation, natural_roll=natural_roll, inputs=inputs)
+        details.update(
+            {
+                "natural_roll_before": before,
+                "natural_roll_after": replacement,
+                "pool_value": replacement,
+            }
+        )
+        return original_total + replacement - before, details
     # replace_d20
     replacement = _minimum(operation, bindings=bindings, inputs=inputs)
     if not 1 <= replacement <= 20:

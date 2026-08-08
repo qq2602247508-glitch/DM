@@ -517,28 +517,36 @@ class CombatEngineService:
         ):
             raise ValueError("该职业特性只能选择同阵营目标")
         raw_range = policy.get("range_ft")
-        if raw_range is None or target.id == actor.id:
+        requires_visibility = policy.get("requires_visible_or_audible") is True
+        if target.id == actor.id and not requires_visibility:
             return
-        if isinstance(raw_range, bool) or not isinstance(raw_range, int) or raw_range < 0:
+        if raw_range is None and not requires_visibility:
+            return
+        if raw_range is not None and (
+            isinstance(raw_range, bool) or not isinstance(raw_range, int) or raw_range < 0
+        ):
             raise ValueError("职业特性目标积木的 range_ft 无效")
-        actor_position = (actor.snapshot_json or {}).get("grid_position")
-        target_position = (target.snapshot_json or {}).get("grid_position")
-        if not isinstance(actor_position, dict) or not isinstance(target_position, dict):
-            raise ValueError("职业特性目标距离缺少权威网格位置，需由 DM 裁定")
-        try:
-            actor_cell = (int(actor_position["row"]), int(actor_position["col"]))
-            target_cell = (int(target_position["row"]), int(target_position["col"]))
-        except (KeyError, TypeError, ValueError) as exc:
-            raise ValueError("职业特性目标距离的网格位置无效，需由 DM 裁定") from exc
-        cell_size = 5
-        if session is not None and combat.scene_id:
-            grid = session.scalar(select(SceneGrid).where(SceneGrid.scene_id == combat.scene_id))
-            if grid is not None:
-                cell_size = grid.cell_size_ft
-        distance = grid_distance_ft(actor_cell, target_cell, cell_size_ft=cell_size)
-        if distance > raw_range:
-            raise ValueError(f"职业特性目标必须在 {raw_range} 尺范围内")
-        if policy.get("requires_visible_or_audible") is True:
+        if raw_range is not None and target.id != actor.id:
+            actor_position = (actor.snapshot_json or {}).get("grid_position")
+            target_position = (target.snapshot_json or {}).get("grid_position")
+            if not isinstance(actor_position, dict) or not isinstance(target_position, dict):
+                raise ValueError("职业特性目标距离缺少权威网格位置，需由 DM 裁定")
+            try:
+                actor_cell = (int(actor_position["row"]), int(actor_position["col"]))
+                target_cell = (int(target_position["row"]), int(target_position["col"]))
+            except (KeyError, TypeError, ValueError) as exc:
+                raise ValueError("职业特性目标距离的网格位置无效，需由 DM 裁定") from exc
+            cell_size = 5
+            if session is not None and combat.scene_id:
+                grid = session.scalar(
+                    select(SceneGrid).where(SceneGrid.scene_id == combat.scene_id)
+                )
+                if grid is not None:
+                    cell_size = grid.cell_size_ft
+            distance = grid_distance_ft(actor_cell, target_cell, cell_size_ft=cell_size)
+            if distance > raw_range:
+                raise ValueError(f"职业特性目标必须在 {raw_range} 尺范围内")
+        if requires_visibility and target.id != actor.id:
             # "能看见或能听见" is resolved from the authoritative combat
             # geometry and condition snapshots.  A blocked line of sight is
             # still a valid audible target unless either creature is deafened
@@ -3965,6 +3973,43 @@ class CombatEngineService:
                 },
             )
             for candidate in candidates:
+                operation = candidate.get("operation")
+                operation_kind = (
+                    operation.get("kind")
+                    if isinstance(operation, dict)
+                    else operation
+                )
+                if str(operation_kind or "").strip().casefold() == "replace_d20_from_pool":
+                    eligibility = candidate.get("eligibility")
+                    resource_spec = (
+                        eligibility.get("resource")
+                        if isinstance(eligibility, dict)
+                        else None
+                    )
+                    pool_key = (
+                        str(resource_spec.get("key") or "").strip()
+                        if isinstance(resource_spec, dict)
+                        else ""
+                    )
+                    pool_entry = resources.get(pool_key)
+                    raw_values = (
+                        pool_entry.get("available_values")
+                        if isinstance(pool_entry, dict)
+                        else None
+                    )
+                    pool_values = (
+                        [
+                            int(value)
+                            for value in raw_values
+                            if isinstance(value, int) and 1 <= value <= 20
+                        ]
+                        if isinstance(raw_values, list)
+                        else []
+                    )
+                    if not pool_values:
+                        continue
+                    candidate["pool_resource_key"] = pool_key
+                    candidate["available_pool_values"] = pool_values
                 if reactor.id != target.id:
                     policy = candidate.get("target_policy")
                     if not isinstance(policy, dict) or combat is None or session is None:
@@ -4037,6 +4082,134 @@ class CombatEngineService:
                     snapshot["feature_runtime"] = runtime
                     target.snapshot_json = snapshot
         return {"key": key, "cost": cost, "before": before, "after": after}
+
+    @classmethod
+    def _prepare_pre_roll_intervention(
+        cls,
+        action: CombatAction,
+        command: PlayerRollResolutionCommand,
+        *,
+        session: Session | None,
+        consume: bool,
+    ) -> PlayerRollResolutionCommand:
+        """Apply an armed pre-roll pool value before ordinary d20 resolution.
+
+        The prompt transaction records the selected pool index before the
+        player rolls.  Confirmation then removes exactly that value with the
+        same character/resource CAS boundary used by other roll consumers.
+        A preview never mutates the pool; a confirmation replay uses the
+        effective totals persisted on the action request.
+        """
+
+        request = dict(action.request_json or {})
+        raw_armed = request.get("armed_pre_roll_intervention")
+        if not isinstance(raw_armed, dict):
+            return command
+        armed = dict(raw_armed)
+        if armed.get("consumed") is True:
+            effective_total = cls._state_int(armed.get("effective_roll_total"))
+            effective_totals = armed.get("effective_roll_totals")
+            effective_naturals = armed.get("effective_natural_rolls")
+            if effective_total is None or not isinstance(effective_totals, list):
+                raise ValueError("预掷骰干预已消费但缺少持久化结果")
+            return command.model_copy(
+                update={
+                    "roll_total": effective_total,
+                    "roll_totals": [int(value) for value in effective_totals],
+                    "natural_roll": (
+                        int(effective_naturals[0])
+                        if isinstance(effective_naturals, list) and effective_naturals
+                        else None
+                    ),
+                    "natural_rolls": (
+                        [int(value) for value in effective_naturals]
+                        if isinstance(effective_naturals, list)
+                        else []
+                    ),
+                }
+            )
+        reactor_id = str(armed.get("reactor_combatant_id") or "").strip()
+        pool_key = str(armed.get("pool_resource_key") or "").strip()
+        pool_index = armed.get("die_index")
+        roll_index = armed.get("roll_index")
+        pool_value = armed.get("pool_value")
+        if (
+            not reactor_id
+            or not pool_key
+            or not isinstance(pool_index, int)
+            or not isinstance(roll_index, int)
+        ):
+            raise ValueError("预掷骰干预缺少持久化选择")
+        if not 1 <= int(pool_value or 0) <= 20:
+            raise ValueError("预掷骰干预的池值无效")
+        if session is None:
+            raise ValueError("预掷骰干预需要权威资源上下文")
+        reactor = session.get(Combatant, reactor_id)
+        if reactor is None or reactor.entity_type != "character" or not reactor.entity_id:
+            raise ValueError("预掷骰干预反应者不存在")
+        character = session.get(Character, reactor.entity_id)
+        if character is None:
+            raise ValueError("预掷骰干预角色不存在")
+        resources = dict(character.resources or {})
+        entry = dict(resources.get(pool_key) or {})
+        raw_values = entry.get("available_values")
+        values = [int(value) for value in raw_values] if isinstance(raw_values, list) else []
+        if pool_index >= len(values) or values[pool_index] != int(pool_value):
+            raise ValueError("预置骰池中的所选骰子已不存在")
+        reported_totals = list(command.roll_totals) if command.roll_totals else [command.roll_total]
+        natural_rolls = list(command.natural_rolls)
+        if not natural_rolls:
+            if command.natural_roll is None:
+                raise ValueError("预掷骰替换需要提交天然 d20 结果")
+            natural_rolls = [command.natural_roll]
+        if len(natural_rolls) != len(reported_totals) or roll_index >= len(reported_totals):
+            raise ValueError("预掷骰替换的天然 d20 与报告总值不匹配")
+        before_natural = int(natural_rolls[roll_index])
+        adjusted_totals = list(reported_totals)
+        adjusted_totals[roll_index] = adjusted_totals[roll_index] + int(pool_value) - before_natural
+        adjusted_naturals = list(natural_rolls)
+        adjusted_naturals[roll_index] = int(pool_value)
+        adjusted_total = adjusted_totals[roll_index]
+        if consume:
+            values.pop(pool_index)
+            entry["available_values"] = values
+            entry["current"] = len(values)
+            resources[pool_key] = entry
+            character.resources = resources
+            character.version += 1
+            character.updated_at = datetime.now(UTC)
+            reactor_snapshot = dict(reactor.snapshot_json or {})
+            runtime = reactor_snapshot.get("feature_runtime")
+            if isinstance(runtime, dict):
+                runtime = dict(runtime)
+                runtime_resources = runtime.get("resources")
+                if isinstance(runtime_resources, dict):
+                    runtime_resources = dict(runtime_resources)
+                    runtime_entry = dict(runtime_resources.get(pool_key) or {})
+                    runtime_entry["available_values"] = values
+                    runtime_entry["current"] = len(values)
+                    runtime_resources[pool_key] = runtime_entry
+                    runtime["resources"] = runtime_resources
+                    reactor_snapshot["feature_runtime"] = runtime
+                    reactor.snapshot_json = reactor_snapshot
+            armed.update(
+                {
+                    "consumed": True,
+                    "consumed_value": int(pool_value),
+                    "effective_roll_total": adjusted_total,
+                    "effective_roll_totals": adjusted_totals,
+                    "effective_natural_rolls": adjusted_naturals,
+                }
+            )
+            action.request_json = {**request, "armed_pre_roll_intervention": armed}
+        return command.model_copy(
+            update={
+                "roll_total": adjusted_total,
+                "roll_totals": adjusted_totals,
+                "natural_roll": adjusted_naturals[0],
+                "natural_rolls": adjusted_naturals,
+            }
+        )
 
     @classmethod
     def _feature_rule_modifiers(
@@ -9100,7 +9273,48 @@ class CombatEngineService:
                 assert actor is not None
                 actor.version += 1
                 actor.updated_at = datetime.now(UTC)
+            pre_roll_options = self._generic_roll_intervention_options(
+                target,
+                trigger="before_d20_test",
+                resolution_type=command.resolution_type,
+                request=command.model_dump(mode="json"),
+                session=session,
+                combat=combat,
+            )
+            armed_pre_roll: dict[str, object] | None = None
+            if command.pre_roll_intervention_id is not None:
+                armed = next(
+                    (
+                        item
+                        for item in pre_roll_options
+                        if item.get("id") == command.pre_roll_intervention_id
+                        and (
+                            command.pre_roll_intervention_reactor_id is None
+                            or item.get("reactor_combatant_id")
+                            == command.pre_roll_intervention_reactor_id
+                        )
+                    ),
+                    None,
+                )
+                if armed is None:
+                    raise ValueError("所选预掷骰干预当前不可用")
+                values = list(armed.get("available_pool_values") or [])
+                index = command.pre_roll_intervention_die_index
+                if index is None or index >= len(values):
+                    raise ValueError("预置骰池索引超出当前可用骰子")
+                armed_pre_roll = {
+                    "id": armed.get("id"),
+                    "reactor_combatant_id": armed.get("reactor_combatant_id"),
+                    "pool_resource_key": armed.get("pool_resource_key"),
+                    "die_index": index,
+                    "pool_value": values[index],
+                    "roll_index": command.pre_roll_intervention_roll_index,
+                    "operation": "replace_d20_from_pool",
+                    "consumed": False,
+                }
             request_json = command.model_dump(mode="json")
+            if armed_pre_roll is not None:
+                request_json["armed_pre_roll_intervention"] = armed_pre_roll
             if area_geometry:
                 request_json["area_geometry"] = area_geometry
             request_json["actor_name"] = actor.display_name
@@ -9136,6 +9350,16 @@ class CombatEngineService:
                 result_json={
                     "phase": "awaiting_player_roll",
                     "roll_owner": "player",
+                    "pre_roll_intervention_window": [
+                        {
+                            "id": item.get("id"),
+                            "name": item.get("name"),
+                            "reactor_combatant_id": item.get("reactor_combatant_id"),
+                            "reactor_name": item.get("reactor_name"),
+                            "available_pool_values": item.get("available_pool_values", []),
+                        }
+                        for item in pre_roll_options
+                    ],
                     **({"action_window": action_window} if action_window is not None else {}),
                 },
                 explanation=command.description,
@@ -9892,6 +10116,12 @@ class CombatEngineService:
         combat: Combat | None = None,
     ) -> dict[str, Any]:
         request = action.request_json
+        command = cls._prepare_pre_roll_intervention(
+            action,
+            command,
+            session=session,
+            consume=consume_defenses,
+        )
         zero_hp_intervention = request.get("zero_hp_intervention")
         if isinstance(zero_hp_intervention, dict):
             if command.use_legendary_resistance or command.use_feature_reroll:
@@ -10936,8 +11166,9 @@ class CombatEngineService:
                     **resolution,
                     "confirmation_idempotency_key": idempotency_key,
                 }
+                current_request = dict(action.request_json or request)
                 action.request_json = {
-                    **request,
+                    **current_request,
                     **(
                         {"feature_reroll_window": resolution.get("feature_reroll_window")}
                         if resolution.get("feature_reroll_window") is not None

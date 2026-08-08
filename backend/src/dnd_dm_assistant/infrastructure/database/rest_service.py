@@ -424,6 +424,38 @@ class RestService:
         applied: list[dict[str, Any]] = []
         for action_id, raw_amount in choices.items():
             action = actions.get(str(action_id))
+            if action_id == "portent_pool":
+                feature_pool = by_key.get("portent_dice")
+                if feature_pool is None or effective_type != "long":
+                    raise ValueError("预兆骰池只能在长休时生成")
+                raw_values = (
+                    raw_amount.get("values")
+                    if isinstance(raw_amount, Mapping)
+                    else raw_amount
+                )
+                if not isinstance(raw_values, list):
+                    raise ValueError("预兆骰池必须提交 values 列表")
+                values = [int(value) for value in raw_values]
+                if len(values) != feature_pool.maximum or any(
+                    value < 1 or value > 20 for value in values
+                ):
+                    raise ValueError("预兆骰池必须提交与资源上限相同数量的 1 至 20 骰值")
+                by_key[feature_pool.key] = RestResource(
+                    feature_pool.key,
+                    len(values),
+                    feature_pool.maximum,
+                    feature_pool.recovery,
+                    feature_pool.recovery_events,
+                )
+                applied.append(
+                    {
+                        "action_id": "portent_pool",
+                        "resource_key": feature_pool.key,
+                        "resource_cost": 0,
+                        "pool_values": values,
+                    }
+                )
+                continue
             if not isinstance(action, Mapping) or action.get("kind") != "rest_recovery":
                 raise ValueError(f"休息特性恢复动作不存在或不可执行：{action_id}")
             if action.get("trigger") != effective_type + "_rest":
@@ -1124,6 +1156,27 @@ class RestService:
                     )
                 )
             character.resources = resources_json
+            if participant.get("completed") and str(request_data.get("rest_type") or "") == "long":
+                if "portent_dice" in resources_json:
+                    pool = dict(resources_json.get("portent_dice") or {})
+                    pool["available_values"] = []
+                    pool["current"] = 0
+                    resources_json["portent_dice"] = pool
+                    character.resources = resources_json
+            for recovery in participant.get("feature_recovery_applied") or []:
+                if (
+                    isinstance(recovery, dict)
+                    and recovery.get("action_id") == "portent_pool"
+                    and isinstance(recovery.get("pool_values"), list)
+                ):
+                    pool = dict(resources_json.get("portent_dice") or {})
+                    values = [int(value) for value in recovery["pool_values"]]
+                    pool["available_values"] = values
+                    pool["current"] = len(values)
+                    pool["max"] = int(pool.get("max") or len(values))
+                    pool["maximum"] = int(pool.get("maximum") or pool["max"])
+                    resources_json["portent_dice"] = pool
+                    character.resources = resources_json
             character.max_hp_reduction = int(participant["after"]["max_hp_reduction"])
             character.ability_score_reductions = dict(
                 participant["after"]["ability_score_reductions"]

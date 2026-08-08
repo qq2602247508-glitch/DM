@@ -1433,6 +1433,10 @@ class _PlayerRollPromptBase(BaseModel):
 class PlayerRollPromptCommand(_PlayerRollPromptBase):
     target_combatant_id: str = Field(min_length=1, max_length=36)
     target_version: int = Field(ge=1)
+    pre_roll_intervention_id: str | None = Field(default=None, min_length=1, max_length=120)
+    pre_roll_intervention_reactor_id: str | None = Field(default=None, min_length=1, max_length=36)
+    pre_roll_intervention_die_index: int | None = Field(default=None, ge=0, le=20)
+    pre_roll_intervention_roll_index: int | None = Field(default=None, ge=0, le=1)
     # The target rolls the requested d20, while an optional separate target
     # receives the structured outcome.  This is used for player-originated
     # adjudications such as a character trying to make an enemy fall over.
@@ -1445,6 +1449,22 @@ class PlayerRollPromptCommand(_PlayerRollPromptBase):
             raise ValueError(
                 "effect_target_combatant_id and effect_target_version are required together"
             )
+        if self.pre_roll_intervention_id is None and (
+            self.pre_roll_intervention_reactor_id is not None
+            or self.pre_roll_intervention_die_index is not None
+            or self.pre_roll_intervention_roll_index is not None
+        ):
+            raise ValueError("预掷骰干预的反应者和骰子索引需要 pre_roll_intervention_id")
+        if (
+            self.pre_roll_intervention_id is not None
+            and self.pre_roll_intervention_die_index is None
+        ):
+            raise ValueError("选择预置骰池时必须提交骰子索引")
+        if (
+            self.pre_roll_intervention_id is not None
+            and self.pre_roll_intervention_roll_index is None
+        ):
+            raise ValueError("选择预置骰池时必须提交待替换的检定骰索引")
         return self
 
 
@@ -1482,6 +1502,8 @@ class PlayerRollResolutionCommand(BaseModel):
     action_version: int = Field(ge=1)
     roll_total: int = Field(ge=-100, le=1_000)
     roll_totals: list[int] = Field(default_factory=list, min_length=0, max_length=2)
+    natural_roll: int | None = Field(default=None, ge=1, le=20)
+    natural_rolls: list[int] = Field(default_factory=list, min_length=0, max_length=2)
     bardic_inspiration_total: int | None = Field(default=None, ge=1, le=1_000)
     use_legendary_resistance: bool = False
     use_feature_reroll: bool = False
@@ -1497,6 +1519,14 @@ class PlayerRollResolutionCommand(BaseModel):
     def validate_roll_totals(self) -> PlayerRollResolutionCommand:
         if any(value < -100 or value > 1_000 for value in self.roll_totals):
             raise ValueError("roll_totals entries must be between -100 and 1000")
+        if any(value < 1 or value > 20 for value in self.natural_rolls):
+            raise ValueError("natural_rolls entries must be between 1 and 20")
+        if (
+            self.natural_rolls
+            and self.roll_totals
+            and len(self.natural_rolls) != len(self.roll_totals)
+        ):
+            raise ValueError("natural_rolls must align with roll_totals")
         if self.roll_totals and self.roll_total not in self.roll_totals:
             raise ValueError("roll_total must be one of roll_totals when both are provided")
         if self.use_stroke_of_luck and self.use_feature_reroll:

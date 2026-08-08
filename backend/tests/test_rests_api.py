@@ -642,3 +642,97 @@ def test_tireless_ranger_short_rest_reduces_exhaustion_without_consuming_resourc
         f"/api/v1/campaigns/{campaign['id']}/characters/{created['id']}/conditions"
     ).json()["items"]
     assert fatigue[0]["details"]["level"] == 2
+
+
+def test_portent_long_rest_persists_submitted_d20_pool(
+    rest_client: TestClient,
+) -> None:
+    campaign = _campaign(rest_client, current_time="2026-07-26T10:00:00Z")
+    runtime = {
+        "combat_start": {"modifiers": [], "defenses": []},
+        "resources": {},
+        "actions": {
+            "portent_pool": {
+                "id": "portent_pool",
+                "name": "预兆",
+                "kind": "roll_intervention",
+                "trigger": "before_d20_test",
+                "eligibility": {
+                    "entity_types": ["character"],
+                    "resource": {"key": "portent_dice", "minimum": 1},
+                },
+                "operation": {"kind": "replace_d20_from_pool", "input_key": "pool_value"},
+                "input_requirements": [{"key": "pool_value", "kind": "d20_roll"}],
+                "resource": {"key": "portent_dice", "cost": 1},
+                "target_policy": {"mode": "any", "requires_visible_or_audible": True},
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "player_roll_prompt_and_resolution",
+                },
+                "automation_status": "full",
+            }
+        },
+        "triggers": [],
+        "attack_riders": [],
+    }
+    created = rest_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/characters",
+        json={
+            "name": "预兆测试者",
+            "class_name": "法师",
+            "level": 3,
+            "class_levels": {"法师": 3},
+            "hp": 20,
+            "max_hp": 20,
+            "features": [
+                {
+                    "kind": "feature",
+                    "name": "预兆",
+                    "class_name": "法师",
+                    "class_level": 3,
+                    "runtime": {"registry": runtime},
+                }
+            ],
+            "resources": {
+                "portent_dice": {
+                    "label": "预兆骰",
+                    "current": 0,
+                    "max": 2,
+                    "recovery": "long_rest",
+                }
+            },
+        },
+    )
+    assert created.status_code == 201, created.text
+    character = created.json()
+    body = {
+        "rest_type": "long",
+        "duration_minutes": 480,
+        "participants": [
+            {
+                "character_id": character["id"],
+                "character_version": character["version"],
+                "feature_recovery_choices": {"portent_pool": {"values": [4, 17]}},
+            }
+        ],
+    }
+    preview = rest_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/rests/preview", json=body
+    )
+    assert preview.status_code == 200, preview.text
+    applied = preview.json()["participants"][0]["feature_recovery_applied"][0]
+    assert applied["pool_values"] == [4, 17]
+    confirmed = rest_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/rests/confirm",
+        json={
+            **body,
+            "preview_token": preview.json()["preview_token"],
+            "idempotency_key": "portent-rest-0001",
+        },
+    )
+    assert confirmed.status_code == 200, confirmed.text
+    updated = rest_client.get(
+        f"/api/v1/campaigns/{campaign['id']}/characters/{character['id']}"
+    ).json()
+    assert updated["resources"]["portent_dice"]["current"] == 2
+    assert updated["resources"]["portent_dice"]["available_values"] == [4, 17]

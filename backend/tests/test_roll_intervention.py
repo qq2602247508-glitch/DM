@@ -330,3 +330,33 @@ def test_roll_intervention_supports_reroll_with_bound_bonus_and_signed_die() -> 
             bindings={"rage_damage": 2},
             dc=12,
         )
+
+
+def test_pre_roll_pool_replaces_one_reported_d20_without_server_rolling() -> None:
+    spec = {
+        "id": "portent_pool",
+        "kind": "roll_intervention",
+        "trigger": "before_d20_test",
+        "operation": {"kind": "replace_d20_from_pool", "input_key": "pool_value"},
+        "input_requirements": [{"key": "pool_value", "kind": "d20_roll"}],
+        "resource": {"key": "portent_dice", "cost": 1},
+    }
+    resolved = resolve_roll_interventions(
+        [spec],
+        trigger="before_d20_test",
+        context={
+            "entity_type": "character",
+            "test_kind": "saving_throw",
+            "resources": {"portent_dice": {"current": 2}},
+            "conditions": [],
+        },
+    )[0]
+    result = apply_roll_intervention(
+        resolved,
+        roll_total=14,
+        inputs={"pool_value": 4},
+        natural_roll=14,
+    )
+    assert result["effective_total"] == 4
+    assert result["details"]["natural_roll_before"] == 14
+    assert result["details"]["natural_roll_after"] == 4
