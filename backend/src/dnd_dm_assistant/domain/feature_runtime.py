@@ -244,9 +244,7 @@ def resolve_resource_lifecycle_value(
     elif operation == "restore":
         amount = event.get("amount")
         next_value = (
-            current + amount
-            if isinstance(amount, int) and not isinstance(amount, bool)
-            else None
+            current + amount if isinstance(amount, int) and not isinstance(amount, bool) else None
         )
     elif operation == "set_to":
         value = event.get("value")
@@ -604,6 +602,35 @@ def feature_runtime_definition(
             "runtime_execution": {
                 "status": "ready",
                 "consumer": "advancement_service",
+            },
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+        }
+
+    mystic_arcanum_levels = {
+        "玄奥秘法六环": 6,
+        "玄奥秘法七环": 7,
+        "玄奥秘法八环": 8,
+        "玄奥秘法九环": 9,
+    }
+    mystic_arcanum_level = mystic_arcanum_levels.get(identity)
+    if mystic_arcanum_level is not None and class_identity in {"魔契师", "warlock"}:
+        resource_key = f"mystic_arcanum_{mystic_arcanum_level}"
+        resource = definition["resources"].get(resource_key)
+        if isinstance(resource, dict):
+            resource.update(
+                {
+                    "automation_status": "full",
+                    "requires_dm_adjudication": False,
+                    "note": "所选秘法由受控法术选择授予；免费施放消耗该资源并在长休恢复。",
+                }
+            )
+        definition["advancement"] = {
+            "kind": "selected_spell_grant",
+            "selection_key": resource_key,
+            "runtime_execution": {
+                "status": "ready",
+                "consumer": "advancement_service_and_player_action_resolution",
             },
             "automation_status": "full",
             "requires_dm_adjudication": False,
@@ -2016,9 +2043,7 @@ def feature_runtime_definition(
                 "test_kinds": ["ability_check"],
                 "resource": {"key": "second_wind", "minimum": 1},
             },
-            "input_requirements": [
-                {"key": "tactical_die", "kind": "die_roll", "die_sides": 10}
-            ],
+            "input_requirements": [{"key": "tactical_die", "kind": "die_roll", "die_sides": 10}],
             "operation": {
                 "kind": "failure_recovery",
                 "recovery": {
@@ -2203,8 +2228,7 @@ def feature_runtime_definition(
                 "automation_status": "full",
                 "requires_dm_adjudication": False,
                 "summary": (
-                    "仅当权威快照绑定的猎人印记目标一致时，攻击自动获得优势；"
-                    "缺少绑定则不生效。"
+                    "仅当权威快照绑定的猎人印记目标一致时，攻击自动获得优势；缺少绑定则不生效。"
                 ),
                 **source,
             }
@@ -2828,9 +2852,7 @@ def compile_feature_runtime_registry(
             existing = target.get(field)
             merged = list(existing) if isinstance(existing, list) else []
             existing_ids = {
-                str(item.get("id") or "")
-                for item in merged
-                if isinstance(item, Mapping)
+                str(item.get("id") or "") for item in merged if isinstance(item, Mapping)
             }
             for item in additions:
                 if not isinstance(item, Mapping):

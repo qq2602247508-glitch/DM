@@ -15,7 +15,12 @@ from dnd_dm_assistant.domain.advancement_choices import (
     subclass_runtime_grants,
 )
 from dnd_dm_assistant.domain.noncombat_actions import skill_modifier
-from dnd_dm_assistant.infrastructure.database.advancement_service import AdvancementService
+from dnd_dm_assistant.infrastructure.database.advancement_service import (
+    AdvancementService,
+    _fixed_subclass_feature_spell_additions,
+    _selected_core_spell_additions,
+    _selected_subclass_spell_additions,
+)
 
 
 def _rule(name: str) -> ClassProgression:
@@ -457,8 +462,7 @@ def test_healing_dice_pool_configs_are_reusable_and_level_bound() -> None:
                     "name": "神之勇者",
                     "class_level": 3,
                     "description": (
-                        "你获得一个有着4枚d12的治疗池。以一个附赠动作，"
-                        "你可以消耗骰子恢复生命值。"
+                        "你获得一个有着4枚d12的治疗池。以一个附赠动作，你可以消耗骰子恢复生命值。"
                     ),
                     "source_record_id": "warrior-of-gods",
                 }
@@ -488,9 +492,7 @@ def test_healing_dice_pool_configs_are_reusable_and_level_bound() -> None:
         current_class_level=10,
     )
 
-    warrior_action = warrior["grants"][0]["runtime"]["registry"]["actions"][
-        "warrior_of_the_gods"
-    ]
+    warrior_action = warrior["grants"][0]["runtime"]["registry"]["actions"]["warrior_of_the_gods"]
     light_action = light["grants"][0]["runtime"]["registry"]["actions"]["healing_light"]
     assert warrior["grants"][0]["runtime"]["automation_status"] == "full"
     assert warrior_action["resource_cost_mode"] == "dice_count"
@@ -557,7 +559,7 @@ def test_fixed_subclass_spell_list_is_a_generic_always_prepared_block() -> None:
     assert result["prepared_spell_features"][0]["feature_id"] == "glory-spells"
 
 
-def test_choice_bound_subclass_spell_list_does_not_become_always_prepared() -> None:
+def test_choice_bound_subclass_spell_list_uses_typed_selected_spell_grant() -> None:
     result = subclass_runtime_grants(
         {
             "name": "逸闻学院",
@@ -574,8 +576,130 @@ def test_choice_bound_subclass_spell_list_does_not_become_always_prepared() -> N
         class_name="吟游诗人",
         target_class_level=6,
     )
-    assert result["grants"][0]["runtime"]["automation_status"] == "dm_only"
+    assert result["grants"][0]["runtime"]["automation_status"] == "full"
+    registry = result["grants"][0]["runtime"]["registry"]
+    assert registry["advancement"]["kind"] == "selected_spell_grant"
+    assert result["choice_requirements"][0]["minimum"] == 2
     assert result["prepared_spell_features"] == []
+
+
+def test_selected_spell_grant_validates_source_school_and_cumulative_school_count() -> None:
+    result = subclass_runtime_grants(
+        {
+            "name": "塑能师",
+            "feature_definitions": [
+                {
+                    "id": "evocation-savant",
+                    "name": "塑能学者",
+                    "class_level": 3,
+                    "description": "从法师法术列表中选择两道不高于二环的塑能学派法术。",
+                    "source_record_id": "evocation-savant",
+                }
+            ],
+        },
+        class_name="法师",
+        target_class_level=3,
+        current_class_level=5,
+        selected_choices={"evocation-savant": ["燃烧之手", "火球术", "闪电束"]},
+    )
+    assert result["choice_requirements"][0]["minimum"] == 3
+    additions = _selected_subclass_spell_additions(
+        result["grants"],
+        selected_choices={"evocation-savant": ["燃烧之手", "火球术", "闪电束"]},
+        spell_catalog=(
+            {
+                "name": "燃烧之手",
+                "source_record_id": "burning-hands",
+                "level": 1,
+                "school": "塑能",
+                "classes": ["法师"],
+            },
+            {
+                "name": "火球术",
+                "source_record_id": "fireball",
+                "level": 3,
+                "school": "塑能",
+                "classes": ["法师"],
+            },
+            {
+                "name": "闪电束",
+                "source_record_id": "lightning-bolt",
+                "level": 3,
+                "school": "塑能",
+                "classes": ["法师"],
+            },
+        ),
+        owner_class="法师",
+        owner_level=5,
+    )
+    assert [spell["name"] for spell in additions] == ["燃烧之手", "火球术", "闪电束"]
+    assert all(spell["spellbook"] is True for spell in additions)
+
+
+def test_mystic_arcanum_choice_becomes_free_cast_spell_access() -> None:
+    additions = _selected_core_spell_additions(
+        {"mystic_arcanum_6": ["秘法眼"]},
+        spell_catalog=(
+            {
+                "name": "秘法眼",
+                "source_record_id": "arcane-eye",
+                "level": 6,
+                "classes": ["魔契师"],
+            },
+        ),
+        owner_class="魔契师",
+    )
+    assert additions == [
+        {
+            "name": "秘法眼",
+            "source_record_id": "arcane-eye",
+            "level": 6,
+            "classes": ["魔契师"],
+            "spell_level": 6,
+            "class_name": "魔契师",
+            "prepared": True,
+            "always_prepared": True,
+            "resource_key": "mystic_arcanum_6",
+            "resource_cost": 1,
+            "source_feature_id": "mystic_arcanum_6",
+            "source_feature_name": "mystic_arcanum_6",
+            "granted_spell_access": True,
+            "does_not_count_toward_level_learning": True,
+        }
+    ]
+
+
+def test_fixed_subclass_spell_grant_persists_its_casting_ability() -> None:
+    grants = subclass_runtime_grants(
+        {
+            "name": "四象武者",
+            "feature_definitions": [
+                {
+                    "id": "manipulate-elements",
+                    "name": "掌控元素 Manipulate Elements",
+                    "class_level": 3,
+                    "description": "你习得戏法四象法门，其施法属性为感知。",
+                }
+            ],
+        },
+        class_name="武僧",
+        target_class_level=3,
+    )["grants"]
+    additions = _fixed_subclass_feature_spell_additions(
+        grants,
+        spell_catalog=(
+            {
+                "name": "四象法门",
+                "source_record_id": "elementalism",
+                "level": 0,
+                "classes": ["法师"],
+            },
+        ),
+        owner_class="武僧",
+    )
+    assert additions[0]["class_name"] == "武僧"
+    assert additions[0]["spellcasting_ability"] == "wisdom"
+    assert additions[0]["prepared"] is True
 
 
 def test_mindless_rage_declares_conditional_immunity_and_clear_trigger() -> None:

@@ -60,6 +60,22 @@ FEATURE_CHOICE_COUNTS: dict[str, tuple[str, int]] = {
     "魔法奥秘": ("magical_secrets", 2),
     "法术精通": ("spell_mastery", 2),
     "招牌法术": ("signature_spells", 2),
+    "玄奥秘法（六环）": ("mystic_arcanum_6", 1),
+    "玄奥秘法（七环）": ("mystic_arcanum_7", 1),
+    "玄奥秘法（八环）": ("mystic_arcanum_8", 1),
+    "玄奥秘法（九环）": ("mystic_arcanum_9", 1),
+}
+
+CORE_SELECTED_SPELL_GRANTS: dict[str, dict[str, Any]] = {
+    f"mystic_arcanum_{spell_level}": {
+        "count": 1,
+        "allowed_classes": ["魔契师"],
+        "exact_level": spell_level,
+        "grant_class": "owner_class",
+        "always_prepared": True,
+        "free_cast_resource_key": f"mystic_arcanum_{spell_level}",
+    }
+    for spell_level in (6, 7, 8, 9)
 }
 
 # The table reports the total number known. A level that raises this total
@@ -280,9 +296,7 @@ def core_feat_rules_from_records(records: Iterable[dict[str, Any]]) -> tuple[Fea
     core_records = [
         record
         for record in records
-        if str(record.get("source_relative_path") or "").startswith(
-            "玩家手册2024/专长/"
-        )
+        if str(record.get("source_relative_path") or "").startswith("玩家手册2024/专长/")
     ]
     overview = next(
         (
@@ -340,8 +354,7 @@ def core_feat_rules_from_records(records: Iterable[dict[str, Any]]) -> tuple[Fea
                 prerequisite=detail[0],
                 repeatable="*" in display_name or "＊" in display_name,
                 source_record_id=detail[1] or str(overview.get("stable_id") or ""),
-                source_path=detail[2]
-                or str(overview.get("source_relative_path") or ""),
+                source_path=detail[2] or str(overview.get("source_relative_path") or ""),
             )
         )
     return tuple(result)
@@ -386,30 +399,20 @@ def extension_feat_rules_from_records(
             markdown,
             re.I,
         )
-        category = (
-            category_match.group(1).strip(" ：:。")
-            if category_match
-            else "通用"
-        )
+        category = category_match.group(1).strip(" ：:。") if category_match else "通用"
         result.append(
             FeatRule(
                 name=name,
                 category=category,
                 prerequisite=(
-                    prerequisite_match.group(1).strip(" ：:。")
-                    if prerequisite_match
-                    else ""
+                    prerequisite_match.group(1).strip(" ：:。") if prerequisite_match else ""
                 ),
                 repeatable=bool(re.search(r"(?:可重复|Repeatable)", markdown, re.I)),
                 source_record_id=str(record.get("stable_id") or ""),
                 source_path=source_path,
-                rule_year=str(
-                    record.get("normalized_edition") or record.get("edition") or "2014"
-                ),
+                rule_year=str(record.get("normalized_edition") or record.get("edition") or "2014"),
                 content_pack_key=(
-                    str(record.get("content_pack_key"))
-                    if record.get("content_pack_key")
-                    else None
+                    str(record.get("content_pack_key")) if record.get("content_pack_key") else None
                 ),
             )
         )
@@ -452,10 +455,13 @@ def validate_feat_prerequisites(
     ):
         abilities = re.findall(ability_pattern, match.group("abilities"))
         minimum = int(match.group("minimum"))
-        if max(
-            (int(ability_scores.get(ABILITY_LABELS[label], 0)) for label in abilities),
-            default=0,
-        ) < minimum:
+        if (
+            max(
+                (int(ability_scores.get(ABILITY_LABELS[label], 0)) for label in abilities),
+                default=0,
+            )
+            < minimum
+        ):
             failures.append(match.group(0))
 
     for class_name in CORE_CLASSES_2024:
@@ -538,8 +544,7 @@ def _progression_value(
             return str(value)
 
     normalized_columns = {
-        re.sub(r"[\s（）()]", "", str(key)): value
-        for key, value in progression.items()
+        re.sub(r"[\s（）()]", "", str(key)): value for key, value in progression.items()
     }
     for column in columns:
         value = normalized_columns.get(re.sub(r"[\s（）()]", "", column))
@@ -729,9 +734,7 @@ def advancement_choice_requirements(
                 ),
                 reason=f"职业成长表规定本级准备法术总数为{prepared}。",
                 target_total=prepared,
-                maximum_spell_level=maximum_class_spell_level(
-                    rule.name, target_class_level
-                ),
+                maximum_spell_level=maximum_class_spell_level(rule.name, target_class_level),
             )
         )
         if rule.name != "法师":
@@ -765,9 +768,7 @@ def advancement_choice_requirements(
                 strict=True,
                 options_source="spells:法师",
                 reason="法师每获得一个法师等级，将两个合法法师法术加入法术书。",
-                maximum_spell_level=maximum_class_spell_level(
-                    rule.name, target_class_level
-                ),
+                maximum_spell_level=maximum_class_spell_level(rule.name, target_class_level),
             )
         )
 
@@ -1002,6 +1003,190 @@ _SUBCLASS_ABILITY_NAMES = {
 # adapter/configuration layer; the consumer only reads typed defense fields and
 # never dispatches on a subclass or feature identifier.
 SUBCLASS_FEATURE_RUNTIME_CONFIGS: dict[str, dict[str, Any]] = {
+    # Fixed spell access uses the same authoritative character-spell list as
+    # class spellcasting, while retaining the source-specific casting ability.
+    "掌控元素": {
+        "combat_start": {"modifiers": [], "defenses": []},
+        "resources": {},
+        "actions": {},
+        "triggers": [],
+        "attack_riders": [],
+        "advancement": {
+            "kind": "fixed_spell_grant",
+            "spells": ["四象法门"],
+            "grant_class": "owner_class",
+            "casting_ability": "wisdom",
+            "runtime_execution": {
+                "status": "ready",
+                "consumer": "advancement_service_and_player_action_resolution",
+            },
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+        },
+    },
+    # A selected spell grant is an advancement effect, not an informal note.
+    # The advancement service validates the selected catalog entries against
+    # this typed source/class/school/level contract and persists them on the
+    # authoritative spell sheet.  Consumers never identify the subclass.
+    "魔法探秘": {
+        "combat_start": {"modifiers": [], "defenses": []},
+        "resources": {},
+        "actions": {},
+        "triggers": [],
+        "attack_riders": [],
+        "advancement": {
+            "kind": "selected_spell_grant",
+            "selection": {
+                "count": 2,
+                "allowed_classes": ["牧师", "德鲁伊", "法师"],
+                "maximum_level": "owner_class",
+                "grant_class": "owner_class",
+                "always_prepared": True,
+            },
+            "choice_requirement": {
+                "key": "subclass_selected_spells",
+                "minimum": 2,
+                "maximum": 2,
+                "strict": True,
+                "options_source": "spell_catalog:牧师|德鲁伊|法师",
+                "requires_dm_selection": False,
+                "reason": "魔法探秘要求从牧师、德鲁伊或法师法术表选择两道法术。",
+            },
+            "runtime_execution": {
+                "status": "ready",
+                "consumer": "advancement_service",
+            },
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+        },
+    },
+    # The four specialist schools share one source-validated spellbook grant.
+    # Adding future schools is configuration-only; the executor consumes the
+    # same `selected_spell_grant` grammar above.
+    "塑能学者": {
+        "combat_start": {"modifiers": [], "defenses": []},
+        "resources": {},
+        "actions": {},
+        "triggers": [],
+        "attack_riders": [],
+        "advancement": {
+            "kind": "selected_spell_grant",
+            "selection": {
+                "count": 2,
+                "add_one_per_new_spell_level": True,
+                "allowed_classes": ["法师"],
+                "school": "塑能",
+                "maximum_level": "owner_class",
+                "grant_class": "owner_class",
+                "spellbook": True,
+            },
+            "choice_requirement": {
+                "key": "subclass_selected_spells",
+                "minimum": 2,
+                "maximum": 2,
+                "strict": True,
+                "options_source": "spell_catalog:法师:塑能:1-2",
+                "requires_dm_selection": False,
+                "reason": "塑能学者要求从法师塑能法术中选择两道不高于二环的法术加入法术书。",
+            },
+            "runtime_execution": {"status": "ready", "consumer": "advancement_service"},
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+        },
+    },
+    "幻术学者": {
+        "combat_start": {"modifiers": [], "defenses": []},
+        "resources": {},
+        "actions": {},
+        "triggers": [],
+        "attack_riders": [],
+        "advancement": {
+            "kind": "selected_spell_grant",
+            "selection": {
+                "count": 2,
+                "add_one_per_new_spell_level": True,
+                "allowed_classes": ["法师"],
+                "school": "幻术",
+                "maximum_level": "owner_class",
+                "grant_class": "owner_class",
+                "spellbook": True,
+            },
+            "choice_requirement": {
+                "key": "subclass_selected_spells",
+                "minimum": 2,
+                "maximum": 2,
+                "strict": True,
+                "options_source": "spell_catalog:法师:幻术:1-2",
+                "requires_dm_selection": False,
+                "reason": "幻术学者要求从法师幻术法术中选择两道不高于二环的法术加入法术书。",
+            },
+            "runtime_execution": {"status": "ready", "consumer": "advancement_service"},
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+        },
+    },
+    "防护学者": {
+        "combat_start": {"modifiers": [], "defenses": []},
+        "resources": {},
+        "actions": {},
+        "triggers": [],
+        "attack_riders": [],
+        "advancement": {
+            "kind": "selected_spell_grant",
+            "selection": {
+                "count": 2,
+                "add_one_per_new_spell_level": True,
+                "allowed_classes": ["法师"],
+                "school": "防护",
+                "maximum_level": "owner_class",
+                "grant_class": "owner_class",
+                "spellbook": True,
+            },
+            "choice_requirement": {
+                "key": "subclass_selected_spells",
+                "minimum": 2,
+                "maximum": 2,
+                "strict": True,
+                "options_source": "spell_catalog:法师:防护:1-2",
+                "requires_dm_selection": False,
+                "reason": "防护学者要求从法师防护法术中选择两道不高于二环的法术加入法术书。",
+            },
+            "runtime_execution": {"status": "ready", "consumer": "advancement_service"},
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+        },
+    },
+    "预言学者": {
+        "combat_start": {"modifiers": [], "defenses": []},
+        "resources": {},
+        "actions": {},
+        "triggers": [],
+        "attack_riders": [],
+        "advancement": {
+            "kind": "selected_spell_grant",
+            "selection": {
+                "count": 2,
+                "add_one_per_new_spell_level": True,
+                "allowed_classes": ["法师"],
+                "school": "预言",
+                "maximum_level": "owner_class",
+                "grant_class": "owner_class",
+                "spellbook": True,
+            },
+            "choice_requirement": {
+                "key": "subclass_selected_spells",
+                "minimum": 2,
+                "maximum": 2,
+                "strict": True,
+                "options_source": "spell_catalog:法师:预言:1-2",
+                "requires_dm_selection": False,
+                "reason": "预言学者要求从法师预言法术中选择两道不高于二环的法术加入法术书。",
+            },
+            "runtime_execution": {"status": "ready", "consumer": "advancement_service"},
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+        },
+    },
     # Eldritch Knight and Arcane Trickster obtain their spellcasting from this
     # subclass grant rather than their base class.  Their third-caster slot
     # progression, spell preparation validation, and spell-economy spending
@@ -1343,9 +1528,7 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS: dict[str, dict[str, Any]] = {
                     "input_key": "die_roll",
                     "die_sides": 10,
                 },
-                "input_requirements": [
-                    {"key": "die_roll", "kind": "die_roll", "die_sides": 10}
-                ],
+                "input_requirements": [{"key": "die_roll", "kind": "die_roll", "die_sides": 10}],
                 "resource": {"key": "$feature_resource", "cost": 1},
                 "resource_lifecycle": {
                     "events": [
@@ -1958,9 +2141,7 @@ def subclass_feature_runtime_definition(
             if name.startswith(prefix):
                 config = candidate
                 break
-    spell_contract = _subclass_prepared_spell_contract(
-        str(definition.get("description") or "")
-    )
+    spell_contract = _subclass_prepared_spell_contract(str(definition.get("description") or ""))
     if config is None and spell_contract is not None:
         return {
             "combat_start": {"modifiers": [], "defenses": []},
@@ -2081,13 +2262,9 @@ def subclass_feature_definitions_from_record(
             "description": description[:5000],
             "source_record_id": source_id,
             "source_path": str(record.get("source_relative_path") or ""),
-            "rule_year": str(
-                record.get("normalized_edition") or record.get("edition") or "2014"
-            ),
+            "rule_year": str(record.get("normalized_edition") or record.get("edition") or "2014"),
             "content_pack_key": (
-                str(record.get("content_pack_key"))
-                if record.get("content_pack_key")
-                else None
+                str(record.get("content_pack_key")) if record.get("content_pack_key") else None
             ),
         }
         choice = _subclass_choice_schema(description)
@@ -2102,11 +2279,15 @@ def _subclass_choice_schema(description: str) -> dict[str, Any] | None:
         return None
     count_match = re.search(r"(?:选择|选取)\s*(?:其中)?\s*(\d+)\s*(?:项|个|种)?", description)
     chinese_count = re.search(r"([一二三])\s*选\s*一", description)
-    count = int(count_match.group(1)) if count_match else {
-        "一": 1,
-        "二": 1,
-        "三": 1,
-    }.get(chinese_count.group(1) if chinese_count else "", 1)
+    count = (
+        int(count_match.group(1))
+        if count_match
+        else {
+            "一": 1,
+            "二": 1,
+            "三": 1,
+        }.get(chinese_count.group(1) if chinese_count else "", 1)
+    )
     return {
         "key": "subclass_feature_choice",
         "minimum": count,
@@ -2168,16 +2349,10 @@ def _subclass_resource_update(
         source_id = str(definition.get("source_record_id") or definition.get("id") or "")
         fingerprint = re.sub(r"[^a-z0-9]+", "", source_id.casefold())[-18:]
         if not fingerprint:
-            fingerprint = hashlib.sha256(
-                str(definition.get("id") or "").encode()
-            ).hexdigest()[:18]
+            fingerprint = hashlib.sha256(str(definition.get("id") or "").encode()).hexdigest()[:18]
         die_size = int((healing_pool or scaling_healing_pool).group(2 if healing_pool else 1))
         level = int(current_class_level or definition.get("class_level") or 0)
-        maximum = (
-            int(healing_pool.group(1))
-            if healing_pool
-            else 1 + max(0, level)
-        )
+        maximum = int(healing_pool.group(1)) if healing_pool else 1 + max(0, level)
         return f"subclass_{fingerprint}_{int(definition['class_level'])}", {
             "label": str(definition["name"]),
             "max": maximum,
@@ -2198,9 +2373,7 @@ def _subclass_resource_update(
     source_id = str(definition.get("source_record_id") or definition.get("id") or "")
     fingerprint = re.sub(r"[^a-z0-9]+", "", source_id.casefold())[-18:]
     if not fingerprint:
-        fingerprint = hashlib.sha256(
-            str(definition.get("id") or "").encode()
-        ).hexdigest()[:18]
+        fingerprint = hashlib.sha256(str(definition.get("id") or "").encode()).hexdigest()[:18]
     key = f"subclass_{fingerprint}_{int(definition['class_level'])}"
     explicit = re.search(
         r"(?:可|能)?使用(?:此|该)?(?:特性|能力)?[^。；;]{0,32}?(\d+)\s*次",
@@ -2301,8 +2474,7 @@ def subclass_runtime_grants(
     definitions = [
         dict(item)
         for item in subclass.get("feature_definitions", [])
-        if isinstance(item, dict)
-        and int(item.get("class_level") or 0) == target_class_level
+        if isinstance(item, dict) and int(item.get("class_level") or 0) == target_class_level
     ]
     grants: list[dict[str, Any]] = []
     resources: dict[str, dict[str, Any]] = {}
@@ -2373,10 +2545,29 @@ def subclass_runtime_grants(
         if isinstance(runtime_registry, dict):
             advancement = runtime_registry.get("advancement")
             configured_requirement = (
-                advancement.get("choice_requirement")
-                if isinstance(advancement, Mapping)
-                else None
+                advancement.get("choice_requirement") if isinstance(advancement, Mapping) else None
             )
+            if (
+                isinstance(advancement, Mapping)
+                and advancement.get("kind") == "selected_spell_grant"
+                and isinstance(advancement.get("selection"), Mapping)
+                and isinstance(configured_requirement, Mapping)
+            ):
+                selection = advancement["selection"]
+                required_count = int(selection.get("count") or 0)
+                if selection.get("add_one_per_new_spell_level") is True:
+                    required_count += max(
+                        0,
+                        maximum_class_spell_level(
+                            class_name, int(current_class_level or target_class_level)
+                        )
+                        - 2,
+                    )
+                configured_requirement = {
+                    **dict(configured_requirement),
+                    "minimum": required_count,
+                    "maximum": required_count,
+                }
             requirement = (
                 configured_requirement
                 if isinstance(configured_requirement, Mapping)
@@ -2434,8 +2625,7 @@ def subclass_runtime_grants(
                     "note": (
                         "该子职特性已接入通用运行时积木并写入战斗快照。"
                         if runtime_status == "full"
-                        else
-                        "已同步可验证的资源或动作经济；其余文本效果由 DM 裁定。"
+                        else "已同步可验证的资源或动作经济；其余文本效果由 DM 裁定。"
                         if (resource or action)
                         else "该子职特性已自动授予；具体效果由 DM 根据来源文本裁定。"
                     ),
@@ -2565,15 +2755,9 @@ def core_feature_grants(
             source_path=rule.source_path,
             definition=registry,
             declared_status=(
-                progression_profile.overall_status
-                if progression_profile is not None
-                else None
+                progression_profile.overall_status if progression_profile is not None else None
             ),
-            note=(
-                progression_profile.dm_boundary
-                if progression_profile is not None
-                else None
-            ),
+            note=(progression_profile.dm_boundary if progression_profile is not None else None),
         )
         tracked = contract["automation_status"] != "dm_only"
         grants.append(
@@ -2599,9 +2783,7 @@ def core_feature_grants(
                     "modifiers": modifier_profiles,
                     "registry": registry,
                     "advancement_automation": (
-                        progression_profile.as_dict()
-                        if progression_profile is not None
-                        else None
+                        progression_profile.as_dict() if progression_profile is not None else None
                     ),
                     "requires_dm_adjudication": contract["requires_dm_adjudication"],
                     "note": (
