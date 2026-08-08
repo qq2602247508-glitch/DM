@@ -2810,7 +2810,7 @@ def test_steady_aim_zeroes_movement_and_is_consumed_by_next_attack(
             "amount": 3,
             "damage_type": "piercing",
             "is_attack": True,
-            "attack_roll_mode": "normal",
+            "attack_roll_mode": "advantage",
             "attack_roll_total": 12,
         },
     )
