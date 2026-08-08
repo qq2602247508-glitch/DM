@@ -2433,3 +2433,60 @@ def test_attack_riders_require_explicit_dice_and_are_not_reused_in_same_turn() -
         assert "攻击附伤 sneak_attack:bonus_damage" in str(exc)
     else:
         raise AssertionError("a Sneak Attack dice rider must require a reported total")
+
+
+def test_frenzy_rider_binds_rage_damage_and_reckless_first_hit() -> None:
+    runtime = subclass_feature_runtime_definition(
+        {"name": "狂怒 Frenzy", "class_name": "野蛮人", "class_level": 3}
+    )
+    assert runtime is not None
+    rider = runtime["attack_riders"][0]
+    assert rider["dice_count_source"] == "rage_damage"
+    assert rider["applies_when"] == "raging_reckless_strength_weapon_attack"
+    assert rider["damage_type"] == "weapon_damage_type"
+    assert rider["frequency"] == "once_per_turn"
+    assert rider["automation_status"] == "full"
+
+
+def test_frenzy_rider_requires_raging_reckless_strength_attack_and_reports_d6_total() -> None:
+    actor = Combatant(
+        id="frenzy-barbarian",
+        entity_type="character",
+        conditions=["raging", "reckless_attack"],
+        snapshot_json={
+            "feature_runtime": {
+                "attack_riders": [
+                    {
+                        "id": "rage:bonus_damage",
+                        "value": "+3",
+                        "applies_when": "raging_strength_attack",
+                    },
+                    {
+                        "id": "frenzy:bonus_damage",
+                        "value": "1d6",
+                        "dice_count_source": "rage_damage",
+                        "damage_type": "weapon_damage_type",
+                        "applies_when": "raging_reckless_strength_weapon_attack",
+                        "frequency": "once_per_turn",
+                    },
+                ]
+            }
+        },
+    )
+    target = Combatant(id="frenzy-target", entity_type="monster")
+    riders = PlayerRoomService._eligible_attack_riders(
+        actor,
+        {
+            "name": "巨斧",
+            "description": "力量近战武器攻击",
+            "is_weapon_attack": True,
+            "attack_ability": "strength",
+        },
+        target,
+        special_inputs={"attack_rider_totals": {"frenzy:bonus_damage": 9}},
+        critical_hit=False,
+        used_this_turn=set(),
+    )
+    frenzy = next(item for item in riders if item["rider_id"] == "frenzy:bonus_damage")
+    assert frenzy["total"] == 9
+    assert frenzy["damage_type"] == "weapon_damage_type"

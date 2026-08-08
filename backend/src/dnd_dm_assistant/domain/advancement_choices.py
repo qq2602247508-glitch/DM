@@ -3129,6 +3129,36 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS["妖冶娴都"] = {
     "requires_dm_adjudication": False,
 }
 
+# Frenzy is a first-hit rider, not a second rage implementation.  The
+# existing attack-rider path supplies the reported d6 total; this contract
+# only binds the rage-damage scaling and the authoritative reckless/raging
+# conditions.
+SUBCLASS_FEATURE_RUNTIME_CONFIGS["狂怒"] = {
+    "combat_start": {"modifiers": [], "defenses": []},
+    "resources": {},
+    "actions": {},
+    "triggers": [],
+    "attack_riders": [
+        {
+            "id": "frenzy:bonus_damage",
+            "kind": "bonus_damage",
+            "value": "1d6",
+            "dice_count_source": "rage_damage",
+            "damage_type": "weapon_damage_type",
+            "applies_when": "raging_reckless_strength_weapon_attack",
+            "frequency": "once_per_turn",
+            "runtime_execution": {
+                "status": "ready",
+                "consumer": "attack_rider_resolver",
+            },
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+        }
+    ],
+    "automation_status": "full",
+    "requires_dm_adjudication": False,
+}
+
 
 def subclass_feature_runtime_definition(
     definition: Mapping[str, Any],

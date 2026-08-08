@@ -1574,6 +1574,15 @@ class PlayerRoomService:
                     and is_strength_attack
                     and is_weapon_attack
                 )
+            elif applies_when == "raging_reckless_strength_weapon_attack":
+                eligible = (
+                    CombatEngineService._has_condition(actor, "raging")
+                    and CombatEngineService._has_condition(actor, "reckless_attack")
+                    and is_strength_attack
+                    and bool(
+                        is_weapon_attack or action.get("is_unarmed_attack") is True
+                    )
+                )
             elif applies_when == "sneak_attack_eligible":
                 explicit = eligibility.get(rider_id, eligibility.get("sneak_attack"))
                 eligible = explicit is True
@@ -1606,6 +1615,29 @@ class PlayerRoomService:
                 continue
             rider_for_total = raw
             selected_slot_level: int | None = None
+            dice_count_source = str(raw.get("dice_count_source") or "").strip()
+            if dice_count_source:
+                if dice_count_source != "rage_damage":
+                    raise ValueError(f"攻击附伤 {rider_id} 的骰数来源不受支持")
+                rage_rider = next(
+                    (
+                        candidate
+                        for candidate in riders
+                        if isinstance(candidate, dict)
+                        and str(candidate.get("id") or "") == "rage:bonus_damage"
+                    ),
+                    None,
+                )
+                raw_rage_value = str(rage_rider.get("value") or "") if rage_rider else ""
+                match = re.search(r"(\d+)", raw_rage_value)
+                if match is None:
+                    raise ValueError("攻击附伤缺少权威狂暴伤害骰数")
+                dice_count = int(match.group(1))
+                rider_for_total = {
+                    **raw,
+                    "value": f"{dice_count}d6",
+                    "expression": f"{dice_count}d6",
+                }
             if rider_id == "divine_smite:bonus_damage":
                 raw_slot = special_inputs.get("divine_smite_slot_level")
                 if isinstance(raw_slot, bool) or not isinstance(raw_slot, (int, float)):
