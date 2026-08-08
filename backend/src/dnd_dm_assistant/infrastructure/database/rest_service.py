@@ -1014,8 +1014,15 @@ class RestService:
             restore_max = int(restore_pool.get("max") or restore_pool.get("maximum") or 0)
             if restore_max < 1:
                 raise ValueError("秘法回流缺少契约魔法法术位上限")
-            amount = (restore_max - restore_before + 1) // 2
-            amount = min(amount, restore_max - restore_before)
+            amount_formula = str(action.get("amount_formula") or "").strip()
+            remaining = restore_max - restore_before
+            if amount_formula == "all_expended":
+                amount = remaining
+            elif amount_formula == "half_expended_round_up":
+                amount = (remaining + 1) // 2
+            else:
+                raise ValueError("秘法回流缺少受支持的恢复数量公式")
+            amount = min(amount, remaining)
             feature_pool["current"] = feature_before - int(action.get("resource_cost") or 1)
             restore_pool["current"] = restore_before + amount
             resources[resource_key] = feature_pool

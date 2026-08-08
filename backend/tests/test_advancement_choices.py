@@ -415,6 +415,44 @@ def test_guarded_mind_binds_psionic_dice_and_turn_start_condition_action() -> No
     assert action["condition_removal_options"] == ["charmed", "frightened"]
 
 
+@pytest.mark.parametrize(
+    ("class_name", "subclass_name"),
+    [("战士", "灵能武士"), ("游荡者", "魂刃")],
+)
+def test_psionic_power_persists_typed_pool_contract_for_each_owner_class(
+    class_name: str,
+    subclass_name: str,
+) -> None:
+    result = subclass_runtime_grants(
+        {
+            "name": subclass_name,
+            "feature_definitions": [
+                {
+                    "id": f"{class_name}-psionic-power",
+                    "name": "灵能力量 Psionic Power",
+                    "class_level": 3,
+                    "description": "你拥有灵能骰，骰池在短休恢复一个，长休恢复全部。",
+                    "source_record_id": f"{class_name}-psionic-power",
+                }
+            ],
+        },
+        class_name=class_name,
+        target_class_level=3,
+        current_class_level=3,
+    )
+    grant = result["grants"][0]
+    runtime = grant["runtime"]
+    assert runtime["automation_status"] == "full"
+    assert runtime["tracked_resource_keys"] == [f"psionic_dice:{class_name}"]
+    resource = runtime["registry"]["resources"][f"psionic_dice:{class_name}"]
+    assert resource["max"] == 4
+    assert resource["die_size"] == 6
+    assert resource["recovery_events"] == [
+        {"rest": "short_rest", "operation": "restore", "amount": 1},
+        {"rest": "long_rest", "operation": "set_to_max"},
+    ]
+
+
 def test_elemental_affinity_binds_selected_damage_type_and_validates_choice_options() -> None:
     result = subclass_runtime_grants(
         {

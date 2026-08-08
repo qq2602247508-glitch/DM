@@ -1235,6 +1235,16 @@ def test_choice_bound_feature_actions_are_partial_and_explicit() -> None:
     assert magical_cunning["magical_cunning"]["max"] == 1
     assert magical_cunning["magical_cunning"]["recovery"] == "long_rest"
 
+    mastery = feature_runtime_definition(
+        feature_name="魔能掌控",
+        class_name="魔契师",
+        class_level=20,
+        resources={"magical_cunning": {"current": 1, "max": 1}},
+    )
+    assert mastery["actions"]["magical_cunning"]["amount_formula"] == "all_expended"
+    assert mastery["actions"]["magical_cunning"]["restore_resource_key"] == "pact_slots"
+    assert mastery["actions"]["magical_cunning"]["automation_status"] == "full"
+
     ranger_resources = progression_resource_updates(
         rules["游侠"],
         14,

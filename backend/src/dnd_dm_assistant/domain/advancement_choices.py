@@ -1540,6 +1540,37 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS: dict[str, dict[str, Any]] = {
         "triggers": [],
         "attack_riders": [],
     },
+    # Psionic Power is itself a resource-producing feature.  Its consumers
+    # (Guarded Mind, Psychic Teleportation, and the other subclass actions)
+    # are separate contracts; this block owns only the authoritative die pool
+    # size and its short/long-rest lifecycle.  The subclass compiler binds
+    # ``$feature_resource`` to the class-specific pool emitted by
+    # ``_subclass_resource_update``.
+    "灵能力量": {
+        "combat_start": {"modifiers": [], "defenses": []},
+        "resources": {
+            "$feature_resource": {
+                "key": "$feature_resource",
+                "label": "灵能骰",
+                "resource_kind": "psionic_dice",
+                "recovery_events": [
+                    {"rest": "short_rest", "operation": "restore", "amount": 1},
+                    {"rest": "long_rest", "operation": "set_to_max"},
+                ],
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "rest_service_and_resource_registry",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        },
+        "actions": {},
+        "triggers": [],
+        "attack_riders": [],
+        "automation_status": "full",
+        "requires_dm_adjudication": False,
+    },
     "高等预兆": {
         "combat_start": {"modifiers": [], "defenses": []},
         "resources": {},
@@ -4334,6 +4365,27 @@ def subclass_runtime_grants(
             # only the resulting key; this adapter is kept at configuration
             # compilation and is not a feature-ID branch in the executor.
             runtime_registry = deepcopy(runtime_registry)
+            raw_resources = runtime_registry.get("resources")
+            if isinstance(raw_resources, Mapping):
+                bound_resources: dict[str, dict[str, Any]] = {}
+                for raw_key, raw_value in raw_resources.items():
+                    if not isinstance(raw_value, Mapping):
+                        continue
+                    bound_key = (
+                        resource_key
+                        if str(raw_key) == "$feature_resource"
+                        else str(raw_key)
+                    )
+                    value = deepcopy(dict(raw_value))
+                    if str(raw_key) == "$feature_resource":
+                        # The resource parser is the single source of truth
+                        # for the class-level die table and recovery metadata.
+                        # Keep the typed config's runtime consumer while
+                        # binding the actual persisted key and numeric values.
+                        value = {**value, **deepcopy(resource[1])}
+                    value["key"] = bound_key
+                    bound_resources[bound_key] = value
+                runtime_registry["resources"] = bound_resources
             raw_actions = runtime_registry.get("actions")
             if isinstance(raw_actions, dict):
                 for raw_action in raw_actions.values():

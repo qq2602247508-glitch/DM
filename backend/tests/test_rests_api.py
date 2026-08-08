@@ -208,6 +208,81 @@ def test_magical_cunning_ritual_recovery_is_persisted_and_idempotent(
     assert replay.json()["restore_after"] == 3
 
 
+def test_eldritch_mastery_restores_all_expended_pact_slots(
+    rest_client: TestClient,
+) -> None:
+    campaign = _campaign(rest_client)
+    base_runtime = feature_runtime_definition(
+        feature_name="秘法回流",
+        class_name="魔契师",
+        class_level=2,
+        resources={"magical_cunning": {"current": 1, "max": 1}},
+        tracked_resource_keys=("magical_cunning",),
+    )
+    mastery_runtime = feature_runtime_definition(
+        feature_name="魔能掌控",
+        class_name="魔契师",
+        class_level=20,
+        resources={"magical_cunning": {"current": 1, "max": 1}},
+        tracked_resource_keys=("magical_cunning",),
+    )
+    created = rest_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/characters",
+        json={
+            "name": "全额回流者",
+            "class_name": "魔契师",
+            "level": 20,
+            "hp": 20,
+            "max_hp": 20,
+            "class_levels": {"魔契师": 20},
+            "features": [
+                {
+                    "kind": "feature",
+                    "name": "秘法回流",
+                    "class_name": "魔契师",
+                    "class_level": 2,
+                    "runtime": {"registry": base_runtime},
+                },
+                {
+                    "kind": "feature",
+                    "name": "魔能掌控",
+                    "class_name": "魔契师",
+                    "class_level": 20,
+                    "runtime": {"registry": mastery_runtime},
+                },
+            ],
+            "resources": {
+                "magical_cunning": {"current": 1, "max": 1},
+                "pact_slots": {"current": 0, "max": 4, "recovery": "short_rest"},
+            },
+        },
+    )
+    assert created.status_code == 201, created.text
+    character = created.json()
+    body = {
+        "character_id": character["id"],
+        "character_version": character["version"],
+        "feature_id": "magical_cunning",
+        "ritual_minutes": 1,
+        "idempotency_key": "eldritch-mastery-0001",
+    }
+    response = rest_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/feature-recoveries/confirm",
+        json=body,
+    )
+    assert response.status_code == 200, response.text
+    result = response.json()
+    assert result["restored_amount"] == 4
+    assert result["restore_after"] == 4
+    assert result["resource_after"] == 0
+    replay = rest_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/feature-recoveries/confirm",
+        json=body,
+    )
+    assert replay.status_code == 200, replay.text
+    assert replay.json()["restore_after"] == 4
+
+
 def test_sorcery_restoration_short_rest_choice_consumes_once(
     rest_client: TestClient,
 ) -> None:

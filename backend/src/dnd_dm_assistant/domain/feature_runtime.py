@@ -1711,6 +1711,32 @@ def feature_runtime_definition(
             **source,
         }
 
+    if identity in {"魔能掌控", "eldritchmaster"}:
+        # This level-20 feature changes the amount restored by the existing
+        # one-minute Magical Cunning ritual.  It deliberately reuses the
+        # same action id and resource contract; the compiler's normal
+        # last-definition-wins merge binds this typed override to the real
+        # recovery consumer instead of creating a second, name-specific path.
+        definition["actions"]["magical_cunning"] = {
+            "id": "magical_cunning",
+            "name": "秘法回流（魔能掌控）",
+            "kind": "ritual_recovery",
+            "trigger": "one_minute_ritual",
+            "resource_key": "magical_cunning",
+            "resource_cost": 1,
+            "restore_resource_key": "pact_slots",
+            "amount_formula": "all_expended",
+            "reset_trigger": "long_rest",
+            "runtime_execution": {
+                "status": "ready",
+                "consumer": "feature_recovery_service",
+            },
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+            "summary": "完成一分钟秘传仪式后恢复所有已消耗的契约魔法法术位。",
+            **source,
+        }
+
     if "神圣干预" in identity or "divineintervention" in identity:
         if "divine_intervention" in resource_keys:
             definition["actions"]["divine_intervention"] = {
