@@ -29,6 +29,19 @@ ROLL_INTERVENTION_OPERATIONS = frozenset(
     }
 )
 
+# A roll intervention is often a short-lived window rather than a passive
+# modifier.  Keep the lifecycle vocabulary in the domain module so every
+# consumer (combat, player-room replay, and future non-combat rolls) validates
+# the same persisted shape.  ``window`` is deliberately clock-oriented: the
+# caller supplies the authoritative event clock and remains responsible for
+# writing the returned state in its transaction.
+ROLL_INTERVENTION_WINDOW_PHASES = frozenset(
+    {"before_d20_test", "after_d20_test", "after_failed_d20_test"}
+)
+ROLL_INTERVENTION_WINDOW_EXPIRIES = frozenset(
+    {"operation", "turn_end", "next_turn_start", "round_end", "duration_end", "rest"}
+)
+
 _INTEGER_EXPRESSION = re.compile(
     r"[A-Za-z_][A-Za-z0-9_]*|\d+|[+\-*]",
 )
@@ -61,6 +74,127 @@ def _normalized_set(values: Iterable[object]) -> set[str]:
 
 def _mapping(value: object) -> dict[str, object]:
     return dict(value) if isinstance(value, Mapping) else {}
+
+
+def validate_roll_intervention_window(spec: Mapping[str, object]) -> dict[str, object]:
+    """Validate and normalize the optional persisted roll window contract.
+
+    A malformed window is rejected instead of silently becoming an always-on
+    feature.  ``phase`` defaults to the historical trigger so old snapshots
+    continue to replay exactly as before.  ``max_uses`` and ``uses`` are kept
+    as non-negative integers; consumers decrement ``uses`` only after their
+    idempotent confirmation transaction succeeds.
+    """
+
+    raw = spec.get("window")
+    if raw is None:
+        return {
+            "phase": str(spec.get("trigger") or "after_failed_d20_test").strip().casefold(),
+            "expires": "operation",
+        }
+    window = _mapping(raw)
+    phase = str(window.get("phase") or spec.get("trigger") or "").strip().casefold()
+    if phase not in ROLL_INTERVENTION_WINDOW_PHASES:
+        raise ValueError("掷骰干预窗口 phase 无效")
+    expires = str(window.get("expires") or "operation").strip().casefold()
+    if expires not in ROLL_INTERVENTION_WINDOW_EXPIRIES:
+        raise ValueError("掷骰干预窗口 expires 无效")
+    normalized: dict[str, object] = {"phase": phase, "expires": expires}
+    for key in ("state_key", "source_event_id", "target_combatant_id"):
+        value = window.get(key)
+        if value is not None:
+            value = str(value).strip()
+            if not value:
+                raise ValueError(f"掷骰干预窗口 {key} 无效")
+            normalized[key] = value
+    for key in ("max_uses", "uses", "created_round", "created_turn_index", "expires_round"):
+        value = _integer(window.get(key))
+        if value is None or value < 0:
+            if window.get(key) is not None:
+                raise ValueError(f"掷骰干预窗口 {key} 无效")
+            continue
+        normalized[key] = value
+    max_uses = normalized.get("max_uses")
+    uses = normalized.get("uses")
+    if isinstance(max_uses, int) and isinstance(uses, int) and uses > max_uses:
+        raise ValueError("掷骰干预窗口 uses 不能超过 max_uses")
+    return normalized
+
+
+def roll_intervention_window_state(
+    spec: Mapping[str, object],
+    *,
+    event_phase: str,
+    state: Mapping[str, object] | None = None,
+    round_number: int | None = None,
+    turn_index: int | None = None,
+) -> dict[str, object] | None:
+    """Return a durable, eligible window state for one roll event.
+
+    This is pure and idempotent.  It never mutates ``state`` and therefore can
+    be called for preview and confirmation.  The caller persists the returned
+    ``uses``/``consumed_for_operation_id`` fields after applying the result.
+    """
+
+    window = validate_roll_intervention_window(spec)
+    phase = str(event_phase).strip().casefold()
+    if window["phase"] != phase:
+        return None
+    current = dict(state or {})
+    if current.get("consumed") is True:
+        return None
+    if isinstance(current.get("uses"), int) and current["uses"] <= 0:
+        return None
+    expires = str(window.get("expires") or "operation")
+    if expires == "round_end" and isinstance(current.get("expires_round"), int):
+        if round_number is not None and round_number > current["expires_round"]:
+            return None
+    if expires == "next_turn_start":
+        if (
+            isinstance(current.get("expires_round"), int)
+            and isinstance(current.get("expires_turn_index"), int)
+            and round_number is not None
+            and turn_index is not None
+            and (round_number, turn_index)
+            >= (current["expires_round"], current["expires_turn_index"])
+        ):
+            return None
+    result = {**window, **current, "phase": phase}
+    if "uses" not in result and isinstance(result.get("max_uses"), int):
+        result["uses"] = result["max_uses"]
+    return result
+
+
+def consume_roll_intervention_window(
+    state: Mapping[str, object],
+    *,
+    operation_id: str,
+    consume: bool = True,
+) -> dict[str, object]:
+    """Apply one idempotent consumption to a persisted window state."""
+
+    operation_id = str(operation_id).strip()
+    if not operation_id:
+        raise ValueError("掷骰干预窗口消费需要 operation_id")
+    current = dict(state)
+    consumed_for = current.get("consumed_for_operation_id")
+    if consumed_for == operation_id:
+        return current
+    if current.get("consumed") is True:
+        raise ValueError("掷骰干预窗口已被其他操作消费")
+    if not consume:
+        return current
+    uses = current.get("uses")
+    if isinstance(uses, int):
+        if uses <= 0:
+            raise ValueError("掷骰干预窗口次数不足")
+        current["uses"] = uses - 1
+        if current["uses"] == 0:
+            current["consumed"] = True
+    elif current.get("max_uses") == 1 or current.get("expires") == "operation":
+        current["consumed"] = True
+    current["consumed_for_operation_id"] = operation_id
+    return current
 
 
 def _operation_spec(spec: Mapping[str, object]) -> dict[str, object]:
@@ -217,10 +351,20 @@ def resolve_roll_interventions(
             or operation not in ROLL_INTERVENTION_OPERATIONS
         ):
             continue
+        # Validate lifecycle metadata even when the current phase is selected
+        # by a different consumer.  This prevents malformed persisted feature
+        # windows from leaking into API projections or being applied later.
+        try:
+            window = validate_roll_intervention_window(spec)
+        except ValueError:
+            continue
+        if window.get("phase") != normalized_trigger:
+            continue
         bindings = _eligible_bindings(spec, context)
         if bindings is None:
             continue
         copied = deepcopy(spec)
+        copied["window"] = window
         copied["resolved_bindings"] = bindings
         resolved.append(copied)
     return resolved

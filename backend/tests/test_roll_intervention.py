@@ -2,7 +2,10 @@ import pytest
 
 from dnd_dm_assistant.domain.roll_intervention import (
     apply_roll_intervention,
+    consume_roll_intervention_window,
     resolve_roll_interventions,
+    roll_intervention_window_state,
+    validate_roll_intervention_window,
 )
 
 
@@ -178,3 +181,77 @@ def test_generic_executor_fails_closed_on_missing_or_invalid_reported_input() ->
     failed = apply_roll_intervention(failed_recovery, roll_total=8, dc=15, inputs={"die": 2})
     assert failed["success"] is False
     assert failed["resource_should_consume"] is False
+
+
+def test_roll_intervention_window_is_validated_and_consumed_idempotently() -> None:
+    spec = {
+        "id": "fixture:once-per-turn",
+        "kind": "roll_intervention",
+        "trigger": "before_d20_test",
+        "window": {
+            "phase": "before_d20_test",
+            "expires": "next_turn_start",
+            "max_uses": 1,
+            "uses": 1,
+            "expires_round": 4,
+            "expires_turn_index": 2,
+        },
+        "operation": {"kind": "advantage"},
+    }
+    normalized = validate_roll_intervention_window(spec)
+    assert normalized["phase"] == "before_d20_test"
+    state = roll_intervention_window_state(
+        spec,
+        event_phase="before_d20_test",
+        state={"uses": 1, "expires_round": 4, "expires_turn_index": 2},
+        round_number=4,
+        turn_index=1,
+    )
+    assert state is not None
+    consumed = consume_roll_intervention_window(state, operation_id="roll-1")
+    assert consumed["consumed"] is True
+    assert consumed["consumed_for_operation_id"] == "roll-1"
+    # Replay is a no-op for the same operation id, while a different operation
+    # cannot spend the already consumed window.
+    assert consume_roll_intervention_window(consumed, operation_id="roll-1") == consumed
+    with pytest.raises(ValueError, match="已被其他操作消费"):
+        consume_roll_intervention_window(consumed, operation_id="roll-2")
+    assert (
+        roll_intervention_window_state(
+            spec,
+            event_phase="before_d20_test",
+            state=consumed,
+            round_number=4,
+            turn_index=1,
+        )
+        is None
+    )
+
+
+def test_roll_intervention_window_fails_closed_on_bad_clock_or_phase() -> None:
+    with pytest.raises(ValueError, match="phase 无效"):
+        validate_roll_intervention_window(
+            {
+                "kind": "roll_intervention",
+                "trigger": "before_d20_test",
+                "window": {"phase": "not-a-phase"},
+            }
+        )
+    spec = {
+        "id": "fixture:window",
+        "kind": "roll_intervention",
+        "trigger": "after_d20_test",
+        "window": {"phase": "after_d20_test", "expires": "round_end"},
+        "operation": {"kind": "add", "amount": 1},
+    }
+    assert roll_intervention_window_state(spec, event_phase="before_d20_test") is None
+    assert (
+        roll_intervention_window_state(
+            spec,
+            event_phase="after_d20_test",
+            state={"expires_round": 3},
+            round_number=4,
+            turn_index=0,
+        )
+        is None
+    )
