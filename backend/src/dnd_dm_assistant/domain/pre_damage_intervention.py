@@ -100,6 +100,8 @@ def apply_pre_damage_intervention(
         if transform.get("rounding", "floor") != "floor":
             raise ValueError("暂未接入该伤害前反应取整方式")
         values = [max(0, int(amount * multiplier)) for amount in values]
+    elif operation == "set_zero":
+        values = [0 for _ in original]
     elif operation == "subtract_total":
         if transform.get("distribution", "components_in_order") != "components_in_order":
             raise ValueError("暂未接入该伤害前反应分段分配方式")

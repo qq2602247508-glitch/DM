@@ -407,6 +407,7 @@ class RestParticipantInput(BaseModel):
     character_version: int = Field(ge=1)
     hit_dice: list[RestHitDieSelection] = Field(default_factory=list, max_length=20)
     excluded_resource_keys: list[str] = Field(default_factory=list, max_length=50)
+    feature_recovery_choices: dict[str, Any] = Field(default_factory=dict, max_length=20)
 
 
 class RestPreviewRequest(BaseModel):
@@ -422,6 +423,14 @@ class RestPreviewRequest(BaseModel):
 
 class RestConfirmRequest(RestPreviewRequest):
     preview_token: str = Field(min_length=16, max_length=128)
+    idempotency_key: str = Field(min_length=8, max_length=120)
+
+
+class FeatureRecoveryRequest(BaseModel):
+    character_id: str = Field(min_length=1, max_length=36)
+    character_version: int = Field(ge=1)
+    feature_id: str = Field(min_length=1, max_length=120)
+    ritual_minutes: int = Field(default=1, ge=1, le=1)
     idempotency_key: str = Field(min_length=8, max_length=120)
 
 
@@ -1673,6 +1682,7 @@ class MonsterAreaActionCommand(BaseModel):
 class DeathSaveCommand(BaseModel):
     target_version: int = Field(ge=1)
     roll: int = Field(ge=1, le=20)
+    rolls: list[int] | None = Field(default=None, min_length=2, max_length=2)
 
 
 class DeathConfirmationCommand(BaseModel):

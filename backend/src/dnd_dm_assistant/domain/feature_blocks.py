@@ -24,7 +24,9 @@ TRIGGER_WINDOWS = frozenset(
         "before_damage",
     }
 )
-TRIGGER_EVENTS = frozenset({"after_feature_action", "after_attack", "after_zero_hp"})
+TRIGGER_EVENTS = frozenset(
+    {"after_feature_action", "after_attack", "after_zero_hp", "turn_start"}
+)
 TRIGGER_EFFECT_KINDS = frozenset(
     {
         "grant_movement_budget",
@@ -32,6 +34,8 @@ TRIGGER_EFFECT_KINDS = frozenset(
         "remove_conditions",
         "teleport",
         "grant_temporary_hp",
+        "restore_hit_points_if_bloodied",
+        "grant_feature_state_if_missing",
     }
 )
 RESOURCE_LIFECYCLE_EVENTS = frozenset(
@@ -203,6 +207,23 @@ def feature_trigger_block_errors(trigger: Mapping[str, Any]) -> tuple[str, ...]:
                     not isinstance(minimum, int) or isinstance(minimum, bool) or minimum < 0
                 ):
                     errors.append("grant_temporary_hp.minimum is invalid")
+            elif kind == "restore_hit_points_if_bloodied":
+                if not any(
+                    str(effect.get(key) or "").strip()
+                    for key in ("amount", "ability_modifier")
+                ):
+                    errors.append(
+                        "restore_hit_points_if_bloodied needs amount or ability_modifier"
+                    )
+                minimum = effect.get("minimum")
+                if minimum is not None and (
+                    not isinstance(minimum, int) or isinstance(minimum, bool) or minimum < 0
+                ):
+                    errors.append("restore_hit_points_if_bloodied.minimum is invalid")
+            elif kind == "grant_feature_state_if_missing" and not str(
+                effect.get("state_key") or ""
+            ).strip():
+                errors.append("feature state producer needs state_key")
     return tuple(errors)
 
 

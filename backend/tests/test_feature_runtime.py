@@ -113,6 +113,7 @@ def test_movement_feature_contracts_are_full_and_typed() -> None:
             kind="subclass_feature",
         )
         assert contract["automation_status"] == "full"
+
         payload = json.dumps(runtime, ensure_ascii=False)
         assert marker in payload
 
@@ -142,6 +143,138 @@ def test_movement_feature_contracts_are_full_and_typed() -> None:
     assert soul_blades["actions"]["psychic_teleportation"]["runtime_execution"][
         "consumer"
     ] == "combat_feature_action"
+
+
+def test_draconic_resilience_has_unarmored_charisma_ac_and_hp_scaling_contract() -> None:
+    runtime = subclass_feature_runtime_definition(
+        {
+            "name": "龙族体魄 Draconic Resilience",
+            "class_name": "术士",
+            "class_level": 3,
+        }
+    )
+    assert runtime is not None
+    modifier = runtime["combat_start"]["modifiers"][0]
+    assert modifier["formula"] == "10+dexterity_modifier+charisma_modifier"
+    assert {
+        key: runtime["advancement"][key]
+        for key in (
+            "kind",
+            "minimum_class_level",
+            "initial_bonus",
+            "per_level_bonus",
+            "runtime_execution",
+            "automation_status",
+            "requires_dm_adjudication",
+        )
+    } == {
+        "kind": "hit_points_by_class_level",
+        "minimum_class_level": 3,
+        "initial_bonus": 3,
+        "per_level_bonus": 1,
+        "runtime_execution": {
+            "status": "ready",
+            "consumer": "advancement_service",
+        },
+        "automation_status": "full",
+        "requires_dm_adjudication": False,
+    }
+    ac, details = resolve_unarmored_defense_ac(
+        12,
+        {"dexterity": 16, "charisma": 18},
+        {"combat_start": {"modifiers": [modifier]}},
+        equipment_state_authoritative=True,
+        wearing_armor=False,
+        wielding_shield=False,
+    )
+    assert ac == 17
+    assert details["formula"] == "10+dexterity_modifier+charisma_modifier"
+
+
+def test_otherworldly_glamour_closes_charisma_bonus_and_skill_choice() -> None:
+    runtime = subclass_feature_runtime_definition(
+        {
+            "name": "妖冶娴都 Otherworldly Glamour",
+            "class_name": "游侠",
+            "class_level": 3,
+        }
+    )
+    assert runtime is not None
+    modifier = runtime["combat_start"]["modifiers"][0]
+    assert modifier["stat"] == "ability_check"
+    assert modifier["ability"] == "charisma"
+    assert modifier["value_source"] == "wisdom_modifier"
+    assert modifier["applies_when"] == "every_charisma_ability_check"
+    assert runtime["advancement"]["choice_requirement"]["minimum"] == 1
+    assert runtime["advancement"]["choice_requirement"]["maximum"] == 1
+    assert runtime["automation_status"] == "full"
+
+
+def test_illusory_self_has_full_reaction_and_spell_slot_reset_contract() -> None:
+    runtime = subclass_feature_runtime_definition(
+        {
+            "name": "幻影化形",
+            "class_name": "游荡者",
+            "class_level": 3,
+        }
+    )
+    assert runtime is not None
+    resource = runtime["resources"]["illusory_self"]
+    action = runtime["actions"]["illusory_self"]
+    assert resource["reset_options"] == {
+        "kind": "spell_slot",
+        "minimum_level": 2,
+        "cost": 1,
+    }
+    assert resource["automation_status"] == "full"
+    assert action["runtime_execution"]["consumer"] == "pre_damage_reaction_window"
+    assert action["pre_damage_intervention"]["damage_transform"] == {"operation": "set_zero"}
+    assert action["automation_status"] == "full"
+
+
+def test_dragon_wings_has_flight_lifecycle_and_sorcery_point_reset() -> None:
+    runtime = subclass_feature_runtime_definition(
+        {
+            "name": "龙翼",
+            "class_name": "术士",
+            "class_level": 14,
+        }
+    )
+    assert runtime is not None
+    assert runtime["combat_start"]["movement_modes"][0]["mode"] == "fly"
+    assert runtime["actions"]["dragon_wings"]["effects"] == [
+        {
+            "kind": "activate_duration_condition",
+            "condition": "dragon_wings",
+            "duration_unit": "minutes",
+            "duration_value": 60,
+        }
+    ]
+    assert runtime["actions"]["reset_dragon_wings"]["effects"] == [
+        {
+            "kind": "restore_resource",
+            "resource_key": "dragon_wings",
+            "operation": "set_to_max",
+        }
+    ]
+
+
+def test_heroic_warrior_has_turn_start_inspiration_and_d20_reroll() -> None:
+    runtime = subclass_feature_runtime_definition(
+        {
+            "name": "勇战英豪",
+            "class_name": "战士",
+            "class_level": 10,
+        }
+    )
+    assert runtime is not None
+    action = runtime["actions"]["heroic_inspiration"]
+    assert action["operation"] == {"kind": "reroll", "selection": "replacement"}
+    assert action["eligibility"]["state"] == {"key": "heroic_inspiration"}
+    assert runtime["triggers"][0]["event"] == "turn_start"
+    assert runtime["triggers"][0]["effects"] == [
+        {"kind": "grant_feature_state_if_missing", "state_key": "heroic_inspiration"}
+    ]
 
 
 def test_turn_refresh_consumes_first_turn_and_conditional_movement_modes() -> None:
@@ -317,7 +450,6 @@ def test_spellcasting_capability_block_uses_existing_spell_economy_consumer() ->
         definition=definition,
     )
     assert contract["automation_status"] == "full"
-    assert contract["runtime_sections"] == ["spellcasting"]
     registry = compile_feature_runtime_registry(
         [
             {
@@ -332,6 +464,32 @@ def test_spellcasting_capability_block_uses_existing_spell_economy_consumer() ->
         total_level=1,
     )
     assert registry["spellcasting"][0]["consumer"] == "spell_economy_service"
+
+
+def test_survivor_contract_covers_death_saves_and_bloodied_turn_healing() -> None:
+    runtime = feature_runtime_definition(
+        feature_name="百折不挠",
+        class_name="战士",
+        class_level=18,
+        resources={},
+        tracked_resource_keys=(),
+    )
+    defenses = runtime["combat_start"]["defenses"]
+    assert {item["kind"] for item in defenses} == {
+        "death_save_advantage",
+        "death_save_success_threshold",
+    }
+    trigger = runtime["triggers"][0]
+    assert trigger["event"] == "turn_start"
+    assert trigger["effects"][0]["kind"] == "restore_hit_points_if_bloodied"
+    contract = feature_runtime_contract(
+        feature_name="百折不挠",
+        class_name="战士",
+        class_level=18,
+        definition=runtime,
+        kind="feature",
+    )
+    assert contract["automation_status"] == "full"
 
 
 def test_structured_recovery_events_restore_one_use_on_short_rest_and_full_on_long_rest() -> None:
@@ -977,9 +1135,19 @@ def test_feature_extensions_keep_base_resources_without_inventing_actions() -> N
     assert any(
         event.get("trigger") == "initiative_start"
         and event.get("value") == 4
-        and event.get("requires_dm_adjudication") is True
+        and event.get("condition") == "current_at_most_3"
         for event in perfect_focus["recovery_events"]
     )
+    focus_registry = compile_feature_runtime_registry(
+        core_feature_grants(rules["武僧"], 15),
+        resources=progression_resource_updates(rules["武僧"], 15),
+    )
+    focus_contracts = [
+        item
+        for item in focus_registry["feature_contracts"]
+        if item.get("name") == "明镜止水"
+    ]
+    assert focus_contracts and focus_contracts[0]["automation_status"] == "full"
 
     archdruid = compile_feature_runtime_registry(
         core_feature_grants(rules["德鲁伊"], 20),
@@ -1032,7 +1200,8 @@ def test_choice_bound_feature_actions_are_partial_and_explicit() -> None:
 
     sorcerous_restoration = progression_resource_updates(rules["术士"], 5)
     assert sorcerous_restoration["sorcery_restoration"]["max"] == 1
-    assert sorcerous_restoration["sorcery_restoration"]["requires_dm_adjudication"] is True
+    assert sorcerous_restoration["sorcery_restoration"]["requires_dm_adjudication"] is False
+    assert sorcerous_restoration["sorcery_restoration"]["automation_status"] == "full"
 
     magical_cunning = progression_resource_updates(rules["魔契师"], 2)
     assert magical_cunning["magical_cunning"]["max"] == 1

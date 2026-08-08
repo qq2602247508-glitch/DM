@@ -160,6 +160,8 @@ FEATURE_RESOURCE_MARKERS: dict[str, str] = {
     "进阶神圣干预": "divine_intervention",
     "术法复苏": "sorcery_restoration",
     "秘法回流": "magical_cunning",
+    "归复平衡": "clockwork_balance",
+    "龙翼": "dragon_wings",
     "不知疲倦": "tireless",
     "自然面纱": "nature_veil",
     "魔力泉涌": "sorcery_points",
@@ -869,8 +871,9 @@ def progression_resource_updates(
             "max": 1,
             "recovery": "long_rest",
             "source": source,
-            "requires_dm_adjudication": True,
-            "note": "只追踪短休期间可用的一次恢复；恢复术法点的数量仍按职业等级裁定。",
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+            "note": "短休恢复数量由休息输入限定为不超过术士等级一半。",
         }
     if rule.name == "魔契师" and target_class_level >= 2:
         updates["magical_cunning"] = {
@@ -878,8 +881,9 @@ def progression_resource_updates(
             "max": 1,
             "recovery": "long_rest",
             "source": source,
-            "requires_dm_adjudication": True,
-            "note": "只追踪一分钟仪式的每日使用次数；恢复法术位数量由 DM 按职业等级确认。",
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+            "note": "一分钟仪式恢复数量按已消耗契约魔法法术位的一半向上取整。",
         }
     if rule.name == "游侠":
         wisdom_modifier = _ability_modifier(ability_scores, "wisdom")
@@ -1145,6 +1149,54 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS: dict[str, dict[str, Any]] = {
         "triggers": [],
         "attack_riders": [],
     },
+    "归复平衡": {
+        "combat_start": {"modifiers": [], "defenses": []},
+        "resources": {
+            "clockwork_balance": {
+                "key": "clockwork_balance",
+                "label": "归复平衡",
+                "max_formula": "max(1, charisma_modifier)",
+                "recovery_events": [{"rest": "long_rest", "operation": "set_to_max"}],
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        },
+        "actions": {
+            "restore_balance": {
+                "id": "restore_balance",
+                "name": "归复平衡",
+                "kind": "roll_intervention",
+                "trigger": "after_d20_test",
+                "action_cost": "reaction",
+                "target_policy": {
+                    "mode": "any",
+                    "range_ft": 60,
+                    "requires_visible_or_audible": True,
+                },
+                "eligibility": {
+                    "entity_types": ["character"],
+                    "test_kinds": ["ability_check", "skill_check", "saving_throw", "armor_class"],
+                    "roll_modes": ["advantage", "disadvantage"],
+                    "resource": {"key": "clockwork_balance", "minimum": 1},
+                },
+                "operation": {
+                    "kind": "cancel_advantage_disadvantage",
+                    "selection": "first",
+                },
+                "resource": {"key": "clockwork_balance", "cost": 1},
+                "idempotency": {"prefix": "roll-intervention"},
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "player_roll_resolution",
+                    "target_validation": "line_of_sight_or_audibility",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        },
+        "triggers": [],
+        "attack_riders": [],
+    },
     # Warding Flare is the same external-reactor, post-roll window with a
     # disadvantage transform.  The separate feature pool is restored on a
     # long rest; the second reported d20 is mandatory, so the server never
@@ -1295,14 +1347,11 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS: dict[str, dict[str, Any]] = {
                         "effect_kind": "evasion",
                         "target_relation": "self_and_allies",
                         "range_ft": 5,
-                        "requires_line_of_sight": True,
+                        "requires_grid_position_for_others": True,
                         "source_forbidden_conditions": ["incapacitated"],
                     },
-                    "automation_status": "partial",
-                    "requires_dm_adjudication": True,
-                    "partial_reason": (
-                        "自身闪避已由消费者支持；是否将增益授予5尺内其他生物仍需逐次选择。"
-                    ),
+                    "automation_status": "full",
+                    "requires_dm_adjudication": False,
                     "runtime_execution": {
                         "status": "ready",
                         "consumer": "ranged_passive_evasion_and_saving_throw_resolution",
@@ -1314,8 +1363,8 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS: dict[str, dict[str, Any]] = {
         "actions": {},
         "triggers": [],
         "attack_riders": [],
-        "automation_status": "partial",
-        "requires_dm_adjudication": True,
+        "automation_status": "full",
+        "requires_dm_adjudication": False,
     },
     # Starry Form remains partial because its constellation branches still
     # require their dedicated attack/healing/concentration consumers.  Its
@@ -2610,6 +2659,293 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS: dict[str, dict[str, Any]] = {
         "triggers": [],
         "attack_riders": [],
     },
+    "奥法打击": {
+        "combat_start": {"modifiers": [], "defenses": []},
+        "resources": {},
+        "actions": {},
+        "triggers": [],
+        "attack_riders": [
+            {
+                "id": "eldritch_strike:next_spell_save",
+                "kind": "post_hit_rider",
+                "trigger": "after_hit",
+                "frequency": "each_eligible_hit",
+                "eligibility": {
+                    "actor_entity_types": ["character"],
+                    "target_relations": ["enemy"],
+                    "action_tags_all": ["attack", "weapon"],
+                },
+                "on_hit": [
+                    {
+                        "id": "eldritch_strike:next_save_disadvantage",
+                        "kind": "modifier",
+                        "stat": "saving_throw",
+                        "scope": "incoming",
+                        "operation": "disadvantage",
+                        "duration": {"unit": "until_next_save"},
+                        "source": "奥法打击：对抗施法者法术的下一次豁免具有劣势",
+                    }
+                ],
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "post_hit_rider_and_source_bound_spell_save_resolution",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        ],
+    },
+    "龙族体魄": {
+        "combat_start": {
+            "modifiers": [
+                {
+                    "id": "draconic_resilience:unarmored_ac",
+                    "stat": "armor_class",
+                    "operation": "set_base_formula",
+                    "formula": "10+dexterity_modifier+charisma_modifier",
+                    "scope": "self",
+                    "requirements": ["not_wearing_armor"],
+                    "shield_allowed": False,
+                    "runtime_execution": {
+                        "status": "ready",
+                        "consumer": "unarmored_defense_resolver",
+                    },
+                    "automation_status": "full",
+                    "requires_dm_adjudication": False,
+                }
+            ],
+            "defenses": [],
+        },
+        "advancement": {
+            "kind": "hit_points_by_class_level",
+            "minimum_class_level": 3,
+            "initial_bonus": 3,
+            "per_level_bonus": 1,
+            "runtime_execution": {
+                "status": "ready",
+                "consumer": "advancement_service",
+            },
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+        },
+        "resources": {},
+        "actions": {},
+        "triggers": [],
+        "attack_riders": [],
+    },
+    "龙翼": {
+        "combat_start": {
+            "modifiers": [],
+            "defenses": [],
+            "movement_modes": [
+                {
+                    "id": "dragon_wings:flight",
+                    "mode": "fly",
+                    "speed_ft": 60,
+                    "applies_when": "dragon_wings",
+                    "runtime_execution": {
+                        "status": "ready",
+                        "consumer": "turn_budget_movement_mode_resolver",
+                    },
+                    "automation_status": "full",
+                    "requires_dm_adjudication": False,
+                }
+            ],
+        },
+        "resources": {
+            "dragon_wings": {
+                "key": "dragon_wings",
+                "label": "龙翼",
+                "max": 1,
+                "recovery_events": [{"rest": "long_rest", "operation": "set_to_max"}],
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        },
+        "actions": {
+            "dragon_wings": {
+                "id": "dragon_wings",
+                "name": "龙翼",
+                "kind": "feature_action",
+                "action_cost": "bonus_action",
+                "target": "self",
+                "resource_key": "dragon_wings",
+                "resource_cost": 1,
+                "effects": [
+                    {
+                        "kind": "activate_duration_condition",
+                        "condition": "dragon_wings",
+                        "duration_unit": "minutes",
+                        "duration_value": 60,
+                    }
+                ],
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "combat_feature_action_and_turn_budget_movement_mode_resolver",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            },
+            "reset_dragon_wings": {
+                "id": "reset_dragon_wings",
+                "name": "龙翼（术法点重置）",
+                "kind": "feature_action",
+                "action_cost": "none",
+                "target": "self",
+                "resource_key": "sorcery_points",
+                "resource_cost": 3,
+                "effects": [
+                    {
+                        "kind": "restore_resource",
+                        "resource_key": "dragon_wings",
+                        "operation": "set_to_max",
+                    }
+                ],
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "combat_feature_action_resource_restore",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            },
+        },
+        "triggers": [],
+        "attack_riders": [],
+        "automation_status": "full",
+        "requires_dm_adjudication": False,
+    },
+    "勇战英豪": {
+        "combat_start": {"modifiers": [], "defenses": []},
+        "resources": {},
+        "actions": {
+            "heroic_inspiration": {
+                "id": "heroic_inspiration",
+                "name": "勇战英豪",
+                "kind": "roll_intervention",
+                "trigger": "after_d20_test",
+                "eligibility": {
+                    "entity_types": ["character"],
+                    "test_kinds": ["ability_check", "skill_check", "saving_throw", "armor_class"],
+                    "state": {"key": "heroic_inspiration"},
+                },
+                "operation": {"kind": "reroll", "selection": "replacement"},
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "player_roll_resolution",
+                    "producer": "turn_start_feature_state",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        },
+        "triggers": [
+            {
+                "id": "heroic_warrior:turn_start",
+                "event": "turn_start",
+                "effects": [
+                    {
+                        "kind": "grant_feature_state_if_missing",
+                        "state_key": "heroic_inspiration",
+                    }
+                ],
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "turn_start_feature_state_producer",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        ],
+        "attack_riders": [],
+        "automation_status": "full",
+        "requires_dm_adjudication": False,
+    },
+    "幻影化形": {
+        "combat_start": {"modifiers": [], "defenses": []},
+        "resources": {
+            "illusory_self": {
+                "key": "illusory_self",
+                "label": "幻影化形",
+                "max": 1,
+                "recovery_events": [{"rest": "long_rest", "operation": "set_to_max"}],
+                "reset_options": {
+                    "kind": "spell_slot",
+                    "minimum_level": 2,
+                    "cost": 1,
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        },
+        "actions": {
+            "illusory_self": {
+                "id": "illusory_self",
+                "name": "幻影化形",
+                "kind": "feature_action",
+                "action_cost": "reaction",
+                "target": "self",
+                "trigger": {
+                    "event": "attacker_hits_self",
+                    "timing": "before_damage",
+                    "requirements": ["attacker_visible"],
+                },
+                "resource": {"key": "illusory_self", "cost": 1},
+                "pre_damage_intervention": {
+                    "kind": "pre_damage_intervention",
+                    "eligibility": {
+                        "entity_types": ["character"],
+                        "damage_types": "all",
+                        "forbidden_conditions": ["incapacitated"],
+                    },
+                    "input_requirements": [],
+                    "damage_transform": {"operation": "set_zero"},
+                },
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "pre_damage_reaction_window",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        },
+        "triggers": [],
+        "attack_riders": [],
+    },
+    "思维之盾": {
+        "combat_start": {
+            "modifiers": [],
+            "defenses": [
+                {
+                    "id": "thought_shield:psychic_resistance",
+                    "kind": "damage_resistance",
+                    "damage_types": ["psychic"],
+                    "applies_when": "always",
+                    "runtime_execution": {
+                        "status": "ready",
+                        "consumer": "damage_defense_resolver",
+                    },
+                    "automation_status": "full",
+                    "requires_dm_adjudication": False,
+                },
+                {
+                    "id": "thought_shield:psychic_reflection",
+                    "kind": "damage_reflection",
+                    "damage_types": ["psychic"],
+                    "reflection": "equal_adjusted_damage_to_source",
+                    "runtime_execution": {
+                        "status": "ready",
+                        "consumer": "damage_resolution",
+                    },
+                    "automation_status": "full",
+                    "requires_dm_adjudication": False,
+                },
+            ],
+        },
+        "resources": {},
+        "actions": {},
+        "triggers": [],
+        "attack_riders": [],
+    },
     "奥能冲锋": {
         "combat_start": {"modifiers": [], "defenses": []},
         "resources": {}, "actions": {},
@@ -2658,6 +2994,141 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS: dict[str, dict[str, Any]] = {
 # unaware of either feature name.
 SUBCLASS_FEATURE_RUNTIME_CONFIGS["治愈之光"] = SUBCLASS_FEATURE_RUNTIME_CONFIGS["治疗之光"]
 
+# Circle of the Land's Natural Recovery is a deterministic short-rest
+# recovery.  The player still chooses the individual spell-slot levels; the
+# rest service receives that choice explicitly and validates the combined
+# level budget instead of inventing a slot distribution.
+SUBCLASS_FEATURE_RUNTIME_CONFIGS["自然恢复"] = {
+    "combat_start": {"modifiers": [], "defenses": []},
+    "resources": {},
+    "actions": {
+        "natural_recovery": {
+            "id": "natural_recovery",
+            "name": "自然恢复",
+            "kind": "rest_recovery",
+            "trigger": "short_rest",
+            "resource_key": "$feature_resource",
+            "resource_cost": 1,
+            "restore_resource_prefix": "spell_slots_",
+            "maximum_total_levels_formula": "half_class_level_round_up",
+            "maximum_slot_level": 5,
+            "reset_trigger": "long_rest",
+            "runtime_execution": {
+                "status": "ready",
+                "consumer": "rest_service",
+            },
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+            "summary": (
+                "短休结束时选择恢复总环阶不超过德鲁伊等级一半（向上取整）的1至5环法术位；"
+                "使用权长休恢复。"
+            ),
+        }
+    },
+    "triggers": [],
+    "attack_riders": [],
+}
+
+SUBCLASS_FEATURE_RUNTIME_CONFIGS["百折不挠"] = {
+    "combat_start": {
+        "modifiers": [],
+        "defenses": [
+            {
+                "id": "survivor:death_save_advantage",
+                "kind": "death_save_advantage",
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            },
+            {
+                "id": "survivor:death_save_18_is_20",
+                "kind": "death_save_success_threshold",
+                "minimum_roll": 18,
+                "treat_as": 20,
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            },
+        ],
+    },
+    "resources": {},
+    "actions": {},
+    "triggers": [
+        {
+            "id": "survivor:turn_start_bloodied_healing",
+            "event": "turn_start",
+            "effects": [
+                {
+                    "kind": "restore_hit_points_if_bloodied",
+                    "amount": 5,
+                    "ability_modifier": "constitution",
+                    "minimum": 1,
+                }
+            ],
+            "runtime_execution": {
+                "status": "ready",
+                "consumer": "turn_start_feature_healing",
+            },
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+        }
+    ],
+    "attack_riders": [],
+    "automation_status": "full",
+    "requires_dm_adjudication": False,
+}
+
+# Otherworldly Glamour has two coupled effects: a wisdom-scaled bonus on every
+# Charisma ability check and one explicitly chosen skill proficiency.  The
+# modifier is consumed by the player-roll resolver; the typed choice is
+# persisted by the existing subclass advancement consumer.
+SUBCLASS_FEATURE_RUNTIME_CONFIGS["妖冶娴都"] = {
+    "combat_start": {
+        "modifiers": [
+            {
+                "id": "otherworldly_glamour:charisma_check_bonus",
+                "stat": "ability_check",
+                "ability": "charisma",
+                "operation": "add",
+                "value_source": "wisdom_modifier",
+                "scope": "self",
+                "applies_when": "every_charisma_ability_check",
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "player_roll_resolution",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        ],
+        "defenses": [],
+    },
+    "resources": {},
+    "actions": {},
+    "triggers": [],
+    "attack_riders": [],
+    "advancement": {
+        "kind": "proficiency_choice",
+        "option_kind": "skill",
+        "operation": "grant_proficiency",
+        "allowed_options": "supported_skills",
+        "choice_requirement": {
+            "key": "subclass_skill_proficiency",
+            "minimum": 1,
+            "maximum": 1,
+            "strict": True,
+            "options_source": "supported_skill_registry",
+            "requires_dm_selection": False,
+        },
+        "runtime_execution": {
+            "status": "ready",
+            "consumer": "advancement_service",
+        },
+        "automation_status": "full",
+        "requires_dm_adjudication": False,
+    },
+    "automation_status": "full",
+    "requires_dm_adjudication": False,
+}
+
 
 def subclass_feature_runtime_definition(
     definition: Mapping[str, Any],
@@ -2680,6 +3151,28 @@ def subclass_feature_runtime_definition(
             "triggers": [],
             "attack_riders": [],
             "prepared_spell_list": spell_contract,
+        }
+    if config is None and (name == "动物语者" or name.startswith("自然语者")):
+        spells = ["野兽感官", "动物交谈"] if name == "动物语者" else ["问道自然"]
+        return {
+            "combat_start": {"modifiers": [], "defenses": []},
+            "resources": {},
+            "actions": {},
+            "triggers": [],
+            "attack_riders": [],
+            "advancement": {
+                "kind": "fixed_spell_grant",
+                "spells": spells,
+                "grant_class": "owner_class",
+                "casting_ability": "wisdom",
+                "ritual_only": True,
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "advancement_service_and_noncombat_spell_economy",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            },
         }
     if config is None:
         return None
@@ -2865,6 +3358,21 @@ def _subclass_resource_update(
     current_class_level: int | None = None,
 ) -> tuple[str, dict[str, Any]] | None:
     description = str(definition.get("description") or "")
+    feature_name = str(definition.get("name") or "").strip()
+    if feature_name.startswith("自然恢复"):
+        return "natural_recovery", {
+            "label": feature_name,
+            "max": 1,
+            "max_formula": "fixed_one",
+            "recovery": "long_rest",
+            "recovery_events": [{"rest": "long_rest", "operation": "set_to_max"}],
+            "source": (
+                f"{definition.get('source_path') or definition.get('source_record_id')}"
+                f" · {definition.get('class_level')}级{feature_name}"
+            ),
+            "requires_dm_adjudication": False,
+            "automation_status": "full",
+        }
     healing_pool = re.search(
         r"(?:有着|拥有)\s*(\d+)\s*枚\s*d(\d+)\s*(?:骰子|骰)?的治疗池",
         description,

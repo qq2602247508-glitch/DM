@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from collections.abc import Mapping
 from datetime import UTC, datetime, timedelta
 from typing import Any, cast
 
@@ -379,6 +380,179 @@ class RestService:
             ).all()
             return tuple(serialize(row) for row in rows)
 
+    @staticmethod
+    def _apply_feature_recovery_choices(
+        character: Character,
+        resources: tuple[RestResource, ...],
+        participant: Mapping[str, Any],
+        *,
+        effective_type: str,
+        completed: bool,
+    ) -> tuple[tuple[RestResource, ...], list[dict[str, Any]]]:
+        """Apply explicitly submitted rest feature recoveries.
+
+        The rest request is the authoritative player/DM input boundary.  The
+        feature registry supplies the action contract; this method only
+        executes the two deterministic recovery formulas currently supported.
+        Missing choices do nothing, while a submitted choice that is not
+        available fails closed instead of silently consuming a feature.
+        """
+
+        raw_choices = participant.get("feature_recovery_choices")
+        choices = dict(raw_choices) if isinstance(raw_choices, Mapping) else {}
+        if not choices or not completed:
+            return resources, []
+        grants = [item for item in character.features or [] if isinstance(item, dict)]
+        if not grants:
+            raise ValueError("休息特性恢复选择缺少职业特性运行时合同")
+        scalings = {
+            str(item.get("scaling_key")): {"value": item.get("value")}
+            for item in grants
+            if item.get("kind") == "class_scaling" and isinstance(item.get("scaling_key"), str)
+        }
+        registry = compile_feature_runtime_registry(
+            grants,
+            resources=character.resources if isinstance(character.resources, dict) else {},
+            scalings=scalings,
+            class_levels=character.class_levels if isinstance(character.class_levels, dict) else {},
+            total_level=character.level,
+        )
+        actions = registry.get("actions")
+        if not isinstance(actions, Mapping):
+            raise ValueError("休息特性恢复选择缺少动作合同")
+        by_key = {item.key: item for item in resources}
+        applied: list[dict[str, Any]] = []
+        for action_id, raw_amount in choices.items():
+            action = actions.get(str(action_id))
+            if not isinstance(action, Mapping) or action.get("kind") != "rest_recovery":
+                raise ValueError(f"休息特性恢复动作不存在或不可执行：{action_id}")
+            if action.get("trigger") != effective_type + "_rest":
+                raise ValueError(f"休息特性恢复动作不适用于本次休息：{action_id}")
+            resource_key = str(action.get("resource_key") or "").strip()
+            restore_key = str(action.get("restore_resource_key") or "").strip()
+            feature_pool = by_key.get(resource_key)
+            restore_pool = by_key.get(restore_key)
+            if feature_pool is None or (
+                action_id != "natural_recovery" and restore_pool is None
+            ):
+                raise ValueError(f"休息特性恢复资源池不存在：{action_id}")
+            if feature_pool.current < int(action.get("resource_cost") or 1):
+                raise ValueError(f"休息特性恢复次数不足：{action_id}")
+            if action.get("kind") == "rest_recovery" and action_id == "natural_recovery":
+                if not isinstance(raw_amount, Mapping):
+                    raise ValueError("自然恢复必须提交各法术环阶的恢复数量")
+                class_level = (
+                    max(
+                        int(value)
+                        for key, value in (character.class_levels or {}).items()
+                        if str(key) in {"德鲁伊", "druid"}
+                        and isinstance(value, int)
+                    )
+                    if any(
+                        str(key) in {"德鲁伊", "druid"}
+                        for key in (character.class_levels or {})
+                    )
+                    else 0
+                )
+                maximum_total_levels = (class_level + 1) // 2
+                total_levels = 0
+                restored_slots: list[tuple[int, int]] = []
+                for raw_level, raw_count in raw_amount.items():
+                    level = int(raw_level)
+                    count = int(raw_count)
+                    if level < 1 or level > int(action.get("maximum_slot_level") or 5):
+                        raise ValueError("自然恢复只能选择1至5环法术位")
+                    if count < 0:
+                        raise ValueError("自然恢复数量不能为负数")
+                    if count == 0:
+                        continue
+                    total_levels += level * count
+                    restored_slots.append((level, count))
+                if total_levels < 1 or total_levels > maximum_total_levels:
+                    raise ValueError("自然恢复总环阶必须不超过德鲁伊等级一半（向上取整）")
+                for level, count in restored_slots:
+                    restore_pool = by_key.get(f"spell_slots_{level}")
+                    if restore_pool is None:
+                        raise ValueError(f"自然恢复法术位资源池不存在：{level}环")
+                    available = max(0, restore_pool.maximum - restore_pool.current)
+                    if count > available:
+                        raise ValueError(f"自然恢复数量超过{level}环法术位缺口")
+                by_key[resource_key] = RestResource(
+                    feature_pool.key,
+                    feature_pool.current - int(action.get("resource_cost") or 1),
+                    feature_pool.maximum,
+                    feature_pool.recovery,
+                    feature_pool.recovery_events,
+                )
+                for level, count in restored_slots:
+                    key = f"spell_slots_{level}"
+                    pool = by_key[key]
+                    by_key[key] = RestResource(
+                        pool.key,
+                        pool.current + count,
+                        pool.maximum,
+                        pool.recovery,
+                        pool.recovery_events,
+                    )
+                applied.append(
+                    {
+                        "action_id": str(action_id),
+                        "resource_key": resource_key,
+                        "resource_cost": int(action.get("resource_cost") or 1),
+                        "restore_resource_key": "spell_slots_*",
+                        "slot_choices": {str(level): count for level, count in restored_slots},
+                        "total_levels": total_levels,
+                    }
+                )
+                continue
+            amount = int(raw_amount)
+            if action_id == "sorcery_restoration":
+                class_level = (
+                    max(
+                        int(value)
+                        for key, value in (character.class_levels or {}).items()
+                        if str(key) in {"术士", "sorcerer"}
+                        and isinstance(value, int)
+                    )
+                    if any(
+                        str(key) in {"术士", "sorcerer"}
+                        for key in (character.class_levels or {})
+                    )
+                    else 0
+                )
+                maximum_amount = class_level // 2
+                if amount < 1 or amount > maximum_amount:
+                    raise ValueError("术法复苏数量必须不大于术士等级一半且至少为1")
+            else:
+                raise ValueError(f"未支持的休息特性恢复动作：{action_id}")
+            available = max(0, restore_pool.maximum - restore_pool.current)
+            if amount > available:
+                raise ValueError(f"休息特性恢复数量超过资源池缺口：{restore_key}")
+            by_key[resource_key] = RestResource(
+                feature_pool.key,
+                feature_pool.current - int(action.get("resource_cost") or 1),
+                feature_pool.maximum,
+                feature_pool.recovery,
+                feature_pool.recovery_events,
+            )
+            by_key[restore_key] = RestResource(
+                restore_pool.key,
+                restore_pool.current + amount,
+                restore_pool.maximum,
+                restore_pool.recovery,
+                restore_pool.recovery_events,
+            )
+            applied.append(
+                {
+                    "action_id": str(action_id),
+                    "resource_key": resource_key,
+                    "resource_cost": int(action.get("resource_cost") or 1),
+                    "restore_resource_key": restore_key,
+                    "amount": amount,
+                }
+            )
+        return tuple(by_key[item.key] for item in resources), applied
+
     def _preview_in_session(
         self,
         session: Session,
@@ -537,6 +711,13 @@ class RestService:
                 after_hit_dice = hit_dice
                 completed = True
 
+            after_resources, feature_recovery_applied = self._apply_feature_recovery_choices(
+                character,
+                after_resources,
+                participant,
+                effective_type=effective_type,
+                completed=completed,
+            )
             after_resource_map = {item.key: item for item in after_resources}
             resource_changes: list[dict[str, Any]] = []
             for pool in pools:
@@ -639,6 +820,7 @@ class RestService:
                     "character_name": character.name,
                     "character_version": character.version,
                     "completed": completed,
+                    "feature_recovery_applied": feature_recovery_applied,
                     "before": {
                         "hp": character.hp,
                         "fatigue": fatigue,
@@ -714,6 +896,107 @@ class RestService:
     def preview(self, campaign_id: str, request_data: dict[str, Any]) -> dict[str, Any]:
         with Session(self.engine) as session, session.begin():
             return self._preview_in_session(session, campaign_id, request_data)
+
+    def confirm_feature_recovery(
+        self, campaign_id: str, request_data: dict[str, Any]
+    ) -> dict[str, Any]:
+        """Execute a non-combat, idempotent feature recovery ritual."""
+
+        idempotency_key = str(request_data.get("idempotency_key") or "").strip()
+        if not idempotency_key:
+            raise ValueError("feature recovery idempotency_key is required")
+        operation_key = f"feature-recovery:{idempotency_key}"
+        with Session(self.engine) as session, session.begin():
+            existing = session.scalar(
+                select(OperationTransaction).where(
+                    OperationTransaction.campaign_id == campaign_id,
+                    OperationTransaction.idempotency_key == operation_key,
+                )
+            )
+            if existing is not None:
+                return dict(existing.after_snapshot or {})
+            character = self._character(
+                session,
+                campaign_id,
+                str(request_data.get("character_id") or ""),
+            )
+            expected_version = int(request_data.get("character_version") or 0)
+            if character.version != expected_version:
+                raise VersionConflict(
+                    "character", character.id, expected_version, character.version
+                )
+            feature_id = str(request_data.get("feature_id") or "").strip()
+            if not feature_id:
+                raise ValueError("feature recovery feature_id is required")
+            grants = [item for item in character.features or [] if isinstance(item, dict)]
+            registry = compile_feature_runtime_registry(
+                grants,
+                resources=character.resources if isinstance(character.resources, dict) else {},
+                class_levels=(
+                    character.class_levels if isinstance(character.class_levels, dict) else {}
+                ),
+                total_level=character.level,
+            )
+            actions = registry.get("actions")
+            action = actions.get(feature_id) if isinstance(actions, Mapping) else None
+            if not isinstance(action, Mapping) or action.get("kind") != "ritual_recovery":
+                raise ValueError("该职业特性没有可执行的仪式恢复合同")
+            if int(request_data.get("ritual_minutes") or 0) != 1:
+                raise ValueError("秘法回流必须完成一分钟仪式")
+            resource_key = str(action.get("resource_key") or "").strip()
+            restore_key = str(action.get("restore_resource_key") or "").strip()
+            resources = dict(character.resources or {})
+            feature_pool = dict(resources.get(resource_key) or {})
+            restore_pool = dict(resources.get(restore_key) or {})
+            feature_before = int(feature_pool.get("current") or 0)
+            if feature_before < int(action.get("resource_cost") or 1):
+                raise ValueError("秘法回流今日使用次数不足")
+            restore_before = int(restore_pool.get("current") or 0)
+            restore_max = int(restore_pool.get("max") or restore_pool.get("maximum") or 0)
+            if restore_max < 1:
+                raise ValueError("秘法回流缺少契约魔法法术位上限")
+            amount = (restore_max - restore_before + 1) // 2
+            amount = min(amount, restore_max - restore_before)
+            feature_pool["current"] = feature_before - int(action.get("resource_cost") or 1)
+            restore_pool["current"] = restore_before + amount
+            resources[resource_key] = feature_pool
+            resources[restore_key] = restore_pool
+            before = {
+                "character_id": character.id,
+                "character_version": character.version,
+                "resources": dict(character.resources or {}),
+            }
+            character.resources = resources
+            character.version += 1
+            character.updated_at = datetime.now(UTC)
+            result = {
+                "feature_id": feature_id,
+                "feature_name": action.get("name"),
+                "ritual_minutes": 1,
+                "resource_key": resource_key,
+                "resource_before": feature_before,
+                "resource_after": feature_pool["current"],
+                "restore_resource_key": restore_key,
+                "restored_amount": amount,
+                "restore_before": restore_before,
+                "restore_after": restore_pool["current"],
+                "character": serialize(character),
+            }
+            session.add(
+                OperationTransaction(
+                    campaign_id=campaign_id,
+                    operation_type="feature_recovery",
+                    idempotency_key=operation_key,
+                    status="applied",
+                    before_snapshot=before,
+                    after_snapshot=result,
+                    reason="完成一分钟职业特性仪式恢复",
+                    source="game_table",
+                    confirmed_at=datetime.now(UTC),
+                )
+            )
+            session.flush()
+            return result
 
     def confirm(self, campaign_id: str, request_data: dict[str, Any]) -> dict[str, Any]:
         with Session(self.engine) as session, session.begin():

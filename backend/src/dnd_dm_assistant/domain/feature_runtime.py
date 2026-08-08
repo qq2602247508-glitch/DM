@@ -82,6 +82,10 @@ FEATURE_CONDITION_RUNTIME_SPECS: dict[str, dict[str, dict[str, Any]]] = {
             "state_name": "feature_starry_form",
             "duration_units": ["minutes"],
         },
+        "dragon_wings": {
+            "state_name": "feature_dragon_wings",
+            "duration_units": ["minutes"],
+        },
     },
     "activate_timed_condition": {
         "隐形": {
@@ -293,6 +297,8 @@ def resolve_unarmored_defense_ac(
             constitution_key = "constitution"
         elif formula == "10+dexterity_modifier+wisdom_modifier":
             constitution_key = "wisdom"
+        elif formula == "10+dexterity_modifier+charisma_modifier":
+            constitution_key = "charisma"
         else:
             continue
         shield_allowed = raw_modifier.get("shield_allowed") is True
@@ -308,7 +314,13 @@ def resolve_unarmored_defense_ac(
             ability_scores.get(
                 constitution_key,
                 ability_scores.get(
-                    "体质" if constitution_key == "constitution" else "感知",
+                    (
+                        "体质"
+                        if constitution_key == "constitution"
+                        else "感知"
+                        if constitution_key == "wisdom"
+                        else "魅力"
+                    ),
                     10,
                 ),
             )
@@ -684,17 +696,67 @@ def feature_runtime_definition(
                     "trigger": "initiative_start",
                     "operation": "set_to",
                     "value": 4,
-                    "condition": "current_at_most_3_and_not_using_focus_feature",
-                    "requires_dm_adjudication": True,
+                    "condition": "current_at_most_3",
                 },
             ]
             resource.update(
                 {
-                    "automation_status": "partial",
-                    "requires_dm_adjudication": True,
-                    "note": "先攻条件与恢复值已结构化；仍需判断本次是否使用运转周天。",
+                    "automation_status": "full",
+                    "requires_dm_adjudication": False,
+                    "note": "先攻开始时功力低于4点会自动恢复至4点。",
                 }
             )
+
+    if (
+        identity in {"百折不挠", "survivor"}
+        or identity.startswith("百折不挠")
+        or "survivor" in identity
+    ):
+        # Survivor has no spendable pool.  Both clauses are represented as
+        # typed combat contracts: the death-save resolver consumes the
+        # advantage/18–20 rule, while the turn boundary consumes the bloodied
+        # healing trigger.
+        definition["combat_start"]["defenses"].extend(
+            [
+                {
+                    "id": "survivor:death_save_advantage",
+                    "kind": "death_save_advantage",
+                    "automation_status": "full",
+                    "requires_dm_adjudication": False,
+                    **source,
+                },
+                {
+                    "id": "survivor:death_save_18_is_20",
+                    "kind": "death_save_success_threshold",
+                    "minimum_roll": 18,
+                    "treat_as": 20,
+                    "automation_status": "full",
+                    "requires_dm_adjudication": False,
+                    **source,
+                },
+            ]
+        )
+        definition["triggers"].append(
+            {
+                "id": "survivor:turn_start_bloodied_healing",
+                "event": "turn_start",
+                "effects": [
+                    {
+                        "kind": "restore_hit_points_if_bloodied",
+                        "amount": 5,
+                        "ability_modifier": "constitution",
+                        "minimum": 1,
+                    }
+                ],
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "turn_start_feature_healing",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+                **source,
+            }
+        )
 
     if identity in {"大德鲁伊", "archdruid"} and "wild_shape" in resource_keys:
         resource = definition["resources"].get("wild_shape")
@@ -1544,6 +1606,48 @@ def feature_runtime_definition(
                 ],
                 **source,
             }
+
+    if identity in {"术法复苏", "sorceryrestoration"} and "sorcery_restoration" in resource_keys:
+        definition["actions"]["sorcery_restoration"] = {
+            "id": "sorcery_restoration",
+            "name": feature_name,
+            "kind": "rest_recovery",
+            "trigger": "short_rest",
+            "resource_key": "sorcery_restoration",
+            "resource_cost": 1,
+            "restore_resource_key": "sorcery_points",
+            "maximum_amount_formula": "half_class_level_floor",
+            "reset_trigger": "long_rest",
+            "runtime_execution": {
+                "status": "ready",
+                "consumer": "rest_service",
+            },
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+            "summary": "短休结束时可选择恢复不超过术士等级一半的术法点；使用权长休恢复。",
+            **source,
+        }
+
+    if identity in {"秘法回流", "magicalcunning"} and "magical_cunning" in resource_keys:
+        definition["actions"]["magical_cunning"] = {
+            "id": "magical_cunning",
+            "name": feature_name,
+            "kind": "ritual_recovery",
+            "trigger": "one_minute_ritual",
+            "resource_key": "magical_cunning",
+            "resource_cost": 1,
+            "restore_resource_key": "pact_slots",
+            "amount_formula": "half_expended_round_up",
+            "reset_trigger": "long_rest",
+            "runtime_execution": {
+                "status": "ready",
+                "consumer": "feature_recovery_service",
+            },
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+            "summary": "完成一分钟秘传仪式后恢复一半已消耗的契约魔法法术位（向上取整）。",
+            **source,
+        }
 
     if "神圣干预" in identity or "divineintervention" in identity:
         if "divine_intervention" in resource_keys:

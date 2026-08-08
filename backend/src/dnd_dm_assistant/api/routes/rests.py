@@ -5,7 +5,11 @@ from typing import Annotated, Any
 from fastapi import APIRouter, Depends, HTTPException, Query
 
 from dnd_dm_assistant.api.dependencies import get_rest_service
-from dnd_dm_assistant.api.schemas import RestConfirmRequest, RestPreviewRequest
+from dnd_dm_assistant.api.schemas import (
+    FeatureRecoveryRequest,
+    RestConfirmRequest,
+    RestPreviewRequest,
+)
 from dnd_dm_assistant.domain.campaign_state import StateNotFoundError, VersionConflict
 from dnd_dm_assistant.infrastructure.database.rest_service import RestService
 
@@ -55,4 +59,18 @@ def confirm_rest(
 ) -> dict[str, Any]:
     return _safe_call(
         lambda: service.confirm(campaign_id, body.model_dump(mode="json"))
+    )
+
+
+@router.post("/feature-recoveries/confirm")
+def confirm_feature_recovery(
+    campaign_id: str,
+    body: FeatureRecoveryRequest,
+    service: Annotated[RestService, Depends(get_rest_service)],
+) -> dict[str, Any]:
+    return _safe_call(
+        lambda: service.confirm_feature_recovery(
+            campaign_id,
+            body.model_dump(mode="json"),
+        )
     )

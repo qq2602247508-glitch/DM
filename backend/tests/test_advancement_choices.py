@@ -745,6 +745,48 @@ def test_fixed_subclass_spell_grant_persists_its_casting_ability() -> None:
     assert additions[0]["prepared"] is True
 
 
+def test_ritual_only_subclass_spell_grants_are_typed_and_full() -> None:
+    result = subclass_runtime_grants(
+        {
+            "name": "兽心道途",
+            "feature_definitions": [
+                {
+                    "id": "animal-speaker",
+                    "name": "动物语者",
+                    "class_level": 3,
+                    "description": "你可以施展法术野兽感官与动物交谈，仅限仪式施展。",
+                    "source_record_id": "animal-speaker",
+                }
+            ],
+        },
+        class_name="野蛮人",
+        target_class_level=3,
+    )
+    grant = result["grants"][0]
+    assert grant["runtime"]["automation_status"] == "full"
+    assert grant["runtime"]["registry"]["advancement"]["ritual_only"] is True
+    additions = _fixed_subclass_feature_spell_additions(
+        result["grants"],
+        spell_catalog=(
+            {
+                "name": "野兽感官",
+                "source_record_id": "beast-sense",
+                "level": 2,
+                "classes": ["德鲁伊"],
+            },
+            {
+                "name": "动物交谈",
+                "source_record_id": "speak-with-animals",
+                "level": 1,
+                "classes": ["吟游诗人"],
+            },
+        ),
+        owner_class="野蛮人",
+    )
+    assert {item["name"] for item in additions} == {"野兽感官", "动物交谈"}
+    assert all(item["ritual_only"] is True for item in additions)
+
+
 def test_mindless_rage_declares_conditional_immunity_and_clear_trigger() -> None:
     result = subclass_runtime_grants(
         {

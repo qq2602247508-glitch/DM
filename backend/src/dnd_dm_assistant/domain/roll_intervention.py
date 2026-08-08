@@ -26,6 +26,7 @@ ROLL_INTERVENTION_OPERATIONS = frozenset(
         "set_minimum",
         "set_minimum_d20",
         "replace_d20",
+        "cancel_advantage_disadvantage",
         "failure_recovery",
     }
 )
@@ -274,6 +275,7 @@ def _eligible_bindings(
         ("ability", "abilities"),
         ("skill", "skills"),
         ("attack_type", "attack_types"),
+        ("roll_mode", "roll_modes"),
     ):
         allowed = _normalized_set(_string_list(eligibility.get(eligibility_key)))
         if not allowed:
@@ -632,6 +634,23 @@ def _apply_operation(
         pair = _two_reported_totals(reported_totals, label="优势或劣势")
         details["reported_totals"] = tuple(pair)
         return (max(pair) if kind == "advantage" else min(pair)), details
+    if kind == "cancel_advantage_disadvantage":
+        pair = _two_reported_totals(reported_totals, label="优势/劣势抵消")
+        selection = str(operation.get("selection") or "first").strip().casefold()
+        if selection == "first":
+            effective = pair[0]
+        elif selection == "second":
+            effective = pair[1]
+        else:
+            raise ValueError("优势/劣势抵消必须选择 first 或 second")
+        details.update(
+            {
+                "reported_totals": tuple(pair),
+                "selection": selection,
+                "cancelled_roll_mode": True,
+            }
+        )
+        return effective, details
     if kind == "add":
         amount = evaluate_roll_intervention_amount(
             operation.get("amount", operation.get("value")), bindings=bindings, inputs=inputs

@@ -11,6 +11,7 @@ from fastapi.testclient import TestClient
 
 from dnd_dm_assistant.api.app import create_app
 from dnd_dm_assistant.config import Settings
+from dnd_dm_assistant.domain.feature_runtime import feature_runtime_definition
 
 
 @pytest.fixture
@@ -141,6 +142,224 @@ def test_short_rest_preview_and_confirm_are_atomic_and_idempotent(
         f"/api/v1/campaigns/{campaign['id']}/characters/{character['id']}"
     ).json()
     assert replayed_character["version"] == updated["version"]
+
+
+def test_magical_cunning_ritual_recovery_is_persisted_and_idempotent(
+    rest_client: TestClient,
+) -> None:
+    campaign = _campaign(rest_client)
+    runtime = feature_runtime_definition(
+        feature_name="秘法回流",
+        class_name="魔契师",
+        class_level=5,
+        resources={
+            "magical_cunning": {"current": 1, "max": 1, "recovery": "long_rest"},
+        },
+        tracked_resource_keys=("magical_cunning",),
+    )
+    created = rest_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/characters",
+        json={
+            "name": "仪式回流者",
+            "class_name": "魔契师",
+            "level": 5,
+            "hp": 20,
+            "max_hp": 20,
+            "ability_scores": {"charisma": 16},
+            "class_levels": {"魔契师": 5},
+            "features": [
+                {
+                    "kind": "feature",
+                    "name": "秘法回流",
+                    "class_name": "魔契师",
+                    "class_level": 5,
+                    "runtime": {"registry": runtime},
+                }
+            ],
+            "resources": {
+                "magical_cunning": {"current": 1, "max": 1, "recovery": "long_rest"},
+                "pact_slots": {"current": 1, "max": 4, "recovery": "short_rest"},
+            },
+        },
+    )
+    assert created.status_code == 201, created.text
+    character = created.json()
+    body = {
+        "character_id": character["id"],
+        "character_version": character["version"],
+        "feature_id": "magical_cunning",
+        "ritual_minutes": 1,
+        "idempotency_key": "magical-cunning-0001",
+    }
+    response = rest_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/feature-recoveries/confirm",
+        json=body,
+    )
+    assert response.status_code == 200, response.text
+    result = response.json()
+    assert result["restored_amount"] == 2
+    assert result["restore_after"] == 3
+    assert result["resource_after"] == 0
+    replay = rest_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/feature-recoveries/confirm",
+        json=body,
+    )
+    assert replay.status_code == 200, replay.text
+    assert replay.json()["restore_after"] == 3
+
+
+def test_sorcery_restoration_short_rest_choice_consumes_once(
+    rest_client: TestClient,
+) -> None:
+    campaign = _campaign(rest_client)
+    runtime = feature_runtime_definition(
+        feature_name="术法复苏",
+        class_name="术士",
+        class_level=10,
+        resources={
+            "sorcery_restoration": {"current": 1, "max": 1, "recovery": "long_rest"},
+        },
+        tracked_resource_keys=("sorcery_restoration",),
+    )
+    created = rest_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/characters",
+        json={
+            "name": "术法复苏者",
+            "class_name": "术士",
+            "level": 10,
+            "hp": 20,
+            "max_hp": 20,
+            "ability_scores": {"charisma": 16},
+            "class_levels": {"术士": 10},
+            "features": [
+                {
+                    "kind": "feature",
+                    "name": "术法复苏",
+                    "class_name": "术士",
+                    "class_level": 10,
+                    "runtime": {"registry": runtime},
+                }
+            ],
+            "resources": {
+                "sorcery_restoration": {"current": 1, "max": 1, "recovery": "long_rest"},
+                "sorcery_points": {"current": 2, "max": 10, "recovery": "long_rest"},
+            },
+        },
+    )
+    assert created.status_code == 201, created.text
+    character = created.json()
+    body = {
+        "rest_type": "short",
+        "duration_minutes": 60,
+        "participants": [
+            {
+                "character_id": character["id"],
+                "character_version": character["version"],
+                "feature_recovery_choices": {"sorcery_restoration": 5},
+            }
+        ],
+    }
+    preview = rest_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/rests/preview", json=body
+    )
+    assert preview.status_code == 200, preview.text
+    participant = preview.json()["participants"][0]
+    assert participant["feature_recovery_applied"][0]["amount"] == 5
+    confirm = rest_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/rests/confirm",
+        json={
+            **body,
+            "preview_token": preview.json()["preview_token"],
+            "idempotency_key": "sorcery-rest-0001",
+        },
+    )
+    assert confirm.status_code == 200, confirm.text
+    updated = rest_client.get(
+        f"/api/v1/campaigns/{campaign['id']}/characters/{character['id']}"
+    ).json()
+    assert updated["resources"]["sorcery_points"]["current"] == 7
+    assert updated["resources"]["sorcery_restoration"]["current"] == 0
+
+
+def test_natural_recovery_restores_explicit_spell_slot_levels(
+    rest_client: TestClient,
+) -> None:
+    campaign = _campaign(rest_client)
+    runtime = {
+        "actions": {
+            "natural_recovery": {
+                "id": "natural_recovery",
+                "kind": "rest_recovery",
+                "trigger": "short_rest",
+                "resource_key": "natural_recovery",
+                "resource_cost": 1,
+                "maximum_slot_level": 5,
+                "maximum_total_levels_formula": "half_class_level_round_up",
+            }
+        }
+    }
+    created = rest_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/characters",
+        json={
+            "name": "自然恢复者",
+            "class_name": "德鲁伊",
+            "level": 10,
+            "hp": 20,
+            "max_hp": 20,
+            "ability_scores": {"wisdom": 16},
+            "class_levels": {"德鲁伊": 10},
+            "features": [
+                {
+                    "kind": "feature",
+                    "name": "自然恢复",
+                    "class_name": "德鲁伊",
+                    "class_level": 10,
+                    "runtime": {"registry": runtime},
+                }
+            ],
+            "resources": {
+                "natural_recovery": {"current": 1, "max": 1, "recovery": "long_rest"},
+                "spell_slots_1": {"current": 0, "max": 4, "recovery": "long_rest"},
+                "spell_slots_2": {"current": 1, "max": 3, "recovery": "long_rest"},
+                "spell_slots_3": {"current": 0, "max": 3, "recovery": "long_rest"},
+            },
+        },
+    )
+    assert created.status_code == 201, created.text
+    character = created.json()
+    assert "natural_recovery" in character["resources"]
+    body = {
+        "rest_type": "short",
+        "duration_minutes": 60,
+        "participants": [
+            {
+                "character_id": character["id"],
+                "character_version": character["version"],
+                "feature_recovery_choices": {"natural_recovery": {"1": 2, "2": 1}},
+            }
+        ],
+    }
+    preview = rest_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/rests/preview", json=body
+    )
+    assert preview.status_code == 200, preview.text
+    applied = preview.json()["participants"][0]["feature_recovery_applied"][0]
+    assert applied["total_levels"] == 4
+    confirm = rest_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/rests/confirm",
+        json={
+            **body,
+            "preview_token": preview.json()["preview_token"],
+            "idempotency_key": "natural-recovery-0001",
+        },
+    )
+    assert confirm.status_code == 200, confirm.text
+    updated = rest_client.get(
+        f"/api/v1/campaigns/{campaign['id']}/characters/{character['id']}"
+    ).json()
+    assert updated["resources"]["natural_recovery"]["current"] == 0
+    assert updated["resources"]["spell_slots_1"]["current"] == 2
+    assert updated["resources"]["spell_slots_2"]["current"] == 2
 
 
 def test_team_rest_rejects_stale_participant_without_partial_changes(

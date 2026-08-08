@@ -265,6 +265,7 @@ def _fixed_subclass_feature_spell_additions(
                     "prepared": True,
                     "always_prepared": True,
                     "spellcasting_ability": str(advancement.get("casting_ability") or ""),
+                    "ritual_only": bool(advancement.get("ritual_only")),
                     "source_feature_id": feature_id,
                     "source_feature_name": str(grant.get("name") or ""),
                     "granted_spell_access": True,
@@ -671,6 +672,7 @@ class AdvancementService:
         *,
         selected_choices: dict[str, list[str]],
         skills: dict[str, Any],
+        allow_missing: bool = False,
     ) -> dict[str, dict[str, Any]]:
         """Apply configuration-driven subclass skill-proficiency selections.
 
@@ -707,6 +709,8 @@ class AdvancementService:
             minimum = int(requirement.get("minimum") or 0)
             maximum = int(requirement.get("maximum") or 0)
             if not minimum <= len(choices) <= maximum:
+                if allow_missing:
+                    continue
                 raise ValueError(
                     f"子职特性{feature_id}必须选择 {minimum} 至 {maximum} 项技能，"
                     f"当前为 {len(choices)} 项"
@@ -1628,6 +1632,39 @@ class AdvancementService:
                 )
                 subclass_runtime["choice_requirements"].extend(level_runtime["choice_requirements"])
                 subclass_runtime["resources"].update(level_runtime["resources"])
+        # Some subclass features change hit-point maximum retroactively and
+        # continue scaling with that class.  Apply only the typed advancement
+        # contract emitted by the runtime registry, using the delta from the
+        # character's previous class level so repeated previews stay idempotent.
+        previous_class_level = int((character.class_levels or {}).get(class_name, 0))
+        for grant in subclass_runtime["grants"]:
+            runtime = grant.get("runtime") if isinstance(grant, dict) else None
+            registry = runtime.get("registry") if isinstance(runtime, dict) else None
+            advancement = registry.get("advancement") if isinstance(registry, dict) else None
+            if not isinstance(advancement, dict) or advancement.get("kind") != (
+                "hit_points_by_class_level"
+            ):
+                continue
+            minimum_level = advancement.get("minimum_class_level")
+            initial_bonus = advancement.get("initial_bonus")
+            per_level_bonus = advancement.get("per_level_bonus")
+            if not all(
+                isinstance(value, int) and not isinstance(value, bool)
+                for value in (minimum_level, initial_bonus, per_level_bonus)
+            ) or minimum_level < 1 or initial_bonus < 0 or per_level_bonus < 0:
+                raise ValueError("生命值成长合同包含非法数值")
+
+            current_bonus = (
+                0
+                if target_class_level < minimum_level
+                else initial_bonus + (target_class_level - minimum_level) * per_level_bonus
+            )
+            previous_bonus = (
+                0
+                if previous_class_level < minimum_level
+                else initial_bonus + (previous_class_level - minimum_level) * per_level_bonus
+            )
+            hp_gain += max(0, current_bonus - previous_bonus)
         known_subclass_choice_ids = {
             str(item.get("feature_id") or "") for item in subclass_runtime["choice_requirements"]
         }
@@ -1659,6 +1696,7 @@ class AdvancementService:
             list(subclass_runtime["grants"]),
             selected_choices=selected_subclass_choices,
             skills=dict(progression_choice_result["skills"]),
+            allow_missing=bool(override),
         )
 
         # Fixed typed subclass grants (for example tool proficiencies) are

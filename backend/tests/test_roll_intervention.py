@@ -98,6 +98,36 @@ def test_generic_executor_covers_add_advantage_disadvantage_and_minimum_d20() ->
     assert minimum["details"]["natural_roll_after"] == 10
 
 
+def test_restore_balance_cancels_a_reported_advantage_or_disadvantage_pair() -> None:
+    spec = {
+        "id": "restore_balance",
+        "kind": "roll_intervention",
+        "trigger": "after_d20_test",
+        "eligibility": {"roll_modes": ["advantage", "disadvantage"]},
+        "operation": {"kind": "cancel_advantage_disadvantage", "selection": "first"},
+        "resource": {"key": "clockwork_balance", "cost": 1},
+    }
+    resolved = resolve_roll_interventions(
+        [spec],
+        trigger="after_d20_test",
+        context={
+            "entity_type": "character",
+            "test_kind": "saving_throw",
+            "roll_mode": "disadvantage",
+        },
+    )
+    assert len(resolved) == 1
+    result = apply_roll_intervention(
+        resolved[0],
+        roll_total=4,
+        roll_totals=[4, 17],
+        operation_id="restore-1",
+    )
+    assert result["effective_total"] == 4
+    assert result["details"]["cancelled_roll_mode"] is True
+    assert result["resource_should_consume"] is True
+
+
 def test_generic_resolver_uses_structured_eligibility_instead_of_feature_ids() -> None:
     wrong_faction = {
         "id": "fixture:enemy-only",

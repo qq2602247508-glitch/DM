@@ -2485,6 +2485,7 @@ class PlayerRoomService:
                                 "cost",
                                 "resource_key",
                                 "resource_cost",
+                                "ritual_only",
                                 "resolution_kind",
                                 "classes",
                             }
@@ -3091,6 +3092,7 @@ class PlayerRoomService:
                     "concentration": bool(raw.get("concentration")),
                     "resource_key": raw.get("resource_key"),
                     "resource_cost": int(raw.get("resource_cost") or 0),
+                    "ritual_only": bool(raw.get("ritual_only")),
                     "save_ability": raw.get("save_ability"),
                     "save_dc": raw.get("save_dc"),
                     "rule_plan": raw.get("rule_plan")
@@ -4424,6 +4426,8 @@ class PlayerRoomService:
                         "requires_dm_confirmation": True,
                     }
             elif kind == "spell":
+                if action.get("ritual_only") is True and data.get("ritual") is not True:
+                    raise ValueError("该法术特性仅限以仪式施展；请明确提交 ritual=true")
                 resource_key = action.get("resource_key")
                 resource_cost = int(action.get("resource_cost") or 0)
                 if resource_key and resource_cost:
@@ -6930,6 +6934,11 @@ class PlayerRoomService:
                 if actor.entity_type == "character"
                 else self._companion_action_data(actor, action_name)
             )
+            # Ritual-only grants are resolved through the noncombat ritual
+            # planner.  They are not combat actions: allowing them here would
+            # silently turn a ten-minute ritual into an instantaneous cast.
+            if action.get("ritual_only") is True:
+                raise ValueError("仪式法术不能在战斗中施放")
             if slot_level is not None:
                 base_level = int(action.get("spell_level") or 0)
                 if base_level <= 0 or slot_level < base_level:
@@ -8021,6 +8030,33 @@ class PlayerRoomService:
             combat_id,
             commands,
         )
+        # A post-hit Eldritch Strike-style rider is source-bound and applies
+        # only to the source's next spell save.  Player-room spell saves are
+        # resolved in this service rather than through CombatEngine's prompt
+        # endpoint, so consume the persisted one-shot effect only after the
+        # authoritative damage action has committed.
+        is_spell_action = bool(
+            action.get("kind") == "spell"
+            or action.get("action_type") == "spellcasting"
+            or int(action.get("spell_level") or 0) > 0
+        )
+        if saving_throw_action and is_spell_action:
+            for outcome in target_outcomes:
+                raw_save = outcome.get("save")
+                target_combatant_id = outcome.get("target_combatant_id")
+                if not isinstance(raw_save, dict) or not isinstance(target_combatant_id, str):
+                    continue
+                consumed_ids = self.combat.consume_post_hit_save_modifiers(
+                    principal.campaign_id,
+                    combat_id,
+                    target_id=target_combatant_id,
+                    source_combatant_id=actor.id,
+                )
+                if consumed_ids:
+                    applied = list(raw_save.get("applied_defenses") or [])
+                    applied.extend(f"post_hit_save:{effect_id}" for effect_id in consumed_ids)
+                    raw_save["applied_defenses"] = applied
+                    raw_save["consumed_post_hit_effect_ids"] = consumed_ids
         bardic_inspiration_consumed = None
         if bardic_inspiration is not None:
             bardic_inspiration_consumed = self._consume_bardic_inspiration_after_attack(

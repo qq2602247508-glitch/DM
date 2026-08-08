@@ -132,6 +132,79 @@ def test_typed_feature_damage_resistance_is_consumed_without_feature_name_branch
     assert unresolved == []
 
 
+def test_psychic_reflection_returns_equal_adjusted_damage_to_source() -> None:
+    source = Combatant(
+        id="psychic-source",
+        entity_type="character",
+        display_name="心灵攻击者",
+        hp=30,
+        max_hp=30,
+        temporary_hp=0,
+        version=1,
+        snapshot_json={},
+    )
+    target = Combatant(
+        id="thought-shield-target",
+        entity_type="character",
+        display_name="思维之盾目标",
+        hp=20,
+        max_hp=20,
+        temporary_hp=0,
+        version=1,
+        snapshot_json={
+            "feature_runtime": {
+                "combat_start": {
+                    "defenses": [
+                        {
+                            "kind": "damage_resistance",
+                            "damage_types": ["psychic"],
+                            "applies_when": "always",
+                        },
+                        {
+                            "kind": "damage_reflection",
+                            "damage_types": ["psychic"],
+                            "reflection": "equal_adjusted_damage_to_source",
+                        },
+                    ]
+                }
+            }
+        },
+    )
+
+    class _Rows:
+        @staticmethod
+        def all() -> list[object]:
+            return []
+
+    class _Session:
+        def get(self, model: object, identifier: str) -> Combatant | None:
+            return {source.id: source, target.id: target}.get(identifier)
+
+        @staticmethod
+        def scalars(*_args: object, **_kwargs: object) -> _Rows:
+            return _Rows()
+
+    command = CombatActionCommand(
+        action_type="damage",
+        target_combatant_id=target.id,
+        target_version=1,
+        actor_combatant_id=source.id,
+        actor_version=1,
+        amount=10,
+        damage_type="psychic",
+    )
+    resolved = CombatEngineService._resolve(
+        command,
+        target,
+        session=_Session(),  # type: ignore[arg-type]
+        combat_id="combat",
+    )
+
+    assert resolved["result"]["adjusted_damage"] == 5
+    assert resolved["result"]["psychic_reflection"]["adjusted_damage"] == 5
+    assert source.hp == 25
+
+
 def test_typed_damage_resistance_requires_every_declared_condition() -> None:
     target = Combatant(
         id="conditional-defense",
@@ -514,7 +587,7 @@ def test_typed_feature_saving_throw_advantage_is_consumed_by_save_resolution() -
         ability="敏捷",
         roll_total=8,
         roll_totals=[8, 17],
-        damage_on_success=0,
+        damage_on_success=5,
         damage_on_failure=10,
         is_magical=True,
         use_legendary_resistance=False,
@@ -1110,6 +1183,57 @@ def test_poisoned_check_disadvantage_cancels_feature_advantage() -> None:
         "ability_check_advantage_disadvantage_cancelled",
         "condition:poisoned_disadvantage_check",
     ]
+
+
+def test_otherworldly_glamour_adds_wisdom_modifier_to_charisma_checks() -> None:
+    action = CombatAction(
+        id="glamour-check",
+        campaign_id="campaign",
+        combat_id="combat",
+        action_type="player_roll_prompt",
+        target_combatant_ids=["glamour-checker"],
+        request_json={
+            "resolution_type": "ability_check",
+            "dc": 15,
+            "ability": "charisma",
+            "action_name": "游说守卫",
+        },
+        result_json={},
+        round_number=1,
+        turn_index=0,
+        summary="等待魅力属性检定",
+        idempotency_key="glamour-check",
+    )
+    target = Combatant(
+        id="glamour-checker",
+        entity_type="character",
+        display_name="妖冶娴都检定者",
+        hp=20,
+        max_hp=20,
+        snapshot_json={
+            "ability_scores": {"charisma": 14, "wisdom": 18},
+            "rule_modifiers": {
+                "glamour": {
+                    "id": "otherworldly_glamour:charisma_check_bonus",
+                    "stat": "ability_check",
+                    "ability": "charisma",
+                    "operation": "add",
+                    "value_source": "wisdom_modifier",
+                    "scope": "self",
+                    "applies_when": "every_charisma_ability_check",
+                    "source": "妖冶娴都",
+                }
+            },
+        },
+    )
+    resolved = CombatEngineService._resolve_player_roll(
+        action,
+        target,
+        PlayerRollResolutionCommand(action_version=1, roll_total=10),
+    )
+    assert resolved["roll_total"] == 14
+    assert resolved["success"] is False
+    assert resolved["applied_defenses"] == ["feature:妖冶娴都"]
 
 
 def test_frightened_check_disadvantage_requires_visible_fear_source(
@@ -1943,7 +2067,9 @@ def test_generic_ranged_passive_resolves_range_override_and_stacking_groups() ->
         def scalar(self, _query: object) -> object:
             return SimpleNamespace(cell_size_ft=5)
 
-        def scalars(self, _query: object) -> Rows:
+        def scalars(self, query: object) -> Rows:
+            if "combat_effects" in str(query):
+                return type("EmptyRows", (), {"all": lambda self: []})()
             return Rows()
 
     assert CombatEngineService._ranged_passive_numeric_modifier(
@@ -1952,6 +2078,124 @@ def test_generic_ranged_passive_resolves_range_override_and_stacking_groups() ->
         session=FakeSession(),
         combat_id="combat",
     ) == 6
+
+
+def test_leading_evasion_applies_to_adjacent_ally_dexterity_save() -> None:
+    source = Combatant(
+        id="leading-evasion-source",
+        combat_id="combat",
+        entity_type="character",
+        display_name="舞者",
+        hp=20,
+        max_hp=20,
+        snapshot_json={
+            "disposition": "ally",
+            "grid_position": {"row": 0, "col": 0},
+            "feature_runtime": {
+                "combat_start": {
+                    "defenses": [
+                        {
+                            "kind": "evasion",
+                            "ranged_passive": {
+                                "effect_kind": "evasion",
+                                "target_relation": "self_and_allies",
+                                "range_ft": 5,
+                                "requires_grid_position_for_others": True,
+                                "source_forbidden_conditions": ["incapacitated"],
+                            },
+                        }
+                    ]
+                }
+            },
+        },
+    )
+    target = Combatant(
+        id="leading-evasion-ally",
+        combat_id="combat",
+        entity_type="character",
+        display_name="邻近盟友",
+        hp=20,
+        max_hp=20,
+        snapshot_json={"disposition": "ally", "grid_position": {"row": 0, "col": 1}},
+    )
+
+    class Rows:
+        def all(self) -> list[Combatant]:
+            return [source, target]
+
+    class FakeSession:
+        def get(self, model: object, _entity_id: str) -> object:
+            if model is Combatant:
+                return source if _entity_id == source.id else target
+            return SimpleNamespace(id="combat", scene_id="scene")
+
+        def scalar(self, _query: object) -> object:
+            return SimpleNamespace(cell_size_ft=5)
+
+        def scalars(self, query: object) -> Rows:
+            if "combat_effects" in str(query):
+                return type("EmptyRows", (), {"all": lambda self: []})()
+            return Rows()
+
+    passives = CombatEngineService._ranged_passive_effects(
+        target,
+        effect_kind="evasion",
+        session=FakeSession(),
+        combat_id="combat",
+    )
+    assert len(passives) == 1
+    resolved = CombatEngineService._resolve_save_defenses(
+        target,
+        dc=15,
+        ability="dexterity",
+        roll_total=10,
+        roll_totals=[10],
+        damage_on_success=5,
+        damage_on_failure=10,
+        is_magical=False,
+        use_legendary_resistance=False,
+        use_feature_reroll=False,
+        consume=False,
+        session=FakeSession(),
+        combat=SimpleNamespace(id="combat"),
+    )
+
+    assert resolved["success"] is False
+    assert resolved["damage"] == 5
+    assert "evasion" in resolved["applied_defenses"]
+
+
+def test_turn_start_feature_state_producer_grants_heroic_inspiration_once() -> None:
+    actor = Combatant(
+        id="heroic-warrior",
+        combat_id="combat",
+        entity_type="character",
+        display_name="勇士",
+        hp=20,
+        max_hp=20,
+        speed_ft=30,
+        snapshot_json={
+            "feature_runtime": {
+                "triggers": [
+                    {
+                        "event": "turn_start",
+                        "effects": [
+                            {
+                                "kind": "grant_feature_state_if_missing",
+                                "state_key": "heroic_inspiration",
+                            }
+                        ],
+                    }
+                ]
+            }
+        },
+    )
+
+    CombatEngineService._refresh_new_turn_resources(actor, round_number=1)
+    assert actor.snapshot_json["feature_states"] == {"heroic_inspiration": True}
+    actor.snapshot_json["feature_states"]["heroic_inspiration"] = False
+    CombatEngineService._refresh_new_turn_resources(actor, round_number=1)
+    assert actor.snapshot_json["feature_states"]["heroic_inspiration"] is True
 
 
 def test_ranged_passive_damage_resistance_is_consumed_by_damage_resolver() -> None:
