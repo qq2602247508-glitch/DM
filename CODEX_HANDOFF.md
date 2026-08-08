@@ -14,9 +14,11 @@
 - 新增/扩展：`feature_blocks` 现在验证追加攻击事件合同；战斗大师 `反击` 的 trigger 仅在学习集合中出现，
   资源编译层绑定 `superiority_dice`。没有复制第二套攻击、伤害、资源或移动结算器。
 - 验证：追加攻击定向测试 2 个、战技 registry 测试通过；全量后端 `pytest -q backend/tests` 通过；前端
-  `npm test -- --run`（204 tests）、typecheck、lint、build 均通过。全量 `ruff check backend/src backend/tests scripts`
-  仍会命中仓库原有脚本文件的 N999/EXE001（非本切片代码）；本切片源码/测试 Ruff、compileall、`git diff --check` 通过。
-- 当前工作树尚未提交代码；代码、审计基线测试、文档/交接必须分开提交。必须继续保留且不暂存/提交：
+  `npm test -- --run`（204 tests）、typecheck、lint、build 均通过。真实浏览器验收也已完成：DM 模拟战斗页
+  和玩家一次性入口均正常显示，后端/SQLite/索引/模型状态正常，两端控制台无 error/warn。全量
+  `ruff check backend/src backend/tests scripts` 仍会命中仓库原有脚本文件的 N999/EXE001（非本切片代码）；
+  本切片源码/测试 Ruff、compileall、`git diff --check` 通过。
+- 已分离提交：代码 `65cd8ce`，审计基线测试 `4c8b0a3`，文档/交接 `de7ec8f`。必须继续保留且不暂存/提交：
   `backend/tests/integrations/`、`backend/tests/ollama.py`。
 
 # 2026-08-08 长执行检查点：战斗大师卓越骰与战技通用平台
