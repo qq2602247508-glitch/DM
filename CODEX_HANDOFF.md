@@ -1,3 +1,13 @@
+# 2026-08-08 长执行检查点：预兆与高等预兆真实 D20 池
+
+- 代码切片尚未提交；文档与交接需和代码分开提交。
+- 本 Goal 起点固定审计为 `full 227 / partial 195 / dm_only 77`；当前审计为 `full 229 / partial 193 / dm_only 77`，净增 2 条，来自「预兆」与「高等预兆」。
+- 真实生产链：长休请求的 `feature_recovery_choices.portent_pool` 必须由玩家/DM 提交完整 1–20 骰值；休息确认持久化 `portent_dice.available_values`，未提交的新长休会清空旧池；预掷窗口从角色快照运行时合同暴露池值；玩家在真实 `player-roll` prompt 选择一颗骰子；确认时校验天然 d20、目标可见性、检定类型和骰池索引，原子消费单颗资源并写入有效总值。
+- 幂等链：action request 持久化所选骰子和有效结果；相同 `X-Request-ID` 或已消费 action 重放直接返回同一结果，不再次消费；资源与战斗快照版本同步更新。
+- 领域 `replace_d20_from_pool` 只负责结构化结果校验与替换，不能单独计 full；full 依赖本条完整 rest/consumer/input/CAS/idempotency 链。
+- 定向门禁已通过：`test_roll_intervention.py`、`test_rests_api.py`、`test_combat_engine.py`（含长休生成、预掷选择、消费和幂等重放）；Ruff、compileall、`git diff --check` 通过。全量后端 pytest 是本检查点提交前门禁。
+- 下一步继续同一 Goal，不停在 `+2`：逐条复核其余 `roll_intervention` consumer_partial，只有所有触发窗口、目标、资源、恢复、输入和持久化分支闭环才升级；随后推进资源/恢复、状态/防御/移动的安全独立簇。
+
 # 2026-08-08 长执行检查点：预置 D20 池审计安全边界
 
 - 继续执行了第二轮高扇出候选反审计：`resource_lifecycle` 非 full 候选最多 24 条但混合免费施法、资源转换、持续状态、目标选择和复杂分支；`aura_passive`、`state_lifecycle`、`action_trigger` 也分别混合范围几何、状态 producer、动作触发和资源语义，不能拼成一个完整同构批次。
