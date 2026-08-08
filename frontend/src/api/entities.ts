@@ -773,6 +773,22 @@ export const resolveCombatAttackResolution = (
   { method: "POST", body: input, headers: { "X-Request-ID": requestId } },
 );
 
+export const resolveCombatBeguilingReflection = (
+  cid: string,
+  combatId: string,
+  windowId: string,
+  input: {
+    window_id: string;
+    window_version: number;
+    decision: "accept" | "reject";
+    save_total?: number | null;
+  },
+  requestId: string = createClientId("beguiling-reflection"),
+) => apiFetch<Record<string, unknown>>(
+  `/campaigns/${cid}/combats/${combatId}/reactions/beguiling-reflection/${windowId}/resolve`,
+  { method: "POST", body: input, headers: { "X-Request-ID": requestId } },
+);
+
 export const resolveCombatAttackResolutionTeleport = (
   cid: string,
   combatId: string,

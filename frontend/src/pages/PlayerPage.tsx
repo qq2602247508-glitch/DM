@@ -24,6 +24,7 @@ import {
   resolveMyDeflectRedirect,
   resolveMyAttackResolution,
   resolveMyAttackResolutionTeleport,
+  resolveMyBeguilingReflection,
   resolveMyPreDamageReaction,
   resolveMyTriggeredAttack,
   searchPlayerRules,
@@ -1092,6 +1093,7 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
   const [attackResolutionSelectedFeatures, setAttackResolutionSelectedFeatures] = useState<Record<string, string>>({});
   const [attackResolutionInputs, setAttackResolutionInputs] = useState<Record<string, Record<string, string>>>({});
   const [shadowyDodgeInputs, setShadowyDodgeInputs] = useState<Record<string, Record<string, string>>>({});
+  const [beguilingSaveTotals, setBeguilingSaveTotals] = useState<Record<string, string>>({});
   const [preDamageReductionRolls, setPreDamageReductionRolls] = useState<Record<string, string>>({});
   const [preDamageSelectedFeatures, setPreDamageSelectedFeatures] = useState<Record<string, string>>({});
   const [deflectRedirectTargets, setDeflectRedirectTargets] = useState<Record<string, string>>({});
@@ -1826,6 +1828,14 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
       refresh();
     },
   });
+  const beguilingReflectionMutation = useMutation({
+    mutationFn: ({ id, version, decision, saveTotal }: { id: string; version: number; decision: "accept" | "reject"; saveTotal?: number }) =>
+      resolveMyBeguilingReflection(id, version, decision, saveTotal),
+    onSuccess: (_result, variables) => {
+      setLastResolution(variables.decision === "accept" ? "斗转星移感知豁免已提交；反伤已按结果结算。" : "已放弃斗转星移感知豁免。");
+      refresh();
+    },
+  });
   const attackResolutionTeleportMutation = useMutation({
     mutationFn: ({ id, version, decision, row, col }: { id: string; version: number; decision: "accept" | "reject"; row?: number; col?: number }) =>
       resolveMyAttackResolutionTeleport(id, version, decision, row, col),
@@ -2279,6 +2289,28 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
                       <div className="mt-2 flex gap-2">
                         <Button disabled={attackResolutionMutation.isPending || !canAccept} loading={attackResolutionMutation.isPending && attackResolutionMutation.variables?.id === reaction.id && attackResolutionMutation.variables.decision === "accept"} onClick={() => attackResolutionMutation.mutate({ id: reaction.id, version: reaction.version, decision: "accept", featureId: selectedFeatureId, inputs: needsDie ? { [dieKey]: Number(dieRoll) } : {}, attackRolls: isShadowyDodge ? d20s.map(Number) : [], attackRollTotals: isShadowyDodge ? totals.map(Number) : [] })} variant="danger">使用{selectedFeature.name}</Button>
                         <Button disabled={attackResolutionMutation.isPending} loading={attackResolutionMutation.isPending && attackResolutionMutation.variables?.id === reaction.id && attackResolutionMutation.variables.decision === "reject"} onClick={() => attackResolutionMutation.mutate({ id: reaction.id, version: reaction.version, decision: "reject" })}>不使用</Button>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+            ) : reaction.kind === "beguiling_reflection" ? (
+              <div className="mb-3 rounded border border-indigo-700 bg-indigo-950/25 p-3" data-testid="player-pending-beguiling-reflection" key={reaction.id}>
+                {(() => {
+                  const saveTotal = beguilingSaveTotals[reaction.id] ?? "";
+                  const dc = reaction.save_dc ?? 0;
+                  const canAccept = Number.isInteger(Number(saveTotal)) && Number(saveTotal) >= -100 && Number(saveTotal) <= 1000;
+                  return (
+                    <div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <strong className="text-sm text-indigo-100">斗转星移 · 感知豁免 · {reaction.source_name ?? "攻击者"}</strong>
+                        <span className="rounded border border-indigo-700/70 px-1.5 py-0.5 text-2xs text-indigo-200">心灵反伤</span>
+                      </div>
+                      <p className="mb-2 mt-1 text-xs leading-5 text-stone-300">{reaction.message ?? "斗转星移使伤害减半；攻击者须进行感知豁免，失败则受到等同实际承受伤害的心灵伤害。"}</p>
+                      <label className="flex items-center gap-1 text-2xs text-indigo-100">感知豁免总值<input aria-label={`${reaction.id} 斗转星移感知豁免`} className="w-20 rounded border border-indigo-800 bg-ink-950 px-1.5 py-1" onChange={(event) => setBeguilingSaveTotals((current) => ({ ...current, [reaction.id]: event.target.value }))} type="number" value={saveTotal} /><span className="text-stone-400">vs DC {dc || "—"}</span></label>
+                      <div className="mt-2 flex gap-2">
+                        <Button disabled={beguilingReflectionMutation.isPending || !canAccept} loading={beguilingReflectionMutation.isPending && beguilingReflectionMutation.variables?.id === reaction.id && beguilingReflectionMutation.variables.decision === "accept"} onClick={() => beguilingReflectionMutation.mutate({ id: reaction.id, version: reaction.version, decision: "accept", saveTotal: Number(saveTotal) })} variant="danger">提交豁免</Button>
+                        <Button disabled={beguilingReflectionMutation.isPending} loading={beguilingReflectionMutation.isPending && beguilingReflectionMutation.variables?.id === reaction.id && beguilingReflectionMutation.variables.decision === "reject"} onClick={() => beguilingReflectionMutation.mutate({ id: reaction.id, version: reaction.version, decision: "reject" })}>放弃豁免</Button>
                       </div>
                     </div>
                   );

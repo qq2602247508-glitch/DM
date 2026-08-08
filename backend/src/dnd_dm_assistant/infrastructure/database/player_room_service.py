@@ -3876,9 +3876,31 @@ class PlayerRoomService:
                         "deflect_redirect",
                         "attack_resolution",
                         "attack_resolution_teleport",
+                        "beguiling_reflection",
                     }
                     or metadata.get("status") != "pending"
                 ):
+                    continue
+                if metadata.get("phase") == "beguiling_reflection":
+                    pending_reactions.append(
+                        {
+                            "id": window.id,
+                            "version": window.version,
+                            "kind": "beguiling_reflection",
+                            "feature_id": metadata.get("feature_id"),
+                            "feature_name": metadata.get("feature_name"),
+                            "source_name": metadata.get("reactor_combatant_name"),
+                            "source_action_name": "斗转星移",
+                            "target_name": metadata.get("warlock_combatant_name"),
+                            "reaction_trigger": "攻击者感知豁免",
+                            "message": window.summary,
+                            "save_ability": metadata.get("save_ability"),
+                            "save_dc": metadata.get("save_dc"),
+                            "damage_type": metadata.get("damage_type"),
+                            "actual_damage_taken": metadata.get("actual_damage_taken"),
+                            "action_cost": metadata.get("action_cost", "none"),
+                        }
+                    )
                     continue
                 if metadata.get("phase") == "attack_resolution_teleport":
                     pending_reactions.append(
@@ -8933,6 +8955,53 @@ class PlayerRoomService:
             "turn_advance": turn_advance,
         }
 
+
+    def resolve_beguiling_reflection(
+        self,
+        principal: PlayerPrincipal,
+        window_id: str,
+        window_version: int,
+        decision: Literal["accept", "reject"],
+        save_total: int | None,
+        request_id: str,
+    ) -> dict[str, Any]:
+        """Resolve a Beguiling Defenses reflection window for this player's attacker."""
+
+        if principal.character_id is None:
+            raise ValueError("请先绑定角色")
+        with Session(self.engine) as session:
+            room = session.get(PlayerRoom, principal.room_id)
+            combat = (
+                session.get(Combat, room.current_combat_id)
+                if room and room.current_combat_id
+                else None
+            )
+            if combat is None or combat.status != "active":
+                raise ValueError("当前没有进行中的战斗")
+            window = session.get(CombatAction, window_id)
+            fighters = self._ordered_fighters(session, combat.id)
+            if (
+                window is None
+                or window.combat_id != combat.id
+                or window.actor_combatant_id is None
+                or not any(
+                    item.id == window.actor_combatant_id
+                    and self._is_player_controlled(item, principal.character_id)
+                    for item in fighters
+                )
+            ):
+                raise ValueError("该斗转星移豁免窗口不属于你的可控单位")
+            combat_id = combat.id
+        return self.combat.resolve_beguiling_reflection(
+            principal.campaign_id,
+            combat_id,
+            window_id,
+            window_version,
+            decision,
+            save_total,
+            actor_combatant_id=None,
+            idempotency_key=request_id,
+        )
 
     def resolve_attack_resolution_teleport(
         self,

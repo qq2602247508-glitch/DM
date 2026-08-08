@@ -10,6 +10,7 @@ from dnd_dm_assistant.api.schemas import (
     CombatActionCommand,
     CombatAttackResolutionCommand,
     CombatAttackResolutionTeleportCommand,
+    CombatBeguilingReflectionCommand,
     CombatDeflectRedirectCommand,
     CombatEffectCommand,
     CombatEffectEndCommand,
@@ -144,6 +145,33 @@ def resolve_attack_resolution_teleport(
             body.decision,
             body.destination_row,
             body.destination_col,
+            idempotency_key=request_id,
+        )
+    )
+
+
+
+
+@router.post("/reactions/beguiling-reflection/{window_id}/resolve")
+def resolve_beguiling_reflection(
+    campaign_id: str,
+    combat_id: str,
+    window_id: str,
+    body: CombatBeguilingReflectionCommand,
+    request: Request,
+    service: Annotated[CombatEngineService, Depends(get_combat_engine_service)],
+) -> dict[str, Any]:
+    if body.window_id != window_id:
+        raise HTTPException(status_code=400, detail="斗转星移豁免窗口路径与请求体不一致")
+    request_id = str(getattr(request.state, "request_id", "unknown"))
+    return _safe_call(
+        lambda: service.resolve_beguiling_reflection(
+            campaign_id,
+            combat_id,
+            window_id,
+            body.window_version,
+            body.decision,
+            body.save_total,
             idempotency_key=request_id,
         )
     )

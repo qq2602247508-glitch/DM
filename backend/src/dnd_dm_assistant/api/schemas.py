@@ -1182,6 +1182,25 @@ class CombatAttackResolutionTeleportCommand(BaseModel):
         return self
 
 
+
+
+class CombatBeguilingReflectionCommand(BaseModel):
+    """Resolve the attacker Wisdom save after Beguiling Defenses halving."""
+
+    window_id: str = Field(min_length=1, max_length=36)
+    window_version: int = Field(ge=1)
+    decision: Literal["accept", "reject"]
+    save_total: int | None = Field(default=None, ge=-100, le=1_000)
+
+    @model_validator(mode="after")
+    def validate_reflection(self) -> CombatBeguilingReflectionCommand:
+        if self.decision == "accept" and self.save_total is None:
+            raise ValueError("接受斗转星移必须提交感知豁免总值")
+        if self.decision == "reject" and self.save_total is not None:
+            raise ValueError("放弃斗转星移时不能携带豁免总值")
+        return self
+
+
 class CombatPreDamageReactionCommand(BaseModel):
     """Resolve a persisted reaction window before the triggering damage lands."""
 

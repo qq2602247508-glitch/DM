@@ -4022,6 +4022,84 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS["卓越战技"] = {
 # These entries describe only the generic event contract.  The combat engine
 # consumes event/target/profile/resource fields and never branches on these
 # feature names.
+SUBCLASS_FEATURE_RUNTIME_CONFIGS["斗转星移"] = {
+    "combat_start": {
+        "modifiers": [],
+        "defenses": [
+            {
+                "id": "subclass:beguiling_defenses:charmed_immunity",
+                "kind": "condition_immunity",
+                "condition": "charmed",
+                "applies_when": "always",
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "condition_immunity_resolution",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        ],
+    },
+    "resources": {
+        "$feature_resource": {
+            "key": "$feature_resource",
+            "label": "斗转星移",
+            "resource_kind": "feature_uses",
+            "max_formula": "fixed_one",
+            "recovery_events": [{"rest": "long_rest", "operation": "set_to_max"}],
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+        }
+    },
+    "actions": {
+        "beguiling_defenses": {
+            "id": "beguiling_defenses",
+            "name": "斗转星移",
+            "kind": "feature_action",
+            "action_cost": "reaction",
+            "trigger": {
+                "event": "hit_by_attack",
+                "timing": "before_damage",
+                "requirements": ["attacker_visible"],
+            },
+            "pre_damage_intervention": {
+                "kind": "pre_damage_intervention",
+                "eligibility": {
+                    "entity_types": ["character"],
+                    "damage_types": "all",
+                    "forbidden_conditions": ["incapacitated"],
+                },
+                "input_requirements": [],
+                "damage_transform": {
+                    "operation": "multiply_each_component",
+                    "multiplier": 0.5,
+                    "rounding": "floor",
+                },
+            },
+            "resource": {"key": "$feature_resource", "cost": 1},
+            "reflection": {
+                "kind": "beguiling_reflection",
+                "save_ability": "wisdom",
+                "save_dc_source": "spellcasting",
+                "damage_type": "psychic",
+                "damage_basis": "actual_damage_taken",
+                "attacker_target": True,
+            },
+            "runtime_execution": {
+                "status": "ready",
+                "consumer": "pre_damage_reaction_window_and_beguiling_reflection",
+                "persistence": "combat_action_window_and_cas",
+            },
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+        }
+    },
+    "triggers": [],
+    "attack_riders": [],
+    "automation_status": "full",
+    "requires_dm_adjudication": False,
+}
+
 SUBCLASS_FEATURE_RUNTIME_CONFIGS["如影随行"] = {
     "combat_start": {"modifiers": [], "defenses": []},
     "resources": {},
@@ -4733,6 +4811,21 @@ def _subclass_resource_update(
         if maximum is not None:
             resource["max"] = maximum
         return "war_gods_blessing", resource
+    if feature_name.startswith("斗转星移"):
+        return "beguiling_defenses", {
+            "label": "斗转星移",
+            "max": 1,
+            "max_formula": "fixed_one",
+            "resource_kind": "feature_uses",
+            "recovery": "long_rest",
+            "recovery_events": [{"rest": "long_rest", "operation": "set_to_max"}],
+            "source": (
+                f"{definition.get('source_path') or definition.get('source_record_id')}"
+                f" · {definition.get('class_level')}级{feature_name}"
+            ),
+            "requires_dm_adjudication": False,
+            "automation_status": "full",
+        }
     if feature_name.startswith("自然恢复"):
         return "natural_recovery", {
             "label": feature_name,

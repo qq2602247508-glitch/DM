@@ -10,6 +10,7 @@ import {
   previewCombatSettlement, resetCombat, revertEncounterAdjustment, updateCombat, updateCombatant,
   resolveCombatAttackResolution,
   resolveCombatAttackResolutionTeleport,
+  resolveCombatBeguilingReflection,
   resolveCombatPreDamageReaction, resolveCombatDeflectRedirect,
 } from "../api/entities";
 import type {
@@ -1551,6 +1552,17 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
       && (metadata as Record<string, unknown>).status === "pending",
     );
   });
+  const beguilingReflectionWindows = (combatActions.data ?? []).filter((action) => {
+    if (action.action_type !== "eligible_action_window" || action.status !== "confirmed") return false;
+    const metadata = action.result_json?.action_window;
+    return Boolean(
+      metadata
+      && typeof metadata === "object"
+      && !Array.isArray(metadata)
+      && (metadata as Record<string, unknown>).phase === "beguiling_reflection"
+      && (metadata as Record<string, unknown>).status === "pending",
+    );
+  });
   const attackResolutionTeleportWindows = (combatActions.data ?? []).filter((action) => {
     if (action.action_type !== "eligible_action_window" || action.status !== "confirmed") return false;
     const metadata = action.result_json?.action_window;
@@ -1734,6 +1746,20 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
       showToast(result.success ? "重复豁免成功，状态已结束" : "重复豁免失败，状态继续");
     },
     onError: () => showToast("状态重复豁免确认失败，请刷新战斗状态", "error"),
+  });
+  const resolveBeguilingReflection = useMutation({
+    mutationFn: (input: { windowId: string; version: number; decision: "accept" | "reject"; saveTotal?: number }) =>
+      resolveCombatBeguilingReflection(campaignId, combat.id, input.windowId, {
+        window_id: input.windowId,
+        window_version: input.version,
+        decision: input.decision,
+        save_total: input.saveTotal ?? null,
+      }),
+    onSuccess: () => {
+      invalidate();
+      showToast("斗转星移感知豁免已确认");
+    },
+    onError: (error) => showToast(error instanceof Error ? error.message : "斗转星移豁免确认失败，请刷新战斗", "error"),
   });
   const resolveAttackResolutionTeleport = useMutation({
     mutationFn: (input: { windowId: string; version: number; decision: "accept" | "reject"; row?: number; col?: number }) =>
@@ -2190,6 +2216,25 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
                   <span className="mr-auto text-stone-300">{attackerName} 使用攻击命中 {protectedName}（总值 {attackTotal} vs AC {effectiveAc}） · 伤害未落地 · {featureName}</span>
                   <Button disabled={resolveAttackResolution.isPending} loading={resolveAttackResolution.isPending} onClick={() => resolveAttackResolution.mutate({ windowId: action.id, version: action.version, decision: "accept", featureId })} size="sm" variant="danger">确认{featureName}</Button>
                   <Button disabled={resolveAttackResolution.isPending} onClick={() => resolveAttackResolution.mutate({ windowId: action.id, version: action.version, decision: "reject" })} size="sm">放弃反应</Button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ) : null}
+      {beguilingReflectionWindows.length > 0 ? (
+        <div className="mt-3 rounded-lg border border-indigo-700/60 bg-indigo-950/20 p-3" data-testid="combat-pending-beguiling-reflection">
+          <strong className="text-xs text-indigo-200">斗转星移 · 攻击者感知豁免</strong>
+          <p className="mb-2 mt-1 text-2xs text-stone-400">斗转星移已使伤害减半；攻击者须进行感知豁免，失败则受到等同实际承受伤害的心灵伤害。</p>
+          <div className="grid gap-2">
+            {beguilingReflectionWindows.map((action) => {
+              const metadata = action.result_json.action_window as Record<string, unknown>;
+              const attackerName = typeof metadata.reactor_combatant_name === "string" ? metadata.reactor_combatant_name : "攻击者";
+              const dc = Number(metadata.save_dc ?? 0);
+              return (
+                <div className="flex flex-wrap items-center gap-2 rounded border border-indigo-900/60 bg-ink-950/40 px-2 py-1.5 text-2xs" key={action.id}>
+                  <span className="mr-auto text-stone-300">{attackerName} · 感知豁免 vs DC {dc || "—"} · 心灵反伤</span>
+                  <Button disabled={resolveBeguilingReflection.isPending} onClick={() => resolveBeguilingReflection.mutate({ windowId: action.id, version: action.version, decision: "reject" })} size="sm">放弃豁免</Button>
                 </div>
               );
             })}

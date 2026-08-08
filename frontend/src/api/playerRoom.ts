@@ -315,7 +315,7 @@ export type PlayerPendingRoll = {
 export type PlayerPendingReaction = {
   id: string;
   version: number;
-  kind?: "opportunity" | "pre_damage" | "deflect_redirect" | "triggered_attack" | "attack_resolution" | "attack_resolution_teleport";
+  kind?: "opportunity" | "pre_damage" | "deflect_redirect" | "triggered_attack" | "attack_resolution" | "attack_resolution_teleport" | "beguiling_reflection";
   feature_id?: string | null;
   feature_name?: string | null;
   candidate_features?: Array<{
@@ -957,6 +957,16 @@ export const resolveMyAttackResolution = (
     attack_rolls: attackRolls ?? [],
     attack_roll_totals: attackRollTotals ?? [],
   }),
+});
+
+export const resolveMyBeguilingReflection = (
+  windowId: string,
+  version: number,
+  decision: "accept" | "reject",
+  saveTotal?: number,
+) => playerFetch<Record<string, unknown>>(`/player-room/me/combat/beguiling-reflection/${windowId}`, {
+  method: "POST",
+  body: JSON.stringify({ version, decision, save_total: saveTotal ?? null }),
 });
 
 export const resolveMyAttackResolutionTeleport = (

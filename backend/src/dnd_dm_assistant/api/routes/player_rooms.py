@@ -123,11 +123,38 @@ class ReactionDecisionInput(BaseModel):
     decision: Literal["accept", "reject"]
 
 
+class BeguilingReflectionInput(BaseModel):
+    version: int = Field(ge=1)
+    decision: Literal["accept", "reject"]
+    save_total: int | None = Field(default=None, ge=-100, le=1_000)
+
+
 class AttackResolutionTeleportInput(BaseModel):
     version: int = Field(ge=1)
     decision: Literal["accept", "reject"]
     destination_row: int | None = Field(default=None, ge=1, le=10_000)
     destination_col: int | None = Field(default=None, ge=1, le=10_000)
+
+
+
+@public_player_room_router.post("/me/combat/beguiling-reflection/{window_id}")
+def resolve_player_beguiling_reflection(
+    window_id: str,
+    body: BeguilingReflectionInput,
+    request: Request,
+    principal: Annotated[PlayerPrincipal, Depends(get_player_principal)],
+    service: Annotated[PlayerRoomService, Depends(get_player_room_service)],
+) -> dict[str, Any]:
+    return _safe(
+        lambda: service.resolve_beguiling_reflection(
+            principal,
+            window_id,
+            body.version,
+            body.decision,
+            body.save_total,
+            _request_id(request),
+        )
+    )
 
 
 class AttackResolutionInput(BaseModel):

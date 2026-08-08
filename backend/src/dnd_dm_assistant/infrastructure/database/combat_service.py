@@ -1629,6 +1629,9 @@ class CombatEngineService:
             proficiency_bonus = int(progression.get("proficiency_bonus") or 0)
             redirect = raw.get("redirect")
             redirect_data = dict(redirect) if isinstance(redirect, dict) else None
+            reflection_data = (
+                dict(raw.get("reflection")) if isinstance(raw.get("reflection"), dict) else None
+            )
             raw_resource = raw.get("resource")
             resource_data = raw_resource if isinstance(raw_resource, dict) else {}
             resource_key = str(resource_data.get("key") or "").strip()
@@ -1703,6 +1706,7 @@ class CombatEngineService:
                         for item in intervention.get("input_requirements", [])
                     ),
                     "redirect": redirect_data,
+                    "reflection": reflection_data,
                     "resource_key": resource_key or None,
                     "resource_cost": resource_cost,
                     "trigger": trigger,
@@ -2306,6 +2310,7 @@ class CombatEngineService:
                     "dexterity_modifier": item["dexterity_modifier"],
                     "class_level": item["class_level"],
                     "redirect": item["redirect"],
+                    "reflection": item.get("reflection"),
                     "resource_key": item.get("resource_key"),
                     "resource_cost": item.get("resource_cost", 0),
                     "reactor_combatant_id": item.get("reactor_combatant_id"),
@@ -12682,6 +12687,7 @@ class CombatEngineService:
             "class_level": candidate.get("class_level"),
             "requires_reduction_roll": candidate.get("requires_reduction_roll", False),
             "redirect": candidate.get("redirect"),
+            "reflection": candidate.get("reflection"),
             "resource_key": candidate.get("resource_key"),
             "resource_cost": candidate.get("resource_cost", 0),
             "trigger_action_type": command.action_type,
@@ -14219,6 +14225,34 @@ class CombatEngineService:
                         "deflect_redirect_window_id": redirect_window.id,
                     }
                     pre_damage_metadata["redirect_window_id"] = redirect_window.id
+            beguiling_reflection_window: CombatAction | None = None
+            if (
+                pre_damage_window is not None
+                and pre_damage_reaction_decision == "accept"
+                and isinstance(pre_damage_metadata.get("reflection"), dict)
+                and actor is not None
+                and actor.is_active
+                and actor.hp > 0
+            ):
+                beguiling_reflection_window = self._open_beguiling_reflection_window(
+                    session,
+                    combat=combat,
+                    transaction=transaction,
+                    parent_action=action,
+                    warlock=target,
+                    attacker=actor,
+                    pre_damage_metadata=pre_damage_metadata,
+                    actual_damage_taken=int(result.get("hp_lost") or 0)
+                    + int(result.get("temporary_hp_lost") or 0),
+                )
+                if beguiling_reflection_window is not None:
+                    action.result_json = {
+                        **dict(action.result_json or {}),
+                        "beguiling_reflection_window_id": beguiling_reflection_window.id,
+                    }
+                    pre_damage_metadata["beguiling_reflection_window_id"] = (
+                        beguiling_reflection_window.id
+                    )
             if pre_damage_window is not None:
                 pre_damage_metadata.update(
                     {
@@ -14639,6 +14673,206 @@ class CombatEngineService:
         session.add(window)
         session.flush()
         return window
+
+    @classmethod
+    def _open_beguiling_reflection_window(
+        cls,
+        session: Session,
+        *,
+        combat: Combat,
+        transaction: OperationTransaction,
+        parent_action: CombatAction,
+        warlock: Combatant,
+        attacker: Combatant,
+        pre_damage_metadata: dict[str, object],
+        actual_damage_taken: int,
+    ) -> CombatAction | None:
+        """Open the attacker Wisdom-save reflection window after Beguiling Defenses."""
+
+        reflection = pre_damage_metadata.get("reflection")
+        if not isinstance(reflection, dict):
+            return None
+        save_ability = str(reflection.get("save_ability") or "wisdom").strip()
+        ability_scores = (warlock.snapshot_json or {}).get("ability_scores")
+        scores = ability_scores if isinstance(ability_scores, dict) else {}
+        warlock_ability = int(scores.get("charisma", scores.get("魅力", 10)) or 10)
+        charisma_modifier = (warlock_ability - 10) // 2
+        progression = (warlock.snapshot_json or {}).get("feature_runtime", {})
+        progression = progression.get("progression") if isinstance(progression, dict) else {}
+        proficiency_bonus = int(progression.get("proficiency_bonus") or 0)
+        save_dc = 8 + proficiency_bonus + charisma_modifier
+        window = CombatAction(
+            campaign_id=combat.campaign_id,
+            combat_id=combat.id,
+            actor_combatant_id=attacker.id,
+            transaction_id=transaction.id,
+            action_type="eligible_action_window",
+            target_combatant_ids=[warlock.id],
+            request_json={
+                "trigger_event": "beguiling_reflection",
+                "parent_action_id": parent_action.id,
+                "feature_id": str(reflection.get("id") or "beguiling_defenses"),
+            },
+            result_json={
+                "action_window": {
+                    "phase": "beguiling_reflection",
+                    "status": "pending",
+                    "action_cost": "none",
+                    "feature_id": "beguiling_defenses",
+                    "feature_name": "斗转星移",
+                    "reactor_combatant_id": attacker.id,
+                    "reactor_combatant_name": attacker.display_name,
+                    "warlock_combatant_id": warlock.id,
+                    "warlock_combatant_name": warlock.display_name,
+                    "save_ability": save_ability,
+                    "save_dc": save_dc,
+                    "damage_type": str(reflection.get("damage_type") or "psychic"),
+                    "actual_damage_taken": actual_damage_taken,
+                    "parent_action_id": parent_action.id,
+                    "causal_depth": 1,
+                    "causal_root_id": parent_action.id,
+                }
+            },
+            explanation=(
+                "斗转星移已使伤害减半；攻击者须进行感知豁免，失败则受到等同实际承受伤害的心灵伤害。"
+            ),
+            round_number=combat.round_number,
+            turn_index=combat.current_turn_index,
+            summary=f"{attacker.display_name}：斗转星移感知豁免窗口已开放",
+            idempotency_key=(
+                f"beguiling-reflection:{parent_action.id}:{attacker.id}:{warlock.id}"
+            ),
+            status="confirmed",
+            created_at=parent_action.created_at + timedelta(seconds=1),
+        )
+        session.add(window)
+        session.flush()
+        return window
+
+    def resolve_beguiling_reflection(
+        self,
+        campaign_id: str,
+        combat_id: str,
+        window_id: str,
+        window_version: int,
+        decision: str,
+        save_total: int | None,
+        *,
+        actor_combatant_id: str | None = None,
+        idempotency_key: str,
+    ) -> dict[str, Any]:
+        """Resolve the attacker Wisdom save for Beguiling Defenses reflection."""
+
+        if not idempotency_key.strip():
+            raise ValueError("idempotency key is required")
+        with Session(self.engine) as session, session.begin():
+            combat = session.get(Combat, combat_id)
+            window = session.get(CombatAction, window_id)
+            if combat is None or combat.campaign_id != campaign_id:
+                raise StateNotFoundError("combat not found in campaign")
+            if (
+                window is None
+                or window.combat_id != combat_id
+                or window.action_type != "eligible_action_window"
+            ):
+                raise StateNotFoundError("斗转星移豁免窗口不存在")
+            metadata = dict((window.result_json or {}).get("action_window") or {})
+            if metadata.get("phase") != "beguiling_reflection":
+                raise ValueError("斗转星移豁免窗口阶段不匹配")
+            attacker_id = actor_combatant_id or str(metadata.get("reactor_combatant_id") or "")
+            if metadata.get("reactor_combatant_id") != attacker_id:
+                raise ValueError("斗转星移豁免窗口不属于当前单位")
+            if window.version != window_version:
+                if metadata.get("resolver_idempotency_key") == idempotency_key:
+                    return {"window": serialize(window), "already_applied": True}
+                raise VersionConflict(
+                    "combat_action",
+                    window.id,
+                    window_version,
+                    window.version,
+                )
+            if metadata.get("status") != "pending":
+                if metadata.get("resolver_idempotency_key") == idempotency_key:
+                    return {"window": serialize(window), "already_applied": True}
+                raise ValueError("斗转星移豁免窗口已处理")
+            attacker = session.get(Combatant, attacker_id)
+            if attacker is None or not attacker.is_active or attacker.hp <= 0:
+                raise StateNotFoundError("斗转星移攻击者不存在或已离场")
+            save_dc = int(metadata.get("save_dc") or 0)
+            damage_type = str(metadata.get("damage_type") or "psychic")
+            actual_damage = int(metadata.get("actual_damage_taken") or 0)
+            reflection_result: dict[str, object] | None = None
+            if decision == "accept":
+                if save_total is None:
+                    raise ValueError("接受斗转星移必须提交感知豁免总值")
+                save_success = save_total >= save_dc
+                reflected_damage = 0 if save_success else actual_damage
+                if reflected_damage > 0:
+                    resistances, vulnerabilities, immunities, _, _ = self._damage_defenses(
+                        attacker,
+                        None,
+                        [damage_type],
+                        damage_tags=["reflected_psychic"],
+                        session=session,
+                        combat_id=combat.id,
+                    )
+                    resolved = resolve_damage(
+                        amount=reflected_damage,
+                        current_hp=attacker.hp,
+                        temporary_hp=attacker.temporary_hp,
+                        damage_type=damage_type,
+                        resistances=resistances,
+                        vulnerabilities=vulnerabilities,
+                        immunities=immunities,
+                    )
+                    attacker.hp = resolved.remaining_hp
+                    attacker.temporary_hp = resolved.remaining_temporary_hp
+                    attacker.version += 1
+                    attacker.updated_at = datetime.now(UTC)
+                    reflection_result = {
+                        "applied": True,
+                        "save_total": save_total,
+                        "save_success": save_success,
+                        "save_dc": save_dc,
+                        "damage_type": damage_type,
+                        "reflected_damage": reflected_damage,
+                        "hp_lost": resolved.hp_lost,
+                        "temporary_hp_lost": resolved.temporary_hp_lost,
+                    }
+                else:
+                    reflection_result = {
+                        "applied": False,
+                        "save_total": save_total,
+                        "save_success": save_success,
+                        "save_dc": save_dc,
+                        "damage_type": damage_type,
+                        "reflected_damage": 0,
+                        "reason": "实际承受伤害为 0，无心灵反伤",
+                    }
+            elif decision != "reject":
+                raise ValueError("斗转星移决议必须是接受或放弃")
+            metadata.update(
+                {
+                    "status": "resolved",
+                    "decision": decision,
+                    "save_total": save_total,
+                    "reflection_result": reflection_result,
+                    "resolved_action_id": window.id,
+                    "resolver_idempotency_key": idempotency_key,
+                }
+            )
+            window.result_json = {"action_window": metadata}
+            window.version += 1
+            window.updated_at = datetime.now(UTC)
+            window.summary = (
+                f"{attacker.display_name}：斗转星移感知豁免"
+                + ("完成" if decision == "accept" else "已放弃")
+            )
+            return {
+                "window": serialize(window),
+                "reflection_result": reflection_result,
+                "already_applied": False,
+            }
 
     def resolve_attack_resolution_teleport(
         self,
