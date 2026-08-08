@@ -545,6 +545,7 @@ class SqlAlchemyCampaignStateGateway:
                             "condition": str(
                                 defense.get("applies_when") or "feature_condition"
                             ),
+                            "required_conditions": defense.get("required_conditions"),
                             "operation": operation,
                             "damage_types": [str(value) for value in types],
                         }

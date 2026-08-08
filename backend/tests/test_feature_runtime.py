@@ -98,6 +98,76 @@ def _registry_at(rule: ClassProgression, level: int) -> dict[str, Any]:
     )
 
 
+def test_movement_feature_contracts_are_full_and_typed() -> None:
+    cases = {"奥能冲锋": "teleport"}
+    for name, marker in cases.items():
+        runtime = subclass_feature_runtime_definition(
+            {"name": name, "class_name": "fixture", "class_level": 10}
+        )
+        assert runtime is not None
+        contract = feature_runtime_contract(
+            feature_name=name,
+            class_name="fixture",
+            class_level=10,
+            definition=runtime,
+            kind="subclass_feature",
+        )
+        assert contract["automation_status"] == "full"
+        payload = json.dumps(runtime, ensure_ascii=False)
+        assert marker in payload
+
+    soul_blades = subclass_feature_runtime_definition(
+        {"name": "灵魂之刃", "class_name": "fixture", "class_level": 9}
+    )
+    assert soul_blades is not None
+    soul_contract = feature_runtime_contract(
+        feature_name="灵魂之刃",
+        class_name="fixture",
+        class_level=9,
+        definition=soul_blades,
+        kind="subclass_feature",
+    )
+    assert soul_contract["automation_status"] == "partial"
+    assert soul_blades["actions"]["psychic_teleportation"]["runtime_execution"][
+        "consumer"
+    ] == "combat_feature_action"
+
+
+def test_turn_refresh_consumes_first_turn_and_conditional_movement_modes() -> None:
+    actor = Combatant(
+        combat_id="combat",
+        display_name="Scout",
+        entity_type="character",
+        speed_ft=30,
+        movement_remaining_ft=0,
+        conditions=["elemental_attunement"],
+        snapshot_json={
+            "feature_runtime": {
+                "combat_start": {
+                    "first_turn_movement": [{"amount_ft": 10}],
+                    "movement_modes": [
+                        {
+                            "mode": "fly",
+                            "speed_source": "current_speed",
+                            "applies_when": "elemental_attunement",
+                        },
+                        {
+                            "mode": "swim",
+                            "speed_ft": 20,
+                            "applies_when": "not_active",
+                        },
+                    ],
+                }
+            }
+        },
+    )
+
+    CombatEngineService._refresh_new_turn_resources(actor, round_number=1)
+
+    assert actor.movement_remaining_ft == 40
+    assert actor.snapshot_json["active_movement_modes"] == {"fly": 30}
+
+
 def test_all_core_class_grants_compile_for_levels_one_through_twenty() -> None:
     rules = _core_rules()
     for class_name in CORE_CLASSES_2024:
@@ -163,6 +233,12 @@ def test_feature_condition_lifecycle_spec_is_shared_and_fail_closed() -> None:
     ) == {
         "state_name": "feature_raging",
         "duration_units": ["rounds", "minutes"],
+    }
+    assert feature_condition_runtime_spec(
+        "activate_duration_condition", "starry_form"
+    ) == {
+        "state_name": "feature_starry_form",
+        "duration_units": ["minutes"],
     }
 
 
@@ -379,6 +455,7 @@ def test_rage_and_sneak_attack_keep_exact_scaling_and_conditions() -> None:
     )
     assert rage_defense["damage_types"] == ["bludgeoning", "piercing", "slashing"]
     assert rage_defense["applies_when"] == "raging"
+    assert rage_defense["required_conditions"] == ["raging"]
     rage_damage = next(
         item for item in barbarian["attack_riders"] if item["id"] == "rage:bonus_damage"
     )
@@ -1425,6 +1502,7 @@ def test_reactions_and_monk_defenses_publish_typed_contracts() -> None:
         superior["damage_types"]
     )
     assert superior["applies_when"] == "superior_defense_active"
+    assert superior["required_conditions"] == ["superior_defense"]
     assert superior["automation_status"] == "full"
     assert superior["requires_dm_adjudication"] is False
 

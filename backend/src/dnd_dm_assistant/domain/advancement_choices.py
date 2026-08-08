@@ -1003,6 +1003,73 @@ _SUBCLASS_ABILITY_NAMES = {
 # adapter/configuration layer; the consumer only reads typed defense fields and
 # never dispatches on a subclass or feature identifier.
 SUBCLASS_FEATURE_RUNTIME_CONFIGS: dict[str, dict[str, Any]] = {
+    # Starry Form remains partial because its constellation branches still
+    # require their dedicated attack/healing/concentration consumers.  Its
+    # activation lifecycle is nevertheless authoritative and reusable by
+    # later features such as Full of Stars.
+    "星耀形态": {
+        "automation_status": "partial",
+        "requires_dm_adjudication": True,
+        "combat_start": {"modifiers": [], "defenses": []},
+        "resources": {},
+        "actions": {
+            "starry_form": {
+                "id": "starry_form",
+                "name": "星耀形态",
+                "kind": "feature_action",
+                "action_cost": "bonus_action",
+                "resource_key": "wild_shape",
+                "resource_cost": 1,
+                "target": "self",
+                "resolution_kind": "condition",
+                "duration": "10_minutes",
+                "effects": [
+                    {
+                        "kind": "activate_duration_condition",
+                        "condition": "starry_form",
+                        "duration_unit": "minutes",
+                        "duration_value": 10,
+                    }
+                ],
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "combat_feature_action",
+                    "effect_kinds": ["activate_duration_condition"],
+                },
+                "automation_status": "partial",
+                "requires_dm_adjudication": True,
+            }
+        },
+        "triggers": [],
+        "attack_riders": [],
+    },
+    # Full of Stars is a complete conditional defense.  Activation is written
+    # by the typed Starry Form action above; the damage resolver consumes only
+    # this structured condition list and never dispatches on a feature name.
+    "灿若繁星": {
+        "combat_start": {
+            "modifiers": [],
+            "defenses": [
+                {
+                    "id": "subclass:full_of_stars:physical_resistance",
+                    "kind": "damage_resistance",
+                    "damage_types": ["bludgeoning", "piercing", "slashing"],
+                    "applies_when": "always",
+                    "required_conditions": ["starry_form"],
+                    "runtime_execution": {
+                        "status": "ready",
+                        "consumer": "damage_defense_resolver",
+                    },
+                    "automation_status": "full",
+                    "requires_dm_adjudication": False,
+                }
+            ],
+        },
+        "resources": {},
+        "actions": {},
+        "triggers": [],
+        "attack_riders": [],
+    },
     # Fixed spell access uses the same authoritative character-spell list as
     # class spellcasting, while retaining the source-specific casting ability.
     "掌控元素": {
@@ -1739,7 +1806,8 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS: dict[str, dict[str, Any]] = {
                     "id": "subclass:mindless_rage:condition_immunity",
                     "kind": "condition_immunity",
                     "condition": "charmed",
-                    "applies_when": "raging",
+                    "applies_when": "always",
+                    "required_conditions": ["raging"],
                     "runtime_execution": {
                         "status": "ready",
                         "consumer": "condition_immunity_resolution",
@@ -1751,7 +1819,8 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS: dict[str, dict[str, Any]] = {
                     "id": "subclass:mindless_rage:frightened_immunity",
                     "kind": "condition_immunity",
                     "condition": "frightened",
-                    "applies_when": "raging",
+                    "applies_when": "always",
+                    "required_conditions": ["raging"],
                     "runtime_execution": {
                         "status": "ready",
                         "consumer": "condition_immunity_resolution",
@@ -2121,6 +2190,48 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS: dict[str, dict[str, Any]] = {
         "actions": {},
         "triggers": [],
         "attack_riders": [],
+    },
+    "奥能冲锋": {
+        "combat_start": {"modifiers": [], "defenses": []},
+        "resources": {}, "actions": {},
+        "triggers": [
+            {
+                "id": "arcane_charge:after_action_surge",
+                "event": "after_feature_action",
+                "action_id": "action_surge",
+                "effects": [{"kind": "teleport", "max_distance_ft": 30}],
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "feature_action_trigger_resolver",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        ],
+        "attack_riders": [],
+    },
+    "灵魂之刃": {
+        "automation_status": "partial",
+        "requires_dm_adjudication": True,
+        "combat_start": {"modifiers": [], "defenses": []},
+        "resources": {},
+        "actions": {
+            "psychic_teleportation": {
+                "id": "psychic_teleportation",
+                "name": "心灵传送",
+                "kind": "feature_action",
+                "action_cost": "bonus_action",
+                "resource_key": "$feature_resource",
+                "resource_cost": 1,
+                "target": "self",
+                "effects": [{"kind": "teleport", "roll_multiplier_ft": 10}],
+                "runtime_execution": {"status": "ready", "consumer": "combat_feature_action"},
+                "automation_status": "partial",
+                "requires_dm_adjudication": True,
+                "partial_reason": "心灵传送已可执行；寻的斩击尚未接入未命中攻击重算窗口。",
+            }
+        },
+        "triggers": [], "attack_riders": [],
     },
 }
 # The source pack uses both translated labels for Healing Light.  Keep the

@@ -303,6 +303,7 @@ class CombatEngineService:
         "steady_aim": "steady_aim",
         "feature_innate_sorcery": "innate_sorcery",
         "superior_defense": "superior_defense",
+        "feature_starry_form": "starry_form",
     }
 
     def __init__(self, engine: Engine) -> None:
@@ -3467,6 +3468,28 @@ class CombatEngineService:
         return cls._canonical_condition(condition) in cls._condition_set(target)
 
     @classmethod
+    def _required_conditions_met(
+        cls,
+        target: Combatant,
+        rule: dict[str, object],
+    ) -> bool:
+        """Fail closed unless every structured condition predicate is active."""
+
+        raw_required = rule.get("required_conditions")
+        if raw_required is None:
+            return True
+        if not isinstance(raw_required, list) or not raw_required:
+            return False
+        required = [
+            cls._canonical_condition(str(value))
+            for value in raw_required
+            if str(value).strip()
+        ]
+        if len(required) != len(raw_required) or not all(required):
+            return False
+        return set(required).issubset(cls._condition_set(target))
+
+    @classmethod
     def _condition_is_immune(
         cls,
         target: Combatant,
@@ -3488,6 +3511,8 @@ class CombatEngineService:
             if defense.get("kind") != "condition_immunity":
                 continue
             if cls._canonical_condition(defense.get("condition")) != canonical:
+                continue
+            if not cls._required_conditions_met(target, defense):
                 continue
             applies_when = str(defense.get("applies_when") or "always").strip().lower()
             if applies_when in {"always", ""}:
@@ -4092,7 +4117,14 @@ class CombatEngineService:
         if not defenses:
             combat_start = raw.get("combat_start")
             defenses = combat_start.get("defenses") if isinstance(combat_start, dict) else None
-        return [item for item in defenses or () if isinstance(item, dict)]
+        # Apply structured state predicates at the common defense boundary so
+        # damage resistance, condition immunity, saving-throw defense,
+        # concentration defense and ranged-passive discovery cannot disagree.
+        return [
+            item
+            for item in defenses or ()
+            if isinstance(item, dict) and cls._required_conditions_met(combatant, item)
+        ]
 
     @classmethod
     def _concentration_damage_immunity(cls, target: Combatant) -> bool:
@@ -4672,7 +4704,12 @@ class CombatEngineService:
                 raise ValueError("恐慌状态下不能主动靠近恐慌来源")
 
     @classmethod
-    def _refresh_new_turn_resources(cls, actor: Combatant) -> None:
+    def _refresh_new_turn_resources(
+        cls,
+        actor: Combatant,
+        *,
+        round_number: int | None = None,
+    ) -> None:
         """Recompute a unit's turn budget after boundary effects settle.
 
         A turn-start condition can expire while ``advance_turn`` is processing
@@ -4682,7 +4719,34 @@ class CombatEngineService:
         """
 
         movement_blocked = cls._movement_is_blocked(actor)
-        actor.movement_remaining_ft = 0 if movement_blocked else actor.speed_ft
+        movement_budget = actor.speed_ft
+        snapshot = dict(actor.snapshot_json or {})
+        registry = snapshot.get("feature_runtime")
+        combat_start = registry.get("combat_start") if isinstance(registry, dict) else None
+        if isinstance(combat_start, dict):
+            if round_number == 1:
+                for raw in combat_start.get("first_turn_movement", []):
+                    if not isinstance(raw, dict):
+                        continue
+                    amount = raw.get("amount_ft")
+                    if isinstance(amount, int) and not isinstance(amount, bool) and amount > 0:
+                        movement_budget += amount
+            active_modes: dict[str, int] = {}
+            conditions = cls._condition_set(actor)
+            for raw in combat_start.get("movement_modes", []):
+                if not isinstance(raw, dict):
+                    continue
+                required = cls._canonical_condition(raw.get("applies_when"))
+                if required and required not in conditions:
+                    continue
+                mode = str(raw.get("mode") or "").strip()
+                speed_source = str(raw.get("speed_source") or "").strip()
+                speed = actor.speed_ft if speed_source == "current_speed" else raw.get("speed_ft")
+                if mode in {"fly", "swim", "burrow"} and isinstance(speed, int) and speed >= 0:
+                    active_modes[mode] = max(active_modes.get(mode, 0), speed)
+            snapshot["active_movement_modes"] = active_modes
+            actor.snapshot_json = snapshot
+        actor.movement_remaining_ft = 0 if movement_blocked else movement_budget
         can_act = not bool(cls._condition_set(actor) & cls._ACTION_BLOCKING_CONDITIONS)
         actor.action_available = can_act
         actor.bonus_action_available = can_act
@@ -5552,6 +5616,18 @@ class CombatEngineService:
                     trigger_result["effects"].append(
                         {"kind": kind, "conditions_removed": removed}
                     )
+                elif kind == "teleport":
+                    context = dict(event_context or {})
+                    max_distance = cls._state_int(raw_effect.get("max_distance_ft"), 0)
+                    movement = cls._apply_feature_teleport(
+                        session,
+                        combat,
+                        target=actor,
+                        row=context.get("destination_row"),
+                        col=context.get("destination_col"),
+                        max_distance_ft=max_distance,
+                    )
+                    trigger_result["effects"].append({"kind": kind, **movement})
                 else:
                     raise ValueError(f"职业特性触发器效果类型不受支持：{kind or 'unknown'}")
             if trigger_result["effects"]:
@@ -6934,6 +7010,61 @@ class CombatEngineService:
             )
         return result
 
+    @classmethod
+    def _apply_feature_teleport(
+        cls,
+        session: Session,
+        combat: Combat,
+        *,
+        target: Combatant,
+        row: int | None,
+        col: int | None,
+        max_distance_ft: int,
+    ) -> dict[str, object]:
+        """Move a combatant to an explicit legal grid cell without spending speed."""
+
+        if row is None or col is None:
+            raise ValueError("传送特性需要明确的目的地行列")
+        if combat.scene_id is None:
+            raise ValueError("传送特性需要权威战斗地图")
+        grid = session.scalar(select(SceneGrid).where(SceneGrid.scene_id == combat.scene_id))
+        if grid is None:
+            raise ValueError("传送特性需要权威战斗网格")
+        if not (1 <= row <= grid.height and 1 <= col <= grid.width):
+            raise ValueError("传送目的地不在战斗地图内")
+        current = cls._grid_point(target)
+        if current is None:
+            raise ValueError("传送目标缺少权威网格位置")
+        distance = grid_distance_ft(current, (row, col), cell_size_ft=grid.cell_size_ft)
+        if distance > max_distance_ft:
+            raise ValueError("传送目的地超出特性允许距离")
+        layers = grid.layers_json.get("cells", [])
+        if isinstance(layers, list) and any(
+            isinstance(cell, dict)
+            and cell.get("row") == row
+            and cell.get("col") == col
+            and cell.get("kind") in {"wall", "void"}
+            for cell in layers
+        ):
+            raise ValueError("传送目的地不可通行")
+        occupants = session.scalars(
+            select(Combatant).where(
+                Combatant.combat_id == combat.id,
+                Combatant.is_active.is_(True),
+                Combatant.id != target.id,
+            )
+        ).all()
+        if any((row, col) in cls._grid_footprint(item) for item in occupants):
+            raise ValueError("传送目的地已被占据")
+        snapshot = dict(target.snapshot_json or {})
+        snapshot["grid_position"] = {"row": row, "col": col}
+        target.snapshot_json = snapshot
+        return {
+            "from": {"row": current[0], "col": current[1]},
+            "to": {"row": row, "col": col},
+            "distance_ft": distance,
+        }
+
     @staticmethod
     def _grid_point(combatant: Combatant) -> tuple[int, int] | None:
         raw = (combatant.snapshot_json or {}).get("grid_position")
@@ -8023,6 +8154,8 @@ class CombatEngineService:
         for defense in cls._feature_defenses(target):
             if defense.get("kind") != "damage_resistance":
                 continue
+            if not cls._required_conditions_met(target, defense):
+                continue
             applies_when = str(defense.get("applies_when") or "always").strip()
             if applies_when == "magical":
                 if getattr(command, "is_magical", False) is not True:
@@ -8080,6 +8213,8 @@ class CombatEngineService:
         for index, raw_defense in enumerate(conditionals):
             if not isinstance(raw_defense, dict):
                 continue
+            if not cls._required_conditions_met(target, raw_defense):
+                continue
             condition = str(raw_defense.get("condition") or "").strip()
             operation = str(raw_defense.get("operation") or "").strip()
             raw_types = raw_defense.get("damage_types")
@@ -8098,6 +8233,8 @@ class CombatEngineService:
                 continue
             defense_label = str(raw_defense.get("id") or f"conditional_defense_{index + 1}")
             automatic_feature_condition = (
+                raw_defense.get("required_conditions") is not None
+            ) or (
                 condition.lower() in {"raging", "rage"} and cls._has_condition(target, "raging")
             ) or (
                 condition.lower() in {"superior_defense", "superior_defense_active"}
@@ -12551,6 +12688,24 @@ class CombatEngineService:
                     result["healing_effect"] = True
                 elif kind == "condition_removal":
                     result["condition_removal_effect"] = True
+                elif kind == "teleport":
+                    maximum = self._state_int(effect.get("max_distance_ft"), 0)
+                    multiplier = self._state_int(effect.get("roll_multiplier_ft"), 0)
+                    if multiplier:
+                        if command.movement_roll_total is None:
+                            raise ValueError("该传送特性需要提交明确的骰值")
+                        maximum = command.movement_roll_total * multiplier
+                        result["movement_roll_total"] = command.movement_roll_total
+                    if maximum < 1:
+                        raise ValueError("传送特性缺少明确的最大距离")
+                    result["teleport"] = self._apply_feature_teleport(
+                        session,
+                        combat,
+                        target=target,
+                        row=command.destination_row,
+                        col=command.destination_col,
+                        max_distance_ft=maximum,
+                    )
                 elif kind == "requires_dm_choice":
                     raise ValueError(str(effect.get("reason") or "该职业特性需要 DM 选择分支"))
 
@@ -12560,6 +12715,11 @@ class CombatEngineService:
                 actor=actor,
                 action=action,
                 triggers=registry_data.get("triggers"),
+                event_context={
+                    "destination_row": command.destination_row,
+                    "destination_col": command.destination_col,
+                    "movement_roll_total": command.movement_roll_total,
+                },
             )
             if trigger_results:
                 result["triggers"] = trigger_results
@@ -14468,7 +14628,7 @@ class CombatEngineService:
             combat.current_turn_index = next_index
             combat.round_number = next_round
             combat.version += 1
-            self._refresh_new_turn_resources(active)
+            self._refresh_new_turn_resources(active, round_number=combat.round_number)
             active_snapshot = dict(active.snapshot_json or {})
             # Action Surge grants a budget for this turn only.  The budget is
             # consumed by the normal action-economy gate and must never leak
@@ -14740,7 +14900,7 @@ class CombatEngineService:
             # A turn-start effect may have removed a condition that blocked
             # the active unit. Recompute the fresh turn budget after every
             # lifecycle path (runtime, predicated, and round expiry).
-            self._refresh_new_turn_resources(active)
+            self._refresh_new_turn_resources(active, round_number=combat.round_number)
             expiration_prompts = [
                 serialize(effect) for effect in expiring_effects if effect.status == "active"
             ]

@@ -278,6 +278,49 @@ def test_subclass_typed_defense_grant_uses_generic_resistance_consumer() -> None
     )
 
 
+def test_full_of_stars_uses_starry_form_condition_contract() -> None:
+    starry = subclass_feature_runtime_definition(
+        {
+            "name": "星耀形态 Starry Form",
+            "class_name": "德鲁伊",
+            "class_level": 3,
+        }
+    )
+    assert starry is not None
+    action = starry["actions"]["starry_form"]
+    assert action["resource_key"] == "wild_shape"
+    assert action["effects"] == [
+        {
+            "kind": "activate_duration_condition",
+            "condition": "starry_form",
+            "duration_unit": "minutes",
+            "duration_value": 10,
+        }
+    ]
+
+    full_of_stars = subclass_runtime_grants(
+        {
+            "name": "星辰结社",
+            "feature_definitions": [
+                {
+                    "id": "full-of-stars",
+                    "name": "灿若繁星 Full of Stars",
+                    "class_level": 14,
+                    "description": "星耀形态期间获得钝击、穿刺与挥砍伤害的抗性。",
+                    "source_record_id": "stars-druid",
+                }
+            ],
+        },
+        class_name="德鲁伊",
+        target_class_level=14,
+    )
+    grant = full_of_stars["grants"][0]
+    assert grant["runtime"]["automation_status"] == "full"
+    defense = grant["runtime"]["registry"]["combat_start"]["defenses"][0]
+    assert defense["required_conditions"] == ["starry_form"]
+    assert defense["damage_types"] == ["bludgeoning", "piercing", "slashing"]
+
+
 def test_subclass_aura_immunity_uses_ranged_passive_consumer() -> None:
     result = subclass_runtime_grants(
         {
@@ -721,4 +764,7 @@ def test_mindless_rage_declares_conditional_immunity_and_clear_trigger() -> None
     )
     grant = result["grants"][0]
     assert grant["runtime"]["automation_status"] == "full"
+    defenses = grant["runtime"]["registry"]["combat_start"]["defenses"]
+    assert {item["condition"] for item in defenses} == {"charmed", "frightened"}
+    assert all(item["required_conditions"] == ["raging"] for item in defenses)
     assert grant["runtime"]["registry"]["triggers"][0]["action_id"] == "rage"

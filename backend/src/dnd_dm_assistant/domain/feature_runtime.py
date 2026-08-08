@@ -78,6 +78,10 @@ FEATURE_CONDITION_RUNTIME_SPECS: dict[str, dict[str, dict[str, Any]]] = {
             "state_name": "superior_defense",
             "duration_units": ["rounds", "minutes"],
         },
+        "starry_form": {
+            "state_name": "feature_starry_form",
+            "duration_units": ["minutes"],
+        },
     },
     "activate_timed_condition": {
         "隐形": {
@@ -847,6 +851,7 @@ def feature_runtime_definition(
                 "operation": "resistance",
                 "damage_types": ["bludgeoning", "piercing", "slashing"],
                 "applies_when": "raging",
+                "required_conditions": ["raging"],
                 "runtime_execution": {
                     "status": "ready",
                     "consumer": "conditional_damage_defense",
@@ -1833,6 +1838,7 @@ def feature_runtime_definition(
                 "operation": "resistance",
                 "damage_types": deepcopy(_DAMAGE_TYPES_EXCEPT_FORCE),
                 "applies_when": "superior_defense_active",
+                "required_conditions": ["superior_defense"],
                 "resource_key": "focus",
                 "activation_cost": 3,
                 "automation_status": "full",
@@ -2300,6 +2306,10 @@ def _runtime_sections(definition: Mapping[str, Any]) -> tuple[str, ...]:
             sections.append("combat_modifiers")
         if combat_start.get("defenses"):
             sections.append("combat_defenses")
+        if combat_start.get("movement_modes"):
+            sections.append("movement_modes")
+        if combat_start.get("first_turn_movement"):
+            sections.append("first_turn_movement")
     if definition.get("resources"):
         sections.append("resources")
     if definition.get("actions"):
@@ -2389,6 +2399,8 @@ def feature_runtime_contract(
         entries = (
             *list(combat_start.get("modifiers") or ()),
             *list(combat_start.get("defenses") or ()),
+            *list(combat_start.get("movement_modes") or ()),
+            *list(combat_start.get("first_turn_movement") or ()),
         )
         for raw in entries:
             if isinstance(raw, Mapping):

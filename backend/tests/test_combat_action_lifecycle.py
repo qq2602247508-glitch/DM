@@ -2202,6 +2202,118 @@ def test_rage_feature_automatically_applies_physical_resistance(
     assert damage.json()["action"]["result_json"]["adjusted_damage"] == 4
 
 
+def test_starry_form_activation_enables_full_of_stars_resistance(
+    combat_client: TestClient,
+) -> None:
+    campaign, combat, actor = _setup(combat_client)
+    character_response = combat_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/characters",
+        json={
+            "name": "星辰德鲁伊",
+            "class_name": "德鲁伊",
+            "resources": {"wild_shape": {"current": 1, "max": 2}},
+        },
+    )
+    assert character_response.status_code == 201, character_response.text
+    character = character_response.json()
+    patched = combat_client.patch(
+        _combatant_path(campaign, combat, actor["id"]),
+        headers={"If-Match": f'"{actor["version"]}"'},
+        json={
+            "entity_type": "character",
+            "entity_id": character["id"],
+            "snapshot_json": {
+                "feature_runtime": {
+                    "actions": {
+                        "starry_form": {
+                            "name": "星耀形态",
+                            "kind": "feature_action",
+                            "action_cost": "bonus_action",
+                            "resource_key": "wild_shape",
+                            "resource_cost": 1,
+                            "target": "self",
+                            "resolution_kind": "condition",
+                            "runtime_execution": {
+                                "status": "ready",
+                                "consumer": "combat_feature_action",
+                                "effect_kinds": ["activate_duration_condition"],
+                            },
+                            "effects": [
+                                {
+                                    "kind": "activate_duration_condition",
+                                    "condition": "starry_form",
+                                    "duration_unit": "minutes",
+                                    "duration_value": 10,
+                                }
+                            ],
+                        }
+                    },
+                    "combat_start": {
+                        "defenses": [
+                            {
+                                "id": "subclass:full_of_stars:physical_resistance",
+                                "kind": "damage_resistance",
+                                "damage_types": ["slashing"],
+                                "applies_when": "always",
+                                "required_conditions": ["starry_form"],
+                            }
+                        ]
+                    },
+                }
+            },
+        },
+    )
+    assert patched.status_code == 200, patched.text
+    actor = patched.json()
+
+    before = combat_client.post(
+        f"{_root(campaign, combat)}/actions/confirm",
+        headers={"X-Request-ID": "full-of-stars-before"},
+        json={
+            "action_type": "damage",
+            "target_combatant_id": actor["id"],
+            "target_version": actor["version"],
+            "amount": 9,
+            "damage_type": "slashing",
+        },
+    )
+    assert before.status_code == 200, before.text
+    assert before.json()["action"]["result_json"]["adjusted_damage"] == 9
+    refreshed = combat_client.get(_combatant_path(campaign, combat, actor["id"]))
+    assert refreshed.status_code == 200, refreshed.text
+    actor = refreshed.json()
+
+    activated = combat_client.post(
+        f"{_root(campaign, combat)}/feature-actions/confirm",
+        headers={"X-Request-ID": "starry-form-activation"},
+        json={
+            "actor_combatant_id": actor["id"],
+            "actor_version": actor["version"],
+            "feature_id": "starry_form",
+            "target_combatant_id": actor["id"],
+            "target_version": actor["version"],
+        },
+    )
+    assert activated.status_code == 200, activated.text
+    actor = activated.json()["actor"]
+    assert "starry_form" in actor["conditions"]
+    assert activated.json()["result"]["resource_after"] == 0
+
+    damage = combat_client.post(
+        f"{_root(campaign, combat)}/actions/confirm",
+        headers={"X-Request-ID": "full-of-stars-after"},
+        json={
+            "action_type": "damage",
+            "target_combatant_id": actor["id"],
+            "target_version": actor["version"],
+            "amount": 9,
+            "damage_type": "slashing",
+        },
+    )
+    assert damage.status_code == 200, damage.text
+    assert damage.json()["action"]["result_json"]["adjusted_damage"] == 4
+
+
 def test_rage_feature_ends_when_turn_has_no_attack_or_damage(
     combat_client: TestClient,
 ) -> None:

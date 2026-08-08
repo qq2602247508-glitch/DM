@@ -1119,6 +1119,9 @@ class CombatFeatureActionCommand(BaseModel):
     condition_to_remove: Literal["charmed", "frightened", "poisoned"] | None = None
     target_combatant_id: str | None = Field(default=None, min_length=1, max_length=36)
     target_version: int | None = Field(default=None, ge=1)
+    destination_row: int | None = Field(default=None, ge=1, le=10_000)
+    destination_col: int | None = Field(default=None, ge=1, le=10_000)
+    movement_roll_total: int | None = Field(default=None, ge=1, le=1_000)
     dm_override: bool = False
     override_reason: str | None = Field(default=None, max_length=1_000)
 
@@ -1128,6 +1131,8 @@ class CombatFeatureActionCommand(BaseModel):
             raise ValueError("override_reason is required for a DM override")
         if (self.target_combatant_id is None) != (self.target_version is None):
             raise ValueError("target_combatant_id and target_version are required together")
+        if (self.destination_row is None) != (self.destination_col is None):
+            raise ValueError("destination_row and destination_col are required together")
         return self
 
 

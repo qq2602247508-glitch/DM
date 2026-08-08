@@ -132,6 +132,114 @@ def test_typed_feature_damage_resistance_is_consumed_without_feature_name_branch
     assert unresolved == []
 
 
+def test_typed_damage_resistance_requires_every_declared_condition() -> None:
+    target = Combatant(
+        id="conditional-defense",
+        entity_type="character",
+        display_name="条件防御",
+        hp=20,
+        max_hp=20,
+        snapshot_json={
+            "feature_runtime": {
+                "combat_start": {
+                    "defenses": [
+                        {
+                            "id": "test:conditional_resistance",
+                            "kind": "damage_resistance",
+                            "damage_types": ["slashing"],
+                            "applies_when": "always",
+                            "required_conditions": ["starry_form", "focused"],
+                        }
+                    ]
+                }
+            }
+        },
+    )
+
+    before = CombatEngineService._damage_defenses(
+        target,
+        SimpleNamespace(damage_tags=[]),
+        ["slashing"],
+    )
+    assert "slashing" not in before[0]
+
+    target.conditions = ["starry_form"]
+    partial = CombatEngineService._damage_defenses(
+        target,
+        SimpleNamespace(damage_tags=[]),
+        ["slashing"],
+    )
+    assert "slashing" not in partial[0]
+
+    target.conditions = ["starry_form", "focused"]
+    active = CombatEngineService._damage_defenses(
+        target,
+        SimpleNamespace(damage_tags=[]),
+        ["slashing"],
+    )
+    assert "slashing" in active[0]
+    assert active[3] == ["test:conditional_resistance:resistance:slashing"]
+
+
+def test_typed_damage_resistance_fails_closed_for_invalid_condition_contract() -> None:
+    target = Combatant(
+        id="invalid-conditional-defense",
+        entity_type="character",
+        display_name="无效条件防御",
+        hp=20,
+        max_hp=20,
+        conditions=["starry_form"],
+        snapshot_json={
+            "feature_runtime": {
+                "combat_start": {
+                    "defenses": [
+                        {
+                            "kind": "damage_resistance",
+                            "damage_types": ["slashing"],
+                            "required_conditions": "starry_form",
+                        }
+                    ]
+                }
+            }
+        },
+    )
+
+    resolved = CombatEngineService._damage_defenses(
+        target,
+        SimpleNamespace(damage_tags=[]),
+        ["slashing"],
+    )
+    assert "slashing" not in resolved[0]
+
+
+def test_required_conditions_gate_condition_immunity_at_shared_defense_boundary() -> None:
+    target = Combatant(
+        id="conditional-immunity",
+        entity_type="character",
+        display_name="条件免疫",
+        hp=20,
+        max_hp=20,
+        snapshot_json={
+            "feature_runtime": {
+                "combat_start": {
+                    "defenses": [
+                        {
+                            "kind": "condition_immunity",
+                            "condition": "charmed",
+                            "applies_when": "always",
+                            "required_conditions": ["focused"],
+                        }
+                    ]
+                }
+            }
+        },
+    )
+
+    assert CombatEngineService._condition_is_immune(target, "charmed") is False
+    target.conditions = ["focused"]
+    assert CombatEngineService._condition_is_immune(target, "charmed") is True
+
+
 def test_critical_threshold_block_uses_authoritative_natural_d20() -> None:
     actor = Combatant(
         id="champion",

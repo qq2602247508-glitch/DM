@@ -26,7 +26,7 @@ TRIGGER_WINDOWS = frozenset(
 )
 TRIGGER_EVENTS = frozenset({"after_feature_action", "after_attack"})
 TRIGGER_EFFECT_KINDS = frozenset(
-    {"grant_movement_budget", "grant_disengage", "remove_conditions"}
+    {"grant_movement_budget", "grant_disengage", "remove_conditions", "teleport"}
 )
 RESOURCE_LIFECYCLE_EVENTS = frozenset(
     {"short_rest", "long_rest", "initiative_start", "turn_start", "turn_end"}
@@ -176,6 +176,10 @@ def feature_trigger_block_errors(trigger: Mapping[str, Any]) -> tuple[str, ...]:
                     str(item).strip() for item in conditions
                 ):
                     errors.append("remove_conditions needs a non-empty conditions list")
+            elif kind == "teleport":
+                maximum = effect.get("max_distance_ft")
+                if not _positive_int(maximum):
+                    errors.append("teleport needs a positive max_distance_ft")
     return tuple(errors)
 
 
