@@ -266,6 +266,8 @@ def _fixed_subclass_feature_spell_additions(
                     "always_prepared": True,
                     "spellcasting_ability": str(advancement.get("casting_ability") or ""),
                     "ritual_only": bool(advancement.get("ritual_only")),
+                    "resource_key": str(advancement.get("free_cast_resource_key") or ""),
+                    "resource_cost": 1 if advancement.get("free_cast_resource_key") else 0,
                     "source_feature_id": feature_id,
                     "source_feature_name": str(grant.get("name") or ""),
                     "granted_spell_access": True,

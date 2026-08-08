@@ -655,6 +655,30 @@ def feature_runtime_definition(
     scaling_keys = set(tracked_scaling_keys)
     resource_keys = set(tracked_resource_keys)
 
+    if identity.startswith("信实坐骑") and "faithful_steed" in resource_keys:
+        resource = definition["resources"].get("faithful_steed")
+        if isinstance(resource, dict):
+            resource.update(
+                {
+                    "automation_status": "full",
+                    "requires_dm_adjudication": False,
+                    "note": "寻获坐骑始终准备；免费施法每次长休恢复一次。",
+                }
+            )
+        definition["advancement"] = {
+            "kind": "fixed_spell_grant",
+            "spells": ["寻获坐骑"],
+            "grant_class": "owner_class",
+            "casting_ability": "charisma",
+            "free_cast_resource_key": "faithful_steed",
+            "runtime_execution": {
+                "status": "ready",
+                "consumer": "advancement_service_and_spell_economy_service",
+            },
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+        }
+
     if identity in {"持久狂暴", "persistentrage"} and "rage" in resource_keys:
         # The local 2024 progression table treats Persistent Rage as the
         # point at which the rage pool is fully restored by either rest. Keep

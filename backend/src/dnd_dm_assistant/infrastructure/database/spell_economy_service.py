@@ -343,6 +343,36 @@ class SpellEconomyService:
                 raise ValueError("spell is not prepared")
             if data["slot_level"] < spell.spell_level:
                 raise ValueError("slot level is below spell level")
+            free_cast_key = ""
+            free_cast_cost = 0
+            free_cast_before = 0
+            if data.get("free_cast"):
+                if data["slot_level"] != spell.spell_level:
+                    raise ValueError("free cast must use the spell's base level")
+                sheet_spell = next(
+                    (
+                        item
+                        for item in c.spells or []
+                        if isinstance(item, dict)
+                        and (
+                            str(item.get("source_record_id") or "")
+                            == str(spell.metadata_json.get("source_record_id") or "")
+                            or str(item.get("name") or "") == spell.name
+                        )
+                    ),
+                    None,
+                )
+                if not isinstance(sheet_spell, dict):
+                    raise ValueError("free cast spell metadata is missing")
+                free_cast_key = str(sheet_spell.get("resource_key") or "").strip()
+                free_cast_cost = int(sheet_spell.get("resource_cost") or 1)
+                if not free_cast_key or free_cast_cost < 1:
+                    raise ValueError("spell is not eligible for a free cast")
+                raw_resource = c.resources.get(free_cast_key)
+                resource = raw_resource if isinstance(raw_resource, dict) else {}
+                free_cast_before = int(resource.get("current") or 0)
+                if free_cast_before < free_cast_cost:
+                    raise ValueError("free cast resource unavailable")
             if not data["ritual"] and spell.spell_level and not data["material_available"]:
                 raise ValueError("required material is unavailable")
             raw_slots = c.spellcasting.get("slots", {})
@@ -350,7 +380,7 @@ class SpellEconomyService:
             key = str(data["slot_level"])
             before = slots.get(key, {})
             current = int(before.get("current", 0)) if isinstance(before, dict) else 0
-            if spell.spell_level and not data["ritual"] and current < 1:
+            if spell.spell_level and not data["ritual"] and not data.get("free_cast") and current < 1:
                 raise ValueError("spell slot unavailable")
             result = {
                 "character_id": c.id,
@@ -358,7 +388,15 @@ class SpellEconomyService:
                 "slot_level": data["slot_level"],
                 "ritual": data["ritual"],
                 "slot_before": current,
-                "slot_after": current if data["ritual"] or spell.spell_level == 0 else current - 1,
+                "slot_after": current
+                if data["ritual"] or spell.spell_level == 0 or data.get("free_cast")
+                else current - 1,
+                "free_cast": bool(data.get("free_cast")),
+                "free_cast_resource_key": free_cast_key or None,
+                "free_cast_before": free_cast_before,
+                "free_cast_after": (
+                    free_cast_before - free_cast_cost if free_cast_key else free_cast_before
+                ),
                 "concentration": data["concentration"],
                 "rule_reference": RULE,
             }
@@ -383,13 +421,26 @@ class SpellEconomyService:
             if preview["preview_token"] != token:
                 raise VersionConflict("spell preview", "state", 1, 2)
             c = self._character(s, cid, data["character_id"], data["character_version"])
-            raw_slots = c.spellcasting.get("slots", {})
-            slots = dict(raw_slots) if isinstance(raw_slots, dict) else {}
-            raw_slot = slots.get(str(data["slot_level"]), {})
-            slot = dict(raw_slot) if isinstance(raw_slot, dict) else {}
-            slot["current"] = preview["slot_after"]
-            slots[str(data["slot_level"])] = slot
-            c.spellcasting = {**c.spellcasting, "slots": slots}
+            if preview.get("free_cast"):
+                resource_key = str(preview.get("free_cast_resource_key") or "").strip()
+                resources = dict(c.resources or {})
+                raw_resource = resources.get(resource_key)
+                resource = dict(raw_resource) if isinstance(raw_resource, dict) else {}
+                before = int(resource.get("current") or 0)
+                cost = before - int(preview.get("free_cast_after") or 0)
+                if not resource_key or cost < 1 or before < cost:
+                    raise ValueError("free cast resource changed before confirmation")
+                resource["current"] = before - cost
+                resources[resource_key] = resource
+                c.resources = resources
+            else:
+                raw_slots = c.spellcasting.get("slots", {})
+                slots = dict(raw_slots) if isinstance(raw_slots, dict) else {}
+                raw_slot = slots.get(str(data["slot_level"]), {})
+                slot = dict(raw_slot) if isinstance(raw_slot, dict) else {}
+                slot["current"] = preview["slot_after"]
+                slots[str(data["slot_level"])] = slot
+                c.spellcasting = {**c.spellcasting, "slots": slots}
             c.version += 1
             if data["concentration"]:
                 c.resources = {

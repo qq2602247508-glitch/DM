@@ -307,6 +307,74 @@ def test_spell_and_equipment_preview_confirm_idempotent(economy_client: TestClie
     )
 
 
+def test_free_cast_uses_feature_resource_and_replay_is_idempotent(
+    economy_client: TestClient,
+) -> None:
+    campaign = economy_client.post("/api/v1/campaigns", json={"name": "免费施法"}).json()
+    character = economy_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/characters",
+        json={
+            "name": "圣武士",
+            "spellcasting": {"slots": {"2": {"current": 0, "max": 0}}},
+            "resources": {
+                "faithful_steed": {
+                    "label": "信实坐骑免费施法",
+                    "current": 1,
+                    "max": 1,
+                }
+            },
+            "spells": [
+                {
+                    "name": "寻获坐骑",
+                    "source_record_id": "find-steed-2024",
+                    "spell_level": 2,
+                    "prepared": True,
+                    "always_prepared": True,
+                    "resource_key": "faithful_steed",
+                    "resource_cost": 1,
+                }
+            ],
+        },
+    ).json()
+    engine = create_engine(economy_client.database_url)  # type: ignore[attr-defined]
+    with Session(engine) as session, session.begin():
+        spell = KnownSpell(
+            campaign_id=campaign["id"],
+            character_id=character["id"],
+            name="寻获坐骑",
+            spell_level=2,
+            metadata_json={"source_record_id": "find-steed-2024"},
+        )
+        session.add(spell)
+        session.flush()
+        spell_id = spell.id
+        session.add(PreparedSpell(character_id=character["id"], known_spell_id=spell.id, prepared=True))
+    prefix = f"/api/v1/campaigns/{campaign['id']}"
+    body = {
+        "character_id": character["id"],
+        "character_version": character["version"],
+        "known_spell_id": spell_id,
+        "slot_level": 2,
+        "free_cast": True,
+    }
+    preview = economy_client.post(f"{prefix}/spells/cast/preview", json=body)
+    assert preview.status_code == 200, preview.text
+    assert preview.json()["slot_after"] == 0
+    assert preview.json()["free_cast_resource_key"] == "faithful_steed"
+    confirm_body = {
+        **body,
+        "preview_token": preview.json()["preview_token"],
+        "idempotency_key": "faithful-steed-1",
+    }
+    confirmed = economy_client.post(f"{prefix}/spells/cast/confirm", json=confirm_body)
+    assert confirmed.status_code == 200, confirmed.text
+    after = economy_client.get(f"{prefix}/characters/{character['id']}").json()
+    assert after["resources"]["faithful_steed"]["current"] == 0
+    replay = economy_client.post(f"{prefix}/spells/cast/confirm", json=confirm_body)
+    assert replay.status_code == 200, replay.text
+    assert replay.json() == confirmed.json()
+
+
 def test_equipment_slots_block_two_handed_shield_and_untrained_armor(
     economy_client: TestClient,
 ) -> None:

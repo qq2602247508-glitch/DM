@@ -156,6 +156,7 @@ FEATURE_RESOURCE_MARKERS: dict[str, str] = {
     "先发激励": "bardic_inspiration",
     "明镜止水": "focus",
     "大德鲁伊": "wild_shape",
+    "信实坐骑": "faithful_steed",
     "神圣干预": "divine_intervention",
     "进阶神圣干预": "divine_intervention",
     "术法复苏": "sorcery_restoration",
@@ -841,6 +842,16 @@ def progression_resource_updates(
             "recovery": "long_rest",
             "source": source,
         }
+        if target_class_level >= 5:
+            updates["faithful_steed"] = {
+                "label": "信实坐骑免费施法",
+                "max": 1,
+                "recovery": "long_rest",
+                "source": source,
+                "resource_kind": "free_spell_cast",
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
     elif rule.name == "牧师" and target_class_level >= 10:
         updates["divine_intervention"] = {
             "label": "神圣干预",
@@ -1498,6 +1509,39 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS: dict[str, dict[str, Any]] = {
             "runtime_execution": {
                 "status": "ready",
                 "consumer": "advancement_service_and_player_action_resolution",
+            },
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+        },
+    },
+    # Faithful Steed has two linked effects: the spell is always prepared and
+    # one casting per long rest bypasses ordinary spell slots.  Spell economy
+    # consumes the typed resource metadata, not this feature name.
+    "信实坐骑": {
+        "combat_start": {"modifiers": [], "defenses": []},
+        "resources": {
+            "faithful_steed": {
+                "key": "faithful_steed",
+                "label": "信实坐骑免费施法",
+                "max": 1,
+                "recovery": "long_rest",
+                "recovery_events": [{"rest": "long_rest", "operation": "set_to_max"}],
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        },
+        "actions": {},
+        "triggers": [],
+        "attack_riders": [],
+        "advancement": {
+            "kind": "fixed_spell_grant",
+            "spells": ["寻获坐骑"],
+            "grant_class": "owner_class",
+            "casting_ability": "charisma",
+            "free_cast_resource_key": "faithful_steed",
+            "runtime_execution": {
+                "status": "ready",
+                "consumer": "advancement_service_and_spell_economy_service",
             },
             "automation_status": "full",
             "requires_dm_adjudication": False,
@@ -3469,6 +3513,21 @@ def _subclass_resource_update(
 ) -> tuple[str, dict[str, Any]] | None:
     description = str(definition.get("description") or "")
     feature_name = str(definition.get("name") or "").strip()
+    if feature_name == "信实坐骑":
+        return "faithful_steed", {
+            "label": "信实坐骑免费施法",
+            "max": 1,
+            "max_formula": "fixed_one",
+            "resource_kind": "free_spell_cast",
+            "recovery": "long_rest",
+            "recovery_events": [{"rest": "long_rest", "operation": "set_to_max"}],
+            "source": (
+                f"{definition.get('source_path') or definition.get('source_record_id')}"
+                f" · {definition.get('class_level')}级{feature_name}"
+            ),
+            "requires_dm_adjudication": False,
+            "automation_status": "full",
+        }
     if feature_name.startswith("预兆"):
         return "portent_dice", {
             "label": "预兆骰",
