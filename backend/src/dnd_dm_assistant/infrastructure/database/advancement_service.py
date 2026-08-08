@@ -1737,6 +1737,17 @@ class AdvancementService:
                 if not override:
                     raise ValueError(message)
                 warnings.append("DM 已覆盖：" + message)
+            options = requirement.get("options")
+            if isinstance(options, list):
+                invalid = sorted(set(selected) - {str(value) for value in options})
+                if invalid and not override:
+                    raise ValueError(
+                        f"子职特性{feature_id}包含不支持的选择：" + "、".join(invalid)
+                    )
+                if invalid:
+                    warnings.append(
+                        f"DM 已覆盖子职特性{feature_id}的不支持选择：" + "、".join(invalid)
+                    )
 
         subclass_skills = self._apply_subclass_proficiency_choices(
             list(subclass_runtime["grants"]),

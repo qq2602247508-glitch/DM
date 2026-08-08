@@ -3320,6 +3320,49 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS: dict[str, dict[str, Any]] = {
         "automation_status": "full",
         "requires_dm_adjudication": False,
     },
+    "元素亲和": {
+        "combat_start": {
+            "modifiers": [],
+            "defenses": [
+                {
+                    "id": "elemental_affinity:selected_resistance",
+                    "kind": "damage_resistance",
+                    "damage_types": [],
+                    "applies_when": "always",
+                    "runtime_execution": {
+                        "status": "ready",
+                        "consumer": "damage_defense_resolver",
+                        "selection_source": "advancement_choice",
+                    },
+                    "automation_status": "full",
+                    "requires_dm_adjudication": False,
+                }
+            ],
+        },
+        "resources": {},
+        "actions": {},
+        "triggers": [],
+        "attack_riders": [
+            {
+                "id": "elemental_affinity:bonus_damage",
+                "kind": "bonus_damage",
+                "value": "0",
+                "modifier_source": "charisma_modifier",
+                "damage_type": "spell_damage_type",
+                "applies_when": "elemental_affinity_spell_damage",
+                "frequency": "once_per_turn",
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "attack_rider_resolver",
+                    "selection_source": "advancement_choice",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        ],
+        "automation_status": "full",
+        "requires_dm_adjudication": False,
+    },
     # Guarded Mind combines a permanent psychic resistance with an optional
     # turn-start cleanup. The action consumes the same subclass psionic-die
     # pool produced by Psionic Power and takes the selected condition from
@@ -4113,6 +4156,55 @@ def subclass_runtime_grants(
         if action is not None:
             actions.append(action)
         runtime_registry = subclass_feature_runtime_definition(definition)
+        if runtime_registry is not None and str(definition.get("name") or "").startswith(
+            "元素亲和"
+        ):
+            elemental_options = {
+                "damage_type:acid": "acid",
+                "damage_type:cold": "cold",
+                "damage_type:fire": "fire",
+                "damage_type:lightning": "lightning",
+                "damage_type:poison": "poison",
+            }
+            choice_requirement = {
+                "key": "elemental_affinity_damage_type",
+                "minimum": 1,
+                "maximum": 1,
+                "strict": True,
+                "options": sorted(elemental_options),
+                "requires_dm_selection": True,
+            }
+            runtime_registry = deepcopy(runtime_registry)
+            runtime_registry["advancement"] = {
+                "kind": "selected_damage_type",
+                "choice_requirement": choice_requirement,
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "advancement_service_and_damage_resolver",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+            selected_damage_type = next(
+                (
+                    elemental_options[value]
+                    for value in selected
+                    if value in elemental_options
+                ),
+                None,
+            )
+            if selected_damage_type is not None:
+                defense_entries = runtime_registry["combat_start"]["defenses"]
+                for defense in defense_entries:
+                    if isinstance(defense, dict) and defense.get("id") == (
+                        "elemental_affinity:selected_resistance"
+                    ):
+                        defense["damage_types"] = [selected_damage_type]
+                for rider in runtime_registry.get("attack_riders") or ():
+                    if isinstance(rider, dict) and rider.get("id") == (
+                        "elemental_affinity:bonus_damage"
+                    ):
+                        rider["selected_damage_type"] = selected_damage_type
         if runtime_registry is not None and str(definition.get("name") or "").startswith(
             "钢铁意志"
         ):

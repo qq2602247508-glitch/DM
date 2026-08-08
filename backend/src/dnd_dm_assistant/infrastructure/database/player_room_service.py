@@ -1618,6 +1618,24 @@ class PlayerRoomService:
                     and is_spell_action
                     and bool(damage_types & {"radiant", "fire"})
                 )
+            elif applies_when == "elemental_affinity_spell_damage":
+                selected_damage_type = str(raw.get("selected_damage_type") or "").strip().lower()
+                raw_damage_types = action.get("damage_types")
+                damage_types = {
+                    str(value).strip().lower()
+                    for value in raw_damage_types
+                    if str(value).strip()
+                } if isinstance(raw_damage_types, list) else set()
+                is_spell_action = bool(
+                    action.get("is_spell_attack") is True
+                    or action.get("kind") == "spell"
+                    or action.get("spell_level") is not None
+                )
+                eligible = (
+                    bool(selected_damage_type)
+                    and is_spell_action
+                    and selected_damage_type in damage_types
+                )
             elif applies_when == "sneak_attack_eligible":
                 explicit = eligibility.get(rider_id, eligibility.get("sneak_attack"))
                 eligible = explicit is True

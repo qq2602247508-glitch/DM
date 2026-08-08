@@ -2590,3 +2590,50 @@ def test_radiant_soul_applies_charisma_bonus_to_one_radiant_or_fire_spell_target
         critical_hit=False,
         used_this_turn=set(),
     ) == []
+
+
+def test_elemental_affinity_uses_bound_choice_for_resistance_and_spell_bonus() -> None:
+    grants = subclass_runtime_grants(
+        {
+            "name": "龙族术法",
+            "feature_definitions": [
+                {
+                    "id": "elemental-affinity",
+                    "name": "元素亲和 Elemental Affinity",
+                    "class_level": 6,
+                    "description": "选择一种元素伤害类型。",
+                    "source_record_id": "elemental-affinity",
+                }
+            ],
+        },
+        class_name="术士",
+        target_class_level=6,
+        selected_choices={"elemental-affinity": ["damage_type:fire"]},
+    )["grants"]
+    registry = grants[0]["runtime"]["registry"]
+    actor = Combatant(
+        id="elemental-affinity-caster",
+        entity_type="character",
+        snapshot_json={
+            "ability_scores": {"charisma": 18},
+            "feature_runtime": registry,
+        },
+    )
+    target = Combatant(id="elemental-affinity-target", entity_type="monster")
+    riders = PlayerRoomService._eligible_attack_riders(
+        actor,
+        {"kind": "spell", "spell_level": 1, "damage_types": ["fire"]},
+        target,
+        special_inputs={},
+        critical_hit=False,
+        used_this_turn=set(),
+    )
+    assert riders[0]["total"] == 4
+    assert PlayerRoomService._eligible_attack_riders(
+        actor,
+        {"kind": "spell", "spell_level": 1, "damage_types": ["cold"]},
+        target,
+        special_inputs={},
+        critical_hit=False,
+        used_this_turn=set(),
+    ) == []

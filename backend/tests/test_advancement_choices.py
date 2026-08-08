@@ -415,6 +415,39 @@ def test_guarded_mind_binds_psionic_dice_and_turn_start_condition_action() -> No
     assert action["condition_removal_options"] == ["charmed", "frightened"]
 
 
+def test_elemental_affinity_binds_selected_damage_type_and_validates_choice_options() -> None:
+    result = subclass_runtime_grants(
+        {
+            "name": "龙族术法",
+            "feature_definitions": [
+                {
+                    "id": "elemental-affinity",
+                    "name": "元素亲和 Elemental Affinity",
+                    "class_level": 6,
+                    "description": "选择酸、寒冷、火焰、闪电或毒素伤害类型并获得抗性。",
+                    "source_record_id": "elemental-affinity",
+                }
+            ],
+        },
+        class_name="术士",
+        target_class_level=6,
+        selected_choices={"elemental-affinity": ["damage_type:fire"]},
+    )
+    grant = result["grants"][0]
+    assert grant["runtime"]["automation_status"] == "full"
+    assert result["choice_requirements"][0]["options"] == [
+        "damage_type:acid",
+        "damage_type:cold",
+        "damage_type:fire",
+        "damage_type:lightning",
+        "damage_type:poison",
+    ]
+    defense = grant["runtime"]["registry"]["combat_start"]["defenses"][0]
+    assert defense["damage_types"] == ["fire"]
+    rider = grant["runtime"]["registry"]["attack_riders"][0]
+    assert rider["selected_damage_type"] == "fire"
+
+
 def test_subclass_aura_immunity_uses_ranged_passive_consumer() -> None:
     result = subclass_runtime_grants(
         {
