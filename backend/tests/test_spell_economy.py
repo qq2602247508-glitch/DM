@@ -375,6 +375,84 @@ def test_free_cast_uses_feature_resource_and_replay_is_idempotent(
     assert replay.json() == confirmed.json()
 
 
+def test_expert_divination_restores_selected_lower_slot_and_replays_idempotently(
+    economy_client: TestClient,
+) -> None:
+    campaign = economy_client.post("/api/v1/campaigns", json={"name": "专业预言"}).json()
+    feature = {
+        "name": "专业预言 Expert Divination",
+        "kind": "subclass_feature",
+        "runtime": {
+            "automation_status": "full",
+            "registry": {
+                "actions": {
+                    "expert_divination_slot_recovery": {
+                        "id": "expert_divination_slot_recovery",
+                        "kind": "spell_slot_recovery",
+                    }
+                }
+            },
+        },
+    }
+    character = economy_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/characters",
+        json={
+            "name": "预言师",
+            "hp": 20,
+            "max_hp": 20,
+            "features": [feature],
+            "spellcasting": {
+                "slots": {
+                    "1": {"current": 0, "max": 2},
+                    "3": {"current": 1, "max": 1},
+                }
+            },
+        },
+    ).json()
+    engine = create_engine(economy_client.database_url)  # type: ignore[attr-defined]
+    with Session(engine) as session, session.begin():
+        spell = KnownSpell(
+            campaign_id=campaign["id"],
+            character_id=character["id"],
+            name="预言术",
+            spell_level=3,
+            metadata_json={"school": "divination"},
+        )
+        session.add(spell)
+        session.flush()
+        session.add(PreparedSpell(character_id=character["id"], known_spell_id=spell.id, prepared=True))
+        spell_id = spell.id
+    prefix = f"/api/v1/campaigns/{campaign['id']}"
+    body = {
+        "character_id": character["id"],
+        "character_version": character["version"],
+        "known_spell_id": spell_id,
+        "slot_level": 3,
+        "recovery_slot_level": 1,
+    }
+    preview = economy_client.post(f"{prefix}/spells/cast/preview", json=body)
+    assert preview.status_code == 200, preview.text
+    assert preview.json()["expert_divination_recovery"] == {
+        "slot_level": 1,
+        "slot_before": 0,
+        "slot_after": 1,
+        "slot_max": 2,
+    }
+    confirm_body = {
+        **body,
+        "preview_token": preview.json()["preview_token"],
+        "idempotency_key": "expert-divination-1",
+    }
+    confirmed = economy_client.post(f"{prefix}/spells/cast/confirm", json=confirm_body)
+    assert confirmed.status_code == 200, confirmed.text
+    after = economy_client.get(f"{prefix}/characters/{character['id']}").json()
+    assert after["spellcasting"]["slots"]["3"]["current"] == 0
+    assert after["spellcasting"]["slots"]["1"]["current"] == 1
+    replay = economy_client.post(f"{prefix}/spells/cast/confirm", json=confirm_body)
+    assert replay.status_code == 200, replay.text
+    assert replay.json() == confirmed.json()
+
+
 def test_equipment_slots_block_two_handed_shield_and_untrained_armor(
     economy_client: TestClient,
 ) -> None:

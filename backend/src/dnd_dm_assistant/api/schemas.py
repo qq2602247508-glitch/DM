@@ -2292,6 +2292,7 @@ class SpellCastRequest(BaseModel):
     character_version: int = Field(ge=1)
     known_spell_id: str
     slot_level: int = Field(ge=0, le=9)
+    recovery_slot_level: int | None = Field(default=None, ge=1, le=5)
     free_cast: bool = False
     ritual: bool = False
     material_available: bool = True

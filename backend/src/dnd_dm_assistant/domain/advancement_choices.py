@@ -2008,6 +2008,43 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS: dict[str, dict[str, Any]] = {
         "triggers": [],
         "attack_riders": [],
     },
+    "专业预言": {
+        "combat_start": {"modifiers": [], "defenses": []},
+        "resources": {},
+        "actions": {
+            "expert_divination_slot_recovery": {
+                "id": "expert_divination_slot_recovery",
+                "name": "专业预言",
+                "kind": "spell_slot_recovery",
+                "activation_window": "after_spell_cast",
+                "requirements": [
+                    "divination_spell_level_at_least_2",
+                    "recovery_slot_lower_than_cast_slot",
+                    "recovery_slot_level_at_most_5",
+                ],
+                "input_requirements": [
+                    {
+                        "key": "recovery_slot_level",
+                        "kind": "player_or_dm_choice",
+                        "minimum": 1,
+                        "maximum": 5,
+                    }
+                ],
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "spell_economy_service",
+                    "persistent_state": "spellcasting.slots",
+                    "idempotency": "spell_cast_operation",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        },
+        "triggers": [],
+        "attack_riders": [],
+        "automation_status": "full",
+        "requires_dm_adjudication": False,
+    },
     # Extra Attack is a subclass grant in several source tables, but the
     # execution contract is the same typed attack-action-count consumer used
     # by core class grants.  The executor does not branch on a subclass ID.

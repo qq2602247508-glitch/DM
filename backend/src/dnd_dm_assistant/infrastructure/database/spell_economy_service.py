@@ -54,6 +54,61 @@ class SpellEconomyService:
             raise VersionConflict("character", char_id, version, row.version)
         return row
 
+    @staticmethod
+    def _has_expert_divination(character: Character) -> bool:
+        for raw in character.features or []:
+            if not isinstance(raw, dict):
+                continue
+            runtime = raw.get("runtime")
+            registry = runtime.get("registry") if isinstance(runtime, dict) else None
+            actions = registry.get("actions") if isinstance(registry, dict) else None
+            if not isinstance(actions, dict):
+                continue
+            if any(
+                isinstance(action, dict)
+                and action.get("kind") == "spell_slot_recovery"
+                and action.get("id") == "expert_divination_slot_recovery"
+                for action in actions.values()
+            ):
+                return True
+        return False
+
+    @classmethod
+    def _expert_divination_recovery(
+        cls,
+        character: Character,
+        spell: KnownSpell,
+        data: dict[str, Any],
+    ) -> dict[str, int] | None:
+        requested = data.get("recovery_slot_level")
+        if requested is None:
+            return None
+        if data.get("ritual") or data.get("free_cast"):
+            raise ValueError("专业预言必须通过消耗普通法术位施放，不能用于仪式或免费施法")
+        if not cls._has_expert_divination(character):
+            raise ValueError("角色没有可执行的专业预言法术位恢复合同")
+        cast_level = int(spell.spell_level)
+        recovery_level = int(requested)
+        school = str((spell.metadata_json or {}).get("school") or "").strip().casefold()
+        if cast_level < 2 or school not in {"divination", "预言", "预言学派"}:
+            raise ValueError("专业预言只能在施放二环以上预言学派法术后使用")
+        if recovery_level >= cast_level or recovery_level > 5:
+            raise ValueError("专业预言只能恢复低于施法环阶且不超过五环的法术位")
+        raw_slots = character.spellcasting.get("slots", {})
+        slots = dict(raw_slots) if isinstance(raw_slots, dict) else {}
+        raw_slot = slots.get(str(recovery_level), {})
+        slot = dict(raw_slot) if isinstance(raw_slot, dict) else {}
+        current = int(slot.get("current", 0))
+        maximum = int(slot.get("max", current))
+        if maximum < 1 or current >= maximum:
+            raise ValueError("专业预言选择的法术位没有已消耗空间")
+        return {
+            "slot_level": recovery_level,
+            "slot_before": current,
+            "slot_after": current + 1,
+            "slot_max": maximum,
+        }
+
     def character_assets(self, cid: str, character_id: str) -> dict[str, Any]:
         """Read model for the character sheet; mutations remain preview/confirm only."""
         with Session(self.engine) as s:
@@ -400,6 +455,9 @@ class SpellEconomyService:
                 "concentration": data["concentration"],
                 "rule_reference": RULE,
             }
+            recovery = self._expert_divination_recovery(c, spell, data)
+            if recovery is not None:
+                result["expert_divination_recovery"] = recovery
             result["preview_token"] = _token({"data": data, "result": result, "version": c.version})
             return result
 
@@ -440,6 +498,22 @@ class SpellEconomyService:
                 slot = dict(raw_slot) if isinstance(raw_slot, dict) else {}
                 slot["current"] = preview["slot_after"]
                 slots[str(data["slot_level"])] = slot
+                c.spellcasting = {**c.spellcasting, "slots": slots}
+            recovery = preview.get("expert_divination_recovery")
+            if isinstance(recovery, dict):
+                recovery_level = int(recovery["slot_level"])
+                raw_slots = c.spellcasting.get("slots", {})
+                slots = dict(raw_slots) if isinstance(raw_slots, dict) else {}
+                raw_recovery_slot = slots.get(str(recovery_level), {})
+                recovery_slot = (
+                    dict(raw_recovery_slot) if isinstance(raw_recovery_slot, dict) else {}
+                )
+                current = int(recovery_slot.get("current", 0))
+                maximum = int(recovery_slot.get("max", current))
+                if current != int(recovery["slot_before"]) or current >= maximum:
+                    raise VersionConflict("spell slot", str(recovery_level), int(recovery["slot_before"]), current)
+                recovery_slot["current"] = current + 1
+                slots[str(recovery_level)] = recovery_slot
                 c.spellcasting = {**c.spellcasting, "slots": slots}
             c.version += 1
             if data["concentration"]:

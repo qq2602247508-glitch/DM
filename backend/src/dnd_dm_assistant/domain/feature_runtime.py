@@ -537,6 +537,40 @@ def feature_runtime_definition(
             "automation_status": "full",
             "requires_dm_adjudication": False,
         }
+
+    if identity in {"专业预言", "expertdivination"}:
+        definition["actions"]["expert_divination_slot_recovery"] = {
+            "id": "expert_divination_slot_recovery",
+            "name": feature_name,
+            "kind": "spell_slot_recovery",
+            "activation_window": "after_spell_cast",
+            "requirements": [
+                "divination_spell_level_at_least_2",
+                "recovery_slot_lower_than_cast_slot",
+                "recovery_slot_level_at_most_5",
+            ],
+            "input_requirements": [
+                {
+                    "key": "recovery_slot_level",
+                    "kind": "player_or_dm_choice",
+                    "minimum": 1,
+                    "maximum": 5,
+                }
+            ],
+            "runtime_execution": {
+                "status": "ready",
+                "consumer": "spell_economy_service",
+                "persistent_state": "spellcasting.slots",
+                "idempotency": "spell_cast_operation",
+            },
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+            "summary": (
+                "施放二环以上预言法术后，由玩家/DM选择一个低于施法环阶"
+                "且不超过五环的已消耗法术位恢复。"
+            ),
+            **source,
+        }
     resource_values = resources or {}
     for key in tracked_resource_keys:
         value = resource_values.get(key)
