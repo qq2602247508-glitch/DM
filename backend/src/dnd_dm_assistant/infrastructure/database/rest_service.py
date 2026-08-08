@@ -456,6 +456,33 @@ class RestService:
                     }
                 )
                 continue
+            if isinstance(action, Mapping) and action.get("kind") == "rest_choice":
+                trigger = str(action.get("trigger") or "").strip()
+                if trigger not in {"short_rest", "long_rest", "short_or_long_rest"}:
+                    raise ValueError(f"休息特性选择触发时机无效：{action_id}")
+                if trigger != "short_or_long_rest" and trigger != effective_type + "_rest":
+                    raise ValueError(f"休息特性选择不适用于本次休息：{action_id}")
+                raw_value = (
+                    raw_amount.get("value")
+                    if isinstance(raw_amount, Mapping)
+                    else raw_amount
+                )
+                selected = str(raw_value or "").strip().lower()
+                options = {
+                    str(value).strip().lower()
+                    for value in action.get("choice_options") or ()
+                    if str(value).strip()
+                }
+                if not options or selected not in options:
+                    raise ValueError(f"休息特性选择不在允许范围内：{action_id}")
+                applied.append(
+                    {
+                        "action_id": str(action_id),
+                        "selection_key": str(action.get("choice_key") or action_id),
+                        "selected": selected,
+                    }
+                )
+                continue
             if not isinstance(action, Mapping) or action.get("kind") != "rest_recovery":
                 raise ValueError(f"休息特性恢复动作不存在或不可执行：{action_id}")
             if action.get("trigger") != effective_type + "_rest":
@@ -1176,6 +1203,16 @@ class RestService:
                     pool["max"] = int(pool.get("max") or len(values))
                     pool["maximum"] = int(pool.get("maximum") or pool["max"])
                     resources_json["portent_dice"] = pool
+                    character.resources = resources_json
+                elif (
+                    isinstance(recovery, dict)
+                    and recovery.get("selection_key")
+                    and isinstance(recovery.get("selected"), str)
+                ):
+                    selection_key = str(recovery["selection_key"])
+                    selection = dict(resources_json.get(selection_key) or {})
+                    selection["selected"] = recovery["selected"]
+                    resources_json[selection_key] = selection
                     character.resources = resources_json
             character.max_hp_reduction = int(participant["after"]["max_hp_reduction"])
             character.ability_score_reductions = dict(

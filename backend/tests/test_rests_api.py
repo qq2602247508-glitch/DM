@@ -736,3 +736,102 @@ def test_portent_long_rest_persists_submitted_d20_pool(
     ).json()
     assert updated["resources"]["portent_dice"]["current"] == 2
     assert updated["resources"]["portent_dice"]["available_values"] == [4, 17]
+
+
+def test_fiendish_resilience_persists_player_selected_rest_resistance(
+    rest_client: TestClient,
+) -> None:
+    campaign = _campaign(rest_client)
+    runtime = {
+        "combat_start": {
+            "modifiers": [],
+            "defenses": [
+                {
+                    "id": "fiendish_resilience:selected_resistance",
+                    "kind": "damage_resistance",
+                    "damage_types": [],
+                    "selection_resource_key": "fiendish_resilience_choice",
+                    "selection_options": ["acid", "fire", "psychic"],
+                    "applies_when": "selected_damage_type",
+                    "runtime_execution": {
+                        "status": "ready",
+                        "consumer": "damage_defense_resolver",
+                    },
+                    "automation_status": "full",
+                }
+            ],
+        },
+        "resources": {},
+        "actions": {
+            "fiendish_resilience_choice": {
+                "id": "fiendish_resilience_choice",
+                "name": "邪魔体魄（休息选择抗性）",
+                "kind": "rest_choice",
+                "trigger": "short_or_long_rest",
+                "choice_key": "fiendish_resilience_choice",
+                "choice_options": ["acid", "fire", "psychic"],
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "rest_feature_choice_persistence",
+                },
+                "automation_status": "full",
+            }
+        },
+        "triggers": [],
+        "attack_riders": [],
+    }
+    created = rest_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/characters",
+        json={
+            "name": "邪魔体魄测试者",
+            "class_name": "魔契师",
+            "level": 10,
+            "class_levels": {"魔契师": 10},
+            "hp": 20,
+            "max_hp": 20,
+            "features": [
+                {
+                    "name": "邪魔体魄 Fiendish Resilience",
+                    "class_name": "魔契师",
+                    "class_level": 10,
+                    "kind": "feature",
+                    "runtime": {"registry": runtime},
+                }
+            ],
+            "resources": {"fiendish_resilience_choice": {}},
+        },
+    )
+    assert created.status_code == 201, created.text
+    character = created.json()
+    body = {
+        "rest_type": "short",
+        "duration_minutes": 60,
+        "participants": [
+            {
+                "character_id": character["id"],
+                "character_version": character["version"],
+                "feature_recovery_choices": {
+                    "fiendish_resilience_choice": "fire"
+                },
+            }
+        ],
+    }
+    preview = rest_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/rests/preview", json=body
+    )
+    assert preview.status_code == 200, preview.text
+    applied = preview.json()["participants"][0]["feature_recovery_applied"][0]
+    assert applied["selected"] == "fire"
+    confirmed = rest_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/rests/confirm",
+        json={
+            **body,
+            "preview_token": preview.json()["preview_token"],
+            "idempotency_key": "fiendish-resilience-rest-0001",
+        },
+    )
+    assert confirmed.status_code == 200, confirmed.text
+    updated = rest_client.get(
+        f"/api/v1/campaigns/{campaign['id']}/characters/{character['id']}"
+    ).json()
+    assert updated["resources"]["fiendish_resilience_choice"]["selected"] == "fire"

@@ -8726,12 +8726,47 @@ class CombatEngineService:
             if not cls._required_conditions_met(target, defense):
                 continue
             applies_when = str(defense.get("applies_when") or "always").strip()
+            selection_key = str(defense.get("selection_resource_key") or "").strip()
+            selected_types: list[str] | None = None
+            if selection_key:
+                selected: object = None
+                runtime = (target.snapshot_json or {}).get("feature_runtime")
+                runtime_resources = runtime.get("resources") if isinstance(runtime, dict) else None
+                configured = (
+                    runtime_resources.get(selection_key)
+                    if isinstance(runtime_resources, dict)
+                    else None
+                )
+                if isinstance(configured, dict):
+                    selected = configured.get("selected")
+                if session is not None and target.entity_type == "character" and target.entity_id:
+                    character = session.get(Character, target.entity_id)
+                    resources = character.resources if character is not None else None
+                    persisted = (
+                        resources.get(selection_key) if isinstance(resources, dict) else None
+                    )
+                    if isinstance(persisted, dict):
+                        selected = persisted.get("selected", selected)
+                options = {
+                    str(value).strip().lower()
+                    for value in defense.get("selection_options") or ()
+                    if str(value).strip()
+                }
+                selected_text = str(selected or "").strip().lower()
+                if not selected_text or selected_text not in options:
+                    continue
+                selected_types = [selected_text]
+                applies_when = "always"
             if applies_when == "magical":
                 if getattr(command, "is_magical", False) is not True:
                     continue
             elif applies_when != "always":
                 continue
-            raw_types = defense.get("damage_types")
+            raw_types = (
+                selected_types
+                if selected_types is not None
+                else defense.get("damage_types")
+            )
             if not isinstance(raw_types, list):
                 continue
             types = [str(value).strip().lower() for value in raw_types if str(value).strip()]

@@ -11,7 +11,12 @@ from dnd_dm_assistant.api.schemas import (
 )
 from dnd_dm_assistant.domain.feature_runtime import compile_feature_runtime_registry
 from dnd_dm_assistant.infrastructure.database.combat_service import CombatEngineService
-from dnd_dm_assistant.infrastructure.database.models import CombatAction, Combatant, CombatEffect
+from dnd_dm_assistant.infrastructure.database.models import (
+    Character,
+    CombatAction,
+    Combatant,
+    CombatEffect,
+)
 from dnd_dm_assistant.infrastructure.database.player_room_service import PlayerRoomService
 
 
@@ -285,6 +290,69 @@ def test_guarded_mind_psychic_resistance_is_consumed_by_damage_defense_resolver(
     assert resistance[3] == [
         "guarded_mind:psychic_resistance:resistance:psychic"
     ]
+
+
+def test_fiendish_resilience_reads_persisted_rest_selection_in_damage_resolver() -> None:
+    target = Combatant(
+        id="fiendish-resilience-defense",
+        entity_type="character",
+        entity_id="fiendish-character",
+        display_name="邪魔体魄者",
+        hp=20,
+        max_hp=20,
+        snapshot_json={
+            "feature_runtime": {
+                "combat_start": {
+                    "defenses": [
+                        {
+                            "id": "fiendish_resilience:selected_resistance",
+                            "kind": "damage_resistance",
+                            "damage_types": [],
+                            "selection_resource_key": "fiendish_resilience_choice",
+                            "selection_options": ["acid", "fire", "psychic"],
+                            "applies_when": "selected_damage_type",
+                        }
+                    ]
+                }
+            }
+        },
+    )
+    character = Character(
+        id="fiendish-character",
+        campaign_id="campaign",
+        name="邪魔体魄者",
+        resources={"fiendish_resilience_choice": {"selected": "fire"}},
+    )
+
+    class FakeSession:
+        def get(self, model: object, entity_id: str) -> object | None:
+            return character if model is Character and entity_id == character.id else None
+
+        def scalar(self, _query: object) -> object | None:
+            return None
+
+        def scalars(self, _query: object) -> object:
+            return SimpleNamespace(all=lambda: [])
+
+    fire = CombatEngineService._damage_defenses(
+        target,
+        SimpleNamespace(damage_tags=[]),
+        ["fire"],
+        session=FakeSession(),
+        combat_id="combat",
+    )
+    cold = CombatEngineService._damage_defenses(
+        target,
+        SimpleNamespace(damage_tags=[]),
+        ["cold"],
+        session=FakeSession(),
+        combat_id="combat",
+    )
+    assert "fire" in fire[0]
+    assert fire[3] == [
+        "fiendish_resilience:selected_resistance:resistance:fire"
+    ]
+    assert "cold" not in cold[0]
 
 
 def test_typed_damage_resistance_fails_closed_for_invalid_condition_contract() -> None:

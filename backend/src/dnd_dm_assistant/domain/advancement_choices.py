@@ -3204,6 +3204,79 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS: dict[str, dict[str, Any]] = {
         "automation_status": "full",
         "requires_dm_adjudication": False,
     },
+    # Fiendish Resilience stores the player's short/long-rest damage-type
+    # choice in the character resource JSON; the combat resolver reads that
+    # persisted selection rather than guessing from the feature name.
+    "邪魔体魄": {
+        "combat_start": {
+            "modifiers": [],
+            "defenses": [
+                {
+                    "id": "fiendish_resilience:selected_resistance",
+                    "kind": "damage_resistance",
+                    "damage_types": [],
+                    "selection_resource_key": "fiendish_resilience_choice",
+                    "selection_options": [
+                        "acid",
+                        "bludgeoning",
+                        "cold",
+                        "fire",
+                        "lightning",
+                        "necrotic",
+                        "piercing",
+                        "poison",
+                        "psychic",
+                        "radiant",
+                        "slashing",
+                        "thunder",
+                    ],
+                    "applies_when": "selected_damage_type",
+                    "runtime_execution": {
+                        "status": "ready",
+                        "consumer": "damage_defense_resolver",
+                        "selection_source": "character_resource",
+                    },
+                    "automation_status": "full",
+                    "requires_dm_adjudication": False,
+                }
+            ],
+        },
+        "resources": {},
+        "actions": {
+            "fiendish_resilience_choice": {
+                "id": "fiendish_resilience_choice",
+                "name": "邪魔体魄（休息选择抗性）",
+                "kind": "rest_choice",
+                "trigger": "short_or_long_rest",
+                "choice_key": "fiendish_resilience_choice",
+                "choice_options": [
+                    "acid",
+                    "bludgeoning",
+                    "cold",
+                    "fire",
+                    "lightning",
+                    "necrotic",
+                    "piercing",
+                    "poison",
+                    "psychic",
+                    "radiant",
+                    "slashing",
+                    "thunder",
+                ],
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "rest_feature_choice_persistence",
+                    "input": "player_selected_damage_type",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        },
+        "triggers": [],
+        "attack_riders": [],
+        "automation_status": "full",
+        "requires_dm_adjudication": False,
+    },
     # Guarded Mind combines a permanent psychic resistance with an optional
     # turn-start cleanup. The action consumes the same subclass psionic-die
     # pool produced by Psionic Power and takes the selected condition from
