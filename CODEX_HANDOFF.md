@@ -1,3 +1,24 @@
+# 2026-08-09 长执行检查点：事件驱动追加攻击窗口平台
+
+- 实时固定审计仍为 499 条；本切片前 `full 247 / partial 178 / dm_only 74`，当前为
+  `full 249 / partial 176 / dm_only 74`。真实新增 full 只有「野蛮人·狂战士道途·10·报偿」和
+  「吟游诗人·勇气学院·14·战斗魔法 Battle Magic」；战斗大师「反击」已接入按已学习战技过滤的
+  追加攻击合同，但其父特性仍是复合 partial，不计作独立 full。
+- 新增不识别职业/特性名称的 `triggered_attack_window`：封闭事件词表（受伤、施法、敌方攻击未命中等）、
+  父动作/版本、因果深度、反应者/目标集合、权威网格距离与视线、合法武器/徒手动作、动作经济、资源、
+  过期和窗口版本均持久化到 `CombatAction`。确认时校验窗口 CAS、真实动作 profile、目标和玩家提交的 d20；
+  反应/资源只消费一次，接受、放弃和重复请求均幂等，旧窗口在回合边界失效。
+- 真实消费者：`CombatEngineService.confirm` 在实际伤害、单动作结构化施法和敌方近战攻击未命中后派发窗口；
+  `PlayerRoomService.attack` 复用同一普通攻击/伤害结算器，新增玩家面板目标、动作、d20、攻击总值和伤害总值输入；
+  DM 与玩家均有窗口放弃 API。未接入的复仇之魂、辉煌防御、指挥官奇袭仍保持 partial。
+- 新增/扩展：`feature_blocks` 现在验证追加攻击事件合同；战斗大师 `反击` 的 trigger 仅在学习集合中出现，
+  资源编译层绑定 `superiority_dice`。没有复制第二套攻击、伤害、资源或移动结算器。
+- 验证：追加攻击定向测试 2 个、战技 registry 测试通过；全量后端 `pytest -q backend/tests` 通过；前端
+  `npm test -- --run`（204 tests）、typecheck、lint、build 均通过。全量 `ruff check backend/src backend/tests scripts`
+  仍会命中仓库原有脚本文件的 N999/EXE001（非本切片代码）；本切片源码/测试 Ruff、compileall、`git diff --check` 通过。
+- 当前工作树尚未提交代码；代码、审计基线测试、文档/交接必须分开提交。必须继续保留且不暂存/提交：
+  `backend/tests/integrations/`、`backend/tests/ollama.py`。
+
 # 2026-08-08 长执行检查点：战斗大师卓越骰与战技通用平台
 
 - 当前固定分母 499；实时审计起点 `full 246 / partial 179 / dm_only 74`，本切片结束为
