@@ -1,8 +1,8 @@
 # 特性自动化迁移预审报告
 
-## 2026-08-08 检查点（邪魔体魄）
+## 2026-08-08 检查点（光耀之魂）
 
-当前审计为 `full 237 / partial 186 / dm_only 76`。本 Goal 从 `227/195/77` 开始，已完成预兆池、信实坐骑、高阶防守战术、钢铁意志、专业预言、战争祭司、意念守护、凶蛮打击和邪魔体魄的真实端到端闭环；领域 helper、配置覆盖数和单一分支不计入 full。
+当前审计为 `full 238 / partial 185 / dm_only 76`。本 Goal 从 `227/195/77` 开始，已完成预兆池、信实坐骑、高阶防守战术、钢铁意志、专业预言、战争祭司、意念守护、凶蛮打击、邪魔体魄和光耀之魂的真实端到端闭环；领域 helper、配置覆盖数和单一分支不计入 full。
 
 ### 当前新增真实消费者
 
@@ -13,6 +13,7 @@
 - `意念守护`：`damage_resistance` 由共享防御解析器实际应用；`guarded_mind_clear` 只在 `turn_start` 窗口接受玩家选择的 `charmed`/`frightened`，通过角色的 `psionic_dice:战士` 资源扣除 1 枚并清除状态/效果，重复请求返回同一 CombatAction。
 - `凶蛮打击`：攻击入口将实际 `attack_roll_mode` 传给通用骑手消费者；只有玩家显式选择放弃本次优势且提交合法 1d10 总值时才附伤，狂暴/鲁莽/力量武器条件和每回合使用集合均由服务端验证。
 - `邪魔体魄`：通用 `rest_choice` 合同接受短/长休玩家选择并持久化 `selected`；`damage_resistance` 合同通过 `selection_resource_key` 从角色资源读取抗性类型，不读取特性名称或猜测默认值。
+- `光耀之魂`：攻击服务把每个目标的真实伤害类型传给通用攻击骑手；`radiant_soul_target_id` 绑定单一目标，`attack_rider_eligibility.radiant_soul` 是显式玩家输入，魅力调整值由角色属性快照解析并受每回合使用集合约束。
 
 ### 预置 D20 池审计边界
 
@@ -30,7 +31,7 @@
 这份报告只规划迁移，不修改运行时状态，也不把候选行直接升级为 `full`。
 
 - 总条目：499
-- 当前状态：`{'full': 237, 'dm_only': 76, 'partial': 186}`
+- 当前状态：`{'full': 238, 'dm_only': 76, 'partial': 185}`
 - 预审状态：`{'already_full': 227, 'missing_source': 35, 'missing_runtime_contract': 185, 'consumer_partial': 35, 'manual_boundary': 10, 'needs_contract_review': 7}`
 
 ## 模板分组
