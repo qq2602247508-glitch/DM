@@ -1571,6 +1571,54 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS: dict[str, dict[str, Any]] = {
         "automation_status": "full",
         "requires_dm_adjudication": False,
     },
+    # War God's Blessing is a reaction after an attack roll is reported.  The
+    # target/range and reaction are validated by the shared roll-intervention
+    # resolver; the Wisdom-scaled pool is produced by the typed resource
+    # parser below and restored on a long rest.
+    "战神祝福": {
+        "combat_start": {"modifiers": [], "defenses": []},
+        "resources": {
+            "$feature_resource": {
+                "key": "$feature_resource",
+                "label": "战神祝福",
+                "resource_kind": "feature_uses",
+                "recovery_events": [{"rest": "long_rest", "operation": "set_to_max"}],
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        },
+        "actions": {
+            "war_gods_blessing": {
+                "id": "war_gods_blessing",
+                "name": "战神祝福",
+                "kind": "roll_intervention",
+                "trigger": "after_d20_test",
+                "action_cost": "reaction",
+                "target_policy": {
+                    "mode": "any",
+                    "range_ft": 30,
+                    "requires_visible_or_audible": True,
+                },
+                "eligibility": {
+                    "entity_types": ["character"],
+                    "test_kinds": ["armor_class"],
+                    "resource": {"key": "$feature_resource", "minimum": 1},
+                },
+                "operation": {"kind": "add", "amount": 10},
+                "resource": {"key": "$feature_resource", "cost": 1},
+                "idempotency": {"prefix": "roll-intervention"},
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "player_roll_resolution",
+                    "target_validation": "line_of_sight_or_audibility",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        },
+        "triggers": [],
+        "attack_riders": [],
+    },
     "高等预兆": {
         "combat_start": {"modifiers": [], "defenses": []},
         "resources": {},
@@ -4068,6 +4116,29 @@ def _subclass_resource_update(
             "requires_dm_adjudication": False,
             "automation_status": "full",
         }
+    if feature_name.startswith("战神祝福"):
+        ability = "wisdom"
+        maximum = (
+            max(1, _ability_modifier(ability_scores, ability) or 0)
+            if ability_scores is not None
+            else None
+        )
+        resource: dict[str, Any] = {
+            "label": feature_name,
+            "max_formula": "max(1, wisdom_modifier)",
+            "resource_kind": "feature_uses",
+            "recovery": "long_rest",
+            "recovery_events": [{"rest": "long_rest", "operation": "set_to_max"}],
+            "source": (
+                f"{definition.get('source_path') or definition.get('source_record_id')}"
+                f" · {definition.get('class_level')}级{feature_name}"
+            ),
+            "requires_dm_adjudication": False,
+            "automation_status": "full",
+        }
+        if maximum is not None:
+            resource["max"] = maximum
+        return "war_gods_blessing", resource
     if feature_name.startswith("自然恢复"):
         return "natural_recovery", {
             "label": feature_name,

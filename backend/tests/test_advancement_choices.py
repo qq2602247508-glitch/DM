@@ -453,6 +453,38 @@ def test_psionic_power_persists_typed_pool_contract_for_each_owner_class(
     ]
 
 
+def test_war_gods_blessing_binds_wisdom_pool_and_attack_roll_reaction() -> None:
+    result = subclass_runtime_grants(
+        {
+            "name": "战争领域",
+            "feature_definitions": [
+                {
+                    "id": "war-gods-blessing",
+                    "name": "战神祝福 War God's Blessing",
+                    "class_level": 6,
+                    "description": "你可以使用此特性，次数等于你的感知调整值，长休恢复全部。",
+                    "source_record_id": "war-gods-blessing",
+                }
+            ],
+        },
+        class_name="牧师",
+        target_class_level=6,
+        ability_scores={"wisdom": 18},
+        current_class_level=6,
+    )
+    grant = result["grants"][0]
+    runtime = grant["runtime"]
+    assert runtime["automation_status"] == "full"
+    assert runtime["tracked_resource_keys"] == ["war_gods_blessing"]
+    resource = runtime["registry"]["resources"]["war_gods_blessing"]
+    assert resource["max"] == 4
+    action = runtime["registry"]["actions"]["war_gods_blessing"]
+    assert action["resource"]["key"] == "war_gods_blessing"
+    assert action["eligibility"]["resource"]["key"] == "war_gods_blessing"
+    assert action["eligibility"]["test_kinds"] == ["armor_class"]
+    assert action["action_cost"] == "reaction"
+
+
 def test_elemental_affinity_binds_selected_damage_type_and_validates_choice_options() -> None:
     result = subclass_runtime_grants(
         {

@@ -10687,6 +10687,121 @@ def test_mercy_hand_of_harm_attack_rider_spends_focus_and_adds_damage(
     assert target_after["hp"] == 29
 
 
+def test_war_gods_blessing_uses_attack_roll_reaction_and_replays_idempotently(
+    combat_client: TestClient,
+) -> None:
+    campaign = _campaign(combat_client, "War God's Blessing")
+    base = f"/api/v1/campaigns/{campaign['id']}"
+    grants = subclass_runtime_grants(
+        {
+            "name": "战争领域",
+            "feature_definitions": [
+                {
+                    "id": "war-gods-blessing",
+                    "name": "战神祝福 War God's Blessing",
+                    "class_level": 6,
+                    "description": "你可以使用此特性，次数等于你的感知调整值，长休恢复全部。",
+                    "source_record_id": "war-gods-blessing",
+                }
+            ],
+        },
+        class_name="牧师",
+        target_class_level=6,
+        ability_scores={"wisdom": 18},
+        current_class_level=6,
+    )["grants"]
+    resources = {"war_gods_blessing": {"current": 4, "max": 4}}
+    character_response = combat_client.post(
+        f"{base}/characters",
+        json={
+            "name": "战神祝福者",
+            "class_name": "牧师",
+            "level": 6,
+            "ability_scores": {"wisdom": 18},
+            "resources": resources,
+            "features": grants,
+        },
+    )
+    assert character_response.status_code == 201, character_response.text
+    character = character_response.json()
+    registry = compile_feature_runtime_registry(
+        grants,
+        resources=resources,
+        class_levels={"牧师": 6},
+        total_level=6,
+    )
+    combat = combat_client.post(f"{base}/combats", json={"name": "祝福战斗"}).json()
+    actor_response = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "战神祝福者",
+            "entity_type": "character",
+            "entity_id": character["id"],
+            "initiative": 20,
+            "hp": 20,
+            "max_hp": 20,
+            "reaction_available": True,
+            "snapshot_json": {"feature_runtime": registry},
+        },
+    )
+    assert actor_response.status_code == 201, actor_response.text
+    actor = actor_response.json()
+    root = f"{base}/combats/{combat['id']}"
+    pending = combat_client.post(
+        f"{root}/actions/player-rolls/pending",
+        headers={"X-Request-ID": "war-gods-prompt"},
+        json={
+            "actor_combatant_id": actor["id"],
+            "actor_version": actor["version"],
+            "target_combatant_id": actor["id"],
+            "target_version": actor["version"],
+            "action_cost": "none",
+            "action_name": "神圣攻击",
+            "resolution_type": "armor_class",
+            "dc": 20,
+        },
+    )
+    assert pending.status_code == 200, pending.text
+    action = pending.json()["action"]
+    opened = combat_client.post(
+        f"{root}/actions/player-rolls/{action['id']}/confirm",
+        headers={"X-Request-ID": "war-gods-open"},
+        json={"action_version": action["version"], "roll_total": 12},
+    )
+    assert opened.status_code == 200, opened.text
+    assert opened.json()["resolution"]["phase"] == "awaiting_roll_intervention"
+    resolved = combat_client.post(
+        f"{root}/actions/player-rolls/{action['id']}/confirm",
+        headers={"X-Request-ID": "war-gods-confirm"},
+        json={
+            "action_version": opened.json()["action"]["version"],
+            "roll_total": 12,
+            "roll_intervention_id": "war_gods_blessing",
+        },
+    )
+    assert resolved.status_code == 200, resolved.text
+    resolution = resolved.json()["resolution"]
+    assert resolution["roll_total"] == 22
+    assert resolution["success"] is True
+    assert resolution["generic_resource_consumed"] == {
+        "key": "war_gods_blessing",
+        "cost": 1,
+        "before": 4,
+        "after": 3,
+    }
+    replay = combat_client.post(
+        f"{root}/actions/player-rolls/{action['id']}/confirm",
+        headers={"X-Request-ID": "war-gods-confirm"},
+        json={
+            "action_version": opened.json()["action"]["version"],
+            "roll_total": 12,
+            "roll_intervention_id": "war_gods_blessing",
+        },
+    )
+    assert replay.status_code == 200, replay.text
+    assert replay.json()["resolution"] == resolution
+
+
 def test_portent_is_armed_before_roll_consumed_once_and_replayed_idempotently(
     combat_client: TestClient,
 ) -> None:
