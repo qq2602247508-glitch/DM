@@ -1003,6 +1003,236 @@ _SUBCLASS_ABILITY_NAMES = {
 # adapter/configuration layer; the consumer only reads typed defense fields and
 # never dispatches on a subclass or feature identifier.
 SUBCLASS_FEATURE_RUNTIME_CONFIGS: dict[str, dict[str, Any]] = {
+    # Trickster's Blessing is a single, rest-scoped skill advantage.  The
+    # action writes a typed modifier into the target snapshot; the player-roll
+    # resolver consumes that modifier and the rest service removes it on a
+    # long rest.  Reusing the feature replaces the previous blessing instead
+    # of leaving duplicate sources behind.
+    "诡术祝福": {
+        "combat_start": {"modifiers": [], "defenses": []},
+        "resources": {},
+        "actions": {
+            "trickster_blessing": {
+                "id": "trickster_blessing",
+                "name": "诡术祝福",
+                "kind": "feature_action",
+                "action_cost": "action",
+                "target": "ally_or_self",
+                "target_policy": {
+                    "mode": "ally_or_self",
+                    "same_faction": True,
+                    "range_ft": 30,
+                },
+                "resolution_kind": "timed_modifier",
+                "effects": [
+                    {
+                        "kind": "grant_timed_modifier",
+                        "modifier": {
+                            "stat": "skill_check",
+                            "skill": "stealth",
+                            "operation": "advantage",
+                            "scope": "self",
+                        },
+                        "expires_on": "long_rest",
+                    }
+                ],
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "combat_feature_action_and_player_roll_resolution",
+                    "effect_kinds": ["grant_timed_modifier"],
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        },
+        "triggers": [],
+        "attack_riders": [],
+    },
+    # Fanatical Focus is a once-per-rage failed-save recovery.  The rage
+    # action produces ``feature_states.fanatical_focus`` and the generic roll
+    # consumer clears it in the same confirmation transaction that records the
+    # replacement roll.  The bonus is bound to the persisted rage-damage
+    # scaling entry, never guessed from a class name.
+    "专心炽志": {
+        "combat_start": {"modifiers": [], "defenses": []},
+        "resources": {},
+        "actions": {
+            "fanatical_focus": {
+                "id": "fanatical_focus",
+                "name": "专心炽志",
+                "kind": "roll_intervention",
+                "trigger": "after_failed_d20_test",
+                "eligibility": {
+                    "entity_types": ["character"],
+                    "test_kinds": ["saving_throw"],
+                    "required_conditions": ["raging"],
+                    "state": {"key": "fanatical_focus"},
+                    "resource": {
+                        "key": "rage_damage",
+                        "minimum": 0,
+                        "value_bind_as": "rage_damage",
+                    },
+                },
+                "operation": {
+                    "kind": "failure_recovery",
+                    "recovery": {
+                        "kind": "reroll_with_add",
+                        "selection": "replacement",
+                        "amount": "rage_damage",
+                    },
+                    "consume_when": "on_confirm",
+                },
+                "idempotency": {"prefix": "roll-intervention"},
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "player_roll_resolution",
+                    "producer": "rage_activation",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        },
+        "triggers": [],
+        "attack_riders": [],
+    },
+    # Bend Luck is a post-d20 reaction that can target any visible creature.
+    # The generic resolver asks for the reported d4 and sign, then the combat
+    # transaction consumes one sorcery point and the reactor's reaction.
+    "扭曲幸运": {
+        "combat_start": {"modifiers": [], "defenses": []},
+        "resources": {},
+        "actions": {
+            "bend_luck": {
+                "id": "bend_luck",
+                "name": "扭曲幸运",
+                "kind": "roll_intervention",
+                "trigger": "after_d20_test",
+                "action_cost": "reaction",
+                "target_policy": {
+                    "mode": "any",
+                    "range_ft": 60,
+                    "requires_visible_or_audible": True,
+                },
+                "eligibility": {
+                    "entity_types": ["character"],
+                    "test_kinds": [
+                        "ability_check",
+                        "skill_check",
+                        "saving_throw",
+                        "armor_class",
+                    ],
+                    "resource": {"key": "sorcery_points", "minimum": 1},
+                },
+                "input_requirements": [
+                    {"key": "luck_die", "kind": "die_roll", "die_sides": 4},
+                    {"key": "luck_direction", "kind": "signed_unit"},
+                ],
+                "operation": {
+                    "kind": "add",
+                    "amount": "luck_die*luck_direction",
+                },
+                "resource": {"key": "sorcery_points", "cost": 1},
+                "idempotency": {"prefix": "roll-intervention"},
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "player_roll_resolution",
+                    "target_validation": "line_of_sight_or_audibility",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        },
+        "triggers": [],
+        "attack_riders": [],
+    },
+    # Warding Flare is the same external-reactor, post-roll window with a
+    # disadvantage transform.  The separate feature pool is restored on a
+    # long rest; the second reported d20 is mandatory, so the server never
+    # invents the reaction roll.
+    "守御之光": {
+        "combat_start": {"modifiers": [], "defenses": []},
+        "resources": {
+            "warding_flare": {
+                "key": "warding_flare",
+                "label": "守御之光",
+                "max_formula": "max(1, wisdom_modifier)",
+                "recovery_events": [
+                    {"rest": "long_rest", "operation": "set_to_max"}
+                ],
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        },
+        "actions": {
+            "warding_flare": {
+                "id": "warding_flare",
+                "name": "守御之光",
+                "kind": "roll_intervention",
+                "trigger": "after_d20_test",
+                "action_cost": "reaction",
+                "target_policy": {
+                    "mode": "any",
+                    "range_ft": 30,
+                    "requires_visible_or_audible": True,
+                },
+                "eligibility": {
+                    "entity_types": ["character"],
+                    "test_kinds": ["armor_class"],
+                    "resource": {"key": "warding_flare", "minimum": 1},
+                },
+                "operation": {"kind": "disadvantage", "selection": "lowest"},
+                "resource": {"key": "warding_flare", "cost": 1},
+                "idempotency": {"prefix": "roll-intervention"},
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "player_roll_resolution",
+                    "target_validation": "line_of_sight_or_audibility",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        },
+        "triggers": [],
+        "attack_riders": [],
+    },
+    # Guided Strike is a fixed +10 recovery after a missed attack.  The
+    # reaction is conditional: the cleric spends it only when correcting an
+    # ally's roll, while correcting its own attack is reaction-free.
+    "导引打击": {
+        "combat_start": {"modifiers": [], "defenses": []},
+        "resources": {},
+        "actions": {
+            "guided_strike": {
+                "id": "guided_strike",
+                "name": "导引打击",
+                "kind": "roll_intervention",
+                "trigger": "after_failed_d20_test",
+                "action_cost": "reaction_if_external",
+                "target_policy": {
+                    "mode": "any",
+                    "range_ft": 30,
+                    "requires_visible_or_audible": True,
+                },
+                "eligibility": {
+                    "entity_types": ["character"],
+                    "test_kinds": ["armor_class"],
+                    "resource": {"key": "channel_divinity", "minimum": 1},
+                },
+                "operation": {"kind": "add", "amount": 10},
+                "resource": {"key": "channel_divinity", "cost": 1},
+                "idempotency": {"prefix": "roll-intervention"},
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "player_roll_resolution",
+                    "target_validation": "line_of_sight_or_audibility",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        },
+        "triggers": [],
+        "attack_riders": [],
+    },
     # Starry Form remains partial because its constellation branches still
     # require their dedicated attack/healing/concentration consumers.  Its
     # activation lifecycle is nevertheless authoritative and reusable by

@@ -255,3 +255,48 @@ def test_roll_intervention_window_fails_closed_on_bad_clock_or_phase() -> None:
         )
         is None
     )
+
+
+def test_roll_intervention_supports_reroll_with_bound_bonus_and_signed_die() -> None:
+    spec = {
+        "id": "fixture:fanatical-focus",
+        "kind": "roll_intervention",
+        "trigger": "after_failed_d20_test",
+        "input_requirements": [
+            {"key": "direction", "kind": "signed_unit"},
+        ],
+        "operation": {
+            "kind": "failure_recovery",
+            "recovery": {
+                "kind": "reroll_with_add",
+                "selection": "replacement",
+                "amount": "rage_damage*direction",
+            },
+            "consume_when": "on_confirm",
+        },
+    }
+    resolved = resolve_roll_interventions(
+        [spec],
+        trigger="after_failed_d20_test",
+        context={"resources": {}, "conditions": []},
+    )[0]
+    result = apply_roll_intervention(
+        resolved,
+        roll_total=8,
+        roll_totals=[8, 11],
+        inputs={"direction": 1},
+        bindings={"rage_damage": 2},
+        dc=12,
+        operation_id="fanatical-1",
+    )
+    assert result["effective_total"] == 13
+    assert result["failure_recovered"] is True
+    with pytest.raises(ValueError, match="方向输入"):
+        apply_roll_intervention(
+            resolved,
+            roll_total=8,
+            roll_totals=[8, 11],
+            inputs={"direction": 0},
+            bindings={"rage_damage": 2},
+            dc=12,
+        )

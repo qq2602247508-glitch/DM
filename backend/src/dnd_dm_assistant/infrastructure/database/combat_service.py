@@ -359,6 +359,16 @@ class CombatEngineService:
         raw_die = dice.get("bardic_inspiration_die")
         if not isinstance(raw_die, dict):
             raise ValueError("目标没有可用的吟游诗人激励骰")
+        expires_at = raw_die.get("expires_at")
+        if isinstance(expires_at, str) and expires_at.strip():
+            try:
+                expiry = datetime.fromisoformat(expires_at)
+            except ValueError as exc:
+                raise ValueError("吟游诗人激励骰的有效期记录无效") from exc
+            if expiry.tzinfo is None:
+                expiry = expiry.replace(tzinfo=UTC)
+            if datetime.now(UTC) >= expiry:
+                raise ValueError("吟游诗人激励骰已超过1小时有效期")
         if raw_die.get("available") is not True:
             consumed = raw_die.get("consumed")
             if (
@@ -525,6 +535,35 @@ class CombatEngineService:
         distance = grid_distance_ft(actor_cell, target_cell, cell_size_ft=cell_size)
         if distance > raw_range:
             raise ValueError(f"职业特性目标必须在 {raw_range} 尺范围内")
+        if policy.get("requires_visible_or_audible") is True:
+            # "能看见或能听见" is resolved from the authoritative combat
+            # geometry and condition snapshots.  A blocked line of sight is
+            # still a valid audible target unless either creature is deafened
+            # (or explicitly silenced); missing geometry fails closed above.
+            actor_footprint = cls._grid_footprint(actor)
+            target_footprint = cls._grid_footprint(target)
+            grid = (
+                session.scalar(select(SceneGrid).where(SceneGrid.scene_id == combat.scene_id))
+                if session is not None and combat.scene_id
+                else None
+            )
+            visible = False
+            if grid is not None and actor_footprint and target_footprint:
+                blockers, _cover_cells = cls._grid_obstacles(session, grid)
+                visible, _mode, _pair = cls._grid_footprint_line_of_sight(
+                    session,
+                    grid,
+                    actor_footprint,
+                    target_footprint,
+                    blockers,
+                    start_height_ft=cls._explicit_grid_elevation_ft(actor),
+                    end_height_ft=cls._explicit_grid_elevation_ft(target),
+                )
+            if not visible:
+                actor_conditions = cls._condition_set(actor)
+                target_conditions = cls._condition_set(target)
+                if {"deafened", "silenced"} & (actor_conditions | target_conditions):
+                    raise ValueError("职业特性目标既不可见且无法听见，需由 DM 裁定")
 
     @classmethod
     def _rage_attack_counts_as_activity(
@@ -3799,39 +3838,89 @@ class CombatEngineService:
         resolution_type: str,
         request: dict[str, Any],
         session: Session | None,
+        combat: Combat | None = None,
     ) -> list[dict[str, object]]:
-        snapshot = dict(target.snapshot_json or {})
-        runtime = snapshot.get("feature_runtime")
-        if not isinstance(runtime, dict):
-            return []
-        raw_actions = runtime.get("actions")
-        actions = list(raw_actions.values()) if isinstance(raw_actions, dict) else []
-        specs = [item for item in actions if isinstance(item, dict)]
-        progression = runtime.get("progression")
-        class_levels = (
-            dict(progression.get("class_levels") or {})
-            if isinstance(progression, dict)
-            else {}
-        )
-        resources = dict(runtime.get("resources") or {})
-        if session is not None and target.entity_type == "character" and target.entity_id:
-            character = session.get(Character, target.entity_id)
-            if character is not None:
-                resources.update(dict(character.resources or {}))
-        return resolve_roll_interventions(
-            specs,
-            trigger=trigger,
-            context={
-                "entity_type": target.entity_type,
-                "faction": cls._combatant_faction(target),
-                "test_kind": resolution_type,
-                "ability": request.get("ability"),
-                "skill": request.get("skill"),
-                "conditions": sorted(cls._condition_set(target)),
-                "class_levels": class_levels,
-                "resources": resources,
-            },
-        )
+        reactors: list[Combatant] = [target]
+        if (
+            session is not None
+            and combat is not None
+            and hasattr(session, "scalars")
+            and getattr(combat, "id", None)
+        ):
+            reactors.extend(
+                item
+                for item in session.scalars(
+                    select(Combatant).where(
+                        Combatant.combat_id == combat.id,
+                        Combatant.is_active.is_(True),
+                    )
+                ).all()
+                if item.id != target.id
+            )
+        resolved: list[dict[str, object]] = []
+        for reactor in reactors:
+            snapshot = dict(reactor.snapshot_json or {})
+            runtime = snapshot.get("feature_runtime")
+            if not isinstance(runtime, dict):
+                continue
+            raw_actions = runtime.get("actions")
+            actions = list(raw_actions.values()) if isinstance(raw_actions, dict) else []
+            specs = [item for item in actions if isinstance(item, dict)]
+            progression = runtime.get("progression")
+            class_levels = (
+                dict(progression.get("class_levels") or {})
+                if isinstance(progression, dict)
+                else {}
+            )
+            resources = dict(runtime.get("resources") or {})
+            if session is not None and reactor.entity_type == "character" and reactor.entity_id:
+                character = session.get(Character, reactor.entity_id)
+                if character is not None:
+                    resources.update(dict(character.resources or {}))
+            raw_feature_states = snapshot.get("feature_states")
+            feature_states = (
+                dict(raw_feature_states) if isinstance(raw_feature_states, dict) else {}
+            )
+            candidates = resolve_roll_interventions(
+                specs,
+                trigger=trigger,
+                context={
+                    "entity_type": reactor.entity_type,
+                    "faction": cls._combatant_faction(reactor),
+                    "test_kind": resolution_type,
+                    "ability": request.get("ability"),
+                    "skill": request.get("skill"),
+                    "conditions": sorted(cls._condition_set(reactor)),
+                    "class_levels": class_levels,
+                    "resources": resources,
+                    "feature_states": feature_states,
+                },
+            )
+            for candidate in candidates:
+                if reactor.id != target.id:
+                    policy = candidate.get("target_policy")
+                    if not isinstance(policy, dict) or combat is None or session is None:
+                        continue
+                    try:
+                        cls._validate_feature_target_policy(
+                            session,
+                            combat,
+                            reactor,
+                            target,
+                            {"target_policy": policy},
+                        )
+                    except ValueError:
+                        continue
+                action_cost = str(candidate.get("action_cost") or "none")
+                needs_reaction = action_cost == "reaction" or (
+                    action_cost == "reaction_if_external" and reactor.id != target.id
+                )
+                if needs_reaction and not reactor.reaction_available:
+                    continue
+                candidate["reactor_combatant_id"] = reactor.id
+                candidate["reactor_name"] = reactor.display_name
+                resolved.append(candidate)
+        return resolved
 
     @classmethod
     def _consume_generic_roll_intervention_resource(
@@ -3920,6 +4009,29 @@ class CombatEngineService:
                 }
             )
             raw = merged
+        # Timed feature actions persist their typed modifiers in the target
+        # snapshot.  They are merged through the same consumer as static
+        # feature blocks, with an explicit expiry check so stale snapshots
+        # cannot grant an advantage after the next long rest.
+        timed = snapshot.get("timed_feature_modifiers")
+        if isinstance(timed, list):
+            now = datetime.now(UTC)
+            for index, item in enumerate(timed):
+                if not isinstance(item, dict):
+                    continue
+                expires_at = item.get("expires_at")
+                if isinstance(expires_at, str) and expires_at.strip():
+                    try:
+                        expiry = datetime.fromisoformat(expires_at)
+                    except ValueError:
+                        continue
+                    if expiry.tzinfo is None:
+                        expiry = expiry.replace(tzinfo=UTC)
+                    if now >= expiry:
+                        continue
+                modifier = item.get("modifier")
+                if isinstance(modifier, dict):
+                    raw[f"timed:{item.get('id') or index}"] = dict(modifier)
         ability_aliases = {
             "力量": "strength",
             "敏捷": "dexterity",
@@ -6178,6 +6290,11 @@ class CombatEngineService:
             if state.get("name") == "feature_raging":
                 snapshot = dict(target.snapshot_json or {})
                 snapshot.pop("rage_activity", None)
+                feature_states = snapshot.get("feature_states")
+                if isinstance(feature_states, dict):
+                    feature_states = dict(feature_states)
+                    feature_states.pop("fanatical_focus", None)
+                    snapshot["feature_states"] = feature_states
                 target.snapshot_json = snapshot
             target.updated_at = now
         effect.status = "ended"
@@ -9729,30 +9846,49 @@ class CombatEngineService:
         generic_roll_intervention: dict[str, object] | None = None
         generic_resource_consumed: dict[str, object] | None = None
         generic_options: list[dict[str, object]] = []
-        if not success and not any(
+        auto_failed = any(
             str(item).startswith("condition_auto_fail")
             for item in defense["applied_defenses"]
-        ):
+        )
+        if not auto_failed:
             generic_options = cls._generic_roll_intervention_options(
                 target,
-                trigger="after_failed_d20_test",
+                trigger="after_d20_test",
                 resolution_type=resolution_type,
                 request=request,
                 session=session,
+                combat=combat,
             )
+            if not generic_options and not success:
+                generic_options = cls._generic_roll_intervention_options(
+                    target,
+                    trigger="after_failed_d20_test",
+                    resolution_type=resolution_type,
+                    request=request,
+                    session=session,
+                    combat=combat,
+                )
         if command.roll_intervention_id is not None:
-            if success:
-                raise ValueError("通用掷骰干预只能用于失败的检定")
             selected = next(
                 (
                     item
                     for item in generic_options
                     if item.get("id") == command.roll_intervention_id
+                    and (
+                        command.roll_intervention_reactor_id is None
+                        or item.get("reactor_combatant_id")
+                        == command.roll_intervention_reactor_id
+                    )
                 ),
                 None,
             )
             if selected is None:
                 raise ValueError("所选通用掷骰干预当前不可用")
+            if (
+                str(selected.get("trigger") or "") == "after_failed_d20_test"
+                and success
+            ):
+                raise ValueError("失败补救只能用于失败的检定")
             generic_roll_intervention = apply_roll_intervention(
                 selected,
                 roll_total=int(defense["effective_roll_total"]),
@@ -9767,12 +9903,56 @@ class CombatEngineService:
                 f"roll_intervention:{command.roll_intervention_id}",
             ]
             success = bool(defense["success"])
+            if resolution_type == "saving_throw":
+                defense["damage"] = (
+                    cls._state_int(request.get("damage_on_success"))
+                    if success
+                    else cls._state_int(request.get("damage_on_failure"))
+                )
             if consume_defenses:
+                reactor_id = str(selected.get("reactor_combatant_id") or target.id)
+                reactor = target if reactor_id == target.id else None
+                if reactor is None and session is not None:
+                    reactor = session.get(Combatant, reactor_id)
+                if reactor is None or reactor.combat_id != target.combat_id:
+                    raise ValueError("掷骰干预反应者不在当前战斗")
+                selected_cost = str(selected.get("action_cost") or "none")
+                needs_reaction = selected_cost == "reaction" or (
+                    selected_cost == "reaction_if_external" and reactor.id != target.id
+                )
+                if needs_reaction:
+                    if not reactor.reaction_available:
+                        raise ValueError("掷骰干预反应者本回合没有可用反应")
+                    reactor.reaction_available = False
+                    reactor.version += 1
+                    reactor.updated_at = datetime.now(UTC)
                 generic_resource_consumed = cls._consume_generic_roll_intervention_resource(
-                    target,
+                    reactor,
                     generic_roll_intervention,
                     session=session,
                 )
+                eligibility = selected.get("eligibility")
+                state_spec = (
+                    eligibility.get("state")
+                    if isinstance(eligibility, dict)
+                    else None
+                )
+                state_key = (
+                    str(state_spec.get("key") or "").strip()
+                    if isinstance(state_spec, dict)
+                    else ""
+                )
+                if state_key:
+                    snapshot = dict(reactor.snapshot_json or {})
+                    states = snapshot.get("feature_states")
+                    feature_states = (
+                        dict(states) if isinstance(states, dict) else {}
+                    )
+                    if feature_states.get(state_key) is not True:
+                        raise ValueError("该掷骰干预窗口已被消费")
+                    feature_states[state_key] = False
+                    snapshot["feature_states"] = feature_states
+                    reactor.snapshot_json = snapshot
         elif generic_options:
             return {
                 "phase": "awaiting_roll_intervention",
@@ -9780,8 +9960,8 @@ class CombatEngineService:
                 "roll_total": defense["effective_roll_total"],
                 "reported_roll_totals": defense["reported_roll_totals"],
                 "dc": dc,
-                "success": False,
-                "outcome": "failure",
+                "success": success,
+                "outcome": "success" if success else "failure",
                 "damage": 0,
                 "damage_type": None,
                 "damage_components": [],
@@ -9793,6 +9973,9 @@ class CombatEngineService:
                         "operation": item.get("operation"),
                         "input_requirements": item.get("input_requirements", []),
                         "resource": item.get("resource"),
+                        "reactor_combatant_id": item.get("reactor_combatant_id"),
+                        "reactor_name": item.get("reactor_name"),
+                        "action_cost": item.get("action_cost"),
                     }
                     for item in generic_options
                 ],
@@ -12528,6 +12711,50 @@ class CombatEngineService:
                         result["outcome"] = command.outcome
                         result["adjudication_note"] = command.adjudication_note
                     continue
+                if kind == "grant_timed_modifier":
+                    modifier = effect.get("modifier")
+                    if not isinstance(modifier, dict):
+                        raise ValueError("限时职业特性修正缺少结构化 modifier")
+                    stat = str(modifier.get("stat") or "").strip()
+                    operation = str(modifier.get("operation") or "").strip()
+                    if stat not in {"ability_check", "skill_check", "attack_roll", "saving_throw"}:
+                        raise ValueError("限时职业特性修正的 stat 不受支持")
+                    if operation not in {"advantage", "disadvantage", "add"}:
+                        raise ValueError("限时职业特性修正的 operation 不受支持")
+                    if stat == "skill_check" and not str(modifier.get("skill") or "").strip():
+                        raise ValueError("技能检定修正需要明确 skill")
+                    expires_on = str(effect.get("expires_on") or "").strip()
+                    if expires_on not in {"long_rest", "short_rest", "turn_end"}:
+                        raise ValueError("限时职业特性修正的 expires_on 不受支持")
+                    snapshot = dict(target.snapshot_json or {})
+                    raw_timed = snapshot.get("timed_feature_modifiers")
+                    timed = (
+                        [dict(item) for item in raw_timed if isinstance(item, dict)]
+                        if isinstance(raw_timed, list)
+                        else []
+                    )
+                    source_id = str(action.get("id") or command.feature_id).strip()
+                    timed = [
+                        item
+                        for item in timed
+                        if str(item.get("source_id") or "") != source_id
+                    ]
+                    timed.append(
+                        {
+                            "id": f"{source_id}:{target.id}",
+                            "source_id": source_id,
+                            "feature_id": command.feature_id,
+                            "source": action.get("name"),
+                            "modifier": dict(modifier),
+                            "expires_on": expires_on,
+                            "granted_at": datetime.now(UTC).isoformat(),
+                        }
+                    )
+                    snapshot["timed_feature_modifiers"] = timed
+                    target.snapshot_json = snapshot
+                    result["timed_modifier_granted"] = dict(modifier)
+                    result["timed_modifier_expires_on"] = expires_on
+                    continue
                 if kind == "activate_condition":
                     condition = str(effect.get("condition") or "").strip()
                     if not condition:
@@ -12592,6 +12819,15 @@ class CombatEngineService:
                             "attacked": False,
                             "damaged": False,
                         }
+                        actor.snapshot_json = snapshot
+                        feature_states = snapshot.get("feature_states")
+                        feature_states = (
+                            dict(feature_states)
+                            if isinstance(feature_states, dict)
+                            else {}
+                        )
+                        feature_states["fanatical_focus"] = True
+                        snapshot["feature_states"] = feature_states
                         actor.snapshot_json = snapshot
                         result["rage_activity"] = {
                             "attacked": False,
@@ -12673,11 +12909,14 @@ class CombatEngineService:
                     existing_die = feature_dice.get(die_key)
                     if isinstance(existing_die, dict) and existing_die.get("available") is True:
                         raise ValueError(f"目标已经持有可用的{die_key}，不能同时持有两枚同类职业骰")
+                    granted_at = datetime.now(UTC)
                     feature_dice[die_key] = {
                         "source": action.get("name"),
                         "value": die_value,
                         "target_combatant_id": target.id,
                         "available": True,
+                        "granted_at": granted_at.isoformat(),
+                        "expires_at": (granted_at + timedelta(hours=1)).isoformat(),
                     }
                     snapshot["feature_dice"] = feature_dice
                     target.snapshot_json = snapshot

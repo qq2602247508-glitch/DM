@@ -18,6 +18,7 @@ ROLL_INTERVENTION_KIND = "roll_intervention"
 ROLL_INTERVENTION_OPERATIONS = frozenset(
     {
         "reroll",
+        "reroll_with_add",
         "add",
         "add_die",
         "advantage",
@@ -284,6 +285,12 @@ def _eligible_bindings(
     forbidden = _normalized_set(_string_list(eligibility.get("forbidden_conditions")))
     if not required.issubset(conditions) or forbidden & conditions:
         return None
+    state_spec = _mapping(eligibility.get("state"))
+    state_key = str(state_spec.get("key") or "").strip()
+    if state_key:
+        states = _mapping(context.get("feature_states"))
+        if states.get(state_key) is not True:
+            return None
     if "proficient" in eligibility:
         proficient = eligibility.get("proficient")
         if not isinstance(proficient, bool) or context.get("proficient") is not proficient:
@@ -315,8 +322,10 @@ def _eligible_bindings(
         value_binding = str(resource_spec.get("value_bind_as") or "").strip()
         raw_resource = resources.get(key)
         raw_value = raw_resource.get("value") if isinstance(raw_resource, Mapping) else None
-        if value_binding and isinstance(raw_value, str):
-            match = re.fullmatch(r"[dD](\d+)", raw_value.strip())
+        if value_binding and isinstance(raw_value, int) and not isinstance(raw_value, bool):
+            bindings[value_binding] = raw_value
+        elif value_binding and isinstance(raw_value, str):
+            match = re.fullmatch(r"[dD]?(\d+)", raw_value.strip())
             if match:
                 bindings[value_binding] = int(match.group(1))
     return bindings
@@ -494,6 +503,9 @@ def _validate_requirement(requirement: Mapping[str, object], value: object) -> N
     elif kind == "roll_total":
         if not -_MAX_TOTAL <= number <= _MAX_TOTAL:
             raise ValueError(f"掷骰干预总值输入超出范围：{key}")
+    elif kind == "signed_unit":
+        if number not in {-1, 1}:
+            raise ValueError(f"掷骰干预方向输入必须为 -1 或 1：{key}")
     elif kind != "integer":
         raise ValueError(f"暂未接入该掷骰干预输入类型：{key}")
 
@@ -588,7 +600,7 @@ def _apply_operation(
     if kind not in ROLL_INTERVENTION_OPERATIONS - {"failure_recovery"}:
         raise ValueError("暂未接入该掷骰干预操作")
     details: dict[str, object] = {}
-    if kind == "reroll":
+    if kind in {"reroll", "reroll_with_add"}:
         pair = _two_reported_totals(reported_totals, label="重骰")
         if pair[0] != original_total:
             raise ValueError("重骰的第一个总值必须是原始总值")
@@ -603,6 +615,16 @@ def _apply_operation(
             raise ValueError("重骰选择方式无效")
         details["reported_totals"] = tuple(pair)
         details["selection"] = selection
+        if kind == "reroll_with_add":
+            amount = evaluate_roll_intervention_amount(
+                operation.get("amount", operation.get("value")),
+                bindings=bindings,
+                inputs=inputs,
+            )
+            if amount is None:
+                raise ValueError("重骰加值配置无效")
+            details["amount"] = amount
+            effective += amount
         return effective, details
     if kind in {"advantage", "disadvantage"}:
         pair = _two_reported_totals(reported_totals, label="优势或劣势")

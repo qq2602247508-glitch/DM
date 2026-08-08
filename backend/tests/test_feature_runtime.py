@@ -790,13 +790,19 @@ def test_bardic_inspiration_projection_consumes_resource_and_records_granted_die
     )
 
     inspiration = registry["actions"]["bardic_inspiration"]
-    assert inspiration["automation_status"] == "partial"
+    assert inspiration["automation_status"] == "full"
     assert inspiration["runtime_execution"] == {
         "status": "ready",
-        "consumer": "combat_feature_action",
+        "consumer": "combat_feature_action_and_player_roll_resolution",
         "effect_kinds": ["grant_roll_die"],
-        "remaining_dm_boundaries": [
-            "target_range_visibility_and_audibility",
+        "window": {
+            "phase": "after_failed_d20_test",
+            "expires": "duration_end",
+            "duration_unit": "hours",
+            "duration_value": 1,
+        },
+        "covered_rules": [
+            "target_range_visibility_or_audibility",
             "one_die_per_target",
             "failed_d20_consumption_window",
         ],
@@ -889,13 +895,16 @@ def test_bardic_inspiration_projection_consumes_resource_and_records_granted_die
     }
     assert result["actor"]["bonus_action_available"] is False
     assert "feature_dice" not in result["actor"]["snapshot_json"]
-    assert result["target"]["snapshot_json"]["feature_dice"] == {
-        "bardic_inspiration_die": {
-            "source": "吟游诗人激励",
-            "value": "D6",
-            "target_combatant_id": ally["id"],
-            "available": True,
-        }
+    granted_die = result["target"]["snapshot_json"]["feature_dice"][
+        "bardic_inspiration_die"
+    ]
+    assert granted_die == {
+        "source": "吟游诗人激励",
+        "value": "D6",
+        "target_combatant_id": ally["id"],
+        "available": True,
+        "granted_at": granted_die["granted_at"],
+        "expires_at": granted_die["expires_at"],
     }
     persisted = campaign_client.get(f"{base}/characters/{character['id']}")
     assert persisted.status_code == 200, persisted.text

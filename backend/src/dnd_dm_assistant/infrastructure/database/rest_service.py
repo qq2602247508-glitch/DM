@@ -164,6 +164,22 @@ class RestService:
                 [adapt_legacy_zero_hp_intervention(item) for item in defenses],
                 rest_event=rest_event,
             )
+            timed_modifiers = updated.get("timed_feature_modifiers")
+            if isinstance(timed_modifiers, list):
+                remaining_modifiers = [
+                    item
+                    for item in timed_modifiers
+                    if not isinstance(item, dict)
+                    or str(item.get("expires_on") or "")
+                    not in (
+                        {"long_rest", "short_rest"}
+                        if rest_event == "long_rest"
+                        else {"short_rest"}
+                    )
+                ]
+                if len(remaining_modifiers) != len(timed_modifiers):
+                    updated["timed_feature_modifiers"] = remaining_modifiers
+                    reset_state_keys.append("timed_feature_modifiers")
             if not reset_state_keys:
                 # Adapter for snapshots created before contracts were frozen.
                 legacy_state = snapshot.get("relentless_rage_state")

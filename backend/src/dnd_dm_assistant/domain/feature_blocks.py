@@ -259,7 +259,11 @@ def structured_target_save_status(action: Mapping[str, Any]) -> bool:
     outcomes = action.get("on_save_failure") or action.get("on_save_success")
     if policy is None and save is None and outcomes is None:
         return True
-    if policy is not None and not feature_action_block_ready(action):
+    if (
+        policy is not None
+        and action.get("kind") == "feature_action"
+        and not feature_action_block_ready(action)
+    ):
         return False
     if save is not None and not isinstance(save, Mapping):
         return False

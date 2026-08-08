@@ -1415,26 +1415,29 @@ def feature_runtime_definition(
                     "mode": "ally_or_self",
                     "same_faction": True,
                     "range_ft": 60,
+                    "requires_visible_or_audible": True,
                 },
                 "resolution_kind": "grant_dice",
                 "dice_key": "bardic_inspiration_die",
                 "effects": [{"kind": "grant_roll_die", "die_key": "bardic_inspiration_die"}],
                 "runtime_execution": {
                     "status": "ready",
-                    "consumer": "combat_feature_action",
+                    "consumer": "combat_feature_action_and_player_roll_resolution",
                     "effect_kinds": ["grant_roll_die"],
-                    "remaining_dm_boundaries": [
-                        "target_range_visibility_and_audibility",
+                    "window": {
+                        "phase": "after_failed_d20_test",
+                        "expires": "duration_end",
+                        "duration_unit": "hours",
+                        "duration_value": 1,
+                    },
+                    "covered_rules": [
+                        "target_range_visibility_or_audibility",
                         "one_die_per_target",
                         "failed_d20_consumption_window",
                     ],
                 },
-                "automation_status": "partial",
-                "requires_dm_adjudication": True,
-                "partial_reason": (
-                    "激励骰授予与资源扣除由现有特性执行器结算；目标距离、可见/可听、"
-                    "同一目标持有上限和失败 D20 后的消费窗口仍需 DM 裁定。"
-                ),
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
                 **source,
             }
 

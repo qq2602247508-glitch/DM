@@ -93,7 +93,7 @@ def test_core_contract_counts_move_only_to_evidence_backed_statuses() -> None:
             status.update(
                 item["automation_status"] for item in contract["feature_contracts"]
             )
-    assert status == {"full": 150, "partial": 31, "dm_only": 77}
+    assert status == {"full": 151, "partial": 30, "dm_only": 77}
     assert sum(status.values()) == 258
 
 
