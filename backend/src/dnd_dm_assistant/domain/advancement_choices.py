@@ -1337,6 +1337,55 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS: dict[str, dict[str, Any]] = {
         "triggers": [],
         "attack_riders": [],
     },
+    # Moonlight Step is a single bonus-action teleport followed by the same
+    # persisted next-attack advantage state used by Steady Aim.  The resource
+    # is a wisdom-scaled pool restored by a long rest; teleport validation is
+    # delegated to the authoritative grid consumer.
+    "月光飞步": {
+        "combat_start": {"modifiers": [], "defenses": []},
+        "resources": {
+            "moonlight_step": {
+                "key": "moonlight_step",
+                "label": "月光飞步",
+                "max_formula": "max(1, wisdom_modifier)",
+                "recovery_events": [{"rest": "long_rest", "operation": "set_to_max"}],
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        },
+        "actions": {
+            "moonlight_step": {
+                "id": "moonlight_step",
+                "name": "月光飞步",
+                "kind": "feature_action",
+                "action_cost": "bonus_action",
+                "resource_key": "moonlight_step",
+                "resource_cost": 1,
+                "target": "self",
+                "resolution_kind": "condition",
+                "effects": [
+                    {
+                        "kind": "teleport",
+                        "max_distance_ft": 30,
+                    },
+                    {
+                        "kind": "activate_timed_condition",
+                        "condition": "steady_aim",
+                        "expires": "turn_end",
+                    },
+                ],
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "combat_feature_action",
+                    "effect_kinds": ["teleport", "activate_timed_condition"],
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        },
+        "triggers": [],
+        "attack_riders": [],
+    },
     # Fixed spell access uses the same authoritative character-spell list as
     # class spellcasting, while retaining the source-specific casting ability.
     "掌控元素": {

@@ -99,7 +99,7 @@ def _registry_at(rule: ClassProgression, level: int) -> dict[str, Any]:
 
 
 def test_movement_feature_contracts_are_full_and_typed() -> None:
-    cases = {"奥能冲锋": "teleport"}
+    cases = {"奥能冲锋": "teleport", "月光飞步": "moonlight_step"}
     for name, marker in cases.items():
         runtime = subclass_feature_runtime_definition(
             {"name": name, "class_name": "fixture", "class_level": 10}
@@ -115,6 +115,17 @@ def test_movement_feature_contracts_are_full_and_typed() -> None:
         assert contract["automation_status"] == "full"
         payload = json.dumps(runtime, ensure_ascii=False)
         assert marker in payload
+
+    moonlight = subclass_feature_runtime_definition(
+        {"name": "月光飞步", "class_name": "德鲁伊", "class_level": 10}
+    )
+    assert moonlight is not None
+    moonlight_action = moonlight["actions"]["moonlight_step"]
+    assert moonlight_action["resource_key"] == "moonlight_step"
+    assert [effect["kind"] for effect in moonlight_action["effects"]] == [
+        "teleport",
+        "activate_timed_condition",
+    ]
 
     soul_blades = subclass_feature_runtime_definition(
         {"name": "灵魂之刃", "class_name": "fixture", "class_level": 9}

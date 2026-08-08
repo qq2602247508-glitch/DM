@@ -62,13 +62,13 @@ def test_migration_planner_keeps_fixed_scope_and_status_counts() -> None:
     report = _planner_module().plan()
     assert report["audit_scope"]["total_features"] == 499
     assert report["audit_status_counts"] == {
-        "full": 208,
-        "partial": 214,
+        "full": 209,
+        "partial": 213,
         "dm_only": 77,
     }
     assert report["readiness_counts"] == {
-        "consumer_partial": 41,
-        "already_full": 208,
+        "consumer_partial": 40,
+        "already_full": 209,
         "missing_runtime_contract": 195,
         "missing_source": 35,
         "manual_boundary": 10,
