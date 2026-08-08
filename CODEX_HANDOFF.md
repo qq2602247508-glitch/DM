@@ -1,3 +1,19 @@
+# 2026-08-09 长执行检查点：防守战术休息选择与 incoming 劣势
+
+- 实时固定审计仍为 499 条；本切片前 `full 253 / partial 172 / dm_only 74`，当前为
+  `full 254 / partial 171 / dm_only 74`。新增 full：「游侠·猎人·7·防守战术」。
+- 休息选择复用 rest_service 的 rest_choice 积木：短休/长休提交 `defensive_tactics`
+  选择（escape_the_horde / multiattack_defense），校验选项并持久化到角色资源。
+- 冲出重围：当攻击者为借机攻击（reaction + leaves_reach/借机触发）且目标选择
+  escape_the_horde 时，服务端在权威攻击上下文强制附加劣势源；普通攻击不受影响。
+- 多重防御：攻击命中选择 multiattack_defense 的目标时，记录 `multiattack_defense_hits`
+  按回合键存攻击者；同攻击者本回合后续攻击在攻击上下文强制附加劣势源。两分支均通过
+  `attack_roll_mode` 冲突校验证明真实生效（提交 normal 模式会被拒绝）。
+- 验证：防守战术 3 个真实 API 测试通过；全量后端 pytest、前端 204 tests/typecheck/lint/build、
+  新增源码/测试 Ruff、compileall、`git diff --check` 通过。
+- 已分离提交：代码 `b27050b`，审计基线测试 `a5473da`；文档/交接随后单独提交。必须继续保留且不暂存/提交：
+  `backend/tests/integrations/`、`backend/tests/ollama.py`。
+
 # 2026-08-09 长执行检查点：斗转星移减半与心灵反伤
 
 - 实时固定审计仍为 499 条；本切片前 `full 252 / partial 173 / dm_only 74`，当前为
