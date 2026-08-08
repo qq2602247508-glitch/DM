@@ -1596,6 +1596,28 @@ class PlayerRoomService:
                     and str(action.get("attack_roll_mode") or "").strip().lower()
                     == "advantage"
                 )
+            elif applies_when == "radiant_soul_spell_damage":
+                explicit = eligibility.get(rider_id, eligibility.get("radiant_soul"))
+                raw_damage_types = action.get("damage_types")
+                damage_types = {
+                    str(value).strip().lower()
+                    for value in raw_damage_types
+                    if str(value).strip()
+                } if isinstance(raw_damage_types, list) else set()
+                selected_target = str(
+                    special_inputs.get("radiant_soul_target_id") or ""
+                ).strip()
+                is_spell_action = bool(
+                    action.get("is_spell_attack") is True
+                    or action.get("kind") == "spell"
+                    or action.get("spell_level") is not None
+                )
+                eligible = (
+                    explicit is True
+                    and selected_target == target.id
+                    and is_spell_action
+                    and bool(damage_types & {"radiant", "fire"})
+                )
             elif applies_when == "sneak_attack_eligible":
                 explicit = eligibility.get(rider_id, eligibility.get("sneak_attack"))
                 eligible = explicit is True
@@ -1650,6 +1672,18 @@ class PlayerRoomService:
                     **raw,
                     "value": f"{dice_count}d6",
                     "expression": f"{dice_count}d6",
+                }
+            modifier_source = str(raw.get("modifier_source") or "").strip()
+            if modifier_source:
+                ability = modifier_source.removesuffix("_modifier")
+                scores = (actor.snapshot_json or {}).get("ability_scores")
+                raw_score = scores.get(ability) if isinstance(scores, dict) else None
+                if not isinstance(raw_score, int):
+                    raise ValueError(f"攻击附伤 {rider_id} 缺少权威属性值")
+                rider_for_total = {
+                    **raw,
+                    "value": str(max(0, (raw_score - 10) // 2)),
+                    "expression": f"{modifier_source}",
                 }
             if rider_id == "divine_smite:bonus_damage":
                 raw_slot = special_inputs.get("divine_smite_slot_level")
@@ -7884,6 +7918,10 @@ class PlayerRoomService:
                         {
                             **action,
                             "attack_roll_mode": attack_roll_mode,
+                            "damage_types": [
+                                str(component.damage_type).strip().lower()
+                                for component in components
+                            ],
                         },
                         current_target,
                         special_inputs=special_inputs,

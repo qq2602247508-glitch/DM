@@ -3277,6 +3277,49 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS: dict[str, dict[str, Any]] = {
         "automation_status": "full",
         "requires_dm_adjudication": False,
     },
+    "光耀之魂": {
+        "combat_start": {
+            "modifiers": [],
+            "defenses": [
+                {
+                    "id": "radiant_soul:radiant_resistance",
+                    "kind": "damage_resistance",
+                    "damage_types": ["radiant"],
+                    "applies_when": "always",
+                    "runtime_execution": {
+                        "status": "ready",
+                        "consumer": "damage_defense_resolver",
+                    },
+                    "automation_status": "full",
+                    "requires_dm_adjudication": False,
+                }
+            ],
+        },
+        "resources": {},
+        "actions": {},
+        "triggers": [],
+        "attack_riders": [
+            {
+                "id": "radiant_soul:bonus_damage",
+                "kind": "bonus_damage",
+                "value": "0",
+                "modifier_source": "charisma_modifier",
+                "damage_type": "spell_damage_type",
+                "applies_when": "radiant_soul_spell_damage",
+                "frequency": "once_per_turn",
+                "eligibility_input": "radiant_soul",
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "attack_rider_resolver",
+                    "input": "attack_rider_eligibility.radiant_soul + radiant_soul_target_id",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        ],
+        "automation_status": "full",
+        "requires_dm_adjudication": False,
+    },
     # Guarded Mind combines a permanent psychic resistance with an optional
     # turn-start cleanup. The action consumes the same subclass psionic-die
     # pool produced by Psionic Power and takes the selected condition from

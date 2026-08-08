@@ -2544,3 +2544,49 @@ def test_brutal_strike_requires_explicit_advantage_trade_and_reports_d10_total()
         critical_hit=False,
         used_this_turn=set(),
     ) == []
+
+
+def test_radiant_soul_applies_charisma_bonus_to_one_radiant_or_fire_spell_target() -> None:
+    runtime = subclass_feature_runtime_definition(
+        {"name": "光耀之魂 Radiant Soul", "class_name": "魔契师", "class_level": 6}
+    )
+    assert runtime is not None
+    rider = runtime["attack_riders"][0]
+    assert rider["automation_status"] == "full"
+    actor = Combatant(
+        id="radiant-soul-caster",
+        entity_type="character",
+        snapshot_json={
+            "ability_scores": {"charisma": 18},
+            "feature_runtime": {"attack_riders": [rider]},
+        },
+    )
+    target = Combatant(id="radiant-soul-target", entity_type="monster")
+    riders = PlayerRoomService._eligible_attack_riders(
+        actor,
+        {
+            "kind": "spell",
+            "spell_level": 3,
+            "damage_types": ["fire"],
+        },
+        target,
+        special_inputs={
+            "attack_rider_eligibility": {"radiant_soul": True},
+            "radiant_soul_target_id": target.id,
+        },
+        critical_hit=False,
+        used_this_turn=set(),
+    )
+    assert riders[0]["rider_id"] == "radiant_soul:bonus_damage"
+    assert riders[0]["total"] == 4
+    assert PlayerRoomService._eligible_attack_riders(
+        actor,
+        {"kind": "spell", "spell_level": 3, "damage_types": ["cold"]},
+        target,
+        special_inputs={
+            "attack_rider_eligibility": {"radiant_soul": True},
+            "radiant_soul_target_id": target.id,
+        },
+        critical_hit=False,
+        used_this_turn=set(),
+    ) == []
