@@ -21,6 +21,7 @@ from dnd_dm_assistant.domain.advancement import (
 )
 from dnd_dm_assistant.domain.advancement_choices import (
     CORE_SELECTED_SPELL_GRANTS,
+    _canonical_battle_master_maneuver,
     advancement_choice_requirements,
     canonical_class_name,
     core_feat_rules_from_records,
@@ -419,11 +420,23 @@ class AdvancementService:
             old = merged.get(key)
             old_max = int(old.get("max", 0)) if isinstance(old, dict) else 0
             old_current = int(old.get("current", old_max)) if isinstance(old, dict) else 0
-            new_max = max(old_max, int(resource_update["max"]))
+            requested_max = int(resource_update["max"])
+            # Some progression tables are exact snapshots rather than
+            # monotonically growing pools.  Battle-master superiority dice,
+            # for example, must shrink again when an imported/downgraded
+            # character is rebuilt at a lower class level.  Keep the legacy
+            # additive behavior for ordinary resources and opt into exact
+            # table semantics only through the typed resource contract.
+            exact_max = str(resource_update.get("max_mode") or "").strip().casefold() == "exact"
+            new_max = requested_max if exact_max else max(old_max, requested_max)
+            if exact_max and requested_max < old_max:
+                next_current = min(requested_max, old_current)
+            else:
+                next_current = min(new_max, old_current + max(0, new_max - old_max))
             merged[key] = {
                 **(old if isinstance(old, dict) else {}),
                 **resource_update,
-                "current": min(new_max, old_current + max(0, new_max - old_max)),
+                "current": next_current,
             }
         return merged
 
@@ -1654,6 +1667,11 @@ class AdvancementService:
                 selected_subclass_choices[feature_id] = [
                     str(choice).strip() for choice in choices if str(choice).strip()
                 ]
+            selected_inputs = existing.get("selected_choice_inputs")
+            if feature_id and isinstance(selected_inputs, dict):
+                dc_ability = str(selected_inputs.get("superiority_dc_ability") or "").strip()
+                if dc_ability:
+                    selected_subclass_choices.setdefault(f"{feature_id}:dc_ability", [dc_ability])
         subclass_runtime = {
             "grants": [],
             "resources": {},
@@ -1739,7 +1757,24 @@ class AdvancementService:
                 warnings.append("DM 已覆盖：" + message)
             options = requirement.get("options")
             if isinstance(options, list):
-                invalid = sorted(set(selected) - {str(value) for value in options})
+                allowed = {str(value) for value in options}
+                invalid: list[str] = []
+                replacement_format = str(requirement.get("replacement_format") or "")
+                for value in selected:
+                    if value in allowed:
+                        continue
+                    if replacement_format and value.casefold().startswith("replace:"):
+                        canonical = _canonical_battle_master_maneuver(value)
+                        if canonical is None:
+                            invalid.append(value)
+                            continue
+                        old_key, new_key = canonical[8:].split("->", 1)
+                        if old_key not in allowed or new_key not in allowed:
+                            invalid.append(value)
+                            continue
+                        continue
+                    invalid.append(value)
+                invalid = sorted(set(invalid))
                 if invalid and not override:
                     raise ValueError(
                         f"子职特性{feature_id}包含不支持的选择：" + "、".join(invalid)
@@ -1748,6 +1783,48 @@ class AdvancementService:
                     warnings.append(
                         f"DM 已覆盖子职特性{feature_id}的不支持选择：" + "、".join(invalid)
                     )
+
+        # Battle Master replacements and additions form one persistent
+        # maneuver set across levels.  Validate the sequence, not merely the
+        # per-level list length, so a repeated maneuver or a replacement of an
+        # unlearned maneuver cannot silently enter the runtime snapshot.
+        known_by_group: dict[str, set[str]] = {}
+        for requirement in subclass_runtime["choice_requirements"]:
+            group = str(requirement.get("unique_group") or "").strip()
+            if not group:
+                continue
+            feature_id = str(requirement.get("feature_id") or "")
+            selected = selected_subclass_choices.get(feature_id, [])
+            known = known_by_group.setdefault(group, set())
+            invalid_message: str | None = None
+            for raw_choice in selected:
+                choice = _canonical_battle_master_maneuver(raw_choice)
+                if choice is None:
+                    invalid_message = f"子职特性{feature_id}包含无法规范化的战技选择：{raw_choice}"
+                    break
+                if choice.startswith("replace:"):
+                    old_key, new_key = choice[8:].split("->", 1)
+                    if old_key not in known:
+                        invalid_message = (
+                            f"子职特性{feature_id}不能替换未习得的战技：{old_key}"
+                        )
+                        break
+                    if new_key in known:
+                        invalid_message = (
+                            f"子职特性{feature_id}不能替换为已习得的战技：{new_key}"
+                        )
+                        break
+                    known.remove(old_key)
+                    known.add(new_key)
+                elif choice in known:
+                    invalid_message = f"战斗大师战技不能重复选择：{choice}"
+                    break
+                else:
+                    known.add(choice)
+            if invalid_message:
+                if not override:
+                    raise ValueError(invalid_message)
+                warnings.append("DM 已覆盖：" + invalid_message)
 
         subclass_skills = self._apply_subclass_proficiency_choices(
             list(subclass_runtime["grants"]),

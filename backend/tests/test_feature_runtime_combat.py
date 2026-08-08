@@ -9,6 +9,7 @@ from dnd_dm_assistant.api.schemas import (
     PlayerRollPromptCommand,
     PlayerRollResolutionCommand,
 )
+from dnd_dm_assistant.domain.advancement_choices import subclass_runtime_grants
 from dnd_dm_assistant.domain.feature_runtime import compile_feature_runtime_registry
 from dnd_dm_assistant.infrastructure.database.combat_service import CombatEngineService
 from dnd_dm_assistant.infrastructure.database.models import (
@@ -73,6 +74,75 @@ def _jack_of_all_trades_target(*, proficiency_bonus: int | None = 5) -> Combatan
         max_hp=20,
         snapshot_json=snapshot,
     )
+
+
+def test_battle_master_maneuver_uses_player_roll_consumer_and_dynamic_die() -> None:
+    feature_id = "battle-master:3:combat"
+    compiled = subclass_runtime_grants(
+        {
+            "name": "战斗大师",
+            "feature_definitions": [
+                {
+                    "id": feature_id,
+                    "name": "卓越战技 Combat",
+                    "class_level": 3,
+                    "description": "你习得三种战技并获得卓越骰。",
+                }
+            ],
+        },
+        class_name="战士",
+        target_class_level=3,
+        current_class_level=3,
+        selected_choices={feature_id: ["伏击", "领导风范", "战术预估"]},
+    )
+    resource = {**compiled["resources"]["superiority_dice"], "current": 4}
+    registry = compile_feature_runtime_registry(
+        compiled["grants"],
+        resources={"superiority_dice": resource},
+        class_levels={"战士": 3},
+        total_level=3,
+    )
+    target = Combatant(
+        id="battle-master-roll",
+        entity_type="character",
+        display_name="战斗大师",
+        hp=20,
+        max_hp=20,
+        snapshot_json={"feature_runtime": registry},
+    )
+    action = CombatAction(
+        id="battle-master-roll-action",
+        campaign_id="campaign",
+        combat_id="combat",
+        action_type="player_roll_prompt",
+        target_combatant_ids=[target.id],
+        request_json={
+            "resolution_type": "skill_check",
+            "skill": "隐匿",
+            "ability": "dexterity",
+            "dc": 15,
+            "action_name": "潜行",
+        },
+        result_json={},
+        round_number=1,
+        turn_index=0,
+        summary="等待战技检定",
+        idempotency_key="battle-master-roll-action",
+    )
+    preview = CombatEngineService._resolve_player_roll(
+        action,
+        target,
+        PlayerRollResolutionCommand(
+            action_version=1,
+            roll_total=10,
+            roll_intervention_id="battle_master:ambush",
+            roll_intervention_inputs={"superiority_die_roll": 8},
+        ),
+    )
+    assert preview["success"] is True
+    assert preview["roll_total"] == 18
+    assert preview["generic_roll_intervention"]["resource_should_consume"] is True
+    assert target.snapshot_json["feature_runtime"]["resources"]["superiority_dice"]["current"] == 4
 
 
 def test_concentration_damage_immunity_is_data_driven_by_effect_name() -> None:

@@ -453,6 +453,144 @@ def test_psionic_power_persists_typed_pool_contract_for_each_owner_class(
     ]
 
 
+def test_battle_master_superiority_dice_table_and_selected_roll_maneuvers() -> None:
+    subclass = {
+        "name": "战斗大师",
+        "feature_definitions": [
+            {
+                "id": "battle-master:3:combat",
+                "name": "卓越战技 Combat",
+                "class_level": 3,
+                "description": "你习得三种战技并获得四个d8卓越骰，短休或长休恢复。",
+            },
+            {
+                "id": "battle-master:10:improved",
+                "name": "精通战技 Improved Combat",
+                "class_level": 10,
+                "description": "你的卓越骰变为d10。",
+            },
+        ],
+    }
+    selected = {
+        "battle-master:3:combat": ["伏击", "领导风范", "战术预估"],
+    }
+    level_three = subclass_runtime_grants(
+        subclass,
+        class_name="战士",
+        target_class_level=3,
+        current_class_level=3,
+        selected_choices=selected,
+    )
+    resource = level_three["resources"]["superiority_dice"]
+    assert (resource["max"], resource["value"], resource["die_size"]) == (4, "d8", 8)
+    assert resource["recovery_events"] == [
+        {"rest": "short_rest", "operation": "set_to_max"},
+        {"rest": "long_rest", "operation": "set_to_max"},
+    ]
+    registry = level_three["grants"][0]["runtime"]["registry"]
+    assert registry["selected_maneuvers"] == [
+        "ambush",
+        "commanding_presence",
+        "tactical_assessment",
+    ]
+    assert set(registry["actions"]) == {
+        "ambush",
+        "commanding_presence",
+        "tactical_assessment",
+    }
+
+    level_ten = subclass_runtime_grants(
+        subclass,
+        class_name="战士",
+        target_class_level=10,
+        current_class_level=10,
+        selected_choices=selected,
+    )
+    improved = next(item for item in level_ten["grants"] if item["class_level"] == 10)
+    assert improved["runtime"]["automation_status"] == "full"
+    assert level_ten["resources"]["superiority_dice"]["value"] == "d10"
+    assert level_ten["resources"]["superiority_dice"]["max"] == 5
+
+
+def test_battle_master_maneuver_replacement_is_cumulative_and_fail_closed() -> None:
+    feature_id = "battle-master:3:combat"
+    subclass = {
+        "name": "战斗大师",
+        "feature_definitions": [
+            {
+                "id": feature_id,
+                "name": "卓越战技 Combat",
+                "class_level": 3,
+                "description": "你习得三种战技。",
+            }
+        ],
+    }
+    result = subclass_runtime_grants(
+        subclass,
+        class_name="战士",
+        target_class_level=3,
+        selected_choices={feature_id: ["伏击", "领导风范", "战术预估"]},
+    )
+    assert result["grants"][0]["selected_choices"] == [
+        "ambush",
+        "commanding_presence",
+        "tactical_assessment",
+    ]
+    bad = subclass_runtime_grants(
+        subclass,
+        class_name="战士",
+        target_class_level=3,
+        selected_choices={feature_id: ["伏击", "伏击", "战术预估"]},
+    )
+    # Domain compilation remains side-effect free; the advancement service is
+    # the authoritative request validator.  Its grouped validator is covered
+    # by the service-level tests and the registry still filters unknown IDs.
+    assert bad["grants"][0]["runtime"]["registry"]["selected_maneuvers"] == [
+        "ambush",
+        "tactical_assessment",
+    ]
+
+
+def test_exact_progression_resource_rebuild_clamps_downgrade_and_preserves_spend() -> None:
+    resources = {
+        "superiority_dice": {
+            "max": 6,
+            "current": 2,
+            "value": "d12",
+        }
+    }
+    rebuilt = AdvancementService._merge_progression_resources(
+        resources,
+        {
+            "superiority_dice": {
+                "max": 5,
+                "max_mode": "exact",
+                "value": "d10",
+                "die_size": 10,
+            }
+        },
+    )
+    assert rebuilt["superiority_dice"] == {
+        "max": 5,
+        "current": 2,
+        "value": "d10",
+        "max_mode": "exact",
+        "die_size": 10,
+    }
+    upgraded = AdvancementService._merge_progression_resources(
+        rebuilt,
+        {
+            "superiority_dice": {
+                "max": 6,
+                "max_mode": "exact",
+                "value": "d10",
+                "die_size": 10,
+            }
+        },
+    )
+    assert upgraded["superiority_dice"]["current"] == 3
+
+
 def test_war_gods_blessing_binds_wisdom_pool_and_attack_roll_reaction() -> None:
     result = subclass_runtime_grants(
         {

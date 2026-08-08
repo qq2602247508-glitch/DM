@@ -1013,6 +1013,49 @@ _SUBCLASS_ABILITY_NAMES = {
 }
 
 
+# Battle Master maneuvers are persisted as canonical IDs.  The display labels
+# are kept at the choice boundary; the roll/attack consumers only receive the
+# resulting typed action contracts.
+BATTLE_MASTER_MANEUVER_OPTIONS: dict[str, str] = {
+    "ambush": "伏击",
+    "bait_and_switch": "换位诈术",
+    "commander_strike": "指挥官奇袭",
+    "commanding_presence": "领导风范",
+    "disarming_attack": "缴械攻击",
+    "distracting_strike": "扰乱打击",
+    "evasive_footwork": "灵巧步法",
+    "feinting_attack": "诡诈攻击",
+    "goading_attack": "挑衅攻击",
+    "lunging_attack": "突刺攻击",
+    "maneuvering_attack": "灵动攻击",
+    "menacing_attack": "恐吓攻击",
+    "parry": "格挡",
+    "precision_attack": "精准攻击",
+    "pushing_attack": "推撞攻击",
+    "rally": "重整旗鼓",
+    "riposte": "反击",
+    "sweeping_attack": "横扫攻击",
+    "tactical_assessment": "战术预估",
+    "trip_attack": "摔绊攻击",
+}
+_BATTLE_MASTER_MANEUVER_ALIASES = {
+    **{key: key for key in BATTLE_MASTER_MANEUVER_OPTIONS},
+    **{label: key for key, label in BATTLE_MASTER_MANEUVER_OPTIONS.items()},
+}
+
+
+def _canonical_battle_master_maneuver(value: object) -> str | None:
+    normalized = str(value or "").strip().casefold()
+    if normalized.startswith("replace:") and "->" in normalized:
+        old, new = normalized[8:].split("->", 1)
+        old_key = _BATTLE_MASTER_MANEUVER_ALIASES.get(old.strip())
+        new_key = _BATTLE_MASTER_MANEUVER_ALIASES.get(new.strip())
+        if old_key and new_key:
+            return f"replace:{old_key}->{new_key}"
+        return None
+    return _BATTLE_MASTER_MANEUVER_ALIASES.get(normalized)
+
+
 # A small, explicit set of subclass configurations whose effect is already
 # represented by the shared combat defense consumer.  This table is an
 # adapter/configuration layer; the consumer only reads typed defense fields and
@@ -3795,6 +3838,202 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS["战斗激励"] = {
     "requires_dm_adjudication": False,
 }
 
+# Superiority dice are one shared resource across every Battle Master
+# feature.  The resource producer is bound to the exact class-level table by
+# ``_subclass_resource_update``; these three maneuvers then reuse the existing
+# player-roll intervention window instead of creating a second dice resolver.
+# The parent feature remains partial until every selected maneuver has its
+# complete consumer, but the connected roll maneuvers are fail-closed and
+# cannot expose an unlearned option.
+SUBCLASS_FEATURE_RUNTIME_CONFIGS["卓越战技"] = {
+    "combat_start": {"modifiers": [], "defenses": []},
+    "resources": {
+        "$feature_resource": {
+            "key": "$feature_resource",
+            "label": "卓越骰",
+            "max": 4,
+            "max_mode": "exact",
+            "value": "d8",
+            "die_size": 8,
+            "resource_kind": "superiority_dice",
+            "recovery": "both",
+            "recovery_events": [
+                {"rest": "short_rest", "operation": "set_to_max"},
+                {"rest": "long_rest", "operation": "set_to_max"},
+            ],
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+        }
+    },
+    "actions": {
+        "ambush": {
+            "id": "battle_master:ambush",
+            "kind": "roll_intervention",
+            "maneuver_id": "ambush",
+            "trigger": "after_d20_test",
+            "operation": {
+                "kind": "add_die",
+                "input_key": "superiority_die_roll",
+                "die_sides_expression": "superiority_die_sides",
+            },
+            "eligibility": {
+                "entity_types": ["character"],
+                "test_kinds": ["skill_check"],
+                "skills": ["隐匿", "stealth"],
+                "forbidden_conditions": ["incapacitated"],
+                "resource": {
+                    "key": "$feature_resource",
+                    "minimum": 1,
+                    "value_bind_as": "superiority_die_sides",
+                },
+            },
+            "input_requirements": [
+                {"key": "superiority_die_roll", "kind": "integer"}
+            ],
+            "window": {"phase": "after_d20_test", "expires": "operation"},
+            "action_cost": "none",
+            "resource": {"key": "$feature_resource", "cost": 1},
+            "runtime_execution": {
+                "status": "ready",
+                "consumer": "player_roll_resolution",
+                "persistence": "character_resource_and_operation_transaction",
+            },
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+        },
+        "commanding_presence": {
+            "id": "battle_master:commanding_presence",
+            "kind": "roll_intervention",
+            "maneuver_id": "commanding_presence",
+            "trigger": "after_d20_test",
+            "operation": {
+                "kind": "add_die",
+                "input_key": "superiority_die_roll",
+                "die_sides_expression": "superiority_die_sides",
+            },
+            "eligibility": {
+                "entity_types": ["character"],
+                "test_kinds": ["ability_check"],
+                "abilities": ["charisma"],
+                "skills": ["威吓", "表演", "游说", "intimidation", "performance", "persuasion"],
+                "resource": {
+                    "key": "$feature_resource",
+                    "minimum": 1,
+                    "value_bind_as": "superiority_die_sides",
+                },
+            },
+            "input_requirements": [
+                {"key": "superiority_die_roll", "kind": "integer"}
+            ],
+            "window": {"phase": "after_d20_test", "expires": "operation"},
+            "action_cost": "none",
+            "resource": {"key": "$feature_resource", "cost": 1},
+            "runtime_execution": {
+                "status": "ready",
+                "consumer": "player_roll_resolution",
+                "persistence": "character_resource_and_operation_transaction",
+            },
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+        },
+        "tactical_assessment": {
+            "id": "battle_master:tactical_assessment",
+            "kind": "roll_intervention",
+            "maneuver_id": "tactical_assessment",
+            "trigger": "after_d20_test",
+            "operation": {
+                "kind": "add_die",
+                "input_key": "superiority_die_roll",
+                "die_sides_expression": "superiority_die_sides",
+            },
+            "eligibility": {
+                "entity_types": ["character"],
+                "test_kinds": ["ability_check"],
+                "abilities": ["intelligence", "wisdom"],
+                "skills": ["调查", "历史", "洞悉", "investigation", "history", "insight"],
+                "resource": {
+                    "key": "$feature_resource",
+                    "minimum": 1,
+                    "value_bind_as": "superiority_die_sides",
+                },
+            },
+            "input_requirements": [
+                {"key": "superiority_die_roll", "kind": "integer"}
+            ],
+            "window": {"phase": "after_d20_test", "expires": "operation"},
+            "action_cost": "none",
+            "resource": {"key": "$feature_resource", "cost": 1},
+            "runtime_execution": {
+                "status": "ready",
+                "consumer": "player_roll_resolution",
+                "persistence": "character_resource_and_operation_transaction",
+            },
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+        },
+    },
+    "triggers": [],
+    "attack_riders": [],
+    "advancement": {
+        "kind": "battle_master_maneuver_selection",
+        "choice_requirement": {
+            "key": "battle_master_maneuvers",
+            "minimum": 3,
+            "maximum": 3,
+            "strict": True,
+            "options": [
+                *sorted(BATTLE_MASTER_MANEUVER_OPTIONS),
+                *sorted(BATTLE_MASTER_MANEUVER_OPTIONS.values()),
+            ],
+            "options_labels": BATTLE_MASTER_MANEUVER_OPTIONS,
+            "requires_dm_selection": False,
+            "unique_group": "battle_master_maneuvers",
+        },
+        "runtime_execution": {
+            "status": "ready",
+            "consumer": "advancement_service_and_roll_intervention_resolver",
+        },
+        "automation_status": "partial",
+        "requires_dm_adjudication": True,
+        "partial_reason": (
+            "仅三项检定战技接入；命中后、反应、位移、目标物品和状态分支"
+            "仍需完整消费者。"
+        ),
+    },
+    "automation_status": "partial",
+    "requires_dm_adjudication": True,
+}
+
+# Improved Combat changes only the die size of the already-persisted
+# superiority-dice resource.  It is therefore a complete typed progression
+# contract even while the parent maneuver catalogue remains partial.
+SUBCLASS_FEATURE_RUNTIME_CONFIGS["精通战技"] = {
+    "combat_start": {"modifiers": [], "defenses": []},
+    "resources": {
+        "$feature_resource": {
+            "key": "$feature_resource",
+            "label": "卓越骰",
+            "max": 5,
+            "max_mode": "exact",
+            "value": "d10",
+            "die_size": 10,
+            "resource_kind": "superiority_dice",
+            "recovery": "both",
+            "recovery_events": [
+                {"rest": "short_rest", "operation": "set_to_max"},
+                {"rest": "long_rest", "operation": "set_to_max"},
+            ],
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+        }
+    },
+    "actions": {},
+    "triggers": [],
+    "attack_riders": [],
+    "automation_status": "full",
+    "requires_dm_adjudication": False,
+}
+
 # Moonlight Step is a single bonus-action teleport contract. Its resource is
 # parsed from the source's Wisdom-modifier uses and bound to the generated
 # subclass resource key; a qualifying spell slot can reset one spent use.
@@ -4071,6 +4310,40 @@ def _subclass_resource_update(
 ) -> tuple[str, dict[str, Any]] | None:
     description = str(definition.get("description") or "")
     feature_name = str(definition.get("name") or "").strip()
+    subclass_name = str(definition.get("subclass_name") or "").strip()
+    if subclass_name == "战斗大师" and str(definition.get("class_name") or "") == "战士":
+        if feature_name.startswith(("卓越战技", "精通战技", "坚韧", "究极战技")):
+            level = int(current_class_level or definition.get("class_level") or 0)
+            if level >= 18:
+                die_size, maximum = 12, 6
+            elif level >= 15:
+                die_size, maximum = 10, 6
+            elif level >= 10:
+                die_size, maximum = 10, 5
+            elif level >= 7:
+                die_size, maximum = 8, 5
+            else:
+                die_size, maximum = 8, 4
+            return "superiority_dice", {
+                "label": "卓越骰",
+                "max": maximum,
+                "max_mode": "exact",
+                "max_formula": "battle_master_superiority_dice_table",
+                "value": f"d{die_size}",
+                "die_size": die_size,
+                "resource_kind": "superiority_dice",
+                "recovery": "both",
+                "recovery_events": [
+                    {"rest": "short_rest", "operation": "set_to_max"},
+                    {"rest": "long_rest", "operation": "set_to_max"},
+                ],
+                "source": (
+                    f"{definition.get('source_path') or definition.get('source_record_id')}"
+                    f" · {definition.get('class_level')}级{feature_name}"
+                ),
+                "requires_dm_adjudication": False,
+                "automation_status": "full",
+            }
     if feature_name == "信实坐骑":
         return "faithful_steed", {
             "label": "信实坐骑免费施法",
@@ -4343,9 +4616,45 @@ def subclass_runtime_grants(
     choices = selected_choices or {}
     for definition in definitions:
         definition["class_name"] = class_name
+        definition["subclass_name"] = str(subclass.get("name") or "")
         feature_id = str(definition.get("id") or definition.get("name") or "")
+        feature_name = str(definition.get("name") or "").strip()
         declared_requirement = definition.get("choice_requirement")
         selected = [str(item).strip() for item in choices.get(feature_id, []) if str(item).strip()]
+        is_battle_master = (
+            class_name == "战士" and definition["subclass_name"] == "战斗大师"
+        )
+        if is_battle_master:
+            canonical_selected = [_canonical_battle_master_maneuver(item) for item in selected]
+            if all(item is not None for item in canonical_selected):
+                selected = [str(item) for item in canonical_selected if item is not None]
+            definition_level = int(definition.get("class_level") or target_class_level)
+            maneuver_count = (
+                {3: 3, 7: 2, 10: 2, 15: 2}.get(definition_level)
+                if definition_level != 3 or feature_name.startswith("卓越战技")
+                else None
+            )
+            if maneuver_count is not None:
+                declared_requirement = {
+                    "key": "battle_master_maneuvers",
+                    "minimum": maneuver_count,
+                    "maximum": maneuver_count,
+                    "strict": True,
+                    "options": [
+                        *sorted(BATTLE_MASTER_MANEUVER_OPTIONS),
+                        *sorted(BATTLE_MASTER_MANEUVER_OPTIONS.values()),
+                    ],
+                    "options_labels": dict(BATTLE_MASTER_MANEUVER_OPTIONS),
+                    "requires_dm_selection": False,
+                    "unique_group": "battle_master_maneuvers",
+                    "replacement_format": "replace:<known_maneuver>-><new_maneuver>",
+                }
+        dc_feature_id = f"{feature_id}:dc_ability"
+        dc_selected = [
+            str(item).strip().casefold()
+            for item in choices.get(dc_feature_id, [])
+            if str(item).strip()
+        ]
         resource = _subclass_resource_update(
             definition,
             ability_scores=ability_scores,
@@ -4478,6 +4787,71 @@ def subclass_runtime_grants(
                                 and nested.get("key") == "$feature_resource"
                             ):
                                 nested["key"] = resource_key
+        if runtime_registry is not None and is_battle_master:
+            # Reconstruct the learned set in level order.  The registry is
+            # persisted on every grant, so a rebuilt character exposes only
+            # maneuvers actually learned/replaced by that point in the sheet.
+            learned: list[str] = []
+            ordered_definitions = sorted(
+                (
+                    item
+                    for item in subclass.get("feature_definitions", [])
+                    if isinstance(item, Mapping)
+                    and int(item.get("class_level") or 0) <= target_class_level
+                ),
+                key=lambda item: (int(item.get("class_level") or 0), str(item.get("id") or "")),
+            )
+            for prior in ordered_definitions:
+                prior_id = str(prior.get("id") or prior.get("name") or "")
+                prior_level = int(prior.get("class_level") or 0)
+                if prior_level not in {3, 7, 10, 15}:
+                    continue
+                for raw_choice in choices.get(prior_id, []):
+                    choice = _canonical_battle_master_maneuver(raw_choice)
+                    if choice is None:
+                        continue
+                    if choice.startswith("replace:"):
+                        old_key, new_key = choice[8:].split("->", 1)
+                        if old_key in learned:
+                            learned.remove(old_key)
+                        if new_key not in learned:
+                            learned.append(new_key)
+                    elif choice not in learned:
+                        learned.append(choice)
+            runtime_registry = deepcopy(runtime_registry)
+            runtime_registry["selected_maneuvers"] = list(learned)
+            if is_battle_master and feature_name.startswith("卓越战技"):
+                if dc_selected:
+                    runtime_registry["superiority_dc_ability"] = dc_selected[0]
+                runtime_registry["advancement"] = {
+                    **dict(runtime_registry.get("advancement") or {}),
+                    "dc_ability_choice_requirement": {
+                        "key": "battle_master_superiority_dc_ability",
+                        "minimum": 1,
+                        "maximum": 1,
+                        "strict": True,
+                        "options": ["strength", "dexterity"],
+                        "requires_dm_selection": False,
+                    },
+                }
+            raw_runtime_actions = runtime_registry.get("actions")
+            if isinstance(raw_runtime_actions, Mapping):
+                runtime_registry["actions"] = {
+                    str(key): value
+                    for key, value in raw_runtime_actions.items()
+                    if not isinstance(value, Mapping)
+                    or not value.get("maneuver_id")
+                    or str(value.get("maneuver_id")) in learned
+                }
+            raw_runtime_riders = runtime_registry.get("attack_riders")
+            if isinstance(raw_runtime_riders, list):
+                runtime_registry["attack_riders"] = [
+                    value
+                    for value in raw_runtime_riders
+                    if not isinstance(value, Mapping)
+                    or not value.get("maneuver_id")
+                    or str(value.get("maneuver_id")) in learned
+                ]
         spell_contract = _subclass_prepared_spell_contract(str(definition.get("description") or ""))
         if spell_contract is not None:
             runtime_registry = {
@@ -4527,6 +4901,18 @@ def subclass_runtime_grants(
             )
             if isinstance(requirement, Mapping):
                 requirements.append({"feature_id": feature_id, **dict(requirement)})
+            if is_battle_master and feature_name.startswith("卓越战技"):
+                requirements.append(
+                    {
+                        "feature_id": dc_feature_id,
+                        "key": "battle_master_superiority_dc_ability",
+                        "minimum": 1,
+                        "maximum": 1,
+                        "strict": True,
+                        "options": ["strength", "dexterity"],
+                        "requires_dm_selection": False,
+                    }
+                )
             runtime_contract = feature_runtime_contract(
                 feature_name=str(definition.get("name") or ""),
                 class_name=class_name,
@@ -4568,6 +4954,11 @@ def subclass_runtime_grants(
                 "content_pack_key": definition.get("content_pack_key"),
                 "description": definition.get("description"),
                 "selected_choices": selected,
+                "selected_choice_inputs": (
+                    {"superiority_dc_ability": dc_selected[0]}
+                    if dc_selected and is_battle_master and feature_name.startswith("卓越战技")
+                    else {}
+                ),
                 "runtime": {
                     "automation_status": runtime_status,
                     "tracked_resource_keys": [resource_key] if resource_key else [],

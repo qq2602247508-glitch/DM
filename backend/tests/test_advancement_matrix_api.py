@@ -217,6 +217,76 @@ def test_batch_advancement_persists_each_step_and_runtime_sheet_state(
     ) >= 2
 
 
+def test_battle_master_level_three_persists_superiority_pool_and_maneuver_choices(
+    matrix_client: TestClient,
+    matrix_campaign: dict[str, Any],
+) -> None:
+    fighter = _create_character(
+        matrix_client,
+        matrix_campaign["id"],
+        class_name="战士",
+        level=2,
+        experience=900,
+        suffix="战斗大师卓越骰",
+    )
+    path = _preview_path(matrix_campaign["id"], fighter["id"])
+    request = {
+        "character_version": fighter["version"],
+        "class_name": "战士",
+        "subclass_name": "战斗大师",
+        "subclass_feature_choices": {
+            "4955e27f4cfda13483c0d1fd:3:1": ["伏击", "领导风范", "战术预估"],
+            "4955e27f4cfda13483c0d1fd:3:2": ["skill:洞悉", "tool:铁匠工具"],
+            "4955e27f4cfda13483c0d1fd:3:1:dc_ability": ["strength"],
+        },
+    }
+    preview = matrix_client.post(path, json=request)
+    assert preview.status_code == 200, preview.text
+    bad_request = {
+        **request,
+        "subclass_feature_choices": {
+            **request["subclass_feature_choices"],
+            "4955e27f4cfda13483c0d1fd:3:1": ["伏击", "伏击", "战术预估"],
+        },
+    }
+    rejected = matrix_client.post(path, json=bad_request)
+    assert rejected.status_code == 400
+    assert "不能重复选择" in rejected.text
+    after = preview.json()["after"]
+    pool = after["resources"]["superiority_dice"]
+    assert (pool["max"], pool["current"], pool["value"], pool["die_size"]) == (
+        4,
+        4,
+        "d8",
+        8,
+    )
+    battle_master_grant = next(
+        item
+        for item in after["features"]
+        if item.get("feature_id") == "4955e27f4cfda13483c0d1fd:3:1"
+    )
+    registry = battle_master_grant["runtime"]["registry"]
+    assert registry["selected_maneuvers"] == [
+        "ambush",
+        "commanding_presence",
+        "tactical_assessment",
+    ]
+    confirm = matrix_client.post(
+        path.replace("/advancement/preview", "/advancement/confirm"),
+        json={
+            **request,
+            "preview_token": preview.json()["preview_token"],
+            "idempotency_key": "battle-master-superiority-dice-0001",
+        },
+    )
+    assert confirm.status_code == 200, confirm.text
+    persisted = matrix_client.get(
+        f"/api/v1/campaigns/{matrix_campaign['id']}/characters/{fighter['id']}"
+    ).json()
+    assert persisted["resources"]["superiority_dice"]["value"] == "d8"
+    assert persisted["resources"]["superiority_dice"]["current"] == 4
+
+
 def test_asi_is_an_atomic_sheet_grant_and_preview_exposes_runtime_registry(
     matrix_client: TestClient,
     matrix_campaign: dict[str, Any],

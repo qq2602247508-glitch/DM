@@ -469,6 +469,7 @@ def _resource_entry(key: str, value: Mapping[str, Any]) -> dict[str, Any]:
         "value_kind",
         "die_size",
         "resource_kind",
+        "max_mode",
         "automation_status",
     }
     entry = {"key": key, **{name: deepcopy(value[name]) for name in allowed if name in value}}

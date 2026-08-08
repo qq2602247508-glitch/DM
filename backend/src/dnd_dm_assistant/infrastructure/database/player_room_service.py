@@ -1333,6 +1333,15 @@ class PlayerRoomService:
         )
         raw_eligibility = special_inputs.get("attack_rider_eligibility")
         eligibility = raw_eligibility if isinstance(raw_eligibility, dict) else {}
+        selected_maneuvers = (
+            registry.get("selected_maneuvers") if isinstance(registry, dict) else None
+        )
+        requested_maneuver = str(special_inputs.get("maneuver_id") or "").strip()
+        if requested_maneuver and isinstance(selected_maneuvers, list):
+            if requested_maneuver not in {
+                str(value).strip() for value in selected_maneuvers if str(value).strip()
+            }:
+                raise ValueError("所选战技未被角色学习")
         result: list[dict[str, Any]] = []
         for raw in riders:
             if not isinstance(raw, dict):
@@ -1340,6 +1349,14 @@ class PlayerRoomService:
             rider_id = str(raw.get("id") or "").strip()
             if not rider_id or rider_id in used_this_turn:
                 continue
+            maneuver_id = str(raw.get("maneuver_id") or "").strip()
+            if maneuver_id:
+                if not isinstance(selected_maneuvers, list) or maneuver_id not in {
+                    str(value).strip() for value in selected_maneuvers if str(value).strip()
+                }:
+                    continue
+                if requested_maneuver != maneuver_id:
+                    continue
             if raw.get("kind") == "post_hit_rider":
                 raw_inputs_by_rider = special_inputs.get("post_hit_rider_inputs")
                 inputs_by_rider = (
@@ -1419,7 +1436,11 @@ class PlayerRoomService:
                     registry.get("resources") if isinstance(registry, dict) else None
                 )
                 if isinstance(runtime_resources, dict):
-                    for key in ("martial_arts_die", "bardic_inspiration_die"):
+                    for key in (
+                        "martial_arts_die",
+                        "bardic_inspiration_die",
+                        "superiority_dice",
+                    ):
                         raw_die = runtime_resources.get(key)
                         if isinstance(raw_die, dict):
                             die_value = raw_die.get("value") or raw_die.get("label")
@@ -1427,6 +1448,10 @@ class PlayerRoomService:
                                 r"d\d+", die_value.strip(), re.IGNORECASE
                             ):
                                 bindings[key] = die_value.strip()
+                if isinstance(registry, dict):
+                    selected_dc_ability = registry.get("superiority_dc_ability")
+                    if isinstance(selected_dc_ability, str) and selected_dc_ability.strip():
+                        bindings["superiority_dc_ability"] = selected_dc_ability.strip()
                 ability_scores = (actor.snapshot_json or {}).get("ability_scores")
                 if isinstance(ability_scores, dict):
                     for ability, binding_key in (
@@ -1451,6 +1476,11 @@ class PlayerRoomService:
                 if isinstance(raw_save, dict) and raw_save.get("dc_source"):
                     dc_source = str(raw_save.get("dc_source") or "").strip()
                     dc_ability = str(raw_save.get("dc_ability") or "").strip()
+                    dc_ability_source = str(raw_save.get("dc_ability_source") or "").strip()
+                    if dc_ability_source:
+                        selected_dc_ability = bindings.get(dc_ability_source)
+                        if isinstance(selected_dc_ability, str):
+                            dc_ability = selected_dc_ability.strip()
                     ability_scores = (actor.snapshot_json or {}).get("ability_scores")
                     proficiency_bonus = (
                         runtime_progression.get("proficiency_bonus")
