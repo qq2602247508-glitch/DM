@@ -1379,15 +1379,24 @@ class AdvancementService:
                         current_class_level=target_class_level,
                     )["grants"]
                 )
-        automatic_subclass_spells.extend(
-            _selected_subclass_spell_additions(
-                selected_subclass_grants,
-                selected_choices=selected_subclass_spell_choices,
-                spell_catalog=spell_catalog,
-                owner_class=class_name,
-                owner_level=target_class_level,
+        try:
+            automatic_subclass_spells.extend(
+                _selected_subclass_spell_additions(
+                    selected_subclass_grants,
+                    selected_choices=selected_subclass_spell_choices,
+                    spell_catalog=spell_catalog,
+                    owner_class=class_name,
+                    owner_level=target_class_level,
+                )
             )
-        )
+        except ValueError as exc:
+            # A matrix/DM override may intentionally omit a newly structured
+            # subclass choice while testing a different advancement boundary.
+            # Normal requests remain strict; an explicit override preserves
+            # the former permissive path without inventing any spell rows.
+            if not override:
+                raise
+            warnings.append(f"DM 已覆盖受控子职法术选择：{exc}")
         automatic_subclass_spells.extend(
             _fixed_subclass_feature_spell_additions(
                 selected_subclass_grants,
