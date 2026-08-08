@@ -9,6 +9,15 @@
 - 领域 `roll_intervention` 新增 `cancel_advantage_disadvantage` 操作与 `roll_modes` eligibility；当前只有纯解析器测试，未计为新的 full，直到接入真实生产特性。
 - 验证：`backend/.venv/bin/pytest -q backend/tests` 通过；`ruff check backend/src backend/tests`、`python -m compileall -q backend/src`、`git diff --check` 通过。保留未跟踪 `backend/tests/integrations/` 与 `backend/tests/ollama.py`，未暂存。
 
+# 2026-08-08 长执行检查点：狂怒首击附伤
+
+- 代码提交：`cb05706 feat: automate frenzy first-hit damage rider`；文档/交接需单独提交。
+- 审计固定总数 499，当前 `full 227 / partial 195 / dm_only 77`。从本长执行起点 `201/221/77` 算，上一批已净增 25；下一批新增“狂怒”1 条，不能把它称为 +25 批次。
+- “狂怒”完整接入既有攻击后骑手消费者：仅在 `raging + reckless_attack + strength weapon/unarmed attack` 时可用，每回合首个符合条件命中触发；骰数从权威 `rage:bonus_damage` 成长值绑定为 d6 数量，玩家提交附伤总值，伤害类型沿用基础武器伤害，重复回合使用由现有幂等集合阻止。
+- 运行时配置不识别狂战士特性名；执行器只识别 `dice_count_source=rage_damage`、条件谓词和 rider 字段。配置、运行时合同和 direct rider tests 已通过。
+- 下一批仍在审计的候选：战斗激励（AC 反应 + 命中附伤双分支）、暗杀（先攻/首轮优势/偷袭附伤）、自然守御（地形选择+中毒免疫+抗性）、预兆/高等预兆（长休生成并消费 d20 池）、暗影步（光照证明+传送+下一次近战优势）、迅捷灵光（动态范围/首次进入触发）。任一缺分支、资源、目标或权威输入都保持 partial。
+- 全量 `backend/.venv/bin/pytest -q backend/tests`、Ruff、compileall、`git diff --check` 已通过。未跟踪 `backend/tests/integrations/` 与 `backend/tests/ollama.py` 保留且未暂存。
+
 # 2026-08-08 长执行：多积木攻击后触发与子职业额外攻击
 
 - 当前工作树切片已完成，尚未提交；代码与交接文档仍需分开提交。

@@ -2,13 +2,13 @@
 
 ## 2026-08-08 检查点
 
-当前审计为 `full 226 / partial 196 / dm_only 77`。从本长执行起点 `201/221/77` 计算，已完成真实净增 25；下一批仍以完整消费者、持久化状态/资源/动作、输入链、幂等和测试为门槛。领域 helper、配置覆盖数和单一分支不计入 full。
+当前审计为 `full 227 / partial 195 / dm_only 77`。从本长执行起点 `201/221/77` 计算，已完成上一批真实净增 25；下一批目前只新增“狂怒”1 条，仍需继续寻找完整同构簇。领域 helper、配置覆盖数和单一分支不计入 full。
 
 这份报告只规划迁移，不修改运行时状态，也不把候选行直接升级为 `full`。
 
 - 总条目：499
-- 当前状态：`{'full': 226, 'dm_only': 77, 'partial': 196}`
-- 预审状态：`{'already_full': 226, 'missing_source': 35, 'missing_runtime_contract': 186, 'consumer_partial': 35, 'manual_boundary': 10, 'needs_contract_review': 7}`
+- 当前状态：`{'full': 227, 'dm_only': 77, 'partial': 195}`
+- 预审状态：`{'already_full': 227, 'missing_source': 35, 'missing_runtime_contract': 185, 'consumer_partial': 35, 'manual_boundary': 10, 'needs_contract_review': 7}`
 
 ## 模板分组
 
@@ -21,7 +21,7 @@
 | 成长授予/升级选择 (`progression_grant`) | 67 | 54 | 12 | 0 | 0 | 1 | 0 |
 | 资源/恢复/频率 (`resource_lifecycle`) | 64 | 32 | 24 | 2 | 0 | 6 | 0 |
 | 光环/范围被动 (`aura_passive`) | 48 | 5 | 42 | 1 | 0 | 0 | 0 |
-| 伤害/治疗 (`damage_healing`) | 48 | 18 | 28 | 2 | 0 | 0 | 0 |
+| 伤害/治疗 (`damage_healing`) | 48 | 19 | 27 | 2 | 0 | 0 | 0 |
 | 施法框架/法术修改 (`spell_capability`) | 7 | 3 | 0 | 0 | 4 | 0 | 0 |
 | 命中后骑手 (`attack_rider`) | 13 | 3 | 0 | 0 | 10 | 0 | 0 |
 | 0 HP/死亡生命周期 (`zero_hp_intervention`) | 8 | 3 | 5 | 0 | 0 | 0 | 0 |
