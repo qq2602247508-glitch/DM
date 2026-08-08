@@ -1,30 +1,34 @@
 # 特性自动化迁移预审报告
 
+## 2026-08-08 检查点
+
+当前审计为 `full 226 / partial 196 / dm_only 77`。从本长执行起点 `201/221/77` 计算，已完成真实净增 25；下一批仍以完整消费者、持久化状态/资源/动作、输入链、幂等和测试为门槛。领域 helper、配置覆盖数和单一分支不计入 full。
+
 这份报告只规划迁移，不修改运行时状态，也不把候选行直接升级为 `full`。
 
 - 总条目：499
-- 当前状态：`{'partial': 223, 'full': 199, 'dm_only': 77}`
-- 预审状态：`{'consumer_partial': 47, 'already_full': 199, 'missing_source': 35, 'missing_runtime_contract': 198, 'manual_boundary': 10, 'needs_contract_review': 10}`
+- 当前状态：`{'full': 226, 'dm_only': 77, 'partial': 196}`
+- 预审状态：`{'already_full': 226, 'missing_source': 35, 'missing_runtime_contract': 186, 'consumer_partial': 35, 'manual_boundary': 10, 'needs_contract_review': 7}`
 
 ## 模板分组
 
 | 模板 | 条目 | 已 full | 缺运行时合同 | 待合同复核 | 消费者不完整 | 人工边界 | 缺源码 |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| 掷骰干预 (`roll_intervention`) | 46 | 17 | 0 | 0 | 29 | 0 | 0 |
-| 状态生命周期 (`state_lifecycle`) | 34 | 16 | 17 | 1 | 0 | 0 | 0 |
-| 动作经济与触发条件 (`action_trigger`) | 34 | 21 | 12 | 0 | 0 | 1 | 0 |
-| 通用被动/数值修正 (`passive_modifier`) | 79 | 28 | 15 | 0 | 0 | 1 | 35 |
+| 掷骰干预 (`roll_intervention`) | 46 | 25 | 0 | 0 | 21 | 0 | 0 |
+| 状态生命周期 (`state_lifecycle`) | 34 | 17 | 16 | 1 | 0 | 0 | 0 |
+| 动作经济与触发条件 (`action_trigger`) | 34 | 22 | 11 | 0 | 0 | 1 | 0 |
+| 通用被动/数值修正 (`passive_modifier`) | 79 | 29 | 14 | 0 | 0 | 1 | 35 |
 | 成长授予/升级选择 (`progression_grant`) | 67 | 54 | 12 | 0 | 0 | 1 | 0 |
-| 资源/恢复/频率 (`resource_lifecycle`) | 64 | 27 | 26 | 5 | 0 | 6 | 0 |
-| 光环/范围被动 (`aura_passive`) | 48 | 4 | 43 | 1 | 0 | 0 | 0 |
-| 伤害/治疗 (`damage_healing`) | 48 | 14 | 32 | 2 | 0 | 0 | 0 |
-| 施法框架/法术修改 (`spell_capability`) | 7 | 1 | 0 | 0 | 6 | 0 | 0 |
-| 命中后骑手 (`attack_rider`) | 13 | 1 | 0 | 0 | 12 | 0 | 0 |
-| 0 HP/死亡生命周期 (`zero_hp_intervention`) | 8 | 2 | 6 | 0 | 0 | 0 | 0 |
+| 资源/恢复/频率 (`resource_lifecycle`) | 64 | 32 | 24 | 2 | 0 | 6 | 0 |
+| 光环/范围被动 (`aura_passive`) | 48 | 5 | 42 | 1 | 0 | 0 | 0 |
+| 伤害/治疗 (`damage_healing`) | 48 | 18 | 28 | 2 | 0 | 0 | 0 |
+| 施法框架/法术修改 (`spell_capability`) | 7 | 3 | 0 | 0 | 4 | 0 | 0 |
+| 命中后骑手 (`attack_rider`) | 13 | 3 | 0 | 0 | 10 | 0 | 0 |
+| 0 HP/死亡生命周期 (`zero_hp_intervention`) | 8 | 3 | 5 | 0 | 0 | 0 | 0 |
 | 目标/范围/豁免组合 (`target_save_status`) | 10 | 3 | 6 | 0 | 0 | 1 | 0 |
 | 召唤/伙伴 (`summon_lifecycle`) | 13 | 7 | 6 | 0 | 0 | 0 | 0 |
 | 伤害前/防御干预 (`pre_damage_intervention`) | 13 | 2 | 10 | 1 | 0 | 0 | 0 |
-| 移动/位移 (`movement`) | 15 | 2 | 13 | 0 | 0 | 0 | 0 |
+| 移动/位移 (`movement`) | 15 | 3 | 12 | 0 | 0 | 0 | 0 |
 
 ## 预审结论
 

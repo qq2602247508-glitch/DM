@@ -1,3 +1,14 @@
+# 2026-08-08 长执行检查点：自然恢复、百折不挠与妖冶娴都
+
+- 代码检查点提交：`967d3c7 feat: close rest survivor and glamour feature contracts`；文档与交接更新需单独提交。
+- 固定审计总数 499；当前真实状态 `full 226 / partial 196 / dm_only 77`。本长执行起点是 `201/221/77`，真实净增 `full +25`，已越过 `full 223` 目标但按用户要求继续推进。
+- 新增 `自然恢复`：短休选择 1–5 环法术位，总环阶不超过德鲁伊等级一半向上取整；消耗 feature resource、恢复具体 slot、长休恢复使用次数，选择通过 `feature_recovery_choices` 持久化并校验。
+- 新增 `百折不挠`：死亡豁免优势、天然 18–20 视为成功、血量不高于一半时每回合开始恢复 5+体质调整值；死亡豁免接受双 d20 输入，回合触发使用版本/轮次幂等状态。
+- 新增 `妖冶娴都`：魅力属性检定加入感知调整值，且必须选择一项技能熟练；前者进入 `_resolve_player_roll`，后者进入 advancement service 的技能状态写入和真实技能消费者。显式 DM override 可跳过缺失选择，但普通请求严格拒绝。
+- 还修复了 Survivor 的 `DeathSaveCommand.rolls` 输入、休息恢复服务的自然恢复分支以及技能选择的 DM override 兼容路径。
+- 领域 `roll_intervention` 新增 `cancel_advantage_disadvantage` 操作与 `roll_modes` eligibility；当前只有纯解析器测试，未计为新的 full，直到接入真实生产特性。
+- 验证：`backend/.venv/bin/pytest -q backend/tests` 通过；`ruff check backend/src backend/tests`、`python -m compileall -q backend/src`、`git diff --check` 通过。保留未跟踪 `backend/tests/integrations/` 与 `backend/tests/ollama.py`，未暂存。
+
 # 2026-08-08 长执行：多积木攻击后触发与子职业额外攻击
 
 - 当前工作树切片已完成，尚未提交；代码与交接文档仍需分开提交。
