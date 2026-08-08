@@ -92,6 +92,113 @@ def _relentless_rage_intervention() -> dict[str, Any]:
     }
 
 
+def test_guarded_mind_turn_start_clears_selected_condition_and_replays_idempotently(
+    combat_client: TestClient,
+) -> None:
+    campaign, combat, actor = _setup(combat_client)
+    character_response = combat_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/characters",
+        json={
+            "name": "意念守护测试者",
+            "class_name": "战士",
+            "resources": {
+                "psionic_dice:战士": {
+                    "label": "战士灵能骰",
+                    "current": 8,
+                    "max": 8,
+                    "die_size": 8,
+                    "resource_kind": "psionic_dice",
+                }
+            },
+        },
+    )
+    assert character_response.status_code == 201, character_response.text
+    character = character_response.json()
+    registry = {
+        "combat_start": {
+            "defenses": [
+                {
+                    "id": "guarded_mind:psychic_resistance",
+                    "kind": "damage_resistance",
+                    "damage_types": ["psychic"],
+                    "applies_when": "always",
+                }
+            ]
+        },
+        "actions": {
+            "guarded_mind_clear": {
+                "id": "guarded_mind_clear",
+                "name": "意念守护（清除控制）",
+                "kind": "feature_action",
+                "action_cost": "none",
+                "activation_window": "turn_start",
+                "resource_key": "psionic_dice:战士",
+                "resource_cost": 1,
+                "target": "self",
+                "resolution_kind": "condition_removal",
+                "condition_removal_options": ["charmed", "frightened"],
+                "effects": [{"kind": "condition_removal"}],
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "combat_feature_action",
+                    "effect_kinds": ["condition_removal"],
+                },
+            }
+        },
+    }
+    patched = combat_client.patch(
+        _combatant_path(campaign, combat, actor["id"]),
+        headers={"If-Match": f'"{actor["version"]}"'},
+        json={
+            "entity_type": "character",
+            "entity_id": character["id"],
+            "conditions": ["charmed", "frightened"],
+            "snapshot_json": {
+                "feature_runtime": registry,
+                "conditional_damage_defenses": registry["combat_start"]["defenses"],
+            },
+        },
+    )
+    assert patched.status_code == 200, patched.text
+    actor = patched.json()
+    feature_path = f"{_root(campaign, combat)}/feature-actions/confirm"
+    request_id = "guarded-mind-clear-charmed"
+    resolved = combat_client.post(
+        feature_path,
+        headers={"X-Request-ID": request_id},
+        json={
+            "actor_combatant_id": actor["id"],
+            "actor_version": actor["version"],
+            "feature_id": "guarded_mind_clear",
+            "condition_to_remove": "charmed",
+            "target_combatant_id": actor["id"],
+            "target_version": actor["version"],
+        },
+    )
+    assert resolved.status_code == 200, resolved.text
+    body = resolved.json()
+    assert body["actor"]["conditions"] == ["frightened"]
+    assert body["result"]["resource_key"] == "psionic_dice:战士"
+    assert body["result"]["resource_before"] == 8
+    assert body["result"]["resource_after"] == 7
+    replay = combat_client.post(
+        feature_path,
+        headers={"X-Request-ID": request_id},
+        json={
+            "actor_combatant_id": actor["id"],
+            "actor_version": actor["version"],
+            "feature_id": "guarded_mind_clear",
+            "condition_to_remove": "charmed",
+            "target_combatant_id": actor["id"],
+            "target_version": actor["version"],
+        },
+    )
+    assert replay.status_code == 200, replay.text
+    assert replay.json()["already_applied"] is True
+    assert replay.json()["actor"]["conditions"] == ["frightened"]
+    assert replay.json()["actor"]["version"] == body["actor"]["version"]
+
+
 def _lay_on_hands_fixture(
     client: TestClient,
     *,

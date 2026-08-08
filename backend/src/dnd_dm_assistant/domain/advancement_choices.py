@@ -3204,6 +3204,57 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS: dict[str, dict[str, Any]] = {
         "automation_status": "full",
         "requires_dm_adjudication": False,
     },
+    # Guarded Mind combines a permanent psychic resistance with an optional
+    # turn-start cleanup. The action consumes the same subclass psionic-die
+    # pool produced by Psionic Power and takes the selected condition from
+    # the player's structured feature-action input.
+    "意念守护": {
+        "combat_start": {
+            "modifiers": [],
+            "defenses": [
+                {
+                    "id": "guarded_mind:psychic_resistance",
+                    "kind": "damage_resistance",
+                    "damage_types": ["psychic"],
+                    "applies_when": "always",
+                    "runtime_execution": {
+                        "status": "ready",
+                        "consumer": "damage_defense_resolver",
+                    },
+                    "automation_status": "full",
+                    "requires_dm_adjudication": False,
+                }
+            ],
+        },
+        "resources": {},
+        "actions": {
+            "guarded_mind_clear": {
+                "id": "guarded_mind_clear",
+                "name": "意念守护（清除控制）",
+                "kind": "feature_action",
+                "action_cost": "none",
+                "activation_window": "turn_start",
+                "resource_key": "$feature_resource",
+                "resource_cost": 1,
+                "target": "self",
+                "resolution_kind": "condition_removal",
+                "condition_removal_options": ["charmed", "frightened"],
+                "effects": [{"kind": "condition_removal"}],
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "combat_feature_action",
+                    "effect_kinds": ["condition_removal"],
+                    "input": "player_selected_condition",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        },
+        "triggers": [],
+        "attack_riders": [],
+        "automation_status": "full",
+        "requires_dm_adjudication": False,
+    },
     "思维之盾": {
         "combat_start": {
             "modifiers": [],
@@ -3751,6 +3802,46 @@ def _subclass_resource_update(
         description,
         re.IGNORECASE,
     )
+    # Psi Warrior and Soulknife share the official six-step psionic-die
+    # table. Bind all features in one owning class to one stable pool so a
+    # later feature consumes the resource produced by the level-3 feature.
+    if "灵能骰" in description and str(definition.get("class_name") or "") in {
+        "战士",
+        "游荡者",
+    }:
+        level = int(current_class_level or definition.get("class_level") or 0)
+        if level >= 17:
+            die_size, maximum = 12, 12
+        elif level >= 13:
+            die_size, maximum = 10, 10
+        elif level >= 11:
+            die_size, maximum = 10, 8
+        elif level >= 9:
+            die_size, maximum = 8, 8
+        elif level >= 5:
+            die_size, maximum = 8, 6
+        else:
+            die_size, maximum = 6, 4
+        class_name = str(definition["class_name"])
+        key = f"psionic_dice:{class_name}"
+        return key, {
+            "label": f"{class_name}灵能骰",
+            "max": maximum,
+            "max_formula": "psionic_energy_dice_table",
+            "die_size": die_size,
+            "resource_kind": "psionic_dice",
+            "recovery": "both",
+            "recovery_events": [
+                {"rest": "short_rest", "operation": "restore", "amount": 1},
+                {"rest": "long_rest", "operation": "set_to_max"},
+            ],
+            "source": (
+                f"{definition.get('source_path') or definition.get('source_record_id')}"
+                f" · {definition.get('class_level')}级灵能力量"
+            ),
+            "requires_dm_adjudication": False,
+            "automation_status": "full",
+        }
     if healing_pool or scaling_healing_pool:
         source_id = str(definition.get("source_record_id") or definition.get("id") or "")
         fingerprint = re.sub(r"[^a-z0-9]+", "", source_id.casefold())[-18:]

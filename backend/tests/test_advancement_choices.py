@@ -7,6 +7,7 @@ import pytest
 from dnd_dm_assistant.domain.advancement import ClassLevel, ClassProgression
 from dnd_dm_assistant.domain.advancement_choices import (
     CORE_CLASSES_2024,
+    _subclass_resource_update,
     advancement_choice_requirements,
     core_feature_grants,
     maximum_class_spell_level,
@@ -361,6 +362,57 @@ def test_full_of_stars_uses_starry_form_condition_contract() -> None:
     defense = grant["runtime"]["registry"]["combat_start"]["defenses"][0]
     assert defense["required_conditions"] == ["starry_form"]
     assert defense["damage_types"] == ["bludgeoning", "piercing", "slashing"]
+
+
+def test_guarded_mind_binds_psionic_dice_and_turn_start_condition_action() -> None:
+    parent = {
+        "name": "灵能力量 Psionic Power",
+        "class_name": "战士",
+        "class_level": 3,
+        "description": "你拥有灵能骰，骰池在短休恢复一个，长休恢复全部。",
+        "source_record_id": "psi-power",
+    }
+    child = {
+        "id": "guarded-mind",
+        "name": "意念守护 Guarded Mind",
+        "class_level": 10,
+        "description": (
+            "你获得心灵伤害抗性。如果你在回合开始时处于魅惑或恐慌，"
+            "可消耗一个灵能骰结束状态。"
+        ),
+        "source_record_id": "guarded-mind",
+    }
+    parent_key, parent_resource = _subclass_resource_update(
+        parent,
+        ability_scores=None,
+        current_class_level=10,
+    ) or (None, None)
+    child["class_name"] = "战士"
+    child_key, child_resource = _subclass_resource_update(
+        child,
+        ability_scores=None,
+        current_class_level=10,
+    ) or (None, None)
+    assert parent_key == child_key == "psionic_dice:战士"
+    assert parent_resource is not None and child_resource is not None
+    assert parent_resource["max"] == child_resource["max"] == 8
+    assert parent_resource["die_size"] == child_resource["die_size"] == 8
+
+    result = subclass_runtime_grants(
+        {
+            "name": "灵能武士",
+            "feature_definitions": [child],
+        },
+        class_name="战士",
+        target_class_level=10,
+        current_class_level=10,
+    )
+    grant = result["grants"][0]
+    assert grant["runtime"]["automation_status"] == "full"
+    action = grant["runtime"]["registry"]["actions"]["guarded_mind_clear"]
+    assert action["resource_key"] == "psionic_dice:战士"
+    assert action["activation_window"] == "turn_start"
+    assert action["condition_removal_options"] == ["charmed", "frightened"]
 
 
 def test_subclass_aura_immunity_uses_ranged_passive_consumer() -> None:

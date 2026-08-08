@@ -13343,10 +13343,26 @@ class CombatEngineService:
                 if not self._has_condition(actor, condition_to_remove):
                     raise ValueError("目标当前没有要移除的返本还元状态")
             elif condition_to_remove is not None:
-                raise ValueError("condition_to_remove 只适用于返本还元")
+                allowed_conditions = {
+                    str(value).strip()
+                    for value in action.get("condition_removal_options") or ()
+                    if str(value).strip()
+                }
+                if not allowed_conditions or condition_to_remove not in allowed_conditions:
+                    raise ValueError("该职业特性未声明此可移除状态")
+                if not self._has_condition(actor, condition_to_remove):
+                    raise ValueError("目标当前没有要移除的指定状态")
             condition_to_cure = command.condition_to_cure
             if action.get("activation_window") == "after_failed_saving_throw":
                 raise ValueError("该职业特性只能在失败豁免后通过重掷窗口使用")
+            if action.get("activation_window") == "turn_start":
+                if (
+                    actor.movement_remaining_ft != actor.speed_ft
+                    or not actor.action_available
+                    or not actor.bonus_action_available
+                    or not actor.reaction_available
+                ):
+                    raise ValueError("该职业特性只能在本回合开始时使用")
             if command.feature_id == "action_surge":
                 turn_key = f"{combat.round_number}:{combat.current_turn_index}"
                 if (actor.snapshot_json or {}).get("action_surge_turn_key") == turn_key:
@@ -13906,7 +13922,7 @@ class CombatEngineService:
                     self._end_runtime_effect(
                         session,
                         effect,
-                        reason="condition_removed_by_self_restoration",
+                        reason="condition_removed_by_feature_action",
                         now=datetime.now(UTC),
                     )
                     ended_effect_ids.append(effect.id)

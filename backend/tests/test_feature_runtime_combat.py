@@ -254,6 +254,39 @@ def test_typed_damage_resistance_requires_every_declared_condition() -> None:
     assert active[3] == ["test:conditional_resistance:resistance:slashing"]
 
 
+def test_guarded_mind_psychic_resistance_is_consumed_by_damage_defense_resolver() -> None:
+    target = Combatant(
+        id="guarded-mind-defense",
+        entity_type="character",
+        display_name="意念守护者",
+        hp=20,
+        max_hp=20,
+        snapshot_json={
+            "feature_runtime": {
+                "combat_start": {
+                    "defenses": [
+                        {
+                            "id": "guarded_mind:psychic_resistance",
+                            "kind": "damage_resistance",
+                            "damage_types": ["psychic"],
+                            "applies_when": "always",
+                        }
+                    ]
+                }
+            }
+        },
+    )
+    resistance = CombatEngineService._damage_defenses(
+        target,
+        SimpleNamespace(damage_tags=[]),
+        ["psychic"],
+    )
+    assert "psychic" in resistance[0]
+    assert resistance[3] == [
+        "guarded_mind:psychic_resistance:resistance:psychic"
+    ]
+
+
 def test_typed_damage_resistance_fails_closed_for_invalid_condition_contract() -> None:
     target = Combatant(
         id="invalid-conditional-defense",
