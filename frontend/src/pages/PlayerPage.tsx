@@ -22,6 +22,7 @@ import {
   rollMyNoncombatAction,
   resolveMyOpportunityReaction,
   resolveMyDeflectRedirect,
+  resolveMyAttackResolution,
   resolveMyPreDamageReaction,
   resolveMyTriggeredAttack,
   searchPlayerRules,
@@ -1087,6 +1088,8 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
   const [aimPoint, setAimPoint] = useState<GridPoint | null>(null);
   const [summonPosition, setSummonPosition] = useState<GridPoint | null>(null);
   const [reactionTrigger, setReactionTrigger] = useState("");
+  const [attackResolutionSelectedFeatures, setAttackResolutionSelectedFeatures] = useState<Record<string, string>>({});
+  const [attackResolutionInputs, setAttackResolutionInputs] = useState<Record<string, Record<string, string>>>({});
   const [preDamageReductionRolls, setPreDamageReductionRolls] = useState<Record<string, string>>({});
   const [preDamageSelectedFeatures, setPreDamageSelectedFeatures] = useState<Record<string, string>>({});
   const [deflectRedirectTargets, setDeflectRedirectTargets] = useState<Record<string, string>>({});
@@ -1813,6 +1816,14 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
       refresh();
     },
   });
+  const attackResolutionMutation = useMutation({
+    mutationFn: ({ id, version, decision, featureId, inputs, attackRolls }: { id: string; version: number; decision: "accept" | "reject"; featureId?: string; inputs?: Record<string, number>; attackRolls?: number[] }) =>
+      resolveMyAttackResolution(id, version, decision, featureId, inputs, attackRolls),
+    onSuccess: (_result, variables) => {
+      setLastResolution(variables.decision === "accept" ? `已使用${variables.featureId ?? "攻击决议反应"}；攻击正在按新结果结算。` : "已放弃攻击决议反应；原攻击正在正常结算。");
+      refresh();
+    },
+  });
   const preDamageReactionMutation = useMutation({
     mutationFn: ({ id, version, decision, featureId, reductionRoll }: { id: string; version: number; decision: "accept" | "reject"; featureId?: string; reductionRoll?: number }) =>
       resolveMyPreDamageReaction(id, version, decision, featureId, reductionRoll),
@@ -2209,6 +2220,38 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
                       <div className="mt-2 flex gap-2">
                         <Button disabled={deflectRedirectMutation.isPending || !canAccept} loading={deflectRedirectMutation.isPending && deflectRedirectMutation.variables?.id === reaction.id && deflectRedirectMutation.variables.decision === "accept"} onClick={() => deflectRedirectMutation.mutate({ id: reaction.id, version: reaction.version, decision: "accept", targetId, targetVersion: target?.version, savingThrowRoll: Number(saveRoll), damageRolls: rolls.map(Number) })} variant="danger">消耗 Focus 并反击</Button>
                         <Button disabled={deflectRedirectMutation.isPending} loading={deflectRedirectMutation.isPending && deflectRedirectMutation.variables?.id === reaction.id && deflectRedirectMutation.variables.decision === "reject"} onClick={() => deflectRedirectMutation.mutate({ id: reaction.id, version: reaction.version, decision: "reject" })}>放弃反击</Button>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+            ) : reaction.kind === "attack_resolution" ? (
+              <div className="mb-3 rounded border border-violet-700 bg-violet-950/25 p-3" data-testid="player-pending-attack-resolution" key={reaction.id}>
+                {(() => {
+                  const defaultFeature = { id: reaction.feature_id ?? "glorious_defense", name: reaction.feature_name ?? "攻击决议反应" };
+                  const candidateOptions = reaction.candidate_features?.length ? reaction.candidate_features : [defaultFeature];
+                  const selectedFeatureId = attackResolutionSelectedFeatures[reaction.id] ?? candidateOptions[0]?.id ?? defaultFeature.id;
+                  const selectedFeature = candidateOptions.find((candidate) => candidate.id === selectedFeatureId) ?? candidateOptions[0] ?? defaultFeature;
+                  const requirements = reaction.input_requirements ?? [];
+                  const dieRequirement = requirements.find((item) => item?.kind === "die_roll");
+                  const dieSides = dieRequirement?.die_sides ?? 0;
+                  const dieKey = dieRequirement?.key ?? "bardic_die";
+                  const dieRoll = attackResolutionInputs[reaction.id]?.[dieKey] ?? "";
+                  const needsDie = dieSides > 0;
+                  const canAccept = !needsDie || (Number.isInteger(Number(dieRoll)) && Number(dieRoll) >= 1 && Number(dieRoll) <= dieSides);
+                  const updateInput = (key: string, value: string) => setAttackResolutionInputs((current) => ({ ...current, [reaction.id]: { ...(current[reaction.id] ?? {}), [key]: value } }));
+                  return (
+                    <div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <strong className="text-sm text-violet-100">攻击决议反应暂停 · {reaction.source_name ?? "攻击者"} · {selectedFeature.name}</strong>
+                        <span className="rounded border border-violet-700/70 px-1.5 py-0.5 text-2xs text-violet-200">伤害尚未落地</span>
+                        {candidateOptions.length > 1 ? <label className="flex items-center gap-1 text-2xs text-violet-100">选择反应<select aria-label={`${reaction.id} 攻击决议反应`} className="rounded border border-violet-800 bg-ink-950 px-1.5 py-1" onChange={(event) => setAttackResolutionSelectedFeatures((current) => ({ ...current, [reaction.id]: event.target.value }))} value={selectedFeatureId}>{candidateOptions.map((candidate) => <option key={candidate.id} value={candidate.id}>{candidate.name}</option>)}</select></label> : null}
+                        {needsDie ? <label className="flex items-center gap-1 text-2xs text-violet-100">骰值<input aria-label={`${reaction.id} 攻击决议骰`} className="w-16 rounded border border-violet-800 bg-ink-950 px-1.5 py-1" max={dieSides} min="1" onChange={(event) => updateInput(dieKey, event.target.value)} type="number" value={dieRoll} /><span className="text-stone-400">d{dieSides}</span></label> : null}
+                      </div>
+                      <p className="mb-0 mt-1 text-xs leading-5 text-stone-300">{reaction.message ?? "一次攻击已初步命中；请选择是否使用反应改变结果。"}</p>
+                      <div className="mt-2 flex gap-2">
+                        <Button disabled={attackResolutionMutation.isPending || !canAccept} loading={attackResolutionMutation.isPending && attackResolutionMutation.variables?.id === reaction.id && attackResolutionMutation.variables.decision === "accept"} onClick={() => attackResolutionMutation.mutate({ id: reaction.id, version: reaction.version, decision: "accept", featureId: selectedFeatureId, inputs: needsDie ? { [dieKey]: Number(dieRoll) } : {} })} variant="danger">使用{selectedFeature.name}</Button>
+                        <Button disabled={attackResolutionMutation.isPending} loading={attackResolutionMutation.isPending && attackResolutionMutation.variables?.id === reaction.id && attackResolutionMutation.variables.decision === "reject"} onClick={() => attackResolutionMutation.mutate({ id: reaction.id, version: reaction.version, decision: "reject" })}>不使用</Button>
                       </div>
                     </div>
                   );

@@ -123,6 +123,14 @@ class ReactionDecisionInput(BaseModel):
     decision: Literal["accept", "reject"]
 
 
+class AttackResolutionInput(BaseModel):
+    version: int = Field(ge=1)
+    decision: Literal["accept", "reject"]
+    feature_id: str | None = Field(default=None, min_length=1, max_length=120)
+    inputs: dict[str, int] = Field(default_factory=dict)
+    attack_rolls: list[int] = Field(default_factory=list, max_length=2)
+
+
 class PreDamageReactionInput(BaseModel):
     version: int = Field(ge=1)
     decision: Literal["accept", "reject"]
@@ -674,6 +682,28 @@ def resolve_player_reaction(
             request_id_value,
             body.version,
             body.decision,
+            _request_id(request),
+        )
+    )
+
+
+@public_player_room_router.post("/me/combat/attack-resolution/{window_id}")
+def resolve_player_attack_resolution(
+    window_id: str,
+    body: AttackResolutionInput,
+    request: Request,
+    principal: Annotated[PlayerPrincipal, Depends(get_player_principal)],
+    service: Annotated[PlayerRoomService, Depends(get_player_room_service)],
+) -> dict[str, Any]:
+    return _safe(
+        lambda: service.resolve_attack_resolution(
+            principal,
+            window_id,
+            body.version,
+            body.decision,
+            body.feature_id,
+            body.inputs,
+            body.attack_rolls,
             _request_id(request),
         )
     )

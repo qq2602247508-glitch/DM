@@ -8,6 +8,7 @@ from dnd_dm_assistant.api.dependencies import get_combat_engine_service
 from dnd_dm_assistant.api.schemas import (
     CombatActionBatchCommand,
     CombatActionCommand,
+    CombatAttackResolutionCommand,
     CombatDeflectRedirectCommand,
     CombatEffectCommand,
     CombatEffectEndCommand,
@@ -95,6 +96,27 @@ def confirm_combat_action_batch(
                 ],
             )
         }
+    )
+
+
+
+
+@router.post("/reactions/attack-resolution/resolve")
+def resolve_attack_resolution(
+    campaign_id: str,
+    combat_id: str,
+    body: CombatAttackResolutionCommand,
+    request: Request,
+    service: Annotated[CombatEngineService, Depends(get_combat_engine_service)],
+) -> dict[str, Any]:
+    request_id = str(getattr(request.state, "request_id", "unknown"))
+    return _safe_call(
+        lambda: service.resolve_attack_resolution(
+            campaign_id,
+            combat_id,
+            body,
+            idempotency_key=request_id,
+        )
     )
 
 

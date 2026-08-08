@@ -1185,6 +1185,27 @@ class CombatPreDamageReactionCommand(BaseModel):
         return self
 
 
+class CombatAttackResolutionCommand(BaseModel):
+    """Resolve a durable attack-resolution intervention before damage lands."""
+
+    window_id: str = Field(min_length=1, max_length=36)
+    window_version: int = Field(ge=1)
+    decision: Literal["accept", "reject"]
+    feature_id: str | None = Field(default=None, min_length=1, max_length=120)
+    inputs: dict[str, int] = Field(default_factory=dict)
+    attack_rolls: list[int] = Field(default_factory=list, max_length=2)
+
+    @model_validator(mode="after")
+    def validate_attack_resolution(self) -> CombatAttackResolutionCommand:
+        if self.decision == "accept" and not (self.feature_id or "").strip():
+            raise ValueError("使用攻击决议反应时必须选择职业特性")
+        if self.decision == "reject" and (
+            self.feature_id is not None or self.inputs or self.attack_rolls
+        ):
+            raise ValueError("放弃攻击决议反应时不能携带特性或执行输入")
+        return self
+
+
 class TriggeredAttackDecisionCommand(BaseModel):
     """Accept or skip a durable event-driven attack window."""
 

@@ -8,7 +8,7 @@ import {
   createEvent, endCombatSummon, getCombatEndCondition, getDeathSave, listCombatActions, listCombatEffects, listCombatants, listCombats,
   listEncounterAdjustments, listEvents, previewCombatAction, previewMonsterAI, addCombatSummon,
   previewCombatSettlement, resetCombat, revertEncounterAdjustment, updateCombat, updateCombatant,
-  resolveCombatPreDamageReaction, resolveCombatDeflectRedirect,
+  resolveCombatAttackResolution, resolveCombatPreDamageReaction, resolveCombatDeflectRedirect,
 } from "../api/entities";
 import type {
   CombatActionCommand, CombatEffectCommand, CombatSettlementCommand,
@@ -1538,7 +1538,19 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
       && (metadata as Record<string, unknown>).status === "pending",
     );
   });
-  const hasPendingPreDamageReaction = preDamageWindows.length > 0 || deflectRedirectWindows.length > 0;
+  const attackResolutionWindows = (combatActions.data ?? []).filter((action) => {
+    if (action.action_type !== "eligible_action_window" || action.status !== "confirmed") return false;
+    const metadata = action.result_json?.action_window;
+    return Boolean(
+      metadata
+      && typeof metadata === "object"
+      && !Array.isArray(metadata)
+      && (metadata as Record<string, unknown>).phase === "attack_resolution"
+      && (metadata as Record<string, unknown>).status === "pending",
+    );
+  });
+  const hasPendingAttackResolution = attackResolutionWindows.length > 0;
+  const hasPendingPreDamageReaction = preDamageWindows.length > 0 || deflectRedirectWindows.length > 0 || hasPendingAttackResolution;
   const pendingPlayerRolls = (combatActions.data ?? []).filter(
     (action) => action.action_type === "player_roll_prompt" && action.status === "previewed",
   );
@@ -1709,6 +1721,21 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
       showToast(result.success ? "重复豁免成功，状态已结束" : "重复豁免失败，状态继续");
     },
     onError: () => showToast("状态重复豁免确认失败，请刷新战斗状态", "error"),
+  });
+  const resolveAttackResolution = useMutation({
+    mutationFn: (input: { windowId: string; version: number; decision: "accept" | "reject"; featureId?: string; inputs?: Record<string, number> }) =>
+      resolveCombatAttackResolution(campaignId, combat.id, {
+        window_id: input.windowId,
+        window_version: input.version,
+        decision: input.decision,
+        feature_id: input.featureId ?? null,
+        inputs: input.inputs ?? {},
+      }),
+    onSuccess: () => {
+      invalidate();
+      showToast("攻击决议反应已确认，攻击正在按新结果结算");
+    },
+    onError: (error) => showToast(error instanceof Error ? error.message : "攻击决议确认失败，请刷新战斗", "error"),
   });
   const resolvePreDamageReaction = useMutation({
     mutationFn: (input: { windowId: string; version: number; decision: "accept" | "reject"; featureId?: string; reductionRoll?: number }) =>
@@ -2115,6 +2142,30 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
               return <li key={prompt.actionId}>{target?.display_name ?? "目标"} · 体质 DC {prompt.dc} · 请在对应先攻卡中输入最终豁免总值</li>;
             })}
           </ul>
+        </div>
+      ) : null}
+      {hasPendingAttackResolution ? (
+        <div className="mt-3 rounded-lg border border-violet-700/60 bg-violet-950/20 p-3" data-testid="combat-pending-attack-resolution">
+          <strong className="text-xs text-violet-200">攻击决议反应 · 战斗暂停</strong>
+          <p className="mb-2 mt-1 text-2xs text-stone-400">攻击已初步命中，但尚未写入 HP。玩家端会看到同一窗口；DM 也可以代玩家确认攻击决议反应或放弃。</p>
+          <div className="grid gap-2">
+            {attackResolutionWindows.map((action) => {
+              const metadata = action.result_json.action_window as Record<string, unknown>;
+              const featureId = typeof metadata.feature_id === "string" ? metadata.feature_id : "glorious_defense";
+              const featureName = typeof metadata.feature_name === "string" ? metadata.feature_name : "攻击决议反应";
+              const attackerName = typeof metadata.trigger_combatant_name === "string" ? metadata.trigger_combatant_name : "攻击者";
+              const protectedName = typeof metadata.protected_combatant_name === "string" ? metadata.protected_combatant_name : "目标";
+              const attackTotal = Number(metadata.attack_roll_total ?? 0);
+              const effectiveAc = Number(metadata.effective_armor_class ?? 0);
+              return (
+                <div className="flex flex-wrap items-center gap-2 rounded border border-violet-900/60 bg-ink-950/40 px-2 py-1.5 text-2xs" key={action.id}>
+                  <span className="mr-auto text-stone-300">{attackerName} 使用攻击命中 {protectedName}（总值 {attackTotal} vs AC {effectiveAc}） · 伤害未落地 · {featureName}</span>
+                  <Button disabled={resolveAttackResolution.isPending} loading={resolveAttackResolution.isPending} onClick={() => resolveAttackResolution.mutate({ windowId: action.id, version: action.version, decision: "accept", featureId })} size="sm" variant="danger">确认{featureName}</Button>
+                  <Button disabled={resolveAttackResolution.isPending} onClick={() => resolveAttackResolution.mutate({ windowId: action.id, version: action.version, decision: "reject" })} size="sm">放弃反应</Button>
+                </div>
+              );
+            })}
+          </div>
         </div>
       ) : null}
       {hasPendingPreDamageReaction ? (

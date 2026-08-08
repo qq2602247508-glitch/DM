@@ -16,6 +16,7 @@ from sqlalchemy.orm import Session
 
 from dnd_dm_assistant.api.schemas import (
     CombatActionCommand,
+    CombatAttackResolutionCommand,
     CombatDeflectRedirectCommand,
     CombatEffectCommand,
     CombatEffectEndCommand,
@@ -3869,9 +3870,36 @@ class PlayerRoomService:
                     )
                     continue
                 if (
-                    metadata.get("phase") not in {"pre_damage", "deflect_redirect"}
+                    metadata.get("phase")
+                    not in {"pre_damage", "deflect_redirect", "attack_resolution"}
                     or metadata.get("status") != "pending"
                 ):
+                    continue
+                if metadata.get("phase") == "attack_resolution":
+                    pending_reactions.append(
+                        {
+                            "id": window.id,
+                            "version": window.version,
+                            "kind": "attack_resolution",
+                            "feature_id": metadata.get("feature_id"),
+                            "feature_name": metadata.get("feature_name"),
+                            "source_name": metadata.get("trigger_combatant_name"),
+                            "source_action_name": "攻击决议",
+                            "target_name": metadata.get("protected_combatant_name"),
+                            "reaction_trigger": "攻击初步命中，伤害前决议",
+                            "message": window.summary,
+                            "candidate_features": metadata.get("candidate_features", []),
+                            "attack_roll_total": metadata.get("attack_roll_total"),
+                            "effective_armor_class": metadata.get("effective_armor_class"),
+                            "resource_key": metadata.get("resource_key"),
+                            "resource_cost": metadata.get("resource_cost", 0),
+                            "input_requirements": (
+                                (metadata.get("intervention") or {}).get("input_requirements")
+                                if isinstance(metadata.get("intervention"), dict)
+                                else []
+                            ),
+                        }
+                    )
                     continue
                 if metadata.get("phase") == "deflect_redirect":
                     candidate_ids = [
@@ -8880,6 +8908,60 @@ class PlayerRoomService:
             "compiled_effects": compiled_effects,
             "turn_advance": turn_advance,
         }
+
+
+    def resolve_attack_resolution(
+        self,
+        principal: PlayerPrincipal,
+        window_id: str,
+        window_version: int,
+        decision: Literal["accept", "reject"],
+        feature_id: str | None,
+        inputs: dict[str, int],
+        attack_rolls: list[int],
+        request_id: str,
+    ) -> dict[str, Any]:
+        """Resolve only an attack-resolution window belonging to this player."""
+
+        if principal.character_id is None:
+            raise ValueError("请先绑定角色")
+        with Session(self.engine) as session:
+            room = session.get(PlayerRoom, principal.room_id)
+            combat = (
+                session.get(Combat, room.current_combat_id)
+                if room and room.current_combat_id
+                else None
+            )
+            if combat is None or combat.status != "active":
+                raise ValueError("当前没有进行中的战斗")
+            window = session.get(CombatAction, window_id)
+            fighters = self._ordered_fighters(session, combat.id)
+            if (
+                window is None
+                or window.combat_id != combat.id
+                or window.actor_combatant_id is None
+                or not any(
+                    item.id == window.actor_combatant_id
+                    and self._is_player_controlled(item, principal.character_id)
+                    for item in fighters
+                )
+            ):
+                raise ValueError("该攻击决议反应不属于你的可控单位")
+            combat_id = combat.id
+        return self.combat.resolve_attack_resolution(
+            principal.campaign_id,
+            combat_id,
+            CombatAttackResolutionCommand(
+                window_id=window_id,
+                window_version=window_version,
+                decision=decision,
+                feature_id=feature_id,
+                inputs=inputs,
+                attack_rolls=attack_rolls,
+            ),
+            idempotency_key=request_id,
+        )
+
 
     def resolve_pre_damage_reaction(
         self,

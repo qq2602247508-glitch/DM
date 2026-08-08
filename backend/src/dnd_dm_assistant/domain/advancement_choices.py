@@ -4022,6 +4022,183 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS["卓越战技"] = {
 # These entries describe only the generic event contract.  The combat engine
 # consumes event/target/profile/resource fields and never branches on these
 # feature names.
+SUBCLASS_FEATURE_RUNTIME_CONFIGS["语出惊人"] = {
+    "combat_start": {"modifiers": [], "defenses": []},
+    "resources": {},
+    "actions": {
+        "cutting_words_attack": {
+            "id": "cutting_words_attack",
+            "name": "语出惊人·攻击检定",
+            "kind": "attack_resolution_intervention",
+            "action_cost": "reaction",
+            "phase": "after_provisional_hit",
+            "operation": {
+                "kind": "subtract_from_attack_total",
+                "amount": "bardic_die",
+            },
+            "eligibility": {
+                "entity_types": ["character"],
+                "subject": "visible_creature",
+                "range_ft": 60,
+                "requires_visible": True,
+                "resource": {"key": "bardic_inspiration", "minimum": 1},
+            },
+            "input_requirements": [
+                {
+                    "key": "bardic_die",
+                    "kind": "die_roll",
+                    "die_sides_source": "bardic_inspiration_die",
+                }
+            ],
+            "resource": {"key": "bardic_inspiration", "cost": 1},
+            "runtime_execution": {
+                "status": "ready",
+                "consumer": "attack_resolution_intervention_window",
+                "persistence": "combat_action_window_and_cas",
+            },
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+        },
+        "cutting_words_check": {
+            "id": "cutting_words_check",
+            "name": "语出惊人·属性检定",
+            "kind": "roll_intervention",
+            "trigger": "after_d20_test",
+            "action_cost": "reaction",
+            "operation": {
+                "kind": "add",
+                "amount": "0-bardic_die",
+            },
+            "eligibility": {
+                "entity_types": ["character"],
+                "test_kinds": ["ability_check", "skill_check"],
+                "success_only": True,
+                "resource": {"key": "bardic_inspiration", "minimum": 1},
+            },
+            "target_policy": {
+                "mode": "any",
+                "range_ft": 60,
+                "requires_visible_or_audible": True,
+            },
+            "input_requirements": [
+                {
+                    "key": "bardic_die",
+                    "kind": "die_roll",
+                    "die_sides_source": "bardic_inspiration_die",
+                }
+            ],
+            "resource": {"key": "bardic_inspiration", "cost": 1},
+            "window": {"phase": "after_d20_test", "expires": "operation"},
+            "runtime_execution": {
+                "status": "ready",
+                "consumer": "player_roll_resolution",
+            },
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+        },
+        "cutting_words_damage": {
+            "id": "cutting_words_damage",
+            "name": "语出惊人·伤害掷骰",
+            "kind": "feature_action",
+            "action_cost": "reaction",
+            "trigger": {
+                "event": "takes_damage",
+                "timing": "before_damage",
+                "requirements": ["attacker_visible"],
+            },
+            "pre_damage_intervention": {
+                "kind": "pre_damage_intervention",
+                "eligibility": {
+                    "entity_types": ["character"],
+                    "damage_types": "all",
+                    "range_ft": 60,
+                    "requires_visible": True,
+                },
+                "input_requirements": [
+                    {"key": "bardic_die", "kind": "die_roll", "die_sides": 12}
+                ],
+                "damage_transform": {
+                    "operation": "subtract_total",
+                    "amount": "bardic_die",
+                    "distribution": "components_in_order",
+                    "minimum": 0,
+                },
+            },
+            "resource": {"key": "bardic_inspiration", "cost": 1},
+            "runtime_execution": {
+                "status": "ready",
+                "consumer": "pre_damage_reaction_window",
+            },
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+        },
+    },
+    "triggers": [],
+    "attack_riders": [],
+    "automation_status": "full",
+    "requires_dm_adjudication": False,
+}
+
+SUBCLASS_FEATURE_RUNTIME_CONFIGS["辉煌防御"] = {
+    "combat_start": {"modifiers": [], "defenses": []},
+    "resources": {
+        "$feature_resource": {
+            "key": "$feature_resource",
+            "label": "辉煌防御",
+            "resource_kind": "feature_uses",
+            "max_formula": "max(1, charisma_modifier)",
+            "recovery_events": [{"rest": "long_rest", "operation": "set_to_max"}],
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+        }
+    },
+    "actions": {
+        "glorious_defense": {
+            "id": "glorious_defense",
+            "name": "辉煌防御",
+            "kind": "attack_resolution_intervention",
+            "action_cost": "reaction",
+            "phase": "after_provisional_hit",
+            "operation": {
+                "kind": "add_to_target_ac",
+                "amount": "max(1, charisma_modifier)",
+                "minimum": 1,
+            },
+            "eligibility": {
+                "entity_types": ["character"],
+                "subject": "self_or_ally",
+                "range_ft": 10,
+                "requires_visible": True,
+                "resource": {"key": "$feature_resource", "minimum": 1},
+            },
+            "input_requirements": [],
+            "resource": {"key": "$feature_resource", "cost": 1},
+            "follow_up": {
+                "kind": "triggered_attack_on_miss",
+                "parent_action_part": True,
+                "action_cost": "none",
+                "attack_profile": {"mode": "weapon_only"},
+                "target_policy": {
+                    "mode": "event_actor",
+                    "range_ft": "weapon_reach",
+                    "requires_visible_or_audible": True,
+                },
+            },
+            "runtime_execution": {
+                "status": "ready",
+                "consumer": "attack_resolution_intervention_window",
+                "persistence": "combat_action_window_and_cas",
+            },
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+        }
+    },
+    "triggers": [],
+    "attack_riders": [],
+    "automation_status": "full",
+    "requires_dm_adjudication": False,
+}
+
 SUBCLASS_FEATURE_RUNTIME_CONFIGS["报偿"] = {
     "combat_start": {"modifiers": [], "defenses": []},
     "resources": {},
@@ -4470,6 +4647,29 @@ def _subclass_resource_update(
             "requires_dm_adjudication": False,
             "automation_status": "full",
         }
+    if feature_name.startswith("辉煌防御"):
+        ability = "charisma"
+        maximum = (
+            max(1, _ability_modifier(ability_scores, ability) or 0)
+            if ability_scores is not None
+            else None
+        )
+        resource = {
+            "label": feature_name,
+            "max_formula": "max(1, charisma_modifier)",
+            "resource_kind": "feature_uses",
+            "recovery": "long_rest",
+            "recovery_events": [{"rest": "long_rest", "operation": "set_to_max"}],
+            "source": (
+                f"{definition.get('source_path') or definition.get('source_record_id')}"
+                f" · {definition.get('class_level')}级{feature_name}"
+            ),
+            "requires_dm_adjudication": False,
+            "automation_status": "full",
+        }
+        if maximum is not None:
+            resource["max"] = maximum
+        return "glorious_defense", resource
     if feature_name.startswith("战神祝福"):
         ability = "wisdom"
         maximum = (

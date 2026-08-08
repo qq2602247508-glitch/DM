@@ -757,6 +757,22 @@ export const confirmCombatAction = (
     },
   );
 
+export const resolveCombatAttackResolution = (
+  cid: string,
+  combatId: string,
+  input: {
+    window_id: string;
+    window_version: number;
+    decision: "accept" | "reject";
+    feature_id?: string | null;
+    inputs?: Record<string, number>;
+  },
+  requestId: string = createClientId("attack-resolution"),
+) => apiFetch<Record<string, unknown>>(
+  `/campaigns/${cid}/combats/${combatId}/reactions/attack-resolution/resolve`,
+  { method: "POST", body: input, headers: { "X-Request-ID": requestId } },
+);
+
 export const resolveCombatPreDamageReaction = (
   cid: string,
   combatId: string,
