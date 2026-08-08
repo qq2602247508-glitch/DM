@@ -746,7 +746,13 @@ class CombatActionCommand(BaseModel):
     actor_combatant_id: str | None = Field(default=None, min_length=1, max_length=36)
     actor_version: int | None = Field(default=None, ge=1)
     action_cost: Literal[
-        "action", "bonus_action", "reaction", "legendary_action", "lair_action", "none"
+        "action",
+        "bonus_action",
+        "reaction",
+        "parent_action_part",
+        "legendary_action",
+        "lair_action",
+        "none",
     ] = "none"
     action_name: str | None = Field(default=None, max_length=200)
     resolution_note: str | None = Field(default=None, max_length=1_000)
@@ -777,6 +783,8 @@ class CombatActionCommand(BaseModel):
     legendary_pool_max: int | None = Field(default=None, ge=1, le=10)
     action_window_id: str | None = Field(default=None, min_length=1, max_length=36)
     reaction_window_id: str | None = Field(default=None, min_length=1, max_length=36)
+    triggered_attack_window_id: str | None = Field(default=None, min_length=1, max_length=36)
+    triggered_attack_window_version: int | None = Field(default=None, ge=1)
     reaction_trigger: str | None = Field(default=None, max_length=1_000)
     reaction_event: (
         Literal[
@@ -1116,16 +1124,19 @@ class CombatFeatureActionCommand(BaseModel):
     adjudication_note: str | None = Field(default=None, max_length=1_000)
     healing_total: int | None = Field(default=None, ge=0, le=100_000)
     healing_dice_count: int | None = Field(default=None, ge=1, le=100)
-    condition_to_cure: Literal[
-        "blinded",
-        "charmed",
-        "deafened",
-        "diseased",
-        "frightened",
-        "paralyzed",
-        "poisoned",
-        "stunned",
-    ] | None = None
+    condition_to_cure: (
+        Literal[
+            "blinded",
+            "charmed",
+            "deafened",
+            "diseased",
+            "frightened",
+            "paralyzed",
+            "poisoned",
+            "stunned",
+        ]
+        | None
+    ) = None
     condition_to_remove: Literal["charmed", "frightened", "poisoned"] | None = None
     target_combatant_id: str | None = Field(default=None, min_length=1, max_length=36)
     target_version: int | None = Field(default=None, ge=1)
@@ -1171,6 +1182,18 @@ class CombatPreDamageReactionCommand(BaseModel):
             and self.inputs["reduction_roll"] != self.reduction_roll
         ):
             raise ValueError("兼容减伤骰字段与通用输入不一致")
+        return self
+
+
+class TriggeredAttackDecisionCommand(BaseModel):
+    """Accept or skip a durable event-driven attack window."""
+
+    window_id: str = Field(min_length=1, max_length=36)
+    window_version: int = Field(ge=1)
+    decision: Literal["accept", "reject"]
+
+    @model_validator(mode="after")
+    def validate_triggered_attack_decision(self) -> TriggeredAttackDecisionCommand:
         return self
 
 

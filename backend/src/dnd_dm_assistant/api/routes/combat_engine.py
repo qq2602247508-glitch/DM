@@ -26,6 +26,7 @@ from dnd_dm_assistant.api.schemas import (
     PlayerRollPromptBatchCommand,
     PlayerRollPromptCommand,
     PlayerRollResolutionCommand,
+    TriggeredAttackDecisionCommand,
     TurnAdvanceCommand,
 )
 from dnd_dm_assistant.domain.campaign_state import StateNotFoundError, VersionConflict
@@ -108,6 +109,28 @@ def resolve_pre_damage_reaction(
     request_id = str(getattr(request.state, "request_id", "unknown"))
     return _safe_call(
         lambda: service.resolve_pre_damage_reaction(
+            campaign_id,
+            combat_id,
+            body,
+            idempotency_key=request_id,
+        )
+    )
+
+
+@router.post("/triggered-attacks/{window_id}/resolve")
+def resolve_triggered_attack_window(
+    campaign_id: str,
+    combat_id: str,
+    window_id: str,
+    body: TriggeredAttackDecisionCommand,
+    request: Request,
+    service: Annotated[CombatEngineService, Depends(get_combat_engine_service)],
+) -> dict[str, Any]:
+    if body.window_id != window_id:
+        raise HTTPException(status_code=400, detail="追加攻击窗口路径与请求体不一致")
+    request_id = str(getattr(request.state, "request_id", "unknown"))
+    return _safe_call(
+        lambda: service.resolve_triggered_attack_window(
             campaign_id,
             combat_id,
             body,

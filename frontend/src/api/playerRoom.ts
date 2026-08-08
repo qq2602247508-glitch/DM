@@ -315,7 +315,7 @@ export type PlayerPendingRoll = {
 export type PlayerPendingReaction = {
   id: string;
   version: number;
-  kind?: "opportunity" | "pre_damage" | "deflect_redirect";
+  kind?: "opportunity" | "pre_damage" | "deflect_redirect" | "triggered_attack";
   feature_id?: string | null;
   feature_name?: string | null;
   candidate_features?: Array<{
@@ -346,6 +346,15 @@ export type PlayerPendingReaction = {
   damage_modifier?: number | null;
   resource_key?: string | null;
   resource_cost?: number | null;
+  action_cost?: "action" | "bonus_action" | "reaction" | "parent_action_part" | null;
+  trigger_event?: string | null;
+  parent_action_id?: string | null;
+  eligible_attack_profiles?: Array<{
+    action_name: string;
+    is_weapon_attack?: boolean;
+    is_unarmed_attack?: boolean;
+    is_melee?: boolean;
+  }>;
 };
 
 export type PlayerDeathSave = {
@@ -803,6 +812,7 @@ export const attackWithMyCombatant = (
     damageComponentTotals?: Record<string, number>;
     targetDamageComponentTotals?: Record<string, Record<string, number>>;
     reactionTrigger?: string;
+    attackD20?: number;
     specialInputs?: Record<string, unknown>;
   } = {},
 ) => playerFetch<Record<string, unknown>>("/player-room/me/combat/attack", {
@@ -813,6 +823,7 @@ export const attackWithMyCombatant = (
     action_name: actionName,
     slot_level: slotLevel,
     attack_total: attackTotal,
+    attack_d20: execution.attackD20 ?? null,
     damage_total: damageTotal,
     damage_component_totals: execution.damageComponentTotals ?? {},
     target_damage_component_totals: execution.targetDamageComponentTotals ?? {},
@@ -952,6 +963,15 @@ export const resolveMyDeflectRedirect = (
   method: "POST",
   body: JSON.stringify({ version, ...input }),
   headers: { "X-Request-ID": createClientId("player-deflect-redirect") },
+});
+
+export const resolveMyTriggeredAttack = (
+  windowId: string,
+  version: number,
+  idempotencyKey: string,
+) => playerFetch<Record<string, unknown>>(`/player-room/me/combat/triggered-attacks/${windowId}/resolve`, {
+  method: "POST",
+  body: JSON.stringify({ version, decision: "reject", idempotency_key: idempotencyKey }),
 });
 
 export const submitMyDeathSave = (targetVersion: number, roll: number) =>

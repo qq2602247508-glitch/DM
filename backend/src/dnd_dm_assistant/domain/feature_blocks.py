@@ -25,7 +25,19 @@ TRIGGER_WINDOWS = frozenset(
     }
 )
 TRIGGER_EVENTS = frozenset(
-    {"after_feature_action", "after_attack", "after_zero_hp", "turn_start"}
+    {
+        "after_feature_action",
+        "after_attack",
+        "after_zero_hp",
+        "turn_start",
+        "after_taking_damage",
+        "after_casting_spell",
+        "after_enemy_attack",
+        "after_enemy_attack_miss",
+        "after_attack_miss",
+        "after_feature_resource_spent",
+        "after_teleport",
+    }
 )
 TRIGGER_EFFECT_KINDS = frozenset(
     {
@@ -163,6 +175,31 @@ def feature_trigger_block_errors(trigger: Mapping[str, Any]) -> tuple[str, ...]:
         policy = trigger.get("target_policy")
         if not isinstance(policy, Mapping):
             errors.append("after_zero_hp.target_policy is required")
+    if trigger.get("kind") in {"triggered_attack", "triggered_attack_window"}:
+        cost = str(trigger.get("action_cost") or "")
+        if cost not in {"reaction", "bonus_action", "parent_action_part"}:
+            errors.append("triggered_attack.action_cost is invalid")
+        profile = trigger.get("attack_profile")
+        if not isinstance(profile, Mapping) or str(profile.get("mode") or "") not in {
+            "weapon_only",
+            "melee_weapon_only",
+            "melee_weapon_or_unarmed",
+            "unarmed_only",
+        }:
+            errors.append("triggered_attack.attack_profile.mode is invalid")
+        policy = trigger.get("target_policy")
+        if not isinstance(policy, Mapping) or str(policy.get("mode") or "") not in {
+            "event_actor",
+            "enemy",
+            "all_enemies",
+            "ally",
+            "same_faction",
+        }:
+            errors.append("triggered_attack.target_policy.mode is invalid")
+        execution = trigger.get("runtime_execution")
+        if not isinstance(execution, Mapping) or not str(execution.get("consumer") or "").strip():
+            errors.append("triggered_attack.runtime_execution.consumer is required")
+        return tuple(errors)
     effects = trigger.get("effects")
     if not isinstance(effects, list) or not effects:
         errors.append("effects must be a non-empty list")

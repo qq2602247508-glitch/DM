@@ -63,9 +63,9 @@ class CharacterCreateInput(BaseModel):
     class_name: str = Field(min_length=1, max_length=100)
     background: str = Field(min_length=1, max_length=100)
     ability_scores: dict[str, int]
-    ability_generation_method: Literal[
-        "standard_array", "point_buy", "rolled_4d6_drop_lowest"
-    ] = "standard_array"
+    ability_generation_method: Literal["standard_array", "point_buy", "rolled_4d6_drop_lowest"] = (
+        "standard_array"
+    )
     ability_rolls: dict[str, list[int]] = Field(default_factory=dict, max_length=6)
     origin_ability_increases: dict[str, int] = Field(default_factory=dict, max_length=3)
     background_tool_proficiency: str = Field(min_length=1, max_length=100)
@@ -173,9 +173,9 @@ class ManeuverInput(BaseModel):
     item_version: int | None = Field(default=None, ge=1)
     object_id: str | None = Field(default=None, min_length=1, max_length=36)
     object_version: int | None = Field(default=None, ge=1)
-    object_state: Literal[
-        "active", "open", "closed", "destroyed", "disarmed", "picked_up"
-    ] | None = None
+    object_state: (
+        Literal["active", "open", "closed", "destroyed", "disarmed", "picked_up"] | None
+    ) = None
     idempotency_key: str = Field(min_length=8, max_length=120)
 
 
@@ -185,6 +185,7 @@ class AttackInput(BaseModel):
     action_name: str = Field(min_length=1, max_length=200)
     slot_level: int | None = Field(default=None, ge=0, le=9)
     attack_total: int = Field(ge=-100, le=1000)
+    attack_d20: int | None = Field(default=None, ge=1, le=20)
     damage_total: int = Field(ge=0, le=100_000)
     damage_component_totals: dict[str, int] = Field(default_factory=dict, max_length=20)
     target_damage_component_totals: dict[str, dict[str, int]] = Field(
@@ -195,6 +196,12 @@ class AttackInput(BaseModel):
     special_inputs: dict[str, Any] = Field(default_factory=dict, max_length=30)
     critical_hit: bool = False
     end_turn_after: bool = False
+    idempotency_key: str = Field(min_length=8, max_length=120)
+
+
+class TriggeredAttackInput(BaseModel):
+    version: int = Field(ge=1)
+    decision: Literal["reject"]
     idempotency_key: str = Field(min_length=8, max_length=120)
 
 
@@ -221,16 +228,19 @@ class FeatureActionInput(BaseModel):
     outcome: Literal["success", "failure"] | None = None
     adjudication_note: str | None = Field(default=None, max_length=1_000)
     healing_total: int | None = Field(default=None, ge=0, le=100_000)
-    condition_to_cure: Literal[
-        "blinded",
-        "charmed",
-        "deafened",
-        "diseased",
-        "frightened",
-        "paralyzed",
-        "poisoned",
-        "stunned",
-    ] | None = None
+    condition_to_cure: (
+        Literal[
+            "blinded",
+            "charmed",
+            "deafened",
+            "diseased",
+            "frightened",
+            "paralyzed",
+            "poisoned",
+            "stunned",
+        ]
+        | None
+    ) = None
     condition_to_remove: Literal["charmed", "frightened", "poisoned"] | None = None
     idempotency_key: str = Field(min_length=8, max_length=120)
 
@@ -713,9 +723,7 @@ def resolve_player_deflect_redirect(
     )
 
 
-@public_player_room_router.post(
-    "/me/noncombat-actions/plan", status_code=status.HTTP_201_CREATED
-)
+@public_player_room_router.post("/me/noncombat-actions/plan", status_code=status.HTTP_201_CREATED)
 def plan_noncombat_action(
     body: NoncombatActionPlanInput,
     request: Request,
@@ -723,9 +731,7 @@ def plan_noncombat_action(
     service: Annotated[PlayerRoomService, Depends(get_player_room_service)],
 ) -> dict[str, Any]:
     return _safe(
-        lambda: service.plan_noncombat_action(
-            principal, body.model_dump(), _request_id(request)
-        )
+        lambda: service.plan_noncombat_action(principal, body.model_dump(), _request_id(request))
     )
 
 
@@ -753,9 +759,7 @@ def move(
     service: Annotated[PlayerRoomService, Depends(get_player_room_service)],
 ) -> dict[str, Any]:
     return _safe(
-        lambda: service.move(
-            principal, body.row, body.col, body.combatant_version, body.disengage
-        )
+        lambda: service.move(principal, body.row, body.col, body.combatant_version, body.disengage)
     )
 
 
@@ -790,6 +794,25 @@ def attack(
             body.target_damage_component_totals,
             body.reaction_trigger,
             body.special_inputs,
+            attack_d20=body.attack_d20,
+        )
+    )
+
+
+@public_player_room_router.post("/me/combat/triggered-attacks/{window_id}/resolve")
+def resolve_triggered_attack(
+    window_id: str,
+    body: TriggeredAttackInput,
+    principal: Annotated[PlayerPrincipal, Depends(get_player_principal)],
+    service: Annotated[PlayerRoomService, Depends(get_player_room_service)],
+) -> dict[str, Any]:
+    return _safe(
+        lambda: service.resolve_triggered_attack_window(
+            principal,
+            window_id,
+            body.version,
+            body.decision,
+            body.idempotency_key,
         )
     )
 

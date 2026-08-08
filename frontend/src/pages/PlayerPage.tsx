@@ -23,6 +23,7 @@ import {
   resolveMyOpportunityReaction,
   resolveMyDeflectRedirect,
   resolveMyPreDamageReaction,
+  resolveMyTriggeredAttack,
   searchPlayerRules,
   submitMyDeathSave,
   submitMyActionRequest,
@@ -1091,6 +1092,11 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
   const [deflectRedirectTargets, setDeflectRedirectTargets] = useState<Record<string, string>>({});
   const [deflectRedirectSaves, setDeflectRedirectSaves] = useState<Record<string, string>>({});
   const [deflectRedirectDamageRolls, setDeflectRedirectDamageRolls] = useState<Record<string, string[]>>({});
+  const [triggeredAttackTargets, setTriggeredAttackTargets] = useState<Record<string, string>>({});
+  const [triggeredAttackActions, setTriggeredAttackActions] = useState<Record<string, string>>({});
+  const [triggeredAttackD20s, setTriggeredAttackD20s] = useState<Record<string, string>>({});
+  const [triggeredAttackTotals, setTriggeredAttackTotals] = useState<Record<string, string>>({});
+  const [triggeredAttackDamages, setTriggeredAttackDamages] = useState<Record<string, string>>({});
   const [criticalHit, setCriticalHit] = useState(false);
   const [rolls, setRolls] = useState<Record<string, string>>({});
   const [bardicInspirationRolls, setBardicInspirationRolls] = useState<Record<string, string>>({});
@@ -1829,6 +1835,34 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
       refresh();
     },
   });
+  const triggeredAttackMutation = useMutation({
+    mutationFn: async (input: { id: string; version: number; decision: "accept" | "reject"; targetId: string; actionName: string; d20: number; attackTotal: number; damageTotal: number; reactionTrigger?: string; resourceKey?: string | null; resourceCost?: number | null }) => {
+      if (!own) throw new Error("当前没有可控单位");
+      if (input.decision === "reject") return resolveMyTriggeredAttack(input.id, input.version, createClientId("triggered-attack-skip"));
+      return attackWithMyCombatant(
+        input.targetId,
+        [input.targetId],
+        input.actionName,
+        null,
+        input.attackTotal,
+        input.damageTotal,
+        input.d20 === 20,
+        false,
+        {
+          reactionTrigger: input.reactionTrigger,
+          attackD20: input.d20,
+          specialInputs: {
+            triggered_attack_window_id: input.id,
+            triggered_attack_window_version: input.version,
+          },
+        },
+      );
+    },
+    onSuccess: (_result, variables) => {
+      setLastResolution(variables.decision === "reject" ? "已放弃追加攻击窗口。" : "追加攻击已提交并完成结算。");
+      refresh();
+    },
+  });
   const maneuverMutation = useMutation({
     mutationFn: () => {
       if (!own) throw new Error("当前没有可控单位");
@@ -2092,7 +2126,54 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
             </section>
           ) : null}
           {(combat.pending_reactions ?? []).map((reaction) => (
-            reaction.kind === "deflect_redirect" ? (
+            reaction.kind === "triggered_attack" ? (
+              <div className="mb-3 rounded border border-cyan-700 bg-cyan-950/25 p-3" data-testid="player-pending-triggered-attack" key={reaction.id}>
+                {(() => {
+                  const targetId = triggeredAttackTargets[reaction.id] ?? reaction.candidate_target_ids?.[0] ?? "";
+                  const actionName = triggeredAttackActions[reaction.id] ?? reaction.eligible_attack_profiles?.[0]?.action_name ?? "";
+                  const d20 = triggeredAttackD20s[reaction.id] ?? "";
+                  const attackTotal = triggeredAttackTotals[reaction.id] ?? "";
+                  const damageTotal = triggeredAttackDamages[reaction.id] ?? "";
+                  const validNumber = (value: string, min: number, max: number) => Number.isInteger(Number(value)) && Number(value) >= min && Number(value) <= max;
+                  const canAccept = Boolean(targetId && actionName && validNumber(d20, 1, 20) && validNumber(attackTotal, -100, 1000) && validNumber(damageTotal, 0, 100000));
+                  return (
+                    <div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <strong className="text-sm text-cyan-100">追加攻击窗口 · {reaction.feature_name ?? "职业特性"}</strong>
+                        <span className="rounded border border-cyan-700/70 px-1.5 py-0.5 text-2xs text-cyan-200">{reaction.action_cost ?? "反应"}</span>
+                      </div>
+                      <p className="mb-2 mt-1 text-xs leading-5 text-stone-300">{reaction.message ?? `事件：${reaction.trigger_event ?? "战斗事件"}；请选择目标、真实攻击动作和骰值。`}</p>
+                      <div className="grid gap-2 sm:grid-cols-2">
+                        <label className="text-2xs text-cyan-100">目标
+                          <select aria-label={`${reaction.id} 追加攻击目标`} className="ml-2 rounded border border-cyan-800 bg-ink-950 px-1.5 py-1" onChange={(event) => setTriggeredAttackTargets((current) => ({ ...current, [reaction.id]: event.target.value }))} value={targetId}>
+                            <option value="">请选择目标</option>
+                            {(reaction.candidate_target_ids ?? []).map((candidateId) => <option key={candidateId} value={candidateId}>{reaction.candidate_target_names?.[candidateId] ?? candidateId}</option>)}
+                          </select>
+                        </label>
+                        <label className="text-2xs text-cyan-100">攻击动作
+                          <select aria-label={`${reaction.id} 追加攻击动作`} className="ml-2 rounded border border-cyan-800 bg-ink-950 px-1.5 py-1" onChange={(event) => setTriggeredAttackActions((current) => ({ ...current, [reaction.id]: event.target.value }))} value={actionName}>
+                            {(reaction.eligible_attack_profiles ?? []).map((profile) => <option key={profile.action_name} value={profile.action_name}>{profile.action_name}</option>)}
+                          </select>
+                        </label>
+                        <label className="text-2xs text-cyan-100">d20
+                          <input aria-label={`${reaction.id} 追加攻击 d20`} className="ml-2 w-16 rounded border border-cyan-800 bg-ink-950 px-1.5 py-1" max="20" min="1" onChange={(event) => setTriggeredAttackD20s((current) => ({ ...current, [reaction.id]: event.target.value }))} type="number" value={d20} />
+                        </label>
+                        <label className="text-2xs text-cyan-100">攻击总值
+                          <input aria-label={`${reaction.id} 追加攻击总值`} className="ml-2 w-20 rounded border border-cyan-800 bg-ink-950 px-1.5 py-1" onChange={(event) => setTriggeredAttackTotals((current) => ({ ...current, [reaction.id]: event.target.value }))} type="number" value={attackTotal} />
+                        </label>
+                        <label className="text-2xs text-cyan-100">伤害总值
+                          <input aria-label={`${reaction.id} 追加攻击伤害`} className="ml-2 w-20 rounded border border-cyan-800 bg-ink-950 px-1.5 py-1" min="0" onChange={(event) => setTriggeredAttackDamages((current) => ({ ...current, [reaction.id]: event.target.value }))} type="number" value={damageTotal} />
+                        </label>
+                      </div>
+                      <div className="mt-2 flex gap-2">
+                        <Button disabled={!canAccept || triggeredAttackMutation.isPending} loading={triggeredAttackMutation.isPending && triggeredAttackMutation.variables?.id === reaction.id && triggeredAttackMutation.variables.decision === "accept"} onClick={() => triggeredAttackMutation.mutate({ id: reaction.id, version: reaction.version, decision: "accept", targetId, actionName, d20: Number(d20), attackTotal: Number(attackTotal), damageTotal: Number(damageTotal), reactionTrigger: reaction.reaction_trigger ?? undefined, resourceKey: reaction.resource_key, resourceCost: reaction.resource_cost })} variant="primary">执行追加攻击</Button>
+                        <Button disabled={triggeredAttackMutation.isPending} loading={triggeredAttackMutation.isPending && triggeredAttackMutation.variables?.id === reaction.id && triggeredAttackMutation.variables.decision === "reject"} onClick={() => triggeredAttackMutation.mutate({ id: reaction.id, version: reaction.version, decision: "reject", targetId, actionName, d20: 1, attackTotal: 0, damageTotal: 0 })}>放弃</Button>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+            ) : reaction.kind === "deflect_redirect" ? (
               <div className="mb-3 rounded border border-fuchsia-700 bg-fuchsia-950/25 p-3" data-testid="player-pending-deflect-redirect" key={reaction.id}>
                 {(() => {
                   const targetId = deflectRedirectTargets[reaction.id] ?? "";

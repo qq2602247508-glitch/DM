@@ -26,6 +26,7 @@ from dnd_dm_assistant.api.schemas import (
     CombatSummonEndCommand,
     DeathSaveCommand,
     PlayerRollResolutionCommand,
+    TriggeredAttackDecisionCommand,
     TurnAdvanceCommand,
 )
 from dnd_dm_assistant.application.rule_block_compiler import (
@@ -986,9 +987,7 @@ class PlayerRoomService:
                 runtime = combatant.snapshot_json.get("feature_runtime")
                 progression = runtime.get("progression") if isinstance(runtime, dict) else None
                 proficiency_bonus = (
-                    progression.get("proficiency_bonus")
-                    if isinstance(progression, dict)
-                    else None
+                    progression.get("proficiency_bonus") if isinstance(progression, dict) else None
                 )
                 if isinstance(proficiency_bonus, int) and proficiency_bonus > 0:
                     numeric += proficiency_bonus
@@ -1035,8 +1034,7 @@ class PlayerRoomService:
                 stat=stat,
                 scope=scope,
             )
-            if item.get("operation") == "add"
-            and isinstance(item.get("value"), int)
+            if item.get("operation") == "add" and isinstance(item.get("value"), int)
         )
 
     @staticmethod
@@ -1049,17 +1047,11 @@ class PlayerRoomService:
             "reliabletalent",
         }
         for raw_feature in character.features or []:
-            name = (
-                raw_feature.get("name")
-                if isinstance(raw_feature, dict)
-                else str(raw_feature)
-            )
+            name = raw_feature.get("name") if isinstance(raw_feature, dict) else str(raw_feature)
             normalized = str(name or "").strip().lower().replace(" ", "")
             if normalized in {item.lower() for item in feature_names}:
                 skill_data = (character.skills or {}).get(skill)
-                return isinstance(skill_data, dict) and bool(
-                    skill_data.get("proficient")
-                )
+                return isinstance(skill_data, dict) and bool(skill_data.get("proficient"))
         return False
 
     @staticmethod
@@ -1092,12 +1084,13 @@ class PlayerRoomService:
         if CombatEngineService._has_condition(actor, "invisible"):
             advantage.append("攻击者隐形")
         if CombatEngineService._has_condition(actor, "reckless_attack"):
-            attack_ability = str(
-                action_data.get("attack_ability") or action_data.get("ability") or ""
-            ).strip().lower()
+            attack_ability = (
+                str(action_data.get("attack_ability") or action_data.get("ability") or "")
+                .strip()
+                .lower()
+            )
             action_text = " ".join(
-                str(action_data.get(key) or "")
-                for key in ("name", "description", "action_name")
+                str(action_data.get(key) or "") for key in ("name", "description", "action_name")
             ).lower()
             is_weapon_attack = bool(
                 action_data.get("is_weapon_attack") is True
@@ -1113,11 +1106,11 @@ class PlayerRoomService:
             or action_data.get("kind") == "spell"
             or action_data.get("spell_level") is not None
         )
-        spellcasting_class = str(
-            action_data.get("spellcasting_class")
-            or action_data.get("class_name")
-            or ""
-        ).strip().lower()
+        spellcasting_class = (
+            str(action_data.get("spellcasting_class") or action_data.get("class_name") or "")
+            .strip()
+            .lower()
+        )
         is_sorcerer_spell = spellcasting_class in {"术士", "sorcerer"}
         for modifier in CombatEngineService._feature_rule_modifiers(
             actor,
@@ -1268,9 +1261,7 @@ class PlayerRoomService:
             minimum = expected_dice + modifier
             maximum = expected_dice * sides + modifier
             if not minimum <= total <= maximum:
-                raise ValueError(
-                    f"攻击附伤 {rider_id} 的伤害骰结果应在 {minimum}–{maximum} 之间"
-                )
+                raise ValueError(f"攻击附伤 {rider_id} 的伤害骰结果应在 {minimum}–{maximum} 之间")
             return total, {
                 "rider_id": rider_id,
                 "expression": raw_value,
@@ -1305,9 +1296,7 @@ class PlayerRoomService:
         registry = actor.snapshot_json.get("feature_runtime")
         raw_riders = registry.get("attack_riders") if isinstance(registry, dict) else None
         canonical_riders = (
-            feature_block_payloads(registry, "attack_rider")
-            if isinstance(registry, dict)
-            else []
+            feature_block_payloads(registry, "attack_rider") if isinstance(registry, dict) else []
         )
         riders = list(canonical_riders)
         canonical_ids = {
@@ -1321,9 +1310,7 @@ class PlayerRoomService:
         action_text = " ".join(
             str(action.get(key) or "") for key in ("name", "description", "damage")
         )
-        attack_ability = str(
-            action.get("attack_ability") or action.get("ability") or ""
-        ).lower()
+        attack_ability = str(action.get("attack_ability") or action.get("ability") or "").lower()
         is_strength_attack = attack_ability in {"strength", "力量"} or "力量" in action_text
         is_weapon_attack = bool(
             action.get("is_weapon_attack") is True
@@ -1369,9 +1356,7 @@ class PlayerRoomService:
                 # eligibility and execution remain in the generic resolver.
                 legacy_totals = special_inputs.get("attack_rider_totals")
                 legacy_total = (
-                    legacy_totals.get(rider_id)
-                    if isinstance(legacy_totals, dict)
-                    else None
+                    legacy_totals.get(rider_id) if isinstance(legacy_totals, dict) else None
                 )
                 raw_damage = raw.get("damage")
                 damage_entries = raw_damage if isinstance(raw_damage, list) else [raw_damage]
@@ -1462,14 +1447,19 @@ class PlayerRoomService:
                         ("wisdom", "wisdom_modifier"),
                         ("charisma", "charisma_modifier"),
                     ):
-                        raw_score = ability_scores.get(ability, ability_scores.get({
-                            "strength": "力量",
-                            "dexterity": "敏捷",
-                            "constitution": "体质",
-                            "intelligence": "智力",
-                            "wisdom": "感知",
-                            "charisma": "魅力",
-                        }[ability]))
+                        raw_score = ability_scores.get(
+                            ability,
+                            ability_scores.get(
+                                {
+                                    "strength": "力量",
+                                    "dexterity": "敏捷",
+                                    "constitution": "体质",
+                                    "intelligence": "智力",
+                                    "wisdom": "感知",
+                                    "charisma": "魅力",
+                                }[ability]
+                            ),
+                        )
                         if isinstance(raw_score, int):
                             bindings[binding_key] = (raw_score - 10) // 2
                 raw_save = raw.get("saving_throw")
@@ -1488,9 +1478,7 @@ class PlayerRoomService:
                         else None
                     )
                     ability_score = (
-                        ability_scores.get(dc_ability)
-                        if isinstance(ability_scores, dict)
-                        else None
+                        ability_scores.get(dc_ability) if isinstance(ability_scores, dict) else None
                     )
                     if (
                         dc_source
@@ -1526,9 +1514,7 @@ class PlayerRoomService:
                         "conditions": sorted(CombatEngineService._condition_set(target)),
                     },
                     action={"tags": sorted(action_tags), "attack_ability": attack_ability},
-                    resources=(
-                        registry.get("resources", {}) if isinstance(registry, dict) else {}
-                    ),
+                    resources=(registry.get("resources", {}) if isinstance(registry, dict) else {}),
                     event_id=event_id or f"attack:{actor.id}:{target.id}",
                     turn_id=turn_id,
                     inputs=rider_inputs,
@@ -1584,9 +1570,7 @@ class PlayerRoomService:
                         "total": total,
                         "source": raw.get("feature_name") or rider_id,
                         "damage_type": (
-                            components[0].get("damage_type")
-                            if len(components) == 1
-                            else "mixed"
+                            components[0].get("damage_type") if len(components) == 1 else "mixed"
                         ),
                         "frequency": raw.get("frequency"),
                         "target_combatant_id": target.id,
@@ -1609,9 +1593,7 @@ class PlayerRoomService:
                     CombatEngineService._has_condition(actor, "raging")
                     and CombatEngineService._has_condition(actor, "reckless_attack")
                     and is_strength_attack
-                    and bool(
-                        is_weapon_attack or action.get("is_unarmed_attack") is True
-                    )
+                    and bool(is_weapon_attack or action.get("is_unarmed_attack") is True)
                 )
             elif applies_when == "brutal_strike_eligible":
                 explicit = eligibility.get(rider_id, eligibility.get("brutal_strike"))
@@ -1620,23 +1602,18 @@ class PlayerRoomService:
                     and CombatEngineService._has_condition(actor, "raging")
                     and CombatEngineService._has_condition(actor, "reckless_attack")
                     and is_strength_attack
-                    and bool(
-                        is_weapon_attack or action.get("is_unarmed_attack") is True
-                    )
-                    and str(action.get("attack_roll_mode") or "").strip().lower()
-                    == "advantage"
+                    and bool(is_weapon_attack or action.get("is_unarmed_attack") is True)
+                    and str(action.get("attack_roll_mode") or "").strip().lower() == "advantage"
                 )
             elif applies_when == "radiant_soul_spell_damage":
                 explicit = eligibility.get(rider_id, eligibility.get("radiant_soul"))
                 raw_damage_types = action.get("damage_types")
-                damage_types = {
-                    str(value).strip().lower()
-                    for value in raw_damage_types
-                    if str(value).strip()
-                } if isinstance(raw_damage_types, list) else set()
-                selected_target = str(
-                    special_inputs.get("radiant_soul_target_id") or ""
-                ).strip()
+                damage_types = (
+                    {str(value).strip().lower() for value in raw_damage_types if str(value).strip()}
+                    if isinstance(raw_damage_types, list)
+                    else set()
+                )
+                selected_target = str(special_inputs.get("radiant_soul_target_id") or "").strip()
                 is_spell_action = bool(
                     action.get("is_spell_attack") is True
                     or action.get("kind") == "spell"
@@ -1651,11 +1628,11 @@ class PlayerRoomService:
             elif applies_when == "elemental_affinity_spell_damage":
                 selected_damage_type = str(raw.get("selected_damage_type") or "").strip().lower()
                 raw_damage_types = action.get("damage_types")
-                damage_types = {
-                    str(value).strip().lower()
-                    for value in raw_damage_types
-                    if str(value).strip()
-                } if isinstance(raw_damage_types, list) else set()
+                damage_types = (
+                    {str(value).strip().lower() for value in raw_damage_types if str(value).strip()}
+                    if isinstance(raw_damage_types, list)
+                    else set()
+                )
                 is_spell_action = bool(
                     action.get("is_spell_attack") is True
                     or action.get("kind") == "spell"
@@ -1681,14 +1658,9 @@ class PlayerRoomService:
                 # unarmed attack.  Damage dice are still supplied by the
                 # player/DM; the trigger itself must not require a guessed
                 # eligibility flag.
-                eligible = bool(
-                    action.get("is_unarmed_attack") is True
-                    or is_weapon_attack
-                )
+                eligible = bool(action.get("is_unarmed_attack") is True or is_weapon_attack)
             elif applies_when == "target_is_current_hunters_mark":
-                current_mark = (actor.snapshot_json or {}).get(
-                    "current_hunters_mark_target_id"
-                )
+                current_mark = (actor.snapshot_json or {}).get("current_hunters_mark_target_id")
                 explicit = eligibility.get(rider_id)
                 eligible = current_mark == target.id or explicit is True
             else:
@@ -2802,8 +2774,7 @@ class PlayerRoomService:
             if character is not None:
                 character["hit_dice"] = hit_dice
                 feature_grants = [
-                    item for item in character.get("features", [])
-                    if isinstance(item, dict)
+                    item for item in character.get("features", []) if isinstance(item, dict)
                 ]
                 scaling_values = {
                     str(item.get("scaling_key")): item.get("value")
@@ -2816,10 +2787,7 @@ class PlayerRoomService:
                     resources=(character.get("resources") or {})
                     if isinstance(character.get("resources"), dict)
                     else {},
-                    scalings={
-                        key: {"value": value}
-                        for key, value in scaling_values.items()
-                    },
+                    scalings={key: {"value": value} for key, value in scaling_values.items()},
                     class_levels=(character.get("class_levels") or {})
                     if isinstance(character.get("class_levels"), dict)
                     else {},
@@ -2836,7 +2804,8 @@ class PlayerRoomService:
                     character["actions"] = [
                         *list(character.get("actions") or []),
                         *[
-                            item for item in runtime_actions
+                            item
+                            for item in runtime_actions
                             if str(item.get("name")) not in existing_names
                         ],
                     ]
@@ -3126,10 +3095,13 @@ class PlayerRoomService:
             if item.object_type == "wall" or (
                 item.object_type == "door" and item.state in {"active", "closed"}
             ):
-                if CombatEngineService._sight_transparency(
-                    item.metadata_json,
-                    default="opaque",
-                ) == "opaque":
+                if (
+                    CombatEngineService._sight_transparency(
+                        item.metadata_json,
+                        default="opaque",
+                    )
+                    == "opaque"
+                ):
                     blockers.update(_object_cells(item))
         radius = 8
         visible = {
@@ -3657,17 +3629,14 @@ class PlayerRoomService:
                 )
                 raw_dice = target.snapshot_json.get("feature_dice") if target else None
                 raw_bardic_die = (
-                    raw_dice.get("bardic_inspiration_die")
-                    if isinstance(raw_dice, dict)
-                    else None
+                    raw_dice.get("bardic_inspiration_die") if isinstance(raw_dice, dict) else None
                 )
                 bardic_inspiration_die = (
                     {
                         "value": raw_bardic_die.get("value"),
                         "source": raw_bardic_die.get("source"),
                     }
-                    if isinstance(raw_bardic_die, dict)
-                    and raw_bardic_die.get("available") is True
+                    if isinstance(raw_bardic_die, dict) and raw_bardic_die.get("available") is True
                     else None
                 )
                 pending.append(
@@ -3718,8 +3687,7 @@ class PlayerRoomService:
                 (
                     str(item.get("action_name"))
                     for item in pending
-                    if item.get("actor_combatant_id") == active.id
-                    and item.get("action_name")
+                    if item.get("actor_combatant_id") == active.id and item.get("action_name")
                 ),
                 None,
             )
@@ -3798,9 +3766,7 @@ class PlayerRoomService:
             result_json = action.result_json if isinstance(action.result_json, dict) else {}
             details: dict[str, object] = {
                 "damage_type": result_json.get("damage_type"),
-                "damage_components": public_damage_components(
-                    result_json.get("damage_components")
-                ),
+                "damage_components": public_damage_components(result_json.get("damage_components")),
             }
             raw_target_results = result_json.get("target_results")
             if isinstance(raw_target_results, list):
@@ -3830,13 +3796,15 @@ class PlayerRoomService:
         pending_reactions: list[dict[str, Any]] = []
         if principal.character_id is not None:
             for request in session.scalars(
-                select(PlayerActionRequest).where(
+                select(PlayerActionRequest)
+                .where(
                     PlayerActionRequest.campaign_id == room.campaign_id,
                     PlayerActionRequest.character_id == principal.character_id,
                     PlayerActionRequest.player_key == principal.session_id,
                     PlayerActionRequest.action_type == "opportunity_reaction",
                     PlayerActionRequest.status == "pending",
-                ).order_by(PlayerActionRequest.created_at)
+                )
+                .order_by(PlayerActionRequest.created_at)
             ).all():
                 payload = dict(request.payload_json or {})
                 pending_reactions.append(
@@ -3853,13 +3821,53 @@ class PlayerRoomService:
                     }
                 )
             for window in session.scalars(
-                select(CombatAction).where(
+                select(CombatAction)
+                .where(
                     CombatAction.combat_id == combat.id,
-                    CombatAction.action_type == "eligible_action_window",
+                    CombatAction.action_type.in_(
+                        ("eligible_action_window", "triggered_attack_window")
+                    ),
                     CombatAction.actor_combatant_id.in_(own_ids),
-                ).order_by(CombatAction.created_at, CombatAction.id)
+                )
+                .order_by(CombatAction.created_at, CombatAction.id)
             ).all():
                 metadata = dict((window.result_json or {}).get("action_window") or {})
+                if window.action_type == "triggered_attack_window":
+                    if metadata.get("status") != "eligible":
+                        continue
+                    candidate_ids = [
+                        str(item)
+                        for item in metadata.get("candidate_target_ids", [])
+                        if isinstance(item, str) and item in safe_fighters_by_id
+                    ]
+                    pending_reactions.append(
+                        {
+                            "id": window.id,
+                            "version": window.version,
+                            "kind": "triggered_attack",
+                            "feature_id": metadata.get("feature_id"),
+                            "feature_name": metadata.get("feature_name"),
+                            "source_name": metadata.get("trigger_combatant_name"),
+                            "source_action_name": metadata.get("trigger_event"),
+                            "target_name": None,
+                            "reaction_trigger": metadata.get("reaction_trigger"),
+                            "message": window.summary,
+                            "action_cost": metadata.get("action_cost"),
+                            "candidate_target_ids": candidate_ids,
+                            "candidate_target_names": {
+                                candidate_id: safe_fighters_by_id[candidate_id].display_name
+                                for candidate_id in candidate_ids
+                            },
+                            "eligible_attack_profiles": metadata.get(
+                                "eligible_attack_profiles", []
+                            ),
+                            "resource_key": metadata.get("resource_key"),
+                            "resource_cost": metadata.get("resource_cost", 0),
+                            "trigger_event": metadata.get("trigger_event"),
+                            "parent_action_id": metadata.get("parent_action_id"),
+                        }
+                    )
+                    continue
                 if (
                     metadata.get("phase") not in {"pre_damage", "deflect_redirect"}
                     or metadata.get("status") != "pending"
@@ -3914,8 +3922,7 @@ class PlayerRoomService:
                             else []
                         )
                         requires_roll = any(
-                            isinstance(item, dict)
-                            and item.get("key") == "reduction_roll"
+                            isinstance(item, dict) and item.get("key") == "reduction_roll"
                             for item in raw_requirements or []
                         )
                         candidate_features.append(
@@ -4088,12 +4095,8 @@ class PlayerRoomService:
                     "action_available": item.action_available,
                     "bonus_action_available": item.bonus_action_available,
                     "reaction_available": item.reaction_available,
-                    "extra_action_budget": int(
-                        item.snapshot_json.get("extra_action_budget") or 0
-                    ),
-                    "attack_roll_budget": int(
-                        item.snapshot_json.get("attack_roll_budget") or 0
-                    ),
+                    "extra_action_budget": int(item.snapshot_json.get("extra_action_budget") or 0),
+                    "attack_roll_budget": int(item.snapshot_json.get("attack_roll_budget") or 0),
                     "bardic_inspiration_die": (
                         {
                             "value": item.snapshot_json.get("feature_dice", {})
@@ -4179,9 +4182,7 @@ class PlayerRoomService:
         registry = item.snapshot_json.get("feature_runtime")
         if isinstance(registry, dict):
             existing_names = {
-                str(action.get("name") or "")
-                for action in actions
-                if isinstance(action, dict)
+                str(action.get("name") or "") for action in actions if isinstance(action, dict)
             }
             actions.extend(
                 action
@@ -4679,11 +4680,7 @@ class PlayerRoomService:
             resolution.update(
                 raw_roll=raw_roll,
                 reported_raw_roll=reported_raw_roll,
-                **(
-                    {"applied_features": ["可靠才能"]}
-                    if reliable_talent
-                    else {}
-                ),
+                **({"applied_features": ["可靠才能"]} if reliable_talent else {}),
                 total=total,
                 success=total >= dc,
                 instruction=(
@@ -4787,9 +4784,7 @@ class PlayerRoomService:
             elif summon_block.get("count_expression") and not isinstance(count, int):
                 raise ValueError("数量表达式的召唤必须由玩家明确提交实际数量")
             elif summon_block.get("count_expression"):
-                allowed_counts = explicit_count_outcomes(
-                    str(summon_block["count_expression"])
-                )
+                allowed_counts = explicit_count_outcomes(str(summon_block["count_expression"]))
                 if allowed_counts and count not in allowed_counts:
                     formatted = "、".join(str(value) for value in allowed_counts)
                     raise ValueError(f"该召唤的明确数量只能是：{formatted}")
@@ -5016,9 +5011,7 @@ class PlayerRoomService:
                 if not cls._rule_expression_supported(expression) or not damage_type:
                     return False
             return True
-        return cls._rule_expression_supported(
-            cls._opportunity_damage_expression(action)
-        ) and bool(
+        return cls._rule_expression_supported(cls._opportunity_damage_expression(action)) and bool(
             str(action.get("damage_type") or "").strip()
         )
 
@@ -5118,9 +5111,7 @@ class PlayerRoomService:
                 amount=(roll["damage_total"] if roll["attack_total"] >= target.armor_class else 0),
                 damage_type=damage_type,
                 damage_components=(
-                    roll["damage_components"]
-                    if roll["attack_total"] >= target.armor_class
-                    else []
+                    roll["damage_components"] if roll["attack_total"] >= target.armor_class else []
                 ),
                 is_attack=True,
                 attack_roll_mode="normal",
@@ -5299,24 +5290,20 @@ class PlayerRoomService:
                             self._opportunity_damage_expression(action) or "按 DM 指定"
                         )
                         opportunity = {
-                                "source_combatant_id": enemy.id,
-                                "source_name": enemy.display_name,
-                                "source_action_name": str(
-                                    action.get("name") or "近战攻击"
-                                ),
-                                "source_action_type": str(
-                                    action.get("action_type") or "action"
-                                ),
-                                "source_attack_range_ft": action.get("range_ft"),
-                                "damage_expression": damage_expression,
-                                "damage_type": str(action.get("damage_type") or "slashing"),
-                                "target_combatant_id": actor.id,
-                                "target_name": actor.display_name,
-                                "reaction_trigger": (
-                                    f"{actor.display_name} 离开 {enemy.display_name} 的近战威胁范围"
-                                ),
-                                "action": action,
-                            }
+                            "source_combatant_id": enemy.id,
+                            "source_name": enemy.display_name,
+                            "source_action_name": str(action.get("name") or "近战攻击"),
+                            "source_action_type": str(action.get("action_type") or "action"),
+                            "source_attack_range_ft": action.get("range_ft"),
+                            "damage_expression": damage_expression,
+                            "damage_type": str(action.get("damage_type") or "slashing"),
+                            "target_combatant_id": actor.id,
+                            "target_name": actor.display_name,
+                            "reaction_trigger": (
+                                f"{actor.display_name} 离开 {enemy.display_name} 的近战威胁范围"
+                            ),
+                            "action": action,
+                        }
                         if not self._automatic_opportunity_supported(action):
                             opportunity_requests.append(opportunity)
                         else:
@@ -5423,9 +5410,7 @@ class PlayerRoomService:
                     )
                 )
                 if ended_movement_effects:
-                    result_effect_ids = [
-                        effect.id for effect in ended_movement_effects
-                    ]
+                    result_effect_ids = [effect.id for effect in ended_movement_effects]
                 else:
                     result_effect_ids = []
             else:
@@ -5528,9 +5513,7 @@ class PlayerRoomService:
         result["opportunity_attacks"] = [*opportunity_requests, *automatic_results]
         result["automatic_opportunity_attacks"] = automatic_results
         result["ended_predicated_effect_ids"] = result_effect_ids
-        result["ended_predicated_summon_ids"] = [
-            summon.id for summon in ended_movement_summons
-        ]
+        result["ended_predicated_summon_ids"] = [summon.id for summon in ended_movement_summons]
         return result
 
     def move_monster(
@@ -5654,84 +5637,79 @@ class PlayerRoomService:
             )
             reaction_requests: list[dict[str, Any]] = []
             for target in fighters:
-                    if target.id == monster.id or target.hp <= 0:
-                        continue
-                    if self._combatant_faction(target) == self._combatant_faction(monster):
-                        continue
-                    target_position = target.snapshot_json.get("grid_position")
-                    if not isinstance(target_position, dict):
-                        continue
-                    target_point = (int(target_position["row"]), int(target_position["col"]))
-                    if not (
-                        grid_distance_ft(start, target_point, cell_size_ft=cell_size) <= 5
-                        and grid_distance_ft((row, col), target_point, cell_size_ft=cell_size) > 5
-                    ):
-                        continue
-                    character_id = self._combatant_owner(target)
-                    if character_id is None:
-                        continue
-                    character = session.get(Character, character_id)
-                    player_session = session.scalar(
-                        select(PlayerSession).where(
-                            PlayerSession.room_id == room.id,
-                            PlayerSession.character_id == character_id,
-                            PlayerSession.status == "active",
-                        )
+                if target.id == monster.id or target.hp <= 0:
+                    continue
+                if self._combatant_faction(target) == self._combatant_faction(monster):
+                    continue
+                target_position = target.snapshot_json.get("grid_position")
+                if not isinstance(target_position, dict):
+                    continue
+                target_point = (int(target_position["row"]), int(target_position["col"]))
+                if not (
+                    grid_distance_ft(start, target_point, cell_size_ft=cell_size) <= 5
+                    and grid_distance_ft((row, col), target_point, cell_size_ft=cell_size) > 5
+                ):
+                    continue
+                character_id = self._combatant_owner(target)
+                if character_id is None:
+                    continue
+                character = session.get(Character, character_id)
+                player_session = session.scalar(
+                    select(PlayerSession).where(
+                        PlayerSession.room_id == room.id,
+                        PlayerSession.character_id == character_id,
+                        PlayerSession.status == "active",
                     )
-                    if character is None or player_session is None:
-                        continue
-                    action = self._opportunity_attack_action(
-                        self._combatant_actions(session, target)
+                )
+                if character is None or player_session is None:
+                    continue
+                action = self._opportunity_attack_action(self._combatant_actions(session, target))
+                if action is None or not self._automatic_opportunity_supported(action):
+                    continue
+                payload = {
+                    "schema_version": "1.0",
+                    "phase": "awaiting_player_choice",
+                    "combat_id": combat_id,
+                    "source_combatant_id": target.id,
+                    "source_name": target.display_name,
+                    "source_action_name": str(action.get("name") or "近战攻击"),
+                    "damage_expression": str(
+                        self._opportunity_damage_expression(action) or "分段伤害"
+                    ),
+                    "damage_type": str(action.get("damage_type") or ""),
+                    "target_combatant_id": monster.id,
+                    "target_name": monster.display_name,
+                    "reaction_trigger": (
+                        f"{monster.display_name} 离开 {target.display_name} 的近战威胁范围"
+                    ),
+                    "action": action,
+                }
+                idempotency_key = (
+                    f"opportunity-choice:{combat_id}:{monster.id}:{target.id}:{combatant_version}"
+                )
+                existing = session.scalar(
+                    select(PlayerActionRequest).where(
+                        PlayerActionRequest.campaign_id == campaign_id,
+                        PlayerActionRequest.idempotency_key == idempotency_key,
                     )
-                    if action is None or not self._automatic_opportunity_supported(action):
-                        continue
-                    payload = {
-                        "schema_version": "1.0",
-                        "phase": "awaiting_player_choice",
-                        "combat_id": combat_id,
-                        "source_combatant_id": target.id,
-                        "source_name": target.display_name,
-                        "source_action_name": str(action.get("name") or "近战攻击"),
-                        "damage_expression": str(
-                            self._opportunity_damage_expression(action) or "分段伤害"
-                        ),
-                        "damage_type": str(action.get("damage_type") or ""),
-                        "target_combatant_id": monster.id,
-                        "target_name": monster.display_name,
-                        "reaction_trigger": (
-                            f"{monster.display_name} 离开 {target.display_name} 的近战威胁范围"
-                        ),
-                        "action": action,
-                    }
-                    idempotency_key = (
-                        f"opportunity-choice:{combat_id}:{monster.id}:{target.id}:"
-                        f"{combatant_version}"
-                    )
-                    existing = session.scalar(
-                        select(PlayerActionRequest).where(
-                            PlayerActionRequest.campaign_id == campaign_id,
-                            PlayerActionRequest.idempotency_key == idempotency_key,
-                        )
-                    )
-                    if existing is not None:
-                        reaction_requests.append(serialize(existing))
-                        continue
-                    item = PlayerActionRequest(
-                        campaign_id=campaign_id,
-                        character_id=character_id,
-                        player_key=player_session.id,
-                        action_type="opportunity_reaction",
-                        message=(
-                            f"{monster.display_name} 离开你的近战范围；是否发动一次借机攻击？"
-                        ),
-                        payload_json=payload,
-                        character_version=character.version,
-                        idempotency_key=idempotency_key,
-                        status="pending",
-                    )
-                    session.add(item)
-                    session.flush()
-                    reaction_requests.append(serialize(item))
+                )
+                if existing is not None:
+                    reaction_requests.append(serialize(existing))
+                    continue
+                item = PlayerActionRequest(
+                    campaign_id=campaign_id,
+                    character_id=character_id,
+                    player_key=player_session.id,
+                    action_type="opportunity_reaction",
+                    message=(f"{monster.display_name} 离开你的近战范围；是否发动一次借机攻击？"),
+                    payload_json=payload,
+                    character_version=character.version,
+                    idempotency_key=idempotency_key,
+                    status="pending",
+                )
+                session.add(item)
+                session.flush()
+                reaction_requests.append(serialize(item))
             session.flush()
             result = serialize(monster)
         result["reaction_requests"] = reaction_requests
@@ -5873,15 +5851,11 @@ class PlayerRoomService:
 
     @staticmethod
     def _action_data(session: Session, character: Character, action_name: str) -> dict[str, Any]:
-        feature_grants = [
-            item for item in character.features
-            if isinstance(item, dict)
-        ]
+        feature_grants = [item for item in character.features if isinstance(item, dict)]
         scaling_values = {
             str(item.get("scaling_key")): item.get("value")
             for item in feature_grants
-            if item.get("kind") == "class_scaling"
-            and isinstance(item.get("scaling_key"), str)
+            if item.get("kind") == "class_scaling" and isinstance(item.get("scaling_key"), str)
         }
         feature_registry = compile_feature_runtime_registry(
             feature_grants,
@@ -5951,9 +5925,7 @@ class PlayerRoomService:
             or "远程攻击" in action_text
         ):
             return
-        action["attack_riders"] = [
-            dict(rider) for rider in raw_riders if isinstance(rider, dict)
-        ]
+        action["attack_riders"] = [dict(rider) for rider in raw_riders if isinstance(rider, dict)]
 
     @staticmethod
     def _companion_action_data(companion: Combatant, action_name: str) -> dict[str, Any]:
@@ -7020,6 +6992,7 @@ class PlayerRoomService:
         target_damage_component_totals: dict[str, dict[str, int]] | None = None,
         reaction_trigger: str | None = None,
         special_inputs: dict[str, Any] | None = None,
+        attack_d20: int | None = None,
     ) -> dict[str, Any]:
         if principal.character_id is None:
             raise ValueError("请先绑定角色")
@@ -7061,6 +7034,58 @@ class PlayerRoomService:
                 if actor.entity_type == "character"
                 else self._companion_action_data(actor, action_name)
             )
+            triggered_window: CombatAction | None = None
+            triggered_metadata: dict[str, Any] = {}
+            raw_triggered_window_id = special_inputs.get("triggered_attack_window_id")
+            if raw_triggered_window_id is not None:
+                if (
+                    not isinstance(raw_triggered_window_id, str)
+                    or not raw_triggered_window_id.strip()
+                ):
+                    raise ValueError("追加攻击窗口 ID 无效")
+                triggered_window = session.get(CombatAction, raw_triggered_window_id)
+                triggered_metadata = dict(
+                    (triggered_window.result_json if triggered_window is not None else {}).get(
+                        "action_window"
+                    )
+                    or {}
+                )
+                expected_window_version = special_inputs.get("triggered_attack_window_version")
+                if (
+                    triggered_window is None
+                    or triggered_window.combat_id != combat.id
+                    or triggered_window.action_type != "triggered_attack_window"
+                    or triggered_window.version != expected_window_version
+                    or triggered_metadata.get("status") != "eligible"
+                    or triggered_metadata.get("reactor_combatant_id") != actor.id
+                ):
+                    raise ValueError("追加攻击窗口不存在、版本过期或不属于当前角色")
+                allowed_targets = {
+                    str(value)
+                    for value in triggered_metadata.get("candidate_target_ids", [])
+                    if isinstance(value, str)
+                }
+                if target.id not in allowed_targets:
+                    raise ValueError("追加攻击目标不在服务器窗口的权威目标集合内")
+                profiles = triggered_metadata.get("eligible_attack_profiles")
+                if not isinstance(profiles, list) or not any(
+                    isinstance(profile, dict) and profile.get("action_name") == action_name
+                    for profile in profiles
+                ):
+                    raise ValueError("追加攻击动作不在服务器窗口授予的动作集合内")
+                action = {
+                    **action,
+                    "_triggered_attack_window_id": triggered_window.id,
+                    "_triggered_attack_window_version": triggered_window.version,
+                    "_triggered_attack_action_cost": triggered_metadata.get("action_cost"),
+                    "_triggered_attack_reaction_trigger": triggered_metadata.get(
+                        "reaction_trigger"
+                    ),
+                    "_triggered_attack_resource_key": triggered_metadata.get("resource_key"),
+                    "_triggered_attack_resource_cost": int(
+                        triggered_metadata.get("resource_cost") or 0
+                    ),
+                }
             if action.get("resolution_kind") == "weapon_attack":
                 input_key = str(action.get("feature_attack_profile_input_key") or "").strip()
                 selected_name = str(special_inputs.get(input_key) or "").strip()
@@ -7068,8 +7093,7 @@ class PlayerRoomService:
                     raise ValueError("该职业特性攻击必须提交一个不同的武器或徒手动作名")
                 selected = self._action_data(session, character, selected_name)
                 selected_text = " ".join(
-                    str(selected.get(key) or "")
-                    for key in ("name", "description", "attack_type")
+                    str(selected.get(key) or "") for key in ("name", "description", "attack_type")
                 )
                 selected_is_spell = bool(
                     selected.get("kind") == "spell"
@@ -7091,8 +7115,10 @@ class PlayerRoomService:
                 selected_is_unarmed = bool(
                     selected.get("is_unarmed_attack") is True or "徒手" in selected_text
                 )
-                if selected_is_spell or not selected_is_melee or not (
-                    selected_is_weapon or selected_is_unarmed
+                if (
+                    selected_is_spell
+                    or not selected_is_melee
+                    or not (selected_is_weapon or selected_is_unarmed)
                 ):
                     raise ValueError("战争祭司只能选择近战武器攻击或徒手打击")
                 if selected.get("area_shape") or selected.get("affects_multiple_targets"):
@@ -7161,7 +7187,8 @@ class PlayerRoomService:
                 and isinstance(area_block, dict)
                 and any(
                     block.get("kind") in {"damage", "save", "move"}
-                    and str(block.get("id")) in {
+                    and str(block.get("id"))
+                    in {
                         str(child_id)
                         for child_id in area_block.get("effect_block_ids", [])
                         if isinstance(child_id, str)
@@ -7169,18 +7196,20 @@ class PlayerRoomService:
                     for block in blocks
                 )
             ):
-                target_rule = TargetBlock.model_validate({
-                    **target_block,
-                    "mode": "area",
-                    "shape": area_block.get("shape"),
-                    "size_ft": area_block.get("size_ft"),
-                    "width_ft": area_block.get("width_ft"),
-                    "height_ft": area_block.get("height_ft"),
-                    "anchor_height_ft": area_block.get("anchor_height_ft", 0),
-                    "requires_explicit_elevation": area_block.get(
-                        "requires_explicit_elevation", False
-                    ),
-                })
+                target_rule = TargetBlock.model_validate(
+                    {
+                        **target_block,
+                        "mode": "area",
+                        "shape": area_block.get("shape"),
+                        "size_ft": area_block.get("size_ft"),
+                        "width_ft": area_block.get("width_ft"),
+                        "height_ft": area_block.get("height_ft"),
+                        "anchor_height_ft": area_block.get("anchor_height_ft", 0),
+                        "requires_explicit_elevation": area_block.get(
+                            "requires_explicit_elevation", False
+                        ),
+                    }
+                )
             plan_range = target_block.get("range_ft")
             plan_size = target_rule.size_ft or (
                 area_block.get("size_ft") if isinstance(area_block, dict) else None
@@ -7283,8 +7312,7 @@ class PlayerRoomService:
                             cell,
                             default=(
                                 "opaque"
-                                if cell.get("kind") == "wall"
-                                or cell.get("blocks_sight") is True
+                                if cell.get("kind") == "wall" or cell.get("blocks_sight") is True
                                 else cover_default
                             ),
                         )
@@ -7315,10 +7343,13 @@ class PlayerRoomService:
                         and scene_object.state == "active"
                         and metadata.get("provides_cover") is True
                     ):
-                        if CombatEngineService._sight_transparency(
-                            metadata,
-                            default="translucent",
-                        ) != "transparent":
+                        if (
+                            CombatEngineService._sight_transparency(
+                                metadata,
+                                default="translucent",
+                            )
+                            != "transparent"
+                        ):
                             cover_cells.update(object_cells)
                     blocks_sight = scene_object.object_type == "wall" or (
                         scene_object.object_type == "door"
@@ -7346,9 +7377,7 @@ class PlayerRoomService:
                     if isinstance(value, int) and not isinstance(value, bool):
                         return value
                 if requires_explicit_elevation:
-                    raise ValueError(
-                        f"高级三维区域需要{label}记录 grid_position.elevation_ft"
-                    )
+                    raise ValueError(f"高级三维区域需要{label}记录 grid_position.elevation_ft")
                 return None
 
             actor_elevation = explicit_elevation(actor_pos, "施法者")
@@ -7365,10 +7394,10 @@ class PlayerRoomService:
                 if grid is None:
                     return line_of_sight(start, end, sight_blockers), "2d"
                 end_elevation = explicit_elevation(end_position, label)
-                start_elevation = actor_elevation if start == actor_point else (
-                    int(plan_anchor_height or 0)
-                    if requires_explicit_elevation
-                    else None
+                start_elevation = (
+                    actor_elevation
+                    if start == actor_point
+                    else (int(plan_anchor_height or 0) if requires_explicit_elevation else None)
                 )
                 if (
                     end_combatant is not None
@@ -7435,13 +7464,26 @@ class PlayerRoomService:
             )
             cover_bonus = 2 if cover_kind == "half" else 0
             cost_text = str(action.get("cost") or "动作")
-            cost: Literal["action", "bonus_action", "reaction"] = (
+            cost: str = (
                 "bonus_action"
                 if "附赠" in cost_text
                 else "reaction"
                 if "反应" in cost_text
                 else "action"
             )
+            if triggered_window is not None:
+                raw_window_cost = str(triggered_metadata.get("action_cost") or "").strip()
+                if raw_window_cost not in {
+                    "action",
+                    "bonus_action",
+                    "reaction",
+                    "parent_action_part",
+                }:
+                    raise ValueError("追加攻击窗口的动作经济无效")
+                cost = raw_window_cost  # type: ignore[assignment]
+                reaction_trigger = (
+                    str(triggered_metadata.get("reaction_trigger") or "").strip() or None
+                )
             if cost == "reaction" and not (reaction_trigger or "").strip():
                 raise ValueError("反应动作必须由玩家明确填写 reaction_trigger")
             damage_rules = [
@@ -7512,10 +7554,7 @@ class PlayerRoomService:
                     raise ValueError("战斗激励模式必须是 defense 或 offense")
             raw_bardic_total = special_inputs.get("bardic_inspiration_total")
             if raw_bardic_total is not None:
-                if (
-                    isinstance(raw_bardic_total, bool)
-                    or not isinstance(raw_bardic_total, int)
-                ):
+                if isinstance(raw_bardic_total, bool) or not isinstance(raw_bardic_total, int):
                     raise ValueError("吟游诗人激励骰结果必须是整数")
                 if saving_throw_action or auto_hit_action:
                     raise ValueError("吟游诗人激励骰只能用于攻击检定")
@@ -7661,18 +7700,23 @@ class PlayerRoomService:
                             f"目标 {candidate.display_name}",
                         )[0]
                     elif shape == "cylinder":
-                        legal = grid_distance_ft(
-                            aim_point,
-                            candidate_point,
-                            cell_size_ft=cell_size,
-                        ) <= radius and sight_check(
-                            aim_point,
-                            candidate_point,
-                            candidate_pos,
-                            f"目标 {candidate.display_name}",
-                        )[0] and int(plan_anchor_height or 0) <= candidate_height < int(
-                            plan_anchor_height or 0
-                        ) + int(plan_height)
+                        legal = (
+                            grid_distance_ft(
+                                aim_point,
+                                candidate_point,
+                                cell_size_ft=cell_size,
+                            )
+                            <= radius
+                            and sight_check(
+                                aim_point,
+                                candidate_point,
+                                candidate_pos,
+                                f"目标 {candidate.display_name}",
+                            )[0]
+                            and int(plan_anchor_height or 0)
+                            <= candidate_height
+                            < int(plan_anchor_height or 0) + int(plan_height)
+                        )
                     elif shape == "cube":
                         size_cells = max(0.5, width / cell_size)
                         if target_rule.range_ft == 0 and aim_point != actor_point:
@@ -7684,9 +7728,10 @@ class PlayerRoomService:
                             forward = (
                                 relative_row * direction_row + relative_col * direction_col
                             ) / direction_length
-                            lateral = abs(
-                                relative_row * direction_col - relative_col * direction_row
-                            ) / direction_length
+                            lateral = (
+                                abs(relative_row * direction_col - relative_col * direction_row)
+                                / direction_length
+                            )
                             legal = (
                                 forward >= -0.01
                                 and forward <= size_cells + 0.01
@@ -7706,20 +7751,25 @@ class PlayerRoomService:
                             )
                         else:
                             center = actor_point if target_rule.range_ft == 0 else aim_point
-                            legal = max(
-                                abs(candidate_point[0] - center[0]),
-                                abs(candidate_point[1] - center[1]),
-                            ) <= size_cells / 2 + 0.01 and (
-                                not requires_explicit_elevation
-                                or int(plan_anchor_height or 0)
-                                <= candidate_height
-                                < int(plan_anchor_height or 0) + width
-                            ) and sight_check(
-                                center,
-                                candidate_point,
-                                candidate_pos,
-                                f"目标 {candidate.display_name}",
-                            )[0]
+                            legal = (
+                                max(
+                                    abs(candidate_point[0] - center[0]),
+                                    abs(candidate_point[1] - center[1]),
+                                )
+                                <= size_cells / 2 + 0.01
+                                and (
+                                    not requires_explicit_elevation
+                                    or int(plan_anchor_height or 0)
+                                    <= candidate_height
+                                    < int(plan_anchor_height or 0) + width
+                                )
+                                and sight_check(
+                                    center,
+                                    candidate_point,
+                                    candidate_pos,
+                                    f"目标 {candidate.display_name}",
+                                )[0]
+                            )
                     elif shape == "cone" and length_squared > 0:
                         candidate_row = candidate_point[0] - actor_row
                         candidate_col = candidate_point[1] - actor_col
@@ -7788,6 +7838,9 @@ class PlayerRoomService:
 
             resource_key = str(action.get("resource_key") or "")
             resource_cost = int(action.get("resource_cost") or 0)
+            if triggered_window is not None:
+                resource_key = str(triggered_metadata.get("resource_key") or "")
+                resource_cost = int(triggered_metadata.get("resource_cost") or 0)
             if actor.entity_type != "character":
                 resource_key = ""
                 resource_cost = 0
@@ -7869,13 +7922,9 @@ class PlayerRoomService:
             rider_turn_key = f"{combat.round_number}:{combat.current_turn_index}"
             raw_rider_usage = actor.snapshot_json.get("attack_rider_uses")
             rider_usage = (
-                raw_rider_usage.get(rider_turn_key, [])
-                if isinstance(raw_rider_usage, dict)
-                else []
+                raw_rider_usage.get(rider_turn_key, []) if isinstance(raw_rider_usage, dict) else []
             )
-            riders_used_this_turn = {
-                str(value) for value in rider_usage if isinstance(value, str)
-            }
+            riders_used_this_turn = {str(value) for value in rider_usage if isinstance(value, str)}
             riders_applied_this_call: set[str] = set()
             rider_results_by_target: dict[str, list[dict[str, Any]]] = {}
             attack_bonus, _, _ = self._rule_modifier(
@@ -8044,9 +8093,7 @@ class PlayerRoomService:
                         current_target,
                         special_inputs=special_inputs,
                         critical_hit=effective_critical,
-                        used_this_turn=(
-                            riders_used_this_turn | riders_applied_this_call
-                        ),
+                        used_this_turn=(riders_used_this_turn | riders_applied_this_call),
                         event_id=f"{idempotency_key}:{current_target.id}",
                         turn_id=rider_turn_key,
                     )
@@ -8066,9 +8113,7 @@ class PlayerRoomService:
                 for component in components:
                     rule = next(rule for rule in damage_rules if rule.id == component.block_id)
                     critical_expression = (
-                        critical_damage_expression(rule.expression)
-                        if effective_critical
-                        else None
+                        critical_damage_expression(rule.expression) if effective_critical else None
                     )
                     reported_total = max(
                         0,
@@ -8128,7 +8173,7 @@ class PlayerRoomService:
                             "amount": amount,
                             "critical_hit": effective_critical,
                             "note": (
-                            f"{note}；伤害段 {component.block_id} "
+                                f"{note}；伤害段 {component.block_id} "
                                 f"({component.damage_type}) 报告 {reported_total}，结算 {amount}"
                                 + (
                                     f"；暴击伤害骰应为 {critical_expression}"
@@ -8142,8 +8187,7 @@ class PlayerRoomService:
                                         for item in rider_results
                                         if item.get("total")
                                     )
-                                    if component.block_id == first_damage_block_id
-                                    and rider_results
+                                    if component.block_id == first_damage_block_id and rider_results
                                     else ""
                                 )
                             ),
@@ -8205,11 +8249,11 @@ class PlayerRoomService:
 
         commands: list[tuple[CombatActionCommand, str]] = []
         target_versions = {item.id: item.version for item in requested_targets}
-        action_damage_tags = [
-            str(value)
-            for value in action.get("damage_tags", [])
-            if isinstance(value, str)
-        ] if isinstance(action.get("damage_tags"), list) else []
+        action_damage_tags = (
+            [str(value) for value in action.get("damage_tags", []) if isinstance(value, str)]
+            if isinstance(action.get("damage_tags"), list)
+            else []
+        )
 
         # One attack/spell against one target is one damage event, even when
         # its rule plan contains several independently resisted segments.  The
@@ -8231,14 +8275,18 @@ class PlayerRoomService:
                 {
                     "amount": int(spec["amount"]),
                     "damage_type": str(spec["damage_type"]),
-                    "damage_tags": list(dict.fromkeys([
-                        *action_damage_tags,
-                        *[
-                            str(tag)
-                            for tag in spec.get("damage_tags", [])
-                            if str(tag).strip()
-                        ],
-                    ])),
+                    "damage_tags": list(
+                        dict.fromkeys(
+                            [
+                                *action_damage_tags,
+                                *[
+                                    str(tag)
+                                    for tag in spec.get("damage_tags", [])
+                                    if str(tag).strip()
+                                ],
+                            ]
+                        )
+                    ),
                 }
                 for spec in target_specs
             ]
@@ -8255,16 +8303,13 @@ class PlayerRoomService:
                 resolution_note="；".join(str(spec["note"]) for spec in target_specs),
                 amount=total_amount,
                 damage_type=(
-                    str(components[0]["damage_type"])
-                    if len(components) == 1
-                    else "mixed"
+                    str(components[0]["damage_type"]) if len(components) == 1 else "mixed"
                 ),
                 damage_components=components if len(components) > 1 else [],
                 critical_hit=critical and not saving_throw_action,
                 is_attack=not saving_throw_action and not auto_hit_action,
                 attack_ability=(
-                    str(action.get("attack_ability") or action.get("ability") or "").strip()
-                    or None
+                    str(action.get("attack_ability") or action.get("ability") or "").strip() or None
                 ),
                 is_weapon_attack=bool(
                     action.get("is_weapon_attack") is True
@@ -8289,7 +8334,9 @@ class PlayerRoomService:
                         action.get("spellcasting_class")
                         or action.get("class_name")
                         or (character.class_name if actor.entity_type == "character" else "")
-                    ).strip().lower()
+                    )
+                    .strip()
+                    .lower()
                     in {"术士", "sorcerer"}
                 ),
                 attack_roll_total=(
@@ -8303,31 +8350,52 @@ class PlayerRoomService:
                     if not saving_throw_action and not auto_hit_action
                     else None
                 ),
-                attack_roll_mode=(
-                    attack_roll_mode
-                    if not saving_throw_action and not auto_hit_action
+                attack_d20=(
+                    int(attack_d20)
+                    if attack_d20 is not None
+                    and index == 0
+                    and not saving_throw_action
+                    and not auto_hit_action
                     else None
+                ),
+                attack_range_ft=maximum_range
+                if not saving_throw_action and not auto_hit_action
+                else None,
+                attack_roll_mode=(
+                    attack_roll_mode if not saving_throw_action and not auto_hit_action else None
                 ),
                 damage_tags=action_damage_tags,
                 resource_key=(
                     str(action.get("resource_key") or "").strip() or None
-                    if index == 0 and action.get("resolution_kind") == "weapon_attack"
+                    if index == 0
+                    and (
+                        action.get("resolution_kind") == "weapon_attack"
+                        or triggered_window is not None
+                    )
                     else None
                 ),
                 resource_cost=(
                     int(action.get("resource_cost") or 0)
-                    if index == 0 and action.get("resolution_kind") == "weapon_attack"
+                    if index == 0
+                    and (
+                        action.get("resolution_kind") == "weapon_attack"
+                        or triggered_window is not None
+                    )
                     else 0
                 ),
                 reaction_trigger=reaction_trigger.strip()
                 if cost == "reaction" and index == 0
                 else None,
+                triggered_attack_window_id=(
+                    triggered_window.id if triggered_window is not None and index == 0 else None
+                ),
+                triggered_attack_window_version=(
+                    triggered_window.version
+                    if triggered_window is not None and index == 0
+                    else None
+                ),
             )
-            command_key = (
-                idempotency_key
-                if index == 0
-                else f"{idempotency_key}:damage:{target_id}"
-            )
+            command_key = idempotency_key if index == 0 else f"{idempotency_key}:damage:{target_id}"
             commands.append((command, command_key))
             target_versions[target_id] = target_version + 1
         results = self.combat.confirm_action_batch(
@@ -8365,9 +8433,7 @@ class PlayerRoomService:
         bardic_inspiration_consumed = None
         if bardic_inspiration is not None:
             inspiration_owner_id = (
-                target.id
-                if bardic_inspiration.get("mode") == "defense"
-                else actor.id
+                target.id if bardic_inspiration.get("mode") == "defense" else actor.id
             )
             bardic_inspiration_consumed = self._consume_bardic_inspiration_after_attack(
                 inspiration_owner_id,
@@ -8445,15 +8511,50 @@ class PlayerRoomService:
             "target_resolution": target_resolution,
             "target_outcomes": target_outcomes,
             "attack_riders": [
-                rider
-                for values in rider_results_by_target.values()
-                for rider in values
+                rider for values in rider_results_by_target.values() for rider in values
             ],
             "post_hit_rider_requests": post_hit_rider_requests,
             "bardic_inspiration_consumed": bardic_inspiration_consumed,
             "compiled_effects": compiled_effects,
             "turn_advance": turn_advance,
         }
+
+    def resolve_triggered_attack_window(
+        self,
+        principal: PlayerPrincipal,
+        window_id: str,
+        version: int,
+        decision: str,
+        idempotency_key: str,
+    ) -> dict[str, Any]:
+        if principal.character_id is None:
+            raise ValueError("请先绑定角色")
+        with Session(self.engine) as session:
+            room = session.get(PlayerRoom, principal.room_id)
+            combat = (
+                session.get(Combat, room.current_combat_id)
+                if room and room.current_combat_id
+                else None
+            )
+            if combat is None or combat.status != "active":
+                raise ValueError("当前没有进行中的战斗")
+            fighters = CombatEngineService._ordered_combatants(session, combat.id)
+            active = fighters[combat.current_turn_index] if fighters else None
+            actor = self._controlled_actor(fighters, active, principal.character_id)
+            if actor is None:
+                raise ValueError("当前角色不在战斗中或已失去控制")
+        command = TriggeredAttackDecisionCommand(
+            window_id=window_id,
+            window_version=version,
+            decision=decision,
+        )
+        return self.combat.resolve_triggered_attack_window(
+            principal.campaign_id,
+            combat.id,
+            command,
+            actor_combatant_id=actor.id,
+            idempotency_key=idempotency_key,
+        )
 
     def resolve_post_hit_rider(
         self,

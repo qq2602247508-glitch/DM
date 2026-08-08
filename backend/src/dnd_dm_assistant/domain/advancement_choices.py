@@ -1262,9 +1262,7 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS: dict[str, dict[str, Any]] = {
                 "key": "warding_flare",
                 "label": "守御之光",
                 "max_formula": "max(1, wisdom_modifier)",
-                "recovery_events": [
-                    {"rest": "long_rest", "operation": "set_to_max"}
-                ],
+                "recovery_events": [{"rest": "long_rest", "operation": "set_to_max"}],
                 "automation_status": "full",
                 "requires_dm_adjudication": False,
             }
@@ -1325,9 +1323,7 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS: dict[str, dict[str, Any]] = {
                     "resource": {"key": "warding_flare", "minimum": 1},
                 },
                 "operation": {"kind": "disadvantage", "selection": "lowest"},
-                "input_requirements": [
-                    {"key": "temporary_hp_total", "kind": "roll_total"}
-                ],
+                "input_requirements": [{"key": "temporary_hp_total", "kind": "roll_total"}],
                 "post_effect": {
                     "kind": "grant_temporary_hp",
                     "input_key": "temporary_hp_total",
@@ -3524,7 +3520,8 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS: dict[str, dict[str, Any]] = {
     },
     "奥能冲锋": {
         "combat_start": {"modifiers": [], "defenses": []},
-        "resources": {}, "actions": {},
+        "resources": {},
+        "actions": {},
         "triggers": [
             {
                 "id": "arcane_charge:after_action_surge",
@@ -3562,7 +3559,8 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS: dict[str, dict[str, Any]] = {
                 "partial_reason": "心灵传送已可执行；寻的斩击尚未接入未命中攻击重算窗口。",
             }
         },
-        "triggers": [], "attack_riders": [],
+        "triggers": [],
+        "attack_riders": [],
     },
 }
 # The source pack uses both translated labels for Healing Light.  Keep the
@@ -3887,9 +3885,7 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS["卓越战技"] = {
                     "value_bind_as": "superiority_die_sides",
                 },
             },
-            "input_requirements": [
-                {"key": "superiority_die_roll", "kind": "integer"}
-            ],
+            "input_requirements": [{"key": "superiority_die_roll", "kind": "integer"}],
             "window": {"phase": "after_d20_test", "expires": "operation"},
             "action_cost": "none",
             "resource": {"key": "$feature_resource", "cost": 1},
@@ -3922,9 +3918,7 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS["卓越战技"] = {
                     "value_bind_as": "superiority_die_sides",
                 },
             },
-            "input_requirements": [
-                {"key": "superiority_die_roll", "kind": "integer"}
-            ],
+            "input_requirements": [{"key": "superiority_die_roll", "kind": "integer"}],
             "window": {"phase": "after_d20_test", "expires": "operation"},
             "action_cost": "none",
             "resource": {"key": "$feature_resource", "cost": 1},
@@ -3957,9 +3951,7 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS["卓越战技"] = {
                     "value_bind_as": "superiority_die_sides",
                 },
             },
-            "input_requirements": [
-                {"key": "superiority_die_roll", "kind": "integer"}
-            ],
+            "input_requirements": [{"key": "superiority_die_roll", "kind": "integer"}],
             "window": {"phase": "after_d20_test", "expires": "operation"},
             "action_cost": "none",
             "resource": {"key": "$feature_resource", "cost": 1},
@@ -3972,7 +3964,31 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS["卓越战技"] = {
             "requires_dm_adjudication": False,
         },
     },
-    "triggers": [],
+    "triggers": [
+        {
+            "id": "battle_master:riposte",
+            "feature_name": "反击",
+            "kind": "triggered_attack",
+            "maneuver_id": "riposte",
+            "event": "after_enemy_attack_miss",
+            "action_cost": "reaction",
+            "reaction_trigger": "敌方近战攻击未命中",
+            "target_policy": {
+                "mode": "event_actor",
+                "range_ft": 5,
+                "requires_visible_or_audible": True,
+            },
+            "attack_profile": {"mode": "melee_weapon_or_unarmed"},
+            "resource": {"key": "$feature_resource", "cost": 1},
+            "runtime_execution": {
+                "status": "ready",
+                "consumer": "generic_triggered_attack_window_and_player_attack",
+                "persistence": "combat_action_window_and_cas",
+            },
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+        }
+    ],
     "attack_riders": [],
     "advancement": {
         "kind": "battle_master_maneuver_selection",
@@ -3996,12 +4012,77 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS["卓越战技"] = {
         "automation_status": "partial",
         "requires_dm_adjudication": True,
         "partial_reason": (
-            "仅三项检定战技接入；命中后、反应、位移、目标物品和状态分支"
-            "仍需完整消费者。"
+            "仅三项检定战技接入；命中后、反应、位移、目标物品和状态分支仍需完整消费者。"
         ),
     },
     "automation_status": "partial",
     "requires_dm_adjudication": True,
+}
+
+# These entries describe only the generic event contract.  The combat engine
+# consumes event/target/profile/resource fields and never branches on these
+# feature names.
+SUBCLASS_FEATURE_RUNTIME_CONFIGS["报偿"] = {
+    "combat_start": {"modifiers": [], "defenses": []},
+    "resources": {},
+    "actions": {},
+    "triggers": [
+        {
+            "id": "retaliation:triggered_attack",
+            "feature_name": "报偿",
+            "kind": "triggered_attack",
+            "event": "after_taking_damage",
+            "action_cost": "reaction",
+            "reaction_trigger": "受到 5 尺内生物造成的实际伤害",
+            "target_policy": {
+                "mode": "event_actor",
+                "range_ft": 5,
+                "requires_visible_or_audible": True,
+            },
+            "attack_profile": {"mode": "melee_weapon_or_unarmed"},
+            "runtime_execution": {
+                "status": "ready",
+                "consumer": "generic_triggered_attack_window_and_player_attack",
+                "persistence": "combat_action_window_and_cas",
+            },
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+        }
+    ],
+    "attack_riders": [],
+    "automation_status": "full",
+    "requires_dm_adjudication": False,
+}
+
+SUBCLASS_FEATURE_RUNTIME_CONFIGS["战斗魔法"] = {
+    "combat_start": {"modifiers": [], "defenses": []},
+    "resources": {},
+    "actions": {},
+    "triggers": [
+        {
+            "id": "battle_magic:triggered_attack",
+            "feature_name": "战斗魔法",
+            "kind": "triggered_attack",
+            "event": "after_casting_spell",
+            "action_cost": "bonus_action",
+            "reaction_trigger": "施展施法时间为一动作的法术成功后",
+            "target_policy": {
+                "mode": "enemy",
+                "requires_visible_or_audible": True,
+            },
+            "attack_profile": {"mode": "weapon_only"},
+            "runtime_execution": {
+                "status": "ready",
+                "consumer": "generic_triggered_attack_window_and_player_attack",
+                "persistence": "combat_action_window_and_cas",
+            },
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+        }
+    ],
+    "attack_riders": [],
+    "automation_status": "full",
+    "requires_dm_adjudication": False,
 }
 
 # Improved Combat changes only the die size of the already-persisted
@@ -4621,9 +4702,7 @@ def subclass_runtime_grants(
         feature_name = str(definition.get("name") or "").strip()
         declared_requirement = definition.get("choice_requirement")
         selected = [str(item).strip() for item in choices.get(feature_id, []) if str(item).strip()]
-        is_battle_master = (
-            class_name == "战士" and definition["subclass_name"] == "战斗大师"
-        )
+        is_battle_master = class_name == "战士" and definition["subclass_name"] == "战斗大师"
         if is_battle_master:
             canonical_selected = [_canonical_battle_master_maneuver(item) for item in selected]
             if all(item is not None for item in canonical_selected):
@@ -4697,11 +4776,7 @@ def subclass_runtime_grants(
                 "requires_dm_adjudication": False,
             }
             selected_damage_type = next(
-                (
-                    elemental_options[value]
-                    for value in selected
-                    if value in elemental_options
-                ),
+                (elemental_options[value] for value in selected if value in elemental_options),
                 None,
             )
             if selected_damage_type is not None:
@@ -4752,9 +4827,7 @@ def subclass_runtime_grants(
                     if not isinstance(raw_value, Mapping):
                         continue
                     bound_key = (
-                        resource_key
-                        if str(raw_key) == "$feature_resource"
-                        else str(raw_key)
+                        resource_key if str(raw_key) == "$feature_resource" else str(raw_key)
                     )
                     value = deepcopy(dict(raw_value))
                     if str(raw_key) == "$feature_resource":
@@ -4787,6 +4860,17 @@ def subclass_runtime_grants(
                                 and nested.get("key") == "$feature_resource"
                             ):
                                 nested["key"] = resource_key
+            raw_runtime_triggers = runtime_registry.get("triggers")
+            if isinstance(raw_runtime_triggers, list):
+                for raw_trigger in raw_runtime_triggers:
+                    if not isinstance(raw_trigger, dict):
+                        continue
+                    trigger_resource = raw_trigger.get("resource")
+                    if (
+                        isinstance(trigger_resource, dict)
+                        and trigger_resource.get("key") == "$feature_resource"
+                    ):
+                        trigger_resource["key"] = resource_key
         if runtime_registry is not None and is_battle_master:
             # Reconstruct the learned set in level order.  The registry is
             # persisted on every grant, so a rebuilt character exposes only
@@ -4848,6 +4932,15 @@ def subclass_runtime_grants(
                 runtime_registry["attack_riders"] = [
                     value
                     for value in raw_runtime_riders
+                    if not isinstance(value, Mapping)
+                    or not value.get("maneuver_id")
+                    or str(value.get("maneuver_id")) in learned
+                ]
+            raw_runtime_triggers = runtime_registry.get("triggers")
+            if isinstance(raw_runtime_triggers, list):
+                runtime_registry["triggers"] = [
+                    value
+                    for value in raw_runtime_triggers
                     if not isinstance(value, Mapping)
                     or not value.get("maneuver_id")
                     or str(value.get("maneuver_id")) in learned

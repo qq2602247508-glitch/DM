@@ -33,6 +33,7 @@ from dnd_dm_assistant.api.schemas import (
     PlayerRollPromptBatchCommand,
     PlayerRollPromptCommand,
     PlayerRollResolutionCommand,
+    TriggeredAttackDecisionCommand,
     TurnAdvanceCommand,
 )
 from dnd_dm_assistant.domain.attack_rider import resolve_post_hit_rider
@@ -187,14 +188,16 @@ class CombatEngineService:
                 ability = ability_match.group(1)
                 raw_score = scores.get(ability)
                 if raw_score is None:
-                    raw_score = scores.get({
-                        "strength": "力量",
-                        "dexterity": "敏捷",
-                        "constitution": "体质",
-                        "intelligence": "智力",
-                        "wisdom": "感知",
-                        "charisma": "魅力",
-                    }[ability])
+                    raw_score = scores.get(
+                        {
+                            "strength": "力量",
+                            "dexterity": "敏捷",
+                            "constitution": "体质",
+                            "intelligence": "智力",
+                            "wisdom": "感知",
+                            "charisma": "魅力",
+                        }[ability]
+                    )
                 if not isinstance(raw_score, int):
                     return None
                 modifier = floor((raw_score - 10) / 2)
@@ -270,6 +273,7 @@ class CombatEngineService:
         if max_dice < 1 or dice_count < 1 or dice_count > max_dice:
             return None
         return dice_count, dice_count * raw_die_size, max_dice
+
     _ACTION_BLOCKING_CONDITIONS = {
         "incapacitated",
         "unconscious",
@@ -1727,9 +1731,7 @@ class CombatEngineService:
                 line_of_sight = True
             elif context == "line_of_sight:false":
                 line_of_sight = False
-        is_fall_damage = "fall" in {
-            str(value).strip().lower() for value in command.damage_tags
-        }
+        is_fall_damage = "fall" in {str(value).strip().lower() for value in command.damage_tags}
         if command.is_attack:
             if command.attack_roll_total is not None:
                 if command.attack_roll_total < effective_ac:
@@ -1755,9 +1757,7 @@ class CombatEngineService:
         for feature in cls._pre_damage_feature_reactions(target):
             intervention = feature.get("intervention")
             eligibility = (
-                intervention.get("eligibility")
-                if isinstance(intervention, dict)
-                else None
+                intervention.get("eligibility") if isinstance(intervention, dict) else None
             )
             eligibility = eligibility if isinstance(eligibility, dict) else {}
             entity_types = {
@@ -1788,9 +1788,7 @@ class CombatEngineService:
                 ):
                     continue
             trigger = feature.get("trigger")
-            trigger_event = (
-                str(trigger.get("event") or "") if isinstance(trigger, dict) else ""
-            )
+            trigger_event = str(trigger.get("event") or "") if isinstance(trigger, dict) else ""
             if trigger_event == "takes_fall_damage" and not is_fall_damage:
                 continue
             if trigger_event in {"attacker_hits_self", "hit_by_attack"} and not command.is_attack:
@@ -1823,11 +1821,11 @@ class CombatEngineService:
                     continue
             candidates.append(
                 {
-                **feature,
-                "effective_armor_class": effective_ac,
-                "hit_basis": hit_basis,
-                "attack_roll_total": command.attack_roll_total,
-                "line_of_sight": line_of_sight,
+                    **feature,
+                    "effective_armor_class": effective_ac,
+                    "hit_basis": hit_basis,
+                    "attack_roll_total": command.attack_roll_total,
+                    "line_of_sight": line_of_sight,
                 }
             )
         if not candidates:
@@ -2744,7 +2742,7 @@ class CombatEngineService:
         windows = session.scalars(
             select(CombatAction).where(
                 CombatAction.combat_id == combat.id,
-                CombatAction.action_type == "eligible_action_window",
+                CombatAction.action_type.in_(("eligible_action_window", "triggered_attack_window")),
                 CombatAction.status == "confirmed",
             )
         ).all()
@@ -2756,7 +2754,13 @@ class CombatEngineService:
             if metadata.get("status") != "eligible":
                 continue
             action_cost = metadata.get("action_cost")
-            if action_cost not in {"legendary_action", "lair_action", "reaction"}:
+            if action_cost not in {
+                "legendary_action",
+                "lair_action",
+                "reaction",
+                "bonus_action",
+                "parent_action_part",
+            }:
                 continue
             is_current_advanced_window = (
                 metadata.get("window_key") == current_window_key
@@ -2780,6 +2784,478 @@ class CombatEngineService:
             }
             window.version += 1
             window.updated_at = datetime.now(UTC)
+
+    # Event names are intentionally closed.  A feature configuration that
+    # invents a new event cannot silently become executable until the generic
+    # dispatcher has a real producer for it.
+    _TRIGGERED_ATTACK_EVENTS = frozenset(
+        {
+            "after_taking_damage",
+            "after_casting_spell",
+            "after_enemy_attack",
+            "after_enemy_attack_miss",
+            "after_attack_miss",
+            "after_feature_resource_spent",
+            "after_teleport",
+        }
+    )
+    _TRIGGERED_ATTACK_MAX_CAUSAL_DEPTH = 2
+
+    @classmethod
+    def _triggered_attack_specs(cls, combatant: Combatant, event: str) -> list[dict[str, Any]]:
+        runtime = (combatant.snapshot_json or {}).get("feature_runtime")
+        raw_triggers = runtime.get("triggers") if isinstance(runtime, dict) else None
+        if not isinstance(raw_triggers, list) or event not in cls._TRIGGERED_ATTACK_EVENTS:
+            return []
+        specs: list[dict[str, Any]] = []
+        for raw in raw_triggers:
+            if not isinstance(raw, dict):
+                continue
+            if str(raw.get("event") or "").strip() != event:
+                continue
+            if str(raw.get("kind") or "").strip() not in {
+                "triggered_attack",
+                "triggered_attack_window",
+            }:
+                continue
+            if raw.get("automation_status") not in {"full", "ready"}:
+                continue
+            execution = raw.get("runtime_execution")
+            if not isinstance(execution, dict) or not str(execution.get("consumer") or "").strip():
+                continue
+            if raw.get("requires_dm_adjudication") is True:
+                continue
+            profile = raw.get("attack_profile")
+            if not isinstance(profile, dict):
+                continue
+            cost = str(raw.get("action_cost") or "").strip()
+            if cost not in {"reaction", "bonus_action", "parent_action_part"}:
+                continue
+            specs.append(raw)
+        return specs
+
+    @classmethod
+    def _triggered_attack_profiles(
+        cls,
+        combatant: Combatant,
+        spec: Mapping[str, Any],
+    ) -> list[dict[str, Any]]:
+        profile = spec.get("attack_profile")
+        if not isinstance(profile, Mapping):
+            return []
+        mode = str(profile.get("mode") or "melee_weapon_or_unarmed").strip()
+        profiles: list[dict[str, Any]] = []
+        raw_actions = (combatant.snapshot_json or {}).get("actions", [])
+        if not isinstance(raw_actions, list):
+            return []
+        for raw in raw_actions:
+            if not isinstance(raw, dict):
+                continue
+            name = str(raw.get("name") or "").strip()
+            if not name or raw.get("ritual_only") is True:
+                continue
+            text = " ".join(
+                str(raw.get(key) or "") for key in ("name", "description", "attack_type")
+            )
+            is_spell = bool(
+                raw.get("kind") == "spell"
+                or raw.get("is_spell") is True
+                or raw.get("spell_level") is not None
+                or raw.get("action_type") == "spellcasting"
+            )
+            is_unarmed = bool(raw.get("is_unarmed_attack") is True or "徒手" in text)
+            is_weapon = bool(
+                raw.get("is_weapon_attack") is True
+                or "武器攻击" in text
+                or "weapon attack" in text.lower()
+            )
+            is_melee = bool(
+                raw.get("melee_weapon_attack") is True
+                or raw.get("is_unarmed_attack") is True
+                or "近战" in text
+                or "melee" in text.lower()
+            )
+            if is_spell:
+                continue
+            if mode == "weapon_only" and (not is_weapon or is_unarmed):
+                continue
+            if mode == "melee_weapon_only" and (not is_weapon or is_unarmed or not is_melee):
+                continue
+            if mode == "melee_weapon_or_unarmed" and (
+                not is_melee or not (is_weapon or is_unarmed)
+            ):
+                continue
+            if mode == "unarmed_only" and not is_unarmed:
+                continue
+            profiles.append(
+                {
+                    "action_name": name,
+                    "is_weapon_attack": is_weapon,
+                    "is_unarmed_attack": is_unarmed,
+                    "is_melee": is_melee,
+                    "range_ft": raw.get("range") or raw.get("range_ft"),
+                    "action_cost": raw.get("cost") or "动作",
+                }
+            )
+        return profiles
+
+    @classmethod
+    def _triggered_attack_geometry(
+        cls,
+        session: Session,
+        combat: Combat,
+        source: Combatant,
+        target: Combatant,
+        *,
+        range_ft: int | None,
+        requires_visible: bool,
+    ) -> bool:
+        if source.id == target.id:
+            return True
+        source_pos = (source.snapshot_json or {}).get("grid_position")
+        target_pos = (target.snapshot_json or {}).get("grid_position")
+        if not isinstance(source_pos, dict) or not isinstance(target_pos, dict):
+            return False
+        try:
+            source_point = (int(source_pos["row"]), int(source_pos["col"]))
+            target_point = (int(target_pos["row"]), int(target_pos["col"]))
+        except (KeyError, TypeError, ValueError):
+            return False
+        grid = (
+            session.scalar(select(SceneGrid).where(SceneGrid.scene_id == combat.scene_id))
+            if combat.scene_id
+            else None
+        )
+        if grid is None:
+            return False if range_ft is not None or requires_visible else True
+        distance = grid_distance_ft(source_point, target_point, cell_size_ft=grid.cell_size_ft)
+        if range_ft is not None and distance > range_ft:
+            return False
+        if requires_visible:
+            blockers, _cover = cls._grid_obstacles(session, grid)
+            if not line_of_sight(source_point, target_point, blockers):
+                return False
+        return True
+
+    @classmethod
+    def _triggered_attack_targets(
+        cls,
+        session: Session,
+        combat: Combat,
+        reactor: Combatant,
+        source_actor: Combatant | None,
+        spec: Mapping[str, Any],
+    ) -> list[Combatant]:
+        policy = spec.get("target_policy")
+        policy = policy if isinstance(policy, Mapping) else {}
+        mode = str(policy.get("mode") or "event_actor").strip()
+        if mode == "event_actor":
+            candidates = [source_actor] if source_actor is not None else []
+        else:
+            candidates = cls._ordered_combatants(session, combat.id)
+        range_ft = policy.get("range_ft")
+        range_value = (
+            int(range_ft) if isinstance(range_ft, int) and not isinstance(range_ft, bool) else None
+        )
+        requires_visible = policy.get("requires_visible_or_audible") is True
+        result: list[Combatant] = []
+        for candidate in candidates:
+            if (
+                candidate is None
+                or not candidate.is_active
+                or candidate.hp <= 0
+                or candidate.id == reactor.id
+            ):
+                continue
+            same_faction = cls._combatant_faction(candidate) == cls._combatant_faction(reactor)
+            if mode in {"enemy", "all_enemies"} and same_faction:
+                continue
+            if mode in {"ally", "same_faction"} and not same_faction:
+                continue
+            if not cls._triggered_attack_geometry(
+                session,
+                combat,
+                reactor,
+                candidate,
+                range_ft=range_value,
+                requires_visible=requires_visible,
+            ):
+                continue
+            result.append(candidate)
+        return result
+
+    @classmethod
+    def _persist_triggered_attack_windows(
+        cls,
+        session: Session,
+        *,
+        combat: Combat,
+        transaction: OperationTransaction,
+        parent_action: CombatAction,
+        event: str,
+        source_actor: Combatant | None,
+        event_context: Mapping[str, Any] | None = None,
+    ) -> list[CombatAction]:
+        """Dispatch one authoritative event into typed, durable attack windows.
+
+        This is deliberately configuration-driven: the executor only knows
+        event names, target policies, action profiles, resources and lifecycle
+        fields.  It never branches on a class, subclass or feature name.
+        """
+
+        if event not in cls._TRIGGERED_ATTACK_EVENTS:
+            return []
+        context = dict(event_context or {})
+        depth = int(context.get("causal_depth") or 0)
+        if depth >= cls._TRIGGERED_ATTACK_MAX_CAUSAL_DEPTH:
+            return []
+        windows: list[CombatAction] = []
+        for reactor in cls._ordered_combatants(session, combat.id):
+            for spec in cls._triggered_attack_specs(reactor, event):
+                feature_id = str(spec.get("id") or spec.get("feature_id") or "").strip()
+                if not feature_id:
+                    continue
+                if event == "after_taking_damage" and (
+                    context.get("damaged_target_id") != reactor.id
+                    or int(context.get("adjusted_damage") or 0) <= 0
+                ):
+                    continue
+                if event == "after_casting_spell" and (
+                    source_actor is None
+                    or source_actor.id != reactor.id
+                    or context.get("one_action_spell") is not True
+                ):
+                    continue
+                if event == "after_enemy_attack_miss" and (
+                    context.get("defender_id") != reactor.id
+                    or source_actor is None
+                    or source_actor.id == reactor.id
+                    or context.get("melee_attack") is not True
+                ):
+                    continue
+                if event == "after_attack_miss" and context.get("attacker_id") != reactor.id:
+                    continue
+                resource = spec.get("resource")
+                resource_key = (
+                    str(resource.get("key") or "").strip() if isinstance(resource, Mapping) else ""
+                )
+                resource_cost = (
+                    int(resource.get("cost") or 0) if isinstance(resource, Mapping) else 0
+                )
+                if resource_key and resource_cost:
+                    if reactor.entity_type != "character" or not reactor.entity_id:
+                        continue
+                    character = session.get(Character, reactor.entity_id)
+                    raw = (
+                        (character.resources or {}).get(resource_key)
+                        if character is not None
+                        else None
+                    )
+                    current = int(raw.get("current") or 0) if isinstance(raw, dict) else 0
+                    if current < resource_cost:
+                        continue
+                profiles = cls._triggered_attack_profiles(reactor, spec)
+                if not profiles:
+                    continue
+                targets = cls._triggered_attack_targets(
+                    session, combat, reactor, source_actor, spec
+                )
+                if not targets:
+                    continue
+                idempotency_key = f"taw:{combat.id}:{parent_action.id}:{reactor.id}:{feature_id}"
+                if (
+                    session.scalar(
+                        select(CombatAction).where(
+                            CombatAction.combat_id == combat.id,
+                            CombatAction.idempotency_key == idempotency_key,
+                        )
+                    )
+                    is not None
+                ):
+                    continue
+                metadata: dict[str, Any] = {
+                    "kind": "triggered_attack",
+                    "status": "eligible",
+                    "trigger_event": event,
+                    "feature_id": feature_id,
+                    "feature_name": spec.get("feature_name") or feature_id,
+                    "action_cost": spec.get("action_cost"),
+                    "reaction_trigger": str(spec.get("reaction_trigger") or event),
+                    "resource_key": resource_key or None,
+                    "resource_cost": resource_cost,
+                    "owner_combatant_id": reactor.id,
+                    "reactor_combatant_id": reactor.id,
+                    "trigger_combatant_id": source_actor.id if source_actor is not None else None,
+                    "trigger_combatant_name": source_actor.display_name
+                    if source_actor is not None
+                    else None,
+                    "candidate_target_ids": [target.id for target in targets],
+                    "candidate_target_names": {
+                        target.id: target.display_name for target in targets
+                    },
+                    "eligible_attack_profiles": profiles,
+                    "parent_action_id": parent_action.id,
+                    "parent_action_version": parent_action.version,
+                    "parent_idempotency_key": parent_action.idempotency_key,
+                    "causal_depth": depth + 1,
+                    "causal_root_id": context.get("causal_root_id") or parent_action.id,
+                    "window_key": f"{event}:{parent_action.id}:{reactor.id}:{feature_id}",
+                    "expires_round": combat.round_number,
+                    "expires_turn_index": combat.current_turn_index,
+                }
+                window = CombatAction(
+                    campaign_id=combat.campaign_id,
+                    combat_id=combat.id,
+                    actor_combatant_id=reactor.id,
+                    transaction_id=transaction.id,
+                    action_type="triggered_attack_window",
+                    target_combatant_ids=[target.id for target in targets],
+                    request_json={
+                        "trigger_event": event,
+                        "parent_action_id": parent_action.id,
+                        "feature_id": feature_id,
+                    },
+                    result_json={"action_window": metadata},
+                    explanation=(
+                        "真实战斗事件已满足追加攻击条件；等待玩家或 DM 选择动作、目标与骰值。"
+                    ),
+                    round_number=combat.round_number,
+                    turn_index=combat.current_turn_index,
+                    summary=(
+                        f"{reactor.display_name}：{metadata['feature_name']} 追加攻击窗口已开放"
+                        f"（{event}；等待选择）"
+                    ),
+                    idempotency_key=idempotency_key,
+                    status="confirmed",
+                    created_at=parent_action.created_at + timedelta(seconds=1),
+                )
+                session.add(window)
+                windows.append(window)
+        if windows:
+            session.flush()
+        return windows
+
+    @classmethod
+    def _validate_triggered_attack_window(
+        cls,
+        session: Session,
+        *,
+        combat: Combat,
+        actor: Combatant | None,
+        target: Combatant,
+        command: CombatActionCommand,
+    ) -> CombatAction | None:
+        window_id = command.triggered_attack_window_id
+        if window_id is None:
+            if command.triggered_attack_window_version is not None:
+                raise ValueError("追加攻击窗口版本必须与窗口 ID 一起提交")
+            return None
+        if actor is None or command.triggered_attack_window_version is None:
+            raise ValueError("追加攻击必须绑定真实追加攻击窗口和版本")
+        window = session.get(CombatAction, window_id)
+        if (
+            window is None
+            or window.combat_id != combat.id
+            or window.action_type != "triggered_attack_window"
+        ):
+            raise ValueError("追加攻击窗口不存在或不属于当前战斗")
+        metadata = dict((window.result_json or {}).get("action_window") or {})
+        if window.version != command.triggered_attack_window_version:
+            raise VersionConflict(
+                "combat_action", window.id, command.triggered_attack_window_version, window.version
+            )
+        if metadata.get("status") != "eligible":
+            raise ValueError("追加攻击窗口已处理或已过期")
+        if (
+            metadata.get("reactor_combatant_id") != actor.id
+            or metadata.get("owner_combatant_id") != actor.id
+        ):
+            raise ValueError("追加攻击窗口不属于当前角色")
+        if target.id not in {
+            str(item) for item in metadata.get("candidate_target_ids", []) if isinstance(item, str)
+        }:
+            raise ValueError("目标不在追加攻击窗口的权威目标集合内")
+        if str(command.action_cost) != str(metadata.get("action_cost")):
+            raise ValueError("追加攻击的动作经济与窗口不一致")
+        if (
+            str(command.reaction_trigger or "").strip()
+            != str(metadata.get("reaction_trigger") or "").strip()
+            and command.action_cost == "reaction"
+        ):
+            raise ValueError("追加攻击反应触发原因与服务器窗口不一致")
+        profiles = metadata.get("eligible_attack_profiles")
+        if not isinstance(profiles, list) or not any(
+            isinstance(profile, dict) and profile.get("action_name") == command.action_name
+            for profile in profiles
+        ):
+            raise ValueError("追加攻击动作不在服务器授予的动作集合内")
+        if command.resource_key != metadata.get("resource_key") or command.resource_cost != int(
+            metadata.get("resource_cost") or 0
+        ):
+            raise ValueError("追加攻击资源与窗口不一致")
+        parent_id = metadata.get("parent_action_id")
+        if not isinstance(parent_id, str) or session.get(CombatAction, parent_id) is None:
+            raise ValueError("追加攻击窗口缺少真实父动作")
+        if command.attack_d20 is None:
+            raise ValueError("追加攻击必须提交真实 d20 结果")
+        return window
+
+    def resolve_triggered_attack_window(
+        self,
+        campaign_id: str,
+        combat_id: str,
+        command: TriggeredAttackDecisionCommand,
+        *,
+        actor_combatant_id: str | None = None,
+        idempotency_key: str,
+    ) -> dict[str, Any]:
+        if not idempotency_key.strip():
+            raise ValueError("idempotency key is required")
+        with Session(self.engine) as session, session.begin():
+            combat = session.get(Combat, combat_id)
+            window = session.get(CombatAction, command.window_id)
+            if combat is None or combat.campaign_id != campaign_id:
+                raise StateNotFoundError("combat not found in campaign")
+            if (
+                window is None
+                or window.combat_id != combat_id
+                or window.action_type != "triggered_attack_window"
+            ):
+                raise StateNotFoundError("追加攻击窗口不存在")
+            metadata = dict((window.result_json or {}).get("action_window") or {})
+            resolved_actor_id = actor_combatant_id or str(
+                metadata.get("reactor_combatant_id") or ""
+            )
+            if metadata.get("reactor_combatant_id") != resolved_actor_id:
+                raise ValueError("追加攻击窗口不属于当前玩家")
+            if window.version != command.window_version:
+                if metadata.get("resolver_idempotency_key") == idempotency_key:
+                    return {"window": serialize(window), "already_applied": True}
+                raise VersionConflict(
+                    "combat_action", window.id, command.window_version, window.version
+                )
+            if metadata.get("status") != "eligible":
+                if metadata.get("resolver_idempotency_key") == idempotency_key:
+                    return {"window": serialize(window), "already_applied": True}
+                raise ValueError("追加攻击窗口已处理或已过期")
+            if command.decision == "accept":
+                raise ValueError("接受追加攻击必须提交真实攻击动作与骰值")
+            metadata.update(
+                {
+                    "status": "resolved",
+                    "decision": "reject",
+                    "resolved_by_combatant_id": resolved_actor_id,
+                    "resolver_idempotency_key": idempotency_key,
+                }
+            )
+            window.result_json = {"action_window": metadata}
+            window.version += 1
+            window.updated_at = datetime.now(UTC)
+            window.summary = (
+                "追加攻击窗口已放弃（"
+                f"{metadata.get('feature_name') or metadata.get('feature_id') or '未命名特性'}）"
+            )
+            return {"window": serialize(window), "already_applied": False}
 
     @classmethod
     def _persist_eligible_damage_reaction_windows(
@@ -3145,6 +3621,13 @@ class CombatEngineService:
         active = ordered[combat.current_turn_index] if ordered else None
         if action_cost in {"action", "bonus_action"} and (active is None or active.id != actor.id):
             raise ValueError("only the active combatant can spend actions")
+        if action_cost == "parent_action_part":
+            if active is None or active.id != actor.id:
+                raise ValueError("父动作分段追加攻击只能在当前角色回合内执行")
+            # The parent action already paid the action economy.  The window
+            # validator binds this command to that specific confirmed parent;
+            # no second action flag or budget is consumed here.
+            return False
         if action_cost == "reaction" and not (reaction_trigger or "").strip():
             raise ValueError("a reaction requires an explicit trigger confirmed by the DM")
         if action_cost == "reaction" and action_name:
@@ -3587,9 +4070,7 @@ class CombatEngineService:
         if not isinstance(raw_required, list) or not raw_required:
             return False
         required = [
-            cls._canonical_condition(str(value))
-            for value in raw_required
-            if str(value).strip()
+            cls._canonical_condition(str(value)) for value in raw_required if str(value).strip()
         ]
         if len(required) != len(raw_required) or not all(required):
             return False
@@ -3645,8 +4126,7 @@ class CombatEngineService:
 
         canonical = cls._canonical_condition(condition)
         return any(
-            cls._canonical_condition(str(item["effect"].get("condition") or ""))
-            == canonical
+            cls._canonical_condition(str(item["effect"].get("condition") or "")) == canonical
             for item in cls._ranged_passive_effects(
                 target,
                 effect_kind="condition_immunity",
@@ -3747,19 +4227,17 @@ class CombatEngineService:
                 # generic ranged_passive contract existed.  The executor
                 # remains ID-agnostic; this only translates legacy fields.
                 if not isinstance(config, dict):
-                    if (
-                        item.get("scope") == "self_and_allies_within_10ft"
-                        and item.get("applies_when") in {
-                            "within_aura_of_protection",
-                            "within_aura_of_courage",
-                        }
-                    ):
+                    if item.get("scope") == "self_and_allies_within_10ft" and item.get(
+                        "applies_when"
+                    ) in {
+                        "within_aura_of_protection",
+                        "within_aura_of_courage",
+                    }:
                         config = {
                             "range_group": "paladin_aura_radius",
                             "stacking_group": (
                                 "aura_of_protection_saving_throw"
-                                if item.get("applies_when")
-                                == "within_aura_of_protection"
+                                if item.get("applies_when") == "within_aura_of_protection"
                                 else "aura_of_courage_immunity"
                             ),
                             "source_scope": "self",
@@ -3773,10 +4251,7 @@ class CombatEngineService:
                             else "condition_immunity",
                         }
                         item = {**item, "ranged_passive": config}
-                if (
-                    isinstance(config, dict)
-                    and config.get("effect_kind") == effect_kind
-                ):
+                if isinstance(config, dict) and config.get("effect_kind") == effect_kind:
                     entries.append(item)
             if not entries:
                 continue
@@ -3802,9 +4277,11 @@ class CombatEngineService:
                     distance_ft = 0
                 else:
                     same_faction = cls._combatant_faction(source) == target_faction
-                    if relation == "self" or (
-                        relation == "self_and_allies" and not same_faction
-                    ) or (relation == "enemies" and same_faction):
+                    if (
+                        relation == "self"
+                        or (relation == "self_and_allies" and not same_faction)
+                        or (relation == "enemies" and same_faction)
+                    ):
                         continue
                     source_position = (source.snapshot_json or {}).get("grid_position")
                     if (
@@ -3960,9 +4437,7 @@ class CombatEngineService:
             specs = [item for item in actions if isinstance(item, dict)]
             progression = runtime.get("progression")
             class_levels = (
-                dict(progression.get("class_levels") or {})
-                if isinstance(progression, dict)
-                else {}
+                dict(progression.get("class_levels") or {}) if isinstance(progression, dict) else {}
             )
             resources = dict(runtime.get("resources") or {})
             if session is not None and reactor.entity_type == "character" and reactor.entity_id:
@@ -3990,17 +4465,11 @@ class CombatEngineService:
             )
             for candidate in candidates:
                 operation = candidate.get("operation")
-                operation_kind = (
-                    operation.get("kind")
-                    if isinstance(operation, dict)
-                    else operation
-                )
+                operation_kind = operation.get("kind") if isinstance(operation, dict) else operation
                 if str(operation_kind or "").strip().casefold() == "replace_d20_from_pool":
                     eligibility = candidate.get("eligibility")
                     resource_spec = (
-                        eligibility.get("resource")
-                        if isinstance(eligibility, dict)
-                        else None
+                        eligibility.get("resource") if isinstance(eligibility, dict) else None
                     )
                     pool_key = (
                         str(resource_spec.get("key") or "").strip()
@@ -4009,9 +4478,7 @@ class CombatEngineService:
                     )
                     pool_entry = resources.get(pool_key)
                     raw_values = (
-                        pool_entry.get("available_values")
-                        if isinstance(pool_entry, dict)
-                        else None
+                        pool_entry.get("available_values") if isinstance(pool_entry, dict) else None
                     )
                     pool_values = (
                         [
@@ -4477,9 +4944,7 @@ class CombatEngineService:
         if not modifiers:
             return None
         thresholds = [
-            int(item["value"])
-            for item in modifiers
-            if isinstance(item.get("value"), int)
+            int(item["value"]) for item in modifiers if isinstance(item.get("value"), int)
         ]
         if not thresholds:
             return None
@@ -4663,8 +5128,7 @@ class CombatEngineService:
                 else:
                     continue
                 if not requested_conditions & {
-                    cls._canonical_condition(value)
-                    for value in trigger.get("conditions", [])
+                    cls._canonical_condition(value) for value in trigger.get("conditions", [])
                 }:
                     continue
                 candidate_actions.append((feature_id, raw_action, trigger))
@@ -4724,8 +5188,7 @@ class CombatEngineService:
             options.append(countercharm_candidates[0])
         elif countercharm_candidates:
             candidate_feature_ids = {
-                str(candidate.get("feature_id") or "")
-                for candidate in countercharm_candidates
+                str(candidate.get("feature_id") or "") for candidate in countercharm_candidates
             }
             options.append(
                 {
@@ -5107,9 +5570,7 @@ class CombatEngineService:
             trigger_turn_key = f"{round_number or 0}:{actor.id}"
             applied_turn_triggers = snapshot.get("feature_trigger_turns")
             applied_turn_triggers = (
-                dict(applied_turn_triggers)
-                if isinstance(applied_turn_triggers, dict)
-                else {}
+                dict(applied_turn_triggers) if isinstance(applied_turn_triggers, dict) else {}
             )
             for raw_trigger in registry.get("triggers", []):
                 if not isinstance(raw_trigger, dict) or raw_trigger.get("event") != "turn_start":
@@ -6049,9 +6510,7 @@ class CombatEngineService:
                             removed.append(condition)
                     if removed:
                         cls._restore_condition_restrictions(actor)
-                    trigger_result["effects"].append(
-                        {"kind": kind, "conditions_removed": removed}
-                    )
+                    trigger_result["effects"].append({"kind": kind, "conditions_removed": removed})
                 elif kind == "teleport":
                     context = dict(event_context or {})
                     max_distance = cls._state_int(raw_effect.get("max_distance_ft"), 0)
@@ -6365,9 +6824,7 @@ class CombatEngineService:
             resources = runtime.get("resources", {}) if isinstance(runtime, dict) else {}
             progression = runtime.get("progression", {}) if isinstance(runtime, dict) else {}
             class_levels = (
-                progression.get("class_levels", {})
-                if isinstance(progression, dict)
-                else {}
+                progression.get("class_levels", {}) if isinstance(progression, dict) else {}
             )
             normalized_levels = {
                 re.sub(r"[\s_：:（）()\-]", "", str(key)).casefold(): int(value)
@@ -6383,11 +6840,7 @@ class CombatEngineService:
                 default=0,
             )
             ranger_level = max(
-                (
-                    level
-                    for key, level in normalized_levels.items()
-                    if key in {"游侠", "ranger"}
-                ),
+                (level for key, level in normalized_levels.items() if key in {"游侠", "ranger"}),
                 default=0,
             )
             rider_bindings = dict(payload.get("bindings") or {})
@@ -6485,9 +6938,7 @@ class CombatEngineService:
             rider_damage_result: dict[str, Any] | None = None
             raw_damage = resolved.get("damage")
             if isinstance(raw_damage, list) and raw_damage:
-                components = [
-                    item for item in raw_damage if isinstance(item, dict)
-                ]
+                components = [item for item in raw_damage if isinstance(item, dict)]
                 total_damage = sum(int(item.get("reported_total") or 0) for item in components)
                 if total_damage > 0:
                     damage_type = (
@@ -8570,8 +9021,7 @@ class CombatEngineService:
             scope="incoming",
         )
         if any(
-            (cls._runtime_state(effect) or {}).get("modifier", {}).get("operation")
-            == "advantage"
+            (cls._runtime_state(effect) or {}).get("modifier", {}).get("operation") == "advantage"
             for effect in incoming_advantage
         ):
             contexts.append("post_hit_modifier:incoming_attack_advantage")
@@ -8771,9 +9221,7 @@ class CombatEngineService:
                 )
                 if isinstance(mapped_types, list):
                     selected_types = [
-                        str(value).strip().lower()
-                        for value in mapped_types
-                        if str(value).strip()
+                        str(value).strip().lower() for value in mapped_types if str(value).strip()
                     ]
                 else:
                     selected_types = [selected_text]
@@ -8786,9 +9234,7 @@ class CombatEngineService:
             elif applies_when != "always":
                 continue
             raw_types = (
-                selected_types
-                if selected_types is not None
-                else defense.get("damage_types")
+                selected_types if selected_types is not None else defense.get("damage_types")
             )
             if not isinstance(raw_types, list):
                 continue
@@ -8810,11 +9256,7 @@ class CombatEngineService:
                 raw_types = effect.get("damage_types") if isinstance(effect, dict) else None
                 if not isinstance(raw_types, list):
                     continue
-                types = [
-                    str(value).strip().lower()
-                    for value in raw_types
-                    if str(value).strip()
-                ]
+                types = [str(value).strip().lower() for value in raw_types if str(value).strip()]
                 if not types or not normalized_types.intersection(types):
                     continue
                 resistance.extend(types)
@@ -8860,12 +9302,14 @@ class CombatEngineService:
                 continue
             defense_label = str(raw_defense.get("id") or f"conditional_defense_{index + 1}")
             automatic_feature_condition = (
-                raw_defense.get("required_conditions") is not None
-            ) or (
-                condition.lower() in {"raging", "rage"} and cls._has_condition(target, "raging")
-            ) or (
-                condition.lower() in {"superior_defense", "superior_defense_active"}
-                and cls._has_condition(target, "superior_defense")
+                (raw_defense.get("required_conditions") is not None)
+                or (
+                    condition.lower() in {"raging", "rage"} and cls._has_condition(target, "raging")
+                )
+                or (
+                    condition.lower() in {"superior_defense", "superior_defense_active"}
+                    and cls._has_condition(target, "superior_defense")
+                )
             )
             if condition.lower() not in tags and not automatic_feature_condition:
                 # A typed segment may explicitly identify one source class
@@ -9040,10 +9484,7 @@ class CombatEngineService:
                 reflection_enabled = any(
                     defense.get("kind") == "damage_reflection"
                     and "psychic"
-                    in {
-                        str(value).strip().lower()
-                        for value in (defense.get("damage_types") or [])
-                    }
+                    in {str(value).strip().lower() for value in (defense.get("damage_types") or [])}
                     and cls._required_conditions_met(target, defense)
                     for defense in cls._feature_defenses(target)
                     if isinstance(defense, dict)
@@ -9053,14 +9494,12 @@ class CombatEngineService:
                         sum(
                             int(component.get("adjusted_damage") or 0)
                             for component in result.get("damage_components", [])
-                            if str(component.get("damage_type") or "").strip().lower()
-                            == "psychic"
+                            if str(component.get("damage_type") or "").strip().lower() == "psychic"
                         )
                         if isinstance(result.get("damage_components"), list)
                         else (
                             int(result.get("adjusted_damage") or 0)
-                            if str(result.get("damage_type") or "").strip().lower()
-                            == "psychic"
+                            if str(result.get("damage_type") or "").strip().lower() == "psychic"
                             else 0
                         )
                     )
@@ -10572,8 +11011,7 @@ class CombatEngineService:
         else:
             intervention_request["roll_mode"] = "normal"
         auto_failed = any(
-            str(item).startswith("condition_auto_fail")
-            for item in defense["applied_defenses"]
+            str(item).startswith("condition_auto_fail") for item in defense["applied_defenses"]
         )
         if not auto_failed:
             generic_options = cls._generic_roll_intervention_options(
@@ -10601,18 +11039,14 @@ class CombatEngineService:
                     if item.get("id") == command.roll_intervention_id
                     and (
                         command.roll_intervention_reactor_id is None
-                        or item.get("reactor_combatant_id")
-                        == command.roll_intervention_reactor_id
+                        or item.get("reactor_combatant_id") == command.roll_intervention_reactor_id
                     )
                 ),
                 None,
             )
             if selected is None:
                 raise ValueError("所选通用掷骰干预当前不可用")
-            if (
-                str(selected.get("trigger") or "") == "after_failed_d20_test"
-                and success
-            ):
+            if str(selected.get("trigger") or "") == "after_failed_d20_test" and success:
                 raise ValueError("失败补救只能用于失败的检定")
             generic_roll_intervention = apply_roll_intervention(
                 selected,
@@ -10658,22 +11092,14 @@ class CombatEngineService:
                     session=session,
                 )
                 eligibility = selected.get("eligibility")
-                state_spec = (
-                    eligibility.get("state")
-                    if isinstance(eligibility, dict)
-                    else None
-                )
+                state_spec = eligibility.get("state") if isinstance(eligibility, dict) else None
                 state_key = (
-                    str(state_spec.get("key") or "").strip()
-                    if isinstance(state_spec, dict)
-                    else ""
+                    str(state_spec.get("key") or "").strip() if isinstance(state_spec, dict) else ""
                 )
                 if state_key:
                     snapshot = dict(reactor.snapshot_json or {})
                     states = snapshot.get("feature_states")
-                    feature_states = (
-                        dict(states) if isinstance(states, dict) else {}
-                    )
+                    feature_states = dict(states) if isinstance(states, dict) else {}
                     if feature_states.get(state_key) is not True:
                         raise ValueError("该掷骰干预窗口已被消费")
                     feature_states[state_key] = False
@@ -10698,9 +11124,7 @@ class CombatEngineService:
                     minimum = max(1, dice_count + modifier)
                     maximum = dice_count * die_sides + modifier
                     if amount < minimum or amount > maximum:
-                        raise ValueError(
-                            f"掷骰干预后置临时生命值应在 {minimum}–{maximum} 之间"
-                        )
+                        raise ValueError(f"掷骰干预后置临时生命值应在 {minimum}–{maximum} 之间")
                     before_temporary = target.temporary_hp
                     target.temporary_hp = max(before_temporary, amount)
                     generic_roll_intervention["post_effect"] = {
@@ -11253,11 +11677,7 @@ class CombatEngineService:
                         else {}
                     ),
                     **(
-                        {
-                            "roll_intervention_window": resolution.get(
-                                "roll_intervention_window"
-                            )
-                        }
+                        {"roll_intervention_window": resolution.get("roll_intervention_window")}
                         if resolution.get("roll_intervention_window") is not None
                         else {}
                     ),
@@ -11467,6 +11887,13 @@ class CombatEngineService:
                 target=target,
                 command=command,
             )
+            self._validate_triggered_attack_window(
+                session,
+                combat=combat,
+                actor=actor,
+                target=target,
+                command=command,
+            )
             self._validate_monster_sequence(session, combat_id, actor, command)
             self._validate_action_economy(
                 session,
@@ -11598,6 +12025,13 @@ class CombatEngineService:
                             expected_actor_version,
                         )
                 self._validate_reaction_window(
+                    session,
+                    combat=combat,
+                    actor=actor,
+                    target=current_target,
+                    command=command,
+                )
+                self._validate_triggered_attack_window(
                     session,
                     combat=combat,
                     actor=actor,
@@ -11767,9 +12201,7 @@ class CombatEngineService:
             "target_version": target.version,
             "attacker_version": attacker.version,
             "original_command": command.model_dump(mode="json"),
-            "candidate_features": candidate.get(
-                "candidate_features", [candidate["feature_id"]]
-            ),
+            "candidate_features": candidate.get("candidate_features", [candidate["feature_id"]]),
             "candidate_interventions": candidate.get("candidate_interventions", {}),
         }
         window = CombatAction(
@@ -11981,6 +12413,13 @@ class CombatEngineService:
                 target=target,
                 command=command,
             )
+            triggered_attack_window = self._validate_triggered_attack_window(
+                session,
+                combat=combat,
+                actor=actor,
+                target=target,
+                command=command,
+            )
             advanced_action_window = self._validate_advanced_action_window(
                 session,
                 combat=combat,
@@ -12071,10 +12510,7 @@ class CombatEngineService:
                     if pre_damage_reduction_roll is not None:
                         inputs["reduction_roll"] = pre_damage_reduction_roll
                     transform = spec.get("damage_transform")
-                    if (
-                        isinstance(transform, dict)
-                        and transform.get("operation") == "resistance"
-                    ):
+                    if isinstance(transform, dict) and transform.get("operation") == "resistance":
                         incoming_types = {
                             str(component.damage_type).strip().lower()
                             for component in command.damage_components
@@ -12087,9 +12523,7 @@ class CombatEngineService:
                             "kind": "defense",
                             "operation": "resistance",
                             "damage_types": [damage_type],
-                            "source": str(
-                                pre_damage_metadata.get("name") or "伤害前抗性反应"
-                            ),
+                            "source": str(pre_damage_metadata.get("name") or "伤害前抗性反应"),
                         }
                         effect_details: dict[str, object] = {
                             "rule_block": defense_block,
@@ -12773,6 +13207,83 @@ class CombatEngineService:
                 )
             session.add(action)
             session.flush()
+            triggered_attack_windows: list[CombatAction] = []
+            causal_depth = int(
+                ((command.triggered_attack_window_id and triggered_attack_window) or {})
+                .result_json.get("action_window", {})
+                .get("causal_depth", 0)
+                if triggered_attack_window is not None
+                else 0
+            )
+            if command.action_type == "damage" and int(result.get("adjusted_damage", 0)) > 0:
+                triggered_attack_windows.extend(
+                    self._persist_triggered_attack_windows(
+                        session,
+                        combat=combat,
+                        transaction=transaction,
+                        parent_action=action,
+                        event="after_taking_damage",
+                        source_actor=actor,
+                        event_context={
+                            "damaged_target_id": target.id,
+                            "adjusted_damage": int(result.get("adjusted_damage", 0)),
+                            "causal_depth": causal_depth,
+                        },
+                    )
+                )
+            if (
+                actor is not None
+                and command.action_type == "damage"
+                and command.is_attack
+                and attack_hit_status is False
+            ):
+                triggered_attack_windows.extend(
+                    self._persist_triggered_attack_windows(
+                        session,
+                        combat=combat,
+                        transaction=transaction,
+                        parent_action=action,
+                        event="after_enemy_attack_miss",
+                        source_actor=actor,
+                        event_context={
+                            "defender_id": target.id,
+                            "attacker_id": actor.id,
+                            "melee_attack": bool(
+                                command.is_unarmed_attack
+                                or (
+                                    command.is_weapon_attack and (command.attack_range_ft or 5) <= 5
+                                )
+                            ),
+                            "causal_depth": causal_depth,
+                        },
+                    )
+                )
+            if (
+                actor is not None
+                and self._is_structured_spell_action(actor, command.action_name)
+                and command.action_cost == "action"
+            ):
+                triggered_attack_windows.extend(
+                    self._persist_triggered_attack_windows(
+                        session,
+                        combat=combat,
+                        transaction=transaction,
+                        parent_action=action,
+                        event="after_casting_spell",
+                        source_actor=actor,
+                        event_context={"one_action_spell": True, "causal_depth": causal_depth},
+                    )
+                )
+            if triggered_attack_windows:
+                result["triggered_attack_windows"] = [
+                    window.id for window in triggered_attack_windows
+                ]
+                action.result_json = {
+                    **dict(action.result_json or {}),
+                    "triggered_attack_windows": [window.id for window in triggered_attack_windows],
+                }
+                action.version += 1
+                action.updated_at = now
             zero_hp_intervention_prompt: CombatAction | None = None
             if zero_hp_intervention is not None and target.hp == 0:
                 zero_hp_intervention_prompt = self._open_zero_hp_intervention_prompt(
@@ -12887,6 +13398,24 @@ class CombatEngineService:
                 }
                 reaction_window.version += 1
                 reaction_window.updated_at = now
+            if triggered_attack_window is not None:
+                window_result = dict(triggered_attack_window.result_json or {})
+                window_metadata = dict(window_result.get("action_window") or {})
+                window_metadata.update(
+                    {
+                        "status": "resolved",
+                        "decision": "accept",
+                        "resolved_action_id": action.id,
+                        "resolved_target_combatant_id": target.id,
+                        "resolver_idempotency_key": idempotency_key,
+                    }
+                )
+                triggered_attack_window.result_json = {
+                    **window_result,
+                    "action_window": window_metadata,
+                }
+                triggered_attack_window.version += 1
+                triggered_attack_window.updated_at = now
             movement = structured_effects.get("movement")
             if isinstance(movement, dict) and int(movement.get("moved_ft") or 0) > 0:
                 self._persist_eligible_enters_reach_reaction_windows(
@@ -13646,9 +14175,7 @@ class CombatEngineService:
                         raise ValueError("资源恢复积木只能由角色单位执行")
                     resources = dict(character.resources or {})
                     raw_restore = resources.get(restore_key)
-                    restore_entry = (
-                        dict(raw_restore) if isinstance(raw_restore, dict) else {}
-                    )
+                    restore_entry = dict(raw_restore) if isinstance(raw_restore, dict) else {}
                     maximum = self._state_int(
                         restore_entry.get("maximum", restore_entry.get("max")), 0
                     )
@@ -13739,9 +14266,7 @@ class CombatEngineService:
                     )
                     source_id = str(action.get("id") or command.feature_id).strip()
                     timed = [
-                        item
-                        for item in timed
-                        if str(item.get("source_id") or "") != source_id
+                        item for item in timed if str(item.get("source_id") or "") != source_id
                     ]
                     timed.append(
                         {
@@ -13826,9 +14351,7 @@ class CombatEngineService:
                         actor.snapshot_json = snapshot
                         feature_states = snapshot.get("feature_states")
                         feature_states = (
-                            dict(feature_states)
-                            if isinstance(feature_states, dict)
-                            else {}
+                            dict(feature_states) if isinstance(feature_states, dict) else {}
                         )
                         feature_states["fanatical_focus"] = True
                         snapshot["feature_states"] = feature_states
@@ -13924,14 +14447,10 @@ class CombatEngineService:
                     }
                     actor_runtime = actor.snapshot_json.get("feature_runtime")
                     actor_actions = (
-                        actor_runtime.get("actions")
-                        if isinstance(actor_runtime, dict)
-                        else None
+                        actor_runtime.get("actions") if isinstance(actor_runtime, dict) else None
                     )
                     action_specs = (
-                        list(actor_actions.values())
-                        if isinstance(actor_actions, dict)
-                        else []
+                        list(actor_actions.values()) if isinstance(actor_actions, dict) else []
                     )
                     combat_inspiration = next(
                         (
