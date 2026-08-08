@@ -1640,3 +1640,11 @@ backend/.venv/bin/python -m pytest -q backend/tests
 - 新增固定属性提升合同：野蛮人原初斗士、武僧天人合一在升级事务中真实应用 +4 与 25 上限，体质变化沿既有 HP 调整链计算；后续属性提升读取已持有的类型化属性上限。
 - 新增心灵防御：心灵伤害抗性由权威伤害防御链消费；只有对抗/终止魅惑或恐慌的豁免才获得优势，普通豁免不会误加。
 - 本轮定向测试、后端全量测试、Ruff、compileall、`git diff --check` 已通过；仅有既有 Starlette/httpx 弃用警告。`backend/tests/integrations/` 与 `backend/tests/ollama.py` 仍未跟踪、未纳入提交。
+# 2026-08-08 长执行纠偏与受控法术授予批次
+
+- 用户明确要求批量迁移以高吞吐推进，不能把“真实闭环”当成替代产出指标；后续交付批次硬门槛为审计固定分母 499 的 `full` 净增至少 25，未达到不结束批次、不把候选覆盖数报成完成数。
+- 本批代码提交：`69eb4a3 feat: automate controlled spell grants`；文档提交：`a7faa6d docs: record controlled spell grant migration`。
+- 真实新增 `full +10`：逸闻学院魔法探秘、塑能/幻术/防护/预言学者、魔契师六至九环玄奥秘法、四象武者掌控元素。受控选择已写入角色法术状态；秘法动作消费对应长休资源；四象法门写入感知施法属性；重放、越级、错来源/学派/环阶均 fail-closed。
+- 当前固定审计：`full 199 / partial 223 / dm_only 77`，距离用户此前要求的 `full≥223` 还差 24；候选积木覆盖仍是重叠统计，不计入完成度。
+- 门禁：定向升级选择测试 24 项、Ruff、compileall、`git diff --check` 已通过；全量后端 pytest 需取得明确退出摘要后才可宣称通过。用户未跟踪的 `backend/tests/integrations/`、`backend/tests/ollama.py` 保持原样、未加入提交。
+- 下一批执行策略：并行预审多个同构簇，优先选择已有持久化消费者且可一次覆盖 10 条以上的职业/子职业特性；禁止为单条反应、复杂召唤、随机表和只落库特性新建孤立积木。只有真实配置、消费者、状态/资源/动作链、幂等和测试全部成立才升 `full`。
