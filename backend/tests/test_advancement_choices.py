@@ -551,6 +551,31 @@ def test_battle_master_maneuver_replacement_is_cumulative_and_fail_closed() -> N
     ]
 
 
+def test_battle_master_riposte_trigger_is_filtered_and_bound_to_superiority_resource() -> None:
+    feature_id = "battle-master:3:combat"
+    result = subclass_runtime_grants(
+        {
+            "name": "战斗大师",
+            "feature_definitions": [
+                {
+                    "id": feature_id,
+                    "name": "卓越战技 Combat",
+                    "class_level": 3,
+                    "description": "你习得三种战技。",
+                }
+            ],
+        },
+        class_name="战士",
+        target_class_level=3,
+        selected_choices={feature_id: ["伏击", "领导风范", "反击"]},
+    )
+    registry = result["grants"][0]["runtime"]["registry"]
+    triggers = registry["triggers"]
+    assert [item["maneuver_id"] for item in triggers] == ["riposte"]
+    assert triggers[0]["resource"]["key"] == "superiority_dice"
+    assert triggers[0]["event"] == "after_enemy_attack_miss"
+
+
 def test_exact_progression_resource_rebuild_clamps_downgrade_and_preserves_spend() -> None:
     resources = {
         "superiority_dice": {
