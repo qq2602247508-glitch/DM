@@ -1195,6 +1195,53 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS: dict[str, dict[str, Any]] = {
         "triggers": [],
         "attack_riders": [],
     },
+    # Improved Warding Flare keeps the existing external reaction, resource
+    # CAS and disadvantage operation, then applies its additional 2d6 + WIS
+    # temporary-hit-point grant to the attack's target in the same transaction.
+    "精通守御之光": {
+        "combat_start": {"modifiers": [], "defenses": []},
+        "resources": {},
+        "actions": {
+            "warding_flare": {
+                "id": "warding_flare",
+                "name": "守御之光（精通）",
+                "kind": "roll_intervention",
+                "trigger": "after_d20_test",
+                "action_cost": "reaction",
+                "target_policy": {
+                    "mode": "any",
+                    "range_ft": 30,
+                    "requires_visible_or_audible": True,
+                },
+                "eligibility": {
+                    "entity_types": ["character"],
+                    "test_kinds": ["armor_class"],
+                    "resource": {"key": "warding_flare", "minimum": 1},
+                },
+                "operation": {"kind": "disadvantage", "selection": "lowest"},
+                "input_requirements": [
+                    {"key": "temporary_hp_total", "kind": "roll_total"}
+                ],
+                "post_effect": {
+                    "kind": "grant_temporary_hp",
+                    "input_key": "temporary_hp_total",
+                    "dice_count": 2,
+                    "die_sides": 6,
+                    "ability_modifier": "wisdom",
+                },
+                "resource": {"key": "warding_flare", "cost": 1},
+                "idempotency": {"prefix": "roll-intervention"},
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "player_roll_resolution_and_temporary_hp",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        },
+        "triggers": [],
+        "attack_riders": [],
+    },
     # Guided Strike is a fixed +10 recovery after a missed attack.  The
     # reaction is conditional: the cleric spends it only when correcting an
     # ally's roll, while correcting its own attack is reaction-free.

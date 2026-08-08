@@ -1856,7 +1856,6 @@ def test_ranged_passive_condition_immunity_suppresses_but_does_not_delete_state(
 def test_generic_ranged_passive_resolves_range_override_and_stacking_groups() -> None:
     target = Combatant(
         id="range-target",
-        combat_id="combat",
         entity_type="character",
         display_name="范围目标",
         hp=20,
@@ -2205,6 +2204,96 @@ def test_tactical_mind_uses_generic_failure_recovery_and_consumes_only_on_succes
         "before": 2,
         "after": 1,
     }
+
+
+def test_improved_warding_flare_applies_temporary_hp_post_effect() -> None:
+    action = CombatAction(
+        id="warding-flare-check",
+        campaign_id="campaign",
+        combat_id="combat",
+        action_type="player_roll_prompt",
+        target_combatant_ids=["warding-target"],
+        request_json={
+            "resolution_type": "armor_class",
+            "dc": 15,
+            "action_name": "命中测试",
+        },
+        result_json={},
+        round_number=1,
+        turn_index=0,
+        summary="等待攻击检定",
+        idempotency_key="warding-flare-check",
+    )
+    target = Combatant(
+        id="warding-target",
+        entity_type="character",
+        entity_id="warding-character",
+        display_name="守御目标",
+        hp=20,
+        max_hp=20,
+        temporary_hp=0,
+        reaction_available=True,
+        version=1,
+        snapshot_json={
+            "ability_scores": {"wisdom": 18},
+            "feature_runtime": {
+                "actions": {
+                    "warding_flare": {
+                        "id": "warding_flare",
+                        "name": "守御之光（精通）",
+                        "kind": "roll_intervention",
+                        "trigger": "after_d20_test",
+                        "action_cost": "reaction",
+                        "eligibility": {
+                            "entity_types": ["character"],
+                            "test_kinds": ["armor_class"],
+                            "resource": {"key": "warding_flare", "minimum": 1},
+                        },
+                        "operation": {"kind": "disadvantage", "selection": "lowest"},
+                        "input_requirements": [
+                            {"key": "temporary_hp_total", "kind": "roll_total"}
+                        ],
+                        "post_effect": {
+                            "kind": "grant_temporary_hp",
+                            "input_key": "temporary_hp_total",
+                            "dice_count": 2,
+                            "die_sides": 6,
+                            "ability_modifier": "wisdom",
+                        },
+                        "resource": {"key": "warding_flare", "cost": 1},
+                    }
+                }
+            },
+        },
+    )
+
+    class FakeSession:
+        def __init__(self) -> None:
+            self.character = SimpleNamespace(
+                resources={"warding_flare": {"current": 1, "max": 1}},
+                version=1,
+                updated_at=None,
+            )
+
+        def get(self, _model: object, entity_id: str) -> object:
+            return self.character if entity_id == "warding-character" else None
+
+    resolved = CombatEngineService._resolve_player_roll(
+        action,
+        target,
+        PlayerRollResolutionCommand(
+            action_version=1,
+            roll_total=17,
+            roll_totals=[17, 12],
+            roll_intervention_id="warding_flare",
+            roll_intervention_inputs={"temporary_hp_total": 9},
+        ),
+        consume_defenses=True,
+        session=FakeSession(),
+    )
+    assert resolved["success"] is False
+    assert target.temporary_hp == 9
+    assert resolved["generic_roll_intervention"]["post_effect"]["amount"] == 9
 
 
 def test_combat_consumers_accept_a_snapshot_with_only_canonical_feature_blocks() -> None:

@@ -3643,7 +3643,7 @@ class CombatEngineService:
                 grid = session.scalar(
                     select(SceneGrid).where(SceneGrid.scene_id == combat.scene_id)
                 )
-                if grid is not None:
+                if grid is not None and hasattr(grid, "layers_json"):
                     grid_blockers, _cover_cells = cls._grid_obstacles(session, grid)
             candidates = list(
                 session.scalars(
@@ -9979,6 +9979,7 @@ class CombatEngineService:
             generic_roll_intervention = apply_roll_intervention(
                 selected,
                 roll_total=int(defense["effective_roll_total"]),
+                roll_totals=list(defense.get("reported_roll_totals") or []),
                 inputs=command.roll_intervention_inputs,
                 dc=dc,
                 operation_id=action.id,
@@ -10040,6 +10041,36 @@ class CombatEngineService:
                     feature_states[state_key] = False
                     snapshot["feature_states"] = feature_states
                     reactor.snapshot_json = snapshot
+                post_effect = selected.get("post_effect")
+                if isinstance(post_effect, dict):
+                    if str(post_effect.get("kind") or "") != "grant_temporary_hp":
+                        raise ValueError("掷骰干预后置效果类型不受支持")
+                    input_key = str(post_effect.get("input_key") or "").strip()
+                    amount = cls._state_int(command.roll_intervention_inputs.get(input_key), 0)
+                    dice_count = cls._state_int(post_effect.get("dice_count"), 0)
+                    die_sides = cls._state_int(post_effect.get("die_sides"), 0)
+                    if not input_key or amount < 1 or dice_count < 1 or die_sides < 1:
+                        raise ValueError("掷骰干预后置临时生命值配置无效")
+                    scores = (reactor.snapshot_json or {}).get("ability_scores")
+                    ability = str(post_effect.get("ability_modifier") or "").strip()
+                    score = scores.get(ability) if isinstance(scores, dict) else None
+                    if not isinstance(score, int):
+                        raise ValueError("掷骰干预后置临时生命值缺少权威属性值")
+                    modifier = (score - 10) // 2
+                    minimum = max(1, dice_count + modifier)
+                    maximum = dice_count * die_sides + modifier
+                    if amount < minimum or amount > maximum:
+                        raise ValueError(
+                            f"掷骰干预后置临时生命值应在 {minimum}–{maximum} 之间"
+                        )
+                    before_temporary = target.temporary_hp
+                    target.temporary_hp = max(before_temporary, amount)
+                    generic_roll_intervention["post_effect"] = {
+                        "kind": "grant_temporary_hp",
+                        "amount": amount,
+                        "temporary_hp_before": before_temporary,
+                        "temporary_hp_after": target.temporary_hp,
+                    }
         elif generic_options:
             return {
                 "phase": "awaiting_roll_intervention",
