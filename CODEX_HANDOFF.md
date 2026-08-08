@@ -1,3 +1,20 @@
+# 2026-08-09 长执行检查点：如影随行掷骰前劣势与战后传送
+
+- 实时固定审计仍为 499 条；本切片前 `full 251 / partial 174 / dm_only 74`，当前为
+  `full 252 / partial 173 / dm_only 74`。新增 full：「游侠·幽域追猎者·15·如影随行」。
+- 新增 `before_attack_roll_resolution` 阶段：攻击声明但未提交最终 d20 时，若受击单位拥有
+  该阶段反应，先冻结原始命令并打开攻击决议窗口。接受后必须提交两个真实 d20 与对应总值，
+  服务端选择较低 d20 的总值重写 `attack_roll_total/attack_d20/attack_roll_mode=disadvantage`
+  并重算命中/失手；拒绝则保留单 d20 流程。不会把已提交的单 d20 事后改标签为劣势。
+- 战后传送：攻击结算完成（无论命中或失手）后，如影随行同一反应开放 `attack_resolution_teleport`
+  窗口；接受必须提交目的地行列，服务端校验 30 尺距离、可见与未占用；传送复用现有
+  `_apply_feature_teleport`，不重复消费反应。窗口版本、CAS、幂等和过期均走 CombatAction。
+- 验证：如影随行 3 个真实 API 测试（含劣势重算、失手不结算、同反应传送、拒绝路径）通过；
+  全量后端 pytest、前端 204 tests/typecheck/lint/build、新增源码/测试 Ruff、compileall、
+  `git diff --check` 均通过。全量 Ruff 仍只命中仓库原有 scripts 的 N999/EXE001。
+- 已分离提交：代码 `8a94e1c`，审计基线测试 `d589b86`；文档/交接随后单独提交。必须继续保留且不暂存/提交：
+  `backend/tests/integrations/`、`backend/tests/ollama.py`。
+
 # 2026-08-09 长执行检查点：分阶段攻击结算与反应干预状态机
 
 - 实时固定审计仍为 499 条；本切片前 `full 249 / partial 176 / dm_only 74`，当前为

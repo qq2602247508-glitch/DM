@@ -1,5 +1,21 @@
 # 特性自动化迁移预审报告
 
+## 2026-08-09 检查点（如影随行掷骰前劣势与战后传送）
+
+实时审计固定总数仍为 `499`：本切片前 `full 251 / partial 174 / dm_only 74`，本切片后
+`full 252 / partial 173 / dm_only 74`。新增 full 为幽域追猎者「如影随行」，由真实 API 回归覆盖。
+
+- 新增 `before_attack_roll_resolution` 分阶段输入链：攻击声明后暂停，受击单位接受则提交
+  两个 d20 与总值，服务端取较低 d20 重算并继续；拒绝保持单 d20。
+- 攻击结算后开放同一反应的 `attack_resolution_teleport` 窗口：30 尺可见未占用目的地校验，
+  传送复用既有网格/传送结算器，不重复扣反应。
+- 攻击决议窗口统一持久化 `phase=attack_resolution` 与 `intervention_phase`，兼容
+  after-provisional-hit 与 before-roll 两阶段。
+
+验证：如影随行 3 个 API 测试、全量后端 pytest、前端 204 tests/typecheck/lint/build、
+新增源码/测试 Ruff、compileall、`git diff --check` 均通过。代码 `8a94e1c`、审计基线测试
+`d589b86`、文档/交接随后单独提交。
+
 ## 2026-08-09 检查点（分阶段攻击结算与反应干预状态机）
 
 实时审计固定总数仍为 `499`：本切片前 `full 249 / partial 176 / dm_only 74`，本切片后
