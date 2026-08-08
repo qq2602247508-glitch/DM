@@ -1,3 +1,12 @@
+# 2026-08-08 长执行检查点：真力注拳与月光飞步生命周期
+
+- 当前固定分母 499，最新真实审计：`full 242 / partial 182 / dm_only 75`；本 Goal 起点 `227/195/77`，真实净增 15，继续推进，未因超过 223 停止。
+- `真力注拳`：武僧核心特性的最终伤害类型选择已经接入玩家攻击生产入口。服务端只接受结构化徒手攻击、`force/original` 明确输入和单一基础伤害段；伤害类型覆盖发生在实际伤害组件结算前，非法武器、多段伤害、未授予特性均 fail-closed；攻击结果、HP 变化和幂等重放均已覆盖。
+- `月光飞步`：附赠动作的资源从配置编译层绑定到真实特性资源；资源不足时可提交二至九环法术位，CombatEngine 在同一事务中校验并扣除法术位、恢复并消费一次特性使用。显式目的地经过权威网格距离、边界、占用校验；`moonlight_step` 持久化到回合末，攻击上下文授予一次优势并在下一次攻击中消费。
+- 新增/修复：`CombatFeatureActionCommand.reset_spell_slot_level`；运行时状态注册 `moonlight_step`；资源重置记录、角色版本更新、CombatAction 幂等重放；对应 API 生命周期测试和真实玩家攻击测试通过。
+- 验证：全量 `backend/.venv/bin/pytest -q backend/tests`、Ruff、compileall、`git diff --check` 已通过；本轮代码与 docs/交接仍需分开提交。
+- 工作树必须继续保留且不暂存/提交：`backend/tests/integrations/`、`backend/tests/ollama.py`。
+
 # 2026-08-08 长执行检查点：自然守御地形选择与动态抗性
 
 - 当前固定分母 499，最新真实审计：`full 240 / partial 183 / dm_only 76`；本 Goal 起点 `227/195/77`，已真实净增 13，仍继续推进。
