@@ -2799,6 +2799,113 @@ def test_uncanny_dodge_pauses_damage_then_halves_before_defenses(
     assert replay.json()["action"]["id"] == rejected.json()["action"]["id"]
 
 
+def test_superior_hunters_defense_persists_selected_resistance_until_turn_end(
+    combat_client: TestClient,
+) -> None:
+    campaign = _campaign(combat_client, "Superior hunter defense")
+    base = f"/api/v1/campaigns/{campaign['id']}"
+    combat = combat_client.post(f"{base}/combats", json={"name": "Defense reaction"}).json()
+    attacker = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "元素攻击者",
+            "entity_type": "monster",
+            "initiative": 20,
+            "hp": 20,
+            "max_hp": 20,
+        },
+    ).json()
+    hunter = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "猎人",
+            "entity_type": "character",
+            "initiative": 10,
+            "hp": 30,
+            "max_hp": 30,
+            "snapshot_json": {
+                "feature_runtime": {
+                    "actions": {
+                        "superior_hunters_defense": {
+                            "name": "高阶防守战术",
+                            "kind": "feature_action",
+                            "action_cost": "reaction",
+                            "trigger": {"event": "takes_damage", "timing": "before_damage"},
+                            "pre_damage_intervention": {
+                                "kind": "pre_damage_intervention",
+                                "eligibility": {
+                                    "entity_types": ["character"],
+                                    "damage_types": "all",
+                                    "forbidden_conditions": ["incapacitated"],
+                                },
+                                "input_requirements": [],
+                                "damage_transform": {"operation": "resistance"},
+                            },
+                        }
+                    }
+                }
+            },
+        },
+    ).json()
+    path = f"{base}/combats/{combat['id']}/actions/confirm"
+    attack = {
+        "action_type": "damage",
+        "actor_combatant_id": attacker["id"],
+        "actor_version": attacker["version"],
+        "target_combatant_id": hunter["id"],
+        "target_version": hunter["version"],
+        "action_cost": "none",
+        "amount": 10,
+        "damage_type": "fire",
+        "is_attack": False,
+    }
+    paused = combat_client.post(path, headers={"X-Request-ID": "superior-defense-1"}, json=attack)
+    assert paused.status_code == 200, paused.text
+    assert paused.json()["phase"] == "awaiting_reaction"
+    window = paused.json()["pending_reaction"]
+    resolved = combat_client.post(
+        f"{base}/combats/{combat['id']}/reactions/pre-damage/resolve",
+        headers={"X-Request-ID": "superior-defense-accept"},
+        json={
+            "reaction_window_id": window["id"],
+            "reaction_window_version": window["version"],
+            "decision": "accept",
+            "feature_id": "superior_hunters_defense",
+        },
+    )
+    assert resolved.status_code == 200, resolved.text
+    body = resolved.json()
+    assert body["target"]["hp"] == 25
+    assert body["target"]["reaction_available"] is False
+    assert body["action"]["result_json"]["pre_damage_reaction"]["resistance_damage_type"] == "fire"
+    effects = combat_client.get(f"{base}/combats/{combat['id']}/effects").json()["items"]
+    resistance = next(item for item in effects if item["effect_type"] == "feature_defense")
+    assert resistance["status"] == "active"
+    assert resistance["details_json"]["rule_block"]["damage_types"] == ["fire"]
+
+    follow_up = {
+        **attack,
+        "target_version": body["target"]["version"],
+    }
+    follow_up_response = combat_client.post(
+        path,
+        headers={"X-Request-ID": "superior-defense-2"},
+        json=follow_up,
+    )
+    assert follow_up_response.status_code == 200, follow_up_response.text
+    assert follow_up_response.json()["target"]["hp"] == 20
+    combat_version = combat["version"]
+    for index in range(2):
+        advanced = combat_client.post(
+            f"{base}/combats/{combat['id']}/turns/advance",
+            headers={"X-Request-ID": f"superior-defense-advance-{index}"},
+            json={"combat_version": combat_version},
+        )
+        assert advanced.status_code == 200, advanced.text
+        combat_version = advanced.json()["combat"]["version"]
+    expired = combat_client.get(f"{base}/combats/{combat['id']}/effects").json()["items"]
+    assert next(item for item in expired if item["id"] == resistance["id"])["status"] == "ended"
+
 def test_deflect_attacks_uses_player_d10_and_leaves_zero_damage_for_dm_redirect(
     combat_client: TestClient,
 ) -> None:

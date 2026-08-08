@@ -118,6 +118,14 @@ def apply_pre_damage_intervention(
             reduction = min(value, remaining)
             values.append(max(0, value - reduction))
             remaining = max(0, remaining - value)
+    elif operation == "resistance":
+        # Resistance is intentionally applied by the authoritative combat
+        # defense resolver after the player accepts the reaction window.  The
+        # damage-before domain helper therefore leaves the command unchanged
+        # and only records the typed operation for the persistence consumer.
+        # A direct transform cannot safely halve mixed damage without knowing
+        # which concrete component the rule selected.
+        values = list(original)
     else:
         raise ValueError("暂未接入该伤害前变换")
     if components:
@@ -134,4 +142,5 @@ def apply_pre_damage_intervention(
         "result_amount": sum(values),
         "delta": sum(original) - sum(values),
         "zero_damage": sum(values) == 0,
+        "deferred_to_damage_defense": operation == "resistance",
     }

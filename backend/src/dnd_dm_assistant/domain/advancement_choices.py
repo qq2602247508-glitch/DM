@@ -3035,6 +3035,47 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS: dict[str, dict[str, Any]] = {
         "triggers": [],
         "attack_riders": [],
     },
+    # Superior Hunter's Defense is a reaction after taking damage.  The
+    # selected concrete damage type is bound by the combat event itself; the
+    # generic pre-damage consumer persists a reversible resistance effect
+    # through the target's turn end, then the normal damage-defense resolver
+    # applies it to every matching component.
+    "高阶防守战术": {
+        "combat_start": {"modifiers": [], "defenses": []},
+        "resources": {},
+        "actions": {
+            "superior_hunters_defense": {
+                "id": "superior_hunters_defense",
+                "name": "高阶防守战术",
+                "kind": "feature_action",
+                "action_cost": "reaction",
+                "target": "self",
+                "trigger": {"event": "takes_damage", "timing": "before_damage"},
+                "pre_damage_intervention": {
+                    "kind": "pre_damage_intervention",
+                    "eligibility": {
+                        "entity_types": ["character"],
+                        "damage_types": "all",
+                        "forbidden_conditions": ["incapacitated"],
+                    },
+                    "input_requirements": [],
+                    "damage_transform": {"operation": "resistance"},
+                },
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "pre_damage_reaction_window_and_damage_defense_resolver",
+                    "persistence": "combat_effect_until_target_turn_end",
+                    "idempotency": "source_damage_operation_key",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        },
+        "triggers": [],
+        "attack_riders": [],
+        "automation_status": "full",
+        "requires_dm_adjudication": False,
+    },
     "思维之盾": {
         "combat_start": {
             "modifiers": [],

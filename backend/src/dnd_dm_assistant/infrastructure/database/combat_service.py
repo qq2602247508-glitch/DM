@@ -1553,6 +1553,7 @@ class CombatEngineService:
             if trigger.get("event") not in {
                 "attacker_hits_self",
                 "hit_by_attack",
+                "takes_damage",
                 "takes_fall_damage",
             }:
                 continue
@@ -1741,6 +1742,8 @@ class CombatEngineService:
                 return None
         elif is_fall_damage and command.amount > 0:
             hit_basis = "fall_damage"
+        elif command.amount > 0:
+            hit_basis = "damage"
         else:
             return None
         incoming_damage_types = {
@@ -1790,6 +1793,18 @@ class CombatEngineService:
             if trigger_event == "takes_fall_damage" and not is_fall_damage:
                 continue
             if trigger_event in {"attacker_hits_self", "hit_by_attack"} and not command.is_attack:
+                continue
+            if trigger_event == "takes_damage" and command.amount <= 0:
+                continue
+            intervention_transform = intervention.get("damage_transform")
+            if (
+                isinstance(intervention_transform, dict)
+                and intervention_transform.get("operation") == "resistance"
+                and len(incoming_damage_types) != 1
+            ):
+                # A reaction that grants resistance to "that damage" must
+                # identify one concrete type.  Mixed damage remains DM-owned
+                # rather than silently applying resistance to every segment.
                 continue
             damage_tags_all = {
                 str(item).strip().lower()
@@ -11997,6 +12012,62 @@ class CombatEngineService:
                         raise ValueError("伤害前反应窗口缺少通用执行配置")
                     if pre_damage_reduction_roll is not None:
                         inputs["reduction_roll"] = pre_damage_reduction_roll
+                    transform = spec.get("damage_transform")
+                    if (
+                        isinstance(transform, dict)
+                        and transform.get("operation") == "resistance"
+                    ):
+                        incoming_types = {
+                            str(component.damage_type).strip().lower()
+                            for component in command.damage_components
+                        } or {str(command.damage_type or "").strip().lower()}
+                        incoming_types.discard("")
+                        if len(incoming_types) != 1:
+                            raise ValueError("抗性反应必须绑定一个明确的伤害类型")
+                        damage_type = next(iter(incoming_types))
+                        defense_block = {
+                            "kind": "defense",
+                            "operation": "resistance",
+                            "damage_types": [damage_type],
+                            "source": str(
+                                pre_damage_metadata.get("name") or "伤害前抗性反应"
+                            ),
+                        }
+                        effect_details: dict[str, object] = {
+                            "rule_block": defense_block,
+                            "runtime_state": {
+                                "name": "feature_damage_resistance",
+                                "condition": None,
+                                "end_triggers": ["target_turn_end"],
+                                "expires": "turn_end",
+                                "expires_combatant_id": target.id,
+                                "created_round": combat.round_number,
+                                "created_turn_index": combat.current_turn_index,
+                                "source": "pre_damage_feature_reaction",
+                            },
+                        }
+                        effect_details["applied_state"] = self._apply_rule_block_effect(
+                            target,
+                            effect_details,
+                            session=session,
+                        )
+                        resistance_effect = CombatEffect(
+                            campaign_id=combat.campaign_id,
+                            combat_id=combat.id,
+                            target_combatant_id=target.id,
+                            source_combatant_id=target.id,
+                            name=f"{target.display_name}：本回合{damage_type}抗性",
+                            effect_type="feature_defense",
+                            details_json=effect_details,
+                            started_round=combat.round_number,
+                            duration_unit="until_removed",
+                            requires_concentration=False,
+                            status="active",
+                        )
+                        session.add(resistance_effect)
+                        session.flush()
+                        pre_damage_metadata["resistance_effect_id"] = resistance_effect.id
+                        pre_damage_metadata["resistance_damage_type"] = damage_type
                     command, transform_result = apply_pre_damage_intervention(
                         command,
                         spec,
@@ -12616,6 +12687,8 @@ class CombatEngineService:
                         "damage_reduction_roll": pre_damage_metadata.get("damage_reduction_roll"),
                         "inputs": pre_damage_metadata.get("inputs", {}),
                         "damage_reduction_total": pre_damage_metadata.get("damage_reduction_total"),
+                        "resistance_effect_id": pre_damage_metadata.get("resistance_effect_id"),
+                        "resistance_damage_type": pre_damage_metadata.get("resistance_damage_type"),
                         "redirect_available": pre_damage_metadata.get("redirect_available", False),
                         "redirect_window_id": None,
                         "applied": pre_damage_metadata.get("applied", False),
