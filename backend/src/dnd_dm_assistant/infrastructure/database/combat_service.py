@@ -507,6 +507,8 @@ class CombatEngineService:
             raise ValueError("职业特性目标积木的 mode 无效")
         if mode == "self" and target.id != actor.id:
             raise ValueError("该职业特性只能以自身为目标")
+        if policy.get("allow_self") is False and target.id == actor.id:
+            raise ValueError("该职业特性必须选择另一名生物")
         if mode == "enemy" and cls._combatant_faction(actor) == cls._combatant_faction(target):
             raise ValueError("该职业特性只能以敌方为目标")
         if policy.get("same_faction") is True and (
@@ -3633,6 +3635,7 @@ class CombatEngineService:
         target_snapshot = dict(target.snapshot_json or {})
         candidates = [target]
         grid: SceneGrid | None = None
+        grid_blockers: set[tuple[int, int]] = set()
         resolved_combat_id = combat_id or target.combat_id
         if session is not None and resolved_combat_id:
             combat = session.get(Combat, resolved_combat_id)
@@ -3640,6 +3643,8 @@ class CombatEngineService:
                 grid = session.scalar(
                     select(SceneGrid).where(SceneGrid.scene_id == combat.scene_id)
                 )
+                if grid is not None:
+                    grid_blockers, _cover_cells = cls._grid_obstacles(session, grid)
             candidates = list(
                 session.scalars(
                     select(Combatant).where(
@@ -3765,6 +3770,28 @@ class CombatEngineService:
                 effective_range = max([base_range, *applicable_overrides])
                 if distance_ft > effective_range:
                     continue
+                if relation != "self" and config.get("requires_line_of_sight") is True:
+                    source_position = (source.snapshot_json or {}).get("grid_position")
+                    if (
+                        grid is None
+                        or not isinstance(source_position, dict)
+                        or not isinstance(target_position, dict)
+                    ):
+                        continue
+                    try:
+                        visible, _mode = cls._grid_line_of_sight(
+                            session,
+                            grid,
+                            (int(source_position["row"]), int(source_position["col"])),
+                            (int(target_position["row"]), int(target_position["col"])),
+                            grid_blockers,
+                            start_height_ft=cls._explicit_grid_elevation_ft(source),
+                            end_height_ft=cls._explicit_grid_elevation_ft(target),
+                        )
+                    except (KeyError, TypeError, ValueError):
+                        continue
+                    if not visible:
+                        continue
                 resolved.append(
                     {
                         "source": source,
@@ -5623,6 +5650,7 @@ class CombatEngineService:
         triggers: object,
         event: str = "after_feature_action",
         event_context: Mapping[str, Any] | None = None,
+        target: Combatant | None = None,
     ) -> list[dict[str, Any]]:
         """Apply configuration-driven effects emitted after a feature action.
 
@@ -5650,7 +5678,7 @@ class CombatEngineService:
                 not trigger_action_id or trigger_action_id not in action_ids
             ):
                 continue
-            if event == "after_attack":
+            if event in {"after_attack", "after_zero_hp"}:
                 context = dict(event_context or {})
                 conditions = raw_trigger.get("when")
                 if isinstance(conditions, Mapping) and any(
@@ -5658,6 +5686,20 @@ class CombatEngineService:
                     for key, value in conditions.items()
                     if isinstance(value, bool)
                 ):
+                    continue
+            if event == "after_zero_hp":
+                policy = raw_trigger.get("target_policy")
+                if target is None or not isinstance(policy, Mapping):
+                    continue
+                try:
+                    cls._validate_feature_target_policy(
+                        session,
+                        combat,
+                        actor,
+                        target,
+                        {"target_policy": dict(policy)},
+                    )
+                except ValueError:
                     continue
             trigger_result: dict[str, Any] = {
                 "trigger_id": raw_trigger.get("id"),
@@ -5740,6 +5782,42 @@ class CombatEngineService:
                         max_distance_ft=max_distance,
                     )
                     trigger_result["effects"].append({"kind": kind, **movement})
+                elif kind == "grant_temporary_hp":
+                    amount = cls._state_int(raw_effect.get("amount"), 0)
+                    ability = str(raw_effect.get("ability_modifier") or "").strip()
+                    if ability:
+                        scores = (actor.snapshot_json or {}).get("ability_scores")
+                        score = scores.get(ability) if isinstance(scores, dict) else None
+                        if isinstance(score, int):
+                            amount += (score - 10) // 2
+                    class_name = str(raw_effect.get("class_level_source") or "").strip()
+                    if class_name:
+                        runtime = (actor.snapshot_json or {}).get("feature_runtime")
+                        progression = (
+                            runtime.get("progression") if isinstance(runtime, dict) else None
+                        )
+                        levels = (
+                            progression.get("class_levels")
+                            if isinstance(progression, dict)
+                            else None
+                        )
+                        if not isinstance(levels, dict):
+                            levels = (actor.snapshot_json or {}).get("class_levels")
+                        if isinstance(levels, dict):
+                            amount += cls._state_int(levels.get(class_name), 0)
+                    amount = max(cls._state_int(raw_effect.get("minimum"), 0), amount)
+                    if amount < 1:
+                        raise ValueError("临时生命值触发器需要正数结果")
+                    before = int(actor.temporary_hp)
+                    actor.temporary_hp = max(before, amount)
+                    trigger_result["effects"].append(
+                        {
+                            "kind": kind,
+                            "amount": amount,
+                            "temporary_hp_before": before,
+                            "temporary_hp_after": actor.temporary_hp,
+                        }
+                    )
                 else:
                     raise ValueError(f"职业特性触发器效果类型不受支持：{kind or 'unknown'}")
             if trigger_result["effects"]:
@@ -9469,6 +9547,15 @@ class CombatEngineService:
                 target.snapshot_json = snapshot
         damage = damage_on_success if succeeded else damage_on_failure
         evasion = bool(defenses.get("evasion") or snapshot.get("evasion"))
+        if not evasion and session is not None and combat is not None:
+            evasion = bool(
+                cls._ranged_passive_effects(
+                    target,
+                    effect_kind="evasion",
+                    session=session,
+                    combat_id=combat.id,
+                )
+            )
         # Evasion only applies to a Dexterity save against an effect that
         # explicitly deals half damage on a successful save.  It also stops
         # working while the creature is incapacitated (including the
@@ -11473,6 +11560,41 @@ class CombatEngineService:
                 target,
                 before_hp=int(resolved["before"]["hp"]),
             )
+            zero_hp_trigger_results: list[dict[str, Any]] = []
+            if (
+                command.action_type == "damage"
+                and int(resolved["before"]["hp"]) > 0
+                and target.hp == 0
+            ):
+                sources = list(
+                    session.scalars(
+                        select(Combatant).where(
+                            Combatant.combat_id == combat.id,
+                            Combatant.is_active.is_(True),
+                        )
+                    ).all()
+                )
+                for source in sources:
+                    runtime = source.snapshot_json.get("feature_runtime")
+                    triggers = runtime.get("triggers") if isinstance(runtime, dict) else None
+                    if not isinstance(triggers, list):
+                        continue
+                    zero_hp_trigger_results.extend(
+                        self._apply_feature_action_triggers(
+                            session,
+                            combat,
+                            actor=source,
+                            action={},
+                            triggers=triggers,
+                            event="after_zero_hp",
+                            event_context={
+                                "source_is_killer": source.id == (actor.id if actor else None),
+                                "killer_id": actor.id if actor else None,
+                                "target_id": target.id,
+                            },
+                            target=target,
+                        )
+                    )
             structured_effects: dict[str, object] = {}
             if actor is not None and (
                 command.conditions_to_apply or command.forced_movement_distance_ft is not None
@@ -11715,6 +11837,8 @@ class CombatEngineService:
                 result["structured_effects"] = structured_effects
             if attack_trigger_results:
                 result["attack_triggers"] = attack_trigger_results
+            if zero_hp_trigger_results:
+                result["zero_hp_triggers"] = zero_hp_trigger_results
             if extra_attack_budget:
                 result["attack_roll_budget"] = extra_attack_budget
             if attack_contexts:

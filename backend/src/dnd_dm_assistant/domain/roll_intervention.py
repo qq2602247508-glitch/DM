@@ -328,6 +328,8 @@ def _eligible_bindings(
             match = re.fullmatch(r"[dD]?(\d+)", raw_value.strip())
             if match:
                 bindings[value_binding] = int(match.group(1))
+        if value_binding and value_binding not in bindings:
+            return None
     return bindings
 
 

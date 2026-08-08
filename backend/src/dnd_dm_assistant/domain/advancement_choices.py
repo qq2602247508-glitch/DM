@@ -1233,6 +1233,43 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS: dict[str, dict[str, Any]] = {
         "triggers": [],
         "attack_riders": [],
     },
+    # Leading Evasion reuses the existing Evasion save consumer and extends
+    # it through a position-aware five-foot ally passive.  The source must be
+    # visible and not incapacitated; leaving the radius immediately removes
+    # the shared benefit without mutating the ally's sheet.
+    "引导闪避": {
+        "combat_start": {
+            "modifiers": [],
+            "defenses": [
+                {
+                    "id": "leading_evasion:ranged_evasion",
+                    "kind": "evasion",
+                    "ranged_passive": {
+                        "effect_kind": "evasion",
+                        "target_relation": "self_and_allies",
+                        "range_ft": 5,
+                        "requires_line_of_sight": True,
+                        "source_forbidden_conditions": ["incapacitated"],
+                    },
+                    "automation_status": "partial",
+                    "requires_dm_adjudication": True,
+                    "partial_reason": (
+                        "自身闪避已由消费者支持；是否将增益授予5尺内其他生物仍需逐次选择。"
+                    ),
+                    "runtime_execution": {
+                        "status": "ready",
+                        "consumer": "ranged_passive_evasion_and_saving_throw_resolution",
+                    },
+                }
+            ],
+        },
+        "resources": {},
+        "actions": {},
+        "triggers": [],
+        "attack_riders": [],
+        "automation_status": "partial",
+        "requires_dm_adjudication": True,
+    },
     # Starry Form remains partial because its constellation branches still
     # require their dedicated attack/healing/concentration consumers.  Its
     # activation lifecycle is nevertheless authoritative and reusable by
@@ -1844,6 +1881,62 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS: dict[str, dict[str, Any]] = {
             }
         },
         "triggers": [],
+        "attack_riders": [],
+    },
+    # Dark One's Blessing is a complete zero-HP trigger: the warlock gains
+    # temporary hit points when they reduce a hostile creature to 0 HP, or
+    # when an ally does so within 10 feet.  Both branches share the same
+    # persisted temporary-HP consumer and are kept as separate typed triggers
+    # so the killer/range distinction cannot be silently skipped.
+    "黑暗赐福": {
+        "combat_start": {"modifiers": [], "defenses": []},
+        "resources": {},
+        "actions": {},
+        "triggers": [
+            {
+                "id": "dark_ones_blessing:self_kill",
+                "event": "after_zero_hp",
+                "when": {"source_is_killer": True},
+                "target_policy": {"mode": "enemy"},
+                "effects": [
+                    {
+                        "kind": "grant_temporary_hp",
+                        "ability_modifier": "charisma",
+                        "class_level_source": "魔契师",
+                        "minimum": 1,
+                    }
+                ],
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "damage_zero_hp_trigger_temporary_hp",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            },
+            {
+                "id": "dark_ones_blessing:ally_kill",
+                "event": "after_zero_hp",
+                "when": {"source_is_killer": False},
+                "target_policy": {
+                    "mode": "enemy",
+                    "range_ft": 10,
+                },
+                "effects": [
+                    {
+                        "kind": "grant_temporary_hp",
+                        "ability_modifier": "charisma",
+                        "class_level_source": "魔契师",
+                        "minimum": 1,
+                    }
+                ],
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "damage_zero_hp_trigger_temporary_hp",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            },
+        ],
         "attack_riders": [],
     },
     "超凡技艺": {

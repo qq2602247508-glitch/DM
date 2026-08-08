@@ -9179,6 +9179,116 @@ def test_after_attack_trigger_requires_critical_hit_and_is_idempotent(
     assert replay_body["actor"]["movement_remaining_ft"] == 20
 
 
+def test_dark_ones_blessing_grants_temporary_hp_on_self_or_ally_kill(
+    combat_client: TestClient,
+) -> None:
+    campaign = _campaign(combat_client, "Dark One blessing runtime")
+    base = f"/api/v1/campaigns/{campaign['id']}"
+    combat = combat_client.post(f"{base}/combats", json={"name": "黑暗赐福"}).json()
+    runtime = subclass_feature_runtime_definition(
+        {
+            "name": "黑暗赐福 Dark One's Blessing",
+            "class_name": "魔契师",
+            "class_level": 5,
+            "source_record_id": "test-dark-ones-blessing",
+        }
+    )
+    assert runtime is not None
+    owner = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "邪魔术士",
+            "entity_type": "character",
+            "initiative": 30,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {
+                "ability_scores": {"charisma": 18},
+                "class_levels": {"魔契师": 5},
+                "feature_runtime": runtime,
+                "grid_position": {"row": 0, "col": 0},
+            },
+        },
+    ).json()
+    ally = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "盟友",
+            "entity_type": "character",
+            "initiative": 20,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {"grid_position": {"row": 0, "col": 1}},
+        },
+    ).json()
+    enemy = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "敌人",
+            "entity_type": "monster",
+            "initiative": 10,
+            "hp": 1,
+            "max_hp": 1,
+        },
+    ).json()
+
+    self_kill = combat_client.post(
+        f"{base}/combats/{combat['id']}/actions/confirm",
+        headers={"X-Request-ID": "dark-blessing-self-kill"},
+        json={
+            "action_type": "damage",
+            "actor_combatant_id": owner["id"],
+            "actor_version": owner["version"],
+            "target_combatant_id": enemy["id"],
+            "target_version": enemy["version"],
+            "amount": 1,
+            "damage_type": "necrotic",
+        },
+    )
+    assert self_kill.status_code == 200, self_kill.text
+    self_body = self_kill.json()
+    assert self_body["actor"]["temporary_hp"] == 9
+    assert self_body["action"]["result_json"]["zero_hp_triggers"][0]["effects"][0][
+        "amount"
+    ] == 9
+
+    enemy_two = combat_client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "敌人二",
+            "entity_type": "monster",
+            "initiative": 5,
+            "hp": 1,
+            "max_hp": 1,
+        },
+    ).json()
+    owner = self_body["actor"]
+    ally = self_body["target"] if self_body["target"]["id"] == ally["id"] else ally
+    ally_kill = combat_client.post(
+        f"{base}/combats/{combat['id']}/actions/confirm",
+        headers={"X-Request-ID": "dark-blessing-ally-kill"},
+        json={
+            "action_type": "damage",
+            "actor_combatant_id": ally["id"],
+            "actor_version": ally["version"],
+            "target_combatant_id": enemy_two["id"],
+            "target_version": enemy_two["version"],
+            "amount": 1,
+            "damage_type": "necrotic",
+        },
+    )
+    assert ally_kill.status_code == 200, ally_kill.text
+    ally_body = ally_kill.json()
+    assert ally_body["actor"]["id"] == ally["id"]
+    assert ally_body["target"]["id"] == enemy_two["id"]
+
+    owner_after = combat_client.get(
+        f"{base}/combats/{combat['id']}/combatants/{owner['id']}"
+    )
+    assert owner_after.status_code == 200, owner_after.text
+    assert owner_after.json()["temporary_hp"] == 9
+
+
 def test_superior_defense_spends_focus_and_resists_non_force_damage(
     combat_client: TestClient,
 ) -> None:

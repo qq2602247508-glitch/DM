@@ -24,9 +24,15 @@ TRIGGER_WINDOWS = frozenset(
         "before_damage",
     }
 )
-TRIGGER_EVENTS = frozenset({"after_feature_action", "after_attack"})
+TRIGGER_EVENTS = frozenset({"after_feature_action", "after_attack", "after_zero_hp"})
 TRIGGER_EFFECT_KINDS = frozenset(
-    {"grant_movement_budget", "grant_disengage", "remove_conditions", "teleport"}
+    {
+        "grant_movement_budget",
+        "grant_disengage",
+        "remove_conditions",
+        "teleport",
+        "grant_temporary_hp",
+    }
 )
 RESOURCE_LIFECYCLE_EVENTS = frozenset(
     {"short_rest", "long_rest", "initiative_start", "turn_start", "turn_end"}
@@ -149,6 +155,10 @@ def feature_trigger_block_errors(trigger: Mapping[str, Any]) -> tuple[str, ...]:
             for key in ("hit", "critical_hit"):
                 if key in when and not isinstance(when[key], bool):
                     errors.append(f"after_attack.when.{key} must be boolean")
+    if event == "after_zero_hp":
+        policy = trigger.get("target_policy")
+        if not isinstance(policy, Mapping):
+            errors.append("after_zero_hp.target_policy is required")
     effects = trigger.get("effects")
     if not isinstance(effects, list) or not effects:
         errors.append("effects must be a non-empty list")
@@ -180,6 +190,19 @@ def feature_trigger_block_errors(trigger: Mapping[str, Any]) -> tuple[str, ...]:
                 maximum = effect.get("max_distance_ft")
                 if not _positive_int(maximum):
                     errors.append("teleport needs a positive max_distance_ft")
+            elif kind == "grant_temporary_hp":
+                if not any(
+                    str(effect.get(key) or "").strip()
+                    for key in ("amount", "ability_modifier", "class_level_source")
+                ):
+                    errors.append(
+                        "grant_temporary_hp needs amount, ability_modifier, or class_level_source"
+                    )
+                minimum = effect.get("minimum")
+                if minimum is not None and (
+                    not isinstance(minimum, int) or isinstance(minimum, bool) or minimum < 0
+                ):
+                    errors.append("grant_temporary_hp.minimum is invalid")
     return tuple(errors)
 
 

@@ -1416,6 +1416,7 @@ def feature_runtime_definition(
                     "same_faction": True,
                     "range_ft": 60,
                     "requires_visible_or_audible": True,
+                    "allow_self": False,
                 },
                 "resolution_kind": "grant_dice",
                 "dice_key": "bardic_inspiration_die",
