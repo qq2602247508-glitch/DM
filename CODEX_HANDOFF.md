@@ -1,3 +1,18 @@
+# 2026-08-09 长执行检查点：斗转星移减半与心灵反伤
+
+- 实时固定审计仍为 499 条；本切片前 `full 252 / partial 173 / dm_only 74`，当前为
+  `full 253 / partial 172 / dm_only 74`。新增 full：「魔契师·至高妖精宗主·10·斗转星移」。
+- 魅惑免疫走既有 condition_immunity 消费者；被可见敌人命中后打开 pre-damage 反应窗口，
+  消耗 `beguiling_defenses` 资源（1 次，长休恢复），`multiply_each_component 0.5` 将最终伤害
+  减半（向下取整）。
+- 新增 `beguiling_reflection` 后续窗口：伤害结算后攻击者须提交感知豁免总值（DC = 8 + 熟练 +
+  魅力调整值）；失败则攻击者受到等同实际承受伤害（HP/临时 HP 损失合计）的心灵伤害，走真实
+  抗性/免疫结算；成功则无反伤。窗口 CAS、版本、幂等与过期均持久化。
+- 验证：斗转星移 3 个真实 API 测试（减半、失败反伤、成功无反伤）通过；全量后端 pytest、
+  前端 204 tests/typecheck/lint/build、新增源码/测试 Ruff、compileall、`git diff --check` 通过。
+- 已分离提交：代码 `a22a0c2`，审计基线测试 `b5964ae`；文档/交接随后单独提交。必须继续保留且不暂存/提交：
+  `backend/tests/integrations/`、`backend/tests/ollama.py`。
+
 # 2026-08-09 长执行检查点：如影随行掷骰前劣势与战后传送
 
 - 实时固定审计仍为 499 条；本切片前 `full 251 / partial 174 / dm_only 74`，当前为

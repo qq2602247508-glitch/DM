@@ -1,5 +1,19 @@
 # 特性自动化迁移预审报告
 
+## 2026-08-09 检查点（斗转星移减半与心灵反伤）
+
+实时审计固定总数仍为 `499`：本切片前 `full 252 / partial 173 / dm_only 74`，本切片后
+`full 253 / partial 172 / dm_only 74`。新增 full 为至高妖精宗主「斗转星移」。
+
+- 魅惑免疫由 condition_immunity 消费者闭环；pre-damage 反应将最终伤害减半（floor）。
+- 新增 `beguiling_reflection`：伤害结算后攻击者感知豁免（DC=8+熟练+魅力调整值），失败受到
+  等同实际承受伤害的心灵伤害，走真实抗性/免疫结算；成功无反伤。窗口 CAS、版本、幂等和过期
+  均持久化到 CombatAction。
+
+验证：斗转星移 3 个 API 测试、全量后端 pytest、前端 204 tests/typecheck/lint/build、
+新增源码/测试 Ruff、compileall、`git diff --check` 均通过。代码 `a22a0c2`、审计基线测试
+`b5964ae`、文档/交接随后单独提交。
+
 ## 2026-08-09 检查点（如影随行掷骰前劣势与战后传送）
 
 实时审计固定总数仍为 `499`：本切片前 `full 251 / partial 174 / dm_only 74`，本切片后
