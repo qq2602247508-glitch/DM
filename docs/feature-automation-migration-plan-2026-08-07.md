@@ -1,5 +1,28 @@
 # 特性自动化迁移预审报告
 
+## 2026-08-08 检查点（战斗大师卓越骰与战技通用平台）
+
+实时审计固定总数仍为 `499`：本切片前 `full 246 / partial 179 / dm_only 74`，切片后
+`full 247 / partial 178 / dm_only 74`。唯一新增的 `full` 是战斗大师 10 级「精通战技」；
+「卓越战技」父特性、料敌机先、坚韧和究极战技仍为 `partial`，没有把单一骰池分支冒充整条
+复合特性完成。
+
+- 新增通用卓越骰资源合同：按战士等级生产 `4d8 → 5d8 → 5d10 → 6d10 → 6d12`，短休和长休
+  恢复，升级/降级/重复升级/快照重建使用 exact 上限和骰面语义，并写入真实角色资源状态。
+- 新增战技选择与替换合同：3/7/10/15 级累计选择、重复/越级/未学习替换 fail-closed，选择结果
+  持久化到运行时 registry；力量/敏捷豁免 DC 能力选择通过独立结构化输入保存，普通流程不使用
+  DM override 默认值。
+- 新增不识别职业名称的通用战技 `roll_intervention` 接线：伏击、领导风范、战术预估复用真实
+  玩家 d20 检定入口，动态读取卓越骰面，CAS 扣除资源并以动作幂等键重放；只把这些完整闭环的
+  三个战技消费者接通，未完成的攻击、反应、移动和状态分支继续保持 partial。
+- 「精通战技」完整语义在现有资源/休息/升级消费者中闭环，因此升为 full；其他条目仍需新的
+  反应攻击、攻击重骰、目标体型/物件、强制移动或 universal maneuver 消费基础，暂不扩张。
+
+代码提交：`36ac2dc feat: add battle master superiority dice runtime`；审计基线测试修订：
+`e7aa6e0 test: update battle master audit baseline`。本检查点文档与 `CODEX_HANDOFF.md`
+另行提交。当前预审统计为 `already_full 247 / missing_runtime_contract 167 / consumer_partial 34 /
+manual_boundary 10 / needs_contract_review 6 / missing_source 35`。
+
 ## 2026-08-08 检查点（魔能掌控、灵能力量与战神祝福）
 
 当前固定审计为 `full 246 / partial 179 / dm_only 74`。本 Goal 从
