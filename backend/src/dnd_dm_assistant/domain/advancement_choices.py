@@ -4022,6 +4022,31 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS["卓越战技"] = {
 # These entries describe only the generic event contract.  The combat engine
 # consumes event/target/profile/resource fields and never branches on these
 # feature names.
+SUBCLASS_FEATURE_RUNTIME_CONFIGS["防守战术"] = {
+    "combat_start": {"modifiers": [], "defenses": []},
+    "resources": {},
+    "actions": {
+        "defensive_tactics_choice": {
+            "id": "defensive_tactics_choice",
+            "name": "防守战术（休息选择）",
+            "kind": "rest_choice",
+            "trigger": "short_or_long_rest",
+            "choice_key": "defensive_tactics",
+            "choice_options": ["escape_the_horde", "multiattack_defense"],
+            "runtime_execution": {
+                "status": "ready",
+                "consumer": "rest_service_and_incoming_attack_context",
+            },
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+        }
+    },
+    "triggers": [],
+    "attack_riders": [],
+    "automation_status": "full",
+    "requires_dm_adjudication": False,
+}
+
 SUBCLASS_FEATURE_RUNTIME_CONFIGS["斗转星移"] = {
     "combat_start": {
         "modifiers": [],

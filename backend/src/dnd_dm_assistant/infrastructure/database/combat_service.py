@@ -9335,6 +9335,67 @@ class CombatEngineService:
         return None
 
     @classmethod
+    @classmethod
+    def _selected_defensive_tactics(cls, combatant: Combatant) -> str | None:
+        """Return the persisted Defensive Tactics choice for a character."""
+
+        snapshot = dict(combatant.snapshot_json or {})
+        resources = snapshot.get("resources")
+        if isinstance(resources, dict):
+            choice = resources.get("defensive_tactics")
+            if isinstance(choice, dict):
+                selected = str(choice.get("selected") or "").strip().lower()
+                if selected in {"escape_the_horde", "multiattack_defense"}:
+                    return selected
+        runtime = snapshot.get("feature_runtime")
+        if isinstance(runtime, dict):
+            runtime_resources = runtime.get("resources")
+            if isinstance(runtime_resources, dict):
+                choice = runtime_resources.get("defensive_tactics")
+                if isinstance(choice, dict):
+                    selected = str(choice.get("selected") or "").strip().lower()
+                    if selected in {"escape_the_horde", "multiattack_defense"}:
+                        return selected
+        return None
+
+    @classmethod
+    def _defensive_tactics_incoming_disadvantage(
+        cls,
+        *,
+        session: Session,
+        combat: Combat,
+        command: CombatActionCommand,
+        attacker: Combatant,
+        target: Combatant,
+    ) -> list[str]:
+        """Return typed disadvantage sources a defender's Defensive Tactics impose."""
+
+        selected = cls._selected_defensive_tactics(target)
+        if selected is None:
+            return []
+        sources: list[str] = []
+        is_opportunity = (
+            command.action_cost == "reaction"
+            and (
+                "借机" in str(command.reaction_trigger or "")
+                or command.reaction_event == "leaves_reach"
+                or "leaves_reach" in str(command.reaction_event or "")
+            )
+        )
+        if selected == "escape_the_horde" and is_opportunity:
+            sources.append("defensive_tactics:escape_the_horde")
+        if selected == "multiattack_defense":
+            snapshot = dict(target.snapshot_json or {})
+            hits = snapshot.get("multiattack_defense_hits")
+            if isinstance(hits, dict):
+                turn_key = f"{combat.round_number}:{combat.current_turn_index}"
+                attackers = hits.get(turn_key)
+                if isinstance(attackers, list) and attacker.id in {
+                    str(value) for value in attackers if isinstance(value, str)
+                }:
+                    sources.append("defensive_tactics:multiattack_defense")
+        return sources
+
     def _attack_contexts(
         cls,
         session: Session,
@@ -9516,6 +9577,15 @@ class CombatEngineService:
         if cls._suppresses_incoming_attack_advantage(target):
             contexts.append("target_feature_suppresses_incoming_advantage")
             advantage_sources.clear()
+        for source in cls._defensive_tactics_incoming_disadvantage(
+            session=session,
+            combat=combat,
+            command=command,
+            attacker=actor,
+            target=target,
+        ):
+            contexts.append(source)
+            disadvantage_sources.append(source)
         if cls._active_runtime_effects(session, combat.id, target_id=actor.id, state_name="hidden"):
             contexts.append("attacker_hidden_visibility_requires_dm_ruling")
             adjudication_contexts.append("attacker_hidden_visibility_requires_dm_ruling")
@@ -13546,6 +13616,23 @@ class CombatEngineService:
                 and int(resolved["result"].get("adjusted_damage", 0)) > 0
             ):
                 self._mark_rage_activity(target, damaged=True)
+            if (
+                command.is_attack
+                and actor is not None
+                and attack_hit_status is True
+                and self._selected_defensive_tactics(target) == "multiattack_defense"
+            ):
+                snapshot = dict(target.snapshot_json or {})
+                hits = snapshot.get("multiattack_defense_hits")
+                hits = dict(hits) if isinstance(hits, dict) else {}
+                turn_key = f"{combat.round_number}:{combat.current_turn_index}"
+                attackers = {
+                    str(value) for value in hits.get(turn_key, []) if isinstance(value, str)
+                }
+                attackers.add(actor.id)
+                hits[turn_key] = sorted(attackers)
+                snapshot["multiattack_defense_hits"] = hits
+                target.snapshot_json = snapshot
             if (
                 command.is_attack
                 and actor is not None
