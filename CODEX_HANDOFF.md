@@ -1,7 +1,15 @@
+# 2026-08-08 长执行检查点：专业预言、钢铁意志与高阶防守
+
+- 当前固定分母 499，最新真实审计：`full 233 / partial 190 / dm_only 76`；本 Goal 起点 `227/195/77`，已真实净增 6，继续执行，未因超过 223 停止。
+- `钢铁意志`：`save:wisdom`，或已有感知豁免熟练时选择 `save:intelligence` / `save:charisma`；升级服务、战斗快照和实际豁免解析消费同一选择。
+- `专业预言`：二环以上预言法术消耗普通法术位后，提交低于施法环阶且不超过五环的已消耗法术位恢复；预览、CAS、幂等、仪式/免费施法拒绝已接入 Spell Economy。
+- `高阶防守战术`：伤害前反应窗口选择单一具体伤害类型，抗性 CombatEffect 持续至目标回合结束；混合伤害 fail-closed。
+- 代码提交与 docs/交接提交保持分离；当前工作树只保留用户要求的未跟踪 `backend/tests/integrations/`、`backend/tests/ollama.py`。
+
 # 2026-08-08 长执行检查点：信实坐骑免费施法
 
 - 代码提交：`4baf94c feat: automate faithful steed free casting`；交接/审计文档需单独提交。
-- 当前固定分母 499，审计状态：`full 230 / partial 193 / dm_only 76`。本 Goal 起点 `227/195/77`，已真实净增 3（预兆、高等预兆、信实坐骑）。
+- 当前固定分母 499，审计状态：`full 230 / partial 193 / dm_only 76`。本 Goal 起点 `227/195/77`，已真实净增 3（预兆、高等预兆、信实坐骑）。历史检查点保留；最新状态见上方。
 - 信实坐骑完整链：圣武士 5 级核心运行时资源 `faithful_steed`（1 次，长休恢复）；固定法术授予「寻获坐骑」并标记始终准备；Spell Economy 的 preview/confirm 接受显式 `free_cast=true`，只允许与该已授予法术的 resource metadata 匹配，跳过普通法术位，校验资源余额，确认时原子扣除角色资源并通过 OperationTransaction 幂等重放返回同一结果。
 - 不是只落库：免费施法输入、角色版本 CAS、法术准备校验、法术等级、材料校验、资源消费和重放均由真实 API 消费者执行；没有匹配授权 metadata 或资源不足会 fail-closed。
 - 定向门禁：`test_spell_economy.py`（免费施法/重放）、升级/休息/预兆测试、Ruff、compileall、`git diff --check` 通过；全量 pytest 继续作为长执行门禁。
