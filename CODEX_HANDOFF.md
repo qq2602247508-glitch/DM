@@ -1,3 +1,12 @@
+# 2026-08-08 长执行检查点：信实坐骑免费施法
+
+- 代码提交：`4baf94c feat: automate faithful steed free casting`；交接/审计文档需单独提交。
+- 当前固定分母 499，审计状态：`full 230 / partial 193 / dm_only 76`。本 Goal 起点 `227/195/77`，已真实净增 3（预兆、高等预兆、信实坐骑）。
+- 信实坐骑完整链：圣武士 5 级核心运行时资源 `faithful_steed`（1 次，长休恢复）；固定法术授予「寻获坐骑」并标记始终准备；Spell Economy 的 preview/confirm 接受显式 `free_cast=true`，只允许与该已授予法术的 resource metadata 匹配，跳过普通法术位，校验资源余额，确认时原子扣除角色资源并通过 OperationTransaction 幂等重放返回同一结果。
+- 不是只落库：免费施法输入、角色版本 CAS、法术准备校验、法术等级、材料校验、资源消费和重放均由真实 API 消费者执行；没有匹配授权 metadata 或资源不足会 fail-closed。
+- 定向门禁：`test_spell_economy.py`（免费施法/重放）、升级/休息/预兆测试、Ruff、compileall、`git diff --check` 通过；全量 pytest 继续作为长执行门禁。
+- 继续同一 Goal，不在 `+3` 停止；下一步审查其余资源/恢复或状态/防御/移动候选，优先全条规则可由现有消费者闭环者。
+
 # 2026-08-08 长执行检查点：预兆与高等预兆真实 D20 池
 
 - 代码切片尚未提交；文档与交接需和代码分开提交。
