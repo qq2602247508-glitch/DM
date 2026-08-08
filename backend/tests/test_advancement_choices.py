@@ -191,6 +191,48 @@ def test_student_of_war_typed_skill_and_tool_choices_are_persisted() -> None:
         )
 
 
+def test_iron_mind_persists_replacement_save_and_narrows_runtime_modifier() -> None:
+    feature_id = "gloom-stalker:7:iron-mind"
+    definition = {
+        "id": feature_id,
+        "name": "钢铁意志 Iron Mind",
+        "class_level": 7,
+        "source_record_id": "fixture:gloom-stalker:iron-mind",
+        "description": "你获得感知豁免熟练；如果已经拥有，则改选智力或魅力豁免熟练。",
+    }
+    runtime = subclass_runtime_grants(
+        {"name": "幽域追猎者", "feature_definitions": [definition]},
+        class_name="游侠",
+        target_class_level=7,
+        selected_choices={feature_id: ["save:intelligence"]},
+    )
+    grant = runtime["grants"][0]
+    assert grant["runtime"]["automation_status"] == "full"
+    modifier = grant["runtime"]["registry"]["combat_start"]["modifiers"][0]
+    assert modifier["abilities"] == ["intelligence"]
+    _, proficiencies = AdvancementService._apply_subclass_typed_proficiency_choices(
+        runtime["grants"],
+        selected_choices={feature_id: ["save:intelligence"]},
+        skills={},
+        proficiencies=["感知豁免"],
+    )
+    assert proficiencies == ["感知豁免", "智力豁免"]
+    with pytest.raises(ValueError, match="只能选择感知"):
+        AdvancementService._apply_subclass_typed_proficiency_choices(
+            runtime["grants"],
+            selected_choices={feature_id: ["save:intelligence"]},
+            skills={},
+            proficiencies=[],
+        )
+    _, proficiencies = AdvancementService._apply_subclass_typed_proficiency_choices(
+        runtime["grants"],
+        selected_choices={feature_id: ["save:wisdom"]},
+        skills={},
+        proficiencies=[],
+    )
+    assert proficiencies == ["感知豁免"]
+
+
 def test_spell_level_uses_class_level_not_shared_multiclass_slots() -> None:
     assert maximum_class_spell_level("法师", 5) == 3
     assert maximum_class_spell_level("圣武士", 5) == 2

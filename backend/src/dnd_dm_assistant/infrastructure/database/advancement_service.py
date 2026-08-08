@@ -769,7 +769,11 @@ class AdvancementService:
                 allowed = group.get("allowed_options")
                 minimum = int(group.get("minimum") or 0)
                 maximum = int(group.get("maximum") or 0)
-                if not prefix or kind not in {"skill", "tool"} or not isinstance(allowed, list):
+                if (
+                    not prefix
+                    or kind not in {"skill", "tool", "saving_throw"}
+                    or not isinstance(allowed, list)
+                ):
                     raise ValueError("子职类型化熟练选择分组不受支持")
                 selected = [
                     choice.split(":", 1)[1].strip()
@@ -795,10 +799,50 @@ class AdvancementService:
                         current = after_skills.get(skill)
                         existing = dict(current) if isinstance(current, dict) else {}
                         after_skills[skill] = {**existing, "proficient": True}
-                else:
+                elif kind == "tool":
                     for tool in selected:
                         if tool not in after_proficiencies:
                             after_proficiencies.append(tool)
+                else:
+                    aliases = {
+                        "力量": "strength",
+                        "敏捷": "dexterity",
+                        "体质": "constitution",
+                        "智力": "intelligence",
+                        "感知": "wisdom",
+                        "魅力": "charisma",
+                    }
+                    selected_abilities = [
+                        aliases.get(value.casefold(), value.casefold()) for value in selected
+                    ]
+                    existing_saves = {
+                        aliases.get(
+                            str(item).removesuffix("豁免").strip().casefold(),
+                            str(item).removesuffix("豁免").strip().casefold(),
+                        )
+                        for item in after_proficiencies
+                        if str(item).strip().endswith("豁免")
+                    }
+                    chosen = selected_abilities[0] if selected_abilities else ""
+                    if chosen == "wisdom" and "wisdom" not in existing_saves:
+                        pass
+                    elif chosen in {"intelligence", "charisma"} and "wisdom" in existing_saves:
+                        pass
+                    else:
+                        raise ValueError(
+                            "钢铁意志：若已有感知豁免熟练，必须改选智力或魅力；否则只能选择感知"
+                        )
+                    label = {
+                        "strength": "力量",
+                        "dexterity": "敏捷",
+                        "constitution": "体质",
+                        "intelligence": "智力",
+                        "wisdom": "感知",
+                        "charisma": "魅力",
+                    }[chosen]
+                    proficiency = f"{label}豁免"
+                    if proficiency not in after_proficiencies:
+                        after_proficiencies.append(proficiency)
             if set(choices) != consumed:
                 raise ValueError("子职类型化熟练选择必须使用 <类型>:<名称> 格式")
         return after_skills, after_proficiencies

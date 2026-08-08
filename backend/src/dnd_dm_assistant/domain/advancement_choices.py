@@ -1951,6 +1951,63 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS: dict[str, dict[str, Any]] = {
         "triggers": [],
         "attack_riders": [],
     },
+    # Iron Mind is a typed saving-throw proficiency choice.  The advancement
+    # service persists the selected save and enforces the source replacement
+    # rule; the combat snapshot narrows this modifier to that one ability.
+    "钢铁意志": {
+        "combat_start": {
+            "modifiers": [
+                {
+                    "id": "iron_mind:saving_throw_proficiency",
+                    "stat": "saving_throw",
+                    "operation": "grant_proficiency",
+                    "abilities": ["wisdom"],
+                    "scope": "self",
+                    "runtime_execution": {
+                        "status": "ready",
+                        "consumer": "saving_throw_resolution",
+                    },
+                    "automation_status": "full",
+                    "requires_dm_adjudication": False,
+                }
+            ],
+            "defenses": [],
+        },
+        "advancement": {
+            "kind": "typed_proficiency_choice",
+            "choice_groups": [
+                {
+                    "prefix": "save",
+                    "kind": "saving_throw",
+                    "minimum": 1,
+                    "maximum": 1,
+                    "allowed_options": ["wisdom", "intelligence", "charisma"],
+                }
+            ],
+            "choice_requirement": {
+                "key": "subclass_typed_proficiency",
+                "minimum": 1,
+                "maximum": 1,
+                "strict": True,
+                "options_source": "iron_mind_saving_throw_choices",
+                "requires_dm_selection": False,
+                "reason": (
+                    "钢铁意志使用 save:wisdom；已有感知豁免熟练时改用 "
+                    "save:intelligence 或 save:charisma。"
+                ),
+            },
+            "runtime_execution": {
+                "status": "ready",
+                "consumer": "advancement_service_and_saving_throw_resolution",
+            },
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+        },
+        "resources": {},
+        "actions": {},
+        "triggers": [],
+        "attack_riders": [],
+    },
     # Extra Attack is a subclass grant in several source tables, but the
     # execution contract is the same typed attack-action-count consumer used
     # by core class grants.  The executor does not branch on a subclass ID.
@@ -3777,6 +3834,29 @@ def subclass_runtime_grants(
         if action is not None:
             actions.append(action)
         runtime_registry = subclass_feature_runtime_definition(definition)
+        if runtime_registry is not None and str(definition.get("name") or "").startswith(
+            "钢铁意志"
+        ):
+            selected_save = next(
+                (
+                    value.split(":", 1)[1].strip()
+                    for value in selected
+                    if value.startswith("save:") and value.split(":", 1)[1].strip()
+                ),
+                None,
+            )
+            if selected_save:
+                combat_start = runtime_registry.get("combat_start")
+                modifiers = (
+                    combat_start.get("modifiers") if isinstance(combat_start, dict) else None
+                )
+                if isinstance(modifiers, list):
+                    for modifier in modifiers:
+                        if (
+                            isinstance(modifier, dict)
+                            and modifier.get("id") == "iron_mind:saving_throw_proficiency"
+                        ):
+                            modifier["abilities"] = [selected_save]
         if runtime_registry is not None and resource_key:
             # Bind a generic resource-lifecycle action to the resource parsed
             # from this feature's source description.  The shared executor sees
