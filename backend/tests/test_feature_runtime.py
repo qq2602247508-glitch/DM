@@ -2490,3 +2490,57 @@ def test_frenzy_rider_requires_raging_reckless_strength_attack_and_reports_d6_to
     frenzy = next(item for item in riders if item["rider_id"] == "frenzy:bonus_damage")
     assert frenzy["total"] == 9
     assert frenzy["damage_type"] == "weapon_damage_type"
+
+
+def test_brutal_strike_requires_explicit_advantage_trade_and_reports_d10_total() -> None:
+    runtime = feature_runtime_definition(
+        feature_name="凶蛮打击",
+        class_name="野蛮人",
+        class_level=9,
+    )
+    assert runtime is not None
+    rider = runtime["attack_riders"][0]
+    assert rider["automation_status"] == "full"
+    assert rider["runtime_execution"] == {
+        "status": "ready",
+        "consumer": "attack_rider_resolver",
+        "input": "attack_rider_eligibility.brutal_strike",
+    }
+    actor = Combatant(
+        id="brutal-striker",
+        entity_type="character",
+        conditions=["raging", "reckless_attack"],
+        snapshot_json={"feature_runtime": {"attack_riders": [rider]}},
+    )
+    target = Combatant(id="brutal-target", entity_type="monster")
+    action = {
+        "name": "巨斧",
+        "description": "力量近战武器攻击",
+        "is_weapon_attack": True,
+        "attack_ability": "strength",
+        "attack_roll_mode": "advantage",
+    }
+    riders = PlayerRoomService._eligible_attack_riders(
+        actor,
+        action,
+        target,
+        special_inputs={
+            "attack_rider_eligibility": {"brutal_strike": True},
+            "attack_rider_totals": {"brutal_strike:bonus_damage": 7},
+        },
+        critical_hit=False,
+        used_this_turn=set(),
+    )
+    assert riders[0]["rider_id"] == "brutal_strike:bonus_damage"
+    assert riders[0]["total"] == 7
+    assert PlayerRoomService._eligible_attack_riders(
+        actor,
+        {**action, "attack_roll_mode": "normal"},
+        target,
+        special_inputs={
+            "attack_rider_eligibility": {"brutal_strike": True},
+            "attack_rider_totals": {"brutal_strike:bonus_damage": 7},
+        },
+        critical_hit=False,
+        used_this_turn=set(),
+    ) == []

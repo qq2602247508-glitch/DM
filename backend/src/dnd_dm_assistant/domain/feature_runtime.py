@@ -2360,7 +2360,14 @@ def feature_runtime_definition(
                 "damage_type": "weapon_damage_type",
                 "applies_when": "brutal_strike_eligible",
                 "frequency": "once_per_turn",
-                "requires_dm_adjudication": True,
+                "eligibility_input": "brutal_strike",
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "attack_rider_resolver",
+                    "input": "attack_rider_eligibility.brutal_strike",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
                 **source,
             }
         )

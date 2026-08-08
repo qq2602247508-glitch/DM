@@ -1583,6 +1583,19 @@ class PlayerRoomService:
                         is_weapon_attack or action.get("is_unarmed_attack") is True
                     )
                 )
+            elif applies_when == "brutal_strike_eligible":
+                explicit = eligibility.get(rider_id, eligibility.get("brutal_strike"))
+                eligible = (
+                    explicit is True
+                    and CombatEngineService._has_condition(actor, "raging")
+                    and CombatEngineService._has_condition(actor, "reckless_attack")
+                    and is_strength_attack
+                    and bool(
+                        is_weapon_attack or action.get("is_unarmed_attack") is True
+                    )
+                    and str(action.get("attack_roll_mode") or "").strip().lower()
+                    == "advantage"
+                )
             elif applies_when == "sneak_attack_eligible":
                 explicit = eligibility.get(rider_id, eligibility.get("sneak_attack"))
                 eligible = explicit is True
@@ -7868,7 +7881,10 @@ class PlayerRoomService:
                 if outcome_code == "hit":
                     eligible_riders = self._eligible_attack_riders(
                         actor,
-                        action,
+                        {
+                            **action,
+                            "attack_roll_mode": attack_roll_mode,
+                        },
                         current_target,
                         special_inputs=special_inputs,
                         critical_hit=effective_critical,
