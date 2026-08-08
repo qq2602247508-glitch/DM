@@ -100,6 +100,10 @@ FEATURE_CONDITION_RUNTIME_SPECS: dict[str, dict[str, dict[str, Any]]] = {
             "state_name": "steady_aim",
             "expires": ["turn_start", "turn_end"],
         },
+        "moonlight_step": {
+            "state_name": "moonlight_step",
+            "expires": ["turn_end"],
+        },
     },
 }
 
@@ -2266,6 +2270,28 @@ def feature_runtime_definition(
                 "scaling_key": "martial_arts_die",
                 "applies_when": "unarmored_martial_arts_attack",
                 "requires_dm_adjudication": True,
+                **source,
+            }
+        )
+
+    if identity in {"真力注拳", "empoweredstrikes"}:
+        # This is a base-damage type choice on an unarmed hit, not an extra
+        # damage rider. The player attack resolver consumes it only when the
+        # selected action is structurally marked as an unarmed attack.
+        definition["attack_riders"].append(
+            {
+                "id": "empowered_strikes:damage_type_override",
+                "kind": "damage_type_override",
+                "input_key": "empowered_strikes_damage_type",
+                "options": ["force", "original"],
+                "applies_when": "unarmed_attack_damage",
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "player_attack_damage_component_resolver",
+                    "input": "empowered_strikes_damage_type",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
                 **source,
             }
         )

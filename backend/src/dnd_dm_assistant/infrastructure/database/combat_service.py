@@ -301,6 +301,7 @@ class CombatEngineService:
         "feature_raging": "raging",
         "feature_reckless_attack": "reckless_attack",
         "steady_aim": "steady_aim",
+        "moonlight_step": "moonlight_step",
         "feature_innate_sorcery": "innate_sorcery",
         "superior_defense": "superior_defense",
         "feature_starry_form": "starry_form",
@@ -4446,6 +4447,13 @@ class CombatEngineService:
                 is not None
             ):
                 advantage.append("究明攻击")
+            if cls._active_runtime_effects(
+                session,
+                combat_id,
+                target_id=actor.id,
+                state_name="moonlight_step",
+            ):
+                advantage.append("月光飞步")
         # Defensive features such as Elusive suppress an incoming advantage
         # only when their explicit predicate is satisfied.
         if cls._suppresses_incoming_attack_advantage(target):
@@ -12425,6 +12433,12 @@ class CombatEngineService:
                     target_id=actor.id,
                     state_name="steady_aim",
                 )
+                moonlight_step_effects = self._active_runtime_effects(
+                    session,
+                    combat.id,
+                    target_id=actor.id,
+                    state_name="moonlight_step",
+                )
                 studied_attack_effect = self._active_studied_attack_effect(
                     session,
                     combat.id,
@@ -12447,6 +12461,7 @@ class CombatEngineService:
                     *actor_hidden,
                     help_effect,
                     *steady_aim_effects,
+                    *moonlight_step_effects,
                     studied_attack_effect,
                     *incoming_attack_effects,
                 ]:
@@ -13550,6 +13565,7 @@ class CombatEngineService:
                 resource_cost = command.healing_total
             resource_before: int | None = None
             resource_after: int | None = None
+            resource_reset: dict[str, Any] | None = None
             if resource_key and resource_cost:
                 if character is None:
                     raise ValueError("职业特性资源只能由角色单位消耗")
@@ -13558,7 +13574,42 @@ class CombatEngineService:
                 resource = dict(raw_resource) if isinstance(raw_resource, dict) else {}
                 resource_before = self._state_int(resource.get("current"))
                 if resource_before < resource_cost:
-                    raise ValueError(f"职业特性资源不足：{resource_key}")
+                    reset_options = action.get("reset_options")
+                    reset_level = command.reset_spell_slot_level
+                    if not isinstance(reset_options, dict) or reset_level is None:
+                        raise ValueError(f"职业特性资源不足：{resource_key}")
+                    minimum_level = self._state_int(
+                        reset_options.get("minimum_spell_slot_level"), 0
+                    )
+                    maximum_level = self._state_int(
+                        reset_options.get("maximum_spell_slot_level"), 9
+                    )
+                    reset_amount = self._state_int(reset_options.get("amount"), 0)
+                    if (
+                        reset_amount < 1
+                        or reset_level < minimum_level
+                        or reset_level > maximum_level
+                    ):
+                        raise ValueError("职业特性资源重置的法术位环阶无效")
+                    slot_key = f"spell_slots_{reset_level}"
+                    raw_slot = resources.get(slot_key)
+                    slot = dict(raw_slot) if isinstance(raw_slot, dict) else {}
+                    slot_before = self._state_int(slot.get("current"))
+                    if slot_before < 1:
+                        raise ValueError(f"重置职业特性需要可用的法术位：{slot_key}")
+                    deficit = resource_cost - resource_before
+                    restored = min(reset_amount, deficit)
+                    if restored < deficit:
+                        raise ValueError("职业特性资源重置不足以支付本次消耗")
+                    slot["current"] = slot_before - 1
+                    resources[slot_key] = slot
+                    resource_before += restored
+                    resource_reset = {
+                        "spell_slot_key": slot_key,
+                        "spell_slot_before": slot_before,
+                        "spell_slot_after": slot_before - 1,
+                        "restored_amount": restored,
+                    }
                 resource_after = resource_before - resource_cost
                 resource["current"] = resource_after
                 resources[resource_key] = resource
@@ -13576,6 +13627,8 @@ class CombatEngineService:
                 "resource_before": resource_before,
                 "resource_after": resource_after,
             }
+            if resource_reset is not None:
+                result["resource_reset"] = resource_reset
             if condition_to_cure is not None:
                 result["condition_to_cure"] = condition_to_cure
             effects = action.get("effects")

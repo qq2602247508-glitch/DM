@@ -1444,55 +1444,6 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS: dict[str, dict[str, Any]] = {
         "triggers": [],
         "attack_riders": [],
     },
-    # Moonlight Step is a single bonus-action teleport followed by the same
-    # persisted next-attack advantage state used by Steady Aim.  The resource
-    # is a wisdom-scaled pool restored by a long rest; teleport validation is
-    # delegated to the authoritative grid consumer.
-    "月光飞步": {
-        "combat_start": {"modifiers": [], "defenses": []},
-        "resources": {
-            "moonlight_step": {
-                "key": "moonlight_step",
-                "label": "月光飞步",
-                "max_formula": "max(1, wisdom_modifier)",
-                "recovery_events": [{"rest": "long_rest", "operation": "set_to_max"}],
-                "automation_status": "full",
-                "requires_dm_adjudication": False,
-            }
-        },
-        "actions": {
-            "moonlight_step": {
-                "id": "moonlight_step",
-                "name": "月光飞步",
-                "kind": "feature_action",
-                "action_cost": "bonus_action",
-                "resource_key": "moonlight_step",
-                "resource_cost": 1,
-                "target": "self",
-                "resolution_kind": "condition",
-                "effects": [
-                    {
-                        "kind": "teleport",
-                        "max_distance_ft": 30,
-                    },
-                    {
-                        "kind": "activate_timed_condition",
-                        "condition": "steady_aim",
-                        "expires": "turn_end",
-                    },
-                ],
-                "runtime_execution": {
-                    "status": "ready",
-                    "consumer": "combat_feature_action",
-                    "effect_kinds": ["teleport", "activate_timed_condition"],
-                },
-                "automation_status": "full",
-                "requires_dm_adjudication": False,
-            }
-        },
-        "triggers": [],
-        "attack_riders": [],
-    },
     # Fixed spell access uses the same authoritative character-spell list as
     # class spellcasting, while retaining the source-specific casting ability.
     "掌控元素": {
@@ -3754,6 +3705,52 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS["战斗激励"] = {
                 "status": "ready",
                 "consumer": "player_attack_resolver",
                 "persisted_die_consumer": "bardic_inspiration_die",
+            },
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+        }
+    },
+    "triggers": [],
+    "attack_riders": [],
+    "automation_status": "full",
+    "requires_dm_adjudication": False,
+}
+
+# Moonlight Step is a single bonus-action teleport contract. Its resource is
+# parsed from the source's Wisdom-modifier uses and bound to the generated
+# subclass resource key; a qualifying spell slot can reset one spent use.
+# The second effect is a real turn-end lifecycle state consumed by the attack
+# context resolver, so the advantage is granted exactly once after movement.
+SUBCLASS_FEATURE_RUNTIME_CONFIGS["月光飞步"] = {
+    "combat_start": {"modifiers": [], "defenses": []},
+    "resources": {},
+    "actions": {
+        "moonlight_step": {
+            "id": "moonlight_step",
+            "name": "月光飞步",
+            "kind": "feature_action",
+            "action_cost": "bonus_action",
+            "resource_key": "$feature_resource",
+            "resource_cost": 1,
+            "target": "self",
+            "reset_options": {
+                "minimum_spell_slot_level": 2,
+                "maximum_spell_slot_level": 9,
+                "amount": 1,
+            },
+            "effects": [
+                {"kind": "teleport", "max_distance_ft": 30},
+                {
+                    "kind": "activate_timed_condition",
+                    "condition": "moonlight_step",
+                    "expires": "turn_end",
+                },
+            ],
+            "runtime_execution": {
+                "status": "ready",
+                "consumer": "combat_feature_action_and_attack_context_resolver",
+                "effect_kinds": ["teleport", "activate_timed_condition"],
+                "input": "explicit_visible_unoccupied_destination",
             },
             "automation_status": "full",
             "requires_dm_adjudication": False,

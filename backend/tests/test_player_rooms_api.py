@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 from dnd_dm_assistant.api.routes.player_rooms import _clear_join_failures
 from dnd_dm_assistant.application.rule_block_compiler import compile_rule_blocks_dict
 from dnd_dm_assistant.domain.advancement_choices import subclass_runtime_grants
+from dnd_dm_assistant.domain.feature_runtime import compile_class_feature_blocks
 from dnd_dm_assistant.infrastructure.database.models import (
     NPC,
     Character,
@@ -2066,6 +2067,116 @@ def test_player_compound_damage_is_one_lifecycle_event(
         (item["damage_type"], item["original_damage"], item["adjusted_damage"])
         for item in public_entry["damage_components"]
     ] == [("fire", 1, 0), ("cold", 1, 2)]
+
+
+def test_empowered_strikes_changes_unarmed_base_damage_and_replays_idempotently(
+    campaign_client: TestClient,
+) -> None:
+    campaign = _campaign(campaign_client, "真力注拳伤害类型团")
+    character = campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/characters",
+        json={
+            "name": "真力注拳武僧",
+            "class_name": "武僧",
+            "hp": 20,
+            "max_hp": 20,
+            "actions": [
+                {
+                    "name": "徒手打击",
+                    "cost": "动作",
+                    "range": "5尺",
+                    "is_unarmed_attack": True,
+                    "damage_components": [
+                        {"expression": "1d1", "damage_type": "钝击"}
+                    ],
+                }
+            ],
+        },
+    ).json()
+    scene = campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/scenes",
+        json={"name": "真力注拳靶场"},
+    ).json()
+    assert campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/scenes/{scene['id']}/grid",
+        json={"width": 6, "height": 4, "cell_size_ft": 5, "mode": "combat"},
+    ).status_code == 201
+    combat = campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/combats",
+        json={"name": "真力注拳战斗", "scene_id": scene["id"]},
+    ).json()
+    feature_runtime = {
+        "attack_riders": [
+            {
+                "id": "empowered_strikes:damage_type_override",
+                "kind": "damage_type_override",
+                "input_key": "empowered_strikes_damage_type",
+                "options": ["force", "original"],
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        ]
+    }
+    feature_runtime["feature_blocks"] = compile_class_feature_blocks(feature_runtime)
+    _actor = campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": character["name"],
+            "entity_type": "character",
+            "entity_id": character["id"],
+            "initiative": 20,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {
+                "grid_position": {"row": 2, "col": 2},
+                "feature_runtime": feature_runtime,
+            },
+        },
+    ).json()
+    target = campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "真力注拳目标",
+            "entity_type": "monster",
+            "initiative": 10,
+            "armor_class": 10,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {"grid_position": {"row": 2, "col": 3}},
+        },
+    ).json()
+    opened = _open(campaign_client, campaign["id"])
+    _join(campaign_client, opened["join_code"], "真力注拳玩家")
+    assert campaign_client.post(
+        "/api/v1/player-room/me/bind-character",
+        json={"character_id": character["id"]},
+    ).status_code == 200
+    assert campaign_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/player-room/live-state",
+        json={"scene_id": scene["id"], "combat_id": combat["id"]},
+    ).status_code == 200
+
+    payload = {
+        "target_combatant_id": target["id"],
+        "action_name": "徒手打击",
+        "attack_total": 20,
+        "damage_total": 1,
+        "special_inputs": {"empowered_strikes_damage_type": "force"},
+        "idempotency_key": "empowered-strikes-force-1",
+    }
+    first = campaign_client.post("/api/v1/player-room/me/combat/attack", json=payload)
+    assert first.status_code == 200, first.text
+    result = first.json()["results"][0]["action"]["result_json"]
+    assert result["damage_type"] == "force"
+    assert result["adjusted_damage"] == 1
+
+    replay = campaign_client.post("/api/v1/player-room/me/combat/attack", json=payload)
+    assert replay.status_code == 200, replay.text
+    assert replay.json()["results"][0]["action"]["id"] == first.json()["results"][0]["action"]["id"]
+    current = campaign_client.get(
+        f"/api/v1/campaigns/{campaign['id']}/combats/{combat['id']}/combatants"
+    ).json()["items"]
+    assert next(item for item in current if item["id"] == target["id"])["hp"] == 19
 
 
 def test_player_compiled_forced_movement_is_applied_after_failed_save(

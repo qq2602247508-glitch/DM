@@ -2810,7 +2810,7 @@ def test_steady_aim_zeroes_movement_and_is_consumed_by_next_attack(
             "amount": 3,
             "damage_type": "piercing",
             "is_attack": True,
-            "attack_roll_mode": "advantage",
+            "attack_roll_mode": "normal",
             "attack_roll_total": 12,
         },
     )
@@ -2841,7 +2841,7 @@ def test_steady_aim_zeroes_movement_and_is_consumed_by_next_attack(
             "amount": 3,
             "damage_type": "piercing",
             "is_attack": True,
-            "attack_roll_mode": "normal",
+            "attack_roll_mode": "advantage",
             "attack_roll_total": 12,
         },
     )
@@ -2926,6 +2926,164 @@ def test_steady_aim_requires_unspent_movement_and_expires_at_turn_end(
     )
     assert second_next.status_code == 200, second_next.text
     assert "steady_aim" not in second_next.json()["active_combatant"]["conditions"]
+
+
+def test_moonlight_step_resets_from_spell_slot_teleports_and_grants_one_attack_advantage(
+    combat_client: TestClient,
+) -> None:
+    campaign_response = combat_client.post(
+        "/api/v1/campaigns", json={"name": "月光飞步生命周期"}
+    )
+    assert campaign_response.status_code == 201
+    campaign = campaign_response.json()
+    scene = combat_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/scenes", json={"name": "月光靶场"}
+    ).json()
+    grid = combat_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/scenes/{scene['id']}/grid",
+        json={"width": 8, "height": 4, "cell_size_ft": 5, "mode": "combat"},
+    )
+    assert grid.status_code == 201, grid.text
+    character_response = combat_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/characters",
+        json={
+            "name": "月光德鲁伊",
+            "class_name": "fixture",
+            "resources": {
+                "moonlight_step": {"current": 0, "max": 1},
+                "spell_slots_2": {"current": 1, "max": 1},
+            },
+        },
+    )
+    assert character_response.status_code == 201, character_response.text
+    character = character_response.json()
+    combat_response = combat_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/combats",
+        json={"name": "月光战斗", "scene_id": scene["id"]},
+    )
+    assert combat_response.status_code == 201
+    combat = combat_response.json()
+    registry = {
+        "actions": {
+            "moonlight_step": {
+                "name": "月光飞步",
+                "kind": "feature_action",
+                "action_cost": "bonus_action",
+                "resource_key": "moonlight_step",
+                "resource_cost": 1,
+                "target": "self",
+                "reset_options": {
+                    "minimum_spell_slot_level": 2,
+                    "maximum_spell_slot_level": 9,
+                    "amount": 1,
+                },
+                "effects": [
+                    {"kind": "teleport", "max_distance_ft": 30},
+                    {
+                        "kind": "activate_timed_condition",
+                        "condition": "moonlight_step",
+                        "expires": "turn_end",
+                    },
+                ],
+            }
+        }
+    }
+    actor_response = combat_client.post(
+        f"{_root(campaign, combat)}/combatants",
+        json={
+            "display_name": "月光德鲁伊",
+            "entity_type": "character",
+            "entity_id": character["id"],
+            "initiative": 20,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {
+                "grid_position": {"row": 2, "col": 2},
+                "feature_runtime": registry,
+            },
+        },
+    )
+    assert actor_response.status_code == 201, actor_response.text
+    actor = actor_response.json()
+    enemy_response = combat_client.post(
+        f"{_root(campaign, combat)}/combatants",
+        json={
+            "display_name": "月光目标",
+            "entity_type": "monster",
+            "initiative": 10,
+            "armor_class": 10,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {"grid_position": {"row": 2, "col": 3}},
+        },
+    )
+    assert enemy_response.status_code == 201, enemy_response.text
+    enemy = enemy_response.json()
+
+    activated = combat_client.post(
+        f"{_root(campaign, combat)}/feature-actions/confirm",
+        headers={"X-Request-ID": "moonlight-step-activate"},
+        json={
+            "actor_combatant_id": actor["id"],
+            "actor_version": actor["version"],
+            "feature_id": "moonlight_step",
+            "target_combatant_id": actor["id"],
+            "target_version": actor["version"],
+            "destination_row": 2,
+            "destination_col": 4,
+            "reset_spell_slot_level": 2,
+        },
+    )
+    assert activated.status_code == 200, activated.text
+    body = activated.json()
+    actor = body["actor"]
+    assert actor["snapshot_json"]["grid_position"] == {"row": 2, "col": 4}
+    assert body["result"]["resource_reset"]["spell_slot_key"] == "spell_slots_2"
+    assert body["result"]["resource_after"] == 0
+    assert "moonlight_step" in actor["conditions"]
+
+    replay = combat_client.post(
+        f"{_root(campaign, combat)}/feature-actions/confirm",
+        headers={"X-Request-ID": "moonlight-step-activate"},
+        json={
+            "actor_combatant_id": actor_response.json()["id"],
+            "actor_version": actor_response.json()["version"],
+            "feature_id": "moonlight_step",
+            "target_combatant_id": actor_response.json()["id"],
+            "target_version": actor_response.json()["version"],
+            "destination_row": 2,
+            "destination_col": 4,
+            "reset_spell_slot_level": 2,
+        },
+    )
+    assert replay.status_code == 200, replay.text
+    assert replay.json()["action"]["id"] == body["action"]["id"]
+
+    attack = combat_client.post(
+        f"{_root(campaign, combat)}/actions/confirm",
+        headers={"X-Request-ID": "moonlight-step-attack"},
+        json={
+            "action_type": "damage",
+            "actor_combatant_id": actor["id"],
+            "actor_version": actor["version"],
+            "action_cost": "action",
+            "target_combatant_id": enemy["id"],
+            "target_version": enemy["version"],
+            "amount": 1,
+            "damage_type": "slashing",
+            "is_attack": True,
+            "attack_roll_total": 15,
+            "attack_roll_mode": "advantage",
+        },
+    )
+    assert attack.status_code == 200, attack.text
+    result = attack.json()["action"]["result_json"]
+    assert "feature:月光飞步" in next(
+        item
+        for item in result["attack_contexts"]
+        if item.startswith("attack_roll_advantage_sources:")
+    )
+    assert "moonlight_step" not in attack.json()["actor"]["conditions"]
 
 
 def test_hide_requires_dm_result_and_search_reveals_runtime_state(

@@ -1132,6 +1132,7 @@ class CombatFeatureActionCommand(BaseModel):
     destination_row: int | None = Field(default=None, ge=1, le=10_000)
     destination_col: int | None = Field(default=None, ge=1, le=10_000)
     movement_roll_total: int | None = Field(default=None, ge=1, le=1_000)
+    reset_spell_slot_level: int | None = Field(default=None, ge=2, le=9)
     dm_override: bool = False
     override_reason: str | None = Field(default=None, max_length=1_000)
 

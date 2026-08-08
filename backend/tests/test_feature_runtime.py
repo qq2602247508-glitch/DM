@@ -122,7 +122,7 @@ def test_movement_feature_contracts_are_full_and_typed() -> None:
     )
     assert moonlight is not None
     moonlight_action = moonlight["actions"]["moonlight_step"]
-    assert moonlight_action["resource_key"] == "moonlight_step"
+    assert moonlight_action["resource_key"] == "$feature_resource"
     assert [effect["kind"] for effect in moonlight_action["effects"]] == [
         "teleport",
         "activate_timed_condition",
@@ -143,6 +143,22 @@ def test_movement_feature_contracts_are_full_and_typed() -> None:
     assert soul_blades["actions"]["psychic_teleportation"]["runtime_execution"][
         "consumer"
     ] == "combat_feature_action"
+
+
+def test_empowered_strikes_declares_base_damage_type_override_consumer() -> None:
+    monk = _core_rules()["武僧"]
+    grant = next(
+        item for item in core_feature_grants(monk, 6) if item["name"] == "真力注拳"
+    )
+    runtime = grant["runtime"]["registry"]
+    riders = runtime["attack_riders"]
+    override = next(item for item in riders if item["kind"] == "damage_type_override")
+    assert override["input_key"] == "empowered_strikes_damage_type"
+    assert override["options"] == ["force", "original"]
+    assert override["runtime_execution"]["consumer"] == (
+        "player_attack_damage_component_resolver"
+    )
+    assert grant["runtime"]["automation_status"] == "full"
 
 
 def test_draconic_resilience_has_unarmored_charisma_ac_and_hp_scaling_contract() -> None:

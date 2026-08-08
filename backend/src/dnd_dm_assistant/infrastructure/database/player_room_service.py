@@ -7421,6 +7421,30 @@ class PlayerRoomService:
             ]
             if not damage_rules:
                 raise ValueError("该动作缺少可验证的伤害规则，不能自动结算")
+            empowered_strikes_damage_type: str | None = None
+            raw_empowered_type = special_inputs.get("empowered_strikes_damage_type")
+            if raw_empowered_type is not None:
+                runtime = actor.snapshot_json.get("feature_runtime")
+                raw_riders = (
+                    feature_block_payloads(runtime, "attack_rider")
+                    if isinstance(runtime, dict)
+                    else []
+                )
+                override_specs = [
+                    item
+                    for item in raw_riders
+                    if isinstance(item, dict)
+                    and item.get("kind") == "damage_type_override"
+                    and item.get("input_key") == "empowered_strikes_damage_type"
+                ]
+                selected_type = str(raw_empowered_type).strip().lower()
+                if not override_specs or selected_type not in {"force", "original"}:
+                    raise ValueError("徒手伤害类型选择无效或角色未获得真力注拳")
+                if action.get("is_unarmed_attack") is not True:
+                    raise ValueError("真力注拳只能用于结构化徒手打击")
+                if len(damage_rules) != 1:
+                    raise ValueError("真力注拳要求徒手打击只有一个基础伤害段")
+                empowered_strikes_damage_type = selected_type
             shared_damage_rules = [block for block in damage_rules if block.shared_roll]
             target_damage_rules = [block for block in damage_rules if not block.shared_roll]
             combat_id = combat.id
@@ -7800,7 +7824,13 @@ class PlayerRoomService:
                     component.block_id: component
                     for component in (*shared_components, *target_components)
                 }
-                return [by_block_id[rule.id] for rule in damage_rules]
+                components = [by_block_id[rule.id] for rule in damage_rules]
+                if empowered_strikes_damage_type == "force":
+                    components = [
+                        component.model_copy(update={"damage_type": "force"})
+                        for component in components
+                    ]
+                return components
 
             effect_targets: dict[str, bool] = {}
             target_outcome_codes: dict[str, str] = {}
