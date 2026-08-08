@@ -7450,6 +7450,12 @@ class PlayerRoomService:
             saving_throw_action = bool(save_ability and save_dc)
             auto_hit_action = bool(action.get("auto_hit") is True)
             bardic_inspiration: dict[str, Any] | None = None
+            combat_inspiration_mode: str | None = None
+            raw_combat_mode = special_inputs.get("bardic_inspiration_mode")
+            if raw_combat_mode is not None:
+                combat_inspiration_mode = str(raw_combat_mode).strip().lower()
+                if combat_inspiration_mode not in {"defense", "offense"}:
+                    raise ValueError("战斗激励模式必须是 defense 或 offense")
             raw_bardic_total = special_inputs.get("bardic_inspiration_total")
             if raw_bardic_total is not None:
                 if (
@@ -7459,15 +7465,43 @@ class PlayerRoomService:
                     raise ValueError("吟游诗人激励骰结果必须是整数")
                 if saving_throw_action or auto_hit_action:
                     raise ValueError("吟游诗人激励骰只能用于攻击检定")
+                inspiration_command = PlayerRollResolutionCommand(
+                    action_version=1,
+                    roll_total=0,
+                    bardic_inspiration_total=raw_bardic_total,
+                )
+                inspiration_target = actor
+                if combat_inspiration_mode == "defense":
+                    inspiration_target = target
+                    raw_die = (
+                        (target.snapshot_json.get("feature_dice") or {}).get(
+                            "bardic_inspiration_die"
+                        )
+                        if isinstance(target.snapshot_json.get("feature_dice"), dict)
+                        else None
+                    )
+                    modes = raw_die.get("mode_options") if isinstance(raw_die, dict) else None
+                    if not isinstance(modes, list) or "defense" not in modes:
+                        raise ValueError("目标持有的激励骰不支持战斗激励防御选项")
+                elif combat_inspiration_mode == "offense":
+                    raw_die = (
+                        (actor.snapshot_json.get("feature_dice") or {}).get(
+                            "bardic_inspiration_die"
+                        )
+                        if isinstance(actor.snapshot_json.get("feature_dice"), dict)
+                        else None
+                    )
+                    modes = raw_die.get("mode_options") if isinstance(raw_die, dict) else None
+                    if not isinstance(modes, list) or "offense" not in modes:
+                        raise ValueError("攻击者持有的激励骰不支持战斗激励进攻选项")
+                    inspiration_target = actor
                 bardic_inspiration = CombatEngineService._bardic_inspiration_context(
-                    actor,
-                    PlayerRollResolutionCommand(
-                        action_version=1,
-                        roll_total=0,
-                        bardic_inspiration_total=raw_bardic_total,
-                    ),
+                    inspiration_target,
+                    inspiration_command,
                     operation_id=idempotency_key,
                 )
+                if bardic_inspiration is not None:
+                    bardic_inspiration["mode"] = combat_inspiration_mode or "attack_roll"
             requested_targets, target_resolution = self._resolve_combat_targets(
                 target_rule=target_rule,
                 actor=actor,
@@ -7857,7 +7891,7 @@ class PlayerRoomService:
                     effective_attack_roll = min(attack_rolls[:2])
                 else:
                     effective_attack_roll = attack_total
-                if bardic_inspiration is not None:
+                if bardic_inspiration is not None and bardic_inspiration.get("mode") != "offense":
                     effective_attack_roll += int(bardic_inspiration["value"])
                 save: dict[str, Any] | None = None
                 if saving_throw_action:
@@ -7902,6 +7936,12 @@ class PlayerRoomService:
                     )
                 else:
                     effective_armor_class = current_target.armor_class + cover_bonus
+                    if (
+                        bardic_inspiration is not None
+                        and bardic_inspiration.get("mode") == "defense"
+                        and current_target.id == target.id
+                    ):
+                        effective_armor_class += int(bardic_inspiration["value"])
                     effective_attack_total = effective_attack_roll + attack_bonus
                     hit = (
                         auto_hit_action
@@ -7973,7 +8013,19 @@ class PlayerRoomService:
                     reported_total = max(
                         0,
                         component.total
-                        + (damage_bonus if component.block_id == first_damage_block_id else 0)
+                        + (
+                            damage_bonus
+                            + (
+                                int(bardic_inspiration["value"])
+                                if (
+                                    bardic_inspiration is not None
+                                    and bardic_inspiration.get("mode") == "offense"
+                                )
+                                else 0
+                            )
+                            if component.block_id == first_damage_block_id
+                            else 0
+                        )
                         + rider_bonus_by_block.get(component.block_id, 0),
                     )
                     if saving_throw_action:
@@ -8050,6 +8102,12 @@ class PlayerRoomService:
                                 "value": bardic_inspiration["value"],
                             }
                             if bardic_inspiration is not None and not saving_throw_action
+                            else None
+                        ),
+                        "combat_inspiration_mode": (
+                            bardic_inspiration.get("mode")
+                            if bardic_inspiration is not None
+                            and bardic_inspiration.get("mode") in {"defense", "offense"}
                             else None
                         ),
                         "effective_attack_roll": (
@@ -8246,8 +8304,13 @@ class PlayerRoomService:
                     raw_save["consumed_post_hit_effect_ids"] = consumed_ids
         bardic_inspiration_consumed = None
         if bardic_inspiration is not None:
+            inspiration_owner_id = (
+                target.id
+                if bardic_inspiration.get("mode") == "defense"
+                else actor.id
+            )
             bardic_inspiration_consumed = self._consume_bardic_inspiration_after_attack(
-                actor.id,
+                inspiration_owner_id,
                 bardic_inspiration,
                 idempotency_key,
             )

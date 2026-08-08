@@ -425,6 +425,100 @@ def test_player_attack_bardic_inspiration_is_consumed_once_and_idempotent(
         assert replay.status_code == 200, replay.text
         assert replay.json()["bardic_inspiration_consumed"]["value"] == 4
         assert replay.json()["results"][0]["target"]["hp"] == 16
+        refreshed = campaign_client.get(
+            f"/api/v1/campaigns/{campaign_id}/combats/{combat['id']}/combatants"
+        ).json()["items"]
+        refreshed_actor = next(item for item in refreshed if item["id"] == actor.json()["id"])
+        armed = campaign_client.patch(
+            f"/api/v1/campaigns/{campaign_id}/combats/{combat['id']}/combatants/{refreshed_actor['id']}",
+            headers={"If-Match": f'"{refreshed_actor["version"]}"'},
+            json={
+                "action_available": True,
+                "snapshot_json": {
+                    **refreshed_actor["snapshot_json"],
+                    "feature_dice": {
+                        "bardic_inspiration_die": {
+                            "source": "战斗激励",
+                            "value": "D6",
+                            "target_combatant_id": refreshed_actor["id"],
+                            "mode_options": ["defense", "offense"],
+                            "available": True,
+                        }
+                    },
+                }
+            },
+        )
+        assert armed.status_code == 200, armed.text
+        offense = player.post(
+            "/api/v1/player-room/me/combat/attack",
+            json={
+                "target_combatant_id": target.json()["id"],
+                "action_name": "长剑",
+                "attack_total": 12,
+                "damage_total": 4,
+                "special_inputs": {
+                    "bardic_inspiration_mode": "offense",
+                    "bardic_inspiration_total": 4,
+                },
+                "end_turn_after": False,
+                "idempotency_key": "combat-inspiration-offense",
+            },
+        )
+        assert offense.status_code == 200, offense.text
+        assert offense.json()["target_outcomes"][0]["damage_total"] == 8
+        assert offense.json()["bardic_inspiration_consumed"]["value"] == 4
+        refreshed_again = campaign_client.get(
+            f"/api/v1/campaigns/{campaign_id}/combats/{combat['id']}/combatants"
+        ).json()["items"]
+        refreshed_again_actor = next(
+            item for item in refreshed_again if item["id"] == actor.json()["id"]
+        )
+        refreshed_target = next(
+            item for item in refreshed_again if item["id"] == target.json()["id"]
+        )
+        reset_actor = campaign_client.patch(
+            f"/api/v1/campaigns/{campaign_id}/combats/{combat['id']}/combatants/{refreshed_again_actor['id']}",
+            headers={"If-Match": f'"{refreshed_again_actor["version"]}"'},
+            json={"action_available": True},
+        )
+        assert reset_actor.status_code == 200, reset_actor.text
+        armed_defense = campaign_client.patch(
+            f"/api/v1/campaigns/{campaign_id}/combats/{combat['id']}/combatants/{refreshed_target['id']}",
+            headers={"If-Match": f'"{refreshed_target["version"]}"'},
+            json={
+                "snapshot_json": {
+                    **refreshed_target["snapshot_json"],
+                    "feature_dice": {
+                        "bardic_inspiration_die": {
+                            "source": "战斗激励",
+                            "value": "D6",
+                            "target_combatant_id": refreshed_target["id"],
+                            "mode_options": ["defense", "offense"],
+                            "available": True,
+                        }
+                    },
+                }
+            },
+        )
+        assert armed_defense.status_code == 200, armed_defense.text
+        defense = player.post(
+            "/api/v1/player-room/me/combat/attack",
+            json={
+                "target_combatant_id": target.json()["id"],
+                "action_name": "长剑",
+                "attack_total": 8,
+                "damage_total": 4,
+                "special_inputs": {
+                    "bardic_inspiration_mode": "defense",
+                    "bardic_inspiration_total": 4,
+                },
+                "end_turn_after": False,
+                "idempotency_key": "combat-inspiration-defense",
+            },
+        )
+        assert defense.status_code == 200, defense.text
+        assert defense.json()["target_outcomes"][0]["damage_total"] == 0
+        assert defense.json()["bardic_inspiration_consumed"]["value"] == 4
         snapshot = player.get("/api/v1/player-room/me")
         assert snapshot.status_code == 200, snapshot.text
         combatant = next(

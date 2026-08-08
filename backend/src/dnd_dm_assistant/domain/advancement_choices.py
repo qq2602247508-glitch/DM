@@ -3727,6 +3727,44 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS["自然守御"] = {
     "requires_dm_adjudication": False,
 }
 
+# Combat Inspiration changes how a granted Bardic Inspiration die can be spent:
+# the recipient chooses AC protection after being hit or extra damage after a
+# hit.  The attack resolver consumes the same persisted die and idempotency
+# record as ordinary Bardic Inspiration; this contract only declares the two
+# legal post-roll modes.
+SUBCLASS_FEATURE_RUNTIME_CONFIGS["战斗激励"] = {
+    "combat_start": {"modifiers": [], "defenses": []},
+    "resources": {},
+    "actions": {
+        "combat_inspiration": {
+            "id": "combat_inspiration",
+            "name": "战斗激励",
+            "kind": "attack_roll_intervention",
+            "source_die_key": "bardic_inspiration_die",
+            "modes": ["defense", "offense"],
+            "input_requirements": [
+                {
+                    "key": "bardic_inspiration_mode",
+                    "kind": "enum",
+                    "options": ["defense", "offense"],
+                },
+                {"key": "bardic_inspiration_total", "kind": "die_roll"},
+            ],
+            "runtime_execution": {
+                "status": "ready",
+                "consumer": "player_attack_resolver",
+                "persisted_die_consumer": "bardic_inspiration_die",
+            },
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+        }
+    },
+    "triggers": [],
+    "attack_riders": [],
+    "automation_status": "full",
+    "requires_dm_adjudication": False,
+}
+
 
 def subclass_feature_runtime_definition(
     definition: Mapping[str, Any],

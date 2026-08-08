@@ -982,6 +982,17 @@ def test_bardic_inspiration_projection_consumes_resource_and_records_granted_die
     }
     assert projections["bardic_inspiration"]["runtime_feature"] is True
 
+    combat_inspiration = subclass_feature_runtime_definition(
+        {
+            "name": "战斗激励 Combat Inspiration",
+            "class_name": "吟游诗人",
+            "class_level": 3,
+            "description": "命中后可将诗人激励骰用于防御或进攻。",
+        }
+    )
+    assert combat_inspiration is not None
+    registry["actions"].update(combat_inspiration["actions"])
+
     campaign_response = campaign_client.post(
         "/api/v1/campaigns",
         json={"name": "吟游诗人激励运行时"},
@@ -1071,6 +1082,7 @@ def test_bardic_inspiration_projection_consumes_resource_and_records_granted_die
         "source": "吟游诗人激励",
         "value": "D6",
         "target_combatant_id": ally["id"],
+        "mode_options": ["defense", "offense"],
         "available": True,
         "granted_at": granted_die["granted_at"],
         "expires_at": granted_die["expires_at"],

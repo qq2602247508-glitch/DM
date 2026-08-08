@@ -965,3 +965,19 @@ def test_natures_ward_declares_long_rest_land_choice_and_all_defenses() -> None:
     assert action["choice_key"] == "circle_land_terrain"
     defenses = registry["combat_start"]["defenses"]
     assert {item["kind"] for item in defenses} == {"condition_immunity", "damage_resistance"}
+
+
+def test_combat_inspiration_declares_both_persisted_die_spending_modes() -> None:
+    runtime = subclass_feature_runtime_definition(
+        {
+            "name": "战斗激励 Combat Inspiration",
+            "class_name": "吟游诗人",
+            "class_level": 3,
+            "description": "命中后可将诗人激励骰用于防御或进攻。",
+        }
+    )
+    assert runtime is not None
+    action = runtime["actions"]["combat_inspiration"]
+    assert action["runtime_execution"]["consumer"] == "player_attack_resolver"
+    assert action["modes"] == ["defense", "offense"]
+    assert action["automation_status"] == "full"

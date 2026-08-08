@@ -13861,7 +13861,7 @@ class CombatEngineService:
                     if isinstance(existing_die, dict) and existing_die.get("available") is True:
                         raise ValueError(f"目标已经持有可用的{die_key}，不能同时持有两枚同类职业骰")
                     granted_at = datetime.now(UTC)
-                    feature_dice[die_key] = {
+                    die_record = {
                         "source": action.get("name"),
                         "value": die_value,
                         "target_combatant_id": target.id,
@@ -13869,6 +13869,34 @@ class CombatEngineService:
                         "granted_at": granted_at.isoformat(),
                         "expires_at": (granted_at + timedelta(hours=1)).isoformat(),
                     }
+                    actor_runtime = actor.snapshot_json.get("feature_runtime")
+                    actor_actions = (
+                        actor_runtime.get("actions")
+                        if isinstance(actor_runtime, dict)
+                        else None
+                    )
+                    action_specs = (
+                        list(actor_actions.values())
+                        if isinstance(actor_actions, dict)
+                        else []
+                    )
+                    combat_inspiration = next(
+                        (
+                            spec
+                            for spec in action_specs
+                            if isinstance(spec, dict)
+                            and spec.get("kind") == "attack_roll_intervention"
+                            and spec.get("source_die_key") == die_key
+                        ),
+                        None,
+                    )
+                    if isinstance(combat_inspiration, dict):
+                        modes = combat_inspiration.get("modes")
+                        if isinstance(modes, list) and modes:
+                            die_record["mode_options"] = [
+                                str(mode).strip() for mode in modes if str(mode).strip()
+                            ]
+                    feature_dice[die_key] = die_record
                     snapshot["feature_dice"] = feature_dice
                     target.snapshot_json = snapshot
                     result["roll_die_granted"] = {"die_key": die_key, "value": die_value}
