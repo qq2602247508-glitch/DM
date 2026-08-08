@@ -8119,8 +8119,16 @@ class PlayerRoomService:
                     else None
                 ),
                 damage_tags=action_damage_tags,
-                resource_key=str(action.get("resource_key") or "").strip() or None,
-                resource_cost=int(action.get("resource_cost") or 0),
+                resource_key=(
+                    str(action.get("resource_key") or "").strip() or None
+                    if index == 0 and action.get("resolution_kind") == "weapon_attack"
+                    else None
+                ),
+                resource_cost=(
+                    int(action.get("resource_cost") or 0)
+                    if index == 0 and action.get("resolution_kind") == "weapon_attack"
+                    else 0
+                ),
                 reaction_trigger=reaction_trigger.strip()
                 if cost == "reaction" and index == 0
                 else None,
