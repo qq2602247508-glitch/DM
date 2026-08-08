@@ -937,3 +937,31 @@ def test_mindless_rage_declares_conditional_immunity_and_clear_trigger() -> None
     assert {item["condition"] for item in defenses} == {"charmed", "frightened"}
     assert all(item["required_conditions"] == ["raging"] for item in defenses)
     assert grant["runtime"]["registry"]["triggers"][0]["action_id"] == "rage"
+
+
+def test_natures_ward_declares_long_rest_land_choice_and_all_defenses() -> None:
+    result = subclass_runtime_grants(
+        {
+            "name": "大地结社",
+            "feature_definitions": [
+                {
+                    "id": "natures-ward",
+                    "name": "自然守御 Nature's Ward",
+                    "class_level": 10,
+                    "description": "你免疫中毒状态，并具有所选地形相关伤害类型的抗性。",
+                    "source_record_id": "natures-ward",
+                }
+            ],
+        },
+        class_name="德鲁伊",
+        target_class_level=10,
+    )
+    grant = result["grants"][0]
+    assert grant["runtime"]["automation_status"] == "full"
+    registry = grant["runtime"]["registry"]
+    action = registry["actions"]["terrain_choice"]
+    assert action["kind"] == "rest_choice"
+    assert action["trigger"] == "long_rest"
+    assert action["choice_key"] == "circle_land_terrain"
+    defenses = registry["combat_start"]["defenses"]
+    assert {item["kind"] for item in defenses} == {"condition_immunity", "damage_resistance"}

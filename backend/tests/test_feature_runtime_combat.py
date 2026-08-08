@@ -328,11 +328,11 @@ def test_fiendish_resilience_reads_persisted_rest_selection_in_damage_resolver()
         def get(self, model: object, entity_id: str) -> object | None:
             return character if model is Character and entity_id == character.id else None
 
-        def scalar(self, _query: object) -> object | None:
-            return None
-
         def scalars(self, _query: object) -> object:
             return SimpleNamespace(all=lambda: [])
+
+        def scalar(self, _query: object) -> object | None:
+            return None
 
     fire = CombatEngineService._damage_defenses(
         target,
@@ -353,6 +353,77 @@ def test_fiendish_resilience_reads_persisted_rest_selection_in_damage_resolver()
         "fiendish_resilience:selected_resistance:resistance:fire"
     ]
     assert "cold" not in cold[0]
+
+
+def test_natures_ward_maps_persisted_land_choice_to_resistance_and_poison_immunity() -> None:
+    target = Combatant(
+        id="natures-ward-defense",
+        entity_type="character",
+        entity_id="natures-character",
+        display_name="自然守御者",
+        hp=20,
+        max_hp=20,
+        snapshot_json={
+            "feature_runtime": {
+                "combat_start": {
+                    "defenses": [
+                        {
+                            "id": "nature_ward:poison_immunity",
+                            "kind": "condition_immunity",
+                            "condition": "poisoned",
+                            "applies_when": "always",
+                        },
+                        {
+                            "id": "nature_ward:terrain_resistance",
+                            "kind": "damage_resistance",
+                            "selection_resource_key": "circle_land_terrain",
+                            "selection_options": ["arid", "polar", "temperate", "tropical"],
+                            "selection_damage_types": {
+                                "arid": ["fire"],
+                                "polar": ["cold"],
+                                "temperate": ["lightning"],
+                                "tropical": ["poison"],
+                            },
+                            "damage_types": [],
+                            "applies_when": "always",
+                        },
+                    ]
+                },
+                "resources": {"circle_land_terrain": {"selected": "polar"}},
+            }
+        },
+    )
+    character = Character(
+        id="natures-character",
+        campaign_id="campaign",
+        name="自然守御者",
+        resources={"circle_land_terrain": {"selected": "polar"}},
+    )
+
+    class FakeSession:
+        def get(self, model: object, entity_id: str) -> object | None:
+            return character if model is Character and entity_id == character.id else None
+
+        def scalars(self, _query: object) -> object:
+            return SimpleNamespace(all=lambda: [])
+
+    cold = CombatEngineService._damage_defenses(
+        target,
+        SimpleNamespace(damage_tags=[]),
+        ["cold"],
+        session=FakeSession(),
+        combat_id="combat",
+    )
+    fire = CombatEngineService._damage_defenses(
+        target,
+        SimpleNamespace(damage_tags=[]),
+        ["fire"],
+        session=FakeSession(),
+        combat_id="combat",
+    )
+    assert "cold" in cold[0]
+    assert "fire" not in fire[0]
+    assert CombatEngineService._condition_is_immune(target, "poisoned") is True
 
 
 def test_typed_damage_resistance_fails_closed_for_invalid_condition_contract() -> None:

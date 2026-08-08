@@ -8755,7 +8755,22 @@ class CombatEngineService:
                 selected_text = str(selected or "").strip().lower()
                 if not selected_text or selected_text not in options:
                     continue
-                selected_types = [selected_text]
+                raw_selection_types = defense.get("selection_damage_types")
+                mapped_types = (
+                    raw_selection_types.get(selected_text)
+                    if isinstance(raw_selection_types, dict)
+                    else None
+                )
+                if isinstance(mapped_types, list):
+                    selected_types = [
+                        str(value).strip().lower()
+                        for value in mapped_types
+                        if str(value).strip()
+                    ]
+                else:
+                    selected_types = [selected_text]
+                if not selected_types:
+                    continue
                 applies_when = "always"
             if applies_when == "magical":
                 if getattr(command, "is_magical", False) is not True:

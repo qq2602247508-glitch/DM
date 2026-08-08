@@ -3662,6 +3662,71 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS["狂怒"] = {
     "requires_dm_adjudication": False,
 }
 
+# Nature's Ward consumes the terrain selected by Circle of the Land Spells.
+# The selection is a long-rest input, persisted under one stable resource key;
+# the defense resolver then reads that key for the matching resistance while
+# the condition-immunity consumer applies poison immunity independently.
+SUBCLASS_FEATURE_RUNTIME_CONFIGS["自然守御"] = {
+    "combat_start": {
+        "modifiers": [],
+        "defenses": [
+            {
+                "id": "nature_ward:poison_immunity",
+                "kind": "condition_immunity",
+                "condition": "poisoned",
+                "applies_when": "always",
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "condition_immunity_resolution",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            },
+            {
+                "id": "nature_ward:terrain_resistance",
+                "kind": "damage_resistance",
+                "selection_resource_key": "circle_land_terrain",
+                "selection_options": ["arid", "polar", "temperate", "tropical"],
+                "selection_damage_types": {
+                    "arid": ["fire"],
+                    "polar": ["cold"],
+                    "temperate": ["lightning"],
+                    "tropical": ["poison"],
+                },
+                "damage_types": [],
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "damage_defense_resolver",
+                    "selection_source": "long_rest",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            },
+        ],
+    },
+    "resources": {},
+    "actions": {
+        "terrain_choice": {
+            "id": "circle_land_terrain_choice",
+            "name": "结社地形选择",
+            "kind": "rest_choice",
+            "trigger": "long_rest",
+            "choice_key": "circle_land_terrain",
+            "choice_options": ["arid", "polar", "temperate", "tropical"],
+            "runtime_execution": {
+                "status": "ready",
+                "consumer": "rest_service_and_damage_defense_resolver",
+            },
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+        }
+    },
+    "triggers": [],
+    "attack_riders": [],
+    "automation_status": "full",
+    "requires_dm_adjudication": False,
+}
+
 
 def subclass_feature_runtime_definition(
     definition: Mapping[str, Any],
