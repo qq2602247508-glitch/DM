@@ -10,8 +10,11 @@ from sqlalchemy.orm import Session
 
 from dnd_dm_assistant.api.routes.player_rooms import _clear_join_failures
 from dnd_dm_assistant.application.rule_block_compiler import compile_rule_blocks_dict
+from dnd_dm_assistant.domain.advancement_choices import subclass_runtime_grants
 from dnd_dm_assistant.infrastructure.database.models import (
     NPC,
+    Character,
+    Combat,
     Combatant,
     EquipmentInstance,
     Event,
@@ -51,6 +54,170 @@ def test_player_attack_context_keeps_automatic_critical_for_only_unconscious_tar
     assert has_advantage is True
     assert has_disadvantage is False
     assert automatic_critical is True
+
+
+def test_war_priest_bonus_attack_uses_player_selected_melee_profile_and_resource(
+    campaign_client: TestClient,
+) -> None:
+    campaign = _campaign(campaign_client, "战争祭司攻击闭环")
+    campaign_id = campaign["id"]
+    runtime = subclass_runtime_grants(
+        {
+            "name": "战争领域",
+            "feature_definitions": [
+                {
+                    "id": "war-priest",
+                    "name": "战争祭司 War Priest",
+                    "class_level": 3,
+                    "description": (
+                        "作为一个附赠动作，你可以发动一次武器攻击或者徒手打击。"
+                        "你可以使用该附赠动作的次数等于你的感知调整值（最低为1），"
+                        "你在完成一次长休或短休后重新获得所有的使用次数。"
+                    ),
+                    "source_record_id": "war-priest-test",
+                }
+            ],
+        },
+        class_name="牧师",
+        target_class_level=3,
+        ability_scores={"strength": 16, "dexterity": 10, "constitution": 14, "wisdom": 16},
+        current_class_level=3,
+    )
+    resource_key, resource = next(iter(runtime["resources"].items()))
+    resource = {**resource, "current": 3, "max": 3}
+    hero = campaign_client.post(
+        f"/api/v1/campaigns/{campaign_id}/characters",
+        json={
+            "name": "战争祭司",
+            "class_name": "牧师",
+            "level": 3,
+            "armor_class": 16,
+            "speed": 30,
+            "ability_scores": {"strength": 16, "dexterity": 10, "constitution": 14, "wisdom": 16},
+            "hp": 24,
+            "max_hp": 24,
+            "class_levels": {"牧师": 3},
+            "features": runtime["grants"],
+            "resources": {resource_key: resource},
+            "actions": [
+                {
+                    "name": "硬头锤",
+                    "description": "近战武器攻击",
+                    "damage": "1d6+力量 钝击",
+                    "damage_type": "钝击",
+                    "range": "5尺",
+                    "cost": "动作",
+                    "is_weapon_attack": True,
+                    "melee_weapon_attack": True,
+                },
+                {
+                    "name": "徒手打击",
+                    "description": "近战徒手攻击",
+                    "damage": "1d6+力量 钝击",
+                    "damage_type": "钝击",
+                    "range": "5尺",
+                    "cost": "动作",
+                    "is_unarmed_attack": True,
+                },
+            ],
+        },
+    )
+    assert hero.status_code == 201, hero.text
+    hero_id = hero.json()["id"]
+    monster = campaign_client.post(
+        f"/api/v1/campaigns/{campaign_id}/monsters",
+        json={"name": "战争祭司目标", "armor_class": 10, "hp": 20, "max_hp": 20},
+    )
+    assert monster.status_code == 201, monster.text
+    monster_id = monster.json()["id"]
+    scene = campaign_client.post(
+        f"/api/v1/campaigns/{campaign_id}/scenes",
+        json={"name": "战争祭司战场", "description": "测试战场"},
+    ).json()
+    grid = campaign_client.post(
+        f"/api/v1/campaigns/{campaign_id}/scenes/{scene['id']}/grid",
+        json={
+            "width": 6,
+            "height": 6,
+            "cell_size_ft": 5,
+            "mode": "combat",
+            "layers_json": {"cells": []},
+        },
+    )
+    assert grid.status_code == 201, grid.text
+    for entity_id, entity_type in ((hero_id, "character"), (monster_id, "monster")):
+        response = campaign_client.post(
+            f"/api/v1/campaigns/{campaign_id}/scenes/{scene['id']}/participants",
+            json={"entity_type": entity_type, "entity_id": entity_id},
+        )
+        assert response.status_code == 201, response.text
+    started = campaign_client.post(
+        f"/api/v1/campaigns/{campaign_id}/scenes/{scene['id']}/start-combat",
+        json={"name": "战争祭司测试"},
+    )
+    assert started.status_code == 201, started.text
+    combat_id = started.json()["combat"]["id"]
+    engine = create_engine(campaign_client.database_url)  # type: ignore[attr-defined]
+    with Session(engine) as session, session.begin():
+        combatants = list(
+            session.scalars(select(Combatant).where(Combatant.combat_id == combat_id)).all()
+        )
+        by_entity = {item.entity_id: item for item in combatants}
+        actor = by_entity[hero_id]
+        target = by_entity[monster_id]
+        actor.initiative = 30
+        target.initiative = 10
+        actor.snapshot_json = {**actor.snapshot_json, "grid_position": {"row": 3, "col": 2}}
+        target.snapshot_json = {**target.snapshot_json, "grid_position": {"row": 3, "col": 3}}
+        combat = session.get(Combat, combat_id)
+        assert combat is not None
+        combat.current_turn_index = 0
+    room = campaign_client.post(
+        f"/api/v1/campaigns/{campaign_id}/player-room/open", json={"hours": 4}
+    )
+    assert room.status_code == 200, room.text
+    live = campaign_client.post(
+        f"/api/v1/campaigns/{campaign_id}/player-room/live-state",
+        json={"scene_id": scene["id"], "combat_id": combat_id},
+    )
+    assert live.status_code == 200, live.text
+    service = PlayerRoomService(engine)
+    principal = service._dm_principal(campaign_id, hero_id)
+    with Session(engine) as session:
+        actor = session.scalar(
+            select(Combatant).where(
+                Combatant.combat_id == combat_id,
+                Combatant.entity_id == hero_id,
+            )
+        )
+        target = session.scalar(
+            select(Combatant).where(
+                Combatant.combat_id == combat_id,
+                Combatant.entity_id == monster_id,
+            )
+        )
+        assert actor is not None and target is not None
+    result = service.attack(
+        principal,
+        target.id,
+        [target.id],
+        "战争祭司",
+        None,
+        18,
+        4,
+        False,
+        False,
+        "war-priest-attack-1",
+        special_inputs={"weapon_action_name": "硬头锤"},
+    )
+    assert result["target_count"] == 1
+    assert result["target_outcomes"][0]["damage_total"] == 4, result
+    with Session(engine) as session:
+        character = session.get(Character, hero_id)
+        actor = session.get(Combatant, actor.id)
+        assert character is not None and actor is not None
+        assert character.resources[resource_key]["current"] == 2
+        assert actor.bonus_action_available is False
 
 
 def _campaign(client: TestClient, name: str = "LAN团") -> dict[str, Any]:

@@ -758,6 +758,7 @@ class CombatActionCommand(BaseModel):
     is_attack: bool = False
     attack_ability: str | None = Field(default=None, max_length=30)
     is_weapon_attack: bool = False
+    is_unarmed_attack: bool = False
     is_spell_attack: bool = False
     is_sorcerer_spell: bool = False
     attack_roll_total: int | None = Field(default=None, ge=-100, le=1_000)

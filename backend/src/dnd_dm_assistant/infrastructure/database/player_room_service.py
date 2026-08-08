@@ -6966,6 +6966,69 @@ class PlayerRoomService:
                 if actor.entity_type == "character"
                 else self._companion_action_data(actor, action_name)
             )
+            if action.get("resolution_kind") == "weapon_attack":
+                input_key = str(action.get("feature_attack_profile_input_key") or "").strip()
+                selected_name = str(special_inputs.get(input_key) or "").strip()
+                if not input_key or not selected_name or selected_name == action_name:
+                    raise ValueError("该职业特性攻击必须提交一个不同的武器或徒手动作名")
+                selected = self._action_data(session, character, selected_name)
+                selected_text = " ".join(
+                    str(selected.get(key) or "")
+                    for key in ("name", "description", "attack_type")
+                )
+                selected_is_spell = bool(
+                    selected.get("kind") == "spell"
+                    or selected.get("is_spell") is True
+                    or selected.get("spell_level") is not None
+                    or selected.get("action_type") == "spellcasting"
+                )
+                selected_is_melee = bool(
+                    selected.get("melee_weapon_attack") is True
+                    or selected.get("is_unarmed_attack") is True
+                    or "近战" in selected_text
+                    or "徒手" in selected_text
+                )
+                selected_is_weapon = bool(
+                    selected.get("is_weapon_attack") is True
+                    or "武器攻击" in selected_text
+                    or "weapon attack" in selected_text.lower()
+                )
+                selected_is_unarmed = bool(
+                    selected.get("is_unarmed_attack") is True or "徒手" in selected_text
+                )
+                if selected_is_spell or not selected_is_melee or not (
+                    selected_is_weapon or selected_is_unarmed
+                ):
+                    raise ValueError("战争祭司只能选择近战武器攻击或徒手打击")
+                if selected.get("area_shape") or selected.get("affects_multiple_targets"):
+                    raise ValueError("职业特性攻击不能选择区域或多目标动作")
+                preserved = {
+                    key: action.get(key)
+                    for key in ("name", "cost", "resource_key", "resource_cost")
+                }
+                action = {
+                    **action,
+                    **{
+                        key: selected.get(key)
+                        for key in (
+                            "damage",
+                            "damage_expression",
+                            "damage_dice",
+                            "damage_type",
+                            "range",
+                            "description",
+                            "rule_plan",
+                            "attack_ability",
+                            "ability",
+                            "is_weapon_attack",
+                            "melee_weapon_attack",
+                            "damage_tags",
+                        )
+                        if selected.get(key) not in (None, "")
+                    },
+                    "is_unarmed_attack": selected_is_unarmed,
+                    **preserved,
+                }
             # Ritual-only grants are resolved through the noncombat ritual
             # planner.  They are not combat actions: allowing them here would
             # silently turn a ten-minute ritual into an instantaneous cast.
@@ -7580,6 +7643,15 @@ class PlayerRoomService:
                 current = int(resource.get("current") or 0) if isinstance(resource, dict) else 0
                 if current < resource_cost:
                     raise ValueError("对应法术位或资源不足")
+            # Feature weapon attacks carry their primary resource through the
+            # authoritative combat command.  Keep the final player-room
+            # bookkeeping from spending that same resource a second time.
+            primary_resource_consumed_by_combat = bool(
+                action.get("resolution_kind") == "weapon_attack"
+                and resource_key
+                and resource_cost > 0
+                and actor.entity_type == "character"
+            )
 
             # A shared component is reported once; a non-shared component must
             # be reported for each resolved target.  No dice total is copied,
@@ -8009,6 +8081,7 @@ class PlayerRoomService:
                     or "武器攻击" in str(action.get("description") or "")
                     or "近战攻击" in str(action.get("name") or "")
                 ),
+                is_unarmed_attack=bool(action.get("is_unarmed_attack") is True),
                 is_spell_attack=bool(
                     not saving_throw_action
                     and not auto_hit_action
@@ -8046,6 +8119,8 @@ class PlayerRoomService:
                     else None
                 ),
                 damage_tags=action_damage_tags,
+                resource_key=str(action.get("resource_key") or "").strip() or None,
+                resource_cost=int(action.get("resource_cost") or 0),
                 reaction_trigger=reaction_trigger.strip()
                 if cost == "reaction" and index == 0
                 else None,
@@ -8144,11 +8219,12 @@ class PlayerRoomService:
             rider_results_by_target=rider_results_by_target,
             attack_idempotency_key=idempotency_key,
         )
-        self._spend_character_resource(
-            principal.character_id,
-            resource_key,
-            resource_cost,
-        )
+        if not primary_resource_consumed_by_combat:
+            self._spend_character_resource(
+                principal.character_id,
+                resource_key,
+                resource_cost,
+            )
         turn_advance = (
             self._advance_player_room_turn(
                 principal,

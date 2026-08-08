@@ -3170,6 +3170,40 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS: dict[str, dict[str, Any]] = {
         "automation_status": "full",
         "requires_dm_adjudication": False,
     },
+    # War Priest is a direct bonus-action weapon or unarmed attack.  The
+    # player attack endpoint receives the selected base attack profile (for
+    # example a configured mace or unarmed strike), while this typed action
+    # owns the bonus-action economy, Wisdom-scaled pool, target range and
+    # short/long-rest recovery parsed from the source feature.
+    "战争祭司": {
+        "combat_start": {"modifiers": [], "defenses": []},
+        "resources": {},
+        "actions": {
+            "war_priest_attack": {
+                "id": "war_priest_attack",
+                "name": "战争祭司",
+                "kind": "feature_action",
+                "action_cost": "bonus_action",
+                "resource_key": "$feature_resource",
+                "resource_cost": 1,
+                "target_disposition": "enemy",
+                "range": "5尺",
+                "resolution_kind": "weapon_attack",
+                "feature_attack_profile_input_key": "weapon_action_name",
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "player_attack_resolution",
+                    "input": "player_selected_weapon_or_unarmed_action",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        },
+        "triggers": [],
+        "attack_riders": [],
+        "automation_status": "full",
+        "requires_dm_adjudication": False,
+    },
     "思维之盾": {
         "combat_start": {
             "modifiers": [],
@@ -3752,7 +3786,8 @@ def _subclass_resource_update(
         description,
     )
     ability_match = re.search(
-        r"(?:使用次数|使用(?:这|此|该)?(?:个)?特性的次数)(?:等于|为|相当于)你的?"
+        r"(?:使用次数|使用(?:这|此|该)?(?:个)?(?:特性|附赠动作)的次数)"
+        r"(?:等于|为|相当于)你的?"
         r"(力量|敏捷|体质|智力|感知|魅力)(?:调整值|调整)",
         description,
     )
