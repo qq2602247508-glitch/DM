@@ -1723,17 +1723,21 @@ class CombatEngineService:
         command: CombatActionCommand,
         attack_contexts: list[str],
         provisional_hit: bool,
+        phase: str = "after_provisional_hit",
     ) -> list[dict[str, object]]:
-        """Return name-agnostic attack-resolution interventions for this hit."""
+        """Return name-agnostic attack-resolution interventions.
 
-        if (
-            command.action_type != "damage"
-            or not command.is_attack
-            or not provisional_hit
-            or command.attack_roll_total is None
-            or target.hp <= 0
-            or not target.is_active
-        ):
+        ``after_provisional_hit`` pauses after a provisional hit before
+        damage; ``before_attack_roll_resolution`` pauses an attack declaration
+        before the attacker's final d20 is committed (e.g. Shadowy Dodge).
+        """
+
+        if command.action_type != "damage" or not command.is_attack:
+            return []
+        if phase == "after_provisional_hit":
+            if not provisional_hit or command.attack_roll_total is None:
+                return []
+        if target.hp <= 0 or not target.is_active:
             return []
         line_of_sight: bool | None = None
         distance_ft: int | None = None
@@ -1793,12 +1797,23 @@ class CombatEngineService:
                     continue
                 if raw.get("action_cost") != "reaction":
                     continue
-                if str(raw.get("phase") or "") != "after_provisional_hit":
+                if str(raw.get("phase") or "") != phase:
                     continue
                 eligibility = raw.get("eligibility")
                 eligibility = eligibility if isinstance(eligibility, dict) else {}
                 subject = str(eligibility.get("subject") or "self").strip()
                 if subject == "self" and reactor.id != target.id:
+                    continue
+                if phase == "before_attack_roll_resolution" and reactor.id != target.id:
+                    continue
+                if phase == "before_attack_roll_resolution" and str(
+                    eligibility.get("trigger") or ""
+                ).strip() not in {"attacked_by_visible_creature", "attacked_by_creature"}:
+                    continue
+                if phase == "before_attack_roll_resolution" and (
+                    eligibility.get("requires_visible_attacker") is True
+                    and line_of_sight is False
+                ):
                     continue
                 if subject == "self_or_ally":
                     if reactor.id != target.id:
@@ -1873,7 +1888,7 @@ class CombatEngineService:
                         "protected_combatant_name": target.display_name,
                         "attacker_combatant_id": attacker.id,
                         "attacker_combatant_name": attacker.display_name,
-                        "phase": "after_provisional_hit",
+                        "phase": phase,
                         "operation": operation,
                         "input_requirements": list(raw.get("input_requirements") or []),
                         "resource_key": resource_key or None,
@@ -1893,7 +1908,7 @@ class CombatEngineService:
                         "distance_ft": distance_ft,
                         "intervention": {
                             "kind": "attack_resolution_intervention",
-                            "phase": "after_provisional_hit",
+                            "phase": phase,
                             "operation": operation,
                             "input_requirements": cls._materialize_attack_resolution_inputs(
                                 raw.get("input_requirements") or [],
@@ -1982,7 +1997,10 @@ class CombatEngineService:
         if window is None:
             return None
         metadata = (window.result_json or {}).get("action_window")
-        if not isinstance(metadata, dict) or metadata.get("phase") != "attack_resolution":
+        if not isinstance(metadata, dict) or metadata.get("phase") not in {
+            "attack_resolution",
+            "before_attack_roll_resolution",
+        }:
             return None
         if metadata.get("status") not in {"pending", "resolving"}:
             return None
@@ -2003,8 +2021,14 @@ class CombatEngineService:
         attack_contexts: list[str],
     ) -> CombatAction:
         primary = candidates[0]
+        candidate_phase = str(primary.get("phase") or "after_provisional_hit")
         metadata: dict[str, object] = {
-            "phase": "attack_resolution",
+            "phase": (
+                "attack_resolution"
+                if candidate_phase == "after_provisional_hit"
+                else candidate_phase
+            ),
+            "intervention_phase": candidate_phase,
             "status": "pending",
             "action_cost": "reaction",
             "feature_id": primary["feature_id"],
@@ -2020,7 +2044,7 @@ class CombatEngineService:
             "base_armor_class": primary["base_armor_class"],
             "cover_bonus": primary["cover_bonus"],
             "effective_armor_class": primary["effective_armor_class"],
-            "provisional_hit": True,
+            "provisional_hit": candidate_phase == "after_provisional_hit",
             "attack_contexts": list(attack_contexts),
             "source_idempotency_key": source_idempotency_key,
             "target_version": target.version,
@@ -12842,6 +12866,7 @@ class CombatEngineService:
         attack_resolution_feature_id: str | None = None,
         attack_resolution_inputs: dict[str, int] | None = None,
         attack_resolution_rolls: list[int] | None = None,
+        attack_resolution_roll_totals: list[int] | None = None,
     ) -> dict[str, Any]:
         if not idempotency_key.strip():
             raise ValueError("idempotency key is required")
@@ -13110,6 +13135,53 @@ class CombatEngineService:
             attack_contexts, help_effect = self._attack_contexts(
                 session, combat, command, actor, target
             )
+            if (
+                not skip_attack_resolution
+                and attack_resolution_window_id is None
+                and command.is_attack
+                and command.attack_roll_total is None
+                and actor is not None
+                and target.reaction_available
+            ):
+                before_candidates = self._attack_resolution_feature_candidates(
+                    session,
+                    combat=combat,
+                    attacker=actor,
+                    target=target,
+                    command=command,
+                    attack_contexts=attack_contexts,
+                    provisional_hit=False,
+                    phase="before_attack_roll_resolution",
+                )
+                if before_candidates:
+                    transaction = OperationTransaction(
+                        campaign_id=combat.campaign_id,
+                        operation_type="combat_attack_resolution",
+                        idempotency_key=self._attack_resolution_window_key(idempotency_key),
+                        status="applied",
+                        source="combat",
+                        confirmed_at=datetime.now(UTC),
+                    )
+                    session.add(transaction)
+                    session.flush()
+                    window = self._open_attack_resolution_window(
+                        session,
+                        combat=combat,
+                        transaction=transaction,
+                        command=command,
+                        attacker=actor,
+                        target=target,
+                        candidates=before_candidates,
+                        source_idempotency_key=idempotency_key,
+                        attack_contexts=attack_contexts,
+                    )
+                    return {
+                        "phase": "awaiting_attack_intervention",
+                        "pending_attack_intervention": serialize(window),
+                        "actor": serialize(actor),
+                        "target": serialize(target),
+                        "end_condition": self._end_condition(session, combat),
+                    }
             automatic_critical = "automatic_critical:target_within_5ft" in attack_contexts
             effective_critical_hit = command.critical_hit or automatic_critical
             attack_hit_status = self._attack_hit_status(
@@ -13127,12 +13199,17 @@ class CombatEngineService:
                 if (
                     attack_window is None
                     or attack_window.combat_id != combat.id
-                    or attack_metadata.get("phase") != "attack_resolution"
+                    or attack_metadata.get("phase")
+                    not in {"attack_resolution", "before_attack_roll_resolution"}
                     or attack_metadata.get("status") != "resolving"
                     or attack_metadata.get("source_idempotency_key") != idempotency_key
                     or attack_resolution_decision not in {"accept", "reject"}
                 ):
                     raise ValueError("攻击决议窗口不存在、已处理或来源不匹配")
+                before_roll = (
+                    attack_metadata.get("intervention_phase")
+                    == "before_attack_roll_resolution"
+                )
                 if attack_resolution_decision == "accept":
                     candidates = attack_metadata.get("candidate_interventions")
                     candidates = candidates if isinstance(candidates, dict) else {}
@@ -13187,12 +13264,33 @@ class CombatEngineService:
                         ),
                         attack_roll_mode=command.attack_roll_mode,
                         attack_rolls=list(attack_resolution_rolls or []),
+                        attack_roll_totals=list(attack_resolution_roll_totals or []),
                         spec=intervention,
                         inputs=dict(attack_resolution_inputs or {}),
                         bindings={
                             "charisma_modifier": int(selected.get("charisma_modifier") or 0),
                         },
                     )
+                    if before_roll and attack_resolution_result.get("imposed_disadvantage"):
+                        if (
+                            attack_resolution_result.get("effective_attack_total") is None
+                            or attack_resolution_result.get("selected_d20") is None
+                        ):
+                            raise ValueError("如影随行必须提交两个真实 d20 及其总值")
+                        command = command.model_copy(
+                            update={
+                                "attack_roll_total": int(
+                                    attack_resolution_result["effective_attack_total"]
+                                ),
+                                "attack_d20": int(attack_resolution_result["selected_d20"]),
+                                "attack_roll_mode": "disadvantage",
+                            }
+                        )
+                        attack_hit_status = self._attack_hit_status(
+                            command,
+                            target,
+                            attack_contexts,
+                        )
                     if attack_resolution_result.get("hit") is False:
                         command = command.model_copy(
                             update={
@@ -13939,6 +14037,36 @@ class CombatEngineService:
                             follow_up=follow_up,
                             causal_depth=0,
                         )
+            teleport_follow_up: CombatAction | None = None
+            if (
+                attack_resolution_result is not None
+                and attack_resolution_result.get("applied")
+                and isinstance(
+                    attack_resolution_result.get("follow_up"),
+                    dict,
+                )
+                and attack_resolution_result["follow_up"].get("kind") == "teleport_after_attack"
+                and target.is_active
+                and target.hp > 0
+            ):
+                teleport_follow_up = self._persist_attack_resolution_teleport_window(
+                    session,
+                    combat=combat,
+                    transaction=transaction,
+                    parent_action=action,
+                    reactor=target,
+                    attacker=actor,
+                    feature_id=str(attack_resolution_result.get("feature_id") or ""),
+                    feature_name=str(attack_resolution_result.get("feature_name") or ""),
+                    follow_up=attack_resolution_result["follow_up"],
+                )
+                if teleport_follow_up is not None:
+                    action.result_json = {
+                        **dict(action.result_json or {}),
+                        "attack_resolution_teleport_window_id": teleport_follow_up.id,
+                    }
+                    action.version += 1
+                    action.updated_at = now
             triggered_attack_windows: list[CombatAction] = []
             causal_depth = int(
                 ((command.triggered_attack_window_id and triggered_attack_window) or {})
@@ -14390,6 +14518,224 @@ class CombatEngineService:
         return window
 
 
+    @classmethod
+    def _persist_attack_resolution_teleport_window(
+        cls,
+        session: Session,
+        *,
+        combat: Combat,
+        transaction: OperationTransaction,
+        parent_action: CombatAction,
+        reactor: Combatant,
+        attacker: Combatant,
+        feature_id: str,
+        feature_name: str,
+        follow_up: dict[str, object],
+    ) -> CombatAction | None:
+        """Open the same-reaction teleport branch after Shadowy Dodge resolves."""
+
+        range_ft = int(follow_up.get("range_ft") or 30)
+        requires_visible = follow_up.get("requires_visible_destination") is True
+        requires_unoccupied = follow_up.get("requires_unoccupied_destination") is True
+        grid = (
+            session.scalar(select(SceneGrid).where(SceneGrid.scene_id == combat.scene_id))
+            if combat.scene_id
+            else None
+        )
+        reactor_pos = (reactor.snapshot_json or {}).get("grid_position")
+        candidate_cells: list[dict[str, int]] = []
+        geometry_authoritative = False
+        if grid is not None and isinstance(reactor_pos, dict):
+            geometry_authoritative = True
+            blockers, _ = cls._grid_obstacles(session, grid)
+            reactor_footprint = cls._grid_footprint(reactor)
+            current = cls._grid_point(reactor)
+            occupied = {
+                (int(item.snapshot_json.get("grid_position", {}).get("row", 0)),
+                 int(item.snapshot_json.get("grid_position", {}).get("col", 0)))
+                for item in session.scalars(
+                    select(Combatant).where(
+                        Combatant.combat_id == combat.id,
+                        Combatant.is_active.is_(True),
+                    )
+                ).all()
+                if isinstance(item.snapshot_json, dict)
+                and isinstance(item.snapshot_json.get("grid_position"), dict)
+                and item.id != reactor.id
+            }
+            blocked_cells = set(blockers)
+            for row in range(1, grid.height + 1):
+                for col in range(1, grid.width + 1):
+                    if (row, col) == current:
+                        continue
+                    if requires_unoccupied and (row, col) in occupied:
+                        continue
+                    if (row, col) in blocked_cells:
+                        continue
+                    distance = grid_distance_ft(
+                        current,
+                        (row, col),
+                        cell_size_ft=grid.cell_size_ft,
+                    )
+                    if distance > range_ft:
+                        continue
+                    if requires_visible:
+                        visible, _, _ = cls._grid_footprint_line_of_sight(
+                            session,
+                            grid,
+                            reactor_footprint,
+                            {(row, col)},
+                            blockers,
+                            start_height_ft=cls._explicit_grid_elevation_ft(reactor),
+                            end_height_ft=0,
+                        )
+                        if not visible:
+                            continue
+                    candidate_cells.append({"row": row, "col": col})
+        metadata: dict[str, object] = {
+            "phase": "attack_resolution_teleport",
+            "status": "pending",
+            "action_cost": "none",
+            "feature_id": feature_id,
+            "feature_name": feature_name,
+            "reactor_combatant_id": reactor.id,
+            "reactor_combatant_name": reactor.display_name,
+            "reactor_version": reactor.version,
+            "trigger_combatant_id": attacker.id,
+            "trigger_combatant_name": attacker.display_name,
+            "parent_action_id": parent_action.id,
+            "parent_action_version": parent_action.version,
+            "range_ft": range_ft,
+            "requires_visible_destination": requires_visible,
+            "requires_unoccupied_destination": requires_unoccupied,
+            "candidate_cells": candidate_cells,
+            "geometry_authoritative": geometry_authoritative,
+            "causal_depth": 1,
+            "causal_root_id": parent_action.id,
+        }
+        window = CombatAction(
+            campaign_id=combat.campaign_id,
+            combat_id=combat.id,
+            actor_combatant_id=reactor.id,
+            transaction_id=transaction.id,
+            action_type="eligible_action_window",
+            target_combatant_ids=[attacker.id],
+            request_json={
+                "trigger_event": "after_attack_resolution",
+                "parent_action_id": parent_action.id,
+                "feature_id": feature_id,
+            },
+            result_json={"action_window": metadata},
+            explanation="攻击决议完成后，同一反应允许传送至可见未占用空间。",
+            round_number=combat.round_number,
+            turn_index=combat.current_turn_index,
+            summary=f"{reactor.display_name}：{feature_name} 传送窗口已开放",
+            idempotency_key=(
+                f"attack-resolution-teleport:{parent_action.id}:{reactor.id}:{feature_id}"
+            ),
+            status="confirmed",
+            created_at=parent_action.created_at + timedelta(seconds=1),
+        )
+        session.add(window)
+        session.flush()
+        return window
+
+    def resolve_attack_resolution_teleport(
+        self,
+        campaign_id: str,
+        combat_id: str,
+        window_id: str,
+        window_version: int,
+        decision: str,
+        destination_row: int | None,
+        destination_col: int | None,
+        *,
+        actor_combatant_id: str | None = None,
+        idempotency_key: str,
+    ) -> dict[str, Any]:
+        """Resolve a same-reaction teleport branch (e.g. Shadowy Dodge)."""
+
+        if not idempotency_key.strip():
+            raise ValueError("idempotency key is required")
+        with Session(self.engine) as session, session.begin():
+            combat = session.get(Combat, combat_id)
+            window = session.get(CombatAction, window_id)
+            if combat is None or combat.campaign_id != campaign_id:
+                raise StateNotFoundError("combat not found in campaign")
+            if (
+                window is None
+                or window.combat_id != combat_id
+                or window.action_type != "eligible_action_window"
+            ):
+                raise StateNotFoundError("传送窗口不存在")
+            metadata = dict((window.result_json or {}).get("action_window") or {})
+            if metadata.get("phase") != "attack_resolution_teleport":
+                raise ValueError("传送窗口阶段不匹配")
+            reactor_id = actor_combatant_id or str(metadata.get("reactor_combatant_id") or "")
+            if metadata.get("reactor_combatant_id") != reactor_id:
+                raise ValueError("传送窗口不属于当前单位")
+            if window.version != window_version:
+                if metadata.get("resolver_idempotency_key") == idempotency_key:
+                    return {"window": serialize(window), "already_applied": True}
+                raise VersionConflict(
+                    "combat_action",
+                    window.id,
+                    window_version,
+                    window.version,
+                )
+            if metadata.get("status") != "pending":
+                if metadata.get("resolver_idempotency_key") == idempotency_key:
+                    return {"window": serialize(window), "already_applied": True}
+                raise ValueError("传送窗口已处理")
+            reactor = session.get(Combatant, reactor_id)
+            if reactor is None or not reactor.is_active or reactor.hp <= 0:
+                raise StateNotFoundError("传送单位不存在或已离场")
+            teleport_result: dict[str, object] | None = None
+            if decision == "accept":
+                if destination_row is None or destination_col is None:
+                    raise ValueError("接受传送必须提交目的地行列")
+                teleport_result = self._apply_feature_teleport(
+                    session,
+                    combat,
+                    target=reactor,
+                    row=destination_row,
+                    col=destination_col,
+                    max_distance_ft=int(metadata.get("range_ft") or 30),
+                )
+                if teleport_result is not None:
+                    teleport_result = {
+                        **teleport_result,
+                        "applied": True,
+                        "same_reaction": True,
+                        "destination_row": destination_row,
+                        "destination_col": destination_col,
+                    }
+            elif decision != "reject":
+                raise ValueError("传送决议必须是接受或放弃")
+            metadata.update(
+                {
+                    "status": "resolved",
+                    "decision": decision,
+                    "destination_row": destination_row,
+                    "destination_col": destination_col,
+                    "teleport_result": teleport_result,
+                    "resolved_action_id": window.id,
+                    "resolver_idempotency_key": idempotency_key,
+                }
+            )
+            window.result_json = {"action_window": metadata}
+            window.version += 1
+            window.updated_at = datetime.now(UTC)
+            window.summary = (
+                f"{reactor.display_name}：{metadata.get('feature_name') or '如影随行'} 传送"
+                + ("已完成" if decision == "accept" else "已放弃")
+            )
+            return {
+                "window": serialize(window),
+                "teleport_result": teleport_result,
+                "already_applied": False,
+            }
+
     def resolve_attack_resolution(
         self,
         campaign_id: str,
@@ -14421,7 +14767,8 @@ class CombatEngineService:
                 )
             if (
                 window.action_type != "eligible_action_window"
-                or metadata.get("phase") != "attack_resolution"
+                or metadata.get("phase")
+                not in {"attack_resolution", "before_attack_roll_resolution"}
                 or (metadata.get("status") != "pending" and not replay_claim)
             ):
                 raise ValueError("攻击决议窗口已处理或不是可处理窗口")
@@ -14448,6 +14795,7 @@ class CombatEngineService:
                         "selected_feature_id": command.feature_id,
                         "inputs": provided_inputs,
                         "attack_rolls": list(command.attack_rolls),
+                        "attack_roll_totals": list(command.attack_roll_totals),
                         "resolver_idempotency_key": idempotency_key,
                     }
                 )
@@ -14466,6 +14814,7 @@ class CombatEngineService:
                 attack_resolution_feature_id=command.feature_id,
                 attack_resolution_inputs=provided_inputs,
                 attack_resolution_rolls=list(command.attack_rolls),
+                attack_resolution_roll_totals=list(command.attack_roll_totals),
             )
         except Exception:
             with Session(self.engine) as session, session.begin():
@@ -14482,6 +14831,7 @@ class CombatEngineService:
                             "selected_feature_id",
                             "inputs",
                             "attack_rolls",
+                            "attack_roll_totals",
                             "resolver_idempotency_key",
                         ):
                             metadata.pop(key, None)

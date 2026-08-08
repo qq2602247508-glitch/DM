@@ -315,7 +315,7 @@ export type PlayerPendingRoll = {
 export type PlayerPendingReaction = {
   id: string;
   version: number;
-  kind?: "opportunity" | "pre_damage" | "deflect_redirect" | "triggered_attack" | "attack_resolution";
+  kind?: "opportunity" | "pre_damage" | "deflect_redirect" | "triggered_attack" | "attack_resolution" | "attack_resolution_teleport";
   feature_id?: string | null;
   feature_name?: string | null;
   candidate_features?: Array<{
@@ -946,6 +946,7 @@ export const resolveMyAttackResolution = (
   featureId?: string,
   inputs?: Record<string, number>,
   attackRolls?: number[],
+  attackRollTotals?: number[],
 ) => playerFetch<Record<string, unknown>>(`/player-room/me/combat/attack-resolution/${windowId}`, {
   method: "POST",
   body: JSON.stringify({
@@ -954,6 +955,23 @@ export const resolveMyAttackResolution = (
     feature_id: featureId ?? null,
     inputs: inputs ?? {},
     attack_rolls: attackRolls ?? [],
+    attack_roll_totals: attackRollTotals ?? [],
+  }),
+});
+
+export const resolveMyAttackResolutionTeleport = (
+  windowId: string,
+  version: number,
+  decision: "accept" | "reject",
+  destinationRow?: number,
+  destinationCol?: number,
+) => playerFetch<Record<string, unknown>>(`/player-room/me/combat/attack-resolution-teleport/${windowId}`, {
+  method: "POST",
+  body: JSON.stringify({
+    version,
+    decision,
+    destination_row: destinationRow ?? null,
+    destination_col: destinationCol ?? null,
   }),
 });
 

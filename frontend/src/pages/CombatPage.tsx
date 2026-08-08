@@ -8,7 +8,9 @@ import {
   createEvent, endCombatSummon, getCombatEndCondition, getDeathSave, listCombatActions, listCombatEffects, listCombatants, listCombats,
   listEncounterAdjustments, listEvents, previewCombatAction, previewMonsterAI, addCombatSummon,
   previewCombatSettlement, resetCombat, revertEncounterAdjustment, updateCombat, updateCombatant,
-  resolveCombatAttackResolution, resolveCombatPreDamageReaction, resolveCombatDeflectRedirect,
+  resolveCombatAttackResolution,
+  resolveCombatAttackResolutionTeleport,
+  resolveCombatPreDamageReaction, resolveCombatDeflectRedirect,
 } from "../api/entities";
 import type {
   CombatActionCommand, CombatEffectCommand, CombatSettlementCommand,
@@ -1549,7 +1551,18 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
       && (metadata as Record<string, unknown>).status === "pending",
     );
   });
-  const hasPendingAttackResolution = attackResolutionWindows.length > 0;
+  const attackResolutionTeleportWindows = (combatActions.data ?? []).filter((action) => {
+    if (action.action_type !== "eligible_action_window" || action.status !== "confirmed") return false;
+    const metadata = action.result_json?.action_window;
+    return Boolean(
+      metadata
+      && typeof metadata === "object"
+      && !Array.isArray(metadata)
+      && (metadata as Record<string, unknown>).phase === "attack_resolution_teleport"
+      && (metadata as Record<string, unknown>).status === "pending",
+    );
+  });
+  const hasPendingAttackResolution = attackResolutionWindows.length > 0 || attackResolutionTeleportWindows.length > 0;
   const hasPendingPreDamageReaction = preDamageWindows.length > 0 || deflectRedirectWindows.length > 0 || hasPendingAttackResolution;
   const pendingPlayerRolls = (combatActions.data ?? []).filter(
     (action) => action.action_type === "player_roll_prompt" && action.status === "previewed",
@@ -1721,6 +1734,21 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
       showToast(result.success ? "重复豁免成功，状态已结束" : "重复豁免失败，状态继续");
     },
     onError: () => showToast("状态重复豁免确认失败，请刷新战斗状态", "error"),
+  });
+  const resolveAttackResolutionTeleport = useMutation({
+    mutationFn: (input: { windowId: string; version: number; decision: "accept" | "reject"; row?: number; col?: number }) =>
+      resolveCombatAttackResolutionTeleport(campaignId, combat.id, input.windowId, {
+        window_id: input.windowId,
+        window_version: input.version,
+        decision: input.decision,
+        destination_row: input.row ?? null,
+        destination_col: input.col ?? null,
+      }),
+    onSuccess: () => {
+      invalidate();
+      showToast("如影随行传送已确认");
+    },
+    onError: (error) => showToast(error instanceof Error ? error.message : "传送确认失败，请刷新战斗", "error"),
   });
   const resolveAttackResolution = useMutation({
     mutationFn: (input: { windowId: string; version: number; decision: "accept" | "reject"; featureId?: string; inputs?: Record<string, number> }) =>
@@ -2162,6 +2190,24 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
                   <span className="mr-auto text-stone-300">{attackerName} 使用攻击命中 {protectedName}（总值 {attackTotal} vs AC {effectiveAc}） · 伤害未落地 · {featureName}</span>
                   <Button disabled={resolveAttackResolution.isPending} loading={resolveAttackResolution.isPending} onClick={() => resolveAttackResolution.mutate({ windowId: action.id, version: action.version, decision: "accept", featureId })} size="sm" variant="danger">确认{featureName}</Button>
                   <Button disabled={resolveAttackResolution.isPending} onClick={() => resolveAttackResolution.mutate({ windowId: action.id, version: action.version, decision: "reject" })} size="sm">放弃反应</Button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ) : null}
+      {attackResolutionTeleportWindows.length > 0 ? (
+        <div className="mt-3 rounded-lg border border-emerald-700/60 bg-emerald-950/20 p-3" data-testid="combat-pending-attack-resolution-teleport">
+          <strong className="text-xs text-emerald-200">如影随行传送 · 同一反应后续</strong>
+          <p className="mb-2 mt-1 text-2xs text-stone-400">攻击已结算；玩家可在 30 尺内可见未占用空间选择传送目的地。</p>
+          <div className="grid gap-2">
+            {attackResolutionTeleportWindows.map((action) => {
+              const metadata = action.result_json.action_window as Record<string, unknown>;
+              const reactorName = typeof metadata.reactor_combatant_name === "string" ? metadata.reactor_combatant_name : "游侠";
+              return (
+                <div className="flex flex-wrap items-center gap-2 rounded border border-emerald-900/60 bg-ink-950/40 px-2 py-1.5 text-2xs" key={action.id}>
+                  <span className="mr-auto text-stone-300">{reactorName} · 如影随行传送窗口（30 尺）</span>
+                  <Button disabled={resolveAttackResolutionTeleport.isPending} onClick={() => resolveAttackResolutionTeleport.mutate({ windowId: action.id, version: action.version, decision: "reject" })} size="sm">放弃传送</Button>
                 </div>
               );
             })}

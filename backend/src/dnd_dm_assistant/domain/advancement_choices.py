@@ -4022,6 +4022,46 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS["卓越战技"] = {
 # These entries describe only the generic event contract.  The combat engine
 # consumes event/target/profile/resource fields and never branches on these
 # feature names.
+SUBCLASS_FEATURE_RUNTIME_CONFIGS["如影随行"] = {
+    "combat_start": {"modifiers": [], "defenses": []},
+    "resources": {},
+    "actions": {
+        "shadowy_dodge": {
+            "id": "shadowy_dodge",
+            "name": "如影随行",
+            "kind": "attack_resolution_intervention",
+            "action_cost": "reaction",
+            "phase": "before_attack_roll_resolution",
+            "operation": {"kind": "impose_disadvantage"},
+            "eligibility": {
+                "entity_types": ["character"],
+                "subject": "self",
+                "trigger": "attacked_by_visible_creature",
+            },
+            "input_requirements": [],
+            "follow_up": {
+                "kind": "teleport_after_attack",
+                "parent_action_part": True,
+                "action_cost": "none",
+                "range_ft": 30,
+                "requires_visible_destination": True,
+                "requires_unoccupied_destination": True,
+            },
+            "runtime_execution": {
+                "status": "ready",
+                "consumer": "attack_resolution_intervention_window",
+                "persistence": "combat_action_window_and_cas",
+            },
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+        }
+    },
+    "triggers": [],
+    "attack_riders": [],
+    "automation_status": "full",
+    "requires_dm_adjudication": False,
+}
+
 SUBCLASS_FEATURE_RUNTIME_CONFIGS["语出惊人"] = {
     "combat_start": {"modifiers": [], "defenses": []},
     "resources": {},

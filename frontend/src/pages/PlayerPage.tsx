@@ -23,6 +23,7 @@ import {
   resolveMyOpportunityReaction,
   resolveMyDeflectRedirect,
   resolveMyAttackResolution,
+  resolveMyAttackResolutionTeleport,
   resolveMyPreDamageReaction,
   resolveMyTriggeredAttack,
   searchPlayerRules,
@@ -1090,6 +1091,7 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
   const [reactionTrigger, setReactionTrigger] = useState("");
   const [attackResolutionSelectedFeatures, setAttackResolutionSelectedFeatures] = useState<Record<string, string>>({});
   const [attackResolutionInputs, setAttackResolutionInputs] = useState<Record<string, Record<string, string>>>({});
+  const [shadowyDodgeInputs, setShadowyDodgeInputs] = useState<Record<string, Record<string, string>>>({});
   const [preDamageReductionRolls, setPreDamageReductionRolls] = useState<Record<string, string>>({});
   const [preDamageSelectedFeatures, setPreDamageSelectedFeatures] = useState<Record<string, string>>({});
   const [deflectRedirectTargets, setDeflectRedirectTargets] = useState<Record<string, string>>({});
@@ -1817,10 +1819,18 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
     },
   });
   const attackResolutionMutation = useMutation({
-    mutationFn: ({ id, version, decision, featureId, inputs, attackRolls }: { id: string; version: number; decision: "accept" | "reject"; featureId?: string; inputs?: Record<string, number>; attackRolls?: number[] }) =>
-      resolveMyAttackResolution(id, version, decision, featureId, inputs, attackRolls),
+    mutationFn: ({ id, version, decision, featureId, inputs, attackRolls, attackRollTotals }: { id: string; version: number; decision: "accept" | "reject"; featureId?: string; inputs?: Record<string, number>; attackRolls?: number[]; attackRollTotals?: number[] }) =>
+      resolveMyAttackResolution(id, version, decision, featureId, inputs, attackRolls, attackRollTotals),
     onSuccess: (_result, variables) => {
       setLastResolution(variables.decision === "accept" ? `已使用${variables.featureId ?? "攻击决议反应"}；攻击正在按新结果结算。` : "已放弃攻击决议反应；原攻击正在正常结算。");
+      refresh();
+    },
+  });
+  const attackResolutionTeleportMutation = useMutation({
+    mutationFn: ({ id, version, decision, row, col }: { id: string; version: number; decision: "accept" | "reject"; row?: number; col?: number }) =>
+      resolveMyAttackResolutionTeleport(id, version, decision, row, col),
+    onSuccess: (_result, variables) => {
+      setLastResolution(variables.decision === "accept" ? "如影随行传送已完成。" : "已放弃如影随行传送。");
       refresh();
     },
   });
@@ -2238,8 +2248,17 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
                   const dieKey = dieRequirement?.key ?? "bardic_die";
                   const dieRoll = attackResolutionInputs[reaction.id]?.[dieKey] ?? "";
                   const needsDie = dieSides > 0;
-                  const canAccept = !needsDie || (Number.isInteger(Number(dieRoll)) && Number(dieRoll) >= 1 && Number(dieRoll) <= dieSides);
+                  const isShadowyDodge = reaction.feature_id === "shadowy_dodge";
+                  const shadowy = shadowyDodgeInputs[reaction.id] ?? {};
+                  const d20s = [shadowy.d20a ?? "", shadowy.d20b ?? ""];
+                  const totals = [shadowy.totala ?? "", shadowy.totalb ?? ""];
+                  const validShadowy = d20s.every((v) => Number.isInteger(Number(v)) && Number(v) >= 1 && Number(v) <= 20)
+                    && totals.every((v) => Number.isInteger(Number(v)) && Number(v) >= -100 && Number(v) <= 1000);
+                  const canAccept = isShadowyDodge
+                    ? validShadowy
+                    : !needsDie || (Number.isInteger(Number(dieRoll)) && Number(dieRoll) >= 1 && Number(dieRoll) <= dieSides);
                   const updateInput = (key: string, value: string) => setAttackResolutionInputs((current) => ({ ...current, [reaction.id]: { ...(current[reaction.id] ?? {}), [key]: value } }));
+                  const updateShadowy = (key: string, value: string) => setShadowyDodgeInputs((current) => ({ ...current, [reaction.id]: { ...(current[reaction.id] ?? {}), [key]: value } }));
                   return (
                     <div>
                       <div className="flex flex-wrap items-center gap-2">
@@ -2247,11 +2266,43 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
                         <span className="rounded border border-violet-700/70 px-1.5 py-0.5 text-2xs text-violet-200">伤害尚未落地</span>
                         {candidateOptions.length > 1 ? <label className="flex items-center gap-1 text-2xs text-violet-100">选择反应<select aria-label={`${reaction.id} 攻击决议反应`} className="rounded border border-violet-800 bg-ink-950 px-1.5 py-1" onChange={(event) => setAttackResolutionSelectedFeatures((current) => ({ ...current, [reaction.id]: event.target.value }))} value={selectedFeatureId}>{candidateOptions.map((candidate) => <option key={candidate.id} value={candidate.id}>{candidate.name}</option>)}</select></label> : null}
                         {needsDie ? <label className="flex items-center gap-1 text-2xs text-violet-100">骰值<input aria-label={`${reaction.id} 攻击决议骰`} className="w-16 rounded border border-violet-800 bg-ink-950 px-1.5 py-1" max={dieSides} min="1" onChange={(event) => updateInput(dieKey, event.target.value)} type="number" value={dieRoll} /><span className="text-stone-400">d{dieSides}</span></label> : null}
+                        {isShadowyDodge ? (
+                          <div className="grid grid-cols-4 gap-2 text-2xs text-violet-100">
+                            <label>d20①<input aria-label={`${reaction.id} 如影随行 d20 1`} className="w-16 rounded border border-violet-800 bg-ink-950 px-1.5 py-1" max="20" min="1" onChange={(event) => updateShadowy("d20a", event.target.value)} type="number" value={d20s[0]} /></label>
+                            <label>总值①<input aria-label={`${reaction.id} 如影随行总值1`} className="w-20 rounded border border-violet-800 bg-ink-950 px-1.5 py-1" onChange={(event) => updateShadowy("totala", event.target.value)} type="number" value={totals[0]} /></label>
+                            <label>d20②<input aria-label={`${reaction.id} 如影随行 d20 2`} className="w-16 rounded border border-violet-800 bg-ink-950 px-1.5 py-1" max="20" min="1" onChange={(event) => updateShadowy("d20b", event.target.value)} type="number" value={d20s[1]} /></label>
+                            <label>总值②<input aria-label={`${reaction.id} 如影随行总值2`} className="w-20 rounded border border-violet-800 bg-ink-950 px-1.5 py-1" onChange={(event) => updateShadowy("totalb", event.target.value)} type="number" value={totals[1]} /></label>
+                          </div>
+                        ) : null}
                       </div>
                       <p className="mb-0 mt-1 text-xs leading-5 text-stone-300">{reaction.message ?? "一次攻击已初步命中；请选择是否使用反应改变结果。"}</p>
                       <div className="mt-2 flex gap-2">
-                        <Button disabled={attackResolutionMutation.isPending || !canAccept} loading={attackResolutionMutation.isPending && attackResolutionMutation.variables?.id === reaction.id && attackResolutionMutation.variables.decision === "accept"} onClick={() => attackResolutionMutation.mutate({ id: reaction.id, version: reaction.version, decision: "accept", featureId: selectedFeatureId, inputs: needsDie ? { [dieKey]: Number(dieRoll) } : {} })} variant="danger">使用{selectedFeature.name}</Button>
+                        <Button disabled={attackResolutionMutation.isPending || !canAccept} loading={attackResolutionMutation.isPending && attackResolutionMutation.variables?.id === reaction.id && attackResolutionMutation.variables.decision === "accept"} onClick={() => attackResolutionMutation.mutate({ id: reaction.id, version: reaction.version, decision: "accept", featureId: selectedFeatureId, inputs: needsDie ? { [dieKey]: Number(dieRoll) } : {}, attackRolls: isShadowyDodge ? d20s.map(Number) : [], attackRollTotals: isShadowyDodge ? totals.map(Number) : [] })} variant="danger">使用{selectedFeature.name}</Button>
                         <Button disabled={attackResolutionMutation.isPending} loading={attackResolutionMutation.isPending && attackResolutionMutation.variables?.id === reaction.id && attackResolutionMutation.variables.decision === "reject"} onClick={() => attackResolutionMutation.mutate({ id: reaction.id, version: reaction.version, decision: "reject" })}>不使用</Button>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+            ) : reaction.kind === "attack_resolution_teleport" ? (
+              <div className="mb-3 rounded border border-emerald-700 bg-emerald-950/25 p-3" data-testid="player-pending-attack-resolution-teleport" key={reaction.id}>
+                {(() => {
+                  const destination = teleportDestinations[reaction.id] ?? { row: "", col: "" };
+                  const canAccept = Number.isInteger(Number(destination.row)) && Number(destination.row) >= 1 && Number.isInteger(Number(destination.col)) && Number(destination.col) >= 1;
+                  return (
+                    <div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <strong className="text-sm text-emerald-100">如影随行传送 · {reaction.feature_name ?? "如影随行"}</strong>
+                        <span className="rounded border border-emerald-700/70 px-1.5 py-0.5 text-2xs text-emerald-200">同一反应 · 30 尺</span>
+                      </div>
+                      <p className="mb-2 mt-1 text-xs leading-5 text-stone-300">{reaction.message ?? "攻击已结算；可传送至 30 尺内可见未占用空间。"}</p>
+                      <div className="grid grid-cols-2 gap-2">
+                        <label className="text-2xs text-emerald-100">目的地行<input aria-label={`${reaction.id} 传送行`} className="w-20 rounded border border-emerald-800 bg-ink-950 px-1.5 py-1" min="1" onChange={(event) => setTeleportDestinations((current) => ({ ...current, [reaction.id]: { ...destination, row: event.target.value } }))} type="number" value={destination.row} /></label>
+                        <label className="text-2xs text-emerald-100">目的地列<input aria-label={`${reaction.id} 传送列`} className="w-20 rounded border border-emerald-800 bg-ink-950 px-1.5 py-1" min="1" onChange={(event) => setTeleportDestinations((current) => ({ ...current, [reaction.id]: { ...destination, col: event.target.value } }))} type="number" value={destination.col} /></label>
+                      </div>
+                      <div className="mt-2 flex gap-2">
+                        <Button disabled={attackResolutionTeleportMutation.isPending || !canAccept} loading={attackResolutionTeleportMutation.isPending && attackResolutionTeleportMutation.variables?.id === reaction.id && attackResolutionTeleportMutation.variables.decision === "accept"} onClick={() => attackResolutionTeleportMutation.mutate({ id: reaction.id, version: reaction.version, decision: "accept", row: Number(destination.row), col: Number(destination.col) })} variant="primary">传送</Button>
+                        <Button disabled={attackResolutionTeleportMutation.isPending} loading={attackResolutionTeleportMutation.isPending && attackResolutionTeleportMutation.variables?.id === reaction.id && attackResolutionTeleportMutation.variables.decision === "reject"} onClick={() => attackResolutionTeleportMutation.mutate({ id: reaction.id, version: reaction.version, decision: "reject" })}>放弃传送</Button>
                       </div>
                     </div>
                   );

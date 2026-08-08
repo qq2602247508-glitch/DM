@@ -9,6 +9,7 @@ from dnd_dm_assistant.api.schemas import (
     CombatActionBatchCommand,
     CombatActionCommand,
     CombatAttackResolutionCommand,
+    CombatAttackResolutionTeleportCommand,
     CombatDeflectRedirectCommand,
     CombatEffectCommand,
     CombatEffectEndCommand,
@@ -115,6 +116,34 @@ def resolve_attack_resolution(
             campaign_id,
             combat_id,
             body,
+            idempotency_key=request_id,
+        )
+    )
+
+
+
+
+@router.post("/reactions/attack-resolution-teleport/{window_id}/resolve")
+def resolve_attack_resolution_teleport(
+    campaign_id: str,
+    combat_id: str,
+    window_id: str,
+    body: CombatAttackResolutionTeleportCommand,
+    request: Request,
+    service: Annotated[CombatEngineService, Depends(get_combat_engine_service)],
+) -> dict[str, Any]:
+    if body.window_id != window_id:
+        raise HTTPException(status_code=400, detail="传送窗口路径与请求体不一致")
+    request_id = str(getattr(request.state, "request_id", "unknown"))
+    return _safe_call(
+        lambda: service.resolve_attack_resolution_teleport(
+            campaign_id,
+            combat_id,
+            window_id,
+            body.window_version,
+            body.decision,
+            body.destination_row,
+            body.destination_col,
             idempotency_key=request_id,
         )
     )

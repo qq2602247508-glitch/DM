@@ -1158,6 +1158,30 @@ class CombatFeatureActionCommand(BaseModel):
         return self
 
 
+
+
+class CombatAttackResolutionTeleportCommand(BaseModel):
+    """Accept or skip a same-reaction teleport after an attack resolution."""
+
+    window_id: str = Field(min_length=1, max_length=36)
+    window_version: int = Field(ge=1)
+    decision: Literal["accept", "reject"]
+    destination_row: int | None = Field(default=None, ge=1, le=10_000)
+    destination_col: int | None = Field(default=None, ge=1, le=10_000)
+
+    @model_validator(mode="after")
+    def validate_teleport(self) -> CombatAttackResolutionTeleportCommand:
+        if self.decision == "accept" and (
+            self.destination_row is None or self.destination_col is None
+        ):
+            raise ValueError("接受传送必须提交目的地行列")
+        if self.decision == "reject" and (
+            self.destination_row is not None or self.destination_col is not None
+        ):
+            raise ValueError("放弃传送时不能携带目的地")
+        return self
+
+
 class CombatPreDamageReactionCommand(BaseModel):
     """Resolve a persisted reaction window before the triggering damage lands."""
 
@@ -1194,15 +1218,21 @@ class CombatAttackResolutionCommand(BaseModel):
     feature_id: str | None = Field(default=None, min_length=1, max_length=120)
     inputs: dict[str, int] = Field(default_factory=dict)
     attack_rolls: list[int] = Field(default_factory=list, max_length=2)
+    attack_roll_totals: list[int] = Field(default_factory=list, max_length=2)
 
     @model_validator(mode="after")
     def validate_attack_resolution(self) -> CombatAttackResolutionCommand:
         if self.decision == "accept" and not (self.feature_id or "").strip():
             raise ValueError("使用攻击决议反应时必须选择职业特性")
         if self.decision == "reject" and (
-            self.feature_id is not None or self.inputs or self.attack_rolls
+            self.feature_id is not None
+            or self.inputs
+            or self.attack_rolls
+            or self.attack_roll_totals
         ):
             raise ValueError("放弃攻击决议反应时不能携带特性或执行输入")
+        if self.attack_roll_totals and len(self.attack_roll_totals) != len(self.attack_rolls):
+            raise ValueError("攻击决议的 d20 与总值数量必须一致")
         return self
 
 

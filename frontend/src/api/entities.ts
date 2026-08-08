@@ -773,6 +773,23 @@ export const resolveCombatAttackResolution = (
   { method: "POST", body: input, headers: { "X-Request-ID": requestId } },
 );
 
+export const resolveCombatAttackResolutionTeleport = (
+  cid: string,
+  combatId: string,
+  windowId: string,
+  input: {
+    window_id: string;
+    window_version: number;
+    decision: "accept" | "reject";
+    destination_row?: number | null;
+    destination_col?: number | null;
+  },
+  requestId: string = createClientId("attack-resolution-teleport"),
+) => apiFetch<Record<string, unknown>>(
+  `/campaigns/${cid}/combats/${combatId}/reactions/attack-resolution-teleport/${windowId}/resolve`,
+  { method: "POST", body: input, headers: { "X-Request-ID": requestId } },
+);
+
 export const resolveCombatPreDamageReaction = (
   cid: string,
   combatId: string,

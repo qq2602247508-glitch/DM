@@ -128,6 +128,7 @@ def apply_attack_resolution_intervention(
     automatic_critical: bool = False,
     attack_roll_mode: str | None = None,
     attack_rolls: list[int] | None = None,
+    attack_roll_totals: list[int] | None = None,
     spec: Mapping[str, object],
     inputs: Mapping[str, object] | None = None,
     bindings: Mapping[str, int] | None = None,
@@ -177,21 +178,27 @@ def apply_attack_resolution_intervention(
             raise ValueError("劣势 d20 必须在 1–20 之间")
         imposed_disadvantage = True
         selected_roll = min(rolls[:2])
-        bonus = 0
-        if effective_attack_total is not None and attack_roll_total is not None:
-            # Preserve any non-d20 bonus that the provisional total already included.
-            # Callers should pass the raw d20 values separately from the total.
-            bonus = (
-                effective_attack_total - max(rolls[:2])
-                if attack_roll_mode == "advantage"
-                else (effective_attack_total - rolls[0] if rolls else 0)
-            )
-        if attack_roll_total is not None and len(rolls) >= 1 and bonus == 0:
-            # Fallback: treat attack_roll_total as d20 + modifiers where the
-            # highest/first submitted d20 is the natural die already used.
-            natural = rolls[0]
-            bonus = attack_roll_total - natural
-        effective_attack_total = selected_roll + bonus
+        totals = [int(value) for value in attack_roll_totals or []]
+        if totals:
+            if len(totals) != len(rolls):
+                raise ValueError("施加劣势的 d20 与总值数量必须一致")
+            if any(value < -100 or value > 1_000 for value in totals):
+                raise ValueError("劣势攻击总值超出允许范围")
+            selected_index = rolls.index(selected_roll)
+            effective_attack_total = totals[selected_index]
+        else:
+            bonus = 0
+            if effective_attack_total is not None and attack_roll_total is not None:
+                # Preserve any non-d20 bonus that the provisional total included.
+                bonus = (
+                    effective_attack_total - max(rolls[:2])
+                    if attack_roll_mode == "advantage"
+                    else (effective_attack_total - rolls[0] if rolls else 0)
+                )
+            if attack_roll_total is not None and len(rolls) >= 1 and bonus == 0:
+                natural = rolls[0]
+                bonus = attack_roll_total - natural
+            effective_attack_total = selected_roll + bonus
     else:  # pragma: no cover - guarded by validate
         raise ValueError(f"暂未接入该攻击决议操作：{op_kind}")
 

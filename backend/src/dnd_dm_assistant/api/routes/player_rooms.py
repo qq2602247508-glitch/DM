@@ -123,12 +123,41 @@ class ReactionDecisionInput(BaseModel):
     decision: Literal["accept", "reject"]
 
 
+class AttackResolutionTeleportInput(BaseModel):
+    version: int = Field(ge=1)
+    decision: Literal["accept", "reject"]
+    destination_row: int | None = Field(default=None, ge=1, le=10_000)
+    destination_col: int | None = Field(default=None, ge=1, le=10_000)
+
+
 class AttackResolutionInput(BaseModel):
     version: int = Field(ge=1)
     decision: Literal["accept", "reject"]
     feature_id: str | None = Field(default=None, min_length=1, max_length=120)
     inputs: dict[str, int] = Field(default_factory=dict)
     attack_rolls: list[int] = Field(default_factory=list, max_length=2)
+
+
+
+@public_player_room_router.post("/me/combat/attack-resolution-teleport/{window_id}")
+def resolve_player_attack_resolution_teleport(
+    window_id: str,
+    body: AttackResolutionTeleportInput,
+    request: Request,
+    principal: Annotated[PlayerPrincipal, Depends(get_player_principal)],
+    service: Annotated[PlayerRoomService, Depends(get_player_room_service)],
+) -> dict[str, Any]:
+    return _safe(
+        lambda: service.resolve_attack_resolution_teleport(
+            principal,
+            window_id,
+            body.version,
+            body.decision,
+            body.destination_row,
+            body.destination_col,
+            _request_id(request),
+        )
+    )
 
 
 class PreDamageReactionInput(BaseModel):
