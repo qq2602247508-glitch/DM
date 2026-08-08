@@ -1,3 +1,29 @@
+# 2026-08-09 长执行检查点：分阶段攻击结算与反应干预状态机
+
+- 实时固定审计仍为 499 条；本切片前 `full 249 / partial 176 / dm_only 74`，当前为
+  `full 251 / partial 174 / dm_only 74`。真实新增 full：「圣武士·荣耀之誓·15·辉煌防御」和
+  「吟游诗人·逸闻学院·3·语出惊人」。两条都通过真实 API 回归验证，不是配置声明。
+- 新增不识别职业/特性名称的 `attack_resolution_intervention` 领域合同与持久化窗口：攻击进入
+  `after_provisional_hit` 后暂停，冻结原始命令、初始 AC/掩体、攻击总值、攻击上下文、目标/攻击者
+  版本和候选干预集合；DM/玩家选择接受或放弃，接受后服务端重算命中/失手并改写伤害命令与
+  `effective_ac` 上下文。`add_to_target_ac`、`subtract_from_attack_total`、`impose_disadvantage`
+  已接入，未知操作 fail-closed。
+- 辉煌防御：10 尺内可见自我/盟友被命中时开窗；消费反应与 `glorious_defense` 资源（长休恢复，
+  上限 max(1, 魅力调整值)）；AC 加值重判；变失手且攻击者在武器触及内时，创建 `triggered_attack_window`
+  作为同一反应的一部分（不再扣反应/资源）；仍命中则正常进伤害；暴击在变失手时不产生暴击伤害。
+- 语出惊人：三分支全部真实闭环。攻击检定分支在初步命中后暂停，从攻击总值减诗人骰并重判；
+  属性/技能检定分支复用 player-roll 的 `after_d20_test` 窗口，仅成功后开放、旁观者反应者 60 尺可见、
+  动态诗人骰面物化、失败检定不误开；伤害分支由旁观者 bard 在受击单位附近 60 尺可见时打开
+  pre-damage 窗口，按诗人骰从各伤害段顺序减伤、最低 0。
+- 通用链：反应、角色资源（含快照内资源）、攻击/AC/伤害重算、幂等重放、CAS 和窗口版本全部落库；
+  pre-damage 与 roll-intervention 消费者扩展支持旁观者反应者（窗口 actor 不再是受击目标本人）。
+- 验证：新增攻击决议/辉煌防御/语出惊人定向测试全部通过；全量后端 `pytest -q backend/tests` 通过；
+  前端 `npm test -- --run`（204 tests）、typecheck、lint、build 通过；新增源码/测试 Ruff、compileall、
+  `git diff --check` 通过。全量 `ruff check backend/src backend/tests scripts` 仍只命中仓库原有
+  scripts 的 N999/EXE001。
+- 已分离提交：代码 `f6c6e97`，审计基线测试 `8659e36`；文档/交接随后单独提交。必须继续保留且不暂存/提交：
+  `backend/tests/integrations/`、`backend/tests/ollama.py`。
+
 # 2026-08-09 长执行检查点：事件驱动追加攻击窗口平台
 
 - 实时固定审计仍为 499 条；本切片前 `full 247 / partial 178 / dm_only 74`，当前为

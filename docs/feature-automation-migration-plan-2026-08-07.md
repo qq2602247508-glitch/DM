@@ -1,5 +1,25 @@
 # 特性自动化迁移预审报告
 
+## 2026-08-09 检查点（分阶段攻击结算与反应干预状态机）
+
+实时审计固定总数仍为 `499`：本切片前 `full 249 / partial 176 / dm_only 74`，本切片后
+`full 251 / partial 174 / dm_only 74`。新增 full 为荣耀之誓「辉煌防御」和逸闻学院「语出惊人」；
+两者都由真实 API 回归覆盖，不是只写配置。
+
+- 新增通用 `attack_resolution_intervention`：初步命中后冻结攻击提案（原始命令、初始 AC/掩体、
+  攻击总值、上下文、目标/攻击者版本、候选干预），DM/玩家选择后服务端重算命中/失手并改写伤害命令。
+  已支持 `add_to_target_ac`、`subtract_from_attack_total`、`impose_disadvantage`；未知操作 fail-closed。
+- 辉煌防御：10 尺内可见自我/盟友被命中开窗；消耗反应与长休恢复的 `glorious_defense` 资源；AC 加值重判；
+  变失手且攻击者在武器触及内时创建同一反应的反击窗口（不再重复扣反应/资源）。
+- 语出惊人：攻击分支在初步命中后暂停并减值重判；属性/技能检定分支仅成功时对旁观者反应者开放、
+  动态诗人骰面物化、失败不误开；伤害分支由附近可见 bard 打开 pre-damage 窗口按段减伤。
+- pre-damage 与 roll-intervention 消费者支持旁观者反应者；资源、反应、攻击/AC/伤害重算、CAS 和
+  幂等重放均走真实持久化事务。
+
+验证：攻击决议/辉煌防御/语出惊人定向测试、全量后端 pytest、前端 204 tests/typecheck/lint/build、
+新增源码/测试 Ruff、compileall、`git diff --check` 均通过；全量 Ruff 仍只命中仓库原有 scripts 的
+N999/EXE001。代码 `f6c6e97`、审计基线测试 `8659e36`、文档/交接随后单独提交。
+
 ## 2026-08-09 检查点（事件驱动追加攻击窗口）
 
 实时审计固定总数仍为 `499`：本切片前 `full 247 / partial 178 / dm_only 74`，本切片后
