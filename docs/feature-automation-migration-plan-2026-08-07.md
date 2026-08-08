@@ -3,22 +3,22 @@
 这份报告只规划迁移，不修改运行时状态，也不把候选行直接升级为 `full`。
 
 - 总条目：499
-- 当前状态：`{'partial': 240, 'full': 168, 'dm_only': 91}`
-- 预审状态：`{'consumer_partial': 49, 'already_full': 168, 'missing_runtime_contract': 222, 'missing_source': 35, 'manual_boundary': 11, 'needs_contract_review': 14}`
+- 当前状态：`{'partial': 223, 'full': 199, 'dm_only': 77}`
+- 预审状态：`{'consumer_partial': 47, 'already_full': 199, 'missing_source': 35, 'missing_runtime_contract': 198, 'manual_boundary': 10, 'needs_contract_review': 10}`
 
 ## 模板分组
 
 | 模板 | 条目 | 已 full | 缺运行时合同 | 待合同复核 | 消费者不完整 | 人工边界 | 缺源码 |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| 掷骰干预 (`roll_intervention`) | 46 | 16 | 0 | 0 | 30 | 0 | 0 |
-| 状态生命周期 (`state_lifecycle`) | 34 | 15 | 18 | 1 | 0 | 0 | 0 |
+| 掷骰干预 (`roll_intervention`) | 46 | 17 | 0 | 0 | 29 | 0 | 0 |
+| 状态生命周期 (`state_lifecycle`) | 34 | 16 | 17 | 1 | 0 | 0 | 0 |
 | 动作经济与触发条件 (`action_trigger`) | 34 | 21 | 12 | 0 | 0 | 1 | 0 |
-| 通用被动/数值修正 (`passive_modifier`) | 79 | 14 | 29 | 0 | 0 | 1 | 35 |
-| 成长授予/升级选择 (`progression_grant`) | 67 | 53 | 13 | 0 | 0 | 1 | 0 |
-| 资源/恢复/频率 (`resource_lifecycle`) | 64 | 16 | 32 | 9 | 0 | 7 | 0 |
+| 通用被动/数值修正 (`passive_modifier`) | 79 | 28 | 15 | 0 | 0 | 1 | 35 |
+| 成长授予/升级选择 (`progression_grant`) | 67 | 54 | 12 | 0 | 0 | 1 | 0 |
+| 资源/恢复/频率 (`resource_lifecycle`) | 64 | 27 | 26 | 5 | 0 | 6 | 0 |
 | 光环/范围被动 (`aura_passive`) | 48 | 4 | 43 | 1 | 0 | 0 | 0 |
-| 伤害/治疗 (`damage_healing`) | 48 | 12 | 34 | 2 | 0 | 0 | 0 |
-| 施法框架/法术修改 (`spell_capability`) | 7 | 0 | 0 | 0 | 7 | 0 | 0 |
+| 伤害/治疗 (`damage_healing`) | 48 | 14 | 32 | 2 | 0 | 0 | 0 |
+| 施法框架/法术修改 (`spell_capability`) | 7 | 1 | 0 | 0 | 6 | 0 | 0 |
 | 命中后骑手 (`attack_rider`) | 13 | 1 | 0 | 0 | 12 | 0 | 0 |
 | 0 HP/死亡生命周期 (`zero_hp_intervention`) | 8 | 2 | 6 | 0 | 0 | 0 | 0 |
 | 目标/范围/豁免组合 (`target_save_status`) | 10 | 3 | 6 | 0 | 0 | 1 | 0 |
