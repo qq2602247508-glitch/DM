@@ -16,6 +16,7 @@ from dnd_dm_assistant.domain.feature_runtime import (
     feature_block_payloads,
     resource_recovery_events,
 )
+from dnd_dm_assistant.domain.growth_asset_catalog import weapon_asset, weapon_is_eligible
 from dnd_dm_assistant.domain.rests import (
     HitDieSpend,
     ResourceRecovery,
@@ -453,6 +454,81 @@ class RestService:
                         "resource_key": feature_pool.key,
                         "resource_cost": 0,
                         "pool_values": values,
+                    }
+                )
+                continue
+            if (
+                isinstance(action, Mapping)
+                and action.get("kind") == "rest_asset_loadout_reconfiguration"
+            ):
+                if effective_type != "long":
+                    raise ValueError(f"资产配置只能在长休时变更：{action_id}")
+                if not isinstance(raw_amount, Mapping):
+                    raise ValueError(f"资产配置必须提交 weapon_ids 列表：{action_id}")
+                raw_values = raw_amount.get("weapon_ids")
+                if not isinstance(raw_values, list):
+                    raise ValueError(f"资产配置必须提交 weapon_ids 列表：{action_id}")
+                class_name = str(action.get("class_name") or "")
+                current = [
+                    dict(item)
+                    for item in character.proficiencies or []
+                    if isinstance(item, Mapping)
+                    and item.get("kind") == "weapon_mastery"
+                    and str(item.get("class_name") or "") == class_name
+                ]
+                if not current:
+                    raise ValueError(f"角色没有可重配的武器精通：{action_id}")
+                assets = [weapon_asset(value) for value in raw_values]
+                if any(asset is None for asset in assets):
+                    raise ValueError(f"武器不在2024权威目录中：{action_id}")
+                asset_ids = [str(asset.id) for asset in assets if asset is not None]
+                if len(asset_ids) != len(current) or len(set(asset_ids)) != len(asset_ids):
+                    raise ValueError(f"重配后必须保持原数量且不重复：{action_id}")
+                policy = str(action.get("eligibility_policy") or "")
+                if any(
+                    not weapon_is_eligible(
+                        asset,
+                        policy=policy,
+                        proficiencies=list(character.proficiencies or []),
+                    )
+                    for asset in assets
+                    if asset is not None
+                ):
+                    raise ValueError(f"重配包含不符合职业策略的武器：{action_id}")
+                current_ids = {
+                    str(item.get("id") or item.get("name") or "") for item in current
+                }
+                replacement_count = len(set(asset_ids) - current_ids)
+                maximum_replacements = action.get("maximum_replacements")
+                if maximum_replacements is not None and replacement_count > int(
+                    maximum_replacements
+                ):
+                    raise ValueError(f"本次长休替换的武器精通过多：{action_id}")
+                template_level = max(int(item.get("class_level") or 1) for item in current)
+                selected_masteries = [
+                    {
+                        "kind": "weapon_mastery",
+                        "id": asset.id,
+                        "name": asset.name,
+                        "weapon_category": asset.category,
+                        "range_kind": asset.range_kind,
+                        "mastery": asset.mastery,
+                        "source_record_id": asset.source_record_id,
+                        "mastery_source_record_id": "08fd9f442907e6520302fddf",
+                        "class_name": class_name,
+                        "class_level": template_level,
+                        "selected_asset_status": "full",
+                        "effect_status": "separate_asset_contract",
+                    }
+                    for asset in assets
+                    if asset is not None
+                ]
+                applied.append(
+                    {
+                        "action_id": str(action_id),
+                        "class_name": class_name,
+                        "weapon_masteries": selected_masteries,
+                        "replacement_count": replacement_count,
                     }
                 )
                 continue
@@ -1089,7 +1165,7 @@ class RestService:
             )
         )
         if existing is not None:
-            return dict(existing.result_json or {})
+            return {**dict(existing.result_json or {}), "idempotent_replay": True}
 
         preview = self._preview_in_session(session, campaign_id, request_data)
         if preview_token is not None and preview["preview_token"] != preview_token:
@@ -1221,6 +1297,25 @@ class RestService:
                     selection["selected"] = recovery["selected"]
                     resources_json[selection_key] = selection
                     character.resources = resources_json
+                elif (
+                    isinstance(recovery, dict)
+                    and isinstance(recovery.get("weapon_masteries"), list)
+                    and recovery.get("class_name")
+                ):
+                    owner_class = str(recovery["class_name"])
+                    preserved = [
+                        item
+                        for item in character.proficiencies or []
+                        if not (
+                            isinstance(item, dict)
+                            and item.get("kind") == "weapon_mastery"
+                            and str(item.get("class_name") or "") == owner_class
+                        )
+                    ]
+                    character.proficiencies = [
+                        *preserved,
+                        *[dict(item) for item in recovery["weapon_masteries"]],
+                    ]
             character.max_hp_reduction = int(participant["after"]["max_hp_reduction"])
             character.ability_score_reductions = dict(
                 participant["after"]["ability_score_reductions"]

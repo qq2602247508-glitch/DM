@@ -38,6 +38,7 @@ from dnd_dm_assistant.domain.advancement_choices import (
 from dnd_dm_assistant.domain.campaign_state import StateNotFoundError, VersionConflict
 from dnd_dm_assistant.domain.character_creation import CORE_LANGUAGES
 from dnd_dm_assistant.domain.feature_runtime import compile_feature_runtime_registry
+from dnd_dm_assistant.domain.growth_asset_catalog import metamagic_asset
 from dnd_dm_assistant.domain.noncombat_actions import SKILL_RULES
 from dnd_dm_assistant.domain.progression_automation import (
     apply_progression_choice_grants,
@@ -49,7 +50,9 @@ from dnd_dm_assistant.infrastructure.database.models import (
     Campaign,
     Character,
     CharacterCompanion,
+    KnownSpell,
     OperationTransaction,
+    PreparedSpell,
 )
 
 XP_THRESHOLDS = (
@@ -126,6 +129,8 @@ def _fixed_subclass_spell_additions(
                     "always_prepared": True,
                     "source_feature_id": feature_id,
                     "source_feature_name": str(raw.get("name") or ""),
+                    "granted_spell_access": True,
+                    "does_not_count_toward_level_learning": True,
                 }
             )
     return additions
@@ -343,11 +348,7 @@ def _selected_core_spell_additions(
                     "prepared": bool(contract.get("always_prepared")),
                     "always_prepared": bool(contract.get("always_prepared")),
                     **(
-                        {
-                            "spellcasting_ability": str(
-                                contract.get("spellcasting_ability")
-                            )
-                        }
+                        {"spellcasting_ability": str(contract.get("spellcasting_ability"))}
                         if contract.get("spellcasting_ability")
                         else {}
                     ),
@@ -362,6 +363,95 @@ def _selected_core_spell_additions(
     return additions
 
 
+def _source_bound_cantrip_replacements(
+    choices_by_key: dict[str, list[str]],
+    *,
+    existing_spells: list[Any],
+    spell_catalog: tuple[dict[str, Any], ...],
+    owner_class: str,
+) -> tuple[list[dict[str, Any]], set[str]]:
+    contracts = {
+        "blessed_warrior_cantrip_replacement": (
+            "blessed_warrior_cantrips",
+            "牧师",
+            "charisma",
+        ),
+        "druidic_warrior_cantrip_replacement": (
+            "druidic_warrior_cantrips",
+            "德鲁伊",
+            "wisdom",
+        ),
+    }
+    by_identity = {
+        identity: spell
+        for spell in spell_catalog
+        for identity in (
+            str(spell.get("source_record_id") or ""),
+            str(spell.get("name") or ""),
+        )
+        if identity
+    }
+    additions: list[dict[str, Any]] = []
+    removals: set[str] = set()
+    for key, (source_feature_id, spell_class, ability) in contracts.items():
+        selected = choices_by_key.get(key, [])
+        if not selected:
+            continue
+        old_raw, separator, new_raw = selected[0].partition("->")
+        if not separator or not old_raw.strip() or not new_raw.strip():
+            raise ValueError(f"{key}必须使用 old->new 结构")
+        old = next(
+            (
+                dict(item)
+                for item in existing_spells
+                if isinstance(item, dict)
+                and item.get("source_feature_id") == source_feature_id
+                and old_raw.strip()
+                in {
+                    str(item.get("name") or ""),
+                    str(item.get("source_record_id") or ""),
+                }
+            ),
+            None,
+        )
+        if old is None:
+            raise ValueError(f"不能替换不属于{source_feature_id}的戏法：{old_raw}")
+        new_spell = by_identity.get(new_raw.strip())
+        if new_spell is None:
+            raise ValueError(f"替换戏法不在2024权威目录中：{new_raw}")
+        classes = {canonical_class_name(str(item)) for item in new_spell.get("classes") or ()}
+        if (
+            canonical_class_name(spell_class) not in classes
+            or int(new_spell.get("level") or 0) != 0
+        ):
+            raise ValueError(f"{key}只能选择{spell_class}戏法")
+        remaining_ids = {
+            str(item.get("source_record_id") or item.get("name") or "")
+            for item in existing_spells
+            if isinstance(item, dict) and item is not old
+        }
+        new_identity = str(new_spell.get("source_record_id") or new_spell.get("name") or "")
+        if new_identity in remaining_ids:
+            raise ValueError(f"替换后不能重复掌握戏法：{new_spell.get('name')}")
+        removals.add(str(old.get("source_record_id") or old.get("name") or ""))
+        additions.append(
+            {
+                **dict(new_spell),
+                "spell_level": 0,
+                "class_name": owner_class,
+                "prepared": True,
+                "always_prepared": True,
+                "spellcasting_ability": ability,
+                "source_feature_id": source_feature_id,
+                "source_feature_name": source_feature_id,
+                "granted_spell_access": True,
+                "does_not_count_toward_level_learning": True,
+                "replacement_of": str(old.get("source_record_id") or old.get("name") or ""),
+            }
+        )
+    return additions, removals
+
+
 class AdvancementService:
     def __init__(self, engine: Engine, catalog: CharacterCatalog) -> None:
         self.engine = engine
@@ -373,6 +463,161 @@ class AdvancementService:
         if character is None or character.campaign_id != campaign_id:
             raise StateNotFoundError("character not found in campaign")
         return character
+
+    @staticmethod
+    def _metamagic_asset_changes(
+        existing_features: list[Any],
+        *,
+        choices_by_key: dict[str, list[str]],
+        class_level: int,
+        total_level: int,
+        source_record_id: str | None,
+    ) -> tuple[list[dict[str, Any]], set[str]]:
+        existing = {
+            str(item.get("asset_id") or ""): dict(item)
+            for item in existing_features
+            if isinstance(item, dict)
+            and item.get("kind") == "metamagic_option"
+            and item.get("asset_id")
+        }
+        acquisition = choices_by_key.get("metamagic_options", [])
+        expected_before = {2: 0, 10: 2, 17: 4}.get(class_level)
+        if acquisition and expected_before is not None and len(existing) != expected_before:
+            raise ValueError(
+                f"术士{class_level}级超魔法授予前应有{expected_before}个已选资产，"
+                f"当前为{len(existing)}个"
+            )
+        additions = []
+        for raw in choices_by_key.get("metamagic_options", []):
+            asset = metamagic_asset(raw)
+            if asset is None:
+                raise ValueError(f"超魔法选项不在2024权威目录中：{raw}")
+            if asset.id in existing or any(item["asset_id"] == asset.id for item in additions):
+                raise ValueError(f"超魔法选项不能重复：{asset.name}")
+            additions.append(
+                {
+                    "name": asset.name,
+                    "kind": "metamagic_option",
+                    "asset_id": asset.id,
+                    "english_name": asset.english_name,
+                    "sorcery_point_cost": asset.sorcery_point_cost,
+                    "class_name": "术士",
+                    "class_level": class_level,
+                    "level": total_level,
+                    "source_record_id": asset.source_record_id,
+                    "source_feature_record_id": source_record_id,
+                    "rule_year": asset.rule_year,
+                    "runtime": {
+                        "automation_status": "full",
+                        "requires_dm_adjudication": False,
+                        "execution": {
+                            "kind": "selected_asset_grant",
+                            "consumer": "advancement_service",
+                            "grant_status": "full",
+                            "effect_status": "separate_asset_contract",
+                        },
+                        "note": "超魔法选项已由权威目录授予；其施法效果按独立合同验收。",
+                    },
+                }
+            )
+
+        replaced: set[str] = set()
+        replacement = choices_by_key.get("metamagic_replacement", [])
+        if replacement:
+            old_raw, separator, new_raw = replacement[0].partition("->")
+            old_asset = metamagic_asset(old_raw)
+            new_asset = metamagic_asset(new_raw)
+            if not separator or old_asset is None or new_asset is None:
+                raise ValueError("超魔法替换必须使用权威目录的 old->new")
+            if old_asset.id not in existing:
+                raise ValueError(f"不能替换未掌握的超魔法：{old_asset.name}")
+            resulting_ids = (set(existing) - {old_asset.id}) | {
+                str(item["asset_id"]) for item in additions
+            }
+            if new_asset.id in resulting_ids:
+                raise ValueError(f"替换后的超魔法不能重复：{new_asset.name}")
+            replaced.add(old_asset.id)
+            additions.extend(
+                AdvancementService._metamagic_asset_changes(
+                    [],
+                    choices_by_key={"metamagic_options": [new_asset.id]},
+                    class_level=class_level,
+                    total_level=total_level,
+                    source_record_id=source_record_id,
+                )[0]
+            )
+        if acquisition:
+            target_total = {2: 2, 10: 4, 17: 6}.get(class_level)
+            resulting_ids = (set(existing) - replaced) | {
+                str(item["asset_id"]) for item in additions
+            }
+            if target_total is not None and len(resulting_ids) != target_total:
+                raise ValueError(f"术士{class_level}级超魔法授予后必须累计{target_total}个选项")
+        return additions, replaced
+
+    @staticmethod
+    def _sync_source_bound_spells(
+        session: Session,
+        *,
+        campaign_id: str,
+        character_id: str,
+        spells: list[Any],
+    ) -> None:
+        source_ids = {"blessed_warrior_cantrips", "druidic_warrior_cantrips"}
+        desired = {
+            str(item.get("name") or ""): dict(item)
+            for item in spells
+            if isinstance(item, dict)
+            and item.get("source_feature_id") in source_ids
+            and item.get("name")
+        }
+        rows = session.scalars(
+            select(KnownSpell).where(KnownSpell.character_id == character_id)
+        ).all()
+        by_name = {row.name: row for row in rows}
+        for row in rows:
+            metadata = dict(row.metadata_json or {})
+            if metadata.get("source_feature_id") in source_ids and row.name not in desired:
+                session.delete(row)
+        for name, spell in desired.items():
+            metadata = {
+                **spell,
+                "source_feature_id": spell["source_feature_id"],
+                "always_prepared": True,
+                "granted_spell_access": True,
+            }
+            row = by_name.get(name)
+            if row is None:
+                row = KnownSpell(
+                    campaign_id=campaign_id,
+                    character_id=character_id,
+                    name=name,
+                    spell_level=0,
+                    source_reference=str(spell.get("source_record_id") or "") or None,
+                    metadata_json=metadata,
+                )
+                session.add(row)
+                session.flush()
+            else:
+                row.spell_level = 0
+                row.source_reference = str(spell.get("source_record_id") or "") or None
+                row.metadata_json = metadata
+            prepared = session.scalar(
+                select(PreparedSpell).where(
+                    PreparedSpell.character_id == character_id,
+                    PreparedSpell.known_spell_id == row.id,
+                )
+            )
+            if prepared is None:
+                session.add(
+                    PreparedSpell(
+                        character_id=character_id,
+                        known_spell_id=row.id,
+                        prepared=True,
+                    )
+                )
+            else:
+                prepared.prepared = True
 
     def _class_rule(
         self,
@@ -1665,6 +1910,14 @@ class AdvancementService:
                 owner_class=class_name,
             )
         )
+        cantrip_replacements, cantrip_removals = _source_bound_cantrip_replacements(
+            selected_core_spell_choices,
+            existing_spells=list(character.spells or []),
+            spell_catalog=spell_catalog,
+            owner_class=class_name,
+        )
+        automatic_subclass_spells.extend(cantrip_replacements)
+        spell_removals.update(cantrip_removals)
         existing_addition_ids = {
             str(item.get("source_record_id") or item.get("name") or "") for item in spell_additions
         }
@@ -1824,6 +2077,17 @@ class AdvancementService:
             rule_year=rule.rule_year,
             allowed_languages=CORE_LANGUAGES,
         )
+        metamagic_grants, replaced_metamagic_ids = (
+            self._metamagic_asset_changes(
+                list(character.features or []),
+                choices_by_key=requested_feature_choices_by_key,
+                class_level=target_class_level,
+                total_level=character.level + 1,
+                source_record_id=rule.source_record_id,
+            )
+            if class_name == "术士"
+            else ([], set())
+        )
 
         class_levels[class_name] = target_class_level
         if subclass_name:
@@ -1904,10 +2168,15 @@ class AdvancementService:
             minimum_level = advancement.get("minimum_class_level")
             initial_bonus = advancement.get("initial_bonus")
             per_level_bonus = advancement.get("per_level_bonus")
-            if not all(
-                isinstance(value, int) and not isinstance(value, bool)
-                for value in (minimum_level, initial_bonus, per_level_bonus)
-            ) or minimum_level < 1 or initial_bonus < 0 or per_level_bonus < 0:
+            if (
+                not all(
+                    isinstance(value, int) and not isinstance(value, bool)
+                    for value in (minimum_level, initial_bonus, per_level_bonus)
+                )
+                or minimum_level < 1
+                or initial_bonus < 0
+                or per_level_bonus < 0
+            ):
                 raise ValueError("生命值成长合同包含非法数值")
 
             current_bonus = (
@@ -1968,9 +2237,7 @@ class AdvancementService:
                     invalid.append(value)
                 invalid = sorted(set(invalid))
                 if invalid and not override:
-                    raise ValueError(
-                        f"子职特性{feature_id}包含不支持的选择：" + "、".join(invalid)
-                    )
+                    raise ValueError(f"子职特性{feature_id}包含不支持的选择：" + "、".join(invalid))
                 if invalid:
                     warnings.append(
                         f"DM 已覆盖子职特性{feature_id}的不支持选择：" + "、".join(invalid)
@@ -1995,9 +2262,10 @@ class AdvancementService:
             # On later levels the selected choice is recovered to rebuild the
             # subclass runtime, while the already persisted feat remains on
             # the sheet. Only the feature's own level creates the asset.
-            if not isinstance(source_grant, dict) or int(
-                source_grant.get("class_level") or 0
-            ) != target_class_level:
+            if (
+                not isinstance(source_grant, dict)
+                or int(source_grant.get("class_level") or 0) != target_class_level
+            ):
                 continue
             selected = selected_subclass_choices.get(feature_id, [])
             if not selected:
@@ -2038,14 +2306,10 @@ class AdvancementService:
                 if choice.startswith("replace:"):
                     old_key, new_key = choice[8:].split("->", 1)
                     if old_key not in known:
-                        invalid_message = (
-                            f"子职特性{feature_id}不能替换未习得的战技：{old_key}"
-                        )
+                        invalid_message = f"子职特性{feature_id}不能替换未习得的战技：{old_key}"
                         break
                     if new_key in known:
-                        invalid_message = (
-                            f"子职特性{feature_id}不能替换为已习得的战技：{new_key}"
-                        )
+                        invalid_message = f"子职特性{feature_id}不能替换为已习得的战技：{new_key}"
                         break
                     known.remove(old_key)
                     known.add(new_key)
@@ -2168,7 +2432,12 @@ class AdvancementService:
             else None
         )
         chosen_features = [
-            *list(progression_choice_result["grants"]),
+            *[
+                item
+                for item in progression_choice_result["grants"]
+                if item.get("choice_key") not in {"metamagic_options", "metamagic_replacement"}
+            ],
+            *metamagic_grants,
             *style_asset_grants,
             *subclass_style_asset_grants,
         ]
@@ -2208,9 +2477,17 @@ class AdvancementService:
             for item in character.features or []
             if not (
                 isinstance(item, dict)
-                and str(item.get("name") or "") in replaced_style_names
-                and item.get("kind") == "feat"
-                and item.get("category") == "战斗风格"
+                and (
+                    (
+                        str(item.get("name") or "") in replaced_style_names
+                        and item.get("kind") == "feat"
+                        and item.get("category") == "战斗风格"
+                    )
+                    or (
+                        item.get("kind") == "metamagic_option"
+                        and str(item.get("asset_id") or "") in replaced_metamagic_ids
+                    )
+                )
             )
         ]
         after_features = self._replace_class_progression_grants(
@@ -2463,7 +2740,7 @@ class AdvancementService:
             if existing is not None:
                 if existing.character_id != character_id:
                     raise ValueError("idempotency key was already used for a different character")
-                return dict(existing.result_json or {})
+                return {**dict(existing.result_json or {}), "idempotent_replay": True}
             preview = self._preview_in_session(session, campaign_id, character_id, data)
             if preview["preview_token"] != preview_token:
                 raise VersionConflict("advancement preview", character_id, 1, 2)
@@ -2489,6 +2766,12 @@ class AdvancementService:
                 preview=preview,
                 expected_version=int(data["character_version"]),
                 updated_at=now,
+            )
+            self._sync_source_bound_spells(
+                session,
+                campaign_id=campaign_id,
+                character_id=character.id,
+                spells=list(preview["after"].get("spells") or []),
             )
             result = {
                 **preview,
@@ -2539,7 +2822,7 @@ class AdvancementService:
             if existing is not None:
                 if existing.character_id != character_id:
                     raise ValueError("idempotency key was already used for a different character")
-                return dict(existing.result_json or {})
+                return {**dict(existing.result_json or {}), "idempotent_replay": True}
 
             preview = self._preview_batch_in_session(
                 session,
@@ -2571,6 +2854,12 @@ class AdvancementService:
                 preview=preview,
                 expected_version=int(payload["character_version"]),
                 updated_at=now,
+            )
+            self._sync_source_bound_spells(
+                session,
+                campaign_id=campaign_id,
+                character_id=character.id,
+                spells=list(preview["after"].get("spells") or []),
             )
 
             records: list[AdvancementRecord] = []
