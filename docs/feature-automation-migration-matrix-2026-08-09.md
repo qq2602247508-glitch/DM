@@ -64,3 +64,15 @@
 ## 下一批执行门槛
 
 下一批必须从一个模板中选择一组条目，先生成配置和定向测试，再跑499条审计。预审数字是候选分组，不是承诺的新增 `full` 数量。
+
+## Feature IR 生产化硬化 I 结果
+
+- 34 个 operator contract 已有 required/optional 参数、精确类型、enum、边界、互斥/条件必填
+  与 materializer/capability 绑定；空参数不再可 full。
+- 34 个 capability descriptor 已生成精确闭世界支持集合；production_closed 不含 wildcard。
+- 十条 authored IR 稳定 feature ID 已完成字段级 semantic parity（10/10 exact-or-equivalent）并
+  切换 compiler authority；正式 runtime_status 仍由固定审计保持 `310/128/61`。
+- 真实扇出簇 `modifier.passive.v2`：6 条 FeatureSpec 在 capability 注册前为 partial，注册后为
+  full，真实消费者为 `feature_runtime_registry` 与 `combat_start_modifiers`。
+- 演示拓展包保持 24 条 `18 full / 4 partial / 2 manual`；18 条参数完整、materialize 和 validator
+  全通过，不计入 499。

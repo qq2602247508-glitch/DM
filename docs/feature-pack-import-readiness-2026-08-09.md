@@ -2,6 +2,21 @@
 
 本轮新增 `FeaturePackManifest` 和本地版本化导入器。导入器不修改角色快照，只管理经过 IR 编译的特性定义。
 
+## 生产化硬化 I 检查点
+
+Manifest 现在显式声明 `source_trust`。`authored_ir`/`verified_mapping` 才能自动 full；
+`generated_draft`、`unstructured_source` 或未声明信任会保留为 draft/partial，并从 execution
+lookup 中排除。
+
+`FeaturePackImporter --apply` 会把 full feature 物化成现有生产 runtime contract，并写入本地
+`FeaturePackRegistry`。Registry 支持 reload、按 `namespace/feature_id/pack_version` 稳定查询、
+角色 pack/version pin、重复 apply 幂等、同版本 fingerprint 冲突和版本更新 clause diff。
+breaking update 只生成 migration plan，不静默修改已经 pin 的角色。
+
+当前演示包 24 条仍为 `18 full / 4 partial / 2 manual`；18 条都有完整参数、materializer 和
+validator 证据。生产扇出报告证明六条 FeatureSpec 在同一 capability 注册后无需修改 specs
+即可 full，并进入两个真实 runtime projection。
+
 ## 命令
 
 ```bash
@@ -39,11 +54,16 @@ backend/.venv/bin/python scripts/import-feature-pack.py \
 
 ```text
 demo pack: 18 full / 4 partial / 2 manual
-legacy shadow parity: 30 selected full rows
-compiler authority pilot: 10 rows
+strict operator contracts: 34
+formal semantic parity: 10/10 exact-or-equivalent
+production fan-out: 6 partial -> 6 full
+compiler authority: 10 authored features
 official audit: 310 full / 128 partial / 61 dm_only
 ```
 
 ## 当前限制
 
-当前导入器已经具备 dry-run、apply、版本和幂等保护，但真实生产拓展包仍需要由可信来源提供 `authored_ir` 或 `verified_mapping`。非结构化 PDF/自然语言只能生成 draft，不能直接授予 full。下一步应继续增加通用 capability，并用扇出测试证明同一 capability 可以让多条 FeatureSpec 无需修改就从 partial 变成 full。
+当前导入器已经具备 dry-run、apply、reload、稳定 lookup、pin、版本和幂等保护。真实生产拓展包
+仍需要由可信来源提供 `authored_ir` 或 `verified_mapping`；非结构化 PDF/自然语言只能生成 draft，
+不能直接授予 full。新增 capability 必须同时补 contract、descriptor、materializer、validator、
+真实 consumer evidence 和扇出回归。

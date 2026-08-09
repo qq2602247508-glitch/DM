@@ -8,6 +8,13 @@
 - 运行时状态：`{'full': 310, 'dm_only': 61, 'partial': 128}`
 - 源码读取状态：`{'description_located': 415, 'structural_placeholder': 35, 'description_reused': 49}`
 
+## IR 生产化硬化附注（2026-08-09）
+
+正式审计仍固定为 499 条，`runtime_status` 不因 IR shadow 或 compiler authority 改写。
+当前只有十条经过 authored IR、逐字段 parity 和生产回归的稳定 feature ID 使用
+`status_authority=compiler`；其余可解析条目最多是 `shadow_candidate`。严格 operator 参数、
+精确 capability、materializer validator 和 source trust 是 full 的额外必要条件。
+
 ## 积木覆盖（允许重叠）
 
 | 积木 | 源码候选 | full | partial | dm_only |

@@ -26,6 +26,23 @@
 - 自然语言/generated draft 不得自动 full；需要新 producer、复杂状态、召唤、强制移动、法术书、额外
   回合或新 UI 的机制继续由 compiler 精确报告 blocker。
 
+## 2026-08-09 Feature IR 生产化硬化 I
+
+- Operator 合同已从宽松 `Mapping` 收紧为 34 条 `OperatorContract`。空参数、未知字段、错误
+  类型/enum、互斥字段和可执行 payload 都会 fail-closed；只有参数完整且组合受支持的 clause
+  才能进入 full。
+- production_closed capability 已移除 wildcard，并要求精确 producer/consumer/persistence/CAS/
+  idempotency/materializer/evidence。当前 catalog 34 个 descriptor；施法上下文和目标情报仍是
+  `production_partial`。
+- Materializer Registry 输出真实 advancement/resource/feature_runtime/combat/spell/zero-HP
+  合同，逐 section validator 通过。缺 materializer 或 validator 失败时不会登记 execution runtime。
+- source trust 进入 full 判定：只允许 `authored_ir`、`verified_mapping`；generated draft 只生成
+  partial 诊断和 migration plan。
+- 十条正式 authored feature 已完成字段 parity 和生产 runtime 回归，稳定 ID 的 authority 才切换为
+  compiler；正式 499 状态不变。
+- 六条真实扇出使用 `modifier.passive.v2`，注册前六条 partial，注册后六条 full，两个真实 runtime
+  projection 均有 evidence。演示包仍严格 18/4/2，且 18 条都有真实参数和 materializer。
+
 ## 2026-08-09 现有生产消费者收割 II
 
 - 固定分母 499：`full 286 / partial 147 / dm_only 66` → `full 310 / partial 128 / dm_only 61`，

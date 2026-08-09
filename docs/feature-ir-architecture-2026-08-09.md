@@ -2,6 +2,27 @@
 
 本轮建立了职业/子职业特性自动装配的第一版中间层。它不替代现有的 CombatEngine、PlayerRoom、advancement、rest 或 spell economy；它只负责把结构化特性需求编译成已有生产消费者可以识别的合同，并对无法满足的子句给出精确阻塞原因。
 
+## 生产化硬化 I（当前检查点）
+
+`domain/feature_operators.py` 为每个 operator 提供 `OperatorContract`：required/optional 参数、
+精确类型、enum、数值边界、互斥字段、条件必填、兼容 trigger/condition/target/duration/action/
+resource、materializer 和 capability 绑定。未知参数、空参数、错误类型以及 expression/eval/
+exec/Python/import/module/function/path payload 均 fail-closed。
+
+`production_closed` capability 禁止 wildcard，并且必须同时有真实 producer、consumer、持久化、
+CAS、幂等、materializer 和 evidence test。FeatureSpec/FeaturePackManifest 记录 `source_trust`；
+只有 `authored_ir`、`verified_mapping` 能自动 full，generated draft 只能登记为 partial/manual。
+
+`application/feature_materializers.py` 的 `MaterializerRegistry` 只按 operator、验证后的参数和
+capability 工作，输出现有 advancement、resource、feature_runtime、移动/视线、法术修改、
+zero-HP 与窗口消费者识别的 canonical contract，并经过 section validator。
+
+十条正式特性现在由 authored Feature IR 编译，字段级 parity 全部为 `exact` 或有证明的
+`equivalent`，十条稳定 ID 的 `status_authority` 为 `compiler`。旧名称配置只保留兼容 fallback，
+不再参与这十条正式绑定的执行。新增 `modifier.passive.v2` 证明六条真实 FeatureSpec 在能力
+注册前全部 partial、注册后无需修改 specs 即全部 full，并进入
+`feature_runtime_registry` 与 `combat_start_modifiers` 两个生产投影。
+
 ## 分层
 
 ```text
@@ -34,7 +55,7 @@ CapabilityDescriptor 记录：
 - production status 与证据测试；
 - 已知限制。
 
-只有 `production_closed` capability 可以让 clause 参与自动 `full`。当前目录包含 28 个 operator capability，其中包含成长授予、资源、被动修正、移动/视线、伤害/治疗、防御、状态、计时 modifier、反应窗口和部分施法上下文能力。施法上下文和目标情报仍明确标记为 `production_partial`，不会被编译器误报为 full。
+只有 `production_closed` capability 可以让 clause 参与自动 `full`。当前目录包含 34 个 descriptor，覆盖成长授予、资源、被动修正、移动/视线、伤害/治疗、防御、状态、计时 modifier、zero-HP、反应窗口和部分施法上下文能力。施法上下文和目标情报仍明确标记为 `production_partial`，不会被编译器误报为 full。
 
 ## 编译结果
 
@@ -65,7 +86,7 @@ CapabilityDescriptor 记录：
 - legacy adapter 标记
 - compiler fingerprint
 
-审计中已有 10 条 parity 成功的特性切换为 compiler authority；另有 30 条 full 特性进入 shadow parity 试点。正式 499 条状态仍保持 `full 310 / partial 128 / dm_only 61`，没有因为 shadow 编译器而回退。
+审计中只有十条真实 authored IR 且逐字段 parity/生产回归通过的特性切换为 compiler authority；其余 legacy/结构 IR 为 `shadow_candidate` 或 `legacy`。正式 499 条状态仍保持 `full 310 / partial 128 / dm_only 61`，没有因为编译器改变正式分母或状态。
 
 ## 后续边界
 

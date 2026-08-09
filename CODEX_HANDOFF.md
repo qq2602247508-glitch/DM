@@ -1,5 +1,42 @@
 # 2026-08-09 长执行检查点：Feature IR 自动装配与拓展包导入基础
 
+- 本轮生产化硬化已在当前工作树完成实现，尚未分离提交。严格门禁已通过：后端全量
+  `backend/.venv/bin/pytest -q backend/tests`、新增源码/测试 Ruff、compileall 和
+  `git diff --check`；正式审计仍固定为 `full 310 / partial 128 / dm_only 61`，总数 499。
+- 新增 `domain/feature_operators.py` 的 `OperatorContract`：34 个 operator 都有稳定 contract
+  version、required/optional 参数、精确类型、enum、数值边界、互斥/条件必填、兼容 trigger/
+  condition/target/duration/action/resource、materializer 和 capability 绑定。未知参数、空参数、
+  错误类型、可执行/导入 payload 均 fail-closed；`authored_ir`/`verified_mapping` 才能自动 full。
+- `CapabilityDescriptor` 已禁止 `production_closed` wildcard，并要求 contract/materializer/evidence
+  一致。默认目录现有 34 个 descriptor，施法上下文/目标情报等不完整能力仍为
+  `production_partial`。
+- 新增真实 `MaterializerRegistry`：operator 参数只投影到现有 advancement、资源、角色
+  `feature_runtime`、移动/视线、法术伤害/治疗和 zero-HP consumer 的 canonical 字段；每个输出
+  通过 block validator，带稳定来源、capability version、持久化位置和 execution status。
+- 新增 10 条 authored Feature IR 稳定 ID，并在 core/subclass runtime registry 中优先使用编译/
+  物化结果；旧名称配置仅保留兼容 fallback，不再参与这十条正式绑定的执行。字段级 parity 报告
+  为 exact/equivalent 全通过，十条 status_authority 均为 `compiler`：
+  `dnd2024.core.druid.druidic`、`dnd2024.core.rogue.thieves-cant`、
+  `dnd2024.core.warlock.contact-patron`、`dnd2024.core.ranger.roving`、
+  `dnd2024.core.ranger.wild-senses`、`dnd2024.subclass.rogue.thief.second-story-work`、
+  `dnd2024.subclass.cleric.life.disciple-of-life`、
+  `dnd2024.subclass.wizard.evoker.empowered-evocation`、
+  `dnd2024.subclass.wizard.evoker.potent-cantrip`、
+  `dnd2024.subclass.paladin.ancients.undying-sentinel`。
+- `FeaturePackImporter` 现在把 trusted apply 写入带 runtime contracts 的本地
+  `FeaturePackRegistry`，支持 reload、稳定 feature lookup、character pack/version pin、重复 apply
+  幂等、版本 fingerprint 冲突、真实 clause diff 和 breaking migration plan；partial/manual/draft
+  只可登记，不能进入 execution lookup。
+- 演示包已重写为真实参数，仍严格 `18 full / 4 partial / 2 manual`；18 条全部 materialize/
+  validator 通过。新增真实扇出 capability `modifier.passive.v2`，六条 authored FeatureSpec
+  在注册前均 partial，注册后均 full，并经 `feature_runtime_registry` 与 `combat_start_modifiers`
+  两个生产投影验证。
+- 新机器报告：`reports/feature-operator-contracts-2026-08-09.json`、
+  `reports/feature-ir-semantic-parity-2026-08-09.json`、
+  `reports/feature-ir-production-fanout-2026-08-09.json`，以及更新后的 capability/pack/parity
+  报告。报告生成器连续两次运行 hash 一致。
+- 必须继续保留且不得暂存/提交：`backend/tests/integrations/`、`backend/tests/ollama.py`。
+
 - 本轮全程单线程，未创建、调用、委托或等待任何子代理。正式固定审计仍为 499 条：
   `full 310 / partial 128 / dm_only 61`，没有因为 shadow 编译器而回退正式状态。
 - 新增严格 `feature-ir-1`：FeatureSpec、Clause、Effect、Condition、Input、Resource 和 Target
