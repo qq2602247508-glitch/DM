@@ -433,7 +433,11 @@ def audit() -> dict[str, Any]:
 
     for row in rows:
         if row.get("formal_ir") and row.get("compiler_status") == "full":
-            row["status_authority"] = "compiler"
+            row["status_authority"] = (
+                "compiler"
+                if row.get("source_trust") == "authored_ir"
+                else "verified_mapping"
+            )
         elif row.get("ir_available"):
             row["status_authority"] = "shadow_candidate"
 

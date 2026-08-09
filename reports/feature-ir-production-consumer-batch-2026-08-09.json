@@ -1,0 +1,45 @@
+{
+  "actual_new_full": 2,
+  "after_status_counts": {
+    "dm_only": 61,
+    "full": 312,
+    "partial": 126
+  },
+  "audit_total": 499,
+  "batch_id": "production_consumer_batch_I",
+  "before_status_counts": {
+    "dm_only": 61,
+    "full": 310,
+    "partial": 128
+  },
+  "candidate_clusters": [
+    "targeted_attack_window",
+    "resource_lifecycle_trigger"
+  ],
+  "candidate_feature_ids": [
+    "class-feature:vengeance:vow-of-enmity",
+    "class-feature:vengeance:soul-of-vengeance"
+  ],
+  "demo_counts": {
+    "full": 18,
+    "invalid": 0,
+    "manual": 2,
+    "partial": 4
+  },
+  "fanout_count": 6,
+  "feature_name_branch_count": 65,
+  "production_consumers": [
+    "after_zero_hp_target_retarget_resource_cas",
+    "generic_triggered_attack_window_and_player_attack"
+  ],
+  "production_tests": [
+    "backend/tests/test_feature_ir_production_hardening.py::test_vengeance_mapping_closes_existing_trigger_effect_contract",
+    "backend/tests/test_triggered_attack_windows.py::test_soul_of_vengeance_uses_marked_target_state_and_any_enemy_attack"
+  ],
+  "schema_version": "feature-ir-production-consumer-batch-1",
+  "source_trust": {
+    "class-feature:vengeance:soul-of-vengeance": "verified_mapping",
+    "class-feature:vengeance:vow-of-enmity": "verified_mapping"
+  },
+  "stop_reason": "remaining candidates require attack-rider, forced-movement, multi-target-state, target-information or spellbook producers"
+}

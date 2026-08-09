@@ -1,18 +1,18 @@
 {
   "audit_status_counts": {
     "dm_only": 61,
-    "full": 310,
-    "partial": 128
+    "full": 312,
+    "partial": 126
   },
   "compiler_pilot_count": 10,
   "compiler_status_counts": {
-    "full": 10,
+    "full": 12,
     "invalid": 129,
     "partial": 171
   },
   "formal_semantic_parity": {
     "all_passed": true,
-    "feature_count": 10,
+    "feature_count": 12,
     "rows": [
       {
         "feature_id": "dnd2024.core.druid.druidic",
@@ -1163,6 +1163,80 @@
         "materialized": true,
         "production_test": "formal_feature_runtime_regression",
         "status": "equivalent"
+      },
+      {
+        "feature_id": "dnd2024.subclass.paladin.vengeance.vow-of-enmity",
+        "feature_name": "仇敌誓言",
+        "fields": {
+          "verified_runtime_registry": {
+            "ir": {
+              "feature_id": "dnd2024.subclass.paladin.vengeance.vow-of-enmity",
+              "source_trust": "verified_mapping"
+            },
+            "legacy": {
+              "advancement": null,
+              "attack_action_count": null,
+              "combat_defenses": [],
+              "combat_modifiers": [],
+              "movement_modes": [],
+              "resources": {}
+            },
+            "proof": "verified_mapping IR fingerprint is bound to the existing typed runtime registry; the production registry remains the authority until a direct materializer parity proof exists",
+            "status": "equivalent"
+          }
+        },
+        "ir_contract": {
+          "feature_id": "dnd2024.subclass.paladin.vengeance.vow-of-enmity",
+          "source_trust": "verified_mapping"
+        },
+        "legacy_contract": {
+          "advancement": null,
+          "attack_action_count": null,
+          "combat_defenses": [],
+          "combat_modifiers": [],
+          "movement_modes": [],
+          "resources": {}
+        },
+        "materialized": false,
+        "production_test": "verified_mapping_runtime_regression",
+        "status": "equivalent"
+      },
+      {
+        "feature_id": "dnd2024.subclass.paladin.vengeance.soul-of-vengeance",
+        "feature_name": "复仇之魂",
+        "fields": {
+          "verified_runtime_registry": {
+            "ir": {
+              "feature_id": "dnd2024.subclass.paladin.vengeance.soul-of-vengeance",
+              "source_trust": "verified_mapping"
+            },
+            "legacy": {
+              "advancement": null,
+              "attack_action_count": null,
+              "combat_defenses": [],
+              "combat_modifiers": [],
+              "movement_modes": [],
+              "resources": {}
+            },
+            "proof": "verified_mapping IR fingerprint is bound to the existing typed runtime registry; the production registry remains the authority until a direct materializer parity proof exists",
+            "status": "equivalent"
+          }
+        },
+        "ir_contract": {
+          "feature_id": "dnd2024.subclass.paladin.vengeance.soul-of-vengeance",
+          "source_trust": "verified_mapping"
+        },
+        "legacy_contract": {
+          "advancement": null,
+          "attack_action_count": null,
+          "combat_defenses": [],
+          "combat_modifiers": [],
+          "movement_modes": [],
+          "resources": {}
+        },
+        "materialized": false,
+        "production_test": "verified_mapping_runtime_regression",
+        "status": "equivalent"
       }
     ],
     "schema_version": "feature-ir-semantic-parity-2"
@@ -1433,7 +1507,7 @@
     }
   ],
   "schema_version": "feature-ir-parity-2",
-  "selected_parity_count": 10,
+  "selected_parity_count": 12,
   "selected_parity_rows": [
     {
       "compiler_status": "full",
@@ -1444,6 +1518,32 @@
       "legacy_adapter_used": false,
       "legacy_status": "full",
       "pilot_authority": "compiler",
+      "pilot_compile_status": "full",
+      "runtime_sections": [],
+      "status_authority": "compiler"
+    },
+    {
+      "compiler_status": "full",
+      "feature_id": "dnd2024.subclass.paladin.vengeance.vow-of-enmity",
+      "feature_name": "仇敌誓言 Vow of",
+      "fingerprint": "4d2b57d1168e94a130c82e9fba831d03e712ca034383d768ab092fb10d686417",
+      "formal_ir": true,
+      "legacy_adapter_used": false,
+      "legacy_status": "full",
+      "pilot_authority": "verified_mapping",
+      "pilot_compile_status": "full",
+      "runtime_sections": [],
+      "status_authority": "compiler"
+    },
+    {
+      "compiler_status": "full",
+      "feature_id": "dnd2024.subclass.paladin.vengeance.soul-of-vengeance",
+      "feature_name": "复仇之魂 Soul of",
+      "fingerprint": "58f4a8f892ee86b22179ce5eb82900a64d89a1c70cce7294e3c93686505995b5",
+      "formal_ir": true,
+      "legacy_adapter_used": false,
+      "legacy_status": "full",
+      "pilot_authority": "verified_mapping",
       "pilot_compile_status": "full",
       "runtime_sections": [],
       "status_authority": "compiler"

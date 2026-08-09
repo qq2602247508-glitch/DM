@@ -129,7 +129,11 @@ def main() -> int:
                         "legacy_adapter_used": result.legacy_adapter_used,
                         "fingerprint": result.fingerprint,
                         "pilot_authority": (
-                            "compiler"
+                            (
+                                "compiler"
+                                if formal_spec.source_trust == "authored_ir"
+                                else "verified_mapping"
+                            )
                             if formal_spec is not None
                             else "shadow_candidate"
                         ),
@@ -161,6 +165,52 @@ def main() -> int:
         REPORT_DIR / "feature-ir-semantic-parity-2026-08-09.json",
         semantic_parity,
     )
+    demo_manifest = load_feature_pack(DEMO_PACK)
+    demo_result = FeaturePackImporter(compiler=FeatureCompiler(catalog)).dry_run(
+        demo_manifest
+    )
+    _write(
+        REPORT_DIR / "feature-ir-production-consumer-batch-2026-08-09.json",
+        {
+            "schema_version": "feature-ir-production-consumer-batch-1",
+            "batch_id": "production_consumer_batch_I",
+            "audit_total": audit_report["scope"]["total_features"],
+            "before_status_counts": {
+                "full": 310,
+                "partial": 128,
+                "dm_only": 61,
+            },
+            "after_status_counts": audit_report["status_counts"],
+            "candidate_clusters": [
+                "targeted_attack_window",
+                "resource_lifecycle_trigger",
+            ],
+            "candidate_feature_ids": [
+                "class-feature:vengeance:vow-of-enmity",
+                "class-feature:vengeance:soul-of-vengeance",
+            ],
+            "actual_new_full": 2,
+            "source_trust": {
+                "class-feature:vengeance:vow-of-enmity": "verified_mapping",
+                "class-feature:vengeance:soul-of-vengeance": "verified_mapping",
+            },
+            "production_consumers": [
+                "after_zero_hp_target_retarget_resource_cas",
+                "generic_triggered_attack_window_and_player_attack",
+            ],
+            "production_tests": [
+                "backend/tests/test_feature_ir_production_hardening.py::test_vengeance_mapping_closes_existing_trigger_effect_contract",
+                "backend/tests/test_triggered_attack_windows.py::test_soul_of_vengeance_uses_marked_target_state_and_any_enemy_attack",
+            ],
+            "fanout_count": 6,
+            "demo_counts": demo_result.counts,
+            "feature_name_branch_count": _feature_name_branch_count(),
+            "stop_reason": (
+                "remaining candidates require attack-rider, forced-movement, "
+                "multi-target-state, target-information or spellbook producers"
+            ),
+        },
+    )
     _write(
         REPORT_DIR / "feature-ir-parity-2026-08-09.json",
         {
@@ -179,10 +229,6 @@ def main() -> int:
         },
     )
 
-    demo_manifest = load_feature_pack(DEMO_PACK)
-    demo_result = FeaturePackImporter(compiler=FeatureCompiler(catalog)).dry_run(
-        demo_manifest
-    )
     demo_materialized: dict[str, dict[str, Any]] = {}
     demo_consumer_contracts: dict[str, dict[str, Any]] = {}
     demo_readiness_rows: list[dict[str, Any]] = []

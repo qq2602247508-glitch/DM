@@ -16,6 +16,7 @@ from dnd_dm_assistant.application.feature_pack_importer import (
     load_feature_pack,
 )
 from dnd_dm_assistant.application.feature_semantic_parity import formal_semantic_parity
+from dnd_dm_assistant.domain.feature_blocks import feature_trigger_block_errors
 from dnd_dm_assistant.domain.feature_capabilities import (
     CapabilityCatalog,
     default_capability_catalog,
@@ -166,9 +167,9 @@ def test_empty_unknown_and_executable_operator_parameters_fail_closed() -> None:
     assert any("executable" in item for item in result.blockers)
 
 
-def test_formal_ten_have_field_parity_and_compiler_authority() -> None:
+def test_formal_and_verified_mappings_have_parity_and_authority() -> None:
     report = formal_semantic_parity()
-    assert report["feature_count"] == 10
+    assert report["feature_count"] == 12
     assert report["all_passed"] is True
     assert all(row["status"] in {"exact", "equivalent"} for row in report["rows"])
 
@@ -301,3 +302,14 @@ def test_feature_spec_rejects_unknown_top_level_fields() -> None:
     value["python"] = "import os"
     with pytest.raises(FeatureIRValidationError, match="unknown fields"):
         FeatureSpec.from_dict(value)
+
+
+def test_vengeance_mapping_closes_existing_trigger_effect_contract() -> None:
+    from dnd_dm_assistant.domain.advancement_choices import SUBCLASS_FEATURE_RUNTIME_CONFIGS
+
+    vow_trigger = SUBCLASS_FEATURE_RUNTIME_CONFIGS["仇敌誓言"]["triggers"][0]
+    assert feature_trigger_block_errors(vow_trigger) == ()
+    vengeance_trigger = SUBCLASS_FEATURE_RUNTIME_CONFIGS["复仇之魂"]["triggers"][0]
+    assert vengeance_trigger["event"] == "after_enemy_attack"
+    assert vengeance_trigger["required_actor_state_key"] == "vow_of_enmity_target_id"
+    assert vengeance_trigger["automation_status"] == "full"

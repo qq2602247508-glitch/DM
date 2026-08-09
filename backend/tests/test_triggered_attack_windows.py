@@ -261,3 +261,115 @@ def test_triggered_attack_accept_binds_real_reaction_and_attack_d20(client: Test
     )
     assert resolved["result_json"]["action_window"]["status"] == "resolved"
     assert resolved["result_json"]["action_window"]["decision"] == "accept"
+
+
+def test_soul_of_vengeance_uses_marked_target_state_and_any_enemy_attack(
+    client: TestClient,
+) -> None:
+    campaign = client.post("/api/v1/campaigns", json={"name": "Vengeance"}).json()
+    base = f"/api/v1/campaigns/{campaign['id']}"
+    scene = client.post(f"{base}/scenes", json={"name": "Vengeance room"}).json()
+    assert (
+        client.post(
+            f"{base}/scenes/{scene['id']}/grid",
+            json={"width": 6, "height": 4, "cell_size_ft": 5, "mode": "combat"},
+        ).status_code
+        == 201
+    )
+    combat = client.post(
+        f"{base}/combats", json={"name": "Vengeance combat", "scene_id": scene["id"]}
+    ).json()
+    attacker = client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "仇敌",
+            "entity_type": "monster",
+            "initiative": 20,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {
+                "disposition": "enemy",
+                "grid_position": {"row": 1, "col": 2},
+            },
+        },
+    ).json()
+    defender = client.post(
+        f"{base}/combats/{combat['id']}/combatants",
+        json={
+            "display_name": "复仇圣武士",
+            "entity_type": "character",
+            "initiative": 10,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {
+                "disposition": "ally",
+                "grid_position": {"row": 1, "col": 1},
+                "vow_of_enmity_target_id": attacker["id"],
+                "feature_runtime": {
+                    "triggers": [
+                        {
+                            "id": "soul_of_vengeance:triggered_attack",
+                            "kind": "triggered_attack",
+                            "event": "after_enemy_attack",
+                            "required_actor_state_key": "vow_of_enmity_target_id",
+                            "action_cost": "reaction",
+                            "reaction_trigger": "仇敌誓言目标发动攻击且位于你的武器触及内",
+                            "target_policy": {
+                                "mode": "event_actor",
+                                "range_ft": "weapon_reach",
+                                "requires_visible_or_audible": True,
+                            },
+                            "attack_profile": {"mode": "melee_weapon_only"},
+                            "runtime_execution": {
+                                "status": "ready",
+                                "consumer": "generic_triggered_attack_window_and_player_attack",
+                            },
+                            "automation_status": "full",
+                        }
+                    ]
+                },
+                "actions": [
+                    {
+                        "name": "长剑",
+                        "is_weapon_attack": True,
+                        "melee_weapon_attack": True,
+                        "range_ft": 5,
+                        "description": "近战武器攻击",
+                    }
+                ],
+            },
+        },
+    ).json()
+    attack = client.post(
+        f"{base}/combats/{combat['id']}/actions/confirm",
+        headers={"X-Request-ID": "vengeance-parent"},
+        json={
+            "action_type": "damage",
+            "actor_combatant_id": attacker["id"],
+            "actor_version": attacker["version"],
+            "target_combatant_id": defender["id"],
+            "target_version": defender["version"],
+            "action_cost": "none",
+            "action_name": "仇敌攻击",
+            "amount": 2,
+            "damage_type": "slashing",
+            "is_attack": True,
+            "is_weapon_attack": True,
+            "attack_range_ft": 5,
+            "attack_roll_total": 20,
+            "idempotency_key": "vengeance-parent-command",
+        },
+    )
+    assert attack.status_code == 200, attack.text
+    actions = client.get(f"{base}/combats/{combat['id']}/actions").json()["items"]
+    windows = [
+        item
+        for item in actions
+        if item["action_type"] == "triggered_attack_window"
+        and item["result_json"]["action_window"]["feature_id"]
+        == "soul_of_vengeance:triggered_attack"
+    ]
+    assert len(windows) == 1
+    metadata = windows[0]["result_json"]["action_window"]
+    assert metadata["trigger_event"] == "after_enemy_attack"
+    assert metadata["candidate_target_ids"] == [attacker["id"]]
