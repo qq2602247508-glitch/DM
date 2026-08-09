@@ -28,6 +28,12 @@ def authored_ir_runtime_definition(
     spec = formal_feature_spec_for_definition(definition)
     if spec is None:
         return None
+    # verified_mapping entries are intentionally audited against an existing
+    # typed runtime registry.  They carry IR fingerprints and source trust,
+    # but the registry remains the production authority until a materializer
+    # projection is proven field-for-field equivalent.
+    if spec.source_trust != "authored_ir":
+        return None
     result = _compiler().compile(spec)
     if result.compile_status != "full":
         return None

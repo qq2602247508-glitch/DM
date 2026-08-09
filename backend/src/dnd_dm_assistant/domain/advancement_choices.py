@@ -5563,6 +5563,38 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS["仇敌誓言"] = {
     "requires_dm_adjudication": False,
 }
 
+SUBCLASS_FEATURE_RUNTIME_CONFIGS["复仇之魂"] = {
+    "combat_start": {"modifiers": [], "defenses": []},
+    "resources": {},
+    "actions": {},
+    "triggers": [
+        {
+            "id": "soul_of_vengeance:triggered_attack",
+            "kind": "triggered_attack",
+            "event": "after_enemy_attack",
+            "required_actor_state_key": "vow_of_enmity_target_id",
+            "action_cost": "reaction",
+            "reaction_trigger": "仇敌誓言目标发动攻击且位于你的武器触及内",
+            "target_policy": {
+                "mode": "event_actor",
+                "range_ft": "weapon_reach",
+                "requires_visible_or_audible": True,
+            },
+            "attack_profile": {"mode": "melee_weapon_only"},
+            "runtime_execution": {
+                "status": "ready",
+                "consumer": "generic_triggered_attack_window_and_player_attack",
+                "persistence": "combat_action_window_and_cas",
+            },
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+        }
+    ],
+    "attack_riders": [],
+    "automation_status": "full",
+    "requires_dm_adjudication": False,
+}
+
 SUBCLASS_FEATURE_RUNTIME_CONFIGS["圣洁武器"] = {
     "combat_start": {"modifiers": [], "defenses": []},
     "resources": {},

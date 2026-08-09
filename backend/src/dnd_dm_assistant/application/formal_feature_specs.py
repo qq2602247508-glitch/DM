@@ -26,6 +26,7 @@ def _feature(
     level: int,
     subclass_name: str | None = None,
     source_record_id: str | None = None,
+    source_trust: str = "authored_ir",
     clauses: list[dict[str, Any]],
 ) -> FeatureSpec:
     return FeatureSpec.from_dict(
@@ -38,7 +39,7 @@ def _feature(
             "ruleset_version": RULESET_VERSION,
             "source_record_id": source_record_id or feature_id,
             "source_name": source_name,
-            "source_trust": "authored_ir",
+            "source_trust": source_trust,
             "localized_names": {"zh-CN": source_name},
             "class_name": class_name,
             "subclass_name": subclass_name,
@@ -419,6 +420,95 @@ def formal_feature_specs() -> tuple[FeatureSpec, ...]:
                 )
             ],
         ),
+        _feature(
+            "dnd2024.subclass.paladin.vengeance.vow-of-enmity",
+            source_name="仇敌誓言",
+            class_name="圣武士",
+            subclass_name="复仇之誓",
+            level=3,
+            source_record_id="verified:vow-of-enmity",
+            source_trust="verified_mapping",
+            clauses=[
+                _clause(
+                    "targeted-advantage",
+                    trigger="action_declared",
+                    activation="explicit_choice",
+                    action_economy="none",
+                    targeting={"kind": "enemy", "parameters": {"range_ft": 30}},
+                    duration="one_minute",
+                    conditions=[{"kind": "visible", "parameters": {}}],
+                    effects=[
+                        {
+                            "operator": "impose_advantage",
+                            "parameters": {
+                                "stat": "attack_roll",
+                                "operation": "advantage",
+                                "scope": "outgoing",
+                                "applies_when": "target_matches_persisted_id",
+                                "id": "vow_of_enmity:attack_advantage",
+                            },
+                        }
+                    ],
+                ),
+                _clause(
+                    "retarget-recovery",
+                    trigger="zero_hp",
+                    effects=[
+                        {
+                            "operator": "restore_resource",
+                            "parameters": {
+                                "resource_key": "channel_divinity",
+                                "operation": "set_to_max",
+                                "amount": 1,
+                            },
+                        }
+                    ],
+                ),
+            ],
+        ),
+        _feature(
+            "dnd2024.subclass.paladin.vengeance.soul-of-vengeance",
+            source_name="复仇之魂",
+            class_name="圣武士",
+            subclass_name="复仇之誓",
+            level=15,
+            source_record_id="verified:soul-of-vengeance",
+            source_trust="verified_mapping",
+            clauses=[
+                _clause(
+                    "triggered-reaction-attack",
+                    activation="automatic",
+                    action_economy="reaction",
+                    targeting={
+                        "kind": "enemy",
+                        "parameters": {"range": "weapon_reach"},
+                    },
+                    duration="current_turn",
+                    trigger="action_resolved",
+                    conditions=[
+                        {"kind": "target_matches_persisted_id", "parameters": {}}
+                    ],
+                    effects=[
+                        {
+                            "operator": "create_triggered_attack_window",
+                            "parameters": {
+                                "window_kind": "soul_of_vengeance",
+                                "parent_action": "enemy_attack",
+                                "target_policy": {
+                                    "mode": "event_actor",
+                                    "range_ft": "weapon_reach",
+                                    "requires_visible_or_audible": True,
+                                },
+                                "expires": "current_turn",
+                                "reaction_type": "reaction",
+                                "attack_profile": {"mode": "melee_weapon_only"},
+                                "id": "soul_of_vengeance:triggered_attack",
+                            },
+                        }
+                    ],
+                )
+            ],
+        ),
     )
 
 
@@ -433,6 +523,8 @@ _ALIASES: dict[tuple[str, str | None, str], str] = {
     ("法师", "塑能师", "强效塑能"): "dnd2024.subclass.wizard.evoker.empowered-evocation",
     ("法师", "塑能师", "强力戏法"): "dnd2024.subclass.wizard.evoker.potent-cantrip",
     ("圣武士", "古贤之誓", "不灭哨卫"): "dnd2024.subclass.paladin.ancients.undying-sentinel",
+    ("圣武士", "复仇之誓", "仇敌誓言"): "dnd2024.subclass.paladin.vengeance.vow-of-enmity",
+    ("圣武士", "复仇之誓", "复仇之魂"): "dnd2024.subclass.paladin.vengeance.soul-of-vengeance",
 }
 
 _SOURCE_ALIASES: dict[str, str] = {
@@ -441,6 +533,8 @@ _SOURCE_ALIASES: dict[str, str] = {
     "Empowered Evocation": "强效塑能",
     "Potent Cantrip": "强力戏法",
     "Undying": "不灭哨卫",
+    "Vow of": "仇敌誓言",
+    "Soul of": "复仇之魂",
 }
 
 

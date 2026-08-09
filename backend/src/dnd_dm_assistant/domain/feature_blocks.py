@@ -48,6 +48,8 @@ TRIGGER_EFFECT_KINDS = frozenset(
         "grant_temporary_hp",
         "restore_hit_points_if_bloodied",
         "grant_feature_state_if_missing",
+        "restore_resource",
+        "clear_feature_state",
     }
 )
 RESOURCE_LIFECYCLE_EVENTS = frozenset(
@@ -257,6 +259,17 @@ def feature_trigger_block_errors(trigger: Mapping[str, Any]) -> tuple[str, ...]:
                     not isinstance(minimum, int) or isinstance(minimum, bool) or minimum < 0
                 ):
                     errors.append("restore_hit_points_if_bloodied.minimum is invalid")
+            elif kind == "restore_resource":
+                if not str(effect.get("resource_key") or "").strip():
+                    errors.append("restore_resource.resource_key is required")
+                if str(effect.get("operation") or "") != "add":
+                    errors.append("restore_resource.operation must be add")
+                if not _positive_int(effect.get("amount")):
+                    errors.append("restore_resource.amount must be a positive integer")
+            elif kind == "clear_feature_state" and not str(
+                effect.get("state_key") or ""
+            ).strip():
+                errors.append("clear_feature_state.state_key is required")
             elif kind == "grant_feature_state_if_missing" and not str(
                 effect.get("state_key") or ""
             ).strip():

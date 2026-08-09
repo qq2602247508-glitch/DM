@@ -4097,6 +4097,8 @@ class CombatEngineService:
         reactor: Combatant,
         source_actor: Combatant | None,
         spec: Mapping[str, Any],
+        *,
+        attack_profiles: list[dict[str, Any]] | None = None,
     ) -> list[Combatant]:
         policy = spec.get("target_policy")
         policy = policy if isinstance(policy, Mapping) else {}
@@ -4106,9 +4108,19 @@ class CombatEngineService:
         else:
             candidates = cls._ordered_combatants(session, combat.id)
         range_ft = policy.get("range_ft")
-        range_value = (
-            int(range_ft) if isinstance(range_ft, int) and not isinstance(range_ft, bool) else None
-        )
+        if isinstance(range_ft, int) and not isinstance(range_ft, bool):
+            range_value = int(range_ft)
+        elif range_ft == "weapon_reach":
+            reaches = [
+                int(item.get("range_ft"))
+                for item in (attack_profiles or ())
+                if isinstance(item.get("range_ft"), int)
+                and not isinstance(item.get("range_ft"), bool)
+                and int(item["range_ft"]) > 0
+            ]
+            range_value = max(reaches, default=5)
+        else:
+            range_value = None
         requires_visible = policy.get("requires_visible_or_audible") is True
         result: list[Combatant] = []
         for candidate in candidates:
@@ -4185,6 +4197,13 @@ class CombatEngineService:
                     or context.get("melee_attack") is not True
                 ):
                     continue
+                required_state_key = str(spec.get("required_actor_state_key") or "").strip()
+                if required_state_key:
+                    snapshot = reactor.snapshot_json or {}
+                    if str(snapshot.get(required_state_key) or "") != str(
+                        source_actor.id if source_actor is not None else ""
+                    ):
+                        continue
                 if event == "after_attack_miss" and context.get("attacker_id") != reactor.id:
                     continue
                 resource = spec.get("resource")
@@ -4210,7 +4229,12 @@ class CombatEngineService:
                 if not profiles:
                     continue
                 targets = cls._triggered_attack_targets(
-                    session, combat, reactor, source_actor, spec
+                    session,
+                    combat,
+                    reactor,
+                    source_actor,
+                    spec,
+                    attack_profiles=profiles,
                 )
                 if not targets:
                     continue
@@ -15200,7 +15224,6 @@ class CombatEngineService:
                 actor is not None
                 and command.action_type == "damage"
                 and command.is_attack
-                and attack_hit_status is False
             ):
                 triggered_attack_windows.extend(
                     self._persist_triggered_attack_windows(
@@ -15208,7 +15231,11 @@ class CombatEngineService:
                         combat=combat,
                         transaction=transaction,
                         parent_action=action,
-                        event="after_enemy_attack_miss",
+                        event=(
+                            "after_enemy_attack_miss"
+                            if attack_hit_status is False
+                            else "after_enemy_attack"
+                        ),
                         source_actor=actor,
                         event_context={
                             "defender_id": target.id,
@@ -15219,6 +15246,7 @@ class CombatEngineService:
                                     command.is_weapon_attack and (command.attack_range_ft or 5) <= 5
                                 )
                             ),
+                            "attack_hit": attack_hit_status is True,
                             "causal_depth": causal_depth,
                         },
                     )

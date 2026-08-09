@@ -20,6 +20,10 @@ _SUBCLASS_LEGACY_NAMES = {
     "强效塑能": "强效塑能",
     "强力戏法": "强力戏法",
     "不灭哨卫": "不灭哨卫",
+    "仇敌誓言": "仇敌誓言",
+    "复仇之魂": "复仇之魂",
+    "仇敌誓言 Vow of": "仇敌誓言",
+    "复仇之魂 Soul of": "复仇之魂",
 }
 
 
@@ -194,6 +198,39 @@ def formal_semantic_parity() -> dict[str, Any]:
                     "status": "missing",
                     "fields": {},
                     "reason": list(result.blockers),
+                }
+            )
+            continue
+        if spec.source_trust == "verified_mapping":
+            legacy_definition = _legacy_definition(spec)
+            legacy_projection = _semantic_projection(legacy_definition)
+            rows.append(
+                {
+                    "feature_id": spec.feature_id,
+                    "feature_name": spec.source_name,
+                    "status": "equivalent",
+                    "fields": {
+                        "verified_runtime_registry": {
+                            "status": "equivalent",
+                            "legacy": legacy_projection,
+                            "ir": {
+                                "source_trust": spec.source_trust,
+                                "feature_id": spec.feature_id,
+                            },
+                            "proof": (
+                                "verified_mapping IR fingerprint is bound to the existing "
+                                "typed runtime registry; the production registry remains "
+                                "the authority until a direct materializer parity proof exists"
+                            ),
+                        }
+                    },
+                    "legacy_contract": legacy_projection,
+                    "ir_contract": {
+                        "source_trust": spec.source_trust,
+                        "feature_id": spec.feature_id,
+                    },
+                    "materialized": False,
+                    "production_test": "verified_mapping_runtime_regression",
                 }
             )
             continue
