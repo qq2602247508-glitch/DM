@@ -1,3 +1,36 @@
+# 2026-08-09 长执行检查点：服务端权威成长资产选择与能力授予
+
+- 全程由当前对话单线程完成，未创建、调用、委托或等待任何子代理。固定审计分母仍为 499：
+  `full 268 / partial 157 / dm_only 74` → `full 276 / partial 154 / dm_only 69`，真实净增
+  `full +8`。
+- 新增 full：战士 1「战斗风格」、勇士 7「额外战斗风格」、吟游诗人 10「魔法奥秘」、游侠 2
+  「熟练探险家」、德鲁伊 1「原初职能」、牧师 1「圣职」、法师 1「仪式学家」、勇气学院 3
+  「战争训练」。圣武士/游侠 2「战斗风格」保持 partial：首次专长/职业戏法分支已接线，但以后职业
+  等级的受祝福勇士/德鲁伊教战士戏法替换尚无权威替换事务，不能提前标 full。
+- 通用成长合同扩展为 keyed `selected_asset`、replacement、expertise、language、closed option bundle
+  与 conditional spell grant。战斗风格来自 2024 权威专长目录，验证类别、前置、重复和 Fighter
+  `old->new` 替换；职业授予行 full 与具体风格 feat 的独立 runtime 状态严格分离。
+- 真实消费者：升级事务写入 features/skills/proficiencies/spells；技能专精和原初/圣职技能加值由
+  `skill_modifier` 消费；护甲/武器熟练由装备/攻击规则消费；魔法奥秘沿普通吟游诗人学习与替换路径；
+  仪式学家仅允许法术书中、带 ritual 标签的法师法术未准备仪式施放且不耗法术位；战争训练的已装备、
+  已熟练武器法器由 `spell_economy_service` 校验。
+- 迁移矩阵 schema v2 现在显式区分 `grant_status`、`selected_asset_status`、`effect_status`，并记录权威
+  catalog、输入、duplicate/replacement policy、前置校验、持久化目标和下游 consumer。10 个候选都有
+  稳定 feature ID；参数化测试锁定 8 full / 2 partial。
+- 真实 API 覆盖：战斗风格首次授予、确认、替换与勇士额外风格；熟练探险家专精/语言及真实技能调整值；
+  原初职能 Warden 熟练；未准备法师仪式且幂等重放；勇气诗人武器法器。前端测试验证只提交
+  `feature_choices_by_key`，不再用自由文本伪造战斗风格。
+- 验证：后端全量 pytest 通过；`ruff check backend/src backend/tests`、compileall、
+  `git diff --check` 通过；前端 205 tests、typecheck、lint、production build 全部通过。真实 DM 浏览器
+  以隔离数据库完成“权威防御风格选择 → 预览 → DM 确认 → 刷新角色卡”，最终显示 Lv2、独立
+  `防御Defense` feat 和 3 项武器精通，控制台 error/warn 为 0；临时服务已关闭。
+- 分离提交：合同基础 `d997fad`；生产消费者 `7f79815`；测试/审计/矩阵 `f24e2b6`；前端通用选择器
+  `14cd3d8`；本文档提交随后单独生成。继续保留且不得暂存/提交：
+  `backend/tests/integrations/`、`backend/tests/ollama.py`。
+- 下一批最高收益：先补通用“已授予戏法资产替换”事务，闭合圣武士/游侠两条战斗风格；随后从矩阵的
+  `progression_grant` / `passive_modifier` 选择已有 consumer 的固定熟练、抗性或被动数值批次，避免重新
+  建设攻击骑手、移动、召唤或多阶段反应平台。
+
 # 2026-08-09 长执行检查点：批量迁移矩阵与传奇恩惠授予簇
 
 - 全程单线程执行，未创建、调用、委托或等待任何子代理。固定审计分母仍为 499：

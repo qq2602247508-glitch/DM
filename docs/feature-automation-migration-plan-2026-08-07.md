@@ -285,3 +285,27 @@ manual_boundary 10 / needs_contract_review 6 / missing_source 35`。
 ## 下一批执行门槛
 
 下一批必须从一个模板中选择一组条目，先生成配置和定向测试，再跑499条审计。预审数字是候选分组，不是承诺的新增 `full` 数量。
+
+# 2026-08-09 成长资产选择与能力授予批次
+
+本轮以固定 499 条审计从 `268/157/74` 推进到 `276/154/69`，full 净增 8。新增 full 为战士
+「战斗风格」、勇士「额外战斗风格」、吟游诗人「魔法奥秘」、游侠「熟练探险家」、德鲁伊
+「原初职能」、牧师「圣职」、法师「仪式学家」、勇气学院「战争训练」。圣武士和游侠的职业
+「战斗风格」仍为 partial，因为职业专属两戏法分支的后续升级替换尚未闭合。
+
+本批次扩展既有成长体系而未建立平行执行器：keyed 权威资产、替换、专精、语言、封闭分支与条件法术
+授予都在 advancement preview/confirm 事务中校验并写入角色快照。战斗风格职业行只负责权威授予；
+所选 feat 的具体效果保持自己的 runtime status。魔法奥秘复用普通吟游诗人法术目录/环阶/替换校验，
+仪式学家与战争训练分别接入真实法术经济的未准备仪式和已装备熟练武器法器分支。
+
+矩阵 schema v2 已增加权威 catalog、selected asset kind、grant/asset/effect 三层状态、duplicate / replacement
+policy、前置校验、持久化目标和消费者证据。参数化测试固定 10 个稳定 feature ID、8 full 和 2 partial；
+代表性 API 覆盖战斗风格、熟练探险家、原初职能、仪式与武器法器。前端通用选择器从后端目录呈现
+战斗风格、封闭选项、语言、专精和戏法，并提交 `feature_choices_by_key`。
+
+验证证据：后端全量 pytest、backend Ruff、compileall、diff check 通过；前端 205 tests、typecheck、
+lint、production build 通过；隔离数据库的真实 DM 页面完成战斗风格选择、预览、确认、刷新持久化，
+控制台 error/warn 为 0。代码职责提交为 `d997fad`、`7f79815`、`f24e2b6`、`14cd3d8`。
+
+下一轮优先补通用 selected-cantrip replacement，使圣武士/游侠两条复合战斗风格达到 full；之后继续
+扫描已有消费者的低风险 progression/passive grant 批次，不引入新的大型战斗状态机。
