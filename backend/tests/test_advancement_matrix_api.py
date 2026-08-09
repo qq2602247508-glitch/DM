@@ -1358,3 +1358,102 @@ def test_deft_explorer_and_primal_order_persist_real_sheet_assets(
     druid_preview = matrix_client.post(druid_path, json=druid_body)
     assert druid_preview.status_code == 200, druid_preview.text
     assert {"军用武器", "中甲"} <= set(druid_preview.json()["after"]["proficiencies"])
+
+
+def test_circle_of_land_spell_table_follows_long_rest_terrain_selection(
+    matrix_client: TestClient,
+    matrix_campaign: dict[str, Any],
+) -> None:
+    druid = _create_character(
+        matrix_client,
+        matrix_campaign["id"],
+        class_name="德鲁伊",
+        level=3,
+        experience=2700,
+        suffix="大地结社法术选择",
+        subclass_name="大地结社",
+    )
+    path = _preview_path(matrix_campaign["id"], druid["id"])
+    feature_id = "bdf3e030933d14af5a71b229:3:1"
+    aid_feature_id = "bdf3e030933d14af5a71b229:3:2"
+    request = {
+        "character_version": druid["version"],
+        "class_name": "德鲁伊",
+        "subclass_name": "大地结社",
+        "ability_increases": {"wisdom": 2},
+        "dm_override_reason": "夹具不重复构造德鲁伊四级已有准备法术",
+        "subclass_feature_choices": {
+            feature_id: ["arid"],
+            aid_feature_id: ["point"],
+        },
+    }
+    preview_response = matrix_client.post(path, json=request)
+    assert preview_response.status_code == 200, preview_response.text
+    preview = preview_response.json()
+    land_spells = [
+        item
+        for item in preview["after"]["spells"]
+        if item.get("source_feature_id") == feature_id
+    ]
+    assert {item["name"] for item in land_spells} == {"火焰箭", "燃烧之手", "朦胧术"}
+    assert all(item["selection_value"] == "arid" for item in land_spells)
+    assert "circle_land_terrain_choice" in preview["after"]["feature_runtime"]["actions"]
+
+    confirmed = matrix_client.post(
+        path.replace("/preview", "/confirm"),
+        json={
+            **request,
+            "preview_token": preview["preview_token"],
+            "idempotency_key": "circle-land-spells-0001",
+        },
+    )
+    assert confirmed.status_code == 200, confirmed.text
+    persisted = matrix_client.get(
+        f"/api/v1/campaigns/{matrix_campaign['id']}/characters/{druid['id']}"
+    ).json()
+    assert {
+        item["name"]
+        for item in persisted["spells"]
+        if item.get("source_feature_id") == feature_id
+    } == {
+        "火焰箭",
+        "燃烧之手",
+        "朦胧术",
+    }
+
+    rest_body = {
+        "rest_type": "long",
+        "duration_minutes": 480,
+        "participants": [
+            {
+                "character_id": druid["id"],
+                "character_version": persisted["version"],
+                "feature_recovery_choices": {
+                    "circle_land_terrain_choice": {"value": "polar"},
+                },
+            }
+        ],
+    }
+    rest_preview = matrix_client.post(
+        f"/api/v1/campaigns/{matrix_campaign['id']}/rests/preview",
+        json=rest_body,
+    )
+    assert rest_preview.status_code == 200, rest_preview.text
+    rest_confirm = matrix_client.post(
+        f"/api/v1/campaigns/{matrix_campaign['id']}/rests/confirm",
+        json={
+            **rest_body,
+            "preview_token": rest_preview.json()["preview_token"],
+            "idempotency_key": "circle-land-spells-rest-0001",
+        },
+    )
+    assert rest_confirm.status_code == 200, rest_confirm.text
+    reconfigured = matrix_client.get(
+        f"/api/v1/campaigns/{matrix_campaign['id']}/characters/{druid['id']}"
+    ).json()
+    assert reconfigured["resources"]["circle_land_terrain"]["selected"] == "polar"
+    assert {
+        item["name"]
+        for item in reconfigured["spells"]
+        if item.get("source_feature_id") == feature_id
+    } == {"冷冻射线", "云雾术", "定身类人"}

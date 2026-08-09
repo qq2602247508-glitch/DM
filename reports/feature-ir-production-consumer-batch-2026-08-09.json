@@ -2,8 +2,8 @@
   "actual_new_full": 2,
   "after_status_counts": {
     "dm_only": 61,
-    "full": 312,
-    "partial": 126
+    "full": 314,
+    "partial": 124
   },
   "audit_total": 499,
   "batch_id": "production_consumer_batch_I",

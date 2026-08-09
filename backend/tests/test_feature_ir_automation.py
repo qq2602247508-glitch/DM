@@ -280,7 +280,7 @@ def test_audit_rows_expose_shadow_fields_without_changing_499_statuses() -> None
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     report = module.audit()
-    assert report["status_counts"] == {"full": 312, "partial": 126, "dm_only": 61}
+    assert report["status_counts"] == {"full": 314, "partial": 124, "dm_only": 61}
     assert report["compiler_pilot"]["count"] == 12
     for row in report["rows"]:
         assert {

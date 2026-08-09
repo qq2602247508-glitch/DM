@@ -2060,7 +2060,7 @@ def test_mercy_harm_rider_binds_die_modifier_and_physician_overlay() -> None:
     assert rider["on_hit"][0]["condition"] == "poisoned"
     contracts = {item["name"]: item for item in registry["feature_contracts"]}
     assert contracts["夺命之手 Hand of Harm"]["automation_status"] == "full"
-    assert contracts["生死之触 Physician's Touch"]["automation_status"] == "partial"
+    assert contracts["生死之触 Physician's Touch"]["automation_status"] == "full"
 
 def test_choice_bound_blessed_and_elemental_fury_features_remain_dm_only() -> None:
     rules = _core_rules()
