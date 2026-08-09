@@ -98,7 +98,10 @@ function CharacterToolkit({
   const fileRef = useRef<HTMLInputElement>(null);
   const ocrFileRef = useRef<HTMLInputElement>(null);
   const [ocrResult, setOcrResult] = useState<CharacterOcrResult | null>(null);
-  const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
+  const [selectedCharacterId, setSelectedCharacterId] = useState<string | null>(null);
+  const selectedCharacter = (characters.data ?? []).find(
+    (character) => character.id === selectedCharacterId,
+  ) ?? null;
   const importCharacters = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     event.target.value = "";
@@ -193,7 +196,7 @@ function CharacterToolkit({
                     aria-label={`打开${character.name}的详细角色卡`}
                     className="rounded-xl border border-ink-700 bg-ink-950/45 p-4 text-left transition hover:border-ember-700/60 hover:bg-ink-950/75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ember-400"
                     key={character.id}
-                    onClick={() => setSelectedCharacter(character)}
+                    onClick={() => setSelectedCharacterId(character.id)}
                     type="button"
                   >
                     <div className="flex items-start gap-3">
@@ -208,7 +211,7 @@ function CharacterToolkit({
             })}
           </div>
           {!characters.isLoading && characters.data?.length === 0 ? <EmptyState title="这个团还没有角色" hint="切换到“创建角色”，按 D&D 5e 2024 向导完成车卡。" /> : null}
-          {selectedCharacter ? <CharacterSheetDetail campaignId={campaignId} character={selectedCharacter} onClose={() => setSelectedCharacter(null)} /> : null}
+          {selectedCharacter ? <CharacterSheetDetail campaignId={campaignId} character={selectedCharacter} onClose={() => setSelectedCharacterId(null)} /> : null}
         </Panel>
         <CompanionPanel campaignId={campaignId} characters={characters.data ?? []} />
       </>

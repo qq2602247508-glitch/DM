@@ -21,6 +21,7 @@ const character: Character = {
 
 const catalog: CharacterOptionsCatalog = {
   edition: 2024, officiality: "official", species: [], backgrounds: [], feats: [],
+  weapons: [], metamagic_options: [],
   skills: ["隐匿", "洞悉", "奥秘", "调查"], languages: [], tools: [],
   enabled_rule_extensions: [], rule_extensions: [],
   classes: [{

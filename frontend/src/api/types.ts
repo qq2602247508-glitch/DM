@@ -310,6 +310,24 @@ export type CharacterOptionsCatalog = {
   backgrounds: CharacterOptionSummary[];
   feats: CharacterOptionSummary[];
   spells: SpellOption[];
+  weapons: Array<{
+    id: string;
+    name: string;
+    english_name: string;
+    category: "simple" | "martial";
+    range_kind: "melee" | "ranged";
+    damage: string;
+    properties: string;
+    mastery: string;
+    source_record_id: string;
+  }>;
+  metamagic_options: Array<{
+    id: string;
+    name: string;
+    english_name: string;
+    sorcery_point_cost: number;
+    source_record_id: string;
+  }>;
   skills: string[];
   languages: string[];
   tools: string[];

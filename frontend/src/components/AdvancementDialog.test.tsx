@@ -97,6 +97,8 @@ describe("AdvancementDialog", () => {
         source_path: "PHB/Feats/Defense",
       }],
       spells: [],
+      weapons: [],
+      metamagic_options: [],
       species: [],
       backgrounds: [],
       skills: [],

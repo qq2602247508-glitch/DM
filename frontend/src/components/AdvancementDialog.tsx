@@ -139,6 +139,12 @@ export function AdvancementDialog({
         (name) => name !== "通用语" && !known.has(name),
       );
     }
+    if (requirement.options_source === "catalog.weapons") {
+      return (catalog.data?.weapons ?? []).map((item) => item.name);
+    }
+    if (requirement.options_source === "catalog.metamagic_options") {
+      return (catalog.data?.metamagic_options ?? []).map((item) => item.name);
+    }
     if (requirement.options_source.startsWith("spells:")) {
       const [, spellClass, rawLevel] = requirement.options_source.split(":");
       return (catalog.data?.spells ?? [])
@@ -457,10 +463,19 @@ export function AdvancementDialog({
                                 value={featureChoicesByKey[requirement.key]?.[0]?.split("->")[0] ?? ""}
                               >
                                 <option value="">不替换</option>
-                                {character.features
+                                {[...character.features, ...character.spells]
                                   .filter((item): item is Record<string, unknown> => {
                                     if (typeof item !== "object" || item === null) return false;
                                     const record = item as Record<string, unknown>;
+                                    if (requirement.selected_asset_kind === "metamagic_option") {
+                                      return record.kind === "metamagic_option";
+                                    }
+                                    if (requirement.selected_asset_kind === "source_bound_cantrip") {
+                                      const source = requirement.key.startsWith("blessed_warrior")
+                                        ? "blessed_warrior_cantrips"
+                                        : "druidic_warrior_cantrips";
+                                      return record.source_feature_id === source;
+                                    }
                                     return record.kind === "feat"
                                       && record.category === requirement.expected_category;
                                   })
