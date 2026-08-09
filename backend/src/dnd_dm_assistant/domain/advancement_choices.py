@@ -47,9 +47,6 @@ HALF_CASTERS = {"圣武士", "游侠", "奇械师"}
 # These counts are stated by the named 2024 feature, rather than guessed from
 # prose. Option membership still comes from the local rule corpus/DM review.
 FEATURE_CHOICE_COUNTS: dict[str, tuple[str, int]] = {
-    "战斗风格": ("fighting_style", 1),
-    "原初职能": ("primal_order", 1),
-    "圣职": ("divine_order", 1),
     "元素之怒": ("elemental_fury", 1),
     "元素狂怒": ("elemental_fury_improvement", 1),
     "受祝击": ("blessed_strikes", 1),
@@ -57,7 +54,6 @@ FEATURE_CHOICE_COUNTS: dict[str, tuple[str, int]] = {
     # Scholar is a one-skill expertise grant.  It intentionally reuses the
     # same generic expertise executor as Rogue/Bard expertise.
     "学者": ("expertise", 1),
-    "魔法奥秘": ("magical_secrets", 2),
     "法术精通": ("spell_mastery", 2),
     "招牌法术": ("signature_spells", 2),
     "玄奥秘法（六环）": ("mystic_arcanum_6", 1),
@@ -77,6 +73,44 @@ CORE_SELECTED_SPELL_GRANTS: dict[str, dict[str, Any]] = {
     }
     for spell_level in (6, 7, 8, 9)
 }
+CORE_SELECTED_SPELL_GRANTS.update(
+    {
+        "primal_order_cantrip": {
+            "count": 1,
+            "allowed_classes": ["德鲁伊"],
+            "exact_level": 0,
+            "grant_class": "owner_class",
+            "always_prepared": True,
+            "conditional_choice": ("primal_order", "magician"),
+        },
+        "divine_order_cantrip": {
+            "count": 1,
+            "allowed_classes": ["牧师"],
+            "exact_level": 0,
+            "grant_class": "owner_class",
+            "always_prepared": True,
+            "conditional_choice": ("divine_order", "thaumaturge"),
+        },
+        "blessed_warrior_cantrips": {
+            "count": 2,
+            "allowed_classes": ["牧师"],
+            "exact_level": 0,
+            "grant_class": "owner_class",
+            "always_prepared": True,
+            "spellcasting_ability": "charisma",
+            "conditional_choice": ("fighting_style", "blessed_warrior"),
+        },
+        "druidic_warrior_cantrips": {
+            "count": 2,
+            "allowed_classes": ["德鲁伊"],
+            "exact_level": 0,
+            "grant_class": "owner_class",
+            "always_prepared": True,
+            "spellcasting_ability": "wisdom",
+            "conditional_choice": ("fighting_style", "druidic_warrior"),
+        },
+    }
+)
 
 # The table reports the total number known. A level that raises this total
 # creates exactly the delta in new selections.
@@ -272,6 +306,11 @@ class ChoiceRequirement:
     reason: str
     target_total: int | None = None
     maximum_spell_level: int | None = None
+    options: tuple[str, ...] = ()
+    selected_asset_kind: str | None = None
+    expected_category: str | None = None
+    duplicate_policy: str | None = None
+    replacement_policy: str | None = None
 
     def as_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -593,6 +632,132 @@ def advancement_choice_requirements(
     level_rule = rule.levels[target_class_level - 1]
     previous_level = target_class_level - 1
     requirements: list[ChoiceRequirement] = []
+
+    if any("战斗风格" in feature for feature in level_rule.features):
+        alternatives = (
+            ("blessed_warrior",) if rule.name == "圣武士" else
+            ("druidic_warrior",) if rule.name == "游侠" else ()
+        )
+        requirements.append(
+            ChoiceRequirement(
+                key="fighting_style",
+                kind="selected_asset",
+                minimum=1,
+                maximum=1,
+                strict=True,
+                options_source="feats:战斗风格",
+                options=alternatives,
+                selected_asset_kind="feat_or_typed_option",
+                expected_category="战斗风格",
+                duplicate_policy="forbid",
+                replacement_policy=(
+                    "replace_on_owner_class_level" if rule.name == "战士" else None
+                ),
+                reason="从权威战斗风格专长目录选择；职业专属戏法分支使用封闭选项。",
+            )
+        )
+
+        if rule.name == "圣武士":
+            requirements.append(
+                ChoiceRequirement(
+                    key="blessed_warrior_cantrips",
+                    kind="feature_option",
+                    minimum=0,
+                    maximum=2,
+                    strict=True,
+                    options_source="spells:牧师:0",
+                    reason="仅选择受祝福的勇士时，必须选择两道不重复牧师戏法。",
+                    maximum_spell_level=0,
+                )
+            )
+        elif rule.name == "游侠":
+            requirements.append(
+                ChoiceRequirement(
+                    key="druidic_warrior_cantrips",
+                    kind="feature_option",
+                    minimum=0,
+                    maximum=2,
+                    strict=True,
+                    options_source="spells:德鲁伊:0",
+                    reason="仅选择德鲁伊教战士时，必须选择两道不重复德鲁伊戏法。",
+                    maximum_spell_level=0,
+                )
+            )
+
+    if rule.name == "战士" and target_class_level > 1:
+        requirements.append(
+            ChoiceRequirement(
+                key="fighting_style_replacement",
+                kind="selected_asset_replacement",
+                minimum=0,
+                maximum=1,
+                strict=True,
+                options_source="feats:战斗风格",
+                selected_asset_kind="feat",
+                expected_category="战斗风格",
+                duplicate_policy="forbid",
+                replacement_policy="old->new",
+                reason="每次获得战士等级时，可将一个已选战斗风格替换为另一个。",
+            )
+        )
+
+    if any("熟练探险家" in feature for feature in level_rule.features):
+        requirements.extend(
+            (
+                ChoiceRequirement(
+                    key="deft_explorer_expertise",
+                    kind="selected_expertise",
+                    minimum=1,
+                    maximum=1,
+                    strict=True,
+                    options_source="character.proficient_skills",
+                    reason="选择一项已熟练且尚未专精的技能。",
+                    duplicate_policy="forbid",
+                ),
+                ChoiceRequirement(
+                    key="deft_explorer_languages",
+                    kind="selected_language",
+                    minimum=2,
+                    maximum=2,
+                    strict=True,
+                    options_source="catalog.languages",
+                    reason="从2024核心语言表选择两门尚未掌握的非通用语。",
+                    duplicate_policy="forbid",
+                ),
+            )
+        )
+
+    for feature_name, key, options, cantrip_key, spell_class in (
+        ("原初职能", "primal_order", ("magician", "warden"), "primal_order_cantrip", "德鲁伊"),
+        ("圣职", "divine_order", ("protector", "thaumaturge"), "divine_order_cantrip", "牧师"),
+    ):
+        if not any(feature_name in feature for feature in level_rule.features):
+            continue
+        requirements.extend(
+            (
+                ChoiceRequirement(
+                    key=key,
+                    kind="selected_option_bundle",
+                    minimum=1,
+                    maximum=1,
+                    strict=True,
+                    options_source=f"feature:{feature_name}",
+                    options=options,
+                    duplicate_policy="forbid",
+                    reason=f"{feature_name}使用封闭分支，并在升级事务中写入全部效果。",
+                ),
+                ChoiceRequirement(
+                    key=cantrip_key,
+                    kind="feature_option",
+                    minimum=0,
+                    maximum=1,
+                    strict=True,
+                    options_source=f"spells:{spell_class}:0",
+                    reason="仅施法分支必须选择一道权威职业戏法。",
+                    maximum_spell_level=0,
+                ),
+            )
+        )
 
     if any("子职" in feature or "子职业" in feature for feature in level_rule.features):
         requirements.append(
@@ -4572,6 +4737,87 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS["月光飞步"] = {
     "requires_dm_adjudication": False,
 }
 
+SUBCLASS_FEATURE_RUNTIME_CONFIGS["战争训练"] = {
+    "combat_start": {"modifiers": [], "defenses": []},
+    "proficiencies": [
+        {
+            "kind": "weapon_group",
+            "name": "军用武器",
+            "operation": "grant",
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+        },
+        {
+            "kind": "armor",
+            "name": "中甲",
+            "operation": "grant",
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+        },
+        {
+            "kind": "armor",
+            "name": "盾牌",
+            "operation": "grant",
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+        },
+    ],
+    "spellcasting": {
+        "kind": "spellcasting_focus_permission",
+        "spell_class": "吟游诗人",
+        "allowed_equipment_kinds": ["weapon"],
+        "requires_weapon_proficiency": True,
+        "runtime_execution": {
+            "status": "ready",
+            "consumer": "spell_economy_service",
+        },
+        "automation_status": "full",
+        "requires_dm_adjudication": False,
+    },
+    "resources": {},
+    "actions": {},
+    "triggers": [],
+    "attack_riders": [],
+    "automation_status": "full",
+    "requires_dm_adjudication": False,
+}
+
+SUBCLASS_FEATURE_RUNTIME_CONFIGS["额外战斗风格"] = {
+    "combat_start": {"modifiers": [], "defenses": []},
+    "advancement": {
+        "kind": "selected_asset_grant",
+        "asset_kind": "feat",
+        "expected_category": "战斗风格",
+        "catalog_source": "feats:战斗风格",
+        "duplicate_policy": "forbid",
+        "choice_requirement": {
+            "key": "additional_fighting_style",
+            "minimum": 1,
+            "maximum": 1,
+            "strict": True,
+            "options_source": "feats:战斗风格",
+            "selected_asset_kind": "feat",
+            "expected_category": "战斗风格",
+            "duplicate_policy": "forbid",
+            "requires_dm_selection": False,
+        },
+        "runtime_execution": {
+            "status": "ready",
+            "consumer": "advancement_service_and_feat_prerequisite_validator",
+            "grant_status": "full",
+            "effect_status": "separate_contract",
+        },
+        "automation_status": "full",
+        "requires_dm_adjudication": False,
+    },
+    "resources": {},
+    "actions": {},
+    "triggers": [],
+    "attack_riders": [],
+    "automation_status": "full",
+    "requires_dm_adjudication": False,
+}
+
 
 def subclass_feature_runtime_definition(
     definition: Mapping[str, Any],
@@ -5642,6 +5888,100 @@ def core_feature_grants(
                 "requires_dm_adjudication": False,
             }
         progression_profile = progression_automation_profile(feature)
+        compact_feature = re.sub(r"\s+", "", feature)
+        if "战斗风格" in compact_feature and rule.name == "战士":
+            registry["advancement"] = {
+                "kind": "selected_asset_grant",
+                "choice_requirement_key": "fighting_style",
+                "request_field": "feature_choices_by_key.fighting_style",
+                "asset_kind": "feat",
+                "authoritative_catalog": "core_feat_rules",
+                "expected_category": "战斗风格",
+                "count": 1,
+                "duplicate_policy": "forbid",
+                "replacement_policy": "replace_on_owner_class_level",
+                "prerequisites": "authoritative_feat_catalog",
+                "persisted_state": "character.features",
+                "selected_asset_runtime": "separate_contract",
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "advancement_service_and_feat_prerequisite_validator",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        elif "熟练探险家" in compact_feature:
+            registry["advancement"] = {
+                "kind": "selected_option_bundle",
+                "choice_requirement_keys": [
+                    "deft_explorer_expertise",
+                    "deft_explorer_languages",
+                ],
+                "operations": ["grant_expertise", "grant_languages"],
+                "authoritative_catalogs": ["character.skills", "core_languages"],
+                "persisted_state": ["character.skills", "character.proficiencies"],
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "advancement_service_and_skill_modifier",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        elif "原初职能" in compact_feature or compact_feature == "圣职":
+            primal = "原初职能" in compact_feature
+            registry["advancement"] = {
+                "kind": "selected_option_bundle",
+                "choice_requirement_keys": [
+                    "primal_order" if primal else "divine_order",
+                    "primal_order_cantrip" if primal else "divine_order_cantrip",
+                ],
+                "options": ["magician", "warden"] if primal else ["protector", "thaumaturge"],
+                "operations": [
+                    "grant_proficiencies",
+                    "grant_selected_cantrip",
+                    "grant_skill_ability_modifier_bonus",
+                ],
+                "authoritative_catalogs": ["class_spell_list", "supported_skills"],
+                "persisted_state": [
+                    "character.features",
+                    "character.proficiencies",
+                    "character.skills",
+                    "character.spells",
+                ],
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "advancement_service_spell_grant_and_skill_modifier",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        elif "魔法奥秘" in compact_feature:
+            registry["advancement"] = {
+                "kind": "spell_list_expansion",
+                "allowed_classes": ["吟游诗人", "牧师", "德鲁伊", "法师"],
+                "applies_to": ["prepared_spell_increase", "prepared_spell_replacement"],
+                "persisted_state": "character.spells",
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "advancement_service_spell_catalog_validator",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        elif "仪式学家" in compact_feature:
+            registry["advancement"] = {
+                "kind": "ritual_spellbook_casting",
+                "spell_source": "wizard_spellbook",
+                "requires_ritual_tag": True,
+                "requires_prepared": False,
+                "consumes_spell_slot": False,
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "spell_economy_service",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
         if progression_profile is not None and progression_profile.choice_key == "epic_boon":
             # The class-table feature is a typed asset grant.  The chosen feat
             # remains a separate persisted runtime contract, whose concrete

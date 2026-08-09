@@ -2463,6 +2463,7 @@ class SpellCastRequest(BaseModel):
     ritual: bool = False
     material_available: bool = True
     concentration: bool = False
+    focus_equipment_id: str | None = Field(default=None, max_length=36)
     preview_token: str | None = None
     idempotency_key: str | None = Field(default=None, min_length=8, max_length=120)
 

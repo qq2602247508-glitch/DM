@@ -62,6 +62,20 @@ def skill_modifier(character: Any, skill: str, ability: str) -> tuple[int, list[
         bonus = proficiency_bonus(int(character.level)) * multiplier
         total += bonus
         reasons.append(f"{'专精' if expertise else '熟练'} {bonus:+d}")
+    if isinstance(skill_data, dict):
+        bonus_ability = str(skill_data.get("bonus_ability_modifier") or "")
+        if bonus_ability in ABILITY_LABELS:
+            minimum = int(skill_data.get("bonus_minimum") or 0)
+            bonus = max(
+                minimum,
+                ability_modifier(
+                    int((character.ability_scores or {}).get(bonus_ability, 10))
+                ),
+            )
+            total += bonus
+            reasons.append(
+                f"{ABILITY_LABELS[bonus_ability]}调整值额外加值 {bonus:+d}"
+            )
     return total, reasons
 
 

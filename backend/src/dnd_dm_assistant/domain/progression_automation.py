@@ -123,7 +123,19 @@ def assign_progression_choices(
     should always submit choices_by_key and never depend on that ordering.
     """
 
-    feature_requirements = [item for item in requirements if item.kind == "feature_option"]
+    feature_requirements = [
+        item
+        for item in requirements
+        if item.kind
+        in {
+            "feature_option",
+            "selected_asset",
+            "selected_asset_replacement",
+            "selected_expertise",
+            "selected_language",
+            "selected_option_bundle",
+        }
+    ]
     requirement_by_key = {str(item.key): item for item in feature_requirements}
     raw_typed = dict(choices_by_key or {})
     unknown = sorted(set(raw_typed) - set(requirement_by_key))
@@ -141,7 +153,10 @@ def assign_progression_choices(
     if legacy:
         cursor = 0
         for requirement in feature_requirements:
-            count = int(requirement.maximum)
+            # The legacy flat payload cannot express which optional typed
+            # requirement a value belongs to.  Consume only mandatory slots;
+            # optional replacements must use the keyed contract.
+            count = int(requirement.maximum) if int(requirement.minimum) > 0 else 0
             assigned[str(requirement.key)] = legacy[cursor : cursor + count]
             cursor += count
         if cursor != len(legacy):
@@ -156,6 +171,14 @@ def assign_progression_choices(
                 f"class feature choice {key} requires {requirement.minimum} to "
                 f"{requirement.maximum} selections"
             )
+        options = {str(item) for item in getattr(requirement, "options", ())}
+        if options and key not in {"fighting_style"}:
+            invalid = sorted(set(selected) - options)
+            if invalid:
+                raise ValueError(
+                    f"class feature choice {key} contains unsupported selections: "
+                    + ", ".join(invalid)
+                )
     return assigned, used_legacy_adapter
 
 
@@ -169,6 +192,7 @@ def apply_progression_choice_grants(
     total_level: int,
     source_record_id: str | None,
     rule_year: str | int,
+    allowed_languages: Iterable[str] = (),
 ) -> dict[str, Any]:
     """Apply reusable sheet mutations for typed advancement choices."""
 
@@ -181,11 +205,28 @@ def apply_progression_choice_grants(
         for item in after_proficiencies
         if isinstance(item, Mapping) and item.get("kind") == "weapon_mastery"
     }
+    language_catalog = {str(item) for item in allowed_languages}
+    existing_languages = {
+        str(item).removeprefix("语言：")
+        for item in after_proficiencies
+        if str(item).startswith("语言：")
+    }
+
+    def grant_skill_bonus(skill_names: Iterable[str]) -> None:
+        for skill in skill_names:
+            current = after_skills.get(skill)
+            existing = dict(current) if isinstance(current, Mapping) else {}
+            after_skills[skill] = {
+                **existing,
+                "bonus_ability_modifier": "wisdom",
+                "bonus_minimum": 1,
+                "bonus_source": "selected_option_bundle",
+            }
     for key, raw_selections in choices_by_key.items():
         selections = [str(item).strip() for item in raw_selections if str(item).strip()]
         for selection in selections:
             effect_status = "dm_only"
-            if key == "expertise":
+            if key in {"expertise", "deft_explorer_expertise"}:
                 current = after_skills.get(selection)
                 if not isinstance(current, Mapping) or not current.get("proficient"):
                     raise ValueError(f"expertise requires an already proficient skill: {selection}")
@@ -193,6 +234,48 @@ def apply_progression_choice_grants(
                     raise ValueError(f"skill already has expertise: {selection}")
                 after_skills[selection] = {**dict(current), "expertise": True}
                 effect_status = "full"
+            elif key == "deft_explorer_languages":
+                if selection == "通用语" or selection not in language_catalog:
+                    raise ValueError(f"unsupported deft explorer language: {selection}")
+                if selection in existing_languages:
+                    raise ValueError(f"language already known: {selection}")
+                after_proficiencies.append(f"语言：{selection}")
+                existing_languages.add(selection)
+                effect_status = "full"
+            elif key == "primal_order":
+                if selection == "warden":
+                    for proficiency in ("军用武器", "中甲"):
+                        if proficiency not in after_proficiencies:
+                            after_proficiencies.append(proficiency)
+                elif selection == "magician":
+                    grant_skill_bonus(("奥秘", "自然"))
+                else:
+                    raise ValueError(f"unsupported primal order: {selection}")
+                effect_status = "full"
+            elif key == "divine_order":
+                if selection == "protector":
+                    for proficiency in ("军用武器", "重甲"):
+                        if proficiency not in after_proficiencies:
+                            after_proficiencies.append(proficiency)
+                elif selection == "thaumaturge":
+                    grant_skill_bonus(("奥秘", "宗教"))
+                else:
+                    raise ValueError(f"unsupported divine order: {selection}")
+                effect_status = "full"
+            elif key in {
+                "primal_order_cantrip",
+                "divine_order_cantrip",
+                "blessed_warrior_cantrips",
+                "druidic_warrior_cantrips",
+            }:
+                # The authoritative spell catalog consumer materializes these
+                # choices.  Keep only one full audit grant for the selected
+                # option bundle rather than duplicating the spell asset here.
+                continue
+            elif key in {"fighting_style", "fighting_style_replacement"}:
+                # The authoritative feat-catalog resolver owns these assets.
+                # It persists the selected feat as an independent contract.
+                continue
             elif key == "weapon_mastery":
                 if selection in existing_masteries:
                     raise ValueError(f"weapon mastery already selected: {selection}")
@@ -205,15 +288,6 @@ def apply_progression_choice_grants(
                     }
                 )
                 existing_masteries.add(selection)
-            elif key == "fighting_style":
-                # Defense is already consumed by the shared AC runtime. Other
-                # styles are persisted but remain explicitly partial/DM-only.
-                compact = "".join(selection.lower().split())
-                effect_status = (
-                    "full"
-                    if compact in {"防御", "defense", "防御defense", "战斗风格防御"}
-                    else "dm_only"
-                )
 
             overall = "full" if effect_status == "full" else "partial"
             grants.append(
