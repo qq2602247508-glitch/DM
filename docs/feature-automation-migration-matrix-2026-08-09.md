@@ -4,50 +4,52 @@
 
 - 矩阵 schema：`feature-automation-migration-plan-2`
 - 总条目：499
-- 当前状态：`{'full': 276, 'dm_only': 69, 'partial': 154}`
-- 预审状态：`{'already_full': 276, 'manual_boundary': 9, 'missing_runtime_contract': 145, 'consumer_partial': 28, 'needs_contract_review': 6, 'missing_source': 35}`
+- 当前状态：`{'full': 310, 'dm_only': 61, 'partial': 128}`
+- 预审状态：`{'already_full': 310, 'manual_boundary': 3, 'missing_runtime_contract': 117, 'consumer_partial': 28, 'needs_contract_review': 6, 'missing_source': 35}`
 
 ## 模板分组
 
 | 模板 | 条目 | 已 full | 缺运行时合同 | 待合同复核 | 消费者不完整 | 人工边界 | 缺源码 |
 |---|---:|---:|---:|---:|---:|---:|---:|
 | 动作经济与触发条件 (`action_trigger`) | 31 | 26 | 4 | 0 | 0 | 1 | 0 |
-| 成长授予/升级选择 (`progression_grant`) | 71 | 69 | 2 | 0 | 0 | 0 | 0 |
+| 成长授予/升级选择 (`progression_grant`) | 71 | 71 | 0 | 0 | 0 | 0 | 0 |
 | 施法框架/法术修改 (`spell_capability`) | 7 | 7 | 0 | 0 | 0 | 0 | 0 |
+| 资源/恢复/频率 (`resource_lifecycle`) | 64 | 48 | 14 | 2 | 0 | 0 | 0 |
 | 命中后骑手 (`attack_rider`) | 13 | 4 | 0 | 0 | 9 | 0 | 0 |
-| 光环/范围被动 (`aura_passive`) | 48 | 8 | 39 | 1 | 0 | 0 | 0 |
-| 伤害/治疗 (`damage_healing`) | 48 | 26 | 21 | 1 | 0 | 0 | 0 |
-| 移动/位移 (`movement`) | 15 | 3 | 12 | 0 | 0 | 0 | 0 |
-| 通用被动/数值修正 (`passive_modifier`) | 79 | 31 | 12 | 0 | 0 | 1 | 35 |
+| 光环/范围被动 (`aura_passive`) | 48 | 12 | 35 | 1 | 0 | 0 | 0 |
+| 伤害/治疗 (`damage_healing`) | 48 | 31 | 16 | 1 | 0 | 0 | 0 |
+| 移动/位移 (`movement`) | 15 | 6 | 9 | 0 | 0 | 0 | 0 |
+| 通用被动/数值修正 (`passive_modifier`) | 79 | 36 | 7 | 0 | 0 | 1 | 35 |
 | 伤害前/防御干预 (`pre_damage_intervention`) | 13 | 5 | 7 | 1 | 0 | 0 | 0 |
-| 资源/恢复/频率 (`resource_lifecycle`) | 64 | 37 | 19 | 2 | 0 | 6 | 0 |
 | 掷骰干预 (`roll_intervention`) | 46 | 27 | 0 | 0 | 19 | 0 | 0 |
-| 状态生命周期 (`state_lifecycle`) | 34 | 19 | 14 | 1 | 0 | 0 | 0 |
+| 状态生命周期 (`state_lifecycle`) | 34 | 20 | 13 | 1 | 0 | 0 | 0 |
 | 召唤/伙伴 (`summon_lifecycle`) | 12 | 7 | 5 | 0 | 0 | 0 | 0 |
-| 目标/范围/豁免组合 (`target_save_status`) | 10 | 4 | 5 | 0 | 0 | 1 | 0 |
-| 0 HP/死亡生命周期 (`zero_hp_intervention`) | 8 | 3 | 5 | 0 | 0 | 0 | 0 |
+| 目标/范围/豁免组合 (`target_save_status`) | 10 | 6 | 3 | 0 | 0 | 1 | 0 |
+| 0 HP/死亡生命周期 (`zero_hp_intervention`) | 8 | 4 | 4 | 0 | 0 | 0 | 0 |
 
 ## 能力簇
 
 | 能力簇 | 总数 | full | 非 full | 本轮可直接迁移 | producer | consumer | 新 UI | 新持久化 |
 |---|---:|---:|---:|---:|:---:|:---:|:---:|:---:|
-| passive_modifier | 79 | 31 | 48 | 0 | 是 | 是 | 是 | 否 |
-| aura_passive | 48 | 8 | 40 | 0 | 是 | 是 | 是 | 是 |
-| resource_lifecycle | 64 | 37 | 27 | 0 | 是 | 是 | 是 | 是 |
-| damage_healing | 48 | 26 | 22 | 0 | 是 | 是 | 是 | 是 |
+| passive_modifier | 79 | 36 | 43 | 0 | 是 | 是 | 是 | 否 |
+| aura_passive | 48 | 12 | 36 | 0 | 是 | 是 | 是 | 是 |
 | roll_intervention | 46 | 27 | 19 | 0 | 是 | 是 | 是 | 是 |
-| state_lifecycle | 34 | 19 | 15 | 0 | 是 | 是 | 是 | 是 |
-| movement | 15 | 3 | 12 | 0 | 是 | 是 | 是 | 是 |
+| damage_healing | 48 | 31 | 17 | 0 | 是 | 是 | 是 | 是 |
+| resource_lifecycle | 56 | 40 | 16 | 0 | 是 | 是 | 是 | 是 |
+| state_lifecycle | 34 | 20 | 14 | 0 | 是 | 是 | 是 | 是 |
 | attack_rider | 13 | 4 | 9 | 0 | 是 | 是 | 是 | 是 |
+| movement | 15 | 6 | 9 | 0 | 是 | 是 | 是 | 是 |
 | pre_damage_intervention | 13 | 5 | 8 | 0 | 是 | 是 | 是 | 是 |
-| target_save_status | 10 | 4 | 6 | 0 | 是 | 是 | 是 | 是 |
 | action_trigger | 30 | 25 | 5 | 0 | 是 | 是 | 是 | 否 |
 | summon_lifecycle | 12 | 7 | 5 | 0 | 是 | 是 | 是 | 是 |
-| zero_hp_intervention | 8 | 3 | 5 | 0 | 是 | 是 | 是 | 是 |
-| advancement_asset_grant:fighting_style | 4 | 2 | 2 | 0 | 是 | 是 | 是 | 否 |
+| target_save_status | 10 | 6 | 4 | 0 | 是 | 是 | 是 | 是 |
+| zero_hp_intervention | 8 | 4 | 4 | 0 | 是 | 是 | 是 | 是 |
 | advancement_asset_grant:epic_boon | 12 | 12 | 0 | 0 | 是 | 是 | 否 | 否 |
+| advancement_asset_grant:fighting_style | 4 | 4 | 0 | 0 | 是 | 是 | 是 | 否 |
 | advancement_asset_grant:growth_option_bundle | 3 | 3 | 0 | 0 | 是 | 是 | 否 | 是 |
+| advancement_asset_grant:metamagic_options | 3 | 3 | 0 | 0 | 是 | 是 | 否 | 是 |
 | advancement_asset_grant:spell_capability | 3 | 3 | 0 | 0 | 是 | 是 | 是 | 是 |
+| advancement_asset_grant:weapon_mastery_loadout | 5 | 5 | 0 | 0 | 是 | 是 | 否 | 是 |
 | progression_grant | 54 | 54 | 0 | 0 | 是 | 是 | 是 | 否 |
 | spell_capability | 3 | 3 | 0 | 0 | 是 | 是 | 是 | 是 |
 

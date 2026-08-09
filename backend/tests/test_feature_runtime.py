@@ -2675,3 +2675,78 @@ def test_elemental_affinity_uses_bound_choice_for_resistance_and_spell_bonus() -
         critical_hit=False,
         used_this_turn=set(),
     ) == []
+
+
+def test_fixed_passive_batch_contracts_and_selected_movement_are_executable() -> None:
+    wild_senses = feature_runtime_definition(
+        feature_name="野性感官",
+        class_name="游侠",
+        class_level=18,
+    )
+    assert wild_senses["combat_start"]["modifiers"][0]["stat"] == "blindsight_ft"
+    registry = compile_feature_runtime_registry(
+        [
+            {
+                "name": "野性感官",
+                "class_name": "游侠",
+                "class_level": 18,
+                "runtime": {"registry": wild_senses},
+            }
+        ]
+    )
+    actor = Combatant(
+        id="wild-senses",
+        entity_type="character",
+        snapshot_json={"feature_runtime": registry},
+    )
+    assert CombatEngineService._blindsight_range_ft(actor) == 30
+
+    aspect = subclass_feature_runtime_definition(
+        {"name": "兽之形貌", "class_name": "野蛮人", "class_level": 6}
+    )
+    assert aspect is not None
+    assert aspect["actions"]["aspect_of_wilds_choice"]["kind"] == "rest_choice"
+    selected = compile_feature_runtime_registry(
+        [
+            {
+                "name": "兽之形貌",
+                "class_name": "野蛮人",
+                "class_level": 6,
+                "runtime": {"registry": aspect},
+            }
+        ],
+        resources={"aspect_of_wilds_choice": {"selected": "panther"}},
+    )
+    assert [item["mode"] for item in selected["combat_start"]["movement_modes"]] == [
+        "climb"
+    ]
+    assert not any(
+        item.get("selection_value") == "salmon"
+        for item in selected["combat_start"]["movement_modes"]
+    )
+
+
+def test_character_card_jump_contract_and_sacred_weapon_contract_are_typed() -> None:
+    second_story = subclass_feature_runtime_definition(
+        {"name": "梁上君子", "class_name": "游荡者", "class_level": 3}
+    )
+    assert second_story is not None
+    jump = second_story["combat_start"]["modifiers"][0]
+    assert jump["stat"] == "jump_ability"
+    assert jump["value_source"] == "dexterity"
+    assert second_story["combat_start"]["movement_modes"][0]["mode"] == "climb"
+
+    sacred = subclass_feature_runtime_definition(
+        {"name": "圣洁武器", "class_name": "圣武士", "class_level": 3}
+    )
+    assert sacred is not None
+    action = sacred["actions"]["sacred_weapon"]
+    assert action["resource_key"] == "channel_divinity"
+    effect = action["effects"][0]
+    assert effect["modifier"] == {
+        "stat": "attack_roll",
+        "operation": "add",
+        "value": 3,
+        "scope": "outgoing",
+    }
+    assert effect["light_radius_ft"] == 20

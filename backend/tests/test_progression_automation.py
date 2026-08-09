@@ -92,7 +92,7 @@ def test_core_contract_counts_move_only_to_evidence_backed_statuses() -> None:
         for level in range(1, 21):
             contract = core_class_level_runtime_contract(rule, level)
             status.update(item["automation_status"] for item in contract["feature_contracts"])
-    assert status == {"full": 186, "partial": 6, "dm_only": 66}
+    assert status == {"full": 191, "partial": 6, "dm_only": 61}
     assert sum(status.values()) == 258
 
 
