@@ -1,0 +1,600 @@
+{
+  "schema_version": "feature-pack-1",
+  "pack_id": "automation-demo",
+  "pack_version": "1.0.0",
+  "ruleset_version": "2024",
+  "namespace": "demo",
+  "display_name": "Feature IR automation demo",
+  "source_metadata": {
+    "source": "test-fixture",
+    "trust": "authored_ir"
+  },
+  "dependencies": [],
+  "compatibility": {
+    "engine": "feature-ir-1"
+  },
+  "migration": {
+    "breaking_change": false
+  },
+  "features": [
+    {
+      "schema_version": "feature-ir-1",
+      "feature_id": "demo:proficiency",
+      "namespace": "demo",
+      "pack_id": "automation-demo",
+      "pack_version": "1.0.0",
+      "ruleset_version": "2024",
+      "source_record_id": "demo:proficiency",
+      "source_name": "Demo Proficiency",
+      "localized_names": {},
+      "class_name": "demo",
+      "subclass_name": null,
+      "level": 1,
+      "source_completeness": "complete",
+      "dependencies": [],
+      "compatibility": {},
+      "clauses": [
+        {
+          "clause_id": "grant",
+          "trigger": "advancement_confirmed",
+          "effects": [{"operator": "grant_proficiency", "parameters": {}}]
+        }
+      ]
+    },
+    {
+      "schema_version": "feature-ir-1",
+      "feature_id": "demo:language",
+      "namespace": "demo",
+      "pack_id": "automation-demo",
+      "pack_version": "1.0.0",
+      "ruleset_version": "2024",
+      "source_record_id": "demo:language",
+      "source_name": "Demo Language",
+      "localized_names": {},
+      "class_name": "demo",
+      "subclass_name": null,
+      "level": 1,
+      "source_completeness": "complete",
+      "dependencies": [],
+      "compatibility": {},
+      "clauses": [
+        {
+          "clause_id": "grant",
+          "trigger": "advancement_confirmed",
+          "effects": [{"operator": "grant_language", "parameters": {}}]
+        }
+      ]
+    },
+    {
+      "schema_version": "feature-ir-1",
+      "feature_id": "demo:spell",
+      "namespace": "demo",
+      "pack_id": "automation-demo",
+      "pack_version": "1.0.0",
+      "ruleset_version": "2024",
+      "source_record_id": "demo:spell",
+      "source_name": "Demo Spell",
+      "localized_names": {},
+      "class_name": "demo",
+      "subclass_name": null,
+      "level": 1,
+      "source_completeness": "complete",
+      "dependencies": [],
+      "compatibility": {},
+      "clauses": [
+        {
+          "clause_id": "grant",
+          "trigger": "advancement_confirmed",
+          "effects": [{"operator": "grant_spell", "parameters": {}}]
+        }
+      ]
+    },
+    {
+      "schema_version": "feature-ir-1",
+      "feature_id": "demo:prepared-spell",
+      "namespace": "demo",
+      "pack_id": "automation-demo",
+      "pack_version": "1.0.0",
+      "ruleset_version": "2024",
+      "source_record_id": "demo:prepared-spell",
+      "source_name": "Demo Prepared Spell",
+      "localized_names": {},
+      "class_name": "demo",
+      "subclass_name": null,
+      "level": 1,
+      "source_completeness": "complete",
+      "dependencies": [],
+      "compatibility": {},
+      "clauses": [
+        {
+          "clause_id": "prepare",
+          "trigger": "advancement_confirmed",
+          "effects": [{"operator": "prepare_spell", "parameters": {}}]
+        }
+      ]
+    },
+    {
+      "schema_version": "feature-ir-1",
+      "feature_id": "demo:restore",
+      "namespace": "demo",
+      "pack_id": "automation-demo",
+      "pack_version": "1.0.0",
+      "ruleset_version": "2024",
+      "source_record_id": "demo:restore",
+      "source_name": "Demo Restore",
+      "localized_names": {},
+      "class_name": "demo",
+      "subclass_name": null,
+      "level": 1,
+      "source_completeness": "complete",
+      "dependencies": [],
+      "compatibility": {},
+      "clauses": [
+        {
+          "clause_id": "restore",
+          "trigger": "long_rest_completed",
+          "effects": [{"operator": "restore_resource", "parameters": {}}]
+        }
+      ]
+    },
+    {
+      "schema_version": "feature-ir-1",
+      "feature_id": "demo:consume",
+      "namespace": "demo",
+      "pack_id": "automation-demo",
+      "pack_version": "1.0.0",
+      "ruleset_version": "2024",
+      "source_record_id": "demo:consume",
+      "source_name": "Demo Consume",
+      "localized_names": {},
+      "class_name": "demo",
+      "subclass_name": null,
+      "level": 1,
+      "source_completeness": "complete",
+      "dependencies": [],
+      "compatibility": {},
+      "clauses": [
+        {
+          "clause_id": "consume",
+          "trigger": "explicit_activation",
+          "action_economy": "bonus_action",
+          "effects": [{"operator": "consume_resource", "parameters": {}}]
+        }
+      ]
+    },
+    {
+      "schema_version": "feature-ir-1",
+      "feature_id": "demo:exchange",
+      "namespace": "demo",
+      "pack_id": "automation-demo",
+      "pack_version": "1.0.0",
+      "ruleset_version": "2024",
+      "source_record_id": "demo:exchange",
+      "source_name": "Demo Exchange",
+      "localized_names": {},
+      "class_name": "demo",
+      "subclass_name": null,
+      "level": 1,
+      "source_completeness": "complete",
+      "dependencies": [],
+      "compatibility": {},
+      "clauses": [
+        {
+          "clause_id": "exchange",
+          "trigger": "explicit_activation",
+          "effects": [{"operator": "exchange_resource", "parameters": {}}]
+        }
+      ]
+    },
+    {
+      "schema_version": "feature-ir-1",
+      "feature_id": "demo:add-modifier",
+      "namespace": "demo",
+      "pack_id": "automation-demo",
+      "pack_version": "1.0.0",
+      "ruleset_version": "2024",
+      "source_record_id": "demo:add-modifier",
+      "source_name": "Demo Add Modifier",
+      "localized_names": {},
+      "class_name": "demo",
+      "subclass_name": null,
+      "level": 1,
+      "source_completeness": "complete",
+      "dependencies": [],
+      "compatibility": {},
+      "clauses": [
+        {
+          "clause_id": "modifier",
+          "trigger": "combat_started",
+          "effects": [{"operator": "add_modifier", "parameters": {}}]
+        }
+      ]
+    },
+    {
+      "schema_version": "feature-ir-1",
+      "feature_id": "demo:set-modifier",
+      "namespace": "demo",
+      "pack_id": "automation-demo",
+      "pack_version": "1.0.0",
+      "ruleset_version": "2024",
+      "source_record_id": "demo:set-modifier",
+      "source_name": "Demo Set Modifier",
+      "localized_names": {},
+      "class_name": "demo",
+      "subclass_name": null,
+      "level": 1,
+      "source_completeness": "complete",
+      "dependencies": [],
+      "compatibility": {},
+      "clauses": [
+        {
+          "clause_id": "modifier",
+          "trigger": "combat_started",
+          "effects": [{"operator": "set_modifier", "parameters": {}}]
+        }
+      ]
+    },
+    {
+      "schema_version": "feature-ir-1",
+      "feature_id": "demo:advantage",
+      "namespace": "demo",
+      "pack_id": "automation-demo",
+      "pack_version": "1.0.0",
+      "ruleset_version": "2024",
+      "source_record_id": "demo:advantage",
+      "source_name": "Demo Advantage",
+      "localized_names": {},
+      "class_name": "demo",
+      "subclass_name": null,
+      "level": 1,
+      "source_completeness": "complete",
+      "dependencies": [],
+      "compatibility": {},
+      "clauses": [
+        {
+          "clause_id": "roll",
+          "trigger": "ability_check",
+          "effects": [{"operator": "impose_advantage", "parameters": {}}]
+        }
+      ]
+    },
+    {
+      "schema_version": "feature-ir-1",
+      "feature_id": "demo:disadvantage",
+      "namespace": "demo",
+      "pack_id": "automation-demo",
+      "pack_version": "1.0.0",
+      "ruleset_version": "2024",
+      "source_record_id": "demo:disadvantage",
+      "source_name": "Demo Disadvantage",
+      "localized_names": {},
+      "class_name": "demo",
+      "subclass_name": null,
+      "level": 1,
+      "source_completeness": "complete",
+      "dependencies": [],
+      "compatibility": {},
+      "clauses": [
+        {
+          "clause_id": "roll",
+          "trigger": "saving_throw",
+          "effects": [{"operator": "impose_disadvantage", "parameters": {}}]
+        }
+      ]
+    },
+    {
+      "schema_version": "feature-ir-1",
+      "feature_id": "demo:movement",
+      "namespace": "demo",
+      "pack_id": "automation-demo",
+      "pack_version": "1.0.0",
+      "ruleset_version": "2024",
+      "source_record_id": "demo:movement",
+      "source_name": "Demo Movement",
+      "localized_names": {},
+      "class_name": "demo",
+      "subclass_name": null,
+      "level": 1,
+      "source_completeness": "complete",
+      "dependencies": [],
+      "compatibility": {},
+      "clauses": [
+        {
+          "clause_id": "movement",
+          "trigger": "combat_started",
+          "effects": [{"operator": "grant_movement_mode", "parameters": {}}]
+        }
+      ]
+    },
+    {
+      "schema_version": "feature-ir-1",
+      "feature_id": "demo:sight",
+      "namespace": "demo",
+      "pack_id": "automation-demo",
+      "pack_version": "1.0.0",
+      "ruleset_version": "2024",
+      "source_record_id": "demo:sight",
+      "source_name": "Demo Sight",
+      "localized_names": {},
+      "class_name": "demo",
+      "subclass_name": null,
+      "level": 1,
+      "source_completeness": "complete",
+      "dependencies": [],
+      "compatibility": {},
+      "clauses": [
+        {
+          "clause_id": "sight",
+          "trigger": "combat_started",
+          "effects": [{"operator": "grant_sight_mode", "parameters": {}}]
+        }
+      ]
+    },
+    {
+      "schema_version": "feature-ir-1",
+      "feature_id": "demo:healing",
+      "namespace": "demo",
+      "pack_id": "automation-demo",
+      "pack_version": "1.0.0",
+      "source_record_id": "demo:healing",
+      "source_name": "Demo Healing",
+      "localized_names": {},
+      "class_name": "demo",
+      "subclass_name": null,
+      "level": 1,
+      "ruleset_version": "2024",
+      "source_completeness": "complete",
+      "dependencies": [],
+      "compatibility": {},
+      "clauses": [
+        {
+          "clause_id": "heal",
+          "trigger": "action_resolved",
+          "effects": [{"operator": "heal", "parameters": {}}]
+        }
+      ]
+    },
+    {
+      "schema_version": "feature-ir-1",
+      "feature_id": "demo:temporary-hp",
+      "namespace": "demo",
+      "pack_id": "automation-demo",
+      "pack_version": "1.0.0",
+      "ruleset_version": "2024",
+      "source_record_id": "demo:temporary-hp",
+      "source_name": "Demo Temporary HP",
+      "localized_names": {},
+      "class_name": "demo",
+      "subclass_name": null,
+      "level": 1,
+      "source_completeness": "complete",
+      "dependencies": [],
+      "compatibility": {},
+      "clauses": [
+        {
+          "clause_id": "temp-hp",
+          "trigger": "short_rest_completed",
+          "effects": [{"operator": "grant_temporary_hp", "parameters": {}}]
+        }
+      ]
+    },
+    {
+      "schema_version": "feature-ir-1",
+      "feature_id": "demo:damage",
+      "namespace": "demo",
+      "pack_id": "automation-demo",
+      "pack_version": "1.0.0",
+      "ruleset_version": "2024",
+      "source_record_id": "demo:damage",
+      "source_name": "Demo Damage",
+      "localized_names": {},
+      "class_name": "demo",
+      "subclass_name": null,
+      "level": 1,
+      "source_completeness": "complete",
+      "dependencies": [],
+      "compatibility": {},
+      "clauses": [
+        {
+          "clause_id": "damage",
+          "trigger": "attack_hit",
+          "effects": [{"operator": "add_damage", "parameters": {}}]
+        }
+      ]
+    },
+    {
+      "schema_version": "feature-ir-1",
+      "feature_id": "demo:resistance",
+      "namespace": "demo",
+      "pack_id": "automation-demo",
+      "pack_version": "1.0.0",
+      "ruleset_version": "2024",
+      "source_record_id": "demo:resistance",
+      "source_name": "Demo Resistance",
+      "localized_names": {},
+      "class_name": "demo",
+      "subclass_name": null,
+      "level": 1,
+      "source_completeness": "complete",
+      "dependencies": [],
+      "compatibility": {},
+      "clauses": [
+        {
+          "clause_id": "resistance",
+          "trigger": "combat_started",
+          "effects": [{"operator": "grant_resistance", "parameters": {}}]
+        }
+      ]
+    },
+    {
+      "schema_version": "feature-ir-1",
+      "feature_id": "demo:immunity",
+      "namespace": "demo",
+      "pack_id": "automation-demo",
+      "pack_version": "1.0.0",
+      "ruleset_version": "2024",
+      "source_record_id": "demo:immunity",
+      "source_name": "Demo Immunity",
+      "localized_names": {},
+      "class_name": "demo",
+      "subclass_name": null,
+      "level": 1,
+      "source_completeness": "complete",
+      "dependencies": [],
+      "compatibility": {},
+      "clauses": [
+        {
+          "clause_id": "immunity",
+          "trigger": "combat_started",
+          "effects": [{"operator": "grant_immunity", "parameters": {}}]
+        }
+      ]
+    },
+    {
+      "schema_version": "feature-ir-1",
+      "feature_id": "demo:unknown-1",
+      "namespace": "demo",
+      "pack_id": "automation-demo",
+      "pack_version": "1.0.0",
+      "ruleset_version": "2024",
+      "source_record_id": "demo:unknown-1",
+      "source_name": "Demo Unknown 1",
+      "localized_names": {},
+      "class_name": "demo",
+      "subclass_name": null,
+      "level": 1,
+      "source_completeness": "complete",
+      "dependencies": [],
+      "compatibility": {},
+      "clauses": [
+        {
+          "clause_id": "unknown",
+          "trigger": "combat_started",
+          "effects": [{"operator": "future_operator_one", "parameters": {}}]
+        }
+      ]
+    },
+    {
+      "schema_version": "feature-ir-1",
+      "feature_id": "demo:unknown-2",
+      "namespace": "demo",
+      "pack_id": "automation-demo",
+      "pack_version": "1.0.0",
+      "ruleset_version": "2024",
+      "source_record_id": "demo:unknown-2",
+      "source_name": "Demo Unknown 2",
+      "localized_names": {},
+      "class_name": "demo",
+      "subclass_name": null,
+      "level": 1,
+      "source_completeness": "complete",
+      "dependencies": [],
+      "compatibility": {},
+      "clauses": [
+        {
+          "clause_id": "unknown",
+          "trigger": "combat_started",
+          "effects": [{"operator": "future_operator_two", "parameters": {}}]
+        }
+      ]
+    },
+    {
+      "schema_version": "feature-ir-1",
+      "feature_id": "demo:unknown-3",
+      "namespace": "demo",
+      "pack_id": "automation-demo",
+      "pack_version": "1.0.0",
+      "ruleset_version": "2024",
+      "source_record_id": "demo:unknown-3",
+      "source_name": "Demo Unknown 3",
+      "localized_names": {},
+      "class_name": "demo",
+      "subclass_name": null,
+      "level": 1,
+      "source_completeness": "complete",
+      "dependencies": [],
+      "compatibility": {},
+      "clauses": [
+        {
+          "clause_id": "unknown",
+          "trigger": "combat_started",
+          "effects": [{"operator": "future_operator_three", "parameters": {}}]
+        }
+      ]
+    },
+    {
+      "schema_version": "feature-ir-1",
+      "feature_id": "demo:unknown-4",
+      "namespace": "demo",
+      "pack_id": "automation-demo",
+      "pack_version": "1.0.0",
+      "ruleset_version": "2024",
+      "source_record_id": "demo:unknown-4",
+      "source_name": "Demo Unknown 4",
+      "localized_names": {},
+      "class_name": "demo",
+      "subclass_name": null,
+      "level": 1,
+      "source_completeness": "complete",
+      "dependencies": [],
+      "compatibility": {},
+      "clauses": [
+        {
+          "clause_id": "unknown",
+          "trigger": "combat_started",
+          "effects": [{"operator": "future_operator_four", "parameters": {}}]
+        }
+      ]
+    },
+    {
+      "schema_version": "feature-ir-1",
+      "feature_id": "demo:manual-1",
+      "namespace": "demo",
+      "pack_id": "automation-demo",
+      "pack_version": "1.0.0",
+      "ruleset_version": "2024",
+      "source_record_id": "demo:manual-1",
+      "source_name": "Demo Manual 1",
+      "localized_names": {},
+      "class_name": "demo",
+      "subclass_name": null,
+      "level": 1,
+      "source_completeness": "complete",
+      "dependencies": [],
+      "compatibility": {},
+      "clauses": [
+        {
+          "clause_id": "manual",
+          "trigger": "explicit_activation",
+          "audit": {"manual_boundary": "requires DM adjudication"},
+          "effects": [{"operator": "add_modifier", "parameters": {}}]
+        }
+      ]
+    },
+    {
+      "schema_version": "feature-ir-1",
+      "feature_id": "demo:manual-2",
+      "namespace": "demo",
+      "pack_id": "automation-demo",
+      "pack_version": "1.0.0",
+      "ruleset_version": "2024",
+      "source_record_id": "demo:manual-2",
+      "source_name": "Demo Manual 2",
+      "localized_names": {},
+      "class_name": "demo",
+      "subclass_name": null,
+      "level": 1,
+      "source_completeness": "complete",
+      "dependencies": [],
+      "compatibility": {},
+      "clauses": [
+        {
+          "clause_id": "manual",
+          "trigger": "explicit_activation",
+          "audit": {"manual_boundary": "requires DM adjudication"},
+          "effects": [{"operator": "create_timed_modifier", "parameters": {}}]
+        }
+      ]
+    }
+  ]
+}

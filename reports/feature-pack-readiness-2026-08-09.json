@@ -1,0 +1,1327 @@
+{
+  "conflicts": [],
+  "counts": {
+    "full": 18,
+    "invalid": 0,
+    "manual": 2,
+    "partial": 4
+  },
+  "feature_results": [
+    {
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_ids": [
+            "modifier.passive"
+          ],
+          "clause_id": "modifier",
+          "generated_block": {
+            "action_economy": "none",
+            "activation": "automatic",
+            "capability_id": "modifier.passive",
+            "clause_id": "modifier",
+            "contract_version": "1.0",
+            "operator": "add_modifier",
+            "parameters": {},
+            "targeting": null,
+            "trigger": "combat_started"
+          },
+          "status": "full"
+        }
+      ],
+      "compile_status": "full",
+      "dependencies": [],
+      "evidence": [
+        "feature_runtime_contract_tests"
+      ],
+      "feature_id": "demo:add-modifier",
+      "fingerprint": "8f7cdcf48fb667928b41da329fade38dbb1d7f3fc40b8350ae2fc54761f8bb12",
+      "generated_runtime_blocks": [
+        {
+          "action_economy": "none",
+          "activation": "automatic",
+          "capability_id": "modifier.passive",
+          "clause_id": "modifier",
+          "contract_version": "1.0",
+          "operator": "add_modifier",
+          "parameters": {},
+          "targeting": null,
+          "trigger": "combat_started"
+        }
+      ],
+      "legacy_adapter_used": false,
+      "manual_boundaries": [],
+      "required_inputs": [],
+      "required_persistence": [
+        "character.feature_runtime"
+      ],
+      "required_tests": [
+        "feature_runtime_contract_tests"
+      ],
+      "required_ui": [],
+      "status_authority": "compiler",
+      "unsupported_combinations": [],
+      "unsupported_conditions": [],
+      "unsupported_operators": []
+    },
+    {
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_ids": [
+            "modifier.roll"
+          ],
+          "clause_id": "roll",
+          "generated_block": {
+            "action_economy": "none",
+            "activation": "automatic",
+            "capability_id": "modifier.roll",
+            "clause_id": "roll",
+            "contract_version": "1.0",
+            "operator": "impose_advantage",
+            "parameters": {},
+            "targeting": null,
+            "trigger": "ability_check"
+          },
+          "status": "full"
+        }
+      ],
+      "compile_status": "full",
+      "dependencies": [],
+      "evidence": [
+        "feature_runtime_contract_tests"
+      ],
+      "feature_id": "demo:advantage",
+      "fingerprint": "376875533dddf30852080c623a16686b8ff9dfadf3a0f1bb2aa0e7789b924441",
+      "generated_runtime_blocks": [
+        {
+          "action_economy": "none",
+          "activation": "automatic",
+          "capability_id": "modifier.roll",
+          "clause_id": "roll",
+          "contract_version": "1.0",
+          "operator": "impose_advantage",
+          "parameters": {},
+          "targeting": null,
+          "trigger": "ability_check"
+        }
+      ],
+      "legacy_adapter_used": false,
+      "manual_boundaries": [],
+      "required_inputs": [],
+      "required_persistence": [
+        "character.feature_runtime"
+      ],
+      "required_tests": [
+        "feature_runtime_contract_tests"
+      ],
+      "required_ui": [],
+      "status_authority": "compiler",
+      "unsupported_combinations": [],
+      "unsupported_conditions": [],
+      "unsupported_operators": []
+    },
+    {
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_ids": [
+            "resource.lifecycle.consume"
+          ],
+          "clause_id": "consume",
+          "generated_block": {
+            "action_economy": "bonus_action",
+            "activation": "automatic",
+            "capability_id": "resource.lifecycle.consume",
+            "clause_id": "consume",
+            "contract_version": "1.0",
+            "operator": "consume_resource",
+            "parameters": {},
+            "targeting": null,
+            "trigger": "explicit_activation"
+          },
+          "status": "full"
+        }
+      ],
+      "compile_status": "full",
+      "dependencies": [],
+      "evidence": [
+        "feature_runtime_contract_tests"
+      ],
+      "feature_id": "demo:consume",
+      "fingerprint": "a4b07ef9046add42d39c5d324958cd6ab60ba91ef0843da096f0d1a119bc2636",
+      "generated_runtime_blocks": [
+        {
+          "action_economy": "bonus_action",
+          "activation": "automatic",
+          "capability_id": "resource.lifecycle.consume",
+          "clause_id": "consume",
+          "contract_version": "1.0",
+          "operator": "consume_resource",
+          "parameters": {},
+          "targeting": null,
+          "trigger": "explicit_activation"
+        }
+      ],
+      "legacy_adapter_used": false,
+      "manual_boundaries": [],
+      "required_inputs": [],
+      "required_persistence": [
+        "character.resources"
+      ],
+      "required_tests": [
+        "feature_runtime_contract_tests"
+      ],
+      "required_ui": [],
+      "status_authority": "compiler",
+      "unsupported_combinations": [],
+      "unsupported_conditions": [],
+      "unsupported_operators": []
+    },
+    {
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_ids": [
+            "damage.modifier"
+          ],
+          "clause_id": "damage",
+          "generated_block": {
+            "action_economy": "none",
+            "activation": "automatic",
+            "capability_id": "damage.modifier",
+            "clause_id": "damage",
+            "contract_version": "1.0",
+            "operator": "add_damage",
+            "parameters": {},
+            "targeting": null,
+            "trigger": "attack_hit"
+          },
+          "status": "full"
+        }
+      ],
+      "compile_status": "full",
+      "dependencies": [],
+      "evidence": [
+        "feature_runtime_contract_tests"
+      ],
+      "feature_id": "demo:damage",
+      "fingerprint": "6cba8982447aec4afb15425362d2e76a78104fa1b3741c910e0fb91507d1733e",
+      "generated_runtime_blocks": [
+        {
+          "action_economy": "none",
+          "activation": "automatic",
+          "capability_id": "damage.modifier",
+          "clause_id": "damage",
+          "contract_version": "1.0",
+          "operator": "add_damage",
+          "parameters": {},
+          "targeting": null,
+          "trigger": "attack_hit"
+        }
+      ],
+      "legacy_adapter_used": false,
+      "manual_boundaries": [],
+      "required_inputs": [],
+      "required_persistence": [
+        "combat_action.damage"
+      ],
+      "required_tests": [
+        "feature_runtime_contract_tests"
+      ],
+      "required_ui": [],
+      "status_authority": "compiler",
+      "unsupported_combinations": [],
+      "unsupported_conditions": [],
+      "unsupported_operators": []
+    },
+    {
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_ids": [
+            "modifier.roll.disadvantage"
+          ],
+          "clause_id": "roll",
+          "generated_block": {
+            "action_economy": "none",
+            "activation": "automatic",
+            "capability_id": "modifier.roll.disadvantage",
+            "clause_id": "roll",
+            "contract_version": "1.0",
+            "operator": "impose_disadvantage",
+            "parameters": {},
+            "targeting": null,
+            "trigger": "saving_throw"
+          },
+          "status": "full"
+        }
+      ],
+      "compile_status": "full",
+      "dependencies": [],
+      "evidence": [
+        "feature_runtime_contract_tests"
+      ],
+      "feature_id": "demo:disadvantage",
+      "fingerprint": "208a8765319f6dbbb6cbc453f3918644e0cbd5c87c9f4f76f94f00e8124c7fb3",
+      "generated_runtime_blocks": [
+        {
+          "action_economy": "none",
+          "activation": "automatic",
+          "capability_id": "modifier.roll.disadvantage",
+          "clause_id": "roll",
+          "contract_version": "1.0",
+          "operator": "impose_disadvantage",
+          "parameters": {},
+          "targeting": null,
+          "trigger": "saving_throw"
+        }
+      ],
+      "legacy_adapter_used": false,
+      "manual_boundaries": [],
+      "required_inputs": [],
+      "required_persistence": [
+        "character.feature_runtime"
+      ],
+      "required_tests": [
+        "feature_runtime_contract_tests"
+      ],
+      "required_ui": [],
+      "status_authority": "compiler",
+      "unsupported_combinations": [],
+      "unsupported_conditions": [],
+      "unsupported_operators": []
+    },
+    {
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_ids": [
+            "resource.exchange"
+          ],
+          "clause_id": "exchange",
+          "generated_block": {
+            "action_economy": "none",
+            "activation": "automatic",
+            "capability_id": "resource.exchange",
+            "clause_id": "exchange",
+            "contract_version": "1.0",
+            "operator": "exchange_resource",
+            "parameters": {},
+            "targeting": null,
+            "trigger": "explicit_activation"
+          },
+          "status": "full"
+        }
+      ],
+      "compile_status": "full",
+      "dependencies": [],
+      "evidence": [
+        "feature_runtime_contract_tests"
+      ],
+      "feature_id": "demo:exchange",
+      "fingerprint": "724863bedc4c2f21512a8b1cbebae1eebcd55e578777e5731b31efd5bccbd4e5",
+      "generated_runtime_blocks": [
+        {
+          "action_economy": "none",
+          "activation": "automatic",
+          "capability_id": "resource.exchange",
+          "clause_id": "exchange",
+          "contract_version": "1.0",
+          "operator": "exchange_resource",
+          "parameters": {},
+          "targeting": null,
+          "trigger": "explicit_activation"
+        }
+      ],
+      "legacy_adapter_used": false,
+      "manual_boundaries": [],
+      "required_inputs": [],
+      "required_persistence": [
+        "character.resources"
+      ],
+      "required_tests": [
+        "feature_runtime_contract_tests"
+      ],
+      "required_ui": [],
+      "status_authority": "compiler",
+      "unsupported_combinations": [],
+      "unsupported_conditions": [],
+      "unsupported_operators": []
+    },
+    {
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_ids": [
+            "damage.healing"
+          ],
+          "clause_id": "heal",
+          "generated_block": {
+            "action_economy": "none",
+            "activation": "automatic",
+            "capability_id": "damage.healing",
+            "clause_id": "heal",
+            "contract_version": "1.0",
+            "operator": "heal",
+            "parameters": {},
+            "targeting": null,
+            "trigger": "action_resolved"
+          },
+          "status": "full"
+        }
+      ],
+      "compile_status": "full",
+      "dependencies": [],
+      "evidence": [
+        "feature_runtime_contract_tests"
+      ],
+      "feature_id": "demo:healing",
+      "fingerprint": "65c286166eb19f1cb1af76f53311436cc5f45fedcf8cf895f4ac712711c2a20b",
+      "generated_runtime_blocks": [
+        {
+          "action_economy": "none",
+          "activation": "automatic",
+          "capability_id": "damage.healing",
+          "clause_id": "heal",
+          "contract_version": "1.0",
+          "operator": "heal",
+          "parameters": {},
+          "targeting": null,
+          "trigger": "action_resolved"
+        }
+      ],
+      "legacy_adapter_used": false,
+      "manual_boundaries": [],
+      "required_inputs": [],
+      "required_persistence": [
+        "combatant.hp"
+      ],
+      "required_tests": [
+        "feature_runtime_contract_tests"
+      ],
+      "required_ui": [],
+      "status_authority": "compiler",
+      "unsupported_combinations": [],
+      "unsupported_conditions": [],
+      "unsupported_operators": []
+    },
+    {
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_ids": [
+            "defense.immunity"
+          ],
+          "clause_id": "immunity",
+          "generated_block": {
+            "action_economy": "none",
+            "activation": "automatic",
+            "capability_id": "defense.immunity",
+            "clause_id": "immunity",
+            "contract_version": "1.0",
+            "operator": "grant_immunity",
+            "parameters": {},
+            "targeting": null,
+            "trigger": "combat_started"
+          },
+          "status": "full"
+        }
+      ],
+      "compile_status": "full",
+      "dependencies": [],
+      "evidence": [
+        "feature_runtime_contract_tests"
+      ],
+      "feature_id": "demo:immunity",
+      "fingerprint": "650387494f57a3f85f9e61f5605859fa474ab19cdcfd145b9e987befc904561a",
+      "generated_runtime_blocks": [
+        {
+          "action_economy": "none",
+          "activation": "automatic",
+          "capability_id": "defense.immunity",
+          "clause_id": "immunity",
+          "contract_version": "1.0",
+          "operator": "grant_immunity",
+          "parameters": {},
+          "targeting": null,
+          "trigger": "combat_started"
+        }
+      ],
+      "legacy_adapter_used": false,
+      "manual_boundaries": [],
+      "required_inputs": [],
+      "required_persistence": [
+        "combatant.conditions_and_defenses"
+      ],
+      "required_tests": [
+        "feature_runtime_contract_tests"
+      ],
+      "required_ui": [],
+      "status_authority": "compiler",
+      "unsupported_combinations": [],
+      "unsupported_conditions": [],
+      "unsupported_operators": []
+    },
+    {
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_ids": [
+            "advancement.language"
+          ],
+          "clause_id": "grant",
+          "generated_block": {
+            "action_economy": "none",
+            "activation": "automatic",
+            "capability_id": "advancement.language",
+            "clause_id": "grant",
+            "contract_version": "1.0",
+            "operator": "grant_language",
+            "parameters": {},
+            "targeting": null,
+            "trigger": "advancement_confirmed"
+          },
+          "status": "full"
+        }
+      ],
+      "compile_status": "full",
+      "dependencies": [],
+      "evidence": [
+        "feature_runtime_contract_tests"
+      ],
+      "feature_id": "demo:language",
+      "fingerprint": "4da2fad0194252e97da68a1ab02781dfa3fbc7d7c3d80c9798cdf91275daeb1a",
+      "generated_runtime_blocks": [
+        {
+          "action_economy": "none",
+          "activation": "automatic",
+          "capability_id": "advancement.language",
+          "clause_id": "grant",
+          "contract_version": "1.0",
+          "operator": "grant_language",
+          "parameters": {},
+          "targeting": null,
+          "trigger": "advancement_confirmed"
+        }
+      ],
+      "legacy_adapter_used": false,
+      "manual_boundaries": [],
+      "required_inputs": [],
+      "required_persistence": [
+        "character.languages"
+      ],
+      "required_tests": [
+        "feature_runtime_contract_tests"
+      ],
+      "required_ui": [],
+      "status_authority": "compiler",
+      "unsupported_combinations": [],
+      "unsupported_conditions": [],
+      "unsupported_operators": []
+    },
+    {
+      "clause_results": [
+        {
+          "blockers": [
+            "manual: requires DM adjudication"
+          ],
+          "capability_ids": [
+            "modifier.passive"
+          ],
+          "clause_id": "manual",
+          "generated_block": null,
+          "status": "partial"
+        }
+      ],
+      "compile_status": "manual",
+      "dependencies": [],
+      "evidence": [
+        "feature_runtime_contract_tests"
+      ],
+      "feature_id": "demo:manual-1",
+      "fingerprint": "77584dbd7d54792d65a23f91631c78a5f72034740ec64ebf891653c56ccefb2b",
+      "generated_runtime_blocks": [
+        {
+          "action_economy": "none",
+          "activation": "automatic",
+          "capability_id": "modifier.passive",
+          "clause_id": "manual",
+          "contract_version": "1.0",
+          "operator": "add_modifier",
+          "parameters": {},
+          "targeting": null,
+          "trigger": "explicit_activation"
+        }
+      ],
+      "legacy_adapter_used": false,
+      "manual_boundaries": [
+        "manual: requires DM adjudication"
+      ],
+      "required_inputs": [],
+      "required_persistence": [
+        "character.feature_runtime"
+      ],
+      "required_tests": [
+        "feature_runtime_contract_tests"
+      ],
+      "required_ui": [],
+      "status_authority": "compiler",
+      "unsupported_combinations": [],
+      "unsupported_conditions": [],
+      "unsupported_operators": []
+    },
+    {
+      "clause_results": [
+        {
+          "blockers": [
+            "manual: requires DM adjudication"
+          ],
+          "capability_ids": [
+            "modifier.timed"
+          ],
+          "clause_id": "manual",
+          "generated_block": null,
+          "status": "partial"
+        }
+      ],
+      "compile_status": "manual",
+      "dependencies": [],
+      "evidence": [
+        "feature_runtime_contract_tests"
+      ],
+      "feature_id": "demo:manual-2",
+      "fingerprint": "3acd8cf697e2e4568a8f36e3a70f043aa43a0d57d5338e4ad47ec62016aa2bb7",
+      "generated_runtime_blocks": [
+        {
+          "action_economy": "none",
+          "activation": "automatic",
+          "capability_id": "modifier.timed",
+          "clause_id": "manual",
+          "contract_version": "1.0",
+          "operator": "create_timed_modifier",
+          "parameters": {},
+          "targeting": null,
+          "trigger": "explicit_activation"
+        }
+      ],
+      "legacy_adapter_used": false,
+      "manual_boundaries": [
+        "manual: requires DM adjudication"
+      ],
+      "required_inputs": [],
+      "required_persistence": [
+        "combatant.timed_feature_modifiers"
+      ],
+      "required_tests": [
+        "feature_runtime_contract_tests"
+      ],
+      "required_ui": [],
+      "status_authority": "compiler",
+      "unsupported_combinations": [],
+      "unsupported_conditions": [],
+      "unsupported_operators": []
+    },
+    {
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_ids": [
+            "movement.mode"
+          ],
+          "clause_id": "movement",
+          "generated_block": {
+            "action_economy": "none",
+            "activation": "automatic",
+            "capability_id": "movement.mode",
+            "clause_id": "movement",
+            "contract_version": "1.0",
+            "operator": "grant_movement_mode",
+            "parameters": {},
+            "targeting": null,
+            "trigger": "combat_started"
+          },
+          "status": "full"
+        }
+      ],
+      "compile_status": "full",
+      "dependencies": [],
+      "evidence": [
+        "feature_runtime_contract_tests"
+      ],
+      "feature_id": "demo:movement",
+      "fingerprint": "ab6adf51d2ebb8ed09b599d7be257cfe49d605e2b7f1c264a537d028ff39b425",
+      "generated_runtime_blocks": [
+        {
+          "action_economy": "none",
+          "activation": "automatic",
+          "capability_id": "movement.mode",
+          "clause_id": "movement",
+          "contract_version": "1.0",
+          "operator": "grant_movement_mode",
+          "parameters": {},
+          "targeting": null,
+          "trigger": "combat_started"
+        }
+      ],
+      "legacy_adapter_used": false,
+      "manual_boundaries": [],
+      "required_inputs": [],
+      "required_persistence": [
+        "combatant.snapshot_json"
+      ],
+      "required_tests": [
+        "feature_runtime_contract_tests"
+      ],
+      "required_ui": [],
+      "status_authority": "compiler",
+      "unsupported_combinations": [],
+      "unsupported_conditions": [],
+      "unsupported_operators": []
+    },
+    {
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_ids": [
+            "advancement.prepare_spell"
+          ],
+          "clause_id": "prepare",
+          "generated_block": {
+            "action_economy": "none",
+            "activation": "automatic",
+            "capability_id": "advancement.prepare_spell",
+            "clause_id": "prepare",
+            "contract_version": "1.0",
+            "operator": "prepare_spell",
+            "parameters": {},
+            "targeting": null,
+            "trigger": "advancement_confirmed"
+          },
+          "status": "full"
+        }
+      ],
+      "compile_status": "full",
+      "dependencies": [],
+      "evidence": [
+        "feature_runtime_contract_tests"
+      ],
+      "feature_id": "demo:prepared-spell",
+      "fingerprint": "4031c8d04f718d1160f7447d32a369ecf3da86b5112e3c2002d901ec063e0357",
+      "generated_runtime_blocks": [
+        {
+          "action_economy": "none",
+          "activation": "automatic",
+          "capability_id": "advancement.prepare_spell",
+          "clause_id": "prepare",
+          "contract_version": "1.0",
+          "operator": "prepare_spell",
+          "parameters": {},
+          "targeting": null,
+          "trigger": "advancement_confirmed"
+        }
+      ],
+      "legacy_adapter_used": false,
+      "manual_boundaries": [],
+      "required_inputs": [],
+      "required_persistence": [
+        "character.prepared_spells"
+      ],
+      "required_tests": [
+        "feature_runtime_contract_tests"
+      ],
+      "required_ui": [],
+      "status_authority": "compiler",
+      "unsupported_combinations": [],
+      "unsupported_conditions": [],
+      "unsupported_operators": []
+    },
+    {
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_ids": [
+            "advancement.proficiency"
+          ],
+          "clause_id": "grant",
+          "generated_block": {
+            "action_economy": "none",
+            "activation": "automatic",
+            "capability_id": "advancement.proficiency",
+            "clause_id": "grant",
+            "contract_version": "1.0",
+            "operator": "grant_proficiency",
+            "parameters": {},
+            "targeting": null,
+            "trigger": "advancement_confirmed"
+          },
+          "status": "full"
+        }
+      ],
+      "compile_status": "full",
+      "dependencies": [],
+      "evidence": [
+        "feature_runtime_contract_tests"
+      ],
+      "feature_id": "demo:proficiency",
+      "fingerprint": "3cb1c2104b83626a872496e5a0a33d71fd240201febf5c20c6ba1df37bad173e",
+      "generated_runtime_blocks": [
+        {
+          "action_economy": "none",
+          "activation": "automatic",
+          "capability_id": "advancement.proficiency",
+          "clause_id": "grant",
+          "contract_version": "1.0",
+          "operator": "grant_proficiency",
+          "parameters": {},
+          "targeting": null,
+          "trigger": "advancement_confirmed"
+        }
+      ],
+      "legacy_adapter_used": false,
+      "manual_boundaries": [],
+      "required_inputs": [],
+      "required_persistence": [
+        "character.proficiencies"
+      ],
+      "required_tests": [
+        "feature_runtime_contract_tests"
+      ],
+      "required_ui": [],
+      "status_authority": "compiler",
+      "unsupported_combinations": [],
+      "unsupported_conditions": [],
+      "unsupported_operators": []
+    },
+    {
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_ids": [
+            "defense.resistance"
+          ],
+          "clause_id": "resistance",
+          "generated_block": {
+            "action_economy": "none",
+            "activation": "automatic",
+            "capability_id": "defense.resistance",
+            "clause_id": "resistance",
+            "contract_version": "1.0",
+            "operator": "grant_resistance",
+            "parameters": {},
+            "targeting": null,
+            "trigger": "combat_started"
+          },
+          "status": "full"
+        }
+      ],
+      "compile_status": "full",
+      "dependencies": [],
+      "evidence": [
+        "feature_runtime_contract_tests"
+      ],
+      "feature_id": "demo:resistance",
+      "fingerprint": "55ffd5efa26fbe83859a1769721662698fcb6e1b830a7d66116f5402d44be64a",
+      "generated_runtime_blocks": [
+        {
+          "action_economy": "none",
+          "activation": "automatic",
+          "capability_id": "defense.resistance",
+          "clause_id": "resistance",
+          "contract_version": "1.0",
+          "operator": "grant_resistance",
+          "parameters": {},
+          "targeting": null,
+          "trigger": "combat_started"
+        }
+      ],
+      "legacy_adapter_used": false,
+      "manual_boundaries": [],
+      "required_inputs": [],
+      "required_persistence": [
+        "combatant.damage_resistances"
+      ],
+      "required_tests": [
+        "feature_runtime_contract_tests"
+      ],
+      "required_ui": [],
+      "status_authority": "compiler",
+      "unsupported_combinations": [],
+      "unsupported_conditions": [],
+      "unsupported_operators": []
+    },
+    {
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_ids": [
+            "resource.lifecycle"
+          ],
+          "clause_id": "restore",
+          "generated_block": {
+            "action_economy": "none",
+            "activation": "automatic",
+            "capability_id": "resource.lifecycle",
+            "clause_id": "restore",
+            "contract_version": "1.0",
+            "operator": "restore_resource",
+            "parameters": {},
+            "targeting": null,
+            "trigger": "long_rest_completed"
+          },
+          "status": "full"
+        }
+      ],
+      "compile_status": "full",
+      "dependencies": [],
+      "evidence": [
+        "feature_runtime_contract_tests"
+      ],
+      "feature_id": "demo:restore",
+      "fingerprint": "83155e993181ab150cf3df4f722d9b189346130af64225e8683df1fa890c66dc",
+      "generated_runtime_blocks": [
+        {
+          "action_economy": "none",
+          "activation": "automatic",
+          "capability_id": "resource.lifecycle",
+          "clause_id": "restore",
+          "contract_version": "1.0",
+          "operator": "restore_resource",
+          "parameters": {},
+          "targeting": null,
+          "trigger": "long_rest_completed"
+        }
+      ],
+      "legacy_adapter_used": false,
+      "manual_boundaries": [],
+      "required_inputs": [],
+      "required_persistence": [
+        "character.resources"
+      ],
+      "required_tests": [
+        "feature_runtime_contract_tests"
+      ],
+      "required_ui": [],
+      "status_authority": "compiler",
+      "unsupported_combinations": [],
+      "unsupported_conditions": [],
+      "unsupported_operators": []
+    },
+    {
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_ids": [
+            "modifier.passive.set"
+          ],
+          "clause_id": "modifier",
+          "generated_block": {
+            "action_economy": "none",
+            "activation": "automatic",
+            "capability_id": "modifier.passive.set",
+            "clause_id": "modifier",
+            "contract_version": "1.0",
+            "operator": "set_modifier",
+            "parameters": {},
+            "targeting": null,
+            "trigger": "combat_started"
+          },
+          "status": "full"
+        }
+      ],
+      "compile_status": "full",
+      "dependencies": [],
+      "evidence": [
+        "feature_runtime_contract_tests"
+      ],
+      "feature_id": "demo:set-modifier",
+      "fingerprint": "d5109cea1a202f815f1800535a90ac691d20da24262a351b93f700e4693433b9",
+      "generated_runtime_blocks": [
+        {
+          "action_economy": "none",
+          "activation": "automatic",
+          "capability_id": "modifier.passive.set",
+          "clause_id": "modifier",
+          "contract_version": "1.0",
+          "operator": "set_modifier",
+          "parameters": {},
+          "targeting": null,
+          "trigger": "combat_started"
+        }
+      ],
+      "legacy_adapter_used": false,
+      "manual_boundaries": [],
+      "required_inputs": [],
+      "required_persistence": [
+        "character.feature_runtime"
+      ],
+      "required_tests": [
+        "feature_runtime_contract_tests"
+      ],
+      "required_ui": [],
+      "status_authority": "compiler",
+      "unsupported_combinations": [],
+      "unsupported_conditions": [],
+      "unsupported_operators": []
+    },
+    {
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_ids": [
+            "sight.mode"
+          ],
+          "clause_id": "sight",
+          "generated_block": {
+            "action_economy": "none",
+            "activation": "automatic",
+            "capability_id": "sight.mode",
+            "clause_id": "sight",
+            "contract_version": "1.0",
+            "operator": "grant_sight_mode",
+            "parameters": {},
+            "targeting": null,
+            "trigger": "combat_started"
+          },
+          "status": "full"
+        }
+      ],
+      "compile_status": "full",
+      "dependencies": [],
+      "evidence": [
+        "feature_runtime_contract_tests"
+      ],
+      "feature_id": "demo:sight",
+      "fingerprint": "2057488dfc21306ae3abcf3c44a11f04de1d151b2b9544623b60bac9a15e3558",
+      "generated_runtime_blocks": [
+        {
+          "action_economy": "none",
+          "activation": "automatic",
+          "capability_id": "sight.mode",
+          "clause_id": "sight",
+          "contract_version": "1.0",
+          "operator": "grant_sight_mode",
+          "parameters": {},
+          "targeting": null,
+          "trigger": "combat_started"
+        }
+      ],
+      "legacy_adapter_used": false,
+      "manual_boundaries": [],
+      "required_inputs": [],
+      "required_persistence": [
+        "combatant.snapshot_json"
+      ],
+      "required_tests": [
+        "feature_runtime_contract_tests"
+      ],
+      "required_ui": [],
+      "status_authority": "compiler",
+      "unsupported_combinations": [],
+      "unsupported_conditions": [],
+      "unsupported_operators": []
+    },
+    {
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_ids": [
+            "advancement.spell"
+          ],
+          "clause_id": "grant",
+          "generated_block": {
+            "action_economy": "none",
+            "activation": "automatic",
+            "capability_id": "advancement.spell",
+            "clause_id": "grant",
+            "contract_version": "1.0",
+            "operator": "grant_spell",
+            "parameters": {},
+            "targeting": null,
+            "trigger": "advancement_confirmed"
+          },
+          "status": "full"
+        }
+      ],
+      "compile_status": "full",
+      "dependencies": [],
+      "evidence": [
+        "feature_runtime_contract_tests"
+      ],
+      "feature_id": "demo:spell",
+      "fingerprint": "61d4e9414dae4d3606e7ee5d7baf90299a1020cc24e7de888034500184d3cc3e",
+      "generated_runtime_blocks": [
+        {
+          "action_economy": "none",
+          "activation": "automatic",
+          "capability_id": "advancement.spell",
+          "clause_id": "grant",
+          "contract_version": "1.0",
+          "operator": "grant_spell",
+          "parameters": {},
+          "targeting": null,
+          "trigger": "advancement_confirmed"
+        }
+      ],
+      "legacy_adapter_used": false,
+      "manual_boundaries": [],
+      "required_inputs": [],
+      "required_persistence": [
+        "character.spells"
+      ],
+      "required_tests": [
+        "feature_runtime_contract_tests"
+      ],
+      "required_ui": [],
+      "status_authority": "compiler",
+      "unsupported_combinations": [],
+      "unsupported_conditions": [],
+      "unsupported_operators": []
+    },
+    {
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_ids": [
+            "damage.temporary_hp"
+          ],
+          "clause_id": "temp-hp",
+          "generated_block": {
+            "action_economy": "none",
+            "activation": "automatic",
+            "capability_id": "damage.temporary_hp",
+            "clause_id": "temp-hp",
+            "contract_version": "1.0",
+            "operator": "grant_temporary_hp",
+            "parameters": {},
+            "targeting": null,
+            "trigger": "short_rest_completed"
+          },
+          "status": "full"
+        }
+      ],
+      "compile_status": "full",
+      "dependencies": [],
+      "evidence": [
+        "feature_runtime_contract_tests"
+      ],
+      "feature_id": "demo:temporary-hp",
+      "fingerprint": "6cead867dbc2dec278e474c4da1587745ade813a93f6c1992df859fb77a62665",
+      "generated_runtime_blocks": [
+        {
+          "action_economy": "none",
+          "activation": "automatic",
+          "capability_id": "damage.temporary_hp",
+          "clause_id": "temp-hp",
+          "contract_version": "1.0",
+          "operator": "grant_temporary_hp",
+          "parameters": {},
+          "targeting": null,
+          "trigger": "short_rest_completed"
+        }
+      ],
+      "legacy_adapter_used": false,
+      "manual_boundaries": [],
+      "required_inputs": [],
+      "required_persistence": [
+        "combatant.temporary_hp"
+      ],
+      "required_tests": [
+        "feature_runtime_contract_tests"
+      ],
+      "required_ui": [],
+      "status_authority": "compiler",
+      "unsupported_combinations": [],
+      "unsupported_conditions": [],
+      "unsupported_operators": []
+    },
+    {
+      "clause_results": [
+        {
+          "blockers": [
+            "unsupported operator: future_operator_one"
+          ],
+          "capability_ids": [],
+          "clause_id": "unknown",
+          "generated_block": null,
+          "status": "partial"
+        }
+      ],
+      "compile_status": "partial",
+      "dependencies": [],
+      "evidence": [],
+      "feature_id": "demo:unknown-1",
+      "fingerprint": "63e686af50619e8d747d6e429481fd500712b277052729e45c011794a865c712",
+      "generated_runtime_blocks": [],
+      "legacy_adapter_used": false,
+      "manual_boundaries": [],
+      "required_inputs": [],
+      "required_persistence": [],
+      "required_tests": [],
+      "required_ui": [],
+      "status_authority": "compiler",
+      "unsupported_combinations": [
+        "u",
+        "n",
+        "k",
+        "o",
+        "w",
+        ":",
+        "f",
+        "t",
+        "r",
+        "e",
+        "_",
+        "p",
+        "a"
+      ],
+      "unsupported_conditions": [],
+      "unsupported_operators": [
+        "future_operator_one"
+      ]
+    },
+    {
+      "clause_results": [
+        {
+          "blockers": [
+            "unsupported operator: future_operator_two"
+          ],
+          "capability_ids": [],
+          "clause_id": "unknown",
+          "generated_block": null,
+          "status": "partial"
+        }
+      ],
+      "compile_status": "partial",
+      "dependencies": [],
+      "evidence": [],
+      "feature_id": "demo:unknown-2",
+      "fingerprint": "06f062595875cddfd4476ff99d38153b8082ebb8b544c8ed11ce06a98916a577",
+      "generated_runtime_blocks": [],
+      "legacy_adapter_used": false,
+      "manual_boundaries": [],
+      "required_inputs": [],
+      "required_persistence": [],
+      "required_tests": [],
+      "required_ui": [],
+      "status_authority": "compiler",
+      "unsupported_combinations": [
+        "u",
+        "n",
+        "k",
+        "o",
+        "w",
+        ":",
+        "f",
+        "t",
+        "r",
+        "e",
+        "_",
+        "p",
+        "a"
+      ],
+      "unsupported_conditions": [],
+      "unsupported_operators": [
+        "future_operator_two"
+      ]
+    },
+    {
+      "clause_results": [
+        {
+          "blockers": [
+            "unsupported operator: future_operator_three"
+          ],
+          "capability_ids": [],
+          "clause_id": "unknown",
+          "generated_block": null,
+          "status": "partial"
+        }
+      ],
+      "compile_status": "partial",
+      "dependencies": [],
+      "evidence": [],
+      "feature_id": "demo:unknown-3",
+      "fingerprint": "00065d259f988b4669ac637ceb718dac7ecef25f29cbfceb836561cb6e64eda6",
+      "generated_runtime_blocks": [],
+      "legacy_adapter_used": false,
+      "manual_boundaries": [],
+      "required_inputs": [],
+      "required_persistence": [],
+      "required_tests": [],
+      "required_ui": [],
+      "status_authority": "compiler",
+      "unsupported_combinations": [
+        "u",
+        "n",
+        "k",
+        "o",
+        "w",
+        ":",
+        "f",
+        "t",
+        "r",
+        "e",
+        "_",
+        "p",
+        "a",
+        "h"
+      ],
+      "unsupported_conditions": [],
+      "unsupported_operators": [
+        "future_operator_three"
+      ]
+    },
+    {
+      "clause_results": [
+        {
+          "blockers": [
+            "unsupported operator: future_operator_four"
+          ],
+          "capability_ids": [],
+          "clause_id": "unknown",
+          "generated_block": null,
+          "status": "partial"
+        }
+      ],
+      "compile_status": "partial",
+      "dependencies": [],
+      "evidence": [],
+      "feature_id": "demo:unknown-4",
+      "fingerprint": "ee786ab9ee1e57a7567c3be0dcf42eb8305386de9db33d4fec28acb673987f30",
+      "generated_runtime_blocks": [],
+      "legacy_adapter_used": false,
+      "manual_boundaries": [],
+      "required_inputs": [],
+      "required_persistence": [],
+      "required_tests": [],
+      "required_ui": [],
+      "status_authority": "compiler",
+      "unsupported_combinations": [
+        "u",
+        "n",
+        "k",
+        "o",
+        "w",
+        ":",
+        "f",
+        "t",
+        "r",
+        "e",
+        "_",
+        "p",
+        "a"
+      ],
+      "unsupported_conditions": [],
+      "unsupported_operators": [
+        "future_operator_four"
+      ]
+    }
+  ],
+  "migration_plan": {
+    "changed_features": [],
+    "kind": "new_pack"
+  },
+  "pack_id": "automation-demo",
+  "pack_version": "1.0.0",
+  "schema_version": "feature-pack-readiness-1"
+}

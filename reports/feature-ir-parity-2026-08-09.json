@@ -1,0 +1,884 @@
+{
+  "audit_status_counts": {
+    "dm_only": 61,
+    "full": 310,
+    "partial": 128
+  },
+  "compiler_pilot_count": 10,
+  "compiler_status_counts": {
+    "full": 126,
+    "partial": 184
+  },
+  "legacy_adapter": true,
+  "partial_diagnostics": [
+    {
+      "clause_results": [
+        {
+          "blockers": [
+            "unsupported operator: legacy_unsupported:no_runtime_section"
+          ],
+          "capability_ids": [],
+          "clause_id": "legacy:no_runtime_section",
+          "generated_block": null,
+          "status": "partial"
+        }
+      ],
+      "compiler_status": "partial",
+      "feature_id": "legacy:subclass:5791e4c41e530d449b0f4386:3:炫目舞步",
+      "feature_name": "炫目舞步",
+      "legacy_status": "partial",
+      "manual_boundaries": [],
+      "unsupported_combinations": [
+        "l",
+        "e",
+        "g",
+        "a",
+        "c",
+        "y",
+        ":",
+        "n",
+        "o",
+        "_",
+        "r",
+        "u",
+        "t",
+        "i",
+        "m",
+        "s",
+        "p",
+        "d"
+      ],
+      "unsupported_conditions": [],
+      "unsupported_operators": [
+        "legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "clause_results": [
+        {
+          "blockers": [
+            "unsupported operator: legacy_unsupported:no_runtime_section"
+          ],
+          "capability_ids": [],
+          "clause_id": "legacy:no_runtime_section",
+          "generated_block": null,
+          "status": "partial"
+        }
+      ],
+      "compiler_status": "partial",
+      "feature_id": "legacy:subclass:5791e4c41e530d449b0f4386:6:鼓舞之移",
+      "feature_name": "鼓舞之移",
+      "legacy_status": "partial",
+      "manual_boundaries": [],
+      "unsupported_combinations": [
+        "l",
+        "e",
+        "g",
+        "a",
+        "c",
+        "y",
+        ":",
+        "n",
+        "o",
+        "_",
+        "r",
+        "u",
+        "t",
+        "i",
+        "m",
+        "s",
+        "p",
+        "d"
+      ],
+      "unsupported_conditions": [],
+      "unsupported_operators": [
+        "legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "clause_results": [
+        {
+          "blockers": [
+            "unsupported operator: legacy_unsupported:no_runtime_section"
+          ],
+          "capability_ids": [],
+          "clause_id": "legacy:no_runtime_section",
+          "generated_block": null,
+          "status": "partial"
+        }
+      ],
+      "compiler_status": "partial",
+      "feature_id": "legacy:subclass:5791e4c41e530d449b0f4386:6:协同舞步",
+      "feature_name": "协同舞步",
+      "legacy_status": "partial",
+      "manual_boundaries": [],
+      "unsupported_combinations": [
+        "l",
+        "e",
+        "g",
+        "a",
+        "c",
+        "y",
+        ":",
+        "n",
+        "o",
+        "_",
+        "r",
+        "u",
+        "t",
+        "i",
+        "m",
+        "s",
+        "p",
+        "d"
+      ],
+      "unsupported_conditions": [],
+      "unsupported_operators": [
+        "legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "clause_results": [
+        {
+          "blockers": [
+            "unsupported operator: legacy_unsupported:no_runtime_section"
+          ],
+          "capability_ids": [],
+          "clause_id": "legacy:no_runtime_section",
+          "generated_block": null,
+          "status": "partial"
+        }
+      ],
+      "compiler_status": "partial",
+      "feature_id": "legacy:subclass:ae358863fd8cc1be0c21f0ff:3:惑心魔法",
+      "feature_name": "惑心魔法",
+      "legacy_status": "partial",
+      "manual_boundaries": [],
+      "unsupported_combinations": [
+        "l",
+        "e",
+        "g",
+        "a",
+        "c",
+        "y",
+        ":",
+        "n",
+        "o",
+        "_",
+        "r",
+        "u",
+        "t",
+        "i",
+        "m",
+        "s",
+        "p",
+        "d"
+      ],
+      "unsupported_conditions": [],
+      "unsupported_operators": [
+        "legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "clause_results": [
+        {
+          "blockers": [
+            "unsupported operator: legacy_unsupported:no_runtime_section"
+          ],
+          "capability_ids": [],
+          "clause_id": "legacy:no_runtime_section",
+          "generated_block": null,
+          "status": "partial"
+        }
+      ],
+      "compiler_status": "partial",
+      "feature_id": "legacy:subclass:ae358863fd8cc1be0c21f0ff:3:灵感织衣",
+      "feature_name": "灵感织衣",
+      "legacy_status": "partial",
+      "manual_boundaries": [],
+      "unsupported_combinations": [
+        "l",
+        "e",
+        "g",
+        "a",
+        "c",
+        "y",
+        ":",
+        "n",
+        "o",
+        "_",
+        "r",
+        "u",
+        "t",
+        "i",
+        "m",
+        "s",
+        "p",
+        "d"
+      ],
+      "unsupported_conditions": [],
+      "unsupported_operators": [
+        "legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "clause_results": [
+        {
+          "blockers": [
+            "unsupported operator: legacy_unsupported:no_runtime_section"
+          ],
+          "capability_ids": [],
+          "clause_id": "legacy:no_runtime_section",
+          "generated_block": null,
+          "status": "partial"
+        }
+      ],
+      "compiler_status": "partial",
+      "feature_id": "legacy:subclass:ae358863fd8cc1be0c21f0ff:6:威仪作锦",
+      "feature_name": "威仪作锦",
+      "legacy_status": "partial",
+      "manual_boundaries": [],
+      "unsupported_combinations": [
+        "l",
+        "e",
+        "g",
+        "a",
+        "c",
+        "y",
+        ":",
+        "n",
+        "o",
+        "_",
+        "r",
+        "u",
+        "t",
+        "i",
+        "m",
+        "s",
+        "p",
+        "d"
+      ],
+      "unsupported_conditions": [],
+      "unsupported_operators": [
+        "legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "clause_results": [
+        {
+          "blockers": [
+            "unsupported operator: legacy_unsupported:no_runtime_section"
+          ],
+          "capability_ids": [],
+          "clause_id": "legacy:no_runtime_section",
+          "generated_block": null,
+          "status": "partial"
+        }
+      ],
+      "compiler_status": "partial",
+      "feature_id": "legacy:subclass:ae358863fd8cc1be0c21f0ff:14:不破威仪 Unbreakable Majesty",
+      "feature_name": "不破威仪 Unbreakable Majesty",
+      "legacy_status": "partial",
+      "manual_boundaries": [],
+      "unsupported_combinations": [
+        "l",
+        "e",
+        "g",
+        "a",
+        "c",
+        "y",
+        ":",
+        "n",
+        "o",
+        "_",
+        "r",
+        "u",
+        "t",
+        "i",
+        "m",
+        "s",
+        "p",
+        "d"
+      ],
+      "unsupported_conditions": [],
+      "unsupported_operators": [
+        "legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "clause_results": [
+        {
+          "blockers": [],
+          "capability_ids": [
+            "resource.lifecycle"
+          ],
+          "clause_id": "legacy:resources:0",
+          "generated_block": {
+            "action_economy": "none",
+            "activation": "automatic",
+            "capability_id": "resource.lifecycle",
+            "clause_id": "legacy:resources:0",
+            "contract_version": "1.0",
+            "operator": "restore_resource",
+            "parameters": {
+              "legacy_section": "resources"
+            },
+            "targeting": {
+              "kind": "self",
+              "parameters": {}
+            },
+            "trigger": "advancement_confirmed"
+          },
+          "status": "full"
+        },
+        {
+          "blockers": [],
+          "capability_ids": [
+            "modifier.timed"
+          ],
+          "clause_id": "legacy:actions:1",
+          "generated_block": {
+            "action_economy": "none",
+            "activation": "automatic",
+            "capability_id": "modifier.timed",
+            "clause_id": "legacy:actions:1",
+            "contract_version": "1.0",
+            "operator": "create_timed_modifier",
+            "parameters": {
+              "legacy_section": "actions"
+            },
+            "targeting": {
+              "kind": "self",
+              "parameters": {}
+            },
+            "trigger": "advancement_confirmed"
+          },
+          "status": "full"
+        }
+      ],
+      "compiler_status": "full",
+      "feature_id": "legacy:core:dc41ed56a5781f0a765d66f0:3:引导神力",
+      "feature_name": "引导神力",
+      "legacy_status": "partial",
+      "manual_boundaries": [],
+      "unsupported_combinations": [],
+      "unsupported_conditions": [],
+      "unsupported_operators": []
+    },
+    {
+      "clause_results": [
+        {
+          "blockers": [
+            "unsupported operator: legacy_unsupported:no_runtime_section"
+          ],
+          "capability_ids": [],
+          "clause_id": "legacy:no_runtime_section",
+          "generated_block": null,
+          "status": "partial"
+        }
+      ],
+      "compiler_status": "partial",
+      "feature_id": "legacy:subclass:09860de59419ccc7f1b12908:3:自然之怒 Nature's",
+      "feature_name": "自然之怒 Nature's",
+      "legacy_status": "partial",
+      "manual_boundaries": [],
+      "unsupported_combinations": [
+        "l",
+        "e",
+        "g",
+        "a",
+        "c",
+        "y",
+        ":",
+        "n",
+        "o",
+        "_",
+        "r",
+        "u",
+        "t",
+        "i",
+        "m",
+        "s",
+        "p",
+        "d"
+      ],
+      "unsupported_conditions": [],
+      "unsupported_operators": [
+        "legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "clause_results": [
+        {
+          "blockers": [
+            "unsupported operator: legacy_unsupported:no_runtime_section"
+          ],
+          "capability_ids": [],
+          "clause_id": "legacy:no_runtime_section",
+          "generated_block": null,
+          "status": "partial"
+        }
+      ],
+      "compiler_status": "partial",
+      "feature_id": "legacy:subclass:09860de59419ccc7f1b12908:20:上古斗士 Elder",
+      "feature_name": "上古斗士 Elder",
+      "legacy_status": "partial",
+      "manual_boundaries": [],
+      "unsupported_combinations": [
+        "l",
+        "e",
+        "g",
+        "a",
+        "c",
+        "y",
+        ":",
+        "n",
+        "o",
+        "_",
+        "r",
+        "u",
+        "t",
+        "i",
+        "m",
+        "s",
+        "p",
+        "d"
+      ],
+      "unsupported_conditions": [],
+      "unsupported_operators": [
+        "legacy_unsupported:no_runtime_section"
+      ]
+    }
+  ],
+  "schema_version": "feature-ir-parity-1",
+  "selected_parity_count": 30,
+  "selected_parity_rows": [
+    {
+      "compiler_status": "full",
+      "feature_id": "legacy:core:47c531d01c04990952a84b3b:1:吟游诗人激励",
+      "feature_name": "吟游诗人激励",
+      "fingerprint": "c5c5973ab2fee8bd86597f6cd2e842498d1868c6ce49c980674d3424e08a1afd",
+      "legacy_adapter_used": true,
+      "legacy_status": "full",
+      "pilot_authority": "compiler",
+      "pilot_compile_status": "full",
+      "runtime_sections": [
+        "resources",
+        "actions"
+      ],
+      "status_authority": "legacy"
+    },
+    {
+      "compiler_status": "full",
+      "feature_id": "legacy:core:47c531d01c04990952a84b3b:1:施法",
+      "feature_name": "施法",
+      "fingerprint": "e6845c8b5ad71e6726ffa024b8e55e940066c1784635f3cd6f849a4dec863d38",
+      "legacy_adapter_used": true,
+      "legacy_status": "full",
+      "pilot_authority": "compiler",
+      "pilot_compile_status": "full",
+      "runtime_sections": [
+        "spellcasting"
+      ],
+      "status_authority": "legacy"
+    },
+    {
+      "compiler_status": "full",
+      "feature_id": "legacy:core:47c531d01c04990952a84b3b:2:万事通",
+      "feature_name": "万事通",
+      "fingerprint": "31edeb1c96575b71bf79615735fed6edff12abb2ecaacaaebb10a0d05a9dfd4e",
+      "legacy_adapter_used": true,
+      "legacy_status": "full",
+      "pilot_authority": "compiler",
+      "pilot_compile_status": "full",
+      "runtime_sections": [
+        "combat_modifiers"
+      ],
+      "status_authority": "legacy"
+    },
+    {
+      "compiler_status": "full",
+      "feature_id": "legacy:core:47c531d01c04990952a84b3b:3:吟游诗人子职",
+      "feature_name": "吟游诗人子职",
+      "fingerprint": "d423e60f3b42ffc669fe2bfcf2d3a93d8f2c5b4a2699350c2083409e17c6277a",
+      "legacy_adapter_used": true,
+      "legacy_status": "full",
+      "pilot_authority": "compiler",
+      "pilot_compile_status": "full",
+      "runtime_sections": [
+        "advancement"
+      ],
+      "status_authority": "legacy"
+    },
+    {
+      "compiler_status": "full",
+      "feature_id": "legacy:core:47c531d01c04990952a84b3b:5:激励之源",
+      "feature_name": "激励之源",
+      "fingerprint": "9ac256438be60136b0d9b443bb4c3f398ac47406c2638eab9358fd15fcde780f",
+      "legacy_adapter_used": true,
+      "legacy_status": "full",
+      "pilot_authority": "compiler",
+      "pilot_compile_status": "full",
+      "runtime_sections": [
+        "resources"
+      ],
+      "status_authority": "legacy"
+    },
+    {
+      "compiler_status": "full",
+      "feature_id": "legacy:core:47c531d01c04990952a84b3b:7:反迷惑",
+      "feature_name": "反迷惑",
+      "fingerprint": "c50492c7a349805b1533f51f2bc85cbdd79064578e54e7460f70c3d23490b407",
+      "legacy_adapter_used": true,
+      "legacy_status": "full",
+      "pilot_authority": "compiler",
+      "pilot_compile_status": "full",
+      "runtime_sections": [
+        "actions"
+      ],
+      "status_authority": "legacy"
+    },
+    {
+      "compiler_status": "full",
+      "feature_id": "legacy:core:47c531d01c04990952a84b3b:10:魔法奥秘",
+      "feature_name": "魔法奥秘",
+      "fingerprint": "a76bcd33681dbcf6eba68a6263fa304def2cd746b16de77fbf8a4d54d6792c8a",
+      "legacy_adapter_used": true,
+      "legacy_status": "full",
+      "pilot_authority": "compiler",
+      "pilot_compile_status": "full",
+      "runtime_sections": [
+        "advancement"
+      ],
+      "status_authority": "legacy"
+    },
+    {
+      "compiler_status": "full",
+      "feature_id": "legacy:core:47c531d01c04990952a84b3b:18:先发激励",
+      "feature_name": "先发激励",
+      "fingerprint": "689c9ebddb6613f5c8e0168c77a7a1fdb27ed984e8333ca1cf72f5d65ab73f05",
+      "legacy_adapter_used": true,
+      "legacy_status": "full",
+      "pilot_authority": "compiler",
+      "pilot_compile_status": "full",
+      "runtime_sections": [
+        "resources"
+      ],
+      "status_authority": "legacy"
+    },
+    {
+      "compiler_status": "full",
+      "feature_id": "legacy:core:47c531d01c04990952a84b3b:19:传奇恩惠",
+      "feature_name": "传奇恩惠",
+      "fingerprint": "0e50cfb5b356c30c614a71db8e30b528105ed1366aa5e6c5002df77a54319a3e",
+      "legacy_adapter_used": true,
+      "legacy_status": "full",
+      "pilot_authority": "compiler",
+      "pilot_compile_status": "full",
+      "runtime_sections": [
+        "advancement"
+      ],
+      "status_authority": "legacy"
+    },
+    {
+      "compiler_status": "full",
+      "feature_id": "legacy:core:dc41ed56a5781f0a765d66f0:1:圣疗",
+      "feature_name": "圣疗",
+      "fingerprint": "f338c16021ee7e06195993921064cd84a6c0349979acee438953a9f7c2c15ada",
+      "legacy_adapter_used": true,
+      "legacy_status": "full",
+      "pilot_authority": "compiler",
+      "pilot_compile_status": "full",
+      "runtime_sections": [
+        "resources",
+        "actions"
+      ],
+      "status_authority": "legacy"
+    },
+    {
+      "compiler_status": "full",
+      "feature_id": "legacy:core:dc41ed56a5781f0a765d66f0:1:施法",
+      "feature_name": "施法",
+      "fingerprint": "b3f05af3c48f4100d4c321a8c484afdb375cafcc7168677eb34f82e4f0a543f7",
+      "legacy_adapter_used": true,
+      "legacy_status": "full",
+      "pilot_authority": "legacy",
+      "pilot_compile_status": null,
+      "runtime_sections": [
+        "spellcasting"
+      ],
+      "status_authority": "legacy"
+    },
+    {
+      "compiler_status": "full",
+      "feature_id": "legacy:core:dc41ed56a5781f0a765d66f0:1:武器精通",
+      "feature_name": "武器精通",
+      "fingerprint": "33f50c0a941f509d42a70671e099d6086e18bb0c6fc2f3c8b9d1269f187e278e",
+      "legacy_adapter_used": true,
+      "legacy_status": "full",
+      "pilot_authority": "legacy",
+      "pilot_compile_status": null,
+      "runtime_sections": [
+        "actions",
+        "advancement"
+      ],
+      "status_authority": "legacy"
+    },
+    {
+      "compiler_status": "full",
+      "feature_id": "legacy:core:dc41ed56a5781f0a765d66f0:2:战斗风格",
+      "feature_name": "战斗风格",
+      "fingerprint": "7d2ac9429d8820e3e281acd41e98e5a4d84302194e68dfb2ba27064e1ec28747",
+      "legacy_adapter_used": true,
+      "legacy_status": "full",
+      "pilot_authority": "legacy",
+      "pilot_compile_status": null,
+      "runtime_sections": [
+        "advancement"
+      ],
+      "status_authority": "legacy"
+    },
+    {
+      "compiler_status": "full",
+      "feature_id": "legacy:core:dc41ed56a5781f0a765d66f0:2:圣武斩",
+      "feature_name": "圣武斩",
+      "fingerprint": "07b3c886a9a651f2e61cb42835d350d7d1d0d5a15bfbff565536bb45068ba4ee",
+      "legacy_adapter_used": true,
+      "legacy_status": "full",
+      "pilot_authority": "legacy",
+      "pilot_compile_status": null,
+      "runtime_sections": [
+        "actions",
+        "attack_riders"
+      ],
+      "status_authority": "legacy"
+    },
+    {
+      "compiler_status": "full",
+      "feature_id": "legacy:core:dc41ed56a5781f0a765d66f0:3:圣武士子职",
+      "feature_name": "圣武士子职",
+      "fingerprint": "9529f7dba4b81a185ccf5709d2b2d34d0907e55d39f1be4068958ac9ae0c4fe0",
+      "legacy_adapter_used": true,
+      "legacy_status": "full",
+      "pilot_authority": "legacy",
+      "pilot_compile_status": null,
+      "runtime_sections": [
+        "advancement"
+      ],
+      "status_authority": "legacy"
+    },
+    {
+      "compiler_status": "full",
+      "feature_id": "legacy:core:dc41ed56a5781f0a765d66f0:5:额外攻击",
+      "feature_name": "额外攻击",
+      "fingerprint": "77f4f4eef708ae8b4c2b529034574db3cdc5b828104ce18c02c1f34a6f42a6bc",
+      "legacy_adapter_used": true,
+      "legacy_status": "full",
+      "pilot_authority": "legacy",
+      "pilot_compile_status": null,
+      "runtime_sections": [
+        "attack_action_count"
+      ],
+      "status_authority": "legacy"
+    },
+    {
+      "compiler_status": "full",
+      "feature_id": "legacy:core:dc41ed56a5781f0a765d66f0:5:信实坐骑",
+      "feature_name": "信实坐骑",
+      "fingerprint": "9b94159d80cd51f78091590a57c39bb4fd1e6aaacc7a95297caf2de173a3f486",
+      "legacy_adapter_used": true,
+      "legacy_status": "full",
+      "pilot_authority": "legacy",
+      "pilot_compile_status": null,
+      "runtime_sections": [
+        "resources",
+        "advancement"
+      ],
+      "status_authority": "legacy"
+    },
+    {
+      "compiler_status": "full",
+      "feature_id": "legacy:core:dc41ed56a5781f0a765d66f0:6:守护灵光",
+      "feature_name": "守护灵光",
+      "fingerprint": "51f3553e0f7c8572e204218cf142321a53f6382c58eab9fd184696b7ec1795f2",
+      "legacy_adapter_used": true,
+      "legacy_status": "full",
+      "pilot_authority": "legacy",
+      "pilot_compile_status": null,
+      "runtime_sections": [
+        "combat_modifiers"
+      ],
+      "status_authority": "legacy"
+    },
+    {
+      "compiler_status": "full",
+      "feature_id": "legacy:core:dc41ed56a5781f0a765d66f0:10:勇气灵光",
+      "feature_name": "勇气灵光",
+      "fingerprint": "11ef736b098dbd3ddc832f5ec1434d5f1cc7d68111d8df25baf65a8119712e34",
+      "legacy_adapter_used": true,
+      "legacy_status": "full",
+      "pilot_authority": "legacy",
+      "pilot_compile_status": null,
+      "runtime_sections": [
+        "combat_defenses"
+      ],
+      "status_authority": "legacy"
+    },
+    {
+      "compiler_status": "full",
+      "feature_id": "legacy:core:dc41ed56a5781f0a765d66f0:11:光耀打击",
+      "feature_name": "光耀打击",
+      "fingerprint": "e8e9db8e5ce9fad63992af0a003dee9a39a29cf940645a7b5541944cbfc5b5b1",
+      "legacy_adapter_used": true,
+      "legacy_status": "full",
+      "pilot_authority": "legacy",
+      "pilot_compile_status": null,
+      "runtime_sections": [
+        "attack_riders"
+      ],
+      "status_authority": "legacy"
+    },
+    {
+      "compiler_status": "full",
+      "feature_id": "legacy:core:dc41ed56a5781f0a765d66f0:14:复原之触",
+      "feature_name": "复原之触",
+      "fingerprint": "4a230e0e6aea15f41cf6cf3629357ec040f8579f4985ab6b2b154360a955be3c",
+      "legacy_adapter_used": true,
+      "legacy_status": "full",
+      "pilot_authority": "legacy",
+      "pilot_compile_status": null,
+      "runtime_sections": [
+        "resources",
+        "actions"
+      ],
+      "status_authority": "legacy"
+    },
+    {
+      "compiler_status": "full",
+      "feature_id": "legacy:core:dc41ed56a5781f0a765d66f0:18:灵光增效",
+      "feature_name": "灵光增效",
+      "fingerprint": "3389798bfd0a5b7cd4f697caaa03a0dd73cc78e83933f9c4bb2da4568014f866",
+      "legacy_adapter_used": true,
+      "legacy_status": "full",
+      "pilot_authority": "legacy",
+      "pilot_compile_status": null,
+      "runtime_sections": [
+        "combat_defenses"
+      ],
+      "status_authority": "legacy"
+    },
+    {
+      "compiler_status": "full",
+      "feature_id": "legacy:core:dc41ed56a5781f0a765d66f0:19:传奇恩惠",
+      "feature_name": "传奇恩惠",
+      "fingerprint": "888c3302dba45e10d71bffc0534ca0521a3f09e7c468bc1d8d14cd58c70bdd22",
+      "legacy_adapter_used": true,
+      "legacy_status": "full",
+      "pilot_authority": "legacy",
+      "pilot_compile_status": null,
+      "runtime_sections": [
+        "advancement"
+      ],
+      "status_authority": "legacy"
+    },
+    {
+      "compiler_status": "full",
+      "feature_id": "legacy:core:30c6d89fdef6d38670fe0994:1:德鲁伊语",
+      "feature_name": "德鲁伊语",
+      "fingerprint": "487389571920d912571c574e495cff6af3634bd94c38f9c4e0d892c38e624a09",
+      "legacy_adapter_used": true,
+      "legacy_status": "full",
+      "pilot_authority": "legacy",
+      "pilot_compile_status": null,
+      "runtime_sections": [
+        "proficiencies",
+        "advancement"
+      ],
+      "status_authority": "legacy"
+    },
+    {
+      "compiler_status": "full",
+      "feature_id": "legacy:core:30c6d89fdef6d38670fe0994:1:原初职能",
+      "feature_name": "原初职能",
+      "fingerprint": "95db41c041916ca773e34c8495c2333b959c11a6b2bee4820b61e149b4dc56b7",
+      "legacy_adapter_used": true,
+      "legacy_status": "full",
+      "pilot_authority": "legacy",
+      "pilot_compile_status": null,
+      "runtime_sections": [
+        "advancement"
+      ],
+      "status_authority": "legacy"
+    },
+    {
+      "compiler_status": "full",
+      "feature_id": "legacy:core:30c6d89fdef6d38670fe0994:1:施法",
+      "feature_name": "施法",
+      "fingerprint": "7fe2f4823fd07be8e0b6dc2252d53933c1cd50d2acb6bdbb1024ef03fd1ee48f",
+      "legacy_adapter_used": true,
+      "legacy_status": "full",
+      "pilot_authority": "legacy",
+      "pilot_compile_status": null,
+      "runtime_sections": [
+        "spellcasting"
+      ],
+      "status_authority": "legacy"
+    },
+    {
+      "compiler_status": "full",
+      "feature_id": "legacy:core:30c6d89fdef6d38670fe0994:3:德鲁伊子职",
+      "feature_name": "德鲁伊子职",
+      "fingerprint": "0d9987616fd8e26680f0a75699fbacca8a39836a333ce2059feef0009ddc55c1",
+      "legacy_adapter_used": true,
+      "legacy_status": "full",
+      "pilot_authority": "legacy",
+      "pilot_compile_status": null,
+      "runtime_sections": [
+        "advancement"
+      ],
+      "status_authority": "legacy"
+    },
+    {
+      "compiler_status": "full",
+      "feature_id": "legacy:core:30c6d89fdef6d38670fe0994:19:传奇恩惠",
+      "feature_name": "传奇恩惠",
+      "fingerprint": "e2dc34d2964df6d1c68b805f5d4f35aba10d72df81c2d4978f91be4337896e79",
+      "legacy_adapter_used": true,
+      "legacy_status": "full",
+      "pilot_authority": "legacy",
+      "pilot_compile_status": null,
+      "runtime_sections": [
+        "advancement"
+      ],
+      "status_authority": "legacy"
+    },
+    {
+      "compiler_status": "full",
+      "feature_id": "legacy:core:30c6d89fdef6d38670fe0994:20:大德鲁伊",
+      "feature_name": "大德鲁伊",
+      "fingerprint": "b547b54f82cc6f997dc7071875667b0fe8c9fa17c67be08f0fe517073d261dcd",
+      "legacy_adapter_used": true,
+      "legacy_status": "full",
+      "pilot_authority": "legacy",
+      "pilot_compile_status": null,
+      "runtime_sections": [
+        "resources"
+      ],
+      "status_authority": "legacy"
+    },
+    {
+      "compiler_status": "full",
+      "feature_id": "legacy:core:a036e1ccfa000d3655c412bd:1:战斗风格",
+      "feature_name": "战斗风格",
+      "fingerprint": "17219e2587919f3682ae3fca5e4cc68eab81d3b9451ebf539d534afe37fe7da0",
+      "legacy_adapter_used": true,
+      "legacy_status": "full",
+      "pilot_authority": "legacy",
+      "pilot_compile_status": null,
+      "runtime_sections": [
+        "advancement"
+      ],
+      "status_authority": "legacy"
+    }
+  ]
+}
