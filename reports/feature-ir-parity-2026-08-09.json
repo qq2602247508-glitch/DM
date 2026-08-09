@@ -6,8 +6,1144 @@
   },
   "compiler_pilot_count": 10,
   "compiler_status_counts": {
-    "full": 126,
-    "partial": 184
+    "full": 10,
+    "invalid": 129,
+    "partial": 171
+  },
+  "formal_semantic_parity": {
+    "all_passed": true,
+    "feature_count": 10,
+    "rows": [
+      {
+        "feature_id": "dnd2024.core.druid.druidic",
+        "feature_name": "德鲁伊语",
+        "fields": {
+          "advancement": {
+            "ir": {
+              "casting_ability": "wisdom",
+              "grant_class": "德鲁伊",
+              "kind": "fixed_spell_grant",
+              "ritual_only": true,
+              "spells": [
+                "动物交谈"
+              ]
+            },
+            "legacy": {
+              "casting_ability": "wisdom",
+              "grant_class": "owner_class",
+              "kind": "fixed_spell_grant",
+              "ritual_only": true,
+              "spells": [
+                "动物交谈"
+              ]
+            },
+            "proof": "typed IR fields normalize to the same rule semantics",
+            "status": "equivalent"
+          },
+          "attack_action_count": {
+            "ir": null,
+            "legacy": null,
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "combat_defenses": {
+            "ir": [],
+            "legacy": [],
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "combat_modifiers": {
+            "ir": [],
+            "legacy": [],
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "movement_modes": {
+            "ir": [],
+            "legacy": [],
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "resources": {
+            "ir": {},
+            "legacy": {},
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          }
+        },
+        "ir_contract": {
+          "advancement": {
+            "casting_ability": "wisdom",
+            "grant_class": "德鲁伊",
+            "kind": "fixed_spell_grant",
+            "ritual_only": true,
+            "spells": [
+              "动物交谈"
+            ]
+          },
+          "attack_action_count": null,
+          "combat_defenses": [],
+          "combat_modifiers": [],
+          "movement_modes": [],
+          "resources": {}
+        },
+        "legacy_contract": {
+          "advancement": {
+            "casting_ability": "wisdom",
+            "grant_class": "owner_class",
+            "kind": "fixed_spell_grant",
+            "ritual_only": true,
+            "spells": [
+              "动物交谈"
+            ]
+          },
+          "attack_action_count": null,
+          "combat_defenses": [],
+          "combat_modifiers": [],
+          "movement_modes": [],
+          "resources": {}
+        },
+        "materialized": true,
+        "production_test": "formal_feature_runtime_regression",
+        "status": "equivalent"
+      },
+      {
+        "feature_id": "dnd2024.core.rogue.thieves-cant",
+        "feature_name": "盗贼黑话",
+        "fields": {
+          "advancement": {
+            "ir": {
+              "choice_requirement": {
+                "duplicate_policy": "forbid",
+                "key": "language_choice",
+                "maximum": 1,
+                "minimum": 1,
+                "options_source": "core_languages",
+                "requires_dm_selection": false,
+                "strict": true
+              },
+              "kind": "selected_language_grant"
+            },
+            "legacy": {
+              "choice_requirement": {
+                "duplicate_policy": "forbid",
+                "key": "thieves_cant_language",
+                "maximum": 1,
+                "minimum": 1,
+                "options_source": "core_languages",
+                "requires_dm_selection": false,
+                "strict": true
+              },
+              "kind": "selected_language_grant"
+            },
+            "proof": "typed IR fields normalize to the same rule semantics",
+            "status": "equivalent"
+          },
+          "attack_action_count": {
+            "ir": null,
+            "legacy": null,
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "combat_defenses": {
+            "ir": [],
+            "legacy": [],
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "combat_modifiers": {
+            "ir": [],
+            "legacy": [],
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "movement_modes": {
+            "ir": [],
+            "legacy": [],
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "resources": {
+            "ir": {},
+            "legacy": {},
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          }
+        },
+        "ir_contract": {
+          "advancement": {
+            "choice_requirement": {
+              "duplicate_policy": "forbid",
+              "key": "language_choice",
+              "maximum": 1,
+              "minimum": 1,
+              "options_source": "core_languages",
+              "requires_dm_selection": false,
+              "strict": true
+            },
+            "kind": "selected_language_grant"
+          },
+          "attack_action_count": null,
+          "combat_defenses": [],
+          "combat_modifiers": [],
+          "movement_modes": [],
+          "resources": {}
+        },
+        "legacy_contract": {
+          "advancement": {
+            "choice_requirement": {
+              "duplicate_policy": "forbid",
+              "key": "thieves_cant_language",
+              "maximum": 1,
+              "minimum": 1,
+              "options_source": "core_languages",
+              "requires_dm_selection": false,
+              "strict": true
+            },
+            "kind": "selected_language_grant"
+          },
+          "attack_action_count": null,
+          "combat_defenses": [],
+          "combat_modifiers": [],
+          "movement_modes": [],
+          "resources": {}
+        },
+        "materialized": true,
+        "production_test": "formal_feature_runtime_regression",
+        "status": "equivalent"
+      },
+      {
+        "feature_id": "dnd2024.core.warlock.contact-patron",
+        "feature_name": "联络宗主",
+        "fields": {
+          "advancement": {
+            "ir": {
+              "auto_save": true,
+              "casting_ability": "charisma",
+              "free_cast_resource_key": "contact_other_plane",
+              "grant_class": "魔契师",
+              "kind": "fixed_spell_grant",
+              "spells": [
+                "异界探知"
+              ]
+            },
+            "legacy": {
+              "auto_save": true,
+              "casting_ability": "charisma",
+              "free_cast_resource_key": "contact_other_plane",
+              "grant_class": "owner_class",
+              "kind": "fixed_spell_grant",
+              "spells": [
+                "异界探知"
+              ]
+            },
+            "proof": "typed IR fields normalize to the same rule semantics",
+            "status": "equivalent"
+          },
+          "attack_action_count": {
+            "ir": null,
+            "legacy": null,
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "combat_defenses": {
+            "ir": [],
+            "legacy": [],
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "combat_modifiers": {
+            "ir": [],
+            "legacy": [],
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "movement_modes": {
+            "ir": [],
+            "legacy": [],
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "resources": {
+            "ir": {
+              "contact_other_plane": {
+                "recovery": "long_rest_completed",
+                "recovery_events": [
+                  {
+                    "operation": "set_to_max",
+                    "rest": "long_rest"
+                  }
+                ]
+              }
+            },
+            "legacy": {
+              "contact_other_plane": {
+                "max": 1,
+                "recovery": "long_rest",
+                "recovery_events": [
+                  {
+                    "operation": "set_to_max",
+                    "rest": "long_rest"
+                  }
+                ]
+              }
+            },
+            "proof": "typed IR fields normalize to the same rule semantics",
+            "status": "equivalent"
+          }
+        },
+        "ir_contract": {
+          "advancement": {
+            "auto_save": true,
+            "casting_ability": "charisma",
+            "free_cast_resource_key": "contact_other_plane",
+            "grant_class": "魔契师",
+            "kind": "fixed_spell_grant",
+            "spells": [
+              "异界探知"
+            ]
+          },
+          "attack_action_count": null,
+          "combat_defenses": [],
+          "combat_modifiers": [],
+          "movement_modes": [],
+          "resources": {
+            "contact_other_plane": {
+              "recovery": "long_rest_completed",
+              "recovery_events": [
+                {
+                  "operation": "set_to_max",
+                  "rest": "long_rest"
+                }
+              ]
+            }
+          }
+        },
+        "legacy_contract": {
+          "advancement": {
+            "auto_save": true,
+            "casting_ability": "charisma",
+            "free_cast_resource_key": "contact_other_plane",
+            "grant_class": "owner_class",
+            "kind": "fixed_spell_grant",
+            "spells": [
+              "异界探知"
+            ]
+          },
+          "attack_action_count": null,
+          "combat_defenses": [],
+          "combat_modifiers": [],
+          "movement_modes": [],
+          "resources": {
+            "contact_other_plane": {
+              "max": 1,
+              "recovery": "long_rest",
+              "recovery_events": [
+                {
+                  "operation": "set_to_max",
+                  "rest": "long_rest"
+                }
+              ]
+            }
+          }
+        },
+        "materialized": true,
+        "production_test": "formal_feature_runtime_regression",
+        "status": "equivalent"
+      },
+      {
+        "feature_id": "dnd2024.core.ranger.roving",
+        "feature_name": "越野",
+        "fields": {
+          "advancement": {
+            "ir": null,
+            "legacy": null,
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "attack_action_count": {
+            "ir": null,
+            "legacy": null,
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "combat_defenses": {
+            "ir": [],
+            "legacy": [],
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "combat_modifiers": {
+            "ir": [
+              {
+                "applies_when": "not_wearing_heavy_armor",
+                "operation": "add",
+                "scope": "self",
+                "stat": "speed_ft",
+                "value": 10
+              }
+            ],
+            "legacy": [
+              {
+                "applies_when": "not_wearing_heavy_armor",
+                "operation": "add",
+                "scope": "self",
+                "stat": "speed_ft",
+                "value": 10
+              }
+            ],
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "movement_modes": {
+            "ir": [
+              {
+                "mode": "climb",
+                "requires_not_wearing_heavy_armor": true,
+                "speed_source": "current_speed"
+              },
+              {
+                "mode": "swim",
+                "requires_not_wearing_heavy_armor": true,
+                "speed_source": "current_speed"
+              }
+            ],
+            "legacy": [
+              {
+                "mode": "climb",
+                "requires_not_wearing_heavy_armor": true,
+                "speed_source": "current_speed"
+              },
+              {
+                "mode": "swim",
+                "requires_not_wearing_heavy_armor": true,
+                "speed_source": "current_speed"
+              }
+            ],
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "resources": {
+            "ir": {},
+            "legacy": {},
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          }
+        },
+        "ir_contract": {
+          "advancement": null,
+          "attack_action_count": null,
+          "combat_defenses": [],
+          "combat_modifiers": [
+            {
+              "applies_when": "not_wearing_heavy_armor",
+              "operation": "add",
+              "scope": "self",
+              "stat": "speed_ft",
+              "value": 10
+            }
+          ],
+          "movement_modes": [
+            {
+              "mode": "climb",
+              "requires_not_wearing_heavy_armor": true,
+              "speed_source": "current_speed"
+            },
+            {
+              "mode": "swim",
+              "requires_not_wearing_heavy_armor": true,
+              "speed_source": "current_speed"
+            }
+          ],
+          "resources": {}
+        },
+        "legacy_contract": {
+          "advancement": null,
+          "attack_action_count": null,
+          "combat_defenses": [],
+          "combat_modifiers": [
+            {
+              "applies_when": "not_wearing_heavy_armor",
+              "operation": "add",
+              "scope": "self",
+              "stat": "speed_ft",
+              "value": 10
+            }
+          ],
+          "movement_modes": [
+            {
+              "mode": "climb",
+              "requires_not_wearing_heavy_armor": true,
+              "speed_source": "current_speed"
+            },
+            {
+              "mode": "swim",
+              "requires_not_wearing_heavy_armor": true,
+              "speed_source": "current_speed"
+            }
+          ],
+          "resources": {}
+        },
+        "materialized": true,
+        "production_test": "formal_feature_runtime_regression",
+        "status": "exact"
+      },
+      {
+        "feature_id": "dnd2024.core.ranger.wild-senses",
+        "feature_name": "野性感官",
+        "fields": {
+          "advancement": {
+            "ir": null,
+            "legacy": null,
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "attack_action_count": {
+            "ir": null,
+            "legacy": null,
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "combat_defenses": {
+            "ir": [],
+            "legacy": [],
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "combat_modifiers": {
+            "ir": [
+              {
+                "applies_when": "always",
+                "mode": "blindsight",
+                "operation": "set",
+                "range_ft": null,
+                "scope": "self",
+                "stat": "blindsight_ft"
+              }
+            ],
+            "legacy": [
+              {
+                "applies_when": "always",
+                "mode": "blindsight",
+                "operation": "set",
+                "range_ft": 30,
+                "scope": "self",
+                "stat": "blindsight_ft",
+                "value": 30
+              }
+            ],
+            "proof": "typed IR fields normalize to the same rule semantics",
+            "status": "equivalent"
+          },
+          "movement_modes": {
+            "ir": [],
+            "legacy": [],
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "resources": {
+            "ir": {},
+            "legacy": {},
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          }
+        },
+        "ir_contract": {
+          "advancement": null,
+          "attack_action_count": null,
+          "combat_defenses": [],
+          "combat_modifiers": [
+            {
+              "applies_when": "always",
+              "mode": "blindsight",
+              "operation": "set",
+              "range_ft": null,
+              "scope": "self",
+              "stat": "blindsight_ft"
+            }
+          ],
+          "movement_modes": [],
+          "resources": {}
+        },
+        "legacy_contract": {
+          "advancement": null,
+          "attack_action_count": null,
+          "combat_defenses": [],
+          "combat_modifiers": [
+            {
+              "applies_when": "always",
+              "mode": "blindsight",
+              "operation": "set",
+              "range_ft": 30,
+              "scope": "self",
+              "stat": "blindsight_ft",
+              "value": 30
+            }
+          ],
+          "movement_modes": [],
+          "resources": {}
+        },
+        "materialized": true,
+        "production_test": "formal_feature_runtime_regression",
+        "status": "equivalent"
+      },
+      {
+        "feature_id": "dnd2024.subclass.rogue.thief.second-story-work",
+        "feature_name": "梁上君子",
+        "fields": {
+          "advancement": {
+            "ir": null,
+            "legacy": null,
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "attack_action_count": {
+            "ir": null,
+            "legacy": null,
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "combat_defenses": {
+            "ir": [],
+            "legacy": [],
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "combat_modifiers": {
+            "ir": [
+              {
+                "applies_when": "always",
+                "operation": "set",
+                "scope": "self",
+                "stat": "jump_ability",
+                "value_source": "dexterity"
+              }
+            ],
+            "legacy": [
+              {
+                "operation": "set",
+                "scope": "self",
+                "stat": "jump_ability",
+                "value_source": "dexterity"
+              }
+            ],
+            "proof": "typed IR fields normalize to the same rule semantics",
+            "status": "equivalent"
+          },
+          "movement_modes": {
+            "ir": [
+              {
+                "mode": "climb",
+                "speed_source": "current_speed"
+              }
+            ],
+            "legacy": [
+              {
+                "mode": "climb",
+                "speed_source": "current_speed"
+              }
+            ],
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "resources": {
+            "ir": {},
+            "legacy": {},
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          }
+        },
+        "ir_contract": {
+          "advancement": null,
+          "attack_action_count": null,
+          "combat_defenses": [],
+          "combat_modifiers": [
+            {
+              "applies_when": "always",
+              "operation": "set",
+              "scope": "self",
+              "stat": "jump_ability",
+              "value_source": "dexterity"
+            }
+          ],
+          "movement_modes": [
+            {
+              "mode": "climb",
+              "speed_source": "current_speed"
+            }
+          ],
+          "resources": {}
+        },
+        "legacy_contract": {
+          "advancement": null,
+          "attack_action_count": null,
+          "combat_defenses": [],
+          "combat_modifiers": [
+            {
+              "operation": "set",
+              "scope": "self",
+              "stat": "jump_ability",
+              "value_source": "dexterity"
+            }
+          ],
+          "movement_modes": [
+            {
+              "mode": "climb",
+              "speed_source": "current_speed"
+            }
+          ],
+          "resources": {}
+        },
+        "materialized": true,
+        "production_test": "formal_feature_runtime_regression",
+        "status": "equivalent"
+      },
+      {
+        "feature_id": "dnd2024.subclass.cleric.life.disciple-of-life",
+        "feature_name": "生命门徒",
+        "fields": {
+          "advancement": {
+            "ir": null,
+            "legacy": null,
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "attack_action_count": {
+            "ir": null,
+            "legacy": null,
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "combat_defenses": {
+            "ir": [],
+            "legacy": [],
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "combat_modifiers": {
+            "ir": [
+              {
+                "applies_when": "legal_spell_healing_source",
+                "formula": "spell_slot_level_plus_two",
+                "operation": "add",
+                "scope": "outgoing",
+                "stat": "spell_healing"
+              }
+            ],
+            "legacy": [
+              {
+                "applies_when": "always",
+                "formula": "spell_slot_level_plus_two",
+                "operation": "add",
+                "scope": "outgoing",
+                "stat": "spell_healing"
+              }
+            ],
+            "proof": "typed IR fields normalize to the same rule semantics",
+            "status": "equivalent"
+          },
+          "movement_modes": {
+            "ir": [],
+            "legacy": [],
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "resources": {
+            "ir": {},
+            "legacy": {},
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          }
+        },
+        "ir_contract": {
+          "advancement": null,
+          "attack_action_count": null,
+          "combat_defenses": [],
+          "combat_modifiers": [
+            {
+              "applies_when": "legal_spell_healing_source",
+              "formula": "spell_slot_level_plus_two",
+              "operation": "add",
+              "scope": "outgoing",
+              "stat": "spell_healing"
+            }
+          ],
+          "movement_modes": [],
+          "resources": {}
+        },
+        "legacy_contract": {
+          "advancement": null,
+          "attack_action_count": null,
+          "combat_defenses": [],
+          "combat_modifiers": [
+            {
+              "applies_when": "always",
+              "formula": "spell_slot_level_plus_two",
+              "operation": "add",
+              "scope": "outgoing",
+              "stat": "spell_healing"
+            }
+          ],
+          "movement_modes": [],
+          "resources": {}
+        },
+        "materialized": true,
+        "production_test": "formal_feature_runtime_regression",
+        "status": "equivalent"
+      },
+      {
+        "feature_id": "dnd2024.subclass.wizard.evoker.empowered-evocation",
+        "feature_name": "强效塑能",
+        "fields": {
+          "advancement": {
+            "ir": null,
+            "legacy": null,
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "attack_action_count": {
+            "ir": null,
+            "legacy": null,
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "combat_defenses": {
+            "ir": [],
+            "legacy": [],
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "combat_modifiers": {
+            "ir": [
+              {
+                "ability": "intelligence",
+                "applies_when": "legal_evocation_spell_damage",
+                "formula": "ability_modifier",
+                "operation": "add_ability_modifier_once",
+                "scope": "outgoing",
+                "stat": "spell_damage"
+              }
+            ],
+            "legacy": [
+              {
+                "ability": "intelligence",
+                "applies_when": "always",
+                "formula": "ability_modifier",
+                "operation": "add_ability_modifier_once",
+                "scope": "outgoing",
+                "stat": "spell_damage"
+              }
+            ],
+            "proof": "typed IR fields normalize to the same rule semantics",
+            "status": "equivalent"
+          },
+          "movement_modes": {
+            "ir": [],
+            "legacy": [],
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "resources": {
+            "ir": {},
+            "legacy": {},
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          }
+        },
+        "ir_contract": {
+          "advancement": null,
+          "attack_action_count": null,
+          "combat_defenses": [],
+          "combat_modifiers": [
+            {
+              "ability": "intelligence",
+              "applies_when": "legal_evocation_spell_damage",
+              "formula": "ability_modifier",
+              "operation": "add_ability_modifier_once",
+              "scope": "outgoing",
+              "stat": "spell_damage"
+            }
+          ],
+          "movement_modes": [],
+          "resources": {}
+        },
+        "legacy_contract": {
+          "advancement": null,
+          "attack_action_count": null,
+          "combat_defenses": [],
+          "combat_modifiers": [
+            {
+              "ability": "intelligence",
+              "applies_when": "always",
+              "formula": "ability_modifier",
+              "operation": "add_ability_modifier_once",
+              "scope": "outgoing",
+              "stat": "spell_damage"
+            }
+          ],
+          "movement_modes": [],
+          "resources": {}
+        },
+        "materialized": true,
+        "production_test": "formal_feature_runtime_regression",
+        "status": "equivalent"
+      },
+      {
+        "feature_id": "dnd2024.subclass.wizard.evoker.potent-cantrip",
+        "feature_name": "强力戏法",
+        "fields": {
+          "advancement": {
+            "ir": null,
+            "legacy": null,
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "attack_action_count": {
+            "ir": null,
+            "legacy": null,
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "combat_defenses": {
+            "ir": [],
+            "legacy": [],
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "combat_modifiers": {
+            "ir": [
+              {
+                "applies_when": "cantrip_save_failure",
+                "formula": "half_damage",
+                "operation": "cantrip_failure_half",
+                "scope": "outgoing",
+                "stat": "spell_damage"
+              }
+            ],
+            "legacy": [
+              {
+                "applies_when": "always",
+                "formula": "half_damage",
+                "operation": "cantrip_failure_half",
+                "scope": "outgoing",
+                "stat": "spell_damage"
+              }
+            ],
+            "proof": "typed IR fields normalize to the same rule semantics",
+            "status": "equivalent"
+          },
+          "movement_modes": {
+            "ir": [],
+            "legacy": [],
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "resources": {
+            "ir": {},
+            "legacy": {},
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          }
+        },
+        "ir_contract": {
+          "advancement": null,
+          "attack_action_count": null,
+          "combat_defenses": [],
+          "combat_modifiers": [
+            {
+              "applies_when": "cantrip_save_failure",
+              "formula": "half_damage",
+              "operation": "cantrip_failure_half",
+              "scope": "outgoing",
+              "stat": "spell_damage"
+            }
+          ],
+          "movement_modes": [],
+          "resources": {}
+        },
+        "legacy_contract": {
+          "advancement": null,
+          "attack_action_count": null,
+          "combat_defenses": [],
+          "combat_modifiers": [
+            {
+              "applies_when": "always",
+              "formula": "half_damage",
+              "operation": "cantrip_failure_half",
+              "scope": "outgoing",
+              "stat": "spell_damage"
+            }
+          ],
+          "movement_modes": [],
+          "resources": {}
+        },
+        "materialized": true,
+        "production_test": "formal_feature_runtime_regression",
+        "status": "equivalent"
+      },
+      {
+        "feature_id": "dnd2024.subclass.paladin.ancients.undying-sentinel",
+        "feature_name": "不灭哨卫",
+        "fields": {
+          "advancement": {
+            "ir": null,
+            "legacy": null,
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "attack_action_count": {
+            "ir": null,
+            "legacy": null,
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "combat_defenses": {
+            "ir": [
+              {
+                "eligibility": {
+                  "class_names": [
+                    "圣武士",
+                    "paladin"
+                  ],
+                  "entity_types": [
+                    "character"
+                  ],
+                  "minimum_level": 15
+                },
+                "exceptions": [
+                  "outright_death"
+                ],
+                "kind": "zero_hp_auto_prevention",
+                "on_success": {
+                  "hit_points": "3*paladin_level"
+                },
+                "reset": "long_rest",
+                "resource_cost": 1,
+                "resource_key": "undying_sentinel",
+                "trigger": "would_drop_to_zero_hit_points"
+              }
+            ],
+            "legacy": [
+              {
+                "eligibility": {
+                  "entity_types": [
+                    "character"
+                  ],
+                  "level": {
+                    "bind_as": "paladin_level",
+                    "class_names": [
+                      "圣武士",
+                      "paladin"
+                    ],
+                    "minimum": 15
+                  }
+                },
+                "exceptions": [
+                  "outright_death"
+                ],
+                "kind": "zero_hp_auto_prevention",
+                "on_success": {
+                  "hit_points": "3*paladin_level"
+                },
+                "resource_cost": 1,
+                "resource_key": "undying_sentinel",
+                "trigger": "would_drop_to_zero_hit_points"
+              }
+            ],
+            "proof": "typed IR fields normalize to the same rule semantics",
+            "status": "equivalent"
+          },
+          "combat_modifiers": {
+            "ir": [],
+            "legacy": [],
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "movement_modes": {
+            "ir": [],
+            "legacy": [],
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "resources": {
+            "ir": {},
+            "legacy": {},
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          }
+        },
+        "ir_contract": {
+          "advancement": null,
+          "attack_action_count": null,
+          "combat_defenses": [
+            {
+              "eligibility": {
+                "class_names": [
+                  "圣武士",
+                  "paladin"
+                ],
+                "entity_types": [
+                  "character"
+                ],
+                "minimum_level": 15
+              },
+              "exceptions": [
+                "outright_death"
+              ],
+              "kind": "zero_hp_auto_prevention",
+              "on_success": {
+                "hit_points": "3*paladin_level"
+              },
+              "reset": "long_rest",
+              "resource_cost": 1,
+              "resource_key": "undying_sentinel",
+              "trigger": "would_drop_to_zero_hit_points"
+            }
+          ],
+          "combat_modifiers": [],
+          "movement_modes": [],
+          "resources": {}
+        },
+        "legacy_contract": {
+          "advancement": null,
+          "attack_action_count": null,
+          "combat_defenses": [
+            {
+              "eligibility": {
+                "entity_types": [
+                  "character"
+                ],
+                "level": {
+                  "bind_as": "paladin_level",
+                  "class_names": [
+                    "圣武士",
+                    "paladin"
+                  ],
+                  "minimum": 15
+                }
+              },
+              "exceptions": [
+                "outright_death"
+              ],
+              "kind": "zero_hp_auto_prevention",
+              "on_success": {
+                "hit_points": "3*paladin_level"
+              },
+              "resource_cost": 1,
+              "resource_key": "undying_sentinel",
+              "trigger": "would_drop_to_zero_hit_points"
+            }
+          ],
+          "combat_modifiers": [],
+          "movement_modes": [],
+          "resources": {}
+        },
+        "materialized": true,
+        "production_test": "formal_feature_runtime_regression",
+        "status": "equivalent"
+      }
+    ],
+    "schema_version": "feature-ir-semantic-parity-2"
   },
   "legacy_adapter": true,
   "partial_diagnostics": [
@@ -29,24 +1165,7 @@
       "legacy_status": "partial",
       "manual_boundaries": [],
       "unsupported_combinations": [
-        "l",
-        "e",
-        "g",
-        "a",
-        "c",
-        "y",
-        ":",
-        "n",
-        "o",
-        "_",
-        "r",
-        "u",
-        "t",
-        "i",
-        "m",
-        "s",
-        "p",
-        "d"
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
       ],
       "unsupported_conditions": [],
       "unsupported_operators": [
@@ -71,24 +1190,7 @@
       "legacy_status": "partial",
       "manual_boundaries": [],
       "unsupported_combinations": [
-        "l",
-        "e",
-        "g",
-        "a",
-        "c",
-        "y",
-        ":",
-        "n",
-        "o",
-        "_",
-        "r",
-        "u",
-        "t",
-        "i",
-        "m",
-        "s",
-        "p",
-        "d"
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
       ],
       "unsupported_conditions": [],
       "unsupported_operators": [
@@ -113,24 +1215,7 @@
       "legacy_status": "partial",
       "manual_boundaries": [],
       "unsupported_combinations": [
-        "l",
-        "e",
-        "g",
-        "a",
-        "c",
-        "y",
-        ":",
-        "n",
-        "o",
-        "_",
-        "r",
-        "u",
-        "t",
-        "i",
-        "m",
-        "s",
-        "p",
-        "d"
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
       ],
       "unsupported_conditions": [],
       "unsupported_operators": [
@@ -155,24 +1240,7 @@
       "legacy_status": "partial",
       "manual_boundaries": [],
       "unsupported_combinations": [
-        "l",
-        "e",
-        "g",
-        "a",
-        "c",
-        "y",
-        ":",
-        "n",
-        "o",
-        "_",
-        "r",
-        "u",
-        "t",
-        "i",
-        "m",
-        "s",
-        "p",
-        "d"
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
       ],
       "unsupported_conditions": [],
       "unsupported_operators": [
@@ -197,24 +1265,7 @@
       "legacy_status": "partial",
       "manual_boundaries": [],
       "unsupported_combinations": [
-        "l",
-        "e",
-        "g",
-        "a",
-        "c",
-        "y",
-        ":",
-        "n",
-        "o",
-        "_",
-        "r",
-        "u",
-        "t",
-        "i",
-        "m",
-        "s",
-        "p",
-        "d"
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
       ],
       "unsupported_conditions": [],
       "unsupported_operators": [
@@ -239,24 +1290,7 @@
       "legacy_status": "partial",
       "manual_boundaries": [],
       "unsupported_combinations": [
-        "l",
-        "e",
-        "g",
-        "a",
-        "c",
-        "y",
-        ":",
-        "n",
-        "o",
-        "_",
-        "r",
-        "u",
-        "t",
-        "i",
-        "m",
-        "s",
-        "p",
-        "d"
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
       ],
       "unsupported_conditions": [],
       "unsupported_operators": [
@@ -281,24 +1315,7 @@
       "legacy_status": "partial",
       "manual_boundaries": [],
       "unsupported_combinations": [
-        "l",
-        "e",
-        "g",
-        "a",
-        "c",
-        "y",
-        ":",
-        "n",
-        "o",
-        "_",
-        "r",
-        "u",
-        "t",
-        "i",
-        "m",
-        "s",
-        "p",
-        "d"
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
       ],
       "unsupported_conditions": [],
       "unsupported_operators": [
@@ -308,55 +1325,32 @@
     {
       "clause_results": [
         {
-          "blockers": [],
-          "capability_ids": [
-            "resource.lifecycle"
+          "blockers": [
+            "invalid_parameters: unknown parameter 'legacy_section' for operator restore_resource",
+            "invalid_parameters: missing required parameter 'operation' for operator restore_resource",
+            "invalid_parameters: missing required parameter 'resource_key' for operator restore_resource",
+            "invalid_parameters: restore_resource requires one of 'amount' or 'amount_source'"
           ],
+          "capability_ids": [],
           "clause_id": "legacy:resources:0",
-          "generated_block": {
-            "action_economy": "none",
-            "activation": "automatic",
-            "capability_id": "resource.lifecycle",
-            "clause_id": "legacy:resources:0",
-            "contract_version": "1.0",
-            "operator": "restore_resource",
-            "parameters": {
-              "legacy_section": "resources"
-            },
-            "targeting": {
-              "kind": "self",
-              "parameters": {}
-            },
-            "trigger": "advancement_confirmed"
-          },
-          "status": "full"
+          "generated_block": null,
+          "status": "partial"
         },
         {
-          "blockers": [],
-          "capability_ids": [
-            "modifier.timed"
+          "blockers": [
+            "invalid_parameters: unknown parameter 'legacy_section' for operator create_timed_modifier",
+            "invalid_parameters: missing required parameter 'duration' for operator create_timed_modifier",
+            "invalid_parameters: missing required parameter 'operation' for operator create_timed_modifier",
+            "invalid_parameters: missing required parameter 'stat' for operator create_timed_modifier",
+            "invalid_parameters: create_timed_modifier requires one of 'value' or 'value_source'"
           ],
+          "capability_ids": [],
           "clause_id": "legacy:actions:1",
-          "generated_block": {
-            "action_economy": "none",
-            "activation": "automatic",
-            "capability_id": "modifier.timed",
-            "clause_id": "legacy:actions:1",
-            "contract_version": "1.0",
-            "operator": "create_timed_modifier",
-            "parameters": {
-              "legacy_section": "actions"
-            },
-            "targeting": {
-              "kind": "self",
-              "parameters": {}
-            },
-            "trigger": "advancement_confirmed"
-          },
-          "status": "full"
+          "generated_block": null,
+          "status": "partial"
         }
       ],
-      "compiler_status": "full",
+      "compiler_status": "invalid",
       "feature_id": "legacy:core:dc41ed56a5781f0a765d66f0:3:引导神力",
       "feature_name": "引导神力",
       "legacy_status": "partial",
@@ -383,24 +1377,7 @@
       "legacy_status": "partial",
       "manual_boundaries": [],
       "unsupported_combinations": [
-        "l",
-        "e",
-        "g",
-        "a",
-        "c",
-        "y",
-        ":",
-        "n",
-        "o",
-        "_",
-        "r",
-        "u",
-        "t",
-        "i",
-        "m",
-        "s",
-        "p",
-        "d"
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
       ],
       "unsupported_conditions": [],
       "unsupported_operators": [
@@ -425,24 +1402,7 @@
       "legacy_status": "partial",
       "manual_boundaries": [],
       "unsupported_combinations": [
-        "l",
-        "e",
-        "g",
-        "a",
-        "c",
-        "y",
-        ":",
-        "n",
-        "o",
-        "_",
-        "r",
-        "u",
-        "t",
-        "i",
-        "m",
-        "s",
-        "p",
-        "d"
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
       ],
       "unsupported_conditions": [],
       "unsupported_operators": [
@@ -450,435 +1410,152 @@
       ]
     }
   ],
-  "schema_version": "feature-ir-parity-1",
-  "selected_parity_count": 30,
+  "schema_version": "feature-ir-parity-2",
+  "selected_parity_count": 10,
   "selected_parity_rows": [
     {
       "compiler_status": "full",
-      "feature_id": "legacy:core:47c531d01c04990952a84b3b:1:吟游诗人激励",
-      "feature_name": "吟游诗人激励",
-      "fingerprint": "c5c5973ab2fee8bd86597f6cd2e842498d1868c6ce49c980674d3424e08a1afd",
-      "legacy_adapter_used": true,
+      "feature_id": "dnd2024.subclass.paladin.ancients.undying-sentinel",
+      "feature_name": "不灭哨卫 Undying",
+      "fingerprint": "bed067d4c415348440754351fa4fb726be2515bf3e9cb6da48a1acc90a02eb27",
+      "formal_ir": true,
+      "legacy_adapter_used": false,
       "legacy_status": "full",
       "pilot_authority": "compiler",
       "pilot_compile_status": "full",
-      "runtime_sections": [
-        "resources",
-        "actions"
-      ],
-      "status_authority": "legacy"
+      "runtime_sections": [],
+      "status_authority": "compiler"
     },
     {
       "compiler_status": "full",
-      "feature_id": "legacy:core:47c531d01c04990952a84b3b:1:施法",
-      "feature_name": "施法",
-      "fingerprint": "e6845c8b5ad71e6726ffa024b8e55e940066c1784635f3cd6f849a4dec863d38",
-      "legacy_adapter_used": true,
-      "legacy_status": "full",
-      "pilot_authority": "compiler",
-      "pilot_compile_status": "full",
-      "runtime_sections": [
-        "spellcasting"
-      ],
-      "status_authority": "legacy"
-    },
-    {
-      "compiler_status": "full",
-      "feature_id": "legacy:core:47c531d01c04990952a84b3b:2:万事通",
-      "feature_name": "万事通",
-      "fingerprint": "31edeb1c96575b71bf79615735fed6edff12abb2ecaacaaebb10a0d05a9dfd4e",
-      "legacy_adapter_used": true,
-      "legacy_status": "full",
-      "pilot_authority": "compiler",
-      "pilot_compile_status": "full",
-      "runtime_sections": [
-        "combat_modifiers"
-      ],
-      "status_authority": "legacy"
-    },
-    {
-      "compiler_status": "full",
-      "feature_id": "legacy:core:47c531d01c04990952a84b3b:3:吟游诗人子职",
-      "feature_name": "吟游诗人子职",
-      "fingerprint": "d423e60f3b42ffc669fe2bfcf2d3a93d8f2c5b4a2699350c2083409e17c6277a",
-      "legacy_adapter_used": true,
-      "legacy_status": "full",
-      "pilot_authority": "compiler",
-      "pilot_compile_status": "full",
-      "runtime_sections": [
-        "advancement"
-      ],
-      "status_authority": "legacy"
-    },
-    {
-      "compiler_status": "full",
-      "feature_id": "legacy:core:47c531d01c04990952a84b3b:5:激励之源",
-      "feature_name": "激励之源",
-      "fingerprint": "9ac256438be60136b0d9b443bb4c3f398ac47406c2638eab9358fd15fcde780f",
-      "legacy_adapter_used": true,
-      "legacy_status": "full",
-      "pilot_authority": "compiler",
-      "pilot_compile_status": "full",
-      "runtime_sections": [
-        "resources"
-      ],
-      "status_authority": "legacy"
-    },
-    {
-      "compiler_status": "full",
-      "feature_id": "legacy:core:47c531d01c04990952a84b3b:7:反迷惑",
-      "feature_name": "反迷惑",
-      "fingerprint": "c50492c7a349805b1533f51f2bc85cbdd79064578e54e7460f70c3d23490b407",
-      "legacy_adapter_used": true,
-      "legacy_status": "full",
-      "pilot_authority": "compiler",
-      "pilot_compile_status": "full",
-      "runtime_sections": [
-        "actions"
-      ],
-      "status_authority": "legacy"
-    },
-    {
-      "compiler_status": "full",
-      "feature_id": "legacy:core:47c531d01c04990952a84b3b:10:魔法奥秘",
-      "feature_name": "魔法奥秘",
-      "fingerprint": "a76bcd33681dbcf6eba68a6263fa304def2cd746b16de77fbf8a4d54d6792c8a",
-      "legacy_adapter_used": true,
-      "legacy_status": "full",
-      "pilot_authority": "compiler",
-      "pilot_compile_status": "full",
-      "runtime_sections": [
-        "advancement"
-      ],
-      "status_authority": "legacy"
-    },
-    {
-      "compiler_status": "full",
-      "feature_id": "legacy:core:47c531d01c04990952a84b3b:18:先发激励",
-      "feature_name": "先发激励",
-      "fingerprint": "689c9ebddb6613f5c8e0168c77a7a1fdb27ed984e8333ca1cf72f5d65ab73f05",
-      "legacy_adapter_used": true,
-      "legacy_status": "full",
-      "pilot_authority": "compiler",
-      "pilot_compile_status": "full",
-      "runtime_sections": [
-        "resources"
-      ],
-      "status_authority": "legacy"
-    },
-    {
-      "compiler_status": "full",
-      "feature_id": "legacy:core:47c531d01c04990952a84b3b:19:传奇恩惠",
-      "feature_name": "传奇恩惠",
-      "fingerprint": "0e50cfb5b356c30c614a71db8e30b528105ed1366aa5e6c5002df77a54319a3e",
-      "legacy_adapter_used": true,
-      "legacy_status": "full",
-      "pilot_authority": "compiler",
-      "pilot_compile_status": "full",
-      "runtime_sections": [
-        "advancement"
-      ],
-      "status_authority": "legacy"
-    },
-    {
-      "compiler_status": "full",
-      "feature_id": "legacy:core:dc41ed56a5781f0a765d66f0:1:圣疗",
-      "feature_name": "圣疗",
-      "fingerprint": "f338c16021ee7e06195993921064cd84a6c0349979acee438953a9f7c2c15ada",
-      "legacy_adapter_used": true,
-      "legacy_status": "full",
-      "pilot_authority": "compiler",
-      "pilot_compile_status": "full",
-      "runtime_sections": [
-        "resources",
-        "actions"
-      ],
-      "status_authority": "legacy"
-    },
-    {
-      "compiler_status": "full",
-      "feature_id": "legacy:core:dc41ed56a5781f0a765d66f0:1:施法",
-      "feature_name": "施法",
-      "fingerprint": "b3f05af3c48f4100d4c321a8c484afdb375cafcc7168677eb34f82e4f0a543f7",
-      "legacy_adapter_used": true,
-      "legacy_status": "full",
-      "pilot_authority": "legacy",
-      "pilot_compile_status": null,
-      "runtime_sections": [
-        "spellcasting"
-      ],
-      "status_authority": "legacy"
-    },
-    {
-      "compiler_status": "full",
-      "feature_id": "legacy:core:dc41ed56a5781f0a765d66f0:1:武器精通",
-      "feature_name": "武器精通",
-      "fingerprint": "33f50c0a941f509d42a70671e099d6086e18bb0c6fc2f3c8b9d1269f187e278e",
-      "legacy_adapter_used": true,
-      "legacy_status": "full",
-      "pilot_authority": "legacy",
-      "pilot_compile_status": null,
-      "runtime_sections": [
-        "actions",
-        "advancement"
-      ],
-      "status_authority": "legacy"
-    },
-    {
-      "compiler_status": "full",
-      "feature_id": "legacy:core:dc41ed56a5781f0a765d66f0:2:战斗风格",
-      "feature_name": "战斗风格",
-      "fingerprint": "7d2ac9429d8820e3e281acd41e98e5a4d84302194e68dfb2ba27064e1ec28747",
-      "legacy_adapter_used": true,
-      "legacy_status": "full",
-      "pilot_authority": "legacy",
-      "pilot_compile_status": null,
-      "runtime_sections": [
-        "advancement"
-      ],
-      "status_authority": "legacy"
-    },
-    {
-      "compiler_status": "full",
-      "feature_id": "legacy:core:dc41ed56a5781f0a765d66f0:2:圣武斩",
-      "feature_name": "圣武斩",
-      "fingerprint": "07b3c886a9a651f2e61cb42835d350d7d1d0d5a15bfbff565536bb45068ba4ee",
-      "legacy_adapter_used": true,
-      "legacy_status": "full",
-      "pilot_authority": "legacy",
-      "pilot_compile_status": null,
-      "runtime_sections": [
-        "actions",
-        "attack_riders"
-      ],
-      "status_authority": "legacy"
-    },
-    {
-      "compiler_status": "full",
-      "feature_id": "legacy:core:dc41ed56a5781f0a765d66f0:3:圣武士子职",
-      "feature_name": "圣武士子职",
-      "fingerprint": "9529f7dba4b81a185ccf5709d2b2d34d0907e55d39f1be4068958ac9ae0c4fe0",
-      "legacy_adapter_used": true,
-      "legacy_status": "full",
-      "pilot_authority": "legacy",
-      "pilot_compile_status": null,
-      "runtime_sections": [
-        "advancement"
-      ],
-      "status_authority": "legacy"
-    },
-    {
-      "compiler_status": "full",
-      "feature_id": "legacy:core:dc41ed56a5781f0a765d66f0:5:额外攻击",
-      "feature_name": "额外攻击",
-      "fingerprint": "77f4f4eef708ae8b4c2b529034574db3cdc5b828104ce18c02c1f34a6f42a6bc",
-      "legacy_adapter_used": true,
-      "legacy_status": "full",
-      "pilot_authority": "legacy",
-      "pilot_compile_status": null,
-      "runtime_sections": [
-        "attack_action_count"
-      ],
-      "status_authority": "legacy"
-    },
-    {
-      "compiler_status": "full",
-      "feature_id": "legacy:core:dc41ed56a5781f0a765d66f0:5:信实坐骑",
-      "feature_name": "信实坐骑",
-      "fingerprint": "9b94159d80cd51f78091590a57c39bb4fd1e6aaacc7a95297caf2de173a3f486",
-      "legacy_adapter_used": true,
-      "legacy_status": "full",
-      "pilot_authority": "legacy",
-      "pilot_compile_status": null,
-      "runtime_sections": [
-        "resources",
-        "advancement"
-      ],
-      "status_authority": "legacy"
-    },
-    {
-      "compiler_status": "full",
-      "feature_id": "legacy:core:dc41ed56a5781f0a765d66f0:6:守护灵光",
-      "feature_name": "守护灵光",
-      "fingerprint": "51f3553e0f7c8572e204218cf142321a53f6382c58eab9fd184696b7ec1795f2",
-      "legacy_adapter_used": true,
-      "legacy_status": "full",
-      "pilot_authority": "legacy",
-      "pilot_compile_status": null,
-      "runtime_sections": [
-        "combat_modifiers"
-      ],
-      "status_authority": "legacy"
-    },
-    {
-      "compiler_status": "full",
-      "feature_id": "legacy:core:dc41ed56a5781f0a765d66f0:10:勇气灵光",
-      "feature_name": "勇气灵光",
-      "fingerprint": "11ef736b098dbd3ddc832f5ec1434d5f1cc7d68111d8df25baf65a8119712e34",
-      "legacy_adapter_used": true,
-      "legacy_status": "full",
-      "pilot_authority": "legacy",
-      "pilot_compile_status": null,
-      "runtime_sections": [
-        "combat_defenses"
-      ],
-      "status_authority": "legacy"
-    },
-    {
-      "compiler_status": "full",
-      "feature_id": "legacy:core:dc41ed56a5781f0a765d66f0:11:光耀打击",
-      "feature_name": "光耀打击",
-      "fingerprint": "e8e9db8e5ce9fad63992af0a003dee9a39a29cf940645a7b5541944cbfc5b5b1",
-      "legacy_adapter_used": true,
-      "legacy_status": "full",
-      "pilot_authority": "legacy",
-      "pilot_compile_status": null,
-      "runtime_sections": [
-        "attack_riders"
-      ],
-      "status_authority": "legacy"
-    },
-    {
-      "compiler_status": "full",
-      "feature_id": "legacy:core:dc41ed56a5781f0a765d66f0:14:复原之触",
-      "feature_name": "复原之触",
-      "fingerprint": "4a230e0e6aea15f41cf6cf3629357ec040f8579f4985ab6b2b154360a955be3c",
-      "legacy_adapter_used": true,
-      "legacy_status": "full",
-      "pilot_authority": "legacy",
-      "pilot_compile_status": null,
-      "runtime_sections": [
-        "resources",
-        "actions"
-      ],
-      "status_authority": "legacy"
-    },
-    {
-      "compiler_status": "full",
-      "feature_id": "legacy:core:dc41ed56a5781f0a765d66f0:18:灵光增效",
-      "feature_name": "灵光增效",
-      "fingerprint": "3389798bfd0a5b7cd4f697caaa03a0dd73cc78e83933f9c4bb2da4568014f866",
-      "legacy_adapter_used": true,
-      "legacy_status": "full",
-      "pilot_authority": "legacy",
-      "pilot_compile_status": null,
-      "runtime_sections": [
-        "combat_defenses"
-      ],
-      "status_authority": "legacy"
-    },
-    {
-      "compiler_status": "full",
-      "feature_id": "legacy:core:dc41ed56a5781f0a765d66f0:19:传奇恩惠",
-      "feature_name": "传奇恩惠",
-      "fingerprint": "888c3302dba45e10d71bffc0534ca0521a3f09e7c468bc1d8d14cd58c70bdd22",
-      "legacy_adapter_used": true,
-      "legacy_status": "full",
-      "pilot_authority": "legacy",
-      "pilot_compile_status": null,
-      "runtime_sections": [
-        "advancement"
-      ],
-      "status_authority": "legacy"
-    },
-    {
-      "compiler_status": "full",
-      "feature_id": "legacy:core:30c6d89fdef6d38670fe0994:1:德鲁伊语",
+      "feature_id": "dnd2024.core.druid.druidic",
       "feature_name": "德鲁伊语",
-      "fingerprint": "487389571920d912571c574e495cff6af3634bd94c38f9c4e0d892c38e624a09",
-      "legacy_adapter_used": true,
+      "fingerprint": "2379123d3e2e8fd3e3aebe5a48682133b0210d9ec69ff34b1dd53875bcc89c4f",
+      "formal_ir": true,
+      "legacy_adapter_used": false,
       "legacy_status": "full",
-      "pilot_authority": "legacy",
-      "pilot_compile_status": null,
+      "pilot_authority": "compiler",
+      "pilot_compile_status": "full",
       "runtime_sections": [
         "proficiencies",
         "advancement"
       ],
-      "status_authority": "legacy"
+      "status_authority": "compiler"
     },
     {
       "compiler_status": "full",
-      "feature_id": "legacy:core:30c6d89fdef6d38670fe0994:1:原初职能",
-      "feature_name": "原初职能",
-      "fingerprint": "95db41c041916ca773e34c8495c2333b959c11a6b2bee4820b61e149b4dc56b7",
-      "legacy_adapter_used": true,
+      "feature_id": "dnd2024.subclass.wizard.evoker.potent-cantrip",
+      "feature_name": "强力戏法",
+      "fingerprint": "50353315aeedca3b78ee84a13fd1c7b600b304d7806088293cf0226986d53181",
+      "formal_ir": true,
+      "legacy_adapter_used": false,
       "legacy_status": "full",
-      "pilot_authority": "legacy",
-      "pilot_compile_status": null,
+      "pilot_authority": "compiler",
+      "pilot_compile_status": "full",
+      "runtime_sections": [],
+      "status_authority": "compiler"
+    },
+    {
+      "compiler_status": "full",
+      "feature_id": "dnd2024.subclass.wizard.evoker.empowered-evocation",
+      "feature_name": "强效塑能 Empowered Evocation",
+      "fingerprint": "623194e6b3319036525ab6af75e5664c048a35bae95393fded54e9c9fe3c572f",
+      "formal_ir": true,
+      "legacy_adapter_used": false,
+      "legacy_status": "full",
+      "pilot_authority": "compiler",
+      "pilot_compile_status": "full",
+      "runtime_sections": [],
+      "status_authority": "compiler"
+    },
+    {
+      "compiler_status": "full",
+      "feature_id": "dnd2024.core.ranger.roving",
+      "feature_name": "越野",
+      "fingerprint": "1cb6e68b3589c96b6ba92c8a716c1e8fb508d17489557fa7f7790129d7b3c287",
+      "formal_ir": true,
+      "legacy_adapter_used": false,
+      "legacy_status": "full",
+      "pilot_authority": "compiler",
+      "pilot_compile_status": "full",
       "runtime_sections": [
+        "combat_modifiers",
+        "movement_modes"
+      ],
+      "status_authority": "compiler"
+    },
+    {
+      "compiler_status": "full",
+      "feature_id": "dnd2024.core.ranger.wild-senses",
+      "feature_name": "野性感官",
+      "fingerprint": "20264adbcb7bc1426433b28f24732e0639ace598be09e522e4b87871d0e77151",
+      "formal_ir": true,
+      "legacy_adapter_used": false,
+      "legacy_status": "full",
+      "pilot_authority": "compiler",
+      "pilot_compile_status": "full",
+      "runtime_sections": [
+        "combat_modifiers"
+      ],
+      "status_authority": "compiler"
+    },
+    {
+      "compiler_status": "full",
+      "feature_id": "dnd2024.core.rogue.thieves-cant",
+      "feature_name": "盗贼黑话",
+      "fingerprint": "cf7c197d650f31a1f5ea89f2444de0743294adeda5e811b69b36d3f934383334",
+      "formal_ir": true,
+      "legacy_adapter_used": false,
+      "legacy_status": "full",
+      "pilot_authority": "compiler",
+      "pilot_compile_status": "full",
+      "runtime_sections": [
+        "proficiencies",
         "advancement"
       ],
-      "status_authority": "legacy"
+      "status_authority": "compiler"
     },
     {
       "compiler_status": "full",
-      "feature_id": "legacy:core:30c6d89fdef6d38670fe0994:1:施法",
-      "feature_name": "施法",
-      "fingerprint": "7fe2f4823fd07be8e0b6dc2252d53933c1cd50d2acb6bdbb1024ef03fd1ee48f",
-      "legacy_adapter_used": true,
+      "feature_id": "dnd2024.subclass.rogue.thief.second-story-work",
+      "feature_name": "梁上君子 Second-Story",
+      "fingerprint": "58887b768165891404f838ca0e964634b05c4aeed11c5f34ab9bddac57d129a5",
+      "formal_ir": true,
+      "legacy_adapter_used": false,
       "legacy_status": "full",
-      "pilot_authority": "legacy",
-      "pilot_compile_status": null,
-      "runtime_sections": [
-        "spellcasting"
-      ],
-      "status_authority": "legacy"
+      "pilot_authority": "compiler",
+      "pilot_compile_status": "full",
+      "runtime_sections": [],
+      "status_authority": "compiler"
     },
     {
       "compiler_status": "full",
-      "feature_id": "legacy:core:30c6d89fdef6d38670fe0994:3:德鲁伊子职",
-      "feature_name": "德鲁伊子职",
-      "fingerprint": "0d9987616fd8e26680f0a75699fbacca8a39836a333ce2059feef0009ddc55c1",
-      "legacy_adapter_used": true,
+      "feature_id": "dnd2024.subclass.cleric.life.disciple-of-life",
+      "feature_name": "生命门徒 Disciple of",
+      "fingerprint": "7cf2de92f665af06fc43f8c8de10d6be3f65fb09f881ecb96c89a2e797f15655",
+      "formal_ir": true,
+      "legacy_adapter_used": false,
       "legacy_status": "full",
-      "pilot_authority": "legacy",
-      "pilot_compile_status": null,
+      "pilot_authority": "compiler",
+      "pilot_compile_status": "full",
+      "runtime_sections": [],
+      "status_authority": "compiler"
+    },
+    {
+      "compiler_status": "full",
+      "feature_id": "dnd2024.core.warlock.contact-patron",
+      "feature_name": "联络宗主",
+      "fingerprint": "4bb70f64a5ffa4a721acfc315f17cd9f8e44b7aeb2a92909e3d40459aa3f11d4",
+      "formal_ir": true,
+      "legacy_adapter_used": false,
+      "legacy_status": "full",
+      "pilot_authority": "compiler",
+      "pilot_compile_status": "full",
       "runtime_sections": [
+        "resources",
         "advancement"
       ],
-      "status_authority": "legacy"
-    },
-    {
-      "compiler_status": "full",
-      "feature_id": "legacy:core:30c6d89fdef6d38670fe0994:19:传奇恩惠",
-      "feature_name": "传奇恩惠",
-      "fingerprint": "e2dc34d2964df6d1c68b805f5d4f35aba10d72df81c2d4978f91be4337896e79",
-      "legacy_adapter_used": true,
-      "legacy_status": "full",
-      "pilot_authority": "legacy",
-      "pilot_compile_status": null,
-      "runtime_sections": [
-        "advancement"
-      ],
-      "status_authority": "legacy"
-    },
-    {
-      "compiler_status": "full",
-      "feature_id": "legacy:core:30c6d89fdef6d38670fe0994:20:大德鲁伊",
-      "feature_name": "大德鲁伊",
-      "fingerprint": "b547b54f82cc6f997dc7071875667b0fe8c9fa17c67be08f0fe517073d261dcd",
-      "legacy_adapter_used": true,
-      "legacy_status": "full",
-      "pilot_authority": "legacy",
-      "pilot_compile_status": null,
-      "runtime_sections": [
-        "resources"
-      ],
-      "status_authority": "legacy"
-    },
-    {
-      "compiler_status": "full",
-      "feature_id": "legacy:core:a036e1ccfa000d3655c412bd:1:战斗风格",
-      "feature_name": "战斗风格",
-      "fingerprint": "17219e2587919f3682ae3fca5e4cc68eab81d3b9451ebf539d534afe37fe7da0",
-      "legacy_adapter_used": true,
-      "legacy_status": "full",
-      "pilot_authority": "legacy",
-      "pilot_compile_status": null,
-      "runtime_sections": [
-        "advancement"
-      ],
-      "status_authority": "legacy"
+      "status_authority": "compiler"
     }
   ]
 }

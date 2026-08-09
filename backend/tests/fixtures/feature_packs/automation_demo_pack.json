@@ -9,6 +9,7 @@
     "source": "test-fixture",
     "trust": "authored_ir"
   },
+  "source_trust": "authored_ir",
   "dependencies": [],
   "compatibility": {
     "engine": "feature-ir-1"
@@ -37,7 +38,7 @@
         {
           "clause_id": "grant",
           "trigger": "advancement_confirmed",
-          "effects": [{"operator": "grant_proficiency", "parameters": {}}]
+          "effects": [{"operator": "grant_proficiency", "parameters": {"proficiency_kind": "skill", "asset_id": "stealth", "operation": "grant"}}]
         }
       ]
     },
@@ -61,7 +62,7 @@
         {
           "clause_id": "grant",
           "trigger": "advancement_confirmed",
-          "effects": [{"operator": "grant_language", "parameters": {}}]
+          "effects": [{"operator": "grant_language", "parameters": {"language_id": "elvish", "operation": "grant"}}]
         }
       ]
     },
@@ -85,7 +86,7 @@
         {
           "clause_id": "grant",
           "trigger": "advancement_confirmed",
-          "effects": [{"operator": "grant_spell", "parameters": {}}]
+          "effects": [{"operator": "grant_spell", "parameters": {"spell_id": "shield", "source_class": "wizard", "casting_ability": "intelligence", "grant_mode": "known"}}]
         }
       ]
     },
@@ -109,7 +110,7 @@
         {
           "clause_id": "prepare",
           "trigger": "advancement_confirmed",
-          "effects": [{"operator": "prepare_spell", "parameters": {}}]
+          "effects": [{"operator": "prepare_spell", "parameters": {"spell_id": "mage_armor", "source_class": "wizard", "preparation_mode": "always_prepared"}}]
         }
       ]
     },
@@ -133,7 +134,7 @@
         {
           "clause_id": "restore",
           "trigger": "long_rest_completed",
-          "effects": [{"operator": "restore_resource", "parameters": {}}]
+          "effects": [{"operator": "restore_resource", "parameters": {"resource_key": "demo_charge", "operation": "set_to_max", "amount": 1}}]
         }
       ]
     },
@@ -158,7 +159,7 @@
           "clause_id": "consume",
           "trigger": "explicit_activation",
           "action_economy": "bonus_action",
-          "effects": [{"operator": "consume_resource", "parameters": {}}]
+          "effects": [{"operator": "consume_resource", "parameters": {"resource_key": "demo_charge", "operation": "consume", "amount": 1}}]
         }
       ]
     },
@@ -182,7 +183,7 @@
         {
           "clause_id": "exchange",
           "trigger": "explicit_activation",
-          "effects": [{"operator": "exchange_resource", "parameters": {}}]
+          "effects": [{"operator": "exchange_resource", "parameters": {"from_resource_key": "demo_charge", "to_resource_key": "demo_pool", "operation": "exchange", "amount": 1}}]
         }
       ]
     },
@@ -206,7 +207,7 @@
         {
           "clause_id": "modifier",
           "trigger": "combat_started",
-          "effects": [{"operator": "add_modifier", "parameters": {}}]
+          "effects": [{"operator": "add_modifier", "parameters": {"stat": "speed_ft", "operation": "add", "value": 1, "scope": "self", "applies_when": "always"}}]
         }
       ]
     },
@@ -230,7 +231,7 @@
         {
           "clause_id": "modifier",
           "trigger": "combat_started",
-          "effects": [{"operator": "set_modifier", "parameters": {}}]
+          "effects": [{"operator": "set_modifier", "parameters": {"stat": "blindsight_ft", "operation": "set", "value": 30, "scope": "self", "applies_when": "always"}}]
         }
       ]
     },
@@ -254,7 +255,7 @@
         {
           "clause_id": "roll",
           "trigger": "ability_check",
-          "effects": [{"operator": "impose_advantage", "parameters": {}}]
+          "effects": [{"operator": "impose_advantage", "parameters": {"stat": "ability_check", "operation": "advantage", "scope": "self", "applies_when": "always"}}]
         }
       ]
     },
@@ -278,7 +279,7 @@
         {
           "clause_id": "roll",
           "trigger": "saving_throw",
-          "effects": [{"operator": "impose_disadvantage", "parameters": {}}]
+          "effects": [{"operator": "impose_disadvantage", "parameters": {"stat": "attack_roll", "operation": "disadvantage", "scope": "incoming", "applies_when": "always"}}]
         }
       ]
     },
@@ -302,7 +303,7 @@
         {
           "clause_id": "movement",
           "trigger": "combat_started",
-          "effects": [{"operator": "grant_movement_mode", "parameters": {}}]
+          "effects": [{"operator": "grant_movement_mode", "parameters": {"mode": "climb", "speed_source": "current_speed"}}]
         }
       ]
     },
@@ -326,7 +327,7 @@
         {
           "clause_id": "sight",
           "trigger": "combat_started",
-          "effects": [{"operator": "grant_sight_mode", "parameters": {}}]
+          "effects": [{"operator": "grant_sight_mode", "parameters": {"mode": "blindsight", "range_ft": 30, "applies_when": "always"}}]
         }
       ]
     },
@@ -350,7 +351,7 @@
         {
           "clause_id": "heal",
           "trigger": "action_resolved",
-          "effects": [{"operator": "heal", "parameters": {}}]
+          "effects": [{"operator": "heal", "parameters": {"formula": "1d8", "source": "spell", "ability": "wisdom"}}]
         }
       ]
     },
@@ -374,7 +375,7 @@
         {
           "clause_id": "temp-hp",
           "trigger": "short_rest_completed",
-          "effects": [{"operator": "grant_temporary_hp", "parameters": {}}]
+          "effects": [{"operator": "grant_temporary_hp", "parameters": {"formula": "level", "source": "feature"}}]
         }
       ]
     },
@@ -398,7 +399,7 @@
         {
           "clause_id": "damage",
           "trigger": "attack_hit",
-          "effects": [{"operator": "add_damage", "parameters": {}}]
+          "effects": [{"operator": "add_damage", "parameters": {"formula": "1d4", "damage_type": "fire", "source": "feature", "applies_when": "attack_hit"}}]
         }
       ]
     },
@@ -422,7 +423,7 @@
         {
           "clause_id": "resistance",
           "trigger": "combat_started",
-          "effects": [{"operator": "grant_resistance", "parameters": {}}]
+          "effects": [{"operator": "grant_resistance", "parameters": {"damage_type": "fire", "source": "feature"}}]
         }
       ]
     },
@@ -446,7 +447,7 @@
         {
           "clause_id": "immunity",
           "trigger": "combat_started",
-          "effects": [{"operator": "grant_immunity", "parameters": {}}]
+          "effects": [{"operator": "grant_immunity", "parameters": {"condition_or_damage_type": "poison", "source": "feature"}}]
         }
       ]
     },
@@ -567,7 +568,7 @@
           "clause_id": "manual",
           "trigger": "explicit_activation",
           "audit": {"manual_boundary": "requires DM adjudication"},
-          "effects": [{"operator": "add_modifier", "parameters": {}}]
+          "effects": [{"operator": "add_modifier", "parameters": {"stat": "armor_class", "operation": "add", "value": 1, "scope": "self", "applies_when": "always"}}]
         }
       ]
     },
@@ -592,7 +593,7 @@
           "clause_id": "manual",
           "trigger": "explicit_activation",
           "audit": {"manual_boundary": "requires DM adjudication"},
-          "effects": [{"operator": "create_timed_modifier", "parameters": {}}]
+          "effects": [{"operator": "create_timed_modifier", "parameters": {"stat": "attack_roll", "operation": "add", "duration": "current_turn", "value": 1, "scope": "outgoing", "applies_when": "always"}}]
         }
       ]
     }

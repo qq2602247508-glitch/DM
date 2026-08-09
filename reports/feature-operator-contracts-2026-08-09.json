@@ -1,0 +1,3233 @@
+{
+  "contracts": [
+    {
+      "capability_id": "state.lifecycle.activate",
+      "compatible_action_economy": [
+        "action",
+        "automatic",
+        "bonus_action",
+        "explicit_player_choice",
+        "none",
+        "reaction"
+      ],
+      "compatible_activation": [
+        "automatic",
+        "dm_accept",
+        "explicit_choice",
+        "player_accept"
+      ],
+      "compatible_conditions": [
+        "action_tag",
+        "actor_has_feature",
+        "actor_has_state",
+        "actor_lacks_state",
+        "armor_category",
+        "audible",
+        "damage_type",
+        "equipped",
+        "first_round",
+        "first_turn",
+        "once_per_target",
+        "once_per_turn",
+        "resource_is_zero",
+        "spell_level_range",
+        "spell_school",
+        "spell_source",
+        "target_has_not_acted",
+        "target_has_state",
+        "target_matches_persisted_id",
+        "visible",
+        "weapon_category",
+        "within_range"
+      ],
+      "compatible_durations": [
+        "advancement_persistent",
+        "current_round",
+        "current_turn",
+        "one_hour",
+        "one_minute",
+        "permanent",
+        "ten_minutes",
+        "until_condition_ends",
+        "until_long_rest",
+        "until_short_rest"
+      ],
+      "compatible_resource_operations": [],
+      "compatible_targets": [
+        "ally",
+        "aura",
+        "enemy",
+        "marked_target",
+        "one_creature",
+        "self",
+        "visible_creature"
+      ],
+      "compatible_triggers": [
+        "ability_check",
+        "action_declared",
+        "action_resolved",
+        "attack_declared",
+        "attack_hit",
+        "attack_missed",
+        "combat_started",
+        "damage_applied",
+        "damage_before_apply",
+        "explicit_activation",
+        "initiative_rolled",
+        "saving_throw",
+        "spell_cast",
+        "turn_ended",
+        "turn_started",
+        "zero_hp"
+      ],
+      "conditional_required_fields": [],
+      "contract_version": "1.0",
+      "enum_values": {},
+      "materializer_id": "state.lifecycle.activate",
+      "mutually_exclusive_fields": [],
+      "numeric_bounds": {},
+      "operator_id": "activate_condition",
+      "optional_parameters": [
+        "duration",
+        "id"
+      ],
+      "parameter_types": {
+        "condition": "string",
+        "duration": "string",
+        "id": "string"
+      },
+      "required_parameters": [
+        "condition"
+      ]
+    },
+    {
+      "capability_id": "damage.modifier",
+      "compatible_action_economy": [
+        "automatic",
+        "none"
+      ],
+      "compatible_activation": [
+        "automatic",
+        "dm_accept",
+        "explicit_choice",
+        "player_accept"
+      ],
+      "compatible_conditions": [
+        "action_tag",
+        "actor_has_feature",
+        "actor_has_state",
+        "actor_lacks_state",
+        "armor_category",
+        "audible",
+        "damage_type",
+        "equipped",
+        "first_round",
+        "first_turn",
+        "once_per_target",
+        "once_per_turn",
+        "resource_is_zero",
+        "spell_level_range",
+        "spell_school",
+        "spell_source",
+        "target_has_not_acted",
+        "target_has_state",
+        "target_matches_persisted_id",
+        "visible",
+        "weapon_category",
+        "within_range"
+      ],
+      "compatible_durations": [
+        "advancement_persistent",
+        "current_round",
+        "current_turn",
+        "one_hour",
+        "one_minute",
+        "permanent",
+        "ten_minutes",
+        "until_condition_ends",
+        "until_long_rest",
+        "until_short_rest"
+      ],
+      "compatible_resource_operations": [],
+      "compatible_targets": [
+        "ally",
+        "aura",
+        "enemy",
+        "marked_target",
+        "one_creature",
+        "self",
+        "visible_creature"
+      ],
+      "compatible_triggers": [
+        "ability_check",
+        "action_declared",
+        "action_resolved",
+        "attack_declared",
+        "attack_hit",
+        "attack_missed",
+        "combat_started",
+        "damage_applied",
+        "damage_before_apply",
+        "explicit_activation",
+        "initiative_rolled",
+        "saving_throw",
+        "spell_cast",
+        "turn_ended",
+        "turn_started",
+        "zero_hp"
+      ],
+      "conditional_required_fields": [],
+      "contract_version": "1.0",
+      "enum_values": {},
+      "materializer_id": "damage.modifier",
+      "mutually_exclusive_fields": [],
+      "numeric_bounds": {},
+      "operator_id": "add_damage",
+      "optional_parameters": [
+        "applies_when",
+        "id",
+        "source"
+      ],
+      "parameter_types": {
+        "applies_when": "string",
+        "damage_type": "string",
+        "formula": "string",
+        "id": "string",
+        "source": "string"
+      },
+      "required_parameters": [
+        "damage_type",
+        "formula"
+      ]
+    },
+    {
+      "capability_id": "modifier.passive",
+      "compatible_action_economy": [
+        "automatic",
+        "none"
+      ],
+      "compatible_activation": [
+        "automatic",
+        "dm_accept",
+        "explicit_choice",
+        "player_accept"
+      ],
+      "compatible_conditions": [
+        "action_tag",
+        "actor_has_feature",
+        "actor_has_state",
+        "actor_lacks_state",
+        "armor_category",
+        "audible",
+        "damage_type",
+        "equipped",
+        "first_round",
+        "first_turn",
+        "once_per_target",
+        "once_per_turn",
+        "resource_is_zero",
+        "spell_level_range",
+        "spell_school",
+        "spell_source",
+        "target_has_not_acted",
+        "target_has_state",
+        "target_matches_persisted_id",
+        "visible",
+        "weapon_category",
+        "within_range"
+      ],
+      "compatible_durations": [
+        "advancement_persistent",
+        "current_round",
+        "current_turn",
+        "one_hour",
+        "one_minute",
+        "permanent",
+        "ten_minutes",
+        "until_condition_ends",
+        "until_long_rest",
+        "until_short_rest"
+      ],
+      "compatible_resource_operations": [],
+      "compatible_targets": [
+        "ally",
+        "enemy",
+        "self"
+      ],
+      "compatible_triggers": [
+        "ability_check",
+        "action_declared",
+        "action_resolved",
+        "advancement_confirmed",
+        "attack_declared",
+        "attack_hit",
+        "attack_missed",
+        "combat_started",
+        "damage_applied",
+        "damage_before_apply",
+        "explicit_activation",
+        "initiative_rolled",
+        "saving_throw",
+        "spell_cast",
+        "turn_ended",
+        "turn_started",
+        "zero_hp"
+      ],
+      "conditional_required_fields": [],
+      "contract_version": "1.0",
+      "enum_values": {
+        "scope": [
+          "aura",
+          "incoming",
+          "outgoing",
+          "self",
+          "target"
+        ]
+      },
+      "materializer_id": "modifier.passive",
+      "mutually_exclusive_fields": [
+        [
+          "value",
+          "value_source"
+        ]
+      ],
+      "numeric_bounds": {},
+      "operator_id": "add_modifier",
+      "optional_parameters": [
+        "applies_when",
+        "id",
+        "scope",
+        "value",
+        "value_source"
+      ],
+      "parameter_types": {
+        "applies_when": "string",
+        "id": "string",
+        "operation": "string",
+        "scope": "string",
+        "stat": "string",
+        "value": "number",
+        "value_source": "string"
+      },
+      "required_parameters": [
+        "operation",
+        "stat"
+      ]
+    },
+    {
+      "capability_id": "resource.lifecycle.consume",
+      "compatible_action_economy": [
+        "action",
+        "automatic",
+        "bonus_action",
+        "explicit_player_choice",
+        "none",
+        "reaction"
+      ],
+      "compatible_activation": [
+        "automatic",
+        "dm_accept",
+        "explicit_choice",
+        "player_accept"
+      ],
+      "compatible_conditions": [
+        "action_tag",
+        "actor_has_feature",
+        "actor_has_state",
+        "actor_lacks_state",
+        "armor_category",
+        "audible",
+        "damage_type",
+        "equipped",
+        "first_round",
+        "first_turn",
+        "once_per_target",
+        "once_per_turn",
+        "resource_is_zero",
+        "spell_level_range",
+        "spell_school",
+        "spell_source",
+        "target_has_not_acted",
+        "target_has_state",
+        "target_matches_persisted_id",
+        "visible",
+        "weapon_category",
+        "within_range"
+      ],
+      "compatible_durations": [
+        "advancement_persistent",
+        "current_round",
+        "current_turn",
+        "one_hour",
+        "one_minute",
+        "permanent",
+        "ten_minutes",
+        "until_condition_ends",
+        "until_long_rest",
+        "until_short_rest"
+      ],
+      "compatible_resource_operations": [
+        "consume",
+        "event",
+        "exchange",
+        "grant",
+        "long_rest",
+        "restore",
+        "set",
+        "set_to_max",
+        "short_rest",
+        "turn"
+      ],
+      "compatible_targets": [
+        "ally",
+        "aura",
+        "enemy",
+        "marked_target",
+        "one_creature",
+        "self",
+        "visible_creature"
+      ],
+      "compatible_triggers": [
+        "ability_check",
+        "action_declared",
+        "action_resolved",
+        "advancement_confirmed",
+        "attack_declared",
+        "attack_hit",
+        "attack_missed",
+        "combat_started",
+        "damage_applied",
+        "damage_before_apply",
+        "explicit_activation",
+        "initiative_rolled",
+        "saving_throw",
+        "spell_cast",
+        "turn_ended",
+        "turn_started",
+        "zero_hp"
+      ],
+      "conditional_required_fields": [],
+      "contract_version": "1.0",
+      "enum_values": {
+        "operation": [
+          "consume",
+          "set"
+        ]
+      },
+      "materializer_id": "resource.lifecycle.consume",
+      "mutually_exclusive_fields": [
+        [
+          "amount",
+          "amount_source"
+        ]
+      ],
+      "numeric_bounds": {
+        "amount": [
+          1,
+          100
+        ]
+      },
+      "operator_id": "consume_resource",
+      "optional_parameters": [
+        "amount",
+        "amount_source"
+      ],
+      "parameter_types": {
+        "amount": "integer",
+        "amount_source": "string",
+        "operation": "string",
+        "resource_key": "string"
+      },
+      "required_parameters": [
+        "operation",
+        "resource_key"
+      ]
+    },
+    {
+      "capability_id": "window.reaction",
+      "compatible_action_economy": [
+        "explicit_player_choice",
+        "reaction"
+      ],
+      "compatible_activation": [
+        "automatic",
+        "dm_accept",
+        "explicit_choice",
+        "player_accept"
+      ],
+      "compatible_conditions": [
+        "action_tag",
+        "actor_has_feature",
+        "actor_has_state",
+        "actor_lacks_state",
+        "armor_category",
+        "audible",
+        "damage_type",
+        "equipped",
+        "first_round",
+        "first_turn",
+        "once_per_target",
+        "once_per_turn",
+        "resource_is_zero",
+        "spell_level_range",
+        "spell_school",
+        "spell_source",
+        "target_has_not_acted",
+        "target_has_state",
+        "target_matches_persisted_id",
+        "visible",
+        "weapon_category",
+        "within_range"
+      ],
+      "compatible_durations": [
+        "current_round",
+        "current_turn"
+      ],
+      "compatible_resource_operations": [],
+      "compatible_targets": [
+        "ally",
+        "aura",
+        "enemy",
+        "marked_target",
+        "one_creature",
+        "self",
+        "visible_creature"
+      ],
+      "compatible_triggers": [
+        "ability_check",
+        "action_declared",
+        "action_resolved",
+        "attack_declared",
+        "attack_hit",
+        "attack_missed",
+        "combat_started",
+        "damage_applied",
+        "damage_before_apply",
+        "explicit_activation",
+        "initiative_rolled",
+        "saving_throw",
+        "spell_cast",
+        "turn_ended",
+        "turn_started",
+        "zero_hp"
+      ],
+      "conditional_required_fields": [],
+      "contract_version": "1.0",
+      "enum_values": {},
+      "materializer_id": "window.reaction",
+      "mutually_exclusive_fields": [],
+      "numeric_bounds": {},
+      "operator_id": "create_reaction_window",
+      "optional_parameters": [
+        "id",
+        "target_policy"
+      ],
+      "parameter_types": {
+        "expires": "string",
+        "id": "string",
+        "target_policy": "object",
+        "window_kind": "string"
+      },
+      "required_parameters": [
+        "expires",
+        "window_kind"
+      ]
+    },
+    {
+      "capability_id": "modifier.timed",
+      "compatible_action_economy": [
+        "action",
+        "automatic",
+        "bonus_action",
+        "explicit_player_choice",
+        "none",
+        "reaction"
+      ],
+      "compatible_activation": [
+        "automatic",
+        "dm_accept",
+        "explicit_choice",
+        "player_accept"
+      ],
+      "compatible_conditions": [
+        "action_tag",
+        "actor_has_feature",
+        "actor_has_state",
+        "actor_lacks_state",
+        "armor_category",
+        "audible",
+        "damage_type",
+        "equipped",
+        "first_round",
+        "first_turn",
+        "once_per_target",
+        "once_per_turn",
+        "resource_is_zero",
+        "spell_level_range",
+        "spell_school",
+        "spell_source",
+        "target_has_not_acted",
+        "target_has_state",
+        "target_matches_persisted_id",
+        "visible",
+        "weapon_category",
+        "within_range"
+      ],
+      "compatible_durations": [
+        "advancement_persistent",
+        "current_round",
+        "current_turn",
+        "one_hour",
+        "one_minute",
+        "permanent",
+        "ten_minutes",
+        "until_condition_ends",
+        "until_long_rest",
+        "until_short_rest"
+      ],
+      "compatible_resource_operations": [],
+      "compatible_targets": [
+        "ally",
+        "aura",
+        "enemy",
+        "marked_target",
+        "one_creature",
+        "self",
+        "visible_creature"
+      ],
+      "compatible_triggers": [
+        "ability_check",
+        "action_declared",
+        "action_resolved",
+        "attack_declared",
+        "attack_hit",
+        "attack_missed",
+        "combat_started",
+        "damage_applied",
+        "damage_before_apply",
+        "explicit_activation",
+        "initiative_rolled",
+        "saving_throw",
+        "spell_cast",
+        "turn_ended",
+        "turn_started",
+        "zero_hp"
+      ],
+      "conditional_required_fields": [],
+      "contract_version": "1.0",
+      "enum_values": {
+        "scope": [
+          "aura",
+          "incoming",
+          "outgoing",
+          "self",
+          "target"
+        ]
+      },
+      "materializer_id": "modifier.timed",
+      "mutually_exclusive_fields": [
+        [
+          "value",
+          "value_source"
+        ]
+      ],
+      "numeric_bounds": {},
+      "operator_id": "create_timed_modifier",
+      "optional_parameters": [
+        "applies_when",
+        "id",
+        "scope",
+        "value",
+        "value_source"
+      ],
+      "parameter_types": {
+        "applies_when": "string",
+        "duration": "string",
+        "id": "string",
+        "operation": "string",
+        "scope": "string",
+        "stat": "string",
+        "value": "number",
+        "value_source": "string"
+      },
+      "required_parameters": [
+        "duration",
+        "operation",
+        "stat"
+      ]
+    },
+    {
+      "capability_id": "window.triggered_attack",
+      "compatible_action_economy": [
+        "action",
+        "bonus_action",
+        "explicit_player_choice",
+        "reaction"
+      ],
+      "compatible_activation": [
+        "automatic",
+        "dm_accept",
+        "explicit_choice",
+        "player_accept"
+      ],
+      "compatible_conditions": [
+        "action_tag",
+        "actor_has_feature",
+        "actor_has_state",
+        "actor_lacks_state",
+        "armor_category",
+        "audible",
+        "damage_type",
+        "equipped",
+        "first_round",
+        "first_turn",
+        "once_per_target",
+        "once_per_turn",
+        "resource_is_zero",
+        "spell_level_range",
+        "spell_school",
+        "spell_source",
+        "target_has_not_acted",
+        "target_has_state",
+        "target_matches_persisted_id",
+        "visible",
+        "weapon_category",
+        "within_range"
+      ],
+      "compatible_durations": [
+        "current_round",
+        "current_turn"
+      ],
+      "compatible_resource_operations": [],
+      "compatible_targets": [
+        "ally",
+        "aura",
+        "enemy",
+        "marked_target",
+        "one_creature",
+        "self",
+        "visible_creature"
+      ],
+      "compatible_triggers": [
+        "action_resolved",
+        "attack_hit",
+        "attack_missed",
+        "damage_applied",
+        "zero_hp"
+      ],
+      "conditional_required_fields": [],
+      "contract_version": "1.0",
+      "enum_values": {
+        "reaction_type": [
+          "action",
+          "bonus_action",
+          "reaction"
+        ]
+      },
+      "materializer_id": "window.triggered_attack",
+      "mutually_exclusive_fields": [],
+      "numeric_bounds": {},
+      "operator_id": "create_triggered_attack_window",
+      "optional_parameters": [
+        "attack_profile",
+        "id",
+        "reaction_type"
+      ],
+      "parameter_types": {
+        "attack_profile": "object",
+        "expires": "string",
+        "id": "string",
+        "parent_action": "string",
+        "reaction_type": "string",
+        "target_policy": "object",
+        "window_kind": "string"
+      },
+      "required_parameters": [
+        "expires",
+        "parent_action",
+        "target_policy",
+        "window_kind"
+      ]
+    },
+    {
+      "capability_id": "resource.exchange",
+      "compatible_action_economy": [
+        "action",
+        "automatic",
+        "bonus_action",
+        "explicit_player_choice",
+        "none",
+        "reaction"
+      ],
+      "compatible_activation": [
+        "automatic",
+        "dm_accept",
+        "explicit_choice",
+        "player_accept"
+      ],
+      "compatible_conditions": [
+        "action_tag",
+        "actor_has_feature",
+        "actor_has_state",
+        "actor_lacks_state",
+        "armor_category",
+        "audible",
+        "damage_type",
+        "equipped",
+        "first_round",
+        "first_turn",
+        "once_per_target",
+        "once_per_turn",
+        "resource_is_zero",
+        "spell_level_range",
+        "spell_school",
+        "spell_source",
+        "target_has_not_acted",
+        "target_has_state",
+        "target_matches_persisted_id",
+        "visible",
+        "weapon_category",
+        "within_range"
+      ],
+      "compatible_durations": [
+        "advancement_persistent",
+        "current_round",
+        "current_turn",
+        "one_hour",
+        "one_minute",
+        "permanent",
+        "ten_minutes",
+        "until_condition_ends",
+        "until_long_rest",
+        "until_short_rest"
+      ],
+      "compatible_resource_operations": [
+        "consume",
+        "event",
+        "exchange",
+        "grant",
+        "long_rest",
+        "restore",
+        "set",
+        "set_to_max",
+        "short_rest",
+        "turn"
+      ],
+      "compatible_targets": [
+        "self"
+      ],
+      "compatible_triggers": [
+        "ability_check",
+        "action_declared",
+        "action_resolved",
+        "advancement_confirmed",
+        "attack_declared",
+        "attack_hit",
+        "attack_missed",
+        "combat_started",
+        "damage_applied",
+        "damage_before_apply",
+        "explicit_activation",
+        "initiative_rolled",
+        "long_rest_completed",
+        "long_rest_started",
+        "saving_throw",
+        "short_rest_completed",
+        "short_rest_started",
+        "spell_cast",
+        "turn_ended",
+        "turn_started",
+        "zero_hp"
+      ],
+      "conditional_required_fields": [],
+      "contract_version": "1.0",
+      "enum_values": {
+        "operation": [
+          "exchange"
+        ]
+      },
+      "materializer_id": "resource.exchange",
+      "mutually_exclusive_fields": [
+        [
+          "amount",
+          "amount_source"
+        ]
+      ],
+      "numeric_bounds": {
+        "amount": [
+          1,
+          100
+        ]
+      },
+      "operator_id": "exchange_resource",
+      "optional_parameters": [
+        "amount",
+        "amount_source"
+      ],
+      "parameter_types": {
+        "amount": "integer",
+        "amount_source": "string",
+        "from_resource_key": "string",
+        "operation": "string",
+        "to_resource_key": "string"
+      },
+      "required_parameters": [
+        "from_resource_key",
+        "operation",
+        "to_resource_key"
+      ]
+    },
+    {
+      "capability_id": "target.authorized_information",
+      "compatible_action_economy": [
+        "action",
+        "bonus_action",
+        "explicit_player_choice"
+      ],
+      "compatible_activation": [
+        "automatic",
+        "dm_accept",
+        "explicit_choice",
+        "player_accept"
+      ],
+      "compatible_conditions": [
+        "action_tag",
+        "actor_has_feature",
+        "actor_has_state",
+        "actor_lacks_state",
+        "armor_category",
+        "audible",
+        "damage_type",
+        "equipped",
+        "first_round",
+        "first_turn",
+        "once_per_target",
+        "once_per_turn",
+        "resource_is_zero",
+        "spell_level_range",
+        "spell_school",
+        "spell_source",
+        "target_has_not_acted",
+        "target_has_state",
+        "target_matches_persisted_id",
+        "visible",
+        "weapon_category",
+        "within_range"
+      ],
+      "compatible_durations": [
+        "advancement_persistent",
+        "current_round",
+        "current_turn",
+        "one_hour",
+        "one_minute",
+        "permanent",
+        "ten_minutes",
+        "until_condition_ends",
+        "until_long_rest",
+        "until_short_rest"
+      ],
+      "compatible_resource_operations": [],
+      "compatible_targets": [
+        "ally",
+        "aura",
+        "enemy",
+        "marked_target",
+        "one_creature",
+        "self",
+        "visible_creature"
+      ],
+      "compatible_triggers": [
+        "action_declared",
+        "action_resolved",
+        "explicit_activation"
+      ],
+      "conditional_required_fields": [],
+      "contract_version": "1.0",
+      "enum_values": {},
+      "materializer_id": "target.authorized_information",
+      "mutually_exclusive_fields": [],
+      "numeric_bounds": {},
+      "operator_id": "expose_authorized_target_information",
+      "optional_parameters": [
+        "id",
+        "range_ft",
+        "visibility"
+      ],
+      "parameter_types": {
+        "id": "string",
+        "information_kind": "string",
+        "range_ft": "integer",
+        "visibility": "string"
+      },
+      "required_parameters": [
+        "information_kind"
+      ]
+    },
+    {
+      "capability_id": "spell.free_cast",
+      "compatible_action_economy": [
+        "automatic",
+        "explicit_player_choice",
+        "none"
+      ],
+      "compatible_activation": [
+        "automatic",
+        "dm_accept",
+        "explicit_choice",
+        "player_accept"
+      ],
+      "compatible_conditions": [
+        "action_tag",
+        "actor_has_feature",
+        "actor_has_state",
+        "actor_lacks_state",
+        "armor_category",
+        "audible",
+        "damage_type",
+        "equipped",
+        "first_round",
+        "first_turn",
+        "once_per_target",
+        "once_per_turn",
+        "resource_is_zero",
+        "spell_level_range",
+        "spell_school",
+        "spell_source",
+        "target_has_not_acted",
+        "target_has_state",
+        "target_matches_persisted_id",
+        "visible",
+        "weapon_category",
+        "within_range"
+      ],
+      "compatible_durations": [
+        "advancement_persistent",
+        "permanent"
+      ],
+      "compatible_resource_operations": [
+        "consume",
+        "event",
+        "exchange",
+        "grant",
+        "long_rest",
+        "restore",
+        "set",
+        "set_to_max",
+        "short_rest",
+        "turn"
+      ],
+      "compatible_targets": [
+        "self"
+      ],
+      "compatible_triggers": [
+        "advancement_confirmed",
+        "long_rest_completed",
+        "long_rest_started",
+        "short_rest_completed",
+        "short_rest_started",
+        "spell_cast"
+      ],
+      "conditional_required_fields": [],
+      "contract_version": "1.0",
+      "enum_values": {
+        "reset": [
+          "long_rest",
+          "short_rest"
+        ]
+      },
+      "materializer_id": "spell.free_cast",
+      "mutually_exclusive_fields": [],
+      "numeric_bounds": {},
+      "operator_id": "free_spell_cast",
+      "optional_parameters": [
+        "auto_save",
+        "casting_ability",
+        "id",
+        "source_class"
+      ],
+      "parameter_types": {
+        "auto_save": "boolean",
+        "casting_ability": "string",
+        "id": "string",
+        "reset": "string",
+        "resource_key": "string",
+        "source_class": "string",
+        "spell_id": "string"
+      },
+      "required_parameters": [
+        "reset",
+        "resource_key",
+        "spell_id"
+      ]
+    },
+    {
+      "capability_id": "defense.immunity",
+      "compatible_action_economy": [
+        "automatic",
+        "none"
+      ],
+      "compatible_activation": [
+        "automatic",
+        "dm_accept",
+        "explicit_choice",
+        "player_accept"
+      ],
+      "compatible_conditions": [
+        "action_tag",
+        "actor_has_feature",
+        "actor_has_state",
+        "actor_lacks_state",
+        "armor_category",
+        "audible",
+        "damage_type",
+        "equipped",
+        "first_round",
+        "first_turn",
+        "once_per_target",
+        "once_per_turn",
+        "resource_is_zero",
+        "spell_level_range",
+        "spell_school",
+        "spell_source",
+        "target_has_not_acted",
+        "target_has_state",
+        "target_matches_persisted_id",
+        "visible",
+        "weapon_category",
+        "within_range"
+      ],
+      "compatible_durations": [
+        "advancement_persistent",
+        "permanent"
+      ],
+      "compatible_resource_operations": [],
+      "compatible_targets": [
+        "self"
+      ],
+      "compatible_triggers": [
+        "ability_check",
+        "action_declared",
+        "action_resolved",
+        "advancement_confirmed",
+        "attack_declared",
+        "attack_hit",
+        "attack_missed",
+        "combat_started",
+        "damage_applied",
+        "damage_before_apply",
+        "explicit_activation",
+        "initiative_rolled",
+        "saving_throw",
+        "spell_cast",
+        "turn_ended",
+        "turn_started",
+        "zero_hp"
+      ],
+      "conditional_required_fields": [],
+      "contract_version": "1.0",
+      "enum_values": {},
+      "materializer_id": "defense.immunity",
+      "mutually_exclusive_fields": [],
+      "numeric_bounds": {},
+      "operator_id": "grant_immunity",
+      "optional_parameters": [
+        "id",
+        "source"
+      ],
+      "parameter_types": {
+        "condition_or_damage_type": "string",
+        "id": "string",
+        "source": "string"
+      },
+      "required_parameters": [
+        "condition_or_damage_type"
+      ]
+    },
+    {
+      "capability_id": "advancement.language",
+      "compatible_action_economy": [
+        "automatic",
+        "none"
+      ],
+      "compatible_activation": [
+        "automatic",
+        "dm_accept",
+        "explicit_choice",
+        "player_accept"
+      ],
+      "compatible_conditions": [
+        "action_tag",
+        "actor_has_feature",
+        "actor_has_state",
+        "actor_lacks_state",
+        "armor_category",
+        "audible",
+        "damage_type",
+        "equipped",
+        "first_round",
+        "first_turn",
+        "once_per_target",
+        "once_per_turn",
+        "resource_is_zero",
+        "spell_level_range",
+        "spell_school",
+        "spell_source",
+        "target_has_not_acted",
+        "target_has_state",
+        "target_matches_persisted_id",
+        "visible",
+        "weapon_category",
+        "within_range"
+      ],
+      "compatible_durations": [
+        "advancement_persistent",
+        "permanent"
+      ],
+      "compatible_resource_operations": [],
+      "compatible_targets": [
+        "self"
+      ],
+      "compatible_triggers": [
+        "advancement_confirmed"
+      ],
+      "conditional_required_fields": [],
+      "contract_version": "1.0",
+      "enum_values": {
+        "operation": [
+          "grant",
+          "remove",
+          "replace"
+        ]
+      },
+      "materializer_id": "advancement.language",
+      "mutually_exclusive_fields": [],
+      "numeric_bounds": {},
+      "operator_id": "grant_language",
+      "optional_parameters": [],
+      "parameter_types": {
+        "language_id": "string",
+        "operation": "string"
+      },
+      "required_parameters": [
+        "language_id",
+        "operation"
+      ]
+    },
+    {
+      "capability_id": "movement.mode",
+      "compatible_action_economy": [
+        "automatic",
+        "none"
+      ],
+      "compatible_activation": [
+        "automatic",
+        "dm_accept",
+        "explicit_choice",
+        "player_accept"
+      ],
+      "compatible_conditions": [
+        "action_tag",
+        "actor_has_feature",
+        "actor_has_state",
+        "actor_lacks_state",
+        "armor_category",
+        "audible",
+        "damage_type",
+        "equipped",
+        "first_round",
+        "first_turn",
+        "once_per_target",
+        "once_per_turn",
+        "resource_is_zero",
+        "spell_level_range",
+        "spell_school",
+        "spell_source",
+        "target_has_not_acted",
+        "target_has_state",
+        "target_matches_persisted_id",
+        "visible",
+        "weapon_category",
+        "within_range"
+      ],
+      "compatible_durations": [
+        "advancement_persistent",
+        "permanent"
+      ],
+      "compatible_resource_operations": [],
+      "compatible_targets": [
+        "self"
+      ],
+      "compatible_triggers": [
+        "advancement_confirmed",
+        "combat_started"
+      ],
+      "conditional_required_fields": [
+        {
+          "equals": "fly",
+          "required_fields": [
+            "speed_source"
+          ],
+          "when_field": "mode"
+        }
+      ],
+      "contract_version": "1.0",
+      "enum_values": {
+        "mode": [
+          "burrow",
+          "climb",
+          "fly",
+          "swim",
+          "walk"
+        ]
+      },
+      "materializer_id": "movement.mode",
+      "mutually_exclusive_fields": [
+        [
+          "speed_ft",
+          "speed_source"
+        ]
+      ],
+      "numeric_bounds": {},
+      "operator_id": "grant_movement_mode",
+      "optional_parameters": [
+        "id",
+        "requires_not_wearing_heavy_armor",
+        "selection_binding",
+        "speed_ft",
+        "speed_source"
+      ],
+      "parameter_types": {
+        "id": "string",
+        "mode": "string",
+        "requires_not_wearing_heavy_armor": "boolean",
+        "selection_binding": "object",
+        "speed_ft": "integer",
+        "speed_source": "string"
+      },
+      "required_parameters": [
+        "mode"
+      ]
+    },
+    {
+      "capability_id": "modifier.passive.v2",
+      "compatible_action_economy": [
+        "automatic",
+        "none"
+      ],
+      "compatible_activation": [
+        "automatic",
+        "dm_accept",
+        "explicit_choice",
+        "player_accept"
+      ],
+      "compatible_conditions": [
+        "action_tag",
+        "actor_has_feature",
+        "actor_has_state",
+        "actor_lacks_state",
+        "armor_category",
+        "audible",
+        "damage_type",
+        "equipped",
+        "first_round",
+        "first_turn",
+        "once_per_target",
+        "once_per_turn",
+        "resource_is_zero",
+        "spell_level_range",
+        "spell_school",
+        "spell_source",
+        "target_has_not_acted",
+        "target_has_state",
+        "target_matches_persisted_id",
+        "visible",
+        "weapon_category",
+        "within_range"
+      ],
+      "compatible_durations": [
+        "advancement_persistent",
+        "current_round",
+        "current_turn",
+        "one_hour",
+        "one_minute",
+        "permanent",
+        "ten_minutes",
+        "until_condition_ends",
+        "until_long_rest",
+        "until_short_rest"
+      ],
+      "compatible_resource_operations": [],
+      "compatible_targets": [
+        "ally",
+        "enemy",
+        "self"
+      ],
+      "compatible_triggers": [
+        "ability_check",
+        "action_declared",
+        "action_resolved",
+        "advancement_confirmed",
+        "attack_declared",
+        "attack_hit",
+        "attack_missed",
+        "combat_started",
+        "damage_applied",
+        "damage_before_apply",
+        "explicit_activation",
+        "initiative_rolled",
+        "saving_throw",
+        "spell_cast",
+        "turn_ended",
+        "turn_started",
+        "zero_hp"
+      ],
+      "conditional_required_fields": [],
+      "contract_version": "1.0",
+      "enum_values": {
+        "scope": [
+          "aura",
+          "incoming",
+          "outgoing",
+          "self",
+          "target"
+        ]
+      },
+      "materializer_id": "modifier.passive.v2",
+      "mutually_exclusive_fields": [
+        [
+          "value",
+          "value_source"
+        ]
+      ],
+      "numeric_bounds": {},
+      "operator_id": "grant_passive_modifier",
+      "optional_parameters": [
+        "id",
+        "value",
+        "value_source"
+      ],
+      "parameter_types": {
+        "applies_when": "string",
+        "id": "string",
+        "operation": "string",
+        "scope": "string",
+        "stat": "string",
+        "value": "number",
+        "value_source": "string"
+      },
+      "required_parameters": [
+        "applies_when",
+        "operation",
+        "scope",
+        "stat"
+      ]
+    },
+    {
+      "capability_id": "advancement.proficiency",
+      "compatible_action_economy": [
+        "automatic",
+        "none"
+      ],
+      "compatible_activation": [
+        "automatic",
+        "dm_accept",
+        "explicit_choice",
+        "player_accept"
+      ],
+      "compatible_conditions": [
+        "action_tag",
+        "actor_has_feature",
+        "actor_has_state",
+        "actor_lacks_state",
+        "armor_category",
+        "audible",
+        "damage_type",
+        "equipped",
+        "first_round",
+        "first_turn",
+        "once_per_target",
+        "once_per_turn",
+        "resource_is_zero",
+        "spell_level_range",
+        "spell_school",
+        "spell_source",
+        "target_has_not_acted",
+        "target_has_state",
+        "target_matches_persisted_id",
+        "visible",
+        "weapon_category",
+        "within_range"
+      ],
+      "compatible_durations": [
+        "advancement_persistent",
+        "permanent"
+      ],
+      "compatible_resource_operations": [],
+      "compatible_targets": [
+        "self"
+      ],
+      "compatible_triggers": [
+        "advancement_confirmed"
+      ],
+      "conditional_required_fields": [],
+      "contract_version": "1.0",
+      "enum_values": {
+        "operation": [
+          "grant",
+          "remove",
+          "replace"
+        ]
+      },
+      "materializer_id": "advancement.proficiency",
+      "mutually_exclusive_fields": [],
+      "numeric_bounds": {},
+      "operator_id": "grant_proficiency",
+      "optional_parameters": [],
+      "parameter_types": {
+        "asset_id": "string",
+        "operation": "string",
+        "proficiency_kind": "string"
+      },
+      "required_parameters": [
+        "asset_id",
+        "operation",
+        "proficiency_kind"
+      ]
+    },
+    {
+      "capability_id": "defense.resistance",
+      "compatible_action_economy": [
+        "automatic",
+        "none"
+      ],
+      "compatible_activation": [
+        "automatic",
+        "dm_accept",
+        "explicit_choice",
+        "player_accept"
+      ],
+      "compatible_conditions": [
+        "action_tag",
+        "actor_has_feature",
+        "actor_has_state",
+        "actor_lacks_state",
+        "armor_category",
+        "audible",
+        "damage_type",
+        "equipped",
+        "first_round",
+        "first_turn",
+        "once_per_target",
+        "once_per_turn",
+        "resource_is_zero",
+        "spell_level_range",
+        "spell_school",
+        "spell_source",
+        "target_has_not_acted",
+        "target_has_state",
+        "target_matches_persisted_id",
+        "visible",
+        "weapon_category",
+        "within_range"
+      ],
+      "compatible_durations": [
+        "advancement_persistent",
+        "permanent"
+      ],
+      "compatible_resource_operations": [],
+      "compatible_targets": [
+        "self"
+      ],
+      "compatible_triggers": [
+        "ability_check",
+        "action_declared",
+        "action_resolved",
+        "advancement_confirmed",
+        "attack_declared",
+        "attack_hit",
+        "attack_missed",
+        "combat_started",
+        "damage_applied",
+        "damage_before_apply",
+        "explicit_activation",
+        "initiative_rolled",
+        "saving_throw",
+        "spell_cast",
+        "turn_ended",
+        "turn_started",
+        "zero_hp"
+      ],
+      "conditional_required_fields": [],
+      "contract_version": "1.0",
+      "enum_values": {},
+      "materializer_id": "defense.resistance",
+      "mutually_exclusive_fields": [],
+      "numeric_bounds": {},
+      "operator_id": "grant_resistance",
+      "optional_parameters": [
+        "id",
+        "source"
+      ],
+      "parameter_types": {
+        "damage_type": "string",
+        "id": "string",
+        "source": "string"
+      },
+      "required_parameters": [
+        "damage_type"
+      ]
+    },
+    {
+      "capability_id": "sight.mode",
+      "compatible_action_economy": [
+        "automatic",
+        "none"
+      ],
+      "compatible_activation": [
+        "automatic",
+        "dm_accept",
+        "explicit_choice",
+        "player_accept"
+      ],
+      "compatible_conditions": [
+        "action_tag",
+        "actor_has_feature",
+        "actor_has_state",
+        "actor_lacks_state",
+        "armor_category",
+        "audible",
+        "damage_type",
+        "equipped",
+        "first_round",
+        "first_turn",
+        "once_per_target",
+        "once_per_turn",
+        "resource_is_zero",
+        "spell_level_range",
+        "spell_school",
+        "spell_source",
+        "target_has_not_acted",
+        "target_has_state",
+        "target_matches_persisted_id",
+        "visible",
+        "weapon_category",
+        "within_range"
+      ],
+      "compatible_durations": [
+        "advancement_persistent",
+        "permanent"
+      ],
+      "compatible_resource_operations": [],
+      "compatible_targets": [
+        "self"
+      ],
+      "compatible_triggers": [
+        "advancement_confirmed",
+        "combat_started"
+      ],
+      "conditional_required_fields": [],
+      "contract_version": "1.0",
+      "enum_values": {
+        "mode": [
+          "blindsight",
+          "darkvision",
+          "tremorsense",
+          "truesight"
+        ]
+      },
+      "materializer_id": "sight.mode",
+      "mutually_exclusive_fields": [
+        [
+          "range_ft",
+          "range_source"
+        ]
+      ],
+      "numeric_bounds": {
+        "range_ft": [
+          1,
+          120
+        ]
+      },
+      "operator_id": "grant_sight_mode",
+      "optional_parameters": [
+        "applies_when",
+        "id",
+        "range_ft",
+        "range_source"
+      ],
+      "parameter_types": {
+        "applies_when": "string",
+        "id": "string",
+        "mode": "string",
+        "range_ft": "integer",
+        "range_source": "string"
+      },
+      "required_parameters": [
+        "mode"
+      ]
+    },
+    {
+      "capability_id": "advancement.spell",
+      "compatible_action_economy": [
+        "automatic",
+        "none"
+      ],
+      "compatible_activation": [
+        "automatic",
+        "dm_accept",
+        "explicit_choice",
+        "player_accept"
+      ],
+      "compatible_conditions": [
+        "action_tag",
+        "actor_has_feature",
+        "actor_has_state",
+        "actor_lacks_state",
+        "armor_category",
+        "audible",
+        "damage_type",
+        "equipped",
+        "first_round",
+        "first_turn",
+        "once_per_target",
+        "once_per_turn",
+        "resource_is_zero",
+        "spell_level_range",
+        "spell_school",
+        "spell_source",
+        "target_has_not_acted",
+        "target_has_state",
+        "target_matches_persisted_id",
+        "visible",
+        "weapon_category",
+        "within_range"
+      ],
+      "compatible_durations": [
+        "advancement_persistent",
+        "permanent"
+      ],
+      "compatible_resource_operations": [],
+      "compatible_targets": [
+        "self"
+      ],
+      "compatible_triggers": [
+        "advancement_confirmed"
+      ],
+      "conditional_required_fields": [],
+      "contract_version": "1.0",
+      "enum_values": {
+        "grant_mode": [
+          "always_prepared",
+          "free_cast",
+          "known"
+        ]
+      },
+      "materializer_id": "advancement.spell",
+      "mutually_exclusive_fields": [],
+      "numeric_bounds": {},
+      "operator_id": "grant_spell",
+      "optional_parameters": [
+        "auto_save",
+        "free_cast_resource_key",
+        "ritual_only"
+      ],
+      "parameter_types": {
+        "auto_save": "boolean",
+        "casting_ability": "string",
+        "free_cast_resource_key": "string",
+        "grant_mode": "string",
+        "ritual_only": "boolean",
+        "source_class": "string",
+        "spell_id": "string"
+      },
+      "required_parameters": [
+        "casting_ability",
+        "grant_mode",
+        "source_class",
+        "spell_id"
+      ]
+    },
+    {
+      "capability_id": "damage.temporary_hp",
+      "compatible_action_economy": [
+        "action",
+        "automatic",
+        "bonus_action",
+        "explicit_player_choice",
+        "none",
+        "reaction"
+      ],
+      "compatible_activation": [
+        "automatic",
+        "dm_accept",
+        "explicit_choice",
+        "player_accept"
+      ],
+      "compatible_conditions": [
+        "action_tag",
+        "actor_has_feature",
+        "actor_has_state",
+        "actor_lacks_state",
+        "armor_category",
+        "audible",
+        "damage_type",
+        "equipped",
+        "first_round",
+        "first_turn",
+        "once_per_target",
+        "once_per_turn",
+        "resource_is_zero",
+        "spell_level_range",
+        "spell_school",
+        "spell_source",
+        "target_has_not_acted",
+        "target_has_state",
+        "target_matches_persisted_id",
+        "visible",
+        "weapon_category",
+        "within_range"
+      ],
+      "compatible_durations": [
+        "advancement_persistent",
+        "current_round",
+        "current_turn",
+        "one_hour",
+        "one_minute",
+        "permanent",
+        "ten_minutes",
+        "until_condition_ends",
+        "until_long_rest",
+        "until_short_rest"
+      ],
+      "compatible_resource_operations": [],
+      "compatible_targets": [
+        "ally",
+        "aura",
+        "enemy",
+        "marked_target",
+        "one_creature",
+        "self",
+        "visible_creature"
+      ],
+      "compatible_triggers": [
+        "ability_check",
+        "action_declared",
+        "action_resolved",
+        "advancement_confirmed",
+        "attack_declared",
+        "attack_hit",
+        "attack_missed",
+        "combat_started",
+        "damage_applied",
+        "damage_before_apply",
+        "explicit_activation",
+        "initiative_rolled",
+        "long_rest_completed",
+        "long_rest_started",
+        "saving_throw",
+        "short_rest_completed",
+        "short_rest_started",
+        "spell_cast",
+        "turn_ended",
+        "turn_started",
+        "zero_hp"
+      ],
+      "conditional_required_fields": [],
+      "contract_version": "1.0",
+      "enum_values": {},
+      "materializer_id": "damage.temporary_hp",
+      "mutually_exclusive_fields": [],
+      "numeric_bounds": {},
+      "operator_id": "grant_temporary_hp",
+      "optional_parameters": [
+        "id"
+      ],
+      "parameter_types": {
+        "formula": "string",
+        "id": "string",
+        "source": "string"
+      },
+      "required_parameters": [
+        "formula",
+        "source"
+      ]
+    },
+    {
+      "capability_id": "damage.healing",
+      "compatible_action_economy": [
+        "action",
+        "automatic",
+        "bonus_action",
+        "explicit_player_choice",
+        "none",
+        "reaction"
+      ],
+      "compatible_activation": [
+        "automatic",
+        "dm_accept",
+        "explicit_choice",
+        "player_accept"
+      ],
+      "compatible_conditions": [
+        "action_tag",
+        "actor_has_feature",
+        "actor_has_state",
+        "actor_lacks_state",
+        "armor_category",
+        "audible",
+        "damage_type",
+        "equipped",
+        "first_round",
+        "first_turn",
+        "once_per_target",
+        "once_per_turn",
+        "resource_is_zero",
+        "spell_level_range",
+        "spell_school",
+        "spell_source",
+        "target_has_not_acted",
+        "target_has_state",
+        "target_matches_persisted_id",
+        "visible",
+        "weapon_category",
+        "within_range"
+      ],
+      "compatible_durations": [
+        "advancement_persistent",
+        "current_round",
+        "current_turn",
+        "one_hour",
+        "one_minute",
+        "permanent",
+        "ten_minutes",
+        "until_condition_ends",
+        "until_long_rest",
+        "until_short_rest"
+      ],
+      "compatible_resource_operations": [],
+      "compatible_targets": [
+        "ally",
+        "aura",
+        "enemy",
+        "marked_target",
+        "one_creature",
+        "self",
+        "visible_creature"
+      ],
+      "compatible_triggers": [
+        "ability_check",
+        "action_declared",
+        "action_resolved",
+        "advancement_confirmed",
+        "attack_declared",
+        "attack_hit",
+        "attack_missed",
+        "combat_started",
+        "damage_applied",
+        "damage_before_apply",
+        "explicit_activation",
+        "initiative_rolled",
+        "saving_throw",
+        "spell_cast",
+        "turn_ended",
+        "turn_started",
+        "zero_hp"
+      ],
+      "conditional_required_fields": [],
+      "contract_version": "1.0",
+      "enum_values": {},
+      "materializer_id": "damage.healing",
+      "mutually_exclusive_fields": [],
+      "numeric_bounds": {},
+      "operator_id": "heal",
+      "optional_parameters": [
+        "ability",
+        "id",
+        "legal_sources"
+      ],
+      "parameter_types": {
+        "ability": "string",
+        "formula": "string",
+        "id": "string",
+        "legal_sources": "array",
+        "source": "string"
+      },
+      "required_parameters": [
+        "formula",
+        "source"
+      ]
+    },
+    {
+      "capability_id": "modifier.roll",
+      "compatible_action_economy": [
+        "automatic",
+        "none"
+      ],
+      "compatible_activation": [
+        "automatic",
+        "dm_accept",
+        "explicit_choice",
+        "player_accept"
+      ],
+      "compatible_conditions": [
+        "action_tag",
+        "actor_has_feature",
+        "actor_has_state",
+        "actor_lacks_state",
+        "armor_category",
+        "audible",
+        "damage_type",
+        "equipped",
+        "first_round",
+        "first_turn",
+        "once_per_target",
+        "once_per_turn",
+        "resource_is_zero",
+        "spell_level_range",
+        "spell_school",
+        "spell_source",
+        "target_has_not_acted",
+        "target_has_state",
+        "target_matches_persisted_id",
+        "visible",
+        "weapon_category",
+        "within_range"
+      ],
+      "compatible_durations": [
+        "advancement_persistent",
+        "current_round",
+        "current_turn",
+        "one_hour",
+        "one_minute",
+        "permanent",
+        "ten_minutes",
+        "until_condition_ends",
+        "until_long_rest",
+        "until_short_rest"
+      ],
+      "compatible_resource_operations": [],
+      "compatible_targets": [
+        "ally",
+        "enemy",
+        "self"
+      ],
+      "compatible_triggers": [
+        "ability_check",
+        "action_declared",
+        "action_resolved",
+        "advancement_confirmed",
+        "attack_declared",
+        "attack_hit",
+        "attack_missed",
+        "combat_started",
+        "damage_applied",
+        "damage_before_apply",
+        "explicit_activation",
+        "initiative_rolled",
+        "saving_throw",
+        "spell_cast",
+        "turn_ended",
+        "turn_started",
+        "zero_hp"
+      ],
+      "conditional_required_fields": [],
+      "contract_version": "1.0",
+      "enum_values": {
+        "operation": [
+          "advantage"
+        ],
+        "scope": [
+          "incoming",
+          "outgoing",
+          "self",
+          "target"
+        ]
+      },
+      "materializer_id": "modifier.roll",
+      "mutually_exclusive_fields": [],
+      "numeric_bounds": {},
+      "operator_id": "impose_advantage",
+      "optional_parameters": [
+        "applies_when",
+        "id",
+        "scope"
+      ],
+      "parameter_types": {
+        "applies_when": "string",
+        "id": "string",
+        "operation": "string",
+        "scope": "string",
+        "stat": "string"
+      },
+      "required_parameters": [
+        "operation",
+        "stat"
+      ]
+    },
+    {
+      "capability_id": "modifier.roll.disadvantage",
+      "compatible_action_economy": [
+        "automatic",
+        "none"
+      ],
+      "compatible_activation": [
+        "automatic",
+        "dm_accept",
+        "explicit_choice",
+        "player_accept"
+      ],
+      "compatible_conditions": [
+        "action_tag",
+        "actor_has_feature",
+        "actor_has_state",
+        "actor_lacks_state",
+        "armor_category",
+        "audible",
+        "damage_type",
+        "equipped",
+        "first_round",
+        "first_turn",
+        "once_per_target",
+        "once_per_turn",
+        "resource_is_zero",
+        "spell_level_range",
+        "spell_school",
+        "spell_source",
+        "target_has_not_acted",
+        "target_has_state",
+        "target_matches_persisted_id",
+        "visible",
+        "weapon_category",
+        "within_range"
+      ],
+      "compatible_durations": [
+        "advancement_persistent",
+        "current_round",
+        "current_turn",
+        "one_hour",
+        "one_minute",
+        "permanent",
+        "ten_minutes",
+        "until_condition_ends",
+        "until_long_rest",
+        "until_short_rest"
+      ],
+      "compatible_resource_operations": [],
+      "compatible_targets": [
+        "ally",
+        "enemy",
+        "self"
+      ],
+      "compatible_triggers": [
+        "ability_check",
+        "action_declared",
+        "action_resolved",
+        "advancement_confirmed",
+        "attack_declared",
+        "attack_hit",
+        "attack_missed",
+        "combat_started",
+        "damage_applied",
+        "damage_before_apply",
+        "explicit_activation",
+        "initiative_rolled",
+        "saving_throw",
+        "spell_cast",
+        "turn_ended",
+        "turn_started",
+        "zero_hp"
+      ],
+      "conditional_required_fields": [],
+      "contract_version": "1.0",
+      "enum_values": {
+        "operation": [
+          "disadvantage"
+        ],
+        "scope": [
+          "incoming",
+          "outgoing",
+          "self",
+          "target"
+        ]
+      },
+      "materializer_id": "modifier.roll.disadvantage",
+      "mutually_exclusive_fields": [],
+      "numeric_bounds": {},
+      "operator_id": "impose_disadvantage",
+      "optional_parameters": [
+        "applies_when",
+        "id",
+        "scope"
+      ],
+      "parameter_types": {
+        "applies_when": "string",
+        "id": "string",
+        "operation": "string",
+        "scope": "string",
+        "stat": "string"
+      },
+      "required_parameters": [
+        "operation",
+        "stat"
+      ]
+    },
+    {
+      "capability_id": "spell.context",
+      "compatible_action_economy": [
+        "automatic",
+        "none"
+      ],
+      "compatible_activation": [
+        "automatic",
+        "dm_accept",
+        "explicit_choice",
+        "player_accept"
+      ],
+      "compatible_conditions": [
+        "action_tag",
+        "actor_has_feature",
+        "actor_has_state",
+        "actor_lacks_state",
+        "armor_category",
+        "audible",
+        "damage_type",
+        "equipped",
+        "first_round",
+        "first_turn",
+        "once_per_target",
+        "once_per_turn",
+        "resource_is_zero",
+        "spell_level_range",
+        "spell_school",
+        "spell_source",
+        "target_has_not_acted",
+        "target_has_state",
+        "target_matches_persisted_id",
+        "visible",
+        "weapon_category",
+        "within_range"
+      ],
+      "compatible_durations": [
+        "advancement_persistent",
+        "permanent"
+      ],
+      "compatible_resource_operations": [],
+      "compatible_targets": [
+        "self"
+      ],
+      "compatible_triggers": [
+        "advancement_confirmed",
+        "spell_cast"
+      ],
+      "conditional_required_fields": [],
+      "contract_version": "1.0",
+      "enum_values": {},
+      "materializer_id": "spell.context",
+      "mutually_exclusive_fields": [],
+      "numeric_bounds": {},
+      "operator_id": "override_spell_components",
+      "optional_parameters": [
+        "applies_when",
+        "id"
+      ],
+      "parameter_types": {
+        "applies_when": "string",
+        "component": "string",
+        "id": "string",
+        "operation": "string"
+      },
+      "required_parameters": [
+        "component",
+        "operation"
+      ]
+    },
+    {
+      "capability_id": "spell.context.payment",
+      "compatible_action_economy": [
+        "automatic",
+        "explicit_player_choice",
+        "none"
+      ],
+      "compatible_activation": [
+        "automatic",
+        "dm_accept",
+        "explicit_choice",
+        "player_accept"
+      ],
+      "compatible_conditions": [
+        "action_tag",
+        "actor_has_feature",
+        "actor_has_state",
+        "actor_lacks_state",
+        "armor_category",
+        "audible",
+        "damage_type",
+        "equipped",
+        "first_round",
+        "first_turn",
+        "once_per_target",
+        "once_per_turn",
+        "resource_is_zero",
+        "spell_level_range",
+        "spell_school",
+        "spell_source",
+        "target_has_not_acted",
+        "target_has_state",
+        "target_matches_persisted_id",
+        "visible",
+        "weapon_category",
+        "within_range"
+      ],
+      "compatible_durations": [
+        "advancement_persistent",
+        "permanent"
+      ],
+      "compatible_resource_operations": [
+        "consume",
+        "event",
+        "exchange",
+        "grant",
+        "long_rest",
+        "restore",
+        "set",
+        "set_to_max",
+        "short_rest",
+        "turn"
+      ],
+      "compatible_targets": [
+        "self"
+      ],
+      "compatible_triggers": [
+        "advancement_confirmed",
+        "spell_cast"
+      ],
+      "conditional_required_fields": [],
+      "contract_version": "1.0",
+      "enum_values": {},
+      "materializer_id": "spell.context.payment",
+      "mutually_exclusive_fields": [],
+      "numeric_bounds": {},
+      "operator_id": "override_spell_payment",
+      "optional_parameters": [
+        "applies_when",
+        "id",
+        "resource_key"
+      ],
+      "parameter_types": {
+        "applies_when": "string",
+        "id": "string",
+        "operation": "string",
+        "payment_kind": "string",
+        "resource_key": "string"
+      },
+      "required_parameters": [
+        "operation",
+        "payment_kind"
+      ]
+    },
+    {
+      "capability_id": "spell.context.range",
+      "compatible_action_economy": [
+        "automatic",
+        "none"
+      ],
+      "compatible_activation": [
+        "automatic",
+        "dm_accept",
+        "explicit_choice",
+        "player_accept"
+      ],
+      "compatible_conditions": [
+        "action_tag",
+        "actor_has_feature",
+        "actor_has_state",
+        "actor_lacks_state",
+        "armor_category",
+        "audible",
+        "damage_type",
+        "equipped",
+        "first_round",
+        "first_turn",
+        "once_per_target",
+        "once_per_turn",
+        "resource_is_zero",
+        "spell_level_range",
+        "spell_school",
+        "spell_source",
+        "target_has_not_acted",
+        "target_has_state",
+        "target_matches_persisted_id",
+        "visible",
+        "weapon_category",
+        "within_range"
+      ],
+      "compatible_durations": [
+        "advancement_persistent",
+        "permanent"
+      ],
+      "compatible_resource_operations": [],
+      "compatible_targets": [
+        "self"
+      ],
+      "compatible_triggers": [
+        "advancement_confirmed",
+        "spell_cast"
+      ],
+      "conditional_required_fields": [],
+      "contract_version": "1.0",
+      "enum_values": {},
+      "materializer_id": "spell.context.range",
+      "mutually_exclusive_fields": [],
+      "numeric_bounds": {
+        "range_ft": [
+          0,
+          10000
+        ]
+      },
+      "operator_id": "override_spell_range",
+      "optional_parameters": [
+        "applies_when",
+        "id"
+      ],
+      "parameter_types": {
+        "applies_when": "string",
+        "id": "string",
+        "operation": "string",
+        "range_ft": "integer"
+      },
+      "required_parameters": [
+        "operation",
+        "range_ft"
+      ]
+    },
+    {
+      "capability_id": "advancement.prepare_spell",
+      "compatible_action_economy": [
+        "automatic",
+        "none"
+      ],
+      "compatible_activation": [
+        "automatic",
+        "dm_accept",
+        "explicit_choice",
+        "player_accept"
+      ],
+      "compatible_conditions": [
+        "action_tag",
+        "actor_has_feature",
+        "actor_has_state",
+        "actor_lacks_state",
+        "armor_category",
+        "audible",
+        "damage_type",
+        "equipped",
+        "first_round",
+        "first_turn",
+        "once_per_target",
+        "once_per_turn",
+        "resource_is_zero",
+        "spell_level_range",
+        "spell_school",
+        "spell_source",
+        "target_has_not_acted",
+        "target_has_state",
+        "target_matches_persisted_id",
+        "visible",
+        "weapon_category",
+        "within_range"
+      ],
+      "compatible_durations": [
+        "advancement_persistent",
+        "permanent"
+      ],
+      "compatible_resource_operations": [],
+      "compatible_targets": [
+        "self"
+      ],
+      "compatible_triggers": [
+        "advancement_confirmed"
+      ],
+      "conditional_required_fields": [],
+      "contract_version": "1.0",
+      "enum_values": {
+        "preparation_mode": [
+          "always_prepared",
+          "prepared"
+        ]
+      },
+      "materializer_id": "advancement.prepare_spell",
+      "mutually_exclusive_fields": [],
+      "numeric_bounds": {},
+      "operator_id": "prepare_spell",
+      "optional_parameters": [
+        "preparation_mode"
+      ],
+      "parameter_types": {
+        "preparation_mode": "string",
+        "source_class": "string",
+        "spell_id": "string"
+      },
+      "required_parameters": [
+        "source_class",
+        "spell_id"
+      ]
+    },
+    {
+      "capability_id": "state.lifecycle.remove",
+      "compatible_action_economy": [
+        "action",
+        "automatic",
+        "bonus_action",
+        "explicit_player_choice",
+        "none",
+        "reaction"
+      ],
+      "compatible_activation": [
+        "automatic",
+        "dm_accept",
+        "explicit_choice",
+        "player_accept"
+      ],
+      "compatible_conditions": [
+        "action_tag",
+        "actor_has_feature",
+        "actor_has_state",
+        "actor_lacks_state",
+        "armor_category",
+        "audible",
+        "damage_type",
+        "equipped",
+        "first_round",
+        "first_turn",
+        "once_per_target",
+        "once_per_turn",
+        "resource_is_zero",
+        "spell_level_range",
+        "spell_school",
+        "spell_source",
+        "target_has_not_acted",
+        "target_has_state",
+        "target_matches_persisted_id",
+        "visible",
+        "weapon_category",
+        "within_range"
+      ],
+      "compatible_durations": [
+        "advancement_persistent",
+        "current_round",
+        "current_turn",
+        "one_hour",
+        "one_minute",
+        "permanent",
+        "ten_minutes",
+        "until_condition_ends",
+        "until_long_rest",
+        "until_short_rest"
+      ],
+      "compatible_resource_operations": [],
+      "compatible_targets": [
+        "ally",
+        "aura",
+        "enemy",
+        "marked_target",
+        "one_creature",
+        "self",
+        "visible_creature"
+      ],
+      "compatible_triggers": [
+        "ability_check",
+        "action_declared",
+        "action_resolved",
+        "attack_declared",
+        "attack_hit",
+        "attack_missed",
+        "combat_started",
+        "damage_applied",
+        "damage_before_apply",
+        "explicit_activation",
+        "initiative_rolled",
+        "saving_throw",
+        "spell_cast",
+        "turn_ended",
+        "turn_started",
+        "zero_hp"
+      ],
+      "conditional_required_fields": [],
+      "contract_version": "1.0",
+      "enum_values": {},
+      "materializer_id": "state.lifecycle.remove",
+      "mutually_exclusive_fields": [],
+      "numeric_bounds": {},
+      "operator_id": "remove_condition",
+      "optional_parameters": [
+        "id"
+      ],
+      "parameter_types": {
+        "condition": "string",
+        "id": "string"
+      },
+      "required_parameters": [
+        "condition"
+      ]
+    },
+    {
+      "capability_id": "damage.type",
+      "compatible_action_economy": [
+        "automatic",
+        "none"
+      ],
+      "compatible_activation": [
+        "automatic",
+        "dm_accept",
+        "explicit_choice",
+        "player_accept"
+      ],
+      "compatible_conditions": [
+        "action_tag",
+        "actor_has_feature",
+        "actor_has_state",
+        "actor_lacks_state",
+        "armor_category",
+        "audible",
+        "damage_type",
+        "equipped",
+        "first_round",
+        "first_turn",
+        "once_per_target",
+        "once_per_turn",
+        "resource_is_zero",
+        "spell_level_range",
+        "spell_school",
+        "spell_source",
+        "target_has_not_acted",
+        "target_has_state",
+        "target_matches_persisted_id",
+        "visible",
+        "weapon_category",
+        "within_range"
+      ],
+      "compatible_durations": [
+        "advancement_persistent",
+        "current_round",
+        "current_turn",
+        "one_hour",
+        "one_minute",
+        "permanent",
+        "ten_minutes",
+        "until_condition_ends",
+        "until_long_rest",
+        "until_short_rest"
+      ],
+      "compatible_resource_operations": [],
+      "compatible_targets": [
+        "ally",
+        "aura",
+        "enemy",
+        "marked_target",
+        "one_creature",
+        "self",
+        "visible_creature"
+      ],
+      "compatible_triggers": [
+        "ability_check",
+        "action_declared",
+        "action_resolved",
+        "attack_declared",
+        "attack_hit",
+        "attack_missed",
+        "combat_started",
+        "damage_applied",
+        "damage_before_apply",
+        "explicit_activation",
+        "initiative_rolled",
+        "saving_throw",
+        "spell_cast",
+        "turn_ended",
+        "turn_started",
+        "zero_hp"
+      ],
+      "conditional_required_fields": [],
+      "contract_version": "1.0",
+      "enum_values": {},
+      "materializer_id": "damage.type",
+      "mutually_exclusive_fields": [],
+      "numeric_bounds": {},
+      "operator_id": "replace_damage_type",
+      "optional_parameters": [
+        "applies_when",
+        "id"
+      ],
+      "parameter_types": {
+        "applies_when": "string",
+        "from_type": "string",
+        "id": "string",
+        "to_type": "string"
+      },
+      "required_parameters": [
+        "from_type",
+        "to_type"
+      ]
+    },
+    {
+      "capability_id": "resource.lifecycle",
+      "compatible_action_economy": [
+        "action",
+        "automatic",
+        "bonus_action",
+        "explicit_player_choice",
+        "none",
+        "reaction"
+      ],
+      "compatible_activation": [
+        "automatic",
+        "dm_accept",
+        "explicit_choice",
+        "player_accept"
+      ],
+      "compatible_conditions": [
+        "action_tag",
+        "actor_has_feature",
+        "actor_has_state",
+        "actor_lacks_state",
+        "armor_category",
+        "audible",
+        "damage_type",
+        "equipped",
+        "first_round",
+        "first_turn",
+        "once_per_target",
+        "once_per_turn",
+        "resource_is_zero",
+        "spell_level_range",
+        "spell_school",
+        "spell_source",
+        "target_has_not_acted",
+        "target_has_state",
+        "target_matches_persisted_id",
+        "visible",
+        "weapon_category",
+        "within_range"
+      ],
+      "compatible_durations": [
+        "advancement_persistent",
+        "current_round",
+        "current_turn",
+        "one_hour",
+        "one_minute",
+        "permanent",
+        "ten_minutes",
+        "until_condition_ends",
+        "until_long_rest",
+        "until_short_rest"
+      ],
+      "compatible_resource_operations": [
+        "consume",
+        "event",
+        "exchange",
+        "grant",
+        "long_rest",
+        "restore",
+        "set",
+        "set_to_max",
+        "short_rest",
+        "turn"
+      ],
+      "compatible_targets": [
+        "self"
+      ],
+      "compatible_triggers": [
+        "advancement_confirmed",
+        "long_rest_completed",
+        "long_rest_started",
+        "short_rest_completed",
+        "short_rest_started",
+        "spell_cast",
+        "zero_hp"
+      ],
+      "conditional_required_fields": [],
+      "contract_version": "1.0",
+      "enum_values": {
+        "operation": [
+          "add",
+          "restore",
+          "set_to_max"
+        ]
+      },
+      "materializer_id": "resource.lifecycle",
+      "mutually_exclusive_fields": [
+        [
+          "amount",
+          "amount_source"
+        ]
+      ],
+      "numeric_bounds": {
+        "amount": [
+          0,
+          100
+        ]
+      },
+      "operator_id": "restore_resource",
+      "optional_parameters": [
+        "amount",
+        "amount_source",
+        "recovery_event"
+      ],
+      "parameter_types": {
+        "amount": "integer",
+        "amount_source": "string",
+        "operation": "string",
+        "recovery_event": "string",
+        "resource_key": "string"
+      },
+      "required_parameters": [
+        "operation",
+        "resource_key"
+      ]
+    },
+    {
+      "capability_id": "modifier.passive.set",
+      "compatible_action_economy": [
+        "automatic",
+        "none"
+      ],
+      "compatible_activation": [
+        "automatic",
+        "dm_accept",
+        "explicit_choice",
+        "player_accept"
+      ],
+      "compatible_conditions": [
+        "action_tag",
+        "actor_has_feature",
+        "actor_has_state",
+        "actor_lacks_state",
+        "armor_category",
+        "audible",
+        "damage_type",
+        "equipped",
+        "first_round",
+        "first_turn",
+        "once_per_target",
+        "once_per_turn",
+        "resource_is_zero",
+        "spell_level_range",
+        "spell_school",
+        "spell_source",
+        "target_has_not_acted",
+        "target_has_state",
+        "target_matches_persisted_id",
+        "visible",
+        "weapon_category",
+        "within_range"
+      ],
+      "compatible_durations": [
+        "advancement_persistent",
+        "current_round",
+        "current_turn",
+        "one_hour",
+        "one_minute",
+        "permanent",
+        "ten_minutes",
+        "until_condition_ends",
+        "until_long_rest",
+        "until_short_rest"
+      ],
+      "compatible_resource_operations": [],
+      "compatible_targets": [
+        "ally",
+        "enemy",
+        "self"
+      ],
+      "compatible_triggers": [
+        "ability_check",
+        "action_declared",
+        "action_resolved",
+        "advancement_confirmed",
+        "attack_declared",
+        "attack_hit",
+        "attack_missed",
+        "combat_started",
+        "damage_applied",
+        "damage_before_apply",
+        "explicit_activation",
+        "initiative_rolled",
+        "saving_throw",
+        "spell_cast",
+        "turn_ended",
+        "turn_started",
+        "zero_hp"
+      ],
+      "conditional_required_fields": [],
+      "contract_version": "1.0",
+      "enum_values": {
+        "scope": [
+          "aura",
+          "incoming",
+          "outgoing",
+          "self",
+          "target"
+        ]
+      },
+      "materializer_id": "modifier.passive.set",
+      "mutually_exclusive_fields": [
+        [
+          "value",
+          "value_source"
+        ]
+      ],
+      "numeric_bounds": {},
+      "operator_id": "set_modifier",
+      "optional_parameters": [
+        "applies_when",
+        "id",
+        "scope",
+        "value",
+        "value_source"
+      ],
+      "parameter_types": {
+        "applies_when": "string",
+        "id": "string",
+        "operation": "string",
+        "scope": "string",
+        "stat": "string",
+        "value": "number",
+        "value_source": "string"
+      },
+      "required_parameters": [
+        "operation",
+        "stat"
+      ]
+    },
+    {
+      "capability_id": "spell.damage_modifier",
+      "compatible_action_economy": [
+        "automatic",
+        "none"
+      ],
+      "compatible_activation": [
+        "automatic",
+        "dm_accept",
+        "explicit_choice",
+        "player_accept"
+      ],
+      "compatible_conditions": [
+        "action_tag",
+        "actor_has_feature",
+        "actor_has_state",
+        "actor_lacks_state",
+        "armor_category",
+        "audible",
+        "damage_type",
+        "equipped",
+        "first_round",
+        "first_turn",
+        "once_per_target",
+        "once_per_turn",
+        "resource_is_zero",
+        "spell_level_range",
+        "spell_school",
+        "spell_source",
+        "target_has_not_acted",
+        "target_has_state",
+        "target_matches_persisted_id",
+        "visible",
+        "weapon_category",
+        "within_range"
+      ],
+      "compatible_durations": [
+        "advancement_persistent",
+        "permanent"
+      ],
+      "compatible_resource_operations": [],
+      "compatible_targets": [
+        "ally",
+        "aura",
+        "enemy",
+        "marked_target",
+        "one_creature",
+        "self",
+        "visible_creature"
+      ],
+      "compatible_triggers": [
+        "advancement_confirmed",
+        "spell_cast"
+      ],
+      "conditional_required_fields": [],
+      "contract_version": "1.0",
+      "enum_values": {},
+      "materializer_id": "spell.damage_modifier",
+      "mutually_exclusive_fields": [],
+      "numeric_bounds": {},
+      "operator_id": "spell_damage_modifier",
+      "optional_parameters": [
+        "ability",
+        "applies_when",
+        "id",
+        "spell_school"
+      ],
+      "parameter_types": {
+        "ability": "string",
+        "applies_when": "string",
+        "formula": "string",
+        "id": "string",
+        "operation": "string",
+        "spell_school": "string"
+      },
+      "required_parameters": [
+        "formula",
+        "operation"
+      ]
+    },
+    {
+      "capability_id": "spell.healing_modifier",
+      "compatible_action_economy": [
+        "automatic",
+        "none"
+      ],
+      "compatible_activation": [
+        "automatic",
+        "dm_accept",
+        "explicit_choice",
+        "player_accept"
+      ],
+      "compatible_conditions": [
+        "action_tag",
+        "actor_has_feature",
+        "actor_has_state",
+        "actor_lacks_state",
+        "armor_category",
+        "audible",
+        "damage_type",
+        "equipped",
+        "first_round",
+        "first_turn",
+        "once_per_target",
+        "once_per_turn",
+        "resource_is_zero",
+        "spell_level_range",
+        "spell_school",
+        "spell_source",
+        "target_has_not_acted",
+        "target_has_state",
+        "target_matches_persisted_id",
+        "visible",
+        "weapon_category",
+        "within_range"
+      ],
+      "compatible_durations": [
+        "advancement_persistent",
+        "permanent"
+      ],
+      "compatible_resource_operations": [],
+      "compatible_targets": [
+        "ally",
+        "one_creature",
+        "self"
+      ],
+      "compatible_triggers": [
+        "advancement_confirmed",
+        "spell_cast"
+      ],
+      "conditional_required_fields": [],
+      "contract_version": "1.0",
+      "enum_values": {},
+      "materializer_id": "spell.healing_modifier",
+      "mutually_exclusive_fields": [],
+      "numeric_bounds": {},
+      "operator_id": "spell_healing_modifier",
+      "optional_parameters": [
+        "ability",
+        "applies_when",
+        "id"
+      ],
+      "parameter_types": {
+        "ability": "string",
+        "applies_when": "string",
+        "formula": "string",
+        "id": "string",
+        "operation": "string"
+      },
+      "required_parameters": [
+        "formula",
+        "operation"
+      ]
+    },
+    {
+      "capability_id": "spell.save_damage_modifier",
+      "compatible_action_economy": [
+        "automatic",
+        "none"
+      ],
+      "compatible_activation": [
+        "automatic",
+        "dm_accept",
+        "explicit_choice",
+        "player_accept"
+      ],
+      "compatible_conditions": [
+        "action_tag",
+        "actor_has_feature",
+        "actor_has_state",
+        "actor_lacks_state",
+        "armor_category",
+        "audible",
+        "damage_type",
+        "equipped",
+        "first_round",
+        "first_turn",
+        "once_per_target",
+        "once_per_turn",
+        "resource_is_zero",
+        "spell_level_range",
+        "spell_school",
+        "spell_source",
+        "target_has_not_acted",
+        "target_has_state",
+        "target_matches_persisted_id",
+        "visible",
+        "weapon_category",
+        "within_range"
+      ],
+      "compatible_durations": [
+        "advancement_persistent",
+        "permanent"
+      ],
+      "compatible_resource_operations": [],
+      "compatible_targets": [
+        "ally",
+        "aura",
+        "enemy",
+        "marked_target",
+        "one_creature",
+        "self",
+        "visible_creature"
+      ],
+      "compatible_triggers": [
+        "advancement_confirmed",
+        "saving_throw",
+        "spell_cast"
+      ],
+      "conditional_required_fields": [],
+      "contract_version": "1.0",
+      "enum_values": {},
+      "materializer_id": "spell.save_damage_modifier",
+      "mutually_exclusive_fields": [],
+      "numeric_bounds": {},
+      "operator_id": "spell_save_damage_modifier",
+      "optional_parameters": [
+        "applies_when",
+        "id",
+        "spell_school"
+      ],
+      "parameter_types": {
+        "applies_when": "string",
+        "formula": "string",
+        "id": "string",
+        "operation": "string",
+        "spell_school": "string"
+      },
+      "required_parameters": [
+        "formula",
+        "operation"
+      ]
+    },
+    {
+      "capability_id": "zero_hp.intervention",
+      "compatible_action_economy": [
+        "automatic",
+        "explicit_player_choice",
+        "none",
+        "reaction"
+      ],
+      "compatible_activation": [
+        "automatic",
+        "dm_accept",
+        "explicit_choice",
+        "player_accept"
+      ],
+      "compatible_conditions": [
+        "action_tag",
+        "actor_has_feature",
+        "actor_has_state",
+        "actor_lacks_state",
+        "armor_category",
+        "audible",
+        "damage_type",
+        "equipped",
+        "first_round",
+        "first_turn",
+        "once_per_target",
+        "once_per_turn",
+        "resource_is_zero",
+        "spell_level_range",
+        "spell_school",
+        "spell_source",
+        "target_has_not_acted",
+        "target_has_state",
+        "target_matches_persisted_id",
+        "visible",
+        "weapon_category",
+        "within_range"
+      ],
+      "compatible_durations": [
+        "current_round",
+        "current_turn",
+        "until_long_rest"
+      ],
+      "compatible_resource_operations": [
+        "consume",
+        "event",
+        "exchange",
+        "grant",
+        "long_rest",
+        "restore",
+        "set",
+        "set_to_max",
+        "short_rest",
+        "turn"
+      ],
+      "compatible_targets": [
+        "self"
+      ],
+      "compatible_triggers": [
+        "damage_before_apply",
+        "zero_hp"
+      ],
+      "conditional_required_fields": [],
+      "contract_version": "1.0",
+      "enum_values": {
+        "reset": [
+          "long_rest",
+          "short_rest"
+        ]
+      },
+      "materializer_id": "zero_hp.intervention",
+      "mutually_exclusive_fields": [],
+      "numeric_bounds": {},
+      "operator_id": "zero_hp_intervention",
+      "optional_parameters": [
+        "exceptions",
+        "id"
+      ],
+      "parameter_types": {
+        "eligibility": "object",
+        "exceptions": "array",
+        "id": "string",
+        "replacement_hp": "string",
+        "reset": "string",
+        "resource_key": "string",
+        "trigger": "string"
+      },
+      "required_parameters": [
+        "eligibility",
+        "replacement_hp",
+        "reset",
+        "resource_key",
+        "trigger"
+      ]
+    }
+  ],
+  "operator_count": 34,
+  "schema_version": "feature-operator-contracts-1",
+  "strict_schema_count": 34
+}

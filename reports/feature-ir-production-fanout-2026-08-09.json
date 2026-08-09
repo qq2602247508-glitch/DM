@@ -1,0 +1,37 @@
+{
+  "after_registration": [
+    "full",
+    "full",
+    "full",
+    "full",
+    "full",
+    "full"
+  ],
+  "before_registration": [
+    "partial",
+    "partial",
+    "partial",
+    "partial",
+    "partial",
+    "partial"
+  ],
+  "capability_id": "modifier.passive.v2",
+  "feature_ids": [
+    "dnd2024.cohort.roving-speed",
+    "dnd2024.cohort.wild-senses-range",
+    "dnd2024.cohort.second-story-jump",
+    "dnd2024.cohort.water-affinity",
+    "dnd2024.cohort.sequence-awareness",
+    "dnd2024.cohort.swift-glimmer"
+  ],
+  "materialized_count": 6,
+  "production_evidence": [
+    "test_feature_runtime_fanout"
+  ],
+  "real_consumers": [
+    "feature_runtime_registry",
+    "combat_start_modifiers"
+  ],
+  "runtime_modifier_count": 6,
+  "schema_version": "feature-ir-production-fanout-1"
+}

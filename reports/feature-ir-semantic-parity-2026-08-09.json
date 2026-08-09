@@ -1,0 +1,1135 @@
+{
+  "all_passed": true,
+  "feature_count": 10,
+  "rows": [
+    {
+      "feature_id": "dnd2024.core.druid.druidic",
+      "feature_name": "德鲁伊语",
+      "fields": {
+        "advancement": {
+          "ir": {
+            "casting_ability": "wisdom",
+            "grant_class": "德鲁伊",
+            "kind": "fixed_spell_grant",
+            "ritual_only": true,
+            "spells": [
+              "动物交谈"
+            ]
+          },
+          "legacy": {
+            "casting_ability": "wisdom",
+            "grant_class": "owner_class",
+            "kind": "fixed_spell_grant",
+            "ritual_only": true,
+            "spells": [
+              "动物交谈"
+            ]
+          },
+          "proof": "typed IR fields normalize to the same rule semantics",
+          "status": "equivalent"
+        },
+        "attack_action_count": {
+          "ir": null,
+          "legacy": null,
+          "proof": "canonical projection values are identical",
+          "status": "exact"
+        },
+        "combat_defenses": {
+          "ir": [],
+          "legacy": [],
+          "proof": "canonical projection values are identical",
+          "status": "exact"
+        },
+        "combat_modifiers": {
+          "ir": [],
+          "legacy": [],
+          "proof": "canonical projection values are identical",
+          "status": "exact"
+        },
+        "movement_modes": {
+          "ir": [],
+          "legacy": [],
+          "proof": "canonical projection values are identical",
+          "status": "exact"
+        },
+        "resources": {
+          "ir": {},
+          "legacy": {},
+          "proof": "canonical projection values are identical",
+          "status": "exact"
+        }
+      },
+      "ir_contract": {
+        "advancement": {
+          "casting_ability": "wisdom",
+          "grant_class": "德鲁伊",
+          "kind": "fixed_spell_grant",
+          "ritual_only": true,
+          "spells": [
+            "动物交谈"
+          ]
+        },
+        "attack_action_count": null,
+        "combat_defenses": [],
+        "combat_modifiers": [],
+        "movement_modes": [],
+        "resources": {}
+      },
+      "legacy_contract": {
+        "advancement": {
+          "casting_ability": "wisdom",
+          "grant_class": "owner_class",
+          "kind": "fixed_spell_grant",
+          "ritual_only": true,
+          "spells": [
+            "动物交谈"
+          ]
+        },
+        "attack_action_count": null,
+        "combat_defenses": [],
+        "combat_modifiers": [],
+        "movement_modes": [],
+        "resources": {}
+      },
+      "materialized": true,
+      "production_test": "formal_feature_runtime_regression",
+      "status": "equivalent"
+    },
+    {
+      "feature_id": "dnd2024.core.rogue.thieves-cant",
+      "feature_name": "盗贼黑话",
+      "fields": {
+        "advancement": {
+          "ir": {
+            "choice_requirement": {
+              "duplicate_policy": "forbid",
+              "key": "language_choice",
+              "maximum": 1,
+              "minimum": 1,
+              "options_source": "core_languages",
+              "requires_dm_selection": false,
+              "strict": true
+            },
+            "kind": "selected_language_grant"
+          },
+          "legacy": {
+            "choice_requirement": {
+              "duplicate_policy": "forbid",
+              "key": "thieves_cant_language",
+              "maximum": 1,
+              "minimum": 1,
+              "options_source": "core_languages",
+              "requires_dm_selection": false,
+              "strict": true
+            },
+            "kind": "selected_language_grant"
+          },
+          "proof": "typed IR fields normalize to the same rule semantics",
+          "status": "equivalent"
+        },
+        "attack_action_count": {
+          "ir": null,
+          "legacy": null,
+          "proof": "canonical projection values are identical",
+          "status": "exact"
+        },
+        "combat_defenses": {
+          "ir": [],
+          "legacy": [],
+          "proof": "canonical projection values are identical",
+          "status": "exact"
+        },
+        "combat_modifiers": {
+          "ir": [],
+          "legacy": [],
+          "proof": "canonical projection values are identical",
+          "status": "exact"
+        },
+        "movement_modes": {
+          "ir": [],
+          "legacy": [],
+          "proof": "canonical projection values are identical",
+          "status": "exact"
+        },
+        "resources": {
+          "ir": {},
+          "legacy": {},
+          "proof": "canonical projection values are identical",
+          "status": "exact"
+        }
+      },
+      "ir_contract": {
+        "advancement": {
+          "choice_requirement": {
+            "duplicate_policy": "forbid",
+            "key": "language_choice",
+            "maximum": 1,
+            "minimum": 1,
+            "options_source": "core_languages",
+            "requires_dm_selection": false,
+            "strict": true
+          },
+          "kind": "selected_language_grant"
+        },
+        "attack_action_count": null,
+        "combat_defenses": [],
+        "combat_modifiers": [],
+        "movement_modes": [],
+        "resources": {}
+      },
+      "legacy_contract": {
+        "advancement": {
+          "choice_requirement": {
+            "duplicate_policy": "forbid",
+            "key": "thieves_cant_language",
+            "maximum": 1,
+            "minimum": 1,
+            "options_source": "core_languages",
+            "requires_dm_selection": false,
+            "strict": true
+          },
+          "kind": "selected_language_grant"
+        },
+        "attack_action_count": null,
+        "combat_defenses": [],
+        "combat_modifiers": [],
+        "movement_modes": [],
+        "resources": {}
+      },
+      "materialized": true,
+      "production_test": "formal_feature_runtime_regression",
+      "status": "equivalent"
+    },
+    {
+      "feature_id": "dnd2024.core.warlock.contact-patron",
+      "feature_name": "联络宗主",
+      "fields": {
+        "advancement": {
+          "ir": {
+            "auto_save": true,
+            "casting_ability": "charisma",
+            "free_cast_resource_key": "contact_other_plane",
+            "grant_class": "魔契师",
+            "kind": "fixed_spell_grant",
+            "spells": [
+              "异界探知"
+            ]
+          },
+          "legacy": {
+            "auto_save": true,
+            "casting_ability": "charisma",
+            "free_cast_resource_key": "contact_other_plane",
+            "grant_class": "owner_class",
+            "kind": "fixed_spell_grant",
+            "spells": [
+              "异界探知"
+            ]
+          },
+          "proof": "typed IR fields normalize to the same rule semantics",
+          "status": "equivalent"
+        },
+        "attack_action_count": {
+          "ir": null,
+          "legacy": null,
+          "proof": "canonical projection values are identical",
+          "status": "exact"
+        },
+        "combat_defenses": {
+          "ir": [],
+          "legacy": [],
+          "proof": "canonical projection values are identical",
+          "status": "exact"
+        },
+        "combat_modifiers": {
+          "ir": [],
+          "legacy": [],
+          "proof": "canonical projection values are identical",
+          "status": "exact"
+        },
+        "movement_modes": {
+          "ir": [],
+          "legacy": [],
+          "proof": "canonical projection values are identical",
+          "status": "exact"
+        },
+        "resources": {
+          "ir": {
+            "contact_other_plane": {
+              "recovery": "long_rest_completed",
+              "recovery_events": [
+                {
+                  "operation": "set_to_max",
+                  "rest": "long_rest"
+                }
+              ]
+            }
+          },
+          "legacy": {
+            "contact_other_plane": {
+              "max": 1,
+              "recovery": "long_rest",
+              "recovery_events": [
+                {
+                  "operation": "set_to_max",
+                  "rest": "long_rest"
+                }
+              ]
+            }
+          },
+          "proof": "typed IR fields normalize to the same rule semantics",
+          "status": "equivalent"
+        }
+      },
+      "ir_contract": {
+        "advancement": {
+          "auto_save": true,
+          "casting_ability": "charisma",
+          "free_cast_resource_key": "contact_other_plane",
+          "grant_class": "魔契师",
+          "kind": "fixed_spell_grant",
+          "spells": [
+            "异界探知"
+          ]
+        },
+        "attack_action_count": null,
+        "combat_defenses": [],
+        "combat_modifiers": [],
+        "movement_modes": [],
+        "resources": {
+          "contact_other_plane": {
+            "recovery": "long_rest_completed",
+            "recovery_events": [
+              {
+                "operation": "set_to_max",
+                "rest": "long_rest"
+              }
+            ]
+          }
+        }
+      },
+      "legacy_contract": {
+        "advancement": {
+          "auto_save": true,
+          "casting_ability": "charisma",
+          "free_cast_resource_key": "contact_other_plane",
+          "grant_class": "owner_class",
+          "kind": "fixed_spell_grant",
+          "spells": [
+            "异界探知"
+          ]
+        },
+        "attack_action_count": null,
+        "combat_defenses": [],
+        "combat_modifiers": [],
+        "movement_modes": [],
+        "resources": {
+          "contact_other_plane": {
+            "max": 1,
+            "recovery": "long_rest",
+            "recovery_events": [
+              {
+                "operation": "set_to_max",
+                "rest": "long_rest"
+              }
+            ]
+          }
+        }
+      },
+      "materialized": true,
+      "production_test": "formal_feature_runtime_regression",
+      "status": "equivalent"
+    },
+    {
+      "feature_id": "dnd2024.core.ranger.roving",
+      "feature_name": "越野",
+      "fields": {
+        "advancement": {
+          "ir": null,
+          "legacy": null,
+          "proof": "canonical projection values are identical",
+          "status": "exact"
+        },
+        "attack_action_count": {
+          "ir": null,
+          "legacy": null,
+          "proof": "canonical projection values are identical",
+          "status": "exact"
+        },
+        "combat_defenses": {
+          "ir": [],
+          "legacy": [],
+          "proof": "canonical projection values are identical",
+          "status": "exact"
+        },
+        "combat_modifiers": {
+          "ir": [
+            {
+              "applies_when": "not_wearing_heavy_armor",
+              "operation": "add",
+              "scope": "self",
+              "stat": "speed_ft",
+              "value": 10
+            }
+          ],
+          "legacy": [
+            {
+              "applies_when": "not_wearing_heavy_armor",
+              "operation": "add",
+              "scope": "self",
+              "stat": "speed_ft",
+              "value": 10
+            }
+          ],
+          "proof": "canonical projection values are identical",
+          "status": "exact"
+        },
+        "movement_modes": {
+          "ir": [
+            {
+              "mode": "climb",
+              "requires_not_wearing_heavy_armor": true,
+              "speed_source": "current_speed"
+            },
+            {
+              "mode": "swim",
+              "requires_not_wearing_heavy_armor": true,
+              "speed_source": "current_speed"
+            }
+          ],
+          "legacy": [
+            {
+              "mode": "climb",
+              "requires_not_wearing_heavy_armor": true,
+              "speed_source": "current_speed"
+            },
+            {
+              "mode": "swim",
+              "requires_not_wearing_heavy_armor": true,
+              "speed_source": "current_speed"
+            }
+          ],
+          "proof": "canonical projection values are identical",
+          "status": "exact"
+        },
+        "resources": {
+          "ir": {},
+          "legacy": {},
+          "proof": "canonical projection values are identical",
+          "status": "exact"
+        }
+      },
+      "ir_contract": {
+        "advancement": null,
+        "attack_action_count": null,
+        "combat_defenses": [],
+        "combat_modifiers": [
+          {
+            "applies_when": "not_wearing_heavy_armor",
+            "operation": "add",
+            "scope": "self",
+            "stat": "speed_ft",
+            "value": 10
+          }
+        ],
+        "movement_modes": [
+          {
+            "mode": "climb",
+            "requires_not_wearing_heavy_armor": true,
+            "speed_source": "current_speed"
+          },
+          {
+            "mode": "swim",
+            "requires_not_wearing_heavy_armor": true,
+            "speed_source": "current_speed"
+          }
+        ],
+        "resources": {}
+      },
+      "legacy_contract": {
+        "advancement": null,
+        "attack_action_count": null,
+        "combat_defenses": [],
+        "combat_modifiers": [
+          {
+            "applies_when": "not_wearing_heavy_armor",
+            "operation": "add",
+            "scope": "self",
+            "stat": "speed_ft",
+            "value": 10
+          }
+        ],
+        "movement_modes": [
+          {
+            "mode": "climb",
+            "requires_not_wearing_heavy_armor": true,
+            "speed_source": "current_speed"
+          },
+          {
+            "mode": "swim",
+            "requires_not_wearing_heavy_armor": true,
+            "speed_source": "current_speed"
+          }
+        ],
+        "resources": {}
+      },
+      "materialized": true,
+      "production_test": "formal_feature_runtime_regression",
+      "status": "exact"
+    },
+    {
+      "feature_id": "dnd2024.core.ranger.wild-senses",
+      "feature_name": "野性感官",
+      "fields": {
+        "advancement": {
+          "ir": null,
+          "legacy": null,
+          "proof": "canonical projection values are identical",
+          "status": "exact"
+        },
+        "attack_action_count": {
+          "ir": null,
+          "legacy": null,
+          "proof": "canonical projection values are identical",
+          "status": "exact"
+        },
+        "combat_defenses": {
+          "ir": [],
+          "legacy": [],
+          "proof": "canonical projection values are identical",
+          "status": "exact"
+        },
+        "combat_modifiers": {
+          "ir": [
+            {
+              "applies_when": "always",
+              "mode": "blindsight",
+              "operation": "set",
+              "range_ft": null,
+              "scope": "self",
+              "stat": "blindsight_ft"
+            }
+          ],
+          "legacy": [
+            {
+              "applies_when": "always",
+              "mode": "blindsight",
+              "operation": "set",
+              "range_ft": 30,
+              "scope": "self",
+              "stat": "blindsight_ft",
+              "value": 30
+            }
+          ],
+          "proof": "typed IR fields normalize to the same rule semantics",
+          "status": "equivalent"
+        },
+        "movement_modes": {
+          "ir": [],
+          "legacy": [],
+          "proof": "canonical projection values are identical",
+          "status": "exact"
+        },
+        "resources": {
+          "ir": {},
+          "legacy": {},
+          "proof": "canonical projection values are identical",
+          "status": "exact"
+        }
+      },
+      "ir_contract": {
+        "advancement": null,
+        "attack_action_count": null,
+        "combat_defenses": [],
+        "combat_modifiers": [
+          {
+            "applies_when": "always",
+            "mode": "blindsight",
+            "operation": "set",
+            "range_ft": null,
+            "scope": "self",
+            "stat": "blindsight_ft"
+          }
+        ],
+        "movement_modes": [],
+        "resources": {}
+      },
+      "legacy_contract": {
+        "advancement": null,
+        "attack_action_count": null,
+        "combat_defenses": [],
+        "combat_modifiers": [
+          {
+            "applies_when": "always",
+            "mode": "blindsight",
+            "operation": "set",
+            "range_ft": 30,
+            "scope": "self",
+            "stat": "blindsight_ft",
+            "value": 30
+          }
+        ],
+        "movement_modes": [],
+        "resources": {}
+      },
+      "materialized": true,
+      "production_test": "formal_feature_runtime_regression",
+      "status": "equivalent"
+    },
+    {
+      "feature_id": "dnd2024.subclass.rogue.thief.second-story-work",
+      "feature_name": "梁上君子",
+      "fields": {
+        "advancement": {
+          "ir": null,
+          "legacy": null,
+          "proof": "canonical projection values are identical",
+          "status": "exact"
+        },
+        "attack_action_count": {
+          "ir": null,
+          "legacy": null,
+          "proof": "canonical projection values are identical",
+          "status": "exact"
+        },
+        "combat_defenses": {
+          "ir": [],
+          "legacy": [],
+          "proof": "canonical projection values are identical",
+          "status": "exact"
+        },
+        "combat_modifiers": {
+          "ir": [
+            {
+              "applies_when": "always",
+              "operation": "set",
+              "scope": "self",
+              "stat": "jump_ability",
+              "value_source": "dexterity"
+            }
+          ],
+          "legacy": [
+            {
+              "operation": "set",
+              "scope": "self",
+              "stat": "jump_ability",
+              "value_source": "dexterity"
+            }
+          ],
+          "proof": "typed IR fields normalize to the same rule semantics",
+          "status": "equivalent"
+        },
+        "movement_modes": {
+          "ir": [
+            {
+              "mode": "climb",
+              "speed_source": "current_speed"
+            }
+          ],
+          "legacy": [
+            {
+              "mode": "climb",
+              "speed_source": "current_speed"
+            }
+          ],
+          "proof": "canonical projection values are identical",
+          "status": "exact"
+        },
+        "resources": {
+          "ir": {},
+          "legacy": {},
+          "proof": "canonical projection values are identical",
+          "status": "exact"
+        }
+      },
+      "ir_contract": {
+        "advancement": null,
+        "attack_action_count": null,
+        "combat_defenses": [],
+        "combat_modifiers": [
+          {
+            "applies_when": "always",
+            "operation": "set",
+            "scope": "self",
+            "stat": "jump_ability",
+            "value_source": "dexterity"
+          }
+        ],
+        "movement_modes": [
+          {
+            "mode": "climb",
+            "speed_source": "current_speed"
+          }
+        ],
+        "resources": {}
+      },
+      "legacy_contract": {
+        "advancement": null,
+        "attack_action_count": null,
+        "combat_defenses": [],
+        "combat_modifiers": [
+          {
+            "operation": "set",
+            "scope": "self",
+            "stat": "jump_ability",
+            "value_source": "dexterity"
+          }
+        ],
+        "movement_modes": [
+          {
+            "mode": "climb",
+            "speed_source": "current_speed"
+          }
+        ],
+        "resources": {}
+      },
+      "materialized": true,
+      "production_test": "formal_feature_runtime_regression",
+      "status": "equivalent"
+    },
+    {
+      "feature_id": "dnd2024.subclass.cleric.life.disciple-of-life",
+      "feature_name": "生命门徒",
+      "fields": {
+        "advancement": {
+          "ir": null,
+          "legacy": null,
+          "proof": "canonical projection values are identical",
+          "status": "exact"
+        },
+        "attack_action_count": {
+          "ir": null,
+          "legacy": null,
+          "proof": "canonical projection values are identical",
+          "status": "exact"
+        },
+        "combat_defenses": {
+          "ir": [],
+          "legacy": [],
+          "proof": "canonical projection values are identical",
+          "status": "exact"
+        },
+        "combat_modifiers": {
+          "ir": [
+            {
+              "applies_when": "legal_spell_healing_source",
+              "formula": "spell_slot_level_plus_two",
+              "operation": "add",
+              "scope": "outgoing",
+              "stat": "spell_healing"
+            }
+          ],
+          "legacy": [
+            {
+              "applies_when": "always",
+              "formula": "spell_slot_level_plus_two",
+              "operation": "add",
+              "scope": "outgoing",
+              "stat": "spell_healing"
+            }
+          ],
+          "proof": "typed IR fields normalize to the same rule semantics",
+          "status": "equivalent"
+        },
+        "movement_modes": {
+          "ir": [],
+          "legacy": [],
+          "proof": "canonical projection values are identical",
+          "status": "exact"
+        },
+        "resources": {
+          "ir": {},
+          "legacy": {},
+          "proof": "canonical projection values are identical",
+          "status": "exact"
+        }
+      },
+      "ir_contract": {
+        "advancement": null,
+        "attack_action_count": null,
+        "combat_defenses": [],
+        "combat_modifiers": [
+          {
+            "applies_when": "legal_spell_healing_source",
+            "formula": "spell_slot_level_plus_two",
+            "operation": "add",
+            "scope": "outgoing",
+            "stat": "spell_healing"
+          }
+        ],
+        "movement_modes": [],
+        "resources": {}
+      },
+      "legacy_contract": {
+        "advancement": null,
+        "attack_action_count": null,
+        "combat_defenses": [],
+        "combat_modifiers": [
+          {
+            "applies_when": "always",
+            "formula": "spell_slot_level_plus_two",
+            "operation": "add",
+            "scope": "outgoing",
+            "stat": "spell_healing"
+          }
+        ],
+        "movement_modes": [],
+        "resources": {}
+      },
+      "materialized": true,
+      "production_test": "formal_feature_runtime_regression",
+      "status": "equivalent"
+    },
+    {
+      "feature_id": "dnd2024.subclass.wizard.evoker.empowered-evocation",
+      "feature_name": "强效塑能",
+      "fields": {
+        "advancement": {
+          "ir": null,
+          "legacy": null,
+          "proof": "canonical projection values are identical",
+          "status": "exact"
+        },
+        "attack_action_count": {
+          "ir": null,
+          "legacy": null,
+          "proof": "canonical projection values are identical",
+          "status": "exact"
+        },
+        "combat_defenses": {
+          "ir": [],
+          "legacy": [],
+          "proof": "canonical projection values are identical",
+          "status": "exact"
+        },
+        "combat_modifiers": {
+          "ir": [
+            {
+              "ability": "intelligence",
+              "applies_when": "legal_evocation_spell_damage",
+              "formula": "ability_modifier",
+              "operation": "add_ability_modifier_once",
+              "scope": "outgoing",
+              "stat": "spell_damage"
+            }
+          ],
+          "legacy": [
+            {
+              "ability": "intelligence",
+              "applies_when": "always",
+              "formula": "ability_modifier",
+              "operation": "add_ability_modifier_once",
+              "scope": "outgoing",
+              "stat": "spell_damage"
+            }
+          ],
+          "proof": "typed IR fields normalize to the same rule semantics",
+          "status": "equivalent"
+        },
+        "movement_modes": {
+          "ir": [],
+          "legacy": [],
+          "proof": "canonical projection values are identical",
+          "status": "exact"
+        },
+        "resources": {
+          "ir": {},
+          "legacy": {},
+          "proof": "canonical projection values are identical",
+          "status": "exact"
+        }
+      },
+      "ir_contract": {
+        "advancement": null,
+        "attack_action_count": null,
+        "combat_defenses": [],
+        "combat_modifiers": [
+          {
+            "ability": "intelligence",
+            "applies_when": "legal_evocation_spell_damage",
+            "formula": "ability_modifier",
+            "operation": "add_ability_modifier_once",
+            "scope": "outgoing",
+            "stat": "spell_damage"
+          }
+        ],
+        "movement_modes": [],
+        "resources": {}
+      },
+      "legacy_contract": {
+        "advancement": null,
+        "attack_action_count": null,
+        "combat_defenses": [],
+        "combat_modifiers": [
+          {
+            "ability": "intelligence",
+            "applies_when": "always",
+            "formula": "ability_modifier",
+            "operation": "add_ability_modifier_once",
+            "scope": "outgoing",
+            "stat": "spell_damage"
+          }
+        ],
+        "movement_modes": [],
+        "resources": {}
+      },
+      "materialized": true,
+      "production_test": "formal_feature_runtime_regression",
+      "status": "equivalent"
+    },
+    {
+      "feature_id": "dnd2024.subclass.wizard.evoker.potent-cantrip",
+      "feature_name": "强力戏法",
+      "fields": {
+        "advancement": {
+          "ir": null,
+          "legacy": null,
+          "proof": "canonical projection values are identical",
+          "status": "exact"
+        },
+        "attack_action_count": {
+          "ir": null,
+          "legacy": null,
+          "proof": "canonical projection values are identical",
+          "status": "exact"
+        },
+        "combat_defenses": {
+          "ir": [],
+          "legacy": [],
+          "proof": "canonical projection values are identical",
+          "status": "exact"
+        },
+        "combat_modifiers": {
+          "ir": [
+            {
+              "applies_when": "cantrip_save_failure",
+              "formula": "half_damage",
+              "operation": "cantrip_failure_half",
+              "scope": "outgoing",
+              "stat": "spell_damage"
+            }
+          ],
+          "legacy": [
+            {
+              "applies_when": "always",
+              "formula": "half_damage",
+              "operation": "cantrip_failure_half",
+              "scope": "outgoing",
+              "stat": "spell_damage"
+            }
+          ],
+          "proof": "typed IR fields normalize to the same rule semantics",
+          "status": "equivalent"
+        },
+        "movement_modes": {
+          "ir": [],
+          "legacy": [],
+          "proof": "canonical projection values are identical",
+          "status": "exact"
+        },
+        "resources": {
+          "ir": {},
+          "legacy": {},
+          "proof": "canonical projection values are identical",
+          "status": "exact"
+        }
+      },
+      "ir_contract": {
+        "advancement": null,
+        "attack_action_count": null,
+        "combat_defenses": [],
+        "combat_modifiers": [
+          {
+            "applies_when": "cantrip_save_failure",
+            "formula": "half_damage",
+            "operation": "cantrip_failure_half",
+            "scope": "outgoing",
+            "stat": "spell_damage"
+          }
+        ],
+        "movement_modes": [],
+        "resources": {}
+      },
+      "legacy_contract": {
+        "advancement": null,
+        "attack_action_count": null,
+        "combat_defenses": [],
+        "combat_modifiers": [
+          {
+            "applies_when": "always",
+            "formula": "half_damage",
+            "operation": "cantrip_failure_half",
+            "scope": "outgoing",
+            "stat": "spell_damage"
+          }
+        ],
+        "movement_modes": [],
+        "resources": {}
+      },
+      "materialized": true,
+      "production_test": "formal_feature_runtime_regression",
+      "status": "equivalent"
+    },
+    {
+      "feature_id": "dnd2024.subclass.paladin.ancients.undying-sentinel",
+      "feature_name": "不灭哨卫",
+      "fields": {
+        "advancement": {
+          "ir": null,
+          "legacy": null,
+          "proof": "canonical projection values are identical",
+          "status": "exact"
+        },
+        "attack_action_count": {
+          "ir": null,
+          "legacy": null,
+          "proof": "canonical projection values are identical",
+          "status": "exact"
+        },
+        "combat_defenses": {
+          "ir": [
+            {
+              "eligibility": {
+                "class_names": [
+                  "圣武士",
+                  "paladin"
+                ],
+                "entity_types": [
+                  "character"
+                ],
+                "minimum_level": 15
+              },
+              "exceptions": [
+                "outright_death"
+              ],
+              "kind": "zero_hp_auto_prevention",
+              "on_success": {
+                "hit_points": "3*paladin_level"
+              },
+              "reset": "long_rest",
+              "resource_cost": 1,
+              "resource_key": "undying_sentinel",
+              "trigger": "would_drop_to_zero_hit_points"
+            }
+          ],
+          "legacy": [
+            {
+              "eligibility": {
+                "entity_types": [
+                  "character"
+                ],
+                "level": {
+                  "bind_as": "paladin_level",
+                  "class_names": [
+                    "圣武士",
+                    "paladin"
+                  ],
+                  "minimum": 15
+                }
+              },
+              "exceptions": [
+                "outright_death"
+              ],
+              "kind": "zero_hp_auto_prevention",
+              "on_success": {
+                "hit_points": "3*paladin_level"
+              },
+              "resource_cost": 1,
+              "resource_key": "undying_sentinel",
+              "trigger": "would_drop_to_zero_hit_points"
+            }
+          ],
+          "proof": "typed IR fields normalize to the same rule semantics",
+          "status": "equivalent"
+        },
+        "combat_modifiers": {
+          "ir": [],
+          "legacy": [],
+          "proof": "canonical projection values are identical",
+          "status": "exact"
+        },
+        "movement_modes": {
+          "ir": [],
+          "legacy": [],
+          "proof": "canonical projection values are identical",
+          "status": "exact"
+        },
+        "resources": {
+          "ir": {},
+          "legacy": {},
+          "proof": "canonical projection values are identical",
+          "status": "exact"
+        }
+      },
+      "ir_contract": {
+        "advancement": null,
+        "attack_action_count": null,
+        "combat_defenses": [
+          {
+            "eligibility": {
+              "class_names": [
+                "圣武士",
+                "paladin"
+              ],
+              "entity_types": [
+                "character"
+              ],
+              "minimum_level": 15
+            },
+            "exceptions": [
+              "outright_death"
+            ],
+            "kind": "zero_hp_auto_prevention",
+            "on_success": {
+              "hit_points": "3*paladin_level"
+            },
+            "reset": "long_rest",
+            "resource_cost": 1,
+            "resource_key": "undying_sentinel",
+            "trigger": "would_drop_to_zero_hit_points"
+          }
+        ],
+        "combat_modifiers": [],
+        "movement_modes": [],
+        "resources": {}
+      },
+      "legacy_contract": {
+        "advancement": null,
+        "attack_action_count": null,
+        "combat_defenses": [
+          {
+            "eligibility": {
+              "entity_types": [
+                "character"
+              ],
+              "level": {
+                "bind_as": "paladin_level",
+                "class_names": [
+                  "圣武士",
+                  "paladin"
+                ],
+                "minimum": 15
+              }
+            },
+            "exceptions": [
+              "outright_death"
+            ],
+            "kind": "zero_hp_auto_prevention",
+            "on_success": {
+              "hit_points": "3*paladin_level"
+            },
+            "resource_cost": 1,
+            "resource_key": "undying_sentinel",
+            "trigger": "would_drop_to_zero_hit_points"
+          }
+        ],
+        "combat_modifiers": [],
+        "movement_modes": [],
+        "resources": {}
+      },
+      "materialized": true,
+      "production_test": "formal_feature_runtime_regression",
+      "status": "equivalent"
+    }
+  ],
+  "schema_version": "feature-ir-semantic-parity-2"
+}

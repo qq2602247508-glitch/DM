@@ -24,6 +24,9 @@ from dnd_dm_assistant.application.feature_compiler import (
     FeatureCompiler,
     legacy_feature_spec_from_audit_row,
 )
+from dnd_dm_assistant.application.formal_feature_specs import (
+    formal_feature_spec_for_definition,
+)
 from dnd_dm_assistant.domain.advancement_choices import (
     CORE_CLASSES_2024,
     core_class_level_runtime_contract,
@@ -59,7 +62,16 @@ BLOCK_PATTERNS: tuple[tuple[str, str, tuple[str, ...]], ...] = (
     (
         "spellcasting",
         "施法框架/法术修改",
-        ("施法", "法术位", "准备法术", "戏法", "法术列表", "始终准备", "施展法术", "施放法术"),
+        (
+            "施法",
+            "法术位",
+            "准备法术",
+            "戏法",
+            "法术列表",
+            "始终准备",
+            "施展法术",
+            "施放法术",
+        ),
     ),
     (
         "spell_modification",
@@ -99,7 +111,11 @@ BLOCK_PATTERNS: tuple[tuple[str, str, tuple[str, ...]], ...] = (
         "资源/恢复绑定",
         ("消耗一次", "消耗一个法术位", "消耗圣疗", "消耗引导神力", "重获所有"),
     ),
-    ("damage_healing", "伤害/治疗", ("伤害", "治疗", "生命值", "临时生命值", "恢复生命")),
+    (
+        "damage_healing",
+        "伤害/治疗",
+        ("伤害", "治疗", "生命值", "临时生命值", "恢复生命"),
+    ),
     (
         "pre_damage_defense",
         "伤害前/防御干预",
@@ -109,7 +125,16 @@ BLOCK_PATTERNS: tuple[tuple[str, str, tuple[str, ...]], ...] = (
     (
         "roll_intervention",
         "掷骰干预",
-        ("重骰", "具有优势", "具有劣势", "优势进行", "劣势进行", "D20检定", "D20掷骰", "骰具有"),
+        (
+            "重骰",
+            "具有优势",
+            "具有劣势",
+            "优势进行",
+            "劣势进行",
+            "D20检定",
+            "D20掷骰",
+            "骰具有",
+        ),
     ),
     (
         "hit_rider",
@@ -138,7 +163,11 @@ BLOCK_PATTERNS: tuple[tuple[str, str, tuple[str, ...]], ...] = (
         ("目盲", "魅惑", "恐慌", "麻痹", "震慑", "隐形", "失能", "持续"),
     ),
     ("summon_companion", "召唤/伙伴", ("召唤", "精魂", "伙伴", "魔宠", "召唤物")),
-    ("world_state", "创造物/世界状态", ("创造出", "生成", "物件", "环境", "植物生长", "世界")),
+    (
+        "world_state",
+        "创造物/世界状态",
+        ("创造出", "生成", "物件", "环境", "植物生长", "世界"),
+    ),
     (
         "narrative_language",
         "语言/开放叙事",
@@ -165,7 +194,10 @@ def _core_source_entries(record: dict[str, Any]) -> list[dict[str, Any]]:
     unique: dict[int, re.Match[str]] = {}
     for match in matches:
         previous = unique.get(match.start())
-        if previous is None or match.end() - match.start() > previous.end() - previous.start():
+        if (
+            previous is None
+            or match.end() - match.start() > previous.end() - previous.start()
+        ):
             unique[match.start()] = match
     matches = sorted(unique.values(), key=lambda item: item.start())
     entries: list[dict[str, Any]] = []
@@ -193,7 +225,9 @@ def _feature_name_matches(table_name: str, source_name: str) -> bool:
     return any(alias in source for alias in aliases.get(table, ()))
 
 
-def _source_for_core(record: dict[str, Any], level: int, table_name: str) -> dict[str, Any] | None:
+def _source_for_core(
+    record: dict[str, Any], level: int, table_name: str
+) -> dict[str, Any] | None:
     if _compact(table_name) == "子职特性":
         # Later subclass grant rows point to the selected subclass document;
         # the class page intentionally has no second prose section to copy.
@@ -201,7 +235,8 @@ def _source_for_core(record: dict[str, Any], level: int, table_name: str) -> dic
     candidates = [
         item
         for item in _core_source_entries(record)
-        if int(item["level"]) == level and _feature_name_matches(table_name, item["name"])
+        if int(item["level"]) == level
+        and _feature_name_matches(table_name, item["name"])
     ]
     if candidates:
         return max(candidates, key=lambda item: len(item["description"]))
@@ -221,7 +256,9 @@ def _source_for_core(record: dict[str, Any], level: int, table_name: str) -> dic
 def _blocks(description: str, title: str) -> list[str]:
     text = f"{title}\n{description}"
     return [
-        key for key, _label, markers in BLOCK_PATTERNS if any(marker in text for marker in markers)
+        key
+        for key, _label, markers in BLOCK_PATTERNS
+        if any(marker in text for marker in markers)
     ]
 
 
@@ -302,7 +339,9 @@ def audit() -> dict[str, Any]:
                 keys = _blocks(description, str(definition.get("name") or ""))
                 configured_status = subclass_feature_automation_status(definition)
                 runtime_status = configured_status or (
-                    "partial" if subclass.get("automation_status") == "partial" else "dm_only"
+                    "partial"
+                    if subclass.get("automation_status") == "partial"
+                    else "dm_only"
                 )
                 rows.append(
                     {
@@ -328,10 +367,15 @@ def audit() -> dict[str, Any]:
                     }
                 )
 
-    shadow_compiler = FeatureCompiler(status_authority="legacy")
+    shadow_compiler = FeatureCompiler(status_authority="shadow_candidate")
+    formal_compiler = FeatureCompiler(status_authority="compiler")
+    compiler_feature_ids: list[str] = []
     for row in rows:
         source_parse = str(row.get("source_parse") or "")
-        row["ir_available"] = source_parse in {"description_located", "description_reused"}
+        row["ir_available"] = source_parse in {
+            "description_located",
+            "description_reused",
+        }
         if not row["ir_available"]:
             row.update(
                 {
@@ -347,8 +391,16 @@ def audit() -> dict[str, Any]:
                 }
             )
             continue
-        spec, adapter_used = legacy_feature_spec_from_audit_row(row)
-        result = shadow_compiler.compile(spec, legacy_adapter_used=adapter_used)
+        formal_spec = formal_feature_spec_for_definition(row)
+        if formal_spec is not None:
+            spec = formal_spec
+            adapter_used = False
+            result = formal_compiler.compile(spec)
+            if result.compile_status == "full":
+                compiler_feature_ids.append(spec.feature_id)
+        else:
+            spec, adapter_used = legacy_feature_spec_from_audit_row(row)
+            result = shadow_compiler.compile(spec, legacy_adapter_used=adapter_used)
         capability_ids = sorted(
             {
                 capability_id
@@ -373,21 +425,17 @@ def audit() -> dict[str, Any]:
                 "capability_ids": capability_ids,
                 "legacy_adapter_used": result.legacy_adapter_used,
                 "compiler_fingerprint": result.fingerprint,
+                "source_trust": result.source_trust,
+                "compiler_blockers": list(result.blockers),
+                "formal_ir": formal_spec is not None,
             }
         )
 
-    compiler_pilot_feature_ids: list[str] = []
     for row in rows:
-        if (
-            row.get("compiler_status") == "full"
-            and row.get("ir_available")
-            and len(compiler_pilot_feature_ids) < 10
-        ):
+        if row.get("formal_ir") and row.get("compiler_status") == "full":
             row["status_authority"] = "compiler"
-            compiler_pilot_feature_ids.append(
-                f"{row.get('scope')}:{row.get('source_record_id')}:{row.get('level')}:"
-                f"{row.get('feature_name')}"
-            )
+        elif row.get("ir_available"):
+            row["status_authority"] = "shadow_candidate"
 
     status_counts = Counter(row["runtime_status"] for row in rows)
     source_counts = Counter(row["source_parse"] for row in rows)
@@ -413,8 +461,8 @@ def audit() -> dict[str, Any]:
         "status_counts": dict(status_counts),
         "source_parse_counts": dict(source_counts),
         "compiler_pilot": {
-            "count": len(compiler_pilot_feature_ids),
-            "feature_ids": compiler_pilot_feature_ids,
+            "count": len(compiler_feature_ids),
+            "feature_ids": compiler_feature_ids,
         },
         "block_counts_overlap": block_rows,
         "rows": rows,
@@ -446,9 +494,7 @@ def write_markdown(report: dict[str, Any], path: Path) -> None:
     ]
     for value in report["block_counts_overlap"].values():
         lines.append(
-            "| {label} | {coverage} | {full} | {partial} | {dm_only} |".format(
-                **value
-            )
+            "| {label} | {coverage} | {full} | {partial} | {dm_only} |".format(**value)
         )
     lines.extend(
         [
@@ -460,7 +506,10 @@ def write_markdown(report: dict[str, Any], path: Path) -> None:
         ]
     )
     for row in report["rows"]:
-        if row["runtime_status"] == "dm_only" or row["source_parse"] != "description_located":
+        if (
+            row["runtime_status"] == "dm_only"
+            or row["source_parse"] != "description_located"
+        ):
             labels = "、".join(row["detected_block_labels"]) or "未检测到"
             lines.append(
                 "| {scope} | {class_name} | {subclass} | {level} | {feature} | "
@@ -481,7 +530,9 @@ def write_markdown(report: dict[str, Any], path: Path) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--json", type=Path, default=ROOT / "reports/class-feature-audit-2026-08-07.json"
+        "--json",
+        type=Path,
+        default=ROOT / "reports/class-feature-audit-2026-08-07.json",
     )
     parser.add_argument(
         "--markdown", type=Path, default=ROOT / "docs/class-feature-audit-2026-08-07.md"
@@ -489,13 +540,20 @@ def main() -> None:
     args = parser.parse_args()
     report = audit()
     args.json.parent.mkdir(parents=True, exist_ok=True)
-    args.json.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    args.json.write_text(
+        json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+    )
     write_markdown(report, args.markdown)
     print(
         json.dumps(
             {
                 key: report[key]
-                for key in ("scope", "status_counts", "source_parse_counts", "block_counts_overlap")
+                for key in (
+                    "scope",
+                    "status_counts",
+                    "source_parse_counts",
+                    "block_counts_overlap",
+                )
             },
             ensure_ascii=False,
             indent=2,

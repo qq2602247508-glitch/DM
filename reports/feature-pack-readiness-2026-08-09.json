@@ -8,6 +8,7 @@
   },
   "feature_results": [
     {
+      "blockers": [],
       "clause_results": [
         {
           "blockers": [],
@@ -21,8 +22,15 @@
             "capability_id": "modifier.passive",
             "clause_id": "modifier",
             "contract_version": "1.0",
+            "materializer_id": "modifier.passive",
             "operator": "add_modifier",
-            "parameters": {},
+            "parameters": {
+              "applies_when": "always",
+              "operation": "add",
+              "scope": "self",
+              "stat": "speed_ft",
+              "value": 1
+            },
             "targeting": null,
             "trigger": "combat_started"
           },
@@ -35,7 +43,7 @@
         "feature_runtime_contract_tests"
       ],
       "feature_id": "demo:add-modifier",
-      "fingerprint": "8f7cdcf48fb667928b41da329fade38dbb1d7f3fc40b8350ae2fc54761f8bb12",
+      "fingerprint": "ea7fd3af25a9851766203e5e07996c2e1f904cd6e30028b51925b4bb3dce17a6",
       "generated_runtime_blocks": [
         {
           "action_economy": "none",
@@ -43,8 +51,15 @@
           "capability_id": "modifier.passive",
           "clause_id": "modifier",
           "contract_version": "1.0",
+          "materializer_id": "modifier.passive",
           "operator": "add_modifier",
-          "parameters": {},
+          "parameters": {
+            "applies_when": "always",
+            "operation": "add",
+            "scope": "self",
+            "stat": "speed_ft",
+            "value": 1
+          },
           "targeting": null,
           "trigger": "combat_started"
         }
@@ -59,12 +74,14 @@
         "feature_runtime_contract_tests"
       ],
       "required_ui": [],
+      "source_trust": "authored_ir",
       "status_authority": "compiler",
       "unsupported_combinations": [],
       "unsupported_conditions": [],
       "unsupported_operators": []
     },
     {
+      "blockers": [],
       "clause_results": [
         {
           "blockers": [],
@@ -78,8 +95,14 @@
             "capability_id": "modifier.roll",
             "clause_id": "roll",
             "contract_version": "1.0",
+            "materializer_id": "modifier.roll",
             "operator": "impose_advantage",
-            "parameters": {},
+            "parameters": {
+              "applies_when": "always",
+              "operation": "advantage",
+              "scope": "self",
+              "stat": "ability_check"
+            },
             "targeting": null,
             "trigger": "ability_check"
           },
@@ -92,7 +115,7 @@
         "feature_runtime_contract_tests"
       ],
       "feature_id": "demo:advantage",
-      "fingerprint": "376875533dddf30852080c623a16686b8ff9dfadf3a0f1bb2aa0e7789b924441",
+      "fingerprint": "fce0b3024643141be52bbfc33e350386d7934c67e0ca492168b2ad782d85f7a9",
       "generated_runtime_blocks": [
         {
           "action_economy": "none",
@@ -100,8 +123,14 @@
           "capability_id": "modifier.roll",
           "clause_id": "roll",
           "contract_version": "1.0",
+          "materializer_id": "modifier.roll",
           "operator": "impose_advantage",
-          "parameters": {},
+          "parameters": {
+            "applies_when": "always",
+            "operation": "advantage",
+            "scope": "self",
+            "stat": "ability_check"
+          },
           "targeting": null,
           "trigger": "ability_check"
         }
@@ -116,12 +145,14 @@
         "feature_runtime_contract_tests"
       ],
       "required_ui": [],
+      "source_trust": "authored_ir",
       "status_authority": "compiler",
       "unsupported_combinations": [],
       "unsupported_conditions": [],
       "unsupported_operators": []
     },
     {
+      "blockers": [],
       "clause_results": [
         {
           "blockers": [],
@@ -135,8 +166,13 @@
             "capability_id": "resource.lifecycle.consume",
             "clause_id": "consume",
             "contract_version": "1.0",
+            "materializer_id": "resource.lifecycle.consume",
             "operator": "consume_resource",
-            "parameters": {},
+            "parameters": {
+              "amount": 1,
+              "operation": "consume",
+              "resource_key": "demo_charge"
+            },
             "targeting": null,
             "trigger": "explicit_activation"
           },
@@ -149,7 +185,7 @@
         "feature_runtime_contract_tests"
       ],
       "feature_id": "demo:consume",
-      "fingerprint": "a4b07ef9046add42d39c5d324958cd6ab60ba91ef0843da096f0d1a119bc2636",
+      "fingerprint": "45bfdd1206dd326664eb9998088c2ffb3dd71fa3b46fc73030aea9a68e2d55a6",
       "generated_runtime_blocks": [
         {
           "action_economy": "bonus_action",
@@ -157,8 +193,13 @@
           "capability_id": "resource.lifecycle.consume",
           "clause_id": "consume",
           "contract_version": "1.0",
+          "materializer_id": "resource.lifecycle.consume",
           "operator": "consume_resource",
-          "parameters": {},
+          "parameters": {
+            "amount": 1,
+            "operation": "consume",
+            "resource_key": "demo_charge"
+          },
           "targeting": null,
           "trigger": "explicit_activation"
         }
@@ -173,12 +214,14 @@
         "feature_runtime_contract_tests"
       ],
       "required_ui": [],
+      "source_trust": "authored_ir",
       "status_authority": "compiler",
       "unsupported_combinations": [],
       "unsupported_conditions": [],
       "unsupported_operators": []
     },
     {
+      "blockers": [],
       "clause_results": [
         {
           "blockers": [],
@@ -192,8 +235,14 @@
             "capability_id": "damage.modifier",
             "clause_id": "damage",
             "contract_version": "1.0",
+            "materializer_id": "damage.modifier",
             "operator": "add_damage",
-            "parameters": {},
+            "parameters": {
+              "applies_when": "attack_hit",
+              "damage_type": "fire",
+              "formula": "1d4",
+              "source": "feature"
+            },
             "targeting": null,
             "trigger": "attack_hit"
           },
@@ -206,7 +255,7 @@
         "feature_runtime_contract_tests"
       ],
       "feature_id": "demo:damage",
-      "fingerprint": "6cba8982447aec4afb15425362d2e76a78104fa1b3741c910e0fb91507d1733e",
+      "fingerprint": "ade61aa3c320978decf5f34c2e2e1521450d111e1dd286dbcb7cbcf0d95f90a2",
       "generated_runtime_blocks": [
         {
           "action_economy": "none",
@@ -214,8 +263,14 @@
           "capability_id": "damage.modifier",
           "clause_id": "damage",
           "contract_version": "1.0",
+          "materializer_id": "damage.modifier",
           "operator": "add_damage",
-          "parameters": {},
+          "parameters": {
+            "applies_when": "attack_hit",
+            "damage_type": "fire",
+            "formula": "1d4",
+            "source": "feature"
+          },
           "targeting": null,
           "trigger": "attack_hit"
         }
@@ -230,12 +285,14 @@
         "feature_runtime_contract_tests"
       ],
       "required_ui": [],
+      "source_trust": "authored_ir",
       "status_authority": "compiler",
       "unsupported_combinations": [],
       "unsupported_conditions": [],
       "unsupported_operators": []
     },
     {
+      "blockers": [],
       "clause_results": [
         {
           "blockers": [],
@@ -249,8 +306,14 @@
             "capability_id": "modifier.roll.disadvantage",
             "clause_id": "roll",
             "contract_version": "1.0",
+            "materializer_id": "modifier.roll.disadvantage",
             "operator": "impose_disadvantage",
-            "parameters": {},
+            "parameters": {
+              "applies_when": "always",
+              "operation": "disadvantage",
+              "scope": "incoming",
+              "stat": "attack_roll"
+            },
             "targeting": null,
             "trigger": "saving_throw"
           },
@@ -263,7 +326,7 @@
         "feature_runtime_contract_tests"
       ],
       "feature_id": "demo:disadvantage",
-      "fingerprint": "208a8765319f6dbbb6cbc453f3918644e0cbd5c87c9f4f76f94f00e8124c7fb3",
+      "fingerprint": "febdee7d16c3e29f7814b7bb7ee7460c5e93e7845b5a01b288bbaca431460085",
       "generated_runtime_blocks": [
         {
           "action_economy": "none",
@@ -271,8 +334,14 @@
           "capability_id": "modifier.roll.disadvantage",
           "clause_id": "roll",
           "contract_version": "1.0",
+          "materializer_id": "modifier.roll.disadvantage",
           "operator": "impose_disadvantage",
-          "parameters": {},
+          "parameters": {
+            "applies_when": "always",
+            "operation": "disadvantage",
+            "scope": "incoming",
+            "stat": "attack_roll"
+          },
           "targeting": null,
           "trigger": "saving_throw"
         }
@@ -287,12 +356,14 @@
         "feature_runtime_contract_tests"
       ],
       "required_ui": [],
+      "source_trust": "authored_ir",
       "status_authority": "compiler",
       "unsupported_combinations": [],
       "unsupported_conditions": [],
       "unsupported_operators": []
     },
     {
+      "blockers": [],
       "clause_results": [
         {
           "blockers": [],
@@ -306,8 +377,14 @@
             "capability_id": "resource.exchange",
             "clause_id": "exchange",
             "contract_version": "1.0",
+            "materializer_id": "resource.exchange",
             "operator": "exchange_resource",
-            "parameters": {},
+            "parameters": {
+              "amount": 1,
+              "from_resource_key": "demo_charge",
+              "operation": "exchange",
+              "to_resource_key": "demo_pool"
+            },
             "targeting": null,
             "trigger": "explicit_activation"
           },
@@ -320,7 +397,7 @@
         "feature_runtime_contract_tests"
       ],
       "feature_id": "demo:exchange",
-      "fingerprint": "724863bedc4c2f21512a8b1cbebae1eebcd55e578777e5731b31efd5bccbd4e5",
+      "fingerprint": "784307bd1e91282608f856f93037057876137d0dbf8e559442008d7ba9a8d166",
       "generated_runtime_blocks": [
         {
           "action_economy": "none",
@@ -328,8 +405,14 @@
           "capability_id": "resource.exchange",
           "clause_id": "exchange",
           "contract_version": "1.0",
+          "materializer_id": "resource.exchange",
           "operator": "exchange_resource",
-          "parameters": {},
+          "parameters": {
+            "amount": 1,
+            "from_resource_key": "demo_charge",
+            "operation": "exchange",
+            "to_resource_key": "demo_pool"
+          },
           "targeting": null,
           "trigger": "explicit_activation"
         }
@@ -344,12 +427,14 @@
         "feature_runtime_contract_tests"
       ],
       "required_ui": [],
+      "source_trust": "authored_ir",
       "status_authority": "compiler",
       "unsupported_combinations": [],
       "unsupported_conditions": [],
       "unsupported_operators": []
     },
     {
+      "blockers": [],
       "clause_results": [
         {
           "blockers": [],
@@ -363,8 +448,13 @@
             "capability_id": "damage.healing",
             "clause_id": "heal",
             "contract_version": "1.0",
+            "materializer_id": "damage.healing",
             "operator": "heal",
-            "parameters": {},
+            "parameters": {
+              "ability": "wisdom",
+              "formula": "1d8",
+              "source": "spell"
+            },
             "targeting": null,
             "trigger": "action_resolved"
           },
@@ -377,7 +467,7 @@
         "feature_runtime_contract_tests"
       ],
       "feature_id": "demo:healing",
-      "fingerprint": "65c286166eb19f1cb1af76f53311436cc5f45fedcf8cf895f4ac712711c2a20b",
+      "fingerprint": "8b20306cf8786d6794d3aa7c99c253297d3d15e56dbe4dbcf9abe4dbba30ca42",
       "generated_runtime_blocks": [
         {
           "action_economy": "none",
@@ -385,8 +475,13 @@
           "capability_id": "damage.healing",
           "clause_id": "heal",
           "contract_version": "1.0",
+          "materializer_id": "damage.healing",
           "operator": "heal",
-          "parameters": {},
+          "parameters": {
+            "ability": "wisdom",
+            "formula": "1d8",
+            "source": "spell"
+          },
           "targeting": null,
           "trigger": "action_resolved"
         }
@@ -401,12 +496,14 @@
         "feature_runtime_contract_tests"
       ],
       "required_ui": [],
+      "source_trust": "authored_ir",
       "status_authority": "compiler",
       "unsupported_combinations": [],
       "unsupported_conditions": [],
       "unsupported_operators": []
     },
     {
+      "blockers": [],
       "clause_results": [
         {
           "blockers": [],
@@ -420,8 +517,12 @@
             "capability_id": "defense.immunity",
             "clause_id": "immunity",
             "contract_version": "1.0",
+            "materializer_id": "defense.immunity",
             "operator": "grant_immunity",
-            "parameters": {},
+            "parameters": {
+              "condition_or_damage_type": "poison",
+              "source": "feature"
+            },
             "targeting": null,
             "trigger": "combat_started"
           },
@@ -434,7 +535,7 @@
         "feature_runtime_contract_tests"
       ],
       "feature_id": "demo:immunity",
-      "fingerprint": "650387494f57a3f85f9e61f5605859fa474ab19cdcfd145b9e987befc904561a",
+      "fingerprint": "186e6fcaa9c038b3023bf06090408daf0a9e5ed07dc0f76ff323991153ec2c7e",
       "generated_runtime_blocks": [
         {
           "action_economy": "none",
@@ -442,8 +543,12 @@
           "capability_id": "defense.immunity",
           "clause_id": "immunity",
           "contract_version": "1.0",
+          "materializer_id": "defense.immunity",
           "operator": "grant_immunity",
-          "parameters": {},
+          "parameters": {
+            "condition_or_damage_type": "poison",
+            "source": "feature"
+          },
           "targeting": null,
           "trigger": "combat_started"
         }
@@ -458,12 +563,14 @@
         "feature_runtime_contract_tests"
       ],
       "required_ui": [],
+      "source_trust": "authored_ir",
       "status_authority": "compiler",
       "unsupported_combinations": [],
       "unsupported_conditions": [],
       "unsupported_operators": []
     },
     {
+      "blockers": [],
       "clause_results": [
         {
           "blockers": [],
@@ -477,8 +584,12 @@
             "capability_id": "advancement.language",
             "clause_id": "grant",
             "contract_version": "1.0",
+            "materializer_id": "advancement.language",
             "operator": "grant_language",
-            "parameters": {},
+            "parameters": {
+              "language_id": "elvish",
+              "operation": "grant"
+            },
             "targeting": null,
             "trigger": "advancement_confirmed"
           },
@@ -491,7 +602,7 @@
         "feature_runtime_contract_tests"
       ],
       "feature_id": "demo:language",
-      "fingerprint": "4da2fad0194252e97da68a1ab02781dfa3fbc7d7c3d80c9798cdf91275daeb1a",
+      "fingerprint": "3fac19a4e04b5400a80fdc2d07a4f5f3443bb39d1cf776d1315be63aadf7292d",
       "generated_runtime_blocks": [
         {
           "action_economy": "none",
@@ -499,8 +610,12 @@
           "capability_id": "advancement.language",
           "clause_id": "grant",
           "contract_version": "1.0",
+          "materializer_id": "advancement.language",
           "operator": "grant_language",
-          "parameters": {},
+          "parameters": {
+            "language_id": "elvish",
+            "operation": "grant"
+          },
           "targeting": null,
           "trigger": "advancement_confirmed"
         }
@@ -515,12 +630,16 @@
         "feature_runtime_contract_tests"
       ],
       "required_ui": [],
+      "source_trust": "authored_ir",
       "status_authority": "compiler",
       "unsupported_combinations": [],
       "unsupported_conditions": [],
       "unsupported_operators": []
     },
     {
+      "blockers": [
+        "manual: requires DM adjudication"
+      ],
       "clause_results": [
         {
           "blockers": [
@@ -540,7 +659,7 @@
         "feature_runtime_contract_tests"
       ],
       "feature_id": "demo:manual-1",
-      "fingerprint": "77584dbd7d54792d65a23f91631c78a5f72034740ec64ebf891653c56ccefb2b",
+      "fingerprint": "632fb7f9d7af09fd9f6b80dd6beabf40c6e0dc8c0d573215f83ec0bb7b2e1007",
       "generated_runtime_blocks": [
         {
           "action_economy": "none",
@@ -548,8 +667,15 @@
           "capability_id": "modifier.passive",
           "clause_id": "manual",
           "contract_version": "1.0",
+          "materializer_id": "modifier.passive",
           "operator": "add_modifier",
-          "parameters": {},
+          "parameters": {
+            "applies_when": "always",
+            "operation": "add",
+            "scope": "self",
+            "stat": "armor_class",
+            "value": 1
+          },
           "targeting": null,
           "trigger": "explicit_activation"
         }
@@ -566,12 +692,16 @@
         "feature_runtime_contract_tests"
       ],
       "required_ui": [],
+      "source_trust": "authored_ir",
       "status_authority": "compiler",
       "unsupported_combinations": [],
       "unsupported_conditions": [],
       "unsupported_operators": []
     },
     {
+      "blockers": [
+        "manual: requires DM adjudication"
+      ],
       "clause_results": [
         {
           "blockers": [
@@ -591,7 +721,7 @@
         "feature_runtime_contract_tests"
       ],
       "feature_id": "demo:manual-2",
-      "fingerprint": "3acd8cf697e2e4568a8f36e3a70f043aa43a0d57d5338e4ad47ec62016aa2bb7",
+      "fingerprint": "59d6c14694a1448c0fdb439745df94cec7239871785c70abc05db3133355a992",
       "generated_runtime_blocks": [
         {
           "action_economy": "none",
@@ -599,8 +729,16 @@
           "capability_id": "modifier.timed",
           "clause_id": "manual",
           "contract_version": "1.0",
+          "materializer_id": "modifier.timed",
           "operator": "create_timed_modifier",
-          "parameters": {},
+          "parameters": {
+            "applies_when": "always",
+            "duration": "current_turn",
+            "operation": "add",
+            "scope": "outgoing",
+            "stat": "attack_roll",
+            "value": 1
+          },
           "targeting": null,
           "trigger": "explicit_activation"
         }
@@ -617,12 +755,14 @@
         "feature_runtime_contract_tests"
       ],
       "required_ui": [],
+      "source_trust": "authored_ir",
       "status_authority": "compiler",
       "unsupported_combinations": [],
       "unsupported_conditions": [],
       "unsupported_operators": []
     },
     {
+      "blockers": [],
       "clause_results": [
         {
           "blockers": [],
@@ -636,8 +776,12 @@
             "capability_id": "movement.mode",
             "clause_id": "movement",
             "contract_version": "1.0",
+            "materializer_id": "movement.mode",
             "operator": "grant_movement_mode",
-            "parameters": {},
+            "parameters": {
+              "mode": "climb",
+              "speed_source": "current_speed"
+            },
             "targeting": null,
             "trigger": "combat_started"
           },
@@ -650,7 +794,7 @@
         "feature_runtime_contract_tests"
       ],
       "feature_id": "demo:movement",
-      "fingerprint": "ab6adf51d2ebb8ed09b599d7be257cfe49d605e2b7f1c264a537d028ff39b425",
+      "fingerprint": "b906a81856520a2e5142f861876c17aa6203ce93e2e35dc471493ccd59e58ba4",
       "generated_runtime_blocks": [
         {
           "action_economy": "none",
@@ -658,8 +802,12 @@
           "capability_id": "movement.mode",
           "clause_id": "movement",
           "contract_version": "1.0",
+          "materializer_id": "movement.mode",
           "operator": "grant_movement_mode",
-          "parameters": {},
+          "parameters": {
+            "mode": "climb",
+            "speed_source": "current_speed"
+          },
           "targeting": null,
           "trigger": "combat_started"
         }
@@ -674,12 +822,14 @@
         "feature_runtime_contract_tests"
       ],
       "required_ui": [],
+      "source_trust": "authored_ir",
       "status_authority": "compiler",
       "unsupported_combinations": [],
       "unsupported_conditions": [],
       "unsupported_operators": []
     },
     {
+      "blockers": [],
       "clause_results": [
         {
           "blockers": [],
@@ -693,8 +843,13 @@
             "capability_id": "advancement.prepare_spell",
             "clause_id": "prepare",
             "contract_version": "1.0",
+            "materializer_id": "advancement.prepare_spell",
             "operator": "prepare_spell",
-            "parameters": {},
+            "parameters": {
+              "preparation_mode": "always_prepared",
+              "source_class": "wizard",
+              "spell_id": "mage_armor"
+            },
             "targeting": null,
             "trigger": "advancement_confirmed"
           },
@@ -707,7 +862,7 @@
         "feature_runtime_contract_tests"
       ],
       "feature_id": "demo:prepared-spell",
-      "fingerprint": "4031c8d04f718d1160f7447d32a369ecf3da86b5112e3c2002d901ec063e0357",
+      "fingerprint": "6326a93ab18d8952e71975a593a7dfd3a2ccdc54668815cf7c769ef0827248d0",
       "generated_runtime_blocks": [
         {
           "action_economy": "none",
@@ -715,8 +870,13 @@
           "capability_id": "advancement.prepare_spell",
           "clause_id": "prepare",
           "contract_version": "1.0",
+          "materializer_id": "advancement.prepare_spell",
           "operator": "prepare_spell",
-          "parameters": {},
+          "parameters": {
+            "preparation_mode": "always_prepared",
+            "source_class": "wizard",
+            "spell_id": "mage_armor"
+          },
           "targeting": null,
           "trigger": "advancement_confirmed"
         }
@@ -731,12 +891,14 @@
         "feature_runtime_contract_tests"
       ],
       "required_ui": [],
+      "source_trust": "authored_ir",
       "status_authority": "compiler",
       "unsupported_combinations": [],
       "unsupported_conditions": [],
       "unsupported_operators": []
     },
     {
+      "blockers": [],
       "clause_results": [
         {
           "blockers": [],
@@ -750,8 +912,13 @@
             "capability_id": "advancement.proficiency",
             "clause_id": "grant",
             "contract_version": "1.0",
+            "materializer_id": "advancement.proficiency",
             "operator": "grant_proficiency",
-            "parameters": {},
+            "parameters": {
+              "asset_id": "stealth",
+              "operation": "grant",
+              "proficiency_kind": "skill"
+            },
             "targeting": null,
             "trigger": "advancement_confirmed"
           },
@@ -764,7 +931,7 @@
         "feature_runtime_contract_tests"
       ],
       "feature_id": "demo:proficiency",
-      "fingerprint": "3cb1c2104b83626a872496e5a0a33d71fd240201febf5c20c6ba1df37bad173e",
+      "fingerprint": "130b11e73be6ceb29491e6eb9465450b073a6251f2236f9f98b2f62ae42c0c9e",
       "generated_runtime_blocks": [
         {
           "action_economy": "none",
@@ -772,8 +939,13 @@
           "capability_id": "advancement.proficiency",
           "clause_id": "grant",
           "contract_version": "1.0",
+          "materializer_id": "advancement.proficiency",
           "operator": "grant_proficiency",
-          "parameters": {},
+          "parameters": {
+            "asset_id": "stealth",
+            "operation": "grant",
+            "proficiency_kind": "skill"
+          },
           "targeting": null,
           "trigger": "advancement_confirmed"
         }
@@ -788,12 +960,14 @@
         "feature_runtime_contract_tests"
       ],
       "required_ui": [],
+      "source_trust": "authored_ir",
       "status_authority": "compiler",
       "unsupported_combinations": [],
       "unsupported_conditions": [],
       "unsupported_operators": []
     },
     {
+      "blockers": [],
       "clause_results": [
         {
           "blockers": [],
@@ -807,8 +981,12 @@
             "capability_id": "defense.resistance",
             "clause_id": "resistance",
             "contract_version": "1.0",
+            "materializer_id": "defense.resistance",
             "operator": "grant_resistance",
-            "parameters": {},
+            "parameters": {
+              "damage_type": "fire",
+              "source": "feature"
+            },
             "targeting": null,
             "trigger": "combat_started"
           },
@@ -821,7 +999,7 @@
         "feature_runtime_contract_tests"
       ],
       "feature_id": "demo:resistance",
-      "fingerprint": "55ffd5efa26fbe83859a1769721662698fcb6e1b830a7d66116f5402d44be64a",
+      "fingerprint": "e533c10d070ee17b0e53de16e31d7e6066229376eb471b13509be52d25649247",
       "generated_runtime_blocks": [
         {
           "action_economy": "none",
@@ -829,8 +1007,12 @@
           "capability_id": "defense.resistance",
           "clause_id": "resistance",
           "contract_version": "1.0",
+          "materializer_id": "defense.resistance",
           "operator": "grant_resistance",
-          "parameters": {},
+          "parameters": {
+            "damage_type": "fire",
+            "source": "feature"
+          },
           "targeting": null,
           "trigger": "combat_started"
         }
@@ -845,12 +1027,14 @@
         "feature_runtime_contract_tests"
       ],
       "required_ui": [],
+      "source_trust": "authored_ir",
       "status_authority": "compiler",
       "unsupported_combinations": [],
       "unsupported_conditions": [],
       "unsupported_operators": []
     },
     {
+      "blockers": [],
       "clause_results": [
         {
           "blockers": [],
@@ -864,8 +1048,13 @@
             "capability_id": "resource.lifecycle",
             "clause_id": "restore",
             "contract_version": "1.0",
+            "materializer_id": "resource.lifecycle",
             "operator": "restore_resource",
-            "parameters": {},
+            "parameters": {
+              "amount": 1,
+              "operation": "set_to_max",
+              "resource_key": "demo_charge"
+            },
             "targeting": null,
             "trigger": "long_rest_completed"
           },
@@ -878,7 +1067,7 @@
         "feature_runtime_contract_tests"
       ],
       "feature_id": "demo:restore",
-      "fingerprint": "83155e993181ab150cf3df4f722d9b189346130af64225e8683df1fa890c66dc",
+      "fingerprint": "f5b988be3dbed85816df249b46d2ccbc32f8d6862618203c04d6cc97d32de5b0",
       "generated_runtime_blocks": [
         {
           "action_economy": "none",
@@ -886,8 +1075,13 @@
           "capability_id": "resource.lifecycle",
           "clause_id": "restore",
           "contract_version": "1.0",
+          "materializer_id": "resource.lifecycle",
           "operator": "restore_resource",
-          "parameters": {},
+          "parameters": {
+            "amount": 1,
+            "operation": "set_to_max",
+            "resource_key": "demo_charge"
+          },
           "targeting": null,
           "trigger": "long_rest_completed"
         }
@@ -902,12 +1096,14 @@
         "feature_runtime_contract_tests"
       ],
       "required_ui": [],
+      "source_trust": "authored_ir",
       "status_authority": "compiler",
       "unsupported_combinations": [],
       "unsupported_conditions": [],
       "unsupported_operators": []
     },
     {
+      "blockers": [],
       "clause_results": [
         {
           "blockers": [],
@@ -921,8 +1117,15 @@
             "capability_id": "modifier.passive.set",
             "clause_id": "modifier",
             "contract_version": "1.0",
+            "materializer_id": "modifier.passive.set",
             "operator": "set_modifier",
-            "parameters": {},
+            "parameters": {
+              "applies_when": "always",
+              "operation": "set",
+              "scope": "self",
+              "stat": "blindsight_ft",
+              "value": 30
+            },
             "targeting": null,
             "trigger": "combat_started"
           },
@@ -935,7 +1138,7 @@
         "feature_runtime_contract_tests"
       ],
       "feature_id": "demo:set-modifier",
-      "fingerprint": "d5109cea1a202f815f1800535a90ac691d20da24262a351b93f700e4693433b9",
+      "fingerprint": "2be7aea73d497f084419c22d662c334592cc71b115bb2656f9705476c71a2c0e",
       "generated_runtime_blocks": [
         {
           "action_economy": "none",
@@ -943,8 +1146,15 @@
           "capability_id": "modifier.passive.set",
           "clause_id": "modifier",
           "contract_version": "1.0",
+          "materializer_id": "modifier.passive.set",
           "operator": "set_modifier",
-          "parameters": {},
+          "parameters": {
+            "applies_when": "always",
+            "operation": "set",
+            "scope": "self",
+            "stat": "blindsight_ft",
+            "value": 30
+          },
           "targeting": null,
           "trigger": "combat_started"
         }
@@ -959,12 +1169,14 @@
         "feature_runtime_contract_tests"
       ],
       "required_ui": [],
+      "source_trust": "authored_ir",
       "status_authority": "compiler",
       "unsupported_combinations": [],
       "unsupported_conditions": [],
       "unsupported_operators": []
     },
     {
+      "blockers": [],
       "clause_results": [
         {
           "blockers": [],
@@ -978,8 +1190,13 @@
             "capability_id": "sight.mode",
             "clause_id": "sight",
             "contract_version": "1.0",
+            "materializer_id": "sight.mode",
             "operator": "grant_sight_mode",
-            "parameters": {},
+            "parameters": {
+              "applies_when": "always",
+              "mode": "blindsight",
+              "range_ft": 30
+            },
             "targeting": null,
             "trigger": "combat_started"
           },
@@ -992,7 +1209,7 @@
         "feature_runtime_contract_tests"
       ],
       "feature_id": "demo:sight",
-      "fingerprint": "2057488dfc21306ae3abcf3c44a11f04de1d151b2b9544623b60bac9a15e3558",
+      "fingerprint": "302deb6f9cd3459911dceeff5e5a9234695eef8bacbbf6e9fab2f11cfa7a0ef8",
       "generated_runtime_blocks": [
         {
           "action_economy": "none",
@@ -1000,8 +1217,13 @@
           "capability_id": "sight.mode",
           "clause_id": "sight",
           "contract_version": "1.0",
+          "materializer_id": "sight.mode",
           "operator": "grant_sight_mode",
-          "parameters": {},
+          "parameters": {
+            "applies_when": "always",
+            "mode": "blindsight",
+            "range_ft": 30
+          },
           "targeting": null,
           "trigger": "combat_started"
         }
@@ -1016,12 +1238,14 @@
         "feature_runtime_contract_tests"
       ],
       "required_ui": [],
+      "source_trust": "authored_ir",
       "status_authority": "compiler",
       "unsupported_combinations": [],
       "unsupported_conditions": [],
       "unsupported_operators": []
     },
     {
+      "blockers": [],
       "clause_results": [
         {
           "blockers": [],
@@ -1035,8 +1259,14 @@
             "capability_id": "advancement.spell",
             "clause_id": "grant",
             "contract_version": "1.0",
+            "materializer_id": "advancement.spell",
             "operator": "grant_spell",
-            "parameters": {},
+            "parameters": {
+              "casting_ability": "intelligence",
+              "grant_mode": "known",
+              "source_class": "wizard",
+              "spell_id": "shield"
+            },
             "targeting": null,
             "trigger": "advancement_confirmed"
           },
@@ -1049,7 +1279,7 @@
         "feature_runtime_contract_tests"
       ],
       "feature_id": "demo:spell",
-      "fingerprint": "61d4e9414dae4d3606e7ee5d7baf90299a1020cc24e7de888034500184d3cc3e",
+      "fingerprint": "904dfeedb64ea434c248f28ce15144cc07ca2427b985373291ae797afc17b00e",
       "generated_runtime_blocks": [
         {
           "action_economy": "none",
@@ -1057,8 +1287,14 @@
           "capability_id": "advancement.spell",
           "clause_id": "grant",
           "contract_version": "1.0",
+          "materializer_id": "advancement.spell",
           "operator": "grant_spell",
-          "parameters": {},
+          "parameters": {
+            "casting_ability": "intelligence",
+            "grant_mode": "known",
+            "source_class": "wizard",
+            "spell_id": "shield"
+          },
           "targeting": null,
           "trigger": "advancement_confirmed"
         }
@@ -1073,12 +1309,14 @@
         "feature_runtime_contract_tests"
       ],
       "required_ui": [],
+      "source_trust": "authored_ir",
       "status_authority": "compiler",
       "unsupported_combinations": [],
       "unsupported_conditions": [],
       "unsupported_operators": []
     },
     {
+      "blockers": [],
       "clause_results": [
         {
           "blockers": [],
@@ -1092,8 +1330,12 @@
             "capability_id": "damage.temporary_hp",
             "clause_id": "temp-hp",
             "contract_version": "1.0",
+            "materializer_id": "damage.temporary_hp",
             "operator": "grant_temporary_hp",
-            "parameters": {},
+            "parameters": {
+              "formula": "level",
+              "source": "feature"
+            },
             "targeting": null,
             "trigger": "short_rest_completed"
           },
@@ -1106,7 +1348,7 @@
         "feature_runtime_contract_tests"
       ],
       "feature_id": "demo:temporary-hp",
-      "fingerprint": "6cead867dbc2dec278e474c4da1587745ade813a93f6c1992df859fb77a62665",
+      "fingerprint": "d49b0f45b4745130191342b9d33b2e6692adbb60b5d21750bb4c6b5e13f1889a",
       "generated_runtime_blocks": [
         {
           "action_economy": "none",
@@ -1114,8 +1356,12 @@
           "capability_id": "damage.temporary_hp",
           "clause_id": "temp-hp",
           "contract_version": "1.0",
+          "materializer_id": "damage.temporary_hp",
           "operator": "grant_temporary_hp",
-          "parameters": {},
+          "parameters": {
+            "formula": "level",
+            "source": "feature"
+          },
           "targeting": null,
           "trigger": "short_rest_completed"
         }
@@ -1130,12 +1376,17 @@
         "feature_runtime_contract_tests"
       ],
       "required_ui": [],
+      "source_trust": "authored_ir",
       "status_authority": "compiler",
       "unsupported_combinations": [],
       "unsupported_conditions": [],
       "unsupported_operators": []
     },
     {
+      "blockers": [
+        "future_operator_one",
+        "unknown: future_operator_one"
+      ],
       "clause_results": [
         {
           "blockers": [
@@ -1151,7 +1402,7 @@
       "dependencies": [],
       "evidence": [],
       "feature_id": "demo:unknown-1",
-      "fingerprint": "63e686af50619e8d747d6e429481fd500712b277052729e45c011794a865c712",
+      "fingerprint": "d5568c15e9cba63385a8f98be607b6187525af9c404734031db4ae1a487d8ed1",
       "generated_runtime_blocks": [],
       "legacy_adapter_used": false,
       "manual_boundaries": [],
@@ -1159,21 +1410,10 @@
       "required_persistence": [],
       "required_tests": [],
       "required_ui": [],
+      "source_trust": "authored_ir",
       "status_authority": "compiler",
       "unsupported_combinations": [
-        "u",
-        "n",
-        "k",
-        "o",
-        "w",
-        ":",
-        "f",
-        "t",
-        "r",
-        "e",
-        "_",
-        "p",
-        "a"
+        "unknown: future_operator_one"
       ],
       "unsupported_conditions": [],
       "unsupported_operators": [
@@ -1181,6 +1421,10 @@
       ]
     },
     {
+      "blockers": [
+        "future_operator_two",
+        "unknown: future_operator_two"
+      ],
       "clause_results": [
         {
           "blockers": [
@@ -1196,7 +1440,7 @@
       "dependencies": [],
       "evidence": [],
       "feature_id": "demo:unknown-2",
-      "fingerprint": "06f062595875cddfd4476ff99d38153b8082ebb8b544c8ed11ce06a98916a577",
+      "fingerprint": "9bf0e4f47243e7cbc85d234392765b12f9ab6aecaea1cdac4cfe8799c1c5658c",
       "generated_runtime_blocks": [],
       "legacy_adapter_used": false,
       "manual_boundaries": [],
@@ -1204,21 +1448,10 @@
       "required_persistence": [],
       "required_tests": [],
       "required_ui": [],
+      "source_trust": "authored_ir",
       "status_authority": "compiler",
       "unsupported_combinations": [
-        "u",
-        "n",
-        "k",
-        "o",
-        "w",
-        ":",
-        "f",
-        "t",
-        "r",
-        "e",
-        "_",
-        "p",
-        "a"
+        "unknown: future_operator_two"
       ],
       "unsupported_conditions": [],
       "unsupported_operators": [
@@ -1226,6 +1459,10 @@
       ]
     },
     {
+      "blockers": [
+        "future_operator_three",
+        "unknown: future_operator_three"
+      ],
       "clause_results": [
         {
           "blockers": [
@@ -1241,7 +1478,7 @@
       "dependencies": [],
       "evidence": [],
       "feature_id": "demo:unknown-3",
-      "fingerprint": "00065d259f988b4669ac637ceb718dac7ecef25f29cbfceb836561cb6e64eda6",
+      "fingerprint": "5789693d6c772f0787fb8bfcbec66c628bb9b9a339fa52730dd58e8568d20406",
       "generated_runtime_blocks": [],
       "legacy_adapter_used": false,
       "manual_boundaries": [],
@@ -1249,22 +1486,10 @@
       "required_persistence": [],
       "required_tests": [],
       "required_ui": [],
+      "source_trust": "authored_ir",
       "status_authority": "compiler",
       "unsupported_combinations": [
-        "u",
-        "n",
-        "k",
-        "o",
-        "w",
-        ":",
-        "f",
-        "t",
-        "r",
-        "e",
-        "_",
-        "p",
-        "a",
-        "h"
+        "unknown: future_operator_three"
       ],
       "unsupported_conditions": [],
       "unsupported_operators": [
@@ -1272,6 +1497,10 @@
       ]
     },
     {
+      "blockers": [
+        "future_operator_four",
+        "unknown: future_operator_four"
+      ],
       "clause_results": [
         {
           "blockers": [
@@ -1287,7 +1516,7 @@
       "dependencies": [],
       "evidence": [],
       "feature_id": "demo:unknown-4",
-      "fingerprint": "ee786ab9ee1e57a7567c3be0dcf42eb8305386de9db33d4fec28acb673987f30",
+      "fingerprint": "a1db003dc4841121d03d05d25602508e4675043c122d156a48714ed5cdd0f5f7",
       "generated_runtime_blocks": [],
       "legacy_adapter_used": false,
       "manual_boundaries": [],
@@ -1295,21 +1524,10 @@
       "required_persistence": [],
       "required_tests": [],
       "required_ui": [],
+      "source_trust": "authored_ir",
       "status_authority": "compiler",
       "unsupported_combinations": [
-        "u",
-        "n",
-        "k",
-        "o",
-        "w",
-        ":",
-        "f",
-        "t",
-        "r",
-        "e",
-        "_",
-        "p",
-        "a"
+        "unknown: future_operator_four"
       ],
       "unsupported_conditions": [],
       "unsupported_operators": [
@@ -1317,11 +1535,15 @@
       ]
     }
   ],
+  "materialized_full_count": 18,
   "migration_plan": {
     "changed_features": [],
     "kind": "new_pack"
   },
   "pack_id": "automation-demo",
   "pack_version": "1.0.0",
-  "schema_version": "feature-pack-readiness-1"
+  "production_consumer_test_count": 8,
+  "schema_version": "feature-pack-readiness-1",
+  "source_trust": "authored_ir",
+  "validator_passed_count": 18
 }

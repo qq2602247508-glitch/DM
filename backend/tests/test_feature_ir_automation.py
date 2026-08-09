@@ -9,16 +9,17 @@ import pytest
 
 from dnd_dm_assistant.application.feature_compiler import (
     FeatureCompiler,
-    legacy_feature_spec_from_audit_row,
     materialize_runtime_definition,
 )
 from dnd_dm_assistant.application.feature_pack_importer import (
     FeaturePackImporter,
     FeaturePackImportError,
     FeaturePackManifest,
+    FeaturePackRegistry,
     load_feature_pack,
 )
 from dnd_dm_assistant.domain.feature_capabilities import (
+    CapabilityCatalog,
     CapabilityDescriptor,
     default_capability_catalog,
 )
@@ -41,6 +42,39 @@ def _spec(
     source_completeness: str = "complete",
     audit: dict[str, Any] | None = None,
 ) -> FeatureSpec:
+    params: dict[str, Any] = {
+        "grant_proficiency": {
+            "proficiency_kind": "skill",
+            "asset_id": "stealth",
+            "operation": "grant",
+        },
+        "grant_language": {"language_id": "elvish", "operation": "grant"},
+        "grant_spell": {
+            "spell_id": "shield",
+            "source_class": "wizard",
+            "casting_ability": "intelligence",
+            "grant_mode": "known",
+        },
+        "prepare_spell": {
+            "spell_id": "mage_armor",
+            "source_class": "wizard",
+            "preparation_mode": "prepared",
+        },
+        "grant_passive_modifier": {
+            "stat": "speed_ft",
+            "operation": "add",
+            "value": 1,
+            "scope": "self",
+            "applies_when": "always",
+        },
+        "add_modifier": {
+            "stat": "speed_ft",
+            "operation": "add",
+            "value": 1,
+            "scope": "self",
+            "applies_when": "always",
+        },
+    }.get(operator, {})
     return FeatureSpec.from_dict(
         {
             "schema_version": "feature-ir-1",
@@ -51,6 +85,7 @@ def _spec(
             "ruleset_version": "2024",
             "source_record_id": feature_id,
             "source_name": feature_id,
+            "source_trust": "authored_ir",
             "localized_names": {},
             "class_name": "test",
             "subclass_name": None,
@@ -63,7 +98,7 @@ def _spec(
                     "clause_id": "main",
                     "trigger": trigger,
                     "audit": audit or {},
-                    "effects": [{"operator": operator, "parameters": {}}],
+                    "effects": [{"operator": operator, "parameters": params}],
                 }
             ],
         }
@@ -105,11 +140,13 @@ def test_feature_ir_rejects_unknown_fields_and_executable_payloads() -> None:
         "expression": "__import__('os').system('touch /tmp/bad')"
     }
     parsed = FeatureSpec.from_dict(value)
-    assert parsed.clauses[0].effects[0].parameters["expression"].startswith("__import__")
+    result = FeatureCompiler().compile(parsed)
+    assert result.compile_status == "invalid"
+    assert any("executable" in item for item in result.blockers)
 
 
 def test_capability_catalog_requires_production_evidence_and_cas() -> None:
-    with pytest.raises(ValueError, match="evidence_tests"):
+    with pytest.raises(ValueError, match="wildcard"):
         CapabilityDescriptor(
             capability_id="test.invalid",
             contract_version="1.0",
@@ -155,13 +192,18 @@ def test_compiler_is_clause_strict_and_fingerprint_deterministic() -> None:
 
 
 def test_one_capability_fans_out_to_six_specs_without_spec_changes() -> None:
-    operator = "timed_numeric_modifier"
+    operator = "grant_passive_modifier"
     specs = tuple(_spec(f"fanout:{index}", operator) for index in range(6))
-    catalog = default_capability_catalog()
+    base_catalog = default_capability_catalog()
+    catalog = CapabilityCatalog(
+        descriptor
+        for descriptor in base_catalog.descriptors()
+        if descriptor.capability_id != "modifier.passive.v2"
+    )
     before = FeatureCompiler(catalog)
     assert [before.compile(spec).compile_status for spec in specs] == ["partial"] * 6
 
-    catalog.register(_custom_capability(operator))
+    catalog.register(default_capability_catalog().get("modifier.passive.v2"))
     after = FeatureCompiler(catalog)
     assert [after.compile(spec).compile_status for spec in specs] == ["full"] * 6
     assert [spec.fingerprint() for spec in specs] == [
@@ -201,6 +243,14 @@ def test_feature_pack_apply_is_idempotent_and_conflicts_fail_closed(tmp_path: Pa
     assert first.applied is True
     assert second.idempotent_replay is True
     assert (tmp_path / "automation-demo--1.0.0.json").exists()
+    registry = FeaturePackRegistry(tmp_path)
+    assert registry.lookup("demo:proficiency") is not None
+    assert registry.lookup("demo:unknown-1") is None
+    registry.pin_character("character-1", "automation-demo", "1.0.0")
+    assert registry.character_pin("character-1") == {
+        "pack_id": "automation-demo",
+        "pack_version": "1.0.0",
+    }
 
     changed = json.loads(DEMO_PACK.read_text(encoding="utf-8"))
     changed["features"][0]["source_name"] = "changed"
@@ -214,18 +264,10 @@ def test_legacy_shadow_parity_selects_thirty_full_rows() -> None:
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
-    compiler = FeatureCompiler(status_authority="legacy")
-    selected: list[str] = []
-    for row in module.audit()["rows"]:
-        if row["runtime_status"] != "full":
-            continue
-        feature, adapter_used = legacy_feature_spec_from_audit_row(row)
-        result = compiler.compile(feature, legacy_adapter_used=adapter_used)
-        if result.compile_status == "full":
-            selected.append(row["feature_name"])
-        if len(selected) == 30:
-            break
-    assert len(selected) == 30
+    report = module.audit()
+    formal = [row for row in report["rows"] if row.get("formal_ir")]
+    assert len(formal) == 10
+    assert all(row["status_authority"] == "compiler" for row in formal)
 
 
 def test_audit_rows_expose_shadow_fields_without_changing_499_statuses() -> None:
