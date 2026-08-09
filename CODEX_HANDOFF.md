@@ -1,3 +1,26 @@
+# 2026-08-09 长执行检查点：现有 production_closed 消费者批量迁移 I
+
+- 本轮全程单线程，未创建、调用、委托或等待任何子代理。固定审计分母仍为 499：
+  `full 310 / partial 128 / dm_only 61` → `full 312 / partial 126 / dm_only 61`，真实净增
+  `full +2`。
+- 新增 full：圣武士·复仇之誓·3「仇敌誓言」与 15 级「复仇之魂」。前者修正通用触发器
+  合同，正式承认既有生产消费者已经支持的 `restore_resource` / `clear_feature_state`；
+  后者复用现有 `triggered_attack_window`，新增封闭 `after_enemy_attack` producer、
+  誓言目标持久化状态过滤、武器触及范围解析，未新增职业名执行分支。
+- `仇敌誓言` 与 `复仇之魂` 绑定 `verified_mapping` Feature IR：IR 编译、稳定 fingerprint、
+  source trust 和 parity 报告均有证据；运行时继续由已验证 typed registry authority 提供，
+  直到直接 materializer 字段 parity 完成。两条均有真实动作窗口、目标过滤、反应 CAS、幂等
+  重放回归；新增回归为 `test_soul_of_vengeance_uses_marked_target_state_and_any_enemy_attack`。
+- 报告已刷新：`docs/class-feature-audit-2026-08-07.md`、`docs/feature-automation-migration-matrix-2026-08-09.md`
+  与 `reports/feature-ir-*`。当前 readiness 为 `already_full 312 / missing_runtime_contract 116 /
+  consumer_partial 27 / needs_contract_review 6 / manual_boundary 3 / missing_source 35`。
+- 修复 `scripts/compile-feature-automation-report.py` 的 demo pack 初始化顺序；报告连续运行两次
+  输出一致，仍为 capability/operator `34/34`、compiler pilot `10`、semantic parity 全通过、
+  demo `18 full / 4 partial / 2 manual`、legacy feature-name 分支 `65`。
+- 其余 partial 未强行升级：仍依赖攻击骑手、强制移动、多目标状态、目标信息读取、完整法术书
+  或新 UI 的候选保留原状态。后端全量 pytest 通过；本轮无前端源码变化，不做前端/浏览器声明。
+- 必须继续保留且不得暂存/提交：`backend/tests/integrations/`、`backend/tests/ollama.py`。
+
 # 2026-08-09 长执行检查点：Feature IR 自动装配与拓展包导入基础
 
 - 本轮生产化硬化已在当前工作树完成实现，尚未分离提交。严格门禁已通过：后端全量

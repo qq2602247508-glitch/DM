@@ -4,8 +4,8 @@
 
 - 矩阵 schema：`feature-automation-migration-plan-2`
 - 总条目：499
-- 当前状态：`{'full': 310, 'dm_only': 61, 'partial': 128}`
-- 预审状态：`{'already_full': 310, 'manual_boundary': 3, 'missing_runtime_contract': 117, 'consumer_partial': 28, 'needs_contract_review': 6, 'missing_source': 35}`
+- 当前状态：`{'full': 312, 'dm_only': 61, 'partial': 126}`
+- 预审状态：`{'already_full': 312, 'manual_boundary': 3, 'missing_runtime_contract': 116, 'consumer_partial': 27, 'needs_contract_review': 6, 'missing_source': 35}`
 
 ## 模板分组
 
@@ -19,9 +19,9 @@
 | 光环/范围被动 (`aura_passive`) | 48 | 12 | 35 | 1 | 0 | 0 | 0 |
 | 伤害/治疗 (`damage_healing`) | 48 | 31 | 16 | 1 | 0 | 0 | 0 |
 | 移动/位移 (`movement`) | 15 | 6 | 9 | 0 | 0 | 0 | 0 |
-| 通用被动/数值修正 (`passive_modifier`) | 79 | 36 | 7 | 0 | 0 | 1 | 35 |
+| 通用被动/数值修正 (`passive_modifier`) | 79 | 37 | 6 | 0 | 0 | 1 | 35 |
 | 伤害前/防御干预 (`pre_damage_intervention`) | 13 | 5 | 7 | 1 | 0 | 0 | 0 |
-| 掷骰干预 (`roll_intervention`) | 46 | 27 | 0 | 0 | 19 | 0 | 0 |
+| 掷骰干预 (`roll_intervention`) | 46 | 28 | 0 | 0 | 18 | 0 | 0 |
 | 状态生命周期 (`state_lifecycle`) | 34 | 20 | 13 | 1 | 0 | 0 | 0 |
 | 召唤/伙伴 (`summon_lifecycle`) | 12 | 7 | 5 | 0 | 0 | 0 | 0 |
 | 目标/范围/豁免组合 (`target_save_status`) | 10 | 6 | 3 | 0 | 0 | 1 | 0 |
@@ -31,9 +31,9 @@
 
 | 能力簇 | 总数 | full | 非 full | 本轮可直接迁移 | producer | consumer | 新 UI | 新持久化 |
 |---|---:|---:|---:|---:|:---:|:---:|:---:|:---:|
-| passive_modifier | 79 | 36 | 43 | 0 | 是 | 是 | 是 | 否 |
+| passive_modifier | 79 | 37 | 42 | 0 | 是 | 是 | 是 | 否 |
 | aura_passive | 48 | 12 | 36 | 0 | 是 | 是 | 是 | 是 |
-| roll_intervention | 46 | 27 | 19 | 0 | 是 | 是 | 是 | 是 |
+| roll_intervention | 46 | 28 | 18 | 0 | 是 | 是 | 是 | 是 |
 | damage_healing | 48 | 31 | 17 | 0 | 是 | 是 | 是 | 是 |
 | resource_lifecycle | 56 | 40 | 16 | 0 | 是 | 是 | 是 | 是 |
 | state_lifecycle | 34 | 20 | 14 | 0 | 是 | 是 | 是 | 是 |
@@ -64,15 +64,3 @@
 ## 下一批执行门槛
 
 下一批必须从一个模板中选择一组条目，先生成配置和定向测试，再跑499条审计。预审数字是候选分组，不是承诺的新增 `full` 数量。
-
-## Feature IR 生产化硬化 I 结果
-
-- 34 个 operator contract 已有 required/optional 参数、精确类型、enum、边界、互斥/条件必填
-  与 materializer/capability 绑定；空参数不再可 full。
-- 34 个 capability descriptor 已生成精确闭世界支持集合；production_closed 不含 wildcard。
-- 十条 authored IR 稳定 feature ID 已完成字段级 semantic parity（10/10 exact-or-equivalent）并
-  切换 compiler authority；正式 runtime_status 仍由固定审计保持 `310/128/61`。
-- 真实扇出簇 `modifier.passive.v2`：6 条 FeatureSpec 在 capability 注册前为 partial，注册后为
-  full，真实消费者为 `feature_runtime_registry` 与 `combat_start_modifiers`。
-- 演示拓展包保持 24 条 `18 full / 4 partial / 2 manual`；18 条参数完整、materialize 和 validator
-  全通过，不计入 499。
