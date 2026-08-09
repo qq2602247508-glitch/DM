@@ -1,5 +1,48 @@
 # 特性自动化迁移预审报告
 
+## 2026-08-09 批量迁移工厂检查点
+
+固定审计从 `full 256 / partial 169 / dm_only 74` 变为
+`full 268 / partial 157 / dm_only 74`，固定分母仍为 499，真实净增 `full +12`。
+
+本轮把旧关键词预审器升级为可执行矩阵 schema v2。机器可读 JSON 由
+`scripts/plan-feature-automation-migrations.py` 重复生成；可审阅摘要在
+`docs/feature-automation-migration-matrix-2026-08-09.md`。每行现在携带稳定 ID、当前状态原因、
+runtime sections、触发时点、所需/现有 producer 和 consumer、规范缺口类别、资源/动作经济/输入/
+权威目标/状态需求、前置依赖、风险、复用簇、可执行性、阻塞原因和测试证据；输出按能力簇与特性
+身份稳定排序。
+
+### 已完成批次：`advancement_asset_grant:epic_boon`
+
+- 12 个 2024 核心职业的 19 级「传奇恩惠」授予行共享一个 `selected_asset_grant` 合同。
+- producer：`advancement_choice_requirements`。
+- consumer：`advancement_service_and_feat_prerequisite_validator`。
+- 服务端要求明确 `feat_choice`，从权威本地专长目录读取，强制类别为「传奇恩惠」并验证等级及其他
+  前置；确认后写入角色 features，重复 idempotency key 返回同一升级记录，不重复授予。
+- 职业授予行与所选资产明确分层：职业行在选择/验证/授予完成后为 full；所选具体 feat 是独立合同，
+  当前仍为 dm_only。矩阵和 API 测试都验证该边界，未把具体恩惠效果冒充完成。
+- 参数化测试一次覆盖 12 个职业；代表性战士 18→19 API 用例覆盖拒绝、预览、确认、持久化和重放。
+
+### 止损与下一批
+
+- `advancement_asset_grant:fighting_style` 有 4 条候选，但现有请求仍允许自由文本职业选项，缺权威
+  战斗风格专长目录/类别校验；除已结构化的防御风格外，其余具体风格消费者也不完整。本轮止损，
+  保持 partial。
+- 19 条 `roll_intervention` consumer_partial 混有标记目标、状态激活、范围、随机奇偶、失败重骰与
+  多模式，不能按共享 d20 窗口批量升级。
+- 9 条 `attack_rider`、8 条 pre-damage、5 条 zero-HP，以及移动/状态/光环大簇都要求新的复合
+  producer、持久化或玩家输入；单一子簇尚未证明能在低风险下解锁 5 条以上，因此不扩张平台。
+- 下一轮优先建议先把战斗风格改为权威 feat 资产选择，并按具体风格消费者再聚类；只有能一次闭合
+  至少 4～5 条时才执行。之后从矩阵筛选同构的纯状态免疫/抗性或简单资源恢复子簇。
+
+### 验证与提交
+
+- 后端全量 pytest、`ruff check backend/src backend/tests`、compileall、`git diff --check` 通过。
+- 前端 204 tests、typecheck、lint、production build 通过。
+- 无前端改动，不需要浏览器验收。
+- 全仓 scripts Ruff 仍只有仓库既有 4 个 N999 与 1 个 EXE001。
+- 提交：矩阵基础 `c55b80b`；运行时代码 `69eb54c`；测试与审计 `9ec638c`；文档随后单独提交。
+
 ## 2026-08-09 最终检查点（权威 Attack 动作序列与攻击槽替换）
 
 实时固定审计：`full 254 / partial 171 / dm_only 74` →

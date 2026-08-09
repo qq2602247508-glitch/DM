@@ -1,3 +1,32 @@
+# 2026-08-09 长执行检查点：批量迁移矩阵与传奇恩惠授予簇
+
+- 全程单线程执行，未创建、调用、委托或等待任何子代理。固定审计分母仍为 499：
+  `full 256 / partial 169 / dm_only 74` → `full 268 / partial 157 / dm_only 74`，真实净增
+  `full +12`。
+- 新增的 12 个 full 是全部 2024 核心职业的 19 级「传奇恩惠」职业授予行：野蛮人、吟游诗人、
+  牧师、德鲁伊、战士、武僧、圣武士、游侠、游荡者、术士、魔契师、法师。
+- 边界没有放宽：19 级职业特性的完整规则只是“从权威专长目录选择并授予一个符合前置条件的传奇
+  恩惠专长”。该职业行现在拥有 `selected_asset_grant` 合同，真实 consumer 为
+  `advancement_service_and_feat_prerequisite_validator`；缺选择、错误分类、等级/其他前置不满足均
+  fail-closed，确认后写入角色 features，角色版本与升级事务维持既有 CAS/幂等语义。
+- 被选择的具体传奇恩惠仍保存为独立 `feat` 运行时合同，当前明确保持 `dm_only`。职业授予行的 full
+  不会传播给所选专长，也不声称 12 个传奇恩惠专长的具体战斗效果已经自动化。
+- `scripts/plan-feature-automation-migrations.py` 升级为矩阵 schema v2：499 行都有稳定 feature ID、
+  当前原因/section、触发时点、producer/consumer、规范缺口、资源/动作经济/玩家或 DM 输入、权威
+  目标/状态需求、风险、复用能力簇、阻塞原因，以及参数化合同测试和代表性 E2E 证据。输出稳定排序，
+  默认生成 `reports/feature-automation-migration-plan-2026-08-07.json` 与
+  `docs/feature-automation-migration-matrix-2026-08-09.md`。
+- 参数化合同测试一次验证 12 个职业行共享同一强类型合同；真实 API 测试验证缺输入拒绝、权威目录和
+  前置校验、preview/confirm、持久化与幂等重放，并验证具体 feat 保持独立 dm_only。
+- 第二候选簇在收益门槛处止损：4 条战斗风格授予行仍缺权威战斗风格专长目录/分类验证，且已选择风格
+  的效果消费者不完整，不能沿用传奇恩惠边界直接升级。其余较大簇仍需要状态、目标、资源、移动、
+  攻击骑手或玩家输入的复合闭环，不在本轮新增高风险平台。
+- 验证：后端全量 pytest、`ruff check backend/src backend/tests`、compileall、`git diff --check`；
+  前端 204 tests、typecheck、lint、production build 全部通过。无前端/交互改动，因此未运行浏览器
+  验收。全仓 scripts Ruff 仍仅命中既有 4 个 N999 与 1 个 EXE001。
+- 分离提交：矩阵基础 `c55b80b`，运行时代码 `69eb54c`，测试/审计基线 `9ec638c`，文档提交随后
+  单独生成。继续保留且不得暂存/提交：`backend/tests/integrations/`、`backend/tests/ollama.py`。
+
 # 2026-08-09 长执行检查点：权威 Attack 动作序列与攻击槽替换
 
 - 固定审计分母仍为 499：`full 254 / partial 171 / dm_only 74` →
