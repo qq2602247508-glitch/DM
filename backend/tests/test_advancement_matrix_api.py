@@ -112,10 +112,7 @@ def _create_character(
 
 
 def _preview_path(campaign_id: str, character_id: str) -> str:
-    return (
-        f"/api/v1/campaigns/{campaign_id}/characters/{character_id}"
-        "/advancement/preview"
-    )
+    return f"/api/v1/campaigns/{campaign_id}/characters/{character_id}/advancement/preview"
 
 
 def _class_option(options: dict[str, Any], class_name: str) -> dict[str, Any]:
@@ -146,9 +143,7 @@ def test_all_core_classes_have_a_legal_level_two_preview(
                 "dm_override_reason": "矩阵夹具不重复构造1级完整法术与职业选项",
             },
         )
-        assert response.status_code == 200, (
-            f"{class_name} level 2 preview failed: {response.text}"
-        )
+        assert response.status_code == 200, f"{class_name} level 2 preview failed: {response.text}"
         preview = response.json()
         assert preview["class_name"] == class_name
         assert preview["class_level"] == 2
@@ -174,8 +169,7 @@ def test_batch_advancement_persists_each_step_and_runtime_sheet_state(
     )
     subclass = _class_option(character_options, "战士")["subclasses"][0]["name"]
     base_path = (
-        f"/api/v1/campaigns/{matrix_campaign['id']}/characters/{fighter['id']}"
-        "/advancement/batch"
+        f"/api/v1/campaigns/{matrix_campaign['id']}/characters/{fighter['id']}/advancement/batch"
     )
     request = {
         "character_version": fighter["version"],
@@ -197,10 +191,15 @@ def test_batch_advancement_persists_each_step_and_runtime_sheet_state(
     assert preview["to_level"] == 3
     assert [step["to_level"] for step in preview["steps"]] == [2, 3]
     assert preview["after"]["resources"]["action_surge"]["recovery"] == "short_rest"
-    assert any(
-        feature.get("runtime", {}).get("automation_status") in {"partial", "dm_only"}
+    weapon_mastery = next(
+        feature
         for feature in preview["after"]["features"]
-        if isinstance(feature, dict)
+        if isinstance(feature, dict) and feature.get("name") == "武器精通"
+    )
+    assert weapon_mastery["runtime"]["automation_status"] == "full"
+    assert (
+        "weapon_mastery_reconfiguration:战士"
+        in weapon_mastery["runtime"]["registry"]["actions"]
     )
 
     confirmed_response = matrix_client.post(
@@ -219,11 +218,14 @@ def test_batch_advancement_persists_each_step_and_runtime_sheet_state(
     ).json()
     assert persisted["level"] == 3
     assert persisted["resources"]["action_surge"]["max"] == 1
-    assert len(
-        matrix_client.get(
-            f"/api/v1/campaigns/{matrix_campaign['id']}/characters/{fighter['id']}/advancement"
-        ).json()["items"]
-    ) >= 2
+    assert (
+        len(
+            matrix_client.get(
+                f"/api/v1/campaigns/{matrix_campaign['id']}/characters/{fighter['id']}/advancement"
+            ).json()["items"]
+        )
+        >= 2
+    )
 
 
 def test_battle_master_level_three_persists_superiority_pool_and_maneuver_choices(
@@ -334,9 +336,7 @@ def test_asi_is_an_atomic_sheet_grant_and_preview_exposes_runtime_registry(
     preview = preview_response.json()
     assert preview["after"]["ability_scores"]["strength"] == 16
     asi = next(
-        item
-        for item in preview["features_gained"]
-        if item.get("kind") == "ability_score_increase"
+        item for item in preview["features_gained"] if item.get("kind") == "ability_score_increase"
     )
     assert asi["runtime"]["automation_status"] == "full"
     assert asi["runtime"]["execution"]["delta"] == {"strength": 2}
@@ -370,6 +370,187 @@ def test_asi_is_an_atomic_sheet_grant_and_preview_exposes_runtime_registry(
         for item in persisted["features"]
         if isinstance(item, dict)
     )
+
+
+def test_sorcerer_metamagic_acquisition_and_level_replacement_are_transactional(
+    matrix_client: TestClient,
+    matrix_campaign: dict[str, Any],
+    character_options: dict[str, Any],
+) -> None:
+    sorcerer_cantrips = [
+        item
+        for item in character_options["spells"]
+        if item["level"] == 0 and "术士" in item["classes"]
+    ][:4]
+    sorcerer_spells = [
+        item
+        for item in character_options["spells"]
+        if item["level"] == 1 and "术士" in item["classes"]
+    ][:6]
+    sorcerer = _create_character(
+        matrix_client,
+        matrix_campaign["id"],
+        class_name="术士",
+        level=1,
+        experience=900,
+        suffix="超魔法资产",
+        spells=[
+            *[
+                {**item, "spell_level": 0, "class_name": "术士", "prepared": True}
+                for item in sorcerer_cantrips
+            ],
+            *[
+                {**item, "spell_level": 1, "class_name": "术士", "prepared": True}
+                for item in sorcerer_spells[:4]
+            ],
+        ],
+    )
+    path = _preview_path(matrix_campaign["id"], sorcerer["id"])
+    request = {
+        "character_version": sorcerer["version"],
+        "class_name": "术士",
+        "feature_choices_by_key": {
+            "metamagic_options": ["谨慎法术", "远程法术"],
+        },
+    }
+    preview = matrix_client.post(path, json=request)
+    assert preview.status_code == 200, preview.text
+    confirm = matrix_client.post(
+        path.replace("/preview", "/confirm"),
+        json={
+            **request,
+            "preview_token": preview.json()["preview_token"],
+            "idempotency_key": "metamagic-level-two-0001",
+        },
+    )
+    assert confirm.status_code == 200, confirm.text
+    level_two = matrix_client.get(
+        f"/api/v1/campaigns/{matrix_campaign['id']}/characters/{sorcerer['id']}"
+    ).json()
+    options = [
+        item
+        for item in level_two["features"]
+        if isinstance(item, dict) and item.get("kind") == "metamagic_option"
+    ]
+    assert {item["asset_id"] for item in options} == {
+        "metamagic:careful-spell",
+        "metamagic:distant-spell",
+    }
+
+    replacement_request = {
+        "character_version": level_two["version"],
+        "class_name": "术士",
+        "subclass_name": "狂野术法",
+        "feature_choices_by_key": {
+            "metamagic_replacement": ["谨慎法术->强效法术"],
+        },
+        "spell_additions": [
+            {**item, "spell_level": 1, "class_name": "术士", "prepared": True}
+            for item in sorcerer_spells[4:6]
+        ],
+    }
+    replacement_preview = matrix_client.post(path, json=replacement_request)
+    assert replacement_preview.status_code == 200, replacement_preview.text
+    replacement_confirm = matrix_client.post(
+        path.replace("/preview", "/confirm"),
+        json={
+            **replacement_request,
+            "preview_token": replacement_preview.json()["preview_token"],
+            "idempotency_key": "metamagic-level-three-replace-0001",
+        },
+    )
+    assert replacement_confirm.status_code == 200, replacement_confirm.text
+    persisted = matrix_client.get(
+        f"/api/v1/campaigns/{matrix_campaign['id']}/characters/{sorcerer['id']}"
+    ).json()
+    assert {
+        item["asset_id"]
+        for item in persisted["features"]
+        if isinstance(item, dict) and item.get("kind") == "metamagic_option"
+    } == {"metamagic:distant-spell", "metamagic:empowered-spell"}
+
+
+def test_paladin_style_cantrip_replacement_updates_sheet_and_known_spell_assets(
+    matrix_client: TestClient,
+    matrix_campaign: dict[str, Any],
+    character_options: dict[str, Any],
+) -> None:
+    catalog = {item["name"]: item for item in character_options["spells"]}
+    old_spell = catalog["圣火术"]
+    paladin_spells = [
+        item
+        for item in character_options["spells"]
+        if item["level"] == 1 and "圣武士" in item["classes"]
+    ][:4]
+    subclass = "复仇之誓"
+    paladin = _create_character(
+        matrix_client,
+        matrix_campaign["id"],
+        class_name="圣武士",
+        level=2,
+        experience=900,
+        suffix="战斗风格戏法替换",
+        spells=[
+            *[
+                {
+                    **old_spell,
+                    "spell_level": 0,
+                    "class_name": "圣武士",
+                    "prepared": True,
+                    "always_prepared": True,
+                    "spellcasting_ability": "charisma",
+                    "source_feature_id": "blessed_warrior_cantrips",
+                    "granted_spell_access": True,
+                }
+            ],
+            *[
+                {
+                    **item,
+                    "spell_level": 1,
+                    "class_name": "圣武士",
+                    "prepared": True,
+                }
+                for item in paladin_spells
+            ],
+        ],
+    )
+    path = _preview_path(matrix_campaign["id"], paladin["id"])
+    request = {
+        "character_version": paladin["version"],
+        "class_name": "圣武士",
+        "subclass_name": subclass,
+        "feature_choices_by_key": {
+            "blessed_warrior_cantrip_replacement": ["圣火术->神导术"],
+        },
+    }
+    preview = matrix_client.post(path, json=request)
+    assert preview.status_code == 200, preview.text
+    confirm = matrix_client.post(
+        path.replace("/preview", "/confirm"),
+        json={
+            **request,
+            "preview_token": preview.json()["preview_token"],
+            "idempotency_key": "blessed-warrior-cantrip-replace-0001",
+        },
+    )
+    assert confirm.status_code == 200, confirm.text
+    persisted = matrix_client.get(
+        f"/api/v1/campaigns/{matrix_campaign['id']}/characters/{paladin['id']}"
+    ).json()
+    source_spells = [
+        item
+        for item in persisted["spells"]
+        if isinstance(item, dict) and item.get("source_feature_id") == "blessed_warrior_cantrips"
+    ]
+    assert [item["name"] for item in source_spells] == ["神导术"]
+    assets = matrix_client.get(
+        f"/api/v1/campaigns/{matrix_campaign['id']}/characters/{paladin['id']}/assets"
+    )
+    assert assets.status_code == 200, assets.text
+    known = [item for item in assets.json()["spells"] if item["name"] == "神导术"]
+    assert len(known) == 1
+    assert known[0]["prepared"] is True
+    assert known[0]["metadata_json"]["source_feature_id"] == "blessed_warrior_cantrips"
 
 
 @pytest.mark.parametrize(
@@ -494,9 +675,7 @@ def test_typed_expertise_choice_persists_and_changes_real_skill_modifier(
         f"/api/v1/campaigns/{matrix_campaign['id']}/characters/{ranger['id']}"
     ).json()
     assert persisted["skills"]["调查"]["expertise"] is True
-    modifier, reasons = skill_modifier(
-        type("Sheet", (), persisted), "调查", "intelligence"
-    )
+    modifier, reasons = skill_modifier(type("Sheet", (), persisted), "调查", "intelligence")
     assert modifier == 10  # INT +2 and level-9 expertise +8
     assert "专精 +8" in reasons
 
@@ -568,9 +747,7 @@ def test_level_three_requires_and_accepts_a_catalog_subclass(
     assert valid.status_code == 200, valid.text
     assert valid.json()["subclass_name"] == subclass_name
     requirement = next(
-        item
-        for item in valid.json()["choice_requirements"]
-        if item["key"] == "subclass"
+        item for item in valid.json()["choice_requirements"] if item["key"] == "subclass"
     )
     assert requirement["minimum"] == requirement["maximum"] == 1
 
@@ -697,14 +874,19 @@ def test_level_four_requires_exactly_one_asi_or_feat_path(
         json={
             **base,
             "ability_increases": {"strength": 2},
+            **(
+                {"feature_choices_by_key": {"weapon_mastery": ["长剑"]}}
+                if class_name in {"野蛮人", "战士"}
+                else {}
+            ),
             "feature_choices": [
                 f"测试职业选项{index + 1}"
                 for index in range(
                     sum(
                         item["minimum"]
-                        for item in _class_option(character_options, class_name)[
-                            "levels"
-                        ][3]["choice_requirements"]
+                        for item in _class_option(character_options, class_name)["levels"][3][
+                            "choice_requirements"
+                        ]
                         if item["kind"] == "feature_option"
                     )
                 )
@@ -795,20 +977,16 @@ def test_wizard_spell_matrix_rejects_wrong_class_ring_count_and_preparation(
     character_options: dict[str, Any],
 ) -> None:
     spells = character_options["spells"]
-    wizard_cantrips = [
-        item for item in spells if item["level"] == 0 and "法师" in item["classes"]
-    ][:3]
+    wizard_cantrips = [item for item in spells if item["level"] == 0 and "法师" in item["classes"]][
+        :3
+    ]
     wizard_level_one = [
         item for item in spells if item["level"] == 1 and "法师" in item["classes"]
     ][:8]
     wrong_class = next(
-        item
-        for item in spells
-        if item["level"] == 1 and "法师" not in item["classes"]
+        item for item in spells if item["level"] == 1 and "法师" not in item["classes"]
     )
-    too_high = next(
-        item for item in spells if item["level"] == 2 and "法师" in item["classes"]
-    )
+    too_high = next(item for item in spells if item["level"] == 2 and "法师" in item["classes"])
     assert len(wizard_cantrips) == 3
     assert len(wizard_level_one) == 8
 
@@ -915,16 +1093,13 @@ def test_confirm_is_idempotent_and_persists_once(
     first = matrix_client.post(path, json=confirm_body)
     replay = matrix_client.post(path, json=confirm_body)
     assert first.status_code == replay.status_code == 200
-    assert replay.json()["advancement_record_id"] == first.json()[
-        "advancement_record_id"
-    ]
+    assert replay.json()["advancement_record_id"] == first.json()["advancement_record_id"]
 
     updated = matrix_client.get(
         f"/api/v1/campaigns/{matrix_campaign['id']}/characters/{character['id']}"
     ).json()
     history = matrix_client.get(
-        f"/api/v1/campaigns/{matrix_campaign['id']}/characters/{character['id']}"
-        "/advancement"
+        f"/api/v1/campaigns/{matrix_campaign['id']}/characters/{character['id']}/advancement"
     ).json()
     assert updated["level"] == 2
     assert len(history["items"]) == 1
@@ -935,9 +1110,7 @@ def test_epic_boon_grant_is_authoritative_and_selected_feat_stays_separate(
     matrix_campaign: dict[str, Any],
     character_options: dict[str, Any],
 ) -> None:
-    boon = next(
-        item for item in character_options["feats"] if item["category"] == "传奇恩惠"
-    )
+    boon = next(item for item in character_options["feats"] if item["category"] == "传奇恩惠")
     character = _create_character(
         matrix_client,
         matrix_campaign["id"],
@@ -975,9 +1148,7 @@ def test_epic_boon_grant_is_authoritative_and_selected_feat_stays_separate(
     assert selected_feat["kind"] == "feat"
     assert selected_feat["name"] == boon["name"]
     assert class_grant["runtime"]["automation_status"] == "full"
-    assert class_grant["runtime"]["registry"]["advancement"]["request_field"] == (
-        "feat_choice"
-    )
+    assert class_grant["runtime"]["registry"]["advancement"]["request_field"] == ("feat_choice")
     assert selected_feat["runtime"]["automation_status"] == "dm_only"
     assert selected_feat["runtime"]["execution"] == {
         "kind": "sheet_feat_grant",
@@ -994,19 +1165,20 @@ def test_epic_boon_grant_is_authoritative_and_selected_feat_stays_separate(
     first = matrix_client.post(confirm_path, json=confirm_body)
     replay = matrix_client.post(confirm_path, json=confirm_body)
     assert first.status_code == replay.status_code == 200
-    assert replay.json()["advancement_record_id"] == first.json()[
-        "advancement_record_id"
-    ]
+    assert replay.json()["advancement_record_id"] == first.json()["advancement_record_id"]
     persisted = matrix_client.get(
         f"/api/v1/campaigns/{matrix_campaign['id']}/characters/{character['id']}"
     ).json()
     assert persisted["level"] == 19
-    assert sum(
-        isinstance(item, dict)
-        and item.get("kind") == "feat"
-        and item.get("name") == boon["name"]
-        for item in persisted["features"]
-    ) == 1
+    assert (
+        sum(
+            isinstance(item, dict)
+            and item.get("kind") == "feat"
+            and item.get("name") == boon["name"]
+            for item in persisted["features"]
+        )
+        == 1
+    )
 
 
 def test_fighting_style_grant_replacement_and_champion_additional_style_are_assets(
@@ -1014,9 +1186,7 @@ def test_fighting_style_grant_replacement_and_champion_additional_style_are_asse
     matrix_campaign: dict[str, Any],
     character_options: dict[str, Any],
 ) -> None:
-    styles = [
-        item for item in character_options["feats"] if item.get("category") == "战斗风格"
-    ]
+    styles = [item for item in character_options["feats"] if item.get("category") == "战斗风格"]
     assert len(styles) >= 3
     campaign = matrix_client.post(
         "/api/v1/campaigns",
@@ -1063,9 +1233,7 @@ def test_fighting_style_grant_replacement_and_champion_additional_style_are_asse
         "character_version": character["version"],
         "class_name": "战士",
         "feature_choices_by_key": {
-            "fighting_style_replacement": [
-                f"{styles[0]['name']}->{styles[1]['name']}"
-            ]
+            "fighting_style_replacement": [f"{styles[0]['name']}->{styles[1]['name']}"]
         },
     }
     replacement_preview = matrix_client.post(path, json=replacement_body)
@@ -1129,9 +1297,7 @@ def test_deft_explorer_and_primal_order_persist_real_sheet_assets(
         json={"name": "成长选项资产", "enabled_rule_extensions": ["multiclassing"]},
     ).json()
     style = next(
-        item["name"]
-        for item in character_options["feats"]
-        if item.get("category") == "战斗风格"
+        item["name"] for item in character_options["feats"] if item.get("category") == "战斗风格"
     )
     ranger = _create_character(
         matrix_client,

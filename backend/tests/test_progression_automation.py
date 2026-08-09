@@ -48,7 +48,7 @@ def _core_rules() -> list[ClassProgression]:
 def test_classifier_migration_table_and_acceptance_matrix_are_complete() -> None:
     rules = _core_rules()
     matrix = progression_acceptance_matrix(rules)
-    assert len(matrix) == 77
+    assert len(matrix) == 80
     assert Counter(item["feature_name"] for item in matrix) == {
         "属性值提升": 51,
         "传奇恩惠": 12,
@@ -56,10 +56,11 @@ def test_classifier_migration_table_and_acceptance_matrix_are_complete() -> None
         "专精": 5,
         "学者": 1,
         "战斗风格": 3,
+        "超魔法": 3,
     }
     assert Counter(item["overall_status"] for item in matrix) == {
-        "full": 69,
-        "partial": 8,
+        "full": 77,
+        "partial": 3,
     }
     assert all(
         item["executor_kind"] == "advancement_choice_grant"
@@ -90,10 +91,8 @@ def test_core_contract_counts_move_only_to_evidence_backed_statuses() -> None:
     for rule in _core_rules():
         for level in range(1, 21):
             contract = core_class_level_runtime_contract(rule, level)
-            status.update(
-                item["automation_status"] for item in contract["feature_contracts"]
-            )
-    assert status == {"full": 176, "partial": 13, "dm_only": 69}
+            status.update(item["automation_status"] for item in contract["feature_contracts"])
+    assert status == {"full": 186, "partial": 6, "dm_only": 66}
     assert sum(status.values()) == 258
 
 
@@ -102,8 +101,7 @@ def test_epic_boon_class_rows_share_one_authoritative_asset_grant_contract() -> 
     for rule in _core_rules():
         for level_rule in rule.levels:
             if not any(
-                "传奇恩惠" in feature or "史诗恩惠" in feature
-                for feature in level_rule.features
+                "传奇恩惠" in feature or "史诗恩惠" in feature for feature in level_rule.features
             ):
                 continue
             grant = next(
@@ -136,8 +134,7 @@ def test_epic_boon_class_rows_share_one_authoritative_asset_grant_contract() -> 
     assert len(rows) == 12
     assert {item["class_name"] for item in rows} == set(CORE_CLASSES_2024)
     assert all(
-        item["runtime"]["advancement_automation"]["effect_status"]
-        == "separate_asset_contract"
+        item["runtime"]["advancement_automation"]["effect_status"] == "separate_asset_contract"
         for item in rows
     )
 
@@ -151,9 +148,7 @@ def test_subclass_table_grant_is_full_without_promoting_subclass_effects() -> No
     assert subclass["automation_status"] == "full"
     assert "advancement" in subclass["runtime_sections"]
     assert subclass["requires_dm_adjudication"] is False
-    assert any(
-        item["key"] == "subclass" for item in contract["choice_requirements"]
-    )
+    assert any(item["key"] == "subclass" for item in contract["choice_requirements"])
 
 
 def test_typed_choices_separate_same_level_requirements_and_apply_generic_grants() -> None:
@@ -210,12 +205,48 @@ def test_growth_asset_bundles_apply_authoritative_sheet_effects() -> None:
     assert result["skills"]["察觉"]["expertise"] is True
     assert result["skills"]["奥秘"]["bonus_ability_modifier"] == "wisdom"
     assert result["skills"]["自然"]["bonus_minimum"] == 1
-    assert {"语言：精灵语", "语言：矮人语", "军用武器", "重甲"} <= set(
-        result["proficiencies"]
+    assert {"语言：精灵语", "语言：矮人语", "军用武器", "重甲"} <= set(result["proficiencies"])
+    assert all(item["runtime"]["automation_status"] == "full" for item in result["grants"])
+
+
+def test_weapon_and_metamagic_catalog_choices_preserve_asset_effect_boundary() -> None:
+    fighter = next(rule for rule in _core_rules() if rule.name == "战士")
+    weapon_requirement = next(
+        item for item in advancement_choice_requirements(fighter, 1) if item.key == "weapon_mastery"
     )
-    assert all(
-        item["runtime"]["automation_status"] == "full" for item in result["grants"]
+    assert weapon_requirement.strict is True
+    assert weapon_requirement.options_source == "catalog.weapons"
+    assert "长剑" in weapon_requirement.options
+
+    result = apply_progression_choice_grants(
+        choices_by_key={"weapon_mastery": ["长剑", "战锤", "长弓"]},
+        skills={},
+        proficiencies=["简易武器", "军用武器"],
+        class_name="战士",
+        class_level=1,
+        total_level=1,
+        source_record_id="fighter-2024",
+        rule_year=2024,
     )
+    masteries = [
+        item
+        for item in result["proficiencies"]
+        if isinstance(item, dict) and item.get("kind") == "weapon_mastery"
+    ]
+    assert {item["id"] for item in masteries} == {
+        "weapon:longsword",
+        "weapon:warhammer",
+        "weapon:longbow",
+    }
+    assert all(item["selected_asset_status"] == "full" for item in masteries)
+    assert all(item["effect_status"] == "separate_asset_contract" for item in masteries)
+
+    sorcerer = next(rule for rule in _core_rules() if rule.name == "术士")
+    level_two = {item.key: item for item in advancement_choice_requirements(sorcerer, 2)}
+    assert level_two["metamagic_options"].target_total == 2
+    level_ten = {item.key: item for item in advancement_choice_requirements(sorcerer, 10)}
+    assert level_ten["metamagic_options"].target_total == 4
+    assert level_ten["metamagic_replacement"].replacement_policy == "old->new"
 
 
 def test_expertise_mutation_requires_proficiency_and_is_reusable() -> None:
@@ -238,7 +269,4 @@ def test_expertise_mutation_requires_proficiency_and_is_reusable() -> None:
         "source": "background",
         "expertise": True,
     }
-    assert all(
-        item["runtime"]["automation_status"] == "full"
-        for item in result["grants"]
-    )
+    assert all(item["runtime"]["automation_status"] == "full" for item in result["grants"])

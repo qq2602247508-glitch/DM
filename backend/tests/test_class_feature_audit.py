@@ -63,16 +63,16 @@ def test_migration_planner_keeps_fixed_scope_and_status_counts() -> None:
     report = _planner_module().plan()
     assert report["audit_scope"]["total_features"] == 499
     assert report["audit_status_counts"] == {
-        "full": 276,
-        "partial": 154,
-        "dm_only": 69,
+        "full": 286,
+        "partial": 147,
+        "dm_only": 66,
     }
     assert report["readiness_counts"] == {
         "consumer_partial": 28,
-        "already_full": 276,
-        "missing_runtime_contract": 145,
+        "already_full": 286,
+        "missing_runtime_contract": 140,
         "missing_source": 35,
-        "manual_boundary": 9,
+        "manual_boundary": 4,
         "needs_contract_review": 6,
     }
 
@@ -96,15 +96,12 @@ def test_growth_asset_batch_has_stable_ids_and_explicit_grant_effect_boundaries(
     ]
     assert len(rows) == 10
     assert len({row["feature_id"] for row in rows}) == 10
-    assert sum(row["runtime_status"] == "full" for row in rows) == 8
+    assert sum(row["runtime_status"] == "full" for row in rows) == 10
     assert {
         (row["class_name"], row["feature_name"], row["runtime_status"])
         for row in rows
         if row["runtime_status"] != "full"
-    } == {
-        ("圣武士", "战斗风格", "partial"),
-        ("游侠", "战斗风格", "partial"),
-    }
+    } == set()
     for row in rows:
         assert row["authoritative_catalog"]
         assert row["selected_asset_kind"]

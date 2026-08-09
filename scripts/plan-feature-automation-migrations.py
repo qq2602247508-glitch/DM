@@ -200,15 +200,30 @@ CANONICAL_GAP_CATEGORIES = frozenset(
 
 FIELD_REQUIREMENTS = {
     "zero_hp_intervention": ("trigger", "eligibility", "save/result", "reset"),
-    "attack_rider": ("after_hit trigger", "target/qualification", "resource/frequency", "effect"),
+    "attack_rider": (
+        "after_hit trigger",
+        "target/qualification",
+        "resource/frequency",
+        "effect",
+    ),
     "roll_intervention": ("trigger", "operation", "input", "resource consumption"),
-    "pre_damage_intervention": ("before_damage trigger", "damage eligibility", "transformation", "resource"),
+    "pre_damage_intervention": (
+        "before_damage trigger",
+        "damage eligibility",
+        "transformation",
+        "resource",
+    ),
     "aura_passive": ("source/target relation", "range", "stacking", "effect"),
     "summon_lifecycle": ("template", "quantity", "control", "duration"),
     "state_lifecycle": ("condition", "duration/end", "immunity or removal"),
     "movement": ("destination/distance", "path rule", "action/resource"),
     "damage_healing": ("dice/expression", "type/effect", "target", "lifecycle"),
-    "target_save_status": ("target/range", "save ability/DC", "success/failure", "effect"),
+    "target_save_status": (
+        "target/range",
+        "save ability/DC",
+        "success/failure",
+        "effect",
+    ),
     "resource_lifecycle": ("resource key", "cost", "recovery", "fail-closed"),
     "action_trigger": ("event", "action economy", "qualification", "effect"),
     "spell_capability": ("spell identity/list", "slot/choice", "consumer", "effect"),
@@ -281,6 +296,10 @@ def _specialized_cluster(row: dict[str, Any], template: str) -> str:
         return "advancement_asset_grant:epic_boon"
     if "战斗风格" in name:
         return "advancement_asset_grant:fighting_style"
+    if "武器精通" in name:
+        return "advancement_asset_grant:weapon_mastery_loadout"
+    if "超魔法" in name:
+        return "advancement_asset_grant:metamagic_options"
     if any(value in name for value in ("熟练探险家", "原初职能", "圣职")):
         return "advancement_asset_grant:growth_option_bundle"
     if any(value in name for value in ("魔法奥秘", "仪式学家", "战争训练")):
@@ -307,7 +326,37 @@ def _growth_asset_metadata(row: dict[str, Any]) -> dict[str, Any]:
         "prerequisite_validation": None,
         "persisted_state": None,
     }
-    if "战斗风格" in name:
+    if "武器精通" in name:
+        metadata.update(
+            authoritative_catalog="2024 weapon catalog+mastery property catalog",
+            selected_asset_kind="weapon_mastery_loadout",
+            grant_consumer="advancement_service",
+            grant_status="full",
+            selected_asset_consumer="rest_service",
+            selected_asset_status="full",
+            effect_status="separate_asset_contract",
+            required_input="feature_choices_by_key|long_rest.weapon_ids",
+            duplicate_policy="forbid",
+            replacement_policy="class_policy_on_long_rest",
+            prerequisite_validation="weapon_category_or_character_proficiency",
+            persisted_state="character.proficiencies",
+        )
+    elif "超魔法" in name:
+        metadata.update(
+            authoritative_catalog="2024 metamagic option catalog",
+            selected_asset_kind="metamagic_option",
+            grant_consumer="advancement_service",
+            grant_status="full",
+            selected_asset_consumer="character.features",
+            selected_asset_status="full",
+            effect_status="separate_asset_contract",
+            required_input="feature_choices_by_key",
+            duplicate_policy="forbid",
+            replacement_policy="replace_one_on_each_sorcerer_level",
+            prerequisite_validation="catalog_identity+cumulative_target_total",
+            persisted_state="character.features",
+        )
+    elif "战斗风格" in name:
         metadata.update(
             authoritative_catalog="2024 feat catalog:战斗风格",
             selected_asset_kind="feat_or_typed_spell_bundle",
@@ -321,7 +370,11 @@ def _growth_asset_metadata(row: dict[str, Any]) -> dict[str, Any]:
                 "replace_on_fighter_level"
                 if str(row.get("class_name") or "") == "战士"
                 and str(row.get("scope") or "") == "core"
-                else "source_specific"
+                else (
+                    "replace_source_bound_cantrip_on_owner_class_level"
+                    if str(row.get("class_name") or "") in {"圣武士", "游侠"}
+                    else "source_specific"
+                )
             ),
             prerequisite_validation="authoritative_feat_prerequisite_validator",
             persisted_state="character.features|character.spells",
@@ -692,10 +745,26 @@ def main() -> None:
     args = parser.parse_args()
     report = plan()
     args.json.parent.mkdir(parents=True, exist_ok=True)
-    args.json.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    args.json.write_text(
+        json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+    )
     args.markdown.parent.mkdir(parents=True, exist_ok=True)
     write_markdown(report, args.markdown)
-    print(json.dumps({key: report[key] for key in ("audit_scope", "audit_status_counts", "readiness_counts", "templates")}, ensure_ascii=False, indent=2))
+    print(
+        json.dumps(
+            {
+                key: report[key]
+                for key in (
+                    "audit_scope",
+                    "audit_status_counts",
+                    "readiness_counts",
+                    "templates",
+                )
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+    )
 
 
 if __name__ == "__main__":

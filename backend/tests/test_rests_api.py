@@ -334,9 +334,7 @@ def test_sorcery_restoration_short_rest_choice_consumes_once(
             }
         ],
     }
-    preview = rest_client.post(
-        f"/api/v1/campaigns/{campaign['id']}/rests/preview", json=body
-    )
+    preview = rest_client.post(f"/api/v1/campaigns/{campaign['id']}/rests/preview", json=body)
     assert preview.status_code == 200, preview.text
     participant = preview.json()["participants"][0]
     assert participant["feature_recovery_applied"][0]["amount"] == 5
@@ -414,9 +412,7 @@ def test_natural_recovery_restores_explicit_spell_slot_levels(
             }
         ],
     }
-    preview = rest_client.post(
-        f"/api/v1/campaigns/{campaign['id']}/rests/preview", json=body
-    )
+    preview = rest_client.post(f"/api/v1/campaigns/{campaign['id']}/rests/preview", json=body)
     assert preview.status_code == 200, preview.text
     applied = preview.json()["participants"][0]["feature_recovery_applied"][0]
     assert applied["total_levels"] == 4
@@ -456,9 +452,10 @@ def test_team_rest_rejects_stale_participant_without_partial_changes(
         json=body,
     )
     assert response.status_code == 409
-    assert rest_client.get(
-        f"/api/v1/campaigns/{campaign['id']}/characters/{first['id']}"
-    ).json()["hp"] == 4
+    assert (
+        rest_client.get(f"/api/v1/campaigns/{campaign['id']}/characters/{first['id']}").json()["hp"]
+        == 4
+    )
 
 
 def test_rest_resets_relentless_rage_dc_in_active_combat_snapshot(
@@ -596,9 +593,7 @@ def test_long_rest_recovers_long_term_reductions_and_enforces_cooldown(
     body = {
         "rest_type": "long",
         "duration_minutes": 480,
-        "participants": [
-            {"character_id": created["id"], "character_version": created["version"]}
-        ],
+        "participants": [{"character_id": created["id"], "character_version": created["version"]}],
     }
     preview = rest_client.post(
         f"/api/v1/campaigns/{campaign['id']}/rests/preview", json=body
@@ -685,13 +680,9 @@ def test_tireless_ranger_short_rest_reduces_exhaustion_without_consuming_resourc
     body = {
         "rest_type": "short",
         "duration_minutes": 60,
-        "participants": [
-            {"character_id": created["id"], "character_version": created["version"]}
-        ],
+        "participants": [{"character_id": created["id"], "character_version": created["version"]}],
     }
-    preview = rest_client.post(
-        f"/api/v1/campaigns/{campaign['id']}/rests/preview", json=body
-    )
+    preview = rest_client.post(f"/api/v1/campaigns/{campaign['id']}/rests/preview", json=body)
     assert preview.status_code == 200, preview.text
     participant = preview.json()["participants"][0]
     assert participant["after"]["fatigue"] == 2
@@ -791,9 +782,7 @@ def test_portent_long_rest_persists_submitted_d20_pool(
             }
         ],
     }
-    preview = rest_client.post(
-        f"/api/v1/campaigns/{campaign['id']}/rests/preview", json=body
-    )
+    preview = rest_client.post(f"/api/v1/campaigns/{campaign['id']}/rests/preview", json=body)
     assert preview.status_code == 200, preview.text
     applied = preview.json()["participants"][0]["feature_recovery_applied"][0]
     assert applied["pool_values"] == [4, 17]
@@ -885,15 +874,11 @@ def test_fiendish_resilience_persists_player_selected_rest_resistance(
             {
                 "character_id": character["id"],
                 "character_version": character["version"],
-                "feature_recovery_choices": {
-                    "fiendish_resilience_choice": "fire"
-                },
+                "feature_recovery_choices": {"fiendish_resilience_choice": "fire"},
             }
         ],
     }
-    preview = rest_client.post(
-        f"/api/v1/campaigns/{campaign['id']}/rests/preview", json=body
-    )
+    preview = rest_client.post(f"/api/v1/campaigns/{campaign['id']}/rests/preview", json=body)
     assert preview.status_code == 200, preview.text
     applied = preview.json()["participants"][0]["feature_recovery_applied"][0]
     assert applied["selected"] == "fire"
@@ -910,3 +895,112 @@ def test_fiendish_resilience_persists_player_selected_rest_resistance(
         f"/api/v1/campaigns/{campaign['id']}/characters/{character['id']}"
     ).json()
     assert updated["resources"]["fiendish_resilience_choice"]["selected"] == "fire"
+
+
+def test_weapon_mastery_long_rest_reconfiguration_is_catalog_bound_and_idempotent(
+    rest_client: TestClient,
+) -> None:
+    campaign = _campaign(rest_client)
+    action_id = "weapon_mastery_reconfiguration:战士"
+    runtime = feature_runtime_definition(
+        feature_name="武器精通",
+        class_name="战士",
+        class_level=1,
+        source_record_id="fighter-2024",
+    )
+    runtime["actions"] = {
+        action_id: {
+            "id": action_id,
+            "kind": "rest_asset_loadout_reconfiguration",
+            "trigger": "long_rest",
+            "class_name": "战士",
+            "eligibility_policy": "simple_or_martial",
+            "maximum_replacements": 1,
+            "automation_status": "full",
+        }
+    }
+    created = rest_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/characters",
+        json={
+            "name": "武器精通长休测试者",
+            "class_name": "战士",
+            "level": 4,
+            "class_levels": {"战士": 4},
+            "hp": 20,
+            "max_hp": 20,
+            "features": [
+                {
+                    "name": "武器精通",
+                    "class_name": "战士",
+                    "class_level": 1,
+                    "kind": "class_feature",
+                    "runtime": {"registry": runtime},
+                }
+            ],
+            "proficiencies": [
+                "简易武器",
+                "军用武器",
+                *[
+                    {
+                        "kind": "weapon_mastery",
+                        "id": asset_id,
+                        "name": name,
+                        "class_name": "战士",
+                        "class_level": 4,
+                    }
+                    for asset_id, name in (
+                        ("weapon:longsword", "长剑"),
+                        ("weapon:warhammer", "战锤"),
+                        ("weapon:longbow", "长弓"),
+                        ("weapon:dagger", "匕首"),
+                    )
+                ],
+            ],
+        },
+    )
+    assert created.status_code == 201, created.text
+    character = created.json()
+    # Model a level-4 Fighter's four-entry loadout and change exactly one.
+    body = {
+        "rest_type": "long",
+        "duration_minutes": 480,
+        "participants": [
+            {
+                "character_id": character["id"],
+                "character_version": character["version"],
+                "feature_recovery_choices": {
+                    action_id: {
+                        "weapon_ids": ["长剑", "战锤", "长弓", "短剑"],
+                    }
+                },
+            }
+        ],
+    }
+    preview = rest_client.post(f"/api/v1/campaigns/{campaign['id']}/rests/preview", json=body)
+    assert preview.status_code == 200, preview.text
+    applied = preview.json()["participants"][0]["feature_recovery_applied"][0]
+    assert applied["replacement_count"] == 1
+    confirm_body = {
+        **body,
+        "preview_token": preview.json()["preview_token"],
+        "idempotency_key": "weapon-mastery-rest-0001",
+    }
+    confirmed = rest_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/rests/confirm", json=confirm_body
+    )
+    assert confirmed.status_code == 200, confirmed.text
+    replay = rest_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/rests/confirm", json=confirm_body
+    )
+    assert replay.status_code == 200, replay.text
+    assert replay.json()["idempotent_replay"] is True
+    updated = rest_client.get(
+        f"/api/v1/campaigns/{campaign['id']}/characters/{character['id']}"
+    ).json()
+    assert {
+        item["name"]
+        for item in updated["proficiencies"]
+        if isinstance(item, dict)
+        and item.get("kind") == "weapon_mastery"
+        and item.get("class_name") == "战士"
+    } == {"长剑", "战锤", "长弓", "短剑"}
