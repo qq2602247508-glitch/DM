@@ -13,6 +13,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from dnd_dm_assistant.domain.feature_ir import canonical_json
+from dnd_dm_assistant.domain.feature_operators import get_operator_contract
 
 CAPABILITY_STATUSES = frozenset(
     {"production_closed", "production_partial", "manual_only", "deprecated", "unsupported"}
@@ -40,6 +41,7 @@ class CapabilityDescriptor:
     production_status: str
     evidence_tests: tuple[str, ...]
     known_limitations: tuple[str, ...] = ()
+    materializer_id: str | None = None
 
     def __post_init__(self) -> None:
         if self.production_status not in CAPABILITY_STATUSES:
@@ -49,6 +51,20 @@ class CapabilityDescriptor:
         if not self.supported_operator.strip():
             raise ValueError("supported_operator cannot be empty")
         if self.production_status == "production_closed":
+            for field_name, values in (
+                ("supported_triggers", self.supported_triggers),
+                ("supported_conditions", self.supported_conditions),
+                ("supported_inputs", self.supported_inputs),
+                ("supported_targets", self.supported_targets),
+                ("supported_duration", self.supported_duration),
+                ("action_economy_support", self.action_economy_support),
+                ("resource_support", self.resource_support),
+            ):
+                if "*" in values:
+                    raise ValueError(
+                        f"production_closed capability {self.capability_id} "
+                        f"cannot use wildcard {field_name}"
+                    )
             required = {
                 "producer": self.producer,
                 "consumer": self.consumer,
@@ -67,6 +83,18 @@ class CapabilityDescriptor:
                 raise ValueError(
                     f"production_closed capability {self.capability_id} needs evidence_tests"
                 )
+            contract = get_operator_contract(self.supported_operator)
+            if contract is not None:
+                if self.capability_id != contract.capability_id:
+                    raise ValueError(
+                        f"capability {self.capability_id} does not match "
+                        f"operator contract {self.supported_operator}"
+                    )
+                if self.materializer_id != contract.materializer_id:
+                    raise ValueError(
+                        f"capability {self.capability_id} needs materializer "
+                        f"{contract.materializer_id}"
+                    )
 
     def supports(
         self,
@@ -89,15 +117,11 @@ class CapabilityDescriptor:
         for condition in conditions:
             if self.supported_conditions and "*" not in self.supported_conditions:
                 if condition not in self.supported_conditions:
-                    errors.append(
-                        f"condition {condition!r} is unsupported by {self.capability_id}"
-                    )
+                    errors.append(f"condition {condition!r} is unsupported by {self.capability_id}")
         for input_kind in inputs:
             if self.supported_inputs and "*" not in self.supported_inputs:
                 if input_kind not in self.supported_inputs:
-                    errors.append(
-                        f"input {input_kind!r} is unsupported by {self.capability_id}"
-                    )
+                    errors.append(f"input {input_kind!r} is unsupported by {self.capability_id}")
         if target is not None:
             check(target, self.supported_targets, "target")
         if duration is not None:
@@ -132,6 +156,7 @@ class CapabilityDescriptor:
             "production_status": self.production_status,
             "evidence_tests": list(self.evidence_tests),
             "known_limitations": list(self.known_limitations),
+            "materializer_id": self.materializer_id,
         }
 
 
@@ -167,6 +192,34 @@ class CapabilityCatalog:
 
     def to_dict(self) -> list[dict[str, Any]]:
         return [item.to_dict() for item in self.descriptors()]
+
+    def validation_errors(self) -> tuple[str, ...]:
+        """Return closed-world catalog violations without mutating the catalog."""
+
+        errors: list[str] = []
+        for descriptor in self.descriptors():
+            if descriptor.production_status != "production_closed":
+                continue
+            contract = get_operator_contract(descriptor.supported_operator)
+            if contract is None:
+                errors.append(f"{descriptor.capability_id}: missing operator contract")
+                continue
+            if descriptor.materializer_id != contract.materializer_id:
+                errors.append(f"{descriptor.capability_id}: materializer mismatch")
+            if descriptor.capability_id != contract.capability_id:
+                errors.append(f"{descriptor.capability_id}: capability mismatch")
+            for label, values in (
+                ("triggers", descriptor.supported_triggers),
+                ("conditions", descriptor.supported_conditions),
+                ("inputs", descriptor.supported_inputs),
+                ("targets", descriptor.supported_targets),
+                ("duration", descriptor.supported_duration),
+                ("action_economy", descriptor.action_economy_support),
+                ("resources", descriptor.resource_support),
+            ):
+                if "*" in values:
+                    errors.append(f"{descriptor.capability_id}: wildcard {label}")
+        return tuple(errors)
 
 
 _ALL_TRIGGERS = frozenset(
@@ -219,7 +272,7 @@ _ALL_CONDITIONS = frozenset(
         "once_per_turn",
         "once_per_target",
         "resource_is_zero",
-}
+    }
 )
 _ALL_TARGETS = frozenset(
     {"self", "one_creature", "ally", "enemy", "marked_target", "visible_creature", "aura"}
@@ -236,7 +289,7 @@ _ALL_DURATIONS = frozenset(
         "until_condition_ends",
         "permanent",
         "advancement_persistent",
-}
+    }
 )
 _ALL_ACTIONS = frozenset(
     {"automatic", "action", "bonus_action", "reaction", "none", "explicit_player_choice"}
@@ -267,31 +320,51 @@ def _descriptor(
     status: str = "production_closed",
     targets: frozenset[str] = _ALL_TARGETS,
     durations: frozenset[str] = _ALL_DURATIONS,
-    actions: frozenset[str] = _ALL_ACTIONS,
-    resources: frozenset[str] = _ALL_RESOURCES,
+    actions: frozenset[str] | None = None,
+    resources: frozenset[str] | None = None,
     limitations: tuple[str, ...] = (),
     evidence: tuple[str, ...] = ("feature_runtime_contract_tests",),
 ) -> CapabilityDescriptor:
+    contract = get_operator_contract(operator)
+    supported_triggers = contract.compatible_triggers if contract is not None else _ALL_TRIGGERS
+    supported_conditions = (
+        contract.compatible_conditions if contract is not None else _ALL_CONDITIONS
+    )
+    supported_targets = contract.compatible_targets if contract is not None else targets
+    supported_duration = contract.compatible_durations if contract is not None else durations
+    supported_actions = (
+        actions
+        if actions is not None
+        else (contract.compatible_action_economy if contract is not None else _ALL_ACTIONS)
+    )
+    supported_resources = (
+        resources
+        if resources is not None
+        else (contract.compatible_resource_operations if contract is not None else _ALL_RESOURCES)
+    )
     return CapabilityDescriptor(
         capability_id=capability_id,
         contract_version="1.0",
         supported_operator=operator,
-        supported_triggers=_ALL_TRIGGERS,
-        supported_conditions=_ALL_CONDITIONS,
-        supported_inputs=frozenset({"*", "choice", "d20", "damage_total", "target_ids"}),
-        supported_targets=targets,
-        supported_duration=durations,
+        supported_triggers=supported_triggers,
+        supported_conditions=supported_conditions,
+        supported_inputs=frozenset(
+            {"choice", "d20", "damage_total", "target_ids", "player_or_dm_choice"}
+        ),
+        supported_targets=supported_targets,
+        supported_duration=supported_duration,
         producer=producer,
         consumer=consumer,
         persisted_state=persisted_state,
-        action_economy_support=actions,
-        resource_support=resources,
+        action_economy_support=supported_actions,
+        resource_support=supported_resources,
         idempotency_support=True,
         cas_support=True,
         ui_projection_support=True,
         production_status=status,
         evidence_tests=evidence,
         known_limitations=limitations,
+        materializer_id=contract.materializer_id if contract is not None else None,
     )
 
 
@@ -354,6 +427,14 @@ def default_capability_catalog() -> CapabilityCatalog:
             consumer="typed_modifier_resolvers",
             producer="feature_runtime_compiler",
             persisted_state="character.feature_runtime",
+        ),
+        _descriptor(
+            "modifier.passive.v2",
+            "grant_passive_modifier",
+            consumer="feature_runtime_registry.combat_start_modifiers",
+            producer="feature_runtime_compiler",
+            persisted_state="character.feature_runtime",
+            evidence=("test_feature_runtime_fanout",),
         ),
         _descriptor(
             "modifier.passive.set",
@@ -461,6 +542,58 @@ def default_capability_catalog() -> CapabilityCatalog:
             persisted_state="combat_actions",
             targets=frozenset({"enemy", "marked_target", "one_creature"}),
             durations=frozenset({"current_turn", "current_round"}),
+        ),
+        _descriptor(
+            "zero_hp.intervention",
+            "zero_hp_intervention",
+            consumer="zero_hp_damage_resolution",
+            producer="damage_resolution",
+            persisted_state="character_resource_and_combat_snapshot",
+            targets=frozenset({"self"}),
+            durations=frozenset({"current_turn", "current_round", "until_long_rest"}),
+            actions=frozenset({"none", "automatic", "reaction", "explicit_player_choice"}),
+            resources=_ALL_RESOURCES,
+            evidence=("test_zero_hp_intervention",),
+        ),
+        _descriptor(
+            "spell.healing_modifier",
+            "spell_healing_modifier",
+            consumer="spell_healing_resolution",
+            producer="spell_cast_resolution",
+            persisted_state="combatant.spell_context",
+            targets=frozenset({"self", "ally", "one_creature"}),
+            durations=frozenset({"permanent", "advancement_persistent"}),
+            evidence=("test_spell_healing_modifier",),
+        ),
+        _descriptor(
+            "spell.damage_modifier",
+            "spell_damage_modifier",
+            consumer="spell_damage_resolution",
+            producer="spell_cast_resolution",
+            persisted_state="combatant.spell_context",
+            targets=frozenset({"self", "one_creature", "ally", "enemy"}),
+            durations=frozenset({"permanent", "advancement_persistent"}),
+            evidence=("test_spell_damage_modifier",),
+        ),
+        _descriptor(
+            "spell.save_damage_modifier",
+            "spell_save_damage_modifier",
+            consumer="spell_save_damage_resolution",
+            producer="spell_cast_resolution",
+            persisted_state="combatant.spell_context",
+            targets=frozenset({"self", "one_creature", "ally", "enemy"}),
+            durations=frozenset({"permanent", "advancement_persistent"}),
+            evidence=("test_spell_save_damage_modifier",),
+        ),
+        _descriptor(
+            "spell.free_cast",
+            "free_spell_cast",
+            consumer="spell_economy_service",
+            producer="advancement_service",
+            persisted_state="character.resources_and_spells",
+            durations=frozenset({"permanent", "advancement_persistent"}),
+            resources=_ALL_RESOURCES,
+            evidence=("test_spell_economy",),
         ),
         _descriptor(
             "window.reaction",

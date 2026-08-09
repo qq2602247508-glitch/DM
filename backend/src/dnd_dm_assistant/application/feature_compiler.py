@@ -12,6 +12,10 @@ from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from typing import Any
 
+from dnd_dm_assistant.application.feature_materializers import (
+    MaterializerRegistry,
+    default_materializer_registry,
+)
 from dnd_dm_assistant.domain.feature_capabilities import (
     CapabilityCatalog,
     CapabilityDescriptor,
@@ -22,6 +26,7 @@ from dnd_dm_assistant.domain.feature_ir import (
     FeatureSpec,
     canonical_json,
 )
+from dnd_dm_assistant.domain.feature_operators import get_operator_contract
 
 
 @dataclass(frozen=True)
@@ -58,6 +63,8 @@ class CompileResult:
     unsupported_combinations: tuple[str, ...]
     manual_boundaries: tuple[str, ...]
     evidence: tuple[str, ...]
+    source_trust: str
+    blockers: tuple[str, ...]
     status_authority: str
     legacy_adapter_used: bool
     fingerprint: str
@@ -78,6 +85,8 @@ class CompileResult:
             "unsupported_combinations": list(self.unsupported_combinations),
             "manual_boundaries": list(self.manual_boundaries),
             "evidence": list(self.evidence),
+            "source_trust": self.source_trust,
+            "blockers": list(self.blockers),
             "status_authority": self.status_authority,
             "legacy_adapter_used": self.legacy_adapter_used,
             "fingerprint": self.fingerprint,
@@ -100,8 +109,16 @@ def _duration_kind(value: object) -> str | None:
 def _compile_effect(
     clause: ClauseSpec,
     operator: str,
+    parameters: Mapping[str, Any],
     catalog: CapabilityCatalog,
+    materializers: MaterializerRegistry,
 ) -> tuple[CapabilityDescriptor | None, tuple[str, ...]]:
+    contract = get_operator_contract(operator)
+    if contract is None:
+        return None, (f"unsupported operator: {operator}",)
+    parameter_validation = contract.validate_parameters(parameters)
+    if not parameter_validation.valid:
+        return None, tuple(f"invalid_parameters: {item}" for item in parameter_validation.errors)
     candidates = catalog.get_for_operator(operator)
     if not candidates:
         return None, (f"unsupported operator: {operator}",)
@@ -114,6 +131,18 @@ def _compile_effect(
     )
     partial_errors: list[str] = []
     for descriptor in candidates:
+        contract_errors = contract.validate_clause(
+            trigger=clause.trigger,
+            conditions=conditions,
+            activation=clause.activation,
+            action_economy=clause.action_economy,
+            target=target,
+            duration=duration,
+            resource_operations=resource_operations,
+        )
+        if contract_errors:
+            partial_errors.extend(contract_errors)
+            continue
         errors = descriptor.supports(
             trigger=clause.trigger,
             conditions=conditions,
@@ -124,6 +153,9 @@ def _compile_effect(
             resource_operations=resource_operations,
         )
         if not errors and descriptor.production_status == "production_closed":
+            if materializers.get(descriptor.materializer_id) is None:
+                partial_errors.append(f"materializer_missing: {descriptor.materializer_id}")
+                continue
             return descriptor, ()
         if errors:
             partial_errors.extend(errors)
@@ -143,11 +175,13 @@ class FeatureCompiler:
         *,
         available_feature_ids: Iterable[str] = (),
         status_authority: str = "compiler",
+        materializers: MaterializerRegistry | None = None,
     ) -> None:
         self.catalog = catalog or default_capability_catalog()
         self.available_feature_ids = frozenset(str(item) for item in available_feature_ids)
-        if status_authority not in {"compiler", "legacy"}:
-            raise ValueError("status_authority must be compiler or legacy")
+        self.materializers = materializers or default_materializer_registry()
+        if status_authority not in {"compiler", "shadow_candidate", "legacy"}:
+            raise ValueError("status_authority must be compiler, shadow_candidate or legacy")
         self.status_authority = status_authority
 
     def compile(
@@ -168,6 +202,7 @@ class FeatureCompiler:
         manual_boundaries: list[str] = []
         evidence: list[str] = []
         dependency_blockers: list[str] = []
+        schema_blockers: list[str] = []
 
         if self.available_feature_ids:
             for dependency in spec.dependencies:
@@ -178,6 +213,8 @@ class FeatureCompiler:
             manual_boundaries.append("source is unstructured")
         elif spec.source_completeness == "incomplete":
             dependency_blockers.append("source is incomplete")
+        if spec.source_trust not in {"authored_ir", "verified_mapping"}:
+            dependency_blockers.append("source_trust_not_verified")
 
         for clause in spec.clauses:
             clause_capabilities: list[str] = []
@@ -204,9 +241,20 @@ class FeatureCompiler:
                     required_ui.append(str(input_spec.parameters["requires_ui"]))
 
             for effect in clause.effects:
-                descriptor, errors = _compile_effect(clause, effect.operator, self.catalog)
+                descriptor, errors = _compile_effect(
+                    clause,
+                    effect.operator,
+                    effect.parameters,
+                    self.catalog,
+                    self.materializers,
+                )
                 if descriptor is None:
                     clause_blockers.extend(errors)
+                    schema_blockers.extend(
+                        f"{clause.clause_id}: {item}"
+                        for item in errors
+                        if item.startswith("invalid_parameters:")
+                    )
                     if any(item.startswith("unsupported operator:") for item in errors):
                         unsupported_operators.append(effect.operator)
                     if any("condition " in item for item in errors):
@@ -215,9 +263,7 @@ class FeatureCompiler:
                             for condition in clause.conditions
                         )
                     if any("unsupported" in item for item in errors):
-                        unsupported_combinations.extend(
-                            f"{clause.clause_id}: {effect.operator}"
-                        )
+                        unsupported_combinations.append(f"{clause.clause_id}: {effect.operator}")
                     continue
                 clause_capabilities.append(descriptor.capability_id)
                 evidence.extend(descriptor.evidence_tests)
@@ -235,6 +281,7 @@ class FeatureCompiler:
                         "targeting": clause.targeting.to_dict() if clause.targeting else None,
                         "capability_id": descriptor.capability_id,
                         "contract_version": descriptor.contract_version,
+                        "materializer_id": descriptor.materializer_id,
                     }
                 )
 
@@ -245,16 +292,16 @@ class FeatureCompiler:
                     status=clause_status,
                     capability_ids=_unique(clause_capabilities),
                     generated_block=(
-                        generated[-1]
-                        if clause_status == "full" and generated
-                        else None
+                        generated[-1] if clause_status == "full" and generated else None
                     ),
                     blockers=_unique((*clause_blockers, clause_manual)),
                 )
             )
 
         statuses = {item.status for item in clause_results}
-        if manual_boundaries:
+        if schema_blockers:
+            compile_status = "invalid"
+        elif manual_boundaries:
             compile_status = "manual"
         elif dependency_blockers or statuses != {"full"}:
             compile_status = "partial"
@@ -275,6 +322,7 @@ class FeatureCompiler:
         if compile_status == "full" and not evidence:
             compile_status = "partial"
             blockers = (*blockers, "no production evidence")
+        blockers = _unique((*blockers, *schema_blockers))
         result_without_fingerprint = {
             "feature_id": spec.feature_id,
             "compile_status": compile_status,
@@ -290,9 +338,10 @@ class FeatureCompiler:
             "unsupported_combinations": list(_unique(unsupported_combinations)),
             "manual_boundaries": list(_unique(manual_boundaries)),
             "evidence": evidence,
+            "source_trust": spec.source_trust,
+            "blockers": list(_unique(blockers)),
             "status_authority": self.status_authority,
             "legacy_adapter_used": legacy_adapter_used,
-            "blockers": list(_unique(blockers)),
         }
         fingerprint = hashlib.sha256(
             canonical_json(result_without_fingerprint).encode("utf-8")
@@ -312,6 +361,8 @@ class FeatureCompiler:
             unsupported_combinations=_unique(unsupported_combinations),
             manual_boundaries=_unique(manual_boundaries),
             evidence=tuple(evidence),
+            source_trust=spec.source_trust,
+            blockers=_unique(blockers),
             status_authority=self.status_authority,
             legacy_adapter_used=legacy_adapter_used,
             fingerprint=fingerprint,
@@ -480,6 +531,7 @@ def materialize_runtime_definition(
     result: CompileResult,
     *,
     catalog: CapabilityCatalog | None = None,
+    materializers: MaterializerRegistry | None = None,
 ) -> dict[str, Any]:
     """Turn a full compile result into existing typed runtime sections.
 
@@ -494,6 +546,8 @@ def materialize_runtime_definition(
     if result.compile_status != "full":
         raise ValueError("only a full compile result can be materialized")
     capability_catalog = catalog or default_capability_catalog()
+    materializer_registry = materializers or default_materializer_registry()
+    clauses = {clause.clause_id: clause for clause in spec.clauses}
     definition: dict[str, Any] = {
         "combat_start": {"modifiers": [], "defenses": [], "movement_modes": []},
         "resources": {},
@@ -506,38 +560,45 @@ def materialize_runtime_definition(
     }
     for index, block in enumerate(result.generated_runtime_blocks):
         operator = str(block.get("operator") or "")
-        section = _RUNTIME_SECTION_BY_OPERATOR.get(operator)
-        if section is None:
-            raise ValueError(f"no runtime section mapping for operator {operator}")
         capability_id = str(block.get("capability_id") or "")
         descriptor = capability_catalog.get(capability_id)
         if descriptor is None:
             raise ValueError(f"unknown capability in compile result: {capability_id}")
-        entry = {
-            "id": f"{spec.feature_id}:{block.get('clause_id')}:{index}",
-            "feature_id": spec.feature_id,
-            "feature_name": spec.source_name,
-            "class_name": spec.class_name or "unclassified",
-            "class_level": spec.level or 0,
-            "kind": operator,
-            "operator": operator,
-            "trigger": block.get("trigger"),
-            "action_cost": block.get("action_economy", "none"),
-            "targeting": block.get("targeting"),
-            "parameters": block.get("parameters") or {},
-            "runtime_execution": {
-                "status": "ready",
-                "consumer": descriptor.consumer,
-                "capability_id": capability_id,
-                "contract_version": descriptor.contract_version,
-            },
-            "automation_status": "full",
-            "requires_dm_adjudication": False,
-        }
+        clause_id = str(block.get("clause_id") or "")
+        clause = clauses.get(clause_id)
+        if clause is None:
+            raise ValueError(f"compile result references unknown clause: {clause_id}")
+        materialized = materializer_registry.materialize(
+            spec=spec,
+            clause=clause,
+            operator=operator,
+            parameters=block.get("parameters") or {},
+            descriptor=descriptor,
+            index=index,
+        )
+        section = materialized.section
+        entry = materialized.entry
         if section == "combat_modifiers":
             definition["combat_start"]["modifiers"].append(entry)
         elif section == "combat_defenses":
             definition["combat_start"]["defenses"].append(entry)
+            if operator == "zero_hp_intervention":
+                resource_key = str(entry.get("resource_key") or "")
+                if resource_key:
+                    definition["resources"][resource_key] = {
+                        "key": resource_key,
+                        "label": spec.source_name,
+                        "max": 1,
+                        "recovery": entry.get("reset", "long_rest"),
+                        "recovery_events": [
+                            {
+                                "rest": entry.get("reset", "long_rest"),
+                                "operation": "set_to_max",
+                            }
+                        ],
+                        "automation_status": "full",
+                        "requires_dm_adjudication": False,
+                    }
         elif section == "movement_modes":
             definition["combat_start"]["movement_modes"].append(entry)
         elif section in {"proficiencies", "triggers", "attack_riders", "actions"}:
@@ -545,9 +606,13 @@ def materialize_runtime_definition(
             if isinstance(target, list):
                 target.append(entry)
         elif section == "resources":
-            definition["resources"][entry["id"]] = entry
+            definition["resources"][str(entry.get("key") or entry["id"])] = entry
         elif section == "advancement":
+            if definition["advancement"] is not None:
+                raise ValueError("multiple advancement blocks are not supported")
             definition["advancement"] = entry
         elif section == "prepared_spell_list":
+            if definition["prepared_spell_list"] is not None:
+                raise ValueError("multiple prepared spell blocks are not supported")
             definition["prepared_spell_list"] = entry
     return definition

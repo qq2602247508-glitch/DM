@@ -1,0 +1,422 @@
+"""Materializer registry for Feature IR runtime contracts.
+
+The compiler decides whether a clause is satisfiable.  This module decides how
+that already-validated clause is projected into the typed sections consumed by
+the existing advancement, rest, spell and combat code.  Materializers are
+registered by operator/capability contract, never by feature name.
+"""
+
+from __future__ import annotations
+
+from collections.abc import Callable, Mapping
+from dataclasses import dataclass
+from typing import Any
+
+from dnd_dm_assistant.domain.feature_capabilities import CapabilityDescriptor
+from dnd_dm_assistant.domain.feature_ir import ClauseSpec, FeatureSpec
+
+
+class MaterializerError(ValueError):
+    """Raised when a validated clause cannot be projected safely."""
+
+
+@dataclass(frozen=True)
+class MaterializedBlock:
+    section: str
+    entry: dict[str, Any]
+
+
+@dataclass(frozen=True)
+class MaterializerContext:
+    spec: FeatureSpec
+    clause: ClauseSpec
+    operator: str
+    parameters: Mapping[str, Any]
+    descriptor: CapabilityDescriptor
+    index: int
+
+    @property
+    def block_id(self) -> str:
+        explicit = self.parameters.get("id")
+        return (
+            str(explicit)
+            if isinstance(explicit, str) and explicit.strip()
+            else (f"{self.spec.feature_id}:{self.clause.clause_id}:{self.index}")
+        )
+
+    def base(self, *, kind: str | None = None) -> dict[str, Any]:
+        return {
+            "id": self.block_id,
+            "feature_id": self.spec.feature_id,
+            "clause_id": self.clause.clause_id,
+            "source_record_id": self.spec.source_record_id,
+            "feature_name": self.spec.source_name,
+            "class_name": self.spec.class_name or "unclassified",
+            "class_level": self.spec.level or 0,
+            "kind": kind or self.operator,
+            "operator": self.operator,
+            "trigger": self.clause.trigger,
+            "activation": self.clause.activation,
+            "action_cost": self.clause.action_economy,
+            "targeting": (
+                self.clause.targeting.to_dict() if self.clause.targeting is not None else None
+            ),
+            "runtime_execution": {
+                "status": "ready",
+                "consumer": self.descriptor.consumer,
+                "capability_id": self.descriptor.capability_id,
+                "contract_version": self.descriptor.contract_version,
+                "materializer_id": self.descriptor.materializer_id,
+                "persistence": self.descriptor.persisted_state,
+            },
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+        }
+
+
+Materializer = Callable[[MaterializerContext], MaterializedBlock]
+
+
+def _with_parameters(context: MaterializerContext, *, kind: str | None = None) -> dict[str, Any]:
+    entry = context.base(kind=kind)
+    entry.update(dict(context.parameters))
+    entry["operator"] = context.operator
+    entry["runtime_execution"] = context.base()["runtime_execution"]
+    entry["automation_status"] = "full"
+    entry["requires_dm_adjudication"] = False
+    return entry
+
+
+def _materialize_proficiency(context: MaterializerContext) -> MaterializedBlock:
+    params = context.parameters
+    if params["proficiency_kind"] == "language_choice":
+        entry = context.base(kind="selected_language_grant")
+        entry["choice_requirement"] = {
+            "key": "language_choice",
+            "minimum": 1,
+            "maximum": 1,
+            "strict": True,
+            "options_source": str(params["asset_id"]),
+            "duplicate_policy": "forbid",
+            "requires_dm_selection": False,
+        }
+        return MaterializedBlock("advancement", entry)
+    entry = context.base(kind=str(params["proficiency_kind"]))
+    entry.update(
+        {
+            "name": str(params["asset_id"]),
+            "asset_id": str(params["asset_id"]),
+            "operation": str(params["operation"]),
+        }
+    )
+    return MaterializedBlock("proficiencies", entry)
+
+
+def _materialize_language(context: MaterializerContext) -> MaterializedBlock:
+    params = context.parameters
+    entry = context.base(kind="language")
+    entry.update(
+        {
+            "name": f"语言：{params['language_id']}",
+            "language_id": str(params["language_id"]),
+            "operation": str(params["operation"]),
+        }
+    )
+    return MaterializedBlock("proficiencies", entry)
+
+
+def _materialize_spell(context: MaterializerContext) -> MaterializedBlock:
+    params = context.parameters
+    entry = context.base(kind="fixed_spell_grant")
+    entry.update(
+        {
+            "spells": [str(params["spell_id"])],
+            "grant_class": str(params["source_class"]),
+            "casting_ability": str(params["casting_ability"]),
+            "grant_mode": str(params["grant_mode"]),
+        }
+    )
+    for key in ("ritual_only", "free_cast_resource_key", "auto_save"):
+        if key in params:
+            entry[key] = params[key]
+    return MaterializedBlock("advancement", entry)
+
+
+def _materialize_prepare_spell(context: MaterializerContext) -> MaterializedBlock:
+    params = context.parameters
+    entry = context.base(kind="always_prepared_spell_list")
+    entry.update(
+        {
+            "spells": [str(params["spell_id"])],
+            "source_class": str(params["source_class"]),
+            "preparation_mode": str(params.get("preparation_mode", "prepared")),
+        }
+    )
+    return MaterializedBlock("prepared_spell_list", entry)
+
+
+def _materialize_resource(context: MaterializerContext) -> MaterializedBlock:
+    params = context.parameters
+    entry = context.base(kind="resource_lifecycle")
+    entry.update(
+        {
+            "key": str(params["resource_key"]),
+            "operation": str(params["operation"]),
+            "recovery": context.clause.trigger,
+        }
+    )
+    for key in ("amount", "amount_source", "recovery_event"):
+        if key in params:
+            entry[key] = params[key]
+    if context.clause.trigger in {"long_rest_completed", "long_rest_started"}:
+        entry["recovery_events"] = [{"rest": "long_rest", "operation": params["operation"]}]
+    elif context.clause.trigger in {"short_rest_completed", "short_rest_started"}:
+        entry["recovery_events"] = [{"rest": "short_rest", "operation": params["operation"]}]
+    return MaterializedBlock("resources", entry)
+
+
+def _materialize_exchange(context: MaterializerContext) -> MaterializedBlock:
+    params = context.parameters
+    entry = context.base(kind="resource_exchange")
+    entry.update(
+        {
+            "from_resource_key": str(params["from_resource_key"]),
+            "to_resource_key": str(params["to_resource_key"]),
+            "operation": str(params["operation"]),
+        }
+    )
+    for key in ("amount", "amount_source"):
+        if key in params:
+            entry[key] = params[key]
+    return MaterializedBlock("resources", entry)
+
+
+def _materialize_modifier(context: MaterializerContext) -> MaterializedBlock:
+    params = context.parameters
+    entry = context.base(kind="modifier")
+    for key in ("stat", "operation", "value", "value_source", "scope", "applies_when"):
+        if key in params:
+            entry[key] = params[key]
+    if "value" not in entry and "value_source" not in entry:
+        if context.operator in {"impose_advantage", "impose_disadvantage"}:
+            entry["value"] = 1
+        else:
+            raise MaterializerError(
+                f"{context.operator} requires value or value_source in materialized contract"
+            )
+    return MaterializedBlock("combat_modifiers", entry)
+
+
+def _materialize_movement(context: MaterializerContext) -> MaterializedBlock:
+    params = context.parameters
+    if "speed_source" not in params and "speed_ft" not in params:
+        raise MaterializerError("grant_movement_mode requires speed_source or speed_ft")
+    entry = context.base(kind="movement_mode")
+    entry["mode"] = str(params["mode"])
+    for key in (
+        "speed_source",
+        "speed_ft",
+        "requires_not_wearing_heavy_armor",
+        "selection_binding",
+    ):
+        if key in params:
+            entry[key] = params[key]
+    return MaterializedBlock("movement_modes", entry)
+
+
+def _materialize_sight(context: MaterializerContext) -> MaterializedBlock:
+    params = context.parameters
+    if "range_ft" not in params and "range_source" not in params:
+        raise MaterializerError("grant_sight_mode requires range_ft or range_source")
+    entry = context.base(kind="sight_mode")
+    entry["mode"] = str(params["mode"])
+    entry["stat"] = f"{params['mode']}_ft"
+    entry["operation"] = "set"
+    entry["scope"] = "self"
+    for key in ("range_ft", "range_source", "applies_when"):
+        if key in params:
+            entry[key] = params[key]
+    return MaterializedBlock("combat_modifiers", entry)
+
+
+def _materialize_action(context: MaterializerContext) -> MaterializedBlock:
+    entry = _with_parameters(context, kind=context.operator)
+    return MaterializedBlock("actions", entry)
+
+
+def _materialize_trigger(context: MaterializerContext) -> MaterializedBlock:
+    entry = _with_parameters(context, kind=context.operator)
+    return MaterializedBlock("triggers", entry)
+
+
+def _materialize_defense(context: MaterializerContext) -> MaterializedBlock:
+    entry = _with_parameters(context, kind=context.operator)
+    return MaterializedBlock("combat_defenses", entry)
+
+
+def _materialize_zero_hp(context: MaterializerContext) -> MaterializedBlock:
+    params = context.parameters
+    entry = context.base(kind="zero_hp_auto_prevention")
+    entry.update(
+        {
+            "trigger": str(params["trigger"]),
+            "resource_key": str(params["resource_key"]),
+            "resource_cost": 1,
+            "on_success": {"hit_points": str(params["replacement_hp"])},
+            "eligibility": dict(params["eligibility"]),
+            "reset": str(params["reset"]),
+            "exceptions": list(params.get("exceptions") or ["outright_death"]),
+        }
+    )
+    return MaterializedBlock("combat_defenses", entry)
+
+
+def _materialize_spell_modifier(context: MaterializerContext) -> MaterializedBlock:
+    params = context.parameters
+    stat = {
+        "spell_healing_modifier": "spell_healing",
+        "spell_damage_modifier": "spell_damage",
+        "spell_save_damage_modifier": "spell_damage",
+    }.get(context.operator)
+    if stat is None:
+        raise MaterializerError(f"unknown spell modifier operator {context.operator}")
+    entry = context.base(kind="modifier")
+    entry.update(
+        {
+            "stat": stat,
+            "operation": str(params["operation"]),
+            "formula": str(params["formula"]),
+            "scope": "outgoing",
+            "applies_when": params.get("applies_when", "always"),
+        }
+    )
+    for key in ("ability", "spell_school"):
+        if key in params:
+            entry[key] = params[key]
+    return MaterializedBlock("combat_modifiers", entry)
+
+
+def _materialize_rider(context: MaterializerContext) -> MaterializedBlock:
+    entry = _with_parameters(context, kind=context.operator)
+    return MaterializedBlock("attack_riders", entry)
+
+
+class MaterializerRegistry:
+    """Stable operator/materializer registry with fail-closed validation."""
+
+    def __init__(self, materializers: Mapping[str, Materializer] | None = None) -> None:
+        self._materializers: dict[str, Materializer] = dict(materializers or {})
+
+    def register(self, materializer_id: str, materializer: Materializer) -> None:
+        if not materializer_id.strip():
+            raise ValueError("materializer_id cannot be empty")
+        existing = self._materializers.get(materializer_id)
+        if existing is not None and existing is not materializer:
+            raise ValueError(f"duplicate materializer_id: {materializer_id}")
+        self._materializers[materializer_id] = materializer
+
+    def get(self, materializer_id: str | None) -> Materializer | None:
+        return self._materializers.get(materializer_id or "")
+
+    def materialize(
+        self,
+        *,
+        spec: FeatureSpec,
+        clause: ClauseSpec,
+        operator: str,
+        parameters: Mapping[str, Any],
+        descriptor: CapabilityDescriptor,
+        index: int,
+    ) -> MaterializedBlock:
+        materializer = self.get(descriptor.materializer_id)
+        if materializer is None:
+            raise MaterializerError(
+                f"missing materializer {descriptor.materializer_id!r} "
+                f"for capability {descriptor.capability_id}"
+            )
+        block = materializer(
+            MaterializerContext(
+                spec=spec,
+                clause=clause,
+                operator=operator,
+                parameters=parameters,
+                descriptor=descriptor,
+                index=index,
+            )
+        )
+        self.validate(block)
+        return block
+
+    @staticmethod
+    def validate(block: MaterializedBlock) -> None:
+        entry = block.entry
+        if not entry.get("id") or not entry.get("feature_id"):
+            raise MaterializerError("materialized block needs stable id and feature_id")
+        execution = entry.get("runtime_execution")
+        if not isinstance(execution, Mapping) or execution.get("status") != "ready":
+            raise MaterializerError("materialized block lacks ready runtime_execution")
+        if entry.get("automation_status") != "full":
+            raise MaterializerError("materialized block is not full")
+        if block.section == "combat_modifiers":
+            for key in ("stat", "operation", "scope"):
+                if not entry.get(key):
+                    raise MaterializerError(f"combat modifier missing {key}")
+        elif block.section == "movement_modes":
+            if not entry.get("mode") or ("speed_source" not in entry and "speed_ft" not in entry):
+                raise MaterializerError("movement mode lacks mode or speed")
+        elif block.section == "proficiencies":
+            if not entry.get("name") or not entry.get("operation"):
+                raise MaterializerError("proficiency block lacks name or operation")
+        elif block.section == "advancement":
+            if entry.get("kind") == "selected_language_grant":
+                if not isinstance(entry.get("choice_requirement"), Mapping):
+                    raise MaterializerError("language choice lacks choice_requirement")
+            elif not entry.get("spells") or not entry.get("grant_class"):
+                raise MaterializerError("spell advancement block lacks spell or class")
+        elif block.section == "prepared_spell_list":
+            if not entry.get("spells") or not entry.get("source_class"):
+                raise MaterializerError("prepared spell block lacks spell or class")
+
+    def to_dict(self) -> list[str]:
+        return sorted(self._materializers)
+
+
+def default_materializer_registry() -> MaterializerRegistry:
+    registry = MaterializerRegistry()
+    for materializer_id, materializer in {
+        "advancement.proficiency": _materialize_proficiency,
+        "advancement.language": _materialize_language,
+        "advancement.spell": _materialize_spell,
+        "advancement.prepare_spell": _materialize_prepare_spell,
+        "resource.lifecycle": _materialize_resource,
+        "resource.lifecycle.consume": _materialize_resource,
+        "resource.exchange": _materialize_exchange,
+        "modifier.passive": _materialize_modifier,
+        "modifier.passive.v2": _materialize_modifier,
+        "modifier.passive.set": _materialize_modifier,
+        "modifier.roll": _materialize_modifier,
+        "modifier.roll.disadvantage": _materialize_modifier,
+        "movement.mode": _materialize_movement,
+        "sight.mode": _materialize_sight,
+        "damage.healing": _materialize_action,
+        "damage.temporary_hp": _materialize_trigger,
+        "damage.modifier": _materialize_rider,
+        "damage.type": _materialize_modifier,
+        "defense.resistance": _materialize_defense,
+        "defense.immunity": _materialize_defense,
+        "state.lifecycle.activate": _materialize_action,
+        "state.lifecycle.remove": _materialize_trigger,
+        "modifier.timed": _materialize_action,
+        "window.triggered_attack": _materialize_trigger,
+        "window.reaction": _materialize_trigger,
+        "zero_hp.intervention": _materialize_zero_hp,
+        "spell.healing_modifier": _materialize_spell_modifier,
+        "spell.damage_modifier": _materialize_spell_modifier,
+        "spell.save_damage_modifier": _materialize_spell_modifier,
+        "target.authorized_information": _materialize_action,
+        "spell.context": _materialize_modifier,
+        "spell.context.range": _materialize_modifier,
+        "spell.context.payment": _materialize_modifier,
+    }.items():
+        registry.register(materializer_id, materializer)
+    return registry

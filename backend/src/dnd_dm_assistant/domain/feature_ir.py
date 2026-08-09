@@ -15,6 +15,9 @@ from dataclasses import dataclass
 from typing import Any, ClassVar
 
 FEATURE_IR_SCHEMA_VERSION = "feature-ir-1"
+FEATURE_SOURCE_TRUSTS = frozenset(
+    {"authored_ir", "verified_mapping", "generated_draft", "unstructured_source", "unverified"}
+)
 
 
 class FeatureIRValidationError(ValueError):
@@ -132,9 +135,7 @@ class ResourceSpec:
     amount: object | None
     parameters: dict[str, Any]
 
-    _FIELDS: ClassVar[frozenset[str]] = frozenset(
-        {"key", "operation", "amount", "parameters"}
-    )
+    _FIELDS: ClassVar[frozenset[str]] = frozenset({"key", "operation", "amount", "parameters"})
 
     @classmethod
     def from_dict(cls, value: object, path: str) -> ResourceSpec:
@@ -239,8 +240,7 @@ class ClauseSpec:
         ) -> tuple[Any, ...]:
             values = _list(data.get(key, []), f"{path}.{key}")
             return tuple(
-                factory(item, f"{path}.{key}[{index}]")
-                for index, item in enumerate(values)
+                factory(item, f"{path}.{key}[{index}]") for index, item in enumerate(values)
             )
 
         effects = parse_entries("effects", EffectSpec.from_dict)
@@ -298,6 +298,7 @@ class FeatureSpec:
     ruleset_version: str
     source_record_id: str
     source_name: str
+    source_trust: str
     localized_names: dict[str, str]
     class_name: str | None
     subclass_name: str | None
@@ -317,6 +318,7 @@ class FeatureSpec:
             "ruleset_version",
             "source_record_id",
             "source_name",
+            "source_trust",
             "localized_names",
             "class_name",
             "subclass_name",
@@ -344,13 +346,14 @@ class FeatureSpec:
         namespace = _require_string(data.get("namespace"), f"{path}.namespace")
         pack_id = _require_string(data.get("pack_id"), f"{path}.pack_id")
         pack_version = _require_string(data.get("pack_version"), f"{path}.pack_version")
-        ruleset_version = _require_string(
-            data.get("ruleset_version"), f"{path}.ruleset_version"
-        )
-        source_record_id = _require_string(
-            data.get("source_record_id"), f"{path}.source_record_id"
-        )
+        ruleset_version = _require_string(data.get("ruleset_version"), f"{path}.ruleset_version")
+        source_record_id = _require_string(data.get("source_record_id"), f"{path}.source_record_id")
         source_name = _require_string(data.get("source_name"), f"{path}.source_name")
+        source_trust = _require_string(
+            data.get("source_trust", "unverified"), f"{path}.source_trust"
+        )
+        if source_trust not in FEATURE_SOURCE_TRUSTS:
+            raise FeatureIRValidationError(f"{path}.source_trust {source_trust!r} is unsupported")
         localized_raw = _mapping(data.get("localized_names", {}), f"{path}.localized_names")
         localized_names = {
             _require_string(key, f"{path}.localized_names.key"): _require_string(
@@ -392,6 +395,7 @@ class FeatureSpec:
             ruleset_version=ruleset_version,
             source_record_id=source_record_id,
             source_name=source_name,
+            source_trust=source_trust,
             localized_names=localized_names,
             class_name=_optional_string(data.get("class_name"), f"{path}.class_name"),
             subclass_name=_optional_string(data.get("subclass_name"), f"{path}.subclass_name"),
@@ -412,6 +416,7 @@ class FeatureSpec:
             "ruleset_version": self.ruleset_version,
             "source_record_id": self.source_record_id,
             "source_name": self.source_name,
+            "source_trust": self.source_trust,
             "localized_names": _jsonable(self.localized_names),
             "class_name": self.class_name,
             "subclass_name": self.subclass_name,
