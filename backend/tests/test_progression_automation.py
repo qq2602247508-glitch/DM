@@ -12,7 +12,6 @@ from dnd_dm_assistant.domain.advancement_choices import (
     core_class_level_runtime_contract,
     core_feature_grants,
 )
-from dnd_dm_assistant.domain.feature_runtime import compile_feature_runtime_registry
 from dnd_dm_assistant.domain.progression_automation import (
     apply_progression_choice_grants,
     assign_progression_choices,
@@ -94,7 +93,7 @@ def test_core_contract_counts_move_only_to_evidence_backed_statuses() -> None:
             status.update(
                 item["automation_status"] for item in contract["feature_contracts"]
             )
-    assert status == {"full": 170, "partial": 14, "dm_only": 74}
+    assert status == {"full": 176, "partial": 13, "dm_only": 69}
     assert sum(status.values()) == 258
 
 
@@ -188,20 +187,34 @@ def test_typed_choices_separate_same_level_requirements_and_apply_generic_grants
         if isinstance(item, dict) and item.get("kind") == "weapon_mastery"
     ]
     assert [item["name"] for item in masteries] == ["长剑", "战锤", "长弓"]
-    defense = next(item for item in result["grants"] if item["name"] == "防御")
-    assert defense["runtime"]["execution"] == {
-        "kind": "advancement_choice_grant",
-        "consumer": "advancement_service",
-        "status": "ready",
-        "grant_status": "full",
-        "effect_status": "full",
-    }
-    registry = compile_feature_runtime_registry(result["grants"])
-    assert any(
-        item["id"] == "fighting_style_defense:armor_class"
-        and item["value"] == 1
-        and item["applies_when"] == "wearing_armor"
-        for item in registry["combat_start"]["modifiers"]
+    assert all(item["name"] != "防御" for item in result["grants"])
+
+
+def test_growth_asset_bundles_apply_authoritative_sheet_effects() -> None:
+    result = apply_progression_choice_grants(
+        choices_by_key={
+            "deft_explorer_expertise": ["察觉"],
+            "deft_explorer_languages": ["精灵语", "矮人语"],
+            "primal_order": ["magician"],
+            "divine_order": ["protector"],
+        },
+        skills={"察觉": {"proficient": True}, "奥秘": {}, "自然": {}},
+        proficiencies=[],
+        class_name="游侠",
+        class_level=1,
+        total_level=1,
+        source_record_id="growth-assets",
+        rule_year=2024,
+        allowed_languages=["通用语", "精灵语", "矮人语"],
+    )
+    assert result["skills"]["察觉"]["expertise"] is True
+    assert result["skills"]["奥秘"]["bonus_ability_modifier"] == "wisdom"
+    assert result["skills"]["自然"]["bonus_minimum"] == 1
+    assert {"语言：精灵语", "语言：矮人语", "军用武器", "重甲"} <= set(
+        result["proficiencies"]
+    )
+    assert all(
+        item["runtime"]["automation_status"] == "full" for item in result["grants"]
     )
 
 

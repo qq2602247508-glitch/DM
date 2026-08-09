@@ -79,6 +79,9 @@ def _create_character(
     spells: list[dict[str, Any]] | None = None,
     subclass_name: str | None = None,
     class_levels: dict[str, int] | None = None,
+    skills: dict[str, Any] | None = None,
+    proficiencies: list[Any] | None = None,
+    features: list[Any] | None = None,
 ) -> dict[str, Any]:
     body: dict[str, Any] = {
         "name": f"{class_name}-{suffix}",
@@ -90,6 +93,12 @@ def _create_character(
         "ability_scores": _abilities(),
         "class_levels": class_levels or {class_name: level},
     }
+    if skills is not None:
+        body["skills"] = skills
+    if proficiencies is not None:
+        body["proficiencies"] = proficiencies
+    if features is not None:
+        body["features"] = features
     if spells is not None:
         body["spells"] = spells
     if subclass_name is not None:
@@ -998,3 +1007,188 @@ def test_epic_boon_grant_is_authoritative_and_selected_feat_stays_separate(
         and item.get("name") == boon["name"]
         for item in persisted["features"]
     ) == 1
+
+
+def test_fighting_style_grant_replacement_and_champion_additional_style_are_assets(
+    matrix_client: TestClient,
+    matrix_campaign: dict[str, Any],
+    character_options: dict[str, Any],
+) -> None:
+    styles = [
+        item for item in character_options["feats"] if item.get("category") == "战斗风格"
+    ]
+    assert len(styles) >= 3
+    campaign = matrix_client.post(
+        "/api/v1/campaigns",
+        json={"name": "战斗风格资产", "enabled_rule_extensions": ["multiclassing"]},
+    ).json()
+    character = _create_character(
+        matrix_client,
+        campaign["id"],
+        class_name="吟游诗人",
+        level=1,
+        experience=10_000,
+        suffix="战斗风格资产",
+    )
+    path = _preview_path(campaign["id"], character["id"])
+    first_body = {
+        "character_version": character["version"],
+        "class_name": "战士",
+        "feature_choices_by_key": {
+            "fighting_style": [styles[0]["name"]],
+            "weapon_mastery": ["长剑", "战锤", "长弓"],
+        },
+    }
+    first_preview = matrix_client.post(path, json=first_body)
+    assert first_preview.status_code == 200, first_preview.text
+    selected = next(
+        item
+        for item in first_preview.json()["after"]["features"]
+        if item.get("kind") == "feat" and item.get("name") == styles[0]["name"]
+    )
+    assert selected["runtime"]["execution"]["grant_status"] == "full"
+    first = matrix_client.post(
+        path.replace("/preview", "/confirm"),
+        json={
+            **first_body,
+            "preview_token": first_preview.json()["preview_token"],
+            "idempotency_key": "fighter-style-initial-0001",
+        },
+    )
+    assert first.status_code == 200, first.text
+    character = matrix_client.get(
+        f"/api/v1/campaigns/{campaign['id']}/characters/{character['id']}"
+    ).json()
+    replacement_body = {
+        "character_version": character["version"],
+        "class_name": "战士",
+        "feature_choices_by_key": {
+            "fighting_style_replacement": [
+                f"{styles[0]['name']}->{styles[1]['name']}"
+            ]
+        },
+    }
+    replacement_preview = matrix_client.post(path, json=replacement_body)
+    assert replacement_preview.status_code == 200, replacement_preview.text
+    feature_names = {
+        item.get("name")
+        for item in replacement_preview.json()["after"]["features"]
+        if isinstance(item, dict) and item.get("kind") == "feat"
+    }
+    assert styles[0]["name"] not in feature_names
+    assert styles[1]["name"] in feature_names
+
+    champion = next(
+        item
+        for item in _class_option(character_options, "战士")["subclasses"]
+        if item["name"] == "勇士"
+    )
+    champion_character = _create_character(
+        matrix_client,
+        campaign["id"],
+        class_name="战士",
+        level=6,
+        experience=99_999,
+        suffix="冠军额外风格",
+        subclass_name=champion["name"],
+    )
+    champion_path = _preview_path(campaign["id"], champion_character["id"])
+    discovery = matrix_client.post(
+        champion_path,
+        json={
+            "character_version": champion_character["version"],
+            "class_name": "战士",
+            "dm_override_reason": "只读取服务端生成的结构化子职 requirement id",
+        },
+    )
+    assert discovery.status_code == 200, discovery.text
+    requirement = next(
+        item
+        for item in discovery.json()["choice_requirements"]
+        if item.get("key") == "additional_fighting_style"
+    )
+    champion_body = {
+        "character_version": champion_character["version"],
+        "class_name": "战士",
+        "subclass_feature_choices": {requirement["feature_id"]: [styles[2]["name"]]},
+    }
+    champion_preview = matrix_client.post(champion_path, json=champion_body)
+    assert champion_preview.status_code == 200, champion_preview.text
+    assert any(
+        item.get("kind") == "feat" and item.get("name") == styles[2]["name"]
+        for item in champion_preview.json()["after"]["features"]
+    )
+
+
+def test_deft_explorer_and_primal_order_persist_real_sheet_assets(
+    matrix_client: TestClient,
+    character_options: dict[str, Any],
+) -> None:
+    campaign = matrix_client.post(
+        "/api/v1/campaigns",
+        json={"name": "成长选项资产", "enabled_rule_extensions": ["multiclassing"]},
+    ).json()
+    style = next(
+        item["name"]
+        for item in character_options["feats"]
+        if item.get("category") == "战斗风格"
+    )
+    ranger = _create_character(
+        matrix_client,
+        campaign["id"],
+        class_name="游侠",
+        level=1,
+        experience=10_000,
+        suffix="熟练探险家",
+        skills={"察觉": {"proficient": True}},
+    )
+    ranger_path = _preview_path(campaign["id"], ranger["id"])
+    ranger_body = {
+        "character_version": ranger["version"],
+        "class_name": "游侠",
+        "feature_choices_by_key": {
+            "fighting_style": [style],
+            "deft_explorer_expertise": ["察觉"],
+            "deft_explorer_languages": ["精灵语", "矮人语"],
+        },
+        "dm_override_reason": "夹具不重复构造游侠一级已有准备法术，仅复核本级成长资产",
+    }
+    ranger_preview = matrix_client.post(ranger_path, json=ranger_body)
+    assert ranger_preview.status_code == 200, ranger_preview.text
+    ranger_after = ranger_preview.json()["after"]
+    assert ranger_after["skills"]["察觉"]["expertise"] is True
+    assert {"语言：精灵语", "语言：矮人语"} <= set(ranger_after["proficiencies"])
+    ranger_sheet = {
+        **ranger_after,
+        "level": 2,
+        "ability_scores": _abilities(),
+    }
+    assert skill_modifier(type("Sheet", (), ranger_sheet), "察觉", "wisdom")[0] == 6
+    confirmed = matrix_client.post(
+        ranger_path.replace("/preview", "/confirm"),
+        json={
+            **ranger_body,
+            "preview_token": ranger_preview.json()["preview_token"],
+            "idempotency_key": "deft-explorer-assets-0001",
+        },
+    )
+    assert confirmed.status_code == 200, confirmed.text
+
+    druid = _create_character(
+        matrix_client,
+        campaign["id"],
+        class_name="吟游诗人",
+        level=1,
+        experience=10_000,
+        suffix="原初职能",
+    )
+    druid_path = _preview_path(campaign["id"], druid["id"])
+    druid_body = {
+        "character_version": druid["version"],
+        "class_name": "德鲁伊",
+        "feature_choices_by_key": {"primal_order": ["warden"]},
+        "dm_override_reason": "夹具不重复构造德鲁伊一级完整准备法术，仅复核守卫分支",
+    }
+    druid_preview = matrix_client.post(druid_path, json=druid_body)
+    assert druid_preview.status_code == 200, druid_preview.text
+    assert {"军用武器", "中甲"} <= set(druid_preview.json()["after"]["proficiencies"])

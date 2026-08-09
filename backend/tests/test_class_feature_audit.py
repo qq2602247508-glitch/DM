@@ -51,10 +51,11 @@ def test_source_audit_does_not_hide_complete_rules_in_dm_only_bucket() -> None:
     assert set(rows) == {"创生圣言", "弃绝众敌", "复原之触", "德鲁伊语", "原初职能"}
     assert all(row["source_parse"] == "description_located" for row in rows.values())
     assert rows["复原之触"]["runtime_status"] == "full"
+    assert rows["原初职能"]["runtime_status"] == "full"
     assert all(
         row["runtime_status"] == "dm_only"
         for name, row in rows.items()
-        if name != "复原之触"
+        if name not in {"复原之触", "原初职能"}
     )
 
 
@@ -62,18 +63,56 @@ def test_migration_planner_keeps_fixed_scope_and_status_counts() -> None:
     report = _planner_module().plan()
     assert report["audit_scope"]["total_features"] == 499
     assert report["audit_status_counts"] == {
-        "full": 268,
-        "partial": 157,
-        "dm_only": 74,
+        "full": 276,
+        "partial": 154,
+        "dm_only": 69,
     }
     assert report["readiness_counts"] == {
-        "consumer_partial": 32,
-        "already_full": 268,
-        "missing_runtime_contract": 148,
+        "consumer_partial": 28,
+        "already_full": 276,
+        "missing_runtime_contract": 145,
         "missing_source": 35,
-        "manual_boundary": 10,
+        "manual_boundary": 9,
         "needs_contract_review": 6,
     }
+
+
+def test_growth_asset_batch_has_stable_ids_and_explicit_grant_effect_boundaries() -> None:
+    report = _planner_module().plan()
+    markers = (
+        "战斗风格",
+        "魔法奥秘",
+        "熟练探险家",
+        "原初职能",
+        "圣职",
+        "仪式学家",
+        "战争训练",
+    )
+    rows = [
+        row
+        for row in report["rows"]
+        if any(marker in row["feature_name"] for marker in markers)
+        and row["class_name"] in {"战士", "圣武士", "游侠", "吟游诗人", "德鲁伊", "牧师", "法师"}
+    ]
+    assert len(rows) == 10
+    assert len({row["feature_id"] for row in rows}) == 10
+    assert sum(row["runtime_status"] == "full" for row in rows) == 8
+    assert {
+        (row["class_name"], row["feature_name"], row["runtime_status"])
+        for row in rows
+        if row["runtime_status"] != "full"
+    } == {
+        ("圣武士", "战斗风格", "partial"),
+        ("游侠", "战斗风格", "partial"),
+    }
+    for row in rows:
+        assert row["authoritative_catalog"]
+        assert row["selected_asset_kind"]
+        assert row["grant_consumer"] == "advancement_service"
+        assert row["selected_asset_consumer"]
+        assert row["selected_asset_status"]
+        assert row["persisted_state"]
+        assert row["grant_status"] in {"full", "partial"}
 
 
 def test_migration_matrix_exposes_stable_execution_evidence() -> None:

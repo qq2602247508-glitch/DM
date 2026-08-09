@@ -281,7 +281,122 @@ def _specialized_cluster(row: dict[str, Any], template: str) -> str:
         return "advancement_asset_grant:epic_boon"
     if "战斗风格" in name:
         return "advancement_asset_grant:fighting_style"
+    if any(value in name for value in ("熟练探险家", "原初职能", "圣职")):
+        return "advancement_asset_grant:growth_option_bundle"
+    if any(value in name for value in ("魔法奥秘", "仪式学家", "战争训练")):
+        return "advancement_asset_grant:spell_capability"
     return template
+
+
+def _growth_asset_metadata(row: dict[str, Any]) -> dict[str, Any]:
+    """Expose schema-v2 grant/effect boundaries for the growth-asset batch."""
+
+    name = "".join(str(row.get("feature_name") or "").split())
+    status = str(row.get("runtime_status") or "dm_only")
+    metadata: dict[str, Any] = {
+        "authoritative_catalog": None,
+        "selected_asset_kind": None,
+        "grant_consumer": None,
+        "grant_status": None,
+        "selected_asset_consumer": None,
+        "selected_asset_status": None,
+        "effect_status": status,
+        "required_input": None,
+        "duplicate_policy": None,
+        "replacement_policy": None,
+        "prerequisite_validation": None,
+        "persisted_state": None,
+    }
+    if "战斗风格" in name:
+        metadata.update(
+            authoritative_catalog="2024 feat catalog:战斗风格",
+            selected_asset_kind="feat_or_typed_spell_bundle",
+            grant_consumer="advancement_service",
+            grant_status="full" if status == "full" else "partial",
+            selected_asset_consumer="feat_runtime_contract|spell_economy",
+            selected_asset_status="separate_contract",
+            required_input="feature_choices_by_key|subclass_feature_choices",
+            duplicate_policy="forbid",
+            replacement_policy=(
+                "replace_on_fighter_level"
+                if str(row.get("class_name") or "") == "战士"
+                and str(row.get("scope") or "") == "core"
+                else "source_specific"
+            ),
+            prerequisite_validation="authoritative_feat_prerequisite_validator",
+            persisted_state="character.features|character.spells",
+        )
+    elif "熟练探险家" in name:
+        metadata.update(
+            authoritative_catalog="character.proficient_skills|2024 core languages",
+            selected_asset_kind="expertise+language",
+            grant_consumer="advancement_service",
+            grant_status="full",
+            selected_asset_consumer="skill_modifier|character_language_assets",
+            selected_asset_status="full",
+            required_input="feature_choices_by_key",
+            duplicate_policy="forbid",
+            replacement_policy="none",
+            prerequisite_validation="already_proficient+language_catalog",
+            persisted_state="character.skills|character.proficiencies",
+        )
+    elif "原初职能" in name or name == "圣职":
+        metadata.update(
+            authoritative_catalog="closed_option_bundle|2024 spell catalog",
+            selected_asset_kind="proficiency+cantrip+skill_modifier",
+            grant_consumer="advancement_service",
+            grant_status="full",
+            selected_asset_consumer="equipment/attack|spell_economy|skill_modifier",
+            selected_asset_status="full",
+            required_input="feature_choices_by_key",
+            duplicate_policy="forbid",
+            replacement_policy="none",
+            prerequisite_validation="closed_branch+spell_class_and_level",
+            persisted_state="character.proficiencies|skills|spells",
+        )
+    elif "魔法奥秘" in name:
+        metadata.update(
+            authoritative_catalog="2024 bard/cleric/druid/wizard spell catalog",
+            selected_asset_kind="spell_list_expansion",
+            grant_consumer="advancement_service",
+            grant_status="full",
+            selected_asset_consumer="ordinary_bard_spell_learning_and_replacement",
+            selected_asset_status="full",
+            required_input="spell_additions|spell_removals",
+            duplicate_policy="spell_identity",
+            replacement_policy="bard_level_replacement",
+            prerequisite_validation="bard_level_and_max_spell_level",
+            persisted_state="character.spells",
+        )
+    elif "仪式学家" in name:
+        metadata.update(
+            authoritative_catalog="known wizard spellbook+ritual tag",
+            selected_asset_kind="spellcasting_capability",
+            grant_consumer="advancement_service",
+            grant_status="full",
+            selected_asset_consumer="spell_economy_service",
+            selected_asset_status="full",
+            required_input="ritual spell cast request",
+            duplicate_policy="not_applicable",
+            replacement_policy="not_applicable",
+            prerequisite_validation="known+wizard+ritual+spellbook",
+            persisted_state="character.features|known_spells",
+        )
+    elif "战争训练" in name:
+        metadata.update(
+            authoritative_catalog="fixed subclass proficiencies+equipped weapon",
+            selected_asset_kind="proficiency+spellcasting_focus_permission",
+            grant_consumer="advancement_service",
+            grant_status="full",
+            selected_asset_consumer="equipment_rules|spell_economy_service",
+            selected_asset_status="full",
+            required_input="focus_equipment_id",
+            duplicate_policy="deduplicate",
+            replacement_policy="not_applicable",
+            prerequisite_validation="equipped_weapon+weapon_proficiency+spell_class",
+            persisted_state="character.proficiencies|features",
+        )
+    return metadata
 
 
 def _gap_category(readiness: str, blockers: list[str]) -> str | None:
@@ -401,6 +516,7 @@ def plan() -> dict[str, Any]:
                     else None
                 ),
                 "blocking_reason": list(dict.fromkeys(blocker)),
+                **_growth_asset_metadata(row),
             }
         )
 

@@ -307,6 +307,137 @@ def test_spell_and_equipment_preview_confirm_idempotent(economy_client: TestClie
     )
 
 
+def test_wizard_ritualist_casts_unprepared_spellbook_ritual_without_slot(
+    economy_client: TestClient,
+) -> None:
+    campaign = economy_client.post("/api/v1/campaigns", json={"name": "法师仪式"}).json()
+    ritualist = {
+        "name": "仪式研习者",
+        "kind": "class_feature",
+        "runtime": {
+            "automation_status": "full",
+            "registry": {
+                "advancement": {
+                    "kind": "ritual_spellbook_casting",
+                    "requires_ritual_tag": True,
+                    "requires_prepared": False,
+                }
+            },
+        },
+    }
+    character = economy_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/characters",
+        json={
+            "name": "仪式法师",
+            "features": [ritualist],
+            "spellcasting": {"slots": {"1": {"current": 0, "max": 2}}},
+        },
+    ).json()
+    engine = create_engine(economy_client.database_url)  # type: ignore[attr-defined]
+    with Session(engine) as session, session.begin():
+        spell = KnownSpell(
+            campaign_id=campaign["id"],
+            character_id=character["id"],
+            name="侦测魔法",
+            spell_level=1,
+            metadata_json={"ritual": True, "class_name": "法师"},
+        )
+        session.add(spell)
+        session.flush()
+        spell_id = spell.id
+    prefix = f"/api/v1/campaigns/{campaign['id']}"
+    body = {
+        "character_id": character["id"],
+        "character_version": character["version"],
+        "known_spell_id": spell_id,
+        "slot_level": 1,
+        "ritual": True,
+    }
+    preview = economy_client.post(f"{prefix}/spells/cast/preview", json=body)
+    assert preview.status_code == 200, preview.text
+    assert preview.json()["slot_before"] == preview.json()["slot_after"] == 0
+    normal = economy_client.post(
+        f"{prefix}/spells/cast/preview", json={**body, "ritual": False}
+    )
+    assert normal.status_code == 400
+    confirm_body = {
+        **body,
+        "preview_token": preview.json()["preview_token"],
+        "idempotency_key": "wizard-ritual-1",
+    }
+    confirmed = economy_client.post(f"{prefix}/spells/cast/confirm", json=confirm_body)
+    assert confirmed.status_code == 200, confirmed.text
+    replay = economy_client.post(f"{prefix}/spells/cast/confirm", json=confirm_body)
+    assert replay.status_code == 200
+    assert replay.json() == confirmed.json()
+
+
+def test_valor_bard_can_use_equipped_proficient_weapon_as_focus(
+    economy_client: TestClient,
+) -> None:
+    campaign = economy_client.post("/api/v1/campaigns", json={"name": "勇气武器法器"}).json()
+    martial_training = {
+        "name": "战争训练",
+        "kind": "subclass_feature",
+        "runtime": {
+            "automation_status": "full",
+            "registry": {
+                "spellcasting": {
+                    "kind": "spellcasting_focus_permission",
+                    "spell_class": "吟游诗人",
+                    "allowed_equipment_kinds": ["weapon"],
+                    "requires_weapon_proficiency": True,
+                }
+            },
+        },
+    }
+    character = economy_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/characters",
+        json={
+            "name": "勇气诗人",
+            "features": [martial_training],
+            "proficiencies": ["军用武器"],
+            "spellcasting": {"slots": {"1": {"current": 1, "max": 1}}},
+        },
+    ).json()
+    engine = create_engine(economy_client.database_url)  # type: ignore[attr-defined]
+    with Session(engine) as session, session.begin():
+        spell = KnownSpell(
+            campaign_id=campaign["id"],
+            character_id=character["id"],
+            name="疗伤术",
+            spell_level=1,
+            metadata_json={"class_name": "吟游诗人"},
+        )
+        weapon = EquipmentInstance(
+            campaign_id=campaign["id"],
+            character_id=character["id"],
+            name="长剑",
+            category="weapon",
+            equipped=True,
+            metadata_json={"equipment_kind": "weapon"},
+        )
+        session.add_all([spell, weapon])
+        session.flush()
+        session.add(
+            PreparedSpell(
+                character_id=character["id"], known_spell_id=spell.id, prepared=True
+            )
+        )
+        spell_id, weapon_id = spell.id, weapon.id
+    prefix = f"/api/v1/campaigns/{campaign['id']}"
+    body = {
+        "character_id": character["id"],
+        "character_version": character["version"],
+        "known_spell_id": spell_id,
+        "slot_level": 1,
+        "focus_equipment_id": weapon_id,
+    }
+    preview = economy_client.post(f"{prefix}/spells/cast/preview", json=body)
+    assert preview.status_code == 200, preview.text
+    assert preview.json()["focus_equipment_id"] == weapon_id
+
+
 def test_free_cast_uses_feature_resource_and_replay_is_idempotent(
     economy_client: TestClient,
 ) -> None:
