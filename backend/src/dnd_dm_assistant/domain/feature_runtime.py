@@ -3176,7 +3176,19 @@ def compile_feature_runtime_registry(
         if isinstance(embedded, Mapping):
             definition = deepcopy(dict(embedded))
         else:
-            definition = feature_runtime_definition(
+            authored_definition = None
+            try:
+                # Lazy import keeps the domain module independent at import
+                # time while allowing the production IR bridge to become the
+                # authoritative source for migrated grants.
+                from dnd_dm_assistant.application.formal_feature_runtime import (
+                    authored_ir_runtime_definition,
+                )
+
+                authored_definition = authored_ir_runtime_definition(grant)
+            except (ImportError, ValueError):
+                authored_definition = None
+            definition = authored_definition or feature_runtime_definition(
                 feature_name=str(grant.get("name") or ""),
                 class_name=str(grant.get("class_name") or ""),
                 class_level=int(grant.get("class_level") or 0),
@@ -3235,13 +3247,9 @@ def compile_feature_runtime_registry(
                     if selection_key:
                         selected = current_resources.get(selection_key)
                         selected_value = (
-                            selected.get("selected")
-                            if isinstance(selected, Mapping)
-                            else None
+                            selected.get("selected") if isinstance(selected, Mapping) else None
                         )
-                        if str(selected_value or "") != str(
-                            entry.get("selection_value") or ""
-                        ):
+                        if str(selected_value or "") != str(entry.get("selection_value") or ""):
                             continue
                     scaling_key = entry.get("scaling_key")
                     if isinstance(scaling_key, str) and scaling_key in scaling_values:
@@ -3258,13 +3266,9 @@ def compile_feature_runtime_registry(
                     if selection_key:
                         selected = current_resources.get(selection_key)
                         selected_value = (
-                            selected.get("selected")
-                            if isinstance(selected, Mapping)
-                            else None
+                            selected.get("selected") if isinstance(selected, Mapping) else None
                         )
-                        if str(selected_value or "") != str(
-                            entry.get("selection_value") or ""
-                        ):
+                        if str(selected_value or "") != str(entry.get("selection_value") or ""):
                             continue
                     movement_modes[str(entry.get("id") or len(movement_modes))] = entry
 

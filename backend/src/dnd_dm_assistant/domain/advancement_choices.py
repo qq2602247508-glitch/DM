@@ -7,6 +7,9 @@ from copy import deepcopy
 from dataclasses import asdict, dataclass
 from typing import Any
 
+from dnd_dm_assistant.application.formal_feature_runtime import (
+    authored_ir_runtime_definition,
+)
 from dnd_dm_assistant.domain.advancement import ClassProgression, merge_spell_slot_resources
 from dnd_dm_assistant.domain.feature_runtime import (
     compile_feature_runtime_registry,
@@ -664,9 +667,9 @@ def advancement_choice_requirements(
 
         if rule.name == "圣武士":
             requirements.append(
-                    ChoiceRequirement(
-                        key="blessed_warrior_cantrips",
-                        kind="feature_option",
+                ChoiceRequirement(
+                    key="blessed_warrior_cantrips",
+                    kind="feature_option",
                     minimum=0,
                     maximum=2,
                     strict=True,
@@ -5109,9 +5112,7 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS["灵能面纱"] = {
                     "ends_on": ["deals_damage", "forces_saving_throw", "manual_end"],
                 }
             ],
-            "resource_lifecycle": {
-                "events": [{"trigger": "long_rest", "operation": "set_to_max"}]
-            },
+            "resource_lifecycle": {"events": [{"trigger": "long_rest", "operation": "set_to_max"}]},
             "runtime_execution": {
                 "status": "ready",
                 "consumer": "combat_feature_action",
@@ -5476,9 +5477,7 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS["料敌机先"] = {
                 "resource_cost": 1,
                 "reset_amount": 1,
             },
-            "resource_lifecycle": {
-                "events": [{"trigger": "long_rest", "operation": "set_to_max"}]
-            },
+            "resource_lifecycle": {"events": [{"trigger": "long_rest", "operation": "set_to_max"}]},
             "runtime_execution": {
                 "status": "ready",
                 "consumer": "combat_feature_action_target_defense_inspection",
@@ -5607,6 +5606,7 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS["圣洁武器"] = {
     "requires_dm_adjudication": False,
 }
 
+
 def _life_domain_healing_modifier(operation: str) -> dict[str, Any]:
     return {
         "combat_start": {
@@ -5639,9 +5639,7 @@ def _life_domain_healing_modifier(operation: str) -> dict[str, Any]:
 SUBCLASS_FEATURE_RUNTIME_CONFIGS["生命门徒"] = _life_domain_healing_modifier(
     "add_spell_slot_plus_two"
 )
-SUBCLASS_FEATURE_RUNTIME_CONFIGS["神祝医者"] = _life_domain_healing_modifier(
-    "grant_self_healing"
-)
+SUBCLASS_FEATURE_RUNTIME_CONFIGS["神祝医者"] = _life_domain_healing_modifier("grant_self_healing")
 SUBCLASS_FEATURE_RUNTIME_CONFIGS["极效治疗"] = _life_domain_healing_modifier(
     "maximize_healing_dice"
 )
@@ -5762,9 +5760,7 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS["序列意识"] = {
                 "resource_cost": 5,
                 "reset_amount": 1,
             },
-            "resource_lifecycle": {
-                "events": [{"trigger": "long_rest", "operation": "set_to_max"}]
-            },
+            "resource_lifecycle": {"events": [{"trigger": "long_rest", "operation": "set_to_max"}]},
             "runtime_execution": {
                 "status": "ready",
                 "consumer": "combat_feature_action_and_d20_resolution",
@@ -5784,6 +5780,10 @@ def subclass_feature_runtime_definition(
     definition: Mapping[str, Any],
 ) -> dict[str, Any] | None:
     """Return a typed runtime registry for an explicitly supported subclass effect."""
+
+    authored_runtime = authored_ir_runtime_definition(definition)
+    if authored_runtime is not None:
+        return authored_runtime
 
     name = str(definition.get("name") or "").strip()
     config = SUBCLASS_FEATURE_RUNTIME_CONFIGS.get(name)
@@ -6586,10 +6586,7 @@ def subclass_runtime_grants(
                     rider_eligibility = raw_rider.get("eligibility")
                     if isinstance(rider_eligibility, dict):
                         nested = rider_eligibility.get("resource")
-                        if (
-                            isinstance(nested, dict)
-                            and nested.get("key") == "$feature_resource"
-                        ):
+                        if isinstance(nested, dict) and nested.get("key") == "$feature_resource":
                             nested["key"] = resource_key
             raw_advancement = runtime_registry.get("advancement")
             if isinstance(raw_advancement, dict):
