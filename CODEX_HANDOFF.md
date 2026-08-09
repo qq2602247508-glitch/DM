@@ -34,7 +34,9 @@
 - 新机器报告：`reports/feature-operator-contracts-2026-08-09.json`、
   `reports/feature-ir-semantic-parity-2026-08-09.json`、
   `reports/feature-ir-production-fanout-2026-08-09.json`，以及更新后的 capability/pack/parity
-  报告。报告生成器连续两次运行 hash 一致。
+  报告。pack readiness 逐条区分 schema/capability/materialized/validator/production-test/
+  authority；当前仍有 65 个 legacy feature-name dispatch 分支，但十条正式 IR 绑定不再执行它们。
+  报告生成器连续两次运行 hash 一致。
 - 必须继续保留且不得暂存/提交：`backend/tests/integrations/`、`backend/tests/ollama.py`。
 
 - 本轮全程单线程，未创建、调用、委托或等待任何子代理。正式固定审计仍为 499 条：

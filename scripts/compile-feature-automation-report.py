@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import re
 from collections import Counter
 from pathlib import Path
 from typing import Any
@@ -38,6 +39,23 @@ ROOT = Path(__file__).resolve().parents[1]
 AUDIT_PATH = ROOT / "scripts/audit-class-feature-coverage.py"
 DEMO_PACK = ROOT / "backend/tests/fixtures/feature_packs/automation_demo_pack.json"
 REPORT_DIR = ROOT / "reports"
+
+
+def _feature_name_branch_count() -> int:
+    """Count remaining legacy name-dispatch branches for audit visibility."""
+
+    paths = (
+        ROOT / "backend/src/dnd_dm_assistant/domain/feature_runtime.py",
+        ROOT / "backend/src/dnd_dm_assistant/domain/advancement_choices.py",
+    )
+    pattern = re.compile(
+        r"\b(?:if|elif)\s+(?:identity|feature_name|name)\s*(?:in|==|\.startswith)"
+    )
+    return sum(
+        len(pattern.findall(path.read_text(encoding="utf-8")))
+        for path in paths
+        if path.exists()
+    )
 
 
 def _audit_module() -> Any:
@@ -167,6 +185,7 @@ def main() -> int:
     )
     demo_materialized: dict[str, dict[str, Any]] = {}
     demo_consumer_contracts: dict[str, dict[str, Any]] = {}
+    demo_readiness_rows: list[dict[str, Any]] = []
     for feature, result in zip(
         sorted(demo_manifest.features, key=lambda item: item.feature_id),
         demo_result.feature_results,
@@ -183,6 +202,27 @@ def main() -> int:
                 definition=demo_materialized[feature.feature_id],
                 source_record_id=feature.source_record_id,
             )
+        demo_readiness_rows.append(
+            {
+                "feature_id": feature.feature_id,
+                "source_trust": feature.source_trust,
+                "schema_valid": result.compile_status != "invalid",
+                "capability_satisfied": bool(result.clause_results)
+                and all(item.capability_ids for item in result.clause_results),
+                "materialized": feature.feature_id in demo_materialized,
+                "validator_passed": feature.feature_id in demo_materialized,
+                "semantic_parity": "not_applicable",
+                "production_tested": feature.feature_id in demo_consumer_contracts
+                and demo_consumer_contracts[feature.feature_id]["automation_status"]
+                == "full",
+                "status_authority": (
+                    "compiler" if result.compile_status == "full" else "legacy"
+                ),
+                "official_runtime_status": "demo_only",
+                "compile_status": result.compile_status,
+                "blockers": list(result.blockers),
+            }
+        )
     _write(
         REPORT_DIR / "feature-pack-readiness-2026-08-09.json",
         {
@@ -204,6 +244,8 @@ def main() -> int:
                     for section in contract["runtime_sections"]
                 }
             ),
+            "readiness_rows": demo_readiness_rows,
+            "feature_name_branch_count": _feature_name_branch_count(),
             "feature_results": [item.to_dict() for item in demo_result.feature_results],
             "conflicts": list(demo_result.conflicts),
             "migration_plan": demo_result.migration_plan,
@@ -256,6 +298,7 @@ def main() -> int:
                 "combat_start_modifiers",
             ],
             "production_evidence": ["test_feature_runtime_fanout"],
+            "feature_name_branch_count": _feature_name_branch_count(),
         },
     )
     print(
@@ -273,6 +316,7 @@ def main() -> int:
                 "formal_semantic_parity": semantic_parity["all_passed"],
                 "fanout_before": before,
                 "fanout_after": [item.compile_status for item in after_results],
+                "feature_name_branch_count": _feature_name_branch_count(),
             },
             ensure_ascii=False,
             sort_keys=True,

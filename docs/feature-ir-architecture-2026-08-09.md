@@ -23,6 +23,9 @@ zero-HP 与窗口消费者识别的 canonical contract，并经过 section valid
 注册前全部 partial、注册后无需修改 specs 即全部 full，并进入
 `feature_runtime_registry` 与 `combat_start_modifiers` 两个生产投影。
 
+审计报告会显式记录当前 65 个 legacy feature-name dispatch 分支；它们是未迁移条目的兼容路径，
+不属于十条正式 IR 绑定的执行来源。后续删除这些分支必须以对应稳定 ID 的生产 parity 和回归为前提。
+
 ## 分层
 
 ```text
