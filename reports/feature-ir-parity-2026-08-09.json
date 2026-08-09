@@ -1066,10 +1066,21 @@
             "status": "exact"
           },
           "resources": {
-            "ir": {},
+            "ir": {
+              "undying_sentinel": {
+                "max": 1,
+                "recovery": "long_rest",
+                "recovery_events": [
+                  {
+                    "operation": "set_to_max",
+                    "rest": "long_rest"
+                  }
+                ]
+              }
+            },
             "legacy": {},
-            "proof": "canonical projection values are identical",
-            "status": "exact"
+            "proof": "typed IR fields normalize to the same rule semantics",
+            "status": "equivalent"
           }
         },
         "ir_contract": {
@@ -1102,7 +1113,18 @@
           ],
           "combat_modifiers": [],
           "movement_modes": [],
-          "resources": {}
+          "resources": {
+            "undying_sentinel": {
+              "max": 1,
+              "recovery": "long_rest",
+              "recovery_events": [
+                {
+                  "operation": "set_to_max",
+                  "rest": "long_rest"
+                }
+              ]
+            }
+          }
         },
         "legacy_contract": {
           "advancement": null,
