@@ -15,6 +15,8 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from dnd_dm_assistant.api.schemas import (
+    AttackActionSequenceCancelCommand,
+    AttackActionSequenceStartCommand,
     CombatActionCommand,
     CombatAttackResolutionCommand,
     CombatDeflectRedirectCommand,
@@ -4106,6 +4108,14 @@ class PlayerRoomService:
             ],
             "pending_rolls": pending,
             "pending_reactions": pending_reactions,
+            "attack_sequences": [
+                serialize(action)
+                for action in actions
+                if action.action_type == "attack_action_sequence"
+                and action.actor_combatant_id in own_ids
+                and CombatEngineService._attack_sequence_metadata(action).get("status")
+                == "open"
+            ],
             "death_save": death_save,
         }
 
@@ -7091,6 +7101,27 @@ class PlayerRoomService:
             active = fighters[combat.current_turn_index] if fighters else None
             character = session.get(Character, principal.character_id)
             actor = self._controlled_actor(fighters, active, principal.character_id)
+            requested_window_id = special_inputs.get("triggered_attack_window_id")
+            if isinstance(requested_window_id, str) and requested_window_id.strip():
+                requested_window = session.get(CombatAction, requested_window_id)
+                requested_metadata = dict(
+                    (requested_window.result_json if requested_window is not None else {}).get(
+                        "action_window"
+                    )
+                    or {}
+                )
+                requested_actor = next(
+                    (
+                        item
+                        for item in fighters
+                        if item.id == requested_metadata.get("reactor_combatant_id")
+                    ),
+                    None,
+                )
+                if requested_actor is not None and self._is_player_controlled(
+                    requested_actor, principal.character_id
+                ):
+                    actor = requested_actor
             if actor is None or target is None or character is None:
                 raise ValueError("当前角色、目标或回合无效")
             CombatEngineService._validate_can_act(actor)
@@ -7108,10 +7139,47 @@ class PlayerRoomService:
                 if actor.entity_type == "character"
                 else self._companion_action_data(actor, action_name)
             )
+            attack_sequence_id = special_inputs.get("attack_sequence_id")
+            attack_sequence_version = special_inputs.get("attack_sequence_version")
+            attack_sequence_slot_index = special_inputs.get("attack_sequence_slot_index")
+            raw_sequence_slot_indices = special_inputs.get("attack_sequence_slot_indices")
+            attack_sequence_slot_indices = (
+                [int(value) for value in raw_sequence_slot_indices]
+                if isinstance(raw_sequence_slot_indices, list)
+                and all(isinstance(value, int) for value in raw_sequence_slot_indices)
+                else []
+            )
+            replacement_policy_id = special_inputs.get(
+                "attack_sequence_replacement_policy_id"
+            )
+            known_spell = session.scalar(
+                select(KnownSpell).where(
+                    KnownSpell.character_id == character.id,
+                    KnownSpell.name == action_name,
+                )
+            )
+            sequence_replacement_kind = (
+                "replace_attack_with_spell"
+                if attack_sequence_id is not None and replacement_policy_id is not None
+                else None
+            )
+            if attack_sequence_id is not None:
+                if not isinstance(attack_sequence_id, str) or not attack_sequence_id.strip():
+                    raise ValueError("攻击动作序列 ID 无效")
+                if not isinstance(attack_sequence_version, int):
+                    raise ValueError("攻击动作序列版本无效")
+                if sequence_replacement_kind is not None:
+                    if known_spell is None or not attack_sequence_slot_indices:
+                        raise ValueError("法术替换必须绑定权威已知法术和攻击槽")
+                    attack_sequence_slot_index = None
+                elif not isinstance(attack_sequence_slot_index, int):
+                    raise ValueError("普通攻击必须选择一个权威攻击槽")
             triggered_window: CombatAction | None = None
             triggered_metadata: dict[str, Any] = {}
             raw_triggered_window_id = special_inputs.get("triggered_attack_window_id")
             if raw_triggered_window_id is not None:
+                if attack_sequence_id is not None:
+                    raise ValueError("攻击动作序列不能与追加攻击窗口叠加")
                 if (
                     not isinstance(raw_triggered_window_id, str)
                     or not raw_triggered_window_id.strip()
@@ -7558,6 +7626,8 @@ class PlayerRoomService:
                 reaction_trigger = (
                     str(triggered_metadata.get("reaction_trigger") or "").strip() or None
                 )
+            if attack_sequence_id is not None:
+                cost = "parent_action_part"
             if cost == "reaction" and not (reaction_trigger or "").strip():
                 raise ValueError("反应动作必须由玩家明确填写 reaction_trigger")
             damage_rules = [
@@ -7927,7 +7997,10 @@ class PlayerRoomService:
             # authoritative combat command.  Keep the final player-room
             # bookkeeping from spending that same resource a second time.
             primary_resource_consumed_by_combat = bool(
-                action.get("resolution_kind") == "weapon_attack"
+                (
+                    action.get("resolution_kind") == "weapon_attack"
+                    or sequence_replacement_kind == "replace_attack_with_spell"
+                )
                 and resource_key
                 and resource_cost > 0
                 and actor.entity_type == "character"
@@ -8445,6 +8518,7 @@ class PlayerRoomService:
                     and (
                         action.get("resolution_kind") == "weapon_attack"
                         or triggered_window is not None
+                        or sequence_replacement_kind == "replace_attack_with_spell"
                     )
                     else None
                 ),
@@ -8454,6 +8528,7 @@ class PlayerRoomService:
                     and (
                         action.get("resolution_kind") == "weapon_attack"
                         or triggered_window is not None
+                        or sequence_replacement_kind == "replace_attack_with_spell"
                     )
                     else 0
                 ),
@@ -8466,6 +8541,39 @@ class PlayerRoomService:
                 triggered_attack_window_version=(
                     triggered_window.version
                     if triggered_window is not None and index == 0
+                    else None
+                ),
+                attack_sequence_id=(
+                    str(attack_sequence_id)
+                    if attack_sequence_id is not None and index == 0
+                    else None
+                ),
+                attack_sequence_version=(
+                    int(attack_sequence_version)
+                    if attack_sequence_id is not None and index == 0
+                    else None
+                ),
+                attack_sequence_slot_index=(
+                    int(attack_sequence_slot_index)
+                    if attack_sequence_slot_index is not None and index == 0
+                    else None
+                ),
+                attack_sequence_slot_indices=(
+                    attack_sequence_slot_indices if index == 0 else []
+                ),
+                attack_sequence_replacement_kind=(
+                    sequence_replacement_kind if index == 0 else None
+                ),
+                attack_sequence_replacement_policy_id=(
+                    str(replacement_policy_id)
+                    if replacement_policy_id is not None and index == 0
+                    else None
+                ),
+                attack_sequence_known_spell_id=(
+                    known_spell.id
+                    if known_spell is not None
+                    and sequence_replacement_kind == "replace_attack_with_spell"
+                    and index == 0
                     else None
                 ),
             )
@@ -8593,6 +8701,69 @@ class PlayerRoomService:
             "turn_advance": turn_advance,
         }
 
+    def start_attack_sequence(
+        self,
+        principal: PlayerPrincipal,
+        actor_version: int,
+        idempotency_key: str,
+    ) -> dict[str, Any]:
+        if principal.character_id is None:
+            raise ValueError("请先绑定角色")
+        with Session(self.engine) as session:
+            room = session.get(PlayerRoom, principal.room_id)
+            combat = session.get(Combat, room.current_combat_id) if room else None
+            if combat is None or combat.status != "active":
+                raise ValueError("当前没有进行中的战斗")
+            fighters = self._ordered_fighters(session, combat.id)
+            active = fighters[combat.current_turn_index] if fighters else None
+            actor = self._controlled_actor(fighters, active, principal.character_id)
+            if actor is None:
+                raise ValueError("当前不是你的可控单位回合")
+            combat_id = combat.id
+            actor_id = actor.id
+        return self.combat.start_attack_sequence(
+            principal.campaign_id,
+            combat_id,
+            AttackActionSequenceStartCommand(
+                actor_combatant_id=actor_id,
+                actor_version=actor_version,
+            ),
+            idempotency_key=idempotency_key,
+        )
+
+    def cancel_attack_sequence(
+        self,
+        principal: PlayerPrincipal,
+        sequence_id: str,
+        sequence_version: int,
+        idempotency_key: str,
+    ) -> dict[str, Any]:
+        if principal.character_id is None:
+            raise ValueError("请先绑定角色")
+        with Session(self.engine) as session:
+            room = session.get(PlayerRoom, principal.room_id)
+            combat = session.get(Combat, room.current_combat_id) if room else None
+            sequence = session.get(CombatAction, sequence_id)
+            actor = (
+                session.get(Combatant, sequence.actor_combatant_id)
+                if sequence is not None and sequence.actor_combatant_id
+                else None
+            )
+            if combat is None or sequence is None or sequence.combat_id != combat.id:
+                raise StateNotFoundError("攻击动作序列不存在")
+            if actor is None or not self._is_player_controlled(actor, principal.character_id):
+                raise ValueError("攻击动作序列不属于当前玩家")
+            combat_id = combat.id
+        return self.combat.cancel_attack_sequence(
+            principal.campaign_id,
+            combat_id,
+            AttackActionSequenceCancelCommand(
+                sequence_id=sequence_id,
+                sequence_version=sequence_version,
+            ),
+            idempotency_key=idempotency_key,
+        )
+
     def resolve_triggered_attack_window(
         self,
         principal: PlayerPrincipal,
@@ -8693,6 +8864,32 @@ class PlayerRoomService:
                 if actor.entity_type == "character"
                 else self._companion_action_data(actor, action_name)
             )
+            attack_sequence_id = special_inputs.get("attack_sequence_id")
+            attack_sequence_version = special_inputs.get("attack_sequence_version")
+            raw_sequence_slot_indices = special_inputs.get("attack_sequence_slot_indices")
+            attack_sequence_slot_indices = (
+                [int(value) for value in raw_sequence_slot_indices]
+                if isinstance(raw_sequence_slot_indices, list)
+                and all(isinstance(value, int) for value in raw_sequence_slot_indices)
+                else []
+            )
+            replacement_policy_id = special_inputs.get(
+                "attack_sequence_replacement_policy_id"
+            )
+            known_spell = session.scalar(
+                select(KnownSpell).where(
+                    KnownSpell.character_id == character.id,
+                    KnownSpell.name == action_name,
+                )
+            )
+            if attack_sequence_id is not None and (
+                not isinstance(attack_sequence_id, str)
+                or not isinstance(attack_sequence_version, int)
+                or not attack_sequence_slot_indices
+                or not isinstance(replacement_policy_id, str)
+                or known_spell is None
+            ):
+                raise ValueError("法术替换必须绑定权威攻击序列、策略、槽位和已知法术")
             if slot_level is not None:
                 base_level = int(action.get("spell_level") or 0)
                 if base_level <= 0 or slot_level < base_level:
@@ -8848,7 +9045,9 @@ class PlayerRoomService:
                         raise ValueError(f"{target.display_name}超出该法术的合法距离")
 
             cost_text = str(action.get("cost") or "动作")
-            cost: Literal["action", "bonus_action", "reaction", "none"] = (
+            cost: Literal[
+                "action", "bonus_action", "reaction", "parent_action_part", "none"
+            ] = (
                 "bonus_action"
                 if "附赠" in cost_text
                 else "reaction"
@@ -8857,6 +9056,8 @@ class PlayerRoomService:
                 if "无" in cost_text
                 else "action"
             )
+            if attack_sequence_id is not None:
+                cost = "parent_action_part"
             reaction_trigger = str(special_inputs.get("reaction_trigger") or "").strip()
             if cost == "reaction":
                 reaction_trigger = self._reaction_trigger_for_support_cast(
@@ -8899,6 +9100,42 @@ class PlayerRoomService:
                 ),
                 amount=healing_total if has_ordinary_heal else 0,
                 reaction_trigger=reaction_trigger if cost == "reaction" else None,
+                resource_key=(
+                    resource_key or None
+                    if attack_sequence_id is not None and index == 0
+                    else None
+                ),
+                resource_cost=(
+                    resource_cost if attack_sequence_id is not None and index == 0 else 0
+                ),
+                attack_sequence_id=(
+                    str(attack_sequence_id)
+                    if attack_sequence_id is not None and index == 0
+                    else None
+                ),
+                attack_sequence_version=(
+                    int(attack_sequence_version)
+                    if attack_sequence_id is not None and index == 0
+                    else None
+                ),
+                attack_sequence_slot_indices=(
+                    attack_sequence_slot_indices if index == 0 else []
+                ),
+                attack_sequence_replacement_kind=(
+                    "replace_attack_with_spell"
+                    if attack_sequence_id is not None and index == 0
+                    else None
+                ),
+                attack_sequence_replacement_policy_id=(
+                    str(replacement_policy_id)
+                    if attack_sequence_id is not None and index == 0
+                    else None
+                ),
+                attack_sequence_known_spell_id=(
+                    known_spell.id
+                    if known_spell is not None and attack_sequence_id is not None and index == 0
+                    else None
+                ),
             )
             commands.append(
                 (
@@ -8927,11 +9164,12 @@ class PlayerRoomService:
             special_inputs,
             {item.id: "always" for item in requested_targets},
         )
-        self._spend_character_resource(
-            principal.character_id,
-            resource_key,
-            resource_cost,
-        )
+        if attack_sequence_id is None:
+            self._spend_character_resource(
+                principal.character_id,
+                resource_key,
+                resource_cost,
+            )
         turn_advance = (
             self._advance_player_room_turn(
                 principal,

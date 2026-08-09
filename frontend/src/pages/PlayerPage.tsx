@@ -31,6 +31,8 @@ import {
   submitMyDeathSave,
   submitMyActionRequest,
   submitMyPlayerRoll,
+  startMyAttackSequence,
+  cancelMyAttackSequence,
   switchPlayerRoom,
   type PlayerRoomSnapshot,
   type PlayerCombatant,
@@ -1202,6 +1204,10 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
   const ownCombatants = combat?.combatants.filter((item) => item.is_own) ?? [];
   const selectedControlledUnit = ownCombatants.find((item) => item.id === selectedControlledUnitId);
   const own = activeOwn ?? selectedControlledUnit ?? ownCombatants[0];
+  const currentAttackSequence = combat?.attack_sequences?.find(
+    (sequence) => sequence.actor_combatant_id === own?.id,
+  );
+  const attackSequenceState = currentAttackSequence?.result_json.attack_sequence;
   const ownUntilSaveEffects = ownCombatants.flatMap((combatant) => (
     (combatant.active_effects ?? [])
       .filter((effect) => effect.duration_unit === "until_save")
@@ -1296,6 +1302,39 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
     };
   }, [selectedActionBase, slotLevel]);
   const selectedSpellLevel = Number(selectedActionBase?.spell_level ?? 0);
+  const selectedActionIsSpell = (snapshot.character?.spells ?? []).some(
+    (spell) => typeof spell === "object" && spell !== null
+      && display((spell as Record<string, unknown>).name) === actionName,
+  );
+  const pendingAttackSlots = attackSequenceState?.slots.filter(
+    (slot) => slot.status === "pending",
+  ) ?? [];
+  const selectedSpellReplacement = attackSequenceState?.replacement_policies.find(
+    (policy) => selectedActionIsSpell
+      && policy.kind === "replace_attack_with_spell"
+      && (policy.spell_levels ?? []).includes(selectedSpellLevel)
+      && pendingAttackSlots.length >= policy.slot_cost,
+  );
+  const attackSequenceAllowsAction = (action: Record<string, unknown>): boolean => {
+    if (!currentAttackSequence) return true;
+    const name = display(action.name);
+    const spell = (snapshot.character?.spells ?? []).some(
+      (item) => typeof item === "object" && item !== null
+        && display((item as Record<string, unknown>).name) === name,
+    );
+    if (spell) {
+      const level = Number(action.spell_level ?? 0);
+      return Boolean(attackSequenceState?.replacement_policies.some(
+        (policy) => policy.kind === "replace_attack_with_spell"
+          && (policy.spell_levels ?? []).includes(level)
+          && pendingAttackSlots.length >= policy.slot_cost,
+      ));
+    }
+    const text = `${display(action.name)} ${display(action.description)} ${display(action.attack_type)}`;
+    return action.is_weapon_attack === true
+      || action.is_unarmed_attack === true
+      || /武器攻击|徒手|weapon attack/i.test(text);
+  };
   const selectedSummonBlock = (() => {
     const plan = selectedActionBase?.rule_plan;
     const blocks = plan && typeof plan === "object" && Array.isArray((plan as { blocks?: unknown[] }).blocks)
@@ -1640,7 +1679,8 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
     || Number(selectedResource?.current ?? 0) >= selectedResourceCost;
   const selectedActionAvailable = Boolean(
     own
-    && playerHasActionEconomy(own, selectedActionCost)
+    && (currentAttackSequence || playerHasActionEconomy(own, selectedActionCost))
+    && (!selectedAction || attackSequenceAllowsAction(selectedAction))
     && selectedResourceAvailable,
   );
   const effectiveEndTurnAfterAttack = selectedActionCost === "reaction" ? false : endTurnAfterAttack;
@@ -1763,6 +1803,18 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
       result.attack_rider_totals = { "divine_smite:bonus_damage": divineSmiteReportedTotal };
       result.divine_smite_slot_level = Number(divineSmiteSlotLevel);
     }
+    if (currentAttackSequence && pendingAttackSlots.length) {
+      result.attack_sequence_id = currentAttackSequence.id;
+      result.attack_sequence_version = currentAttackSequence.version;
+      if (selectedSpellReplacement) {
+        result.attack_sequence_slot_indices = pendingAttackSlots
+          .slice(0, selectedSpellReplacement.slot_cost)
+          .map((slot) => slot.index);
+        result.attack_sequence_replacement_policy_id = selectedSpellReplacement.id;
+      } else {
+        result.attack_sequence_slot_index = pendingAttackSlots[0]?.index;
+      }
+    }
     return result;
   };
   const specialInputValid = (
@@ -1812,6 +1864,15 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
   const isCastAction = !isRuntimeFeatureAction && (isSupportAction || (isSpecialAction && !damageOrSaveBlocks));
   const needsDamageRoll = !isCastAction && selectedDamageBlocks.length > 0;
   const mutation = useMutation({ mutationFn: async (fn: () => Promise<unknown>) => fn(), onSuccess: refresh });
+  const attackSequenceMutation = useMutation({
+    mutationFn: async (mode: "start" | "cancel") => {
+      if (!own) throw new Error("当前没有可控单位");
+      if (mode === "start") return startMyAttackSequence(own.version ?? 1);
+      if (!currentAttackSequence) throw new Error("当前没有未完成的攻击动作序列");
+      return cancelMyAttackSequence(currentAttackSequence.id, currentAttackSequence.version);
+    },
+    onSuccess: () => refresh(),
+  });
   const reactionMutation = useMutation({
     mutationFn: ({ id, version, decision }: { id: string; version: number; decision: "accept" | "reject" }) =>
       resolveMyOpportunityReaction(id, version, decision),
@@ -2428,7 +2489,9 @@ function CombatView({ snapshot, refresh }: { snapshot: PlayerRoomSnapshot; refre
           })}
           {ended ? <p className="rounded border border-amber-800/60 bg-amber-950/20 p-3 text-sm text-amber-100">战斗已由 DM 结束。你仍可查看地图和完整公开日志；奖励请到“我的角色”查看。</p> : null}
           {companionTurn && activeOwn ? <section className="mb-3 rounded border border-violet-700/70 bg-violet-950/20 p-3 text-xs text-violet-100" data-testid="player-summon-turn-panel"><strong>{activeOwn.name} · 独立召唤物回合</strong><p className="mb-0 mt-1 leading-5 text-stone-300">现在控制的是该召唤物本身：移动、动作、附赠动作和结束回合都会写入它自己的 Combatant 与先攻位置，不会代替施法者行动。</p></section> : null}
-          <label className="block text-xs text-stone-400">{companionTurn ? "召唤物动作" : "攻击 / 技能 / 特殊效果"}<select className={`${inputCls} mt-1`} disabled={ended || !combat.is_my_turn} onChange={(event) => { const next = event.target.value; setCombatMode("action"); setActionName(next); const action = actions.find((item) => display(item.name) === next); setTargetId(action?.runtime_feature === true ? (activeOwn?.id ?? own?.id ?? "") : ""); setAimPoint(null); setSummonPosition(null); setSlotLevel(Number(action?.spell_level ?? 0)); setDamageComponentTotals({}); setTargetDamageComponentTotals({}); setChoiceSelections({}); setAreaOrigins({}); setSpecialEffectIds(""); setReactionTrigger(""); setUseDivineSmite(false); setDivineSmiteDamageTotal(""); setDivineSmiteSlotLevel("1"); setConditionToCure(""); setConditionToRemove(""); }} value={actionName}><option value="">{companionTurn ? "选择该召唤物的模板动作" : "选择角色卡动作或法术/特殊技能"}</option>{actions.map((action, index) => { const cost = playerActionCost(action); const available = playerHasActionEconomy(own, cost); return <option disabled={!available} key={`${display(action.name)}-${index}`} value={display(action.name)}>{playerActionCostLabel(cost)} · {actionCategoryLabel(action)} · {display(action.name)} · {damageInstructionForAction(action)}{available ? "" : " · 资源已用"}</option>; })}</select></label>
+          {!companionTurn && combat.is_my_turn && own ? <section className="mb-3 rounded border border-sky-700/70 bg-sky-950/20 p-3 text-xs text-sky-100" data-testid="player-attack-sequence-panel">{attackSequenceState ? <><strong>攻击动作序列 · {attackSequenceState.consumed_slots}/{attackSequenceState.total_slots} 已用</strong><p className="mb-2 mt-1 text-stone-300">剩余 {attackSequenceState.remaining_slots} 个服务端权威攻击槽。选择普通攻击，或选择下方服务器允许的法术替换。</p><div className="flex flex-wrap gap-1">{attackSequenceState.slots.map((slot) => <span className={`rounded px-2 py-1 ${slot.status === "pending" ? "bg-sky-800" : "bg-ink-700 text-stone-400"}`} key={slot.index}>槽 {slot.index + 1} · {slot.status}</span>)}</div><Button className="mt-2" disabled={attackSequenceMutation.isPending} onClick={() => attackSequenceMutation.mutate("cancel")}>放弃剩余槽位</Button></> : <><strong>Attack action</strong><p className="mb-2 mt-1 text-stone-300">开始后由服务器冻结本次攻击次数；普通攻击与合法替换会逐槽结算。</p><Button disabled={!own.action_available || attackSequenceMutation.isPending} onClick={() => attackSequenceMutation.mutate("start")} variant="primary">开始攻击动作序列</Button></>}{attackSequenceMutation.isError ? <p className="mb-0 mt-2 text-red-300">{attackSequenceMutation.error.message}</p> : null}</section> : null}
+          <label className="block text-xs text-stone-400">{companionTurn ? "召唤物动作" : "攻击 / 技能 / 特殊效果"}<select className={`${inputCls} mt-1`} disabled={ended || !combat.is_my_turn} onChange={(event) => { const next = event.target.value; setCombatMode("action"); setActionName(next); const action = actions.find((item) => display(item.name) === next); setTargetId(action?.runtime_feature === true ? (activeOwn?.id ?? own?.id ?? "") : ""); setAimPoint(null); setSummonPosition(null); setSlotLevel(Number(action?.spell_level ?? 0)); setDamageComponentTotals({}); setTargetDamageComponentTotals({}); setChoiceSelections({}); setAreaOrigins({}); setSpecialEffectIds(""); setReactionTrigger(""); setUseDivineSmite(false); setDivineSmiteDamageTotal(""); setDivineSmiteSlotLevel("1"); setConditionToCure(""); setConditionToRemove(""); }} value={actionName}><option value="">{companionTurn ? "选择该召唤物的模板动作" : "选择角色卡动作或法术/特殊技能"}</option>{actions.map((action, index) => { const cost = playerActionCost(action); const available = currentAttackSequence ? attackSequenceAllowsAction(action) : playerHasActionEconomy(own, cost); return <option disabled={!available} key={`${display(action.name)}-${index}`} value={display(action.name)}>{currentAttackSequence ? "攻击槽" : playerActionCostLabel(cost)} · {actionCategoryLabel(action)} · {display(action.name)} · {damageInstructionForAction(action)}{available ? "" : currentAttackSequence ? " · 非法替换" : " · 资源已用"}</option>; })}</select></label>
+          {currentAttackSequence && selectedAction ? <p className="mb-0 mt-2 text-2xs text-sky-200">{selectedSpellReplacement ? `将以「${selectedSpellReplacement.id}」原子消费 ${selectedSpellReplacement.slot_cost} 个攻击槽。` : selectedActionIsSpell ? "该法术不满足本序列冻结的替换策略，服务器会拒绝。" : `将消费攻击槽 ${(pendingAttackSlots[0]?.index ?? 0) + 1}。`}</p> : null}
           {selectedSpellLevel > 0 ? <label className="mt-2 block text-xs text-stone-400">使用法术环阶<select aria-label="玩家使用法术环阶" className={`${inputCls} mt-1`} onChange={(event) => setSlotLevel(Number(event.target.value))} value={Math.max(selectedSpellLevel, slotLevel)}>{(availableSlotLevels.length ? availableSlotLevels : [selectedSpellLevel]).map((level) => { const slot = snapshot.character?.resources?.[`spell_slots_${level}`] as { label?: string; current?: number; max?: number } | undefined; return <option disabled={Number(slot?.current ?? 0) < 1} key={level} value={level}>{level}环 · {slot?.label ?? `法术位${level}`} · 可用 {Number(slot?.current ?? 0)}/{Number(slot?.max ?? 0)}</option>; })}</select><span className="mt-1 block text-2xs text-amber-200">当前施法：{Math.max(selectedSpellLevel, slotLevel)}环；伤害骰会按升环规则增加。</span></label> : null}
           {selectedAction ? <p className="mb-0 mt-2 text-2xs text-stone-400" data-testid="player-selected-action-constraints">资源/窗口：{playerActionCostLabel(selectedActionCost)} · {selectedActionCost === "reaction" ? "填写实际触发事件；不自动结束当前回合" : selectedActionCost === "legendary_action" ? "仅限传奇动作窗口" : selectedActionCost === "lair_action" ? "仅限巢穴动作窗口" : "当前回合"}{selectedResourceKey ? ` · ${selectedResource?.label ?? selectedResourceKey} ${Number(selectedResource?.current ?? 0)}/${Number(selectedResource?.max ?? 0)}` : ""}{!selectedActionAvailable ? " · 当前不可用" : ""}{targeting?.requiresElevation ? ` · 三维区域：锚点 ${targeting.anchorHeightFt ?? "未记录"}尺；目标必须有 elevation_ft` : ""}</p> : null}
           {isCunningAction ? <div className="mt-2 rounded border border-cyan-800/60 bg-cyan-950/20 p-2 text-xs text-cyan-100" data-testid="player-cunning-action-choice"><label className="block">附赠动作分支<select aria-label="灵巧动作分支" className={`${inputCls} mt-1`} onChange={(event) => { setCunningActionChoice(event.target.value as "dash" | "disengage" | "hide"); setFeatureActionOutcome(""); setFeatureActionNote(""); }} value={cunningActionChoice}><option value="dash">疾走：增加一次速度的移动力</option><option value="disengage">撤离：本回合移动不触发借机攻击</option><option value="hide">躲藏：需要 DM 确认隐匿结果</option></select></label>{featureActionNeedsAdjudication ? <div className="mt-2 grid gap-2 sm:grid-cols-2"><label>DM 裁定结果<select aria-label="灵巧动作躲藏结果" className={`${inputCls} mt-1`} onChange={(event) => setFeatureActionOutcome(event.target.value as "" | "success" | "failure")} value={featureActionOutcome}><option value="">等待 DM 裁定</option><option value="success">成功</option><option value="failure">失败</option></select></label><label>裁定说明<input aria-label="灵巧动作躲藏裁定说明" className={`${inputCls} mt-1`} onChange={(event) => setFeatureActionNote(event.target.value)} placeholder="例如：隐匿检定超过敌方被动察觉" value={featureActionNote} /></label></div> : <p className="mb-0 mt-1 text-2xs text-stone-300">疾走和撤离会直接复用标准动作引擎，真实改变本回合移动力或借机攻击状态。</p>}</div> : null}

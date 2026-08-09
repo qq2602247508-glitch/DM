@@ -2928,6 +2928,7 @@ def compile_feature_runtime_registry(
     proficiency_registry: list[dict[str, Any]] = []
     feature_contracts: dict[str, dict[str, Any]] = {}
     attack_action_count = 1
+    attack_slot_replacements: dict[str, dict[str, Any]] = {}
 
     for grant in grants:
         runtime = grant.get("runtime")
@@ -2982,6 +2983,12 @@ def compile_feature_runtime_registry(
             count = combat_start.get("attack_action_count")
             if isinstance(count, int):
                 attack_action_count = max(attack_action_count, count)
+            for raw in combat_start.get("attack_slot_replacements") or ():
+                if isinstance(raw, Mapping):
+                    entry = deepcopy(dict(raw))
+                    replacement_id = str(entry.get("id") or "").strip()
+                    if replacement_id:
+                        attack_slot_replacements[replacement_id] = entry
             for raw in combat_start.get("modifiers") or ():
                 if isinstance(raw, Mapping):
                     entry = deepcopy(dict(raw))
@@ -3159,6 +3166,7 @@ def compile_feature_runtime_registry(
         },
         "combat_start": {
             "attack_action_count": attack_action_count,
+            "attack_slot_replacements": list(attack_slot_replacements.values()),
             "modifiers": list(modifiers.values()),
             "defenses": list(defenses.values()),
         },

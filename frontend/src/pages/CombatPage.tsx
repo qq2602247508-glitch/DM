@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent, type
 
 import {
   advanceCombatTurn, confirmCombatAction, confirmCombatEffect,
+  startCombatAttackSequence, cancelCombatAttackSequence,
   confirmCombatSettlement, confirmCombatantDeath, confirmConcentrationCheck,
   confirmDeathSave, confirmCombatEffectSave, createCombat, createCombatant, deleteCombatant, endCombatEffect,
   createEvent, endCombatSummon, getCombatEndCondition, getDeathSave, listCombatActions, listCombatEffects, listCombatants, listCombats,
@@ -1852,6 +1853,47 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
   const activeFighter = combat.status === "active"
     ? ordered[combat.current_turn_index] ?? ordered[0]
     : undefined;
+  const activeAttackSequence = (combatActions.data ?? []).find((action) => {
+    if (
+      action.action_type !== "attack_action_sequence"
+      || action.actor_combatant_id !== activeFighter?.id
+    ) return false;
+    const metadata = action.result_json?.attack_sequence;
+    return typeof metadata === "object" && metadata !== null
+      && (metadata as Record<string, unknown>).status === "open";
+  });
+  const activeAttackSequenceState = activeAttackSequence?.result_json?.attack_sequence as
+    | { total_slots?: number; consumed_slots?: number; remaining_slots?: number }
+    | undefined;
+  const attackSequenceMutation = useMutation({
+    mutationFn: async (mode: "start" | "cancel") => {
+      if (!activeFighter) throw new Error("当前没有活动单位");
+      if (mode === "start") {
+        return startCombatAttackSequence(
+          campaignId,
+          combat.id,
+          activeFighter.id,
+          activeFighter.version,
+        );
+      }
+      if (!activeAttackSequence) throw new Error("当前没有未完成的攻击动作序列");
+      return cancelCombatAttackSequence(
+        campaignId,
+        combat.id,
+        activeAttackSequence.id,
+        activeAttackSequence.version,
+      );
+    },
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: ["combat-actions", campaignId, combat.id] });
+      void client.invalidateQueries({ queryKey: ["combatants", campaignId, combat.id] });
+      showToast(activeAttackSequence ? "已放弃剩余攻击槽" : "攻击动作序列已开始");
+    },
+    onError: (error) => showToast(
+      error instanceof Error ? error.message : "攻击动作序列操作失败",
+      "error",
+    ),
+  });
   const activeFighterIdForCard = activeFighter?.id;
   useEffect(() => {
     if (activeFighterIdForCard) setExpandedFighterId(activeFighterIdForCard);
@@ -2387,6 +2429,11 @@ function CombatCard({ campaignId, combat, candidates, encounterConsequences, gri
             <h3 className="mb-0 mt-1 text-sm text-parchment-100">当前回合操作台</h3>
             <p className="mb-0 mt-1 text-2xs text-stone-500">随当前角色自动切换；玩家在这里选择行动，怪物在这里自动执行。</p>
           </div>
+          {activeFighter ? (
+            <div className="mb-3 rounded border border-sky-800/70 bg-sky-950/20 p-3 text-xs text-sky-100" data-testid="dm-attack-sequence-panel">
+              {activeAttackSequence ? <><strong>攻击动作序列 · {activeAttackSequenceState?.consumed_slots ?? 0}/{activeAttackSequenceState?.total_slots ?? 0}</strong><p className="mb-2 mt-1 text-stone-300">剩余 {activeAttackSequenceState?.remaining_slots ?? 0} 个权威攻击槽；玩家端刷新后会恢复同一序列。</p><Button disabled={attackSequenceMutation.isPending} onClick={() => attackSequenceMutation.mutate("cancel")}>放弃剩余槽位</Button></> : <><strong>Attack action 序列</strong><p className="mb-2 mt-1 text-stone-300">为当前单位冻结权威攻击次数，并只在这里消费一次动作。</p><Button disabled={!activeFighter.action_available || attackSequenceMutation.isPending} onClick={() => attackSequenceMutation.mutate("start")} variant="primary">开始攻击动作序列</Button></>}
+            </div>
+          ) : null}
           {activeFighter ? (
             <TurnCommandConsole
               key={`${combat.id}:${resetGeneration}:${activeFighter.id}`}

@@ -785,6 +785,17 @@ class CombatActionCommand(BaseModel):
     reaction_window_id: str | None = Field(default=None, min_length=1, max_length=36)
     triggered_attack_window_id: str | None = Field(default=None, min_length=1, max_length=36)
     triggered_attack_window_version: int | None = Field(default=None, ge=1)
+    attack_sequence_id: str | None = Field(default=None, min_length=1, max_length=36)
+    attack_sequence_version: int | None = Field(default=None, ge=1)
+    attack_sequence_slot_index: int | None = Field(default=None, ge=0, le=20)
+    attack_sequence_slot_indices: list[int] = Field(default_factory=list, max_length=2)
+    attack_sequence_replacement_kind: (
+        Literal["replace_attack_with_spell", "replace_attack_with_ally_attack"] | None
+    ) = None
+    attack_sequence_replacement_policy_id: str | None = Field(
+        default=None, min_length=1, max_length=120
+    )
+    attack_sequence_known_spell_id: str | None = Field(default=None, min_length=1, max_length=36)
     reaction_trigger: str | None = Field(default=None, max_length=1_000)
     reaction_event: (
         Literal[
@@ -890,6 +901,45 @@ class CombatActionCommand(BaseModel):
                 raise ValueError("the first sequence step must spend an action resource")
             if self.sequence_step > 0 and self.action_cost != "none":
                 raise ValueError("only the first sequence step may spend an action resource")
+        attack_sequence_values = (self.attack_sequence_id, self.attack_sequence_version)
+        if any(value is not None for value in attack_sequence_values) and not all(
+            value is not None for value in attack_sequence_values
+        ):
+            raise ValueError("attack sequence id and version are required together")
+        if self.attack_sequence_id is not None:
+            if self.action_cost != "parent_action_part":
+                raise ValueError("an attack sequence slot must use parent_action_part")
+            if self.attack_sequence_replacement_kind is None:
+                if (
+                    not self.is_attack
+                    or self.attack_sequence_slot_index is None
+                    or self.attack_sequence_slot_indices
+                ):
+                    raise ValueError(
+                        "an ordinary attack sequence slot must resolve one real attack"
+                    )
+            elif self.attack_sequence_replacement_kind == "replace_attack_with_spell":
+                if self.attack_sequence_slot_index is not None:
+                    raise ValueError("a spell replacement must use attack_sequence_slot_indices")
+                if not self.attack_sequence_slot_indices:
+                    raise ValueError("a spell replacement must consume one or two attack slots")
+                if not self.attack_sequence_known_spell_id:
+                    raise ValueError("a spell replacement must bind a known spell")
+            if len(set(self.attack_sequence_slot_indices)) != len(
+                self.attack_sequence_slot_indices
+            ):
+                raise ValueError("attack sequence slot indices must be unique")
+            if self.attack_sequence_replacement_kind is not None and not (
+                self.attack_sequence_replacement_policy_id or ""
+            ).strip():
+                raise ValueError("an attack slot replacement must bind its frozen policy")
+        elif (
+            self.attack_sequence_slot_indices
+            or self.attack_sequence_replacement_kind is not None
+            or self.attack_sequence_replacement_policy_id is not None
+            or self.attack_sequence_known_spell_id is not None
+        ):
+            raise ValueError("attack sequence replacement fields require an attack sequence")
         if self.conditions_to_apply and self.condition_duration is None:
             raise ValueError("condition_duration is required for structured monster conditions")
         if self.condition_duration is not None and not self.conditions_to_apply:
@@ -960,6 +1010,27 @@ class CombatActionCommand(BaseModel):
         if (self.help_effect_id is None) != (self.help_effect_version is None):
             raise ValueError("help_effect_id and help_effect_version must be provided together")
         return self
+
+
+class AttackActionSequenceStartCommand(BaseModel):
+    actor_combatant_id: str = Field(min_length=1, max_length=36)
+    actor_version: int = Field(ge=1)
+
+
+class AttackActionSequenceCancelCommand(BaseModel):
+    sequence_id: str = Field(min_length=1, max_length=36)
+    sequence_version: int = Field(ge=1)
+
+
+class AttackActionSequenceCommanderStrikeCommand(BaseModel):
+    sequence_id: str = Field(min_length=1, max_length=36)
+    sequence_version: int = Field(ge=1)
+    actor_combatant_id: str = Field(min_length=1, max_length=36)
+    actor_version: int = Field(ge=1)
+    slot_index: int = Field(ge=0, le=20)
+    ally_combatant_id: str = Field(min_length=1, max_length=36)
+    ally_version: int = Field(ge=1)
+    superiority_die_total: int = Field(ge=1, le=12)
 
 
 class CombatActionBatchItem(BaseModel):

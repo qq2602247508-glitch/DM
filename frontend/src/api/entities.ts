@@ -757,6 +757,34 @@ export const confirmCombatAction = (
     },
   );
 
+export const startCombatAttackSequence = (
+  cid: string,
+  combatId: string,
+  actorCombatantId: string,
+  actorVersion: number,
+) => apiFetch<Record<string, unknown>>(
+  `/campaigns/${cid}/combats/${combatId}/attack-sequences/start`,
+  {
+    method: "POST",
+    body: { actor_combatant_id: actorCombatantId, actor_version: actorVersion },
+    headers: { "X-Request-ID": createClientId("dm-attack-sequence-start") },
+  },
+);
+
+export const cancelCombatAttackSequence = (
+  cid: string,
+  combatId: string,
+  sequenceId: string,
+  sequenceVersion: number,
+) => apiFetch<Record<string, unknown>>(
+  `/campaigns/${cid}/combats/${combatId}/attack-sequences/${sequenceId}/cancel`,
+  {
+    method: "POST",
+    body: { sequence_id: sequenceId, sequence_version: sequenceVersion },
+    headers: { "X-Request-ID": createClientId("dm-attack-sequence-cancel") },
+  },
+);
+
 export const resolveCombatAttackResolution = (
   cid: string,
   combatId: string,

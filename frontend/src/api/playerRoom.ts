@@ -411,7 +411,30 @@ export type PlayerCombatSnapshot = {
   }>;
   pending_rolls: PlayerPendingRoll[];
   pending_reactions: PlayerPendingReaction[];
+  attack_sequences: PlayerAttackSequence[];
   death_save: PlayerDeathSave | null;
+};
+
+export type PlayerAttackSequence = {
+  id: string;
+  version: number;
+  actor_combatant_id: string;
+  result_json: {
+    attack_sequence: {
+      status: "open" | "completed" | "cancelled" | "expired";
+      total_slots: number;
+      consumed_slots: number;
+      remaining_slots: number;
+      slots: Array<{ index: number; status: string; resolution_kind?: string }>;
+      replacement_policies: Array<{
+        id: string;
+        kind: "replace_attack_with_spell" | "replace_attack_with_ally_attack";
+        slot_cost: number;
+        spell_levels?: number[];
+        maneuver_id?: string;
+      }>;
+    };
+  };
 };
 
 export type PlayerRoomSnapshot = {
@@ -835,6 +858,24 @@ export const attackWithMyCombatant = (
     idempotency_key: createClientId("player-attack"),
   }),
 });
+
+export const startMyAttackSequence = (actorVersion: number) =>
+  playerFetch<Record<string, unknown>>("/player-room/me/combat/attack-sequences/start", {
+    method: "POST",
+    body: JSON.stringify({
+      actor_version: actorVersion,
+      idempotency_key: createClientId("player-attack-sequence-start"),
+    }),
+  });
+
+export const cancelMyAttackSequence = (sequenceId: string, sequenceVersion: number) =>
+  playerFetch<Record<string, unknown>>(`/player-room/me/combat/attack-sequences/${sequenceId}/cancel`, {
+    method: "POST",
+    body: JSON.stringify({
+      sequence_version: sequenceVersion,
+      idempotency_key: createClientId("player-attack-sequence-cancel"),
+    }),
+  });
 
 export const castMyCombatAction = (
   targetId: string,

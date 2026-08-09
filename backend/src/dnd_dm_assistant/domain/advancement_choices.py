@@ -3844,7 +3844,33 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS["战斗激励"] = {
 # complete consumer, but the connected roll maneuvers are fail-closed and
 # cannot expose an unlearned option.
 SUBCLASS_FEATURE_RUNTIME_CONFIGS["卓越战技"] = {
-    "combat_start": {"modifiers": [], "defenses": []},
+    "combat_start": {
+        "modifiers": [],
+        "defenses": [],
+        "attack_slot_replacements": [
+            {
+                "id": "battle_master:commander_strike",
+                "kind": "replace_attack_with_ally_attack",
+                "maneuver_id": "commander_strike",
+                "slot_cost": 1,
+                "uses_per_sequence": 1,
+                "ally_action_cost": "reaction",
+                "attack_profile": "weapon_or_unarmed",
+                "payment": {
+                    "resource_kind": "superiority_dice",
+                    "resource_cost": 1,
+                    "actual_die_value": True,
+                    "resource_die_size": True,
+                },
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "attack_sequence_ally_triggered_attack_window",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        ],
+    },
     "resources": {
         "$feature_resource": {
             "key": "$feature_resource",
@@ -4428,6 +4454,71 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS["精通战技"] = {
             "requires_dm_adjudication": False,
         }
     },
+    "actions": {},
+    "triggers": [],
+    "attack_riders": [],
+    "automation_status": "full",
+    "requires_dm_adjudication": False,
+}
+
+# Attack-slot replacement contracts are frozen into each Attack action sequence.
+# The combat consumer dispatches only on these typed policies; class and feature
+# names never enter the transactional resolver.
+SUBCLASS_FEATURE_RUNTIME_CONFIGS["战争魔法"] = {
+    "combat_start": {
+        "modifiers": [],
+        "defenses": [],
+        "attack_slot_replacements": [
+            {
+                "id": "replace_attack_with_wizard_cantrip",
+                "kind": "replace_attack_with_spell",
+                "slot_cost": 1,
+                "spell_levels": [0],
+                "spellcasting_classes": ["法师", "wizard"],
+                "casting_time": "action",
+                "uses_per_sequence": 1,
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "attack_action_sequence_and_player_spell_action",
+                    "persistence": "combat_action_operation_transaction_and_character_resource",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        ],
+    },
+    "resources": {},
+    "actions": {},
+    "triggers": [],
+    "attack_riders": [],
+    "automation_status": "full",
+    "requires_dm_adjudication": False,
+}
+
+SUBCLASS_FEATURE_RUNTIME_CONFIGS["精通战争魔法"] = {
+    "combat_start": {
+        "modifiers": [],
+        "defenses": [],
+        "attack_slot_replacements": [
+            {
+                "id": "replace_two_attacks_with_wizard_spell",
+                "kind": "replace_attack_with_spell",
+                "slot_cost": 2,
+                "spell_levels": [1, 2],
+                "spellcasting_classes": ["法师", "wizard"],
+                "casting_time": "action",
+                "uses_per_sequence": 1,
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "attack_action_sequence_and_player_spell_action",
+                    "persistence": "combat_action_operation_transaction_and_character_resource",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        ],
+    },
+    "resources": {},
     "actions": {},
     "triggers": [],
     "attack_riders": [],
@@ -5303,6 +5394,17 @@ def subclass_runtime_grants(
                     or not value.get("maneuver_id")
                     or str(value.get("maneuver_id")) in learned
                 ]
+            combat_start = runtime_registry.get("combat_start")
+            if isinstance(combat_start, dict):
+                raw_replacements = combat_start.get("attack_slot_replacements")
+                if isinstance(raw_replacements, list):
+                    combat_start["attack_slot_replacements"] = [
+                        value
+                        for value in raw_replacements
+                        if not isinstance(value, Mapping)
+                        or not value.get("maneuver_id")
+                        or str(value.get("maneuver_id")) in learned
+                    ]
         spell_contract = _subclass_prepared_spell_contract(str(definition.get("description") or ""))
         if spell_contract is not None:
             runtime_registry = {

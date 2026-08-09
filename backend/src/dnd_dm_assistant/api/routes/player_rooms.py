@@ -263,6 +263,16 @@ class AttackInput(BaseModel):
     idempotency_key: str = Field(min_length=8, max_length=120)
 
 
+class AttackSequenceStartInput(BaseModel):
+    actor_version: int = Field(ge=1)
+    idempotency_key: str = Field(min_length=8, max_length=120)
+
+
+class AttackSequenceCancelInput(BaseModel):
+    sequence_version: int = Field(ge=1)
+    idempotency_key: str = Field(min_length=8, max_length=120)
+
+
 class TriggeredAttackInput(BaseModel):
     version: int = Field(ge=1)
     decision: Literal["reject"]
@@ -881,6 +891,38 @@ def attack(
             body.reaction_trigger,
             body.special_inputs,
             attack_d20=body.attack_d20,
+        )
+    )
+
+
+@public_player_room_router.post("/me/combat/attack-sequences/start")
+def start_attack_sequence(
+    body: AttackSequenceStartInput,
+    principal: Annotated[PlayerPrincipal, Depends(get_player_principal)],
+    service: Annotated[PlayerRoomService, Depends(get_player_room_service)],
+) -> dict[str, Any]:
+    return _safe(
+        lambda: service.start_attack_sequence(
+            principal,
+            body.actor_version,
+            body.idempotency_key,
+        )
+    )
+
+
+@public_player_room_router.post("/me/combat/attack-sequences/{sequence_id}/cancel")
+def cancel_attack_sequence(
+    sequence_id: str,
+    body: AttackSequenceCancelInput,
+    principal: Annotated[PlayerPrincipal, Depends(get_player_principal)],
+    service: Annotated[PlayerRoomService, Depends(get_player_room_service)],
+) -> dict[str, Any]:
+    return _safe(
+        lambda: service.cancel_attack_sequence(
+            principal,
+            sequence_id,
+            body.sequence_version,
+            body.idempotency_key,
         )
     )
 

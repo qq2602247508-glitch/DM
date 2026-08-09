@@ -14,6 +14,9 @@ from sqlalchemy.engine import CursorResult, Engine
 from sqlalchemy.orm import Session
 
 from dnd_dm_assistant.api.schemas import (
+    AttackActionSequenceCancelCommand,
+    AttackActionSequenceCommanderStrikeCommand,
+    AttackActionSequenceStartCommand,
     CombatActionCommand,
     CombatAttackResolutionCommand,
     CombatDeflectRedirectCommand,
@@ -86,9 +89,11 @@ from dnd_dm_assistant.infrastructure.database.models import (
     CombatSettlement,
     CurrencyTransaction,
     DeathSave,
+    KnownSpell,
     MonsterInstance,
     OperationTransaction,
     PlayerActionRequest,
+    PreparedSpell,
     SceneGrid,
     SceneObject,
     SceneParticipant,
@@ -137,6 +142,665 @@ class CombatEngineService:
         "reckless_attack": "reckless_attack",
         "鲁莽攻击": "reckless_attack",
     }
+
+    @staticmethod
+    def _attack_sequence_metadata(sequence: CombatAction) -> dict[str, Any]:
+        raw = (sequence.result_json or {}).get("attack_sequence")
+        if not isinstance(raw, dict):
+            raise ValueError("攻击动作序列缺少权威状态")
+        return dict(raw)
+
+    @classmethod
+    def _attack_sequence_replacements(cls, actor: Combatant) -> list[dict[str, Any]]:
+        runtime = (actor.snapshot_json or {}).get("feature_runtime")
+        combat_start = runtime.get("combat_start") if isinstance(runtime, dict) else None
+        raw = (
+            combat_start.get("attack_slot_replacements")
+            if isinstance(combat_start, dict)
+            else None
+        )
+        return [dict(item) for item in raw or [] if isinstance(item, dict)]
+
+    @classmethod
+    def _attack_action_count(cls, actor: Combatant) -> int:
+        runtime = (actor.snapshot_json or {}).get("feature_runtime")
+        combat_start = runtime.get("combat_start") if isinstance(runtime, dict) else None
+        count = (
+            cls._state_int(combat_start.get("attack_action_count"), 1)
+            if isinstance(combat_start, dict)
+            else cls._state_int((actor.snapshot_json or {}).get("attack_action_count"), 1)
+        )
+        return max(1, min(20, count))
+
+    @classmethod
+    def _attack_sequence_scope(
+        cls,
+        session: Session,
+        combat: Combat,
+        sequence_id: str,
+        sequence_version: int,
+        *,
+        actor: Combatant,
+        slot_indices: list[int],
+    ) -> tuple[CombatAction, dict[str, Any]]:
+        sequence = session.get(CombatAction, sequence_id)
+        if (
+            sequence is None
+            or sequence.combat_id != combat.id
+            or sequence.action_type != "attack_action_sequence"
+        ):
+            raise StateNotFoundError("attack action sequence not found")
+        if sequence.version != sequence_version:
+            raise VersionConflict(
+                "combat_action", sequence.id, sequence_version, sequence.version
+            )
+        metadata = cls._attack_sequence_metadata(sequence)
+        if metadata.get("status") != "open":
+            raise ValueError("攻击动作序列已经结束")
+        if sequence.actor_combatant_id != actor.id:
+            raise ValueError("攻击动作序列不属于当前攻击者")
+        if (
+            sequence.round_number != combat.round_number
+            or sequence.turn_index != combat.current_turn_index
+        ):
+            raise ValueError("攻击动作序列已跨越回合边界")
+        slots = metadata.get("slots")
+        if not isinstance(slots, list):
+            raise ValueError("攻击动作序列槽位损坏")
+        if not slot_indices or len(set(slot_indices)) != len(slot_indices):
+            raise ValueError("攻击动作序列必须选择唯一槽位")
+        for index in slot_indices:
+            if index < 0 or index >= len(slots):
+                raise ValueError("攻击槽位超出权威序列范围")
+            slot = slots[index]
+            if not isinstance(slot, dict) or slot.get("status") != "pending":
+                raise ValueError("攻击槽位已被消费或不可用")
+        return sequence, metadata
+
+    @classmethod
+    def _open_attack_sequence(
+        cls,
+        session: Session,
+        combat: Combat,
+        actor: Combatant,
+    ) -> CombatAction | None:
+        candidates = session.scalars(
+            select(CombatAction).where(
+                CombatAction.combat_id == combat.id,
+                CombatAction.actor_combatant_id == actor.id,
+                CombatAction.action_type == "attack_action_sequence",
+                CombatAction.round_number == combat.round_number,
+                CombatAction.turn_index == combat.current_turn_index,
+            )
+        ).all()
+        return next(
+            (
+                sequence
+                for sequence in candidates
+                if cls._attack_sequence_metadata(sequence).get("status") == "open"
+            ),
+            None,
+        )
+
+    @staticmethod
+    def _resolve_attack_sequence_slots(
+        sequence: CombatAction,
+        metadata: dict[str, Any],
+        slot_indices: list[int],
+        *,
+        resolution_kind: str,
+        resolved_action_id: str,
+        replacement_kind: str | None = None,
+        target_id: str | None = None,
+        resource_transaction: dict[str, Any] | None = None,
+        idempotency_key: str,
+    ) -> None:
+        slots = [dict(item) for item in metadata.get("slots", [])]
+        for index in slot_indices:
+            slots[index] = {
+                **slots[index],
+                "status": "resolved",
+                "resolution_kind": resolution_kind,
+                "resolved_action_id": resolved_action_id,
+                "replacement_kind": replacement_kind,
+                "target_id": target_id,
+                "resource_transaction": resource_transaction,
+                "idempotency_key": idempotency_key,
+            }
+        remaining = sum(1 for item in slots if item.get("status") == "pending")
+        metadata.update(
+            {
+                "slots": slots,
+                "consumed_slots": len(slots) - remaining,
+                "remaining_slots": remaining,
+                "status": "completed" if remaining == 0 else "open",
+            }
+        )
+        sequence.result_json = {**dict(sequence.result_json or {}), "attack_sequence": metadata}
+        sequence.version += 1
+        sequence.updated_at = datetime.now(UTC)
+
+    @classmethod
+    def _expire_attack_sequences(
+        cls,
+        session: Session,
+        combat: Combat,
+        *,
+        actor_combatant_id: str | None = None,
+        reason: str,
+    ) -> list[str]:
+        query = select(CombatAction).where(
+            CombatAction.combat_id == combat.id,
+            CombatAction.action_type == "attack_action_sequence",
+        )
+        if actor_combatant_id is not None:
+            query = query.where(CombatAction.actor_combatant_id == actor_combatant_id)
+        expired: list[str] = []
+        for sequence in session.scalars(query).all():
+            metadata = cls._attack_sequence_metadata(sequence)
+            if metadata.get("status") != "open":
+                continue
+            slots = [dict(item) for item in metadata.get("slots", [])]
+            for index, slot in enumerate(slots):
+                if slot.get("status") == "pending":
+                    slots[index] = {**slot, "status": "expired", "expiration_reason": reason}
+            metadata.update(
+                {
+                    "slots": slots,
+                    "remaining_slots": 0,
+                    "status": "expired",
+                    "expiration_reason": reason,
+                }
+            )
+            sequence.result_json = {
+                **dict(sequence.result_json or {}),
+                "attack_sequence": metadata,
+            }
+            sequence.version += 1
+            sequence.updated_at = datetime.now(UTC)
+            expired.append(sequence.id)
+        return expired
+
+    @classmethod
+    def _validate_attack_sequence_replacement(
+        cls,
+        session: Session,
+        sequence: CombatAction,
+        metadata: dict[str, Any],
+        command: CombatActionCommand,
+        slot_indices: list[int],
+        actor: Combatant,
+    ) -> tuple[str, str | None]:
+        replacement_kind = command.attack_sequence_replacement_kind
+        if replacement_kind is None:
+            if (
+                len(slot_indices) != 1
+                or not command.is_attack
+                or command.is_spell_attack
+                or not (command.is_weapon_attack or command.is_unarmed_attack)
+            ):
+                raise ValueError("普通攻击槽必须结算一次真实武器或徒手攻击")
+            return "attack", None
+        policies = metadata.get("replacement_policies")
+        policy = next(
+            (
+                item
+                for item in policies or []
+                if isinstance(item, dict)
+                and item.get("id") == command.attack_sequence_replacement_policy_id
+            ),
+            None,
+        )
+        if not isinstance(policy, dict) or policy.get("kind") != replacement_kind:
+            raise ValueError("攻击槽替换不在序列冻结的权威策略内")
+        expected_cost = cls._state_int(policy.get("slot_cost"), 0)
+        if expected_cost < 1 or len(slot_indices) != expected_cost:
+            raise ValueError("攻击槽替换消费数量与权威策略不一致")
+        used = sum(
+            1
+            for slot in metadata.get("slots", [])
+            if isinstance(slot, dict)
+            and slot.get("replacement_kind") == replacement_kind
+            and slot.get("replacement_policy_id") == policy.get("id")
+        )
+        if used and cls._state_int(policy.get("uses_per_sequence"), 1) <= used:
+            raise ValueError("同一攻击动作序列不能重复使用该替换")
+        if replacement_kind != "replace_attack_with_spell":
+            raise ValueError("该攻击槽替换必须通过专用权威窗口执行")
+        if actor.entity_type != "character" or not actor.entity_id:
+            raise ValueError("法术替换只能由角色执行")
+        spell = session.get(KnownSpell, command.attack_sequence_known_spell_id)
+        if spell is None or spell.character_id != actor.entity_id:
+            raise ValueError("替换法术不属于当前角色的权威法术状态")
+        if spell.name != (command.action_name or "").strip():
+            raise ValueError("替换法术记录与实际施法动作不一致")
+        allowed_levels = {
+            cls._state_int(value, -1) for value in policy.get("spell_levels", [])
+        }
+        if spell.spell_level not in allowed_levels:
+            raise ValueError("法术环阶不满足攻击槽替换策略")
+        if spell.spell_level > 0:
+            prepared = session.scalar(
+                select(PreparedSpell).where(
+                    PreparedSpell.character_id == actor.entity_id,
+                    PreparedSpell.known_spell_id == spell.id,
+                    PreparedSpell.prepared.is_(True),
+                )
+            )
+            if prepared is None:
+                raise ValueError("替换法术尚未准备")
+            resource_key = str(command.resource_key or "").strip()
+            match = re.fullmatch(r"spell_slots_(\d)", resource_key)
+            if (
+                match is None
+                or int(match.group(1)) < spell.spell_level
+                or command.resource_cost != 1
+            ):
+                raise ValueError("有环法术替换必须在同一事务消费合法法术位")
+        elif command.resource_key is not None or command.resource_cost:
+            raise ValueError("戏法替换不能消费法术位")
+        metadata_json = dict(spell.metadata_json or {})
+        raw_source = metadata_json.get("character_spell")
+        source = dict(raw_source) if isinstance(raw_source, dict) else metadata_json
+        casting_time = str(
+            source.get("casting_time")
+            or source.get("cost")
+            or metadata_json.get("casting_time")
+            or ""
+        ).strip().lower()
+        if casting_time not in {"action", "动作", "一个动作", "1 action"}:
+            raise ValueError("攻击槽只能替换为施法时间为一个动作的法术")
+        allowed_classes = {
+            str(value).strip().lower() for value in policy.get("spellcasting_classes", [])
+        }
+        spell_classes = {
+            str(value).strip().lower()
+            for value in source.get("classes", metadata_json.get("classes", []))
+        }
+        single_class = str(
+            source.get("class_name") or metadata_json.get("class_name") or ""
+        ).strip().lower()
+        if single_class:
+            spell_classes.add(single_class)
+        if allowed_classes and not spell_classes.intersection(allowed_classes):
+            raise ValueError("攻击槽替换只允许权威法师法术来源")
+        return "spell", str(policy["id"])
+
+    def start_attack_sequence(
+        self,
+        campaign_id: str,
+        combat_id: str,
+        command: AttackActionSequenceStartCommand,
+        *,
+        idempotency_key: str,
+    ) -> dict[str, Any]:
+        if not idempotency_key.strip():
+            raise ValueError("idempotency key is required")
+        with Session(self.engine) as session, session.begin():
+            combat = session.get(Combat, combat_id)
+            actor = session.get(Combatant, command.actor_combatant_id)
+            if combat is None or combat.campaign_id != campaign_id or combat.status != "active":
+                raise StateNotFoundError("active combat not found")
+            if actor is None or actor.combat_id != combat.id:
+                raise StateNotFoundError("attack sequence actor not found")
+            existing = session.scalar(
+                select(CombatAction).where(
+                    CombatAction.combat_id == combat.id,
+                    CombatAction.idempotency_key == f"attack-sequence:{idempotency_key}",
+                )
+            )
+            if existing is not None:
+                return {"sequence": serialize(existing), "actor": serialize(actor)}
+            ordered = self._ordered_combatants(session, combat.id)
+            active = ordered[combat.current_turn_index] if ordered else None
+            if active is None or active.id != actor.id:
+                raise ValueError("只能在自己的回合开始攻击动作序列")
+            self._validate_can_act(actor)
+            if actor.version != command.actor_version:
+                raise VersionConflict("combatant", actor.id, command.actor_version, actor.version)
+            if self._state_int((actor.snapshot_json or {}).get("attack_roll_budget"), 0) > 0:
+                raise ValueError("旧攻击次数预算尚未结清，不能叠加新的攻击动作序列")
+            self._validate_action_economy(
+                session,
+                combat,
+                actor,
+                actor_version=command.actor_version,
+                action_cost="action",
+                consume=True,
+                action_name="Attack",
+            )
+            count = self._attack_action_count(actor)
+            replacements = self._attack_sequence_replacements(actor)
+            metadata: dict[str, Any] = {
+                "status": "open",
+                "attack_action_count": count,
+                "total_slots": count,
+                "consumed_slots": 0,
+                "remaining_slots": count,
+                "slots": [{"index": index, "status": "pending"} for index in range(count)],
+                "replacement_policies": replacements,
+                "actor_version_after_start": actor.version,
+                "round_number": combat.round_number,
+                "turn_index": combat.current_turn_index,
+            }
+            transaction = OperationTransaction(
+                campaign_id=campaign_id,
+                operation_type="combat_attack_sequence_start",
+                idempotency_key=f"attack-sequence:{idempotency_key}",
+                status="applied",
+                before_snapshot={"actor_version": command.actor_version},
+                after_snapshot={"actor_version": actor.version, "attack_sequence": metadata},
+                source="combat",
+                confirmed_at=datetime.now(UTC),
+            )
+            session.add(transaction)
+            session.flush()
+            sequence = CombatAction(
+                campaign_id=campaign_id,
+                combat_id=combat.id,
+                actor_combatant_id=actor.id,
+                transaction_id=transaction.id,
+                action_type="attack_action_sequence",
+                target_combatant_ids=[],
+                request_json=command.model_dump(mode="json"),
+                result_json={"attack_sequence": metadata},
+                explanation="服务端权威攻击动作序列",
+                round_number=combat.round_number,
+                turn_index=combat.current_turn_index,
+                summary=f"{actor.display_name} 开始攻击动作（{count} 次攻击）",
+                idempotency_key=f"attack-sequence:{idempotency_key}",
+                status="confirmed",
+            )
+            session.add(sequence)
+            session.flush()
+            return {"sequence": serialize(sequence), "actor": serialize(actor)}
+
+    def cancel_attack_sequence(
+        self,
+        campaign_id: str,
+        combat_id: str,
+        command: AttackActionSequenceCancelCommand,
+        *,
+        idempotency_key: str,
+    ) -> dict[str, Any]:
+        with Session(self.engine) as session, session.begin():
+            old = session.scalar(
+                select(OperationTransaction).where(
+                    OperationTransaction.campaign_id == campaign_id,
+                    OperationTransaction.idempotency_key
+                    == f"attack-sequence-cancel:{idempotency_key}",
+                )
+            )
+            if old is not None:
+                return dict(old.after_snapshot)
+            combat = session.get(Combat, combat_id)
+            sequence = session.get(CombatAction, command.sequence_id)
+            if combat is None or combat.campaign_id != campaign_id:
+                raise StateNotFoundError("combat not found")
+            if sequence is None or sequence.combat_id != combat.id:
+                raise StateNotFoundError("attack action sequence not found")
+            if sequence.version != command.sequence_version:
+                raise VersionConflict(
+                    "combat_action", sequence.id, command.sequence_version, sequence.version
+                )
+            metadata = self._attack_sequence_metadata(sequence)
+            if metadata.get("status") == "open":
+                metadata["slots"] = [
+                    {**dict(item), "status": "cancelled"}
+                    if isinstance(item, dict) and item.get("status") == "pending"
+                    else item
+                    for item in metadata.get("slots", [])
+                ]
+                metadata["remaining_slots"] = 0
+                metadata["status"] = "cancelled"
+                sequence.result_json = {
+                    **dict(sequence.result_json or {}),
+                    "attack_sequence": metadata,
+                }
+                sequence.version += 1
+                sequence.updated_at = datetime.now(UTC)
+            out = {"sequence": serialize(sequence)}
+            session.add(
+                OperationTransaction(
+                    campaign_id=campaign_id,
+                    operation_type="combat_attack_sequence_cancel",
+                    idempotency_key=f"attack-sequence-cancel:{idempotency_key}",
+                    status="applied",
+                    after_snapshot=out,
+                    source="combat",
+                    confirmed_at=datetime.now(UTC),
+                )
+            )
+            return out
+
+    def confirm_attack_sequence_commander_strike(
+        self,
+        campaign_id: str,
+        combat_id: str,
+        command: AttackActionSequenceCommanderStrikeCommand,
+        *,
+        idempotency_key: str,
+    ) -> dict[str, Any]:
+        """Replace one frozen attack slot with an ally reaction-attack window."""
+
+        with Session(self.engine) as session, session.begin():
+            existing = session.scalar(
+                select(CombatAction).where(
+                    CombatAction.combat_id == combat_id,
+                    CombatAction.idempotency_key == f"commander-strike:{idempotency_key}",
+                )
+            )
+            if existing is not None:
+                sequence = session.get(CombatAction, command.sequence_id)
+                ally = session.get(Combatant, command.ally_combatant_id)
+                return {
+                    "window": serialize(existing),
+                    "sequence": serialize(sequence) if sequence is not None else None,
+                    "ally": serialize(ally) if ally is not None else None,
+                    "already_applied": True,
+                }
+            combat = session.get(Combat, combat_id)
+            actor = session.get(Combatant, command.actor_combatant_id)
+            ally = session.get(Combatant, command.ally_combatant_id)
+            if combat is None or combat.campaign_id != campaign_id or combat.status != "active":
+                raise StateNotFoundError("active combat not found")
+            if actor is None or actor.combat_id != combat.id or not actor.entity_id:
+                raise StateNotFoundError("commander not found")
+            if ally is None or ally.combat_id != combat.id:
+                raise StateNotFoundError("commanded ally not found")
+            if actor.version != command.actor_version:
+                raise VersionConflict("combatant", actor.id, command.actor_version, actor.version)
+            if ally.version != command.ally_version:
+                raise VersionConflict("combatant", ally.id, command.ally_version, ally.version)
+            self._validate_can_act(actor)
+            self._validate_can_act(ally)
+            if not ally.reaction_available:
+                raise ValueError("受令盟友的反应已经用过")
+            if actor.id == ally.id or (
+                self._combatant_faction(actor) != self._combatant_faction(ally)
+            ):
+                raise ValueError("指挥官奇袭必须选择另一名友方单位")
+            sequence, metadata = self._attack_sequence_scope(
+                session,
+                combat,
+                command.sequence_id,
+                command.sequence_version,
+                actor=actor,
+                slot_indices=[command.slot_index],
+            )
+            policy = next(
+                (
+                    item
+                    for item in metadata.get("replacement_policies", [])
+                    if isinstance(item, dict)
+                    and item.get("kind") == "replace_attack_with_ally_attack"
+                    and item.get("maneuver_id") == "commander_strike"
+                ),
+                None,
+            )
+            if not isinstance(policy, dict) or self._state_int(policy.get("slot_cost"), 0) != 1:
+                raise ValueError("当前攻击序列没有冻结合法的盟友攻击替换策略")
+            profiles = self._eligible_attack_profiles_for_mode(ally, "melee_weapon_or_unarmed")
+            if not profiles:
+                profiles = self._eligible_attack_profiles_for_mode(ally, "weapon_only")
+            if not profiles:
+                raise ValueError("受令盟友没有可执行的真实武器或徒手攻击")
+            audible = not self._has_condition(ally, "deafened") and not bool(
+                (ally.snapshot_json or {}).get("cannot_hear")
+            )
+            visible = False
+            if combat.scene_id is not None:
+                grid = session.scalar(
+                    select(SceneGrid).where(SceneGrid.scene_id == combat.scene_id)
+                )
+                if grid is not None:
+                    blockers, _cover = self._grid_obstacles(session, grid)
+                    visible, _mode, _pair = self._grid_footprint_line_of_sight(
+                        session,
+                        grid,
+                        self._grid_footprint(ally),
+                        self._grid_footprint(actor),
+                        blockers,
+                    )
+            if not visible and not audible:
+                raise ValueError("受令盟友既看不见也听不见战斗大师")
+            character = session.get(Character, actor.entity_id)
+            if character is None:
+                raise StateNotFoundError("commander character not found")
+            resources = dict(character.resources or {})
+            payment = policy.get("payment")
+            payment = payment if isinstance(payment, dict) else {}
+            resource_kind = str(payment.get("resource_kind") or "").strip()
+            resource_key = next(
+                (
+                    key
+                    for key, value in resources.items()
+                    if isinstance(value, dict)
+                    and value.get("resource_kind") == resource_kind
+                ),
+                resource_kind,
+            )
+            resource = dict(resources.get(resource_key) or {})
+            resource_before = self._state_int(resource.get("current"), 0)
+            die_size = self._state_int(resource.get("die_size"), 0)
+            if not die_size:
+                raw_value = str(resource.get("value") or "")
+                die_size = self._state_int(raw_value.removeprefix("d"), 0)
+            if resource_before < 1:
+                raise ValueError("卓越骰资源不足")
+            if die_size not in {8, 10, 12} or command.superiority_die_total > die_size:
+                raise ValueError("卓越骰实际骰值超过权威骰面")
+            resource["current"] = resource_before - 1
+            resources[resource_key] = resource
+            character.resources = resources
+            character.version += 1
+            actor_snapshot = dict(actor.snapshot_json or {})
+            actor_snapshot["resources"] = resources
+            actor.snapshot_json = actor_snapshot
+            actor.version += 1
+            actor.updated_at = datetime.now(UTC)
+            transaction = OperationTransaction(
+                campaign_id=campaign_id,
+                operation_type="combat_attack_slot_ally_replacement",
+                idempotency_key=f"commander-strike:{idempotency_key}",
+                status="applied",
+                before_snapshot={
+                    "sequence_version": command.sequence_version,
+                    "commander_version": command.actor_version,
+                    "ally_version": command.ally_version,
+                    "superiority_dice": resource_before,
+                },
+                source="combat",
+                confirmed_at=datetime.now(UTC),
+            )
+            session.add(transaction)
+            session.flush()
+            window_metadata: dict[str, Any] = {
+                "kind": "triggered_attack",
+                "status": "eligible",
+                "trigger_event": "commander_strike",
+                "feature_id": "battle_master:commander_strike",
+                "feature_name": "指挥官奇袭",
+                "action_cost": "reaction",
+                "reaction_trigger": "战斗大师以攻击槽和卓越骰发出指令",
+                "owner_combatant_id": actor.id,
+                "attack_actor_combatant_id": ally.id,
+                "reactor_combatant_id": ally.id,
+                "resource_owner_combatant_id": actor.id,
+                "action_economy_owner_combatant_id": ally.id,
+                "resource_key": None,
+                "resource_cost": 0,
+                "resource_payment": {
+                    "owner_combatant_id": actor.id,
+                    "key": resource_key,
+                    "before": resource_before,
+                    "after": resource_before - 1,
+                    "actual_die_value": command.superiority_die_total,
+                    "die_size": die_size,
+                },
+                "damage_bonus": {
+                    "amount": command.superiority_die_total,
+                    "type": "same_as_attack",
+                    "source": "指挥官奇袭卓越骰",
+                },
+                "candidate_target_ids": [
+                    item.id
+                    for item in self._ordered_combatants(session, combat.id)
+                    if self._combatant_faction(item) != self._combatant_faction(ally)
+                    and item.is_active
+                    and item.hp > 0
+                ],
+                "eligible_attack_profiles": profiles,
+                "parent_action_id": sequence.id,
+                "parent_action_version": sequence.version,
+                "causal_depth": 1,
+                "causal_root_id": sequence.id,
+                "expires_round": combat.round_number,
+                "expires_turn_index": combat.current_turn_index,
+            }
+            window = CombatAction(
+                campaign_id=campaign_id,
+                combat_id=combat.id,
+                actor_combatant_id=ally.id,
+                transaction_id=transaction.id,
+                action_type="triggered_attack_window",
+                target_combatant_ids=list(window_metadata["candidate_target_ids"]),
+                request_json=command.model_dump(mode="json"),
+                result_json={"action_window": window_metadata},
+                explanation="攻击槽与卓越骰已消费；等待盟友决定是否用反应发动真实攻击。",
+                round_number=combat.round_number,
+                turn_index=combat.current_turn_index,
+                summary=f"{actor.display_name} 指挥 {ally.display_name} 发动指挥官奇袭",
+                idempotency_key=f"commander-strike:{idempotency_key}",
+                status="confirmed",
+            )
+            session.add(window)
+            session.flush()
+            self._resolve_attack_sequence_slots(
+                sequence,
+                metadata,
+                [command.slot_index],
+                resolution_kind="ally_attack_window",
+                resolved_action_id=window.id,
+                replacement_kind="replace_attack_with_ally_attack",
+                resource_transaction=window_metadata["resource_payment"],
+                idempotency_key=idempotency_key,
+            )
+            transaction.after_snapshot = {
+                "sequence_id": sequence.id,
+                "sequence_version": sequence.version,
+                "window_id": window.id,
+                "commander_version": actor.version,
+                "ally_version": ally.version,
+                "superiority_dice": resource_before - 1,
+            }
+            return {
+                "window": serialize(window),
+                "sequence": serialize(sequence),
+                "actor": serialize(actor),
+                "ally": serialize(ally),
+                "already_applied": False,
+            }
 
     @staticmethod
     def _feature_healing_total_bounds(
@@ -3637,10 +4301,12 @@ class CombatEngineService:
             )
         if metadata.get("status") != "eligible":
             raise ValueError("追加攻击窗口已处理或已过期")
-        if (
-            metadata.get("reactor_combatant_id") != actor.id
-            or metadata.get("owner_combatant_id") != actor.id
-        ):
+        attack_actor_id = str(
+            metadata.get("attack_actor_combatant_id")
+            or metadata.get("reactor_combatant_id")
+            or ""
+        )
+        if metadata.get("reactor_combatant_id") != actor.id or attack_actor_id != actor.id:
             raise ValueError("追加攻击窗口不属于当前角色")
         if target.id not in {
             str(item) for item in metadata.get("candidate_target_ids", []) if isinstance(item, str)
@@ -13001,6 +13667,46 @@ class CombatEngineService:
                     command.target_version,
                     target.version,
                 )
+            attack_sequence: CombatAction | None = None
+            attack_sequence_metadata: dict[str, Any] | None = None
+            attack_sequence_slot_indices: list[int] = []
+            attack_sequence_resolution_kind = "attack"
+            attack_sequence_policy_id: str | None = None
+            if command.attack_sequence_id is not None:
+                if actor is None:
+                    raise ValueError("攻击动作序列必须绑定攻击者")
+                assert command.attack_sequence_version is not None
+                attack_sequence_slot_indices = (
+                    list(command.attack_sequence_slot_indices)
+                    if command.attack_sequence_slot_indices
+                    else [cast(int, command.attack_sequence_slot_index)]
+                )
+                attack_sequence, attack_sequence_metadata = self._attack_sequence_scope(
+                    session,
+                    combat,
+                    command.attack_sequence_id,
+                    command.attack_sequence_version,
+                    actor=actor,
+                    slot_indices=attack_sequence_slot_indices,
+                )
+                (
+                    attack_sequence_resolution_kind,
+                    attack_sequence_policy_id,
+                ) = self._validate_attack_sequence_replacement(
+                    session,
+                    attack_sequence,
+                    attack_sequence_metadata,
+                    command,
+                    attack_sequence_slot_indices,
+                    actor,
+                )
+            elif (
+                actor is not None
+                and command.is_attack
+                and command.action_cost == "action"
+                and self._open_attack_sequence(session, combat, actor) is not None
+            ):
+                raise ValueError("当前攻击者已有未完成的攻击动作序列，不能叠加旧攻击预算")
             reaction_window = self._validate_reaction_window(
                 session,
                 combat=combat,
@@ -13459,6 +14165,36 @@ class CombatEngineService:
                         "actor": serialize(actor),
                         "target": serialize(target),
                         "end_condition": self._end_condition(session, combat),
+                    }
+            if triggered_attack_window is not None and attack_hit_status is True:
+                triggered_metadata = dict(
+                    (triggered_attack_window.result_json or {}).get("action_window") or {}
+                )
+                raw_bonus = triggered_metadata.get("damage_bonus")
+                bonus = raw_bonus if isinstance(raw_bonus, dict) else {}
+                bonus_amount = self._state_int(bonus.get("amount"), 0)
+                if bonus_amount > 0:
+                    if command.damage_components:
+                        components = list(command.damage_components)
+                        components[0] = components[0].model_copy(
+                            update={"amount": components[0].amount + bonus_amount}
+                        )
+                        command = command.model_copy(
+                            update={
+                                "amount": command.amount + bonus_amount,
+                                "damage_components": components,
+                            }
+                        )
+                    else:
+                        command = command.model_copy(
+                            update={"amount": command.amount + bonus_amount}
+                        )
+                    attack_resolution_result = {
+                        **dict(attack_resolution_result or {}),
+                        "triggered_attack_damage_bonus": {
+                            "amount": bonus_amount,
+                            "source": bonus.get("source"),
+                        },
                     }
             if actor is not None and self._combat_action_is_harmful(command):
                 self._validate_charmed_harm_targets(
@@ -14104,6 +14840,33 @@ class CombatEngineService:
                     action.summary += "；攻击决议被放弃"
             session.add(action)
             session.flush()
+            if attack_sequence is not None and attack_sequence_metadata is not None:
+                self._resolve_attack_sequence_slots(
+                    attack_sequence,
+                    attack_sequence_metadata,
+                    attack_sequence_slot_indices,
+                    resolution_kind=attack_sequence_resolution_kind,
+                    resolved_action_id=action.id,
+                    replacement_kind=command.attack_sequence_replacement_kind,
+                    target_id=target.id,
+                    idempotency_key=idempotency_key,
+                )
+                for slot_index in attack_sequence_slot_indices:
+                    slots = attack_sequence_metadata.get("slots", [])
+                    if isinstance(slots, list) and isinstance(slots[slot_index], dict):
+                        slots[slot_index]["replacement_policy_id"] = attack_sequence_policy_id
+                action.result_json = {
+                    **dict(action.result_json or {}),
+                    "attack_sequence": {
+                        "sequence_id": attack_sequence.id,
+                        "resolved_slot_indices": attack_sequence_slot_indices,
+                        "sequence_version": attack_sequence.version,
+                        "remaining_slots": attack_sequence_metadata["remaining_slots"],
+                        "status": attack_sequence_metadata["status"],
+                    },
+                }
+                slot_labels = "、".join(str(index + 1) for index in attack_sequence_slot_indices)
+                action.summary += f"；攻击槽 {slot_labels} 已结算"
             if (
                 attack_resolution_result is not None
                 and attack_resolution_result.get("applied")
@@ -18100,6 +18863,12 @@ class CombatEngineService:
             )
             previous_active = raw_ordered[previous_raw_index]
             now = datetime.now(UTC)
+            expired_attack_sequence_ids = self._expire_attack_sequences(
+                session,
+                combat,
+                actor_combatant_id=previous_active.id,
+                reason="turn_ended",
+            )
             for row in raw_ordered:
                 if row.hp <= 0 and row.entity_type != "character":
                     if row.is_active:
@@ -18429,6 +19198,7 @@ class CombatEngineService:
                     "predicated_effect_ids": [effect.id for effect in predicated_effects],
                     "recharge_rolls": recharge_rolls,
                     "trait_results": trait_results,
+                    "expired_attack_sequence_ids": expired_attack_sequence_ids,
                 },
                 reason="DM advanced combat turn",
                 source="combat",
@@ -18495,6 +19265,7 @@ class CombatEngineService:
                 "expired_rule_effects": [serialize(effect) for effect in expired_rule_effects],
                 "recharge_rolls": recharge_rolls,
                 "trait_results": trait_results,
+                "expired_attack_sequence_ids": expired_attack_sequence_ids,
             }
             action = CombatAction(
                 campaign_id=campaign_id,
@@ -18533,6 +19304,7 @@ class CombatEngineService:
                 "expired_rule_effects": [serialize(effect) for effect in expired_rule_effects],
                 "recharge_rolls": recharge_rolls,
                 "trait_results": trait_results,
+                "expired_attack_sequence_ids": expired_attack_sequence_ids,
             }
 
     def reset_combat(

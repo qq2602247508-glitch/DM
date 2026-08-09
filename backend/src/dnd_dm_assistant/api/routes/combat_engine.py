@@ -6,6 +6,9 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 
 from dnd_dm_assistant.api.dependencies import get_combat_engine_service
 from dnd_dm_assistant.api.schemas import (
+    AttackActionSequenceCancelCommand,
+    AttackActionSequenceCommanderStrikeCommand,
+    AttackActionSequenceStartCommand,
     CombatActionBatchCommand,
     CombatActionCommand,
     CombatAttackResolutionCommand,
@@ -74,6 +77,66 @@ def confirm_combat_action(
             combat_id,
             body,
             idempotency_key=request_id,
+        )
+    )
+
+
+@router.post("/attack-sequences/start")
+def start_attack_sequence(
+    campaign_id: str,
+    combat_id: str,
+    body: AttackActionSequenceStartCommand,
+    request: Request,
+    service: Annotated[CombatEngineService, Depends(get_combat_engine_service)],
+) -> dict[str, Any]:
+    return _safe_call(
+        lambda: service.start_attack_sequence(
+            campaign_id,
+            combat_id,
+            body,
+            idempotency_key=str(getattr(request.state, "request_id", "unknown")),
+        )
+    )
+
+
+@router.post("/attack-sequences/{sequence_id}/cancel")
+def cancel_attack_sequence(
+    campaign_id: str,
+    combat_id: str,
+    sequence_id: str,
+    body: AttackActionSequenceCancelCommand,
+    request: Request,
+    service: Annotated[CombatEngineService, Depends(get_combat_engine_service)],
+) -> dict[str, Any]:
+    if body.sequence_id != sequence_id:
+        raise HTTPException(status_code=400, detail="攻击序列路径与请求体不一致")
+    return _safe_call(
+        lambda: service.cancel_attack_sequence(
+            campaign_id,
+            combat_id,
+            body,
+            idempotency_key=str(getattr(request.state, "request_id", "unknown")),
+        )
+    )
+
+
+@router.post("/attack-sequences/{sequence_id}/commander-strike")
+def confirm_attack_sequence_commander_strike(
+    campaign_id: str,
+    combat_id: str,
+    sequence_id: str,
+    body: AttackActionSequenceCommanderStrikeCommand,
+    request: Request,
+    service: Annotated[CombatEngineService, Depends(get_combat_engine_service)],
+) -> dict[str, Any]:
+    if body.sequence_id != sequence_id:
+        raise HTTPException(status_code=400, detail="攻击序列路径与请求体不一致")
+    return _safe_call(
+        lambda: service.confirm_attack_sequence_commander_strike(
+            campaign_id,
+            combat_id,
+            body,
+            idempotency_key=str(getattr(request.state, "request_id", "unknown")),
         )
     )
 
