@@ -62,17 +62,104 @@ def test_migration_planner_keeps_fixed_scope_and_status_counts() -> None:
     report = _planner_module().plan()
     assert report["audit_scope"]["total_features"] == 499
     assert report["audit_status_counts"] == {
-        "full": 256,
-        "partial": 169,
+        "full": 268,
+        "partial": 157,
         "dm_only": 74,
     }
     assert report["readiness_counts"] == {
         "consumer_partial": 32,
-        "already_full": 256,
-        "missing_runtime_contract": 160,
+        "already_full": 268,
+        "missing_runtime_contract": 148,
         "missing_source": 35,
         "manual_boundary": 10,
         "needs_contract_review": 6,
+    }
+
+
+def test_migration_matrix_exposes_stable_execution_evidence() -> None:
+    report = _planner_module().plan()
+    assert report["schema_version"] == "feature-automation-migration-plan-2"
+    assert len({row["feature_id"] for row in report["rows"]}) == 499
+    assert list(report["rows"]) == sorted(
+        report["rows"],
+        key=lambda item: (
+            item["reusable_cluster"],
+            item["readiness"],
+            item["class_name"],
+            item.get("subclass_name") or "",
+            item["level"],
+            item["feature_name"],
+        ),
+    )
+    required = {
+        "feature_id",
+        "runtime_reason",
+        "trigger_time",
+        "required_producers",
+        "required_consumers",
+        "producer_available",
+        "consumer_available",
+        "requires_resource",
+        "requires_action_economy",
+        "requires_player_input",
+        "requires_dm_input",
+        "requires_authoritative_targeting",
+        "requires_status_context",
+        "estimated_risk",
+        "reusable_cluster",
+        "eligible_this_run",
+        "contract_evidence",
+        "parameterized_contract_test",
+        "representative_e2e_test",
+        "blocking_reason",
+        "gap_category",
+    }
+    assert all(required <= row.keys() for row in report["rows"])
+    assert all(
+        row["gap_category"]
+        in {
+            "missing_runtime_contract",
+            "producer_missing",
+            "consumer_missing",
+            "consumer_partial",
+            "resource_missing",
+            "action_economy_missing",
+            "authoritative_targeting_missing",
+            "ui_input_missing",
+            "prerequisite_feature_missing",
+            "source_missing",
+            "manual_boundary",
+            "needs_contract_review",
+        }
+        for row in report["rows"]
+        if row["runtime_status"] != "full"
+    )
+    assert all(
+        row["gap_category"] is None
+        for row in report["rows"]
+        if row["runtime_status"] == "full"
+    )
+    epic_rows = [
+        row
+        for row in report["rows"]
+        if row["reusable_cluster"] == "advancement_asset_grant:epic_boon"
+    ]
+    assert len(epic_rows) == 12
+    assert all(row["contract_evidence"] == ["advancement"] for row in epic_rows)
+    assert all(row["parameterized_contract_test"] for row in epic_rows)
+    assert all(row["representative_e2e_test"] for row in epic_rows)
+    epic = report["clusters"]["advancement_asset_grant:epic_boon"]
+    assert epic == {
+        "total_count": 12,
+        "full_count": 12,
+        "candidate_count": 0,
+        "eligible_this_run": 0,
+        "producer_available": True,
+        "consumer_available": True,
+        "requires_new_ui": False,
+        "requires_new_persistence": False,
+        "risk_counts": {"low": 12},
+        "readiness_counts": {"already_full": 12},
     }
 
 

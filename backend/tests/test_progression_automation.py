@@ -10,6 +10,7 @@ from dnd_dm_assistant.domain.advancement_choices import (
     CORE_CLASSES_2024,
     advancement_choice_requirements,
     core_class_level_runtime_contract,
+    core_feature_grants,
 )
 from dnd_dm_assistant.domain.feature_runtime import compile_feature_runtime_registry
 from dnd_dm_assistant.domain.progression_automation import (
@@ -58,8 +59,8 @@ def test_classifier_migration_table_and_acceptance_matrix_are_complete() -> None
         "战斗风格": 3,
     }
     assert Counter(item["overall_status"] for item in matrix) == {
-        "full": 57,
-        "partial": 20,
+        "full": 69,
+        "partial": 8,
     }
     assert all(
         item["executor_kind"] == "advancement_choice_grant"
@@ -93,8 +94,53 @@ def test_core_contract_counts_move_only_to_evidence_backed_statuses() -> None:
             status.update(
                 item["automation_status"] for item in contract["feature_contracts"]
             )
-    assert status == {"full": 158, "partial": 26, "dm_only": 74}
+    assert status == {"full": 170, "partial": 14, "dm_only": 74}
     assert sum(status.values()) == 258
+
+
+def test_epic_boon_class_rows_share_one_authoritative_asset_grant_contract() -> None:
+    rows: list[dict[str, Any]] = []
+    for rule in _core_rules():
+        for level_rule in rule.levels:
+            if not any(
+                "传奇恩惠" in feature or "史诗恩惠" in feature
+                for feature in level_rule.features
+            ):
+                continue
+            grant = next(
+                item
+                for item in core_feature_grants(rule, level_rule.level)
+                if "传奇恩惠" in item["name"] or "史诗恩惠" in item["name"]
+            )
+            contract = grant["runtime"]["contract"]
+            advancement = grant["runtime"]["registry"]["advancement"]
+            assert contract["automation_status"] == "full"
+            assert contract["runtime_sections"] == ["advancement"]
+            assert advancement == {
+                "kind": "selected_asset_grant",
+                "choice_requirement_key": "epic_boon",
+                "request_field": "feat_choice",
+                "asset_kind": "feat",
+                "expected_category": "传奇恩惠",
+                "prerequisites": "authoritative_feat_catalog",
+                "persisted_state": "character.features",
+                "selected_asset_runtime": "separate_contract",
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "advancement_service_and_feat_prerequisite_validator",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+            rows.append(grant)
+
+    assert len(rows) == 12
+    assert {item["class_name"] for item in rows} == set(CORE_CLASSES_2024)
+    assert all(
+        item["runtime"]["advancement_automation"]["effect_status"]
+        == "separate_asset_contract"
+        for item in rows
+    )
 
 
 def test_subclass_table_grant_is_full_without_promoting_subclass_effects() -> None:

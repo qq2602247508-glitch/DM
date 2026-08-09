@@ -919,3 +919,82 @@ def test_confirm_is_idempotent_and_persists_once(
     ).json()
     assert updated["level"] == 2
     assert len(history["items"]) == 1
+
+
+def test_epic_boon_grant_is_authoritative_and_selected_feat_stays_separate(
+    matrix_client: TestClient,
+    matrix_campaign: dict[str, Any],
+    character_options: dict[str, Any],
+) -> None:
+    boon = next(
+        item for item in character_options["feats"] if item["category"] == "传奇恩惠"
+    )
+    character = _create_character(
+        matrix_client,
+        matrix_campaign["id"],
+        class_name="战士",
+        level=18,
+        experience=999_999,
+        suffix="传奇恩惠授予",
+    )
+    body = {
+        "character_version": character["version"],
+        "class_name": "战士",
+        "feat_choice": boon["name"],
+    }
+    path = _preview_path(matrix_campaign["id"], character["id"])
+
+    missing = matrix_client.post(
+        path,
+        json={
+            "character_version": character["version"],
+            "class_name": "战士",
+        },
+    )
+    assert missing.status_code == 400
+    assert "feat choice" in missing.text
+
+    preview_response = matrix_client.post(path, json=body)
+    assert preview_response.status_code == 200, preview_response.text
+    preview = preview_response.json()
+    class_grant = next(
+        item
+        for item in preview["features_gained"]
+        if item.get("kind") == "class_feature" and "传奇恩惠" in item.get("name", "")
+    )
+    selected_feat = preview["feat_grant"]
+    assert selected_feat["kind"] == "feat"
+    assert selected_feat["name"] == boon["name"]
+    assert class_grant["runtime"]["automation_status"] == "full"
+    assert class_grant["runtime"]["registry"]["advancement"]["request_field"] == (
+        "feat_choice"
+    )
+    assert selected_feat["runtime"]["automation_status"] == "dm_only"
+    assert selected_feat["runtime"]["execution"] == {
+        "kind": "sheet_feat_grant",
+        "grant_status": "full",
+        "effect_status": "dm_only",
+    }
+
+    confirm_body = {
+        **body,
+        "preview_token": preview["preview_token"],
+        "idempotency_key": "epic-boon-authoritative-grant-0001",
+    }
+    confirm_path = path.replace("/preview", "/confirm")
+    first = matrix_client.post(confirm_path, json=confirm_body)
+    replay = matrix_client.post(confirm_path, json=confirm_body)
+    assert first.status_code == replay.status_code == 200
+    assert replay.json()["advancement_record_id"] == first.json()[
+        "advancement_record_id"
+    ]
+    persisted = matrix_client.get(
+        f"/api/v1/campaigns/{matrix_campaign['id']}/characters/{character['id']}"
+    ).json()
+    assert persisted["level"] == 19
+    assert sum(
+        isinstance(item, dict)
+        and item.get("kind") == "feat"
+        and item.get("name") == boon["name"]
+        for item in persisted["features"]
+    ) == 1
