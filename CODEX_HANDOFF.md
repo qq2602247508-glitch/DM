@@ -1,3 +1,38 @@
+# 2026-08-09 长执行检查点：权威 Attack 动作序列与攻击槽替换
+
+- 固定审计分母仍为 499：`full 254 / partial 171 / dm_only 74` →
+  `full 256 / partial 169 / dm_only 74`，真实净增 `full +2`。新增 full 为奥法骑士
+  「战争魔法 War」与「精通战争魔法 Improved War」；战斗大师父级「卓越战技」仍保持
+  partial，未因指挥官奇袭单个战技闭环而整体升级。
+- 新增持久化 `attack_action_sequence`：开始时从冻结的 `feature_runtime.combat_start`
+  读取 `attack_action_count` 与 `attack_slot_replacements`，只消费一次 action；每槽记录
+  pending/resolved/cancelled/expired、结算动作、替换类型/策略、目标、资源事务和幂等键。
+  序列与槽位共用 CombatAction version CAS；同一槽并发确认只会有一个成功，幂等重放不重复
+  伤害或资源消费。回合推进会把未用槽位标为 expired。
+- 普通槽只绑定现有真实武器/徒手攻击入口，明确拒绝法术攻击、反应、附赠动作和追加攻击冒充；
+  旧单次攻击继续兼容，存在开放序列时拒绝旧 Extra Attack 预算叠加。Action Surge 的
+  `extra_action_budget` 仍由既有动作经济门消费，可在同回合建立第二个独立序列。
+- 战争魔法：冻结策略只允许角色权威 KnownSpell 中的一动作法师戏法，消费 1 个攻击槽且不重复
+  消费 action；普通攻击槽仍可继续。精通战争魔法：只允许已准备的一环/二环一动作法师法术，
+  原子消费 2 个未用攻击槽，并在同一 CombatEngine 事务消费 `spell_slots_N`；槽不足、未准备、
+  非法来源/环阶/施法时间全部 fail-closed。
+- 指挥官奇袭：冻结的 `replace_attack_with_ally_attack` 策略原子消费战斗大师的一个攻击槽与一枚
+  权威卓越骰，校验盟友版本、阵营、存活/失能、反应和可见/可听条件，创建通用
+  triggered_attack_window。窗口分别记录 owner、attack actor、resource owner、action-economy
+  owner；盟友真实武器/徒手攻击消费自己的 reaction，命中时服务端把实际卓越骰值加入伤害，
+  失手/拒绝仍保留已付槽位与卓越骰。接受、拒绝、CAS 和重放均由真实 API 测试覆盖。
+- DM/玩家双端新增最小攻击序列 UI：开始、槽位计数、刷新恢复、合法普通/法术替换过滤、放弃剩余
+  槽位和冲突后刷新。浏览器实测 DM 创建后刷新恢复，玩家看到同一槽位，玩家放弃后 DM 刷新同步
+  关闭；两端 console error/warn 均为 0。
+- 验证：后端全量 `pytest -q backend/tests` 通过；`ruff check backend/src backend/tests`、
+  compileall、`git diff --check` 通过；前端 204 tests/typecheck/lint/build 全部通过。全仓 scripts
+  Ruff 仍只命中既有 4 个 N999 与 1 个 EXE001。
+- 提交：代码 `d5c7728`，测试与审计基线 `1a473b4`，本文档提交随后单独生成。继续保留且不得
+  暂存/提交：`backend/tests/integrations/`、`backend/tests/ollama.py`。
+- 仍保持 partial：卓越战技/究极战技（其余战技分支未闭环）、坚韧（尚未把所有既有战技入口统一
+  到 maneuver_payment_policy）、以及需要攻击骑手、强制移动、状态 producer 或独立目标信息
+  读取系统的候选。当前没有发现另一个可安全迁入攻击槽替换平台的同构消费者。
+
 # 2026-08-09 长执行检查点：分阶段攻击结算平台安全消费者耗尽
 
 - 实时固定审计仍为 499 条：`full 254 / partial 171 / dm_only 74`。本长执行从 `full 249 /

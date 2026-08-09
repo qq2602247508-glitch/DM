@@ -1,5 +1,32 @@
 # 特性自动化迁移预审报告
 
+## 2026-08-09 最终检查点（权威 Attack 动作序列与攻击槽替换）
+
+实时固定审计：`full 254 / partial 171 / dm_only 74` →
+`full 256 / partial 169 / dm_only 74`，分母仍为 499。新增 full：奥法骑士「战争魔法」与
+「精通战争魔法」；指挥官奇袭已成为真实生产消费者，但父级「卓越战技」保持 partial。
+
+- `attack_action_sequence` 在开始时冻结服务端攻击次数、替换策略、回合与 actor 版本，只支付一次
+  action；槽位逐个持久化 resolution、replacement、target、resource transaction 与幂等键。
+- 普通槽复用既有 CombatEngine/PlayerRoom 武器与徒手攻击，不复制命中、伤害、抗性、骑手、
+  staged intervention 或 triggered attack 解析器。开放序列与旧 attack_roll_budget 不能叠加。
+- 战争魔法消费 1 槽施放权威一动作法师戏法；精通战争魔法原子消费 2 槽施放权威已准备的一环/
+  二环法师法术，并在同一事务消费真实法术位。非法来源、施法时间、环阶、准备状态、槽位不足和
+  重复使用全部 fail-closed。
+- 指挥官奇袭消费 1 槽 + 1 枚卓越骰后创建盟友 triggered_attack_window；四种所有权分离，盟友
+  消费自己的反应并使用自己的真实攻击 profile。服务端仅在命中时追加实际卓越骰伤害；拒绝或
+  失手仍保留已付资源，幂等重放不重复扣费或伤害。
+- 回合结束自动将开放序列标为 expired；主动放弃标为 cancelled。Action Surge 继续复用既有
+  extra_action_budget，可建立独立第二序列；旧单次 Attack 兼容，但不会静默获得 Extra Attack。
+- DM/玩家 UI 均显示服务端槽位并支持开始、刷新恢复与放弃。真实浏览器验收确认双端同步，控制台
+  无 error/warn。
+
+验证：后端全量 pytest、Ruff backend/src+backend/tests、compileall、git diff --check；前端 204
+tests、typecheck、lint、build 全部通过。全仓 scripts Ruff 仍为既有 4 个 N999 + 1 个 EXE001。
+
+下一轮不应继续扩张本平台：剩余 partial 主要需要通用 maneuver_payment_policy 全入口迁移、攻击
+骑手/强制移动/状态 producer 或目标信息读取等独立基础系统。
+
 ## 2026-08-09 最终检查点（分阶段攻击结算平台安全消费者耗尽）
 
 实时审计固定总数仍为 `499`：`full 254 / partial 171 / dm_only 74`。本长执行从
