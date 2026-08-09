@@ -4,12 +4,15 @@ import hashlib
 import json
 from collections.abc import Mapping
 from datetime import UTC, datetime, timedelta
+from pathlib import Path
 from typing import Any, cast
 
 from sqlalchemy import select
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
+from dnd_dm_assistant.application.character_catalog import CharacterCatalog
+from dnd_dm_assistant.domain.advancement_choices import canonical_class_name
 from dnd_dm_assistant.domain.campaign_state import StateNotFoundError, VersionConflict
 from dnd_dm_assistant.domain.feature_runtime import (
     compile_feature_runtime_registry,
@@ -103,8 +106,11 @@ def _resource_recovery(value: str) -> ResourceRecovery:
 
 
 class RestService:
-    def __init__(self, engine: Engine) -> None:
+    def __init__(self, engine: Engine, catalog: CharacterCatalog | None = None) -> None:
         self.engine = engine
+        self.catalog = catalog or CharacterCatalog(
+            Path("data/generated-content/dnd5e_chm/json")
+        )
 
     @staticmethod
     def _campaign(session: Session, campaign_id: str) -> Campaign:
@@ -688,6 +694,132 @@ class RestService:
             )
         return tuple(by_key[item.key] for item in resources), applied
 
+    def _refresh_selection_bound_spells(
+        self,
+        session: Session,
+        *,
+        campaign: Campaign,
+        character: Character,
+        resources: tuple[RestResource, ...],
+        applied: list[dict[str, Any]],
+    ) -> set[str]:
+        """Rebuild fixed spell-table rows after a persisted rest selection."""
+
+        selection_keys = {
+            str(item.get("selection_key") or "")
+            for item in applied
+            if str(item.get("selection_key") or "")
+        }
+        if not selection_keys:
+            return set()
+        enabled_content_packs = tuple(str(value) for value in campaign.enabled_content_packs or ())
+        allow_legacy = bool(campaign.allow_legacy)
+        try:
+            class_rules = self.catalog.classes(
+                enabled_content_packs=enabled_content_packs,
+                allow_legacy=allow_legacy,
+            )
+            spell_catalog = tuple(
+                dict(item)
+                for item in self.catalog.options(
+                    enabled_content_packs=enabled_content_packs,
+                    allow_legacy=allow_legacy,
+                ).get("spells", [])
+            )
+        except Exception:
+            # The selection itself remains authoritative; if an optional
+            # corpus cannot be read, do not invent spell rows.
+            return selection_keys
+
+        selected_values = {
+            key: str(
+                (character.resources or {}).get(key, {}).get("selected") or ""
+            ).strip().lower()
+            for key in selection_keys
+        }
+        for entry in applied:
+            key = str(entry.get("selection_key") or "")
+            if key in selected_values:
+                selected_values[key] = str(entry.get("selected") or "").strip().lower()
+
+        from dnd_dm_assistant.infrastructure.database.advancement_service import (
+            _fixed_subclass_spell_additions,
+        )
+
+        desired: list[dict[str, Any]] = []
+        bound_feature_ids: set[str] = set()
+        class_levels = character.class_levels if isinstance(character.class_levels, dict) else {}
+        subclass_choices = (
+            character.subclass_choices if isinstance(character.subclass_choices, dict) else {}
+        )
+        for raw_class_name, raw_level in class_levels.items():
+            class_name = canonical_class_name(str(raw_class_name))
+            target_level = int(raw_level or 0)
+            if target_level < 1:
+                continue
+            rule = next((item for item in class_rules if item.name == class_name), None)
+            if rule is None:
+                continue
+            subclass_name = str(
+                subclass_choices.get(raw_class_name)
+                or subclass_choices.get(class_name)
+                or ""
+            ).strip()
+            subclass = next(
+                (
+                    item
+                    for item in rule.subclasses
+                    if str(item.get("name") or "").strip() == subclass_name
+                ),
+                None,
+            )
+            if not isinstance(subclass, dict):
+                continue
+            for definition in subclass.get("feature_definitions") or ():
+                if not isinstance(definition, dict):
+                    continue
+                description = str(definition.get("description") or "")
+                if "选择一种地形" not in description:
+                    continue
+                bound_feature_ids.add(
+                    str(definition.get("id") or definition.get("name") or "")
+                )
+            for key in selection_keys:
+                selected = selected_values.get(key) or None
+                if not selected:
+                    continue
+                desired.extend(
+                    _fixed_subclass_spell_additions(
+                        subclass,
+                        class_name=class_name,
+                        target_class_level=target_level,
+                        spell_catalog=spell_catalog,
+                        selected_terrain=(
+                            selected if key == "circle_land_terrain" else None
+                        ),
+                    )
+                )
+
+        existing = [
+            dict(item)
+            for item in character.spells or ()
+            if isinstance(item, dict)
+            and str(item.get("selection_resource_key") or "") not in selection_keys
+            and str(item.get("source_feature_id") or "") not in bound_feature_ids
+        ]
+        identities = {
+            str(item.get("source_record_id") or item.get("name") or "")
+            for item in existing
+        }
+        for spell in desired:
+            identity = str(spell.get("source_record_id") or spell.get("name") or "")
+            if not identity or identity in identities:
+                continue
+            existing.append(spell)
+            identities.add(identity)
+        character.spells = existing
+        return selection_keys
+
     def _preview_in_session(
         self,
         session: Session,
@@ -853,6 +985,13 @@ class RestService:
                 effective_type=effective_type,
                 completed=completed,
             )
+            selection_keys = self._refresh_selection_bound_spells(
+                session,
+                campaign=campaign,
+                character=character,
+                resources=after_resources,
+                applied=feature_recovery_applied,
+            )
             after_resource_map = {item.key: item for item in after_resources}
             resource_changes: list[dict[str, Any]] = []
             for pool in pools:
@@ -956,6 +1095,7 @@ class RestService:
                     "character_version": character.version,
                     "completed": completed,
                     "feature_recovery_applied": feature_recovery_applied,
+                    "selection_bound_spell_keys": sorted(selection_keys),
                     "before": {
                         "hp": character.hp,
                         "fatigue": fatigue,
@@ -1316,6 +1456,23 @@ class RestService:
                         *preserved,
                         *[dict(item) for item in recovery["weapon_masteries"]],
                     ]
+            selection_bound_spell_keys = {
+                str(value)
+                for value in participant.get("selection_bound_spell_keys") or ()
+                if str(value)
+            }
+            if selection_bound_spell_keys:
+                from dnd_dm_assistant.infrastructure.database.advancement_service import (
+                    AdvancementService,
+                )
+
+                AdvancementService._sync_source_bound_spells(
+                    session,
+                    campaign_id=campaign_id,
+                    character_id=character.id,
+                    spells=list(character.spells or []),
+                    bound_selection_keys=selection_bound_spell_keys,
+                )
             character.max_hp_reduction = int(participant["after"]["max_hp_reduction"])
             character.ability_score_reductions = dict(
                 participant["after"]["ability_score_reductions"]

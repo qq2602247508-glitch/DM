@@ -3112,11 +3112,11 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS: dict[str, dict[str, Any]] = {
         ],
         "runtime_execution": {
             "status": "ready",
-            "consumer": "attack_rider_resolver",
+            "consumer": "attack_rider_and_feature_action_overlay_resolvers",
         },
-        "automation_status": "partial",
-        "requires_dm_adjudication": True,
-        "note": "已接入命中后中毒覆盖；予命之手的状态解除/疾风连击替换仍需独立动作积木。",
+        "automation_status": "full",
+        "requires_dm_adjudication": False,
+        "note": "命中后中毒与予命之手的状态解除均通过已存在的 typed overlay consumer 执行。",
     },
     # Divine Fury and Dreadful Strikes share the persisted post-hit rider
     # consumer.  Their only dynamic values are authoritative class-level
@@ -6019,9 +6019,13 @@ def _subclass_prepared_spell_contract(description: str) -> dict[str, Any] | None
         return None
     if not re.search(r"(?:始终|总是)准备着(?:特定的法术|表中对应的法术)", text):
         return None
-    if not re.search(r"(?:法术表|Spells|准备法术)", text, re.IGNORECASE):
+    if not re.search(
+        r"(?:法术表|结社法术|领域法术|宗主法术|Spells|准备法术)",
+        text,
+        re.IGNORECASE,
+    ):
         return None
-    return {
+    contract: dict[str, Any] = {
         "kind": "always_prepared_spell_list",
         "source": "subclass_feature_description",
         "runtime_execution": {
@@ -6031,6 +6035,35 @@ def _subclass_prepared_spell_contract(description: str) -> dict[str, Any] | None
         "automation_status": "full",
         "requires_dm_adjudication": False,
     }
+    # Some fixed spell tables are selected by a persisted long-rest choice.
+    # Keep that choice as typed contract metadata so the generic advancement,
+    # rest and spell-sheet consumers can bind the same table without a
+    # feature-name branch or silently materializing every branch.
+    terrain_markers = (
+        ("arid", r"(?:荒漠|Arid\s+Land)"),
+        ("polar", r"(?:极地|Polar\s+Land)"),
+        ("temperate", r"(?:温带|Temperate\s+Land)"),
+        ("tropical", r"(?:热带|Tropical\s+Land)"),
+    )
+    if re.search(
+        r"完成一次长休.{0,80}选择一种地形.{0,40}(?:荒漠|极地|温带|热带)",
+        text,
+        re.DOTALL,
+    ) and all(re.search(pattern, text, re.IGNORECASE) for _key, pattern in terrain_markers):
+        contract["selection"] = {
+            "kind": "rest_choice",
+            "trigger": "long_rest",
+            "choice_key": "circle_land_terrain",
+            "options": [key for key, _pattern in terrain_markers],
+            "labels": {
+                "arid": "荒漠",
+                "polar": "极地",
+                "temperate": "温带",
+                "tropical": "热带",
+            },
+            "source": "subclass_feature_description",
+        }
+    return contract
 
 
 def _subclass_resource_update(
@@ -6434,6 +6467,32 @@ def subclass_runtime_grants(
         feature_id = str(definition.get("id") or definition.get("name") or "")
         feature_name = str(definition.get("name") or "").strip()
         declared_requirement = definition.get("choice_requirement")
+        prepared_contract = _subclass_prepared_spell_contract(
+            str(definition.get("description") or "")
+        )
+        prepared_selection = (
+            prepared_contract.get("selection")
+            if isinstance(prepared_contract, Mapping)
+            else None
+        )
+        if isinstance(prepared_selection, Mapping):
+            declared_requirement = {
+                "key": "subclass_feature_choice",
+                "minimum": 1,
+                "maximum": 1,
+                "strict": True,
+                "options": [
+                    str(value)
+                    for value in prepared_selection.get("options") or ()
+                    if str(value).strip()
+                ],
+                "options_labels": dict(prepared_selection.get("labels") or {}),
+                "requires_dm_selection": False,
+                "selection_resource_key": str(
+                    prepared_selection.get("choice_key") or ""
+                ),
+                "selection_trigger": str(prepared_selection.get("trigger") or ""),
+            }
         selected = [str(item).strip() for item in choices.get(feature_id, []) if str(item).strip()]
         is_battle_master = class_name == "战士" and definition["subclass_name"] == "战斗大师"
         if is_battle_master:
@@ -6714,12 +6773,39 @@ def subclass_runtime_grants(
                         or not value.get("maneuver_id")
                         or str(value.get("maneuver_id")) in learned
                     ]
-        spell_contract = _subclass_prepared_spell_contract(str(definition.get("description") or ""))
+        spell_contract = prepared_contract
         if spell_contract is not None:
             runtime_registry = {
                 **(runtime_registry or {"combat_start": {"modifiers": [], "defenses": []}}),
                 "prepared_spell_list": spell_contract,
             }
+            selection = spell_contract.get("selection")
+            if isinstance(selection, Mapping):
+                runtime_actions = runtime_registry.get("actions")
+                if not isinstance(runtime_actions, dict):
+                    runtime_actions = {}
+                    runtime_registry["actions"] = runtime_actions
+                action_id = str(
+                    selection.get("action_id") or "circle_land_terrain_choice"
+                ).strip()
+                runtime_actions[action_id] = {
+                    "id": action_id,
+                    "name": "结社地形选择",
+                    "kind": "rest_choice",
+                    "trigger": str(selection.get("trigger") or "long_rest"),
+                    "choice_key": str(selection.get("choice_key") or action_id),
+                    "choice_options": [
+                        str(value)
+                        for value in selection.get("options") or ()
+                        if str(value).strip()
+                    ],
+                    "runtime_execution": {
+                        "status": "ready",
+                        "consumer": "rest_service_and_spell_preparation",
+                    },
+                    "automation_status": "full",
+                    "requires_dm_adjudication": False,
+                }
             prepared_spell_features.append(
                 {
                     "feature_id": feature_id,

@@ -22,6 +22,7 @@ from dnd_dm_assistant.domain.advancement import (
 from dnd_dm_assistant.domain.advancement_choices import (
     CORE_SELECTED_SPELL_GRANTS,
     _canonical_battle_master_maneuver,
+    _subclass_prepared_spell_contract,
     advancement_choice_requirements,
     canonical_class_name,
     core_feat_rules_from_records,
@@ -85,6 +86,7 @@ def _fixed_subclass_spell_additions(
     class_name: str,
     target_class_level: int,
     spell_catalog: tuple[dict[str, Any], ...],
+    selected_terrain: str | None = None,
 ) -> list[dict[str, Any]]:
     """Resolve fixed subclass spell tables against the authoritative catalog.
 
@@ -105,13 +107,82 @@ def _fixed_subclass_spell_additions(
             continue
         if not re.search(r"(?:始终|总是)准备着(?:特定的法术|表中对应的法术)", description):
             continue
-        if not re.search(r"(?:法术表|Spells|准备法术)", description, re.IGNORECASE):
+        if not re.search(
+            r"(?:法术表|结社法术|领域法术|宗主法术|Spells|准备法术)",
+            description,
+            re.IGNORECASE,
+        ):
             continue
+        contract = _subclass_prepared_spell_contract(description)
+        if contract is None:
+            continue
+        selection = contract.get("selection")
+        selection_key = (
+            str(selection.get("choice_key") or "").strip()
+            if isinstance(selection, dict)
+            else ""
+        )
+        section_text = description
+        selected_value = str(selected_terrain or "").strip().lower()
+        section_rows: list[tuple[int | None, str]] = []
+        if isinstance(selection, dict) and selection.get("kind") == "rest_choice":
+            if selected_value not in {
+                str(value).strip().lower() for value in selection.get("options") or ()
+            }:
+                # A branch-bound table is not allowed to leak every option
+                # onto the sheet before the authoritative long-rest choice.
+                continue
+            section_markers = (
+                ("arid", r"(?:荒漠(?:\s+Arid\s+Land)?|Arid\s+Land)"),
+                ("polar", r"(?:极地(?:\s+Polar\s+Land)?|Polar\s+Land)"),
+                (
+                    "temperate",
+                    r"(?:温带(?:\s+Temperate\s+Land)?|Temperate\s+Land)",
+                ),
+                ("tropical", r"(?:热带(?:\s+Tropical\s+Land)?|Tropical\s+Land)"),
+            )
+            matches = [
+                (key, match)
+                for key, pattern in section_markers
+                if (match := re.search(rf"\*\*\s*{pattern}\s*\*\*", description, re.IGNORECASE))
+            ]
+            selected_match = next(
+                (match for key, match in matches if key == selected_value),
+                None,
+            )
+            if selected_match is None:
+                continue
+            following = [
+                match.start()
+                for key, match in matches
+                if match.start() > selected_match.start()
+            ]
+            section_text = description[
+                selected_match.end() : min(following) if following else len(description)
+            ]
+            current_level: int | None = None
+            for line in section_text.splitlines():
+                cells = [cell.strip() for cell in line.split("|")[1:-1]]
+                if len(cells) < 2 or set(cells) <= {"", "---"}:
+                    continue
+                first = cells[0]
+                if first.isdigit():
+                    current_level = int(first)
+                    row_text = " ".join(cells[1:])
+                else:
+                    row_text = cells[0] if not cells[1] else " ".join(cells)
+                if row_text.strip():
+                    section_rows.append((current_level, row_text))
         feature_id = str(raw.get("id") or raw.get("name") or "")
         for spell in spell_catalog:
             name = str(spell.get("name") or "").strip()
             source_id = str(spell.get("source_record_id") or "").strip()
-            if len(name) < 2 or name not in description:
+            if len(name) < 2 or name not in section_text:
+                continue
+            if section_rows and not any(
+                (level is None or level <= target_class_level) and name in row_text
+                for level, row_text in section_rows
+            ):
                 continue
             identity = source_id or name
             if identity in seen:
@@ -129,6 +200,14 @@ def _fixed_subclass_spell_additions(
                     "always_prepared": True,
                     "source_feature_id": feature_id,
                     "source_feature_name": str(raw.get("name") or ""),
+                    **(
+                        {
+                            "selection_resource_key": selection_key,
+                            "selection_value": selected_value,
+                        }
+                        if selection_key
+                        else {}
+                    ),
                     "granted_spell_access": True,
                     "does_not_count_toward_level_learning": True,
                 }
@@ -568,13 +647,22 @@ class AdvancementService:
         campaign_id: str,
         character_id: str,
         spells: list[Any],
+        bound_selection_keys: set[str] | None = None,
     ) -> None:
         source_ids = {"blessed_warrior_cantrips", "druidic_warrior_cantrips"}
+        selection_keys = set(bound_selection_keys or ()) | {
+            str(item.get("selection_resource_key") or "")
+            for item in spells
+            if isinstance(item, dict) and item.get("selection_resource_key")
+        }
         desired = {
             str(item.get("name") or ""): dict(item)
             for item in spells
             if isinstance(item, dict)
-            and item.get("source_feature_id") in source_ids
+            and (
+                item.get("source_feature_id") in source_ids
+                or str(item.get("selection_resource_key") or "") in selection_keys
+            )
             and item.get("name")
         }
         rows = session.scalars(
@@ -583,7 +671,10 @@ class AdvancementService:
         by_name = {row.name: row for row in rows}
         for row in rows:
             metadata = dict(row.metadata_json or {})
-            if metadata.get("source_feature_id") in source_ids and row.name not in desired:
+            is_bound = metadata.get("source_feature_id") in source_ids or (
+                str(metadata.get("selection_resource_key") or "") in selection_keys
+            )
+            if is_bound and row.name not in desired:
                 session.delete(row)
         for name, spell in desired.items():
             metadata = {
@@ -1865,12 +1956,6 @@ class AdvancementService:
             if spell_additions or selected_subclass is not None or selected_core_spell_choices
             else ()
         )
-        automatic_subclass_spells = _fixed_subclass_spell_additions(
-            selected_subclass,
-            class_name=class_name,
-            target_class_level=target_class_level,
-            spell_catalog=spell_catalog,
-        )
         selected_subclass_grants: list[dict[str, Any]] = []
         if selected_subclass is not None:
             for subclass_level in range(1, target_class_level + 1):
@@ -1884,6 +1969,41 @@ class AdvancementService:
                         current_class_level=target_class_level,
                     )["grants"]
                 )
+        selected_terrain = str(
+            (
+                (character.resources or {}).get("circle_land_terrain", {})
+                if isinstance(character.resources, dict)
+                else {}
+            ).get("selected")
+            or ""
+        ).strip().lower()
+        for grant in selected_subclass_grants:
+            runtime = grant.get("runtime") if isinstance(grant, dict) else None
+            registry = runtime.get("registry") if isinstance(runtime, dict) else None
+            prepared_list = (
+                registry.get("prepared_spell_list") if isinstance(registry, dict) else None
+            )
+            selection = prepared_list.get("selection") if isinstance(prepared_list, dict) else None
+            if not isinstance(selection, dict) or selection.get("kind") != "rest_choice":
+                continue
+            feature_id = str(grant.get("feature_id") or "")
+            requested = selected_subclass_spell_choices.get(feature_id, [])
+            allowed = {
+                str(value).strip().lower() for value in selection.get("options") or ()
+            }
+            requested_value = next(
+                (value.casefold() for value in requested if value.casefold() in allowed),
+                None,
+            )
+            if requested_value:
+                selected_terrain = requested_value
+        automatic_subclass_spells = _fixed_subclass_spell_additions(
+            selected_subclass,
+            class_name=class_name,
+            target_class_level=target_class_level,
+            spell_catalog=spell_catalog,
+            selected_terrain=selected_terrain or None,
+        )
         try:
             automatic_subclass_spells.extend(
                 _selected_subclass_spell_additions(
@@ -1931,6 +2051,29 @@ class AdvancementService:
         )
         automatic_subclass_spells.extend(cantrip_replacements)
         spell_removals.update(cantrip_removals)
+        selected_spell_bindings = {
+            (
+                str(item.get("source_feature_id") or ""),
+                str(item.get("selection_resource_key") or ""),
+            ): str(item.get("selection_value") or "").strip().lower()
+            for item in automatic_subclass_spells
+            if item.get("selection_resource_key")
+        }
+        for existing in character.spells or ():
+            if not isinstance(existing, dict):
+                continue
+            binding = (
+                str(existing.get("source_feature_id") or ""),
+                str(existing.get("selection_resource_key") or ""),
+            )
+            if binding not in selected_spell_bindings:
+                continue
+            selected_value = selected_spell_bindings[binding]
+            existing_value = str(existing.get("selection_value") or "").strip().lower()
+            if existing_value != selected_value:
+                spell_removals.add(
+                    str(existing.get("source_record_id") or existing.get("name") or "")
+                )
         existing_addition_ids = {
             str(item.get("source_record_id") or item.get("name") or "") for item in spell_additions
         }

@@ -126,7 +126,11 @@ def get_merchant_service(request: Request) -> MerchantService:
 
 
 def get_rest_service(request: Request) -> RestService:
-    return RestService(cast(Engine, request.app.state.database_engine))
+    settings = get_app_settings(request)
+    return RestService(
+        cast(Engine, request.app.state.database_engine),
+        CharacterCatalog(settings.rag_corpus_json_root),
+    )
 
 
 def get_session_checkpoint_service(request: Request) -> SessionCheckpointService:
