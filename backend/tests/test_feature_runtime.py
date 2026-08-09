@@ -7,6 +7,10 @@ from typing import Any
 
 from fastapi.testclient import TestClient
 
+from dnd_dm_assistant.application.feature_compiler import FeatureCompiler
+from dnd_dm_assistant.application.formal_feature_specs import (
+    formal_feature_spec_for_definition,
+)
 from dnd_dm_assistant.domain.advancement import (
     ClassProgression,
     class_progression_from_record,
@@ -19,6 +23,7 @@ from dnd_dm_assistant.domain.advancement_choices import (
     core_runtime_actions,
     progression_resource_updates,
     progression_scaling_updates,
+    subclass_feature_automation_status,
     subclass_feature_runtime_definition,
     subclass_runtime_grants,
 )
@@ -143,6 +148,89 @@ def test_movement_feature_contracts_are_full_and_typed() -> None:
     assert soul_blades["actions"]["psychic_teleportation"]["runtime_execution"][
         "consumer"
     ] == "combat_feature_action"
+
+
+def test_peerless_athlete_and_ultimate_combat_batch_contracts_are_full() -> None:
+    peerless = subclass_feature_runtime_definition(
+        {
+            "name": "绝伦健将 Peerless Athlete",
+            "class_name": "圣武士",
+            "class_level": 3,
+        }
+    )
+    assert peerless is not None
+    peerless_contract = feature_runtime_contract(
+        feature_name="绝伦健将 Peerless Athlete",
+        class_name="圣武士",
+        class_level=3,
+        definition=peerless,
+        kind="subclass_feature",
+    )
+    assert peerless_contract["automation_status"] == "full"
+    peerless_effects = peerless["actions"]["peerless_athlete"]["effects"]
+    assert {item["modifier"]["stat"] for item in peerless_effects} == {
+        "skill_check",
+        "jump_distance_ft",
+    }
+
+    ultimate = subclass_feature_runtime_definition(
+        {
+            "name": "究极战技 Ultimate Combat",
+            "class_name": "战士",
+            "class_level": 18,
+        }
+    )
+    assert ultimate is not None
+    ultimate_contract = feature_runtime_contract(
+        feature_name="究极战技 Ultimate Combat",
+        class_name="战士",
+        class_level=18,
+        definition=ultimate,
+        kind="subclass_feature",
+    )
+    assert ultimate_contract["automation_status"] == "full"
+    assert ultimate["resources"]["$feature_resource"]["die_size"] == 12
+
+    assert (
+        subclass_feature_automation_status(
+            {
+                "name": "坚韧复仇 Relentless Avenger",
+                "class_name": "圣武士",
+                "class_level": 7,
+            }
+        )
+        is None
+    )
+    assert (
+        subclass_feature_automation_status(
+            {
+                "name": "坚韧 Relentless",
+                "class_name": "战士",
+                "subclass_name": "战斗大师",
+                "class_level": 15,
+            }
+        )
+        == "partial"
+    )
+
+    for definition in (
+        {
+            "name": "绝伦健将 Peerless Athlete",
+            "class_name": "圣武士",
+            "subclass_name": "荣耀之誓",
+            "class_level": 3,
+        },
+        {
+            "name": "究极战技 Ultimate Combat",
+            "class_name": "战士",
+            "subclass_name": "战斗大师",
+            "class_level": 18,
+        },
+    ):
+        spec = formal_feature_spec_for_definition(definition)
+        assert spec is not None
+        result = FeatureCompiler(status_authority="compiler").compile(spec)
+        assert result.compile_status == "full"
 
 
 def test_empowered_strikes_declares_base_damage_type_override_consumer() -> None:

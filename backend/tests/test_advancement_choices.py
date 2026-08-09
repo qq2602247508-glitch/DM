@@ -512,6 +512,37 @@ def test_battle_master_superiority_dice_table_and_selected_roll_maneuvers() -> N
     assert level_ten["resources"]["superiority_dice"]["max"] == 5
 
 
+def test_battle_master_ultimate_combat_rebuilds_the_persisted_d12_profile() -> None:
+    result = subclass_runtime_grants(
+        {
+            "name": "战斗大师",
+            "feature_definitions": [
+                {
+                    "id": "battle-master:18:ultimate",
+                    "name": "究极战技 Ultimate Combat",
+                    "class_level": 18,
+                    "description": "你的卓越骰变为d12，短休或长休恢复。",
+                }
+            ],
+        },
+        class_name="战士",
+        target_class_level=18,
+        current_class_level=18,
+    )
+    resource = result["resources"]["superiority_dice"]
+    assert resource["automation_status"] == "full"
+    assert (resource["max"], resource["value"], resource["die_size"]) == (6, "d12", 12)
+    assert resource["recovery_events"] == [
+        {"rest": "short_rest", "operation": "set_to_max"},
+        {"rest": "long_rest", "operation": "set_to_max"},
+    ]
+    registry_resource = result["grants"][0]["runtime"]["registry"]["resources"][
+        "superiority_dice"
+    ]
+    assert registry_resource["die_size"] == 12
+    assert registry_resource["max_formula"] == "battle_master_superiority_dice_table"
+
+
 def test_battle_master_maneuver_replacement_is_cumulative_and_fail_closed() -> None:
     feature_id = "battle-master:3:combat"
     subclass = {

@@ -11,6 +11,7 @@ from fastapi.testclient import TestClient
 
 from dnd_dm_assistant.api.app import create_app
 from dnd_dm_assistant.config import Settings
+from dnd_dm_assistant.domain.advancement_choices import subclass_feature_runtime_definition
 
 
 @pytest.fixture
@@ -197,6 +198,96 @@ def test_guarded_mind_turn_start_clears_selected_condition_and_replays_idempoten
     assert replay.json()["already_applied"] is True
     assert replay.json()["actor"]["conditions"] == ["frightened"]
     assert replay.json()["actor"]["version"] == body["actor"]["version"]
+
+
+def test_peerless_athlete_consumes_channel_divinity_once_and_persists_all_modifiers(
+    combat_client: TestClient,
+) -> None:
+    campaign, combat, actor = _setup(combat_client)
+    character_response = combat_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/characters",
+        json={
+            "name": "绝伦健将测试者",
+            "class_name": "圣武士",
+            "level": 3,
+            "resources": {
+                "channel_divinity": {
+                    "label": "引导神力",
+                    "current": 2,
+                    "max": 2,
+                    "recovery": "short_rest",
+                }
+            },
+        },
+    )
+    assert character_response.status_code == 201, character_response.text
+    character = character_response.json()
+    runtime = subclass_feature_runtime_definition(
+        {
+            "name": "绝伦健将 Peerless",
+            "class_name": "圣武士",
+            "subclass_name": "荣耀之誓",
+            "class_level": 3,
+        }
+    )
+    assert runtime is not None
+    patched = combat_client.patch(
+        _combatant_path(campaign, combat, actor["id"]),
+        headers={"If-Match": f'"{actor["version"]}"'},
+        json={
+            "entity_type": "character",
+            "entity_id": character["id"],
+            "snapshot_json": {"feature_runtime": runtime},
+        },
+    )
+    assert patched.status_code == 200, patched.text
+    actor = patched.json()
+    request = {
+        "actor_combatant_id": actor["id"],
+        "actor_version": actor["version"],
+        "feature_id": "peerless_athlete",
+        "target_combatant_id": actor["id"],
+        "target_version": actor["version"],
+    }
+    feature_path = f"{_root(campaign, combat)}/feature-actions/confirm"
+    resolved = combat_client.post(
+        feature_path,
+        headers={"X-Request-ID": "peerless-athlete-0001"},
+        json=request,
+    )
+    assert resolved.status_code == 200, resolved.text
+    body = resolved.json()
+    assert body["result"]["resource_key"] == "channel_divinity"
+    assert body["result"]["resource_before"] == 2
+    assert body["result"]["resource_after"] == 1
+    modifiers = body["actor"]["snapshot_json"]["timed_feature_modifiers"]
+    assert len(modifiers) == 3
+    assert {item["modifier"]["stat"] for item in modifiers} == {
+        "skill_check",
+        "jump_distance_ft",
+    }
+    assert {
+        item["modifier"].get("skill")
+        for item in modifiers
+        if item["modifier"]["stat"] == "skill_check"
+    } == {"运动", "特技"}
+    assert all(item["expires_on"] == "long_rest" for item in modifiers)
+
+    replay = combat_client.post(
+        feature_path,
+        headers={"X-Request-ID": "peerless-athlete-0001"},
+        json=request,
+    )
+    assert replay.status_code == 200, replay.text
+    assert replay.json()["already_applied"] is True
+    assert replay.json()["actor"]["version"] == body["actor"]["version"]
+
+    conflict = combat_client.post(
+        feature_path,
+        headers={"X-Request-ID": "peerless-athlete-0002"},
+        json=request,
+    )
+    assert conflict.status_code == 409, conflict.text
 
 
 def _lay_on_hands_fixture(
