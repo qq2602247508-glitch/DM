@@ -2174,3 +2174,24 @@ backend/.venv/bin/python -m pytest -q backend/tests
 - `战神祝福`：感知调整值（至少1）次数、长休恢复、30尺可见/可听攻击检定目标、反应 +10。真实 `player-roll` 窗口消费资源与反应，检定成功/失败和相同幂等请求均由 CombatEngine 持久化；代码 `1f5fa37`。
 - 当前已审计但保留 partial 的主要阻塞：其余掷骰干预候选带标记目标、随机奇偶、状态/光环、额外攻击或多模式；战斗大师“坚韧”缺战技骰池与每回合替代入口；荣耀“辉煌防御”缺反击攻击分支；越野/盲视/复杂移动缺权威感知与地形消费者。不得以配置、helper 或单分支升级。
 - 本次代码提交与 docs/交接提交必须分离。完整门禁：`backend/.venv/bin/pytest -q backend/tests`、Ruff、compileall、`git diff --check`。必须保留且不得暂存/提交 `backend/tests/integrations/`、`backend/tests/ollama.py`。
+
+# 2026-08-09 现有 production_closed 消费者批量迁移 II
+
+- 本批接管时实际基线为 `full 314 / partial 124 / dm_only 61`，收尾审计为
+  `full 315 / partial 123 / dm_only 61`；固定分母仍为 499，真实净增 `+1`。
+- 新增 `verified_mapping` FeatureSpec：
+  - 圣武士·荣耀之誓·3「绝伦健将」：现有 bonus-action feature action 一次消费
+    `channel_divinity`，同一事务持久化运动优势、特技优势和跳跃距离 `+10` 三个长休限时修正；
+    资源 CAS、幂等重放、版本冲突和三项 modifier 快照写入均有真实 API 回归。
+  - 战士·战斗大师·18「究极战技」：复用既有卓越骰表和角色资源存储，`6d12`，短休/长休恢复，
+    升级/降级精确重建与 d12 profile 回归已覆盖。
+- 为支持一个动作内的多个限时修正，`combat_service.confirm_feature_action` 现在按动作一次清理
+  同源旧 modifier，再按效果独立生成稳定 ID；此前会被后一个效果覆盖的通用消费者缺陷已修复。
+- 「坚韧 Relentless」明确保留 `partial`：现有资源表不等于每回合一次免费战技骰支付消费者，
+  缺少权威支付窗口/CAS，禁止误报 full。
+- Feature IR 当前 14 条正式映射，semantic parity 全部通过；本批新增映射仍是
+  `verified_mapping`，生产 authority 继续是已验证的 typed runtime registry，直到直接 materializer
+  parity 证明完成。完整批次证据见
+  `reports/feature-ir-production-consumer-batch-II-2026-08-09.json`。
+- 本轮无前端源码变化，不运行/宣称前端或浏览器门禁。必须保留且不得暂存/提交：
+  `backend/tests/integrations/`、`backend/tests/ollama.py`。

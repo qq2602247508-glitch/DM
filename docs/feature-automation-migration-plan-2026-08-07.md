@@ -26,6 +26,23 @@
 - 自然语言/generated draft 不得自动 full；需要新 producer、复杂状态、召唤、强制移动、法术书、额外
   回合或新 UI 的机制继续由 compiler 精确报告 blocker。
 
+## 2026-08-09 现有 production_closed 消费者批量迁移 II
+
+- 固定审计分母仍为 499。接管本批时实际基线为 `full 314 / partial 124 / dm_only 61`；
+  收尾后为 `full 315 / partial 123 / dm_only 61`，真实净增 `+1`。
+- 「绝伦健将 Peerless」与「究极战技 Ultimate Combat」新增 `verified_mapping` FeatureSpec，
+  共享现有 `modifier.timed`、`resource.lifecycle.consume` 与 `resource.profile` 合同；
+  IR 编译、严格参数校验、source trust、semantic parity 和生产回归均已记录。
+- 「绝伦健将」真实 bonus action 只消费一次 `channel_divinity`，同一动作写入运动优势、特技优势、
+  跳跃距离 `+10` 三个限时修正；消费者按动作一次清理、按效果独立持久化，避免同源效果互相覆盖。
+  真实 API 回归覆盖资源 CAS、幂等重放、版本冲突和三个 modifier 的快照写入。
+- 「究极战技」复用战斗大师卓越骰表、角色资源持久化、短休/长休恢复、升级/降级精确重建；
+  18 级 profile 为 `6d12`，不创建新的攻击或战技支付系统。
+- 「坚韧 Relentless」主动保留 `partial`：虽然已有卓越骰资源表，但当前没有每回合一次免费战技骰
+  支付窗口、确认 CAS 和真实 maneuver payment consumer；不能因为配置存在而计 full。
+- 本批没有新增前端代码或新 UI，因此未运行/宣称前端和浏览器验收。完整证据见
+  `reports/feature-ir-production-consumer-batch-II-2026-08-09.json`。
+
 ## 2026-08-09 Feature IR 生产化硬化 I
 
 - Operator 合同已从宽松 `Mapping` 收紧为 34 条 `OperatorContract`。空参数、未知字段、错误

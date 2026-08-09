@@ -1,0 +1,61 @@
+{
+  "schema_version": "feature-ir-production-consumer-batch-2",
+  "batch_id": "production_consumer_batch_II",
+  "audit_total": 499,
+  "before_status_counts": {
+    "full": 314,
+    "partial": 124,
+    "dm_only": 61
+  },
+  "after_status_counts": {
+    "full": 315,
+    "partial": 123,
+    "dm_only": 61
+  },
+  "actual_new_full": 1,
+  "candidate_clusters": [
+    "modifier.timed",
+    "resource.profile"
+  ],
+  "candidate_feature_ids": [
+    "dnd2024.subclass.paladin.glory.peerless-athlete",
+    "dnd2024.subclass.fighter.battle-master.ultimate-combat"
+  ],
+  "rejected_candidates": [
+    {
+      "feature_name": "坚韧 Relentless",
+      "reason": "已有卓越骰资源表，但缺少每回合一次免费战技骰的权威支付窗口、确认 CAS 和真实 maneuver consumer；保留 partial"
+    }
+  ],
+  "production_consumers": [
+    "combat_feature_action_and_player_roll_resolution",
+    "combat_feature_action_and_player_roll_resolution",
+    "timed_feature_modifier_resolver",
+    "rest_service.active_combat_snapshot_reset",
+    "character_resource_store",
+    "advancement_service"
+  ],
+  "production_tests": [
+    "backend/tests/test_combat_action_lifecycle.py::test_peerless_athlete_consumes_channel_divinity_once_and_persists_all_modifiers",
+    "backend/tests/test_advancement_choices.py::test_battle_master_ultimate_combat_rebuilds_the_persisted_d12_profile",
+    "backend/tests/test_feature_runtime.py::test_peerless_athlete_and_ultimate_combat_batch_contracts_are_full",
+    "backend/tests/test_feature_ir_production_hardening.py::test_formal_and_verified_mappings_have_parity_and_authority"
+  ],
+  "source_trust": {
+    "dnd2024.subclass.paladin.glory.peerless-athlete": "verified_mapping",
+    "dnd2024.subclass.fighter.battle-master.ultimate-combat": "verified_mapping"
+  },
+  "semantic_parity": {
+    "feature_count": 14,
+    "all_passed": true,
+    "verified_mapping_runtime_authority": "legacy_typed_runtime_registry_until_direct_materializer_parity"
+  },
+  "fanout_count": 6,
+  "demo_counts": {
+    "full": 18,
+    "partial": 4,
+    "manual": 2
+  },
+  "feature_name_branch_count": 66,
+  "stop_reason": "本轮安全候选验证后仅有一个真实净新增 full；其余 partial 需要免费战技支付、攻击骑手、复杂反应、多目标状态、强制移动、目标信息或法术书基础系统"
+}

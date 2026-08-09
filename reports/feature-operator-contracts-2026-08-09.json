@@ -2899,6 +2899,88 @@
       ]
     },
     {
+      "capability_id": "resource.profile",
+      "compatible_action_economy": [
+        "automatic",
+        "none"
+      ],
+      "compatible_activation": [
+        "automatic",
+        "dm_accept",
+        "explicit_choice",
+        "player_accept"
+      ],
+      "compatible_conditions": [
+        "action_tag",
+        "actor_has_feature",
+        "actor_has_state",
+        "actor_lacks_state",
+        "armor_category",
+        "audible",
+        "damage_type",
+        "equipped",
+        "first_round",
+        "first_turn",
+        "once_per_target",
+        "once_per_turn",
+        "resource_is_zero",
+        "spell_level_range",
+        "spell_school",
+        "spell_source",
+        "target_has_not_acted",
+        "target_has_state",
+        "target_matches_persisted_id",
+        "visible",
+        "weapon_category",
+        "within_range"
+      ],
+      "compatible_durations": [
+        "advancement_persistent",
+        "permanent"
+      ],
+      "compatible_resource_operations": [],
+      "compatible_targets": [
+        "self"
+      ],
+      "compatible_triggers": [
+        "advancement_confirmed"
+      ],
+      "conditional_required_fields": [],
+      "contract_version": "1.0",
+      "enum_values": {
+        "resource_kind": [
+          "d20_pool",
+          "psionic_dice",
+          "superiority_dice"
+        ]
+      },
+      "materializer_id": "resource.profile",
+      "mutually_exclusive_fields": [],
+      "numeric_bounds": {
+        "die_size": [
+          2,
+          100
+        ]
+      },
+      "operator_id": "set_resource_profile",
+      "optional_parameters": [
+        "id",
+        "max_formula"
+      ],
+      "parameter_types": {
+        "die_size": "integer",
+        "id": "string",
+        "max_formula": "string",
+        "resource_key": "string",
+        "resource_kind": "string"
+      },
+      "required_parameters": [
+        "die_size",
+        "resource_key",
+        "resource_kind"
+      ]
+    },
+    {
       "capability_id": "spell.damage_modifier",
       "compatible_action_economy": [
         "automatic",
@@ -3227,7 +3309,7 @@
       ]
     }
   ],
-  "operator_count": 34,
+  "operator_count": 35,
   "schema_version": "feature-operator-contracts-1",
-  "strict_schema_count": 34
+  "strict_schema_count": 35
 }

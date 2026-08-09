@@ -1,18 +1,18 @@
 {
   "audit_status_counts": {
     "dm_only": 61,
-    "full": 314,
-    "partial": 124
+    "full": 315,
+    "partial": 123
   },
   "compiler_pilot_count": 10,
   "compiler_status_counts": {
-    "full": 12,
+    "full": 14,
     "invalid": 129,
-    "partial": 173
+    "partial": 172
   },
   "formal_semantic_parity": {
     "all_passed": true,
-    "feature_count": 12,
+    "feature_count": 14,
     "rows": [
       {
         "feature_id": "dnd2024.core.druid.druidic",
@@ -1237,12 +1237,141 @@
         "materialized": false,
         "production_test": "verified_mapping_runtime_regression",
         "status": "equivalent"
+      },
+      {
+        "feature_id": "dnd2024.subclass.paladin.glory.peerless-athlete",
+        "feature_name": "绝伦健将",
+        "fields": {
+          "verified_runtime_registry": {
+            "ir": {
+              "feature_id": "dnd2024.subclass.paladin.glory.peerless-athlete",
+              "source_trust": "verified_mapping"
+            },
+            "legacy": {
+              "advancement": null,
+              "attack_action_count": null,
+              "combat_defenses": [],
+              "combat_modifiers": [],
+              "movement_modes": [],
+              "resources": {}
+            },
+            "proof": "verified_mapping IR fingerprint is bound to the existing typed runtime registry; the production registry remains the authority until a direct materializer parity proof exists",
+            "status": "equivalent"
+          }
+        },
+        "ir_contract": {
+          "feature_id": "dnd2024.subclass.paladin.glory.peerless-athlete",
+          "source_trust": "verified_mapping"
+        },
+        "legacy_contract": {
+          "advancement": null,
+          "attack_action_count": null,
+          "combat_defenses": [],
+          "combat_modifiers": [],
+          "movement_modes": [],
+          "resources": {}
+        },
+        "materialized": false,
+        "production_test": "verified_mapping_runtime_regression",
+        "status": "equivalent"
+      },
+      {
+        "feature_id": "dnd2024.subclass.fighter.battle-master.ultimate-combat",
+        "feature_name": "究极战技",
+        "fields": {
+          "verified_runtime_registry": {
+            "ir": {
+              "feature_id": "dnd2024.subclass.fighter.battle-master.ultimate-combat",
+              "source_trust": "verified_mapping"
+            },
+            "legacy": {
+              "advancement": null,
+              "attack_action_count": null,
+              "combat_defenses": [],
+              "combat_modifiers": [],
+              "movement_modes": [],
+              "resources": {
+                "$feature_resource": {
+                  "recovery": "both",
+                  "recovery_events": [
+                    {
+                      "operation": "set_to_max",
+                      "rest": "short_rest"
+                    },
+                    {
+                      "operation": "set_to_max",
+                      "rest": "long_rest"
+                    }
+                  ],
+                  "resource_kind": "superiority_dice"
+                }
+              }
+            },
+            "proof": "verified_mapping IR fingerprint is bound to the existing typed runtime registry; the production registry remains the authority until a direct materializer parity proof exists",
+            "status": "equivalent"
+          }
+        },
+        "ir_contract": {
+          "feature_id": "dnd2024.subclass.fighter.battle-master.ultimate-combat",
+          "source_trust": "verified_mapping"
+        },
+        "legacy_contract": {
+          "advancement": null,
+          "attack_action_count": null,
+          "combat_defenses": [],
+          "combat_modifiers": [],
+          "movement_modes": [],
+          "resources": {
+            "$feature_resource": {
+              "recovery": "both",
+              "recovery_events": [
+                {
+                  "operation": "set_to_max",
+                  "rest": "short_rest"
+                },
+                {
+                  "operation": "set_to_max",
+                  "rest": "long_rest"
+                }
+              ],
+              "resource_kind": "superiority_dice"
+            }
+          }
+        },
+        "materialized": false,
+        "production_test": "verified_mapping_runtime_regression",
+        "status": "equivalent"
       }
     ],
     "schema_version": "feature-ir-semantic-parity-2"
   },
   "legacy_adapter": true,
   "partial_diagnostics": [
+    {
+      "clause_results": [
+        {
+          "blockers": [
+            "unsupported operator: legacy_unsupported:no_runtime_section"
+          ],
+          "capability_ids": [],
+          "clause_id": "legacy:no_runtime_section",
+          "generated_block": null,
+          "status": "partial"
+        }
+      ],
+      "compiler_status": "partial",
+      "feature_id": "legacy:subclass:2709144090ad73a4c316bfe6:3:战斗激励Combat Inspiration",
+      "feature_name": "战斗激励Combat Inspiration",
+      "legacy_status": "partial",
+      "manual_boundaries": [],
+      "unsupported_combinations": [
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ],
+      "unsupported_conditions": [],
+      "unsupported_operators": [
+        "legacy_unsupported:no_runtime_section"
+      ]
+    },
     {
       "clause_results": [
         {
@@ -1479,35 +1608,10 @@
       "unsupported_operators": [
         "legacy_unsupported:no_runtime_section"
       ]
-    },
-    {
-      "clause_results": [
-        {
-          "blockers": [
-            "unsupported operator: legacy_unsupported:no_runtime_section"
-          ],
-          "capability_ids": [],
-          "clause_id": "legacy:no_runtime_section",
-          "generated_block": null,
-          "status": "partial"
-        }
-      ],
-      "compiler_status": "partial",
-      "feature_id": "legacy:subclass:09860de59419ccc7f1b12908:20:上古斗士 Elder",
-      "feature_name": "上古斗士 Elder",
-      "legacy_status": "partial",
-      "manual_boundaries": [],
-      "unsupported_combinations": [
-        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
-      ],
-      "unsupported_conditions": [],
-      "unsupported_operators": [
-        "legacy_unsupported:no_runtime_section"
-      ]
     }
   ],
   "schema_version": "feature-ir-parity-2",
-  "selected_parity_count": 12,
+  "selected_parity_count": 14,
   "selected_parity_rows": [
     {
       "compiler_status": "full",
@@ -1550,6 +1654,19 @@
     },
     {
       "compiler_status": "full",
+      "feature_id": "dnd2024.subclass.paladin.glory.peerless-athlete",
+      "feature_name": "绝伦健将 Peerless",
+      "fingerprint": "318e5574905c6da51c50ce3301c3a1ef85fbf9c0977a119e9a7b208bf50e3a12",
+      "formal_ir": true,
+      "legacy_adapter_used": false,
+      "legacy_status": "full",
+      "pilot_authority": "verified_mapping",
+      "pilot_compile_status": "full",
+      "runtime_sections": [],
+      "status_authority": "compiler"
+    },
+    {
+      "compiler_status": "full",
       "feature_id": "dnd2024.core.druid.druidic",
       "feature_name": "德鲁伊语",
       "fingerprint": "2379123d3e2e8fd3e3aebe5a48682133b0210d9ec69ff34b1dd53875bcc89c4f",
@@ -1562,6 +1679,19 @@
         "proficiencies",
         "advancement"
       ],
+      "status_authority": "compiler"
+    },
+    {
+      "compiler_status": "full",
+      "feature_id": "dnd2024.subclass.fighter.battle-master.ultimate-combat",
+      "feature_name": "究极战技 Ultimate Combat",
+      "fingerprint": "7273ea99f267395a89c52e9de23abbdae752b1ae7ff0026d4193986b33e16ef6",
+      "formal_ir": true,
+      "legacy_adapter_used": false,
+      "legacy_status": "full",
+      "pilot_authority": "verified_mapping",
+      "pilot_compile_status": "full",
+      "runtime_sections": [],
       "status_authority": "compiler"
     },
     {
