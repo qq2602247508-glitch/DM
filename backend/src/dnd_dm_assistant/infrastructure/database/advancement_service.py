@@ -36,6 +36,7 @@ from dnd_dm_assistant.domain.advancement_choices import (
     validate_feat_prerequisites,
 )
 from dnd_dm_assistant.domain.campaign_state import StateNotFoundError, VersionConflict
+from dnd_dm_assistant.domain.character_creation import CORE_LANGUAGES
 from dnd_dm_assistant.domain.feature_runtime import compile_feature_runtime_registry
 from dnd_dm_assistant.domain.noncombat_actions import SKILL_RULES
 from dnd_dm_assistant.domain.progression_automation import (
@@ -298,7 +299,22 @@ def _selected_core_spell_additions(
     for key, contract in CORE_SELECTED_SPELL_GRANTS.items():
         choices = [str(item).strip() for item in choices_by_key.get(key, []) if str(item).strip()]
         count = int(contract.get("count") or 0)
-        if not choices:
+        conditional = contract.get("conditional_choice")
+        if isinstance(conditional, tuple) and len(conditional) == 2:
+            branch_key, branch_value = (str(conditional[0]), str(conditional[1]))
+            branch = [
+                str(item).strip()
+                for item in choices_by_key.get(branch_key, [])
+                if str(item).strip()
+            ]
+            active = branch == [branch_value]
+            if not active and choices:
+                raise ValueError(f"职业特性{key}只允许在{branch_value}分支选择法术")
+            if active and len(choices) != count:
+                raise ValueError(f"职业特性{key}必须选择 {count} 道不重复法术")
+            if not active:
+                continue
+        elif not choices:
             continue
         if len(choices) != count or len(set(choices)) != len(choices):
             raise ValueError(f"职业特性{key}必须选择 {count} 道不重复法术")
@@ -326,8 +342,17 @@ def _selected_core_spell_additions(
                     "class_name": owner_class,
                     "prepared": bool(contract.get("always_prepared")),
                     "always_prepared": bool(contract.get("always_prepared")),
+                    **(
+                        {
+                            "spellcasting_ability": str(
+                                contract.get("spellcasting_ability")
+                            )
+                        }
+                        if contract.get("spellcasting_ability")
+                        else {}
+                    ),
                     "resource_key": str(contract.get("free_cast_resource_key") or ""),
-                    "resource_cost": 1,
+                    "resource_cost": 1 if contract.get("free_cast_resource_key") else 0,
                     "source_feature_id": key,
                     "source_feature_name": key,
                     "granted_spell_access": True,
@@ -404,6 +429,131 @@ class AdvancementService:
                 record for record in records if record.get("content_pack_key")
             ),
         )
+
+    @staticmethod
+    def _fighting_style_asset_grants(
+        *,
+        choices_by_key: dict[str, list[str]],
+        feat_rules: tuple[Any, ...],
+        character: Any,
+        class_name: str,
+        class_level: int,
+        total_level: int,
+        source_record_id: str | None,
+        rule_year: str | int,
+    ) -> tuple[list[dict[str, Any]], set[str]]:
+        """Resolve a typed fighting-style feat grant or replacement."""
+
+        selected = [
+            str(item).strip()
+            for item in choices_by_key.get("fighting_style", [])
+            if str(item).strip()
+        ]
+        replacements = [
+            str(item).strip()
+            for item in choices_by_key.get("fighting_style_replacement", [])
+            if str(item).strip()
+        ]
+        grants: list[dict[str, Any]] = []
+        replaced_names: set[str] = set()
+
+        existing_features = [
+            dict(item) for item in character.features or () if isinstance(item, dict)
+        ]
+        existing_style_names = {
+            str(item.get("name") or "")
+            for item in existing_features
+            if item.get("kind") == "feat" and item.get("category") == "战斗风格"
+        }
+
+        def feat_grant(choice: str, *, replacing: str | None = None) -> dict[str, Any]:
+            rule = find_feat_rule(feat_rules, choice)
+            if rule is None:
+                raise ValueError(f"战斗风格不在权威2024专长目录：{choice}")
+            filtered_features = [
+                item for item in existing_features if str(item.get("name") or "") != replacing
+            ]
+            failures = validate_feat_prerequisites(
+                rule,
+                expected_category="战斗风格",
+                total_level=total_level,
+                ability_scores=dict(character.ability_scores or {}),
+                class_levels={
+                    **dict(character.class_levels or {}),
+                    class_name: class_level,
+                },
+                proficiencies=list(character.proficiencies or []),
+                features=filtered_features,
+            )
+            if failures:
+                raise ValueError("战斗风格前置条件不满足：" + "；".join(failures))
+            return {
+                "name": rule.name,
+                "kind": "feat",
+                "category": rule.category,
+                "level": total_level,
+                "class_name": class_name,
+                "class_level": class_level,
+                "source_record_id": rule.source_record_id or source_record_id,
+                "source_path": rule.source_path,
+                "rule_year": rule.rule_year or rule_year,
+                "runtime": {
+                    "automation_status": "dm_only",
+                    "requires_dm_adjudication": True,
+                    "execution": {
+                        "kind": "selected_asset_grant",
+                        "consumer": "advancement_service_and_feat_prerequisite_validator",
+                        "grant_status": "full",
+                        "effect_status": "dm_only",
+                        "selected_asset_runtime": "separate_contract",
+                    },
+                    "note": "战斗风格专长已权威授予；具体风格效果由该专长自己的合同决定。",
+                },
+            }
+
+        for choice in selected:
+            if choice in {"blessed_warrior", "druidic_warrior"}:
+                expected = "圣武士" if choice == "blessed_warrior" else "游侠"
+                if class_name != expected:
+                    raise ValueError(f"{choice}不是{class_name}可选的战斗风格分支")
+                grants.append(
+                    {
+                        "name": "受祝福的勇士" if choice == "blessed_warrior" else "德鲁伊教战士",
+                        "kind": "selected_option_bundle",
+                        "choice_key": "fighting_style",
+                        "class_name": class_name,
+                        "class_level": class_level,
+                        "level": total_level,
+                        "source_record_id": source_record_id,
+                        "rule_year": rule_year,
+                        "runtime": {
+                            "automation_status": "full",
+                            "requires_dm_adjudication": False,
+                            "execution": {
+                                "kind": "selected_spell_grant",
+                                "consumer": "advancement_service_spell_catalog_validator",
+                                "grant_status": "full",
+                                "effect_status": "full",
+                            },
+                        },
+                    }
+                )
+                continue
+            if choice in existing_style_names:
+                raise ValueError(f"战斗风格不能重复选择：{choice}")
+            grants.append(feat_grant(choice))
+
+        for replacement in replacements:
+            if replacement.count("->") != 1:
+                raise ValueError("战斗风格替换必须使用 <旧风格>-><新风格> 格式")
+            old_name, new_name = (part.strip() for part in replacement.split("->", 1))
+            if old_name not in existing_style_names:
+                raise ValueError(f"不能替换尚未拥有的战斗风格：{old_name}")
+            if not new_name or new_name == old_name:
+                raise ValueError("战斗风格替换必须选择不同的新风格")
+            replaced_names.add(old_name)
+            grants.append(feat_grant(new_name, replacing=old_name))
+        return grants, replaced_names
 
     @staticmethod
     def _merge_progression_resources(
@@ -996,6 +1146,9 @@ class AdvancementService:
         }
         by_name = {str(item.get("name") or ""): item for item in catalog if item.get("name")}
         max_level = maximum_class_spell_level(class_name, target_class_level)
+        allowed_spell_classes = {class_name}
+        if class_name == "吟游诗人" and target_class_level >= 10:
+            allowed_spell_classes.update({"牧师", "德鲁伊", "法师"})
         invalid: list[str] = []
         for addition in spell_additions:
             record = by_id.get(str(addition.get("source_record_id") or "")) or by_name.get(
@@ -1010,8 +1163,13 @@ class AdvancementService:
             }
             spell_level = int(record.get("level") or 0)
             granted_spell_access = addition.get("granted_spell_access") is True
-            if class_name not in record_classes and not granted_spell_access:
-                invalid.append(f"{name}不属于{class_name}法术表")
+            if not (record_classes & allowed_spell_classes) and not granted_spell_access:
+                suffix = (
+                    "当前可用法术表"
+                    if class_name == "吟游诗人" and target_class_level >= 10
+                    else "法术表"
+                )
+                invalid.append(f"{name}不属于{class_name}{suffix}")
             elif spell_level > max_level and not granted_spell_access:
                 invalid.append(
                     f"{name}为{spell_level}环，{class_name}{target_class_level}级"
@@ -1387,6 +1545,39 @@ class AdvancementService:
         }
         if len(selected_core_spell_choices) != len(raw_core_spell_choices):
             raise ValueError("each feature choice must be a list of text choices")
+        for branch_key, branch_value, spell_key, count in (
+            ("primal_order", "magician", "primal_order_cantrip", 1),
+            ("divine_order", "thaumaturge", "divine_order_cantrip", 1),
+            ("fighting_style", "blessed_warrior", "blessed_warrior_cantrips", 2),
+            ("fighting_style", "druidic_warrior", "druidic_warrior_cantrips", 2),
+        ):
+            branch = selected_core_spell_choices.get(branch_key, [])
+            spells = selected_core_spell_choices.get(spell_key, [])
+            active = branch == [branch_value]
+            if active and (len(spells) != count or len(set(spells)) != count):
+                raise ValueError(f"{branch_value}分支必须选择{count}道不重复法术")
+            if not active and spells:
+                raise ValueError(f"未选择{branch_value}分支，不能提交{spell_key}")
+
+        style_asset_grants: list[dict[str, Any]] = []
+        replaced_style_names: set[str] = set()
+        if any(
+            selected_core_spell_choices.get(key)
+            for key in ("fighting_style", "fighting_style_replacement")
+        ):
+            style_asset_grants, replaced_style_names = self._fighting_style_asset_grants(
+                choices_by_key=selected_core_spell_choices,
+                feat_rules=self._feat_rules(
+                    enabled_content_packs=enabled_content_packs,
+                    allow_legacy=allow_legacy,
+                ),
+                character=character,
+                class_name=class_name,
+                class_level=target_class_level,
+                total_level=character.level + 1,
+                source_record_id=rule.source_record_id,
+                rule_year=rule.rule_year,
+            )
         raw_subclass_spell_choices = data.get("subclass_feature_choices") or {}
         if not isinstance(raw_subclass_spell_choices, dict):
             raise ValueError("subclass_feature_choices must be an object keyed by feature id")
@@ -1420,7 +1611,7 @@ class AdvancementService:
                 enabled_content_packs=enabled_content_packs,
                 allow_legacy=allow_legacy,
             )
-            if spell_additions or selected_subclass is not None
+            if spell_additions or selected_subclass is not None or selected_core_spell_choices
             else ()
         )
         automatic_subclass_spells = _fixed_subclass_spell_additions(
@@ -1631,6 +1822,7 @@ class AdvancementService:
             total_level=character.level + 1,
             source_record_id=rule.source_record_id,
             rule_year=rule.rule_year,
+            allowed_languages=CORE_LANGUAGES,
         )
 
         class_levels[class_name] = target_class_level
@@ -1784,6 +1976,47 @@ class AdvancementService:
                         f"DM 已覆盖子职特性{feature_id}的不支持选择：" + "、".join(invalid)
                     )
 
+        subclass_style_asset_grants: list[dict[str, Any]] = []
+        for requirement in subclass_runtime["choice_requirements"]:
+            if (
+                requirement.get("selected_asset_kind") != "feat"
+                or requirement.get("expected_category") != "战斗风格"
+            ):
+                continue
+            feature_id = str(requirement.get("feature_id") or "")
+            source_grant = next(
+                (
+                    item
+                    for item in subclass_runtime["grants"]
+                    if str(item.get("feature_id") or "") == feature_id
+                ),
+                None,
+            )
+            # On later levels the selected choice is recovered to rebuild the
+            # subclass runtime, while the already persisted feat remains on
+            # the sheet. Only the feature's own level creates the asset.
+            if not isinstance(source_grant, dict) or int(
+                source_grant.get("class_level") or 0
+            ) != target_class_level:
+                continue
+            selected = selected_subclass_choices.get(feature_id, [])
+            if not selected:
+                continue
+            resolved, _ = self._fighting_style_asset_grants(
+                choices_by_key={"fighting_style": selected},
+                feat_rules=self._feat_rules(
+                    enabled_content_packs=enabled_content_packs,
+                    allow_legacy=allow_legacy,
+                ),
+                character=character,
+                class_name=class_name,
+                class_level=target_class_level,
+                total_level=character.level + 1,
+                source_record_id=str(source_grant.get("source_record_id") or "") or None,
+                rule_year=str(source_grant.get("rule_year") or rule.rule_year),
+            )
+            subclass_style_asset_grants.extend(resolved)
+
         # Battle Master replacements and additions form one persistent
         # maneuver set across levels.  Validate the sequence, not merely the
         # per-level list length, so a repeated maneuver or a replacement of an
@@ -1934,7 +2167,11 @@ class AdvancementService:
             if ability_increases
             else None
         )
-        chosen_features = list(progression_choice_result["grants"])
+        chosen_features = [
+            *list(progression_choice_result["grants"]),
+            *style_asset_grants,
+            *subclass_style_asset_grants,
+        ]
         proficiency_bonus_grant = {
             "name": "熟练加值",
             "kind": "proficiency_bonus",
@@ -1966,8 +2203,18 @@ class AdvancementService:
         ]
         if feat_grant:
             grants_to_persist.append(dict(feat_grant))
+        existing_features_for_rebuild = [
+            item
+            for item in character.features or []
+            if not (
+                isinstance(item, dict)
+                and str(item.get("name") or "") in replaced_style_names
+                and item.get("kind") == "feat"
+                and item.get("category") == "战斗风格"
+            )
+        ]
         after_features = self._replace_class_progression_grants(
-            list(character.features or []),
+            existing_features_for_rebuild,
             class_name=class_name,
             grants=grants_to_persist,
         )

@@ -73,6 +73,60 @@ class SpellEconomyService:
                 return True
         return False
 
+    @staticmethod
+    def _has_ritual_spellbook_casting(character: Character) -> bool:
+        for raw in character.features or []:
+            if not isinstance(raw, dict):
+                continue
+            runtime = raw.get("runtime")
+            registry = runtime.get("registry") if isinstance(runtime, dict) else None
+            advancement = registry.get("advancement") if isinstance(registry, dict) else None
+            if (
+                isinstance(advancement, dict)
+                and advancement.get("kind") == "ritual_spellbook_casting"
+                and advancement.get("requires_ritual_tag") is True
+                and advancement.get("requires_prepared") is False
+            ):
+                return True
+        return False
+
+    @classmethod
+    def _unprepared_ritual_allowed(
+        cls,
+        character: Character,
+        spell: KnownSpell,
+        data: dict[str, Any],
+    ) -> bool:
+        metadata = dict(spell.metadata_json or {})
+        ritual_tagged = metadata.get("ritual") is True
+        spell_class = str(metadata.get("class_name") or "").strip()
+        return bool(
+            data.get("ritual")
+            and ritual_tagged
+            and spell_class in {"法师", "wizard", "Wizard"}
+            and cls._has_ritual_spellbook_casting(character)
+        )
+
+    @staticmethod
+    def _weapon_focus_allowed(character: Character, spell: KnownSpell) -> bool:
+        spell_class = str((spell.metadata_json or {}).get("class_name") or "").strip()
+        for raw in character.features or []:
+            if not isinstance(raw, dict):
+                continue
+            runtime = raw.get("runtime")
+            registry = runtime.get("registry") if isinstance(runtime, dict) else None
+            spellcasting = registry.get("spellcasting") if isinstance(registry, dict) else None
+            entries = spellcasting if isinstance(spellcasting, list) else [spellcasting]
+            for entry in entries:
+                if (
+                    isinstance(entry, dict)
+                    and entry.get("kind") == "spellcasting_focus_permission"
+                    and entry.get("spell_class") == spell_class
+                    and "weapon" in list(entry.get("allowed_equipment_kinds") or [])
+                ):
+                    return True
+        return False
+
     @classmethod
     def _expert_divination_recovery(
         cls,
@@ -394,8 +448,38 @@ class SpellEconomyService:
                     PreparedSpell.prepared.is_(True),
                 )
             )
-            if spell.spell_level and prepared is None:
+            if (
+                spell.spell_level
+                and prepared is None
+                and not self._unprepared_ritual_allowed(c, spell, data)
+            ):
                 raise ValueError("spell is not prepared")
+            focus_equipment_id = str(data.get("focus_equipment_id") or "").strip()
+            focus_equipment: EquipmentInstance | None = None
+            if focus_equipment_id:
+                focus_equipment = s.get(EquipmentInstance, focus_equipment_id)
+                if (
+                    focus_equipment is None
+                    or focus_equipment.character_id != c.id
+                    or not focus_equipment.equipped
+                ):
+                    raise ValueError("selected spellcasting focus is not equipped by this character")
+                profile = equipment_profile(
+                    focus_equipment.name,
+                    focus_equipment.category,
+                    dict(focus_equipment.metadata_json or {}),
+                    focus_equipment.armor_class,
+                )
+                if profile.get("kind") != "weapon":
+                    raise ValueError("selected spellcasting focus is not a weapon")
+                if not self._weapon_focus_allowed(c, spell):
+                    raise ValueError("character cannot use a weapon as a focus for this spell class")
+                warning = weapon_proficiency_warning(
+                    focus_equipment.name,
+                    list(c.proficiencies or []),
+                )
+                if warning:
+                    raise ValueError(warning)
             if data["slot_level"] < spell.spell_level:
                 raise ValueError("slot level is below spell level")
             free_cast_key = ""
@@ -453,6 +537,7 @@ class SpellEconomyService:
                     free_cast_before - free_cast_cost if free_cast_key else free_cast_before
                 ),
                 "concentration": data["concentration"],
+                "focus_equipment_id": focus_equipment.id if focus_equipment else None,
                 "rule_reference": RULE,
             }
             recovery = self._expert_divination_recovery(c, spell, data)
