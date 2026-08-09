@@ -20,6 +20,10 @@ from pathlib import Path
 from typing import Any
 
 from dnd_dm_assistant.application.character_catalog import CharacterCatalog
+from dnd_dm_assistant.application.feature_compiler import (
+    FeatureCompiler,
+    legacy_feature_spec_from_audit_row,
+)
 from dnd_dm_assistant.domain.advancement_choices import (
     CORE_CLASSES_2024,
     core_class_level_runtime_contract,
@@ -324,6 +328,67 @@ def audit() -> dict[str, Any]:
                     }
                 )
 
+    shadow_compiler = FeatureCompiler(status_authority="legacy")
+    for row in rows:
+        source_parse = str(row.get("source_parse") or "")
+        row["ir_available"] = source_parse in {"description_located", "description_reused"}
+        if not row["ir_available"]:
+            row.update(
+                {
+                    "ir_schema_version": None,
+                    "compiler_status": "invalid",
+                    "status_authority": "legacy",
+                    "compiled_clause_count": 0,
+                    "total_clause_count": 0,
+                    "unsupported_clause_ids": [],
+                    "capability_ids": [],
+                    "legacy_adapter_used": False,
+                    "compiler_fingerprint": None,
+                }
+            )
+            continue
+        spec, adapter_used = legacy_feature_spec_from_audit_row(row)
+        result = shadow_compiler.compile(spec, legacy_adapter_used=adapter_used)
+        capability_ids = sorted(
+            {
+                capability_id
+                for clause in result.clause_results
+                for capability_id in clause.capability_ids
+            }
+        )
+        row.update(
+            {
+                "ir_schema_version": spec.schema_version,
+                "compiler_status": result.compile_status,
+                "status_authority": result.status_authority,
+                "compiled_clause_count": sum(
+                    item.status == "full" for item in result.clause_results
+                ),
+                "total_clause_count": len(result.clause_results),
+                "unsupported_clause_ids": [
+                    item.clause_id
+                    for item in result.clause_results
+                    if item.status != "full"
+                ],
+                "capability_ids": capability_ids,
+                "legacy_adapter_used": result.legacy_adapter_used,
+                "compiler_fingerprint": result.fingerprint,
+            }
+        )
+
+    compiler_pilot_feature_ids: list[str] = []
+    for row in rows:
+        if (
+            row.get("compiler_status") == "full"
+            and row.get("ir_available")
+            and len(compiler_pilot_feature_ids) < 10
+        ):
+            row["status_authority"] = "compiler"
+            compiler_pilot_feature_ids.append(
+                f"{row.get('scope')}:{row.get('source_record_id')}:{row.get('level')}:"
+                f"{row.get('feature_name')}"
+            )
+
     status_counts = Counter(row["runtime_status"] for row in rows)
     source_counts = Counter(row["source_parse"] for row in rows)
     block_rows = {}
@@ -347,6 +412,10 @@ def audit() -> dict[str, Any]:
         },
         "status_counts": dict(status_counts),
         "source_parse_counts": dict(source_counts),
+        "compiler_pilot": {
+            "count": len(compiler_pilot_feature_ids),
+            "feature_ids": compiler_pilot_feature_ids,
+        },
         "block_counts_overlap": block_rows,
         "rows": rows,
     }
