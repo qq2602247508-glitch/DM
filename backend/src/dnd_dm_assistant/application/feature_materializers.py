@@ -180,9 +180,11 @@ def _materialize_exchange(context: MaterializerContext) -> MaterializedBlock:
     entry = context.base(kind="resource_exchange")
     entry.update(
         {
+            "key": str(params["from_resource_key"]),
             "from_resource_key": str(params["from_resource_key"]),
             "to_resource_key": str(params["to_resource_key"]),
             "operation": str(params["operation"]),
+            "recovery_events": [],
         }
     )
     for key in ("amount", "amount_source"):

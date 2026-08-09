@@ -1542,7 +1542,18 @@
   },
   "pack_id": "automation-demo",
   "pack_version": "1.0.0",
-  "production_consumer_test_count": 8,
+  "production_consumer_sections": [
+    "actions",
+    "advancement",
+    "attack_riders",
+    "combat_defenses",
+    "combat_modifiers",
+    "movement_modes",
+    "proficiencies",
+    "resources",
+    "triggers"
+  ],
+  "production_consumer_test_count": 18,
   "schema_version": "feature-pack-readiness-1",
   "source_trust": "authored_ir",
   "validator_passed_count": 18

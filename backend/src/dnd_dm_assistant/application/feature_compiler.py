@@ -601,7 +601,9 @@ def materialize_runtime_definition(
                     }
         elif section == "movement_modes":
             definition["combat_start"]["movement_modes"].append(entry)
-        elif section in {"proficiencies", "triggers", "attack_riders", "actions"}:
+        elif section == "actions":
+            definition["actions"][str(entry["id"])] = entry
+        elif section in {"proficiencies", "triggers", "attack_riders"}:
             target = definition[section]
             if isinstance(target, list):
                 target.append(entry)

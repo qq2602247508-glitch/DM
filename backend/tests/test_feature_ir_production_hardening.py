@@ -22,7 +22,10 @@ from dnd_dm_assistant.domain.feature_capabilities import (
 )
 from dnd_dm_assistant.domain.feature_ir import FeatureIRValidationError, FeatureSpec
 from dnd_dm_assistant.domain.feature_operators import default_operator_contracts
-from dnd_dm_assistant.domain.feature_runtime import compile_feature_runtime_registry
+from dnd_dm_assistant.domain.feature_runtime import (
+    compile_feature_runtime_registry,
+    feature_runtime_contract,
+)
 
 ROOT = Path(__file__).resolve().parents[2]
 DEMO_PACK = ROOT / "backend/tests/fixtures/feature_packs/automation_demo_pack.json"
@@ -253,6 +256,40 @@ def test_pack_registry_trust_pin_and_real_clause_diff(tmp_path: Path) -> None:
     assert all(
         "source_trust_not_verified" in item.blockers for item in draft_result.feature_results
     )
+
+
+def test_all_demo_fulls_enter_existing_feature_runtime_consumer() -> None:
+    manifest = load_feature_pack(DEMO_PACK)
+    results = FeaturePackImporter().compile(manifest)
+    contracts = []
+    for feature, result in zip(
+        sorted(manifest.features, key=lambda item: item.feature_id),
+        results,
+        strict=True,
+    ):
+        if result.compile_status != "full":
+            continue
+        definition = materialize_runtime_definition(feature, result)
+        contracts.append(
+            feature_runtime_contract(
+                feature_name=feature.source_name,
+                class_name=feature.class_name or "unclassified",
+                class_level=feature.level or 0,
+                definition=definition,
+                source_record_id=feature.source_record_id,
+            )
+        )
+    assert len(contracts) == 18
+    assert all(contract["automation_status"] == "full" for contract in contracts)
+    assert {section for contract in contracts for section in contract["runtime_sections"]} >= {
+        "proficiencies",
+        "advancement",
+        "resources",
+        "combat_modifiers",
+        "movement_modes",
+        "combat_defenses",
+        "attack_riders",
+    }
 
 
 def test_feature_spec_rejects_unknown_top_level_fields() -> None:

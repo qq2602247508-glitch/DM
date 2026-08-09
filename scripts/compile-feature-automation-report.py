@@ -29,7 +29,10 @@ from dnd_dm_assistant.domain.feature_capabilities import (
     default_capability_catalog,
 )
 from dnd_dm_assistant.domain.feature_operators import default_operator_contracts
-from dnd_dm_assistant.domain.feature_runtime import compile_feature_runtime_registry
+from dnd_dm_assistant.domain.feature_runtime import (
+    compile_feature_runtime_registry,
+    feature_runtime_contract,
+)
 
 ROOT = Path(__file__).resolve().parents[1]
 AUDIT_PATH = ROOT / "scripts/audit-class-feature-coverage.py"
@@ -163,13 +166,22 @@ def main() -> int:
         demo_manifest
     )
     demo_materialized: dict[str, dict[str, Any]] = {}
+    demo_consumer_contracts: dict[str, dict[str, Any]] = {}
     for feature, result in zip(
         sorted(demo_manifest.features, key=lambda item: item.feature_id),
         demo_result.feature_results,
+        strict=True,
     ):
         if result.compile_status == "full":
             demo_materialized[feature.feature_id] = materialize_runtime_definition(
                 feature, result, catalog=catalog
+            )
+            demo_consumer_contracts[feature.feature_id] = feature_runtime_contract(
+                feature_name=feature.source_name,
+                class_name=feature.class_name or "unclassified",
+                class_level=feature.level or 0,
+                definition=demo_materialized[feature.feature_id],
+                source_record_id=feature.source_record_id,
             )
     _write(
         REPORT_DIR / "feature-pack-readiness-2026-08-09.json",
@@ -181,7 +193,17 @@ def main() -> int:
             "source_trust": demo_manifest.source_trust,
             "materialized_full_count": len(demo_materialized),
             "validator_passed_count": len(demo_materialized),
-            "production_consumer_test_count": 8,
+            "production_consumer_test_count": sum(
+                contract["automation_status"] == "full"
+                for contract in demo_consumer_contracts.values()
+            ),
+            "production_consumer_sections": sorted(
+                {
+                    section
+                    for contract in demo_consumer_contracts.values()
+                    for section in contract["runtime_sections"]
+                }
+            ),
             "feature_results": [item.to_dict() for item in demo_result.feature_results],
             "conflicts": list(demo_result.conflicts),
             "migration_plan": demo_result.migration_plan,
