@@ -33,6 +33,10 @@ from dnd_dm_assistant.domain.content_packs import (
     record_is_enabled_for_content_packs,
     validate_content_pack_compatibility,
 )
+from dnd_dm_assistant.domain.growth_asset_catalog import (
+    METAMAGIC_ASSETS,
+    WEAPON_ASSETS,
+)
 
 CORE_CLASSES_2024 = {
     "野蛮人",
@@ -537,6 +541,8 @@ class CharacterCatalog:
                 ),
                 key=lambda item: (item["level"], item["name"]),
             ),
+            "weapons": [item.as_dict() for item in WEAPON_ASSETS],
+            "metamagic_options": [item.as_dict() for item in METAMAGIC_ASSETS],
             "enabled_content_packs": sorted(enabled_pack_keys),
             "content_packs": [
                 pack for pack in list_content_packs() if pack["key"] in enabled_pack_keys
