@@ -5642,6 +5642,28 @@ def core_feature_grants(
                 "requires_dm_adjudication": False,
             }
         progression_profile = progression_automation_profile(feature)
+        if progression_profile is not None and progression_profile.choice_key == "epic_boon":
+            # The class-table feature is a typed asset grant.  The chosen feat
+            # remains a separate persisted runtime contract, whose concrete
+            # effects retain their own automation status.  This mirrors the
+            # existing subclass-selection boundary and prevents a class grant
+            # from claiming that every possible selected asset is executable.
+            registry["advancement"] = {
+                "kind": "selected_asset_grant",
+                "choice_requirement_key": "epic_boon",
+                "request_field": "feat_choice",
+                "asset_kind": "feat",
+                "expected_category": "传奇恩惠",
+                "prerequisites": "authoritative_feat_catalog",
+                "persisted_state": "character.features",
+                "selected_asset_runtime": "separate_contract",
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "advancement_service_and_feat_prerequisite_validator",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
         contract = feature_runtime_contract(
             feature_name=feature,
             class_name=rule.name,

@@ -42,11 +42,14 @@ PROGRESSION_AUTOMATION_PROFILES: dict[str, ProgressionAutomationProfile] = {
         choice_key="epic_boon",
         executor_kind="advancement_choice_grant",
         grant_status="full",
-        effect_status="dm_only",
-        overall_status="partial",
+        # The level-19 class feature ends after granting one eligible feat.
+        # The selected feat is persisted as its own feature/runtime contract,
+        # so its effect status must not be folded into (or falsely inherited
+        # by) the class-table grant.
+        effect_status="separate_asset_contract",
+        overall_status="full",
         persisted_state=("features",),
-        consumers=("feat_prerequisite_validator",),
-        dm_boundary="所选传奇恩惠的具体规则效果尚未逐项执行。",
+        consumers=("advancement_service", "feat_prerequisite_validator"),
     ),
     "战斗风格": ProgressionAutomationProfile(
         category="fighting_style_choice",
