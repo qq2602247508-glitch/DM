@@ -1,5 +1,24 @@
 # 特性自动化迁移预审报告
 
+## 2026-08-09 现有生产消费者收割 II
+
+- 固定分母 499：`full 286 / partial 147 / dm_only 66` → `full 310 / partial 128 / dm_only 61`，
+  严格审计得到真实 `full +24`。dm_only 的下降来自已有结构化消费者证据被纳入审计，不改变总条目。
+- 本批优先复用现有生产链，未新建高风险攻击/召唤/复杂状态底座。新增或收口的消费簇包括移动/视线、
+  语言与固定能力、先攻/回合开始、资源与目标状态、治疗/法术修改，以及角色卡/战斗快照中的跳跃和光照。
+  代表性特性：越野、野性感官、盗贼黑话、德鲁伊语、联络宗主、恐惧伏击、水生亲和、兽之形貌、梁上君子、
+  不灭哨卫、料敌机先、仇敌誓言、圣洁武器、生命门徒、神祝医者、极效治疗、强效塑能、强力戏法、序列意识。
+- `compile_feature_runtime_registry` 现在对选择型 movement/modifier 进行资源选择匹配；战斗与角色卡消费权威
+  blindsight、speed、jump、light、initiative、damage/healing 和资源/状态合同。错误选择、缺失权威快照、
+  过期 timed modifier 和未知 operation 均 fail-closed，未用显示名称绕过合同。
+- 当前矩阵预审重新生成的 readiness：`already_full 310`、`missing_runtime_contract 117`、
+  `consumer_partial 28`、`needs_contract_review 6`、`manual_boundary 3`、`missing_source 35`。
+  这些数字是下一批筛选状态，不是可直接承诺的新增 full 数量。
+- 验证：后端全量 pytest、`ruff check backend/src backend/tests`、compileall、`git diff --check` 通过；
+  前端未改动，不运行前端门禁/浏览器验收。全仓 scripts Ruff 仍保留既有 4 个 N999 与 1 个 EXE001。
+- 本轮代码、测试/审计、文档/交接分离提交；必须保留且不得提交的未跟踪路径为
+  `backend/tests/integrations/` 与 `backend/tests/ollama.py`。
+
 ## 2026-08-09 权威成长选项资产目录 II
 
 - 固定审计 499 条：`276/154/69` → `286/147/66`，真实净增 full +10。新增 full 为
