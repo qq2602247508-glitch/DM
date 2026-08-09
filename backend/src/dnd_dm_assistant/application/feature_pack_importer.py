@@ -11,12 +11,17 @@ from __future__ import annotations
 import json
 import re
 from collections.abc import Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any
 
-from dnd_dm_assistant.application.feature_compiler import CompileResult, FeatureCompiler
+from dnd_dm_assistant.application.feature_compiler import (
+    CompileResult,
+    FeatureCompiler,
+    materialize_runtime_definition,
+)
 from dnd_dm_assistant.domain.feature_ir import (
+    FEATURE_SOURCE_TRUSTS,
     FeatureIRValidationError,
     FeatureSpec,
     canonical_json,
@@ -63,6 +68,7 @@ class FeaturePackManifest:
     namespace: str
     display_name: str
     source_metadata: dict[str, Any]
+    source_trust: str
     dependencies: tuple[str, ...]
     features: tuple[FeatureSpec, ...]
     compatibility: dict[str, Any]
@@ -77,6 +83,7 @@ class FeaturePackManifest:
             "namespace",
             "display_name",
             "source_metadata",
+            "source_trust",
             "dependencies",
             "features",
             "compatibility",
@@ -99,6 +106,9 @@ class FeaturePackManifest:
         pack_version = _required(data.get("pack_version"), f"{path}.pack_version")
         ruleset_version = _required(data.get("ruleset_version"), f"{path}.ruleset_version")
         display_name = _required(data.get("display_name"), f"{path}.display_name")
+        source_trust = _required(data.get("source_trust", "unverified"), f"{path}.source_trust")
+        if source_trust not in FEATURE_SOURCE_TRUSTS:
+            raise FeaturePackImportError(f"{path}.source_trust {source_trust!r} is unsupported")
         raw_dependencies = _list(data.get("dependencies", []), f"{path}.dependencies")
         dependencies = tuple(
             _required(item, f"{path}.dependencies[{index}]")
@@ -134,6 +144,7 @@ class FeaturePackManifest:
             namespace=namespace,
             display_name=display_name,
             source_metadata=_mapping(data.get("source_metadata", {}), f"{path}.source_metadata"),
+            source_trust=source_trust,
             dependencies=dependencies,
             features=features,
             compatibility=_mapping(data.get("compatibility", {}), f"{path}.compatibility"),
@@ -149,6 +160,7 @@ class FeaturePackManifest:
             "namespace": self.namespace,
             "display_name": self.display_name,
             "source_metadata": self.source_metadata,
+            "source_trust": self.source_trust,
             "dependencies": list(self.dependencies),
             "features": [item.to_dict() for item in self.features],
             "compatibility": self.compatibility,
@@ -211,7 +223,7 @@ class FeaturePackImporter:
         )
         return tuple(
             compiler.compile(
-                feature,
+                replace(feature, source_trust=manifest.source_trust),
                 legacy_adapter_used=False,
             )
             for feature in sorted(manifest.features, key=lambda item: item.feature_id)
@@ -242,9 +254,28 @@ class FeaturePackImporter:
         target = self.target_dir
         target.mkdir(parents=True, exist_ok=True)
         path = self._manifest_path(manifest.pack_id, manifest.pack_version)
+        runtime_contracts: dict[str, dict[str, Any]] = {}
+        for feature, feature_result in zip(
+            sorted(manifest.features, key=lambda item: item.feature_id),
+            result.feature_results,
+            strict=True,
+        ):
+            if feature_result.compile_status != "full":
+                continue
+            try:
+                runtime_contracts[feature.feature_id] = materialize_runtime_definition(
+                    feature,
+                    feature_result,
+                    catalog=self.compiler.catalog,
+                )
+            except (TypeError, ValueError) as exc:
+                raise FeaturePackImportError(
+                    f"feature {feature.feature_id} materializer failed: {exc}"
+                ) from exc
         payload = {
             "manifest": manifest.to_dict(),
             "compile": result.to_dict(),
+            "runtime_contracts": runtime_contracts,
             "fingerprint": manifest.fingerprint(),
         }
         serialized = json.dumps(payload, ensure_ascii=False, sort_keys=True, indent=2) + "\n"
@@ -252,9 +283,7 @@ class FeaturePackImporter:
             try:
                 existing_payload = json.loads(path.read_text(encoding="utf-8"))
             except json.JSONDecodeError as exc:
-                raise FeaturePackImportError(
-                    f"pack/version file is invalid: {path.name}"
-                ) from exc
+                raise FeaturePackImportError(f"pack/version file is invalid: {path.name}") from exc
             if existing_payload.get("fingerprint") != manifest.fingerprint():
                 raise FeaturePackImportError(
                     f"pack/version already exists with a different fingerprint: {path.name}"
@@ -268,7 +297,7 @@ class FeaturePackImporter:
                 }
             )
         path.write_text(serialized, encoding="utf-8")
-        self._write_index(manifest, path)
+        self._write_index(manifest, path, result, runtime_contracts)
         return FeaturePackImportResult(
             **{
                 **result.__dict__,
@@ -289,7 +318,13 @@ class FeaturePackImporter:
             raise FeaturePackImportError("target_dir is required")
         return self.target_dir / "index.json"
 
-    def _write_index(self, manifest: FeaturePackManifest, path: Path) -> None:
+    def _write_index(
+        self,
+        manifest: FeaturePackManifest,
+        path: Path,
+        result: FeaturePackImportResult,
+        runtime_contracts: Mapping[str, dict[str, Any]],
+    ) -> None:
         index_path = self._index_path()
         current: dict[str, Any] = {}
         if index_path.exists():
@@ -300,11 +335,33 @@ class FeaturePackImporter:
         packs = current.get("packs")
         if not isinstance(packs, dict):
             packs = {}
-        packs[manifest.pack_id] = {
+        feature_records = {
+            item.feature_id: {
+                "compile_status": feature_result.compile_status,
+                "execution_enabled": (
+                    feature_result.compile_status == "full" and item.feature_id in runtime_contracts
+                ),
+                "fingerprint": item.fingerprint(),
+            }
+            for item, feature_result in zip(
+                sorted(manifest.features, key=lambda item: item.feature_id),
+                result.feature_results,
+                strict=True,
+            )
+        }
+        version_record = {
             "pack_version": manifest.pack_version,
             "path": path.name,
             "fingerprint": manifest.fingerprint(),
+            "source_trust": manifest.source_trust,
+            "feature_records": feature_records,
         }
+        versions = packs.get(manifest.pack_id, {}).get("versions", {})
+        if not isinstance(versions, dict):
+            versions = {}
+        versions[manifest.pack_version] = version_record
+        pack_record = {**version_record, "versions": versions}
+        packs[manifest.pack_id] = pack_record
         index_path.write_text(
             json.dumps({"packs": packs}, ensure_ascii=False, sort_keys=True, indent=2) + "\n",
             encoding="utf-8",
@@ -324,9 +381,7 @@ class FeaturePackImporter:
                 return (f"existing pack file is invalid: {path.name}",), {}
             if existing.get("fingerprint") == manifest.fingerprint():
                 return (), {"kind": "idempotent_replay", "changed_features": []}
-            return (
-                f"pack/version conflict: {manifest.pack_id}@{manifest.pack_version}",
-            ), {}
+            return (f"pack/version conflict: {manifest.pack_id}@{manifest.pack_version}",), {}
         index_path = self._index_path()
         if not index_path.exists():
             return (), {"kind": "new_pack", "changed_features": []}
@@ -337,11 +392,50 @@ class FeaturePackImporter:
         prior = index.get("packs", {}).get(manifest.pack_id)
         if not isinstance(prior, Mapping):
             return (), {"kind": "new_pack", "changed_features": []}
+        previous_version = prior.get("pack_version")
+        previous_path = self.target_dir / str(prior.get("path")) if prior.get("path") else None
+        changed_features: list[dict[str, Any]] = []
+        if previous_path is not None and previous_path.exists():
+            try:
+                previous_payload = json.loads(previous_path.read_text(encoding="utf-8"))
+                previous_features = {
+                    item.get("feature_id"): item
+                    for item in previous_payload.get("manifest", {}).get("features", [])
+                    if isinstance(item, Mapping)
+                }
+                current_features = {item.feature_id: item for item in manifest.features}
+                for feature_id in sorted(set(previous_features) | set(current_features)):
+                    before = previous_features.get(feature_id)
+                    after = current_features.get(feature_id)
+                    before_fp = canonical_json(before) if before is not None else None
+                    after_fp = after.fingerprint() if after is not None else None
+                    if before_fp != after_fp:
+                        changed_features.append(
+                            {
+                                "feature_id": feature_id,
+                                "kind": (
+                                    "added"
+                                    if before is None
+                                    else "removed"
+                                    if after is None
+                                    else "changed"
+                                ),
+                                "before_fingerprint": before_fp,
+                                "after_fingerprint": after_fp,
+                            }
+                        )
+            except (OSError, json.JSONDecodeError):
+                changed_features.append({"feature_id": "*", "kind": "previous_manifest_unreadable"})
         return (), {
             "kind": "version_update",
-            "previous_version": prior.get("pack_version"),
-            "changed_features": [],
+            "previous_version": previous_version,
+            "changed_features": changed_features,
             "breaking_change": bool(manifest.migration.get("breaking_change", False)),
+            "migration_action": (
+                "write_migration_plan"
+                if manifest.migration.get("breaking_change", False)
+                else "allow_new_version"
+            ),
         }
 
 
@@ -351,3 +445,114 @@ def load_feature_pack(path: Path) -> FeaturePackManifest:
     except (OSError, json.JSONDecodeError) as exc:
         raise FeaturePackImportError(f"cannot read feature pack: {path}") from exc
     return FeaturePackManifest.from_dict(value, path=str(path))
+
+
+class FeaturePackRegistry:
+    """Read-only execution registry backed by the importer directory.
+
+    The registry exposes only full, materialized feature contracts.  Draft,
+    partial and manual entries remain inspectable in the pack payload but are
+    never returned by ``lookup``.
+    """
+
+    def __init__(self, target_dir: Path) -> None:
+        self.target_dir = target_dir
+        self._index: dict[str, Any] = {}
+
+    def reload(self) -> dict[str, Any]:
+        index_path = self.target_dir / "index.json"
+        if not index_path.exists():
+            self._index = {"packs": {}}
+            return self._index
+        try:
+            payload = json.loads(index_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            raise FeaturePackImportError("feature pack index is invalid") from exc
+        if not isinstance(payload, Mapping) or not isinstance(payload.get("packs"), Mapping):
+            raise FeaturePackImportError("feature pack index is invalid")
+        self._index = dict(payload)
+        return self._index
+
+    def _ensure_loaded(self) -> None:
+        if not self._index:
+            self.reload()
+
+    def lookup(
+        self,
+        feature_id: str,
+        *,
+        pack_id: str | None = None,
+        pack_version: str | None = None,
+    ) -> dict[str, Any] | None:
+        self._ensure_loaded()
+        packs = self._index.get("packs", {})
+        candidates = {pack_id: packs.get(pack_id)} if pack_id is not None else packs
+        for current_pack_id, raw_record in candidates.items():
+            if not isinstance(raw_record, Mapping):
+                continue
+            record = raw_record
+            if pack_version is not None:
+                versions = raw_record.get("versions", {})
+                if not isinstance(versions, Mapping):
+                    continue
+                record = versions.get(pack_version)
+            if not isinstance(record, Mapping):
+                continue
+            feature_record = record.get("feature_records", {}).get(feature_id)
+            if not isinstance(feature_record, Mapping):
+                continue
+            if not feature_record.get("execution_enabled"):
+                return None
+            path = self.target_dir / str(record.get("path"))
+            try:
+                payload = json.loads(path.read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError) as exc:
+                raise FeaturePackImportError(f"feature pack file is invalid: {path.name}") from exc
+            contract = payload.get("runtime_contracts", {}).get(feature_id)
+            if not isinstance(contract, Mapping):
+                raise FeaturePackImportError(
+                    f"execution registry entry {feature_id!r} has no runtime contract"
+                )
+            return {
+                "pack_id": current_pack_id,
+                "pack_version": record.get("pack_version"),
+                "fingerprint": record.get("fingerprint"),
+                "feature_id": feature_id,
+                "runtime_contract": dict(contract),
+            }
+        return None
+
+    def pin_character(self, character_id: str, pack_id: str, pack_version: str) -> None:
+        self._ensure_loaded()
+        record = self._index.get("packs", {}).get(pack_id)
+        if not isinstance(record, Mapping):
+            raise FeaturePackImportError(f"unknown pack_id: {pack_id}")
+        versions = record.get("versions", {})
+        if pack_version not in versions:
+            raise FeaturePackImportError(f"unknown pack version: {pack_id}@{pack_version}")
+        pins_path = self.target_dir / "character-pins.json"
+        pins: dict[str, Any] = {}
+        if pins_path.exists():
+            try:
+                pins = json.loads(pins_path.read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError) as exc:
+                raise FeaturePackImportError("character pin registry is invalid") from exc
+        pins[str(character_id)] = {
+            "pack_id": pack_id,
+            "pack_version": pack_version,
+        }
+        pins_path.write_text(
+            json.dumps(pins, ensure_ascii=False, sort_keys=True, indent=2) + "\n",
+            encoding="utf-8",
+        )
+
+    def character_pin(self, character_id: str) -> dict[str, str] | None:
+        pins_path = self.target_dir / "character-pins.json"
+        if not pins_path.exists():
+            return None
+        try:
+            pins = json.loads(pins_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            raise FeaturePackImportError("character pin registry is invalid") from exc
+        value = pins.get(str(character_id))
+        return dict(value) if isinstance(value, Mapping) else None
