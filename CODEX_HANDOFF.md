@@ -1,3 +1,26 @@
+# 2026-08-09 长执行检查点：现有 production_closed 消费者批量迁移 I 收尾
+
+- 本批起点按实时审计为 `full 312 / partial 126 / dm_only 61`，终点为
+  `full 314 / partial 124 / dm_only 61`，固定分母仍为 499，真实净增 `+2`。
+- 新增 full：
+  - 德鲁伊·大地结社·3「大地结社法术」：固定法术表现在由 typed
+    `rest_choice` 合同绑定 `circle_land_terrain`；升级/快照只物化已选地形且按德鲁伊等级
+    截止法术；长休重选会移除旧地形法术、加入新地形法术，并同步 known/prepared spell
+    持久化记录。
+  - 武僧·命流武者·6「生死之触」：命中后中毒 rider overlay 与予命之手状态解除
+    action overlay 均由现有 typed overlay consumer 执行，移除错误的 partial/DM 标记；
+    予命之手自身的疾风连击免费替换仍单独保持 partial。
+- 新增真实回归：大地结社升级选择、四种地形分支的等级截止、长休重配与法术快照重建；
+  生死之触的攻击 rider/action overlay 合同回归。后端全量 `pytest -q backend/tests`
+  通过；新增源码/测试 Ruff、compileall、`git diff --check` 通过。
+- 仍未完成且明确保留 partial 的高风险簇：攻击骑手/复杂反应、多目标状态/召唤、
+  目标抗性读取、强制移动、额外攻击/攻击槽替换、星耀形态三分支、灵魂之刃未命中重算等。
+  当前 readiness 为 `already_full 314 / missing_runtime_contract 114 /
+  consumer_partial 27 / needs_contract_review 6 / manual_boundary 3 / missing_source 35`。
+- 工作树必须保留且不得暂存/提交：`backend/tests/integrations/`、`backend/tests/ollama.py`。
+- 本批尚未创建新的高风险底层系统；下一轮应从剩余 partial 中重新筛选至少 4 条共享同构
+  production_closed capability，若证据不足则止损，不为达到数量硬升 full。
+
 # 2026-08-09 长执行检查点：现有 production_closed 消费者批量迁移 I
 
 - 本轮全程单线程，未创建、调用、委托或等待任何子代理。固定审计分母仍为 499：

@@ -4,8 +4,8 @@
 
 - 矩阵 schema：`feature-automation-migration-plan-2`
 - 总条目：499
-- 当前状态：`{'full': 312, 'dm_only': 61, 'partial': 126}`
-- 预审状态：`{'already_full': 312, 'manual_boundary': 3, 'missing_runtime_contract': 116, 'consumer_partial': 27, 'needs_contract_review': 6, 'missing_source': 35}`
+- 当前状态：`{'full': 314, 'dm_only': 61, 'partial': 124}`
+- 预审状态：`{'already_full': 314, 'manual_boundary': 3, 'missing_runtime_contract': 114, 'consumer_partial': 27, 'needs_contract_review': 6, 'missing_source': 35}`
 
 ## 模板分组
 
@@ -14,7 +14,7 @@
 | 动作经济与触发条件 (`action_trigger`) | 31 | 26 | 4 | 0 | 0 | 1 | 0 |
 | 成长授予/升级选择 (`progression_grant`) | 71 | 71 | 0 | 0 | 0 | 0 | 0 |
 | 施法框架/法术修改 (`spell_capability`) | 7 | 7 | 0 | 0 | 0 | 0 | 0 |
-| 资源/恢复/频率 (`resource_lifecycle`) | 64 | 48 | 14 | 2 | 0 | 0 | 0 |
+| 资源/恢复/频率 (`resource_lifecycle`) | 64 | 49 | 13 | 2 | 0 | 0 | 0 |
 | 命中后骑手 (`attack_rider`) | 13 | 4 | 0 | 0 | 9 | 0 | 0 |
 | 光环/范围被动 (`aura_passive`) | 48 | 12 | 35 | 1 | 0 | 0 | 0 |
 | 伤害/治疗 (`damage_healing`) | 48 | 31 | 16 | 1 | 0 | 0 | 0 |
@@ -22,7 +22,7 @@
 | 通用被动/数值修正 (`passive_modifier`) | 79 | 37 | 6 | 0 | 0 | 1 | 35 |
 | 伤害前/防御干预 (`pre_damage_intervention`) | 13 | 5 | 7 | 1 | 0 | 0 | 0 |
 | 掷骰干预 (`roll_intervention`) | 46 | 28 | 0 | 0 | 18 | 0 | 0 |
-| 状态生命周期 (`state_lifecycle`) | 34 | 20 | 13 | 1 | 0 | 0 | 0 |
+| 状态生命周期 (`state_lifecycle`) | 34 | 21 | 12 | 1 | 0 | 0 | 0 |
 | 召唤/伙伴 (`summon_lifecycle`) | 12 | 7 | 5 | 0 | 0 | 0 | 0 |
 | 目标/范围/豁免组合 (`target_save_status`) | 10 | 6 | 3 | 0 | 0 | 1 | 0 |
 | 0 HP/死亡生命周期 (`zero_hp_intervention`) | 8 | 4 | 4 | 0 | 0 | 0 | 0 |
@@ -35,8 +35,8 @@
 | aura_passive | 48 | 12 | 36 | 0 | 是 | 是 | 是 | 是 |
 | roll_intervention | 46 | 28 | 18 | 0 | 是 | 是 | 是 | 是 |
 | damage_healing | 48 | 31 | 17 | 0 | 是 | 是 | 是 | 是 |
-| resource_lifecycle | 56 | 40 | 16 | 0 | 是 | 是 | 是 | 是 |
-| state_lifecycle | 34 | 20 | 14 | 0 | 是 | 是 | 是 | 是 |
+| resource_lifecycle | 56 | 41 | 15 | 0 | 是 | 是 | 是 | 是 |
+| state_lifecycle | 34 | 21 | 13 | 0 | 是 | 是 | 是 | 是 |
 | attack_rider | 13 | 4 | 9 | 0 | 是 | 是 | 是 | 是 |
 | movement | 15 | 6 | 9 | 0 | 是 | 是 | 是 | 是 |
 | pre_damage_intervention | 13 | 5 | 8 | 0 | 是 | 是 | 是 | 是 |
