@@ -1,5 +1,31 @@
 # 特性自动化迁移预审报告
 
+## 2026-08-09 Feature IR 自动装配与拓展包导入基础
+
+- 本轮将迁移策略从“逐条人工接线”推进到 Feature IR + Capability Catalog + FeatureCompiler +
+  FeaturePackImporter。正式审计固定分母仍为 499，旧状态保持 `full 310 / partial 128 / dm_only 61`。
+- `feature-ir-1` 为严格关闭 schema，FeatureSpec/Clause/Effect/Condition/Input/Resource/Target 均可
+  确定性序列化；未知字段、schema、operator、重复 ID、不安全 namespace 和 pack/version 冲突 fail-closed。
+- 当前 capability catalog 有 28 个 operator descriptor；它们记录真实 producer、consumer、持久化、
+  CAS、幂等、输入/目标/持续时间支持和证据测试。只有 `production_closed` 可参与自动 full；施法上下文
+  和目标信息能力显式保持 `production_partial`。
+- FeatureCompiler 逐 clause 输出 full/partial/manual/invalid、unsupported clause、缺 producer/consumer、
+  资源/输入/持久化/UI 需求和 fingerprint。`materialize_runtime_definition` 只投影现有 runtime contract，
+  不复制战斗、施法或资源执行器。
+- 499 条审计进入 shadow：正式 runtime_status 不变，额外输出 IR 是否存在、compiler_status、authority、
+  clause 计数、unsupported clause、capability IDs、legacy adapter 和 fingerprint。30 条已有 full 完成
+  shadow parity 试点，10 条进入 compiler authority 试点。
+- FeaturePackImporter 支持 `--dry-run`、`--apply`、幂等重放、版本 fingerprint 冲突、namespace 校验和
+  migration metadata。测试拓展包 24 条准确编译为 `18 full / 4 partial / 2 manual`，不计入 499。
+- 扇出证明：6 条共享同一未注册 operator 的 FeatureSpec 在 capability 注册前全部 partial；注册一个
+  production_closed capability 后，六条无需修改 spec 即全部 full。
+- 报告：`reports/feature-capability-catalog-2026-08-09.json`、
+  `reports/feature-ir-parity-2026-08-09.json`、
+  `reports/feature-pack-readiness-2026-08-09.json`。架构和导入说明见
+  `docs/feature-ir-architecture-2026-08-09.md`、`docs/feature-pack-import-readiness-2026-08-09.md`。
+- 自然语言/generated draft 不得自动 full；需要新 producer、复杂状态、召唤、强制移动、法术书、额外
+  回合或新 UI 的机制继续由 compiler 精确报告 blocker。
+
 ## 2026-08-09 现有生产消费者收割 II
 
 - 固定分母 499：`full 286 / partial 147 / dm_only 66` → `full 310 / partial 128 / dm_only 61`，

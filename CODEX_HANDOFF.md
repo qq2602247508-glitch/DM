@@ -1,3 +1,37 @@
+# 2026-08-09 长执行检查点：Feature IR 自动装配与拓展包导入基础
+
+- 本轮全程单线程，未创建、调用、委托或等待任何子代理。正式固定审计仍为 499 条：
+  `full 310 / partial 128 / dm_only 61`，没有因为 shadow 编译器而回退正式状态。
+- 新增严格 `feature-ir-1`：FeatureSpec、Clause、Effect、Condition、Input、Resource 和 Target
+  均为版本化、可序列化、关闭字段集合；未知字段、schema、operator、重复 ID 和不安全 pack/namespace
+  fail-closed。IR 不保存 Python、模块路径、任意表达式或执行回调。
+- 新增 28 项 Capability Catalog 描述现有生产消费者，记录 producer、consumer、持久化、动作经济、
+  支持的 trigger/condition/input/target/duration、CAS、幂等、UI 投影、证据测试和已知限制。只有
+  `production_closed` capability 能参与 full；施法上下文和目标情报保持 `production_partial`。
+- 新增 FeatureCompiler：逐 clause 解析 operator 与 capability 满足性，输出 full/partial/manual/invalid、
+  精确 blocker、生成 runtime blocks、输入/持久化/UI/测试需求和确定性 fingerprint。新增
+  `materialize_runtime_definition`，把完整编译结果投影到现有 feature runtime contract 形状，未复制
+  CombatEngine、PlayerRoom、rest 或 spell economy 执行器。
+- 现有审计进入 shadow：每行新增 `ir_available`、`compiler_status`、`status_authority`、
+  compiled/total clause、unsupported clause IDs、capability IDs、legacy adapter 和 fingerprint。
+  30 条已有 full 进入 parity 试点，10 条 parity 行切换 compiler authority，正式 status_counts 仍由旧
+  审计标准保持不变。
+- 新增 FeaturePackManifest 和版本化导入器，支持 dry-run、apply、幂等重放、pack/version fingerprint
+  冲突保护、版本更新 migration metadata、namespace 校验和 partial/manual 保留。命令：
+  `backend/.venv/bin/python scripts/import-feature-pack.py <manifest> --dry-run`。
+- 测试拓展包 `backend/tests/fixtures/feature_packs/automation_demo_pack.json` 共 24 条，实际结果严格为
+  `18 full / 4 partial / 2 manual`；不计入正式 499 条。6 条扇出测试证明注册一个通用 capability 后，
+  六条 FeatureSpec 无需修改即可从 partial 变为 full。
+- 机器报告：
+  `reports/feature-capability-catalog-2026-08-09.json`、
+  `reports/feature-ir-parity-2026-08-09.json`、
+  `reports/feature-pack-readiness-2026-08-09.json`。
+  人类文档为 `docs/feature-ir-architecture-2026-08-09.md` 和
+  `docs/feature-pack-import-readiness-2026-08-09.md`。
+- 当前边界：legacy adapter 仍用于 shadow；自然语言/generated draft 不能自动 full；需要新 producer、
+  复杂状态、召唤、强制移动、法术书、额外回合或新 UI 的机制继续保持 partial。
+- 必须继续保留且不得暂存/提交：`backend/tests/integrations/`、`backend/tests/ollama.py`。
+
 # 2026-08-09 长执行检查点：现有生产消费者收割 II
 
 - 本轮全程由当前对话单线程完成，未创建、调用、委托或等待任何子代理。固定审计分母仍为 499：
