@@ -504,6 +504,7 @@ _RUNTIME_SECTION_BY_OPERATOR = {
     "grant_spell": "advancement",
     "prepare_spell": "prepared_spell_list",
     "restore_resource": "resources",
+    "set_resource_profile": "resources",
     "consume_resource": "resources",
     "exchange_resource": "resources",
     "add_modifier": "combat_modifiers",

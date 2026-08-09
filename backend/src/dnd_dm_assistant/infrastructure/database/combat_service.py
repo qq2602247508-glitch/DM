@@ -16912,7 +16912,25 @@ class CombatEngineService:
                 result["condition_to_cure"] = condition_to_cure
             effects = action.get("effects")
             effect_list = effects if isinstance(effects, list) else []
-            for effect in effect_list:
+            timed_source_id = str(action.get("id") or command.feature_id).strip()
+            if any(
+                isinstance(effect, dict) and effect.get("kind") == "grant_timed_modifier"
+                for effect in effect_list
+            ):
+                snapshot = dict(target.snapshot_json or {})
+                raw_timed = snapshot.get("timed_feature_modifiers")
+                timed = (
+                    [dict(item) for item in raw_timed if isinstance(item, dict)]
+                    if isinstance(raw_timed, list)
+                    else []
+                )
+                snapshot["timed_feature_modifiers"] = [
+                    item
+                    for item in timed
+                    if str(item.get("source_id") or "") != timed_source_id
+                ]
+                target.snapshot_json = snapshot
+            for effect_index, effect in enumerate(effect_list):
                 if not isinstance(effect, dict):
                     continue
                 kind = str(effect.get("kind") or "")
@@ -16998,12 +17016,24 @@ class CombatEngineService:
                         raise ValueError("限时职业特性修正缺少结构化 modifier")
                     stat = str(modifier.get("stat") or "").strip()
                     operation = str(modifier.get("operation") or "").strip()
-                    if stat not in {"ability_check", "skill_check", "attack_roll", "saving_throw"}:
+                    if stat not in {
+                        "ability_check",
+                        "skill_check",
+                        "attack_roll",
+                        "saving_throw",
+                        "jump_distance_ft",
+                    }:
                         raise ValueError("限时职业特性修正的 stat 不受支持")
                     if operation not in {"advantage", "disadvantage", "add"}:
                         raise ValueError("限时职业特性修正的 operation 不受支持")
                     if stat == "skill_check" and not str(modifier.get("skill") or "").strip():
                         raise ValueError("技能检定修正需要明确 skill")
+                    if stat == "jump_distance_ft" and (
+                        operation != "add"
+                        or not isinstance(modifier.get("value"), int)
+                        or isinstance(modifier.get("value"), bool)
+                    ):
+                        raise ValueError("跳跃距离限时修正必须是整数 add")
                     expires_on = str(effect.get("expires_on") or "").strip()
                     if expires_on not in {"long_rest", "short_rest", "turn_end"}:
                         raise ValueError("限时职业特性修正的 expires_on 不受支持")
@@ -17014,14 +17044,15 @@ class CombatEngineService:
                         if isinstance(raw_timed, list)
                         else []
                     )
-                    source_id = str(action.get("id") or command.feature_id).strip()
-                    timed = [
-                        item for item in timed if str(item.get("source_id") or "") != source_id
-                    ]
+                    modifier_id = str(
+                        effect.get("id")
+                        or modifier.get("id")
+                        or f"modifier:{effect_index}"
+                    ).strip()
                     timed.append(
                         {
-                            "id": f"{source_id}:{target.id}",
-                            "source_id": source_id,
+                            "id": f"{timed_source_id}:{modifier_id}:{target.id}",
+                            "source_id": timed_source_id,
                             "feature_id": command.feature_id,
                             "source": action.get("name"),
                             "modifier": dict(modifier),
@@ -17032,6 +17063,7 @@ class CombatEngineService:
                     snapshot["timed_feature_modifiers"] = timed
                     target.snapshot_json = snapshot
                     result["timed_modifier_granted"] = dict(modifier)
+                    result.setdefault("timed_modifiers_granted", []).append(dict(modifier))
                     result["timed_modifier_expires_on"] = expires_on
                     continue
                 elif kind == "grant_targeted_timed_modifier":

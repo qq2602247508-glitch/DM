@@ -175,6 +175,26 @@ def _materialize_resource(context: MaterializerContext) -> MaterializedBlock:
     return MaterializedBlock("resources", entry)
 
 
+def _materialize_resource_profile(context: MaterializerContext) -> MaterializedBlock:
+    params = context.parameters
+    entry = context.base(kind="resource_profile")
+    entry.update(
+        {
+            "key": str(params["resource_key"]),
+            "resource_kind": str(params["resource_kind"]),
+            "die_size": int(params["die_size"]),
+            "recovery": "both",
+            "recovery_events": [
+                {"rest": "short_rest", "operation": "set_to_max"},
+                {"rest": "long_rest", "operation": "set_to_max"},
+            ],
+        }
+    )
+    if "max_formula" in params:
+        entry["max_formula"] = str(params["max_formula"])
+    return MaterializedBlock("resources", entry)
+
+
 def _materialize_exchange(context: MaterializerContext) -> MaterializedBlock:
     params = context.parameters
     entry = context.base(kind="resource_exchange")
@@ -391,6 +411,7 @@ def default_materializer_registry() -> MaterializerRegistry:
         "advancement.spell": _materialize_spell,
         "advancement.prepare_spell": _materialize_prepare_spell,
         "resource.lifecycle": _materialize_resource,
+        "resource.profile": _materialize_resource_profile,
         "resource.lifecycle.consume": _materialize_resource,
         "resource.exchange": _materialize_exchange,
         "modifier.passive": _materialize_modifier,

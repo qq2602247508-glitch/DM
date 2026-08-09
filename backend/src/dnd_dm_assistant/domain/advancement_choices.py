@@ -5595,6 +5595,160 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS["复仇之魂"] = {
     "requires_dm_adjudication": False,
 }
 
+# Ultimate Combat Superiority is a resource-facing Battle Master upgrade whose
+# complete effect is already owned by the shared superiority-dice producer and
+# resource store.  Relentless is deliberately kept as a typed partial
+# contract: the existing maneuver endpoint consumes a superiority die, but it
+# does not yet own the feature's once-per-turn free-die payment policy.
+SUBCLASS_FEATURE_RUNTIME_CONFIGS["坚韧"] = {
+    "combat_start": {"modifiers": [], "defenses": []},
+    "resources": {
+        "$feature_resource": {
+            "key": "$feature_resource",
+            "label": "坚韧（每回合一次免费战技骰）",
+            "resource_kind": "superiority_dice",
+            "recovery": "both",
+            "recovery_events": [
+                {"rest": "short_rest", "operation": "set_to_max"},
+                {"rest": "long_rest", "operation": "set_to_max"},
+            ],
+            "runtime_execution": {
+                "status": "partial",
+                "consumer": "battle_master_maneuver_payment_resolver",
+                "persistence": "character_resource_and_combat_action",
+                "remaining_dm_boundaries": [
+                    "缺少权威的每回合一次免费战技骰支付窗口与确认 CAS"
+                ],
+            },
+            "automation_status": "partial",
+            "requires_dm_adjudication": True,
+        }
+    },
+    "actions": {
+        "relentless_maneuver_payment": {
+            "id": "battle_master:relentless_maneuver_payment",
+            "name": "坚韧",
+            "kind": "maneuver_payment_policy",
+            "trigger": "maneuver_declared",
+            "frequency": "once_per_turn",
+            "resource_key": "$feature_resource",
+            "replacement": {
+                "kind": "reported_die",
+                "die_sides_source": "superiority_die_sides",
+                "consume_when": "maneuver_confirmed",
+            },
+            "runtime_execution": {
+                "status": "partial",
+                "consumer": "battle_master_maneuver_payment_resolver",
+                "persistence": "character_resource_and_combat_action",
+                "remaining_dm_boundaries": [
+                    "缺少权威的每回合一次免费战技骰支付窗口与确认 CAS"
+                ],
+            },
+            "automation_status": "partial",
+            "requires_dm_adjudication": True,
+        }
+    },
+    "triggers": [],
+    "attack_riders": [],
+    "automation_status": "partial",
+    "requires_dm_adjudication": True,
+}
+
+SUBCLASS_FEATURE_RUNTIME_CONFIGS["究极战技"] = {
+    "combat_start": {"modifiers": [], "defenses": []},
+    "resources": {
+        "$feature_resource": {
+            "key": "$feature_resource",
+            "label": "卓越骰（究极战技）",
+            "resource_kind": "superiority_dice",
+            "value": "d12",
+            "die_size": 12,
+            "max_formula": "battle_master_superiority_dice_table",
+            "recovery": "both",
+            "recovery_events": [
+                {"rest": "short_rest", "operation": "set_to_max"},
+                {"rest": "long_rest", "operation": "set_to_max"},
+            ],
+            "runtime_execution": {
+                "status": "ready",
+                "consumer": "battle_master_superiority_dice_resource_store",
+                "persistence": "character_resource_and_feature_snapshot",
+            },
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+        }
+    },
+    "actions": {},
+    "triggers": [],
+    "attack_riders": [],
+    "automation_status": "full",
+    "requires_dm_adjudication": False,
+}
+
+# Peerless Athlete is a bounded self-target timed modifier.  It reuses the
+# existing resource CAS, timed-modifier snapshot and jump-distance resolver;
+# no feature-name branch is required in the consumer.
+SUBCLASS_FEATURE_RUNTIME_CONFIGS["绝伦健将"] = {
+    "combat_start": {"modifiers": [], "defenses": []},
+    "resources": {},
+    "actions": {
+        "peerless_athlete": {
+            "id": "peerless_athlete",
+            "name": "绝伦健将",
+            "kind": "feature_action",
+            "action_cost": "bonus_action",
+            "resource_key": "channel_divinity",
+            "resource_cost": 1,
+            "target": "self",
+            "resolution_kind": "timed_modifier",
+            "effects": [
+                {
+                    "kind": "grant_timed_modifier",
+                    "modifier": {
+                        "stat": "skill_check",
+                        "skill": "运动",
+                        "operation": "advantage",
+                        "scope": "self",
+                    },
+                    "expires_on": "long_rest",
+                },
+                {
+                    "kind": "grant_timed_modifier",
+                    "modifier": {
+                        "stat": "skill_check",
+                        "skill": "特技",
+                        "operation": "advantage",
+                        "scope": "self",
+                    },
+                    "expires_on": "long_rest",
+                },
+                {
+                    "kind": "grant_timed_modifier",
+                    "modifier": {
+                        "stat": "jump_distance_ft",
+                        "operation": "add",
+                        "value": 10,
+                        "scope": "self",
+                    },
+                    "expires_on": "long_rest",
+                },
+            ],
+            "runtime_execution": {
+                "status": "ready",
+                "consumer": "combat_feature_action_and_player_roll_resolution",
+                "persistence": "actor_snapshot_timed_feature_modifiers",
+            },
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+        }
+    },
+    "triggers": [],
+    "attack_riders": [],
+    "automation_status": "full",
+    "requires_dm_adjudication": False,
+}
+
 SUBCLASS_FEATURE_RUNTIME_CONFIGS["圣洁武器"] = {
     "combat_start": {"modifiers": [], "defenses": []},
     "resources": {},
@@ -5821,6 +5975,14 @@ def subclass_feature_runtime_definition(
     config = SUBCLASS_FEATURE_RUNTIME_CONFIGS.get(name)
     if config is None:
         for prefix, candidate in SUBCLASS_FEATURE_RUNTIME_CONFIGS.items():
+            suffix = name[len(prefix) :] if name.startswith(prefix) else ""
+            # Prefix aliases are used to bind source names such as
+            # ``星耀形态 Starry`` to a Chinese registry key.  Do not let a
+            # short key such as ``坚韧`` accidentally capture the distinct
+            # feature ``坚韧复仇``; an alias may continue only at a source
+            # separator (normally whitespace) or at the end of the name.
+            if suffix and not suffix[0].isspace():
+                continue
             if name.startswith(prefix):
                 config = candidate
                 break

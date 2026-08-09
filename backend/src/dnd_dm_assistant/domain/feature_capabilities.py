@@ -408,6 +408,13 @@ def default_capability_catalog() -> CapabilityCatalog:
             persisted_state="character.resources",
         ),
         _descriptor(
+            "resource.profile",
+            "set_resource_profile",
+            consumer="character_resource_store",
+            producer="advancement_service",
+            persisted_state="character.resources",
+        ),
+        _descriptor(
             "resource.lifecycle.consume",
             "consume_resource",
             consumer="combat_and_advancement_resource_cas",

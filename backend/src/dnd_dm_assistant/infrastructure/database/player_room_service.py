@@ -4174,6 +4174,9 @@ class PlayerRoomService:
         )
         light_radius_ft: int | None = None
         snapshot = item.snapshot_json if isinstance(item.snapshot_json, dict) else {}
+        jump_distance_ft = snapshot.get("jump_distance_ft")
+        if not isinstance(jump_distance_ft, int) or isinstance(jump_distance_ft, bool):
+            jump_distance_ft = None
         timed_modifiers = snapshot.get("timed_feature_modifiers")
         if isinstance(timed_modifiers, list):
             now = datetime.now(UTC)
@@ -4193,6 +4196,16 @@ class PlayerRoomService:
                 value = timed.get("light_radius_ft")
                 if isinstance(value, int) and value > 0:
                     light_radius_ft = max(light_radius_ft or 0, value)
+                modifier = timed.get("modifier")
+                if (
+                    jump_distance_ft is not None
+                    and isinstance(modifier, dict)
+                    and modifier.get("stat") == "jump_distance_ft"
+                    and modifier.get("operation") == "add"
+                    and isinstance(modifier.get("value"), int)
+                    and not isinstance(modifier.get("value"), bool)
+                ):
+                    jump_distance_ft += int(modifier["value"])
         result: dict[str, Any] = {
             "id": item.id,
             "version": item.version,
@@ -4215,7 +4228,7 @@ class PlayerRoomService:
             "conditions": item.conditions,
             "speed_ft": item.speed_ft,
             "jump_ability": item.snapshot_json.get("jump_ability"),
-            "jump_distance_ft": item.snapshot_json.get("jump_distance_ft"),
+            "jump_distance_ft": jump_distance_ft,
             "light_radius_ft": light_radius_ft,
             "ability_scores": json_dict(item.snapshot_json.get("ability_scores")),
             "actions": PlayerRoomService._combatant_actions(session, item),

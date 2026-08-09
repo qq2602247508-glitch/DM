@@ -509,6 +509,95 @@ def formal_feature_specs() -> tuple[FeatureSpec, ...]:
                 )
             ],
         ),
+        _feature(
+            "dnd2024.subclass.paladin.glory.peerless-athlete",
+            source_name="绝伦健将",
+            class_name="圣武士",
+            subclass_name="荣耀之誓",
+            level=3,
+            source_record_id="verified:peerless-athlete",
+            source_trust="verified_mapping",
+            clauses=[
+                _clause(
+                    "peerless-athlete-activation",
+                    trigger="explicit_activation",
+                    activation="explicit_choice",
+                    action_economy="bonus_action",
+                    duration="one_hour",
+                    effects=[
+                        {
+                            "operator": "consume_resource",
+                            "parameters": {
+                                "resource_key": "channel_divinity",
+                                "operation": "consume",
+                                "amount": 1,
+                            },
+                        },
+                        {
+                            "operator": "create_timed_modifier",
+                            "parameters": {
+                                "stat": "skill_check",
+                                "operation": "advantage",
+                                "duration": "one_hour",
+                                "scope": "self",
+                                "applies_when": "skill:运动",
+                                "value": 1,
+                                "id": "peerless_athlete:athletics",
+                            },
+                        },
+                        {
+                            "operator": "create_timed_modifier",
+                            "parameters": {
+                                "stat": "skill_check",
+                                "operation": "advantage",
+                                "duration": "one_hour",
+                                "scope": "self",
+                                "applies_when": "skill:特技",
+                                "value": 1,
+                                "id": "peerless_athlete:acrobatics",
+                            },
+                        },
+                        {
+                            "operator": "create_timed_modifier",
+                            "parameters": {
+                                "stat": "jump_distance_ft",
+                                "operation": "add",
+                                "duration": "one_hour",
+                                "scope": "self",
+                                "value": 10,
+                                "id": "peerless_athlete:jump",
+                            },
+                        },
+                    ],
+                ),
+            ],
+        ),
+        _feature(
+            "dnd2024.subclass.fighter.battle-master.ultimate-combat",
+            source_name="究极战技",
+            class_name="战士",
+            subclass_name="战斗大师",
+            level=18,
+            source_record_id="verified:ultimate-combat",
+            source_trust="verified_mapping",
+            clauses=[
+                _clause(
+                    "superiority-die-profile",
+                    effects=[
+                        {
+                            "operator": "set_resource_profile",
+                            "parameters": {
+                                "resource_key": "superiority_dice",
+                                "resource_kind": "superiority_dice",
+                                "die_size": 12,
+                                "max_formula": "battle_master_superiority_dice_table",
+                                "id": "ultimate_combat:superiority_die",
+                            },
+                        }
+                    ],
+                )
+            ],
+        ),
     )
 
 
@@ -525,6 +614,8 @@ _ALIASES: dict[tuple[str, str | None, str], str] = {
     ("圣武士", "古贤之誓", "不灭哨卫"): "dnd2024.subclass.paladin.ancients.undying-sentinel",
     ("圣武士", "复仇之誓", "仇敌誓言"): "dnd2024.subclass.paladin.vengeance.vow-of-enmity",
     ("圣武士", "复仇之誓", "复仇之魂"): "dnd2024.subclass.paladin.vengeance.soul-of-vengeance",
+    ("圣武士", "荣耀之誓", "绝伦健将"): "dnd2024.subclass.paladin.glory.peerless-athlete",
+    ("战士", "战斗大师", "究极战技"): "dnd2024.subclass.fighter.battle-master.ultimate-combat",
 }
 
 _SOURCE_ALIASES: dict[str, str] = {
@@ -535,6 +626,9 @@ _SOURCE_ALIASES: dict[str, str] = {
     "Undying": "不灭哨卫",
     "Vow of": "仇敌誓言",
     "Soul of": "复仇之魂",
+    "Ultimate Combat": "究极战技",
+    "Peerless Athlete": "绝伦健将",
+    "Peerless": "绝伦健将",
 }
 
 
