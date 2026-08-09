@@ -5,6 +5,12 @@ from copy import deepcopy
 from dataclasses import asdict, dataclass
 from typing import Any
 
+from dnd_dm_assistant.domain.growth_asset_catalog import (
+    metamagic_asset,
+    weapon_asset,
+    weapon_is_eligible,
+)
+
 
 @dataclass(frozen=True)
 class ProgressionAutomationProfile:
@@ -67,11 +73,22 @@ PROGRESSION_AUTOMATION_PROFILES: dict[str, ProgressionAutomationProfile] = {
         choice_key="weapon_mastery",
         executor_kind="advancement_choice_grant",
         grant_status="full",
-        effect_status="dm_only",
-        overall_status="partial",
+        effect_status="separate_asset_contract",
+        overall_status="full",
         persisted_state=("proficiencies", "features"),
         consumers=("feat_prerequisite_validator", "equipment_proficiency"),
-        dm_boundary="武器精通词条还没有逐项接入攻击结算。",
+        dm_boundary="武器选择与重配已闭环；各精通词条是独立运行时合同。",
+    ),
+    "超魔法": ProgressionAutomationProfile(
+        category="metamagic_asset_choice",
+        choice_key="metamagic_options",
+        executor_kind="advancement_choice_grant",
+        grant_status="full",
+        effect_status="separate_asset_contract",
+        overall_status="full",
+        persisted_state=("features",),
+        consumers=("advancement_service", "authoritative_metamagic_catalog"),
+        dm_boundary="超魔法选项的获取与替换已闭环；各选项的施法效果独立审计。",
     ),
     "专精": ProgressionAutomationProfile(
         category="expertise_choice",
@@ -172,7 +189,20 @@ def assign_progression_choices(
                 f"{requirement.maximum} selections"
             )
         options = {str(item) for item in getattr(requirement, "options", ())}
-        if options and key not in {"fighting_style"}:
+        if options and requirement.kind == "selected_asset_replacement":
+            replacement_values = {
+                value
+                for selection in selected
+                for value in selection.split("->")
+                if value
+            }
+            invalid = sorted(replacement_values - options)
+            if invalid:
+                raise ValueError(
+                    f"class feature choice {key} contains unsupported replacement assets: "
+                    + ", ".join(invalid)
+                )
+        elif options and key not in {"fighting_style"}:
             invalid = sorted(set(selected) - options)
             if invalid:
                 raise ValueError(
@@ -277,19 +307,63 @@ def apply_progression_choice_grants(
                 # It persists the selected feat as an independent contract.
                 continue
             elif key == "weapon_mastery":
-                if selection in existing_masteries:
-                    raise ValueError(f"weapon mastery already selected: {selection}")
+                asset = weapon_asset(selection)
+                if asset is None:
+                    raise ValueError(f"weapon mastery is not in the 2024 catalog: {selection}")
+                if asset.id in existing_masteries or asset.name in existing_masteries:
+                    raise ValueError(f"weapon mastery already selected: {asset.name}")
+                policy = {
+                    "野蛮人": "simple_or_martial_melee",
+                    "战士": "simple_or_martial",
+                    "圣武士": "character_proficient",
+                    "游侠": "character_proficient",
+                    "游荡者": "character_proficient",
+                }.get(class_name, "character_proficient")
+                if not weapon_is_eligible(
+                    asset,
+                    policy=policy,
+                    proficiencies=after_proficiencies,
+                ):
+                    raise ValueError(f"weapon mastery selection is not eligible: {asset.name}")
                 after_proficiencies.append(
                     {
                         "kind": "weapon_mastery",
-                        "name": selection,
+                        "id": asset.id,
+                        "name": asset.name,
+                        "weapon_category": asset.category,
+                        "range_kind": asset.range_kind,
+                        "mastery": asset.mastery,
+                        "source_record_id": asset.source_record_id,
+                        "mastery_source_record_id": "08fd9f442907e6520302fddf",
                         "class_name": class_name,
                         "class_level": class_level,
+                        "selected_asset_status": "full",
+                        "effect_status": "separate_asset_contract",
                     }
                 )
-                existing_masteries.add(selection)
+                existing_masteries.update({asset.id, asset.name})
+                selection = asset.name
+            elif key == "metamagic_options":
+                asset = metamagic_asset(selection)
+                if asset is None:
+                    raise ValueError(f"metamagic option is not in the 2024 catalog: {selection}")
+                selection = asset.name
+                effect_status = "separate_asset_contract"
+            elif key == "metamagic_replacement":
+                # Replacement is resolved against the character's persisted
+                # option assets by AdvancementService.  This grant records the
+                # typed intent without pretending the option effect is done.
+                old, separator, new = selection.partition("->")
+                if not separator or metamagic_asset(old) is None or metamagic_asset(new) is None:
+                    raise ValueError("metamagic replacement must be old->new catalog options")
+                selection = f"{metamagic_asset(old).name}->{metamagic_asset(new).name}"
+                effect_status = "separate_asset_contract"
 
-            overall = "full" if effect_status == "full" else "partial"
+            overall = (
+                "full"
+                if effect_status in {"full", "separate_asset_contract"}
+                else "partial"
+            )
             grants.append(
                 {
                     "name": selection,

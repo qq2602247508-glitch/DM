@@ -15,6 +15,7 @@ from dnd_dm_assistant.domain.feature_runtime import (
     feature_runtime_definition,
     resource_recovery_events,
 )
+from dnd_dm_assistant.domain.growth_asset_catalog import METAMAGIC_ASSETS, WEAPON_ASSETS
 from dnd_dm_assistant.domain.progression_automation import (
     progression_automation_profile,
 )
@@ -635,8 +636,11 @@ def advancement_choice_requirements(
 
     if any("战斗风格" in feature for feature in level_rule.features):
         alternatives = (
-            ("blessed_warrior",) if rule.name == "圣武士" else
-            ("druidic_warrior",) if rule.name == "游侠" else ()
+            ("blessed_warrior",)
+            if rule.name == "圣武士"
+            else ("druidic_warrior",)
+            if rule.name == "游侠"
+            else ()
         )
         requirements.append(
             ChoiceRequirement(
@@ -659,9 +663,9 @@ def advancement_choice_requirements(
 
         if rule.name == "圣武士":
             requirements.append(
-                ChoiceRequirement(
-                    key="blessed_warrior_cantrips",
-                    kind="feature_option",
+                    ChoiceRequirement(
+                        key="blessed_warrior_cantrips",
+                        kind="feature_option",
                     minimum=0,
                     maximum=2,
                     strict=True,
@@ -700,6 +704,68 @@ def advancement_choice_requirements(
                 reason="每次获得战士等级时，可将一个已选战斗风格替换为另一个。",
             )
         )
+
+    if rule.name in {"圣武士", "游侠"} and target_class_level > 1:
+        key = (
+            "blessed_warrior_cantrip_replacement"
+            if rule.name == "圣武士"
+            else "druidic_warrior_cantrip_replacement"
+        )
+        spell_class = "牧师" if rule.name == "圣武士" else "德鲁伊"
+        requirements.append(
+            ChoiceRequirement(
+                key=key,
+                kind="selected_asset_replacement",
+                minimum=0,
+                maximum=1,
+                strict=True,
+                options_source=f"spells:{spell_class}:0",
+                selected_asset_kind="source_bound_cantrip",
+                duplicate_policy="forbid",
+                replacement_policy="old->new_same_source_feature",
+                reason=(
+                    f"每次获得{rule.name}等级时，可替换一道由该战斗风格授予的{spell_class}戏法。"
+                ),
+                maximum_spell_level=0,
+            )
+        )
+
+    if rule.name == "术士":
+        if any("超魔法" in feature for feature in level_rule.features):
+            target_total = {2: 2, 10: 4, 17: 6}.get(target_class_level)
+            if target_total is not None:
+                requirements.append(
+                    ChoiceRequirement(
+                        key="metamagic_options",
+                        kind="selected_asset",
+                        minimum=2,
+                        maximum=2,
+                        strict=True,
+                        options_source="catalog.metamagic_options",
+                        options=tuple(item.name for item in METAMAGIC_ASSETS),
+                        selected_asset_kind="metamagic_option",
+                        duplicate_policy="forbid",
+                        replacement_policy="replace_one_on_owner_class_level",
+                        reason="从2024超魔法权威目录中获得两个不重复选项。",
+                        target_total=target_total,
+                    )
+                )
+        if target_class_level > 2:
+            requirements.append(
+                ChoiceRequirement(
+                    key="metamagic_replacement",
+                    kind="selected_asset_replacement",
+                    minimum=0,
+                    maximum=1,
+                    strict=True,
+                    options_source="catalog.metamagic_options",
+                    options=tuple(item.name for item in METAMAGIC_ASSETS),
+                    selected_asset_kind="metamagic_option",
+                    duplicate_policy="forbid",
+                    replacement_policy="old->new",
+                    reason="每次获得术士等级时，可将一个已知超魔法替换为另一个。",
+                )
+            )
 
     if any("熟练探险家" in feature for feature in level_rule.features):
         requirements.extend(
@@ -748,7 +814,7 @@ def advancement_choice_requirements(
                 ),
                 ChoiceRequirement(
                     key=cantrip_key,
-                    kind="feature_option",
+                    kind="selected_asset" if key == "weapon_mastery" else "feature_option",
                     minimum=0,
                     maximum=1,
                     strict=True,
@@ -833,11 +899,20 @@ def advancement_choice_requirements(
             requirements.append(
                 ChoiceRequirement(
                     key=key,
-                    kind="feature_option",
+                    kind="selected_asset" if key == "weapon_mastery" else "feature_option",
                     minimum=delta,
                     maximum=delta,
-                    strict=False,
-                    options_source=f"progression:{column}",
+                    strict=key == "weapon_mastery",
+                    options_source=(
+                        "catalog.weapons" if key == "weapon_mastery" else f"progression:{column}"
+                    ),
+                    options=(
+                        tuple(item.name for item in WEAPON_ASSETS)
+                        if key == "weapon_mastery"
+                        else ()
+                    ),
+                    selected_asset_kind="weapon" if key == "weapon_mastery" else None,
+                    duplicate_policy="forbid" if key == "weapon_mastery" else None,
                     reason=(
                         f"{column}总数由{previous or 0}增至{target}；"
                         "具体选项的前置条件需要规则条目或DM复核。"
@@ -855,11 +930,14 @@ def advancement_choice_requirements(
         requirements.append(
             ChoiceRequirement(
                 key="weapon_mastery",
-                kind="feature_option",
+                kind="selected_asset",
                 minimum=count,
                 maximum=count,
-                strict=False,
-                options_source="feature:武器精通",
+                strict=True,
+                options_source="catalog.weapons",
+                options=tuple(item.name for item in WEAPON_ASSETS),
+                selected_asset_kind="weapon",
+                duplicate_policy="forbid",
                 reason=(
                     f"{rule.name}的2024武器精通特性授予{count}项初始选择；"
                     "具体武器的熟练与词条效果分层验收。"
@@ -4448,9 +4526,7 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS["语出惊人"] = {
                     "range_ft": 60,
                     "requires_visible": True,
                 },
-                "input_requirements": [
-                    {"key": "bardic_die", "kind": "die_roll", "die_sides": 12}
-                ],
+                "input_requirements": [{"key": "bardic_die", "kind": "die_roll", "die_sides": 12}],
                 "damage_transform": {
                     "operation": "subtract_total",
                     "amount": "bardic_die",
@@ -5889,7 +5965,11 @@ def core_feature_grants(
             }
         progression_profile = progression_automation_profile(feature)
         compact_feature = re.sub(r"\s+", "", feature)
-        if "战斗风格" in compact_feature and rule.name == "战士":
+        if "战斗风格" in compact_feature and rule.name in {"战士", "圣武士", "游侠"}:
+            special_cantrip_key = {
+                "圣武士": "blessed_warrior_cantrip_replacement",
+                "游侠": "druidic_warrior_cantrip_replacement",
+            }.get(rule.name)
             registry["advancement"] = {
                 "kind": "selected_asset_grant",
                 "choice_requirement_key": "fighting_style",
@@ -5899,9 +5979,18 @@ def core_feature_grants(
                 "expected_category": "战斗风格",
                 "count": 1,
                 "duplicate_policy": "forbid",
-                "replacement_policy": "replace_on_owner_class_level",
+                "replacement_policy": (
+                    "replace_on_owner_class_level"
+                    if rule.name == "战士"
+                    else "replace_source_bound_cantrip_on_owner_class_level"
+                ),
                 "prerequisites": "authoritative_feat_catalog",
-                "persisted_state": "character.features",
+                "persisted_state": (
+                    ["character.features", "character.spells", "known_spells"]
+                    if special_cantrip_key
+                    else "character.features"
+                ),
+                "optional_cantrip_replacement_key": special_cantrip_key,
                 "selected_asset_runtime": "separate_contract",
                 "runtime_execution": {
                     "status": "ready",
@@ -6000,6 +6089,69 @@ def core_feature_grants(
                 "runtime_execution": {
                     "status": "ready",
                     "consumer": "advancement_service_and_feat_prerequisite_validator",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        elif progression_profile is not None and progression_profile.choice_key == "weapon_mastery":
+            policy = {
+                "野蛮人": "simple_or_martial_melee",
+                "战士": "simple_or_martial",
+                "圣武士": "character_proficient",
+                "游侠": "character_proficient",
+                "游荡者": "character_proficient",
+            }[rule.name]
+            action_id = f"weapon_mastery_reconfiguration:{rule.name}"
+            registry["advancement"] = {
+                "kind": "selected_asset_loadout_grant",
+                "choice_requirement_key": "weapon_mastery",
+                "asset_kind": "weapon",
+                "authoritative_catalog": "catalog.weapons",
+                "eligibility_policy": policy,
+                "persisted_state": "character.proficiencies",
+                "selected_asset_runtime": "separate_contract",
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "advancement_service",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+            registry.setdefault("actions", {})[action_id] = {
+                "id": action_id,
+                "name": f"{rule.name}武器精通长休重配",
+                "kind": "rest_asset_loadout_reconfiguration",
+                "trigger": "long_rest",
+                "asset_kind": "weapon",
+                "authoritative_catalog": "catalog.weapons",
+                "class_name": rule.name,
+                "eligibility_policy": policy,
+                "maximum_replacements": 1 if rule.name in {"野蛮人", "战士"} else None,
+                "persisted_state": "character.proficiencies",
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "rest_service",
+                    "input": "player_selected_weapon_ids",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        elif (
+            progression_profile is not None
+            and progression_profile.choice_key == "metamagic_options"
+        ):
+            registry["advancement"] = {
+                "kind": "selected_asset_cumulative_grant",
+                "choice_requirement_keys": ["metamagic_options", "metamagic_replacement"],
+                "asset_kind": "metamagic_option",
+                "authoritative_catalog": "catalog.metamagic_options",
+                "target_totals": {"2": 2, "10": 4, "17": 6},
+                "replacement_policy": "replace_one_on_each_owner_class_level",
+                "persisted_state": "character.features",
+                "selected_asset_runtime": "separate_contract",
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "advancement_service",
                 },
                 "automation_status": "full",
                 "requires_dm_adjudication": False,
