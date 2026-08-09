@@ -12,6 +12,7 @@ was detected.  It does not mutate feature snapshots or audit statuses.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import importlib.util
 import json
 from collections import Counter
@@ -61,6 +62,142 @@ PRODUCTION_CONSUMERS = {
     "manual_narrative": "manual_only",
 }
 
+# This inventory describes capabilities that already have a production event
+# source and consumer.  It is intentionally planning metadata: a row does not
+# become ``full`` merely because its capability exists.  The feature still
+# needs a typed runtime contract and the audit remains authoritative.
+CAPABILITY_SPECS: dict[str, dict[str, Any]] = {
+    "zero_hp_intervention": {
+        "trigger": "before_zero_hp_resolution",
+        "producers": ["combat_damage_resolution"],
+        "consumers": ["zero_hp_intervention_resolver"],
+        "risk": "high",
+        "needs": ["resource", "action_economy", "player_input", "targeting", "status"],
+    },
+    "attack_rider": {
+        "trigger": "after_confirmed_attack_hit",
+        "producers": ["combat_attack_resolution"],
+        "consumers": ["attack_rider_resolver"],
+        "risk": "high",
+        "needs": ["resource", "player_input", "targeting", "status"],
+    },
+    "roll_intervention": {
+        "trigger": "before_or_after_authoritative_d20_test",
+        "producers": ["player_roll_resolution", "combat_attack_resolution"],
+        "consumers": ["roll_intervention_resolver"],
+        "risk": "medium",
+        "needs": ["resource", "action_economy", "player_input", "targeting"],
+    },
+    "pre_damage_intervention": {
+        "trigger": "before_damage_commit",
+        "producers": ["combat_damage_resolution"],
+        "consumers": ["pre_damage_intervention_resolver"],
+        "risk": "high",
+        "needs": ["resource", "action_economy", "player_input", "targeting"],
+    },
+    "aura_passive": {
+        "trigger": "authoritative_context_resolution",
+        "producers": ["combat_snapshot_compiler", "grid_visibility_resolver"],
+        "consumers": ["ranged_passive_resolver"],
+        "risk": "medium",
+        "needs": ["targeting", "status"],
+    },
+    "summon_lifecycle": {
+        "trigger": "feature_action_confirmation",
+        "producers": ["combat_feature_action"],
+        "consumers": ["summon_lifecycle_resolver"],
+        "risk": "high",
+        "needs": ["resource", "action_economy", "player_input", "targeting", "status"],
+    },
+    "state_lifecycle": {
+        "trigger": "feature_action_or_combat_boundary",
+        "producers": ["combat_feature_action", "combat_turn_boundary"],
+        "consumers": ["feature_condition_lifecycle"],
+        "risk": "medium",
+        "needs": ["resource", "action_economy", "player_input", "status"],
+    },
+    "movement": {
+        "trigger": "movement_or_feature_action",
+        "producers": ["combat_movement", "combat_feature_action"],
+        "consumers": ["authoritative_grid_movement"],
+        "risk": "high",
+        "needs": ["resource", "action_economy", "player_input", "targeting"],
+    },
+    "damage_healing": {
+        "trigger": "damage_or_healing_resolution",
+        "producers": ["combat_damage_resolution", "healing_resolution"],
+        "consumers": ["typed_damage_healing_resolver"],
+        "risk": "medium",
+        "needs": ["resource", "player_input", "targeting"],
+    },
+    "target_save_status": {
+        "trigger": "feature_action_confirmation",
+        "producers": ["combat_feature_action"],
+        "consumers": ["target_save_status_resolver"],
+        "risk": "high",
+        "needs": ["resource", "action_economy", "player_input", "targeting", "status"],
+    },
+    "resource_lifecycle": {
+        "trigger": "advancement_rest_or_combat_boundary",
+        "producers": ["advancement_service", "rest_service", "combat_boundary"],
+        "consumers": ["character_resource_store"],
+        "risk": "low",
+        "needs": ["resource"],
+    },
+    "action_trigger": {
+        "trigger": "typed_combat_event",
+        "producers": ["combat_engine"],
+        "consumers": ["feature_trigger_dispatch"],
+        "risk": "medium",
+        "needs": ["action_economy", "player_input", "targeting"],
+    },
+    "spell_capability": {
+        "trigger": "advancement_or_spell_cast",
+        "producers": ["advancement_service", "spell_economy"],
+        "consumers": ["prepared_spell_and_cast_resolver"],
+        "risk": "high",
+        "needs": ["resource", "action_economy", "player_input", "targeting"],
+    },
+    "progression_grant": {
+        "trigger": "advancement_confirmation",
+        "producers": ["advancement_choice_requirements"],
+        "consumers": ["advancement_service"],
+        "risk": "low",
+        "needs": ["player_input"],
+    },
+    "passive_modifier": {
+        "trigger": "snapshot_or_context_resolution",
+        "producers": ["feature_runtime_compiler"],
+        "consumers": ["typed_modifier_resolvers"],
+        "risk": "medium",
+        "needs": [],
+    },
+    "manual_narrative": {
+        "trigger": "dm_adjudication",
+        "producers": [],
+        "consumers": [],
+        "risk": "manual",
+        "needs": ["dm_input"],
+    },
+}
+
+CANONICAL_GAP_CATEGORIES = frozenset(
+    {
+        "missing_runtime_contract",
+        "producer_missing",
+        "consumer_missing",
+        "consumer_partial",
+        "resource_missing",
+        "action_economy_missing",
+        "authoritative_targeting_missing",
+        "ui_input_missing",
+        "prerequisite_feature_missing",
+        "source_missing",
+        "manual_boundary",
+        "needs_contract_review",
+    }
+)
+
 FIELD_REQUIREMENTS = {
     "zero_hp_intervention": ("trigger", "eligibility", "save/result", "reset"),
     "attack_rider": ("after_hit trigger", "target/qualification", "resource/frequency", "effect"),
@@ -104,6 +241,14 @@ def _audit_module() -> Any:
 
 
 def _template(row: dict[str, Any]) -> tuple[str, str]:
+    name = "".join(str(row.get("feature_name") or "").split())
+    if "传奇恩惠" in name or "史诗恩惠" in name:
+        # Repeated source prose can contain markers from the selected feat's
+        # description.  The class-table row itself is still an advancement
+        # asset grant and must not drift into summon/damage buckets.
+        return "progression_grant", "成长授予/升级选择"
+    if "战斗风格" in name:
+        return "progression_grant", "成长授予/升级选择"
     blocks = set(row.get("detected_blocks") or ())
     for key, label, required_blocks in TEMPLATE_RULES:
         if required_blocks and any(block in blocks for block in required_blocks):
@@ -119,6 +264,51 @@ def _missing_fields(row: dict[str, Any], template: str) -> list[str]:
     if template != "manual_narrative" and not description.strip():
         missing.insert(0, "source description")
     return list(dict.fromkeys(missing))
+
+
+def _feature_id(row: dict[str, Any]) -> str:
+    identity = "|".join(
+        str(row.get(key) or "")
+        for key in ("scope", "class_name", "subclass_name", "level", "feature_name")
+    )
+    digest = hashlib.sha256(identity.encode("utf-8")).hexdigest()[:16]
+    return f"class-feature:{digest}"
+
+
+def _specialized_cluster(row: dict[str, Any], template: str) -> str:
+    name = "".join(str(row.get("feature_name") or "").split())
+    if "传奇恩惠" in name or "史诗恩惠" in name:
+        return "advancement_asset_grant:epic_boon"
+    if "战斗风格" in name:
+        return "advancement_asset_grant:fighting_style"
+    return template
+
+
+def _gap_category(readiness: str, blockers: list[str]) -> str | None:
+    if readiness == "already_full":
+        return None
+    if readiness in CANONICAL_GAP_CATEGORIES:
+        return readiness
+    if any("consumer" in item for item in blockers):
+        return "consumer_missing"
+    return "missing_runtime_contract"
+
+
+def _row_needs(row: dict[str, Any], template: str) -> set[str]:
+    needs = set(CAPABILITY_SPECS[template]["needs"])
+    blocks = set(row.get("detected_blocks") or ())
+    description = str(row.get("source_description") or "")
+    if blocks & {"resource_binding", "resource_recovery"}:
+        needs.add("resource")
+    if "action_economy" in blocks:
+        needs.add("action_economy")
+    if blocks & {"target_range_save", "aura_range"}:
+        needs.add("targeting")
+    if blocks & {"status_lifecycle", "zero_hp"}:
+        needs.add("status")
+    if any(marker in description for marker in ("选择", "由你决定", "掷", "投掷")):
+        needs.add("player_input")
+    return needs
 
 
 def plan() -> dict[str, Any]:
@@ -155,22 +345,75 @@ def plan() -> dict[str, Any]:
             else:
                 readiness = "needs_contract_review"
                 blocker.append("field-by-field contract review")
+        needs = _row_needs(row, template)
+        capability = CAPABILITY_SPECS[template]
+        cluster = _specialized_cluster(row, template)
+        gap_category = _gap_category(readiness, blocker)
         rows.append(
             {
+                "feature_id": _feature_id(row),
                 "scope": row["scope"],
                 "class_name": row["class_name"],
                 "subclass_name": row.get("subclass_name"),
                 "level": row["level"],
                 "feature_name": row["feature_name"],
                 "runtime_status": row["runtime_status"],
+                "runtime_reason": list(row.get("runtime_reasons") or ()),
+                "runtime_sections": list(row.get("runtime_sections") or ()),
                 "source_parse": row["source_parse"],
                 "template": template,
                 "template_label": label,
+                "reusable_cluster": cluster,
+                "trigger_time": capability["trigger"],
+                "required_producers": list(capability["producers"]),
+                "required_consumers": list(capability["consumers"]),
+                "producer_available": bool(capability["producers"]),
+                "consumer_available": PRODUCTION_CONSUMERS[template] != "manual_only",
                 "consumer_status": PRODUCTION_CONSUMERS[template],
                 "readiness": readiness,
+                "gap_category": gap_category,
                 "missing_fields": list(dict.fromkeys(blocker)),
+                "requires_resource": "resource" in needs,
+                "requires_action_economy": "action_economy" in needs,
+                "requires_player_input": "player_input" in needs,
+                "requires_dm_input": "dm_input" in needs,
+                "requires_authoritative_targeting": "targeting" in needs,
+                "requires_status_context": "status" in needs,
+                "prerequisite_feature_missing": False,
+                "estimated_risk": capability["risk"],
+                "eligible_this_run": (
+                    cluster == "advancement_asset_grant:epic_boon"
+                    and row["runtime_status"] != "full"
+                ),
+                "contract_evidence": list(row.get("runtime_sections") or ()),
+                "parameterized_contract_test": (
+                    "backend/tests/test_progression_automation.py::"
+                    "test_epic_boon_class_rows_share_one_authoritative_asset_grant_contract"
+                    if cluster == "advancement_asset_grant:epic_boon"
+                    and row["runtime_status"] == "full"
+                    else None
+                ),
+                "representative_e2e_test": (
+                    "backend/tests/test_advancement_matrix_api.py::"
+                    "test_epic_boon_grant_is_authoritative_and_selected_feat_stays_separate"
+                    if cluster == "advancement_asset_grant:epic_boon"
+                    and row["runtime_status"] == "full"
+                    else None
+                ),
+                "blocking_reason": list(dict.fromkeys(blocker)),
             }
         )
+
+    rows.sort(
+        key=lambda item: (
+            str(item["reusable_cluster"]),
+            str(item["readiness"]),
+            str(item["class_name"]),
+            str(item.get("subclass_name") or ""),
+            int(item["level"]),
+            str(item["feature_name"]),
+        )
+    )
 
     grouped: dict[str, dict[str, Any]] = {}
     for row in rows:
@@ -192,12 +435,69 @@ def plan() -> dict[str, Any]:
         group[row["readiness"]] = group.get(row["readiness"], 0) + 1
 
     readiness_counts = Counter(row["readiness"] for row in rows)
+    clusters: dict[str, dict[str, Any]] = {}
+    for row in rows:
+        cluster = clusters.setdefault(
+            row["reusable_cluster"],
+            {
+                "total_count": 0,
+                "full_count": 0,
+                "candidate_count": 0,
+                "eligible_this_run": 0,
+                "producer_available": True,
+                "consumer_available": True,
+                "requires_new_ui": False,
+                "requires_new_persistence": False,
+                "risk_counts": {},
+                "readiness_counts": {},
+            },
+        )
+        cluster["total_count"] += 1
+        cluster["full_count"] += int(row["runtime_status"] == "full")
+        cluster["candidate_count"] += int(row["runtime_status"] != "full")
+        cluster["eligible_this_run"] += int(bool(row["eligible_this_run"]))
+        cluster["producer_available"] = bool(
+            cluster["producer_available"] and row["producer_available"]
+        )
+        cluster["consumer_available"] = bool(
+            cluster["consumer_available"] and row["consumer_available"]
+        )
+        cluster["requires_new_ui"] = bool(
+            cluster["requires_new_ui"]
+            or (
+                row["requires_player_input"]
+                and not row["runtime_sections"]
+                and row["reusable_cluster"] != "advancement_asset_grant:epic_boon"
+            )
+        )
+        cluster["requires_new_persistence"] = bool(
+            cluster["requires_new_persistence"]
+            or row["requires_status_context"]
+            or row["requires_resource"]
+        )
+        risk = str(row["estimated_risk"])
+        cluster["risk_counts"][risk] = cluster["risk_counts"].get(risk, 0) + 1
+        readiness = str(row["readiness"])
+        cluster["readiness_counts"][readiness] = (
+            cluster["readiness_counts"].get(readiness, 0) + 1
+        )
+    ordered_clusters = dict(
+        sorted(
+            clusters.items(),
+            key=lambda item: (
+                -int(item[1]["eligible_this_run"]),
+                -int(item[1]["candidate_count"]),
+                item[0],
+            ),
+        )
+    )
     return {
-        "schema_version": "feature-automation-migration-plan-1",
+        "schema_version": "feature-automation-migration-plan-2",
         "audit_scope": report["scope"],
         "audit_status_counts": report["status_counts"],
         "readiness_counts": dict(readiness_counts),
         "templates": grouped,
+        "clusters": ordered_clusters,
         "rows": rows,
     }
 
@@ -208,6 +508,7 @@ def write_markdown(report: dict[str, Any], path: Path) -> None:
         "",
         "这份报告只规划迁移，不修改运行时状态，也不把候选行直接升级为 `full`。",
         "",
+        f"- 矩阵 schema：`{report['schema_version']}`",
         f"- 总条目：{report['audit_scope']['total_features']}",
         f"- 当前状态：`{report['audit_status_counts']}`",
         f"- 预审状态：`{report['readiness_counts']}`",
@@ -226,6 +527,23 @@ def write_markdown(report: dict[str, Any], path: Path) -> None:
         )
     lines.extend(
         [
+            "",
+            "## 能力簇",
+            "",
+            "| 能力簇 | 总数 | full | 非 full | 本轮可直接迁移 | producer | consumer | 新 UI | 新持久化 |",
+            "|---|---:|---:|---:|---:|:---:|:---:|:---:|:---:|",
+            *[
+                "| {key} | {total_count} | {full_count} | {candidate_count} | "
+                "{eligible_this_run} | {producer} | {consumer} | {ui} | {persistence} |".format(
+                    key=key,
+                    producer="是" if cluster["producer_available"] else "否",
+                    consumer="是" if cluster["consumer_available"] else "否",
+                    ui="是" if cluster["requires_new_ui"] else "否",
+                    persistence="是" if cluster["requires_new_persistence"] else "否",
+                    **cluster,
+                )
+                for key, cluster in report["clusters"].items()
+            ],
             "",
             "## 预审结论",
             "",
@@ -253,7 +571,7 @@ def main() -> None:
     parser.add_argument(
         "--markdown",
         type=Path,
-        default=ROOT / "docs/feature-automation-migration-plan-2026-08-07.md",
+        default=ROOT / "docs/feature-automation-migration-matrix-2026-08-09.md",
     )
     args = parser.parse_args()
     report = plan()
