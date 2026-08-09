@@ -566,6 +566,21 @@ class WorldService:
                             "attack_action_count", 1
                         )
                     )
+                    jump_modifiers = [
+                        item
+                        for item in feature_registry.get("combat_start", {}).get(
+                            "modifiers", []
+                        )
+                        if isinstance(item, dict)
+                        and item.get("stat") == "jump_ability"
+                        and item.get("operation") == "set"
+                    ]
+                    if jump_modifiers:
+                        ability = str(jump_modifiers[-1].get("value_source") or "strength")
+                        raw_score = (entity.ability_scores or {}).get(ability)
+                        if isinstance(raw_score, int):
+                            snapshot["jump_ability"] = ability
+                            snapshot["jump_distance_ft"] = max(0, raw_score)
                     conditional_defenses = [
                         {
                             "id": item.get("id"),
@@ -611,6 +626,7 @@ class WorldService:
                         for row in equipment_rows
                         if row.equipped
                     ]
+                    snapshot["equipment"] = equipped_profiles
                     armor_profiles = [
                         profile
                         for profile in equipped_profiles
@@ -680,6 +696,21 @@ class WorldService:
                             initiative_advantage_sources.append(source_name)
                         elif operation == "disadvantage":
                             initiative_disadvantage_sources.append(source_name)
+                        elif operation == "add":
+                            raw_value = raw_modifier.get("value")
+                            if raw_modifier.get("value_source") == "wisdom_modifier":
+                                wisdom = int(
+                                    (entity.ability_scores or {}).get(
+                                        "wisdom",
+                                        (entity.ability_scores or {}).get("感知", 10),
+                                    )
+                                )
+                                raw_value = floor((wisdom - 10) / 2)
+                            if isinstance(raw_value, int) and not isinstance(raw_value, bool):
+                                modifier += raw_value
+                                initiative_advantage_sources.append(
+                                    f"{source_name} (+{raw_value} initiative)"
+                                )
 
                 # Multiple advantages do not stack.  If a future feature
                 # supplies both advantage and disadvantage, they cancel and

@@ -1191,6 +1191,23 @@ class CombatEngineService:
         ):
             raise ValueError("该职业特性只能选择同阵营目标")
         raw_range = policy.get("range_ft")
+        range_group = str(policy.get("range_group") or "").strip()
+        if range_group:
+            runtime = (actor.snapshot_json or {}).get("feature_runtime")
+            combat_start = runtime.get("combat_start") if isinstance(runtime, dict) else None
+            overrides = (
+                combat_start.get("defenses") if isinstance(combat_start, dict) else None
+            )
+            override_values = [
+                int(item.get("range_ft"))
+                for item in overrides or ()
+                if isinstance(item, dict)
+                and item.get("kind") == "ranged_passive_range_override"
+                and item.get("target_range_group") == range_group
+                and isinstance(item.get("range_ft"), int)
+            ]
+            if override_values:
+                raw_range = max([int(raw_range or 0), *override_values])
         requires_visibility = policy.get("requires_visible_or_audible") is True
         if target.id == actor.id and not requires_visibility:
             return
@@ -4540,7 +4557,13 @@ class CombatEngineService:
                 pass
             break
         if command.attack_roll_total is not None:
-            attack_hit = command.attack_roll_total >= effective_ac
+            attack_bonus = sum(
+                int(context.split(":", 1)[1])
+                for context in attack_contexts
+                if context.startswith("feature_attack_roll_add:")
+                and context.split(":", 1)[1].lstrip("-").isdigit()
+            )
+            attack_hit = command.attack_roll_total + attack_bonus >= effective_ac
             hit_basis = "attack_roll"
         elif command.critical_hit:
             attack_hit = True
@@ -5857,6 +5880,7 @@ class CombatEngineService:
         ability: str | None = None,
         skill: str | None = None,
         condition_names: Iterable[object] = (),
+        target_combatant_id: str | None = None,
     ) -> list[dict[str, object]]:
         """Return typed feature modifiers that apply to this combatant.
 
@@ -5931,6 +5955,9 @@ class CombatEngineService:
                 continue
             if str(value.get("stat") or "").strip() != stat:
                 continue
+            targeted_id = str(value.get("target_combatant_id") or "").strip()
+            if targeted_id and targeted_id != str(target_combatant_id or ""):
+                continue
             declared_scope = str(value.get("scope") or "all").strip()
             if scope is not None and declared_scope not in {"all", scope}:
                 continue
@@ -5975,6 +6002,7 @@ class CombatEngineService:
                 "not wearing armor",
                 "target_is_current_hunters_mark",
                 "saving_throw_against_charmed_or_frightened",
+                "trance_of_order",
             }
             if applies_when not in known_predicates:
                 # A typed modifier with an event predicate (for example
@@ -6033,7 +6061,12 @@ class CombatEngineService:
 
         advantage: list[str] = []
         disadvantage: list[str] = []
-        for modifier in cls._feature_rule_modifiers(actor, stat="attack_roll", scope="outgoing"):
+        for modifier in cls._feature_rule_modifiers(
+            actor,
+            stat="attack_roll",
+            scope="outgoing",
+            target_combatant_id=target.id,
+        ):
             operation = str(modifier.get("operation") or "")
             applies_when = str(modifier.get("applies_when") or "").strip().lower()
             if applies_when == "innate_sorcery_active_and_sorcerer_spell" and not (
@@ -6079,6 +6112,21 @@ class CombatEngineService:
         if cls._suppresses_incoming_attack_advantage(target):
             advantage.clear()
         return advantage, disadvantage
+
+    @classmethod
+    def _blindsight_range_ft(cls, combatant: Combatant) -> int:
+        """Resolve the maximum typed blindsight range from passive modifiers."""
+
+        ranges = [
+            cls._state_int(item.get("value"), 0)
+            for item in cls._feature_rule_modifiers(
+                combatant,
+                stat="blindsight_ft",
+                scope="self",
+            )
+            if item.get("operation") in {"set", "add"}
+        ]
+        return max(ranges, default=0)
 
     @classmethod
     def _critical_attack_context(
@@ -6704,6 +6752,7 @@ class CombatEngineService:
         actor: Combatant,
         *,
         round_number: int | None = None,
+        session: Session | None = None,
     ) -> None:
         """Recompute a unit's turn budget after boundary effects settle.
 
@@ -6715,6 +6764,13 @@ class CombatEngineService:
 
         movement_blocked = cls._movement_is_blocked(actor)
         movement_budget = actor.speed_ft
+        if session is not None:
+            movement_budget += cls._ranged_passive_numeric_modifier(
+                actor,
+                stat="speed_ft",
+                session=session,
+                combat_id=actor.combat_id,
+            )
         snapshot = dict(actor.snapshot_json or {})
         registry = snapshot.get("feature_runtime")
         if isinstance(registry, dict):
@@ -6771,6 +6827,17 @@ class CombatEngineService:
             for raw in combat_start.get("movement_modes", []):
                 if not isinstance(raw, dict):
                     continue
+                if raw.get("requires_not_wearing_heavy_armor") is True:
+                    equipment = snapshot.get("equipment")
+                    if not isinstance(equipment, list):
+                        continue
+                    if any(
+                        isinstance(item, dict)
+                        and item.get("kind") == "armor"
+                        and item.get("armor_type") == "heavy"
+                        for item in equipment
+                    ):
+                        continue
                 required = cls._canonical_condition(raw.get("applies_when"))
                 if required and required not in conditions:
                     continue
@@ -7096,8 +7163,19 @@ class CombatEngineService:
             ),
             None,
         )
-        if defense is None:
+        generic_defense = next(
+            (
+                item
+                for item in cls._feature_defenses(target)
+                if item.get("kind") == "zero_hp_auto_prevention"
+                and item.get("trigger") == "would_drop_to_zero_hit_points"
+            ),
+            None,
+        )
+        if defense is None and generic_defense is None:
             return None
+        if generic_defense is not None:
+            defense = generic_defense
         resource_key = str(defense.get("resource_key") or "").strip()
         if not resource_key:
             return None
@@ -7112,6 +7190,54 @@ class CombatEngineService:
         if cost < 1 or before < cost:
             return None
         after = before - cost
+        hit_points = 1
+        if defense.get("kind") == "zero_hp_auto_prevention":
+            eligibility = defense.get("eligibility")
+            level_spec = eligibility.get("level") if isinstance(eligibility, dict) else None
+            if not isinstance(level_spec, dict):
+                return None
+            class_names = {
+                str(value).strip().casefold()
+                for value in level_spec.get("class_names") or ()
+                if str(value).strip()
+            }
+            levels = character.class_levels if isinstance(character.class_levels, dict) else {}
+            level = max(
+                (
+                    cls._state_int(value)
+                    for name, value in levels.items()
+                    if str(name).strip().casefold() in class_names
+                ),
+                default=0,
+            )
+            minimum = cls._state_int(level_spec.get("minimum"), 1)
+            if not class_names or level < max(1, minimum):
+                return None
+            expression = str(
+                (defense.get("on_success") or {}).get("hit_points")
+                if isinstance(defense.get("on_success"), dict)
+                else "1"
+            ).replace(" ", "")
+            match = re.fullmatch(
+                r"(\d+|[A-Za-z_][A-Za-z0-9_]*)(?:\*(\d+|[A-Za-z_][A-Za-z0-9_]*))?",
+                expression,
+            )
+            if match is None:
+                return None
+            bindings = {
+                str(level_spec.get("bind_as") or "class_level"): level,
+                "class_level": level,
+            }
+            def resolve_atom(raw: str) -> int | None:
+                if raw.isdigit():
+                    return int(raw)
+                value = bindings.get(raw)
+                return value if isinstance(value, int) and value >= 0 else None
+            left = resolve_atom(match.group(1))
+            right = resolve_atom(match.group(2)) if match.group(2) else 1
+            if left is None or right is None or left * right < 1:
+                return None
+            hit_points = left * right
         resource["current"] = after
         resources[resource_key] = resource
         character.resources = resources
@@ -7138,7 +7264,7 @@ class CombatEngineService:
             "resource": resource_key,
             "resource_before": before,
             "resource_after": after,
-            "hit_points": 1,
+            "hit_points": hit_points,
             "massive_damage": False,
         }
 
@@ -7467,7 +7593,13 @@ class CombatEngineService:
             except (TypeError, ValueError):
                 pass
             break
-        return command.attack_roll_total >= effective_ac
+        attack_bonus = sum(
+            int(context.split(":", 1)[1])
+            for context in attack_contexts
+            if context.startswith("feature_attack_roll_add:")
+            and context.split(":", 1)[1].lstrip("-").isdigit()
+        )
+        return command.attack_roll_total + attack_bonus >= effective_ac
 
     @classmethod
     def _create_runtime_effect(
@@ -7583,6 +7715,14 @@ class CombatEngineService:
                     if isinstance(value, bool)
                 ):
                     continue
+                if isinstance(conditions, Mapping):
+                    state_key = str(conditions.get("actor_target_state_key") or "").strip()
+                    if state_key:
+                        actor_state = dict(actor.snapshot_json or {})
+                        if str(actor_state.get(state_key) or "") != str(
+                            context.get("target_id") or ""
+                        ):
+                            continue
             if event == "after_zero_hp":
                 policy = raw_trigger.get("target_policy")
                 if target is None or not isinstance(policy, Mapping):
@@ -7711,6 +7851,52 @@ class CombatEngineService:
                             "temporary_hp_before": before,
                             "temporary_hp_after": actor.temporary_hp,
                         }
+                    )
+                elif kind == "restore_resource":
+                    restore_key = str(raw_effect.get("resource_key") or "").strip()
+                    operation = str(raw_effect.get("operation") or "").strip()
+                    amount = cls._state_int(raw_effect.get("amount"), 0)
+                    if not restore_key or operation != "add" or amount < 1:
+                        raise ValueError("触发器资源恢复必须声明正数 add 操作")
+                    if actor.entity_type != "character" or not actor.entity_id:
+                        raise ValueError("触发器资源恢复只能作用于角色单位")
+                    character = session.get(Character, actor.entity_id)
+                    if character is None:
+                        raise ValueError("触发器资源恢复的角色不存在")
+                    resources = dict(character.resources or {})
+                    raw_resource = resources.get(restore_key)
+                    resource = dict(raw_resource) if isinstance(raw_resource, dict) else {}
+                    maximum = cls._state_int(
+                        resource.get("maximum", resource.get("max")), 0
+                    )
+                    current = cls._state_int(resource.get("current"), 0)
+                    if maximum < 1:
+                        raise ValueError(f"触发器资源恢复缺少有效上限：{restore_key}")
+                    after = min(maximum, current + amount)
+                    resource["current"] = after
+                    resources[restore_key] = resource
+                    character.resources = resources
+                    character.version += 1
+                    character.updated_at = datetime.now(UTC)
+                    trigger_result["effects"].append(
+                        {
+                            "kind": kind,
+                            "resource_key": restore_key,
+                            "before": current,
+                            "after": after,
+                            "amount": after - current,
+                        }
+                    )
+                elif kind == "clear_feature_state":
+                    state_key = str(raw_effect.get("state_key") or "").strip()
+                    if not state_key:
+                        raise ValueError("触发器状态清除缺少 state_key")
+                    snapshot = dict(actor.snapshot_json or {})
+                    existed = state_key in snapshot
+                    snapshot.pop(state_key, None)
+                    actor.snapshot_json = snapshot
+                    trigger_result["effects"].append(
+                        {"kind": kind, "state_key": state_key, "cleared": existed}
                     )
                 else:
                     raise ValueError(f"职业特性触发器效果类型不受支持：{kind or 'unknown'}")
@@ -10102,6 +10288,21 @@ class CombatEngineService:
         if feature_disadvantage:
             contexts.append("feature_attack_roll_disadvantage")
             disadvantage_sources.extend(f"feature:{source}" for source in feature_disadvantage)
+        for modifier in cls._feature_rule_modifiers(
+            actor,
+            stat="attack_roll",
+            scope="outgoing",
+            target_combatant_id=target.id,
+        ):
+            if modifier.get("operation") != "add":
+                continue
+            value = modifier.get("value")
+            if isinstance(value, int) and not isinstance(value, bool):
+                contexts.append(f"feature_attack_roll_add:{value}")
+                contexts.append(
+                    "feature_attack_roll_add_source:"
+                    + str(modifier.get("source") or modifier.get("id") or "职业特性")
+                )
         critical_context = cls._critical_attack_context(
             actor,
             attack_d20=command.attack_d20,
@@ -10223,7 +10424,16 @@ class CombatEngineService:
                 }:
                     advantage_sources.append(context)
                 elif condition == "invisible":
-                    disadvantage_sources.append(context)
+                    blindsight_ft = cls._blindsight_range_ft(actor)
+                    detected = bool(
+                        geometry is not None
+                        and blindsight_ft > 0
+                        and int(geometry.get("distance_ft") or 0) <= blindsight_ft
+                    )
+                    if detected:
+                        contexts.append("target_invisible_detected_by_blindsight")
+                    else:
+                        disadvantage_sources.append(context)
         if cls._has_condition(target, "reckless_attack"):
             contexts.append("target_reckless_attack")
             advantage_sources.append("target_reckless_attack")
@@ -11729,6 +11939,22 @@ class CombatEngineService:
                 applied.append("restrained_disadvantage_dexterity_save")
         else:
             effective_roll = roll_total
+        d20_floor = max(
+            (
+                int(item.get("value"))
+                for item in cls._feature_rule_modifiers(
+                    target,
+                    stat="d20_roll",
+                    scope="self",
+                )
+                if item.get("operation") == "set_minimum_d20"
+                and isinstance(item.get("value"), int)
+            ),
+            default=0,
+        )
+        if d20_floor > 0 and effective_roll < d20_floor:
+            effective_roll = d20_floor
+            applied.append(f"feature:d20_floor:{d20_floor}")
         if consume and triggered_save_effects and session is not None:
             for effect in triggered_save_effects:
                 cls._end_runtime_effect(
@@ -12000,6 +12226,22 @@ class CombatEngineService:
             else:
                 effective_roll = command.roll_total
                 applied = []
+            d20_floor = max(
+                (
+                    int(item.get("value"))
+                    for item in cls._feature_rule_modifiers(
+                        target,
+                        stat="d20_roll",
+                        scope="self",
+                    )
+                    if item.get("operation") == "set_minimum_d20"
+                    and isinstance(item.get("value"), int)
+                ),
+                default=0,
+            )
+            if d20_floor > 0 and effective_roll < d20_floor:
+                effective_roll = d20_floor
+                applied.append(f"feature:d20_floor:{d20_floor}")
             if resolution_type == "ability_check":
                 ability_aliases = {
                     "力量": "strength",
@@ -14335,12 +14577,19 @@ class CombatEngineService:
                 unapplied_damage=self._state_int(resolved["result"].get("unapplied_damage")),
             )
             if zero_hp_feature is not None:
-                after = {**after, "hp": 1}
+                restored_hp = max(
+                    1,
+                    min(
+                        target.max_hp,
+                        self._state_int(zero_hp_feature.get("hit_points"), 1),
+                    ),
+                )
+                after = {**after, "hp": restored_hp}
                 resolved["after"] = after
                 resolved["result"] = {
                     **resolved["result"],
                     "feature_defense": zero_hp_feature,
-                    "remaining_hp": 1,
+                    "remaining_hp": restored_hp,
                 }
             target.hp = int(after["hp"])
             target.temporary_hp = int(after["temporary_hp"])
@@ -16443,6 +16692,9 @@ class CombatEngineService:
                 target,
                 action,
             )
+            if action.get("requires_bloodied_target") is True:
+                if target.max_hp <= 0 or target.hp * 2 > target.max_hp:
+                    raise ValueError("该职业特性只能选择生命值不超过上限一半的目标")
             if command.feature_id == "lay_on_hands" and target.id != actor.id:
                 if self._combatant_faction(actor) != self._combatant_faction(target):
                     raise ValueError("圣疗只能以自身或同阵营目标为目标")
@@ -16547,40 +16799,68 @@ class CombatEngineService:
                 if resource_before < resource_cost:
                     reset_options = action.get("reset_options")
                     reset_level = command.reset_spell_slot_level
-                    if not isinstance(reset_options, dict) or reset_level is None:
+                    if not isinstance(reset_options, dict):
                         raise ValueError(f"职业特性资源不足：{resource_key}")
-                    minimum_level = self._state_int(
-                        reset_options.get("minimum_spell_slot_level"), 0
-                    )
-                    maximum_level = self._state_int(
-                        reset_options.get("maximum_spell_slot_level"), 9
-                    )
-                    reset_amount = self._state_int(reset_options.get("amount"), 0)
-                    if (
-                        reset_amount < 1
-                        or reset_level < minimum_level
-                        or reset_level > maximum_level
-                    ):
-                        raise ValueError("职业特性资源重置的法术位环阶无效")
-                    slot_key = f"spell_slots_{reset_level}"
-                    raw_slot = resources.get(slot_key)
-                    slot = dict(raw_slot) if isinstance(raw_slot, dict) else {}
-                    slot_before = self._state_int(slot.get("current"))
-                    if slot_before < 1:
-                        raise ValueError(f"重置职业特性需要可用的法术位：{slot_key}")
-                    deficit = resource_cost - resource_before
-                    restored = min(reset_amount, deficit)
-                    if restored < deficit:
-                        raise ValueError("职业特性资源重置不足以支付本次消耗")
-                    slot["current"] = slot_before - 1
-                    resources[slot_key] = slot
-                    resource_before += restored
-                    resource_reset = {
-                        "spell_slot_key": slot_key,
-                        "spell_slot_before": slot_before,
-                        "spell_slot_after": slot_before - 1,
-                        "restored_amount": restored,
-                    }
+                    reset_resource_key = str(reset_options.get("resource_key") or "").strip()
+                    if reset_resource_key:
+                        reset_cost = self._state_int(reset_options.get("resource_cost"), 0)
+                        reset_amount = self._state_int(reset_options.get("reset_amount"), 1)
+                        raw_reset_resource = resources.get(reset_resource_key)
+                        reset_resource = (
+                            dict(raw_reset_resource) if isinstance(raw_reset_resource, dict) else {}
+                        )
+                        reset_before = self._state_int(reset_resource.get("current"))
+                        if reset_cost < 1 or reset_amount < 1 or reset_before < reset_cost:
+                            raise ValueError(f"职业特性资源重置资源不足：{reset_resource_key}")
+                        deficit = resource_cost - resource_before
+                        restored = min(reset_amount, deficit)
+                        if restored < deficit:
+                            raise ValueError("职业特性资源重置不足以支付本次消耗")
+                        reset_resource["current"] = reset_before - reset_cost
+                        resources[reset_resource_key] = reset_resource
+                        resource_before += restored
+                        resource_reset = {
+                            "resource_key": reset_resource_key,
+                            "resource_before": reset_before,
+                            "resource_after": reset_before - reset_cost,
+                            "resource_cost": reset_cost,
+                            "restored_amount": restored,
+                        }
+                    else:
+                        if reset_level is None:
+                            raise ValueError(f"职业特性资源不足：{resource_key}")
+                        minimum_level = self._state_int(
+                            reset_options.get("minimum_spell_slot_level"), 0
+                        )
+                        maximum_level = self._state_int(
+                            reset_options.get("maximum_spell_slot_level"), 9
+                        )
+                        reset_amount = self._state_int(reset_options.get("amount"), 0)
+                        if (
+                            reset_amount < 1
+                            or reset_level < minimum_level
+                            or reset_level > maximum_level
+                        ):
+                            raise ValueError("职业特性资源重置的法术位环阶无效")
+                        slot_key = f"spell_slots_{reset_level}"
+                        raw_slot = resources.get(slot_key)
+                        slot = dict(raw_slot) if isinstance(raw_slot, dict) else {}
+                        slot_before = self._state_int(slot.get("current"))
+                        if slot_before < 1:
+                            raise ValueError(f"重置职业特性需要可用的法术位：{slot_key}")
+                        deficit = resource_cost - resource_before
+                        restored = min(reset_amount, deficit)
+                        if restored < deficit:
+                            raise ValueError("职业特性资源重置不足以支付本次消耗")
+                        slot["current"] = slot_before - 1
+                        resources[slot_key] = slot
+                        resource_before += restored
+                        resource_reset = {
+                            "spell_slot_key": slot_key,
+                            "spell_slot_before": slot_before,
+                            "spell_slot_after": slot_before - 1,
+                            "restored_amount": restored,
+                        }
                 resource_after = resource_before - resource_cost
                 resource["current"] = resource_after
                 resources[resource_key] = resource
@@ -16725,6 +17005,68 @@ class CombatEngineService:
                     target.snapshot_json = snapshot
                     result["timed_modifier_granted"] = dict(modifier)
                     result["timed_modifier_expires_on"] = expires_on
+                    continue
+                elif kind == "grant_targeted_timed_modifier":
+                    modifier = effect.get("modifier")
+                    if not isinstance(modifier, dict):
+                        raise ValueError("目标限时职业特性修正缺少结构化 modifier")
+                    stat = str(modifier.get("stat") or "")
+                    operation = str(modifier.get("operation") or "")
+                    if stat == "attack_roll" and operation not in {
+                        "advantage",
+                        "disadvantage",
+                        "add",
+                    }:
+                        raise ValueError("目标攻击修正的 operation 不受支持")
+                    if stat == "light_radius_ft" and operation != "set":
+                        raise ValueError("光照范围修正必须使用 set")
+                    if stat not in {"attack_roll", "light_radius_ft"}:
+                        raise ValueError("目标限时修正的 stat 不受支持")
+                    duration_unit = str(effect.get("duration_unit") or "minutes").strip()
+                    duration_value = self._state_int(effect.get("duration_value"), 0)
+                    if duration_unit != "minutes" or duration_value < 1:
+                        raise ValueError("目标限时修正必须声明正数分钟持续时间")
+                    snapshot = dict(actor.snapshot_json or {})
+                    raw_timed = snapshot.get("timed_feature_modifiers")
+                    timed = (
+                        [dict(item) for item in raw_timed if isinstance(item, dict)]
+                        if isinstance(raw_timed, list)
+                        else []
+                    )
+                    source_id = str(action.get("id") or command.feature_id).strip()
+                    timed = [
+                        item for item in timed if str(item.get("source_id") or "") != source_id
+                    ]
+                    expires_at = datetime.now(UTC) + timedelta(minutes=duration_value)
+                    timed.append(
+                        {
+                            "id": f"{source_id}:{target.id}",
+                            "source_id": source_id,
+                            "feature_id": command.feature_id,
+                            "source": action.get("name"),
+                            "modifier": {**dict(modifier), "target_combatant_id": target.id},
+                            "light_radius_ft": self._state_int(
+                                effect.get("light_radius_ft"), 0
+                            ),
+                            "expires_on": "duration",
+                            "expires_at": expires_at.isoformat(),
+                            "granted_at": datetime.now(UTC).isoformat(),
+                        }
+                    )
+                    snapshot["timed_feature_modifiers"] = timed
+                    state_key = str(effect.get("state_key") or "").strip()
+                    if state_key:
+                        snapshot[state_key] = target.id
+                    actor.snapshot_json = snapshot
+                    result["targeted_timed_modifier_granted"] = {
+                        **dict(modifier),
+                        "target_combatant_id": target.id,
+                        "expires_at": expires_at.isoformat(),
+                    }
+                    if self._state_int(effect.get("light_radius_ft"), 0) > 0:
+                        result["targeted_timed_modifier_granted"]["light_radius_ft"] = (
+                            self._state_int(effect.get("light_radius_ft"), 0)
+                        )
                     continue
                 if kind == "activate_condition":
                     condition = str(effect.get("condition") or "").strip()
@@ -16918,6 +17260,20 @@ class CombatEngineService:
                     result["temporary_healing_effect"] = True
                 elif kind == "healing":
                     result["healing_effect"] = True
+                elif kind == "inspect_damage_defenses":
+                    result["inspection"] = {
+                        "target_combatant_id": target.id,
+                        "damage_resistances": sorted(
+                            str(value) for value in (target.damage_resistances or [])
+                        ),
+                        "damage_immunities": sorted(
+                            str(value) for value in (target.damage_immunities or [])
+                        ),
+                        "damage_vulnerabilities": sorted(
+                            str(value) for value in (target.damage_vulnerabilities or [])
+                        ),
+                        "source": "authoritative_combatant_defense_fields",
+                    }
                 elif kind == "condition_removal":
                     result["condition_removal_effect"] = True
                 elif kind == "teleport":
@@ -17060,6 +17416,10 @@ class CombatEngineService:
                     minimum, maximum = bounds
                     if not minimum <= total <= maximum:
                         raise ValueError(f"治疗骰结果应在 {minimum}–{maximum} 之间")
+                cap_fraction = action.get("maximum_target_hp_fraction")
+                if isinstance(cap_fraction, (int, float)) and 0 < cap_fraction <= 1:
+                    cap = floor(target.max_hp * float(cap_fraction))
+                    total = min(total, max(0, cap - target.hp))
                 healing = resolve_healing(
                     amount=total,
                     current_hp=target.hp,
@@ -18896,7 +19256,11 @@ class CombatEngineService:
             combat.current_turn_index = next_index
             combat.round_number = next_round
             combat.version += 1
-            self._refresh_new_turn_resources(active, round_number=combat.round_number)
+            self._refresh_new_turn_resources(
+                active,
+                round_number=combat.round_number,
+                session=session,
+            )
             active_snapshot = dict(active.snapshot_json or {})
             # Action Surge grants a budget for this turn only.  The budget is
             # consumed by the normal action-economy gate and must never leak
@@ -19168,7 +19532,11 @@ class CombatEngineService:
             # A turn-start effect may have removed a condition that blocked
             # the active unit. Recompute the fresh turn budget after every
             # lifecycle path (runtime, predicated, and round expiry).
-            self._refresh_new_turn_resources(active, round_number=combat.round_number)
+            self._refresh_new_turn_resources(
+                active,
+                round_number=combat.round_number,
+                session=session,
+            )
             expiration_prompts = [
                 serialize(effect) for effect in expiring_effects if effect.status == "active"
             ]

@@ -210,6 +210,7 @@ FEATURE_RESOURCE_MARKERS: dict[str, str] = {
     "玄奥秘法（七环）": "mystic_arcanum_7",
     "玄奥秘法（八环）": "mystic_arcanum_8",
     "玄奥秘法（九环）": "mystic_arcanum_9",
+    "联络宗主": "contact_other_plane",
 }
 
 FEATURE_SCALING_MARKERS: dict[str, str] = {
@@ -767,6 +768,20 @@ def advancement_choice_requirements(
                 )
             )
 
+    if rule.name == "游荡者" and any("盗贼黑话" in feature for feature in level_rule.features):
+        requirements.append(
+            ChoiceRequirement(
+                key="thieves_cant_language",
+                kind="selected_language",
+                minimum=1,
+                maximum=1,
+                strict=True,
+                options_source="catalog.languages",
+                reason="盗贼黑话额外选择一门2024核心语言；通用语不能重复选择。",
+                duplicate_policy="forbid",
+            )
+        )
+
     if any("熟练探险家" in feature for feature in level_rule.features):
         requirements.extend(
             (
@@ -1165,6 +1180,17 @@ def progression_resource_updates(
             }
             if wisdom_modifier is not None:
                 updates["nature_veil"]["max"] = max(1, wisdom_modifier)
+
+    if rule.name == "魔契师" and target_class_level >= 9:
+        updates["contact_other_plane"] = {
+            "label": "联络宗主免费施法",
+            "max": 1,
+            "recovery": "long_rest",
+            "source": source,
+            "resource_kind": "free_spell_cast",
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+        }
 
     if rule.name == "魔契师":
         pact_slots = _number(
@@ -3164,6 +3190,90 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS: dict[str, dict[str, Any]] = {
             }
         ],
     },
+    "恐惧伏击": {
+        "combat_start": {
+            "modifiers": [
+                {
+                    "id": "dread_ambusher:initiative_wisdom",
+                    "stat": "initiative",
+                    "operation": "add",
+                    "scope": "self",
+                    "value_source": "wisdom_modifier",
+                    "runtime_execution": {
+                        "status": "ready",
+                        "consumer": "initiative_resolution",
+                    },
+                    "automation_status": "full",
+                    "requires_dm_adjudication": False,
+                }
+            ],
+            "defenses": [],
+            "first_turn_movement": [
+                {
+                    "id": "dread_ambusher:first_turn_speed",
+                    "amount_ft": 10,
+                    "runtime_execution": {
+                        "status": "ready",
+                        "consumer": "turn_budget_first_turn_movement_resolver",
+                    },
+                    "automation_status": "full",
+                    "requires_dm_adjudication": False,
+                }
+            ],
+        },
+        "resources": {
+            "$feature_resource": {
+                "key": "$feature_resource",
+                "resource_kind": "feature_uses",
+                "max_formula": "max(1, wisdom_modifier)",
+                "recovery": "long_rest",
+                "recovery_events": [
+                    {
+                        "rest": "long_rest",
+                        "trigger": "long_rest",
+                        "operation": "set_to_max",
+                    }
+                ],
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        },
+        "actions": {},
+        "triggers": [],
+        "attack_riders": [
+            {
+                "id": "dread_ambusher:dreadful_strikes",
+                "kind": "post_hit_rider",
+                "trigger": "after_hit",
+                "frequency": "once_per_turn",
+                "activation": {
+                    "input_key": "activate_dreadful_strikes",
+                    "label": "消耗一次恐惧打击使用次数",
+                },
+                "eligibility": {
+                    "actor_entity_types": ["character"],
+                    "target_relations": ["enemy"],
+                    "action_tags_all": ["weapon"],
+                    "resource": {"key": "$feature_resource", "minimum": 1},
+                },
+                "resource": {"key": "$feature_resource", "amount": 1},
+                "damage": {
+                    "id": "dread_ambusher:dreadful_strikes_damage",
+                    "expression": "2d6",
+                    "damage_type": "psychic",
+                    "input_key": "dreadful_strikes_total",
+                },
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "post_hit_rider_resolver",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        ],
+        "automation_status": "full",
+        "requires_dm_adjudication": False,
+    },
     "精通重击": {
         "combat_start": {
             "modifiers": [
@@ -4894,6 +5004,781 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS["额外战斗风格"] = {
     "requires_dm_adjudication": False,
 }
 
+# The second harvesting batch reuses the existing conditional movement and
+# damage-defense consumers.  These entries describe only the incremental
+# passive supplied by the feature; the parent activation producer remains a
+# separate contract and is intentionally referenced through typed conditions.
+SUBCLASS_FEATURE_RUNTIME_CONFIGS["风暴降生"] = {
+    "combat_start": {
+        "modifiers": [],
+        "defenses": [
+            {
+                "id": "stormborn:elemental_resistance",
+                "kind": "damage_resistance",
+                "damage_types": ["cold", "lightning", "thunder"],
+                "required_conditions": ["sea_wrath"],
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "damage_defense_resolver",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        ],
+        "movement_modes": [
+            {
+                "id": "stormborn:flight",
+                "mode": "fly",
+                "speed_source": "current_speed",
+                "applies_when": "sea_wrath",
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "turn_budget_movement_mode_resolver",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        ],
+    },
+    "resources": {},
+    "actions": {},
+    "triggers": [],
+    "attack_riders": [],
+    "automation_status": "full",
+    "requires_dm_adjudication": False,
+}
+
+SUBCLASS_FEATURE_RUNTIME_CONFIGS["四象遁术"] = {
+    "combat_start": {
+        "modifiers": [],
+        "defenses": [],
+        "movement_modes": [
+            {
+                "id": "stride_of_elements:flight",
+                "mode": "fly",
+                "speed_source": "current_speed",
+                "applies_when": "elemental_attunement",
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "turn_budget_movement_mode_resolver",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            },
+            {
+                "id": "stride_of_elements:swim",
+                "mode": "swim",
+                "speed_source": "current_speed",
+                "applies_when": "elemental_attunement",
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "turn_budget_movement_mode_resolver",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            },
+        ],
+    },
+    "resources": {},
+    "actions": {},
+    "triggers": [],
+    "attack_riders": [],
+    "automation_status": "full",
+    "requires_dm_adjudication": False,
+}
+
+SUBCLASS_FEATURE_RUNTIME_CONFIGS["灵能面纱"] = {
+    "combat_start": {"modifiers": [], "defenses": []},
+    "resources": {},
+    "actions": {
+        "psychic_veil": {
+            "id": "psychic_veil",
+            "name": "灵能面纱",
+            "kind": "feature_action",
+            "action_cost": "action",
+            "resource_key": "$feature_resource",
+            "resource_cost": 1,
+            "target": "self",
+            "resolution_kind": "condition",
+            "effects": [
+                {
+                    "kind": "activate_duration_condition",
+                    "condition": "隐形",
+                    "duration_unit": "minutes",
+                    "duration_value": 60,
+                    "ends_on": ["deals_damage", "forces_saving_throw", "manual_end"],
+                }
+            ],
+            "resource_lifecycle": {
+                "events": [{"trigger": "long_rest", "operation": "set_to_max"}]
+            },
+            "runtime_execution": {
+                "status": "ready",
+                "consumer": "combat_feature_action",
+                "effect_kinds": ["activate_duration_condition"],
+            },
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+        }
+    },
+    "triggers": [],
+    "attack_riders": [],
+    "automation_status": "full",
+    "requires_dm_adjudication": False,
+}
+
+SUBCLASS_FEATURE_RUNTIME_CONFIGS["星图"] = {
+    "combat_start": {"modifiers": [], "defenses": []},
+    "resources": {
+        "$feature_resource": {
+            "key": "$feature_resource",
+            "label": "星图光导箭免费施法",
+            "resource_kind": "free_spell_cast",
+            "recovery_events": [{"rest": "long_rest", "operation": "set_to_max"}],
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+        }
+    },
+    "actions": {},
+    "triggers": [],
+    "attack_riders": [],
+    "advancement": {
+        "kind": "fixed_spell_grant",
+        "spells": ["神导术", "光导箭"],
+        "grant_class": "owner_class",
+        "casting_ability": "wisdom",
+        "free_cast_resource_key": "$feature_resource",
+        "runtime_execution": {
+            "status": "ready",
+            "consumer": "advancement_service_and_spell_economy_service",
+        },
+        "automation_status": "full",
+        "requires_dm_adjudication": False,
+    },
+    "automation_status": "full",
+    "requires_dm_adjudication": False,
+}
+
+SUBCLASS_FEATURE_RUNTIME_CONFIGS["迅捷灵光"] = {
+    "combat_start": {
+        "modifiers": [
+            {
+                "id": "aura_of_alacrity:self_speed",
+                "stat": "speed_ft",
+                "operation": "add",
+                "value": 10,
+                "scope": "self",
+                "applies_when": "always",
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        ],
+        "defenses": [
+            {
+                "id": "aura_of_alacrity:ally_speed",
+                "stat": "speed_ft",
+                "operation": "add",
+                "value": 10,
+                "scope": "self_and_allies_within_10ft",
+                "ranged_passive": {
+                    "range_group": "paladin_aura_radius",
+                    "source_scope": "self",
+                    "target_relation": "self_and_allies",
+                    "range_ft": 10,
+                    "requires_grid_position_for_others": True,
+                    "source_forbidden_conditions": ["incapacitated"],
+                    "stacking": "best",
+                    "effect_kind": "numeric_modifier",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        ],
+    },
+    "resources": {},
+    "actions": {},
+    "triggers": [],
+    "attack_riders": [],
+    "automation_status": "full",
+    "requires_dm_adjudication": False,
+}
+
+SUBCLASS_FEATURE_RUNTIME_CONFIGS["维持生命"] = {
+    "combat_start": {"modifiers": [], "defenses": []},
+    "resources": {},
+    "actions": {
+        "preserve_life": {
+            "id": "preserve_life",
+            "name": "维持生命",
+            "kind": "feature_action",
+            "action_cost": "action",
+            "resource_key": "channel_divinity",
+            "resource_cost": 1,
+            "target": "ally_or_self",
+            "target_policy": {
+                "mode": "ally_or_self",
+                "same_faction": True,
+                "range_ft": 30,
+            },
+            "resolution_kind": "healing",
+            "healing_formula": "5*class_level",
+            "minimum_healing": 1,
+            "maximum_target_hp_fraction": 0.5,
+            "requires_bloodied_target": True,
+            "effects": [{"kind": "healing"}],
+            "runtime_execution": {
+                "status": "ready",
+                "consumer": "combat_feature_action",
+                "effect_kinds": ["healing"],
+            },
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+        }
+    },
+    "triggers": [],
+    "attack_riders": [],
+    "automation_status": "full",
+    "requires_dm_adjudication": False,
+}
+
+# Stormborn's flight is part of the same sea-wrath condition as its typed
+# resistances.  Keep the movement mode inside combat_start so it is copied to
+# the authoritative turn snapshot and not merely shown in the registry.
+SUBCLASS_FEATURE_RUNTIME_CONFIGS["风暴降生"]["combat_start"]["movement_modes"] = [
+    {
+        "id": "stormborn:flight",
+        "mode": "fly",
+        "speed_source": "current_speed",
+        "applies_when": "sea_wrath",
+        "runtime_execution": {
+            "status": "ready",
+            "consumer": "turn_budget_movement_mode_resolver",
+        },
+        "automation_status": "full",
+        "requires_dm_adjudication": False,
+    }
+]
+
+# Aquatic Affinity is a fixed passive consumer: the parent sea-wrath action
+# remains its own partial contract, while this feature changes only the typed
+# aura range and grants a speed-derived swim mode.
+SUBCLASS_FEATURE_RUNTIME_CONFIGS["水生亲和"] = {
+    "combat_start": {
+        "modifiers": [],
+        "defenses": [
+            {
+                "id": "aquatic_affinity:sea_wrath_range",
+                "kind": "ranged_passive_range_override",
+                "applies_to": "range_group",
+                "target_range_group": "sea_wrath_aura",
+                "range_ft": 10,
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "ranged_passive_resolver_and_feature_target_policy",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        ],
+        "movement_modes": [
+            {
+                "id": "aquatic_affinity:swim",
+                "mode": "swim",
+                "speed_source": "current_speed",
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "turn_budget_movement_mode_resolver",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        ],
+    },
+    "resources": {},
+    "actions": {},
+    "triggers": [],
+    "attack_riders": [],
+    "automation_status": "full",
+    "requires_dm_adjudication": False,
+}
+
+SUBCLASS_FEATURE_RUNTIME_CONFIGS["兽之形貌"] = {
+    "combat_start": {
+        "modifiers": [
+            {
+                "id": "aspect_of_the_wilds:owl_sight",
+                "stat": "sight_range_ft",
+                "operation": "set",
+                "value": 60,
+                "scope": "self",
+                "selection_resource_key": "aspect_of_wilds_choice",
+                "selection_value": "owl",
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "visibility_range_resolver",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        ],
+        "defenses": [],
+        "movement_modes": [
+            {
+                "id": "aspect_of_the_wilds:panther_climb",
+                "mode": "climb",
+                "speed_source": "current_speed",
+                "selection_resource_key": "aspect_of_wilds_choice",
+                "selection_value": "panther",
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "turn_budget_movement_mode_resolver",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            },
+            {
+                "id": "aspect_of_the_wilds:salmon_swim",
+                "mode": "swim",
+                "speed_source": "current_speed",
+                "selection_resource_key": "aspect_of_wilds_choice",
+                "selection_value": "salmon",
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "turn_budget_movement_mode_resolver",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            },
+        ],
+    },
+    "resources": {},
+    "actions": {
+        "aspect_of_wilds_choice": {
+            "id": "aspect_of_wilds_choice",
+            "name": "兽之形貌（长休选择）",
+            "kind": "rest_choice",
+            "trigger": "long_rest",
+            "choice_key": "aspect_of_wilds_choice",
+            "choice_options": ["owl", "panther", "salmon"],
+            "runtime_execution": {
+                "status": "ready",
+                "consumer": "rest_service_choice_and_feature_registry_rebuild",
+            },
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+        }
+    },
+    "triggers": [],
+    "attack_riders": [],
+    "automation_status": "full",
+    "requires_dm_adjudication": False,
+}
+
+SUBCLASS_FEATURE_RUNTIME_CONFIGS["梁上君子"] = {
+    "combat_start": {
+        "modifiers": [
+            {
+                "id": "second_story_work:jump_ability",
+                "stat": "jump_ability",
+                "operation": "set",
+                "value_source": "dexterity",
+                "scope": "self",
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "character_card_jump_distance_resolver",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        ],
+        "defenses": [],
+        "movement_modes": [
+            {
+                "id": "second_story_work:climb_speed",
+                "mode": "climb",
+                "speed_source": "current_speed",
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "turn_budget_movement_mode_resolver",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        ],
+    },
+    "resources": {},
+    "actions": {},
+    "triggers": [],
+    "attack_riders": [],
+    "automation_status": "full",
+    "requires_dm_adjudication": False,
+}
+
+SUBCLASS_FEATURE_RUNTIME_CONFIGS["不灭哨卫"] = {
+    "combat_start": {
+        "modifiers": [],
+        "defenses": [
+            {
+                "id": "undying_sentinel:zero_hp_prevention",
+                "kind": "zero_hp_auto_prevention",
+                "trigger": "would_drop_to_zero_hit_points",
+                "resource_key": "$feature_resource",
+                "resource_cost": 1,
+                "on_success": {"hit_points": "3*paladin_level"},
+                "eligibility": {
+                    "entity_types": ["character"],
+                    "level": {
+                        "class_names": ["圣武士", "paladin"],
+                        "minimum": 15,
+                        "bind_as": "paladin_level",
+                    },
+                },
+                "exceptions": ["outright_death"],
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "zero_hp_damage_resolution",
+                    "persistence": "character_resource_and_combat_snapshot",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        ],
+    },
+    "resources": {},
+    "actions": {},
+    "triggers": [],
+    "attack_riders": [],
+    "automation_status": "full",
+    "requires_dm_adjudication": False,
+}
+
+SUBCLASS_FEATURE_RUNTIME_CONFIGS["料敌机先"] = {
+    "combat_start": {"modifiers": [], "defenses": []},
+    "resources": {},
+    "actions": {
+        "know_your_enemy": {
+            "id": "know_your_enemy",
+            "name": "料敌机先",
+            "kind": "feature_action",
+            "action_cost": "bonus_action",
+            "resource_key": "know_your_enemy",
+            "resource_cost": 1,
+            "target": "any",
+            "target_policy": {
+                "mode": "any",
+                "range_ft": 30,
+                "requires_visible_or_audible": True,
+            },
+            "resolution_kind": "inspection",
+            "effects": [{"kind": "inspect_damage_defenses"}],
+            "reset_options": {
+                "resource_key": "superiority_dice",
+                "resource_cost": 1,
+                "reset_amount": 1,
+            },
+            "resource_lifecycle": {
+                "events": [{"trigger": "long_rest", "operation": "set_to_max"}]
+            },
+            "runtime_execution": {
+                "status": "ready",
+                "consumer": "combat_feature_action_target_defense_inspection",
+            },
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+        }
+    },
+    "triggers": [],
+    "attack_riders": [],
+    "automation_status": "full",
+    "requires_dm_adjudication": False,
+}
+
+SUBCLASS_FEATURE_RUNTIME_CONFIGS["仇敌誓言"] = {
+    "combat_start": {"modifiers": [], "defenses": []},
+    "resources": {},
+    "actions": {
+        "vow_of_enmity": {
+            "id": "vow_of_enmity",
+            "name": "仇敌誓言",
+            "kind": "feature_action",
+            "action_cost": "none",
+            "resource_key": "channel_divinity",
+            "resource_cost": 1,
+            "target": "enemy",
+            "target_policy": {
+                "mode": "enemy",
+                "range_ft": 30,
+                "requires_visible_or_audible": True,
+            },
+            "resolution_kind": "targeted_modifier",
+            "effects": [
+                {
+                    "kind": "grant_targeted_timed_modifier",
+                    "state_key": "vow_of_enmity_target_id",
+                    "duration_unit": "minutes",
+                    "duration_value": 1,
+                    "modifier": {
+                        "stat": "attack_roll",
+                        "operation": "advantage",
+                        "scope": "outgoing",
+                    },
+                }
+            ],
+            "runtime_execution": {
+                "status": "ready",
+                "consumer": "combat_feature_action_targeted_attack_modifier",
+                "persistence": "actor_snapshot_timed_modifier",
+            },
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+        }
+    },
+    "triggers": [
+        {
+            "id": "vow_of_enmity:retarget_on_target_zero_hp",
+            "event": "after_zero_hp",
+            "when": {"actor_target_state_key": "vow_of_enmity_target_id"},
+            "target_policy": {"mode": "enemy"},
+            "effects": [
+                {
+                    "kind": "restore_resource",
+                    "resource_key": "channel_divinity",
+                    "operation": "add",
+                    "amount": 1,
+                },
+                {
+                    "kind": "clear_feature_state",
+                    "state_key": "vow_of_enmity_target_id",
+                },
+            ],
+            "runtime_execution": {
+                "status": "ready",
+                "consumer": "after_zero_hp_target_retarget_resource_cas",
+            },
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+        }
+    ],
+    "attack_riders": [],
+    "automation_status": "full",
+    "requires_dm_adjudication": False,
+}
+
+SUBCLASS_FEATURE_RUNTIME_CONFIGS["圣洁武器"] = {
+    "combat_start": {"modifiers": [], "defenses": []},
+    "resources": {},
+    "actions": {
+        "sacred_weapon": {
+            "id": "sacred_weapon",
+            "name": "圣洁武器",
+            "kind": "feature_action",
+            "action_cost": "action",
+            "resource_key": "channel_divinity",
+            "resource_cost": 1,
+            "target": "self",
+            "target_policy": {"mode": "self"},
+            "resolution_kind": "timed_modifier",
+            "effects": [
+                {
+                    "kind": "grant_targeted_timed_modifier",
+                    "duration_unit": "minutes",
+                    "duration_value": 1,
+                    "light_radius_ft": 20,
+                    "modifier": {
+                        "stat": "attack_roll",
+                        "operation": "add",
+                        "value": 3,
+                        "scope": "outgoing",
+                    },
+                }
+            ],
+            "runtime_execution": {
+                "status": "ready",
+                "consumer": "combat_feature_action_timed_attack_modifier_and_light",
+                "persistence": "actor_snapshot_timed_modifier",
+            },
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+        }
+    },
+    "triggers": [],
+    "attack_riders": [],
+    "automation_status": "full",
+    "requires_dm_adjudication": False,
+}
+
+def _life_domain_healing_modifier(operation: str) -> dict[str, Any]:
+    return {
+        "combat_start": {
+            "modifiers": [
+                {
+                    "id": f"life_domain:{operation}",
+                    "stat": "spell_healing",
+                    "operation": operation,
+                    "scope": "outgoing",
+                    "applies_when": "always",
+                    "runtime_execution": {
+                        "status": "ready",
+                        "consumer": "spell_healing_resolution",
+                    },
+                    "automation_status": "full",
+                    "requires_dm_adjudication": False,
+                }
+            ],
+            "defenses": [],
+        },
+        "resources": {},
+        "actions": {},
+        "triggers": [],
+        "attack_riders": [],
+        "automation_status": "full",
+        "requires_dm_adjudication": False,
+    }
+
+
+SUBCLASS_FEATURE_RUNTIME_CONFIGS["生命门徒"] = _life_domain_healing_modifier(
+    "add_spell_slot_plus_two"
+)
+SUBCLASS_FEATURE_RUNTIME_CONFIGS["神祝医者"] = _life_domain_healing_modifier(
+    "grant_self_healing"
+)
+SUBCLASS_FEATURE_RUNTIME_CONFIGS["极效治疗"] = _life_domain_healing_modifier(
+    "maximize_healing_dice"
+)
+
+SUBCLASS_FEATURE_RUNTIME_CONFIGS["强效塑能"] = {
+    "combat_start": {
+        "modifiers": [
+            {
+                "id": "empowered_evocation:spell_damage_ability",
+                "stat": "spell_damage",
+                "operation": "add_ability_modifier_once",
+                "ability": "intelligence",
+                "scope": "outgoing",
+                "applies_when": "always",
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "spell_damage_resolution",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        ],
+        "defenses": [],
+    },
+    "resources": {},
+    "actions": {},
+    "triggers": [],
+    "attack_riders": [],
+    "automation_status": "full",
+    "requires_dm_adjudication": False,
+}
+
+SUBCLASS_FEATURE_RUNTIME_CONFIGS["强力戏法"] = {
+    "combat_start": {
+        "modifiers": [
+            {
+                "id": "potent_cantrip:failure_half_damage",
+                "stat": "spell_damage",
+                "operation": "cantrip_failure_half",
+                "scope": "outgoing",
+                "applies_when": "always",
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "spell_damage_resolution",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        ],
+        "defenses": [],
+    },
+    "resources": {},
+    "actions": {},
+    "triggers": [],
+    "attack_riders": [],
+    "automation_status": "full",
+    "requires_dm_adjudication": False,
+}
+
+# Trance of Order is a single timed state.  The suppression defense and the
+# minimum-d20 modifier are consumed by existing attack and player-roll paths;
+# the only new adapter is the generic floor operation, which remains feature
+# name agnostic.
+SUBCLASS_FEATURE_RUNTIME_CONFIGS["序列意识"] = {
+    "combat_start": {
+        "modifiers": [
+            {
+                "id": "trance_of_order:d20_floor",
+                "stat": "d20_roll",
+                "operation": "set_minimum_d20",
+                "value": 10,
+                "scope": "self",
+                "applies_when": "trance_of_order",
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "player_roll_and_attack_d20_resolution",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        ],
+        "defenses": [
+            {
+                "id": "trance_of_order:suppress_attack_advantage",
+                "kind": "suppress_attack_advantage",
+                "required_conditions": ["trance_of_order"],
+                "applies_when": "not_incapacitated",
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "attack_context_resolver",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        ],
+    },
+    "resources": {},
+    "actions": {
+        "trance_of_order": {
+            "id": "trance_of_order",
+            "name": "序列意识",
+            "kind": "feature_action",
+            "action_cost": "bonus_action",
+            "resource_key": "$feature_resource",
+            "resource_cost": 1,
+            "target": "self",
+            "resolution_kind": "condition",
+            "effects": [
+                {
+                    "kind": "activate_duration_condition",
+                    "condition": "trance_of_order",
+                    "duration_unit": "minutes",
+                    "duration_value": 1,
+                }
+            ],
+            "reset_options": {
+                "resource_key": "sorcery_points",
+                "resource_cost": 5,
+                "reset_amount": 1,
+            },
+            "resource_lifecycle": {
+                "events": [{"trigger": "long_rest", "operation": "set_to_max"}]
+            },
+            "runtime_execution": {
+                "status": "ready",
+                "consumer": "combat_feature_action_and_d20_resolution",
+            },
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+        }
+    },
+    "triggers": [],
+    "attack_riders": [],
+    "automation_status": "full",
+    "requires_dm_adjudication": False,
+}
+
 
 def subclass_feature_runtime_definition(
     definition: Mapping[str, Any],
@@ -5125,6 +6010,51 @@ def _subclass_resource_update(
     description = str(definition.get("description") or "")
     feature_name = str(definition.get("name") or "").strip()
     subclass_name = str(definition.get("subclass_name") or "").strip()
+    if feature_name.startswith("序列意识"):
+        return "trance_of_order", {
+            "label": feature_name,
+            "max": 1,
+            "max_formula": "fixed_one",
+            "resource_kind": "feature_uses",
+            "recovery": "long_rest",
+            "recovery_events": [{"rest": "long_rest", "operation": "set_to_max"}],
+            "source": (
+                f"{definition.get('source_path') or definition.get('source_record_id')}"
+                f" · {definition.get('class_level')}级{feature_name}"
+            ),
+            "requires_dm_adjudication": False,
+            "automation_status": "full",
+        }
+    if feature_name.startswith("不灭哨卫"):
+        return "undying_sentinel", {
+            "label": feature_name,
+            "max": 1,
+            "max_formula": "fixed_one",
+            "resource_kind": "feature_uses",
+            "recovery": "long_rest",
+            "recovery_events": [{"rest": "long_rest", "operation": "set_to_max"}],
+            "source": (
+                f"{definition.get('source_path') or definition.get('source_record_id')}"
+                f" · {definition.get('class_level')}级{feature_name}"
+            ),
+            "requires_dm_adjudication": False,
+            "automation_status": "full",
+        }
+    if feature_name.startswith("料敌机先"):
+        return "know_your_enemy", {
+            "label": feature_name,
+            "max": 1,
+            "max_formula": "fixed_one",
+            "resource_kind": "feature_uses",
+            "recovery": "long_rest",
+            "recovery_events": [{"rest": "long_rest", "operation": "set_to_max"}],
+            "source": (
+                f"{definition.get('source_path') or definition.get('source_record_id')}"
+                f" · {definition.get('class_level')}级{feature_name}"
+            ),
+            "requires_dm_adjudication": False,
+            "automation_status": "full",
+        }
     if subclass_name == "战斗大师" and str(definition.get("class_name") or "") == "战士":
         if feature_name.startswith(("卓越战技", "精通战技", "坚韧", "究极战技")):
             level = int(current_class_level or definition.get("class_level") or 0)
@@ -5642,6 +6572,34 @@ def subclass_runtime_grants(
                         and trigger_resource.get("key") == "$feature_resource"
                     ):
                         trigger_resource["key"] = resource_key
+            raw_runtime_riders = runtime_registry.get("attack_riders")
+            if isinstance(raw_runtime_riders, list):
+                for raw_rider in raw_runtime_riders:
+                    if not isinstance(raw_rider, dict):
+                        continue
+                    rider_resource = raw_rider.get("resource")
+                    if (
+                        isinstance(rider_resource, dict)
+                        and rider_resource.get("key") == "$feature_resource"
+                    ):
+                        rider_resource["key"] = resource_key
+                    rider_eligibility = raw_rider.get("eligibility")
+                    if isinstance(rider_eligibility, dict):
+                        nested = rider_eligibility.get("resource")
+                        if (
+                            isinstance(nested, dict)
+                            and nested.get("key") == "$feature_resource"
+                        ):
+                            nested["key"] = resource_key
+            raw_advancement = runtime_registry.get("advancement")
+            if isinstance(raw_advancement, dict):
+                if raw_advancement.get("free_cast_resource_key") == "$feature_resource":
+                    raw_advancement["free_cast_resource_key"] = resource_key
+                selection = raw_advancement.get("selection")
+                if isinstance(selection, dict) and selection.get("free_cast_resource_key") == (
+                    "$feature_resource"
+                ):
+                    selection["free_cast_resource_key"] = resource_key
         if runtime_registry is not None and is_battle_master:
             # Reconstruct the learned set in level order.  The registry is
             # persisted on every grant, so a rebuilt character exposes only

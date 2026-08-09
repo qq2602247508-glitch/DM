@@ -165,7 +165,10 @@ def _selected_subclass_spell_additions(
         if not isinstance(advancement, dict) or advancement.get("kind") != "selected_spell_grant":
             continue
         selection = advancement.get("selection")
-        feature_id = str(grant.get("feature_id") or "").strip()
+        feature_id = str(
+            grant.get("feature_id")
+            or f"class:{grant.get('class_name')}:{grant.get('class_level')}:{grant.get('name')}"
+        ).strip()
         if not isinstance(selection, dict) or not feature_id:
             raise ValueError("受控法术选择缺少特性或选择合同")
         choices = [
@@ -249,7 +252,10 @@ def _fixed_subclass_feature_spell_additions(
         if not isinstance(advancement, dict) or advancement.get("kind") != "fixed_spell_grant":
             continue
         spell_names = advancement.get("spells")
-        feature_id = str(grant.get("feature_id") or "").strip()
+        feature_id = str(
+            grant.get("feature_id")
+            or f"class:{grant.get('class_name')}:{grant.get('class_level')}:{grant.get('name')}"
+        ).strip()
         if not feature_id or not isinstance(spell_names, list) or not spell_names:
             raise ValueError("固定法术授予缺少特性或法术合同")
         for spell_name in spell_names:
@@ -1904,6 +1910,13 @@ class AdvancementService:
             )
         )
         automatic_subclass_spells.extend(
+            _fixed_subclass_feature_spell_additions(
+                list(target_core_grants),
+                spell_catalog=spell_catalog,
+                owner_class=class_name,
+            )
+        )
+        automatic_subclass_spells.extend(
             _selected_core_spell_additions(
                 selected_core_spell_choices,
                 spell_catalog=spell_catalog,
@@ -2077,6 +2090,22 @@ class AdvancementService:
             rule_year=rule.rule_year,
             allowed_languages=CORE_LANGUAGES,
         )
+        # Fixed core-language/proficiency contracts use the same authoritative
+        # sheet list as subclass tool grants.  The runtime compiler owns the
+        # typed source; this transaction only materializes the grant once and
+        # keeps repeated snapshot rebuilds idempotent.
+        core_proficiencies = list(progression_choice_result["proficiencies"])
+        for grant in target_core_grants:
+            runtime = grant.get("runtime") if isinstance(grant, dict) else None
+            registry = runtime.get("registry") if isinstance(runtime, dict) else None
+            entries = registry.get("proficiencies") if isinstance(registry, dict) else None
+            for entry in entries if isinstance(entries, list) else ():
+                if not isinstance(entry, dict) or entry.get("operation") != "grant":
+                    continue
+                name = str(entry.get("name") or "").strip()
+                if name and name not in core_proficiencies:
+                    core_proficiencies.append(name)
+        progression_choice_result["proficiencies"] = core_proficiencies
         metamagic_grants, replaced_metamagic_ids = (
             self._metamagic_asset_changes(
                 list(character.features or []),

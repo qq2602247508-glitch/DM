@@ -86,6 +86,14 @@ FEATURE_CONDITION_RUNTIME_SPECS: dict[str, dict[str, dict[str, Any]]] = {
             "state_name": "feature_dragon_wings",
             "duration_units": ["minutes"],
         },
+        "隐形": {
+            "state_name": "feature_invisible",
+            "duration_units": ["minutes"],
+        },
+        "trance_of_order": {
+            "state_name": "trance_of_order",
+            "duration_units": ["minutes"],
+        },
     },
     "activate_timed_condition": {
         "隐形": {
@@ -417,6 +425,8 @@ def resolve_feature_speed(
                     }
                 )
                 continue
+        elif condition in {None, "always"}:
+            pass
         else:
             skipped.append({**record, "reason": "speed_condition_not_supported"})
             continue
@@ -543,6 +553,171 @@ def feature_runtime_definition(
             "requires_dm_adjudication": False,
         }
 
+    if identity in {"越野", "roving"} and class_identity in {"游侠", "ranger"}:
+        # Roving is a fixed movement contract.  The speed modifier reuses the
+        # equipment-aware resolver; the two movement modes are consumed by the
+        # authoritative turn-budget refresh and mirror the character's current
+        # walking speed rather than inventing a second speed value.
+        definition["combat_start"]["modifiers"].append(
+            {
+                "id": "roving:speed_bonus",
+                "stat": "speed_ft",
+                "operation": "add",
+                "value": 10,
+                "scope": "self",
+                "applies_when": "not_wearing_heavy_armor",
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+                **source,
+            }
+        )
+        definition["combat_start"]["movement_modes"] = [
+            {
+                "id": "roving:climb_speed",
+                "mode": "climb",
+                "speed_source": "current_speed",
+                "requires_not_wearing_heavy_armor": True,
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "turn_budget_movement_mode_resolver",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+                **source,
+            },
+            {
+                "id": "roving:swim_speed",
+                "mode": "swim",
+                "speed_source": "current_speed",
+                "requires_not_wearing_heavy_armor": True,
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "turn_budget_movement_mode_resolver",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+                **source,
+            },
+        ]
+
+    if identity in {"野性感官", "wildsenses"} and class_identity in {"游侠", "ranger"}:
+        # Blindsight is consumed by the same attack-context visibility path as
+        # ordinary condition modifiers.  The value is fixed by the source
+        # feature and remains bounded to 30 feet; no prose or class dispatch is
+        # needed in the combat executor.
+        definition["combat_start"]["modifiers"].append(
+            {
+                "id": "wild_senses:blindsight",
+                "stat": "blindsight_ft",
+                "operation": "set",
+                "value": 30,
+                "scope": "self",
+                "applies_when": "always",
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "combat_visibility_and_attack_context",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+                **source,
+            }
+        )
+
+    if identity in {"盗贼黑话", "thievescant"} and class_identity in {
+        "游荡者",
+        "rogue",
+    }:
+        # The fixed Cant language and the one ordinary-language choice are
+        # persisted through the same proficiency list used by backgrounds and
+        # growth assets.  The choice requirement is consumed by the existing
+        # advancement choice validator.
+        definition["proficiencies"] = [
+            {
+                "kind": "language",
+                "name": "语言：盗贼黑话",
+                "operation": "grant",
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "character_proficiency_registry",
+                },
+            }
+        ]
+        definition["advancement"] = {
+            "kind": "selected_language_grant",
+            "choice_requirement": {
+                "key": "thieves_cant_language",
+                "minimum": 1,
+                "maximum": 1,
+                "strict": True,
+                "options_source": "core_languages",
+                "duplicate_policy": "forbid",
+                "requires_dm_selection": False,
+            },
+            "runtime_execution": {
+                "status": "ready",
+                "consumer": "advancement_service_and_character_proficiency_registry",
+            },
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+        }
+
+    if identity in {"德鲁伊语", "druidic"} and class_identity in {"德鲁伊", "druid"}:
+        definition["proficiencies"] = [
+            {
+                "kind": "language",
+                "name": "语言：德鲁伊语",
+                "operation": "grant",
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "character_proficiency_registry",
+                },
+            }
+        ]
+        definition["advancement"] = {
+            "kind": "fixed_spell_grant",
+            "spells": ["动物交谈"],
+            "grant_class": "owner_class",
+            "casting_ability": "wisdom",
+            "ritual_only": True,
+            "runtime_execution": {
+                "status": "ready",
+                "consumer": "advancement_service_and_noncombat_spell_economy",
+            },
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+        }
+
+    if identity in {"联络宗主", "contactpatron", "contactotherplane"} and class_identity in {
+        "魔契师",
+        "warlock",
+    }:
+        resource = definition["resources"].get("contact_other_plane")
+        if isinstance(resource, dict):
+            resource.update(
+                {
+                    "automation_status": "full",
+                    "requires_dm_adjudication": False,
+                }
+            )
+        definition["advancement"] = {
+            "kind": "fixed_spell_grant",
+            "spells": ["异界探知"],
+            "grant_class": "owner_class",
+            "casting_ability": "charisma",
+            "free_cast_resource_key": "contact_other_plane",
+            "auto_save": True,
+            "runtime_execution": {
+                "status": "ready",
+                "consumer": "advancement_service_and_spell_economy_service",
+            },
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+        }
+
     if identity in {"专业预言", "expertdivination"}:
         definition["actions"]["expert_divination_slot_recovery"] = {
             "id": "expert_divination_slot_recovery",
@@ -576,11 +751,74 @@ def feature_runtime_definition(
             ),
             **source,
         }
+
+    if identity in {"不灭哨卫", "undying-sentinel", "undying"} and class_identity in {
+        "圣武士",
+        "paladin",
+    }:
+        # The feature is a deterministic once-per-long-rest zero-HP guard.  It
+        # deliberately uses the shared prevention contract; the combat engine
+        # owns massive-damage exclusion, resource CAS, snapshot rebuilding and
+        # idempotent damage replay.
+        definition["resources"]["undying_sentinel"] = _resource_entry(
+            "undying_sentinel",
+            {
+                "label": feature_name,
+                "max": 1,
+                "recovery": "long_rest",
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            },
+        )
+        definition["combat_start"]["defenses"].append(
+            {
+                "id": "undying_sentinel:zero_hp_prevention",
+                "kind": "zero_hp_auto_prevention",
+                "trigger": "would_drop_to_zero_hit_points",
+                "resource_key": "undying_sentinel",
+                "resource_cost": 1,
+                "on_success": {"hit_points": "3*paladin_level"},
+                "eligibility": {
+                    "entity_types": ["character"],
+                    "level": {
+                        "class_names": ["圣武士", "paladin"],
+                        "minimum": 15,
+                        "bind_as": "paladin_level",
+                    },
+                },
+                "exceptions": ["outright_death"],
+                "runtime_execution": {
+                    "status": "ready",
+                    "consumer": "zero_hp_damage_resolution",
+                    "persistence": "character_resource_and_combat_snapshot",
+                },
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+                **source,
+            }
+        )
     resource_values = resources or {}
     for key in tracked_resource_keys:
         value = resource_values.get(key)
         if value is not None:
             definition["resources"][key] = _resource_entry(key, value)
+    if identity in {"联络宗主", "contactpatron", "contactotherplane"}:
+        value = resource_values.get("contact_other_plane")
+        if value is None:
+            value = {
+                "label": "联络宗主免费施法",
+                "max": 1,
+                "recovery": "long_rest",
+                "recovery_events": [{"rest": "long_rest", "operation": "set_to_max"}],
+                "automation_status": "full",
+                "requires_dm_adjudication": False,
+            }
+        definition["resources"]["contact_other_plane"] = _resource_entry(
+            "contact_other_plane", value
+        )
+        definition["resources"]["contact_other_plane"].update(
+            {"automation_status": "full", "requires_dm_adjudication": False}
+        )
 
     for index, raw_modifier in enumerate(modifiers):
         modifier = deepcopy(dict(raw_modifier))
@@ -2923,6 +3161,7 @@ def compile_feature_runtime_registry(
     spellcasting_registry: list[dict[str, Any]] = []
     trigger_registry: list[dict[str, Any]] = []
     riders: dict[str, dict[str, Any]] = {}
+    movement_modes: dict[str, dict[str, Any]] = {}
     rider_overlays: list[dict[str, Any]] = []
     action_overlays: list[dict[str, Any]] = []
     proficiency_registry: list[dict[str, Any]] = []
@@ -2992,6 +3231,18 @@ def compile_feature_runtime_registry(
             for raw in combat_start.get("modifiers") or ():
                 if isinstance(raw, Mapping):
                     entry = deepcopy(dict(raw))
+                    selection_key = str(entry.get("selection_resource_key") or "").strip()
+                    if selection_key:
+                        selected = current_resources.get(selection_key)
+                        selected_value = (
+                            selected.get("selected")
+                            if isinstance(selected, Mapping)
+                            else None
+                        )
+                        if str(selected_value or "") != str(
+                            entry.get("selection_value") or ""
+                        ):
+                            continue
                     scaling_key = entry.get("scaling_key")
                     if isinstance(scaling_key, str) and scaling_key in scaling_values:
                         entry["value"] = scaling_values[scaling_key]
@@ -3000,6 +3251,22 @@ def compile_feature_runtime_registry(
                 if isinstance(raw, Mapping):
                     entry = deepcopy(dict(raw))
                     defenses[str(entry.get("id") or len(defenses))] = entry
+            for raw in combat_start.get("movement_modes") or ():
+                if isinstance(raw, Mapping):
+                    entry = deepcopy(dict(raw))
+                    selection_key = str(entry.get("selection_resource_key") or "").strip()
+                    if selection_key:
+                        selected = current_resources.get(selection_key)
+                        selected_value = (
+                            selected.get("selected")
+                            if isinstance(selected, Mapping)
+                            else None
+                        )
+                        if str(selected_value or "") != str(
+                            entry.get("selection_value") or ""
+                        ):
+                            continue
+                    movement_modes[str(entry.get("id") or len(movement_modes))] = entry
 
         raw_resources = definition.get("resources")
         if isinstance(raw_resources, Mapping):
@@ -3169,6 +3436,7 @@ def compile_feature_runtime_registry(
             "attack_slot_replacements": list(attack_slot_replacements.values()),
             "modifiers": list(modifiers.values()),
             "defenses": list(defenses.values()),
+            "movement_modes": list(movement_modes.values()),
         },
         "resources": resource_registry,
         "actions": action_registry,

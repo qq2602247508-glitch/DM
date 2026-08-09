@@ -1119,6 +1119,7 @@ class PlayerRoomService:
             actor,
             stat="attack_roll",
             scope="outgoing",
+            target_combatant_id=target.id,
         ):
             if (
                 str(modifier.get("applies_when") or "").strip().lower()
@@ -3050,6 +3051,7 @@ class PlayerRoomService:
             for item in (state.explored_cells if state else [])
             if isinstance(item, dict) and "row" in item and "col" in item
         }
+        combatant: Combatant | None = None
         origin = origin_override
         if origin is None:
             room = session.get(PlayerRoom, principal.room_id)
@@ -3081,6 +3083,21 @@ class PlayerRoomService:
                 origin = (token.row, token.col)
         if origin is None:
             return {"visible": set(), "explored": explored}
+        if combatant is None:
+            room = session.get(PlayerRoom, principal.room_id)
+            combat = (
+                session.get(Combat, room.current_combat_id)
+                if room and room.current_combat_id
+                else None
+            )
+            if combat is not None:
+                combatant = session.scalar(
+                    select(Combatant).where(
+                        Combatant.combat_id == combat.id,
+                        Combatant.entity_type == "character",
+                        Combatant.entity_id == principal.character_id,
+                    )
+                )
         blockers = {
             (int(cell["row"]), int(cell["col"]))
             for cell in public_cells(grid.layers_json)
@@ -3106,13 +3123,25 @@ class PlayerRoomService:
                     == "opaque"
                 ):
                     blockers.update(_object_cells(item))
-        radius = 8
+        radius_ft = 40
+        if combatant is not None:
+            sight_ranges = [
+                CombatEngineService._state_int(item.get("value"), 0)
+                for item in CombatEngineService._feature_rule_modifiers(
+                    combatant,
+                    stat="sight_range_ft",
+                    scope="self",
+                )
+                if item.get("operation") in {"set", "add"}
+            ]
+            radius_ft = max(radius_ft, max(sight_ranges, default=0))
+        radius = max(1, (radius_ft + grid.cell_size_ft - 1) // grid.cell_size_ft)
         visible = {
             (row, col)
             for row in range(max(0, origin[0] - radius), min(grid.height, origin[0] + radius) + 1)
             for col in range(max(0, origin[1] - radius), min(grid.width, origin[1] + radius) + 1)
             if grid_distance_ft(origin, (row, col), cell_size_ft=grid.cell_size_ft)
-            <= radius * grid.cell_size_ft
+            <= radius_ft
             and line_of_sight(origin, (row, col), blockers)
         }
         return {"visible": visible, "explored": explored | visible}
@@ -4143,6 +4172,27 @@ class PlayerRoomService:
             if isinstance(item.snapshot_json, dict)
             else None
         )
+        light_radius_ft: int | None = None
+        snapshot = item.snapshot_json if isinstance(item.snapshot_json, dict) else {}
+        timed_modifiers = snapshot.get("timed_feature_modifiers")
+        if isinstance(timed_modifiers, list):
+            now = datetime.now(UTC)
+            for timed in timed_modifiers:
+                if not isinstance(timed, dict):
+                    continue
+                expires_at = timed.get("expires_at")
+                if isinstance(expires_at, str) and expires_at.strip():
+                    try:
+                        expiry = datetime.fromisoformat(expires_at)
+                    except ValueError:
+                        continue
+                    if expiry.tzinfo is None:
+                        expiry = expiry.replace(tzinfo=UTC)
+                    if now >= expiry:
+                        continue
+                value = timed.get("light_radius_ft")
+                if isinstance(value, int) and value > 0:
+                    light_radius_ft = max(light_radius_ft or 0, value)
         result: dict[str, Any] = {
             "id": item.id,
             "version": item.version,
@@ -4164,6 +4214,9 @@ class PlayerRoomService:
             "temporary_hp": item.temporary_hp,
             "conditions": item.conditions,
             "speed_ft": item.speed_ft,
+            "jump_ability": item.snapshot_json.get("jump_ability"),
+            "jump_distance_ft": item.snapshot_json.get("jump_distance_ft"),
+            "light_radius_ft": light_radius_ft,
             "ability_scores": json_dict(item.snapshot_json.get("ability_scores")),
             "actions": PlayerRoomService._combatant_actions(session, item),
             "active_action": active_action,
@@ -8084,6 +8137,35 @@ class PlayerRoomService:
                 "damage_roll",
                 scope="outgoing",
             )
+            is_spell_action = bool(
+                action.get("is_spell_attack") is True
+                or action.get("is_spell") is True
+                or action.get("kind") == "spell"
+                or action.get("spell_level") is not None
+            )
+            spell_damage_modifiers = CombatEngineService._feature_rule_modifiers(
+                actor,
+                stat="spell_damage",
+                scope="outgoing",
+            )
+            spell_damage_bonus = 0
+            if is_spell_action:
+                for modifier in spell_damage_modifiers:
+                    if modifier.get("operation") != "add_ability_modifier_once":
+                        continue
+                    ability = str(modifier.get("ability") or "").strip()
+                    scores = actor.snapshot_json.get("ability_scores")
+                    raw_score = scores.get(ability) if isinstance(scores, dict) else None
+                    if isinstance(raw_score, int):
+                        spell_damage_bonus += (raw_score - 10) // 2
+            cantrip_failure_half = bool(
+                is_spell_action
+                and int(action.get("spell_level") or 0) == 0
+                and any(
+                    item.get("operation") == "cantrip_failure_half"
+                    for item in spell_damage_modifiers
+                )
+            )
             first_damage_block_id = damage_rules[0].id
             for current_target in requested_targets:
                 components = components_for(current_target)
@@ -8147,6 +8229,21 @@ class PlayerRoomService:
                     effective_attack_roll = min(attack_rolls[:2])
                 else:
                     effective_attack_roll = attack_total
+                d20_floor = max(
+                    (
+                        int(item.get("value"))
+                        for item in CombatEngineService._feature_rule_modifiers(
+                            actor,
+                            stat="d20_roll",
+                            scope="self",
+                        )
+                        if item.get("operation") == "set_minimum_d20"
+                        and isinstance(item.get("value"), int)
+                    ),
+                    default=0,
+                )
+                if d20_floor > 0 and effective_attack_roll < d20_floor:
+                    effective_attack_roll = d20_floor
                 if bardic_inspiration is not None and bardic_inspiration.get("mode") != "offense":
                     effective_attack_roll += int(bardic_inspiration["value"])
                 save: dict[str, Any] | None = None
@@ -8275,6 +8372,11 @@ class PlayerRoomService:
                                 )
                                 else 0
                             )
+                            + (
+                                spell_damage_bonus
+                                if component.block_id == first_damage_block_id
+                                else 0
+                            )
                             if component.block_id == first_damage_block_id
                             else 0
                         )
@@ -8285,6 +8387,8 @@ class PlayerRoomService:
                         amount = (
                             reported_total // 2
                             if save["success"] and save_on_success == "half"
+                            else reported_total // 2
+                            if save["success"] and cantrip_failure_half
                             else reported_total
                             if save["success"] and save_on_success == "full"
                             else 0
@@ -8292,7 +8396,13 @@ class PlayerRoomService:
                             else reported_total
                         )
                     else:
-                        amount = reported_total if outcome_code == "hit" else 0
+                        amount = (
+                            reported_total
+                            if outcome_code == "hit"
+                            else reported_total // 2
+                            if cantrip_failure_half
+                            else 0
+                        )
                     component_outcomes.append(
                         {
                             "block_id": component.block_id,
@@ -8973,6 +9083,39 @@ class PlayerRoomService:
             if has_heal and healing_total <= 0:
                 raise ValueError("请先掷治疗骰，并填写治疗骰最终总值")
             has_area_effect = any(block.get("kind") == "area_effect" for block in blocks)
+            healing_modifiers = CombatEngineService._feature_rule_modifiers(
+                actor,
+                stat="spell_healing",
+                scope="outgoing",
+            )
+            uses_spell_slot = isinstance(slot_level, int) and slot_level >= 1
+            healing_slot_bonus = (
+                2 + int(slot_level)
+                if uses_spell_slot
+                and has_ordinary_heal
+                and any(
+                    item.get("operation") == "add_spell_slot_plus_two"
+                    for item in healing_modifiers
+                )
+                else 0
+            )
+            maximize_healing_dice = bool(
+                has_ordinary_heal
+                and any(
+                    item.get("operation") == "maximize_healing_dice"
+                    for item in healing_modifiers
+                )
+            )
+            if maximize_healing_dice:
+                maximum_dice_total = sum(
+                    int(count) * int(sides)
+                    for block in direct_heal_blocks
+                    for count, sides in re.findall(
+                        r"(\d+)d(\d+)", str(block.get("expression") or ""), flags=re.I
+                    )
+                )
+                if maximum_dice_total > 0:
+                    healing_total = max(healing_total, maximum_dice_total)
 
             requested_ids = list(dict.fromkeys(target_ids or [target_id]))
             if target_id not in requested_ids:
@@ -8980,6 +9123,23 @@ class PlayerRoomService:
             requested_targets = [item for item in fighters if item.id in requested_ids]
             if len(requested_targets) != len(requested_ids):
                 raise ValueError("目标包含不存在或不在当前战斗的单位")
+            self_healing_bonus = (
+                2 + int(slot_level)
+                if uses_spell_slot
+                and has_ordinary_heal
+                and any(item.get("operation") == "grant_self_healing" for item in healing_modifiers)
+                and any(item.id != actor.id for item in requested_targets)
+                else 0
+            )
+            if self_healing_bonus and actor.id not in requested_ids:
+                requested_ids.append(actor.id)
+                requested_targets = [item for item in fighters if item.id in requested_ids]
+            target_healing_totals = {
+                item.id: healing_total + healing_slot_bonus + (
+                    self_healing_bonus if item.id == actor.id else 0
+                )
+                for item in requested_targets
+            }
             has_dispel = any(str(block.get("kind") or "") == "dispel" for block in blocks)
             if has_area_effect and any(item.id != actor.id for item in requested_targets):
                 raise ValueError(
@@ -9091,14 +9251,18 @@ class PlayerRoomService:
                 resolution_note=(
                     f"玩家施放友方效果；{target.display_name}"
                     + (
-                        f"获得 {healing_total} 点临时生命"
+                        f"获得 {target_healing_totals.get(target.id, healing_total)} 点临时生命"
                         if has_temporary_hp
-                        else f"恢复 {healing_total} 点生命"
+                        else f"恢复 {target_healing_totals.get(target.id, healing_total)} 点生命"
                         if has_ordinary_heal
                         else "获得规则积木效果"
                     )
                 ),
-                amount=healing_total if has_ordinary_heal else 0,
+                amount=(
+                    target_healing_totals.get(target.id, healing_total)
+                    if has_ordinary_heal
+                    else 0
+                ),
                 reaction_trigger=reaction_trigger if cost == "reaction" else None,
                 resource_key=(
                     resource_key or None

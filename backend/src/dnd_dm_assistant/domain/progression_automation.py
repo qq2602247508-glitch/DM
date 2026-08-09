@@ -272,6 +272,14 @@ def apply_progression_choice_grants(
                 after_proficiencies.append(f"语言：{selection}")
                 existing_languages.add(selection)
                 effect_status = "full"
+            elif key == "thieves_cant_language":
+                if selection == "通用语" or selection not in language_catalog:
+                    raise ValueError(f"unsupported thieves' cant language: {selection}")
+                if selection in existing_languages:
+                    raise ValueError(f"language already known: {selection}")
+                after_proficiencies.append(f"语言：{selection}")
+                existing_languages.add(selection)
+                effect_status = "full"
             elif key == "primal_order":
                 if selection == "warden":
                     for proficiency in ("军用武器", "中甲"):
