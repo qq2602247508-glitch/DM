@@ -260,7 +260,7 @@ export const createShopInventoryItem = (cid: string, input: { name: string; quan
   apiFetch<Record<string, unknown>>(`/campaigns/${cid}/shop-inventory`, { method: "POST", body: input });
 
 export type EquipmentOperationInput = { character_id: string; character_version: number; equipment_id: string; operation: "equip" | "unequip" | "consume" | "use_charge" | "attune" | "unattune"; amount?: number; preview_token?: string; idempotency_key?: string };
-export type SpellCastInput = { character_id: string; character_version: number; known_spell_id: string; slot_level: number; ritual?: boolean; material_available?: boolean; concentration?: boolean; preview_token?: string; idempotency_key?: string };
+export type SpellCastInput = { character_id: string; character_version: number; known_spell_id: string; slot_level: number; ritual?: boolean; material_available?: boolean; concentration?: boolean; focus_equipment_id?: string; preview_token?: string; idempotency_key?: string };
 export type CommerceInput = { wallet_id: string; wallet_version: number; shop_inventory_id: string; shop_version: number; quantity: number; direction: "buy" | "sell"; price_modifier_bps?: number; preview_token?: string; idempotency_key?: string };
 export const previewSpellCast = (cid: string, input: SpellCastInput) => apiFetch<Record<string, unknown>>(`/campaigns/${cid}/spells/cast/preview`, { method: "POST", body: input });
 export const confirmSpellCast = (cid: string, input: SpellCastInput) => apiFetch<Record<string, unknown>>(`/campaigns/${cid}/spells/cast/confirm`, { method: "POST", body: input });

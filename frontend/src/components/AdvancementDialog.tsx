@@ -57,6 +57,7 @@ export function AdvancementDialog({
   const [feat, setFeat] = useState("");
   const [abilityIncreases, setAbilityIncreases] = useState<Record<string, number>>({});
   const [featureChoices, setFeatureChoices] = useState("");
+  const [featureChoicesByKey, setFeatureChoicesByKey] = useState<Record<string, string[]>>({});
   const [spellAdditions, setSpellAdditions] = useState("");
   const [spellRemovals, setSpellRemovals] = useState("");
   const [preparedSpellNames, setPreparedSpellNames] = useState<string[]>([]);
@@ -109,6 +110,82 @@ export function AdvancementDialog({
     return Number(record.spell_level ?? record.level ?? 0) > 0 && record.prepared === true;
   }).length;
 
+  const requirementOptions = (requirement: (typeof choiceRequirements)[number]): string[] => {
+    const fixed = requirement.options ?? [];
+    if (requirement.expected_category === "战斗风格" || requirement.key === "fighting_style") {
+      return [...new Set([
+        ...(catalog.data?.feats ?? [])
+          .filter((item) => item.category === "战斗风格")
+          .map((item) => item.name),
+        ...fixed,
+      ])];
+    }
+    if (requirement.kind === "selected_expertise") {
+      return Object.entries(character.skills)
+        .filter(([, value]) => Boolean(
+          typeof value === "object" && value !== null
+            ? (value as Record<string, unknown>).proficient
+            : value,
+        ))
+        .map(([name]) => name);
+    }
+    if (requirement.kind === "selected_language") {
+      const known = new Set(
+        character.proficiencies
+          .filter((item): item is string => typeof item === "string")
+          .map((item) => item.replace(/^语言：/, "")),
+      );
+      return (catalog.data?.languages ?? []).filter(
+        (name) => name !== "通用语" && !known.has(name),
+      );
+    }
+    if (requirement.options_source.startsWith("spells:")) {
+      const [, spellClass, rawLevel] = requirement.options_source.split(":");
+      return (catalog.data?.spells ?? [])
+        .filter((spell) => (
+          spell.level === Number(rawLevel)
+          && Boolean(spellClass)
+          && spell.classes.includes(spellClass ?? "")
+        ))
+        .map((spell) => spell.name);
+    }
+    return fixed;
+  };
+
+  const setRequirementValue = (key: string, index: number, value: string): void => {
+    setFeatureChoicesByKey((current) => {
+      const next = [...(current[key] ?? [])];
+      next[index] = value;
+      const compact = next.map((item) => item?.trim()).filter(Boolean);
+      if (!compact.length) {
+        const remaining = { ...current };
+        delete remaining[key];
+        return remaining;
+      }
+      return { ...current, [key]: compact };
+    });
+    clearPreview();
+  };
+
+  const setReplacementPart = (
+    key: string,
+    part: "old" | "new",
+    value: string,
+  ): void => {
+    const [oldValue = "", newValue = ""] = featureChoicesByKey[key]?.[0]?.split("->") ?? [];
+    const oldName = part === "old" ? value : oldValue;
+    const newName = part === "new" ? value : newValue;
+    setFeatureChoicesByKey((current) => {
+      if (!oldName && !newName) {
+        const remaining = { ...current };
+        delete remaining[key];
+        return remaining;
+      }
+      return { ...current, [key]: [`${oldName}->${newName}`] };
+    });
+    clearPreview();
+  };
+
   const clearPreview = (): void => setPreview(null);
   const request = (): AdvancementRequest => ({
     character_version: character.version,
@@ -120,7 +197,20 @@ export function AdvancementDialog({
       Object.entries(abilityIncreases).filter(([, value]) => value > 0),
     ),
     feat_choice: feat || null,
-    feature_choices: featureChoices.split(/[,，、]/).map((item) => item.trim()).filter(Boolean),
+    feature_choices: [],
+    feature_choices_by_key: {
+      ...featureChoicesByKey,
+      ...Object.fromEntries(
+        featureChoices
+          ? choiceRequirements
+              .filter((item) => requirementOptions(item).length === 0)
+              .map((item) => [
+                item.key,
+                featureChoices.split(/[,，、]/).map((value) => value.trim()).filter(Boolean),
+              ])
+          : [],
+      ),
+    },
     spell_additions: selectedAdditionSpells.map((spell, index) => {
       const name = additionNames[index] ?? "";
       return spell
@@ -242,6 +332,8 @@ export function AdvancementDialog({
                       setSpellAdditions("");
                       setSpellRemovals("");
                       setPreparedSpellNames([]);
+                      setFeatureChoices("");
+                      setFeatureChoicesByKey({});
                       clearPreview();
                     }}
                     value={className}
@@ -356,6 +448,59 @@ export function AdvancementDialog({
                           {requirement.target_total !== null ? ` · 完成后总数 ${requirement.target_total}` : ""}
                           {requirement.maximum_spell_level !== null ? ` · 最高 ${requirement.maximum_spell_level} 环` : ""}
                           <span className="mt-1 block text-stone-500">{requirement.reason}</span>
+                          {requirement.kind === "selected_asset_replacement" ? (
+                            <div className="mt-2 grid grid-cols-2 gap-2">
+                              <select
+                                aria-label={`${requirement.key}旧资产`}
+                                className={selectCls}
+                                onChange={(event) => setReplacementPart(requirement.key, "old", event.target.value)}
+                                value={featureChoicesByKey[requirement.key]?.[0]?.split("->")[0] ?? ""}
+                              >
+                                <option value="">不替换</option>
+                                {character.features
+                                  .filter((item): item is Record<string, unknown> => {
+                                    if (typeof item !== "object" || item === null) return false;
+                                    const record = item as Record<string, unknown>;
+                                    return record.kind === "feat"
+                                      && record.category === requirement.expected_category;
+                                  })
+                                  .map((item) => {
+                                    const name = typeof item.name === "string" ? item.name : "";
+                                    return <option key={name} value={name}>{name}</option>;
+                                  })}
+                              </select>
+                              <select
+                                aria-label={`${requirement.key}新资产`}
+                                className={selectCls}
+                                onChange={(event) => setReplacementPart(requirement.key, "new", event.target.value)}
+                                value={featureChoicesByKey[requirement.key]?.[0]?.split("->")[1] ?? ""}
+                              >
+                                <option value="">选择新资产</option>
+                                {requirementOptions(requirement).map((option) => (
+                                  <option key={option} value={option}>{option}</option>
+                                ))}
+                              </select>
+                            </div>
+                          ) : requirementOptions(requirement).length ? (
+                            <div className="mt-2 grid gap-2">
+                              {Array.from({ length: requirement.maximum }, (_, index) => (
+                                <select
+                                  aria-label={`${requirement.key}选择${index + 1}`}
+                                  className={selectCls}
+                                  key={`${requirement.key}-${index}`}
+                                  onChange={(event) => setRequirementValue(requirement.key, index, event.target.value)}
+                                  value={featureChoicesByKey[requirement.key]?.[index] ?? ""}
+                                >
+                                  <option value="">
+                                    {index < requirement.minimum ? "请选择" : "可选：不选择"}
+                                  </option>
+                                  {requirementOptions(requirement).map((option) => (
+                                    <option key={option} value={option}>{option}</option>
+                                  ))}
+                                </select>
+                              ))}
+                            </div>
+                          ) : null}
                         </li>
                       ))}
                     </ul>
@@ -365,15 +510,17 @@ export function AdvancementDialog({
                     本级成长表没有额外选择；生命值、职业特性和资源变化仍会进入预览。
                   </p>
                 )}
-                <input
-                  className={inputCls}
-                  onChange={(event) => {
-                    setFeatureChoices(event.target.value);
-                    clearPreview();
-                  }}
-                  placeholder="本级特性选项（逗号分隔）"
-                  value={featureChoices}
-                />
+                {choiceRequirements.some((item) => requirementOptions(item).length === 0) ? (
+                  <input
+                    className={inputCls}
+                    onChange={(event) => {
+                      setFeatureChoices(event.target.value);
+                      clearPreview();
+                    }}
+                    placeholder="尚无目录的本级选项（逗号分隔，按 requirement key 提交）"
+                    value={featureChoices}
+                  />
+                ) : null}
                 <input
                   className={inputCls}
                   list="advancement-spells"

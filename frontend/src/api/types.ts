@@ -242,6 +242,8 @@ export type CharacterOptionSummary = {
   name: string;
   source_record_id: string;
   source_path: string;
+  category?: string;
+  prerequisite?: string;
 };
 
 export type SpellOption = CharacterOptionSummary & {
@@ -276,6 +278,11 @@ export type AdvancementChoiceRequirement = {
   reason: string;
   target_total: number | null;
   maximum_spell_level: number | null;
+  options?: string[];
+  selected_asset_kind?: string | null;
+  expected_category?: string | null;
+  duplicate_policy?: string | null;
+  replacement_policy?: string | null;
 };
 
 export type ClassLevelOption = {
@@ -338,6 +345,7 @@ export type AdvancementRequest = {
   ability_increases: Record<string, number>;
   feat_choice?: string | null;
   feature_choices: string[];
+  feature_choices_by_key?: Record<string, string[]>;
   spell_additions: Array<Record<string, unknown>>;
   spell_removals: string[];
   dm_override_reason?: string | null;
