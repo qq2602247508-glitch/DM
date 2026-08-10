@@ -449,3 +449,14 @@ lint、production build 通过；隔离数据库的真实 DM 页面完成战斗�
 
 验证：Hunter's Lore 真实 API 与 IR/批量测试通过；提交前仍需运行后端全量 pytest、Ruff、
 compileall、git diff check。无前端源码变更，不运行前端/浏览器门禁。
+# 2026-08-10：Clause IR 先于平台的硬门槛
+
+在 Batch V 之后已确认，完整 feature 的 exact cluster 不能代表可复用的实现边界。Batch VI
+新增 source-backed、非 executable 的 Feature Clause Corpus 和 capability unlock graph。它们的
+选择规则是 `completion_unlock_count >= 8`，而不是关键词 occurrence。
+
+当前报告显示 118 条 partial 均有完整定位源码，但其 166 个 source clause 尚未具备完整的
+trigger / target / effect / producer / consumer / persistence / CAS / idempotency 合同。因此 typed
+missing contract 为 0，不能诚实地选择任何生产底座，也不能因“saving throw 45 次”等频次升级
+feature。下一迁移批次必须先提交人工审阅的 typed clause manifest；只有届时字段级相等、且 feature
+其余 clause 都 production_closed 的成员才计入 completion unlock。

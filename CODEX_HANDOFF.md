@@ -1,5 +1,27 @@
 # 2026-08-10 长执行检查点：真实语料批量编译入口与阻塞审计
 
+# 2026-08-10 长执行检查点：Feature Clause IR 缺口图谱（止损点）
+
+- 本轮仍为单线程。尝试建立 Clause IR 后的实时审计没有漂移：`full 320 / partial 118 /
+  dm_only 61`，固定分母 499；本轮没有把任何 feature 升为 full。
+- 新增 `application/feature_clause_corpus.py` 和
+  `scripts/compile-feature-clause-corpus.py`。它把 118 个 partial 的已定位源码保留为 166 个
+  **非可执行** review clause，字段未知时显式为 null，绝不从关键词推断 operator、DC、目标、
+  资源或 runtime。报告为 `reports/feature-clause-corpus-2026-08-10.json`。
+- 实际 corpus 与旧提示不同：118/118 都是 `description_located`，无 source-incomplete 条目；
+  旧 planner 的 `missing_source=35` 是 readiness 类别，不能再当作 source_parse 缺失。
+- 新增 `application/feature_capability_unlocks.py` 和
+  `scripts/plan-feature-capability-unlocks.py`。只有所有 operational fields 完整且 canonical
+  相等的 clause 才有 capability ID 和 completion unlock credit；未审阅 source clause 仅以
+  `review:missing_semantic_contract` 列出，unlock 必为 0。报告为
+  `reports/feature-capability-unlock-ranking-2026-08-10.json`。
+- 真实结果：166 条 clause 都尚未形成完整 missing contract，typed candidate 为 0，
+  completion unlock ≥8 的 capability 为 0。因此按本 Goal 的 fail-closed 条款，没有建设任何
+  “高扇出平台”、也没有虚报批量 full；`reports/feature-ir-production-consumer-batch-VI-2026-08-10.json`
+  是可重复生成的止损证据。下一步必须先把一批 source clauses 人工审阅成 typed contract，而不是继续
+  从原语频次推平台。
+- 必须保留且不得暂存/提交：`backend/tests/integrations/`、`backend/tests/ollama.py`。
+
 - 本轮接管时固定审计实时为 `full 320 / partial 118 / dm_only 61`，分母仍为 499。
   先修复 `grant_saving_throw_advantage`、Spell Resistance typed defense、IR parity
   alias 和 planner 期望；后端全量 pytest、backend/src+backend/tests Ruff、compileall、
