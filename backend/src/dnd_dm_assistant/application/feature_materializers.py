@@ -192,6 +192,12 @@ def _materialize_resource_profile(context: MaterializerContext) -> MaterializedB
     )
     if "max_formula" in params:
         entry["max_formula"] = str(params["max_formula"])
+    if "recovery_events" in params:
+        recovery_events = params["recovery_events"]
+        if not isinstance(recovery_events, list) or not recovery_events:
+            raise MaterializerError("resource profile recovery_events must be a non-empty array")
+        entry["recovery_events"] = [dict(item) for item in recovery_events]
+        entry["recovery"] = "custom"
     return MaterializedBlock("resources", entry)
 
 
@@ -280,8 +286,89 @@ def _materialize_trigger(context: MaterializerContext) -> MaterializedBlock:
     return MaterializedBlock("triggers", entry)
 
 
+def _materialize_attack_roll_intervention(
+    context: MaterializerContext,
+) -> MaterializedBlock:
+    params = context.parameters
+    modes = params.get("modes")
+    if not isinstance(modes, list) or not modes:
+        raise MaterializerError("attack roll intervention requires at least one mode")
+    normalized_modes = [str(value) for value in modes]
+    if any(value not in {"defense", "offense"} for value in normalized_modes):
+        raise MaterializerError("attack roll intervention mode is unsupported")
+    if len(set(normalized_modes)) != len(normalized_modes):
+        raise MaterializerError("attack roll intervention modes must be unique")
+    entry = context.base(kind="attack_roll_intervention")
+    entry.update(
+        {
+            "source_die_key": str(params["source_die_key"]),
+            "modes": normalized_modes,
+            "input_requirements": [
+                {
+                    "key": "bardic_inspiration_mode",
+                    "kind": "enum",
+                    "options": normalized_modes,
+                },
+                {
+                    "key": "bardic_inspiration_total",
+                    "kind": "die_roll",
+                    "die_key": str(params["source_die_key"]),
+                },
+            ],
+        }
+    )
+    return MaterializedBlock("actions", entry)
+
+
+def _materialize_authorized_information(
+    context: MaterializerContext,
+) -> MaterializedBlock:
+    params = context.parameters
+    information_kind = str(params["information_kind"])
+    if information_kind != "damage_defenses":
+        raise MaterializerError(
+            "authorized target information only supports damage_defenses"
+        )
+    target_kind = (
+        context.clause.targeting.kind
+        if context.clause.targeting is not None
+        else "enemy"
+    )
+    target_parameters = (
+        dict(context.clause.targeting.parameters)
+        if context.clause.targeting is not None
+        else {}
+    )
+    entry = context.base(kind="feature_action")
+    entry.update(
+        {
+            "action_cost": context.clause.action_economy,
+            "target": target_kind,
+            "target_policy": {
+                "mode": target_kind,
+                **target_parameters,
+            },
+            "availability": "any_time_readonly",
+            "resolution_kind": "inspection",
+            "effects": [{"kind": "inspect_damage_defenses"}],
+            "information_kind": information_kind,
+        }
+    )
+    required_state_target_key = params.get("required_state_target_key")
+    if required_state_target_key is not None:
+        entry["required_actor_state_target_key"] = str(required_state_target_key)
+    return MaterializedBlock("actions", entry)
+
+
 def _materialize_defense(context: MaterializerContext) -> MaterializedBlock:
-    entry = _with_parameters(context, kind=context.operator)
+    kind = {
+        "grant_resistance": "damage_resistance",
+        "grant_immunity": "condition_immunity",
+        "grant_saving_throw_advantage": "saving_throw_advantage",
+    }.get(context.operator)
+    if kind is None:
+        raise MaterializerError(f"unknown defense operator {context.operator}")
+    entry = _with_parameters(context, kind=kind)
     if context.operator in {"grant_resistance", "grant_immunity"}:
         raw_type = entry.get("damage_type")
         if isinstance(raw_type, str) and raw_type.strip():
@@ -439,17 +526,19 @@ def default_materializer_registry() -> MaterializerRegistry:
         "damage.modifier": _materialize_rider,
         "damage.type": _materialize_modifier,
         "defense.resistance": _materialize_defense,
+        "defense.saving_throw_advantage": _materialize_defense,
         "defense.immunity": _materialize_defense,
         "state.lifecycle.activate": _materialize_action,
         "state.lifecycle.remove": _materialize_trigger,
         "modifier.timed": _materialize_action,
         "window.triggered_attack": _materialize_trigger,
         "window.reaction": _materialize_trigger,
+        "attack.roll.intervention": _materialize_attack_roll_intervention,
+        "target.authorized_information": _materialize_authorized_information,
         "zero_hp.intervention": _materialize_zero_hp,
         "spell.healing_modifier": _materialize_spell_modifier,
         "spell.damage_modifier": _materialize_spell_modifier,
         "spell.save_damage_modifier": _materialize_spell_modifier,
-        "target.authorized_information": _materialize_action,
         "spell.context": _materialize_modifier,
         "spell.context.range": _materialize_modifier,
         "spell.context.payment": _materialize_modifier,

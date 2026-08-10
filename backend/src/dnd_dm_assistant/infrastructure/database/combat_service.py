@@ -16690,14 +16690,6 @@ class CombatEngineService:
                 raise StateNotFoundError("feature action actor not found in combat")
             if actor.version != command.actor_version:
                 raise VersionConflict("combatant", actor.id, command.actor_version, actor.version)
-            ordered = self._ordered_combatants(session, combat_id)
-            active = (
-                ordered[combat.current_turn_index]
-                if 0 <= combat.current_turn_index < len(ordered)
-                else None
-            )
-            if active is None or active.id != actor.id:
-                raise ValueError("职业特性只能在该单位的当前回合使用")
             self._validate_can_act(actor)
             registry = actor.snapshot_json.get("feature_runtime")
             registry_data = dict(registry) if isinstance(registry, dict) else {}
@@ -16719,6 +16711,21 @@ class CombatEngineService:
             block_errors = feature_action_block_errors(action)
             if block_errors:
                 raise ValueError("职业特性动作积木无效：" + "；".join(block_errors))
+            readonly_inspection = (
+                action.get("availability") == "any_time_readonly"
+                and action.get("resolution_kind") == "inspection"
+            )
+            ordered = self._ordered_combatants(session, combat_id)
+            active = (
+                ordered[combat.current_turn_index]
+                if 0 <= combat.current_turn_index < len(ordered)
+                else None
+            )
+            if (
+                (active is None or active.id != actor.id)
+                and action.get("availability") != "any_time_readonly"
+            ):
+                raise ValueError("职业特性只能在该单位的当前回合使用")
             selected_action = command.selected_action
             condition_to_remove = command.condition_to_remove
             allowed_actions = {
@@ -16804,6 +16811,15 @@ class CombatEngineService:
                     )
             if action.get("target") == "self" and target.id != actor.id:
                 raise ValueError("该职业特性只能以自身为目标")
+            required_state_target_key = str(
+                action.get("required_actor_state_target_key") or ""
+            ).strip()
+            if required_state_target_key:
+                actor_snapshot = (
+                    actor.snapshot_json if isinstance(actor.snapshot_json, dict) else {}
+                )
+                if actor_snapshot.get(required_state_target_key) != target.id:
+                    raise ValueError("该职业特性只能读取其权威状态绑定的目标")
             self._validate_feature_target_policy(
                 session,
                 combat,
@@ -17617,11 +17633,12 @@ class CombatEngineService:
 
             # A feature with no action cost (Action Surge) still changes the
             # combat snapshot and therefore needs a new CAS version.
-            target.version += 1
-            target.updated_at = datetime.now(UTC)
-            if target.id != actor.id:
-                actor.version += 1
-                actor.updated_at = datetime.now(UTC)
+            if not readonly_inspection:
+                target.version += 1
+                target.updated_at = datetime.now(UTC)
+                if target.id != actor.id:
+                    actor.version += 1
+                    actor.updated_at = datetime.now(UTC)
             actor_snapshot = dict(actor.snapshot_json or {})
             if character is not None:
                 actor_snapshot["resources"] = dict(character.resources or {})

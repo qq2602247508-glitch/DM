@@ -29,6 +29,14 @@ _SUBCLASS_LEGACY_NAMES = {
     "神之狂暴": "神之狂暴",
     "炫目舞步": "炫目舞步",
     "圣树活力": "圣树活力",
+    "战斗激励Combat Inspiration": "战斗激励",
+    "猎人学识 Hunter's Lore": "猎人学识",
+    "心灵防御 Psychic": "心灵防御",
+    "高效重击 Superior": "高效重击",
+    "操命本事 Implements of": "操命本事",
+    "刺客工具 Assassin's": "刺客工具",
+    "法术抗性 Spell Resistance": "法术抗性",
+    "灵能力量 Psionic": "灵能力量",
 }
 
 

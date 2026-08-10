@@ -5971,6 +5971,49 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS["序列意识"] = {
 # production resolvers; adding a table row never adds an executor branch.
 SUBCLASS_FEATURE_RUNTIME_CONFIGS.update(batch_runtime_configs())
 
+# Hunter's Lore is an inspection action rather than a combat-start block.  Keep
+# its typed legacy projection available for parity and shadow consumers; the
+# authored Feature IR remains the authority for normal runtime lookup.
+SUBCLASS_FEATURE_RUNTIME_CONFIGS["猎人学识"] = {
+    "combat_start": {"modifiers": [], "defenses": [], "movement_modes": []},
+    "resources": {},
+    "actions": {
+        "hunters_lore:damage_defenses": {
+            "id": "hunters_lore:damage_defenses",
+            "kind": "feature_action",
+            "target": "enemy",
+            "target_policy": {
+                "mode": "enemy",
+                "requires_visible_or_audible": True,
+            },
+            "availability": "any_time_readonly",
+            "resolution_kind": "inspection",
+            "effects": [{"kind": "inspect_damage_defenses"}],
+            "information_kind": "damage_defenses",
+            "required_actor_state_target_key": "current_hunters_mark_target_id",
+            "runtime_execution": {
+                "status": "ready",
+                "consumer": "combat_feature_action_target_defense_inspection",
+            },
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+        }
+    },
+    "triggers": [],
+    "attack_riders": [],
+    "automation_status": "full",
+    "requires_dm_adjudication": False,
+}
+
+# Some source pages concatenate the localized heading and its English
+# gloss (for example ``战斗激励Combat Inspiration``).  Keep this as an
+# explicit source-title alias, not a prefix search: it only repairs the
+# source binding and does not add a feature-name execution branch.
+SUBCLASS_FEATURE_RUNTIME_SOURCE_ALIASES: dict[str, str] = {
+    "战斗激励Combat Inspiration": "战斗激励",
+    "猎人学识 Hunter's": "猎人学识",
+}
+
 
 def subclass_feature_runtime_definition(
     definition: Mapping[str, Any],
@@ -5982,6 +6025,11 @@ def subclass_feature_runtime_definition(
         return authored_runtime
 
     name = str(definition.get("name") or "").strip()
+    aliased_name = SUBCLASS_FEATURE_RUNTIME_SOURCE_ALIASES.get(name)
+    if aliased_name is not None:
+        config = SUBCLASS_FEATURE_RUNTIME_CONFIGS.get(aliased_name)
+        if config is not None:
+            return deepcopy(config)
     for batch_name, batch_config in batch_runtime_configs().items():
         if name.startswith(batch_name):
             return deepcopy(batch_config)

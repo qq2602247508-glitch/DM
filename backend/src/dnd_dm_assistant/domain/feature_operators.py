@@ -153,6 +153,19 @@ class OperatorContract:
             and "value_source" not in parameters
         ):
             errors.append(f"{self.operator_id} requires one of 'value' or 'value_source'")
+        if self.operator_id == "configure_attack_roll_intervention":
+            modes = parameters.get("modes")
+            if isinstance(modes, list):
+                if not modes:
+                    errors.append("configure_attack_roll_intervention requires at least one mode")
+                if any(value not in {"defense", "offense"} for value in modes):
+                    errors.append(
+                        "configure_attack_roll_intervention modes must be defense/offense"
+                    )
+                if len(set(modes)) != len(modes):
+                    errors.append("configure_attack_roll_intervention modes must be unique")
+            elif "modes" in parameters:
+                errors.append("configure_attack_roll_intervention modes must be an array")
         for key, type_name in self.parameter_types.items():
             if key not in parameters:
                 continue
@@ -462,12 +475,13 @@ def default_operator_contracts() -> dict[str, OperatorContract]:
         _contract(
             "set_resource_profile",
             required=("resource_key", "resource_kind", "die_size"),
-            optional=("max_formula", "id"),
+            optional=("max_formula", "recovery_events", "id"),
             types={
                 "resource_key": "string",
                 "resource_kind": "string",
                 "die_size": "integer",
                 "max_formula": "string",
+                "recovery_events": "array",
                 "id": "string",
             },
             enums={"resource_kind": {"superiority_dice", "psionic_dice", "d20_pool"}},
@@ -761,6 +775,21 @@ def default_operator_contracts() -> dict[str, OperatorContract]:
             capability="defense.resistance",
         ),
         _contract(
+            "grant_saving_throw_advantage",
+            required=("applies_when",),
+            optional=("id",),
+            types={
+                "applies_when": "string",
+                "id": "string",
+            },
+            triggers=_TRIGGER_ADVANCEMENT | _TRIGGER_COMBAT,
+            actions=_ACTIONS_NONE,
+            targets=_TARGET_SELF,
+            durations=_DURATION_PERSISTENT | _DURATION_COMBAT,
+            materializer="defense.saving_throw_advantage",
+            capability="defense.saving_throw_advantage",
+        ),
+        _contract(
             "grant_immunity",
             required=("condition_or_damage_type",),
             optional=("source", "id"),
@@ -856,6 +885,22 @@ def default_operator_contracts() -> dict[str, OperatorContract]:
             durations=frozenset({"current_turn", "current_round"}),
             materializer="window.reaction",
             capability="window.reaction",
+        ),
+        _contract(
+            "configure_attack_roll_intervention",
+            required=("source_die_key", "modes"),
+            optional=("id",),
+            types={
+                "source_die_key": "string",
+                "modes": "array",
+                "id": "string",
+            },
+            triggers=_TRIGGER_ADVANCEMENT,
+            actions=_ACTIONS_NONE,
+            targets=_TARGET_SELF,
+            durations=_DURATION_PERSISTENT,
+            materializer="attack.roll.intervention",
+            capability="attack.roll.intervention",
         ),
         _contract(
             "zero_hp_intervention",
@@ -958,15 +1003,16 @@ def default_operator_contracts() -> dict[str, OperatorContract]:
         _contract(
             "expose_authorized_target_information",
             required=("information_kind",),
-            optional=("range_ft", "visibility", "id"),
+            optional=("range_ft", "visibility", "required_state_target_key", "id"),
             types={
                 "information_kind": "string",
                 "range_ft": "integer",
                 "visibility": "string",
+                "required_state_target_key": "string",
                 "id": "string",
             },
             triggers=frozenset({"explicit_activation", "action_declared", "action_resolved"}),
-            actions=frozenset({"bonus_action", "action", "explicit_player_choice"}),
+            actions=frozenset({"none", "bonus_action", "action", "explicit_player_choice"}),
             targets=_TARGET_COMBAT,
             durations=_DURATION_COMBAT,
             materializer="target.authorized_information",

@@ -518,6 +518,7 @@ _RUNTIME_SECTION_BY_OPERATOR = {
     "add_damage": "attack_riders",
     "replace_damage_type": "combat_modifiers",
     "grant_resistance": "combat_defenses",
+    "grant_saving_throw_advantage": "combat_defenses",
     "grant_immunity": "combat_defenses",
     "activate_condition": "actions",
     "remove_condition": "triggers",

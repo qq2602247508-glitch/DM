@@ -706,6 +706,395 @@ def formal_feature_specs() -> tuple[FeatureSpec, ...]:
                 )
             ],
         ),
+        _feature(
+            "dnd2024.subclass.bard.college-of-valor.combat-inspiration",
+            source_name="战斗激励Combat Inspiration",
+            class_name="吟游诗人",
+            subclass_name="勇气学院",
+            level=3,
+            source_record_id="2709144090ad73a4c316bfe6",
+            source_trust="authored_ir",
+            clauses=[
+                _clause(
+                    "combat-inspiration",
+                    effects=[
+                        {
+                            "operator": "configure_attack_roll_intervention",
+                            "parameters": {
+                                "source_die_key": "bardic_inspiration_die",
+                                "modes": ["defense", "offense"],
+                                "id": "combat_inspiration",
+                            },
+                        }
+                    ],
+                )
+            ],
+        ),
+        _feature(
+            "dnd2024.subclass.ranger.hunter.hunters-lore",
+            source_name="猎人学识 Hunter's Lore",
+            class_name="游侠",
+            subclass_name="猎人",
+            level=3,
+            source_record_id="verified:hunters-lore",
+            source_trust="authored_ir",
+            clauses=[
+                _clause(
+                    "inspect-marked-target-defenses",
+                    trigger="explicit_activation",
+                    activation="explicit_choice",
+                    targeting={
+                        "kind": "enemy",
+                        "parameters": {"requires_visible_or_audible": True},
+                    },
+                    duration="current_turn",
+                    conditions=[
+                        {"kind": "target_matches_persisted_id", "parameters": {}}
+                    ],
+                    effects=[
+                        {
+                            "operator": "expose_authorized_target_information",
+                            "parameters": {
+                                "information_kind": "damage_defenses",
+                                "required_state_target_key": "current_hunters_mark_target_id",
+                                "id": "hunters_lore:damage_defenses",
+                            },
+                        }
+                    ],
+                )
+            ],
+        ),
+        _feature(
+            "dnd2024.subclass.warlock.aberrant-mind.psychic-defenses",
+            source_name="心灵防御 Psychic",
+            class_name="术士",
+            subclass_name="畸变术法",
+            level=6,
+            source_record_id="0d93a792867dfff4a2f40402",
+            source_trust="authored_ir",
+            clauses=[
+                _clause(
+                    "psychic-resistance-and-condition-saves",
+                    effects=[
+                        {
+                            "operator": "grant_resistance",
+                            "parameters": {
+                                "damage_type": "psychic",
+                                "id": "psychic_defenses:psychic_resistance",
+                            },
+                        },
+                        {
+                            "operator": "grant_passive_modifier",
+                            "parameters": {
+                                "stat": "saving_throw",
+                                "operation": "advantage",
+                                "value": 1,
+                                "scope": "self",
+                                "applies_when": "saving_throw_against_charmed_or_frightened",
+                                "id": "psychic_defenses:condition_save_advantage",
+                            },
+                        },
+                    ],
+                )
+            ],
+        ),
+        _feature(
+            "dnd2024.subclass.fighter.champion.superior-critical",
+            source_name="高效重击 Superior",
+            class_name="战士",
+            subclass_name="勇士",
+            level=15,
+            source_record_id="fa4052ed9e53e0d32483d691",
+            source_trust="authored_ir",
+            clauses=[
+                _clause(
+                    "critical-threshold",
+                    effects=[
+                        {
+                            "operator": "set_modifier",
+                            "parameters": {
+                                "stat": "attack_critical_threshold",
+                                "operation": "set",
+                                "value": 18,
+                                "scope": "outgoing",
+                                "applies_when": "always",
+                                "id": "critical_threshold:18",
+                            },
+                        }
+                    ],
+                )
+            ],
+        ),
+        _feature(
+            "dnd2024.subclass.monk.way-of-mercy.implements",
+            source_name="操命本事 Implements of",
+            class_name="武僧",
+            subclass_name="命流武者",
+            level=3,
+            source_record_id="eea779c8a7bdd0ca384fede5",
+            source_trust="authored_ir",
+            clauses=[
+                _clause(
+                    "fixed-proficiencies",
+                    effects=[
+                        {
+                            "operator": "grant_proficiency",
+                            "parameters": {
+                                "proficiency_kind": "skill",
+                                "asset_id": "洞悉",
+                                "operation": "grant",
+                            },
+                        },
+                        {
+                            "operator": "grant_proficiency",
+                            "parameters": {
+                                "proficiency_kind": "skill",
+                                "asset_id": "医药",
+                                "operation": "grant",
+                            },
+                        },
+                        {
+                            "operator": "grant_proficiency",
+                            "parameters": {
+                                "proficiency_kind": "tool",
+                                "asset_id": "草药工具",
+                                "operation": "grant",
+                            },
+                        },
+                    ],
+                )
+            ],
+        ),
+        _feature(
+            "dnd2024.subclass.rogue.assassin.assassins-tools",
+            source_name="刺客工具 Assassin's",
+            class_name="游荡者",
+            subclass_name="刺客",
+            level=3,
+            source_record_id="ed19d790590e092a37804fdc",
+            source_trust="authored_ir",
+            clauses=[
+                _clause(
+                    "fixed-tool-proficiencies",
+                    effects=[
+                        {
+                            "operator": "grant_proficiency",
+                            "parameters": {
+                                "proficiency_kind": "tool",
+                                "asset_id": "易容工具",
+                                "operation": "grant",
+                            },
+                        },
+                        {
+                            "operator": "grant_proficiency",
+                            "parameters": {
+                                "proficiency_kind": "tool",
+                                "asset_id": "毒药工具",
+                                "operation": "grant",
+                            },
+                        },
+                    ],
+                )
+            ],
+        ),
+        _feature(
+            "dnd2024.subclass.wizard.abjurer.spell-resistance",
+            source_name="法术抗性 Spell Resistance",
+            class_name="法师",
+            subclass_name="防护师",
+            level=14,
+            source_record_id="655461c88c4fe6cf243214",
+            source_trust="authored_ir",
+            clauses=[
+                _clause(
+                    "magical-saving-throws",
+                    effects=[
+                        {
+                            "operator": "grant_saving_throw_advantage",
+                            "parameters": {
+                                "applies_when": "magical",
+                                "id": "spell_resistance:magical_saves",
+                            },
+                        }
+                    ],
+                ),
+                _clause(
+                    "magical-damage-resistance",
+                    effects=[
+                        {
+                            "operator": "grant_resistance",
+                            "parameters": {
+                                "damage_type": "acid",
+                                "applies_when": "magical",
+                                "id": "spell_resistance:acid",
+                            },
+                        },
+                        {
+                            "operator": "grant_resistance",
+                            "parameters": {
+                                "damage_type": "bludgeoning",
+                                "applies_when": "magical",
+                                "id": "spell_resistance:bludgeoning",
+                            },
+                        },
+                        {
+                            "operator": "grant_resistance",
+                            "parameters": {
+                                "damage_type": "cold",
+                                "applies_when": "magical",
+                                "id": "spell_resistance:cold",
+                            },
+                        },
+                        {
+                            "operator": "grant_resistance",
+                            "parameters": {
+                                "damage_type": "fire",
+                                "applies_when": "magical",
+                                "id": "spell_resistance:fire",
+                            },
+                        },
+                        {
+                            "operator": "grant_resistance",
+                            "parameters": {
+                                "damage_type": "force",
+                                "applies_when": "magical",
+                                "id": "spell_resistance:force",
+                            },
+                        },
+                        {
+                            "operator": "grant_resistance",
+                            "parameters": {
+                                "damage_type": "lightning",
+                                "applies_when": "magical",
+                                "id": "spell_resistance:lightning",
+                            },
+                        },
+                        {
+                            "operator": "grant_resistance",
+                            "parameters": {
+                                "damage_type": "necrotic",
+                                "applies_when": "magical",
+                                "id": "spell_resistance:necrotic",
+                            },
+                        },
+                        {
+                            "operator": "grant_resistance",
+                            "parameters": {
+                                "damage_type": "piercing",
+                                "applies_when": "magical",
+                                "id": "spell_resistance:piercing",
+                            },
+                        },
+                        {
+                            "operator": "grant_resistance",
+                            "parameters": {
+                                "damage_type": "poison",
+                                "applies_when": "magical",
+                                "id": "spell_resistance:poison",
+                            },
+                        },
+                        {
+                            "operator": "grant_resistance",
+                            "parameters": {
+                                "damage_type": "psychic",
+                                "applies_when": "magical",
+                                "id": "spell_resistance:psychic",
+                            },
+                        },
+                        {
+                            "operator": "grant_resistance",
+                            "parameters": {
+                                "damage_type": "radiant",
+                                "applies_when": "magical",
+                                "id": "spell_resistance:radiant",
+                            },
+                        },
+                        {
+                            "operator": "grant_resistance",
+                            "parameters": {
+                                "damage_type": "slashing",
+                                "applies_when": "magical",
+                                "id": "spell_resistance:slashing",
+                            },
+                        },
+                        {
+                            "operator": "grant_resistance",
+                            "parameters": {
+                                "damage_type": "thunder",
+                                "applies_when": "magical",
+                                "id": "spell_resistance:thunder",
+                            },
+                        },
+                    ],
+                ),
+            ],
+        ),
+        _feature(
+            "dnd2024.subclass.fighter.psi-warrior.psionic-power",
+            source_name="灵能力量 Psionic",
+            class_name="战士",
+            subclass_name="灵能武士",
+            level=3,
+            source_record_id="verified:psi-warrior-psionic-power",
+            source_trust="authored_ir",
+            clauses=[
+                _clause(
+                    "psionic-die-profile",
+                    effects=[
+                        {
+                            "operator": "set_resource_profile",
+                            "parameters": {
+                                "resource_key": "$feature_resource",
+                                "resource_kind": "psionic_dice",
+                                "die_size": 6,
+                                "max_formula": "psionic_dice_table",
+                                "recovery_events": [
+                                    {
+                                        "rest": "short_rest",
+                                        "operation": "restore",
+                                        "amount": 1,
+                                    },
+                                    {"rest": "long_rest", "operation": "set_to_max"},
+                                ],
+                            },
+                        }
+                    ],
+                )
+            ],
+        ),
+        _feature(
+            "dnd2024.subclass.rogue.soulknife.psionic-power",
+            source_name="灵能力量 Psionic",
+            class_name="游荡者",
+            subclass_name="魂刃",
+            level=3,
+            source_record_id="verified:soulknife-psionic-power",
+            source_trust="authored_ir",
+            clauses=[
+                _clause(
+                    "psionic-die-profile",
+                    effects=[
+                        {
+                            "operator": "set_resource_profile",
+                            "parameters": {
+                                "resource_key": "$feature_resource",
+                                "resource_kind": "psionic_dice",
+                                "die_size": 6,
+                                "max_formula": "psionic_dice_table",
+                                "recovery_events": [
+                                    {
+                                        "rest": "short_rest",
+                                        "operation": "restore",
+                                        "amount": 1,
+                                    },
+                                    {"rest": "long_rest", "operation": "set_to_max"},
+                                ],
+                            },
+                        }
+                    ],
+                )
+            ],
+        ),
     )
 
 
@@ -726,6 +1115,17 @@ _ALIASES: dict[tuple[str, str | None, str], str] = {
     ("战士", "战斗大师", "究极战技"): "dnd2024.subclass.fighter.battle-master.ultimate-combat",
     ("野蛮人", "狂热者道途", "神之狂暴"): "dnd2024.subclass.barbarian.zealot.divine-rage",
     ("吟游诗人", "舞蹈学院", "炫目舞步"): "dnd2024.subclass.bard.college-of-dance.dance-virtuoso",
+    ("吟游诗人", "勇气学院", "战斗激励"): (
+        "dnd2024.subclass.bard.college-of-valor.combat-inspiration"
+    ),
+    ("游侠", "猎人", "猎人学识"): "dnd2024.subclass.ranger.hunter.hunters-lore",
+    ("术士", "畸变术法", "心灵防御"): "dnd2024.subclass.warlock.aberrant-mind.psychic-defenses",
+    ("战士", "勇士", "高效重击"): "dnd2024.subclass.fighter.champion.superior-critical",
+    ("武僧", "命流武者", "操命本事"): "dnd2024.subclass.monk.way-of-mercy.implements",
+    ("游荡者", "刺客", "刺客工具"): "dnd2024.subclass.rogue.assassin.assassins-tools",
+    ("法师", "防护师", "法术抗性"): "dnd2024.subclass.wizard.abjurer.spell-resistance",
+    ("战士", "灵能武士", "灵能力量"): "dnd2024.subclass.fighter.psi-warrior.psionic-power",
+    ("游荡者", "魂刃", "灵能力量"): "dnd2024.subclass.rogue.soulknife.psionic-power",
 }
 
 _SOURCE_ALIASES: dict[str, str] = {
@@ -742,6 +1142,16 @@ _SOURCE_ALIASES: dict[str, str] = {
     "Rage of the Gods": "神之狂暴",
     "Rage of the": "神之狂暴",
     "Dazzling Footwork": "炫目舞步",
+    "战斗激励Combat Inspiration": "战斗激励",
+    "猎人学识 Hunter's Lore": "猎人学识",
+    "猎人学识 Hunter's": "猎人学识",
+    "心灵防御 Psychic": "心灵防御",
+    "究极战技 Ultimate Combat": "究极战技",
+    "高效重击 Superior": "高效重击",
+    "操命本事 Implements of": "操命本事",
+    "刺客工具 Assassin's": "刺客工具",
+    "法术抗性 Spell Resistance": "法术抗性",
+    "灵能力量 Psionic": "灵能力量",
 }
 
 
