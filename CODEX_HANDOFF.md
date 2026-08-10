@@ -4,6 +4,33 @@
 
 # 2026-08-10 长执行检查点：166 条 Clause reviewed typed 审阅批次
 
+# 2026-08-10 长执行检查点：生产收割 VIII 与扩展包自动导入
+
+- 本轮全程单线程，正式审计从 `full 320 / partial 118 / dm_only 61` 变为
+  `full 328 / partial 110 / dm_only 61`，固定分母仍为 499，真实净增 `full +8`。
+- 新增 8 条 direct authored Feature IR：诡术伏击、骇异恶咒、卫护斩、力场壁垒、狂热威仪、
+  天界韧性、暗杀、进阶结社形态。八条均为 `source_trust=authored_ir`、
+  `status_authority=compiler`，通过现有 production_closed capability、compiler、
+  materializer、validator 和 runtime registry；没有新增 feature-name runtime 分支。
+- 修复通用 `replace_damage_type` materializer 的标准 `combat_modifiers` 投影，并给 pack
+  importer 增加版本/规则集校验、source fingerprint 元数据校验、跨 pack duplicate feature_id
+  拒绝、并发 apply lock，以及 index 写入失败后的事务回滚。
+- 新增确定性 harvest planner：`scripts/plan-feature-ir-production-harvest.py`，8/8
+  `harvest_ready`。新增报告：
+  `reports/feature-ir-production-harvest-plan-2026-08-10.json`、
+  `reports/feature-ir-production-harvest-VIII-2026-08-10.json`。
+- 新增真实扩展包 fixture：
+  `data/feature-packs/expansion-pack-fixture-2026-08-10/`，包含 manifest、features 和
+  source metadata。8 条使用不同 feature_id、source_record_id、feature_name，但复用相同
+  typed contracts；不修改核心运行时名称分支。
+- 扩展包验收结果：dry-run `8 full`、apply 成功、第二次 apply 幂等、reload 后 8/8 runtime
+  registry、fingerprint/version conflict 拒绝、跨 pack duplicate feature_id 拒绝、并发 apply
+  一次成功一次锁拒绝、index 故障后回滚无残留文件。报告：
+  `reports/feature-pack-expansion-import-2026-08-10.json`。
+- 后端全量 pytest、Ruff、compileall、git diff check 和审计/Corpus/Unlock/Harvest/Pack 报告
+  双次 byte-identical 均通过。前端未修改，因此未运行前端门禁。
+- 必须保留且不得暂存/提交：`backend/tests/integrations/`、`backend/tests/ollama.py`。
+
 - 本轮全程单线程，实时审计仍为 `full 320 / partial 118 / dm_only 61`，固定分母 499。
 - 现有 166 个 source review clause 已进入带稳定 `source_fingerprint`、`reviewed_fields`、
   `missing_fields`、`review_blocker_category` 和 `review_blocker_details` 的

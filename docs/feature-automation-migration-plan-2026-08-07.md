@@ -453,6 +453,21 @@ compileall、git diff check。无前端源码变更，不运行前端/浏览器�
 
 # 2026-08-10：166 条 Clause review schema 批次
 
+# 2026-08-10：生产收割 VIII 与扩展包导入验收
+
+本批不再等待全部 166 条 manual boundary，而是从现有 production_closed consumer 中选择
+8 条能完整 authored 的特性，实际将审计从 `320/118/61` 推进到 `328/110/61`。每条新增
+full 均由 direct authored Feature IR、compiler authority 和现有 materializer/runtime consumer
+驱动。
+
+扩展包自动化边界已经通过真实 fixture 验证：扩展包作者提供符合 `feature-ir-1` 的 typed
+FeatureSpec，通用 importer 负责 schema/ruleset/namespace/source fingerprint 校验、compiler、
+materialize、registry apply、reload、幂等、版本冲突、跨 pack feature_id 冲突、并发互斥和回滚。
+导入 8 条使用不同 feature_name 的样例不需要核心代码或 feature-name 分支变化。
+
+这不表示自然语言可以直接自动变成 full；扩展包仍必须提供 authored typed IR。自动化的是
+导入、校验、编译、投影、注册和版本管理。
+
 本批将 166 个 source review clause 变成 `feature-clause-reviewed-1` 记录，保留 source
 fingerprint、审阅字段、缺失字段和具体 blocker。`reviewed_typed` 只表示记录通过了关闭式
 review schema；它不表示可执行。当前 166 条均为 `manual_boundary`，source incomplete 为
