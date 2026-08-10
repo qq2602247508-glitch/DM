@@ -1,0 +1,98 @@
+{
+  "schema_version": "feature-pack-expansion-import-1",
+  "pack_id": "dnd-expansion-proof-2026",
+  "pack_version": "1.0.0",
+  "ruleset_version": "2024",
+  "feature_count": 8,
+  "full_count": 8,
+  "partial_count": 0,
+  "manual_count": 0,
+  "dry_run_result": {
+    "counts": {
+      "full": 8,
+      "partial": 0,
+      "manual": 0,
+      "invalid": 0
+    },
+    "all_full": true
+  },
+  "apply_result": {
+    "applied": true,
+    "idempotent_replay": true
+  },
+  "reload_result": {
+    "registered_count": 8,
+    "registered_feature_ids": [
+      "expansion2026.feature.01",
+      "expansion2026.feature.02",
+      "expansion2026.feature.03",
+      "expansion2026.feature.04",
+      "expansion2026.feature.05",
+      "expansion2026.feature.06",
+      "expansion2026.feature.07",
+      "expansion2026.feature.08"
+    ]
+  },
+  "idempotency_result": true,
+  "fingerprint_conflict_result": true,
+  "rollback_result": {
+    "raised": true,
+    "remaining_files": []
+  },
+  "cross_pack_duplicate_feature_result": true,
+  "concurrent_apply_result": [
+    [
+      "applied_or_replayed",
+      true,
+      false
+    ],
+    [
+      "rejected_concurrent_lock",
+      false,
+      false
+    ]
+  ],
+  "imported_feature_ids": [
+    "expansion2026.feature.01",
+    "expansion2026.feature.02",
+    "expansion2026.feature.03",
+    "expansion2026.feature.04",
+    "expansion2026.feature.05",
+    "expansion2026.feature.06",
+    "expansion2026.feature.07",
+    "expansion2026.feature.08"
+  ],
+  "compiled_feature_ids": [
+    "expansion2026.feature.01",
+    "expansion2026.feature.02",
+    "expansion2026.feature.03",
+    "expansion2026.feature.04",
+    "expansion2026.feature.05",
+    "expansion2026.feature.06",
+    "expansion2026.feature.07",
+    "expansion2026.feature.08"
+  ],
+  "materialized_feature_ids": [
+    "expansion2026.feature.01",
+    "expansion2026.feature.02",
+    "expansion2026.feature.03",
+    "expansion2026.feature.04",
+    "expansion2026.feature.05",
+    "expansion2026.feature.06",
+    "expansion2026.feature.07",
+    "expansion2026.feature.08"
+  ],
+  "runtime_registered_feature_ids": [
+    "expansion2026.feature.01",
+    "expansion2026.feature.02",
+    "expansion2026.feature.03",
+    "expansion2026.feature.04",
+    "expansion2026.feature.05",
+    "expansion2026.feature.06",
+    "expansion2026.feature.07",
+    "expansion2026.feature.08"
+  ],
+  "whether_core_code_changed": false,
+  "whether_feature_name_branch_changed": false,
+  "source_trust": "authored_ir"
+}

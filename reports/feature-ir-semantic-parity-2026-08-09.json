@@ -1,6 +1,6 @@
 {
   "all_passed": true,
-  "feature_count": 25,
+  "feature_count": 33,
   "rows": [
     {
       "feature_id": "dnd2024.core.druid.druidic",
@@ -2478,6 +2478,253 @@
       "materialized": true,
       "production_test": "formal_feature_runtime_regression",
       "status": "equivalent"
+    },
+    {
+      "feature_id": "dnd2024.subclass.rogue.arcane-trickster.magical-ambush",
+      "feature_name": "诡术伏击",
+      "fields": {
+        "authored_runtime_contract": {
+          "proof": "no legacy runtime mapping exists; direct authored IR materialization is the production authority",
+          "status": "authored"
+        }
+      },
+      "ir_contract": {
+        "advancement": null,
+        "attack_action_count": null,
+        "combat_defenses": [],
+        "combat_modifiers": [
+          {
+            "applies_when": "against_triggering_spell_same_turn",
+            "operation": "disadvantage",
+            "scope": "target",
+            "stat": "saving_throw",
+            "value": 1
+          }
+        ],
+        "movement_modes": [],
+        "resources": {}
+      },
+      "legacy_contract": null,
+      "materialized": true,
+      "production_test": "authored_feature_runtime_regression",
+      "status": "authored"
+    },
+    {
+      "feature_id": "dnd2024.subclass.warlock.great-old-one.eldritch-hex",
+      "feature_name": "骇异恶咒",
+      "fields": {
+        "authored_runtime_contract": {
+          "proof": "no legacy runtime mapping exists; direct authored IR materialization is the production authority",
+          "status": "authored"
+        }
+      },
+      "ir_contract": {
+        "advancement": null,
+        "attack_action_count": null,
+        "combat_defenses": [],
+        "combat_modifiers": [
+          {
+            "applies_when": "hex_selected_ability",
+            "operation": "disadvantage",
+            "scope": "target",
+            "stat": "saving_throw",
+            "value": 1
+          }
+        ],
+        "movement_modes": [],
+        "resources": {}
+      },
+      "legacy_contract": null,
+      "materialized": true,
+      "production_test": "authored_feature_runtime_regression",
+      "status": "authored"
+    },
+    {
+      "feature_id": "dnd2024.subclass.paladin.devotion.smite-of-protection",
+      "feature_name": "卫护斩",
+      "fields": {
+        "authored_runtime_contract": {
+          "proof": "no legacy runtime mapping exists; direct authored IR materialization is the production authority",
+          "status": "authored"
+        }
+      },
+      "ir_contract": {
+        "advancement": null,
+        "attack_action_count": null,
+        "combat_defenses": [],
+        "combat_modifiers": [],
+        "movement_modes": [],
+        "resources": {}
+      },
+      "legacy_contract": null,
+      "materialized": true,
+      "production_test": "authored_feature_runtime_regression",
+      "status": "authored"
+    },
+    {
+      "feature_id": "dnd2024.subclass.fighter.psi-warrior.bulwark-of-force",
+      "feature_name": "力场壁垒",
+      "fields": {
+        "authored_runtime_contract": {
+          "proof": "no legacy runtime mapping exists; direct authored IR materialization is the production authority",
+          "status": "authored"
+        }
+      },
+      "ir_contract": {
+        "advancement": null,
+        "attack_action_count": null,
+        "combat_defenses": [],
+        "combat_modifiers": [],
+        "movement_modes": [],
+        "resources": {
+          "bulwark_of_force": {
+            "recovery": "long_rest_completed",
+            "recovery_events": [
+              {
+                "operation": "set_to_max",
+                "rest": "long_rest"
+              }
+            ]
+          },
+          "psi_energy_dice": {
+            "recovery_events": []
+          }
+        }
+      },
+      "legacy_contract": null,
+      "materialized": true,
+      "production_test": "authored_feature_runtime_regression",
+      "status": "authored"
+    },
+    {
+      "feature_id": "dnd2024.subclass.barbarian.zealot.zealous-presence",
+      "feature_name": "狂热威仪",
+      "fields": {
+        "authored_runtime_contract": {
+          "proof": "no legacy runtime mapping exists; direct authored IR materialization is the production authority",
+          "status": "authored"
+        }
+      },
+      "ir_contract": {
+        "advancement": null,
+        "attack_action_count": null,
+        "combat_defenses": [],
+        "combat_modifiers": [],
+        "movement_modes": [],
+        "resources": {
+          "rage": {
+            "recovery_events": []
+          },
+          "zealous_presence": {
+            "recovery": "long_rest_completed",
+            "recovery_events": [
+              {
+                "operation": "set_to_max",
+                "rest": "long_rest"
+              }
+            ]
+          }
+        }
+      },
+      "legacy_contract": null,
+      "materialized": true,
+      "production_test": "authored_feature_runtime_regression",
+      "status": "authored"
+    },
+    {
+      "feature_id": "dnd2024.subclass.warlock.celestial.celestial-resilience",
+      "feature_name": "天界韧性",
+      "fields": {
+        "authored_runtime_contract": {
+          "proof": "no legacy runtime mapping exists; direct authored IR materialization is the production authority",
+          "status": "authored"
+        }
+      },
+      "ir_contract": {
+        "advancement": null,
+        "attack_action_count": null,
+        "combat_defenses": [],
+        "combat_modifiers": [],
+        "movement_modes": [],
+        "resources": {}
+      },
+      "legacy_contract": null,
+      "materialized": true,
+      "production_test": "authored_feature_runtime_regression",
+      "status": "authored"
+    },
+    {
+      "feature_id": "dnd2024.subclass.rogue.assassin.assassinate",
+      "feature_name": "暗杀",
+      "fields": {
+        "authored_runtime_contract": {
+          "proof": "no legacy runtime mapping exists; direct authored IR materialization is the production authority",
+          "status": "authored"
+        }
+      },
+      "ir_contract": {
+        "advancement": null,
+        "attack_action_count": null,
+        "combat_defenses": [],
+        "combat_modifiers": [
+          {
+            "applies_when": "target_has_not_acted_first_round",
+            "operation": "advantage",
+            "scope": "outgoing",
+            "stat": "attack_roll",
+            "value": 1
+          },
+          {
+            "applies_when": "initiative_roll",
+            "operation": "advantage",
+            "scope": "self",
+            "stat": "initiative",
+            "value": 1
+          }
+        ],
+        "movement_modes": [],
+        "resources": {}
+      },
+      "legacy_contract": null,
+      "materialized": true,
+      "production_test": "authored_feature_runtime_regression",
+      "status": "authored"
+    },
+    {
+      "feature_id": "dnd2024.subclass.druid.moon.improved-circle-forms",
+      "feature_name": "进阶结社形态",
+      "fields": {
+        "authored_runtime_contract": {
+          "proof": "no legacy runtime mapping exists; direct authored IR materialization is the production authority",
+          "status": "authored"
+        }
+      },
+      "ir_contract": {
+        "advancement": null,
+        "attack_action_count": null,
+        "combat_defenses": [],
+        "combat_modifiers": [
+          {
+            "applies_when": "actor_in_wild_shape",
+            "operation": "add",
+            "scope": "self",
+            "stat": "constitution_saving_throw",
+            "value_source": "wisdom_modifier"
+          },
+          {
+            "applies_when": "player_selects_radiant",
+            "operation": "replace",
+            "scope": "outgoing",
+            "stat": "damage_type"
+          }
+        ],
+        "movement_modes": [],
+        "resources": {}
+      },
+      "legacy_contract": null,
+      "materialized": true,
+      "production_test": "authored_feature_runtime_regression",
+      "status": "authored"
     }
   ],
   "schema_version": "feature-ir-semantic-parity-2"

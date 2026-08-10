@@ -2,12 +2,12 @@
   "schema_version": "feature-ir-semantic-cluster-census-1",
   "audit_total": 499,
   "status_counts": {
-    "full": 320,
+    "full": 328,
     "dm_only": 61,
-    "partial": 118
+    "partial": 110
   },
-  "partial_total": 118,
-  "partial_exact_cluster_count": 115,
+  "partial_total": 110,
+  "partial_exact_cluster_count": 107,
   "partial_signatures": [
     {
       "feature_id": "class-feature:subclass:吟游诗人:舞蹈学院:6:鼓舞之移",
@@ -1122,87 +1122,6 @@
       "signature_fingerprint": "fedff1a6053e4b57"
     },
     {
-      "feature_id": "class-feature:subclass:圣武士:奉献之誓:15:卫护斩 Smite of",
-      "scope": "subclass",
-      "class_name": "圣武士",
-      "subclass_name": "奉献之誓",
-      "level": 15,
-      "feature_name": "卫护斩 Smite of",
-      "source_record_id": "9d0cbb381195bdc22700ce7a",
-      "source_parse": "description_located",
-      "runtime_status": "partial",
-      "action_economy": [
-        "triggered"
-      ],
-      "resource": [],
-      "trigger": [
-        "on_spell_cast",
-        "on_turn_start"
-      ],
-      "target": [
-        "self"
-      ],
-      "effects": [],
-      "duration": [
-        "turn_scoped"
-      ],
-      "detected_blocks": [
-        "action_trigger"
-      ],
-      "source_trust": "unverified",
-      "semantic_contract": {
-        "trigger": [
-          "on_spell_cast",
-          "on_turn_start"
-        ],
-        "conditions": [],
-        "activation": "unknown",
-        "action_economy": [
-          "triggered"
-        ],
-        "target_policy": [
-          "self"
-        ],
-        "input_requirements": [],
-        "resource": [],
-        "frequency": [],
-        "duration": [
-          "turn_scoped"
-        ],
-        "expiry": [],
-        "effect_operator": [],
-        "effect_parameters": {},
-        "producer": null,
-        "consumer": [],
-        "persisted_state": [],
-        "cas_support": null,
-        "idempotency_support": null,
-        "materializer": null,
-        "validator": null,
-        "production_evidence": [
-          "legacy:no_runtime_section: legacy_unsupported:no_runtime_section",
-          "legacy_unsupported:no_runtime_section",
-          "source_trust_not_verified"
-        ],
-        "remaining_blocker": [
-          "legacy:no_runtime_section: legacy_unsupported:no_runtime_section",
-          "legacy_unsupported:no_runtime_section",
-          "source_trust_not_verified"
-        ]
-      },
-      "contract_missing_fields": [
-        "producer",
-        "consumer",
-        "persisted_state",
-        "cas_support",
-        "idempotency_support",
-        "materializer",
-        "validator"
-      ],
-      "classification": "missing_authority",
-      "signature_fingerprint": "c9b761127248cbf1"
-    },
-    {
       "feature_id": "class-feature:subclass:圣武士:奉献之誓:20:至圣光轮 Holy",
       "scope": "subclass",
       "class_name": "圣武士",
@@ -2225,95 +2144,6 @@
       "signature_fingerprint": "f3c8846d0e9cf12e"
     },
     {
-      "feature_id": "class-feature:subclass:德鲁伊:月亮结社:6:进阶结社形态 Improved Circle",
-      "scope": "subclass",
-      "class_name": "德鲁伊",
-      "subclass_name": "月亮结社",
-      "level": 6,
-      "feature_name": "进阶结社形态 Improved Circle",
-      "source_record_id": "4e1a16417129f0809deb556c",
-      "source_parse": "description_located",
-      "runtime_status": "partial",
-      "action_economy": [
-        "triggered"
-      ],
-      "resource": [
-        "wild_shape"
-      ],
-      "trigger": [
-        "on_attack_hit",
-        "wild_shape_related"
-      ],
-      "target": [
-        "self"
-      ],
-      "effects": [
-        "damage",
-        "saving_throw"
-      ],
-      "duration": [],
-      "detected_blocks": [
-        "damage_healing",
-        "hit_rider",
-        "save_dc"
-      ],
-      "source_trust": "unverified",
-      "semantic_contract": {
-        "trigger": [
-          "on_attack_hit",
-          "wild_shape_related"
-        ],
-        "conditions": [],
-        "activation": "unknown",
-        "action_economy": [
-          "triggered"
-        ],
-        "target_policy": [
-          "self"
-        ],
-        "input_requirements": [],
-        "resource": [
-          "wild_shape"
-        ],
-        "frequency": [],
-        "duration": [],
-        "expiry": [],
-        "effect_operator": [
-          "damage",
-          "saving_throw"
-        ],
-        "effect_parameters": {},
-        "producer": null,
-        "consumer": [],
-        "persisted_state": [],
-        "cas_support": null,
-        "idempotency_support": null,
-        "materializer": null,
-        "validator": null,
-        "production_evidence": [
-          "legacy:no_runtime_section: legacy_unsupported:no_runtime_section",
-          "legacy_unsupported:no_runtime_section",
-          "source_trust_not_verified"
-        ],
-        "remaining_blocker": [
-          "legacy:no_runtime_section: legacy_unsupported:no_runtime_section",
-          "legacy_unsupported:no_runtime_section",
-          "source_trust_not_verified"
-        ]
-      },
-      "contract_missing_fields": [
-        "producer",
-        "consumer",
-        "persisted_state",
-        "cas_support",
-        "idempotency_support",
-        "materializer",
-        "validator"
-      ],
-      "classification": "missing_authority",
-      "signature_fingerprint": "44542670b6a43e35"
-    },
-    {
       "feature_id": "class-feature:subclass:德鲁伊:月亮结社:14:月辉形态 Lunar",
       "scope": "subclass",
       "class_name": "德鲁伊",
@@ -2955,103 +2785,6 @@
       ],
       "classification": "missing_authority",
       "signature_fingerprint": "a8972195943beb31"
-    },
-    {
-      "feature_id": "class-feature:subclass:战士:灵能武士:15:力场壁垒 Bulwark of",
-      "scope": "subclass",
-      "class_name": "战士",
-      "subclass_name": "灵能武士",
-      "level": 15,
-      "feature_name": "力场壁垒 Bulwark of",
-      "source_record_id": "7af94ca3efa94531c62ee9dc",
-      "source_parse": "description_located",
-      "runtime_status": "partial",
-      "action_economy": [
-        "bonus_action",
-        "no_action"
-      ],
-      "resource": [
-        "long_rest_recovery",
-        "psionic_dice"
-      ],
-      "trigger": [
-        "on_long_rest"
-      ],
-      "target": [
-        "area",
-        "self"
-      ],
-      "effects": [],
-      "duration": [
-        "minutes",
-        "until_incapacitated",
-        "until_long_rest"
-      ],
-      "detected_blocks": [
-        "action_economy",
-        "aura_range",
-        "resource_recovery",
-        "status_lifecycle",
-        "target_range_save"
-      ],
-      "source_trust": "unverified",
-      "semantic_contract": {
-        "trigger": [
-          "on_long_rest"
-        ],
-        "conditions": [],
-        "activation": "unknown",
-        "action_economy": [
-          "bonus_action",
-          "no_action"
-        ],
-        "target_policy": [
-          "area",
-          "self"
-        ],
-        "input_requirements": [],
-        "resource": [
-          "long_rest_recovery",
-          "psionic_dice"
-        ],
-        "frequency": [],
-        "duration": [
-          "minutes",
-          "until_incapacitated",
-          "until_long_rest"
-        ],
-        "expiry": [],
-        "effect_operator": [],
-        "effect_parameters": {},
-        "producer": null,
-        "consumer": [],
-        "persisted_state": [],
-        "cas_support": null,
-        "idempotency_support": null,
-        "materializer": null,
-        "validator": null,
-        "production_evidence": [
-          "legacy:no_runtime_section: legacy_unsupported:no_runtime_section",
-          "legacy_unsupported:no_runtime_section",
-          "source_trust_not_verified"
-        ],
-        "remaining_blocker": [
-          "legacy:no_runtime_section: legacy_unsupported:no_runtime_section",
-          "legacy_unsupported:no_runtime_section",
-          "source_trust_not_verified"
-        ]
-      },
-      "contract_missing_fields": [
-        "producer",
-        "consumer",
-        "persisted_state",
-        "cas_support",
-        "idempotency_support",
-        "materializer",
-        "validator"
-      ],
-      "classification": "missing_authority",
-      "signature_fingerprint": "7ae3cd92b8a6e12f"
     },
     {
       "feature_id": "class-feature:subclass:战士:灵能武士:18:念力宗师 Telekinetic",
@@ -7187,90 +6920,6 @@
       "signature_fingerprint": "cebcb8a894b01c36"
     },
     {
-      "feature_id": "class-feature:subclass:游荡者:刺客:3:暗杀 Assassinate",
-      "scope": "subclass",
-      "class_name": "游荡者",
-      "subclass_name": "刺客",
-      "level": 3,
-      "feature_name": "暗杀 Assassinate",
-      "source_record_id": "ed19d790590e092a37804fdc",
-      "source_parse": "description_located",
-      "runtime_status": "partial",
-      "action_economy": [
-        "triggered"
-      ],
-      "resource": [],
-      "trigger": [
-        "on_attack_hit"
-      ],
-      "target": [
-        "self"
-      ],
-      "effects": [
-        "ability_check",
-        "advantage",
-        "damage"
-      ],
-      "duration": [],
-      "detected_blocks": [
-        "damage_healing",
-        "roll_intervention"
-      ],
-      "source_trust": "unverified",
-      "semantic_contract": {
-        "trigger": [
-          "on_attack_hit"
-        ],
-        "conditions": [],
-        "activation": "unknown",
-        "action_economy": [
-          "triggered"
-        ],
-        "target_policy": [
-          "self"
-        ],
-        "input_requirements": [],
-        "resource": [],
-        "frequency": [],
-        "duration": [],
-        "expiry": [],
-        "effect_operator": [
-          "ability_check",
-          "advantage",
-          "damage"
-        ],
-        "effect_parameters": {},
-        "producer": null,
-        "consumer": [],
-        "persisted_state": [],
-        "cas_support": null,
-        "idempotency_support": null,
-        "materializer": null,
-        "validator": null,
-        "production_evidence": [
-          "legacy:no_runtime_section: legacy_unsupported:no_runtime_section",
-          "legacy_unsupported:no_runtime_section",
-          "source_trust_not_verified"
-        ],
-        "remaining_blocker": [
-          "legacy:no_runtime_section: legacy_unsupported:no_runtime_section",
-          "legacy_unsupported:no_runtime_section",
-          "source_trust_not_verified"
-        ]
-      },
-      "contract_missing_fields": [
-        "producer",
-        "consumer",
-        "persisted_state",
-        "cas_support",
-        "idempotency_support",
-        "materializer",
-        "validator"
-      ],
-      "classification": "missing_authority",
-      "signature_fingerprint": "af4a6784a37724db"
-    },
-    {
       "feature_id": "class-feature:subclass:游荡者:刺客:9:专业渗透 Infiltration",
       "scope": "subclass",
       "class_name": "游荡者",
@@ -7890,92 +7539,6 @@
       ],
       "classification": "missing_authority",
       "signature_fingerprint": "6ef79bba18271550"
-    },
-    {
-      "feature_id": "class-feature:subclass:游荡者:诡术师:9:诡术伏击 Magical",
-      "scope": "subclass",
-      "class_name": "游荡者",
-      "subclass_name": "诡术师",
-      "level": 9,
-      "feature_name": "诡术伏击 Magical",
-      "source_record_id": "9cf06e62650334b555019eaf",
-      "source_parse": "description_located",
-      "runtime_status": "partial",
-      "action_economy": [],
-      "resource": [],
-      "trigger": [
-        "on_spell_cast"
-      ],
-      "target": [
-        "enemy",
-        "self"
-      ],
-      "effects": [
-        "ability_check",
-        "disadvantage",
-        "invisible",
-        "saving_throw"
-      ],
-      "duration": [],
-      "detected_blocks": [
-        "roll_intervention",
-        "save_dc",
-        "spellcasting",
-        "status_lifecycle"
-      ],
-      "source_trust": "unverified",
-      "semantic_contract": {
-        "trigger": [
-          "on_spell_cast"
-        ],
-        "conditions": [],
-        "activation": "unknown",
-        "action_economy": [],
-        "target_policy": [
-          "enemy",
-          "self"
-        ],
-        "input_requirements": [],
-        "resource": [],
-        "frequency": [],
-        "duration": [],
-        "expiry": [],
-        "effect_operator": [
-          "ability_check",
-          "disadvantage",
-          "invisible",
-          "saving_throw"
-        ],
-        "effect_parameters": {},
-        "producer": null,
-        "consumer": [],
-        "persisted_state": [],
-        "cas_support": null,
-        "idempotency_support": null,
-        "materializer": null,
-        "validator": null,
-        "production_evidence": [
-          "legacy:no_runtime_section: legacy_unsupported:no_runtime_section",
-          "legacy_unsupported:no_runtime_section",
-          "source_trust_not_verified"
-        ],
-        "remaining_blocker": [
-          "legacy:no_runtime_section: legacy_unsupported:no_runtime_section",
-          "legacy_unsupported:no_runtime_section",
-          "source_trust_not_verified"
-        ]
-      },
-      "contract_missing_fields": [
-        "producer",
-        "consumer",
-        "persisted_state",
-        "cas_support",
-        "idempotency_support",
-        "materializer",
-        "validator"
-      ],
-      "classification": "missing_authority",
-      "signature_fingerprint": "35cde20a57d6f486"
     },
     {
       "feature_id": "class-feature:subclass:游荡者:诡术师:13:万能诡术 Versatile",
@@ -9804,204 +9367,6 @@
       "signature_fingerprint": "c33d444fb6eddce0"
     },
     {
-      "feature_id": "class-feature:subclass:野蛮人:狂热者道途:10:狂热威仪 Zealous Presence",
-      "scope": "subclass",
-      "class_name": "野蛮人",
-      "subclass_name": "狂热者道途",
-      "level": 10,
-      "feature_name": "狂热威仪 Zealous Presence",
-      "source_record_id": "56bade27e4a4f3f4977775a8",
-      "source_parse": "description_located",
-      "runtime_status": "partial",
-      "action_economy": [
-        "bonus_action",
-        "no_action"
-      ],
-      "resource": [
-        "long_rest_recovery",
-        "rage"
-      ],
-      "trigger": [
-        "on_long_rest",
-        "on_turn_start"
-      ],
-      "target": [
-        "allies_or_creatures",
-        "self"
-      ],
-      "effects": [
-        "ability_check",
-        "advantage",
-        "save_advantage_modifier",
-        "saving_throw"
-      ],
-      "duration": [
-        "turn_scoped",
-        "until_long_rest"
-      ],
-      "detected_blocks": [
-        "action_economy",
-        "aura_range",
-        "resource_binding",
-        "resource_recovery",
-        "roll_intervention",
-        "save_dc",
-        "target_range_save"
-      ],
-      "source_trust": "unverified",
-      "semantic_contract": {
-        "trigger": [
-          "on_long_rest",
-          "on_turn_start"
-        ],
-        "conditions": [],
-        "activation": "unknown",
-        "action_economy": [
-          "bonus_action",
-          "no_action"
-        ],
-        "target_policy": [
-          "allies_or_creatures",
-          "self"
-        ],
-        "input_requirements": [],
-        "resource": [
-          "long_rest_recovery",
-          "rage"
-        ],
-        "frequency": [],
-        "duration": [
-          "turn_scoped",
-          "until_long_rest"
-        ],
-        "expiry": [],
-        "effect_operator": [
-          "ability_check",
-          "advantage",
-          "save_advantage_modifier",
-          "saving_throw"
-        ],
-        "effect_parameters": {},
-        "producer": null,
-        "consumer": [],
-        "persisted_state": [],
-        "cas_support": null,
-        "idempotency_support": null,
-        "materializer": null,
-        "validator": null,
-        "production_evidence": [
-          "legacy:no_runtime_section: legacy_unsupported:no_runtime_section",
-          "legacy_unsupported:no_runtime_section",
-          "source_trust_not_verified"
-        ],
-        "remaining_blocker": [
-          "legacy:no_runtime_section: legacy_unsupported:no_runtime_section",
-          "legacy_unsupported:no_runtime_section",
-          "source_trust_not_verified"
-        ]
-      },
-      "contract_missing_fields": [
-        "producer",
-        "consumer",
-        "persisted_state",
-        "cas_support",
-        "idempotency_support",
-        "materializer",
-        "validator"
-      ],
-      "classification": "missing_authority",
-      "signature_fingerprint": "fec2f41e67ca5bed"
-    },
-    {
-      "feature_id": "class-feature:subclass:魔契师:天界宗主:10:天界韧性 Celestial",
-      "scope": "subclass",
-      "class_name": "魔契师",
-      "subclass_name": "天界宗主",
-      "level": 10,
-      "feature_name": "天界韧性 Celestial",
-      "source_record_id": "180ee728207b19b5621a8eb9",
-      "source_parse": "description_located",
-      "runtime_status": "partial",
-      "action_economy": [
-        "triggered"
-      ],
-      "resource": [
-        "long_rest_recovery",
-        "short_rest_recovery"
-      ],
-      "trigger": [
-        "on_long_rest"
-      ],
-      "target": [
-        "allies_or_creatures",
-        "self"
-      ],
-      "effects": [
-        "temporary_hp"
-      ],
-      "duration": [],
-      "detected_blocks": [
-        "action_trigger",
-        "damage_healing",
-        "resource_recovery"
-      ],
-      "source_trust": "unverified",
-      "semantic_contract": {
-        "trigger": [
-          "on_long_rest"
-        ],
-        "conditions": [],
-        "activation": "unknown",
-        "action_economy": [
-          "triggered"
-        ],
-        "target_policy": [
-          "allies_or_creatures",
-          "self"
-        ],
-        "input_requirements": [],
-        "resource": [
-          "long_rest_recovery",
-          "short_rest_recovery"
-        ],
-        "frequency": [],
-        "duration": [],
-        "expiry": [],
-        "effect_operator": [
-          "temporary_hp"
-        ],
-        "effect_parameters": {},
-        "producer": null,
-        "consumer": [],
-        "persisted_state": [],
-        "cas_support": null,
-        "idempotency_support": null,
-        "materializer": null,
-        "validator": null,
-        "production_evidence": [
-          "legacy:no_runtime_section: legacy_unsupported:no_runtime_section",
-          "legacy_unsupported:no_runtime_section",
-          "source_trust_not_verified"
-        ],
-        "remaining_blocker": [
-          "legacy:no_runtime_section: legacy_unsupported:no_runtime_section",
-          "legacy_unsupported:no_runtime_section",
-          "source_trust_not_verified"
-        ]
-      },
-      "contract_missing_fields": [
-        "producer",
-        "consumer",
-        "persisted_state",
-        "cas_support",
-        "idempotency_support",
-        "materializer",
-        "validator"
-      ],
-      "classification": "missing_authority",
-      "signature_fingerprint": "5ccc44e10467f262"
-    },
-    {
       "feature_id": "class-feature:subclass:魔契师:天界宗主:14:灼光复仇 Searing",
       "scope": "subclass",
       "class_name": "魔契师",
@@ -10359,92 +9724,6 @@
       ],
       "classification": "missing_authority",
       "signature_fingerprint": "7a2f1361dc0f63d6"
-    },
-    {
-      "feature_id": "class-feature:subclass:魔契师:旧日支配者宗主:10:骇异恶咒 Eldritch Hex",
-      "scope": "subclass",
-      "class_name": "魔契师",
-      "subclass_name": "旧日支配者宗主",
-      "level": 10,
-      "feature_name": "骇异恶咒 Eldritch Hex",
-      "source_record_id": "b978fdb54062ecba2de9b056",
-      "source_parse": "description_located",
-      "runtime_status": "partial",
-      "action_economy": [
-        "triggered"
-      ],
-      "resource": [],
-      "trigger": [
-        "on_spell_cast"
-      ],
-      "target": [
-        "self"
-      ],
-      "effects": [
-        "disadvantage",
-        "saving_throw"
-      ],
-      "duration": [],
-      "detected_blocks": [
-        "action_trigger",
-        "roll_intervention",
-        "save_dc",
-        "spell_selection",
-        "spellcasting",
-        "status_lifecycle"
-      ],
-      "source_trust": "unverified",
-      "semantic_contract": {
-        "trigger": [
-          "on_spell_cast"
-        ],
-        "conditions": [],
-        "activation": "unknown",
-        "action_economy": [
-          "triggered"
-        ],
-        "target_policy": [
-          "self"
-        ],
-        "input_requirements": [],
-        "resource": [],
-        "frequency": [],
-        "duration": [],
-        "expiry": [],
-        "effect_operator": [
-          "disadvantage",
-          "saving_throw"
-        ],
-        "effect_parameters": {},
-        "producer": null,
-        "consumer": [],
-        "persisted_state": [],
-        "cas_support": null,
-        "idempotency_support": null,
-        "materializer": null,
-        "validator": null,
-        "production_evidence": [
-          "legacy:no_runtime_section: legacy_unsupported:no_runtime_section",
-          "legacy_unsupported:no_runtime_section",
-          "source_trust_not_verified"
-        ],
-        "remaining_blocker": [
-          "legacy:no_runtime_section: legacy_unsupported:no_runtime_section",
-          "legacy_unsupported:no_runtime_section",
-          "source_trust_not_verified"
-        ]
-      },
-      "contract_missing_fields": [
-        "producer",
-        "consumer",
-        "persisted_state",
-        "cas_support",
-        "idempotency_support",
-        "materializer",
-        "validator"
-      ],
-      "classification": "missing_authority",
-      "signature_fingerprint": "1e24d81e8900350d"
     },
     {
       "feature_id": "class-feature:subclass:魔契师:旧日支配者宗主:14:创造奴仆 Create",
@@ -11781,58 +11060,6 @@
       ]
     },
     {
-      "cluster_id": "semantic:1e24d81e8900350d",
-      "member_count": 1,
-      "member_feature_ids": [
-        "class-feature:subclass:魔契师:旧日支配者宗主:10:骇异恶咒 Eldritch Hex"
-      ],
-      "action_economy": [
-        "triggered"
-      ],
-      "resource": [],
-      "trigger": [
-        "on_spell_cast"
-      ],
-      "target": [
-        "self"
-      ],
-      "effects": [
-        "disadvantage",
-        "saving_throw"
-      ],
-      "duration": [],
-      "detected_blocks": [
-        "action_trigger",
-        "roll_intervention",
-        "save_dc",
-        "spell_selection",
-        "spellcasting",
-        "status_lifecycle"
-      ],
-      "classification": "missing_authority",
-      "contract_relation": "exact_same_contract",
-      "contract_missing_fields": [
-        "producer",
-        "consumer",
-        "persisted_state",
-        "cas_support",
-        "idempotency_support",
-        "materializer",
-        "validator"
-      ],
-      "production_closed": false,
-      "needs_new_producer": true,
-      "needs_new_consumer": true,
-      "needs_new_persistence": true,
-      "needs_new_ui": false,
-      "estimated_full_count": 0,
-      "blockers": [
-        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section",
-        "legacy_unsupported:no_runtime_section",
-        "source_trust_not_verified"
-      ]
-    },
-    {
       "cluster_id": "semantic:20266dfa28b76e1b",
       "member_count": 1,
       "member_feature_ids": [
@@ -12515,57 +11742,6 @@
       ]
     },
     {
-      "cluster_id": "semantic:35cde20a57d6f486",
-      "member_count": 1,
-      "member_feature_ids": [
-        "class-feature:subclass:游荡者:诡术师:9:诡术伏击 Magical"
-      ],
-      "action_economy": [],
-      "resource": [],
-      "trigger": [
-        "on_spell_cast"
-      ],
-      "target": [
-        "enemy",
-        "self"
-      ],
-      "effects": [
-        "ability_check",
-        "disadvantage",
-        "invisible",
-        "saving_throw"
-      ],
-      "duration": [],
-      "detected_blocks": [
-        "roll_intervention",
-        "save_dc",
-        "spellcasting",
-        "status_lifecycle"
-      ],
-      "classification": "missing_authority",
-      "contract_relation": "exact_same_contract",
-      "contract_missing_fields": [
-        "producer",
-        "consumer",
-        "persisted_state",
-        "cas_support",
-        "idempotency_support",
-        "materializer",
-        "validator"
-      ],
-      "production_closed": false,
-      "needs_new_producer": true,
-      "needs_new_consumer": true,
-      "needs_new_persistence": true,
-      "needs_new_ui": false,
-      "estimated_full_count": 0,
-      "blockers": [
-        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section",
-        "legacy_unsupported:no_runtime_section",
-        "source_trust_not_verified"
-      ]
-    },
-    {
       "cluster_id": "semantic:37622f31087d0059",
       "member_count": 1,
       "member_feature_ids": [
@@ -12938,58 +12114,6 @@
       ]
     },
     {
-      "cluster_id": "semantic:44542670b6a43e35",
-      "member_count": 1,
-      "member_feature_ids": [
-        "class-feature:subclass:德鲁伊:月亮结社:6:进阶结社形态 Improved Circle"
-      ],
-      "action_economy": [
-        "triggered"
-      ],
-      "resource": [
-        "wild_shape"
-      ],
-      "trigger": [
-        "on_attack_hit",
-        "wild_shape_related"
-      ],
-      "target": [
-        "self"
-      ],
-      "effects": [
-        "damage",
-        "saving_throw"
-      ],
-      "duration": [],
-      "detected_blocks": [
-        "damage_healing",
-        "hit_rider",
-        "save_dc"
-      ],
-      "classification": "missing_authority",
-      "contract_relation": "exact_same_contract",
-      "contract_missing_fields": [
-        "producer",
-        "consumer",
-        "persisted_state",
-        "cas_support",
-        "idempotency_support",
-        "materializer",
-        "validator"
-      ],
-      "production_closed": false,
-      "needs_new_producer": true,
-      "needs_new_consumer": true,
-      "needs_new_persistence": true,
-      "needs_new_ui": false,
-      "estimated_full_count": 0,
-      "blockers": [
-        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section",
-        "legacy_unsupported:no_runtime_section",
-        "source_trust_not_verified"
-      ]
-    },
-    {
       "cluster_id": "semantic:45dec12a0d4f1eff",
       "member_count": 1,
       "member_feature_ids": [
@@ -13117,6 +12241,178 @@
         "legacy_unsupported:no_runtime_section",
         "source_trust_not_verified"
       ]
+    },
+    {
+      "cluster_id": "semantic:4a43c2eb4385cadc",
+      "member_count": 1,
+      "member_feature_ids": [
+        "class-feature:subclass:魔契师:天界宗主:14:灼光复仇 Searing"
+      ],
+      "action_economy": [
+        "triggered"
+      ],
+      "resource": [
+        "long_rest_recovery"
+      ],
+      "trigger": [
+        "on_death_save",
+        "on_long_rest"
+      ],
+      "target": [
+        "allies_or_creatures",
+        "self"
+      ],
+      "effects": [
+        "condition",
+        "damage",
+        "saving_throw"
+      ],
+      "duration": [
+        "turn_scoped",
+        "until_long_rest"
+      ],
+      "detected_blocks": [
+        "action_trigger",
+        "aura_range",
+        "damage_healing",
+        "resource_recovery",
+        "save_dc",
+        "status_lifecycle",
+        "target_range_save"
+      ],
+      "classification": "missing_authority",
+      "contract_relation": "exact_same_contract",
+      "contract_missing_fields": [
+        "producer",
+        "consumer",
+        "persisted_state",
+        "cas_support",
+        "idempotency_support",
+        "materializer",
+        "validator"
+      ],
+      "production_closed": false,
+      "needs_new_producer": true,
+      "needs_new_consumer": true,
+      "needs_new_persistence": true,
+      "needs_new_ui": false,
+      "estimated_full_count": 0,
+      "blockers": [
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section",
+        "legacy_unsupported:no_runtime_section",
+        "source_trust_not_verified"
+      ]
+    },
+    {
+      "cluster_id": "semantic:4a81916184928c5b",
+      "member_count": 1,
+      "member_feature_ids": [
+        "class-feature:subclass:德鲁伊:海洋结社:14:大洋慨赠 Oceanic"
+      ],
+      "action_economy": [
+        "triggered"
+      ],
+      "resource": [
+        "wild_shape"
+      ],
+      "trigger": [
+        "wild_shape_related"
+      ],
+      "target": [
+        "allies_or_creatures",
+        "self"
+      ],
+      "effects": [
+        "saving_throw"
+      ],
+      "duration": [],
+      "detected_blocks": [
+        "action_trigger",
+        "aura_range",
+        "resource_recovery",
+        "save_dc",
+        "target_range_save"
+      ],
+      "classification": "missing_authority",
+      "contract_relation": "exact_same_contract",
+      "contract_missing_fields": [
+        "producer",
+        "consumer",
+        "persisted_state",
+        "cas_support",
+        "idempotency_support",
+        "materializer",
+        "validator"
+      ],
+      "production_closed": false,
+      "needs_new_producer": true,
+      "needs_new_consumer": true,
+      "needs_new_persistence": true,
+      "needs_new_ui": false,
+      "estimated_full_count": 0,
+      "blockers": [
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section",
+        "legacy_unsupported:no_runtime_section",
+        "source_trust_not_verified"
+      ]
+    },
+    {
+      "cluster_id": "semantic:4d03b2d11a2d8d7f",
+      "member_count": 1,
+      "member_feature_ids": [
+        "class-feature:subclass:武僧:四象武者:3:元素同调 Elemental"
+      ],
+      "action_economy": [
+        "triggered"
+      ],
+      "resource": [],
+      "trigger": [
+        "on_attack_hit",
+        "on_turn_start"
+      ],
+      "target": [
+        "self"
+      ],
+      "effects": [
+        "attack",
+        "damage",
+        "saving_throw"
+      ],
+      "duration": [
+        "minutes",
+        "until_incapacitated"
+      ],
+      "detected_blocks": [
+        "action_trigger",
+        "damage_healing",
+        "hit_rider",
+        "movement",
+        "resource_recovery",
+        "save_dc",
+        "status_lifecycle"
+      ],
+      "classification": "missing_authority",
+      "contract_relation": "exact_same_contract",
+      "contract_missing_fields": [
+        "producer",
+        "consumer",
+        "persisted_state",
+        "cas_support",
+        "idempotency_support",
+        "materializer",
+        "validator"
+      ],
+      "production_closed": false,
+      "needs_new_producer": true,
+      "needs_new_consumer": true,
+      "needs_new_persistence": true,
+      "needs_new_ui": false,
+      "estimated_full_count": 0,
+      "blockers": [
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section",
+        "legacy_unsupported:no_runtime_section",
+        "source_trust_not_verified"
+      ]
     }
   ],
   "equivalent_contract_candidates": [],
@@ -13162,16 +12458,6 @@
       "merge_allowed": false
     },
     {
-      "similarity_key": "similarity:862f22f70068f18f",
-      "member_count": 2,
-      "member_feature_ids": [
-        "class-feature:subclass:圣武士:奉献之誓:15:卫护斩 Smite of",
-        "class-feature:subclass:武僧:散打武者:11:流星步 Fleet"
-      ],
-      "reason": "coarse effects/blocks match but typed producer/consumer contract differs",
-      "merge_allowed": false
-    },
-    {
       "similarity_key": "similarity:bbcc648c0b6bcc29",
       "member_count": 2,
       "member_feature_ids": [
@@ -13183,43 +12469,43 @@
     }
   ],
   "contract_relation_counts": {
-    "exact_same_contract": 115,
+    "exact_same_contract": 107,
     "equivalent_contract": 0,
-    "superficially_similar": 6
+    "superficially_similar": 5
   },
   "classification_counts": {
-    "missing_authority": 118
+    "missing_authority": 110
   },
   "effect_counts": {
-    "saving_throw": 45,
-    "damage": 43,
-    "ability_check": 37,
+    "saving_throw": 41,
+    "damage": 41,
+    "ability_check": 34,
     "condition": 17,
     "teleport": 14,
     "speed": 13,
-    "advantage": 13,
     "attack": 13,
-    "invisible": 9,
-    "disadvantage": 8,
+    "advantage": 11,
     "flight": 8,
     "damage_resistance": 8,
-    "temporary_hp": 7,
+    "invisible": 8,
     "light": 7,
-    "save_advantage_modifier": 2,
+    "temporary_hp": 6,
+    "disadvantage": 6,
     "reroll": 2,
     "healing": 2,
     "damage_immunity": 2,
     "zero_hp": 2,
     "swim": 2,
+    "save_advantage_modifier": 1,
     "climb": 1
   },
   "trigger_counts": {
-    "on_long_rest": 43,
-    "on_spell_cast": 37,
-    "on_attack_hit": 21,
+    "on_long_rest": 40,
+    "on_spell_cast": 34,
+    "on_attack_hit": 19,
     "on_save_failure": 14,
-    "on_turn_start": 13,
-    "wild_shape_related": 9,
+    "on_turn_start": 11,
+    "wild_shape_related": 8,
     "on_turn_end": 7,
     "on_damage_taken": 6,
     "while_raging": 4,
@@ -13229,24 +12515,24 @@
     "on_death_save": 1
   },
   "resource_counts": {
-    "long_rest_recovery": 43,
+    "long_rest_recovery": 40,
     "spell_slot": 27,
-    "short_rest_recovery": 11,
+    "short_rest_recovery": 10,
     "proficiency_bonus": 10,
-    "wild_shape": 9,
+    "wild_shape": 8,
     "channel_divinity": 7,
     "sorcery_points": 6,
-    "rage": 6,
-    "psionic_dice": 5,
+    "rage": 5,
     "bardic_inspiration": 4,
+    "psionic_dice": 4,
     "superiority_dice": 2,
     "uses_ability_modifier": 2
   },
   "target_counts": {
-    "self": 118,
-    "allies_or_creatures": 34,
+    "self": 110,
+    "allies_or_creatures": 32,
     "summon": 17,
-    "enemy": 16,
-    "area": 13
+    "enemy": 15,
+    "area": 12
   }
 }

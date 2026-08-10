@@ -1,0 +1,582 @@
+{
+  "schema_version": "feature-ir-production-harvest-plan-1",
+  "candidate_count": 8,
+  "harvest_ready_count": 8,
+  "selected_feature_ids": [
+    "dnd2024.subclass.barbarian.zealot.zealous-presence",
+    "dnd2024.subclass.druid.moon.improved-circle-forms",
+    "dnd2024.subclass.fighter.psi-warrior.bulwark-of-force",
+    "dnd2024.subclass.paladin.devotion.smite-of-protection",
+    "dnd2024.subclass.rogue.arcane-trickster.magical-ambush",
+    "dnd2024.subclass.rogue.assassin.assassinate",
+    "dnd2024.subclass.warlock.celestial.celestial-resilience",
+    "dnd2024.subclass.warlock.great-old-one.eldritch-hex"
+  ],
+  "candidates": [
+    {
+      "feature_id": "dnd2024.subclass.barbarian.zealot.zealous-presence",
+      "source_record_id": "56bade27e4a4f3f4977775a8",
+      "class_name": "野蛮人",
+      "subclass_name": "狂热者道途",
+      "level": 10,
+      "source_fingerprint": "686ba2091b87fb7562d28bb48e0d2ce728205d15a5f2422f9b4f0651f73d97a5",
+      "source_runtime_status": "full",
+      "clause_count": 3,
+      "clause_contract_summary": [
+        {
+          "clause_id": "battle-cry",
+          "trigger": "explicit_activation",
+          "action_economy": "bonus_action",
+          "target": "ally",
+          "operators": [
+            "consume_resource",
+            "create_timed_modifier",
+            "create_timed_modifier"
+          ]
+        },
+        {
+          "clause_id": "long-rest-recovery",
+          "trigger": "long_rest_completed",
+          "action_economy": "none",
+          "target": "self",
+          "operators": [
+            "restore_resource"
+          ]
+        },
+        {
+          "clause_id": "rage-reset",
+          "trigger": "explicit_activation",
+          "action_economy": "none",
+          "target": "self",
+          "operators": [
+            "exchange_resource"
+          ]
+        }
+      ],
+      "existing_capability_ids": [
+        "modifier.timed",
+        "resource.exchange",
+        "resource.lifecycle",
+        "resource.lifecycle.consume"
+      ],
+      "existing_materializer_ids": [
+        "modifier.timed",
+        "resource.exchange",
+        "resource.lifecycle",
+        "resource.lifecycle.consume"
+      ],
+      "existing_producers": [
+        "feature_action_or_event",
+        "rest_service"
+      ],
+      "existing_consumers": [
+        "combat_and_advancement_resource_cas",
+        "resource_exchange_cas",
+        "rest_service.character_resource_store",
+        "timed_feature_modifier_resolver"
+      ],
+      "persistence_requirements": [
+        "character.resources",
+        "combatant.timed_feature_modifiers"
+      ],
+      "cas_requirements": [
+        "compare_and_swap"
+      ],
+      "idempotency_requirements": [
+        "idempotent_replay"
+      ],
+      "ui_requirements": [],
+      "compiler_status": "full",
+      "compiler_blockers": [],
+      "materializer_error": null,
+      "harvest_ready": true,
+      "eligibility_reason": "all clauses compile and materialize through production_closed capabilities",
+      "expected_status_after_authored_ir": "full",
+      "portable_external_pack": true
+    },
+    {
+      "feature_id": "dnd2024.subclass.druid.moon.improved-circle-forms",
+      "source_record_id": "4e1a16417129f0809deb556c",
+      "class_name": "德鲁伊",
+      "subclass_name": "月亮结社",
+      "level": 6,
+      "source_fingerprint": "4c4861112ca6fe772c5bab17b21cdacd310bf10c2fee7fc456634a2189f2221b",
+      "source_runtime_status": "full",
+      "clause_count": 2,
+      "clause_contract_summary": [
+        {
+          "clause_id": "wild-shape-radiant-damage-choice",
+          "trigger": "damage_before_apply",
+          "action_economy": "none",
+          "target": "enemy",
+          "operators": [
+            "replace_damage_type"
+          ]
+        },
+        {
+          "clause_id": "wild-shape-constitution-save-bonus",
+          "trigger": "saving_throw",
+          "action_economy": "none",
+          "target": "self",
+          "operators": [
+            "add_modifier"
+          ]
+        }
+      ],
+      "existing_capability_ids": [
+        "damage.type",
+        "modifier.passive"
+      ],
+      "existing_materializer_ids": [
+        "damage.type",
+        "modifier.passive"
+      ],
+      "existing_producers": [
+        "feature_runtime_compiler",
+        "spell_or_attack_resolution"
+      ],
+      "existing_consumers": [
+        "typed_damage_healing_resolver",
+        "typed_modifier_resolvers"
+      ],
+      "persistence_requirements": [
+        "character.feature_runtime",
+        "combat_action.damage"
+      ],
+      "cas_requirements": [
+        "compare_and_swap"
+      ],
+      "idempotency_requirements": [
+        "idempotent_replay"
+      ],
+      "ui_requirements": [
+        "damage_type_choice"
+      ],
+      "compiler_status": "full",
+      "compiler_blockers": [],
+      "materializer_error": null,
+      "harvest_ready": true,
+      "eligibility_reason": "all clauses compile and materialize through production_closed capabilities",
+      "expected_status_after_authored_ir": "full",
+      "portable_external_pack": true
+    },
+    {
+      "feature_id": "dnd2024.subclass.fighter.psi-warrior.bulwark-of-force",
+      "source_record_id": "7af94ca3efa94531c62ee9dc",
+      "class_name": "战士",
+      "subclass_name": "灵能武士",
+      "level": 15,
+      "source_fingerprint": "287d210bb0446a1bc60a370c4140d41e5cc135525150bc8a6d319658df4d20e0",
+      "source_runtime_status": "full",
+      "clause_count": 3,
+      "clause_contract_summary": [
+        {
+          "clause_id": "activate-half-cover",
+          "trigger": "explicit_activation",
+          "action_economy": "bonus_action",
+          "target": "ally",
+          "operators": [
+            "consume_resource",
+            "create_timed_modifier"
+          ]
+        },
+        {
+          "clause_id": "long-rest-recovery",
+          "trigger": "long_rest_completed",
+          "action_economy": "none",
+          "target": "self",
+          "operators": [
+            "restore_resource"
+          ]
+        },
+        {
+          "clause_id": "psi-die-reset",
+          "trigger": "explicit_activation",
+          "action_economy": "none",
+          "target": "self",
+          "operators": [
+            "exchange_resource"
+          ]
+        }
+      ],
+      "existing_capability_ids": [
+        "modifier.timed",
+        "resource.exchange",
+        "resource.lifecycle",
+        "resource.lifecycle.consume"
+      ],
+      "existing_materializer_ids": [
+        "modifier.timed",
+        "resource.exchange",
+        "resource.lifecycle",
+        "resource.lifecycle.consume"
+      ],
+      "existing_producers": [
+        "feature_action_or_event",
+        "rest_service"
+      ],
+      "existing_consumers": [
+        "combat_and_advancement_resource_cas",
+        "resource_exchange_cas",
+        "rest_service.character_resource_store",
+        "timed_feature_modifier_resolver"
+      ],
+      "persistence_requirements": [
+        "character.resources",
+        "combatant.timed_feature_modifiers"
+      ],
+      "cas_requirements": [
+        "compare_and_swap"
+      ],
+      "idempotency_requirements": [
+        "idempotent_replay"
+      ],
+      "ui_requirements": [],
+      "compiler_status": "full",
+      "compiler_blockers": [],
+      "materializer_error": null,
+      "harvest_ready": true,
+      "eligibility_reason": "all clauses compile and materialize through production_closed capabilities",
+      "expected_status_after_authored_ir": "full",
+      "portable_external_pack": true
+    },
+    {
+      "feature_id": "dnd2024.subclass.paladin.devotion.smite-of-protection",
+      "source_record_id": "9d0cbb381195bdc22700ce7a",
+      "class_name": "圣武士",
+      "subclass_name": "奉献之誓",
+      "level": 15,
+      "source_fingerprint": "5bb654b7cc2be2162e231cdfc6bc1c498853f5cf238efa6232f32d95732e4add",
+      "source_runtime_status": "full",
+      "clause_count": 1,
+      "clause_contract_summary": [
+        {
+          "clause_id": "smite-aura-half-cover",
+          "trigger": "spell_cast",
+          "action_economy": "none",
+          "target": "aura",
+          "operators": [
+            "create_timed_modifier"
+          ]
+        }
+      ],
+      "existing_capability_ids": [
+        "modifier.timed"
+      ],
+      "existing_materializer_ids": [
+        "modifier.timed"
+      ],
+      "existing_producers": [
+        "feature_action_or_event"
+      ],
+      "existing_consumers": [
+        "timed_feature_modifier_resolver"
+      ],
+      "persistence_requirements": [
+        "combatant.timed_feature_modifiers"
+      ],
+      "cas_requirements": [
+        "compare_and_swap"
+      ],
+      "idempotency_requirements": [
+        "idempotent_replay"
+      ],
+      "ui_requirements": [],
+      "compiler_status": "full",
+      "compiler_blockers": [],
+      "materializer_error": null,
+      "harvest_ready": true,
+      "eligibility_reason": "all clauses compile and materialize through production_closed capabilities",
+      "expected_status_after_authored_ir": "full",
+      "portable_external_pack": true
+    },
+    {
+      "feature_id": "dnd2024.subclass.rogue.arcane-trickster.magical-ambush",
+      "source_record_id": "9cf06e62650334b555019eaf",
+      "class_name": "游荡者",
+      "subclass_name": "诡术师",
+      "level": 9,
+      "source_fingerprint": "0d335bd386f8ac35d0a736586e1009ac5f087e921f5d7c15027079393aa1b529",
+      "source_runtime_status": "full",
+      "clause_count": 1,
+      "clause_contract_summary": [
+        {
+          "clause_id": "invisible-spell-save-disadvantage",
+          "trigger": "spell_cast",
+          "action_economy": "none",
+          "target": "enemy",
+          "operators": [
+            "impose_disadvantage"
+          ]
+        }
+      ],
+      "existing_capability_ids": [
+        "modifier.roll.disadvantage"
+      ],
+      "existing_materializer_ids": [
+        "modifier.roll.disadvantage"
+      ],
+      "existing_producers": [
+        "feature_runtime_compiler"
+      ],
+      "existing_consumers": [
+        "d20_and_attack_context_resolvers"
+      ],
+      "persistence_requirements": [
+        "character.feature_runtime"
+      ],
+      "cas_requirements": [
+        "compare_and_swap"
+      ],
+      "idempotency_requirements": [
+        "idempotent_replay"
+      ],
+      "ui_requirements": [],
+      "compiler_status": "full",
+      "compiler_blockers": [],
+      "materializer_error": null,
+      "harvest_ready": true,
+      "eligibility_reason": "all clauses compile and materialize through production_closed capabilities",
+      "expected_status_after_authored_ir": "full",
+      "portable_external_pack": true
+    },
+    {
+      "feature_id": "dnd2024.subclass.rogue.assassin.assassinate",
+      "source_record_id": "ed19d790590e092a37804fdc",
+      "class_name": "游荡者",
+      "subclass_name": "刺客",
+      "level": 3,
+      "source_fingerprint": "023a16eb90144b3afbe576a6b364b0f2bee2715291f9a2ae9ab588543fa583f7",
+      "source_runtime_status": "full",
+      "clause_count": 3,
+      "clause_contract_summary": [
+        {
+          "clause_id": "initiative-advantage",
+          "trigger": "initiative_rolled",
+          "action_economy": "none",
+          "target": "self",
+          "operators": [
+            "impose_advantage"
+          ]
+        },
+        {
+          "clause_id": "first-round-attack-advantage",
+          "trigger": "attack_declared",
+          "action_economy": "none",
+          "target": "self",
+          "operators": [
+            "impose_advantage"
+          ]
+        },
+        {
+          "clause_id": "first-round-sneak-attack-damage",
+          "trigger": "attack_hit",
+          "action_economy": "none",
+          "target": "enemy",
+          "operators": [
+            "add_damage"
+          ]
+        }
+      ],
+      "existing_capability_ids": [
+        "damage.modifier",
+        "modifier.roll"
+      ],
+      "existing_materializer_ids": [
+        "damage.modifier",
+        "modifier.roll"
+      ],
+      "existing_producers": [
+        "damage_resolution",
+        "feature_runtime_compiler"
+      ],
+      "existing_consumers": [
+        "d20_and_attack_context_resolvers",
+        "typed_damage_healing_resolver"
+      ],
+      "persistence_requirements": [
+        "character.feature_runtime",
+        "combat_action.damage"
+      ],
+      "cas_requirements": [
+        "compare_and_swap"
+      ],
+      "idempotency_requirements": [
+        "idempotent_replay"
+      ],
+      "ui_requirements": [],
+      "compiler_status": "full",
+      "compiler_blockers": [],
+      "materializer_error": null,
+      "harvest_ready": true,
+      "eligibility_reason": "all clauses compile and materialize through production_closed capabilities",
+      "expected_status_after_authored_ir": "full",
+      "portable_external_pack": true
+    },
+    {
+      "feature_id": "dnd2024.subclass.warlock.celestial.celestial-resilience",
+      "source_record_id": "180ee728207b19b5621a8eb9",
+      "class_name": "魔契师",
+      "subclass_name": "天界宗主",
+      "level": 10,
+      "source_fingerprint": "6f75631b2ea6d71c2a111c526fc8faa8500bd1fe7b3383923b117c24126cfbdb",
+      "source_runtime_status": "full",
+      "clause_count": 6,
+      "clause_contract_summary": [
+        {
+          "clause_id": "short_rest_completed-self-temporary-hp",
+          "trigger": "short_rest_completed",
+          "action_economy": "none",
+          "target": "self",
+          "operators": [
+            "grant_temporary_hp"
+          ]
+        },
+        {
+          "clause_id": "long_rest_completed-self-temporary-hp",
+          "trigger": "long_rest_completed",
+          "action_economy": "none",
+          "target": "self",
+          "operators": [
+            "grant_temporary_hp"
+          ]
+        },
+        {
+          "clause_id": "explicit_activation-self-temporary-hp",
+          "trigger": "explicit_activation",
+          "action_economy": "none",
+          "target": "self",
+          "operators": [
+            "grant_temporary_hp"
+          ]
+        },
+        {
+          "clause_id": "short_rest_completed-allies-temporary-hp",
+          "trigger": "short_rest_completed",
+          "action_economy": "none",
+          "target": "ally",
+          "operators": [
+            "grant_temporary_hp"
+          ]
+        },
+        {
+          "clause_id": "long_rest_completed-allies-temporary-hp",
+          "trigger": "long_rest_completed",
+          "action_economy": "none",
+          "target": "ally",
+          "operators": [
+            "grant_temporary_hp"
+          ]
+        },
+        {
+          "clause_id": "explicit_activation-allies-temporary-hp",
+          "trigger": "explicit_activation",
+          "action_economy": "none",
+          "target": "ally",
+          "operators": [
+            "grant_temporary_hp"
+          ]
+        }
+      ],
+      "existing_capability_ids": [
+        "damage.temporary_hp"
+      ],
+      "existing_materializer_ids": [
+        "damage.temporary_hp"
+      ],
+      "existing_producers": [
+        "feature_event_or_rest"
+      ],
+      "existing_consumers": [
+        "damage_and_temporary_hp_resolver"
+      ],
+      "persistence_requirements": [
+        "combatant.temporary_hp"
+      ],
+      "cas_requirements": [
+        "compare_and_swap"
+      ],
+      "idempotency_requirements": [
+        "idempotent_replay"
+      ],
+      "ui_requirements": [],
+      "compiler_status": "full",
+      "compiler_blockers": [],
+      "materializer_error": null,
+      "harvest_ready": true,
+      "eligibility_reason": "all clauses compile and materialize through production_closed capabilities",
+      "expected_status_after_authored_ir": "full",
+      "portable_external_pack": true
+    },
+    {
+      "feature_id": "dnd2024.subclass.warlock.great-old-one.eldritch-hex",
+      "source_record_id": "b978fdb54062ecba2de9b056",
+      "class_name": "魔契师",
+      "subclass_name": "旧日支配者宗主",
+      "level": 10,
+      "source_fingerprint": "ee189af095f03b78629e9eee230cda77e01585c12909eb3bd008915cb34ead84",
+      "source_runtime_status": "full",
+      "clause_count": 2,
+      "clause_contract_summary": [
+        {
+          "clause_id": "always-prepared-hex",
+          "trigger": "advancement_confirmed",
+          "action_economy": "none",
+          "target": "self",
+          "operators": [
+            "prepare_spell"
+          ]
+        },
+        {
+          "clause_id": "hex-chosen-ability-save-disadvantage",
+          "trigger": "saving_throw",
+          "action_economy": "none",
+          "target": "enemy",
+          "operators": [
+            "impose_disadvantage"
+          ]
+        }
+      ],
+      "existing_capability_ids": [
+        "advancement.prepare_spell",
+        "modifier.roll.disadvantage"
+      ],
+      "existing_materializer_ids": [
+        "advancement.prepare_spell",
+        "modifier.roll.disadvantage"
+      ],
+      "existing_producers": [
+        "advancement_service",
+        "feature_runtime_compiler"
+      ],
+      "existing_consumers": [
+        "advancement_service.spell_registry",
+        "d20_and_attack_context_resolvers"
+      ],
+      "persistence_requirements": [
+        "character.feature_runtime",
+        "character.prepared_spells"
+      ],
+      "cas_requirements": [
+        "compare_and_swap"
+      ],
+      "idempotency_requirements": [
+        "idempotent_replay"
+      ],
+      "ui_requirements": [],
+      "compiler_status": "full",
+      "compiler_blockers": [],
+      "materializer_error": null,
+      "harvest_ready": true,
+      "eligibility_reason": "all clauses compile and materialize through production_closed capabilities",
+      "expected_status_after_authored_ir": "full",
+      "portable_external_pack": true
+    }
+  ],
+  "audit_total": 499,
+  "audit_status_counts": {
+    "full": 328,
+    "dm_only": 61,
+    "partial": 110
+  }
+}

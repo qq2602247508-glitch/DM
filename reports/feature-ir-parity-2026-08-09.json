@@ -1,18 +1,18 @@
 {
   "audit_status_counts": {
     "dm_only": 61,
-    "full": 320,
-    "partial": 118
+    "full": 328,
+    "partial": 110
   },
-  "compiler_pilot_count": 21,
+  "compiler_pilot_count": 26,
   "compiler_status_counts": {
-    "full": 25,
+    "full": 33,
     "invalid": 129,
     "partial": 166
   },
   "formal_semantic_parity": {
     "all_passed": true,
-    "feature_count": 25,
+    "feature_count": 33,
     "rows": [
       {
         "feature_id": "dnd2024.core.druid.druidic",
@@ -2490,6 +2490,253 @@
         "materialized": true,
         "production_test": "formal_feature_runtime_regression",
         "status": "equivalent"
+      },
+      {
+        "feature_id": "dnd2024.subclass.rogue.arcane-trickster.magical-ambush",
+        "feature_name": "诡术伏击",
+        "fields": {
+          "authored_runtime_contract": {
+            "proof": "no legacy runtime mapping exists; direct authored IR materialization is the production authority",
+            "status": "authored"
+          }
+        },
+        "ir_contract": {
+          "advancement": null,
+          "attack_action_count": null,
+          "combat_defenses": [],
+          "combat_modifiers": [
+            {
+              "applies_when": "against_triggering_spell_same_turn",
+              "operation": "disadvantage",
+              "scope": "target",
+              "stat": "saving_throw",
+              "value": 1
+            }
+          ],
+          "movement_modes": [],
+          "resources": {}
+        },
+        "legacy_contract": null,
+        "materialized": true,
+        "production_test": "authored_feature_runtime_regression",
+        "status": "authored"
+      },
+      {
+        "feature_id": "dnd2024.subclass.warlock.great-old-one.eldritch-hex",
+        "feature_name": "骇异恶咒",
+        "fields": {
+          "authored_runtime_contract": {
+            "proof": "no legacy runtime mapping exists; direct authored IR materialization is the production authority",
+            "status": "authored"
+          }
+        },
+        "ir_contract": {
+          "advancement": null,
+          "attack_action_count": null,
+          "combat_defenses": [],
+          "combat_modifiers": [
+            {
+              "applies_when": "hex_selected_ability",
+              "operation": "disadvantage",
+              "scope": "target",
+              "stat": "saving_throw",
+              "value": 1
+            }
+          ],
+          "movement_modes": [],
+          "resources": {}
+        },
+        "legacy_contract": null,
+        "materialized": true,
+        "production_test": "authored_feature_runtime_regression",
+        "status": "authored"
+      },
+      {
+        "feature_id": "dnd2024.subclass.paladin.devotion.smite-of-protection",
+        "feature_name": "卫护斩",
+        "fields": {
+          "authored_runtime_contract": {
+            "proof": "no legacy runtime mapping exists; direct authored IR materialization is the production authority",
+            "status": "authored"
+          }
+        },
+        "ir_contract": {
+          "advancement": null,
+          "attack_action_count": null,
+          "combat_defenses": [],
+          "combat_modifiers": [],
+          "movement_modes": [],
+          "resources": {}
+        },
+        "legacy_contract": null,
+        "materialized": true,
+        "production_test": "authored_feature_runtime_regression",
+        "status": "authored"
+      },
+      {
+        "feature_id": "dnd2024.subclass.fighter.psi-warrior.bulwark-of-force",
+        "feature_name": "力场壁垒",
+        "fields": {
+          "authored_runtime_contract": {
+            "proof": "no legacy runtime mapping exists; direct authored IR materialization is the production authority",
+            "status": "authored"
+          }
+        },
+        "ir_contract": {
+          "advancement": null,
+          "attack_action_count": null,
+          "combat_defenses": [],
+          "combat_modifiers": [],
+          "movement_modes": [],
+          "resources": {
+            "bulwark_of_force": {
+              "recovery": "long_rest_completed",
+              "recovery_events": [
+                {
+                  "operation": "set_to_max",
+                  "rest": "long_rest"
+                }
+              ]
+            },
+            "psi_energy_dice": {
+              "recovery_events": []
+            }
+          }
+        },
+        "legacy_contract": null,
+        "materialized": true,
+        "production_test": "authored_feature_runtime_regression",
+        "status": "authored"
+      },
+      {
+        "feature_id": "dnd2024.subclass.barbarian.zealot.zealous-presence",
+        "feature_name": "狂热威仪",
+        "fields": {
+          "authored_runtime_contract": {
+            "proof": "no legacy runtime mapping exists; direct authored IR materialization is the production authority",
+            "status": "authored"
+          }
+        },
+        "ir_contract": {
+          "advancement": null,
+          "attack_action_count": null,
+          "combat_defenses": [],
+          "combat_modifiers": [],
+          "movement_modes": [],
+          "resources": {
+            "rage": {
+              "recovery_events": []
+            },
+            "zealous_presence": {
+              "recovery": "long_rest_completed",
+              "recovery_events": [
+                {
+                  "operation": "set_to_max",
+                  "rest": "long_rest"
+                }
+              ]
+            }
+          }
+        },
+        "legacy_contract": null,
+        "materialized": true,
+        "production_test": "authored_feature_runtime_regression",
+        "status": "authored"
+      },
+      {
+        "feature_id": "dnd2024.subclass.warlock.celestial.celestial-resilience",
+        "feature_name": "天界韧性",
+        "fields": {
+          "authored_runtime_contract": {
+            "proof": "no legacy runtime mapping exists; direct authored IR materialization is the production authority",
+            "status": "authored"
+          }
+        },
+        "ir_contract": {
+          "advancement": null,
+          "attack_action_count": null,
+          "combat_defenses": [],
+          "combat_modifiers": [],
+          "movement_modes": [],
+          "resources": {}
+        },
+        "legacy_contract": null,
+        "materialized": true,
+        "production_test": "authored_feature_runtime_regression",
+        "status": "authored"
+      },
+      {
+        "feature_id": "dnd2024.subclass.rogue.assassin.assassinate",
+        "feature_name": "暗杀",
+        "fields": {
+          "authored_runtime_contract": {
+            "proof": "no legacy runtime mapping exists; direct authored IR materialization is the production authority",
+            "status": "authored"
+          }
+        },
+        "ir_contract": {
+          "advancement": null,
+          "attack_action_count": null,
+          "combat_defenses": [],
+          "combat_modifiers": [
+            {
+              "applies_when": "target_has_not_acted_first_round",
+              "operation": "advantage",
+              "scope": "outgoing",
+              "stat": "attack_roll",
+              "value": 1
+            },
+            {
+              "applies_when": "initiative_roll",
+              "operation": "advantage",
+              "scope": "self",
+              "stat": "initiative",
+              "value": 1
+            }
+          ],
+          "movement_modes": [],
+          "resources": {}
+        },
+        "legacy_contract": null,
+        "materialized": true,
+        "production_test": "authored_feature_runtime_regression",
+        "status": "authored"
+      },
+      {
+        "feature_id": "dnd2024.subclass.druid.moon.improved-circle-forms",
+        "feature_name": "进阶结社形态",
+        "fields": {
+          "authored_runtime_contract": {
+            "proof": "no legacy runtime mapping exists; direct authored IR materialization is the production authority",
+            "status": "authored"
+          }
+        },
+        "ir_contract": {
+          "advancement": null,
+          "attack_action_count": null,
+          "combat_defenses": [],
+          "combat_modifiers": [
+            {
+              "applies_when": "actor_in_wild_shape",
+              "operation": "add",
+              "scope": "self",
+              "stat": "constitution_saving_throw",
+              "value_source": "wisdom_modifier"
+            },
+            {
+              "applies_when": "player_selects_radiant",
+              "operation": "replace",
+              "scope": "outgoing",
+              "stat": "damage_type"
+            }
+          ],
+          "movement_modes": [],
+          "resources": {}
+        },
+        "legacy_contract": null,
+        "materialized": true,
+        "production_test": "authored_feature_runtime_regression",
+        "status": "authored"
       }
     ],
     "schema_version": "feature-ir-semantic-parity-2"
@@ -2760,7 +3007,7 @@
     }
   ],
   "schema_version": "feature-ir-parity-2",
-  "selected_parity_count": 25,
+  "selected_parity_count": 30,
   "selected_parity_rows": [
     {
       "compiler_status": "full",
@@ -2829,6 +3076,19 @@
     },
     {
       "compiler_status": "full",
+      "feature_id": "dnd2024.subclass.paladin.devotion.smite-of-protection",
+      "feature_name": "卫护斩 Smite of",
+      "fingerprint": "657d37f54b404826e1bbc73cb55c50227f849378888be64a05df4a946ee7cdf2",
+      "formal_ir": true,
+      "legacy_adapter_used": false,
+      "legacy_status": "full",
+      "pilot_authority": "compiler",
+      "pilot_compile_status": "full",
+      "runtime_sections": [],
+      "status_authority": "compiler"
+    },
+    {
+      "compiler_status": "full",
       "feature_id": "dnd2024.subclass.paladin.glory.peerless-athlete",
       "feature_name": "绝伦健将 Peerless",
       "fingerprint": "318e5574905c6da51c50ce3301c3a1ef85fbf9c0977a119e9a7b208bf50e3a12",
@@ -2854,6 +3114,19 @@
         "proficiencies",
         "advancement"
       ],
+      "status_authority": "compiler"
+    },
+    {
+      "compiler_status": "full",
+      "feature_id": "dnd2024.subclass.druid.moon.improved-circle-forms",
+      "feature_name": "进阶结社形态 Improved Circle",
+      "fingerprint": "e19dd18c9ebc11202d082fbfb07b06e748dc3357afdc2a722ef6823d73524358",
+      "formal_ir": true,
+      "legacy_adapter_used": false,
+      "legacy_status": "full",
+      "pilot_authority": "compiler",
+      "pilot_compile_status": "full",
+      "runtime_sections": [],
       "status_authority": "compiler"
     },
     {
@@ -2887,6 +3160,19 @@
       "feature_id": "dnd2024.subclass.fighter.psi-warrior.psionic-power",
       "feature_name": "灵能力量 Psionic",
       "fingerprint": "d5ab87847a94f5b996e92fa955745a50757fe7ed1c76a51e0337d5a711bfa0d1",
+      "formal_ir": true,
+      "legacy_adapter_used": false,
+      "legacy_status": "full",
+      "pilot_authority": "compiler",
+      "pilot_compile_status": "full",
+      "runtime_sections": [],
+      "status_authority": "compiler"
+    },
+    {
+      "compiler_status": "full",
+      "feature_id": "dnd2024.subclass.fighter.psi-warrior.bulwark-of-force",
+      "feature_name": "力场壁垒 Bulwark of",
+      "fingerprint": "ac7cdb432552fbf8ec937d8766ba4e8b14e1ebcd437347c6b7d242c4b930b779",
       "formal_ir": true,
       "legacy_adapter_used": false,
       "legacy_status": "full",
@@ -3022,6 +3308,19 @@
     },
     {
       "compiler_status": "full",
+      "feature_id": "dnd2024.subclass.rogue.assassin.assassinate",
+      "feature_name": "暗杀 Assassinate",
+      "fingerprint": "5bb444cec7a74cc91fb5265ee1e9b3d6448677c3ff9624ecd8a78d12a4f53063",
+      "formal_ir": true,
+      "legacy_adapter_used": false,
+      "legacy_status": "full",
+      "pilot_authority": "compiler",
+      "pilot_compile_status": "full",
+      "runtime_sections": [],
+      "status_authority": "compiler"
+    },
+    {
+      "compiler_status": "full",
       "feature_id": "dnd2024.subclass.rogue.assassin.assassins-tools",
       "feature_name": "刺客工具 Assassin's",
       "fingerprint": "0e93a622e1d1b55bd22064e9f64a8b7e3fe5886ea0bd3f6808173478442a670e",
@@ -3038,6 +3337,19 @@
       "feature_id": "dnd2024.subclass.rogue.thief.second-story-work",
       "feature_name": "梁上君子 Second-Story",
       "fingerprint": "58887b768165891404f838ca0e964634b05c4aeed11c5f34ab9bddac57d129a5",
+      "formal_ir": true,
+      "legacy_adapter_used": false,
+      "legacy_status": "full",
+      "pilot_authority": "compiler",
+      "pilot_compile_status": "full",
+      "runtime_sections": [],
+      "status_authority": "compiler"
+    },
+    {
+      "compiler_status": "full",
+      "feature_id": "dnd2024.subclass.rogue.arcane-trickster.magical-ambush",
+      "feature_name": "诡术伏击 Magical",
+      "fingerprint": "ff9ca1c956b2af8b07f988314bbed251d2374cc42a48adeb28c7f433034ea66e",
       "formal_ir": true,
       "legacy_adapter_used": false,
       "legacy_status": "full",
@@ -3074,9 +3386,9 @@
     },
     {
       "compiler_status": "full",
-      "feature_id": "dnd2024.subclass.barbarian.zealot.divine-rage",
-      "feature_name": "神之狂暴 Rage of the",
-      "fingerprint": "82d7298ff7a4c8e4c80ee72e9e8ca0a8e0bc428b56e3c5ad6b006aac8464a5b6",
+      "feature_id": "dnd2024.subclass.barbarian.zealot.zealous-presence",
+      "feature_name": "狂热威仪 Zealous Presence",
+      "fingerprint": "650ab91bd84e6e1f9a7d3d4101bac8cef4db86e66564983e62dd60de3d1062cd",
       "formal_ir": true,
       "legacy_adapter_used": false,
       "legacy_status": "full",
@@ -3087,18 +3399,15 @@
     },
     {
       "compiler_status": "full",
-      "feature_id": "dnd2024.core.warlock.contact-patron",
-      "feature_name": "联络宗主",
-      "fingerprint": "4bb70f64a5ffa4a721acfc315f17cd9f8e44b7aeb2a92909e3d40459aa3f11d4",
+      "feature_id": "dnd2024.subclass.barbarian.zealot.divine-rage",
+      "feature_name": "神之狂暴 Rage of the",
+      "fingerprint": "82d7298ff7a4c8e4c80ee72e9e8ca0a8e0bc428b56e3c5ad6b006aac8464a5b6",
       "formal_ir": true,
       "legacy_adapter_used": false,
       "legacy_status": "full",
       "pilot_authority": "compiler",
       "pilot_compile_status": "full",
-      "runtime_sections": [
-        "resources",
-        "advancement"
-      ],
+      "runtime_sections": [],
       "status_authority": "compiler"
     }
   ]

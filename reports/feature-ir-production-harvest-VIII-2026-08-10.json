@@ -1,0 +1,1623 @@
+{
+  "schema_version": "feature-ir-production-harvest-VIII-1",
+  "batch_id": "production_consumer_harvest_viii",
+  "audit_total": 499,
+  "before_status_counts": {
+    "full": 320,
+    "partial": 118,
+    "dm_only": 61
+  },
+  "after_status_counts": {
+    "full": 328,
+    "dm_only": 61,
+    "partial": 110
+  },
+  "actual_new_full": 8,
+  "gross_new_full": 8,
+  "false_positive_corrections": 0,
+  "harvest_ready_count": 8,
+  "selected_feature_ids": [
+    "dnd2024.subclass.barbarian.zealot.zealous-presence",
+    "dnd2024.subclass.druid.moon.improved-circle-forms",
+    "dnd2024.subclass.fighter.psi-warrior.bulwark-of-force",
+    "dnd2024.subclass.paladin.devotion.smite-of-protection",
+    "dnd2024.subclass.rogue.arcane-trickster.magical-ambush",
+    "dnd2024.subclass.rogue.assassin.assassinate",
+    "dnd2024.subclass.warlock.celestial.celestial-resilience",
+    "dnd2024.subclass.warlock.great-old-one.eldritch-hex"
+  ],
+  "newly_full_feature_ids": [
+    "dnd2024.subclass.barbarian.zealot.zealous-presence",
+    "dnd2024.subclass.druid.moon.improved-circle-forms",
+    "dnd2024.subclass.fighter.psi-warrior.bulwark-of-force",
+    "dnd2024.subclass.paladin.devotion.smite-of-protection",
+    "dnd2024.subclass.rogue.arcane-trickster.magical-ambush",
+    "dnd2024.subclass.rogue.assassin.assassinate",
+    "dnd2024.subclass.warlock.celestial.celestial-resilience",
+    "dnd2024.subclass.warlock.great-old-one.eldritch-hex"
+  ],
+  "direct_ir_authority_count": 8,
+  "verified_mapping_count": 0,
+  "legacy_authority_count": 0,
+  "operator_count": 37,
+  "production_closed_count": 34,
+  "materializer_count": 36,
+  "real_consumer_count": 34,
+  "feature_name_branch_count": 68,
+  "remaining_partial_count": 110,
+  "remaining_partial_blockers": [
+    {
+      "feature_id": "class-feature:subclass:吟游诗人:舞蹈学院:6:鼓舞之移",
+      "feature_name": "鼓舞之移",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:吟游诗人:舞蹈学院:6:协同舞步",
+      "feature_name": "协同舞步",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:吟游诗人:魅心学院:3:惑心魔法",
+      "feature_name": "惑心魔法",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:吟游诗人:魅心学院:3:灵感织衣",
+      "feature_name": "灵感织衣",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:吟游诗人:魅心学院:6:威仪作锦",
+      "feature_name": "威仪作锦",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:吟游诗人:魅心学院:14:不破威仪 Unbreakable Majesty",
+      "feature_name": "不破威仪 Unbreakable Majesty",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:core:圣武士:None:3:引导神力",
+      "feature_name": "引导神力",
+      "runtime_reasons": [
+        "引导神力的具体选项来自牧师子职或特性分支",
+        "该特性有可验证的运行时 contract；未覆盖的触发、目标或分支会在 contract 的 reasons 中明确列为 DM 裁定。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy:resources:0: invalid_parameters: unknown parameter 'legacy_section' for operator restore_resource",
+        "legacy:resources:0: invalid_parameters: missing required parameter 'operation' for operator restore_resource",
+        "legacy:resources:0: invalid_parameters: missing required parameter 'resource_key' for operator restore_resource",
+        "legacy:resources:0: invalid_parameters: restore_resource requires one of 'amount' or 'amount_source'",
+        "legacy:actions:1: invalid_parameters: unknown parameter 'legacy_section' for operator create_timed_modifier",
+        "legacy:actions:1: invalid_parameters: missing required parameter 'duration' for operator create_timed_modifier",
+        "legacy:actions:1: invalid_parameters: missing required parameter 'operation' for operator create_timed_modifier",
+        "legacy:actions:1: invalid_parameters: missing required parameter 'stat' for operator create_timed_modifier",
+        "legacy:actions:1: invalid_parameters: create_timed_modifier requires one of 'value' or 'value_source'"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:圣武士:古贤之誓:3:自然之怒 Nature's",
+      "feature_name": "自然之怒 Nature's",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:圣武士:古贤之誓:20:上古斗士 Elder",
+      "feature_name": "上古斗士 Elder",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:圣武士:复仇之誓:7:坚韧复仇 Relentless",
+      "feature_name": "坚韧复仇 Relentless",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:圣武士:复仇之誓:20:复仇天使 Avenging",
+      "feature_name": "复仇天使 Avenging",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:圣武士:奉献之誓:20:至圣光轮 Holy",
+      "feature_name": "至圣光轮 Holy",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:圣武士:荣耀之誓:3:鼓舞斩 Inspiring",
+      "feature_name": "鼓舞斩 Inspiring",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:圣武士:荣耀之誓:20:现世传说 Living",
+      "feature_name": "现世传说 Living",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:core:德鲁伊:None:2:荒野变形",
+      "feature_name": "荒野变形",
+      "runtime_reasons": [
+        "荒野变形的形态、临时生命值与动作选项需要 DM 选择",
+        "该特性有可验证的运行时 contract；未覆盖的触发、目标或分支会在 contract 的 reasons 中明确列为 DM 裁定。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy:resources:0: invalid_parameters: unknown parameter 'legacy_section' for operator restore_resource",
+        "legacy:resources:0: invalid_parameters: missing required parameter 'operation' for operator restore_resource",
+        "legacy:resources:0: invalid_parameters: missing required parameter 'resource_key' for operator restore_resource",
+        "legacy:resources:0: invalid_parameters: restore_resource requires one of 'amount' or 'amount_source'",
+        "legacy:actions:1: invalid_parameters: unknown parameter 'legacy_section' for operator create_timed_modifier",
+        "legacy:actions:1: invalid_parameters: missing required parameter 'duration' for operator create_timed_modifier",
+        "legacy:actions:1: invalid_parameters: missing required parameter 'operation' for operator create_timed_modifier",
+        "legacy:actions:1: invalid_parameters: missing required parameter 'stat' for operator create_timed_modifier",
+        "legacy:actions:1: invalid_parameters: create_timed_modifier requires one of 'value' or 'value_source'"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:德鲁伊:大地结社:3:大地之援 Land's",
+      "feature_name": "大地之援 Land's",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:德鲁伊:大地结社:14:自然庇护 Nature's",
+      "feature_name": "自然庇护 Nature's",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:德鲁伊:星辰结社:3:星耀形态 Starry",
+      "feature_name": "星耀形态 Starry",
+      "runtime_reasons": [
+        "已接入通用伤害防御积木并写入战斗快照。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:德鲁伊:星辰结社:6:宇宙预兆 Cosmic",
+      "feature_name": "宇宙预兆 Cosmic",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:德鲁伊:星辰结社:10:闪烁星座 Twinkling",
+      "feature_name": "闪烁星座 Twinkling",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:德鲁伊:月亮结社:3:结社形态 Circle",
+      "feature_name": "结社形态 Circle",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:德鲁伊:月亮结社:14:月辉形态 Lunar",
+      "feature_name": "月辉形态 Lunar",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:德鲁伊:海洋结社:3:瀚海之怒 Wrath of the",
+      "feature_name": "瀚海之怒 Wrath of the",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:德鲁伊:海洋结社:14:大洋慨赠 Oceanic",
+      "feature_name": "大洋慨赠 Oceanic",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:战士:奥法骑士:3:战争联结 War",
+      "feature_name": "战争联结 War",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:战士:战斗大师:3:卓越战技 Combat",
+      "feature_name": "卓越战技 Combat",
+      "runtime_reasons": [
+        "已接入通用伤害防御积木并写入战斗快照。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:战士:战斗大师:15:坚韧",
+      "feature_name": "坚韧",
+      "runtime_reasons": [
+        "已接入通用伤害防御积木并写入战斗快照。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:战士:灵能武士:7:念力精通 Telekinetic",
+      "feature_name": "念力精通 Telekinetic",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:战士:灵能武士:18:念力宗师 Telekinetic",
+      "feature_name": "念力宗师 Telekinetic",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:术士:时械术法:6:律令之壁 Bastion of",
+      "feature_name": "律令之壁 Bastion of",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:术士:时械术法:18:时械矩阵 Clockwork",
+      "feature_name": "时械矩阵 Clockwork",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:术士:狂野术法:3:狂野魔法浪涌 Wild Magic",
+      "feature_name": "狂野魔法浪涌 Wild Magic",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:术士:狂野术法:3:混乱之潮 Tide of",
+      "feature_name": "混乱之潮 Tide of",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:术士:狂野术法:14:受控混沌 Controlled",
+      "feature_name": "受控混沌 Controlled",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:术士:狂野术法:18:驯服浪涌 Tamed",
+      "feature_name": "驯服浪涌 Tamed",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:术士:畸变术法:3:传心谈话 Telepathic",
+      "feature_name": "传心谈话 Telepathic",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:术士:畸变术法:6:灵能术法 Psionic",
+      "feature_name": "灵能术法 Psionic",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:术士:畸变术法:14:血肉启示 Revelation in",
+      "feature_name": "血肉启示 Revelation in",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:术士:畸变术法:18:扭曲内爆 Warping",
+      "feature_name": "扭曲内爆 Warping",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:术士:龙族术法:18:龙族伙伴 Dragon",
+      "feature_name": "龙族伙伴 Dragon",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:core:武僧:None:1:武艺",
+      "feature_name": "武艺",
+      "runtime_reasons": [
+        "该特性有可验证的运行时 contract；未覆盖的触发、目标或分支会在 contract 的 reasons 中明确列为 DM 裁定。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy:combat_modifiers:0: invalid_parameters: unknown parameter 'legacy_section' for operator add_modifier",
+        "legacy:combat_modifiers:0: invalid_parameters: missing required parameter 'operation' for operator add_modifier",
+        "legacy:combat_modifiers:0: invalid_parameters: missing required parameter 'stat' for operator add_modifier",
+        "legacy:combat_modifiers:0: invalid_parameters: add_modifier requires one of 'value' or 'value_source'"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:武僧:命流武者:3:予命之手 Hand of",
+      "feature_name": "予命之手 Hand of",
+      "runtime_reasons": [
+        "已接入通用伤害防御积木并写入战斗快照。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:武僧:命流武者:11:生杀予夺 Flurry of Healing",
+      "feature_name": "生杀予夺 Flurry of Healing",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:武僧:命流武者:17:命极之手 Hand of Ultimate",
+      "feature_name": "命极之手 Hand of Ultimate",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:武僧:四象武者:3:元素同调 Elemental",
+      "feature_name": "元素同调 Elemental",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:武僧:四象武者:6:元素爆破拳 Elemental",
+      "feature_name": "元素爆破拳 Elemental",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:武僧:四象武者:17:四象神通 Elemental",
+      "feature_name": "四象神通 Elemental",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:武僧:散打武者:3:散打技巧 Open Hand",
+      "feature_name": "散打技巧 Open Hand",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:武僧:散打武者:11:流星步 Fleet",
+      "feature_name": "流星步 Fleet",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:武僧:散打武者:17:渗透劲 Quivering",
+      "feature_name": "渗透劲 Quivering",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:武僧:暗影武者:3:暗影技艺 Shadow",
+      "feature_name": "暗影技艺 Shadow",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:武僧:暗影武者:6:暗影步 Shadow",
+      "feature_name": "暗影步 Shadow",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:武僧:暗影武者:11:无影步 Improved Shadow",
+      "feature_name": "无影步 Improved Shadow",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:武僧:暗影武者:17:幽影斗篷 Cloak of",
+      "feature_name": "幽影斗篷 Cloak of",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:法师:塑能师:6:法术塑形",
+      "feature_name": "法术塑形",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:法师:塑能师:14:超限导能 Overchannel",
+      "feature_name": "超限导能 Overchannel",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:法师:幻术师:3:强化幻术",
+      "feature_name": "强化幻术",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:法师:幻术师:6:魅影生灵",
+      "feature_name": "魅影生灵",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:法师:幻术师:14:亦真亦幻 Illusory Reality",
+      "feature_name": "亦真亦幻 Illusory Reality",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:法师:防护师:3:奥术守御 Arcane Ward",
+      "feature_name": "奥术守御 Arcane Ward",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:法师:防护师:6:投射守御 Projected Ward",
+      "feature_name": "投射守御 Projected Ward",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:法师:防护师:10:破法者",
+      "feature_name": "破法者",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:法师:预言师:10:天眼通",
+      "feature_name": "天眼通",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:游侠:妖精漫游者:7:妖思魅缕 Beguiling",
+      "feature_name": "妖思魅缕 Beguiling",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:游侠:妖精漫游者:11:精宸所与 Fey",
+      "feature_name": "精宸所与 Fey",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:游侠:妖精漫游者:15:雾行漫游 Misty",
+      "feature_name": "雾行漫游 Misty",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:游侠:幽域追猎者:3:阴影视野 Umbral",
+      "feature_name": "阴影视野 Umbral",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:游侠:幽域追猎者:11:追猎如风 Stalker's",
+      "feature_name": "追猎如风 Stalker's",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:游侠:猎人:3:猎杀技艺 Hunter's",
+      "feature_name": "猎杀技艺 Hunter's",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:游侠:猎人:11:高阶猎杀技艺 Superior Hunter's",
+      "feature_name": "高阶猎杀技艺 Superior Hunter's",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:游侠:驯兽师:3:原初行侣 Primal",
+      "feature_name": "原初行侣 Primal",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:游侠:驯兽师:7:特效训练 Exceptional",
+      "feature_name": "特效训练 Exceptional",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:游侠:驯兽师:11:兽性狂怒 Bestial",
+      "feature_name": "兽性狂怒 Bestial",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:游侠:驯兽师:15:法术共享 Share",
+      "feature_name": "法术共享 Share",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:游荡者:刺客:9:专业渗透 Infiltration",
+      "feature_name": "专业渗透 Infiltration",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:游荡者:刺客:13:淬毒武器 Envenom",
+      "feature_name": "淬毒武器 Envenom",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:游荡者:刺客:17:致命袭杀 Death",
+      "feature_name": "致命袭杀 Death",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:游荡者:盗贼:3:快手 Fast",
+      "feature_name": "快手 Fast",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:游荡者:盗贼:9:极效潜行 Supreme",
+      "feature_name": "极效潜行 Supreme",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:游荡者:盗贼:13:使用魔法装置 Use Magic",
+      "feature_name": "使用魔法装置 Use Magic",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:游荡者:盗贼:17:窃盗本能 Thief's",
+      "feature_name": "窃盗本能 Thief's",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:游荡者:诡术师:3:法师之手诈术 Mage Hand",
+      "feature_name": "法师之手诈术 Mage Hand",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:游荡者:诡术师:13:万能诡术 Versatile",
+      "feature_name": "万能诡术 Versatile",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:游荡者:诡术师:17:法术窃贼 Spell",
+      "feature_name": "法术窃贼 Spell",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:游荡者:魂刃:3:念刃 Psychic",
+      "feature_name": "念刃 Psychic",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:游荡者:魂刃:9:灵魂之刃 Soul",
+      "feature_name": "灵魂之刃 Soul",
+      "runtime_reasons": [
+        "已接入通用伤害防御积木并写入战斗快照。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:游荡者:魂刃:17:撕裂心智 Rend",
+      "feature_name": "撕裂心智 Rend",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:core:牧师:None:2:引导神力",
+      "feature_name": "引导神力",
+      "runtime_reasons": [
+        "引导神力的具体选项来自牧师子职或特性分支",
+        "该特性有可验证的运行时 contract；未覆盖的触发、目标或分支会在 contract 的 reasons 中明确列为 DM 裁定。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy:resources:0: invalid_parameters: unknown parameter 'legacy_section' for operator restore_resource",
+        "legacy:resources:0: invalid_parameters: missing required parameter 'operation' for operator restore_resource",
+        "legacy:resources:0: invalid_parameters: missing required parameter 'resource_key' for operator restore_resource",
+        "legacy:resources:0: invalid_parameters: restore_resource requires one of 'amount' or 'amount_source'",
+        "legacy:actions:1: invalid_parameters: unknown parameter 'legacy_section' for operator create_timed_modifier",
+        "legacy:actions:1: invalid_parameters: missing required parameter 'duration' for operator create_timed_modifier",
+        "legacy:actions:1: invalid_parameters: missing required parameter 'operation' for operator create_timed_modifier",
+        "legacy:actions:1: invalid_parameters: missing required parameter 'stat' for operator create_timed_modifier",
+        "legacy:actions:1: invalid_parameters: create_timed_modifier requires one of 'value' or 'value_source'"
+      ]
+    },
+    {
+      "feature_id": "class-feature:core:牧师:None:10:神圣干预",
+      "feature_name": "神圣干预",
+      "runtime_reasons": [
+        "只追踪使用次数；具体法术或祈愿术分支仍需 DM 选择。",
+        "神圣干预需要 DM 选择合法的牧师法术或祈愿术分支",
+        "该特性有可验证的运行时 contract；未覆盖的触发、目标或分支会在 contract 的 reasons 中明确列为 DM 裁定。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy:resources:0: invalid_parameters: unknown parameter 'legacy_section' for operator restore_resource",
+        "legacy:resources:0: invalid_parameters: missing required parameter 'operation' for operator restore_resource",
+        "legacy:resources:0: invalid_parameters: missing required parameter 'resource_key' for operator restore_resource",
+        "legacy:resources:0: invalid_parameters: restore_resource requires one of 'amount' or 'amount_source'",
+        "legacy:actions:1: invalid_parameters: unknown parameter 'legacy_section' for operator create_timed_modifier",
+        "legacy:actions:1: invalid_parameters: missing required parameter 'duration' for operator create_timed_modifier",
+        "legacy:actions:1: invalid_parameters: missing required parameter 'operation' for operator create_timed_modifier",
+        "legacy:actions:1: invalid_parameters: missing required parameter 'stat' for operator create_timed_modifier",
+        "legacy:actions:1: invalid_parameters: create_timed_modifier requires one of 'value' or 'value_source'"
+      ]
+    },
+    {
+      "feature_id": "class-feature:core:牧师:None:20:进阶神圣干预",
+      "feature_name": "进阶神圣干预",
+      "runtime_reasons": [
+        "只追踪使用次数；具体法术或祈愿术分支仍需 DM 选择。",
+        "神圣干预需要 DM 选择合法的牧师法术或祈愿术分支",
+        "该特性有可验证的运行时 contract；未覆盖的触发、目标或分支会在 contract 的 reasons 中明确列为 DM 裁定。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy:resources:0: invalid_parameters: unknown parameter 'legacy_section' for operator restore_resource",
+        "legacy:resources:0: invalid_parameters: missing required parameter 'operation' for operator restore_resource",
+        "legacy:resources:0: invalid_parameters: missing required parameter 'resource_key' for operator restore_resource",
+        "legacy:resources:0: invalid_parameters: restore_resource requires one of 'amount' or 'amount_source'",
+        "legacy:actions:1: invalid_parameters: unknown parameter 'legacy_section' for operator create_timed_modifier",
+        "legacy:actions:1: invalid_parameters: missing required parameter 'duration' for operator create_timed_modifier",
+        "legacy:actions:1: invalid_parameters: missing required parameter 'operation' for operator create_timed_modifier",
+        "legacy:actions:1: invalid_parameters: missing required parameter 'stat' for operator create_timed_modifier",
+        "legacy:actions:1: invalid_parameters: create_timed_modifier requires one of 'value' or 'value_source'"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:牧师:光明领域:3:黎明曙光 Radiance of the",
+      "feature_name": "黎明曙光 Radiance of the",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:牧师:光明领域:17:光冕 Corona of",
+      "feature_name": "光冕 Corona of",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:牧师:诡术领域:3:召现分身 Invoke",
+      "feature_name": "召现分身 Invoke",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:牧师:诡术领域:6:诡诈换位 Trickster's",
+      "feature_name": "诡诈换位 Trickster's",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:牧师:诡术领域:17:精通分身 Improved",
+      "feature_name": "精通分身 Improved",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:野蛮人:世界树道途:6:灵树枝杈",
+      "feature_name": "灵树枝杈",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:野蛮人:世界树道途:10:根击千钧 Battering Roots",
+      "feature_name": "根击千钧 Battering Roots",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:野蛮人:世界树道途:14:世界树之奇旅 Travel along the Tree",
+      "feature_name": "世界树之奇旅 Travel along the Tree",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:野蛮人:兽心道途:3:兽性狂暴",
+      "feature_name": "兽性狂暴",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:野蛮人:兽心道途:14:兽力威能 Power of the Wilds",
+      "feature_name": "兽力威能 Power of the Wilds",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:野蛮人:狂战士道途:14:威慑之姿 Intimidating Presence",
+      "feature_name": "威慑之姿 Intimidating Presence",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:魔契师:天界宗主:14:灼光复仇 Searing",
+      "feature_name": "灼光复仇 Searing",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:魔契师:旧日支配者宗主:3:唤醒心灵 Awakened",
+      "feature_name": "唤醒心灵 Awakened",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:魔契师:旧日支配者宗主:3:心灵法术 Psychic Spells",
+      "feature_name": "心灵法术 Psychic Spells",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:魔契师:旧日支配者宗主:6:锐眼斗士 Clairvoyant",
+      "feature_name": "锐眼斗士 Clairvoyant",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:魔契师:旧日支配者宗主:14:创造奴仆 Create",
+      "feature_name": "创造奴仆 Create",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:魔契师:至高妖精宗主:3:妖精步伐 Steps of the",
+      "feature_name": "妖精步伐 Steps of the",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:魔契师:至高妖精宗主:6:雾遁 Misty",
+      "feature_name": "雾遁 Misty",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:魔契师:至高妖精宗主:14:醉心魔法 Bewitching",
+      "feature_name": "醉心魔法 Bewitching",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "feature_id": "class-feature:subclass:魔契师:邪魔宗主:14:直坠噩梦 Hurl Through",
+      "feature_name": "直坠噩梦 Hurl Through",
+      "runtime_reasons": [
+        "子职业当前仅同步授予、部分资源或动作字段；具体效果未统一接入执行器。"
+      ],
+      "formal_ir": false,
+      "compiler_blockers": [
+        "source_trust_not_verified",
+        "legacy_unsupported:no_runtime_section",
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ]
+    }
+  ],
+  "extension_pack": {
+    "schema_version": "feature-pack-expansion-import-1",
+    "pack_id": "dnd-expansion-proof-2026",
+    "pack_version": "1.0.0",
+    "ruleset_version": "2024",
+    "feature_count": 8,
+    "full_count": 8,
+    "partial_count": 0,
+    "manual_count": 0,
+    "dry_run_result": {
+      "counts": {
+        "full": 8,
+        "partial": 0,
+        "manual": 0,
+        "invalid": 0
+      },
+      "all_full": true
+    },
+    "apply_result": {
+      "applied": true,
+      "idempotent_replay": true
+    },
+    "reload_result": {
+      "registered_count": 8,
+      "registered_feature_ids": [
+        "expansion2026.feature.01",
+        "expansion2026.feature.02",
+        "expansion2026.feature.03",
+        "expansion2026.feature.04",
+        "expansion2026.feature.05",
+        "expansion2026.feature.06",
+        "expansion2026.feature.07",
+        "expansion2026.feature.08"
+      ]
+    },
+    "idempotency_result": true,
+    "fingerprint_conflict_result": true,
+    "rollback_result": {
+      "raised": true,
+      "remaining_files": []
+    },
+    "cross_pack_duplicate_feature_result": true,
+    "concurrent_apply_result": [
+      [
+        "applied_or_replayed",
+        true,
+        false
+      ],
+      [
+        "rejected_concurrent_lock",
+        false,
+        false
+      ]
+    ],
+    "imported_feature_ids": [
+      "expansion2026.feature.01",
+      "expansion2026.feature.02",
+      "expansion2026.feature.03",
+      "expansion2026.feature.04",
+      "expansion2026.feature.05",
+      "expansion2026.feature.06",
+      "expansion2026.feature.07",
+      "expansion2026.feature.08"
+    ],
+    "compiled_feature_ids": [
+      "expansion2026.feature.01",
+      "expansion2026.feature.02",
+      "expansion2026.feature.03",
+      "expansion2026.feature.04",
+      "expansion2026.feature.05",
+      "expansion2026.feature.06",
+      "expansion2026.feature.07",
+      "expansion2026.feature.08"
+    ],
+    "materialized_feature_ids": [
+      "expansion2026.feature.01",
+      "expansion2026.feature.02",
+      "expansion2026.feature.03",
+      "expansion2026.feature.04",
+      "expansion2026.feature.05",
+      "expansion2026.feature.06",
+      "expansion2026.feature.07",
+      "expansion2026.feature.08"
+    ],
+    "runtime_registered_feature_ids": [
+      "expansion2026.feature.01",
+      "expansion2026.feature.02",
+      "expansion2026.feature.03",
+      "expansion2026.feature.04",
+      "expansion2026.feature.05",
+      "expansion2026.feature.06",
+      "expansion2026.feature.07",
+      "expansion2026.feature.08"
+    ],
+    "whether_core_code_changed": false,
+    "whether_feature_name_branch_changed": false,
+    "source_trust": "authored_ir"
+  },
+  "stop_reasons": []
+}
