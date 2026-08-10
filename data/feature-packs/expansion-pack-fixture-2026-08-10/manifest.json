@@ -1,0 +1,1122 @@
+{
+  "schema_version": "feature-pack-1",
+  "pack_id": "dnd-expansion-proof-2026",
+  "pack_version": "1.0.0",
+  "ruleset_version": "2024",
+  "namespace": "dnd.expansion.proof",
+  "display_name": "扩展包 Feature IR 自动导入验证",
+  "source_metadata": {
+    "kind": "source-reviewed-authored-ir-fixture",
+    "date": "2026-08-10",
+    "feature_source_fingerprints": {
+      "expansion2026.feature.01": "3b5d43b6e93134c7cdc62558f4feb013f32d40fbf16a03afd370efd074d40d33",
+      "expansion2026.feature.02": "c34c442061f00a83f5832ae884bb5aa43a348db7ef2aa0b69c8331a24c38ea08",
+      "expansion2026.feature.03": "c6f9863f0944745069dbdcce99bad436ae4e922d4e7c050b66abeaed727d92d0",
+      "expansion2026.feature.04": "8aff2554f6f9051853fe345b20b4c0a77781fc07314df7f5ae42bf1722b8871c",
+      "expansion2026.feature.05": "a267bcc0dd799bb1825efd6302e96d2a0e52a062bbcab715597214f72c6651e3",
+      "expansion2026.feature.06": "4fd5101fd20a90c2bec747253c16804a2a32713d6b7f5d3c5cfa176899a4eabd",
+      "expansion2026.feature.07": "1debe2cccfa40b5e06d7a2bb363f0685e748a9d61ab4d0abd1b6c4cf134968cd",
+      "expansion2026.feature.08": "32585bc4a65333cb17514151be619305303d68a9aef31f387181b1dc5cb9e39c"
+    },
+    "natural_language_autocompile": false
+  },
+  "source_trust": "authored_ir",
+  "dependencies": [],
+  "features": [
+    {
+      "schema_version": "feature-ir-1",
+      "feature_id": "expansion2026.feature.01",
+      "namespace": "dnd.expansion.proof",
+      "pack_id": "dnd-expansion-proof-2026",
+      "pack_version": "1.0.0",
+      "ruleset_version": "2024",
+      "source_record_id": "expansion-source-01",
+      "source_name": "扩展规则样例 01",
+      "source_trust": "authored_ir",
+      "localized_names": {
+        "contract_origin": "dnd2024.subclass.barbarian.zealot.zealous-presence",
+        "zh-CN": "扩展规则样例 01"
+      },
+      "class_name": "扩展包职业",
+      "subclass_name": "扩展包子职业",
+      "level": 10,
+      "source_completeness": "complete",
+      "clauses": [
+        {
+          "clause_id": "battle-cry",
+          "trigger": "explicit_activation",
+          "conditions": [],
+          "activation": "explicit_choice",
+          "action_economy": "bonus_action",
+          "resource_costs": [],
+          "resource_recovery": [],
+          "required_inputs": [],
+          "targeting": {
+            "kind": "ally",
+            "parameters": {
+              "maximum": 10,
+              "range_ft": 60
+            }
+          },
+          "effects": [
+            {
+              "operator": "consume_resource",
+              "parameters": {
+                "amount": 1,
+                "operation": "consume",
+                "resource_key": "zealous_presence"
+              }
+            },
+            {
+              "operator": "create_timed_modifier",
+              "parameters": {
+                "applies_when": "until_actor_next_turn_start",
+                "duration": "current_turn",
+                "operation": "advantage",
+                "scope": "target",
+                "stat": "attack_roll",
+                "value": 1
+              }
+            },
+            {
+              "operator": "create_timed_modifier",
+              "parameters": {
+                "applies_when": "until_actor_next_turn_start",
+                "duration": "current_turn",
+                "operation": "advantage",
+                "scope": "target",
+                "stat": "saving_throw",
+                "value": 1
+              }
+            }
+          ],
+          "duration": "current_turn",
+          "expiry": null,
+          "stacking": "replace_same_source",
+          "frequency": null,
+          "persistence": "character.feature_runtime",
+          "visibility": "owner",
+          "audit": {
+            "batch": "harvest-viii",
+            "source": "authored_ir"
+          }
+        },
+        {
+          "clause_id": "long-rest-recovery",
+          "trigger": "long_rest_completed",
+          "conditions": [],
+          "activation": "automatic",
+          "action_economy": "none",
+          "resource_costs": [],
+          "resource_recovery": [],
+          "required_inputs": [],
+          "targeting": {
+            "kind": "self",
+            "parameters": {}
+          },
+          "effects": [
+            {
+              "operator": "restore_resource",
+              "parameters": {
+                "amount": 1,
+                "operation": "set_to_max",
+                "resource_key": "zealous_presence"
+              }
+            }
+          ],
+          "duration": "advancement_persistent",
+          "expiry": null,
+          "stacking": "replace_same_source",
+          "frequency": null,
+          "persistence": "character.feature_runtime",
+          "visibility": "owner",
+          "audit": {
+            "batch": "harvest-viii",
+            "source": "authored_ir"
+          }
+        },
+        {
+          "clause_id": "rage-reset",
+          "trigger": "explicit_activation",
+          "conditions": [],
+          "activation": "explicit_choice",
+          "action_economy": "none",
+          "resource_costs": [],
+          "resource_recovery": [],
+          "required_inputs": [],
+          "targeting": {
+            "kind": "self",
+            "parameters": {}
+          },
+          "effects": [
+            {
+              "operator": "exchange_resource",
+              "parameters": {
+                "amount": 1,
+                "from_resource_key": "rage",
+                "operation": "exchange",
+                "to_resource_key": "zealous_presence"
+              }
+            }
+          ],
+          "duration": "advancement_persistent",
+          "expiry": null,
+          "stacking": "replace_same_source",
+          "frequency": null,
+          "persistence": "character.feature_runtime",
+          "visibility": "owner",
+          "audit": {
+            "batch": "harvest-viii",
+            "source": "authored_ir"
+          }
+        }
+      ],
+      "dependencies": [],
+      "compatibility": {
+        "contract_origin": "dnd2024.subclass.barbarian.zealot.zealous-presence",
+        "core_code_change_required": false,
+        "portable_pack_contract": true,
+        "runtime_source": "feature_ir",
+        "source_excerpt_sha256": "08389de29da5e8b7db829102776c087eab44f6d9b03febce9ed82416f97e1172"
+      }
+    },
+    {
+      "schema_version": "feature-ir-1",
+      "feature_id": "expansion2026.feature.02",
+      "namespace": "dnd.expansion.proof",
+      "pack_id": "dnd-expansion-proof-2026",
+      "pack_version": "1.0.0",
+      "ruleset_version": "2024",
+      "source_record_id": "expansion-source-02",
+      "source_name": "扩展规则样例 02",
+      "source_trust": "authored_ir",
+      "localized_names": {
+        "contract_origin": "dnd2024.subclass.druid.moon.improved-circle-forms",
+        "zh-CN": "扩展规则样例 02"
+      },
+      "class_name": "扩展包职业",
+      "subclass_name": "扩展包子职业",
+      "level": 6,
+      "source_completeness": "complete",
+      "clauses": [
+        {
+          "clause_id": "wild-shape-radiant-damage-choice",
+          "trigger": "damage_before_apply",
+          "conditions": [
+            {
+              "kind": "actor_has_state",
+              "parameters": {
+                "state": "wild_shape"
+              }
+            }
+          ],
+          "activation": "automatic",
+          "action_economy": "none",
+          "resource_costs": [],
+          "resource_recovery": [],
+          "required_inputs": [
+            {
+              "key": "wild_shape_damage_type",
+              "kind": "choice",
+              "parameters": {
+                "options": [
+                  "normal",
+                  "radiant"
+                ],
+                "requires_ui": "damage_type_choice"
+              }
+            }
+          ],
+          "targeting": {
+            "kind": "enemy",
+            "parameters": {}
+          },
+          "effects": [
+            {
+              "operator": "replace_damage_type",
+              "parameters": {
+                "applies_when": "player_selects_radiant",
+                "from_type": "wild_shape_attack_damage_type",
+                "to_type": "radiant"
+              }
+            }
+          ],
+          "duration": "advancement_persistent",
+          "expiry": null,
+          "stacking": "replace_same_source",
+          "frequency": null,
+          "persistence": "character.feature_runtime",
+          "visibility": "owner",
+          "audit": {
+            "batch": "harvest-viii",
+            "source": "authored_ir"
+          }
+        },
+        {
+          "clause_id": "wild-shape-constitution-save-bonus",
+          "trigger": "saving_throw",
+          "conditions": [
+            {
+              "kind": "actor_has_state",
+              "parameters": {
+                "state": "wild_shape"
+              }
+            }
+          ],
+          "activation": "automatic",
+          "action_economy": "none",
+          "resource_costs": [],
+          "resource_recovery": [],
+          "required_inputs": [],
+          "targeting": {
+            "kind": "self",
+            "parameters": {}
+          },
+          "effects": [
+            {
+              "operator": "add_modifier",
+              "parameters": {
+                "applies_when": "actor_in_wild_shape",
+                "operation": "add",
+                "scope": "self",
+                "stat": "constitution_saving_throw",
+                "value_source": "wisdom_modifier"
+              }
+            }
+          ],
+          "duration": "advancement_persistent",
+          "expiry": null,
+          "stacking": "replace_same_source",
+          "frequency": null,
+          "persistence": "character.feature_runtime",
+          "visibility": "owner",
+          "audit": {
+            "batch": "harvest-viii",
+            "source": "authored_ir"
+          }
+        }
+      ],
+      "dependencies": [],
+      "compatibility": {
+        "contract_origin": "dnd2024.subclass.druid.moon.improved-circle-forms",
+        "core_code_change_required": false,
+        "portable_pack_contract": true,
+        "runtime_source": "feature_ir",
+        "source_excerpt_sha256": "00c7b7dc1541c66f6f8d18036f16ec6c2667862f52fc983bb685f27b8a2af78e"
+      }
+    },
+    {
+      "schema_version": "feature-ir-1",
+      "feature_id": "expansion2026.feature.03",
+      "namespace": "dnd.expansion.proof",
+      "pack_id": "dnd-expansion-proof-2026",
+      "pack_version": "1.0.0",
+      "ruleset_version": "2024",
+      "source_record_id": "expansion-source-03",
+      "source_name": "扩展规则样例 03",
+      "source_trust": "authored_ir",
+      "localized_names": {
+        "contract_origin": "dnd2024.subclass.fighter.psi-warrior.bulwark-of-force",
+        "zh-CN": "扩展规则样例 03"
+      },
+      "class_name": "扩展包职业",
+      "subclass_name": "扩展包子职业",
+      "level": 15,
+      "source_completeness": "complete",
+      "clauses": [
+        {
+          "clause_id": "activate-half-cover",
+          "trigger": "explicit_activation",
+          "conditions": [],
+          "activation": "explicit_choice",
+          "action_economy": "bonus_action",
+          "resource_costs": [],
+          "resource_recovery": [],
+          "required_inputs": [],
+          "targeting": {
+            "kind": "ally",
+            "parameters": {
+              "include_self": true,
+              "maximum": "intelligence_modifier_min_1",
+              "range_ft": 30
+            }
+          },
+          "effects": [
+            {
+              "operator": "consume_resource",
+              "parameters": {
+                "amount": 1,
+                "operation": "consume",
+                "resource_key": "bulwark_of_force"
+              }
+            },
+            {
+              "operator": "create_timed_modifier",
+              "parameters": {
+                "applies_when": "actor_not_incapacitated",
+                "duration": "one_minute",
+                "operation": "set",
+                "scope": "target",
+                "stat": "cover",
+                "value": 2
+              }
+            }
+          ],
+          "duration": "one_minute",
+          "expiry": null,
+          "stacking": "replace_same_source",
+          "frequency": null,
+          "persistence": "character.feature_runtime",
+          "visibility": "owner",
+          "audit": {
+            "batch": "harvest-viii",
+            "source": "authored_ir"
+          }
+        },
+        {
+          "clause_id": "long-rest-recovery",
+          "trigger": "long_rest_completed",
+          "conditions": [],
+          "activation": "automatic",
+          "action_economy": "none",
+          "resource_costs": [],
+          "resource_recovery": [],
+          "required_inputs": [],
+          "targeting": {
+            "kind": "self",
+            "parameters": {}
+          },
+          "effects": [
+            {
+              "operator": "restore_resource",
+              "parameters": {
+                "amount": 1,
+                "operation": "set_to_max",
+                "resource_key": "bulwark_of_force"
+              }
+            }
+          ],
+          "duration": "advancement_persistent",
+          "expiry": null,
+          "stacking": "replace_same_source",
+          "frequency": null,
+          "persistence": "character.feature_runtime",
+          "visibility": "owner",
+          "audit": {
+            "batch": "harvest-viii",
+            "source": "authored_ir"
+          }
+        },
+        {
+          "clause_id": "psi-die-reset",
+          "trigger": "explicit_activation",
+          "conditions": [],
+          "activation": "explicit_choice",
+          "action_economy": "none",
+          "resource_costs": [],
+          "resource_recovery": [],
+          "required_inputs": [],
+          "targeting": {
+            "kind": "self",
+            "parameters": {}
+          },
+          "effects": [
+            {
+              "operator": "exchange_resource",
+              "parameters": {
+                "amount": 1,
+                "from_resource_key": "psi_energy_dice",
+                "operation": "exchange",
+                "to_resource_key": "bulwark_of_force"
+              }
+            }
+          ],
+          "duration": "advancement_persistent",
+          "expiry": null,
+          "stacking": "replace_same_source",
+          "frequency": null,
+          "persistence": "character.feature_runtime",
+          "visibility": "owner",
+          "audit": {
+            "batch": "harvest-viii",
+            "source": "authored_ir"
+          }
+        }
+      ],
+      "dependencies": [],
+      "compatibility": {
+        "contract_origin": "dnd2024.subclass.fighter.psi-warrior.bulwark-of-force",
+        "core_code_change_required": false,
+        "portable_pack_contract": true,
+        "runtime_source": "feature_ir",
+        "source_excerpt_sha256": "3eceb79d2952141abb1220dbbd5d92024b9751f811a56babcf8b321d0f9b9519"
+      }
+    },
+    {
+      "schema_version": "feature-ir-1",
+      "feature_id": "expansion2026.feature.04",
+      "namespace": "dnd.expansion.proof",
+      "pack_id": "dnd-expansion-proof-2026",
+      "pack_version": "1.0.0",
+      "ruleset_version": "2024",
+      "source_record_id": "expansion-source-04",
+      "source_name": "扩展规则样例 04",
+      "source_trust": "authored_ir",
+      "localized_names": {
+        "contract_origin": "dnd2024.subclass.paladin.devotion.smite-of-protection",
+        "zh-CN": "扩展规则样例 04"
+      },
+      "class_name": "扩展包职业",
+      "subclass_name": "扩展包子职业",
+      "level": 15,
+      "source_completeness": "complete",
+      "clauses": [
+        {
+          "clause_id": "smite-aura-half-cover",
+          "trigger": "spell_cast",
+          "conditions": [
+            {
+              "kind": "action_tag",
+              "parameters": {
+                "tag": "divine_smite"
+              }
+            }
+          ],
+          "activation": "automatic",
+          "action_economy": "none",
+          "resource_costs": [],
+          "resource_recovery": [],
+          "required_inputs": [],
+          "targeting": {
+            "kind": "aura",
+            "parameters": {
+              "members": [
+                "self",
+                "allies"
+              ]
+            }
+          },
+          "effects": [
+            {
+              "operator": "create_timed_modifier",
+              "parameters": {
+                "applies_when": "until_actor_next_turn_start",
+                "duration": "current_turn",
+                "operation": "set",
+                "scope": "aura",
+                "stat": "cover",
+                "value": 2
+              }
+            }
+          ],
+          "duration": "current_turn",
+          "expiry": null,
+          "stacking": "replace_same_source",
+          "frequency": null,
+          "persistence": "character.feature_runtime",
+          "visibility": "owner",
+          "audit": {
+            "batch": "harvest-viii",
+            "source": "authored_ir"
+          }
+        }
+      ],
+      "dependencies": [],
+      "compatibility": {
+        "contract_origin": "dnd2024.subclass.paladin.devotion.smite-of-protection",
+        "core_code_change_required": false,
+        "portable_pack_contract": true,
+        "runtime_source": "feature_ir",
+        "source_excerpt_sha256": "7bb89dc3e1e4e48de956c868fc2209ae8d9863db4ad4f891b7c78b5dbe68d843"
+      }
+    },
+    {
+      "schema_version": "feature-ir-1",
+      "feature_id": "expansion2026.feature.05",
+      "namespace": "dnd.expansion.proof",
+      "pack_id": "dnd-expansion-proof-2026",
+      "pack_version": "1.0.0",
+      "ruleset_version": "2024",
+      "source_record_id": "expansion-source-05",
+      "source_name": "扩展规则样例 05",
+      "source_trust": "authored_ir",
+      "localized_names": {
+        "contract_origin": "dnd2024.subclass.rogue.arcane-trickster.magical-ambush",
+        "zh-CN": "扩展规则样例 05"
+      },
+      "class_name": "扩展包职业",
+      "subclass_name": "扩展包子职业",
+      "level": 9,
+      "source_completeness": "complete",
+      "clauses": [
+        {
+          "clause_id": "invisible-spell-save-disadvantage",
+          "trigger": "spell_cast",
+          "conditions": [
+            {
+              "kind": "actor_has_state",
+              "parameters": {
+                "state": "invisible"
+              }
+            }
+          ],
+          "activation": "automatic",
+          "action_economy": "none",
+          "resource_costs": [],
+          "resource_recovery": [],
+          "required_inputs": [],
+          "targeting": {
+            "kind": "enemy",
+            "parameters": {}
+          },
+          "effects": [
+            {
+              "operator": "impose_disadvantage",
+              "parameters": {
+                "applies_when": "against_triggering_spell_same_turn",
+                "operation": "disadvantage",
+                "scope": "target",
+                "stat": "saving_throw"
+              }
+            }
+          ],
+          "duration": "current_turn",
+          "expiry": null,
+          "stacking": "replace_same_source",
+          "frequency": null,
+          "persistence": "character.feature_runtime",
+          "visibility": "owner",
+          "audit": {
+            "batch": "harvest-viii",
+            "source": "authored_ir"
+          }
+        }
+      ],
+      "dependencies": [],
+      "compatibility": {
+        "contract_origin": "dnd2024.subclass.rogue.arcane-trickster.magical-ambush",
+        "core_code_change_required": false,
+        "portable_pack_contract": true,
+        "runtime_source": "feature_ir",
+        "source_excerpt_sha256": "f09ac7c2494a7b18c410cac3685d3dda99e05dd7bcf5a9cb654ef42317230c2e"
+      }
+    },
+    {
+      "schema_version": "feature-ir-1",
+      "feature_id": "expansion2026.feature.06",
+      "namespace": "dnd.expansion.proof",
+      "pack_id": "dnd-expansion-proof-2026",
+      "pack_version": "1.0.0",
+      "ruleset_version": "2024",
+      "source_record_id": "expansion-source-06",
+      "source_name": "扩展规则样例 06",
+      "source_trust": "authored_ir",
+      "localized_names": {
+        "contract_origin": "dnd2024.subclass.rogue.assassin.assassinate",
+        "zh-CN": "扩展规则样例 06"
+      },
+      "class_name": "扩展包职业",
+      "subclass_name": "扩展包子职业",
+      "level": 3,
+      "source_completeness": "complete",
+      "clauses": [
+        {
+          "clause_id": "initiative-advantage",
+          "trigger": "initiative_rolled",
+          "conditions": [],
+          "activation": "automatic",
+          "action_economy": "none",
+          "resource_costs": [],
+          "resource_recovery": [],
+          "required_inputs": [],
+          "targeting": {
+            "kind": "self",
+            "parameters": {}
+          },
+          "effects": [
+            {
+              "operator": "impose_advantage",
+              "parameters": {
+                "applies_when": "initiative_roll",
+                "operation": "advantage",
+                "scope": "self",
+                "stat": "initiative"
+              }
+            }
+          ],
+          "duration": "current_round",
+          "expiry": null,
+          "stacking": "replace_same_source",
+          "frequency": null,
+          "persistence": "character.feature_runtime",
+          "visibility": "owner",
+          "audit": {
+            "batch": "harvest-viii",
+            "source": "authored_ir"
+          }
+        },
+        {
+          "clause_id": "first-round-attack-advantage",
+          "trigger": "attack_declared",
+          "conditions": [
+            {
+              "kind": "first_round",
+              "parameters": {}
+            },
+            {
+              "kind": "target_has_not_acted",
+              "parameters": {}
+            }
+          ],
+          "activation": "automatic",
+          "action_economy": "none",
+          "resource_costs": [],
+          "resource_recovery": [],
+          "required_inputs": [],
+          "targeting": {
+            "kind": "self",
+            "parameters": {}
+          },
+          "effects": [
+            {
+              "operator": "impose_advantage",
+              "parameters": {
+                "applies_when": "target_has_not_acted_first_round",
+                "operation": "advantage",
+                "scope": "outgoing",
+                "stat": "attack_roll"
+              }
+            }
+          ],
+          "duration": "current_round",
+          "expiry": null,
+          "stacking": "replace_same_source",
+          "frequency": null,
+          "persistence": "character.feature_runtime",
+          "visibility": "owner",
+          "audit": {
+            "batch": "harvest-viii",
+            "source": "authored_ir"
+          }
+        },
+        {
+          "clause_id": "first-round-sneak-attack-damage",
+          "trigger": "attack_hit",
+          "conditions": [
+            {
+              "kind": "first_round",
+              "parameters": {}
+            },
+            {
+              "kind": "target_has_not_acted",
+              "parameters": {}
+            },
+            {
+              "kind": "action_tag",
+              "parameters": {
+                "tag": "sneak_attack"
+              }
+            },
+            {
+              "kind": "once_per_target",
+              "parameters": {}
+            }
+          ],
+          "activation": "automatic",
+          "action_economy": "none",
+          "resource_costs": [],
+          "resource_recovery": [],
+          "required_inputs": [],
+          "targeting": {
+            "kind": "enemy",
+            "parameters": {}
+          },
+          "effects": [
+            {
+              "operator": "add_damage",
+              "parameters": {
+                "applies_when": "first_round_sneak_attack",
+                "damage_type": "weapon_damage_type",
+                "formula": "rogue_level"
+              }
+            }
+          ],
+          "duration": "current_round",
+          "expiry": null,
+          "stacking": "replace_same_source",
+          "frequency": null,
+          "persistence": "character.feature_runtime",
+          "visibility": "owner",
+          "audit": {
+            "batch": "harvest-viii",
+            "source": "authored_ir"
+          }
+        }
+      ],
+      "dependencies": [],
+      "compatibility": {
+        "contract_origin": "dnd2024.subclass.rogue.assassin.assassinate",
+        "core_code_change_required": false,
+        "portable_pack_contract": true,
+        "runtime_source": "feature_ir",
+        "source_excerpt_sha256": "9375a91a0dddc2a575a038176321cac18985c4a0861b6fd6b2eb64799a9da542"
+      }
+    },
+    {
+      "schema_version": "feature-ir-1",
+      "feature_id": "expansion2026.feature.07",
+      "namespace": "dnd.expansion.proof",
+      "pack_id": "dnd-expansion-proof-2026",
+      "pack_version": "1.0.0",
+      "ruleset_version": "2024",
+      "source_record_id": "expansion-source-07",
+      "source_name": "扩展规则样例 07",
+      "source_trust": "authored_ir",
+      "localized_names": {
+        "contract_origin": "dnd2024.subclass.warlock.celestial.celestial-resilience",
+        "zh-CN": "扩展规则样例 07"
+      },
+      "class_name": "扩展包职业",
+      "subclass_name": "扩展包子职业",
+      "level": 10,
+      "source_completeness": "complete",
+      "clauses": [
+        {
+          "clause_id": "short_rest_completed-self-temporary-hp",
+          "trigger": "short_rest_completed",
+          "conditions": [],
+          "activation": "automatic",
+          "action_economy": "none",
+          "resource_costs": [],
+          "resource_recovery": [],
+          "required_inputs": [],
+          "targeting": {
+            "kind": "self",
+            "parameters": {}
+          },
+          "effects": [
+            {
+              "operator": "grant_temporary_hp",
+              "parameters": {
+                "formula": "warlock_level+charisma_modifier",
+                "source": "celestial_resilience"
+              }
+            }
+          ],
+          "duration": "advancement_persistent",
+          "expiry": null,
+          "stacking": "replace_same_source",
+          "frequency": null,
+          "persistence": "character.feature_runtime",
+          "visibility": "owner",
+          "audit": {
+            "batch": "harvest-viii",
+            "source": "authored_ir"
+          }
+        },
+        {
+          "clause_id": "long_rest_completed-self-temporary-hp",
+          "trigger": "long_rest_completed",
+          "conditions": [],
+          "activation": "automatic",
+          "action_economy": "none",
+          "resource_costs": [],
+          "resource_recovery": [],
+          "required_inputs": [],
+          "targeting": {
+            "kind": "self",
+            "parameters": {}
+          },
+          "effects": [
+            {
+              "operator": "grant_temporary_hp",
+              "parameters": {
+                "formula": "warlock_level+charisma_modifier",
+                "source": "celestial_resilience"
+              }
+            }
+          ],
+          "duration": "advancement_persistent",
+          "expiry": null,
+          "stacking": "replace_same_source",
+          "frequency": null,
+          "persistence": "character.feature_runtime",
+          "visibility": "owner",
+          "audit": {
+            "batch": "harvest-viii",
+            "source": "authored_ir"
+          }
+        },
+        {
+          "clause_id": "explicit_activation-self-temporary-hp",
+          "trigger": "explicit_activation",
+          "conditions": [],
+          "activation": "automatic",
+          "action_economy": "none",
+          "resource_costs": [],
+          "resource_recovery": [],
+          "required_inputs": [],
+          "targeting": {
+            "kind": "self",
+            "parameters": {}
+          },
+          "effects": [
+            {
+              "operator": "grant_temporary_hp",
+              "parameters": {
+                "formula": "warlock_level+charisma_modifier",
+                "source": "celestial_resilience"
+              }
+            }
+          ],
+          "duration": "advancement_persistent",
+          "expiry": null,
+          "stacking": "replace_same_source",
+          "frequency": null,
+          "persistence": "character.feature_runtime",
+          "visibility": "owner",
+          "audit": {
+            "batch": "harvest-viii",
+            "source": "authored_ir"
+          }
+        },
+        {
+          "clause_id": "short_rest_completed-allies-temporary-hp",
+          "trigger": "short_rest_completed",
+          "conditions": [],
+          "activation": "automatic",
+          "action_economy": "none",
+          "resource_costs": [],
+          "resource_recovery": [],
+          "required_inputs": [],
+          "targeting": {
+            "kind": "ally",
+            "parameters": {
+              "maximum": 5,
+              "visible": true
+            }
+          },
+          "effects": [
+            {
+              "operator": "grant_temporary_hp",
+              "parameters": {
+                "formula": "floor(warlock_level/2)+charisma_modifier",
+                "source": "celestial_resilience"
+              }
+            }
+          ],
+          "duration": "advancement_persistent",
+          "expiry": null,
+          "stacking": "replace_same_source",
+          "frequency": null,
+          "persistence": "character.feature_runtime",
+          "visibility": "owner",
+          "audit": {
+            "batch": "harvest-viii",
+            "source": "authored_ir"
+          }
+        },
+        {
+          "clause_id": "long_rest_completed-allies-temporary-hp",
+          "trigger": "long_rest_completed",
+          "conditions": [],
+          "activation": "automatic",
+          "action_economy": "none",
+          "resource_costs": [],
+          "resource_recovery": [],
+          "required_inputs": [],
+          "targeting": {
+            "kind": "ally",
+            "parameters": {
+              "maximum": 5,
+              "visible": true
+            }
+          },
+          "effects": [
+            {
+              "operator": "grant_temporary_hp",
+              "parameters": {
+                "formula": "floor(warlock_level/2)+charisma_modifier",
+                "source": "celestial_resilience"
+              }
+            }
+          ],
+          "duration": "advancement_persistent",
+          "expiry": null,
+          "stacking": "replace_same_source",
+          "frequency": null,
+          "persistence": "character.feature_runtime",
+          "visibility": "owner",
+          "audit": {
+            "batch": "harvest-viii",
+            "source": "authored_ir"
+          }
+        },
+        {
+          "clause_id": "explicit_activation-allies-temporary-hp",
+          "trigger": "explicit_activation",
+          "conditions": [],
+          "activation": "automatic",
+          "action_economy": "none",
+          "resource_costs": [],
+          "resource_recovery": [],
+          "required_inputs": [],
+          "targeting": {
+            "kind": "ally",
+            "parameters": {
+              "maximum": 5,
+              "visible": true
+            }
+          },
+          "effects": [
+            {
+              "operator": "grant_temporary_hp",
+              "parameters": {
+                "formula": "floor(warlock_level/2)+charisma_modifier",
+                "source": "celestial_resilience"
+              }
+            }
+          ],
+          "duration": "advancement_persistent",
+          "expiry": null,
+          "stacking": "replace_same_source",
+          "frequency": null,
+          "persistence": "character.feature_runtime",
+          "visibility": "owner",
+          "audit": {
+            "batch": "harvest-viii",
+            "source": "authored_ir"
+          }
+        }
+      ],
+      "dependencies": [],
+      "compatibility": {
+        "contract_origin": "dnd2024.subclass.warlock.celestial.celestial-resilience",
+        "core_code_change_required": false,
+        "portable_pack_contract": true,
+        "runtime_source": "feature_ir",
+        "source_excerpt_sha256": "82b48fbec526d877d2a7659bc33fbfb4e1f2eda71538e6bc3337c37e8145c654"
+      }
+    },
+    {
+      "schema_version": "feature-ir-1",
+      "feature_id": "expansion2026.feature.08",
+      "namespace": "dnd.expansion.proof",
+      "pack_id": "dnd-expansion-proof-2026",
+      "pack_version": "1.0.0",
+      "ruleset_version": "2024",
+      "source_record_id": "expansion-source-08",
+      "source_name": "扩展规则样例 08",
+      "source_trust": "authored_ir",
+      "localized_names": {
+        "contract_origin": "dnd2024.subclass.warlock.great-old-one.eldritch-hex",
+        "zh-CN": "扩展规则样例 08"
+      },
+      "class_name": "扩展包职业",
+      "subclass_name": "扩展包子职业",
+      "level": 10,
+      "source_completeness": "complete",
+      "clauses": [
+        {
+          "clause_id": "always-prepared-hex",
+          "trigger": "advancement_confirmed",
+          "conditions": [],
+          "activation": "automatic",
+          "action_economy": "none",
+          "resource_costs": [],
+          "resource_recovery": [],
+          "required_inputs": [],
+          "targeting": {
+            "kind": "self",
+            "parameters": {}
+          },
+          "effects": [
+            {
+              "operator": "prepare_spell",
+              "parameters": {
+                "preparation_mode": "always_prepared",
+                "source_class": "魔契师",
+                "spell_id": "脆弱诅咒"
+              }
+            }
+          ],
+          "duration": "advancement_persistent",
+          "expiry": null,
+          "stacking": "replace_same_source",
+          "frequency": null,
+          "persistence": "character.feature_runtime",
+          "visibility": "owner",
+          "audit": {
+            "batch": "harvest-viii",
+            "source": "authored_ir"
+          }
+        },
+        {
+          "clause_id": "hex-chosen-ability-save-disadvantage",
+          "trigger": "saving_throw",
+          "conditions": [
+            {
+              "kind": "target_has_state",
+              "parameters": {
+                "state": "hexed_by_actor"
+              }
+            },
+            {
+              "kind": "target_matches_persisted_id",
+              "parameters": {
+                "key": "hex_target_id"
+              }
+            }
+          ],
+          "activation": "automatic",
+          "action_economy": "none",
+          "resource_costs": [],
+          "resource_recovery": [],
+          "required_inputs": [],
+          "targeting": {
+            "kind": "enemy",
+            "parameters": {}
+          },
+          "effects": [
+            {
+              "operator": "impose_disadvantage",
+              "parameters": {
+                "applies_when": "hex_selected_ability",
+                "operation": "disadvantage",
+                "scope": "target",
+                "stat": "saving_throw"
+              }
+            }
+          ],
+          "duration": "until_condition_ends",
+          "expiry": null,
+          "stacking": "replace_same_source",
+          "frequency": null,
+          "persistence": "character.feature_runtime",
+          "visibility": "owner",
+          "audit": {
+            "batch": "harvest-viii",
+            "source": "authored_ir"
+          }
+        }
+      ],
+      "dependencies": [],
+      "compatibility": {
+        "contract_origin": "dnd2024.subclass.warlock.great-old-one.eldritch-hex",
+        "core_code_change_required": false,
+        "portable_pack_contract": true,
+        "runtime_source": "feature_ir",
+        "source_excerpt_sha256": "feac19dab4ad2b9ab670794887b8919c62fbe5b573900caf4598587bd6eadf39"
+      }
+    }
+  ],
+  "compatibility": {
+    "minimum_feature_ir_schema": "feature-ir-1",
+    "requires_feature_name_branch": false,
+    "portable_contracts": true
+  },
+  "migration": {
+    "breaking_change": false,
+    "rollback": "remove pack version and restore registry index"
+  }
+}

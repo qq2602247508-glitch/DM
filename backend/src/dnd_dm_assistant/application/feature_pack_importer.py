@@ -9,6 +9,7 @@ compile contracts.
 from __future__ import annotations
 
 import json
+import os
 import re
 from collections.abc import Mapping
 from dataclasses import dataclass, replace
@@ -136,6 +137,32 @@ class FeaturePackManifest:
                 raise FeaturePackImportError(
                     f"{path}.features[{feature.feature_id}] pack_version mismatch"
                 )
+            if feature.ruleset_version != ruleset_version:
+                raise FeaturePackImportError(
+                    f"{path}.features[{feature.feature_id}] ruleset_version mismatch"
+                )
+        source_metadata = _mapping(
+            data.get("source_metadata", {}),
+            f"{path}.source_metadata",
+        )
+        raw_source_fingerprints = source_metadata.get("feature_source_fingerprints")
+        if raw_source_fingerprints is not None:
+            fingerprints = _mapping(
+                raw_source_fingerprints,
+                f"{path}.source_metadata.feature_source_fingerprints",
+            )
+            expected_ids = set(ids)
+            if set(fingerprints) != expected_ids:
+                raise FeaturePackImportError(
+                    f"{path}.source_metadata.feature_source_fingerprints "
+                    "must contain every feature_id exactly once"
+                )
+            for feature_id, fingerprint in fingerprints.items():
+                if not isinstance(fingerprint, str) or not fingerprint.strip():
+                    raise FeaturePackImportError(
+                        f"{path}.source_metadata.feature_source_fingerprints"
+                        f"[{feature_id}] must be a non-empty string"
+                    )
         return cls(
             schema_version=schema_version,
             pack_id=pack_id,
@@ -143,7 +170,7 @@ class FeaturePackManifest:
             ruleset_version=ruleset_version,
             namespace=namespace,
             display_name=display_name,
-            source_metadata=_mapping(data.get("source_metadata", {}), f"{path}.source_metadata"),
+            source_metadata=source_metadata,
             source_trust=source_trust,
             dependencies=dependencies,
             features=features,
@@ -246,14 +273,32 @@ class FeaturePackImporter:
     def apply(self, manifest: FeaturePackManifest) -> FeaturePackImportResult:
         if self.target_dir is None:
             raise FeaturePackImportError("apply requires a target_dir")
+        target = self.target_dir
+        target.mkdir(parents=True, exist_ok=True)
+        path = self._manifest_path(manifest.pack_id, manifest.pack_version)
+        lock_path = target / f".{path.name}.lock"
+        try:
+            lock_fd = os.open(lock_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
+        except FileExistsError as exc:
+            raise FeaturePackImportError(
+                f"concurrent apply in progress: {manifest.pack_id}@{manifest.pack_version}"
+            ) from exc
+        try:
+            return self._apply_locked(manifest, path)
+        finally:
+            os.close(lock_fd)
+            lock_path.unlink(missing_ok=True)
+
+    def _apply_locked(
+        self,
+        manifest: FeaturePackManifest,
+        path: Path,
+    ) -> FeaturePackImportResult:
         result = self.dry_run(manifest)
         if any(item.compile_status == "invalid" for item in result.feature_results):
             raise FeaturePackImportError("invalid feature cannot be applied")
         if result.conflicts:
             raise FeaturePackImportError("; ".join(result.conflicts))
-        target = self.target_dir
-        target.mkdir(parents=True, exist_ok=True)
-        path = self._manifest_path(manifest.pack_id, manifest.pack_version)
         runtime_contracts: dict[str, dict[str, Any]] = {}
         for feature, feature_result in zip(
             sorted(manifest.features, key=lambda item: item.feature_id),
@@ -296,8 +341,25 @@ class FeaturePackImporter:
                     "idempotent_replay": True,
                 }
             )
-        path.write_text(serialized, encoding="utf-8")
-        self._write_index(manifest, path, result, runtime_contracts)
+        index_path = self._index_path()
+        index_before = index_path.read_bytes() if index_path.exists() else None
+        temp_path = path.with_name(f".{path.name}.tmp")
+        try:
+            temp_path.write_text(serialized, encoding="utf-8")
+            temp_path.replace(path)
+            self._write_index(manifest, path, result, runtime_contracts)
+        except Exception as exc:
+            temp_path.unlink(missing_ok=True)
+            path.unlink(missing_ok=True)
+            if index_before is None:
+                index_path.unlink(missing_ok=True)
+            else:
+                index_path.write_bytes(index_before)
+            if isinstance(exc, FeaturePackImportError):
+                raise
+            raise FeaturePackImportError(
+                f"pack apply rolled back: {manifest.pack_id}@{manifest.pack_version}"
+            ) from exc
         return FeaturePackImportResult(
             **{
                 **result.__dict__,
@@ -389,7 +451,23 @@ class FeaturePackImporter:
             index = json.loads(index_path.read_text(encoding="utf-8"))
         except json.JSONDecodeError:
             return ("feature pack index is invalid",), {}
-        prior = index.get("packs", {}).get(manifest.pack_id)
+        packs = index.get("packs", {})
+        current_ids = {item.feature_id for item in manifest.features}
+        duplicate_conflicts: list[str] = []
+        if isinstance(packs, Mapping):
+            for other_pack_id, raw_record in packs.items():
+                if other_pack_id == manifest.pack_id or not isinstance(raw_record, Mapping):
+                    continue
+                records = raw_record.get("feature_records", {})
+                if not isinstance(records, Mapping):
+                    continue
+                for feature_id in sorted(current_ids & set(records)):
+                    duplicate_conflicts.append(
+                        f"feature_id {feature_id!r} already registered by pack {other_pack_id!r}"
+                    )
+        if duplicate_conflicts:
+            return tuple(duplicate_conflicts), {}
+        prior = packs.get(manifest.pack_id) if isinstance(packs, Mapping) else None
         if not isinstance(prior, Mapping):
             return (), {"kind": "new_pack", "changed_features": []}
         previous_version = prior.get("pack_version")

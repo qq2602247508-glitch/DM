@@ -1,0 +1,15 @@
+{
+  "kind": "source-reviewed-authored-ir-fixture",
+  "date": "2026-08-10",
+  "feature_source_fingerprints": {
+    "expansion2026.feature.01": "3b5d43b6e93134c7cdc62558f4feb013f32d40fbf16a03afd370efd074d40d33",
+    "expansion2026.feature.02": "c34c442061f00a83f5832ae884bb5aa43a348db7ef2aa0b69c8331a24c38ea08",
+    "expansion2026.feature.03": "c6f9863f0944745069dbdcce99bad436ae4e922d4e7c050b66abeaed727d92d0",
+    "expansion2026.feature.04": "8aff2554f6f9051853fe345b20b4c0a77781fc07314df7f5ae42bf1722b8871c",
+    "expansion2026.feature.05": "a267bcc0dd799bb1825efd6302e96d2a0e52a062bbcab715597214f72c6651e3",
+    "expansion2026.feature.06": "4fd5101fd20a90c2bec747253c16804a2a32713d6b7f5d3c5cfa176899a4eabd",
+    "expansion2026.feature.07": "1debe2cccfa40b5e06d7a2bb363f0685e748a9d61ab4d0abd1b6c4cf134968cd",
+    "expansion2026.feature.08": "32585bc4a65333cb17514151be619305303d68a9aef31f387181b1dc5cb9e39c"
+  },
+  "natural_language_autocompile": false
+}
