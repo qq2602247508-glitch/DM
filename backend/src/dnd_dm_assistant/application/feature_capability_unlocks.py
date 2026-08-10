@@ -127,12 +127,18 @@ def plan_capability_unlocks(corpus: Mapping[str, Any]) -> dict[str, Any]:
         )
     )
 
-    # A separate row makes the high frequency of unreviewed source visible but
-    # gives it zero unlock credit: semantic review is not an executable platform.
+    # A separate row makes reviewed-but-blocked source visible but gives it
+    # zero unlock credit: a manual boundary is not an executable platform.
     if untyped:
+        blocker_counts: dict[str, int] = defaultdict(int)
+        missing_field_counts: dict[str, int] = defaultdict(int)
+        for clause in untyped:
+            blocker_counts[str(clause.get("clause_status") or "unknown")] += 1
+            for field in clause.get("missing_fields") or ():
+                missing_field_counts[str(field)] += 1
         rows.append(
             {
-                "capability_id": "review:missing_semantic_contract",
+                "capability_id": "review:manual_boundary",
                 "normalized_missing_contract": None,
                 "occurrence_count": len(untyped),
                 "completion_unlock_count": 0,
@@ -148,11 +154,18 @@ def plan_capability_unlocks(corpus: Mapping[str, Any]) -> dict[str, Any]:
                 "ui_requirement": None,
                 "implementation_risk": "not_an_implementation_capability",
                 "estimated_files": [],
-                "required_tests": ["human semantic clause review"],
+                "required_tests": ["authored semantic clause review"],
                 "existing_consumer_reused": False,
                 "new_bounded_platform_required": False,
                 "field_equivalence_proof": (
-                    "not eligible: at least one required operational field is unknown"
+                    "not eligible: reviewed clause has an explicit manual boundary"
+                ),
+                "blocker_status_counts": dict(sorted(blocker_counts.items())),
+                "missing_field_counts": dict(
+                    sorted(
+                        missing_field_counts.items(),
+                        key=lambda item: (-item[1], item[0]),
+                    )
                 ),
             }
         )
@@ -163,6 +176,13 @@ def plan_capability_unlocks(corpus: Mapping[str, Any]) -> dict[str, Any]:
         "clause_count": len(clauses),
         "typed_missing_contract_count": sum(len(items) for items in by_capability.values()),
         "untyped_clause_count": len(untyped),
+        "reviewed_clause_count": len(clauses),
+        "manual_boundary_clause_count": sum(
+            item.get("clause_status") == "manual_boundary" for item in clauses
+        ),
+        "source_incomplete_clause_count": sum(
+            item.get("clause_status") == "source_incomplete" for item in clauses
+        ),
         "ranking": rows,
         "eligible_capability_ids": [item["capability_id"] for item in eligible],
         "qualified_cluster_found": bool(eligible),
