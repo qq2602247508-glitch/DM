@@ -37,6 +37,7 @@ TRIGGER_EVENTS = frozenset(
         "after_attack_miss",
         "after_feature_resource_spent",
         "after_teleport",
+        "after_rage_activation",
     }
 )
 TRIGGER_EFFECT_KINDS = frozenset(

@@ -105,6 +105,32 @@ BATCH_BUFF_FEATURES: tuple[BatchBuffFeature, ...] = (
         ),
         effect_kinds=(),
     ),
+    BatchBuffFeature(
+        key="vitality_surge",
+        name="圣树活力",
+        class_name="野蛮人",
+        subclass_name="世界树道途",
+        level=3,
+        condition="",
+        duration_value=0,
+        resource_key="",
+        resource_label="",
+        action_cost="none",
+        triggers=(
+            {
+                "id": "vitality_surge:on_rage",
+                "event": "after_rage_activation",
+                "effects": [
+                    {
+                        "kind": "grant_temporary_hp",
+                        "amount": 0,
+                        "class_level_source": "野蛮人",
+                    }
+                ],
+            },
+        ),
+        effect_kinds=(),
+    ),
 )
 
 
@@ -237,7 +263,11 @@ def batch_runtime_configs() -> dict[str, dict[str, Any]]:
 def batch_resource_updates() -> dict[str, tuple[str, dict[str, Any]]]:
     """Return the resource key/update for every batch feature by Chinese name."""
 
-    return {feature.name: _resource_entry(feature) for feature in BATCH_BUFF_FEATURES}
+    return {
+        feature.name: _resource_entry(feature)
+        for feature in BATCH_BUFF_FEATURES
+        if feature.resource_key
+    }
 
 
 def batch_keys() -> tuple[str, ...]:

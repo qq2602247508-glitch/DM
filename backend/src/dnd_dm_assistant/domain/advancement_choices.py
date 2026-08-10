@@ -6250,9 +6250,10 @@ def _subclass_resource_update(
     description = str(definition.get("description") or "")
     feature_name = str(definition.get("name") or "").strip()
     subclass_name = str(definition.get("subclass_name") or "").strip()
-    for batch_name, batch_resource in batch_resource_updates().items():
-        if feature_name.startswith(batch_name):
-            return batch_resource
+    if feature_name:
+        for batch_name, batch_resource in batch_resource_updates().items():
+            if feature_name.startswith(batch_name):
+                return batch_resource
     if feature_name.startswith("序列意识"):
         return "trance_of_order", {
             "label": feature_name,

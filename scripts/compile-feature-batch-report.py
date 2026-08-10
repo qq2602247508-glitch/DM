@@ -33,8 +33,8 @@ def build() -> dict[str, Any]:
         "audit_total": census["audit_total"],
         "before_status_counts": {"full": 315, "partial": 123, "dm_only": 61},
         "after_status_counts": status_counts,
-        "actual_new_full": 2,
-        "gross_new_full": 2,
+        "actual_new_full": 3,
+        "gross_new_full": 3,
         "false_positive_corrections": 0,
         "candidate_cluster_count": len(
             [
@@ -64,6 +64,8 @@ def build() -> dict[str, Any]:
         "production_tests": [
             "backend/tests/test_combat_action_lifecycle.py::"
             "test_batch_buff_condition_gates_flight_and_resistance_end_to_end",
+            "backend/tests/test_combat_action_lifecycle.py::"
+            "test_rage_activation_grants_vitality_surge_temporary_hp",
             "backend/tests/test_feature_batch_assembly.py",
         ],
         "census_evidence": {

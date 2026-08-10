@@ -7941,6 +7941,89 @@ class CombatEngineService:
         return applied
 
     @classmethod
+    def _apply_rage_activation_triggers(
+        cls,
+        session: Session,
+        combat: Combat,
+        *,
+        actor: Combatant,
+    ) -> list[dict[str, Any]]:
+        """Apply configuration-driven effects fired when rage activates.
+
+        Rage activation is a typed feature action that adds the ``raging``
+        runtime condition.  Subclass features may declare an
+        ``after_rage_activation`` trigger in their own runtime registry to
+        emit a supported effect (currently ``grant_temporary_hp``) without any
+        feature-name branch in this executor.
+        """
+
+        if not isinstance(actor.snapshot_json, dict):
+            return []
+        runtime = actor.snapshot_json.get("feature_runtime")
+        triggers = runtime.get("triggers") if isinstance(runtime, dict) else None
+        if not isinstance(triggers, list):
+            return []
+        applied: list[dict[str, Any]] = []
+        for raw_trigger in triggers:
+            if not isinstance(raw_trigger, Mapping):
+                continue
+            if str(raw_trigger.get("event") or "") != "after_rage_activation":
+                continue
+            trigger_result: dict[str, Any] = {
+                "trigger_id": raw_trigger.get("id"),
+                "effects": [],
+            }
+            raw_effects = raw_trigger.get("effects")
+            for raw_effect in raw_effects if isinstance(raw_effects, list) else ():
+                if not isinstance(raw_effect, Mapping):
+                    continue
+                kind = str(raw_effect.get("kind") or "")
+                if kind != "grant_temporary_hp":
+                    raise ValueError(
+                        f"狂暴激活触发器效果类型不受支持：{kind or 'unknown'}"
+                    )
+                amount = cls._state_int(raw_effect.get("amount"), 0)
+                class_name = str(raw_effect.get("class_level_source") or "").strip()
+                if class_name:
+                    runtime_data = (
+                        actor.snapshot_json.get("feature_runtime")
+                        if isinstance(actor.snapshot_json, dict)
+                        else None
+                    )
+                    progression = (
+                        runtime_data.get("progression")
+                        if isinstance(runtime_data, dict)
+                        else None
+                    )
+                    levels = (
+                        progression.get("class_levels")
+                        if isinstance(progression, dict)
+                        else None
+                    )
+                    if not isinstance(levels, dict):
+                        levels = (actor.snapshot_json or {}).get("class_levels")
+                    if isinstance(levels, dict):
+                        amount += cls._state_int(levels.get(class_name), 0)
+                amount = max(cls._state_int(raw_effect.get("minimum"), 0), amount)
+                if amount < 1:
+                    raise ValueError("狂暴激活临时生命值触发器需要正数结果")
+                before = int(actor.temporary_hp)
+                actor.temporary_hp = max(before, amount)
+                trigger_result["effects"].append(
+                    {
+                        "kind": kind,
+                        "amount": amount,
+                        "temporary_hp_before": before,
+                        "temporary_hp_after": actor.temporary_hp,
+                    }
+                )
+            if trigger_result["effects"]:
+                actor.version += 1
+                actor.updated_at = datetime.now(UTC)
+                applied.append(trigger_result)
+        return applied
+
+    @classmethod
     def _apply_post_hit_rider_effects(
         cls,
         session: Session,
@@ -17209,6 +17292,13 @@ class CombatEngineService:
                             "attacked": False,
                             "damaged": False,
                         }
+                        rage_triggers = self._apply_rage_activation_triggers(
+                            session,
+                            combat,
+                            actor=actor,
+                        )
+                        if rage_triggers:
+                            result["rage_activation_triggers"] = rage_triggers
                 elif kind == "activate_timed_condition":
                     condition = str(effect.get("condition") or "").strip()
                     expires = str(effect.get("expires") or "turn_start")
