@@ -1,0 +1,65 @@
+{
+  "schema_version": "content-ir-workbench-dry-run-summary-1",
+  "generated_from": "/tmp/content-ir-workbench/<pack-id>/dry-run-result.json",
+  "production_mutated": false,
+  "formal_feature_registry_written": false,
+  "formal_spell_registry_written": false,
+  "campaign_written": false,
+  "character_written": false,
+  "packs": [
+    {
+      "pack_id": "xanathars-guide",
+      "manifest_fingerprint": "6f8c9fc911517d20c0f8110092d2128a69bb1e3fed48a39c4e2963e63f480410",
+      "pack_version": "source-85e2a9c1578f",
+      "dry_run_status": "dry_run",
+      "typed_ir_count": 0,
+      "runtime_preview_count": 0,
+      "counts": {"full": 0, "partial": 0, "manual": 141, "invalid": 0}
+    },
+    {
+      "pack_id": "tashas-cauldron",
+      "manifest_fingerprint": "968b1a44b359d7a7cca079ecd5a5ffa97fac1b61fc2bd856f37a6949a7c656b3",
+      "pack_version": "source-85e2a9c1578f",
+      "dry_run_status": "dry_run",
+      "typed_ir_count": 0,
+      "runtime_preview_count": 0,
+      "counts": {"full": 0, "partial": 0, "manual": 72, "invalid": 0}
+    },
+    {
+      "pack_id": "fizbans-treasury",
+      "manifest_fingerprint": "b7a8def543fe54ece90a9e429b6a8e4ae5fbc9410d2ac1d4d565ffd2feb6e246",
+      "pack_version": "source-85e2a9c1578f",
+      "dry_run_status": "dry_run",
+      "typed_ir_count": 0,
+      "runtime_preview_count": 0,
+      "counts": {"full": 0, "partial": 0, "manual": 15, "invalid": 0}
+    },
+    {
+      "pack_id": "book-of-many-things",
+      "manifest_fingerprint": "7a8be17b8dda30a68696928f2c4f636938a4fbaaa8e72e41038ae1e7c0f70247",
+      "pack_version": "source-85e2a9c1578f",
+      "dry_run_status": "dry_run",
+      "typed_ir_count": 0,
+      "runtime_preview_count": 0,
+      "counts": {"full": 0, "partial": 0, "manual": 7, "invalid": 0}
+    },
+    {
+      "pack_id": "bigbys-glory",
+      "manifest_fingerprint": "de402304c1a6640a673446aa9573c6ef4a74b19c56aa9d39fb04f8f44a997a34",
+      "pack_version": "source-85e2a9c1578f",
+      "dry_run_status": "dry_run",
+      "typed_ir_count": 0,
+      "runtime_preview_count": 0,
+      "counts": {"full": 0, "partial": 0, "manual": 8, "invalid": 0}
+    },
+    {
+      "pack_id": "mordenkainen-multiverse",
+      "manifest_fingerprint": "c80df7b967bb9e485ea53c434345d5d79b3b20ce8712827afca7d01426eed3f6",
+      "pack_version": "source-85e2a9c1578f",
+      "dry_run_status": "dry_run",
+      "typed_ir_count": 0,
+      "runtime_preview_count": 0,
+      "counts": {"full": 0, "partial": 0, "manual": 0, "invalid": 0}
+    }
+  ]
+}

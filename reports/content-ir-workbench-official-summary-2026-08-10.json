@@ -1,0 +1,129 @@
+{
+  "schema_version": "content-ir-workbench-official-summary-1",
+  "generated_from": "/tmp/content-ir-workbench/all-official.json",
+  "compiler_fingerprint": "d9b023cbf709cf74bb7f2276a65c6d2939103dd9aec5977551f7854b2d93cd8c",
+  "baselines": {
+    "feature_audit_499": {
+      "full": 328,
+      "partial": 110,
+      "dm_only": 61
+    },
+    "phb_2024_spells": {
+      "source_record_count": 411,
+      "detail_candidate_count": 391
+    },
+    "phb_2014_spells": {
+      "source_record_count": 372,
+      "detail_candidate_count": 361
+    }
+  },
+  "packs": [
+    {
+      "pack_id": "xanathars-guide",
+      "source_book": "珊娜萨的万事指南",
+      "source_record_count": 325,
+      "feature_candidate_count": 25,
+      "spell_candidate_count": 95,
+      "feat_candidate_count": 1,
+      "other_player_option_count": 20,
+      "draft_count": 141,
+      "typed_ir_count": 0,
+      "full_count": 0,
+      "partial_count": 0,
+      "manual_count": 141,
+      "invalid_count": 0,
+      "source_untyped_count": 141,
+      "completion_unlock_count": 0
+    },
+    {
+      "pack_id": "tashas-cauldron",
+      "source_book": "塔莎的万事坩埚",
+      "source_record_count": 144,
+      "feature_candidate_count": 48,
+      "spell_candidate_count": 21,
+      "feat_candidate_count": 1,
+      "other_player_option_count": 2,
+      "draft_count": 72,
+      "typed_ir_count": 0,
+      "full_count": 0,
+      "partial_count": 0,
+      "manual_count": 72,
+      "invalid_count": 0,
+      "source_untyped_count": 72,
+      "completion_unlock_count": 0
+    },
+    {
+      "pack_id": "fizbans-treasury",
+      "source_book": "费资本的巨龙宝库",
+      "source_record_count": 113,
+      "feature_candidate_count": 2,
+      "spell_candidate_count": 7,
+      "feat_candidate_count": 1,
+      "other_player_option_count": 5,
+      "draft_count": 15,
+      "typed_ir_count": 0,
+      "full_count": 0,
+      "partial_count": 0,
+      "manual_count": 15,
+      "invalid_count": 0,
+      "source_untyped_count": 15,
+      "completion_unlock_count": 0
+    },
+    {
+      "pack_id": "book-of-many-things",
+      "source_book": "万象无常书",
+      "source_record_count": 195,
+      "feature_candidate_count": 0,
+      "spell_candidate_count": 3,
+      "feat_candidate_count": 1,
+      "other_player_option_count": 3,
+      "draft_count": 7,
+      "typed_ir_count": 0,
+      "full_count": 0,
+      "partial_count": 0,
+      "manual_count": 7,
+      "invalid_count": 0,
+      "source_untyped_count": 7,
+      "completion_unlock_count": 0
+    },
+    {
+      "pack_id": "bigbys-glory",
+      "source_book": "毕格比巨献：巨人之荣耀",
+      "source_record_count": 177,
+      "feature_candidate_count": 1,
+      "spell_candidate_count": 0,
+      "feat_candidate_count": 1,
+      "other_player_option_count": 6,
+      "draft_count": 8,
+      "typed_ir_count": 0,
+      "full_count": 0,
+      "partial_count": 0,
+      "manual_count": 8,
+      "invalid_count": 0,
+      "source_untyped_count": 8,
+      "completion_unlock_count": 0
+    },
+    {
+      "pack_id": "mordenkainen-multiverse",
+      "source_book": "魔邓肯巨献：多元宇宙的怪物",
+      "source_record_count": 316,
+      "feature_candidate_count": 0,
+      "spell_candidate_count": 0,
+      "feat_candidate_count": 0,
+      "other_player_option_count": 0,
+      "draft_count": 0,
+      "typed_ir_count": 0,
+      "full_count": 0,
+      "partial_count": 0,
+      "manual_count": 0,
+      "invalid_count": 0,
+      "source_untyped_count": 0,
+      "completion_unlock_count": 0
+    }
+  ],
+  "completion_unlock_ranking": [],
+  "report_replay": {
+    "byte_identical": true,
+    "verified_against": "/tmp/content-ir-workbench/all-official-replay.json"
+  }
+}
