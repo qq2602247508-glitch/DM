@@ -171,7 +171,65 @@ def semantic_signature(row: dict[str, Any]) -> dict[str, Any]:
     if _has(text, "陷入失能"):
         duration.append("until_incapacitated")
 
+    feature_id = row.get("feature_id") or row.get("stable_id")
+    if not isinstance(feature_id, str) or not feature_id.strip():
+        feature_id = (
+            f"class-feature:{row.get('scope')}:{row.get('class_name')}:"
+            f"{row.get('subclass_name') or ''}:{row.get('level')}:{row.get('feature_name')}"
+        )
+    contract = {
+        "trigger": sorted(set(trigger)),
+        "conditions": list(row.get("conditions") or ()),
+        "activation": row.get("activation") or "unknown",
+        "action_economy": sorted(set(action_economy)),
+        "target_policy": sorted(set(target)),
+        "input_requirements": list(row.get("input_requirements") or ()),
+        "resource": sorted(set(resource)),
+        "frequency": row.get("frequency") or [],
+        "duration": sorted(set(duration)),
+        "expiry": row.get("expiry") or [],
+        "effect_operator": row.get("effect_operator") or sorted(set(effects)),
+        "effect_parameters": row.get("effect_parameters") or {},
+        "producer": row.get("producer"),
+        "consumer": row.get("consumer") or sorted(set(row.get("capability_ids") or ())),
+        "persisted_state": row.get("persisted_state") or sorted(
+            set(row.get("runtime_sections") or ())
+        ),
+        "cas_support": row.get("cas_support"),
+        "idempotency_support": row.get("idempotency_support"),
+        "materializer": row.get("materializer"),
+        "validator": row.get("validator"),
+        "production_evidence": row.get("production_evidence")
+        or sorted(set(row.get("compiler_blockers") or ())),
+        "remaining_blocker": row.get("remaining_blocker")
+        or row.get("blocker")
+        or sorted(set(row.get("compiler_blockers") or ())),
+    }
+    missing_contract_fields = [
+        key
+        for key in (
+            "producer",
+            "consumer",
+            "persisted_state",
+            "cas_support",
+            "idempotency_support",
+            "materializer",
+            "validator",
+            "production_evidence",
+        )
+        if contract[key] in (None, [], "")
+    ]
+    classification = "exact_same_contract"
+    if row.get("source_parse") == "structural_placeholder":
+        classification = "source_incomplete"
+    elif missing_contract_fields:
+        classification = "missing_authority"
+    elif contract["producer"] is None:
+        classification = "missing_producer"
+    elif contract["consumer"] is None:
+        classification = "consumer_partial"
     signature: dict[str, Any] = {
+        "feature_id": feature_id,
         "scope": row.get("scope"),
         "class_name": row.get("class_name"),
         "subclass_name": row.get("subclass_name"),
@@ -187,21 +245,14 @@ def semantic_signature(row: dict[str, Any]) -> dict[str, Any]:
         "effects": sorted(set(effects)),
         "duration": sorted(set(duration)),
         "detected_blocks": sorted(set(row.get("detected_blocks") or ())),
+        "source_trust": row.get("source_trust"),
+        "semantic_contract": contract,
+        "contract_missing_fields": missing_contract_fields,
+        "classification": classification,
     }
     signature["signature_fingerprint"] = hashlib.sha256(
         json.dumps(
-            {
-                key: signature[key]
-                for key in (
-                    "action_economy",
-                    "resource",
-                    "trigger",
-                    "target",
-                    "effects",
-                    "duration",
-                    "detected_blocks",
-                )
-            },
+            contract,
             ensure_ascii=False,
             sort_keys=True,
         ).encode("utf-8")
@@ -223,6 +274,18 @@ def census() -> dict[str, Any]:
     for signature in partial:
         partial_clusters.setdefault(signature["signature_fingerprint"], []).append(signature)
 
+    superficial_groups: dict[str, list[dict[str, Any]]] = {}
+    for signature in partial:
+        coarse_key = json.dumps(
+            {
+                "effects": signature["effects"],
+                "detected_blocks": signature["detected_blocks"],
+            },
+            ensure_ascii=False,
+            sort_keys=True,
+        )
+        superficial_groups.setdefault(coarse_key, []).append(signature)
+
     cluster_rows: list[dict[str, Any]] = []
     for fingerprint, members in sorted(
         partial_clusters.items(), key=lambda item: (-len(item[1]), item[0])
@@ -232,11 +295,7 @@ def census() -> dict[str, Any]:
             {
                 "cluster_id": f"semantic:{fingerprint}",
                 "member_count": len(members),
-                "member_feature_ids": [
-                    f"{member['class_name']}:{member['subclass_name'] or ''}:"
-                    f"{member['level']}:{member['feature_name']}"
-                    for member in members
-                ],
+                "member_feature_ids": [member["feature_id"] for member in members],
                 "action_economy": first["action_economy"],
                 "resource": first["resource"],
                 "trigger": first["trigger"],
@@ -244,6 +303,19 @@ def census() -> dict[str, Any]:
                 "effects": first["effects"],
                 "duration": first["duration"],
                 "detected_blocks": first["detected_blocks"],
+                "classification": first["classification"],
+                "contract_relation": "exact_same_contract",
+                "contract_missing_fields": first["contract_missing_fields"],
+                "production_closed": not first["contract_missing_fields"]
+                and first["classification"] == "exact_same_contract",
+                "needs_new_producer": "producer" in first["contract_missing_fields"],
+                "needs_new_consumer": "consumer" in first["contract_missing_fields"],
+                "needs_new_persistence": "persisted_state" in first["contract_missing_fields"],
+                "needs_new_ui": "input_requirements" in first["contract_missing_fields"],
+                "estimated_full_count": len(members)
+                if not first["contract_missing_fields"]
+                else 0,
+                "blockers": first["semantic_contract"]["remaining_blocker"],
             }
         )
 
@@ -258,7 +330,43 @@ def census() -> dict[str, Any]:
         "status_counts": dict(Counter(signature["runtime_status"] for signature in signed)),
         "partial_total": len(partial),
         "partial_exact_cluster_count": len(partial_clusters),
+        "partial_signatures": partial,
         "largest_partial_clusters": cluster_rows[:40],
+        "equivalent_contract_candidates": [],
+        "superficially_similar_clusters": [
+            {
+                "similarity_key": (
+                    "similarity:"
+                    + hashlib.sha256(key.encode("utf-8")).hexdigest()[:16]
+                ),
+                "member_count": len(members),
+                "member_feature_ids": [item["feature_id"] for item in members],
+                "reason": (
+                    "coarse effects/blocks match but typed producer/consumer "
+                    "contract differs"
+                ),
+                "merge_allowed": False,
+            }
+            for key, members in sorted(
+                superficial_groups.items(),
+                key=lambda item: (-len(item[1]), item[0]),
+            )
+            if len(members) > 1
+            and len({item["signature_fingerprint"] for item in members}) > 1
+        ][:40],
+        "contract_relation_counts": {
+            "exact_same_contract": len(partial_clusters),
+            "equivalent_contract": 0,
+            "superficially_similar": sum(
+                1
+                for members in superficial_groups.values()
+                if len(members) > 1
+                and len({item["signature_fingerprint"] for item in members}) > 1
+            ),
+        },
+        "classification_counts": dict(
+            sorted(Counter(item["classification"] for item in partial).items())
+        ),
         "effect_counts": dict(sorted(effect_counts.items(), key=lambda item: -item[1])),
         "trigger_counts": dict(sorted(trigger_counts.items(), key=lambda item: -item[1])),
         "resource_counts": dict(sorted(resource_counts.items(), key=lambda item: -item[1])),
