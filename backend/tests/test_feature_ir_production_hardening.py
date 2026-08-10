@@ -169,7 +169,7 @@ def test_empty_unknown_and_executable_operator_parameters_fail_closed() -> None:
 
 def test_formal_and_verified_mappings_have_parity_and_authority() -> None:
     report = formal_semantic_parity()
-    assert report["feature_count"] == 14
+    assert report["feature_count"] == 16
     assert report["all_passed"] is True
     assert all(row["status"] in {"exact", "equivalent"} for row in report["rows"])
 

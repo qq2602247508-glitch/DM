@@ -266,8 +266,8 @@ def test_legacy_shadow_parity_selects_formal_and_verified_rows() -> None:
     spec.loader.exec_module(module)
     report = module.audit()
     formal = [row for row in report["rows"] if row.get("formal_ir")]
-    assert len(formal) == 14
-    assert sum(row["source_trust"] == "authored_ir" for row in formal) == 10
+    assert len(formal) == 16
+    assert sum(row["source_trust"] == "authored_ir" for row in formal) == 12
     assert sum(row["source_trust"] == "verified_mapping" for row in formal) == 4
     assert {
         row["status_authority"] for row in formal
@@ -281,7 +281,7 @@ def test_audit_rows_expose_shadow_fields_without_changing_499_statuses() -> None
     spec.loader.exec_module(module)
     report = module.audit()
     assert report["status_counts"] == {"full": 318, "partial": 120, "dm_only": 61}
-    assert report["compiler_pilot"]["count"] == 14
+    assert report["compiler_pilot"]["count"] == 16
     for row in report["rows"]:
         assert {
             "ir_available",

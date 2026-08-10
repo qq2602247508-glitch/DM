@@ -345,7 +345,11 @@ def test_batch_buff_condition_gates_flight_and_resistance_end_to_end(
     )
     grant = next(item for item in grants["grants"] if item["class_level"] == 14)
     runtime = grant["runtime"]["registry"]
-    action_id = "野蛮人:狂热者道途:divine_rage"
+    action_id = next(
+        key
+        for key, value in runtime["actions"].items()
+        if str(value.get("resource_key") or "") == "divine_rage"
+    )
     assert action_id in runtime["actions"]
     patched = combat_client.patch(
         _combatant_path(campaign, combat, actor["id"]),
