@@ -89,11 +89,11 @@ def test_census_proves_partial_corpus_has_no_large_homogeneous_cluster() -> None
     spec.loader.exec_module(module)
     report = module.census()
     assert report["audit_total"] == 499
-    assert report["status_counts"] == {"full": 320, "partial": 118, "dm_only": 61}
-    assert report["partial_total"] == 118
+    assert report["status_counts"] == {"full": 328, "partial": 110, "dm_only": 61}
+    assert report["partial_total"] == 110
     largest = report["largest_partial_clusters"][0]
     assert largest["member_count"] <= 2
-    assert report["classification_counts"] == {"missing_authority": 118}
+    assert report["classification_counts"] == {"missing_authority": 110}
     assert report["contract_relation_counts"]["equivalent_contract"] == 0
     assert report["contract_relation_counts"]["superficially_similar"] > 0
     assert all(
