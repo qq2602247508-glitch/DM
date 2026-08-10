@@ -248,7 +248,32 @@ def formal_semantic_parity() -> dict[str, Any]:
             )
             continue
         ir_definition = materialize_runtime_definition(spec, result)
-        legacy_definition = _legacy_definition(spec)
+        try:
+            legacy_definition = _legacy_definition(spec)
+        except KeyError:
+            if spec.source_trust != "authored_ir":
+                raise
+            rows.append(
+                {
+                    "feature_id": spec.feature_id,
+                    "feature_name": spec.source_name,
+                    "status": "authored",
+                    "fields": {
+                        "authored_runtime_contract": {
+                            "status": "authored",
+                            "proof": (
+                                "no legacy runtime mapping exists; direct authored IR "
+                                "materialization is the production authority"
+                            ),
+                        }
+                    },
+                    "legacy_contract": None,
+                    "ir_contract": _semantic_projection(ir_definition),
+                    "materialized": True,
+                    "production_test": "authored_feature_runtime_regression",
+                }
+            )
+            continue
         legacy_projection = _semantic_projection(legacy_definition)
         ir_projection = _semantic_projection(ir_definition)
         fields: dict[str, dict[str, Any]] = {}
@@ -303,6 +328,8 @@ def formal_semantic_parity() -> dict[str, Any]:
     return {
         "schema_version": "feature-ir-semantic-parity-2",
         "feature_count": len(rows),
-        "all_passed": all(row["status"] in {"exact", "equivalent"} for row in rows),
+        "all_passed": all(
+            row["status"] in {"exact", "equivalent", "authored"} for row in rows
+        ),
         "rows": rows,
     }

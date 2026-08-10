@@ -11,6 +11,7 @@ from collections.abc import Mapping
 from dataclasses import replace
 from typing import Any
 
+from dnd_dm_assistant.application.harvest_feature_specs import harvest_feature_specs
 from dnd_dm_assistant.domain.feature_ir import FeatureSpec
 
 PACK_ID = "2024-core-formal"
@@ -1095,7 +1096,7 @@ def formal_feature_specs() -> tuple[FeatureSpec, ...]:
                 )
             ],
         ),
-    )
+    ) + harvest_feature_specs()
 
 
 _ALIASES: dict[tuple[str, str | None, str], str] = {
@@ -1126,6 +1127,46 @@ _ALIASES: dict[tuple[str, str | None, str], str] = {
     ("法师", "防护师", "法术抗性"): "dnd2024.subclass.wizard.abjurer.spell-resistance",
     ("战士", "灵能武士", "灵能力量"): "dnd2024.subclass.fighter.psi-warrior.psionic-power",
     ("游荡者", "魂刃", "灵能力量"): "dnd2024.subclass.rogue.soulknife.psionic-power",
+    (
+        "游荡者",
+        "诡术师",
+        "诡术伏击",
+    ): "dnd2024.subclass.rogue.arcane-trickster.magical-ambush",
+    (
+        "魔契师",
+        "旧日支配者宗主",
+        "骇异恶咒",
+    ): "dnd2024.subclass.warlock.great-old-one.eldritch-hex",
+    (
+        "圣武士",
+        "奉献之誓",
+        "卫护斩",
+    ): "dnd2024.subclass.paladin.devotion.smite-of-protection",
+    (
+        "战士",
+        "灵能武士",
+        "力场壁垒",
+    ): "dnd2024.subclass.fighter.psi-warrior.bulwark-of-force",
+    (
+        "野蛮人",
+        "狂热者道途",
+        "狂热威仪",
+    ): "dnd2024.subclass.barbarian.zealot.zealous-presence",
+    (
+        "魔契师",
+        "天界宗主",
+        "天界韧性",
+    ): "dnd2024.subclass.warlock.celestial.celestial-resilience",
+    (
+        "游荡者",
+        "刺客",
+        "暗杀",
+    ): "dnd2024.subclass.rogue.assassin.assassinate",
+    (
+        "德鲁伊",
+        "月亮结社",
+        "进阶结社形态",
+    ): "dnd2024.subclass.druid.moon.improved-circle-forms",
 }
 
 _SOURCE_ALIASES: dict[str, str] = {
@@ -1152,6 +1193,14 @@ _SOURCE_ALIASES: dict[str, str] = {
     "刺客工具 Assassin's": "刺客工具",
     "法术抗性 Spell Resistance": "法术抗性",
     "灵能力量 Psionic": "灵能力量",
+    "诡术伏击 Magical": "诡术伏击",
+    "骇异恶咒 Eldritch Hex": "骇异恶咒",
+    "卫护斩 Smite of": "卫护斩",
+    "力场壁垒 Bulwark of": "力场壁垒",
+    "狂热威仪 Zealous Presence": "狂热威仪",
+    "天界韧性 Celestial": "天界韧性",
+    "暗杀 Assassinate": "暗杀",
+    "进阶结社形态 Improved Circle": "进阶结社形态",
 }
 
 

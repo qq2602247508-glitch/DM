@@ -222,6 +222,14 @@ def _materialize_exchange(context: MaterializerContext) -> MaterializedBlock:
 def _materialize_modifier(context: MaterializerContext) -> MaterializedBlock:
     params = context.parameters
     entry = context.base(kind="modifier")
+    if context.operator == "replace_damage_type":
+        entry.update(
+            {
+                "stat": "damage_type",
+                "operation": "replace",
+                "scope": "outgoing",
+            }
+        )
     for key in (
         "stat",
         "operation",
@@ -233,7 +241,11 @@ def _materialize_modifier(context: MaterializerContext) -> MaterializedBlock:
     ):
         if key in params:
             entry[key] = params[key]
-    if "value" not in entry and "value_source" not in entry:
+    if (
+        "value" not in entry
+        and "value_source" not in entry
+        and context.operator != "replace_damage_type"
+    ):
         if context.operator in {"impose_advantage", "impose_disadvantage"}:
             entry["value"] = 1
         else:
