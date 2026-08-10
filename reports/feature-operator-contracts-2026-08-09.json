@@ -1216,8 +1216,12 @@
     {
       "capability_id": "movement.mode",
       "compatible_action_economy": [
+        "action",
         "automatic",
-        "none"
+        "bonus_action",
+        "explicit_player_choice",
+        "none",
+        "reaction"
       ],
       "compatible_activation": [
         "automatic",
@@ -1251,15 +1255,38 @@
       ],
       "compatible_durations": [
         "advancement_persistent",
-        "permanent"
+        "current_round",
+        "current_turn",
+        "one_hour",
+        "one_minute",
+        "permanent",
+        "ten_minutes",
+        "until_condition_ends",
+        "until_long_rest",
+        "until_short_rest"
       ],
       "compatible_resource_operations": [],
       "compatible_targets": [
         "self"
       ],
       "compatible_triggers": [
+        "ability_check",
+        "action_declared",
+        "action_resolved",
         "advancement_confirmed",
-        "combat_started"
+        "attack_declared",
+        "attack_hit",
+        "attack_missed",
+        "combat_started",
+        "damage_applied",
+        "damage_before_apply",
+        "explicit_activation",
+        "initiative_rolled",
+        "saving_throw",
+        "spell_cast",
+        "turn_ended",
+        "turn_started",
+        "zero_hp"
       ],
       "conditional_required_fields": [
         {
@@ -1290,6 +1317,7 @@
       "numeric_bounds": {},
       "operator_id": "grant_movement_mode",
       "optional_parameters": [
+        "applies_when",
         "id",
         "requires_not_wearing_heavy_armor",
         "selection_binding",
@@ -1297,6 +1325,7 @@
         "speed_source"
       ],
       "parameter_types": {
+        "applies_when": "string",
         "id": "string",
         "mode": "string",
         "requires_not_wearing_heavy_armor": "boolean",
@@ -1402,12 +1431,14 @@
       "numeric_bounds": {},
       "operator_id": "grant_passive_modifier",
       "optional_parameters": [
+        "formula",
         "id",
         "value",
         "value_source"
       ],
       "parameter_types": {
         "applies_when": "string",
+        "formula": "string",
         "id": "string",
         "operation": "string",
         "scope": "string",
@@ -1497,8 +1528,12 @@
     {
       "capability_id": "defense.resistance",
       "compatible_action_economy": [
+        "action",
         "automatic",
-        "none"
+        "bonus_action",
+        "explicit_player_choice",
+        "none",
+        "reaction"
       ],
       "compatible_activation": [
         "automatic",
@@ -1532,7 +1567,15 @@
       ],
       "compatible_durations": [
         "advancement_persistent",
-        "permanent"
+        "current_round",
+        "current_turn",
+        "one_hour",
+        "one_minute",
+        "permanent",
+        "ten_minutes",
+        "until_condition_ends",
+        "until_long_rest",
+        "until_short_rest"
       ],
       "compatible_resource_operations": [],
       "compatible_targets": [
@@ -1565,10 +1608,12 @@
       "numeric_bounds": {},
       "operator_id": "grant_resistance",
       "optional_parameters": [
+        "applies_when",
         "id",
         "source"
       ],
       "parameter_types": {
+        "applies_when": "string",
         "damage_type": "string",
         "id": "string",
         "source": "string"

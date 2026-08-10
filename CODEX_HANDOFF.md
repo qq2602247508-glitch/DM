@@ -2247,3 +2247,26 @@ backend/.venv/bin/python -m pytest -q backend/tests
   条件门控被动），这是下一个机制轮的目标。当前已闭合的 3 条（神之狂暴、
   炫目舞步、圣树活力）继续由 registry authority 驱动并有 E2E 证据。
 - 审计仍为 `318/120/61`（499 分母不变）。工作树只保留规定未跟踪路径。
+
+# 2026-08-10 批量吞吐恢复第四切片：direct IR/materializer authority 落地
+
+- 把已验证的批量特性切换到 FeatureSpec/materializer 权威，共 2 条：
+  - 神之狂暴：`dnd2024.subclass.barbarian.zealot.divine-rage`（authored_ir），
+    clause 含 `consume_resource` + `activate_condition` + `grant_resistance`×3 +
+    `grant_movement_mode`，编译 full、审计 authority=compiler，E2E 走 IR 生成的
+    feature_action（resource_key=divine_rage、effects=[activate_duration_condition]）。
+  - 炫目舞步：`dnd2024.subclass.bard.college-of-dance.dance-virtuoso`（authored_ir），
+    clause 含无甲防御公式 `10+Dex+Cha` + 魅力检定优势。
+- 为此修复的通用 IR 缺口：
+  - `grant_resistance`/`grant_movement_mode` 合同支持 `explicit_activation` +
+    bonus action + 战斗时长 + `applies_when`。
+  - `grant_passive_modifier` 支持 `formula`（无甲防御）。
+  - materializer 把 `damage_type` 投影为运行时 `damage_types`、透传 `applies_when`。
+  - `materialize_runtime_definition` 为 explicit 激活 clause 组装可执行
+    `feature_action`（kind/resource_key/resource_cost/effects），并把
+    `activate_condition` 投影为 `activate_duration_condition` 效果。
+  - 抗性 resolver 消费 `applies_when` 条件门控（目标带条件才生效）。
+- 圣树活力维持 registry authority（`after_rage_activation` 触发器暂未进 IR）。
+- 审计 `318/120/61`；formal IR 16 条（authored 12 / verified 4），
+  compiler_pilot 16。全量 pytest、Ruff、compileall、diff-check 通过。
+- 相对目标的进度：净增 full 3/20、direct IR authority 2/10、≥8 条簇 0/1。

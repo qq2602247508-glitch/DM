@@ -4,15 +4,15 @@
     "full": 318,
     "partial": 120
   },
-  "compiler_pilot_count": 10,
+  "compiler_pilot_count": 12,
   "compiler_status_counts": {
-    "full": 14,
+    "full": 16,
     "invalid": 129,
-    "partial": 175
+    "partial": 173
   },
   "formal_semantic_parity": {
     "all_passed": true,
-    "feature_count": 14,
+    "feature_count": 16,
     "rows": [
       {
         "feature_id": "dnd2024.core.druid.druidic",
@@ -1341,6 +1341,274 @@
         "materialized": false,
         "production_test": "verified_mapping_runtime_regression",
         "status": "equivalent"
+      },
+      {
+        "feature_id": "dnd2024.subclass.barbarian.zealot.divine-rage",
+        "feature_name": "神之狂暴",
+        "fields": {
+          "advancement": {
+            "ir": null,
+            "legacy": null,
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "attack_action_count": {
+            "ir": null,
+            "legacy": null,
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "combat_defenses": {
+            "ir": [
+              {
+                "kind": "grant_resistance",
+                "trigger": "explicit_activation"
+              },
+              {
+                "kind": "grant_resistance",
+                "trigger": "explicit_activation"
+              },
+              {
+                "kind": "grant_resistance",
+                "trigger": "explicit_activation"
+              }
+            ],
+            "legacy": [
+              {
+                "kind": "damage_resistance"
+              }
+            ],
+            "proof": "typed IR fields normalize to the same rule semantics",
+            "status": "equivalent"
+          },
+          "combat_modifiers": {
+            "ir": [],
+            "legacy": [],
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "movement_modes": {
+            "ir": [
+              {
+                "mode": "fly",
+                "speed_source": "current_speed"
+              }
+            ],
+            "legacy": [
+              {
+                "mode": "fly",
+                "speed_source": "current_speed"
+              }
+            ],
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "resources": {
+            "ir": {
+              "divine_rage": {
+                "recovery": "explicit_activation"
+              }
+            },
+            "legacy": {
+              "$feature_resource": {
+                "max": 1,
+                "recovery": "long_rest",
+                "recovery_events": [
+                  {
+                    "operation": "set_to_max",
+                    "rest": "long_rest"
+                  }
+                ],
+                "resource_kind": "feature_uses"
+              }
+            },
+            "proof": "typed IR fields normalize to the same rule semantics",
+            "status": "equivalent"
+          }
+        },
+        "ir_contract": {
+          "advancement": null,
+          "attack_action_count": null,
+          "combat_defenses": [
+            {
+              "kind": "grant_resistance",
+              "trigger": "explicit_activation"
+            },
+            {
+              "kind": "grant_resistance",
+              "trigger": "explicit_activation"
+            },
+            {
+              "kind": "grant_resistance",
+              "trigger": "explicit_activation"
+            }
+          ],
+          "combat_modifiers": [],
+          "movement_modes": [
+            {
+              "mode": "fly",
+              "speed_source": "current_speed"
+            }
+          ],
+          "resources": {
+            "divine_rage": {
+              "recovery": "explicit_activation"
+            }
+          }
+        },
+        "legacy_contract": {
+          "advancement": null,
+          "attack_action_count": null,
+          "combat_defenses": [
+            {
+              "kind": "damage_resistance"
+            }
+          ],
+          "combat_modifiers": [],
+          "movement_modes": [
+            {
+              "mode": "fly",
+              "speed_source": "current_speed"
+            }
+          ],
+          "resources": {
+            "$feature_resource": {
+              "max": 1,
+              "recovery": "long_rest",
+              "recovery_events": [
+                {
+                  "operation": "set_to_max",
+                  "rest": "long_rest"
+                }
+              ],
+              "resource_kind": "feature_uses"
+            }
+          }
+        },
+        "materialized": true,
+        "production_test": "formal_feature_runtime_regression",
+        "status": "equivalent"
+      },
+      {
+        "feature_id": "dnd2024.subclass.bard.college-of-dance.dance-virtuoso",
+        "feature_name": "炫目舞步",
+        "fields": {
+          "advancement": {
+            "ir": null,
+            "legacy": null,
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "attack_action_count": {
+            "ir": null,
+            "legacy": null,
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "combat_defenses": {
+            "ir": [],
+            "legacy": [],
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "combat_modifiers": {
+            "ir": [
+              {
+                "applies_when": "every_charisma_ability_check",
+                "operation": "advantage",
+                "scope": "self",
+                "stat": "ability_check",
+                "value": 1
+              },
+              {
+                "applies_when": "not_wearing_armor",
+                "formula": "10+dexterity_modifier+charisma_modifier",
+                "operation": "set_base_formula",
+                "scope": "self",
+                "stat": "armor_class",
+                "value": 1
+              }
+            ],
+            "legacy": [
+              {
+                "applies_when": "every_charisma_ability_check",
+                "operation": "advantage",
+                "scope": "self",
+                "stat": "ability_check"
+              },
+              {
+                "applies_when": "not_wearing_armor",
+                "formula": "10+dexterity_modifier+charisma_modifier",
+                "operation": "set_base_formula",
+                "scope": "self",
+                "stat": "armor_class"
+              }
+            ],
+            "proof": "typed IR fields normalize to the same rule semantics",
+            "status": "equivalent"
+          },
+          "movement_modes": {
+            "ir": [],
+            "legacy": [],
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "resources": {
+            "ir": {},
+            "legacy": {},
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          }
+        },
+        "ir_contract": {
+          "advancement": null,
+          "attack_action_count": null,
+          "combat_defenses": [],
+          "combat_modifiers": [
+            {
+              "applies_when": "every_charisma_ability_check",
+              "operation": "advantage",
+              "scope": "self",
+              "stat": "ability_check",
+              "value": 1
+            },
+            {
+              "applies_when": "not_wearing_armor",
+              "formula": "10+dexterity_modifier+charisma_modifier",
+              "operation": "set_base_formula",
+              "scope": "self",
+              "stat": "armor_class",
+              "value": 1
+            }
+          ],
+          "movement_modes": [],
+          "resources": {}
+        },
+        "legacy_contract": {
+          "advancement": null,
+          "attack_action_count": null,
+          "combat_defenses": [],
+          "combat_modifiers": [
+            {
+              "applies_when": "every_charisma_ability_check",
+              "operation": "advantage",
+              "scope": "self",
+              "stat": "ability_check"
+            },
+            {
+              "applies_when": "not_wearing_armor",
+              "formula": "10+dexterity_modifier+charisma_modifier",
+              "operation": "set_base_formula",
+              "scope": "self",
+              "stat": "armor_class"
+            }
+          ],
+          "movement_modes": [],
+          "resources": {}
+        },
+        "materialized": true,
+        "production_test": "formal_feature_runtime_regression",
+        "status": "equivalent"
       }
     ],
     "schema_version": "feature-ir-semantic-parity-2"
@@ -1611,8 +1879,21 @@
     }
   ],
   "schema_version": "feature-ir-parity-2",
-  "selected_parity_count": 14,
+  "selected_parity_count": 16,
   "selected_parity_rows": [
+    {
+      "compiler_status": "full",
+      "feature_id": "dnd2024.subclass.bard.college-of-dance.dance-virtuoso",
+      "feature_name": "炫目舞步",
+      "fingerprint": "7bf3921d3f13b394c5e496cfe93d02fbd8487f6a7cd53a31f4a90899522a8b73",
+      "formal_ir": true,
+      "legacy_adapter_used": false,
+      "legacy_status": "full",
+      "pilot_authority": "compiler",
+      "pilot_compile_status": "full",
+      "runtime_sections": [],
+      "status_authority": "compiler"
+    },
     {
       "compiler_status": "full",
       "feature_id": "dnd2024.subclass.paladin.ancients.undying-sentinel",
@@ -1785,6 +2066,19 @@
       "feature_id": "dnd2024.subclass.cleric.life.disciple-of-life",
       "feature_name": "生命门徒 Disciple of",
       "fingerprint": "7cf2de92f665af06fc43f8c8de10d6be3f65fb09f881ecb96c89a2e797f15655",
+      "formal_ir": true,
+      "legacy_adapter_used": false,
+      "legacy_status": "full",
+      "pilot_authority": "compiler",
+      "pilot_compile_status": "full",
+      "runtime_sections": [],
+      "status_authority": "compiler"
+    },
+    {
+      "compiler_status": "full",
+      "feature_id": "dnd2024.subclass.barbarian.zealot.divine-rage",
+      "feature_name": "神之狂暴 Rage of the",
+      "fingerprint": "82d7298ff7a4c8e4c80ee72e9e8ca0a8e0bc428b56e3c5ad6b006aac8464a5b6",
       "formal_ir": true,
       "legacy_adapter_used": false,
       "legacy_status": "full",
