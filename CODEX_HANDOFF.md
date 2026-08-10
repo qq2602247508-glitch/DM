@@ -2,6 +2,25 @@
 
 # 2026-08-10 长执行检查点：Feature Clause IR 缺口图谱（止损点）
 
+# 2026-08-10 长执行检查点：166 条 Clause reviewed typed 审阅批次
+
+- 本轮全程单线程，实时审计仍为 `full 320 / partial 118 / dm_only 61`，固定分母 499。
+- 现有 166 个 source review clause 已进入带稳定 `source_fingerprint`、`reviewed_fields`、
+  `missing_fields`、`review_blocker_category` 和 `review_blocker_details` 的
+  `feature-clause-reviewed-1` 结构。它们不再是只有空字段的裸分段，但仍不是 executable
+  FeatureSpec：166 条全部为 `manual_boundary`，`source_incomplete=0`，`executable=0`。
+- `feature_clause_corpus.py` 仍保持非执行边界：review 结构只保存源码证据、身份、缺失字段和
+  审阅结论，不从 anchor 关键词生成 operator、DC、目标或资源。
+- Capability ranking 现在明确区分 review manual boundary 与 capability：`review:manual_boundary`
+  occurrence 为 166，但 completion unlock 必为 0；`typed_missing_contract=0` 表示没有一条
+  可用于生产选择的字段完整缺口合同，不表示语义审阅被跳过。
+- Batch VII 报告已生成：`reports/feature-ir-production-consumer-batch-VII-2026-08-10.json`。
+  本批没有建设平台、没有新增 full，也没有新增 feature-name runtime 分支；原因是全部 clause
+  仍需要逐字段 authored/runtime contract，任何平台选择都会把 manual review 当作 capability。
+- 全量后端 pytest、`backend/src`+`backend/tests` Ruff、compileall、`git diff --check` 和
+  审计/Corpus/Unlock/Batch VII 报告双次 byte-identical 均通过。
+- 必须保留且不得暂存/提交：`backend/tests/integrations/`、`backend/tests/ollama.py`。
+
 - 本轮仍为单线程。尝试建立 Clause IR 后的实时审计没有漂移：`full 320 / partial 118 /
   dm_only 61`，固定分母 499；本轮没有把任何 feature 升为 full。
 - 新增 `application/feature_clause_corpus.py` 和

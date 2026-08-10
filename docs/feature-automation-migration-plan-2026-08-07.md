@@ -451,6 +451,18 @@ lint、production build 通过；隔离数据库的真实 DM 页面完成战斗�
 compileall、git diff check。无前端源码变更，不运行前端/浏览器门禁。
 # 2026-08-10：Clause IR 先于平台的硬门槛
 
+# 2026-08-10：166 条 Clause review schema 批次
+
+本批将 166 个 source review clause 变成 `feature-clause-reviewed-1` 记录，保留 source
+fingerprint、审阅字段、缺失字段和具体 blocker。`reviewed_typed` 只表示记录通过了关闭式
+review schema；它不表示可执行。当前 166 条均为 `manual_boundary`，source incomplete 为
+0，executable clause 为 0。
+
+Capability ranking 将 `review:manual_boundary` 的 occurrence count 与 completion unlock count
+严格分离。它可以显示 166 条仍需要 authored contract，但 completion unlock 必须为 0；只有
+明确的 producer/consumer/persistence/CAS/idempotency 等字段级合同才能成为后续平台候选。
+因此 Batch VII 没有建设底座或新增 full，避免把审阅队列本身误报成可收割 capability。
+
 在 Batch V 之后已确认，完整 feature 的 exact cluster 不能代表可复用的实现边界。Batch VI
 新增 source-backed、非 executable 的 Feature Clause Corpus 和 capability unlock graph。它们的
 选择规则是 `completion_unlock_count >= 8`，而不是关键词 occurrence。
