@@ -598,6 +598,114 @@ def formal_feature_specs() -> tuple[FeatureSpec, ...]:
                 )
             ],
         ),
+        _feature(
+            "dnd2024.subclass.barbarian.zealot.divine-rage",
+            source_name="神之狂暴",
+            class_name="野蛮人",
+            subclass_name="狂热者道途",
+            level=14,
+            source_record_id="verified:divine-rage",
+            source_trust="authored_ir",
+            clauses=[
+                _clause(
+                    "activate",
+                    trigger="explicit_activation",
+                    activation="explicit_choice",
+                    action_economy="bonus_action",
+                    duration="one_minute",
+                    effects=[
+                        {
+                            "operator": "consume_resource",
+                            "parameters": {
+                                "resource_key": "divine_rage",
+                                "operation": "consume",
+                                "amount": 1,
+                            },
+                        },
+                        {
+                            "operator": "activate_condition",
+                            "parameters": {
+                                "condition": "divine_rage",
+                                "duration": "one_minute",
+                                "id": "divine_rage:state",
+                            },
+                        },
+                        {
+                            "operator": "grant_resistance",
+                            "parameters": {
+                                "damage_type": "necrotic",
+                                "applies_when": "divine_rage",
+                                "id": "divine_rage:necrotic",
+                            },
+                        },
+                        {
+                            "operator": "grant_resistance",
+                            "parameters": {
+                                "damage_type": "psychic",
+                                "applies_when": "divine_rage",
+                                "id": "divine_rage:psychic",
+                            },
+                        },
+                        {
+                            "operator": "grant_resistance",
+                            "parameters": {
+                                "damage_type": "radiant",
+                                "applies_when": "divine_rage",
+                                "id": "divine_rage:radiant",
+                            },
+                        },
+                        {
+                            "operator": "grant_movement_mode",
+                            "parameters": {
+                                "mode": "fly",
+                                "speed_source": "current_speed",
+                                "applies_when": "divine_rage",
+                                "id": "divine_rage:flight",
+                            },
+                        },
+                    ],
+                )
+            ],
+        ),
+        _feature(
+            "dnd2024.subclass.bard.college-of-dance.dance-virtuoso",
+            source_name="炫目舞步",
+            class_name="吟游诗人",
+            subclass_name="舞蹈学院",
+            level=3,
+            source_record_id="verified:dance-virtuoso",
+            source_trust="authored_ir",
+            clauses=[
+                _clause(
+                    "unarmored-defense",
+                    effects=[
+                        {
+                            "operator": "grant_passive_modifier",
+                            "parameters": {
+                                "stat": "armor_class",
+                                "operation": "set_base_formula",
+                                "formula": "10+dexterity_modifier+charisma_modifier",
+                                "scope": "self",
+                                "applies_when": "not_wearing_armor",
+                                "value": 1,
+                                "id": "dance_virtuoso:ac",
+                            },
+                        },
+                        {
+                            "operator": "grant_passive_modifier",
+                            "parameters": {
+                                "stat": "ability_check",
+                                "operation": "advantage",
+                                "scope": "self",
+                                "applies_when": "every_charisma_ability_check",
+                                "value": 1,
+                                "id": "dance_virtuoso:performance",
+                            },
+                        },
+                    ],
+                )
+            ],
+        ),
     )
 
 
@@ -616,6 +724,8 @@ _ALIASES: dict[tuple[str, str | None, str], str] = {
     ("圣武士", "复仇之誓", "复仇之魂"): "dnd2024.subclass.paladin.vengeance.soul-of-vengeance",
     ("圣武士", "荣耀之誓", "绝伦健将"): "dnd2024.subclass.paladin.glory.peerless-athlete",
     ("战士", "战斗大师", "究极战技"): "dnd2024.subclass.fighter.battle-master.ultimate-combat",
+    ("野蛮人", "狂热者道途", "神之狂暴"): "dnd2024.subclass.barbarian.zealot.divine-rage",
+    ("吟游诗人", "舞蹈学院", "炫目舞步"): "dnd2024.subclass.bard.college-of-dance.dance-virtuoso",
 }
 
 _SOURCE_ALIASES: dict[str, str] = {
@@ -629,6 +739,9 @@ _SOURCE_ALIASES: dict[str, str] = {
     "Ultimate Combat": "究极战技",
     "Peerless Athlete": "绝伦健将",
     "Peerless": "绝伦健将",
+    "Rage of the Gods": "神之狂暴",
+    "Rage of the": "神之狂暴",
+    "Dazzling Footwork": "炫目舞步",
 }
 
 

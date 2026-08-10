@@ -216,7 +216,15 @@ def _materialize_exchange(context: MaterializerContext) -> MaterializedBlock:
 def _materialize_modifier(context: MaterializerContext) -> MaterializedBlock:
     params = context.parameters
     entry = context.base(kind="modifier")
-    for key in ("stat", "operation", "value", "value_source", "scope", "applies_when"):
+    for key in (
+        "stat",
+        "operation",
+        "value",
+        "value_source",
+        "formula",
+        "scope",
+        "applies_when",
+    ):
         if key in params:
             entry[key] = params[key]
     if "value" not in entry and "value_source" not in entry:
@@ -239,6 +247,7 @@ def _materialize_movement(context: MaterializerContext) -> MaterializedBlock:
         "speed_source",
         "speed_ft",
         "requires_not_wearing_heavy_armor",
+        "applies_when",
         "selection_binding",
     ):
         if key in params:
@@ -273,6 +282,10 @@ def _materialize_trigger(context: MaterializerContext) -> MaterializedBlock:
 
 def _materialize_defense(context: MaterializerContext) -> MaterializedBlock:
     entry = _with_parameters(context, kind=context.operator)
+    if context.operator in {"grant_resistance", "grant_immunity"}:
+        raw_type = entry.get("damage_type")
+        if isinstance(raw_type, str) and raw_type.strip():
+            entry["damage_types"] = [raw_type.strip()]
     return MaterializedBlock("combat_defenses", entry)
 
 

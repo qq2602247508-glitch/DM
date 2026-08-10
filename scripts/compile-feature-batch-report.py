@@ -44,9 +44,9 @@ def build() -> dict[str, Any]:
             ]
         ),
         "candidate_feature_count": 0,
-        "direct_ir_authority_count": 0,
+        "direct_ir_authority_count": 2,
         "verified_mapping_count": 0,
-        "legacy_authority_count": 2,
+        "legacy_authority_count": 1,
         "batch_features": [
             {
                 "feature_name": feature.name,

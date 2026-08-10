@@ -10776,6 +10776,9 @@ class CombatEngineService:
             if applies_when == "magical":
                 if getattr(command, "is_magical", False) is not True:
                     continue
+            elif applies_when not in {"", "always"}:
+                if not cls._has_condition(target, applies_when):
+                    continue
             elif applies_when != "always":
                 continue
             raw_types = (

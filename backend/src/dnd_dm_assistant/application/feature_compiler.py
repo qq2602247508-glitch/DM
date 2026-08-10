@@ -549,6 +549,13 @@ def materialize_runtime_definition(
     capability_catalog = catalog or default_capability_catalog()
     materializer_registry = materializers or default_materializer_registry()
     clauses = {clause.clause_id: clause for clause in spec.clauses}
+    explicit_clause_effects: dict[str, list[dict[str, Any]]] = {}
+    for clause in spec.clauses:
+        if clause.trigger != "explicit_activation":
+            continue
+        explicit_clause_effects[clause.clause_id] = [
+            dict(effect.to_dict()) for effect in clause.effects
+        ]
     definition: dict[str, Any] = {
         "combat_start": {"modifiers": [], "defenses": [], "movement_modes": []},
         "resources": {},
@@ -603,6 +610,37 @@ def materialize_runtime_definition(
         elif section == "movement_modes":
             definition["combat_start"]["movement_modes"].append(entry)
         elif section == "actions":
+            if operator == "activate_condition" and clause_id in explicit_clause_effects:
+                entry["kind"] = "feature_action"
+                entry["target"] = str(
+                    clause.targeting.kind if clause.targeting is not None else "self"
+                )
+                consume = next(
+                    (
+                        effect.get("parameters", {})
+                        for effect in explicit_clause_effects[clause_id]
+                        if effect.get("operator") == "consume_resource"
+                    ),
+                    None,
+                )
+                if consume:
+                    entry["resource_key"] = str(consume.get("resource_key") or "")
+                    entry["resource_cost"] = int(consume.get("amount") or 1)
+                effects: list[dict[str, Any]] = []
+                for effect in explicit_clause_effects[clause_id]:
+                    params = dict(effect.get("parameters") or {})
+                    operator = str(effect.get("operator") or "")
+                    if operator == "activate_condition":
+                        effects.append(
+                            {
+                                "kind": "activate_duration_condition",
+                                "condition": str(params.get("condition") or ""),
+                                "duration_unit": "minutes",
+                                "duration_value": 1,
+                            }
+                        )
+                if effects:
+                    entry["effects"] = effects
             definition["actions"][str(entry["id"])] = entry
         elif section in {"proficiencies", "triggers", "attack_riders"}:
             target = definition[section]
@@ -618,4 +656,6 @@ def materialize_runtime_definition(
             if definition["prepared_spell_list"] is not None:
                 raise ValueError("multiple prepared spell blocks are not supported")
             definition["prepared_spell_list"] = entry
+    definition.setdefault("automation_status", "full")
+    definition.setdefault("requires_dm_adjudication", False)
     return definition
