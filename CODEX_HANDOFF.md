@@ -2231,3 +2231,19 @@ backend/.venv/bin/python -m pytest -q backend/tests
   与 census 报告。
 - 仍未达到 20 条门槛；剩余 partial 仍需逐机制建设（多目标/光环、强制移动、
   召唤、目标信息、法术上下文、回合开始触发等）。Goal 保持 active。
+
+# 2026-08-10 批量吞吐恢复第三切片：IR 条件门控被动缺口审计
+
+- 目标要求"净增 full ≥20 且 ≥10 条 direct IR authority"。为把已闭合的
+  registry 特性切到 FeatureSpec/materializer authority，本轮对 IR 做了原型验证：
+- 神之狂暴（自启 buff：消耗资源 + 激活条件 + 门控飞行/抗性）无法用现有 IR
+  operator 表达，精确 blocker：
+  - `grant_resistance` / `grant_movement_mode` 的 contract 只接受
+    `advancement_confirmed` trigger、`none` action economy、persistent duration；
+    不支持 `explicit_activation` + `bonus_action` + `one_minute`。
+  - movement materializer 丢弃 `applies_when`（无法把飞行门控到激活条件）。
+  - resistance/movement resolver 不消费 `applies_when` 条件门控。
+- 结论：要让"激活类 buff"成为 IR authority，需要新增 IR 能力（explicit 激活的
+  条件门控被动），这是下一个机制轮的目标。当前已闭合的 3 条（神之狂暴、
+  炫目舞步、圣树活力）继续由 registry authority 驱动并有 E2E 证据。
+- 审计仍为 `318/120/61`（499 分母不变）。工作树只保留规定未跟踪路径。
