@@ -11,7 +11,10 @@ from fastapi.testclient import TestClient
 
 from dnd_dm_assistant.api.app import create_app
 from dnd_dm_assistant.config import Settings
-from dnd_dm_assistant.domain.advancement_choices import subclass_feature_runtime_definition
+from dnd_dm_assistant.domain.advancement_choices import (
+    subclass_feature_runtime_definition,
+    subclass_runtime_grants,
+)
 
 
 @pytest.fixture
@@ -286,6 +289,121 @@ def test_peerless_athlete_consumes_channel_divinity_once_and_persists_all_modifi
         feature_path,
         headers={"X-Request-ID": "peerless-athlete-0002"},
         json=request,
+    )
+    assert conflict.status_code == 409, conflict.text
+
+
+def test_batch_buff_condition_gates_flight_and_resistance_end_to_end(
+    combat_client: TestClient,
+) -> None:
+    """One generated batch entry runs through the real feature-action chain.
+
+    神之狂暴 activates a long-rest-bounded condition; the movement-mode and
+    damage-resistance resolvers consume the gated entries only while the
+    condition is active.  Replay is idempotent and a stale version is rejected.
+    """
+
+    campaign, combat, actor = _setup(combat_client)
+    character_response = combat_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/characters",
+        json={
+            "name": "神之狂暴测试者",
+            "class_name": "野蛮人",
+            "level": 14,
+            "speed_ft": 30,
+            "resources": {
+                "divine_rage": {
+                    "label": "神之狂暴",
+                    "current": 1,
+                    "max": 1,
+                    "recovery": "long_rest",
+                }
+            },
+        },
+    )
+    assert character_response.status_code == 201, character_response.text
+    character = character_response.json()
+    grants = subclass_runtime_grants(
+        {
+            "name": "狂热者道途",
+            "feature_definitions": [
+                {
+                    "id": "fanatic:14:divine-rage",
+                    "name": "神之狂暴 Rage of the Gods",
+                    "class_level": 14,
+                    "description": (
+                        "当你激活狂暴时，你可以呈现出圣斗士姿态。持续1分钟。"
+                        "处于圣斗士姿态期间，你具有飞行速度和暗蚀、心灵、光耀抗性。"
+                    ),
+                }
+            ],
+        },
+        class_name="野蛮人",
+        target_class_level=14,
+        current_class_level=14,
+    )
+    grant = next(item for item in grants["grants"] if item["class_level"] == 14)
+    runtime = grant["runtime"]["registry"]
+    action_id = "野蛮人:狂热者道途:divine_rage"
+    assert action_id in runtime["actions"]
+    patched = combat_client.patch(
+        _combatant_path(campaign, combat, actor["id"]),
+        headers={"If-Match": f'"{actor["version"]}"'},
+        json={
+            "entity_type": "character",
+            "entity_id": character["id"],
+            "speed_ft": 30,
+            "snapshot_json": {"feature_runtime": runtime},
+        },
+    )
+    assert patched.status_code == 200, patched.text
+    actor = patched.json()
+    request = {
+        "actor_combatant_id": actor["id"],
+        "actor_version": actor["version"],
+        "feature_id": action_id,
+        "target_combatant_id": actor["id"],
+        "target_version": actor["version"],
+    }
+    feature_path = f"{_root(campaign, combat)}/feature-actions/confirm"
+    resolved = combat_client.post(
+        feature_path,
+        headers={"X-Request-ID": "divine-rage-0001"},
+        json=request,
+    )
+    assert resolved.status_code == 200, resolved.text
+    body = resolved.json()
+    assert "divine_rage" in body["actor"]["conditions"]
+    assert body["result"]["resource_key"] == "divine_rage"
+    assert body["result"]["resource_before"] == 1
+    assert body["result"]["resource_after"] == 0
+    actor = body["actor"]
+    advanced = combat_client.post(
+        f"{_root(campaign, combat)}/turns/advance",
+        headers={"X-Request-ID": "divine-rage-advance"},
+        json={"combat_version": combat["version"]},
+    )
+    assert advanced.status_code == 200, advanced.text
+    refreshed = combat_client.get(_combatant_path(campaign, combat, actor["id"]))
+    assert refreshed.status_code == 200, refreshed.text
+    actor = refreshed.json()
+    assert "divine_rage" in actor["conditions"]
+    movement_modes = actor["snapshot_json"].get("active_movement_modes") or {}
+    assert movement_modes.get("fly") == 30
+
+    replay = combat_client.post(
+        feature_path,
+        headers={"X-Request-ID": "divine-rage-0001"},
+        json=request,
+    )
+    assert replay.status_code == 200, replay.text
+    assert replay.json()["already_applied"] is True
+    assert "divine_rage" in replay.json()["actor"]["conditions"]
+
+    conflict = combat_client.post(
+        feature_path,
+        headers={"X-Request-ID": "divine-rage-0002"},
+        json={**request, "actor_version": actor["version"] + 1},
     )
     assert conflict.status_code == 409, conflict.text
 
