@@ -1,3 +1,22 @@
+# 2026-08-10 长执行检查点：Content IR Workbench 与法术自动化基线
+
+- 新增只读 `application/content_ir_workbench.py` 与
+  `scripts/audit-content-ir-workbench.py`：扫描真实 generated-content，按 source_book
+  或稳定 source path 隔离原版/扩展包，过滤索引与非详情页，生成 source fingerprint、
+  Feature Draft、Spell Draft 和确定性报告。
+- 新增独立 `SpellSpec` 闭集合同与 fail-closed 编译入口。只有 authored/verified typed
+  clauses 可成为 `full`；未知 clause 为 invalid，HTML/JSON 字段提取结果一律 manual，
+  不把“字段可读”伪装为可执行。
+- 真实基线：2024 PHB 共 650 个相关 source records，其中 391 个法术详情候选；2014 PHB
+  511/361。现有库仍没有 authored Spell IR，因此 source dry-run 的 typed/full 均为 0。
+- 官方包只读结果：塔莎 144 records、48 feature candidates、21 spell candidates；
+  珊娜萨 325/0/95；费资本 113/0/7；万象无常书 195/0/3。以上 typed IR/full 均为 0，
+  真实 blocker 是缺 authored Feature/Spell IR。
+- 报告位于 `reports/content-ir-workbench-*-2026-08-10.json` 与
+  `reports/spell-automation-audit-phb*-2026-08-10.json`；没有修改数据库、正式 compiled
+  registry 或 499 条职业审计状态。
+- 必须保留且不得暂存/提交：`backend/tests/integrations/`、`backend/tests/ollama.py`。
+
 # 2026-08-10 长执行检查点：真实语料批量编译入口与阻塞审计
 
 # 2026-08-10 长执行检查点：Feature Clause IR 缺口图谱（止损点）

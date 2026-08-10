@@ -487,3 +487,11 @@ trigger / target / effect / producer / consumer / persistence / CAS / idempotenc
 missing contract 为 0，不能诚实地选择任何生产底座，也不能因“saving throw 45 次”等频次升级
 feature。下一迁移批次必须先提交人工审阅的 typed clause manifest；只有届时字段级相等、且 feature
 其余 clause 都 production_closed 的成员才计入 completion unlock。
+# 2026-08-10：Content IR Workbench / Spell IR 基线
+
+- 已建立独立只读扫描器，统一识别 Feature Draft 与 Spell Draft，并按 source fingerprint
+  输出确定性报告。
+- 新增闭集 `SpellSpec`；未经过 authored typed clause 的官方正文不能成为 full。
+- 当前扩展包导入瓶颈已从“是否能找到页面”明确为“缺 authored Feature/Spell IR”。
+- 下一阶段应按 blocker fan-out 建设 Spell clause materializer，并先 authored 一批
+  原版法术作为 golden corpus；每个新 clause 必须报告真实 completion unlock 数。
