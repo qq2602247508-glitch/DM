@@ -26,9 +26,15 @@ def test_clause_corpus_retains_source_without_inferring_executable_contract() ->
     assert report["feature_count"] == 1
     assert report["clause_count"] == 2
     assert report["source_complete_feature_count"] == 1
-    assert {item["clause_status"] for item in report["clauses"]} == {"production_partial"}
+    assert report["reviewed_clause_count"] == 2
+    assert report["typed_clause_count"] == 2
+    assert report["manual_boundary_clause_count"] == 2
+    assert {item["clause_status"] for item in report["clauses"]} == {"manual_boundary"}
     assert {item["effect_operator"] for item in report["clauses"]} == {None}
     assert report["clauses"][0]["analysis_anchors"] == ["save_dc"]
+    assert report["clauses"][0]["review_status"] == "reviewed_typed"
+    assert report["clauses"][0]["missing_fields"]
+    assert report["clauses"][0]["source_fingerprint"]
 
 
 def test_unlock_planner_never_converts_untyped_source_frequency_into_unlocks() -> None:
@@ -43,10 +49,12 @@ def test_unlock_planner_never_converts_untyped_source_frequency_into_unlocks() -
 
     assert report["typed_missing_contract_count"] == 0
     assert report["qualified_cluster_found"] is False
+    assert report["reviewed_clause_count"] == 16
+    assert report["manual_boundary_clause_count"] == 16
     review = next(
         item
         for item in report["ranking"]
-        if item["capability_id"] == "review:missing_semantic_contract"
+        if item["capability_id"] == "review:manual_boundary"
     )
     assert review["occurrence_count"] == 16
     assert review["completion_unlock_count"] == 0
