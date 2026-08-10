@@ -2195,3 +2195,25 @@ backend/.venv/bin/python -m pytest -q backend/tests
   `reports/feature-ir-production-consumer-batch-II-2026-08-09.json`。
 - 本轮无前端源码变化，不运行/宣称前端或浏览器门禁。必须保留且不得暂存/提交：
   `backend/tests/integrations/`、`backend/tests/ollama.py`。
+
+# 2026-08-10 批量吞吐恢复与真实语料编译器（第一切片）
+
+- 固定分母 499；实时审计从 `315/123/61` 变为 `317/121/61`，本切片真实净增 `+2`。
+- 新增真实语料 cluster census：`scripts/feature-ir-semantic-cluster-census.py` +
+  `reports/feature-ir-semantic-cluster-census-2026-08-10.json`。结论：121 条 partial
+  中 119 个 exact 语义簇，最大簇仅 2 条；不存在任何 ≥8 条的真实同构簇。这是
+  “为什么不能按关键词一次性收割 20+ 条”的客观证据。
+- 新增批量装配层：`domain/feature_batch_declarations.py` 用声明表一次生成同形状
+  特性的 typed runtime 配置，并注册进 `SUBCLASS_FEATURE_RUNTIME_CONFIGS`。
+  本切片真实闭环 2 条：
+  - 野蛮人·狂热者道途·14「神之狂暴」：长休资源附赠动作激活 `divine_rage` 条件，
+    飞行移动模式与暗蚀/心灵/光耀抗性由现有 resolver 消费；E2E 覆盖激活、回合推进后
+    飞行出现、幂等重放、版本冲突。
+  - 吟游诗人·舞蹈学院·3「炫目舞步」：未着装护甲时 `10+Dex+Cha` 无甲防御公式与
+    魅力检定优势由 world_service/player-roll resolver 消费。
+- 引擎通用扩展：`FEATURE_CONDITION_RUNTIME_SPECS` 与 `_RUNTIME_STATE_CONDITIONS`
+  增加 `divine_rage`；modifier resolver 支持 `while:<condition>` 通用谓词前缀。
+- 未达到 20 条门槛：剩余 partial 依赖攻击骑手、多目标/光环、强制移动、召唤、目标信息、
+  法术上下文等未接线机制。Goal 保持 active，本切片不关闭。
+- 门禁：后端全量 pytest、Ruff、compileall、`git diff --check` 通过；报告生成器
+  连续两次哈希一致。无前端改动，不运行前端门禁。规定未跟踪路径保持原样。

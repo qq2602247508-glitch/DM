@@ -4,8 +4,8 @@
 
 - 矩阵 schema：`feature-automation-migration-plan-2`
 - 总条目：499
-- 当前状态：`{'full': 315, 'dm_only': 61, 'partial': 123}`
-- 预审状态：`{'already_full': 315, 'manual_boundary': 3, 'missing_runtime_contract': 114, 'consumer_partial': 26, 'needs_contract_review': 6, 'missing_source': 35}`
+- 当前状态：`{'full': 317, 'dm_only': 61, 'partial': 121}`
+- 预审状态：`{'already_full': 317, 'manual_boundary': 3, 'missing_runtime_contract': 113, 'consumer_partial': 25, 'needs_contract_review': 6, 'missing_source': 35}`
 
 ## 模板分组
 
@@ -21,11 +21,11 @@
 | 移动/位移 (`movement`) | 15 | 6 | 9 | 0 | 0 | 0 | 0 |
 | 通用被动/数值修正 (`passive_modifier`) | 79 | 37 | 6 | 0 | 0 | 1 | 35 |
 | 伤害前/防御干预 (`pre_damage_intervention`) | 13 | 5 | 7 | 1 | 0 | 0 | 0 |
-| 掷骰干预 (`roll_intervention`) | 46 | 28 | 0 | 0 | 18 | 0 | 0 |
+| 掷骰干预 (`roll_intervention`) | 46 | 29 | 0 | 0 | 17 | 0 | 0 |
 | 状态生命周期 (`state_lifecycle`) | 34 | 21 | 12 | 1 | 0 | 0 | 0 |
 | 召唤/伙伴 (`summon_lifecycle`) | 12 | 7 | 5 | 0 | 0 | 0 | 0 |
 | 目标/范围/豁免组合 (`target_save_status`) | 10 | 6 | 3 | 0 | 0 | 1 | 0 |
-| 0 HP/死亡生命周期 (`zero_hp_intervention`) | 8 | 4 | 4 | 0 | 0 | 0 | 0 |
+| 0 HP/死亡生命周期 (`zero_hp_intervention`) | 8 | 5 | 3 | 0 | 0 | 0 | 0 |
 
 ## 能力簇
 
@@ -34,7 +34,7 @@
 | passive_modifier | 79 | 37 | 42 | 0 | 是 | 是 | 是 | 否 |
 | aura_passive | 48 | 12 | 36 | 0 | 是 | 是 | 是 | 是 |
 | damage_healing | 48 | 30 | 18 | 0 | 是 | 是 | 是 | 是 |
-| roll_intervention | 46 | 28 | 18 | 0 | 是 | 是 | 是 | 是 |
+| roll_intervention | 46 | 29 | 17 | 0 | 是 | 是 | 是 | 是 |
 | resource_lifecycle | 56 | 42 | 14 | 0 | 是 | 是 | 是 | 是 |
 | state_lifecycle | 34 | 21 | 13 | 0 | 是 | 是 | 是 | 是 |
 | movement | 15 | 6 | 9 | 0 | 是 | 是 | 是 | 是 |
@@ -43,7 +43,7 @@
 | action_trigger | 30 | 25 | 5 | 0 | 是 | 是 | 是 | 否 |
 | summon_lifecycle | 12 | 7 | 5 | 0 | 是 | 是 | 是 | 是 |
 | target_save_status | 10 | 6 | 4 | 0 | 是 | 是 | 是 | 是 |
-| zero_hp_intervention | 8 | 4 | 4 | 0 | 是 | 是 | 是 | 是 |
+| zero_hp_intervention | 8 | 5 | 3 | 0 | 是 | 是 | 是 | 是 |
 | advancement_asset_grant:epic_boon | 12 | 12 | 0 | 0 | 是 | 是 | 否 | 否 |
 | advancement_asset_grant:fighting_style | 4 | 4 | 0 | 0 | 是 | 是 | 是 | 否 |
 | advancement_asset_grant:growth_option_bundle | 3 | 3 | 0 | 0 | 是 | 是 | 否 | 是 |

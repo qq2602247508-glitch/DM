@@ -1,0 +1,1411 @@
+{
+  "schema_version": "feature-ir-semantic-cluster-census-1",
+  "audit_total": 499,
+  "status_counts": {
+    "full": 317,
+    "dm_only": 61,
+    "partial": 121
+  },
+  "partial_total": 121,
+  "partial_exact_cluster_count": 119,
+  "largest_partial_clusters": [
+    {
+      "cluster_id": "semantic:526e877e5732560a",
+      "member_count": 2,
+      "member_feature_ids": [
+        "术士:狂野术法:14:受控混沌 Controlled",
+        "游荡者:盗贼:17:窃盗本能 Thief's"
+      ],
+      "action_economy": [],
+      "resource": [],
+      "trigger": [],
+      "target": [
+        "self"
+      ],
+      "effects": [],
+      "duration": [],
+      "detected_blocks": []
+    },
+    {
+      "cluster_id": "semantic:b8778cbedff5e93d",
+      "member_count": 2,
+      "member_feature_ids": [
+        "游侠:幽域追猎者:3:阴影视野 Umbral",
+        "游荡者:盗贼:9:极效潜行 Supreme"
+      ],
+      "action_economy": [],
+      "resource": [],
+      "trigger": [],
+      "target": [
+        "self"
+      ],
+      "effects": [
+        "invisible"
+      ],
+      "duration": [],
+      "detected_blocks": [
+        "status_lifecycle"
+      ]
+    },
+    {
+      "cluster_id": "semantic:00dee511260af724",
+      "member_count": 1,
+      "member_feature_ids": [
+        "术士:时械术法:18:时械矩阵 Clockwork"
+      ],
+      "action_economy": [
+        "action",
+        "no_action"
+      ],
+      "resource": [
+        "long_rest_recovery",
+        "sorcery_points"
+      ],
+      "trigger": [
+        "on_long_rest"
+      ],
+      "target": [
+        "allies_or_creatures",
+        "area",
+        "self",
+        "summon"
+      ],
+      "effects": [],
+      "duration": [],
+      "detected_blocks": [
+        "action_economy",
+        "aura_range",
+        "damage_healing",
+        "resource_recovery",
+        "summon_companion",
+        "target_range_save",
+        "world_state"
+      ]
+    },
+    {
+      "cluster_id": "semantic:00fc6b23615b7230",
+      "member_count": 1,
+      "member_feature_ids": [
+        "牧师::2:引导神力"
+      ],
+      "action_economy": [
+        "action"
+      ],
+      "resource": [
+        "channel_divinity",
+        "long_rest_recovery",
+        "short_rest_recovery"
+      ],
+      "trigger": [
+        "on_damage_taken",
+        "on_long_rest"
+      ],
+      "target": [
+        "allies_or_creatures",
+        "self"
+      ],
+      "effects": [
+        "condition",
+        "damage",
+        "saving_throw"
+      ],
+      "duration": [
+        "until_incapacitated"
+      ],
+      "detected_blocks": [
+        "action_economy",
+        "action_trigger",
+        "aura_range",
+        "damage_healing",
+        "pre_damage_defense",
+        "resource_binding",
+        "resource_recovery",
+        "save_dc",
+        "spellcasting",
+        "status_lifecycle",
+        "target_range_save"
+      ]
+    },
+    {
+      "cluster_id": "semantic:06fa1583a885c187",
+      "member_count": 1,
+      "member_feature_ids": [
+        "术士:狂野术法:18:驯服浪涌 Tamed"
+      ],
+      "action_economy": [
+        "bonus_action"
+      ],
+      "resource": [
+        "long_rest_recovery",
+        "sorcery_points",
+        "spell_slot"
+      ],
+      "trigger": [
+        "on_long_rest",
+        "on_save_failure",
+        "on_spell_cast",
+        "on_turn_end",
+        "on_turn_start"
+      ],
+      "target": [
+        "allies_or_creatures",
+        "area",
+        "self"
+      ],
+      "effects": [
+        "ability_check",
+        "advantage",
+        "condition",
+        "damage",
+        "damage_immunity",
+        "damage_resistance",
+        "disadvantage",
+        "flight",
+        "invisible",
+        "light",
+        "reroll",
+        "saving_throw",
+        "teleport",
+        "zero_hp"
+      ],
+      "duration": [
+        "one_hour",
+        "until_long_rest"
+      ],
+      "detected_blocks": [
+        "action_economy",
+        "aura_range",
+        "damage_healing",
+        "movement",
+        "resource_binding",
+        "resource_recovery",
+        "roll_intervention",
+        "save_dc",
+        "spellcasting",
+        "status_lifecycle",
+        "target_range_save",
+        "world_state",
+        "zero_hp"
+      ]
+    },
+    {
+      "cluster_id": "semantic:0a1009aeb8ddd1f7",
+      "member_count": 1,
+      "member_feature_ids": [
+        "术士:时械术法:6:律令之壁 Bastion of"
+      ],
+      "action_economy": [
+        "action"
+      ],
+      "resource": [
+        "long_rest_recovery",
+        "sorcery_points"
+      ],
+      "trigger": [
+        "on_damage_taken",
+        "on_long_rest"
+      ],
+      "target": [
+        "allies_or_creatures",
+        "self"
+      ],
+      "effects": [
+        "damage"
+      ],
+      "duration": [],
+      "detected_blocks": [
+        "action_economy",
+        "aura_range",
+        "damage_healing",
+        "pre_damage_defense",
+        "resource_recovery",
+        "target_range_save",
+        "world_state"
+      ]
+    },
+    {
+      "cluster_id": "semantic:0a943002a80f96cb",
+      "member_count": 1,
+      "member_feature_ids": [
+        "术士:狂野术法:3:狂野魔法浪涌 Wild Magic"
+      ],
+      "action_economy": [],
+      "resource": [
+        "spell_slot"
+      ],
+      "trigger": [
+        "on_spell_cast"
+      ],
+      "target": [
+        "self"
+      ],
+      "effects": [],
+      "duration": [],
+      "detected_blocks": [
+        "resource_recovery",
+        "spellcasting"
+      ]
+    },
+    {
+      "cluster_id": "semantic:0ba6fa5a2b777c38",
+      "member_count": 1,
+      "member_feature_ids": [
+        "牧师:诡术领域:6:诡诈换位 Trickster's"
+      ],
+      "action_economy": [
+        "bonus_action"
+      ],
+      "resource": [],
+      "trigger": [],
+      "target": [
+        "self",
+        "summon"
+      ],
+      "effects": [
+        "teleport"
+      ],
+      "duration": [],
+      "detected_blocks": [
+        "action_trigger",
+        "movement"
+      ]
+    },
+    {
+      "cluster_id": "semantic:0f5d6c2fcd802be1",
+      "member_count": 1,
+      "member_feature_ids": [
+        "圣武士:古贤之誓:3:自然之怒 Nature's"
+      ],
+      "action_economy": [
+        "triggered"
+      ],
+      "resource": [
+        "channel_divinity"
+      ],
+      "trigger": [
+        "on_turn_end"
+      ],
+      "target": [
+        "allies_or_creatures",
+        "self"
+      ],
+      "effects": [
+        "condition",
+        "saving_throw"
+      ],
+      "duration": [
+        "minutes"
+      ],
+      "detected_blocks": [
+        "aura_range",
+        "resource_binding",
+        "resource_recovery",
+        "save_dc",
+        "target_range_save"
+      ]
+    },
+    {
+      "cluster_id": "semantic:114489a0088c8cf2",
+      "member_count": 1,
+      "member_feature_ids": [
+        "吟游诗人:魅心学院:6:威仪作锦"
+      ],
+      "action_economy": [
+        "bonus_action",
+        "no_action"
+      ],
+      "resource": [
+        "long_rest_recovery",
+        "spell_slot"
+      ],
+      "trigger": [
+        "on_long_rest",
+        "on_spell_cast"
+      ],
+      "target": [
+        "self"
+      ],
+      "effects": [
+        "ability_check",
+        "condition",
+        "saving_throw"
+      ],
+      "duration": [
+        "minutes",
+        "until_long_rest"
+      ],
+      "detected_blocks": [
+        "action_economy",
+        "resource_recovery",
+        "save_dc",
+        "spell_selection",
+        "spellcasting",
+        "status_lifecycle"
+      ]
+    },
+    {
+      "cluster_id": "semantic:12d41a5c3f3be507",
+      "member_count": 1,
+      "member_feature_ids": [
+        "战士:奥法骑士:3:战争联结 War"
+      ],
+      "action_economy": [
+        "bonus_action"
+      ],
+      "resource": [
+        "short_rest_recovery"
+      ],
+      "trigger": [],
+      "target": [
+        "self",
+        "summon"
+      ],
+      "effects": [
+        "teleport"
+      ],
+      "duration": [],
+      "detected_blocks": [
+        "aura_range",
+        "movement",
+        "resource_recovery",
+        "status_lifecycle",
+        "summon_companion",
+        "target_range_save"
+      ]
+    },
+    {
+      "cluster_id": "semantic:13c1e229a6ac91d5",
+      "member_count": 1,
+      "member_feature_ids": [
+        "野蛮人:兽心道途:3:兽性狂暴"
+      ],
+      "action_economy": [
+        "bonus_action"
+      ],
+      "resource": [
+        "rage"
+      ],
+      "trigger": [
+        "on_rage_activation",
+        "while_raging"
+      ],
+      "target": [
+        "enemy",
+        "self"
+      ],
+      "effects": [
+        "ability_check",
+        "advantage",
+        "damage",
+        "damage_resistance"
+      ],
+      "duration": [],
+      "detected_blocks": [
+        "action_economy",
+        "action_trigger",
+        "advancement_choice",
+        "aura_range",
+        "damage_healing",
+        "movement",
+        "roll_intervention",
+        "target_range_save"
+      ]
+    },
+    {
+      "cluster_id": "semantic:143424d51f0b7419",
+      "member_count": 1,
+      "member_feature_ids": [
+        "法师:防护师:6:投射守御 Projected Ward"
+      ],
+      "action_economy": [
+        "triggered"
+      ],
+      "resource": [],
+      "trigger": [
+        "on_damage_taken"
+      ],
+      "target": [
+        "allies_or_creatures",
+        "self"
+      ],
+      "effects": [
+        "damage",
+        "damage_resistance"
+      ],
+      "duration": [],
+      "detected_blocks": [
+        "aura_range",
+        "damage_healing",
+        "pre_damage_defense",
+        "target_range_save"
+      ]
+    },
+    {
+      "cluster_id": "semantic:1463ae55b2f5830c",
+      "member_count": 1,
+      "member_feature_ids": [
+        "野蛮人:世界树道途:3:圣树活力 Vitality"
+      ],
+      "action_economy": [
+        "triggered"
+      ],
+      "resource": [
+        "rage"
+      ],
+      "trigger": [
+        "on_rage_activation",
+        "on_turn_start",
+        "while_raging"
+      ],
+      "target": [
+        "allies_or_creatures",
+        "enemy",
+        "self"
+      ],
+      "effects": [
+        "damage",
+        "temporary_hp"
+      ],
+      "duration": [],
+      "detected_blocks": [
+        "action_trigger",
+        "aura_range",
+        "damage_healing",
+        "target_range_save",
+        "world_state"
+      ]
+    },
+    {
+      "cluster_id": "semantic:1ed8a66417e1348f",
+      "member_count": 1,
+      "member_feature_ids": [
+        "游荡者:刺客:9:专业渗透 Infiltration"
+      ],
+      "action_economy": [],
+      "resource": [],
+      "trigger": [],
+      "target": [
+        "self"
+      ],
+      "effects": [
+        "speed"
+      ],
+      "duration": [],
+      "detected_blocks": []
+    },
+    {
+      "cluster_id": "semantic:1fa822ff10be868d",
+      "member_count": 1,
+      "member_feature_ids": [
+        "游荡者:刺客:3:暗杀 Assassinate"
+      ],
+      "action_economy": [
+        "triggered"
+      ],
+      "resource": [],
+      "trigger": [
+        "on_attack_hit"
+      ],
+      "target": [
+        "self"
+      ],
+      "effects": [
+        "ability_check",
+        "advantage",
+        "damage"
+      ],
+      "duration": [],
+      "detected_blocks": [
+        "damage_healing",
+        "roll_intervention"
+      ]
+    },
+    {
+      "cluster_id": "semantic:25e401a44264c473",
+      "member_count": 1,
+      "member_feature_ids": [
+        "游侠:猎人:3:猎人学识 Hunter's"
+      ],
+      "action_economy": [],
+      "resource": [],
+      "trigger": [],
+      "target": [
+        "self"
+      ],
+      "effects": [
+        "damage_immunity",
+        "damage_resistance"
+      ],
+      "duration": [],
+      "detected_blocks": []
+    },
+    {
+      "cluster_id": "semantic:2764661c746409a3",
+      "member_count": 1,
+      "member_feature_ids": [
+        "武僧:命流武者:3:予命之手 Hand of"
+      ],
+      "action_economy": [
+        "action"
+      ],
+      "resource": [],
+      "trigger": [],
+      "target": [
+        "enemy",
+        "self"
+      ],
+      "effects": [
+        "attack"
+      ],
+      "duration": [],
+      "detected_blocks": [
+        "action_economy",
+        "action_trigger",
+        "damage_healing",
+        "resource_recovery"
+      ]
+    },
+    {
+      "cluster_id": "semantic:294759d8601f4215",
+      "member_count": 1,
+      "member_feature_ids": [
+        "野蛮人:兽心道途:14:兽力威能 Power of the Wilds"
+      ],
+      "action_economy": [
+        "triggered"
+      ],
+      "resource": [
+        "rage"
+      ],
+      "trigger": [
+        "on_attack_hit",
+        "on_rage_activation",
+        "while_raging"
+      ],
+      "target": [
+        "enemy",
+        "self"
+      ],
+      "effects": [
+        "ability_check",
+        "condition",
+        "disadvantage",
+        "flight",
+        "speed"
+      ],
+      "duration": [],
+      "detected_blocks": [
+        "action_trigger",
+        "advancement_choice",
+        "aura_range",
+        "hit_rider",
+        "movement",
+        "target_range_save"
+      ]
+    },
+    {
+      "cluster_id": "semantic:29c541cf208c8459",
+      "member_count": 1,
+      "member_feature_ids": [
+        "吟游诗人:魅心学院:3:惑心魔法"
+      ],
+      "action_economy": [
+        "no_action"
+      ],
+      "resource": [
+        "bardic_inspiration",
+        "long_rest_recovery",
+        "spell_slot"
+      ],
+      "trigger": [
+        "on_long_rest",
+        "on_save_failure",
+        "on_spell_cast",
+        "on_turn_end"
+      ],
+      "target": [
+        "allies_or_creatures",
+        "self"
+      ],
+      "effects": [
+        "ability_check",
+        "condition",
+        "saving_throw"
+      ],
+      "duration": [
+        "minutes",
+        "until_long_rest"
+      ],
+      "detected_blocks": [
+        "aura_range",
+        "resource_binding",
+        "resource_recovery",
+        "save_dc",
+        "spell_selection",
+        "spellcasting",
+        "status_lifecycle",
+        "target_range_save"
+      ]
+    },
+    {
+      "cluster_id": "semantic:2c3d55ede97d89ce",
+      "member_count": 1,
+      "member_feature_ids": [
+        "游侠:猎人:3:猎杀技艺 Hunter's"
+      ],
+      "action_economy": [
+        "triggered"
+      ],
+      "resource": [
+        "long_rest_recovery",
+        "short_rest_recovery"
+      ],
+      "trigger": [
+        "on_attack_hit",
+        "on_long_rest"
+      ],
+      "target": [
+        "allies_or_creatures",
+        "enemy",
+        "self"
+      ],
+      "effects": [
+        "attack",
+        "damage"
+      ],
+      "duration": [],
+      "detected_blocks": [
+        "action_trigger",
+        "aura_range",
+        "damage_healing",
+        "resource_recovery",
+        "target_range_save"
+      ]
+    },
+    {
+      "cluster_id": "semantic:2cdf8b33416b83ac",
+      "member_count": 1,
+      "member_feature_ids": [
+        "术士:畸变术法:14:血肉启示 Revelation in"
+      ],
+      "action_economy": [
+        "bonus_action"
+      ],
+      "resource": [
+        "sorcery_points"
+      ],
+      "trigger": [],
+      "target": [
+        "allies_or_creatures",
+        "self"
+      ],
+      "effects": [
+        "condition",
+        "flight",
+        "invisible",
+        "speed",
+        "swim"
+      ],
+      "duration": [
+        "minutes"
+      ],
+      "detected_blocks": [
+        "action_economy",
+        "action_trigger",
+        "advancement_choice",
+        "aura_range",
+        "movement",
+        "resource_recovery",
+        "status_lifecycle",
+        "target_range_save"
+      ]
+    },
+    {
+      "cluster_id": "semantic:2d5c357ad80ed684",
+      "member_count": 1,
+      "member_feature_ids": [
+        "魔契师:邪魔宗主:14:直坠噩梦 Hurl Through"
+      ],
+      "action_economy": [
+        "no_action"
+      ],
+      "resource": [
+        "long_rest_recovery",
+        "spell_slot"
+      ],
+      "trigger": [
+        "on_attack_hit",
+        "on_long_rest",
+        "on_save_failure"
+      ],
+      "target": [
+        "self"
+      ],
+      "effects": [
+        "ability_check",
+        "damage",
+        "saving_throw"
+      ],
+      "duration": [
+        "until_incapacitated",
+        "until_long_rest"
+      ],
+      "detected_blocks": [
+        "action_trigger",
+        "damage_healing",
+        "resource_recovery",
+        "save_dc",
+        "spellcasting",
+        "status_lifecycle",
+        "target_range_save"
+      ]
+    },
+    {
+      "cluster_id": "semantic:331758b9088a8c91",
+      "member_count": 1,
+      "member_feature_ids": [
+        "圣武士:古贤之誓:20:上古斗士 Elder"
+      ],
+      "action_economy": [
+        "bonus_action",
+        "no_action"
+      ],
+      "resource": [
+        "channel_divinity",
+        "long_rest_recovery",
+        "spell_slot"
+      ],
+      "trigger": [
+        "on_long_rest",
+        "on_spell_cast",
+        "on_turn_start"
+      ],
+      "target": [
+        "enemy",
+        "self"
+      ],
+      "effects": [
+        "disadvantage",
+        "saving_throw"
+      ],
+      "duration": [
+        "minutes",
+        "until_long_rest"
+      ],
+      "detected_blocks": [
+        "action_economy",
+        "action_trigger",
+        "aura_range",
+        "damage_healing",
+        "resource_recovery",
+        "roll_intervention",
+        "save_dc",
+        "spellcasting",
+        "status_lifecycle",
+        "target_range_save"
+      ]
+    },
+    {
+      "cluster_id": "semantic:35c595b139ca879d",
+      "member_count": 1,
+      "member_feature_ids": [
+        "德鲁伊:月亮结社:3:结社形态 Circle"
+      ],
+      "action_economy": [
+        "triggered"
+      ],
+      "resource": [
+        "wild_shape"
+      ],
+      "trigger": [
+        "wild_shape_related"
+      ],
+      "target": [
+        "self"
+      ],
+      "effects": [
+        "temporary_hp"
+      ],
+      "duration": [],
+      "detected_blocks": [
+        "action_trigger",
+        "damage_healing"
+      ]
+    },
+    {
+      "cluster_id": "semantic:35dd3969db52b223",
+      "member_count": 1,
+      "member_feature_ids": [
+        "魔契师:至高妖精宗主:3:妖精步伐 Steps of the"
+      ],
+      "action_economy": [
+        "triggered"
+      ],
+      "resource": [
+        "long_rest_recovery",
+        "spell_slot",
+        "uses_ability_modifier"
+      ],
+      "trigger": [
+        "on_long_rest",
+        "on_spell_cast",
+        "on_turn_start"
+      ],
+      "target": [
+        "allies_or_creatures",
+        "self"
+      ],
+      "effects": [
+        "ability_check",
+        "disadvantage",
+        "saving_throw",
+        "teleport",
+        "temporary_hp"
+      ],
+      "duration": [],
+      "detected_blocks": [
+        "action_trigger",
+        "aura_range",
+        "damage_healing",
+        "movement",
+        "resource_binding",
+        "resource_recovery",
+        "roll_intervention",
+        "save_dc",
+        "spellcasting",
+        "target_range_save"
+      ]
+    },
+    {
+      "cluster_id": "semantic:3aec849d1a965599",
+      "member_count": 1,
+      "member_feature_ids": [
+        "吟游诗人:舞蹈学院:6:鼓舞之移"
+      ],
+      "action_economy": [
+        "reaction"
+      ],
+      "resource": [
+        "bardic_inspiration"
+      ],
+      "trigger": [],
+      "target": [
+        "allies_or_creatures",
+        "enemy",
+        "self"
+      ],
+      "effects": [
+        "speed"
+      ],
+      "duration": [],
+      "detected_blocks": [
+        "aura_range",
+        "resource_binding",
+        "resource_recovery",
+        "target_range_save"
+      ]
+    },
+    {
+      "cluster_id": "semantic:3d016e7476da52e3",
+      "member_count": 1,
+      "member_feature_ids": [
+        "游荡者:刺客:17:致命袭杀 Death"
+      ],
+      "action_economy": [
+        "triggered"
+      ],
+      "resource": [
+        "proficiency_bonus"
+      ],
+      "trigger": [
+        "on_attack_hit"
+      ],
+      "target": [
+        "self"
+      ],
+      "effects": [
+        "damage",
+        "saving_throw"
+      ],
+      "duration": [],
+      "detected_blocks": [
+        "action_trigger",
+        "damage_healing",
+        "save_dc",
+        "target_range_save"
+      ]
+    },
+    {
+      "cluster_id": "semantic:3dc6721d976f5c4c",
+      "member_count": 1,
+      "member_feature_ids": [
+        "牧师:光明领域:3:黎明曙光 Radiance of the"
+      ],
+      "action_economy": [
+        "action"
+      ],
+      "resource": [
+        "channel_divinity"
+      ],
+      "trigger": [
+        "on_save_failure"
+      ],
+      "target": [
+        "allies_or_creatures",
+        "area",
+        "self"
+      ],
+      "effects": [
+        "damage",
+        "saving_throw"
+      ],
+      "duration": [],
+      "detected_blocks": [
+        "action_economy",
+        "aura_range",
+        "damage_healing",
+        "pre_damage_defense",
+        "resource_binding",
+        "resource_recovery",
+        "save_dc"
+      ]
+    },
+    {
+      "cluster_id": "semantic:3facf046182e5278",
+      "member_count": 1,
+      "member_feature_ids": [
+        "游荡者:诡术师:17:法术窃贼 Spell"
+      ],
+      "action_economy": [],
+      "resource": [
+        "long_rest_recovery"
+      ],
+      "trigger": [
+        "on_long_rest",
+        "on_save_failure",
+        "on_spell_cast"
+      ],
+      "target": [
+        "self"
+      ],
+      "effects": [
+        "saving_throw"
+      ],
+      "duration": [
+        "until_long_rest"
+      ],
+      "detected_blocks": [
+        "action_trigger",
+        "resource_recovery",
+        "save_dc",
+        "spellcasting"
+      ]
+    },
+    {
+      "cluster_id": "semantic:42299aab3e8725d1",
+      "member_count": 1,
+      "member_feature_ids": [
+        "游侠:驯兽师:3:原初行侣 Primal"
+      ],
+      "action_economy": [
+        "action",
+        "bonus_action"
+      ],
+      "resource": [
+        "long_rest_recovery",
+        "spell_slot"
+      ],
+      "trigger": [
+        "on_long_rest"
+      ],
+      "target": [
+        "self",
+        "summon"
+      ],
+      "effects": [],
+      "duration": [
+        "until_incapacitated"
+      ],
+      "detected_blocks": [
+        "action_economy",
+        "action_trigger",
+        "aura_range",
+        "damage_healing",
+        "resource_binding",
+        "resource_recovery",
+        "spellcasting",
+        "status_lifecycle",
+        "summon_companion",
+        "target_range_save"
+      ]
+    },
+    {
+      "cluster_id": "semantic:461c040942d11259",
+      "member_count": 1,
+      "member_feature_ids": [
+        "游侠:猎人:11:高阶猎杀技艺 Superior Hunter's"
+      ],
+      "action_economy": [
+        "triggered"
+      ],
+      "resource": [],
+      "trigger": [],
+      "target": [
+        "area",
+        "enemy",
+        "self"
+      ],
+      "effects": [
+        "damage"
+      ],
+      "duration": [],
+      "detected_blocks": [
+        "action_trigger",
+        "aura_range",
+        "damage_healing",
+        "target_range_save"
+      ]
+    },
+    {
+      "cluster_id": "semantic:480278136bc60c86",
+      "member_count": 1,
+      "member_feature_ids": [
+        "武僧:散打武者:17:渗透劲 Quivering"
+      ],
+      "action_economy": [
+        "triggered"
+      ],
+      "resource": [],
+      "trigger": [
+        "on_attack_hit"
+      ],
+      "target": [
+        "self"
+      ],
+      "effects": [
+        "attack",
+        "damage",
+        "saving_throw"
+      ],
+      "duration": [],
+      "detected_blocks": [
+        "action_trigger",
+        "damage_healing",
+        "resource_recovery",
+        "save_dc",
+        "status_lifecycle",
+        "target_range_save"
+      ]
+    },
+    {
+      "cluster_id": "semantic:48f59a2a6620fed4",
+      "member_count": 1,
+      "member_feature_ids": [
+        "术士:畸变术法:18:扭曲内爆 Warping"
+      ],
+      "action_economy": [
+        "action",
+        "no_action"
+      ],
+      "resource": [
+        "long_rest_recovery",
+        "sorcery_points"
+      ],
+      "trigger": [
+        "on_long_rest",
+        "on_save_failure"
+      ],
+      "target": [
+        "allies_or_creatures",
+        "self"
+      ],
+      "effects": [
+        "damage",
+        "saving_throw",
+        "teleport"
+      ],
+      "duration": [
+        "until_long_rest"
+      ],
+      "detected_blocks": [
+        "action_economy",
+        "aura_range",
+        "damage_healing",
+        "movement",
+        "resource_recovery",
+        "save_dc",
+        "spellcasting",
+        "target_range_save"
+      ]
+    },
+    {
+      "cluster_id": "semantic:49bb0f1458fdf26c",
+      "member_count": 1,
+      "member_feature_ids": [
+        "游侠:驯兽师:11:兽性狂怒 Bestial"
+      ],
+      "action_economy": [
+        "triggered"
+      ],
+      "resource": [],
+      "trigger": [],
+      "target": [
+        "self",
+        "summon"
+      ],
+      "effects": [
+        "damage"
+      ],
+      "duration": [],
+      "detected_blocks": [
+        "action_trigger",
+        "damage_healing"
+      ]
+    },
+    {
+      "cluster_id": "semantic:4b0fc87aa7c5f12e",
+      "member_count": 1,
+      "member_feature_ids": [
+        "野蛮人:狂战士道途:14:威慑之姿 Intimidating Presence"
+      ],
+      "action_economy": [
+        "bonus_action",
+        "no_action"
+      ],
+      "resource": [
+        "long_rest_recovery",
+        "proficiency_bonus",
+        "rage"
+      ],
+      "trigger": [
+        "on_long_rest",
+        "on_save_failure",
+        "on_turn_end"
+      ],
+      "target": [
+        "allies_or_creatures",
+        "area",
+        "self"
+      ],
+      "effects": [
+        "ability_check",
+        "condition",
+        "saving_throw"
+      ],
+      "duration": [
+        "minutes",
+        "until_long_rest"
+      ],
+      "detected_blocks": [
+        "action_economy",
+        "action_trigger",
+        "aura_range",
+        "resource_binding",
+        "resource_recovery",
+        "save_dc",
+        "status_lifecycle"
+      ]
+    },
+    {
+      "cluster_id": "semantic:4b42e0d821dba31a",
+      "member_count": 1,
+      "member_feature_ids": [
+        "野蛮人:世界树道途:14:世界树之奇旅 Travel along the Tree"
+      ],
+      "action_economy": [
+        "bonus_action"
+      ],
+      "resource": [
+        "rage"
+      ],
+      "trigger": [
+        "on_rage_activation",
+        "while_raging"
+      ],
+      "target": [
+        "allies_or_creatures",
+        "self"
+      ],
+      "effects": [
+        "teleport"
+      ],
+      "duration": [],
+      "detected_blocks": [
+        "action_economy",
+        "action_trigger",
+        "aura_range",
+        "movement",
+        "target_range_save",
+        "world_state"
+      ]
+    },
+    {
+      "cluster_id": "semantic:4cb996da35083e33",
+      "member_count": 1,
+      "member_feature_ids": [
+        "游荡者:魂刃:17:撕裂心智 Rend"
+      ],
+      "action_economy": [
+        "no_action"
+      ],
+      "resource": [
+        "long_rest_recovery",
+        "proficiency_bonus",
+        "psionic_dice"
+      ],
+      "trigger": [
+        "on_long_rest",
+        "on_save_failure",
+        "on_turn_end"
+      ],
+      "target": [
+        "self"
+      ],
+      "effects": [
+        "condition",
+        "damage",
+        "saving_throw"
+      ],
+      "duration": [
+        "until_long_rest"
+      ],
+      "detected_blocks": [
+        "action_trigger",
+        "damage_healing",
+        "resource_recovery",
+        "save_dc",
+        "status_lifecycle"
+      ]
+    },
+    {
+      "cluster_id": "semantic:52628c3dc8b4d831",
+      "member_count": 1,
+      "member_feature_ids": [
+        "魔契师:至高妖精宗主:6:雾遁 Misty"
+      ],
+      "action_economy": [
+        "reaction"
+      ],
+      "resource": [],
+      "trigger": [
+        "on_damage_taken",
+        "on_save_failure",
+        "on_spell_cast",
+        "on_turn_start"
+      ],
+      "target": [
+        "allies_or_creatures",
+        "self"
+      ],
+      "effects": [
+        "ability_check",
+        "attack",
+        "damage",
+        "invisible",
+        "saving_throw",
+        "teleport"
+      ],
+      "duration": [],
+      "detected_blocks": [
+        "action_trigger",
+        "aura_range",
+        "damage_healing",
+        "movement",
+        "pre_damage_defense",
+        "save_dc",
+        "status_lifecycle",
+        "target_range_save"
+      ]
+    },
+    {
+      "cluster_id": "semantic:55f080e823c61876",
+      "member_count": 1,
+      "member_feature_ids": [
+        "游侠:妖精漫游者:11:精宸所与 Fey"
+      ],
+      "action_economy": [
+        "triggered"
+      ],
+      "resource": [
+        "long_rest_recovery",
+        "spell_slot"
+      ],
+      "trigger": [
+        "on_long_rest",
+        "on_spell_cast"
+      ],
+      "target": [
+        "self",
+        "summon"
+      ],
+      "effects": [],
+      "duration": [],
+      "detected_blocks": [
+        "action_trigger",
+        "resource_recovery",
+        "spellcasting",
+        "status_lifecycle",
+        "summon_companion"
+      ]
+    }
+  ],
+  "effect_counts": {
+    "damage": 45,
+    "saving_throw": 45,
+    "ability_check": 38,
+    "condition": 17,
+    "teleport": 14,
+    "speed": 13,
+    "advantage": 13,
+    "attack": 13,
+    "damage_resistance": 9,
+    "invisible": 9,
+    "temporary_hp": 8,
+    "disadvantage": 8,
+    "flight": 8,
+    "light": 7,
+    "damage_immunity": 3,
+    "save_advantage_modifier": 2,
+    "reroll": 2,
+    "healing": 2,
+    "zero_hp": 2,
+    "swim": 2,
+    "climb": 1
+  },
+  "trigger_counts": {
+    "on_long_rest": 43,
+    "on_spell_cast": 37,
+    "on_attack_hit": 22,
+    "on_save_failure": 14,
+    "on_turn_start": 14,
+    "wild_shape_related": 9,
+    "on_turn_end": 7,
+    "on_damage_taken": 6,
+    "while_raging": 5,
+    "on_rage_activation": 4,
+    "on_initiative_roll": 1,
+    "on_check_failure": 1,
+    "on_death_save": 1
+  },
+  "resource_counts": {
+    "long_rest_recovery": 43,
+    "spell_slot": 27,
+    "short_rest_recovery": 11,
+    "proficiency_bonus": 10,
+    "wild_shape": 9,
+    "channel_divinity": 7,
+    "rage": 7,
+    "sorcery_points": 6,
+    "bardic_inspiration": 5,
+    "psionic_dice": 5,
+    "superiority_dice": 2,
+    "uses_ability_modifier": 2
+  },
+  "target_counts": {
+    "self": 121,
+    "allies_or_creatures": 35,
+    "enemy": 17,
+    "summon": 17,
+    "area": 13
+  }
+}

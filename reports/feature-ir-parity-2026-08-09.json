@@ -1,14 +1,14 @@
 {
   "audit_status_counts": {
     "dm_only": 61,
-    "full": 315,
-    "partial": 123
+    "full": 317,
+    "partial": 121
   },
   "compiler_pilot_count": 10,
   "compiler_status_counts": {
     "full": 14,
     "invalid": 129,
-    "partial": 172
+    "partial": 174
   },
   "formal_semantic_parity": {
     "all_passed": true,
@@ -1385,31 +1385,6 @@
         }
       ],
       "compiler_status": "partial",
-      "feature_id": "legacy:subclass:5791e4c41e530d449b0f4386:3:炫目舞步",
-      "feature_name": "炫目舞步",
-      "legacy_status": "partial",
-      "manual_boundaries": [],
-      "unsupported_combinations": [
-        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
-      ],
-      "unsupported_conditions": [],
-      "unsupported_operators": [
-        "legacy_unsupported:no_runtime_section"
-      ]
-    },
-    {
-      "clause_results": [
-        {
-          "blockers": [
-            "unsupported operator: legacy_unsupported:no_runtime_section"
-          ],
-          "capability_ids": [],
-          "clause_id": "legacy:no_runtime_section",
-          "generated_block": null,
-          "status": "partial"
-        }
-      ],
-      "compiler_status": "partial",
       "feature_id": "legacy:subclass:5791e4c41e530d449b0f4386:6:鼓舞之移",
       "feature_name": "鼓舞之移",
       "legacy_status": "partial",
@@ -1599,6 +1574,31 @@
       "compiler_status": "partial",
       "feature_id": "legacy:subclass:09860de59419ccc7f1b12908:3:自然之怒 Nature's",
       "feature_name": "自然之怒 Nature's",
+      "legacy_status": "partial",
+      "manual_boundaries": [],
+      "unsupported_combinations": [
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ],
+      "unsupported_conditions": [],
+      "unsupported_operators": [
+        "legacy_unsupported:no_runtime_section"
+      ]
+    },
+    {
+      "clause_results": [
+        {
+          "blockers": [
+            "unsupported operator: legacy_unsupported:no_runtime_section"
+          ],
+          "capability_ids": [],
+          "clause_id": "legacy:no_runtime_section",
+          "generated_block": null,
+          "status": "partial"
+        }
+      ],
+      "compiler_status": "partial",
+      "feature_id": "legacy:subclass:09860de59419ccc7f1b12908:20:上古斗士 Elder",
+      "feature_name": "上古斗士 Elder",
       "legacy_status": "partial",
       "manual_boundaries": [],
       "unsupported_combinations": [
