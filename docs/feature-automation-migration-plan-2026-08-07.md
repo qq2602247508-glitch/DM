@@ -1,5 +1,24 @@
 # 特性自动化迁移预审报告
 
+## 2026-08-10 真实语料批量编译吞吐恢复（未达生产收割门槛）
+
+- 当前严格审计仍为 `full 320 / partial 118 / dm_only 61`，固定分母 499。本阶段修复
+  Spell Resistance typed defense 与 IR parity 回归，并新增真实 audit rows 批量编译入口：
+  `backend/src/dnd_dm_assistant/application/feature_ir_batch_compiler.py`、
+  `scripts/compile-feature-ir-batch.py`。
+- 批量入口按稳定 feature ID、source/spec fingerprint、source trust 和显式 FeatureSpec
+  编译；支持 preview/dry-run/replay 元数据、fingerprint conflict 与 rollback plan。
+  没有 typed spec 的真实语料行只输出 partial，`generated_draft` 不得进入 full，且不改正式
+  runtime_status。
+- census 已补齐 producer/consumer/persistence/CAS/idempotency/materializer/validator/evidence
+  等 authority 字段。当前 partial exact cluster 115 个，最大成员数 2；满足
+  `production_closed + >=8` 的真实簇为 0。preview 报告显示 118 条 partial 全部
+  `missing_typed_spec`，没有可安全 apply 的候选。
+- 批次报告为 `reports/feature-ir-production-consumer-batch-V-2026-08-10.json`。本阶段
+  `actual_new_full=0`、`direct_ir_authority_count=0`，因此 Goal 继续 active；下一步只能
+  从真实语料中补齐可证明的参数化 typed specs，或建设缺失的 producer/consumer/持久化系统，
+  不能用名称、粗标签、legacy parity 或 demo fanout 凑数。
+
 ## 2026-08-09 Feature IR 自动装配与拓展包导入基础
 
 - 本轮将迁移策略从“逐条人工接线”推进到 Feature IR + Capability Catalog + FeatureCompiler +
@@ -409,3 +428,24 @@ lint、production build 通过；隔离数据库的真实 DM 页面完成战斗�
 
 下一轮优先补通用 selected-cantrip replacement，使圣武士/游侠两条复合战斗风格达到 full；之后继续
 扫描已有消费者的低风险 progression/passive grant 批次，不引入新的大型战斗状态机。
+
+# 2026-08-10 目标信息读取与 IR 权威扩展检查点
+
+当前严格审计为 `full 320 / partial 118 / dm_only 61`（固定 499）。本检查点没有新增
+`full`，只完成 authority 和证据扩展：
+
+- 「猎人学识 Hunter's Lore」由 authored Feature IR 编译并物化为只读目标信息动作；
+  真实 combat API 使用猎人印记快照绑定目标，读取目标的抗性/免疫/易伤，覆盖离回合调用、
+  目标/角色版本 CAS、幂等重放和缺失绑定 fail-closed。只读动作记录审计结果，不递增
+  combatant 版本。
+- 新增 7 条 authored IR 的已有 full 消费者映射：心灵防御、高效重击、操命本事、
+  刺客工具、法术抗性，以及灵能武士/魂刃的灵能力量。`set_resource_profile` 现在允许
+  显式短休/长休恢复事件，未改变既有资源消费者。
+- formal IR 当前 25 条（authored 21、verified 4）；这些新增映射不重复计入已有 full，
+  不把“compiler full”单独当作正式新增。
+- 真实语义 census 仍显示 partial 最大 exact 簇为 2；下一轮必须先建设一个可复用的
+  多目标/反应/状态或攻击后窗口 producer，再批量收割，不能用 source alias、配置存在或
+  单分支 effect 抬高状态。
+
+验证：Hunter's Lore 真实 API 与 IR/批量测试通过；提交前仍需运行后端全量 pytest、Ruff、
+compileall、git diff check。无前端源码变更，不运行前端/浏览器门禁。

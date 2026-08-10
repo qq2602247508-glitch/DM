@@ -1,3 +1,25 @@
+# 2026-08-10 长执行检查点：真实语料批量编译入口与阻塞审计
+
+- 本轮接管时固定审计实时为 `full 320 / partial 118 / dm_only 61`，分母仍为 499。
+  先修复 `grant_saving_throw_advantage`、Spell Resistance typed defense、IR parity
+  alias 和 planner 期望；后端全量 pytest、backend/src+backend/tests Ruff、compileall、
+  git diff check 均通过。
+- 新增 `application/feature_ir_batch_compiler.py` 与
+  `scripts/compile-feature-ir-batch.py`：真实 audit rows 按稳定 feature ID 和 source/spec
+  fingerprint 排序编译，支持 dry-run/preview/apply/replay 元数据、fingerprint conflict、
+  rollback plan；没有显式 typed FeatureSpec 的行一律 partial，generated_draft 一律不能 full。
+- 新增真实语料 preview 报告：`reports/feature-ir-batch-preview-2026-08-10.json`；
+  118 条 partial 全部 `missing_typed_spec`，0 条 materialized，正式 499 状态未改变。
+- 语义 census 已扩展为每条 partial 的 typed contract 字段、authority 缺口、CAS/幂等、
+  materializer/validator/evidence 和 cluster blocker；同时单独列出
+  `superficially_similar_clusters`，这些粗标签相似簇明确 `merge_allowed=false`。当前
+  `partial_exact_cluster_count=115`，最大 exact cluster 仍为 2，production_closed 且成员数
+  ≥8 的候选簇为 0。
+- 批次报告：`reports/feature-ir-production-consumer-batch-V-2026-08-10.json`。
+  本阶段真实新增 full 为 0、direct IR authority 为 0；Goal 必须保持 active，不能把
+  “compiler/preview 已存在”写成批量迁移完成。
+- 必须保留且不得暂存/提交：`backend/tests/integrations/`、`backend/tests/ollama.py`。
+
 # 2026-08-09 长执行检查点：现有 production_closed 消费者批量迁移 I 收尾
 
 - 本批起点按实时审计为 `full 312 / partial 126 / dm_only 61`，终点为
@@ -2270,3 +2292,26 @@ backend/.venv/bin/python -m pytest -q backend/tests
 - 审计 `318/120/61`；formal IR 16 条（authored 12 / verified 4），
   compiler_pilot 16。全量 pytest、Ruff、compileall、diff-check 通过。
 - 相对目标的进度：净增 full 3/20、direct IR authority 2/10、≥8 条簇 0/1。
+
+# 2026-08-10 批量吞吐恢复第五切片：目标信息读取与 IR 权威扩展
+
+- 本切片把「猎人学识 Hunter's Lore」接入真实 Feature IR/materializer：
+  `expose_authorized_target_information` 物化为只读 `feature_action`，
+  通过角色快照 `current_hunters_mark_target_id` 绑定目标，并由战斗权威防御字段
+  返回抗性、免疫和易伤。
+- 真实 API 回归覆盖：非当前回合只读使用、目标版本校验、错误目标/缺失标记
+  fail-closed、幂等重放、actor stale CAS；只读检查持久化审计结果但不递增
+  actor/target combatant 版本。修复了只读动作在加载动作积木前引用未定义变量的顺序缺陷。
+- 追加 7 条已有 production-closed 消费者的 authored IR/materializer authority：
+  心灵防御、高效重击、操命本事、刺客工具、法术抗性，以及灵能武士/魂刃的
+  灵能力量；`set_resource_profile` 现在保留短休恢复一枚、长休全恢复的自定义恢复事件。
+  这些是 authority/证据扩展，不重复计入已有 full。
+- 当前严格审计仍为 `full 320 / partial 118 / dm_only 61`，固定分母 499；
+  formal IR 共 25（authored 21 / verified 4）。本切片真实新增 full 为 0，
+  因而相对本 Goal 起点 `318/120/61` 的净增仍为 `+2`；不能把 IR authority
+  扩展或已有 full 的重复映射冒充新增 full。
+- semantic census 当前仍显示 partial 最大 exact 簇为 2，未达到 ≥8 条 partial
+  同构簇。Goal 保持 active；下一步必须建设一个可复用且有真实 producer/consumer、
+  多目标或反应窗口、CAS/幂等和 E2E 证据的新高扇出机制，不能靠 alias/配置升格。
+- 门禁：本切片定向 pytest 已通过；完整后端 pytest、Ruff、compileall、git diff
+  --check 仍需在提交前重跑。无前端源码变更，不运行/宣称前端或浏览器验收。
