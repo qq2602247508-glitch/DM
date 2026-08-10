@@ -15,6 +15,7 @@ from dnd_dm_assistant.domain.advancement_choices import (
     subclass_feature_runtime_definition,
     subclass_runtime_grants,
 )
+from dnd_dm_assistant.domain.feature_runtime import feature_runtime_definition
 
 
 @pytest.fixture
@@ -406,6 +407,122 @@ def test_batch_buff_condition_gates_flight_and_resistance_end_to_end(
         json={**request, "actor_version": actor["version"] + 1},
     )
     assert conflict.status_code == 409, conflict.text
+
+
+def test_rage_activation_grants_vitality_surge_temporary_hp(
+    combat_client: TestClient,
+) -> None:
+    """圣树活力 fires on rage activation through the generic trigger hook."""
+
+    campaign, combat, actor = _setup(combat_client)
+    character_response = combat_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/characters",
+        json={
+            "name": "圣树活力测试者",
+            "class_name": "野蛮人",
+            "level": 3,
+            "hp": 20,
+            "max_hp": 20,
+            "resources": {
+                "rage": {
+                    "label": "狂暴",
+                    "current": 2,
+                    "max": 2,
+                    "recovery": "long_rest",
+                }
+            },
+        },
+    )
+    assert character_response.status_code == 201, character_response.text
+    character = character_response.json()
+    grants = subclass_runtime_grants(
+        {
+            "name": "世界树道途",
+            "feature_definitions": [
+                {
+                    "id": "world-tree:3:vitality",
+                    "name": "圣树活力",
+                    "class_level": 3,
+                    "description": "当你激活狂暴时，你获得等于你野蛮人等级的临时生命值。",
+                }
+            ],
+        },
+        class_name="野蛮人",
+        target_class_level=3,
+        current_class_level=3,
+    )
+    vitality_grant = next(
+        item for item in grants["grants"] if item["class_level"] == 3
+    )
+    vitality_runtime = vitality_grant["runtime"]["registry"]
+    assert "after_rage_activation" in [
+        str(trigger.get("event")) for trigger in vitality_runtime.get("triggers", [])
+    ]
+    rage_runtime = feature_runtime_definition(
+        feature_name="狂暴",
+        class_name="野蛮人",
+        class_level=1,
+    )
+    assert rage_runtime is not None
+    merged_runtime = {
+        "combat_start": {
+            "modifiers": [
+                *((rage_runtime.get("combat_start") or {}).get("modifiers") or ()),
+                *((vitality_runtime.get("combat_start") or {}).get("modifiers") or ()),
+            ],
+            "defenses": [
+                *((rage_runtime.get("combat_start") or {}).get("defenses") or ()),
+                *((vitality_runtime.get("combat_start") or {}).get("defenses") or ()),
+            ],
+        },
+        "resources": dict(rage_runtime.get("resources") or {}),
+        "actions": {
+            **dict(rage_runtime.get("actions") or {}),
+            **dict(vitality_runtime.get("actions") or {}),
+        },
+        "triggers": [
+            *list(rage_runtime.get("triggers") or ()),
+            *list(vitality_runtime.get("triggers") or ()),
+        ],
+        "attack_riders": [],
+    }
+    patched = combat_client.patch(
+        _combatant_path(campaign, combat, actor["id"]),
+        headers={"If-Match": f'"{actor["version"]}"'},
+        json={
+            "entity_type": "character",
+            "entity_id": character["id"],
+            "snapshot_json": {
+                "feature_runtime": merged_runtime,
+                "equipment": [],
+                "class_levels": {"野蛮人": 3},
+            },
+        },
+    )
+    assert patched.status_code == 200, patched.text
+    actor = patched.json()
+    rage_action_id = next(
+        key for key, value in merged_runtime["actions"].items() if value.get("id") == "rage"
+    )
+    feature_path = f"{_root(campaign, combat)}/feature-actions/confirm"
+    resolved = combat_client.post(
+        feature_path,
+        headers={"X-Request-ID": "rage-vitality-0001"},
+        json={
+            "actor_combatant_id": actor["id"],
+            "actor_version": actor["version"],
+            "feature_id": rage_action_id,
+            "target_combatant_id": actor["id"],
+            "target_version": actor["version"],
+        },
+    )
+    assert resolved.status_code == 200, resolved.text
+    body = resolved.json()
+    assert "raging" in body["actor"]["conditions"]
+    assert body["actor"]["temporary_hp"] == 3
+    assert body["result"]["rage_activation_triggers"][0]["effects"][0][
+        "temporary_hp_after"
+    ] == 3
 
 
 def _lay_on_hands_fixture(

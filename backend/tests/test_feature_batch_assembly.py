@@ -20,7 +20,7 @@ CENSUS_SCRIPT = ROOT / "scripts" / "feature-ir-semantic-cluster-census.py"
 
 def test_batch_declarations_generate_typed_registries() -> None:
     configs = batch_runtime_configs()
-    assert set(configs) == {"神之狂暴", "炫目舞步"}
+    assert set(configs) == {"神之狂暴", "炫目舞步", "圣树活力"}
     divine_rage = configs["神之狂暴"]
     assert divine_rage["automation_status"] == "full"
     action_id = "野蛮人:狂热者道途:divine_rage"
@@ -42,6 +42,13 @@ def test_batch_declarations_generate_typed_registries() -> None:
     assert ac_modifier["stat"] == "armor_class"
     assert ac_modifier["operation"] == "set_base_formula"
     assert ac_modifier["formula"] == "10+dexterity_modifier+charisma_modifier"
+
+    vitality = configs["圣树活力"]
+    assert vitality["actions"] == {}
+    trigger = vitality["triggers"][0]
+    assert trigger["event"] == "after_rage_activation"
+    assert trigger["effects"][0]["kind"] == "grant_temporary_hp"
+    assert trigger["effects"][0]["class_level_source"] == "野蛮人"
 
 
 def test_batch_features_audit_as_full_and_pass_prefix_alias() -> None:
@@ -82,7 +89,7 @@ def test_census_proves_partial_corpus_has_no_large_homogeneous_cluster() -> None
     spec.loader.exec_module(module)
     report = module.census()
     assert report["audit_total"] == 499
-    assert report["status_counts"] == {"full": 317, "partial": 121, "dm_only": 61}
-    assert report["partial_total"] == 121
+    assert report["status_counts"] == {"full": 318, "partial": 120, "dm_only": 61}
+    assert report["partial_total"] == 120
     largest = report["largest_partial_clusters"][0]
     assert largest["member_count"] <= 2
