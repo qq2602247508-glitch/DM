@@ -2402,3 +2402,81 @@ backend/.venv/bin/python -m pytest -q backend/tests
   多目标或反应窗口、CAS/幂等和 E2E 证据的新高扇出机制，不能靠 alias/配置升格。
 - 门禁：本切片定向 pytest 已通过；完整后端 pytest、Ruff、compileall、git diff
   --check 仍需在提交前重跑。无前端源码变更，不运行/宣称前端或浏览器验收。
+
+# 2026-08-10 统一 Content IR 批量 Workbench
+
+本轮严格单线程执行，没有创建、调用、委托或等待子代理。唯一写入副本为本运行仓库；
+`backend/tests/integrations/` 与 `backend/tests/ollama.py` 始终保持未跟踪、未暂存、未提交且
+逐文件哈希不变。
+
+## 真实基线
+
+- 固定职业/子职业审计分母仍为 499：`full 328 / partial 110 / dm_only 61`。
+- 原版 2024《玩家手册》法术：`411` 条 `spells` 记录，其中 `391` 条详情候选、20 条列表/规则页。
+- 原版 2014《玩家手册》法术：`372` 条 `spells` 记录，其中 `361` 条详情候选、11 条列表/规则页。
+- 全部本地法术记录为 1314 条；官方/第三方/unknown 为 `786 / 293 / 235`；
+  版本为 `2024 / legacy / 2025 / unknown = 412 / 376 / 5 / 521`。
+- 本轮没有改原版数据库、正式 feature/spell registry、campaign、character snapshot 或正式 audit 状态。
+
+## 已实现
+
+- `backend/src/dnd_dm_assistant/application/content_ir_workbench.py`
+  - Feature Draft 与独立 Spell Draft；
+  - 共用 source provenance、record ID、source/spec fingerprint、pack/namespace、ruleset、
+    clause identity、compiler/capability registry、blocker、replay/idempotency 和 report schema；
+  - Feature Draft 只允许进入现有 FeatureCompiler 的 authored/verified typed 路径；
+  - SpellSpec 覆盖 attack/save、damage、healing、temporary HP、condition、area、duration、
+    concentration、movement、summon/creation、resource、upcast、modifier 和 target selection；
+  - 未知 Spell clause、未知字段、缺 typed 参数、source fingerprint 冲突均 fail-closed；
+  - 详情正文二次边界截断，避免串入下一法术或 stat block。
+- `backend/src/feature_workbench/`
+  - `scan`、`extract`、`compile`、`dry-run`、`report`、`scan-all-official` 统一命令；
+  - dry-run 只写 `/tmp/content-ir-workbench/<pack-id>/` 或调用方指定隔离目录；
+  - 支持重复运行幂等、target ownership/conflict、source fingerprint conflict、重复 ID 拒绝、
+    staging rollback 和 byte-identical report。
+- `backend/tests/test_content_ir_batch_workbench.py`
+  - 覆盖 2024/2014 分离、官方/第三方/unknown 隔离、索引排除、正文边界、Draft 不升 full、
+    最小 typed Feature/Spell full、未知 clause、缺字段、重复 ID、fingerprint conflict、dry-run
+    隔离、回滚、报告幂等和保护路径校验。
+
+## 真实官方扩展包扫描
+
+本地注册表自动发现 6 个官方扩展包，而不是只写死四本书。所有真实内容均为 source-backed
+Draft，当前没有 authored typed IR，因此没有任何扩展包被误报为 full：
+
+| pack_id | source_record_count | feature | spell | feat | other player option | draft | full/partial/manual/invalid |
+|---|---:|---:|---:|---:|---:|---:|---|
+| `xanathars-guide` | 325 | 25 | 95 | 1 | 20 | 141 | 0/0/141/0 |
+| `tashas-cauldron` | 144 | 48 | 21 | 1 | 2 | 72 | 0/0/72/0 |
+| `fizbans-treasury` | 113 | 2 | 7 | 1 | 5 | 15 | 0/0/15/0 |
+| `book-of-many-things` | 195 | 0 | 3 | 1 | 3 | 7 | 0/0/7/0 |
+| `bigbys-glory` | 177 | 1 | 0 | 1 | 6 | 8 | 0/0/8/0 |
+| `mordenkainen-multiverse` | 316 | 0 | 0 | 0 | 0 | 0 | 0/0/0/0 |
+
+机器可读真实结果：
+
+- `/tmp/content-ir-workbench/all-official.json`
+- `/tmp/content-ir-workbench/<pack-id>/source-inventory.json`
+- `/tmp/content-ir-workbench/<pack-id>/drafts/`
+- `/tmp/content-ir-workbench/<pack-id>/manifest.json`
+- `/tmp/content-ir-workbench/<pack-id>/compile-result.json`
+- `/tmp/content-ir-workbench/<pack-id>/dry-run-result.json`
+- `/tmp/content-ir-workbench/<pack-id>/compiled-runtime-preview.json`
+- `/tmp/content-ir-workbench/<pack-id>/report.json`
+
+最大 blocker 仍是没有可信 authored Feature/Spell IR；官方来源和字段可读性都不等于 full。
+当前真实 completion unlock ranking 为空/为 0，因为本轮没有 production-closed typed clause
+成员；不能据此推荐新的底座。新扩展包只要提供符合闭集 schema 的 typed IR，即可自动进入
+schema/source fingerprint/compiler/materializer/validator/dry-run/隔离导入链，但自然语言或
+generated draft 仍不能直接声称 full。
+
+## 验证
+
+```text
+PYTHONPATH=. backend/.venv/bin/pytest -q backend/tests
+backend/.venv/bin/ruff check backend/src backend/tests
+PYTHONPATH=. backend/.venv/bin/python -m compileall -q backend/src backend/tests
+git diff --check
+```
+
+四项均通过；真实官方扫描报告连续两次 hash 一致。

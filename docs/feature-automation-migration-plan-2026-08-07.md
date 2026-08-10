@@ -495,3 +495,55 @@ feature。下一迁移批次必须先提交人工审阅的 typed clause manifest
 - 当前扩展包导入瓶颈已从“是否能找到页面”明确为“缺 authored Feature/Spell IR”。
 - 下一阶段应按 blocker fan-out 建设 Spell clause materializer，并先 authored 一批
   原版法术作为 golden corpus；每个新 clause 必须报告真实 completion unlock 数。
+
+# 2026-08-10：统一内容 IR 批量转换与官方扩展包验证收口
+
+本轮完成了从真实本地 CHM JSON 到隔离 Content IR Workbench 的统一生产转换链，保持正式 499
+审计和所有生产运行时状态只读。
+
+## 基线
+
+- 职业/子职业固定分母 499：`full 328 / partial 110 / dm_only 61`。
+- 2024 PHB 法术：总记录 411，详情候选 391。
+- 2014 PHB 法术：总记录 372，详情候选 361。
+- 全部法术真实记录 1314；official/third_party/unknown 为 786/293/235。
+
+## 统一协议
+
+Feature Draft/FeatureSpec 与 Spell Draft/SpellSpec 分开建模，但共用 source provenance、
+source_record_id、source fingerprint、pack/namespace、ruleset、clause identity、compiler
+fingerprint、capability registry、compiler status、blocker、dry-run/import result、report schema
+以及 idempotency/replay 元数据。
+
+边界固定为：
+
+```text
+raw HTML/JSON → Source Atom → Draft IR → Typed IR → Compiler
+→ Materializer → Runtime Registry → full
+```
+
+没有 Typed IR 的内容只能保持 `partial`/`manual`；不把官方性、字段读取、legacy adapter 或关键字
+命中当作执行证据。未知 Spell clause、缺 typed 参数、重复 ID 和 source fingerprint conflict
+均 fail-closed。
+
+## 扩展包真实扫描
+
+本地注册表自动发现并分别扫描 6 个官方 pack：珊娜萨、塔莎、费资本、万象无常、毕格比以及多元宇宙
+的怪物。当前 4 个重点扩展包的 draft 结果为：
+
+- 珊娜萨：feature 25、spell 95、feat 1、other 20、draft 141；
+- 塔莎：feature 48、spell 21、feat 1、other 2、draft 72；
+- 费资本：feature 2、spell 7、feat 1、other 5、draft 15；
+- 万象：feature 0、spell 3、feat 1、other 3、draft 7。
+
+六个 pack 均为 `0 full`；mordenkainen pack 没有可识别玩家选项候选。真实产物统一写入
+`/tmp/content-ir-workbench/<pack-id>/`，包含 source inventory、draft、typed IR 目录、manifest、
+compile result、runtime preview、dry-run result 和 report。
+
+## 下一步门槛
+
+- 继续保持 completion unlock ranking 的真实证据门槛：当前所有 pack ranking 均为空/0。
+- 下一块底座只能由 authored typed clause 的 production-closed capability fan-out 证明解锁；
+  source-backed prose review 或 generated draft 不得作为候选成员。
+- 首个 golden corpus 应优先覆盖具备完整 source boundary 和 authored clauses 的原版 2024/2014
+  法术，并为每种新增 Spell clause 同时补 materializer、validator、runtime evidence 和负例。
