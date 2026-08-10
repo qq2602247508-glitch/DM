@@ -1,0 +1,311 @@
+{
+  "blocker_counts": {
+    "unstructured_source_requires_authored_spell_ir": 7
+  },
+  "capability_counts": {},
+  "counts": {
+    "full": 0,
+    "invalid": 0,
+    "manual": 7,
+    "partial": 0
+  },
+  "draft_count": 7,
+  "entries": [
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1动作",
+        "classes": [
+          "吟游诗人",
+          "术士",
+          "法师"
+        ],
+        "components": "S、M（一块面包皮，来自一个苹果派）",
+        "concentration": true,
+        "conditions": [
+          "失能",
+          "目盲"
+        ],
+        "damage_expression": null,
+        "damage_type": null,
+        "duration": "专注，至多一分钟",
+        "level": 2,
+        "range": "60尺",
+        "repeat": {
+          "count_expression": "duration",
+          "source": "explicit_timing",
+          "timing": "turn_start"
+        },
+        "resolution_kind": "control",
+        "ritual": false,
+        "save": "感知豁免",
+        "school": "幻术",
+        "target_disposition": "creature",
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "纳撒尔恶作剧",
+      "officiality": "unknown",
+      "source_book": "费资本的巨龙宝库",
+      "source_fingerprint": "3b5f4bbb855ea4d969ba3253839a70034d3426275664957596f8d2a24b291c82",
+      "source_path": "费资本的巨龙宝库/玩家选项/巨龙法术详述.htm",
+      "spell_id": "051cb2f9130d4b712da3aa90",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "area_shape": null,
+        "area_size_ft": null,
+        "casting_time": "1动作",
+        "classes": [
+          "德鲁伊",
+          "术士",
+          "法师"
+        ],
+        "components": "V、S、M（一件带有巨龙图案的物品，价值至少500gp）",
+        "concentration": true,
+        "conditions": null,
+        "damage_expression": null,
+        "damage_type": null,
+        "duration": "专注，至多 \n1小时",
+        "half_damage_on_save": null,
+        "healing": null,
+        "level": 5,
+        "max_targets": null,
+        "movement": null,
+        "range": "60尺",
+        "reaction": null,
+        "resolution_kind": "summon",
+        "ritual": false,
+        "save": null,
+        "school": "咒法",
+        "summon": {
+          "controller": "caster",
+          "count": 1,
+          "creature_ref": "龙类灵魄召唤术",
+          "enters_combat": true,
+          "initiative_mode": "independent"
+        },
+        "upcast_text": "升环施法效果： 当你用六环或更高的法术位施展此法术时，用对应的环数决定数据栏中与法术环数有关的数据。\n龙类灵魄Draconic \n Spirit 大型龙类，绝对中立 护甲等级：14+法术环数（天生护甲） 生命值：50+每比五环高的法术环阶10点（拥有和法术位环级相等的d10生命骰） 速度：30尺，飞行60尺，游泳30尺 力量19（+4）敏捷14（+2）体质17（+3） 智力10（+0）感知14（+2） \n 魅力14（+2） 伤害抗性（仅色彩龙与金属龙）：强酸，寒冷，火焰，闪电，毒素 伤害抗性（仅宝石龙）：力场，暗蚀，心灵，光耀，雷鸣 状态免疫：魅惑，恐慌，中毒 感官：盲视30尺，黑暗视觉60尺，被动察觉12 语言：龙语，理解所有你能说的语言 挑战等级 \n — 熟练加值等同于你的熟练加值 分享抗性Shared \n Resistances。 当你召唤龙时，选择一种它具有的伤害抗性。直至法术结束前，你也会获得所选伤害的抗性。 动作Actions 多重攻击Multiattack。 龙使用它的吐息武器，并进行一定次数的啃抓攻击，等同于法术环数的一半（向下取整）。 啃抓Rend。 近战武器攻击，命中采取你的法术攻击加值，触及10尺，单一目标。命中：1d6+4+法术环数的穿刺伤害。 吐息武器Breath \n Weapon。 龙吐出毁灭性的能量，覆盖30尺锥形范围。范围内的每个生物必须进行一次敏捷豁免，否则受到2d6点伤害，伤害类型由你在龙所具有抗性的伤害类型中选择。成功则伤害减半。"
+      },
+      "kind": "spell_draft",
+      "name": "龙类灵魄召唤术",
+      "officiality": "unknown",
+      "source_book": "费资本的巨龙宝库",
+      "source_fingerprint": "87c9ec84c98a986171a25cae2afc57f98fa5fc275e322327fb1e4ed36bdadb35",
+      "source_path": "费资本的巨龙宝库/玩家选项/巨龙法术详述.htm",
+      "spell_id": "0591371f9dc41058f1600081",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1附赠动作",
+        "classes": [
+          "奇械师",
+          "游侠",
+          "术士",
+          "法师"
+        ],
+        "components": "V、S",
+        "concentration": true,
+        "damage_expression": "1d6",
+        "damage_type": "火焰",
+        "duration": "专注，至多1分钟",
+        "level": 3,
+        "range": "自身",
+        "resolution_kind": "damage",
+        "ritual": false,
+        "save": null,
+        "school": "变化",
+        "target_disposition": "creature",
+        "upcast_damage_dice": 1,
+        "upcast_text": "升环施法效果： 当你用4环或更高的法术位施展此法术时，你使用的法术位每比3环高一环，你的移动速度额外增加5尺，法术造成的伤害增加1d6。"
+      },
+      "kind": "spell_draft",
+      "name": "阿莎德隆奔行",
+      "officiality": "unknown",
+      "source_book": "费资本的巨龙宝库",
+      "source_fingerprint": "a679d5c02d1d6c23db4d52c3deb5a1f5ad2eb21c74c97378a2fd35fa48bdd783",
+      "source_path": "费资本的巨龙宝库/玩家选项/巨龙法术详述.htm",
+      "spell_id": "084712e58fd3714db50148c5",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1动作",
+        "classes": [
+          "吟游诗人",
+          "术士",
+          "魔契师",
+          "法师"
+        ],
+        "components": "V",
+        "concentration": false,
+        "conditions": [
+          "失能",
+          "发光"
+        ],
+        "damage_expression": null,
+        "damage_type": null,
+        "duration": "立即",
+        "half_damage_on_save": true,
+        "level": 4,
+        "range": "120尺",
+        "resolution_kind": "control",
+        "ritual": false,
+        "save": "智力豁免",
+        "school": null,
+        "target_disposition": "creature",
+        "upcast_text": "升环施法效果： 当你用5环或更高的法术位施展此法术时，你使用的法术位每比4环高一环，法术的伤害增加1d6。"
+      },
+      "kind": "spell_draft",
+      "name": "劳洛希姆心灵长枪",
+      "officiality": "unknown",
+      "source_book": "费资本的巨龙宝库",
+      "source_fingerprint": "d3b1e6bfda378c7b4bd91e9b8ae74fb67aa9d28eb5c829ad3806ed5ad0e0fdf4",
+      "source_path": "费资本的巨龙宝库/玩家选项/巨龙法术详述.htm",
+      "spell_id": "49a5bacc752aa90fbbfbf316",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1附赠动作",
+        "classes": [
+          "术士",
+          "法师"
+        ],
+        "components": "V、S、M（一枚镀上铂金的龙鳞，价值至少500gp）",
+        "concentration": true,
+        "damage_expression": null,
+        "damage_type": null,
+        "duration": "专注，至多 \n1分钟",
+        "level": 6,
+        "range": "60尺",
+        "ritual": false,
+        "save": "敏捷豁免",
+        "school": "防护",
+        "target_disposition": "creature",
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "费资本铂金盾",
+      "officiality": "unknown",
+      "source_book": "费资本的巨龙宝库",
+      "source_fingerprint": "4a5fd15f51a8803e83ab5168edaaf2b45aa474441e5394bc333c6868f261f89d",
+      "source_path": "费资本的巨龙宝库/玩家选项/巨龙法术详述.htm",
+      "spell_id": "843fb135e4cc8a1fb34c46be",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "area_shape": "cone",
+        "area_size_ft": 30,
+        "casting_time": "1动作",
+        "classes": [
+          "术士",
+          "法师"
+        ],
+        "components": "S、M（一瓶冰雪融化而成的水）",
+        "concentration": false,
+        "damage_expression": null,
+        "damage_type": null,
+        "duration": "立即",
+        "half_damage_on_save": true,
+        "level": 2,
+        "range": "自身（30尺锥形）",
+        "ritual": false,
+        "save": "体质豁免",
+        "school": "塑能",
+        "target_disposition": "creature",
+        "upcast_text": "升环施法效果： 当你用3环或更高的法术位施展此法术时，你使用的法术位每比2环高一环，法术的伤害增加1d8。"
+      },
+      "kind": "spell_draft",
+      "name": "雾凇霜缚",
+      "officiality": "unknown",
+      "source_book": "费资本的巨龙宝库",
+      "source_fingerprint": "d478c93b85b848e0818099d5bf43de75b4c67372d83bed228924d889a8478e8b",
+      "source_path": "费资本的巨龙宝库/玩家选项/巨龙法术详述.htm",
+      "spell_id": "cadce71b1ba7a42354f785dc",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "area_shape": "cone",
+        "area_size_ft": 60,
+        "casting_time": "1附赠动作",
+        "classes": [
+          "德鲁伊",
+          "术士",
+          "法师"
+        ],
+        "components": "V、S、M（一个龙形小雕像，价值至少500gp）",
+        "concentration": true,
+        "conditions": [
+          "目盲"
+        ],
+        "damage_expression": null,
+        "damage_type": null,
+        "duration": "专注，至多 \n1分钟",
+        "level": 7,
+        "range": "自身",
+        "resolution_kind": "control",
+        "ritual": false,
+        "save": "敏捷豁免",
+        "school": "变化",
+        "target_disposition": "creature",
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "龙类变形",
+      "officiality": "unknown",
+      "source_book": "费资本的巨龙宝库",
+      "source_fingerprint": "0f07638abcb38ddc9dae637f87f64873950af6c6464883e23eb293abecd22569",
+      "source_path": "费资本的巨龙宝库/玩家选项/巨龙法术详述.htm",
+      "spell_id": "cd282f83133ae1b4ff3df426",
+      "status": "manual"
+    }
+  ],
+  "feat_count": 1,
+  "feature_count": 0,
+  "schema_version": "content-ir-workbench-report-1",
+  "source_book": "费资本的巨龙宝库",
+  "source_root": "generated-content",
+  "source_untyped": 7,
+  "spell_count": 7,
+  "total_records": 113,
+  "typed_ir_count": 0
+}

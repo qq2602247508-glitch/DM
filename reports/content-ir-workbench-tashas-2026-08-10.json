@@ -1,0 +1,1496 @@
+{
+  "blocker_counts": {
+    "unstructured_source_requires_authored_feature_ir": 48,
+    "unstructured_source_requires_authored_spell_ir": 21
+  },
+  "capability_counts": {},
+  "counts": {
+    "full": 0,
+    "invalid": 0,
+    "manual": 69,
+    "partial": 0
+  },
+  "draft_count": 69,
+  "entries": [
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_feature_ir"
+      ],
+      "kind": "feature_draft",
+      "name": "深海意志（TCE）",
+      "source_book": "本书速查",
+      "source_fingerprint": "d7e49a318d3686b51b7191ac4db89c4830e76f89d63a78390f735370b3e36ed2",
+      "source_path": "塔莎的万事坩埚/玩家选项/职业/邪术师（TCE）/深海意志.html",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_feature_ir"
+      ],
+      "kind": "feature_draft",
+      "name": "术士",
+      "source_book": "本书速查",
+      "source_fingerprint": "899d65165be09c191752b77a06d12c92d76da7a4a4d69763dc87eda85e58e4f1",
+      "source_path": "塔莎的万事坩埚/玩家选项/职业/术士（TCE）.html",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_feature_ir"
+      ],
+      "kind": "feature_draft",
+      "name": "符文骑士（TCE）",
+      "source_book": "本书速查",
+      "source_fingerprint": "525101fe5b940d2e5091b8857361eca1b96fd68d4792b767579a09923bf95c77",
+      "source_path": "塔莎的万事坩埚/玩家选项/职业/战士（TCE）/符文骑士.html",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_feature_ir"
+      ],
+      "kind": "feature_draft",
+      "name": "战技选项",
+      "source_book": "塔莎的万事坩埚",
+      "source_fingerprint": "2908ffec1736077074ccf9a47cf5bc202321e931f97bc2a544da5a8a51fae019",
+      "source_path": "塔莎的万事坩埚/玩家选项/职业/战士（TCE）/战技选项.htm",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_feature_ir"
+      ],
+      "kind": "feature_draft",
+      "name": "圣武士",
+      "source_book": "本书速查",
+      "source_fingerprint": "13e5197c067b982ac426166043b5f2087eb521920b3cbbf76f6a31a8243401f7",
+      "source_path": "塔莎的万事坩埚/玩家选项/职业/圣武士（TCE）.html",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_feature_ir"
+      ],
+      "kind": "feature_draft",
+      "name": "奇械师（旧版）",
+      "source_book": "塔莎的万事坩埚",
+      "source_fingerprint": "f17bb531f0c5011c4fa646e698d9a2c55c014ffca2f8332650393592aa92377a",
+      "source_path": "塔莎的万事坩埚/玩家选项/职业/奇械师.html",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_feature_ir"
+      ],
+      "kind": "feature_draft",
+      "name": "魔契师",
+      "source_book": "本书速查",
+      "source_fingerprint": "32d5b1263eab7b0926ae56024ce69d82e2e609f0e29e8523803704ee90e505ec",
+      "source_path": "塔莎的万事坩埚/玩家选项/职业/邪术师（TCE）.html",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_feature_ir"
+      ],
+      "kind": "feature_draft",
+      "name": "秩序领域（TCE）",
+      "source_book": "本书速查",
+      "source_fingerprint": "093655a1d51fc7c8c5785526fa4b0ef64134b291a2226be41f082b2e2391869f",
+      "source_path": "塔莎的万事坩埚/玩家选项/职业/牧师（TCE）/秩序领域.html",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_feature_ir"
+      ],
+      "kind": "feature_draft",
+      "name": "剑咏（旧版）",
+      "source_book": "塔莎的万事坩埚",
+      "source_fingerprint": "ab6df1283334a2a0c9303e4dbe6bd5d3ece7f590344d49d4167dccea1250c121",
+      "source_path": "塔莎的万事坩埚/玩家选项/职业/法师（TCE）/剑咏.html",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_feature_ir"
+      ],
+      "kind": "feature_draft",
+      "name": "吟游诗人",
+      "source_book": "本书速查",
+      "source_fingerprint": "c854ec61ef5ce1889a2809eed701d5e3afbbf76278e329cc5b73c73bd4170bbf",
+      "source_path": "塔莎的万事坩埚/玩家选项/职业/吟游诗人（TCE）.html",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_feature_ir"
+      ],
+      "kind": "feature_draft",
+      "name": "游荡者",
+      "source_book": "本书速查",
+      "source_fingerprint": "0c6b7e7a911b0c22ad22f76242855d6b23dfc04ec827704edb95874ddf62c3c2",
+      "source_path": "塔莎的万事坩埚/玩家选项/职业/游荡者（TCE）.html",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_feature_ir"
+      ],
+      "kind": "feature_draft",
+      "name": "孢子结社（TCE）",
+      "source_book": "本书速查",
+      "source_fingerprint": "0f7166b13e333bd8e13a1cda9172b97cffb7774a62f3b8ec9f77f4b411020596",
+      "source_path": "塔莎的万事坩埚/玩家选项/职业/德鲁伊（TCE）/孢子结社.html",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_feature_ir"
+      ],
+      "kind": "feature_draft",
+      "name": "德鲁伊",
+      "source_book": "本书速查",
+      "source_fingerprint": "1a034be0a8fe88ae7b068a62ee9dfbfbc2b28657441d239e95e257d512f88bb8",
+      "source_path": "塔莎的万事坩埚/玩家选项/职业/德鲁伊（TCE）.html",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_feature_ir"
+      ],
+      "kind": "feature_draft",
+      "name": "战地匠师",
+      "source_book": "塔莎的万事坩埚",
+      "source_fingerprint": "325bd3a8debfb45c1a3211fef52f96f014d3ed2558cfb642eafe755c66aafaac",
+      "source_path": "塔莎的万事坩埚/玩家选项/职业/奇械师/战地匠师.html",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_feature_ir"
+      ],
+      "kind": "feature_draft",
+      "name": "狂野魔法道途（TCE）",
+      "source_book": "本书速查",
+      "source_fingerprint": "5e4d6162e44b48d4fde1c78f955cb91a07d959ec357b7e5808af3a5681b4bfe2",
+      "source_path": "塔莎的万事坩埚/玩家选项/职业/野蛮人（TCE）/狂野魔法道途.html",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_feature_ir"
+      ],
+      "kind": "feature_draft",
+      "name": "暮光领域（TCE）",
+      "source_book": "本书速查",
+      "source_fingerprint": "4331d91fcfc45e7043e299153fcd002ef8c35d0e383c7b48bb16223ccbcde2ff",
+      "source_path": "塔莎的万事坩埚/玩家选项/职业/牧师（TCE）/暮光领域.html",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_feature_ir"
+      ],
+      "kind": "feature_draft",
+      "name": "妖精漫游者（旧版）",
+      "source_book": "塔莎的万事坩埚",
+      "source_fingerprint": "5425c3e718e953693cca942f1ccfe69ccb08687855af79d64a8b43154070bafb",
+      "source_path": "塔莎的万事坩埚/玩家选项/职业/游侠（TCE）/妖精漫游者.html",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_feature_ir"
+      ],
+      "kind": "feature_draft",
+      "name": "魔能祈唤选项（TCE）",
+      "source_book": "本书速查",
+      "source_fingerprint": "cc936fb7b3cad9e13e10d07d37a8f497c32de396b33f5a9a1dcb7c4501e7ed98",
+      "source_path": "塔莎的万事坩埚/玩家选项/职业/邪术师（TCE）/魔能祈唤.html",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_feature_ir"
+      ],
+      "kind": "feature_draft",
+      "name": "游侠",
+      "source_book": "本书速查",
+      "source_fingerprint": "73c4083037eeb2669e6cb1fb870c8e30859be2c54f8a021820775a29d286365d",
+      "source_path": "塔莎的万事坩埚/玩家选项/职业/游侠（TCE）.html",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_feature_ir"
+      ],
+      "kind": "feature_draft",
+      "name": "和平领域（TCE）",
+      "source_book": "本书速查",
+      "source_fingerprint": "8d05f9c8b9c9e6a2ae578ce7ed5fad6be06fce6f542d9183466b7cf07efbfa95",
+      "source_path": "塔莎的万事坩埚/玩家选项/职业/牧师（TCE）/和平领域.html",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_feature_ir"
+      ],
+      "kind": "feature_draft",
+      "name": "守望之誓（TCE）",
+      "source_book": "本书速查",
+      "source_fingerprint": "20348f1353d304274ebcd8dfb1d98f23cb93354e5d59e5674680b59d5a4ffc25",
+      "source_path": "塔莎的万事坩埚/玩家选项/职业/圣武士（TCE）/守望之誓.html",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_feature_ir"
+      ],
+      "kind": "feature_draft",
+      "name": "荣耀之誓（旧版）",
+      "source_book": "塔莎的万事坩埚",
+      "source_fingerprint": "27717b2337133fd25927df14029d6aaf05fadf22ab0fcaef2a7f860835287a17",
+      "source_path": "塔莎的万事坩埚/玩家选项/职业/圣武士（TCE）/荣耀之誓.html",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_feature_ir"
+      ],
+      "kind": "feature_draft",
+      "name": "牧师",
+      "source_book": "本书速查",
+      "source_fingerprint": "ba542e3907c843511541716430d48b678448e8e228a177163e76b287e21c431a",
+      "source_path": "塔莎的万事坩埚/玩家选项/职业/牧师（TCE）.html",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_feature_ir"
+      ],
+      "kind": "feature_draft",
+      "name": "驯兽师伴侣（旧版）",
+      "source_book": "塔莎的万事坩埚",
+      "source_fingerprint": "40a752dcd4d007770411f81005bcac39744ec1bc91d8521259847e4f49b28485",
+      "source_path": "塔莎的万事坩埚/玩家选项/职业/游侠（TCE）/驯兽师伙伴.html",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_feature_ir"
+      ],
+      "kind": "feature_draft",
+      "name": "野火结社（TCE）",
+      "source_book": "本书速查",
+      "source_fingerprint": "5980c64124850127ab3c05e3101bb05c0307da3c52b125f89d8b905461e9daa5",
+      "source_path": "塔莎的万事坩埚/玩家选项/职业/德鲁伊（TCE）/野火结社.html",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_feature_ir"
+      ],
+      "kind": "feature_draft",
+      "name": "巨灵（TCE）",
+      "source_book": "本书速查",
+      "source_fingerprint": "05c43db8934706acfde059c30a1b3f1e91eec9fb25966dc40203a25b0aac30e2",
+      "source_path": "塔莎的万事坩埚/玩家选项/职业/邪术师（TCE）/巨灵宗主.html",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_feature_ir"
+      ],
+      "kind": "feature_draft",
+      "name": "灵能武士（旧版）",
+      "source_book": "塔莎的万事坩埚",
+      "source_fingerprint": "f18b518a803c1e02e97e881b2ab4bfbb27895b2bbb62ad9f10db8684faf4b65c",
+      "source_path": "塔莎的万事坩埚/玩家选项/职业/战士（TCE）/灵能武士.html",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_feature_ir"
+      ],
+      "kind": "feature_draft",
+      "name": "法师",
+      "source_book": "本书速查",
+      "source_fingerprint": "d6e45ade93ab5dcbbdb0e3d9c93feb3e63e8a39b20dbf764a5b9efaf2360ee48",
+      "source_path": "塔莎的万事坩埚/玩家选项/职业/法师（TCE）.html",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_feature_ir"
+      ],
+      "kind": "feature_draft",
+      "name": "野蛮人",
+      "source_book": "本书速查",
+      "source_fingerprint": "d03efb1d56413087f4d7dcd00e1a5453be376b1cc583cbfd319fe14a546bddca",
+      "source_path": "塔莎的万事坩埚/玩家选项/职业/野蛮人（TCE）.html",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_feature_ir"
+      ],
+      "kind": "feature_draft",
+      "name": "战士",
+      "source_book": "本书速查",
+      "source_fingerprint": "f765f057d005c5563449b2a30e0095bc852e55d7d25b8250ce80a3975d5fd8e5",
+      "source_path": "塔莎的万事坩埚/玩家选项/职业/战士（TCE）.html",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_feature_ir"
+      ],
+      "kind": "feature_draft",
+      "name": "野兽道途（TCE）",
+      "source_book": "本书速查",
+      "source_fingerprint": "2a6a4224a635a6f12db3c02d2b5ec1bf7d7a32a2c93d94673cf5e76b5060dc8c",
+      "source_path": "塔莎的万事坩埚/玩家选项/职业/野蛮人（TCE）/野兽道途.html",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_feature_ir"
+      ],
+      "kind": "feature_draft",
+      "name": "魂刃（旧版）",
+      "source_book": "塔莎的万事坩埚",
+      "source_fingerprint": "5c6a720029c3079503ec6f005ef868e52938812c0df3257aa60ea47312312ab8",
+      "source_path": "塔莎的万事坩埚/玩家选项/职业/游荡者（TCE）/魂刃.html",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_feature_ir"
+      ],
+      "kind": "feature_draft",
+      "name": "星我宗（TCE）",
+      "source_book": "本书速查",
+      "source_fingerprint": "a11be68d301c7f5a479b24c757a6252824cf58ef3112677f24181b247648d734",
+      "source_path": "塔莎的万事坩埚/玩家选项/职业/武僧（TCE）/星我宗.html",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_feature_ir"
+      ],
+      "kind": "feature_draft",
+      "name": "星辰结社（旧版）",
+      "source_book": "塔莎的万事坩埚",
+      "source_fingerprint": "a9caf079732f96084648500046b079ded8ffa4e73082a6a762a56c177b91ef9c",
+      "source_path": "塔莎的万事坩埚/玩家选项/职业/德鲁伊（TCE）/星辰结社.html",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_feature_ir"
+      ],
+      "kind": "feature_draft",
+      "name": "战斗大师构筑",
+      "source_book": "塔莎的万事坩埚",
+      "source_fingerprint": "8baa154781d15127e1828ff6b23671fb95301e18bb36ce2dd627283edd1dde91",
+      "source_path": "塔莎的万事坩埚/玩家选项/职业/战士（TCE）/战斗大师构筑.html",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_feature_ir"
+      ],
+      "kind": "feature_draft",
+      "name": "装甲师",
+      "source_book": "塔莎的万事坩埚",
+      "source_fingerprint": "6f8ec85327e11c9fd6465769624c195d03800d83ccd47c1519f6ad29fb938d58",
+      "source_path": "塔莎的万事坩埚/玩家选项/职业/奇械师/装甲师.html",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_feature_ir"
+      ],
+      "kind": "feature_draft",
+      "name": "雄辩学院（TCE）",
+      "source_book": "本书速查",
+      "source_fingerprint": "f97206dc2f216b15e64d38f07741ecba5c475abd116a52acf205cb6e9b280382",
+      "source_path": "塔莎的万事坩埚/玩家选项/职业/吟游诗人（TCE）/雄辩学院.html",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_feature_ir"
+      ],
+      "kind": "feature_draft",
+      "name": "命流宗（旧版）",
+      "source_book": "塔莎的万事坩埚",
+      "source_fingerprint": "16614c87990acd7fe5c0b9ecb23be7cc335aad120fa164a4896dc471acefda7a",
+      "source_path": "塔莎的万事坩埚/玩家选项/职业/武僧（TCE）/命流宗.html",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_feature_ir"
+      ],
+      "kind": "feature_draft",
+      "name": "鬼魅",
+      "source_book": "塔莎的万事坩埚",
+      "source_fingerprint": "8ecc3250412e63ebc9f7f270f5284a704db74efb77ffbd2ff2a6db9fb415018c",
+      "source_path": "塔莎的万事坩埚/玩家选项/职业/游荡者（TCE）/鬼魅.html",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_feature_ir"
+      ],
+      "kind": "feature_draft",
+      "name": "创造学院（TCE）",
+      "source_book": "本书速查",
+      "source_fingerprint": "5070e70025515b1fd032af94911d2bc8dbec0f5bb55726654c7813d4c85580b7",
+      "source_path": "塔莎的万事坩埚/玩家选项/职业/吟游诗人（TCE）/创造学院.html",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_feature_ir"
+      ],
+      "kind": "feature_draft",
+      "name": "炼金师",
+      "source_book": "塔莎的万事坩埚",
+      "source_fingerprint": "3e8af42c4ba5e3de44210a14b4104a0c10df9e10f483b4b5128bbbcb431c66fb",
+      "source_path": "塔莎的万事坩埚/玩家选项/职业/奇械师/炼金师.html",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_feature_ir"
+      ],
+      "kind": "feature_draft",
+      "name": "武僧",
+      "source_book": "本书速查",
+      "source_fingerprint": "8fc8fdd1ff810350918310f915d98f1cbf5a58a7b2328c31852a3b9584004e98",
+      "source_path": "塔莎的万事坩埚/玩家选项/职业/武僧（TCE）.html",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_feature_ir"
+      ],
+      "kind": "feature_draft",
+      "name": "畸变心智",
+      "source_book": "塔莎的万事坩埚",
+      "source_fingerprint": "2f7e62a199420dd350c53f41885f035aad4ef77e02adeb1af7ba4a4a4e932e49",
+      "source_path": "塔莎的万事坩埚/玩家选项/职业/术士（TCE）/畸变心智.html",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_feature_ir"
+      ],
+      "kind": "feature_draft",
+      "name": "时械之魂（旧版）",
+      "source_book": "塔莎的万事坩埚",
+      "source_fingerprint": "33507394da9cc5601313c19fffb0cefdff4f642c2b1e74b8717eb51b852fc13b",
+      "source_path": "塔莎的万事坩埚/玩家选项/职业/术士（TCE）/时械之魂.html",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_feature_ir"
+      ],
+      "kind": "feature_draft",
+      "name": "奇械师注法",
+      "source_book": "塔莎的万事坩埚",
+      "source_fingerprint": "0c615a22df5192c5296c8469ada46d1f8d0c1eab3affe4388712711e0ca20ddf",
+      "source_path": "塔莎的万事坩埚/玩家选项/职业/奇械师/奇械师注法.html",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_feature_ir"
+      ],
+      "kind": "feature_draft",
+      "name": "集群牧者（TCE）",
+      "source_book": "本书速查",
+      "source_fingerprint": "962e0585ee15998b95213150926c86b2b426a65c1b97a2071d56aa88cda0fc4b",
+      "source_path": "塔莎的万事坩埚/玩家选项/职业/游侠（TCE）/集群牧者.html",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_feature_ir"
+      ],
+      "kind": "feature_draft",
+      "name": "魔炮师",
+      "source_book": "塔莎的万事坩埚",
+      "source_fingerprint": "81555f83ae29e4942eec0fdf85af73c6864092a4b47efbf06506e172b4fd44aa",
+      "source_path": "塔莎的万事坩埚/玩家选项/职业/奇械师/魔炮师.html",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_feature_ir"
+      ],
+      "kind": "feature_draft",
+      "name": "书士会（TCE）",
+      "source_book": "本书速查",
+      "source_fingerprint": "0e636c396034e81c6098af4723504eefb794e4dca56d947c294d8a00ca48b378",
+      "source_path": "塔莎的万事坩埚/玩家选项/职业/法师（TCE）/书士会.html",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "area_shape": null,
+        "area_size_ft": null,
+        "casting_time": "1 动作",
+        "classes": [
+          "德鲁伊",
+          "游侠",
+          "魔契师",
+          "法师"
+        ],
+        "components": "V, S, \nM（一朵镀金花，价值至少 300gp）",
+        "concentration": true,
+        "conditions": null,
+        "damage_expression": null,
+        "damage_type": null,
+        "duration": "专注，至多 1 \n小时",
+        "half_damage_on_save": null,
+        "healing": null,
+        "level": 3,
+        "max_targets": null,
+        "movement": null,
+        "range": "90 尺",
+        "reaction": null,
+        "resolution_kind": "summon",
+        "ritual": false,
+        "save": null,
+        "school": "咒法",
+        "summon": {
+          "controller": "caster",
+          "count": 1,
+          "creature_ref": "妖精灵魄Fey Spirit",
+          "enters_combat": true,
+          "initiative_mode": "shared_with_source"
+        },
+        "upcast_text": "升环施法。 使用四环或更高环阶的法术位施展该法术时，该生物数据中使用更高的法术环数。\n妖精灵魄Fey \n Spirit 小型妖精，无阵营 AC：12+法术环阶（天生护甲） HP：30+高于三环的每环阶 \n 10 \n 点 速度：40尺 力量13（+1）敏捷16（+3）体质14（+4） 智力14（+2）感知11（+0）魅力16（+3） 状态免疫：魅惑 感官：黑暗视觉 \n 60尺，被动察觉 10 语言：木族语，理解你讲的语言 挑战等级：- \n熟练加值与你相等 动作Actions 多重攻击Multiacttack。 妖精发动等同于法术环阶半数（向下取整）次数的攻击。 短剑Shortsword。 近战武器攻击：命中采取你的法术攻击加值，触及 \n 5尺，单一目标；命中：1d6+3+法术环阶的穿刺伤害，外加 1d6 力场伤害。 附赠动作Bonus Actions 妖精步Fey \n Step。 妖精魔法地传送到最远 30尺的一处它可见的未占据空间。然后根据所选妖精情绪，触发以下效果之一： 愤怒Fuming。 在使用妖精步后，妖精在它回合结束前的下一次攻击检定具有优势。 欢欣Mirthful。 在使用妖精步后，妖精可以立即选择它 10 \n 尺内可见的一个生物，强迫其进行一次对抗你的法术豁免 DC 的感知豁免，若豁免失败则其将被你及妖精生物魅惑，持续 1 分钟或目标受到任何伤害。 诡诈Tricksy。 在使用妖精步后，妖精可以立即令魔法黑暗充斥于它 5 尺内的一个 5 \n 尺立方区域，魔法黑暗持续直到妖精的下回合结束。"
+      },
+      "kind": "spell_draft",
+      "name": "妖精召唤术",
+      "officiality": "unknown",
+      "source_book": "塔莎的万事坩埚",
+      "source_fingerprint": "4545d018fa9a36ccdbb7d05199b0ed0bace11ecbd2d89872bad1d7cad5dafc53",
+      "source_path": "塔莎的万事坩埚/法术/法术详述/3环.html",
+      "spell_id": "0036d7dc058c496ef08fe340",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "area_shape": null,
+        "area_size_ft": null,
+        "casting_time": "1 动作",
+        "classes": [
+          "魔契师",
+          "法师"
+        ],
+        "components": "V, S, M（一个镀金头骨，价值至少 \n300gp）",
+        "concentration": true,
+        "conditions": null,
+        "damage_expression": null,
+        "damage_type": null,
+        "duration": "专注，至多 1 \n小时",
+        "half_damage_on_save": null,
+        "healing": null,
+        "level": 3,
+        "max_targets": null,
+        "movement": null,
+        "range": "90 尺",
+        "reaction": null,
+        "resolution_kind": "summon",
+        "ritual": false,
+        "save": null,
+        "school": "死灵",
+        "summon": {
+          "controller": "caster",
+          "count": 1,
+          "creature_ref": "亡灵灵魄Undead Spirit",
+          "enters_combat": true,
+          "initiative_mode": "shared_with_source"
+        },
+        "upcast_text": "升环施法。 使用四环或更高环阶的法术位施展该法术时，该生物数据中使用更高的法术环数。\n亡灵灵魄Undead \n Spirit 中型亡灵，无阵营 AC：11+法术等级 \n(天生护甲) HP：30（仅限幽体或腐尸）或20（仅限骸骨）+10每比三环高的法术等级 速度：40 尺，飞行40 \n尺（悬浮）（仅限幽体） 力量12（+1）敏捷16（+3）体质15（+2） 智力4（-3）感知10（+0）魅力9（-1） 伤害免疫：暗蚀，毒素 状态免疫：力竭，恐慌，麻痹，中毒 感官：黑暗视觉60 \n尺，被动察觉10 语言：理解你说的语言 挑战等级：- 熟练加值与你相等 腐灭灵光Festering \n Aura（仅限腐尸）。 除你之外的所有生物，在亡灵5尺内开始其回合时必须进行一次体质豁免对抗你的法术豁免DC，豁免失败则在其下个回合开始前中毒。 虚体移动Incorporeal Movement（仅限于幽体）。 灵魄可以虚体化并如同穿过困难地形一样穿过其他生物和物件。如果它在自己的回合结束时仍处在物件内部，则被挪到距离最近的未被占据的位置，且每虚体移动5尺便受到1d10力场伤害。 动作Actions 多重攻击Multiattack。 灵魄发动等同于法术环数一半的次数的攻击（向下取整）。 致死之触Deathly \n Touch（仅限于 幽体 ）。 近战武器攻击：命中采取你的法术攻击加值，触及5尺，单一生物。命中：1d8+3+法术环数的暗蚀伤害，且目标生物必须进行一次感知豁免对抗你的法术豁免DC，豁免失败则对亡灵恐慌直到目标下回合结束。 暗澹箭Grave \n Bolt（仅限于骸骨）。 远程法术攻击：命中采取你的法术攻击加值，射程150 尺，单一目标。命中：2d4+3+法术环数的暗蚀伤害。 腐烂爪击Rotting \n Claw（仅限于腐尸）。 近战武器攻击：命中采取你的法术攻击加值，触及5尺，单一目标。命中：1d6+3+法术环数的挥砍伤害。如果目标处于中毒状态，其必须进行一次体质豁免对抗你的法术豁免DC，否则麻痹直到目标下回合结束。"
+      },
+      "kind": "spell_draft",
+      "name": "亡灵召唤术",
+      "officiality": "unknown",
+      "source_book": "塔莎的万事坩埚",
+      "source_fingerprint": "27b212e3174a9b3ca2774d2305d54c5cade433855afcbc6d7610652455a6c78f",
+      "source_path": "塔莎的万事坩埚/法术/法术详述/3环.html",
+      "spell_id": "083419d9de551806a5ca9748",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 附赠动作",
+        "classes": [
+          "牧师",
+          "圣武士",
+          "魔契师",
+          "法师"
+        ],
+        "components": "V, \nS",
+        "concentration": true,
+        "damage_expression": null,
+        "damage_type": null,
+        "duration": "专注，至多 1 \n分钟",
+        "level": 3,
+        "range": "自身",
+        "ritual": false,
+        "save": null,
+        "school": "死灵",
+        "target_disposition": "creature",
+        "upcast_text": "升环施法。 使用四环或更高环阶的法术位施展该法术时，你使用的法术位每比三环高 2 \n环，其伤害就增加 1d8。"
+      },
+      "kind": "spell_draft",
+      "name": "魂灵环绕",
+      "officiality": "unknown",
+      "source_book": "塔莎的万事坩埚",
+      "source_fingerprint": "96b093d6920c92636ddbab573c913af0b308a51c7301786dd4df5421c076f077",
+      "source_path": "塔莎的万事坩埚/法术/法术详述/3环.html",
+      "spell_id": "186b6f8d92a18280c411d71f",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 附赠动作",
+        "classes": [
+          "术士",
+          "魔契师",
+          "法师"
+        ],
+        "components": "V, \nS",
+        "concentration": true,
+        "creation": {
+          "count": null,
+          "creation_kind": "terrain",
+          "requires_template_choice": true,
+          "template_ref": "dm_chosen_template"
+        },
+        "damage_components": [
+          {
+            "damage_type": "力场",
+            "expression": "4d12"
+          },
+          {
+            "damage_type": "力场",
+            "expression": "8d12"
+          },
+          {
+            "damage_type": "力场",
+            "expression": "12d12"
+          }
+        ],
+        "damage_expression": "4d12",
+        "damage_type": "力场",
+        "duration": "专注，至多 1 分钟",
+        "level": 9,
+        "range": "60 尺",
+        "resolution_kind": "damage",
+        "ritual": false,
+        "save": null,
+        "school": "咒法",
+        "target_disposition": "creature",
+        "transformation": {
+          "form_ref": "dm_chosen_form",
+          "mode": "polymorph",
+          "requires_form_choice": true,
+          "reversible": true
+        },
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "灾厄之刃",
+      "officiality": "unknown",
+      "source_book": "塔莎的万事坩埚",
+      "source_fingerprint": "67d095cdf311515e11b497ecc8812900da4004fd43863427c47e22f639a953cc",
+      "source_path": "塔莎的万事坩埚/法术/法术详述/9环.html",
+      "spell_id": "1ac1466462ef7c0514a3ea44",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "area_shape": "sphere",
+        "area_size_ft": 5,
+        "casting_time": "1 动作",
+        "classes": [
+          "奇械师",
+          "术士",
+          "魔契师",
+          "法师"
+        ],
+        "components": "S,",
+        "concentration": false,
+        "damage_components": [
+          {
+            "damage_type": "雷鸣",
+            "expression": "1d8"
+          },
+          {
+            "damage_type": "雷鸣",
+            "expression": "1d8"
+          }
+        ],
+        "damage_expression": "1d8",
+        "damage_type": "雷鸣",
+        "duration": "1 轮 你挥舞作为法术成分的那把武器，对你周围 5",
+        "level": null,
+        "range": "自身（半径5尺）",
+        "resolution_kind": "damage",
+        "ritual": false,
+        "save": null,
+        "school": "塑能",
+        "target_disposition": "creature",
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "轰雷剑",
+      "officiality": "unknown",
+      "source_book": "塔莎的万事坩埚",
+      "source_fingerprint": "756eeac17e198466ef4502d00fedb0d94934bb2114e48102f0de932f562fe6cd",
+      "source_path": "塔莎的万事坩埚/法术/法术详述/戏法.html",
+      "spell_id": "2aa8d961d7c7274480168627",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "area_shape": "sphere",
+        "area_size_ft": 5,
+        "casting_time": "1 动作",
+        "classes": [
+          "奇械师",
+          "术士",
+          "魔契师",
+          "法师"
+        ],
+        "components": "V",
+        "concentration": false,
+        "damage_expression": "1d8",
+        "damage_type": "闪电",
+        "duration": "立即 你创造出鞭状闪电能量袭向你 15",
+        "level": null,
+        "range": "自身（15尺）",
+        "resolution_kind": "damage",
+        "ritual": false,
+        "save": "力量豁免",
+        "school": "塑能",
+        "target_disposition": "creature",
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "闪电牵引",
+      "officiality": "unknown",
+      "source_book": "塔莎的万事坩埚",
+      "source_fingerprint": "15cb0442a6b0c5018e7aed47a0777778ad602a0add3e8a12d2fecdd57b3ce5d8",
+      "source_path": "塔莎的万事坩埚/法术/法术详述/戏法.html",
+      "spell_id": "34f3e707683bf37f2adf1f04",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "area_shape": null,
+        "area_size_ft": null,
+        "casting_time": "1 动作",
+        "classes": [
+          "魔契师",
+          "法师"
+        ],
+        "components": "V, S, \nM（装有类人生物血液的红宝石瓶，价值至少 600gp）",
+        "concentration": true,
+        "conditions": null,
+        "damage_expression": null,
+        "damage_type": null,
+        "duration": "专注，至多 1 \n小时",
+        "half_damage_on_save": null,
+        "healing": null,
+        "level": 6,
+        "max_targets": null,
+        "movement": null,
+        "range": "90 尺",
+        "reaction": null,
+        "resolution_kind": "summon",
+        "ritual": false,
+        "save": null,
+        "school": "咒法",
+        "summon": {
+          "controller": "caster",
+          "count": 1,
+          "creature_ref": "邪魔灵魄Fiendish Spirit",
+          "enters_combat": true,
+          "initiative_mode": "shared_with_source"
+        },
+        "upcast_text": "升环施法。 使用七环或更高法术位施展该法术时，该生物数据中使用更高的法术环数。\n邪魔灵魄Fiendish \n Spirit 大型邪魔，无阵营 AC：12+法术等级 \n (天生护甲) HP：50（仅限恶魔）或40（仅限魔鬼）或60（仅限尤格罗斯魔）+15每比六环高的法术等级 速度：40 尺，攀爬40 \n 尺（仅限恶魔），飞行60 \n 尺（仅限魔鬼） 力量13（+1）敏捷16（+3）体质15（+2） 智力10（+0）感知10（+0）魅力16（+3） 伤害抗性：火焰 伤害免疫：毒素 状态免疫：中毒 感官：黑暗视觉60 \n 尺，被动察觉10 语言：深渊语，炼狱语，心灵感应60 尺 挑战等级：- 熟练加值与你相等 焚身爆Death Throes（仅限恶魔）。 邪魔生命值降为0时或法术结束时将爆炸，其周围10 \n 尺内每个生物必须进行一次敏捷豁免对抗你的法术豁免DC，豁免失败则将受到2d10+法术环位的火焰伤害，豁免成功则伤害减半。 魔鬼视界Devil's \n Sight（仅限魔鬼）。 魔法黑暗不会阻碍邪魔的黑暗视觉。 魔法抗性Magical \n Resistance。 邪魔为抵抗法术和其他魔法效应而作的豁免检定具有优势。 动作Actions 多重攻击Multiattacks。 邪魔发动等同于法术环数一半的次数的攻击（向下取整）。 啃咬Bite（仅限于恶魔）。 近战武器攻击：命中采取你的法术攻击调整值，触及5尺，单一目标。命中：1d12+3+法术环数的暗蚀伤害。 爪击Claws（仅限于尤格罗斯魔）。 近战武器攻击：命中采取你的法术攻击调整值，触及5尺，单一目标。命中：1d8+3+法术环数的挥砍伤害。发动攻击后，邪魔可以魔法性地传送至一处30 \n 尺内其可见且未占据空间。 投掷烈焰Hurl \n Flame（仅限于魔鬼）。 远程法术攻击：命中采取你的法术攻击调整值，射程150 \n 尺，单一目标。命中：2d6+3+法术环数的火焰伤害。如果目标时未被着装或携带的可燃物件，则将被点燃。"
+      },
+      "kind": "spell_draft",
+      "name": "邪魔召唤术",
+      "officiality": "unknown",
+      "source_book": "塔莎的万事坩埚",
+      "source_fingerprint": "252472bd9064cf031ad65e35274fab475ecb6c8c49aade6b7d369f26a1e2762c",
+      "source_path": "塔莎的万事坩埚/法术/法术详述/6环.html",
+      "spell_id": "5473a33b48053a0271120a31",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "area_shape": null,
+        "area_size_ft": null,
+        "casting_time": "1 动作",
+        "classes": [
+          "德鲁伊",
+          "游侠"
+        ],
+        "components": "V, \nS, M（一根羽毛、一簇毛皮和一条装在镀金橡果内的鱼尾，价值至少200gp）",
+        "concentration": true,
+        "conditions": null,
+        "damage_expression": null,
+        "damage_type": null,
+        "duration": "专注，至多 1 \n小时",
+        "half_damage_on_save": null,
+        "healing": null,
+        "level": 2,
+        "max_targets": null,
+        "movement": null,
+        "range": "90 尺",
+        "reaction": null,
+        "resolution_kind": "summon",
+        "ritual": false,
+        "save": null,
+        "school": "咒法",
+        "summon": {
+          "controller": "caster",
+          "count": 1,
+          "creature_ref": "野兽灵魄Bestial Spirit",
+          "enters_combat": true,
+          "initiative_mode": "shared_with_source"
+        },
+        "upcast_text": "升环施法。 使用三环或更高法术位施展该法术时，该生物数据中使用更高的法术环数。\n野兽灵魄Bestial \n Spirit 小型野兽，无阵营 AC：11+法术环阶 \n (天生护甲) HP：20（仅限空）或 30（仅限陆与水），外加高于二环的每环阶 5 点 速度：30尺；攀爬 60尺（仅限陆）；飞行 \n 60尺（仅限空）；游泳 \n 30尺（仅限水） 力量18（+4）敏捷11（+0）体质16（+3） 智力4（-4）感知14（+2）魅力5（-3） 感官：黑暗视觉 \n 60尺，被动察觉 12 语言：理解你讲的语言 挑战等级：- 熟练加值与你相等 飞掠Flyby（仅限空）。 该野兽飞出敌人触及范围时不会引起借机攻击。 集群战术Pack \n Tactics（仅限陆与水）。 该野兽至少有一个未处于失能的盟友在目标生物 \n 5尺内时，它对该生物发动的攻击检定有优势。 水下呼吸Water \n Breathing（仅限水）。 该野兽只能在水下呼吸。 动作Actions 多重攻击Multiattack。 野兽发动等同于法术环阶半数（向下取整）次数的攻击。 撕咬Maul。 近战武器攻击：命中采取你的法术攻击加值，触及5尺，单一目标。命中：1d8+4+法术环阶 \n 点穿刺伤害。"
+      },
+      "kind": "spell_draft",
+      "name": "野兽召唤术",
+      "officiality": "unknown",
+      "source_book": "塔莎的万事坩埚",
+      "source_fingerprint": "2475370b9cb484d04e15a606aef2ce39266792daae08f304433e607c912d197a",
+      "source_path": "塔莎的万事坩埚/法术/法术详述/2环.html",
+      "spell_id": "54c8c29188db1442473d9dc1",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 动作",
+        "classes": [
+          "术士",
+          "法师"
+        ],
+        "components": "V",
+        "concentration": false,
+        "damage_expression": "3d6",
+        "damage_type": "心灵",
+        "duration": "1 \n轮",
+        "level": 2,
+        "range": "90 尺",
+        "resolution_kind": "damage",
+        "ritual": false,
+        "save": "智力豁免",
+        "school": null,
+        "target_disposition": "creature",
+        "upcast_text": "升环施法。 使用三环或更高的法术位施展该法术时，你使用的法术位每比二环高 \n1 环就可以额外指定一个生物。被你选为目标的生物互相之间的距离不能超过 30 尺。"
+      },
+      "kind": "spell_draft",
+      "name": "塔莎心灵鞭",
+      "officiality": "unknown",
+      "source_book": "塔莎的万事坩埚",
+      "source_fingerprint": "56b4efc412b63b657d3c832312e0897ca45f608b4fd74f69620fd1c7770df0f9",
+      "source_path": "塔莎的万事坩埚/法术/法术详述/2环.html",
+      "spell_id": "7947fb03852a7bc77d69e3ac",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "area_shape": null,
+        "area_size_ft": null,
+        "casting_time": "1 动作",
+        "classes": [
+          "德鲁伊",
+          "游侠",
+          "法师"
+        ],
+        "components": "V, S, M（一个至少价值 \n400gp 的，装有空气、一块鹅卵石、灰烬与水的水晶瓶）",
+        "concentration": true,
+        "conditions": null,
+        "damage_expression": null,
+        "damage_type": null,
+        "duration": "专注，至多 1 \n小时",
+        "half_damage_on_save": null,
+        "healing": null,
+        "level": 4,
+        "max_targets": null,
+        "movement": null,
+        "range": "90 尺",
+        "reaction": null,
+        "resolution_kind": "summon",
+        "ritual": false,
+        "save": null,
+        "school": "咒法",
+        "summon": {
+          "controller": "caster",
+          "count": 1,
+          "creature_ref": "元素灵魄Elemental Spirit",
+          "enters_combat": true,
+          "initiative_mode": "shared_with_source"
+        },
+        "upcast_text": "升环施法。 使用五环或更高环阶的法术位施展该法术时，该生物数据中使用更高的法术环数。\n元素灵魄Elemental \n Spirit 中型元素，无阵营 AC：11+法术环阶（天生护甲） HP：50+每比四环高的法术环阶10点 速度：40尺，掘穴 \n 30尺（仅限土），飞行 40尺（悬浮）（仅限气），游泳 \n 40尺（仅限水） 力量18（+4）敏捷15（+2）体质17（+3） 智力4（-3）感知10（+0）魅力16（+3） 伤害抗性：毒素 状态免疫：魅惑，力竭，恐慌，失能，麻痹，石化，中毒 感官：黑暗视觉 \n 60尺，被动察觉 10 语言：理解你讲的语言 挑战等级：-；熟练加值与你相等 不定形态Amorphous Form（仅限于气、火和水）。 该元素生物能够轻松穿过最窄 1 \n 寸宽的狭窄空间而无需跻身通过。 动作Actions 多重攻击Multiattack。 该元素发动等同于法术环阶半数（向下取整）次数的攻击。 猛击Slam。 近战武器攻击：命中采取你的法术攻击加值，触及 \n 5尺，单一目标；命中：1d10+4+法术环阶的钝击伤害（仅限气、土和水）或火焰伤害（仅限火）。"
+      },
+      "kind": "spell_draft",
+      "name": "元素召唤术",
+      "officiality": "unknown",
+      "source_book": "塔莎的万事坩埚",
+      "source_fingerprint": "563691210270d02a0f814e389604d7dff3500ca8b9200ca67dc1a23041680c44",
+      "source_path": "塔莎的万事坩埚/法术/法术详述/4环.html",
+      "spell_id": "821697eef9deee02919ab171",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 附赠动作",
+        "classes": [
+          "术士",
+          "魔契师",
+          "法师"
+        ],
+        "components": "V, S, \nM（一件的镶嵌有外层位面标记的物件，价值至少 \n500gp）",
+        "concentration": true,
+        "damage_expression": null,
+        "damage_type": null,
+        "duration": "专注，至多1分钟",
+        "level": 6,
+        "range": "自身",
+        "ritual": false,
+        "save": null,
+        "school": "变化",
+        "target_disposition": "object",
+        "transformation": {
+          "form_ref": "dm_chosen_form",
+          "mode": "polymorph",
+          "requires_form_choice": true,
+          "reversible": false
+        },
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "塔莎超凡形态",
+      "officiality": "unknown",
+      "source_book": "塔莎的万事坩埚",
+      "source_fingerprint": "7ce3ef3209ddbdbabd4f0d34a10c157aaa03aa4b749120fb4c2c196d361eba3f",
+      "source_path": "塔莎的万事坩埚/法术/法术详述/6环.html",
+      "spell_id": "8c4325e8ec5be6bdaa772525",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "10 分钟",
+        "classes": [
+          "吟游诗人",
+          "术士",
+          "魔契师",
+          "法师"
+        ],
+        "components": "V, S, \nM（来自目标世界的一个魔法物品或一个自愿生物）",
+        "concentration": false,
+        "creation": {
+          "count": 8,
+          "creation_kind": "item",
+          "requires_template_choice": true,
+          "template_ref": "dm_chosen_template"
+        },
+        "damage_expression": null,
+        "damage_type": null,
+        "duration": "6 小时",
+        "level": 7,
+        "range": "20 尺",
+        "ritual": false,
+        "save": null,
+        "school": "咒法",
+        "target_disposition": "ally",
+        "teleport": {
+          "can_take_creatures": true,
+          "destination_kind": "chosen_space",
+          "max_distance_ft": null,
+          "requires_destination_choice": true
+        },
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "蓝纱一梦",
+      "officiality": "unknown",
+      "source_book": "塔莎的万事坩埚",
+      "source_fingerprint": "39118afdff3a603cea4c7526179b9f23733b8139eb72ad1cdeb6d00b48da22af",
+      "source_path": "塔莎的万事坩埚/法术/法术详述/7环.html",
+      "spell_id": "9bcc248fd8cb8514ecc26155",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "area_shape": null,
+        "area_size_ft": null,
+        "casting_time": "1 动作",
+        "classes": [
+          "魔契师",
+          "法师"
+        ],
+        "components": "V, S, \nM（一条腌制触手和一颗装在白金瓶中的眼球，至少价值 400gp）",
+        "concentration": true,
+        "conditions": null,
+        "damage_expression": null,
+        "damage_type": null,
+        "duration": "专注，至多 1 \n小时",
+        "half_damage_on_save": null,
+        "healing": null,
+        "level": 4,
+        "max_targets": null,
+        "movement": null,
+        "range": "90 尺",
+        "reaction": null,
+        "resolution_kind": "summon",
+        "ritual": false,
+        "save": null,
+        "school": "咒法",
+        "summon": {
+          "controller": "caster",
+          "count": 1,
+          "creature_ref": "异怪灵魄Aberrant Spirit",
+          "enters_combat": true,
+          "initiative_mode": "shared_with_source"
+        },
+        "upcast_text": "升环施法。 使用五环或更高环阶的法术位施展该法术时，该生物数据中使用更高的法术环数。\n异怪灵魄Aberrant \n Spirit 中型异怪，无阵营 AC：11+法术等级 \n(天生护甲) HP：40+每比四环高的法术环阶10点 速度：30 尺；飞行30 \n尺（悬浮）（仅限类眼魔） 力量16（+3）敏捷10（+0）体质15（+2） 智力16（+3）感知10（+0）魅力6（-2） 伤害免疫：心灵 感官：黑暗视觉60 \n尺，被动察觉10 语言：深潜语，理解你说的语言 挑战等级：- 熟练加值与你相等 再生Regeneration（仅限史拉蟾）。 异怪在其自己的回合开始时恢复5点生命值，前提是它至少有1点生命值。 低语灵光Whispering \n Aura（仅限星之子）。 于异怪自己的每个回合开始时，所有在其5尺内的生物必须进行一次感知豁免对抗你的法术豁免DC，豁免失败则受到2d6心灵伤害，这个效果只在异怪不处于失能时适用。 动作Actions 多重攻击Multiattack。 异怪发动等同于法术环数一半的次数的攻击（向下取整）。 爪击Claws（仅限史拉蟾）。 近战武器攻击：命中+你的法术攻击加值，触及5尺，单一目标。命中：1d10+3+法术环数的挥砍伤害。如果目标是生物，其直到异怪下回合开始不能恢复生命值。 眼波射线Eye Ray（仅限类眼魔）。 远程法术攻击：命中+你的法术攻击加值，射程 150 尺，单一生物。命中：1d8+3+法术环数的心灵伤害。 灵能猛击Psychic \n Slam（仅限星之子）。 近战法术攻击：命中+你的法术攻击加值，触及5尺，单一生物。命中：1d8+3+法术环数的心灵伤害。"
+      },
+      "kind": "spell_draft",
+      "name": "异怪召唤术",
+      "officiality": "unknown",
+      "source_book": "塔莎的万事坩埚",
+      "source_fingerprint": "107177129cc97e4e018dd52c1252fc27943251f2bed9960e8ee9fb7a38acca6d",
+      "source_path": "塔莎的万事坩埚/法术/法术详述/4环.html",
+      "spell_id": "a578939f50108dbe40825f9f",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "area_shape": "sphere",
+        "area_size_ft": 5,
+        "casting_time": "1 动作",
+        "classes": [
+          "奇械师",
+          "术士",
+          "魔契师",
+          "法师"
+        ],
+        "components": "S,",
+        "concentration": false,
+        "damage_expression": "1d8",
+        "damage_type": "火焰",
+        "duration": "立即 你挥舞作为法术成分的那把武器，对你周围 5",
+        "level": null,
+        "range": "自身（半径5尺）",
+        "resolution_kind": "damage",
+        "ritual": false,
+        "save": null,
+        "school": "塑能",
+        "target_disposition": "creature",
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "翠炎剑",
+      "officiality": "unknown",
+      "source_book": "塔莎的万事坩埚",
+      "source_fingerprint": "5641b8cb510a3632e1597a1ff82fcb02e58bf22553da174601fd4f88d56d0b9b",
+      "source_path": "塔莎的万事坩埚/法术/法术详述/戏法.html",
+      "spell_id": "aadaa43a2f946220099797b4",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 动作",
+        "classes": [
+          "奇械师",
+          "吟游诗人",
+          "术士",
+          "魔契师",
+          "法师"
+        ],
+        "components": "V",
+        "concentration": true,
+        "damage_expression": null,
+        "damage_type": null,
+        "duration": "专注，最长 1 \n小时",
+        "level": 3,
+        "range": "30 \n尺",
+        "ritual": false,
+        "save": "魅力豁免",
+        "school": "防护",
+        "target_disposition": "creature",
+        "upcast_text": "升环施法。 使用四环或更高环阶的法术位施展该法术时，你使用的法术位每比三环高 \n1 环，就可以多选择一个生物作为目标。而各目标之间距离不能超过 30 尺。"
+      },
+      "kind": "spell_draft",
+      "name": "智能壁垒",
+      "officiality": "unknown",
+      "source_book": "塔莎的万事坩埚",
+      "source_fingerprint": "8450a48186d8ed36be7deb015a6aa98f7bb890586d0a8914d67e79bdf7652c8e",
+      "source_path": "塔莎的万事坩埚/法术/法术详述/3环.html",
+      "spell_id": "b4ea0dc1907dd5ac08666af3",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "area_shape": "line",
+        "area_size_ft": 30,
+        "casting_time": "1 动作",
+        "classes": [
+          "奇械师",
+          "术士",
+          "法师"
+        ],
+        "components": "V, S, \nM（一点腐烂的食物）",
+        "concentration": true,
+        "damage_expression": "2d4",
+        "damage_type": "强酸",
+        "duration": "专注，至多 1 分钟",
+        "level": 1,
+        "range": "自身（30 尺线状）",
+        "resolution_kind": "damage",
+        "ritual": false,
+        "save": "敏捷豁免",
+        "school": "塑能",
+        "target_disposition": "creature",
+        "upcast_damage_dice": 2,
+        "upcast_text": "升环施法。 使用二环或更高法术位施展该法术时，你使用的法术位每比一环高 1 环，法术的伤害就增加 \n2d4。"
+      },
+      "kind": "spell_draft",
+      "name": "塔莎酸蚀酿",
+      "officiality": "unknown",
+      "source_book": "塔莎的万事坩埚",
+      "source_fingerprint": "0a67c6d643fd5619ef29606812f818453a1943f3bc0fdca6e2e745f909b0fea9",
+      "source_path": "塔莎的万事坩埚/法术/法术详述/1环.html",
+      "spell_id": "bef5ef39397ea7aa8a0856ea",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "area_shape": null,
+        "area_size_ft": null,
+        "casting_time": "1 动作",
+        "classes": [
+          "牧师",
+          "圣武士"
+        ],
+        "components": "V, S, M（一个的金制圣物匣，价值至少 \n500gp）",
+        "concentration": true,
+        "conditions": null,
+        "damage_expression": null,
+        "damage_type": null,
+        "duration": "专注，至多 1 小时",
+        "half_damage_on_save": null,
+        "healing": null,
+        "level": 5,
+        "max_targets": null,
+        "movement": null,
+        "range": "90 尺",
+        "reaction": null,
+        "resolution_kind": "summon",
+        "ritual": false,
+        "save": null,
+        "school": "咒法",
+        "summon": {
+          "controller": "caster",
+          "count": 1,
+          "creature_ref": "天界灵魄Celestial Spirit",
+          "enters_combat": true,
+          "initiative_mode": "shared_with_source"
+        },
+        "upcast_text": "升环施法。 使用六环或更高环阶的法术位施展该法术时，该生物数据中使用更高的法术环数。\n天界灵魄Celestial \n Spirit 大型天族，无阵营 AC：11+法术等级 \n(天生护甲)+2（仅限守护圣灵） HP：40+10每比五环高的法术等级 速度：30 尺；飞行40 \n尺 力量16（+3）敏捷14（+2）体质16（+3） 智力10（+0）感知14（+2）魅力16（+3） 伤害抗性：光耀 状态免疫：魅惑，恐慌 感官：黑暗视觉60 \n尺，被动察觉12 语言：天界语，理解你说的语言 挑战等级：- 熟练加值与你相等 动作Actions 多重攻击Multiattack。 天族发动等同于法术环数一半的次数的攻击（向下取整）。 光耀之弓Radiant \n Bow（仅限复仇圣灵）。 远程武器攻击：命中采取你的法术攻击加值，射程150/600 \n尺，单一目标。命中：2d6+2+法术环数的光耀伤害。 光耀之锤Radiant \n Mace（仅限守护圣灵）。 近战武器攻击：命中采取你的法术攻击加值，触及5尺，单一目标。命中：1d10+3+法术环数的光耀伤害，且天族可选择自己或其10 \n尺内可见的另一生物。选定生物获得1d10临时生命值。 治愈之触Healing \n Touch（1/日）。 天族触碰另一生物。目标魔法性地恢复目标等同于 2d8+法术环阶 \n点生命值。"
+      },
+      "kind": "spell_draft",
+      "name": "天界召唤术",
+      "officiality": "unknown",
+      "source_book": "塔莎的万事坩埚",
+      "source_fingerprint": "4063b1f0c7f458b3fc99619ae9a46f23a689e5d25060e1a757109f03525e9814",
+      "source_path": "塔莎的万事坩埚/法术/法术详述/5环.html",
+      "spell_id": "d8f457a67427548a0b968fb6",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "area_shape": null,
+        "area_size_ft": null,
+        "casting_time": "1 动作",
+        "classes": [
+          "奇械师",
+          "法师"
+        ],
+        "components": "V, S, \nM（一块华丽的石头和一个金属密码箱，价值至少 400gp）",
+        "concentration": true,
+        "conditions": null,
+        "damage_expression": null,
+        "damage_type": null,
+        "duration": "专注，至多 1 \n小时",
+        "half_damage_on_save": null,
+        "healing": null,
+        "level": 4,
+        "max_targets": null,
+        "movement": null,
+        "range": "90 尺",
+        "reaction": null,
+        "resolution_kind": "summon",
+        "ritual": false,
+        "save": null,
+        "school": "咒法",
+        "summon": {
+          "controller": "caster",
+          "count": 1,
+          "creature_ref": "构装灵魄Construct Spirit",
+          "enters_combat": true,
+          "initiative_mode": "shared_with_source"
+        },
+        "upcast_text": "升环施法。 使用四环或更高环阶的法术位施展该法术时，该生物数据中使用更高的法术环数。\n构装灵魄Construct \n Spirit 中型构装，无阵营 AC：13+法术等级 \n (天生护甲) HP：40+每比4环高的法术环阶15点 速度：30 \n 尺 力量18（+4）敏捷10（+0）体质18（+4） 智力14（+2）感知11（+0）魅力5（-3） 伤害抗性：毒素 状态免疫：魅惑，力竭，恐慌，失能，麻痹，石化，中毒 感官：黑暗视觉60 \n 尺，被动察觉10 语言：理解你说的语言 挑战等级：- 熟练加值与你相等 灼热之躯Heated \n Body（仅限金属）。 当一个生物在构装生物周边5尺范围内触碰或对其发动近战攻击命中时，将受1d10火焰伤害。 石迷昏眠Stony \n Lethargy（仅限石）。 当一个构装生物可见的生物在其10 \n 尺距离内开始回合时，构装生物可以强迫其进行一次感知豁免对抗你的法术豁免DC，豁免失败则其直到其下个回合开始前不能使用反应，且速度减半。 动作Actions 多重攻击Multiattack。 构装生物发动等同于法术环数一半的次数的攻击（向下取整）。 猛击Slam。 近战武器攻击：命中+你的法术攻击调整值，触及5尺，单一目标。命中：1d8+4+法术环数的钝击伤害 反应Reactions 狂怒乱击Berserk \n Lashing（仅限粘土）。 当构装生物受到伤害时，对其5尺内的随机一个生物进行一次猛击攻击。如果在其触及范围内没有生物，则该构装生物会以其一半的速度朝着其可见的一个敌人移动，且不会引发借机攻击。"
+      },
+      "kind": "spell_draft",
+      "name": "构装召唤术",
+      "officiality": "unknown",
+      "source_book": "塔莎的万事坩埚",
+      "source_fingerprint": "6c72cd5ed570f0c5ae1ad1f0c576d28803f2b9aae51029703cf0bb0eb2ec2dee",
+      "source_path": "塔莎的万事坩埚/法术/法术详述/4环.html",
+      "spell_id": "e801ed5d271a68fbfe81acfa",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "area_shape": "sphere",
+        "area_size_ft": 5,
+        "casting_time": "1 动作",
+        "classes": [
+          "奇械师",
+          "术士",
+          "魔契师",
+          "法师"
+        ],
+        "components": "V",
+        "concentration": false,
+        "damage_expression": null,
+        "damage_type": null,
+        "duration": "立即 你制造出一圈临时的半透明利刃迅速横扫你的周围。你周围半径5尺范围内的所有生物都必须通过一次敏捷豁免，豁免失败将受到",
+        "level": null,
+        "range": "自身（半径5尺）",
+        "ritual": false,
+        "save": "敏捷豁免",
+        "school": "咒法",
+        "target_disposition": "creature",
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "剑刃爆发",
+      "officiality": "unknown",
+      "source_book": "塔莎的万事坩埚",
+      "source_fingerprint": "133107ea3831d1aa1ca2922527b9c51273e73ec9ec88a4416aeeb7c18d746af0",
+      "source_path": "塔莎的万事坩埚/法术/法术详述/戏法.html",
+      "spell_id": "eec6bd94eb83a351fb987de2",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 动作",
+        "classes": [
+          "术士",
+          "魔契师",
+          "法师"
+        ],
+        "components": "V",
+        "concentration": false,
+        "damage_expression": "1d6",
+        "damage_type": "心灵",
+        "duration": "1",
+        "level": null,
+        "range": "60 尺",
+        "resolution_kind": "damage",
+        "ritual": false,
+        "save": "智力豁免",
+        "school": null,
+        "target_disposition": "creature",
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "心灵之楔",
+      "officiality": "unknown",
+      "source_book": "塔莎的万事坩埚",
+      "source_fingerprint": "4ba6ed7f26d23a02c0b47e0ffbc74a4e24871fb369ec633e2630c9c81cef4df8",
+      "source_path": "塔莎的万事坩埚/法术/法术详述/戏法.html",
+      "spell_id": "ef0f92b557fb48d421d462e1",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "area_shape": null,
+        "area_size_ft": null,
+        "casting_time": "1 动作",
+        "classes": [
+          "魔契师",
+          "法师"
+        ],
+        "components": "V, S, M（包有眼泪的宝石，价值至少 \n300gp）",
+        "concentration": true,
+        "conditions": null,
+        "damage_expression": null,
+        "damage_type": null,
+        "duration": "专注，至多 1 小时",
+        "half_damage_on_save": null,
+        "healing": null,
+        "level": 3,
+        "max_targets": null,
+        "movement": null,
+        "range": "90 尺",
+        "reaction": null,
+        "resolution_kind": "summon",
+        "ritual": false,
+        "save": null,
+        "school": "咒法",
+        "summon": {
+          "controller": "caster",
+          "count": 1,
+          "creature_ref": "暗影灵魄Shadow Spirit",
+          "enters_combat": true,
+          "initiative_mode": "shared_with_source"
+        },
+        "upcast_text": "升环施法。 使用四环或更高环阶的法术位施展该法术时，该生物数据中使用更高的法术环数。\n暗影灵魄Shadow \n Spirit 中型怪兽，无阵营 AC：11+法术等级 \n(天生护甲) HP：35+15每比3环高的法术等级 速度：40 力量13（+1）敏捷16（+3）体质15（+2） 智力4（-3）感知10（+0）魅力16（+3） 伤害抗性：暗蚀 状态免疫：恐慌 感官：黑暗视觉120 \n尺，被动察觉10 语言：理解你说的语言 挑战等级：- 熟练加值与你相等 惧怖狂怒Terror \n Frenzy（仅限暴怒）。 该灵魄对恐慌生物发动的攻击检定具有优势。 哀伤之重Weight of Sorrow（仅限绝望）。 除你之外的所有生物在该灵魄 5 尺内开始回合时，其速度降低 20 \n尺直到该生物的下回合开始。 动作Actions 多重攻击Multiattack。 该灵魄发动等同于法术环数一半的次数的攻击（向下取整）。 冻寒撕裂Chilling \n Rend。 近战武器攻击：命中采取你的法术攻击加值，触及5尺，单一目标。命中：1d12+3+法术环阶的寒冷伤害。 恐惧尖叫Dreadful Scream（1/日）。 该灵魄发出尖叫。处于它10 \n尺内的每个生物必须进行一次感知豁免对抗你的法术豁免DC，否则对灵魄恐慌1分钟。被恐慌生物可以在其自己回合结束时再进行一次该豁免，豁免成功则终止该生物身上的恐慌效应。 附赠动作Bonus \n Actions 暗影潜藏Shadow \n Stealth（仅限恐惧）。 灵魄处于微光光照或黑暗环境时，可以一个附赠动作来执行躲藏动作。"
+      },
+      "kind": "spell_draft",
+      "name": "暗影衍体召唤术",
+      "officiality": "unknown",
+      "source_book": "塔莎的万事坩埚",
+      "source_fingerprint": "bbbc8d15a8370228ba85c4da71e104f495506501272fa4668764eefc13c59b44",
+      "source_path": "塔莎的万事坩埚/法术/法术详述/3环.html",
+      "spell_id": "f5cecd71fec2973d283c87e7",
+      "status": "manual"
+    }
+  ],
+  "feat_count": 1,
+  "feature_count": 48,
+  "schema_version": "content-ir-workbench-report-1",
+  "source_book": "塔莎的万事坩埚",
+  "source_root": "generated-content",
+  "source_untyped": 69,
+  "spell_count": 21,
+  "total_records": 144,
+  "typed_ir_count": 0
+}

@@ -1,0 +1,162 @@
+{
+  "blocker_counts": {
+    "unstructured_source_requires_authored_spell_ir": 3
+  },
+  "capability_counts": {},
+  "counts": {
+    "full": 0,
+    "invalid": 0,
+    "manual": 3,
+    "partial": 0
+  },
+  "draft_count": 3,
+  "entries": [
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1动作",
+        "classes": [
+          "吟游诗人",
+          "术士",
+          "魔契师",
+          "法师"
+        ],
+        "components": "V、S、M（一张描绘着 浪客Rogue \n的卡牌）",
+        "concentration": false,
+        "damage_expression": "4d4",
+        "damage_type": "心灵",
+        "duration": "立即",
+        "half_damage_on_save": true,
+        "level": 3,
+        "range": "30尺",
+        "reaction": {
+          "effect": "目标按法术原文执行反应；没有明确距离时由 DM 裁定。",
+          "event": "规则描述触发后",
+          "timing": "when"
+        },
+        "resolution_kind": "damage",
+        "ritual": false,
+        "save": "感知豁免",
+        "school": null,
+        "target_disposition": "creature",
+        "upcast_damage_dice": 1,
+        "upcast_text": "升环施法。 当你使用4环或更高法术位施放本法术时，你使用的法术位每比3环高一环，法术的伤害就增加1d4。"
+      },
+      "kind": "spell_draft",
+      "name": "敌意术",
+      "officiality": "unknown",
+      "source_book": "万象无常书",
+      "source_fingerprint": "c000365bdd883316df8f0abf1d5ecebbe4b8cceedc67d97c4b4cad2b3cd23ddc",
+      "source_path": "万象无常书/贤者/卡牌法术详述.htm",
+      "spell_id": "164b86c070175f43296670a8",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "area_shape": "cone",
+        "area_size_ft": 15,
+        "casting_time": "1动作",
+        "classes": [
+          "吟游诗人",
+          "术士",
+          "魔契师",
+          "法师"
+        ],
+        "components": "V、S、M（一副牌组）",
+        "concentration": false,
+        "conditions": [
+          "目盲"
+        ],
+        "damage_expression": "2d10",
+        "damage_type": "力场",
+        "duration": "立即",
+        "half_damage_on_save": true,
+        "level": 2,
+        "range": "自身（15尺锥形）",
+        "resolution_kind": "damage",
+        "ritual": false,
+        "save": "敏捷豁免",
+        "school": "咒法",
+        "target_disposition": "creature",
+        "upcast_damage_dice": 1,
+        "upcast_text": "升环施法。 当你使用3环或更高法术位施放本法术时，你使用的法术位每比2环高一环，法术的伤害就增加1d10。"
+      },
+      "kind": "spell_draft",
+      "name": "卡牌喷射",
+      "officiality": "unknown",
+      "source_book": "万象无常书",
+      "source_fingerprint": "9e678693c47631f8eb4ded94cfa68a49fabd5824a4ee85cccf8b79decfc5a460",
+      "source_path": "万象无常书/贤者/卡牌法术详述.htm",
+      "spell_id": "69822f264262f10066c621b3",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "area_shape": null,
+        "area_size_ft": null,
+        "casting_time": "1动作",
+        "classes": [
+          "术士",
+          "魔契师",
+          "法师"
+        ],
+        "components": "V、S、M（一张描绘着死神化身的镀金纸牌，至少价值400gp）",
+        "concentration": true,
+        "conditions": null,
+        "damage_expression": null,
+        "damage_type": null,
+        "duration": "专注，至多1小时",
+        "half_damage_on_save": null,
+        "healing": null,
+        "level": 4,
+        "max_targets": null,
+        "movement": null,
+        "range": "60尺",
+        "reaction": null,
+        "resolution_kind": "summon",
+        "ritual": false,
+        "save": null,
+        "school": "死灵",
+        "summon": {
+          "controller": "caster",
+          "count": 1,
+          "creature_ref": "收割者灵魄 Reaper Spirit",
+          "enters_combat": true,
+          "initiative_mode": "independent"
+        },
+        "upcast_text": "升环施法。 使用5环或更高法术位施放本法术时，该法术召唤的收割者灵魄数据中使用更高的法术环阶。\n收割者灵魄 Reaper \n Spirit 中型亡灵，绝对中立 AC：11+法术环阶（天生护甲） HP：40+高于4环每环10点 速度：30尺，飞行30尺（悬浮） 力量16（+3） \n敏捷16（+3） 体质16（+3） 智力16（+3） 感知16（+3） 魅力16（+3） 伤害免疫：暗蚀，毒素 状态免疫：魅惑，力竭，恐慌，麻痹，中毒 感官：黑暗视觉60尺，被动察觉13 语言：理解你所说的语言 挑战等级：- 熟练加值：等同于你的熟练加值 虚体移动 Incorporeal \nMovement。 灵魄可以如同穿过困难地形一样穿过其他生物和物件。如果它在自己的回合结束时仍处在物件内部则受到5（1d10）的力场伤害。 动作Actions 多重攻击Multiattacks。 灵魄发动等同于法术环阶一半的次数的攻击 \n（向下取整）。 收割之镰Reaping \nScythe。 近战武器攻击：命中使用你的法术攻击调整值(具有优势)，触及5尺，单一被作祟的生物。命中：1d8+3+该法术环阶的暗蚀伤害。 附赠动作Bonus Actions 作祟生物Haunt \nCreature。 灵魄以自己10尺内的一个生物为目标，并开始作祟该生物。当目标被作祟时，如果目标和你在同一个存在位面上，你和灵魄就会感知到目标的方向和距离。此外，如果目标在灵魄10尺内开始其回合，则该目标必须对你的法术豁免DC进行一次成功的感知豁免，否则将陷入恐慌状态直到目标的下一回合开始。目标在死亡、灵魄消失或灵魄再次使用此动作前一直处于被作祟状态。"
+      },
+      "kind": "spell_draft",
+      "name": "死神灵魄",
+      "officiality": "unknown",
+      "source_book": "万象无常书",
+      "source_fingerprint": "fdbd1c7a38a6eadca6066e6320e19e512edceca3a5f61a23619231b8a50a54f3",
+      "source_path": "万象无常书/贤者/卡牌法术详述.htm",
+      "spell_id": "d52d8cc60a51205a85548bf1",
+      "status": "manual"
+    }
+  ],
+  "feat_count": 1,
+  "feature_count": 0,
+  "schema_version": "content-ir-workbench-report-1",
+  "source_book": "万象无常书",
+  "source_root": "generated-content",
+  "source_untyped": 3,
+  "spell_count": 3,
+  "total_records": 195,
+  "typed_ir_count": 0
+}

@@ -1,0 +1,3745 @@
+{
+  "blocker_counts": {
+    "unstructured_source_requires_authored_spell_ir": 95
+  },
+  "capability_counts": {},
+  "counts": {
+    "full": 0,
+    "invalid": 0,
+    "manual": 95,
+    "partial": 0
+  },
+  "draft_count": 95,
+  "entries": [
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 动作",
+        "classes": [
+          "牧师"
+        ],
+        "components": "V、M（一块圣徽）",
+        "concentration": false,
+        "damage_expression": null,
+        "damage_type": null,
+        "duration": "立即",
+        "level": null,
+        "range": "5 \n尺",
+        "ritual": false,
+        "save": "体质豁免",
+        "school": "塑能",
+        "target_disposition": "creature",
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "光耀祷词",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "d14aec5a30076b383d21f303a9001cccbb12afe50f5754dff94274aff88d269c",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/戏法.html",
+      "spell_id": "02a4993d7cfe05576114bbf9",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "area_shape": "sphere",
+        "area_size_ft": 5,
+        "casting_time": "1 动作",
+        "classes": [
+          "德鲁伊",
+          "术士",
+          "法师"
+        ],
+        "components": "V、S、M（一滴水）",
+        "concentration": true,
+        "damage_expression": null,
+        "damage_type": null,
+        "duration": "专注，至多 1 分钟",
+        "level": 4,
+        "range": "90 \n尺",
+        "ritual": false,
+        "save": "力量豁免",
+        "school": "咒法",
+        "target_disposition": "creature",
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "碧水法球",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "8fbbab32476219316de5ca37295788ccd675a2f3288065e349774261022fa933",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/4环.html",
+      "spell_id": "047749c5509fc99db00b3fcf",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 附赠动作",
+        "classes": [
+          "德鲁伊",
+          "游侠"
+        ],
+        "components": "V",
+        "concentration": true,
+        "damage_expression": "1d6",
+        "damage_type": "力场",
+        "duration": "专注，至多 1 \n分钟",
+        "healing": "10",
+        "level": 4,
+        "range": "自身",
+        "resolution_kind": "heal",
+        "ritual": false,
+        "save": "体质豁免",
+        "school": "变化",
+        "target_disposition": "enemy",
+        "temporary_hp": true,
+        "transformation": {
+          "form_ref": "dm_chosen_form",
+          "mode": "polymorph",
+          "requires_form_choice": true,
+          "reversible": true
+        },
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "自然守卫",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "4f1633fde1a56698ba22a0449d7d721d476b490356c113cd35691143f04cb393",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/4环.html",
+      "spell_id": "048941785a073a147150ef01",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 动作",
+        "classes": [
+          "德鲁伊",
+          "术士",
+          "魔契师",
+          "法师"
+        ],
+        "components": "V、S、M（一只活跳蚤）",
+        "concentration": false,
+        "damage_expression": null,
+        "damage_type": null,
+        "duration": "立即",
+        "level": null,
+        "range": "30 \n尺",
+        "ritual": false,
+        "save": "体质豁免",
+        "school": "咒法",
+        "target_disposition": "creature",
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "虫群孳生",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "a7b6320fc78fb73ec741b2e52b19aafcbb33677545a9ae56b0edae14817fdc9d",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/戏法.html",
+      "spell_id": "0efb3208f8e15653d4c76c10",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 动作",
+        "classes": [
+          "德鲁伊",
+          "术士",
+          "法师"
+        ],
+        "components": "V、M（一根稻草）",
+        "concentration": true,
+        "damage_expression": "10d6",
+        "damage_type": "钝击",
+        "duration": "专注，至多 1 分钟",
+        "half_damage_on_save": true,
+        "level": 7,
+        "range": "300 \n尺",
+        "resolution_kind": "damage",
+        "ritual": false,
+        "save": "敏捷豁免",
+        "school": "塑能",
+        "target_disposition": "creature",
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "旋风术",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "fa12ac082c816083866c203de4c67ed438c70bb6a307280de52dd9e5092ffcfa",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/7环.html",
+      "spell_id": "1ac6fa5898d04171132949ab",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "area_shape": "sphere",
+        "area_size_ft": 100,
+        "casting_time": "1 动作",
+        "classes": [
+          "吟游诗人",
+          "德鲁伊",
+          "术士",
+          "魔契师",
+          "法师",
+          "奇械师"
+        ],
+        "components": "S",
+        "concentration": false,
+        "damage_expression": "1d6",
+        "damage_type": "雷鸣",
+        "duration": "立即",
+        "level": null,
+        "range": "5 \n尺",
+        "resolution_kind": "damage",
+        "ritual": false,
+        "save": "体质豁免",
+        "school": "塑能",
+        "target_disposition": "creature",
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "鸣雷破",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "60378f457673aebe30e4362402197fea317f13e49f9c54c6997fcd9554ac369a",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/戏法.html",
+      "spell_id": "1af1b8cdfc05fcc4189008d2",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 附赠动作",
+        "classes": [
+          "术士",
+          "魔契师",
+          "法师"
+        ],
+        "components": "V",
+        "concentration": true,
+        "damage_expression": null,
+        "damage_type": null,
+        "duration": "专注，至多 1 \n分钟",
+        "level": 5,
+        "range": "自身",
+        "ritual": false,
+        "save": null,
+        "school": "咒法",
+        "teleport": {
+          "can_take_creatures": false,
+          "destination_kind": "chosen_space",
+          "max_distance_ft": null,
+          "requires_destination_choice": true
+        },
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "渺远步",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "cd079caabfa00c6460928f4416d9fe7ce3ce98bb5796a69ea96e7364ff7462c8",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/5环.html",
+      "spell_id": "24a9c47f5465541aa2cb8bc3",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 \n动作",
+        "classes": [
+          "德鲁伊"
+        ],
+        "components": "S",
+        "concentration": false,
+        "damage_expression": "1d10",
+        "damage_type": "强酸",
+        "duration": "立即",
+        "level": null,
+        "range": "自身",
+        "resolution_kind": "damage",
+        "ritual": false,
+        "save": null,
+        "school": "变化",
+        "target_disposition": "creature",
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "原初蛮击",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "8b9e82ffea139db924c5669d10a7fa8914d291555e59962d6231138962158a9c",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/戏法.html",
+      "spell_id": "25d9674d7172fb2c6b06e64c",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 动作",
+        "classes": [
+          "德鲁伊",
+          "术士",
+          "法师"
+        ],
+        "components": "V、S、M（一滴水）",
+        "concentration": false,
+        "damage_expression": "4d8",
+        "damage_type": "钝击",
+        "duration": "立即",
+        "half_damage_on_save": true,
+        "level": 3,
+        "range": "120 \n尺",
+        "resolution_kind": "damage",
+        "ritual": false,
+        "save": "敏捷豁免",
+        "school": "咒法",
+        "target_disposition": "creature",
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "潮涌",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "42f426ad7cfa357de0b46d8e7f8341122a52489d0620a200d56cab6d99cdb9de",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/3环.html",
+      "spell_id": "25fd183be8a5a886bc180e83",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 动作",
+        "classes": [
+          "魔契师",
+          "法师"
+        ],
+        "components": "V",
+        "concentration": true,
+        "damage_expression": null,
+        "damage_type": null,
+        "duration": "专注，至多 1 \n分钟",
+        "level": 1,
+        "range": "60 尺",
+        "repeat": {
+          "count_expression": "duration",
+          "source": "explicit_timing",
+          "timing": "turn_end"
+        },
+        "ritual": false,
+        "save": "感知豁免",
+        "school": "死灵",
+        "target_disposition": "creature",
+        "upcast_text": "升环施法。 当你使用二环或更高的法术位施放该法术时，使用的法术位每高一环，你就可以多指定一个额外生物作为目标。每个被你指定的生物相互之间的施法距离必须在 \n30 尺内。"
+      },
+      "kind": "spell_draft",
+      "name": "造成恐惧",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "b5d47ee3171933f95e8f9339e671d40b2ab7835a9a71d580282ac50dad5f9e56",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/1环.html",
+      "spell_id": "32029f628876bce678c798d1",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "area_shape": "sphere",
+        "area_size_ft": 5,
+        "casting_time": "1 动作",
+        "classes": [
+          "术士",
+          "法师"
+        ],
+        "components": "V、S、M（一个由陶土雕塑成的手的模型）",
+        "concentration": true,
+        "damage_components": [
+          {
+            "damage_type": "钝击",
+            "expression": "2d6"
+          },
+          {
+            "damage_type": "钝击",
+            "expression": "2d6"
+          }
+        ],
+        "damage_expression": "2d6",
+        "damage_type": "钝击",
+        "duration": "专注，至多 1 分钟",
+        "level": 2,
+        "range": "30 尺",
+        "resolution_kind": "damage",
+        "ritual": false,
+        "save": "力量豁免",
+        "school": "变化",
+        "target_disposition": "creature",
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "麦克斯米利安的地之攫",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "f3bf790d332e8476586bfe75e7e9a6281deeda60c9d095cd3f3022ba59e6f5fb",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/2环.html",
+      "spell_id": "322be7591c0652d2690ff996",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "area_shape": "sphere",
+        "area_size_ft": 120,
+        "casting_time": "1 分钟",
+        "classes": [
+          "法师",
+          "奇械师"
+        ],
+        "components": "V、S",
+        "concentration": false,
+        "damage_expression": null,
+        "damage_type": null,
+        "duration": "8 \n小时",
+        "level": 3,
+        "range": "触碰",
+        "ritual": false,
+        "save": null,
+        "school": "变化",
+        "target_disposition": "enemy",
+        "transformation": {
+          "form_ref": "dm_chosen_form",
+          "mode": "polymorph",
+          "requires_form_choice": true,
+          "reversible": true
+        },
+        "upcast_text": "升环施法。 当你使用四环或更高的法术位施放该法术时，使用的法术位每高一环，你可以额外活化两个物体。\n迷你仆役Tiny \n Servant 微型构装，无阵营 AC：15（天生护甲） HP：10（4d4） 速度：30尺，攀爬30尺 力量 4（-3） \n 敏捷 16（+3） 体质 10（+0） 智力 2（-4） 感知 10（+0） 魅力 1（-5） 伤害免疫：毒素，心灵 状态免疫：目盲，魅惑，耳聋，力竭，恐慌，麻痹，石化，中毒 感官：盲视 60 \n 尺（对超过半径的区域目盲），被动察觉 10 语言：- 动作Actions 猛击Slam。 近战武器攻击：命中+5，触及 \n 5 尺，单一目标。命中：5(1d4+3)点钝击伤害"
+      },
+      "kind": "spell_draft",
+      "name": "迷你仆役",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "4335a1f37d9ca23d2641deaa7af41bc4d09a712fb0ccc6aa2994cdf308148467",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/3环.html",
+      "spell_id": "3354757eafb1584a6e6f896c",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 动作",
+        "classes": [
+          "吟游诗人",
+          "术士",
+          "魔契师",
+          "法师"
+        ],
+        "components": "S",
+        "concentration": false,
+        "damage_expression": "14d6",
+        "damage_type": "心灵",
+        "duration": "立即",
+        "half_damage_on_save": true,
+        "level": 9,
+        "range": "90 \n尺",
+        "repeat": {
+          "count_expression": "duration",
+          "source": "explicit_timing",
+          "timing": "turn_end"
+        },
+        "resolution_kind": "damage",
+        "ritual": false,
+        "save": "智力豁免",
+        "school": null,
+        "target_disposition": "creature",
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "心灵尖啸",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "b7a5a8ada8e901f47001133d69f22b33e5819d257dd9526ff4caeab6d7c9c17a",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/9环.html",
+      "spell_id": "3552e12594b2d8e6067f24f5",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "area_shape": "cube",
+        "area_size_ft": 5,
+        "casting_time": "1 动作",
+        "classes": [
+          "吟游诗人",
+          "术士",
+          "法师",
+          "奇械师"
+        ],
+        "components": "V、S",
+        "concentration": false,
+        "conditions": [
+          "目盲"
+        ],
+        "damage_expression": null,
+        "damage_type": null,
+        "duration": "立即",
+        "level": 2,
+        "range": "60 尺",
+        "resolution_kind": "control",
+        "ritual": false,
+        "save": "体质豁免",
+        "school": "变化",
+        "target_disposition": "creature",
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "烟火术",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "be40c4d68eea30a262859c12437e8290d6ee77a5a3747ee14c192282f37eaff0",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/2环.html",
+      "spell_id": "399847dd993051deee7f6aac",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 动作",
+        "classes": [
+          "游侠",
+          "法师"
+        ],
+        "components": "S、M（一把价值至少 1sp \n的近战武器）",
+        "concentration": false,
+        "damage_expression": "6d10",
+        "damage_type": "力场",
+        "duration": "立即",
+        "level": 5,
+        "range": "30尺",
+        "resolution_kind": "damage",
+        "ritual": false,
+        "save": null,
+        "school": "咒法",
+        "target_disposition": "creature",
+        "teleport": {
+          "can_take_creatures": false,
+          "destination_kind": "chosen_space",
+          "max_distance_ft": null,
+          "requires_destination_choice": true
+        },
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "钢风斩",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "85cf45162d97049c9c6f74fbc9cddb80c0be32415c5dd81c995bff5e606a246c",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/5环.html",
+      "spell_id": "3d0c919b8a247aea928708f1",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 动作",
+        "classes": [
+          "德鲁伊",
+          "法师",
+          "奇械师"
+        ],
+        "components": "V、S、M（陶土和水）",
+        "concentration": false,
+        "damage_expression": "4d8",
+        "damage_type": "钝击",
+        "duration": "直至被解除",
+        "half_damage_on_save": true,
+        "level": 5,
+        "range": "120 \n尺",
+        "resolution_kind": "damage",
+        "ritual": false,
+        "save": "力量豁免",
+        "school": "变化",
+        "target_disposition": "creature",
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "转化岩石",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "63ee4dcb38416c218a022a95046ed3eae7a28190fc70e14cd7b52b6b8ce5933e",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/5环.html",
+      "spell_id": "44b313df9ea9023c89edb9b8",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 动作",
+        "classes": [
+          "术士",
+          "魔契师",
+          "法师"
+        ],
+        "components": "V、S",
+        "concentration": true,
+        "damage_expression": "4d10",
+        "damage_type": "光耀",
+        "duration": "专注，至多 10 分钟",
+        "level": 4,
+        "range": "120 \n尺",
+        "resolution_kind": "damage",
+        "ritual": false,
+        "save": "体质豁免",
+        "school": "塑能",
+        "target_disposition": "creature",
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "致病辐射",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "825530eca4bb3ad1cd20b9a1425b83807f1518afd6958d601f9f1314d86dfb1b",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/4环.html",
+      "spell_id": "469bbcf22c89ccc8019a0afc",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 动作",
+        "classes": [
+          "吟游诗人",
+          "德鲁伊",
+          "术士",
+          "法师"
+        ],
+        "components": "V、S",
+        "concentration": false,
+        "damage_expression": "1d6",
+        "damage_type": "钝击",
+        "duration": "立即",
+        "level": 1,
+        "range": "10 \n尺",
+        "resolution_kind": "damage",
+        "ritual": false,
+        "save": "敏捷豁免",
+        "school": "塑能",
+        "target_disposition": "creature",
+        "upcast_damage_dice": 1,
+        "upcast_text": "升环施法。 当你使用二环或更高的法术位施放该法术时，使用的法术位每高一环，伤害便增加 1d6。"
+      },
+      "kind": "spell_draft",
+      "name": "地颤",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "91b93bce1d888cb16241c4d0cb8412af53639f22b300d70914b3aec3879a2081",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/1环.html",
+      "spell_id": "483e4b174da746100d0f873b",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 \n反应，当你受到强酸、寒冷、火焰、闪电、或雷鸣伤害时执行",
+        "classes": [
+          "德鲁伊",
+          "游侠",
+          "术士",
+          "法师",
+          "奇械师"
+        ],
+        "components": "S",
+        "concentration": false,
+        "damage_expression": null,
+        "damage_type": null,
+        "duration": "1 \n轮",
+        "level": 1,
+        "range": "自身",
+        "ritual": false,
+        "save": null,
+        "school": "防护",
+        "upcast_text": "升环施法。 当你使用二环或更高的法术位施放该法术时，使用的法术位每高一环，额外伤害便增加 \n1d6。"
+      },
+      "kind": "spell_draft",
+      "name": "吸收元素",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "8d5024a9b281f4d091030b25c310d315b82a037623bad884314ad37062991b37",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/1环.html",
+      "spell_id": "485ed4b107f275c1751d9833",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 动作",
+        "classes": [
+          "德鲁伊",
+          "术士",
+          "魔契师",
+          "法师"
+        ],
+        "components": "V、S",
+        "concentration": false,
+        "damage_expression": "1d6",
+        "damage_type": "寒冷",
+        "duration": "立即",
+        "level": null,
+        "range": "60 \n尺",
+        "resolution_kind": "damage",
+        "ritual": false,
+        "save": "体质豁免",
+        "school": "塑能",
+        "target_disposition": "creature",
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "霜噬",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "bccd12705d72dc053638c02374a69f439c03a37fb8465a49b4ad392442018989",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/戏法.html",
+      "spell_id": "4d94c0c610e955904d8893aa",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 动作",
+        "classes": [
+          "术士",
+          "魔契师",
+          "法师"
+        ],
+        "components": "V、S、M（一面手镜）",
+        "concentration": true,
+        "damage_components": [
+          {
+            "damage_type": "光耀",
+            "expression": "4d8"
+          },
+          {
+            "damage_type": "光耀",
+            "expression": "4d8"
+          },
+          {
+            "damage_type": "光耀",
+            "expression": "4d8"
+          }
+        ],
+        "damage_expression": "4d8",
+        "damage_type": "光耀",
+        "duration": "专注，至多 10 \n分钟",
+        "half_damage_on_save": true,
+        "level": 5,
+        "range": "120 \n尺",
+        "repeat": {
+          "count_expression": "duration",
+          "source": "explicit_timing",
+          "timing": "turn_end"
+        },
+        "resolution_kind": "damage",
+        "ritual": false,
+        "save": "体质豁免",
+        "school": "塑能",
+        "target_disposition": "creature",
+        "upcast_text": "升环施法。 当你使用六环或更高的法术位施放该法术时，使用的法术位每高一环，伤害便增加 1d8。"
+      },
+      "kind": "spell_draft",
+      "name": "光墙术",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "bb8bd9cc0ab097f2bba9c5207573e0ced281a342b28bf4b4944192cf008e247d",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/5环.html",
+      "spell_id": "4f414052ed79b3e2bff11772",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 动作",
+        "classes": [
+          "牧师",
+          "魔契师",
+          "法师"
+        ],
+        "components": "V、S",
+        "concentration": false,
+        "damage_expression": "1d8",
+        "damage_type": null,
+        "duration": "立即",
+        "healing": "12",
+        "level": null,
+        "range": "60 \n尺",
+        "resolution_kind": "heal",
+        "ritual": false,
+        "save": "感知豁免",
+        "school": "死灵",
+        "target_disposition": "creature",
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "亡者丧钟",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "b3a14cbcc0839fc7f809572c256ef8639de7bff04a123b7d240737d44b761ea2",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/戏法.html",
+      "spell_id": "51390e4a119d736a6bb4e3bf",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 \n动作",
+        "classes": [
+          "德鲁伊",
+          "术士",
+          "魔契师",
+          "法师"
+        ],
+        "components": "V、S",
+        "concentration": true,
+        "creation": {
+          "count": null,
+          "creation_kind": "terrain",
+          "requires_template_choice": true,
+          "template_ref": "dm_chosen_template"
+        },
+        "damage_expression": "4d6",
+        "damage_type": "寒冷",
+        "duration": "专注，至多 10 分钟",
+        "level": 6,
+        "range": "自身",
+        "resolution_kind": "damage",
+        "ritual": false,
+        "save": "体质豁免",
+        "school": "变化",
+        "target_disposition": "creature",
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "寒冰赋权",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "caba568728bd3f85afd69bc413ce61b1d7b44e24b38ad3d0360dc399cf078a83",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/6环.html",
+      "spell_id": "51d0679ee8e5bd9263306ece",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 \n动作",
+        "classes": [
+          "术士",
+          "魔契师",
+          "法师"
+        ],
+        "components": "V",
+        "concentration": false,
+        "damage_expression": null,
+        "damage_type": null,
+        "duration": "立即",
+        "level": 6,
+        "range": "30尺",
+        "ritual": false,
+        "save": "感知豁免",
+        "school": "咒法",
+        "target_disposition": "creature",
+        "teleport": {
+          "can_take_creatures": false,
+          "destination_kind": "chosen_space",
+          "max_distance_ft": null,
+          "requires_destination_choice": true
+        },
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "散射术",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "a27a2977f5e955123791770ef549c3a57b388428edd43f7958280f8e49fa4e32",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/6环.html",
+      "spell_id": "53f73902884f2e26ec4c6371",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 动作",
+        "classes": [
+          "术士"
+        ],
+        "components": "V、S",
+        "concentration": false,
+        "damage_expression": null,
+        "damage_type": null,
+        "duration": "立即",
+        "level": 1,
+        "range": "120 \n尺",
+        "ritual": false,
+        "save": null,
+        "school": "塑能",
+        "target_disposition": "creature",
+        "upcast_text": "升环施法。 当你使用二环或更高的法术位施展此法术时，每个生物受到额外伤害，类型与投出的一致。额外伤害等于高于一环的每个等级 \n1d6 点。"
+      },
+      "kind": "spell_draft",
+      "name": "混乱箭",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "8069f1bb4d2c61f7a335babc9c2d6c80617d0a4f0fdd70e15e29c5f4993bc03c",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/1环.html",
+      "spell_id": "5aa5cf7f93be0fa149fdcd62",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 动作",
+        "classes": [
+          "德鲁伊",
+          "术士",
+          "魔契师",
+          "法师",
+          "奇械师"
+        ],
+        "components": "V、S",
+        "concentration": true,
+        "creation": {
+          "count": null,
+          "creation_kind": "item",
+          "requires_template_choice": true,
+          "template_ref": "dm_chosen_template"
+        },
+        "damage_expression": null,
+        "damage_type": null,
+        "duration": "专注，至多 1 分钟",
+        "level": null,
+        "range": "60 \n尺",
+        "ritual": false,
+        "save": "敏捷豁免",
+        "school": "咒法",
+        "target_disposition": "creature",
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "创造篝火",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "16f3bc57ea639647d810fee52d479c7ae2dc4fcc661812c7ec5003606155dc54",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/戏法.html",
+      "spell_id": "5e3d2647a31064d6b795ff76",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "area_shape": null,
+        "area_size_ft": null,
+        "casting_time": "1 动作",
+        "classes": [
+          "魔契师",
+          "法师"
+        ],
+        "components": "V、S、M（来自一个于 24 \n小时之内被杀的类人生物身上的一剂血液）",
+        "concentration": true,
+        "conditions": null,
+        "damage_expression": null,
+        "damage_type": null,
+        "duration": "专注，至多 1 \n小时",
+        "half_damage_on_save": null,
+        "healing": null,
+        "level": 3,
+        "max_targets": null,
+        "movement": null,
+        "range": "60 尺",
+        "reaction": null,
+        "resolution_kind": "summon",
+        "ritual": false,
+        "save": null,
+        "school": "咒法",
+        "summon": {
+          "controller": "independent",
+          "count_expression": "1d6：2/4/8只（按法术表决定；整体共用一次先攻）",
+          "creature_ref": "恶魔（DM选择种类）",
+          "enters_combat": true,
+          "initiative_mode": "independent"
+        },
+        "upcast_text": "升环施法。 当你使用六环或七环的法术位施放该法术时，被召唤的恶魔数量变为两倍。当你使用八环或九环的法术位施放该法术时，被召唤的恶魔数量变为三倍。"
+      },
+      "kind": "spell_draft",
+      "name": "低阶恶魔召唤术",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "c761656596cc8294902e657326b4aa4c262c7441571b896e2752d4a985f8a14e",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/3环.html",
+      "spell_id": "60380abd1ce511bfda13bb70",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 动作",
+        "classes": [
+          "吟游诗人",
+          "术士",
+          "魔契师",
+          "法师"
+        ],
+        "components": "V、S",
+        "concentration": true,
+        "damage_expression": null,
+        "damage_type": null,
+        "duration": "专注，至多 1 \n分钟",
+        "level": 3,
+        "range": "120 尺",
+        "ritual": false,
+        "save": "智力豁免",
+        "school": null,
+        "target_disposition": "enemy",
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "举目皆敌",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "ce8845bb784b164dca073632121cafa8bd819febfae03cc7e91d31fdcf3cfae1",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/3环.html",
+      "spell_id": "63069d39418cec22fd8266dd",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 动作",
+        "classes": [
+          "法师"
+        ],
+        "components": "V、S、M（一小块价值至少 500gp \n的精金，作为该法术的耗材）",
+        "concentration": true,
+        "damage_expression": null,
+        "damage_type": null,
+        "duration": "专注，至多 10 分钟",
+        "level": 9,
+        "range": "自身",
+        "ritual": false,
+        "save": null,
+        "school": "防护",
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "无敌术",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "4c6e191b461a01de41832a8d2370482ae89d8f769463f6f63911b67341a4d781",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/9环.html",
+      "spell_id": "63ee1cc8e81638280110e84c",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 动作",
+        "classes": [
+          "术士",
+          "法师"
+        ],
+        "components": "V、S、M（一块冰或一小块白色岩石碎片）",
+        "concentration": false,
+        "damage_expression": "3d6",
+        "damage_type": "寒冷",
+        "duration": "立即",
+        "level": 2,
+        "range": "90 尺",
+        "resolution_kind": "damage",
+        "ritual": false,
+        "save": "敏捷豁免",
+        "school": "塑能",
+        "target_disposition": "creature",
+        "upcast_damage_dice": 1,
+        "upcast_text": "升环施法。 当你使用三环或更高的法术位施放该法术时，使用的法术位每高一环，伤害便增加 1d6。"
+      },
+      "kind": "spell_draft",
+      "name": "史尼洛雪球群",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "bfb46bd314a981d3bebeea4961b5af3eb9366086014ef2a445817e50e5a66820",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/2环.html",
+      "spell_id": "647e44fd3b93b2e4dafd2323",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 动作",
+        "classes": [
+          "吟游诗人",
+          "术士",
+          "法师"
+        ],
+        "components": "V、S、M（一个毛毛虫的茧）",
+        "concentration": true,
+        "damage_expression": null,
+        "damage_type": null,
+        "duration": "专注，至多 1 小时",
+        "level": 9,
+        "range": "120 \n尺",
+        "ritual": false,
+        "save": "感知豁免",
+        "school": "变化",
+        "target_disposition": "creature",
+        "transformation": {
+          "form_ref": "dm_chosen_form",
+          "mode": "polymorph",
+          "requires_form_choice": true,
+          "reversible": true
+        },
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "群体变形术",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "07b8ae67166a8957f0957a5c2a3a16eba3fee32c3769c87915c0ddc44cc56258",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/9环.html",
+      "spell_id": "64a36abb2d7083f6f64a8a65",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "area_shape": "cube",
+        "area_size_ft": 60,
+        "casting_time": "1 动作",
+        "classes": [
+          "德鲁伊",
+          "游侠"
+        ],
+        "components": "V、S",
+        "concentration": true,
+        "damage_expression": "4d6",
+        "damage_type": "挥砍",
+        "duration": "专注，至多 1 \n分钟",
+        "level": 5,
+        "range": "120 尺",
+        "repeat": {
+          "count_expression": "duration",
+          "source": "explicit_timing",
+          "timing": "turn_start"
+        },
+        "resolution_kind": "damage",
+        "ritual": false,
+        "save": "敏捷豁免",
+        "school": "塑能",
+        "target_disposition": "enemy",
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "自然之怒",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "979bb90216f125c18b05ed6bd66bf6ac0b46a9a9849f3cbbafba14d63c5ac1ed",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/5环.html",
+      "spell_id": "685cc72cc486eda479ee3ccd",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 \n动作",
+        "classes": [
+          "德鲁伊"
+        ],
+        "components": "V、S",
+        "concentration": true,
+        "damage_expression": null,
+        "damage_type": null,
+        "duration": "专注，至多1分钟",
+        "level": 6,
+        "range": "自身",
+        "ritual": false,
+        "save": null,
+        "school": "防护",
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "原初守护",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "cffc7a1c5d93f2f82512a4816104846c873d665cc48ea5b406574671865f23d8",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/6环.html",
+      "spell_id": "68977df05b6f81b3a78115c8",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 动作",
+        "classes": [
+          "德鲁伊",
+          "游侠"
+        ],
+        "components": "V、S、M（一小块被布包裹的毛皮）",
+        "concentration": true,
+        "damage_expression": null,
+        "damage_type": null,
+        "duration": "专注，至多 \n10 分钟",
+        "level": 1,
+        "range": "触碰",
+        "ritual": false,
+        "save": null,
+        "school": "预言",
+        "target_disposition": "creature",
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "兽之联结",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "23b0059d7b5acdf04a7f6dd8bc4ea165d86bcde2d2ffab8490c3a8bc00995cdc",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/1环.html",
+      "spell_id": "6d32a73dbc7bf6f5fac303bd",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 动作",
+        "classes": [
+          "术士",
+          "魔契师",
+          "法师"
+        ],
+        "components": "V、S",
+        "concentration": false,
+        "creation": {
+          "count": null,
+          "creation_kind": "item",
+          "requires_template_choice": true,
+          "template_ref": "dm_chosen_template"
+        },
+        "damage_expression": "4d12",
+        "damage_type": "光耀",
+        "duration": "1 \n小时",
+        "level": 7,
+        "range": "自身",
+        "resolution_kind": "damage",
+        "ritual": false,
+        "save": null,
+        "school": "塑能",
+        "target_disposition": "creature",
+        "upcast_text": "升环施法。 当你使用八环或更高的法术位施放该法术时，使用的法术位每高一环，你就可以多创造两枚额外的光点。"
+      },
+      "kind": "spell_draft",
+      "name": "众星冠冕",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "97d62138d14954ca59f67d2af893cbfdf0b39b065ec310123a6f4141c1e43301",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/7环.html",
+      "spell_id": "6dbdd35badefa52d5d7aa016",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "area_shape": "sphere",
+        "area_size_ft": 5,
+        "casting_time": "1 动作",
+        "classes": [
+          "德鲁伊",
+          "术士",
+          "法师"
+        ],
+        "components": "S、M（一滴水或一块冰）",
+        "concentration": false,
+        "damage_expression": "1d10",
+        "damage_type": "穿刺",
+        "duration": "立即",
+        "level": 1,
+        "range": "60 \n尺",
+        "resolution_kind": "damage",
+        "ritual": false,
+        "save": "敏捷豁免",
+        "school": "咒法",
+        "target_disposition": "creature",
+        "upcast_text": "升环施法。 当你使用二环或更高的法术位施放该法术时，使用的法术位每高一环，寒冷伤害便增加 1d6 点。"
+      },
+      "kind": "spell_draft",
+      "name": "冰刃",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "a3524ea78cc0ed65b672cc3ff70a12e5667425d00fb43a6fa4a52ce6199f8130",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/1环.html",
+      "spell_id": "6f0ba0ecbcd8a90021afd407",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 动作",
+        "classes": [
+          "魔契师"
+        ],
+        "components": "V、S、M（镶嵌在宝石里的亡灵的眼睛，价值至少 \n150GP）",
+        "concentration": true,
+        "damage_expression": "2d8",
+        "damage_type": "暗蚀",
+        "duration": "专注，至多 1 \n分钟",
+        "level": 4,
+        "range": "自身",
+        "resolution_kind": "damage",
+        "ritual": false,
+        "save": null,
+        "school": "死灵",
+        "target_disposition": "creature",
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "莫伊之影",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "140ab6fb8ab16362b836ebea0854cdc56efb6844768de0c62d2be73588a44579",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/4环.html",
+      "spell_id": "732a9015630c1b5e4fef64c1",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 \n小时",
+        "classes": [
+          "法师"
+        ],
+        "components": "V、S、M（黏土，灰尘，曼德拉草根，以上材料作为该法术的耗材，以及价值 1000gp \n的镶嵌宝石的匕首）",
+        "concentration": false,
+        "damage_expression": "2d4",
+        "damage_type": "穿刺",
+        "duration": "立即",
+        "healing": "1",
+        "level": 6,
+        "range": "触碰",
+        "resolution_kind": "heal",
+        "ritual": false,
+        "save": null,
+        "school": "变化",
+        "target_disposition": "creature",
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "创造人工生命体",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "2c8a3499bdf920f2fa0e6bae7655d8bdc6040e734a22eb545654139e2a538e17",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/6环.html",
+      "spell_id": "76f6db8af29069b258316fa5",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 分钟",
+        "classes": [
+          "魔契师",
+          "法师"
+        ],
+        "components": "V、S、M（一块至少价值 999gp \n的红宝石）",
+        "concentration": true,
+        "damage_expression": null,
+        "damage_type": null,
+        "duration": "专注，至多 1 小时",
+        "level": 5,
+        "range": "90 尺",
+        "ritual": false,
+        "save": null,
+        "school": "咒法",
+        "target_disposition": "enemy",
+        "upcast_text": "升环施法。 当你使用六环或更高的法术位施放该法术时，使用的法术位每高一环，允许召唤的魔鬼挑战等级就+1。"
+      },
+      "kind": "spell_draft",
+      "name": "地狱呼唤",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "7cf693c2efa508c4db0cfcb16629637351984f0a1a414a5029e5363bbf478a2d",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/5环.html",
+      "spell_id": "7740a47295d78f2de355b31a",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "area_shape": "cube",
+        "area_size_ft": 20,
+        "casting_time": "1 动作",
+        "classes": [
+          "德鲁伊",
+          "术士",
+          "法师"
+        ],
+        "components": "V、S、M（一块黑曜石）",
+        "concentration": false,
+        "damage_expression": null,
+        "damage_type": null,
+        "duration": "立即",
+        "level": 3,
+        "range": "120 \n尺",
+        "ritual": false,
+        "save": "敏捷豁免",
+        "school": "变化",
+        "target_disposition": "creature",
+        "upcast_text": "升环施法。 当你使用四环或更高的法术位施放该法术时，使用的法术位每高一环，伤害便增加 1d12。"
+      },
+      "kind": "spell_draft",
+      "name": "土石喷发",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "8a53e67ba76c0dd5abeaa5185f30f399c55c38aee28460e4f6912455a1c4c93b",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/3环.html",
+      "spell_id": "7c6ea0798cf1e7f00e5bbfbb",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "area_shape": "sphere",
+        "area_size_ft": 20,
+        "casting_time": "1 动作",
+        "classes": [
+          "吟游诗人",
+          "术士",
+          "魔契师",
+          "法师"
+        ],
+        "components": "V、S",
+        "concentration": true,
+        "damage_expression": "8d6",
+        "damage_type": "心灵",
+        "duration": "立即",
+        "level": 5,
+        "range": "120 \n尺",
+        "repeat": {
+          "count_expression": "duration",
+          "source": "explicit_timing",
+          "timing": "turn_end"
+        },
+        "resolution_kind": "damage",
+        "ritual": false,
+        "save": "智力豁免",
+        "school": null,
+        "target_disposition": "creature",
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "突触静止",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "8dac78f1e4ca4e6e7d4d12eb2d7f5957da5bfc92a6a008dcfdb6ab115ae5662c",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/5环.html",
+      "spell_id": "7cb43d543026cdce941ad77d",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 \n动作",
+        "classes": [
+          "德鲁伊"
+        ],
+        "components": "V、S",
+        "concentration": false,
+        "conditions": [
+          "束缚"
+        ],
+        "damage_expression": "6d6",
+        "damage_type": "钝击",
+        "duration": "立即",
+        "level": 6,
+        "range": "120尺",
+        "resolution_kind": "damage",
+        "ritual": false,
+        "save": "敏捷豁免",
+        "school": "变化",
+        "target_disposition": "creature",
+        "upcast_text": "升环施法。 当你使用七环或更高的法术位施放该法术时，使用的法术位每高一环，你便能额外升起两根石柱。"
+      },
+      "kind": "spell_draft",
+      "name": "地之骨",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "9f26ab922d624a1cc0259da12aedd5bf88e0536f5ced1407d807185d9c426ef7",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/6环.html",
+      "spell_id": "7dfb77f848f6c22fe70a6486",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "area_shape": "sphere",
+        "area_size_ft": 60,
+        "casting_time": "1 \n动作",
+        "classes": [
+          "德鲁伊",
+          "术士",
+          "魔契师",
+          "法师"
+        ],
+        "components": "V、S",
+        "concentration": true,
+        "damage_expression": "2d10",
+        "damage_type": "钝击",
+        "duration": "专注，至多 10 分钟",
+        "half_damage_on_save": true,
+        "level": 6,
+        "movement": {
+          "direction": "away",
+          "distance_ft": 10,
+          "type": "forced"
+        },
+        "range": "自身",
+        "resolution_kind": "damage",
+        "ritual": false,
+        "save": "体质豁免",
+        "school": "变化",
+        "target_disposition": "creature",
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "清风赋权",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "67f37a75eae4fece70e42874a28722cef3779d565401a86d7e6c4f21b6a1c2ac",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/6环.html",
+      "spell_id": "7fb3623fc519dca9c46df73a",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 分钟",
+        "classes": [
+          "奇械师",
+          "德鲁伊",
+          "游侠",
+          "法师"
+        ],
+        "components": "S、M（25 \n尺的线绳，作为该法术的耗材）",
+        "concentration": false,
+        "damage_expression": null,
+        "damage_type": null,
+        "duration": "8 小时",
+        "level": 1,
+        "range": "触碰",
+        "ritual": false,
+        "save": "敏捷豁免",
+        "school": "防护",
+        "target_disposition": "creature",
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "圈套术",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "d6acad3352b76bd8a7fb279ae1797ca6d8f112d5266449e01456e634186c1d8c",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/1环.html",
+      "spell_id": "805cbf82765f6710391cc75f",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "area_shape": "cube",
+        "area_size_ft": 100,
+        "casting_time": "1 动作",
+        "classes": [
+          "德鲁伊",
+          "术士",
+          "法师"
+        ],
+        "components": "V、S",
+        "concentration": true,
+        "damage_expression": null,
+        "damage_type": null,
+        "duration": "专注，至多 1 小时",
+        "level": 5,
+        "range": "300 \n尺",
+        "ritual": false,
+        "save": "力量豁免",
+        "school": "变化",
+        "target_disposition": "creature",
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "操控风力",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "728491a15f59eb4438ab083b02d06510fc9562bfeda9937bce7ea853fd717413",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/5环.html",
+      "spell_id": "83932e937562660a8043ba36",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 动作",
+        "classes": [
+          "魔契师",
+          "法师"
+        ],
+        "components": "V、M（一块破碎的骨头和一块方形的黑色丝绸）",
+        "concentration": false,
+        "damage_expression": "5d12",
+        "damage_type": "暗蚀",
+        "duration": "立即",
+        "half_damage_on_save": true,
+        "level": 5,
+        "range": "60 \n尺",
+        "resolution_kind": "damage",
+        "ritual": false,
+        "save": "体质豁免",
+        "school": "死灵",
+        "target_disposition": "creature",
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "负能量洪流",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "1a021faf85033253cf1bc4b7cf468ddecc38eddc7680808f8e456fbde798032d",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/5环.html",
+      "spell_id": "8650502dfcabfd989b1b9d8d",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 动作",
+        "classes": [
+          "术士",
+          "法师",
+          "奇械师"
+        ],
+        "components": "S",
+        "concentration": false,
+        "damage_expression": "3d8",
+        "damage_type": "钝击",
+        "duration": "立即",
+        "level": 1,
+        "range": "60 \n尺",
+        "resolution_kind": "damage",
+        "ritual": false,
+        "save": "敏捷豁免",
+        "school": "变化",
+        "target_disposition": "creature",
+        "upcast_damage_dice": 1,
+        "upcast_text": "升环施法。 当你使用二环或更高的法术位施放该法术时，使用的法术位每高一环，你可以选择的物体重量上限便增加 5 \n磅，造成的伤害提高 1d8。"
+      },
+      "kind": "spell_draft",
+      "name": "弹射术",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "aea03028a6e18b23150fc5e5fcc947fc8bbb43863f1a47dba367b9d6bab15a14",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/1环.html",
+      "spell_id": "868117360db3137344a7e04d",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 动作",
+        "classes": [
+          "术士",
+          "魔契师",
+          "法师"
+        ],
+        "components": "S",
+        "concentration": true,
+        "damage_expression": "3d8",
+        "damage_type": "心灵",
+        "duration": "专注，至多 1 小时",
+        "level": 2,
+        "range": "60 尺",
+        "resolution_kind": "damage",
+        "ritual": false,
+        "save": "感知豁免",
+        "school": "预言",
+        "target_disposition": "creature",
+        "upcast_damage_dice": 1,
+        "upcast_text": "升环施法。 当你使用三环或更高的法术位施放该法术时，使用的法术位每高一环，伤害就增加 1d8。"
+      },
+      "kind": "spell_draft",
+      "name": "心灵尖刺",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "d3f2e74697e425ffa1dbb4d86790eab3f311eb9f205cdc88c07640182502273a",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/2环.html",
+      "spell_id": "86d55316c4b9aff9f396ed40",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "area_shape": "sphere",
+        "area_size_ft": 120,
+        "casting_time": "1 \n动作",
+        "classes": [
+          "术士",
+          "法师"
+        ],
+        "components": "V、S、M（由松木盛着的硝石和硫磺，外形为小珠子）",
+        "concentration": true,
+        "damage_expression": "2d6",
+        "damage_type": "火焰",
+        "duration": "专注，至多 10 \n分钟",
+        "level": 3,
+        "range": "自身",
+        "resolution_kind": "damage",
+        "ritual": false,
+        "save": "敏捷豁免",
+        "school": "塑能",
+        "target_disposition": "creature",
+        "upcast_text": "升环施法。 当你使用四环或更高的法术位施放该法术时，使用的法术位每高一环，创造出的流星数量就增加两颗。"
+      },
+      "kind": "spell_draft",
+      "name": "马友夫微流星",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "94ce8c8df47b5cb7c65403724bb8954e8c2916ac1f02c3accc5b982785edbfa9",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/3环.html",
+      "spell_id": "8768e07a95e03a5f882ac1b2",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 \n动作",
+        "classes": [
+          "德鲁伊",
+          "术士",
+          "魔契师",
+          "法师"
+        ],
+        "components": "V",
+        "concentration": true,
+        "damage_expression": null,
+        "damage_type": null,
+        "duration": "专注，至多 1 分钟",
+        "level": 2,
+        "range": "300 尺",
+        "ritual": false,
+        "save": "力量豁免",
+        "school": "变化",
+        "target_disposition": "creature",
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "地缚",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "3ee23c59a6e9f6c3247e5bdb33fa074e88e525d0a3136d6e09ab6af292b8a407",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/2环.html",
+      "spell_id": "9075b6060639807c35790340",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 动作",
+        "classes": [
+          "德鲁伊",
+          "术士",
+          "法师"
+        ],
+        "components": "V、S",
+        "concentration": false,
+        "creation": {
+          "count": null,
+          "creation_kind": "item",
+          "requires_template_choice": true,
+          "template_ref": "dm_chosen_template"
+        },
+        "damage_expression": null,
+        "damage_type": null,
+        "duration": "立即",
+        "level": null,
+        "movement": {
+          "direction": "away",
+          "distance_ft": 5,
+          "type": "forced"
+        },
+        "range": "30 \n尺",
+        "ritual": false,
+        "save": "力量豁免",
+        "school": "变化",
+        "target_disposition": "creature",
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "舞风术",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "593bf8953d4750f6dde194dc5f52be9a95dd72a217093083130180f1ab3a5cfd",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/戏法.html",
+      "spell_id": "9433f4dff85d26a470b6c17a",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "area_shape": "cube",
+        "area_size_ft": 5,
+        "casting_time": "1 附赠动作",
+        "classes": [
+          "德鲁伊",
+          "游侠"
+        ],
+        "components": "V、S",
+        "concentration": true,
+        "damage_expression": "1d6",
+        "damage_type": null,
+        "duration": "专注，至多 1 分钟",
+        "healing": "1d6",
+        "level": 2,
+        "range": "60 尺",
+        "resolution_kind": "heal",
+        "ritual": false,
+        "save": null,
+        "school": "咒法",
+        "target_disposition": "creature",
+        "upcast_healing_dice": 1,
+        "upcast_text": "升环施法。 当你使用三环或更高的法术位施放该法术时，使用的法术位每高一环，治疗值就增加 1d6 点。"
+      },
+      "kind": "spell_draft",
+      "name": "治愈之魂",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "5454fd1cfa532cc3ea7875fd67bf6496f3ca9688da2472379986cb4c53242b92",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/2环.html",
+      "spell_id": "958d66c0251cfa88519f5a26",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "area_shape": "sphere",
+        "area_size_ft": 30,
+        "casting_time": "1 小时",
+        "classes": [
+          "仪式；牧师",
+          "圣武士"
+        ],
+        "components": "V、S、M（价值 25gp \n的银粉，作为该法术的耗材）",
+        "concentration": false,
+        "damage_expression": null,
+        "damage_type": null,
+        "duration": "立即",
+        "level": 1,
+        "range": "触碰",
+        "ritual": true,
+        "save": null,
+        "school": "防护",
+        "target_disposition": "ally",
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "典礼术",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "b4d8703e7a77a8d841a04d2d996d7ad9c5daabc604a590ebe179814bb64e8466",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/1环.html",
+      "spell_id": "96d5c3265bc938448c4aef58",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 \n动作",
+        "classes": [
+          "德鲁伊",
+          "术士",
+          "法师"
+        ],
+        "components": "V、S、M（一滴水）",
+        "concentration": true,
+        "creation": {
+          "count": null,
+          "creation_kind": "terrain",
+          "requires_template_choice": true,
+          "template_ref": "dm_chosen_template"
+        },
+        "damage_expression": null,
+        "damage_type": null,
+        "duration": "专注，至多 10 \n分钟",
+        "level": 3,
+        "range": "60尺",
+        "ritual": false,
+        "save": null,
+        "school": "塑能",
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "水墙术",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "1739b18ca478a1f78c9f7a3b1bae1cb39898867e0829102264a715c9a3d3c5ef",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/3环.html",
+      "spell_id": "9764b21de6aeee99390e1297",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "area_shape": "sphere",
+        "area_size_ft": 10,
+        "casting_time": "1 动作",
+        "classes": [
+          "术士",
+          "魔契师",
+          "法师"
+        ],
+        "components": "V",
+        "concentration": false,
+        "damage_expression": "3d10",
+        "damage_type": "雷鸣",
+        "duration": "立即",
+        "level": 3,
+        "range": "90 \n尺",
+        "resolution_kind": "damage",
+        "ritual": false,
+        "save": "体质豁免",
+        "school": "咒法",
+        "target_disposition": "ally",
+        "teleport": {
+          "can_take_creatures": true,
+          "destination_kind": "chosen_space",
+          "max_distance_ft": null,
+          "requires_destination_choice": true
+        },
+        "upcast_damage_dice": 1,
+        "upcast_text": "升环施法。 当你使用四环或更高的法术位施放该法术时，使用的法术位每高一环，伤害就会增加 \n1d10。"
+      },
+      "kind": "spell_draft",
+      "name": "雷霆步",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "7f9adf016700e49b3effe4e43aac0b0715a25d1dd0b193194ed40d46bac5c097",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/3环.html",
+      "spell_id": "9b9aa7c1fe26d02b56812f0f",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 动作",
+        "classes": [
+          "德鲁伊",
+          "术士",
+          "法师"
+        ],
+        "components": "S",
+        "concentration": false,
+        "damage_expression": null,
+        "damage_type": null,
+        "duration": "立即或 1 \n小时（见下文）",
+        "level": null,
+        "range": "60 尺",
+        "ritual": false,
+        "save": null,
+        "school": "变化",
+        "target_disposition": "creature",
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "控火术",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "6c2f1278f45a954666098d9330f71fb90bf7d0e5f7f7f75ef47303c0131fd3bf",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/戏法.html",
+      "spell_id": "9c78f7238347bb8a92d3682f",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 分钟",
+        "classes": [
+          "法师"
+        ],
+        "components": "V、S、M（一颗价值至少 500gp \n的钻石，作为该法术的耗材）",
+        "concentration": false,
+        "creation": {
+          "count": null,
+          "creation_kind": "terrain",
+          "requires_template_choice": true,
+          "template_ref": "dm_chosen_template"
+        },
+        "damage_expression": null,
+        "damage_type": null,
+        "duration": "立即",
+        "level": 8,
+        "range": "1 里",
+        "ritual": false,
+        "save": null,
+        "school": "咒法",
+        "target_disposition": "creature",
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "坚固堡垒",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "c99fbd6a3c5ad913c6e8202994f0020568bcabb93bc8d1a4f3891e9a7a8daddb",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/8环.html",
+      "spell_id": "a2577944fd2b0fa48dea2e80",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 动作",
+        "classes": [
+          "术士",
+          "魔契师",
+          "法师"
+        ],
+        "components": "V、S",
+        "concentration": true,
+        "damage_components": [
+          {
+            "damage_type": "暗蚀",
+            "expression": "2d8"
+          },
+          {
+            "damage_type": "暗蚀",
+            "expression": "4d8"
+          },
+          {
+            "damage_type": "暗蚀",
+            "expression": "4d8"
+          }
+        ],
+        "damage_expression": "2d8",
+        "damage_type": "暗蚀",
+        "duration": "专注，至多 \n1 分钟",
+        "half_damage_on_save": true,
+        "level": 5,
+        "range": "60 尺",
+        "resolution_kind": "damage",
+        "ritual": false,
+        "save": "敏捷豁免",
+        "school": "死灵",
+        "target_disposition": "creature",
+        "upcast_text": "升环施法。 当你使用六环或更高的法术位施放该法术时，使用的法术位每高一环，伤害便增加 \n1d8。"
+      },
+      "kind": "spell_draft",
+      "name": "汲能术",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "5aedb66341160ee97509c173e709b407817c69331f1df3208781efeefee5eed2",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/5环.html",
+      "spell_id": "a2edf1c42a7e671a594024d1",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "area_shape": null,
+        "area_size_ft": null,
+        "casting_time": "1 动作",
+        "classes": [
+          "魔契师",
+          "法师"
+        ],
+        "components": "V、S、M（来自一个于 24 \n小时之内被杀的类人生物身上的一剂血液）",
+        "concentration": true,
+        "conditions": null,
+        "damage_expression": null,
+        "damage_type": null,
+        "duration": "专注，至多 1 小时",
+        "half_damage_on_save": null,
+        "healing": null,
+        "level": 4,
+        "max_targets": null,
+        "movement": null,
+        "range": "60 尺",
+        "reaction": null,
+        "resolution_kind": "summon",
+        "ritual": false,
+        "save": null,
+        "school": "咒法",
+        "summon": {
+          "controller": "caster",
+          "count": 1,
+          "creature_ref": "恶魔（挑战等级5或更低）",
+          "enters_combat": true,
+          "initiative_mode": "independent"
+        },
+        "upcast_text": "升环施法。 当你使用五环或更高的法术位施放该法术时，使用的法术位每高一环，允许召唤的恶魔挑战等级就+1。"
+      },
+      "kind": "spell_draft",
+      "name": "高阶恶魔召唤术",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "38696bd9197e7bf56d23c9f1cfe4184473146f7015a9857ed12953c42513e710",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/4环.html",
+      "spell_id": "a690018a64210237573233a4",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "area_shape": "sphere",
+        "area_size_ft": 30,
+        "casting_time": "1 \n动作",
+        "classes": [
+          "德鲁伊",
+          "术士",
+          "魔契师",
+          "法师"
+        ],
+        "components": "V、S",
+        "concentration": true,
+        "damage_expression": "4d8",
+        "damage_type": "火焰",
+        "duration": "专注，至多 10 分钟",
+        "half_damage_on_save": true,
+        "level": 6,
+        "range": "自身",
+        "resolution_kind": "damage",
+        "ritual": false,
+        "save": "敏捷豁免",
+        "school": "变化",
+        "target_disposition": "creature",
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "炽焰赋权",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "3d71401aed398bfd8f1cb22308f5c36e7115dc749d49256ae6c15ca4cd1eda83",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/6环.html",
+      "spell_id": "a9862a89541ecdc27361f962",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 动作",
+        "classes": [
+          "仪式；吟游诗人",
+          "德鲁伊",
+          "法师",
+          "奇械师"
+        ],
+        "components": "V、S",
+        "concentration": true,
+        "damage_expression": null,
+        "damage_type": null,
+        "duration": "专注，至多 1 小时",
+        "level": 2,
+        "range": "视野",
+        "ritual": true,
+        "save": null,
+        "school": "变化",
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "写入空中",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "d2da002364ff79d2fe1ed5ece5cd3423e333a3b800256118a3e079d194a3393e",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/2环.html",
+      "spell_id": "aadf89719f073bfca1fefb3a",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 动作",
+        "classes": [
+          "吟游诗人",
+          "德鲁伊",
+          "术士",
+          "法师"
+        ],
+        "components": "V",
+        "concentration": true,
+        "damage_expression": null,
+        "damage_type": null,
+        "duration": "专注，至多 10 分钟",
+        "level": 2,
+        "range": "自身",
+        "ritual": false,
+        "save": null,
+        "school": "塑能",
+        "target_disposition": "creature",
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "守护之风",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "affe0d4d85dab6ce6f1c979abb2d1ada3edcd12c25406c57ad02586138975a09",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/2环.html",
+      "spell_id": "aea32b7dee674c8a6e82cf8a",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 \n动作",
+        "classes": [
+          "法师"
+        ],
+        "components": "V、S、M（一缕公牛毛发）",
+        "concentration": true,
+        "damage_expression": "2d12",
+        "damage_type": "力场",
+        "duration": "专注，直至 10 \n分钟",
+        "healing": "50",
+        "level": 6,
+        "range": "自身",
+        "resolution_kind": "heal",
+        "ritual": false,
+        "save": "力量豁免",
+        "school": "变化",
+        "temporary_hp": true,
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "谭森变形术",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "9270add5fc6997f2d2ebf334bc4967bceab4d4c891deb08e69e7cc7f9d629cdb",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/6环.html",
+      "spell_id": "b2232fe1d5c3a96529dc961c",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "area_shape": null,
+        "area_size_ft": null,
+        "casting_time": "10 分钟",
+        "classes": [
+          "圣武士"
+        ],
+        "components": "V、S",
+        "concentration": false,
+        "conditions": null,
+        "damage_expression": null,
+        "damage_type": null,
+        "duration": "立即",
+        "half_damage_on_save": null,
+        "healing": null,
+        "level": 4,
+        "max_targets": null,
+        "movement": null,
+        "range": "30 \n尺",
+        "reaction": null,
+        "resolution_kind": "summon",
+        "ritual": false,
+        "save": null,
+        "school": "咒法",
+        "summon": {
+          "controller": "caster",
+          "count": 1,
+          "creature_ref": "高等坐骑（所选形态）",
+          "enters_combat": true,
+          "initiative_mode": "shared_with_source"
+        },
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "寻获高等坐骑",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "997bb6509feefc13009341ebe3365380828a64aebd16cafb2b532706a8beb655",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/4环.html",
+      "spell_id": "b28a9ca0a9ce6512e9a039a2",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 动作",
+        "classes": [
+          "术士",
+          "法师"
+        ],
+        "components": "V、S、M（一片红龙的鳞片）",
+        "concentration": false,
+        "damage_expression": "3d8",
+        "damage_type": "火焰",
+        "duration": "立即",
+        "half_damage_on_save": true,
+        "level": 2,
+        "range": "30 尺",
+        "resolution_kind": "damage",
+        "ritual": false,
+        "save": "敏捷豁免",
+        "school": "塑能",
+        "target_disposition": "creature",
+        "upcast_damage_dice": 1,
+        "upcast_text": "升环施法。 当你使用三环或更高的法术位施放该法术时，使用的法术位每高一环，伤害便增加 \n1d8。"
+      },
+      "kind": "spell_draft",
+      "name": "阿迦纳萨喷火术",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "8cd695be21291996f217d5427488ede097c9f2b992165a21ddbd38098f203f2a",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/2环.html",
+      "spell_id": "b2a01c766a8db42f9bc4d52e",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "area_shape": "cone",
+        "area_size_ft": 15,
+        "casting_time": "1 附赠动作",
+        "classes": [
+          "术士",
+          "法师"
+        ],
+        "components": "V、S、M（一枚辣椒）",
+        "concentration": true,
+        "damage_expression": null,
+        "damage_type": null,
+        "duration": "专注，至多 1 \n分钟",
+        "level": 2,
+        "range": "触碰",
+        "ritual": false,
+        "save": "敏捷豁免",
+        "school": "变化",
+        "target_disposition": "ally",
+        "upcast_text": "升环施法。 当你使用三环或更高的法术位施放该法术时，使用的法术位每高一环，伤害就增加 1d6。"
+      },
+      "kind": "spell_draft",
+      "name": "龙息术",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "ff9f5623ce0b27fa0cac94618830bad96aef239c3bb509a5164413f2926af01b",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/2环.html",
+      "spell_id": "b354c32d3c612b9ea4746ee4",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 动作",
+        "classes": [
+          "德鲁伊",
+          "游侠",
+          "术士",
+          "法师"
+        ],
+        "components": "V、S",
+        "concentration": true,
+        "damage_expression": "1d6",
+        "damage_type": "火焰",
+        "duration": "专注，至多 1 \n小时",
+        "level": 3,
+        "range": "触碰",
+        "resolution_kind": "damage",
+        "ritual": false,
+        "save": null,
+        "school": "变化",
+        "upcast_text": "升环施法。 当你使用四环或更高的法术位施放该法术时，使用的法术位每高一环，你能以此法术影响的弹药的数量便增加 2 发。"
+      },
+      "kind": "spell_draft",
+      "name": "烈焰箭矢",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "99d22fe23a6f2e971b8da4e8d3e138973fb958cee5f8af7243db021625f77213",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/3环.html",
+      "spell_id": "b6fa74218c68e57cf90311ce",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1附赠动作",
+        "classes": [
+          "牧师",
+          "圣武士"
+        ],
+        "components": "V、S",
+        "concentration": true,
+        "conditions": [
+          "目盲",
+          "发光"
+        ],
+        "damage_components": [
+          {
+            "damage_type": "光耀",
+            "expression": "2d8"
+          },
+          {
+            "damage_type": "光耀",
+            "expression": "4d8"
+          }
+        ],
+        "damage_expression": "2d8",
+        "damage_type": "光耀",
+        "duration": "专注，至多1小时",
+        "half_damage_on_save": true,
+        "level": 5,
+        "range": "触碰",
+        "repeat": {
+          "count_expression": "duration",
+          "source": "explicit_timing",
+          "timing": "turn_end"
+        },
+        "resolution_kind": "damage",
+        "ritual": false,
+        "save": "体质豁免",
+        "school": "塑能",
+        "target_disposition": "creature",
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "神圣武器",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "8d7f9c5ceeee1d5ac13b4077e0c7961752e911f94250cacb1211d148c5a0e8e8",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/5环.html",
+      "spell_id": "b8a44932e045eea0ca8c82d3",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 动作",
+        "classes": [
+          "法师"
+        ],
+        "components": "V、S、M（一捧沙）",
+        "concentration": true,
+        "creation": {
+          "count": null,
+          "creation_kind": "terrain",
+          "requires_template_choice": true,
+          "template_ref": "dm_chosen_template"
+        },
+        "damage_expression": null,
+        "damage_type": null,
+        "duration": "专注，至多 \n10 分钟",
+        "level": 3,
+        "range": "90 尺",
+        "ritual": false,
+        "save": null,
+        "school": "塑能",
+        "target_disposition": "creature",
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "沙墙术",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "3bcee7424e9bca49d31667473d60ddd33b7c7f1e876ad673fa879903a0320ebc",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/3环.html",
+      "spell_id": "bb40e5a4d76c37dccd9dc1c0",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 动作",
+        "classes": [
+          "德鲁伊",
+          "魔契师",
+          "法师",
+          "奇械师"
+        ],
+        "components": "V、S",
+        "concentration": true,
+        "damage_expression": null,
+        "damage_type": null,
+        "duration": "专注，至多 1 \n分钟",
+        "level": 4,
+        "range": "90 \n尺",
+        "ritual": false,
+        "save": "体质豁免",
+        "school": "变化",
+        "target_disposition": "creature",
+        "upcast_text": "升环施法。 当你使用五环或更高的法术位施放该法术时，使用的法术位每高一环，你便可以额外指定一个生物作为目标。当选定生物时，每个生物间的距离不得超过 \n30 尺。"
+      },
+      "kind": "spell_draft",
+      "name": "元素灾厄",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "49b2603e9acebe6d2fb7dfcd168a75f68c8a20c99fa7507fcd1e40589ad26300",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/4环.html",
+      "spell_id": "bc2c4a9f9565c6502001e634",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 \n动作",
+        "classes": [
+          "吟游诗人",
+          "术士",
+          "法师",
+          "奇械师"
+        ],
+        "components": "V、S",
+        "concentration": true,
+        "damage_expression": null,
+        "damage_type": null,
+        "duration": "专注，至多 1 \n小时",
+        "level": 5,
+        "range": "触碰",
+        "ritual": false,
+        "save": null,
+        "school": "变化",
+        "target_disposition": "ally",
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "授予技能",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "294b5d34a6226f7066c26c7cb3d5cf162a747aef3ab92430f822d463b1627528",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/5环.html",
+      "spell_id": "bd3549582423c7cac2bd6613",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "area_shape": "cube",
+        "area_size_ft": 5,
+        "casting_time": "1 动作",
+        "classes": [
+          "德鲁伊",
+          "术士",
+          "法师"
+        ],
+        "components": "S",
+        "concentration": false,
+        "damage_expression": null,
+        "damage_type": null,
+        "duration": "立即或 1 \n个小时（见下文）",
+        "level": null,
+        "range": "30 尺",
+        "ritual": false,
+        "save": null,
+        "school": "变化",
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "塑土术",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "46fdeb2c7fb63a728d0a74c1db548f1f1a42ede04690377163a556ce005a6f25",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/戏法.html",
+      "spell_id": "bd9ba7efb6a9b19efcc595c6",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "area_shape": "sphere",
+        "area_size_ft": 60,
+        "casting_time": "1 动作",
+        "classes": [
+          "术士",
+          "法师"
+        ],
+        "components": "V、S",
+        "concentration": true,
+        "damage_expression": "4d6",
+        "damage_type": "闪电",
+        "duration": "专注，至多 1 \n分钟",
+        "level": 4,
+        "range": "150 尺",
+        "resolution_kind": "damage",
+        "ritual": false,
+        "save": "力量豁免",
+        "school": "塑能",
+        "target_disposition": "creature",
+        "upcast_damage_dice": 1,
+        "upcast_text": "升环施法。 当你使用五环或更高的法术位施放该法术时，使用的法术位每高一环，所有效应产生的伤害便各增加 \n1d6。"
+      },
+      "kind": "spell_draft",
+      "name": "风暴法球",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "63c5716feba39f9ac50a8aa1ac07fff90a9d58574765807a20bc1ea3c0dec530",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/4环.html",
+      "spell_id": "c81869094ab3af513dfe0a22",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 附赠动作",
+        "classes": [
+          "游侠"
+        ],
+        "components": "V",
+        "concentration": true,
+        "damage_expression": "1d8",
+        "damage_type": "力场",
+        "duration": "专注，至多 1 \n分钟",
+        "level": 1,
+        "range": "自身",
+        "resolution_kind": "damage",
+        "ritual": false,
+        "save": null,
+        "school": "变化",
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "西风打击",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "9f2f54d6fdc0a7ea97d5d8480b0de4654814dd186d7edc182fba7a4212affa08",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/1环.html",
+      "spell_id": "c9d315871dc96f3fed66c29b",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 动作",
+        "classes": [
+          "德鲁伊"
+        ],
+        "components": "V、S、M（折成漏斗状的纸张或叶片）",
+        "concentration": true,
+        "damage_expression": null,
+        "damage_type": null,
+        "duration": "专注，至多 1 分钟",
+        "level": 5,
+        "movement": {
+          "direction": "toward",
+          "distance_ft": 10,
+          "type": "forced"
+        },
+        "range": "120 \n尺",
+        "ritual": false,
+        "save": "力量豁免",
+        "school": "塑能",
+        "target_disposition": "creature",
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "大漩涡",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "5765f33bcf19f99a0256a7e4c7e5a62abfac4c20cd4ba7e6327c1285585a0047",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/5环.html",
+      "spell_id": "ce0c8193a37fed8fc37246c9",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "area_shape": "sphere",
+        "area_size_ft": 30,
+        "casting_time": "1 动作",
+        "classes": [
+          "术士",
+          "法师"
+        ],
+        "components": "V",
+        "concentration": true,
+        "damage_components": [
+          {
+            "damage_type": "火焰",
+            "expression": "8d6"
+          },
+          {
+            "damage_type": "火焰",
+            "expression": "4d6"
+          }
+        ],
+        "damage_expression": "8d6",
+        "damage_type": "火焰",
+        "duration": "专注，至多 1 \n分钟",
+        "level": 5,
+        "range": "90 尺",
+        "resolution_kind": "damage",
+        "ritual": false,
+        "save": "敏捷豁免",
+        "school": "塑能",
+        "target_disposition": "creature",
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "焚烧术",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "a44c3c372b2bedce666cd8f38acec88d78af0ab6ea2cb82aca306bf9fd5cd073",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/5环.html",
+      "spell_id": "d1539095fb175f8e2ba00bbb",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 小时",
+        "classes": [
+          "牧师"
+        ],
+        "components": "V、S、M（一个价值至少5gp的圣徽）",
+        "concentration": false,
+        "creation": {
+          "count": null,
+          "creation_kind": "terrain",
+          "requires_template_choice": true,
+          "template_ref": "dm_chosen_template"
+        },
+        "damage_expression": null,
+        "damage_type": "力场",
+        "duration": "24 \n小时",
+        "healing": "1",
+        "level": 7,
+        "range": "120 \n尺",
+        "resolution_kind": "heal",
+        "ritual": false,
+        "save": "魅力豁免",
+        "school": "咒法",
+        "target_disposition": "creature",
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "神庙术",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "fd8b1a34209b2dc6d5e53a220d809b77641eb2dbb960dd6045050972e17ac464",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/7环.html",
+      "spell_id": "d1eb5fa9a0bafaa4dc6b5148",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 动作",
+        "classes": [
+          "术士",
+          "魔契师",
+          "法师"
+        ],
+        "components": "V",
+        "concentration": false,
+        "damage_expression": null,
+        "damage_type": null,
+        "duration": "立即",
+        "healing": "100",
+        "level": 7,
+        "range": "60 \n尺",
+        "repeat": {
+          "count_expression": "duration",
+          "source": "explicit_timing",
+          "timing": "turn_end"
+        },
+        "resolution_kind": "heal",
+        "ritual": false,
+        "save": "体质豁免",
+        "school": null,
+        "target_disposition": "creature",
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "律令痛苦",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "0cf6c4ff0a9710d1fb35baf930cab2d14a170cb25aef0df58ab662ec84c9d7f8",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/7环.html",
+      "spell_id": "d2a24e13d2ed7a2713402ce3",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 动作",
+        "classes": [
+          "德鲁伊",
+          "术士",
+          "法师"
+        ],
+        "components": "S",
+        "concentration": false,
+        "damage_expression": null,
+        "damage_type": null,
+        "duration": "立即或 1 \n个小时（见下文）",
+        "level": null,
+        "range": "30 尺",
+        "ritual": false,
+        "save": null,
+        "school": "变化",
+        "target_disposition": "creature",
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "操水术",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "b722c9eb2a55489100afa3b23d3a0164c18356e0b728243e7846a9507c6aab69",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/戏法.html",
+      "spell_id": "d59f7f4a5bf93e4da6d43ac2",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 动作",
+        "classes": [
+          "术士",
+          "法师"
+        ],
+        "components": "V、S、M（一滴巨型蜗牛的胆汁）",
+        "concentration": false,
+        "conditions": [
+          "发光"
+        ],
+        "damage_components": [
+          {
+            "damage_type": "强酸",
+            "expression": "10d4"
+          },
+          {
+            "damage_type": "强酸",
+            "expression": "5d4"
+          }
+        ],
+        "damage_expression": "10d4",
+        "damage_type": "强酸",
+        "duration": "立即",
+        "half_damage_on_save": true,
+        "level": 4,
+        "range": "150 \n尺",
+        "resolution_kind": "damage",
+        "ritual": false,
+        "save": "敏捷豁免",
+        "school": "塑能",
+        "target_disposition": "creature",
+        "upcast_text": "升环施法。 当你使用五环或更高的法术位施放该法术时，使用的法术位每高一环，初始伤害便增加 \n2d4。"
+      },
+      "kind": "spell_draft",
+      "name": "浓酸球",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "88e5c6d968eeafc7d2116b3f5fec3619cf397b1ad04d5dc97643811094003309",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/4环.html",
+      "spell_id": "d7a3c82a92a0201253c2d70d",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 动作",
+        "classes": [
+          "魔契师",
+          "法师"
+        ],
+        "components": "V、M（一滴沥青与一滴水银的混合物）",
+        "concentration": true,
+        "damage_expression": "8d8",
+        "damage_type": "心灵",
+        "duration": "专注，至多 10 分钟",
+        "level": 8,
+        "range": "150 \n尺",
+        "resolution_kind": "damage",
+        "ritual": false,
+        "save": "感知豁免",
+        "school": "塑能",
+        "target_disposition": "creature",
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "疯狂之暗",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "82188a82987d8512a93ed49aba97218bf8a465eebe9b6b03148b8deefd03eae8",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/8环.html",
+      "spell_id": "df8870ca680c423334a807cb",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "area_shape": "sphere",
+        "area_size_ft": 5,
+        "casting_time": "1 动作",
+        "classes": [
+          "德鲁伊",
+          "术士",
+          "法师"
+        ],
+        "components": "V、S、M（一捧尘土）",
+        "concentration": true,
+        "damage_expression": "1d8",
+        "damage_type": "钝击",
+        "duration": "专注，至多 1 分钟",
+        "level": 2,
+        "movement": {
+          "direction": "away",
+          "distance_ft": 10,
+          "type": "forced"
+        },
+        "range": "60 尺",
+        "resolution_kind": "damage",
+        "ritual": false,
+        "save": "力量豁免",
+        "school": "咒法",
+        "target_disposition": "creature",
+        "upcast_damage_dice": 1,
+        "upcast_text": "升环施法。 当你使用三环或更高的法术位施放该法术时，使用的法术位每高一环，伤害便增加 1d8。"
+      },
+      "kind": "spell_draft",
+      "name": "龙卷尘暴",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "e30e9350bbab6e661b2dc229f0aaf93bbae2b978d072ebd45d33594331e924f5",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/2环.html",
+      "spell_id": "e0c98b700248bc95920cde38",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 动作",
+        "classes": [
+          "吟游诗人",
+          "德鲁伊",
+          "术士",
+          "魔契师",
+          "法师"
+        ],
+        "components": "V、S",
+        "concentration": false,
+        "damage_expression": null,
+        "damage_type": null,
+        "duration": "1 \n小时",
+        "level": 4,
+        "range": "30 \n尺",
+        "ritual": false,
+        "save": "感知豁免",
+        "school": null,
+        "target_disposition": "creature",
+        "upcast_text": "升环施法。 当你使用五环或更高的法术位施放该法术时，使用的法术位每高一环，你就可以多指定一个额外生物作为目标。每个被你指定的生物相互之间的距离必须在 \n30 尺内。"
+      },
+      "kind": "spell_draft",
+      "name": "魅惑怪物",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "ba141e3c5ab2de6337cd3c47c64b09a18f8c314a54996eb6ad3fbffec8664710",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/4环.html",
+      "spell_id": "e3ba205ebc3d989021426cc3",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 \n动作",
+        "classes": [
+          "牧师",
+          "法师"
+        ],
+        "components": "V、S",
+        "concentration": false,
+        "damage_expression": "4d8",
+        "damage_type": "暗蚀",
+        "duration": "立即",
+        "level": 3,
+        "range": "30尺",
+        "resolution_kind": "damage",
+        "ritual": false,
+        "save": null,
+        "school": "死灵",
+        "target_disposition": "creature",
+        "upcast_damage_dice": 1,
+        "upcast_text": "升环施法。 当你使用四环或更高的法术位施放该法术时，使用的法术位每高一环，暗蚀伤害就增加 \n1d8。"
+      },
+      "kind": "spell_draft",
+      "name": "生命转换",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "f7500139d2afae610a8cd10c4d89e0017d272ca5be8d11ce7bdf5dc30a395894",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/3环.html",
+      "spell_id": "e8a1a0284a69de1cbd7ac382",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 动作",
+        "classes": [
+          "牧师",
+          "法师"
+        ],
+        "components": "V、S、M（价值至少 100gp \n的旭日坠饰）",
+        "concentration": true,
+        "damage_expression": "4d10",
+        "damage_type": "光耀",
+        "duration": "专注，至多 1 分钟",
+        "level": 5,
+        "range": "60 尺",
+        "resolution_kind": "damage",
+        "ritual": false,
+        "save": "体质豁免",
+        "school": "塑能",
+        "target_disposition": "creature",
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "拂晓",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "7cf312eb3da99426065c24bcd9ebdb251c11f6ea17c77c0d623e6a31053fe43a",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/5环.html",
+      "spell_id": "eaa73e1d8173e75c7603b8cf",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 附赠动作",
+        "classes": [
+          "术士",
+          "魔契师",
+          "法师"
+        ],
+        "components": "V、S",
+        "concentration": true,
+        "damage_expression": "2d8",
+        "damage_type": "心灵",
+        "duration": "专注，至多 1 分钟",
+        "level": 2,
+        "range": "自身",
+        "resolution_kind": "damage",
+        "ritual": false,
+        "save": null,
+        "school": "幻术",
+        "upcast_text": "升环施法。 当你用三四环施放该法术时，其伤害增加到 3d8。五六环时增加到 4d8。七环或以上则增加到 \n5d8。"
+      },
+      "kind": "spell_draft",
+      "name": "幽影刃",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "062648d8f026892a5c77ad711569c0a1a2f1da7a0fd86b1b50aaeed0cc8c413c",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/2环.html",
+      "spell_id": "ed1b7b25d5684456c9b6ebfd",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "area_shape": "cone",
+        "area_size_ft": 60,
+        "casting_time": "1 动作",
+        "classes": [
+          "法师"
+        ],
+        "components": "S",
+        "concentration": true,
+        "creation": {
+          "count": null,
+          "creation_kind": "item",
+          "requires_template_choice": true,
+          "template_ref": "dm_chosen_template"
+        },
+        "damage_expression": null,
+        "damage_type": null,
+        "duration": "专注，至多 1 \n分钟",
+        "level": 8,
+        "range": "120 尺",
+        "ritual": false,
+        "save": "感知豁免",
+        "school": "幻术",
+        "target_disposition": "enemy",
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "幻影巨龙",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "583fd0d7c44878bce5cf3d4a16d3ab553ad93abc3fc9700840bb0b9aa1a32f9b",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/8环.html",
+      "spell_id": "eed6969d5631e5623ad8e2d3",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "area_shape": "cube",
+        "area_size_ft": 30,
+        "casting_time": "1 动作",
+        "classes": [
+          "术士",
+          "法师"
+        ],
+        "components": "V、S、M（一小块海绵）",
+        "concentration": false,
+        "damage_expression": "12d8",
+        "damage_type": "暗蚀",
+        "duration": "立即",
+        "half_damage_on_save": true,
+        "level": 8,
+        "range": "150 \n尺",
+        "resolution_kind": "damage",
+        "ritual": false,
+        "save": "体质豁免",
+        "school": "死灵",
+        "target_disposition": "creature",
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "亚比达奇凋死术",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "c956f4f5feaae872308214275072a4afaeda8f14c3af54019ac6e1e4407fa628",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/8环.html",
+      "spell_id": "f193c755b0e25b2fe9827029",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 反应，当你看见 60 \n尺内类人生物死去时采取",
+        "classes": [
+          "魔契师",
+          "法师"
+        ],
+        "components": "V、S、M（一个价值 100gp 的银笼子）",
+        "concentration": true,
+        "conditions": [
+          "隐形"
+        ],
+        "damage_expression": "2d8",
+        "damage_type": "心灵",
+        "duration": "8 \n小时",
+        "healing": "2d8",
+        "level": 6,
+        "range": "60尺",
+        "resolution_kind": "heal",
+        "ritual": false,
+        "save": null,
+        "school": "死灵",
+        "target_disposition": "creature",
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "灵魂牢笼",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "4c662e01ea65b67eeba0ca5c3e107c06a4a61de8b143b1edeeded77ff74ac67a",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/6环.html",
+      "spell_id": "f30ce39b7f165b6d133b4890",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "10 分钟",
+        "classes": [
+          "德鲁伊"
+        ],
+        "components": "V、S、M（一个在满月之光下以黄金镰刀收割的槲寄生，作为该法术的耗材）",
+        "concentration": false,
+        "damage_expression": null,
+        "damage_type": null,
+        "duration": "24 \n小时",
+        "level": 6,
+        "range": "触碰",
+        "ritual": false,
+        "save": null,
+        "school": "防护",
+        "target_disposition": "creature",
+        "transformation": {
+          "form_ref": "dm_chosen_form",
+          "mode": "polymorph",
+          "requires_form_choice": true,
+          "reversible": true
+        },
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "德鲁伊林地",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "d1d1a643ca525706a2f04a1493491c14e8283ee103b9165c651c5fb121f8237a",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/6环.html",
+      "spell_id": "f3ad1096aa0203a2cc782bd5",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 动作",
+        "classes": [
+          "魔契师",
+          "法师"
+        ],
+        "components": "V、S",
+        "concentration": true,
+        "damage_expression": null,
+        "damage_type": null,
+        "duration": "专注，至多 1 \n小时",
+        "level": 5,
+        "range": "60 尺",
+        "ritual": false,
+        "save": null,
+        "school": "死灵",
+        "target_disposition": "enemy",
+        "upcast_text": "升环施法。 当你使用六环或更高的法术位施放该法术时，使用的法术位每高一环，你就可以活化额外的两具尸体。"
+      },
+      "kind": "spell_draft",
+      "name": "骷髅之舞",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "b1c4b340981d827e1702ea93fc2f1951d8430ff97a84a6cf7747f78eec77ec66",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/5环.html",
+      "spell_id": "f55d92810d45977a5df712df",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 \n动作",
+        "classes": [
+          "德鲁伊",
+          "术士",
+          "魔契师",
+          "法师"
+        ],
+        "components": "V、S",
+        "concentration": true,
+        "conditions": [
+          "震慑"
+        ],
+        "creation": {
+          "count": null,
+          "creation_kind": "terrain",
+          "requires_template_choice": true,
+          "template_ref": "dm_chosen_template"
+        },
+        "damage_expression": null,
+        "damage_type": null,
+        "duration": "专注，至多 10 分钟",
+        "level": 6,
+        "range": "自身",
+        "resolution_kind": "control",
+        "ritual": false,
+        "save": "敏捷豁免",
+        "school": "变化",
+        "target_disposition": "creature",
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "磐石赋权",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "2e37796db038557340ae580bc31ef5958420bd907097b1551ca24894dfc8c2e5",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/6环.html",
+      "spell_id": "f5e785be16f2b8b130cc971a",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 附赠动作",
+        "classes": [
+          "德鲁伊",
+          "魔契师",
+          "奇械师"
+        ],
+        "components": "V、S",
+        "concentration": false,
+        "damage_expression": "1d6",
+        "damage_type": "钝击",
+        "duration": "1 \n分钟",
+        "level": null,
+        "range": "触碰",
+        "resolution_kind": "damage",
+        "ritual": false,
+        "save": null,
+        "school": "变化",
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "魔石术",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "3008089904f992b558a572ca18ec9c2728567c008f9c01dac220a82e7a9f1ce7",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/戏法.html",
+      "spell_id": "f8d6888e53abc4f5d869915d",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 动作",
+        "classes": [
+          "吟游诗人",
+          "术士",
+          "法师",
+          "奇械师"
+        ],
+        "components": "S、M（一撮沙子）",
+        "concentration": false,
+        "damage_expression": null,
+        "damage_type": null,
+        "duration": "10 \n分钟",
+        "level": 3,
+        "range": "30 尺",
+        "ritual": false,
+        "save": null,
+        "school": null,
+        "target_disposition": "ally",
+        "upcast_text": "升环施法。 当你使用四环或更高的法术位施放该法术时，使用的法术位每高一环，你就可以多指定 \n1 个额外的自愿生物作为目标。"
+      },
+      "kind": "spell_draft",
+      "name": "假寐术",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "34abebe3645641c4c5f6753ff1d52af2bd0ec69d29e97c99bf8fe8ce5b31ac95",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/3环.html",
+      "spell_id": "fabeb107a7e3c8c0b0f24c80",
+      "status": "manual"
+    },
+    {
+      "blockers": [
+        "unstructured_source_requires_authored_spell_ir"
+      ],
+      "content_type": "spell",
+      "edition": "unknown",
+      "fields": {
+        "casting_time": "1 动作",
+        "classes": [
+          "术士",
+          "魔契师",
+          "法师"
+        ],
+        "components": "S",
+        "concentration": true,
+        "damage_components": [
+          {
+            "damage_type": "心灵",
+            "expression": "5d10"
+          },
+          {
+            "damage_type": "心灵",
+            "expression": "5d10"
+          },
+          {
+            "damage_type": "心灵",
+            "expression": "10d10"
+          }
+        ],
+        "damage_expression": "5d10",
+        "damage_type": "心灵",
+        "duration": "专注，至多 1 \n分钟",
+        "level": 6,
+        "range": "60 尺",
+        "resolution_kind": "damage",
+        "ritual": false,
+        "save": "智力豁免",
+        "school": "幻术",
+        "target_disposition": "creature",
+        "upcast_text": null
+      },
+      "kind": "spell_draft",
+      "name": "精神监狱",
+      "officiality": "unknown",
+      "source_book": "珊娜萨的万事指南",
+      "source_fingerprint": "606910aedafe6201170fd817919eae5aeb97e93171257789b51ba7316cb92e54",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/6环.html",
+      "spell_id": "fdaa4de5a11f0dffaf83f7a8",
+      "status": "manual"
+    }
+  ],
+  "feat_count": 1,
+  "feature_count": 0,
+  "schema_version": "content-ir-workbench-report-1",
+  "source_book": "珊娜萨的万事指南",
+  "source_root": "generated-content",
+  "source_untyped": 95,
+  "spell_count": 95,
+  "total_records": 325,
+  "typed_ir_count": 0
+}
