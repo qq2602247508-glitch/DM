@@ -17,6 +17,33 @@ from dataclasses import asdict, dataclass
 from typing import Any
 
 CLAUSE_CORPUS_SCHEMA_VERSION = "feature-clause-corpus-1"
+REVIEWED_CLAUSE_SCHEMA_VERSION = "feature-clause-reviewed-1"
+
+# These are review declarations, not executable rules.  They describe which
+# contract fields still need an authored/runtime decision for a prose anchor.
+_ANCHOR_REVIEW_FIELDS: dict[str, tuple[str, ...]] = {
+    "action_economy": ("activation", "action_economy"),
+    "action_trigger": ("trigger", "trigger_producer"),
+    "advancement_choice": ("required_inputs", "effect_operator"),
+    "aura_range": ("target_policy", "range", "visibility", "line_of_sight"),
+    "choice_branch": ("required_inputs", "effect_operator", "effect_parameters"),
+    "damage_healing": ("effect_operator", "effect_parameters", "required_consumer"),
+    "hit_rider": ("trigger", "trigger_producer", "effect_operator", "required_consumer"),
+    "movement": ("effect_operator", "effect_parameters", "required_consumer"),
+    "narrative_language": ("effect_operator", "required_consumer"),
+    "pre_damage_defense": ("trigger", "trigger_producer", "effect_operator", "required_consumer"),
+    "resource_binding": ("resource_key", "resource_operation", "resource_amount_or_formula"),
+    "resource_recovery": ("resource_key", "resource_recovery"),
+    "roll_intervention": ("trigger", "trigger_producer", "effect_operator", "required_consumer"),
+    "save_dc": ("saving_throw_ability", "dc_source", "effect_operator", "required_consumer"),
+    "spell_modification": ("effect_operator", "effect_parameters", "required_consumer"),
+    "spell_selection": ("required_inputs", "effect_operator", "effect_parameters"),
+    "spellcasting": ("trigger", "effect_operator", "required_consumer"),
+    "status_lifecycle": ("effect_operator", "effect_parameters", "duration", "expiry"),
+    "summon_companion": ("effect_operator", "effect_parameters", "required_consumer"),
+    "target_range_save": ("target_policy", "target_count", "range", "visibility", "line_of_sight"),
+    "world_state": ("effect_operator", "effect_parameters", "required_consumer"),
+}
 
 
 def _canonical(value: object) -> str:
@@ -69,6 +96,8 @@ def _segments(description: str) -> tuple[str, ...]:
 class FeatureClauseRecord:
     feature_id: str
     clause_id: str
+    feature_name: str
+    parent_source_clause_id: str
     class_name: str | None
     subclass_name: str | None
     level: int | None
@@ -105,12 +134,101 @@ class FeatureClauseRecord:
     blocker_category: str
     blocker_details: str
     analysis_anchors: tuple[str, ...]
+    source_fingerprint: str
+    review_status: str
+    reviewed_contract: dict[str, Any]
 
     def to_dict(self) -> dict[str, Any]:
         value = asdict(self)
         for key in ("conditions", "required_inputs", "production_evidence", "analysis_anchors"):
             value[key] = list(value[key])
+        value.update(value.pop("reviewed_contract"))
         return value
+
+
+def _reviewed_contract(
+    *,
+    row: Mapping[str, Any],
+    feature_name: str,
+    feature_id: str,
+    clause_id: str,
+    excerpt: str,
+    source_fingerprint: str,
+    anchors: tuple[str, ...],
+    completeness: str,
+    source_incomplete: bool,
+) -> dict[str, Any]:
+    """Return a fully shaped review record with explicit unknowns.
+
+    Unknown operational values stay null.  The missing field list is the
+    reviewed conclusion, so an empty value is never silently interpreted as a
+    runtime rule.
+    """
+
+    missing: set[str] = set()
+    for anchor in anchors:
+        missing.update(_ANCHOR_REVIEW_FIELDS.get(anchor, ()))
+    if not anchors:
+        missing.update(
+            {
+                "trigger",
+                "target_policy",
+                "effect_operator",
+                "effect_parameters",
+                "required_producer",
+                "required_consumer",
+            }
+        )
+    if source_incomplete:
+        missing.add("source_excerpt")
+    reviewed_fields = (
+        "feature_id",
+        "clause_id",
+        "parent_source_clause_id",
+        "feature_name",
+        "class_name",
+        "subclass_name",
+        "level",
+        "source_record_id",
+        "source_excerpt",
+        "source_fingerprint",
+        "source_parse",
+        "source_trust",
+        "source_completeness",
+        "analysis_anchors",
+    )
+    blocker = "source_incomplete" if source_incomplete else "manual_boundary"
+    return {
+        "review_schema_version": REVIEWED_CLAUSE_SCHEMA_VERSION,
+        "feature_name": feature_name,
+        "parent_source_clause_id": clause_id,
+        "source_fingerprint": source_fingerprint,
+        "review_status": "reviewed_typed",
+        "actor_policy": None,
+        "target_count": None,
+        "range": None,
+        "visibility": None,
+        "line_of_sight": None,
+        "saving_throw_ability": None,
+        "dc_source": None,
+        "success_effect": None,
+        "failure_effect": None,
+        "ui_requirements": [],
+        "implementation_risk": "requires_explicit_contract_review",
+        "reviewed_fields": list(reviewed_fields),
+        "missing_fields": sorted(missing),
+        "review_anchor_labels": list(anchors),
+        "review_notes": (
+            "source is complete but operational semantics remain an explicit manual boundary"
+            if completeness == "complete"
+            else "source excerpt is incomplete and cannot be safely interpreted"
+        ),
+        "review_blocker_category": blocker,
+        "review_blocker_details": (
+            "missing operational fields: " + ", ".join(sorted(missing))
+        ),
+        "row_runtime_sections": list(row.get("runtime_sections") or ()),
+    }
 
 
 def compile_clause_corpus(rows: Iterable[Mapping[str, Any]]) -> dict[str, Any]:
@@ -140,12 +258,16 @@ def compile_clause_corpus(rows: Iterable[Mapping[str, Any]]) -> dict[str, Any]:
         anchors = tuple(sorted(str(item) for item in row.get("detected_blocks") or ()))
         for index, excerpt in enumerate(segments):
             source_incomplete = completeness != "complete"
+            clause_id = _stable_id(
+                "source-clause",
+                {"feature_id": feature_id, "index": index, "excerpt": excerpt},
+            )
+            source_fingerprint = hashlib.sha256(excerpt.encode("utf-8")).hexdigest()
             record = FeatureClauseRecord(
                 feature_id=feature_id,
-                clause_id=_stable_id(
-                    "source-clause",
-                    {"feature_id": feature_id, "index": index, "excerpt": excerpt},
-                ),
+                clause_id=clause_id,
+                feature_name=str(row.get("feature_name") or ""),
+                parent_source_clause_id=clause_id,
                 class_name=row.get("class_name"),
                 subclass_name=row.get("subclass_name"),
                 level=row.get("level"),
@@ -178,11 +300,11 @@ def compile_clause_corpus(rows: Iterable[Mapping[str, Any]]) -> dict[str, Any]:
                 materializer=None,
                 validator=None,
                 production_evidence=(),
-                clause_status="source_incomplete" if source_incomplete else "production_partial",
+                clause_status="source_incomplete" if source_incomplete else "manual_boundary",
                 blocker_category=(
                     "source_incomplete"
                     if source_incomplete
-                    else "missing_semantic_contract"
+                    else "manual_boundary"
                 ),
                 blocker_details=(
                     "audit row has no complete located source description"
@@ -193,6 +315,19 @@ def compile_clause_corpus(rows: Iterable[Mapping[str, Any]]) -> dict[str, Any]:
                     )
                 ),
                 analysis_anchors=anchors,
+                source_fingerprint=source_fingerprint,
+                review_status="reviewed_typed",
+                reviewed_contract=_reviewed_contract(
+                    row=row,
+                    feature_name=str(row.get("feature_name") or ""),
+                    feature_id=feature_id,
+                    clause_id=clause_id,
+                    excerpt=excerpt,
+                    source_fingerprint=source_fingerprint,
+                    anchors=anchors,
+                    completeness=completeness,
+                    source_incomplete=source_incomplete,
+                ),
             )
             records.append(record)
     records.sort(key=lambda item: (item.feature_id, item.source_segment_index, item.clause_id))
@@ -210,6 +345,14 @@ def compile_clause_corpus(rows: Iterable[Mapping[str, Any]]) -> dict[str, Any]:
             if record.source_completeness != "complete"
         ),
         "executable_clause_count": 0,
+        "reviewed_clause_count": len(records),
+        "typed_clause_count": len(records),
+        "manual_boundary_clause_count": sum(
+            record.blocker_category == "manual_boundary" for record in records
+        ),
+        "source_incomplete_clause_count": sum(
+            record.blocker_category == "source_incomplete" for record in records
+        ),
         "features": sorted(feature_ids),
         "clauses": [record.to_dict() for record in records],
     }
