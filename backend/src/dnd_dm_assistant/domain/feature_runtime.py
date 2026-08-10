@@ -94,6 +94,10 @@ FEATURE_CONDITION_RUNTIME_SPECS: dict[str, dict[str, dict[str, Any]]] = {
             "state_name": "trance_of_order",
             "duration_units": ["minutes"],
         },
+        "divine_rage": {
+            "state_name": "feature_divine_rage",
+            "duration_units": ["minutes"],
+        },
     },
     "activate_timed_condition": {
         "隐形": {

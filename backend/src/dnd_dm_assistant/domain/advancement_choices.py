@@ -11,6 +11,10 @@ from dnd_dm_assistant.application.formal_feature_runtime import (
     authored_ir_runtime_definition,
 )
 from dnd_dm_assistant.domain.advancement import ClassProgression, merge_spell_slot_resources
+from dnd_dm_assistant.domain.feature_batch_declarations import (
+    batch_resource_updates,
+    batch_runtime_configs,
+)
 from dnd_dm_assistant.domain.feature_runtime import (
     compile_feature_runtime_registry,
     feature_runtime_action_projections,
@@ -5961,6 +5965,12 @@ SUBCLASS_FEATURE_RUNTIME_CONFIGS["序列意识"] = {
     "requires_dm_adjudication": False,
 }
 
+# Batch assembly layer: features sharing one exact self-buff runtime shape are
+# generated from the typed declaration table instead of hand-written registries.
+# The table only contains entries whose effects are consumed by the existing
+# production resolvers; adding a table row never adds an executor branch.
+SUBCLASS_FEATURE_RUNTIME_CONFIGS.update(batch_runtime_configs())
+
 
 def subclass_feature_runtime_definition(
     definition: Mapping[str, Any],
@@ -5972,6 +5982,9 @@ def subclass_feature_runtime_definition(
         return authored_runtime
 
     name = str(definition.get("name") or "").strip()
+    for batch_name, batch_config in batch_runtime_configs().items():
+        if name.startswith(batch_name):
+            return deepcopy(batch_config)
     config = SUBCLASS_FEATURE_RUNTIME_CONFIGS.get(name)
     if config is None:
         for prefix, candidate in SUBCLASS_FEATURE_RUNTIME_CONFIGS.items():
@@ -6237,6 +6250,9 @@ def _subclass_resource_update(
     description = str(definition.get("description") or "")
     feature_name = str(definition.get("name") or "").strip()
     subclass_name = str(definition.get("subclass_name") or "").strip()
+    for batch_name, batch_resource in batch_resource_updates().items():
+        if feature_name.startswith(batch_name):
+            return batch_resource
     if feature_name.startswith("序列意识"):
         return "trance_of_order", {
             "label": feature_name,

@@ -979,6 +979,7 @@ class CombatEngineService:
         "superior_defense": "superior_defense",
         "feature_starry_form": "starry_form",
         "feature_dragon_wings": "dragon_wings",
+        "feature_divine_rage": "divine_rage",
     }
 
     def __init__(self, engine: Engine) -> None:
@@ -6042,6 +6043,10 @@ class CombatEngineService:
                 continue
             if applies_when == "raging" and "raging" not in conditions:
                 continue
+            if applies_when.startswith("while_"):
+                required = cls._canonical_condition(applies_when[len("while_") :])
+                if required not in conditions:
+                    continue
             if applies_when == "saving_throw_against_charmed_or_frightened" and not (
                 saving_condition_names & {"charmed", "frightened", "魅惑", "恐慌"}
             ):
