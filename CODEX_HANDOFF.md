@@ -2217,3 +2217,17 @@ backend/.venv/bin/python -m pytest -q backend/tests
   法术上下文等未接线机制。Goal 保持 active，本切片不关闭。
 - 门禁：后端全量 pytest、Ruff、compileall、`git diff --check` 通过；报告生成器
   连续两次哈希一致。无前端改动，不运行前端门禁。规定未跟踪路径保持原样。
+
+# 2026-08-10 批量吞吐恢复第二切片：狂暴激活触发器
+
+- 实时审计从 `317/121/61` 变为 `318/120/61`，本切片真实净增 `+1`（累计 `+3`）。
+- 新增通用 `after_rage_activation` 触发事件（`TRIGGER_EVENTS` + 战斗执行器
+  `_apply_rage_activation_triggers`），配置驱动、无特性名分支，当前支持
+  `grant_temporary_hp`（含 `class_level_source` 等级绑定）。
+- 批量表新增「圣树活力」（野蛮人·世界树道途·3）：激活狂暴时获得等于野蛮人等级
+  的临时生命。E2E 覆盖真实狂暴动作→条件生效→临时生命写入，以及重放/版本冲突。
+- 三个真实闭环特性均来自同一批量装配层：神之狂暴、炫目舞步、圣树活力；
+  完整证据见 `reports/feature-ir-production-consumer-batch-III-2026-08-10.json`
+  与 census 报告。
+- 仍未达到 20 条门槛；剩余 partial 仍需逐机制建设（多目标/光环、强制移动、
+  召唤、目标信息、法术上下文、回合开始触发等）。Goal 保持 active。

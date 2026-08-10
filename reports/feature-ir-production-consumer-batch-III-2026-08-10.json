@@ -8,12 +8,12 @@
     "dm_only": 61
   },
   "after_status_counts": {
-    "full": 317,
+    "full": 318,
     "dm_only": 61,
-    "partial": 121
+    "partial": 120
   },
-  "actual_new_full": 2,
-  "gross_new_full": 2,
+  "actual_new_full": 3,
+  "gross_new_full": 3,
   "false_positive_corrections": 0,
   "candidate_cluster_count": 0,
   "candidate_feature_count": 0,
@@ -42,15 +42,27 @@
       "modifier_count": 2,
       "defense_count": 0,
       "movement_mode_count": 0
+    },
+    {
+      "feature_name": "圣树活力",
+      "class_name": "野蛮人",
+      "subclass_name": "世界树道途",
+      "level": 3,
+      "resource_key": null,
+      "condition": "",
+      "modifier_count": 0,
+      "defense_count": 0,
+      "movement_mode_count": 0
     }
   ],
   "production_tests": [
     "backend/tests/test_combat_action_lifecycle.py::test_batch_buff_condition_gates_flight_and_resistance_end_to_end",
+    "backend/tests/test_combat_action_lifecycle.py::test_rage_activation_grants_vitality_surge_temporary_hp",
     "backend/tests/test_feature_batch_assembly.py"
   ],
   "census_evidence": {
-    "partial_total": 121,
-    "partial_exact_cluster_count": 119,
+    "partial_total": 120,
+    "partial_exact_cluster_count": 118,
     "largest_partial_cluster_member_count": 2
   },
   "stop_reason": "真实语料 census 显示 121 条 partial 中 121 条是唯一语义签名、最大簇仅 2 条，不存在可收割的 ≥8 条同构簇；剩余 partial 依赖攻击骑手、多目标/光环、强制移动、召唤、目标信息读取、法术上下文等未接线机制。本轮新增批量装配层与 2 条真实闭环，未达到 20 条门槛，Goal 保持 active。"

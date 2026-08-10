@@ -2,12 +2,12 @@
   "schema_version": "feature-ir-semantic-cluster-census-1",
   "audit_total": 499,
   "status_counts": {
-    "full": 317,
+    "full": 318,
     "dm_only": 61,
-    "partial": 121
+    "partial": 120
   },
-  "partial_total": 121,
-  "partial_exact_cluster_count": 119,
+  "partial_total": 120,
+  "partial_exact_cluster_count": 118,
   "largest_partial_clusters": [
     {
       "cluster_id": "semantic:526e877e5732560a",
@@ -438,41 +438,6 @@
         "damage_healing",
         "pre_damage_defense",
         "target_range_save"
-      ]
-    },
-    {
-      "cluster_id": "semantic:1463ae55b2f5830c",
-      "member_count": 1,
-      "member_feature_ids": [
-        "野蛮人:世界树道途:3:圣树活力 Vitality"
-      ],
-      "action_economy": [
-        "triggered"
-      ],
-      "resource": [
-        "rage"
-      ],
-      "trigger": [
-        "on_rage_activation",
-        "on_turn_start",
-        "while_raging"
-      ],
-      "target": [
-        "allies_or_creatures",
-        "enemy",
-        "self"
-      ],
-      "effects": [
-        "damage",
-        "temporary_hp"
-      ],
-      "duration": [],
-      "detected_blocks": [
-        "action_trigger",
-        "aura_range",
-        "damage_healing",
-        "target_range_save",
-        "world_state"
       ]
     },
     {
@@ -1347,11 +1312,40 @@
         "status_lifecycle",
         "summon_companion"
       ]
+    },
+    {
+      "cluster_id": "semantic:5735466c783da5c8",
+      "member_count": 1,
+      "member_feature_ids": [
+        "游荡者:诡术师:9:诡术伏击 Magical"
+      ],
+      "action_economy": [],
+      "resource": [],
+      "trigger": [
+        "on_spell_cast"
+      ],
+      "target": [
+        "enemy",
+        "self"
+      ],
+      "effects": [
+        "ability_check",
+        "disadvantage",
+        "invisible",
+        "saving_throw"
+      ],
+      "duration": [],
+      "detected_blocks": [
+        "roll_intervention",
+        "save_dc",
+        "spellcasting",
+        "status_lifecycle"
+      ]
     }
   ],
   "effect_counts": {
-    "damage": 45,
     "saving_throw": 45,
+    "damage": 44,
     "ability_check": 38,
     "condition": 17,
     "teleport": 14,
@@ -1360,9 +1354,9 @@
     "attack": 13,
     "damage_resistance": 9,
     "invisible": 9,
-    "temporary_hp": 8,
     "disadvantage": 8,
     "flight": 8,
+    "temporary_hp": 7,
     "light": 7,
     "damage_immunity": 3,
     "save_advantage_modifier": 2,
@@ -1377,12 +1371,12 @@
     "on_spell_cast": 37,
     "on_attack_hit": 22,
     "on_save_failure": 14,
-    "on_turn_start": 14,
+    "on_turn_start": 13,
     "wild_shape_related": 9,
     "on_turn_end": 7,
     "on_damage_taken": 6,
-    "while_raging": 5,
-    "on_rage_activation": 4,
+    "while_raging": 4,
+    "on_rage_activation": 3,
     "on_initiative_roll": 1,
     "on_check_failure": 1,
     "on_death_save": 1
@@ -1394,18 +1388,18 @@
     "proficiency_bonus": 10,
     "wild_shape": 9,
     "channel_divinity": 7,
-    "rage": 7,
     "sorcery_points": 6,
+    "rage": 6,
     "bardic_inspiration": 5,
     "psionic_dice": 5,
     "superiority_dice": 2,
     "uses_ability_modifier": 2
   },
   "target_counts": {
-    "self": 121,
-    "allies_or_creatures": 35,
-    "enemy": 17,
+    "self": 120,
+    "allies_or_creatures": 34,
     "summon": 17,
+    "enemy": 16,
     "area": 13
   }
 }

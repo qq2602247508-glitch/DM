@@ -1,14 +1,14 @@
 {
   "audit_status_counts": {
     "dm_only": 61,
-    "full": 317,
-    "partial": 121
+    "full": 318,
+    "partial": 120
   },
   "compiler_pilot_count": 10,
   "compiler_status_counts": {
     "full": 14,
     "invalid": 129,
-    "partial": 174
+    "partial": 175
   },
   "formal_semantic_parity": {
     "all_passed": true,
