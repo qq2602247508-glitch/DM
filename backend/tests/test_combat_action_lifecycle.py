@@ -10,6 +10,13 @@ from alembic.config import Config
 from fastapi.testclient import TestClient
 
 from dnd_dm_assistant.api.app import create_app
+from dnd_dm_assistant.application.feature_compiler import (
+    FeatureCompiler,
+    materialize_runtime_definition,
+)
+from dnd_dm_assistant.application.formal_feature_specs import (
+    formal_feature_spec_for_definition,
+)
 from dnd_dm_assistant.config import Settings
 from dnd_dm_assistant.domain.advancement_choices import (
     subclass_feature_runtime_definition,
@@ -58,6 +65,179 @@ def _root(campaign: dict[str, Any], combat: dict[str, Any]) -> str:
 
 def _combatant_path(campaign: dict[str, Any], combat: dict[str, Any], combatant_id: str) -> str:
     return f"{_root(campaign, combat)}/combatants/{combatant_id}"
+
+
+def test_hunters_lore_target_defense_inspection(
+    combat_client: TestClient,
+) -> None:
+    """Hunter's Lore reads only the marked target through the real API.
+
+    The action is a readonly inspection: it is usable off-turn, persists an
+    authoritative result, and does not mutate either combatant version.
+    """
+
+    campaign_response = combat_client.post(
+        "/api/v1/campaigns",
+        json={"name": "Hunter's Lore inspection"},
+    )
+    assert campaign_response.status_code == 201, campaign_response.text
+    campaign = campaign_response.json()
+    combat_response = combat_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/combats",
+        json={"name": "Hunter's Lore combat"},
+    )
+    assert combat_response.status_code == 201, combat_response.text
+    combat = combat_response.json()
+
+    character_response = combat_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/characters",
+        json={
+            "name": "猎人学识测试者",
+            "class_name": "游侠",
+            "level": 3,
+        },
+    )
+    assert character_response.status_code == 201, character_response.text
+    character = character_response.json()
+    spec = formal_feature_spec_for_definition(
+        {
+            "name": "猎人学识 Hunter's Lore",
+            "class_name": "游侠",
+            "subclass_name": "猎人",
+            "class_level": 3,
+        }
+    )
+    assert spec is not None
+    compiled = FeatureCompiler().compile(spec)
+    assert compiled.compile_status == "full"
+    runtime = materialize_runtime_definition(spec, compiled)
+
+    marked_response = combat_client.post(
+        f"{_root(campaign, combat)}/combatants",
+        json={
+            "display_name": "被标记目标",
+            "entity_type": "monster",
+            "initiative": 20,
+            "hp": 30,
+            "max_hp": 30,
+            "damage_resistances": ["fire"],
+            "damage_immunities": ["poison"],
+            "damage_vulnerabilities": ["cold"],
+        },
+    )
+    assert marked_response.status_code == 201, marked_response.text
+    marked = marked_response.json()
+    other_response = combat_client.post(
+        f"{_root(campaign, combat)}/combatants",
+        json={
+            "display_name": "未标记目标",
+            "entity_type": "monster",
+            "initiative": 5,
+            "hp": 30,
+            "max_hp": 30,
+        },
+    )
+    assert other_response.status_code == 201, other_response.text
+    other = other_response.json()
+    actor_response = combat_client.post(
+        f"{_root(campaign, combat)}/combatants",
+        json={
+            "display_name": "猎人",
+            "entity_type": "character",
+            "entity_id": character["id"],
+            "initiative": 10,
+            "hp": 20,
+            "max_hp": 20,
+            "snapshot_json": {
+                "feature_runtime": runtime,
+                "current_hunters_mark_target_id": marked["id"],
+            },
+        },
+    )
+    assert actor_response.status_code == 201, actor_response.text
+    actor = actor_response.json()
+    feature_path = f"{_root(campaign, combat)}/feature-actions/confirm"
+    feature_id = "hunters_lore:damage_defenses"
+    request = {
+        "actor_combatant_id": actor["id"],
+        "actor_version": actor["version"],
+        "feature_id": feature_id,
+        "target_combatant_id": marked["id"],
+        "target_version": marked["version"],
+    }
+    resolved = combat_client.post(
+        feature_path,
+        headers={"X-Request-ID": "hunters-lore-inspection-0001"},
+        json=request,
+    )
+    assert resolved.status_code == 200, resolved.text
+    body = resolved.json()
+    assert body["result"]["inspection"] == {
+        "target_combatant_id": marked["id"],
+        "damage_resistances": ["fire"],
+        "damage_immunities": ["poison"],
+        "damage_vulnerabilities": ["cold"],
+        "source": "authoritative_combatant_defense_fields",
+    }
+    assert body["actor"]["version"] == actor["version"]
+    assert body["target"]["version"] == marked["version"]
+    assert body["action"]["status"] == "confirmed"
+
+    replay = combat_client.post(
+        feature_path,
+        headers={"X-Request-ID": "hunters-lore-inspection-0001"},
+        json=request,
+    )
+    assert replay.status_code == 200, replay.text
+    assert replay.json()["already_applied"] is True
+    assert replay.json()["actor"]["version"] == actor["version"]
+
+    bumped = combat_client.patch(
+        _combatant_path(campaign, combat, actor["id"]),
+        headers={"If-Match": f'"{actor["version"]}"'},
+        json={"display_name": "猎人（版本更新）"},
+    )
+    assert bumped.status_code == 200, bumped.text
+    bumped_actor = bumped.json()
+    assert bumped_actor["version"] == actor["version"] + 1
+
+    wrong_target = combat_client.post(
+        feature_path,
+        headers={"X-Request-ID": "hunters-lore-inspection-wrong-target"},
+        json={
+            **request,
+            "actor_version": bumped_actor["version"],
+            "target_combatant_id": other["id"],
+            "target_version": other["version"],
+        },
+    )
+    assert wrong_target.status_code == 400, wrong_target.text
+    assert "权威状态绑定" in wrong_target.json()["message"]
+
+    stale_actor = combat_client.post(
+        feature_path,
+        headers={"X-Request-ID": "hunters-lore-inspection-stale-actor"},
+        json={**request, "actor_version": actor["version"]},
+    )
+    assert stale_actor.status_code == 409, stale_actor.text
+
+    cleared = combat_client.patch(
+        _combatant_path(campaign, combat, actor["id"]),
+        headers={"If-Match": f'"{bumped_actor["version"]}"'},
+        json={"snapshot_json": {"feature_runtime": runtime}},
+    )
+    assert cleared.status_code == 200, cleared.text
+    cleared_actor = cleared.json()
+    missing_binding = combat_client.post(
+        feature_path,
+        headers={"X-Request-ID": "hunters-lore-inspection-missing-binding"},
+        json={
+            **request,
+            "actor_version": cleared_actor["version"],
+        },
+    )
+    assert missing_binding.status_code == 400, missing_binding.text
+    assert "权威状态绑定" in missing_binding.json()["message"]
 
 
 def _relentless_rage_intervention() -> dict[str, Any]:

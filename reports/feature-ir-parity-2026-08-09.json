@@ -1,18 +1,18 @@
 {
   "audit_status_counts": {
     "dm_only": 61,
-    "full": 318,
-    "partial": 120
+    "full": 320,
+    "partial": 118
   },
-  "compiler_pilot_count": 12,
+  "compiler_pilot_count": 21,
   "compiler_status_counts": {
-    "full": 16,
+    "full": 25,
     "invalid": 129,
-    "partial": 173
+    "partial": 166
   },
   "formal_semantic_parity": {
     "all_passed": true,
-    "feature_count": 16,
+    "feature_count": 25,
     "rows": [
       {
         "feature_id": "dnd2024.core.druid.druidic",
@@ -1361,15 +1361,15 @@
           "combat_defenses": {
             "ir": [
               {
-                "kind": "grant_resistance",
+                "kind": "damage_resistance",
                 "trigger": "explicit_activation"
               },
               {
-                "kind": "grant_resistance",
+                "kind": "damage_resistance",
                 "trigger": "explicit_activation"
               },
               {
-                "kind": "grant_resistance",
+                "kind": "damage_resistance",
                 "trigger": "explicit_activation"
               }
             ],
@@ -1431,15 +1431,15 @@
           "attack_action_count": null,
           "combat_defenses": [
             {
-              "kind": "grant_resistance",
+              "kind": "damage_resistance",
               "trigger": "explicit_activation"
             },
             {
-              "kind": "grant_resistance",
+              "kind": "damage_resistance",
               "trigger": "explicit_activation"
             },
             {
-              "kind": "grant_resistance",
+              "kind": "damage_resistance",
               "trigger": "explicit_activation"
             }
           ],
@@ -1609,37 +1609,893 @@
         "materialized": true,
         "production_test": "formal_feature_runtime_regression",
         "status": "equivalent"
+      },
+      {
+        "feature_id": "dnd2024.subclass.bard.college-of-valor.combat-inspiration",
+        "feature_name": "战斗激励Combat Inspiration",
+        "fields": {
+          "advancement": {
+            "ir": null,
+            "legacy": null,
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "attack_action_count": {
+            "ir": null,
+            "legacy": null,
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "combat_defenses": {
+            "ir": [],
+            "legacy": [],
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "combat_modifiers": {
+            "ir": [],
+            "legacy": [],
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "movement_modes": {
+            "ir": [],
+            "legacy": [],
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "resources": {
+            "ir": {},
+            "legacy": {},
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          }
+        },
+        "ir_contract": {
+          "advancement": null,
+          "attack_action_count": null,
+          "combat_defenses": [],
+          "combat_modifiers": [],
+          "movement_modes": [],
+          "resources": {}
+        },
+        "legacy_contract": {
+          "advancement": null,
+          "attack_action_count": null,
+          "combat_defenses": [],
+          "combat_modifiers": [],
+          "movement_modes": [],
+          "resources": {}
+        },
+        "materialized": true,
+        "production_test": "formal_feature_runtime_regression",
+        "status": "exact"
+      },
+      {
+        "feature_id": "dnd2024.subclass.ranger.hunter.hunters-lore",
+        "feature_name": "猎人学识 Hunter's Lore",
+        "fields": {
+          "advancement": {
+            "ir": null,
+            "legacy": null,
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "attack_action_count": {
+            "ir": null,
+            "legacy": null,
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "combat_defenses": {
+            "ir": [],
+            "legacy": [],
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "combat_modifiers": {
+            "ir": [],
+            "legacy": [],
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "movement_modes": {
+            "ir": [],
+            "legacy": [],
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "resources": {
+            "ir": {},
+            "legacy": {},
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          }
+        },
+        "ir_contract": {
+          "advancement": null,
+          "attack_action_count": null,
+          "combat_defenses": [],
+          "combat_modifiers": [],
+          "movement_modes": [],
+          "resources": {}
+        },
+        "legacy_contract": {
+          "advancement": null,
+          "attack_action_count": null,
+          "combat_defenses": [],
+          "combat_modifiers": [],
+          "movement_modes": [],
+          "resources": {}
+        },
+        "materialized": true,
+        "production_test": "formal_feature_runtime_regression",
+        "status": "exact"
+      },
+      {
+        "feature_id": "dnd2024.subclass.warlock.aberrant-mind.psychic-defenses",
+        "feature_name": "心灵防御 Psychic",
+        "fields": {
+          "advancement": {
+            "ir": null,
+            "legacy": null,
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "attack_action_count": {
+            "ir": null,
+            "legacy": null,
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "combat_defenses": {
+            "ir": [
+              {
+                "kind": "damage_resistance",
+                "trigger": "advancement_confirmed"
+              }
+            ],
+            "legacy": [
+              {
+                "kind": "damage_resistance"
+              }
+            ],
+            "proof": "typed IR fields normalize to the same rule semantics",
+            "status": "equivalent"
+          },
+          "combat_modifiers": {
+            "ir": [
+              {
+                "applies_when": "saving_throw_against_charmed_or_frightened",
+                "operation": "advantage",
+                "scope": "self",
+                "stat": "saving_throw",
+                "value": 1
+              }
+            ],
+            "legacy": [
+              {
+                "applies_when": "saving_throw_against_charmed_or_frightened",
+                "operation": "advantage",
+                "scope": "self",
+                "stat": "saving_throw"
+              }
+            ],
+            "proof": "typed IR fields normalize to the same rule semantics",
+            "status": "equivalent"
+          },
+          "movement_modes": {
+            "ir": [],
+            "legacy": [],
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "resources": {
+            "ir": {},
+            "legacy": {},
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          }
+        },
+        "ir_contract": {
+          "advancement": null,
+          "attack_action_count": null,
+          "combat_defenses": [
+            {
+              "kind": "damage_resistance",
+              "trigger": "advancement_confirmed"
+            }
+          ],
+          "combat_modifiers": [
+            {
+              "applies_when": "saving_throw_against_charmed_or_frightened",
+              "operation": "advantage",
+              "scope": "self",
+              "stat": "saving_throw",
+              "value": 1
+            }
+          ],
+          "movement_modes": [],
+          "resources": {}
+        },
+        "legacy_contract": {
+          "advancement": null,
+          "attack_action_count": null,
+          "combat_defenses": [
+            {
+              "kind": "damage_resistance"
+            }
+          ],
+          "combat_modifiers": [
+            {
+              "applies_when": "saving_throw_against_charmed_or_frightened",
+              "operation": "advantage",
+              "scope": "self",
+              "stat": "saving_throw"
+            }
+          ],
+          "movement_modes": [],
+          "resources": {}
+        },
+        "materialized": true,
+        "production_test": "formal_feature_runtime_regression",
+        "status": "equivalent"
+      },
+      {
+        "feature_id": "dnd2024.subclass.fighter.champion.superior-critical",
+        "feature_name": "高效重击 Superior",
+        "fields": {
+          "advancement": {
+            "ir": null,
+            "legacy": null,
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "attack_action_count": {
+            "ir": null,
+            "legacy": null,
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "combat_defenses": {
+            "ir": [],
+            "legacy": [],
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "combat_modifiers": {
+            "ir": [
+              {
+                "applies_when": "always",
+                "operation": "set",
+                "scope": "outgoing",
+                "stat": "attack_critical_threshold",
+                "value": 18
+              }
+            ],
+            "legacy": [
+              {
+                "applies_when": "always",
+                "operation": "set",
+                "scope": "outgoing",
+                "stat": "attack_critical_threshold",
+                "value": 18
+              }
+            ],
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "movement_modes": {
+            "ir": [],
+            "legacy": [],
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "resources": {
+            "ir": {},
+            "legacy": {},
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          }
+        },
+        "ir_contract": {
+          "advancement": null,
+          "attack_action_count": null,
+          "combat_defenses": [],
+          "combat_modifiers": [
+            {
+              "applies_when": "always",
+              "operation": "set",
+              "scope": "outgoing",
+              "stat": "attack_critical_threshold",
+              "value": 18
+            }
+          ],
+          "movement_modes": [],
+          "resources": {}
+        },
+        "legacy_contract": {
+          "advancement": null,
+          "attack_action_count": null,
+          "combat_defenses": [],
+          "combat_modifiers": [
+            {
+              "applies_when": "always",
+              "operation": "set",
+              "scope": "outgoing",
+              "stat": "attack_critical_threshold",
+              "value": 18
+            }
+          ],
+          "movement_modes": [],
+          "resources": {}
+        },
+        "materialized": true,
+        "production_test": "formal_feature_runtime_regression",
+        "status": "exact"
+      },
+      {
+        "feature_id": "dnd2024.subclass.monk.way-of-mercy.implements",
+        "feature_name": "操命本事 Implements of",
+        "fields": {
+          "advancement": {
+            "ir": null,
+            "legacy": null,
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "attack_action_count": {
+            "ir": null,
+            "legacy": null,
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "combat_defenses": {
+            "ir": [],
+            "legacy": [],
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "combat_modifiers": {
+            "ir": [],
+            "legacy": [],
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "movement_modes": {
+            "ir": [],
+            "legacy": [],
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "resources": {
+            "ir": {},
+            "legacy": {},
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          }
+        },
+        "ir_contract": {
+          "advancement": null,
+          "attack_action_count": null,
+          "combat_defenses": [],
+          "combat_modifiers": [],
+          "movement_modes": [],
+          "resources": {}
+        },
+        "legacy_contract": {
+          "advancement": null,
+          "attack_action_count": null,
+          "combat_defenses": [],
+          "combat_modifiers": [],
+          "movement_modes": [],
+          "resources": {}
+        },
+        "materialized": true,
+        "production_test": "formal_feature_runtime_regression",
+        "status": "exact"
+      },
+      {
+        "feature_id": "dnd2024.subclass.rogue.assassin.assassins-tools",
+        "feature_name": "刺客工具 Assassin's",
+        "fields": {
+          "advancement": {
+            "ir": null,
+            "legacy": null,
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "attack_action_count": {
+            "ir": null,
+            "legacy": null,
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "combat_defenses": {
+            "ir": [],
+            "legacy": [],
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "combat_modifiers": {
+            "ir": [],
+            "legacy": [],
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "movement_modes": {
+            "ir": [],
+            "legacy": [],
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "resources": {
+            "ir": {},
+            "legacy": {},
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          }
+        },
+        "ir_contract": {
+          "advancement": null,
+          "attack_action_count": null,
+          "combat_defenses": [],
+          "combat_modifiers": [],
+          "movement_modes": [],
+          "resources": {}
+        },
+        "legacy_contract": {
+          "advancement": null,
+          "attack_action_count": null,
+          "combat_defenses": [],
+          "combat_modifiers": [],
+          "movement_modes": [],
+          "resources": {}
+        },
+        "materialized": true,
+        "production_test": "formal_feature_runtime_regression",
+        "status": "exact"
+      },
+      {
+        "feature_id": "dnd2024.subclass.wizard.abjurer.spell-resistance",
+        "feature_name": "法术抗性 Spell Resistance",
+        "fields": {
+          "advancement": {
+            "ir": null,
+            "legacy": null,
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "attack_action_count": {
+            "ir": null,
+            "legacy": null,
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "combat_defenses": {
+            "ir": [
+              {
+                "kind": "damage_resistance",
+                "trigger": "advancement_confirmed"
+              },
+              {
+                "kind": "damage_resistance",
+                "trigger": "advancement_confirmed"
+              },
+              {
+                "kind": "damage_resistance",
+                "trigger": "advancement_confirmed"
+              },
+              {
+                "kind": "damage_resistance",
+                "trigger": "advancement_confirmed"
+              },
+              {
+                "kind": "damage_resistance",
+                "trigger": "advancement_confirmed"
+              },
+              {
+                "kind": "damage_resistance",
+                "trigger": "advancement_confirmed"
+              },
+              {
+                "kind": "damage_resistance",
+                "trigger": "advancement_confirmed"
+              },
+              {
+                "kind": "damage_resistance",
+                "trigger": "advancement_confirmed"
+              },
+              {
+                "kind": "damage_resistance",
+                "trigger": "advancement_confirmed"
+              },
+              {
+                "kind": "damage_resistance",
+                "trigger": "advancement_confirmed"
+              },
+              {
+                "kind": "damage_resistance",
+                "trigger": "advancement_confirmed"
+              },
+              {
+                "kind": "damage_resistance",
+                "trigger": "advancement_confirmed"
+              },
+              {
+                "kind": "damage_resistance",
+                "trigger": "advancement_confirmed"
+              },
+              {
+                "kind": "saving_throw_advantage",
+                "trigger": "advancement_confirmed"
+              }
+            ],
+            "legacy": [
+              {
+                "kind": "damage_resistance"
+              },
+              {
+                "kind": "saving_throw_advantage"
+              }
+            ],
+            "proof": "typed IR fields normalize to the same rule semantics",
+            "status": "equivalent"
+          },
+          "combat_modifiers": {
+            "ir": [],
+            "legacy": [],
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "movement_modes": {
+            "ir": [],
+            "legacy": [],
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "resources": {
+            "ir": {},
+            "legacy": {},
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          }
+        },
+        "ir_contract": {
+          "advancement": null,
+          "attack_action_count": null,
+          "combat_defenses": [
+            {
+              "kind": "damage_resistance",
+              "trigger": "advancement_confirmed"
+            },
+            {
+              "kind": "damage_resistance",
+              "trigger": "advancement_confirmed"
+            },
+            {
+              "kind": "damage_resistance",
+              "trigger": "advancement_confirmed"
+            },
+            {
+              "kind": "damage_resistance",
+              "trigger": "advancement_confirmed"
+            },
+            {
+              "kind": "damage_resistance",
+              "trigger": "advancement_confirmed"
+            },
+            {
+              "kind": "damage_resistance",
+              "trigger": "advancement_confirmed"
+            },
+            {
+              "kind": "damage_resistance",
+              "trigger": "advancement_confirmed"
+            },
+            {
+              "kind": "damage_resistance",
+              "trigger": "advancement_confirmed"
+            },
+            {
+              "kind": "damage_resistance",
+              "trigger": "advancement_confirmed"
+            },
+            {
+              "kind": "damage_resistance",
+              "trigger": "advancement_confirmed"
+            },
+            {
+              "kind": "damage_resistance",
+              "trigger": "advancement_confirmed"
+            },
+            {
+              "kind": "damage_resistance",
+              "trigger": "advancement_confirmed"
+            },
+            {
+              "kind": "damage_resistance",
+              "trigger": "advancement_confirmed"
+            },
+            {
+              "kind": "saving_throw_advantage",
+              "trigger": "advancement_confirmed"
+            }
+          ],
+          "combat_modifiers": [],
+          "movement_modes": [],
+          "resources": {}
+        },
+        "legacy_contract": {
+          "advancement": null,
+          "attack_action_count": null,
+          "combat_defenses": [
+            {
+              "kind": "damage_resistance"
+            },
+            {
+              "kind": "saving_throw_advantage"
+            }
+          ],
+          "combat_modifiers": [],
+          "movement_modes": [],
+          "resources": {}
+        },
+        "materialized": true,
+        "production_test": "formal_feature_runtime_regression",
+        "status": "equivalent"
+      },
+      {
+        "feature_id": "dnd2024.subclass.fighter.psi-warrior.psionic-power",
+        "feature_name": "灵能力量 Psionic",
+        "fields": {
+          "advancement": {
+            "ir": null,
+            "legacy": null,
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "attack_action_count": {
+            "ir": null,
+            "legacy": null,
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "combat_defenses": {
+            "ir": [],
+            "legacy": [],
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "combat_modifiers": {
+            "ir": [],
+            "legacy": [],
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "movement_modes": {
+            "ir": [],
+            "legacy": [],
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "resources": {
+            "ir": {
+              "$feature_resource": {
+                "recovery": "custom",
+                "recovery_events": [
+                  {
+                    "amount": 1,
+                    "operation": "restore",
+                    "rest": "short_rest"
+                  },
+                  {
+                    "operation": "set_to_max",
+                    "rest": "long_rest"
+                  }
+                ],
+                "resource_kind": "psionic_dice"
+              }
+            },
+            "legacy": {
+              "$feature_resource": {
+                "recovery_events": [
+                  {
+                    "amount": 1,
+                    "operation": "restore",
+                    "rest": "short_rest"
+                  },
+                  {
+                    "operation": "set_to_max",
+                    "rest": "long_rest"
+                  }
+                ],
+                "resource_kind": "psionic_dice"
+              }
+            },
+            "proof": "typed IR fields normalize to the same rule semantics",
+            "status": "equivalent"
+          }
+        },
+        "ir_contract": {
+          "advancement": null,
+          "attack_action_count": null,
+          "combat_defenses": [],
+          "combat_modifiers": [],
+          "movement_modes": [],
+          "resources": {
+            "$feature_resource": {
+              "recovery": "custom",
+              "recovery_events": [
+                {
+                  "amount": 1,
+                  "operation": "restore",
+                  "rest": "short_rest"
+                },
+                {
+                  "operation": "set_to_max",
+                  "rest": "long_rest"
+                }
+              ],
+              "resource_kind": "psionic_dice"
+            }
+          }
+        },
+        "legacy_contract": {
+          "advancement": null,
+          "attack_action_count": null,
+          "combat_defenses": [],
+          "combat_modifiers": [],
+          "movement_modes": [],
+          "resources": {
+            "$feature_resource": {
+              "recovery_events": [
+                {
+                  "amount": 1,
+                  "operation": "restore",
+                  "rest": "short_rest"
+                },
+                {
+                  "operation": "set_to_max",
+                  "rest": "long_rest"
+                }
+              ],
+              "resource_kind": "psionic_dice"
+            }
+          }
+        },
+        "materialized": true,
+        "production_test": "formal_feature_runtime_regression",
+        "status": "equivalent"
+      },
+      {
+        "feature_id": "dnd2024.subclass.rogue.soulknife.psionic-power",
+        "feature_name": "灵能力量 Psionic",
+        "fields": {
+          "advancement": {
+            "ir": null,
+            "legacy": null,
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "attack_action_count": {
+            "ir": null,
+            "legacy": null,
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "combat_defenses": {
+            "ir": [],
+            "legacy": [],
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "combat_modifiers": {
+            "ir": [],
+            "legacy": [],
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "movement_modes": {
+            "ir": [],
+            "legacy": [],
+            "proof": "canonical projection values are identical",
+            "status": "exact"
+          },
+          "resources": {
+            "ir": {
+              "$feature_resource": {
+                "recovery": "custom",
+                "recovery_events": [
+                  {
+                    "amount": 1,
+                    "operation": "restore",
+                    "rest": "short_rest"
+                  },
+                  {
+                    "operation": "set_to_max",
+                    "rest": "long_rest"
+                  }
+                ],
+                "resource_kind": "psionic_dice"
+              }
+            },
+            "legacy": {
+              "$feature_resource": {
+                "recovery_events": [
+                  {
+                    "amount": 1,
+                    "operation": "restore",
+                    "rest": "short_rest"
+                  },
+                  {
+                    "operation": "set_to_max",
+                    "rest": "long_rest"
+                  }
+                ],
+                "resource_kind": "psionic_dice"
+              }
+            },
+            "proof": "typed IR fields normalize to the same rule semantics",
+            "status": "equivalent"
+          }
+        },
+        "ir_contract": {
+          "advancement": null,
+          "attack_action_count": null,
+          "combat_defenses": [],
+          "combat_modifiers": [],
+          "movement_modes": [],
+          "resources": {
+            "$feature_resource": {
+              "recovery": "custom",
+              "recovery_events": [
+                {
+                  "amount": 1,
+                  "operation": "restore",
+                  "rest": "short_rest"
+                },
+                {
+                  "operation": "set_to_max",
+                  "rest": "long_rest"
+                }
+              ],
+              "resource_kind": "psionic_dice"
+            }
+          }
+        },
+        "legacy_contract": {
+          "advancement": null,
+          "attack_action_count": null,
+          "combat_defenses": [],
+          "combat_modifiers": [],
+          "movement_modes": [],
+          "resources": {
+            "$feature_resource": {
+              "recovery_events": [
+                {
+                  "amount": 1,
+                  "operation": "restore",
+                  "rest": "short_rest"
+                },
+                {
+                  "operation": "set_to_max",
+                  "rest": "long_rest"
+                }
+              ],
+              "resource_kind": "psionic_dice"
+            }
+          }
+        },
+        "materialized": true,
+        "production_test": "formal_feature_runtime_regression",
+        "status": "equivalent"
       }
     ],
     "schema_version": "feature-ir-semantic-parity-2"
   },
   "legacy_adapter": true,
   "partial_diagnostics": [
-    {
-      "clause_results": [
-        {
-          "blockers": [
-            "unsupported operator: legacy_unsupported:no_runtime_section"
-          ],
-          "capability_ids": [],
-          "clause_id": "legacy:no_runtime_section",
-          "generated_block": null,
-          "status": "partial"
-        }
-      ],
-      "compiler_status": "partial",
-      "feature_id": "legacy:subclass:2709144090ad73a4c316bfe6:3:战斗激励Combat Inspiration",
-      "feature_name": "战斗激励Combat Inspiration",
-      "legacy_status": "partial",
-      "manual_boundaries": [],
-      "unsupported_combinations": [
-        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
-      ],
-      "unsupported_conditions": [],
-      "unsupported_operators": [
-        "legacy_unsupported:no_runtime_section"
-      ]
-    },
     {
       "clause_results": [
         {
@@ -1876,11 +2732,49 @@
       "unsupported_operators": [
         "legacy_unsupported:no_runtime_section"
       ]
+    },
+    {
+      "clause_results": [
+        {
+          "blockers": [
+            "unsupported operator: legacy_unsupported:no_runtime_section"
+          ],
+          "capability_ids": [],
+          "clause_id": "legacy:no_runtime_section",
+          "generated_block": null,
+          "status": "partial"
+        }
+      ],
+      "compiler_status": "partial",
+      "feature_id": "legacy:subclass:7c5aa1f4b6d71af539e4aa6c:7:坚韧复仇 Relentless",
+      "feature_name": "坚韧复仇 Relentless",
+      "legacy_status": "partial",
+      "manual_boundaries": [],
+      "unsupported_combinations": [
+        "legacy:no_runtime_section: legacy_unsupported:no_runtime_section"
+      ],
+      "unsupported_conditions": [],
+      "unsupported_operators": [
+        "legacy_unsupported:no_runtime_section"
+      ]
     }
   ],
   "schema_version": "feature-ir-parity-2",
-  "selected_parity_count": 16,
+  "selected_parity_count": 25,
   "selected_parity_rows": [
+    {
+      "compiler_status": "full",
+      "feature_id": "dnd2024.subclass.bard.college-of-valor.combat-inspiration",
+      "feature_name": "战斗激励Combat Inspiration",
+      "fingerprint": "da7f9d50978f23af30aa83f501dc6c8e82a1c265919c22663bccc1225ffe6288",
+      "formal_ir": true,
+      "legacy_adapter_used": false,
+      "legacy_status": "full",
+      "pilot_authority": "compiler",
+      "pilot_compile_status": "full",
+      "runtime_sections": [],
+      "status_authority": "compiler"
+    },
     {
       "compiler_status": "full",
       "feature_id": "dnd2024.subclass.bard.college-of-dance.dance-virtuoso",
@@ -1964,6 +2858,19 @@
     },
     {
       "compiler_status": "full",
+      "feature_id": "dnd2024.subclass.fighter.champion.superior-critical",
+      "feature_name": "高效重击 Superior",
+      "fingerprint": "eb4bf5a7a0a7855093c581f6e60e9c4e17dfa3dc856bff625a25155ac4b4e4c1",
+      "formal_ir": true,
+      "legacy_adapter_used": false,
+      "legacy_status": "full",
+      "pilot_authority": "compiler",
+      "pilot_compile_status": "full",
+      "runtime_sections": [],
+      "status_authority": "compiler"
+    },
+    {
+      "compiler_status": "full",
       "feature_id": "dnd2024.subclass.fighter.battle-master.ultimate-combat",
       "feature_name": "究极战技 Ultimate Combat",
       "fingerprint": "7273ea99f267395a89c52e9de23abbdae752b1ae7ff0026d4193986b33e16ef6",
@@ -1971,6 +2878,45 @@
       "legacy_adapter_used": false,
       "legacy_status": "full",
       "pilot_authority": "verified_mapping",
+      "pilot_compile_status": "full",
+      "runtime_sections": [],
+      "status_authority": "compiler"
+    },
+    {
+      "compiler_status": "full",
+      "feature_id": "dnd2024.subclass.fighter.psi-warrior.psionic-power",
+      "feature_name": "灵能力量 Psionic",
+      "fingerprint": "d5ab87847a94f5b996e92fa955745a50757fe7ed1c76a51e0337d5a711bfa0d1",
+      "formal_ir": true,
+      "legacy_adapter_used": false,
+      "legacy_status": "full",
+      "pilot_authority": "compiler",
+      "pilot_compile_status": "full",
+      "runtime_sections": [],
+      "status_authority": "compiler"
+    },
+    {
+      "compiler_status": "full",
+      "feature_id": "dnd2024.subclass.warlock.aberrant-mind.psychic-defenses",
+      "feature_name": "心灵防御 Psychic",
+      "fingerprint": "4a91511efa77c4a7af02d0f9d4736ea8764779d09520cbdb1fb22ca82fb8d402",
+      "formal_ir": true,
+      "legacy_adapter_used": false,
+      "legacy_status": "full",
+      "pilot_authority": "compiler",
+      "pilot_compile_status": "full",
+      "runtime_sections": [],
+      "status_authority": "compiler"
+    },
+    {
+      "compiler_status": "full",
+      "feature_id": "dnd2024.subclass.monk.way-of-mercy.implements",
+      "feature_name": "操命本事 Implements of",
+      "fingerprint": "dbae870cdf5ef1ef95f37aad7c5d0d5fc90794e834ec4ab40b9a4cdfe0882b5d",
+      "formal_ir": true,
+      "legacy_adapter_used": false,
+      "legacy_status": "full",
+      "pilot_authority": "compiler",
       "pilot_compile_status": "full",
       "runtime_sections": [],
       "status_authority": "compiler"
@@ -1993,6 +2939,19 @@
       "feature_id": "dnd2024.subclass.wizard.evoker.empowered-evocation",
       "feature_name": "强效塑能 Empowered Evocation",
       "fingerprint": "623194e6b3319036525ab6af75e5664c048a35bae95393fded54e9c9fe3c572f",
+      "formal_ir": true,
+      "legacy_adapter_used": false,
+      "legacy_status": "full",
+      "pilot_authority": "compiler",
+      "pilot_compile_status": "full",
+      "runtime_sections": [],
+      "status_authority": "compiler"
+    },
+    {
+      "compiler_status": "full",
+      "feature_id": "dnd2024.subclass.wizard.abjurer.spell-resistance",
+      "feature_name": "法术抗性 Spell Resistance",
+      "fingerprint": "73b19dc283a53d54efbfb93aaa7c38fca33c12dfcd2f15b01bf68df546487fcd",
       "formal_ir": true,
       "legacy_adapter_used": false,
       "legacy_status": "full",
@@ -2034,6 +2993,19 @@
     },
     {
       "compiler_status": "full",
+      "feature_id": "dnd2024.subclass.ranger.hunter.hunters-lore",
+      "feature_name": "猎人学识 Hunter's",
+      "fingerprint": "7c428512e495bf96f22775f46c0b07612ebaa6e60cbe6cbf7dc1d81844be66c0",
+      "formal_ir": true,
+      "legacy_adapter_used": false,
+      "legacy_status": "full",
+      "pilot_authority": "compiler",
+      "pilot_compile_status": "full",
+      "runtime_sections": [],
+      "status_authority": "compiler"
+    },
+    {
+      "compiler_status": "full",
       "feature_id": "dnd2024.core.rogue.thieves-cant",
       "feature_name": "盗贼黑话",
       "fingerprint": "cf7c197d650f31a1f5ea89f2444de0743294adeda5e811b69b36d3f934383334",
@@ -2050,9 +3022,35 @@
     },
     {
       "compiler_status": "full",
+      "feature_id": "dnd2024.subclass.rogue.assassin.assassins-tools",
+      "feature_name": "刺客工具 Assassin's",
+      "fingerprint": "0e93a622e1d1b55bd22064e9f64a8b7e3fe5886ea0bd3f6808173478442a670e",
+      "formal_ir": true,
+      "legacy_adapter_used": false,
+      "legacy_status": "full",
+      "pilot_authority": "compiler",
+      "pilot_compile_status": "full",
+      "runtime_sections": [],
+      "status_authority": "compiler"
+    },
+    {
+      "compiler_status": "full",
       "feature_id": "dnd2024.subclass.rogue.thief.second-story-work",
       "feature_name": "梁上君子 Second-Story",
       "fingerprint": "58887b768165891404f838ca0e964634b05c4aeed11c5f34ab9bddac57d129a5",
+      "formal_ir": true,
+      "legacy_adapter_used": false,
+      "legacy_status": "full",
+      "pilot_authority": "compiler",
+      "pilot_compile_status": "full",
+      "runtime_sections": [],
+      "status_authority": "compiler"
+    },
+    {
+      "compiler_status": "full",
+      "feature_id": "dnd2024.subclass.rogue.soulknife.psionic-power",
+      "feature_name": "灵能力量 Psionic",
+      "fingerprint": "fa2e22390de625574178084659a73183d32c0f8767fcc560e2c65f29d9b7b25b",
       "formal_ir": true,
       "legacy_adapter_used": false,
       "legacy_status": "full",

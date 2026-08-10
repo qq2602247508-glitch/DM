@@ -1,0 +1,1320 @@
+{
+  "schema_version": "feature-ir-batch-1",
+  "mode": "preview",
+  "audit_total": 118,
+  "candidate_feature_count": 118,
+  "compiler_status_counts": {
+    "full": 0,
+    "partial": 118,
+    "manual": 0,
+    "invalid": 0
+  },
+  "direct_ir_authority_count": 0,
+  "materialized_count": 0,
+  "conflicts": [],
+  "rollback_plan": {
+    "required": false,
+    "strategy": "discard artifact and restore pinned pack version",
+    "runtime_status_mutated": false
+  },
+  "features": [
+    {
+      "feature_id": "class-feature:0524e70b02c8f40b",
+      "source_fingerprint": "4019cb486413eb39f8b158ca818aca8285839aa9b4f7fe73b7fbb11d5628006f",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:078ac13737f86e74",
+      "source_fingerprint": "16b734f1fb87a9e082bc869937589ab9b8dd39999b861d9fc58ef31f6a3cbc71",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:0b2d0d1e40eaca31",
+      "source_fingerprint": "797d0b7f3ac7a7fefa832cfd2b1344594112b258099eb8e3341c9418300285d1",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:0c1343ce0cc28c08",
+      "source_fingerprint": "e50285edd66079c0d3beba4b021eb6ba20359ee26e4a036b7a4ef11430820bb4",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:0cb9295d55ba24cf",
+      "source_fingerprint": "56366801d3bb1eab7b4035b360ec787deab97891cf76fa320c281baa9aba7cd6",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:0e4e7e32cb99cba7",
+      "source_fingerprint": "547227ad361534e717fe0dae57d169b74bf20ed7f78a5dc94485f54d1bab7837",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:0ea7d76b1746ec31",
+      "source_fingerprint": "8d4362bd2c6d4167bfdb0c7b9d0e86f469d4967bb4b1aae7087c38ac89cd9c6b",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:1080e829919b03e5",
+      "source_fingerprint": "e356c67d6c3a2caeebf23fee981c095ee31f6c62897fc16762ceb85db44351d4",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:10ea910ffb606660",
+      "source_fingerprint": "335f14e4ca1049e9f67bab2f5a354d865593bdaa985fbaa0567225a8640776bc",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:1119f8a4ef6c74c8",
+      "source_fingerprint": "b3114f79ad996ca826687ddf25e6018c1f0cd7f15fec3491ea387f38b4dd0c19",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:124075d8fc5f1498",
+      "source_fingerprint": "8db2bb2b3e6a4ce31d1510a697b710a9ceb01e5ce69cdd9569a6d4b15e134931",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:15b16ed62f110ae9",
+      "source_fingerprint": "90d8f5c11b85ed7d48180703f60017e9f21ffb0af1c3ad7d31ecbb7bd50454de",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:17184f3c871dec48",
+      "source_fingerprint": "305b506fcf2655c235076cb6d1c6d63fd2e0c8aa2af21953603e66fe9d885850",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:17499ee2538e30e2",
+      "source_fingerprint": "02cc5c1842e9042a9c22281c6b33fdb8ea36c1300bbe9dd3a21118f36e859b7c",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:19ba154d94cae3c3",
+      "source_fingerprint": "a2d30d27168f29dce1e6c5c0f692654bf2d94b891b2488cc70a21fd8e68195b6",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:1d42c47fabc5c3a3",
+      "source_fingerprint": "90aa55855da9b8e0da1c697c61dcb38541da1339234564a9832d88dbb798aaa4",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:21238a603307c8fc",
+      "source_fingerprint": "320127cbf7ef1c5d5d9f14f318da7928c4e735f2ace95872526923cfbe5dfbe1",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:22f743dbd14a2730",
+      "source_fingerprint": "9043f89f48086591ed3feb08393ac2c16b4fe9732d1452e845e98a33ebd1dcfe",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:25acd3a5a55fcb66",
+      "source_fingerprint": "e9493d5d044de9082e37984fbee28f9fffec17711df4b2cf60b28c03a67a830b",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:27b4062514607e55",
+      "source_fingerprint": "313ff266aad3f42f31522260c84cbccbc8ab825e75035c5f911fb287c2046f4b",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:283e861d7bdf0cb2",
+      "source_fingerprint": "a0de9f117c4a8a133f6884a8ec6ac3a2d86ca319998d57d6988b8b33d51fbb18",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:2cc94c28bc4f7b4b",
+      "source_fingerprint": "806ea6f9882bf5858f37fa4e98016ef8e5b8178ef2b713408e031b379dca4de6",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:2f26d330f6201939",
+      "source_fingerprint": "0c58448b57472776f1a19ac1da080e55e45b19510a7faeff6c89a5d852002ed5",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:338372084c3e331d",
+      "source_fingerprint": "37b57be654c942fa5e01923c464c8bcde014f9bf62a519c9e62c1d9bb1217aa9",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:3410e0c57a5efd0c",
+      "source_fingerprint": "ddde543c8ae30028e6888bb00ccba1415d102631be399dd850afb722203ff4fb",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:3632b6605dfbca5f",
+      "source_fingerprint": "5bd15b7f0f3f226e61257b2b8c47f2def13866f91387bdd332335dc681c1653a",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:37698183af0107e2",
+      "source_fingerprint": "74be20fd3e463f68360ac39f15a9e3370e9d45072210a3facfd421ada0830ba8",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:37a2819efc1b9a4e",
+      "source_fingerprint": "bdc48d25cba12eb3e17b763eed094a1b06d13f91dc20202462f95342e2c93697",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:43b65d6fe3404d4b",
+      "source_fingerprint": "4d0b5ee9395e701865ceb1ca96e1ff73cf64dadc92d9d5d079cdbde894bcdd52",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:4687bd40962a67ea",
+      "source_fingerprint": "4a5d2b941802c13f53390596526b4040085c061e3e3be8d40ebcc98c5b109b6c",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:46b6f85251ddb201",
+      "source_fingerprint": "d5830f1f1bcedb3ea70bf40bc84332503b16f93c0e1195134fea7f6ab8fb7724",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:4734713a4ef9be26",
+      "source_fingerprint": "47705363f7cee375f574b552c041272a9113a1fa5ed49d90e37ca548569443d4",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:496001f8278a4a9f",
+      "source_fingerprint": "dfe77da17bd3df5a77b4346559778e13f5290053b05ca639a2a769018ca0c703",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:4fac17922bbdca23",
+      "source_fingerprint": "826e5cc5219259076d84ee723b5c47790a7fc0555f6a196576b10abe011e0bc9",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:500ce3973cf49c03",
+      "source_fingerprint": "6db1e663745fb859d9e38e2bc1121a886b37cfa079d05d0b77d427f33e8791d5",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:50bfd81d69ca958d",
+      "source_fingerprint": "dfd53613a237bb13652597e9b77df54fb6054d39b908e7326f35b6f9c092dfc9",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:5194a54843b5359f",
+      "source_fingerprint": "8088c584533d2eb7fdffbbe4d3a51c3333186b66479e9fcde34067cf82d6ccd4",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:520d7cf87eb32c66",
+      "source_fingerprint": "473220d2637c587e08b413987f9b19a6d412f2a4f6109cc016dc97fd5bd1016e",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:539cfec10d38d4df",
+      "source_fingerprint": "9ad04f9925a6f089a2a853f0f2cb28e20412a7539ecf161bde62cb4af03bdac1",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:5458a7e25b110ee9",
+      "source_fingerprint": "51f3534d45a9abea91c2bbe7fe772fddc111ab1d3cb611f93b513b6773b50404",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:55aa7f55478e2418",
+      "source_fingerprint": "118c871666b9ba23b7c57e90913eeab336d25df4c22f0c283a7c432820807be7",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:56760666b654e350",
+      "source_fingerprint": "25e636a5853e1ab54d2ddf8d28af5a1f3ad121c7bfeb4386b39eb40614c0dc3f",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:57d5f1e8c0dd5944",
+      "source_fingerprint": "ad461c08ed5dcd03eb39fba04ff4681d8b2da68aa5d529c13fa2a1e864b32bff",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:5925641fa157ea01",
+      "source_fingerprint": "43ea8197c36e7bc069ab7aeabc3f92b90d9c4af3464aba69e9143a8846196120",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:59beea03224b8e47",
+      "source_fingerprint": "89a4aa0aae875691d4243258280676c352fdd7cfab97ed13c88e6eb9a8996165",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:5e14322c6353347d",
+      "source_fingerprint": "a86ab3f238043d05857d9538ec6543a09318933e03c908b16c9fed90edea8ca0",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:606ee004882c0cfe",
+      "source_fingerprint": "36d1216f5fd00d8bbcd4a333e3f788a875c0e15154e25f5fd7600fa3cf3f9110",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:6277aee791a99dee",
+      "source_fingerprint": "775b6a18331f872a64984167a99849e8737d6d3fd8e330873ed338d1a09648e3",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:63bced28482c489a",
+      "source_fingerprint": "50773019e0011cc459d098b553550c9f6329871c84fe2b068cf19f3c2745ca83",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:65c466121f1669d0",
+      "source_fingerprint": "61595a4315f91a05319fe05d37177a1f79f30ee28968140d5157b43147e8a850",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:6667209200aab532",
+      "source_fingerprint": "847b03f3a0c862cb79a6b16301d0672acd6e0226131f4989f72a5a135c8e9f6b",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:67502ba547584090",
+      "source_fingerprint": "e0112950b6918c31b11ec9b863abf5ab253bcf79723d6b4994b15744b87ae8d5",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:678892d13e000cb9",
+      "source_fingerprint": "80f36c25d5f764881e345b174c7ee6cd3ce6d528005d52938f411561c4746ceb",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:679f1ac1aac21bde",
+      "source_fingerprint": "6eea9338bd922d0211f6640b056ea6916e356211b7091398f20e9c1c34a72a17",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:681d0bb55391d4c8",
+      "source_fingerprint": "a687be733a49b00220cdb5d478aaa7295b01f2e20301006fea5eb3fac96cd18e",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:688655a3b1722490",
+      "source_fingerprint": "c48f8a9e945e45274fa9796edac0aeddbc18de188dddf3d93f02d6456368a4ff",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:6958797f46ff208f",
+      "source_fingerprint": "11ec0ee6fc5c507c832604fd7a0ba80c4606f6bd80a593baab83c7068ea78b68",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:697f04ed13c258b0",
+      "source_fingerprint": "79216a8e291821b9fb0295eee5da7c1df166f2ae5de702511e03fabe64a4543d",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:6a753b99804d1888",
+      "source_fingerprint": "5511dd8eca64aa49371215d0f913a7f9c707e8dedab87416fea0891f671782c5",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:6ada8a8947f8bf66",
+      "source_fingerprint": "ff0fa7612bd3c990f6194627f9ec21a4573dfe4645036742b72b091b3c9a8f68",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:6efe31b5a16330e9",
+      "source_fingerprint": "256f6caa89df8c18e0a2ca5a1f5c1ac88b311a7e416033b36f618574058ef346",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:718b578f0cf05002",
+      "source_fingerprint": "94c5f63aee33238e422ac0b7cdd0acdf9a7c9d8bdae5d7606497c7a823d57b86",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:735058172b1372a1",
+      "source_fingerprint": "21f194d87f77662aaf5c7b29d3f436cf02434f6365a60bd5f75c65814017c278",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:7873c77678627a30",
+      "source_fingerprint": "a9aafd2ff2a31747238d162f71691396a55afc915a3874a595606ab312a02bd1",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:7c0e1575ffe9d526",
+      "source_fingerprint": "eaa8c52ff1067f1064c5905ff774b38d30e0f299ed8e27756723c32d7440319a",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:7ceb8324e4836cde",
+      "source_fingerprint": "f6c313d4978d21748abd411c0d4e8d3cf84cbce845d97bd1f35b24d5386a7644",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:7cfd8d525e76d930",
+      "source_fingerprint": "b472a9b464288861f4366ac05c7ec647997aff8a0d033b047141279ca2eb8fd2",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:7d03abbf866a0452",
+      "source_fingerprint": "94f797646102cd47ea2ca89d8aa605d0712e036dcd347ff7b826ec46944e1210",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:7df94d91ba3b0147",
+      "source_fingerprint": "e21b3556cb8263ba0b318293a65c99c9a3ffb7a8142526b1d62d531a3b506f00",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:7ff7b05dfc364798",
+      "source_fingerprint": "7008fe64b7e4406bbd73f4ebb85fb2009d62898e4b57caddb9edb5fc2e3cabc5",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:8208bc47ead99f2b",
+      "source_fingerprint": "e7e2dd637d498dba681149db084addb7f00fd21b981225ab032bda77cf099a9a",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:851e154367c1c325",
+      "source_fingerprint": "0cab9acd983cb9ceed5e7e2179282069c72a502a92733bf8c71c5b9114aa9806",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:852fb3fc481bbfaa",
+      "source_fingerprint": "cfe296b33a3bf55a04e2634546f4e76379cd5da3bb998f94947e95bfcab02963",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:88819ca54d3451f7",
+      "source_fingerprint": "32136cfb2859b997903324404716eeff2cd8fff644a58f689d32b598351b8e97",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:8bcb7df353e9ff6c",
+      "source_fingerprint": "5c6e4f755ae1ce571b04bea9094e7a0741b6f2509a6f505aa159cc91a741fbcf",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:8c7e591b7cf5b5bf",
+      "source_fingerprint": "f24ab87740a3e197cd654f143812a9cbc66b20740f52be337b48a7a21998749d",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:93c3cc6d2c18e51a",
+      "source_fingerprint": "c8136d17dec77ce6e3d1d981a710fd0b318a945b89021be88cf596bdc254d059",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:946f2254fdcd1db8",
+      "source_fingerprint": "22720066117ddc86a86d0917171873f7359c271a365e4c615ae562d72b271404",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:97df2ee922900b28",
+      "source_fingerprint": "1c462b122b41820eaf29927e2e4bf91cf373324d83b2284b67079d28568d6a13",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:97ff56638aa11d33",
+      "source_fingerprint": "cd5b8e002ed80918f6ece0ebec25e382e6932ce2528118de82aaf76aff6ec07c",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:98bc60b06db01c33",
+      "source_fingerprint": "9e3b7f2f3d37bebf5cab55fe6f6221d3039244855622d592e870fbe1fc5499e0",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:9945712da726dfb5",
+      "source_fingerprint": "ac685e45bcf799eec48dfed22d396eb889e49a83b3a738c894e8484b1e5f4308",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:9a69a4d5d5e9e380",
+      "source_fingerprint": "70f5993e0197e475511c27f033b2b250fecd7577184d1aef5b1182487983594b",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:9ba88f76394c37f9",
+      "source_fingerprint": "328033f6171188bfe1a1e05eefa8e861fc102da1d0996d9f9b2935f65e2ae5dc",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:9f4e9285c1f3ba3b",
+      "source_fingerprint": "4d6b0addc8a9c25520e965ac73341d7ef214becc7d667c3fcf1c44b0f0f13227",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:a1aba5eec5ff3faa",
+      "source_fingerprint": "87bc3685183567a139d279e6c7d7227901aae42758334b66acb73e2a8114caa2",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:a2a199233a85a1d4",
+      "source_fingerprint": "50da29207b44d559e59aebf05de241592da011ea979d0215ea6d1a77437773e4",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:a4f67cb1becec092",
+      "source_fingerprint": "ca3b34328f458b15f762053c148d8d788618939806ce9701081fa2ecbf91d481",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:a4fac69a52714d0b",
+      "source_fingerprint": "9e42aec65050c548a7a413ebd0a8dec6865134e3e1102527ecf921cc982a73f1",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:a55dd45cf84e5cef",
+      "source_fingerprint": "12467bd5b79f14d0c4165a3d06a2b274e7e4670552cf6745f22d828c14949a55",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:a6a59f4140a36d35",
+      "source_fingerprint": "845118b374291976c4d24ff259910c4f22d84bd7a9edb3d9462580897d682e00",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:a7ca12b833421ea6",
+      "source_fingerprint": "db60d1ad04c89a0ef2d38c2b79dfbb39adb10e2134faec16cfba9406004860ae",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:a9e3c0243891c624",
+      "source_fingerprint": "060e058c080de9a1d661cff56ff88a0a2b6fa53b5b1c231d5d184171edfa08a4",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:b6f3f48050e7035b",
+      "source_fingerprint": "2a818951113ca071ff84159dc7cdcb9a6feb48707432b58174054bd78ea1302f",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:b96c94d28ac81e46",
+      "source_fingerprint": "5aca231d00ba3f25e1d73012d0edadb86d50aab29ec5333b6cc57b8adb2f4ec4",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:c21bea2e78543102",
+      "source_fingerprint": "c7b08fd768327fdec2f486077534c9ea6d6cb51b7089a1f24e6f19fc4161d6cb",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:c4b4c3284817fc94",
+      "source_fingerprint": "171a7e85b4f16f0437a2525a5d4b255c83a7fa82f8467a5b23f58a756310340f",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:c6e537e638150706",
+      "source_fingerprint": "a5176ada2860e33ff242b9b0ca8547856b20e4db0b8c2f3df0c0bfa2b073ca0a",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:c7063012192e947a",
+      "source_fingerprint": "35f705fe5e4d173768d904167b5d6b9b5a2b977d6da3cfbaaa483d44d5c257d2",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:c78fb6ae252465c8",
+      "source_fingerprint": "96cdb87238ed0e69aea35f8d0699fb48df92a68cc4381d776c662c822e790699",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:ca5e268dca42a5ae",
+      "source_fingerprint": "02474ee3902e17d3495fc90056aa27673a5c823dff7db251d852db20ed23961c",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:cbf467e94be74e49",
+      "source_fingerprint": "2803e7b767ce8d53fb168c969b35cec844519ff6bbddfdf4c5ff5201138b8f03",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:cccc5fc997b4dc84",
+      "source_fingerprint": "8cba80679234fd0f49aa8180075a9834139c08b2e1cc5856c2596f768d38543e",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:cea107cc6dfbbb7f",
+      "source_fingerprint": "7de6c5504c291a182302707ad1ddf7c9e609e86f781517851574ca1c7a76c877",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:d1a7309d095c5abc",
+      "source_fingerprint": "ba4ecc5d641578ce2f39d1dcde6c02a9b587feb1ccae1fda68b772ed58719482",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:d56bab70b9397a07",
+      "source_fingerprint": "436b8feb5edceeeb4878f2de63b64d44a09e2729898c9f41a475f970daed55fe",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:ddb4cc07fe17e514",
+      "source_fingerprint": "4b7533ea030871d7c407a77a9547aaa4cfacf053a8abfe6dbe3cdcb630150952",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:decb737f1ad0c4d6",
+      "source_fingerprint": "82c9e9698c238f99c791de78b47e51c973cf42e652ee0623005a2f325a8eef73",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:dffcd4e5f9f10fe7",
+      "source_fingerprint": "dd2aefbd6f67dff7e36983a6c2ae5e90ae92ac194ff7f2ade910fb60f21e0cb7",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:e8f35a2a8eb81735",
+      "source_fingerprint": "6bf24c3ec47141f89e77a0a3cbc5d54dfbca4e07c7d84c28841a3ecc021d3523",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:ec738cdc6e6d0113",
+      "source_fingerprint": "c4e1ffb84e9affe3a6a21d3d60446fad4c6ea60fa5027a047db94aa4cd30aed6",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:ee48895475be9b1d",
+      "source_fingerprint": "43e34ff1e8dea6cb8aa437d95c44da3d81f905b71b910cba9ed41b46323e4c5b",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:eef45966b4ce747a",
+      "source_fingerprint": "db737167a8524d488d2cb7c70a26ba6b57d1d4d908ddb48ce277a5e67907481a",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:f66dda9554857a0e",
+      "source_fingerprint": "039bcb3f94ce586cac4bcfc577d41313282da9cc28580e04632f76ed5f932c4c",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:f97d5c3353dffa49",
+      "source_fingerprint": "4b21ecc5ebbce8ee02e0231e5806e241faf5ae0c694c3f7cfc1f48023b27cb1e",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:fa99364aa5f125e1",
+      "source_fingerprint": "ee2cc879d836e1ff27e547c147bab8ed82e7638f65fe609a146a006d0d83a174",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:fec6e9ab4382139f",
+      "source_fingerprint": "280ee11bfb746c0b6e6494855580dfd7414cb3d8f117c1d3b77cc02c6f2bb194",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    },
+    {
+      "feature_id": "class-feature:ff9e316effe60444",
+      "source_fingerprint": "a08116fb0850f0106b9bcbb94e67fc03b3366d2b00d0386395b60ae4cc166ff9",
+      "spec_fingerprint": null,
+      "compiler_status": "partial",
+      "status_authority": "none",
+      "blockers": [
+        "missing_typed_spec"
+      ],
+      "materialized": false
+    }
+  ]
+}

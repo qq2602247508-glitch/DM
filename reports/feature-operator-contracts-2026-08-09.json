@@ -315,6 +315,73 @@
       ]
     },
     {
+      "capability_id": "attack.roll.intervention",
+      "compatible_action_economy": [
+        "automatic",
+        "none"
+      ],
+      "compatible_activation": [
+        "automatic",
+        "dm_accept",
+        "explicit_choice",
+        "player_accept"
+      ],
+      "compatible_conditions": [
+        "action_tag",
+        "actor_has_feature",
+        "actor_has_state",
+        "actor_lacks_state",
+        "armor_category",
+        "audible",
+        "damage_type",
+        "equipped",
+        "first_round",
+        "first_turn",
+        "once_per_target",
+        "once_per_turn",
+        "resource_is_zero",
+        "spell_level_range",
+        "spell_school",
+        "spell_source",
+        "target_has_not_acted",
+        "target_has_state",
+        "target_matches_persisted_id",
+        "visible",
+        "weapon_category",
+        "within_range"
+      ],
+      "compatible_durations": [
+        "advancement_persistent",
+        "permanent"
+      ],
+      "compatible_resource_operations": [],
+      "compatible_targets": [
+        "self"
+      ],
+      "compatible_triggers": [
+        "advancement_confirmed"
+      ],
+      "conditional_required_fields": [],
+      "contract_version": "1.0",
+      "enum_values": {},
+      "materializer_id": "attack.roll.intervention",
+      "mutually_exclusive_fields": [],
+      "numeric_bounds": {},
+      "operator_id": "configure_attack_roll_intervention",
+      "optional_parameters": [
+        "id"
+      ],
+      "parameter_types": {
+        "id": "string",
+        "modes": "array",
+        "source_die_key": "string"
+      },
+      "required_parameters": [
+        "modes",
+        "source_die_key"
+      ]
+    },
+    {
       "capability_id": "resource.lifecycle.consume",
       "compatible_action_economy": [
         "action",
@@ -882,7 +949,8 @@
       "compatible_action_economy": [
         "action",
         "bonus_action",
-        "explicit_player_choice"
+        "explicit_player_choice",
+        "none"
       ],
       "compatible_activation": [
         "automatic",
@@ -951,12 +1019,14 @@
       "optional_parameters": [
         "id",
         "range_ft",
+        "required_state_target_key",
         "visibility"
       ],
       "parameter_types": {
         "id": "string",
         "information_kind": "string",
         "range_ft": "integer",
+        "required_state_target_key": "string",
         "visibility": "string"
       },
       "required_parameters": [
@@ -1620,6 +1690,95 @@
       },
       "required_parameters": [
         "damage_type"
+      ]
+    },
+    {
+      "capability_id": "defense.saving_throw_advantage",
+      "compatible_action_economy": [
+        "automatic",
+        "none"
+      ],
+      "compatible_activation": [
+        "automatic",
+        "dm_accept",
+        "explicit_choice",
+        "player_accept"
+      ],
+      "compatible_conditions": [
+        "action_tag",
+        "actor_has_feature",
+        "actor_has_state",
+        "actor_lacks_state",
+        "armor_category",
+        "audible",
+        "damage_type",
+        "equipped",
+        "first_round",
+        "first_turn",
+        "once_per_target",
+        "once_per_turn",
+        "resource_is_zero",
+        "spell_level_range",
+        "spell_school",
+        "spell_source",
+        "target_has_not_acted",
+        "target_has_state",
+        "target_matches_persisted_id",
+        "visible",
+        "weapon_category",
+        "within_range"
+      ],
+      "compatible_durations": [
+        "advancement_persistent",
+        "current_round",
+        "current_turn",
+        "one_hour",
+        "one_minute",
+        "permanent",
+        "ten_minutes",
+        "until_condition_ends",
+        "until_long_rest",
+        "until_short_rest"
+      ],
+      "compatible_resource_operations": [],
+      "compatible_targets": [
+        "self"
+      ],
+      "compatible_triggers": [
+        "ability_check",
+        "action_declared",
+        "action_resolved",
+        "advancement_confirmed",
+        "attack_declared",
+        "attack_hit",
+        "attack_missed",
+        "combat_started",
+        "damage_applied",
+        "damage_before_apply",
+        "explicit_activation",
+        "initiative_rolled",
+        "saving_throw",
+        "spell_cast",
+        "turn_ended",
+        "turn_started",
+        "zero_hp"
+      ],
+      "conditional_required_fields": [],
+      "contract_version": "1.0",
+      "enum_values": {},
+      "materializer_id": "defense.saving_throw_advantage",
+      "mutually_exclusive_fields": [],
+      "numeric_bounds": {},
+      "operator_id": "grant_saving_throw_advantage",
+      "optional_parameters": [
+        "id"
+      ],
+      "parameter_types": {
+        "applies_when": "string",
+        "id": "string"
+      },
+      "required_parameters": [
+        "applies_when"
       ]
     },
     {
@@ -3010,12 +3169,14 @@
       "operator_id": "set_resource_profile",
       "optional_parameters": [
         "id",
-        "max_formula"
+        "max_formula",
+        "recovery_events"
       ],
       "parameter_types": {
         "die_size": "integer",
         "id": "string",
         "max_formula": "string",
+        "recovery_events": "array",
         "resource_key": "string",
         "resource_kind": "string"
       },
@@ -3354,7 +3515,7 @@
       ]
     }
   ],
-  "operator_count": 35,
+  "operator_count": 37,
   "schema_version": "feature-operator-contracts-1",
-  "strict_schema_count": 35
+  "strict_schema_count": 37
 }

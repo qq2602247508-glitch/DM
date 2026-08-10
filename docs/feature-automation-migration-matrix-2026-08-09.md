@@ -4,8 +4,8 @@
 
 - 矩阵 schema：`feature-automation-migration-plan-2`
 - 总条目：499
-- 当前状态：`{'full': 318, 'dm_only': 61, 'partial': 120}`
-- 预审状态：`{'already_full': 318, 'manual_boundary': 3, 'missing_runtime_contract': 112, 'consumer_partial': 25, 'needs_contract_review': 6, 'missing_source': 35}`
+- 当前状态：`{'full': 320, 'dm_only': 61, 'partial': 118}`
+- 预审状态：`{'already_full': 320, 'manual_boundary': 3, 'missing_runtime_contract': 110, 'consumer_partial': 25, 'needs_contract_review': 6, 'missing_source': 35}`
 
 ## 模板分组
 
@@ -17,9 +17,9 @@
 | 资源/恢复/频率 (`resource_lifecycle`) | 64 | 50 | 12 | 2 | 0 | 0 | 0 |
 | 命中后骑手 (`attack_rider`) | 13 | 5 | 0 | 0 | 8 | 0 | 0 |
 | 光环/范围被动 (`aura_passive`) | 48 | 13 | 34 | 1 | 0 | 0 | 0 |
-| 伤害/治疗 (`damage_healing`) | 48 | 30 | 17 | 1 | 0 | 0 | 0 |
+| 伤害/治疗 (`damage_healing`) | 48 | 31 | 16 | 1 | 0 | 0 | 0 |
 | 移动/位移 (`movement`) | 15 | 6 | 9 | 0 | 0 | 0 | 0 |
-| 通用被动/数值修正 (`passive_modifier`) | 79 | 37 | 6 | 0 | 0 | 1 | 35 |
+| 通用被动/数值修正 (`passive_modifier`) | 79 | 38 | 5 | 0 | 0 | 1 | 35 |
 | 伤害前/防御干预 (`pre_damage_intervention`) | 13 | 5 | 7 | 1 | 0 | 0 | 0 |
 | 掷骰干预 (`roll_intervention`) | 46 | 29 | 0 | 0 | 17 | 0 | 0 |
 | 状态生命周期 (`state_lifecycle`) | 34 | 21 | 12 | 1 | 0 | 0 | 0 |
@@ -31,9 +31,9 @@
 
 | 能力簇 | 总数 | full | 非 full | 本轮可直接迁移 | producer | consumer | 新 UI | 新持久化 |
 |---|---:|---:|---:|---:|:---:|:---:|:---:|:---:|
-| passive_modifier | 79 | 37 | 42 | 0 | 是 | 是 | 是 | 否 |
+| passive_modifier | 79 | 38 | 41 | 0 | 是 | 是 | 是 | 否 |
 | aura_passive | 48 | 13 | 35 | 0 | 是 | 是 | 是 | 是 |
-| damage_healing | 48 | 30 | 18 | 0 | 是 | 是 | 是 | 是 |
+| damage_healing | 48 | 31 | 17 | 0 | 是 | 是 | 是 | 是 |
 | roll_intervention | 46 | 29 | 17 | 0 | 是 | 是 | 是 | 是 |
 | resource_lifecycle | 56 | 42 | 14 | 0 | 是 | 是 | 是 | 是 |
 | state_lifecycle | 34 | 21 | 13 | 0 | 是 | 是 | 是 | 是 |

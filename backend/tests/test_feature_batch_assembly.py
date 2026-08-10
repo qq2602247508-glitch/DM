@@ -89,7 +89,52 @@ def test_census_proves_partial_corpus_has_no_large_homogeneous_cluster() -> None
     spec.loader.exec_module(module)
     report = module.census()
     assert report["audit_total"] == 499
-    assert report["status_counts"] == {"full": 318, "partial": 120, "dm_only": 61}
-    assert report["partial_total"] == 120
+    assert report["status_counts"] == {"full": 320, "partial": 118, "dm_only": 61}
+    assert report["partial_total"] == 118
     largest = report["largest_partial_clusters"][0]
     assert largest["member_count"] <= 2
+    assert report["classification_counts"] == {"missing_authority": 118}
+    assert report["contract_relation_counts"]["equivalent_contract"] == 0
+    assert report["contract_relation_counts"]["superficially_similar"] > 0
+    assert all(
+        item["merge_allowed"] is False
+        for item in report["superficially_similar_clusters"]
+    )
+    required_contract_fields = {
+        "trigger",
+        "conditions",
+        "activation",
+        "action_economy",
+        "target_policy",
+        "input_requirements",
+        "resource",
+        "frequency",
+        "duration",
+        "expiry",
+        "effect_operator",
+        "effect_parameters",
+        "producer",
+        "consumer",
+        "persisted_state",
+        "cas_support",
+        "idempotency_support",
+        "materializer",
+        "validator",
+        "production_evidence",
+        "remaining_blocker",
+    }
+    assert all(
+        required_contract_fields <= set(item["semantic_contract"])
+        for item in report["partial_signatures"]
+    )
+    assert all(
+        {
+            "production_closed",
+            "needs_new_producer",
+            "needs_new_consumer",
+            "needs_new_persistence",
+            "estimated_full_count",
+        }
+        <= set(cluster)
+        for cluster in report["largest_partial_clusters"]
+    )

@@ -18,6 +18,9 @@ from dnd_dm_assistant.application.feature_pack_importer import (
     FeaturePackRegistry,
     load_feature_pack,
 )
+from dnd_dm_assistant.application.formal_feature_specs import (
+    formal_feature_spec_for_definition,
+)
 from dnd_dm_assistant.domain.feature_capabilities import (
     CapabilityCatalog,
     CapabilityDescriptor,
@@ -266,8 +269,8 @@ def test_legacy_shadow_parity_selects_formal_and_verified_rows() -> None:
     spec.loader.exec_module(module)
     report = module.audit()
     formal = [row for row in report["rows"] if row.get("formal_ir")]
-    assert len(formal) == 16
-    assert sum(row["source_trust"] == "authored_ir" for row in formal) == 12
+    assert len(formal) == 25
+    assert sum(row["source_trust"] == "authored_ir" for row in formal) == 21
     assert sum(row["source_trust"] == "verified_mapping" for row in formal) == 4
     assert {
         row["status_authority"] for row in formal
@@ -280,8 +283,8 @@ def test_audit_rows_expose_shadow_fields_without_changing_499_statuses() -> None
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     report = module.audit()
-    assert report["status_counts"] == {"full": 318, "partial": 120, "dm_only": 61}
-    assert report["compiler_pilot"]["count"] == 16
+    assert report["status_counts"] == {"full": 320, "partial": 118, "dm_only": 61}
+    assert report["compiler_pilot"]["count"] == 25
     for row in report["rows"]:
         assert {
             "ir_available",
@@ -295,3 +298,148 @@ def test_audit_rows_expose_shadow_fields_without_changing_499_statuses() -> None
             "legacy_adapter_used",
             "compiler_fingerprint",
         } <= row.keys()
+
+
+def test_combat_inspiration_materializes_to_real_attack_intervention_contract() -> None:
+    spec = importlib.util.spec_from_file_location(
+        "formal_feature_specs_for_test",
+        ROOT / "backend/src/dnd_dm_assistant/application/formal_feature_specs.py",
+    )
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    definition = {
+        "name": "战斗激励Combat Inspiration",
+        "class_name": "吟游诗人",
+        "subclass_name": "勇气学院",
+        "class_level": 3,
+        "source_record_id": "2709144090ad73a4c316bfe6",
+    }
+    feature = module.formal_feature_spec_for_definition(definition)
+    assert feature is not None
+    result = FeatureCompiler().compile(feature)
+    assert result.compile_status == "full"
+    runtime = materialize_runtime_definition(feature, result)
+    action = runtime["actions"]["combat_inspiration"]
+    assert action["kind"] == "attack_roll_intervention"
+    assert action["source_die_key"] == "bardic_inspiration_die"
+    assert action["modes"] == ["defense", "offense"]
+    assert action["runtime_execution"]["consumer"] == "player_attack_resolution"
+
+
+@pytest.mark.parametrize(
+    ("definition", "expected_section"),
+    [
+        (
+            {
+                "name": "心灵防御 Psychic",
+                "class_name": "术士",
+                "subclass_name": "畸变术法",
+                "class_level": 6,
+            },
+            "combat_start",
+        ),
+        (
+            {
+                "name": "高效重击 Superior",
+                "class_name": "战士",
+                "subclass_name": "勇士",
+                "class_level": 15,
+            },
+            "combat_start",
+        ),
+        (
+            {
+                "name": "操命本事 Implements of",
+                "class_name": "武僧",
+                "subclass_name": "命流武者",
+                "class_level": 3,
+            },
+            "proficiencies",
+        ),
+        (
+            {
+                "name": "刺客工具 Assassin's",
+                "class_name": "游荡者",
+                "subclass_name": "刺客",
+                "class_level": 3,
+            },
+            "proficiencies",
+        ),
+        (
+            {
+                "name": "法术抗性 Spell Resistance",
+                "class_name": "法师",
+                "subclass_name": "防护师",
+                "class_level": 14,
+            },
+            "combat_start",
+        ),
+        (
+            {
+                "name": "灵能力量 Psionic",
+                "class_name": "战士",
+                "subclass_name": "灵能武士",
+                "class_level": 3,
+            },
+            "resources",
+        ),
+        (
+            {
+                "name": "灵能力量 Psionic",
+                "class_name": "游荡者",
+                "subclass_name": "魂刃",
+                "class_level": 3,
+            },
+            "resources",
+        ),
+    ],
+)
+def test_new_authored_ir_slice_materializes_against_existing_full_consumers(
+    definition: dict[str, Any],
+    expected_section: str,
+) -> None:
+    feature = formal_feature_spec_for_definition(definition)
+    assert feature is not None
+    result = FeatureCompiler().compile(feature)
+    assert result.compile_status == "full"
+    runtime = materialize_runtime_definition(feature, result)
+    assert runtime["automation_status"] == "full"
+    section = runtime[expected_section]
+    assert section
+    if isinstance(section, dict):
+        entries = [
+            entry
+            for value in section.values()
+            for entry in (
+                value if isinstance(value, list) else [value]
+            )
+            if isinstance(entry, dict)
+        ]
+    else:
+        entries = list(section)
+    assert all(
+        isinstance(entry, dict)
+        and entry.get("runtime_execution", {}).get("status") == "ready"
+        for entry in entries
+    )
+
+
+def test_resource_profile_materializer_preserves_partial_short_rest_recovery() -> None:
+    definition = {
+        "name": "灵能力量 Psionic",
+        "class_name": "战士",
+        "subclass_name": "灵能武士",
+        "class_level": 3,
+    }
+    feature = formal_feature_spec_for_definition(definition)
+    assert feature is not None
+    result = FeatureCompiler().compile(feature)
+    runtime = materialize_runtime_definition(feature, result)
+    profile = runtime["resources"]["$feature_resource"]
+    assert profile["resource_kind"] == "psionic_dice"
+    assert profile["recovery"] == "custom"
+    assert profile["recovery_events"] == [
+        {"rest": "short_rest", "operation": "restore", "amount": 1},
+        {"rest": "long_rest", "operation": "set_to_max"},
+    ]

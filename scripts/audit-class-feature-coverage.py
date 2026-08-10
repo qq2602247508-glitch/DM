@@ -337,7 +337,13 @@ def audit() -> dict[str, Any]:
             for definition in subclass.get("feature_definitions") or ():
                 description = str(definition.get("description") or "")
                 keys = _blocks(description, str(definition.get("name") or ""))
-                configured_status = subclass_feature_automation_status(definition)
+                configured_status = subclass_feature_automation_status(
+                    {
+                        **definition,
+                        "class_name": class_name,
+                        "subclass_name": subclass_name,
+                    }
+                )
                 runtime_status = configured_status or (
                     "partial"
                     if subclass.get("automation_status") == "partial"
