@@ -1,3 +1,12 @@
+# 2026-08-12 Round 14 检查点：Residual Complete ItemSpec Closeout / Dawn Boundary
+
+- Round XIV 关闭当前 inventory 中剩余的 5 条完整 ItemSpec：堕影冥界碎晶、伪装刺青、堕影冥界印记刺青、重生坩埚、凝晶年纪。5/5 通过 equipment create、attunement/equip、granted action 或 charge、preview→confirm→幂等 replay。
+- 2/2 魔法刺青完成 `manifested/ink → needle_returned/needle`；凝晶年纪的 typed `recovery_trigger=dawn` 通过真实 `RestService._item_charge_recovery()` boundary probe，`long_rest` 不会错误恢复 dawn charge。共 12 个 operation transactions、1 条 charge lifecycle、`name_branch_count=0`。
+- ItemSpec status layers：`47 total / 37 compile_full / 37 isolated_runtime_validated / 37 registered_production_full / 37 game_usable`；项目 production full `166→171`。Tasha Feature 独立维持 `74 production / 2 dm-assisted / 76 game-usable`。
+- Round XIV validator/test/report/result/doc、ItemSpec catalog、isolated runtime definitions/registry 和 whole-pack reports 已落地；Round X–XIV 定向测试 20 项、backend 全量 pytest `889 passed`、Ruff、compileall、`git diff --check` 通过。formal registry/database/campaign/character、source corpus、3D 和永久保护路径未写入。
+- 本轮只有 5 条是因为它们已经是全部剩余完整合同；未解析的 action/spell/effect clauses 仍保持 manual/DM 边界，不能被这些 evidence 自动提升。永久指纹保持：database `f3abdcf57b0d71888f085ca081511df4e4f23f100066b402d49d769089fa6aad`、formal registry `f4b5eab251b2f9f2d426ba271bb25faec773884a327f9d46e566791b97cbca6b`、integrations `ae4ef9f5518ac28272643dc668c40ed49e76da052c84c7023bbb5636d303cd91`、ollama `8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3`。
+- 实现/证据提交 `d6cae79f73601fced2636050f3de97ba81a101ed` 已推送到 `origin/main`；本交接 receipt 更新随后单独提交。下一轮继续 unresolved partial clauses 的 typed semantic unlock，不将 DM-reference、manual 或 isolated-only 计入 production。
+
 # 2026-08-12 Round 13 检查点：Additional ItemSpec Equipment Consumer Batch
 
 - Round XIII 在隔离 SQLite 上完成月镰、自然护符、巴巴·雅加的魔法扫帚、星界碎片、重复手稿、爆裂论文、防护诗篇和狂欢者风笛共 8 条完整 ItemSpec 的 equipment create、attunement/equip、granted action 或 charge、preview→confirm→幂等 replay。

@@ -6,6 +6,19 @@
 
 其中 `game_usable = registered_production_full + dm_assisted`。隔离 pack 不得自动成为正式 registry。
 
+## Round 14：Residual Complete ItemSpec Closeout / Dawn Boundary
+
+当前状态：`accepted`；本轮关闭剩余 5 条完整 ItemSpec，已提交并推送。
+
+- 堕影冥界碎晶、伪装刺青、堕影冥界印记刺青、重生坩埚和凝晶年纪全部通过通用 equipment create → attunement/equip → granted action 或 charge → preview → confirm → 幂等 replay。5/5、12 个 operation transactions、2 条 tattoo lifecycle 和 1 条 charge lifecycle 通过。
+- 凝晶年纪的 typed `recovery_trigger=dawn` 经真实 `RestService._item_charge_recovery()` boundary probe 验证不会被 `long_rest` 错误恢复；`name_branch_count=0`。
+- ItemSpec status layers：`47 total / 37 compile_full / 37 isolated_runtime_validated / 37 registered_production_full / 37 game_usable`；项目 production full `166→171`。Feature Tasha 仍独立为 `74/2/76`。
+- 本轮只有 5 条是因为它们已经是全部剩余完整合同；其余 unresolved action/spell/effect clauses 仍保持 manual/DM 边界，不被本轮 evidence 覆盖。formal registry/database、campaign/character 和 source corpus 未写入。
+- Round XIV validator、whole-pack migration 各运行两次且 byte-identical；Round X–XIV 定向测试 20 项、backend 全量 pytest 889 项、Ruff、compileall 和 `git diff --check` 通过。
+- 证据：`docs/tashas-item-production-consumer-round-XIV-2026-08-12.md`、Round XIV report/result、ItemSpec catalog 与 whole-pack migration 输出。
+- 实现与证据提交 `d6cae79f73601fced2636050f3de97ba81a101ed` 已推送到 `origin/main`；ledger/handoff receipt 随后单独提交。
+- 下一步：ItemSpec complete inventory 已全部达到 production/game usable；继续 unresolved partial clauses 的逐字段语义解锁，不把 DM-reference、manual 或 isolated-only 计入 production。
+
 ## Round 13：Additional ItemSpec Equipment Consumer Batch
 
 当前状态：`accepted`；本轮完成 8 条真实 ItemSpec evidence，已提交并推送。
