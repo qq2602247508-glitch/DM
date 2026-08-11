@@ -1,0 +1,155 @@
+{
+  "class_name": "战士",
+  "clause_boundaries": {
+    "recovery": {
+      "source_excerpt": "*第7级符文骑士特性*\n你学会了激活你的符文魔法来保护你的盟友。当另一个60尺内且对你可见的生物被一次攻击检定命中，你可以使用一个反应来强迫攻击者重新投掷d20并采用新的攻击检定结果。\n\n该特性的可使用次数等于你的熟练加值，且你可以在完成一次长休之后恢复所有已使用的次数。",
+      "source_fragment": "96"
+    },
+    "reroll-window": {
+      "source_excerpt": "*第7级符文骑士特性*\n你学会了激活你的符文魔法来保护你的盟友。当另一个60尺内且对你可见的生物被一次攻击检定命中，你可以使用一个反应来强迫攻击者重新投掷d20并采用新的攻击检定结果。\n\n该特性的可使用次数等于你的熟练加值，且你可以在完成一次长休之后恢复所有已使用的次数。",
+      "source_fragment": "96"
+    }
+  },
+  "clauses": [
+    {
+      "action_economy": "reaction",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+        "source": "authored_ir",
+        "source_boundary": "reroll-window",
+        "source_excerpt": "*第7级符文骑士特性*\n你学会了激活你的符文魔法来保护你的盟友。当另一个60尺内且对你可见的生物被一次攻击检定命中，你可以使用一个反应来强迫攻击者重新投掷d20并采用新的攻击检定结果。\n\n该特性的可使用次数等于你的熟练加值，且你可以在完成一次长休之后恢复所有已使用的次数。"
+      },
+      "clause_id": "reroll-window",
+      "conditions": [],
+      "duration": "current_turn",
+      "effects": [
+        {
+          "operator": "consume_resource",
+          "parameters": {
+            "amount": 1,
+            "operation": "consume",
+            "resource_key": "runic_shield_uses"
+          }
+        },
+        {
+          "operator": "create_reaction_window",
+          "parameters": {
+            "expires": "current_turn",
+            "target_policy": {
+              "mode": "ally"
+            },
+            "window_kind": "attack_reroll"
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "attack_hit",
+      "visibility": "owner"
+    },
+    {
+      "action_economy": "none",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+        "source": "authored_ir",
+        "source_boundary": "recovery",
+        "source_excerpt": "*第7级符文骑士特性*\n你学会了激活你的符文魔法来保护你的盟友。当另一个60尺内且对你可见的生物被一次攻击检定命中，你可以使用一个反应来强迫攻击者重新投掷d20并采用新的攻击检定结果。\n\n该特性的可使用次数等于你的熟练加值，且你可以在完成一次长休之后恢复所有已使用的次数。"
+      },
+      "clause_id": "recovery",
+      "conditions": [],
+      "duration": null,
+      "effects": [
+        {
+          "operator": "restore_resource",
+          "parameters": {
+            "amount_source": "all",
+            "operation": "set_to_max",
+            "recovery_event": "long_rest_completed",
+            "resource_key": "runic_shield_uses"
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "long_rest_completed",
+      "visibility": "owner"
+    }
+  ],
+  "compatibility": {
+    "runtime_source": "feature_ir",
+    "source_fingerprint": "27625f088579223b3d51f2b336e2a8a1b69be4834972cda58b1c6646490524fe"
+  },
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "dependencies": [],
+  "evidence": [
+    "符文之盾: *第7级符文骑士特性*\n你学会了激活你的符文魔法来保护你的盟友。当另一个60尺内且对你可见的生物被一次攻击检定命中，你可以使用一个反应来强迫攻击者重新投掷d20并采用新的攻击检定结果。\n\n该特性的可使用次数等于你的熟练加值，且你可以在完成一次长休之后恢复所有已使用的次数。"
+  ],
+  "feature_id": "content.tashas-cauldron.round2.feature.rune-knight-runic-shield",
+  "kind": "feature",
+  "level": 7,
+  "localized_names": {
+    "zh-CN": "符文之盾"
+  },
+  "manual_decisions": {
+    "isolated_runtime_only": true,
+    "operator_mapping": "explicit_atom_mapping",
+    "unmodeled_source_terms": []
+  },
+  "namespace": "content.tashas-cauldron",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "source-7011166c19bd",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+  "reviewed_fields": [
+    "feature_id",
+    "source_record_id",
+    "source_name",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "content_kind",
+    "class_name",
+    "subclass_name",
+    "level",
+    "source_completeness",
+    "clauses",
+    "required_inputs",
+    "runtime_boundary"
+  ],
+  "ruleset_version": "2014",
+  "schema_version": "feature-ir-1",
+  "source_book": "塔莎的万事坩埚",
+  "source_completeness": "complete",
+  "source_evidence": {
+    "source_excerpt": "*第7级符文骑士特性*\n你学会了激活你的符文魔法来保护你的盟友。当另一个60尺内且对你可见的生物被一次攻击检定命中，你可以使用一个反应来强迫攻击者重新投掷d20并采用新的攻击检定结果。\n\n该特性的可使用次数等于你的熟练加值，且你可以在完成一次长休之后恢复所有已使用的次数。",
+    "source_fragment": "96",
+    "source_path": "塔莎的万事坩埚/玩家选项/职业/战士（TCE）/符文骑士.html",
+    "source_record_id": "0739d5dfe5855a9afc8f3a53"
+  },
+  "source_fingerprint": "27625f088579223b3d51f2b336e2a8a1b69be4834972cda58b1c6646490524fe",
+  "source_name": "符文之盾",
+  "source_path": "塔莎的万事坩埚/玩家选项/职业/战士（TCE）/符文骑士.html",
+  "source_record_id": "0739d5dfe5855a9afc8f3a53",
+  "source_trust": "authored_ir",
+  "subclass_name": "符文骑士"
+}

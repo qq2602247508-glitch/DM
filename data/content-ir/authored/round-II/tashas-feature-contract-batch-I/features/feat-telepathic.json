@@ -1,0 +1,164 @@
+{
+  "class_name": null,
+  "clause_boundaries": {
+    "detect-thoughts": {
+      "source_excerpt": "你觉醒了用意念与其他生物交流的能力。你获得以下好处：\n·\n你的智力，感知或魅力提升1，上限为20。\n·\n你可以和60尺内任何你可见的生物用心灵感应进行交流。你的心电沟通以一种你已知的语言的形式进行，该生物必须懂得该语言才能理解你。你的主动沟通并未给予该生物以心灵感应的形式回复你的能力。\n·\n你可以施展侦测思想法术，无需法术位和法术成分。以此法施法后，你在完成一次长休前不能再这样做。该法术的施法属性是你由此专长提升的属性。如果你拥有二环或更高的法术位，你可以消耗这些法术位施展该法术。",
+      "source_fragment": "131"
+    },
+    "telepathy": {
+      "source_excerpt": "你觉醒了用意念与其他生物交流的能力。你获得以下好处：\n·\n你的智力，感知或魅力提升1，上限为20。\n·\n你可以和60尺内任何你可见的生物用心灵感应进行交流。你的心电沟通以一种你已知的语言的形式进行，该生物必须懂得该语言才能理解你。你的主动沟通并未给予该生物以心灵感应的形式回复你的能力。\n·\n你可以施展侦测思想法术，无需法术位和法术成分。以此法施法后，你在完成一次长休前不能再这样做。该法术的施法属性是你由此专长提升的属性。如果你拥有二环或更高的法术位，你可以消耗这些法术位施展该法术。",
+      "source_fragment": "131"
+    }
+  },
+  "clauses": [
+    {
+      "action_economy": "none",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+        "source": "authored_ir",
+        "source_boundary": "telepathy",
+        "source_excerpt": "你觉醒了用意念与其他生物交流的能力。你获得以下好处：\n·\n你的智力，感知或魅力提升1，上限为20。\n·\n你可以和60尺内任何你可见的生物用心灵感应进行交流。你的心电沟通以一种你已知的语言的形式进行，该生物必须懂得该语言才能理解你。你的主动沟通并未给予该生物以心灵感应的形式回复你的能力。\n·\n你可以施展侦测思想法术，无需法术位和法术成分。以此法施法后，你在完成一次长休前不能再这样做。该法术的施法属性是你由此专长提升的属性。如果你拥有二环或更高的法术位，你可以消耗这些法术位施展该法术。"
+      },
+      "clause_id": "telepathy",
+      "conditions": [],
+      "duration": "advancement_persistent",
+      "effects": [
+        {
+          "operator": "expose_authorized_target_information",
+          "parameters": {
+            "information_kind": "telepathic_communication",
+            "range_ft": 60,
+            "visibility": "owner"
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [
+        {
+          "key": "known_language",
+          "kind": "choice",
+          "parameters": {
+            "duplicate_policy": "forbid",
+            "options_source": "known_languages"
+          }
+        }
+      ],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "explicit_activation",
+      "visibility": "owner"
+    },
+    {
+      "action_economy": "none",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+        "source": "authored_ir",
+        "source_boundary": "detect-thoughts",
+        "source_excerpt": "你觉醒了用意念与其他生物交流的能力。你获得以下好处：\n·\n你的智力，感知或魅力提升1，上限为20。\n·\n你可以和60尺内任何你可见的生物用心灵感应进行交流。你的心电沟通以一种你已知的语言的形式进行，该生物必须懂得该语言才能理解你。你的主动沟通并未给予该生物以心灵感应的形式回复你的能力。\n·\n你可以施展侦测思想法术，无需法术位和法术成分。以此法施法后，你在完成一次长休前不能再这样做。该法术的施法属性是你由此专长提升的属性。如果你拥有二环或更高的法术位，你可以消耗这些法术位施展该法术。"
+      },
+      "clause_id": "detect-thoughts",
+      "conditions": [],
+      "duration": "advancement_persistent",
+      "effects": [
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "chosen_ability",
+            "free_cast_resource_key": "telepathic_detect_thoughts",
+            "grant_mode": "free_cast",
+            "source_class": "feat",
+            "spell_id": "detect_thoughts"
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [
+        {
+          "key": "chosen_ability",
+          "kind": "choice",
+          "parameters": {
+            "duplicate_policy": "forbid",
+            "options_source": "intelligence_wisdom_charisma"
+          }
+        }
+      ],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "advancement_confirmed",
+      "visibility": "owner"
+    }
+  ],
+  "compatibility": {
+    "runtime_source": "feature_ir",
+    "source_fingerprint": "75245c4b8d8ca10c99b4011816e42d47b36e10f3af099b37403798669cabef5a"
+  },
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "dependencies": [],
+  "evidence": [
+    "心电感应: 你觉醒了用意念与其他生物交流的能力。你获得以下好处：\n·\n你的智力，感知或魅力提升1，上限为20。\n·\n你可以和60尺内任何你可见的生物用心灵感应进行交流。你的心电沟通以一种你已知的语言的形式进行，该生物必须懂得该语言才能理解你。你的主动沟通并未给予该生物以心灵感应的形式回复你的能力。\n·\n你可以施展侦测思想法术，无需法术位和法术成分。以此法施法后，你在完成一次长休前不能再这样做。该法术的施法属性是你由此专长提升的属性。如果你拥有二环或更高的法术位，你可以消耗这些法术位施展该法术。"
+  ],
+  "feature_id": "content.tashas-cauldron.round2.feature.feat-telepathic",
+  "kind": "feature",
+  "level": null,
+  "localized_names": {
+    "zh-CN": "心电感应"
+  },
+  "manual_decisions": {
+    "isolated_runtime_only": true,
+    "operator_mapping": "explicit_atom_mapping",
+    "unmodeled_source_terms": []
+  },
+  "namespace": "content.tashas-cauldron",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "source-7011166c19bd",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+  "reviewed_fields": [
+    "feature_id",
+    "source_record_id",
+    "source_name",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "content_kind",
+    "class_name",
+    "subclass_name",
+    "level",
+    "source_completeness",
+    "clauses",
+    "required_inputs",
+    "runtime_boundary"
+  ],
+  "ruleset_version": "2014",
+  "schema_version": "feature-ir-1",
+  "source_book": "塔莎的万事坩埚",
+  "source_completeness": "complete",
+  "source_evidence": {
+    "source_excerpt": "你觉醒了用意念与其他生物交流的能力。你获得以下好处：\n·\n你的智力，感知或魅力提升1，上限为20。\n·\n你可以和60尺内任何你可见的生物用心灵感应进行交流。你的心电沟通以一种你已知的语言的形式进行，该生物必须懂得该语言才能理解你。你的主动沟通并未给予该生物以心灵感应的形式回复你的能力。\n·\n你可以施展侦测思想法术，无需法术位和法术成分。以此法施法后，你在完成一次长休前不能再这样做。该法术的施法属性是你由此专长提升的属性。如果你拥有二环或更高的法术位，你可以消耗这些法术位施展该法术。",
+    "source_fragment": "131",
+    "source_path": "塔莎的万事坩埚/玩家选项/专长.html",
+    "source_record_id": "1924837fba5aec4d15a290b8"
+  },
+  "source_fingerprint": "75245c4b8d8ca10c99b4011816e42d47b36e10f3af099b37403798669cabef5a",
+  "source_name": "心电感应",
+  "source_path": "塔莎的万事坩埚/玩家选项/专长.html",
+  "source_record_id": "1924837fba5aec4d15a290b8",
+  "source_trust": "authored_ir",
+  "subclass_name": null
+}

@@ -1,0 +1,186 @@
+{
+  "class_name": "奇械师",
+  "clause_boundaries": {
+    "always-prepared": {
+      "source_excerpt": "*第3级炼金师特性*\n只要你达到相应的职业等级，炼金师法术表格中的法术总是被视为已准备。这些法术对你来说是奇械师法术，且不会计入你可以准备法术的总数。",
+      "source_fragment": "12"
+    }
+  },
+  "clauses": [
+    {
+      "action_economy": "none",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+        "source": "authored_ir",
+        "source_boundary": "always-prepared",
+        "source_excerpt": "*第3级炼金师特性*\n只要你达到相应的职业等级，炼金师法术表格中的法术总是被视为已准备。这些法术对你来说是奇械师法术，且不会计入你可以准备法术的总数。"
+      },
+      "clause_id": "always-prepared",
+      "conditions": [],
+      "duration": "advancement_persistent",
+      "effects": [
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "intelligence",
+            "grant_mode": "always_prepared",
+            "source_class": "artificer",
+            "spell_id": "healing_word"
+          }
+        },
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "intelligence",
+            "grant_mode": "always_prepared",
+            "source_class": "artificer",
+            "spell_id": "ray_of_sickness"
+          }
+        },
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "intelligence",
+            "grant_mode": "always_prepared",
+            "source_class": "artificer",
+            "spell_id": "flaming_sphere"
+          }
+        },
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "intelligence",
+            "grant_mode": "always_prepared",
+            "source_class": "artificer",
+            "spell_id": "melfs_acid_arrow"
+          }
+        },
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "intelligence",
+            "grant_mode": "always_prepared",
+            "source_class": "artificer",
+            "spell_id": "gaseous_form"
+          }
+        },
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "intelligence",
+            "grant_mode": "always_prepared",
+            "source_class": "artificer",
+            "spell_id": "mass_healing_word"
+          }
+        },
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "intelligence",
+            "grant_mode": "always_prepared",
+            "source_class": "artificer",
+            "spell_id": "blight"
+          }
+        },
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "intelligence",
+            "grant_mode": "always_prepared",
+            "source_class": "artificer",
+            "spell_id": "death_ward"
+          }
+        },
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "intelligence",
+            "grant_mode": "always_prepared",
+            "source_class": "artificer",
+            "spell_id": "cloudkill"
+          }
+        },
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "intelligence",
+            "grant_mode": "always_prepared",
+            "source_class": "artificer",
+            "spell_id": "raise_dead"
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "advancement_confirmed",
+      "visibility": "owner"
+    }
+  ],
+  "compatibility": {
+    "runtime_source": "feature_ir",
+    "source_fingerprint": "5022f3119f776ae5d49994ab31ebbe1edbb7fc11990271ba96ef91ad6be8250f"
+  },
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "dependencies": [],
+  "evidence": [
+    "炼金师法术: *第3级炼金师特性*\n只要你达到相应的职业等级，炼金师法术表格中的法术总是被视为已准备。这些法术对你来说是奇械师法术，且不会计入你可以准备法术的总数。"
+  ],
+  "feature_id": "content.tashas-cauldron.round2.feature.alchemist-spell-list",
+  "kind": "feature",
+  "level": 3,
+  "localized_names": {
+    "zh-CN": "炼金师法术"
+  },
+  "manual_decisions": {
+    "isolated_runtime_only": true,
+    "operator_mapping": "explicit_atom_mapping",
+    "unmodeled_source_terms": []
+  },
+  "namespace": "content.tashas-cauldron",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "source-7011166c19bd",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+  "reviewed_fields": [
+    "feature_id",
+    "source_record_id",
+    "source_name",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "content_kind",
+    "class_name",
+    "subclass_name",
+    "level",
+    "source_completeness",
+    "clauses",
+    "required_inputs",
+    "runtime_boundary"
+  ],
+  "ruleset_version": "2014",
+  "schema_version": "feature-ir-1",
+  "source_book": "塔莎的万事坩埚",
+  "source_completeness": "complete",
+  "source_evidence": {
+    "source_excerpt": "*第3级炼金师特性*\n只要你达到相应的职业等级，炼金师法术表格中的法术总是被视为已准备。这些法术对你来说是奇械师法术，且不会计入你可以准备法术的总数。",
+    "source_fragment": "12",
+    "source_path": "塔莎的万事坩埚/玩家选项/职业/奇械师/炼金师.html",
+    "source_record_id": "dc4f2bf18baca6ec97d7d0bf"
+  },
+  "source_fingerprint": "5022f3119f776ae5d49994ab31ebbe1edbb7fc11990271ba96ef91ad6be8250f",
+  "source_name": "炼金师法术",
+  "source_path": "塔莎的万事坩埚/玩家选项/职业/奇械师/炼金师.html",
+  "source_record_id": "dc4f2bf18baca6ec97d7d0bf",
+  "source_trust": "authored_ir",
+  "subclass_name": "炼金师"
+}

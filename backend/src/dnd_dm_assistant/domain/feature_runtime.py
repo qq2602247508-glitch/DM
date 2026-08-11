@@ -2847,6 +2847,7 @@ def feature_runtime_contract(
     kind: str = "feature",
     source_record_id: str | None = None,
     source_path: str | None = None,
+    stable_id: str | None = None,
     declared_status: str | None = None,
     note: str | None = None,
 ) -> dict[str, Any]:
@@ -2925,16 +2926,18 @@ def feature_runtime_contract(
     if status == "partial" and not reasons:
         reasons.append("已结构化可验证字段；其余触发条件、目标或分支需要 DM 裁定。")
 
-    source_key = ":".join(
-        value
-        for value in (
-            _identity(class_name) or "unclassified",
-            str(class_level),
-            _identity(feature_name) or "unnamed",
-            _identity(kind) or "feature",
+    source_key = str(stable_id or "").strip()
+    if not source_key:
+        source_key = ":".join(
+            value
+            for value in (
+                _identity(class_name) or "unclassified",
+                str(class_level),
+                _identity(feature_name) or "unnamed",
+                _identity(kind) or "feature",
+            )
+            if value
         )
-        if value
-    )
     return {
         "id": source_key,
         "name": feature_name,
@@ -3219,6 +3222,7 @@ def compile_feature_runtime_registry(
             source_path=(
                 str(grant["source_path"]) if grant.get("source_path") is not None else None
             ),
+            stable_id=(str(grant["feature_id"]) if grant.get("feature_id") is not None else None),
             definition=definition,
             declared_status=(
                 str(runtime_data.get("automation_status"))

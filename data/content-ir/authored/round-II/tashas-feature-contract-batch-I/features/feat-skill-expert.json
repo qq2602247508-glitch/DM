@@ -1,0 +1,164 @@
+{
+  "class_name": null,
+  "clause_boundaries": {
+    "skill-expertise": {
+      "source_excerpt": "你已磨练了自身的特定技艺，并获得了以下好处：\n·\n你选择一项属性提升1，上限为20.\n· 你选择并获得一项技能的熟练项。\n·\n选择一项你熟练的技能，你获得该技能的专精，可以将两倍的熟练加值加到使用该技能进行的属性检定上。你选择的技能必须未受益于其他使熟练加值翻倍的特性，例如专精特性。",
+      "source_fragment": "102"
+    },
+    "skill-proficiency": {
+      "source_excerpt": "你已磨练了自身的特定技艺，并获得了以下好处：\n·\n你选择一项属性提升1，上限为20.\n· 你选择并获得一项技能的熟练项。\n·\n选择一项你熟练的技能，你获得该技能的专精，可以将两倍的熟练加值加到使用该技能进行的属性检定上。你选择的技能必须未受益于其他使熟练加值翻倍的特性，例如专精特性。",
+      "source_fragment": "102"
+    }
+  },
+  "clauses": [
+    {
+      "action_economy": "none",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+        "source": "authored_ir",
+        "source_boundary": "skill-proficiency",
+        "source_excerpt": "你已磨练了自身的特定技艺，并获得了以下好处：\n·\n你选择一项属性提升1，上限为20.\n· 你选择并获得一项技能的熟练项。\n·\n选择一项你熟练的技能，你获得该技能的专精，可以将两倍的熟练加值加到使用该技能进行的属性检定上。你选择的技能必须未受益于其他使熟练加值翻倍的特性，例如专精特性。"
+      },
+      "clause_id": "skill-proficiency",
+      "conditions": [],
+      "duration": "advancement_persistent",
+      "effects": [
+        {
+          "operator": "grant_proficiency",
+          "parameters": {
+            "asset_id": "chosen_skill",
+            "operation": "grant",
+            "proficiency_kind": "skill"
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [
+        {
+          "key": "chosen_skill",
+          "kind": "choice",
+          "parameters": {
+            "duplicate_policy": "forbid",
+            "options_source": "skill_list"
+          }
+        }
+      ],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "advancement_confirmed",
+      "visibility": "owner"
+    },
+    {
+      "action_economy": "none",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+        "source": "authored_ir",
+        "source_boundary": "skill-expertise",
+        "source_excerpt": "你已磨练了自身的特定技艺，并获得了以下好处：\n·\n你选择一项属性提升1，上限为20.\n· 你选择并获得一项技能的熟练项。\n·\n选择一项你熟练的技能，你获得该技能的专精，可以将两倍的熟练加值加到使用该技能进行的属性检定上。你选择的技能必须未受益于其他使熟练加值翻倍的特性，例如专精特性。"
+      },
+      "clause_id": "skill-expertise",
+      "conditions": [],
+      "duration": "advancement_persistent",
+      "effects": [
+        {
+          "operator": "grant_passive_modifier",
+          "parameters": {
+            "applies_when": "chosen_skill_expertise",
+            "operation": "add",
+            "scope": "self",
+            "stat": "chosen_skill_check",
+            "value_source": "proficiency_bonus"
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [
+        {
+          "key": "expertise_skill",
+          "kind": "choice",
+          "parameters": {
+            "duplicate_policy": "forbid",
+            "options_source": "skill_list_only_proficient"
+          }
+        }
+      ],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "advancement_confirmed",
+      "visibility": "owner"
+    }
+  ],
+  "compatibility": {
+    "runtime_source": "feature_ir",
+    "source_fingerprint": "8819ac1debf7f8a661dc0cbc426a60c63aa191b16b9837698c4a35ce6e030e59"
+  },
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "dependencies": [],
+  "evidence": [
+    "技艺专家: 你已磨练了自身的特定技艺，并获得了以下好处：\n·\n你选择一项属性提升1，上限为20.\n· 你选择并获得一项技能的熟练项。\n·\n选择一项你熟练的技能，你获得该技能的专精，可以将两倍的熟练加值加到使用该技能进行的属性检定上。你选择的技能必须未受益于其他使熟练加值翻倍的特性，例如专精特性。"
+  ],
+  "feature_id": "content.tashas-cauldron.round2.feature.feat-skill-expert",
+  "kind": "feature",
+  "level": null,
+  "localized_names": {
+    "zh-CN": "技艺专家"
+  },
+  "manual_decisions": {
+    "isolated_runtime_only": true,
+    "operator_mapping": "explicit_atom_mapping",
+    "unmodeled_source_terms": []
+  },
+  "namespace": "content.tashas-cauldron",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "source-7011166c19bd",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+  "reviewed_fields": [
+    "feature_id",
+    "source_record_id",
+    "source_name",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "content_kind",
+    "class_name",
+    "subclass_name",
+    "level",
+    "source_completeness",
+    "clauses",
+    "required_inputs",
+    "runtime_boundary"
+  ],
+  "ruleset_version": "2014",
+  "schema_version": "feature-ir-1",
+  "source_book": "塔莎的万事坩埚",
+  "source_completeness": "complete",
+  "source_evidence": {
+    "source_excerpt": "你已磨练了自身的特定技艺，并获得了以下好处：\n·\n你选择一项属性提升1，上限为20.\n· 你选择并获得一项技能的熟练项。\n·\n选择一项你熟练的技能，你获得该技能的专精，可以将两倍的熟练加值加到使用该技能进行的属性检定上。你选择的技能必须未受益于其他使熟练加值翻倍的特性，例如专精特性。",
+    "source_fragment": "102",
+    "source_path": "塔莎的万事坩埚/玩家选项/专长.html",
+    "source_record_id": "1924837fba5aec4d15a290b8"
+  },
+  "source_fingerprint": "8819ac1debf7f8a661dc0cbc426a60c63aa191b16b9837698c4a35ce6e030e59",
+  "source_name": "技艺专家",
+  "source_path": "塔莎的万事坩埚/玩家选项/专长.html",
+  "source_record_id": "1924837fba5aec4d15a290b8",
+  "source_trust": "authored_ir",
+  "subclass_name": null
+}

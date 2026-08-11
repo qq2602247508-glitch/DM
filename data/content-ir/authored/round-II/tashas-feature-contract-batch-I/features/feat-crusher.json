@@ -1,0 +1,105 @@
+{
+  "class_name": null,
+  "clause_boundaries": {
+    "critical-opening": {
+      "source_excerpt": "你擅长于碾碎敌人的技艺，你获得了以下增益：\n·\n你的力量或体质增加1，上限为20。\n·\n每回合一次，当你用造成钝击伤害的攻击命中一个生物时，只要目标的体型并未比你大一级以上，你就可以将目标移动五尺至一个未占据空间。\n·\n当你用造成钝击伤害的攻击命中一个生物并造成重击时，直至你的下一回合开始，所有针对该生物的攻击检定具有优势。",
+      "source_fragment": "26"
+    }
+  },
+  "clauses": [
+    {
+      "action_economy": "none",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+        "source": "authored_ir",
+        "source_boundary": "critical-opening",
+        "source_excerpt": "你擅长于碾碎敌人的技艺，你获得了以下增益：\n·\n你的力量或体质增加1，上限为20。\n·\n每回合一次，当你用造成钝击伤害的攻击命中一个生物时，只要目标的体型并未比你大一级以上，你就可以将目标移动五尺至一个未占据空间。\n·\n当你用造成钝击伤害的攻击命中一个生物并造成重击时，直至你的下一回合开始，所有针对该生物的攻击检定具有优势。"
+      },
+      "clause_id": "critical-opening",
+      "conditions": [],
+      "duration": "current_turn",
+      "effects": [
+        {
+          "operator": "impose_advantage",
+          "parameters": {
+            "applies_when": "bludgeoning_critical",
+            "operation": "advantage",
+            "scope": "target",
+            "stat": "attack_roll_against_target"
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "attack_hit",
+      "visibility": "owner"
+    }
+  ],
+  "compatibility": {
+    "runtime_source": "feature_ir",
+    "source_fingerprint": "e3303420750fb2e6a4ed58dbedb70cad6b708dd090efee93ef4903af07434755"
+  },
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "dependencies": [],
+  "evidence": [
+    "粉碎者: 你擅长于碾碎敌人的技艺，你获得了以下增益：\n·\n你的力量或体质增加1，上限为20。\n·\n每回合一次，当你用造成钝击伤害的攻击命中一个生物时，只要目标的体型并未比你大一级以上，你就可以将目标移动五尺至一个未占据空间。\n·\n当你用造成钝击伤害的攻击命中一个生物并造成重击时，直至你的下一回合开始，所有针对该生物的攻击检定具有优势。"
+  ],
+  "feature_id": "content.tashas-cauldron.round2.feature.feat-crusher",
+  "kind": "feature",
+  "level": null,
+  "localized_names": {
+    "zh-CN": "粉碎者"
+  },
+  "manual_decisions": {
+    "isolated_runtime_only": true,
+    "operator_mapping": "explicit_atom_mapping",
+    "unmodeled_source_terms": []
+  },
+  "namespace": "content.tashas-cauldron",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "source-7011166c19bd",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+  "reviewed_fields": [
+    "feature_id",
+    "source_record_id",
+    "source_name",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "content_kind",
+    "class_name",
+    "subclass_name",
+    "level",
+    "source_completeness",
+    "clauses",
+    "required_inputs",
+    "runtime_boundary"
+  ],
+  "ruleset_version": "2014",
+  "schema_version": "feature-ir-1",
+  "source_book": "塔莎的万事坩埚",
+  "source_completeness": "complete",
+  "source_evidence": {
+    "source_excerpt": "你擅长于碾碎敌人的技艺，你获得了以下增益：\n·\n你的力量或体质增加1，上限为20。\n·\n每回合一次，当你用造成钝击伤害的攻击命中一个生物时，只要目标的体型并未比你大一级以上，你就可以将目标移动五尺至一个未占据空间。\n·\n当你用造成钝击伤害的攻击命中一个生物并造成重击时，直至你的下一回合开始，所有针对该生物的攻击检定具有优势。",
+    "source_fragment": "26",
+    "source_path": "塔莎的万事坩埚/玩家选项/专长.html",
+    "source_record_id": "1924837fba5aec4d15a290b8"
+  },
+  "source_fingerprint": "e3303420750fb2e6a4ed58dbedb70cad6b708dd090efee93ef4903af07434755",
+  "source_name": "粉碎者",
+  "source_path": "塔莎的万事坩埚/玩家选项/专长.html",
+  "source_record_id": "1924837fba5aec4d15a290b8",
+  "source_trust": "authored_ir",
+  "subclass_name": null
+}

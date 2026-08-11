@@ -373,9 +373,17 @@ def _materialize_authorized_information(
 ) -> MaterializedBlock:
     params = context.parameters
     information_kind = str(params["information_kind"])
-    if information_kind != "damage_defenses":
+    supported_information = {
+        "damage_defenses",
+        "telepathic_communication",
+        "telepathic_link",
+        "telepathic_speech",
+        "shared_darkvision",
+        "manifest_mind_senses",
+    }
+    if information_kind not in supported_information:
         raise MaterializerError(
-            "authorized target information only supports damage_defenses"
+            "authorized target information kind is unsupported"
         )
     target_kind = (
         context.clause.targeting.kind
@@ -398,7 +406,16 @@ def _materialize_authorized_information(
             },
             "availability": "any_time_readonly",
             "resolution_kind": "inspection",
-            "effects": [{"kind": "inspect_damage_defenses"}],
+            "effects": [{
+                "kind": (
+                    "inspect_damage_defenses"
+                    if information_kind == "damage_defenses"
+                    else "inspect_authorized_information"
+                ),
+                "information_kind": information_kind,
+                "range_ft": params.get("range_ft"),
+                "visibility": params.get("visibility"),
+            }],
             "information_kind": information_kind,
         }
     )

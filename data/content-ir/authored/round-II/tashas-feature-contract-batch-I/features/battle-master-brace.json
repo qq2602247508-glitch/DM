@@ -1,0 +1,119 @@
+{
+  "class_name": "战士",
+  "clause_boundaries": {
+    "reaction-attack": {
+      "source_excerpt": "当一名你可见的生物移动进你持握近战武器的触及范围时，你能用一个反应消耗一枚卓越骰对该生物进行一次武器攻击。如果攻击命中，将消耗的卓越骰加入此次攻击的伤害掷骰中。",
+      "source_fragment": "13"
+    }
+  },
+  "clauses": [
+    {
+      "action_economy": "reaction",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+        "source": "authored_ir",
+        "source_boundary": "reaction-attack",
+        "source_excerpt": "当一名你可见的生物移动进你持握近战武器的触及范围时，你能用一个反应消耗一枚卓越骰对该生物进行一次武器攻击。如果攻击命中，将消耗的卓越骰加入此次攻击的伤害掷骰中。"
+      },
+      "clause_id": "reaction-attack",
+      "conditions": [],
+      "duration": "current_turn",
+      "effects": [
+        {
+          "operator": "consume_resource",
+          "parameters": {
+            "amount": 1,
+            "operation": "consume",
+            "resource_key": "superiority_dice"
+          }
+        },
+        {
+          "operator": "create_triggered_attack_window",
+          "parameters": {
+            "attack_profile": {
+              "add_damage_formula": "superiority_die"
+            },
+            "expires": "current_turn",
+            "parent_action": "weapon_attack",
+            "reaction_type": "reaction",
+            "target_policy": {
+              "mode": "triggering_enemy"
+            },
+            "window_kind": "brace_attack"
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "action_resolved",
+      "visibility": "owner"
+    }
+  ],
+  "compatibility": {
+    "runtime_source": "feature_ir",
+    "source_fingerprint": "6a5a2625011b50bfee3b95ad6333595cd27c195444316d11b31b670c1278dcbe"
+  },
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "dependencies": [],
+  "evidence": [
+    "警戒: 当一名你可见的生物移动进你持握近战武器的触及范围时，你能用一个反应消耗一枚卓越骰对该生物进行一次武器攻击。如果攻击命中，将消耗的卓越骰加入此次攻击的伤害掷骰中。"
+  ],
+  "feature_id": "content.tashas-cauldron.round2.feature.battle-master-brace",
+  "kind": "feature",
+  "level": null,
+  "localized_names": {
+    "zh-CN": "警戒"
+  },
+  "manual_decisions": {
+    "isolated_runtime_only": true,
+    "operator_mapping": "explicit_atom_mapping",
+    "unmodeled_source_terms": []
+  },
+  "namespace": "content.tashas-cauldron",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "source-7011166c19bd",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+  "reviewed_fields": [
+    "feature_id",
+    "source_record_id",
+    "source_name",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "content_kind",
+    "class_name",
+    "subclass_name",
+    "level",
+    "source_completeness",
+    "clauses",
+    "required_inputs",
+    "runtime_boundary"
+  ],
+  "ruleset_version": "2014",
+  "schema_version": "feature-ir-1",
+  "source_book": "塔莎的万事坩埚",
+  "source_completeness": "complete",
+  "source_evidence": {
+    "source_excerpt": "当一名你可见的生物移动进你持握近战武器的触及范围时，你能用一个反应消耗一枚卓越骰对该生物进行一次武器攻击。如果攻击命中，将消耗的卓越骰加入此次攻击的伤害掷骰中。",
+    "source_fragment": "13",
+    "source_path": "塔莎的万事坩埚/玩家选项/职业/战士（TCE）/战技选项.htm",
+    "source_record_id": "12139219bf7e575f9cde019c"
+  },
+  "source_fingerprint": "6a5a2625011b50bfee3b95ad6333595cd27c195444316d11b31b670c1278dcbe",
+  "source_name": "警戒",
+  "source_path": "塔莎的万事坩埚/玩家选项/职业/战士（TCE）/战技选项.htm",
+  "source_record_id": "12139219bf7e575f9cde019c",
+  "source_trust": "authored_ir",
+  "subclass_name": null
+}

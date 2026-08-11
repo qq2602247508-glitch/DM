@@ -1,0 +1,104 @@
+{
+  "class_name": "奇械师",
+  "clause_boundaries": {
+    "spell-damage": {
+      "source_excerpt": "你习得了如何把魔杖、法杖、或权杖变为奥法枪械——一种传输你的毁灭性法术的管道。\n当你完成一次长休后，你可以用木匠工具在一根魔杖、法杖或权杖上刻印一个特殊印记，从而把它变成你的奥法枪械。印记会在你为另一件物品上刻上这种印记时消失，否则印记将永久存在。\n\n你可以将你的奥法枪械作为你奇械师法术的法器。当你通过奥法枪械施展一个奇械师法术时，掷一个d8，你在法术的一次伤害掷骰中获得与掷骰结果相同的加值。",
+      "source_fragment": "60"
+    }
+  },
+  "clauses": [
+    {
+      "action_economy": "none",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+        "source": "authored_ir",
+        "source_boundary": "spell-damage",
+        "source_excerpt": "你习得了如何把魔杖、法杖、或权杖变为奥法枪械——一种传输你的毁灭性法术的管道。\n当你完成一次长休后，你可以用木匠工具在一根魔杖、法杖或权杖上刻印一个特殊印记，从而把它变成你的奥法枪械。印记会在你为另一件物品上刻上这种印记时消失，否则印记将永久存在。\n\n你可以将你的奥法枪械作为你奇械师法术的法器。当你通过奥法枪械施展一个奇械师法术时，掷一个d8，你在法术的一次伤害掷骰中获得与掷骰结果相同的加值。"
+      },
+      "clause_id": "spell-damage",
+      "conditions": [],
+      "duration": "advancement_persistent",
+      "effects": [
+        {
+          "operator": "spell_damage_modifier",
+          "parameters": {
+            "applies_when": "spell_cast_through_arcane_firearm",
+            "formula": "1d8",
+            "operation": "add"
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "advancement_confirmed",
+      "visibility": "owner"
+    }
+  ],
+  "compatibility": {
+    "runtime_source": "feature_ir",
+    "source_fingerprint": "245f8fff6a10113c6d0062a26dd054611122b8d830fe6e98b84855467c44d541"
+  },
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "dependencies": [],
+  "evidence": [
+    "奥法枪械: 你习得了如何把魔杖、法杖、或权杖变为奥法枪械——一种传输你的毁灭性法术的管道。\n当你完成一次长休后，你可以用木匠工具在一根魔杖、法杖或权杖上刻印一个特殊印记，从而把它变成你的奥法枪械。印记会在你为另一件物品上刻上这种印记时消失，否则印记将永久存在。\n\n你可以将你的奥法枪械作为你奇械师法术的法器。当你通过奥法枪械施展一个奇械师法术时，掷一个d8，你在法术的一次伤害掷骰中获得与掷骰结果相同的加值。"
+  ],
+  "feature_id": "content.tashas-cauldron.round2.feature.artillerist-arcane-firearm",
+  "kind": "feature",
+  "level": null,
+  "localized_names": {
+    "zh-CN": "奥法枪械"
+  },
+  "manual_decisions": {
+    "isolated_runtime_only": true,
+    "operator_mapping": "explicit_atom_mapping",
+    "unmodeled_source_terms": []
+  },
+  "namespace": "content.tashas-cauldron",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "source-7011166c19bd",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+  "reviewed_fields": [
+    "feature_id",
+    "source_record_id",
+    "source_name",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "content_kind",
+    "class_name",
+    "subclass_name",
+    "level",
+    "source_completeness",
+    "clauses",
+    "required_inputs",
+    "runtime_boundary"
+  ],
+  "ruleset_version": "2014",
+  "schema_version": "feature-ir-1",
+  "source_book": "塔莎的万事坩埚",
+  "source_completeness": "complete",
+  "source_evidence": {
+    "source_excerpt": "你习得了如何把魔杖、法杖、或权杖变为奥法枪械——一种传输你的毁灭性法术的管道。\n当你完成一次长休后，你可以用木匠工具在一根魔杖、法杖或权杖上刻印一个特殊印记，从而把它变成你的奥法枪械。印记会在你为另一件物品上刻上这种印记时消失，否则印记将永久存在。\n\n你可以将你的奥法枪械作为你奇械师法术的法器。当你通过奥法枪械施展一个奇械师法术时，掷一个d8，你在法术的一次伤害掷骰中获得与掷骰结果相同的加值。",
+    "source_fragment": "60",
+    "source_path": "塔莎的万事坩埚/玩家选项/职业/奇械师/魔炮师.html",
+    "source_record_id": "fbf8451f879a169fb17a01e9"
+  },
+  "source_fingerprint": "245f8fff6a10113c6d0062a26dd054611122b8d830fe6e98b84855467c44d541",
+  "source_name": "奥法枪械",
+  "source_path": "塔莎的万事坩埚/玩家选项/职业/奇械师/魔炮师.html",
+  "source_record_id": "fbf8451f879a169fb17a01e9",
+  "source_trust": "authored_ir",
+  "subclass_name": "魔炮师"
+}

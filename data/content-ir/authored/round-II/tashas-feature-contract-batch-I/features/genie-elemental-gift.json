@@ -1,0 +1,161 @@
+{
+  "class_name": "邪术师",
+  "clause_boundaries": {
+    "flight": {
+      "source_excerpt": "*第6级巨灵宗主特性*\n你逐渐显露出你的巨灵宗主的特质。你对一种特定的伤害类型具有抗性，具体由你的宗主类型决定：钝击（土巨灵）、雷鸣（气巨灵）、火焰（火巨灵）、寒冷（水巨灵）。\n此外，以一个附赠动作，你可以获得30尺飞行速度，并且可以悬浮，持续10分钟。你可以使用此附赠动作的次数等同于你的熟练加值次，在完成一次长休后你重获全部已消耗的使用次数。",
+      "source_fragment": "60"
+    },
+    "resistance": {
+      "source_excerpt": "*第6级巨灵宗主特性*\n你逐渐显露出你的巨灵宗主的特质。你对一种特定的伤害类型具有抗性，具体由你的宗主类型决定：钝击（土巨灵）、雷鸣（气巨灵）、火焰（火巨灵）、寒冷（水巨灵）。\n此外，以一个附赠动作，你可以获得30尺飞行速度，并且可以悬浮，持续10分钟。你可以使用此附赠动作的次数等同于你的熟练加值次，在完成一次长休后你重获全部已消耗的使用次数。",
+      "source_fragment": "60"
+    }
+  },
+  "clauses": [
+    {
+      "action_economy": "none",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+        "source": "authored_ir",
+        "source_boundary": "resistance",
+        "source_excerpt": "*第6级巨灵宗主特性*\n你逐渐显露出你的巨灵宗主的特质。你对一种特定的伤害类型具有抗性，具体由你的宗主类型决定：钝击（土巨灵）、雷鸣（气巨灵）、火焰（火巨灵）、寒冷（水巨灵）。\n此外，以一个附赠动作，你可以获得30尺飞行速度，并且可以悬浮，持续10分钟。你可以使用此附赠动作的次数等同于你的熟练加值次，在完成一次长休后你重获全部已消耗的使用次数。"
+      },
+      "clause_id": "resistance",
+      "conditions": [],
+      "duration": "advancement_persistent",
+      "effects": [
+        {
+          "operator": "grant_resistance",
+          "parameters": {
+            "damage_type": "chosen_genie_element",
+            "source": "elemental_gift"
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [
+        {
+          "key": "element",
+          "kind": "choice",
+          "parameters": {
+            "duplicate_policy": "forbid",
+            "options_source": "genie_element_types"
+          }
+        }
+      ],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "advancement_confirmed",
+      "visibility": "owner"
+    },
+    {
+      "action_economy": "none",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+        "source": "authored_ir",
+        "source_boundary": "flight",
+        "source_excerpt": "*第6级巨灵宗主特性*\n你逐渐显露出你的巨灵宗主的特质。你对一种特定的伤害类型具有抗性，具体由你的宗主类型决定：钝击（土巨灵）、雷鸣（气巨灵）、火焰（火巨灵）、寒冷（水巨灵）。\n此外，以一个附赠动作，你可以获得30尺飞行速度，并且可以悬浮，持续10分钟。你可以使用此附赠动作的次数等同于你的熟练加值次，在完成一次长休后你重获全部已消耗的使用次数。"
+      },
+      "clause_id": "flight",
+      "conditions": [],
+      "duration": "advancement_persistent",
+      "effects": [
+        {
+          "operator": "grant_movement_mode",
+          "parameters": {
+            "applies_when": "elemental_gift",
+            "mode": "fly",
+            "speed_source": "walking_speed"
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [
+        {
+          "key": "element",
+          "kind": "choice",
+          "parameters": {
+            "duplicate_policy": "forbid",
+            "options_source": "genie_element_types"
+          }
+        }
+      ],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "advancement_confirmed",
+      "visibility": "owner"
+    }
+  ],
+  "compatibility": {
+    "runtime_source": "feature_ir",
+    "source_fingerprint": "0281762f3f17d10d7da5e74e4ed47ecc3b306de5a5f4a4259bcd675e73739c1d"
+  },
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "dependencies": [],
+  "evidence": [
+    "元素赐福: *第6级巨灵宗主特性*\n你逐渐显露出你的巨灵宗主的特质。你对一种特定的伤害类型具有抗性，具体由你的宗主类型决定：钝击（土巨灵）、雷鸣（气巨灵）、火焰（火巨灵）、寒冷（水巨灵）。\n此外，以一个附赠动作，你可以获得30尺飞行速度，并且可以悬浮，持续10分钟。你可以使用此附赠动作的次数等同于你的熟练加值次，在完成一次长休后你重获全部已消耗的使用次数。"
+  ],
+  "feature_id": "content.tashas-cauldron.round2.feature.genie-elemental-gift",
+  "kind": "feature",
+  "level": 6,
+  "localized_names": {
+    "zh-CN": "元素赐福"
+  },
+  "manual_decisions": {
+    "isolated_runtime_only": true,
+    "operator_mapping": "explicit_atom_mapping",
+    "unmodeled_source_terms": []
+  },
+  "namespace": "content.tashas-cauldron",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "source-7011166c19bd",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+  "reviewed_fields": [
+    "feature_id",
+    "source_record_id",
+    "source_name",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "content_kind",
+    "class_name",
+    "subclass_name",
+    "level",
+    "source_completeness",
+    "clauses",
+    "required_inputs",
+    "runtime_boundary"
+  ],
+  "ruleset_version": "2014",
+  "schema_version": "feature-ir-1",
+  "source_book": "塔莎的万事坩埚",
+  "source_completeness": "complete",
+  "source_evidence": {
+    "source_excerpt": "*第6级巨灵宗主特性*\n你逐渐显露出你的巨灵宗主的特质。你对一种特定的伤害类型具有抗性，具体由你的宗主类型决定：钝击（土巨灵）、雷鸣（气巨灵）、火焰（火巨灵）、寒冷（水巨灵）。\n此外，以一个附赠动作，你可以获得30尺飞行速度，并且可以悬浮，持续10分钟。你可以使用此附赠动作的次数等同于你的熟练加值次，在完成一次长休后你重获全部已消耗的使用次数。",
+    "source_fragment": "60",
+    "source_path": "塔莎的万事坩埚/玩家选项/职业/邪术师（TCE）/巨灵宗主.html",
+    "source_record_id": "98620543cf94e974361c6567"
+  },
+  "source_fingerprint": "0281762f3f17d10d7da5e74e4ed47ecc3b306de5a5f4a4259bcd675e73739c1d",
+  "source_name": "元素赐福",
+  "source_path": "塔莎的万事坩埚/玩家选项/职业/邪术师（TCE）/巨灵宗主.html",
+  "source_record_id": "98620543cf94e974361c6567",
+  "source_trust": "authored_ir",
+  "subclass_name": "巨灵宗主"
+}

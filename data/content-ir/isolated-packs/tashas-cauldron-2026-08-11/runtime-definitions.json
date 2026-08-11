@@ -11,6 +11,66 @@
       ]
     },
     {
+      "atom_id": "tashas-cauldron:atom:008f917eace997a6a54939d5:gift-of-the-sea:003",
+      "content_id": "content.tashas-cauldron.round2.feature.fathomless-gift-of-the-sea",
+      "content_kind": "subclass_feature",
+      "migration_status": "compile_only",
+      "source_fingerprint": "74fbe2468e9de195cc806d2504240777ab5b59e655b609bd77c38accf80ea1a0",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.fathomless-gift-of-the-sea"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:008f917eace997a6a54939d5:oceanic-soul:004",
+      "content_id": "content.tashas-cauldron.round2.feature.fathomless-oceanic-soul",
+      "content_kind": "subclass_feature",
+      "migration_status": "compile_only",
+      "source_fingerprint": "475e8e508d9a9f46c5df17d310287b38645f6be7adb5650f1251b2ad27b1dbe2",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.fathomless-oceanic-soul"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:0739d5dfe5855a9afc8f3a53:bonus-proficiencies:001",
+      "content_id": "content.tashas-cauldron.round2.feature.rune-knight-bonus-proficiencies",
+      "content_kind": "subclass_feature",
+      "migration_status": "compile_only",
+      "source_fingerprint": "d2487b5cf34bb9da95bf52d8a4dde0c5a60e884cef6a87074242cf97d4a902e6",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.rune-knight-bonus-proficiencies"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:0739d5dfe5855a9afc8f3a53:giant-s-might:009",
+      "content_id": "content.tashas-cauldron.round2.feature.rune-knight-giants-might",
+      "content_kind": "subclass_feature",
+      "migration_status": "compile_only",
+      "source_fingerprint": "98de6619ac28cf66d7cb76212aa301e422069c9a426890b516f1f79ce3b75a26",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.rune-knight-giants-might"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:0739d5dfe5855a9afc8f3a53:great-stature:011",
+      "content_id": "content.tashas-cauldron.round2.feature.rune-knight-great-stature",
+      "content_kind": "subclass_feature",
+      "migration_status": "compile_only",
+      "source_fingerprint": "1173de6691918d04d1fd1b689f87d0269fe5b1427c3ab7c4db33ede3872e1fa2",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.rune-knight-great-stature"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:0739d5dfe5855a9afc8f3a53:runic-shield:010",
+      "content_id": "content.tashas-cauldron.round2.feature.rune-knight-runic-shield",
+      "content_kind": "subclass_feature",
+      "migration_status": "compile_only",
+      "source_fingerprint": "27625f088579223b3d51f2b336e2a8a1b69be4834972cda58b1c6646490524fe",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.rune-knight-runic-shield"
+      ]
+    },
+    {
       "atom_id": "tashas-cauldron:atom:083419d9de551806a5ca9748:ade91e9a9b97:000",
       "content_id": "tashas-cauldron:spell:083419d9de551806a5ca9748",
       "content_kind": "spell",
@@ -31,6 +91,26 @@
       ]
     },
     {
+      "atom_id": "tashas-cauldron:atom:12139219bf7e575f9cde019c:bait-and-switch:002",
+      "content_id": "content.tashas-cauldron.round2.feature.battle-master-bait-and-switch",
+      "content_kind": "maneuver",
+      "migration_status": "compile_only",
+      "source_fingerprint": "a33e1f993493f9e77e6863153218a10353ac2bbbde0a95cbe5ffc471ac891465",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.battle-master-bait-and-switch"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:12139219bf7e575f9cde019c:brace:003",
+      "content_id": "content.tashas-cauldron.round2.feature.battle-master-brace",
+      "content_kind": "maneuver",
+      "migration_status": "compile_only",
+      "source_fingerprint": "6a5a2625011b50bfee3b95ad6333595cd27c195444316d11b31b670c1278dcbe",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.battle-master-brace"
+      ]
+    },
+    {
       "atom_id": "tashas-cauldron:atom:12139219bf7e575f9cde019c:commanding-presence:004",
       "content_id": "content.tashas-cauldron.feature.battle-master.commanding-presence",
       "content_kind": "maneuver",
@@ -38,6 +118,156 @@
       "source_fingerprint": "bd974174f41c943d9946ca76495368f3fb70d3d710c8e3f5f9962c393ab52e84",
       "typed_content_ids": [
         "content.tashas-cauldron.feature.battle-master.commanding-presence"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:12139219bf7e575f9cde019c:grappling-strike:005",
+      "content_id": "content.tashas-cauldron.round2.feature.battle-master-grappling-strike",
+      "content_kind": "maneuver",
+      "migration_status": "compile_only",
+      "source_fingerprint": "6471c3b585d7f07ed7f01bafd6e847bee56bc38c376bcba9fa7079c4111d308d",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.battle-master-grappling-strike"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:12139219bf7e575f9cde019c:quick-toss:006",
+      "content_id": "content.tashas-cauldron.round2.feature.battle-master-quick-toss",
+      "content_kind": "maneuver",
+      "migration_status": "compile_only",
+      "source_fingerprint": "4a4a22bf8fdd2ed8eba31db397881043468613d514e1454f628147ff5dd5896c",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.battle-master-quick-toss"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:12139219bf7e575f9cde019c:tactical-assessment:007",
+      "content_id": "content.tashas-cauldron.round2.feature.battle-master-tactical-assessment",
+      "content_kind": "maneuver",
+      "migration_status": "compile_only",
+      "source_fingerprint": "269cb432a4324415c04a77c8977926c262cbef478f93c2f6f73deb3d5ea249ae",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.battle-master-tactical-assessment"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:1924837fba5aec4d15a290b8:crusher:003",
+      "content_id": "content.tashas-cauldron.round2.feature.feat-crusher",
+      "content_kind": "feat",
+      "migration_status": "compile_only",
+      "source_fingerprint": "e3303420750fb2e6a4ed58dbedb70cad6b708dd090efee93ef4903af07434755",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.feat-crusher"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:1924837fba5aec4d15a290b8:fey-touched:005",
+      "content_id": "content.tashas-cauldron.round2.feature.feat-fey-touched",
+      "content_kind": "feat",
+      "migration_status": "compile_only",
+      "source_fingerprint": "d5cc7fd982478d0c2b13d3cb035057c6963f5df14123fb3ebea0e19efe746cb5",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.feat-fey-touched"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:1924837fba5aec4d15a290b8:shadow-touched:011",
+      "content_id": "content.tashas-cauldron.round2.feature.feat-shadow-touched",
+      "content_kind": "feat",
+      "migration_status": "compile_only",
+      "source_fingerprint": "70d7286100e2fce8d19f264f1a5def09f241c523035046b05a4a5ec90029c167",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.feat-shadow-touched"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:1924837fba5aec4d15a290b8:skill-expert:012",
+      "content_id": "content.tashas-cauldron.round2.feature.feat-skill-expert",
+      "content_kind": "feat",
+      "migration_status": "compile_only",
+      "source_fingerprint": "8819ac1debf7f8a661dc0cbc426a60c63aa191b16b9837698c4a35ce6e030e59",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.feat-skill-expert"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:1924837fba5aec4d15a290b8:telepathic:015",
+      "content_id": "content.tashas-cauldron.round2.feature.feat-telepathic",
+      "content_kind": "feat",
+      "migration_status": "compile_only",
+      "source_fingerprint": "75245c4b8d8ca10c99b4011816e42d47b36e10f3af099b37403798669cabef5a",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.feat-telepathic"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:28894d328bca545cc65f7eb9:blessed-warrior:003",
+      "content_id": "content.tashas-cauldron.round2.feature.paladin-blessed-warrior",
+      "content_kind": "class_feature",
+      "migration_status": "compile_only",
+      "source_fingerprint": "f4e75bcff563a7751bf92c7ca912ab7d57fabeb057a567e8661569e7beff5ccf",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.paladin-blessed-warrior"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:28894d328bca545cc65f7eb9:blind-fighting:004",
+      "content_id": "content.tashas-cauldron.round2.feature.paladin-blind-fighting",
+      "content_kind": "class_feature",
+      "migration_status": "compile_only",
+      "source_fingerprint": "bedeef4bfaf1f4e3298ed0b820fe64250b6eddc8c32e6cc46fa8a3e4a04df2d0",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.paladin-blind-fighting"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:28894d328bca545cc65f7eb9:harness-divine-power:006",
+      "content_id": "content.tashas-cauldron.round2.feature.paladin-harness-divine-power",
+      "content_kind": "class_feature",
+      "migration_status": "compile_only",
+      "source_fingerprint": "e340ad42c5b8cb10573dab8b8f71d22f43ffe1645d418ff548b9f148e8ef3dab",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.paladin-harness-divine-power"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:28894d328bca545cc65f7eb9:interception:005",
+      "content_id": "content.tashas-cauldron.round2.feature.paladin-interception",
+      "content_kind": "class_feature",
+      "migration_status": "compile_only",
+      "source_fingerprint": "e1195ccbd5173abc450a0cb3e52b67c29c0feb697cd99cd97f5b393ad777070e",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.paladin-interception"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:2ceef8846dfb30c175abe0dd:tool-expertise:007",
+      "content_id": "content.tashas-cauldron.round2.feature.artificer-tool-expertise",
+      "content_kind": "class_feature",
+      "migration_status": "compile_only",
+      "source_fingerprint": "1b4ba456b9cb7fb043ff44848d69fe948b4efc396b77c87bbeeadd2fbda0d330",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.artificer-tool-expertise"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:38a389e4b25a6eeec6c7835f:bonus-proficiencies:002",
+      "content_id": "content.tashas-cauldron.round2.feature.order-cleric-bonus-proficiencies",
+      "content_kind": "subclass_feature",
+      "migration_status": "compile_only",
+      "source_fingerprint": "18f02efc476e93883b7e6cbb8052a27f2827dee7b21a849cd60b374279ee9b4a",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.order-cleric-bonus-proficiencies"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:4041ef4e8e0a5b7375019c27:training-in-sword-and-song:001",
+      "content_id": "content.tashas-cauldron.round2.feature.bladesinger-training-in-sword-and-song",
+      "content_kind": "subclass_feature",
+      "migration_status": "compile_only",
+      "source_fingerprint": "f819eec7176ec837481935e4097fc313ba6d41dbacef772baa1bfa58a6d6bfdd",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.bladesinger-training-in-sword-and-song"
       ]
     },
     {
@@ -82,6 +312,106 @@
       ]
     },
     {
+      "atom_id": "tashas-cauldron:atom:63d0abe27f6ad161f0820593:bonus-proficiencies:002",
+      "content_id": "content.tashas-cauldron.round2.feature.twilight-cleric-bonus-proficiencies",
+      "content_kind": "subclass_feature",
+      "migration_status": "compile_only",
+      "source_fingerprint": "4d42b7a9f01641ddfceddd9af35ddc869f2beee919f10c3c4e240a670165ee86",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.twilight-cleric-bonus-proficiencies"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:63d0abe27f6ad161f0820593:eyes-of-night:003",
+      "content_id": "content.tashas-cauldron.round2.feature.twilight-cleric-eyes-of-night",
+      "content_kind": "subclass_feature",
+      "migration_status": "compile_only",
+      "source_fingerprint": "3e93325df3b95c00b70e62e4858111dd3f3086ec7e3ffccfef8db7ae612b4eb7",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.twilight-cleric-eyes-of-night"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:63d0abe27f6ad161f0820593:steps-of-night:006",
+      "content_id": "content.tashas-cauldron.round2.feature.twilight-cleric-steps-of-night",
+      "content_kind": "subclass_feature",
+      "migration_status": "compile_only",
+      "source_fingerprint": "add482a99ecb03f656b4f0411eb340b3887a648abf46b16b152f3997d2a1b553",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.twilight-cleric-steps-of-night"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:6ac3dd8adf2acd63eeabf4ea:otherworldly-glamour:003",
+      "content_id": "content.tashas-cauldron.round2.feature.fey-wanderer-otherworldly-glamour",
+      "content_kind": "subclass_feature",
+      "migration_status": "compile_only",
+      "source_fingerprint": "dc82c5d6a753d9625cf335d1f87905b24e6bebbd352ced98c0ffe54916128871",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.fey-wanderer-otherworldly-glamour"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:752d57e35706db428895da0a:blind-fighting:008",
+      "content_id": "content.tashas-cauldron.round2.feature.ranger-blind-fighting",
+      "content_kind": "class_feature",
+      "migration_status": "compile_only",
+      "source_fingerprint": "a39b8159a253eda7998dfdeb1cfd5f664ea39dacfaaa05d80111fd13d23066d5",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.ranger-blind-fighting"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:752d57e35706db428895da0a:canny-1:002",
+      "content_id": "content.tashas-cauldron.round2.feature.ranger-canny",
+      "content_kind": "class_feature",
+      "migration_status": "compile_only",
+      "source_fingerprint": "0daafdbd8cee1a602938173f853a0c62fddacd03b89ddca6e836017ff3b5cfac",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.ranger-canny"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:752d57e35706db428895da0a:druidic-warrior:009",
+      "content_id": "content.tashas-cauldron.round2.feature.ranger-druidic-warrior",
+      "content_kind": "class_feature",
+      "migration_status": "compile_only",
+      "source_fingerprint": "2406e185269ccb82c1cdde24a706f7814f2576449e57bfd98ffad84cc3bb4809",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.ranger-druidic-warrior"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:752d57e35706db428895da0a:roving-6:003",
+      "content_id": "content.tashas-cauldron.round2.feature.ranger-roving",
+      "content_kind": "class_feature",
+      "migration_status": "compile_only",
+      "source_fingerprint": "6595588adee5a89e586f32b1ebed8f455611391f090c9ce43dfe895b02151297",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.ranger-roving"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:752d57e35706db428895da0a:tireless-10:004",
+      "content_id": "content.tashas-cauldron.round2.feature.ranger-tireless",
+      "content_kind": "class_feature",
+      "migration_status": "compile_only",
+      "source_fingerprint": "d877b14749084e924899962f5fbeb75ecaf81c43e042c3c31a57bf7fc143ab25",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.ranger-tireless"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:790ce45021cc1901403353e1:implement-of-peace:002",
+      "content_id": "content.tashas-cauldron.round2.feature.peace-cleric-implement-of-peace",
+      "content_kind": "subclass_feature",
+      "migration_status": "compile_only",
+      "source_fingerprint": "15684662cfef5ade8a2a4936ccfdb89cf0a05de2b56f45d03841da7762a1c055",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.peace-cleric-implement-of-peace"
+      ]
+    },
+    {
       "atom_id": "tashas-cauldron:atom:7947fb03852a7bc77d69e3ac:be0996c2cd7c:000",
       "content_id": "tashas-cauldron:spell:7947fb03852a7bc77d69e3ac",
       "content_kind": "spell",
@@ -89,6 +419,56 @@
       "source_fingerprint": "57b99cef04471d3a67c58b3d80dec59e192ca3e61b6efa35b3aa0a86af3558b5",
       "typed_content_ids": [
         "tashas-cauldron:spell:7947fb03852a7bc77d69e3ac"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:867896faa26eb295d846a574:glorious-defense:010",
+      "content_id": "content.tashas-cauldron.round2.feature.glory-paladin-glorious-defense",
+      "content_kind": "subclass_feature",
+      "migration_status": "compile_only",
+      "source_fingerprint": "f8b34dc43426edf2300e193c0b0e360a8a9abf0ba118bdca226a575956d21dc7",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.glory-paladin-glorious-defense"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:98620543cf94e974361c6567:bottled-respit:003",
+      "content_id": "content.tashas-cauldron.round2.feature.genie-bottled-respite",
+      "content_kind": "subclass_feature",
+      "migration_status": "compile_only",
+      "source_fingerprint": "e81b718b2ee8728e75cf77c2f00c33312a283a9e12d3654d9bb377a64ec745c7",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.genie-bottled-respite"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:98620543cf94e974361c6567:elemental-gift:005",
+      "content_id": "content.tashas-cauldron.round2.feature.genie-elemental-gift",
+      "content_kind": "subclass_feature",
+      "migration_status": "compile_only",
+      "source_fingerprint": "0281762f3f17d10d7da5e74e4ed47ecc3b306de5a5f4a4259bcd675e73739c1d",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.genie-elemental-gift"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:98620543cf94e974361c6567:genie-s-wrath:004",
+      "content_id": "content.tashas-cauldron.round2.feature.genie-genies-wrath",
+      "content_kind": "subclass_feature",
+      "migration_status": "compile_only",
+      "source_fingerprint": "23d8800203ffc916ccb50f5e9257369eb56811a830c49a7e9b670b4f6562abc6",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.genie-genies-wrath"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:a13253dc90904c96eaa719ab:guarded-mind:008",
+      "content_id": "content.tashas-cauldron.round2.feature.psi-warrior-guarded-mind",
+      "content_kind": "subclass_feature",
+      "migration_status": "compile_only",
+      "source_fingerprint": "8d34393b37cc2217820b951ac7ea00c366d2e783eb35c995a894a2bbff253811",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.psi-warrior-guarded-mind"
       ]
     },
     {
@@ -102,6 +482,16 @@
       ]
     },
     {
+      "atom_id": "tashas-cauldron:atom:a13253dc90904c96eaa719ab:psi-powered-leap:006",
+      "content_id": "content.tashas-cauldron.round2.feature.psi-warrior-psi-powered-leap",
+      "content_kind": "subclass_feature",
+      "migration_status": "compile_only",
+      "source_fingerprint": "77c72c1586a767410a2310c68833f137a2ddf36d456e33f393b1475ebe443499",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.psi-warrior-psi-powered-leap"
+      ]
+    },
+    {
       "atom_id": "tashas-cauldron:atom:a13253dc90904c96eaa719ab:psionic-strike:003",
       "content_id": "content.tashas-cauldron.feature.psi-warrior-psionic-strike",
       "content_kind": "subclass_feature",
@@ -109,6 +499,26 @@
       "source_fingerprint": "77c72c1586a767410a2310c68833f137a2ddf36d456e33f393b1475ebe443499",
       "typed_content_ids": [
         "content.tashas-cauldron.feature.psi-warrior-psionic-strike"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:a13253dc90904c96eaa719ab:psionic:001",
+      "content_id": "content.tashas-cauldron.round2.feature.psi-warrior-psionic-power",
+      "content_kind": "subclass_feature",
+      "migration_status": "compile_only",
+      "source_fingerprint": "ae992cb3f24babe6aa406a6cc188d8d8243598b6d32ee71610a058e3d6e8274d",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.psi-warrior-psionic-power"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:a13253dc90904c96eaa719ab:telekinetic-master:010",
+      "content_id": "content.tashas-cauldron.round2.feature.psi-warrior-telekinetic-master",
+      "content_kind": "subclass_feature",
+      "migration_status": "compile_only",
+      "source_fingerprint": "10f5712d3e4d609a13f930b64b2817c88383c4d8cd5c88cee8a7f6ceeef6bee6",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.psi-warrior-telekinetic-master"
       ]
     },
     {
@@ -122,6 +532,16 @@
       ]
     },
     {
+      "atom_id": "tashas-cauldron:atom:b23e97de6529e42be59f8b0d:bestial-soul:005",
+      "content_id": "content.tashas-cauldron.round2.feature.beast-barbarian-bestial-soul",
+      "content_kind": "subclass_feature",
+      "migration_status": "compile_only",
+      "source_fingerprint": "41babb65982a971e9e339f7be5c634a6b703ffa9d4187f9c30e225296980a888",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.beast-barbarian-bestial-soul"
+      ]
+    },
+    {
       "atom_id": "tashas-cauldron:atom:b4ea0dc1907dd5ac08666af3:9beb0f907f0a:000",
       "content_id": "tashas-cauldron:spell:b4ea0dc1907dd5ac08666af3",
       "content_kind": "spell",
@@ -129,6 +549,106 @@
       "source_fingerprint": "cd9ef32eba165fb7461604b077548c4e0e72af622c56f684f5117c0dee958d07",
       "typed_content_ids": [
         "tashas-cauldron:spell:b4ea0dc1907dd5ac08666af3"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:b63c217774b977cdb0c1a23e:homing-strikes:006",
+      "content_id": "content.tashas-cauldron.round2.feature.soulknife-homing-strikes",
+      "content_kind": "subclass_feature",
+      "migration_status": "compile_only",
+      "source_fingerprint": "183231e9b0318ffebefa8d10d3e58bad5e898c7d95343a9e7bde5cf129e9b3c3",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.soulknife-homing-strikes"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:b63c217774b977cdb0c1a23e:psi-bolstered-knack:002",
+      "content_id": "content.tashas-cauldron.round2.feature.soulknife-psi-bolstered-knack",
+      "content_kind": "subclass_feature",
+      "migration_status": "compile_only",
+      "source_fingerprint": "183231e9b0318ffebefa8d10d3e58bad5e898c7d95343a9e7bde5cf129e9b3c3",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.soulknife-psi-bolstered-knack"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:b63c217774b977cdb0c1a23e:psychic-teleportation:007",
+      "content_id": "content.tashas-cauldron.round2.feature.soulknife-psychic-teleportation",
+      "content_kind": "subclass_feature",
+      "migration_status": "compile_only",
+      "source_fingerprint": "6806e8e7559a74d901c4eb97994d4e89f4a3bbdce9a489439d344041940d9044",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.soulknife-psychic-teleportation"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:b63c217774b977cdb0c1a23e:psychic-whispers:003",
+      "content_id": "content.tashas-cauldron.round2.feature.soulknife-psychic-whispers",
+      "content_kind": "subclass_feature",
+      "migration_status": "compile_only",
+      "source_fingerprint": "3728573c1b800cdafc22bc100ce73fa09327c20e244f80bf20305b9fef26386b",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.soulknife-psychic-whispers"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:b6d0bbfbdc36f195e62683c5:armor-of-the-spirit:010",
+      "content_id": "content.tashas-cauldron.round2.feature.astral-self-armor-of-the-spirit",
+      "content_kind": "subclass_feature",
+      "migration_status": "compile_only",
+      "source_fingerprint": "d83b3a738e366be13f11b1df8b195d73bdeeaca2dd87de106f26ede5523bd52e",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.astral-self-armor-of-the-spirit"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:b6d0bbfbdc36f195e62683c5:astral-sight:003",
+      "content_id": "content.tashas-cauldron.round2.feature.astral-self-astral-sight",
+      "content_kind": "subclass_feature",
+      "migration_status": "compile_only",
+      "source_fingerprint": "d83b3a738e366be13f11b1df8b195d73bdeeaca2dd87de106f26ede5523bd52e",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.astral-self-astral-sight"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:b6d0bbfbdc36f195e62683c5:word-of-the-spirit:005",
+      "content_id": "content.tashas-cauldron.round2.feature.astral-self-word-of-the-spirit",
+      "content_kind": "subclass_feature",
+      "migration_status": "compile_only",
+      "source_fingerprint": "d2c28dba464993b83df7c113030e103062ba998e7b04ee47af9ecd47e8ef10a9",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.astral-self-word-of-the-spirit"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:b79182b9e28e7cac95e7c7a5:full-of-stars:010",
+      "content_id": "content.tashas-cauldron.round2.feature.stars-druid-full-of-stars",
+      "content_kind": "subclass_feature",
+      "migration_status": "compile_only",
+      "source_fingerprint": "0f3c3676902ae51a3a69a833a4eefdd34f7b368372029b88d96fd27c02b85471",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.stars-druid-full-of-stars"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:b79182b9e28e7cac95e7c7a5:weal:007",
+      "content_id": "content.tashas-cauldron.round2.feature.stars-druid-weal",
+      "content_kind": "subclass_feature",
+      "migration_status": "compile_only",
+      "source_fingerprint": "618bf518f69b075c8335565cf8fbc6ae01f6ad85d0e16c84e51c17479d1d73dd",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.stars-druid-weal"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:b79182b9e28e7cac95e7c7a5:woe:008",
+      "content_id": "content.tashas-cauldron.round2.feature.stars-druid-woe",
+      "content_kind": "subclass_feature",
+      "migration_status": "compile_only",
+      "source_fingerprint": "011c5ed7256bcbb995e75bbe1402c0e50f1b44aa28d684fd6217de3db2387019",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.stars-druid-woe"
       ]
     },
     {
@@ -182,6 +702,16 @@
       ]
     },
     {
+      "atom_id": "tashas-cauldron:atom:cf864e58ba0d62c93110f5c6:powered-steps:010",
+      "content_id": "content.tashas-cauldron.round2.feature.armorer-powered-steps",
+      "content_kind": "subclass_feature",
+      "migration_status": "compile_only",
+      "source_fingerprint": "84df7f2476a3c44de86be0476fe4fb0dc8fcaf53b1b954b2b43c26f49ce39ae6",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.armorer-powered-steps"
+      ]
+    },
+    {
       "atom_id": "tashas-cauldron:atom:cf864e58ba0d62c93110f5c6:tools-of-the-trade:001",
       "content_id": "content.tashas-cauldron.feature.armorer.tools-of-the-trade",
       "content_kind": "subclass_feature",
@@ -232,6 +762,26 @@
       ]
     },
     {
+      "atom_id": "tashas-cauldron:atom:dc4f2bf18baca6ec97d7d0bf:alchemical-savant:004",
+      "content_id": "content.tashas-cauldron.round2.feature.alchemist-alchemical-savant",
+      "content_kind": "subclass_feature",
+      "migration_status": "compile_only",
+      "source_fingerprint": "a992e0b66f70a6a864aeaa19305e7636912ac00ef4525354841e75c78a33f107",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.alchemist-alchemical-savant"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:dc4f2bf18baca6ec97d7d0bf:alchemist-spells:002",
+      "content_id": "content.tashas-cauldron.round2.feature.alchemist-spell-list",
+      "content_kind": "subclass_feature",
+      "migration_status": "compile_only",
+      "source_fingerprint": "5022f3119f776ae5d49994ab31ebbe1edbb7fc11990271ba96ef91ad6be8250f",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.alchemist-spell-list"
+      ]
+    },
+    {
       "atom_id": "tashas-cauldron:atom:dc4f2bf18baca6ec97d7d0bf:chemical-mastery:006",
       "content_id": "content.tashas-cauldron.feature.alchemist-chemical-mastery",
       "content_kind": "subclass_feature",
@@ -262,6 +812,46 @@
       ]
     },
     {
+      "atom_id": "tashas-cauldron:atom:e94f0c903dd025796d7a2d22:psionic-sorcery:003",
+      "content_id": "content.tashas-cauldron.round2.feature.aberrant-mind-psionic-sorcery",
+      "content_kind": "subclass_feature",
+      "migration_status": "compile_only",
+      "source_fingerprint": "edc9b2cf480295475fe7a1452cc257465c1037f3a2dd01903d13df83701ae683",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.aberrant-mind-psionic-sorcery"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:e94f0c903dd025796d7a2d22:psionic-spells:001",
+      "content_id": "content.tashas-cauldron.round2.feature.aberrant-mind-psionic-spell-list",
+      "content_kind": "subclass_feature",
+      "migration_status": "compile_only",
+      "source_fingerprint": "db31fec9d3bc16dcb820716e3757b8abfd701c57d52a03652da1442c284e4911",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.aberrant-mind-psionic-spell-list"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:e94f0c903dd025796d7a2d22:telepathic-speech:002",
+      "content_id": "content.tashas-cauldron.round2.feature.aberrant-mind-telepathic-speech",
+      "content_kind": "subclass_feature",
+      "migration_status": "compile_only",
+      "source_fingerprint": "bb05fdaef266761765ca639770796cfc0caa722984e1c66a1b5ce1d8ac99f83d",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.aberrant-mind-telepathic-speech"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:ee901996f0fcc3e576657e06:clockwork-magic:001",
+      "content_id": "content.tashas-cauldron.round2.feature.clockwork-soul-clockwork-magic",
+      "content_kind": "subclass_feature",
+      "migration_status": "compile_only",
+      "source_fingerprint": "a75a70d4de1c06e7df15582cdac7b2cb3aa471140cd48e6f0d5d9f87923dd3ca",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.clockwork-soul-clockwork-magic"
+      ]
+    },
+    {
       "atom_id": "tashas-cauldron:atom:eec6bd94eb83a351fb987de2:a306ecfb0c3f:000",
       "content_id": "tashas-cauldron:spell:eec6bd94eb83a351fb987de2",
       "content_kind": "spell",
@@ -282,6 +872,46 @@
       ]
     },
     {
+      "atom_id": "tashas-cauldron:atom:f8e42149abd618bfa3d0eac1:swarmkeeper-magic:002",
+      "content_id": "content.tashas-cauldron.round2.feature.swarmkeeper-spell-list",
+      "content_kind": "subclass_feature",
+      "migration_status": "compile_only",
+      "source_fingerprint": "b041fc5c2ffc39fb41a13028f08dac2e6526050fecd6e848c5d21964a2121f82",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.swarmkeeper-spell-list"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:f8e42149abd618bfa3d0eac1:writhing-tide:003",
+      "content_id": "content.tashas-cauldron.round2.feature.swarmkeeper-writhing-tide",
+      "content_kind": "subclass_feature",
+      "migration_status": "compile_only",
+      "source_fingerprint": "1fd37d80663219dc8205cf97c9fc2b23fb6ee9975c86f3f868f73d9b2c29f821",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.swarmkeeper-writhing-tide"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:fbf8451f879a169fb17a01e9:arcane-firearm:004",
+      "content_id": "content.tashas-cauldron.round2.feature.artillerist-arcane-firearm",
+      "content_kind": "subclass_feature",
+      "migration_status": "compile_only",
+      "source_fingerprint": "245f8fff6a10113c6d0062a26dd054611122b8d830fe6e98b84855467c44d541",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.artillerist-arcane-firearm"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:fbf8451f879a169fb17a01e9:explosive-cannon:005",
+      "content_id": "content.tashas-cauldron.round2.feature.artillerist-explosive-cannon",
+      "content_kind": "subclass_feature",
+      "migration_status": "compile_only",
+      "source_fingerprint": "6b015bff0dd2bdde035ef1d9c805409786a79abea38627c306344a2873854d16",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.artillerist-explosive-cannon"
+      ]
+    },
+    {
       "atom_id": "tashas-cauldron:atom:fbf8451f879a169fb17a01e9:tool-proficiency:001",
       "content_id": "content.tashas-cauldron.feature.artillerist.tool-proficiency",
       "content_kind": "subclass_feature",
@@ -289,6 +919,16 @@
       "source_fingerprint": "f3045ea77f8e32b907e316fa1bd5005b6066de7da24908e3b0e82b1720c9597b",
       "typed_content_ids": [
         "content.tashas-cauldron.feature.artillerist.tool-proficiency"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:ff7049c6a4d0aad0dae4adf5:manifest-mind:002",
+      "content_id": "content.tashas-cauldron.round2.feature.scribe-manifest-mind",
+      "content_kind": "subclass_feature",
+      "migration_status": "compile_only",
+      "source_fingerprint": "dbbdb5b3ca9d86ece43c2f919d8483683f99068a478bccc401906057fccb920a",
+      "typed_content_ids": [
+        "content.tashas-cauldron.round2.feature.scribe-manifest-mind"
       ]
     }
   ],

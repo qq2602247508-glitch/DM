@@ -681,13 +681,65 @@ def materialize_runtime_definition(
         elif section == "resources":
             definition["resources"][str(entry.get("key") or entry["id"])] = entry
         elif section == "advancement":
-            if definition["advancement"] is not None:
-                raise ValueError("multiple advancement blocks are not supported")
-            definition["advancement"] = entry
+            existing = definition["advancement"]
+            if existing is None:
+                definition["advancement"] = entry
+                continue
+            # A single feature may grant several spells (or several grants
+            # with distinct free-cast resources).  Keep one canonical
+            # advancement envelope for the existing character consumer while
+            # preserving each materialized grant's metadata for resolution.
+            merged = dict(existing)
+            existing_spells = [str(item) for item in existing.get("spells", [])]
+            new_spells = [str(item) for item in entry.get("spells", [])]
+            merged["spells"] = list(dict.fromkeys((*existing_spells, *new_spells)))
+            existing_grants = existing.get("spell_grants")
+            if not isinstance(existing_grants, list):
+                existing_grants = [dict(existing)]
+            new_grants = entry.get("spell_grants")
+            if isinstance(new_grants, list):
+                existing_grants.extend(
+                    dict(item) for item in new_grants if isinstance(item, Mapping)
+                )
+            else:
+                existing_grants.append(dict(entry))
+            merged["spell_grants"] = existing_grants
+            for key in (
+                "grant_class",
+                "source_class",
+                "casting_ability",
+                "grant_mode",
+                "ritual_only",
+                "free_cast_resource_key",
+                "auto_save",
+            ):
+                if existing.get(key) != entry.get(key):
+                    merged.pop(key, None)
+            definition["advancement"] = merged
         elif section == "prepared_spell_list":
-            if definition["prepared_spell_list"] is not None:
-                raise ValueError("multiple prepared spell blocks are not supported")
-            definition["prepared_spell_list"] = entry
+            existing = definition["prepared_spell_list"]
+            if existing is None:
+                definition["prepared_spell_list"] = entry
+                continue
+            merged = dict(existing)
+            existing_spells = [str(item) for item in existing.get("spells", [])]
+            new_spells = [str(item) for item in entry.get("spells", [])]
+            merged["spells"] = list(dict.fromkeys((*existing_spells, *new_spells)))
+            existing_grants = existing.get("spell_grants")
+            if not isinstance(existing_grants, list):
+                existing_grants = [dict(existing)]
+            new_grants = entry.get("spell_grants")
+            if isinstance(new_grants, list):
+                existing_grants.extend(
+                    dict(item) for item in new_grants if isinstance(item, Mapping)
+                )
+            else:
+                existing_grants.append(dict(entry))
+            merged["spell_grants"] = existing_grants
+            for key in ("source_class", "preparation_mode"):
+                if existing.get(key) != entry.get(key):
+                    merged.pop(key, None)
+            definition["prepared_spell_list"] = merged
     definition.setdefault("automation_status", "full")
     definition.setdefault("requires_dm_adjudication", False)
     return definition

@@ -1,0 +1,104 @@
+{
+  "class_name": "游侠",
+  "clause_boundaries": {
+    "remove-exhaustion": {
+      "source_excerpt": "**游侠\nRanger**\n游侠在这一部分得到了一些新的特性与子职。\n\n**可选职业特性 Optional Class Features**\n你可以在达到特定等级时获得玩家手册中描述的职业特性。这一部分提供了一些你作为游侠的额外特性。与玩家手册中的特性不同的是，你不会自动获得这些特性。在你达到该部分描述的职业特性的需求等级且决定获得这些特性时，与你的DM先商量商量。这些特性能够被一个一个单独选走，这意味着你可以使用其中一些、全部或不使用它们。\n若你将一个特性替换为另一个特性，那么你将不会受到被替换的特性所带来的好处，你也不会满足在游戏中任何需求被替换的特性的东西。\n\n**熟练探险家 Deft\nExplorer**\n*第1级游侠特性，替换 自然探索者Natural Explorer 特性\n*你是一个无与伦比的探险家和求生专家。你在1级时获得对应的特性，然后在第6级和第10级时再各获得对应的特性。\n\n> **精明 Canny（1级）**\n> 你选择一项你拥有熟练的技能，你在使用该技能时所做的任何属性检定中的熟练加值变为两倍。\n> 你还可以额外说、读、写两门额外的自选语言。\n>\n>\n>\n> **越野 Roving（6级）**\n> 你的步行速度增加5。同时，你获得等于你步行速度的攀爬速度和游泳速度。\n>\n>\n>\n> **不知疲倦 Tireless（10级）**\n> 以一个动作，你能够给予自己1d8+你的感知调整值的临时生命值（至少1点临时生命值）。你能够使用此特性的次数等于你的熟练加值次，当你完成一次长休后，你恢复已消费的全部次数。\n> 此外，当你完成一次短休时，你的力竭等级减少1级（若有）。\n\n**夙敌 Favored\nFoe**\n*第1级游侠特性，替换 宿敌Favored Enemy 特性并能对\n屠灭众敌Foe Slayer 特性起效*\n当你以一次攻击掷骰命中一个生物时，你可以呼唤你与自然的神秘羁连以将目标标记为你的夙敌，持续一分钟或直到你失去专注(如同你在专注一道法术)。\n你在你的回合内第一次命中你的夙敌并对其造成伤害，包括你标记它的时候，你可以造成额外的1d4点伤害。你可以使用同等于你的熟练加值次该特性来标记你的夙敌，你在完成一次长休后恢复所有已使用的次数。这个特性的额外伤害在你达到特定等级时会增加:6级时1d6，14级时1d8。\n\n**额外游侠法术 Addtional Ranger\nSpells**\n*第2级游侠特性*\n下列法术是对《玩家手册》中的游侠法术列表的补充该表格以法术等级而非角色等级排序。除非该法术标有一个星号(说明该法术位于本书第三章)，否则其他法术都来自玩家手册。萨娜珊的万事指南中提供了更多的法术。\n\n| 1环 | 2环 | 3环 | 4环 | 5环 |\n| --- | --- | --- | --- | --- |\n| 纠缠术 Entangle | 援助术 Aid | 元素武器 Elemental Weapon | 支配野兽 Dominate Beast | 高等复原术 Greater Restoration |\n| 炽焰斩 Searing Smite | 强化属性 Enhance Ability | 融身入石 Meld into Stone | 元素召唤术 Summon Elemental* |  |\n|  | 造风术 Gust of Wind | 回生术 Revivify |  |  |\n|  | 魔法武器 Magic Weapon | 妖精召唤术 Summon Fey* |  |  |\n|  | 野兽召唤术 Summon Beast* |  |  |  |\n\n**战斗风格选项 Fighting Style\nOptions**\n*第2级游侠特性*\n当你在选择战斗风格时，下列选项加入你的可选战斗风格中。\n\n> **盲斗Blind Fighting**\n> 你获得10尺的盲视感官。在此范围内，你可以切实的看见非 完全身掩护total cover 的任何东西，即使你处于\n>  目盲Blinded\n> 状态或是身处黑暗之中。不仅如此，你还可以看见此范围内的 隐形Invisible\n> 生物（除非对你而言该生物成功躲藏了起来）。\n>\n>\n>\n> **德鲁伊教战士Druidic Warrior**\n> 你学会两个来自德鲁伊法术列表的你自选的戏法。它们对你视作游侠法术，感知是你施展他们的施法属性。当你升级时，你可以将其中一个戏法替换为德鲁伊法术列表中的另一个戏法。\n>\n>\n>\n> **投掷武器战斗Thrown Weapon Fighting**\n> 你可以在使用一件带有投掷属性武器进行进攻时，将那件武器作为攻击的一部分而拔出。另外，在你以一件投掷武器于远程攻击中命中对手时，你的伤害掷骰+2。\n\n**法器 Spellcasting Focus**\n*第2级游侠特性*\n你可以使用一件德鲁伊法器作为你的游侠法术的法器。一件德鲁伊法器可能会是一枝槲寄生或者冬青木的枝条，用紫衫木或者其他特殊木材制作而成的魔杖或权杖，一柄从活化树木上取来的法杖，或是一件混合了神圣动物的羽毛、毛发、骨头与牙齿的物件。\n\n**原始意识 Primal Awareness**\n*第3级游侠特性，替换 原初意识Primeval Awareness 特性*\n你可以通过与自然的共鸣而集中你的意识:若你尚未习得下方表格种的法术，那么你在抵达对应等级时学会下方原始意识法术表格中的法术。这些法术不占用你的游侠已知法术。\n\n**原始意识法术**\n\n| 游侠等级 | 法术 |\n| --- | --- |\n| 3级 | 动物会话Speak with Animals |\n| 5级 | 野兽知觉Beast Sense |\n| 9级 | 植物交谈Speak with Plants |\n| 12级 | 生物定位术Locate Creature |\n| 17级 | 问道自然Commune with\nNature |\n\n你可以不消耗法术位的施展这些法术每个一次。一旦你用这种方式施展了那个法术，直到你完成一次长休前你都不能再次以此施展它。\n\n**替换武术 Matrial Versatility**\n*第4级游侠特性*\n当你的游侠职业等级抵达能让你获得属性值提升职业特性时，你能用一个游侠可用的战斗风格替换原有的一个战斗风格。这种变化代表着你改变了武术训练和练习的重点。\n\n**自然面纱 Nature's\nVeil**\n*第10级游侠特性，替换 遁术Hide in Plain Sight\n特性*\n你可以暂时地使用自然的力量将你的身形遮蔽。以一个附赠动作，你可以魔法地使自己与正携带、着装的任何装备变得隐形，直到你的下个回合开始。\n\n你可以使用该特性的次数同等于你的熟练加值次，完成一次长休后，你重获全部已消耗的使用次数。",
+      "source_fragment": "blockquote:25"
+    }
+  },
+  "clauses": [
+    {
+      "action_economy": "none",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+        "source": "authored_ir",
+        "source_boundary": "remove-exhaustion",
+        "source_excerpt": "**游侠\nRanger**\n游侠在这一部分得到了一些新的特性与子职。\n\n**可选职业特性 Optional Class Features**\n你可以在达到特定等级时获得玩家手册中描述的职业特性。这一部分提供了一些你作为游侠的额外特性。与玩家手册中的特性不同的是，你不会自动获得这些特性。在你达到该部分描述的职业特性的需求等级且决定获得这些特性时，与你的DM先商量商量。这些特性能够被一个一个单独选走，这意味着你可以使用其中一些、全部或不使用它们。\n若你将一个特性替换为另一个特性，那么你将不会受到被替换的特性所带来的好处，你也不会满足在游戏中任何需求被替换的特性的东西。\n\n**熟练探险家 Deft\nExplorer**\n*第1级游侠特性，替换 自然探索者Natural Explorer 特性\n*你是一个无与伦比的探险家和求生专家。你在1级时获得对应的特性，然后在第6级和第10级时再各获得对应的特性。\n\n> **精明 Canny（1级）**\n> 你选择一项你拥有熟练的技能，你在使用该技能时所做的任何属性检定中的熟练加值变为两倍。\n> 你还可以额外说、读、写两门额外的自选语言。\n>\n>\n>\n> **越野 Roving（6级）**\n> 你的步行速度增加5。同时，你获得等于你步行速度的攀爬速度和游泳速度。\n>\n>\n>\n> **不知疲倦 Tireless（10级）**\n> 以一个动作，你能够给予自己1d8+你的感知调整值的临时生命值（至少1点临时生命值）。你能够使用此特性的次数等于你的熟练加值次，当你完成一次长休后，你恢复已消费的全部次数。\n> 此外，当你完成一次短休时，你的力竭等级减少1级（若有）。\n\n**夙敌 Favored\nFoe**\n*第1级游侠特性，替换 宿敌Favored Enemy 特性并能对\n屠灭众敌Foe Slayer 特性起效*\n当你以一次攻击掷骰命中一个生物时，你可以呼唤你与自然的神秘羁连以将目标标记为你的夙敌，持续一分钟或直到你失去专注(如同你在专注一道法术)。\n你在你的回合内第一次命中你的夙敌并对其造成伤害，包括你标记它的时候，你可以造成额外的1d4点伤害。你可以使用同等于你的熟练加值次该特性来标记你的夙敌，你在完成一次长休后恢复所有已使用的次数。这个特性的额外伤害在你达到特定等级时会增加:6级时1d6，14级时1d8。\n\n**额外游侠法术 Addtional Ranger\nSpells**\n*第2级游侠特性*\n下列法术是对《玩家手册》中的游侠法术列表的补充该表格以法术等级而非角色等级排序。除非该法术标有一个星号(说明该法术位于本书第三章)，否则其他法术都来自玩家手册。萨娜珊的万事指南中提供了更多的法术。\n\n| 1环 | 2环 | 3环 | 4环 | 5环 |\n| --- | --- | --- | --- | --- |\n| 纠缠术 Entangle | 援助术 Aid | 元素武器 Elemental Weapon | 支配野兽 Dominate Beast | 高等复原术 Greater Restoration |\n| 炽焰斩 Searing Smite | 强化属性 Enhance Ability | 融身入石 Meld into Stone | 元素召唤术 Summon Elemental* |  |\n|  | 造风术 Gust of Wind | 回生术 Revivify |  |  |\n|  | 魔法武器 Magic Weapon | 妖精召唤术 Summon Fey* |  |  |\n|  | 野兽召唤术 Summon Beast* |  |  |  |\n\n**战斗风格选项 Fighting Style\nOptions**\n*第2级游侠特性*\n当你在选择战斗风格时，下列选项加入你的可选战斗风格中。\n\n> **盲斗Blind Fighting**\n> 你获得10尺的盲视感官。在此范围内，你可以切实的看见非 完全身掩护total cover 的任何东西，即使你处于\n>  目盲Blinded\n> 状态或是身处黑暗之中。不仅如此，你还可以看见此范围内的 隐形Invisible\n> 生物（除非对你而言该生物成功躲藏了起来）。\n>\n>\n>\n> **德鲁伊教战士Druidic Warrior**\n> 你学会两个来自德鲁伊法术列表的你自选的戏法。它们对你视作游侠法术，感知是你施展他们的施法属性。当你升级时，你可以将其中一个戏法替换为德鲁伊法术列表中的另一个戏法。\n>\n>\n>\n> **投掷武器战斗Thrown Weapon Fighting**\n> 你可以在使用一件带有投掷属性武器进行进攻时，将那件武器作为攻击的一部分而拔出。另外，在你以一件投掷武器于远程攻击中命中对手时，你的伤害掷骰+2。\n\n**法器 Spellcasting Focus**\n*第2级游侠特性*\n你可以使用一件德鲁伊法器作为你的游侠法术的法器。一件德鲁伊法器可能会是一枝槲寄生或者冬青木的枝条，用紫衫木或者其他特殊木材制作而成的魔杖或权杖，一柄从活化树木上取来的法杖，或是一件混合了神圣动物的羽毛、毛发、骨头与牙齿的物件。\n\n**原始意识 Primal Awareness**\n*第3级游侠特性，替换 原初意识Primeval Awareness 特性*\n你可以通过与自然的共鸣而集中你的意识:若你尚未习得下方表格种的法术，那么你在抵达对应等级时学会下方原始意识法术表格中的法术。这些法术不占用你的游侠已知法术。\n\n**原始意识法术**\n\n| 游侠等级 | 法术 |\n| --- | --- |\n| 3级 | 动物会话Speak with Animals |\n| 5级 | 野兽知觉Beast Sense |\n| 9级 | 植物交谈Speak with Plants |\n| 12级 | 生物定位术Locate Creature |\n| 17级 | 问道自然Commune with\nNature |\n\n你可以不消耗法术位的施展这些法术每个一次。一旦你用这种方式施展了那个法术，直到你完成一次长休前你都不能再次以此施展它。\n\n**替换武术 Matrial Versatility**\n*第4级游侠特性*\n当你的游侠职业等级抵达能让你获得属性值提升职业特性时，你能用一个游侠可用的战斗风格替换原有的一个战斗风格。这种变化代表着你改变了武术训练和练习的重点。\n\n**自然面纱 Nature's\nVeil**\n*第10级游侠特性，替换 遁术Hide in Plain Sight\n特性*\n你可以暂时地使用自然的力量将你的身形遮蔽。以一个附赠动作，你可以魔法地使自己与正携带、着装的任何装备变得隐形，直到你的下个回合开始。\n\n你可以使用该特性的次数同等于你的熟练加值次，完成一次长休后，你重获全部已消耗的使用次数。"
+      },
+      "clause_id": "remove-exhaustion",
+      "conditions": [],
+      "duration": null,
+      "effects": [
+        {
+          "operator": "remove_condition",
+          "parameters": {
+            "condition": "exhaustion"
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "short_rest_completed",
+      "visibility": "owner"
+    }
+  ],
+  "compatibility": {
+    "runtime_source": "feature_ir",
+    "source_fingerprint": "d877b14749084e924899962f5fbeb75ecaf81c43e042c3c31a57bf7fc143ab25"
+  },
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "dependencies": [],
+  "evidence": [
+    "不知疲倦: **游侠\nRanger**\n游侠在这一部分得到了一些新的特性与子职。\n\n**可选职业特性 Optional Class Features**\n你可以在达到特定等级时获得玩家手册中描述的职业特性。这一部分提供了一些你作为游侠的额外特性。与玩家手册中的特性不同的是，你不会自动获得这些特性。在你达到该部分描述的职业特性的需求等级且决定获得这些特性时，与你的DM先商量商量。这些特性能够被一个一个单独选走，这意味着你可以使用其中一些、全部或不使用它们。\n若你将一个特性替换为另一个特性，那么你将不会受到被替换的特性所带来的好处，你也不会满足在游戏中任何需求被替换的特性的东西。\n\n**熟练探险家 Deft\nExplorer**\n*第1级游侠特性，替换 自然探索者Natural Explorer 特性\n*你是一个无与伦比的探险家和求生专家。你在1级时获得对应的特性，然后在第6级和第10级时再各获得对应的特性。\n\n> **精明 Canny（1级）**\n> 你选择一项你拥有熟练的技能，你在使用该技能时所做的任何属性检定中的熟练加值变为两倍。\n> 你还可以额外说、读、写两门额外的自选语言。\n>\n>\n>\n> **越野 Roving（6级）**\n> 你的步行速度增加5。同时，你获得等于你步行速度的攀爬速度和游泳速度。\n>\n>\n>\n> **不知疲倦 Tireless（10级）**\n> 以一个动作，你能够给予自己1d8+你的感知调整值的临时生命值（至少1点临时生命值）。你能够使用此特性的次数等于你的熟练加值次，当你完成一次长休后，你恢复已消费的全部次数。\n> 此外，当你完成一次短休时，你的力竭等级减少1级（若有）。\n\n**夙敌 Favored\nFoe**\n*第1级游侠特性，替换 宿敌Favored Enemy 特性并能对\n屠灭众敌Foe Slayer 特性起效*\n当你以一次攻击掷骰命中一个生物时，你可以呼唤你与自然的神秘羁连以将目标标记为你的夙敌，持续一分钟或直到你失去专注(如同你在专注一道法术)。\n你在你的回合内第一次命中你的夙敌并对其造成伤害，包括你标记它的时候，你可以造成额外的1d4点伤害。你可以使用同等于你的熟练加值次该特性来标记你的夙敌，你在完成一次长休后恢复所有已使用的次数。这个特性的额外伤害在你达到特定等级时会增加:6级时1d6，14级时1d8。\n\n**额外游侠法术 Addtional Ranger\nSpells**\n*第2级游侠特性*\n下列法术是对《玩家手册》中的游侠法术列表的补充该表格以法术等级而非角色等级排序。除非该法术标有一个星号(说明该法术位于本书第三章)，否则其他法术都来自玩家手册。萨娜珊的万事指南中提供了更多的法术。\n\n| 1环 | 2环 | 3环 | 4环 | 5环 |\n| --- | --- | --- | --- | --- |\n| 纠缠术 Entang"
+  ],
+  "feature_id": "content.tashas-cauldron.round2.feature.ranger-tireless",
+  "kind": "feature",
+  "level": null,
+  "localized_names": {
+    "zh-CN": "不知疲倦"
+  },
+  "manual_decisions": {
+    "isolated_runtime_only": true,
+    "operator_mapping": "explicit_atom_mapping",
+    "unmodeled_source_terms": [
+      "temporary exhaustion reduction/short-rest timing needs the condition lifecycle consumer"
+    ]
+  },
+  "namespace": "content.tashas-cauldron",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "source-7011166c19bd",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+  "reviewed_fields": [
+    "feature_id",
+    "source_record_id",
+    "source_name",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "content_kind",
+    "class_name",
+    "subclass_name",
+    "level",
+    "source_completeness",
+    "clauses",
+    "required_inputs",
+    "runtime_boundary"
+  ],
+  "ruleset_version": "2014",
+  "schema_version": "feature-ir-1",
+  "source_book": "塔莎的万事坩埚",
+  "source_completeness": "incomplete",
+  "source_evidence": {
+    "source_excerpt": "**游侠\nRanger**\n游侠在这一部分得到了一些新的特性与子职。\n\n**可选职业特性 Optional Class Features**\n你可以在达到特定等级时获得玩家手册中描述的职业特性。这一部分提供了一些你作为游侠的额外特性。与玩家手册中的特性不同的是，你不会自动获得这些特性。在你达到该部分描述的职业特性的需求等级且决定获得这些特性时，与你的DM先商量商量。这些特性能够被一个一个单独选走，这意味着你可以使用其中一些、全部或不使用它们。\n若你将一个特性替换为另一个特性，那么你将不会受到被替换的特性所带来的好处，你也不会满足在游戏中任何需求被替换的特性的东西。\n\n**熟练探险家 Deft\nExplorer**\n*第1级游侠特性，替换 自然探索者Natural Explorer 特性\n*你是一个无与伦比的探险家和求生专家。你在1级时获得对应的特性，然后在第6级和第10级时再各获得对应的特性。\n\n> **精明 Canny（1级）**\n> 你选择一项你拥有熟练的技能，你在使用该技能时所做的任何属性检定中的熟练加值变为两倍。\n> 你还可以额外说、读、写两门额外的自选语言。\n>\n>\n>\n> **越野 Roving（6级）**\n> 你的步行速度增加5。同时，你获得等于你步行速度的攀爬速度和游泳速度。\n>\n>\n>\n> **不知疲倦 Tireless（10级）**\n> 以一个动作，你能够给予自己1d8+你的感知调整值的临时生命值（至少1点临时生命值）。你能够使用此特性的次数等于你的熟练加值次，当你完成一次长休后，你恢复已消费的全部次数。\n> 此外，当你完成一次短休时，你的力竭等级减少1级（若有）。\n\n**夙敌 Favored\nFoe**\n*第1级游侠特性，替换 宿敌Favored Enemy 特性并能对\n屠灭众敌Foe Slayer 特性起效*\n当你以一次攻击掷骰命中一个生物时，你可以呼唤你与自然的神秘羁连以将目标标记为你的夙敌，持续一分钟或直到你失去专注(如同你在专注一道法术)。\n你在你的回合内第一次命中你的夙敌并对其造成伤害，包括你标记它的时候，你可以造成额外的1d4点伤害。你可以使用同等于你的熟练加值次该特性来标记你的夙敌，你在完成一次长休后恢复所有已使用的次数。这个特性的额外伤害在你达到特定等级时会增加:6级时1d6，14级时1d8。\n\n**额外游侠法术 Addtional Ranger\nSpells**\n*第2级游侠特性*\n下列法术是对《玩家手册》中的游侠法术列表的补充该表格以法术等级而非角色等级排序。除非该法术标有一个星号(说明该法术位于本书第三章)，否则其他法术都来自玩家手册。萨娜珊的万事指南中提供了更多的法术。\n\n| 1环 | 2环 | 3环 | 4环 | 5环 |\n| --- | --- | --- | --- | --- |\n| 纠缠术 Entangle | 援助术 Aid | 元素武器 Elemental Weapon | 支配野兽 Dominate Beast | 高等复原术 Greater Restoration |\n| 炽焰斩 Searing Smite | 强化属性 Enhance Ability | 融身入石 Meld into Stone | 元素召唤术 Summon Elemental* |  |\n|  | 造风术 Gust of Wind | 回生术 Revivify |  |  |\n|  | 魔法武器 Magic Weapon | 妖精召唤术 Summon Fey* |  |  |\n|  | 野兽召唤术 Summon Beast* |  |  |  |\n\n**战斗风格选项 Fighting Style\nOptions**\n*第2级游侠特性*\n当你在选择战斗风格时，下列选项加入你的可选战斗风格中。\n\n> **盲斗Blind Fighting**\n> 你获得10尺的盲视感官。在此范围内，你可以切实的看见非 完全身掩护total cover 的任何东西，即使你处于\n>  目盲Blinded\n> 状态或是身处黑暗之中。不仅如此，你还可以看见此范围内的 隐形Invisible\n> 生物（除非对你而言该生物成功躲藏了起来）。\n>\n>\n>\n> **德鲁伊教战士Druidic Warrior**\n> 你学会两个来自德鲁伊法术列表的你自选的戏法。它们对你视作游侠法术，感知是你施展他们的施法属性。当你升级时，你可以将其中一个戏法替换为德鲁伊法术列表中的另一个戏法。\n>\n>\n>\n> **投掷武器战斗Thrown Weapon Fighting**\n> 你可以在使用一件带有投掷属性武器进行进攻时，将那件武器作为攻击的一部分而拔出。另外，在你以一件投掷武器于远程攻击中命中对手时，你的伤害掷骰+2。\n\n**法器 Spellcasting Focus**\n*第2级游侠特性*\n你可以使用一件德鲁伊法器作为你的游侠法术的法器。一件德鲁伊法器可能会是一枝槲寄生或者冬青木的枝条，用紫衫木或者其他特殊木材制作而成的魔杖或权杖，一柄从活化树木上取来的法杖，或是一件混合了神圣动物的羽毛、毛发、骨头与牙齿的物件。\n\n**原始意识 Primal Awareness**\n*第3级游侠特性，替换 原初意识Primeval Awareness 特性*\n你可以通过与自然的共鸣而集中你的意识:若你尚未习得下方表格种的法术，那么你在抵达对应等级时学会下方原始意识法术表格中的法术。这些法术不占用你的游侠已知法术。\n\n**原始意识法术**\n\n| 游侠等级 | 法术 |\n| --- | --- |\n| 3级 | 动物会话Speak with Animals |\n| 5级 | 野兽知觉Beast Sense |\n| 9级 | 植物交谈Speak with Plants |\n| 12级 | 生物定位术Locate Creature |\n| 17级 | 问道自然Commune with\nNature |\n\n你可以不消耗法术位的施展这些法术每个一次。一旦你用这种方式施展了那个法术，直到你完成一次长休前你都不能再次以此施展它。\n\n**替换武术 Matrial Versatility**\n*第4级游侠特性*\n当你的游侠职业等级抵达能让你获得属性值提升职业特性时，你能用一个游侠可用的战斗风格替换原有的一个战斗风格。这种变化代表着你改变了武术训练和练习的重点。\n\n**自然面纱 Nature's\nVeil**\n*第10级游侠特性，替换 遁术Hide in Plain Sight\n特性*\n你可以暂时地使用自然的力量将你的身形遮蔽。以一个附赠动作，你可以魔法地使自己与正携带、着装的任何装备变得隐形，直到你的下个回合开始。\n\n你可以使用该特性的次数同等于你的熟练加值次，完成一次长休后，你重获全部已消耗的使用次数。",
+    "source_fragment": "blockquote:25",
+    "source_path": "塔莎的万事坩埚/玩家选项/职业/游侠（TCE）.html",
+    "source_record_id": "752d57e35706db428895da0a"
+  },
+  "source_fingerprint": "d877b14749084e924899962f5fbeb75ecaf81c43e042c3c31a57bf7fc143ab25",
+  "source_name": "不知疲倦",
+  "source_path": "塔莎的万事坩埚/玩家选项/职业/游侠（TCE）.html",
+  "source_record_id": "752d57e35706db428895da0a",
+  "source_trust": "authored_ir",
+  "subclass_name": null
+}

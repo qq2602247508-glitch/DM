@@ -1,0 +1,115 @@
+{
+  "class_name": "战士",
+  "clause_boundaries": {
+    "swap-and-ac": {
+      "source_excerpt": "在你自己的回合中，若你身旁有某名生物距你5尺内，你就能够消耗一枚卓越骰来与那名生物互换位置，前提是你消耗至少5尺移动力且那名生物是自愿且并未失能。这次移动不会引发借机攻击。\n投掷那枚被消耗的卓越骰。直到你的下个回合开始前，你或被互换位置的另一生物（由你选择）的AC获得等于卓越骰结果的加值。",
+      "source_fragment": "8"
+    }
+  },
+  "clauses": [
+    {
+      "action_economy": "none",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+        "source": "authored_ir",
+        "source_boundary": "swap-and-ac",
+        "source_excerpt": "在你自己的回合中，若你身旁有某名生物距你5尺内，你就能够消耗一枚卓越骰来与那名生物互换位置，前提是你消耗至少5尺移动力且那名生物是自愿且并未失能。这次移动不会引发借机攻击。\n投掷那枚被消耗的卓越骰。直到你的下个回合开始前，你或被互换位置的另一生物（由你选择）的AC获得等于卓越骰结果的加值。"
+      },
+      "clause_id": "swap-and-ac",
+      "conditions": [],
+      "duration": "current_turn",
+      "effects": [
+        {
+          "operator": "consume_resource",
+          "parameters": {
+            "amount": 1,
+            "operation": "consume",
+            "resource_key": "superiority_dice"
+          }
+        },
+        {
+          "operator": "create_timed_modifier",
+          "parameters": {
+            "applies_when": "bait_and_switch",
+            "duration": "current_turn",
+            "operation": "add",
+            "scope": "self",
+            "stat": "armor_class",
+            "value_source": "superiority_die"
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "explicit_activation",
+      "visibility": "owner"
+    }
+  ],
+  "compatibility": {
+    "runtime_source": "feature_ir",
+    "source_fingerprint": "a33e1f993493f9e77e6863153218a10353ac2bbbde0a95cbe5ffc471ac891465"
+  },
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "dependencies": [],
+  "evidence": [
+    "换位诈术: 在你自己的回合中，若你身旁有某名生物距你5尺内，你就能够消耗一枚卓越骰来与那名生物互换位置，前提是你消耗至少5尺移动力且那名生物是自愿且并未失能。这次移动不会引发借机攻击。\n投掷那枚被消耗的卓越骰。直到你的下个回合开始前，你或被互换位置的另一生物（由你选择）的AC获得等于卓越骰结果的加值。"
+  ],
+  "feature_id": "content.tashas-cauldron.round2.feature.battle-master-bait-and-switch",
+  "kind": "feature",
+  "level": null,
+  "localized_names": {
+    "zh-CN": "换位诈术"
+  },
+  "manual_decisions": {
+    "isolated_runtime_only": true,
+    "operator_mapping": "explicit_atom_mapping",
+    "unmodeled_source_terms": []
+  },
+  "namespace": "content.tashas-cauldron",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "source-7011166c19bd",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+  "reviewed_fields": [
+    "feature_id",
+    "source_record_id",
+    "source_name",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "content_kind",
+    "class_name",
+    "subclass_name",
+    "level",
+    "source_completeness",
+    "clauses",
+    "required_inputs",
+    "runtime_boundary"
+  ],
+  "ruleset_version": "2014",
+  "schema_version": "feature-ir-1",
+  "source_book": "塔莎的万事坩埚",
+  "source_completeness": "complete",
+  "source_evidence": {
+    "source_excerpt": "在你自己的回合中，若你身旁有某名生物距你5尺内，你就能够消耗一枚卓越骰来与那名生物互换位置，前提是你消耗至少5尺移动力且那名生物是自愿且并未失能。这次移动不会引发借机攻击。\n投掷那枚被消耗的卓越骰。直到你的下个回合开始前，你或被互换位置的另一生物（由你选择）的AC获得等于卓越骰结果的加值。",
+    "source_fragment": "8",
+    "source_path": "塔莎的万事坩埚/玩家选项/职业/战士（TCE）/战技选项.htm",
+    "source_record_id": "12139219bf7e575f9cde019c"
+  },
+  "source_fingerprint": "a33e1f993493f9e77e6863153218a10353ac2bbbde0a95cbe5ffc471ac891465",
+  "source_name": "换位诈术",
+  "source_path": "塔莎的万事坩埚/玩家选项/职业/战士（TCE）/战技选项.htm",
+  "source_record_id": "12139219bf7e575f9cde019c",
+  "source_trust": "authored_ir",
+  "subclass_name": null
+}

@@ -1,0 +1,119 @@
+{
+  "class_name": "战士",
+  "clause_boundaries": {
+    "thrown-attack": {
+      "source_excerpt": "以一个附赠动作，你能消耗一枚卓越骰，用一件具有投掷属性的武器发动一次远程攻击。你可以作为攻击的一部分拔出那把投掷武器。如果此次攻击命中，你能将消耗的卓越骰加入此武器的伤害掷骰中。",
+      "source_fragment": "24"
+    }
+  },
+  "clauses": [
+    {
+      "action_economy": "bonus_action",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+        "source": "authored_ir",
+        "source_boundary": "thrown-attack",
+        "source_excerpt": "以一个附赠动作，你能消耗一枚卓越骰，用一件具有投掷属性的武器发动一次远程攻击。你可以作为攻击的一部分拔出那把投掷武器。如果此次攻击命中，你能将消耗的卓越骰加入此武器的伤害掷骰中。"
+      },
+      "clause_id": "thrown-attack",
+      "conditions": [],
+      "duration": "current_turn",
+      "effects": [
+        {
+          "operator": "consume_resource",
+          "parameters": {
+            "amount": 1,
+            "operation": "consume",
+            "resource_key": "superiority_dice"
+          }
+        },
+        {
+          "operator": "create_triggered_attack_window",
+          "parameters": {
+            "attack_profile": {
+              "add_damage_formula": "superiority_die"
+            },
+            "expires": "current_turn",
+            "parent_action": "bonus_action",
+            "reaction_type": "bonus_action",
+            "target_policy": {
+              "mode": "chosen_enemy"
+            },
+            "window_kind": "quick_toss_attack"
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "action_resolved",
+      "visibility": "owner"
+    }
+  ],
+  "compatibility": {
+    "runtime_source": "feature_ir",
+    "source_fingerprint": "4a4a22bf8fdd2ed8eba31db397881043468613d514e1454f628147ff5dd5896c"
+  },
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "dependencies": [],
+  "evidence": [
+    "快手投掷: 以一个附赠动作，你能消耗一枚卓越骰，用一件具有投掷属性的武器发动一次远程攻击。你可以作为攻击的一部分拔出那把投掷武器。如果此次攻击命中，你能将消耗的卓越骰加入此武器的伤害掷骰中。"
+  ],
+  "feature_id": "content.tashas-cauldron.round2.feature.battle-master-quick-toss",
+  "kind": "feature",
+  "level": null,
+  "localized_names": {
+    "zh-CN": "快手投掷"
+  },
+  "manual_decisions": {
+    "isolated_runtime_only": true,
+    "operator_mapping": "explicit_atom_mapping",
+    "unmodeled_source_terms": []
+  },
+  "namespace": "content.tashas-cauldron",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "source-7011166c19bd",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+  "reviewed_fields": [
+    "feature_id",
+    "source_record_id",
+    "source_name",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "content_kind",
+    "class_name",
+    "subclass_name",
+    "level",
+    "source_completeness",
+    "clauses",
+    "required_inputs",
+    "runtime_boundary"
+  ],
+  "ruleset_version": "2014",
+  "schema_version": "feature-ir-1",
+  "source_book": "塔莎的万事坩埚",
+  "source_completeness": "complete",
+  "source_evidence": {
+    "source_excerpt": "以一个附赠动作，你能消耗一枚卓越骰，用一件具有投掷属性的武器发动一次远程攻击。你可以作为攻击的一部分拔出那把投掷武器。如果此次攻击命中，你能将消耗的卓越骰加入此武器的伤害掷骰中。",
+    "source_fragment": "24",
+    "source_path": "塔莎的万事坩埚/玩家选项/职业/战士（TCE）/战技选项.htm",
+    "source_record_id": "12139219bf7e575f9cde019c"
+  },
+  "source_fingerprint": "4a4a22bf8fdd2ed8eba31db397881043468613d514e1454f628147ff5dd5896c",
+  "source_name": "快手投掷",
+  "source_path": "塔莎的万事坩埚/玩家选项/职业/战士（TCE）/战技选项.htm",
+  "source_record_id": "12139219bf7e575f9cde019c",
+  "source_trust": "authored_ir",
+  "subclass_name": null
+}

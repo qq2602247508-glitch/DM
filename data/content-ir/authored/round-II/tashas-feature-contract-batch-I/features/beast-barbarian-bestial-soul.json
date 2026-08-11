@@ -1,0 +1,166 @@
+{
+  "class_name": "野蛮人",
+  "clause_boundaries": {
+    "climb": {
+      "source_excerpt": "*第6级野兽道途特性\n*你体内的野性精魂的力量不断成长，这使得你用野兽之形特性的天生武器攻击对非魔法攻击或伤害具有抗性或免疫的目标时视为魔法武器的攻击。\n你还能改变你的形态来适应周遭环境，当你完成一次短休或长休后，你选择以下增益之一，获得之。这一增益将一直持续直至你再次完成短休或长休为止：\n\n- 你获得等于步行速度的游泳速度，并且能够在水中呼吸。你获得等于步行速度的攀爬速度。你无需进行属性检定也可攀爬于困难表面，包括倒挂天花板。每回合一次，你能在跳跃时进行一次力量（运动）检定，使你的跳跃距离延长等于检定结果的尺数。",
+      "source_fragment": "27"
+    },
+    "swim": {
+      "source_excerpt": "*第6级野兽道途特性\n*你体内的野性精魂的力量不断成长，这使得你用野兽之形特性的天生武器攻击对非魔法攻击或伤害具有抗性或免疫的目标时视为魔法武器的攻击。\n你还能改变你的形态来适应周遭环境，当你完成一次短休或长休后，你选择以下增益之一，获得之。这一增益将一直持续直至你再次完成短休或长休为止：\n\n- 你获得等于步行速度的游泳速度，并且能够在水中呼吸。你获得等于步行速度的攀爬速度。你无需进行属性检定也可攀爬于困难表面，包括倒挂天花板。每回合一次，你能在跳跃时进行一次力量（运动）检定，使你的跳跃距离延长等于检定结果的尺数。",
+      "source_fragment": "27"
+    }
+  },
+  "clauses": [
+    {
+      "action_economy": "none",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+        "source": "authored_ir",
+        "source_boundary": "swim",
+        "source_excerpt": "*第6级野兽道途特性\n*你体内的野性精魂的力量不断成长，这使得你用野兽之形特性的天生武器攻击对非魔法攻击或伤害具有抗性或免疫的目标时视为魔法武器的攻击。\n你还能改变你的形态来适应周遭环境，当你完成一次短休或长休后，你选择以下增益之一，获得之。这一增益将一直持续直至你再次完成短休或长休为止：\n\n- 你获得等于步行速度的游泳速度，并且能够在水中呼吸。你获得等于步行速度的攀爬速度。你无需进行属性检定也可攀爬于困难表面，包括倒挂天花板。每回合一次，你能在跳跃时进行一次力量（运动）检定，使你的跳跃距离延长等于检定结果的尺数。"
+      },
+      "clause_id": "swim",
+      "conditions": [],
+      "duration": "advancement_persistent",
+      "effects": [
+        {
+          "operator": "grant_movement_mode",
+          "parameters": {
+            "mode": "swim",
+            "selection_binding": {
+              "choice_key": "bestial_soul_mode"
+            },
+            "speed_source": "walking_speed"
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [
+        {
+          "key": "bestial_soul_mode",
+          "kind": "choice",
+          "parameters": {
+            "duplicate_policy": "forbid",
+            "options_source": "swim_climb_jump"
+          }
+        }
+      ],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "advancement_confirmed",
+      "visibility": "owner"
+    },
+    {
+      "action_economy": "none",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+        "source": "authored_ir",
+        "source_boundary": "climb",
+        "source_excerpt": "*第6级野兽道途特性\n*你体内的野性精魂的力量不断成长，这使得你用野兽之形特性的天生武器攻击对非魔法攻击或伤害具有抗性或免疫的目标时视为魔法武器的攻击。\n你还能改变你的形态来适应周遭环境，当你完成一次短休或长休后，你选择以下增益之一，获得之。这一增益将一直持续直至你再次完成短休或长休为止：\n\n- 你获得等于步行速度的游泳速度，并且能够在水中呼吸。你获得等于步行速度的攀爬速度。你无需进行属性检定也可攀爬于困难表面，包括倒挂天花板。每回合一次，你能在跳跃时进行一次力量（运动）检定，使你的跳跃距离延长等于检定结果的尺数。"
+      },
+      "clause_id": "climb",
+      "conditions": [],
+      "duration": "advancement_persistent",
+      "effects": [
+        {
+          "operator": "grant_movement_mode",
+          "parameters": {
+            "mode": "climb",
+            "selection_binding": {
+              "choice_key": "bestial_soul_mode"
+            },
+            "speed_source": "walking_speed"
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [
+        {
+          "key": "bestial_soul_mode",
+          "kind": "choice",
+          "parameters": {
+            "duplicate_policy": "forbid",
+            "options_source": "swim_climb_jump"
+          }
+        }
+      ],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "advancement_confirmed",
+      "visibility": "owner"
+    }
+  ],
+  "compatibility": {
+    "runtime_source": "feature_ir",
+    "source_fingerprint": "41babb65982a971e9e339f7be5c634a6b703ffa9d4187f9c30e225296980a888"
+  },
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "dependencies": [],
+  "evidence": [
+    "兽性之魂: *第6级野兽道途特性\n*你体内的野性精魂的力量不断成长，这使得你用野兽之形特性的天生武器攻击对非魔法攻击或伤害具有抗性或免疫的目标时视为魔法武器的攻击。\n你还能改变你的形态来适应周遭环境，当你完成一次短休或长休后，你选择以下增益之一，获得之。这一增益将一直持续直至你再次完成短休或长休为止：\n\n- 你获得等于步行速度的游泳速度，并且能够在水中呼吸。你获得等于步行速度的攀爬速度。你无需进行属性检定也可攀爬于困难表面，包括倒挂天花板。每回合一次，你能在跳跃时进行一次力量（运动）检定，使你的跳跃距离延长等于检定结果的尺数。"
+  ],
+  "feature_id": "content.tashas-cauldron.round2.feature.beast-barbarian-bestial-soul",
+  "kind": "feature",
+  "level": 6,
+  "localized_names": {
+    "zh-CN": "兽性之魂"
+  },
+  "manual_decisions": {
+    "isolated_runtime_only": true,
+    "operator_mapping": "explicit_atom_mapping",
+    "unmodeled_source_terms": []
+  },
+  "namespace": "content.tashas-cauldron",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "source-7011166c19bd",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+  "reviewed_fields": [
+    "feature_id",
+    "source_record_id",
+    "source_name",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "content_kind",
+    "class_name",
+    "subclass_name",
+    "level",
+    "source_completeness",
+    "clauses",
+    "required_inputs",
+    "runtime_boundary"
+  ],
+  "ruleset_version": "2014",
+  "schema_version": "feature-ir-1",
+  "source_book": "塔莎的万事坩埚",
+  "source_completeness": "complete",
+  "source_evidence": {
+    "source_excerpt": "*第6级野兽道途特性\n*你体内的野性精魂的力量不断成长，这使得你用野兽之形特性的天生武器攻击对非魔法攻击或伤害具有抗性或免疫的目标时视为魔法武器的攻击。\n你还能改变你的形态来适应周遭环境，当你完成一次短休或长休后，你选择以下增益之一，获得之。这一增益将一直持续直至你再次完成短休或长休为止：\n\n- 你获得等于步行速度的游泳速度，并且能够在水中呼吸。你获得等于步行速度的攀爬速度。你无需进行属性检定也可攀爬于困难表面，包括倒挂天花板。每回合一次，你能在跳跃时进行一次力量（运动）检定，使你的跳跃距离延长等于检定结果的尺数。",
+    "source_fragment": "27",
+    "source_path": "塔莎的万事坩埚/玩家选项/职业/野蛮人（TCE）/野兽道途.html",
+    "source_record_id": "b23e97de6529e42be59f8b0d"
+  },
+  "source_fingerprint": "41babb65982a971e9e339f7be5c634a6b703ffa9d4187f9c30e225296980a888",
+  "source_name": "兽性之魂",
+  "source_path": "塔莎的万事坩埚/玩家选项/职业/野蛮人（TCE）/野兽道途.html",
+  "source_record_id": "b23e97de6529e42be59f8b0d",
+  "source_trust": "authored_ir",
+  "subclass_name": "野兽道途"
+}

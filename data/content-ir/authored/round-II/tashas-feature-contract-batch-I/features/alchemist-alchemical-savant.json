@@ -1,0 +1,146 @@
+{
+  "class_name": "奇械师",
+  "clause_boundaries": {
+    "acid-fire-necrotic-poison": {
+      "source_excerpt": "*第5级炼金师特性*\n你对魔法化学物质的掌握变得非常熟练，这使得你通过炼金物质造成的治疗和伤害更加有效。\n当你使用炼金工具作为法器施展任何法术时，你在法术的一次掷骰中获得等同于你的智力调整值（最低+1）的加值。该掷骰必须是恢复的生命值量，或是造成强酸、火焰、暗蚀、或毒素伤害。",
+      "source_fragment": "70"
+    },
+    "healing": {
+      "source_excerpt": "*第5级炼金师特性*\n你对魔法化学物质的掌握变得非常熟练，这使得你通过炼金物质造成的治疗和伤害更加有效。\n当你使用炼金工具作为法器施展任何法术时，你在法术的一次掷骰中获得等同于你的智力调整值（最低+1）的加值。该掷骰必须是恢复的生命值量，或是造成强酸、火焰、暗蚀、或毒素伤害。",
+      "source_fragment": "70"
+    }
+  },
+  "clauses": [
+    {
+      "action_economy": "none",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+        "source": "authored_ir",
+        "source_boundary": "acid-fire-necrotic-poison",
+        "source_excerpt": "*第5级炼金师特性*\n你对魔法化学物质的掌握变得非常熟练，这使得你通过炼金物质造成的治疗和伤害更加有效。\n当你使用炼金工具作为法器施展任何法术时，你在法术的一次掷骰中获得等同于你的智力调整值（最低+1）的加值。该掷骰必须是恢复的生命值量，或是造成强酸、火焰、暗蚀、或毒素伤害。"
+      },
+      "clause_id": "acid-fire-necrotic-poison",
+      "conditions": [],
+      "duration": "advancement_persistent",
+      "effects": [
+        {
+          "operator": "spell_damage_modifier",
+          "parameters": {
+            "ability": "intelligence",
+            "applies_when": "acid_fire_necrotic_or_poison_damage",
+            "formula": "intelligence_modifier",
+            "operation": "add"
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "advancement_confirmed",
+      "visibility": "owner"
+    },
+    {
+      "action_economy": "none",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+        "source": "authored_ir",
+        "source_boundary": "healing",
+        "source_excerpt": "*第5级炼金师特性*\n你对魔法化学物质的掌握变得非常熟练，这使得你通过炼金物质造成的治疗和伤害更加有效。\n当你使用炼金工具作为法器施展任何法术时，你在法术的一次掷骰中获得等同于你的智力调整值（最低+1）的加值。该掷骰必须是恢复的生命值量，或是造成强酸、火焰、暗蚀、或毒素伤害。"
+      },
+      "clause_id": "healing",
+      "conditions": [],
+      "duration": "advancement_persistent",
+      "effects": [
+        {
+          "operator": "spell_healing_modifier",
+          "parameters": {
+            "ability": "intelligence",
+            "applies_when": "healing_roll",
+            "formula": "intelligence_modifier",
+            "operation": "add"
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "advancement_confirmed",
+      "visibility": "owner"
+    }
+  ],
+  "compatibility": {
+    "runtime_source": "feature_ir",
+    "source_fingerprint": "a992e0b66f70a6a864aeaa19305e7636912ac00ef4525354841e75c78a33f107"
+  },
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "dependencies": [],
+  "evidence": [
+    "炼金术掌握: *第5级炼金师特性*\n你对魔法化学物质的掌握变得非常熟练，这使得你通过炼金物质造成的治疗和伤害更加有效。\n当你使用炼金工具作为法器施展任何法术时，你在法术的一次掷骰中获得等同于你的智力调整值（最低+1）的加值。该掷骰必须是恢复的生命值量，或是造成强酸、火焰、暗蚀、或毒素伤害。"
+  ],
+  "feature_id": "content.tashas-cauldron.round2.feature.alchemist-alchemical-savant",
+  "kind": "feature",
+  "level": 5,
+  "localized_names": {
+    "zh-CN": "炼金术掌握"
+  },
+  "manual_decisions": {
+    "isolated_runtime_only": true,
+    "operator_mapping": "explicit_atom_mapping",
+    "unmodeled_source_terms": []
+  },
+  "namespace": "content.tashas-cauldron",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "source-7011166c19bd",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+  "reviewed_fields": [
+    "feature_id",
+    "source_record_id",
+    "source_name",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "content_kind",
+    "class_name",
+    "subclass_name",
+    "level",
+    "source_completeness",
+    "clauses",
+    "required_inputs",
+    "runtime_boundary"
+  ],
+  "ruleset_version": "2014",
+  "schema_version": "feature-ir-1",
+  "source_book": "塔莎的万事坩埚",
+  "source_completeness": "complete",
+  "source_evidence": {
+    "source_excerpt": "*第5级炼金师特性*\n你对魔法化学物质的掌握变得非常熟练，这使得你通过炼金物质造成的治疗和伤害更加有效。\n当你使用炼金工具作为法器施展任何法术时，你在法术的一次掷骰中获得等同于你的智力调整值（最低+1）的加值。该掷骰必须是恢复的生命值量，或是造成强酸、火焰、暗蚀、或毒素伤害。",
+    "source_fragment": "70",
+    "source_path": "塔莎的万事坩埚/玩家选项/职业/奇械师/炼金师.html",
+    "source_record_id": "dc4f2bf18baca6ec97d7d0bf"
+  },
+  "source_fingerprint": "a992e0b66f70a6a864aeaa19305e7636912ac00ef4525354841e75c78a33f107",
+  "source_name": "炼金术掌握",
+  "source_path": "塔莎的万事坩埚/玩家选项/职业/奇械师/炼金师.html",
+  "source_record_id": "dc4f2bf18baca6ec97d7d0bf",
+  "source_trust": "authored_ir",
+  "subclass_name": "炼金师"
+}

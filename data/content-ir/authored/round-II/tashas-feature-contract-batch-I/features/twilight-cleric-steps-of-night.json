@@ -1,0 +1,104 @@
+{
+  "class_name": "牧师",
+  "clause_boundaries": {
+    "fly": {
+      "source_excerpt": "*第6级暮光领域特性*\n你使用夜晚的神秘力量来飞上空中。当你处于微光光照或黑暗中时，你能以一个附赠动作用魔法使自己获得等于自身步行速度的飞行速度，持续1分钟。你可以使用此特性的次数等同于你的熟练加值，当你完成一次长休时重获全部已消耗的使用次数。",
+      "source_fragment": "62"
+    }
+  },
+  "clauses": [
+    {
+      "action_economy": "bonus_action",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+        "source": "authored_ir",
+        "source_boundary": "fly",
+        "source_excerpt": "*第6级暮光领域特性*\n你使用夜晚的神秘力量来飞上空中。当你处于微光光照或黑暗中时，你能以一个附赠动作用魔法使自己获得等于自身步行速度的飞行速度，持续1分钟。你可以使用此特性的次数等同于你的熟练加值，当你完成一次长休时重获全部已消耗的使用次数。"
+      },
+      "clause_id": "fly",
+      "conditions": [],
+      "duration": "one_minute",
+      "effects": [
+        {
+          "operator": "grant_movement_mode",
+          "parameters": {
+            "applies_when": "dim_light_or_darkness",
+            "mode": "fly",
+            "speed_source": "walking_speed"
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "explicit_activation",
+      "visibility": "owner"
+    }
+  ],
+  "compatibility": {
+    "runtime_source": "feature_ir",
+    "source_fingerprint": "add482a99ecb03f656b4f0411eb340b3887a648abf46b16b152f3997d2a1b553"
+  },
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "dependencies": [],
+  "evidence": [
+    "午夜飞步: *第6级暮光领域特性*\n你使用夜晚的神秘力量来飞上空中。当你处于微光光照或黑暗中时，你能以一个附赠动作用魔法使自己获得等于自身步行速度的飞行速度，持续1分钟。你可以使用此特性的次数等同于你的熟练加值，当你完成一次长休时重获全部已消耗的使用次数。"
+  ],
+  "feature_id": "content.tashas-cauldron.round2.feature.twilight-cleric-steps-of-night",
+  "kind": "feature",
+  "level": 6,
+  "localized_names": {
+    "zh-CN": "午夜飞步"
+  },
+  "manual_decisions": {
+    "isolated_runtime_only": true,
+    "operator_mapping": "explicit_atom_mapping",
+    "unmodeled_source_terms": []
+  },
+  "namespace": "content.tashas-cauldron",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "source-7011166c19bd",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+  "reviewed_fields": [
+    "feature_id",
+    "source_record_id",
+    "source_name",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "content_kind",
+    "class_name",
+    "subclass_name",
+    "level",
+    "source_completeness",
+    "clauses",
+    "required_inputs",
+    "runtime_boundary"
+  ],
+  "ruleset_version": "2014",
+  "schema_version": "feature-ir-1",
+  "source_book": "塔莎的万事坩埚",
+  "source_completeness": "complete",
+  "source_evidence": {
+    "source_excerpt": "*第6级暮光领域特性*\n你使用夜晚的神秘力量来飞上空中。当你处于微光光照或黑暗中时，你能以一个附赠动作用魔法使自己获得等于自身步行速度的飞行速度，持续1分钟。你可以使用此特性的次数等同于你的熟练加值，当你完成一次长休时重获全部已消耗的使用次数。",
+    "source_fragment": "62",
+    "source_path": "塔莎的万事坩埚/玩家选项/职业/牧师（TCE）/暮光领域.html",
+    "source_record_id": "63d0abe27f6ad161f0820593"
+  },
+  "source_fingerprint": "add482a99ecb03f656b4f0411eb340b3887a648abf46b16b152f3997d2a1b553",
+  "source_name": "午夜飞步",
+  "source_path": "塔莎的万事坩埚/玩家选项/职业/牧师（TCE）/暮光领域.html",
+  "source_record_id": "63d0abe27f6ad161f0820593",
+  "source_trust": "authored_ir",
+  "subclass_name": "暮光领域"
+}

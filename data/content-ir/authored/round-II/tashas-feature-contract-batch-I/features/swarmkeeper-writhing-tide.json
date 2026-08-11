@@ -1,0 +1,104 @@
+{
+  "class_name": "游侠",
+  "clause_boundaries": {
+    "flight": {
+      "source_excerpt": "*第7级集群牧者特性*\n你能将你的集群的一部分凝聚成一股集中的力量，来将你托起。以一个附赠动作，你获得10尺飞行速度，且能悬浮。该效应持续1分钟。若你陷入失能状态，它会提前结束。\n你能使用该特性的次数等于你的熟练加值次，在完成一次长休后你重获全部消耗的次数。",
+      "source_fragment": "48"
+    }
+  },
+  "clauses": [
+    {
+      "action_economy": "bonus_action",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+        "source": "authored_ir",
+        "source_boundary": "flight",
+        "source_excerpt": "*第7级集群牧者特性*\n你能将你的集群的一部分凝聚成一股集中的力量，来将你托起。以一个附赠动作，你获得10尺飞行速度，且能悬浮。该效应持续1分钟。若你陷入失能状态，它会提前结束。\n你能使用该特性的次数等于你的熟练加值次，在完成一次长休后你重获全部消耗的次数。"
+      },
+      "clause_id": "flight",
+      "conditions": [],
+      "duration": "one_minute",
+      "effects": [
+        {
+          "operator": "grant_movement_mode",
+          "parameters": {
+            "applies_when": "swarmkeeper",
+            "mode": "fly",
+            "speed_source": "fixed_10_feet"
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "explicit_activation",
+      "visibility": "owner"
+    }
+  ],
+  "compatibility": {
+    "runtime_source": "feature_ir",
+    "source_fingerprint": "1fd37d80663219dc8205cf97c9fc2b23fb6ee9975c86f3f868f73d9b2c29f821"
+  },
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "dependencies": [],
+  "evidence": [
+    "翻腾浪涌: *第7级集群牧者特性*\n你能将你的集群的一部分凝聚成一股集中的力量，来将你托起。以一个附赠动作，你获得10尺飞行速度，且能悬浮。该效应持续1分钟。若你陷入失能状态，它会提前结束。\n你能使用该特性的次数等于你的熟练加值次，在完成一次长休后你重获全部消耗的次数。"
+  ],
+  "feature_id": "content.tashas-cauldron.round2.feature.swarmkeeper-writhing-tide",
+  "kind": "feature",
+  "level": 7,
+  "localized_names": {
+    "zh-CN": "翻腾浪涌"
+  },
+  "manual_decisions": {
+    "isolated_runtime_only": true,
+    "operator_mapping": "explicit_atom_mapping",
+    "unmodeled_source_terms": []
+  },
+  "namespace": "content.tashas-cauldron",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "source-7011166c19bd",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+  "reviewed_fields": [
+    "feature_id",
+    "source_record_id",
+    "source_name",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "content_kind",
+    "class_name",
+    "subclass_name",
+    "level",
+    "source_completeness",
+    "clauses",
+    "required_inputs",
+    "runtime_boundary"
+  ],
+  "ruleset_version": "2014",
+  "schema_version": "feature-ir-1",
+  "source_book": "塔莎的万事坩埚",
+  "source_completeness": "complete",
+  "source_evidence": {
+    "source_excerpt": "*第7级集群牧者特性*\n你能将你的集群的一部分凝聚成一股集中的力量，来将你托起。以一个附赠动作，你获得10尺飞行速度，且能悬浮。该效应持续1分钟。若你陷入失能状态，它会提前结束。\n你能使用该特性的次数等于你的熟练加值次，在完成一次长休后你重获全部消耗的次数。",
+    "source_fragment": "48",
+    "source_path": "塔莎的万事坩埚/玩家选项/职业/游侠（TCE）/集群牧者.html",
+    "source_record_id": "f8e42149abd618bfa3d0eac1"
+  },
+  "source_fingerprint": "1fd37d80663219dc8205cf97c9fc2b23fb6ee9975c86f3f868f73d9b2c29f821",
+  "source_name": "翻腾浪涌",
+  "source_path": "塔莎的万事坩埚/玩家选项/职业/游侠（TCE）/集群牧者.html",
+  "source_record_id": "f8e42149abd618bfa3d0eac1",
+  "source_trust": "authored_ir",
+  "subclass_name": "集群牧者"
+}

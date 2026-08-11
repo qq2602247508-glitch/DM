@@ -1,0 +1,145 @@
+{
+  "class_name": "术士",
+  "clause_boundaries": {
+    "component-override": {
+      "source_excerpt": "*第6级畸变心智特性*\n当你施展一个灵能法术特性中的1环或更高环阶的法术时，你可以改为使用等同于该法术环数数量的术法点而非消耗法术位施放该法术。你依然可以用法术位正常施展这些法术。\n当你通过此能力施放法术时，你无视该法术施法需要的言语成分或姿势成分。你同时无视该法术需要的不会消耗的材料成分。",
+      "source_fragment": "48"
+    },
+    "payment-override": {
+      "source_excerpt": "*第6级畸变心智特性*\n当你施展一个灵能法术特性中的1环或更高环阶的法术时，你可以改为使用等同于该法术环数数量的术法点而非消耗法术位施放该法术。你依然可以用法术位正常施展这些法术。\n当你通过此能力施放法术时，你无视该法术施法需要的言语成分或姿势成分。你同时无视该法术需要的不会消耗的材料成分。",
+      "source_fragment": "48"
+    }
+  },
+  "clauses": [
+    {
+      "action_economy": "none",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+        "source": "authored_ir",
+        "source_boundary": "component-override",
+        "source_excerpt": "*第6级畸变心智特性*\n当你施展一个灵能法术特性中的1环或更高环阶的法术时，你可以改为使用等同于该法术环数数量的术法点而非消耗法术位施放该法术。你依然可以用法术位正常施展这些法术。\n当你通过此能力施放法术时，你无视该法术施法需要的言语成分或姿势成分。你同时无视该法术需要的不会消耗的材料成分。"
+      },
+      "clause_id": "component-override",
+      "conditions": [],
+      "duration": "advancement_persistent",
+      "effects": [
+        {
+          "operator": "override_spell_components",
+          "parameters": {
+            "applies_when": "psionic_spell",
+            "component": "verbal_somatic_material_without_cost",
+            "operation": "ignore"
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "advancement_confirmed",
+      "visibility": "owner"
+    },
+    {
+      "action_economy": "none",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+        "source": "authored_ir",
+        "source_boundary": "payment-override",
+        "source_excerpt": "*第6级畸变心智特性*\n当你施展一个灵能法术特性中的1环或更高环阶的法术时，你可以改为使用等同于该法术环数数量的术法点而非消耗法术位施放该法术。你依然可以用法术位正常施展这些法术。\n当你通过此能力施放法术时，你无视该法术施法需要的言语成分或姿势成分。你同时无视该法术需要的不会消耗的材料成分。"
+      },
+      "clause_id": "payment-override",
+      "conditions": [],
+      "duration": "advancement_persistent",
+      "effects": [
+        {
+          "operator": "override_spell_payment",
+          "parameters": {
+            "applies_when": "psionic_spell",
+            "operation": "replace_with_sorcery_points",
+            "payment_kind": "spell_slot",
+            "resource_key": "sorcery_points"
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "advancement_confirmed",
+      "visibility": "owner"
+    }
+  ],
+  "compatibility": {
+    "runtime_source": "feature_ir",
+    "source_fingerprint": "edc9b2cf480295475fe7a1452cc257465c1037f3a2dd01903d13df83701ae683"
+  },
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "dependencies": [],
+  "evidence": [
+    "灵能术法: *第6级畸变心智特性*\n当你施展一个灵能法术特性中的1环或更高环阶的法术时，你可以改为使用等同于该法术环数数量的术法点而非消耗法术位施放该法术。你依然可以用法术位正常施展这些法术。\n当你通过此能力施放法术时，你无视该法术施法需要的言语成分或姿势成分。你同时无视该法术需要的不会消耗的材料成分。"
+  ],
+  "feature_id": "content.tashas-cauldron.round2.feature.aberrant-mind-psionic-sorcery",
+  "kind": "feature",
+  "level": 6,
+  "localized_names": {
+    "zh-CN": "灵能术法"
+  },
+  "manual_decisions": {
+    "isolated_runtime_only": true,
+    "operator_mapping": "explicit_atom_mapping",
+    "unmodeled_source_terms": []
+  },
+  "namespace": "content.tashas-cauldron",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "source-7011166c19bd",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+  "reviewed_fields": [
+    "feature_id",
+    "source_record_id",
+    "source_name",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "content_kind",
+    "class_name",
+    "subclass_name",
+    "level",
+    "source_completeness",
+    "clauses",
+    "required_inputs",
+    "runtime_boundary"
+  ],
+  "ruleset_version": "2014",
+  "schema_version": "feature-ir-1",
+  "source_book": "塔莎的万事坩埚",
+  "source_completeness": "complete",
+  "source_evidence": {
+    "source_excerpt": "*第6级畸变心智特性*\n当你施展一个灵能法术特性中的1环或更高环阶的法术时，你可以改为使用等同于该法术环数数量的术法点而非消耗法术位施放该法术。你依然可以用法术位正常施展这些法术。\n当你通过此能力施放法术时，你无视该法术施法需要的言语成分或姿势成分。你同时无视该法术需要的不会消耗的材料成分。",
+    "source_fragment": "48",
+    "source_path": "塔莎的万事坩埚/玩家选项/职业/术士（TCE）/畸变心智.html",
+    "source_record_id": "e94f0c903dd025796d7a2d22"
+  },
+  "source_fingerprint": "edc9b2cf480295475fe7a1452cc257465c1037f3a2dd01903d13df83701ae683",
+  "source_name": "灵能术法",
+  "source_path": "塔莎的万事坩埚/玩家选项/职业/术士（TCE）/畸变心智.html",
+  "source_record_id": "e94f0c903dd025796d7a2d22",
+  "source_trust": "authored_ir",
+  "subclass_name": "畸变心智"
+}

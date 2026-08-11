@@ -1,0 +1,127 @@
+{
+  "class_name": "圣武士",
+  "clause_boundaries": {
+    "defense-window": {
+      "source_excerpt": "你能将防御转化为突然的反击。当你或周围10尺内你可见的其他生物被一次攻击检定击中时，你可以用反应使受击生物获得AC加值，此举可能使该次攻击失手。此加值等同于你的魅力调整值（至少为+1）。若该次攻击因此失手，且攻击者在你武器的触及范围内，你可以对那个攻击者进行一次武器攻击（作为此反应的一部分）。\n你可以使用此能力的次数等同于你的魅力调整值次（至少1次）。当你完成一次长休后，你重获全部已消耗的使用次数。",
+      "source_fragment": "57"
+    }
+  },
+  "clauses": [
+    {
+      "action_economy": "reaction",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+        "source": "authored_ir",
+        "source_boundary": "defense-window",
+        "source_excerpt": "你能将防御转化为突然的反击。当你或周围10尺内你可见的其他生物被一次攻击检定击中时，你可以用反应使受击生物获得AC加值，此举可能使该次攻击失手。此加值等同于你的魅力调整值（至少为+1）。若该次攻击因此失手，且攻击者在你武器的触及范围内，你可以对那个攻击者进行一次武器攻击（作为此反应的一部分）。\n你可以使用此能力的次数等同于你的魅力调整值次（至少1次）。当你完成一次长休后，你重获全部已消耗的使用次数。"
+      },
+      "clause_id": "defense-window",
+      "conditions": [],
+      "duration": "current_turn",
+      "effects": [
+        {
+          "operator": "consume_resource",
+          "parameters": {
+            "amount": 1,
+            "operation": "consume",
+            "resource_key": "glorious_defense_uses"
+          }
+        },
+        {
+          "operator": "create_timed_modifier",
+          "parameters": {
+            "applies_when": "glorious_defense",
+            "duration": "current_turn",
+            "operation": "add",
+            "scope": "target",
+            "stat": "armor_class",
+            "value_source": "charisma_modifier"
+          }
+        },
+        {
+          "operator": "create_triggered_attack_window",
+          "parameters": {
+            "expires": "current_turn",
+            "parent_action": "reaction",
+            "reaction_type": "reaction",
+            "target_policy": {
+              "mode": "attacker_within_reach"
+            },
+            "window_kind": "glorious_defense_counterattack"
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "attack_hit",
+      "visibility": "owner"
+    }
+  ],
+  "compatibility": {
+    "runtime_source": "feature_ir",
+    "source_fingerprint": "f8b34dc43426edf2300e193c0b0e360a8a9abf0ba118bdca226a575956d21dc7"
+  },
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "dependencies": [],
+  "evidence": [
+    "辉煌防御: 你能将防御转化为突然的反击。当你或周围10尺内你可见的其他生物被一次攻击检定击中时，你可以用反应使受击生物获得AC加值，此举可能使该次攻击失手。此加值等同于你的魅力调整值（至少为+1）。若该次攻击因此失手，且攻击者在你武器的触及范围内，你可以对那个攻击者进行一次武器攻击（作为此反应的一部分）。\n你可以使用此能力的次数等同于你的魅力调整值次（至少1次）。当你完成一次长休后，你重获全部已消耗的使用次数。"
+  ],
+  "feature_id": "content.tashas-cauldron.round2.feature.glory-paladin-glorious-defense",
+  "kind": "feature",
+  "level": null,
+  "localized_names": {
+    "zh-CN": "辉煌防御"
+  },
+  "manual_decisions": {
+    "isolated_runtime_only": true,
+    "operator_mapping": "explicit_atom_mapping",
+    "unmodeled_source_terms": []
+  },
+  "namespace": "content.tashas-cauldron",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "source-7011166c19bd",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+  "reviewed_fields": [
+    "feature_id",
+    "source_record_id",
+    "source_name",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "content_kind",
+    "class_name",
+    "subclass_name",
+    "level",
+    "source_completeness",
+    "clauses",
+    "required_inputs",
+    "runtime_boundary"
+  ],
+  "ruleset_version": "2014",
+  "schema_version": "feature-ir-1",
+  "source_book": "塔莎的万事坩埚",
+  "source_completeness": "complete",
+  "source_evidence": {
+    "source_excerpt": "你能将防御转化为突然的反击。当你或周围10尺内你可见的其他生物被一次攻击检定击中时，你可以用反应使受击生物获得AC加值，此举可能使该次攻击失手。此加值等同于你的魅力调整值（至少为+1）。若该次攻击因此失手，且攻击者在你武器的触及范围内，你可以对那个攻击者进行一次武器攻击（作为此反应的一部分）。\n你可以使用此能力的次数等同于你的魅力调整值次（至少1次）。当你完成一次长休后，你重获全部已消耗的使用次数。",
+    "source_fragment": "57",
+    "source_path": "塔莎的万事坩埚/玩家选项/职业/圣武士（TCE）/荣耀之誓.html",
+    "source_record_id": "867896faa26eb295d846a574"
+  },
+  "source_fingerprint": "f8b34dc43426edf2300e193c0b0e360a8a9abf0ba118bdca226a575956d21dc7",
+  "source_name": "辉煌防御",
+  "source_path": "塔莎的万事坩埚/玩家选项/职业/圣武士（TCE）/荣耀之誓.html",
+  "source_record_id": "867896faa26eb295d846a574",
+  "source_trust": "authored_ir",
+  "subclass_name": "荣耀之誓"
+}

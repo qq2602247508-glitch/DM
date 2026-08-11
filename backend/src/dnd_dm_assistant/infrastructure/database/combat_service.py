@@ -17460,6 +17460,18 @@ class CombatEngineService:
                         ),
                         "source": "authoritative_combatant_defense_fields",
                     }
+                elif kind == "inspect_authorized_information":
+                    # The information itself is a typed, read-only projection;
+                    # the feature contract declares its kind/range/visibility
+                    # and the caller/DM remains responsible for narrative
+                    # content that is not persisted on the combatant.
+                    result["inspection"] = {
+                        "target_combatant_id": target.id,
+                        "information_kind": str(effect.get("information_kind") or ""),
+                        "range_ft": effect.get("range_ft"),
+                        "visibility": str(effect.get("visibility") or "owner"),
+                        "source": "authorized_feature_information",
+                    }
                 elif kind == "condition_removal":
                     result["condition_removal_effect"] = True
                 elif kind == "teleport":

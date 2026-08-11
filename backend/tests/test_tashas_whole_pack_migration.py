@@ -90,7 +90,9 @@ def test_migration_statuses_are_exhaustive_and_content_id_funnel_is_exact() -> N
     assert migration["source_record_scanned"] == migration["source_record_total"] == 144
     assert migration["source_record_unclassified"] == 0
     assert migration["content_id_funnel"]["relation_holds"] is True
-    assert migration["content_id_funnel"]["matched_typed_ir"] == 30
+    # Round 2 adds 64 reviewed Feature/Option contracts to the 30-item
+    # Round 1 authored baseline; the migration report must expose all 94.
+    assert migration["content_id_funnel"]["matched_typed_ir"] == 94
     assert migration["production_full"] == 17
     assert migration["dm_assisted"] == 1
     assert migration["game_usable"] == 18

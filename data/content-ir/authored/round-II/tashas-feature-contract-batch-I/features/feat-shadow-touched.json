@@ -1,0 +1,166 @@
+{
+  "class_name": null,
+  "clause_boundaries": {
+    "chosen-illusion-or-necromancy": {
+      "source_excerpt": "暴露在堕影冥界的魔法之下的经历已经改变了你，使你获得了以下增益：\n·\n你的智力，感知或魅力提升1，上限为20。\n·\n你习得隐形术以及一个由你选择的一环法术。该一环法术必须是幻术系或死灵系法术。你可以在不消耗法术位的情况下施展这些法术各一次。当你以此法施展某个法术后，你不能再次以此法施展该法术，直至你完成一次长休。你也可以消耗合适的法术位来施展这些法术。这些法术的施法属性是你由此专长提升的属性。",
+      "source_fragment": "94"
+    },
+    "invisibility": {
+      "source_excerpt": "暴露在堕影冥界的魔法之下的经历已经改变了你，使你获得了以下增益：\n·\n你的智力，感知或魅力提升1，上限为20。\n·\n你习得隐形术以及一个由你选择的一环法术。该一环法术必须是幻术系或死灵系法术。你可以在不消耗法术位的情况下施展这些法术各一次。当你以此法施展某个法术后，你不能再次以此法施展该法术，直至你完成一次长休。你也可以消耗合适的法术位来施展这些法术。这些法术的施法属性是你由此专长提升的属性。",
+      "source_fragment": "94"
+    }
+  },
+  "clauses": [
+    {
+      "action_economy": "none",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+        "source": "authored_ir",
+        "source_boundary": "invisibility",
+        "source_excerpt": "暴露在堕影冥界的魔法之下的经历已经改变了你，使你获得了以下增益：\n·\n你的智力，感知或魅力提升1，上限为20。\n·\n你习得隐形术以及一个由你选择的一环法术。该一环法术必须是幻术系或死灵系法术。你可以在不消耗法术位的情况下施展这些法术各一次。当你以此法施展某个法术后，你不能再次以此法施展该法术，直至你完成一次长休。你也可以消耗合适的法术位来施展这些法术。这些法术的施法属性是你由此专长提升的属性。"
+      },
+      "clause_id": "invisibility",
+      "conditions": [],
+      "duration": "advancement_persistent",
+      "effects": [
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "chosen_ability",
+            "free_cast_resource_key": "shadow_touched_invisibility",
+            "grant_mode": "free_cast",
+            "source_class": "feat",
+            "spell_id": "invisibility"
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [
+        {
+          "key": "chosen_ability",
+          "kind": "choice",
+          "parameters": {
+            "duplicate_policy": "forbid",
+            "options_source": "intelligence_wisdom_charisma"
+          }
+        }
+      ],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "advancement_confirmed",
+      "visibility": "owner"
+    },
+    {
+      "action_economy": "none",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+        "source": "authored_ir",
+        "source_boundary": "chosen-illusion-or-necromancy",
+        "source_excerpt": "暴露在堕影冥界的魔法之下的经历已经改变了你，使你获得了以下增益：\n·\n你的智力，感知或魅力提升1，上限为20。\n·\n你习得隐形术以及一个由你选择的一环法术。该一环法术必须是幻术系或死灵系法术。你可以在不消耗法术位的情况下施展这些法术各一次。当你以此法施展某个法术后，你不能再次以此法施展该法术，直至你完成一次长休。你也可以消耗合适的法术位来施展这些法术。这些法术的施法属性是你由此专长提升的属性。"
+      },
+      "clause_id": "chosen-illusion-or-necromancy",
+      "conditions": [],
+      "duration": "advancement_persistent",
+      "effects": [
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "chosen_ability",
+            "free_cast_resource_key": "shadow_touched_1st_level_spell",
+            "grant_mode": "free_cast",
+            "source_class": "feat",
+            "spell_id": "chosen_illusion_or_necromancy_1"
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [
+        {
+          "key": "chosen_1st_level_spell",
+          "kind": "choice",
+          "parameters": {
+            "duplicate_policy": "forbid",
+            "options_source": "illusion_or_necromancy_1st_level"
+          }
+        }
+      ],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "advancement_confirmed",
+      "visibility": "owner"
+    }
+  ],
+  "compatibility": {
+    "runtime_source": "feature_ir",
+    "source_fingerprint": "70d7286100e2fce8d19f264f1a5def09f241c523035046b05a4a5ec90029c167"
+  },
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "dependencies": [],
+  "evidence": [
+    "影界触碰: 暴露在堕影冥界的魔法之下的经历已经改变了你，使你获得了以下增益：\n·\n你的智力，感知或魅力提升1，上限为20。\n·\n你习得隐形术以及一个由你选择的一环法术。该一环法术必须是幻术系或死灵系法术。你可以在不消耗法术位的情况下施展这些法术各一次。当你以此法施展某个法术后，你不能再次以此法施展该法术，直至你完成一次长休。你也可以消耗合适的法术位来施展这些法术。这些法术的施法属性是你由此专长提升的属性。"
+  ],
+  "feature_id": "content.tashas-cauldron.round2.feature.feat-shadow-touched",
+  "kind": "feature",
+  "level": null,
+  "localized_names": {
+    "zh-CN": "影界触碰"
+  },
+  "manual_decisions": {
+    "isolated_runtime_only": true,
+    "operator_mapping": "explicit_atom_mapping",
+    "unmodeled_source_terms": []
+  },
+  "namespace": "content.tashas-cauldron",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "source-7011166c19bd",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+  "reviewed_fields": [
+    "feature_id",
+    "source_record_id",
+    "source_name",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "content_kind",
+    "class_name",
+    "subclass_name",
+    "level",
+    "source_completeness",
+    "clauses",
+    "required_inputs",
+    "runtime_boundary"
+  ],
+  "ruleset_version": "2014",
+  "schema_version": "feature-ir-1",
+  "source_book": "塔莎的万事坩埚",
+  "source_completeness": "complete",
+  "source_evidence": {
+    "source_excerpt": "暴露在堕影冥界的魔法之下的经历已经改变了你，使你获得了以下增益：\n·\n你的智力，感知或魅力提升1，上限为20。\n·\n你习得隐形术以及一个由你选择的一环法术。该一环法术必须是幻术系或死灵系法术。你可以在不消耗法术位的情况下施展这些法术各一次。当你以此法施展某个法术后，你不能再次以此法施展该法术，直至你完成一次长休。你也可以消耗合适的法术位来施展这些法术。这些法术的施法属性是你由此专长提升的属性。",
+    "source_fragment": "94",
+    "source_path": "塔莎的万事坩埚/玩家选项/专长.html",
+    "source_record_id": "1924837fba5aec4d15a290b8"
+  },
+  "source_fingerprint": "70d7286100e2fce8d19f264f1a5def09f241c523035046b05a4a5ec90029c167",
+  "source_name": "影界触碰",
+  "source_path": "塔莎的万事坩埚/玩家选项/专长.html",
+  "source_record_id": "1924837fba5aec4d15a290b8",
+  "source_trust": "authored_ir",
+  "subclass_name": null
+}

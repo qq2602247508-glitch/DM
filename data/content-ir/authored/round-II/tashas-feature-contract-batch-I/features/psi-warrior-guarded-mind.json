@@ -1,0 +1,141 @@
+{
+  "class_name": "战士",
+  "clause_boundaries": {
+    "condition-break": {
+      "source_excerpt": "*第10级灵能武士特性*\n被灵能力量沐浴的你，意念得到增强。你获得心灵伤害的抗性。此外，如果你在你的回合开始时处于魅惑或者恐慌的状态，你可以消耗一个灵能骰并结束自己身上全部包含这些状态的效应。",
+      "source_fragment": "49"
+    },
+    "psychic-resistance": {
+      "source_excerpt": "*第10级灵能武士特性*\n被灵能力量沐浴的你，意念得到增强。你获得心灵伤害的抗性。此外，如果你在你的回合开始时处于魅惑或者恐慌的状态，你可以消耗一个灵能骰并结束自己身上全部包含这些状态的效应。",
+      "source_fragment": "49"
+    }
+  },
+  "clauses": [
+    {
+      "action_economy": "none",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+        "source": "authored_ir",
+        "source_boundary": "psychic-resistance",
+        "source_excerpt": "*第10级灵能武士特性*\n被灵能力量沐浴的你，意念得到增强。你获得心灵伤害的抗性。此外，如果你在你的回合开始时处于魅惑或者恐慌的状态，你可以消耗一个灵能骰并结束自己身上全部包含这些状态的效应。"
+      },
+      "clause_id": "psychic-resistance",
+      "conditions": [],
+      "duration": "advancement_persistent",
+      "effects": [
+        {
+          "operator": "grant_resistance",
+          "parameters": {
+            "damage_type": "psychic",
+            "source": "guarded_mind"
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "advancement_confirmed",
+      "visibility": "owner"
+    },
+    {
+      "action_economy": "none",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+        "source": "authored_ir",
+        "source_boundary": "condition-break",
+        "source_excerpt": "*第10级灵能武士特性*\n被灵能力量沐浴的你，意念得到增强。你获得心灵伤害的抗性。此外，如果你在你的回合开始时处于魅惑或者恐慌的状态，你可以消耗一个灵能骰并结束自己身上全部包含这些状态的效应。"
+      },
+      "clause_id": "condition-break",
+      "conditions": [],
+      "duration": "current_turn",
+      "effects": [
+        {
+          "operator": "remove_condition",
+          "parameters": {
+            "condition": "charmed_or_frightened"
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "explicit_activation",
+      "visibility": "owner"
+    }
+  ],
+  "compatibility": {
+    "runtime_source": "feature_ir",
+    "source_fingerprint": "8d34393b37cc2217820b951ac7ea00c366d2e783eb35c995a894a2bbff253811"
+  },
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "dependencies": [],
+  "evidence": [
+    "意念守护: *第10级灵能武士特性*\n被灵能力量沐浴的你，意念得到增强。你获得心灵伤害的抗性。此外，如果你在你的回合开始时处于魅惑或者恐慌的状态，你可以消耗一个灵能骰并结束自己身上全部包含这些状态的效应。"
+  ],
+  "feature_id": "content.tashas-cauldron.round2.feature.psi-warrior-guarded-mind",
+  "kind": "feature",
+  "level": 10,
+  "localized_names": {
+    "zh-CN": "意念守护"
+  },
+  "manual_decisions": {
+    "isolated_runtime_only": true,
+    "operator_mapping": "explicit_atom_mapping",
+    "unmodeled_source_terms": []
+  },
+  "namespace": "content.tashas-cauldron",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "source-7011166c19bd",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+  "reviewed_fields": [
+    "feature_id",
+    "source_record_id",
+    "source_name",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "content_kind",
+    "class_name",
+    "subclass_name",
+    "level",
+    "source_completeness",
+    "clauses",
+    "required_inputs",
+    "runtime_boundary"
+  ],
+  "ruleset_version": "2014",
+  "schema_version": "feature-ir-1",
+  "source_book": "塔莎的万事坩埚",
+  "source_completeness": "complete",
+  "source_evidence": {
+    "source_excerpt": "*第10级灵能武士特性*\n被灵能力量沐浴的你，意念得到增强。你获得心灵伤害的抗性。此外，如果你在你的回合开始时处于魅惑或者恐慌的状态，你可以消耗一个灵能骰并结束自己身上全部包含这些状态的效应。",
+    "source_fragment": "49",
+    "source_path": "塔莎的万事坩埚/玩家选项/职业/战士（TCE）/灵能武士.html",
+    "source_record_id": "a13253dc90904c96eaa719ab"
+  },
+  "source_fingerprint": "8d34393b37cc2217820b951ac7ea00c366d2e783eb35c995a894a2bbff253811",
+  "source_name": "意念守护",
+  "source_path": "塔莎的万事坩埚/玩家选项/职业/战士（TCE）/灵能武士.html",
+  "source_record_id": "a13253dc90904c96eaa719ab",
+  "source_trust": "authored_ir",
+  "subclass_name": "灵能武士"
+}

@@ -1,0 +1,145 @@
+{
+  "class_name": "法师",
+  "clause_boundaries": {
+    "mind-sight": {
+      "source_excerpt": "*第6级书士会**特性*\n你能将你觉醒法术书中的意识召唤出来。当你持有该法术书时，你可以以一个附赠动作令书中的意识显现为一个微型的灵体物件，使其悬浮于距离你60尺以内且未被占据的、由你选择的空间中。这一灵体意识是无形的，不会占据其空间，并会在其周围半径10尺范围内发出微光光照。它看上去如同一本灵体卷宗、一摞文字、或是一位历史中的学者（由你选择）。\n显现时，该灵体意识能够听音视物，并具有60尺的黑暗视觉。它能用心灵感应将它所看见和听到的信息分享给你（无需动作）。\n每当你在自己的回合内施放法师法术时，你可以使用灵体意识的感官、如同身处它所在的空间一样释放该法术。你每天能如此施法的次数等于你的熟练加值次，完成一次长休后，你恢复所有已消耗的使用次数。\n以一个附赠动作，你可以令灵体意识飘浮到其周围30尺内、你或它可见且未占据空间。灵体意识可以穿过生物但不能穿过物件。\n若遇到以下情况之一，灵体意识的显现将会停止：与你的距离超过300尺、被某人施展了解除魔法Dispel Magic 、觉醒魔法书被摧毁、你死亡时、或是你以一个附赠动作将其驱散。\n显现过灵体意识后，你必须完成一次长休、或是消耗一枚任意环位的法术位，才能再次显现它。",
+      "source_fragment": "27"
+    },
+    "shared-information": {
+      "source_excerpt": "*第6级书士会**特性*\n你能将你觉醒法术书中的意识召唤出来。当你持有该法术书时，你可以以一个附赠动作令书中的意识显现为一个微型的灵体物件，使其悬浮于距离你60尺以内且未被占据的、由你选择的空间中。这一灵体意识是无形的，不会占据其空间，并会在其周围半径10尺范围内发出微光光照。它看上去如同一本灵体卷宗、一摞文字、或是一位历史中的学者（由你选择）。\n显现时，该灵体意识能够听音视物，并具有60尺的黑暗视觉。它能用心灵感应将它所看见和听到的信息分享给你（无需动作）。\n每当你在自己的回合内施放法师法术时，你可以使用灵体意识的感官、如同身处它所在的空间一样释放该法术。你每天能如此施法的次数等于你的熟练加值次，完成一次长休后，你恢复所有已消耗的使用次数。\n以一个附赠动作，你可以令灵体意识飘浮到其周围30尺内、你或它可见且未占据空间。灵体意识可以穿过生物但不能穿过物件。\n若遇到以下情况之一，灵体意识的显现将会停止：与你的距离超过300尺、被某人施展了解除魔法Dispel Magic 、觉醒魔法书被摧毁、你死亡时、或是你以一个附赠动作将其驱散。\n显现过灵体意识后，你必须完成一次长休、或是消耗一枚任意环位的法术位，才能再次显现它。",
+      "source_fragment": "27"
+    }
+  },
+  "clauses": [
+    {
+      "action_economy": "bonus_action",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+        "source": "authored_ir",
+        "source_boundary": "mind-sight",
+        "source_excerpt": "*第6级书士会**特性*\n你能将你觉醒法术书中的意识召唤出来。当你持有该法术书时，你可以以一个附赠动作令书中的意识显现为一个微型的灵体物件，使其悬浮于距离你60尺以内且未被占据的、由你选择的空间中。这一灵体意识是无形的，不会占据其空间，并会在其周围半径10尺范围内发出微光光照。它看上去如同一本灵体卷宗、一摞文字、或是一位历史中的学者（由你选择）。\n显现时，该灵体意识能够听音视物，并具有60尺的黑暗视觉。它能用心灵感应将它所看见和听到的信息分享给你（无需动作）。\n每当你在自己的回合内施放法师法术时，你可以使用灵体意识的感官、如同身处它所在的空间一样释放该法术。你每天能如此施法的次数等于你的熟练加值次，完成一次长休后，你恢复所有已消耗的使用次数。\n以一个附赠动作，你可以令灵体意识飘浮到其周围30尺内、你或它可见且未占据空间。灵体意识可以穿过生物但不能穿过物件。\n若遇到以下情况之一，灵体意识的显现将会停止：与你的距离超过300尺、被某人施展了解除魔法Dispel Magic 、觉醒魔法书被摧毁、你死亡时、或是你以一个附赠动作将其驱散。\n显现过灵体意识后，你必须完成一次长休、或是消耗一枚任意环位的法术位，才能再次显现它。"
+      },
+      "clause_id": "mind-sight",
+      "conditions": [],
+      "duration": "ten_minutes",
+      "effects": [
+        {
+          "operator": "grant_sight_mode",
+          "parameters": {
+            "mode": "darkvision",
+            "range_ft": 60
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "explicit_activation",
+      "visibility": "owner"
+    },
+    {
+      "action_economy": "none",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+        "source": "authored_ir",
+        "source_boundary": "shared-information",
+        "source_excerpt": "*第6级书士会**特性*\n你能将你觉醒法术书中的意识召唤出来。当你持有该法术书时，你可以以一个附赠动作令书中的意识显现为一个微型的灵体物件，使其悬浮于距离你60尺以内且未被占据的、由你选择的空间中。这一灵体意识是无形的，不会占据其空间，并会在其周围半径10尺范围内发出微光光照。它看上去如同一本灵体卷宗、一摞文字、或是一位历史中的学者（由你选择）。\n显现时，该灵体意识能够听音视物，并具有60尺的黑暗视觉。它能用心灵感应将它所看见和听到的信息分享给你（无需动作）。\n每当你在自己的回合内施放法师法术时，你可以使用灵体意识的感官、如同身处它所在的空间一样释放该法术。你每天能如此施法的次数等于你的熟练加值次，完成一次长休后，你恢复所有已消耗的使用次数。\n以一个附赠动作，你可以令灵体意识飘浮到其周围30尺内、你或它可见且未占据空间。灵体意识可以穿过生物但不能穿过物件。\n若遇到以下情况之一，灵体意识的显现将会停止：与你的距离超过300尺、被某人施展了解除魔法Dispel Magic 、觉醒魔法书被摧毁、你死亡时、或是你以一个附赠动作将其驱散。\n显现过灵体意识后，你必须完成一次长休、或是消耗一枚任意环位的法术位，才能再次显现它。"
+      },
+      "clause_id": "shared-information",
+      "conditions": [],
+      "duration": "ten_minutes",
+      "effects": [
+        {
+          "operator": "expose_authorized_target_information",
+          "parameters": {
+            "information_kind": "manifest_mind_senses",
+            "range_ft": 60,
+            "visibility": "owner"
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "explicit_activation",
+      "visibility": "owner"
+    }
+  ],
+  "compatibility": {
+    "runtime_source": "feature_ir",
+    "source_fingerprint": "dbbdb5b3ca9d86ece43c2f919d8483683f99068a478bccc401906057fccb920a"
+  },
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "dependencies": [],
+  "evidence": [
+    "神识显现: *第6级书士会**特性*\n你能将你觉醒法术书中的意识召唤出来。当你持有该法术书时，你可以以一个附赠动作令书中的意识显现为一个微型的灵体物件，使其悬浮于距离你60尺以内且未被占据的、由你选择的空间中。这一灵体意识是无形的，不会占据其空间，并会在其周围半径10尺范围内发出微光光照。它看上去如同一本灵体卷宗、一摞文字、或是一位历史中的学者（由你选择）。\n显现时，该灵体意识能够听音视物，并具有60尺的黑暗视觉。它能用心灵感应将它所看见和听到的信息分享给你（无需动作）。\n每当你在自己的回合内施放法师法术时，你可以使用灵体意识的感官、如同身处它所在的空间一样释放该法术。你每天能如此施法的次数等于你的熟练加值次，完成一次长休后，你恢复所有已消耗的使用次数。\n以一个附赠动作，你可以令灵体意识飘浮到其周围30尺内、你或它可见且未占据空间。灵体意识可以穿过生物但不能穿过物件。\n若遇到以下情况之一，灵体意识的显现将会停止：与你的距离超过300尺、被某人施展了解除魔法Dispel Magic 、觉醒魔法书被摧毁、你死亡时、或是你以一个附赠动作将其驱散。\n显现过灵体意识后，你必须完成一次长休、或是消耗一枚任意环位的法术位，才能再次显现它。"
+  ],
+  "feature_id": "content.tashas-cauldron.round2.feature.scribe-manifest-mind",
+  "kind": "feature",
+  "level": 6,
+  "localized_names": {
+    "zh-CN": "神识显现"
+  },
+  "manual_decisions": {
+    "isolated_runtime_only": true,
+    "operator_mapping": "explicit_atom_mapping",
+    "unmodeled_source_terms": [
+      "summoned spectral object entity lifecycle and remote spell origin need an entity consumer"
+    ]
+  },
+  "namespace": "content.tashas-cauldron",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "source-7011166c19bd",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+  "reviewed_fields": [
+    "feature_id",
+    "source_record_id",
+    "source_name",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "content_kind",
+    "class_name",
+    "subclass_name",
+    "level",
+    "source_completeness",
+    "clauses",
+    "required_inputs",
+    "runtime_boundary"
+  ],
+  "ruleset_version": "2014",
+  "schema_version": "feature-ir-1",
+  "source_book": "塔莎的万事坩埚",
+  "source_completeness": "incomplete",
+  "source_evidence": {
+    "source_excerpt": "*第6级书士会**特性*\n你能将你觉醒法术书中的意识召唤出来。当你持有该法术书时，你可以以一个附赠动作令书中的意识显现为一个微型的灵体物件，使其悬浮于距离你60尺以内且未被占据的、由你选择的空间中。这一灵体意识是无形的，不会占据其空间，并会在其周围半径10尺范围内发出微光光照。它看上去如同一本灵体卷宗、一摞文字、或是一位历史中的学者（由你选择）。\n显现时，该灵体意识能够听音视物，并具有60尺的黑暗视觉。它能用心灵感应将它所看见和听到的信息分享给你（无需动作）。\n每当你在自己的回合内施放法师法术时，你可以使用灵体意识的感官、如同身处它所在的空间一样释放该法术。你每天能如此施法的次数等于你的熟练加值次，完成一次长休后，你恢复所有已消耗的使用次数。\n以一个附赠动作，你可以令灵体意识飘浮到其周围30尺内、你或它可见且未占据空间。灵体意识可以穿过生物但不能穿过物件。\n若遇到以下情况之一，灵体意识的显现将会停止：与你的距离超过300尺、被某人施展了解除魔法Dispel Magic 、觉醒魔法书被摧毁、你死亡时、或是你以一个附赠动作将其驱散。\n显现过灵体意识后，你必须完成一次长休、或是消耗一枚任意环位的法术位，才能再次显现它。",
+    "source_fragment": "27",
+    "source_path": "塔莎的万事坩埚/玩家选项/职业/法师（TCE）/书士会.html",
+    "source_record_id": "ff7049c6a4d0aad0dae4adf5"
+  },
+  "source_fingerprint": "dbbdb5b3ca9d86ece43c2f919d8483683f99068a478bccc401906057fccb920a",
+  "source_name": "神识显现",
+  "source_path": "塔莎的万事坩埚/玩家选项/职业/法师（TCE）/书士会.html",
+  "source_record_id": "ff7049c6a4d0aad0dae4adf5",
+  "source_trust": "authored_ir",
+  "subclass_name": "书士会"
+}

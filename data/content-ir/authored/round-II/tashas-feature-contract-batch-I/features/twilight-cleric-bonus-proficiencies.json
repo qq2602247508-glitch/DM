@@ -1,0 +1,144 @@
+{
+  "class_name": "牧师",
+  "clause_boundaries": {
+    "heavy-armor": {
+      "source_excerpt": "*第1级暮光领域特性*\n你获得军用武器和重甲的熟练项。",
+      "source_fragment": "37"
+    },
+    "martial-weapons": {
+      "source_excerpt": "*第1级暮光领域特性*\n你获得军用武器和重甲的熟练项。",
+      "source_fragment": "37"
+    }
+  },
+  "clauses": [
+    {
+      "action_economy": "none",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+        "source": "authored_ir",
+        "source_boundary": "martial-weapons",
+        "source_excerpt": "*第1级暮光领域特性*\n你获得军用武器和重甲的熟练项。"
+      },
+      "clause_id": "martial-weapons",
+      "conditions": [],
+      "duration": "advancement_persistent",
+      "effects": [
+        {
+          "operator": "grant_proficiency",
+          "parameters": {
+            "asset_id": "martial_weapons",
+            "operation": "grant",
+            "proficiency_kind": "weapon"
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "advancement_confirmed",
+      "visibility": "owner"
+    },
+    {
+      "action_economy": "none",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+        "source": "authored_ir",
+        "source_boundary": "heavy-armor",
+        "source_excerpt": "*第1级暮光领域特性*\n你获得军用武器和重甲的熟练项。"
+      },
+      "clause_id": "heavy-armor",
+      "conditions": [],
+      "duration": "advancement_persistent",
+      "effects": [
+        {
+          "operator": "grant_proficiency",
+          "parameters": {
+            "asset_id": "heavy_armor",
+            "operation": "grant",
+            "proficiency_kind": "armor"
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "advancement_confirmed",
+      "visibility": "owner"
+    }
+  ],
+  "compatibility": {
+    "runtime_source": "feature_ir",
+    "source_fingerprint": "4d42b7a9f01641ddfceddd9af35ddc869f2beee919f10c3c4e240a670165ee86"
+  },
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "dependencies": [],
+  "evidence": [
+    "附赠熟练项: *第1级暮光领域特性*\n你获得军用武器和重甲的熟练项。"
+  ],
+  "feature_id": "content.tashas-cauldron.round2.feature.twilight-cleric-bonus-proficiencies",
+  "kind": "feature",
+  "level": 1,
+  "localized_names": {
+    "zh-CN": "附赠熟练项"
+  },
+  "manual_decisions": {
+    "isolated_runtime_only": true,
+    "operator_mapping": "explicit_atom_mapping",
+    "unmodeled_source_terms": []
+  },
+  "namespace": "content.tashas-cauldron",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "source-7011166c19bd",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+  "reviewed_fields": [
+    "feature_id",
+    "source_record_id",
+    "source_name",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "content_kind",
+    "class_name",
+    "subclass_name",
+    "level",
+    "source_completeness",
+    "clauses",
+    "required_inputs",
+    "runtime_boundary"
+  ],
+  "ruleset_version": "2014",
+  "schema_version": "feature-ir-1",
+  "source_book": "塔莎的万事坩埚",
+  "source_completeness": "complete",
+  "source_evidence": {
+    "source_excerpt": "*第1级暮光领域特性*\n你获得军用武器和重甲的熟练项。",
+    "source_fragment": "37",
+    "source_path": "塔莎的万事坩埚/玩家选项/职业/牧师（TCE）/暮光领域.html",
+    "source_record_id": "63d0abe27f6ad161f0820593"
+  },
+  "source_fingerprint": "4d42b7a9f01641ddfceddd9af35ddc869f2beee919f10c3c4e240a670165ee86",
+  "source_name": "附赠熟练项",
+  "source_path": "塔莎的万事坩埚/玩家选项/职业/牧师（TCE）/暮光领域.html",
+  "source_record_id": "63d0abe27f6ad161f0820593",
+  "source_trust": "authored_ir",
+  "subclass_name": "暮光领域"
+}

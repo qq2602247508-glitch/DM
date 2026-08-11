@@ -1,0 +1,147 @@
+{
+  "class_name": "战士",
+  "clause_boundaries": {
+    "recovery": {
+      "source_excerpt": "*第18级灵能武士特性*\n你用意念移动生物和物体的能力无人能及。你可以在无需任何法术成分的情况下使用法术\n心灵遥控Telekinesis\n，你施展这一法术的施法属性为智力。在每一个你对该法术维持专注的回合，包括你使用它的回合，你都可以使用附赠动作来进行一次武器攻击。\n每当你使用以特性施展此法术，直到你完成一次长休为止你都不能再次使用它。你也可以消耗一枚灵能骰来再次施展它。",
+      "source_fragment": "62"
+    },
+    "telekinesis": {
+      "source_excerpt": "*第18级灵能武士特性*\n你用意念移动生物和物体的能力无人能及。你可以在无需任何法术成分的情况下使用法术\n心灵遥控Telekinesis\n，你施展这一法术的施法属性为智力。在每一个你对该法术维持专注的回合，包括你使用它的回合，你都可以使用附赠动作来进行一次武器攻击。\n每当你使用以特性施展此法术，直到你完成一次长休为止你都不能再次使用它。你也可以消耗一枚灵能骰来再次施展它。",
+      "source_fragment": "62"
+    }
+  },
+  "clauses": [
+    {
+      "action_economy": "none",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+        "source": "authored_ir",
+        "source_boundary": "telekinesis",
+        "source_excerpt": "*第18级灵能武士特性*\n你用意念移动生物和物体的能力无人能及。你可以在无需任何法术成分的情况下使用法术\n心灵遥控Telekinesis\n，你施展这一法术的施法属性为智力。在每一个你对该法术维持专注的回合，包括你使用它的回合，你都可以使用附赠动作来进行一次武器攻击。\n每当你使用以特性施展此法术，直到你完成一次长休为止你都不能再次使用它。你也可以消耗一枚灵能骰来再次施展它。"
+      },
+      "clause_id": "telekinesis",
+      "conditions": [],
+      "duration": "advancement_persistent",
+      "effects": [
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "intelligence",
+            "free_cast_resource_key": "telekinetic_master",
+            "grant_mode": "free_cast",
+            "source_class": "fighter",
+            "spell_id": "telekinesis"
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "advancement_confirmed",
+      "visibility": "owner"
+    },
+    {
+      "action_economy": "none",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+        "source": "authored_ir",
+        "source_boundary": "recovery",
+        "source_excerpt": "*第18级灵能武士特性*\n你用意念移动生物和物体的能力无人能及。你可以在无需任何法术成分的情况下使用法术\n心灵遥控Telekinesis\n，你施展这一法术的施法属性为智力。在每一个你对该法术维持专注的回合，包括你使用它的回合，你都可以使用附赠动作来进行一次武器攻击。\n每当你使用以特性施展此法术，直到你完成一次长休为止你都不能再次使用它。你也可以消耗一枚灵能骰来再次施展它。"
+      },
+      "clause_id": "recovery",
+      "conditions": [],
+      "duration": null,
+      "effects": [
+        {
+          "operator": "restore_resource",
+          "parameters": {
+            "amount_source": "all",
+            "operation": "set_to_max",
+            "recovery_event": "long_rest_completed",
+            "resource_key": "telekinetic_master"
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "long_rest_completed",
+      "visibility": "owner"
+    }
+  ],
+  "compatibility": {
+    "runtime_source": "feature_ir",
+    "source_fingerprint": "10f5712d3e4d609a13f930b64b2817c88383c4d8cd5c88cee8a7f6ceeef6bee6"
+  },
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "dependencies": [],
+  "evidence": [
+    "念力宗师: *第18级灵能武士特性*\n你用意念移动生物和物体的能力无人能及。你可以在无需任何法术成分的情况下使用法术\n心灵遥控Telekinesis\n，你施展这一法术的施法属性为智力。在每一个你对该法术维持专注的回合，包括你使用它的回合，你都可以使用附赠动作来进行一次武器攻击。\n每当你使用以特性施展此法术，直到你完成一次长休为止你都不能再次使用它。你也可以消耗一枚灵能骰来再次施展它。"
+  ],
+  "feature_id": "content.tashas-cauldron.round2.feature.psi-warrior-telekinetic-master",
+  "kind": "feature",
+  "level": 18,
+  "localized_names": {
+    "zh-CN": "念力宗师"
+  },
+  "manual_decisions": {
+    "isolated_runtime_only": true,
+    "operator_mapping": "explicit_atom_mapping",
+    "unmodeled_source_terms": []
+  },
+  "namespace": "content.tashas-cauldron",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "source-7011166c19bd",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+  "reviewed_fields": [
+    "feature_id",
+    "source_record_id",
+    "source_name",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "content_kind",
+    "class_name",
+    "subclass_name",
+    "level",
+    "source_completeness",
+    "clauses",
+    "required_inputs",
+    "runtime_boundary"
+  ],
+  "ruleset_version": "2014",
+  "schema_version": "feature-ir-1",
+  "source_book": "塔莎的万事坩埚",
+  "source_completeness": "complete",
+  "source_evidence": {
+    "source_excerpt": "*第18级灵能武士特性*\n你用意念移动生物和物体的能力无人能及。你可以在无需任何法术成分的情况下使用法术\n心灵遥控Telekinesis\n，你施展这一法术的施法属性为智力。在每一个你对该法术维持专注的回合，包括你使用它的回合，你都可以使用附赠动作来进行一次武器攻击。\n每当你使用以特性施展此法术，直到你完成一次长休为止你都不能再次使用它。你也可以消耗一枚灵能骰来再次施展它。",
+    "source_fragment": "62",
+    "source_path": "塔莎的万事坩埚/玩家选项/职业/战士（TCE）/灵能武士.html",
+    "source_record_id": "a13253dc90904c96eaa719ab"
+  },
+  "source_fingerprint": "10f5712d3e4d609a13f930b64b2817c88383c4d8cd5c88cee8a7f6ceeef6bee6",
+  "source_name": "念力宗师",
+  "source_path": "塔莎的万事坩埚/玩家选项/职业/战士（TCE）/灵能武士.html",
+  "source_record_id": "a13253dc90904c96eaa719ab",
+  "source_trust": "authored_ir",
+  "subclass_name": "灵能武士"
+}

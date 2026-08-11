@@ -1,0 +1,144 @@
+{
+  "class_name": "战士",
+  "clause_boundaries": {
+    "giant-language": {
+      "source_excerpt": "*第3级符文骑士特性*\n你获得铁匠工具的熟练项，此外，你学会说、读、和写巨人语。",
+      "source_fragment": "9"
+    },
+    "smith-tools": {
+      "source_excerpt": "*第3级符文骑士特性*\n你获得铁匠工具的熟练项，此外，你学会说、读、和写巨人语。",
+      "source_fragment": "9"
+    }
+  },
+  "clauses": [
+    {
+      "action_economy": "none",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+        "source": "authored_ir",
+        "source_boundary": "smith-tools",
+        "source_excerpt": "*第3级符文骑士特性*\n你获得铁匠工具的熟练项，此外，你学会说、读、和写巨人语。"
+      },
+      "clause_id": "smith-tools",
+      "conditions": [],
+      "duration": "advancement_persistent",
+      "effects": [
+        {
+          "operator": "grant_proficiency",
+          "parameters": {
+            "asset_id": "smith_tools",
+            "if_already_proficient": "replacement_tool_choice",
+            "operation": "grant",
+            "proficiency_kind": "tool"
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "advancement_confirmed",
+      "visibility": "owner"
+    },
+    {
+      "action_economy": "none",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+        "source": "authored_ir",
+        "source_boundary": "giant-language",
+        "source_excerpt": "*第3级符文骑士特性*\n你获得铁匠工具的熟练项，此外，你学会说、读、和写巨人语。"
+      },
+      "clause_id": "giant-language",
+      "conditions": [],
+      "duration": "advancement_persistent",
+      "effects": [
+        {
+          "operator": "grant_language",
+          "parameters": {
+            "language_id": "giant",
+            "operation": "grant"
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "advancement_confirmed",
+      "visibility": "owner"
+    }
+  ],
+  "compatibility": {
+    "runtime_source": "feature_ir",
+    "source_fingerprint": "d2487b5cf34bb9da95bf52d8a4dde0c5a60e884cef6a87074242cf97d4a902e6"
+  },
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "dependencies": [],
+  "evidence": [
+    "额外熟练项: *第3级符文骑士特性*\n你获得铁匠工具的熟练项，此外，你学会说、读、和写巨人语。"
+  ],
+  "feature_id": "content.tashas-cauldron.round2.feature.rune-knight-bonus-proficiencies",
+  "kind": "feature",
+  "level": 3,
+  "localized_names": {
+    "zh-CN": "额外熟练项"
+  },
+  "manual_decisions": {
+    "isolated_runtime_only": true,
+    "operator_mapping": "explicit_atom_mapping",
+    "unmodeled_source_terms": []
+  },
+  "namespace": "content.tashas-cauldron",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "source-7011166c19bd",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+  "reviewed_fields": [
+    "feature_id",
+    "source_record_id",
+    "source_name",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "content_kind",
+    "class_name",
+    "subclass_name",
+    "level",
+    "source_completeness",
+    "clauses",
+    "required_inputs",
+    "runtime_boundary"
+  ],
+  "ruleset_version": "2014",
+  "schema_version": "feature-ir-1",
+  "source_book": "塔莎的万事坩埚",
+  "source_completeness": "complete",
+  "source_evidence": {
+    "source_excerpt": "*第3级符文骑士特性*\n你获得铁匠工具的熟练项，此外，你学会说、读、和写巨人语。",
+    "source_fragment": "9",
+    "source_path": "塔莎的万事坩埚/玩家选项/职业/战士（TCE）/符文骑士.html",
+    "source_record_id": "0739d5dfe5855a9afc8f3a53"
+  },
+  "source_fingerprint": "d2487b5cf34bb9da95bf52d8a4dde0c5a60e884cef6a87074242cf97d4a902e6",
+  "source_name": "额外熟练项",
+  "source_path": "塔莎的万事坩埚/玩家选项/职业/战士（TCE）/符文骑士.html",
+  "source_record_id": "0739d5dfe5855a9afc8f3a53",
+  "source_trust": "authored_ir",
+  "subclass_name": "符文骑士"
+}

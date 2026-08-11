@@ -1,0 +1,105 @@
+{
+  "class_name": "战士",
+  "clause_boundaries": {
+    "giants-might-die": {
+      "source_excerpt": "*第10级符文骑士特性\n*符文的魔力永久性的改变了你。当你获得该特性时，投掷3d4。你的身高增加该骰结果的英寸数。\n此外，你的巨人之力特性造成的额外伤害提高至1d8。",
+      "source_fragment": "103"
+    }
+  },
+  "clauses": [
+    {
+      "action_economy": "none",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+        "source": "authored_ir",
+        "source_boundary": "giants-might-die",
+        "source_excerpt": "*第10级符文骑士特性\n*符文的魔力永久性的改变了你。当你获得该特性时，投掷3d4。你的身高增加该骰结果的英寸数。\n此外，你的巨人之力特性造成的额外伤害提高至1d8。"
+      },
+      "clause_id": "giants-might-die",
+      "conditions": [],
+      "duration": "advancement_persistent",
+      "effects": [
+        {
+          "operator": "add_damage",
+          "parameters": {
+            "applies_when": "giants_might",
+            "damage_type": "weapon_or_unarmed",
+            "formula": "1d8",
+            "source": "giants_might"
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "attack_hit",
+      "visibility": "owner"
+    }
+  ],
+  "compatibility": {
+    "runtime_source": "feature_ir",
+    "source_fingerprint": "1173de6691918d04d1fd1b689f87d0269fe5b1427c3ab7c4db33ede3872e1fa2"
+  },
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "dependencies": [],
+  "evidence": [
+    "奇伟身躯: *第10级符文骑士特性\n*符文的魔力永久性的改变了你。当你获得该特性时，投掷3d4。你的身高增加该骰结果的英寸数。\n此外，你的巨人之力特性造成的额外伤害提高至1d8。"
+  ],
+  "feature_id": "content.tashas-cauldron.round2.feature.rune-knight-great-stature",
+  "kind": "feature",
+  "level": 10,
+  "localized_names": {
+    "zh-CN": "奇伟身躯"
+  },
+  "manual_decisions": {
+    "isolated_runtime_only": true,
+    "operator_mapping": "explicit_atom_mapping",
+    "unmodeled_source_terms": []
+  },
+  "namespace": "content.tashas-cauldron",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "source-7011166c19bd",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+  "reviewed_fields": [
+    "feature_id",
+    "source_record_id",
+    "source_name",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "content_kind",
+    "class_name",
+    "subclass_name",
+    "level",
+    "source_completeness",
+    "clauses",
+    "required_inputs",
+    "runtime_boundary"
+  ],
+  "ruleset_version": "2014",
+  "schema_version": "feature-ir-1",
+  "source_book": "塔莎的万事坩埚",
+  "source_completeness": "complete",
+  "source_evidence": {
+    "source_excerpt": "*第10级符文骑士特性\n*符文的魔力永久性的改变了你。当你获得该特性时，投掷3d4。你的身高增加该骰结果的英寸数。\n此外，你的巨人之力特性造成的额外伤害提高至1d8。",
+    "source_fragment": "103",
+    "source_path": "塔莎的万事坩埚/玩家选项/职业/战士（TCE）/符文骑士.html",
+    "source_record_id": "0739d5dfe5855a9afc8f3a53"
+  },
+  "source_fingerprint": "1173de6691918d04d1fd1b689f87d0269fe5b1427c3ab7c4db33ede3872e1fa2",
+  "source_name": "奇伟身躯",
+  "source_path": "塔莎的万事坩埚/玩家选项/职业/战士（TCE）/符文骑士.html",
+  "source_record_id": "0739d5dfe5855a9afc8f3a53",
+  "source_trust": "authored_ir",
+  "subclass_name": "符文骑士"
+}

@@ -1,0 +1,106 @@
+{
+  "class_name": "奇械师",
+  "clause_boundaries": {
+    "double-proficiency": {
+      "source_excerpt": "*第6级奇械师特性*你在使用你熟练的工具时所进行的任何属性检定均能够使用你的双倍的熟练加值。",
+      "source_fragment": "132"
+    }
+  },
+  "clauses": [
+    {
+      "action_economy": "none",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+        "source": "authored_ir",
+        "source_boundary": "double-proficiency",
+        "source_excerpt": "*第6级奇械师特性*你在使用你熟练的工具时所进行的任何属性检定均能够使用你的双倍的熟练加值。"
+      },
+      "clause_id": "double-proficiency",
+      "conditions": [],
+      "duration": "advancement_persistent",
+      "effects": [
+        {
+          "operator": "grant_passive_modifier",
+          "parameters": {
+            "applies_when": "proficient_tool",
+            "operation": "add",
+            "scope": "self",
+            "stat": "tool_check",
+            "value_source": "proficiency_bonus"
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "advancement_confirmed",
+      "visibility": "owner"
+    }
+  ],
+  "compatibility": {
+    "runtime_source": "feature_ir",
+    "source_fingerprint": "1b4ba456b9cb7fb043ff44848d69fe948b4efc396b77c87bbeeadd2fbda0d330"
+  },
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "dependencies": [],
+  "evidence": [
+    "工具专精: *第6级奇械师特性*你在使用你熟练的工具时所进行的任何属性检定均能够使用你的双倍的熟练加值。"
+  ],
+  "feature_id": "content.tashas-cauldron.round2.feature.artificer-tool-expertise",
+  "kind": "feature",
+  "level": 6,
+  "localized_names": {
+    "zh-CN": "工具专精"
+  },
+  "manual_decisions": {
+    "isolated_runtime_only": true,
+    "operator_mapping": "explicit_atom_mapping",
+    "unmodeled_source_terms": []
+  },
+  "namespace": "content.tashas-cauldron",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "source-7011166c19bd",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+  "reviewed_fields": [
+    "feature_id",
+    "source_record_id",
+    "source_name",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "content_kind",
+    "class_name",
+    "subclass_name",
+    "level",
+    "source_completeness",
+    "clauses",
+    "required_inputs",
+    "runtime_boundary"
+  ],
+  "ruleset_version": "2014",
+  "schema_version": "feature-ir-1",
+  "source_book": "塔莎的万事坩埚",
+  "source_completeness": "complete",
+  "source_evidence": {
+    "source_excerpt": "*第6级奇械师特性*你在使用你熟练的工具时所进行的任何属性检定均能够使用你的双倍的熟练加值。",
+    "source_fragment": "132",
+    "source_path": "塔莎的万事坩埚/玩家选项/职业/奇械师.html",
+    "source_record_id": "2ceef8846dfb30c175abe0dd"
+  },
+  "source_fingerprint": "1b4ba456b9cb7fb043ff44848d69fe948b4efc396b77c87bbeeadd2fbda0d330",
+  "source_name": "工具专精",
+  "source_path": "塔莎的万事坩埚/玩家选项/职业/奇械师.html",
+  "source_record_id": "2ceef8846dfb30c175abe0dd",
+  "source_trust": "authored_ir",
+  "subclass_name": null
+}

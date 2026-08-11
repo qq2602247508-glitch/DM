@@ -1,0 +1,227 @@
+{
+  "class_name": "战士",
+  "clause_boundaries": {
+    "activate": {
+      "source_excerpt": "*第3级符文骑士特性*\n你已经学会了如何使用巨人之力灌注自身。你可以使用一个附赠动作，魔法性地获得以下能力，持续一分钟。\n\n- 如果你的体型小于大型，你和你所穿戴的所有物品一起变为大型。如果你缺少变为大型的空间，则你的体型不会发生变化。你在力量检定和力量豁免检定上获得优势。你的每回合内一次，你的武器攻击或徒手打击可以在击中后对目标造成额外1d6的伤害。\n\n该特性的可使用次数等于你的熟练加值，且你可以在完成一次长休之后恢复所有已使用的次数。",
+      "source_fragment": "87"
+    },
+    "extra-damage": {
+      "source_excerpt": "*第3级符文骑士特性*\n你已经学会了如何使用巨人之力灌注自身。你可以使用一个附赠动作，魔法性地获得以下能力，持续一分钟。\n\n- 如果你的体型小于大型，你和你所穿戴的所有物品一起变为大型。如果你缺少变为大型的空间，则你的体型不会发生变化。你在力量检定和力量豁免检定上获得优势。你的每回合内一次，你的武器攻击或徒手打击可以在击中后对目标造成额外1d6的伤害。\n\n该特性的可使用次数等于你的熟练加值，且你可以在完成一次长休之后恢复所有已使用的次数。",
+      "source_fragment": "87"
+    },
+    "recovery": {
+      "source_excerpt": "*第3级符文骑士特性*\n你已经学会了如何使用巨人之力灌注自身。你可以使用一个附赠动作，魔法性地获得以下能力，持续一分钟。\n\n- 如果你的体型小于大型，你和你所穿戴的所有物品一起变为大型。如果你缺少变为大型的空间，则你的体型不会发生变化。你在力量检定和力量豁免检定上获得优势。你的每回合内一次，你的武器攻击或徒手打击可以在击中后对目标造成额外1d6的伤害。\n\n该特性的可使用次数等于你的熟练加值，且你可以在完成一次长休之后恢复所有已使用的次数。",
+      "source_fragment": "87"
+    },
+    "strength-advantage": {
+      "source_excerpt": "*第3级符文骑士特性*\n你已经学会了如何使用巨人之力灌注自身。你可以使用一个附赠动作，魔法性地获得以下能力，持续一分钟。\n\n- 如果你的体型小于大型，你和你所穿戴的所有物品一起变为大型。如果你缺少变为大型的空间，则你的体型不会发生变化。你在力量检定和力量豁免检定上获得优势。你的每回合内一次，你的武器攻击或徒手打击可以在击中后对目标造成额外1d6的伤害。\n\n该特性的可使用次数等于你的熟练加值，且你可以在完成一次长休之后恢复所有已使用的次数。",
+      "source_fragment": "87"
+    }
+  },
+  "clauses": [
+    {
+      "action_economy": "bonus_action",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+        "source": "authored_ir",
+        "source_boundary": "activate",
+        "source_excerpt": "*第3级符文骑士特性*\n你已经学会了如何使用巨人之力灌注自身。你可以使用一个附赠动作，魔法性地获得以下能力，持续一分钟。\n\n- 如果你的体型小于大型，你和你所穿戴的所有物品一起变为大型。如果你缺少变为大型的空间，则你的体型不会发生变化。你在力量检定和力量豁免检定上获得优势。你的每回合内一次，你的武器攻击或徒手打击可以在击中后对目标造成额外1d6的伤害。\n\n该特性的可使用次数等于你的熟练加值，且你可以在完成一次长休之后恢复所有已使用的次数。"
+      },
+      "clause_id": "activate",
+      "conditions": [],
+      "duration": "one_minute",
+      "effects": [
+        {
+          "operator": "consume_resource",
+          "parameters": {
+            "amount": 1,
+            "operation": "consume",
+            "resource_key": "giants_might_uses"
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "explicit_activation",
+      "visibility": "owner"
+    },
+    {
+      "action_economy": "none",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+        "source": "authored_ir",
+        "source_boundary": "strength-advantage",
+        "source_excerpt": "*第3级符文骑士特性*\n你已经学会了如何使用巨人之力灌注自身。你可以使用一个附赠动作，魔法性地获得以下能力，持续一分钟。\n\n- 如果你的体型小于大型，你和你所穿戴的所有物品一起变为大型。如果你缺少变为大型的空间，则你的体型不会发生变化。你在力量检定和力量豁免检定上获得优势。你的每回合内一次，你的武器攻击或徒手打击可以在击中后对目标造成额外1d6的伤害。\n\n该特性的可使用次数等于你的熟练加值，且你可以在完成一次长休之后恢复所有已使用的次数。"
+      },
+      "clause_id": "strength-advantage",
+      "conditions": [],
+      "duration": "one_minute",
+      "effects": [
+        {
+          "operator": "impose_advantage",
+          "parameters": {
+            "applies_when": "giants_might",
+            "operation": "advantage",
+            "scope": "self",
+            "stat": "strength_check_and_save"
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "ability_check",
+      "visibility": "owner"
+    },
+    {
+      "action_economy": "none",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+        "source": "authored_ir",
+        "source_boundary": "extra-damage",
+        "source_excerpt": "*第3级符文骑士特性*\n你已经学会了如何使用巨人之力灌注自身。你可以使用一个附赠动作，魔法性地获得以下能力，持续一分钟。\n\n- 如果你的体型小于大型，你和你所穿戴的所有物品一起变为大型。如果你缺少变为大型的空间，则你的体型不会发生变化。你在力量检定和力量豁免检定上获得优势。你的每回合内一次，你的武器攻击或徒手打击可以在击中后对目标造成额外1d6的伤害。\n\n该特性的可使用次数等于你的熟练加值，且你可以在完成一次长休之后恢复所有已使用的次数。"
+      },
+      "clause_id": "extra-damage",
+      "conditions": [],
+      "duration": "one_minute",
+      "effects": [
+        {
+          "operator": "add_damage",
+          "parameters": {
+            "applies_when": "once_per_turn",
+            "damage_type": "weapon_or_unarmed",
+            "formula": "1d6",
+            "source": "giants_might"
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "attack_hit",
+      "visibility": "owner"
+    },
+    {
+      "action_economy": "none",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+        "source": "authored_ir",
+        "source_boundary": "recovery",
+        "source_excerpt": "*第3级符文骑士特性*\n你已经学会了如何使用巨人之力灌注自身。你可以使用一个附赠动作，魔法性地获得以下能力，持续一分钟。\n\n- 如果你的体型小于大型，你和你所穿戴的所有物品一起变为大型。如果你缺少变为大型的空间，则你的体型不会发生变化。你在力量检定和力量豁免检定上获得优势。你的每回合内一次，你的武器攻击或徒手打击可以在击中后对目标造成额外1d6的伤害。\n\n该特性的可使用次数等于你的熟练加值，且你可以在完成一次长休之后恢复所有已使用的次数。"
+      },
+      "clause_id": "recovery",
+      "conditions": [],
+      "duration": null,
+      "effects": [
+        {
+          "operator": "restore_resource",
+          "parameters": {
+            "amount_source": "all",
+            "operation": "set_to_max",
+            "recovery_event": "long_rest_completed",
+            "resource_key": "giants_might_uses"
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "long_rest_completed",
+      "visibility": "owner"
+    }
+  ],
+  "compatibility": {
+    "runtime_source": "feature_ir",
+    "source_fingerprint": "98de6619ac28cf66d7cb76212aa301e422069c9a426890b516f1f79ce3b75a26"
+  },
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "dependencies": [],
+  "evidence": [
+    "巨人之力: *第3级符文骑士特性*\n你已经学会了如何使用巨人之力灌注自身。你可以使用一个附赠动作，魔法性地获得以下能力，持续一分钟。\n\n- 如果你的体型小于大型，你和你所穿戴的所有物品一起变为大型。如果你缺少变为大型的空间，则你的体型不会发生变化。你在力量检定和力量豁免检定上获得优势。你的每回合内一次，你的武器攻击或徒手打击可以在击中后对目标造成额外1d6的伤害。\n\n该特性的可使用次数等于你的熟练加值，且你可以在完成一次长休之后恢复所有已使用的次数。"
+  ],
+  "feature_id": "content.tashas-cauldron.round2.feature.rune-knight-giants-might",
+  "kind": "feature",
+  "level": 3,
+  "localized_names": {
+    "zh-CN": "巨人之力"
+  },
+  "manual_decisions": {
+    "isolated_runtime_only": true,
+    "operator_mapping": "explicit_atom_mapping",
+    "unmodeled_source_terms": []
+  },
+  "namespace": "content.tashas-cauldron",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "source-7011166c19bd",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+  "reviewed_fields": [
+    "feature_id",
+    "source_record_id",
+    "source_name",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "content_kind",
+    "class_name",
+    "subclass_name",
+    "level",
+    "source_completeness",
+    "clauses",
+    "required_inputs",
+    "runtime_boundary"
+  ],
+  "ruleset_version": "2014",
+  "schema_version": "feature-ir-1",
+  "source_book": "塔莎的万事坩埚",
+  "source_completeness": "complete",
+  "source_evidence": {
+    "source_excerpt": "*第3级符文骑士特性*\n你已经学会了如何使用巨人之力灌注自身。你可以使用一个附赠动作，魔法性地获得以下能力，持续一分钟。\n\n- 如果你的体型小于大型，你和你所穿戴的所有物品一起变为大型。如果你缺少变为大型的空间，则你的体型不会发生变化。你在力量检定和力量豁免检定上获得优势。你的每回合内一次，你的武器攻击或徒手打击可以在击中后对目标造成额外1d6的伤害。\n\n该特性的可使用次数等于你的熟练加值，且你可以在完成一次长休之后恢复所有已使用的次数。",
+    "source_fragment": "87",
+    "source_path": "塔莎的万事坩埚/玩家选项/职业/战士（TCE）/符文骑士.html",
+    "source_record_id": "0739d5dfe5855a9afc8f3a53"
+  },
+  "source_fingerprint": "98de6619ac28cf66d7cb76212aa301e422069c9a426890b516f1f79ce3b75a26",
+  "source_name": "巨人之力",
+  "source_path": "塔莎的万事坩埚/玩家选项/职业/战士（TCE）/符文骑士.html",
+  "source_record_id": "0739d5dfe5855a9afc8f3a53",
+  "source_trust": "authored_ir",
+  "subclass_name": "符文骑士"
+}

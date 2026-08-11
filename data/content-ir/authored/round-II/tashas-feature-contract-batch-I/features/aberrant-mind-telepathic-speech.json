@@ -1,0 +1,104 @@
+{
+  "class_name": "术士",
+  "clause_boundaries": {
+    "telepathic-link": {
+      "source_excerpt": "*第1级畸变心智特性*\n你能够在自己与他人的意识中构建一道心灵感应的链接。以一个附赠动作，你可以选择30尺内一个你可见的生物创造这一链接。链接能使你与其能够通过心灵感应方式进行交流，但交流时，你们之间距离的里数不超过你的魅力调整值里（至少1里）。你们必须使用互相知晓的语言进行心灵交流，才能使其理解你通过心灵感应传达的话语。\n心灵感应的链接持续等同于你术士等级的分钟数。如果你陷入失能、死亡、或你使用此能力与其他生物构建链接时，这一链接会提前结束。",
+      "source_fragment": "42"
+    }
+  },
+  "clauses": [
+    {
+      "action_economy": "bonus_action",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+        "source": "authored_ir",
+        "source_boundary": "telepathic-link",
+        "source_excerpt": "*第1级畸变心智特性*\n你能够在自己与他人的意识中构建一道心灵感应的链接。以一个附赠动作，你可以选择30尺内一个你可见的生物创造这一链接。链接能使你与其能够通过心灵感应方式进行交流，但交流时，你们之间距离的里数不超过你的魅力调整值里（至少1里）。你们必须使用互相知晓的语言进行心灵交流，才能使其理解你通过心灵感应传达的话语。\n心灵感应的链接持续等同于你术士等级的分钟数。如果你陷入失能、死亡、或你使用此能力与其他生物构建链接时，这一链接会提前结束。"
+      },
+      "clause_id": "telepathic-link",
+      "conditions": [],
+      "duration": "one_minute",
+      "effects": [
+        {
+          "operator": "expose_authorized_target_information",
+          "parameters": {
+            "information_kind": "telepathic_link",
+            "range_ft": 30,
+            "visibility": "owner"
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "explicit_activation",
+      "visibility": "owner"
+    }
+  ],
+  "compatibility": {
+    "runtime_source": "feature_ir",
+    "source_fingerprint": "bb05fdaef266761765ca639770796cfc0caa722984e1c66a1b5ce1d8ac99f83d"
+  },
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "dependencies": [],
+  "evidence": [
+    "传心谈话: *第1级畸变心智特性*\n你能够在自己与他人的意识中构建一道心灵感应的链接。以一个附赠动作，你可以选择30尺内一个你可见的生物创造这一链接。链接能使你与其能够通过心灵感应方式进行交流，但交流时，你们之间距离的里数不超过你的魅力调整值里（至少1里）。你们必须使用互相知晓的语言进行心灵交流，才能使其理解你通过心灵感应传达的话语。\n心灵感应的链接持续等同于你术士等级的分钟数。如果你陷入失能、死亡、或你使用此能力与其他生物构建链接时，这一链接会提前结束。"
+  ],
+  "feature_id": "content.tashas-cauldron.round2.feature.aberrant-mind-telepathic-speech",
+  "kind": "feature",
+  "level": 1,
+  "localized_names": {
+    "zh-CN": "传心谈话"
+  },
+  "manual_decisions": {
+    "isolated_runtime_only": true,
+    "operator_mapping": "explicit_atom_mapping",
+    "unmodeled_source_terms": []
+  },
+  "namespace": "content.tashas-cauldron",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "source-7011166c19bd",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+  "reviewed_fields": [
+    "feature_id",
+    "source_record_id",
+    "source_name",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "content_kind",
+    "class_name",
+    "subclass_name",
+    "level",
+    "source_completeness",
+    "clauses",
+    "required_inputs",
+    "runtime_boundary"
+  ],
+  "ruleset_version": "2014",
+  "schema_version": "feature-ir-1",
+  "source_book": "塔莎的万事坩埚",
+  "source_completeness": "complete",
+  "source_evidence": {
+    "source_excerpt": "*第1级畸变心智特性*\n你能够在自己与他人的意识中构建一道心灵感应的链接。以一个附赠动作，你可以选择30尺内一个你可见的生物创造这一链接。链接能使你与其能够通过心灵感应方式进行交流，但交流时，你们之间距离的里数不超过你的魅力调整值里（至少1里）。你们必须使用互相知晓的语言进行心灵交流，才能使其理解你通过心灵感应传达的话语。\n心灵感应的链接持续等同于你术士等级的分钟数。如果你陷入失能、死亡、或你使用此能力与其他生物构建链接时，这一链接会提前结束。",
+    "source_fragment": "42",
+    "source_path": "塔莎的万事坩埚/玩家选项/职业/术士（TCE）/畸变心智.html",
+    "source_record_id": "e94f0c903dd025796d7a2d22"
+  },
+  "source_fingerprint": "bb05fdaef266761765ca639770796cfc0caa722984e1c66a1b5ce1d8ac99f83d",
+  "source_name": "传心谈话",
+  "source_path": "塔莎的万事坩埚/玩家选项/职业/术士（TCE）/畸变心智.html",
+  "source_record_id": "e94f0c903dd025796d7a2d22",
+  "source_trust": "authored_ir",
+  "subclass_name": "畸变心智"
+}

@@ -1,0 +1,106 @@
+{
+  "class_name": "圣武士",
+  "clause_boundaries": {
+    "damage-interception": {
+      "source_excerpt": "**圣武士\nPaladin**\n圣武士职业在本节中获得了新的特性与子职业选项。\n\n**可选职业特性 Optional Class\nFeatures**\n你可以在达到特定等级时获得玩家手册中描述的职业特性。这一部分提供了一些你作为圣武士的额外特性。与玩家手册中的特性不同的是，你不会自动获得这些特性。在你达到该部分描述的职业特性的需求等级且决定获得这些特性时，与你的DM先商量商量。这些特性能够被一个一个单独选走，这意味着你可以使用其中一些、全部或不使用它们。\n\n**额外圣武士法术 Addtional Paladin\nSpells**\n*第2级圣武士特性*\n下表中的法术扩充了圣武士在《玩家手册》中的法术列表。此列表以法术环数而非角色等级排序。以下法术均存在于玩家手册中，除非其标有星号*（这说明该法术来自本书的第三章）。《珊娜萨的万事指南》同样提供了更多可使用的新法术。\n\n| 2环 | 3环 | 5环 |\n| --- | --- | --- |\n| 遗体防腐 Gentle Repose | 魂灵环绕 Spirit Shroud* | 天界召唤术 Summon Celestial* |\n| 治疗祷言 Prayer of Healing |  |  |\n| 守护之链 Warding Bond |  |  |\n\n**战斗风格选项 Fighting Style\nOptions**\n*第2级圣武士特性*\n当你选择战斗风格时，以下战斗风格加入可选战斗风格列表。\n\n> **受祝福的勇士Blessed\n> Warrior**\n> 从牧师法术列表中选择两种戏法。你习得这些戏法，它们对你来说是圣武士法术，这些戏法的施法属性是魅力。当你提升此职业的等级时，你能够将一个已知戏法替换为牧师法术列表中的另一个戏法。\n>\n>\n>\n> **盲斗Blind Fighting**\n> 你获得10尺的盲视感官。在此范围内，你可以切实的看见非 完全身掩护total cover 的任何东西，即使你处于\n>  目盲Blinded 状态或是身处黑暗之中。不仅如此，你还可以看见此范围内的 隐形Invisible\n> 生物（除非对你而言该生物成功躲藏了起来）。\n>\n>\n>\n> **拦截Interception**\n> 当一个你可见的生物攻击距离你5尺以内你以外的目标时，你能以一个反应将目标受到的伤害减少1d10+你熟练加值（最多减到0伤害）。当你手持一面盾牌或者一把简单或军用武器时才能执行此反应。\n\n**神力掌控 Harness Divine\nPower**\n*第3级圣武士特性*\n你可以将一次引导神力次数转化为你法术的魔力。以一个附赠动作，你触碰你的圣徽进行祈祷，以此，你恢复一枚环阶 不超过你熟练加值的一半（向上取整）\n的法术位。\n你能使用这一特性一次，当你在此职业上达到更高等级后你可以使用更多次：7级后两次；15级三次。\n在你完成一次长休后，你恢复所有已消耗的使用次数。\n\n**替换武术 Martial Versatility**\n*第4级圣武士特性*\n每当你通过提升圣武士等级获得属性值提升时，你可以用另一个圣武士能够选择的战斗风格替换你当前的战斗风格。这一变化代表着你在战斗训练上重心的转移。",
+      "source_fragment": "blockquote:38"
+    }
+  },
+  "clauses": [
+    {
+      "action_economy": "reaction",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+        "source": "authored_ir",
+        "source_boundary": "damage-interception",
+        "source_excerpt": "**圣武士\nPaladin**\n圣武士职业在本节中获得了新的特性与子职业选项。\n\n**可选职业特性 Optional Class\nFeatures**\n你可以在达到特定等级时获得玩家手册中描述的职业特性。这一部分提供了一些你作为圣武士的额外特性。与玩家手册中的特性不同的是，你不会自动获得这些特性。在你达到该部分描述的职业特性的需求等级且决定获得这些特性时，与你的DM先商量商量。这些特性能够被一个一个单独选走，这意味着你可以使用其中一些、全部或不使用它们。\n\n**额外圣武士法术 Addtional Paladin\nSpells**\n*第2级圣武士特性*\n下表中的法术扩充了圣武士在《玩家手册》中的法术列表。此列表以法术环数而非角色等级排序。以下法术均存在于玩家手册中，除非其标有星号*（这说明该法术来自本书的第三章）。《珊娜萨的万事指南》同样提供了更多可使用的新法术。\n\n| 2环 | 3环 | 5环 |\n| --- | --- | --- |\n| 遗体防腐 Gentle Repose | 魂灵环绕 Spirit Shroud* | 天界召唤术 Summon Celestial* |\n| 治疗祷言 Prayer of Healing |  |  |\n| 守护之链 Warding Bond |  |  |\n\n**战斗风格选项 Fighting Style\nOptions**\n*第2级圣武士特性*\n当你选择战斗风格时，以下战斗风格加入可选战斗风格列表。\n\n> **受祝福的勇士Blessed\n> Warrior**\n> 从牧师法术列表中选择两种戏法。你习得这些戏法，它们对你来说是圣武士法术，这些戏法的施法属性是魅力。当你提升此职业的等级时，你能够将一个已知戏法替换为牧师法术列表中的另一个戏法。\n>\n>\n>\n> **盲斗Blind Fighting**\n> 你获得10尺的盲视感官。在此范围内，你可以切实的看见非 完全身掩护total cover 的任何东西，即使你处于\n>  目盲Blinded 状态或是身处黑暗之中。不仅如此，你还可以看见此范围内的 隐形Invisible\n> 生物（除非对你而言该生物成功躲藏了起来）。\n>\n>\n>\n> **拦截Interception**\n> 当一个你可见的生物攻击距离你5尺以内你以外的目标时，你能以一个反应将目标受到的伤害减少1d10+你熟练加值（最多减到0伤害）。当你手持一面盾牌或者一把简单或军用武器时才能执行此反应。\n\n**神力掌控 Harness Divine\nPower**\n*第3级圣武士特性*\n你可以将一次引导神力次数转化为你法术的魔力。以一个附赠动作，你触碰你的圣徽进行祈祷，以此，你恢复一枚环阶 不超过你熟练加值的一半（向上取整）\n的法术位。\n你能使用这一特性一次，当你在此职业上达到更高等级后你可以使用更多次：7级后两次；15级三次。\n在你完成一次长休后，你恢复所有已消耗的使用次数。\n\n**替换武术 Martial Versatility**\n*第4级圣武士特性*\n每当你通过提升圣武士等级获得属性值提升时，你可以用另一个圣武士能够选择的战斗风格替换你当前的战斗风格。这一变化代表着你在战斗训练上重心的转移。"
+      },
+      "clause_id": "damage-interception",
+      "conditions": [],
+      "duration": "current_turn",
+      "effects": [
+        {
+          "operator": "create_reaction_window",
+          "parameters": {
+            "expires": "current_turn",
+            "target_policy": {
+              "mode": "ally_within_5_feet"
+            },
+            "window_kind": "damage_reduction"
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "damage_before_apply",
+      "visibility": "owner"
+    }
+  ],
+  "compatibility": {
+    "runtime_source": "feature_ir",
+    "source_fingerprint": "e1195ccbd5173abc450a0cb3e52b67c29c0feb697cd99cd97f5b393ad777070e"
+  },
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "dependencies": [],
+  "evidence": [
+    "拦截: **圣武士\nPaladin**\n圣武士职业在本节中获得了新的特性与子职业选项。\n\n**可选职业特性 Optional Class\nFeatures**\n你可以在达到特定等级时获得玩家手册中描述的职业特性。这一部分提供了一些你作为圣武士的额外特性。与玩家手册中的特性不同的是，你不会自动获得这些特性。在你达到该部分描述的职业特性的需求等级且决定获得这些特性时，与你的DM先商量商量。这些特性能够被一个一个单独选走，这意味着你可以使用其中一些、全部或不使用它们。\n\n**额外圣武士法术 Addtional Paladin\nSpells**\n*第2级圣武士特性*\n下表中的法术扩充了圣武士在《玩家手册》中的法术列表。此列表以法术环数而非角色等级排序。以下法术均存在于玩家手册中，除非其标有星号*（这说明该法术来自本书的第三章）。《珊娜萨的万事指南》同样提供了更多可使用的新法术。\n\n| 2环 | 3环 | 5环 |\n| --- | --- | --- |\n| 遗体防腐 Gentle Repose | 魂灵环绕 Spirit Shroud* | 天界召唤术 Summon Celestial* |\n| 治疗祷言 Prayer of Healing |  |  |\n| 守护之链 Warding Bond |  |  |\n\n**战斗风格选项 Fighting Style\nOptions**\n*第2级圣武士特性*\n当你选择战斗风格时，以下战斗风格加入可选战斗风格列表。\n\n> **受祝福的勇士Blessed\n> Warrior**\n> 从牧师法术列表中选择两种戏法。你习得这些戏法，它们对你来说是圣武士法术，这些戏法的施法属性是魅力。当你提升此职业的等级时，你能够将一个已知戏法替换为牧师法术列表中的另一个戏法。\n>\n>\n>\n> **盲斗Blind Fighting**\n> 你获得10尺的盲视感官。在此范围内，你可以切实的看见非 完全身掩护total cover 的任何东西，即使你处于\n>  目盲Blinded 状态或是身处黑暗之中。不仅如此，你还可以看见此范围内的 隐形Invisible\n> 生物（除非对你而言该生物成功躲藏了起来）。\n>\n>\n>\n> **拦截Interception**\n> 当一个你可见的生物攻击距离你5尺以内你以外的目标时，你能以一个反应将目标受到的伤害减少1d10+你熟练加值（最多减到0伤害）。当你手持一面盾牌或者一把简单或军用武器时才能执行此反应。\n\n**神力掌控 Harness Divine\nPower**\n*第3级圣武士特性*\n你可以将一次引导神力次数转化为你法术的魔力。以一个附赠动作，你触碰你的圣徽进行祈祷，以此，你恢复一枚环阶 不超过你熟练加值的一半（向上取整）\n的法术位。\n你能使用这一特性一次，当你在此职业上达到更高等级后你可以使用更多次：7级后两次；15"
+  ],
+  "feature_id": "content.tashas-cauldron.round2.feature.paladin-interception",
+  "kind": "feature",
+  "level": null,
+  "localized_names": {
+    "zh-CN": "拦截"
+  },
+  "manual_decisions": {
+    "isolated_runtime_only": true,
+    "operator_mapping": "explicit_atom_mapping",
+    "unmodeled_source_terms": []
+  },
+  "namespace": "content.tashas-cauldron",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "source-7011166c19bd",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+  "reviewed_fields": [
+    "feature_id",
+    "source_record_id",
+    "source_name",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "content_kind",
+    "class_name",
+    "subclass_name",
+    "level",
+    "source_completeness",
+    "clauses",
+    "required_inputs",
+    "runtime_boundary"
+  ],
+  "ruleset_version": "2014",
+  "schema_version": "feature-ir-1",
+  "source_book": "塔莎的万事坩埚",
+  "source_completeness": "complete",
+  "source_evidence": {
+    "source_excerpt": "**圣武士\nPaladin**\n圣武士职业在本节中获得了新的特性与子职业选项。\n\n**可选职业特性 Optional Class\nFeatures**\n你可以在达到特定等级时获得玩家手册中描述的职业特性。这一部分提供了一些你作为圣武士的额外特性。与玩家手册中的特性不同的是，你不会自动获得这些特性。在你达到该部分描述的职业特性的需求等级且决定获得这些特性时，与你的DM先商量商量。这些特性能够被一个一个单独选走，这意味着你可以使用其中一些、全部或不使用它们。\n\n**额外圣武士法术 Addtional Paladin\nSpells**\n*第2级圣武士特性*\n下表中的法术扩充了圣武士在《玩家手册》中的法术列表。此列表以法术环数而非角色等级排序。以下法术均存在于玩家手册中，除非其标有星号*（这说明该法术来自本书的第三章）。《珊娜萨的万事指南》同样提供了更多可使用的新法术。\n\n| 2环 | 3环 | 5环 |\n| --- | --- | --- |\n| 遗体防腐 Gentle Repose | 魂灵环绕 Spirit Shroud* | 天界召唤术 Summon Celestial* |\n| 治疗祷言 Prayer of Healing |  |  |\n| 守护之链 Warding Bond |  |  |\n\n**战斗风格选项 Fighting Style\nOptions**\n*第2级圣武士特性*\n当你选择战斗风格时，以下战斗风格加入可选战斗风格列表。\n\n> **受祝福的勇士Blessed\n> Warrior**\n> 从牧师法术列表中选择两种戏法。你习得这些戏法，它们对你来说是圣武士法术，这些戏法的施法属性是魅力。当你提升此职业的等级时，你能够将一个已知戏法替换为牧师法术列表中的另一个戏法。\n>\n>\n>\n> **盲斗Blind Fighting**\n> 你获得10尺的盲视感官。在此范围内，你可以切实的看见非 完全身掩护total cover 的任何东西，即使你处于\n>  目盲Blinded 状态或是身处黑暗之中。不仅如此，你还可以看见此范围内的 隐形Invisible\n> 生物（除非对你而言该生物成功躲藏了起来）。\n>\n>\n>\n> **拦截Interception**\n> 当一个你可见的生物攻击距离你5尺以内你以外的目标时，你能以一个反应将目标受到的伤害减少1d10+你熟练加值（最多减到0伤害）。当你手持一面盾牌或者一把简单或军用武器时才能执行此反应。\n\n**神力掌控 Harness Divine\nPower**\n*第3级圣武士特性*\n你可以将一次引导神力次数转化为你法术的魔力。以一个附赠动作，你触碰你的圣徽进行祈祷，以此，你恢复一枚环阶 不超过你熟练加值的一半（向上取整）\n的法术位。\n你能使用这一特性一次，当你在此职业上达到更高等级后你可以使用更多次：7级后两次；15级三次。\n在你完成一次长休后，你恢复所有已消耗的使用次数。\n\n**替换武术 Martial Versatility**\n*第4级圣武士特性*\n每当你通过提升圣武士等级获得属性值提升时，你可以用另一个圣武士能够选择的战斗风格替换你当前的战斗风格。这一变化代表着你在战斗训练上重心的转移。",
+    "source_fragment": "blockquote:38",
+    "source_path": "塔莎的万事坩埚/玩家选项/职业/圣武士（TCE）.html",
+    "source_record_id": "28894d328bca545cc65f7eb9"
+  },
+  "source_fingerprint": "e1195ccbd5173abc450a0cb3e52b67c29c0feb697cd99cd97f5b393ad777070e",
+  "source_name": "拦截",
+  "source_path": "塔莎的万事坩埚/玩家选项/职业/圣武士（TCE）.html",
+  "source_record_id": "28894d328bca545cc65f7eb9",
+  "source_trust": "authored_ir",
+  "subclass_name": null
+}

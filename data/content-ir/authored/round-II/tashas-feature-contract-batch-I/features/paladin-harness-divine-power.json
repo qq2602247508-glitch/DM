@@ -1,0 +1,105 @@
+{
+  "class_name": "圣武士",
+  "clause_boundaries": {
+    "spell-slot-exchange": {
+      "source_excerpt": "*第3级圣武士特性*\n你可以将一次引导神力次数转化为你法术的魔力。以一个附赠动作，你触碰你的圣徽进行祈祷，以此，你恢复一枚环阶 不超过你熟练加值的一半（向上取整）\n的法术位。\n你能使用这一特性一次，当你在此职业上达到更高等级后你可以使用更多次：7级后两次；15级三次。\n在你完成一次长休后，你恢复所有已消耗的使用次数。",
+      "source_fragment": "41"
+    }
+  },
+  "clauses": [
+    {
+      "action_economy": "bonus_action",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+        "source": "authored_ir",
+        "source_boundary": "spell-slot-exchange",
+        "source_excerpt": "*第3级圣武士特性*\n你可以将一次引导神力次数转化为你法术的魔力。以一个附赠动作，你触碰你的圣徽进行祈祷，以此，你恢复一枚环阶 不超过你熟练加值的一半（向上取整）\n的法术位。\n你能使用这一特性一次，当你在此职业上达到更高等级后你可以使用更多次：7级后两次；15级三次。\n在你完成一次长休后，你恢复所有已消耗的使用次数。"
+      },
+      "clause_id": "spell-slot-exchange",
+      "conditions": [],
+      "duration": "current_turn",
+      "effects": [
+        {
+          "operator": "exchange_resource",
+          "parameters": {
+            "amount_source": "half_proficiency_bonus_rounded_up",
+            "from_resource_key": "channel_divinity",
+            "operation": "exchange",
+            "to_resource_key": "spell_slot"
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "explicit_activation",
+      "visibility": "owner"
+    }
+  ],
+  "compatibility": {
+    "runtime_source": "feature_ir",
+    "source_fingerprint": "e340ad42c5b8cb10573dab8b8f71d22f43ffe1645d418ff548b9f148e8ef3dab"
+  },
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "dependencies": [],
+  "evidence": [
+    "神力掌控: *第3级圣武士特性*\n你可以将一次引导神力次数转化为你法术的魔力。以一个附赠动作，你触碰你的圣徽进行祈祷，以此，你恢复一枚环阶 不超过你熟练加值的一半（向上取整）\n的法术位。\n你能使用这一特性一次，当你在此职业上达到更高等级后你可以使用更多次：7级后两次；15级三次。\n在你完成一次长休后，你恢复所有已消耗的使用次数。"
+  ],
+  "feature_id": "content.tashas-cauldron.round2.feature.paladin-harness-divine-power",
+  "kind": "feature",
+  "level": 3,
+  "localized_names": {
+    "zh-CN": "神力掌控"
+  },
+  "manual_decisions": {
+    "isolated_runtime_only": true,
+    "operator_mapping": "explicit_atom_mapping",
+    "unmodeled_source_terms": []
+  },
+  "namespace": "content.tashas-cauldron",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "source-7011166c19bd",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+  "reviewed_fields": [
+    "feature_id",
+    "source_record_id",
+    "source_name",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "content_kind",
+    "class_name",
+    "subclass_name",
+    "level",
+    "source_completeness",
+    "clauses",
+    "required_inputs",
+    "runtime_boundary"
+  ],
+  "ruleset_version": "2014",
+  "schema_version": "feature-ir-1",
+  "source_book": "塔莎的万事坩埚",
+  "source_completeness": "complete",
+  "source_evidence": {
+    "source_excerpt": "*第3级圣武士特性*\n你可以将一次引导神力次数转化为你法术的魔力。以一个附赠动作，你触碰你的圣徽进行祈祷，以此，你恢复一枚环阶 不超过你熟练加值的一半（向上取整）\n的法术位。\n你能使用这一特性一次，当你在此职业上达到更高等级后你可以使用更多次：7级后两次；15级三次。\n在你完成一次长休后，你恢复所有已消耗的使用次数。",
+    "source_fragment": "41",
+    "source_path": "塔莎的万事坩埚/玩家选项/职业/圣武士（TCE）.html",
+    "source_record_id": "28894d328bca545cc65f7eb9"
+  },
+  "source_fingerprint": "e340ad42c5b8cb10573dab8b8f71d22f43ffe1645d418ff548b9f148e8ef3dab",
+  "source_name": "神力掌控",
+  "source_path": "塔莎的万事坩埚/玩家选项/职业/圣武士（TCE）.html",
+  "source_record_id": "28894d328bca545cc65f7eb9",
+  "source_trust": "authored_ir",
+  "subclass_name": null
+}

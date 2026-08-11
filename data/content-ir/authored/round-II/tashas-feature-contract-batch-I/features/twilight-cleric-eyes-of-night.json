@@ -1,0 +1,143 @@
+{
+  "class_name": "牧师",
+  "clause_boundaries": {
+    "darkvision": {
+      "source_excerpt": "*第1级暮光领域特性*\n你可以看穿最深邃的幽域。你获得300尺的黑暗视觉（或扩展到300尺），在这一范围内，你能够将微光光照视为等同于明亮光照，而在黑暗中则视为等同于微光光照。以一个动作，你可以魔法性的将这个特性分享给你10尺内最多等同于你感知调整值数量（最少1名生物）的可见自愿生物。共享的黑暗视觉持续1小时。一旦你使用此特性后，直到你完成一次长休为止你都不能再次分享视觉，不过你也可以消耗一个任意环阶的法术位来再次分享视觉。",
+      "source_fragment": "41"
+    },
+    "share-darkvision": {
+      "source_excerpt": "*第1级暮光领域特性*\n你可以看穿最深邃的幽域。你获得300尺的黑暗视觉（或扩展到300尺），在这一范围内，你能够将微光光照视为等同于明亮光照，而在黑暗中则视为等同于微光光照。以一个动作，你可以魔法性的将这个特性分享给你10尺内最多等同于你感知调整值数量（最少1名生物）的可见自愿生物。共享的黑暗视觉持续1小时。一旦你使用此特性后，直到你完成一次长休为止你都不能再次分享视觉，不过你也可以消耗一个任意环阶的法术位来再次分享视觉。",
+      "source_fragment": "41"
+    }
+  },
+  "clauses": [
+    {
+      "action_economy": "none",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+        "source": "authored_ir",
+        "source_boundary": "darkvision",
+        "source_excerpt": "*第1级暮光领域特性*\n你可以看穿最深邃的幽域。你获得300尺的黑暗视觉（或扩展到300尺），在这一范围内，你能够将微光光照视为等同于明亮光照，而在黑暗中则视为等同于微光光照。以一个动作，你可以魔法性的将这个特性分享给你10尺内最多等同于你感知调整值数量（最少1名生物）的可见自愿生物。共享的黑暗视觉持续1小时。一旦你使用此特性后，直到你完成一次长休为止你都不能再次分享视觉，不过你也可以消耗一个任意环阶的法术位来再次分享视觉。"
+      },
+      "clause_id": "darkvision",
+      "conditions": [],
+      "duration": "advancement_persistent",
+      "effects": [
+        {
+          "operator": "grant_sight_mode",
+          "parameters": {
+            "mode": "darkvision",
+            "range_source": "twilight_domain_darkvision"
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "advancement_confirmed",
+      "visibility": "owner"
+    },
+    {
+      "action_economy": "none",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+        "source": "authored_ir",
+        "source_boundary": "share-darkvision",
+        "source_excerpt": "*第1级暮光领域特性*\n你可以看穿最深邃的幽域。你获得300尺的黑暗视觉（或扩展到300尺），在这一范围内，你能够将微光光照视为等同于明亮光照，而在黑暗中则视为等同于微光光照。以一个动作，你可以魔法性的将这个特性分享给你10尺内最多等同于你感知调整值数量（最少1名生物）的可见自愿生物。共享的黑暗视觉持续1小时。一旦你使用此特性后，直到你完成一次长休为止你都不能再次分享视觉，不过你也可以消耗一个任意环阶的法术位来再次分享视觉。"
+      },
+      "clause_id": "share-darkvision",
+      "conditions": [],
+      "duration": "one_hour",
+      "effects": [
+        {
+          "operator": "expose_authorized_target_information",
+          "parameters": {
+            "information_kind": "shared_darkvision",
+            "range_ft": 300,
+            "visibility": "owner"
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "explicit_activation",
+      "visibility": "owner"
+    }
+  ],
+  "compatibility": {
+    "runtime_source": "feature_ir",
+    "source_fingerprint": "3e93325df3b95c00b70e62e4858111dd3f3086ec7e3ffccfef8db7ae612b4eb7"
+  },
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "dependencies": [],
+  "evidence": [
+    "黑夜明目: *第1级暮光领域特性*\n你可以看穿最深邃的幽域。你获得300尺的黑暗视觉（或扩展到300尺），在这一范围内，你能够将微光光照视为等同于明亮光照，而在黑暗中则视为等同于微光光照。以一个动作，你可以魔法性的将这个特性分享给你10尺内最多等同于你感知调整值数量（最少1名生物）的可见自愿生物。共享的黑暗视觉持续1小时。一旦你使用此特性后，直到你完成一次长休为止你都不能再次分享视觉，不过你也可以消耗一个任意环阶的法术位来再次分享视觉。"
+  ],
+  "feature_id": "content.tashas-cauldron.round2.feature.twilight-cleric-eyes-of-night",
+  "kind": "feature",
+  "level": 1,
+  "localized_names": {
+    "zh-CN": "黑夜明目"
+  },
+  "manual_decisions": {
+    "isolated_runtime_only": true,
+    "operator_mapping": "explicit_atom_mapping",
+    "unmodeled_source_terms": []
+  },
+  "namespace": "content.tashas-cauldron",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "source-7011166c19bd",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+  "reviewed_fields": [
+    "feature_id",
+    "source_record_id",
+    "source_name",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "content_kind",
+    "class_name",
+    "subclass_name",
+    "level",
+    "source_completeness",
+    "clauses",
+    "required_inputs",
+    "runtime_boundary"
+  ],
+  "ruleset_version": "2014",
+  "schema_version": "feature-ir-1",
+  "source_book": "塔莎的万事坩埚",
+  "source_completeness": "complete",
+  "source_evidence": {
+    "source_excerpt": "*第1级暮光领域特性*\n你可以看穿最深邃的幽域。你获得300尺的黑暗视觉（或扩展到300尺），在这一范围内，你能够将微光光照视为等同于明亮光照，而在黑暗中则视为等同于微光光照。以一个动作，你可以魔法性的将这个特性分享给你10尺内最多等同于你感知调整值数量（最少1名生物）的可见自愿生物。共享的黑暗视觉持续1小时。一旦你使用此特性后，直到你完成一次长休为止你都不能再次分享视觉，不过你也可以消耗一个任意环阶的法术位来再次分享视觉。",
+    "source_fragment": "41",
+    "source_path": "塔莎的万事坩埚/玩家选项/职业/牧师（TCE）/暮光领域.html",
+    "source_record_id": "63d0abe27f6ad161f0820593"
+  },
+  "source_fingerprint": "3e93325df3b95c00b70e62e4858111dd3f3086ec7e3ffccfef8db7ae612b4eb7",
+  "source_name": "黑夜明目",
+  "source_path": "塔莎的万事坩埚/玩家选项/职业/牧师（TCE）/暮光领域.html",
+  "source_record_id": "63d0abe27f6ad161f0820593",
+  "source_trust": "authored_ir",
+  "subclass_name": "暮光领域"
+}

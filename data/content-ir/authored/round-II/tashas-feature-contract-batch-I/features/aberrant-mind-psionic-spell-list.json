@@ -1,0 +1,186 @@
+{
+  "class_name": "术士",
+  "clause_boundaries": {
+    "known-spells": {
+      "source_excerpt": "*第1级畸变心智特性*\n当你达到相应的术士等级时，你习得下表中的额外法术，如下方灵能法术表所示的那样。这些法术对你是术士法术，但不计入你术士已知法术数量。\n每当你提升术士等级时，你可以选择一个环数相同的新法术来替换你因此特性习得的一个法术。该法术必须为术士、魔契师、或法师法术列表中的一个预言学派或惑控学派法术。",
+      "source_fragment": "22"
+    }
+  },
+  "clauses": [
+    {
+      "action_economy": "none",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+        "source": "authored_ir",
+        "source_boundary": "known-spells",
+        "source_excerpt": "*第1级畸变心智特性*\n当你达到相应的术士等级时，你习得下表中的额外法术，如下方灵能法术表所示的那样。这些法术对你是术士法术，但不计入你术士已知法术数量。\n每当你提升术士等级时，你可以选择一个环数相同的新法术来替换你因此特性习得的一个法术。该法术必须为术士、魔契师、或法师法术列表中的一个预言学派或惑控学派法术。"
+      },
+      "clause_id": "known-spells",
+      "conditions": [],
+      "duration": "advancement_persistent",
+      "effects": [
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "charisma",
+            "grant_mode": "known",
+            "source_class": "sorcerer",
+            "spell_id": "arms_of_hadar"
+          }
+        },
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "charisma",
+            "grant_mode": "known",
+            "source_class": "sorcerer",
+            "spell_id": "dissonant_whispers"
+          }
+        },
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "charisma",
+            "grant_mode": "known",
+            "source_class": "sorcerer",
+            "spell_id": "mind_spike"
+          }
+        },
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "charisma",
+            "grant_mode": "known",
+            "source_class": "sorcerer",
+            "spell_id": "calm_emotions"
+          }
+        },
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "charisma",
+            "grant_mode": "known",
+            "source_class": "sorcerer",
+            "spell_id": "detect_thoughts"
+          }
+        },
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "charisma",
+            "grant_mode": "known",
+            "source_class": "sorcerer",
+            "spell_id": "hunger_of_hadar"
+          }
+        },
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "charisma",
+            "grant_mode": "known",
+            "source_class": "sorcerer",
+            "spell_id": "sending"
+          }
+        },
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "charisma",
+            "grant_mode": "known",
+            "source_class": "sorcerer",
+            "spell_id": "evards_black_tentacles"
+          }
+        },
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "charisma",
+            "grant_mode": "known",
+            "source_class": "sorcerer",
+            "spell_id": "summon_aberration"
+          }
+        },
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "charisma",
+            "grant_mode": "known",
+            "source_class": "sorcerer",
+            "spell_id": "telekinesis"
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "advancement_confirmed",
+      "visibility": "owner"
+    }
+  ],
+  "compatibility": {
+    "runtime_source": "feature_ir",
+    "source_fingerprint": "db31fec9d3bc16dcb820716e3757b8abfd701c57d52a03652da1442c284e4911"
+  },
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "dependencies": [],
+  "evidence": [
+    "灵能法术: *第1级畸变心智特性*\n当你达到相应的术士等级时，你习得下表中的额外法术，如下方灵能法术表所示的那样。这些法术对你是术士法术，但不计入你术士已知法术数量。\n每当你提升术士等级时，你可以选择一个环数相同的新法术来替换你因此特性习得的一个法术。该法术必须为术士、魔契师、或法师法术列表中的一个预言学派或惑控学派法术。"
+  ],
+  "feature_id": "content.tashas-cauldron.round2.feature.aberrant-mind-psionic-spell-list",
+  "kind": "feature",
+  "level": 1,
+  "localized_names": {
+    "zh-CN": "灵能法术"
+  },
+  "manual_decisions": {
+    "isolated_runtime_only": true,
+    "operator_mapping": "explicit_atom_mapping",
+    "unmodeled_source_terms": []
+  },
+  "namespace": "content.tashas-cauldron",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "source-7011166c19bd",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+  "reviewed_fields": [
+    "feature_id",
+    "source_record_id",
+    "source_name",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "content_kind",
+    "class_name",
+    "subclass_name",
+    "level",
+    "source_completeness",
+    "clauses",
+    "required_inputs",
+    "runtime_boundary"
+  ],
+  "ruleset_version": "2014",
+  "schema_version": "feature-ir-1",
+  "source_book": "塔莎的万事坩埚",
+  "source_completeness": "complete",
+  "source_evidence": {
+    "source_excerpt": "*第1级畸变心智特性*\n当你达到相应的术士等级时，你习得下表中的额外法术，如下方灵能法术表所示的那样。这些法术对你是术士法术，但不计入你术士已知法术数量。\n每当你提升术士等级时，你可以选择一个环数相同的新法术来替换你因此特性习得的一个法术。该法术必须为术士、魔契师、或法师法术列表中的一个预言学派或惑控学派法术。",
+    "source_fragment": "22",
+    "source_path": "塔莎的万事坩埚/玩家选项/职业/术士（TCE）/畸变心智.html",
+    "source_record_id": "e94f0c903dd025796d7a2d22"
+  },
+  "source_fingerprint": "db31fec9d3bc16dcb820716e3757b8abfd701c57d52a03652da1442c284e4911",
+  "source_name": "灵能法术",
+  "source_path": "塔莎的万事坩埚/玩家选项/职业/术士（TCE）/畸变心智.html",
+  "source_record_id": "e94f0c903dd025796d7a2d22",
+  "source_trust": "authored_ir",
+  "subclass_name": "畸变心智"
+}

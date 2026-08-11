@@ -1,0 +1,150 @@
+{
+  "class_name": "游侠",
+  "clause_boundaries": {
+    "known-spells": {
+      "source_excerpt": "*第3级集群牧者特性*\n若你之前还未习得*法师之手mage hand*这个戏法，你习得之。当你施展法师之手时，那只手会以你的集群自然精魂形态出现。\n此外，当你到达指定游侠等级时，你会习得一个额外的1环或更高环阶的法术，如集群牧者法术列表所示。这些法术对你视为游侠法术，且不计入你的已知法术总数中。",
+      "source_fragment": "28"
+    }
+  },
+  "clauses": [
+    {
+      "action_economy": "none",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+        "source": "authored_ir",
+        "source_boundary": "known-spells",
+        "source_excerpt": "*第3级集群牧者特性*\n若你之前还未习得*法师之手mage hand*这个戏法，你习得之。当你施展法师之手时，那只手会以你的集群自然精魂形态出现。\n此外，当你到达指定游侠等级时，你会习得一个额外的1环或更高环阶的法术，如集群牧者法术列表所示。这些法术对你视为游侠法术，且不计入你的已知法术总数中。"
+      },
+      "clause_id": "known-spells",
+      "conditions": [],
+      "duration": "advancement_persistent",
+      "effects": [
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "wisdom",
+            "grant_mode": "known",
+            "source_class": "ranger",
+            "spell_id": "mage_hand"
+          }
+        },
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "wisdom",
+            "grant_mode": "known",
+            "source_class": "ranger",
+            "spell_id": "faerie_fire"
+          }
+        },
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "wisdom",
+            "grant_mode": "known",
+            "source_class": "ranger",
+            "spell_id": "web"
+          }
+        },
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "wisdom",
+            "grant_mode": "known",
+            "source_class": "ranger",
+            "spell_id": "gaseous_form"
+          }
+        },
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "wisdom",
+            "grant_mode": "known",
+            "source_class": "ranger",
+            "spell_id": "arcane_eye"
+          }
+        },
+        {
+          "operator": "grant_spell",
+          "parameters": {
+            "casting_ability": "wisdom",
+            "grant_mode": "known",
+            "source_class": "ranger",
+            "spell_id": "insect_plague"
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "advancement_confirmed",
+      "visibility": "owner"
+    }
+  ],
+  "compatibility": {
+    "runtime_source": "feature_ir",
+    "source_fingerprint": "b041fc5c2ffc39fb41a13028f08dac2e6526050fecd6e848c5d21964a2121f82"
+  },
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "dependencies": [],
+  "evidence": [
+    "集群牧者魔法: *第3级集群牧者特性*\n若你之前还未习得*法师之手mage hand*这个戏法，你习得之。当你施展法师之手时，那只手会以你的集群自然精魂形态出现。\n此外，当你到达指定游侠等级时，你会习得一个额外的1环或更高环阶的法术，如集群牧者法术列表所示。这些法术对你视为游侠法术，且不计入你的已知法术总数中。"
+  ],
+  "feature_id": "content.tashas-cauldron.round2.feature.swarmkeeper-spell-list",
+  "kind": "feature",
+  "level": 3,
+  "localized_names": {
+    "zh-CN": "集群牧者魔法"
+  },
+  "manual_decisions": {
+    "isolated_runtime_only": true,
+    "operator_mapping": "explicit_atom_mapping",
+    "unmodeled_source_terms": []
+  },
+  "namespace": "content.tashas-cauldron",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "source-7011166c19bd",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+  "reviewed_fields": [
+    "feature_id",
+    "source_record_id",
+    "source_name",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "content_kind",
+    "class_name",
+    "subclass_name",
+    "level",
+    "source_completeness",
+    "clauses",
+    "required_inputs",
+    "runtime_boundary"
+  ],
+  "ruleset_version": "2014",
+  "schema_version": "feature-ir-1",
+  "source_book": "塔莎的万事坩埚",
+  "source_completeness": "complete",
+  "source_evidence": {
+    "source_excerpt": "*第3级集群牧者特性*\n若你之前还未习得*法师之手mage hand*这个戏法，你习得之。当你施展法师之手时，那只手会以你的集群自然精魂形态出现。\n此外，当你到达指定游侠等级时，你会习得一个额外的1环或更高环阶的法术，如集群牧者法术列表所示。这些法术对你视为游侠法术，且不计入你的已知法术总数中。",
+    "source_fragment": "28",
+    "source_path": "塔莎的万事坩埚/玩家选项/职业/游侠（TCE）/集群牧者.html",
+    "source_record_id": "f8e42149abd618bfa3d0eac1"
+  },
+  "source_fingerprint": "b041fc5c2ffc39fb41a13028f08dac2e6526050fecd6e848c5d21964a2121f82",
+  "source_name": "集群牧者魔法",
+  "source_path": "塔莎的万事坩埚/玩家选项/职业/游侠（TCE）/集群牧者.html",
+  "source_record_id": "f8e42149abd618bfa3d0eac1",
+  "source_trust": "authored_ir",
+  "subclass_name": "集群牧者"
+}

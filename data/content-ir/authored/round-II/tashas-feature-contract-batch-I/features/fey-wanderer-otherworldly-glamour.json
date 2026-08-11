@@ -1,0 +1,155 @@
+{
+  "class_name": "游侠",
+  "clause_boundaries": {
+    "skill-proficiency": {
+      "source_excerpt": "*第3级妖精漫游者特性\n*你的妖精本质给予了你超脱凡俗的魅惑力。因此，每当你进行一次魅力检定时，你都可以在那次检定中获得等同于你的感知调整值的加值（至少+1）。\n另外，你获得下列技能之一的熟练项（由你选择）：欺瞒、表演、或游说。",
+      "source_fragment": "51"
+    },
+    "wisdom-check-bonus": {
+      "source_excerpt": "*第3级妖精漫游者特性\n*你的妖精本质给予了你超脱凡俗的魅惑力。因此，每当你进行一次魅力检定时，你都可以在那次检定中获得等同于你的感知调整值的加值（至少+1）。\n另外，你获得下列技能之一的熟练项（由你选择）：欺瞒、表演、或游说。",
+      "source_fragment": "51"
+    }
+  },
+  "clauses": [
+    {
+      "action_economy": "none",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+        "source": "authored_ir",
+        "source_boundary": "skill-proficiency",
+        "source_excerpt": "*第3级妖精漫游者特性\n*你的妖精本质给予了你超脱凡俗的魅惑力。因此，每当你进行一次魅力检定时，你都可以在那次检定中获得等同于你的感知调整值的加值（至少+1）。\n另外，你获得下列技能之一的熟练项（由你选择）：欺瞒、表演、或游说。"
+      },
+      "clause_id": "skill-proficiency",
+      "conditions": [],
+      "duration": "advancement_persistent",
+      "effects": [
+        {
+          "operator": "grant_proficiency",
+          "parameters": {
+            "asset_id": "chosen_social_skill",
+            "operation": "grant",
+            "proficiency_kind": "skill"
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [
+        {
+          "key": "chosen_social_skill",
+          "kind": "choice",
+          "parameters": {
+            "duplicate_policy": "forbid",
+            "options_source": "deception_performance_persuasion"
+          }
+        }
+      ],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "advancement_confirmed",
+      "visibility": "owner"
+    },
+    {
+      "action_economy": "none",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+        "source": "authored_ir",
+        "source_boundary": "wisdom-check-bonus",
+        "source_excerpt": "*第3级妖精漫游者特性\n*你的妖精本质给予了你超脱凡俗的魅惑力。因此，每当你进行一次魅力检定时，你都可以在那次检定中获得等同于你的感知调整值的加值（至少+1）。\n另外，你获得下列技能之一的熟练项（由你选择）：欺瞒、表演、或游说。"
+      },
+      "clause_id": "wisdom-check-bonus",
+      "conditions": [],
+      "duration": "advancement_persistent",
+      "effects": [
+        {
+          "operator": "grant_passive_modifier",
+          "parameters": {
+            "applies_when": "social_check",
+            "operation": "add",
+            "scope": "self",
+            "stat": "charisma_check",
+            "value_source": "wisdom_modifier"
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "advancement_confirmed",
+      "visibility": "owner"
+    }
+  ],
+  "compatibility": {
+    "runtime_source": "feature_ir",
+    "source_fingerprint": "dc82c5d6a753d9625cf335d1f87905b24e6bebbd352ced98c0ffe54916128871"
+  },
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "dependencies": [],
+  "evidence": [
+    "妖冶娴都: *第3级妖精漫游者特性\n*你的妖精本质给予了你超脱凡俗的魅惑力。因此，每当你进行一次魅力检定时，你都可以在那次检定中获得等同于你的感知调整值的加值（至少+1）。\n另外，你获得下列技能之一的熟练项（由你选择）：欺瞒、表演、或游说。"
+  ],
+  "feature_id": "content.tashas-cauldron.round2.feature.fey-wanderer-otherworldly-glamour",
+  "kind": "feature",
+  "level": 3,
+  "localized_names": {
+    "zh-CN": "妖冶娴都"
+  },
+  "manual_decisions": {
+    "isolated_runtime_only": true,
+    "operator_mapping": "explicit_atom_mapping",
+    "unmodeled_source_terms": []
+  },
+  "namespace": "content.tashas-cauldron",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "source-7011166c19bd",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+  "reviewed_fields": [
+    "feature_id",
+    "source_record_id",
+    "source_name",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "content_kind",
+    "class_name",
+    "subclass_name",
+    "level",
+    "source_completeness",
+    "clauses",
+    "required_inputs",
+    "runtime_boundary"
+  ],
+  "ruleset_version": "2014",
+  "schema_version": "feature-ir-1",
+  "source_book": "塔莎的万事坩埚",
+  "source_completeness": "complete",
+  "source_evidence": {
+    "source_excerpt": "*第3级妖精漫游者特性\n*你的妖精本质给予了你超脱凡俗的魅惑力。因此，每当你进行一次魅力检定时，你都可以在那次检定中获得等同于你的感知调整值的加值（至少+1）。\n另外，你获得下列技能之一的熟练项（由你选择）：欺瞒、表演、或游说。",
+    "source_fragment": "51",
+    "source_path": "塔莎的万事坩埚/玩家选项/职业/游侠（TCE）/妖精漫游者.html",
+    "source_record_id": "6ac3dd8adf2acd63eeabf4ea"
+  },
+  "source_fingerprint": "dc82c5d6a753d9625cf335d1f87905b24e6bebbd352ced98c0ffe54916128871",
+  "source_name": "妖冶娴都",
+  "source_path": "塔莎的万事坩埚/玩家选项/职业/游侠（TCE）/妖精漫游者.html",
+  "source_record_id": "6ac3dd8adf2acd63eeabf4ea",
+  "source_trust": "authored_ir",
+  "subclass_name": "妖精漫游者"
+}

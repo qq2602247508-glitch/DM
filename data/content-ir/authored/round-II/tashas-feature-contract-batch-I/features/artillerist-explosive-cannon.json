@@ -1,0 +1,144 @@
+{
+  "class_name": "奇械师",
+  "clause_boundaries": {
+    "cannon-damage": {
+      "source_excerpt": "*第9级魔炮师特性\n*你制造的每一门奥法炮台都将拥有更大的破坏力：\n·所有炮台的伤害骰增加1d8。\n·如果你距离炮台不到60尺，你能以一个动作命令你的炮台自爆。这么做会摧毁炮台，并迫使每一个离它20尺以内的生物进行一次对抗你的法术豁免DC的敏捷豁免，若豁免失败，将受到3d8力场伤害，成功时只会受到一半伤害。",
+      "source_fragment": "68"
+    },
+    "detonate": {
+      "source_excerpt": "*第9级魔炮师特性\n*你制造的每一门奥法炮台都将拥有更大的破坏力：\n·所有炮台的伤害骰增加1d8。\n·如果你距离炮台不到60尺，你能以一个动作命令你的炮台自爆。这么做会摧毁炮台，并迫使每一个离它20尺以内的生物进行一次对抗你的法术豁免DC的敏捷豁免，若豁免失败，将受到3d8力场伤害，成功时只会受到一半伤害。",
+      "source_fragment": "68"
+    }
+  },
+  "clauses": [
+    {
+      "action_economy": "none",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+        "source": "authored_ir",
+        "source_boundary": "cannon-damage",
+        "source_excerpt": "*第9级魔炮师特性\n*你制造的每一门奥法炮台都将拥有更大的破坏力：\n·所有炮台的伤害骰增加1d8。\n·如果你距离炮台不到60尺，你能以一个动作命令你的炮台自爆。这么做会摧毁炮台，并迫使每一个离它20尺以内的生物进行一次对抗你的法术豁免DC的敏捷豁免，若豁免失败，将受到3d8力场伤害，成功时只会受到一半伤害。"
+      },
+      "clause_id": "cannon-damage",
+      "conditions": [],
+      "duration": "advancement_persistent",
+      "effects": [
+        {
+          "operator": "add_damage",
+          "parameters": {
+            "applies_when": "eldritch_cannon",
+            "damage_type": "force",
+            "formula": "1d8",
+            "source": "eldritch_cannon"
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "attack_hit",
+      "visibility": "owner"
+    },
+    {
+      "action_economy": "action",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+        "source": "authored_ir",
+        "source_boundary": "detonate",
+        "source_excerpt": "*第9级魔炮师特性\n*你制造的每一门奥法炮台都将拥有更大的破坏力：\n·所有炮台的伤害骰增加1d8。\n·如果你距离炮台不到60尺，你能以一个动作命令你的炮台自爆。这么做会摧毁炮台，并迫使每一个离它20尺以内的生物进行一次对抗你的法术豁免DC的敏捷豁免，若豁免失败，将受到3d8力场伤害，成功时只会受到一半伤害。"
+      },
+      "clause_id": "detonate",
+      "conditions": [],
+      "duration": "current_turn",
+      "effects": [
+        {
+          "operator": "activate_condition",
+          "parameters": {
+            "condition": "eldritch_cannon_detonation",
+            "duration": "current_turn"
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "explicit_activation",
+      "visibility": "owner"
+    }
+  ],
+  "compatibility": {
+    "runtime_source": "feature_ir",
+    "source_fingerprint": "6b015bff0dd2bdde035ef1d9c805409786a79abea38627c306344a2873854d16"
+  },
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "dependencies": [],
+  "evidence": [
+    "高爆炮台: *第9级魔炮师特性\n*你制造的每一门奥法炮台都将拥有更大的破坏力：\n·所有炮台的伤害骰增加1d8。\n·如果你距离炮台不到60尺，你能以一个动作命令你的炮台自爆。这么做会摧毁炮台，并迫使每一个离它20尺以内的生物进行一次对抗你的法术豁免DC的敏捷豁免，若豁免失败，将受到3d8力场伤害，成功时只会受到一半伤害。"
+  ],
+  "feature_id": "content.tashas-cauldron.round2.feature.artillerist-explosive-cannon",
+  "kind": "feature",
+  "level": 9,
+  "localized_names": {
+    "zh-CN": "高爆炮台"
+  },
+  "manual_decisions": {
+    "isolated_runtime_only": true,
+    "operator_mapping": "explicit_atom_mapping",
+    "unmodeled_source_terms": []
+  },
+  "namespace": "content.tashas-cauldron",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "source-7011166c19bd",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+  "reviewed_fields": [
+    "feature_id",
+    "source_record_id",
+    "source_name",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "content_kind",
+    "class_name",
+    "subclass_name",
+    "level",
+    "source_completeness",
+    "clauses",
+    "required_inputs",
+    "runtime_boundary"
+  ],
+  "ruleset_version": "2014",
+  "schema_version": "feature-ir-1",
+  "source_book": "塔莎的万事坩埚",
+  "source_completeness": "complete",
+  "source_evidence": {
+    "source_excerpt": "*第9级魔炮师特性\n*你制造的每一门奥法炮台都将拥有更大的破坏力：\n·所有炮台的伤害骰增加1d8。\n·如果你距离炮台不到60尺，你能以一个动作命令你的炮台自爆。这么做会摧毁炮台，并迫使每一个离它20尺以内的生物进行一次对抗你的法术豁免DC的敏捷豁免，若豁免失败，将受到3d8力场伤害，成功时只会受到一半伤害。",
+    "source_fragment": "68",
+    "source_path": "塔莎的万事坩埚/玩家选项/职业/奇械师/魔炮师.html",
+    "source_record_id": "fbf8451f879a169fb17a01e9"
+  },
+  "source_fingerprint": "6b015bff0dd2bdde035ef1d9c805409786a79abea38627c306344a2873854d16",
+  "source_name": "高爆炮台",
+  "source_path": "塔莎的万事坩埚/玩家选项/职业/奇械师/魔炮师.html",
+  "source_record_id": "fbf8451f879a169fb17a01e9",
+  "source_trust": "authored_ir",
+  "subclass_name": "魔炮师"
+}

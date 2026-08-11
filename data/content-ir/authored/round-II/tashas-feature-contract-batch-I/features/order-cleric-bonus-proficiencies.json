@@ -1,0 +1,153 @@
+{
+  "class_name": "牧师",
+  "clause_boundaries": {
+    "heavy-armor": {
+      "source_excerpt": "*第1级秩序领域特性*\n你获得重甲的熟练项。你还获得威吓、或游说技能的熟练项（由你选择）。",
+      "source_fragment": "36"
+    },
+    "social-skill": {
+      "source_excerpt": "*第1级秩序领域特性*\n你获得重甲的熟练项。你还获得威吓、或游说技能的熟练项（由你选择）。",
+      "source_fragment": "36"
+    }
+  },
+  "clauses": [
+    {
+      "action_economy": "none",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+        "source": "authored_ir",
+        "source_boundary": "heavy-armor",
+        "source_excerpt": "*第1级秩序领域特性*\n你获得重甲的熟练项。你还获得威吓、或游说技能的熟练项（由你选择）。"
+      },
+      "clause_id": "heavy-armor",
+      "conditions": [],
+      "duration": "advancement_persistent",
+      "effects": [
+        {
+          "operator": "grant_proficiency",
+          "parameters": {
+            "asset_id": "heavy_armor",
+            "operation": "grant",
+            "proficiency_kind": "armor"
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "advancement_confirmed",
+      "visibility": "owner"
+    },
+    {
+      "action_economy": "none",
+      "activation": "automatic",
+      "audit": {
+        "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+        "source": "authored_ir",
+        "source_boundary": "social-skill",
+        "source_excerpt": "*第1级秩序领域特性*\n你获得重甲的熟练项。你还获得威吓、或游说技能的熟练项（由你选择）。"
+      },
+      "clause_id": "social-skill",
+      "conditions": [],
+      "duration": "advancement_persistent",
+      "effects": [
+        {
+          "operator": "grant_proficiency",
+          "parameters": {
+            "asset_id": "intimidation_or_persuasion",
+            "operation": "grant",
+            "proficiency_kind": "skill"
+          }
+        }
+      ],
+      "expiry": null,
+      "frequency": null,
+      "persistence": "character.feature_runtime",
+      "required_inputs": [
+        {
+          "key": "social_skill",
+          "kind": "choice",
+          "parameters": {
+            "duplicate_policy": "forbid",
+            "options_source": "intimidation_persuasion"
+          }
+        }
+      ],
+      "resource_costs": [],
+      "resource_recovery": [],
+      "stacking": null,
+      "targeting": {
+        "kind": "self",
+        "parameters": {}
+      },
+      "trigger": "advancement_confirmed",
+      "visibility": "owner"
+    }
+  ],
+  "compatibility": {
+    "runtime_source": "feature_ir",
+    "source_fingerprint": "18f02efc476e93883b7e6cbb8052a27f2827dee7b21a849cd60b374279ee9b4a"
+  },
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "dependencies": [],
+  "evidence": [
+    "附赠熟练项: *第1级秩序领域特性*\n你获得重甲的熟练项。你还获得威吓、或游说技能的熟练项（由你选择）。"
+  ],
+  "feature_id": "content.tashas-cauldron.round2.feature.order-cleric-bonus-proficiencies",
+  "kind": "feature",
+  "level": 1,
+  "localized_names": {
+    "zh-CN": "附赠熟练项"
+  },
+  "manual_decisions": {
+    "isolated_runtime_only": true,
+    "operator_mapping": "explicit_atom_mapping",
+    "unmodeled_source_terms": []
+  },
+  "namespace": "content.tashas-cauldron",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "source-7011166c19bd",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-12-round-II",
+  "reviewed_fields": [
+    "feature_id",
+    "source_record_id",
+    "source_name",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "content_kind",
+    "class_name",
+    "subclass_name",
+    "level",
+    "source_completeness",
+    "clauses",
+    "required_inputs",
+    "runtime_boundary"
+  ],
+  "ruleset_version": "2014",
+  "schema_version": "feature-ir-1",
+  "source_book": "塔莎的万事坩埚",
+  "source_completeness": "complete",
+  "source_evidence": {
+    "source_excerpt": "*第1级秩序领域特性*\n你获得重甲的熟练项。你还获得威吓、或游说技能的熟练项（由你选择）。",
+    "source_fragment": "36",
+    "source_path": "塔莎的万事坩埚/玩家选项/职业/牧师（TCE）/秩序领域.html",
+    "source_record_id": "38a389e4b25a6eeec6c7835f"
+  },
+  "source_fingerprint": "18f02efc476e93883b7e6cbb8052a27f2827dee7b21a849cd60b374279ee9b4a",
+  "source_name": "附赠熟练项",
+  "source_path": "塔莎的万事坩埚/玩家选项/职业/牧师（TCE）/秩序领域.html",
+  "source_record_id": "38a389e4b25a6eeec6c7835f",
+  "source_trust": "authored_ir",
+  "subclass_name": "秩序领域"
+}
