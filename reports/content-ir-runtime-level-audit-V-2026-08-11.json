@@ -1,24 +1,28 @@
 {
   "after": {
     "compile_only": 35,
-    "production_full": 174,
+    "production_full": 178,
     "tasha_atom_pack": {
       "authored_typed_ir": 94,
       "candidate_generated": 407,
       "compile_full": 93,
-      "compile_only": 17,
+      "compile_only": 13,
       "consumer_unlocks": {
         "existing_generic_consumer": {
           "content_ids": [
             "content.tashas-cauldron.feature.alchemist-chemical-mastery",
             "content.tashas-cauldron.feature.alchemist-restorative-reagents",
+            "content.tashas-cauldron.feature.alchemist.tool-proficiency",
             "content.tashas-cauldron.feature.armorer-dampening-field",
             "content.tashas-cauldron.feature.armorer-defensive-field",
             "content.tashas-cauldron.feature.armorer-extra-attack",
             "content.tashas-cauldron.feature.armorer-lightning-launcher",
+            "content.tashas-cauldron.feature.armorer.tools-of-the-trade",
+            "content.tashas-cauldron.feature.artillerist.tool-proficiency",
             "content.tashas-cauldron.feature.battle-smith-arcane-jolt-damage",
             "content.tashas-cauldron.feature.battle-smith-arcane-jolt-healing",
             "content.tashas-cauldron.feature.battle-smith-repair",
+            "content.tashas-cauldron.feature.battle-smith.tool-proficiency",
             "content.tashas-cauldron.feature.psi-warrior-protective-field",
             "content.tashas-cauldron.feature.psi-warrior-psionic-strike",
             "content.tashas-cauldron.feature.psi-warrior-telekinetic-movement",
@@ -134,16 +138,16 @@
       },
       "content_atom_total": 524,
       "content_id_funnel": {
-        "compile_only": 17,
+        "compile_only": 13,
         "dm_assisted": 2,
         "matched_typed_ir": 94,
-        "production_full": 75,
+        "production_full": 79,
         "relation_holds": true
       },
       "current_project_compile_only": 35,
       "current_project_compiled_unique": 111,
-      "current_project_production_full": 174,
-      "current_project_production_registry_fingerprint": "c7d6055db60b87988ccb5814c89d49499340c64e64a64e2a906b53017c775302",
+      "current_project_production_full": 178,
+      "current_project_production_registry_fingerprint": "455bb88a9b22771b5cb6fd9ce9f1781c45ac6a5e17e7ff09363115c890bcf27f",
       "dm_assisted": 2,
       "dm_reference": 107,
       "draft_total": 407,
@@ -160,7 +164,7 @@
         },
         "total": 499
       },
-      "game_usable": 76,
+      "game_usable": 80,
       "invalid_source": 0,
       "item_ir": {
         "blocker": "manual_review_required is retained for unresolved action, spell, and effect clauses",
@@ -232,7 +236,7 @@
         "spell": 21,
         "subclass_feature": 232
       },
-      "production_full": 74,
+      "production_full": 78,
       "reviewed_total": 407,
       "runtime_preview_full": 93,
       "schema_version": "tashas-whole-pack-migration-1",
@@ -242,7 +246,7 @@
       "source_record_total": 144,
       "source_record_unclassified": 0,
       "status_counts": {
-        "compile_only": 17,
+        "compile_only": 13,
         "dm_assisted": 2,
         "dm_reference": 107,
         "duplicate_or_reprint": 0,
@@ -250,7 +254,7 @@
         "manual_authoring": 314,
         "non_instantiable": 10,
         "out_of_scope_with_reason": 0,
-        "production_full": 74
+        "production_full": 78
       },
       "template_matched": 93
     },
@@ -258,7 +262,7 @@
   },
   "baseline": {
     "compile_only": 35,
-    "production_full": 174,
+    "production_full": 178,
     "unique_compiled": 111
   },
   "database_unchanged": true,

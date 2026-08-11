@@ -305,7 +305,7 @@
       "atom_id": "tashas-cauldron:atom:606d89f6e0ea3b2e0194f24c:tool-proficiency:001",
       "content_id": "content.tashas-cauldron.feature.battle-smith.tool-proficiency",
       "content_kind": "subclass_feature",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "source_fingerprint": "682a34783df1c99da8c16c008a24402fb30ca7e909222bd4f7112a8d58820764",
       "typed_content_ids": [
         "content.tashas-cauldron.feature.battle-smith.tool-proficiency"
@@ -715,7 +715,7 @@
       "atom_id": "tashas-cauldron:atom:cf864e58ba0d62c93110f5c6:tools-of-the-trade:001",
       "content_id": "content.tashas-cauldron.feature.armorer.tools-of-the-trade",
       "content_kind": "subclass_feature",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "source_fingerprint": "d318a23d0c3166591290e02949604ab6b05a4ad6981395632cf71eb165ff2ed8",
       "typed_content_ids": [
         "content.tashas-cauldron.feature.armorer.tools-of-the-trade"
@@ -805,7 +805,7 @@
       "atom_id": "tashas-cauldron:atom:dc4f2bf18baca6ec97d7d0bf:tool-proficiency:001",
       "content_id": "content.tashas-cauldron.feature.alchemist.tool-proficiency",
       "content_kind": "subclass_feature",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "source_fingerprint": "341cb58577faf0980eeace3719d6ec5508dd594d447934689b4749d8261bcee5",
       "typed_content_ids": [
         "content.tashas-cauldron.feature.alchemist.tool-proficiency"
@@ -915,7 +915,7 @@
       "atom_id": "tashas-cauldron:atom:fbf8451f879a169fb17a01e9:tool-proficiency:001",
       "content_id": "content.tashas-cauldron.feature.artillerist.tool-proficiency",
       "content_kind": "subclass_feature",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "source_fingerprint": "f3045ea77f8e32b907e316fa1bd5005b6066de7da24908e3b0e82b1720c9597b",
       "typed_content_ids": [
         "content.tashas-cauldron.feature.artillerist.tool-proficiency"
