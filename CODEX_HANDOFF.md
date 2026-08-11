@@ -1,5 +1,37 @@
 # 2026-08-10 长执行检查点：Content IR Workbench 与法术自动化基线
 
+# 2026-08-11 长执行检查点：Typed IR 模板化扩产与真实运行时闭环
+
+- 本轮全程单线程，未创建、调用、委托或等待子代理；`backend/tests/integrations/` 与
+  `backend/tests/ollama.py` 保持用户必保留状态，未修改、未暂存、未提交。
+- 模板与候选链已经落地：12 个 name-independent templates，274 个
+  `generated_candidate`，100 个 reviewed/authored Typed IR；生成候选永远保持
+  `compile_status=never_full_before_review`，review authority 支持 stale template/source
+  fingerprint 检测，未把自然语言直接提升为 production full。
+- Batch II 层级结果：100/100 `compile_full`，100/100 `runtime_preview_full`，20/20
+  `production_runtime_full`。其中 core 2024 为 60/60/60/10，官方扩展法术为
+  25/25/25/5（珊娜萨 11、塔莎 6、费资本 5、万象无常书 3），Tasha 扩展特性为
+  15/15/15/5；15 个法术与 5 个特性均通过真实生产入口。
+- 新增统一 CLI：`templates build`、`candidates generate/report`、`review validate`、
+  `compile reviewed`，并保留 `dry-run` 与 `report --include-runtime-levels`。模板目录、候选、
+  reviewed batch、runtime level、production validation、template ranking、unlock ranking
+  与 isolated-pack dry-run 报告均已生成在 `reports/`。
+- 真实生产消费者仅使用通用数据块：`spell_economy` 的 slot/character CAS 与幂等、
+  `combat_engine` 的 damage/heal/temporary HP/feature action、effect turn snapshot、
+  `rest_service` resource recovery；没有新增 spell-name 或 feature-name runtime 分支。
+  本批 generic consumer 的真实 unlock 计数为 15 spell loops、5 feature loops，另有
+  duration/turn snapshot 与 short-rest recovery 各 1 个 lifecycle loop。
+- 生产验证覆盖 resource lack、wrong slot、illegal target、actor/target CAS、idempotent
+  replay、downstream rollback、upcast、concentration、duration/turn snapshot 与 rest
+  recovery；验证报告的 `all_required_checks_passed=true`。重复构建资产与批次报告
+  byte-identical。
+- 职业/子职业正式 499 条审计保持不变：`328 full / 110 partial / 61 dm_only`。
+  partial/manual 仍停留在需要逐字段语义审阅的 operator、target、branch、choice、复杂
+  duration/trigger、summon control 或 movement，不计入本轮 production full。
+- 相关文档：`docs/content-ir-template-runtime-batch-II-2026-08-11.md`。下一优先级是
+  completion-unlock ranking 中仍未达到 generic unlock threshold 的最高候选，而不是按名字
+  增加 runtime 分支。
+
 - 新增只读 `application/content_ir_workbench.py` 与
   `scripts/audit-content-ir-workbench.py`：扫描真实 generated-content，按 source_book
   或稳定 source path 隔离原版/扩展包，过滤索引与非详情页，生成 source fingerprint、
