@@ -1,0 +1,8 @@
+{
+  "duplicate_id_policy": "reject",
+  "enabled_by_default": false,
+  "pack_pin_required_for_character": true,
+  "ruleset": "2024-primary-with-2014-compatible-legacy-opt-in",
+  "source_fingerprint_policy": "reject stale review",
+  "unknown_effect_policy": "fail_closed_to_manual_or_dm_assisted"
+}

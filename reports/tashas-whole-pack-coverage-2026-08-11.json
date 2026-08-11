@@ -1,0 +1,78 @@
+{
+  "atom_coverage": {
+    "content_atom_total": 625,
+    "dm_reference_total": 57,
+    "duplicate_total": 0,
+    "executable_candidate_total": 558,
+    "invalid_source_total": 0,
+    "non_instantiable_total": 10,
+    "player_facing_atom_total": 558
+  },
+  "conversion_funnel": {
+    "authored_typed_ir": 28,
+    "candidate_generated": 558,
+    "compile_full": 28,
+    "compile_only": 9,
+    "dm_assisted": 1,
+    "draft_total": 558,
+    "invalid": 0,
+    "manual_authoring": 530,
+    "production_full": 18,
+    "reviewed_total": 558,
+    "runtime_preview_full": 28,
+    "template_matched": 28
+  },
+  "minimum_target_check": {
+    "authored_typed_ir_75_percent": false,
+    "compile_full_70_percent": false,
+    "failure_policy": "denominator retained; blockers listed by atom",
+    "game_usable_75_percent": false,
+    "player_facing_draft_90_percent": true,
+    "player_facing_review_80_percent": true,
+    "production_full_60_percent": false,
+    "source_records_100_percent": true
+  },
+  "pack_id": "tashas-cauldron",
+  "per_kind_counts": {
+    "character_option": 15,
+    "class_feature": 64,
+    "companion_profile": 3,
+    "directory": 10,
+    "dm_tool": 7,
+    "environment_rule": 22,
+    "feat": 16,
+    "infusion": 21,
+    "invocation": 9,
+    "magic_item": 103,
+    "magic_tattoo": 36,
+    "maneuver": 8,
+    "narrative": 9,
+    "puzzle": 15,
+    "spell": 21,
+    "subclass_feature": 266
+  },
+  "schema_version": "tashas-whole-pack-coverage-1",
+  "source_coverage": {
+    "source_record_classified": 144,
+    "source_record_scanned": 144,
+    "source_record_total": 144,
+    "source_record_unclassified": 0
+  },
+  "status_counts": {
+    "compile_only": 9,
+    "dm_assisted": 1,
+    "dm_reference": 57,
+    "duplicate_or_reprint": 0,
+    "invalid_source": 0,
+    "manual_authoring": 530,
+    "non_instantiable": 10,
+    "out_of_scope_with_reason": 0,
+    "production_full": 18
+  },
+  "usable_coverage": {
+    "dm_assisted_rate": 0.001792,
+    "game_usable_rate": 0.03405,
+    "manual_rate": 0.949821,
+    "production_full_rate": 0.032258
+  }
+}

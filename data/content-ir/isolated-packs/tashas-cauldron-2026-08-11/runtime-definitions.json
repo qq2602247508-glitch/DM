@@ -1,0 +1,285 @@
+{
+  "definitions": [
+    {
+      "atom_id": "tashas-cauldron:atom:0036d7dc058c496ef08fe340:a27f6b57964b:000",
+      "content_id": "tashas-cauldron:spell:0036d7dc058c496ef08fe340",
+      "content_kind": "spell",
+      "migration_status": "dm_assisted",
+      "source_fingerprint": "7bbc3a380e601b6a029b7240173ceee42dc6c45618995d738c851f71b7022bf1",
+      "typed_content_ids": [
+        "tashas-cauldron:spell:0036d7dc058c496ef08fe340"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:083419d9de551806a5ca9748:ade91e9a9b97:000",
+      "content_id": "tashas-cauldron:spell:083419d9de551806a5ca9748",
+      "content_kind": "spell",
+      "migration_status": "compile_only",
+      "source_fingerprint": "af449971758a4150c22e14243a11ffb271106769498056251c38fe3683eb8c86",
+      "typed_content_ids": [
+        "tashas-cauldron:spell:083419d9de551806a5ca9748"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:12139219bf7e575f9cde019c:ambush:001",
+      "content_id": "content.tashas-cauldron.feature.battle-master.ambush",
+      "content_kind": "maneuver",
+      "migration_status": "compile_only",
+      "source_fingerprint": "51242f7521d5c1fa6f688e02fd8838c7c61a5304a9ab6b4df49e5d97f6433fee",
+      "typed_content_ids": [
+        "content.tashas-cauldron.feature.battle-master.ambush"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:12139219bf7e575f9cde019c:commanding-presence:004",
+      "content_id": "content.tashas-cauldron.feature.battle-master.commanding-presence",
+      "content_kind": "maneuver",
+      "migration_status": "compile_only",
+      "source_fingerprint": "bd974174f41c943d9946ca76495368f3fb70d3d710c8e3f5f9962c393ab52e84",
+      "typed_content_ids": [
+        "content.tashas-cauldron.feature.battle-master.commanding-presence"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:54c8c29188db1442473d9dc1:12b6933c1bf3:000",
+      "content_id": "tashas-cauldron:spell:54c8c29188db1442473d9dc1",
+      "content_kind": "spell",
+      "migration_status": "compile_only",
+      "source_fingerprint": "96e554107670b558467a1fd2d7154eca72b0fc2d0b9e27a2d6e6bf3c56c98526",
+      "typed_content_ids": [
+        "tashas-cauldron:spell:54c8c29188db1442473d9dc1"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:606d89f6e0ea3b2e0194f24c:2354b3daf3fd:001",
+      "content_id": "content.tashas-cauldron.feature.battle-smith.tool-proficiency",
+      "content_kind": "subclass_feature",
+      "migration_status": "compile_only",
+      "source_fingerprint": "682a34783df1c99da8c16c008a24402fb30ca7e909222bd4f7112a8d58820764",
+      "typed_content_ids": [
+        "content.tashas-cauldron.feature.battle-smith.tool-proficiency"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:606d89f6e0ea3b2e0194f24c:arcane-jolt:010",
+      "content_id": "content.tashas-cauldron.feature.battle-smith-arcane-jolt-damage",
+      "content_kind": "subclass_feature",
+      "migration_status": "production_full",
+      "source_fingerprint": "0e98a150786d4ca48240d74c16bb1c4de812dd802abd6b6fbb8f1cdecd89a4f6",
+      "typed_content_ids": [
+        "content.tashas-cauldron.feature.battle-smith-arcane-jolt-damage",
+        "content.tashas-cauldron.feature.battle-smith-arcane-jolt-healing"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:606d89f6e0ea3b2e0194f24c:repair-3:007",
+      "content_id": "content.tashas-cauldron.feature.battle-smith-repair",
+      "content_kind": "subclass_feature",
+      "migration_status": "production_full",
+      "source_fingerprint": "8955327bec412147b5042f7169b2cbaa10dccfd25d323ed90248f6002e5e6d97",
+      "typed_content_ids": [
+        "content.tashas-cauldron.feature.battle-smith-repair"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:7947fb03852a7bc77d69e3ac:be0996c2cd7c:000",
+      "content_id": "tashas-cauldron:spell:7947fb03852a7bc77d69e3ac",
+      "content_kind": "spell",
+      "migration_status": "production_full",
+      "source_fingerprint": "57b99cef04471d3a67c58b3d80dec59e192ca3e61b6efa35b3aa0a86af3558b5",
+      "typed_content_ids": [
+        "tashas-cauldron:spell:7947fb03852a7bc77d69e3ac"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:a13253dc90904c96eaa719ab:426032a81bb5:001",
+      "content_id": "content.tashas-cauldron.feature.psi-warrior-psionic-strike",
+      "content_kind": "subclass_feature",
+      "migration_status": "production_full",
+      "source_fingerprint": "ae992cb3f24babe6aa406a6cc188d8d8243598b6d32ee71610a058e3d6e8274d",
+      "typed_content_ids": [
+        "content.tashas-cauldron.feature.psi-warrior-psionic-strike"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:a13253dc90904c96eaa719ab:protective-field:002",
+      "content_id": "content.tashas-cauldron.feature.psi-warrior-protective-field",
+      "content_kind": "subclass_feature",
+      "migration_status": "production_full",
+      "source_fingerprint": "77c72c1586a767410a2310c68833f137a2ddf36d456e33f393b1475ebe443499",
+      "typed_content_ids": [
+        "content.tashas-cauldron.feature.psi-warrior-protective-field"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:a13253dc90904c96eaa719ab:psionic-strike:003",
+      "content_id": "content.tashas-cauldron.feature.psi-warrior-psionic-strike",
+      "content_kind": "subclass_feature",
+      "migration_status": "production_full",
+      "source_fingerprint": "77c72c1586a767410a2310c68833f137a2ddf36d456e33f393b1475ebe443499",
+      "typed_content_ids": [
+        "content.tashas-cauldron.feature.psi-warrior-psionic-strike"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:a13253dc90904c96eaa719ab:telekinetic-movement:004",
+      "content_id": "content.tashas-cauldron.feature.psi-warrior-telekinetic-movement",
+      "content_kind": "subclass_feature",
+      "migration_status": "production_full",
+      "source_fingerprint": "672998fee57090ea569803a10cd2fa56ea8aeb49419f8d25118e33955fa20182",
+      "typed_content_ids": [
+        "content.tashas-cauldron.feature.psi-warrior-telekinetic-movement"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:b4ea0dc1907dd5ac08666af3:9beb0f907f0a:000",
+      "content_id": "tashas-cauldron:spell:b4ea0dc1907dd5ac08666af3",
+      "content_kind": "spell",
+      "migration_status": "compile_only",
+      "source_fingerprint": "cd9ef32eba165fb7461604b077548c4e0e72af622c56f684f5117c0dee958d07",
+      "typed_content_ids": [
+        "tashas-cauldron:spell:b4ea0dc1907dd5ac08666af3"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:bef5ef39397ea7aa8a0856ea:1d00c9156655:000",
+      "content_id": "tashas-cauldron:spell:bef5ef39397ea7aa8a0856ea",
+      "content_kind": "spell",
+      "migration_status": "production_full",
+      "source_fingerprint": "5eb82d530c54387e576d47e3265dd5cfdabf010c3c765f9b787b82f1209b646e",
+      "typed_content_ids": [
+        "tashas-cauldron:spell:bef5ef39397ea7aa8a0856ea"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:cf864e58ba0d62c93110f5c6:dampening-field:011",
+      "content_id": "content.tashas-cauldron.feature.armorer-dampening-field",
+      "content_kind": "subclass_feature",
+      "migration_status": "production_full",
+      "source_fingerprint": "84df7f2476a3c44de86be0476fe4fb0dc8fcaf53b1b954b2b43c26f49ce39ae6",
+      "typed_content_ids": [
+        "content.tashas-cauldron.feature.armorer-dampening-field"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:cf864e58ba0d62c93110f5c6:defensive-field:007",
+      "content_id": "content.tashas-cauldron.feature.armorer-defensive-field",
+      "content_kind": "subclass_feature",
+      "migration_status": "production_full",
+      "source_fingerprint": "7d1ae99fc8c691f41767a04732278226842f521ec14fc03fedf62c447f2789d9",
+      "typed_content_ids": [
+        "content.tashas-cauldron.feature.armorer-defensive-field"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:cf864e58ba0d62c93110f5c6:extra-attack:012",
+      "content_id": "content.tashas-cauldron.feature.armorer-extra-attack",
+      "content_kind": "subclass_feature",
+      "migration_status": "production_full",
+      "source_fingerprint": "3fc23426e735cba98a680eaf06bf5fe883f6b5d78fcbf10239281ac3c8b74674",
+      "typed_content_ids": [
+        "content.tashas-cauldron.feature.armorer-extra-attack"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:cf864e58ba0d62c93110f5c6:lightning-launcher:009",
+      "content_id": "content.tashas-cauldron.feature.armorer-lightning-launcher",
+      "content_kind": "subclass_feature",
+      "migration_status": "production_full",
+      "source_fingerprint": "84df7f2476a3c44de86be0476fe4fb0dc8fcaf53b1b954b2b43c26f49ce39ae6",
+      "typed_content_ids": [
+        "content.tashas-cauldron.feature.armorer-lightning-launcher"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:d4e98761778ae5c18fd66bdb:hand-of-harm:003",
+      "content_id": "content.tashas-cauldron.feature.way-of-mercy-hand-harm",
+      "content_kind": "subclass_feature",
+      "migration_status": "production_full",
+      "source_fingerprint": "c513064622e29b89071085ef7e2962cabedcc6b3aa9f154ae68eb2c082cb96ec",
+      "typed_content_ids": [
+        "content.tashas-cauldron.feature.way-of-mercy-hand-harm"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:d4e98761778ae5c18fd66bdb:hand-of-healing:002",
+      "content_id": "content.tashas-cauldron.feature.way-of-mercy-hand-healing",
+      "content_kind": "subclass_feature",
+      "migration_status": "production_full",
+      "source_fingerprint": "6d261db2ae3159f4e48e3e6f9d1a70d03a2a490ce6b4d1be9e9295dc21826bae",
+      "typed_content_ids": [
+        "content.tashas-cauldron.feature.way-of-mercy-hand-healing"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:d4e98761778ae5c18fd66bdb:implements-of-mercy:001",
+      "content_id": "content.tashas-cauldron.feature.way-of-mercy.implements-of-mercy",
+      "content_kind": "subclass_feature",
+      "migration_status": "compile_only",
+      "source_fingerprint": "204988b76db45e60389c1fe7e1049be4c2ab379ce491e9a26fc70c334b667b63",
+      "typed_content_ids": [
+        "content.tashas-cauldron.feature.way-of-mercy.implements-of-mercy"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:d4e98761778ae5c18fd66bdb:physician-s-touch:004",
+      "content_id": "content.tashas-cauldron.feature.way-of-mercy-physicians-touch",
+      "content_kind": "subclass_feature",
+      "migration_status": "production_full",
+      "source_fingerprint": "37d9e1f843e111b1d73e69a036d17c374fc960558c4d22c7dcfbeb71e0dafb30",
+      "typed_content_ids": [
+        "content.tashas-cauldron.feature.way-of-mercy-physicians-touch"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:dc4f2bf18baca6ec97d7d0bf:chemical-mastery:006",
+      "content_id": "content.tashas-cauldron.feature.alchemist-chemical-mastery",
+      "content_kind": "subclass_feature",
+      "migration_status": "production_full",
+      "source_fingerprint": "75c146faced99611bd02121832a8b8174ed5a5567105929daa011bb3c153eedc",
+      "typed_content_ids": [
+        "content.tashas-cauldron.feature.alchemist-chemical-mastery"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:dc4f2bf18baca6ec97d7d0bf:restorative-reagents:005",
+      "content_id": "content.tashas-cauldron.feature.alchemist-restorative-reagents",
+      "content_kind": "subclass_feature",
+      "migration_status": "production_full",
+      "source_fingerprint": "0711fd1af4575eefd3decca2b9123e2ef8d0a599c62acd9f2058267658f4dfaf",
+      "typed_content_ids": [
+        "content.tashas-cauldron.feature.alchemist-restorative-reagents"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:dc4f2bf18baca6ec97d7d0bf:tool-proficiency:001",
+      "content_id": "content.tashas-cauldron.feature.alchemist.tool-proficiency",
+      "content_kind": "subclass_feature",
+      "migration_status": "compile_only",
+      "source_fingerprint": "341cb58577faf0980eeace3719d6ec5508dd594d447934689b4749d8261bcee5",
+      "typed_content_ids": [
+        "content.tashas-cauldron.feature.alchemist.tool-proficiency"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:eec6bd94eb83a351fb987de2:a306ecfb0c3f:000",
+      "content_id": "tashas-cauldron:spell:eec6bd94eb83a351fb987de2",
+      "content_kind": "spell",
+      "migration_status": "compile_only",
+      "source_fingerprint": "8795c9248298871f7bd79e0fdfe130f7fe8d73b2405c0182f64e757a5b89649e",
+      "typed_content_ids": [
+        "tashas-cauldron:spell:eec6bd94eb83a351fb987de2"
+      ]
+    },
+    {
+      "atom_id": "tashas-cauldron:atom:ef0f92b557fb48d421d462e1:0a329ff7f32b:000",
+      "content_id": "tashas-cauldron:spell:ef0f92b557fb48d421d462e1",
+      "content_kind": "spell",
+      "migration_status": "production_full",
+      "source_fingerprint": "30a5d13abf7b5e9cd90d7b9675f518b4568ec368c56e9284fc34af09e9fbf186",
+      "typed_content_ids": [
+        "tashas-cauldron:spell:ef0f92b557fb48d421d462e1"
+      ]
+    }
+  ]
+}

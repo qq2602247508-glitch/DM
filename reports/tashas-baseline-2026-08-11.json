@@ -1,0 +1,158 @@
+{
+  "baseline_date": "2026-08-11",
+  "compile_full": 111,
+  "compile_only": 35,
+  "content_ir_total": 111,
+  "database_fingerprint": {
+    "files": [
+      {
+        "path": "data/backups/pre-scene-settlement-repair-20260726.db",
+        "sha256": "39d01f6ebcacab4c27f577a62871e55c460af25195a9ed37ea2aeb77fb7b0639",
+        "size": 929792
+      },
+      {
+        "path": "data/campaign.db",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "size": 0
+      },
+      {
+        "path": "data/dnd_dm.db",
+        "sha256": "2aa9401af94d24fbd4826044fbea584ce0a39ca0856bce6071272b50774457bb",
+        "size": 23281664
+      }
+    ],
+    "fingerprint": "f3abdcf57b0d71888f085ca081511df4e4f23f100066b402d49d769089fa6aad"
+  },
+  "dm_assisted": 0,
+  "formal_499_status": {
+    "source": "reports/class-feature-audit-2026-08-07.json",
+    "status_counts": {
+      "dm_only": 61,
+      "full": 328,
+      "partial": 110
+    },
+    "total": 499
+  },
+  "invalid": 0,
+  "manual": 0,
+  "per_kind_counts": {
+    "Feature": 15,
+    "Spell": 61
+  },
+  "per_pack_counts": {
+    "Book of Many Things": 3,
+    "Core 2024": 42,
+    "Fizban": 3,
+    "Tasha total": 19,
+    "Xanathar": 9
+  },
+  "production_full": 76,
+  "production_registry_fingerprint": "f4b5eab251b2f9f2d426ba271bb25faec773884a327f9d46e566791b97cbca6b",
+  "protected_path_fingerprints": {
+    "backend/tests/integrations/": {
+      "exists": true,
+      "files": [
+        {
+          "path": "backend/tests/integrations/__init__.py",
+          "sha256": "6ce04916a68d2104f8bce9b463cdcfa2e2587d7c539066b53900e21f44c2c107"
+        },
+        {
+          "path": "backend/tests/integrations/__pycache__/__init__.cpython-312.pyc",
+          "sha256": "ad7447a8930adc1be4b1c13b724fd24be491899c2f718a552c716d9f2c69b02c"
+        },
+        {
+          "path": "backend/tests/integrations/__pycache__/ollama.cpython-312.pyc",
+          "sha256": "97b0036c435bfa0d406c1e2ebf107bb8b128fb693ebfb04260933aa6209ecea7"
+        },
+        {
+          "path": "backend/tests/integrations/__pycache__/qdrant_store.cpython-312.pyc",
+          "sha256": "6bc14222a74f728c3069c7e94a0dcde5f88138306318c162bc8b43e8a8aba433"
+        },
+        {
+          "path": "backend/tests/integrations/__pycache__/runtime.cpython-312.pyc",
+          "sha256": "804a278d962979486c80c271dc3cf8c5407d9352baf61be76d91eede6b7867f4"
+        },
+        {
+          "path": "backend/tests/integrations/content/__init__.py",
+          "sha256": "01af14c2dcdc051f7a8f9ef6d549614f7fa6a9d564042063a5562898163de799"
+        },
+        {
+          "path": "backend/tests/integrations/content/__pycache__/__init__.cpython-312.pyc",
+          "sha256": "05ad7fbb6c225f78e2e41d980d66a396f1bf060f830e2607dd707b71db686d84"
+        },
+        {
+          "path": "backend/tests/integrations/content/__pycache__/classification.cpython-312.pyc",
+          "sha256": "625f6a3615f44079f2818f76bfcb6d2ceb6a0b22b1a7279902111e58dcdd4ba6"
+        },
+        {
+          "path": "backend/tests/integrations/content/__pycache__/fetcher.cpython-312.pyc",
+          "sha256": "55dcf13f7e4cfd762775a8bb66cdb441064c6c7929ad71a912c25e85033eb26d"
+        },
+        {
+          "path": "backend/tests/integrations/content/__pycache__/navigation.cpython-312.pyc",
+          "sha256": "2a9a0e97e7a8399d89cc9d75fea6fabae70190c0b9633f4254f5bba8617f536b"
+        },
+        {
+          "path": "backend/tests/integrations/content/__pycache__/parser.cpython-312.pyc",
+          "sha256": "384bc064102187c3c9bceda2f92af804e71e367aa4fc470e7297461470e18ca4"
+        },
+        {
+          "path": "backend/tests/integrations/content/__pycache__/repository.cpython-312.pyc",
+          "sha256": "c256d2fce1ea6a4fca43f68b381c9dd50f7e5c27eeef660e23433cc3a4a0d2d7"
+        },
+        {
+          "path": "backend/tests/integrations/content/__pycache__/url_policy.cpython-312.pyc",
+          "sha256": "ee61a4f32ef76aa65a7b12f0a3993e442edfbc10f2f4f28950224271f84f6b2e"
+        },
+        {
+          "path": "backend/tests/integrations/content/classification.py",
+          "sha256": "5c7413be2e4545ebeebdabf57d36c5ebebd092a8c62cda244686e5ae318ac165"
+        },
+        {
+          "path": "backend/tests/integrations/content/fetcher.py",
+          "sha256": "23e46c451b6ccb28d3522f6217d47a2c11c8c8e9107fa4749ebe527fd695285c"
+        },
+        {
+          "path": "backend/tests/integrations/content/navigation.py",
+          "sha256": "8531449d1d6629914152f01629879c876f735f060a0076f88bdea25bc49d6109"
+        },
+        {
+          "path": "backend/tests/integrations/content/parser.py",
+          "sha256": "aed06d5a1eaff01047f799407f77e2d1b38861b9ddb1da914daf7b1e5fbc88d7"
+        },
+        {
+          "path": "backend/tests/integrations/content/repository.py",
+          "sha256": "bd2fbfbd50c0d20d25408c8e6ca13854e7a686ce0821c0998bca4e841c499c8b"
+        },
+        {
+          "path": "backend/tests/integrations/content/url_policy.py",
+          "sha256": "7237c187158aac82078cb11266b755b3329f66c87c584a10bba29e9c8ab1c48e"
+        },
+        {
+          "path": "backend/tests/integrations/ollama.py",
+          "sha256": "945069ad06b2f6248bc5e5874c4563caa59f301e681087bc4b07ac7bf78c2857"
+        },
+        {
+          "path": "backend/tests/integrations/qdrant_store.py",
+          "sha256": "89fe68687c968dfa0677ab69b3e56314531aff80a295a7ca4c8093cb83950955"
+        },
+        {
+          "path": "backend/tests/integrations/runtime.py",
+          "sha256": "82d92d313c0399faa28230bb81ade3ce2912d46eaa7c671d2c27b8f44734c41e"
+        }
+      ],
+      "manifest_sha256": "ae4ef9f5518ac28272643dc668c40ed49e76da052c84c7023bbb5636d303cd91"
+    },
+    "backend/tests/ollama.py": {
+      "exists": true,
+      "sha256": "8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3"
+    }
+  },
+  "relation_check": {
+    "dm_assisted_not_in_legacy_baseline": true,
+    "production_full_plus_compile_only": 111,
+    "unique_compiled": 111
+  },
+  "runtime_preview_full": 111,
+  "schema_version": "tashas-migration-baseline-1"
+}

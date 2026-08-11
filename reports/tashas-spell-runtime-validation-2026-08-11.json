@@ -1,0 +1,34 @@
+{
+  "pack_id": "tashas-cauldron",
+  "representative_api_checks": {
+    "actor_target_resource_cas": true,
+    "preview_confirm_result_replay": true,
+    "rollback_and_snapshot": true,
+    "source": "existing production-runtime-results-III/IV and Rules Kernel validation reports",
+    "summon_entity_dm_continuation": true
+  },
+  "runtime_production_spell_atoms": [
+    "tashas-cauldron:atom:0036d7dc058c496ef08fe340:a27f6b57964b:000",
+    "tashas-cauldron:atom:7947fb03852a7bc77d69e3ac:be0996c2cd7c:000",
+    "tashas-cauldron:atom:bef5ef39397ea7aa8a0856ea:1d00c9156655:000",
+    "tashas-cauldron:atom:ef0f92b557fb48d421d462e1:0a329ff7f32b:000"
+  ],
+  "schema_version": "tashas-spell-runtime-validation-1",
+  "spell_atom_total": 21,
+  "typed_spell_atoms": 8,
+  "unavailable_without_new_ir": [
+    "tashas-cauldron:atom:186b6f8d92a18280c411d71f:18adac47cc2b:000",
+    "tashas-cauldron:atom:1ac1466462ef7c0514a3ea44:fe782ac2e6fd:000",
+    "tashas-cauldron:atom:2aa8d961d7c7274480168627:df44bca3c04b:000",
+    "tashas-cauldron:atom:34f3e707683bf37f2adf1f04:4ad138ddbaec:000",
+    "tashas-cauldron:atom:5473a33b48053a0271120a31:15009ae27bf5:000",
+    "tashas-cauldron:atom:821697eef9deee02919ab171:12a10b7eaa79:000",
+    "tashas-cauldron:atom:8c4325e8ec5be6bdaa772525:bb3987574085:000",
+    "tashas-cauldron:atom:9bcc248fd8cb8514ecc26155:40ca1b5a4c1c:000",
+    "tashas-cauldron:atom:a578939f50108dbe40825f9f:87d4649f9bac:000",
+    "tashas-cauldron:atom:aadaa43a2f946220099797b4:e7509c9cf982:000",
+    "tashas-cauldron:atom:d8f457a67427548a0b968fb6:432068be0696:000",
+    "tashas-cauldron:atom:e801ed5d271a68fbfe81acfa:05f553eb9ce4:000",
+    "tashas-cauldron:atom:f5cecd71fec2973d283c87e7:89795097d186:000"
+  ]
+}

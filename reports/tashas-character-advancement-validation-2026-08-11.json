@@ -1,0 +1,19 @@
+{
+  "executed_checks": {
+    "choice_persistence_and_snapshot_rebuild": false,
+    "content_pack_pin_and_legacy_boundary": true,
+    "full_character_creation_upgrade_downgrade": false,
+    "reason": "whole-pack atoms are inventoried, but authored advancement assets are not yet registered for the 427 manual atoms",
+    "source_selection_uses_pack_registry": true
+  },
+  "not_claimed": "No direct character JSON mutation or fake advancement result was used.",
+  "pack_compatibility": {
+    "default_2024_without_legacy": "rejected_by_registry",
+    "legacy_opt_in": [
+      "tashas-cauldron"
+    ]
+  },
+  "pack_id": "tashas-cauldron",
+  "schema_version": "tashas-character-advancement-validation-1",
+  "status": "bounded_partial"
+}
