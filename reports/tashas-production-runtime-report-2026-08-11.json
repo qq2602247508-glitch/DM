@@ -27,18 +27,26 @@
         "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-arcane-grimoire-002",
         "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-bloodwell-vial-003",
         "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-guardian-emblem-005",
+        "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-moon-sickle-006",
+        "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-nature-s-mantle-007",
         "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-rhythm-maker-s-drum-008",
         "content.tashas-cauldron.item.tashas-cauldron-atom-62c7a0c6a042e571b17d35e3-dfaab0b0f93c-000",
+        "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-b106ea54c961-000",
         "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-alchemical-compendium-000",
+        "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-astral-shard-001",
         "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-astromancy-archive-002",
         "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-atlas-of-endless-horizons-003",
         "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-bell-branch-004",
         "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-devotee-s-censer-005",
+        "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-duplicitous-manuscript-006",
         "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-far-realm-shard-008",
+        "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-fulminating-treatise-009",
         "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-heart-weaver-s-primer-010",
         "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-libram-of-souls-and-flesh-011",
         "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-lyre-of-building-012",
         "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-planecaller-s-codex-014",
+        "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-protective-verses-015",
+        "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-reveler-s-concertina-016",
         "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-8d7814d75b94-003",
         "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-b9cb8e43543d-007",
         "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-c27398cf29fe-010",
@@ -194,7 +202,7 @@
     "tashas-cauldron:atom:fbf8451f879a169fb17a01e9:arcane-firearm:004",
     "tashas-cauldron:atom:fbf8451f879a169fb17a01e9:explosive-cannon:005"
   ],
-  "registry_production_runtime_full_count": 101,
+  "registry_production_runtime_full_count": 109,
   "runtime_evidence": {
     "content.tashas-cauldron.feature.alchemist-chemical-mastery": {
       "confirm_status": 200,
@@ -619,6 +627,152 @@
         "item.granted_action.v1"
       ]
     },
+    "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-moon-sickle-006": {
+      "attunement_persisted": true,
+      "charge_lifecycle_persisted": true,
+      "compile_status": "full",
+      "consumer_ids": [
+        "item.attunement.v1",
+        "item.equipment_modifier.v1"
+      ],
+      "content_id": "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-moon-sickle-006",
+      "content_kind": "item",
+      "created": true,
+      "evidence_path": "data/content-ir/compiled/production-runtime-results-XV.json",
+      "item_name": "月镰 Moon Sickle",
+      "item_state_persisted": true,
+      "operation_transaction_persisted": true,
+      "operations": [
+        {
+          "confirm": true,
+          "idempotency_replayed": true,
+          "operation": "attune",
+          "output": {
+            "after": {
+              "active_attunements": 1,
+              "armor_class": 10,
+              "attuned": true
+            },
+            "before": {
+              "armor_class": 10,
+              "charges": null,
+              "equipped": false,
+              "quantity": 1
+            },
+            "confirmed": true,
+            "operation": "attune",
+            "slot": null,
+            "tattoo_lifecycle": null,
+            "warnings": []
+          },
+          "preview": true,
+          "replay": true
+        }
+      ],
+      "persisted": {
+        "attuned": true,
+        "charges": null,
+        "item_fingerprint": "3de61e359af8cb34baff146eaf33da03f9b714af1266395756869a4bf00c96eb",
+        "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-moon-sickle-006",
+        "operation_transaction_count": 1,
+        "tattoo_lifecycle": null,
+        "version": 2
+      },
+      "preview_confirm_replay": true,
+      "tattoo_lifecycle_persisted": true,
+      "typed_consumer": true,
+      "typed_projection_consumers": [
+        "item.attunement.v1",
+        "item.equipment_modifier.v1"
+      ]
+    },
+    "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-nature-s-mantle-007": {
+      "attunement_persisted": true,
+      "charge_lifecycle_persisted": true,
+      "compile_status": "full",
+      "consumer_ids": [
+        "item.attunement.v1",
+        "item.equipment_modifier.v1",
+        "item.granted_action.v1"
+      ],
+      "content_id": "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-nature-s-mantle-007",
+      "content_kind": "item",
+      "created": true,
+      "evidence_path": "data/content-ir/compiled/production-runtime-results-XV.json",
+      "item_name": "自然斗篷 Nature's Mantle",
+      "item_state_persisted": true,
+      "operation_transaction_persisted": true,
+      "operations": [
+        {
+          "confirm": true,
+          "idempotency_replayed": true,
+          "operation": "attune",
+          "output": {
+            "after": {
+              "active_attunements": 1,
+              "armor_class": 10,
+              "attuned": true
+            },
+            "before": {
+              "armor_class": 10,
+              "charges": null,
+              "equipped": false,
+              "quantity": 1
+            },
+            "confirmed": true,
+            "operation": "attune",
+            "slot": null,
+            "tattoo_lifecycle": null,
+            "warnings": []
+          },
+          "preview": true,
+          "replay": true
+        },
+        {
+          "confirm": true,
+          "idempotency_replayed": true,
+          "operation": "use_action",
+          "output": {
+            "after": {
+              "action_id": "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:nature-s-mantle:007:action:1",
+              "armor_class": 10,
+              "charges": null,
+              "rules_kernel_consumer": "item.granted_action.v1"
+            },
+            "before": {
+              "armor_class": 10,
+              "charges": null,
+              "equipped": false,
+              "quantity": 1
+            },
+            "confirmed": true,
+            "operation": "use_action",
+            "slot": null,
+            "tattoo_lifecycle": null,
+            "warnings": []
+          },
+          "preview": true,
+          "replay": true
+        }
+      ],
+      "persisted": {
+        "attuned": true,
+        "charges": null,
+        "item_fingerprint": "7dbce54d9e87a742b051477f3b8981e76c9aac282e16ce9d30c9b7f3c2335c26",
+        "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-nature-s-mantle-007",
+        "operation_transaction_count": 2,
+        "tattoo_lifecycle": null,
+        "version": 3
+      },
+      "preview_confirm_replay": true,
+      "tattoo_lifecycle_persisted": true,
+      "typed_consumer": true,
+      "typed_projection_consumers": [
+        "item.attunement.v1",
+        "item.equipment_modifier.v1",
+        "item.granted_action.v1"
+      ]
+    },
     "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-rhythm-maker-s-drum-008": {
       "attunement_persisted": true,
       "charge_lifecycle_persisted": true,
@@ -784,6 +938,119 @@
         "item.granted_action.v1"
       ]
     },
+    "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-b106ea54c961-000": {
+      "attunement_persisted": true,
+      "charge_lifecycle_persisted": true,
+      "compile_status": "full",
+      "consumer_ids": [
+        "item.attunement.v1",
+        "item.charge_resource.v1",
+        "item.equipment_modifier.v1",
+        "item.granted_action.v1"
+      ],
+      "content_id": "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-b106ea54c961-000",
+      "content_kind": "item",
+      "created": true,
+      "evidence_path": "data/content-ir/compiled/production-runtime-results-XV.json",
+      "item_name": "芭芭",
+      "item_state_persisted": true,
+      "operation_transaction_persisted": true,
+      "operations": [
+        {
+          "confirm": true,
+          "idempotency_replayed": true,
+          "operation": "attune",
+          "output": {
+            "after": {
+              "active_attunements": 1,
+              "armor_class": 10,
+              "attuned": true
+            },
+            "before": {
+              "armor_class": 10,
+              "charges": 12,
+              "equipped": false,
+              "quantity": 1
+            },
+            "confirmed": true,
+            "operation": "attune",
+            "slot": null,
+            "tattoo_lifecycle": null,
+            "warnings": []
+          },
+          "preview": true,
+          "replay": true
+        },
+        {
+          "confirm": true,
+          "idempotency_replayed": true,
+          "operation": "use_action",
+          "output": {
+            "after": {
+              "action_id": "tashas-cauldron:atom:760b230e1396825928305642:b106ea54c961:000:action:1",
+              "armor_class": 10,
+              "charges": 12,
+              "rules_kernel_consumer": "item.granted_action.v1"
+            },
+            "before": {
+              "armor_class": 10,
+              "charges": 12,
+              "equipped": false,
+              "quantity": 1
+            },
+            "confirmed": true,
+            "operation": "use_action",
+            "slot": null,
+            "tattoo_lifecycle": null,
+            "warnings": []
+          },
+          "preview": true,
+          "replay": true
+        },
+        {
+          "confirm": true,
+          "idempotency_replayed": true,
+          "operation": "use_charge",
+          "output": {
+            "after": {
+              "armor_class": 10,
+              "charges": 11
+            },
+            "before": {
+              "armor_class": 10,
+              "charges": 12,
+              "equipped": false,
+              "quantity": 1
+            },
+            "confirmed": true,
+            "operation": "use_charge",
+            "slot": null,
+            "tattoo_lifecycle": null,
+            "warnings": []
+          },
+          "preview": true,
+          "replay": true
+        }
+      ],
+      "persisted": {
+        "attuned": true,
+        "charges": 11,
+        "item_fingerprint": "e7ad6394044e0ea9bc6868a99af43f01c2bd2f715c8f0810700c97033c3303e5",
+        "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-b106ea54c961-000",
+        "operation_transaction_count": 3,
+        "tattoo_lifecycle": null,
+        "version": 4
+      },
+      "preview_confirm_replay": true,
+      "tattoo_lifecycle_persisted": true,
+      "typed_consumer": true,
+      "typed_projection_consumers": [
+        "item.attunement.v1",
+        "item.charge_resource.v1",
+        "item.equipment_modifier.v1",
+        "item.granted_action.v1"
+      ]
+    },
     "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-alchemical-compendium-000": {
       "attunement_persisted": true,
       "charge_lifecycle_persisted": true,
@@ -887,6 +1154,93 @@
       "typed_consumer": true,
       "typed_projection_consumers": [
         "item.charge_resource.v1",
+        "item.equipment_modifier.v1",
+        "item.granted_action.v1"
+      ]
+    },
+    "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-astral-shard-001": {
+      "attunement_persisted": true,
+      "charge_lifecycle_persisted": true,
+      "compile_status": "full",
+      "consumer_ids": [
+        "item.attunement.v1",
+        "item.equipment_modifier.v1",
+        "item.granted_action.v1"
+      ],
+      "content_id": "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-astral-shard-001",
+      "content_kind": "item",
+      "created": true,
+      "evidence_path": "data/content-ir/compiled/production-runtime-results-XV.json",
+      "item_name": "星界碎晶|Astral Shard",
+      "item_state_persisted": true,
+      "operation_transaction_persisted": true,
+      "operations": [
+        {
+          "confirm": true,
+          "idempotency_replayed": true,
+          "operation": "attune",
+          "output": {
+            "after": {
+              "active_attunements": 1,
+              "armor_class": 10,
+              "attuned": true
+            },
+            "before": {
+              "armor_class": 10,
+              "charges": null,
+              "equipped": false,
+              "quantity": 1
+            },
+            "confirmed": true,
+            "operation": "attune",
+            "slot": null,
+            "tattoo_lifecycle": null,
+            "warnings": []
+          },
+          "preview": true,
+          "replay": true
+        },
+        {
+          "confirm": true,
+          "idempotency_replayed": true,
+          "operation": "use_action",
+          "output": {
+            "after": {
+              "action_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:astral-shard:001:action:1",
+              "armor_class": 10,
+              "charges": null,
+              "rules_kernel_consumer": "item.granted_action.v1"
+            },
+            "before": {
+              "armor_class": 10,
+              "charges": null,
+              "equipped": false,
+              "quantity": 1
+            },
+            "confirmed": true,
+            "operation": "use_action",
+            "slot": null,
+            "tattoo_lifecycle": null,
+            "warnings": []
+          },
+          "preview": true,
+          "replay": true
+        }
+      ],
+      "persisted": {
+        "attuned": true,
+        "charges": null,
+        "item_fingerprint": "c7a076ce1ad3b4207d319c11f85f9262d5790b25ddf9eea881e63c6b867e9640",
+        "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-astral-shard-001",
+        "operation_transaction_count": 2,
+        "tattoo_lifecycle": null,
+        "version": 3
+      },
+      "preview_confirm_replay": true,
+      "tattoo_lifecycle_persisted": true,
+      "typed_consumer": true,
+      "typed_projection_consumers": [
+        "item.attunement.v1",
         "item.equipment_modifier.v1",
         "item.granted_action.v1"
       ]
@@ -1221,6 +1575,95 @@
         "item.granted_action.v1"
       ]
     },
+    "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-duplicitous-manuscript-006": {
+      "attunement_persisted": true,
+      "charge_lifecycle_persisted": true,
+      "compile_status": "full",
+      "consumer_ids": [
+        "item.attunement.v1",
+        "item.charge_resource.v1",
+        "item.equipment_modifier.v1",
+        "item.granted_action.v1"
+      ],
+      "content_id": "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-duplicitous-manuscript-006",
+      "content_kind": "item",
+      "created": true,
+      "evidence_path": "data/content-ir/compiled/production-runtime-results-XV.json",
+      "item_name": "两面花言|Duplicitous Manuscript",
+      "item_state_persisted": true,
+      "operation_transaction_persisted": true,
+      "operations": [
+        {
+          "confirm": true,
+          "idempotency_replayed": true,
+          "operation": "attune",
+          "output": {
+            "after": {
+              "active_attunements": 1,
+              "armor_class": 10,
+              "attuned": true
+            },
+            "before": {
+              "armor_class": 10,
+              "charges": 3,
+              "equipped": false,
+              "quantity": 1
+            },
+            "confirmed": true,
+            "operation": "attune",
+            "slot": null,
+            "tattoo_lifecycle": null,
+            "warnings": []
+          },
+          "preview": true,
+          "replay": true
+        },
+        {
+          "confirm": true,
+          "idempotency_replayed": true,
+          "operation": "use_action",
+          "output": {
+            "after": {
+              "action_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:duplicitous-manuscript:006:action:1",
+              "armor_class": 10,
+              "charges": 2,
+              "rules_kernel_consumer": "item.granted_action.v1"
+            },
+            "before": {
+              "armor_class": 10,
+              "charges": 3,
+              "equipped": false,
+              "quantity": 1
+            },
+            "confirmed": true,
+            "operation": "use_action",
+            "slot": null,
+            "tattoo_lifecycle": null,
+            "warnings": []
+          },
+          "preview": true,
+          "replay": true
+        }
+      ],
+      "persisted": {
+        "attuned": true,
+        "charges": 2,
+        "item_fingerprint": "f4e980349d4cd65c13f2f50c71d39296c2eaf0b768f30f7d328551aa6c26067f",
+        "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-duplicitous-manuscript-006",
+        "operation_transaction_count": 2,
+        "tattoo_lifecycle": null,
+        "version": 3
+      },
+      "preview_confirm_replay": true,
+      "tattoo_lifecycle_persisted": true,
+      "typed_consumer": true,
+      "typed_projection_consumers": [
+        "item.attunement.v1",
+        "item.charge_resource.v1",
+        "item.equipment_modifier.v1",
+        "item.granted_action.v1"
+      ]
+    },
     "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-far-realm-shard-008": {
       "attunement_persisted": true,
       "charge_lifecycle_persisted": true,
@@ -1300,6 +1743,95 @@
       "typed_consumer": true,
       "typed_projection_consumers": [
         "item.attunement.v1",
+        "item.equipment_modifier.v1",
+        "item.granted_action.v1"
+      ]
+    },
+    "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-fulminating-treatise-009": {
+      "attunement_persisted": true,
+      "charge_lifecycle_persisted": true,
+      "compile_status": "full",
+      "consumer_ids": [
+        "item.attunement.v1",
+        "item.charge_resource.v1",
+        "item.equipment_modifier.v1",
+        "item.granted_action.v1"
+      ],
+      "content_id": "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-fulminating-treatise-009",
+      "content_kind": "item",
+      "created": true,
+      "evidence_path": "data/content-ir/compiled/production-runtime-results-XV.json",
+      "item_name": "爆鸣专论|Fulminating Treatise",
+      "item_state_persisted": true,
+      "operation_transaction_persisted": true,
+      "operations": [
+        {
+          "confirm": true,
+          "idempotency_replayed": true,
+          "operation": "attune",
+          "output": {
+            "after": {
+              "active_attunements": 1,
+              "armor_class": 10,
+              "attuned": true
+            },
+            "before": {
+              "armor_class": 10,
+              "charges": 3,
+              "equipped": false,
+              "quantity": 1
+            },
+            "confirmed": true,
+            "operation": "attune",
+            "slot": null,
+            "tattoo_lifecycle": null,
+            "warnings": []
+          },
+          "preview": true,
+          "replay": true
+        },
+        {
+          "confirm": true,
+          "idempotency_replayed": true,
+          "operation": "use_action",
+          "output": {
+            "after": {
+              "action_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:fulminating-treatise:009:action:1",
+              "armor_class": 10,
+              "charges": 2,
+              "rules_kernel_consumer": "item.granted_action.v1"
+            },
+            "before": {
+              "armor_class": 10,
+              "charges": 3,
+              "equipped": false,
+              "quantity": 1
+            },
+            "confirmed": true,
+            "operation": "use_action",
+            "slot": null,
+            "tattoo_lifecycle": null,
+            "warnings": []
+          },
+          "preview": true,
+          "replay": true
+        }
+      ],
+      "persisted": {
+        "attuned": true,
+        "charges": 2,
+        "item_fingerprint": "b153c21cf2728a5a8c34041cf0f041f1d0eb6dd1d499eeeaa8a756dc7442d114",
+        "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-fulminating-treatise-009",
+        "operation_transaction_count": 2,
+        "tattoo_lifecycle": null,
+        "version": 3
+      },
+      "preview_confirm_replay": true,
+      "tattoo_lifecycle_persisted": true,
+      "typed_consumer": true,
+      "typed_projection_consumers": [
+        "item.attunement.v1",
+        "item.charge_resource.v1",
         "item.equipment_modifier.v1",
         "item.granted_action.v1"
       ]
@@ -1632,6 +2164,206 @@
         "item.attunement.v1",
         "item.charge_resource.v1",
         "item.equipment_modifier.v1"
+      ]
+    },
+    "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-protective-verses-015": {
+      "attunement_persisted": true,
+      "charge_lifecycle_persisted": true,
+      "compile_status": "full",
+      "consumer_ids": [
+        "item.attunement.v1",
+        "item.charge_resource.v1",
+        "item.equipment_modifier.v1",
+        "item.granted_action.v1"
+      ],
+      "content_id": "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-protective-verses-015",
+      "content_kind": "item",
+      "created": true,
+      "evidence_path": "data/content-ir/compiled/production-runtime-results-XV.json",
+      "item_name": "守御诗篇|Protective Verses",
+      "item_state_persisted": true,
+      "operation_transaction_persisted": true,
+      "operations": [
+        {
+          "confirm": true,
+          "idempotency_replayed": true,
+          "operation": "attune",
+          "output": {
+            "after": {
+              "active_attunements": 1,
+              "armor_class": 10,
+              "attuned": true
+            },
+            "before": {
+              "armor_class": 10,
+              "charges": 3,
+              "equipped": false,
+              "quantity": 1
+            },
+            "confirmed": true,
+            "operation": "attune",
+            "slot": null,
+            "tattoo_lifecycle": null,
+            "warnings": []
+          },
+          "preview": true,
+          "replay": true
+        },
+        {
+          "confirm": true,
+          "idempotency_replayed": true,
+          "operation": "use_action",
+          "output": {
+            "after": {
+              "action_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:protective-verses:015:action:1",
+              "armor_class": 10,
+              "charges": 3,
+              "rules_kernel_consumer": "item.granted_action.v1"
+            },
+            "before": {
+              "armor_class": 10,
+              "charges": 3,
+              "equipped": false,
+              "quantity": 1
+            },
+            "confirmed": true,
+            "operation": "use_action",
+            "slot": null,
+            "tattoo_lifecycle": null,
+            "warnings": []
+          },
+          "preview": true,
+          "replay": true
+        },
+        {
+          "confirm": true,
+          "idempotency_replayed": true,
+          "operation": "use_charge",
+          "output": {
+            "after": {
+              "armor_class": 10,
+              "charges": 2
+            },
+            "before": {
+              "armor_class": 10,
+              "charges": 3,
+              "equipped": false,
+              "quantity": 1
+            },
+            "confirmed": true,
+            "operation": "use_charge",
+            "slot": null,
+            "tattoo_lifecycle": null,
+            "warnings": []
+          },
+          "preview": true,
+          "replay": true
+        }
+      ],
+      "persisted": {
+        "attuned": true,
+        "charges": 2,
+        "item_fingerprint": "f2370f1a50a48f0d018d2d1bbab33a3119ec6793e874529cb9813c8330dd3fa4",
+        "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-protective-verses-015",
+        "operation_transaction_count": 3,
+        "tattoo_lifecycle": null,
+        "version": 4
+      },
+      "preview_confirm_replay": true,
+      "tattoo_lifecycle_persisted": true,
+      "typed_consumer": true,
+      "typed_projection_consumers": [
+        "item.attunement.v1",
+        "item.charge_resource.v1",
+        "item.equipment_modifier.v1",
+        "item.granted_action.v1"
+      ]
+    },
+    "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-reveler-s-concertina-016": {
+      "attunement_persisted": true,
+      "charge_lifecycle_persisted": true,
+      "compile_status": "full",
+      "consumer_ids": [
+        "item.attunement.v1",
+        "item.equipment_modifier.v1",
+        "item.granted_action.v1"
+      ],
+      "content_id": "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-reveler-s-concertina-016",
+      "content_kind": "item",
+      "created": true,
+      "evidence_path": "data/content-ir/compiled/production-runtime-results-XV.json",
+      "item_name": "狂宴手风琴|Reveler's Concertina",
+      "item_state_persisted": true,
+      "operation_transaction_persisted": true,
+      "operations": [
+        {
+          "confirm": true,
+          "idempotency_replayed": true,
+          "operation": "attune",
+          "output": {
+            "after": {
+              "active_attunements": 1,
+              "armor_class": 10,
+              "attuned": true
+            },
+            "before": {
+              "armor_class": 10,
+              "charges": null,
+              "equipped": false,
+              "quantity": 1
+            },
+            "confirmed": true,
+            "operation": "attune",
+            "slot": null,
+            "tattoo_lifecycle": null,
+            "warnings": []
+          },
+          "preview": true,
+          "replay": true
+        },
+        {
+          "confirm": true,
+          "idempotency_replayed": true,
+          "operation": "use_action",
+          "output": {
+            "after": {
+              "action_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:reveler-s-concertina:016:action:1",
+              "armor_class": 10,
+              "charges": null,
+              "rules_kernel_consumer": "item.granted_action.v1"
+            },
+            "before": {
+              "armor_class": 10,
+              "charges": null,
+              "equipped": false,
+              "quantity": 1
+            },
+            "confirmed": true,
+            "operation": "use_action",
+            "slot": null,
+            "tattoo_lifecycle": null,
+            "warnings": []
+          },
+          "preview": true,
+          "replay": true
+        }
+      ],
+      "persisted": {
+        "attuned": true,
+        "charges": null,
+        "item_fingerprint": "4b9428dbee3a0140db54532a3e722e3a929acbae5367dd3ea5b89c6a21a7fc3a",
+        "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-reveler-s-concertina-016",
+        "operation_transaction_count": 2,
+        "tattoo_lifecycle": null,
+        "version": 3
+      },
+      "preview_confirm_replay": true,
+      "tattoo_lifecycle_persisted": true,
+      "typed_consumer": true,
+      "typed_projection_consumers": [
+        "item.attunement.v1",
+        "item.equipment_modifier.v1",
+        "item.granted_action.v1"
       ]
     },
     "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-8d7814d75b94-003": {
@@ -3980,18 +4712,26 @@
     "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-arcane-grimoire-002",
     "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-bloodwell-vial-003",
     "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-guardian-emblem-005",
+    "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-moon-sickle-006",
+    "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-nature-s-mantle-007",
     "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-rhythm-maker-s-drum-008",
     "content.tashas-cauldron.item.tashas-cauldron-atom-62c7a0c6a042e571b17d35e3-dfaab0b0f93c-000",
+    "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-b106ea54c961-000",
     "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-alchemical-compendium-000",
+    "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-astral-shard-001",
     "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-astromancy-archive-002",
     "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-atlas-of-endless-horizons-003",
     "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-bell-branch-004",
     "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-devotee-s-censer-005",
+    "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-duplicitous-manuscript-006",
     "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-far-realm-shard-008",
+    "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-fulminating-treatise-009",
     "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-heart-weaver-s-primer-010",
     "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-libram-of-souls-and-flesh-011",
     "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-lyre-of-building-012",
     "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-planecaller-s-codex-014",
+    "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-protective-verses-015",
+    "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-reveler-s-concertina-016",
     "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-8d7814d75b94-003",
     "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-b9cb8e43543d-007",
     "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-c27398cf29fe-010",
