@@ -559,7 +559,13 @@ class SpellEconomyService:
                 )
             )
             if old:
-                return dict(old.after_snapshot)
+                replay = dict(old.after_snapshot or {})
+                # ``character_after`` is an internal transaction snapshot for
+                # rollback/audit.  It is deliberately not part of the public
+                # spell-confirm response, so an idempotent replay is byte
+                # identical to the first confirmation.
+                replay.pop("character_after", None)
+                return replay
             preview = self.spell_preview(cid, data)
             if preview["preview_token"] != token:
                 raise VersionConflict("spell preview", "state", 1, 2)
