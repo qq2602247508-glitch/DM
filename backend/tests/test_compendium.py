@@ -466,6 +466,12 @@ def test_merchant_generation_uses_real_atoms_before_original_fallback(
     assert len(shops) == 1
     assert shops[0]["name"] == "月灯杂货铺"
     assert len(shops[0]["stock"]) == 4
+    assert shops[0]["brief"] == "给五级法师准备的奥术远行补给"
+    assert shops[0]["location_name"] == "长桥市场"
+    assert shops[0]["scene_name"] == "月灯杂货铺"
+    assert shops[0]["armor_class"] == 10
+    assert shops[0]["hp"] == 9
+    assert shops[0]["max_hp"] == 9
     originals = campaign_client.get(f"{root}/compendium?source_kind=original").json()
     assert originals["total"] == 0
 

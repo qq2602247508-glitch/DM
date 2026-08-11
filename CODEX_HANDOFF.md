@@ -2732,3 +2732,8 @@ git diff --check
 - 下一轮最高 completion-unlock 候选：继续从已覆盖的 saving throw + area + damage +
   upcast 同构法术，或 Tasha 固定 proficiency/choice 特性中筛选；不为复杂召唤、自由
   选择、多目标反应和强制移动系统硬建底层 capability。
+# 2026-08-12 合并远程 main 的并行交接
+
+- 本地 Round 1 提交在共同祖先 `2337f8a` 之后与 `origin/main` 分叉；已通过普通 merge 保留双方历史，不使用 force push 或 rebase。
+- 远程 `origin/main` 的 `e58e62b` 线包含 Ollama handoff、campaign conversation、场景语义地图、商店和玩家/游戏桌 UI 更新；这些变更已进入本地 merge 待验收状态。
+- 当前交接的规则平台重点仍是本地 Round 1 的 Tasha status layers 与 isolated Item registry；远程 UI/助手变更不应被当成 Tasha production 证据。

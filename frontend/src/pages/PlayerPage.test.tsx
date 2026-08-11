@@ -260,7 +260,6 @@ describe("PlayerPage", () => {
     expect(guidance).toHaveTextContent("洞悉");
     expect(screen.getByRole("heading", { name: "公开游戏日志" }).parentElement).not.toHaveTextContent("轮到你们回应");
   });
-
   it("sends selected hit dice with a short-rest request", async () => {
     const snapshot = {
       room: { id: "room-1", status: "active", expires_at: "2026-07-28T00:00:00Z" },
