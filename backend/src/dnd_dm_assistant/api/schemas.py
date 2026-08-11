@@ -2488,9 +2488,22 @@ class ContentIRRuntimeRequest(BaseModel):
     actor_version: int = Field(ge=1)
     target_combatant_id: str | None = None
     target_version: int | None = Field(default=None, ge=1)
+    target_combatant_ids: list[str] = Field(default_factory=list, max_length=20)
+    target_versions: dict[str, int] = Field(default_factory=dict, max_length=20)
+    area_shape: Literal["cone", "line", "cube", "sphere", "cylinder"] | None = None
+    area_size_ft: int | None = Field(default=None, ge=5, le=1_000)
+    area_width_ft: int | None = Field(default=None, ge=5, le=1_000)
+    area_height_ft: int | None = Field(default=None, ge=5, le=1_000)
+    area_anchor_row: int | None = Field(default=None, ge=1, le=1_000)
+    area_anchor_col: int | None = Field(default=None, ge=1, le=1_000)
+    area_anchor_height_ft: int = Field(default=0, ge=-10_000, le=10_000)
+    area_include_actor: bool = False
     resolution_total: int | None = Field(default=None, ge=0, le=100_000)
     attack_roll_total: int | None = Field(default=None, ge=-100, le=1_000)
     save_succeeded: bool | None = None
+    save_succeeded_by_target: dict[str, bool] = Field(default_factory=dict, max_length=20)
+    attack_hit: bool | None = None
+    condition_to_remove: Literal["charmed", "frightened", "poisoned"] | None = None
     preview_token: str | None = None
     idempotency_key: str | None = Field(default=None, min_length=8, max_length=120)
 
@@ -2503,6 +2516,19 @@ class ContentIRRuntimeRequest(BaseModel):
                 raise ValueError("spell content runtime requires slot_level")
         if self.content_kind == "feature" and self.known_spell_id is not None:
             raise ValueError("feature content runtime cannot bind known_spell_id")
+        target_ids = [
+            item for item in [self.target_combatant_id, *self.target_combatant_ids] if item
+        ]
+        if len(target_ids) != len(set(target_ids)):
+            raise ValueError("content runtime target ids must be unique")
+        if self.target_versions and not set(self.target_versions).issubset(set(target_ids)):
+            raise ValueError("target_versions contains an unknown target")
+        if self.area_shape is not None and (
+            self.area_size_ft is None
+            or self.area_anchor_row is None
+            or self.area_anchor_col is None
+        ):
+            raise ValueError("area runtime requires shape, size and anchor row/col")
         return self
 
 

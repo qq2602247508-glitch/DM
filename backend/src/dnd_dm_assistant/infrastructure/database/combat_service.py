@@ -17191,12 +17191,16 @@ class CombatEngineService:
                         raise ValueError("目标攻击修正的 operation 不受支持")
                     if stat == "light_radius_ft" and operation != "set":
                         raise ValueError("光照范围修正必须使用 set")
-                    if stat not in {"attack_roll", "light_radius_ft"}:
+                    if stat not in {"attack_roll", "light_radius_ft", "movement_budget"}:
                         raise ValueError("目标限时修正的 stat 不受支持")
                     duration_unit = str(effect.get("duration_unit") or "minutes").strip()
                     duration_value = self._state_int(effect.get("duration_value"), 0)
-                    if duration_unit != "minutes" or duration_value < 1:
-                        raise ValueError("目标限时修正必须声明正数分钟持续时间")
+                    if duration_unit not in {"minutes", "turns"} or duration_value < 1:
+                        raise ValueError("目标限时修正必须声明正数分钟或回合持续时间")
+                    if duration_unit == "turns" and duration_value != 1:
+                        raise ValueError("当前回合限时修正只支持 1 回合")
+                    if stat == "movement_budget" and operation != "add":
+                        raise ValueError("移动预算限时修正必须使用 add")
                     snapshot = dict(actor.snapshot_json or {})
                     raw_timed = snapshot.get("timed_feature_modifiers")
                     timed = (
@@ -17208,7 +17212,9 @@ class CombatEngineService:
                     timed = [
                         item for item in timed if str(item.get("source_id") or "") != source_id
                     ]
-                    expires_at = datetime.now(UTC) + timedelta(minutes=duration_value)
+                    expires_at = datetime.now(UTC) + timedelta(
+                        minutes=duration_value if duration_unit == "minutes" else 1
+                    )
                     timed.append(
                         {
                             "id": f"{source_id}:{target.id}",
@@ -17229,6 +17235,8 @@ class CombatEngineService:
                     if state_key:
                         snapshot[state_key] = target.id
                     actor.snapshot_json = snapshot
+                    if stat == "movement_budget":
+                        target.movement_remaining_ft += self._state_int(modifier.get("value"), 0)
                     result["targeted_timed_modifier_granted"] = {
                         **dict(modifier),
                         "target_combatant_id": target.id,
