@@ -1,0 +1,83 @@
+{
+  "candidate_clauses": [
+    {
+      "required": true,
+      "type": "concentration"
+    }
+  ],
+  "candidate_id": "tashas-cauldron:candidate:5473a33b48053a0271120a31",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "area_shape": null,
+    "area_size_ft": null,
+    "casting_time": "1 动作",
+    "classes": [
+      "魔契师",
+      "法师"
+    ],
+    "components": "V, S, \nM（装有类人生物血液的红宝石瓶，价值至少 600gp）",
+    "concentration": true,
+    "conditions": null,
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "专注，至多 1 \n小时",
+    "half_damage_on_save": null,
+    "healing": null,
+    "level": 6,
+    "max_targets": null,
+    "movement": null,
+    "range": "90 尺",
+    "reaction": null,
+    "resolution_kind": "summon",
+    "ritual": false,
+    "save": null,
+    "school": "咒法",
+    "summon": {
+      "controller": "caster",
+      "count": 1,
+      "creature_ref": "邪魔灵魄Fiendish Spirit",
+      "enters_combat": true,
+      "initiative_mode": "shared_with_source"
+    },
+    "upcast_text": "升环施法。 使用七环或更高法术位施展该法术时，该生物数据中使用更高的法术环数。\n邪魔灵魄Fiendish \n Spirit 大型邪魔，无阵营 AC：12+法术等级 \n (天生护甲) HP：50（仅限恶魔）或40（仅限魔鬼）或60（仅限尤格罗斯魔）+15每比六环高的法术等级 速度：40 尺，攀爬40 \n 尺（仅限恶魔），飞行60 \n 尺（仅限魔鬼） 力量13（+1）敏捷16（+3）体质15（+2） 智力10（+0）感知10（+0）魅力16（+3） 伤害抗性：火焰 伤害免疫：毒素 状态免疫：中毒 感官：黑暗视觉60 \n 尺，被动察觉10 语言：深渊语，炼狱语，心灵感应60 尺 挑战等级：- 熟练加值与你相等 焚身爆Death Throes（仅限恶魔）。 邪魔生命值降为0时或法术结束时将爆炸，其周围10 \n 尺内每个生物必须进行一次敏捷豁免对抗你的法术豁免DC，豁免失败则将受到2d10+法术环位的火焰伤害，豁免成功则伤害减半。 魔鬼视界Devil's \n Sight（仅限魔鬼）。 魔法黑暗不会阻碍邪魔的黑暗视觉。 魔法抗性Magical \n Resistance。 邪魔为抵抗法术和其他魔法效应而作的豁免检定具有优势。 动作Actions 多重攻击Multiattacks。 邪魔发动等同于法术环数一半的次数的攻击（向下取整）。 啃咬Bite（仅限于恶魔）。 近战武器攻击：命中采取你的法术攻击调整值，触及5尺，单一目标。命中：1d12+3+法术环数的暗蚀伤害。 爪击Claws（仅限于尤格罗斯魔）。 近战武器攻击：命中采取你的法术攻击调整值，触及5尺，单一目标。命中：1d8+3+法术环数的挥砍伤害。发动攻击后，邪魔可以魔法性地传送至一处30 \n 尺内其可见且未占据空间。 投掷烈焰Hurl \n Flame（仅限于魔鬼）。 远程法术攻击：命中采取你的法术攻击调整值，射程150 \n 尺，单一目标。命中：2d6+3+法术环数的火焰伤害。如果目标时未被着装或携带的可燃物件，则将被点燃。"
+  },
+  "exact_fields": {
+    "concentration": true
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "邪魔召唤术",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "塔莎的万事坩埚",
+  "source_evidence": {
+    "source_path": "塔莎的万事坩埚/法术/法术详述/6环.html",
+    "source_text": "#### 邪魔召唤术｜Summon Fiend\n\n*六环 咒法（魔契师、法师）**Legacy*\n**施法时间：**1 动作\n**施法距离：**90 尺\n**法术成分：**V, S,\nM（装有类人生物血液的红宝石瓶，价值至少 600gp）\n**持续时间：**专注，至多 1\n小时\n你唤来一个邪魔灵魄。其在施法距离内你可见的一个未占据位置化为实体。这一实体使用下面的**邪魔灵魄Fiendish\nSpirit**的数据。当你施展法术时，从恶魔Demon，魔鬼Devil或尤格罗斯魔Yugoloth中选择一种。此生物外形如同你所选择类型的邪魔，其资料表中的部分特性也受此影响。当其生命值降至\n0\n或法术结束时，生物消失。\n该生物在法术持续时间内对你和你的同伴们友好。在战斗中，该生物使用你的先攻，但在你回合结束后立即行动。它遵从于你的口头指令（无需任何动作）。如果你不发令，它将执行回避动作并远离危险。\n**升环施法。**使用七环或更高法术位施展该法术时，该生物数据中使用更高的法术环数。\n\n> **邪魔灵魄Fiendish\n>  Spirit**\n> *大型邪魔，无阵营*\n> AC：12+法术等级\n>  (天生护甲)\n> HP：50（仅限恶魔）或40（仅限魔鬼）或60（仅限尤格罗斯魔）+15每比六环高的法术等级\n> 速度：40 尺，攀爬40\n>  尺（仅限恶魔），飞行60\n>  尺（仅限魔鬼）\n> 力量13（+1）敏捷16（+3）体质15（+2）\n> 智力10（+0）感知10（+0）魅力16（+3）\n> 伤害抗性：火焰\n> 伤害免疫：毒素\n> 状态免疫：中毒\n> 感官：黑暗视觉60\n>  尺，被动察觉10\n> 语言：深渊语，炼狱语，心灵感应60 尺\n> 挑战等级：- 熟练加值与你相等\n>\n>\n>\n> **焚身爆Death Throes（仅限恶魔）。**邪魔生命值降为0时或法术结束时将爆炸，其周围10\n>  尺内每个生物必须进行一次敏捷豁免对抗你的法术豁免DC，豁免失败则将受到2d10+法术环位的火焰伤害，豁免成功则伤害减半。\n> **魔鬼视界Devil's\n>  Sight（仅限魔鬼）。**魔法黑暗不会阻碍邪魔的黑暗视觉。\n> **魔法抗性Magical\n>  Resistance。**邪魔为抵抗法术和其他魔法效应而作的豁免检定具有优势。\n> **动作Actions**\n> **多重攻击Multiattacks。**邪魔发动等同于法术环数一半的次数的攻击（向下取整）。\n> **啃咬Bite（仅限于恶魔）。**近战武器攻击：命中采取你的法术攻击调整值，触及5尺，单一目标。命中：1d12+3+法术环数的暗蚀伤害。\n> **爪击Claws（仅限于尤格罗斯魔）。**近战武器攻击：命中采取你的法术攻击调整值，触及5尺，单一目标。命中：1d8+3+法术环数的挥砍伤害。发动攻击后，邪魔可以魔法性地传送至一处30\n>  尺内其可见且未占据空间。\n> **投掷烈焰Hurl\n>  Flame（仅限于魔鬼）。**远程法术攻击：命中采取你的法术攻击调整值，射程150\n>  尺，单一目标。命中：2d6+3+法术环数的火焰伤害。如果目标时未被着装或携带的可燃物件，则将被点燃。"
+  },
+  "source_fingerprint": "ca157579997cf7c55e423ef370d5e92bd854a355828eea66d3bfda5471b39bc4",
+  "source_path": "塔莎的万事坩埚/法术/法术详述/6环.html",
+  "source_record_id": "5473a33b48053a0271120a31",
+  "spell_id": "5473a33b48053a0271120a31",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "concentration"
+    ],
+    "template_fingerprint": "c6cf559b317883e1043d55b34f4a36da44766b6d3a4828662a90474ca1486880",
+    "template_id": "spell.shape.005"
+  },
+  "uncertain_fields": {}
+}

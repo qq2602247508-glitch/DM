@@ -1,0 +1,84 @@
+{
+  "candidate_clauses": [
+    {
+      "save_ability": "智力",
+      "type": "saving_throw"
+    },
+    {
+      "damage_type": "心灵",
+      "expression": "14d6",
+      "on_failure": "full",
+      "type": "damage"
+    }
+  ],
+  "candidate_id": "xanathars-guide:candidate:3552e12594b2d8e6067f24f5",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "1 动作",
+    "classes": [
+      "吟游诗人",
+      "术士",
+      "魔契师",
+      "法师"
+    ],
+    "components": "S",
+    "concentration": false,
+    "damage_expression": "14d6",
+    "damage_type": "心灵",
+    "duration": "立即",
+    "half_damage_on_save": true,
+    "level": 9,
+    "range": "90 \n尺",
+    "repeat": {
+      "count_expression": "duration",
+      "source": "explicit_timing",
+      "timing": "turn_end"
+    },
+    "resolution_kind": "damage",
+    "ritual": false,
+    "save": "智力豁免",
+    "target_disposition": "creature"
+  },
+  "exact_fields": {
+    "damage_expression": "14d6",
+    "damage_type": "心灵",
+    "save": "智力豁免"
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "心灵尖啸",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "source_path": "珊娜萨的万事指南/法术/法术详述/9环.html",
+    "source_text": "#### 心灵尖啸｜Psychic Scream\n\n*九环 惑控（吟游诗人、术士、魔契师、法师）\n***施法时间：**1 动作\n**施法距离：**90\n尺\n**法术成分：**S\n**持续时间：**立即\n你释放你的心灵力量，轰击施法距离内至多 10 个由你选择的可见生物的心智。智力值为 2\n或更低的生物不受影响。\n每个目标都必须进行一次智力豁免检定。若豁免失败，目标受到 14d6\n心灵伤害并且被震慑。豁免成功则只承受一半且不被震慑。如果一个有头的目标被这个伤害杀死，它的头会爆炸。\n一个被震慑的生物可以在它每个回合结束时重新进行智力豁免。若豁免成功，震慑效果将结束。"
+  },
+  "source_fingerprint": "5c135954c6a56d6edd429c2f5ae81ce67b41de9aa4b6e34215f72e18d8ce664e",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/9环.html",
+  "source_record_id": "3552e12594b2d8e6067f24f5",
+  "spell_id": "3552e12594b2d8e6067f24f5",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "saving_throw",
+      "damage"
+    ],
+    "template_fingerprint": "3c42f68fb11991f0b3609f5d664da8f01323dbde293a556e901df3dc4b8daf72",
+    "template_id": "spell.shape.008"
+  },
+  "uncertain_fields": {}
+}

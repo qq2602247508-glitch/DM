@@ -1,0 +1,18 @@
+{
+  "compile_full_count": 15,
+  "generated_candidate_count": 48,
+  "production_runtime_full_count": 5,
+  "represented_pack": "tashas-cauldron",
+  "reviewed_authored_typed_ir_count": 15,
+  "runtime_preview_full_count": 15,
+  "scan_count": 48,
+  "schema_version": "feature-ir-official-expansion-batch-II-1",
+  "status": "production_gate_passed",
+  "thresholds": {
+    "compile_full": 10,
+    "generated": 25,
+    "production_runtime_full": 5,
+    "reviewed": 15,
+    "scan": 40
+  }
+}

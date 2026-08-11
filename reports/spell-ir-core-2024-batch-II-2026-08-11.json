@@ -1,0 +1,18 @@
+{
+  "compile_full_count": 60,
+  "detail_candidate_count": 391,
+  "generated_candidate_count": 100,
+  "production_runtime_full_count": 10,
+  "reviewed_authored_typed_ir_count": 60,
+  "runtime_preview_full_count": 60,
+  "scan_count": 391,
+  "schema_version": "spell-ir-core-2024-batch-II-1",
+  "status": "production_gate_passed",
+  "thresholds": {
+    "compile_full": 30,
+    "generated": 70,
+    "production_runtime_full": 10,
+    "reviewed": 40,
+    "scan": 100
+  }
+}

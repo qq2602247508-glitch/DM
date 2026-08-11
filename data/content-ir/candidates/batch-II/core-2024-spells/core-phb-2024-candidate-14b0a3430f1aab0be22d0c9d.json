@@ -1,0 +1,84 @@
+{
+  "candidate_clauses": [
+    {
+      "shape": "sphere",
+      "size_ft": 5,
+      "type": "area"
+    },
+    {
+      "condition": "倒地",
+      "type": "apply_condition"
+    }
+  ],
+  "candidate_id": "core-phb-2024:candidate:14b0a3430f1aab0be22d0c9d",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "area_shape": "sphere",
+    "area_size_ft": 5,
+    "casting_time": "动作",
+    "classes": [
+      "吟游诗人",
+      "牧师",
+      "圣武士"
+    ],
+    "components": "V",
+    "concentration": false,
+    "conditions": [
+      "倒地"
+    ],
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "立即",
+    "level": 1,
+    "range": "60 尺",
+    "resolution_kind": "control",
+    "ritual": false,
+    "save": "感知豁免",
+    "target_disposition": "creature",
+    "upcast_text": "升环施法。 使用的法术位每比一环高一环，你就可以额外选择一个生物作为目标。"
+  },
+  "exact_fields": {
+    "area_shape": "sphere",
+    "area_size_ft": 5,
+    "conditions": [
+      "倒地"
+    ]
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "命令术",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "source_path": "玩家手册2024/法术详述/1环.htm",
+    "source_text": "#### 命令术｜Command\n\n*一环 惑控（吟游诗人、牧师、圣武士）*\n**施法时间：**动作\n**施法距离：**60 尺\n**法术成分：**V\n**持续时间：**立即\n你对施法距离内一个你能看见的生物说出一个单词的命令。目标生物必须通过一次感知豁免，否则在它自己的下一回合中，其必须服从这道命令行事。从以下选项中选择一条命令：\n\n- **过来Approach。**目标以最短最直接的路线向你移动，若其到达你5尺范围内，其会结束自己的回合。**放下Drop。**目标放下持握的任何东西，然后结束自己的回合。**走开Flee。**目标消耗其整个回合，以最快最有效的方式远离你。**趴下Grovel。**目标陷入倒地状态并结束自己的回合。**立定Halt。**在其回合内，目标不进行移动且不作任何动作和附赠动作。\n\n**升环施法。**使用的法术位每比一环高一环，你就可以额外选择一个生物作为目标。"
+  },
+  "source_fingerprint": "95518322b81947616d7e36432aa7dda24d76d2d80dbd5f420e5dd8e62b226361",
+  "source_path": "玩家手册2024/法术详述/1环.htm",
+  "source_record_id": "14b0a3430f1aab0be22d0c9d",
+  "spell_id": "14b0a3430f1aab0be22d0c9d",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "area",
+      "apply_condition"
+    ],
+    "template_fingerprint": "af295bb9885e22721b4b0ce62f8bf849a6eba5ca49ce60a0868f55c840a15edb",
+    "template_id": "spell.shape.009"
+  },
+  "uncertain_fields": {}
+}

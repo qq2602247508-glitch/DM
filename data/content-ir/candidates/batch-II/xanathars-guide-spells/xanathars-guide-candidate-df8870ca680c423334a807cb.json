@@ -1,0 +1,83 @@
+{
+  "candidate_clauses": [
+    {
+      "save_ability": "感知",
+      "type": "saving_throw"
+    },
+    {
+      "damage_type": "心灵",
+      "expression": "8d8",
+      "on_failure": "full",
+      "type": "damage"
+    },
+    {
+      "required": true,
+      "type": "concentration"
+    }
+  ],
+  "candidate_id": "xanathars-guide:candidate:df8870ca680c423334a807cb",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "1 动作",
+    "classes": [
+      "魔契师",
+      "法师"
+    ],
+    "components": "V、M（一滴沥青与一滴水银的混合物）",
+    "concentration": true,
+    "damage_expression": "8d8",
+    "damage_type": "心灵",
+    "duration": "专注，至多 10 分钟",
+    "level": 8,
+    "range": "150 \n尺",
+    "resolution_kind": "damage",
+    "ritual": false,
+    "save": "感知豁免",
+    "school": "塑能",
+    "target_disposition": "creature"
+  },
+  "exact_fields": {
+    "concentration": true,
+    "damage_expression": "8d8",
+    "damage_type": "心灵",
+    "save": "感知豁免"
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "疯狂之暗",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "source_path": "珊娜萨的万事指南/法术/法术详述/8环.html",
+    "source_text": "#### 疯狂之暗｜Maddening Darkness\n\n*八环 塑能（魔契师、法师）*\n**施法时间：**1 动作\n**施法距离：**150\n尺\n**法术成分：**V、M（一滴沥青与一滴水银的混合物）\n**持续时间：**专注，至多 10 分钟\n魔法黑暗从范围内你指定的一点延伸至半径 60\n尺的球形范围，直到法术结束。黑暗会蔓延过拐角。生物的黑暗视觉不能看穿这片黑暗。非魔法的光源，以及八环和八环以下法术创造的光亮不能照亮这片区域。\n尖叫声，低语声，以及疯狂的大笑声时不时能从球形范围内听见。每当一名生物在范围内开始回合，它必须进行一次感知豁免，失败时将受到8d8心灵伤害，成功则只承受一半。"
+  },
+  "source_fingerprint": "28a893e836fea7e7a5fdf9346ce8a08bc3ef8a7e6a854dd1d021db20a3a054ce",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/8环.html",
+  "source_record_id": "df8870ca680c423334a807cb",
+  "spell_id": "df8870ca680c423334a807cb",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "saving_throw",
+      "damage",
+      "concentration"
+    ],
+    "template_fingerprint": "3c42f68fb11991f0b3609f5d664da8f01323dbde293a556e901df3dc4b8daf72",
+    "template_id": "spell.shape.008"
+  },
+  "uncertain_fields": {}
+}

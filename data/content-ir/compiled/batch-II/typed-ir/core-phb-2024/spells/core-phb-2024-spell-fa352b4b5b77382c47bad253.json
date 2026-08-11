@@ -1,0 +1,92 @@
+{
+  "capability_registry": {
+    "id": "spell",
+    "version": "content-capabilities-1"
+  },
+  "casting_time": "动作",
+  "clause_boundaries": {
+    "target": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "士）* **施法时间：**动作 **施法距离：**120尺 **法术成分：**V、S **持续时间：**立即 你向施法距离内的一名生物或一个物件施展术法能量。对目标进行一次远程攻击检定，命中时，目标将受到1d8点伤害。由你选择法术造成何种类型的伤害：强酸，寒冷，火焰，闪电，毒素，心灵或雷鸣。 如果你在此法术的任一d8骰上丢出了8，你便可以立刻再丢一枚d8，并将其加入此法术的伤害中。施展此法术时，你最多以此法造成的额外d8伤害骰数量等同于你的施法属性调整值。 **戏法强化。**到达特定等级后，此戏法的初始伤害将增加1d8：5级（2d8）、11级（3d8）、17级（4d8）。",
+      "source_heading": "术法爆发"
+    }
+  },
+  "clause_identity": [
+    "core-phb-2024:spell:fa352b4b5b77382c47bad253:target"
+  ],
+  "clauses": [
+    {
+      "clause_id": "target",
+      "count": 1,
+      "evidence_ref": "士）* **施法时间：**动作 **施法距离：**120尺 **法术成分：**V、S **持续时间：**立即 你向施法距离内的一名生物或一个物件施展术法能量。对目标进行一次远程攻击检定，命中时，目标将受到1d8点伤害。由你选择法术造成何种类型的伤害：强酸，寒冷，火焰，闪电，毒素，心灵或雷鸣。 如果你在此法术的任一d8骰上丢出了8，你便可以立刻再丢一枚d8，并将其加入此法术的伤害中。施展此法术时，你最多以此法造成的额外d8伤害骰数量等同于你的施法属性调整值。 **戏法强化。**到达特定等级后，此戏法的初始伤害将增加1d8：5级（2d8）、11级（3d8）、17级（4d8）。",
+      "kind": "one_creature",
+      "type": "target_selection",
+      "visibility": "visible"
+    }
+  ],
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "concentration": false,
+  "duration": "立即",
+  "edition": "2024",
+  "evidence": [
+    "target: 士）* **施法时间：**动作 **施法距离：**120尺 **法术成分：**V、S **持续时间：**立即 你向施法距离内的一名生物或一个物件施展术法能量。对目标进行一次远程攻击检定，命中时，目标将受到1d8点伤害。由你选择法术造成何种类型的伤害：强酸，寒冷，火焰，闪电，毒素，心灵或雷鸣。 如果你在此法术的任一d8骰上丢出了8，你便可以立刻再丢一枚d8，并将其加入此法术的伤害中。施展此法术时，你最多以此法造成的额外d8伤害骰数量等同于你的施法属性调整值。 **戏法强化。**到达特定等级后，此戏法的初始伤害将增加1d8：5级（2d8）、11级（3d8）、17级（4d8）。"
+  ],
+  "kind": "spell",
+  "level": 0,
+  "manual_decisions": {
+    "review_gate": "accepted only explicit normalized fields and quoted source evidence",
+    "unresolved_branches": "not promoted when the source does not state attack/save semantics"
+  },
+  "name": "术法爆发",
+  "namespace": "content.core-phb-2024",
+  "pack_id": "core-phb-2024",
+  "pack_version": "source-7011166c19bd",
+  "range": "120尺",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-11-batch-II",
+  "reviewed_fields": [
+    "schema_version",
+    "spell_id",
+    "name",
+    "pack_id",
+    "pack_version",
+    "namespace",
+    "ruleset_version",
+    "source_record_id",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "source_trust",
+    "level",
+    "school",
+    "casting_time",
+    "range",
+    "duration",
+    "concentration",
+    "clauses",
+    "evidence"
+  ],
+  "ruleset_version": "2024",
+  "schema_version": "spell-ir-1",
+  "school": "塑能",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "selected_clause_excerpt": "士）* **施法时间：**动作 **施法距离：**120尺 **法术成分：**V、S **持续时间：**立即 你向施法距离内的一名生物或一个物件施展术法能量。对目标进行一次远程攻击检定，命中时，目标将受到1d8点伤害。由你选择法术造成何种类型的伤害：强酸，寒冷，火焰，闪电，毒素，心灵或雷鸣。 如果你在此法术的任一d8骰上丢出了8，你便可以立刻再丢一枚d8，并将其加入此法术的伤害中。施展此法术时，你最多以此法造成的额外d8伤害骰数量等同于你的施法属性调整值。 **戏法强化。**到达特定等级后，此戏法的初始伤害将增加1d8：5级（2d8）、11级（3d8）、17级（4d8）。",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "a62bf93e71c3ef1ea0e2f81510031e969cbfb84fb0bacf78fda374264f07a291",
+    "source_path": "玩家手册2024/法术详述/0环.htm",
+    "source_text": "#### 术法爆发｜Sorcerous Burst\n\n*塑能 戏法（术士）*\n**施法时间：**动作\n**施法距离：**120尺\n**法术成分：**V、S\n**持续时间：**立即\n你向施法距离内的一名生物或一个物件施展术法能量。对目标进行一次远程攻击检定，命中时，目标将受到1d8点伤害。由你选择法术造成何种类型的伤害：强酸，寒冷，火焰，闪电，毒素，心灵或雷鸣。\n如果你在此法术的任一d8骰上丢出了8，你便可以立刻再丢一枚d8，并将其加入此法术的伤害中。施展此法术时，你最多以此法造成的额外d8伤害骰数量等同于你的施法属性调整值。\n**戏法强化。**到达特定等级后，此戏法的初始伤害将增加1d8：5级（2d8）、11级（3d8）、17级（4d8）。"
+  },
+  "source_fingerprint": "6f7ec180c5d1fb9a668fbd10cb858fe168b13844528e87fbc27e1076ef501d1b",
+  "source_path": "玩家手册2024/法术详述/0环.htm",
+  "source_provenance": {
+    "officiality": "official",
+    "review_basis": "local_source_text_manual_review",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "a62bf93e71c3ef1ea0e2f81510031e969cbfb84fb0bacf78fda374264f07a291",
+    "source_relative_path": "玩家手册2024/法术详述/0环.htm"
+  },
+  "source_record_id": "fa352b4b5b77382c47bad253",
+  "source_trust": "authored_ir",
+  "spell_id": "core-phb-2024:spell:fa352b4b5b77382c47bad253"
+}

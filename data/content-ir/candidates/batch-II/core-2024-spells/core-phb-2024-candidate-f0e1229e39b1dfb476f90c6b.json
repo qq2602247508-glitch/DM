@@ -1,0 +1,61 @@
+{
+  "candidate_clauses": [],
+  "candidate_id": "core-phb-2024:candidate:f0e1229e39b1dfb476f90c6b",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "附赠动作",
+    "classes": [
+      "牧师",
+      "奇械师"
+    ],
+    "components": "V、S、M（一块镜子碎片）",
+    "concentration": false,
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "1 分钟",
+    "level": 1,
+    "range": "30 尺",
+    "ritual": false,
+    "save": "感知豁免",
+    "school": "防护",
+    "target_disposition": "creature"
+  },
+  "exact_fields": {},
+  "kind": "spell_candidate",
+  "missing_fields": [
+    "typed_clause_mapping"
+  ],
+  "name": "庇护术",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target",
+    "typed_clause_mapping"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "source_path": "玩家手册2024/法术详述/1环.htm",
+    "source_text": "#### 庇护术｜Sanctuary\n\n*一环 防护（牧师、奇械师）*\n**施法时间：**附赠动作\n**施法距离：**30 尺\n**法术成分：**V、S、M（一块镜子碎片）\n**持续时间：**1 分钟\n你为施法距离内的一名生物施加守护。在法术终止前，当任何生物将受守护的生物定为其攻击检定或伤害性法术的目标时，该生物都必须成功通过一次感知豁免，否则该生物必须改为选定另一名生物作为新的目标或者失去本次的攻击或法术。不过此法术无法令受术者免受区域效应的影响。\n若受保护生物发动一次攻击，施展一道法术，或是造成任何伤害，则该法术随之终止。"
+  },
+  "source_fingerprint": "44f60ddec39a46ccd408e95285abc4ed08e0f519098d2969d1e0df5d5973fa37",
+  "source_path": "玩家手册2024/法术详述/1环.htm",
+  "source_record_id": "f0e1229e39b1dfb476f90c6b",
+  "spell_id": "f0e1229e39b1dfb476f90c6b",
+  "template_match": {
+    "confidence": "low",
+    "matched_shape": [],
+    "template_fingerprint": "c6cf559b317883e1043d55b34f4a36da44766b6d3a4828662a90474ca1486880",
+    "template_id": "spell.shape.005"
+  },
+  "uncertain_fields": {}
+}

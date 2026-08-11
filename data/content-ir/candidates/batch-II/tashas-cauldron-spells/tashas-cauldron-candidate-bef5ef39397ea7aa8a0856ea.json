@@ -1,0 +1,103 @@
+{
+  "candidate_clauses": [
+    {
+      "save_ability": "敏捷",
+      "type": "saving_throw"
+    },
+    {
+      "damage_type": "强酸",
+      "expression": "2d4",
+      "on_failure": "full",
+      "type": "damage"
+    },
+    {
+      "shape": "line",
+      "size_ft": 30,
+      "type": "area"
+    },
+    {
+      "required": true,
+      "type": "concentration"
+    },
+    {
+      "increments": "2d",
+      "per_slot": 1,
+      "type": "upcast"
+    }
+  ],
+  "candidate_id": "tashas-cauldron:candidate:bef5ef39397ea7aa8a0856ea",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "area_shape": "line",
+    "area_size_ft": 30,
+    "casting_time": "1 动作",
+    "classes": [
+      "奇械师",
+      "术士",
+      "法师"
+    ],
+    "components": "V, S, \nM（一点腐烂的食物）",
+    "concentration": true,
+    "damage_expression": "2d4",
+    "damage_type": "强酸",
+    "duration": "专注，至多 1 分钟",
+    "level": 1,
+    "range": "自身（30 尺线状）",
+    "resolution_kind": "damage",
+    "ritual": false,
+    "save": "敏捷豁免",
+    "school": "塑能",
+    "target_disposition": "creature",
+    "upcast_damage_dice": 2,
+    "upcast_text": "升环施法。 使用二环或更高法术位施展该法术时，你使用的法术位每比一环高 1 环，法术的伤害就增加 \n2d4。"
+  },
+  "exact_fields": {
+    "area_shape": "line",
+    "area_size_ft": 30,
+    "concentration": true,
+    "damage_expression": "2d4",
+    "damage_type": "强酸",
+    "save": "敏捷豁免",
+    "upcast": 2
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "塔莎酸蚀酿",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "塔莎的万事坩埚",
+  "source_evidence": {
+    "source_path": "塔莎的万事坩埚/法术/法术详述/1环.html",
+    "source_text": "#### 塔莎酸蚀酿｜Tasha's Caustic Brew\n\n*一环 塑能（奇械师、术士、法师）*\n**施法时间：**1 动作\n**施法距离：**自身（30 尺线状）\n**法术成分：**V, S,\nM（一点腐烂的食物）\n**持续时间：**专注，至多 1 分钟\n你向一个方向喷涌出一股 30 尺长，5\n尺宽的线状酸液。在线状区域内的每个生物必须进行一次敏捷豁免，豁免失败者被强酸覆盖。强酸会一直存在到法术持续时间结束，或是该生物或其他生物用一个动作刮下或洗下它身上的强酸位置。被强酸覆盖的生物在每个自己回合开始时受到\n2d4 点强酸伤害。\n**升环施法。**使用二环或更高法术位施展该法术时，你使用的法术位每比一环高 1 环，法术的伤害就增加\n2d4。"
+  },
+  "source_fingerprint": "022825b2cb1bbc7bef6261662caa98cc2964ffad60ed5f6d00085bf46f86c736",
+  "source_path": "塔莎的万事坩埚/法术/法术详述/1环.html",
+  "source_record_id": "bef5ef39397ea7aa8a0856ea",
+  "spell_id": "bef5ef39397ea7aa8a0856ea",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "saving_throw",
+      "damage",
+      "area",
+      "concentration",
+      "upcast"
+    ],
+    "template_fingerprint": "af295bb9885e22721b4b0ce62f8bf849a6eba5ca49ce60a0868f55c840a15edb",
+    "template_id": "spell.shape.009"
+  },
+  "uncertain_fields": {}
+}

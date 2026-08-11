@@ -1,0 +1,75 @@
+{
+  "candidate_clauses": [
+    {
+      "required": true,
+      "type": "concentration"
+    }
+  ],
+  "candidate_id": "xanathars-guide:candidate:ed1b7b25d5684456c9b6ebfd",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "1 附赠动作",
+    "classes": [
+      "术士",
+      "魔契师",
+      "法师"
+    ],
+    "components": "V、S",
+    "concentration": true,
+    "damage_expression": "2d8",
+    "damage_type": "心灵",
+    "duration": "专注，至多 1 分钟",
+    "level": 2,
+    "range": "自身",
+    "resolution_kind": "damage",
+    "ritual": false,
+    "school": "幻术",
+    "upcast_text": "升环施法。 当你用三四环施放该法术时，其伤害增加到 3d8。五六环时增加到 4d8。七环或以上则增加到 \n5d8。"
+  },
+  "exact_fields": {
+    "concentration": true
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [
+    "attack_or_save"
+  ],
+  "name": "幽影刃",
+  "required_review_fields": [
+    "action_economy",
+    "attack_or_save",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "source_path": "珊娜萨的万事指南/法术/法术详述/2环.html",
+    "source_text": "#### 幽影刃｜Shadow Blade\n\n*二环 幻术（术士、魔契师、法师）*\n**施法时间：**1 附赠动作\n**施法距离：**自身\n**法术成分：**V、S\n**持续时间：**专注，至多 1 分钟\n你将幽影交织成手中实化的剑。该魔法剑持续到法术结束。它被视为你具有熟练项的简易近战武器，命中时造成 2d8\n心灵伤害，并具有灵巧、轻型和投掷特性（射程 20/60)。当你用该剑攻击微亮光照或黑暗中的目标时，你进行的攻击检定具有优势。\n如果你放下或投掷出了此武器，它将在该回合结束时消散。其后，如法术持续，你能以一个附赠动作使该剑重现于你手中。\n**升环施法。**当你用三四环施放该法术时，其伤害增加到 3d8。五六环时增加到 4d8。七环或以上则增加到\n5d8。"
+  },
+  "source_fingerprint": "b3abd17329646f580920087edf2d9b7d02602a5f5e9f5be894b58481ccfa78ba",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/2环.html",
+  "source_record_id": "ed1b7b25d5684456c9b6ebfd",
+  "spell_id": "ed1b7b25d5684456c9b6ebfd",
+  "template_match": {
+    "confidence": "medium",
+    "matched_shape": [
+      "concentration"
+    ],
+    "template_fingerprint": "c6cf559b317883e1043d55b34f4a36da44766b6d3a4828662a90474ca1486880",
+    "template_id": "spell.shape.005"
+  },
+  "uncertain_fields": {
+    "damage_expression": "2d8",
+    "damage_type": "心灵",
+    "operator": "attack_roll_or_other_damage_operator_requires_review"
+  }
+}

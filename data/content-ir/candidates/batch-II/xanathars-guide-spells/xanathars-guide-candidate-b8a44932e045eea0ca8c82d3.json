@@ -1,0 +1,117 @@
+{
+  "candidate_clauses": [
+    {
+      "save_ability": "体质",
+      "type": "saving_throw"
+    },
+    {
+      "damage_type": "光耀",
+      "expression": "2d8",
+      "on_failure": "full",
+      "type": "damage"
+    },
+    {
+      "required": true,
+      "type": "concentration"
+    },
+    {
+      "condition": "目盲",
+      "type": "apply_condition"
+    },
+    {
+      "condition": "发光",
+      "type": "apply_condition"
+    }
+  ],
+  "candidate_id": "xanathars-guide:candidate:b8a44932e045eea0ca8c82d3",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "1附赠动作",
+    "classes": [
+      "牧师",
+      "圣武士"
+    ],
+    "components": "V、S",
+    "concentration": true,
+    "conditions": [
+      "目盲",
+      "发光"
+    ],
+    "damage_components": [
+      {
+        "damage_type": "光耀",
+        "expression": "2d8"
+      },
+      {
+        "damage_type": "光耀",
+        "expression": "4d8"
+      }
+    ],
+    "damage_expression": "2d8",
+    "damage_type": "光耀",
+    "duration": "专注，至多1小时",
+    "half_damage_on_save": true,
+    "level": 5,
+    "range": "触碰",
+    "repeat": {
+      "count_expression": "duration",
+      "source": "explicit_timing",
+      "timing": "turn_end"
+    },
+    "resolution_kind": "damage",
+    "ritual": false,
+    "save": "体质豁免",
+    "school": "塑能",
+    "target_disposition": "creature"
+  },
+  "exact_fields": {
+    "concentration": true,
+    "conditions": [
+      "目盲",
+      "发光"
+    ],
+    "damage_expression": "2d8",
+    "damage_type": "光耀",
+    "save": "体质豁免"
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "神圣武器",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "source_path": "珊娜萨的万事指南/法术/法术详述/5环.html",
+    "source_text": "#### 神圣武器｜Holy Weapon\n\n*五环 塑能（牧师、圣武士）*\n**施法时间：**1附赠动作\n**施法距离：**触碰\n**法术成分：**V、S\n**持续时间：**专注，至多1小时\n你为你触碰的一把武器注入神圣的力量。直到法术结束前，武器都会散发出半径30尺的明亮光照和额外30尺的微光光照。此外，用这把武器发动的武器攻击在命中时会造成额外2d8光耀伤害。如果该武器原先不是魔法武器，则在法术持续时间内其将暂时转变为魔法武器。\n在你自己的回合中，你能以附赠动作结束该法术并使武器爆发光耀能量。位于武器30尺内每名你选择的你可见的生物必须进行一次体质豁免检定。豁免失败的生物将受到4d8光耀伤害，并陷入目盲，持续1分钟。豁免成功则只承受一半伤害并不会陷入目盲。陷入目盲的生物在其每个回合结束时重复豁免，成功则终止其身上的该效应。"
+  },
+  "source_fingerprint": "f24122f4f29b5fe492b9a47ae95185ecf70b876d9d533f0895ab37b0e87cc6fd",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/5环.html",
+  "source_record_id": "b8a44932e045eea0ca8c82d3",
+  "spell_id": "b8a44932e045eea0ca8c82d3",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "saving_throw",
+      "damage",
+      "concentration",
+      "apply_condition",
+      "apply_condition"
+    ],
+    "template_fingerprint": "3c42f68fb11991f0b3609f5d664da8f01323dbde293a556e901df3dc4b8daf72",
+    "template_id": "spell.shape.008"
+  },
+  "uncertain_fields": {}
+}

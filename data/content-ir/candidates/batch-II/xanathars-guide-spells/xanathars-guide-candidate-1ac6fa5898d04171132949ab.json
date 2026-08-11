@@ -1,0 +1,85 @@
+{
+  "candidate_clauses": [
+    {
+      "save_ability": "敏捷",
+      "type": "saving_throw"
+    },
+    {
+      "damage_type": "钝击",
+      "expression": "10d6",
+      "on_failure": "full",
+      "type": "damage"
+    },
+    {
+      "required": true,
+      "type": "concentration"
+    }
+  ],
+  "candidate_id": "xanathars-guide:candidate:1ac6fa5898d04171132949ab",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "1 动作",
+    "classes": [
+      "德鲁伊",
+      "术士",
+      "法师"
+    ],
+    "components": "V、M（一根稻草）",
+    "concentration": true,
+    "damage_expression": "10d6",
+    "damage_type": "钝击",
+    "duration": "专注，至多 1 分钟",
+    "half_damage_on_save": true,
+    "level": 7,
+    "range": "300 \n尺",
+    "resolution_kind": "damage",
+    "ritual": false,
+    "save": "敏捷豁免",
+    "school": "塑能",
+    "target_disposition": "creature"
+  },
+  "exact_fields": {
+    "concentration": true,
+    "damage_expression": "10d6",
+    "damage_type": "钝击",
+    "save": "敏捷豁免"
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "旋风术",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "source_path": "珊娜萨的万事指南/法术/法术详述/7环.html",
+    "source_text": "#### 旋风术｜Whirlwind\n\n*七环 塑能（德鲁伊、术士、法师）*\n**施法时间：**1 动作\n**施法距离：**300\n尺\n**法术成分：**V、M（一根稻草）\n**持续时间：**专注，至多 1 分钟\n一阵呼啸的旋风出现在你指定的地表上可见的一点。旋风半径为 10 尺，高度为\n30 尺，是一个以指定点为中心的柱状体。直到此法术终结，你可以使用你的动作来在水平的任何方向上移动至多30尺。旋风会吸入所有固定或未被穿戴或持握的至大 中型\nMedium 的物体。\n在回合中第一次进入旋风的生物，或所在空间被旋风进入的生物（包括旋风第一次出现时的）必须进行一次敏捷豁免检定。豁免失败的生物受到\n10d6 钝击伤害，豁免成功者只受到上述伤害的一半。此外，体型不超过 大型 Large\n的生物若未通过豁免则必须通过一次力量豁免检定，否则会被旋风束缚，直到法术终结。当一个生物在被旋风束缚的条件下开始其回合时，除非其达到了顶点，其将被向上方推动 5\n尺。被束缚的生物会随着旋风移动，而法术终结时其会摔落，除非其具有其他方法保持悬浮。\n被束缚的生物可以使用一个动作来进行一次力量或敏捷检定，对抗你的法术豁免\nDC。若成功，该生物不再被旋风束缚，并被向随机方向抛离 3d6×10 尺远。"
+  },
+  "source_fingerprint": "4019a58756b08209d001454d4c721f8f5136cbd0815a1e45ada34f8b794b3792",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/7环.html",
+  "source_record_id": "1ac6fa5898d04171132949ab",
+  "spell_id": "1ac6fa5898d04171132949ab",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "saving_throw",
+      "damage",
+      "concentration"
+    ],
+    "template_fingerprint": "3c42f68fb11991f0b3609f5d664da8f01323dbde293a556e901df3dc4b8daf72",
+    "template_id": "spell.shape.008"
+  },
+  "uncertain_fields": {}
+}

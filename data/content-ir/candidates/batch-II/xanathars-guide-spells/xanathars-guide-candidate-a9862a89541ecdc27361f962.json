@@ -1,0 +1,96 @@
+{
+  "candidate_clauses": [
+    {
+      "save_ability": "敏捷",
+      "type": "saving_throw"
+    },
+    {
+      "damage_type": "火焰",
+      "expression": "4d8",
+      "on_failure": "full",
+      "type": "damage"
+    },
+    {
+      "shape": "sphere",
+      "size_ft": 30,
+      "type": "area"
+    },
+    {
+      "required": true,
+      "type": "concentration"
+    }
+  ],
+  "candidate_id": "xanathars-guide:candidate:a9862a89541ecdc27361f962",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "area_shape": "sphere",
+    "area_size_ft": 30,
+    "casting_time": "1 \n动作",
+    "classes": [
+      "德鲁伊",
+      "术士",
+      "魔契师",
+      "法师"
+    ],
+    "components": "V、S",
+    "concentration": true,
+    "damage_expression": "4d8",
+    "damage_type": "火焰",
+    "duration": "专注，至多 10 分钟",
+    "half_damage_on_save": true,
+    "level": 6,
+    "range": "自身",
+    "resolution_kind": "damage",
+    "ritual": false,
+    "save": "敏捷豁免",
+    "school": "变化",
+    "target_disposition": "creature"
+  },
+  "exact_fields": {
+    "area_shape": "sphere",
+    "area_size_ft": 30,
+    "concentration": true,
+    "damage_expression": "4d8",
+    "damage_type": "火焰",
+    "save": "敏捷豁免"
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "炽焰赋权",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "source_path": "珊娜萨的万事指南/法术/法术详述/6环.html",
+    "source_text": "#### 炽焰赋权｜Investiture of Flame\n\n*六环 变化（德鲁伊、术士、魔契师、法师）*\n**施法时间：**1\n动作\n**施法距离：**自身\n**法术成分：**V、S\n**持续时间：**专注，至多 10 分钟\n火焰环绕着你的身体，照亮周围 30 尺半径的区域，并在外围\n30 尺范围内产生微弱的亮光。这些火焰不会伤害到你。直到此法术终结，你得到如下的好处：\n\n- 你免疫于火焰伤害并对寒冷伤害具有抗性。任何在回合中第一次进入你周围 5 尺范围之内，或是在你周围 5 尺范围之内结束回合的生物受到 1d10\n 火焰伤害。你可以使用你的动作以创造出一条以你为起始点，向由你选择的方向延伸的 15 尺长、5\n 尺宽的火线。在线中的每个生物都必须进行一次敏捷豁免检定。豁免失败的生物受到 4d8 火焰伤害，豁免成功者受到上述伤害的一半。"
+  },
+  "source_fingerprint": "e2c3ff08f7af5be30a133dcf743dcf6e14c9b81100c1ad66bc8c7586054eb398",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/6环.html",
+  "source_record_id": "a9862a89541ecdc27361f962",
+  "spell_id": "a9862a89541ecdc27361f962",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "saving_throw",
+      "damage",
+      "area",
+      "concentration"
+    ],
+    "template_fingerprint": "af295bb9885e22721b4b0ce62f8bf849a6eba5ca49ce60a0868f55c840a15edb",
+    "template_id": "spell.shape.009"
+  },
+  "uncertain_fields": {}
+}

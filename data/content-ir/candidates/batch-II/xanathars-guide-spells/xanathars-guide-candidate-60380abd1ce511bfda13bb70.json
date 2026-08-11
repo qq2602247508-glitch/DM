@@ -1,0 +1,83 @@
+{
+  "candidate_clauses": [
+    {
+      "required": true,
+      "type": "concentration"
+    }
+  ],
+  "candidate_id": "xanathars-guide:candidate:60380abd1ce511bfda13bb70",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "area_shape": null,
+    "area_size_ft": null,
+    "casting_time": "1 动作",
+    "classes": [
+      "魔契师",
+      "法师"
+    ],
+    "components": "V、S、M（来自一个于 24 \n小时之内被杀的类人生物身上的一剂血液）",
+    "concentration": true,
+    "conditions": null,
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "专注，至多 1 \n小时",
+    "half_damage_on_save": null,
+    "healing": null,
+    "level": 3,
+    "max_targets": null,
+    "movement": null,
+    "range": "60 尺",
+    "reaction": null,
+    "resolution_kind": "summon",
+    "ritual": false,
+    "save": null,
+    "school": "咒法",
+    "summon": {
+      "controller": "independent",
+      "count_expression": "1d6：2/4/8只（按法术表决定；整体共用一次先攻）",
+      "creature_ref": "恶魔（DM选择种类）",
+      "enters_combat": true,
+      "initiative_mode": "independent"
+    },
+    "upcast_text": "升环施法。 当你使用六环或七环的法术位施放该法术时，被召唤的恶魔数量变为两倍。当你使用八环或九环的法术位施放该法术时，被召唤的恶魔数量变为三倍。"
+  },
+  "exact_fields": {
+    "concentration": true
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "低阶恶魔召唤术",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "source_path": "珊娜萨的万事指南/法术/法术详述/3环.html",
+    "source_text": "#### 低阶恶魔召唤术｜Summon Lesser Demon\n\n*三环 咒法（魔契师、法师）*\n**施法时间：**1 动作\n**施法距离：**60 尺\n**法术成分：**V、S、M（来自一个于 24\n小时之内被杀的类人生物身上的一剂血液）\n**持续时间：**专注，至多 1\n小时\n你吐出污秽的词语，从无底深渊的无尽混沌中召唤来恶魔。遵从下表掷骰来决定什么生物出现。\n\n| D6 | 被召唤的恶魔 |\n| --- | --- |\n| 1~2 | 2 个挑战等级为 1 或更低的恶魔 |\n| 3~4 | 4 个挑战等级为 1/2 或更低的恶魔 |\n| 5~6 | 8 个挑战等级为 1/4 或更低的恶魔 |\n\nDM 选择恶魔的种类，例如 原魔Manes 或者 怯魔dretches，然后你选择施法距离内可见的未占据空间让它们出现。被召唤的恶魔在生命值降低为 0\n或法术结束时消失。\n恶魔对包括你在内的所有生物抱有敌意。它们拥有自己的回合，将它们整体视作一组来投掷先攻。恶魔会花费它的回合用于追逐和攻击最近的非恶魔生物，尽其所能。\n作为施放此法术的一部分，你可以使用作为施法材料的血液在地上绘制一个法阵。法阵大到可以包括你在的空间。在法术的持续时间内，被召唤来的恶魔无法穿过或伤害法阵，也无法以其中的任何人作为目标。用这种方式使用的施法材料会在法术结束时被消耗。\n**升环施法。**当你使用六环或七环的法术位施放该法术时，被召唤的恶魔数量变为两倍。当你使用八环或九环的法术位施放该法术时，被召唤的恶魔数量变为三倍。"
+  },
+  "source_fingerprint": "765b96a26559d4d0d2e520f796115ad5dae09e2e758678d15884e45a9a2ad0c8",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/3环.html",
+  "source_record_id": "60380abd1ce511bfda13bb70",
+  "spell_id": "60380abd1ce511bfda13bb70",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "concentration"
+    ],
+    "template_fingerprint": "c6cf559b317883e1043d55b34f4a36da44766b6d3a4828662a90474ca1486880",
+    "template_id": "spell.shape.005"
+  },
+  "uncertain_fields": {}
+}

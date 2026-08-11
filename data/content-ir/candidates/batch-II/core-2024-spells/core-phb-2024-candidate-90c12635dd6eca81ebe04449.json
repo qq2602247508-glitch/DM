@@ -1,0 +1,68 @@
+{
+  "candidate_clauses": [
+    {
+      "required": true,
+      "type": "concentration"
+    }
+  ],
+  "candidate_id": "core-phb-2024:candidate:90c12635dd6eca81ebe04449",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "动作或仪式",
+    "classes": [
+      "牧师",
+      "德鲁伊",
+      "圣武士",
+      "游侠"
+    ],
+    "components": "V、S、M（一片紫杉叶）",
+    "concentration": true,
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "专注，至多10分钟",
+    "level": 1,
+    "range": "自身",
+    "ritual": false,
+    "school": "预言",
+    "target_disposition": "creature"
+  },
+  "exact_fields": {
+    "concentration": true
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "侦测毒性和疾病",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "source_path": "玩家手册2024/法术详述/1环.htm",
+    "source_text": "#### 侦测毒性和疾病｜Detect Poison and Disease\n\n*一环 预言（牧师、德鲁伊、圣武士、游侠）*\n**施法时间：**动作或仪式\n**施法距离：**自身\n**法术成分：**V、S、M（一片紫杉叶）\n**持续时间：**专注，至多10分钟\n在法术持续时间内，你定位距你30尺内的毒药、有毒生物和魔法疫病。你可以感知到毒药、有毒生物和疫病的种类。\n此法术会被1尺厚的岩石、泥土或木头，1寸厚的金属，或薄薄一层铅阻隔。"
+  },
+  "source_fingerprint": "9432616781fb2789dfdbfdb26555c03ad602878b1ff7361e38f64f61bcf32bbd",
+  "source_path": "玩家手册2024/法术详述/1环.htm",
+  "source_record_id": "90c12635dd6eca81ebe04449",
+  "spell_id": "90c12635dd6eca81ebe04449",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "concentration"
+    ],
+    "template_fingerprint": "c6cf559b317883e1043d55b34f4a36da44766b6d3a4828662a90474ca1486880",
+    "template_id": "spell.shape.005"
+  },
+  "uncertain_fields": {}
+}

@@ -1,0 +1,66 @@
+{
+  "candidate_clauses": [
+    {
+      "required": true,
+      "type": "concentration"
+    }
+  ],
+  "candidate_id": "core-phb-2024:candidate:223c34bf8bf6032f64a4c85c",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "动作",
+    "classes": [
+      "牧师",
+      "德鲁伊",
+      "奇械师"
+    ],
+    "components": "V、S",
+    "concentration": true,
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "专注，至多1分钟",
+    "range": "触碰",
+    "ritual": false,
+    "school": "预言",
+    "target_disposition": "ally"
+  },
+  "exact_fields": {
+    "concentration": true
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "神导术",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "source_path": "玩家手册2024/法术详述/0环.htm",
+    "source_text": "#### 神导术｜Guidance\n\n*预言 戏法（牧师、德鲁伊、奇械师）*\n**施法时间：**动作\n**施法距离：**触碰\n**法术成分：**V、S\n**持续时间：**专注，至多1分钟\n你触碰一名自愿生物并选择一项技能。直到法术结束为止，受术生物在进行使用到所选技能的任何属性检定时，该次检定具有1d4加值。"
+  },
+  "source_fingerprint": "b6446da3e64f4ca8a92b63d2e286e2d25375f7dacaa342dcc798da9d68f8b4c6",
+  "source_path": "玩家手册2024/法术详述/0环.htm",
+  "source_record_id": "223c34bf8bf6032f64a4c85c",
+  "spell_id": "223c34bf8bf6032f64a4c85c",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "concentration"
+    ],
+    "template_fingerprint": "c6cf559b317883e1043d55b34f4a36da44766b6d3a4828662a90474ca1486880",
+    "template_id": "spell.shape.005"
+  },
+  "uncertain_fields": {}
+}

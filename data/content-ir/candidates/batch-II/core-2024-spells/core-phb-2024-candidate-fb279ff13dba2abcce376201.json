@@ -1,0 +1,89 @@
+{
+  "candidate_clauses": [
+    {
+      "save_ability": "敏捷",
+      "type": "saving_throw"
+    },
+    {
+      "damage_type": "火焰",
+      "expression": "3d6",
+      "on_failure": "full",
+      "type": "damage"
+    },
+    {
+      "shape": "cone",
+      "size_ft": 15,
+      "type": "area"
+    }
+  ],
+  "candidate_id": "core-phb-2024:candidate:fb279ff13dba2abcce376201",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "area_shape": "cone",
+    "area_size_ft": 15,
+    "casting_time": "动作",
+    "classes": [
+      "术士",
+      "法师"
+    ],
+    "components": "V、S",
+    "concentration": false,
+    "damage_expression": "3d6",
+    "damage_type": "火焰",
+    "duration": "立即",
+    "half_damage_on_save": true,
+    "level": 1,
+    "range": "自身",
+    "resolution_kind": "damage",
+    "ritual": false,
+    "save": "敏捷豁免",
+    "school": "塑能",
+    "target_disposition": "creature",
+    "upcast_text": "升环施法。 你使用的法术位每比一环高一环，此法术的伤害就会提升1d6。"
+  },
+  "exact_fields": {
+    "area_shape": "cone",
+    "area_size_ft": 15,
+    "damage_expression": "3d6",
+    "damage_type": "火焰",
+    "save": "敏捷豁免"
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "燃烧之手",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "source_path": "玩家手册2024/法术详述/1环.htm",
+    "source_text": "#### 燃烧之手｜Burning Hands\n\n*一环 塑能（术士、法师）*\n**施法时间：**动作\n**施法距离：**自身\n**法术成分：**V、S\n**持续时间：**立即\n你向前喷射出一片火焰。处于15尺锥状区域内的生物必须进行一次敏捷豁免。豁免失败者受到3d6火焰伤害，豁免成功者受到一半伤害。\n在此锥状区域内的未被着装或携带的易燃物件会开始燃烧。\n**升环施法。**你使用的法术位每比一环高一环，此法术的伤害就会提升1d6。"
+  },
+  "source_fingerprint": "0c24c6df91e4772c5e77d456bb9ad9f400bf5efbe727e737f61ae6ce3bf2e66e",
+  "source_path": "玩家手册2024/法术详述/1环.htm",
+  "source_record_id": "fb279ff13dba2abcce376201",
+  "spell_id": "fb279ff13dba2abcce376201",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "saving_throw",
+      "damage",
+      "area"
+    ],
+    "template_fingerprint": "af295bb9885e22721b4b0ce62f8bf849a6eba5ca49ce60a0868f55c840a15edb",
+    "template_id": "spell.shape.009"
+  },
+  "uncertain_fields": {}
+}

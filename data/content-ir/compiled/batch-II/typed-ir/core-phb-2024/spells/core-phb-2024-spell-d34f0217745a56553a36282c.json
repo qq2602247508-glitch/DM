@@ -1,0 +1,125 @@
+{
+  "capability_registry": {
+    "id": "spell",
+    "version": "content-capabilities-1"
+  },
+  "casting_time": "动作",
+  "clause_boundaries": {
+    "attack": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "*施法时间：**动作 **施法距离：**30尺 **法术成分：**V、S **持续时间：**立即 你向施法距离内一个你可见的生物喷出一股毒气。对目标进行一次远程法术攻击。命中时，目标将受1d12点毒素伤害。 **戏法强化。**到达特定等级后，此戏法的伤害将增加1d12：5级（2d12）、11级（3d12）、17级（4d12）。",
+      "source_heading": "毒气喷涌"
+    },
+    "damage": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "30尺 **法术成分：**V、S **持续时间：**立即 你向施法距离内一个你可见的生物喷出一股毒气。对目标进行一次远程法术攻击。命中时，目标将受1d12点毒素伤害。 **戏法强化。**到达特定等级后，此戏法的伤害将增加1d12：5级（2d12）、11级（3d12）、17级（4d12）。",
+      "source_heading": "毒气喷涌"
+    },
+    "target": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "、奇械师）* **施法时间：**动作 **施法距离：**30尺 **法术成分：**V、S **持续时间：**立即 你向施法距离内一个你可见的生物喷出一股毒气。对目标进行一次远程法术攻击。命中时，目标将受1d12点毒素伤害。 **戏法强化。**到达特定等级后，此戏法的伤害将增加1d12：5级（2d12）、11级（3d12）、17级（4d12）。",
+      "source_heading": "毒气喷涌"
+    }
+  },
+  "clause_identity": [
+    "core-phb-2024:spell:d34f0217745a56553a36282c:target",
+    "core-phb-2024:spell:d34f0217745a56553a36282c:attack",
+    "core-phb-2024:spell:d34f0217745a56553a36282c:damage"
+  ],
+  "clauses": [
+    {
+      "clause_id": "target",
+      "count": 1,
+      "evidence_ref": "、奇械师）* **施法时间：**动作 **施法距离：**30尺 **法术成分：**V、S **持续时间：**立即 你向施法距离内一个你可见的生物喷出一股毒气。对目标进行一次远程法术攻击。命中时，目标将受1d12点毒素伤害。 **戏法强化。**到达特定等级后，此戏法的伤害将增加1d12：5级（2d12）、11级（3d12）、17级（4d12）。",
+      "kind": "one_creature",
+      "type": "target_selection",
+      "visibility": "visible"
+    },
+    {
+      "action_economy": "action",
+      "attack_ability": "spellcasting",
+      "clause_id": "attack",
+      "evidence_ref": "*施法时间：**动作 **施法距离：**30尺 **法术成分：**V、S **持续时间：**立即 你向施法距离内一个你可见的生物喷出一股毒气。对目标进行一次远程法术攻击。命中时，目标将受1d12点毒素伤害。 **戏法强化。**到达特定等级后，此戏法的伤害将增加1d12：5级（2d12）、11级（3d12）、17级（4d12）。",
+      "target": "one_creature",
+      "type": "attack_roll"
+    },
+    {
+      "action_economy": "action",
+      "clause_id": "damage",
+      "damage": "1d12",
+      "damage_type": "毒素",
+      "evidence_ref": "30尺 **法术成分：**V、S **持续时间：**立即 你向施法距离内一个你可见的生物喷出一股毒气。对目标进行一次远程法术攻击。命中时，目标将受1d12点毒素伤害。 **戏法强化。**到达特定等级后，此戏法的伤害将增加1d12：5级（2d12）、11级（3d12）、17级（4d12）。",
+      "expression": "1d12",
+      "target": "one_creature",
+      "timing": "on_hit",
+      "type": "damage"
+    }
+  ],
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "concentration": false,
+  "duration": "立即",
+  "edition": "2024",
+  "evidence": [
+    "attack: *施法时间：**动作 **施法距离：**30尺 **法术成分：**V、S **持续时间：**立即 你向施法距离内一个你可见的生物喷出一股毒气。对目标进行一次远程法术攻击。命中时，目标将受1d12点毒素伤害。 **戏法强化。**到达特定等级后，此戏法的伤害将增加1d12：5级（2d12）、11级（3d12）、17级（4d12）。",
+    "damage: 30尺 **法术成分：**V、S **持续时间：**立即 你向施法距离内一个你可见的生物喷出一股毒气。对目标进行一次远程法术攻击。命中时，目标将受1d12点毒素伤害。 **戏法强化。**到达特定等级后，此戏法的伤害将增加1d12：5级（2d12）、11级（3d12）、17级（4d12）。",
+    "target: 、奇械师）* **施法时间：**动作 **施法距离：**30尺 **法术成分：**V、S **持续时间：**立即 你向施法距离内一个你可见的生物喷出一股毒气。对目标进行一次远程法术攻击。命中时，目标将受1d12点毒素伤害。 **戏法强化。**到达特定等级后，此戏法的伤害将增加1d12：5级（2d12）、11级（3d12）、17级（4d12）。"
+  ],
+  "kind": "spell",
+  "level": 0,
+  "manual_decisions": {
+    "review_gate": "accepted only explicit normalized fields and quoted source evidence",
+    "unresolved_branches": "not promoted when the source does not state attack/save semantics"
+  },
+  "name": "毒气喷涌",
+  "namespace": "content.core-phb-2024",
+  "pack_id": "core-phb-2024",
+  "pack_version": "source-7011166c19bd",
+  "range": "30尺",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-11-batch-II",
+  "reviewed_fields": [
+    "schema_version",
+    "spell_id",
+    "name",
+    "pack_id",
+    "pack_version",
+    "namespace",
+    "ruleset_version",
+    "source_record_id",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "source_trust",
+    "level",
+    "school",
+    "casting_time",
+    "range",
+    "duration",
+    "concentration",
+    "clauses",
+    "evidence"
+  ],
+  "ruleset_version": "2024",
+  "schema_version": "spell-ir-1",
+  "school": "死灵",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "selected_clause_excerpt": "、奇械师）* **施法时间：**动作 **施法距离：**30尺 **法术成分：**V、S **持续时间：**立即 你向施法距离内一个你可见的生物喷出一股毒气。对目标进行一次远程法术攻击。命中时，目标将受1d12点毒素伤害。 **戏法强化。**到达特定等级后，此戏法的伤害将增加1d12：5级（2d12）、11级（3d12）、17级（4d12）。 *施法时间：**动作 **施法距离：**30尺 **法术成分：**V、S **持续时间：**立即 你向施法距离内一个你可见的生物喷出一股毒气。对目标进行一次远程法术攻击。命中时，目标将受1d12点毒素伤害。 **戏法强化。**到达特定等级后，此戏法的伤害将增加1d12：5级（2d12）、11级（3d12）、17级（4d12）。 30尺 **法术成分：**V、S **持续时间：**立即 你向施法距离内一个你可见的生物喷出一股毒气。对目标进行一次远程法术攻击。命中时，目标将受1d12点毒素伤害。 **戏法强化。**到达特定等级后，此戏法的伤害将增加1d12：5级（2d12）、11级（3d12）、17级（4d12）。",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "4bd07430812aec11bd72318c035fb0dff8f5e4886133559776bf712179a30e13",
+    "source_path": "玩家手册2024/法术详述/0环.htm",
+    "source_text": "#### 毒气喷涌｜Poison Spray\n\n*死灵 戏法（德鲁伊、术士、魔契师、法师、奇械师）*\n**施法时间：**动作\n**施法距离：**30尺\n**法术成分：**V、S\n**持续时间：**立即\n你向施法距离内一个你可见的生物喷出一股毒气。对目标进行一次远程法术攻击。命中时，目标将受1d12点毒素伤害。\n**戏法强化。**到达特定等级后，此戏法的伤害将增加1d12：5级（2d12）、11级（3d12）、17级（4d12）。"
+  },
+  "source_fingerprint": "ca910d076ea3d0dd38265639727099a1ffa20a71720c4ab168de35fe5d18d4ce",
+  "source_path": "玩家手册2024/法术详述/0环.htm",
+  "source_provenance": {
+    "officiality": "official",
+    "review_basis": "local_source_text_manual_review",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "4bd07430812aec11bd72318c035fb0dff8f5e4886133559776bf712179a30e13",
+    "source_relative_path": "玩家手册2024/法术详述/0环.htm"
+  },
+  "source_record_id": "d34f0217745a56553a36282c",
+  "source_trust": "authored_ir",
+  "spell_id": "core-phb-2024:spell:d34f0217745a56553a36282c"
+}

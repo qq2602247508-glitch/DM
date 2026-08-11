@@ -1,0 +1,78 @@
+{
+  "candidate_clauses": [
+    {
+      "shape": "cone",
+      "size_ft": 15,
+      "type": "area"
+    },
+    {
+      "required": true,
+      "type": "concentration"
+    }
+  ],
+  "candidate_id": "xanathars-guide:candidate:b354c32d3c612b9ea4746ee4",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "area_shape": "cone",
+    "area_size_ft": 15,
+    "casting_time": "1 附赠动作",
+    "classes": [
+      "术士",
+      "法师"
+    ],
+    "components": "V、S、M（一枚辣椒）",
+    "concentration": true,
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "专注，至多 1 \n分钟",
+    "level": 2,
+    "range": "触碰",
+    "ritual": false,
+    "save": "敏捷豁免",
+    "school": "变化",
+    "target_disposition": "ally",
+    "upcast_text": "升环施法。 当你使用三环或更高的法术位施放该法术时，使用的法术位每高一环，伤害就增加 1d6。"
+  },
+  "exact_fields": {
+    "area_shape": "cone",
+    "area_size_ft": 15,
+    "concentration": true
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "龙息术",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "source_path": "珊娜萨的万事指南/法术/法术详述/2环.html",
+    "source_text": "#### 龙息术｜Dragon's Breath\n\n*二环 变化（术士、法师）**Legacy*\n**施法时间：**1 附赠动作\n**施法距离：**触碰\n**法术成分：**V、S、M（一枚辣椒）\n**持续时间：**专注，至多 1\n分钟\n你触碰一个自愿生物，使它能喷吐出魔法能量，只要它拥有一张嘴。选择强酸、寒冷、火焰、闪电或毒素中的一种。直到法术结束前，生物可以使用一个动作放射出\n15 尺锥形的对应能量。区域内的每个生物必须进行敏捷豁免检定，若失败将受到 3d6\n对应能量类型的伤害，成功则只承受一半。\n**升环施法。**当你使用三环或更高的法术位施放该法术时，使用的法术位每高一环，伤害就增加 1d6。"
+  },
+  "source_fingerprint": "8d49661acb9f7ebef888205abbe51e81e54e2babda7cd2866d56d5488d1b0559",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/2环.html",
+  "source_record_id": "b354c32d3c612b9ea4746ee4",
+  "spell_id": "b354c32d3c612b9ea4746ee4",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "area",
+      "concentration"
+    ],
+    "template_fingerprint": "af295bb9885e22721b4b0ce62f8bf849a6eba5ca49ce60a0868f55c840a15edb",
+    "template_id": "spell.shape.009"
+  },
+  "uncertain_fields": {}
+}

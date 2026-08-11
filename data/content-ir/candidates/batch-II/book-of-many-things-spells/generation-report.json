@@ -1,0 +1,19 @@
+{
+  "book": "万象无常书",
+  "candidate_paths": [
+    "book-of-many-things-candidate-69822f264262f10066c621b3.json",
+    "book-of-many-things-candidate-164b86c070175f43296670a8.json",
+    "book-of-many-things-candidate-d52d8cc60a51205a85548bf1.json"
+  ],
+  "candidate_status": "generated_candidate",
+  "catalog_fingerprint": "7dd03f9bd5d532956076c724a98d275d06114d4afeadeb48b39ee4a0aaa241a5",
+  "counts_by_confidence": {
+    "high": 3
+  },
+  "counts_with_uncertainty": 0,
+  "generated_candidate_count": 3,
+  "kind": "spell",
+  "report_fingerprint": "999b788cc7ff96953bda46f38871d6132cc3ab156ed996b55f227cf07c261122",
+  "schema_version": "content-ir-candidate-generation-1",
+  "source_record_count": 3
+}

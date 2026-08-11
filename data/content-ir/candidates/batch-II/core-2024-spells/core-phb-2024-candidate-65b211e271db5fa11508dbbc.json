@@ -1,0 +1,83 @@
+{
+  "candidate_clauses": [
+    {
+      "shape": "cube",
+      "size_ft": 15,
+      "type": "area"
+    },
+    {
+      "required": true,
+      "type": "concentration"
+    }
+  ],
+  "candidate_id": "core-phb-2024:candidate:65b211e271db5fa11508dbbc",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "area_shape": "cube",
+    "area_size_ft": 15,
+    "casting_time": "动作",
+    "classes": [
+      "吟游诗人",
+      "术士",
+      "法师"
+    ],
+    "components": "V、S、M（少量羊毛）",
+    "concentration": true,
+    "creation": {
+      "count": null,
+      "creation_kind": "item",
+      "requires_template_choice": true,
+      "template_ref": "dm_chosen_template"
+    },
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "专注，至多 10 分钟",
+    "level": 1,
+    "range": "60 尺",
+    "ritual": false,
+    "school": "幻术",
+    "target_disposition": "creature"
+  },
+  "exact_fields": {
+    "area_shape": "cube",
+    "area_size_ft": 15,
+    "concentration": true
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "无声幻影",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "source_path": "玩家手册2024/法术详述/1环.htm",
+    "source_text": "#### 无声幻影｜Silent Image\n\n*一环 幻术（吟游诗人、术士、法师）*\n**施法时间：**动作\n**施法距离：**60 尺\n**法术成分：**V、S、M（少量羊毛）\n**持续时间：**专注，至多 10 分钟\n你创造一个影像，其形象来自一个大小不超过边长 15 尺立方体的物件，生物或其他的可视现象。影像出现在施法距离内的一处位置并在法术持续时间内持续存在。该影像是纯粹的视觉影像；它不会被听觉，嗅觉或其他感官感受到。\n你可以使用魔法动作将影像移动到施法距离内的另一个位置。影像改变位置时，你可以改变影像的外观使其移动得更自然。例如，如果你创造了一个生物的影像并移动它，则你可以改变影像，使它看起来就像是在走路。\n由于影像无法被碰到，任何与该影像进行的物理互动都会暴露其幻象的本质。一个生物使用研究动作调查影像时，它可以进行一次对抗法术豁免 DC 的智力（调查）检定。辨出幻象的生物可以看破该影像，在该生物看来会透过影像看到其背后的事物。"
+  },
+  "source_fingerprint": "596eb2057580fbf9f54ca470d5b9bbc1a10db7bcee7f3e615051dccdf0a02106",
+  "source_path": "玩家手册2024/法术详述/1环.htm",
+  "source_record_id": "65b211e271db5fa11508dbbc",
+  "spell_id": "65b211e271db5fa11508dbbc",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "area",
+      "concentration"
+    ],
+    "template_fingerprint": "af295bb9885e22721b4b0ce62f8bf849a6eba5ca49ce60a0868f55c840a15edb",
+    "template_id": "spell.shape.009"
+  },
+  "uncertain_fields": {}
+}

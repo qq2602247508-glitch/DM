@@ -1,0 +1,68 @@
+{
+  "candidate_clauses": [],
+  "candidate_id": "core-phb-2024:candidate:2e9192cd3d31bb45063daaf9",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "动作",
+    "classes": [
+      "术士",
+      "法师"
+    ],
+    "components": "V、S",
+    "concentration": false,
+    "damage_expression": "1d4+1",
+    "damage_type": "力场",
+    "duration": "立即",
+    "level": 1,
+    "range": "120尺",
+    "resolution_kind": "damage",
+    "ritual": false,
+    "school": "塑能",
+    "target_disposition": "creature",
+    "upcast_text": "升环施法。 使用的法术位每比一环高一环，该法术就会多制造出一支飞镖。"
+  },
+  "exact_fields": {},
+  "kind": "spell_candidate",
+  "missing_fields": [
+    "attack_or_save",
+    "typed_clause_mapping"
+  ],
+  "name": "魔法飞弹",
+  "required_review_fields": [
+    "action_economy",
+    "attack_or_save",
+    "clauses",
+    "level",
+    "name",
+    "target",
+    "typed_clause_mapping"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "source_path": "玩家手册2024/法术详述/1环.htm",
+    "source_text": "#### 魔法飞弹｜Magic Missile\n\n*一环 塑能（术士、法师）*\n**施法时间：**动作\n**施法距离：**120尺\n**法术成分：**V、S\n**持续时间：**立即\n你创造三枚由魔法力场形成的闪光飞镖，并让每发飞镖袭向施法距离内你能看见的指定生物。每发飞镖对目标造成1d4+1点力场伤害。所有飞镖将同时袭向目标，而你还可以指定它们击中同一个目标或是分别击中几个目标。\n**升环施法。**使用的法术位每比一环高一环，该法术就会多制造出一支飞镖。"
+  },
+  "source_fingerprint": "85df4f92850d8a317f7e788f06ea3549f4280052c337a0b04ac6e4cb873d09d8",
+  "source_path": "玩家手册2024/法术详述/1环.htm",
+  "source_record_id": "2e9192cd3d31bb45063daaf9",
+  "spell_id": "2e9192cd3d31bb45063daaf9",
+  "template_match": {
+    "confidence": "low",
+    "matched_shape": [],
+    "template_fingerprint": "c6cf559b317883e1043d55b34f4a36da44766b6d3a4828662a90474ca1486880",
+    "template_id": "spell.shape.005"
+  },
+  "uncertain_fields": {
+    "damage_expression": "1d4+1",
+    "damage_type": "力场",
+    "operator": "attack_roll_or_other_damage_operator_requires_review"
+  }
+}

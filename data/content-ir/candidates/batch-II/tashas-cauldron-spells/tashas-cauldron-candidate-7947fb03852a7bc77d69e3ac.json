@@ -1,0 +1,77 @@
+{
+  "candidate_clauses": [
+    {
+      "save_ability": "智力",
+      "type": "saving_throw"
+    },
+    {
+      "damage_type": "心灵",
+      "expression": "3d6",
+      "on_failure": "full",
+      "type": "damage"
+    }
+  ],
+  "candidate_id": "tashas-cauldron:candidate:7947fb03852a7bc77d69e3ac",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "1 动作",
+    "classes": [
+      "术士",
+      "法师"
+    ],
+    "components": "V",
+    "concentration": false,
+    "damage_expression": "3d6",
+    "damage_type": "心灵",
+    "duration": "1 \n轮",
+    "level": 2,
+    "range": "90 尺",
+    "resolution_kind": "damage",
+    "ritual": false,
+    "save": "智力豁免",
+    "target_disposition": "creature",
+    "upcast_text": "升环施法。 使用三环或更高的法术位施展该法术时，你使用的法术位每比二环高 \n1 环就可以额外指定一个生物。被你选为目标的生物互相之间的距离不能超过 30 尺。"
+  },
+  "exact_fields": {
+    "damage_expression": "3d6",
+    "damage_type": "心灵",
+    "save": "智力豁免"
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "塔莎心灵鞭",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "塔莎的万事坩埚",
+  "source_evidence": {
+    "source_path": "塔莎的万事坩埚/法术/法术详述/2环.html",
+    "source_text": "#### 塔莎心灵鞭｜Tasha's Mind Whip\n\n*二环 惑控（术士、法师）*\n**施法时间：**1 动作\n**施法距离：**90 尺\n**法术成分：**V\n**持续时间：**1\n轮\n你对施法距离内一个你可见的生物进行心灵猛击。目标必须进行一次智力豁免。若豁免失败，目标会受到 3d6\n心灵伤害，并且直到其下一回合结束前不能做出反应。此外，它在自己的下一回合中，只能选择在移动、动作或附赠动作中采取一种。若豁免成功，目标只受到半额伤害，并且不会受到该法术的其他效应。\n**升环施法。**使用三环或更高的法术位施展该法术时，你使用的法术位每比二环高\n1 环就可以额外指定一个生物。被你选为目标的生物互相之间的距离不能超过 30 尺。"
+  },
+  "source_fingerprint": "a46cfddb318a653a5d382a9191c6e7694ba244217f505f74b15fc0669b05c3ee",
+  "source_path": "塔莎的万事坩埚/法术/法术详述/2环.html",
+  "source_record_id": "7947fb03852a7bc77d69e3ac",
+  "spell_id": "7947fb03852a7bc77d69e3ac",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "saving_throw",
+      "damage"
+    ],
+    "template_fingerprint": "3c42f68fb11991f0b3609f5d664da8f01323dbde293a556e901df3dc4b8daf72",
+    "template_id": "spell.shape.008"
+  },
+  "uncertain_fields": {}
+}

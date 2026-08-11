@@ -1,0 +1,63 @@
+{
+  "candidate_clauses": [],
+  "candidate_id": "xanathars-guide:candidate:485ed4b107f275c1751d9833",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "1 \n反应，当你受到强酸、寒冷、火焰、闪电、或雷鸣伤害时执行",
+    "classes": [
+      "德鲁伊",
+      "游侠",
+      "术士",
+      "法师",
+      "奇械师"
+    ],
+    "components": "S",
+    "concentration": false,
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "1 \n轮",
+    "level": 1,
+    "range": "自身",
+    "ritual": false,
+    "school": "防护",
+    "upcast_text": "升环施法。 当你使用二环或更高的法术位施放该法术时，使用的法术位每高一环，额外伤害便增加 \n1d6。"
+  },
+  "exact_fields": {},
+  "kind": "spell_candidate",
+  "missing_fields": [
+    "typed_clause_mapping"
+  ],
+  "name": "吸收元素",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target",
+    "typed_clause_mapping"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "source_path": "珊娜萨的万事指南/法术/法术详述/1环.html",
+    "source_text": "#### 吸收元素｜Absorb Elements\n\n*一环 防护（德鲁伊、游侠、术士、法师、奇械师）*\n**施法时间：**1\n反应，当你受到强酸、寒冷、火焰、闪电、或雷鸣伤害时执行\n**施法距离：**自身\n**法术成分：**S\n**持续时间：**1\n轮\n此法术将捕获部分袭来的能量，减轻能量对你的效果，并将捕获的能量储存起来，用以强化你的下一次近战攻击。你获得触发法术的那个伤害类型的抗性，持续直至你的下个回合的开始。此外，在你的下个回合中，你的近战攻击首次命中时，攻击目标将额外受到1d6点伤害，类型与触发法术的伤害类型相同，之后此法术终止。\n**升环施法。**当你使用二环或更高的法术位施放该法术时，使用的法术位每高一环，额外伤害便增加\n1d6。"
+  },
+  "source_fingerprint": "97f71555e9883ae8977086f3a6bd99d0923b95d22c42a7c1148a62ec656ba9c0",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/1环.html",
+  "source_record_id": "485ed4b107f275c1751d9833",
+  "spell_id": "485ed4b107f275c1751d9833",
+  "template_match": {
+    "confidence": "low",
+    "matched_shape": [],
+    "template_fingerprint": "c6cf559b317883e1043d55b34f4a36da44766b6d3a4828662a90474ca1486880",
+    "template_id": "spell.shape.005"
+  },
+  "uncertain_fields": {}
+}

@@ -1,0 +1,83 @@
+{
+  "candidate_clauses": [
+    {
+      "required": true,
+      "type": "concentration"
+    }
+  ],
+  "candidate_id": "xanathars-guide:candidate:a690018a64210237573233a4",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "area_shape": null,
+    "area_size_ft": null,
+    "casting_time": "1 动作",
+    "classes": [
+      "魔契师",
+      "法师"
+    ],
+    "components": "V、S、M（来自一个于 24 \n小时之内被杀的类人生物身上的一剂血液）",
+    "concentration": true,
+    "conditions": null,
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "专注，至多 1 小时",
+    "half_damage_on_save": null,
+    "healing": null,
+    "level": 4,
+    "max_targets": null,
+    "movement": null,
+    "range": "60 尺",
+    "reaction": null,
+    "resolution_kind": "summon",
+    "ritual": false,
+    "save": null,
+    "school": "咒法",
+    "summon": {
+      "controller": "caster",
+      "count": 1,
+      "creature_ref": "恶魔（挑战等级5或更低）",
+      "enters_combat": true,
+      "initiative_mode": "independent"
+    },
+    "upcast_text": "升环施法。 当你使用五环或更高的法术位施放该法术时，使用的法术位每高一环，允许召唤的恶魔挑战等级就+1。"
+  },
+  "exact_fields": {
+    "concentration": true
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "高阶恶魔召唤术",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "source_path": "珊娜萨的万事指南/法术/法术详述/4环.html",
+    "source_text": "#### 高阶恶魔召唤术｜Summon Greater Demon\n\n*四环 咒法（魔契师、法师）*\n**施法时间：**1 动作\n**施法距离：**60 尺\n**法术成分：**V、S、M（来自一个于 24\n小时之内被杀的类人生物身上的一剂血液）\n**持续时间：**专注，至多 1 小时\n你吐出污秽的词语，从无底深渊的无尽混沌中召唤来一只恶魔。你选择挑战等级为 5 或更低的一种恶魔类型，例如**影魔Shadow Demon**或者是**巴古拉魔Barlgura**。恶魔出现在法术距离内你可见的一处未占据空间，当它的生命值降低至\n0\n点或是法术结束时，恶魔将会消失。\n恶魔拥有自己的回合，为他投掷先攻。当你在召唤它以及在之后你的每一个回合，你都可以向它发布口头命令（无需你的动作），告诉它在下个回合它必须做什么。如果你没有发布命令，它会花费自己的回合用来攻击任何在触及内攻击它的生物。\n在恶魔的每个回合结束时，它都会进行一次魅力豁免检定。如果你说出它的真名，恶魔会在这次豁免检定中具有劣势。如果豁免失败，恶魔继续服从你。如果豁免成功，在法术剩下的时间中你失去对恶魔的控制，并且恶魔会花费它的回合用于追逐和攻击最近的非恶魔生物，尽其所能。即使你在到达完整的持续时间之前中断这个法术的专注，一个失去控制的恶魔在\n1d6\n轮内仍然不会消失，只要它还留有生命值。\n作为施放此法术的一部分，你可以使用作为施法材料的血液在地上绘制一个法阵。法阵大到可以包括你在的空间。在法术的持续时间内，被召唤来的恶魔无法穿过或伤害法阵，也无法以其中的任何人作为目标。用这种方式使用的施法材料会在法术结束时被消耗。\n**升环施法。**当你使用五环或更高的法术位施放该法术时，使用的法术位每高一环，允许召唤的恶魔挑战等级就+1。"
+  },
+  "source_fingerprint": "711114c9421f5802cb9e1244facf1f02957f35c0e5bb7fd0bb151c541fba35d6",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/4环.html",
+  "source_record_id": "a690018a64210237573233a4",
+  "spell_id": "a690018a64210237573233a4",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "concentration"
+    ],
+    "template_fingerprint": "c6cf559b317883e1043d55b34f4a36da44766b6d3a4828662a90474ca1486880",
+    "template_id": "spell.shape.005"
+  },
+  "uncertain_fields": {}
+}

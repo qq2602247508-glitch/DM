@@ -1,0 +1,73 @@
+{
+  "candidate_clauses": [
+    {
+      "shape": "cone",
+      "size_ft": 30,
+      "type": "area"
+    }
+  ],
+  "candidate_id": "fizbans-treasury:candidate:cadce71b1ba7a42354f785dc",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "area_shape": "cone",
+    "area_size_ft": 30,
+    "casting_time": "1动作",
+    "classes": [
+      "术士",
+      "法师"
+    ],
+    "components": "S、M（一瓶冰雪融化而成的水）",
+    "concentration": false,
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "立即",
+    "half_damage_on_save": true,
+    "level": 2,
+    "range": "自身（30尺锥形）",
+    "ritual": false,
+    "save": "体质豁免",
+    "school": "塑能",
+    "target_disposition": "creature",
+    "upcast_text": "升环施法效果： 当你用3环或更高的法术位施展此法术时，你使用的法术位每比2环高一环，法术的伤害增加1d8。"
+  },
+  "exact_fields": {
+    "area_shape": "cone",
+    "area_size_ft": 30
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "雾凇霜缚",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "费资本的巨龙宝库",
+  "source_evidence": {
+    "source_path": "费资本的巨龙宝库/玩家选项/巨龙法术详述.htm",
+    "source_text": "#### 雾凇霜缚｜Rime's Binding Ice\n\n*二环 塑能（术士、法师）*\n**施法时间：**1动作\n**施法距离：**自身（30尺锥形）\n**法术成分：**S、M（一瓶冰雪融化而成的水）\n**持续时间：**立即\n你向30尺锥形范围内放出一股冰冷的能量。范围内的每个生物都必须成功通过一体质豁免，否则将受到3d8寒冷伤害并且被冰霜包裹，持续一分钟或直至一个生物用动作为自己或触及范围内的其他生物破冰。被冰霜包裹的生物其速度降至0。豁免成功则伤害减半，并且不会受到其他效应影响。\n**升环施法效果：**当你用3环或更高的法术位施展此法术时，你使用的法术位每比2环高一环，法术的伤害增加1d8。"
+  },
+  "source_fingerprint": "be9cd13062116e1928605e32a9742d1303e5b12f8899b6f91d06b612278a211b",
+  "source_path": "费资本的巨龙宝库/玩家选项/巨龙法术详述.htm",
+  "source_record_id": "cadce71b1ba7a42354f785dc",
+  "spell_id": "cadce71b1ba7a42354f785dc",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "area"
+    ],
+    "template_fingerprint": "af295bb9885e22721b4b0ce62f8bf849a6eba5ca49ce60a0868f55c840a15edb",
+    "template_id": "spell.shape.009"
+  },
+  "uncertain_fields": {}
+}

@@ -1,0 +1,68 @@
+{
+  "candidate_clauses": [],
+  "candidate_id": "core-phb-2024:candidate:83b7d94b77f332dd71310bbe",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "动作",
+    "classes": [
+      "吟游诗人",
+      "术士",
+      "法师",
+      "奇械师"
+    ],
+    "components": "V、S",
+    "concentration": false,
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "1小时",
+    "level": 1,
+    "range": "自身",
+    "ritual": false,
+    "school": "幻术",
+    "target_disposition": "creature",
+    "transformation": {
+      "form_ref": "dm_chosen_form",
+      "mode": "disguise",
+      "requires_form_choice": true,
+      "reversible": true
+    }
+  },
+  "exact_fields": {},
+  "kind": "spell_candidate",
+  "missing_fields": [
+    "typed_clause_mapping"
+  ],
+  "name": "易容术",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target",
+    "typed_clause_mapping"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "source_path": "玩家手册2024/法术详述/1环.htm",
+    "source_text": "#### 易容术｜Disguise Self\n\n*一环 幻术（吟游诗人、术士、法师、奇械师）*\n**施法时间：**动作\n**施法距离：**自身\n**法术成分：**V、S\n**持续时间：**1小时\n你改变自身以及随身的衣物、护甲、武器等在你身上的所有物。该效应在法术终止时结束。肉眼看来你的身高可以有1尺的增减，体态可胖可瘦。你必须选择一个和你肢体基础排列方式一致的形态。此外，幻术的影响范围由你决定。\n此法术产生的变化无法应对物理检查。比如，你用此法术添了一顶帽子，那么现实物件会从帽子穿过去，且任何触碰帽子的人将摸不到任何东西。\n如果一名生物想要分辨你是否易容，则必须使用一个研究动作研究你的外貌，并成功于一次对抗你法术豁免DC的智力（调查）检定。"
+  },
+  "source_fingerprint": "333f2d3a48232acf17b222fc2782505ff5f61a059a7ffe49c26ad86823caa0f4",
+  "source_path": "玩家手册2024/法术详述/1环.htm",
+  "source_record_id": "83b7d94b77f332dd71310bbe",
+  "spell_id": "83b7d94b77f332dd71310bbe",
+  "template_match": {
+    "confidence": "low",
+    "matched_shape": [],
+    "template_fingerprint": "c6cf559b317883e1043d55b34f4a36da44766b6d3a4828662a90474ca1486880",
+    "template_id": "spell.shape.005"
+  },
+  "uncertain_fields": {}
+}

@@ -1,0 +1,83 @@
+{
+  "candidate_clauses": [
+    {
+      "required": true,
+      "type": "concentration"
+    }
+  ],
+  "candidate_id": "tashas-cauldron:candidate:a578939f50108dbe40825f9f",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "area_shape": null,
+    "area_size_ft": null,
+    "casting_time": "1 动作",
+    "classes": [
+      "魔契师",
+      "法师"
+    ],
+    "components": "V, S, \nM（一条腌制触手和一颗装在白金瓶中的眼球，至少价值 400gp）",
+    "concentration": true,
+    "conditions": null,
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "专注，至多 1 \n小时",
+    "half_damage_on_save": null,
+    "healing": null,
+    "level": 4,
+    "max_targets": null,
+    "movement": null,
+    "range": "90 尺",
+    "reaction": null,
+    "resolution_kind": "summon",
+    "ritual": false,
+    "save": null,
+    "school": "咒法",
+    "summon": {
+      "controller": "caster",
+      "count": 1,
+      "creature_ref": "异怪灵魄Aberrant Spirit",
+      "enters_combat": true,
+      "initiative_mode": "shared_with_source"
+    },
+    "upcast_text": "升环施法。 使用五环或更高环阶的法术位施展该法术时，该生物数据中使用更高的法术环数。\n异怪灵魄Aberrant \n Spirit 中型异怪，无阵营 AC：11+法术等级 \n(天生护甲) HP：40+每比四环高的法术环阶10点 速度：30 尺；飞行30 \n尺（悬浮）（仅限类眼魔） 力量16（+3）敏捷10（+0）体质15（+2） 智力16（+3）感知10（+0）魅力6（-2） 伤害免疫：心灵 感官：黑暗视觉60 \n尺，被动察觉10 语言：深潜语，理解你说的语言 挑战等级：- 熟练加值与你相等 再生Regeneration（仅限史拉蟾）。 异怪在其自己的回合开始时恢复5点生命值，前提是它至少有1点生命值。 低语灵光Whispering \n Aura（仅限星之子）。 于异怪自己的每个回合开始时，所有在其5尺内的生物必须进行一次感知豁免对抗你的法术豁免DC，豁免失败则受到2d6心灵伤害，这个效果只在异怪不处于失能时适用。 动作Actions 多重攻击Multiattack。 异怪发动等同于法术环数一半的次数的攻击（向下取整）。 爪击Claws（仅限史拉蟾）。 近战武器攻击：命中+你的法术攻击加值，触及5尺，单一目标。命中：1d10+3+法术环数的挥砍伤害。如果目标是生物，其直到异怪下回合开始不能恢复生命值。 眼波射线Eye Ray（仅限类眼魔）。 远程法术攻击：命中+你的法术攻击加值，射程 150 尺，单一生物。命中：1d8+3+法术环数的心灵伤害。 灵能猛击Psychic \n Slam（仅限星之子）。 近战法术攻击：命中+你的法术攻击加值，触及5尺，单一生物。命中：1d8+3+法术环数的心灵伤害。"
+  },
+  "exact_fields": {
+    "concentration": true
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "异怪召唤术",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "塔莎的万事坩埚",
+  "source_evidence": {
+    "source_path": "塔莎的万事坩埚/法术/法术详述/4环.html",
+    "source_text": "#### 异怪召唤术｜Summon Aberration\n\n*四环 咒法（魔契师、法师）**Legacy*\n**施法时间：**1 动作\n**施法距离：**90 尺\n**法术成分：**V, S,\nM（一条腌制触手和一颗装在白金瓶中的眼球，至少价值 400gp）\n**持续时间：**专注，至多 1\n小时\n你唤来一个异怪灵魄。其在施法距离内你可见的一个未占据位置化为实体。这一实体使用下面的**异怪灵魄Aberrant Spirit**的数据。当你施展法术时，从类眼魔Beholderkin，史拉蟾Slaadi或星之子Star\nSpawn中选择一个。此生物的外形与你所选一致，其资料表中的部分特性也受此影响。当其生命值降到0或法术结束时，生物消失。\n该生物在法术持续时间内对你和你的同伴们友好。在战斗中，该生物使用你的先攻，但在你回合结束后立即行动。它遵从于你的口头指令（无需任何动作）。如果你不发令，它将执行回避动作并远离危险。\n**升环施法。**使用五环或更高环阶的法术位施展该法术时，该生物数据中使用更高的法术环数。\n\n> **异怪灵魄Aberrant\n>  Spirit**\n> *中型异怪，无阵营*\n> AC：11+法术等级\n> (天生护甲)\n> HP：40+每比四环高的法术环阶10点\n> 速度：30 尺；飞行30\n> 尺（悬浮）（仅限类眼魔）\n> 力量16（+3）敏捷10（+0）体质15（+2）\n> 智力16（+3）感知10（+0）魅力6（-2）\n> 伤害免疫：心灵\n> 感官：黑暗视觉60\n> 尺，被动察觉10\n> 语言：深潜语，理解你说的语言\n> 挑战等级：- 熟练加值与你相等\n>\n>\n>\n> **再生Regeneration（仅限史拉蟾）。**异怪在其自己的回合开始时恢复5点生命值，前提是它至少有1点生命值。\n> **低语灵光Whispering\n>  Aura（仅限星之子）。**于异怪自己的每个回合开始时，所有在其5尺内的生物必须进行一次感知豁免对抗你的法术豁免DC，豁免失败则受到2d6心灵伤害，这个效果只在异怪不处于失能时适用。\n> **动作Actions**\n> **多重攻击Multiattack。**异怪发动等同于法术环数一半的次数的攻击（向下取整）。\n> **爪击Claws（仅限史拉蟾）。**近战武器攻击：命中+你的法术攻击加值，触及5尺，单一目标。命中：1d10+3+法术环数的挥砍伤害。如果目标是生物，其直到异怪下回合开始不能恢复生命值。\n> **眼波射线Eye Ray（仅限类眼魔）。**远程法术攻击：命中+你的法术攻击加值，射程 150 尺，单一生物。命中：1d8+3+法术环数的心灵伤害。\n> **灵能猛击Psychic\n>  Slam（仅限星之子）。**近战法术攻击：命中+你的法术攻击加值，触及5尺，单一生物。命中：1d8+3+法术环数的心灵伤害。"
+  },
+  "source_fingerprint": "73287466dea0ee33c23fbe0f7c50475ea72d9765d480d04d19c2ec239c342745",
+  "source_path": "塔莎的万事坩埚/法术/法术详述/4环.html",
+  "source_record_id": "a578939f50108dbe40825f9f",
+  "spell_id": "a578939f50108dbe40825f9f",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "concentration"
+    ],
+    "template_fingerprint": "c6cf559b317883e1043d55b34f4a36da44766b6d3a4828662a90474ca1486880",
+    "template_id": "spell.shape.005"
+  },
+  "uncertain_fields": {}
+}

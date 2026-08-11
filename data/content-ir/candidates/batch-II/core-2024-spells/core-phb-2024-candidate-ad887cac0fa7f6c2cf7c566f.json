@@ -1,0 +1,84 @@
+{
+  "candidate_clauses": [
+    {
+      "shape": "cone",
+      "size_ft": 15,
+      "type": "area"
+    },
+    {
+      "condition": "目盲",
+      "type": "apply_condition"
+    }
+  ],
+  "candidate_id": "core-phb-2024:candidate:ad887cac0fa7f6c2cf7c566f",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "area_shape": "cone",
+    "area_size_ft": 15,
+    "casting_time": "动作",
+    "classes": [
+      "吟游诗人",
+      "术士",
+      "法师"
+    ],
+    "components": "V、S、M（一撮彩色沙子）",
+    "concentration": false,
+    "conditions": [
+      "目盲"
+    ],
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "立即",
+    "level": 1,
+    "range": "自身",
+    "resolution_kind": "control",
+    "ritual": false,
+    "save": "体质豁免",
+    "school": "幻术",
+    "target_disposition": "creature"
+  },
+  "exact_fields": {
+    "area_shape": "cone",
+    "area_size_ft": 15,
+    "conditions": [
+      "目盲"
+    ]
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "七彩喷射",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "source_path": "玩家手册2024/法术详述/1环.htm",
+    "source_text": "#### 七彩喷射｜Color Spray\n\n*一环 幻术（吟游诗人、术士、法师）*\n**施法时间：**动作\n**施法距离：**自身\n**法术成分：**V、S、M（一撮彩色沙子）\n**持续时间：**立即\n你射出一道炫目的闪耀彩光。以你为源点的15尺锥状区域内的每个生物必须成功通过一次体质豁免，否则陷入目盲状态，持续至下个你的回合结束。"
+  },
+  "source_fingerprint": "63eaf8f87c8de26223c6bc486463dcaa6d32c9aaf78c78082a3451e28d59cac0",
+  "source_path": "玩家手册2024/法术详述/1环.htm",
+  "source_record_id": "ad887cac0fa7f6c2cf7c566f",
+  "spell_id": "ad887cac0fa7f6c2cf7c566f",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "area",
+      "apply_condition"
+    ],
+    "template_fingerprint": "af295bb9885e22721b4b0ce62f8bf849a6eba5ca49ce60a0868f55c840a15edb",
+    "template_id": "spell.shape.009"
+  },
+  "uncertain_fields": {}
+}

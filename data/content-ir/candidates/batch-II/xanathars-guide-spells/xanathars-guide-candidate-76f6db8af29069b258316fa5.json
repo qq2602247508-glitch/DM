@@ -1,0 +1,65 @@
+{
+  "candidate_clauses": [
+    {
+      "expression": "1",
+      "type": "healing"
+    }
+  ],
+  "candidate_id": "xanathars-guide:candidate:76f6db8af29069b258316fa5",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "1 \n小时",
+    "classes": [
+      "法师"
+    ],
+    "components": "V、S、M（黏土，灰尘，曼德拉草根，以上材料作为该法术的耗材，以及价值 1000gp \n的镶嵌宝石的匕首）",
+    "concentration": false,
+    "duration": "立即",
+    "healing": "1",
+    "level": 6,
+    "range": "触碰",
+    "resolution_kind": "heal",
+    "ritual": false,
+    "school": "变化",
+    "target_disposition": "creature"
+  },
+  "exact_fields": {
+    "healing": "1"
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "创造人工生命体",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "source_path": "珊娜萨的万事指南/法术/法术详述/6环.html",
+    "source_text": "#### 创造人工生命体｜Create Homunculus\n\n*六环 变化（法师）*\n**施法时间：**1\n小时\n**施法距离：**触碰\n**法术成分：**V、S、M（黏土，灰尘，曼德拉草根，以上材料作为该法术的耗材，以及价值 1000gp\n的镶嵌宝石的匕首）\n**持续时间：**立即\n说出复杂咒语的同时，你用一把镶嵌宝石的匕首刺穿自己，并受到不能被任何方式降低的 2d4\n穿刺伤害。随后你将血液滴落在法术的其他成分上并接触它们，将它们转变为一种名为**人工生命体Homunculus**的特殊构装生物。\n人工生命体的数据见《怪物图鉴》。它是你的忠实伙伴，并且会随着你死亡。每次你完成一次长休，并且此时若人工生命体与你处于同一位面，你可以选择花费最多一半的生命骰，投掷每个骰子并加上你的体质调整值，之后你的生命值上限降低数字的总和，并且人工生命体的当前生命值及其上限都提升这个数字。这个过程可以让你的生命值降至不低于\n1\n点。你和人工生命体的生命值变化会在你完成下一次长休时还原，在那之前你的最大生命降低效果不能被移除，除非你的人工生命体死亡。\n同一时间你只能拥有一只人工生命体。如果你在你的人工生命体还存活时施展，法术将会失败。"
+  },
+  "source_fingerprint": "a84cb99e2ba9d8e4e97833548278180882471bb2b33fdf2caf09f799875ab3e3",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/6环.html",
+  "source_record_id": "76f6db8af29069b258316fa5",
+  "spell_id": "76f6db8af29069b258316fa5",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "healing"
+    ],
+    "template_fingerprint": "a5e98decf95ae64a83a7eb1eaac4f255fc3ab8f23dce3c36a4cc51211c431aec",
+    "template_id": "spell.shape.007"
+  },
+  "uncertain_fields": {}
+}

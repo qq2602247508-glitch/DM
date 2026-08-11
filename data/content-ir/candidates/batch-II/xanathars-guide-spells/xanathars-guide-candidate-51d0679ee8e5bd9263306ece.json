@@ -1,0 +1,91 @@
+{
+  "candidate_clauses": [
+    {
+      "save_ability": "体质",
+      "type": "saving_throw"
+    },
+    {
+      "damage_type": "寒冷",
+      "expression": "4d6",
+      "on_failure": "full",
+      "type": "damage"
+    },
+    {
+      "required": true,
+      "type": "concentration"
+    }
+  ],
+  "candidate_id": "xanathars-guide:candidate:51d0679ee8e5bd9263306ece",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "1 \n动作",
+    "classes": [
+      "德鲁伊",
+      "术士",
+      "魔契师",
+      "法师"
+    ],
+    "components": "V、S",
+    "concentration": true,
+    "creation": {
+      "count": null,
+      "creation_kind": "terrain",
+      "requires_template_choice": true,
+      "template_ref": "dm_chosen_template"
+    },
+    "damage_expression": "4d6",
+    "damage_type": "寒冷",
+    "duration": "专注，至多 10 分钟",
+    "level": 6,
+    "range": "自身",
+    "resolution_kind": "damage",
+    "ritual": false,
+    "save": "体质豁免",
+    "school": "变化",
+    "target_disposition": "creature"
+  },
+  "exact_fields": {
+    "concentration": true,
+    "damage_expression": "4d6",
+    "damage_type": "寒冷",
+    "save": "体质豁免"
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "寒冰赋权",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "source_path": "珊娜萨的万事指南/法术/法术详述/6环.html",
+    "source_text": "#### 寒冰赋权｜Investiture of Ice\n\n*六环 变化系（德鲁伊、术士、魔契师、法师）*\n**施法时间：**1\n动作\n**施法距离：**自身\n**法术成分：**V、S\n**持续时间：**专注，至多 10 分钟\n直到此法术终结，寒冰浸沐了你的躯体，你得到如下好处：\n\n- 你免疫寒冷伤害，并对火焰伤害具有抗性。你可以在由冰或雪形成的困难地形上移动而无需额外消耗移动力。以你为中心，周围 10\n 尺半径的区域被冻结了，对于你之外的生物而言，其被视为困难地形。此范围会随着你移动而移动。你可以使用你的动作以创造出一道 15\n 尺的寒风锥，以你张开的手为起始点，向由你选择的任意方向延伸。在锥内的每个生物均必须进行一次体质豁免检定。检定失败则受到 4d6\n 寒冷伤害，若成功则受到上述伤害的一半。在对抗此效应的豁免检定中失败的生物，直到你的下个回合开始，其速度减半。"
+  },
+  "source_fingerprint": "b0c8d049f44ef68643b502932baf77c78b62abf63cd80e0673acd3fc6efba069",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/6环.html",
+  "source_record_id": "51d0679ee8e5bd9263306ece",
+  "spell_id": "51d0679ee8e5bd9263306ece",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "saving_throw",
+      "damage",
+      "concentration"
+    ],
+    "template_fingerprint": "3c42f68fb11991f0b3609f5d664da8f01323dbde293a556e901df3dc4b8daf72",
+    "template_id": "spell.shape.008"
+  },
+  "uncertain_fields": {}
+}

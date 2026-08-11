@@ -1,0 +1,74 @@
+{
+  "candidate_clauses": [
+    {
+      "required": true,
+      "type": "concentration"
+    }
+  ],
+  "candidate_id": "xanathars-guide:candidate:64a36abb2d7083f6f64a8a65",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "1 动作",
+    "classes": [
+      "吟游诗人",
+      "术士",
+      "法师"
+    ],
+    "components": "V、S、M（一个毛毛虫的茧）",
+    "concentration": true,
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "专注，至多 1 小时",
+    "level": 9,
+    "range": "120 \n尺",
+    "ritual": false,
+    "save": "感知豁免",
+    "school": "变化",
+    "target_disposition": "creature",
+    "transformation": {
+      "form_ref": "dm_chosen_form",
+      "mode": "polymorph",
+      "requires_form_choice": true,
+      "reversible": true
+    }
+  },
+  "exact_fields": {
+    "concentration": true
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "群体变形术",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "source_path": "珊娜萨的万事指南/法术/法术详述/9环.html",
+    "source_text": "#### 群体变形术｜Mass Polymorph\n\n*九环 变化（吟游诗人、术士、法师）*\n**施法时间：**1 动作\n**施法距离：**120\n尺\n**法术成分：**V、S、M（一个毛毛虫的茧）\n**持续时间：**专注，至多 1 小时\n你可以转变施法距离内最多 10\n个由你选择的可见生物。非自愿的目标必须通过一次感知豁免检定来对抗变形。非自愿的 变形生物shapechanger\n在这次豁免中自动成功。\n每一个目标都获得由你选择的、相同或是不同的野兽形态。新的形态可以是你曾见过的、挑战等级低于或等于目标挑战等级任意野兽（如果目标没有挑战等级，那么上限是目标等级的一半）。这些目标的游戏数据，包括心智属性值，将被你所选择的野兽数据所取代，但仍然保留他们的生命值、阵营和人格。\n每一个目标都得到等同于新形态生命值的临时生命值。这些临时生命值不能被其他来源的临时生命值替换。生物会在失去这些临时生命值或者死亡时变回原本的形态。如果法术在这之前结束，这些临时生命值也会失去且生物变回原形。\n生物能进行的动作被它新形态的特质所限制。它将不能说话、施展法术、或是做其他需要用到手或言语的事情。\n目标的装备融合进新形态，目标生物不能启动，使用，挥舞或其他方式从它的装备上获得增益。"
+  },
+  "source_fingerprint": "baa359e9c2c49072f45c2a3669a55c4b567943c58effd808796f1eec85b0972a",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/9环.html",
+  "source_record_id": "64a36abb2d7083f6f64a8a65",
+  "spell_id": "64a36abb2d7083f6f64a8a65",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "concentration"
+    ],
+    "template_fingerprint": "c6cf559b317883e1043d55b34f4a36da44766b6d3a4828662a90474ca1486880",
+    "template_id": "spell.shape.005"
+  },
+  "uncertain_fields": {}
+}

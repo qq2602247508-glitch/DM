@@ -1,0 +1,91 @@
+{
+  "capability_registry": {
+    "id": "spell",
+    "version": "content-capabilities-1"
+  },
+  "casting_time": "1 动作",
+  "clause_boundaries": {
+    "concentration": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "*1 动作 **施法距离：**90 尺 **法术成分：**V, S, M（一根羽毛、一簇毛皮和一条装在镀金橡果内的鱼尾，价值至少200gp） **持续时间：**专注，至多 1 小时 你唤来一个野兽灵魄。其在施法距离内你可见的一个未占据位置化为实体。这一实体使用下面的 野兽灵魄Bestial Spirit 的数据。施展此法术时，从空、地或水中选择一个环境。此生物的外形属于你所选环境的一种动物，其资料表中的部分特性也受此影响。当其生命值降至 0 或法术结束时，生物消失。 该生物在法术持续时间内对你和你的同伴们友好。在战斗中，该生物使用你的先攻，但在你回合结束后立即行动。它遵从于你的口头指令（无需任何动作）。如果你不发令，它将执行回避动作并远离危险。 **升环施法。**使用三环",
+      "source_heading": "野兽召唤术"
+    }
+  },
+  "clause_identity": [
+    "tashas-cauldron:spell:54c8c29188db1442473d9dc1:concentration"
+  ],
+  "clauses": [
+    {
+      "clause_id": "concentration",
+      "duration": "专注，至多 1 \n小时",
+      "evidence_ref": "*1 动作 **施法距离：**90 尺 **法术成分：**V, S, M（一根羽毛、一簇毛皮和一条装在镀金橡果内的鱼尾，价值至少200gp） **持续时间：**专注，至多 1 小时 你唤来一个野兽灵魄。其在施法距离内你可见的一个未占据位置化为实体。这一实体使用下面的 野兽灵魄Bestial Spirit 的数据。施展此法术时，从空、地或水中选择一个环境。此生物的外形属于你所选环境的一种动物，其资料表中的部分特性也受此影响。当其生命值降至 0 或法术结束时，生物消失。 该生物在法术持续时间内对你和你的同伴们友好。在战斗中，该生物使用你的先攻，但在你回合结束后立即行动。它遵从于你的口头指令（无需任何动作）。如果你不发令，它将执行回避动作并远离危险。 **升环施法。**使用三环",
+      "required": true,
+      "type": "concentration"
+    }
+  ],
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "concentration": true,
+  "duration": "专注，至多 1 \n小时",
+  "edition": "2014",
+  "evidence": [
+    "concentration: *1 动作 **施法距离：**90 尺 **法术成分：**V, S, M（一根羽毛、一簇毛皮和一条装在镀金橡果内的鱼尾，价值至少200gp） **持续时间：**专注，至多 1 小时 你唤来一个野兽灵魄。其在施法距离内你可见的一个未占据位置化为实体。这一实体使用下面的 野兽灵魄Bestial Spirit 的数据。施展此法术时，从空、地或水中选择一个环境。此生物的外形属于你所选环境的一种动物，其资料表中的部分特性也受此影响。当其生命值降至 0 或法术结束时，生物消失。 该生物在法术持续时间内对你和你的同伴们友好。在战斗中，该生物使用你的先攻，但在你回合结束后立即行动。它遵从于你的口头指令（无需任何动作）。如果你不发令，它将执行回避动作并远离危险。 **升环施法。**使用三环"
+  ],
+  "kind": "spell",
+  "level": 2,
+  "manual_decisions": {
+    "review_gate": "accepted only explicit normalized fields and quoted source evidence",
+    "unresolved_branches": "not promoted when the source does not state attack/save semantics"
+  },
+  "name": "野兽召唤术",
+  "namespace": "content.tashas-cauldron",
+  "pack_id": "tashas-cauldron",
+  "pack_version": "source-7011166c19bd",
+  "range": "90 尺",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-11-batch-II",
+  "reviewed_fields": [
+    "schema_version",
+    "spell_id",
+    "name",
+    "pack_id",
+    "pack_version",
+    "namespace",
+    "ruleset_version",
+    "source_record_id",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "source_trust",
+    "level",
+    "school",
+    "casting_time",
+    "range",
+    "duration",
+    "concentration",
+    "clauses",
+    "evidence"
+  ],
+  "ruleset_version": "2014",
+  "schema_version": "spell-ir-1",
+  "school": "咒法",
+  "source_book": "塔莎的万事坩埚",
+  "source_evidence": {
+    "selected_clause_excerpt": "*1 动作 **施法距离：**90 尺 **法术成分：**V, S, M（一根羽毛、一簇毛皮和一条装在镀金橡果内的鱼尾，价值至少200gp） **持续时间：**专注，至多 1 小时 你唤来一个野兽灵魄。其在施法距离内你可见的一个未占据位置化为实体。这一实体使用下面的 野兽灵魄Bestial Spirit 的数据。施展此法术时，从空、地或水中选择一个环境。此生物的外形属于你所选环境的一种动物，其资料表中的部分特性也受此影响。当其生命值降至 0 或法术结束时，生物消失。 该生物在法术持续时间内对你和你的同伴们友好。在战斗中，该生物使用你的先攻，但在你回合结束后立即行动。它遵从于你的口头指令（无需任何动作）。如果你不发令，它将执行回避动作并远离危险。 **升环施法。**使用三环",
+    "source_book": "塔莎的万事坩埚",
+    "source_checksum": "34d050061088a0539431759a1bf61da81b0fb8dceba7a54219efe347e2c5575a",
+    "source_path": "塔莎的万事坩埚/法术/法术详述/2环.html",
+    "source_text": "#### 野兽召唤术｜Summon Beast\n\n*二环 咒法（德鲁伊、游侠）**Legacy*\n**施法时间：**1 动作\n**施法距离：**90 尺\n**法术成分：**V,\nS, M（一根羽毛、一簇毛皮和一条装在镀金橡果内的鱼尾，价值至少200gp）\n**持续时间：**专注，至多 1\n小时\n你唤来一个野兽灵魄。其在施法距离内你可见的一个未占据位置化为实体。这一实体使用下面的 野兽灵魄Bestial Spirit\n的数据。施展此法术时，从空、地或水中选择一个环境。此生物的外形属于你所选环境的一种动物，其资料表中的部分特性也受此影响。当其生命值降至 0\n或法术结束时，生物消失。\n该生物在法术持续时间内对你和你的同伴们友好。在战斗中，该生物使用你的先攻，但在你回合结束后立即行动。它遵从于你的口头指令（无需任何动作）。如果你不发令，它将执行回避动作并远离危险。\n**升环施法。**使用三环或更高法术位施展该法术时，该生物数据中使用更高的法术环数。\n\n> **野兽灵魄Bestial\n>  Spirit**\n> *小型野兽，无阵营*\n> AC：11+法术环阶\n>  (天生护甲)\n> HP：20（仅限空）或 30（仅限陆与水），外加高于二环的每环阶 5 点\n> 速度：30尺；攀爬 60尺（仅限陆）；飞行\n>  60尺（仅限空）；游泳\n>  30尺（仅限水）\n> 力量18（+4）敏捷11（+0）体质16（+3）\n> 智力4（-4）感知14（+2）魅力5（-3）\n> 感官：黑暗视觉\n>  60尺，被动察觉 12\n> 语言：理解你讲的语言\n> 挑战等级：- 熟练加值与你相等\n>\n>\n>\n> **飞掠Flyby（仅限空）。**该野兽飞出敌人触及范围时不会引起借机攻击。\n> **集群战术Pack\n>  Tactics（仅限陆与水）。**该野兽至少有一个未处于失能的盟友在目标生物\n>  5尺内时，它对该生物发动的攻击检定有优势。\n> **水下呼吸Water\n>  Breathing（仅限水）。**该野兽只能在水下呼吸。\n> **动作Actions\n> 多重攻击Multiattack。**野兽发动等同于法术环阶半数（向下取整）次数的攻击。\n> **撕咬Maul。**近战武器攻击：命中采取你的法术攻击加值，触及5尺，单一目标。命中：1d8+4+法术环阶\n>  点穿刺伤害。"
+  },
+  "source_fingerprint": "f57b0e2559fd8a0edbef3ef77cf0ead4daa815a664e1c412bd7e26a337961d50",
+  "source_path": "塔莎的万事坩埚/法术/法术详述/2环.html",
+  "source_provenance": {
+    "officiality": "unknown",
+    "review_basis": "local_source_text_manual_review",
+    "source_book": "塔莎的万事坩埚",
+    "source_checksum": "34d050061088a0539431759a1bf61da81b0fb8dceba7a54219efe347e2c5575a",
+    "source_relative_path": "塔莎的万事坩埚/法术/法术详述/2环.html"
+  },
+  "source_record_id": "54c8c29188db1442473d9dc1",
+  "source_trust": "authored_ir",
+  "spell_id": "tashas-cauldron:spell:54c8c29188db1442473d9dc1"
+}

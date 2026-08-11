@@ -1,0 +1,51 @@
+{
+  "candidate_clauses": [],
+  "candidate_id": "tashas-cauldron:candidate:790ce45021cc1901403353e1",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "feature",
+  "draft_fields": {
+    "source_text": "## 和平领域Peace Domain\n\n这些和平的牧师们难道就没有想过，他们其实在违背一条最为深刻的道理吗？这道理便是：自作，自受。\n——塔莎\n\n在每个健康的社群，友好的诸国，以及善良的灵魂心中，永远存在着对和平的向往。和平之神们激励着所有人平息冲突，并对试图打破和平的力量奋起反抗。和平神祇表格中包含了一部分拥有该领域的神明。\n和平领域的牧师会主持条约的签订仪式，同时还常常被请求秉公裁断，解决争端。这些牧师的祝福让人们众志成城，同舟共济。而这些牧师的魔法对于那些为和平而战之人则如同雪中送炭。\n\n**和平神祇Peace Deities**\n\n| 神祇范例 | 神系 |\n| --- | --- |\n| 安格芮丝 Angharradh | 精灵 |\n| 蓓伦妮真银 Berronar Truesilver | 矮人 |\n| 博得雷 Boldrei | 艾伯伦 |\n| 希劳拉妮 Cyrrollalee | 半身人 |\n| 埃达丝 Eldath | 被遗忘的国度 |\n| 盖尔达尔铁手 Gaerdal Ironhand | 侏儒 |\n| 帕拉丁 Paladine | 龙枪 |\n| 拉奥 Rao | 灰鹰 |\n\n**领域法术 Domain Spells\n***第1级和平领域特性*\n当你获得和平领域法术表中所对应的牧师等级时，你将同时习得这些法术。查看玩家手册中的神圣领域职业特性来了解什么是领域法术。\n\n**和平领域法术Peace Domain Spells**\n\n| 牧师等级 | 法术 |\n| --- | --- |\n| 1st | 英雄气概heroism，庇护术sanctuary |\n| 3rd | 援助术aid，守护之链warding\n bond |\n| 5th | 希望信标beacon of hope，短讯术sending |\n| 7th | 净化灵光aura of\n purity，欧提路克弹力法球Otiluke's resilient sphere |\n| 9th | 高等复原术greater restoration，拉瑞心灵联结Rary's telepathic\n bond |\n\n**和平执行 Implement of Peace**\n*第1级和平领域特性*\n你获得洞悉、表演、或游说技能的熟练项（由你选择）。\n\n**勇气联结 Emboldening Bond**\n*第1级和平领域特性*\n你创造出一条力量的联结，联系彼此之间和平相处的人。以一个动作，你可以选择你周围30尺范围内等同于你熟练加值数量的自愿生物（可以包括你自己）。你在他们之间创造出一条持续10分钟的魔法联结。当任一联结生物的30尺范围内存在另一个或多个被联结的生物时，在他进行的攻击检定、属性检定、或豁免检定时，可以额外掷一枚d4并加入那次检定中。每个生物每回合只能因此加一次d4。若你再次使用此特性，上一条魔法联结就会立刻终止。\n你可以使用此特性的次数等同于你的熟练加值，当你完成一次长休时恢复所有使用次数。\n\n**引导神力：和平抚慰 Channel Divinity:Balm of Peace**\n*第2级和平领域特性*\n你可以用引导神力来减轻痛苦，慰籍心灵。以一个动作，你可以移动等同于你速度的距离，此次移动不会引发借机攻击。当你在此动作期间移动到了任意其他生物周遭5尺范围内时，你都可以为其恢复2d6+你的感知调整值的生命值（最低1点生命值）。每次你使用这个引导神力时，每个生物只能从其中获得一次治疗。\n\n**保护联结 Protective Bond**\n*第6级和平领域特性*\n你创造的联结帮助人们同甘共苦。当一个受到你勇气联结影响的生物即将受到伤害时，30尺内的另一个联结生物可以用它的反应来传送到第一个生物周围5尺的一处未占据空间内，并代替那个生物承受所有伤害。\n\n**强力施法 Potent Spellcasting**\n*第8级和平领域特性*\n你施展牧师戏法造成伤害时，可以再加上你的感知调整值。\n\n**增强联结 Expansive Bond**\n*第17级和平领域特性\n*你的勇气联结和保护联结的现在能在两个联结生物之间距离不超过60尺时被应用。此外，当一个生物使用保护联结来为其他人承受伤害时，还能被视为具有对那次伤害的抗性。"
+  },
+  "exact_fields": {},
+  "feature_id": "tashas-cauldron:feature:790ce45021cc1901403353e1",
+  "kind": "feature_candidate",
+  "missing_fields": [
+    "typed_clause_mapping",
+    "operator",
+    "targeting",
+    "action_economy"
+  ],
+  "name": "和平领域（TCE）",
+  "required_review_fields": [
+    "source_name",
+    "class_name",
+    "level",
+    "clauses",
+    "operator",
+    "targeting"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "本书速查",
+  "source_evidence": {
+    "source_path": "塔莎的万事坩埚/玩家选项/职业/牧师（TCE）/和平领域.html",
+    "source_text": "## 和平领域Peace Domain\n\n这些和平的牧师们难道就没有想过，他们其实在违背一条最为深刻的道理吗？这道理便是：自作，自受。\n——塔莎\n\n在每个健康的社群，友好的诸国，以及善良的灵魂心中，永远存在着对和平的向往。和平之神们激励着所有人平息冲突，并对试图打破和平的力量奋起反抗。和平神祇表格中包含了一部分拥有该领域的神明。\n和平领域的牧师会主持条约的签订仪式，同时还常常被请求秉公裁断，解决争端。这些牧师的祝福让人们众志成城，同舟共济。而这些牧师的魔法对于那些为和平而战之人则如同雪中送炭。\n\n**和平神祇Peace Deities**\n\n| 神祇范例 | 神系 |\n| --- | --- |\n| 安格芮丝 Angharradh | 精灵 |\n| 蓓伦妮真银 Berronar Truesilver | 矮人 |\n| 博得雷 Boldrei | 艾伯伦 |\n| 希劳拉妮 Cyrrollalee | 半身人 |\n| 埃达丝 Eldath | 被遗忘的国度 |\n| 盖尔达尔铁手 Gaerdal Ironhand | 侏儒 |\n| 帕拉丁 Paladine | 龙枪 |\n| 拉奥 Rao | 灰鹰 |\n\n**领域法术 Domain Spells\n***第1级和平领域特性*\n当你获得和平领域法术表中所对应的牧师等级时，你将同时习得这些法术。查看玩家手册中的神圣领域职业特性来了解什么是领域法术。\n\n**和平领域法术Peace Domain Spells**\n\n| 牧师等级 | 法术 |\n| --- | --- |\n| 1st | 英雄气概heroism，庇护术sanctuary |\n| 3rd | 援助术aid，守护之链warding\n bond |\n| 5th | 希望信标beacon of hope，短讯术sending |\n| 7th | 净化灵光aura of\n purity，欧提路克弹力法球Otiluke's resilient sphere |\n| 9th | 高等复原术greater restoration，拉瑞心灵联结Rary's telepathic\n bond |\n\n**和平执行 Implement of Peace**\n*第1级和平领域特性*\n你获得洞悉、表演、或游说技能的熟练项（由你选择）。\n\n**勇气联结 Emboldening Bond**\n*第1级和平领域特性*\n你创造出一条力量的联结，联系彼此之间和平相处的人。以一个动作，你可以选择你周围30尺范围内等同于你熟练加值数量的自愿生物（可以包括你自己）。你在他们之间创造出一条持续10分钟的魔法联结。当任一联结生物的30尺范围内存在另一个或多个被联结的生物时，在他进行的攻击检定、属性检定、或豁免检定时，可以额外掷一枚d4并加入那次检定中。每个生物每回合只能因此加一次d4。若你再次使用此特性，上一条魔法联结就会立刻终止。\n你可以使用此特性的次数等同于你的熟练加值，当你完成一次长休时恢复所有使用次数。\n\n**引导神力：和平抚慰 Channel Divinity:Balm of Peace**\n*第2级和平领域特性*\n你可以用引导神力来减轻痛苦，慰籍心灵。以一个动作，你可以移动等同于你速度的距离，此次移动不会引发借机攻击。当你在此动作期间移动到了任意其他生物周遭5尺范围内时，你都可以为其恢复2d6+你的感知调整值的生命值（最低1点生命值）。每次你使用这个引导神力时，每个生物只能从其中获得一次治疗。\n\n**保护联结 Protective Bond**\n*第6级和平领域特性*\n你创造的联结帮助人们同甘共苦。当一个受到你勇气联结影响的生物即将受到伤害时，30尺内的另一个联结生物可以用它的反应来传送到第一个生物周围5尺的一处未占据空间内，并代替那个生物承受所有伤害。\n\n**强力施法 Potent Spellcasting**\n*第8级和平领域特性*\n你施展牧师戏法造成伤害时，可以再加上你的感知调整值。\n\n**增强联结 Expansive Bond**\n*第17级和平领域特性\n*你的勇气联结和保护联结的现在能在两个联结生物之间距离不超过60尺时被应用。此外，当一个生物使用保护联结来为其他人承受伤害时，还能被视为具有对那次伤害的抗性。"
+  },
+  "source_fingerprint": "81cbd649055317698779025cc6010eb979eaa3fc3015f24f2959777c5d65c914",
+  "source_path": "塔莎的万事坩埚/玩家选项/职业/牧师（TCE）/和平领域.html",
+  "source_record_id": "790ce45021cc1901403353e1",
+  "template_match": {
+    "confidence": "low",
+    "matched_shape": [],
+    "template_fingerprint": "18edef49700b65610b9d8daa0c6bb2fdf33eeabe75bcd1bd6534471d4682b564",
+    "template_id": "feature.shape.001"
+  },
+  "uncertain_fields": {
+    "operator": "feature_semantics_require_review"
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "candidate_clauses": [],
+  "candidate_id": "core-phb-2024:candidate:f3cf7ceffcf997ce3be9d482",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "动作",
+    "classes": [
+      "术士",
+      "法师",
+      "奇械师"
+    ],
+    "components": "V、S",
+    "concentration": false,
+    "damage_expression": "1d10",
+    "damage_type": "火焰",
+    "duration": "立即",
+    "range": "120尺",
+    "resolution_kind": "damage",
+    "ritual": false,
+    "school": "塑能",
+    "target_disposition": "creature"
+  },
+  "exact_fields": {},
+  "kind": "spell_candidate",
+  "missing_fields": [
+    "attack_or_save",
+    "typed_clause_mapping"
+  ],
+  "name": "火焰箭",
+  "required_review_fields": [
+    "action_economy",
+    "attack_or_save",
+    "clauses",
+    "level",
+    "name",
+    "target",
+    "typed_clause_mapping"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "source_path": "玩家手册2024/法术详述/0环.htm",
+    "source_text": "#### 火焰箭｜Fire Bolt\n\n*塑能 戏法（术士、法师、奇械师）*\n**施法时间：**动作\n**施法距离：**120尺\n**法术成分：**V、S\n**持续时间：**立即\n你对施法距离内一名生物或物件掷出一把火焰，对目标进行一次远程法术攻击。命中则目标将受到1d10火焰伤害。未被着装或携带的可燃物件被该法术命中时将开始燃烧。\n**戏法强化。**到达特定等级后，此戏法的伤害将增加1d10：5级（2d10）、11级（3d10）、17级（4d10）。"
+  },
+  "source_fingerprint": "35f2d1b2ad6cf0c4df63c80dac554cc2edb5ecebe75cb39969c60ccf6a8f661e",
+  "source_path": "玩家手册2024/法术详述/0环.htm",
+  "source_record_id": "f3cf7ceffcf997ce3be9d482",
+  "spell_id": "f3cf7ceffcf997ce3be9d482",
+  "template_match": {
+    "confidence": "low",
+    "matched_shape": [],
+    "template_fingerprint": "c6cf559b317883e1043d55b34f4a36da44766b6d3a4828662a90474ca1486880",
+    "template_id": "spell.shape.005"
+  },
+  "uncertain_fields": {
+    "damage_expression": "1d10",
+    "damage_type": "火焰",
+    "operator": "attack_roll_or_other_damage_operator_requires_review"
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "candidate_clauses": [],
+  "candidate_id": "core-phb-2024:candidate:d96b22348fdf49e530ee2384",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "动作",
+    "classes": [
+      "牧师"
+    ],
+    "components": "V、S",
+    "concentration": false,
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "立即",
+    "level": 1,
+    "range": "触碰",
+    "ritual": false,
+    "save": "体质豁免",
+    "school": "死灵",
+    "target_disposition": "creature",
+    "upcast_text": "升环施法。 你使用的法术位每比一环高一环，暗蚀伤害就增加1d10。"
+  },
+  "exact_fields": {},
+  "kind": "spell_candidate",
+  "missing_fields": [
+    "typed_clause_mapping"
+  ],
+  "name": "致伤术",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target",
+    "typed_clause_mapping"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "source_path": "玩家手册2024/法术详述/1环.htm",
+    "source_text": "#### 致伤术｜Inflict Wounds\n\n*一环 死灵（牧师）*\n**施法时间：**动作\n**施法距离：**触碰\n**法术成分：**V、S\n**持续时间：**立即\n你迫使触碰的一名生物进行体质豁免检定，豁免失败将受到 2d10 的暗蚀伤害，豁免成功则受到半数伤害。\n**升环施法。**你使用的法术位每比一环高一环，暗蚀伤害就增加1d10。"
+  },
+  "source_fingerprint": "2da9f51afee8728cc08210e05a785052bfba5ad43a95517c5151090f6f6ca62d",
+  "source_path": "玩家手册2024/法术详述/1环.htm",
+  "source_record_id": "d96b22348fdf49e530ee2384",
+  "spell_id": "d96b22348fdf49e530ee2384",
+  "template_match": {
+    "confidence": "low",
+    "matched_shape": [],
+    "template_fingerprint": "c6cf559b317883e1043d55b34f4a36da44766b6d3a4828662a90474ca1486880",
+    "template_id": "spell.shape.005"
+  },
+  "uncertain_fields": {}
+}

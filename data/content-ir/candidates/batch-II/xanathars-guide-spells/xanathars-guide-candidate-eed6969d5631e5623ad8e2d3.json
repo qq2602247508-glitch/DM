@@ -1,0 +1,82 @@
+{
+  "candidate_clauses": [
+    {
+      "shape": "cone",
+      "size_ft": 60,
+      "type": "area"
+    },
+    {
+      "required": true,
+      "type": "concentration"
+    }
+  ],
+  "candidate_id": "xanathars-guide:candidate:eed6969d5631e5623ad8e2d3",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "area_shape": "cone",
+    "area_size_ft": 60,
+    "casting_time": "1 动作",
+    "classes": [
+      "法师"
+    ],
+    "components": "S",
+    "concentration": true,
+    "creation": {
+      "count": null,
+      "creation_kind": "item",
+      "requires_template_choice": true,
+      "template_ref": "dm_chosen_template"
+    },
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "专注，至多 1 \n分钟",
+    "level": 8,
+    "range": "120 尺",
+    "ritual": false,
+    "save": "感知豁免",
+    "school": "幻术",
+    "target_disposition": "enemy"
+  },
+  "exact_fields": {
+    "area_shape": "cone",
+    "area_size_ft": 60,
+    "concentration": true
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "幻影巨龙",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "source_path": "珊娜萨的万事指南/法术/法术详述/8环.html",
+    "source_text": "#### 幻影巨龙｜Illusory Dragon\n\n*八环 幻术（法师）*\n**施法时间：**1 动作\n**施法距离：**120 尺\n**法术成分：**S\n**持续时间：**专注，至多 1\n分钟\n你汇聚、编织从堕影冥界收集的阴影物质，随后在施法距离内你可见的未占据空间创造出巨型\nHuge阴影龙。这个幻象会占据所在空间并持续到法术结束，就好像是一个真实生物。\n当幻象出现时，任何可以看见幻象的你的敌人必须成功进行感知豁免检定，否则将在\n1\n分钟内陷入恐惧。如果被恐惧的生物在与幻象没有视觉线相连的位置并结束回合，它可以重新进行豁免检定，成功将终止对自己的恐惧效果。\n在你的回合中以一个附赠动作，你可以移动幻象最多\n60\n尺。选择它进行移动的任意一点，你可以使它以那个位置作为起源点并喷吐出60尺锥形的爆发性能量。在你创造巨龙时选择一种伤害类型：强酸，寒冷，火焰，闪电，暗蚀或者毒素。处于锥形范围内的每个生物必须进行智力豁免检定，若豁免失败会受到\n7d6\n点对应类型的伤害，成功只承受一半。\n幻象是有形的因为它由阴影物质创造而成，不过对它的攻击会自动失手。它会通过所有豁免检定，并且免疫所有的伤害和异常状态。一个生物可以用动作来进行智力（调查）检定对抗你的法术豁免DC来判断巨龙是否为幻影。如果生物识别了幻象的真相，生物可以看穿它并在对抗它的吐息时获得优势。"
+  },
+  "source_fingerprint": "d7bde3f4fa82320f49dd2143e3c5efc0d738f503f4059aeefc235b74709510e2",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/8环.html",
+  "source_record_id": "eed6969d5631e5623ad8e2d3",
+  "spell_id": "eed6969d5631e5623ad8e2d3",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "area",
+      "concentration"
+    ],
+    "template_fingerprint": "af295bb9885e22721b4b0ce62f8bf849a6eba5ca49ce60a0868f55c840a15edb",
+    "template_id": "spell.shape.009"
+  },
+  "uncertain_fields": {}
+}

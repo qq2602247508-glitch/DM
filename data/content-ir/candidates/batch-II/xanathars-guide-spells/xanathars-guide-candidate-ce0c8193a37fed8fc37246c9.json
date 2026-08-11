@@ -1,0 +1,71 @@
+{
+  "candidate_clauses": [
+    {
+      "required": true,
+      "type": "concentration"
+    }
+  ],
+  "candidate_id": "xanathars-guide:candidate:ce0c8193a37fed8fc37246c9",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "1 动作",
+    "classes": [
+      "德鲁伊"
+    ],
+    "components": "V、S、M（折成漏斗状的纸张或叶片）",
+    "concentration": true,
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "专注，至多 1 分钟",
+    "level": 5,
+    "movement": {
+      "direction": "toward",
+      "distance_ft": 10,
+      "type": "forced"
+    },
+    "range": "120 \n尺",
+    "ritual": false,
+    "save": "力量豁免",
+    "school": "塑能",
+    "target_disposition": "creature"
+  },
+  "exact_fields": {
+    "concentration": true
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "大漩涡",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "source_path": "珊娜萨的万事指南/法术/法术详述/5环.html",
+    "source_text": "#### 大漩涡｜Maelstrom\n\n*五环 塑能（德鲁伊）\n***施法时间：**1 动作\n**施法距离：**120\n尺\n**法术成分：**V、S、M（折成漏斗状的纸张或叶片）\n**持续时间：**专注，至多 1 分钟\n你指定施法距离之内可见的一点，大量的水在此出现，构成一个深达5尺、半径达30 尺的大漩涡。你选择的点必须处于地面或者水体表面。直到法术结束前，该区域成为困难地形，所有在该区域开始其回合的生物都必须进行一次力量豁免，豁免失败将受到\n6d6 钝击伤害并被拉向中心 10 尺。"
+  },
+  "source_fingerprint": "9a08efbf07748956af60eb860e59bfc9007015b79188dee51067d6ae20c4d137",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/5环.html",
+  "source_record_id": "ce0c8193a37fed8fc37246c9",
+  "spell_id": "ce0c8193a37fed8fc37246c9",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "concentration"
+    ],
+    "template_fingerprint": "c6cf559b317883e1043d55b34f4a36da44766b6d3a4828662a90474ca1486880",
+    "template_id": "spell.shape.005"
+  },
+  "uncertain_fields": {}
+}

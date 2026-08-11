@@ -1,0 +1,91 @@
+{
+  "capability_registry": {
+    "id": "spell",
+    "version": "content-capabilities-1"
+  },
+  "casting_time": "动作",
+  "clause_boundaries": {
+    "concentration": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "ect Evil and Good *一环 预言（牧师、圣武士）* **施法时间：**动作 **施法距离：**自身 **法术成分：**V、S **持续时间：**专注，至多10分钟 在法术持续时间内，你定位距你30尺内任何异怪、天族、元素、妖精、邪魔、亡灵。你也可以感知到范围内是否具有激活的*圣居Hallow*并确定其位置。 此法术会被1尺厚的岩石、泥土或木头，1寸厚的金属，或薄薄一层铅阻隔。",
+      "source_heading": "侦测善恶"
+    }
+  },
+  "clause_identity": [
+    "core-phb-2024:spell:0a6ce73a1735af465a59f154:concentration"
+  ],
+  "clauses": [
+    {
+      "clause_id": "concentration",
+      "duration": "专注，至多10分钟",
+      "evidence_ref": "ect Evil and Good *一环 预言（牧师、圣武士）* **施法时间：**动作 **施法距离：**自身 **法术成分：**V、S **持续时间：**专注，至多10分钟 在法术持续时间内，你定位距你30尺内任何异怪、天族、元素、妖精、邪魔、亡灵。你也可以感知到范围内是否具有激活的*圣居Hallow*并确定其位置。 此法术会被1尺厚的岩石、泥土或木头，1寸厚的金属，或薄薄一层铅阻隔。",
+      "required": true,
+      "type": "concentration"
+    }
+  ],
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "concentration": true,
+  "duration": "专注，至多10分钟",
+  "edition": "2024",
+  "evidence": [
+    "concentration: ect Evil and Good *一环 预言（牧师、圣武士）* **施法时间：**动作 **施法距离：**自身 **法术成分：**V、S **持续时间：**专注，至多10分钟 在法术持续时间内，你定位距你30尺内任何异怪、天族、元素、妖精、邪魔、亡灵。你也可以感知到范围内是否具有激活的*圣居Hallow*并确定其位置。 此法术会被1尺厚的岩石、泥土或木头，1寸厚的金属，或薄薄一层铅阻隔。"
+  ],
+  "kind": "spell",
+  "level": 1,
+  "manual_decisions": {
+    "review_gate": "accepted only explicit normalized fields and quoted source evidence",
+    "unresolved_branches": "not promoted when the source does not state attack/save semantics"
+  },
+  "name": "侦测善恶",
+  "namespace": "content.core-phb-2024",
+  "pack_id": "core-phb-2024",
+  "pack_version": "source-7011166c19bd",
+  "range": "自身",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-11-batch-II",
+  "reviewed_fields": [
+    "schema_version",
+    "spell_id",
+    "name",
+    "pack_id",
+    "pack_version",
+    "namespace",
+    "ruleset_version",
+    "source_record_id",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "source_trust",
+    "level",
+    "school",
+    "casting_time",
+    "range",
+    "duration",
+    "concentration",
+    "clauses",
+    "evidence"
+  ],
+  "ruleset_version": "2024",
+  "schema_version": "spell-ir-1",
+  "school": "预言",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "selected_clause_excerpt": "ect Evil and Good *一环 预言（牧师、圣武士）* **施法时间：**动作 **施法距离：**自身 **法术成分：**V、S **持续时间：**专注，至多10分钟 在法术持续时间内，你定位距你30尺内任何异怪、天族、元素、妖精、邪魔、亡灵。你也可以感知到范围内是否具有激活的*圣居Hallow*并确定其位置。 此法术会被1尺厚的岩石、泥土或木头，1寸厚的金属，或薄薄一层铅阻隔。",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "2bc73cb9b3ee888247d8260e35de45f02e3c7b57124adc15b9c5d6fb1153f93d",
+    "source_path": "玩家手册2024/法术详述/1环.htm",
+    "source_text": "#### 侦测善恶｜Detect Evil and Good\n\n*一环 预言（牧师、圣武士）*\n**施法时间：**动作\n**施法距离：**自身\n**法术成分：**V、S\n**持续时间：**专注，至多10分钟\n在法术持续时间内，你定位距你30尺内任何异怪、天族、元素、妖精、邪魔、亡灵。你也可以感知到范围内是否具有激活的*圣居Hallow*并确定其位置。\n此法术会被1尺厚的岩石、泥土或木头，1寸厚的金属，或薄薄一层铅阻隔。"
+  },
+  "source_fingerprint": "aab38a7171edacde0e94d4e3130a3ea3a19ef08da3472c5ea3d23406300f6742",
+  "source_path": "玩家手册2024/法术详述/1环.htm",
+  "source_provenance": {
+    "officiality": "official",
+    "review_basis": "local_source_text_manual_review",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "2bc73cb9b3ee888247d8260e35de45f02e3c7b57124adc15b9c5d6fb1153f93d",
+    "source_relative_path": "玩家手册2024/法术详述/1环.htm"
+  },
+  "source_record_id": "0a6ce73a1735af465a59f154",
+  "source_trust": "authored_ir",
+  "spell_id": "core-phb-2024:spell:0a6ce73a1735af465a59f154"
+}

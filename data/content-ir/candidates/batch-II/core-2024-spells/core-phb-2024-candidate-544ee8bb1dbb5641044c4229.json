@@ -1,0 +1,89 @@
+{
+  "candidate_clauses": [
+    {
+      "shape": "cube",
+      "size_ft": 20,
+      "type": "area"
+    },
+    {
+      "required": true,
+      "type": "concentration"
+    },
+    {
+      "condition": "束缚",
+      "type": "apply_condition"
+    }
+  ],
+  "candidate_id": "core-phb-2024:candidate:544ee8bb1dbb5641044c4229",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "area_shape": "cube",
+    "area_size_ft": 20,
+    "casting_time": "动作",
+    "classes": [
+      "德鲁伊",
+      "游侠"
+    ],
+    "components": "V、S",
+    "concentration": true,
+    "conditions": [
+      "束缚"
+    ],
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "专注，至多1分钟",
+    "level": 1,
+    "range": "90尺",
+    "resolution_kind": "control",
+    "ritual": false,
+    "save": "力量豁免",
+    "school": "咒法",
+    "target_disposition": "creature"
+  },
+  "exact_fields": {
+    "area_shape": "cube",
+    "area_size_ft": 20,
+    "concentration": true,
+    "conditions": [
+      "束缚"
+    ]
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "纠缠术",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "source_path": "玩家手册2024/法术详述/1环.htm",
+    "source_text": "#### 纠缠术｜Entangle\n\n*一环 咒法（德鲁伊、游侠）*\n**施法时间：**动作\n**施法距离：**90尺\n**法术成分：**V、S\n**持续时间：**专注，至多1分钟\n缠绕的植物在施法距离内从20尺方状区域地面中破土而出。在法术持续时间内，这片被植物覆盖的区域变为困难地形。法术结束时，这些植物会消失。\n在你施展法术时，该区域内的生物（除你之外）必须成功于一次力量豁免，否则陷入束缚状态，直到法术终止。一名因此被束缚的生物可以用其动作进行一次力量（运动）检定对抗该法术的豁免DC。检定成功则成功摆脱缠绕在其身上的藤蔓并不再被其束缚。"
+  },
+  "source_fingerprint": "b93dbd3cdf444aa7a3b6d5b22c514e40d6e6097c253d90ec662f8c42e6953c1b",
+  "source_path": "玩家手册2024/法术详述/1环.htm",
+  "source_record_id": "544ee8bb1dbb5641044c4229",
+  "spell_id": "544ee8bb1dbb5641044c4229",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "area",
+      "concentration",
+      "apply_condition"
+    ],
+    "template_fingerprint": "af295bb9885e22721b4b0ce62f8bf849a6eba5ca49ce60a0868f55c840a15edb",
+    "template_id": "spell.shape.009"
+  },
+  "uncertain_fields": {}
+}

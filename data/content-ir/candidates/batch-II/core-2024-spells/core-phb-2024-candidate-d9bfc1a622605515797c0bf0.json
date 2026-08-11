@@ -1,0 +1,104 @@
+{
+  "candidate_clauses": [
+    {
+      "save_ability": "体质",
+      "type": "saving_throw"
+    },
+    {
+      "damage_type": "雷鸣",
+      "expression": "2d8",
+      "on_failure": "full",
+      "type": "damage"
+    },
+    {
+      "shape": "cube",
+      "size_ft": 15,
+      "type": "area"
+    },
+    {
+      "increments": "1d",
+      "per_slot": 1,
+      "type": "upcast"
+    }
+  ],
+  "candidate_id": "core-phb-2024:candidate:d9bfc1a622605515797c0bf0",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "area_shape": "cube",
+    "area_size_ft": 15,
+    "casting_time": "动作",
+    "classes": [
+      "吟游诗人",
+      "德鲁伊",
+      "术士",
+      "法师"
+    ],
+    "components": "V、S",
+    "concentration": false,
+    "damage_expression": "2d8",
+    "damage_type": "雷鸣",
+    "duration": "立即",
+    "half_damage_on_save": true,
+    "level": 1,
+    "movement": {
+      "direction": "away",
+      "distance_ft": 10,
+      "type": "forced"
+    },
+    "range": "自身",
+    "resolution_kind": "damage",
+    "ritual": false,
+    "save": "体质豁免",
+    "school": "塑能",
+    "target_disposition": "creature",
+    "upcast_damage_dice": 1,
+    "upcast_text": "升环施法。 使用的法术位每比一环高一环，伤害就提高1d8。"
+  },
+  "exact_fields": {
+    "area_shape": "cube",
+    "area_size_ft": 15,
+    "damage_expression": "2d8",
+    "damage_type": "雷鸣",
+    "save": "体质豁免",
+    "upcast": 1
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "雷鸣波",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "source_path": "玩家手册2024/法术详述/1环.htm",
+    "source_text": "#### 雷鸣波｜Thunderwave\n\n*一环 塑能（吟游诗人、德鲁伊、术士、法师）*\n**施法时间：**动作\n**施法距离：**自身\n**法术成分：**V、S\n**持续时间：**立即\n你释放出一道雷鸣能量。在以你为源点15尺立方区域内的每名生物必须进行一次体质豁免。豁免失败者将受到2d8点雷鸣伤害，并被向远离你的方向推离10尺。豁免成功则只受一半伤害。\n此外，所有完全位于该区域内且未被固定住的物件都将被推离10尺。该法术还会发出距你300尺内都能听见的雷霆巨响。\n**升环施法。**使用的法术位每比一环高一环，伤害就提高1d8。"
+  },
+  "source_fingerprint": "b319163339a5d7243a1ee55d02099a189499b883f0f7bf1bcde50f332199e4dd",
+  "source_path": "玩家手册2024/法术详述/1环.htm",
+  "source_record_id": "d9bfc1a622605515797c0bf0",
+  "spell_id": "d9bfc1a622605515797c0bf0",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "saving_throw",
+      "damage",
+      "area",
+      "upcast"
+    ],
+    "template_fingerprint": "af295bb9885e22721b4b0ce62f8bf849a6eba5ca49ce60a0868f55c840a15edb",
+    "template_id": "spell.shape.009"
+  },
+  "uncertain_fields": {}
+}

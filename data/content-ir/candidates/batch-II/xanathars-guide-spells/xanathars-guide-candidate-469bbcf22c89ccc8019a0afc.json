@@ -1,0 +1,84 @@
+{
+  "candidate_clauses": [
+    {
+      "save_ability": "体质",
+      "type": "saving_throw"
+    },
+    {
+      "damage_type": "光耀",
+      "expression": "4d10",
+      "on_failure": "full",
+      "type": "damage"
+    },
+    {
+      "required": true,
+      "type": "concentration"
+    }
+  ],
+  "candidate_id": "xanathars-guide:candidate:469bbcf22c89ccc8019a0afc",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "1 动作",
+    "classes": [
+      "术士",
+      "魔契师",
+      "法师"
+    ],
+    "components": "V、S",
+    "concentration": true,
+    "damage_expression": "4d10",
+    "damage_type": "光耀",
+    "duration": "专注，至多 10 分钟",
+    "level": 4,
+    "range": "120 \n尺",
+    "resolution_kind": "damage",
+    "ritual": false,
+    "save": "体质豁免",
+    "school": "塑能",
+    "target_disposition": "creature"
+  },
+  "exact_fields": {
+    "concentration": true,
+    "damage_expression": "4d10",
+    "damage_type": "光耀",
+    "save": "体质豁免"
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "致病辐射",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "source_path": "珊娜萨的万事指南/法术/法术详述/4环.html",
+    "source_text": "#### 致病辐射｜Sickening Radiance\n\n*四环 塑能（术士、魔契师、法师）*\n**施法时间：**1 动作\n**施法距离：**120\n尺\n**法术成分：**V、S\n**持续时间：**专注，至多 10 分钟\n选择的施法距离内的一点，绿色的微光以那一点为中心扩散并覆盖半径30尺的球状区域。光芒会绕开拐角传播，并会一直持续到法术结束为止。\n当一个生物在某一回合内第一次进入此法术区域内，或者是在其中开始其回合时，该生物必须通过一次体质豁免。豁免失败将受到\n4d10 点光耀伤害并承受一级力竭，且该生物会发散出 5\n尺半径的绿色微光。这个光线让生物无法从隐形中获益。光线和由于这个法术所产生的任何等级的力竭在法术结束时消失。\n（注：辐射Radiance 与光耀伤害的 光耀Radiance\n是同一个词。这也是为什么此法术译作辐射看似辐射却造成光耀伤害。）"
+  },
+  "source_fingerprint": "6aff8f7e364acda97917ef1213ea4b1ceb17d400a1c59832ff703bf642b0616f",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/4环.html",
+  "source_record_id": "469bbcf22c89ccc8019a0afc",
+  "spell_id": "469bbcf22c89ccc8019a0afc",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "saving_throw",
+      "damage",
+      "concentration"
+    ],
+    "template_fingerprint": "3c42f68fb11991f0b3609f5d664da8f01323dbde293a556e901df3dc4b8daf72",
+    "template_id": "spell.shape.008"
+  },
+  "uncertain_fields": {}
+}

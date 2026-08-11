@@ -1,0 +1,73 @@
+{
+  "candidate_clauses": [
+    {
+      "required": true,
+      "type": "concentration"
+    }
+  ],
+  "candidate_id": "xanathars-guide:candidate:32029f628876bce678c798d1",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "1 动作",
+    "classes": [
+      "魔契师",
+      "法师"
+    ],
+    "components": "V",
+    "concentration": true,
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "专注，至多 1 \n分钟",
+    "level": 1,
+    "range": "60 尺",
+    "repeat": {
+      "count_expression": "duration",
+      "source": "explicit_timing",
+      "timing": "turn_end"
+    },
+    "ritual": false,
+    "save": "感知豁免",
+    "school": "死灵",
+    "target_disposition": "creature",
+    "upcast_text": "升环施法。 当你使用二环或更高的法术位施放该法术时，使用的法术位每高一环，你就可以多指定一个额外生物作为目标。每个被你指定的生物相互之间的施法距离必须在 \n30 尺内。"
+  },
+  "exact_fields": {
+    "concentration": true
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "造成恐惧",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "source_path": "珊娜萨的万事指南/法术/法术详述/1环.html",
+    "source_text": "#### 造成恐惧｜Cause Fear\n\n*一环 死灵（魔契师、法师）*\n**施法时间：**1 动作\n**施法距离：**60 尺\n**法术成分：**V\n**持续时间：**专注，至多 1\n分钟\n你唤醒了一个处于施法距离内、你能看见的生物内心的凡性。此法术对于构装生物或亡灵无效。目标必须通过一次感知豁免检定，否则在持续时间内陷入恐惧。被恐惧的生物可以在它的每个回合结束时重复进行这个豁免检定，若成功将结束法术对自身的效果。\n**升环施法。**当你使用二环或更高的法术位施放该法术时，使用的法术位每高一环，你就可以多指定一个额外生物作为目标。每个被你指定的生物相互之间的施法距离必须在\n30 尺内。"
+  },
+  "source_fingerprint": "0a3022a43e497585172bdec69d7e39c21df0e04be4ab08ba26e1b567646bcfc0",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/1环.html",
+  "source_record_id": "32029f628876bce678c798d1",
+  "spell_id": "32029f628876bce678c798d1",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "concentration"
+    ],
+    "template_fingerprint": "c6cf559b317883e1043d55b34f4a36da44766b6d3a4828662a90474ca1486880",
+    "template_id": "spell.shape.005"
+  },
+  "uncertain_fields": {}
+}

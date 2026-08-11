@@ -1,0 +1,92 @@
+{
+  "capability_registry": {
+    "id": "spell",
+    "version": "content-capabilities-1"
+  },
+  "casting_time": "动作",
+  "clause_boundaries": {
+    "target": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": " Play。**你立即点燃或熄灭一根蜡烛、一根火把或一处小篝火。 > **清洁或弄脏Clean or > Soil。**你立即清洁或弄脏一个体积不大于1立方尺的物件。 > **次级感觉Minor > Sensation。**你使一个不大于1立方尺的非活体物质变冷、变暖或对其调味，持续1小时。 > **魔法印记Magic > Mark。**你在一个物件或一个表面上创造一块色斑，一个小印记，或者一个徽记，持续1小时。 > **次级造物Minor > Creation。**你创造出一个非魔法小饰品或一张虚幻图像，其大小不能超过你的手掌大小，它会持续存在至下个你的回合结束为止。一个小饰品不能造成伤害，也不值任何钱。",
+      "source_heading": "魔法伎俩"
+    }
+  },
+  "clause_identity": [
+    "core-phb-2024:spell:b9db026fa1853bca5b6f1c13:target"
+  ],
+  "clauses": [
+    {
+      "clause_id": "target",
+      "count": 1,
+      "evidence_ref": " Play。**你立即点燃或熄灭一根蜡烛、一根火把或一处小篝火。 > **清洁或弄脏Clean or > Soil。**你立即清洁或弄脏一个体积不大于1立方尺的物件。 > **次级感觉Minor > Sensation。**你使一个不大于1立方尺的非活体物质变冷、变暖或对其调味，持续1小时。 > **魔法印记Magic > Mark。**你在一个物件或一个表面上创造一块色斑，一个小印记，或者一个徽记，持续1小时。 > **次级造物Minor > Creation。**你创造出一个非魔法小饰品或一张虚幻图像，其大小不能超过你的手掌大小，它会持续存在至下个你的回合结束为止。一个小饰品不能造成伤害，也不值任何钱。",
+      "kind": "object",
+      "type": "target_selection",
+      "visibility": "visible"
+    }
+  ],
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "concentration": false,
+  "duration": "至多1小时",
+  "edition": "2024",
+  "evidence": [
+    "target:  Play。**你立即点燃或熄灭一根蜡烛、一根火把或一处小篝火。 > **清洁或弄脏Clean or > Soil。**你立即清洁或弄脏一个体积不大于1立方尺的物件。 > **次级感觉Minor > Sensation。**你使一个不大于1立方尺的非活体物质变冷、变暖或对其调味，持续1小时。 > **魔法印记Magic > Mark。**你在一个物件或一个表面上创造一块色斑，一个小印记，或者一个徽记，持续1小时。 > **次级造物Minor > Creation。**你创造出一个非魔法小饰品或一张虚幻图像，其大小不能超过你的手掌大小，它会持续存在至下个你的回合结束为止。一个小饰品不能造成伤害，也不值任何钱。"
+  ],
+  "kind": "spell",
+  "level": 0,
+  "manual_decisions": {
+    "review_gate": "accepted only explicit normalized fields and quoted source evidence",
+    "unresolved_branches": "not promoted when the source does not state attack/save semantics"
+  },
+  "name": "魔法伎俩",
+  "namespace": "content.core-phb-2024",
+  "pack_id": "core-phb-2024",
+  "pack_version": "source-7011166c19bd",
+  "range": "10尺",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-11-batch-II",
+  "reviewed_fields": [
+    "schema_version",
+    "spell_id",
+    "name",
+    "pack_id",
+    "pack_version",
+    "namespace",
+    "ruleset_version",
+    "source_record_id",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "source_trust",
+    "level",
+    "school",
+    "casting_time",
+    "range",
+    "duration",
+    "concentration",
+    "clauses",
+    "evidence"
+  ],
+  "ruleset_version": "2024",
+  "schema_version": "spell-ir-1",
+  "school": "变化",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "selected_clause_excerpt": " Play。**你立即点燃或熄灭一根蜡烛、一根火把或一处小篝火。 > **清洁或弄脏Clean or > Soil。**你立即清洁或弄脏一个体积不大于1立方尺的物件。 > **次级感觉Minor > Sensation。**你使一个不大于1立方尺的非活体物质变冷、变暖或对其调味，持续1小时。 > **魔法印记Magic > Mark。**你在一个物件或一个表面上创造一块色斑，一个小印记，或者一个徽记，持续1小时。 > **次级造物Minor > Creation。**你创造出一个非魔法小饰品或一张虚幻图像，其大小不能超过你的手掌大小，它会持续存在至下个你的回合结束为止。一个小饰品不能造成伤害，也不值任何钱。",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "794cb2bd4b70023bcd4d374f5e765b4b439e4b4174f4ee47ea0be04eae764862",
+    "source_path": "玩家手册2024/法术详述/0环.htm",
+    "source_text": "#### 魔法伎俩｜Prestidigitation\n\n*变化 戏法（吟游诗人、术士、魔契师、法师、奇械师）*\n**施法时间：**动作\n**施法距离：**10尺\n**法术成分：**V、S\n**持续时间：**至多1小时\n你在施法距离内创造一个魔法效应。从下述效应中选择一项。如果你多次施展该法术，则可以同时维持至多三个不同的非即时效应。\n\n> **感官效应Sensory\n> Effect。**你创造一个立即生效的，无害的感官效应，比如一束火花，一阵风，微弱音乐或古怪的臭味。\n> **玩火Fire\n> Play。**你立即点燃或熄灭一根蜡烛、一根火把或一处小篝火。\n> **清洁或弄脏Clean or\n> Soil。**你立即清洁或弄脏一个体积不大于1立方尺的物件。\n> **次级感觉Minor\n> Sensation。**你使一个不大于1立方尺的非活体物质变冷、变暖或对其调味，持续1小时。\n> **魔法印记Magic\n> Mark。**你在一个物件或一个表面上创造一块色斑，一个小印记，或者一个徽记，持续1小时。\n> **次级造物Minor\n> Creation。**你创造出一个非魔法小饰品或一张虚幻图像，其大小不能超过你的手掌大小，它会持续存在至下个你的回合结束为止。一个小饰品不能造成伤害，也不值任何钱。"
+  },
+  "source_fingerprint": "ac01a2d5259ee244017fc18a87ba7014451a505a4e196d260a6dbb2a06806dda",
+  "source_path": "玩家手册2024/法术详述/0环.htm",
+  "source_provenance": {
+    "officiality": "official",
+    "review_basis": "local_source_text_manual_review",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "794cb2bd4b70023bcd4d374f5e765b4b439e4b4174f4ee47ea0be04eae764862",
+    "source_relative_path": "玩家手册2024/法术详述/0环.htm"
+  },
+  "source_record_id": "b9db026fa1853bca5b6f1c13",
+  "source_trust": "authored_ir",
+  "spell_id": "core-phb-2024:spell:b9db026fa1853bca5b6f1c13"
+}

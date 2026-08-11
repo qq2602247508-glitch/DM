@@ -1,0 +1,62 @@
+{
+  "candidate_clauses": [],
+  "candidate_id": "xanathars-guide:candidate:fabeb107a7e3c8c0b0f24c80",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "1 动作",
+    "classes": [
+      "吟游诗人",
+      "术士",
+      "法师",
+      "奇械师"
+    ],
+    "components": "S、M（一撮沙子）",
+    "concentration": false,
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "10 \n分钟",
+    "level": 3,
+    "range": "30 尺",
+    "ritual": false,
+    "target_disposition": "ally",
+    "upcast_text": "升环施法。 当你使用四环或更高的法术位施放该法术时，使用的法术位每高一环，你就可以多指定 \n1 个额外的自愿生物作为目标。"
+  },
+  "exact_fields": {},
+  "kind": "spell_candidate",
+  "missing_fields": [
+    "typed_clause_mapping"
+  ],
+  "name": "假寐术",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target",
+    "typed_clause_mapping"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "source_path": "珊娜萨的万事指南/法术/法术详述/3环.html",
+    "source_text": "#### 假寐术｜Catnap\n\n*三环 惑控（吟游诗人、术士、法师、奇械师）*\n**施法时间：**1 动作\n**施法距离：**30 尺\n**法术成分：**S、M（一撮沙子）\n**持续时间：**10\n分钟\n你做一个使人平静的手势，在施法距离内，你选择最多 3\n名你可以看见的自愿生物在法术持续时间中进入昏迷状态。如果生物受到伤害或者某人使用动作将他摇醒，对于那个目标法术会提前结束。如果目标在整个持续期间都保持昏迷，目标会得到一次短休的好处，但是在完成一次长休之前将不能再受到这个法术的影响。\n**升环施法。**当你使用四环或更高的法术位施放该法术时，使用的法术位每高一环，你就可以多指定\n1 个额外的自愿生物作为目标。"
+  },
+  "source_fingerprint": "30117d566dfc25a3be58d0fcd1c9d716b5e9d7ba2345b1eac9b0f65fdd2ebeb5",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/3环.html",
+  "source_record_id": "fabeb107a7e3c8c0b0f24c80",
+  "spell_id": "fabeb107a7e3c8c0b0f24c80",
+  "template_match": {
+    "confidence": "low",
+    "matched_shape": [],
+    "template_fingerprint": "c6cf559b317883e1043d55b34f4a36da44766b6d3a4828662a90474ca1486880",
+    "template_id": "spell.shape.005"
+  },
+  "uncertain_fields": {}
+}

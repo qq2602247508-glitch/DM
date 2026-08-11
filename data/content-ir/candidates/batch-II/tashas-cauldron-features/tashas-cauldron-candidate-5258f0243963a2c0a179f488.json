@@ -1,0 +1,51 @@
+{
+  "candidate_clauses": [],
+  "candidate_id": "tashas-cauldron:candidate:5258f0243963a2c0a179f488",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "feature",
+  "draft_fields": {
+    "source_text": "**游荡者 Rogue**\n在这一节里，游荡者获得了新的特性和子职业。\n**可选职业特性 Optional Class Features**\n你可以在达到特定等级时获得玩家手册中描述的职业特性。这一部分提供了一些你作为游荡者的额外特性。与玩家手册中的特性不同的是，你不会自动获得这些特性。在你达到该部分描述的职业特性的需求等级且决定获得这些特性时，与你的DM先商量商量。\n\n**稳定瞄准 Steady Aim**\n*第3级游荡者特性*\n作为一个附赠动作，你在当前回合为你的下一次攻击提供优势。你只能在你本回合还没有移动的时候使用这个附赠动作，而且在你使用这个附赠动作后，你的速度在当前回合里归0."
+  },
+  "exact_fields": {},
+  "feature_id": "tashas-cauldron:feature:5258f0243963a2c0a179f488",
+  "kind": "feature_candidate",
+  "missing_fields": [
+    "typed_clause_mapping",
+    "operator",
+    "targeting",
+    "action_economy"
+  ],
+  "name": "游荡者",
+  "required_review_fields": [
+    "source_name",
+    "class_name",
+    "level",
+    "clauses",
+    "operator",
+    "targeting"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "本书速查",
+  "source_evidence": {
+    "source_path": "塔莎的万事坩埚/玩家选项/职业/游荡者（TCE）.html",
+    "source_text": "**游荡者 Rogue**\n在这一节里，游荡者获得了新的特性和子职业。\n**可选职业特性 Optional Class Features**\n你可以在达到特定等级时获得玩家手册中描述的职业特性。这一部分提供了一些你作为游荡者的额外特性。与玩家手册中的特性不同的是，你不会自动获得这些特性。在你达到该部分描述的职业特性的需求等级且决定获得这些特性时，与你的DM先商量商量。\n\n**稳定瞄准 Steady Aim**\n*第3级游荡者特性*\n作为一个附赠动作，你在当前回合为你的下一次攻击提供优势。你只能在你本回合还没有移动的时候使用这个附赠动作，而且在你使用这个附赠动作后，你的速度在当前回合里归0."
+  },
+  "source_fingerprint": "c45772fa4a2d2024f840aa7aaeeef6342d564edebbe864bcc5a314b08c4e2d1e",
+  "source_path": "塔莎的万事坩埚/玩家选项/职业/游荡者（TCE）.html",
+  "source_record_id": "5258f0243963a2c0a179f488",
+  "template_match": {
+    "confidence": "low",
+    "matched_shape": [],
+    "template_fingerprint": "18edef49700b65610b9d8daa0c6bb2fdf33eeabe75bcd1bd6534471d4682b564",
+    "template_id": "feature.shape.001"
+  },
+  "uncertain_fields": {
+    "operator": "feature_semantics_require_review"
+  }
+}

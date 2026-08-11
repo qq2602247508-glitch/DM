@@ -1,0 +1,39 @@
+{
+  "book": "塔莎的万事坩埚",
+  "candidate_paths": [
+    "tashas-cauldron-candidate-bef5ef39397ea7aa8a0856ea.json",
+    "tashas-cauldron-candidate-7947fb03852a7bc77d69e3ac.json",
+    "tashas-cauldron-candidate-54c8c29188db1442473d9dc1.json",
+    "tashas-cauldron-candidate-083419d9de551806a5ca9748.json",
+    "tashas-cauldron-candidate-0036d7dc058c496ef08fe340.json",
+    "tashas-cauldron-candidate-b4ea0dc1907dd5ac08666af3.json",
+    "tashas-cauldron-candidate-f5cecd71fec2973d283c87e7.json",
+    "tashas-cauldron-candidate-186b6f8d92a18280c411d71f.json",
+    "tashas-cauldron-candidate-821697eef9deee02919ab171.json",
+    "tashas-cauldron-candidate-a578939f50108dbe40825f9f.json",
+    "tashas-cauldron-candidate-e801ed5d271a68fbfe81acfa.json",
+    "tashas-cauldron-candidate-d8f457a67427548a0b968fb6.json",
+    "tashas-cauldron-candidate-8c4325e8ec5be6bdaa772525.json",
+    "tashas-cauldron-candidate-5473a33b48053a0271120a31.json",
+    "tashas-cauldron-candidate-9bcc248fd8cb8514ecc26155.json",
+    "tashas-cauldron-candidate-1ac1466462ef7c0514a3ea44.json",
+    "tashas-cauldron-candidate-eec6bd94eb83a351fb987de2.json",
+    "tashas-cauldron-candidate-ef0f92b557fb48d421d462e1.json",
+    "tashas-cauldron-candidate-aadaa43a2f946220099797b4.json",
+    "tashas-cauldron-candidate-2aa8d961d7c7274480168627.json",
+    "tashas-cauldron-candidate-34f3e707683bf37f2adf1f04.json"
+  ],
+  "candidate_status": "generated_candidate",
+  "catalog_fingerprint": "7dd03f9bd5d532956076c724a98d275d06114d4afeadeb48b39ee4a0aaa241a5",
+  "counts_by_confidence": {
+    "high": 17,
+    "low": 1,
+    "medium": 3
+  },
+  "counts_with_uncertainty": 3,
+  "generated_candidate_count": 21,
+  "kind": "spell",
+  "report_fingerprint": "1b2dca349ab41b296a64c4e5b52cd6992a5ae9b3d8b885bd39c072f8a5fc3e94",
+  "schema_version": "content-ir-candidate-generation-1",
+  "source_record_count": 21
+}

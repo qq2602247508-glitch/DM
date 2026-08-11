@@ -1,0 +1,109 @@
+{
+  "capability_registry": {
+    "id": "spell",
+    "version": "content-capabilities-1"
+  },
+  "casting_time": "动作或仪式",
+  "clause_boundaries": {
+    "area": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "奇械师）* **施法时间：**动作或仪式 **施法距离：**10尺 **法术成分：**V、S **持续时间：**立即 以施法距离内一点为中心，你移除半径5尺球状区域内非魔法食物与饮品中的毒素和腐败。",
+      "source_heading": "净化饮食"
+    },
+    "target": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "## 净化饮食｜Purify Food and Drink *一环 变化（牧师、德鲁伊、圣武士、奇械师）* **施法时间：**动作或仪式 **施法距离：**10尺 **法术成分：**V、S **持续时间：**立即 以施法距离内一点为中心，你移除半径5尺球状区域内非魔法食物与饮品中的毒素和腐败。",
+      "source_heading": "净化饮食"
+    }
+  },
+  "clause_identity": [
+    "core-phb-2024:spell:6c07317bf4d16b92da3c8f55:target",
+    "core-phb-2024:spell:6c07317bf4d16b92da3c8f55:area"
+  ],
+  "clauses": [
+    {
+      "clause_id": "target",
+      "count": 1,
+      "evidence_ref": "## 净化饮食｜Purify Food and Drink *一环 变化（牧师、德鲁伊、圣武士、奇械师）* **施法时间：**动作或仪式 **施法距离：**10尺 **法术成分：**V、S **持续时间：**立即 以施法距离内一点为中心，你移除半径5尺球状区域内非魔法食物与饮品中的毒素和腐败。",
+      "kind": "area",
+      "shape": "sphere",
+      "size_ft": 5,
+      "type": "target_selection",
+      "visibility": "visible"
+    },
+    {
+      "clause_id": "area",
+      "evidence_ref": "奇械师）* **施法时间：**动作或仪式 **施法距离：**10尺 **法术成分：**V、S **持续时间：**立即 以施法距离内一点为中心，你移除半径5尺球状区域内非魔法食物与饮品中的毒素和腐败。",
+      "origin": "source_explicit_origin",
+      "shape": "sphere",
+      "size_ft": 5,
+      "type": "area"
+    }
+  ],
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "concentration": false,
+  "duration": "立即",
+  "edition": "2024",
+  "evidence": [
+    "area: 奇械师）* **施法时间：**动作或仪式 **施法距离：**10尺 **法术成分：**V、S **持续时间：**立即 以施法距离内一点为中心，你移除半径5尺球状区域内非魔法食物与饮品中的毒素和腐败。",
+    "target: ## 净化饮食｜Purify Food and Drink *一环 变化（牧师、德鲁伊、圣武士、奇械师）* **施法时间：**动作或仪式 **施法距离：**10尺 **法术成分：**V、S **持续时间：**立即 以施法距离内一点为中心，你移除半径5尺球状区域内非魔法食物与饮品中的毒素和腐败。"
+  ],
+  "kind": "spell",
+  "level": 1,
+  "manual_decisions": {
+    "review_gate": "accepted only explicit normalized fields and quoted source evidence",
+    "unresolved_branches": "not promoted when the source does not state attack/save semantics"
+  },
+  "name": "净化饮食",
+  "namespace": "content.core-phb-2024",
+  "pack_id": "core-phb-2024",
+  "pack_version": "source-7011166c19bd",
+  "range": "10尺",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-11-batch-II",
+  "reviewed_fields": [
+    "schema_version",
+    "spell_id",
+    "name",
+    "pack_id",
+    "pack_version",
+    "namespace",
+    "ruleset_version",
+    "source_record_id",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "source_trust",
+    "level",
+    "school",
+    "casting_time",
+    "range",
+    "duration",
+    "concentration",
+    "clauses",
+    "evidence"
+  ],
+  "ruleset_version": "2024",
+  "schema_version": "spell-ir-1",
+  "school": "变化",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "selected_clause_excerpt": "## 净化饮食｜Purify Food and Drink *一环 变化（牧师、德鲁伊、圣武士、奇械师）* **施法时间：**动作或仪式 **施法距离：**10尺 **法术成分：**V、S **持续时间：**立即 以施法距离内一点为中心，你移除半径5尺球状区域内非魔法食物与饮品中的毒素和腐败。 奇械师）* **施法时间：**动作或仪式 **施法距离：**10尺 **法术成分：**V、S **持续时间：**立即 以施法距离内一点为中心，你移除半径5尺球状区域内非魔法食物与饮品中的毒素和腐败。",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "5c46c2c2522079e79fd94da4b91245fe9cbf8a41f101d6644829646db5abd10d",
+    "source_path": "玩家手册2024/法术详述/1环.htm",
+    "source_text": "#### 净化饮食｜Purify Food and Drink\n\n*一环 变化（牧师、德鲁伊、圣武士、奇械师）*\n**施法时间：**动作或仪式\n**施法距离：**10尺\n**法术成分：**V、S\n**持续时间：**立即\n以施法距离内一点为中心，你移除半径5尺球状区域内非魔法食物与饮品中的毒素和腐败。"
+  },
+  "source_fingerprint": "1f7de824cfb8b337d3232aa13fa7443337c8d8417b450e221f8cb23f38bb7f4a",
+  "source_path": "玩家手册2024/法术详述/1环.htm",
+  "source_provenance": {
+    "officiality": "official",
+    "review_basis": "local_source_text_manual_review",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "5c46c2c2522079e79fd94da4b91245fe9cbf8a41f101d6644829646db5abd10d",
+    "source_relative_path": "玩家手册2024/法术详述/1环.htm"
+  },
+  "source_record_id": "6c07317bf4d16b92da3c8f55",
+  "source_trust": "authored_ir",
+  "spell_id": "core-phb-2024:spell:6c07317bf4d16b92da3c8f55"
+}

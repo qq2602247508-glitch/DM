@@ -1,0 +1,87 @@
+{
+  "candidate_clauses": [
+    {
+      "required": true,
+      "type": "concentration"
+    },
+    {
+      "condition": "震慑",
+      "type": "apply_condition"
+    }
+  ],
+  "candidate_id": "xanathars-guide:candidate:f5e785be16f2b8b130cc971a",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "1 \n动作",
+    "classes": [
+      "德鲁伊",
+      "术士",
+      "魔契师",
+      "法师"
+    ],
+    "components": "V、S",
+    "concentration": true,
+    "conditions": [
+      "震慑"
+    ],
+    "creation": {
+      "count": null,
+      "creation_kind": "terrain",
+      "requires_template_choice": true,
+      "template_ref": "dm_chosen_template"
+    },
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "专注，至多 10 分钟",
+    "level": 6,
+    "range": "自身",
+    "resolution_kind": "control",
+    "ritual": false,
+    "save": "敏捷豁免",
+    "school": "变化",
+    "target_disposition": "creature"
+  },
+  "exact_fields": {
+    "concentration": true,
+    "conditions": [
+      "震慑"
+    ]
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "磐石赋权",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "source_path": "珊娜萨的万事指南/法术/法术详述/6环.html",
+    "source_text": "#### 磐石赋权｜Investiture of Stone\n\n*六环 变化（德鲁伊、术士、魔契师、法师）*\n**施法时间：**1\n动作\n**施法距离：**自身\n**法术成分：**V、S\n**持续时间：**专注，至多 10 分钟\n直到法术终结，岩石颗粒布满了你的躯体，你得到如下好处：\n\n- 你对于来自非魔法攻击的钝击，穿刺和挥砍伤害得到抗性。你可以使用你的动作，在以你为中心周围 15\n 尺半径的地表创造出一阵小型地震。在地表上的其他生物必须通过一次敏捷豁免检定，否则会摔倒。你可以在由泥土或岩石造成的困难地形上移动而无需额外消耗移动力。你可以穿过固态的泥土或石头，像是穿过空气那样。这并未令穿过的物质变得不再凝固，但你不能在物质中结束你的移动。若你结束了移动，你将被排出到最近的未占据空间内，此法术终结，你在直到你下个回合结束前的时间内处于震慑状态。"
+  },
+  "source_fingerprint": "293b85777b2e166c0863a6b4d7c8708252088b3b106cd4c44600d11593342a1e",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/6环.html",
+  "source_record_id": "f5e785be16f2b8b130cc971a",
+  "spell_id": "f5e785be16f2b8b130cc971a",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "concentration",
+      "apply_condition"
+    ],
+    "template_fingerprint": "3c42f68fb11991f0b3609f5d664da8f01323dbde293a556e901df3dc4b8daf72",
+    "template_id": "spell.shape.008"
+  },
+  "uncertain_fields": {}
+}

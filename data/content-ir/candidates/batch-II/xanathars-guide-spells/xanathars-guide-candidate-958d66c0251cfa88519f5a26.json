@@ -1,0 +1,91 @@
+{
+  "candidate_clauses": [
+    {
+      "expression": "1d6",
+      "type": "healing"
+    },
+    {
+      "shape": "cube",
+      "size_ft": 5,
+      "type": "area"
+    },
+    {
+      "required": true,
+      "type": "concentration"
+    },
+    {
+      "increments": "1d",
+      "per_slot": 1,
+      "type": "upcast"
+    }
+  ],
+  "candidate_id": "xanathars-guide:candidate:958d66c0251cfa88519f5a26",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "area_shape": "cube",
+    "area_size_ft": 5,
+    "casting_time": "1 附赠动作",
+    "classes": [
+      "德鲁伊",
+      "游侠"
+    ],
+    "components": "V、S",
+    "concentration": true,
+    "duration": "专注，至多 1 分钟",
+    "healing": "1d6",
+    "level": 2,
+    "range": "60 尺",
+    "resolution_kind": "heal",
+    "ritual": false,
+    "school": "咒法",
+    "target_disposition": "creature",
+    "upcast_healing_dice": 1,
+    "upcast_text": "升环施法。 当你使用三环或更高的法术位施放该法术时，使用的法术位每高一环，治疗值就增加 1d6 点。"
+  },
+  "exact_fields": {
+    "area_shape": "cube",
+    "area_size_ft": 5,
+    "concentration": true,
+    "healing": "1d6",
+    "upcast": 1
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "治愈之魂",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "source_path": "珊娜萨的万事指南/法术/法术详述/2环.html",
+    "source_text": "#### 治愈之魂｜Healing Spirit\n\n*二环 咒法（德鲁伊、游侠）*\n**施法时间：**1 附赠动作\n**施法距离：**60 尺\n**法术成分：**V、S\n**持续时间：**专注，至多 1 分钟\n你召唤出自然精魂抚慰伤员。这个无形的精魂出现在施法距离内你可以看见的一处 5\n尺立方空间。精魂看起来像是透明的野兽或是妖精（由你选择）。\n直到法术结束之前，每次你或者一个你可以看见的生物在回合里第一次进入精魂所占据的空间，或是在其中开始它的回合，你都可以让精魂为它恢复\n1d6 点生命值（无需动作）。精魂不能治疗构装或亡灵生物。\n精魂至多能进行 1+你的施法属性调整值\n次治愈（至少能治疗 2 次）。当治愈次数用尽后，精魂就会消失。\n在你的回合中，你可以用附赠动作来让精魂移动 30\n尺至另一处你可见的空间内。\n**升环施法。**当你使用三环或更高的法术位施放该法术时，使用的法术位每高一环，治疗值就增加 1d6 点。"
+  },
+  "source_fingerprint": "b03376b210fe8aa201044abd3668161cf1a66c9a29608252916b3d2e20409f96",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/2环.html",
+  "source_record_id": "958d66c0251cfa88519f5a26",
+  "spell_id": "958d66c0251cfa88519f5a26",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "healing",
+      "area",
+      "concentration",
+      "upcast"
+    ],
+    "template_fingerprint": "a5e98decf95ae64a83a7eb1eaac4f255fc3ab8f23dce3c36a4cc51211c431aec",
+    "template_id": "spell.shape.007"
+  },
+  "uncertain_fields": {}
+}

@@ -1,0 +1,74 @@
+{
+  "candidate_clauses": [
+    {
+      "condition": "魅惑",
+      "type": "apply_condition"
+    }
+  ],
+  "candidate_id": "core-phb-2024:candidate:eaaa6893b004c177f8237eb0",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "动作",
+    "classes": [
+      "吟游诗人",
+      "德鲁伊",
+      "游侠"
+    ],
+    "components": "V、S、M（一点食物）",
+    "concentration": false,
+    "conditions": [
+      "魅惑"
+    ],
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "24 小时",
+    "level": 1,
+    "range": "30 尺",
+    "resolution_kind": "control",
+    "ritual": false,
+    "save": "感知豁免",
+    "target_disposition": "ally",
+    "upcast_text": "升环施法。 你使用的法术位每比一环高一环，就可以多选择一个野兽作为目标。"
+  },
+  "exact_fields": {
+    "conditions": [
+      "魅惑"
+    ]
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "化兽为友",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "source_path": "玩家手册2024/法术详述/1环.htm",
+    "source_text": "#### 化兽为友｜Animal Friendship\n\n*一环 惑控（吟游诗人、德鲁伊、游侠）*\n**施法时间：**动作\n**施法距离：**30 尺\n**法术成分：**V、S、M（一点食物）\n**持续时间：**24 小时\n在施法距离内指定一只你能看见的野兽。该野兽必须通过一次感知豁免，否则在法术持续时间内陷入魅惑状态。如果你或你的盟友对目标造成伤害，法术将提前终止。\n**升环施法。**你使用的法术位每比一环高一环，就可以多选择一个野兽作为目标。"
+  },
+  "source_fingerprint": "63f53cf060c03dc893657f1155a47ed1c524275aa25191dbd6bc631f479aacb6",
+  "source_path": "玩家手册2024/法术详述/1环.htm",
+  "source_record_id": "eaaa6893b004c177f8237eb0",
+  "spell_id": "eaaa6893b004c177f8237eb0",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "apply_condition"
+    ],
+    "template_fingerprint": "3c42f68fb11991f0b3609f5d664da8f01323dbde293a556e901df3dc4b8daf72",
+    "template_id": "spell.shape.008"
+  },
+  "uncertain_fields": {}
+}

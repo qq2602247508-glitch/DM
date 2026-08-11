@@ -1,0 +1,103 @@
+{
+  "candidate_clauses": [
+    {
+      "save_ability": "体质",
+      "type": "saving_throw"
+    },
+    {
+      "damage_type": "雷鸣",
+      "expression": "3d10",
+      "on_failure": "full",
+      "type": "damage"
+    },
+    {
+      "shape": "sphere",
+      "size_ft": 10,
+      "type": "area"
+    },
+    {
+      "increments": "1d",
+      "per_slot": 1,
+      "type": "upcast"
+    }
+  ],
+  "candidate_id": "xanathars-guide:candidate:9b9aa7c1fe26d02b56812f0f",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "area_shape": "sphere",
+    "area_size_ft": 10,
+    "casting_time": "1 动作",
+    "classes": [
+      "术士",
+      "魔契师",
+      "法师"
+    ],
+    "components": "V",
+    "concentration": false,
+    "damage_expression": "3d10",
+    "damage_type": "雷鸣",
+    "duration": "立即",
+    "level": 3,
+    "range": "90 \n尺",
+    "resolution_kind": "damage",
+    "ritual": false,
+    "save": "体质豁免",
+    "school": "咒法",
+    "target_disposition": "ally",
+    "teleport": {
+      "can_take_creatures": true,
+      "destination_kind": "chosen_space",
+      "max_distance_ft": null,
+      "requires_destination_choice": true
+    },
+    "upcast_damage_dice": 1,
+    "upcast_text": "升环施法。 当你使用四环或更高的法术位施放该法术时，使用的法术位每高一环，伤害就会增加 \n1d10。"
+  },
+  "exact_fields": {
+    "area_shape": "sphere",
+    "area_size_ft": 10,
+    "damage_expression": "3d10",
+    "damage_type": "雷鸣",
+    "save": "体质豁免",
+    "upcast": 1
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "雷霆步",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "source_path": "珊娜萨的万事指南/法术/法术详述/3环.html",
+    "source_text": "#### 雷霆步｜Thunder Step\n\n*三环 咒法（术士、魔契师、法师）*\n**施法时间：**1 动作\n**施法距离：**90\n尺\n**法术成分：**V\n**持续时间：**立即\n你可以将你自己传送至施法距离内一处未被占据的可见空间。在你消失的瞬息之后，雷霆般的爆发声响起。在你原处空间周围10尺范围内的每个生物必须进行一次体质豁免，豁免失败者将受到3d10点雷鸣伤害，豁免成功则只受半数伤害。300尺范围内都能听见的这声雷鸣。\n此外，传送的同时你可以带走物件（只要它们没有超过你能承载的重量），也可以再传送一个与你体型相仿或是比你更小的自愿生物（它所携带的装备也不能超过他的负重）。在你施展此法术时，你要传送的生物必须身处处你周围5尺范围内，且在你的目的地周围5尺范围内必须要有一处未占据空间以供让它一起传送；否则这个生物将被留下。\n**升环施法。**当你使用四环或更高的法术位施放该法术时，使用的法术位每高一环，伤害就会增加\n1d10。"
+  },
+  "source_fingerprint": "896ed9bac81eb665fbf447a23728dd91d610765f7bb60869189ff05f47fffe67",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/3环.html",
+  "source_record_id": "9b9aa7c1fe26d02b56812f0f",
+  "spell_id": "9b9aa7c1fe26d02b56812f0f",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "saving_throw",
+      "damage",
+      "area",
+      "upcast"
+    ],
+    "template_fingerprint": "af295bb9885e22721b4b0ce62f8bf849a6eba5ca49ce60a0868f55c840a15edb",
+    "template_id": "spell.shape.009"
+  },
+  "uncertain_fields": {}
+}

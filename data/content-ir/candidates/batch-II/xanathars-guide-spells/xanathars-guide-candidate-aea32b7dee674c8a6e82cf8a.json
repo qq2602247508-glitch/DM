@@ -1,0 +1,68 @@
+{
+  "candidate_clauses": [
+    {
+      "required": true,
+      "type": "concentration"
+    }
+  ],
+  "candidate_id": "xanathars-guide:candidate:aea32b7dee674c8a6e82cf8a",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "1 动作",
+    "classes": [
+      "吟游诗人",
+      "德鲁伊",
+      "术士",
+      "法师"
+    ],
+    "components": "V",
+    "concentration": true,
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "专注，至多 10 分钟",
+    "level": 2,
+    "range": "自身",
+    "ritual": false,
+    "school": "塑能",
+    "target_disposition": "creature"
+  },
+  "exact_fields": {
+    "concentration": true
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "守护之风",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "source_path": "珊娜萨的万事指南/法术/法术详述/2环.html",
+    "source_text": "#### 守护之风｜Warding Wind\n\n*二环 塑能（吟游诗人、德鲁伊、术士、法师）\n***施法时间：**1 动作\n**施法距离：**自身\n**法术成分：**V\n**持续时间：**专注，至多 10 分钟\n一阵强风（风速每小时 20 里）在你周围 10\n尺半径内回旋并能随着你移动，始终以你为中心。这股风将在法术的持续时间内持续存在。\n这股风具有如下效果：\n\n- 它会令你和其他区域内的生物耳聋。它会令区域内未受保护的火焰熄灭，不过只能熄灭至大到火把上那样大小的火焰。它可以隔离那些能够被强风吹散的毒气，瓦斯和雾气。区域对于除你之外的生物是困难地形。若远程武器攻击进入或离开风区，其攻击检定得到劣势。"
+  },
+  "source_fingerprint": "b2c6127ec8edc932214a87760294cc93aaf27c2bffa6f0ecb82b0cb7471e406a",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/2环.html",
+  "source_record_id": "aea32b7dee674c8a6e82cf8a",
+  "spell_id": "aea32b7dee674c8a6e82cf8a",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "concentration"
+    ],
+    "template_fingerprint": "c6cf559b317883e1043d55b34f4a36da44766b6d3a4828662a90474ca1486880",
+    "template_id": "spell.shape.005"
+  },
+  "uncertain_fields": {}
+}

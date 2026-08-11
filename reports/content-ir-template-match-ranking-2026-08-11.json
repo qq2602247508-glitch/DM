@@ -1,0 +1,59 @@
+{
+  "ranking": [
+    {
+      "candidate_count": 58,
+      "confidence": "low",
+      "content_kind": "spell",
+      "template_id": "spell.shape.005"
+    },
+    {
+      "candidate_count": 51,
+      "confidence": "high",
+      "content_kind": "spell",
+      "template_id": "spell.shape.005"
+    },
+    {
+      "candidate_count": 48,
+      "confidence": "low",
+      "content_kind": "feature",
+      "template_id": "feature.shape.001"
+    },
+    {
+      "candidate_count": 47,
+      "confidence": "high",
+      "content_kind": "spell",
+      "template_id": "spell.shape.009"
+    },
+    {
+      "candidate_count": 40,
+      "confidence": "high",
+      "content_kind": "spell",
+      "template_id": "spell.shape.008"
+    },
+    {
+      "candidate_count": 14,
+      "confidence": "high",
+      "content_kind": "spell",
+      "template_id": "spell.shape.007"
+    },
+    {
+      "candidate_count": 13,
+      "confidence": "medium",
+      "content_kind": "spell",
+      "template_id": "spell.shape.005"
+    },
+    {
+      "candidate_count": 6,
+      "confidence": "None",
+      "content_kind": "None",
+      "template_id": "None"
+    },
+    {
+      "candidate_count": 3,
+      "confidence": "medium",
+      "content_kind": "spell",
+      "template_id": "spell.shape.009"
+    }
+  ],
+  "schema_version": "content-ir-template-match-ranking-II-1"
+}

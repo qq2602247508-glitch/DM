@@ -1,0 +1,72 @@
+{
+  "candidate_clauses": [
+    {
+      "expression": "1",
+      "type": "healing"
+    }
+  ],
+  "candidate_id": "xanathars-guide:candidate:d1eb5fa9a0bafaa4dc6b5148",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "1 小时",
+    "classes": [
+      "牧师"
+    ],
+    "components": "V、S、M（一个价值至少5gp的圣徽）",
+    "concentration": false,
+    "creation": {
+      "count": null,
+      "creation_kind": "terrain",
+      "requires_template_choice": true,
+      "template_ref": "dm_chosen_template"
+    },
+    "duration": "24 \n小时",
+    "healing": "1",
+    "level": 7,
+    "range": "120 \n尺",
+    "resolution_kind": "heal",
+    "ritual": false,
+    "save": "魅力豁免",
+    "school": "咒法",
+    "target_disposition": "creature"
+  },
+  "exact_fields": {
+    "healing": "1"
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "神庙术",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "source_path": "珊娜萨的万事指南/法术/法术详述/7环.html",
+    "source_text": "#### 神庙术｜Temple of the Gods\n\n*七环 咒法（牧师）*\n**施法时间：**1 小时\n**施法距离：**120\n尺\n**法术成分：**V、S、M（一个价值至少5gp的圣徽）\n**持续时间：**24\n小时\n你让一座神庙在闪耀的光辉中出现。选择施法距离内一处你可见的地面，为了容纳神庙这个空间必须是一个未被占用的立方体，每边至少 120\n尺长。神庙维持到法术结束。它被用于供奉施法时所用圣徽体现的神明、众神或是哲学理念。\n你可以对这座神庙的外观做出所有决定。它的内部被地板、墙壁和屋顶所包围，有一扇作为入口的门扉和任意数量的窗户，如你所愿。只有你或任何你在施法时指定的生物可以开启或关闭这扇门。\n神庙的内部是个开放性空间，在一端摆放着神像或者是祭坛。你决定神庙是否被照亮，决定照亮神庙的是明亮光照还是微光光照。这里的温度适宜，熏香的气味弥漫在空气中。\n在你施展这个法术的时候，你选择数种生物类型被神庙所敌对。从以下列表中选择一项或更多：天族，元素生物，妖精，邪魔，或是亡灵。如果选定类型的生物试图进入神庙，它必须立即进行一次魅力豁免检定。若豁免失败，他在\n24 小时内不能进入神庙。即使生物能够进入神庙，魔法的力量也会妨碍它；每当它在神庙里进行攻击检定，属性检定或者是豁免检定时，它必须额外掷一个 d4\n骰，把那个数值从 d20\n的结果中减去。\n此外，预言系法术所创造的传感器不能在神庙中出现，并且神庙里的生物无法被预言系法术定位。\n最后，每次在神庙里的任何生物从一环或更高环的法术中恢复生命时，它将恢复等同于你感知调整值的额外生命值（至少\n1\n点）。\n神庙由不透明的魔法力场所创造并延伸至以太位面，因此会阻碍任何试图从以太旅行中进入神庙内部的行为。没有东西能物理性地穿过神庙的外部。它不会被解除魔法所解消，也不会受到反魔法场的影响。一道解离术能立即摧毁神庙。\n如果你在一年中每天都对同一地点施展这个法术，法术的效果将持续永久。"
+  },
+  "source_fingerprint": "8af6e57ff9bd831533ad7e6f0a37693ce4c21d240ba128d8e1a9631b9e1a83b8",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/7环.html",
+  "source_record_id": "d1eb5fa9a0bafaa4dc6b5148",
+  "spell_id": "d1eb5fa9a0bafaa4dc6b5148",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "healing"
+    ],
+    "template_fingerprint": "a5e98decf95ae64a83a7eb1eaac4f255fc3ab8f23dce3c36a4cc51211c431aec",
+    "template_id": "spell.shape.007"
+  },
+  "uncertain_fields": {}
+}

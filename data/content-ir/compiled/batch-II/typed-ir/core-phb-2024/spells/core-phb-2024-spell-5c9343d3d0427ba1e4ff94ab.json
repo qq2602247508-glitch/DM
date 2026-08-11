@@ -1,0 +1,94 @@
+{
+  "capability_registry": {
+    "id": "spell",
+    "version": "content-capabilities-1"
+  },
+  "casting_time": "动作",
+  "clause_boundaries": {
+    "healing": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "*V、S **持续时间：**立即 你引导出来自坟墓的刺骨阴冷，对目标进行一次近战法术攻击。命中时，目标将受到1d10点暗蚀伤害，并且直至你下一回合的结束前都无法恢复生命值。 **戏法强化。**法术的伤害会在你到达下列等级时增加1d10：5级（2d10）、11级（3d10）以及17级（4d10）。",
+      "source_heading": "颤栗之触"
+    }
+  },
+  "clause_identity": [
+    "core-phb-2024:spell:5c9343d3d0427ba1e4ff94ab:healing"
+  ],
+  "clauses": [
+    {
+      "action_economy": "action",
+      "clause_id": "healing",
+      "evidence_ref": "*V、S **持续时间：**立即 你引导出来自坟墓的刺骨阴冷，对目标进行一次近战法术攻击。命中时，目标将受到1d10点暗蚀伤害，并且直至你下一回合的结束前都无法恢复生命值。 **戏法强化。**法术的伤害会在你到达下列等级时增加1d10：5级（2d10）、11级（3d10）以及17级（4d10）。",
+      "expression": "2d10",
+      "healing": "2d10",
+      "target": "one_creature",
+      "timing": "immediate",
+      "type": "healing"
+    }
+  ],
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "concentration": false,
+  "duration": "立即",
+  "edition": "2024",
+  "evidence": [
+    "healing: *V、S **持续时间：**立即 你引导出来自坟墓的刺骨阴冷，对目标进行一次近战法术攻击。命中时，目标将受到1d10点暗蚀伤害，并且直至你下一回合的结束前都无法恢复生命值。 **戏法强化。**法术的伤害会在你到达下列等级时增加1d10：5级（2d10）、11级（3d10）以及17级（4d10）。"
+  ],
+  "kind": "spell",
+  "level": 0,
+  "manual_decisions": {
+    "review_gate": "accepted only explicit normalized fields and quoted source evidence",
+    "unresolved_branches": "not promoted when the source does not state attack/save semantics"
+  },
+  "name": "颤栗之触",
+  "namespace": "content.core-phb-2024",
+  "pack_id": "core-phb-2024",
+  "pack_version": "source-7011166c19bd",
+  "range": "触碰",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-11-batch-II",
+  "reviewed_fields": [
+    "schema_version",
+    "spell_id",
+    "name",
+    "pack_id",
+    "pack_version",
+    "namespace",
+    "ruleset_version",
+    "source_record_id",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "source_trust",
+    "level",
+    "school",
+    "casting_time",
+    "range",
+    "duration",
+    "concentration",
+    "clauses",
+    "evidence"
+  ],
+  "ruleset_version": "2024",
+  "schema_version": "spell-ir-1",
+  "school": "死灵",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "selected_clause_excerpt": "*V、S **持续时间：**立即 你引导出来自坟墓的刺骨阴冷，对目标进行一次近战法术攻击。命中时，目标将受到1d10点暗蚀伤害，并且直至你下一回合的结束前都无法恢复生命值。 **戏法强化。**法术的伤害会在你到达下列等级时增加1d10：5级（2d10）、11级（3d10）以及17级（4d10）。",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "4a2a6a1bd1536908c91e72607c0b2fe9f2d6c033cf4781520f45ccb4464462a9",
+    "source_path": "玩家手册2024/法术详述/0环.htm",
+    "source_text": "#### 颤栗之触｜Chill Touch\n\n*死灵 戏法（术士、魔契师、法师）*\n**施法时间：**动作\n**施法距离：**触碰\n**法术成分：**V、S\n**持续时间：**立即\n你引导出来自坟墓的刺骨阴冷，对目标进行一次近战法术攻击。命中时，目标将受到1d10点暗蚀伤害，并且直至你下一回合的结束前都无法恢复生命值。\n**戏法强化。**法术的伤害会在你到达下列等级时增加1d10：5级（2d10）、11级（3d10）以及17级（4d10）。"
+  },
+  "source_fingerprint": "202f60f579484af0305ac6dc18e1eabe170434cfa1d6a5f5bb0e63c89f89c757",
+  "source_path": "玩家手册2024/法术详述/0环.htm",
+  "source_provenance": {
+    "officiality": "official",
+    "review_basis": "local_source_text_manual_review",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "4a2a6a1bd1536908c91e72607c0b2fe9f2d6c033cf4781520f45ccb4464462a9",
+    "source_relative_path": "玩家手册2024/法术详述/0环.htm"
+  },
+  "source_record_id": "5c9343d3d0427ba1e4ff94ab",
+  "source_trust": "authored_ir",
+  "spell_id": "core-phb-2024:spell:5c9343d3d0427ba1e4ff94ab"
+}

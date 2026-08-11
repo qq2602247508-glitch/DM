@@ -1,0 +1,75 @@
+{
+  "candidate_clauses": [
+    {
+      "expression": "2d8",
+      "type": "healing"
+    },
+    {
+      "required": true,
+      "type": "concentration"
+    }
+  ],
+  "candidate_id": "xanathars-guide:candidate:f30ce39b7f165b6d133b4890",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "1 反应，当你看见 60 \n尺内类人生物死去时采取",
+    "classes": [
+      "魔契师",
+      "法师"
+    ],
+    "components": "V、S、M（一个价值 100gp 的银笼子）",
+    "concentration": true,
+    "conditions": [
+      "隐形"
+    ],
+    "duration": "8 \n小时",
+    "healing": "2d8",
+    "level": 6,
+    "range": "60尺",
+    "resolution_kind": "heal",
+    "ritual": false,
+    "school": "死灵",
+    "target_disposition": "creature"
+  },
+  "exact_fields": {
+    "concentration": true,
+    "healing": "2d8"
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "灵魂牢笼",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "source_path": "珊娜萨的万事指南/法术/法术详述/6环.html",
+    "source_text": "#### 灵魂牢笼｜Soul Cage\n\n*六环 死灵（魔契师、法师）*\n**施法时间：**1 反应，当你看见 60\n尺内类人生物死去时采取\n**施法距离：**60尺\n**法术成分：**V、S、M（一个价值 100gp 的银笼子）\n**持续时间：**8\n小时\n这个法术攫取一个死去的类人生物的灵魂，并将它关在你用作为法术材料成分的笼子里。被偷窃而来的灵魂在笼子里持续到法术结束或者你摧毁这个笼子，这也会使法术结束。当你的笼子里面有一个灵魂时，你可以用下文描述的任一方法来利用它。一个被困住的灵魂最多被你这样使用\n6 次。一旦你第六次利用这个灵魂，它将会被释放，然后法术结束。在灵魂被困住时，作为灵魂来源的已死类人生物无法被复活。\n\n> **窃取生命Steal Life。**你可以用一个附赠动作从灵魂中吸取活力并恢复 2d8 生命值。\n>\n>\n>\n> **灵魂质问Query\n>  Soul。**你向灵魂提出一个问题（无需动作）并得到一个简短的回答作为心灵感应，无论用什么语言你都可以理解。灵魂只知道它的人生中了解的事物，但它必须如实回答并且尽其所能。回答至多是一两句话，也有可能是有隐藏意义的。\n>\n>\n>\n> **借鉴经验Borrow\n>  Experience。**你可以使用一个附赠动作让灵魂的人生经验来支撑你，令你的下一次攻击检定，属性检定和豁免检定具有优势。如果在你的下个回合开始之前你没有使用这个增益，它将会丢失。\n>\n>\n>\n> **亡者之眼Eyes of the\n>  Dead。**你可以使用一个动作来说出这个类人生物在人生中曾见过的地点的名字，如果你和那个地点在同一位面，你可以在那里创造出一个隐形的传感器。这个传感器将维持到你的专注结束，最多\n>  10 分钟（如同你正专注于一个法术）。你从这个传感器中接受视觉和听觉信息，就如同你在那个地点使用自己的感官。\n\n能看到这个传感器的生物（例如使用了识破隐形法术或是拥有真实视觉）将会看到被你关在笼中的受难者半透明的影像。"
+  },
+  "source_fingerprint": "b7d9e45e7c84a0ba2c982fc1748979f495bfea1a8875c3325a039bcf73e821d1",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/6环.html",
+  "source_record_id": "f30ce39b7f165b6d133b4890",
+  "spell_id": "f30ce39b7f165b6d133b4890",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "healing",
+      "concentration"
+    ],
+    "template_fingerprint": "a5e98decf95ae64a83a7eb1eaac4f255fc3ab8f23dce3c36a4cc51211c431aec",
+    "template_id": "spell.shape.007"
+  },
+  "uncertain_fields": {}
+}

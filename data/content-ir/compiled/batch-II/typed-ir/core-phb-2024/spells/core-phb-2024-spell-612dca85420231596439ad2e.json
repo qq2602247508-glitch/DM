@@ -1,0 +1,125 @@
+{
+  "capability_registry": {
+    "id": "spell",
+    "version": "content-capabilities-1"
+  },
+  "casting_time": "动作",
+  "clause_boundaries": {
+    "attack": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "法时间：**动作 **施法距离：**60 尺 **法术成分：**V、S **持续时间：**立即 你对施法距离内一名生物或一个物件射出一点光芒。对目标进行一次远程法术攻击。命中时，目标将受到1d8点光耀伤害，并且直到你的下个回合结束前，它会散发出10尺微光光照，且无法受益于隐形状态。 **戏法强化。**到达特定等级后，此戏法的伤害将增加1d8：5级（2d8），11 级（3d8），17 级1d8（4d8）。",
+      "source_heading": "点点星芒"
+    },
+    "damage": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": " 尺 **法术成分：**V、S **持续时间：**立即 你对施法距离内一名生物或一个物件射出一点光芒。对目标进行一次远程法术攻击。命中时，目标将受到1d8点光耀伤害，并且直到你的下个回合结束前，它会散发出10尺微光光照，且无法受益于隐形状态。 **戏法强化。**到达特定等级后，此戏法的伤害将增加1d8：5级（2d8），11 级（3d8），17 级1d8（4d8）。",
+      "source_heading": "点点星芒"
+    },
+    "target": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "鲁伊）* **施法时间：**动作 **施法距离：**60 尺 **法术成分：**V、S **持续时间：**立即 你对施法距离内一名生物或一个物件射出一点光芒。对目标进行一次远程法术攻击。命中时，目标将受到1d8点光耀伤害，并且直到你的下个回合结束前，它会散发出10尺微光光照，且无法受益于隐形状态。 **戏法强化。**到达特定等级后，此戏法的伤害将增加1d8：5级（2d8），11 级（3d8），17 级1d8（4d8）。",
+      "source_heading": "点点星芒"
+    }
+  },
+  "clause_identity": [
+    "core-phb-2024:spell:612dca85420231596439ad2e:target",
+    "core-phb-2024:spell:612dca85420231596439ad2e:attack",
+    "core-phb-2024:spell:612dca85420231596439ad2e:damage"
+  ],
+  "clauses": [
+    {
+      "clause_id": "target",
+      "count": 1,
+      "evidence_ref": "鲁伊）* **施法时间：**动作 **施法距离：**60 尺 **法术成分：**V、S **持续时间：**立即 你对施法距离内一名生物或一个物件射出一点光芒。对目标进行一次远程法术攻击。命中时，目标将受到1d8点光耀伤害，并且直到你的下个回合结束前，它会散发出10尺微光光照，且无法受益于隐形状态。 **戏法强化。**到达特定等级后，此戏法的伤害将增加1d8：5级（2d8），11 级（3d8），17 级1d8（4d8）。",
+      "kind": "one_creature",
+      "type": "target_selection",
+      "visibility": "visible"
+    },
+    {
+      "action_economy": "action",
+      "attack_ability": "spellcasting",
+      "clause_id": "attack",
+      "evidence_ref": "法时间：**动作 **施法距离：**60 尺 **法术成分：**V、S **持续时间：**立即 你对施法距离内一名生物或一个物件射出一点光芒。对目标进行一次远程法术攻击。命中时，目标将受到1d8点光耀伤害，并且直到你的下个回合结束前，它会散发出10尺微光光照，且无法受益于隐形状态。 **戏法强化。**到达特定等级后，此戏法的伤害将增加1d8：5级（2d8），11 级（3d8），17 级1d8（4d8）。",
+      "target": "one_creature",
+      "type": "attack_roll"
+    },
+    {
+      "action_economy": "action",
+      "clause_id": "damage",
+      "damage": "1d8",
+      "damage_type": "光耀",
+      "evidence_ref": " 尺 **法术成分：**V、S **持续时间：**立即 你对施法距离内一名生物或一个物件射出一点光芒。对目标进行一次远程法术攻击。命中时，目标将受到1d8点光耀伤害，并且直到你的下个回合结束前，它会散发出10尺微光光照，且无法受益于隐形状态。 **戏法强化。**到达特定等级后，此戏法的伤害将增加1d8：5级（2d8），11 级（3d8），17 级1d8（4d8）。",
+      "expression": "1d8",
+      "target": "one_creature",
+      "timing": "on_hit",
+      "type": "damage"
+    }
+  ],
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "concentration": false,
+  "duration": "立即",
+  "edition": "2024",
+  "evidence": [
+    "attack: 法时间：**动作 **施法距离：**60 尺 **法术成分：**V、S **持续时间：**立即 你对施法距离内一名生物或一个物件射出一点光芒。对目标进行一次远程法术攻击。命中时，目标将受到1d8点光耀伤害，并且直到你的下个回合结束前，它会散发出10尺微光光照，且无法受益于隐形状态。 **戏法强化。**到达特定等级后，此戏法的伤害将增加1d8：5级（2d8），11 级（3d8），17 级1d8（4d8）。",
+    "damage:  尺 **法术成分：**V、S **持续时间：**立即 你对施法距离内一名生物或一个物件射出一点光芒。对目标进行一次远程法术攻击。命中时，目标将受到1d8点光耀伤害，并且直到你的下个回合结束前，它会散发出10尺微光光照，且无法受益于隐形状态。 **戏法强化。**到达特定等级后，此戏法的伤害将增加1d8：5级（2d8），11 级（3d8），17 级1d8（4d8）。",
+    "target: 鲁伊）* **施法时间：**动作 **施法距离：**60 尺 **法术成分：**V、S **持续时间：**立即 你对施法距离内一名生物或一个物件射出一点光芒。对目标进行一次远程法术攻击。命中时，目标将受到1d8点光耀伤害，并且直到你的下个回合结束前，它会散发出10尺微光光照，且无法受益于隐形状态。 **戏法强化。**到达特定等级后，此戏法的伤害将增加1d8：5级（2d8），11 级（3d8），17 级1d8（4d8）。"
+  ],
+  "kind": "spell",
+  "level": 0,
+  "manual_decisions": {
+    "review_gate": "accepted only explicit normalized fields and quoted source evidence",
+    "unresolved_branches": "not promoted when the source does not state attack/save semantics"
+  },
+  "name": "点点星芒",
+  "namespace": "content.core-phb-2024",
+  "pack_id": "core-phb-2024",
+  "pack_version": "source-7011166c19bd",
+  "range": "60 尺",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-11-batch-II",
+  "reviewed_fields": [
+    "schema_version",
+    "spell_id",
+    "name",
+    "pack_id",
+    "pack_version",
+    "namespace",
+    "ruleset_version",
+    "source_record_id",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "source_trust",
+    "level",
+    "school",
+    "casting_time",
+    "range",
+    "duration",
+    "concentration",
+    "clauses",
+    "evidence"
+  ],
+  "ruleset_version": "2024",
+  "schema_version": "spell-ir-1",
+  "school": "塑能",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "selected_clause_excerpt": "鲁伊）* **施法时间：**动作 **施法距离：**60 尺 **法术成分：**V、S **持续时间：**立即 你对施法距离内一名生物或一个物件射出一点光芒。对目标进行一次远程法术攻击。命中时，目标将受到1d8点光耀伤害，并且直到你的下个回合结束前，它会散发出10尺微光光照，且无法受益于隐形状态。 **戏法强化。**到达特定等级后，此戏法的伤害将增加1d8：5级（2d8），11 级（3d8），17 级1d8（4d8）。 法时间：**动作 **施法距离：**60 尺 **法术成分：**V、S **持续时间：**立即 你对施法距离内一名生物或一个物件射出一点光芒。对目标进行一次远程法术攻击。命中时，目标将受到1d8点光耀伤害，并且直到你的下个回合结束前，它会散发出10尺微光光照，且无法受益于隐形状态。 **戏法强化。**到达特定等级后，此戏法的伤害将增加1d8：5级（2d8），11 级（3d8），17 级1d8（4d8）。  尺 **法术成分：**V、S **持续时间：**立即 你对施法距离内一名生物或一个物件射出一点光芒。对目标进行一次远程法术攻击。命中时，目标将受到1d8点光耀伤害，并且直到你的下个回合结束前，它会散发出10尺微光光照，且无法受益于隐形状态。 **戏法强化。**到达特定等级后，此戏法的伤害将增加1d8：5级（2d8），11 级（3d8），17 级1d8（4d8）。",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "175a57d0d30e797949452d5975a82ad06bf57e429f0370bc12ca9c4ce251ce68",
+    "source_path": "玩家手册2024/法术详述/0环.htm",
+    "source_text": "#### 点点星芒｜Starry Wisp\n\n*塑能 戏法（吟游诗人、德鲁伊）*\n**施法时间：**动作\n**施法距离：**60 尺\n**法术成分：**V、S\n**持续时间：**立即\n你对施法距离内一名生物或一个物件射出一点光芒。对目标进行一次远程法术攻击。命中时，目标将受到1d8点光耀伤害，并且直到你的下个回合结束前，它会散发出10尺微光光照，且无法受益于隐形状态。\n**戏法强化。**到达特定等级后，此戏法的伤害将增加1d8：5级（2d8），11 级（3d8），17 级1d8（4d8）。"
+  },
+  "source_fingerprint": "28c3629706dffea09f9140e2ae1f0c570436c7a1b69f2311474b5efad2e3fde5",
+  "source_path": "玩家手册2024/法术详述/0环.htm",
+  "source_provenance": {
+    "officiality": "official",
+    "review_basis": "local_source_text_manual_review",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "175a57d0d30e797949452d5975a82ad06bf57e429f0370bc12ca9c4ce251ce68",
+    "source_relative_path": "玩家手册2024/法术详述/0环.htm"
+  },
+  "source_record_id": "612dca85420231596439ad2e",
+  "source_trust": "authored_ir",
+  "spell_id": "core-phb-2024:spell:612dca85420231596439ad2e"
+}

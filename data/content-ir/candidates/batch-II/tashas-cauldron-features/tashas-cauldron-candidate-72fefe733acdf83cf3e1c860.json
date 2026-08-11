@@ -1,0 +1,51 @@
+{
+  "candidate_clauses": [],
+  "candidate_id": "tashas-cauldron:candidate:72fefe733acdf83cf3e1c860",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "feature",
+  "draft_fields": {
+    "source_text": "## 魔能祈唤选项 Eldritch Invocation Options\n\n****当你选择魔能祈唤时，你可以选用这些额外的内容。\n注：标注legacy的祈唤为旧版资源，即在后续书籍中有着新的版本。\n\n**魔能意志 Eldritch\nMind***Legacy*\n你为保持法术的专注所进行的体质豁免具有优势。\n\n**链主赋能 Investment of the Chain\nMaster***Legacy\n**先决：链之魔契*\n当你施展*寻获魔宠find\nfamiliar*时，你将一定程度的魔能力量灌注给被召唤的魔宠，给予这个生物以下的能力：\n该魔宠获得40尺的飞行速度、或40尺的游泳速度（由你选择）。\n你可以使用一个附赠动作，指挥你的魔宠进行一次攻击动作。\n该魔宠的武器攻击被视为魔法性的，用于克服对于非魔法攻击的免疫和抗性。\n若该魔宠强迫一个生物进行豁免检定，它使用你的法术豁免DC。\n若该魔宠受到伤害，你可以使用你的反应给予它仅对于那次伤害的抗性。\n\n**符令责斥 Rebuke of the Talisman\n***先决：符之魔契*\n当该护符的佩戴者被一个位于你30尺以内你可见的攻击者命中时，你可以使用你的反应来对该攻击者造成等同于你熟练加值的心灵伤害，并将其推离护符佩戴者至多10尺距离。\n\n**遥远音讯 Far Scribe\n***先决：第5级魔契师，书之魔契*\n一张新的书页出现在你的影之书中。在你的允许之下，一个生物可以使用一个动作来将他的名字写在这一页上，这一页能包括的名字数量等于你的熟练加值。\n你可以以一个名字在这一页上的生物为目标，施展法术 短讯术Sending\n，无需法术位与法术的材料成分。不过，你必须将传讯写在这一页上来施展它。目标将在他们的意识中听到这个传讯，且如果目标回复了传讯，他们的回复将会出现在书页上而不是在你的意识中。这些文字会在一分钟后消失。\n你也可以使用一个动作，触摸书页上的一条名字，魔法性的消除它。\n\n**永恒奴役 Undying Servitude\n***先决：第5级魔契师*\n你可以在不消耗法术位的情况下使用*活化死尸animate\ndead*。每当你这么做时，你不能再次以这种形式使用该法术直到你完成一次长休。\n\n**护符庇佑 Protection of the\nTalisman\n***先决：第7级魔契师，符之魔契*\n当佩戴者在一次豁免检定中失败，他们可以在骰掷结果上增加一个d4骰，这可能将结果变为成功。这一能力可使用的次数等于你的熟练加值，在你完成一次长休之后恢复所有已消耗的次数。\n\n**守护馈赠 Gift of\nthe Protectors***Legacy*****\n*先决：第9级魔契师，书之魔契*\n一张新的书页出现在你的影之书中。在你的允许之下，一个生物可以使用一个动作来将他的名字写在这一页上，这一页能包括的名字数量等于你的熟练加值。\n当一个名字在这一页上的生物生命值降为0，但是没有立刻死亡时，这个生物的生命值魔法性的变为1点。当这个魔法效应被触发后，该效应无法再被任何生物触发，直到你完成一次长休。\n你也可以使用一个动作，触摸书页上的一条名字，魔法性的消除它。\n\n**护符牵绊 Bond of the\nTalisman\n***先决：第12级魔契师，符之魔契*\n当除你以外的人佩戴你的护身符时，只要你们存在于同一位面，你可以用一个动作将你传送至它们周围未占据空间内。佩戴该护身符的人也能做同样的事，用他们的动作来传送到你身边。该传送能力可使用的次数等于你的熟练加值，且所有已消耗的次数会在你完成一次长休之后完全恢复。"
+  },
+  "exact_fields": {},
+  "feature_id": "tashas-cauldron:feature:72fefe733acdf83cf3e1c860",
+  "kind": "feature_candidate",
+  "missing_fields": [
+    "typed_clause_mapping",
+    "operator",
+    "targeting",
+    "action_economy"
+  ],
+  "name": "魔能祈唤选项（TCE）",
+  "required_review_fields": [
+    "source_name",
+    "class_name",
+    "level",
+    "clauses",
+    "operator",
+    "targeting"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "本书速查",
+  "source_evidence": {
+    "source_path": "塔莎的万事坩埚/玩家选项/职业/邪术师（TCE）/魔能祈唤.html",
+    "source_text": "## 魔能祈唤选项 Eldritch Invocation Options\n\n****当你选择魔能祈唤时，你可以选用这些额外的内容。\n注：标注legacy的祈唤为旧版资源，即在后续书籍中有着新的版本。\n\n**魔能意志 Eldritch\nMind***Legacy*\n你为保持法术的专注所进行的体质豁免具有优势。\n\n**链主赋能 Investment of the Chain\nMaster***Legacy\n**先决：链之魔契*\n当你施展*寻获魔宠find\nfamiliar*时，你将一定程度的魔能力量灌注给被召唤的魔宠，给予这个生物以下的能力：\n该魔宠获得40尺的飞行速度、或40尺的游泳速度（由你选择）。\n你可以使用一个附赠动作，指挥你的魔宠进行一次攻击动作。\n该魔宠的武器攻击被视为魔法性的，用于克服对于非魔法攻击的免疫和抗性。\n若该魔宠强迫一个生物进行豁免检定，它使用你的法术豁免DC。\n若该魔宠受到伤害，你可以使用你的反应给予它仅对于那次伤害的抗性。\n\n**符令责斥 Rebuke of the Talisman\n***先决：符之魔契*\n当该护符的佩戴者被一个位于你30尺以内你可见的攻击者命中时，你可以使用你的反应来对该攻击者造成等同于你熟练加值的心灵伤害，并将其推离护符佩戴者至多10尺距离。\n\n**遥远音讯 Far Scribe\n***先决：第5级魔契师，书之魔契*\n一张新的书页出现在你的影之书中。在你的允许之下，一个生物可以使用一个动作来将他的名字写在这一页上，这一页能包括的名字数量等于你的熟练加值。\n你可以以一个名字在这一页上的生物为目标，施展法术 短讯术Sending\n，无需法术位与法术的材料成分。不过，你必须将传讯写在这一页上来施展它。目标将在他们的意识中听到这个传讯，且如果目标回复了传讯，他们的回复将会出现在书页上而不是在你的意识中。这些文字会在一分钟后消失。\n你也可以使用一个动作，触摸书页上的一条名字，魔法性的消除它。\n\n**永恒奴役 Undying Servitude\n***先决：第5级魔契师*\n你可以在不消耗法术位的情况下使用*活化死尸animate\ndead*。每当你这么做时，你不能再次以这种形式使用该法术直到你完成一次长休。\n\n**护符庇佑 Protection of the\nTalisman\n***先决：第7级魔契师，符之魔契*\n当佩戴者在一次豁免检定中失败，他们可以在骰掷结果上增加一个d4骰，这可能将结果变为成功。这一能力可使用的次数等于你的熟练加值，在你完成一次长休之后恢复所有已消耗的次数。\n\n**守护馈赠 Gift of\nthe Protectors***Legacy*****\n*先决：第9级魔契师，书之魔契*\n一张新的书页出现在你的影之书中。在你的允许之下，一个生物可以使用一个动作来将他的名字写在这一页上，这一页能包括的名字数量等于你的熟练加值。\n当一个名字在这一页上的生物生命值降为0，但是没有立刻死亡时，这个生物的生命值魔法性的变为1点。当这个魔法效应被触发后，该效应无法再被任何生物触发，直到你完成一次长休。\n你也可以使用一个动作，触摸书页上的一条名字，魔法性的消除它。\n\n**护符牵绊 Bond of the\nTalisman\n***先决：第12级魔契师，符之魔契*\n当除你以外的人佩戴你的护身符时，只要你们存在于同一位面，你可以用一个动作将你传送至它们周围未占据空间内。佩戴该护身符的人也能做同样的事，用他们的动作来传送到你身边。该传送能力可使用的次数等于你的熟练加值，且所有已消耗的次数会在你完成一次长休之后完全恢复。"
+  },
+  "source_fingerprint": "1e180acca903fd80f688a033e12387c1adacdd486a966d9f0788da23176d743e",
+  "source_path": "塔莎的万事坩埚/玩家选项/职业/邪术师（TCE）/魔能祈唤.html",
+  "source_record_id": "72fefe733acdf83cf3e1c860",
+  "template_match": {
+    "confidence": "low",
+    "matched_shape": [],
+    "template_fingerprint": "18edef49700b65610b9d8daa0c6bb2fdf33eeabe75bcd1bd6534471d4682b564",
+    "template_id": "feature.shape.001"
+  },
+  "uncertain_fields": {
+    "operator": "feature_semantics_require_review"
+  }
+}

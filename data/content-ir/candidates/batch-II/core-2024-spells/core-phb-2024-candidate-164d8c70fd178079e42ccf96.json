@@ -1,0 +1,90 @@
+{
+  "candidate_clauses": [
+    {
+      "save_ability": "体质",
+      "type": "saving_throw"
+    },
+    {
+      "damage_type": "雷鸣",
+      "expression": "1d6",
+      "on_failure": "full",
+      "type": "damage"
+    },
+    {
+      "shape": "sphere",
+      "size_ft": 5,
+      "type": "area"
+    }
+  ],
+  "candidate_id": "core-phb-2024:candidate:164d8c70fd178079e42ccf96",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "area_shape": "sphere",
+    "area_size_ft": 5,
+    "casting_time": "动作",
+    "classes": [
+      "吟游诗人",
+      "德鲁伊",
+      "术士",
+      "魔契师",
+      "法师",
+      "奇械师"
+    ],
+    "components": "S",
+    "concentration": false,
+    "damage_expression": "1d6",
+    "damage_type": "雷鸣",
+    "duration": "立即",
+    "range": "自身",
+    "resolution_kind": "damage",
+    "ritual": false,
+    "save": "体质豁免",
+    "school": "塑能",
+    "target_disposition": "creature"
+  },
+  "exact_fields": {
+    "area_shape": "sphere",
+    "area_size_ft": 5,
+    "damage_expression": "1d6",
+    "damage_type": "雷鸣",
+    "save": "体质豁免"
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "鸣雷破",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "source_path": "玩家手册2024/法术详述/0环.htm",
+    "source_text": "#### 鸣雷破｜Thunderclap\n\n*塑能\n戏法（吟游诗人、德鲁伊、术士、魔契师、法师、奇械师）*\n**施法时间：**动作\n**施法距离：**自身\n**法术成分：**S\n**持续时间：**立即\n位于以你为原点5尺光环区域内的每名生物必须成功于一次体质豁免，否则受到1d6点雷鸣伤害。此法术会创造出在100尺内都能听见的巨大声响。\n**戏法强化。**到达特定等级后，此戏法的伤害将增加1d6：5级（2d6）、11级（3d6）、17级（4d6）。"
+  },
+  "source_fingerprint": "c78debfbdd0a12d17b0286860a604f04e930ce0dd6bf10e92d0cce8361e5aa38",
+  "source_path": "玩家手册2024/法术详述/0环.htm",
+  "source_record_id": "164d8c70fd178079e42ccf96",
+  "spell_id": "164d8c70fd178079e42ccf96",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "saving_throw",
+      "damage",
+      "area"
+    ],
+    "template_fingerprint": "af295bb9885e22721b4b0ce62f8bf849a6eba5ca49ce60a0868f55c840a15edb",
+    "template_id": "spell.shape.009"
+  },
+  "uncertain_fields": {}
+}

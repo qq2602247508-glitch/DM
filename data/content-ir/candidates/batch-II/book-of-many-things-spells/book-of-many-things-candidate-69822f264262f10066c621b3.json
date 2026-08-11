@@ -1,0 +1,110 @@
+{
+  "candidate_clauses": [
+    {
+      "save_ability": "敏捷",
+      "type": "saving_throw"
+    },
+    {
+      "damage_type": "力场",
+      "expression": "2d10",
+      "on_failure": "full",
+      "type": "damage"
+    },
+    {
+      "shape": "cone",
+      "size_ft": 15,
+      "type": "area"
+    },
+    {
+      "increments": "1d",
+      "per_slot": 1,
+      "type": "upcast"
+    },
+    {
+      "condition": "目盲",
+      "type": "apply_condition"
+    }
+  ],
+  "candidate_id": "book-of-many-things:candidate:69822f264262f10066c621b3",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "area_shape": "cone",
+    "area_size_ft": 15,
+    "casting_time": "1动作",
+    "classes": [
+      "吟游诗人",
+      "术士",
+      "魔契师",
+      "法师"
+    ],
+    "components": "V、S、M（一副牌组）",
+    "concentration": false,
+    "conditions": [
+      "目盲"
+    ],
+    "damage_expression": "2d10",
+    "damage_type": "力场",
+    "duration": "立即",
+    "half_damage_on_save": true,
+    "level": 2,
+    "range": "自身（15尺锥形）",
+    "resolution_kind": "damage",
+    "ritual": false,
+    "save": "敏捷豁免",
+    "school": "咒法",
+    "target_disposition": "creature",
+    "upcast_damage_dice": 1,
+    "upcast_text": "升环施法。 当你使用3环或更高法术位施放本法术时，你使用的法术位每比2环高一环，法术的伤害就增加1d10。"
+  },
+  "exact_fields": {
+    "area_shape": "cone",
+    "area_size_ft": 15,
+    "conditions": [
+      "目盲"
+    ],
+    "damage_expression": "2d10",
+    "damage_type": "力场",
+    "save": "敏捷豁免",
+    "upcast": 1
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "卡牌喷射",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "万象无常书",
+  "source_evidence": {
+    "source_path": "万象无常书/贤者/卡牌法术详述.htm",
+    "source_text": "#### 卡牌喷射｜Spray of Cards\n\n*二环 咒法（吟游诗人、术士、魔契师、法师）*\n**施法时间：**1动作\n**施法距离：**自身（15尺锥形）\n**法术成分：**V、S、M（一副牌组）\n**持续时间：**立即\n你向一处15尺锥状区域喷射卡牌，该区域内的生物必须进行一次敏捷豁免。豁免失败的生物受到2d10\n点力场伤害伤害并陷入目盲，持续直至其下一个回合结束。豁免成功则仅会受到一半伤害。\n**升环施法。**当你使用3环或更高法术位施放本法术时，你使用的法术位每比2环高一环，法术的伤害就增加1d10。"
+  },
+  "source_fingerprint": "04503730c3ea0119d17b2bde803d307413328d4a88f46c49718277fba6909f5c",
+  "source_path": "万象无常书/贤者/卡牌法术详述.htm",
+  "source_record_id": "69822f264262f10066c621b3",
+  "spell_id": "69822f264262f10066c621b3",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "saving_throw",
+      "damage",
+      "area",
+      "upcast",
+      "apply_condition"
+    ],
+    "template_fingerprint": "af295bb9885e22721b4b0ce62f8bf849a6eba5ca49ce60a0868f55c840a15edb",
+    "template_id": "spell.shape.009"
+  },
+  "uncertain_fields": {}
+}

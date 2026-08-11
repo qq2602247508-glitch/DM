@@ -1,0 +1,75 @@
+{
+  "candidate_clauses": [],
+  "candidate_id": "xanathars-guide:candidate:b28a9ca0a9ce6512e9a039a2",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "area_shape": null,
+    "area_size_ft": null,
+    "casting_time": "10 分钟",
+    "classes": [
+      "圣武士"
+    ],
+    "components": "V、S",
+    "concentration": false,
+    "conditions": null,
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "立即",
+    "half_damage_on_save": null,
+    "healing": null,
+    "level": 4,
+    "max_targets": null,
+    "movement": null,
+    "range": "30 \n尺",
+    "reaction": null,
+    "resolution_kind": "summon",
+    "ritual": false,
+    "save": null,
+    "school": "咒法",
+    "summon": {
+      "controller": "caster",
+      "count": 1,
+      "creature_ref": "高等坐骑（所选形态）",
+      "enters_combat": true,
+      "initiative_mode": "shared_with_source"
+    }
+  },
+  "exact_fields": {},
+  "kind": "spell_candidate",
+  "missing_fields": [
+    "typed_clause_mapping"
+  ],
+  "name": "寻获高等坐骑",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target",
+    "typed_clause_mapping"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "source_path": "珊娜萨的万事指南/法术/法术详述/4环.html",
+    "source_text": "#### 寻获高等坐骑｜Find Greater Steed\n\n*四环 咒法（圣武士）*\n**施法时间：**10 分钟\n**施法距离：**30\n尺\n**法术成分：**V、S\n**持续时间：**立即\n你召唤一个圣魂并呈现出忠诚的、雄伟的坐骑外观。坐骑出现在施法范围内未占据空间内，坐骑的外形由你从以下形态中选择：**狮鹫Griffon**、**天马Pegasus**、**鹿鹰Peryton**、**恐狼Dire\nWolf**、**犀牛Rhinoceros**或者**剑齿虎Saber-toothed\nTiger**。坐骑拥有你选择的形态的数据（见《怪物图鉴》），不过它的生物类型实际上是天族、妖精、或邪魔（由你选择）而非这些生物的通常类型。此外，你的坐骑还能听懂一门你习得的语言（由你选择），且如果你的坐骑智力为\n5 或更低，它的智力变为 6。\n你在战斗中控制坐骑。当坐骑在你周围 1\n里内，你可以通过心灵感应和它沟通。当骑乘在你的魔法坐骑上时，所有你施展的只以你为目标法术同时也影响你的魔法坐骑。\n当魔法坐骑的 HP 降为 0\n时，它会暂时消失。你也可以以一个动作解散你的魔法坐骑使得它消失。再次施放这个法术可以重新召唤绑定的坐骑，此时它的生命值全部恢复，并且任何状态都被移除。\n你不能通过这个法术或获得坐骑法术同时拥有与\n1\n个以上的魔法坐骑的联系，以一个动作，你可以在任何时候将你的坐骑从你们的联系中解放，使得它消失。\n每当坐骑消失，它会留下所有它穿戴或者携带的物品。"
+  },
+  "source_fingerprint": "23730bab4dbea83e5a81d8fbc99b023c0bb76597c0c0c6b257cbce3ba613efd9",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/4环.html",
+  "source_record_id": "b28a9ca0a9ce6512e9a039a2",
+  "spell_id": "b28a9ca0a9ce6512e9a039a2",
+  "template_match": {
+    "confidence": "low",
+    "matched_shape": [],
+    "template_fingerprint": "c6cf559b317883e1043d55b34f4a36da44766b6d3a4828662a90474ca1486880",
+    "template_id": "spell.shape.005"
+  },
+  "uncertain_fields": {}
+}

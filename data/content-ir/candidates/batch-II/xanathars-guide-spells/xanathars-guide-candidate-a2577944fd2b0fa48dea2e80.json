@@ -1,0 +1,65 @@
+{
+  "candidate_clauses": [],
+  "candidate_id": "xanathars-guide:candidate:a2577944fd2b0fa48dea2e80",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "1 分钟",
+    "classes": [
+      "法师"
+    ],
+    "components": "V、S、M（一颗价值至少 500gp \n的钻石，作为该法术的耗材）",
+    "concentration": false,
+    "creation": {
+      "count": null,
+      "creation_kind": "terrain",
+      "requires_template_choice": true,
+      "template_ref": "dm_chosen_template"
+    },
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "立即",
+    "level": 8,
+    "range": "1 里",
+    "ritual": false,
+    "school": "咒法",
+    "target_disposition": "creature"
+  },
+  "exact_fields": {},
+  "kind": "spell_candidate",
+  "missing_fields": [
+    "typed_clause_mapping"
+  ],
+  "name": "坚固堡垒",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target",
+    "typed_clause_mapping"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "source_path": "珊娜萨的万事指南/法术/法术详述/8环.html",
+    "source_text": "#### 坚固堡垒｜Mighty Fortress\n\n*八环 咒法（法师）*\n**施法时间：**1 分钟\n**施法距离：**1 里\n**法术成分：**V、S、M（一颗价值至少 500gp\n的钻石，作为该法术的耗材）\n**持续时间：**立即\n一座岩石的堡垒从施法距离内你选择的一处可见的方形地面升起。这块区域需要在每一边上有至少 120\n尺，并且必须没有任何建筑或其他构造物立于其上。所有处于区域内的生物在堡垒升起时将会被无害地举起。\n这座堡垒有 4 个方形的塔楼，每一个都有 20\n尺的边长和 30 尺的高度，分布在堡垒的每个角上。塔楼通过每边 80 尺长的石墙相互连接，创造出一个封闭的区域。每一面墙的厚度都达到 1 尺，由 10 尺宽度和\n20 尺高度的石板组成。每块石板都与其他两块石板或是与一块石板和一座塔楼相邻接。你可以在堡垒的外墙放置 4\n面石门。\n在封闭区域内树立着一座小城堡。城堡拥有 50 尺边长的方形基座，并且有3层楼，每一层的天花板都有 10\n尺高。每一层都可以以你喜欢的方式划分出许多房间，但每个房间都至少要有 5 尺的边长。城堡的每一层都由石头楼梯相连，它的墙厚达 6\n寸，室内房间的门户式样（石门或者开放式拱门）由你选择。城堡内部的家具和装潢以你喜欢的方式布置，它每天可以提供足够 100\n人享用的、包含九道菜肴的盛宴。从堡垒中被带走的家具、食物和其他由这个法术创造的物体会立即化为土灰。\n你在施展法术时可以指定任意生物，有 100\n个隐形的侍从作为堡垒的职工遵从他们的任何命令。每一个侍从都如同隐形仆役法术的造物，有近似的功能。\n所有由石头创造的城墙、塔楼和城堡都会被损害。每一块\n10x10 尺的岩石部件都有 AC15，以及每寸厚度 30 的生命值。它免疫毒素和心灵伤害。将某一部分的岩石生命值降低至 0\n会摧毁它，并且也许会引起与它连接的部分变形和垮塌，具体由你的 DM 裁量。\n在 7\n天之后，或当你在别处再次施展这个法术，堡垒会无害地坍塌并沉入地面，把其中的任何生物安全地留在地上。\n在一年之间，每7天一次在相同的位置施展这个法术会让堡垒永久存在。"
+  },
+  "source_fingerprint": "0de3cff401a8c873fade8c7d66475228162ecd1dc3194b813f6a24645ca0ee29",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/8环.html",
+  "source_record_id": "a2577944fd2b0fa48dea2e80",
+  "spell_id": "a2577944fd2b0fa48dea2e80",
+  "template_match": {
+    "confidence": "low",
+    "matched_shape": [],
+    "template_fingerprint": "c6cf559b317883e1043d55b34f4a36da44766b6d3a4828662a90474ca1486880",
+    "template_id": "spell.shape.005"
+  },
+  "uncertain_fields": {}
+}

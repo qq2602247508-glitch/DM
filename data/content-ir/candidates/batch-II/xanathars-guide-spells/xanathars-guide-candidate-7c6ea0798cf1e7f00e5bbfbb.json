@@ -1,0 +1,73 @@
+{
+  "candidate_clauses": [
+    {
+      "shape": "cube",
+      "size_ft": 20,
+      "type": "area"
+    }
+  ],
+  "candidate_id": "xanathars-guide:candidate:7c6ea0798cf1e7f00e5bbfbb",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "area_shape": "cube",
+    "area_size_ft": 20,
+    "casting_time": "1 动作",
+    "classes": [
+      "德鲁伊",
+      "术士",
+      "法师"
+    ],
+    "components": "V、S、M（一块黑曜石）",
+    "concentration": false,
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "立即",
+    "level": 3,
+    "range": "120 \n尺",
+    "ritual": false,
+    "save": "敏捷豁免",
+    "school": "变化",
+    "target_disposition": "creature",
+    "upcast_text": "升环施法。 当你使用四环或更高的法术位施放该法术时，使用的法术位每高一环，伤害便增加 1d12。"
+  },
+  "exact_fields": {
+    "area_shape": "cube",
+    "area_size_ft": 20
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "土石喷发",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "source_path": "珊娜萨的万事指南/法术/法术详述/3环.html",
+    "source_text": "#### 土石喷发｜Erupting Earth\n\n*三环 变化（德鲁伊、术士、法师）*\n**施法时间：**1 动作\n**施法距离：**120\n尺\n**法术成分：**V、S、M（一块黑曜石）\n**持续时间：**立即\n选择距离内你能看见的，位于地面上的一点。以该点为中心，20\n尺立方的空间内，一道翻滚的泥土和岩石流喷发而出。在该区域中的每个生物必须进行一次敏捷豁免检定。若未通过豁免，该生物受到 3d12\n点钝击伤害，成功的豁免令上述伤害减半。此外，该区域的地面成为困难地形直到被清理。该区域每 5 平方尺的空间，若用手来清理至少需要 1\n分钟时间。\n**升环施法。**当你使用四环或更高的法术位施放该法术时，使用的法术位每高一环，伤害便增加 1d12。"
+  },
+  "source_fingerprint": "ab6c40c0e9e1639a3144edd7e4582baa97b17ab897e7788d2a82953902335918",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/3环.html",
+  "source_record_id": "7c6ea0798cf1e7f00e5bbfbb",
+  "spell_id": "7c6ea0798cf1e7f00e5bbfbb",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "area"
+    ],
+    "template_fingerprint": "af295bb9885e22721b4b0ce62f8bf849a6eba5ca49ce60a0868f55c840a15edb",
+    "template_id": "spell.shape.009"
+  },
+  "uncertain_fields": {}
+}

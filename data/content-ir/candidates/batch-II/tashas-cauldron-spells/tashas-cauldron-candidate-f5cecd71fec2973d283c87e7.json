@@ -1,0 +1,83 @@
+{
+  "candidate_clauses": [
+    {
+      "required": true,
+      "type": "concentration"
+    }
+  ],
+  "candidate_id": "tashas-cauldron:candidate:f5cecd71fec2973d283c87e7",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "area_shape": null,
+    "area_size_ft": null,
+    "casting_time": "1 动作",
+    "classes": [
+      "魔契师",
+      "法师"
+    ],
+    "components": "V, S, M（包有眼泪的宝石，价值至少 \n300gp）",
+    "concentration": true,
+    "conditions": null,
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "专注，至多 1 小时",
+    "half_damage_on_save": null,
+    "healing": null,
+    "level": 3,
+    "max_targets": null,
+    "movement": null,
+    "range": "90 尺",
+    "reaction": null,
+    "resolution_kind": "summon",
+    "ritual": false,
+    "save": null,
+    "school": "咒法",
+    "summon": {
+      "controller": "caster",
+      "count": 1,
+      "creature_ref": "暗影灵魄Shadow Spirit",
+      "enters_combat": true,
+      "initiative_mode": "shared_with_source"
+    },
+    "upcast_text": "升环施法。 使用四环或更高环阶的法术位施展该法术时，该生物数据中使用更高的法术环数。\n暗影灵魄Shadow \n Spirit 中型怪兽，无阵营 AC：11+法术等级 \n(天生护甲) HP：35+15每比3环高的法术等级 速度：40 力量13（+1）敏捷16（+3）体质15（+2） 智力4（-3）感知10（+0）魅力16（+3） 伤害抗性：暗蚀 状态免疫：恐慌 感官：黑暗视觉120 \n尺，被动察觉10 语言：理解你说的语言 挑战等级：- 熟练加值与你相等 惧怖狂怒Terror \n Frenzy（仅限暴怒）。 该灵魄对恐慌生物发动的攻击检定具有优势。 哀伤之重Weight of Sorrow（仅限绝望）。 除你之外的所有生物在该灵魄 5 尺内开始回合时，其速度降低 20 \n尺直到该生物的下回合开始。 动作Actions 多重攻击Multiattack。 该灵魄发动等同于法术环数一半的次数的攻击（向下取整）。 冻寒撕裂Chilling \n Rend。 近战武器攻击：命中采取你的法术攻击加值，触及5尺，单一目标。命中：1d12+3+法术环阶的寒冷伤害。 恐惧尖叫Dreadful Scream（1/日）。 该灵魄发出尖叫。处于它10 \n尺内的每个生物必须进行一次感知豁免对抗你的法术豁免DC，否则对灵魄恐慌1分钟。被恐慌生物可以在其自己回合结束时再进行一次该豁免，豁免成功则终止该生物身上的恐慌效应。 附赠动作Bonus \n Actions 暗影潜藏Shadow \n Stealth（仅限恐惧）。 灵魄处于微光光照或黑暗环境时，可以一个附赠动作来执行躲藏动作。"
+  },
+  "exact_fields": {
+    "concentration": true
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "暗影衍体召唤术",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "塔莎的万事坩埚",
+  "source_evidence": {
+    "source_path": "塔莎的万事坩埚/法术/法术详述/3环.html",
+    "source_text": "#### 暗影衍体召唤术｜Summon Shadowspawn\n\n*三环 咒法（魔契师、法师）*\n**施法时间：**1 动作\n**施法距离：**90 尺\n**法术成分：**V, S, M（包有眼泪的宝石，价值至少\n300gp）\n**持续时间：**专注，至多 1 小时\n你唤来一个暗影灵魄。其在施法距离内你可见的一个未占据位置化为实体。这一实体使用下面的**暗影灵魄Shadow Spirit**的数据。当你施展法术时，当你施展法术时，从暴怒Fury，绝望Despair或恐惧Fear中选择一种情感。此生物的外形为一个受你所选情感所影响的畸形二足生物，其资料表中的部分特性也受此影响。当其生命值降至\n0\n或法术结束时，生物消失。\n该生物在法术持续时间内对你和你的同伴们友好。在战斗中，该生物使用你的先攻，但在你回合结束后立即行动。它遵从于你的口头指令（无需任何动作）。如果你不发令，它将执行回避动作并远离危险。\n**升环施法。**使用四环或更高环阶的法术位施展该法术时，该生物数据中使用更高的法术环数。\n\n> **暗影灵魄Shadow\n>  Spirit**\n> *中型怪兽，无阵营*\n> AC：11+法术等级\n> (天生护甲)\n> HP：35+15每比3环高的法术等级\n> 速度：40\n> 力量13（+1）敏捷16（+3）体质15（+2）\n> 智力4（-3）感知10（+0）魅力16（+3）\n> 伤害抗性：暗蚀\n> 状态免疫：恐慌\n> 感官：黑暗视觉120\n> 尺，被动察觉10\n> 语言：理解你说的语言\n> 挑战等级：- 熟练加值与你相等\n>\n>\n>\n> **惧怖狂怒Terror\n>  Frenzy（仅限暴怒）。**该灵魄对恐慌生物发动的攻击检定具有优势。\n> **哀伤之重Weight of Sorrow（仅限绝望）。**除你之外的所有生物在该灵魄 5 尺内开始回合时，其速度降低 20\n> 尺直到该生物的下回合开始。\n> **动作Actions**\n> **多重攻击Multiattack。**该灵魄发动等同于法术环数一半的次数的攻击（向下取整）。\n> **冻寒撕裂Chilling\n>  Rend。**近战武器攻击：命中采取你的法术攻击加值，触及5尺，单一目标。命中：1d12+3+法术环阶的寒冷伤害。\n> **恐惧尖叫Dreadful Scream（1/日）。**该灵魄发出尖叫。处于它10\n> 尺内的每个生物必须进行一次感知豁免对抗你的法术豁免DC，否则对灵魄恐慌1分钟。被恐慌生物可以在其自己回合结束时再进行一次该豁免，豁免成功则终止该生物身上的恐慌效应。\n> **附赠动作Bonus\n>  Actions**\n> **暗影潜藏Shadow\n>  Stealth（仅限恐惧）。**灵魄处于微光光照或黑暗环境时，可以一个附赠动作来执行躲藏动作。"
+  },
+  "source_fingerprint": "f60d76dbdf990b26bc07cfb908b62b6f49054c43fcb2b054a65ba642d747daab",
+  "source_path": "塔莎的万事坩埚/法术/法术详述/3环.html",
+  "source_record_id": "f5cecd71fec2973d283c87e7",
+  "spell_id": "f5cecd71fec2973d283c87e7",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "concentration"
+    ],
+    "template_fingerprint": "c6cf559b317883e1043d55b34f4a36da44766b6d3a4828662a90474ca1486880",
+    "template_id": "spell.shape.005"
+  },
+  "uncertain_fields": {}
+}

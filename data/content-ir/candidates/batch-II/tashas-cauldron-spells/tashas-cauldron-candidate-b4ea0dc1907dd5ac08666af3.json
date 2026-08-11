@@ -1,0 +1,71 @@
+{
+  "candidate_clauses": [
+    {
+      "required": true,
+      "type": "concentration"
+    }
+  ],
+  "candidate_id": "tashas-cauldron:candidate:b4ea0dc1907dd5ac08666af3",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "1 动作",
+    "classes": [
+      "奇械师",
+      "吟游诗人",
+      "术士",
+      "魔契师",
+      "法师"
+    ],
+    "components": "V",
+    "concentration": true,
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "专注，最长 1 \n小时",
+    "level": 3,
+    "range": "30 \n尺",
+    "ritual": false,
+    "save": "魅力豁免",
+    "school": "防护",
+    "target_disposition": "creature",
+    "upcast_text": "升环施法。 使用四环或更高环阶的法术位施展该法术时，你使用的法术位每比三环高 \n1 环，就可以多选择一个生物作为目标。而各目标之间距离不能超过 30 尺。"
+  },
+  "exact_fields": {
+    "concentration": true
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "智能壁垒",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "塔莎的万事坩埚",
+  "source_evidence": {
+    "source_path": "塔莎的万事坩埚/法术/法术详述/3环.html",
+    "source_text": "#### 智能壁垒｜Intellect Fortress\n\n*三环 防护（奇械师、吟游诗人、术士、魔契师、法师）*\n**施法时间：**1 动作\n**施法距离：**30\n尺\n**法术成分：**V\n**持续时间：**专注，最长 1\n小时\n在法术持续时间内，你或一个施法距离内的可见生物获得对心灵伤害的抗性，同时在智力、感知和魅力豁免检定上具有优势。\n**升环施法。**使用四环或更高环阶的法术位施展该法术时，你使用的法术位每比三环高\n1 环，就可以多选择一个生物作为目标。而各目标之间距离不能超过 30 尺。"
+  },
+  "source_fingerprint": "f86c958ce95034df82a6a6301688c2c5117bcb4976c5bd9f15bc48d644ee8c31",
+  "source_path": "塔莎的万事坩埚/法术/法术详述/3环.html",
+  "source_record_id": "b4ea0dc1907dd5ac08666af3",
+  "spell_id": "b4ea0dc1907dd5ac08666af3",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "concentration"
+    ],
+    "template_fingerprint": "c6cf559b317883e1043d55b34f4a36da44766b6d3a4828662a90474ca1486880",
+    "template_id": "spell.shape.005"
+  },
+  "uncertain_fields": {}
+}

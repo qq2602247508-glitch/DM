@@ -1,0 +1,80 @@
+{
+  "candidate_clauses": [
+    {
+      "expression": "10",
+      "type": "healing"
+    },
+    {
+      "required": true,
+      "type": "concentration"
+    }
+  ],
+  "candidate_id": "xanathars-guide:candidate:048941785a073a147150ef01",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "1 附赠动作",
+    "classes": [
+      "德鲁伊",
+      "游侠"
+    ],
+    "components": "V",
+    "concentration": true,
+    "duration": "专注，至多 1 \n分钟",
+    "healing": "10",
+    "level": 4,
+    "range": "自身",
+    "resolution_kind": "heal",
+    "ritual": false,
+    "save": "体质豁免",
+    "school": "变化",
+    "target_disposition": "enemy",
+    "temporary_hp": true,
+    "transformation": {
+      "form_ref": "dm_chosen_form",
+      "mode": "polymorph",
+      "requires_form_choice": true,
+      "reversible": true
+    }
+  },
+  "exact_fields": {
+    "concentration": true,
+    "healing": "10"
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "自然守卫",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "source_path": "珊娜萨的万事指南/法术/法术详述/4环.html",
+    "source_text": "#### 自然守卫｜Guardian of Nature\n\n*四环 变化（德鲁伊、游侠）*\n**施法时间：**1 附赠动作\n**施法距离：**自身\n**法术成分：**V\n**持续时间：**专注，至多 1\n分钟\n自然之魂回应你的呼唤并将你转变为一个强大的守卫。转变持续到法术结束。你选择以下形态之一取得：原始猛兽或战争巨树。\n\n> **原始猛兽Primal Beast。**如野兽般的皮毛覆盖你的身体，你的面部特征变得野性，并且你得到以下增益：\n>\n>\n>\n> - 你的步行速度增加 10 尺。你得到 120 尺的黑暗视觉。你基于力量的攻击检定得到优势。你的近战武器攻击在击中时会造成额外1d6力场伤害。\n>\n>\n>\n> **战争巨树Great Tree。**你的皮肤出现树纹，枝叶从你的头发上萌芽，并且你得到以下增益：\n>\n>\n>\n> - 你得到 10 点临时生命。你的体质豁免检定得到优势。你基于敏捷或基于感知的攻击检定得到优势。当你在地面上时，你周围 15 尺的地面对于你的敌人而言是困难地形。"
+  },
+  "source_fingerprint": "1e56dcebb1efcf565bd7f621ecfb6f1486589cecfa5311f9cfdbb5ae60125785",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/4环.html",
+  "source_record_id": "048941785a073a147150ef01",
+  "spell_id": "048941785a073a147150ef01",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "healing",
+      "concentration"
+    ],
+    "template_fingerprint": "a5e98decf95ae64a83a7eb1eaac4f255fc3ab8f23dce3c36a4cc51211c431aec",
+    "template_id": "spell.shape.007"
+  },
+  "uncertain_fields": {}
+}

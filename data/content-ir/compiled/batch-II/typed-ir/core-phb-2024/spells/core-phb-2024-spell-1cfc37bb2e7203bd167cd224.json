@@ -1,0 +1,92 @@
+{
+  "capability_registry": {
+    "id": "spell",
+    "version": "content-capabilities-1"
+  },
+  "casting_time": "动作",
+  "clause_boundaries": {
+    "target": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "德鲁伊、奇械师）* **施法时间：**动作 **施法距离：**15尺 **法术成分：**V、S **持续时间：**立即 选择施法距离内一名生命值为0但还未死亡的生物，使该生物变为伤势稳定。 **戏法强化。**到达特定等级后，此法术的施法距离将翻倍：5级（30尺），11级（60尺），17级（120尺）。",
+      "source_heading": "维生术"
+    }
+  },
+  "clause_identity": [
+    "core-phb-2024:spell:1cfc37bb2e7203bd167cd224:target"
+  ],
+  "clauses": [
+    {
+      "clause_id": "target",
+      "count": 1,
+      "evidence_ref": "德鲁伊、奇械师）* **施法时间：**动作 **施法距离：**15尺 **法术成分：**V、S **持续时间：**立即 选择施法距离内一名生命值为0但还未死亡的生物，使该生物变为伤势稳定。 **戏法强化。**到达特定等级后，此法术的施法距离将翻倍：5级（30尺），11级（60尺），17级（120尺）。",
+      "kind": "one_creature",
+      "type": "target_selection",
+      "visibility": "visible"
+    }
+  ],
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "concentration": false,
+  "duration": "立即",
+  "edition": "2024",
+  "evidence": [
+    "target: 德鲁伊、奇械师）* **施法时间：**动作 **施法距离：**15尺 **法术成分：**V、S **持续时间：**立即 选择施法距离内一名生命值为0但还未死亡的生物，使该生物变为伤势稳定。 **戏法强化。**到达特定等级后，此法术的施法距离将翻倍：5级（30尺），11级（60尺），17级（120尺）。"
+  ],
+  "kind": "spell",
+  "level": 0,
+  "manual_decisions": {
+    "review_gate": "accepted only explicit normalized fields and quoted source evidence",
+    "unresolved_branches": "not promoted when the source does not state attack/save semantics"
+  },
+  "name": "维生术",
+  "namespace": "content.core-phb-2024",
+  "pack_id": "core-phb-2024",
+  "pack_version": "source-7011166c19bd",
+  "range": "15尺",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-11-batch-II",
+  "reviewed_fields": [
+    "schema_version",
+    "spell_id",
+    "name",
+    "pack_id",
+    "pack_version",
+    "namespace",
+    "ruleset_version",
+    "source_record_id",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "source_trust",
+    "level",
+    "school",
+    "casting_time",
+    "range",
+    "duration",
+    "concentration",
+    "clauses",
+    "evidence"
+  ],
+  "ruleset_version": "2024",
+  "schema_version": "spell-ir-1",
+  "school": "死灵",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "selected_clause_excerpt": "德鲁伊、奇械师）* **施法时间：**动作 **施法距离：**15尺 **法术成分：**V、S **持续时间：**立即 选择施法距离内一名生命值为0但还未死亡的生物，使该生物变为伤势稳定。 **戏法强化。**到达特定等级后，此法术的施法距离将翻倍：5级（30尺），11级（60尺），17级（120尺）。",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "4071a6fe81b8986c67b8659db54934e6b0011d6bc045a655913c94c787881bcd",
+    "source_path": "玩家手册2024/法术详述/0环.htm",
+    "source_text": "#### 维生术｜Spare the Dying\n\n*死灵 戏法（牧师、德鲁伊、奇械师）*\n**施法时间：**动作\n**施法距离：**15尺\n**法术成分：**V、S\n**持续时间：**立即\n选择施法距离内一名生命值为0但还未死亡的生物，使该生物变为伤势稳定。\n**戏法强化。**到达特定等级后，此法术的施法距离将翻倍：5级（30尺），11级（60尺），17级（120尺）。"
+  },
+  "source_fingerprint": "0824a4a5faef0cc908e3f17199aaedd5742a560924d833bc8f3b370724321974",
+  "source_path": "玩家手册2024/法术详述/0环.htm",
+  "source_provenance": {
+    "officiality": "official",
+    "review_basis": "local_source_text_manual_review",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "4071a6fe81b8986c67b8659db54934e6b0011d6bc045a655913c94c787881bcd",
+    "source_relative_path": "玩家手册2024/法术详述/0环.htm"
+  },
+  "source_record_id": "1cfc37bb2e7203bd167cd224",
+  "source_trust": "authored_ir",
+  "spell_id": "core-phb-2024:spell:1cfc37bb2e7203bd167cd224"
+}

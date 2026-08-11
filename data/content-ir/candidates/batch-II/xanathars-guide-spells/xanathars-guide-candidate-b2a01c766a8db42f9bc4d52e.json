@@ -1,0 +1,87 @@
+{
+  "candidate_clauses": [
+    {
+      "save_ability": "敏捷",
+      "type": "saving_throw"
+    },
+    {
+      "damage_type": "火焰",
+      "expression": "3d8",
+      "on_failure": "full",
+      "type": "damage"
+    },
+    {
+      "increments": "1d",
+      "per_slot": 1,
+      "type": "upcast"
+    }
+  ],
+  "candidate_id": "xanathars-guide:candidate:b2a01c766a8db42f9bc4d52e",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "1 动作",
+    "classes": [
+      "术士",
+      "法师"
+    ],
+    "components": "V、S、M（一片红龙的鳞片）",
+    "concentration": false,
+    "damage_expression": "3d8",
+    "damage_type": "火焰",
+    "duration": "立即",
+    "half_damage_on_save": true,
+    "level": 2,
+    "range": "30 尺",
+    "resolution_kind": "damage",
+    "ritual": false,
+    "save": "敏捷豁免",
+    "school": "塑能",
+    "target_disposition": "creature",
+    "upcast_damage_dice": 1,
+    "upcast_text": "升环施法。 当你使用三环或更高的法术位施放该法术时，使用的法术位每高一环，伤害便增加 \n1d8。"
+  },
+  "exact_fields": {
+    "damage_expression": "3d8",
+    "damage_type": "火焰",
+    "save": "敏捷豁免",
+    "upcast": 1
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "阿迦纳萨喷火术",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "source_path": "珊娜萨的万事指南/法术/法术详述/2环.html",
+    "source_text": "#### 阿迦纳萨喷火术｜Aganazzar's Scorcher\n\n*二环 塑能（术士、法师）*\n**施法时间：**1 动作\n**施法距离：**30 尺\n**法术成分：**V、S、M（一片红龙的鳞片）\n**持续时间：**立即\n一道长 30 尺，宽 5\n尺的翻涌火线从你向一个你选定的方向蔓延。在该线中的生物必须进行一次敏捷豁免检定。豁免失败的生物受到 3d8 点火焰伤害，而豁免成功则只受到上述伤害的一半。\n**升环施法。**当你使用三环或更高的法术位施放该法术时，使用的法术位每高一环，伤害便增加\n1d8。"
+  },
+  "source_fingerprint": "c41301ba0bf64e2dbb443ca43135440fd84793c1fe095dd68e77796b1bc81b8d",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/2环.html",
+  "source_record_id": "b2a01c766a8db42f9bc4d52e",
+  "spell_id": "b2a01c766a8db42f9bc4d52e",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "saving_throw",
+      "damage",
+      "upcast"
+    ],
+    "template_fingerprint": "3c42f68fb11991f0b3609f5d664da8f01323dbde293a556e901df3dc4b8daf72",
+    "template_id": "spell.shape.008"
+  },
+  "uncertain_fields": {}
+}

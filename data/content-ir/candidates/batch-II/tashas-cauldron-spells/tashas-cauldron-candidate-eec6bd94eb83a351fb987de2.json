@@ -1,0 +1,72 @@
+{
+  "candidate_clauses": [
+    {
+      "shape": "sphere",
+      "size_ft": 5,
+      "type": "area"
+    }
+  ],
+  "candidate_id": "tashas-cauldron:candidate:eec6bd94eb83a351fb987de2",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "area_shape": "sphere",
+    "area_size_ft": 5,
+    "casting_time": "1 动作",
+    "classes": [
+      "奇械师",
+      "术士",
+      "魔契师",
+      "法师"
+    ],
+    "components": "V",
+    "concentration": false,
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "立即 你制造出一圈临时的半透明利刃迅速横扫你的周围。你周围半径5尺范围内的所有生物都必须通过一次敏捷豁免，豁免失败将受到",
+    "range": "自身（半径5尺）",
+    "ritual": false,
+    "save": "敏捷豁免",
+    "school": "咒法",
+    "target_disposition": "creature"
+  },
+  "exact_fields": {
+    "area_shape": "sphere",
+    "area_size_ft": 5
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "剑刃爆发",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "塔莎的万事坩埚",
+  "source_evidence": {
+    "source_path": "塔莎的万事坩埚/法术/法术详述/戏法.html",
+    "source_text": "#### 剑刃爆发｜Sword Burst\n\n*咒法 戏法（奇械师、术士、魔契师、法师）*\n施法时间：1 动作\n施法距离：自身（半径5尺）\n法术成分：V\n持续时间：立即\n你制造出一圈临时的半透明利刃迅速横扫你的周围。你周围半径5尺范围内的所有生物都必须通过一次敏捷豁免，豁免失败将受到\n1d6 点力场伤害。\n当你到达特定等级后，此法术的伤害将增加 1d6 点：5级（变为 2d6）、11 级（3d6）、17\n级（4d6）。"
+  },
+  "source_fingerprint": "1dc4562d4b497156c7f5e46fdb7f06ff8461fcb9f8109752b03aac254d0a8bd6",
+  "source_path": "塔莎的万事坩埚/法术/法术详述/戏法.html",
+  "source_record_id": "eec6bd94eb83a351fb987de2",
+  "spell_id": "eec6bd94eb83a351fb987de2",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "area"
+    ],
+    "template_fingerprint": "af295bb9885e22721b4b0ce62f8bf849a6eba5ca49ce60a0868f55c840a15edb",
+    "template_id": "spell.shape.009"
+  },
+  "uncertain_fields": {}
+}

@@ -1,0 +1,89 @@
+{
+  "candidate_clauses": [
+    {
+      "shape": "sphere",
+      "size_ft": 5,
+      "type": "area"
+    },
+    {
+      "required": true,
+      "type": "concentration"
+    },
+    {
+      "condition": "失能",
+      "type": "apply_condition"
+    }
+  ],
+  "candidate_id": "core-phb-2024:candidate:798d9ce4cd3b4333c376cec7",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "area_shape": "sphere",
+    "area_size_ft": 5,
+    "casting_time": "动作",
+    "classes": [
+      "吟游诗人",
+      "术士",
+      "法师"
+    ],
+    "components": "V、S、M（一把细沙或玫瑰花瓣）",
+    "concentration": true,
+    "conditions": [
+      "失能"
+    ],
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "专注，至多1 分钟",
+    "level": 1,
+    "range": "60 尺",
+    "resolution_kind": "control",
+    "ritual": false,
+    "save": "感知豁免",
+    "target_disposition": "creature"
+  },
+  "exact_fields": {
+    "area_shape": "sphere",
+    "area_size_ft": 5,
+    "concentration": true,
+    "conditions": [
+      "失能"
+    ]
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "睡眠术",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "source_path": "玩家手册2024/法术详述/1环.htm",
+    "source_text": "#### 睡眠术｜Sleep\n\n*一环 惑控（吟游诗人、术士、法师）*\n**施法时间：**动作\n**施法距离：**60 尺\n**法术成分：**V、S、M（一把细沙或玫瑰花瓣）\n**持续时间：**专注，至多1 分钟\n以施法距离内一点为源点，5尺半径球状区域内每个你选择的生物都必须成功通过一次感知豁免否则直到其下个回合结束陷入失能状态。在其下个回合结束时，它必须重复此豁免。如果目标第二次豁免失败，目标在持续时间内陷入昏迷状态。若目标受到伤害或其5尺内有人用一个动作将其摇醒，目标身上的法术结束。\n不需要睡眠的生物（例如精灵）或免疫力竭状态的生物自动成功通过对抗此法术的豁免。"
+  },
+  "source_fingerprint": "e39acbfb5bfd441a097521c6ac8c09417fff909b7eeb3479d614657e486ea65e",
+  "source_path": "玩家手册2024/法术详述/1环.htm",
+  "source_record_id": "798d9ce4cd3b4333c376cec7",
+  "spell_id": "798d9ce4cd3b4333c376cec7",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "area",
+      "concentration",
+      "apply_condition"
+    ],
+    "template_fingerprint": "af295bb9885e22721b4b0ce62f8bf849a6eba5ca49ce60a0868f55c840a15edb",
+    "template_id": "spell.shape.009"
+  },
+  "uncertain_fields": {}
+}

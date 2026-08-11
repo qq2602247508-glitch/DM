@@ -1,0 +1,106 @@
+{
+  "capability_registry": {
+    "id": "spell",
+    "version": "content-capabilities-1"
+  },
+  "casting_time": "动作",
+  "clause_boundaries": {
+    "concentration": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": " *幻术 戏法（吟游诗人、术士、法师、奇械师）* **施法时间：**动作 **施法距离：**120尺 **法术成分：**V、S、M（一点磷） **持续时间：**专注，至多1分钟 你在施法距离内创造至多四个火把大小的光源，使其在法术持续时间内看起来如同火把、灯笼或悬浮珠。或者，你可以将四个光源合并为一个发光的整体形态，使其看上去像一个模糊的中型人形。无论你选择哪种形态，每个光源都会发出10尺半径的微光光照。 你可以用附赠动作将光源移动至多60尺至施法距离内的一处空间。一个由此法术创造的光源必须始终位于任一光源周围20尺内，而超出施法距离的光源会随即熄灭。",
+      "source_heading": "舞光术"
+    },
+    "condition-0": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "**持续时间：**专注，至多1分钟 你在施法距离内创造至多四个火把大小的光源，使其在法术持续时间内看起来如同火把、灯笼或悬浮珠。或者，你可以将四个光源合并为一个发光的整体形态，使其看上去像一个模糊的中型人形。无论你选择哪种形态，每个光源都会发出10尺半径的微光光照。 你可以用附赠动作将光源移动至多60尺至施法距离内的一处空间。一个由此法术创造的光源必须始终位于任一光源周围20尺内，而超出施法距离的光源会随即熄灭。",
+      "source_heading": "舞光术"
+    }
+  },
+  "clause_identity": [
+    "core-phb-2024:spell:5add51530a922ac9deb3e9e5:condition-0",
+    "core-phb-2024:spell:5add51530a922ac9deb3e9e5:concentration"
+  ],
+  "clauses": [
+    {
+      "action_economy": "action",
+      "clause_id": "condition-0",
+      "condition": "发光",
+      "evidence_ref": "**持续时间：**专注，至多1分钟 你在施法距离内创造至多四个火把大小的光源，使其在法术持续时间内看起来如同火把、灯笼或悬浮珠。或者，你可以将四个光源合并为一个发光的整体形态，使其看上去像一个模糊的中型人形。无论你选择哪种形态，每个光源都会发出10尺半径的微光光照。 你可以用附赠动作将光源移动至多60尺至施法距离内的一处空间。一个由此法术创造的光源必须始终位于任一光源周围20尺内，而超出施法距离的光源会随即熄灭。",
+      "target": "one_creature",
+      "type": "apply_condition"
+    },
+    {
+      "clause_id": "concentration",
+      "duration": "专注，至多1分钟",
+      "evidence_ref": " *幻术 戏法（吟游诗人、术士、法师、奇械师）* **施法时间：**动作 **施法距离：**120尺 **法术成分：**V、S、M（一点磷） **持续时间：**专注，至多1分钟 你在施法距离内创造至多四个火把大小的光源，使其在法术持续时间内看起来如同火把、灯笼或悬浮珠。或者，你可以将四个光源合并为一个发光的整体形态，使其看上去像一个模糊的中型人形。无论你选择哪种形态，每个光源都会发出10尺半径的微光光照。 你可以用附赠动作将光源移动至多60尺至施法距离内的一处空间。一个由此法术创造的光源必须始终位于任一光源周围20尺内，而超出施法距离的光源会随即熄灭。",
+      "required": true,
+      "type": "concentration"
+    }
+  ],
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "concentration": true,
+  "duration": "专注，至多1分钟",
+  "edition": "2024",
+  "evidence": [
+    "concentration:  *幻术 戏法（吟游诗人、术士、法师、奇械师）* **施法时间：**动作 **施法距离：**120尺 **法术成分：**V、S、M（一点磷） **持续时间：**专注，至多1分钟 你在施法距离内创造至多四个火把大小的光源，使其在法术持续时间内看起来如同火把、灯笼或悬浮珠。或者，你可以将四个光源合并为一个发光的整体形态，使其看上去像一个模糊的中型人形。无论你选择哪种形态，每个光源都会发出10尺半径的微光光照。 你可以用附赠动作将光源移动至多60尺至施法距离内的一处空间。一个由此法术创造的光源必须始终位于任一光源周围20尺内，而超出施法距离的光源会随即熄灭。",
+    "condition-0: **持续时间：**专注，至多1分钟 你在施法距离内创造至多四个火把大小的光源，使其在法术持续时间内看起来如同火把、灯笼或悬浮珠。或者，你可以将四个光源合并为一个发光的整体形态，使其看上去像一个模糊的中型人形。无论你选择哪种形态，每个光源都会发出10尺半径的微光光照。 你可以用附赠动作将光源移动至多60尺至施法距离内的一处空间。一个由此法术创造的光源必须始终位于任一光源周围20尺内，而超出施法距离的光源会随即熄灭。"
+  ],
+  "kind": "spell",
+  "level": 0,
+  "manual_decisions": {
+    "review_gate": "accepted only explicit normalized fields and quoted source evidence",
+    "unresolved_branches": "not promoted when the source does not state attack/save semantics"
+  },
+  "name": "舞光术",
+  "namespace": "content.core-phb-2024",
+  "pack_id": "core-phb-2024",
+  "pack_version": "source-7011166c19bd",
+  "range": "120尺",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-11-batch-II",
+  "reviewed_fields": [
+    "schema_version",
+    "spell_id",
+    "name",
+    "pack_id",
+    "pack_version",
+    "namespace",
+    "ruleset_version",
+    "source_record_id",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "source_trust",
+    "level",
+    "school",
+    "casting_time",
+    "range",
+    "duration",
+    "concentration",
+    "clauses",
+    "evidence"
+  ],
+  "ruleset_version": "2024",
+  "schema_version": "spell-ir-1",
+  "school": "幻术",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "selected_clause_excerpt": "**持续时间：**专注，至多1分钟 你在施法距离内创造至多四个火把大小的光源，使其在法术持续时间内看起来如同火把、灯笼或悬浮珠。或者，你可以将四个光源合并为一个发光的整体形态，使其看上去像一个模糊的中型人形。无论你选择哪种形态，每个光源都会发出10尺半径的微光光照。 你可以用附赠动作将光源移动至多60尺至施法距离内的一处空间。一个由此法术创造的光源必须始终位于任一光源周围20尺内，而超出施法距离的光源会随即熄灭。  *幻术 戏法（吟游诗人、术士、法师、奇械师）* **施法时间：**动作 **施法距离：**120尺 **法术成分：**V、S、M（一点磷） **持续时间：**专注，至多1分钟 你在施法距离内创造至多四个火把大小的光源，使其在法术持续时间内看起来如同火把、灯笼或悬浮珠。或者，你可以将四个光源合并为一个发光的整体形态，使其看上去像一个模糊的中型人形。无论你选择哪种形态，每个光源都会发出10尺半径的微光光照。 你可以用附赠动作将光源移动至多60尺至施法距离内的一处空间。一个由此法术创造的光源必须始终位于任一光源周围20尺内，而超出施法距离的光源会随即熄灭。",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "863ddc5cbbbd105054488bff127b288c0478659b9826b1cf858be0e7ca693944",
+    "source_path": "玩家手册2024/法术详述/0环.htm",
+    "source_text": "#### 舞光术｜Dancing Lights\n\n*幻术 戏法（吟游诗人、术士、法师、奇械师）*\n**施法时间：**动作\n**施法距离：**120尺\n**法术成分：**V、S、M（一点磷）\n**持续时间：**专注，至多1分钟\n你在施法距离内创造至多四个火把大小的光源，使其在法术持续时间内看起来如同火把、灯笼或悬浮珠。或者，你可以将四个光源合并为一个发光的整体形态，使其看上去像一个模糊的中型人形。无论你选择哪种形态，每个光源都会发出10尺半径的微光光照。\n你可以用附赠动作将光源移动至多60尺至施法距离内的一处空间。一个由此法术创造的光源必须始终位于任一光源周围20尺内，而超出施法距离的光源会随即熄灭。"
+  },
+  "source_fingerprint": "12ee5a939cb0e1da8a032d61a195c48b4c8a3f55b97b2b5e6042dac83a08a4e0",
+  "source_path": "玩家手册2024/法术详述/0环.htm",
+  "source_provenance": {
+    "officiality": "official",
+    "review_basis": "local_source_text_manual_review",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "863ddc5cbbbd105054488bff127b288c0478659b9826b1cf858be0e7ca693944",
+    "source_relative_path": "玩家手册2024/法术详述/0环.htm"
+  },
+  "source_record_id": "5add51530a922ac9deb3e9e5",
+  "source_trust": "authored_ir",
+  "spell_id": "core-phb-2024:spell:5add51530a922ac9deb3e9e5"
+}

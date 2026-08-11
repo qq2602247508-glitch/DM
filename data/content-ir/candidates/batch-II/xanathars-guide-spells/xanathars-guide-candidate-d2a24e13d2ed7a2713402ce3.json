@@ -1,0 +1,72 @@
+{
+  "candidate_clauses": [
+    {
+      "expression": "100",
+      "type": "healing"
+    }
+  ],
+  "candidate_id": "xanathars-guide:candidate:d2a24e13d2ed7a2713402ce3",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "1 动作",
+    "classes": [
+      "术士",
+      "魔契师",
+      "法师"
+    ],
+    "components": "V",
+    "concentration": false,
+    "duration": "立即",
+    "healing": "100",
+    "level": 7,
+    "range": "60 \n尺",
+    "repeat": {
+      "count_expression": "duration",
+      "source": "explicit_timing",
+      "timing": "turn_end"
+    },
+    "resolution_kind": "heal",
+    "ritual": false,
+    "save": "体质豁免",
+    "target_disposition": "creature"
+  },
+  "exact_fields": {
+    "healing": "100"
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "律令痛苦",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "source_path": "珊娜萨的万事指南/法术/法术详述/7环.html",
+    "source_text": "#### 律令痛苦｜Power Word Pain\n\n*七环 惑控（术士、魔契师、法师）*\n**施法时间：**1 动作\n**施法距离：**60\n尺\n**法术成分：**V\n**持续时间：**立即\n你说出饱含力量的真言，引发距离内一个你可见生物的剧痛波浪。如果目标的生命值为 100\n点或更少，它将遭受强烈的痛苦。否则，法术将对它没有作用。免疫魅惑的生物同样不受这个法术影响。\n如果目标承受了这种痛苦，他所拥有的任何速度都不能超过 10\n尺。目标在攻击检定、属性检定和除了体质豁免以外的豁免检定中承受劣势。最后，如果目标试图施法，它必须先成功进行体质豁免检定，否则它将施法失败，法术会被浪费。\n承受了这种痛苦的目标在它的每个回合结束都可以进行一次体质豁免检定。如果豁免成功，痛苦将结束。"
+  },
+  "source_fingerprint": "9ca81db2e4c1c592427e2a27df4bfbe4bd34619a11d42b485e95bd7ff77af3c3",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/7环.html",
+  "source_record_id": "d2a24e13d2ed7a2713402ce3",
+  "spell_id": "d2a24e13d2ed7a2713402ce3",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "healing"
+    ],
+    "template_fingerprint": "a5e98decf95ae64a83a7eb1eaac4f255fc3ab8f23dce3c36a4cc51211c431aec",
+    "template_id": "spell.shape.007"
+  },
+  "uncertain_fields": {}
+}

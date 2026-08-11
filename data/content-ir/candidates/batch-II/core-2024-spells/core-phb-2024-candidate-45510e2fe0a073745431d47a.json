@@ -1,0 +1,78 @@
+{
+  "candidate_clauses": [
+    {
+      "shape": "cube",
+      "size_ft": 20,
+      "type": "area"
+    },
+    {
+      "required": true,
+      "type": "concentration"
+    }
+  ],
+  "candidate_id": "core-phb-2024:candidate:45510e2fe0a073745431d47a",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "area_shape": "cube",
+    "area_size_ft": 20,
+    "casting_time": "动作",
+    "classes": [
+      "吟游诗人",
+      "德鲁伊",
+      "奇械师"
+    ],
+    "components": "V",
+    "concentration": true,
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "专注，至多1分钟",
+    "level": 1,
+    "range": "60尺",
+    "ritual": false,
+    "save": "敏捷豁免",
+    "school": "塑能",
+    "target_disposition": "creature"
+  },
+  "exact_fields": {
+    "area_shape": "cube",
+    "area_size_ft": 20,
+    "concentration": true
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "妖火",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "source_path": "玩家手册2024/法术详述/1环.htm",
+    "source_text": "#### 妖火｜Faerie Fire\n\n*一环 塑能（吟游诗人、德鲁伊、奇械师）*\n**施法时间：**动作\n**施法距离：**60尺\n**法术成分：**V\n**持续时间：**专注，至多1分钟\n施法距离内一处20尺立方区域内每个物件的轮廓都将被蓝色、绿色、或紫色的光芒所勾勒（颜色由你指定）。区域内的生物则必须进行一次敏捷豁免，豁免失败时也会被彩色光芒勾勒出轮廓。受术物件和生物在法术持续时间内发出10尺半径的微光光照。\n受术生物或物件无法受益于隐形状态，且任何能看见他们的攻击者对其发动的攻击检定具有优势。"
+  },
+  "source_fingerprint": "c68a93b415fde5f77cb2d0626e3cdd9c9b2cdfc16b54835dbee1c6042e64ebcf",
+  "source_path": "玩家手册2024/法术详述/1环.htm",
+  "source_record_id": "45510e2fe0a073745431d47a",
+  "spell_id": "45510e2fe0a073745431d47a",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "area",
+      "concentration"
+    ],
+    "template_fingerprint": "af295bb9885e22721b4b0ce62f8bf849a6eba5ca49ce60a0868f55c840a15edb",
+    "template_id": "spell.shape.009"
+  },
+  "uncertain_fields": {}
+}

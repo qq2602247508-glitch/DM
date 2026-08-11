@@ -1,0 +1,67 @@
+{
+  "candidate_clauses": [
+    {
+      "required": true,
+      "type": "concentration"
+    }
+  ],
+  "candidate_id": "xanathars-guide:candidate:f55d92810d45977a5df712df",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "1 动作",
+    "classes": [
+      "魔契师",
+      "法师"
+    ],
+    "components": "V、S",
+    "concentration": true,
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "专注，至多 1 \n小时",
+    "level": 5,
+    "range": "60 尺",
+    "ritual": false,
+    "school": "死灵",
+    "target_disposition": "enemy",
+    "upcast_text": "升环施法。 当你使用六环或更高的法术位施放该法术时，使用的法术位每高一环，你就可以活化额外的两具尸体。"
+  },
+  "exact_fields": {
+    "concentration": true
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "骷髅之舞",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "source_path": "珊娜萨的万事指南/法术/法术详述/5环.html",
+    "source_text": "#### 骷髅之舞｜Danse Macabre\n\n*五环 死灵（魔契师、法师）*\n**施法时间：**1 动作\n**施法距离：**60 尺\n**法术成分：**V、S\n**持续时间：**专注，至多 1\n小时\n黑暗力量的线从你的指尖延伸，刺穿了法术距离内最多 5 具你可见的小型 Small或中型\nMedium的尸体。每具尸体都立即站起变为亡灵。你自由决定它是丧尸或者骷髅（丧尸和骷髅的数据参考怪物图鉴），并且它们在攻击和伤害掷骰中得到等同你的施法属性调整值的加值。\n你可以用你的附赠动作精神性地指挥你用这个法术创造的生物，并对它们发出同样的命令。生物必须在你\n60\n尺内才能接受命令。你决定被操纵的生物下回合的动作和移动。或者，你可以下达宽泛的命令，例如守护某个房间或走廊。如果你不下达命令，生物只会保护自己对抗敌对生物。一旦被下达命令，生物会持续执行命令直到任务完成。\n你对这些生物的控制持续到法术结束，在那之后它们立即变回无生命状态。\n**升环施法。**当你使用六环或更高的法术位施放该法术时，使用的法术位每高一环，你就可以活化额外的两具尸体。"
+  },
+  "source_fingerprint": "cd04f4c63fd039e7c291e5ff2eef607da2d2941584b7e0a01e1d8dd0ec21536e",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/5环.html",
+  "source_record_id": "f55d92810d45977a5df712df",
+  "spell_id": "f55d92810d45977a5df712df",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "concentration"
+    ],
+    "template_fingerprint": "c6cf559b317883e1043d55b34f4a36da44766b6d3a4828662a90474ca1486880",
+    "template_id": "spell.shape.005"
+  },
+  "uncertain_fields": {}
+}

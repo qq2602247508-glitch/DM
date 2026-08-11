@@ -1,0 +1,46 @@
+{
+  "isolated": true,
+  "packs": [
+    {
+      "pack_id": "book-of-many-things",
+      "repeat_build_policy": "manifest fingerprint + idempotent compile",
+      "rollback_policy": "transaction snapshot + CAS guarded revert",
+      "source_fingerprints_present": true,
+      "typed_count": 3,
+      "unique_typed_ids": true
+    },
+    {
+      "pack_id": "core-phb-2024",
+      "repeat_build_policy": "manifest fingerprint + idempotent compile",
+      "rollback_policy": "transaction snapshot + CAS guarded revert",
+      "source_fingerprints_present": true,
+      "typed_count": 60,
+      "unique_typed_ids": true
+    },
+    {
+      "pack_id": "fizbans-treasury",
+      "repeat_build_policy": "manifest fingerprint + idempotent compile",
+      "rollback_policy": "transaction snapshot + CAS guarded revert",
+      "source_fingerprints_present": true,
+      "typed_count": 5,
+      "unique_typed_ids": true
+    },
+    {
+      "pack_id": "tashas-cauldron",
+      "repeat_build_policy": "manifest fingerprint + idempotent compile",
+      "rollback_policy": "transaction snapshot + CAS guarded revert",
+      "source_fingerprints_present": true,
+      "typed_count": 21,
+      "unique_typed_ids": true
+    },
+    {
+      "pack_id": "xanathars-guide",
+      "repeat_build_policy": "manifest fingerprint + idempotent compile",
+      "rollback_policy": "transaction snapshot + CAS guarded revert",
+      "source_fingerprints_present": true,
+      "typed_count": 11,
+      "unique_typed_ids": true
+    }
+  ],
+  "schema_version": "content-ir-isolated-pack-dry-run-II-1"
+}

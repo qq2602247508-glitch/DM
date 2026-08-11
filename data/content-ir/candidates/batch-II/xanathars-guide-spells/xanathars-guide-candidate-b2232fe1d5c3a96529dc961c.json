@@ -1,0 +1,72 @@
+{
+  "candidate_clauses": [
+    {
+      "expression": "50",
+      "type": "healing"
+    },
+    {
+      "required": true,
+      "type": "concentration"
+    }
+  ],
+  "candidate_id": "xanathars-guide:candidate:b2232fe1d5c3a96529dc961c",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "1 \n动作",
+    "classes": [
+      "法师"
+    ],
+    "components": "V、S、M（一缕公牛毛发）",
+    "concentration": true,
+    "duration": "专注，直至 10 \n分钟",
+    "healing": "50",
+    "level": 6,
+    "range": "自身",
+    "resolution_kind": "heal",
+    "ritual": false,
+    "save": "力量豁免",
+    "school": "变化",
+    "temporary_hp": true
+  },
+  "exact_fields": {
+    "concentration": true,
+    "healing": "50"
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "谭森变形术",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "source_path": "珊娜萨的万事指南/法术/法术详述/6环.html",
+    "source_text": "#### 谭森变形术｜Tenser's Transformation\n\n*六环 变化（法师）\n***施法时间：**1\n动作\n**施法距离：**自身\n**法术成分：**V、S、M（一缕公牛毛发）\n**持续时间：**专注，直至 10\n分钟\n你以魔法为燃料赋予自己耐久和武艺。直到法术结束之前，你不能施展法术，并且得到如下增益：\n\n- 你得到 50 点临时生命。如果这些临时生命保持到了法术结束，它们会失去。你在使用简易或军用武器时，攻击检定具有优势。当你用武器攻击击中一个目标，它将受到额外 2d12 力场伤害。你熟练于所有盔甲、盾牌、简易武器、以及军用武器。你熟练于力量豁免和体质豁免。当你在自己的回合采取攻击动作时，你可以攻击两次而非一次。如果已经有类似的能力给予你额外攻击能力，例如额外攻击特性，你无视这项增益。\n\n在法术结束时你需要立即成功通过一次 DC15 的体质豁免，否则将承受一级力竭。"
+  },
+  "source_fingerprint": "6e3cd625b5dce0d6a9ebb15b1c2da34a5daff80470378b26f445e9a23afe5af2",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/6环.html",
+  "source_record_id": "b2232fe1d5c3a96529dc961c",
+  "spell_id": "b2232fe1d5c3a96529dc961c",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "healing",
+      "concentration"
+    ],
+    "template_fingerprint": "a5e98decf95ae64a83a7eb1eaac4f255fc3ab8f23dce3c36a4cc51211c431aec",
+    "template_id": "spell.shape.007"
+  },
+  "uncertain_fields": {}
+}

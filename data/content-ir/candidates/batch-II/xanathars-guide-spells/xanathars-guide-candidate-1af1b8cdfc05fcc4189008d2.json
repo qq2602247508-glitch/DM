@@ -1,0 +1,90 @@
+{
+  "candidate_clauses": [
+    {
+      "save_ability": "体质",
+      "type": "saving_throw"
+    },
+    {
+      "damage_type": "雷鸣",
+      "expression": "1d6",
+      "on_failure": "full",
+      "type": "damage"
+    },
+    {
+      "shape": "sphere",
+      "size_ft": 100,
+      "type": "area"
+    }
+  ],
+  "candidate_id": "xanathars-guide:candidate:1af1b8cdfc05fcc4189008d2",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "area_shape": "sphere",
+    "area_size_ft": 100,
+    "casting_time": "1 动作",
+    "classes": [
+      "吟游诗人",
+      "德鲁伊",
+      "术士",
+      "魔契师",
+      "法师",
+      "奇械师"
+    ],
+    "components": "S",
+    "concentration": false,
+    "damage_expression": "1d6",
+    "damage_type": "雷鸣",
+    "duration": "立即",
+    "range": "5 \n尺",
+    "resolution_kind": "damage",
+    "ritual": false,
+    "save": "体质豁免",
+    "school": "塑能",
+    "target_disposition": "creature"
+  },
+  "exact_fields": {
+    "area_shape": "sphere",
+    "area_size_ft": 100,
+    "damage_expression": "1d6",
+    "damage_type": "雷鸣",
+    "save": "体质豁免"
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "鸣雷破",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "source_path": "珊娜萨的万事指南/法术/法术详述/戏法.html",
+    "source_text": "#### 鸣雷破｜Thunderclap\n\n*塑能\n戏法（吟游诗人、德鲁伊、术士、魔契师、法师、奇械师）**Legacy*\n**施法时间：**1 动作\n**施法距离：**5\n尺\n**法术成分：**S\n**持续时间：**立即\n你制造出雷鸣巨响，可以在 100 尺范围内被听到。除你之外，在你周围 5\n尺范围内的生物必须进行一次体质豁免检定。若检定失败，该生物受到 1d6 点雷鸣伤害。\n你到达 5 级时，该法术的伤害增加 1d6（变为 2d6）。11\n级时再加 1d6（变为3d6），17 级时再加 1d6（变为 4d6）。"
+  },
+  "source_fingerprint": "a0f7755c83c5447a2559b9699b0464d049cf3e2b07ba78cc7b32df9293361814",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/戏法.html",
+  "source_record_id": "1af1b8cdfc05fcc4189008d2",
+  "spell_id": "1af1b8cdfc05fcc4189008d2",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "saving_throw",
+      "damage",
+      "area"
+    ],
+    "template_fingerprint": "af295bb9885e22721b4b0ce62f8bf849a6eba5ca49ce60a0868f55c840a15edb",
+    "template_id": "spell.shape.009"
+  },
+  "uncertain_fields": {}
+}

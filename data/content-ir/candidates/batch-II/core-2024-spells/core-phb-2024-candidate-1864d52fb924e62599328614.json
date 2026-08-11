@@ -1,0 +1,107 @@
+{
+  "candidate_clauses": [
+    {
+      "save_ability": "力量",
+      "type": "saving_throw"
+    },
+    {
+      "damage_type": "穿刺",
+      "expression": "1d6",
+      "on_failure": "full",
+      "type": "damage"
+    },
+    {
+      "required": true,
+      "type": "concentration"
+    },
+    {
+      "increments": "1d",
+      "per_slot": 1,
+      "type": "upcast"
+    },
+    {
+      "condition": "束缚",
+      "type": "apply_condition"
+    }
+  ],
+  "candidate_id": "core-phb-2024:candidate:1864d52fb924e62599328614",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "附赠动作，在你用武器命中目标后立即可用",
+    "classes": [
+      "游侠"
+    ],
+    "components": "V",
+    "concentration": true,
+    "conditions": [
+      "束缚"
+    ],
+    "damage_expression": "1d6",
+    "damage_type": "穿刺",
+    "duration": "专注，至多1分钟",
+    "level": 1,
+    "range": "自身",
+    "repeat": {
+      "count_expression": "duration",
+      "source": "explicit_timing",
+      "timing": "turn_start"
+    },
+    "resolution_kind": "damage",
+    "ritual": false,
+    "save": "力量豁免",
+    "school": "咒法",
+    "target_disposition": "creature",
+    "upcast_damage_dice": 1,
+    "upcast_text": "升环施法。 使用的法术位每比一环高一环，此法术的伤害就提高1d6点。"
+  },
+  "exact_fields": {
+    "concentration": true,
+    "conditions": [
+      "束缚"
+    ],
+    "damage_expression": "1d6",
+    "damage_type": "穿刺",
+    "save": "力量豁免",
+    "upcast": 1
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "捕获打击",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "source_path": "玩家手册2024/法术详述/1环.htm",
+    "source_text": "#### 捕获打击｜Ensnaring Strike\n\n*一环 咒法（游侠）*\n**施法时间：**附赠动作，在你用武器命中目标后立即可用\n**施法距离：**自身\n**法术成分：**V\n**持续时间：**专注，至多1分钟\n你命中目标时，目标身上出现一根紧紧将其攫住的藤蔓，使其进行一次力量豁免，大型及更大体型的生物进行该豁免时具有优势。豁免失败，则目标将直到法术结束为止陷入束缚状态。豁免成功，则藤蔓立即枯萎，法术结束。\n处于束缚状态期间，目标在其每回合开始受到1d6点穿刺伤害。目标或其他位于其触及内的生物可用一个动作进行一次对抗法术豁免DC的力量（运动）检定。检定成功则法术结束。\n**升环施法。**使用的法术位每比一环高一环，此法术的伤害就提高1d6点。"
+  },
+  "source_fingerprint": "203cf9a1ff23fa9bb5e260099f36b4be43383fcb83a3ad8cb2bd4bbd0b743e6f",
+  "source_path": "玩家手册2024/法术详述/1环.htm",
+  "source_record_id": "1864d52fb924e62599328614",
+  "spell_id": "1864d52fb924e62599328614",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "saving_throw",
+      "damage",
+      "concentration",
+      "upcast",
+      "apply_condition"
+    ],
+    "template_fingerprint": "3c42f68fb11991f0b3609f5d664da8f01323dbde293a556e901df3dc4b8daf72",
+    "template_id": "spell.shape.008"
+  },
+  "uncertain_fields": {}
+}

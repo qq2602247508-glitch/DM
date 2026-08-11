@@ -1,0 +1,51 @@
+{
+  "candidate_clauses": [],
+  "candidate_id": "tashas-cauldron:candidate:a344f2b96bdeff96c6c919a3",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "feature",
+  "draft_fields": {
+    "source_text": "**野蛮人 Barbarian**野蛮人职业在本节中获得了新的职业特性与子职业选项。\n\n**可选职业特性 Optional Class Features\n**你可以在达到特定等级时获得玩家手册中描述的职业特性。这一部分提供了一些你作为野蛮人的额外特性。与玩家手册中的特性不同的是，你不会自动获得这些特性。在你达到该部分描述的职业特性的需求等级且决定获得这些特性时，与你的DM先商量商量。这些特性能够被一个一个单独选走，这意味着你可以使用其中一些、全部或不使用它们。\n\n**原始学识 Primal Knowledge**\n*第3级野蛮人特性*\n当你的野蛮人职业等级达到3级和10级时，你可以从野蛮人1级所提供的技能熟练项列表中选择一个技能，获得该技能的熟练。\n\n**莽驰 Instinctive Pounce**\n*第7级**野蛮人**特性*\n作为你进入狂暴状态的附赠动作的一部分，你可以至多移动一段等同于你速度的一半的距离。"
+  },
+  "exact_fields": {},
+  "feature_id": "tashas-cauldron:feature:a344f2b96bdeff96c6c919a3",
+  "kind": "feature_candidate",
+  "missing_fields": [
+    "typed_clause_mapping",
+    "operator",
+    "targeting",
+    "action_economy"
+  ],
+  "name": "野蛮人",
+  "required_review_fields": [
+    "source_name",
+    "class_name",
+    "level",
+    "clauses",
+    "operator",
+    "targeting"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "本书速查",
+  "source_evidence": {
+    "source_path": "塔莎的万事坩埚/玩家选项/职业/野蛮人（TCE）.html",
+    "source_text": "**野蛮人 Barbarian**野蛮人职业在本节中获得了新的职业特性与子职业选项。\n\n**可选职业特性 Optional Class Features\n**你可以在达到特定等级时获得玩家手册中描述的职业特性。这一部分提供了一些你作为野蛮人的额外特性。与玩家手册中的特性不同的是，你不会自动获得这些特性。在你达到该部分描述的职业特性的需求等级且决定获得这些特性时，与你的DM先商量商量。这些特性能够被一个一个单独选走，这意味着你可以使用其中一些、全部或不使用它们。\n\n**原始学识 Primal Knowledge**\n*第3级野蛮人特性*\n当你的野蛮人职业等级达到3级和10级时，你可以从野蛮人1级所提供的技能熟练项列表中选择一个技能，获得该技能的熟练。\n\n**莽驰 Instinctive Pounce**\n*第7级**野蛮人**特性*\n作为你进入狂暴状态的附赠动作的一部分，你可以至多移动一段等同于你速度的一半的距离。"
+  },
+  "source_fingerprint": "fe65fedc75f6c60206d7ef7d29cab89c7378d125efa840bb15047670b202ef98",
+  "source_path": "塔莎的万事坩埚/玩家选项/职业/野蛮人（TCE）.html",
+  "source_record_id": "a344f2b96bdeff96c6c919a3",
+  "template_match": {
+    "confidence": "low",
+    "matched_shape": [],
+    "template_fingerprint": "18edef49700b65610b9d8daa0c6bb2fdf33eeabe75bcd1bd6534471d4682b564",
+    "template_id": "feature.shape.001"
+  },
+  "uncertain_fields": {
+    "operator": "feature_semantics_require_review"
+  }
+}

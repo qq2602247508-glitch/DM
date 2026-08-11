@@ -1,0 +1,83 @@
+{
+  "candidate_clauses": [
+    {
+      "save_ability": "体质",
+      "type": "saving_throw"
+    },
+    {
+      "damage_type": "光耀",
+      "expression": "4d10",
+      "on_failure": "full",
+      "type": "damage"
+    },
+    {
+      "required": true,
+      "type": "concentration"
+    }
+  ],
+  "candidate_id": "xanathars-guide:candidate:eaa73e1d8173e75c7603b8cf",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "1 动作",
+    "classes": [
+      "牧师",
+      "法师"
+    ],
+    "components": "V、S、M（价值至少 100gp \n的旭日坠饰）",
+    "concentration": true,
+    "damage_expression": "4d10",
+    "damage_type": "光耀",
+    "duration": "专注，至多 1 分钟",
+    "level": 5,
+    "range": "60 尺",
+    "resolution_kind": "damage",
+    "ritual": false,
+    "save": "体质豁免",
+    "school": "塑能",
+    "target_disposition": "creature"
+  },
+  "exact_fields": {
+    "concentration": true,
+    "damage_expression": "4d10",
+    "damage_type": "光耀",
+    "save": "体质豁免"
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "拂晓",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "source_path": "珊娜萨的万事指南/法术/法术详述/5环.html",
+    "source_text": "#### 拂晓｜Dawn\n\n*五环 塑能（牧师、法师）*\n**施法时间：**1 动作\n**施法距离：**60 尺\n**法术成分：**V、S、M（价值至少 100gp\n的旭日坠饰）\n**持续时间：**专注，至多 1 分钟\n拂晓之光落在施法距离内你指定的地点，形成一道 30 尺半径、40\n尺高度的明亮光柱。这个光芒被视为阳光。\n当光柱出现时，每个处于其中的生物都必须进行体质豁免，失败将受到 4d10\n光耀伤害，成功则只承受一半。在光柱中结束回合的生物也必须再次进行这个豁免。\n如果你在光柱 60 尺内，你可以在你的回合以一个附赠动作将它移动 60\n尺。"
+  },
+  "source_fingerprint": "11d9d8f821b8d9fffb196506b8cb39cd378b2a7524448f713b84baebcb722aeb",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/5环.html",
+  "source_record_id": "eaa73e1d8173e75c7603b8cf",
+  "spell_id": "eaa73e1d8173e75c7603b8cf",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "saving_throw",
+      "damage",
+      "concentration"
+    ],
+    "template_fingerprint": "3c42f68fb11991f0b3609f5d664da8f01323dbde293a556e901df3dc4b8daf72",
+    "template_id": "spell.shape.008"
+  },
+  "uncertain_fields": {}
+}

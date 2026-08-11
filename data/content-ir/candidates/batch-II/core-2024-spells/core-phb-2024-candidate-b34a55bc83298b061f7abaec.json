@@ -1,0 +1,75 @@
+{
+  "candidate_clauses": [
+    {
+      "shape": "sphere",
+      "size_ft": 20,
+      "type": "area"
+    }
+  ],
+  "candidate_id": "core-phb-2024:candidate:b34a55bc83298b061f7abaec",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "area_shape": "sphere",
+    "area_size_ft": 20,
+    "casting_time": "动作或仪式",
+    "classes": [
+      "法师"
+    ],
+    "components": "V、S、M（一滴汞）",
+    "concentration": false,
+    "creation": {
+      "count": null,
+      "creation_kind": "terrain",
+      "requires_template_choice": true,
+      "template_ref": "dm_chosen_template"
+    },
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "1小时",
+    "level": 1,
+    "range": "30尺",
+    "ritual": false,
+    "school": "咒法",
+    "target_disposition": "object"
+  },
+  "exact_fields": {
+    "area_shape": "sphere",
+    "area_size_ft": 20
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "谭森浮碟术",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "source_path": "玩家手册2024/法术详述/1环.htm",
+    "source_text": "#### 谭森浮碟术｜Tenser's Floating Disk\n\n*一环 咒法（法师）*\n**施法时间：**动作或仪式\n**施法距离：**30尺\n**法术成分：**V、S、M（一滴汞）\n**持续时间：**1小时\n指定施法距离内一处你可见的未占空间，并在该处创造一个圆盘状的碟型水平力场。浮碟直径3尺，厚1寸，悬浮在离地3尺的空中。其可以在法术持续时间内持续存在，并至多可负载500磅重量。如果放在浮碟上的物件重量超过500磅，则该法术终止，浮碟上的所有东西也将掉落至地上。\n浮碟距你20尺内时静止不动。只要你与其距离超过20尺，浮碟就会跟随你移动，并保持在距你20尺范围内。浮碟可以自由跨越崎岖地形、上下阶梯、斜坡面、诸如此类的地面，但它不能越过高差超过10尺的地面。例如，浮碟不能越过一个10尺深的坑；如果将浮碟创造在这个坑的坑底，则它将无法离开这个坑。\n如果你距浮碟超过100尺（通常是因为它受障碍所阻无法跟上你），则法术终止。"
+  },
+  "source_fingerprint": "ecfff4d07aca1de0d3a999328f455fcdb91eb5dd044d014ea39ea90709a38e78",
+  "source_path": "玩家手册2024/法术详述/1环.htm",
+  "source_record_id": "b34a55bc83298b061f7abaec",
+  "spell_id": "b34a55bc83298b061f7abaec",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "area"
+    ],
+    "template_fingerprint": "af295bb9885e22721b4b0ce62f8bf849a6eba5ca49ce60a0868f55c840a15edb",
+    "template_id": "spell.shape.009"
+  },
+  "uncertain_fields": {}
+}

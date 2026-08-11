@@ -1,0 +1,85 @@
+{
+  "candidate_clauses": [
+    {
+      "required": true,
+      "type": "concentration"
+    },
+    {
+      "condition": "失能",
+      "type": "apply_condition"
+    }
+  ],
+  "candidate_id": "core-phb-2024:candidate:85595d634b480207249dd2ac",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "动作",
+    "classes": [
+      "吟游诗人",
+      "魔契师",
+      "法师"
+    ],
+    "components": "V、S、M（一块甜馅饼和一根羽毛）",
+    "concentration": true,
+    "conditions": [
+      "失能"
+    ],
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "专注，至多1分钟",
+    "level": 1,
+    "range": "30尺",
+    "repeat": {
+      "count_expression": "duration",
+      "source": "explicit_timing",
+      "timing": "turn_end"
+    },
+    "resolution_kind": "control",
+    "ritual": false,
+    "save": "感知豁免",
+    "target_disposition": "creature",
+    "upcast_text": "升环施法。 使用的法术位每比一环高一环，你就可以额外选择一个生物作为目标。"
+  },
+  "exact_fields": {
+    "concentration": true,
+    "conditions": [
+      "失能"
+    ]
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "塔莎狂笑术",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "source_path": "玩家手册2024/法术详述/1环.htm",
+    "source_text": "#### 塔莎狂笑术｜Tasha's Hideous Laughter\n\n*一环 惑控（吟游诗人、魔契师、法师）*\n**施法时间：**动作\n**施法距离：**30尺\n**法术成分：**V、S、M（一块甜馅饼和一根羽毛）\n**持续时间：**专注，至多1分钟\n施法距离内你可见的一名生物进行一次感知豁免。豁免失败，目标在持续时间内陷入失能和倒地状态。在此期间，目标会不受控制地狂笑（只要它能够发笑），且无法结束自身的倒地状态。\n目标在其每回合结束或受到伤害时，可以再进行一次感知豁免。如果豁免是因受到伤害所致，则该次豁免具有优势。豁免成功时，法术终止。\n**升环施法。**使用的法术位每比一环高一环，你就可以额外选择一个生物作为目标。"
+  },
+  "source_fingerprint": "f9dbd04fb5822db7475cdbc538bc7160a9eaa47753a708df371cb76b4e716a57",
+  "source_path": "玩家手册2024/法术详述/1环.htm",
+  "source_record_id": "85595d634b480207249dd2ac",
+  "spell_id": "85595d634b480207249dd2ac",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "concentration",
+      "apply_condition"
+    ],
+    "template_fingerprint": "3c42f68fb11991f0b3609f5d664da8f01323dbde293a556e901df3dc4b8daf72",
+    "template_id": "spell.shape.008"
+  },
+  "uncertain_fields": {}
+}

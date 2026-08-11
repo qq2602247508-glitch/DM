@@ -1,0 +1,87 @@
+{
+  "candidate_clauses": [
+    {
+      "save_ability": "敏捷",
+      "type": "saving_throw"
+    },
+    {
+      "damage_type": "钝击",
+      "expression": "3d8",
+      "on_failure": "full",
+      "type": "damage"
+    },
+    {
+      "increments": "1d",
+      "per_slot": 1,
+      "type": "upcast"
+    }
+  ],
+  "candidate_id": "xanathars-guide:candidate:868117360db3137344a7e04d",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "1 动作",
+    "classes": [
+      "术士",
+      "法师",
+      "奇械师"
+    ],
+    "components": "S",
+    "concentration": false,
+    "damage_expression": "3d8",
+    "damage_type": "钝击",
+    "duration": "立即",
+    "level": 1,
+    "range": "60 \n尺",
+    "resolution_kind": "damage",
+    "ritual": false,
+    "save": "敏捷豁免",
+    "school": "变化",
+    "target_disposition": "creature",
+    "upcast_damage_dice": 1,
+    "upcast_text": "升环施法。 当你使用二环或更高的法术位施放该法术时，使用的法术位每高一环，你可以选择的物体重量上限便增加 5 \n磅，造成的伤害提高 1d8。"
+  },
+  "exact_fields": {
+    "damage_expression": "3d8",
+    "damage_type": "钝击",
+    "save": "敏捷豁免",
+    "upcast": 1
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "弹射术",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "source_path": "珊娜萨的万事指南/法术/法术详述/1环.html",
+    "source_text": "#### 弹射术｜Catapult\n\n*一环 变化（术士、法师、奇械师）*\n**施法时间：**1 动作\n**施法距离：**60\n尺\n**法术成分：**S\n**持续时间：**立即\n选择施法距离之内，一个未被穿戴或携带的、重 1~5\n磅的物件。该物件将向着你选择的一个方向，以直线轨迹飞出。弹射物在落到地面前至多可以飞行 90\n尺距离，若其在此过程中弹射物撞击到了固体表面则会提前停止运动。若弹射物即将撞上一个生物，该生物必须进行一次敏捷豁免尝试避开它。若豁免失败，弹射物将击中该生物并停止运动。不论弹射物击中了什么东西，弹射物和被弹射物击中的东西都将各受到\n3d8 点钝击伤害。\n**升环施法。**当你使用二环或更高的法术位施放该法术时，使用的法术位每高一环，你可以选择的物体重量上限便增加 5\n磅，造成的伤害提高 1d8。"
+  },
+  "source_fingerprint": "778a1c90232969699e09941b70e190af34cf7ef6c147860e319f08a94acd2a9c",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/1环.html",
+  "source_record_id": "868117360db3137344a7e04d",
+  "spell_id": "868117360db3137344a7e04d",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "saving_throw",
+      "damage",
+      "upcast"
+    ],
+    "template_fingerprint": "3c42f68fb11991f0b3609f5d664da8f01323dbde293a556e901df3dc4b8daf72",
+    "template_id": "spell.shape.008"
+  },
+  "uncertain_fields": {}
+}

@@ -1,0 +1,61 @@
+{
+  "candidate_clauses": [],
+  "candidate_id": "core-phb-2024:candidate:42bd5f6e5e67108553a40050",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "动作",
+    "classes": [
+      "术士",
+      "法师"
+    ],
+    "components": "V、S、M（一枚价值50GP+的钻石）",
+    "concentration": false,
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "立即",
+    "level": 1,
+    "range": "90 尺",
+    "ritual": false,
+    "school": "塑能",
+    "target_disposition": "creature",
+    "upcast_text": "升环施法。 使用的法术位每高一环，法术的伤害就增加1d8。能量球能够跳跃的最大次数等同于所消耗的法术位环阶，但每次施展此法术时，每名生物只能被指定为此法术目标一次。"
+  },
+  "exact_fields": {},
+  "kind": "spell_candidate",
+  "missing_fields": [
+    "typed_clause_mapping"
+  ],
+  "name": "繁彩球",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target",
+    "typed_clause_mapping"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "source_path": "玩家手册2024/法术详述/1环.htm",
+    "source_text": "#### 繁彩球｜Chromatic Orb\n\n*一环 塑能（术士、法师）*\n**施法时间：**动作\n**施法距离：**90 尺\n**法术成分：**V、S、M（一枚价值50GP+的钻石）\n**持续时间：**立即\n你向施法距离内某个目标掷出一颗能量球。从强酸、寒冷、火焰、闪电、毒素、雷鸣中选择一个作为创造出来的球体的伤害类型，然后对该目标发动一次远程法术攻击。命中时，该目标将受到 3d8 点你所选类型的伤害。\n如果你的d8骰中有两枚（或更多）投出了相同的数字，能量球将会从原目标跃向其周围30尺内由你所选择的另一个目标。你需要对新目标再进行一次攻击检定，然后进行一次新的伤害掷骰。能量球无法再次进行此种跳跃，除非你施展此法术时使用了环阶2+的法术位。\n**升环施法。**使用的法术位每高一环，法术的伤害就增加1d8。能量球能够跳跃的最大次数等同于所消耗的法术位环阶，但每次施展此法术时，每名生物只能被指定为此法术目标一次。"
+  },
+  "source_fingerprint": "ce1a3f87bb64df592b378f48eb7506095f5d5a14eaa21e271b1327725e8848e7",
+  "source_path": "玩家手册2024/法术详述/1环.htm",
+  "source_record_id": "42bd5f6e5e67108553a40050",
+  "spell_id": "42bd5f6e5e67108553a40050",
+  "template_match": {
+    "confidence": "low",
+    "matched_shape": [],
+    "template_fingerprint": "c6cf559b317883e1043d55b34f4a36da44766b6d3a4828662a90474ca1486880",
+    "template_id": "spell.shape.005"
+  },
+  "uncertain_fields": {}
+}

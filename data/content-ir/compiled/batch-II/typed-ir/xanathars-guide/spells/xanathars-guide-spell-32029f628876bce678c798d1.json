@@ -1,0 +1,106 @@
+{
+  "capability_registry": {
+    "id": "spell",
+    "version": "content-capabilities-1"
+  },
+  "casting_time": "1 动作",
+  "clause_boundaries": {
+    "concentration": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "造成恐惧｜Cause Fear *一环 死灵（魔契师、法师）* **施法时间：**1 动作 **施法距离：**60 尺 **法术成分：**V **持续时间：**专注，至多 1 分钟 你唤醒了一个处于施法距离内、你能看见的生物内心的凡性。此法术对于构装生物或亡灵无效。目标必须通过一次感知豁免检定，否则在持续时间内陷入恐惧。被恐惧的生物可以在它的每个回合结束时重复进行这个豁免检定，若成功将结束法术对自身的效果。 **升环施法。**当你使用二环或更高的法术位施放该法术时，使用的法术位每高一环，你就可以多指定一个额外生物作为目标。每个被你指定的生物相互之间的施法距离必须在 30 尺内。",
+      "source_heading": "造成恐惧"
+    },
+    "target": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "**60 尺 **法术成分：**V **持续时间：**专注，至多 1 分钟 你唤醒了一个处于施法距离内、你能看见的生物内心的凡性。此法术对于构装生物或亡灵无效。目标必须通过一次感知豁免检定，否则在持续时间内陷入恐惧。被恐惧的生物可以在它的每个回合结束时重复进行这个豁免检定，若成功将结束法术对自身的效果。 **升环施法。**当你使用二环或更高的法术位施放该法术时，使用的法术位每高一环，你就可以多指定一个额外生物作为目标。每个被你指定的生物相互之间的施法距离必须在 30 尺内。",
+      "source_heading": "造成恐惧"
+    }
+  },
+  "clause_identity": [
+    "xanathars-guide:spell:32029f628876bce678c798d1:target",
+    "xanathars-guide:spell:32029f628876bce678c798d1:concentration"
+  ],
+  "clauses": [
+    {
+      "clause_id": "target",
+      "count": 1,
+      "evidence_ref": "**60 尺 **法术成分：**V **持续时间：**专注，至多 1 分钟 你唤醒了一个处于施法距离内、你能看见的生物内心的凡性。此法术对于构装生物或亡灵无效。目标必须通过一次感知豁免检定，否则在持续时间内陷入恐惧。被恐惧的生物可以在它的每个回合结束时重复进行这个豁免检定，若成功将结束法术对自身的效果。 **升环施法。**当你使用二环或更高的法术位施放该法术时，使用的法术位每高一环，你就可以多指定一个额外生物作为目标。每个被你指定的生物相互之间的施法距离必须在 30 尺内。",
+      "kind": "one_creature",
+      "type": "target_selection",
+      "visibility": "visible"
+    },
+    {
+      "clause_id": "concentration",
+      "duration": "专注，至多 1 \n分钟",
+      "evidence_ref": "造成恐惧｜Cause Fear *一环 死灵（魔契师、法师）* **施法时间：**1 动作 **施法距离：**60 尺 **法术成分：**V **持续时间：**专注，至多 1 分钟 你唤醒了一个处于施法距离内、你能看见的生物内心的凡性。此法术对于构装生物或亡灵无效。目标必须通过一次感知豁免检定，否则在持续时间内陷入恐惧。被恐惧的生物可以在它的每个回合结束时重复进行这个豁免检定，若成功将结束法术对自身的效果。 **升环施法。**当你使用二环或更高的法术位施放该法术时，使用的法术位每高一环，你就可以多指定一个额外生物作为目标。每个被你指定的生物相互之间的施法距离必须在 30 尺内。",
+      "required": true,
+      "type": "concentration"
+    }
+  ],
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "concentration": true,
+  "duration": "专注，至多 1 \n分钟",
+  "edition": "2014",
+  "evidence": [
+    "concentration: 造成恐惧｜Cause Fear *一环 死灵（魔契师、法师）* **施法时间：**1 动作 **施法距离：**60 尺 **法术成分：**V **持续时间：**专注，至多 1 分钟 你唤醒了一个处于施法距离内、你能看见的生物内心的凡性。此法术对于构装生物或亡灵无效。目标必须通过一次感知豁免检定，否则在持续时间内陷入恐惧。被恐惧的生物可以在它的每个回合结束时重复进行这个豁免检定，若成功将结束法术对自身的效果。 **升环施法。**当你使用二环或更高的法术位施放该法术时，使用的法术位每高一环，你就可以多指定一个额外生物作为目标。每个被你指定的生物相互之间的施法距离必须在 30 尺内。",
+    "target: **60 尺 **法术成分：**V **持续时间：**专注，至多 1 分钟 你唤醒了一个处于施法距离内、你能看见的生物内心的凡性。此法术对于构装生物或亡灵无效。目标必须通过一次感知豁免检定，否则在持续时间内陷入恐惧。被恐惧的生物可以在它的每个回合结束时重复进行这个豁免检定，若成功将结束法术对自身的效果。 **升环施法。**当你使用二环或更高的法术位施放该法术时，使用的法术位每高一环，你就可以多指定一个额外生物作为目标。每个被你指定的生物相互之间的施法距离必须在 30 尺内。"
+  ],
+  "kind": "spell",
+  "level": 1,
+  "manual_decisions": {
+    "review_gate": "accepted only explicit normalized fields and quoted source evidence",
+    "unresolved_branches": "not promoted when the source does not state attack/save semantics"
+  },
+  "name": "造成恐惧",
+  "namespace": "content.xanathars-guide",
+  "pack_id": "xanathars-guide",
+  "pack_version": "source-7011166c19bd",
+  "range": "60 尺",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-11-batch-II",
+  "reviewed_fields": [
+    "schema_version",
+    "spell_id",
+    "name",
+    "pack_id",
+    "pack_version",
+    "namespace",
+    "ruleset_version",
+    "source_record_id",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "source_trust",
+    "level",
+    "school",
+    "casting_time",
+    "range",
+    "duration",
+    "concentration",
+    "clauses",
+    "evidence"
+  ],
+  "ruleset_version": "2014",
+  "schema_version": "spell-ir-1",
+  "school": "死灵",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "selected_clause_excerpt": "**60 尺 **法术成分：**V **持续时间：**专注，至多 1 分钟 你唤醒了一个处于施法距离内、你能看见的生物内心的凡性。此法术对于构装生物或亡灵无效。目标必须通过一次感知豁免检定，否则在持续时间内陷入恐惧。被恐惧的生物可以在它的每个回合结束时重复进行这个豁免检定，若成功将结束法术对自身的效果。 **升环施法。**当你使用二环或更高的法术位施放该法术时，使用的法术位每高一环，你就可以多指定一个额外生物作为目标。每个被你指定的生物相互之间的施法距离必须在 30 尺内。 造成恐惧｜Cause Fear *一环 死灵（魔契师、法师）* **施法时间：**1 动作 **施法距离：**60 尺 **法术成分：**V **持续时间：**专注，至多 1 分钟 你唤醒了一个处于施法距离内、你能看见的生物内心的凡性。此法术对于构装生物或亡灵无效。目标必须通过一次感知豁免检定，否则在持续时间内陷入恐惧。被恐惧的生物可以在它的每个回合结束时重复进行这个豁免检定，若成功将结束法术对自身的效果。 **升环施法。**当你使用二环或更高的法术位施放该法术时，使用的法术位每高一环，你就可以多指定一个额外生物作为目标。每个被你指定的生物相互之间的施法距离必须在 30 尺内。",
+    "source_book": "珊娜萨的万事指南",
+    "source_checksum": "cc3a14373c89bda8bcd1ed5d03ad5825b249583d68d2daa12ef7601fe4cc2659",
+    "source_path": "珊娜萨的万事指南/法术/法术详述/1环.html",
+    "source_text": "#### 造成恐惧｜Cause Fear\n\n*一环 死灵（魔契师、法师）*\n**施法时间：**1 动作\n**施法距离：**60 尺\n**法术成分：**V\n**持续时间：**专注，至多 1\n分钟\n你唤醒了一个处于施法距离内、你能看见的生物内心的凡性。此法术对于构装生物或亡灵无效。目标必须通过一次感知豁免检定，否则在持续时间内陷入恐惧。被恐惧的生物可以在它的每个回合结束时重复进行这个豁免检定，若成功将结束法术对自身的效果。\n**升环施法。**当你使用二环或更高的法术位施放该法术时，使用的法术位每高一环，你就可以多指定一个额外生物作为目标。每个被你指定的生物相互之间的施法距离必须在\n30 尺内。"
+  },
+  "source_fingerprint": "0a3022a43e497585172bdec69d7e39c21df0e04be4ab08ba26e1b567646bcfc0",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/1环.html",
+  "source_provenance": {
+    "officiality": "unknown",
+    "review_basis": "local_source_text_manual_review",
+    "source_book": "珊娜萨的万事指南",
+    "source_checksum": "cc3a14373c89bda8bcd1ed5d03ad5825b249583d68d2daa12ef7601fe4cc2659",
+    "source_relative_path": "珊娜萨的万事指南/法术/法术详述/1环.html"
+  },
+  "source_record_id": "32029f628876bce678c798d1",
+  "source_trust": "authored_ir",
+  "spell_id": "xanathars-guide:spell:32029f628876bce678c798d1"
+}

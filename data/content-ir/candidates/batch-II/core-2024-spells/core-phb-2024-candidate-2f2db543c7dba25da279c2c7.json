@@ -1,0 +1,91 @@
+{
+  "candidate_clauses": [
+    {
+      "save_ability": "体质",
+      "type": "saving_throw"
+    },
+    {
+      "damage_type": "火焰",
+      "expression": "1d6",
+      "on_failure": "full",
+      "type": "damage"
+    }
+  ],
+  "candidate_id": "core-phb-2024:candidate:2f2db543c7dba25da279c2c7",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "附赠动作，当你使用近战武器或徒手打击命中一个目标后立即执行",
+    "classes": [
+      "圣武士"
+    ],
+    "components": "V",
+    "concentration": false,
+    "damage_components": [
+      {
+        "damage_type": "火焰",
+        "expression": "1d6"
+      },
+      {
+        "damage_type": "火焰",
+        "expression": "1d6"
+      }
+    ],
+    "damage_expression": "1d6",
+    "damage_type": "火焰",
+    "duration": "1分钟",
+    "level": 1,
+    "range": "自身",
+    "repeat": {
+      "count_expression": "duration",
+      "source": "explicit_timing",
+      "timing": "turn_start"
+    },
+    "resolution_kind": "damage",
+    "ritual": false,
+    "save": "体质豁免",
+    "school": "塑能",
+    "upcast_text": "升环施法。 使用的法术位每比一环高一环，此法术造成的所有伤害都会增加1d6点。"
+  },
+  "exact_fields": {
+    "damage_expression": "1d6",
+    "damage_type": "火焰",
+    "save": "体质豁免"
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "炽焰斩",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "source_path": "玩家手册2024/法术详述/1环.htm",
+    "source_text": "#### 炽焰斩｜Searing Smite\n\n*一环 塑能（圣武士）*\n**施法时间：**附赠动作，当你使用近战武器或徒手打击命中一个目标后立即执行\n**施法距离：**自身\n**法术成分：**V\n**持续时间：**1分钟\n被该次攻击检定命中的目标会在此次攻击中额外受到1d6火焰伤害。直至法术终止前，目标会在其每个回合开始时受到1d6点火焰伤害，并进行一次体质豁免。豁免失败则法术继续生效，成功则法术终止。\n**升环施法。**使用的法术位每比一环高一环，此法术造成的所有伤害都会增加1d6点。"
+  },
+  "source_fingerprint": "08d9fbf08cf4c37c2c9483248e977a9abc829134ba050f8a00ea829d2e041dfc",
+  "source_path": "玩家手册2024/法术详述/1环.htm",
+  "source_record_id": "2f2db543c7dba25da279c2c7",
+  "spell_id": "2f2db543c7dba25da279c2c7",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "saving_throw",
+      "damage"
+    ],
+    "template_fingerprint": "3c42f68fb11991f0b3609f5d664da8f01323dbde293a556e901df3dc4b8daf72",
+    "template_id": "spell.shape.008"
+  },
+  "uncertain_fields": {}
+}

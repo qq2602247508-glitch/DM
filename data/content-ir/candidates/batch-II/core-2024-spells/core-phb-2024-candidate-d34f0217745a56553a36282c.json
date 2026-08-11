@@ -1,0 +1,69 @@
+{
+  "candidate_clauses": [],
+  "candidate_id": "core-phb-2024:candidate:d34f0217745a56553a36282c",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "动作",
+    "classes": [
+      "德鲁伊",
+      "术士",
+      "魔契师",
+      "法师",
+      "奇械师"
+    ],
+    "components": "V、S",
+    "concentration": false,
+    "damage_expression": "1d12",
+    "damage_type": "毒素",
+    "duration": "立即",
+    "range": "30尺",
+    "resolution_kind": "damage",
+    "ritual": false,
+    "school": "死灵",
+    "target_disposition": "creature"
+  },
+  "exact_fields": {},
+  "kind": "spell_candidate",
+  "missing_fields": [
+    "attack_or_save",
+    "typed_clause_mapping"
+  ],
+  "name": "毒气喷涌",
+  "required_review_fields": [
+    "action_economy",
+    "attack_or_save",
+    "clauses",
+    "level",
+    "name",
+    "target",
+    "typed_clause_mapping"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "source_path": "玩家手册2024/法术详述/0环.htm",
+    "source_text": "#### 毒气喷涌｜Poison Spray\n\n*死灵 戏法（德鲁伊、术士、魔契师、法师、奇械师）*\n**施法时间：**动作\n**施法距离：**30尺\n**法术成分：**V、S\n**持续时间：**立即\n你向施法距离内一个你可见的生物喷出一股毒气。对目标进行一次远程法术攻击。命中时，目标将受1d12点毒素伤害。\n**戏法强化。**到达特定等级后，此戏法的伤害将增加1d12：5级（2d12）、11级（3d12）、17级（4d12）。"
+  },
+  "source_fingerprint": "ca910d076ea3d0dd38265639727099a1ffa20a71720c4ab168de35fe5d18d4ce",
+  "source_path": "玩家手册2024/法术详述/0环.htm",
+  "source_record_id": "d34f0217745a56553a36282c",
+  "spell_id": "d34f0217745a56553a36282c",
+  "template_match": {
+    "confidence": "low",
+    "matched_shape": [],
+    "template_fingerprint": "c6cf559b317883e1043d55b34f4a36da44766b6d3a4828662a90474ca1486880",
+    "template_id": "spell.shape.005"
+  },
+  "uncertain_fields": {
+    "damage_expression": "1d12",
+    "damage_type": "毒素",
+    "operator": "attack_roll_or_other_damage_operator_requires_review"
+  }
+}

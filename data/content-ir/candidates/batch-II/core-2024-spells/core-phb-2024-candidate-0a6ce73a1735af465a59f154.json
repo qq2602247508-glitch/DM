@@ -1,0 +1,65 @@
+{
+  "candidate_clauses": [
+    {
+      "required": true,
+      "type": "concentration"
+    }
+  ],
+  "candidate_id": "core-phb-2024:candidate:0a6ce73a1735af465a59f154",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "动作",
+    "classes": [
+      "牧师",
+      "圣武士"
+    ],
+    "components": "V、S",
+    "concentration": true,
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "专注，至多10分钟",
+    "level": 1,
+    "range": "自身",
+    "ritual": false,
+    "school": "预言"
+  },
+  "exact_fields": {
+    "concentration": true
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "侦测善恶",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "source_path": "玩家手册2024/法术详述/1环.htm",
+    "source_text": "#### 侦测善恶｜Detect Evil and Good\n\n*一环 预言（牧师、圣武士）*\n**施法时间：**动作\n**施法距离：**自身\n**法术成分：**V、S\n**持续时间：**专注，至多10分钟\n在法术持续时间内，你定位距你30尺内任何异怪、天族、元素、妖精、邪魔、亡灵。你也可以感知到范围内是否具有激活的*圣居Hallow*并确定其位置。\n此法术会被1尺厚的岩石、泥土或木头，1寸厚的金属，或薄薄一层铅阻隔。"
+  },
+  "source_fingerprint": "aab38a7171edacde0e94d4e3130a3ea3a19ef08da3472c5ea3d23406300f6742",
+  "source_path": "玩家手册2024/法术详述/1环.htm",
+  "source_record_id": "0a6ce73a1735af465a59f154",
+  "spell_id": "0a6ce73a1735af465a59f154",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "concentration"
+    ],
+    "template_fingerprint": "c6cf559b317883e1043d55b34f4a36da44766b6d3a4828662a90474ca1486880",
+    "template_id": "spell.shape.005"
+  },
+  "uncertain_fields": {}
+}

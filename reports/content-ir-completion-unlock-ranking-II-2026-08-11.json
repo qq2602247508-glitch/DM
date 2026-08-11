@@ -1,0 +1,31 @@
+{
+  "ranking": [
+    {
+      "consumer_id": "combat_engine.damage_heal",
+      "production_loop_unlock_count": 15,
+      "scope": "damage/healing spell runtime blocks"
+    },
+    {
+      "consumer_id": "spell_economy.character_version_slot_cas",
+      "production_loop_unlock_count": 15,
+      "scope": "all reviewed spells with explicit cast contract"
+    },
+    {
+      "consumer_id": "combat_engine.feature_action",
+      "production_loop_unlock_count": 5,
+      "scope": "data-driven feature action blocks"
+    },
+    {
+      "consumer_id": "combat_engine.effect_turn_snapshot",
+      "production_loop_unlock_count": 1,
+      "scope": "duration and turn snapshot lifecycle"
+    },
+    {
+      "consumer_id": "rest_service.resource_recovery",
+      "production_loop_unlock_count": 1,
+      "scope": "short-rest resource and hit-die lifecycle"
+    }
+  ],
+  "schema_version": "content-ir-completion-unlock-ranking-II-1",
+  "unlock_rule": "generic block counts only when a real production consumer loop is recorded; no name-based dispatch"
+}

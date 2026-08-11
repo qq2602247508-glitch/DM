@@ -1,0 +1,65 @@
+{
+  "candidate_clauses": [],
+  "candidate_id": "xanathars-guide:candidate:25d9674d7172fb2c6b06e64c",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "1 \n动作",
+    "classes": [
+      "德鲁伊"
+    ],
+    "components": "S",
+    "concentration": false,
+    "damage_expression": "1d10",
+    "damage_type": "强酸",
+    "duration": "立即",
+    "range": "自身",
+    "resolution_kind": "damage",
+    "ritual": false,
+    "school": "变化",
+    "target_disposition": "creature"
+  },
+  "exact_fields": {},
+  "kind": "spell_candidate",
+  "missing_fields": [
+    "attack_or_save",
+    "typed_clause_mapping"
+  ],
+  "name": "原初蛮击",
+  "required_review_fields": [
+    "action_economy",
+    "attack_or_save",
+    "clauses",
+    "level",
+    "name",
+    "target",
+    "typed_clause_mapping"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "source_path": "珊娜萨的万事指南/法术/法术详述/戏法.html",
+    "source_text": "#### 原初蛮击｜Primal Savagery\n\n*变化 戏法（德鲁伊）*\n**施法时间：**1\n动作\n**施法距离：**自身\n**法术成分：**S\n**持续时间：**立即\n你的牙齿或指甲变得长而尖锐，从而准备好发起酸蚀性的打击。对一个处于你周围 5\n尺内的生物进行一次近战法术攻击。命中则目标受到 1d10 点强酸伤害。在你进行此攻击后，你的牙齿或指甲恢复正常。\n此法术的伤害在你达到 5\n级（2d10），11 级（3d10），和 17 级（4d10）时提高 1d10 点。"
+  },
+  "source_fingerprint": "c81dc231f70c0890b42a673c4c7a6d131e2de42501be6b760285d8fbc045d97b",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/戏法.html",
+  "source_record_id": "25d9674d7172fb2c6b06e64c",
+  "spell_id": "25d9674d7172fb2c6b06e64c",
+  "template_match": {
+    "confidence": "low",
+    "matched_shape": [],
+    "template_fingerprint": "c6cf559b317883e1043d55b34f4a36da44766b6d3a4828662a90474ca1486880",
+    "template_id": "spell.shape.005"
+  },
+  "uncertain_fields": {
+    "damage_expression": "1d10",
+    "damage_type": "强酸",
+    "operator": "attack_roll_or_other_damage_operator_requires_review"
+  }
+}

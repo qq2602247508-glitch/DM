@@ -1,0 +1,57 @@
+{
+  "candidate_clauses": [],
+  "candidate_id": "core-phb-2024:candidate:a04b5b4b320636bd5029a9b6",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "动作",
+    "classes": [
+      "德鲁伊"
+    ],
+    "components": "V、S",
+    "concentration": false,
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "立即",
+    "range": "30尺",
+    "ritual": false,
+    "school": "变化"
+  },
+  "exact_fields": {},
+  "kind": "spell_candidate",
+  "missing_fields": [
+    "typed_clause_mapping"
+  ],
+  "name": "德鲁伊伎俩",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target",
+    "typed_clause_mapping"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "source_path": "玩家手册2024/法术详述/0环.htm",
+    "source_text": "#### 德鲁伊伎俩｜Druidcraft\n\n*变化 戏法（德鲁伊）*\n**施法时间：**动作\n**施法距离：**30尺\n**法术成分：**V、S\n**持续时间：**立即\n你向自然精魂低语，在施法距离内创造出下述效应之一。\n\n> **感知天气Weather\n>  Sensor。**你创造一个微型而无害的感官效应，并以之预报你所在地接下来24小时的天气状况。该效应可表现为一个代表晴空的金球、一朵代表雨天的云彩、代表雪日而飘飞的雪花等等。该效应将持续1轮。\n> **盛放Blossom。**你可以立即让一朵鲜花绽放，让一颗种子破壳，或是让一片叶蕾发芽。\n> **感官效应Sensory\n>  Effect。**你创造一个无害的感官效应，例如落叶、如幽灵般舞动的小仙灵们、微风、动物的声音或者臭鼬的微弱臭气。该效应只能在5尺的立方区域内起效。\n> **玩火Fire Play。**你点亮/熄灭一根蜡烛、一根火把或一处小篝火。"
+  },
+  "source_fingerprint": "decc766bef03ead059b80a7acf2eda9d905ec5170054c87f9f649def752b892c",
+  "source_path": "玩家手册2024/法术详述/0环.htm",
+  "source_record_id": "a04b5b4b320636bd5029a9b6",
+  "spell_id": "a04b5b4b320636bd5029a9b6",
+  "template_match": {
+    "confidence": "low",
+    "matched_shape": [],
+    "template_fingerprint": "c6cf559b317883e1043d55b34f4a36da44766b6d3a4828662a90474ca1486880",
+    "template_id": "spell.shape.005"
+  },
+  "uncertain_fields": {}
+}

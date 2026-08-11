@@ -1,0 +1,79 @@
+{
+  "candidate_clauses": [
+    {
+      "save_ability": "敏捷",
+      "type": "saving_throw"
+    },
+    {
+      "damage_type": "钝击",
+      "expression": "4d8",
+      "on_failure": "full",
+      "type": "damage"
+    }
+  ],
+  "candidate_id": "xanathars-guide:candidate:25fd183be8a5a886bc180e83",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "1 动作",
+    "classes": [
+      "德鲁伊",
+      "术士",
+      "法师"
+    ],
+    "components": "V、S、M（一滴水）",
+    "concentration": false,
+    "damage_expression": "4d8",
+    "damage_type": "钝击",
+    "duration": "立即",
+    "half_damage_on_save": true,
+    "level": 3,
+    "range": "120 \n尺",
+    "resolution_kind": "damage",
+    "ritual": false,
+    "save": "敏捷豁免",
+    "school": "咒法",
+    "target_disposition": "creature"
+  },
+  "exact_fields": {
+    "damage_expression": "4d8",
+    "damage_type": "钝击",
+    "save": "敏捷豁免"
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "潮涌",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "source_path": "珊娜萨的万事指南/法术/法术详述/3环.html",
+    "source_text": "#### 潮涌｜Tidal Wave\n\n*三环 咒法（德鲁伊、术士、法师）*\n**施法时间：**1 动作\n**施法距离：**120\n尺\n**法术成分：**V、S、M（一滴水）\n**持续时间：**立即\n你召唤出浪潮拍打距离之内的区域。区域的长度至多为 30\n尺，宽度至多为 10 尺，高度至多为 10\n尺。在区域内的每个生物均必须进行一次敏捷豁免检定。豁免失败则该生物受到4d8钝击伤害并应击倒地。豁免成功则仅受到一半伤害，且不会倒地。水之后会沿着地表向四周流去，熄灭区域内和周围 30\n尺内所有有未受保护的火焰，而后消失不见。"
+  },
+  "source_fingerprint": "e36ab12fc1519be7c9f46ae7d23c239e59cc3afc17046a83879819506db7fa03",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/3环.html",
+  "source_record_id": "25fd183be8a5a886bc180e83",
+  "spell_id": "25fd183be8a5a886bc180e83",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "saving_throw",
+      "damage"
+    ],
+    "template_fingerprint": "3c42f68fb11991f0b3609f5d664da8f01323dbde293a556e901df3dc4b8daf72",
+    "template_id": "spell.shape.008"
+  },
+  "uncertain_fields": {}
+}

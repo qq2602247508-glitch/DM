@@ -1,0 +1,84 @@
+{
+  "candidate_clauses": [
+    {
+      "required": true,
+      "type": "concentration"
+    }
+  ],
+  "candidate_id": "tashas-cauldron:candidate:821697eef9deee02919ab171",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "area_shape": null,
+    "area_size_ft": null,
+    "casting_time": "1 动作",
+    "classes": [
+      "德鲁伊",
+      "游侠",
+      "法师"
+    ],
+    "components": "V, S, M（一个至少价值 \n400gp 的，装有空气、一块鹅卵石、灰烬与水的水晶瓶）",
+    "concentration": true,
+    "conditions": null,
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "专注，至多 1 \n小时",
+    "half_damage_on_save": null,
+    "healing": null,
+    "level": 4,
+    "max_targets": null,
+    "movement": null,
+    "range": "90 尺",
+    "reaction": null,
+    "resolution_kind": "summon",
+    "ritual": false,
+    "save": null,
+    "school": "咒法",
+    "summon": {
+      "controller": "caster",
+      "count": 1,
+      "creature_ref": "元素灵魄Elemental Spirit",
+      "enters_combat": true,
+      "initiative_mode": "shared_with_source"
+    },
+    "upcast_text": "升环施法。 使用五环或更高环阶的法术位施展该法术时，该生物数据中使用更高的法术环数。\n元素灵魄Elemental \n Spirit 中型元素，无阵营 AC：11+法术环阶（天生护甲） HP：50+每比四环高的法术环阶10点 速度：40尺，掘穴 \n 30尺（仅限土），飞行 40尺（悬浮）（仅限气），游泳 \n 40尺（仅限水） 力量18（+4）敏捷15（+2）体质17（+3） 智力4（-3）感知10（+0）魅力16（+3） 伤害抗性：毒素 状态免疫：魅惑，力竭，恐慌，失能，麻痹，石化，中毒 感官：黑暗视觉 \n 60尺，被动察觉 10 语言：理解你讲的语言 挑战等级：-；熟练加值与你相等 不定形态Amorphous Form（仅限于气、火和水）。 该元素生物能够轻松穿过最窄 1 \n 寸宽的狭窄空间而无需跻身通过。 动作Actions 多重攻击Multiattack。 该元素发动等同于法术环阶半数（向下取整）次数的攻击。 猛击Slam。 近战武器攻击：命中采取你的法术攻击加值，触及 \n 5尺，单一目标；命中：1d10+4+法术环阶的钝击伤害（仅限气、土和水）或火焰伤害（仅限火）。"
+  },
+  "exact_fields": {
+    "concentration": true
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "元素召唤术",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "塔莎的万事坩埚",
+  "source_evidence": {
+    "source_path": "塔莎的万事坩埚/法术/法术详述/4环.html",
+    "source_text": "#### 元素召唤术｜Summon Elemental\n\n*四环 咒法（德鲁伊、游侠、法师）**Legacy*\n**施法时间：**1 动作\n**施法距离：**90 尺\n**法术成分：**V, S, M（一个至少价值\n400gp 的，装有空气、一块鹅卵石、灰烬与水的水晶瓶）\n**持续时间：**专注，至多 1\n小时\n你唤来一个元素灵魄。其在施法距离内你可见的一个未占据位置化为实体。这一实体使用下面的**元素灵魄Elemental\nSpirit**的数据。当你施展法术时，从气Air，土Earth，火Fire或水Water中选择一个元素。此生物的外形如同一个周身缠绕着你所选元素的模糊二足人影，其资料表中的部分特性也受此影响。当其生命值降至\n0\n或法术结束时，生物消失。\n该生物在法术持续时间内对你和你的同伴们友好。在战斗中，该生物使用你的先攻，但在你回合结束后立即行动。它遵从于你的口头指令（无需任何动作）。如果你不发令，它将执行回避动作并远离危险。\n**升环施法。**使用五环或更高环阶的法术位施展该法术时，该生物数据中使用更高的法术环数。\n\n> **元素灵魄Elemental\n>  Spirit**\n> *中型元素，无阵营*\n> AC：11+法术环阶（天生护甲）\n> HP：50+每比四环高的法术环阶10点\n> 速度：40尺，掘穴\n>  30尺（仅限土），飞行 40尺（悬浮）（仅限气），游泳\n>  40尺（仅限水）\n> 力量18（+4）敏捷15（+2）体质17（+3）\n> 智力4（-3）感知10（+0）魅力16（+3）\n> 伤害抗性：毒素\n> 状态免疫：魅惑，力竭，恐慌，失能，麻痹，石化，中毒\n> 感官：黑暗视觉\n>  60尺，被动察觉 10\n> 语言：理解你讲的语言\n> 挑战等级：-；熟练加值与你相等\n>\n>\n>\n> **不定形态Amorphous Form（仅限于气、火和水）。**该元素生物能够轻松穿过最窄 1\n>  寸宽的狭窄空间而无需跻身通过。\n> **动作Actions**\n> **多重攻击Multiattack。**该元素发动等同于法术环阶半数（向下取整）次数的攻击。\n> **猛击Slam。**近战武器攻击：命中采取你的法术攻击加值，触及\n>  5尺，单一目标；命中：1d10+4+法术环阶的钝击伤害（仅限气、土和水）或火焰伤害（仅限火）。"
+  },
+  "source_fingerprint": "e18e3222edfad0fc5a93555449dce25f6eb170f9da1dd0a62e2ed3936e7012b2",
+  "source_path": "塔莎的万事坩埚/法术/法术详述/4环.html",
+  "source_record_id": "821697eef9deee02919ab171",
+  "spell_id": "821697eef9deee02919ab171",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "concentration"
+    ],
+    "template_fingerprint": "c6cf559b317883e1043d55b34f4a36da44766b6d3a4828662a90474ca1486880",
+    "template_id": "spell.shape.005"
+  },
+  "uncertain_fields": {}
+}

@@ -1,0 +1,101 @@
+{
+  "candidate_clauses": [
+    {
+      "save_ability": "力量",
+      "type": "saving_throw"
+    },
+    {
+      "damage_type": "雷鸣",
+      "expression": "2d6",
+      "on_failure": "full",
+      "type": "damage"
+    },
+    {
+      "increments": "1d",
+      "per_slot": 1,
+      "type": "upcast"
+    },
+    {
+      "condition": "倒地",
+      "type": "apply_condition"
+    }
+  ],
+  "candidate_id": "core-phb-2024:candidate:e9b542f7428da96ae95bfe87",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "附赠动作，当你使用近战武器或徒手打击命中一个目标后立即执行",
+    "classes": [
+      "圣武士"
+    ],
+    "components": "V",
+    "concentration": false,
+    "conditions": [
+      "倒地"
+    ],
+    "damage_expression": "2d6",
+    "damage_type": "雷鸣",
+    "duration": "立即",
+    "level": 1,
+    "movement": {
+      "direction": "away",
+      "distance_ft": 10,
+      "type": "forced"
+    },
+    "range": "自身",
+    "resolution_kind": "damage",
+    "ritual": false,
+    "save": "力量豁免",
+    "school": "塑能",
+    "target_disposition": "creature",
+    "upcast_damage_dice": 1,
+    "upcast_text": "升环施法。 使用的法术位每比一环高一环，伤害就提高1d6。"
+  },
+  "exact_fields": {
+    "conditions": [
+      "倒地"
+    ],
+    "damage_expression": "2d6",
+    "damage_type": "雷鸣",
+    "save": "力量豁免",
+    "upcast": 1
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "雷鸣斩",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "source_path": "玩家手册2024/法术详述/1环.htm",
+    "source_text": "#### 雷鸣斩｜Thunderous Smite\n\n*一环 塑能（圣武士）*\n**施法时间：**附赠动作，当你使用近战武器或徒手打击命中一个目标后立即执行\n**施法距离：**自身\n**法术成分：**V\n**持续时间：**立即\n你的打击发出距你300尺内都能听见的雷鸣。被该次攻击检定命中的目标会在此次攻击中额外受到2d6点雷鸣伤害，如果目标是一名生物，则它必须成功于一次力量豁免，否则其被向着远离你的方向推离10尺并陷入倒地状态。\n**升环施法。**使用的法术位每比一环高一环，伤害就提高1d6。"
+  },
+  "source_fingerprint": "c760f3d461cd905437b13fc75b35332d476270f55e7c73130d2257ef4ae72509",
+  "source_path": "玩家手册2024/法术详述/1环.htm",
+  "source_record_id": "e9b542f7428da96ae95bfe87",
+  "spell_id": "e9b542f7428da96ae95bfe87",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "saving_throw",
+      "damage",
+      "upcast",
+      "apply_condition"
+    ],
+    "template_fingerprint": "3c42f68fb11991f0b3609f5d664da8f01323dbde293a556e901df3dc4b8daf72",
+    "template_id": "spell.shape.008"
+  },
+  "uncertain_fields": {}
+}

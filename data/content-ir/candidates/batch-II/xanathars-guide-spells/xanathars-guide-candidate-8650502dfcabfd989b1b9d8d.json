@@ -1,0 +1,78 @@
+{
+  "candidate_clauses": [
+    {
+      "save_ability": "体质",
+      "type": "saving_throw"
+    },
+    {
+      "damage_type": "暗蚀",
+      "expression": "5d12",
+      "on_failure": "full",
+      "type": "damage"
+    }
+  ],
+  "candidate_id": "xanathars-guide:candidate:8650502dfcabfd989b1b9d8d",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "1 动作",
+    "classes": [
+      "魔契师",
+      "法师"
+    ],
+    "components": "V、M（一块破碎的骨头和一块方形的黑色丝绸）",
+    "concentration": false,
+    "damage_expression": "5d12",
+    "damage_type": "暗蚀",
+    "duration": "立即",
+    "half_damage_on_save": true,
+    "level": 5,
+    "range": "60 \n尺",
+    "resolution_kind": "damage",
+    "ritual": false,
+    "save": "体质豁免",
+    "school": "死灵",
+    "target_disposition": "creature"
+  },
+  "exact_fields": {
+    "damage_expression": "5d12",
+    "damage_type": "暗蚀",
+    "save": "体质豁免"
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "负能量洪流",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "source_path": "珊娜萨的万事指南/法术/法术详述/5环.html",
+    "source_text": "#### 负能量洪流｜Negative Energy Flood\n\n*五环 死灵（魔契师、法师）*\n**施法时间：**1 动作\n**施法距离：**60\n尺\n**法术成分：**V、M（一块破碎的骨头和一块方形的黑色丝绸）\n**持续时间：**立即\n你向距离内一个可见生物发出丝带状的负能量。如果目标不是亡灵，他必须进行一次体质豁免检定，并在豁免失败时受到\n5d12\n暗蚀伤害，若豁免成功则只承受一半。被这个伤害杀死的目标将在你的下回合开始被唤起为一只丧尸。丧尸会追杀距离他最近的、他可以看见的任何生物。丧尸的数据参考怪物图鉴。\n如果你以亡灵作为目标使用这个法术，目标不需要进行豁免检定，取而代之的是目标得到\n5d12 的一半作为临时生命。"
+  },
+  "source_fingerprint": "17cf7afa194814f60857035c3227351eedd2beb9f2ac6bd163d700a5bfc09437",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/5环.html",
+  "source_record_id": "8650502dfcabfd989b1b9d8d",
+  "spell_id": "8650502dfcabfd989b1b9d8d",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "saving_throw",
+      "damage"
+    ],
+    "template_fingerprint": "3c42f68fb11991f0b3609f5d664da8f01323dbde293a556e901df3dc4b8daf72",
+    "template_id": "spell.shape.008"
+  },
+  "uncertain_fields": {}
+}

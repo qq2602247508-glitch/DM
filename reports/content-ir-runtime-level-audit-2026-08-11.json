@@ -1,0 +1,51 @@
+{
+  "formal_feature_audit_unchanged": {
+    "after": {
+      "dm_only": 61,
+      "full": 328,
+      "partial": 110,
+      "total": 499
+    },
+    "before": {
+      "dm_only": 61,
+      "full": 328,
+      "partial": 110,
+      "total": 499
+    },
+    "changed": false
+  },
+  "generic_production_blocks": [
+    {
+      "consumer_id": "spell_economy.character_version_slot_cas",
+      "production_loop_unlock_count": 15,
+      "scope": "all reviewed spells with explicit cast contract"
+    },
+    {
+      "consumer_id": "combat_engine.damage_heal",
+      "production_loop_unlock_count": 15,
+      "scope": "damage/healing spell runtime blocks"
+    },
+    {
+      "consumer_id": "combat_engine.feature_action",
+      "production_loop_unlock_count": 5,
+      "scope": "data-driven feature action blocks"
+    },
+    {
+      "consumer_id": "combat_engine.effect_turn_snapshot",
+      "production_loop_unlock_count": 1,
+      "scope": "duration and turn snapshot lifecycle"
+    },
+    {
+      "consumer_id": "rest_service.resource_recovery",
+      "production_loop_unlock_count": 1,
+      "scope": "short-rest resource and hit-die lifecycle"
+    }
+  ],
+  "layers": {
+    "compile_full": 100,
+    "production_runtime_full": 20,
+    "runtime_preview_full": 100
+  },
+  "partial_or_manual_policy": "compile-only or preview-only assets are never promoted to production_runtime_full; unresolved target, branch, choice, duration, summon and movement semantics remain review/manual",
+  "schema_version": "content-ir-runtime-level-audit-1"
+}

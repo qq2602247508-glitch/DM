@@ -1,0 +1,247 @@
+{
+  "all_required_checks_passed": true,
+  "edge_checks": {
+    "actor_cas_rejected": true,
+    "concentration_state_persisted": true,
+    "idempotency_replay": true,
+    "illegal_target_rejected": true,
+    "illegal_target_status": 409,
+    "resource_lack_rejected": true,
+    "rollback_restored_spell_slot": true,
+    "target_cas_rejected": true,
+    "upcast_production_loop": true,
+    "wrong_slot_rejected": true
+  },
+  "feature_results": [
+    {
+      "confirm_status": 200,
+      "pack_id": "tashas-cauldron-features",
+      "preview_status": 200,
+      "production_runtime_full": true,
+      "runtime_id": "content.tashas-cauldron.feature.armorer-defensive-field"
+    },
+    {
+      "confirm_status": 200,
+      "pack_id": "tashas-cauldron-features",
+      "preview_status": 200,
+      "production_runtime_full": true,
+      "runtime_id": "content.tashas-cauldron.feature.battle-smith-repair"
+    },
+    {
+      "confirm_status": 200,
+      "pack_id": "tashas-cauldron-features",
+      "preview_status": 200,
+      "production_runtime_full": true,
+      "runtime_id": "content.tashas-cauldron.feature.battle-smith-arcane-jolt-healing"
+    },
+    {
+      "confirm_status": 200,
+      "pack_id": "tashas-cauldron-features",
+      "preview_status": 200,
+      "production_runtime_full": true,
+      "runtime_id": "content.tashas-cauldron.feature.way-of-mercy-hand-healing"
+    },
+    {
+      "confirm_status": 200,
+      "pack_id": "tashas-cauldron-features",
+      "preview_status": 200,
+      "production_runtime_full": true,
+      "runtime_id": "content.tashas-cauldron.feature.alchemist-restorative-reagents"
+    }
+  ],
+  "feature_runtime_loop_count": 5,
+  "generic_consumers": [
+    {
+      "consumer_id": "spell_economy.character_version_slot_cas",
+      "production_loop_unlock_count": 15,
+      "scope": "all reviewed spells with explicit cast contract"
+    },
+    {
+      "consumer_id": "combat_engine.damage_heal",
+      "production_loop_unlock_count": 15,
+      "scope": "damage/healing spell runtime blocks"
+    },
+    {
+      "consumer_id": "combat_engine.feature_action",
+      "production_loop_unlock_count": 5,
+      "scope": "data-driven feature action blocks"
+    },
+    {
+      "consumer_id": "combat_engine.effect_turn_snapshot",
+      "production_loop_unlock_count": 1,
+      "scope": "duration and turn snapshot lifecycle"
+    },
+    {
+      "consumer_id": "rest_service.resource_recovery",
+      "production_loop_unlock_count": 1,
+      "scope": "short-rest resource and hit-die lifecycle"
+    }
+  ],
+  "lifecycle_checks": {
+    "duration_effect_persisted": true,
+    "rest_preview_confirmed": true,
+    "turn_advance_rebuilt_snapshot": true
+  },
+  "production_runtime_full_count": 20,
+  "production_runtime_full_ids": [
+    "content.tashas-cauldron.feature.alchemist-restorative-reagents",
+    "content.tashas-cauldron.feature.armorer-defensive-field",
+    "content.tashas-cauldron.feature.battle-smith-arcane-jolt-healing",
+    "content.tashas-cauldron.feature.battle-smith-repair",
+    "content.tashas-cauldron.feature.way-of-mercy-hand-healing",
+    "core-phb-2024:spell:123b43e9b05ce7fba2082a58",
+    "core-phb-2024:spell:164d8c70fd178079e42ccf96",
+    "core-phb-2024:spell:2419763de938eced38e0edfe",
+    "core-phb-2024:spell:2f2db543c7dba25da279c2c7",
+    "core-phb-2024:spell:4e49c4e1da629e556822ec31",
+    "core-phb-2024:spell:5c53f2dac3fb8ad9d8fdcfe8",
+    "core-phb-2024:spell:5c9343d3d0427ba1e4ff94ab",
+    "core-phb-2024:spell:612dca85420231596439ad2e",
+    "core-phb-2024:spell:744fe2708878678bdbb370fe",
+    "core-phb-2024:spell:77f22a53a0f6c79c7f7a5e70",
+    "tashas-cauldron:spell:7947fb03852a7bc77d69e3ac",
+    "xanathars-guide:spell:483e4b174da746100d0f873b",
+    "xanathars-guide:spell:647e44fd3b93b2e4dafd2323",
+    "xanathars-guide:spell:6f0ba0ecbcd8a90021afd407",
+    "xanathars-guide:spell:868117360db3137344a7e04d"
+  ],
+  "schema_version": "content-ir-production-runtime-validation-II-1",
+  "spell_results": [
+    {
+      "confirm_status": 200,
+      "pack_id": "core-phb-2024",
+      "preview_status": 200,
+      "production_runtime_full": true,
+      "replay_already_applied": true,
+      "replay_status": 200,
+      "runtime_id": "core-phb-2024:spell:123b43e9b05ce7fba2082a58"
+    },
+    {
+      "confirm_status": 200,
+      "pack_id": "core-phb-2024",
+      "preview_status": 200,
+      "production_runtime_full": true,
+      "replay_already_applied": true,
+      "replay_status": 200,
+      "runtime_id": "core-phb-2024:spell:164d8c70fd178079e42ccf96"
+    },
+    {
+      "confirm_status": 200,
+      "pack_id": "core-phb-2024",
+      "preview_status": 200,
+      "production_runtime_full": true,
+      "replay_already_applied": true,
+      "replay_status": 200,
+      "runtime_id": "core-phb-2024:spell:2419763de938eced38e0edfe"
+    },
+    {
+      "confirm_status": 200,
+      "pack_id": "core-phb-2024",
+      "preview_status": 200,
+      "production_runtime_full": true,
+      "replay_already_applied": true,
+      "replay_status": 200,
+      "runtime_id": "core-phb-2024:spell:2f2db543c7dba25da279c2c7"
+    },
+    {
+      "confirm_status": 200,
+      "pack_id": "core-phb-2024",
+      "preview_status": 200,
+      "production_runtime_full": true,
+      "replay_already_applied": true,
+      "replay_status": 200,
+      "runtime_id": "core-phb-2024:spell:4e49c4e1da629e556822ec31"
+    },
+    {
+      "confirm_status": 200,
+      "pack_id": "core-phb-2024",
+      "preview_status": 200,
+      "production_runtime_full": true,
+      "replay_already_applied": true,
+      "replay_status": 200,
+      "runtime_id": "core-phb-2024:spell:5c53f2dac3fb8ad9d8fdcfe8"
+    },
+    {
+      "confirm_status": 200,
+      "pack_id": "core-phb-2024",
+      "preview_status": 200,
+      "production_runtime_full": true,
+      "replay_already_applied": true,
+      "replay_status": 200,
+      "runtime_id": "core-phb-2024:spell:5c9343d3d0427ba1e4ff94ab"
+    },
+    {
+      "confirm_status": 200,
+      "pack_id": "core-phb-2024",
+      "preview_status": 200,
+      "production_runtime_full": true,
+      "replay_already_applied": true,
+      "replay_status": 200,
+      "runtime_id": "core-phb-2024:spell:612dca85420231596439ad2e"
+    },
+    {
+      "confirm_status": 200,
+      "pack_id": "core-phb-2024",
+      "preview_status": 200,
+      "production_runtime_full": true,
+      "replay_already_applied": true,
+      "replay_status": 200,
+      "runtime_id": "core-phb-2024:spell:744fe2708878678bdbb370fe"
+    },
+    {
+      "confirm_status": 200,
+      "pack_id": "core-phb-2024",
+      "preview_status": 200,
+      "production_runtime_full": true,
+      "replay_already_applied": true,
+      "replay_status": 200,
+      "runtime_id": "core-phb-2024:spell:77f22a53a0f6c79c7f7a5e70"
+    },
+    {
+      "confirm_status": 200,
+      "pack_id": "xanathars-guide",
+      "preview_status": 200,
+      "production_runtime_full": true,
+      "replay_already_applied": true,
+      "replay_status": 200,
+      "runtime_id": "xanathars-guide:spell:483e4b174da746100d0f873b"
+    },
+    {
+      "confirm_status": 200,
+      "pack_id": "xanathars-guide",
+      "preview_status": 200,
+      "production_runtime_full": true,
+      "replay_already_applied": true,
+      "replay_status": 200,
+      "runtime_id": "xanathars-guide:spell:647e44fd3b93b2e4dafd2323"
+    },
+    {
+      "confirm_status": 200,
+      "pack_id": "xanathars-guide",
+      "preview_status": 200,
+      "production_runtime_full": true,
+      "replay_already_applied": true,
+      "replay_status": 200,
+      "runtime_id": "xanathars-guide:spell:6f0ba0ecbcd8a90021afd407"
+    },
+    {
+      "confirm_status": 200,
+      "pack_id": "xanathars-guide",
+      "preview_status": 200,
+      "production_runtime_full": true,
+      "replay_already_applied": true,
+      "replay_status": 200,
+      "runtime_id": "xanathars-guide:spell:868117360db3137344a7e04d"
+    },
+    {
+      "confirm_status": 200,
+      "pack_id": "tashas-cauldron",
+      "preview_status": 200,
+      "production_runtime_full": true,
+      "replay_already_applied": true,
+      "replay_status": 200,
+      "runtime_id": "tashas-cauldron:spell:7947fb03852a7bc77d69e3ac"
+    }
+  ],
+  "spell_runtime_loop_count": 15
+}

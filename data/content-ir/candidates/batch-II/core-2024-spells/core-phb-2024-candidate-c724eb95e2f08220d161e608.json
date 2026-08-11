@@ -1,0 +1,68 @@
+{
+  "candidate_clauses": [
+    {
+      "required": true,
+      "type": "concentration"
+    }
+  ],
+  "candidate_id": "core-phb-2024:candidate:c724eb95e2f08220d161e608",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "动作",
+    "classes": [
+      "吟游诗人",
+      "牧师",
+      "魔契师"
+    ],
+    "components": "V、S、M（一滴血）",
+    "concentration": true,
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "专注，至多1分钟",
+    "level": 1,
+    "range": "30尺",
+    "ritual": false,
+    "save": "魅力豁免",
+    "target_disposition": "creature",
+    "upcast_text": "升环施法。 使用的法术位每比一环高一环，你就可以额外选择一个生物作为目标。"
+  },
+  "exact_fields": {
+    "concentration": true
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "灾祸术",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "source_path": "玩家手册2024/法术详述/1环.htm",
+    "source_text": "#### 灾祸术｜Bane\n\n*一环 惑控（吟游诗人、牧师、魔契师）*\n**施法时间：**动作\n**施法距离：**30尺\n**法术成分：**V、S、M（一滴血）\n**持续时间：**专注，至多1分钟\n你选择施法距离内至多三个你可见的生物，迫使其分别进行一次魅力豁免。在法术终止前，豁免失败于此次魅力豁免的目标进行的每次攻击检定与豁免检定都必须承受1d4的减值。\n**升环施法。**使用的法术位每比一环高一环，你就可以额外选择一个生物作为目标。"
+  },
+  "source_fingerprint": "fd373d24aafae214d2e0b69a63c316321d5fe5f9c1360f76450740ffdd9c575a",
+  "source_path": "玩家手册2024/法术详述/1环.htm",
+  "source_record_id": "c724eb95e2f08220d161e608",
+  "spell_id": "c724eb95e2f08220d161e608",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "concentration"
+    ],
+    "template_fingerprint": "c6cf559b317883e1043d55b34f4a36da44766b6d3a4828662a90474ca1486880",
+    "template_id": "spell.shape.005"
+  },
+  "uncertain_fields": {}
+}

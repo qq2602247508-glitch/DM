@@ -1,0 +1,68 @@
+{
+  "candidate_clauses": [
+    {
+      "required": true,
+      "type": "concentration"
+    }
+  ],
+  "candidate_id": "xanathars-guide:candidate:63069d39418cec22fd8266dd",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "1 动作",
+    "classes": [
+      "吟游诗人",
+      "术士",
+      "魔契师",
+      "法师"
+    ],
+    "components": "V、S",
+    "concentration": true,
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "专注，至多 1 \n分钟",
+    "level": 3,
+    "range": "120 尺",
+    "ritual": false,
+    "save": "智力豁免",
+    "target_disposition": "enemy"
+  },
+  "exact_fields": {
+    "concentration": true
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "举目皆敌",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "source_path": "珊娜萨的万事指南/法术/法术详述/3环.html",
+    "source_text": "#### 举目皆敌｜Enemies Abound\n\n*三环 惑控（吟游诗人、术士、魔契师、法师）*\n**施法时间：**1 动作\n**施法距离：**120 尺\n**法术成分：**V、S\n**持续时间：**专注，至多 1\n分钟\n你接触一个可见生物的思想并迫使它进行一次智力豁免检定。免疫恐慌的生物自动通过此豁免。若豁免失败，目标失去从敌人中辨别友伴的能力，将所有可见的生物识别为敌人直到法术结束。每次目标受到伤害时它都可以重复进行此豁免，若成功将结束它对自己的效果。\n每当受影响的生物选择另一个生物作为目标时，它必在攻击、法术或其他可用能力的范围里，从所有可见目标中随机选择目标。如果一名敌人提供了借机攻击的机会给受术生物，生物必须进行攻击只要它有能力这么做。"
+  },
+  "source_fingerprint": "9d9de3e67d9793d44a689c343c81d683edb7fb1da526cdd25666b52a3023334c",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/3环.html",
+  "source_record_id": "63069d39418cec22fd8266dd",
+  "spell_id": "63069d39418cec22fd8266dd",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "concentration"
+    ],
+    "template_fingerprint": "c6cf559b317883e1043d55b34f4a36da44766b6d3a4828662a90474ca1486880",
+    "template_id": "spell.shape.005"
+  },
+  "uncertain_fields": {}
+}

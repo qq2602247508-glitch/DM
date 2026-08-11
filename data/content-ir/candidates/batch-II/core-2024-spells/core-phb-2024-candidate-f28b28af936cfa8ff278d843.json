@@ -1,0 +1,61 @@
+{
+  "candidate_clauses": [],
+  "candidate_id": "core-phb-2024:candidate:f28b28af936cfa8ff278d843",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "动作",
+    "classes": [
+      "吟游诗人",
+      "术士",
+      "魔契师",
+      "法师",
+      "奇械师"
+    ],
+    "components": "S、M（一把价值1+CP的你熟练的武器）",
+    "concentration": false,
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "立即",
+    "range": "自身",
+    "ritual": false,
+    "school": "预言"
+  },
+  "exact_fields": {},
+  "kind": "spell_candidate",
+  "missing_fields": [
+    "typed_clause_mapping"
+  ],
+  "name": "克敌先击",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target",
+    "typed_clause_mapping"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "source_path": "玩家手册2024/法术详述/0环.htm",
+    "source_text": "#### 克敌先击｜True Strike\n\n*预言 戏法（吟游诗人、术士、魔契师、法师、奇械师）*\n**施法时间：**动作\n**施法距离：**自身\n**法术成分：**S、M（一把价值1+CP的你熟练的武器）\n**持续时间：**立即\n你受到一瞬魔法洞见的指引，使用施展此法术时使用的那把武器发动一次攻击。此次攻击使用你的施法属性（而非力量属性或敏捷属性）进行攻击检定与伤害掷骰。此次攻击造成伤害时，你可以选择将其伤害类型改为光耀伤害，或是维持武器原本的伤害类型。\n**戏法强化。**到达特定等级后，无论你选择造成光耀伤害还是原本类型的伤害，本次攻击都会额外造成光耀伤害：5级（1d6）、11级（2d6）、17级（3d6）。\n（译注：根据术语汇编武器攻击条目，“使用武器发动的攻击”就是“武器攻击”（与“法术攻击”并不冲突）。）"
+  },
+  "source_fingerprint": "daedce9a5a76ff8950d306dc7916948558ef974e7e9eb0e7706a98bba418d056",
+  "source_path": "玩家手册2024/法术详述/0环.htm",
+  "source_record_id": "f28b28af936cfa8ff278d843",
+  "spell_id": "f28b28af936cfa8ff278d843",
+  "template_match": {
+    "confidence": "low",
+    "matched_shape": [],
+    "template_fingerprint": "c6cf559b317883e1043d55b34f4a36da44766b6d3a4828662a90474ca1486880",
+    "template_id": "spell.shape.005"
+  },
+  "uncertain_fields": {}
+}

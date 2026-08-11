@@ -1,0 +1,51 @@
+{
+  "candidate_clauses": [],
+  "candidate_id": "tashas-cauldron:candidate:92c8bd3c6a3cd622e2ec4559",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "feature",
+  "draft_fields": {
+    "source_text": "## 野火结社 Circle of Wildfire\n\n我没法跟你说自己有多少次将一切付之一炬然后从头来过。——塔莎\n\n野火结社的德鲁伊们知晓破坏有时是创造的先驱，就如森林大火促进之后的生长。\n这些德鲁伊们与具有破坏力与创造力的原初精魂连接在一起，使德鲁伊能够创造出可控的火焰，焚烧某样事物却又给予它者生命。\n\n**结社法术 Circle Spells**\n*第2级野火结社特性*\n你与野火灵魄——一位兼具创生和毁灭的原初存在——之间的神秘连接业已形成。当你在此职业到达特定等级时，你与灵魄的连接将使你习得一些特定法术，就如野火结社法术列表所示。\n一旦你习得这些法术中任意一个，你就会一直准备着它，且不计入你的每日准备法术上限。如果你学会一个不在德鲁伊法术列表中的法术，该法术对你来说视作德鲁伊法术。\n\n**野火结社法术Circle of Wildfire Spells**\n\n| 德鲁伊等级 | 法术 |\n| --- | --- |\n| 2nd | 燃烧之手buring hands，疗伤术cure wounds |\n| 3rd | 炽焰法球flaming sphere，灼热射线scorching ray |\n| 5th | 植物滋长plant growth，回生术revivify |\n| 7th | 生命灵光aura of life，火焰护盾fire shield |\n| 9th | 焰击术flame strike，群体疗伤术mass cure\n wounds |\n\n**召唤野火灵魄 Summon Wildfire Spirit**\n*第2级野火结社特性\n*你能召唤出与你灵魂连接的原初灵魄。以一个动作，你可以消耗一次荒野变形特性使用次数召唤出你的野火灵魄，而非变化为野兽形态。\n灵魄会出现在由你所选择的、距离你30尺范围内一处未被占据的可见空间内。灵魄出现时，每个灵魄10尺范围内的生物（除你之外）都必须通过一次对抗你法术豁免\nDC\n的敏捷豁免，豁免失败将受到2d6点火焰伤害。\n野火灵魄对你与你的同伴保持友善并遵从你的命令。在野火灵魄资料表中可以看到这只生物的游戏数据，其中几处采用了你的熟练加值（PB）。由你来决定灵魄的外形。一些灵魄是熊熊燃烧的枝条虬结而成的人形，而另一些则像是被火焰包裹的野兽。\n在战斗中，野火灵魄使用你的先攻，并且在你的回合后立即行动。它能自由移动和执行反应，但除非你以一个附赠动作命令它进行动作，否则它在回合中只能进行闪避动作。他可以执行下方写出的动作选项，或是其他的动作选项。如果你陷入失能状态，野火灵魄可以自行选择进行任何动作，而不仅仅是回避。\n野火灵魄持续存在\n1 小时。若其生命值降低至0、或你再次使用此特性召唤此灵魄、或你死亡时，它会提前消失。"
+  },
+  "exact_fields": {},
+  "feature_id": "tashas-cauldron:feature:92c8bd3c6a3cd622e2ec4559",
+  "kind": "feature_candidate",
+  "missing_fields": [
+    "typed_clause_mapping",
+    "operator",
+    "targeting",
+    "action_economy"
+  ],
+  "name": "野火结社（TCE）",
+  "required_review_fields": [
+    "source_name",
+    "class_name",
+    "level",
+    "clauses",
+    "operator",
+    "targeting"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "本书速查",
+  "source_evidence": {
+    "source_path": "塔莎的万事坩埚/玩家选项/职业/德鲁伊（TCE）/野火结社.html",
+    "source_text": "## 野火结社 Circle of Wildfire\n\n我没法跟你说自己有多少次将一切付之一炬然后从头来过。——塔莎\n\n野火结社的德鲁伊们知晓破坏有时是创造的先驱，就如森林大火促进之后的生长。\n这些德鲁伊们与具有破坏力与创造力的原初精魂连接在一起，使德鲁伊能够创造出可控的火焰，焚烧某样事物却又给予它者生命。\n\n**结社法术 Circle Spells**\n*第2级野火结社特性*\n你与野火灵魄——一位兼具创生和毁灭的原初存在——之间的神秘连接业已形成。当你在此职业到达特定等级时，你与灵魄的连接将使你习得一些特定法术，就如野火结社法术列表所示。\n一旦你习得这些法术中任意一个，你就会一直准备着它，且不计入你的每日准备法术上限。如果你学会一个不在德鲁伊法术列表中的法术，该法术对你来说视作德鲁伊法术。\n\n**野火结社法术Circle of Wildfire Spells**\n\n| 德鲁伊等级 | 法术 |\n| --- | --- |\n| 2nd | 燃烧之手buring hands，疗伤术cure wounds |\n| 3rd | 炽焰法球flaming sphere，灼热射线scorching ray |\n| 5th | 植物滋长plant growth，回生术revivify |\n| 7th | 生命灵光aura of life，火焰护盾fire shield |\n| 9th | 焰击术flame strike，群体疗伤术mass cure\n wounds |\n\n**召唤野火灵魄 Summon Wildfire Spirit**\n*第2级野火结社特性\n*你能召唤出与你灵魂连接的原初灵魄。以一个动作，你可以消耗一次荒野变形特性使用次数召唤出你的野火灵魄，而非变化为野兽形态。\n灵魄会出现在由你所选择的、距离你30尺范围内一处未被占据的可见空间内。灵魄出现时，每个灵魄10尺范围内的生物（除你之外）都必须通过一次对抗你法术豁免\nDC\n的敏捷豁免，豁免失败将受到2d6点火焰伤害。\n野火灵魄对你与你的同伴保持友善并遵从你的命令。在野火灵魄资料表中可以看到这只生物的游戏数据，其中几处采用了你的熟练加值（PB）。由你来决定灵魄的外形。一些灵魄是熊熊燃烧的枝条虬结而成的人形，而另一些则像是被火焰包裹的野兽。\n在战斗中，野火灵魄使用你的先攻，并且在你的回合后立即行动。它能自由移动和执行反应，但除非你以一个附赠动作命令它进行动作，否则它在回合中只能进行闪避动作。他可以执行下方写出的动作选项，或是其他的动作选项。如果你陷入失能状态，野火灵魄可以自行选择进行任何动作，而不仅仅是回避。\n野火灵魄持续存在\n1 小时。若其生命值降低至0、或你再次使用此特性召唤此灵魄、或你死亡时，它会提前消失。"
+  },
+  "source_fingerprint": "14c72f56da6ef321ad6f94b0b07d8a5f1bc493b4be12d214c12c4ffd5af323b0",
+  "source_path": "塔莎的万事坩埚/玩家选项/职业/德鲁伊（TCE）/野火结社.html",
+  "source_record_id": "92c8bd3c6a3cd622e2ec4559",
+  "template_match": {
+    "confidence": "low",
+    "matched_shape": [],
+    "template_fingerprint": "18edef49700b65610b9d8daa0c6bb2fdf33eeabe75bcd1bd6534471d4682b564",
+    "template_id": "feature.shape.001"
+  },
+  "uncertain_fields": {
+    "operator": "feature_semantics_require_review"
+  }
+}

@@ -1,0 +1,77 @@
+{
+  "candidate_clauses": [
+    {
+      "shape": "sphere",
+      "size_ft": 120,
+      "type": "area"
+    }
+  ],
+  "candidate_id": "xanathars-guide:candidate:3354757eafb1584a6e6f896c",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "area_shape": "sphere",
+    "area_size_ft": 120,
+    "casting_time": "1 分钟",
+    "classes": [
+      "法师",
+      "奇械师"
+    ],
+    "components": "V、S",
+    "concentration": false,
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "8 \n小时",
+    "level": 3,
+    "range": "触碰",
+    "ritual": false,
+    "school": "变化",
+    "target_disposition": "enemy",
+    "transformation": {
+      "form_ref": "dm_chosen_form",
+      "mode": "polymorph",
+      "requires_form_choice": true,
+      "reversible": true
+    },
+    "upcast_text": "升环施法。 当你使用四环或更高的法术位施放该法术时，使用的法术位每高一环，你可以额外活化两个物体。\n迷你仆役Tiny \n Servant 微型构装，无阵营 AC：15（天生护甲） HP：10（4d4） 速度：30尺，攀爬30尺 力量 4（-3） \n 敏捷 16（+3） 体质 10（+0） 智力 2（-4） 感知 10（+0） 魅力 1（-5） 伤害免疫：毒素，心灵 状态免疫：目盲，魅惑，耳聋，力竭，恐慌，麻痹，石化，中毒 感官：盲视 60 \n 尺（对超过半径的区域目盲），被动察觉 10 语言：- 动作Actions 猛击Slam。 近战武器攻击：命中+5，触及 \n 5 尺，单一目标。命中：5(1d4+3)点钝击伤害"
+  },
+  "exact_fields": {
+    "area_shape": "sphere",
+    "area_size_ft": 120
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "迷你仆役",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "source_path": "珊娜萨的万事指南/法术/法术详述/3环.html",
+    "source_text": "#### 迷你仆役｜Tiny Servant\n\n*三环 变化（法师、奇械师）*\n**施法时间：**1 分钟\n**施法距离：**触碰\n**法术成分：**V、S\n**持续时间：**8\n小时\n你接触一个未附着于其他物体或表面之上，也未被其他生物所携带的微型非魔法物体。目标将被活化并长出细小的胳膊和腿脚，并成为处于你控制之下的生物，直到法术结束或者其HP降至0时提前结束。参考以下版块得知它的数据。\n以一个附赠动作，你可以对这个生物发出精神命令，只要它在你周围 120\n尺范围内（如果你通过这个法术控制了多个生物，你可以同时命令它们，对其中的每一个发布同样的指令）。你决定这个生物在下一回合自愿采取的动作和自愿进行的移动，或者你也可以发布一个简单的、综合的命令，例如去拿起钥匙、站着放哨、堆叠书本。如果你不发布命令，仆役除了保护自己对抗敌对生物以外什么也不会做。一旦得到一个命令，仆役会继续服从命令行动直到工作完成。\n当这个生物的生命值降低至\n0\n点，它恢复至原来的形态，并且任何剩余的伤害会由那个形态承担。\n**升环施法。**当你使用四环或更高的法术位施放该法术时，使用的法术位每高一环，你可以额外活化两个物体。\n\n> **迷你仆役Tiny\n>  Servant**\n> *微型构装，无阵营*\n> AC：15（天生护甲）\n> HP：10（4d4）\n> 速度：30尺，攀爬30尺\n> 力量 4（-3）\n>  敏捷 16（+3） 体质 10（+0）\n> 智力 2（-4） 感知 10（+0） 魅力 1（-5）\n> 伤害免疫：毒素，心灵\n> 状态免疫：目盲，魅惑，耳聋，力竭，恐慌，麻痹，石化，中毒\n> 感官：盲视 60\n>  尺（对超过半径的区域目盲），被动察觉 10\n> 语言：-\n>\n>\n>\n> **动作Actions**\n> **猛击Slam。**近战武器攻击：命中+5，触及\n>  5 尺，单一目标。命中：5(1d4+3)点钝击伤害"
+  },
+  "source_fingerprint": "facc4f4564892eb7f0696e981801ff6eca79ad1d1554cc72e3fc091b57820aab",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/3环.html",
+  "source_record_id": "3354757eafb1584a6e6f896c",
+  "spell_id": "3354757eafb1584a6e6f896c",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "area"
+    ],
+    "template_fingerprint": "af295bb9885e22721b4b0ce62f8bf849a6eba5ca49ce60a0868f55c840a15edb",
+    "template_id": "spell.shape.009"
+  },
+  "uncertain_fields": {}
+}

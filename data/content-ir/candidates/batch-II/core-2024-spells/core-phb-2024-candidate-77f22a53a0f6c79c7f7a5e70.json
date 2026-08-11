@@ -1,0 +1,76 @@
+{
+  "candidate_clauses": [
+    {
+      "save_ability": "智力",
+      "type": "saving_throw"
+    },
+    {
+      "damage_type": "心灵",
+      "expression": "1d6",
+      "on_failure": "full",
+      "type": "damage"
+    }
+  ],
+  "candidate_id": "core-phb-2024:candidate:77f22a53a0f6c79c7f7a5e70",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "动作",
+    "classes": [
+      "术士",
+      "魔契师",
+      "法师"
+    ],
+    "components": "V",
+    "concentration": false,
+    "damage_expression": "1d6",
+    "damage_type": "心灵",
+    "duration": "1轮",
+    "range": "60尺",
+    "resolution_kind": "damage",
+    "ritual": false,
+    "save": "智力豁免",
+    "target_disposition": "creature"
+  },
+  "exact_fields": {
+    "damage_expression": "1d6",
+    "damage_type": "心灵",
+    "save": "智力豁免"
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "心灵之楔",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "source_path": "玩家手册2024/法术详述/0环.htm",
+    "source_text": "#### 心灵之楔｜Mind Sliver\n\n*惑控 戏法（术士、魔契师、法师）*\n**施法时间：**动作\n**施法距离：**60尺\n**法术成分：**V\n**持续时间：**1轮\n指定施法距离内一个你可见的生物，你试图暂时刺入目标的心灵。目标必须通过一次智力豁免\n。豁免失败将受到1d6点心灵伤害，并且其在你的下回合结束前，进行的下一次豁免检定将获得1d4减值。\n**戏法强化。**到达特定等级后，此戏法的伤害将增加1d6：5级（2d6）、11级（3d6）、17级（4d6）。"
+  },
+  "source_fingerprint": "85e89b9045e8b85915e1001450d60cab96613746ec269bee4abb9df93a34ca45",
+  "source_path": "玩家手册2024/法术详述/0环.htm",
+  "source_record_id": "77f22a53a0f6c79c7f7a5e70",
+  "spell_id": "77f22a53a0f6c79c7f7a5e70",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "saving_throw",
+      "damage"
+    ],
+    "template_fingerprint": "3c42f68fb11991f0b3609f5d664da8f01323dbde293a556e901df3dc4b8daf72",
+    "template_id": "spell.shape.008"
+  },
+  "uncertain_fields": {}
+}

@@ -1,0 +1,68 @@
+{
+  "candidate_clauses": [
+    {
+      "required": true,
+      "type": "concentration"
+    }
+  ],
+  "candidate_id": "core-phb-2024:candidate:44f159592237cbcae043d68d",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "动作",
+    "classes": [
+      "吟游诗人",
+      "术士",
+      "法师"
+    ],
+    "components": "V、S、M（1铜币）",
+    "concentration": true,
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "专注，至多1分钟",
+    "level": 2,
+    "range": "自身",
+    "ritual": false,
+    "save": "感知豁免",
+    "school": "预言",
+    "target_disposition": "creature"
+  },
+  "exact_fields": {
+    "concentration": true
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "侦测思想",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "source_path": "玩家手册2024/法术详述/2环.htm",
+    "source_text": "#### 侦测思想｜Detect Thoughts\n\n*二环 预言（吟游诗人、术士、法师）*\n**施法时间：**动作\n**施法距离：**自身\n**法术成分：**V、S、M（1铜币）\n**持续时间：**专注，至多1分钟\n你激活下述效应之一。直到法术结束为止，你可以在你随后的回合用一个魔法动作以激活下述任意效应之一。\n\n- **感知思想Sense\n Thoughts。**你感知距你30尺内，知晓语言或能够心灵感应的思想的存在。你并不会阅读这些思想，但你知道这里存在一名有理智的生物。\n此法术会被1尺厚的岩石、泥土或木头，1寸厚的金属，或薄薄一层铅阻隔。**阅读思想Read\n Thoughts。**选择一名距你30尺内的可见生物，或一名距你30尺内被**感知思想**侦测到的生物。你了解到此时目标最关心的事情。如果目标不知晓任何语言也不能够进行心灵感应，则你不能得到任何信息。\n在你的下一回合，用一个魔法动作，你可以尝试深入目标的心灵。如果你选择这么做，目标进行一次感知豁免。豁免失败，则你了解到他的逻辑推理、情绪状态以及他头脑中的一些大事（比如忧虑、挚爱和仇恨的事物）。豁免成功，法术终止。无论豁免是否成功，目标都会知道你正在窥探其心灵，且直到你的注意力从它的心灵上移开为止，目标均可以在其回合内使用动作进行一次智力（奥秘）检定，对抗你的法术豁免DC，目标胜出对抗时，法术终止。"
+  },
+  "source_fingerprint": "728015f7ff463859d9851b03bb7a49b006f5eae5ae0ff77cdec77240e3b3c832",
+  "source_path": "玩家手册2024/法术详述/2环.htm",
+  "source_record_id": "44f159592237cbcae043d68d",
+  "spell_id": "44f159592237cbcae043d68d",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "concentration"
+    ],
+    "template_fingerprint": "c6cf559b317883e1043d55b34f4a36da44766b6d3a4828662a90474ca1486880",
+    "template_id": "spell.shape.005"
+  },
+  "uncertain_fields": {}
+}

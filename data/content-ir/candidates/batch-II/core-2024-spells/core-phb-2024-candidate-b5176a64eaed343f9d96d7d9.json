@@ -1,0 +1,77 @@
+{
+  "candidate_clauses": [],
+  "candidate_id": "core-phb-2024:candidate:b5176a64eaed343f9d96d7d9",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "area_shape": null,
+    "area_size_ft": null,
+    "casting_time": "动作",
+    "classes": [
+      "吟游诗人",
+      "术士",
+      "魔契师",
+      "法师",
+      "奇械师"
+    ],
+    "components": "V、S",
+    "concentration": false,
+    "conditions": null,
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "1分钟",
+    "half_damage_on_save": null,
+    "healing": null,
+    "max_targets": null,
+    "movement": null,
+    "range": "30尺",
+    "reaction": null,
+    "resolution_kind": "narrative",
+    "ritual": false,
+    "save": null,
+    "school": "咒法",
+    "summon": {
+      "controller": "caster",
+      "count": 1,
+      "creature_ref": "法师之手（幽灵手）",
+      "enters_combat": false
+    }
+  },
+  "exact_fields": {},
+  "kind": "spell_candidate",
+  "missing_fields": [
+    "typed_clause_mapping"
+  ],
+  "name": "法师之手",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target",
+    "typed_clause_mapping"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "source_path": "玩家手册2024/法术详述/0环.htm",
+    "source_text": "#### 法师之手｜Mage Hand\n\n*咒法 戏法（吟游诗人、术士、魔契师、法师、奇械师）*\n**施法时间：**动作\n**施法距离：**30尺\n**法术成分：**V、S\n**持续时间：**1分钟\n一只漂浮的幽灵手出现在施法距离内你指定的一点。幽灵手持续存在至法术终止。如果幽灵手与你之间的距离超过30尺，则幽灵手将消失不见。若你再次施展了此法术，现存的幽灵手也将提前消失。\n你可以在施展该法术时使用幽灵手实施一个行为：你可以操控一个物件、打开一扇未上锁的门或容器、将一件物品放入或取出一个打开的容器、或是将小瓶中的内容物倾倒出来。\n在后续的回合中，你可以用魔法动作控制幽灵手再次实施上述行为之一。而作为那次动作的一部分，你还可以令幽灵手移动至多30尺。\n该幽灵手不能攻击，也不能激活魔法物品或承载超过10磅重的物质。"
+  },
+  "source_fingerprint": "0fff0b9517bc66431a377637357ee8d4095c4dd22534756226c06bf40544e457",
+  "source_path": "玩家手册2024/法术详述/0环.htm",
+  "source_record_id": "b5176a64eaed343f9d96d7d9",
+  "spell_id": "b5176a64eaed343f9d96d7d9",
+  "template_match": {
+    "confidence": "low",
+    "matched_shape": [],
+    "template_fingerprint": "c6cf559b317883e1043d55b34f4a36da44766b6d3a4828662a90474ca1486880",
+    "template_id": "spell.shape.005"
+  },
+  "uncertain_fields": {}
+}

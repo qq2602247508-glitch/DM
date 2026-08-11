@@ -1,0 +1,65 @@
+{
+  "candidate_clauses": [],
+  "candidate_id": "xanathars-guide:candidate:f3ad1096aa0203a2cc782bd5",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "10 分钟",
+    "classes": [
+      "德鲁伊"
+    ],
+    "components": "V、S、M（一个在满月之光下以黄金镰刀收割的槲寄生，作为该法术的耗材）",
+    "concentration": false,
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "24 \n小时",
+    "level": 6,
+    "range": "触碰",
+    "ritual": false,
+    "school": "防护",
+    "target_disposition": "creature",
+    "transformation": {
+      "form_ref": "dm_chosen_form",
+      "mode": "polymorph",
+      "requires_form_choice": true,
+      "reversible": true
+    }
+  },
+  "exact_fields": {},
+  "kind": "spell_candidate",
+  "missing_fields": [
+    "typed_clause_mapping"
+  ],
+  "name": "德鲁伊林地",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target",
+    "typed_clause_mapping"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "source_path": "珊娜萨的万事指南/法术/法术详述/6环.html",
+    "source_text": "#### 德鲁伊林地｜Druid Grove\n\n*六环 防护（德鲁伊）*\n**施法时间：**10 分钟\n**施法距离：**触碰\n**法术成分：**V、S、M（一个在满月之光下以黄金镰刀收割的槲寄生，作为该法术的耗材）\n**持续时间：**24\n小时\n你呼唤自然之灵来守护一块户外区域或者是地底。这片区域最小为边长 30 尺的立方体，最大则可达边长 90\n尺的立方体。建筑物和其他构造物会被排除在受影响区域外。如果你在一年内每天对同一区域施展这个法术，法术将持续到被解除。\n法术将在区域内产生如下效果。当你施展这个法术时，你可以指定生物作为友伴免疫这些效果。你也可以指定一个口令，大声说出口令的人也同样免疫这些效果。\n整个被保护的区域都辐射着魔法。一道在区域内施展的解除魔法法术若成功，将只移除以下效果之一，而非整块区域。法术的施法者可以选择一个效果结束。只有当所有效果结束时法术才会被解除。\n\n> **重雾Solid Fog。**你可以在地面上分布厚雾填充任意数量的 5\n>  尺方格，使其处于重度遮蔽之下。雾气高达10尺。在穿过雾气时每移动 1 尺就要花费额外 2\n>  尺的移动力。在免疫这个效果的生物眼中，雾气什么也不会掩盖，并且看起来像是漂浮在空气中的绿色光点。\n>\n>\n>\n> **纠缠灌木Grasping Undergrowth。**你可以在没有被填充雾气的地面上分布纠缠的藤蔓和杂草填充任意数量的\n>  5 尺方格，如同它们受到了纠缠术的影响。对免疫这个效果的生物而言这些野草和藤蔓都是柔软的，甚至可以重塑形态成为临时的座椅和床铺。\n>\n>\n>\n> **林地守卫Grove Guardians。**你可以活化区域内最多四棵树木，使它们从地面上拔根而起。这些树木与怪物图鉴中的\n>  启蒙树木Awakened tree\n>  有相同的数据，除了它们不会说话，并且在它们的表皮上覆盖着德鲁伊符记。如果有任何不免疫这个效果的生物进入被保护的区域，林地守卫会与它们战斗直到入侵者被赶走或被杀死。林地守卫也遵从你在这个区域内发布的口头命令（无需你的动作）。如果你没有给它们命令也没有入侵者，林地守卫不会行动。林地守卫不能从被保护的区域离开。在法术结束时，驱动它们的魔法也会消失，它们会重新生根（如果可能的话）。\n>\n>\n>\n> **额外法术效果Additional Spell\n> Effect。**你可以从以下魔法效果中选择其一放置在被保护的区域。\n>\n>\n>\n> - 在你选择的两个位置布置持续的*造风术gust of wind*效果。在你选择的一个位置布置*荆棘丛生spike growth*效果。在你选择的两个位置布置*风墙术wall of wind*效果。\n>\n>\n>\n> 对免疫这个效果的生物而言，风是带着芳香的微风，而布置荆棘丛生的区域是无害的。"
+  },
+  "source_fingerprint": "b74b765e8e1ce6ad74fc28a29153c6a990f4c6e9b7bb0cdc1feb532170c1bc14",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/6环.html",
+  "source_record_id": "f3ad1096aa0203a2cc782bd5",
+  "spell_id": "f3ad1096aa0203a2cc782bd5",
+  "template_match": {
+    "confidence": "low",
+    "matched_shape": [],
+    "template_fingerprint": "c6cf559b317883e1043d55b34f4a36da44766b6d3a4828662a90474ca1486880",
+    "template_id": "spell.shape.005"
+  },
+  "uncertain_fields": {}
+}

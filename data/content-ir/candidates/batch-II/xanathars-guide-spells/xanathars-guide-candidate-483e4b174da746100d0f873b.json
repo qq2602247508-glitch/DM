@@ -1,0 +1,88 @@
+{
+  "candidate_clauses": [
+    {
+      "save_ability": "敏捷",
+      "type": "saving_throw"
+    },
+    {
+      "damage_type": "钝击",
+      "expression": "1d6",
+      "on_failure": "full",
+      "type": "damage"
+    },
+    {
+      "increments": "1d",
+      "per_slot": 1,
+      "type": "upcast"
+    }
+  ],
+  "candidate_id": "xanathars-guide:candidate:483e4b174da746100d0f873b",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "1 动作",
+    "classes": [
+      "吟游诗人",
+      "德鲁伊",
+      "术士",
+      "法师"
+    ],
+    "components": "V、S",
+    "concentration": false,
+    "damage_expression": "1d6",
+    "damage_type": "钝击",
+    "duration": "立即",
+    "level": 1,
+    "range": "10 \n尺",
+    "resolution_kind": "damage",
+    "ritual": false,
+    "save": "敏捷豁免",
+    "school": "塑能",
+    "target_disposition": "creature",
+    "upcast_damage_dice": 1,
+    "upcast_text": "升环施法。 当你使用二环或更高的法术位施放该法术时，使用的法术位每高一环，伤害便增加 1d6。"
+  },
+  "exact_fields": {
+    "damage_expression": "1d6",
+    "damage_type": "钝击",
+    "save": "敏捷豁免",
+    "upcast": 1
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "地颤",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "source_path": "珊娜萨的万事指南/法术/法术详述/1环.html",
+    "source_text": "#### 地颤｜Earth Tremor\n\n*一环 塑能（吟游诗人、德鲁伊、术士、法师）*\n**施法时间：**1 动作\n**施法距离：**10\n尺\n**法术成分：**V、S\n**持续时间：**立即\n你在施法距离内引发地面颤动。处于该区域，除你之外的其他生物必须进行一次敏捷豁免检定。若检定失败，该生物受到\n1d6 点钝击伤害并倒地。若区域的地表为松软的土壤或石头，其在被清理之前成为困难地形。每 5 尺直径的部分都需要至少 1\n分钟来手动清理。\n**升环施法。**当你使用二环或更高的法术位施放该法术时，使用的法术位每高一环，伤害便增加 1d6。"
+  },
+  "source_fingerprint": "fb4ddcdbc2be19d027734b69335bb7d3f2d9b95cec8e6e90cf4578977cfd8f05",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/1环.html",
+  "source_record_id": "483e4b174da746100d0f873b",
+  "spell_id": "483e4b174da746100d0f873b",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "saving_throw",
+      "damage",
+      "upcast"
+    ],
+    "template_fingerprint": "3c42f68fb11991f0b3609f5d664da8f01323dbde293a556e901df3dc4b8daf72",
+    "template_id": "spell.shape.008"
+  },
+  "uncertain_fields": {}
+}

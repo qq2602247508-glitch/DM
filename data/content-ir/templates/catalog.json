@@ -1,0 +1,1011 @@
+{
+  "catalog_fingerprint": "7dd03f9bd5d532956076c724a98d275d06114d4afeadeb48b39ee4a0aaa241a5",
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "schema_version": "content-ir-template-catalog-1",
+  "template_count": 12,
+  "templates": [
+    {
+      "capability_ids": [
+        "modifier.passive",
+        "resource.lifecycle.consume"
+      ],
+      "clause_shape": [
+        "consume_resource",
+        "add_modifier"
+      ],
+      "content_kind": "feature",
+      "forbidden_inference_fields": [
+        "operator",
+        "target_semantics",
+        "action_economy",
+        "resource_costs",
+        "complex_duration_triggers",
+        "summon_control",
+        "choice_values",
+        "complex_movement",
+        "attack_or_save_branch"
+      ],
+      "materializer_ids": [
+        "modifier.passive",
+        "resource.lifecycle.consume"
+      ],
+      "optional_fields": {
+        "add_modifier": [],
+        "consume_resource": []
+      },
+      "production_consumers": [
+        "advancement_service",
+        "combat_engine.feature_action",
+        "rest_service"
+      ],
+      "required_fields": {
+        "add_modifier": [
+          "applies_when",
+          "id",
+          "operation",
+          "scope",
+          "stat",
+          "value_source"
+        ],
+        "consume_resource": [
+          "amount",
+          "operation",
+          "resource_key"
+        ]
+      },
+      "runtime_requirements": [
+        "source_evidence",
+        "reviewed_typed_ir",
+        "byte_identical_compile",
+        "character_or_combatant",
+        "actor_version_cas",
+        "idempotency_key"
+      ],
+      "schema_version": "content-ir-template-1",
+      "source_examples": [
+        "12139219bf7e575f9cde019c",
+        "12139219bf7e575f9cde019c",
+        "12139219bf7e575f9cde019c"
+      ],
+      "template_fingerprint": "18edef49700b65610b9d8daa0c6bb2fdf33eeabe75bcd1bd6534471d4682b564",
+      "template_id": "feature.shape.001",
+      "validation_rules": [
+        "all required typed fields must be explicit or reviewed",
+        "source_fingerprint and template_fingerprint must remain stable",
+        "generated_candidate cannot be compile_full",
+        "production_runtime_full requires production evidence"
+      ]
+    },
+    {
+      "capability_ids": [
+        "advancement.proficiency"
+      ],
+      "clause_shape": [
+        "grant_proficiency"
+      ],
+      "content_kind": "feature",
+      "forbidden_inference_fields": [
+        "operator",
+        "target_semantics",
+        "action_economy",
+        "resource_costs",
+        "complex_duration_triggers",
+        "summon_control",
+        "choice_values",
+        "complex_movement",
+        "attack_or_save_branch"
+      ],
+      "materializer_ids": [
+        "advancement.proficiency"
+      ],
+      "optional_fields": {
+        "grant_proficiency": []
+      },
+      "production_consumers": [
+        "advancement_service",
+        "combat_engine.feature_action",
+        "rest_service"
+      ],
+      "required_fields": {
+        "grant_proficiency": [
+          "asset_id",
+          "if_already_proficient",
+          "operation",
+          "proficiency_kind"
+        ]
+      },
+      "runtime_requirements": [
+        "source_evidence",
+        "reviewed_typed_ir",
+        "byte_identical_compile",
+        "character_or_combatant",
+        "actor_version_cas",
+        "idempotency_key"
+      ],
+      "schema_version": "content-ir-template-1",
+      "source_examples": [
+        "606d89f6e0ea3b2e0194f24c",
+        "dc4f2bf18baca6ec97d7d0bf",
+        "fbf8451f879a169fb17a01e9"
+      ],
+      "template_fingerprint": "f91e1c24535760e060554c819dd8bb127f6c5aa44ee1904c9ab5ec3770a4d71d",
+      "template_id": "feature.shape.002",
+      "validation_rules": [
+        "all required typed fields must be explicit or reviewed",
+        "source_fingerprint and template_fingerprint must remain stable",
+        "generated_candidate cannot be compile_full",
+        "production_runtime_full requires production evidence"
+      ]
+    },
+    {
+      "capability_ids": [
+        "advancement.proficiency"
+      ],
+      "clause_shape": [
+        "grant_proficiency",
+        "grant_proficiency"
+      ],
+      "content_kind": "feature",
+      "forbidden_inference_fields": [
+        "operator",
+        "target_semantics",
+        "action_economy",
+        "resource_costs",
+        "complex_duration_triggers",
+        "summon_control",
+        "choice_values",
+        "complex_movement",
+        "attack_or_save_branch"
+      ],
+      "materializer_ids": [
+        "advancement.proficiency"
+      ],
+      "optional_fields": {
+        "grant_proficiency": []
+      },
+      "production_consumers": [
+        "advancement_service",
+        "combat_engine.feature_action",
+        "rest_service"
+      ],
+      "required_fields": {
+        "grant_proficiency": [
+          "asset_id",
+          "if_already_proficient",
+          "operation",
+          "proficiency_kind"
+        ]
+      },
+      "runtime_requirements": [
+        "source_evidence",
+        "reviewed_typed_ir",
+        "byte_identical_compile",
+        "character_or_combatant",
+        "actor_version_cas",
+        "idempotency_key"
+      ],
+      "schema_version": "content-ir-template-1",
+      "source_examples": [
+        "cf864e58ba0d62c93110f5c6"
+      ],
+      "template_fingerprint": "7b62625c1ba88b431e8880e78bd4d16d8ea19e0de6b672ff22e9d40a303cca0b",
+      "template_id": "feature.shape.003",
+      "validation_rules": [
+        "all required typed fields must be explicit or reviewed",
+        "source_fingerprint and template_fingerprint must remain stable",
+        "generated_candidate cannot be compile_full",
+        "production_runtime_full requires production evidence"
+      ]
+    },
+    {
+      "capability_ids": [
+        "advancement.proficiency"
+      ],
+      "clause_shape": [
+        "grant_proficiency",
+        "grant_proficiency",
+        "grant_proficiency"
+      ],
+      "content_kind": "feature",
+      "forbidden_inference_fields": [
+        "operator",
+        "target_semantics",
+        "action_economy",
+        "resource_costs",
+        "complex_duration_triggers",
+        "summon_control",
+        "choice_values",
+        "complex_movement",
+        "attack_or_save_branch"
+      ],
+      "materializer_ids": [
+        "advancement.proficiency"
+      ],
+      "optional_fields": {
+        "grant_proficiency": []
+      },
+      "production_consumers": [
+        "advancement_service",
+        "combat_engine.feature_action",
+        "rest_service"
+      ],
+      "required_fields": {
+        "grant_proficiency": [
+          "asset_id",
+          "if_already_proficient",
+          "operation",
+          "proficiency_kind"
+        ]
+      },
+      "runtime_requirements": [
+        "source_evidence",
+        "reviewed_typed_ir",
+        "byte_identical_compile",
+        "character_or_combatant",
+        "actor_version_cas",
+        "idempotency_key"
+      ],
+      "schema_version": "content-ir-template-1",
+      "source_examples": [
+        "d4e98761778ae5c18fd66bdb"
+      ],
+      "template_fingerprint": "75f085fa9ca7ae7237c9cbf6ca3b0b5bc366e3872cf2f97edfcbfea3e92a2772",
+      "template_id": "feature.shape.004",
+      "validation_rules": [
+        "all required typed fields must be explicit or reviewed",
+        "source_fingerprint and template_fingerprint must remain stable",
+        "generated_candidate cannot be compile_full",
+        "production_runtime_full requires production evidence"
+      ]
+    },
+    {
+      "capability_ids": [
+        "spell.attack_roll.v1",
+        "spell.damage.v1",
+        "spell.movement.v1",
+        "spell.target_selection.v1",
+        "spell.upcast.v1"
+      ],
+      "clause_shape": [
+        "target_selection",
+        "attack_roll",
+        "damage",
+        "movement",
+        "upcast"
+      ],
+      "content_kind": "spell",
+      "forbidden_inference_fields": [
+        "operator",
+        "target_semantics",
+        "action_economy",
+        "resource_costs",
+        "complex_duration_triggers",
+        "summon_control",
+        "choice_values",
+        "complex_movement",
+        "attack_or_save_branch"
+      ],
+      "materializer_ids": [
+        "spell_runtime_materializer"
+      ],
+      "optional_fields": {
+        "attack_roll": [],
+        "damage": [
+          "target",
+          "timing",
+          "on_failure",
+          "on_success"
+        ],
+        "movement": [],
+        "target_selection": [],
+        "upcast": [
+          "text",
+          "applies_to"
+        ]
+      },
+      "production_consumers": [
+        "combat_engine.action",
+        "combat_engine.effect",
+        "spell_economy.cast"
+      ],
+      "required_fields": {
+        "attack_roll": [
+          "type",
+          "clause_id"
+        ],
+        "damage": [
+          "expression",
+          "damage_type"
+        ],
+        "movement": [
+          "type",
+          "clause_id"
+        ],
+        "target_selection": [
+          "type",
+          "clause_id"
+        ],
+        "upcast": [
+          "increments",
+          "per_slot"
+        ]
+      },
+      "runtime_requirements": [
+        "source_evidence",
+        "reviewed_typed_ir",
+        "byte_identical_compile",
+        "known_spell",
+        "character_version_cas",
+        "idempotency_key",
+        "combat_target_and_target_version",
+        "attack_roll_input"
+      ],
+      "schema_version": "content-ir-template-1",
+      "source_examples": [
+        "cdf3b288708b8204133e75fb"
+      ],
+      "template_fingerprint": "c6cf559b317883e1043d55b34f4a36da44766b6d3a4828662a90474ca1486880",
+      "template_id": "spell.shape.005",
+      "validation_rules": [
+        "all required typed fields must be explicit or reviewed",
+        "source_fingerprint and template_fingerprint must remain stable",
+        "generated_candidate cannot be compile_full",
+        "production_runtime_full requires production evidence"
+      ]
+    },
+    {
+      "capability_ids": [
+        "spell.attack_roll.v1",
+        "spell.damage.v1",
+        "spell.target_selection.v1",
+        "spell.upcast.v1"
+      ],
+      "clause_shape": [
+        "target_selection",
+        "attack_roll",
+        "damage",
+        "upcast"
+      ],
+      "content_kind": "spell",
+      "forbidden_inference_fields": [
+        "operator",
+        "target_semantics",
+        "action_economy",
+        "resource_costs",
+        "complex_duration_triggers",
+        "summon_control",
+        "choice_values",
+        "complex_movement",
+        "attack_or_save_branch"
+      ],
+      "materializer_ids": [
+        "spell_runtime_materializer"
+      ],
+      "optional_fields": {
+        "attack_roll": [],
+        "damage": [
+          "target",
+          "timing",
+          "on_failure",
+          "on_success"
+        ],
+        "target_selection": [],
+        "upcast": [
+          "text",
+          "applies_to"
+        ]
+      },
+      "production_consumers": [
+        "combat_engine.action",
+        "combat_engine.effect",
+        "spell_economy.cast"
+      ],
+      "required_fields": {
+        "attack_roll": [
+          "type",
+          "clause_id"
+        ],
+        "damage": [
+          "expression",
+          "damage_type"
+        ],
+        "target_selection": [
+          "type",
+          "clause_id"
+        ],
+        "upcast": [
+          "increments",
+          "per_slot"
+        ]
+      },
+      "runtime_requirements": [
+        "source_evidence",
+        "reviewed_typed_ir",
+        "byte_identical_compile",
+        "known_spell",
+        "character_version_cas",
+        "idempotency_key",
+        "combat_target_and_target_version",
+        "attack_roll_input"
+      ],
+      "schema_version": "content-ir-template-1",
+      "source_examples": [
+        "f3cf7ceffcf997ce3be9d482",
+        "80a94afd6beb396baec20560"
+      ],
+      "template_fingerprint": "c215a87b0ba97c015c316fa1d64a84ad1400c2ee72c66a49274c772a724babdc",
+      "template_id": "spell.shape.006",
+      "validation_rules": [
+        "all required typed fields must be explicit or reviewed",
+        "source_fingerprint and template_fingerprint must remain stable",
+        "generated_candidate cannot be compile_full",
+        "production_runtime_full requires production evidence"
+      ]
+    },
+    {
+      "capability_ids": [
+        "spell.healing.v1",
+        "spell.target_selection.v1",
+        "spell.upcast.v1"
+      ],
+      "clause_shape": [
+        "target_selection",
+        "healing",
+        "upcast"
+      ],
+      "content_kind": "spell",
+      "forbidden_inference_fields": [
+        "operator",
+        "target_semantics",
+        "action_economy",
+        "resource_costs",
+        "complex_duration_triggers",
+        "summon_control",
+        "choice_values",
+        "complex_movement",
+        "attack_or_save_branch"
+      ],
+      "materializer_ids": [
+        "spell_runtime_materializer"
+      ],
+      "optional_fields": {
+        "healing": [
+          "target",
+          "timing"
+        ],
+        "target_selection": [],
+        "upcast": [
+          "text",
+          "applies_to"
+        ]
+      },
+      "production_consumers": [
+        "combat_engine.action",
+        "combat_engine.effect",
+        "spell_economy.cast"
+      ],
+      "required_fields": {
+        "healing": [
+          "expression"
+        ],
+        "target_selection": [
+          "type",
+          "clause_id"
+        ],
+        "upcast": [
+          "increments",
+          "per_slot"
+        ]
+      },
+      "runtime_requirements": [
+        "source_evidence",
+        "reviewed_typed_ir",
+        "byte_identical_compile",
+        "known_spell",
+        "character_version_cas",
+        "idempotency_key",
+        "combat_target_and_target_version"
+      ],
+      "schema_version": "content-ir-template-1",
+      "source_examples": [
+        "123b43e9b05ce7fba2082a58",
+        "5dd11cb3fbb6d21ea53739f2"
+      ],
+      "template_fingerprint": "a5e98decf95ae64a83a7eb1eaac4f255fc3ab8f23dce3c36a4cc51211c431aec",
+      "template_id": "spell.shape.007",
+      "validation_rules": [
+        "all required typed fields must be explicit or reviewed",
+        "source_fingerprint and template_fingerprint must remain stable",
+        "generated_candidate cannot be compile_full",
+        "production_runtime_full requires production evidence"
+      ]
+    },
+    {
+      "capability_ids": [
+        "spell.apply_condition.v1",
+        "spell.damage.v1",
+        "spell.saving_throw.v1",
+        "spell.target_selection.v1",
+        "spell.upcast.v1"
+      ],
+      "clause_shape": [
+        "target_selection",
+        "saving_throw",
+        "damage",
+        "apply_condition",
+        "upcast"
+      ],
+      "content_kind": "spell",
+      "forbidden_inference_fields": [
+        "operator",
+        "target_semantics",
+        "action_economy",
+        "resource_costs",
+        "complex_duration_triggers",
+        "summon_control",
+        "choice_values",
+        "complex_movement",
+        "attack_or_save_branch"
+      ],
+      "materializer_ids": [
+        "spell_runtime_materializer"
+      ],
+      "optional_fields": {
+        "apply_condition": [
+          "duration",
+          "on_failure"
+        ],
+        "damage": [
+          "target",
+          "timing",
+          "on_failure",
+          "on_success"
+        ],
+        "saving_throw": [
+          "half_on_success",
+          "target",
+          "range"
+        ],
+        "target_selection": [],
+        "upcast": [
+          "text",
+          "applies_to"
+        ]
+      },
+      "production_consumers": [
+        "combat_engine.action",
+        "combat_engine.effect",
+        "spell_economy.cast"
+      ],
+      "required_fields": {
+        "apply_condition": [
+          "condition"
+        ],
+        "damage": [
+          "expression",
+          "damage_type"
+        ],
+        "saving_throw": [
+          "save_ability"
+        ],
+        "target_selection": [
+          "type",
+          "clause_id"
+        ],
+        "upcast": [
+          "increments",
+          "per_slot"
+        ]
+      },
+      "runtime_requirements": [
+        "source_evidence",
+        "reviewed_typed_ir",
+        "byte_identical_compile",
+        "known_spell",
+        "character_version_cas",
+        "idempotency_key",
+        "combat_target_and_target_version",
+        "saving_throw_input"
+      ],
+      "schema_version": "content-ir-template-1",
+      "source_examples": [
+        "49a5bacc752aa90fbbfbf316"
+      ],
+      "template_fingerprint": "3c42f68fb11991f0b3609f5d664da8f01323dbde293a556e901df3dc4b8daf72",
+      "template_id": "spell.shape.008",
+      "validation_rules": [
+        "all required typed fields must be explicit or reviewed",
+        "source_fingerprint and template_fingerprint must remain stable",
+        "generated_candidate cannot be compile_full",
+        "production_runtime_full requires production evidence"
+      ]
+    },
+    {
+      "capability_ids": [
+        "spell.apply_condition.v1",
+        "spell.area.v1",
+        "spell.damage.v1",
+        "spell.saving_throw.v1",
+        "spell.target_selection.v1",
+        "spell.upcast.v1"
+      ],
+      "clause_shape": [
+        "target_selection",
+        "saving_throw",
+        "damage",
+        "area",
+        "apply_condition",
+        "upcast"
+      ],
+      "content_kind": "spell",
+      "forbidden_inference_fields": [
+        "operator",
+        "target_semantics",
+        "action_economy",
+        "resource_costs",
+        "complex_duration_triggers",
+        "summon_control",
+        "choice_values",
+        "complex_movement",
+        "attack_or_save_branch"
+      ],
+      "materializer_ids": [
+        "spell_runtime_materializer"
+      ],
+      "optional_fields": {
+        "apply_condition": [
+          "duration",
+          "on_failure"
+        ],
+        "area": [
+          "origin",
+          "target",
+          "range"
+        ],
+        "damage": [
+          "target",
+          "timing",
+          "on_failure",
+          "on_success"
+        ],
+        "saving_throw": [
+          "half_on_success",
+          "target",
+          "range"
+        ],
+        "target_selection": [],
+        "upcast": [
+          "text",
+          "applies_to"
+        ]
+      },
+      "production_consumers": [
+        "combat_engine.action",
+        "combat_engine.effect",
+        "spell_economy.cast"
+      ],
+      "required_fields": {
+        "apply_condition": [
+          "condition"
+        ],
+        "area": [
+          "shape",
+          "size_ft"
+        ],
+        "damage": [
+          "expression",
+          "damage_type"
+        ],
+        "saving_throw": [
+          "save_ability"
+        ],
+        "target_selection": [
+          "type",
+          "clause_id"
+        ],
+        "upcast": [
+          "increments",
+          "per_slot"
+        ]
+      },
+      "runtime_requirements": [
+        "source_evidence",
+        "reviewed_typed_ir",
+        "byte_identical_compile",
+        "known_spell",
+        "character_version_cas",
+        "idempotency_key",
+        "combat_target_and_target_version",
+        "saving_throw_input"
+      ],
+      "schema_version": "content-ir-template-1",
+      "source_examples": [
+        "69822f264262f10066c621b3",
+        "483e4b174da746100d0f873b",
+        "bef5ef39397ea7aa8a0856ea",
+        "cadce71b1ba7a42354f785dc"
+      ],
+      "template_fingerprint": "af295bb9885e22721b4b0ce62f8bf849a6eba5ca49ce60a0868f55c840a15edb",
+      "template_id": "spell.shape.009",
+      "validation_rules": [
+        "all required typed fields must be explicit or reviewed",
+        "source_fingerprint and template_fingerprint must remain stable",
+        "generated_candidate cannot be compile_full",
+        "production_runtime_full requires production evidence"
+      ]
+    },
+    {
+      "capability_ids": [
+        "spell.area.v1",
+        "spell.damage.v1",
+        "spell.saving_throw.v1",
+        "spell.target_selection.v1",
+        "spell.upcast.v1"
+      ],
+      "clause_shape": [
+        "target_selection",
+        "saving_throw",
+        "damage",
+        "area",
+        "upcast"
+      ],
+      "content_kind": "spell",
+      "forbidden_inference_fields": [
+        "operator",
+        "target_semantics",
+        "action_economy",
+        "resource_costs",
+        "complex_duration_triggers",
+        "summon_control",
+        "choice_values",
+        "complex_movement",
+        "attack_or_save_branch"
+      ],
+      "materializer_ids": [
+        "spell_runtime_materializer"
+      ],
+      "optional_fields": {
+        "area": [
+          "origin",
+          "target",
+          "range"
+        ],
+        "damage": [
+          "target",
+          "timing",
+          "on_failure",
+          "on_success"
+        ],
+        "saving_throw": [
+          "half_on_success",
+          "target",
+          "range"
+        ],
+        "target_selection": [],
+        "upcast": [
+          "text",
+          "applies_to"
+        ]
+      },
+      "production_consumers": [
+        "combat_engine.action",
+        "combat_engine.effect",
+        "spell_economy.cast"
+      ],
+      "required_fields": {
+        "area": [
+          "shape",
+          "size_ft"
+        ],
+        "damage": [
+          "expression",
+          "damage_type"
+        ],
+        "saving_throw": [
+          "save_ability"
+        ],
+        "target_selection": [
+          "type",
+          "clause_id"
+        ],
+        "upcast": [
+          "increments",
+          "per_slot"
+        ]
+      },
+      "runtime_requirements": [
+        "source_evidence",
+        "reviewed_typed_ir",
+        "byte_identical_compile",
+        "known_spell",
+        "character_version_cas",
+        "idempotency_key",
+        "combat_target_and_target_version",
+        "saving_throw_input"
+      ],
+      "schema_version": "content-ir-template-1",
+      "source_examples": [
+        "eec6bd94eb83a351fb987de2",
+        "647e44fd3b93b2e4dafd2323",
+        "7c6ea0798cf1e7f00e5bbfbb",
+        "3a56665b98f37eed02921de6",
+        "fb279ff13dba2abcce376201",
+        "d84dec64befac8db7294e0f1",
+        "25c29e45961513478bcd8bc0",
+        "b2a01c766a8db42f9bc4d52e"
+      ],
+      "template_fingerprint": "f66751d99ce6f2a169998f90820e398adaa1cf17d8a893206705f77995324c7a",
+      "template_id": "spell.shape.010",
+      "validation_rules": [
+        "all required typed fields must be explicit or reviewed",
+        "source_fingerprint and template_fingerprint must remain stable",
+        "generated_candidate cannot be compile_full",
+        "production_runtime_full requires production evidence"
+      ]
+    },
+    {
+      "capability_ids": [
+        "spell.damage.v1",
+        "spell.saving_throw.v1",
+        "spell.target_selection.v1",
+        "spell.upcast.v1"
+      ],
+      "clause_shape": [
+        "target_selection",
+        "saving_throw",
+        "damage",
+        "upcast"
+      ],
+      "content_kind": "spell",
+      "forbidden_inference_fields": [
+        "operator",
+        "target_semantics",
+        "action_economy",
+        "resource_costs",
+        "complex_duration_triggers",
+        "summon_control",
+        "choice_values",
+        "complex_movement",
+        "attack_or_save_branch"
+      ],
+      "materializer_ids": [
+        "spell_runtime_materializer"
+      ],
+      "optional_fields": {
+        "damage": [
+          "target",
+          "timing",
+          "on_failure",
+          "on_success"
+        ],
+        "saving_throw": [
+          "half_on_success",
+          "target",
+          "range"
+        ],
+        "target_selection": [],
+        "upcast": [
+          "text",
+          "applies_to"
+        ]
+      },
+      "production_consumers": [
+        "combat_engine.action",
+        "combat_engine.effect",
+        "spell_economy.cast"
+      ],
+      "required_fields": {
+        "damage": [
+          "expression",
+          "damage_type"
+        ],
+        "saving_throw": [
+          "save_ability"
+        ],
+        "target_selection": [
+          "type",
+          "clause_id"
+        ],
+        "upcast": [
+          "increments",
+          "per_slot"
+        ]
+      },
+      "runtime_requirements": [
+        "source_evidence",
+        "reviewed_typed_ir",
+        "byte_identical_compile",
+        "known_spell",
+        "character_version_cas",
+        "idempotency_key",
+        "combat_target_and_target_version",
+        "saving_throw_input"
+      ],
+      "schema_version": "content-ir-template-1",
+      "source_examples": [
+        "82f220a9e3474d8fe1cafd8b",
+        "868117360db3137344a7e04d",
+        "89d9cadae3d9583d0c2dd806"
+      ],
+      "template_fingerprint": "d023e53357779eed95c81f26546fb029e52975f916abe55c7bd4439e10364bd2",
+      "template_id": "spell.shape.011",
+      "validation_rules": [
+        "all required typed fields must be explicit or reviewed",
+        "source_fingerprint and template_fingerprint must remain stable",
+        "generated_candidate cannot be compile_full",
+        "production_runtime_full requires production evidence"
+      ]
+    },
+    {
+      "capability_ids": [
+        "spell.temporary_hp.v1",
+        "spell.upcast.v1"
+      ],
+      "clause_shape": [
+        "temporary_hp",
+        "upcast"
+      ],
+      "content_kind": "spell",
+      "forbidden_inference_fields": [
+        "operator",
+        "target_semantics",
+        "action_economy",
+        "resource_costs",
+        "complex_duration_triggers",
+        "summon_control",
+        "choice_values",
+        "complex_movement",
+        "attack_or_save_branch"
+      ],
+      "materializer_ids": [
+        "spell_runtime_materializer"
+      ],
+      "optional_fields": {
+        "temporary_hp": [
+          "target",
+          "duration"
+        ],
+        "upcast": [
+          "text",
+          "applies_to"
+        ]
+      },
+      "production_consumers": [
+        "combat_engine.action",
+        "combat_engine.effect",
+        "spell_economy.cast"
+      ],
+      "required_fields": {
+        "temporary_hp": [
+          "amount",
+          "expression"
+        ],
+        "upcast": [
+          "increments",
+          "per_slot"
+        ]
+      },
+      "runtime_requirements": [
+        "source_evidence",
+        "reviewed_typed_ir",
+        "byte_identical_compile",
+        "known_spell",
+        "character_version_cas",
+        "idempotency_key",
+        "combat_target_and_target_version"
+      ],
+      "schema_version": "content-ir-template-1",
+      "source_examples": [
+        "56193b76694eafc2025e1c0b"
+      ],
+      "template_fingerprint": "bb6e70ddeb176d5c6f48ba245be9f70000e2c980bdb6932c3239687d1ee97433",
+      "template_id": "spell.shape.012",
+      "validation_rules": [
+        "all required typed fields must be explicit or reviewed",
+        "source_fingerprint and template_fingerprint must remain stable",
+        "generated_candidate cannot be compile_full",
+        "production_runtime_full requires production evidence"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,98 @@
+{
+  "candidate_clauses": [
+    {
+      "save_ability": "敏捷",
+      "type": "saving_throw"
+    },
+    {
+      "damage_type": "挥砍",
+      "expression": "4d6",
+      "on_failure": "full",
+      "type": "damage"
+    },
+    {
+      "shape": "cube",
+      "size_ft": 60,
+      "type": "area"
+    },
+    {
+      "required": true,
+      "type": "concentration"
+    }
+  ],
+  "candidate_id": "xanathars-guide:candidate:685cc72cc486eda479ee3ccd",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "area_shape": "cube",
+    "area_size_ft": 60,
+    "casting_time": "1 动作",
+    "classes": [
+      "德鲁伊",
+      "游侠"
+    ],
+    "components": "V、S",
+    "concentration": true,
+    "damage_expression": "4d6",
+    "damage_type": "挥砍",
+    "duration": "专注，至多 1 \n分钟",
+    "level": 5,
+    "range": "120 尺",
+    "repeat": {
+      "count_expression": "duration",
+      "source": "explicit_timing",
+      "timing": "turn_start"
+    },
+    "resolution_kind": "damage",
+    "ritual": false,
+    "save": "敏捷豁免",
+    "school": "塑能",
+    "target_disposition": "enemy"
+  },
+  "exact_fields": {
+    "area_shape": "cube",
+    "area_size_ft": 60,
+    "concentration": true,
+    "damage_expression": "4d6",
+    "damage_type": "挥砍",
+    "save": "敏捷豁免"
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "自然之怒",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "source_path": "珊娜萨的万事指南/法术/法术详述/5环.html",
+    "source_text": "#### 自然之怒｜Wrath of Nature\n\n*五环 塑能（德鲁伊、游侠）*\n**施法时间：**1 动作\n**施法距离：**120 尺\n**法术成分：**V、S\n**持续时间：**专注，至多 1\n分钟\n你唤醒自然界的精魂对抗你的敌人。选择施法距离内你可见的一点，精魂令那一点为中心 60 尺立方区域内的树木、岩石和草丛被活化，直到法术结束。\n\n> **草丛和灌木Grasses and\n>  Undergrowth。**立方区域内被草丛或灌木覆盖的地面对你的敌人而言是困难地形。\n>\n>\n>\n> **树木Trees。**在你的每个回合开始，在立方区域内的任何树木周围 10\n>  尺范围内的每个你的敌人都必须成功进行敏捷豁免检定，否则会因为树枝的挥打受到 4d6 挥砍伤害。\n>\n>\n>\n> **根与藤Roots and\n>  Vines。**在你的每个回合结束时，立方区域内站于地面上的一个你选择的生物必须成功进行力量豁免检定，否则会被束缚直到法术结束。被束缚的生物可以使用它的动作来进行一次力量（运动）检定对抗你的施法\n>  DC，如果成功将会结束这个效果对自己的影响。\n>\n>\n>\n> **投石Rocks。**在你的回合中以一个附赠动作，你可以使一块立方区域中的松动岩石投掷向同样在区域里的一个你可见的生物。若击中，目标受到\n>  3d8 非魔法钝击伤害，并且必须成功进行力量豁免检定否则被击倒。"
+  },
+  "source_fingerprint": "aaf9aac3432bc7a4bc31b45ca6e0480a1ad4133cc9985b57c2f65a2c5cbdbf87",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/5环.html",
+  "source_record_id": "685cc72cc486eda479ee3ccd",
+  "spell_id": "685cc72cc486eda479ee3ccd",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "saving_throw",
+      "damage",
+      "area",
+      "concentration"
+    ],
+    "template_fingerprint": "af295bb9885e22721b4b0ce62f8bf849a6eba5ca49ce60a0868f55c840a15edb",
+    "template_id": "spell.shape.009"
+  },
+  "uncertain_fields": {}
+}

@@ -1,0 +1,89 @@
+{
+  "candidate_clauses": [
+    {
+      "save_ability": "敏捷",
+      "type": "saving_throw"
+    },
+    {
+      "damage_type": "穿刺",
+      "expression": "1d10",
+      "on_failure": "full",
+      "type": "damage"
+    },
+    {
+      "shape": "sphere",
+      "size_ft": 5,
+      "type": "area"
+    }
+  ],
+  "candidate_id": "xanathars-guide:candidate:6f0ba0ecbcd8a90021afd407",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "area_shape": "sphere",
+    "area_size_ft": 5,
+    "casting_time": "1 动作",
+    "classes": [
+      "德鲁伊",
+      "术士",
+      "法师"
+    ],
+    "components": "S、M（一滴水或一块冰）",
+    "concentration": false,
+    "damage_expression": "1d10",
+    "damage_type": "穿刺",
+    "duration": "立即",
+    "level": 1,
+    "range": "60 \n尺",
+    "resolution_kind": "damage",
+    "ritual": false,
+    "save": "敏捷豁免",
+    "school": "咒法",
+    "target_disposition": "creature",
+    "upcast_text": "升环施法。 当你使用二环或更高的法术位施放该法术时，使用的法术位每高一环，寒冷伤害便增加 1d6 点。"
+  },
+  "exact_fields": {
+    "area_shape": "sphere",
+    "area_size_ft": 5,
+    "damage_expression": "1d10",
+    "damage_type": "穿刺",
+    "save": "敏捷豁免"
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "冰刃",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "source_path": "珊娜萨的万事指南/法术/法术详述/1环.html",
+    "source_text": "#### 冰刃｜Ice Knife\n\n*一环 咒法（德鲁伊、术士、法师）**Legacy*\n**施法时间：**1 动作\n**施法距离：**60\n尺\n**法术成分：**S、M（一滴水或一块冰）\n**持续时间：**立即\n你制造出一块冰晶裂片，并将它射向施法距离内的一个生物。你对目标进行一次远程法术攻击。若击中，目标受到\n1d10 点穿刺伤害。无论击中与否，裂片都会在之后爆裂。目标和周围 5 尺范围内的每个生物必须通过一次敏捷豁免检定，否则受到 2d6\n点寒冷伤害。\n**升环施法。**当你使用二环或更高的法术位施放该法术时，使用的法术位每高一环，寒冷伤害便增加 1d6 点。"
+  },
+  "source_fingerprint": "8abaae753b06c1a7369a3648d712d4ac6153cd3c06b7315cc4c3ddc228d64e3b",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/1环.html",
+  "source_record_id": "6f0ba0ecbcd8a90021afd407",
+  "spell_id": "6f0ba0ecbcd8a90021afd407",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "saving_throw",
+      "damage",
+      "area"
+    ],
+    "template_fingerprint": "af295bb9885e22721b4b0ce62f8bf849a6eba5ca49ce60a0868f55c840a15edb",
+    "template_id": "spell.shape.009"
+  },
+  "uncertain_fields": {}
+}

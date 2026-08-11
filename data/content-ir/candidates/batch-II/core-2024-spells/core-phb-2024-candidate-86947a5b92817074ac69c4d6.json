@@ -1,0 +1,67 @@
+{
+  "candidate_clauses": [
+    {
+      "expression": "5",
+      "type": "healing"
+    }
+  ],
+  "candidate_id": "core-phb-2024:candidate:86947a5b92817074ac69c4d6",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "附赠动作",
+    "classes": [
+      "魔契师"
+    ],
+    "components": "V、S、M（一块蓝色玻璃碎片）",
+    "concentration": false,
+    "duration": "1 小时",
+    "healing": "5",
+    "level": 1,
+    "range": "自身",
+    "resolution_kind": "heal",
+    "ritual": false,
+    "school": "防护",
+    "target_disposition": "creature",
+    "temporary_hp": true,
+    "upcast_text": "升环施法。 你使用的法术位每比一环高一环，临时生命和寒冷伤害就各提升5。"
+  },
+  "exact_fields": {
+    "healing": "5"
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "黯冰狱铠",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "source_path": "玩家手册2024/法术详述/1环.htm",
+    "source_text": "#### 黯冰狱铠｜Armor of Agathys\n\n*一环 防护（魔契师）*\n**施法时间：**附赠动作\n**施法距离：**自身\n**法术成分：**V、S、M（一块蓝色玻璃碎片）\n**持续时间：**1 小时\n防护性的魔法寒霜包裹着你。\n你获得5临时生命值。在法术结束之前，若有生物以近战攻击检定命中你，该生物将受到5寒冷伤害。此法术会在你不具有临时生命值时提前结束。\n**升环施法。**你使用的法术位每比一环高一环，临时生命和寒冷伤害就各提升5。"
+  },
+  "source_fingerprint": "f7f54ab49fe064d9630e901655622f0e32f705042b3eaaa8d470ffdb91d76a37",
+  "source_path": "玩家手册2024/法术详述/1环.htm",
+  "source_record_id": "86947a5b92817074ac69c4d6",
+  "spell_id": "86947a5b92817074ac69c4d6",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "healing"
+    ],
+    "template_fingerprint": "a5e98decf95ae64a83a7eb1eaac4f255fc3ab8f23dce3c36a4cc51211c431aec",
+    "template_id": "spell.shape.007"
+  },
+  "uncertain_fields": {}
+}

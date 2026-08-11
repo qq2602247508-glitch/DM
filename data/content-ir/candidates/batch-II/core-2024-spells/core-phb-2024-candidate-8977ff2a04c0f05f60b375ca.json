@@ -1,0 +1,66 @@
+{
+  "candidate_clauses": [
+    {
+      "required": true,
+      "type": "concentration"
+    }
+  ],
+  "candidate_id": "core-phb-2024:candidate:8977ff2a04c0f05f60b375ca",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "附赠动作",
+    "classes": [
+      "牧师",
+      "圣武士"
+    ],
+    "components": "V、S、M（一张祷文卷轴）",
+    "concentration": true,
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "专注，至多 10 分钟",
+    "level": 1,
+    "range": "60 尺",
+    "ritual": false,
+    "school": "防护",
+    "target_disposition": "creature"
+  },
+  "exact_fields": {
+    "concentration": true
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "虔诚护盾",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "source_path": "玩家手册2024/法术详述/1环.htm",
+    "source_text": "#### 虔诚护盾｜Shield of Faith\n\n*一环 防护（牧师、圣武士）*\n**施法时间：**附赠动作\n**施法距离：**60 尺\n**法术成分：**V、S、M（一张祷文卷轴）\n**持续时间：**专注，至多 10 分钟\n一片闪着微光的能量场围绕着施法距离内你指定的一个生物，使目标在法术持续时间内AC获得+2 加值。"
+  },
+  "source_fingerprint": "ffb0fc1bcc44c048b7eae01eb10e16d803c3a5da259aa7d8edd3fc32e9228047",
+  "source_path": "玩家手册2024/法术详述/1环.htm",
+  "source_record_id": "8977ff2a04c0f05f60b375ca",
+  "spell_id": "8977ff2a04c0f05f60b375ca",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "concentration"
+    ],
+    "template_fingerprint": "c6cf559b317883e1043d55b34f4a36da44766b6d3a4828662a90474ca1486880",
+    "template_id": "spell.shape.005"
+  },
+  "uncertain_fields": {}
+}

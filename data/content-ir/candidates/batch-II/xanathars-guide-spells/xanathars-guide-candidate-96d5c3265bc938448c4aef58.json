@@ -1,0 +1,70 @@
+{
+  "candidate_clauses": [
+    {
+      "shape": "sphere",
+      "size_ft": 30,
+      "type": "area"
+    }
+  ],
+  "candidate_id": "xanathars-guide:candidate:96d5c3265bc938448c4aef58",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "area_shape": "sphere",
+    "area_size_ft": 30,
+    "casting_time": "1 小时",
+    "classes": [
+      "仪式；牧师",
+      "圣武士"
+    ],
+    "components": "V、S、M（价值 25gp \n的银粉，作为该法术的耗材）",
+    "concentration": false,
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "立即",
+    "level": 1,
+    "range": "触碰",
+    "ritual": true,
+    "school": "防护",
+    "target_disposition": "ally"
+  },
+  "exact_fields": {
+    "area_shape": "sphere",
+    "area_size_ft": 30
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "典礼术",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "source_path": "珊娜萨的万事指南/法术/法术详述/1环.html",
+    "source_text": "#### 典礼术｜Ceremony\n\n*一环 防护（仪式；牧师、圣武士）*\n**施法时间：**1 小时\n**施法距离：**触碰\n**法术成分：**V、S、M（价值 25gp\n的银粉，作为该法术的耗材）\n**持续时间：**立即\n你进行几种宗教典礼之一。当你施展此法术时，选择下述典礼之一，其目标必须在施法过程中处于你周围 10\n尺内。\n\n> **赎罪Atonement。**你接触一个阵营发生了改变的自愿生物，而你进行一次 DC20 的感知（洞悉）检定。成功则你令目标恢复其原始阵营。\n>\n>\n>\n> **祝福圣水Bless Water。**你接触一瓶水并将它转变为圣水。\n>\n>\n>\n> **成人礼Coming of\n>  Age。**你接触一个年龄足够成年的类人生物。在接下来的 24 小时内，当目标进行一次属性检定时，它可以投 d4\n> 并将投出的结果加到属性检定上。一个生物只能从此仪式中获得此好处一次。\n>\n>\n>\n> **献身Dedication。**你接触一个自愿转变为你的宗教的信仰或想要为你信奉的神明服务的类人生物。在接下来的24小时内，当目标进行一次豁免检定时，它可以投\n> d4 并将投出的结果加到检定上。一个生物只能从此仪式中获得此好处一次。\n>\n>\n>\n> **葬礼Funeral Rite。**你祝福一具处于你周围 5 尺内的尸体。在接下来的 7 天内，目标不能被任何弱于祈愿术的方式变为亡灵。\n>\n>\n>\n> **婚礼Wedding。**你接触自愿接受婚姻的束缚的成年类人生物。在接下来的 7 天内，每个目标若处于彼此 30 尺范围内，则在 AC 上获得+2\n> 加值。一个生物只有在丧偶时才能再次从这个仪式中受益。"
+  },
+  "source_fingerprint": "0a3e8780679f11352f3e01fd7a63fced6dcb633f2f3fa42fa020ac6a211a0090",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/1环.html",
+  "source_record_id": "96d5c3265bc938448c4aef58",
+  "spell_id": "96d5c3265bc938448c4aef58",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "area"
+    ],
+    "template_fingerprint": "af295bb9885e22721b4b0ce62f8bf849a6eba5ca49ce60a0868f55c840a15edb",
+    "template_id": "spell.shape.009"
+  },
+  "uncertain_fields": {}
+}

@@ -1,0 +1,73 @@
+{
+  "candidate_clauses": [
+    {
+      "required": true,
+      "type": "concentration"
+    }
+  ],
+  "candidate_id": "core-phb-2024:candidate:77bedffa54ff572809eefe04",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "动作",
+    "classes": [
+      "牧师",
+      "德鲁伊",
+      "圣武士",
+      "魔契师",
+      "法师"
+    ],
+    "components": "V、S、M（一瓶25GP+的圣水，作为此法术的耗材）",
+    "concentration": true,
+    "conditions": [
+      "魅惑"
+    ],
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "专注，至多10分钟",
+    "level": 1,
+    "range": "触碰",
+    "resolution_kind": "control",
+    "ritual": false,
+    "school": "防护",
+    "target_disposition": "ally"
+  },
+  "exact_fields": {
+    "concentration": true
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "防护善恶",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "source_path": "玩家手册2024/法术详述/1环.htm",
+    "source_text": "#### 防护善恶｜Protection from Evil and Good\n\n*一环 防护（牧师、德鲁伊、圣武士、魔契师、法师）*\n**施法时间：**动作\n**施法距离：**触碰\n**法术成分：**V、S、M（一瓶25GP+的圣水，作为此法术的耗材）\n**持续时间：**专注，至多10分钟\n法术结束前，你使触碰的一名自愿生物获得针对下述生物类型的防护：异怪、天族、元素、妖精、邪魔、亡灵。\n此防护提供下述几种增益。上述生物类型的生物对目标的攻击检定具有劣势。目标不能被其附身，也不会因其陷入魅惑或恐慌状态。如果目标已经被具有上述生物类型的生物附身，或其魅惑或恐慌状态影响，目标后续进行的相关效应的豁免检定也将具有优势。"
+  },
+  "source_fingerprint": "241418b5642604fe6aaf6ed0e086bbdea8d3286d7b4f9129aec3900c88838975",
+  "source_path": "玩家手册2024/法术详述/1环.htm",
+  "source_record_id": "77bedffa54ff572809eefe04",
+  "spell_id": "77bedffa54ff572809eefe04",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "concentration"
+    ],
+    "template_fingerprint": "c6cf559b317883e1043d55b34f4a36da44766b6d3a4828662a90474ca1486880",
+    "template_id": "spell.shape.005"
+  },
+  "uncertain_fields": {}
+}

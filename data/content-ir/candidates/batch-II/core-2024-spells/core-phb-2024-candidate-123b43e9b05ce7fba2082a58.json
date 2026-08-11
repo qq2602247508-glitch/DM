@@ -1,0 +1,76 @@
+{
+  "candidate_clauses": [
+    {
+      "expression": "2d4",
+      "type": "healing"
+    },
+    {
+      "increments": "2d",
+      "per_slot": 1,
+      "type": "upcast"
+    }
+  ],
+  "candidate_id": "core-phb-2024:candidate:123b43e9b05ce7fba2082a58",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "附赠动作",
+    "classes": [
+      "吟游诗人",
+      "牧师",
+      "德鲁伊"
+    ],
+    "components": "V",
+    "concentration": false,
+    "duration": "立即",
+    "healing": "2d4",
+    "level": 1,
+    "range": "60尺",
+    "resolution_kind": "heal",
+    "ritual": false,
+    "school": "防护",
+    "target_disposition": "creature",
+    "upcast_healing_dice": 2,
+    "upcast_text": "升环施法。 使用的法术位每比一环高一环，此法术的治疗量就增加2d4点。"
+  },
+  "exact_fields": {
+    "healing": "2d4",
+    "upcast": 2
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "治愈真言",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "source_path": "玩家手册2024/法术详述/1环.htm",
+    "source_text": "#### 治愈真言｜Healing Word\n\n*一环 防护（吟游诗人、牧师、德鲁伊）*\n**施法时间：**附赠动作\n**施法距离：**60尺\n**法术成分：**V\n**持续时间：**立即\n你指定施法距离内一个你能看见的生物并恢复其生命值，恢复量等于2d4+你的施法属性调整值。\n**升环施法。**使用的法术位每比一环高一环，此法术的治疗量就增加2d4点。"
+  },
+  "source_fingerprint": "878e3caffe154ddc3bed0eae70cb3b743e0071ed2a5e668d342e62dd23b18ea8",
+  "source_path": "玩家手册2024/法术详述/1环.htm",
+  "source_record_id": "123b43e9b05ce7fba2082a58",
+  "spell_id": "123b43e9b05ce7fba2082a58",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "healing",
+      "upcast"
+    ],
+    "template_fingerprint": "a5e98decf95ae64a83a7eb1eaac4f255fc3ab8f23dce3c36a4cc51211c431aec",
+    "template_id": "spell.shape.007"
+  },
+  "uncertain_fields": {}
+}

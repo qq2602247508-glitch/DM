@@ -1,0 +1,51 @@
+{
+  "candidate_clauses": [],
+  "candidate_id": "tashas-cauldron:candidate:e7a7ee1c83e9714c46b63ddf",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "feature",
+  "draft_fields": {
+    "source_text": "**武僧\nMonk**\n武僧在这一章节中将拥有新的特性和子职。\n\n**可选职业特性 Optional Class Features**\n你可以在达到特定等级时获得玩家手册中描述的职业特性。这一部分提供了一些你作为武僧的额外特性。与玩家手册中的特性不同的是，你不会自动获得这些特性。在你达到该部分描述的职业特性的需求等级且决定获得这些特性时，与你的DM先商量商量。这些特性能够被一个一个单独选走，这意味着你可以使用其中一些、全部或不使用它们。\n\n**专用武器Dedicated Weapon**\n*第2级武僧特性\n*你训练自己使用各种武器作为武僧武器，而不仅仅是简易近战武器和短剑。每当你完成短休或长休时，可以碰触一件武器，将气集中在它之中，然后该武器就视为武僧武器，直到你再次使用这个能力。\n所选武器必须符合以下标准：\n武器必须是简易武器或军用武器。\n你必须拥有其熟练项。\n不能拥有重型或特殊属性。******驭气以击Ki-Fueled\nAttack**\n*第3级武僧特性*\n如果你在你的回合中执行动作时花费了1点或更多的气，则你可以在回合结束前用一个附赠动作以徒手打击或武僧武器进行一次攻击。******加速愈合Quickened\nHealing\n***第4级武僧特性*\n以一个动作，你能消耗2点气并且投掷一粒武艺骰，你恢复等同于掷骰结果加上你的熟练加值的生命值。******凝神聚气Focused\nAim**\n*第5级武僧特性*\n当你攻击检定未命中时，你可以花费1到3点气来使该次攻击检定获得加值，每点气的消耗能获得+2加值，这可能会使原本的未命中改为命中"
+  },
+  "exact_fields": {},
+  "feature_id": "tashas-cauldron:feature:e7a7ee1c83e9714c46b63ddf",
+  "kind": "feature_candidate",
+  "missing_fields": [
+    "typed_clause_mapping",
+    "operator",
+    "targeting",
+    "action_economy"
+  ],
+  "name": "武僧",
+  "required_review_fields": [
+    "source_name",
+    "class_name",
+    "level",
+    "clauses",
+    "operator",
+    "targeting"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "本书速查",
+  "source_evidence": {
+    "source_path": "塔莎的万事坩埚/玩家选项/职业/武僧（TCE）.html",
+    "source_text": "**武僧\nMonk**\n武僧在这一章节中将拥有新的特性和子职。\n\n**可选职业特性 Optional Class Features**\n你可以在达到特定等级时获得玩家手册中描述的职业特性。这一部分提供了一些你作为武僧的额外特性。与玩家手册中的特性不同的是，你不会自动获得这些特性。在你达到该部分描述的职业特性的需求等级且决定获得这些特性时，与你的DM先商量商量。这些特性能够被一个一个单独选走，这意味着你可以使用其中一些、全部或不使用它们。\n\n**专用武器Dedicated Weapon**\n*第2级武僧特性\n*你训练自己使用各种武器作为武僧武器，而不仅仅是简易近战武器和短剑。每当你完成短休或长休时，可以碰触一件武器，将气集中在它之中，然后该武器就视为武僧武器，直到你再次使用这个能力。\n所选武器必须符合以下标准：\n武器必须是简易武器或军用武器。\n你必须拥有其熟练项。\n不能拥有重型或特殊属性。******驭气以击Ki-Fueled\nAttack**\n*第3级武僧特性*\n如果你在你的回合中执行动作时花费了1点或更多的气，则你可以在回合结束前用一个附赠动作以徒手打击或武僧武器进行一次攻击。******加速愈合Quickened\nHealing\n***第4级武僧特性*\n以一个动作，你能消耗2点气并且投掷一粒武艺骰，你恢复等同于掷骰结果加上你的熟练加值的生命值。******凝神聚气Focused\nAim**\n*第5级武僧特性*\n当你攻击检定未命中时，你可以花费1到3点气来使该次攻击检定获得加值，每点气的消耗能获得+2加值，这可能会使原本的未命中改为命中"
+  },
+  "source_fingerprint": "2768a752690805122970f704dd4f91077a954e9a9173b417269a7fdc672d7a24",
+  "source_path": "塔莎的万事坩埚/玩家选项/职业/武僧（TCE）.html",
+  "source_record_id": "e7a7ee1c83e9714c46b63ddf",
+  "template_match": {
+    "confidence": "low",
+    "matched_shape": [],
+    "template_fingerprint": "18edef49700b65610b9d8daa0c6bb2fdf33eeabe75bcd1bd6534471d4682b564",
+    "template_id": "feature.shape.001"
+  },
+  "uncertain_fields": {
+    "operator": "feature_semantics_require_review"
+  }
+}

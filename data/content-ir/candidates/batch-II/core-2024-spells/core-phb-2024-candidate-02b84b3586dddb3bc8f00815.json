@@ -1,0 +1,79 @@
+{
+  "candidate_clauses": [
+    {
+      "required": true,
+      "type": "concentration"
+    },
+    {
+      "condition": "魅惑",
+      "type": "apply_condition"
+    }
+  ],
+  "candidate_id": "core-phb-2024:candidate:02b84b3586dddb3bc8f00815",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "动作",
+    "classes": [
+      "吟游诗人",
+      "术士",
+      "魔契师",
+      "法师"
+    ],
+    "components": "S、M（一些化妆品）",
+    "concentration": true,
+    "conditions": [
+      "魅惑"
+    ],
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "专注，至多1分钟",
+    "range": "10尺",
+    "resolution_kind": "control",
+    "ritual": false,
+    "save": "感知豁免",
+    "target_disposition": "creature"
+  },
+  "exact_fields": {
+    "concentration": true,
+    "conditions": [
+      "魅惑"
+    ]
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "交友术",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "source_path": "玩家手册2024/法术详述/0环.htm",
+    "source_text": "#### 交友术｜Friends\n\n*惑控 戏法（吟游诗人、术士、魔契师、法师）*\n**施法时间：**动作\n**施法距离：**10尺\n**法术成分：**S、M（一些化妆品）\n**持续时间：**专注，至多1分钟\n你魔法性地向施法距离内的一名可见生物散发出友谊感。目标必须成功于一次感知豁免，否则其在法术持续时间内陷入魅惑状态。若目标并非类人生物，或者你正在与其战斗，又或者你在过去24小时内曾对其施展过这道法术，则其进行的此次豁免自动成功。\n若目标受到伤害，或你进行一次攻击检定、造成伤害、迫使任何人进行一次豁免，则法术会提早结束。法术结束时，目标会知道他曾被你魅惑。"
+  },
+  "source_fingerprint": "1eec82fda15bada5ae3880184596c5111a9faa655e0035dcc3a3791f31e2f161",
+  "source_path": "玩家手册2024/法术详述/0环.htm",
+  "source_record_id": "02b84b3586dddb3bc8f00815",
+  "spell_id": "02b84b3586dddb3bc8f00815",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "concentration",
+      "apply_condition"
+    ],
+    "template_fingerprint": "3c42f68fb11991f0b3609f5d664da8f01323dbde293a556e901df3dc4b8daf72",
+    "template_id": "spell.shape.008"
+  },
+  "uncertain_fields": {}
+}

@@ -1,0 +1,79 @@
+{
+  "candidate_clauses": [
+    {
+      "expression": "2d8",
+      "type": "healing"
+    },
+    {
+      "increments": "2d",
+      "per_slot": 1,
+      "type": "upcast"
+    }
+  ],
+  "candidate_id": "core-phb-2024:candidate:5dd11cb3fbb6d21ea53739f2",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "动作",
+    "classes": [
+      "吟游诗人",
+      "牧师",
+      "德鲁伊",
+      "圣武士",
+      "游侠",
+      "奇械师"
+    ],
+    "components": "V、S",
+    "concentration": false,
+    "duration": "立即",
+    "healing": "2d8",
+    "level": 1,
+    "range": "触碰",
+    "resolution_kind": "heal",
+    "ritual": false,
+    "school": "防护",
+    "target_disposition": "creature",
+    "upcast_healing_dice": 2,
+    "upcast_text": "升环施法。 使用的法术位每比一环高一环，此法术的治疗量就增加2d8点。"
+  },
+  "exact_fields": {
+    "healing": "2d8",
+    "upcast": 2
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "疗伤术",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "source_path": "玩家手册2024/法术详述/1环.htm",
+    "source_text": "#### 疗伤术｜Cure Wounds\n\n*一环\n防护（吟游诗人、牧师、德鲁伊、圣武士、游侠、奇械师）*\n**施法时间：**动作\n**施法距离：**触碰\n**法术成分：**V、S\n**持续时间：**立即\n你触碰的一名生物恢复等同于2d8+你施法属性调整值点生命值。\n**升环施法。**使用的法术位每比一环高一环，此法术的治疗量就增加2d8点。"
+  },
+  "source_fingerprint": "d23e86271fc9e1082cc7110c46e7baabdd9282249497a60fd3c20a44e418f197",
+  "source_path": "玩家手册2024/法术详述/1环.htm",
+  "source_record_id": "5dd11cb3fbb6d21ea53739f2",
+  "spell_id": "5dd11cb3fbb6d21ea53739f2",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "healing",
+      "upcast"
+    ],
+    "template_fingerprint": "a5e98decf95ae64a83a7eb1eaac4f255fc3ab8f23dce3c36a4cc51211c431aec",
+    "template_id": "spell.shape.007"
+  },
+  "uncertain_fields": {}
+}

@@ -1,0 +1,75 @@
+{
+  "candidate_clauses": [],
+  "candidate_id": "core-phb-2024:candidate:3d0ca95441660e6abe44df84",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "area_shape": null,
+    "area_size_ft": null,
+    "casting_time": "1小时或仪式",
+    "classes": [
+      "法师"
+    ],
+    "components": "V、S、M（价值10+GP的焚香，作为法术耗材）",
+    "concentration": false,
+    "conditions": null,
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "立即",
+    "half_damage_on_save": null,
+    "healing": null,
+    "level": 1,
+    "max_targets": null,
+    "movement": null,
+    "range": "10尺",
+    "reaction": null,
+    "resolution_kind": "summon",
+    "ritual": false,
+    "save": null,
+    "school": "咒法",
+    "summon": {
+      "controller": "caster",
+      "count": 1,
+      "creature_ref": "魔宠（所选形态）",
+      "enters_combat": true,
+      "initiative_mode": "independent"
+    }
+  },
+  "exact_fields": {},
+  "kind": "spell_candidate",
+  "missing_fields": [
+    "typed_clause_mapping"
+  ],
+  "name": "寻获魔宠",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target",
+    "typed_clause_mapping"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "source_path": "玩家手册2024/法术详述/1环.htm",
+    "source_text": "#### 寻获魔宠｜Find Familiar\n\n*一环 咒法（法师）*\n**施法时间：**1小时或仪式\n**施法距离：**10尺\n**法术成分：**V、S、M（价值10+GP的焚香，作为法术耗材）\n**持续时间：**立即\n你获得一只为你服务的魔宠，魔宠精魄可以采用下述你选择的动物形态之一：**蝙蝠Bat**、**猫Cat**、**蛙Frog**、**隼Hawk**、**蜥蜴Lizard**、**章鱼Octopus**、**猫头鹰Owl**、**鼠Rat**、**渡鸦Raven**、**蜘蛛Spider**、**鼬Weasel**，你也可以选择其他挑战等级为0的野兽作为魔宠的形态。魔宠出现在施法距离内一处未占据空间，虽然有着所选的生物属性数据，但其生物类型为天族、妖精、邪魔之一（由你选择）而非野兽。你的魔宠可脱离你独立行动，不过它会一直遵循你的命令行事。\n**心灵连接Telepathic Connection。**你的魔宠距你100尺内期间，你可以与其进行心灵交流。此外，你还能够以一个附赠动作将自己的视觉和听觉切换到魔宠的感官，并一持续至你下一回合开始。在此期间，你同时享有该魔宠自身的特殊感官。\n最后，当你施展施法距离为触碰的法术时，你的魔宠可以帮你传递这道触碰法术。此时你的魔宠必须距你100尺内，且在你施展这道法术时你的魔宠需要执行一个反应才能将其传递。\n**战斗Combat。**魔宠是你和你盟友的盟友。战斗时，它为自己骰先攻，并在自己回合里行动。魔宠无法攻击，但是它能如常执行其他动作。\n**魔宠的消失Disappearance of the Familiar。**当魔宠生命值降至0点时，它会消失。它会在你再次施展此法术后重新出现。你可以用一个魔法动作，暂时解散你的魔宠，将其送入一个口袋位面。你也可以选择永久解散它。暂时解散时，你可以用一个魔法动作使其重新出现于距你30尺内任意未占空间中。当魔宠生命值归0或消失进入了口袋位面时，它都会将自己穿着或携带的任何物品留在自己曾占据的空间中。\n**独一无二One Familiar Only。**你在同一时间不能拥有多于一只魔宠。如果你在已拥有一只魔宠期间施展此法术，作为替代，你会使其采用一个新的符合条件的形态。"
+  },
+  "source_fingerprint": "15f949851bf1dcdae2ac1eea5edc7db1add22a6b755e6774a69b56592f505ae0",
+  "source_path": "玩家手册2024/法术详述/1环.htm",
+  "source_record_id": "3d0ca95441660e6abe44df84",
+  "spell_id": "3d0ca95441660e6abe44df84",
+  "template_match": {
+    "confidence": "low",
+    "matched_shape": [],
+    "template_fingerprint": "c6cf559b317883e1043d55b34f4a36da44766b6d3a4828662a90474ca1486880",
+    "template_id": "spell.shape.005"
+  },
+  "uncertain_fields": {}
+}

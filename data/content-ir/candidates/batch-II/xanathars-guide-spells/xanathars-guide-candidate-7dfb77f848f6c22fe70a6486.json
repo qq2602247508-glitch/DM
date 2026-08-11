@@ -1,0 +1,88 @@
+{
+  "candidate_clauses": [
+    {
+      "save_ability": "敏捷",
+      "type": "saving_throw"
+    },
+    {
+      "damage_type": "钝击",
+      "expression": "6d6",
+      "on_failure": "full",
+      "type": "damage"
+    },
+    {
+      "condition": "束缚",
+      "type": "apply_condition"
+    }
+  ],
+  "candidate_id": "xanathars-guide:candidate:7dfb77f848f6c22fe70a6486",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "1 \n动作",
+    "classes": [
+      "德鲁伊"
+    ],
+    "components": "V、S",
+    "concentration": false,
+    "conditions": [
+      "束缚"
+    ],
+    "damage_expression": "6d6",
+    "damage_type": "钝击",
+    "duration": "立即",
+    "level": 6,
+    "range": "120尺",
+    "resolution_kind": "damage",
+    "ritual": false,
+    "save": "敏捷豁免",
+    "school": "变化",
+    "target_disposition": "creature",
+    "upcast_text": "升环施法。 当你使用七环或更高的法术位施放该法术时，使用的法术位每高一环，你便能额外升起两根石柱。"
+  },
+  "exact_fields": {
+    "conditions": [
+      "束缚"
+    ],
+    "damage_expression": "6d6",
+    "damage_type": "钝击",
+    "save": "敏捷豁免"
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "地之骨",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "source_path": "珊娜萨的万事指南/法术/法术详述/6环.html",
+    "source_text": "#### 地之骨｜Bones of the Earth\n\n*六环 变化（德鲁伊）*\n**施法时间：**1\n动作\n**施法距离：**120尺\n**法术成分：**V、S\n**持续时间：**立即\n选择距离内你能看见的若干处地面位置，你令六根石柱从这些地面破土而出。每根石柱均为直径5尺，至高30尺的圆柱体。选择的地面必须具有足以容纳石柱直径的空间，且你可以将体型不超过中型的生物下方的地面作为目标。每根石柱的AC为5，具有30HP。当石柱的HP被降至0时，其将变为碎石，并形成一片半径10尺的困难地形区域（持续至被清理）。徒手清理的情况下，此碎石区域中每片直径5尺的部分都需要至少1分钟才能清理干净。\n若一根石柱在某生物的下方升起，则该生物必须通过一次敏捷豁免检定，否则会被石柱顶起。生物可以选择在此豁免中失败。\n若一根石柱因天花板或其他类似障碍而未能达到其最大高度，在石柱上的生物受到\n6d6 钝击伤害，并陷入束缚，在石柱与障碍物间动弹不得。陷入束缚的生物能够以动作进行一次力量或敏捷检定（由该生物选择），对抗此法术的豁免检定\nDC。若成功，该生物不再被束缚，其必须选择从石柱上移出或摔下。\n**升环施法。**当你使用七环或更高的法术位施放该法术时，使用的法术位每高一环，你便能额外升起两根石柱。"
+  },
+  "source_fingerprint": "aa98fb4029e22b447d530bfe4d749f0724e824545d9121f2cf192d58361282f8",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/6环.html",
+  "source_record_id": "7dfb77f848f6c22fe70a6486",
+  "spell_id": "7dfb77f848f6c22fe70a6486",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "saving_throw",
+      "damage",
+      "apply_condition"
+    ],
+    "template_fingerprint": "3c42f68fb11991f0b3609f5d664da8f01323dbde293a556e901df3dc4b8daf72",
+    "template_id": "spell.shape.008"
+  },
+  "uncertain_fields": {}
+}

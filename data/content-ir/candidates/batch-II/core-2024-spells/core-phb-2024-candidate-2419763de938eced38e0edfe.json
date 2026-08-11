@@ -1,0 +1,67 @@
+{
+  "candidate_clauses": [
+    {
+      "expression": "2d8",
+      "type": "healing"
+    }
+  ],
+  "candidate_id": "core-phb-2024:candidate:2419763de938eced38e0edfe",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "动作",
+    "classes": [
+      "牧师",
+      "魔契师",
+      "法师"
+    ],
+    "components": "V、S",
+    "concentration": false,
+    "duration": "立即",
+    "healing": "2d8",
+    "range": "60尺",
+    "resolution_kind": "heal",
+    "ritual": false,
+    "save": "感知豁免",
+    "school": "死灵",
+    "target_disposition": "creature"
+  },
+  "exact_fields": {
+    "healing": "2d8"
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "亡者丧钟",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "source_path": "玩家手册2024/法术详述/0环.htm",
+    "source_text": "#### 亡者丧钟｜Toll the Dead\n\n*死灵 戏法（牧师、魔契师、法师）*\n**施法时间：**动作\n**施法距离：**60尺\n**法术成分：**V、S\n**持续时间：**立即\n你对着施法距离内一名你可见的生物一指，随后目标10尺内响起一阵哀恸的钟鸣。目标必须通过一次感知豁免，否则将受到1d8点暗蚀伤害。若目标豁免失败时已损失任意数量生命值，则改为令其受到1d12点暗蚀伤害。\n**戏法强化。**到达特定等级后，此戏法的伤害骰将增加一枚：5级（2d8或2d12）、11级（3d8或3d12）、17级（4d8或4d12）。"
+  },
+  "source_fingerprint": "da638a8a75fb7ad227d1adbb34d1e8147ec39019332f30e4ffb4dac97f0b8b26",
+  "source_path": "玩家手册2024/法术详述/0环.htm",
+  "source_record_id": "2419763de938eced38e0edfe",
+  "spell_id": "2419763de938eced38e0edfe",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "healing"
+    ],
+    "template_fingerprint": "a5e98decf95ae64a83a7eb1eaac4f255fc3ab8f23dce3c36a4cc51211c431aec",
+    "template_id": "spell.shape.007"
+  },
+  "uncertain_fields": {}
+}

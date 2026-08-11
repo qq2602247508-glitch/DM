@@ -1,0 +1,100 @@
+{
+  "candidate_clauses": [
+    {
+      "save_ability": "敏捷",
+      "type": "saving_throw"
+    },
+    {
+      "damage_type": "强酸",
+      "expression": "10d4",
+      "on_failure": "full",
+      "type": "damage"
+    },
+    {
+      "condition": "发光",
+      "type": "apply_condition"
+    }
+  ],
+  "candidate_id": "xanathars-guide:candidate:d7a3c82a92a0201253c2d70d",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "1 动作",
+    "classes": [
+      "术士",
+      "法师"
+    ],
+    "components": "V、S、M（一滴巨型蜗牛的胆汁）",
+    "concentration": false,
+    "conditions": [
+      "发光"
+    ],
+    "damage_components": [
+      {
+        "damage_type": "强酸",
+        "expression": "10d4"
+      },
+      {
+        "damage_type": "强酸",
+        "expression": "5d4"
+      }
+    ],
+    "damage_expression": "10d4",
+    "damage_type": "强酸",
+    "duration": "立即",
+    "half_damage_on_save": true,
+    "level": 4,
+    "range": "150 \n尺",
+    "resolution_kind": "damage",
+    "ritual": false,
+    "save": "敏捷豁免",
+    "school": "塑能",
+    "target_disposition": "creature",
+    "upcast_text": "升环施法。 当你使用五环或更高的法术位施放该法术时，使用的法术位每高一环，初始伤害便增加 \n2d4。"
+  },
+  "exact_fields": {
+    "conditions": [
+      "发光"
+    ],
+    "damage_expression": "10d4",
+    "damage_type": "强酸",
+    "save": "敏捷豁免"
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "浓酸球",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "source_path": "珊娜萨的万事指南/法术/法术详述/4环.html",
+    "source_text": "#### 浓酸球｜Vitriolic Sphere\n\n*四环 塑能（术士、法师）**Legacy*\n**施法时间：**1 动作\n**施法距离：**150\n尺\n**法术成分：**V、S、M（一滴巨型蜗牛的胆汁）\n**持续时间：**立即\n你指定距离之内的一点，一颗发光的 1 尺直径的强酸球飞向那个位置，爆炸并溅射\n20 尺半径内的球形区域。在该区域中的每个生物必须进行一次敏捷豁免。豁免失败的生物不仅将受到 10d4 点强酸伤害，其下个回合结束时还将再受到 5d4\n点强酸伤害。若豁免成功，该生物只受到初始伤害的一半且不会在其下个回合结束时受到伤害。\n**升环施法。**当你使用五环或更高的法术位施放该法术时，使用的法术位每高一环，初始伤害便增加\n2d4。"
+  },
+  "source_fingerprint": "5794b9690e57c3223acda3b4318c5445185bcf026ddacc59282e03ad18b45918",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/4环.html",
+  "source_record_id": "d7a3c82a92a0201253c2d70d",
+  "spell_id": "d7a3c82a92a0201253c2d70d",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "saving_throw",
+      "damage",
+      "apply_condition"
+    ],
+    "template_fingerprint": "3c42f68fb11991f0b3609f5d664da8f01323dbde293a556e901df3dc4b8daf72",
+    "template_id": "spell.shape.008"
+  },
+  "uncertain_fields": {}
+}

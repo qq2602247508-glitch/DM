@@ -1,0 +1,106 @@
+{
+  "capability_registry": {
+    "id": "spell",
+    "version": "content-capabilities-1"
+  },
+  "casting_time": "动作",
+  "clause_boundaries": {
+    "concentration": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "Bane *一环 惑控（吟游诗人、牧师、魔契师）* **施法时间：**动作 **施法距离：**30尺 **法术成分：**V、S、M（一滴血） **持续时间：**专注，至多1分钟 你选择施法距离内至多三个你可见的生物，迫使其分别进行一次魅力豁免。在法术终止前，豁免失败于此次魅力豁免的目标进行的每次攻击检定与豁免检定都必须承受1d4的减值。 **升环施法。**使用的法术位每比一环高一环，你就可以额外选择一个生物作为目标。",
+      "source_heading": "灾祸术"
+    },
+    "target": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "、S、M（一滴血） **持续时间：**专注，至多1分钟 你选择施法距离内至多三个你可见的生物，迫使其分别进行一次魅力豁免。在法术终止前，豁免失败于此次魅力豁免的目标进行的每次攻击检定与豁免检定都必须承受1d4的减值。 **升环施法。**使用的法术位每比一环高一环，你就可以额外选择一个生物作为目标。",
+      "source_heading": "灾祸术"
+    }
+  },
+  "clause_identity": [
+    "core-phb-2024:spell:c724eb95e2f08220d161e608:target",
+    "core-phb-2024:spell:c724eb95e2f08220d161e608:concentration"
+  ],
+  "clauses": [
+    {
+      "clause_id": "target",
+      "count": 1,
+      "evidence_ref": "、S、M（一滴血） **持续时间：**专注，至多1分钟 你选择施法距离内至多三个你可见的生物，迫使其分别进行一次魅力豁免。在法术终止前，豁免失败于此次魅力豁免的目标进行的每次攻击检定与豁免检定都必须承受1d4的减值。 **升环施法。**使用的法术位每比一环高一环，你就可以额外选择一个生物作为目标。",
+      "kind": "one_creature",
+      "type": "target_selection",
+      "visibility": "visible"
+    },
+    {
+      "clause_id": "concentration",
+      "duration": "专注，至多1分钟",
+      "evidence_ref": "Bane *一环 惑控（吟游诗人、牧师、魔契师）* **施法时间：**动作 **施法距离：**30尺 **法术成分：**V、S、M（一滴血） **持续时间：**专注，至多1分钟 你选择施法距离内至多三个你可见的生物，迫使其分别进行一次魅力豁免。在法术终止前，豁免失败于此次魅力豁免的目标进行的每次攻击检定与豁免检定都必须承受1d4的减值。 **升环施法。**使用的法术位每比一环高一环，你就可以额外选择一个生物作为目标。",
+      "required": true,
+      "type": "concentration"
+    }
+  ],
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "concentration": true,
+  "duration": "专注，至多1分钟",
+  "edition": "2024",
+  "evidence": [
+    "concentration: Bane *一环 惑控（吟游诗人、牧师、魔契师）* **施法时间：**动作 **施法距离：**30尺 **法术成分：**V、S、M（一滴血） **持续时间：**专注，至多1分钟 你选择施法距离内至多三个你可见的生物，迫使其分别进行一次魅力豁免。在法术终止前，豁免失败于此次魅力豁免的目标进行的每次攻击检定与豁免检定都必须承受1d4的减值。 **升环施法。**使用的法术位每比一环高一环，你就可以额外选择一个生物作为目标。",
+    "target: 、S、M（一滴血） **持续时间：**专注，至多1分钟 你选择施法距离内至多三个你可见的生物，迫使其分别进行一次魅力豁免。在法术终止前，豁免失败于此次魅力豁免的目标进行的每次攻击检定与豁免检定都必须承受1d4的减值。 **升环施法。**使用的法术位每比一环高一环，你就可以额外选择一个生物作为目标。"
+  ],
+  "kind": "spell",
+  "level": 1,
+  "manual_decisions": {
+    "review_gate": "accepted only explicit normalized fields and quoted source evidence",
+    "unresolved_branches": "not promoted when the source does not state attack/save semantics"
+  },
+  "name": "灾祸术",
+  "namespace": "content.core-phb-2024",
+  "pack_id": "core-phb-2024",
+  "pack_version": "source-7011166c19bd",
+  "range": "30尺",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-11-batch-II",
+  "reviewed_fields": [
+    "schema_version",
+    "spell_id",
+    "name",
+    "pack_id",
+    "pack_version",
+    "namespace",
+    "ruleset_version",
+    "source_record_id",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "source_trust",
+    "level",
+    "school",
+    "casting_time",
+    "range",
+    "duration",
+    "concentration",
+    "clauses",
+    "evidence"
+  ],
+  "ruleset_version": "2024",
+  "schema_version": "spell-ir-1",
+  "school": null,
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "selected_clause_excerpt": "、S、M（一滴血） **持续时间：**专注，至多1分钟 你选择施法距离内至多三个你可见的生物，迫使其分别进行一次魅力豁免。在法术终止前，豁免失败于此次魅力豁免的目标进行的每次攻击检定与豁免检定都必须承受1d4的减值。 **升环施法。**使用的法术位每比一环高一环，你就可以额外选择一个生物作为目标。 Bane *一环 惑控（吟游诗人、牧师、魔契师）* **施法时间：**动作 **施法距离：**30尺 **法术成分：**V、S、M（一滴血） **持续时间：**专注，至多1分钟 你选择施法距离内至多三个你可见的生物，迫使其分别进行一次魅力豁免。在法术终止前，豁免失败于此次魅力豁免的目标进行的每次攻击检定与豁免检定都必须承受1d4的减值。 **升环施法。**使用的法术位每比一环高一环，你就可以额外选择一个生物作为目标。",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "a6cc80b67a67d14a12e2ee392c93e59e22e9ed4bf2ae97aa14c1b1971ae40626",
+    "source_path": "玩家手册2024/法术详述/1环.htm",
+    "source_text": "#### 灾祸术｜Bane\n\n*一环 惑控（吟游诗人、牧师、魔契师）*\n**施法时间：**动作\n**施法距离：**30尺\n**法术成分：**V、S、M（一滴血）\n**持续时间：**专注，至多1分钟\n你选择施法距离内至多三个你可见的生物，迫使其分别进行一次魅力豁免。在法术终止前，豁免失败于此次魅力豁免的目标进行的每次攻击检定与豁免检定都必须承受1d4的减值。\n**升环施法。**使用的法术位每比一环高一环，你就可以额外选择一个生物作为目标。"
+  },
+  "source_fingerprint": "fd373d24aafae214d2e0b69a63c316321d5fe5f9c1360f76450740ffdd9c575a",
+  "source_path": "玩家手册2024/法术详述/1环.htm",
+  "source_provenance": {
+    "officiality": "official",
+    "review_basis": "local_source_text_manual_review",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "a6cc80b67a67d14a12e2ee392c93e59e22e9ed4bf2ae97aa14c1b1971ae40626",
+    "source_relative_path": "玩家手册2024/法术详述/1环.htm"
+  },
+  "source_record_id": "c724eb95e2f08220d161e608",
+  "source_trust": "authored_ir",
+  "spell_id": "core-phb-2024:spell:c724eb95e2f08220d161e608"
+}

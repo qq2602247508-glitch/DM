@@ -1,0 +1,101 @@
+{
+  "candidate_clauses": [
+    {
+      "save_ability": "体质",
+      "type": "saving_throw"
+    },
+    {
+      "damage_type": "钝击",
+      "expression": "2d10",
+      "on_failure": "full",
+      "type": "damage"
+    },
+    {
+      "shape": "sphere",
+      "size_ft": 60,
+      "type": "area"
+    },
+    {
+      "required": true,
+      "type": "concentration"
+    }
+  ],
+  "candidate_id": "xanathars-guide:candidate:7fb3623fc519dca9c46df73a",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "area_shape": "sphere",
+    "area_size_ft": 60,
+    "casting_time": "1 \n动作",
+    "classes": [
+      "德鲁伊",
+      "术士",
+      "魔契师",
+      "法师"
+    ],
+    "components": "V、S",
+    "concentration": true,
+    "damage_expression": "2d10",
+    "damage_type": "钝击",
+    "duration": "专注，至多 10 分钟",
+    "half_damage_on_save": true,
+    "level": 6,
+    "movement": {
+      "direction": "away",
+      "distance_ft": 10,
+      "type": "forced"
+    },
+    "range": "自身",
+    "resolution_kind": "damage",
+    "ritual": false,
+    "save": "体质豁免",
+    "school": "变化",
+    "target_disposition": "creature"
+  },
+  "exact_fields": {
+    "area_shape": "sphere",
+    "area_size_ft": 60,
+    "concentration": true,
+    "damage_expression": "2d10",
+    "damage_type": "钝击",
+    "save": "体质豁免"
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "清风赋权",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "source_path": "珊娜萨的万事指南/法术/法术详述/6环.html",
+    "source_text": "#### 清风赋权｜Investiture of Wind\n\n*六环 变化（德鲁伊、术士、魔契师、法师）\n***施法时间：**1\n动作\n**施法距离：**自身\n**法术成分：**V、S\n**持续时间：**专注，至多 10 分钟\n直到此法术终止，风在你的身旁回旋，而你得到下述好处：\n\n- 对你进行的远程武器攻击，在其攻击检定中具有劣势。你得到60尺的飞行速度。若此法术终止时，你仍处于飞行状态，你会坠落，除非你有其他方法避免坠落。你可以使用你的动作以在你 60 尺范围内，以你能看到的一点为中心，制造出 15\n 立方尺的呼啸之风。每个在该空间内的生物必须进行一次体质豁免。豁免失败的生物受到 2d10\n 钝击伤害，豁免成功者受到上述伤害的一半。若体型不超过大型的生物在此豁免中失败。该生物将在远离该空间中心的方向上被推离 10 尺。"
+  },
+  "source_fingerprint": "e8e3747500c479671a85f43ed1faa64ff60dd6e1241643fadb97bd9e6386889d",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/6环.html",
+  "source_record_id": "7fb3623fc519dca9c46df73a",
+  "spell_id": "7fb3623fc519dca9c46df73a",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "saving_throw",
+      "damage",
+      "area",
+      "concentration"
+    ],
+    "template_fingerprint": "af295bb9885e22721b4b0ce62f8bf849a6eba5ca49ce60a0868f55c840a15edb",
+    "template_id": "spell.shape.009"
+  },
+  "uncertain_fields": {}
+}

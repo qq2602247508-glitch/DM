@@ -1,0 +1,68 @@
+{
+  "candidate_clauses": [],
+  "candidate_id": "core-phb-2024:candidate:b9db026fa1853bca5b6f1c13",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "动作",
+    "classes": [
+      "吟游诗人",
+      "术士",
+      "魔契师",
+      "法师",
+      "奇械师"
+    ],
+    "components": "V、S",
+    "concentration": false,
+    "creation": {
+      "count": null,
+      "creation_kind": "item",
+      "requires_template_choice": true,
+      "template_ref": "dm_chosen_template"
+    },
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "至多1小时",
+    "range": "10尺",
+    "ritual": false,
+    "school": "变化",
+    "target_disposition": "object"
+  },
+  "exact_fields": {},
+  "kind": "spell_candidate",
+  "missing_fields": [
+    "typed_clause_mapping"
+  ],
+  "name": "魔法伎俩",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target",
+    "typed_clause_mapping"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "source_path": "玩家手册2024/法术详述/0环.htm",
+    "source_text": "#### 魔法伎俩｜Prestidigitation\n\n*变化 戏法（吟游诗人、术士、魔契师、法师、奇械师）*\n**施法时间：**动作\n**施法距离：**10尺\n**法术成分：**V、S\n**持续时间：**至多1小时\n你在施法距离内创造一个魔法效应。从下述效应中选择一项。如果你多次施展该法术，则可以同时维持至多三个不同的非即时效应。\n\n> **感官效应Sensory\n> Effect。**你创造一个立即生效的，无害的感官效应，比如一束火花，一阵风，微弱音乐或古怪的臭味。\n> **玩火Fire\n> Play。**你立即点燃或熄灭一根蜡烛、一根火把或一处小篝火。\n> **清洁或弄脏Clean or\n> Soil。**你立即清洁或弄脏一个体积不大于1立方尺的物件。\n> **次级感觉Minor\n> Sensation。**你使一个不大于1立方尺的非活体物质变冷、变暖或对其调味，持续1小时。\n> **魔法印记Magic\n> Mark。**你在一个物件或一个表面上创造一块色斑，一个小印记，或者一个徽记，持续1小时。\n> **次级造物Minor\n> Creation。**你创造出一个非魔法小饰品或一张虚幻图像，其大小不能超过你的手掌大小，它会持续存在至下个你的回合结束为止。一个小饰品不能造成伤害，也不值任何钱。"
+  },
+  "source_fingerprint": "ac01a2d5259ee244017fc18a87ba7014451a505a4e196d260a6dbb2a06806dda",
+  "source_path": "玩家手册2024/法术详述/0环.htm",
+  "source_record_id": "b9db026fa1853bca5b6f1c13",
+  "spell_id": "b9db026fa1853bca5b6f1c13",
+  "template_match": {
+    "confidence": "low",
+    "matched_shape": [],
+    "template_fingerprint": "c6cf559b317883e1043d55b34f4a36da44766b6d3a4828662a90474ca1486880",
+    "template_id": "spell.shape.005"
+  },
+  "uncertain_fields": {}
+}

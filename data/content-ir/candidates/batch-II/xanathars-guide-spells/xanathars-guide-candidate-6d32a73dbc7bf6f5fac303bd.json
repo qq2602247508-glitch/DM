@@ -1,0 +1,66 @@
+{
+  "candidate_clauses": [
+    {
+      "required": true,
+      "type": "concentration"
+    }
+  ],
+  "candidate_id": "xanathars-guide:candidate:6d32a73dbc7bf6f5fac303bd",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "1 动作",
+    "classes": [
+      "德鲁伊",
+      "游侠"
+    ],
+    "components": "V、S、M（一小块被布包裹的毛皮）",
+    "concentration": true,
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "专注，至多 \n10 分钟",
+    "level": 1,
+    "range": "触碰",
+    "ritual": false,
+    "school": "预言",
+    "target_disposition": "creature"
+  },
+  "exact_fields": {
+    "concentration": true
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "兽之联结",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "source_path": "珊娜萨的万事指南/法术/法术详述/1环.html",
+    "source_text": "#### 兽之联结｜Beast Bond\n\n*一环 预言（德鲁伊、游侠）*\n**施法时间：**1 动作\n**施法距离：**触碰\n**法术成分：**V、S、M（一小块被布包裹的毛皮）\n**持续时间：**专注，至多\n10 分钟\n你和一个你接触的，对你友好或被你魅惑的野兽建立起一道心灵链接。若该野兽的智力不低于\n4，则此法术失败。直到法术终结，只要你和该野兽相互处于彼此的视觉线内，此链接便处于活动状态。通过此链接，该野兽可以理解你以心灵感应传递的信息，而其也会以心灵感应向你传递其基本的情绪和意愿。只要此链接处于活动状态，该野兽在对你周围\n5 尺，你能看见的任何生物所进行的攻击检定中获得优势。"
+  },
+  "source_fingerprint": "d3240455ebc564a3e59c8d37a6520578aa6adcb6ac6350833503c9534f2de1f3",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/1环.html",
+  "source_record_id": "6d32a73dbc7bf6f5fac303bd",
+  "spell_id": "6d32a73dbc7bf6f5fac303bd",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "concentration"
+    ],
+    "template_fingerprint": "c6cf559b317883e1043d55b34f4a36da44766b6d3a4828662a90474ca1486880",
+    "template_id": "spell.shape.005"
+  },
+  "uncertain_fields": {}
+}

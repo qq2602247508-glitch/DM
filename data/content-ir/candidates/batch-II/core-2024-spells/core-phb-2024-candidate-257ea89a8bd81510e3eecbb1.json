@@ -1,0 +1,74 @@
+{
+  "candidate_clauses": [
+    {
+      "condition": "倒地",
+      "type": "apply_condition"
+    }
+  ],
+  "candidate_id": "core-phb-2024:candidate:257ea89a8bd81510e3eecbb1",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "动作",
+    "classes": [
+      "术士",
+      "法师",
+      "奇械师"
+    ],
+    "components": "V、S、M（一块猪皮或黄油）",
+    "concentration": false,
+    "conditions": [
+      "倒地"
+    ],
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "1分钟",
+    "level": 1,
+    "range": "60尺",
+    "resolution_kind": "control",
+    "ritual": false,
+    "save": "敏捷豁免",
+    "school": "咒法",
+    "target_disposition": "creature"
+  },
+  "exact_fields": {
+    "conditions": [
+      "倒地"
+    ]
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "油腻术",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "source_path": "玩家手册2024/法术详述/1环.htm",
+    "source_text": "#### 油腻术｜Grease\n\n*一环 咒法（术士、法师、奇械师）*\n**施法时间：**动作\n**施法距离：**60尺\n**法术成分：**V、S、M（一块猪皮或黄油）\n**持续时间：**1分钟\n你在施法距离内指定一点，光滑的不可燃油脂以该点为中心覆盖一处10尺的方状区域。在法术持续时间内。该区域变为困难地形。\n油脂出现时，站在其范围内的每个生物必须成功通过一次敏捷豁免，否则陷入倒地状态。进入该区域或在区域内结束其回合的生物也必须进行该敏捷豁免，豁免失败则陷入倒地。"
+  },
+  "source_fingerprint": "fcc7a9c35e254af045bdea286f8df070d36e5788fb70d137f90b0c656a44ce0c",
+  "source_path": "玩家手册2024/法术详述/1环.htm",
+  "source_record_id": "257ea89a8bd81510e3eecbb1",
+  "spell_id": "257ea89a8bd81510e3eecbb1",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "apply_condition"
+    ],
+    "template_fingerprint": "3c42f68fb11991f0b3609f5d664da8f01323dbde293a556e901df3dc4b8daf72",
+    "template_id": "spell.shape.008"
+  },
+  "uncertain_fields": {}
+}

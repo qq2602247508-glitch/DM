@@ -1,0 +1,103 @@
+{
+  "candidate_clauses": [
+    {
+      "save_ability": "敏捷",
+      "type": "saving_throw"
+    },
+    {
+      "damage_type": "火焰",
+      "expression": "8d6",
+      "on_failure": "full",
+      "type": "damage"
+    },
+    {
+      "shape": "sphere",
+      "size_ft": 30,
+      "type": "area"
+    },
+    {
+      "required": true,
+      "type": "concentration"
+    }
+  ],
+  "candidate_id": "xanathars-guide:candidate:d1539095fb175f8e2ba00bbb",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "area_shape": "sphere",
+    "area_size_ft": 30,
+    "casting_time": "1 动作",
+    "classes": [
+      "术士",
+      "法师"
+    ],
+    "components": "V",
+    "concentration": true,
+    "damage_components": [
+      {
+        "damage_type": "火焰",
+        "expression": "8d6"
+      },
+      {
+        "damage_type": "火焰",
+        "expression": "4d6"
+      }
+    ],
+    "damage_expression": "8d6",
+    "damage_type": "火焰",
+    "duration": "专注，至多 1 \n分钟",
+    "level": 5,
+    "range": "90 尺",
+    "resolution_kind": "damage",
+    "ritual": false,
+    "save": "敏捷豁免",
+    "school": "塑能",
+    "target_disposition": "creature"
+  },
+  "exact_fields": {
+    "area_shape": "sphere",
+    "area_size_ft": 30,
+    "concentration": true,
+    "damage_expression": "8d6",
+    "damage_type": "火焰",
+    "save": "敏捷豁免"
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "焚烧术",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "source_path": "珊娜萨的万事指南/法术/法术详述/5环.html",
+    "source_text": "#### 焚烧术｜Immolation\n\n*五环 塑能（术士、法师）*\n**施法时间：**1 动作\n**施法距离：**90 尺\n**法术成分：**V\n**持续时间：**专注，至多 1\n分钟\n火焰环绕在施法距离之内你可见的一个生物身上。目标必须进行一次敏捷豁免。豁免失败，目标将受到 8d6\n火焰伤害，豁免成功则只受到半数伤害。若豁免失败，目标还会被此法术点燃，持续至法术结束。被点燃的目标会散发出 30 尺半径的明亮光照，以及其外 30\n尺范围的微光光照。在其被点燃目标回合结束时，目标重复进行此次豁免。豁免失败将受到 4d6\n点火焰伤害，而豁免成功则此法术提前终止。这些魔法火焰无法被非魔法的方式熄灭。\n若此法术造成的伤害杀死了目标，目标将化为灰烬。"
+  },
+  "source_fingerprint": "79d632f63434bbd74bcd8499c08384311f7bb48741f9c9a89ee2f6ff846f671d",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/5环.html",
+  "source_record_id": "d1539095fb175f8e2ba00bbb",
+  "spell_id": "d1539095fb175f8e2ba00bbb",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "saving_throw",
+      "damage",
+      "area",
+      "concentration"
+    ],
+    "template_fingerprint": "af295bb9885e22721b4b0ce62f8bf849a6eba5ca49ce60a0868f55c840a15edb",
+    "template_id": "spell.shape.009"
+  },
+  "uncertain_fields": {}
+}

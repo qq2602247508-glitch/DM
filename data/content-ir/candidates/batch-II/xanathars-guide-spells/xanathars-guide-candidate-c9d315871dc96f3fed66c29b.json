@@ -1,0 +1,72 @@
+{
+  "candidate_clauses": [
+    {
+      "required": true,
+      "type": "concentration"
+    }
+  ],
+  "candidate_id": "xanathars-guide:candidate:c9d315871dc96f3fed66c29b",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "1 附赠动作",
+    "classes": [
+      "游侠"
+    ],
+    "components": "V",
+    "concentration": true,
+    "damage_expression": "1d8",
+    "damage_type": "力场",
+    "duration": "专注，至多 1 \n分钟",
+    "level": 1,
+    "range": "自身",
+    "resolution_kind": "damage",
+    "ritual": false,
+    "school": "变化"
+  },
+  "exact_fields": {
+    "concentration": true
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [
+    "attack_or_save"
+  ],
+  "name": "西风打击",
+  "required_review_fields": [
+    "action_economy",
+    "attack_or_save",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "source_path": "珊娜萨的万事指南/法术/法术详述/1环.html",
+    "source_text": "#### 西风打击｜Zephyr Strike\n\n*一环 变化（游侠）*\n**施法时间：**1 附赠动作\n**施法距离：**自身\n**法术成分：**V\n**持续时间：**专注，至多 1\n分钟\n你行动如风。在持续时间内，你的移动不会导致借机攻击。\n此外，在此法术结束前仅一次，你可以在自己的回合让自己的一次武器攻击检定获得优势。这次攻击若击中会造成额外\n1d8 力场伤害。无论你是否击中，你的步行速度都会增加 30 尺，直到这个回合的结束。"
+  },
+  "source_fingerprint": "d9427224492c27ab4734ac66c5ccd56ef45b43afc6e11b188b543de16059945a",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/1环.html",
+  "source_record_id": "c9d315871dc96f3fed66c29b",
+  "spell_id": "c9d315871dc96f3fed66c29b",
+  "template_match": {
+    "confidence": "medium",
+    "matched_shape": [
+      "concentration"
+    ],
+    "template_fingerprint": "c6cf559b317883e1043d55b34f4a36da44766b6d3a4828662a90474ca1486880",
+    "template_id": "spell.shape.005"
+  },
+  "uncertain_fields": {
+    "damage_expression": "1d8",
+    "damage_type": "力场",
+    "operator": "attack_roll_or_other_damage_operator_requires_review"
+  }
+}

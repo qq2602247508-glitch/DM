@@ -1,0 +1,79 @@
+{
+  "candidate_clauses": [
+    {
+      "shape": "sphere",
+      "size_ft": 5,
+      "type": "area"
+    }
+  ],
+  "candidate_id": "tashas-cauldron:candidate:aadaa43a2f946220099797b4",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "area_shape": "sphere",
+    "area_size_ft": 5,
+    "casting_time": "1 动作",
+    "classes": [
+      "奇械师",
+      "术士",
+      "魔契师",
+      "法师"
+    ],
+    "components": "S,",
+    "concentration": false,
+    "damage_expression": "1d8",
+    "damage_type": "火焰",
+    "duration": "立即 你挥舞作为法术成分的那把武器，对你周围 5",
+    "range": "自身（半径5尺）",
+    "resolution_kind": "damage",
+    "ritual": false,
+    "school": "塑能",
+    "target_disposition": "creature"
+  },
+  "exact_fields": {
+    "area_shape": "sphere",
+    "area_size_ft": 5
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [
+    "attack_or_save"
+  ],
+  "name": "翠炎剑",
+  "required_review_fields": [
+    "action_economy",
+    "attack_or_save",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "塔莎的万事坩埚",
+  "source_evidence": {
+    "source_path": "塔莎的万事坩埚/法术/法术详述/戏法.html",
+    "source_text": "#### 翠炎剑｜Green-Flame Blade\n\n*塑能 戏法（奇械师、术士、魔契师、法师）*\n施法时间：1 动作\n施法距离：自身（半径5尺）\n法术成分：S,\nM（一把价值至少 1sp 的近战武器）\n持续时间：立即\n你挥舞作为法术成分的那把武器，对你周围 5\n尺范围内的一个生物发动一次近战武器攻击。如果攻击成功命中，目标会受到这次攻击的正常影响，且你可以让那翠绿色火焰从目标身上飞跃至目标周围 5\n尺范围内的另一个你可见的生物。第二个生物受到等同于 你施法属性调整值 点的火焰伤害。\n此法术的伤害会随你的等级一同提升：到达 5\n级后，这次近战攻击将造成额外 1d8 点火焰伤害，且第二个目标将受到的伤害提升至 1d8+你的施法主属性调整值。两个伤害都会在 11 级后再增加 1d8（2d8\n和 2d8），17 级后再加 1d8（3d8 和 3d8）。"
+  },
+  "source_fingerprint": "07bf48eeec0d3933920449e47b3d8c6532f2ee5ba6de6553e0568952db2da0c5",
+  "source_path": "塔莎的万事坩埚/法术/法术详述/戏法.html",
+  "source_record_id": "aadaa43a2f946220099797b4",
+  "spell_id": "aadaa43a2f946220099797b4",
+  "template_match": {
+    "confidence": "medium",
+    "matched_shape": [
+      "area"
+    ],
+    "template_fingerprint": "af295bb9885e22721b4b0ce62f8bf849a6eba5ca49ce60a0868f55c840a15edb",
+    "template_id": "spell.shape.009"
+  },
+  "uncertain_fields": {
+    "damage_expression": "1d8",
+    "damage_type": "火焰",
+    "operator": "attack_roll_or_other_damage_operator_requires_review"
+  }
+}

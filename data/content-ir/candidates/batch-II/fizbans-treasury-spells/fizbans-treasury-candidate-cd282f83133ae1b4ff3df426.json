@@ -1,0 +1,90 @@
+{
+  "candidate_clauses": [
+    {
+      "shape": "cone",
+      "size_ft": 60,
+      "type": "area"
+    },
+    {
+      "required": true,
+      "type": "concentration"
+    },
+    {
+      "condition": "目盲",
+      "type": "apply_condition"
+    }
+  ],
+  "candidate_id": "fizbans-treasury:candidate:cd282f83133ae1b4ff3df426",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "area_shape": "cone",
+    "area_size_ft": 60,
+    "casting_time": "1附赠动作",
+    "classes": [
+      "德鲁伊",
+      "术士",
+      "法师"
+    ],
+    "components": "V、S、M（一个龙形小雕像，价值至少500gp）",
+    "concentration": true,
+    "conditions": [
+      "目盲"
+    ],
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "专注，至多 \n1分钟",
+    "level": 7,
+    "range": "自身",
+    "resolution_kind": "control",
+    "ritual": false,
+    "save": "敏捷豁免",
+    "school": "变化",
+    "target_disposition": "creature"
+  },
+  "exact_fields": {
+    "area_shape": "cone",
+    "area_size_ft": 60,
+    "concentration": true,
+    "conditions": [
+      "目盲"
+    ]
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "龙类变形",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "费资本的巨龙宝库",
+  "source_evidence": {
+    "source_path": "费资本的巨龙宝库/玩家选项/巨龙法术详述.htm",
+    "source_text": "#### 龙类变形｜Draconic Transformation\n\n*七环 变化（德鲁伊、术士、法师）*\n**施法时间：**1附赠动作\n**施法距离：**自身\n**法术成分：**V、S、M（一个龙形小雕像，价值至少500gp）\n**持续时间：**专注，至多\n1分钟\n伴随着一声怒吼，你用龙族的魔法变化自身，获得多种龙族特征。直至法术结束，你获得以下好处：\n\n> **盲视Blindsight。**你获得30尺盲视。此范围内，任何不处于全身掩护后的东西对于你来说清晰可见，即使你处于目盲状态或黑暗中。此外，你可以看见隐形的生物，除非该生物对你处于躲藏状态。\n>\n>\n>\n> **吐息武器Breath\n>  Weapon。**当你施展此法术时，以及在持续时间内随后的回合以一个附赠动作，你可以在60尺锥形内呼出一道闪着光的能量。范围内的每个生物都必须成功通过一次敏捷豁免，否则受到6d8点力场伤害，成功则伤害减半。\n>\n>\n>\n> **飞翼Wings。**无形之翼从你背后长出，使你获得60尺飞行速度。"
+  },
+  "source_fingerprint": "b430ef9e871a569af398ef9c24f6043d16fea66e214979317d017324fc2bb8ef",
+  "source_path": "费资本的巨龙宝库/玩家选项/巨龙法术详述.htm",
+  "source_record_id": "cd282f83133ae1b4ff3df426",
+  "spell_id": "cd282f83133ae1b4ff3df426",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "area",
+      "concentration",
+      "apply_condition"
+    ],
+    "template_fingerprint": "af295bb9885e22721b4b0ce62f8bf849a6eba5ca49ce60a0868f55c840a15edb",
+    "template_id": "spell.shape.009"
+  },
+  "uncertain_fields": {}
+}

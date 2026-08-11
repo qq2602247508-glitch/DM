@@ -1,0 +1,83 @@
+{
+  "candidate_clauses": [
+    {
+      "condition": "失能",
+      "type": "apply_condition"
+    },
+    {
+      "condition": "发光",
+      "type": "apply_condition"
+    }
+  ],
+  "candidate_id": "fizbans-treasury:candidate:49a5bacc752aa90fbbfbf316",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "1动作",
+    "classes": [
+      "吟游诗人",
+      "术士",
+      "魔契师",
+      "法师"
+    ],
+    "components": "V",
+    "concentration": false,
+    "conditions": [
+      "失能",
+      "发光"
+    ],
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "立即",
+    "half_damage_on_save": true,
+    "level": 4,
+    "range": "120尺",
+    "resolution_kind": "control",
+    "ritual": false,
+    "save": "智力豁免",
+    "target_disposition": "creature",
+    "upcast_text": "升环施法效果： 当你用5环或更高的法术位施展此法术时，你使用的法术位每比4环高一环，法术的伤害增加1d6。"
+  },
+  "exact_fields": {
+    "conditions": [
+      "失能",
+      "发光"
+    ]
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "劳洛希姆心灵长枪",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "费资本的巨龙宝库",
+  "source_evidence": {
+    "source_path": "费资本的巨龙宝库/玩家选项/巨龙法术详述.htm",
+    "source_text": "#### 劳洛希姆心灵长枪｜Raulothim's Psychic Lance\n\n*四环 惑控（吟游诗人、术士、魔契师、法师）*\n**施法时间：**1动作\n**施法距离：**120尺\n**法术成分：**V\n**持续时间：**立即\n你从你的额头处释放一道闪闪发光的灵能长矛，瞄准施法距离内你可见的一个生物。或者，你可以说出一个生物的名字。如果被唤名的生物身处施法距离内，即使你无法看见它，它也会成为法术的目标。如果被唤名的生物不处于施法距离内，长矛会消失并且没有任何效果。\n目标必须成功通过一次智力豁免，否则将受到7d6点心灵伤害并陷入失能，直至你的下回合开始。如果豁免成功，它只承受一半伤害并且不会失能。\n**升环施法效果：**当你用5环或更高的法术位施展此法术时，你使用的法术位每比4环高一环，法术的伤害增加1d6。"
+  },
+  "source_fingerprint": "45786e6c57e4c56a29800259cf32e1d236b08990ffc7d61efc793cb30a5fbbdc",
+  "source_path": "费资本的巨龙宝库/玩家选项/巨龙法术详述.htm",
+  "source_record_id": "49a5bacc752aa90fbbfbf316",
+  "spell_id": "49a5bacc752aa90fbbfbf316",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "apply_condition",
+      "apply_condition"
+    ],
+    "template_fingerprint": "3c42f68fb11991f0b3609f5d664da8f01323dbde293a556e901df3dc4b8daf72",
+    "template_id": "spell.shape.008"
+  },
+  "uncertain_fields": {}
+}

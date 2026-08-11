@@ -1,0 +1,86 @@
+{
+  "candidate_clauses": [
+    {
+      "save_ability": "敏捷",
+      "type": "saving_throw"
+    },
+    {
+      "damage_type": "穿刺",
+      "expression": "1d10",
+      "on_failure": "full",
+      "type": "damage"
+    },
+    {
+      "increments": "1d",
+      "per_slot": 1,
+      "type": "upcast"
+    }
+  ],
+  "candidate_id": "core-phb-2024:candidate:a128e3cbeb679c0fb30128b9",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "1附赠动作，在你使用远程武器命中一个生物时紧接可用",
+    "classes": [
+      "游侠"
+    ],
+    "components": "V",
+    "concentration": false,
+    "damage_expression": "1d10",
+    "damage_type": "穿刺",
+    "duration": "立即",
+    "half_damage_on_save": true,
+    "level": 1,
+    "range": "自身",
+    "resolution_kind": "damage",
+    "ritual": false,
+    "save": "敏捷豁免",
+    "school": "咒法",
+    "target_disposition": "creature",
+    "upcast_damage_dice": 1,
+    "upcast_text": "升环施法。 使用的法术位每比一环高一环，此法术的伤害就增加 \n1d10。"
+  },
+  "exact_fields": {
+    "damage_expression": "1d10",
+    "damage_type": "穿刺",
+    "save": "敏捷豁免",
+    "upcast": 1
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "荆棘之雨",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "source_path": "玩家手册2024/法术详述/1环.htm",
+    "source_text": "#### 荆棘之雨｜Hail of Thorns\n\n*一环 咒法（游侠）*\n**施法时间：**1附赠动作，在你使用远程武器命中一个生物时紧接可用\n**施法距离：**自身\n**法术成分：**V\n**持续时间：**立即\n当你攻击命中生物时，法术会从你的远程武器或弹药中创造出棘刺，并形成一片棘刺之雨。目标和在目标周围5尺内每个生物必须进行一次敏捷豁免检定，豁免失败者将受到 1d10 点穿刺伤害，豁免成功则受到一半伤害。\n**升环施法。**使用的法术位每比一环高一环，此法术的伤害就增加\n1d10。"
+  },
+  "source_fingerprint": "37ed80678d585583fec131b7d9f057aa88e616ebd229e005dbc50fdb832d5345",
+  "source_path": "玩家手册2024/法术详述/1环.htm",
+  "source_record_id": "a128e3cbeb679c0fb30128b9",
+  "spell_id": "a128e3cbeb679c0fb30128b9",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "saving_throw",
+      "damage",
+      "upcast"
+    ],
+    "template_fingerprint": "3c42f68fb11991f0b3609f5d664da8f01323dbde293a556e901df3dc4b8daf72",
+    "template_id": "spell.shape.008"
+  },
+  "uncertain_fields": {}
+}

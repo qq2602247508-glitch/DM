@@ -1,0 +1,60 @@
+{
+  "candidate_clauses": [],
+  "candidate_id": "core-phb-2024:candidate:1cfc37bb2e7203bd167cd224",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "动作",
+    "classes": [
+      "牧师",
+      "德鲁伊",
+      "奇械师"
+    ],
+    "components": "V、S",
+    "concentration": false,
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "立即",
+    "range": "15尺",
+    "ritual": false,
+    "school": "死灵",
+    "target_disposition": "creature"
+  },
+  "exact_fields": {},
+  "kind": "spell_candidate",
+  "missing_fields": [
+    "typed_clause_mapping"
+  ],
+  "name": "维生术",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target",
+    "typed_clause_mapping"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "source_path": "玩家手册2024/法术详述/0环.htm",
+    "source_text": "#### 维生术｜Spare the Dying\n\n*死灵 戏法（牧师、德鲁伊、奇械师）*\n**施法时间：**动作\n**施法距离：**15尺\n**法术成分：**V、S\n**持续时间：**立即\n选择施法距离内一名生命值为0但还未死亡的生物，使该生物变为伤势稳定。\n**戏法强化。**到达特定等级后，此法术的施法距离将翻倍：5级（30尺），11级（60尺），17级（120尺）。"
+  },
+  "source_fingerprint": "0824a4a5faef0cc908e3f17199aaedd5742a560924d833bc8f3b370724321974",
+  "source_path": "玩家手册2024/法术详述/0环.htm",
+  "source_record_id": "1cfc37bb2e7203bd167cd224",
+  "spell_id": "1cfc37bb2e7203bd167cd224",
+  "template_match": {
+    "confidence": "low",
+    "matched_shape": [],
+    "template_fingerprint": "c6cf559b317883e1043d55b34f4a36da44766b6d3a4828662a90474ca1486880",
+    "template_id": "spell.shape.005"
+  },
+  "uncertain_fields": {}
+}

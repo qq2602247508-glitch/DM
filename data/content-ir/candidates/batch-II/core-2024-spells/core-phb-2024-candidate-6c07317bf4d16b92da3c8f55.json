@@ -1,0 +1,71 @@
+{
+  "candidate_clauses": [
+    {
+      "shape": "sphere",
+      "size_ft": 5,
+      "type": "area"
+    }
+  ],
+  "candidate_id": "core-phb-2024:candidate:6c07317bf4d16b92da3c8f55",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "area_shape": "sphere",
+    "area_size_ft": 5,
+    "casting_time": "动作或仪式",
+    "classes": [
+      "牧师",
+      "德鲁伊",
+      "圣武士",
+      "奇械师"
+    ],
+    "components": "V、S",
+    "concentration": false,
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "立即",
+    "level": 1,
+    "range": "10尺",
+    "ritual": false,
+    "school": "变化"
+  },
+  "exact_fields": {
+    "area_shape": "sphere",
+    "area_size_ft": 5
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "净化饮食",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "source_path": "玩家手册2024/法术详述/1环.htm",
+    "source_text": "#### 净化饮食｜Purify Food and Drink\n\n*一环 变化（牧师、德鲁伊、圣武士、奇械师）*\n**施法时间：**动作或仪式\n**施法距离：**10尺\n**法术成分：**V、S\n**持续时间：**立即\n以施法距离内一点为中心，你移除半径5尺球状区域内非魔法食物与饮品中的毒素和腐败。"
+  },
+  "source_fingerprint": "1f7de824cfb8b337d3232aa13fa7443337c8d8417b450e221f8cb23f38bb7f4a",
+  "source_path": "玩家手册2024/法术详述/1环.htm",
+  "source_record_id": "6c07317bf4d16b92da3c8f55",
+  "spell_id": "6c07317bf4d16b92da3c8f55",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "area"
+    ],
+    "template_fingerprint": "af295bb9885e22721b4b0ce62f8bf849a6eba5ca49ce60a0868f55c840a15edb",
+    "template_id": "spell.shape.009"
+  },
+  "uncertain_fields": {}
+}

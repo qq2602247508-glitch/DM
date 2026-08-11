@@ -1,0 +1,76 @@
+{
+  "candidate_clauses": [
+    {
+      "required": true,
+      "type": "concentration"
+    }
+  ],
+  "candidate_id": "core-phb-2024:candidate:5add51530a922ac9deb3e9e5",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "动作",
+    "classes": [
+      "吟游诗人",
+      "术士",
+      "法师",
+      "奇械师"
+    ],
+    "components": "V、S、M（一点磷）",
+    "concentration": true,
+    "conditions": [
+      "发光"
+    ],
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "专注，至多1分钟",
+    "range": "120尺",
+    "resolution_kind": "control",
+    "ritual": false,
+    "school": "幻术",
+    "transformation": {
+      "form_ref": "dm_chosen_form",
+      "mode": "polymorph",
+      "requires_form_choice": true,
+      "reversible": false
+    }
+  },
+  "exact_fields": {
+    "concentration": true
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "舞光术",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "source_path": "玩家手册2024/法术详述/0环.htm",
+    "source_text": "#### 舞光术｜Dancing Lights\n\n*幻术 戏法（吟游诗人、术士、法师、奇械师）*\n**施法时间：**动作\n**施法距离：**120尺\n**法术成分：**V、S、M（一点磷）\n**持续时间：**专注，至多1分钟\n你在施法距离内创造至多四个火把大小的光源，使其在法术持续时间内看起来如同火把、灯笼或悬浮珠。或者，你可以将四个光源合并为一个发光的整体形态，使其看上去像一个模糊的中型人形。无论你选择哪种形态，每个光源都会发出10尺半径的微光光照。\n你可以用附赠动作将光源移动至多60尺至施法距离内的一处空间。一个由此法术创造的光源必须始终位于任一光源周围20尺内，而超出施法距离的光源会随即熄灭。"
+  },
+  "source_fingerprint": "12ee5a939cb0e1da8a032d61a195c48b4c8a3f55b97b2b5e6042dac83a08a4e0",
+  "source_path": "玩家手册2024/法术详述/0环.htm",
+  "source_record_id": "5add51530a922ac9deb3e9e5",
+  "spell_id": "5add51530a922ac9deb3e9e5",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "concentration"
+    ],
+    "template_fingerprint": "c6cf559b317883e1043d55b34f4a36da44766b6d3a4828662a90474ca1486880",
+    "template_id": "spell.shape.005"
+  },
+  "uncertain_fields": {}
+}

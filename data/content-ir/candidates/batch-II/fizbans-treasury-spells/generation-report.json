@@ -1,0 +1,24 @@
+{
+  "book": "费资本的巨龙宝库",
+  "candidate_paths": [
+    "fizbans-treasury-candidate-49a5bacc752aa90fbbfbf316.json",
+    "fizbans-treasury-candidate-051cb2f9130d4b712da3aa90.json",
+    "fizbans-treasury-candidate-843fb135e4cc8a1fb34c46be.json",
+    "fizbans-treasury-candidate-084712e58fd3714db50148c5.json",
+    "fizbans-treasury-candidate-cadce71b1ba7a42354f785dc.json",
+    "fizbans-treasury-candidate-cd282f83133ae1b4ff3df426.json",
+    "fizbans-treasury-candidate-0591371f9dc41058f1600081.json"
+  ],
+  "candidate_status": "generated_candidate",
+  "catalog_fingerprint": "7dd03f9bd5d532956076c724a98d275d06114d4afeadeb48b39ee4a0aaa241a5",
+  "counts_by_confidence": {
+    "high": 6,
+    "medium": 1
+  },
+  "counts_with_uncertainty": 1,
+  "generated_candidate_count": 7,
+  "kind": "spell",
+  "report_fingerprint": "8d3fbee9badd45e1400917201d1d6175d402d87767ded44f08e13fbae42cfd57",
+  "schema_version": "content-ir-candidate-generation-1",
+  "source_record_count": 7
+}

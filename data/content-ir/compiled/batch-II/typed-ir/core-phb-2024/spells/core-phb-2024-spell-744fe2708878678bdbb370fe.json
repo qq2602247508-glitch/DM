@@ -1,0 +1,145 @@
+{
+  "capability_registry": {
+    "id": "spell",
+    "version": "content-capabilities-1"
+  },
+  "casting_time": "动作",
+  "clause_boundaries": {
+    "area": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "#### 冰刃｜Ice Knife *一环 咒法（德鲁伊、术士、法师）* **施法时间：**动作 **施法距离：**60尺 **法术成分：**S、M（一滴水或一块冰） **持续时间：**立即 你制造出一块冰晶裂片，并将它射向施法距离内的一个生物。你对目标进行一次远程法术攻击。若击中，目标受到 1d10 点穿刺伤害。无论击中与否，裂片都会在那之后立刻爆裂。攻击目标和其5尺范围内的每名生物都必须通过一次敏捷豁免检定，否则将受到 2d6 点寒冷伤害。 **升环施法。**你使用的法术位每比一环高一环，寒冷伤害就增加1d6。",
+      "source_heading": "冰刃"
+    },
+    "damage": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "一滴水或一块冰） **持续时间：**立即 你制造出一块冰晶裂片，并将它射向施法距离内的一个生物。你对目标进行一次远程法术攻击。若击中，目标受到 1d10 点穿刺伤害。无论击中与否，裂片都会在那之后立刻爆裂。攻击目标和其5尺范围内的每名生物都必须通过一次敏捷豁免检定，否则将受到 2d6 点寒冷伤害。 **升环施法。**你使用的法术位每比一环高一环，寒冷伤害就增加1d6。",
+      "source_heading": "冰刃"
+    },
+    "save": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "你对目标进行一次远程法术攻击。若击中，目标受到 1d10 点穿刺伤害。无论击中与否，裂片都会在那之后立刻爆裂。攻击目标和其5尺范围内的每名生物都必须通过一次敏捷豁免检定，否则将受到 2d6 点寒冷伤害。 **升环施法。**你使用的法术位每比一环高一环，寒冷伤害就增加1d6。",
+      "source_heading": "冰刃"
+    },
+    "target": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "#### 冰刃｜Ice Knife *一环 咒法（德鲁伊、术士、法师）* **施法时间：**动作 **施法距离：**60尺 **法术成分：**S、M（一滴水或一块冰） **持续时间：**立即 你制造出一块冰晶裂片，并将它射向施法距离内的一个生物。你对目标进行一次远程法术攻击。若击中，目标受到 1d10 点穿刺伤害。无论击中与否，裂片都会在那之后立刻爆裂。攻击目标和其5尺范围内的每名生物都必须通过一次敏捷豁免检定，否则将受到 2d6 点寒冷伤害。 **升环施法。**你使用的法术位每比一环高一环，寒冷伤害就增加1d6。",
+      "source_heading": "冰刃"
+    }
+  },
+  "clause_identity": [
+    "core-phb-2024:spell:744fe2708878678bdbb370fe:target",
+    "core-phb-2024:spell:744fe2708878678bdbb370fe:save",
+    "core-phb-2024:spell:744fe2708878678bdbb370fe:damage",
+    "core-phb-2024:spell:744fe2708878678bdbb370fe:area"
+  ],
+  "clauses": [
+    {
+      "clause_id": "target",
+      "count": 1,
+      "evidence_ref": "#### 冰刃｜Ice Knife *一环 咒法（德鲁伊、术士、法师）* **施法时间：**动作 **施法距离：**60尺 **法术成分：**S、M（一滴水或一块冰） **持续时间：**立即 你制造出一块冰晶裂片，并将它射向施法距离内的一个生物。你对目标进行一次远程法术攻击。若击中，目标受到 1d10 点穿刺伤害。无论击中与否，裂片都会在那之后立刻爆裂。攻击目标和其5尺范围内的每名生物都必须通过一次敏捷豁免检定，否则将受到 2d6 点寒冷伤害。 **升环施法。**你使用的法术位每比一环高一环，寒冷伤害就增加1d6。",
+      "kind": "area",
+      "shape": "sphere",
+      "size_ft": 5,
+      "type": "target_selection",
+      "visibility": "visible"
+    },
+    {
+      "action_economy": "action",
+      "clause_id": "save",
+      "evidence_ref": "你对目标进行一次远程法术攻击。若击中，目标受到 1d10 点穿刺伤害。无论击中与否，裂片都会在那之后立刻爆裂。攻击目标和其5尺范围内的每名生物都必须通过一次敏捷豁免检定，否则将受到 2d6 点寒冷伤害。 **升环施法。**你使用的法术位每比一环高一环，寒冷伤害就增加1d6。",
+      "half_on_success": false,
+      "save_ability": "敏捷",
+      "target": "one_creature",
+      "type": "saving_throw"
+    },
+    {
+      "action_economy": "action",
+      "clause_id": "damage",
+      "damage": "1d10",
+      "damage_type": "穿刺",
+      "evidence_ref": "一滴水或一块冰） **持续时间：**立即 你制造出一块冰晶裂片，并将它射向施法距离内的一个生物。你对目标进行一次远程法术攻击。若击中，目标受到 1d10 点穿刺伤害。无论击中与否，裂片都会在那之后立刻爆裂。攻击目标和其5尺范围内的每名生物都必须通过一次敏捷豁免检定，否则将受到 2d6 点寒冷伤害。 **升环施法。**你使用的法术位每比一环高一环，寒冷伤害就增加1d6。",
+      "expression": "1d10",
+      "on_failure": "full",
+      "on_success": "none",
+      "target": "one_creature",
+      "timing": "immediate",
+      "type": "damage"
+    },
+    {
+      "clause_id": "area",
+      "evidence_ref": "#### 冰刃｜Ice Knife *一环 咒法（德鲁伊、术士、法师）* **施法时间：**动作 **施法距离：**60尺 **法术成分：**S、M（一滴水或一块冰） **持续时间：**立即 你制造出一块冰晶裂片，并将它射向施法距离内的一个生物。你对目标进行一次远程法术攻击。若击中，目标受到 1d10 点穿刺伤害。无论击中与否，裂片都会在那之后立刻爆裂。攻击目标和其5尺范围内的每名生物都必须通过一次敏捷豁免检定，否则将受到 2d6 点寒冷伤害。 **升环施法。**你使用的法术位每比一环高一环，寒冷伤害就增加1d6。",
+      "origin": "source_explicit_origin",
+      "shape": "sphere",
+      "size_ft": 5,
+      "type": "area"
+    }
+  ],
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "concentration": false,
+  "duration": "立即",
+  "edition": "2024",
+  "evidence": [
+    "area: #### 冰刃｜Ice Knife *一环 咒法（德鲁伊、术士、法师）* **施法时间：**动作 **施法距离：**60尺 **法术成分：**S、M（一滴水或一块冰） **持续时间：**立即 你制造出一块冰晶裂片，并将它射向施法距离内的一个生物。你对目标进行一次远程法术攻击。若击中，目标受到 1d10 点穿刺伤害。无论击中与否，裂片都会在那之后立刻爆裂。攻击目标和其5尺范围内的每名生物都必须通过一次敏捷豁免检定，否则将受到 2d6 点寒冷伤害。 **升环施法。**你使用的法术位每比一环高一环，寒冷伤害就增加1d6。",
+    "damage: 一滴水或一块冰） **持续时间：**立即 你制造出一块冰晶裂片，并将它射向施法距离内的一个生物。你对目标进行一次远程法术攻击。若击中，目标受到 1d10 点穿刺伤害。无论击中与否，裂片都会在那之后立刻爆裂。攻击目标和其5尺范围内的每名生物都必须通过一次敏捷豁免检定，否则将受到 2d6 点寒冷伤害。 **升环施法。**你使用的法术位每比一环高一环，寒冷伤害就增加1d6。",
+    "save: 你对目标进行一次远程法术攻击。若击中，目标受到 1d10 点穿刺伤害。无论击中与否，裂片都会在那之后立刻爆裂。攻击目标和其5尺范围内的每名生物都必须通过一次敏捷豁免检定，否则将受到 2d6 点寒冷伤害。 **升环施法。**你使用的法术位每比一环高一环，寒冷伤害就增加1d6。",
+    "target: #### 冰刃｜Ice Knife *一环 咒法（德鲁伊、术士、法师）* **施法时间：**动作 **施法距离：**60尺 **法术成分：**S、M（一滴水或一块冰） **持续时间：**立即 你制造出一块冰晶裂片，并将它射向施法距离内的一个生物。你对目标进行一次远程法术攻击。若击中，目标受到 1d10 点穿刺伤害。无论击中与否，裂片都会在那之后立刻爆裂。攻击目标和其5尺范围内的每名生物都必须通过一次敏捷豁免检定，否则将受到 2d6 点寒冷伤害。 **升环施法。**你使用的法术位每比一环高一环，寒冷伤害就增加1d6。"
+  ],
+  "kind": "spell",
+  "level": 1,
+  "manual_decisions": {
+    "review_gate": "accepted only explicit normalized fields and quoted source evidence",
+    "unresolved_branches": "not promoted when the source does not state attack/save semantics"
+  },
+  "name": "冰刃",
+  "namespace": "content.core-phb-2024",
+  "pack_id": "core-phb-2024",
+  "pack_version": "source-7011166c19bd",
+  "range": "60尺",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-11-batch-II",
+  "reviewed_fields": [
+    "schema_version",
+    "spell_id",
+    "name",
+    "pack_id",
+    "pack_version",
+    "namespace",
+    "ruleset_version",
+    "source_record_id",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "source_trust",
+    "level",
+    "school",
+    "casting_time",
+    "range",
+    "duration",
+    "concentration",
+    "clauses",
+    "evidence"
+  ],
+  "ruleset_version": "2024",
+  "schema_version": "spell-ir-1",
+  "school": "咒法",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "selected_clause_excerpt": "#### 冰刃｜Ice Knife *一环 咒法（德鲁伊、术士、法师）* **施法时间：**动作 **施法距离：**60尺 **法术成分：**S、M（一滴水或一块冰） **持续时间：**立即 你制造出一块冰晶裂片，并将它射向施法距离内的一个生物。你对目标进行一次远程法术攻击。若击中，目标受到 1d10 点穿刺伤害。无论击中与否，裂片都会在那之后立刻爆裂。攻击目标和其5尺范围内的每名生物都必须通过一次敏捷豁免检定，否则将受到 2d6 点寒冷伤害。 **升环施法。**你使用的法术位每比一环高一环，寒冷伤害就增加1d6。 你对目标进行一次远程法术攻击。若击中，目标受到 1d10 点穿刺伤害。无论击中与否，裂片都会在那之后立刻爆裂。攻击目标和其5尺范围内的每名生物都必须通过一次敏捷豁免检定，否则将受到 2d6 点寒冷伤害。 **升环施法。**你使用的法术位每比一环高一环，寒冷伤害就增加1d6。 一滴水或一块冰） **持续时间：**立即 你制造出一块冰晶裂片，并将它射向施法距离内的一个生物。你对目标进行一次远程法术攻击。若击中，目标受到 1d10 点穿刺伤害。无论击中与否，裂片都会在那之后立刻爆裂。攻击目标和其5尺范围内的每名生物都必须通过一次敏捷豁免检定，否则将受到 2d6 点寒冷伤害。 **升环施法。**你使用的法术位每比一环高一环，寒冷伤害就增加1d6。 #### 冰刃｜Ice Knife *一环 咒法（德鲁伊、术士、法师）* **施法时间：**动作 **施法距离：**60尺 **法术成分：**S、M（一滴水或一块冰） **持续时间：**立即 你制造出一块冰晶裂片，并将它射向施法距离内的一个生物。你对目标进行一次远程法术攻击。若击中，目标受到 1d10 点穿刺伤害。无论击中与否，裂片都会在那之后立刻爆裂。攻击目标和其5尺范围内的每名生物都必须通过一次敏捷豁免检定，否则将受到 2d6 点寒冷伤害。 **升环施法。**你使用的法术位每比一环高一环，寒冷伤害就增加1d6。",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "2213c7d90b47402ac6ec97d85cc38c3f2548cfaa3e0d8e10700c73ae9aa61b08",
+    "source_path": "玩家手册2024/法术详述/1环.htm",
+    "source_text": "#### 冰刃｜Ice Knife\n\n*一环 咒法（德鲁伊、术士、法师）*\n**施法时间：**动作\n**施法距离：**60尺\n**法术成分：**S、M（一滴水或一块冰）\n**持续时间：**立即\n你制造出一块冰晶裂片，并将它射向施法距离内的一个生物。你对目标进行一次远程法术攻击。若击中，目标受到 1d10 点穿刺伤害。无论击中与否，裂片都会在那之后立刻爆裂。攻击目标和其5尺范围内的每名生物都必须通过一次敏捷豁免检定，否则将受到 2d6 点寒冷伤害。\n**升环施法。**你使用的法术位每比一环高一环，寒冷伤害就增加1d6。"
+  },
+  "source_fingerprint": "187f3090f96d447315faafb5f15ab8bd3399688f08b8329c9d597e35116ee48c",
+  "source_path": "玩家手册2024/法术详述/1环.htm",
+  "source_provenance": {
+    "officiality": "official",
+    "review_basis": "local_source_text_manual_review",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "2213c7d90b47402ac6ec97d85cc38c3f2548cfaa3e0d8e10700c73ae9aa61b08",
+    "source_relative_path": "玩家手册2024/法术详述/1环.htm"
+  },
+  "source_record_id": "744fe2708878678bdbb370fe",
+  "source_trust": "authored_ir",
+  "spell_id": "core-phb-2024:spell:744fe2708878678bdbb370fe"
+}

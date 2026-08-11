@@ -1,0 +1,59 @@
+{
+  "candidate_clauses": [],
+  "candidate_id": "core-phb-2024:candidate:82f220a9e3474d8fe1cafd8b",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "动作",
+    "classes": [
+      "牧师"
+    ],
+    "components": "V、S",
+    "concentration": false,
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "立即",
+    "range": "60 尺",
+    "ritual": false,
+    "save": "敏捷豁免",
+    "school": "塑能",
+    "target_disposition": "creature"
+  },
+  "exact_fields": {},
+  "kind": "spell_candidate",
+  "missing_fields": [
+    "typed_clause_mapping"
+  ],
+  "name": "圣火术",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target",
+    "typed_clause_mapping"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "source_path": "玩家手册2024/法术详述/0环.htm",
+    "source_text": "#### 圣火术｜Sacred Flame\n\n*塑能 戏法（牧师）*\n**施法时间：**动作\n**施法距离：**60 尺\n**法术成分：**V、S\n**持续时间：**立即\n如同烈焰般的辉光向着施法距离内你能看见的一名生物倾泻而下。目标必须要通过一次敏捷豁免，否则将受到1d8点光耀伤害。在这次豁免检定中，目标无法享受来自半身掩护和四分之三掩护的增益。\n**戏法强化。**该法术的伤害会在你达到下列等级时增加1d8：5级（2d8），11 级（3d8），17\n级（4d8）。"
+  },
+  "source_fingerprint": "3b5d93b6755939c7caf839d96dcb32e7fcc2d8839b5551ea7ec6afd115874b38",
+  "source_path": "玩家手册2024/法术详述/0环.htm",
+  "source_record_id": "82f220a9e3474d8fe1cafd8b",
+  "spell_id": "82f220a9e3474d8fe1cafd8b",
+  "template_match": {
+    "confidence": "low",
+    "matched_shape": [],
+    "template_fingerprint": "c6cf559b317883e1043d55b34f4a36da44766b6d3a4828662a90474ca1486880",
+    "template_id": "spell.shape.005"
+  },
+  "uncertain_fields": {}
+}

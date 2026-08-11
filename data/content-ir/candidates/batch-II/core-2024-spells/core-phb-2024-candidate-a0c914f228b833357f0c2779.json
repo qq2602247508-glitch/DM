@@ -1,0 +1,66 @@
+{
+  "candidate_clauses": [
+    {
+      "required": true,
+      "type": "concentration"
+    }
+  ],
+  "candidate_id": "core-phb-2024:candidate:a0c914f228b833357f0c2779",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "动作",
+    "classes": [
+      "牧师",
+      "德鲁伊",
+      "奇械师"
+    ],
+    "components": "V、S",
+    "concentration": true,
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "专注，至多1分钟",
+    "range": "触碰",
+    "ritual": false,
+    "school": "防护",
+    "target_disposition": "ally"
+  },
+  "exact_fields": {
+    "concentration": true
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "抵抗术",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "source_path": "玩家手册2024/法术详述/0环.htm",
+    "source_text": "#### 抵抗术｜Resistance\n\n*防护 戏法（牧师、德鲁伊、奇械师）*\n**施法时间：**动作\n**施法距离：**触碰\n**法术成分：**V、S\n**持续时间：**专注，至多1分钟\n你触碰一名自愿生物并选择一种伤害类型：强酸、钝击、寒冷、火焰、闪电、暗蚀、穿刺、毒素、光耀、挥砍、雷鸣。在此法术结束之前，每当该生物受到所选类型伤害时，那名生物所受的总伤害减少1d4。一名生物一回合只能受到一次该法术的增益。"
+  },
+  "source_fingerprint": "59187b0505b844c08bb7e5f19d25b0cd77ef156889ee4ed84969608ddc70d4d9",
+  "source_path": "玩家手册2024/法术详述/0环.htm",
+  "source_record_id": "a0c914f228b833357f0c2779",
+  "spell_id": "a0c914f228b833357f0c2779",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "concentration"
+    ],
+    "template_fingerprint": "c6cf559b317883e1043d55b34f4a36da44766b6d3a4828662a90474ca1486880",
+    "template_id": "spell.shape.005"
+  },
+  "uncertain_fields": {}
+}

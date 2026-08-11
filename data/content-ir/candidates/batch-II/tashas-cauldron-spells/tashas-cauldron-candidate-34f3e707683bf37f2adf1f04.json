@@ -1,0 +1,88 @@
+{
+  "candidate_clauses": [
+    {
+      "save_ability": "力量",
+      "type": "saving_throw"
+    },
+    {
+      "damage_type": "闪电",
+      "expression": "1d8",
+      "on_failure": "full",
+      "type": "damage"
+    },
+    {
+      "shape": "sphere",
+      "size_ft": 5,
+      "type": "area"
+    }
+  ],
+  "candidate_id": "tashas-cauldron:candidate:34f3e707683bf37f2adf1f04",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "area_shape": "sphere",
+    "area_size_ft": 5,
+    "casting_time": "1 动作",
+    "classes": [
+      "奇械师",
+      "术士",
+      "魔契师",
+      "法师"
+    ],
+    "components": "V",
+    "concentration": false,
+    "damage_expression": "1d8",
+    "damage_type": "闪电",
+    "duration": "立即 你创造出鞭状闪电能量袭向你 15",
+    "range": "自身（15尺）",
+    "resolution_kind": "damage",
+    "ritual": false,
+    "save": "力量豁免",
+    "school": "塑能",
+    "target_disposition": "creature"
+  },
+  "exact_fields": {
+    "area_shape": "sphere",
+    "area_size_ft": 5,
+    "damage_expression": "1d8",
+    "damage_type": "闪电",
+    "save": "力量豁免"
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "闪电牵引",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "塔莎的万事坩埚",
+  "source_evidence": {
+    "source_path": "塔莎的万事坩埚/法术/法术详述/戏法.html",
+    "source_text": "#### 闪电牵引｜Lightning Lure\n\n*塑能 戏法（奇械师、术士、魔契师、法师）*\n施法时间：1 动作\n施法距离：自身（15尺）\n法术成分：V\n持续时间：立即\n你创造出鞭状闪电能量袭向你 15\n尺内可见的一个生物。目标必须进行一次力量豁免，豁免失败则其以直线被你拉近至多 10 尺。那之后如果豁免失败者身处在你周围5尺范围内，他将受到 1d8\n点闪电伤害。\n当你到达特定等级后，此法术的伤害将增加 1d8 点：5级（变为 2d8）、11 级（3d8）、17 级（4d8）。"
+  },
+  "source_fingerprint": "644bb31231fe5479283f283e6234fe942c0a40d9c13ebbd9c364364d5286e973",
+  "source_path": "塔莎的万事坩埚/法术/法术详述/戏法.html",
+  "source_record_id": "34f3e707683bf37f2adf1f04",
+  "spell_id": "34f3e707683bf37f2adf1f04",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "saving_throw",
+      "damage",
+      "area"
+    ],
+    "template_fingerprint": "af295bb9885e22721b4b0ce62f8bf849a6eba5ca49ce60a0868f55c840a15edb",
+    "template_id": "spell.shape.009"
+  },
+  "uncertain_fields": {}
+}

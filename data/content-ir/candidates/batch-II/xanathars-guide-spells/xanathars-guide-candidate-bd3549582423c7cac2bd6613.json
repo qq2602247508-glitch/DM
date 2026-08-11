@@ -1,0 +1,68 @@
+{
+  "candidate_clauses": [
+    {
+      "required": true,
+      "type": "concentration"
+    }
+  ],
+  "candidate_id": "xanathars-guide:candidate:bd3549582423c7cac2bd6613",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "1 \n动作",
+    "classes": [
+      "吟游诗人",
+      "术士",
+      "法师",
+      "奇械师"
+    ],
+    "components": "V、S",
+    "concentration": true,
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "专注，至多 1 \n小时",
+    "level": 5,
+    "range": "触碰",
+    "ritual": false,
+    "school": "变化",
+    "target_disposition": "ally"
+  },
+  "exact_fields": {
+    "concentration": true
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "授予技能",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "source_path": "珊娜萨的万事指南/法术/法术详述/5环.html",
+    "source_text": "#### 授予技能｜Skill Empowerment\n\n*五环 变化（吟游诗人、术士、法师、奇械师）*\n**施法时间：**1\n动作\n**施法距离：**触碰\n**法术成分：**V、S\n**持续时间：**专注，至多 1\n小时\n你用魔法加深生物对自己才华的理解。你触碰一个自愿生物，并给予它由你选择的一项技能的专精；直到法术结束之前，生物每次在使用所选技能进行属性检定时都可以加入双倍的熟练加值。\n你所选择的技能必须是目标已熟练的，且没有受益于其他类似将熟练加值加倍的效果（例如\n专精 Expertise ）的。"
+  },
+  "source_fingerprint": "30fe390d3b36b3d5833dd38d05fe68c8979acdb9df441e20ff337fbaf331fd08",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/5环.html",
+  "source_record_id": "bd3549582423c7cac2bd6613",
+  "spell_id": "bd3549582423c7cac2bd6613",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "concentration"
+    ],
+    "template_fingerprint": "c6cf559b317883e1043d55b34f4a36da44766b6d3a4828662a90474ca1486880",
+    "template_id": "spell.shape.005"
+  },
+  "uncertain_fields": {}
+}

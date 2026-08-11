@@ -1,0 +1,71 @@
+{
+  "candidate_clauses": [
+    {
+      "shape": "sphere",
+      "size_ft": 60,
+      "type": "area"
+    }
+  ],
+  "candidate_id": "core-phb-2024:candidate:87fdcaf361a184ab4207a62f",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "area_shape": "sphere",
+    "area_size_ft": 60,
+    "casting_time": "1 分钟或仪式",
+    "classes": [
+      "游侠",
+      "法师",
+      "奇械师"
+    ],
+    "components": "V、S、M（一个小铃铛和一小段银线）",
+    "concentration": false,
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "8 小时",
+    "level": 1,
+    "range": "30 尺",
+    "ritual": false,
+    "school": "防护",
+    "target_disposition": "creature"
+  },
+  "exact_fields": {
+    "area_shape": "sphere",
+    "area_size_ft": 60
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "警报术",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "source_path": "玩家手册2024/法术详述/1环.htm",
+    "source_text": "#### 警报术｜Alarm\n\n*一环 防护（游侠、法师、奇械师）*\n**施法时间：**1 分钟或仪式\n**施法距离：**30 尺\n**法术成分：**V、S、M（一个小铃铛和一小段银线）\n**持续时间：**8 小时\n你设置一个针对不速之客的警报。在施法距离内指定一扇门窗或选择一个边长不大于20\n尺的立方区域。在法术持续时间内，任何触碰或进入被法术保护区域的生物都会触发警报。施法时，你可以决定哪些生物不会触发警报，还可以选择警报方式为声音警报或是精神警报。\n\n> **声音警报Audible Alarm。**警报将在其保护区域 60 尺范围内响起持续 10\n> 秒的摇铃声。\n> **精神警报Mental Alarm。**如果你距离目标区域不超过 1\n>  里，警报会在你脑海中会传来“乒”的警报声。如果你在睡觉，则警报将使你惊醒。"
+  },
+  "source_fingerprint": "96d3d9712b1da0bcc023cff0d5cebf7a46210a0c99c309b94a7d9abfa869ca65",
+  "source_path": "玩家手册2024/法术详述/1环.htm",
+  "source_record_id": "87fdcaf361a184ab4207a62f",
+  "spell_id": "87fdcaf361a184ab4207a62f",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "area"
+    ],
+    "template_fingerprint": "af295bb9885e22721b4b0ce62f8bf849a6eba5ca49ce60a0868f55c840a15edb",
+    "template_id": "spell.shape.009"
+  },
+  "uncertain_fields": {}
+}

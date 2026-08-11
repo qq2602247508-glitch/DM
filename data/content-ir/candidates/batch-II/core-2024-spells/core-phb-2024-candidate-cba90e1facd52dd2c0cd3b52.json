@@ -1,0 +1,76 @@
+{
+  "candidate_clauses": [],
+  "candidate_id": "core-phb-2024:candidate:cba90e1facd52dd2c0cd3b52",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "area_shape": null,
+    "area_size_ft": null,
+    "casting_time": "动作或仪式",
+    "classes": [
+      "吟游诗人",
+      "魔契师",
+      "法师"
+    ],
+    "components": "V、S、M（一些线和木头）",
+    "concentration": false,
+    "conditions": null,
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "1小时",
+    "half_damage_on_save": null,
+    "healing": null,
+    "level": 1,
+    "max_targets": null,
+    "movement": null,
+    "range": "60尺",
+    "reaction": null,
+    "resolution_kind": "narrative",
+    "ritual": false,
+    "save": null,
+    "school": "咒法",
+    "summon": {
+      "controller": "caster",
+      "count": 1,
+      "creature_ref": "隐形仆役",
+      "enters_combat": false
+    }
+  },
+  "exact_fields": {},
+  "kind": "spell_candidate",
+  "missing_fields": [
+    "typed_clause_mapping"
+  ],
+  "name": "隐形仆役",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target",
+    "typed_clause_mapping"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "source_path": "玩家手册2024/法术详述/1环.htm",
+    "source_text": "#### 隐形仆役｜Unseen Servant\n\n*一环 咒法（吟游诗人、魔契师、法师）*\n**施法时间：**动作或仪式\n**施法距离：**60尺\n**法术成分：**V、S、M（一些线和木头）\n**持续时间：**1小时\n该法术创造出一个隐形、无心智、无定形的中型力场。你可以在法术终止前命令它进行简单的工作。该仆役被创造出来后出现在施法距离内一处未占空间的地面上。其AC为10，具有1生命值，力量为2，且不能攻击。若仆从的生命值降至 0，则法术终止。\n在每个自己回合内以一个附赠动作\n ，你可以精神性的对仆役下达一道命令，使其移动至多15尺并与一个物件进行互动。仆役可以做人类能做到的简单工作，例如拿取东西、打扫卫生、修补东西、叠衣服、点火、上菜、倒饮料等。一旦你下达了命令，仆役就会尽全力去进行任务直至完成任务，并在此后等待你的下一个命令。\n如果你命令仆役做一件需要它离开你身边60尺的工作，则法术终止。"
+  },
+  "source_fingerprint": "dc94d2563ff5ee9c5e9f2567b87111ff35e1336dd0efc4e5b719c1b27bdec41c",
+  "source_path": "玩家手册2024/法术详述/1环.htm",
+  "source_record_id": "cba90e1facd52dd2c0cd3b52",
+  "spell_id": "cba90e1facd52dd2c0cd3b52",
+  "template_match": {
+    "confidence": "low",
+    "matched_shape": [],
+    "template_fingerprint": "c6cf559b317883e1043d55b34f4a36da44766b6d3a4828662a90474ca1486880",
+    "template_id": "spell.shape.005"
+  },
+  "uncertain_fields": {}
+}

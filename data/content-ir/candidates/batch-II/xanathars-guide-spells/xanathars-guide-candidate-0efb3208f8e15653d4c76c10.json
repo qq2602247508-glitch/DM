@@ -1,0 +1,62 @@
+{
+  "candidate_clauses": [],
+  "candidate_id": "xanathars-guide:candidate:0efb3208f8e15653d4c76c10",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "1 动作",
+    "classes": [
+      "德鲁伊",
+      "术士",
+      "魔契师",
+      "法师"
+    ],
+    "components": "V、S、M（一只活跳蚤）",
+    "concentration": false,
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "立即",
+    "range": "30 \n尺",
+    "ritual": false,
+    "save": "体质豁免",
+    "school": "咒法",
+    "target_disposition": "creature"
+  },
+  "exact_fields": {},
+  "kind": "spell_candidate",
+  "missing_fields": [
+    "typed_clause_mapping"
+  ],
+  "name": "虫群孳生",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target",
+    "typed_clause_mapping"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "source_path": "珊娜萨的万事指南/法术/法术详述/戏法.html",
+    "source_text": "#### 虫群孳生｜Infestation\n\n*咒法 戏法（德鲁伊、术士、魔契师、法师）*\n**施法时间：**1 动作\n**施法距离：**30\n尺\n**法术成分：**V、S、M（一只活跳蚤）\n**持续时间：**立即\n你令一个处于距离内、你能看见的生物身上暂时性的出现螨虫、跳蚤、和其他寄生虫。目标必须通过一次体质豁免检定，否则受到\n1d6 点毒素伤害并且向着一个随机的方向移动 5 尺，只要它可以移动并且有至少 5 尺的速度。投 1d4\n决定方向：1，北；2，南；3，东；4，西。这个移动不会提供借机攻击，并且如果移动的方向被阻挡，目标将不会移动。\n此法术的伤害在你达到 5\n级（2d6），11 级（3d6），和 17 级（4d6）时提高 1d6 点。"
+  },
+  "source_fingerprint": "cbaba47acd49d4ae47459f177b72675542c98c6bcb4fec060419e05e3e252258",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/戏法.html",
+  "source_record_id": "0efb3208f8e15653d4c76c10",
+  "spell_id": "0efb3208f8e15653d4c76c10",
+  "template_match": {
+    "confidence": "low",
+    "matched_shape": [],
+    "template_fingerprint": "c6cf559b317883e1043d55b34f4a36da44766b6d3a4828662a90474ca1486880",
+    "template_id": "spell.shape.005"
+  },
+  "uncertain_fields": {}
+}

@@ -1,0 +1,77 @@
+{
+  "candidate_clauses": [
+    {
+      "shape": "cube",
+      "size_ft": 5,
+      "type": "area"
+    }
+  ],
+  "candidate_id": "core-phb-2024:candidate:9c4208ec038463dfd608ba9e",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "area_shape": "cube",
+    "area_size_ft": 5,
+    "casting_time": "动作",
+    "classes": [
+      "德鲁伊",
+      "术士",
+      "法师",
+      "奇械师"
+    ],
+    "components": "V、S",
+    "concentration": false,
+    "creation": {
+      "count": null,
+      "creation_kind": "item",
+      "requires_template_choice": true,
+      "template_ref": "dm_chosen_template"
+    },
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "立即",
+    "range": "30尺",
+    "ritual": false,
+    "school": "变化",
+    "target_disposition": "creature"
+  },
+  "exact_fields": {
+    "area_shape": "cube",
+    "area_size_ft": 5
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "四象法门",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "source_path": "玩家手册2024/法术详述/0环.htm",
+    "source_text": "#### 四象法门｜Elementalism\n\n*变化 戏法（德鲁伊、术士、法师、奇械师）*\n**施法时间：**动作\n**施法距离：**30尺\n**法术成分：**V、S\n**持续时间：**立即\n你操控元素，在施法距离内创造下述效应之一。\n\n> **召气Beckon\n> Air。**你在一处5尺立方区域内创造一股和风，其足以吹动布料、搅动灰尘、使落叶沙沙作响、关闭开着的门和百叶窗。若开着的门/百叶窗被某人/某物顶住，则其不受该效应影响。\n> **召土Beckon\n> Earth。**你创造灰尘或沙子组成的薄帷，覆盖在5尺立方区域内的表面上，或者你可以在一堆泥土或沙子中使一个单词以你的手写体出现。\n> **召火Beckon\n> Fire。**你在一处5尺立方区域内创造一片无害余烬与一股富有色彩和气味的烟。你选择烟的色彩和气味，而余烬可以点燃区域中的蜡烛、火把或油灯。烟的气味会存留1分钟。\n> **召水Beckon\n> Water。**你在一处5尺立方范围内创造一片凉爽的，使范围内生物和物件略微潮湿的雾气。或者，你可以在一个有开口的容器或表面上创造出一杯干净的水，水会在1分钟内蒸发。\n> **塑形元素Sculpt\n> Element。**你使1尺立方区域内的泥土、沙子、火焰、烟尘、雾气或水呈现出一个粗略的形状（如一名生物），持续1小时。"
+  },
+  "source_fingerprint": "70fb324f9b9be7245fc240b742430922792817645cb8cecf451f7663ec6d4330",
+  "source_path": "玩家手册2024/法术详述/0环.htm",
+  "source_record_id": "9c4208ec038463dfd608ba9e",
+  "spell_id": "9c4208ec038463dfd608ba9e",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "area"
+    ],
+    "template_fingerprint": "af295bb9885e22721b4b0ce62f8bf849a6eba5ca49ce60a0868f55c840a15edb",
+    "template_id": "spell.shape.009"
+  },
+  "uncertain_fields": {}
+}

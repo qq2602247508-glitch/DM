@@ -1,0 +1,92 @@
+{
+  "capability_registry": {
+    "id": "spell",
+    "version": "content-capabilities-1"
+  },
+  "casting_time": "动作",
+  "clause_boundaries": {
+    "target": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "游侠、法师、奇械师）* **施法时间：**动作 **施法距离：**触碰 **法术成分：**V、S、M（一撮泥土） **持续时间：**1 小时 你触碰一个生物，该目标的速度增加10尺，直至法术结束。 **升环施法。**使用的法术位每比一环高一环，你就可以额外指定一个目标。",
+      "source_heading": "大步奔行"
+    }
+  },
+  "clause_identity": [
+    "core-phb-2024:spell:6f5b6f21ffa22e705a9bd6cb:target"
+  ],
+  "clauses": [
+    {
+      "clause_id": "target",
+      "count": 1,
+      "evidence_ref": "游侠、法师、奇械师）* **施法时间：**动作 **施法距离：**触碰 **法术成分：**V、S、M（一撮泥土） **持续时间：**1 小时 你触碰一个生物，该目标的速度增加10尺，直至法术结束。 **升环施法。**使用的法术位每比一环高一环，你就可以额外指定一个目标。",
+      "kind": "one_creature",
+      "type": "target_selection",
+      "visibility": "visible"
+    }
+  ],
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "concentration": false,
+  "duration": "1 小时",
+  "edition": "2024",
+  "evidence": [
+    "target: 游侠、法师、奇械师）* **施法时间：**动作 **施法距离：**触碰 **法术成分：**V、S、M（一撮泥土） **持续时间：**1 小时 你触碰一个生物，该目标的速度增加10尺，直至法术结束。 **升环施法。**使用的法术位每比一环高一环，你就可以额外指定一个目标。"
+  ],
+  "kind": "spell",
+  "level": 1,
+  "manual_decisions": {
+    "review_gate": "accepted only explicit normalized fields and quoted source evidence",
+    "unresolved_branches": "not promoted when the source does not state attack/save semantics"
+  },
+  "name": "大步奔行",
+  "namespace": "content.core-phb-2024",
+  "pack_id": "core-phb-2024",
+  "pack_version": "source-7011166c19bd",
+  "range": "触碰",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-11-batch-II",
+  "reviewed_fields": [
+    "schema_version",
+    "spell_id",
+    "name",
+    "pack_id",
+    "pack_version",
+    "namespace",
+    "ruleset_version",
+    "source_record_id",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "source_trust",
+    "level",
+    "school",
+    "casting_time",
+    "range",
+    "duration",
+    "concentration",
+    "clauses",
+    "evidence"
+  ],
+  "ruleset_version": "2024",
+  "schema_version": "spell-ir-1",
+  "school": "变化",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "selected_clause_excerpt": "游侠、法师、奇械师）* **施法时间：**动作 **施法距离：**触碰 **法术成分：**V、S、M（一撮泥土） **持续时间：**1 小时 你触碰一个生物，该目标的速度增加10尺，直至法术结束。 **升环施法。**使用的法术位每比一环高一环，你就可以额外指定一个目标。",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "da6bb47a0d6535a9b645dc4b739d9a7e8fa8961eb1935648b27b93cd4e528412",
+    "source_path": "玩家手册2024/法术详述/1环.htm",
+    "source_text": "#### 大步奔行｜Longstrider\n\n*一环 变化（吟游诗人、德鲁伊、游侠、法师、奇械师）*\n**施法时间：**动作\n**施法距离：**触碰\n**法术成分：**V、S、M（一撮泥土）\n**持续时间：**1 小时\n你触碰一个生物，该目标的速度增加10尺，直至法术结束。\n**升环施法。**使用的法术位每比一环高一环，你就可以额外指定一个目标。"
+  },
+  "source_fingerprint": "834e92d0104e26b08042388d344c97379f0274a935e10fd4953075ec9bd0a8b0",
+  "source_path": "玩家手册2024/法术详述/1环.htm",
+  "source_provenance": {
+    "officiality": "official",
+    "review_basis": "local_source_text_manual_review",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "da6bb47a0d6535a9b645dc4b739d9a7e8fa8961eb1935648b27b93cd4e528412",
+    "source_relative_path": "玩家手册2024/法术详述/1环.htm"
+  },
+  "source_record_id": "6f5b6f21ffa22e705a9bd6cb",
+  "source_trust": "authored_ir",
+  "spell_id": "core-phb-2024:spell:6f5b6f21ffa22e705a9bd6cb"
+}

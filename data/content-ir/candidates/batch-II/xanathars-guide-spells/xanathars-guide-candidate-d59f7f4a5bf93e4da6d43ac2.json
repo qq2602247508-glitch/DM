@@ -1,0 +1,60 @@
+{
+  "candidate_clauses": [],
+  "candidate_id": "xanathars-guide:candidate:d59f7f4a5bf93e4da6d43ac2",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "1 动作",
+    "classes": [
+      "德鲁伊",
+      "术士",
+      "法师"
+    ],
+    "components": "S",
+    "concentration": false,
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "立即或 1 \n个小时（见下文）",
+    "range": "30 尺",
+    "ritual": false,
+    "school": "变化",
+    "target_disposition": "creature"
+  },
+  "exact_fields": {},
+  "kind": "spell_candidate",
+  "missing_fields": [
+    "typed_clause_mapping"
+  ],
+  "name": "操水术",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target",
+    "typed_clause_mapping"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "source_path": "珊娜萨的万事指南/法术/法术详述/戏法.html",
+    "source_text": "#### 操水术｜Shape Water\n\n*变化 戏法（德鲁伊、术士、法师）*\n**施法时间：**1 动作\n**施法距离：**30 尺\n**法术成分：**S\n**持续时间：**立即或 1\n个小时（见下文）\n你选定距离之内，你能看见的一处占据 5 立方尺的水体。你能以下述方式之一来对其进行操控：\n\n- 你立即在你选定的方向上，造成或改变水的流动，至多在任意方向上改变 5 尺。此种运动的力量不足以造成伤害。你令水体呈现出简单的形状，随你的意愿而运动。这种变化持续 1 个小时。你改变了水体的颜色或透明度。水体必须被整体性的改变。此种变化持续 1 个小时。你冻结了水（水中有生物时不行）。水会在 1 小时内解冻。\n\n若你多次施放此法术，你可以同时维持至多两个非立即的效果生效，你也可以以一个动作解消上述效应之一。"
+  },
+  "source_fingerprint": "0ac58ccf2a9b67af4346219cd6e6cf5c7221123f449bf69a3cd1880c7705e717",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/戏法.html",
+  "source_record_id": "d59f7f4a5bf93e4da6d43ac2",
+  "spell_id": "d59f7f4a5bf93e4da6d43ac2",
+  "template_match": {
+    "confidence": "low",
+    "matched_shape": [],
+    "template_fingerprint": "c6cf559b317883e1043d55b34f4a36da44766b6d3a4828662a90474ca1486880",
+    "template_id": "spell.shape.005"
+  },
+  "uncertain_fields": {}
+}

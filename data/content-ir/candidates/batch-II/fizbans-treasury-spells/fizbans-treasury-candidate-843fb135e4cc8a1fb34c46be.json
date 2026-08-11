@@ -1,0 +1,67 @@
+{
+  "candidate_clauses": [
+    {
+      "required": true,
+      "type": "concentration"
+    }
+  ],
+  "candidate_id": "fizbans-treasury:candidate:843fb135e4cc8a1fb34c46be",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "1附赠动作",
+    "classes": [
+      "术士",
+      "法师"
+    ],
+    "components": "V、S、M（一枚镀上铂金的龙鳞，价值至少500gp）",
+    "concentration": true,
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "专注，至多 \n1分钟",
+    "level": 6,
+    "range": "60尺",
+    "ritual": false,
+    "save": "敏捷豁免",
+    "school": "防护",
+    "target_disposition": "creature"
+  },
+  "exact_fields": {
+    "concentration": true
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "费资本铂金盾",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "费资本的巨龙宝库",
+  "source_evidence": {
+    "source_path": "费资本的巨龙宝库/玩家选项/巨龙法术详述.htm",
+    "source_text": "#### 费资本铂金盾｜Fizban's Platinum Shield\n\n*六环 防护（术士、法师）*\n**施法时间：**1附赠动作\n**施法距离：**60尺\n**法术成分：**V、S、M（一枚镀上铂金的龙鳞，价值至少500gp）\n**持续时间：**专注，至多\n1分钟\n你创造一道闪着银光的力场，环绕在施法距离内你所选择的一个生物周围（你可以选择你自己）。该力场散发5尺微光光照。被力场保护的生物获得以下好处：\n\n> **掩护Cover。**该生物具有半身掩护。\n>\n>\n>\n> **伤害抗性Damage\n>  Resistance。**该生物获得对强酸，寒冷，火焰，闪电以及毒素伤害的抗性。\n>\n>\n>\n> **反射闪避Evasion。**如果该生物受到可以由成功通过敏捷豁免来使伤害减半的效应影响，该生物在成功通过豁免时改为不受任何伤害，失败则受到一半伤害。\n\n在之后的回合内以一个附赠动作，你可以将该力场移动至力场周围60尺内的另一个生物身上。"
+  },
+  "source_fingerprint": "57e7601f49856c8bdf29f8b7af10763fb401e71bd714363cb1a94b4bbfea373c",
+  "source_path": "费资本的巨龙宝库/玩家选项/巨龙法术详述.htm",
+  "source_record_id": "843fb135e4cc8a1fb34c46be",
+  "spell_id": "843fb135e4cc8a1fb34c46be",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "concentration"
+    ],
+    "template_fingerprint": "c6cf559b317883e1043d55b34f4a36da44766b6d3a4828662a90474ca1486880",
+    "template_id": "spell.shape.005"
+  },
+  "uncertain_fields": {}
+}

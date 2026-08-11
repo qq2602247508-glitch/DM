@@ -1,0 +1,76 @@
+{
+  "candidate_clauses": [
+    {
+      "increments": "1d",
+      "per_slot": 1,
+      "type": "upcast"
+    }
+  ],
+  "candidate_id": "core-phb-2024:candidate:8e0bb8fc40e2083c484b5139",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "动作",
+    "classes": [
+      "牧师"
+    ],
+    "components": "V、S",
+    "concentration": false,
+    "damage_expression": "4d6",
+    "damage_type": "光耀",
+    "duration": "1轮",
+    "level": 1,
+    "range": "120尺",
+    "resolution_kind": "damage",
+    "ritual": false,
+    "school": "塑能",
+    "target_disposition": "creature",
+    "upcast_damage_dice": 1,
+    "upcast_text": "升环施法。 使用的法术位每比一环高一环，此法术的伤害就增加1d6点。"
+  },
+  "exact_fields": {
+    "upcast": 1
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [
+    "attack_or_save"
+  ],
+  "name": "光导箭",
+  "required_review_fields": [
+    "action_economy",
+    "attack_or_save",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "source_path": "玩家手册2024/法术详述/1环.htm",
+    "source_text": "#### 光导箭｜Guiding Bolt\n\n*一环 塑能（牧师）*\n**施法时间：**动作\n**施法距离：**120尺\n**法术成分：**V、S\n**持续时间：**1轮\n你向施法距离内的一名生物掷出一道光箭。对目标进行一次远程法术攻击。命中时，目标受4d6点光耀伤害。在你下个回合结束前，对目标发动的下一次攻击检定具有优势。\n**升环施法。**使用的法术位每比一环高一环，此法术的伤害就增加1d6点。"
+  },
+  "source_fingerprint": "01bae299d4b437210ac388d97f2e837085770b9b615925360643198a7152475e",
+  "source_path": "玩家手册2024/法术详述/1环.htm",
+  "source_record_id": "8e0bb8fc40e2083c484b5139",
+  "spell_id": "8e0bb8fc40e2083c484b5139",
+  "template_match": {
+    "confidence": "medium",
+    "matched_shape": [
+      "upcast"
+    ],
+    "template_fingerprint": "c6cf559b317883e1043d55b34f4a36da44766b6d3a4828662a90474ca1486880",
+    "template_id": "spell.shape.005"
+  },
+  "uncertain_fields": {
+    "damage_expression": "4d6",
+    "damage_type": "光耀",
+    "operator": "attack_roll_or_other_damage_operator_requires_review"
+  }
+}

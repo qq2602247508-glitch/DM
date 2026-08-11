@@ -1,0 +1,83 @@
+{
+  "candidate_clauses": [
+    {
+      "required": true,
+      "type": "concentration"
+    }
+  ],
+  "candidate_id": "tashas-cauldron:candidate:d8f457a67427548a0b968fb6",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "area_shape": null,
+    "area_size_ft": null,
+    "casting_time": "1 动作",
+    "classes": [
+      "牧师",
+      "圣武士"
+    ],
+    "components": "V, S, M（一个的金制圣物匣，价值至少 \n500gp）",
+    "concentration": true,
+    "conditions": null,
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "专注，至多 1 小时",
+    "half_damage_on_save": null,
+    "healing": null,
+    "level": 5,
+    "max_targets": null,
+    "movement": null,
+    "range": "90 尺",
+    "reaction": null,
+    "resolution_kind": "summon",
+    "ritual": false,
+    "save": null,
+    "school": "咒法",
+    "summon": {
+      "controller": "caster",
+      "count": 1,
+      "creature_ref": "天界灵魄Celestial Spirit",
+      "enters_combat": true,
+      "initiative_mode": "shared_with_source"
+    },
+    "upcast_text": "升环施法。 使用六环或更高环阶的法术位施展该法术时，该生物数据中使用更高的法术环数。\n天界灵魄Celestial \n Spirit 大型天族，无阵营 AC：11+法术等级 \n(天生护甲)+2（仅限守护圣灵） HP：40+10每比五环高的法术等级 速度：30 尺；飞行40 \n尺 力量16（+3）敏捷14（+2）体质16（+3） 智力10（+0）感知14（+2）魅力16（+3） 伤害抗性：光耀 状态免疫：魅惑，恐慌 感官：黑暗视觉60 \n尺，被动察觉12 语言：天界语，理解你说的语言 挑战等级：- 熟练加值与你相等 动作Actions 多重攻击Multiattack。 天族发动等同于法术环数一半的次数的攻击（向下取整）。 光耀之弓Radiant \n Bow（仅限复仇圣灵）。 远程武器攻击：命中采取你的法术攻击加值，射程150/600 \n尺，单一目标。命中：2d6+2+法术环数的光耀伤害。 光耀之锤Radiant \n Mace（仅限守护圣灵）。 近战武器攻击：命中采取你的法术攻击加值，触及5尺，单一目标。命中：1d10+3+法术环数的光耀伤害，且天族可选择自己或其10 \n尺内可见的另一生物。选定生物获得1d10临时生命值。 治愈之触Healing \n Touch（1/日）。 天族触碰另一生物。目标魔法性地恢复目标等同于 2d8+法术环阶 \n点生命值。"
+  },
+  "exact_fields": {
+    "concentration": true
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "天界召唤术",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "塔莎的万事坩埚",
+  "source_evidence": {
+    "source_path": "塔莎的万事坩埚/法术/法术详述/5环.html",
+    "source_text": "#### 天界召唤术｜Summon Celestial\n\n*五环 咒法（牧师、圣武士）**Legacy*\n**施法时间：**1 动作\n**施法距离：**90 尺\n**法术成分：**V, S, M（一个的金制圣物匣，价值至少\n500gp）\n**持续时间：**专注，至多 1 小时\n你唤来一个天族灵魄。其在施法距离内你可见的一个未占据位置化为实体。这一实体使用下面的**天界灵魄Celestial Spirit**的数据。当你施展法术时，从复仇圣灵Avenger或守护圣灵Defender中选择一个。此生物资料表中的攻击方式由你的选择决定。当其生命值降至 0\n或法术结束时，生物消失。\n该生物在法术持续时间内对你和你的同伴们友好。在战斗中，该生物使用你的先攻，但在你回合结束后立即行动。它遵从于你的口头指令（无需任何动作）。如果你不发令，它将执行回避动作并远离危险。\n**升环施法。**使用六环或更高环阶的法术位施展该法术时，该生物数据中使用更高的法术环数。\n\n> **天界灵魄Celestial\n>  Spirit**\n> *大型天族，无阵营\n> *AC：11+法术等级\n> (天生护甲)+2（仅限守护圣灵）\n> HP：40+10每比五环高的法术等级\n> 速度：30 尺；飞行40\n> 尺\n> 力量16（+3）敏捷14（+2）体质16（+3）\n> 智力10（+0）感知14（+2）魅力16（+3）\n> 伤害抗性：光耀\n> 状态免疫：魅惑，恐慌\n> 感官：黑暗视觉60\n> 尺，被动察觉12\n> 语言：天界语，理解你说的语言\n> 挑战等级：- 熟练加值与你相等\n>\n>\n>\n> **动作Actions**\n> **多重攻击Multiattack。**天族发动等同于法术环数一半的次数的攻击（向下取整）。\n> **光耀之弓Radiant\n>  Bow（仅限复仇圣灵）。**远程武器攻击：命中采取你的法术攻击加值，射程150/600\n> 尺，单一目标。命中：2d6+2+法术环数的光耀伤害。\n> **光耀之锤Radiant\n>  Mace（仅限守护圣灵）。**近战武器攻击：命中采取你的法术攻击加值，触及5尺，单一目标。命中：1d10+3+法术环数的光耀伤害，且天族可选择自己或其10\n> 尺内可见的另一生物。选定生物获得1d10临时生命值。\n> **治愈之触Healing\n>  Touch（1/日）。**天族触碰另一生物。目标魔法性地恢复目标等同于 2d8+法术环阶\n> 点生命值。"
+  },
+  "source_fingerprint": "95d6005f9fa3fabb35ab6ebf46e799836fb9a6709c974e7513b864d6f9a3abc5",
+  "source_path": "塔莎的万事坩埚/法术/法术详述/5环.html",
+  "source_record_id": "d8f457a67427548a0b968fb6",
+  "spell_id": "d8f457a67427548a0b968fb6",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "concentration"
+    ],
+    "template_fingerprint": "c6cf559b317883e1043d55b34f4a36da44766b6d3a4828662a90474ca1486880",
+    "template_id": "spell.shape.005"
+  },
+  "uncertain_fields": {}
+}

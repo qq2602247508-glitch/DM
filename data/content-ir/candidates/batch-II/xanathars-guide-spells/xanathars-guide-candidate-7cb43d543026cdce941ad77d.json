@@ -1,0 +1,99 @@
+{
+  "candidate_clauses": [
+    {
+      "save_ability": "智力",
+      "type": "saving_throw"
+    },
+    {
+      "damage_type": "心灵",
+      "expression": "8d6",
+      "on_failure": "full",
+      "type": "damage"
+    },
+    {
+      "shape": "sphere",
+      "size_ft": 20,
+      "type": "area"
+    },
+    {
+      "required": true,
+      "type": "concentration"
+    }
+  ],
+  "candidate_id": "xanathars-guide:candidate:7cb43d543026cdce941ad77d",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "area_shape": "sphere",
+    "area_size_ft": 20,
+    "casting_time": "1 动作",
+    "classes": [
+      "吟游诗人",
+      "术士",
+      "魔契师",
+      "法师"
+    ],
+    "components": "V、S",
+    "concentration": true,
+    "damage_expression": "8d6",
+    "damage_type": "心灵",
+    "duration": "立即",
+    "level": 5,
+    "range": "120 \n尺",
+    "repeat": {
+      "count_expression": "duration",
+      "source": "explicit_timing",
+      "timing": "turn_end"
+    },
+    "resolution_kind": "damage",
+    "ritual": false,
+    "save": "智力豁免",
+    "target_disposition": "creature"
+  },
+  "exact_fields": {
+    "area_shape": "sphere",
+    "area_size_ft": 20,
+    "concentration": true,
+    "damage_expression": "8d6",
+    "damage_type": "心灵",
+    "save": "智力豁免"
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "突触静止",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "source_path": "珊娜萨的万事指南/法术/法术详述/5环.html",
+    "source_text": "#### 突触静止｜Synaptic Static\n\n*五环\n惑控（吟游诗人、术士、魔契师、法师）**Legacy*\n**施法时间：**1 动作\n**施法距离：**120\n尺\n**法术成分：**V、S\n**持续时间：**立即\n你选择距离内的一点，并在那里引发心灵能量的爆炸。以那一点为圆形，20\n尺半径球形范围内的每个生物必须进行一次智力豁免检定。智力值为 2 或更低的生物不受这个法术的影响。豁免失败的生物受到 8d6\n心灵伤害，成功则只承受一半。\n豁免失败生物的思想会在 1 分钟内变得混乱。在持续时间中，投掷一个\nd6，每次它进行攻击检定、属性检定和因为维持专注进行体质豁免检定时，它都要从结果上减去这个数值。在目标的每个回合结束它都可以重新进行智力豁免检定，若成功将结束这个效果对自己的影响。"
+  },
+  "source_fingerprint": "01f38701f9b922f30f185e55557d9bb9420b95c896d8e305873dc9a897de3461",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/5环.html",
+  "source_record_id": "7cb43d543026cdce941ad77d",
+  "spell_id": "7cb43d543026cdce941ad77d",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "saving_throw",
+      "damage",
+      "area",
+      "concentration"
+    ],
+    "template_fingerprint": "af295bb9885e22721b4b0ce62f8bf849a6eba5ca49ce60a0868f55c840a15edb",
+    "template_id": "spell.shape.009"
+  },
+  "uncertain_fields": {}
+}

@@ -1,0 +1,122 @@
+{
+  "capability_registry": {
+    "id": "spell",
+    "version": "content-capabilities-1"
+  },
+  "casting_time": "1动作",
+  "clause_boundaries": {
+    "condition-0": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "无法看见它，它也会成为法术的目标。如果被唤名的生物不处于施法距离内，长矛会消失并且没有任何效果。 目标必须成功通过一次智力豁免，否则将受到7d6点心灵伤害并陷入失能，直至你的下回合开始。如果豁免成功，它只承受一半伤害并且不会失能。 **升环施法效果：**当你用5环或更高的法术位施展此法术时，你使用的法术位每比4环高一环，法术的伤害增加1d6。",
+      "source_heading": "劳洛希姆心灵长枪"
+    },
+    "condition-1": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "吟游诗人、术士、魔契师、法师）* **施法时间：**1动作 **施法距离：**120尺 **法术成分：**V **持续时间：**立即 你从你的额头处释放一道闪闪发光的灵能长矛，瞄准施法距离内你可见的一个生物。或者，你可以说出一个生物的名字。如果被唤名的生物身处施法距离内，即使你无法看见它，它也会成为法术的目标。如果被唤名的生物不处于施法距离内，长矛会消失并且没有任何效果。 目标必须成功通过一次智力豁免，否则将受到7d6点心灵伤害并陷入失能，直至你的下回合开始。如果豁免成功，它只承受一半伤害并且不会失能。 **升环施法效果：**当你用5环或更高的法术位施展此法术时，你使用的法术位每比4环高一环，法术的伤害增加1d6。",
+      "source_heading": "劳洛希姆心灵长枪"
+    },
+    "target": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "处释放一道闪闪发光的灵能长矛，瞄准施法距离内你可见的一个生物。或者，你可以说出一个生物的名字。如果被唤名的生物身处施法距离内，即使你无法看见它，它也会成为法术的目标。如果被唤名的生物不处于施法距离内，长矛会消失并且没有任何效果。 目标必须成功通过一次智力豁免，否则将受到7d6点心灵伤害并陷入失能，直至你的下回合开始。如果豁免成功，它只承受一半伤害并且不会失能。 **升环施法效果：**当你用5环或更高的法术位施展此法术时，你使用的法术位每比4环高一环，法术的伤害增加1d6。",
+      "source_heading": "劳洛希姆心灵长枪"
+    }
+  },
+  "clause_identity": [
+    "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316:target",
+    "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316:condition-0",
+    "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316:condition-1"
+  ],
+  "clauses": [
+    {
+      "clause_id": "target",
+      "count": 1,
+      "evidence_ref": "处释放一道闪闪发光的灵能长矛，瞄准施法距离内你可见的一个生物。或者，你可以说出一个生物的名字。如果被唤名的生物身处施法距离内，即使你无法看见它，它也会成为法术的目标。如果被唤名的生物不处于施法距离内，长矛会消失并且没有任何效果。 目标必须成功通过一次智力豁免，否则将受到7d6点心灵伤害并陷入失能，直至你的下回合开始。如果豁免成功，它只承受一半伤害并且不会失能。 **升环施法效果：**当你用5环或更高的法术位施展此法术时，你使用的法术位每比4环高一环，法术的伤害增加1d6。",
+      "kind": "one_creature",
+      "type": "target_selection",
+      "visibility": "visible"
+    },
+    {
+      "action_economy": "action",
+      "clause_id": "condition-0",
+      "condition": "失能",
+      "evidence_ref": "无法看见它，它也会成为法术的目标。如果被唤名的生物不处于施法距离内，长矛会消失并且没有任何效果。 目标必须成功通过一次智力豁免，否则将受到7d6点心灵伤害并陷入失能，直至你的下回合开始。如果豁免成功，它只承受一半伤害并且不会失能。 **升环施法效果：**当你用5环或更高的法术位施展此法术时，你使用的法术位每比4环高一环，法术的伤害增加1d6。",
+      "target": "one_creature",
+      "type": "apply_condition"
+    },
+    {
+      "action_economy": "action",
+      "clause_id": "condition-1",
+      "condition": "发光",
+      "evidence_ref": "吟游诗人、术士、魔契师、法师）* **施法时间：**1动作 **施法距离：**120尺 **法术成分：**V **持续时间：**立即 你从你的额头处释放一道闪闪发光的灵能长矛，瞄准施法距离内你可见的一个生物。或者，你可以说出一个生物的名字。如果被唤名的生物身处施法距离内，即使你无法看见它，它也会成为法术的目标。如果被唤名的生物不处于施法距离内，长矛会消失并且没有任何效果。 目标必须成功通过一次智力豁免，否则将受到7d6点心灵伤害并陷入失能，直至你的下回合开始。如果豁免成功，它只承受一半伤害并且不会失能。 **升环施法效果：**当你用5环或更高的法术位施展此法术时，你使用的法术位每比4环高一环，法术的伤害增加1d6。",
+      "target": "one_creature",
+      "type": "apply_condition"
+    }
+  ],
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "concentration": false,
+  "duration": "立即",
+  "edition": "2014",
+  "evidence": [
+    "condition-0: 无法看见它，它也会成为法术的目标。如果被唤名的生物不处于施法距离内，长矛会消失并且没有任何效果。 目标必须成功通过一次智力豁免，否则将受到7d6点心灵伤害并陷入失能，直至你的下回合开始。如果豁免成功，它只承受一半伤害并且不会失能。 **升环施法效果：**当你用5环或更高的法术位施展此法术时，你使用的法术位每比4环高一环，法术的伤害增加1d6。",
+    "condition-1: 吟游诗人、术士、魔契师、法师）* **施法时间：**1动作 **施法距离：**120尺 **法术成分：**V **持续时间：**立即 你从你的额头处释放一道闪闪发光的灵能长矛，瞄准施法距离内你可见的一个生物。或者，你可以说出一个生物的名字。如果被唤名的生物身处施法距离内，即使你无法看见它，它也会成为法术的目标。如果被唤名的生物不处于施法距离内，长矛会消失并且没有任何效果。 目标必须成功通过一次智力豁免，否则将受到7d6点心灵伤害并陷入失能，直至你的下回合开始。如果豁免成功，它只承受一半伤害并且不会失能。 **升环施法效果：**当你用5环或更高的法术位施展此法术时，你使用的法术位每比4环高一环，法术的伤害增加1d6。",
+    "target: 处释放一道闪闪发光的灵能长矛，瞄准施法距离内你可见的一个生物。或者，你可以说出一个生物的名字。如果被唤名的生物身处施法距离内，即使你无法看见它，它也会成为法术的目标。如果被唤名的生物不处于施法距离内，长矛会消失并且没有任何效果。 目标必须成功通过一次智力豁免，否则将受到7d6点心灵伤害并陷入失能，直至你的下回合开始。如果豁免成功，它只承受一半伤害并且不会失能。 **升环施法效果：**当你用5环或更高的法术位施展此法术时，你使用的法术位每比4环高一环，法术的伤害增加1d6。"
+  ],
+  "kind": "spell",
+  "level": 4,
+  "manual_decisions": {
+    "review_gate": "accepted only explicit normalized fields and quoted source evidence",
+    "unresolved_branches": "not promoted when the source does not state attack/save semantics"
+  },
+  "name": "劳洛希姆心灵长枪",
+  "namespace": "content.fizbans-treasury",
+  "pack_id": "fizbans-treasury",
+  "pack_version": "source-7011166c19bd",
+  "range": "120尺",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-11-batch-II",
+  "reviewed_fields": [
+    "schema_version",
+    "spell_id",
+    "name",
+    "pack_id",
+    "pack_version",
+    "namespace",
+    "ruleset_version",
+    "source_record_id",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "source_trust",
+    "level",
+    "school",
+    "casting_time",
+    "range",
+    "duration",
+    "concentration",
+    "clauses",
+    "evidence"
+  ],
+  "ruleset_version": "2014",
+  "schema_version": "spell-ir-1",
+  "school": null,
+  "source_book": "费资本的巨龙宝库",
+  "source_evidence": {
+    "selected_clause_excerpt": "处释放一道闪闪发光的灵能长矛，瞄准施法距离内你可见的一个生物。或者，你可以说出一个生物的名字。如果被唤名的生物身处施法距离内，即使你无法看见它，它也会成为法术的目标。如果被唤名的生物不处于施法距离内，长矛会消失并且没有任何效果。 目标必须成功通过一次智力豁免，否则将受到7d6点心灵伤害并陷入失能，直至你的下回合开始。如果豁免成功，它只承受一半伤害并且不会失能。 **升环施法效果：**当你用5环或更高的法术位施展此法术时，你使用的法术位每比4环高一环，法术的伤害增加1d6。 无法看见它，它也会成为法术的目标。如果被唤名的生物不处于施法距离内，长矛会消失并且没有任何效果。 目标必须成功通过一次智力豁免，否则将受到7d6点心灵伤害并陷入失能，直至你的下回合开始。如果豁免成功，它只承受一半伤害并且不会失能。 **升环施法效果：**当你用5环或更高的法术位施展此法术时，你使用的法术位每比4环高一环，法术的伤害增加1d6。 吟游诗人、术士、魔契师、法师）* **施法时间：**1动作 **施法距离：**120尺 **法术成分：**V **持续时间：**立即 你从你的额头处释放一道闪闪发光的灵能长矛，瞄准施法距离内你可见的一个生物。或者，你可以说出一个生物的名字。如果被唤名的生物身处施法距离内，即使你无法看见它，它也会成为法术的目标。如果被唤名的生物不处于施法距离内，长矛会消失并且没有任何效果。 目标必须成功通过一次智力豁免，否则将受到7d6点心灵伤害并陷入失能，直至你的下回合开始。如果豁免成功，它只承受一半伤害并且不会失能。 **升环施法效果：**当你用5环或更高的法术位施展此法术时，你使用的法术位每比4环高一环，法术的伤害增加1d6。",
+    "source_book": "费资本的巨龙宝库",
+    "source_checksum": "f6519f02a24ffa7b7193e181685999bb042e8bd2192dcadc020b02f507824874",
+    "source_path": "费资本的巨龙宝库/玩家选项/巨龙法术详述.htm",
+    "source_text": "#### 劳洛希姆心灵长枪｜Raulothim's Psychic Lance\n\n*四环 惑控（吟游诗人、术士、魔契师、法师）*\n**施法时间：**1动作\n**施法距离：**120尺\n**法术成分：**V\n**持续时间：**立即\n你从你的额头处释放一道闪闪发光的灵能长矛，瞄准施法距离内你可见的一个生物。或者，你可以说出一个生物的名字。如果被唤名的生物身处施法距离内，即使你无法看见它，它也会成为法术的目标。如果被唤名的生物不处于施法距离内，长矛会消失并且没有任何效果。\n目标必须成功通过一次智力豁免，否则将受到7d6点心灵伤害并陷入失能，直至你的下回合开始。如果豁免成功，它只承受一半伤害并且不会失能。\n**升环施法效果：**当你用5环或更高的法术位施展此法术时，你使用的法术位每比4环高一环，法术的伤害增加1d6。"
+  },
+  "source_fingerprint": "45786e6c57e4c56a29800259cf32e1d236b08990ffc7d61efc793cb30a5fbbdc",
+  "source_path": "费资本的巨龙宝库/玩家选项/巨龙法术详述.htm",
+  "source_provenance": {
+    "officiality": "unknown",
+    "review_basis": "local_source_text_manual_review",
+    "source_book": "费资本的巨龙宝库",
+    "source_checksum": "f6519f02a24ffa7b7193e181685999bb042e8bd2192dcadc020b02f507824874",
+    "source_relative_path": "费资本的巨龙宝库/玩家选项/巨龙法术详述.htm"
+  },
+  "source_record_id": "49a5bacc752aa90fbbfbf316",
+  "source_trust": "authored_ir",
+  "spell_id": "fizbans-treasury:spell:49a5bacc752aa90fbbfbf316"
+}

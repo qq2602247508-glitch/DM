@@ -1,0 +1,73 @@
+{
+  "candidate_clauses": [
+    {
+      "required": true,
+      "type": "concentration"
+    }
+  ],
+  "candidate_id": "xanathars-guide:candidate:732a9015630c1b5e4fef64c1",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "1 动作",
+    "classes": [
+      "魔契师"
+    ],
+    "components": "V、S、M（镶嵌在宝石里的亡灵的眼睛，价值至少 \n150GP）",
+    "concentration": true,
+    "damage_expression": "2d8",
+    "damage_type": "暗蚀",
+    "duration": "专注，至多 1 \n分钟",
+    "level": 4,
+    "range": "自身",
+    "resolution_kind": "damage",
+    "ritual": false,
+    "school": "死灵",
+    "target_disposition": "creature"
+  },
+  "exact_fields": {
+    "concentration": true
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [
+    "attack_or_save"
+  ],
+  "name": "莫伊之影",
+  "required_review_fields": [
+    "action_economy",
+    "attack_or_save",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "source_path": "珊娜萨的万事指南/法术/法术详述/4环.html",
+    "source_text": "#### 莫伊之影｜Shadow of Moil\n\n*四环 死灵（魔契师）*\n**施法时间：**1 动作\n**施法距离：**自身\n**法术成分：**V、S、M（镶嵌在宝石里的亡灵的眼睛，价值至少\n150GP）\n**持续时间：**专注，至多 1\n分钟\n法术持续时间内，如同火焰般的暗影笼罩在你的身体周遭，使你对于其他人视为身处重度遮蔽下。\n暗影会将你周围 10\n尺内的微光照明转变为黑暗，明亮照明转变为微光。\n直到法术结束之前，你具有光耀伤害抗性。此外，当在你周围 10\n尺内的生物用攻击命中你时，暗影会袭向那个生物，对它造成 2d8 点暗蚀伤害。"
+  },
+  "source_fingerprint": "ff5edbe6c078210c24dfa46a4018ee8bbc515059ed987acf5c66fbb81cc7fe54",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/4环.html",
+  "source_record_id": "732a9015630c1b5e4fef64c1",
+  "spell_id": "732a9015630c1b5e4fef64c1",
+  "template_match": {
+    "confidence": "medium",
+    "matched_shape": [
+      "concentration"
+    ],
+    "template_fingerprint": "c6cf559b317883e1043d55b34f4a36da44766b6d3a4828662a90474ca1486880",
+    "template_id": "spell.shape.005"
+  },
+  "uncertain_fields": {
+    "damage_expression": "2d8",
+    "damage_type": "暗蚀",
+    "operator": "attack_roll_or_other_damage_operator_requires_review"
+  }
+}

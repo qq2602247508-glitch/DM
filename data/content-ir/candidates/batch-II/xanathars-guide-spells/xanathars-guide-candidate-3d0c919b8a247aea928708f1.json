@@ -1,0 +1,73 @@
+{
+  "candidate_clauses": [],
+  "candidate_id": "xanathars-guide:candidate:3d0c919b8a247aea928708f1",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "1 动作",
+    "classes": [
+      "游侠",
+      "法师"
+    ],
+    "components": "S、M（一把价值至少 1sp \n的近战武器）",
+    "concentration": false,
+    "damage_expression": "6d10",
+    "damage_type": "力场",
+    "duration": "立即",
+    "level": 5,
+    "range": "30尺",
+    "resolution_kind": "damage",
+    "ritual": false,
+    "school": "咒法",
+    "target_disposition": "creature",
+    "teleport": {
+      "can_take_creatures": false,
+      "destination_kind": "chosen_space",
+      "max_distance_ft": null,
+      "requires_destination_choice": true
+    }
+  },
+  "exact_fields": {},
+  "kind": "spell_candidate",
+  "missing_fields": [
+    "attack_or_save",
+    "typed_clause_mapping"
+  ],
+  "name": "钢风斩",
+  "required_review_fields": [
+    "action_economy",
+    "attack_or_save",
+    "clauses",
+    "level",
+    "name",
+    "target",
+    "typed_clause_mapping"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "source_path": "珊娜萨的万事指南/法术/法术详述/5环.html",
+    "source_text": "#### 钢风斩｜Steel Wind Strike\n\n*五环 咒法（游侠、法师）**Legacy*\n**施法时间：**1 动作\n**施法距离：**30尺\n**法术成分：**S、M（一把价值至少 1sp\n的近战武器）\n**持续时间：**立即\n你舞动用于施法的武器，随后忽然消失并发起袭击，恰如同一阵钢铁的疾风。选择施法距离内最多 5\n个可见生物。向每个生物分别进行一次近战法术攻击。若击中，目标承受 6d10 力场伤害。\n在这之后，你可以传送到一个你击中或未击中的生物周围 5\n尺内，你可以看见的未占据空间。"
+  },
+  "source_fingerprint": "10e6f357427931181b434e480d1f86a4b3bb9455ddb2f301fc58f62c6f5f219c",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/5环.html",
+  "source_record_id": "3d0c919b8a247aea928708f1",
+  "spell_id": "3d0c919b8a247aea928708f1",
+  "template_match": {
+    "confidence": "low",
+    "matched_shape": [],
+    "template_fingerprint": "c6cf559b317883e1043d55b34f4a36da44766b6d3a4828662a90474ca1486880",
+    "template_id": "spell.shape.005"
+  },
+  "uncertain_fields": {
+    "damage_expression": "6d10",
+    "damage_type": "力场",
+    "operator": "attack_roll_or_other_damage_operator_requires_review"
+  }
+}

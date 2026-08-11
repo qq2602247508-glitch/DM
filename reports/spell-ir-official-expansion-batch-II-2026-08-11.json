@@ -1,0 +1,23 @@
+{
+  "compile_full_count": 25,
+  "generated_candidate_count": 126,
+  "production_runtime_full_count": 5,
+  "represented_books": [
+    "珊娜萨的万事指南",
+    "塔莎的万事坩埚",
+    "费资本的巨龙宝库",
+    "万象无常书"
+  ],
+  "reviewed_authored_typed_ir_count": 25,
+  "runtime_preview_full_count": 25,
+  "scan_count": 126,
+  "schema_version": "spell-ir-official-expansion-batch-II-1",
+  "status": "production_gate_passed",
+  "thresholds": {
+    "compile_full": 20,
+    "generated": 35,
+    "production_runtime_full": 5,
+    "reviewed": 25,
+    "scan": 50
+  }
+}

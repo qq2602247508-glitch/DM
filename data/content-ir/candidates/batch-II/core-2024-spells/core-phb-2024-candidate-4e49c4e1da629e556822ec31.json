@@ -1,0 +1,67 @@
+{
+  "candidate_clauses": [],
+  "candidate_id": "core-phb-2024:candidate:4e49c4e1da629e556822ec31",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "动作",
+    "classes": [
+      "术士",
+      "法师",
+      "奇械师"
+    ],
+    "components": "V、S",
+    "concentration": false,
+    "damage_expression": "1d8",
+    "damage_type": "闪电",
+    "duration": "立即",
+    "range": "触碰",
+    "resolution_kind": "damage",
+    "ritual": false,
+    "school": "塑能",
+    "target_disposition": "creature"
+  },
+  "exact_fields": {},
+  "kind": "spell_candidate",
+  "missing_fields": [
+    "attack_or_save",
+    "typed_clause_mapping"
+  ],
+  "name": "电爪",
+  "required_review_fields": [
+    "action_economy",
+    "attack_or_save",
+    "clauses",
+    "level",
+    "name",
+    "target",
+    "typed_clause_mapping"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "source_path": "玩家手册2024/法术详述/0环.htm",
+    "source_text": "#### 电爪｜Shocking Grasp\n\n*塑能 戏法（术士、法师、奇械师）*\n**施法时间：**动作\n**施法距离：**触碰\n**法术成分：**V、S\n**持续时间：**立即\n你放出闪电，击向一名你试图触碰的生物。对目标发动一次近战法术攻击。若命中，则目标受到\n1d8\n点闪电伤害，并且在其下一回合开始前不能执行借机攻击。\n**戏法强化。**到达特定等级后，此戏法的伤害将增加1d8：5级（2d8）、11级（3d8）、17级（4d8）。"
+  },
+  "source_fingerprint": "e3e6aea3bc33ec9c197a139a213db0798e96a39bb7590db5ecebc6ad7c90f687",
+  "source_path": "玩家手册2024/法术详述/0环.htm",
+  "source_record_id": "4e49c4e1da629e556822ec31",
+  "spell_id": "4e49c4e1da629e556822ec31",
+  "template_match": {
+    "confidence": "low",
+    "matched_shape": [],
+    "template_fingerprint": "c6cf559b317883e1043d55b34f4a36da44766b6d3a4828662a90474ca1486880",
+    "template_id": "spell.shape.005"
+  },
+  "uncertain_fields": {
+    "damage_expression": "1d8",
+    "damage_type": "闪电",
+    "operator": "attack_roll_or_other_damage_operator_requires_review"
+  }
+}

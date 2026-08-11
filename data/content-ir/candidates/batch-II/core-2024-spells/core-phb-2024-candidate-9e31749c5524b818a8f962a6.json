@@ -1,0 +1,70 @@
+{
+  "candidate_clauses": [
+    {
+      "shape": "cube",
+      "size_ft": 30,
+      "type": "area"
+    }
+  ],
+  "candidate_id": "core-phb-2024:candidate:9e31749c5524b818a8f962a6",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "area_shape": "cube",
+    "area_size_ft": 30,
+    "casting_time": "动作",
+    "classes": [
+      "牧师",
+      "德鲁伊"
+    ],
+    "components": "V、S、M（水沙混合物）",
+    "concentration": false,
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "立即",
+    "level": 1,
+    "range": "30尺",
+    "ritual": false,
+    "school": "变化",
+    "upcast_text": "升环施法。 使用的法术位每比一环高一环，法术就多创造或多枯竭10加仑额外的水分，另一种选项能影响的 立方 区域边长增加5尺。"
+  },
+  "exact_fields": {
+    "area_shape": "cube",
+    "area_size_ft": 30
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "造水术/枯水术",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "source_path": "玩家手册2024/法术详述/1环.htm",
+    "source_text": "#### 造水术/枯水术｜Create or Destroy Water\n\n*一环 变化（牧师、德鲁伊）*\n**施法时间：**动作\n**施法距离：**30尺\n**法术成分：**V、S、M（水沙混合物）\n**持续时间：**立即\n你选择其一执行：\n\n> **造水术Create\n> Water。**你在施法距离内一个打开的容器中创造至多10加仑干净的水。作为另一种选项，你使施法距离内一处30尺的立方区域降下雨水并浇灭区域内不受遮盖的火焰。\n> **枯水术Destroy\n> Water。**你使施法距离内一个打开的容器里至多10加仑水枯竭不见。作为另一种选项，你使施法距离内一片30尺立方区域的浓雾消失不见。\n\n**升环施法。**使用的法术位每比一环高一环，法术就多创造或多枯竭10加仑额外的水分，另一种选项能影响的立方区域边长增加5尺。"
+  },
+  "source_fingerprint": "9845bb40bbc241005be0118687431ec7ac3093c0b6278d01bcda95d2c00fda02",
+  "source_path": "玩家手册2024/法术详述/1环.htm",
+  "source_record_id": "9e31749c5524b818a8f962a6",
+  "spell_id": "9e31749c5524b818a8f962a6",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "area"
+    ],
+    "template_fingerprint": "af295bb9885e22721b4b0ce62f8bf849a6eba5ca49ce60a0868f55c840a15edb",
+    "template_id": "spell.shape.009"
+  },
+  "uncertain_fields": {}
+}

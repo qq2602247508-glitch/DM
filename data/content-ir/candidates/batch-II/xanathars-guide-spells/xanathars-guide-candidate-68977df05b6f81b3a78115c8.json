@@ -1,0 +1,64 @@
+{
+  "candidate_clauses": [
+    {
+      "required": true,
+      "type": "concentration"
+    }
+  ],
+  "candidate_id": "xanathars-guide:candidate:68977df05b6f81b3a78115c8",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "1 \n动作",
+    "classes": [
+      "德鲁伊"
+    ],
+    "components": "V、S",
+    "concentration": true,
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "专注，至多1分钟",
+    "level": 6,
+    "range": "自身",
+    "ritual": false,
+    "school": "防护"
+  },
+  "exact_fields": {
+    "concentration": true
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "原初守护",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "source_path": "珊娜萨的万事指南/法术/法术详述/6环.html",
+    "source_text": "#### 原初守护｜Primordial Ward\n\n*六环 防护（德鲁伊）*\n**施法时间：**1\n动作\n**施法距离：**自身\n**法术成分：**V、S\n**持续时间：**专注，至多1分钟\n本法术的持续时间内，你具有强酸、寒冷、火焰、闪电、以及雷鸣伤害的抗性。\n当你受到上述类型之一的伤害时，你可以用反应来得到对该种类型伤害的免疫，此举同样会免疫触发此效果的这次伤害。使用此反应后，上述抗性效果将消失，你获得对应伤害的免疫，持续直至你的下个回合结束（那时法术将提前终止）。"
+  },
+  "source_fingerprint": "bb40839b3e820d4c6d1af654df83294fbd766a8800d54d68ef60aeeb16806603",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/6环.html",
+  "source_record_id": "68977df05b6f81b3a78115c8",
+  "spell_id": "68977df05b6f81b3a78115c8",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "concentration"
+    ],
+    "template_fingerprint": "c6cf559b317883e1043d55b34f4a36da44766b6d3a4828662a90474ca1486880",
+    "template_id": "spell.shape.005"
+  },
+  "uncertain_fields": {}
+}

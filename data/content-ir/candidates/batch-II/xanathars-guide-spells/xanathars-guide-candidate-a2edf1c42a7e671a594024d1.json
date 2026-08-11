@@ -1,0 +1,100 @@
+{
+  "candidate_clauses": [
+    {
+      "save_ability": "敏捷",
+      "type": "saving_throw"
+    },
+    {
+      "damage_type": "暗蚀",
+      "expression": "2d8",
+      "on_failure": "full",
+      "type": "damage"
+    },
+    {
+      "required": true,
+      "type": "concentration"
+    }
+  ],
+  "candidate_id": "xanathars-guide:candidate:a2edf1c42a7e671a594024d1",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "1 动作",
+    "classes": [
+      "术士",
+      "魔契师",
+      "法师"
+    ],
+    "components": "V、S",
+    "concentration": true,
+    "damage_components": [
+      {
+        "damage_type": "暗蚀",
+        "expression": "2d8"
+      },
+      {
+        "damage_type": "暗蚀",
+        "expression": "4d8"
+      },
+      {
+        "damage_type": "暗蚀",
+        "expression": "4d8"
+      }
+    ],
+    "damage_expression": "2d8",
+    "damage_type": "暗蚀",
+    "duration": "专注，至多 \n1 分钟",
+    "half_damage_on_save": true,
+    "level": 5,
+    "range": "60 尺",
+    "resolution_kind": "damage",
+    "ritual": false,
+    "save": "敏捷豁免",
+    "school": "死灵",
+    "target_disposition": "creature",
+    "upcast_text": "升环施法。 当你使用六环或更高的法术位施放该法术时，使用的法术位每高一环，伤害便增加 \n1d8。"
+  },
+  "exact_fields": {
+    "concentration": true,
+    "damage_expression": "2d8",
+    "damage_type": "暗蚀",
+    "save": "敏捷豁免"
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "汲能术",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "source_path": "珊娜萨的万事指南/法术/法术详述/5环.html",
+    "source_text": "#### 汲能术｜Enervation\n\n*五环 死灵（术士、魔契师、法师）*\n**施法时间：**1 动作\n**施法距离：**60 尺\n**法术成分：**V、S\n**持续时间：**专注，至多\n1 分钟\n墨色的黑暗触须从你身上延伸，触碰法术距离内你可见的一个生物并汲取它的生命。目标必须进行敏捷豁免检定。若豁免成功，目标将受到 2d8\n暗蚀伤害，随后法术结束。若豁免失败，目标受到 4d8 暗蚀伤害，并且直到法术结束之前，你在每个自己的回合都可以用你的动作对目标自动造成 4d8\n暗蚀伤害。如果你使用你的动作来做其他任何事情，则法术即刻结束。此外，如果目标位于施法距离外或对你处于全身掩护，法术同样会结束。\n每次法术对目标造成伤害，你都可以恢复目标受到的暗蚀伤害量的一半生命值。\n**升环施法。**当你使用六环或更高的法术位施放该法术时，使用的法术位每高一环，伤害便增加\n1d8。"
+  },
+  "source_fingerprint": "c5bdd1d28f54766922deaf422dc1f405e18fe1df2ac8fa57ceb7359102282711",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/5环.html",
+  "source_record_id": "a2edf1c42a7e671a594024d1",
+  "spell_id": "a2edf1c42a7e671a594024d1",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "saving_throw",
+      "damage",
+      "concentration"
+    ],
+    "template_fingerprint": "3c42f68fb11991f0b3609f5d664da8f01323dbde293a556e901df3dc4b8daf72",
+    "template_id": "spell.shape.008"
+  },
+  "uncertain_fields": {}
+}

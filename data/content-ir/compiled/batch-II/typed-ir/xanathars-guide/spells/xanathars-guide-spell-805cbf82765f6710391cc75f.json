@@ -1,0 +1,92 @@
+{
+  "capability_registry": {
+    "id": "spell",
+    "version": "content-capabilities-1"
+  },
+  "casting_time": "1 分钟",
+  "clause_boundaries": {
+    "target": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "一个魔法陷阱。 陷阱几乎是隐形的，要找到它需要一次成功的对抗你的法术豁免DC的智力（调查）检定。 当一个小型 Small、中型 Medium或大型 Large的生物移动进入受到此法术保护的区域时，陷阱就会触发。触发的生物必须通过一次敏捷豁免检定否则摔倒、变成俯卧，并被魔法性地上下颠倒的举到半空中，直到它施法距离被保护的地面或地板 3 尺高。生物被束缚在那里直到法术结束。 被束缚的生物可以在其每个回合的结束时进行一次敏捷豁免检定，成功则结束被束缚。或者，其他能触及被束缚的生物可以进行一次智力（奥秘）检定，对抗你的法术豁免 DC。成功则束缚的效果也会结束。 在陷阱被触发之后，当没有生物被它束缚时，法术将会结束。",
+      "source_heading": "圈套术"
+    }
+  },
+  "clause_identity": [
+    "xanathars-guide:spell:805cbf82765f6710391cc75f:target"
+  ],
+  "clauses": [
+    {
+      "clause_id": "target",
+      "count": 1,
+      "evidence_ref": "一个魔法陷阱。 陷阱几乎是隐形的，要找到它需要一次成功的对抗你的法术豁免DC的智力（调查）检定。 当一个小型 Small、中型 Medium或大型 Large的生物移动进入受到此法术保护的区域时，陷阱就会触发。触发的生物必须通过一次敏捷豁免检定否则摔倒、变成俯卧，并被魔法性地上下颠倒的举到半空中，直到它施法距离被保护的地面或地板 3 尺高。生物被束缚在那里直到法术结束。 被束缚的生物可以在其每个回合的结束时进行一次敏捷豁免检定，成功则结束被束缚。或者，其他能触及被束缚的生物可以进行一次智力（奥秘）检定，对抗你的法术豁免 DC。成功则束缚的效果也会结束。 在陷阱被触发之后，当没有生物被它束缚时，法术将会结束。",
+      "kind": "one_creature",
+      "type": "target_selection",
+      "visibility": "visible"
+    }
+  ],
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "concentration": false,
+  "duration": "8 小时",
+  "edition": "2014",
+  "evidence": [
+    "target: 一个魔法陷阱。 陷阱几乎是隐形的，要找到它需要一次成功的对抗你的法术豁免DC的智力（调查）检定。 当一个小型 Small、中型 Medium或大型 Large的生物移动进入受到此法术保护的区域时，陷阱就会触发。触发的生物必须通过一次敏捷豁免检定否则摔倒、变成俯卧，并被魔法性地上下颠倒的举到半空中，直到它施法距离被保护的地面或地板 3 尺高。生物被束缚在那里直到法术结束。 被束缚的生物可以在其每个回合的结束时进行一次敏捷豁免检定，成功则结束被束缚。或者，其他能触及被束缚的生物可以进行一次智力（奥秘）检定，对抗你的法术豁免 DC。成功则束缚的效果也会结束。 在陷阱被触发之后，当没有生物被它束缚时，法术将会结束。"
+  ],
+  "kind": "spell",
+  "level": 1,
+  "manual_decisions": {
+    "review_gate": "accepted only explicit normalized fields and quoted source evidence",
+    "unresolved_branches": "not promoted when the source does not state attack/save semantics"
+  },
+  "name": "圈套术",
+  "namespace": "content.xanathars-guide",
+  "pack_id": "xanathars-guide",
+  "pack_version": "source-7011166c19bd",
+  "range": "触碰",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-11-batch-II",
+  "reviewed_fields": [
+    "schema_version",
+    "spell_id",
+    "name",
+    "pack_id",
+    "pack_version",
+    "namespace",
+    "ruleset_version",
+    "source_record_id",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "source_trust",
+    "level",
+    "school",
+    "casting_time",
+    "range",
+    "duration",
+    "concentration",
+    "clauses",
+    "evidence"
+  ],
+  "ruleset_version": "2014",
+  "schema_version": "spell-ir-1",
+  "school": "防护",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "selected_clause_excerpt": "一个魔法陷阱。 陷阱几乎是隐形的，要找到它需要一次成功的对抗你的法术豁免DC的智力（调查）检定。 当一个小型 Small、中型 Medium或大型 Large的生物移动进入受到此法术保护的区域时，陷阱就会触发。触发的生物必须通过一次敏捷豁免检定否则摔倒、变成俯卧，并被魔法性地上下颠倒的举到半空中，直到它施法距离被保护的地面或地板 3 尺高。生物被束缚在那里直到法术结束。 被束缚的生物可以在其每个回合的结束时进行一次敏捷豁免检定，成功则结束被束缚。或者，其他能触及被束缚的生物可以进行一次智力（奥秘）检定，对抗你的法术豁免 DC。成功则束缚的效果也会结束。 在陷阱被触发之后，当没有生物被它束缚时，法术将会结束。",
+    "source_book": "珊娜萨的万事指南",
+    "source_checksum": "ce9fc32f61f0069e3006b73a41508ba423696abb6a249c453fafddbfeb1dc547",
+    "source_path": "珊娜萨的万事指南/法术/法术详述/1环.html",
+    "source_text": "#### 圈套术｜Snare\n\n*一环 防护（奇械师、德鲁伊、游侠、法师）*\n**施法时间：**1 分钟\n**施法距离：**触碰\n**法术成分：**S、M（25\n尺的线绳，作为该法术的耗材）\n**持续时间：**8 小时\n当你施展此法术时，用线绳在一处处于你触及内的地面或地板上创造一个 5\n尺半径的圆圈。当你完成施法时，线绳消失，化为一个魔法陷阱。\n陷阱几乎是隐形的，要找到它需要一次成功的对抗你的法术豁免DC的智力（调查）检定。\n当一个小型\nSmall、中型 Medium或大型\nLarge的生物移动进入受到此法术保护的区域时，陷阱就会触发。触发的生物必须通过一次敏捷豁免检定否则摔倒、变成俯卧，并被魔法性地上下颠倒的举到半空中，直到它施法距离被保护的地面或地板\n3\n尺高。生物被束缚在那里直到法术结束。\n被束缚的生物可以在其每个回合的结束时进行一次敏捷豁免检定，成功则结束被束缚。或者，其他能触及被束缚的生物可以进行一次智力（奥秘）检定，对抗你的法术豁免\nDC。成功则束缚的效果也会结束。\n在陷阱被触发之后，当没有生物被它束缚时，法术将会结束。"
+  },
+  "source_fingerprint": "bbc5ba53f4b4f4e20fc37e375d35c129d3a9e83e9c0721a0fe2572673a7ae83b",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/1环.html",
+  "source_provenance": {
+    "officiality": "unknown",
+    "review_basis": "local_source_text_manual_review",
+    "source_book": "珊娜萨的万事指南",
+    "source_checksum": "ce9fc32f61f0069e3006b73a41508ba423696abb6a249c453fafddbfeb1dc547",
+    "source_relative_path": "珊娜萨的万事指南/法术/法术详述/1环.html"
+  },
+  "source_record_id": "805cbf82765f6710391cc75f",
+  "source_trust": "authored_ir",
+  "spell_id": "xanathars-guide:spell:805cbf82765f6710391cc75f"
+}

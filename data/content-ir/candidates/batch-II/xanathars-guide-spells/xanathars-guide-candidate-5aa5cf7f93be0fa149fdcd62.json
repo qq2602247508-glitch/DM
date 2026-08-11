@@ -1,0 +1,60 @@
+{
+  "candidate_clauses": [],
+  "candidate_id": "xanathars-guide:candidate:5aa5cf7f93be0fa149fdcd62",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "1 动作",
+    "classes": [
+      "术士"
+    ],
+    "components": "V、S",
+    "concentration": false,
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "立即",
+    "level": 1,
+    "range": "120 \n尺",
+    "ritual": false,
+    "school": "塑能",
+    "target_disposition": "creature",
+    "upcast_text": "升环施法。 当你使用二环或更高的法术位施展此法术时，每个生物受到额外伤害，类型与投出的一致。额外伤害等于高于一环的每个等级 \n1d6 点。"
+  },
+  "exact_fields": {},
+  "kind": "spell_candidate",
+  "missing_fields": [
+    "typed_clause_mapping"
+  ],
+  "name": "混乱箭",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target",
+    "typed_clause_mapping"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "source_path": "珊娜萨的万事指南/法术/法术详述/1环.html",
+    "source_text": "#### 混乱箭｜Chaos Bolt\n\n*一环 塑能（术士）*\n**施法时间：**1 动作\n**施法距离：**120\n尺\n**法术成分：**V、S\n**持续时间：**立即\n你向着施法距离内的一个生物掷出一团变化不定、高声尖鸣的混乱能量。对目标进行一次远程法术攻击。击中时，目标受到\n2d8+1d6 点伤害。选择一颗 d8 投出的数字来决定它的伤害类型，投出的数字与对应的类别见下表。\n\n| D8 伤害类别 D8 伤害类别 |  |  |  |\n| --- | --- | --- | --- |\n| 1 | 强酸 | 5 | 闪电 |\n| 2 | 寒冷 | 6 | 毒素 |\n| 3 | 火焰 | 7 | 心灵 |\n| 4 | 力场 | 8 | 雷鸣 |\n\n若你的两颗 d8 投出了相同的数字，混乱能量将从目标跳跃到一个由你选择的、处于它周围 30\n尺内的其他生物上。对新目标进行一次新的攻击检定，进行新的伤害掷骰，这次伤害掷骰也可能令混沌能量跳跃。\n一个生物只能被此混乱箭选作目标一次。\n**升环施法。**当你使用二环或更高的法术位施展此法术时，每个生物受到额外伤害，类型与投出的一致。额外伤害等于高于一环的每个等级\n1d6 点。"
+  },
+  "source_fingerprint": "252f05cc02ca6b371fc79abc09f96cfea99d4e40991d9d709a5191bd1424b27d",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/1环.html",
+  "source_record_id": "5aa5cf7f93be0fa149fdcd62",
+  "spell_id": "5aa5cf7f93be0fa149fdcd62",
+  "template_match": {
+    "confidence": "low",
+    "matched_shape": [],
+    "template_fingerprint": "c6cf559b317883e1043d55b34f4a36da44766b6d3a4828662a90474ca1486880",
+    "template_id": "spell.shape.005"
+  },
+  "uncertain_fields": {}
+}

@@ -1,0 +1,92 @@
+{
+  "candidate_clauses": [
+    {
+      "required": true,
+      "type": "concentration"
+    },
+    {
+      "condition": "失能",
+      "type": "apply_condition"
+    },
+    {
+      "condition": "目盲",
+      "type": "apply_condition"
+    }
+  ],
+  "candidate_id": "fizbans-treasury:candidate:051cb2f9130d4b712da3aa90",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "1动作",
+    "classes": [
+      "吟游诗人",
+      "术士",
+      "法师"
+    ],
+    "components": "S、M（一块面包皮，来自一个苹果派）",
+    "concentration": true,
+    "conditions": [
+      "失能",
+      "目盲"
+    ],
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "专注，至多一分钟",
+    "level": 2,
+    "range": "60尺",
+    "repeat": {
+      "count_expression": "duration",
+      "source": "explicit_timing",
+      "timing": "turn_start"
+    },
+    "resolution_kind": "control",
+    "ritual": false,
+    "save": "感知豁免",
+    "school": "幻术",
+    "target_disposition": "creature"
+  },
+  "exact_fields": {
+    "concentration": true,
+    "conditions": [
+      "失能",
+      "目盲"
+    ]
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "纳撒尔恶作剧",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "费资本的巨龙宝库",
+  "source_evidence": {
+    "source_path": "费资本的巨龙宝库/玩家选项/巨龙法术详述.htm",
+    "source_text": "#### 纳撒尔恶作剧｜Nathair's Mischief\n\n*二环 幻术（吟游诗人、术士、法师）*\n**施法时间：**1动作\n**施法距离：**60尺\n**法术成分：**S、M（一块面包皮，来自一个苹果派）\n**持续时间：**专注，至多一分钟\n你选择一个以施法范围内一点为原点，20尺矩形的范围。你在该范围内填满妖精与龙族的魔法。在恶作剧之涌表格里掷骰以决定产生的魔法效应。法术持续时间内、在你的每个回合开始时，你都重骰这个表格。在你重骰之前，你可以把这个矩形范围移动最多10尺。\n\n> **恶作剧之涌**\n>\n> | d4 | 效应 |\n> | --- | --- |\n> | 1 | 空气中弥漫着苹果派的味道，范围内的生物必须成功通过一次感知豁免，否则将被你魅惑，直至你的下回合开始。 |\n> | 2 | 一束束鲜花出现在四周，范围内的生物必须成功通过一次敏捷豁免，否则鲜花将往他们脸上喷水，使他们陷入目盲，直至你的下回合开始。 |\n> | 3 | 范围内的每个生物必须成功通过一次感知豁免，否则将开始咯咯笑，直至你的下回合开始。一个正在咯咯笑的生物陷入失能，并使用他的所有移动力向一个随机方向移动。 |\n> | 4 | 一滴滴蜜糖出现并在矩形内悬停，将其内变成困难地形，直至你的下回合开始。 |"
+  },
+  "source_fingerprint": "584be8b73690eabf58d6e3c413e36a01297e293a20d051cf69c5ad18871b1903",
+  "source_path": "费资本的巨龙宝库/玩家选项/巨龙法术详述.htm",
+  "source_record_id": "051cb2f9130d4b712da3aa90",
+  "spell_id": "051cb2f9130d4b712da3aa90",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "concentration",
+      "apply_condition",
+      "apply_condition"
+    ],
+    "template_fingerprint": "3c42f68fb11991f0b3609f5d664da8f01323dbde293a556e901df3dc4b8daf72",
+    "template_id": "spell.shape.008"
+  },
+  "uncertain_fields": {}
+}

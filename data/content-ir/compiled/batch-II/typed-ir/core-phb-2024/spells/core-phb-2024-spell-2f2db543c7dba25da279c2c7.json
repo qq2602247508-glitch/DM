@@ -1,0 +1,128 @@
+{
+  "capability_registry": {
+    "id": "spell",
+    "version": "content-capabilities-1"
+  },
+  "casting_time": "附赠动作，当你使用近战武器或徒手打击命中一个目标后立即执行",
+  "clause_boundaries": {
+    "damage": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "徒手打击命中一个目标后立即执行 **施法距离：**自身 **法术成分：**V **持续时间：**1分钟 被该次攻击检定命中的目标会在此次攻击中额外受到1d6火焰伤害。直至法术终止前，目标会在其每个回合开始时受到1d6点火焰伤害，并进行一次体质豁免。豁免失败则法术继续生效，成功则法术终止。 **升环施法。**使用的法术位每比一环高一环，此法术造成的所有伤害都会增加1d6点。",
+      "source_heading": "炽焰斩"
+    },
+    "save": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "持续时间：**1分钟 被该次攻击检定命中的目标会在此次攻击中额外受到1d6火焰伤害。直至法术终止前，目标会在其每个回合开始时受到1d6点火焰伤害，并进行一次体质豁免。豁免失败则法术继续生效，成功则法术终止。 **升环施法。**使用的法术位每比一环高一环，此法术造成的所有伤害都会增加1d6点。",
+      "source_heading": "炽焰斩"
+    },
+    "target": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "#### 炽焰斩｜Searing Smite *一环 塑能（圣武士）* **施法时间：**附赠动作，当你使用近战武器或徒手打击命中一个目标后立即执行 **施法距离：**自身 **法术成分：**V **持续时间：**1分钟 被该次攻击检定命中的目标会在此次攻击中额外受到1d6火焰伤害。直至法术终止前，目标会在其每个回合开始时受到1d6点火焰伤害，并进行一次体质豁免。豁免失败则法术继续生效，成功则法术终止。 **升环施法。**使用的法术位每比一环高一环，此法术造成的所有伤害都会增加1d6点。",
+      "source_heading": "炽焰斩"
+    }
+  },
+  "clause_identity": [
+    "core-phb-2024:spell:2f2db543c7dba25da279c2c7:target",
+    "core-phb-2024:spell:2f2db543c7dba25da279c2c7:save",
+    "core-phb-2024:spell:2f2db543c7dba25da279c2c7:damage"
+  ],
+  "clauses": [
+    {
+      "clause_id": "target",
+      "count": 1,
+      "evidence_ref": "#### 炽焰斩｜Searing Smite *一环 塑能（圣武士）* **施法时间：**附赠动作，当你使用近战武器或徒手打击命中一个目标后立即执行 **施法距离：**自身 **法术成分：**V **持续时间：**1分钟 被该次攻击检定命中的目标会在此次攻击中额外受到1d6火焰伤害。直至法术终止前，目标会在其每个回合开始时受到1d6点火焰伤害，并进行一次体质豁免。豁免失败则法术继续生效，成功则法术终止。 **升环施法。**使用的法术位每比一环高一环，此法术造成的所有伤害都会增加1d6点。",
+      "kind": "one_creature",
+      "type": "target_selection",
+      "visibility": "visible"
+    },
+    {
+      "action_economy": "bonus_action",
+      "clause_id": "save",
+      "evidence_ref": "持续时间：**1分钟 被该次攻击检定命中的目标会在此次攻击中额外受到1d6火焰伤害。直至法术终止前，目标会在其每个回合开始时受到1d6点火焰伤害，并进行一次体质豁免。豁免失败则法术继续生效，成功则法术终止。 **升环施法。**使用的法术位每比一环高一环，此法术造成的所有伤害都会增加1d6点。",
+      "half_on_success": false,
+      "save_ability": "体质",
+      "target": "one_creature",
+      "type": "saving_throw"
+    },
+    {
+      "action_economy": "bonus_action",
+      "clause_id": "damage",
+      "damage": "1d6",
+      "damage_type": "火焰",
+      "evidence_ref": "徒手打击命中一个目标后立即执行 **施法距离：**自身 **法术成分：**V **持续时间：**1分钟 被该次攻击检定命中的目标会在此次攻击中额外受到1d6火焰伤害。直至法术终止前，目标会在其每个回合开始时受到1d6点火焰伤害，并进行一次体质豁免。豁免失败则法术继续生效，成功则法术终止。 **升环施法。**使用的法术位每比一环高一环，此法术造成的所有伤害都会增加1d6点。",
+      "expression": "1d6",
+      "on_failure": "full",
+      "on_success": "none",
+      "target": "one_creature",
+      "timing": "immediate",
+      "type": "damage"
+    }
+  ],
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "concentration": false,
+  "duration": "1分钟",
+  "edition": "2024",
+  "evidence": [
+    "damage: 徒手打击命中一个目标后立即执行 **施法距离：**自身 **法术成分：**V **持续时间：**1分钟 被该次攻击检定命中的目标会在此次攻击中额外受到1d6火焰伤害。直至法术终止前，目标会在其每个回合开始时受到1d6点火焰伤害，并进行一次体质豁免。豁免失败则法术继续生效，成功则法术终止。 **升环施法。**使用的法术位每比一环高一环，此法术造成的所有伤害都会增加1d6点。",
+    "save: 持续时间：**1分钟 被该次攻击检定命中的目标会在此次攻击中额外受到1d6火焰伤害。直至法术终止前，目标会在其每个回合开始时受到1d6点火焰伤害，并进行一次体质豁免。豁免失败则法术继续生效，成功则法术终止。 **升环施法。**使用的法术位每比一环高一环，此法术造成的所有伤害都会增加1d6点。",
+    "target: #### 炽焰斩｜Searing Smite *一环 塑能（圣武士）* **施法时间：**附赠动作，当你使用近战武器或徒手打击命中一个目标后立即执行 **施法距离：**自身 **法术成分：**V **持续时间：**1分钟 被该次攻击检定命中的目标会在此次攻击中额外受到1d6火焰伤害。直至法术终止前，目标会在其每个回合开始时受到1d6点火焰伤害，并进行一次体质豁免。豁免失败则法术继续生效，成功则法术终止。 **升环施法。**使用的法术位每比一环高一环，此法术造成的所有伤害都会增加1d6点。"
+  ],
+  "kind": "spell",
+  "level": 1,
+  "manual_decisions": {
+    "review_gate": "accepted only explicit normalized fields and quoted source evidence",
+    "unresolved_branches": "not promoted when the source does not state attack/save semantics"
+  },
+  "name": "炽焰斩",
+  "namespace": "content.core-phb-2024",
+  "pack_id": "core-phb-2024",
+  "pack_version": "source-7011166c19bd",
+  "range": "自身",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-11-batch-II",
+  "reviewed_fields": [
+    "schema_version",
+    "spell_id",
+    "name",
+    "pack_id",
+    "pack_version",
+    "namespace",
+    "ruleset_version",
+    "source_record_id",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "source_trust",
+    "level",
+    "school",
+    "casting_time",
+    "range",
+    "duration",
+    "concentration",
+    "clauses",
+    "evidence"
+  ],
+  "ruleset_version": "2024",
+  "schema_version": "spell-ir-1",
+  "school": "塑能",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "selected_clause_excerpt": "#### 炽焰斩｜Searing Smite *一环 塑能（圣武士）* **施法时间：**附赠动作，当你使用近战武器或徒手打击命中一个目标后立即执行 **施法距离：**自身 **法术成分：**V **持续时间：**1分钟 被该次攻击检定命中的目标会在此次攻击中额外受到1d6火焰伤害。直至法术终止前，目标会在其每个回合开始时受到1d6点火焰伤害，并进行一次体质豁免。豁免失败则法术继续生效，成功则法术终止。 **升环施法。**使用的法术位每比一环高一环，此法术造成的所有伤害都会增加1d6点。 持续时间：**1分钟 被该次攻击检定命中的目标会在此次攻击中额外受到1d6火焰伤害。直至法术终止前，目标会在其每个回合开始时受到1d6点火焰伤害，并进行一次体质豁免。豁免失败则法术继续生效，成功则法术终止。 **升环施法。**使用的法术位每比一环高一环，此法术造成的所有伤害都会增加1d6点。 徒手打击命中一个目标后立即执行 **施法距离：**自身 **法术成分：**V **持续时间：**1分钟 被该次攻击检定命中的目标会在此次攻击中额外受到1d6火焰伤害。直至法术终止前，目标会在其每个回合开始时受到1d6点火焰伤害，并进行一次体质豁免。豁免失败则法术继续生效，成功则法术终止。 **升环施法。**使用的法术位每比一环高一环，此法术造成的所有伤害都会增加1d6点。",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "a0fb0d5fedfeefe16ce1eb9c4c7df2fab9d30607443645cb55fbc4de4c5ab4a5",
+    "source_path": "玩家手册2024/法术详述/1环.htm",
+    "source_text": "#### 炽焰斩｜Searing Smite\n\n*一环 塑能（圣武士）*\n**施法时间：**附赠动作，当你使用近战武器或徒手打击命中一个目标后立即执行\n**施法距离：**自身\n**法术成分：**V\n**持续时间：**1分钟\n被该次攻击检定命中的目标会在此次攻击中额外受到1d6火焰伤害。直至法术终止前，目标会在其每个回合开始时受到1d6点火焰伤害，并进行一次体质豁免。豁免失败则法术继续生效，成功则法术终止。\n**升环施法。**使用的法术位每比一环高一环，此法术造成的所有伤害都会增加1d6点。"
+  },
+  "source_fingerprint": "08d9fbf08cf4c37c2c9483248e977a9abc829134ba050f8a00ea829d2e041dfc",
+  "source_path": "玩家手册2024/法术详述/1环.htm",
+  "source_provenance": {
+    "officiality": "official",
+    "review_basis": "local_source_text_manual_review",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "a0fb0d5fedfeefe16ce1eb9c4c7df2fab9d30607443645cb55fbc4de4c5ab4a5",
+    "source_relative_path": "玩家手册2024/法术详述/1环.htm"
+  },
+  "source_record_id": "2f2db543c7dba25da279c2c7",
+  "source_trust": "authored_ir",
+  "spell_id": "core-phb-2024:spell:2f2db543c7dba25da279c2c7"
+}

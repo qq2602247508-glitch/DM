@@ -1,0 +1,84 @@
+{
+  "candidate_clauses": [
+    {
+      "required": true,
+      "type": "concentration"
+    }
+  ],
+  "candidate_id": "book-of-many-things:candidate:d52d8cc60a51205a85548bf1",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "area_shape": null,
+    "area_size_ft": null,
+    "casting_time": "1动作",
+    "classes": [
+      "术士",
+      "魔契师",
+      "法师"
+    ],
+    "components": "V、S、M（一张描绘着死神化身的镀金纸牌，至少价值400gp）",
+    "concentration": true,
+    "conditions": null,
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "专注，至多1小时",
+    "half_damage_on_save": null,
+    "healing": null,
+    "level": 4,
+    "max_targets": null,
+    "movement": null,
+    "range": "60尺",
+    "reaction": null,
+    "resolution_kind": "summon",
+    "ritual": false,
+    "save": null,
+    "school": "死灵",
+    "summon": {
+      "controller": "caster",
+      "count": 1,
+      "creature_ref": "收割者灵魄 Reaper Spirit",
+      "enters_combat": true,
+      "initiative_mode": "independent"
+    },
+    "upcast_text": "升环施法。 使用5环或更高法术位施放本法术时，该法术召唤的收割者灵魄数据中使用更高的法术环阶。\n收割者灵魄 Reaper \n Spirit 中型亡灵，绝对中立 AC：11+法术环阶（天生护甲） HP：40+高于4环每环10点 速度：30尺，飞行30尺（悬浮） 力量16（+3） \n敏捷16（+3） 体质16（+3） 智力16（+3） 感知16（+3） 魅力16（+3） 伤害免疫：暗蚀，毒素 状态免疫：魅惑，力竭，恐慌，麻痹，中毒 感官：黑暗视觉60尺，被动察觉13 语言：理解你所说的语言 挑战等级：- 熟练加值：等同于你的熟练加值 虚体移动 Incorporeal \nMovement。 灵魄可以如同穿过困难地形一样穿过其他生物和物件。如果它在自己的回合结束时仍处在物件内部则受到5（1d10）的力场伤害。 动作Actions 多重攻击Multiattacks。 灵魄发动等同于法术环阶一半的次数的攻击 \n（向下取整）。 收割之镰Reaping \nScythe。 近战武器攻击：命中使用你的法术攻击调整值(具有优势)，触及5尺，单一被作祟的生物。命中：1d8+3+该法术环阶的暗蚀伤害。 附赠动作Bonus Actions 作祟生物Haunt \nCreature。 灵魄以自己10尺内的一个生物为目标，并开始作祟该生物。当目标被作祟时，如果目标和你在同一个存在位面上，你和灵魄就会感知到目标的方向和距离。此外，如果目标在灵魄10尺内开始其回合，则该目标必须对你的法术豁免DC进行一次成功的感知豁免，否则将陷入恐慌状态直到目标的下一回合开始。目标在死亡、灵魄消失或灵魄再次使用此动作前一直处于被作祟状态。"
+  },
+  "exact_fields": {
+    "concentration": true
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "死神灵魄",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "万象无常书",
+  "source_evidence": {
+    "source_path": "万象无常书/贤者/卡牌法术详述.htm",
+    "source_text": "#### 死神灵魄｜Spirit of Death\n\n*四环 死灵（术士、魔契师、法师）*\n**施法时间：**1动作\n**施法距离：**60尺\n**法术成分：**V、S、M（一张描绘着死神化身的镀金纸牌，至少价值400gp）\n**持续时间：**专注，至多1小时\n你唤来一个象征死神的灵魄。其在施法距离内你可见的一个未占据位置化为实体，并使用**收割者灵魄 Reaper\nSpirit**的数据。当其生命值降至0或法术结束时，灵魄会消失。\n该灵魄在法术持续时间内对你和你的同伴们友好。在战斗中，该生物与你共享先攻值，其回合紧跟在你的回合之后。它遵从于你的口头指令（无需任何动作）。如果你不发令，它将执行回避动作并远离危险。\n**升环施法。**使用5环或更高法术位施放本法术时，该法术召唤的收割者灵魄数据中使用更高的法术环阶。\n\n> **收割者灵魄 Reaper\n>  Spirit**\n> *中型亡灵，绝对中立*\n> AC：11+法术环阶（天生护甲）\n> HP：40+高于4环每环10点\n> 速度：30尺，飞行30尺（悬浮）\n> 力量16（+3）\n> 敏捷16（+3） 体质16（+3）\n> 智力16（+3） 感知16（+3） 魅力16（+3）\n> 伤害免疫：暗蚀，毒素\n> 状态免疫：魅惑，力竭，恐慌，麻痹，中毒\n> 感官：黑暗视觉60尺，被动察觉13\n> 语言：理解你所说的语言\n> 挑战等级：-\n> 熟练加值：等同于你的熟练加值\n>\n>\n>\n> **虚体移动 Incorporeal\n> Movement。**灵魄可以如同穿过困难地形一样穿过其他生物和物件。如果它在自己的回合结束时仍处在物件内部则受到5（1d10）的力场伤害。\n> **动作Actions**\n> **多重攻击Multiattacks。**灵魄发动等同于法术环阶一半的次数的攻击\n> （向下取整）。\n> **收割之镰Reaping\n> Scythe。**近战武器攻击：命中使用你的法术攻击调整值(具有优势)，触及5尺，单一被作祟的生物。命中：1d8+3+该法术环阶的暗蚀伤害。\n> **附赠动作Bonus Actions**\n> **作祟生物Haunt\n> Creature。**灵魄以自己10尺内的一个生物为目标，并开始作祟该生物。当目标被作祟时，如果目标和你在同一个存在位面上，你和灵魄就会感知到目标的方向和距离。此外，如果目标在灵魄10尺内开始其回合，则该目标必须对你的法术豁免DC进行一次成功的感知豁免，否则将陷入恐慌状态直到目标的下一回合开始。目标在死亡、灵魄消失或灵魄再次使用此动作前一直处于被作祟状态。"
+  },
+  "source_fingerprint": "d7e081a1df4439bed52e981e488b38231d5a1b37bec9ad28cd03492a5d169298",
+  "source_path": "万象无常书/贤者/卡牌法术详述.htm",
+  "source_record_id": "d52d8cc60a51205a85548bf1",
+  "spell_id": "d52d8cc60a51205a85548bf1",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "concentration"
+    ],
+    "template_fingerprint": "c6cf559b317883e1043d55b34f4a36da44766b6d3a4828662a90474ca1486880",
+    "template_id": "spell.shape.005"
+  },
+  "uncertain_fields": {}
+}

@@ -1,0 +1,64 @@
+{
+  "candidate_clauses": [],
+  "candidate_id": "core-phb-2024:candidate:6f5b6f21ffa22e705a9bd6cb",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "动作",
+    "classes": [
+      "吟游诗人",
+      "德鲁伊",
+      "游侠",
+      "法师",
+      "奇械师"
+    ],
+    "components": "V、S、M（一撮泥土）",
+    "concentration": false,
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "1 小时",
+    "level": 1,
+    "range": "触碰",
+    "ritual": false,
+    "school": "变化",
+    "target_disposition": "creature",
+    "upcast_text": "升环施法。 使用的法术位每比一环高一环，你就可以额外指定一个目标。"
+  },
+  "exact_fields": {},
+  "kind": "spell_candidate",
+  "missing_fields": [
+    "typed_clause_mapping"
+  ],
+  "name": "大步奔行",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target",
+    "typed_clause_mapping"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "source_path": "玩家手册2024/法术详述/1环.htm",
+    "source_text": "#### 大步奔行｜Longstrider\n\n*一环 变化（吟游诗人、德鲁伊、游侠、法师、奇械师）*\n**施法时间：**动作\n**施法距离：**触碰\n**法术成分：**V、S、M（一撮泥土）\n**持续时间：**1 小时\n你触碰一个生物，该目标的速度增加10尺，直至法术结束。\n**升环施法。**使用的法术位每比一环高一环，你就可以额外指定一个目标。"
+  },
+  "source_fingerprint": "834e92d0104e26b08042388d344c97379f0274a935e10fd4953075ec9bd0a8b0",
+  "source_path": "玩家手册2024/法术详述/1环.htm",
+  "source_record_id": "6f5b6f21ffa22e705a9bd6cb",
+  "spell_id": "6f5b6f21ffa22e705a9bd6cb",
+  "template_match": {
+    "confidence": "low",
+    "matched_shape": [],
+    "template_fingerprint": "c6cf559b317883e1043d55b34f4a36da44766b6d3a4828662a90474ca1486880",
+    "template_id": "spell.shape.005"
+  },
+  "uncertain_fields": {}
+}

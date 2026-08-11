@@ -1,0 +1,72 @@
+{
+  "candidate_clauses": [
+    {
+      "required": true,
+      "type": "concentration"
+    }
+  ],
+  "candidate_id": "xanathars-guide:candidate:9764b21de6aeee99390e1297",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "1 \n动作",
+    "classes": [
+      "德鲁伊",
+      "术士",
+      "法师"
+    ],
+    "components": "V、S、M（一滴水）",
+    "concentration": true,
+    "creation": {
+      "count": null,
+      "creation_kind": "terrain",
+      "requires_template_choice": true,
+      "template_ref": "dm_chosen_template"
+    },
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "专注，至多 10 \n分钟",
+    "level": 3,
+    "range": "60尺",
+    "ritual": false,
+    "school": "塑能"
+  },
+  "exact_fields": {
+    "concentration": true
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "水墙术",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "source_path": "珊娜萨的万事指南/法术/法术详述/3环.html",
+    "source_text": "#### 水墙术｜Wall of Water\n\n*三环 塑能（德鲁伊、术士、法师）*\n**施法时间：**1\n动作\n**施法距离：**60尺\n**法术成分：**V、S、M（一滴水）\n**持续时间：**专注，至多 10\n分钟\n你在距离内你能看到的地表的一点上召唤出由水构成的墙体。你可以制造出的墙体长度至多为 30 尺，高度至多为 10 尺，厚度至多为 1\n尺。或者你也可以制造出直径至多为 20 尺的环形墙体，高度至多为 20 尺，厚度至多为 1\n尺。该墙体将在法术终结时消失。该墙体所在的区域是困难地形。\n任何进入墙体所在空间的远程武器攻击在攻击检定中具有劣势，而穿过墙体到达其目标的火焰效果所造成的火焰伤害将减半。造成寒冷伤害的法术若穿过墙体会令穿过的部分被冻结（至少\n5 平方尺的空间被冻结）。每个被冻结的5平方尺的方格具有 AC5 和 15 点生命值。令一块被冻结的区域生命值降为 0\n将摧毁它。当一个部分被摧毁时，墙体的水不会填补其位置。"
+  },
+  "source_fingerprint": "1447fb772e76f46aae13f07dcc5926061b9653795421062e4f348f730cd23082",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/3环.html",
+  "source_record_id": "9764b21de6aeee99390e1297",
+  "spell_id": "9764b21de6aeee99390e1297",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "concentration"
+    ],
+    "template_fingerprint": "c6cf559b317883e1043d55b34f4a36da44766b6d3a4828662a90474ca1486880",
+    "template_id": "spell.shape.005"
+  },
+  "uncertain_fields": {}
+}

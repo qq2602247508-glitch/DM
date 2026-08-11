@@ -1,0 +1,90 @@
+{
+  "candidate_clauses": [
+    {
+      "save_ability": "感知",
+      "type": "saving_throw"
+    },
+    {
+      "damage_type": "心灵",
+      "expression": "3d6",
+      "on_failure": "full",
+      "type": "damage"
+    },
+    {
+      "increments": "1d",
+      "per_slot": 1,
+      "type": "upcast"
+    }
+  ],
+  "candidate_id": "core-phb-2024:candidate:9c24ebd2795e3d23f8f72122",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "动作",
+    "classes": [
+      "吟游诗人"
+    ],
+    "components": "V",
+    "concentration": false,
+    "damage_expression": "3d6",
+    "damage_type": "心灵",
+    "duration": "立即",
+    "half_damage_on_save": true,
+    "level": 1,
+    "range": "60尺",
+    "reaction": {
+      "effect": "目标按法术原文执行反应；没有明确距离时由 DM 裁定。",
+      "event": "规则描述触发后",
+      "timing": "when"
+    },
+    "resolution_kind": "damage",
+    "ritual": false,
+    "save": "感知豁免",
+    "target_disposition": "creature",
+    "upcast_damage_dice": 1,
+    "upcast_text": "升环施法。 使用的法术位每比一环高一环，伤害就提高1d6。"
+  },
+  "exact_fields": {
+    "damage_expression": "3d6",
+    "damage_type": "心灵",
+    "save": "感知豁免",
+    "upcast": 1
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "不谐低语",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "source_path": "玩家手册2024/法术详述/1环.htm",
+    "source_text": "#### 不谐低语｜Dissonant Whispers\n\n*一环 惑控（吟游诗人）*\n**施法时间：**动作\n**施法距离：**60尺\n**法术成分：**V\n**持续时间：**立即\n一名施法距离内你选择的可见生物的心灵中听见一段不协和旋律。目标进行一次感知豁免。豁免失败则受到3d6点心灵伤害，并立即执行其反应（若可用）尽可能往远离你的方向移动，并采取最安全的路径。豁免成功则只受一半伤害。\n**升环施法。**使用的法术位每比一环高一环，伤害就提高1d6。"
+  },
+  "source_fingerprint": "d161393563e55ba7a5c333a8549b97c42c16823cba9a838fca442277bb45de30",
+  "source_path": "玩家手册2024/法术详述/1环.htm",
+  "source_record_id": "9c24ebd2795e3d23f8f72122",
+  "spell_id": "9c24ebd2795e3d23f8f72122",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "saving_throw",
+      "damage",
+      "upcast"
+    ],
+    "template_fingerprint": "3c42f68fb11991f0b3609f5d664da8f01323dbde293a556e901df3dc4b8daf72",
+    "template_id": "spell.shape.008"
+  },
+  "uncertain_fields": {}
+}

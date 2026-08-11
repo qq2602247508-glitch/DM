@@ -1,0 +1,59 @@
+{
+  "candidate_clauses": [],
+  "candidate_id": "xanathars-guide:candidate:02a4993d7cfe05576114bbf9",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "1 动作",
+    "classes": [
+      "牧师"
+    ],
+    "components": "V、M（一块圣徽）",
+    "concentration": false,
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "立即",
+    "range": "5 \n尺",
+    "ritual": false,
+    "save": "体质豁免",
+    "school": "塑能",
+    "target_disposition": "creature"
+  },
+  "exact_fields": {},
+  "kind": "spell_candidate",
+  "missing_fields": [
+    "typed_clause_mapping"
+  ],
+  "name": "光耀祷词",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target",
+    "typed_clause_mapping"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "source_path": "珊娜萨的万事指南/法术/法术详述/戏法.html",
+    "source_text": "#### 光耀祷词｜Word of Radiance\n\n*塑能 戏法（牧师）**Legacy*\n**施法时间：**1 动作\n**施法距离：**5\n尺\n**法术成分：**V、M（一块圣徽）\n**持续时间：**立即\n你念出神圣的词语，灼热的光辉随之喷薄而出。每个你选择的、处于你周围 5\n尺内、你能看见的生物必须通过一次体质豁免检定，否则受到 1d6 点光耀伤害。\n此法术的伤害在你达到 5 级（2d6），11级（3d6），和 17\n级（4d6）时提高 1d6 点。"
+  },
+  "source_fingerprint": "8d96fdfd877c702cdac3760eec298c12a4b29429374f80e7adcca340beaccfaf",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/戏法.html",
+  "source_record_id": "02a4993d7cfe05576114bbf9",
+  "spell_id": "02a4993d7cfe05576114bbf9",
+  "template_match": {
+    "confidence": "low",
+    "matched_shape": [],
+    "template_fingerprint": "c6cf559b317883e1043d55b34f4a36da44766b6d3a4828662a90474ca1486880",
+    "template_id": "spell.shape.005"
+  },
+  "uncertain_fields": {}
+}

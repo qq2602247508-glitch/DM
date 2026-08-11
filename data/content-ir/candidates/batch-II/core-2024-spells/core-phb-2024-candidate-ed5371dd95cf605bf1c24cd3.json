@@ -1,0 +1,65 @@
+{
+  "candidate_clauses": [
+    {
+      "required": true,
+      "type": "concentration"
+    }
+  ],
+  "candidate_id": "core-phb-2024:candidate:ed5371dd95cf605bf1c24cd3",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "附赠动作",
+    "classes": [
+      "圣武士"
+    ],
+    "components": "V",
+    "concentration": true,
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "专注，至多 1 \n分钟",
+    "level": 1,
+    "range": "30 尺",
+    "ritual": false,
+    "save": "感知豁免",
+    "target_disposition": "ally"
+  },
+  "exact_fields": {
+    "concentration": true
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "强令对决",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "source_path": "玩家手册2024/法术详述/1环.htm",
+    "source_text": "#### 强令对决｜Compelled Duel\n\n*一环 惑控（圣武士）*\n**施法时间：**附赠动作\n**施法距离：**30 尺\n**法术成分：**V\n**持续时间：**专注，至多 1\n分钟\n你尝试强令一名生物与你决斗。选择施法距离内一名你可见的生物，该生物必须成功通过一次感知豁免，豁免失败则，该生物对除你之外任何生物进行攻击检定时都具有劣势，且该生物不能自主移动到距离你超过30尺的位置。\n当你攻击另一名生物时，当你对另一名敌对生物施展法术时，当一名你的盟友对该目标造成伤害或者对其施展伤害性法术时，又或者你在距离该目标超过\n30 尺的位置结束你的回合时，该法术提前终止。"
+  },
+  "source_fingerprint": "6a747d6744356da4b593443f7cbafc326091b7e05dd5e0ee78b558548791963f",
+  "source_path": "玩家手册2024/法术详述/1环.htm",
+  "source_record_id": "ed5371dd95cf605bf1c24cd3",
+  "spell_id": "ed5371dd95cf605bf1c24cd3",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "concentration"
+    ],
+    "template_fingerprint": "c6cf559b317883e1043d55b34f4a36da44766b6d3a4828662a90474ca1486880",
+    "template_id": "spell.shape.005"
+  },
+  "uncertain_fields": {}
+}

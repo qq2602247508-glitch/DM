@@ -1,0 +1,105 @@
+{
+  "candidate_clauses": [
+    {
+      "save_ability": "体质",
+      "type": "saving_throw"
+    },
+    {
+      "damage_type": "光耀",
+      "expression": "4d8",
+      "on_failure": "full",
+      "type": "damage"
+    },
+    {
+      "required": true,
+      "type": "concentration"
+    }
+  ],
+  "candidate_id": "xanathars-guide:candidate:4f414052ed79b3e2bff11772",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "1 动作",
+    "classes": [
+      "术士",
+      "魔契师",
+      "法师"
+    ],
+    "components": "V、S、M（一面手镜）",
+    "concentration": true,
+    "damage_components": [
+      {
+        "damage_type": "光耀",
+        "expression": "4d8"
+      },
+      {
+        "damage_type": "光耀",
+        "expression": "4d8"
+      },
+      {
+        "damage_type": "光耀",
+        "expression": "4d8"
+      }
+    ],
+    "damage_expression": "4d8",
+    "damage_type": "光耀",
+    "duration": "专注，至多 10 \n分钟",
+    "half_damage_on_save": true,
+    "level": 5,
+    "range": "120 \n尺",
+    "repeat": {
+      "count_expression": "duration",
+      "source": "explicit_timing",
+      "timing": "turn_end"
+    },
+    "resolution_kind": "damage",
+    "ritual": false,
+    "save": "体质豁免",
+    "school": "塑能",
+    "target_disposition": "creature",
+    "upcast_text": "升环施法。 当你使用六环或更高的法术位施放该法术时，使用的法术位每高一环，伤害便增加 1d8。"
+  },
+  "exact_fields": {
+    "concentration": true,
+    "damage_expression": "4d8",
+    "damage_type": "光耀",
+    "save": "体质豁免"
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "光墙术",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "source_path": "珊娜萨的万事指南/法术/法术详述/5环.html",
+    "source_text": "#### 光墙术｜Wall of Light\n\n*五环 塑能（术士、魔契师、法师）*\n**施法时间：**1 动作\n**施法距离：**120\n尺\n**法术成分：**V、S、M（一面手镜）\n**持续时间：**专注，至多 10\n分钟\n明亮的、闪光的墙壁在施法距离内你选择的一点出现。这面光墙的方向由你决定：你可以使墙成为水平或垂直的结界，亦可以使它成一定倾角。它可以浮在空中，也可以立于坚实的表面上。墙壁的长度至多\n60 尺，高度至多 10 尺，厚度至多 5 尺。墙会阻挡视觉线，但是生物和物体可以穿过它。它发出 120 尺的明亮照明和额外 120\n尺的微光照明。\n当光墙出现时，在那个区域里的每个生物都必须进行体质豁免检定。若豁免失败，生物受到 4d8 光耀伤害，并且目盲 1\n分钟。若豁免成功，它只承受一半伤害并且不会被目盲。一个被目盲的生物可以在它的每个回合结束时重新进行体质豁免检定，若成功则结束对自己的目盲效果。在墙壁区域内结束回合的生物也会受到\n4d8 光耀伤害。\n直到法术结束之前，你可以使用你的动作从墙上发射出一条光辉射线，袭击它 60\n尺内的一个你可以看见的生物。进行一次远程法术攻击检定。若击中，目标承受 4d8 光耀伤害。无论击中或失手，墙壁的长度都会被减少 10 尺。如果墙壁的长度被降低至\n0 尺，法术结束。\n**升环施法。**当你使用六环或更高的法术位施放该法术时，使用的法术位每高一环，伤害便增加 1d8。"
+  },
+  "source_fingerprint": "53c03991a4ce969b4f1c14b83a4e74640a3c24b471794537b3109d70c8255910",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/5环.html",
+  "source_record_id": "4f414052ed79b3e2bff11772",
+  "spell_id": "4f414052ed79b3e2bff11772",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "saving_throw",
+      "damage",
+      "concentration"
+    ],
+    "template_fingerprint": "3c42f68fb11991f0b3609f5d664da8f01323dbde293a556e901df3dc4b8daf72",
+    "template_id": "spell.shape.008"
+  },
+  "uncertain_fields": {}
+}

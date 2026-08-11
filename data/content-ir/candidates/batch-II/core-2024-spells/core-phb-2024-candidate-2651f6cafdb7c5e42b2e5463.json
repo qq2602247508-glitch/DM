@@ -1,0 +1,58 @@
+{
+  "candidate_clauses": [],
+  "candidate_id": "core-phb-2024:candidate:2651f6cafdb7c5e42b2e5463",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "动作",
+    "classes": [
+      "吟游诗人"
+    ],
+    "components": "V",
+    "concentration": false,
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "立即",
+    "range": "60尺",
+    "ritual": false,
+    "save": "感知豁免",
+    "target_disposition": "creature"
+  },
+  "exact_fields": {},
+  "kind": "spell_candidate",
+  "missing_fields": [
+    "typed_clause_mapping"
+  ],
+  "name": "恶言相加",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target",
+    "typed_clause_mapping"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "source_path": "玩家手册2024/法术详述/0环.htm",
+    "source_text": "#### 恶言相加｜Vicious Mockery\n\n*惑控 戏法（吟游诗人）*\n**施法时间：**动作\n**施法距离：**60尺\n**法术成分：**V\n**持续时间：**立即\n你对施法距离内一名你能看见或听见的生物连珠炮式地释出一串蕴涵微妙惑控的侮辱。目标必须通过一次感知豁免，否则受到1d6点心灵伤害，且在其下一回合结束前，其进行的下一次攻击检定具有劣势。\n**戏法强化。**到达特定等级后，此戏法的伤害将增加1d6：5级（2d6）、11级（3d6）、17级（4d6）。"
+  },
+  "source_fingerprint": "e9e3d6a1df2892fe1e3757460b2f2dd26f4978ab6915ca321053bd71ba29a1c1",
+  "source_path": "玩家手册2024/法术详述/0环.htm",
+  "source_record_id": "2651f6cafdb7c5e42b2e5463",
+  "spell_id": "2651f6cafdb7c5e42b2e5463",
+  "template_match": {
+    "confidence": "low",
+    "matched_shape": [],
+    "template_fingerprint": "c6cf559b317883e1043d55b34f4a36da44766b6d3a4828662a90474ca1486880",
+    "template_id": "spell.shape.005"
+  },
+  "uncertain_fields": {}
+}

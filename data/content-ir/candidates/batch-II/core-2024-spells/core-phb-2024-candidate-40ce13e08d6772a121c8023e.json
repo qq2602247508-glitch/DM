@@ -1,0 +1,62 @@
+{
+  "candidate_clauses": [],
+  "candidate_id": "core-phb-2024:candidate:40ce13e08d6772a121c8023e",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "1分钟",
+    "classes": [
+      "吟游诗人",
+      "牧师",
+      "德鲁伊",
+      "术士",
+      "法师"
+    ],
+    "components": "V、S、M（两块天然磁石）",
+    "concentration": false,
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "立即",
+    "range": "触碰",
+    "ritual": false,
+    "school": "变化",
+    "target_disposition": "object"
+  },
+  "exact_fields": {},
+  "kind": "spell_candidate",
+  "missing_fields": [
+    "typed_clause_mapping"
+  ],
+  "name": "修复术",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target",
+    "typed_clause_mapping"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "source_path": "玩家手册2024/法术详述/0环.htm",
+    "source_text": "#### 修复术｜Mending\n\n*变化 戏法（吟游诗人、牧师、德鲁伊、术士、法师）*\n**施法时间：**1分钟\n**施法距离：**触碰\n**法术成分：**V、S、M（两块天然磁石）\n**持续时间：**立即\n该法术修复你所触碰一个物件上的一处破损或裂缝，例如修复一条断裂的链条、一把碎成两半的钥匙、一件撕裂的斗篷、一个漏了的酒袋等。只要破损或断裂处在任意方向上都不超过 1 尺，你就可以不留痕迹地修复它。\n该法术可以物理性地修复一件魔法物品，但无法恢复其上的魔法。\n（编注：奇械师的职业特性直接给予了这一法术，因此这一法术现不在奇械师法术列表上。）"
+  },
+  "source_fingerprint": "29ef68da2153d9e826bfbfee58ef6de9659a65a639125b4056e26900b38d47a9",
+  "source_path": "玩家手册2024/法术详述/0环.htm",
+  "source_record_id": "40ce13e08d6772a121c8023e",
+  "spell_id": "40ce13e08d6772a121c8023e",
+  "template_match": {
+    "confidence": "low",
+    "matched_shape": [],
+    "template_fingerprint": "c6cf559b317883e1043d55b34f4a36da44766b6d3a4828662a90474ca1486880",
+    "template_id": "spell.shape.005"
+  },
+  "uncertain_fields": {}
+}

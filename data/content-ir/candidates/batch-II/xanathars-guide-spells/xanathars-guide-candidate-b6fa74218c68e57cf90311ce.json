@@ -1,0 +1,76 @@
+{
+  "candidate_clauses": [
+    {
+      "required": true,
+      "type": "concentration"
+    }
+  ],
+  "candidate_id": "xanathars-guide:candidate:b6fa74218c68e57cf90311ce",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "1 动作",
+    "classes": [
+      "德鲁伊",
+      "游侠",
+      "术士",
+      "法师"
+    ],
+    "components": "V、S",
+    "concentration": true,
+    "damage_expression": "1d6",
+    "damage_type": "火焰",
+    "duration": "专注，至多 1 \n小时",
+    "level": 3,
+    "range": "触碰",
+    "resolution_kind": "damage",
+    "ritual": false,
+    "school": "变化",
+    "upcast_text": "升环施法。 当你使用四环或更高的法术位施放该法术时，使用的法术位每高一环，你能以此法术影响的弹药的数量便增加 2 发。"
+  },
+  "exact_fields": {
+    "concentration": true
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [
+    "attack_or_save"
+  ],
+  "name": "烈焰箭矢",
+  "required_review_fields": [
+    "action_economy",
+    "attack_or_save",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "source_path": "珊娜萨的万事指南/法术/法术详述/3环.html",
+    "source_text": "#### 烈焰箭矢｜Flame Arrows\n\n*三环 变化（德鲁伊、游侠、术士、法师）*\n**施法时间：**1 动作\n**施法距离：**触碰\n**法术成分：**V、S\n**持续时间：**专注，至多 1\n小时\n你接触一个装有箭矢或弹药的箭袋。当一个目标被从箭袋中取出的弹药进行的远程武器攻击击中时，该目标额外受到 1d6\n点火焰伤害。弹药上法术的魔力将在其击中或未击中目标时消失，而法术将在从箭袋中取出 12\n发弹药后终结。\n**升环施法。**当你使用四环或更高的法术位施放该法术时，使用的法术位每高一环，你能以此法术影响的弹药的数量便增加 2 发。"
+  },
+  "source_fingerprint": "a7feb1f718e7abf5e82e7552e12ad099541319baa52d701d1fb4b7a6a089200d",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/3环.html",
+  "source_record_id": "b6fa74218c68e57cf90311ce",
+  "spell_id": "b6fa74218c68e57cf90311ce",
+  "template_match": {
+    "confidence": "medium",
+    "matched_shape": [
+      "concentration"
+    ],
+    "template_fingerprint": "c6cf559b317883e1043d55b34f4a36da44766b6d3a4828662a90474ca1486880",
+    "template_id": "spell.shape.005"
+  },
+  "uncertain_fields": {
+    "damage_expression": "1d6",
+    "damage_type": "火焰",
+    "operator": "attack_roll_or_other_damage_operator_requires_review"
+  }
+}

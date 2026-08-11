@@ -1,0 +1,67 @@
+{
+  "candidate_clauses": [
+    {
+      "expression": "12",
+      "type": "healing"
+    }
+  ],
+  "candidate_id": "xanathars-guide:candidate:51390e4a119d736a6bb4e3bf",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "1 动作",
+    "classes": [
+      "牧师",
+      "魔契师",
+      "法师"
+    ],
+    "components": "V、S",
+    "concentration": false,
+    "duration": "立即",
+    "healing": "12",
+    "range": "60 \n尺",
+    "resolution_kind": "heal",
+    "ritual": false,
+    "save": "感知豁免",
+    "school": "死灵",
+    "target_disposition": "creature"
+  },
+  "exact_fields": {
+    "healing": "12"
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "亡者丧钟",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "source_path": "珊娜萨的万事指南/法术/法术详述/戏法.html",
+    "source_text": "#### 亡者丧钟｜Toll the Dead\n\n*死灵 戏法（牧师、魔契师、法师）**Legacy*\n**施法时间：**1 动作\n**施法距离：**60\n尺\n**法术成分：**V、S\n**持续时间：**立即\n你指向一个处于距离内、你能看见的生物，一阵哀痛的铃声在空中鸣响。目标必须通过一次感知豁免检定，否则受到\n1d8 点暗蚀伤害。若目标失去了任何量的生命值，它改为受到 1d12 点暗蚀伤害。\n此法术的伤害在你达到 5 级（2d8 或 2d12），11 级（3d8\n或 3d12），和 17 级（4d8 或 4d12）时提高一个伤害骰。"
+  },
+  "source_fingerprint": "5b3c72642605bddccadf786ce65f2d2802dc9f3b62371502a825ceba67855f6d",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/戏法.html",
+  "source_record_id": "51390e4a119d736a6bb4e3bf",
+  "spell_id": "51390e4a119d736a6bb4e3bf",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "healing"
+    ],
+    "template_fingerprint": "a5e98decf95ae64a83a7eb1eaac4f255fc3ab8f23dce3c36a4cc51211c431aec",
+    "template_id": "spell.shape.007"
+  },
+  "uncertain_fields": {}
+}

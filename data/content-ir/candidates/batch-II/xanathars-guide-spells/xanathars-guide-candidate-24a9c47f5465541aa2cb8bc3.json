@@ -1,0 +1,72 @@
+{
+  "candidate_clauses": [
+    {
+      "required": true,
+      "type": "concentration"
+    }
+  ],
+  "candidate_id": "xanathars-guide:candidate:24a9c47f5465541aa2cb8bc3",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "1 附赠动作",
+    "classes": [
+      "术士",
+      "魔契师",
+      "法师"
+    ],
+    "components": "V",
+    "concentration": true,
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "专注，至多 1 \n分钟",
+    "level": 5,
+    "range": "自身",
+    "ritual": false,
+    "school": "咒法",
+    "teleport": {
+      "can_take_creatures": false,
+      "destination_kind": "chosen_space",
+      "max_distance_ft": null,
+      "requires_destination_choice": true
+    }
+  },
+  "exact_fields": {
+    "concentration": true
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "渺远步",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "source_path": "珊娜萨的万事指南/法术/法术详述/5环.html",
+    "source_text": "#### 渺远步｜Far Step\n\n*五环 咒法（术士、魔契师、法师）\n***施法时间：**1 附赠动作\n**施法距离：**自身\n**法术成分：**V\n**持续时间：**专注，至多 1\n分钟\n你传送至 60 尺内一处你可见且未占据空间。在法术结束之前你的每个回合，你都可以用附赠动作再次通过这个方法传送。"
+  },
+  "source_fingerprint": "4b0dc08d6827533d39bc11cf3a939dbc038f8dab1a1e7e3af24c268fa3788f20",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/5环.html",
+  "source_record_id": "24a9c47f5465541aa2cb8bc3",
+  "spell_id": "24a9c47f5465541aa2cb8bc3",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "concentration"
+    ],
+    "template_fingerprint": "c6cf559b317883e1043d55b34f4a36da44766b6d3a4828662a90474ca1486880",
+    "template_id": "spell.shape.005"
+  },
+  "uncertain_fields": {}
+}

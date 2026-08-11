@@ -1,0 +1,108 @@
+{
+  "candidate_clauses": [
+    {
+      "save_ability": "力量",
+      "type": "saving_throw"
+    },
+    {
+      "damage_type": "钝击",
+      "expression": "1d8",
+      "on_failure": "full",
+      "type": "damage"
+    },
+    {
+      "shape": "sphere",
+      "size_ft": 5,
+      "type": "area"
+    },
+    {
+      "required": true,
+      "type": "concentration"
+    },
+    {
+      "increments": "1d",
+      "per_slot": 1,
+      "type": "upcast"
+    }
+  ],
+  "candidate_id": "xanathars-guide:candidate:e0c98b700248bc95920cde38",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "area_shape": "sphere",
+    "area_size_ft": 5,
+    "casting_time": "1 动作",
+    "classes": [
+      "德鲁伊",
+      "术士",
+      "法师"
+    ],
+    "components": "V、S、M（一捧尘土）",
+    "concentration": true,
+    "damage_expression": "1d8",
+    "damage_type": "钝击",
+    "duration": "专注，至多 1 分钟",
+    "level": 2,
+    "movement": {
+      "direction": "away",
+      "distance_ft": 10,
+      "type": "forced"
+    },
+    "range": "60 尺",
+    "resolution_kind": "damage",
+    "ritual": false,
+    "save": "力量豁免",
+    "school": "咒法",
+    "target_disposition": "creature",
+    "upcast_damage_dice": 1,
+    "upcast_text": "升环施法。 当你使用三环或更高的法术位施放该法术时，使用的法术位每高一环，伤害便增加 1d8。"
+  },
+  "exact_fields": {
+    "area_shape": "sphere",
+    "area_size_ft": 5,
+    "concentration": true,
+    "damage_expression": "1d8",
+    "damage_type": "钝击",
+    "save": "力量豁免",
+    "upcast": 1
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "龙卷尘暴",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "source_path": "珊娜萨的万事指南/法术/法术详述/2环.html",
+    "source_text": "#### 龙卷尘暴｜Dust Devil\n\n*二环 咒法（德鲁伊、术士、法师）*\n**施法时间：**1 动作\n**施法距离：**60 尺\n**法术成分：**V、S、M（一捧尘土）\n**持续时间：**专注，至多 1 分钟\n选择距离之内，你能看见的一个 5\n尺立方的，未被占据的空气。一股元素，外观如同尘卷风，出现在那里，并在法术的持续时间内持续存在。\n任何在尘卷风周围\n5 尺范围内结束其回合的生物必须进行一次力量豁免检定。若检定失败，该生物受到 1d8 点钝击伤害并被推离 10\n尺。若检定成功，该生物只受到上述伤害的一半，并不会被推离。\n以一个附赠动作，你可以让尘卷风向任意方向移动至多\n30 尺。若尘卷风移动时经过了沙子，尘土，松软的土壤或小砂砾，它将会卷起这些物质，在自身周围形成 10\n尺半径的残骸云，持续到你下个回合的开始。残骸云重度遮蔽了所在区域。\n**升环施法。**当你使用三环或更高的法术位施放该法术时，使用的法术位每高一环，伤害便增加 1d8。"
+  },
+  "source_fingerprint": "d8dbc56359259449d1e17e2acc50a2a07ff975f687100365b96316eca5f7c736",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/2环.html",
+  "source_record_id": "e0c98b700248bc95920cde38",
+  "spell_id": "e0c98b700248bc95920cde38",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "saving_throw",
+      "damage",
+      "area",
+      "concentration",
+      "upcast"
+    ],
+    "template_fingerprint": "af295bb9885e22721b4b0ce62f8bf849a6eba5ca49ce60a0868f55c840a15edb",
+    "template_id": "spell.shape.009"
+  },
+  "uncertain_fields": {}
+}

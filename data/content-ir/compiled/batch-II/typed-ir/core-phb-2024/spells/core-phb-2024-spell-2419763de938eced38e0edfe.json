@@ -1,0 +1,109 @@
+{
+  "capability_registry": {
+    "id": "spell",
+    "version": "content-capabilities-1"
+  },
+  "casting_time": "动作",
+  "clause_boundaries": {
+    "healing": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "#### 亡者丧钟｜Toll the Dead *死灵 戏法（牧师、魔契师、法师）* **施法时间：**动作 **施法距离：**60尺 **法术成分：**V、S **持续时间：**立即 你对着施法距离内一名你可见的生物一指，随后目标10尺内响起一阵哀恸的钟鸣。目标必须通过一次感知豁免，否则将受到1d8点暗蚀伤害。若目标豁免失败时已损失任意数量生命值，则改为令其受到1d12点暗蚀伤害。 **戏法强化。**到达特定等级后，此戏法的伤害骰将增加一枚：5级（2d8或2d12）、11级（3d8或3d12）、17级（4d8或4d12）。",
+      "source_heading": "亡者丧钟"
+    },
+    "target": {
+      "boundary_rule": "one authored clause maps to the quoted source sentence(s)",
+      "source_excerpt": "魔契师、法师）* **施法时间：**动作 **施法距离：**60尺 **法术成分：**V、S **持续时间：**立即 你对着施法距离内一名你可见的生物一指，随后目标10尺内响起一阵哀恸的钟鸣。目标必须通过一次感知豁免，否则将受到1d8点暗蚀伤害。若目标豁免失败时已损失任意数量生命值，则改为令其受到1d12点暗蚀伤害。 **戏法强化。**到达特定等级后，此戏法的伤害骰将增加一枚：5级（2d8或2d12）、11级（3d8或3d12）、17级（4d8或4d12）。",
+      "source_heading": "亡者丧钟"
+    }
+  },
+  "clause_identity": [
+    "core-phb-2024:spell:2419763de938eced38e0edfe:target",
+    "core-phb-2024:spell:2419763de938eced38e0edfe:healing"
+  ],
+  "clauses": [
+    {
+      "clause_id": "target",
+      "count": 1,
+      "evidence_ref": "魔契师、法师）* **施法时间：**动作 **施法距离：**60尺 **法术成分：**V、S **持续时间：**立即 你对着施法距离内一名你可见的生物一指，随后目标10尺内响起一阵哀恸的钟鸣。目标必须通过一次感知豁免，否则将受到1d8点暗蚀伤害。若目标豁免失败时已损失任意数量生命值，则改为令其受到1d12点暗蚀伤害。 **戏法强化。**到达特定等级后，此戏法的伤害骰将增加一枚：5级（2d8或2d12）、11级（3d8或3d12）、17级（4d8或4d12）。",
+      "kind": "one_creature",
+      "type": "target_selection",
+      "visibility": "visible"
+    },
+    {
+      "action_economy": "action",
+      "clause_id": "healing",
+      "evidence_ref": "#### 亡者丧钟｜Toll the Dead *死灵 戏法（牧师、魔契师、法师）* **施法时间：**动作 **施法距离：**60尺 **法术成分：**V、S **持续时间：**立即 你对着施法距离内一名你可见的生物一指，随后目标10尺内响起一阵哀恸的钟鸣。目标必须通过一次感知豁免，否则将受到1d8点暗蚀伤害。若目标豁免失败时已损失任意数量生命值，则改为令其受到1d12点暗蚀伤害。 **戏法强化。**到达特定等级后，此戏法的伤害骰将增加一枚：5级（2d8或2d12）、11级（3d8或3d12）、17级（4d8或4d12）。",
+      "expression": "2d8",
+      "healing": "2d8",
+      "target": "one_creature",
+      "timing": "immediate",
+      "type": "healing"
+    }
+  ],
+  "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
+  "concentration": false,
+  "duration": "立即",
+  "edition": "2024",
+  "evidence": [
+    "healing: #### 亡者丧钟｜Toll the Dead *死灵 戏法（牧师、魔契师、法师）* **施法时间：**动作 **施法距离：**60尺 **法术成分：**V、S **持续时间：**立即 你对着施法距离内一名你可见的生物一指，随后目标10尺内响起一阵哀恸的钟鸣。目标必须通过一次感知豁免，否则将受到1d8点暗蚀伤害。若目标豁免失败时已损失任意数量生命值，则改为令其受到1d12点暗蚀伤害。 **戏法强化。**到达特定等级后，此戏法的伤害骰将增加一枚：5级（2d8或2d12）、11级（3d8或3d12）、17级（4d8或4d12）。",
+    "target: 魔契师、法师）* **施法时间：**动作 **施法距离：**60尺 **法术成分：**V、S **持续时间：**立即 你对着施法距离内一名你可见的生物一指，随后目标10尺内响起一阵哀恸的钟鸣。目标必须通过一次感知豁免，否则将受到1d8点暗蚀伤害。若目标豁免失败时已损失任意数量生命值，则改为令其受到1d12点暗蚀伤害。 **戏法强化。**到达特定等级后，此戏法的伤害骰将增加一枚：5级（2d8或2d12）、11级（3d8或3d12）、17级（4d8或4d12）。"
+  ],
+  "kind": "spell",
+  "level": 0,
+  "manual_decisions": {
+    "review_gate": "accepted only explicit normalized fields and quoted source evidence",
+    "unresolved_branches": "not promoted when the source does not state attack/save semantics"
+  },
+  "name": "亡者丧钟",
+  "namespace": "content.core-phb-2024",
+  "pack_id": "core-phb-2024",
+  "pack_version": "source-7011166c19bd",
+  "range": "60尺",
+  "review_status": "reviewed",
+  "reviewed_by": "codex-manual-review-2026-08-11-batch-II",
+  "reviewed_fields": [
+    "schema_version",
+    "spell_id",
+    "name",
+    "pack_id",
+    "pack_version",
+    "namespace",
+    "ruleset_version",
+    "source_record_id",
+    "source_path",
+    "source_book",
+    "source_fingerprint",
+    "source_trust",
+    "level",
+    "school",
+    "casting_time",
+    "range",
+    "duration",
+    "concentration",
+    "clauses",
+    "evidence"
+  ],
+  "ruleset_version": "2024",
+  "schema_version": "spell-ir-1",
+  "school": "死灵",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "selected_clause_excerpt": "魔契师、法师）* **施法时间：**动作 **施法距离：**60尺 **法术成分：**V、S **持续时间：**立即 你对着施法距离内一名你可见的生物一指，随后目标10尺内响起一阵哀恸的钟鸣。目标必须通过一次感知豁免，否则将受到1d8点暗蚀伤害。若目标豁免失败时已损失任意数量生命值，则改为令其受到1d12点暗蚀伤害。 **戏法强化。**到达特定等级后，此戏法的伤害骰将增加一枚：5级（2d8或2d12）、11级（3d8或3d12）、17级（4d8或4d12）。 #### 亡者丧钟｜Toll the Dead *死灵 戏法（牧师、魔契师、法师）* **施法时间：**动作 **施法距离：**60尺 **法术成分：**V、S **持续时间：**立即 你对着施法距离内一名你可见的生物一指，随后目标10尺内响起一阵哀恸的钟鸣。目标必须通过一次感知豁免，否则将受到1d8点暗蚀伤害。若目标豁免失败时已损失任意数量生命值，则改为令其受到1d12点暗蚀伤害。 **戏法强化。**到达特定等级后，此戏法的伤害骰将增加一枚：5级（2d8或2d12）、11级（3d8或3d12）、17级（4d8或4d12）。",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "d009dfa81716eaeaf42166a5728435584192ef19110f5c464a580f4ebe927d70",
+    "source_path": "玩家手册2024/法术详述/0环.htm",
+    "source_text": "#### 亡者丧钟｜Toll the Dead\n\n*死灵 戏法（牧师、魔契师、法师）*\n**施法时间：**动作\n**施法距离：**60尺\n**法术成分：**V、S\n**持续时间：**立即\n你对着施法距离内一名你可见的生物一指，随后目标10尺内响起一阵哀恸的钟鸣。目标必须通过一次感知豁免，否则将受到1d8点暗蚀伤害。若目标豁免失败时已损失任意数量生命值，则改为令其受到1d12点暗蚀伤害。\n**戏法强化。**到达特定等级后，此戏法的伤害骰将增加一枚：5级（2d8或2d12）、11级（3d8或3d12）、17级（4d8或4d12）。"
+  },
+  "source_fingerprint": "da638a8a75fb7ad227d1adbb34d1e8147ec39019332f30e4ffb4dac97f0b8b26",
+  "source_path": "玩家手册2024/法术详述/0环.htm",
+  "source_provenance": {
+    "officiality": "official",
+    "review_basis": "local_source_text_manual_review",
+    "source_book": "玩家手册 2024",
+    "source_checksum": "d009dfa81716eaeaf42166a5728435584192ef19110f5c464a580f4ebe927d70",
+    "source_relative_path": "玩家手册2024/法术详述/0环.htm"
+  },
+  "source_record_id": "2419763de938eced38e0edfe",
+  "source_trust": "authored_ir",
+  "spell_id": "core-phb-2024:spell:2419763de938eced38e0edfe"
+}

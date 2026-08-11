@@ -1,0 +1,86 @@
+{
+  "candidate_clauses": [
+    {
+      "save_ability": "敏捷",
+      "type": "saving_throw"
+    },
+    {
+      "damage_type": "寒冷",
+      "expression": "3d6",
+      "on_failure": "full",
+      "type": "damage"
+    },
+    {
+      "increments": "1d",
+      "per_slot": 1,
+      "type": "upcast"
+    }
+  ],
+  "candidate_id": "xanathars-guide:candidate:647e44fd3b93b2e4dafd2323",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "1 动作",
+    "classes": [
+      "术士",
+      "法师"
+    ],
+    "components": "V、S、M（一块冰或一小块白色岩石碎片）",
+    "concentration": false,
+    "damage_expression": "3d6",
+    "damage_type": "寒冷",
+    "duration": "立即",
+    "level": 2,
+    "range": "90 尺",
+    "resolution_kind": "damage",
+    "ritual": false,
+    "save": "敏捷豁免",
+    "school": "塑能",
+    "target_disposition": "creature",
+    "upcast_damage_dice": 1,
+    "upcast_text": "升环施法。 当你使用三环或更高的法术位施放该法术时，使用的法术位每高一环，伤害便增加 1d6。"
+  },
+  "exact_fields": {
+    "damage_expression": "3d6",
+    "damage_type": "寒冷",
+    "save": "敏捷豁免",
+    "upcast": 1
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "史尼洛雪球群",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "珊娜萨的万事指南",
+  "source_evidence": {
+    "source_path": "珊娜萨的万事指南/法术/法术详述/2环.html",
+    "source_text": "#### 史尼洛雪球群｜Snilloc's Snowball Swarm\n\n*二环 塑能（术士、法师）*\n**施法时间：**1 动作\n**施法距离：**90 尺\n**法术成分：**V、S、M（一块冰或一小块白色岩石碎片）\n**持续时间：**立即\n在距离之内的，一个由你指定的点上，大量的魔法雪球喷涌而出。以该点为中心，5\n尺半径的球形区域内的所有生物必须进行一次敏捷豁免。豁免失败则受到 3d6 点寒冷伤害，成功则只受到半数伤害。\n**升环施法。**当你使用三环或更高的法术位施放该法术时，使用的法术位每高一环，伤害便增加 1d6。"
+  },
+  "source_fingerprint": "7338870954005f22e908e7152cbd75be2a5fb43a1754dd8bbb988be0f0dc33e6",
+  "source_path": "珊娜萨的万事指南/法术/法术详述/2环.html",
+  "source_record_id": "647e44fd3b93b2e4dafd2323",
+  "spell_id": "647e44fd3b93b2e4dafd2323",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "saving_throw",
+      "damage",
+      "upcast"
+    ],
+    "template_fingerprint": "3c42f68fb11991f0b3609f5d664da8f01323dbde293a556e901df3dc4b8daf72",
+    "template_id": "spell.shape.008"
+  },
+  "uncertain_fields": {}
+}

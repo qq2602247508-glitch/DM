@@ -1,0 +1,71 @@
+{
+  "candidate_clauses": [
+    {
+      "required": true,
+      "type": "concentration"
+    }
+  ],
+  "candidate_id": "core-phb-2024:candidate:0e410303dad3f1e454d43ce4",
+  "candidate_status": "generated_candidate",
+  "compile_status": "never_full_before_review",
+  "content_kind": "spell",
+  "draft_fields": {
+    "casting_time": "动作",
+    "classes": [
+      "吟游诗人",
+      "圣武士"
+    ],
+    "components": "V、S",
+    "concentration": true,
+    "damage_expression": null,
+    "damage_type": null,
+    "duration": "专注，至多1分钟",
+    "level": 1,
+    "range": "触碰",
+    "repeat": {
+      "count_expression": "duration",
+      "source": "explicit_timing",
+      "timing": "turn_start"
+    },
+    "ritual": false,
+    "target_disposition": "ally",
+    "upcast_text": "升环施法。 使用的法术位每比一环高一环，你就可以额外选择一个生物作为目标。"
+  },
+  "exact_fields": {
+    "concentration": true
+  },
+  "kind": "spell_candidate",
+  "missing_fields": [],
+  "name": "英雄气概",
+  "required_review_fields": [
+    "action_economy",
+    "clauses",
+    "level",
+    "name",
+    "target"
+  ],
+  "runtime_levels": {
+    "compile_full": false,
+    "production_runtime_full": false,
+    "runtime_preview_full": false
+  },
+  "schema_version": "content-ir-candidate-1",
+  "source_book": "玩家手册 2024",
+  "source_evidence": {
+    "source_path": "玩家手册2024/法术详述/1环.htm",
+    "source_text": "#### 英雄气概｜Heroism\n\n*一环 惑控（吟游诗人、圣武士）*\n**施法时间：**动作\n**施法距离：**触碰\n**法术成分：**V、S\n**持续时间：**专注，至多1分钟\n你触碰一个自愿生物使其充满勇气。该生物直至法术终止前免疫恐慌状态，且它将在其每回合开始时获得等同于你施法属性调整值的临时生命值。\n**升环施法。**使用的法术位每比一环高一环，你就可以额外选择一个生物作为目标。"
+  },
+  "source_fingerprint": "672d51de761c21b80d2347b24f45acba525b43f0769066d2caf88e2d1109a0ec",
+  "source_path": "玩家手册2024/法术详述/1环.htm",
+  "source_record_id": "0e410303dad3f1e454d43ce4",
+  "spell_id": "0e410303dad3f1e454d43ce4",
+  "template_match": {
+    "confidence": "high",
+    "matched_shape": [
+      "concentration"
+    ],
+    "template_fingerprint": "c6cf559b317883e1043d55b34f4a36da44766b6d3a4828662a90474ca1486880",
+    "template_id": "spell.shape.005"
+  },
+  "uncertain_fields": {}
+}
