@@ -20,12 +20,13 @@
 
 ## Round 12：Typed Tattoo Lifecycle Consumer
 
-当前状态：`in_progress`；本轮已完成通用 tattoo lifecycle 实现和 8 条真实 evidence，待最终门禁、提交和推送。
+当前状态：`accepted`；本轮完成通用 tattoo lifecycle 实现和 8 条真实 evidence，已提交并推送。
 
 - `equipment_preview/confirm` 现在按 typed `tattoo_lifecycle` clause 持久化 `manifested/ink/effects_active` 与 `needle_returned/needle/effects_removed`，并继续复用 `item.attunement.v1`、character CAS、OperationTransaction 和 idempotency；没有 item-name dispatch。
 - 8/8 完整刺青通过 create→attune→action/charge→unattune 的 preview→confirm→replay；8/8 transition、metadata snapshot、Attunement ended、CAS/replay 通过，共 21 transactions，2 条 charge lifecycle。
 - ItemSpec 当前状态：`47 total / 37 compile_full / 37 isolated / 24 registered_production_full / 24 game_usable`；Feature Tasha 仍 `74/2/76`，分开计数。
 - 证据：Round XII report/result、Round XII doc/test、更新后的 ItemSpec catalog 与 whole-pack migration；formal registry/database 未写入，name branch=0。
+- 实现提交 `8947eff9e958808ce7e5f5584295682b263bff39` 已于 2026-08-12 05:23:43 +0800 推送到 `origin/main`；ledger receipt 更新随后单独提交。
 - 下一步：继续剩余 explicit spell-cast、partial tattoo variants 和 unresolved item effects；ItemSpec production 尚未达到整包阈值。
 
 ## Round 11：ItemSpec Content Quality Correction / Equipment Consumer Expansion

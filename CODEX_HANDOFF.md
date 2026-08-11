@@ -22,6 +22,7 @@
 - 8/8 完整刺青真实 API roundtrip 通过，21 transactions，2 charge lifecycle，8/8 transition、metadata、Attunement ended 和 replay 通过。ItemSpec：`47 / 37 / 37 / 24 / 24`（total / compile / isolated / registered / game usable）。
 - 证据入口：`scripts/validate-tashas-item-production-consumer-round-XII.py`、Round XII report/result、`docs/tashas-item-production-consumer-round-XII-2026-08-12.md`。
 - 当前 formal_apply/database/registry 仍 false/unchanged；下一轮继续 explicit spell-cast、partial tattoos 与 unresolved item effects。
+- Round XII 实现提交 `8947eff9e958808ce7e5f5584295682b263bff39` 已于 2026-08-12 05:23:43 +0800 推送到 `origin/main`；receipt 更新随后单独提交。
 
 # 2026-08-12 Round 9 检查点：Resource Profile / Exchange / Event Window Consumer 扩展
 

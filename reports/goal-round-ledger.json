@@ -42,7 +42,7 @@
         "difference": "Round 12 starts from the corrected 37 full ItemSpec catalog and 16 registered items; it closes the typed tattoo lifecycle transition through the same equipment/attunement consumer.",
         "prompt_baseline": {"round_target_item_production": 8}
       },
-      "commits": [],
+      "commits": ["8947eff"],
       "compile_full_delta": 0,
       "dm_assisted_delta": 0,
       "files_changed": [
@@ -71,7 +71,14 @@
         "tasha_feature_registered_production_unchanged": 74
       },
       "phase": "I",
-      "push_receipt": null,
+      "push_receipt": {
+        "branch": "main",
+        "commit_hash": "8947eff9e958808ce7e5f5584295682b263bff39",
+        "pushed_at": "2026-08-12T05:23:43+0800",
+        "remote": "origin",
+        "remote_url": "https://github.com/qq2602247508-glitch/DM.git",
+        "result": "success"
+      },
       "reports": [
         "reports/tashas-item-production-consumer-round-XII-2026-08-12.json",
         "data/content-ir/compiled/production-runtime-results-XIV.json",
@@ -93,7 +100,7 @@
         "character_version_cas",
         "character_assets_snapshot"
       ],
-      "status": "in_progress",
+      "status": "accepted",
       "tests": [
         "Round XII validator: 8/8 typed tattoo manifestation/removal preview-confirm-replay",
         "tattoo transitions: manifested -> needle_returned for 8/8",
