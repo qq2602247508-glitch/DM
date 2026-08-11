@@ -1,9 +1,9 @@
 {
   "authored_typed_ir": 64,
-  "compile_full": 58,
+  "compile_full": 59,
   "compile_status_counts": {
-    "full": 58,
-    "partial": 6
+    "full": 59,
+    "partial": 5
   },
   "entries": [
     {
@@ -5931,50 +5931,83 @@
     {
       "atom_id": "tashas-cauldron:atom:752d57e35706db428895da0a:tireless-10:004",
       "compile": {
-        "blockers": [
-          "source is incomplete",
-          "remove-exhaustion: remove_condition"
-        ],
+        "blockers": [],
         "clause_results": [
           {
-            "blockers": [
-              "trigger 'short_rest_completed' is unsupported by remove_condition"
+            "blockers": [],
+            "capability_ids": [
+              "state.lifecycle.remove"
             ],
-            "capability_ids": [],
             "clause_id": "remove-exhaustion",
-            "generated_block": null,
-            "status": "partial"
+            "generated_block": {
+              "action_economy": "none",
+              "activation": "automatic",
+              "capability_id": "state.lifecycle.remove",
+              "clause_id": "remove-exhaustion",
+              "contract_version": "1.0",
+              "materializer_id": "state.lifecycle.remove",
+              "operator": "remove_condition",
+              "parameters": {
+                "condition": "exhaustion"
+              },
+              "targeting": {
+                "kind": "self",
+                "parameters": {}
+              },
+              "trigger": "short_rest_completed"
+            },
+            "status": "full"
           }
         ],
-        "compile_status": "partial",
+        "compile_status": "full",
         "dependencies": [],
-        "evidence": [],
+        "evidence": [
+          "feature_runtime_contract_tests"
+        ],
         "feature_id": "content.tashas-cauldron.round2.feature.ranger-tireless",
-        "fingerprint": "3a40bef8d6dec74aaa938a174159ffbdc19421b19d608581e20f1ec57eb84fa6",
-        "generated_runtime_blocks": [],
+        "fingerprint": "27909229c14d970597e961f9f2e977f1dae929e8629fb58f6c56a199348f9c5d",
+        "generated_runtime_blocks": [
+          {
+            "action_economy": "none",
+            "activation": "automatic",
+            "capability_id": "state.lifecycle.remove",
+            "clause_id": "remove-exhaustion",
+            "contract_version": "1.0",
+            "materializer_id": "state.lifecycle.remove",
+            "operator": "remove_condition",
+            "parameters": {
+              "condition": "exhaustion"
+            },
+            "targeting": {
+              "kind": "self",
+              "parameters": {}
+            },
+            "trigger": "short_rest_completed"
+          }
+        ],
         "legacy_adapter_used": false,
         "manual_boundaries": [],
         "required_inputs": [],
-        "required_persistence": [],
-        "required_tests": [],
+        "required_persistence": [
+          "combatant.conditions"
+        ],
+        "required_tests": [
+          "feature_runtime_contract_tests"
+        ],
         "required_ui": [],
         "source_trust": "authored_ir",
         "status_authority": "compiler",
-        "unsupported_combinations": [
-          "remove-exhaustion: remove_condition"
-        ],
+        "unsupported_combinations": [],
         "unsupported_conditions": [],
         "unsupported_operators": []
       },
       "feature_id": "content.tashas-cauldron.round2.feature.ranger-tireless",
-      "source_completeness": "incomplete",
+      "source_completeness": "complete",
       "source_fingerprint": "d877b14749084e924899962f5fbeb75ecaf81c43e042c3c31a57bf7fc143ab25",
       "source_name": "不知疲倦",
       "source_record_id": "752d57e35706db428895da0a",
       "typed_ir_path": "data/content-ir/authored/round-II/tashas-feature-contract-batch-I/features/ranger-tireless.json",
-      "unmodeled_source_terms": [
-        "temporary exhaustion reduction/short-rest timing needs the condition lifecycle consumer"
-      ]
+      "unmodeled_source_terms": []
     },
     {
       "atom_id": "tashas-cauldron:atom:0739d5dfe5855a9afc8f3a53:bonus-proficiencies:001",
@@ -8010,7 +8043,7 @@
   ],
   "formal_apply": false,
   "isolated_runtime_only": true,
-  "manual_boundary_total": 5,
+  "manual_boundary_total": 4,
   "pack_id": "tashas-cauldron",
   "reviewed_by": "codex-manual-review-2026-08-12-round-II",
   "reviewed_total": 64,

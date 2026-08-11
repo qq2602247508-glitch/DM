@@ -6,6 +6,19 @@
 
 其中 `game_usable = registered_production_full + dm_assisted`。隔离 pack 不得自动成为正式 registry。
 
+## Round 17：Generic Rest Condition Consumer / Tireless Closure
+
+当前状态：`accepted`；本轮完成一个平台核心消费者 seam，关闭 1 条 typed Feature 的真实生产闭环。
+
+- `content.tashas-cauldron.round2.feature.ranger-tireless` 完成 source completeness 复核并从 partial 解锁为 full：`short_rest_completed` → self `remove_condition(exhaustion)`；compiler/materializer 产出 typed `rest_condition_effect`，不是 feature-name action。
+- `RestService` 现在按 typed trigger/rest/condition/effect_kind 消费短休状态效果；兼容旧 registry 的匿名 `rest_effects`，移除了 `actions["tireless"]` name dispatch。rest 场景对非 exhaustion condition fail closed。
+- 真实隔离 SQLite 上完成 preview→confirm→幂等 replay：力竭 `3→2`、character CAS、OperationTransaction、condition persistence、相同 `rest_record_id` replay 全通过，`name_branch_count=0`。
+- Tasha Feature status layers：`production_full=79`（78→79）、`dm_assisted=2`、`game_usable=81`、`compile_only=12`（13→12）、`authored Typed IR=94`、`runtime_preview_full=93`、`manual_authoring=314`。ItemSpec 独立保持 `47/40/40/40`（total/compile/isolated/registered/game usable 的 registered/game 口径为 40）。当前项目 production full `179`。
+- 本轮只有 1 条，是因为它是关闭通用 Rest/condition consumer 的核心增长，不是把单条内容冒充普通批次。Oceanic Soul、Bottled Respite、Psychic Teleportation、Manifest Mind、Psionic Sorcery、Ambush/Commanding Presence 与 7 条 partial ItemSpec 仍保持各自语义边界。
+- 正式 registry/database/campaign/character、source corpus、3D 与永久保护路径未写入。Round XVII validator 与 whole-pack migration 重跑后关键 report/runtime SHA-256 保持一致；专门 Rest API 2 项通过。
+- 证据：`docs/tashas-feature-production-consumer-round-XVII-2026-08-12.md`、Round XVII report/result、Round-II feature runtime report、whole-pack migration 输出。
+- 下一步：继续已有 typed IR 的通用 event/entity/teleport/payment consumer；不为随机表、实体、通信或 DM 裁定增加名称分支。
+
 ## Round 16：Character Growth Proficiency Consumer Expansion
 
 当前状态：`accepted`；本轮完成 4 条安全 proficiency FeatureSpec 的真实角色成长 evidence，已提交推送。

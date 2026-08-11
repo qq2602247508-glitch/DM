@@ -6856,7 +6856,7 @@
       "instantiable": true,
       "level": null,
       "localized_name": "不知疲倦",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "name": "不知疲倦 Tireless（10级）",
       "officiality": "unknown",
       "parent_atom_id": "tashas-cauldron:atom:752d57e35706db428895da0a:484b3b771be4:000",
@@ -6884,10 +6884,10 @@
         "compile_full": true,
         "dm_assisted": false,
         "draft": true,
-        "game_usable": false,
-        "highest_status": "runtime_preview_full",
-        "isolated_runtime_validated": false,
-        "registered_production_full": false,
+        "game_usable": true,
+        "highest_status": "game_usable",
+        "isolated_runtime_validated": true,
+        "registered_production_full": true,
         "reviewed": true,
         "runtime_preview_full": true,
         "source_identified": true
@@ -18634,11 +18634,11 @@
   "pack_id": "tashas-cauldron",
   "schema_version": "tashas-feature-ir-report-1",
   "status_counts": {
-    "compile_only": 7,
+    "compile_only": 6,
     "dm_assisted": 1,
     "dm_reference": 31,
     "manual_authoring": 222,
-    "production_full": 65
+    "production_full": 66
   },
   "typed_atom_total": 73
 }

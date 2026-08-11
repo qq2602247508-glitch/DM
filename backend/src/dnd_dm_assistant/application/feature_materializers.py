@@ -341,6 +341,25 @@ def _materialize_action(context: MaterializerContext) -> MaterializedBlock:
 
 def _materialize_trigger(context: MaterializerContext) -> MaterializedBlock:
     entry = _with_parameters(context, kind=context.operator)
+    if context.operator == "remove_condition" and context.clause.trigger in {
+        "short_rest_started",
+        "short_rest_completed",
+        "long_rest_started",
+        "long_rest_completed",
+    }:
+        rest = (
+            "short_rest"
+            if context.clause.trigger.startswith("short_rest")
+            else "long_rest"
+        )
+        entry.update(
+            {
+                "kind": "rest_condition_effect",
+                "rest": rest,
+                "effect_kind": "reduce_condition_level",
+                "amount": 1,
+            }
+        )
     return MaterializedBlock("triggers", entry)
 
 

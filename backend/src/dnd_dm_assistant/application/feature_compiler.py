@@ -126,6 +126,16 @@ def _compile_effect(
     inputs = tuple(item.kind for item in clause.required_inputs)
     target = clause.targeting.kind if clause.targeting else None
     duration = _duration_kind(clause.duration)
+    if operator == "remove_condition" and clause.trigger in {
+        "short_rest_started",
+        "short_rest_completed",
+        "long_rest_started",
+        "long_rest_completed",
+    }:
+        if str(parameters.get("condition") or "").strip() != "exhaustion":
+            return None, ("rest remove_condition only supports exhaustion",)
+        if target not in {None, "self"}:
+            return None, ("rest remove_condition only supports self target",)
     resource_operations = tuple(
         item.operation for item in (*clause.resource_costs, *clause.resource_recovery)
     )

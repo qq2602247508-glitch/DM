@@ -1,12 +1,12 @@
 {
   "after": {
     "compile_only": 35,
-    "production_full": 178,
+    "production_full": 179,
     "tasha_atom_pack": {
       "authored_typed_ir": 94,
       "candidate_generated": 407,
       "compile_full": 93,
-      "compile_only": 13,
+      "compile_only": 12,
       "consumer_unlocks": {
         "existing_generic_consumer": {
           "content_ids": [
@@ -112,6 +112,7 @@
             "content.tashas-cauldron.round2.feature.ranger-canny",
             "content.tashas-cauldron.round2.feature.ranger-druidic-warrior",
             "content.tashas-cauldron.round2.feature.ranger-roving",
+            "content.tashas-cauldron.round2.feature.ranger-tireless",
             "content.tashas-cauldron.round2.feature.rune-knight-bonus-proficiencies",
             "content.tashas-cauldron.round2.feature.rune-knight-giants-might",
             "content.tashas-cauldron.round2.feature.rune-knight-great-stature",
@@ -138,16 +139,16 @@
       },
       "content_atom_total": 524,
       "content_id_funnel": {
-        "compile_only": 13,
+        "compile_only": 12,
         "dm_assisted": 2,
         "matched_typed_ir": 94,
-        "production_full": 79,
+        "production_full": 80,
         "relation_holds": true
       },
       "current_project_compile_only": 35,
       "current_project_compiled_unique": 111,
-      "current_project_production_full": 178,
-      "current_project_production_registry_fingerprint": "455bb88a9b22771b5cb6fd9ce9f1781c45ac6a5e17e7ff09363115c890bcf27f",
+      "current_project_production_full": 179,
+      "current_project_production_registry_fingerprint": "bf68fb0cbfbe130d8c5a29070a8333bbef2c3e5b5fcb8fbf63641f13f311af4e",
       "dm_assisted": 2,
       "dm_reference": 107,
       "draft_total": 407,
@@ -164,7 +165,7 @@
         },
         "total": 499
       },
-      "game_usable": 80,
+      "game_usable": 81,
       "invalid_source": 0,
       "item_ir": {
         "blocker": "manual_review_required is retained for unresolved action, spell, and effect clauses",
@@ -236,7 +237,7 @@
         "spell": 21,
         "subclass_feature": 232
       },
-      "production_full": 78,
+      "production_full": 79,
       "reviewed_total": 407,
       "runtime_preview_full": 93,
       "schema_version": "tashas-whole-pack-migration-1",
@@ -246,7 +247,7 @@
       "source_record_total": 144,
       "source_record_unclassified": 0,
       "status_counts": {
-        "compile_only": 13,
+        "compile_only": 12,
         "dm_assisted": 2,
         "dm_reference": 107,
         "duplicate_or_reprint": 0,
@@ -254,7 +255,7 @@
         "manual_authoring": 314,
         "non_instantiable": 10,
         "out_of_scope_with_reason": 0,
-        "production_full": 78
+        "production_full": 79
       },
       "template_matched": 93
     },
@@ -262,7 +263,7 @@
   },
   "baseline": {
     "compile_only": 35,
-    "production_full": 178,
+    "production_full": 179,
     "unique_compiled": 111
   },
   "database_unchanged": true,

@@ -1,3 +1,4 @@
+# ruff: noqa: N999
 """Author the first explicit Tasha Feature/Option semantic-contract batch.
 
 This is a source-bound authoring script, not a keyword-to-operator converter.
@@ -309,9 +310,8 @@ AUTHORING: dict[str, dict[str, Any]] = {
     },
     "tashas-cauldron:atom:752d57e35706db428895da0a:tireless-10:004": {
         "slug": "ranger-tireless",
-        "source_completeness": "incomplete",
-        "unmodeled": ["temporary exhaustion reduction/short-rest timing needs the condition lifecycle consumer"],
-        "clauses": [clause("remove-exhaustion", [effect("remove_condition", condition="exhaustion")], trigger="short_rest_completed", activation="explicit_player_choice", action_economy="none", duration=None)],
+        "source_completeness": "complete",
+        "clauses": [clause("remove-exhaustion", [effect("remove_condition", condition="exhaustion")], trigger="short_rest_completed", activation="automatic", action_economy="none", duration=None)],
     },
     "tashas-cauldron:atom:790ce45021cc1901403353e1:implement-of-peace:002": {
         "slug": "peace-cleric-implement-of-peace",

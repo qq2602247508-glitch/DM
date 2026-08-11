@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
@@ -10,7 +11,12 @@ from alembic.config import Config
 from fastapi.testclient import TestClient
 
 from dnd_dm_assistant.api.app import create_app
+from dnd_dm_assistant.application.feature_compiler import (
+    FeatureCompiler,
+    materialize_runtime_definition,
+)
 from dnd_dm_assistant.config import Settings
+from dnd_dm_assistant.domain.feature_ir import FeatureSpec
 from dnd_dm_assistant.domain.feature_runtime import feature_runtime_definition
 
 
@@ -708,6 +714,122 @@ def test_tireless_ranger_short_rest_reduces_exhaustion_without_consuming_resourc
         f"/api/v1/campaigns/{campaign['id']}/characters/{created['id']}/conditions"
     ).json()["items"]
     assert fatigue[0]["details"]["level"] == 2
+
+
+def test_authored_rest_condition_effect_uses_generic_typed_consumer(
+    rest_client: TestClient,
+) -> None:
+    path = Path(
+        "data/content-ir/authored/round-II/tashas-feature-contract-batch-I/features/"
+        "ranger-tireless.json"
+    )
+    value = json.loads(path.read_text(encoding="utf-8"))
+    spec = FeatureSpec.from_dict(
+        {key: item for key, item in value.items() if key in FeatureSpec._FIELDS},
+        path=str(path),
+    )
+    compiler = FeatureCompiler(status_authority="compiler")
+    compiled = compiler.compile(spec)
+    assert compiled.compile_status == "full", compiled.blockers
+    contract = materialize_runtime_definition(spec, compiled, catalog=compiler.catalog)
+    assert contract["triggers"] == [
+        {
+            "id": "content.tashas-cauldron.round2.feature.ranger-tireless:remove-exhaustion:0",
+            "feature_id": "content.tashas-cauldron.round2.feature.ranger-tireless",
+            "clause_id": "remove-exhaustion",
+            "source_record_id": "752d57e35706db428895da0a",
+            "feature_name": "不知疲倦",
+            "class_name": "游侠",
+            "class_level": 0,
+            "kind": "rest_condition_effect",
+            "operator": "remove_condition",
+            "trigger": "short_rest_completed",
+            "activation": "automatic",
+            "action_cost": "none",
+            "targeting": {"kind": "self", "parameters": {}},
+            "runtime_execution": {
+                "status": "ready",
+                "consumer": "feature_condition_lifecycle",
+                "capability_id": "state.lifecycle.remove",
+                "contract_version": "1.0",
+                "materializer_id": "state.lifecycle.remove",
+                "persistence": "combatant.conditions",
+            },
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+            "condition": "exhaustion",
+            "rest": "short_rest",
+            "effect_kind": "reduce_condition_level",
+            "amount": 1,
+        }
+    ]
+
+    campaign = _campaign(rest_client)
+    created = rest_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/characters",
+        json={
+            "name": "typed rest effect actor",
+            "class_name": "游侠",
+            "level": 10,
+            "hp": 8,
+            "max_hp": 20,
+            "ability_scores": {"constitution": 12, "wisdom": 16},
+            "class_levels": {"游侠": 10},
+            "features": [
+                {
+                    "name": "任意短休状态特性",
+                    "feature_id": spec.feature_id,
+                    "class_name": spec.class_name,
+                    "class_level": 10,
+                    "kind": "feature",
+                    "runtime": {"registry": contract},
+                }
+            ],
+        },
+    ).json()
+    condition = rest_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/characters/{created['id']}/conditions",
+        json={"condition_name": "力竭", "details": {"level": 3}},
+    )
+    assert condition.status_code == 201, condition.text
+
+    body = {
+        "rest_type": "short",
+        "duration_minutes": 60,
+        "participants": [{"character_id": created["id"], "character_version": created["version"]}],
+    }
+    preview = rest_client.post(f"/api/v1/campaigns/{campaign['id']}/rests/preview", json=body)
+    assert preview.status_code == 200, preview.text
+    participant = preview.json()["participants"][0]
+    assert participant["after"]["fatigue"] == 2
+
+    confirm_body = {
+        **body,
+        "preview_token": preview.json()["preview_token"],
+        "idempotency_key": "typed-rest-condition-effect-1",
+    }
+    confirmed = rest_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/rests/confirm", json=confirm_body
+    )
+    assert confirmed.status_code == 200, confirmed.text
+    confirmed_body_json = confirmed.json()
+    assert confirmed_body_json["rest_record_id"]
+    updated = rest_client.get(
+        f"/api/v1/campaigns/{campaign['id']}/characters/{created['id']}"
+    ).json()
+    assert updated["version"] == created["version"] + 1
+
+    replay = rest_client.post(
+        f"/api/v1/campaigns/{campaign['id']}/rests/confirm", json=confirm_body
+    )
+    assert replay.status_code == 200, replay.text
+    assert replay.json()["rest_record_id"] == confirmed_body_json["rest_record_id"]
+    assert (
+        rest_client.get(
+            f"/api/v1/campaigns/{campaign['id']}/characters/{created['id']}"
+        ).json()["version"]
+        == updated["version"]
+    )
 
 
 def test_portent_long_rest_persists_submitted_d20_pool(

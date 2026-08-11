@@ -1,0 +1,79 @@
+{
+  "checks": {
+    "all_preview_confirm_replay": true,
+    "character_cas_and_transaction": true,
+    "condition_lifecycle_persisted": true,
+    "formal_apply": false,
+    "isolated_database": true,
+    "name_branch_count": 0,
+    "production_runtime_full_count": 1,
+    "selected_count": 1,
+    "typed_rest_consumer": "rest_service.typed_rest_condition_effect.v1"
+  },
+  "content_kind": "feature",
+  "evidence_by_id": {
+    "content.tashas-cauldron.round2.feature.ranger-tireless": {
+      "character_cas": true,
+      "compile_blockers": [],
+      "compile_status": "full",
+      "condition_persisted": true,
+      "confirm": true,
+      "confirm_status_code": 200,
+      "content_id": "content.tashas-cauldron.round2.feature.ranger-tireless",
+      "content_kind": "feature",
+      "execution_mode": "typed",
+      "name_branch_count": 0,
+      "pack_id": "tashas-cauldron",
+      "preview": true,
+      "preview_after_fatigue": 2,
+      "preview_status_code": 200,
+      "production_runtime_full": true,
+      "replay": true,
+      "replay_status_code": 200,
+      "rest_effect": {
+        "action_cost": "none",
+        "activation": "automatic",
+        "amount": 1,
+        "automation_status": "full",
+        "class_level": 0,
+        "class_name": "游侠",
+        "clause_id": "remove-exhaustion",
+        "condition": "exhaustion",
+        "effect_kind": "reduce_condition_level",
+        "feature_id": "content.tashas-cauldron.round2.feature.ranger-tireless",
+        "feature_name": "不知疲倦",
+        "id": "content.tashas-cauldron.round2.feature.ranger-tireless:remove-exhaustion:0",
+        "kind": "rest_condition_effect",
+        "operator": "remove_condition",
+        "requires_dm_adjudication": false,
+        "rest": "short_rest",
+        "runtime_execution": {
+          "capability_id": "state.lifecycle.remove",
+          "consumer": "feature_condition_lifecycle",
+          "contract_version": "1.0",
+          "materializer_id": "state.lifecycle.remove",
+          "persistence": "combatant.conditions",
+          "status": "ready"
+        },
+        "source_record_id": "752d57e35706db428895da0a",
+        "targeting": {
+          "kind": "self",
+          "parameters": {}
+        },
+        "trigger": "short_rest_completed"
+      },
+      "source_book": "塔莎的万事坩埚",
+      "transaction": true,
+      "typed_consumer": "rest_service.typed_rest_condition_effect.v1",
+      "typed_sections": [
+        "combat_start",
+        "triggers"
+      ]
+    }
+  },
+  "production_runtime_full_ids": [
+    "content.tashas-cauldron.round2.feature.ranger-tireless"
+  ],
+  "schema_version": "content-ir-production-runtime-results-XIX-1",
+  "source": "Round XVII runs the typed Tasha rest-condition clause through the real rest preview/confirm/replay consumer on an isolated migrated database"
+}

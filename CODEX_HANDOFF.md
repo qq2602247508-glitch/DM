@@ -1,3 +1,13 @@
+# 2026-08-12 Round 17 检查点：Generic Rest Condition Consumer / Tireless Closure
+
+- Round XVII 完成 `remove_condition` 的 rest trigger contract、compiler fail-closed guard 和 `rest_condition_effect` materializer；Tireless 从 partial 解锁为 full，短休时自身 exhaustion 降低 1 级。
+- `RestService._short_rest_fatigue_reduction()` 现在扫描 typed triggers 和匿名 legacy `rest_effects`，不再读取 `actions["tireless"]`；非 exhaustion 的 rest condition 会保持 partial。
+- 真实隔离 SQLite preview→confirm→replay：力竭 3→2、CAS、OperationTransaction、condition persistence、相同 `rest_record_id` replay 全通过，name branch=0。
+- Tasha Feature status：`production_full=79`、`dm_assisted=2`、`game_usable=81`、`compile_only=12`、`authored Typed IR=94`、`runtime_preview_full=93`、`manual_authoring=314`；ItemSpec 独立 `47/40/40/40`，当前项目 production full `179`。
+- 新增/更新：`scripts/validate-tashas-rest-feature-production-consumer-round-XVII.py`、Round XVII tests/doc/report/result、feature compiler/operator/materializer/rest consumer、Round-II isolated Feature pack 与 whole-pack reports。正式 registry/database/campaign/character、source corpus、3D、永久保护路径未写入。
+- Round XVII validator 通过；whole-pack migration 连续运行关键 SHA-256 一致；专门 Rest API 2 项通过。backend 全量 pytest、Ruff、compileall、`git diff --check` 在本轮收尾门禁确认。
+- 下一轮继续已有 typed IR 的通用 event/entity/teleport/payment consumer，不新增名称分支。
+
 # 2026-08-12 Round 16 检查点：Character Growth Proficiency Consumer Expansion
 
 - Round XVI 在真实 `advancement_service.character_growth.v1` 上完成 Battle Smith、Armorer、Alchemist、Artillerist 四条工具熟练 FeatureSpec：4/4 preview→confirm→幂等 replay，5 个 proficiency grants、character CAS、OperationTransaction、feature snapshot 全通过，`name_branch_count=0`。

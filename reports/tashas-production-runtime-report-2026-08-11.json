@@ -1,6 +1,6 @@
 {
   "atom_dm_assisted_count": 2,
-  "atom_production_full_count": 78,
+  "atom_production_full_count": 79,
   "dm_assisted_atoms": [
     "tashas-cauldron:atom:0036d7dc058c496ef08fe340:a27f6b57964b:000",
     "tashas-cauldron:atom:867896faa26eb295d846a574:glorious-defense:010"
@@ -110,6 +110,7 @@
         "content.tashas-cauldron.round2.feature.ranger-canny",
         "content.tashas-cauldron.round2.feature.ranger-druidic-warrior",
         "content.tashas-cauldron.round2.feature.ranger-roving",
+        "content.tashas-cauldron.round2.feature.ranger-tireless",
         "content.tashas-cauldron.round2.feature.rune-knight-bonus-proficiencies",
         "content.tashas-cauldron.round2.feature.rune-knight-giants-might",
         "content.tashas-cauldron.round2.feature.rune-knight-great-stature",
@@ -134,7 +135,7 @@
       "new_consumer_count": 0
     }
   },
-  "matched_atom_production_runtime_full_count": 81,
+  "matched_atom_production_runtime_full_count": 82,
   "name_branch_count": 0,
   "new_consumer_count": 0,
   "pack_id": "tashas-cauldron",
@@ -172,6 +173,7 @@
     "tashas-cauldron:atom:752d57e35706db428895da0a:canny-1:002",
     "tashas-cauldron:atom:752d57e35706db428895da0a:druidic-warrior:009",
     "tashas-cauldron:atom:752d57e35706db428895da0a:roving-6:003",
+    "tashas-cauldron:atom:752d57e35706db428895da0a:tireless-10:004",
     "tashas-cauldron:atom:790ce45021cc1901403353e1:implement-of-peace:002",
     "tashas-cauldron:atom:7947fb03852a7bc77d69e3ac:be0996c2cd7c:000",
     "tashas-cauldron:atom:98620543cf94e974361c6567:elemental-gift:005",
@@ -218,7 +220,7 @@
     "tashas-cauldron:atom:fbf8451f879a169fb17a01e9:explosive-cannon:005",
     "tashas-cauldron:atom:fbf8451f879a169fb17a01e9:tool-proficiency:001"
   ],
-  "registry_production_runtime_full_count": 121,
+  "registry_production_runtime_full_count": 122,
   "runtime_evidence": {
     "content.tashas-cauldron.feature.alchemist-chemical-mastery": {
       "confirm_status": 200,
@@ -5429,6 +5431,65 @@
       "transaction": true,
       "turn_boundary_refresh": true,
       "typed_consumer": "combat_engine.feature_action.v1"
+    },
+    "content.tashas-cauldron.round2.feature.ranger-tireless": {
+      "character_cas": true,
+      "compile_blockers": [],
+      "compile_status": "full",
+      "condition_persisted": true,
+      "confirm": true,
+      "confirm_status_code": 200,
+      "content_id": "content.tashas-cauldron.round2.feature.ranger-tireless",
+      "content_kind": "feature",
+      "evidence_path": "data/content-ir/compiled/production-runtime-results-XIX.json",
+      "execution_mode": "typed",
+      "name_branch_count": 0,
+      "pack_id": "tashas-cauldron",
+      "preview": true,
+      "preview_after_fatigue": 2,
+      "preview_status_code": 200,
+      "production_runtime_full": true,
+      "replay": true,
+      "replay_status_code": 200,
+      "rest_effect": {
+        "action_cost": "none",
+        "activation": "automatic",
+        "amount": 1,
+        "automation_status": "full",
+        "class_level": 0,
+        "class_name": "游侠",
+        "clause_id": "remove-exhaustion",
+        "condition": "exhaustion",
+        "effect_kind": "reduce_condition_level",
+        "feature_id": "content.tashas-cauldron.round2.feature.ranger-tireless",
+        "feature_name": "不知疲倦",
+        "id": "content.tashas-cauldron.round2.feature.ranger-tireless:remove-exhaustion:0",
+        "kind": "rest_condition_effect",
+        "operator": "remove_condition",
+        "requires_dm_adjudication": false,
+        "rest": "short_rest",
+        "runtime_execution": {
+          "capability_id": "state.lifecycle.remove",
+          "consumer": "feature_condition_lifecycle",
+          "contract_version": "1.0",
+          "materializer_id": "state.lifecycle.remove",
+          "persistence": "combatant.conditions",
+          "status": "ready"
+        },
+        "source_record_id": "752d57e35706db428895da0a",
+        "targeting": {
+          "kind": "self",
+          "parameters": {}
+        },
+        "trigger": "short_rest_completed"
+      },
+      "source_book": "塔莎的万事坩埚",
+      "transaction": true,
+      "typed_consumer": "rest_service.typed_rest_condition_effect.v1",
+      "typed_sections": [
+        "combat_start",
+        "triggers"
+      ]
     },
     "content.tashas-cauldron.round2.feature.rune-knight-bonus-proficiencies": {
       "character_cas": true,

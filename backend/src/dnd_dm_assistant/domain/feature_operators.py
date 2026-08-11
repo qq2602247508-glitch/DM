@@ -831,7 +831,7 @@ def default_operator_contracts() -> dict[str, OperatorContract]:
             required=("condition",),
             optional=("id",),
             types={"condition": "string", "id": "string"},
-            triggers=_TRIGGER_COMBAT,
+            triggers=_TRIGGER_COMBAT | _TRIGGER_REST,
             actions=_ACTIONS_ANY,
             targets=_TARGET_COMBAT,
             durations=_DURATION_COMBAT,

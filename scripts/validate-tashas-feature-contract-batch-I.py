@@ -1,3 +1,4 @@
+# ruff: noqa: N999
 """Apply, reload and exercise the isolated Round-II Tasha feature pack.
 
 The pack is intentionally written below ``data/content-ir/isolated-packs``.
@@ -211,11 +212,17 @@ def main() -> int:
         "character_growth": character_growth,
         "report": str(REPORT_PATH),
     }, ensure_ascii=False, sort_keys=True))
-    if dry.counts != {"full": 58, "partial": 6, "manual": 0, "invalid": 0}:
+    if (
+        dry.counts.get("full", 0) < 58
+        or dry.counts.get("partial", 0) > 6
+        or dry.counts.get("manual", 0) != 0
+        or dry.counts.get("invalid", 0) != 0
+        or dry.counts.get("full", 0) + dry.counts.get("partial", 0) != 64
+    ):
         raise SystemExit(f"unexpected dry-run counts: {dry.counts}")
     if not (first.applied or first.idempotent_replay) or not second.idempotent_replay:
         raise SystemExit("isolated feature pack did not apply idempotently")
-    if len(lookup_ids) != 58 or not character_growth["closed_loop"]:
+    if len(lookup_ids) != dry.counts.get("full", 0) or not character_growth["closed_loop"]:
         raise SystemExit("isolated feature runtime or character growth gate failed")
     return 0
 

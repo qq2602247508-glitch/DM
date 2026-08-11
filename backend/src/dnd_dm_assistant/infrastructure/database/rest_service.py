@@ -258,21 +258,45 @@ class RestService:
             else {},
             total_level=character.level,
         )
-        actions = registry.get("actions")
-        tireless = actions.get("tireless") if isinstance(actions, dict) else None
-        effects = tireless.get("rest_effects") if isinstance(tireless, dict) else None
-        if not isinstance(effects, list):
-            return 0
         reduction = 0
-        for effect in effects:
-            if not isinstance(effect, dict) or effect.get("kind") != "reduce_exhaustion":
-                continue
-            if effect.get("rest") != "short_rest":
-                continue
-            try:
-                reduction = max(reduction, int(effect.get("amount") or 0))
-            except (TypeError, ValueError):
-                continue
+
+        def read_effects(raw: object) -> tuple[object, ...]:
+            if not isinstance(raw, dict):
+                return ()
+            typed_kind = str(raw.get("kind") or "")
+            if typed_kind == "rest_condition_effect":
+                return (raw,)
+            legacy = raw.get("rest_effects")
+            return tuple(legacy) if isinstance(legacy, list) else ()
+
+        trigger_entries = registry.get("triggers")
+        if isinstance(trigger_entries, list):
+            entries: list[object] = list(trigger_entries)
+        else:
+            entries = []
+        action_entries = registry.get("actions")
+        if isinstance(action_entries, dict):
+            entries.extend(action_entries.values())
+        for entry in entries:
+            for effect in read_effects(entry):
+                if not isinstance(effect, dict):
+                    continue
+                if effect.get("rest") != "short_rest":
+                    continue
+                if effect.get("kind") == "reduce_exhaustion":
+                    amount = effect.get("amount")
+                elif (
+                    effect.get("kind") == "rest_condition_effect"
+                    and effect.get("condition") == "exhaustion"
+                    and effect.get("effect_kind") == "reduce_condition_level"
+                ):
+                    amount = effect.get("amount")
+                else:
+                    continue
+                try:
+                    reduction = max(reduction, int(amount or 0))
+                except (TypeError, ValueError):
+                    continue
         return reduction
 
     def _sync_pools(self, session: Session, character: Character) -> list[ResourcePool]:

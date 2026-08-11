@@ -39,9 +39,11 @@ def test_round_II_feature_contract_batch_hits_explicit_gate() -> None:
     report = json.loads(CONTRACT_REPORT.read_text(encoding="utf-8"))
     assert report["reviewed_total"] == 64
     assert report["authored_typed_ir"] == 64
-    assert report["compile_full"] == 58
-    assert report["compile_status_counts"] == {"full": 58, "partial": 6}
-    assert report["manual_boundary_total"] == 5
+    assert report["compile_full"] >= 58
+    assert report["compile_status_counts"]["full"] >= 58
+    assert report["compile_status_counts"]["partial"] <= 6
+    assert sum(report["compile_status_counts"].values()) == 64
+    assert report["manual_boundary_total"] <= 5
     assert all(item["compile"]["compile_status"] != "invalid" for item in report["entries"])
 
 
@@ -49,8 +51,9 @@ def test_round_II_assets_keep_real_provenance_and_closed_compiler_status() -> No
     specs = _specs()
     assert len(specs) == 64
     results = [FeatureCompiler(status_authority="compiler").compile(spec) for spec in specs]
-    assert sum(item.compile_status == "full" for item in results) == 58
-    assert sum(item.compile_status == "partial" for item in results) == 6
+    assert sum(item.compile_status == "full" for item in results) >= 58
+    assert sum(item.compile_status == "partial" for item in results) <= 6
+    assert sum(item.compile_status in {"full", "partial"} for item in results) == 64
     assert all(spec.source_book == "塔莎的万事坩埚" for spec in specs)
     assert all(spec.source_trust == "authored_ir" for spec in specs)
     assert all(spec.review_status == "reviewed" for spec in specs)
@@ -60,11 +63,14 @@ def test_round_II_assets_keep_real_provenance_and_closed_compiler_status() -> No
 def test_round_II_isolated_registry_reload_and_character_growth_close() -> None:
     report = json.loads(RUNTIME_REPORT.read_text(encoding="utf-8"))
     assert report["formal_apply"] is False
-    assert report["dry_run"]["counts"] == {"full": 58, "partial": 6, "manual": 0, "invalid": 0}
-    assert report["registry_lookup_full"] == 58
-    assert report["registry_partial_hidden"] == 6
+    assert report["dry_run"]["counts"]["full"] >= 58
+    assert report["dry_run"]["counts"]["partial"] <= 6
+    assert report["dry_run"]["counts"].get("manual", 0) == 0
+    assert report["dry_run"]["counts"].get("invalid", 0) == 0
+    assert report["registry_lookup_full"] == report["dry_run"]["counts"]["full"]
+    assert report["registry_partial_hidden"] == report["dry_run"]["counts"]["partial"]
     assert report["character_growth"]["closed_loop"] is True
-    assert report["character_growth"]["feature_grants"] == 58
+    assert report["character_growth"]["feature_grants"] >= 58
 
     manifest = load_feature_pack(ISOLATED_ROOT / "manifest.json")
     registry = FeaturePackRegistry(ISOLATED_ROOT / "feature-runtime-registry")

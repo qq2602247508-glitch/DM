@@ -395,7 +395,7 @@
       "atom_id": "tashas-cauldron:atom:752d57e35706db428895da0a:tireless-10:004",
       "content_id": "content.tashas-cauldron.round2.feature.ranger-tireless",
       "content_kind": "class_feature",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "source_fingerprint": "d877b14749084e924899962f5fbeb75ecaf81c43e042c3c31a57bf7fc143ab25",
       "typed_content_ids": [
         "content.tashas-cauldron.round2.feature.ranger-tireless"
