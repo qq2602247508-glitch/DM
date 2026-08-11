@@ -28,6 +28,7 @@
 - 新增 `load_item_production_evidence()`：只有带 `content_kind=item` 且整批 create/preview/confirm/replay gate 通过的 persisted result 才能回填 ItemSpec registered 层；隔离 pack 仍 `formal_apply=false`，不写正式数据库。
 - validator、round test、ItemSpec catalog、whole-pack migration 两次确定性验证、backend 定向测试已通过；完整 backend pytest、Ruff、compileall、保护指纹和 push receipt 在本轮收尾门禁中确认。
 - 证据：`docs/tashas-item-production-consumer-round-X-2026-08-12.md`、Round X report/result、`reports/tashas-item-spec-catalog-2026-08-11.json`。
+- 实现与证据已提交并推送：`42153f2562cab8d24af9fc67e7549a7dc2056b13`，`origin/main`，2026-08-12 04:52:00 +0800；receipt 随后写入独立交接提交。
 - 下一步：继续 unresolved ItemSpec granted-spell/tattoo lifecycle 与需要真实 event producer 的 clauses；不把 projection-only、isolated-only 或 DM-reference 伪装成 production。
 
 ## Round 8：Trigger-bound Modifier / Activation Consumer Expansion

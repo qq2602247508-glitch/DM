@@ -5,6 +5,7 @@
 - ItemSpec status layers：`47 total / 41 compile_full / 41 isolated_runtime_validated / 8 registered_production_full / 8 game_usable`；Feature status 不混计，仍 `74 production / 2 dm-assisted / 76 game-usable`，name branch=0。
 - 证据入口：`scripts/validate-tashas-item-production-consumer-round-X.py`、`backend/tests/test_tashas_item_production_consumer_round_X.py`、`reports/tashas-item-production-consumer-round-X-2026-08-12.json`、`data/content-ir/compiled/production-runtime-results-XII.json`、`docs/tashas-item-production-consumer-round-X-2026-08-12.md`。
 - Round X validator report/result 两次 hash 一致；whole-pack migration 两次 stdout 与关键 ItemSpec/catalog/runtime hashes 一致。正式 campaign/character、database、3D、source corpus、499 audit 与永久保护路径不在本轮修改范围。
+- 实现提交 `42153f2562cab8d24af9fc67e7549a7dc2056b13` 已于 2026-08-12 04:52:00 +0800 推送到 `origin/main`；本 receipt 更新随后单独提交。
 - 下一步继续 unresolved ItemSpec granted-spell/tattoo lifecycle 和真实 event producer，不将 projection-only、isolated-only、DM-reference 计入 production。
 
 # 2026-08-12 Round 9 检查点：Resource Profile / Exchange / Event Window Consumer 扩展

@@ -40,7 +40,7 @@
         "difference": "Round 10 starts from the accepted Round 9 state and promotes a bounded batch of complete ItemSpec contracts through the existing equipment, attunement, charge and granted-action consumers; item production remains separate from Feature status layers.",
         "prompt_baseline": {"round_target_item_production": 8}
       },
-      "commits": [],
+      "commits": ["42153f2"],
       "compile_full_delta": 0,
       "dm_assisted_delta": 0,
       "files_changed": [
@@ -69,7 +69,14 @@
         "tasha_feature_registered_production_unchanged": 74
       },
       "phase": "I",
-      "push_receipt": null,
+      "push_receipt": {
+        "branch": "main",
+        "commit_hash": "42153f2562cab8d24af9fc67e7549a7dc2056b13",
+        "pushed_at": "2026-08-12T04:52:00+0800",
+        "remote": "origin",
+        "remote_url": "https://github.com/qq2602247508-glitch/DM.git",
+        "result": "success"
+      },
       "reports": [],
       "reviewed_count": 0,
       "selected_clusters": [
