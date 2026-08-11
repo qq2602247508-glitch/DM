@@ -1,0 +1,363 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "oneOf": [
+    {
+      "$defs": {
+        "KernelExpectedVersions": {
+          "additionalProperties": false,
+          "properties": {
+            "actor_version": {
+              "anyOf": [
+                {
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Actor Version"
+            },
+            "adjudication_version": {
+              "anyOf": [
+                {
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Adjudication Version"
+            },
+            "choice_window_version": {
+              "anyOf": [
+                {
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Choice Window Version"
+            },
+            "combat_version": {
+              "anyOf": [
+                {
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Combat Version"
+            },
+            "entity_versions": {
+              "additionalProperties": {
+                "type": "integer"
+              },
+              "maxProperties": 64,
+              "title": "Entity Versions",
+              "type": "object"
+            },
+            "scene_version": {
+              "anyOf": [
+                {
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Scene Version"
+            },
+            "target_versions": {
+              "additionalProperties": {
+                "type": "integer"
+              },
+              "maxProperties": 64,
+              "title": "Target Versions",
+              "type": "object"
+            }
+          },
+          "title": "KernelExpectedVersions",
+          "type": "object"
+        }
+      },
+      "additionalProperties": false,
+      "properties": {
+        "adjudication_id": {
+          "title": "Adjudication Id",
+          "type": "string"
+        },
+        "allowed_decision_schema": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Allowed Decision Schema",
+          "type": "array"
+        },
+        "category": {
+          "enum": [
+            "target_semantics",
+            "freeform_effect",
+            "illusion_interpretation",
+            "environment_interaction",
+            "custom_object",
+            "custom_movement",
+            "rule_exception"
+          ],
+          "title": "Category",
+          "type": "string"
+        },
+        "content_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Content Id"
+        },
+        "expected_versions": {
+          "$ref": "#/$defs/KernelExpectedVersions"
+        },
+        "expires_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Expires At"
+        },
+        "frozen_context": {
+          "additionalProperties": true,
+          "title": "Frozen Context",
+          "type": "object"
+        },
+        "open_questions": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Open Questions",
+          "type": "array"
+        },
+        "schema_version": {
+          "const": "dm-adjudication-1",
+          "default": "dm-adjudication-1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "source_command_id": {
+          "title": "Source Command Id",
+          "type": "string"
+        },
+        "source_text_evidence": {
+          "title": "Source Text Evidence",
+          "type": "string"
+        },
+        "typed_known_effects": {
+          "default": [],
+          "items": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "title": "Typed Known Effects",
+          "type": "array"
+        }
+      },
+      "required": [
+        "adjudication_id",
+        "source_command_id",
+        "category",
+        "source_text_evidence"
+      ],
+      "title": "RulesKernelAdjudicationRequest",
+      "type": "object"
+    },
+    {
+      "$defs": {
+        "KernelPosition": {
+          "additionalProperties": false,
+          "properties": {
+            "col": {
+              "maximum": 10000,
+              "minimum": 1,
+              "title": "Col",
+              "type": "integer"
+            },
+            "elevation_ft": {
+              "default": 0,
+              "maximum": 10000,
+              "minimum": -10000,
+              "title": "Elevation Ft",
+              "type": "integer"
+            },
+            "row": {
+              "maximum": 10000,
+              "minimum": 1,
+              "title": "Row",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "row",
+            "col"
+          ],
+          "title": "KernelPosition",
+          "type": "object"
+        }
+      },
+      "additionalProperties": false,
+      "properties": {
+        "adjudication_id": {
+          "title": "Adjudication Id",
+          "type": "string"
+        },
+        "approved_condition": {
+          "anyOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Approved Condition"
+        },
+        "approved_damage": {
+          "anyOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Approved Damage"
+        },
+        "approved_duration": {
+          "anyOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Approved Duration"
+        },
+        "approved_exception": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Approved Exception"
+        },
+        "approved_movement": {
+          "anyOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Approved Movement"
+        },
+        "approved_object_profile": {
+          "anyOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Approved Object Profile"
+        },
+        "approved_position": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/KernelPosition"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "approved_targets": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Approved Targets",
+          "type": "array"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "maxLength": 2000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Notes"
+        },
+        "status": {
+          "enum": [
+            "approved",
+            "modified",
+            "rejected"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "adjudication_id",
+        "status"
+      ],
+      "title": "RulesKernelAdjudicationDecision",
+      "type": "object"
+    }
+  ],
+  "title": "RulesKernelDMAdjudicationV1"
+}

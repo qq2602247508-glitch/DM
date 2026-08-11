@@ -1,0 +1,15 @@
+{
+  "adjudication_id": "adjudication-001",
+  "allowed_decision_schema": [
+    "approved_targets",
+    "notes"
+  ],
+  "category": "target_semantics",
+  "content_id": "typed-content:freeform",
+  "open_questions": [
+    "Which visible creature is the secondary target?"
+  ],
+  "schema_version": "dm-adjudication-1",
+  "source_command_id": "cmd-freeform-001",
+  "source_text_evidence": "The typed source leaves the affected creature relationship open."
+}

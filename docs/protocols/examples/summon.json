@@ -1,0 +1,27 @@
+{
+  "action_kind": "summon_known_profile",
+  "actor_id": "combatant-caster",
+  "campaign_id": "campaign-001",
+  "combat_id": "combat-001",
+  "command_id": "cmd-summon-001",
+  "content_id": "typed-content:summon",
+  "content_kind": "spell",
+  "expected_versions": {
+    "actor_version": 1
+  },
+  "idempotency_key": "idem-summon-001",
+  "metadata": {
+    "clause_types": [
+      "summon_known_profile"
+    ]
+  },
+  "scene_id": "scene-001",
+  "schema_version": "rules-kernel-1",
+  "spatial_intent": {
+    "destination": {
+      "col": 3,
+      "row": 3
+    },
+    "entity_profile_id": "compendium-profile-001"
+  }
+}

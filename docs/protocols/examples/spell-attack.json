@@ -1,0 +1,41 @@
+{
+  "action_kind": "content",
+  "actor_id": "combatant-caster",
+  "campaign_id": "campaign-001",
+  "combat_id": "combat-001",
+  "command_id": "cmd-spell-attack-001",
+  "content_id": "typed-content:spell-attack",
+  "content_kind": "spell",
+  "expected_versions": {
+    "actor_version": 1,
+    "target_versions": {
+      "combatant-target": 1
+    }
+  },
+  "idempotency_key": "idem-spell-attack-001",
+  "metadata": {
+    "clause_types": [
+      "attack_roll",
+      "damage"
+    ],
+    "effects": [
+      {
+        "amount": 8,
+        "damage_type": "force",
+        "kind": "damage"
+      }
+    ]
+  },
+  "roll_inputs": {
+    "attack_roll_total": 17,
+    "resolution_total": 8
+  },
+  "scene_id": "scene-001",
+  "schema_version": "rules-kernel-1",
+  "target_intent": {
+    "target_ids": [
+      "combatant-target"
+    ],
+    "target_kind": "one_creature"
+  }
+}

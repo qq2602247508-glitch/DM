@@ -1,0 +1,654 @@
+{
+  "$defs": {
+    "KernelChoiceInput": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "maxLength": 160,
+          "minLength": 1,
+          "title": "Key",
+          "type": "string"
+        },
+        "values": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 32,
+          "title": "Values",
+          "type": "array"
+        }
+      },
+      "required": [
+        "key"
+      ],
+      "title": "KernelChoiceInput",
+      "type": "object"
+    },
+    "KernelExpectedVersions": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_version": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Actor Version"
+        },
+        "adjudication_version": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Adjudication Version"
+        },
+        "choice_window_version": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Choice Window Version"
+        },
+        "combat_version": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Combat Version"
+        },
+        "entity_versions": {
+          "additionalProperties": {
+            "type": "integer"
+          },
+          "maxProperties": 64,
+          "title": "Entity Versions",
+          "type": "object"
+        },
+        "scene_version": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Scene Version"
+        },
+        "target_versions": {
+          "additionalProperties": {
+            "type": "integer"
+          },
+          "maxProperties": 64,
+          "title": "Target Versions",
+          "type": "object"
+        }
+      },
+      "title": "KernelExpectedVersions",
+      "type": "object"
+    },
+    "KernelPosition": {
+      "additionalProperties": false,
+      "properties": {
+        "col": {
+          "maximum": 10000,
+          "minimum": 1,
+          "title": "Col",
+          "type": "integer"
+        },
+        "elevation_ft": {
+          "default": 0,
+          "maximum": 10000,
+          "minimum": -10000,
+          "title": "Elevation Ft",
+          "type": "integer"
+        },
+        "row": {
+          "maximum": 10000,
+          "minimum": 1,
+          "title": "Row",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "row",
+        "col"
+      ],
+      "title": "KernelPosition",
+      "type": "object"
+    },
+    "KernelResourceIntent": {
+      "additionalProperties": false,
+      "properties": {
+        "amount": {
+          "default": 0,
+          "maximum": 10000,
+          "minimum": 0,
+          "title": "Amount",
+          "type": "integer"
+        },
+        "mode": {
+          "default": "none",
+          "enum": [
+            "none",
+            "consume",
+            "grant",
+            "reserve"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "resource_key": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Resource Key"
+        }
+      },
+      "title": "KernelResourceIntent",
+      "type": "object"
+    },
+    "KernelRollInputs": {
+      "additionalProperties": false,
+      "properties": {
+        "attack_roll_total": {
+          "anyOf": [
+            {
+              "maximum": 10000,
+              "minimum": -100,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Attack Roll Total"
+        },
+        "resolution_total": {
+          "anyOf": [
+            {
+              "maximum": 100000,
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Resolution Total"
+        },
+        "save_succeeded": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Save Succeeded"
+        },
+        "save_succeeded_by_target": {
+          "additionalProperties": {
+            "type": "boolean"
+          },
+          "maxProperties": 64,
+          "title": "Save Succeeded By Target",
+          "type": "object"
+        }
+      },
+      "title": "KernelRollInputs",
+      "type": "object"
+    },
+    "KernelSpatialIntent": {
+      "additionalProperties": false,
+      "properties": {
+        "destination": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/KernelPosition"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "entity_profile_id": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Entity Profile Id"
+        },
+        "height_ft": {
+          "anyOf": [
+            {
+              "maximum": 10000,
+              "minimum": 5,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Height Ft"
+        },
+        "line_of_sight_required": {
+          "default": false,
+          "title": "Line Of Sight Required",
+          "type": "boolean"
+        },
+        "maximum_distance_ft": {
+          "anyOf": [
+            {
+              "maximum": 10000,
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maximum Distance Ft"
+        },
+        "movement_kind": {
+          "default": "none",
+          "enum": [
+            "none",
+            "voluntary_movement",
+            "forced_movement",
+            "teleport",
+            "swap_positions"
+          ],
+          "title": "Movement Kind",
+          "type": "string"
+        },
+        "occupied_space_policy": {
+          "default": "reject",
+          "enum": [
+            "reject",
+            "nearest_unoccupied"
+          ],
+          "title": "Occupied Space Policy",
+          "type": "string"
+        },
+        "origin": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/KernelPosition"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "path": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/KernelPosition"
+          },
+          "maxItems": 256,
+          "title": "Path",
+          "type": "array"
+        },
+        "path_required": {
+          "default": true,
+          "title": "Path Required",
+          "type": "boolean"
+        },
+        "shape": {
+          "anyOf": [
+            {
+              "enum": [
+                "point",
+                "cone",
+                "line",
+                "cube",
+                "sphere",
+                "cylinder"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Shape"
+        },
+        "size_ft": {
+          "anyOf": [
+            {
+              "maximum": 10000,
+              "minimum": 5,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Size Ft"
+        },
+        "width_ft": {
+          "anyOf": [
+            {
+              "maximum": 10000,
+              "minimum": 5,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Width Ft"
+        }
+      },
+      "title": "KernelSpatialIntent",
+      "type": "object"
+    },
+    "KernelTargetIntent": {
+      "additionalProperties": false,
+      "properties": {
+        "semantic": {
+          "default": "typed",
+          "enum": [
+            "typed",
+            "target_dependent",
+            "freeform"
+          ],
+          "title": "Semantic",
+          "type": "string"
+        },
+        "target_ids": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 64,
+          "title": "Target Ids",
+          "type": "array"
+        },
+        "target_kind": {
+          "default": "none",
+          "enum": [
+            "none",
+            "self",
+            "one_creature",
+            "multiple_creatures",
+            "position",
+            "area",
+            "freeform"
+          ],
+          "title": "Target Kind",
+          "type": "string"
+        }
+      },
+      "title": "KernelTargetIntent",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "action_economy": {
+      "default": "none",
+      "enum": [
+        "none",
+        "free",
+        "action",
+        "bonus_action",
+        "reaction",
+        "automatic"
+      ],
+      "title": "Action Economy",
+      "type": "string"
+    },
+    "action_kind": {
+      "default": "content",
+      "enum": [
+        "content",
+        "move",
+        "forced_move",
+        "teleport",
+        "swap_positions",
+        "summon_known_profile",
+        "create_known_object",
+        "create_known_hazard",
+        "choice",
+        "adjudication"
+      ],
+      "title": "Action Kind",
+      "type": "string"
+    },
+    "actor_id": {
+      "maxLength": 36,
+      "minLength": 1,
+      "title": "Actor Id",
+      "type": "string"
+    },
+    "campaign_id": {
+      "maxLength": 36,
+      "minLength": 1,
+      "title": "Campaign Id",
+      "type": "string"
+    },
+    "causal_depth": {
+      "default": 0,
+      "maximum": 8,
+      "minimum": 0,
+      "title": "Causal Depth",
+      "type": "integer"
+    },
+    "choice_inputs": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/KernelChoiceInput"
+      },
+      "maxItems": 32,
+      "title": "Choice Inputs",
+      "type": "array"
+    },
+    "combat_id": {
+      "anyOf": [
+        {
+          "maxLength": 36,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Combat Id"
+    },
+    "command_id": {
+      "maxLength": 120,
+      "minLength": 1,
+      "title": "Command Id",
+      "type": "string"
+    },
+    "content_id": {
+      "anyOf": [
+        {
+          "maxLength": 200,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Content Id"
+    },
+    "content_kind": {
+      "enum": [
+        "spell",
+        "feature",
+        "feat",
+        "item",
+        "monster_action",
+        "system"
+      ],
+      "title": "Content Kind",
+      "type": "string"
+    },
+    "expected_versions": {
+      "$ref": "#/$defs/KernelExpectedVersions"
+    },
+    "idempotency_key": {
+      "maxLength": 160,
+      "minLength": 8,
+      "title": "Idempotency Key",
+      "type": "string"
+    },
+    "metadata": {
+      "additionalProperties": true,
+      "maxProperties": 32,
+      "title": "Metadata",
+      "type": "object"
+    },
+    "parent_command_id": {
+      "anyOf": [
+        {
+          "maxLength": 120,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Parent Command Id"
+    },
+    "resource_intent": {
+      "$ref": "#/$defs/KernelResourceIntent"
+    },
+    "roll_inputs": {
+      "$ref": "#/$defs/KernelRollInputs"
+    },
+    "round": {
+      "default": 1,
+      "maximum": 10000,
+      "minimum": 1,
+      "title": "Round",
+      "type": "integer"
+    },
+    "runtime_definition_id": {
+      "anyOf": [
+        {
+          "maxLength": 200,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Runtime Definition Id"
+    },
+    "scene_id": {
+      "anyOf": [
+        {
+          "maxLength": 36,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Scene Id"
+    },
+    "schema_version": {
+      "const": "rules-kernel-1",
+      "default": "rules-kernel-1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "source_pack_id": {
+      "anyOf": [
+        {
+          "maxLength": 120,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Source Pack Id"
+    },
+    "spatial_intent": {
+      "$ref": "#/$defs/KernelSpatialIntent"
+    },
+    "target_intent": {
+      "$ref": "#/$defs/KernelTargetIntent"
+    },
+    "turn": {
+      "default": 0,
+      "maximum": 10000,
+      "minimum": 0,
+      "title": "Turn",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "command_id",
+    "idempotency_key",
+    "campaign_id",
+    "actor_id",
+    "content_kind"
+  ],
+  "title": "RulesKernelCommand",
+  "type": "object"
+}

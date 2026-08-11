@@ -1,0 +1,398 @@
+{
+  "$defs": {
+    "KernelExpectedVersions": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_version": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Actor Version"
+        },
+        "adjudication_version": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Adjudication Version"
+        },
+        "choice_window_version": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Choice Window Version"
+        },
+        "combat_version": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Combat Version"
+        },
+        "entity_versions": {
+          "additionalProperties": {
+            "type": "integer"
+          },
+          "maxProperties": 64,
+          "title": "Entity Versions",
+          "type": "object"
+        },
+        "scene_version": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Scene Version"
+        },
+        "target_versions": {
+          "additionalProperties": {
+            "type": "integer"
+          },
+          "maxProperties": 64,
+          "title": "Target Versions",
+          "type": "object"
+        }
+      },
+      "title": "KernelExpectedVersions",
+      "type": "object"
+    },
+    "KernelResourceIntent": {
+      "additionalProperties": false,
+      "properties": {
+        "amount": {
+          "default": 0,
+          "maximum": 10000,
+          "minimum": 0,
+          "title": "Amount",
+          "type": "integer"
+        },
+        "mode": {
+          "default": "none",
+          "enum": [
+            "none",
+            "consume",
+            "grant",
+            "reserve"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "resource_key": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Resource Key"
+        }
+      },
+      "title": "KernelResourceIntent",
+      "type": "object"
+    },
+    "RulesKernelAdjudicationRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "adjudication_id": {
+          "title": "Adjudication Id",
+          "type": "string"
+        },
+        "allowed_decision_schema": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Allowed Decision Schema",
+          "type": "array"
+        },
+        "category": {
+          "enum": [
+            "target_semantics",
+            "freeform_effect",
+            "illusion_interpretation",
+            "environment_interaction",
+            "custom_object",
+            "custom_movement",
+            "rule_exception"
+          ],
+          "title": "Category",
+          "type": "string"
+        },
+        "content_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Content Id"
+        },
+        "expected_versions": {
+          "$ref": "#/$defs/KernelExpectedVersions"
+        },
+        "expires_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Expires At"
+        },
+        "frozen_context": {
+          "additionalProperties": true,
+          "title": "Frozen Context",
+          "type": "object"
+        },
+        "open_questions": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Open Questions",
+          "type": "array"
+        },
+        "schema_version": {
+          "const": "dm-adjudication-1",
+          "default": "dm-adjudication-1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "source_command_id": {
+          "title": "Source Command Id",
+          "type": "string"
+        },
+        "source_text_evidence": {
+          "title": "Source Text Evidence",
+          "type": "string"
+        },
+        "typed_known_effects": {
+          "default": [],
+          "items": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "title": "Typed Known Effects",
+          "type": "array"
+        }
+      },
+      "required": [
+        "adjudication_id",
+        "source_command_id",
+        "category",
+        "source_text_evidence"
+      ],
+      "title": "RulesKernelAdjudicationRequest",
+      "type": "object"
+    },
+    "RulesKernelBlocker": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "maxLength": 120,
+          "minLength": 1,
+          "title": "Code",
+          "type": "string"
+        },
+        "detail": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Detail",
+          "type": "string"
+        },
+        "retryable": {
+          "default": false,
+          "title": "Retryable",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "code",
+        "detail"
+      ],
+      "title": "RulesKernelBlocker",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "blockers": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/RulesKernelBlocker"
+      },
+      "title": "Blockers",
+      "type": "array"
+    },
+    "command_fingerprint": {
+      "title": "Command Fingerprint",
+      "type": "string"
+    },
+    "command_id": {
+      "title": "Command Id",
+      "type": "string"
+    },
+    "expires_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Expires At"
+    },
+    "frozen_actor": {
+      "additionalProperties": true,
+      "title": "Frozen Actor",
+      "type": "object"
+    },
+    "frozen_spatial_snapshot": {
+      "additionalProperties": true,
+      "title": "Frozen Spatial Snapshot",
+      "type": "object"
+    },
+    "frozen_targets": {
+      "default": [],
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "title": "Frozen Targets",
+      "type": "array"
+    },
+    "legal": {
+      "title": "Legal",
+      "type": "boolean"
+    },
+    "predicted_action_cost": {
+      "default": "none",
+      "title": "Predicted Action Cost",
+      "type": "string"
+    },
+    "predicted_effects": {
+      "default": [],
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "title": "Predicted Effects",
+      "type": "array"
+    },
+    "predicted_resource_cost": {
+      "$ref": "#/$defs/KernelResourceIntent"
+    },
+    "predicted_scene_delta": {
+      "default": [],
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "title": "Predicted Scene Delta",
+      "type": "array"
+    },
+    "preview_version": {
+      "minimum": 1,
+      "title": "Preview Version",
+      "type": "integer"
+    },
+    "required_adjudications": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/RulesKernelAdjudicationRequest"
+      },
+      "title": "Required Adjudications",
+      "type": "array"
+    },
+    "required_choices": {
+      "default": [],
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "title": "Required Choices",
+      "type": "array"
+    },
+    "required_rolls": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Required Rolls",
+      "type": "array"
+    },
+    "schema_version": {
+      "const": "rules-kernel-1",
+      "default": "rules-kernel-1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "ready",
+        "blocked",
+        "pending_choice",
+        "pending_adjudication"
+      ],
+      "title": "Status",
+      "type": "string"
+    }
+  },
+  "required": [
+    "command_id",
+    "command_fingerprint",
+    "preview_version",
+    "status",
+    "legal"
+  ],
+  "title": "RulesKernelPreview",
+  "type": "object"
+}

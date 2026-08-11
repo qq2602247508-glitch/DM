@@ -1,0 +1,31 @@
+{
+  "action_kind": "content",
+  "actor_id": "combatant-cleric",
+  "campaign_id": "campaign-001",
+  "combat_id": "combat-001",
+  "command_id": "cmd-healing-001",
+  "content_id": "typed-content:healing",
+  "content_kind": "feature",
+  "idempotency_key": "idem-healing-001",
+  "metadata": {
+    "clause_types": [
+      "healing"
+    ],
+    "effects": [
+      {
+        "amount": 9,
+        "kind": "healing"
+      }
+    ]
+  },
+  "roll_inputs": {
+    "resolution_total": 9
+  },
+  "schema_version": "rules-kernel-1",
+  "target_intent": {
+    "target_ids": [
+      "combatant-ally"
+    ],
+    "target_kind": "one_creature"
+  }
+}

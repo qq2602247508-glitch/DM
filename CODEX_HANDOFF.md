@@ -1,3 +1,64 @@
+# 2026-08-11 长执行检查点：Rules Kernel、DM 裁定窗口与 3D 场景战斗协议 I
+
+- 本轮全程单线程；没有创建、调用或委托子代理。`backend/tests/integrations/` 与
+  `backend/tests/ollama.py` 未修改、未暂存、未提交，继续作为用户必保留路径。
+- 本轮基线以去重后的真实 ID 为准：113 条 compile rows 中有 2 条跨批次重复，故为
+  `111 unique compiled / 60 unique compile-only / 51 production_runtime_full`。旧 handoff
+  中的 113/62 不是本轮继续沿用的权威计数；正式 499 条职业审计保持
+  `328 full / 110 partial / 61 dm_only`。
+- 真实收割 25 条既有 compile-only：`20 spell + 5 feature`，无新 authored IR。结果为
+  `76 production_runtime_full`（51→76）、`61 spell`（41→61）、`15 feature`（10→15）。
+  官方包增量：Core PHB 2024 `26→42`、Xanathar `8→9`、Tasha `13→19`、Fizban `2→3`、
+  Book of Many Things `2→3`。
+- 每一条批次成员都通过真实 FastAPI/TestClient 的 preview→DM adjudication（需要时）
+  →confirm→result replay；批次报告记录 `25/25` 的 preview、confirm、replay、CAS、
+  transaction、rollback probe、snapshot rebuild 与 Scene Delta 证据，
+  `all_required_checks_passed=true`。没有修改 source HTML/JSON、正式 campaign/character
+  数据或 499 审计状态。
+
+## 统一执行层
+
+- `domain/rules_kernel_protocol.py` 提供严格、版本化、`extra=forbid` 的 Rules Kernel、
+  Scene Query/Delta、Confirmation、Result 和 DM Adjudication 合同；不允许任意 Python 回调、
+  动态导入或 name-based dispatch。
+- `application/rules_kernel.py` 实现 preview/confirm/replay、命令/窗口 CAS、事务回滚、
+  actor/combat/scene version 检查、typed content effect、资源与动作经济、DM continuation、
+  known-profile entity lifecycle、movement/forced movement/teleport/swap 和 Scene Delta。
+- `domain/spatial_authority.py` 定义引擎无关的 Spatial Authority；提供确定性测试实现和
+  现有 `SceneGrid`/`SceneObject`/`Combatant`/`SceneToken` 适配器。3D 客户端只能消费 Query/Delta，
+  不能成为规则权威，也没有把任意 3D 引擎类型引入 kernel。
+- 五个生产 consumer 已登记并按 schema/content/clause/action 分发：
+  `kernel.content.typed`、`kernel.spatial.movement`、`kernel.entity.lifecycle`、
+  `kernel.choice.window`、`kernel.dm.adjudication`。禁止按 spell/feature name、source book 分支。
+- Choice window 已是生产级平台并通过冻结 options、玩家/DM 边界、cardinality、CAS、幂等验证；
+  本轮 60 条剩余 compile-only 中没有可诚实记账的既有 choice unlock，因此其增量为 0。
+- DM adjudication 已是生产级平台：DM-only、冻结请求、允许的 typed decision、CAS、幂等和
+  命令 continuation 均有真实验证；entity lifecycle 当前只承诺既有 compendium profile 的
+  summon/object/hazard，未知自然语言对象仍停在 DM 裁定，不自动执行。
+- movement/spatial 已覆盖通用 voluntary/forced/teleport/swap 合同；不把未证明的空间语义
+  伪装成 production full。剩余 compile-only blocker 计数为：
+  `adjudication.target_semantics 44`、`duration.multi_phase 28`、`spatial.area 11`、
+  `condition.composite 9`、`runtime.evidence_missing 5`。
+
+## 协议、报告与验证产物
+
+- API：`POST /rules-kernel/preview`、`POST /rules-kernel/confirm`、结果/choice/adjudication/
+  scene-deltas 查询与解析、`POST /rules-kernel/scene-query`。
+- 协议资产在 `docs/protocols/`，集成契约为
+  `docs/rules-kernel-3d-integration-contract-2026-08-11.md`；生成器为
+  `scripts/build-rules-kernel-protocol-assets.py`。
+- 生产批次、阻塞审计、消费者注册表、Spatial/Choice/Adjudication/Entity/Movement/Scene Delta
+  验证及 3D 协议报告均在 `reports/*2026-08-11*.json`；生产结果为
+  `data/content-ir/compiled/production-runtime-results-IV.json`。资产与报告重复生成后
+  byte-identical。
+- Migration `20260811_0001_rules_kernel_protocol.py` 已在临时 SQLite 上成功升级到 head。
+- 最终门禁：`PYTHONPATH=backend/src backend/.venv/bin/pytest -q backend/tests` 全量通过；
+  `backend/.venv/bin/ruff check backend/src backend/tests`、脚本 Ruff、compileall、
+  `git diff --check` 全部通过。前端未修改，未运行前端门禁。
+- 下一优先级由真实 blocker/fan-out 决定：先收割 `kernel.dm.adjudication` 的
+  `target_semantics`，并为 `duration.multi_phase`/`spatial.area` 补字段级 typed contract、
+  validator、materializer 和 runtime evidence；不得按内容名字增加分支。
+
 # 2026-08-10 长执行检查点：Content IR Workbench 与法术自动化基线
 
 # 2026-08-11 长执行检查点：Typed IR 模板化扩产与真实运行时闭环

@@ -487,6 +487,29 @@ trigger / target / effect / producer / consumer / persistence / CAS / idempotenc
 missing contract 为 0，不能诚实地选择任何生产底座，也不能因“saving throw 45 次”等频次升级
 feature。下一迁移批次必须先提交人工审阅的 typed clause manifest；只有届时字段级相等、且 feature
 其余 clause 都 production_closed 的成员才计入 completion unlock。
+## 2026-08-11：Rules Kernel 与 3D 场景执行层收口
+
+本轮将已有 compile-only 内容接入统一、版本化的 Rules Kernel 执行边界，而不是继续扩建按名字
+分支的扫描器。去重后的基线为 `111 unique compiled / 60 compile-only / 51 production full`；
+真实解锁 25 条（20 spell、5 feature），production full 达到 76，spell 达到 61，feature 达到
+15；新增 authored IR 为 0。正式 499 条职业审计仍为 `328 full / 110 partial / 61 dm_only`。
+
+迁移层现在固定为：
+
+```text
+typed content IR → Rules Kernel preview → Choice/DM window（必要时）
+→ version/CAS confirm → domain transaction → Scene Delta → client projection
+```
+
+Rules Kernel、Scene Query/Delta、Spatial Authority、Choice window、DM adjudication、entity
+lifecycle 和 movement 均有严格协议及真实 API/TestClient 验证。Spatial Authority 复用现有
+SceneGrid/Combatant/SceneToken，不把 3D 客户端当作规则权威；未知自然语言对象或未闭合的目标/持续
+时间语义仍必须停在 DM 裁定窗口。
+
+剩余 compile-only 的主要 blocker 是 `adjudication.target_semantics=44`、
+`duration.multi_phase=28`、`spatial.area=11`、`condition.composite=9` 和
+`runtime.evidence_missing=5`。下一批先补这些字段级合同与证据，再按 fan-out 进行真实收割。
+
 # 2026-08-10：Content IR Workbench / Spell IR 基线
 
 - 已建立独立只读扫描器，统一识别 Feature Draft 与 Spell Draft，并按 source fingerprint

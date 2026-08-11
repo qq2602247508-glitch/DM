@@ -1,0 +1,41 @@
+{
+  "action_kind": "content",
+  "actor_id": "combatant-caster",
+  "campaign_id": "campaign-001",
+  "combat_id": "combat-001",
+  "command_id": "cmd-area-save-001",
+  "content_id": "typed-content:area-save",
+  "content_kind": "spell",
+  "idempotency_key": "idem-area-save-001",
+  "metadata": {
+    "clause_types": [
+      "area",
+      "saving_throw",
+      "damage"
+    ],
+    "effects": [
+      {
+        "amount": 12,
+        "damage_type": "fire",
+        "kind": "damage"
+      }
+    ]
+  },
+  "roll_inputs": {
+    "resolution_total": 12,
+    "save_succeeded": false
+  },
+  "scene_id": "scene-001",
+  "schema_version": "rules-kernel-1",
+  "spatial_intent": {
+    "origin": {
+      "col": 2,
+      "row": 2
+    },
+    "shape": "sphere",
+    "size_ft": 15
+  },
+  "target_intent": {
+    "target_kind": "area"
+  }
+}

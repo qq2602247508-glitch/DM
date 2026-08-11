@@ -1,0 +1,28 @@
+[
+  {
+    "actor_id": "a",
+    "campaign_id": "c",
+    "command_id": "bad",
+    "content_id": "x",
+    "content_kind": "spell",
+    "extra_callback": "import os",
+    "idempotency_key": "bad-key-000",
+    "schema_version": "rules-kernel-999"
+  },
+  {
+    "actor_id": "a",
+    "campaign_id": "c",
+    "command_id": "bad-target",
+    "content_id": "x",
+    "content_kind": "spell",
+    "idempotency_key": "bad-target-000",
+    "schema_version": "rules-kernel-1",
+    "target_intent": {
+      "target_ids": [
+        "a",
+        "a"
+      ],
+      "target_kind": "one_creature"
+    }
+  }
+]

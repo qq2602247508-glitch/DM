@@ -1,0 +1,352 @@
+{
+  "$defs": {
+    "KernelResourceIntent": {
+      "additionalProperties": false,
+      "properties": {
+        "amount": {
+          "default": 0,
+          "maximum": 10000,
+          "minimum": 0,
+          "title": "Amount",
+          "type": "integer"
+        },
+        "mode": {
+          "default": "none",
+          "enum": [
+            "none",
+            "consume",
+            "grant",
+            "reserve"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "resource_key": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Resource Key"
+        }
+      },
+      "title": "KernelResourceIntent",
+      "type": "object"
+    },
+    "RulesKernelSceneDelta": {
+      "additionalProperties": false,
+      "properties": {
+        "after": {
+          "additionalProperties": true,
+          "title": "After",
+          "type": "object"
+        },
+        "before": {
+          "additionalProperties": true,
+          "title": "Before",
+          "type": "object"
+        },
+        "delta_id": {
+          "title": "Delta Id",
+          "type": "string"
+        },
+        "delta_type": {
+          "enum": [
+            "move_entity",
+            "teleport_entity",
+            "spawn_entity",
+            "despawn_entity",
+            "create_object",
+            "remove_object",
+            "create_hazard",
+            "remove_hazard",
+            "apply_visual_effect",
+            "remove_visual_effect",
+            "update_health",
+            "update_resource",
+            "apply_condition",
+            "remove_condition",
+            "set_concentration",
+            "clear_concentration",
+            "emit_floating_text",
+            "emit_combat_log",
+            "request_dm_adjudication"
+          ],
+          "title": "Delta Type",
+          "type": "string"
+        },
+        "entity_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Entity Id"
+        },
+        "object_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Object Id"
+        },
+        "payload": {
+          "additionalProperties": true,
+          "title": "Payload",
+          "type": "object"
+        },
+        "scene_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Scene Id"
+        },
+        "schema_version": {
+          "const": "scene-delta-1",
+          "default": "scene-delta-1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "sequence": {
+          "minimum": 1,
+          "title": "Sequence",
+          "type": "integer"
+        },
+        "source_command_id": {
+          "title": "Source Command Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "delta_id",
+        "source_command_id",
+        "delta_type",
+        "version",
+        "sequence"
+      ],
+      "title": "RulesKernelSceneDelta",
+      "type": "object"
+    },
+    "RulesKernelStateDelta": {
+      "additionalProperties": false,
+      "properties": {
+        "after": {
+          "title": "After"
+        },
+        "before": {
+          "title": "Before"
+        },
+        "delta_id": {
+          "title": "Delta Id",
+          "type": "string"
+        },
+        "entity_id": {
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "field": {
+          "title": "Field",
+          "type": "string"
+        },
+        "source_command_id": {
+          "title": "Source Command Id",
+          "type": "string"
+        },
+        "version_after": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Version After"
+        },
+        "version_before": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Version Before"
+        }
+      },
+      "required": [
+        "delta_id",
+        "source_command_id",
+        "entity_id",
+        "field",
+        "before",
+        "after"
+      ],
+      "title": "RulesKernelStateDelta",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "actual_action_cost": {
+      "default": "none",
+      "title": "Actual Action Cost",
+      "type": "string"
+    },
+    "actual_resource_cost": {
+      "$ref": "#/$defs/KernelResourceIntent"
+    },
+    "command_id": {
+      "title": "Command Id",
+      "type": "string"
+    },
+    "condition_results": {
+      "default": [],
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "title": "Condition Results",
+      "type": "array"
+    },
+    "damage_results": {
+      "default": [],
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "title": "Damage Results",
+      "type": "array"
+    },
+    "entity_results": {
+      "default": [],
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "title": "Entity Results",
+      "type": "array"
+    },
+    "event_ids": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Event Ids",
+      "type": "array"
+    },
+    "healing_results": {
+      "default": [],
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "title": "Healing Results",
+      "type": "array"
+    },
+    "idempotent_replay": {
+      "default": false,
+      "title": "Idempotent Replay",
+      "type": "boolean"
+    },
+    "movement_results": {
+      "default": [],
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "title": "Movement Results",
+      "type": "array"
+    },
+    "new_versions": {
+      "additionalProperties": {
+        "type": "integer"
+      },
+      "title": "New Versions",
+      "type": "object"
+    },
+    "result_id": {
+      "title": "Result Id",
+      "type": "string"
+    },
+    "roll_results": {
+      "additionalProperties": true,
+      "title": "Roll Results",
+      "type": "object"
+    },
+    "save_results": {
+      "additionalProperties": true,
+      "title": "Save Results",
+      "type": "object"
+    },
+    "scene_delta": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/RulesKernelSceneDelta"
+      },
+      "title": "Scene Delta",
+      "type": "array"
+    },
+    "schema_version": {
+      "const": "rules-kernel-1",
+      "default": "rules-kernel-1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "state_delta": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/RulesKernelStateDelta"
+      },
+      "title": "State Delta",
+      "type": "array"
+    },
+    "status": {
+      "enum": [
+        "confirmed",
+        "rejected",
+        "pending_choice",
+        "pending_adjudication"
+      ],
+      "title": "Status",
+      "type": "string"
+    }
+  },
+  "required": [
+    "result_id",
+    "command_id",
+    "status"
+  ],
+  "title": "RulesKernelResult",
+  "type": "object"
+}

@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "after": {
+      "additionalProperties": true,
+      "title": "After",
+      "type": "object"
+    },
+    "before": {
+      "additionalProperties": true,
+      "title": "Before",
+      "type": "object"
+    },
+    "delta_id": {
+      "title": "Delta Id",
+      "type": "string"
+    },
+    "delta_type": {
+      "enum": [
+        "move_entity",
+        "teleport_entity",
+        "spawn_entity",
+        "despawn_entity",
+        "create_object",
+        "remove_object",
+        "create_hazard",
+        "remove_hazard",
+        "apply_visual_effect",
+        "remove_visual_effect",
+        "update_health",
+        "update_resource",
+        "apply_condition",
+        "remove_condition",
+        "set_concentration",
+        "clear_concentration",
+        "emit_floating_text",
+        "emit_combat_log",
+        "request_dm_adjudication"
+      ],
+      "title": "Delta Type",
+      "type": "string"
+    },
+    "entity_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Entity Id"
+    },
+    "object_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Object Id"
+    },
+    "payload": {
+      "additionalProperties": true,
+      "title": "Payload",
+      "type": "object"
+    },
+    "scene_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Scene Id"
+    },
+    "schema_version": {
+      "const": "scene-delta-1",
+      "default": "scene-delta-1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "sequence": {
+      "minimum": 1,
+      "title": "Sequence",
+      "type": "integer"
+    },
+    "source_command_id": {
+      "title": "Source Command Id",
+      "type": "string"
+    },
+    "version": {
+      "minimum": 1,
+      "title": "Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "delta_id",
+    "source_command_id",
+    "delta_type",
+    "version",
+    "sequence"
+  ],
+  "title": "RulesKernelSceneDelta",
+  "type": "object"
+}

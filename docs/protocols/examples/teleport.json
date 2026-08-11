@@ -1,0 +1,28 @@
+{
+  "action_kind": "teleport",
+  "actor_id": "combatant-rogue",
+  "campaign_id": "campaign-001",
+  "combat_id": "combat-001",
+  "command_id": "cmd-teleport-001",
+  "content_id": "typed-content:teleport",
+  "content_kind": "feature",
+  "expected_versions": {
+    "actor_version": 1
+  },
+  "idempotency_key": "idem-teleport-001",
+  "metadata": {
+    "clause_types": [
+      "teleport"
+    ]
+  },
+  "scene_id": "scene-001",
+  "schema_version": "rules-kernel-1",
+  "spatial_intent": {
+    "destination": {
+      "col": 5,
+      "row": 5
+    },
+    "maximum_distance_ft": 30,
+    "movement_kind": "teleport"
+  }
+}
