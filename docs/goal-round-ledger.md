@@ -16,7 +16,7 @@
 - Tasha Feature status layers：`production_full=79`（78→79）、`dm_assisted=2`、`game_usable=81`、`compile_only=12`（13→12）、`authored Typed IR=94`、`runtime_preview_full=93`、`manual_authoring=314`。ItemSpec 独立保持 `47/40/40/40`（total/compile/isolated/registered/game usable 的 registered/game 口径为 40）。当前项目 production full `179`。
 - 本轮只有 1 条，是因为它是关闭通用 Rest/condition consumer 的核心增长，不是把单条内容冒充普通批次。Oceanic Soul、Bottled Respite、Psychic Teleportation、Manifest Mind、Psionic Sorcery、Ambush/Commanding Presence 与 7 条 partial ItemSpec 仍保持各自语义边界。
 - 正式 registry/database/campaign/character、source corpus、3D 与永久保护路径未写入。Round XVII validator 与 whole-pack migration 重跑后关键 report/runtime SHA-256 保持一致；专门 Rest API 2 项通过。
-- 证据：`docs/tashas-feature-production-consumer-round-XVII-2026-08-12.md`、Round XVII report/result、Round-II feature runtime report、whole-pack migration 输出。
+- 证据：`docs/tashas-feature-production-consumer-round-XVII-2026-08-12.md`、Round XVII report/result、Round-II feature runtime report、whole-pack migration 输出；实现提交 `ecde5e8ccb79bc622f6a179af9e95b8bb39d1e3d` 已推送到 `origin/main`。
 - 下一步：继续已有 typed IR 的通用 event/entity/teleport/payment consumer；不为随机表、实体、通信或 DM 裁定增加名称分支。
 
 ## Round 16：Character Growth Proficiency Consumer Expansion
