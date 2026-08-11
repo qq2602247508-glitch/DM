@@ -1,0 +1,13 @@
+{
+  "baseline_feature_production": 5,
+  "final_feature_production": 10,
+  "ids": [
+    "content.tashas-cauldron.feature.alchemist-chemical-mastery",
+    "content.tashas-cauldron.feature.armorer-extra-attack",
+    "content.tashas-cauldron.feature.armorer-lightning-launcher",
+    "content.tashas-cauldron.feature.psi-warrior-telekinetic-movement",
+    "content.tashas-cauldron.feature.way-of-mercy-physicians-touch"
+  ],
+  "new_feature_production": 5,
+  "schema_version": "feature-ir-production-runtime-batch-I-1"
+}
