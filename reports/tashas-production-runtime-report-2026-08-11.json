@@ -28,9 +28,17 @@
         "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-bloodwell-vial-003",
         "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-guardian-emblem-005",
         "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-rhythm-maker-s-drum-008",
+        "content.tashas-cauldron.item.tashas-cauldron-atom-62c7a0c6a042e571b17d35e3-dfaab0b0f93c-000",
         "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-alchemical-compendium-000",
+        "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-astromancy-archive-002",
+        "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-atlas-of-endless-horizons-003",
+        "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-bell-branch-004",
+        "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-devotee-s-censer-005",
         "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-far-realm-shard-008",
+        "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-heart-weaver-s-primer-010",
+        "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-libram-of-souls-and-flesh-011",
         "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-lyre-of-building-012",
+        "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-planecaller-s-codex-014",
         "content.tashas-cauldron.round2.feature.aberrant-mind-psionic-spell-list",
         "content.tashas-cauldron.round2.feature.aberrant-mind-telepathic-speech",
         "content.tashas-cauldron.round2.feature.alchemist-alchemical-savant",
@@ -178,7 +186,7 @@
     "tashas-cauldron:atom:fbf8451f879a169fb17a01e9:arcane-firearm:004",
     "tashas-cauldron:atom:fbf8451f879a169fb17a01e9:explosive-cannon:005"
   ],
-  "registry_production_runtime_full_count": 85,
+  "registry_production_runtime_full_count": 93,
   "runtime_evidence": {
     "content.tashas-cauldron.feature.alchemist-chemical-mastery": {
       "confirm_status": 200,
@@ -686,6 +694,88 @@
         "item.granted_action.v1"
       ]
     },
+    "content.tashas-cauldron.item.tashas-cauldron-atom-62c7a0c6a042e571b17d35e3-dfaab0b0f93c-000": {
+      "attunement_persisted": true,
+      "charge_lifecycle_persisted": true,
+      "compile_status": "full",
+      "consumer_ids": [
+        "item.equipment_modifier.v1",
+        "item.granted_action.v1"
+      ],
+      "content_id": "content.tashas-cauldron.item.tashas-cauldron-atom-62c7a0c6a042e571b17d35e3-dfaab0b0f93c-000",
+      "content_kind": "item",
+      "created": true,
+      "evidence_path": "data/content-ir/compiled/production-runtime-results-XIII.json",
+      "item_name": "假肢",
+      "item_state_persisted": true,
+      "operation_transaction_persisted": true,
+      "operations": [
+        {
+          "confirm": true,
+          "idempotency_replayed": true,
+          "operation": "equip",
+          "output": {
+            "after": {
+              "armor_class": 10,
+              "equipment_ac_baseline": 10,
+              "equipped": true,
+              "slot": "worn"
+            },
+            "before": {
+              "armor_class": 10,
+              "charges": null,
+              "equipped": false,
+              "quantity": 1
+            },
+            "confirmed": true,
+            "operation": "equip",
+            "slot": "worn",
+            "warnings": []
+          },
+          "preview": true,
+          "replay": true
+        },
+        {
+          "confirm": true,
+          "idempotency_replayed": true,
+          "operation": "use_action",
+          "output": {
+            "after": {
+              "action_id": "tashas-cauldron:atom:62c7a0c6a042e571b17d35e3:dfaab0b0f93c:000:action:1",
+              "armor_class": 10,
+              "charges": null,
+              "rules_kernel_consumer": "item.granted_action.v1"
+            },
+            "before": {
+              "armor_class": 10,
+              "charges": null,
+              "equipped": true,
+              "quantity": 1
+            },
+            "confirmed": true,
+            "operation": "use_action",
+            "slot": "worn",
+            "warnings": []
+          },
+          "preview": true,
+          "replay": true
+        }
+      ],
+      "persisted": {
+        "attuned": false,
+        "charges": null,
+        "item_fingerprint": "3c30660361a43d65a707dfcaa0d729f3e97ea6acf13cdc543abbfa755a3c8186",
+        "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-62c7a0c6a042e571b17d35e3-dfaab0b0f93c-000",
+        "operation_transaction_count": 2,
+        "version": 3
+      },
+      "preview_confirm_replay": true,
+      "typed_consumer": true,
+      "typed_projection_consumers": [
+        "item.equipment_modifier.v1",
+        "item.granted_action.v1"
+      ]
+    },
     "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-alchemical-compendium-000": {
       "attunement_persisted": true,
       "charge_lifecycle_persisted": true,
@@ -793,6 +883,336 @@
         "item.granted_action.v1"
       ]
     },
+    "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-astromancy-archive-002": {
+      "attunement_persisted": true,
+      "charge_lifecycle_persisted": true,
+      "compile_status": "full",
+      "consumer_ids": [
+        "item.attunement.v1",
+        "item.charge_resource.v1",
+        "item.equipment_modifier.v1"
+      ],
+      "content_id": "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-astromancy-archive-002",
+      "content_kind": "item",
+      "created": true,
+      "evidence_path": "data/content-ir/compiled/production-runtime-results-XIII.json",
+      "item_name": "星卜编集|Astromancy Archive",
+      "item_state_persisted": true,
+      "operation_transaction_persisted": true,
+      "operations": [
+        {
+          "confirm": true,
+          "idempotency_replayed": true,
+          "operation": "attune",
+          "output": {
+            "after": {
+              "active_attunements": 1,
+              "armor_class": 10,
+              "attuned": true
+            },
+            "before": {
+              "armor_class": 10,
+              "charges": 3,
+              "equipped": false,
+              "quantity": 1
+            },
+            "confirmed": true,
+            "operation": "attune",
+            "slot": null,
+            "warnings": []
+          },
+          "preview": true,
+          "replay": true
+        },
+        {
+          "confirm": true,
+          "idempotency_replayed": true,
+          "operation": "use_charge",
+          "output": {
+            "after": {
+              "armor_class": 10,
+              "charges": 2
+            },
+            "before": {
+              "armor_class": 10,
+              "charges": 3,
+              "equipped": false,
+              "quantity": 1
+            },
+            "confirmed": true,
+            "operation": "use_charge",
+            "slot": null,
+            "warnings": []
+          },
+          "preview": true,
+          "replay": true
+        }
+      ],
+      "persisted": {
+        "attuned": true,
+        "charges": 2,
+        "item_fingerprint": "6d4ce1ad06e363c148aa5b010656480c41bada66750948bd3b0b785d08663804",
+        "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-astromancy-archive-002",
+        "operation_transaction_count": 2,
+        "version": 3
+      },
+      "preview_confirm_replay": true,
+      "typed_consumer": true,
+      "typed_projection_consumers": [
+        "item.attunement.v1",
+        "item.charge_resource.v1",
+        "item.equipment_modifier.v1"
+      ]
+    },
+    "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-atlas-of-endless-horizons-003": {
+      "attunement_persisted": true,
+      "charge_lifecycle_persisted": true,
+      "compile_status": "full",
+      "consumer_ids": [
+        "item.attunement.v1",
+        "item.charge_resource.v1",
+        "item.equipment_modifier.v1"
+      ],
+      "content_id": "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-atlas-of-endless-horizons-003",
+      "content_kind": "item",
+      "created": true,
+      "evidence_path": "data/content-ir/compiled/production-runtime-results-XIII.json",
+      "item_name": "寰宇图纂|Atlas of Endless Horizons",
+      "item_state_persisted": true,
+      "operation_transaction_persisted": true,
+      "operations": [
+        {
+          "confirm": true,
+          "idempotency_replayed": true,
+          "operation": "attune",
+          "output": {
+            "after": {
+              "active_attunements": 1,
+              "armor_class": 10,
+              "attuned": true
+            },
+            "before": {
+              "armor_class": 10,
+              "charges": 3,
+              "equipped": false,
+              "quantity": 1
+            },
+            "confirmed": true,
+            "operation": "attune",
+            "slot": null,
+            "warnings": []
+          },
+          "preview": true,
+          "replay": true
+        },
+        {
+          "confirm": true,
+          "idempotency_replayed": true,
+          "operation": "use_charge",
+          "output": {
+            "after": {
+              "armor_class": 10,
+              "charges": 2
+            },
+            "before": {
+              "armor_class": 10,
+              "charges": 3,
+              "equipped": false,
+              "quantity": 1
+            },
+            "confirmed": true,
+            "operation": "use_charge",
+            "slot": null,
+            "warnings": []
+          },
+          "preview": true,
+          "replay": true
+        }
+      ],
+      "persisted": {
+        "attuned": true,
+        "charges": 2,
+        "item_fingerprint": "62f78ed472a273034699d57ead68968f4f63b7b2b40f81131f493a65c8ad899c",
+        "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-atlas-of-endless-horizons-003",
+        "operation_transaction_count": 2,
+        "version": 3
+      },
+      "preview_confirm_replay": true,
+      "typed_consumer": true,
+      "typed_projection_consumers": [
+        "item.attunement.v1",
+        "item.charge_resource.v1",
+        "item.equipment_modifier.v1"
+      ]
+    },
+    "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-bell-branch-004": {
+      "attunement_persisted": true,
+      "charge_lifecycle_persisted": true,
+      "compile_status": "full",
+      "consumer_ids": [
+        "item.attunement.v1",
+        "item.charge_resource.v1",
+        "item.equipment_modifier.v1",
+        "item.granted_action.v1"
+      ],
+      "content_id": "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-bell-branch-004",
+      "content_kind": "item",
+      "created": true,
+      "evidence_path": "data/content-ir/compiled/production-runtime-results-XIII.json",
+      "item_name": "钟铃圣枝|Bell Branch",
+      "item_state_persisted": true,
+      "operation_transaction_persisted": true,
+      "operations": [
+        {
+          "confirm": true,
+          "idempotency_replayed": true,
+          "operation": "attune",
+          "output": {
+            "after": {
+              "active_attunements": 1,
+              "armor_class": 10,
+              "attuned": true
+            },
+            "before": {
+              "armor_class": 10,
+              "charges": 3,
+              "equipped": false,
+              "quantity": 1
+            },
+            "confirmed": true,
+            "operation": "attune",
+            "slot": null,
+            "warnings": []
+          },
+          "preview": true,
+          "replay": true
+        },
+        {
+          "confirm": true,
+          "idempotency_replayed": true,
+          "operation": "use_action",
+          "output": {
+            "after": {
+              "action_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:bell-branch:004:action:1",
+              "armor_class": 10,
+              "charges": 2,
+              "rules_kernel_consumer": "item.granted_action.v1"
+            },
+            "before": {
+              "armor_class": 10,
+              "charges": 3,
+              "equipped": false,
+              "quantity": 1
+            },
+            "confirmed": true,
+            "operation": "use_action",
+            "slot": null,
+            "warnings": []
+          },
+          "preview": true,
+          "replay": true
+        }
+      ],
+      "persisted": {
+        "attuned": true,
+        "charges": 2,
+        "item_fingerprint": "bf63cf9d874635b91b223c28a59367d32128ce211a6f64edfd4089f118a92eb3",
+        "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-bell-branch-004",
+        "operation_transaction_count": 2,
+        "version": 3
+      },
+      "preview_confirm_replay": true,
+      "typed_consumer": true,
+      "typed_projection_consumers": [
+        "item.attunement.v1",
+        "item.charge_resource.v1",
+        "item.equipment_modifier.v1",
+        "item.granted_action.v1"
+      ]
+    },
+    "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-devotee-s-censer-005": {
+      "attunement_persisted": true,
+      "charge_lifecycle_persisted": true,
+      "compile_status": "full",
+      "consumer_ids": [
+        "item.attunement.v1",
+        "item.equipment_modifier.v1",
+        "item.granted_action.v1"
+      ],
+      "content_id": "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-devotee-s-censer-005",
+      "content_kind": "item",
+      "created": true,
+      "evidence_path": "data/content-ir/compiled/production-runtime-results-XIII.json",
+      "item_name": "奉献香炉|Devotee's Censer",
+      "item_state_persisted": true,
+      "operation_transaction_persisted": true,
+      "operations": [
+        {
+          "confirm": true,
+          "idempotency_replayed": true,
+          "operation": "attune",
+          "output": {
+            "after": {
+              "active_attunements": 1,
+              "armor_class": 10,
+              "attuned": true
+            },
+            "before": {
+              "armor_class": 10,
+              "charges": null,
+              "equipped": false,
+              "quantity": 1
+            },
+            "confirmed": true,
+            "operation": "attune",
+            "slot": null,
+            "warnings": []
+          },
+          "preview": true,
+          "replay": true
+        },
+        {
+          "confirm": true,
+          "idempotency_replayed": true,
+          "operation": "use_action",
+          "output": {
+            "after": {
+              "action_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:devotee-s-censer:005:action:1",
+              "armor_class": 10,
+              "charges": null,
+              "rules_kernel_consumer": "item.granted_action.v1"
+            },
+            "before": {
+              "armor_class": 10,
+              "charges": null,
+              "equipped": false,
+              "quantity": 1
+            },
+            "confirmed": true,
+            "operation": "use_action",
+            "slot": null,
+            "warnings": []
+          },
+          "preview": true,
+          "replay": true
+        }
+      ],
+      "persisted": {
+        "attuned": true,
+        "charges": null,
+        "item_fingerprint": "c2b23b65fa2631e4b831f10bfed09c51f44f8893be73b88cc84146e472edf7de",
+        "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-devotee-s-censer-005",
+        "operation_transaction_count": 2,
+        "version": 3
+      },
+      "preview_confirm_replay": true,
+      "typed_consumer": true,
+      "typed_projection_consumers": [
+        "item.attunement.v1",
+        "item.equipment_modifier.v1",
+        "item.granted_action.v1"
+      ]
+    },
     "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-far-realm-shard-008": {
       "attunement_persisted": true,
       "charge_lifecycle_persisted": true,
@@ -872,6 +1292,172 @@
       "typed_consumer": true,
       "typed_projection_consumers": [
         "item.attunement.v1",
+        "item.equipment_modifier.v1",
+        "item.granted_action.v1"
+      ]
+    },
+    "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-heart-weaver-s-primer-010": {
+      "attunement_persisted": true,
+      "charge_lifecycle_persisted": true,
+      "compile_status": "full",
+      "consumer_ids": [
+        "item.attunement.v1",
+        "item.charge_resource.v1",
+        "item.equipment_modifier.v1"
+      ],
+      "content_id": "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-heart-weaver-s-primer-010",
+      "content_kind": "item",
+      "created": true,
+      "evidence_path": "data/content-ir/compiled/production-runtime-results-XIII.json",
+      "item_name": "织心入门|Heart Weaver's Primer",
+      "item_state_persisted": true,
+      "operation_transaction_persisted": true,
+      "operations": [
+        {
+          "confirm": true,
+          "idempotency_replayed": true,
+          "operation": "attune",
+          "output": {
+            "after": {
+              "active_attunements": 1,
+              "armor_class": 10,
+              "attuned": true
+            },
+            "before": {
+              "armor_class": 10,
+              "charges": 3,
+              "equipped": false,
+              "quantity": 1
+            },
+            "confirmed": true,
+            "operation": "attune",
+            "slot": null,
+            "warnings": []
+          },
+          "preview": true,
+          "replay": true
+        },
+        {
+          "confirm": true,
+          "idempotency_replayed": true,
+          "operation": "use_charge",
+          "output": {
+            "after": {
+              "armor_class": 10,
+              "charges": 2
+            },
+            "before": {
+              "armor_class": 10,
+              "charges": 3,
+              "equipped": false,
+              "quantity": 1
+            },
+            "confirmed": true,
+            "operation": "use_charge",
+            "slot": null,
+            "warnings": []
+          },
+          "preview": true,
+          "replay": true
+        }
+      ],
+      "persisted": {
+        "attuned": true,
+        "charges": 2,
+        "item_fingerprint": "4ec8a00aec11f486b3332b739b6dbd49426f3bc16a26127bb711452bef37a6bb",
+        "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-heart-weaver-s-primer-010",
+        "operation_transaction_count": 2,
+        "version": 3
+      },
+      "preview_confirm_replay": true,
+      "typed_consumer": true,
+      "typed_projection_consumers": [
+        "item.attunement.v1",
+        "item.charge_resource.v1",
+        "item.equipment_modifier.v1"
+      ]
+    },
+    "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-libram-of-souls-and-flesh-011": {
+      "attunement_persisted": true,
+      "charge_lifecycle_persisted": true,
+      "compile_status": "full",
+      "consumer_ids": [
+        "item.attunement.v1",
+        "item.charge_resource.v1",
+        "item.equipment_modifier.v1",
+        "item.granted_action.v1"
+      ],
+      "content_id": "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-libram-of-souls-and-flesh-011",
+      "content_kind": "item",
+      "created": true,
+      "evidence_path": "data/content-ir/compiled/production-runtime-results-XIII.json",
+      "item_name": "灵肉圣契|Libram of Souls and Flesh",
+      "item_state_persisted": true,
+      "operation_transaction_persisted": true,
+      "operations": [
+        {
+          "confirm": true,
+          "idempotency_replayed": true,
+          "operation": "attune",
+          "output": {
+            "after": {
+              "active_attunements": 1,
+              "armor_class": 10,
+              "attuned": true
+            },
+            "before": {
+              "armor_class": 10,
+              "charges": 3,
+              "equipped": false,
+              "quantity": 1
+            },
+            "confirmed": true,
+            "operation": "attune",
+            "slot": null,
+            "warnings": []
+          },
+          "preview": true,
+          "replay": true
+        },
+        {
+          "confirm": true,
+          "idempotency_replayed": true,
+          "operation": "use_action",
+          "output": {
+            "after": {
+              "action_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:libram-of-souls-and-flesh:011:action:1",
+              "armor_class": 10,
+              "charges": 2,
+              "rules_kernel_consumer": "item.granted_action.v1"
+            },
+            "before": {
+              "armor_class": 10,
+              "charges": 3,
+              "equipped": false,
+              "quantity": 1
+            },
+            "confirmed": true,
+            "operation": "use_action",
+            "slot": null,
+            "warnings": []
+          },
+          "preview": true,
+          "replay": true
+        }
+      ],
+      "persisted": {
+        "attuned": true,
+        "charges": 2,
+        "item_fingerprint": "978ce43ee553bb0472a2705a2db04da64c071cbe452b6c4414719fa965e9c3d1",
+        "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-libram-of-souls-and-flesh-011",
+        "operation_transaction_count": 2,
+        "version": 3
+      },
+      "preview_confirm_replay": true,
+      "typed_consumer": true,
+      "typed_projection_consumers": [
+        "item.attunement.v1",
+        "item.charge_resource.v1",
         "item.equipment_modifier.v1",
         "item.granted_action.v1"
       ]
@@ -957,6 +1543,87 @@
         "item.attunement.v1",
         "item.equipment_modifier.v1",
         "item.granted_action.v1"
+      ]
+    },
+    "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-planecaller-s-codex-014": {
+      "attunement_persisted": true,
+      "charge_lifecycle_persisted": true,
+      "compile_status": "full",
+      "consumer_ids": [
+        "item.attunement.v1",
+        "item.charge_resource.v1",
+        "item.equipment_modifier.v1"
+      ],
+      "content_id": "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-planecaller-s-codex-014",
+      "content_kind": "item",
+      "created": true,
+      "evidence_path": "data/content-ir/compiled/production-runtime-results-XIII.json",
+      "item_name": "异界行访录|Planecaller's Codex",
+      "item_state_persisted": true,
+      "operation_transaction_persisted": true,
+      "operations": [
+        {
+          "confirm": true,
+          "idempotency_replayed": true,
+          "operation": "attune",
+          "output": {
+            "after": {
+              "active_attunements": 1,
+              "armor_class": 10,
+              "attuned": true
+            },
+            "before": {
+              "armor_class": 10,
+              "charges": 3,
+              "equipped": false,
+              "quantity": 1
+            },
+            "confirmed": true,
+            "operation": "attune",
+            "slot": null,
+            "warnings": []
+          },
+          "preview": true,
+          "replay": true
+        },
+        {
+          "confirm": true,
+          "idempotency_replayed": true,
+          "operation": "use_charge",
+          "output": {
+            "after": {
+              "armor_class": 10,
+              "charges": 2
+            },
+            "before": {
+              "armor_class": 10,
+              "charges": 3,
+              "equipped": false,
+              "quantity": 1
+            },
+            "confirmed": true,
+            "operation": "use_charge",
+            "slot": null,
+            "warnings": []
+          },
+          "preview": true,
+          "replay": true
+        }
+      ],
+      "persisted": {
+        "attuned": true,
+        "charges": 2,
+        "item_fingerprint": "216f1692f6cd613a5850652c6a71334cb70488548ef3a93d47d3a8ec708e612b",
+        "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-planecaller-s-codex-014",
+        "operation_transaction_count": 2,
+        "version": 3
+      },
+      "preview_confirm_replay": true,
+      "typed_consumer": true,
+      "typed_projection_consumers": [
+        "item.attunement.v1",
+        "item.charge_resource.v1",
+        "item.equipment_modifier.v1"
       ]
     },
     "content.tashas-cauldron.round2.feature.aberrant-mind-psionic-spell-list": {
@@ -2134,8 +2801,16 @@
     "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-bloodwell-vial-003",
     "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-guardian-emblem-005",
     "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-rhythm-maker-s-drum-008",
+    "content.tashas-cauldron.item.tashas-cauldron-atom-62c7a0c6a042e571b17d35e3-dfaab0b0f93c-000",
     "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-alchemical-compendium-000",
+    "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-astromancy-archive-002",
+    "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-atlas-of-endless-horizons-003",
+    "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-bell-branch-004",
+    "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-devotee-s-censer-005",
     "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-far-realm-shard-008",
-    "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-lyre-of-building-012"
+    "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-heart-weaver-s-primer-010",
+    "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-libram-of-souls-and-flesh-011",
+    "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-lyre-of-building-012",
+    "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-planecaller-s-codex-014"
   ]
 }

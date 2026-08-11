@@ -161,7 +161,7 @@ def _run_item(client: TestClient, database_url: str, spec: ItemSpec, index: int)
                 current,
                 equipment["id"],
                 operation="equip",
-                slot=spec.equipped_slot or "main_hand",
+                slot=spec.equipped_slot or ("main_hand" if spec.item_kind == "weapon" else "worn"),
                 key=f"round-x-{index}-equip",
             )
         )
@@ -190,6 +190,18 @@ def _run_item(client: TestClient, database_url: str, spec: ItemSpec, index: int)
                     key=f"round-x-{index}-charge",
                 )
             )
+    elif spec.charges:
+        current = client.get(f"{base}/characters/{character['id']}").json()
+        operations.append(
+            _confirm_operation(
+                client,
+                base,
+                current,
+                equipment["id"],
+                operation="use_charge",
+                key=f"round-x-{index}-charge",
+            )
+        )
     engine = create_engine(database_url)
     with Session(engine) as session:
         row = session.get(EquipmentInstance, equipment["id"])

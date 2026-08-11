@@ -81,30 +81,6 @@
         "target_policy": "explicit_target"
       },
       "trigger": "item_action_requested"
-    },
-    {
-      "action_economy": "action",
-      "clause_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:fulminating-treatise:009:spell-grant",
-      "clause_type": "granted_spell",
-      "evidence": {
-        "manual_review_required": false,
-        "source_excerpt": "*奇物, 珍稀（需法师同调）*\n这本书被烧焦的厚实法术书散发着烟雾和臭氧的气味，书页的边缘闪烁着能量的火花。\n这本书在被找到时，包含了以下法术：*触发术Contingency*，*火球术Fireball*，*造风术Gust of\nWind*，*李欧蒙小屋Leomund's Tiny\nHut*，*魔法飞弹Magic Missile*，*雷鸣波Thunderwave*和*力场墙Wall of\nForce*。你可以将其作为法术书。\n当你持握这本书时，你可以将其作为你法师法术的法器。\n书具有3发充能，且每天黎明时恢复1d3发已消耗的充能。你持握它时，可以通过以下方式消耗充能：\n\n- 如果你花费1分钟时间研究这本书，你可以消耗1发充能来将你的一道已准备法术替换为书中的另一道法术。新法术必须是塑能学派的法术。当一个你可见的"
-      },
-      "parameters": {
-        "grant_mode": "item_cast",
-        "source_text": "*奇物, 珍稀（需法师同调）*\n这本书被烧焦的厚实法术书散发着烟雾和臭氧的气味，书页的边缘闪烁着能量的火花。\n这本书在被找到时，包含了以下法术：*触发术Contingency*，*火球术Fireball*，*造风术Gust of\nWind*，*李欧蒙小屋Leomund's Tiny\nHut*，*魔法飞弹Magic Missile*，*雷鸣波Thunderwave*和*力场墙Wall of\nForce*。你可以将其作为法术书。\n当你持握这本书时，你可以将其作为你法师法术的法器。\n书具有3发充能，且每天黎明时恢复1d3发已消耗的充能。你持握它时，可以通过以下方式消耗充能：\n\n- 如果你花费1分钟时间研究这本书，你可以消耗1发充能来将你的一道已准备法术替换为书中的另一道法术。新法术必须是塑能学派的法术。当一个你可见的",
-        "spell_identities": [
-          {
-            "english_name": "",
-            "localized_name": "的塑能系",
-            "spell_id": "的塑能系"
-          }
-        ],
-        "spell_ids": [
-          "的塑能系"
-        ]
-      },
-      "trigger": "item_action_requested"
     }
   ],
   "compile": {
@@ -181,30 +157,6 @@
           "target_policy": "explicit_target"
         },
         "trigger": "item_action_requested"
-      },
-      {
-        "action_economy": "action",
-        "clause_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:fulminating-treatise:009:spell-grant",
-        "clause_type": "granted_spell",
-        "evidence": {
-          "manual_review_required": false,
-          "source_excerpt": "*奇物, 珍稀（需法师同调）*\n这本书被烧焦的厚实法术书散发着烟雾和臭氧的气味，书页的边缘闪烁着能量的火花。\n这本书在被找到时，包含了以下法术：*触发术Contingency*，*火球术Fireball*，*造风术Gust of\nWind*，*李欧蒙小屋Leomund's Tiny\nHut*，*魔法飞弹Magic Missile*，*雷鸣波Thunderwave*和*力场墙Wall of\nForce*。你可以将其作为法术书。\n当你持握这本书时，你可以将其作为你法师法术的法器。\n书具有3发充能，且每天黎明时恢复1d3发已消耗的充能。你持握它时，可以通过以下方式消耗充能：\n\n- 如果你花费1分钟时间研究这本书，你可以消耗1发充能来将你的一道已准备法术替换为书中的另一道法术。新法术必须是塑能学派的法术。当一个你可见的"
-        },
-        "parameters": {
-          "grant_mode": "item_cast",
-          "source_text": "*奇物, 珍稀（需法师同调）*\n这本书被烧焦的厚实法术书散发着烟雾和臭氧的气味，书页的边缘闪烁着能量的火花。\n这本书在被找到时，包含了以下法术：*触发术Contingency*，*火球术Fireball*，*造风术Gust of\nWind*，*李欧蒙小屋Leomund's Tiny\nHut*，*魔法飞弹Magic Missile*，*雷鸣波Thunderwave*和*力场墙Wall of\nForce*。你可以将其作为法术书。\n当你持握这本书时，你可以将其作为你法师法术的法器。\n书具有3发充能，且每天黎明时恢复1d3发已消耗的充能。你持握它时，可以通过以下方式消耗充能：\n\n- 如果你花费1分钟时间研究这本书，你可以消耗1发充能来将你的一道已准备法术替换为书中的另一道法术。新法术必须是塑能学派的法术。当一个你可见的",
-          "spell_identities": [
-            {
-              "english_name": "",
-              "localized_name": "的塑能系",
-              "spell_id": "的塑能系"
-            }
-          ],
-          "spell_ids": [
-            "的塑能系"
-          ]
-        },
-        "trigger": "item_action_requested"
       }
     ],
     "compile_status": "full",
@@ -212,10 +164,9 @@
       "item.attunement.v1",
       "item.charge_resource.v1",
       "item.equipment_modifier.v1",
-      "item.granted_action.v1",
-      "item.granted_spell.v1"
+      "item.granted_action.v1"
     ],
-    "item_fingerprint": "42b7cb943039dcd413ce7b8fb01b4aa5ac26b1566ba764215aa3cc05fc784f1e",
+    "item_fingerprint": "b153c21cf2728a5a8c34041cf0f041f1d0eb6dd1d499eeeaa8a756dc7442d114",
     "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-fulminating-treatise-009",
     "runtime_preview_full": true,
     "schema_version": "item-ir-1",
@@ -259,13 +210,7 @@
       "target_policy": "explicit_target"
     }
   ],
-  "granted_spells": [
-    {
-      "english_name": "",
-      "localized_name": "的塑能系",
-      "spell_id": "的塑能系"
-    }
-  ],
+  "granted_spells": [],
   "healing": null,
   "immunities": [],
   "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-fulminating-treatise-009",
@@ -281,7 +226,7 @@
   "requires_attunement": true,
   "resistances": [],
   "resource_bindings": [],
-  "review_fingerprint": "42b7cb943039dcd413ce7b8fb01b4aa5ac26b1566ba764215aa3cc05fc784f1e",
+  "review_fingerprint": "b153c21cf2728a5a8c34041cf0f041f1d0eb6dd1d499eeeaa8a756dc7442d114",
   "review_status": "reviewed",
   "ruleset_version": "2024",
   "schema_version": "item-ir-1",

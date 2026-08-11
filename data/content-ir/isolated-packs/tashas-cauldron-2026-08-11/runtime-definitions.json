@@ -938,8 +938,7 @@
       "consumer_ids": [
         "item.attunement.v1",
         "item.equipment_modifier.v1",
-        "item.granted_action.v1",
-        "item.granted_spell.v1"
+        "item.granted_action.v1"
       ],
       "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-all-purpose-tool-000",
       "item_kind": "tool",
@@ -1098,8 +1097,7 @@
       "compile_status": "full",
       "consumer_ids": [
         "item.attunement.v1",
-        "item.equipment_modifier.v1",
-        "item.granted_spell.v1"
+        "item.equipment_modifier.v1"
       ],
       "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-moon-sickle-006",
       "item_kind": "weapon",
@@ -1126,8 +1124,7 @@
       "consumer_ids": [
         "item.attunement.v1",
         "item.equipment_modifier.v1",
-        "item.granted_action.v1",
-        "item.granted_spell.v1"
+        "item.granted_action.v1"
       ],
       "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-nature-s-mantle-007",
       "item_kind": "spellcasting_focus",
@@ -1192,10 +1189,10 @@
         "compile_full": true,
         "dm_assisted": false,
         "draft": true,
-        "game_usable": false,
-        "highest_status": "isolated_runtime_validated",
+        "game_usable": true,
+        "highest_status": "game_usable",
         "isolated_runtime_validated": true,
-        "registered_production_full": false,
+        "registered_production_full": true,
         "reviewed": true,
         "runtime_preview_full": true,
         "source_identified": true
@@ -1232,7 +1229,7 @@
       "typed_ir_path": "items/content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-23eee2e4e70e-004.json"
     },
     {
-      "compile_status": "full",
+      "compile_status": "partial",
       "consumer_ids": [
         "item.attunement.v1",
         "item.equipment_modifier.v1",
@@ -1246,15 +1243,15 @@
       "status_layers": {
         "authored_typed_ir": true,
         "candidate": true,
-        "compile_full": true,
+        "compile_full": false,
         "dm_assisted": false,
         "draft": true,
         "game_usable": false,
-        "highest_status": "isolated_runtime_validated",
-        "isolated_runtime_validated": true,
+        "highest_status": "authored_typed_ir",
+        "isolated_runtime_validated": false,
         "registered_production_full": false,
         "reviewed": true,
-        "runtime_preview_full": true,
+        "runtime_preview_full": false,
         "source_identified": true
       },
       "typed_ir_path": "items/content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-3e9825c326a3-003.json"
@@ -1265,8 +1262,7 @@
         "item.attunement.v1",
         "item.charge_resource.v1",
         "item.equipment_modifier.v1",
-        "item.granted_action.v1",
-        "item.granted_spell.v1"
+        "item.granted_action.v1"
       ],
       "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-b106ea54c961-000",
       "item_kind": "weapon",
@@ -1289,7 +1285,7 @@
       "typed_ir_path": "items/content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-b106ea54c961-000.json"
     },
     {
-      "compile_status": "full",
+      "compile_status": "partial",
       "consumer_ids": [
         "item.attunement.v1",
         "item.charge_resource.v1",
@@ -1304,21 +1300,21 @@
       "status_layers": {
         "authored_typed_ir": true,
         "candidate": true,
-        "compile_full": true,
+        "compile_full": false,
         "dm_assisted": false,
         "draft": true,
         "game_usable": false,
-        "highest_status": "isolated_runtime_validated",
-        "isolated_runtime_validated": true,
+        "highest_status": "authored_typed_ir",
+        "isolated_runtime_validated": false,
         "registered_production_full": false,
         "reviewed": true,
-        "runtime_preview_full": true,
+        "runtime_preview_full": false,
         "source_identified": true
       },
       "typed_ir_path": "items/content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-db0e19f5d68b-001.json"
     },
     {
-      "compile_status": "full",
+      "compile_status": "partial",
       "consumer_ids": [
         "item.attunement.v1",
         "item.charge_resource.v1",
@@ -1333,15 +1329,15 @@
       "status_layers": {
         "authored_typed_ir": true,
         "candidate": true,
-        "compile_full": true,
+        "compile_full": false,
         "dm_assisted": false,
         "draft": true,
         "game_usable": false,
-        "highest_status": "isolated_runtime_validated",
-        "isolated_runtime_validated": true,
+        "highest_status": "authored_typed_ir",
+        "isolated_runtime_validated": false,
         "registered_production_full": false,
         "reviewed": true,
-        "runtime_preview_full": true,
+        "runtime_preview_full": false,
         "source_identified": true
       },
       "typed_ir_path": "items/content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-demonomiconofiggwilv-002.json"
@@ -1350,8 +1346,7 @@
       "compile_status": "partial",
       "consumer_ids": [
         "item.equipment_modifier.v1",
-        "item.granted_action.v1",
-        "item.granted_spell.v1"
+        "item.granted_action.v1"
       ],
       "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-teeth-ofdahlver-nar-005",
       "item_kind": "weapon",
@@ -1405,8 +1400,7 @@
       "consumer_ids": [
         "item.attunement.v1",
         "item.equipment_modifier.v1",
-        "item.granted_action.v1",
-        "item.granted_spell.v1"
+        "item.granted_action.v1"
       ],
       "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-astral-shard-001",
       "item_kind": "weapon",
@@ -1445,10 +1439,10 @@
         "compile_full": true,
         "dm_assisted": false,
         "draft": true,
-        "game_usable": false,
-        "highest_status": "isolated_runtime_validated",
+        "game_usable": true,
+        "highest_status": "game_usable",
         "isolated_runtime_validated": true,
-        "registered_production_full": false,
+        "registered_production_full": true,
         "reviewed": true,
         "runtime_preview_full": true,
         "source_identified": true
@@ -1472,10 +1466,10 @@
         "compile_full": true,
         "dm_assisted": false,
         "draft": true,
-        "game_usable": false,
-        "highest_status": "isolated_runtime_validated",
+        "game_usable": true,
+        "highest_status": "game_usable",
         "isolated_runtime_validated": true,
-        "registered_production_full": false,
+        "registered_production_full": true,
         "reviewed": true,
         "runtime_preview_full": true,
         "source_identified": true
@@ -1500,10 +1494,10 @@
         "compile_full": true,
         "dm_assisted": false,
         "draft": true,
-        "game_usable": false,
-        "highest_status": "isolated_runtime_validated",
+        "game_usable": true,
+        "highest_status": "game_usable",
         "isolated_runtime_validated": true,
-        "registered_production_full": false,
+        "registered_production_full": true,
         "reviewed": true,
         "runtime_preview_full": true,
         "source_identified": true
@@ -1527,10 +1521,10 @@
         "compile_full": true,
         "dm_assisted": false,
         "draft": true,
-        "game_usable": false,
-        "highest_status": "isolated_runtime_validated",
+        "game_usable": true,
+        "highest_status": "game_usable",
         "isolated_runtime_validated": true,
-        "registered_production_full": false,
+        "registered_production_full": true,
         "reviewed": true,
         "runtime_preview_full": true,
         "source_identified": true
@@ -1543,8 +1537,7 @@
         "item.attunement.v1",
         "item.charge_resource.v1",
         "item.equipment_modifier.v1",
-        "item.granted_action.v1",
-        "item.granted_spell.v1"
+        "item.granted_action.v1"
       ],
       "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-duplicitous-manuscript-006",
       "item_kind": "spellcasting_focus",
@@ -1626,8 +1619,7 @@
         "item.attunement.v1",
         "item.charge_resource.v1",
         "item.equipment_modifier.v1",
-        "item.granted_action.v1",
-        "item.granted_spell.v1"
+        "item.granted_action.v1"
       ],
       "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-fulminating-treatise-009",
       "item_kind": "spellcasting_focus",
@@ -1666,10 +1658,10 @@
         "compile_full": true,
         "dm_assisted": false,
         "draft": true,
-        "game_usable": false,
-        "highest_status": "isolated_runtime_validated",
+        "game_usable": true,
+        "highest_status": "game_usable",
         "isolated_runtime_validated": true,
-        "registered_production_full": false,
+        "registered_production_full": true,
         "reviewed": true,
         "runtime_preview_full": true,
         "source_identified": true
@@ -1694,10 +1686,10 @@
         "compile_full": true,
         "dm_assisted": false,
         "draft": true,
-        "game_usable": false,
-        "highest_status": "isolated_runtime_validated",
+        "game_usable": true,
+        "highest_status": "game_usable",
         "isolated_runtime_validated": true,
-        "registered_production_full": false,
+        "registered_production_full": true,
         "reviewed": true,
         "runtime_preview_full": true,
         "source_identified": true
@@ -1775,10 +1767,10 @@
         "compile_full": true,
         "dm_assisted": false,
         "draft": true,
-        "game_usable": false,
-        "highest_status": "isolated_runtime_validated",
+        "game_usable": true,
+        "highest_status": "game_usable",
         "isolated_runtime_validated": true,
-        "registered_production_full": false,
+        "registered_production_full": true,
         "reviewed": true,
         "runtime_preview_full": true,
         "source_identified": true
@@ -1979,8 +1971,7 @@
       "consumer_ids": [
         "item.attunement.v1",
         "item.equipment_modifier.v1",
-        "item.granted_action.v1",
-        "item.granted_spell.v1"
+        "item.granted_action.v1"
       ],
       "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-coiling-004",
       "item_kind": "magic_tattoo",
@@ -2035,8 +2026,7 @@
         "item.attunement.v1",
         "item.charge_resource.v1",
         "item.equipment_modifier.v1",
-        "item.granted_action.v1",
-        "item.granted_spell.v1"
+        "item.granted_action.v1"
       ],
       "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-ghost-step-tattoo-008",
       "item_kind": "magic_tattoo",
@@ -2139,7 +2129,7 @@
       "typed_ir_path": "items/content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-shadowfellbrand-tattoo-006.json"
     },
     {
-      "compile_status": "full",
+      "compile_status": "partial",
       "consumer_ids": [
         "item.attunement.v1",
         "item.equipment_modifier.v1",
@@ -2152,15 +2142,15 @@
       "status_layers": {
         "authored_typed_ir": true,
         "candidate": true,
-        "compile_full": true,
+        "compile_full": false,
         "dm_assisted": false,
         "draft": true,
         "game_usable": false,
-        "highest_status": "isolated_runtime_validated",
-        "isolated_runtime_validated": true,
+        "highest_status": "authored_typed_ir",
+        "isolated_runtime_validated": false,
         "registered_production_full": false,
         "reviewed": true,
-        "runtime_preview_full": true,
+        "runtime_preview_full": false,
         "source_identified": true
       },
       "typed_ir_path": "items/content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-spell-wrought-tattoo-002.json"
@@ -2170,8 +2160,7 @@
       "consumer_ids": [
         "item.attunement.v1",
         "item.equipment_modifier.v1",
-        "item.granted_action.v1",
-        "item.granted_spell.v1"
+        "item.granted_action.v1"
       ],
       "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-953875067ac4d9a793c844f0-6ad29778c06b-000",
       "item_kind": "spellcasting_focus",
@@ -2198,8 +2187,7 @@
       "consumer_ids": [
         "item.attunement.v1",
         "item.charge_resource.v1",
-        "item.equipment_modifier.v1",
-        "item.granted_spell.v1"
+        "item.equipment_modifier.v1"
       ],
       "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-953875067ac4d9a793c844f0-771dcd20c4dc-001",
       "item_kind": "spellcasting_focus",

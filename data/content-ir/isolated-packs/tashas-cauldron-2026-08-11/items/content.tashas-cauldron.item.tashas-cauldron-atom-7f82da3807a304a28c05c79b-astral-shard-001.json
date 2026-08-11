@@ -47,30 +47,6 @@
         "target_policy": "self"
       },
       "trigger": "item_action_requested"
-    },
-    {
-      "action_economy": "action",
-      "clause_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:astral-shard:001:spell-grant",
-      "clause_type": "granted_spell",
-      "evidence": {
-        "manual_review_required": false,
-        "source_excerpt": "*奇物, 珍稀（需术士同调）*\n这块水晶是一块来自星光位面的坚硬碎晶，银色的迷雾在其表面上流转。\n作为一个动作，你可以将碎晶附上一件微型物件（如一把武器或一块珠宝）或摘下。当同调结束时它会掉落下来。当你持握或穿戴碎晶时，你可以将其作为法器使用。\n当你持握或穿戴碎晶，并在一道法术上应用一种超魔法选项时，可以在施展法术后立即传送到至多30尺内一个你能看见且未被占据的位置。"
-      },
-      "parameters": {
-        "grant_mode": "item_cast",
-        "source_text": "*奇物, 珍稀（需术士同调）*\n这块水晶是一块来自星光位面的坚硬碎晶，银色的迷雾在其表面上流转。\n作为一个动作，你可以将碎晶附上一件微型物件（如一把武器或一块珠宝）或摘下。当同调结束时它会掉落下来。当你持握或穿戴碎晶时，你可以将其作为法器使用。\n当你持握或穿戴碎晶，并在一道法术上应用一种超魔法选项时，可以在施展法术后立即传送到至多30尺内一个你能看见且未被占据的位置。",
-        "spell_identities": [
-          {
-            "english_name": "",
-            "localized_name": "法术后立即传送到至多30尺内一个你能看见且未被占据的位置",
-            "spell_id": "法术后立即传送到至多30尺内一个你能看见且未被占据的位置"
-          }
-        ],
-        "spell_ids": [
-          "法术后立即传送到至多30尺内一个你能看见且未被占据的位置"
-        ]
-      },
-      "trigger": "item_action_requested"
     }
   ],
   "compile": {
@@ -118,40 +94,15 @@
           "target_policy": "self"
         },
         "trigger": "item_action_requested"
-      },
-      {
-        "action_economy": "action",
-        "clause_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:astral-shard:001:spell-grant",
-        "clause_type": "granted_spell",
-        "evidence": {
-          "manual_review_required": false,
-          "source_excerpt": "*奇物, 珍稀（需术士同调）*\n这块水晶是一块来自星光位面的坚硬碎晶，银色的迷雾在其表面上流转。\n作为一个动作，你可以将碎晶附上一件微型物件（如一把武器或一块珠宝）或摘下。当同调结束时它会掉落下来。当你持握或穿戴碎晶时，你可以将其作为法器使用。\n当你持握或穿戴碎晶，并在一道法术上应用一种超魔法选项时，可以在施展法术后立即传送到至多30尺内一个你能看见且未被占据的位置。"
-        },
-        "parameters": {
-          "grant_mode": "item_cast",
-          "source_text": "*奇物, 珍稀（需术士同调）*\n这块水晶是一块来自星光位面的坚硬碎晶，银色的迷雾在其表面上流转。\n作为一个动作，你可以将碎晶附上一件微型物件（如一把武器或一块珠宝）或摘下。当同调结束时它会掉落下来。当你持握或穿戴碎晶时，你可以将其作为法器使用。\n当你持握或穿戴碎晶，并在一道法术上应用一种超魔法选项时，可以在施展法术后立即传送到至多30尺内一个你能看见且未被占据的位置。",
-          "spell_identities": [
-            {
-              "english_name": "",
-              "localized_name": "法术后立即传送到至多30尺内一个你能看见且未被占据的位置",
-              "spell_id": "法术后立即传送到至多30尺内一个你能看见且未被占据的位置"
-            }
-          ],
-          "spell_ids": [
-            "法术后立即传送到至多30尺内一个你能看见且未被占据的位置"
-          ]
-        },
-        "trigger": "item_action_requested"
       }
     ],
     "compile_status": "full",
     "consumer_ids": [
       "item.attunement.v1",
       "item.equipment_modifier.v1",
-      "item.granted_action.v1",
-      "item.granted_spell.v1"
+      "item.granted_action.v1"
     ],
-    "item_fingerprint": "f7004d37b474cadddf2f459eb7c452b241f478074f48c3a2d48b780f08c68453",
+    "item_fingerprint": "c7a076ce1ad3b4207d319c11f85f9262d5790b25ddf9eea881e63c6b867e9640",
     "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-astral-shard-001",
     "runtime_preview_full": true,
     "schema_version": "item-ir-1",
@@ -195,13 +146,7 @@
       "target_policy": "self"
     }
   ],
-  "granted_spells": [
-    {
-      "english_name": "",
-      "localized_name": "法术后立即传送到至多30尺内一个你能看见且未被占据的位置",
-      "spell_id": "法术后立即传送到至多30尺内一个你能看见且未被占据的位置"
-    }
-  ],
+  "granted_spells": [],
   "healing": null,
   "immunities": [],
   "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-astral-shard-001",
@@ -217,7 +162,7 @@
   "requires_attunement": true,
   "resistances": [],
   "resource_bindings": [],
-  "review_fingerprint": "f7004d37b474cadddf2f459eb7c452b241f478074f48c3a2d48b780f08c68453",
+  "review_fingerprint": "c7a076ce1ad3b4207d319c11f85f9262d5790b25ddf9eea881e63c6b867e9640",
   "review_status": "reviewed",
   "ruleset_version": "2024",
   "schema_version": "item-ir-1",

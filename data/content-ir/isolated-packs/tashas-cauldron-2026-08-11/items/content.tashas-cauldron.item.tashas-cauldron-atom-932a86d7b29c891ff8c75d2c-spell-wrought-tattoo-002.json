@@ -32,28 +32,22 @@
       "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:spell-wrought-tattoo:002:spell-grant",
       "clause_type": "granted_spell",
       "evidence": {
-        "manual_review_required": false,
+        "manual_review_required": true,
         "source_excerpt": "***奇物（刺青）**,****多种稀有度*\n该魔法刺青用一根特殊的针制作，包含着一道最高5环的法术，用魔法针纹在你的身上。为了使用此刺青，你必须持针抵住你的皮肤，并说出命令语。针会变为墨水，化为刺青，在你的皮肤上显现为你喜欢的样子。刺青在你身上时，你可以施展那道法术而不需要材料成分。在你施展这道法术时，刺青会在法术的持续时间内发出微光。法术结束时，刺青会从你的皮肤上消失。\n刺青的稀有度、其法术的豁免DC和攻击加值由它所记载的法术环阶决定，如下表所示："
       },
       "parameters": {
         "grant_mode": "item_cast",
         "source_text": "***奇物（刺青）**,****多种稀有度*\n该魔法刺青用一根特殊的针制作，包含着一道最高5环的法术，用魔法针纹在你的身上。为了使用此刺青，你必须持针抵住你的皮肤，并说出命令语。针会变为墨水，化为刺青，在你的皮肤上显现为你喜欢的样子。刺青在你身上时，你可以施展那道法术而不需要材料成分。在你施展这道法术时，刺青会在法术的持续时间内发出微光。法术结束时，刺青会从你的皮肤上消失。\n刺青的稀有度、其法术的豁免DC和攻击加值由它所记载的法术环阶决定，如下表所示：",
-        "spell_identities": [
-          {
-            "english_name": "",
-            "localized_name": "这道",
-            "spell_id": "这道"
-          }
-        ],
-        "spell_ids": [
-          "这道"
-        ]
+        "spell_identities": [],
+        "spell_ids": []
       },
       "trigger": "item_action_requested"
     }
   ],
   "compile": {
-    "blockers": [],
+    "blockers": [
+      "manual_clause_requires_dm_or_additional_typed_fields"
+    ],
     "clauses": [
       {
         "action_economy": "none",
@@ -85,35 +79,27 @@
         "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:spell-wrought-tattoo:002:spell-grant",
         "clause_type": "granted_spell",
         "evidence": {
-          "manual_review_required": false,
+          "manual_review_required": true,
           "source_excerpt": "***奇物（刺青）**,****多种稀有度*\n该魔法刺青用一根特殊的针制作，包含着一道最高5环的法术，用魔法针纹在你的身上。为了使用此刺青，你必须持针抵住你的皮肤，并说出命令语。针会变为墨水，化为刺青，在你的皮肤上显现为你喜欢的样子。刺青在你身上时，你可以施展那道法术而不需要材料成分。在你施展这道法术时，刺青会在法术的持续时间内发出微光。法术结束时，刺青会从你的皮肤上消失。\n刺青的稀有度、其法术的豁免DC和攻击加值由它所记载的法术环阶决定，如下表所示："
         },
         "parameters": {
           "grant_mode": "item_cast",
           "source_text": "***奇物（刺青）**,****多种稀有度*\n该魔法刺青用一根特殊的针制作，包含着一道最高5环的法术，用魔法针纹在你的身上。为了使用此刺青，你必须持针抵住你的皮肤，并说出命令语。针会变为墨水，化为刺青，在你的皮肤上显现为你喜欢的样子。刺青在你身上时，你可以施展那道法术而不需要材料成分。在你施展这道法术时，刺青会在法术的持续时间内发出微光。法术结束时，刺青会从你的皮肤上消失。\n刺青的稀有度、其法术的豁免DC和攻击加值由它所记载的法术环阶决定，如下表所示：",
-          "spell_identities": [
-            {
-              "english_name": "",
-              "localized_name": "这道",
-              "spell_id": "这道"
-            }
-          ],
-          "spell_ids": [
-            "这道"
-          ]
+          "spell_identities": [],
+          "spell_ids": []
         },
         "trigger": "item_action_requested"
       }
     ],
-    "compile_status": "full",
+    "compile_status": "partial",
     "consumer_ids": [
       "item.attunement.v1",
       "item.equipment_modifier.v1",
       "item.granted_spell.v1"
     ],
-    "item_fingerprint": "7f116d36242f35c370d61b929dd51ef0261f7b53b17e55d07e30ef51561e4332",
+    "item_fingerprint": "a2f2bd32736f1fdb0ffa112ea8369df3fe281274211112b19852b8becf535481",
     "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-spell-wrought-tattoo-002",
-    "runtime_preview_full": true,
+    "runtime_preview_full": false,
     "schema_version": "item-ir-1",
     "source_trust": "authored_ir"
   },
@@ -125,7 +111,7 @@
   "duration": null,
   "equipped_slot": "worn",
   "evidence": {
-    "manual_review_required": false,
+    "manual_review_required": true,
     "rejected_inferences": [
       "unknown_effects",
       "unresolved_spell_identity",
@@ -145,19 +131,13 @@
     "source_text_sha256": "0622645595cf40747e3ec9f82ddcad58175e17bd21b507fca80c9cd3b00e2913"
   },
   "granted_actions": [],
-  "granted_spells": [
-    {
-      "english_name": "",
-      "localized_name": "这道",
-      "spell_id": "这道"
-    }
-  ],
+  "granted_spells": [],
   "healing": null,
   "immunities": [],
   "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-spell-wrought-tattoo-002",
   "item_kind": "magic_tattoo",
   "localized_name": "蕴法刺青",
-  "manual_review_required": false,
+  "manual_review_required": true,
   "name": "蕴法刺青|Spell wrought Tattoo",
   "namespace": "dnd.tashas.recovery.item",
   "pack_id": "tashas-cauldron",
@@ -167,7 +147,7 @@
   "requires_attunement": false,
   "resistances": [],
   "resource_bindings": [],
-  "review_fingerprint": "7f116d36242f35c370d61b929dd51ef0261f7b53b17e55d07e30ef51561e4332",
+  "review_fingerprint": "a2f2bd32736f1fdb0ffa112ea8369df3fe281274211112b19852b8becf535481",
   "review_status": "reviewed",
   "ruleset_version": "2024",
   "schema_version": "item-ir-1",
@@ -182,15 +162,15 @@
   "status_layers": {
     "authored_typed_ir": true,
     "candidate": true,
-    "compile_full": true,
+    "compile_full": false,
     "dm_assisted": false,
     "draft": true,
     "game_usable": false,
-    "highest_status": "isolated_runtime_validated",
-    "isolated_runtime_validated": true,
+    "highest_status": "authored_typed_ir",
+    "isolated_runtime_validated": false,
     "registered_production_full": false,
     "reviewed": true,
-    "runtime_preview_full": true,
+    "runtime_preview_full": false,
     "source_identified": true
   },
   "temporary_hp": null,

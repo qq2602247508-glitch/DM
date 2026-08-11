@@ -63,90 +63,6 @@
         "typed_dawn_event_required": true
       },
       "trigger": "dawn"
-    },
-    {
-      "action_economy": "action",
-      "clause_id": "tashas-cauldron:atom:953875067ac4d9a793c844f0:771dcd20c4dc:001:spell-grant",
-      "clause_type": "granted_spell",
-      "evidence": {
-        "manual_review_required": false,
-        "source_excerpt": "Chronicle**\n*奇物**,**极珍稀（需法师同调）*\n这颗蚀刻水晶球有柚子大小，随着内部杂乱的耀斑辐射不断轻声鸣响着。当你触摸水晶球时，你可以以与读写相同的速率往水晶球中储存信息或法术。水晶球在被找到时，包含了以下法术：*侦测思想**Detect\nThoughts*，*智能壁垒**Intellect\nFortress**，*拉瑞心灵**连接**Rary’s\nTelepathic Bond*，*短讯术**Sending*，*心灵遥控**Telekinesis*，*塔莎心灵鞭**Tasha’s Mind Whip**与*谭森浮碟术**Tenser’s**Floating Disk*（带星号的法术出现于本书）。你可以将其作为法术书，其法术与其他文字通过精神编排在水晶之中。\n当你持握水晶球时，你可以将其作为你"
-      },
-      "parameters": {
-        "grant_mode": "item_cast",
-        "source_text": "Chronicle**\n*奇物**,**极珍稀（需法师同调）*\n这颗蚀刻水晶球有柚子大小，随着内部杂乱的耀斑辐射不断轻声鸣响着。当你触摸水晶球时，你可以以与读写相同的速率往水晶球中储存信息或法术。水晶球在被找到时，包含了以下法术：*侦测思想**Detect\nThoughts*，*智能壁垒**Intellect\nFortress**，*拉瑞心灵**连接**Rary’s\nTelepathic Bond*，*短讯术**Sending*，*心灵遥控**Telekinesis*，*塔莎心灵鞭**Tasha’s Mind Whip**与*谭森浮碟术**Tenser’s**Floating Disk*（带星号的法术出现于本书）。你可以将其作为法术书，其法术与其他文字通过精神编排在水晶之中。\n当你持握水晶球时，你可以将其作为你",
-        "spell_identities": [
-          {
-            "english_name": "",
-            "localized_name": "这道",
-            "spell_id": "这道"
-          },
-          {
-            "english_name": "Detect",
-            "localized_name": "侦测思想",
-            "spell_id": "detect"
-          },
-          {
-            "english_name": "Intellect",
-            "localized_name": "智能壁垒",
-            "spell_id": "intellect"
-          },
-          {
-            "english_name": "Rary’s",
-            "localized_name": "连接",
-            "spell_id": "rary’s"
-          },
-          {
-            "english_name": "Sending",
-            "localized_name": "短讯术",
-            "spell_id": "sending"
-          },
-          {
-            "english_name": "Telekinesis",
-            "localized_name": "心灵遥控",
-            "spell_id": "telekinesis"
-          },
-          {
-            "english_name": "Tasha’s Mind Whip",
-            "localized_name": "塔莎心灵鞭",
-            "spell_id": "tasha’s-mind-whip"
-          },
-          {
-            "english_name": "Tenser’s",
-            "localized_name": "谭森浮碟术",
-            "spell_id": "tenser’s"
-          },
-          {
-            "english_name": "Mage",
-            "localized_name": "法师之手",
-            "spell_id": "mage"
-          },
-          {
-            "english_name": "Mind Sliver",
-            "localized_name": "心灵之楔",
-            "spell_id": "mind-sliver"
-          },
-          {
-            "english_name": "Message",
-            "localized_name": "传讯术",
-            "spell_id": "message"
-          }
-        ],
-        "spell_ids": [
-          "这道",
-          "detect",
-          "intellect",
-          "rary’s",
-          "sending",
-          "telekinesis",
-          "tasha’s-mind-whip",
-          "tenser’s",
-          "mage",
-          "mind-sliver",
-          "message"
-        ]
-      },
-      "trigger": "item_action_requested"
     }
   ],
   "compile": {
@@ -205,100 +121,15 @@
           "typed_dawn_event_required": true
         },
         "trigger": "dawn"
-      },
-      {
-        "action_economy": "action",
-        "clause_id": "tashas-cauldron:atom:953875067ac4d9a793c844f0:771dcd20c4dc:001:spell-grant",
-        "clause_type": "granted_spell",
-        "evidence": {
-          "manual_review_required": false,
-          "source_excerpt": "Chronicle**\n*奇物**,**极珍稀（需法师同调）*\n这颗蚀刻水晶球有柚子大小，随着内部杂乱的耀斑辐射不断轻声鸣响着。当你触摸水晶球时，你可以以与读写相同的速率往水晶球中储存信息或法术。水晶球在被找到时，包含了以下法术：*侦测思想**Detect\nThoughts*，*智能壁垒**Intellect\nFortress**，*拉瑞心灵**连接**Rary’s\nTelepathic Bond*，*短讯术**Sending*，*心灵遥控**Telekinesis*，*塔莎心灵鞭**Tasha’s Mind Whip**与*谭森浮碟术**Tenser’s**Floating Disk*（带星号的法术出现于本书）。你可以将其作为法术书，其法术与其他文字通过精神编排在水晶之中。\n当你持握水晶球时，你可以将其作为你"
-        },
-        "parameters": {
-          "grant_mode": "item_cast",
-          "source_text": "Chronicle**\n*奇物**,**极珍稀（需法师同调）*\n这颗蚀刻水晶球有柚子大小，随着内部杂乱的耀斑辐射不断轻声鸣响着。当你触摸水晶球时，你可以以与读写相同的速率往水晶球中储存信息或法术。水晶球在被找到时，包含了以下法术：*侦测思想**Detect\nThoughts*，*智能壁垒**Intellect\nFortress**，*拉瑞心灵**连接**Rary’s\nTelepathic Bond*，*短讯术**Sending*，*心灵遥控**Telekinesis*，*塔莎心灵鞭**Tasha’s Mind Whip**与*谭森浮碟术**Tenser’s**Floating Disk*（带星号的法术出现于本书）。你可以将其作为法术书，其法术与其他文字通过精神编排在水晶之中。\n当你持握水晶球时，你可以将其作为你",
-          "spell_identities": [
-            {
-              "english_name": "",
-              "localized_name": "这道",
-              "spell_id": "这道"
-            },
-            {
-              "english_name": "Detect",
-              "localized_name": "侦测思想",
-              "spell_id": "detect"
-            },
-            {
-              "english_name": "Intellect",
-              "localized_name": "智能壁垒",
-              "spell_id": "intellect"
-            },
-            {
-              "english_name": "Rary’s",
-              "localized_name": "连接",
-              "spell_id": "rary’s"
-            },
-            {
-              "english_name": "Sending",
-              "localized_name": "短讯术",
-              "spell_id": "sending"
-            },
-            {
-              "english_name": "Telekinesis",
-              "localized_name": "心灵遥控",
-              "spell_id": "telekinesis"
-            },
-            {
-              "english_name": "Tasha’s Mind Whip",
-              "localized_name": "塔莎心灵鞭",
-              "spell_id": "tasha’s-mind-whip"
-            },
-            {
-              "english_name": "Tenser’s",
-              "localized_name": "谭森浮碟术",
-              "spell_id": "tenser’s"
-            },
-            {
-              "english_name": "Mage",
-              "localized_name": "法师之手",
-              "spell_id": "mage"
-            },
-            {
-              "english_name": "Mind Sliver",
-              "localized_name": "心灵之楔",
-              "spell_id": "mind-sliver"
-            },
-            {
-              "english_name": "Message",
-              "localized_name": "传讯术",
-              "spell_id": "message"
-            }
-          ],
-          "spell_ids": [
-            "这道",
-            "detect",
-            "intellect",
-            "rary’s",
-            "sending",
-            "telekinesis",
-            "tasha’s-mind-whip",
-            "tenser’s",
-            "mage",
-            "mind-sliver",
-            "message"
-          ]
-        },
-        "trigger": "item_action_requested"
       }
     ],
     "compile_status": "full",
     "consumer_ids": [
       "item.attunement.v1",
       "item.charge_resource.v1",
-      "item.equipment_modifier.v1",
-      "item.granted_spell.v1"
+      "item.equipment_modifier.v1"
     ],
-    "item_fingerprint": "add9dcaa4d10c097855f02968c4e40a333b000d882cf5c8074aa840adc8bf81e",
+    "item_fingerprint": "2f8d817b0ed3917f4cd090b96698e5f00515cbfdc83b95e1cb25c3214931ec8b",
     "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-953875067ac4d9a793c844f0-771dcd20c4dc-001",
     "runtime_preview_full": true,
     "schema_version": "item-ir-1",
@@ -332,63 +163,7 @@
     "source_text_sha256": "d6174e8770e1a7793e15caf7cf131aeb51b6c5980e9f73b8f2a3b51a329a5ae4"
   },
   "granted_actions": [],
-  "granted_spells": [
-    {
-      "english_name": "",
-      "localized_name": "这道",
-      "spell_id": "这道"
-    },
-    {
-      "english_name": "Detect",
-      "localized_name": "侦测思想",
-      "spell_id": "detect"
-    },
-    {
-      "english_name": "Intellect",
-      "localized_name": "智能壁垒",
-      "spell_id": "intellect"
-    },
-    {
-      "english_name": "Rary’s",
-      "localized_name": "连接",
-      "spell_id": "rary’s"
-    },
-    {
-      "english_name": "Sending",
-      "localized_name": "短讯术",
-      "spell_id": "sending"
-    },
-    {
-      "english_name": "Telekinesis",
-      "localized_name": "心灵遥控",
-      "spell_id": "telekinesis"
-    },
-    {
-      "english_name": "Tasha’s Mind Whip",
-      "localized_name": "塔莎心灵鞭",
-      "spell_id": "tasha’s-mind-whip"
-    },
-    {
-      "english_name": "Tenser’s",
-      "localized_name": "谭森浮碟术",
-      "spell_id": "tenser’s"
-    },
-    {
-      "english_name": "Mage",
-      "localized_name": "法师之手",
-      "spell_id": "mage"
-    },
-    {
-      "english_name": "Mind Sliver",
-      "localized_name": "心灵之楔",
-      "spell_id": "mind-sliver"
-    },
-    {
-      "english_name": "Message",
-      "localized_name": "传讯术",
-      "spell_id": "message"
-    }
-  ],
+  "granted_spells": [],
   "healing": null,
   "immunities": [],
   "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-953875067ac4d9a793c844f0-771dcd20c4dc-001",
@@ -404,7 +179,7 @@
   "requires_attunement": true,
   "resistances": [],
   "resource_bindings": [],
-  "review_fingerprint": "add9dcaa4d10c097855f02968c4e40a333b000d882cf5c8074aa840adc8bf81e",
+  "review_fingerprint": "2f8d817b0ed3917f4cd090b96698e5f00515cbfdc83b95e1cb25c3214931ec8b",
   "review_status": "reviewed",
   "ruleset_version": "2024",
   "schema_version": "item-ir-1",

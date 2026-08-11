@@ -53,64 +53,22 @@
       "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:3e9825c326a3:003:spell-grant",
       "clause_type": "granted_spell",
       "evidence": {
-        "manual_review_required": false,
+        "manual_review_required": true,
         "source_excerpt": "of Souls**\n*奇物，神器（需同调）*\n并非所有逗留于世的灵魂都是迷失在通往死后国度之路上的悲惨灵魂。有些灵魂失去活力，成为了囚徒；它们是如此邪恶，以至于凡人不敢将它们释放到那毫无戒心的来世。\n作为由维斯塔尼传说中的人物创造的物品，*鲁芭的灵魂塔罗卡**|Luba‘s Tarokka\nof Souls*塑造了无数英雄的命运。这套牌作出的预言也揭示了巨大的邪恶，引导它的创造者走入邪恶势力的道路。牌组的创造者，鲁芭夫人，依靠着她敏锐的直觉无数次侥幸逃离了自己的毁灭。但就算是她也无法躲过所有的邪恶。在最危急的关头，鲁芭夫人设法用命运的丝线封印住这些至恶的存在，将它们囚禁在了这套塔罗卡中。这些邪恶的灵魂被困于隐藏在卡牌洗混翻转之中的下界空间内，静静地等待着命运本身也被玷污的那一天这一天绝对会到来的。\n和所有塔罗"
       },
       "parameters": {
         "grant_mode": "item_cast",
         "source_text": "of Souls**\n*奇物，神器（需同调）*\n并非所有逗留于世的灵魂都是迷失在通往死后国度之路上的悲惨灵魂。有些灵魂失去活力，成为了囚徒；它们是如此邪恶，以至于凡人不敢将它们释放到那毫无戒心的来世。\n作为由维斯塔尼传说中的人物创造的物品，*鲁芭的灵魂塔罗卡**|Luba‘s Tarokka\nof Souls*塑造了无数英雄的命运。这套牌作出的预言也揭示了巨大的邪恶，引导它的创造者走入邪恶势力的道路。牌组的创造者，鲁芭夫人，依靠着她敏锐的直觉无数次侥幸逃离了自己的毁灭。但就算是她也无法躲过所有的邪恶。在最危急的关头，鲁芭夫人设法用命运的丝线封印住这些至恶的存在，将它们囚禁在了这套塔罗卡中。这些邪恶的灵魂被困于隐藏在卡牌洗混翻转之中的下界空间内，静静地等待着命运本身也被玷污的那一天这一天绝对会到来的。\n和所有塔罗",
-        "spell_identities": [
-          {
-            "english_name": "",
-            "localized_name": "了某个",
-            "spell_id": "了某个"
-          },
-          {
-            "english_name": "Comprehend Languages",
-            "localized_name": "通晓语言",
-            "spell_id": "comprehend-languages"
-          },
-          {
-            "english_name": "Detect Evil and Good",
-            "localized_name": "侦测善恶",
-            "spell_id": "detect-evil-and-good"
-          },
-          {
-            "english_name": "Detect Magic",
-            "localized_name": "侦测魔法",
-            "spell_id": "detect-magic"
-          },
-          {
-            "english_name": "Detect Poison andDIsease",
-            "localized_name": "侦测毒素和疾病",
-            "spell_id": "detect-poison-anddisease"
-          },
-          {
-            "english_name": "Locate Object",
-            "localized_name": "物品定位术",
-            "spell_id": "locate-object"
-          },
-          {
-            "english_name": "Scrying",
-            "localized_name": "探知术",
-            "spell_id": "scrying"
-          }
-        ],
-        "spell_ids": [
-          "了某个",
-          "comprehend-languages",
-          "detect-evil-and-good",
-          "detect-magic",
-          "detect-poison-anddisease",
-          "locate-object",
-          "scrying"
-        ]
+        "spell_identities": [],
+        "spell_ids": []
       },
       "trigger": "item_action_requested"
     }
   ],
   "compile": {
-    "blockers": [],
+    "blockers": [
+      "manual_clause_requires_dm_or_additional_typed_fields"
+    ],
     "clauses": [
       {
         "action_economy": "none",
@@ -160,72 +118,28 @@
         "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:3e9825c326a3:003:spell-grant",
         "clause_type": "granted_spell",
         "evidence": {
-          "manual_review_required": false,
+          "manual_review_required": true,
           "source_excerpt": "of Souls**\n*奇物，神器（需同调）*\n并非所有逗留于世的灵魂都是迷失在通往死后国度之路上的悲惨灵魂。有些灵魂失去活力，成为了囚徒；它们是如此邪恶，以至于凡人不敢将它们释放到那毫无戒心的来世。\n作为由维斯塔尼传说中的人物创造的物品，*鲁芭的灵魂塔罗卡**|Luba‘s Tarokka\nof Souls*塑造了无数英雄的命运。这套牌作出的预言也揭示了巨大的邪恶，引导它的创造者走入邪恶势力的道路。牌组的创造者，鲁芭夫人，依靠着她敏锐的直觉无数次侥幸逃离了自己的毁灭。但就算是她也无法躲过所有的邪恶。在最危急的关头，鲁芭夫人设法用命运的丝线封印住这些至恶的存在，将它们囚禁在了这套塔罗卡中。这些邪恶的灵魂被困于隐藏在卡牌洗混翻转之中的下界空间内，静静地等待着命运本身也被玷污的那一天这一天绝对会到来的。\n和所有塔罗"
         },
         "parameters": {
           "grant_mode": "item_cast",
           "source_text": "of Souls**\n*奇物，神器（需同调）*\n并非所有逗留于世的灵魂都是迷失在通往死后国度之路上的悲惨灵魂。有些灵魂失去活力，成为了囚徒；它们是如此邪恶，以至于凡人不敢将它们释放到那毫无戒心的来世。\n作为由维斯塔尼传说中的人物创造的物品，*鲁芭的灵魂塔罗卡**|Luba‘s Tarokka\nof Souls*塑造了无数英雄的命运。这套牌作出的预言也揭示了巨大的邪恶，引导它的创造者走入邪恶势力的道路。牌组的创造者，鲁芭夫人，依靠着她敏锐的直觉无数次侥幸逃离了自己的毁灭。但就算是她也无法躲过所有的邪恶。在最危急的关头，鲁芭夫人设法用命运的丝线封印住这些至恶的存在，将它们囚禁在了这套塔罗卡中。这些邪恶的灵魂被困于隐藏在卡牌洗混翻转之中的下界空间内，静静地等待着命运本身也被玷污的那一天这一天绝对会到来的。\n和所有塔罗",
-          "spell_identities": [
-            {
-              "english_name": "",
-              "localized_name": "了某个",
-              "spell_id": "了某个"
-            },
-            {
-              "english_name": "Comprehend Languages",
-              "localized_name": "通晓语言",
-              "spell_id": "comprehend-languages"
-            },
-            {
-              "english_name": "Detect Evil and Good",
-              "localized_name": "侦测善恶",
-              "spell_id": "detect-evil-and-good"
-            },
-            {
-              "english_name": "Detect Magic",
-              "localized_name": "侦测魔法",
-              "spell_id": "detect-magic"
-            },
-            {
-              "english_name": "Detect Poison andDIsease",
-              "localized_name": "侦测毒素和疾病",
-              "spell_id": "detect-poison-anddisease"
-            },
-            {
-              "english_name": "Locate Object",
-              "localized_name": "物品定位术",
-              "spell_id": "locate-object"
-            },
-            {
-              "english_name": "Scrying",
-              "localized_name": "探知术",
-              "spell_id": "scrying"
-            }
-          ],
-          "spell_ids": [
-            "了某个",
-            "comprehend-languages",
-            "detect-evil-and-good",
-            "detect-magic",
-            "detect-poison-anddisease",
-            "locate-object",
-            "scrying"
-          ]
+          "spell_identities": [],
+          "spell_ids": []
         },
         "trigger": "item_action_requested"
       }
     ],
-    "compile_status": "full",
+    "compile_status": "partial",
     "consumer_ids": [
       "item.attunement.v1",
       "item.equipment_modifier.v1",
       "item.granted_action.v1",
       "item.granted_spell.v1"
     ],
-    "item_fingerprint": "073240dedd6f550165391b46d19c53edc316352d19265f07a695b6151d1e7c61",
+    "item_fingerprint": "e4a567fd9009d28e36ba0e11b217231919675ed74955eddefd4d8b9dec90293d",
     "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-3e9825c326a3-003",
-    "runtime_preview_full": true,
+    "runtime_preview_full": false,
     "schema_version": "item-ir-1",
     "source_trust": "authored_ir"
   },
@@ -237,7 +151,7 @@
   "duration": null,
   "equipped_slot": null,
   "evidence": {
-    "manual_review_required": false,
+    "manual_review_required": true,
     "rejected_inferences": [
       "unknown_effects",
       "unresolved_spell_identity",
@@ -267,49 +181,13 @@
       "target_policy": "self"
     }
   ],
-  "granted_spells": [
-    {
-      "english_name": "",
-      "localized_name": "了某个",
-      "spell_id": "了某个"
-    },
-    {
-      "english_name": "Comprehend Languages",
-      "localized_name": "通晓语言",
-      "spell_id": "comprehend-languages"
-    },
-    {
-      "english_name": "Detect Evil and Good",
-      "localized_name": "侦测善恶",
-      "spell_id": "detect-evil-and-good"
-    },
-    {
-      "english_name": "Detect Magic",
-      "localized_name": "侦测魔法",
-      "spell_id": "detect-magic"
-    },
-    {
-      "english_name": "Detect Poison andDIsease",
-      "localized_name": "侦测毒素和疾病",
-      "spell_id": "detect-poison-anddisease"
-    },
-    {
-      "english_name": "Locate Object",
-      "localized_name": "物品定位术",
-      "spell_id": "locate-object"
-    },
-    {
-      "english_name": "Scrying",
-      "localized_name": "探知术",
-      "spell_id": "scrying"
-    }
-  ],
+  "granted_spells": [],
   "healing": null,
   "immunities": [],
   "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-3e9825c326a3-003",
   "item_kind": "wondrous_item",
   "localized_name": "鲁芭的灵魂塔罗卡",
-  "manual_review_required": false,
+  "manual_review_required": true,
   "name": "鲁芭的灵魂塔罗卡",
   "namespace": "dnd.tashas.recovery.item",
   "pack_id": "tashas-cauldron",
@@ -319,7 +197,7 @@
   "requires_attunement": true,
   "resistances": [],
   "resource_bindings": [],
-  "review_fingerprint": "073240dedd6f550165391b46d19c53edc316352d19265f07a695b6151d1e7c61",
+  "review_fingerprint": "e4a567fd9009d28e36ba0e11b217231919675ed74955eddefd4d8b9dec90293d",
   "review_status": "reviewed",
   "ruleset_version": "2024",
   "schema_version": "item-ir-1",
@@ -334,15 +212,15 @@
   "status_layers": {
     "authored_typed_ir": true,
     "candidate": true,
-    "compile_full": true,
+    "compile_full": false,
     "dm_assisted": false,
     "draft": true,
     "game_usable": false,
-    "highest_status": "isolated_runtime_validated",
-    "isolated_runtime_validated": true,
+    "highest_status": "authored_typed_ir",
+    "isolated_runtime_validated": false,
     "registered_production_full": false,
     "reviewed": true,
-    "runtime_preview_full": true,
+    "runtime_preview_full": false,
     "source_identified": true
   },
   "temporary_hp": null,

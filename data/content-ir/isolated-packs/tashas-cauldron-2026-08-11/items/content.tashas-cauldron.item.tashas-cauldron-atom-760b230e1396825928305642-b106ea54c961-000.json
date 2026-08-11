@@ -99,30 +99,6 @@
         "target_policy": "self"
       },
       "trigger": "item_action_requested"
-    },
-    {
-      "action_economy": "action",
-      "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:b106ea54c961:000:spell-grant",
-      "clause_type": "granted_spell",
-      "evidence": {
-        "manual_review_required": false,
-        "source_excerpt": "Yaga's Mortar and Pestle****\n***奇物**,**神器（需同调）*\n不朽鬼婆芭芭雅嘎的造物违逆了凡间魔法的法则。在她所有臭名昭著的劳什子里，让她在无尽的诸界中巩固传奇恶名的神器乃是能够助她穿越位面的：*芭芭****雅嘎的臼与杵**Baba\nYaga’s Mortar and Pestle*。这两件芭芭雅嘎特色鲜明的工具各是一件需要同调的单一神器。若两物件分开，那么*杵**Pestle*会在下一个黎明出现在*臼**Mortar*旁边。\n\n***随机属性***。这件神器具有以下随机属性，你可以通过对着*《城主指南》*中的“*神器*”章节掷骰以决定它们。\n\n- 两项弱效增益属性一项强效增益属性一项弱效减益属性\n\n***臼的属性***。臼是一个微型的小木碗。然而，臼的大小会随着你放进去的任何"
-      },
-      "parameters": {
-        "grant_mode": "item_cast",
-        "source_text": "Yaga's Mortar and Pestle****\n***奇物**,**神器（需同调）*\n不朽鬼婆芭芭雅嘎的造物违逆了凡间魔法的法则。在她所有臭名昭著的劳什子里，让她在无尽的诸界中巩固传奇恶名的神器乃是能够助她穿越位面的：*芭芭****雅嘎的臼与杵**Baba\nYaga’s Mortar and Pestle*。这两件芭芭雅嘎特色鲜明的工具各是一件需要同调的单一神器。若两物件分开，那么*杵**Pestle*会在下一个黎明出现在*臼**Mortar*旁边。\n\n***随机属性***。这件神器具有以下随机属性，你可以通过对着*《城主指南》*中的“*神器*”章节掷骰以决定它们。\n\n- 两项弱效增益属性一项强效增益属性一项弱效减益属性\n\n***臼的属性***。臼是一个微型的小木碗。然而，臼的大小会随着你放进去的任何",
-        "spell_identities": [
-          {
-            "english_name": "Baba",
-            "localized_name": "雅嘎的臼与杵",
-            "spell_id": "baba"
-          }
-        ],
-        "spell_ids": [
-          "baba"
-        ]
-      },
-      "trigger": "item_action_requested"
     }
   ],
   "compile": {
@@ -217,30 +193,6 @@
           "target_policy": "self"
         },
         "trigger": "item_action_requested"
-      },
-      {
-        "action_economy": "action",
-        "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:b106ea54c961:000:spell-grant",
-        "clause_type": "granted_spell",
-        "evidence": {
-          "manual_review_required": false,
-          "source_excerpt": "Yaga's Mortar and Pestle****\n***奇物**,**神器（需同调）*\n不朽鬼婆芭芭雅嘎的造物违逆了凡间魔法的法则。在她所有臭名昭著的劳什子里，让她在无尽的诸界中巩固传奇恶名的神器乃是能够助她穿越位面的：*芭芭****雅嘎的臼与杵**Baba\nYaga’s Mortar and Pestle*。这两件芭芭雅嘎特色鲜明的工具各是一件需要同调的单一神器。若两物件分开，那么*杵**Pestle*会在下一个黎明出现在*臼**Mortar*旁边。\n\n***随机属性***。这件神器具有以下随机属性，你可以通过对着*《城主指南》*中的“*神器*”章节掷骰以决定它们。\n\n- 两项弱效增益属性一项强效增益属性一项弱效减益属性\n\n***臼的属性***。臼是一个微型的小木碗。然而，臼的大小会随着你放进去的任何"
-        },
-        "parameters": {
-          "grant_mode": "item_cast",
-          "source_text": "Yaga's Mortar and Pestle****\n***奇物**,**神器（需同调）*\n不朽鬼婆芭芭雅嘎的造物违逆了凡间魔法的法则。在她所有臭名昭著的劳什子里，让她在无尽的诸界中巩固传奇恶名的神器乃是能够助她穿越位面的：*芭芭****雅嘎的臼与杵**Baba\nYaga’s Mortar and Pestle*。这两件芭芭雅嘎特色鲜明的工具各是一件需要同调的单一神器。若两物件分开，那么*杵**Pestle*会在下一个黎明出现在*臼**Mortar*旁边。\n\n***随机属性***。这件神器具有以下随机属性，你可以通过对着*《城主指南》*中的“*神器*”章节掷骰以决定它们。\n\n- 两项弱效增益属性一项强效增益属性一项弱效减益属性\n\n***臼的属性***。臼是一个微型的小木碗。然而，臼的大小会随着你放进去的任何",
-          "spell_identities": [
-            {
-              "english_name": "Baba",
-              "localized_name": "雅嘎的臼与杵",
-              "spell_id": "baba"
-            }
-          ],
-          "spell_ids": [
-            "baba"
-          ]
-        },
-        "trigger": "item_action_requested"
       }
     ],
     "compile_status": "full",
@@ -248,10 +200,9 @@
       "item.attunement.v1",
       "item.charge_resource.v1",
       "item.equipment_modifier.v1",
-      "item.granted_action.v1",
-      "item.granted_spell.v1"
+      "item.granted_action.v1"
     ],
-    "item_fingerprint": "13d19e69a27edf538bdec13dcf40f59af4f53c5085e8aee5391b405ccc2b530e",
+    "item_fingerprint": "e7ad6394044e0ea9bc6868a99af43f01c2bd2f715c8f0810700c97033c3303e5",
     "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-b106ea54c961-000",
     "runtime_preview_full": true,
     "schema_version": "item-ir-1",
@@ -304,13 +255,7 @@
       "target_policy": "self"
     }
   ],
-  "granted_spells": [
-    {
-      "english_name": "Baba",
-      "localized_name": "雅嘎的臼与杵",
-      "spell_id": "baba"
-    }
-  ],
+  "granted_spells": [],
   "healing": null,
   "immunities": [],
   "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-b106ea54c961-000",
@@ -326,7 +271,7 @@
   "requires_attunement": true,
   "resistances": [],
   "resource_bindings": [],
-  "review_fingerprint": "13d19e69a27edf538bdec13dcf40f59af4f53c5085e8aee5391b405ccc2b530e",
+  "review_fingerprint": "e7ad6394044e0ea9bc6868a99af43f01c2bd2f715c8f0810700c97033c3303e5",
   "review_status": "reviewed",
   "ruleset_version": "2024",
   "schema_version": "item-ir-1",

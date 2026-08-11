@@ -18,6 +18,17 @@
 - 证据：`docs/tashas-feature-production-consumer-round-IX-2026-08-12.md`、Round IX report/result、`reports/tashas-status-layer-audit-2026-08-11.json` 和 whole-pack report。
 - 下一步：继续处理 unresolved ItemSpec consumer 与 vessel/entity、exhaustion、spectral object、teleport destination、psionic payment 的真实 event producer/consumer；已补齐的 generic window/resource consumer 继续复用。
 
+## Round 11：ItemSpec Content Quality Correction / Equipment Consumer Expansion
+
+当前状态：`in_progress`；本轮已完成 parser 质量修复和 8 条真实 ItemSpec evidence，待收尾门禁、提交和推送。
+
+- `_explicit_spell_identities()` 收紧为显式 `施展*中文名**English Name*法术`，移除自由 inline spell 抽取；职业法器、法术书目录、状态名和 generic “这道法术”不再伪装成 `granted_spell`。真实明确的 Disguise Self identity 保留。
+- 质量重建将 ItemSpec `compile_full` 从 41 收紧至 37，10 条 partial 的实际 unresolved clauses 不被自动执行；ItemSpec typed 总量仍为 47。现有 Round X 8 条生产 evidence 继续有效。
+- 新增 8 条：假肢、星卜编集、寰宇图纂、钟铃圣枝、奉献香炉、织心入门、灵肉圣契、异界行访录；8/8 create/attune-or-equip/action-or-charge preview→confirm→replay，16 个 operation transaction 通过。
+- 当前 ItemSpec status layers：`47 total / 37 compile_full / 37 isolated_runtime_validated / 16 registered_production_full / 16 game_usable`；Feature Tasha status 仍 `74/2/76`，不与 ItemSpec 混计。
+- 证据：Round XI report/result、Round XI doc/test、更新后的 ItemSpec catalog 与 whole-pack migration 输出。formal registry/database 仍未写入，name branch=0。
+- 下一步：继续审阅剩余 tattoo lifecycle、明确 spell-cast/charge 语义和 unresolved effect clauses；不把 projection-only、isolated-only 或 DM-reference 计入 production。
+
 ## Round 10：ItemSpec Equipment Consumer Production Evidence
 
 当前状态：`accepted`；本轮完成 8 条真实 ItemSpec API evidence，ItemSpec registered production 从 0 增至 8，ItemSpec game usable 达到 8；Feature status layers 保持不变。

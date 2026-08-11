@@ -177,15 +177,40 @@ def _explicit_spell_identities(text: str) -> list[dict[str, str]]:
     """Extract only spell names that the source states next to ``施展``."""
 
     pattern = re.compile(
-        r"施展\s*\*?([\u3400-\u9fff][^*。\n（(]+?)"
-        r"(?:\s+([A-Z][A-Za-z’' -]+))?(?:\s*法术|\s*[（(]|\s*[。])"
+        r"施展\s*\*+(?P<localized>[\u3400-\u9fff][^*\n。]+?)\*{1,2}"
+        r"\s*(?P<english>[A-Z][A-Za-z’' -]{2,})\*?\s*法术"
     )
     identities: list[dict[str, str]] = []
     seen: set[tuple[str, str]] = set()
     for match in pattern.finditer(text):
-        localized = re.sub(r"\s+", "", match.group(1)).strip("* ")
-        english = re.sub(r"\s+", " ", (match.group(2) or "").strip("* "))
-        if any(token in localized for token in ("一道", "下列", "以下", "那道", "该法术", "任意", "任何", "恢复生命值")):
+        localized = re.sub(r"\s+", "", match.group("localized")).strip("* ")
+        english = re.sub(r"\s+", " ", match.group("english").strip("* "))
+        if (
+            not english
+            or english.casefold() in {"grappled", "restrained"}
+            or any(
+                token in localized
+                for token in (
+                    "一道",
+                    "下列",
+                    "以下",
+                    "那道",
+                    "该法术",
+                    "任意",
+                    "任何",
+                    "恢复生命值",
+                    "德鲁伊",
+                    "游侠",
+                    "法师",
+                    "术士",
+                    "邪术师",
+                    "牧师",
+                    "法术后",
+                    "法术对",
+                    "某个",
+                )
+            )
+        ):
             continue
         key = (localized, english)
         if localized and key not in seen:
@@ -195,25 +220,6 @@ def _explicit_spell_identities(text: str) -> list[dict[str, str]]:
                     "localized_name": localized,
                     "english_name": english,
                     "spell_id": english.casefold().replace(" ", "-") if english else localized,
-                }
-            )
-    inline_pattern = re.compile(
-        r"\*+([\u3400-\u9fff][\u3400-\u9fff、/ ]{1,24})\*{1,2}"
-        r"\s*([A-Z][A-Za-z’' -]{2,})\*?"
-    )
-    for match in inline_pattern.finditer(text):
-        localized = re.sub(r"\s+", "", match.group(1)).strip("* ")
-        english = re.sub(r"\s+", " ", match.group(2).strip("* "))
-        if localized in {"下列", "以下", "一道", "任意"}:
-            continue
-        key = (localized, english)
-        if localized and key not in seen:
-            seen.add(key)
-            identities.append(
-                {
-                    "localized_name": localized,
-                    "english_name": english,
-                    "spell_id": english.casefold().replace(" ", "-") or localized,
                 }
             )
     return identities

@@ -123,72 +123,6 @@
       "trigger": "item_action_requested"
     },
     {
-      "action_economy": "action",
-      "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:teeth-ofdahlver-nar:005:spell-grant",
-      "clause_type": "granted_spell",
-      "evidence": {
-        "manual_review_required": false,
-        "source_excerpt": "***奇物，神器（需调谐）*\n达文-纳之牙是多个故事的具现。它们是成套的牙齿，每一颗都代表着各自大不相同的起源，并且由多种多样的材料制成。整套牙齿被收藏在一个小皮袋中，皮袋上缝着英雄和幻想生物的图案。牙齿在哪里落下，传说就会在哪里化为真实。\n***使用牙齿***。当持握小皮袋时，你可以使用一个动作从中取出某一颗牙齿。在达文-纳之牙表格中掷骰以决定被取出的是哪颗牙齿，你可以选择将其播种或者进行植牙。（这两种行为会在之后进行说明）\n如果你不进行播种也不植牙，则在你的回合结束时投一个骰子。投出偶数时，牙齿会消失，对应的生物会如同你播种了牙齿一样出现，并且与你和你的盟友敌对。投出奇数时，该牙齿会取代你的一颗牙齿，就如同你进行了植牙一样（有可能取代另一颗被植入的牙齿，见下文）。\n每颗牙齿只能被使用一次。记录有哪些牙齿被使"
-      },
-      "parameters": {
-        "grant_mode": "item_cast",
-        "source_text": "***奇物，神器（需调谐）*\n达文-纳之牙是多个故事的具现。它们是成套的牙齿，每一颗都代表着各自大不相同的起源，并且由多种多样的材料制成。整套牙齿被收藏在一个小皮袋中，皮袋上缝着英雄和幻想生物的图案。牙齿在哪里落下，传说就会在哪里化为真实。\n***使用牙齿***。当持握小皮袋时，你可以使用一个动作从中取出某一颗牙齿。在达文-纳之牙表格中掷骰以决定被取出的是哪颗牙齿，你可以选择将其播种或者进行植牙。（这两种行为会在之后进行说明）\n如果你不进行播种也不植牙，则在你的回合结束时投一个骰子。投出偶数时，牙齿会消失，对应的生物会如同你播种了牙齿一样出现，并且与你和你的盟友敌对。投出奇数时，该牙齿会取代你的一颗牙齿，就如同你进行了植牙一样（有可能取代另一颗被植入的牙齿，见下文）。\n每颗牙齿只能被使用一次。记录有哪些牙齿被使",
-        "spell_identities": [
-          {
-            "english_name": "Revivify",
-            "localized_name": "回生术",
-            "spell_id": "revivify"
-          },
-          {
-            "english_name": "",
-            "localized_name": "庇护术Sanctuary，持续24小时或直至你打破该效应",
-            "spell_id": "庇护术Sanctuary，持续24小时或直至你打破该效应"
-          },
-          {
-            "english_name": "Detect Thoughts",
-            "localized_name": "侦测思想",
-            "spell_id": "detect-thoughts"
-          },
-          {
-            "english_name": "Black Tentacles",
-            "localized_name": "艾伐黑触手Evard’s",
-            "spell_id": "black-tentacles"
-          },
-          {
-            "english_name": "Eyebite",
-            "localized_name": "摄心目光",
-            "spell_id": "eyebite"
-          },
-          {
-            "english_name": "Detect Magic",
-            "localized_name": "侦测魔法",
-            "spell_id": "detect-magic"
-          },
-          {
-            "english_name": "Animate Dead",
-            "localized_name": "活化死尸",
-            "spell_id": "animate-dead"
-          },
-          {
-            "english_name": "Dominate Monster",
-            "localized_name": "支配怪物",
-            "spell_id": "dominate-monster"
-          }
-        ],
-        "spell_ids": [
-          "revivify",
-          "庇护术Sanctuary，持续24小时或直至你打破该效应",
-          "detect-thoughts",
-          "black-tentacles",
-          "eyebite",
-          "detect-magic",
-          "animate-dead",
-          "dominate-monster"
-        ]
-      },
-      "trigger": "item_action_requested"
-    },
-    {
       "action_economy": "none",
       "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:teeth-ofdahlver-nar:005:healing-modifier",
       "clause_type": "passive_modifier",
@@ -329,72 +263,6 @@
         "trigger": "item_action_requested"
       },
       {
-        "action_economy": "action",
-        "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:teeth-ofdahlver-nar:005:spell-grant",
-        "clause_type": "granted_spell",
-        "evidence": {
-          "manual_review_required": false,
-          "source_excerpt": "***奇物，神器（需调谐）*\n达文-纳之牙是多个故事的具现。它们是成套的牙齿，每一颗都代表着各自大不相同的起源，并且由多种多样的材料制成。整套牙齿被收藏在一个小皮袋中，皮袋上缝着英雄和幻想生物的图案。牙齿在哪里落下，传说就会在哪里化为真实。\n***使用牙齿***。当持握小皮袋时，你可以使用一个动作从中取出某一颗牙齿。在达文-纳之牙表格中掷骰以决定被取出的是哪颗牙齿，你可以选择将其播种或者进行植牙。（这两种行为会在之后进行说明）\n如果你不进行播种也不植牙，则在你的回合结束时投一个骰子。投出偶数时，牙齿会消失，对应的生物会如同你播种了牙齿一样出现，并且与你和你的盟友敌对。投出奇数时，该牙齿会取代你的一颗牙齿，就如同你进行了植牙一样（有可能取代另一颗被植入的牙齿，见下文）。\n每颗牙齿只能被使用一次。记录有哪些牙齿被使"
-        },
-        "parameters": {
-          "grant_mode": "item_cast",
-          "source_text": "***奇物，神器（需调谐）*\n达文-纳之牙是多个故事的具现。它们是成套的牙齿，每一颗都代表着各自大不相同的起源，并且由多种多样的材料制成。整套牙齿被收藏在一个小皮袋中，皮袋上缝着英雄和幻想生物的图案。牙齿在哪里落下，传说就会在哪里化为真实。\n***使用牙齿***。当持握小皮袋时，你可以使用一个动作从中取出某一颗牙齿。在达文-纳之牙表格中掷骰以决定被取出的是哪颗牙齿，你可以选择将其播种或者进行植牙。（这两种行为会在之后进行说明）\n如果你不进行播种也不植牙，则在你的回合结束时投一个骰子。投出偶数时，牙齿会消失，对应的生物会如同你播种了牙齿一样出现，并且与你和你的盟友敌对。投出奇数时，该牙齿会取代你的一颗牙齿，就如同你进行了植牙一样（有可能取代另一颗被植入的牙齿，见下文）。\n每颗牙齿只能被使用一次。记录有哪些牙齿被使",
-          "spell_identities": [
-            {
-              "english_name": "Revivify",
-              "localized_name": "回生术",
-              "spell_id": "revivify"
-            },
-            {
-              "english_name": "",
-              "localized_name": "庇护术Sanctuary，持续24小时或直至你打破该效应",
-              "spell_id": "庇护术Sanctuary，持续24小时或直至你打破该效应"
-            },
-            {
-              "english_name": "Detect Thoughts",
-              "localized_name": "侦测思想",
-              "spell_id": "detect-thoughts"
-            },
-            {
-              "english_name": "Black Tentacles",
-              "localized_name": "艾伐黑触手Evard’s",
-              "spell_id": "black-tentacles"
-            },
-            {
-              "english_name": "Eyebite",
-              "localized_name": "摄心目光",
-              "spell_id": "eyebite"
-            },
-            {
-              "english_name": "Detect Magic",
-              "localized_name": "侦测魔法",
-              "spell_id": "detect-magic"
-            },
-            {
-              "english_name": "Animate Dead",
-              "localized_name": "活化死尸",
-              "spell_id": "animate-dead"
-            },
-            {
-              "english_name": "Dominate Monster",
-              "localized_name": "支配怪物",
-              "spell_id": "dominate-monster"
-            }
-          ],
-          "spell_ids": [
-            "revivify",
-            "庇护术Sanctuary，持续24小时或直至你打破该效应",
-            "detect-thoughts",
-            "black-tentacles",
-            "eyebite",
-            "detect-magic",
-            "animate-dead",
-            "dominate-monster"
-          ]
-        },
-        "trigger": "item_action_requested"
-      },
-      {
         "action_economy": "none",
         "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:teeth-ofdahlver-nar:005:healing-modifier",
         "clause_type": "passive_modifier",
@@ -412,10 +280,9 @@
     "compile_status": "partial",
     "consumer_ids": [
       "item.equipment_modifier.v1",
-      "item.granted_action.v1",
-      "item.granted_spell.v1"
+      "item.granted_action.v1"
     ],
-    "item_fingerprint": "c544da4355f9d8d7a3f1dd714277fbbdd2a080f2d206e16e49499caa2512eb1a",
+    "item_fingerprint": "f5c4bec1d4a3856366f65dbd0c2c20856d078aea280662da930a063b815b58c6",
     "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-teeth-ofdahlver-nar-005",
     "runtime_preview_full": false,
     "schema_version": "item-ir-1",
@@ -504,48 +371,7 @@
       "target_policy": "self"
     }
   ],
-  "granted_spells": [
-    {
-      "english_name": "Revivify",
-      "localized_name": "回生术",
-      "spell_id": "revivify"
-    },
-    {
-      "english_name": "",
-      "localized_name": "庇护术Sanctuary，持续24小时或直至你打破该效应",
-      "spell_id": "庇护术Sanctuary，持续24小时或直至你打破该效应"
-    },
-    {
-      "english_name": "Detect Thoughts",
-      "localized_name": "侦测思想",
-      "spell_id": "detect-thoughts"
-    },
-    {
-      "english_name": "Black Tentacles",
-      "localized_name": "艾伐黑触手Evard’s",
-      "spell_id": "black-tentacles"
-    },
-    {
-      "english_name": "Eyebite",
-      "localized_name": "摄心目光",
-      "spell_id": "eyebite"
-    },
-    {
-      "english_name": "Detect Magic",
-      "localized_name": "侦测魔法",
-      "spell_id": "detect-magic"
-    },
-    {
-      "english_name": "Animate Dead",
-      "localized_name": "活化死尸",
-      "spell_id": "animate-dead"
-    },
-    {
-      "english_name": "Dominate Monster",
-      "localized_name": "支配怪物",
-      "spell_id": "dominate-monster"
-    }
-  ],
+  "granted_spells": [],
   "healing": null,
   "immunities": [],
   "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-teeth-ofdahlver-nar-005",
@@ -561,7 +387,7 @@
   "requires_attunement": false,
   "resistances": [],
   "resource_bindings": [],
-  "review_fingerprint": "c544da4355f9d8d7a3f1dd714277fbbdd2a080f2d206e16e49499caa2512eb1a",
+  "review_fingerprint": "f5c4bec1d4a3856366f65dbd0c2c20856d078aea280662da930a063b815b58c6",
   "review_status": "reviewed",
   "ruleset_version": "2024",
   "schema_version": "item-ir-1",

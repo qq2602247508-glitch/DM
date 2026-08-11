@@ -11,35 +11,35 @@
       "runtime_consumer": "item.equipment_modifier.v1",
       "status": "unlocked",
       "template_id": "item.passive",
-      "unlock_count": 41
+      "unlock_count": 37
     },
     {
       "candidate_count": 47,
       "runtime_consumer": "item.attunement.v1",
       "status": "unlocked",
       "template_id": "item.attunement",
-      "unlock_count": 39
+      "unlock_count": 35
     },
     {
       "candidate_count": 47,
       "runtime_consumer": "item.granted_action.v1",
       "status": "unlocked",
       "template_id": "item.action",
-      "unlock_count": 27
+      "unlock_count": 24
     },
     {
       "candidate_count": 47,
       "runtime_consumer": "item.charge_resource.v1",
       "status": "unlocked",
       "template_id": "item.charges",
-      "unlock_count": 17
+      "unlock_count": 15
     },
     {
       "candidate_count": 11,
       "runtime_consumer": "item.attunement.v1",
       "status": "unlocked",
       "template_id": "item.tattoo.lifecycle",
-      "unlock_count": 11
+      "unlock_count": 10
     },
     {
       "candidate_count": 350,

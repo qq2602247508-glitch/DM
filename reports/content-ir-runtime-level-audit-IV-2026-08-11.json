@@ -1,7 +1,7 @@
 {
   "after": {
     "compile_only": 35,
-    "production_full": 142,
+    "production_full": 150,
     "tasha_atom_pack": {
       "authored_typed_ir": 94,
       "candidate_generated": 407,
@@ -30,9 +30,17 @@
             "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-bloodwell-vial-003",
             "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-guardian-emblem-005",
             "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-rhythm-maker-s-drum-008",
+            "content.tashas-cauldron.item.tashas-cauldron-atom-62c7a0c6a042e571b17d35e3-dfaab0b0f93c-000",
             "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-alchemical-compendium-000",
+            "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-astromancy-archive-002",
+            "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-atlas-of-endless-horizons-003",
+            "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-bell-branch-004",
+            "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-devotee-s-censer-005",
             "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-far-realm-shard-008",
+            "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-heart-weaver-s-primer-010",
+            "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-libram-of-souls-and-flesh-011",
             "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-lyre-of-building-012",
+            "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-planecaller-s-codex-014",
             "content.tashas-cauldron.round2.feature.aberrant-mind-psionic-spell-list",
             "content.tashas-cauldron.round2.feature.aberrant-mind-telepathic-speech",
             "content.tashas-cauldron.round2.feature.alchemist-alchemical-savant",
@@ -110,8 +118,8 @@
       },
       "current_project_compile_only": 35,
       "current_project_compiled_unique": 111,
-      "current_project_production_full": 142,
-      "current_project_production_registry_fingerprint": "f4876bc6d7501ebe7c6e3d2bbf5270c75c1168f2afba6479a8c44cd0981aa598",
+      "current_project_production_full": 150,
+      "current_project_production_registry_fingerprint": "a0d95fbc8734a3db782abc3615757c943cbef6b80eacd3d431a41ea8c45dbfbe",
       "dm_assisted": 2,
       "dm_reference": 107,
       "draft_total": 407,
@@ -135,34 +143,34 @@
         "dm_assisted_count": 0,
         "implemented": true,
         "inventory_atom_count": 47,
-        "isolated_runtime_validated_count": 41,
-        "production_count": 8,
+        "isolated_runtime_validated_count": 37,
+        "production_count": 16,
         "typed_count": 47,
         "unlock_ranking": [
           {
             "capability": "item.passive_modifier",
             "consumer": "item.equipment_modifier.v1",
-            "unlock_count": 41
+            "unlock_count": 37
           },
           {
             "capability": "item.attunement",
             "consumer": "item.attunement.v1",
-            "unlock_count": 38
+            "unlock_count": 35
           },
           {
             "capability": "item.charge_resource",
             "consumer": "item.charge_resource.v1",
-            "unlock_count": 17
+            "unlock_count": 15
           },
           {
             "capability": "item.granted_action",
             "consumer": "item.granted_action.v1",
-            "unlock_count": 27
+            "unlock_count": 24
           },
           {
             "capability": "item.tattoo_lifecycle",
             "consumer": "item.attunement.v1",
-            "unlock_count": 11
+            "unlock_count": 10
           }
         ]
       },
@@ -226,7 +234,7 @@
   },
   "baseline": {
     "compile_only": 35,
-    "production_full": 142,
+    "production_full": 150,
     "unique_compiled": 111
   },
   "existing_production_full_not_retracted": true,

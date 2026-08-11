@@ -47,30 +47,6 @@
         "target_policy": "source_text"
       },
       "trigger": "item_action_requested"
-    },
-    {
-      "action_economy": "action",
-      "clause_id": "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:nature-s-mantle:007:spell-grant",
-      "clause_type": "granted_spell",
-      "evidence": {
-        "manual_review_required": false,
-        "source_excerpt": "*奇物，非普通（需德鲁伊或游侠同调）*\n这件斗篷能随着你周围的环境改变颜色和材质。当穿戴着斗篷时，你可以使用其作为你施展德鲁伊和游侠法术的法器。\n当你处于一处有着轻度遮蔽的区域时，你可以用一个附赠动作进行躲藏动作，即便你能被直接观察到。"
-      },
-      "parameters": {
-        "grant_mode": "item_cast",
-        "source_text": "*奇物，非普通（需德鲁伊或游侠同调）*\n这件斗篷能随着你周围的环境改变颜色和材质。当穿戴着斗篷时，你可以使用其作为你施展德鲁伊和游侠法术的法器。\n当你处于一处有着轻度遮蔽的区域时，你可以用一个附赠动作进行躲藏动作，即便你能被直接观察到。",
-        "spell_identities": [
-          {
-            "english_name": "",
-            "localized_name": "德鲁伊和游侠",
-            "spell_id": "德鲁伊和游侠"
-          }
-        ],
-        "spell_ids": [
-          "德鲁伊和游侠"
-        ]
-      },
-      "trigger": "item_action_requested"
     }
   ],
   "compile": {
@@ -118,40 +94,15 @@
           "target_policy": "source_text"
         },
         "trigger": "item_action_requested"
-      },
-      {
-        "action_economy": "action",
-        "clause_id": "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:nature-s-mantle:007:spell-grant",
-        "clause_type": "granted_spell",
-        "evidence": {
-          "manual_review_required": false,
-          "source_excerpt": "*奇物，非普通（需德鲁伊或游侠同调）*\n这件斗篷能随着你周围的环境改变颜色和材质。当穿戴着斗篷时，你可以使用其作为你施展德鲁伊和游侠法术的法器。\n当你处于一处有着轻度遮蔽的区域时，你可以用一个附赠动作进行躲藏动作，即便你能被直接观察到。"
-        },
-        "parameters": {
-          "grant_mode": "item_cast",
-          "source_text": "*奇物，非普通（需德鲁伊或游侠同调）*\n这件斗篷能随着你周围的环境改变颜色和材质。当穿戴着斗篷时，你可以使用其作为你施展德鲁伊和游侠法术的法器。\n当你处于一处有着轻度遮蔽的区域时，你可以用一个附赠动作进行躲藏动作，即便你能被直接观察到。",
-          "spell_identities": [
-            {
-              "english_name": "",
-              "localized_name": "德鲁伊和游侠",
-              "spell_id": "德鲁伊和游侠"
-            }
-          ],
-          "spell_ids": [
-            "德鲁伊和游侠"
-          ]
-        },
-        "trigger": "item_action_requested"
       }
     ],
     "compile_status": "full",
     "consumer_ids": [
       "item.attunement.v1",
       "item.equipment_modifier.v1",
-      "item.granted_action.v1",
-      "item.granted_spell.v1"
+      "item.granted_action.v1"
     ],
-    "item_fingerprint": "4bf444d4ec9ee74fba18fd114a467312d7ad5eacae431e50c5ab8cab0141f272",
+    "item_fingerprint": "7dbce54d9e87a742b051477f3b8981e76c9aac282e16ce9d30c9b7f3c2335c26",
     "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-nature-s-mantle-007",
     "runtime_preview_full": true,
     "schema_version": "item-ir-1",
@@ -195,13 +146,7 @@
       "target_policy": "source_text"
     }
   ],
-  "granted_spells": [
-    {
-      "english_name": "",
-      "localized_name": "德鲁伊和游侠",
-      "spell_id": "德鲁伊和游侠"
-    }
-  ],
+  "granted_spells": [],
   "healing": null,
   "immunities": [],
   "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-nature-s-mantle-007",
@@ -217,7 +162,7 @@
   "requires_attunement": true,
   "resistances": [],
   "resource_bindings": [],
-  "review_fingerprint": "4bf444d4ec9ee74fba18fd114a467312d7ad5eacae431e50c5ab8cab0141f272",
+  "review_fingerprint": "7dbce54d9e87a742b051477f3b8981e76c9aac282e16ce9d30c9b7f3c2335c26",
   "review_status": "reviewed",
   "ruleset_version": "2024",
   "schema_version": "item-ir-1",

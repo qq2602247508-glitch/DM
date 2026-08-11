@@ -8,6 +8,13 @@
 - 实现提交 `42153f2562cab8d24af9fc67e7549a7dc2056b13` 已于 2026-08-12 04:52:00 +0800 推送到 `origin/main`；本 receipt 更新随后单独提交。
 - 下一步继续 unresolved ItemSpec granted-spell/tattoo lifecycle 和真实 event producer，不将 projection-only、isolated-only、DM-reference 计入 production。
 
+# 2026-08-12 Round 11 检查点：ItemSpec Content Quality Correction / Equipment Expansion
+
+- `_explicit_spell_identities()` 已收紧为明确施展且带英文 identity 的 spell 形态，修复了职业法器、spellbook list、condition 和 generic “这道法术”的误识别；真实 Disguise Self 保留。ItemSpec compile full 从 41 收紧到 37，未解析语义继续 partial/manual。
+- 新增 8 条 ItemSpec 真实 evidence：假肢、星卜编集、寰宇图纂、钟铃圣枝、奉献香炉、织心入门、灵肉圣契、异界行访录；8/8 preview/confirm/replay、16 transactions、charge/CAS/state persistence 全通过。
+- 当前 ItemSpec status：`47 / 37 / 37 / 16 / 16`（total / compile / isolated / registered / game usable）；Feature Tasha 仍 `74 production / 2 dm-assisted / 76 game-usable`。
+- Round XI 产物：`scripts/validate-tashas-item-production-consumer-round-XI.py`、Round XI report/result、`docs/tashas-item-production-consumer-round-XI-2026-08-12.md`；仍 formal_apply=false、formal registry/database 未写入、name branch=0。
+
 # 2026-08-12 Round 9 检查点：Resource Profile / Exchange / Event Window Consumer 扩展
 
 - Round 9 作为 platform/core growth round，完成剩余 6 条 full Feature contract 的真实 production evidence：Psi Warrior Psionic Power resource profile、Battle Master Brace/Quick Toss triggered attack windows、Paladin Harness Divine Power resource exchange、Paladin Interception/ Rune Knight Runic Shield reaction windows。

@@ -1,5 +1,5 @@
 {
-  "compile_full": 11,
+  "compile_full": 10,
   "items": [
     {
       "blockers": [],
@@ -62,8 +62,10 @@
       "localized_name": "堕影冥界印记刺青"
     },
     {
-      "blockers": [],
-      "compile_status": "full",
+      "blockers": [
+        "manual_clause_requires_dm_or_additional_typed_fields"
+      ],
+      "compile_status": "partial",
       "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-spell-wrought-tattoo-002",
       "localized_name": "蕴法刺青"
     }

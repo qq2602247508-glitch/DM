@@ -1399,34 +1399,34 @@
     "typed_total": 85
   },
   "item_spec": {
-    "catalog_fingerprint": "38bdaf7a5fdb25b3f4230e5ab9001fa62de8989b586f828101fdc841ad995d4d",
+    "catalog_fingerprint": "128d6cf9b2f855bdb27bb7378fb91de73c185f1fc40877ce26309ded51ec8ad1",
     "compile_status_counts": {
-      "full": 41,
-      "partial": 6
+      "full": 37,
+      "partial": 10
     },
-    "game_usable": 8,
-    "isolated_runtime_validated": 41,
-    "item_spec_compile_full": 41,
-    "item_spec_compile_only": 6,
+    "game_usable": 16,
+    "isolated_runtime_validated": 37,
+    "item_spec_compile_full": 37,
+    "item_spec_compile_only": 10,
     "item_spec_reviewed": 47,
-    "item_spec_runtime_preview_full": 41,
+    "item_spec_runtime_preview_full": 37,
     "item_spec_total": 47,
     "item_spec_typed": 47,
     "name_branch_count": 0,
     "pack_id": "tashas-cauldron",
-    "production_full": 8,
+    "production_full": 16,
     "rates": {
-      "compile_full": 0.8723404255319149,
-      "game_usable": 0.1702127659574468,
-      "isolated_runtime_validated": 0.8723404255319149,
-      "production_full": 0.1702127659574468,
-      "registered_production_full": 0.1702127659574468,
+      "compile_full": 0.7872340425531915,
+      "game_usable": 0.3404255319148936,
+      "isolated_runtime_validated": 0.7872340425531915,
+      "production_full": 0.3404255319148936,
+      "registered_production_full": 0.3404255319148936,
       "reviewed": 1.0,
-      "runtime_preview_full": 0.8723404255319149,
+      "runtime_preview_full": 0.7872340425531915,
       "typed": 1.0
     },
-    "registered_production_full": 8,
-    "requires_dm": 6,
+    "registered_production_full": 16,
+    "requires_dm": 10,
     "schema_version": "tashas-item-spec-catalog-1",
     "specs": [
       {
@@ -1496,30 +1496,6 @@
               "target_policy": "self"
             },
             "trigger": "item_action_requested"
-          },
-          {
-            "action_economy": "action",
-            "clause_id": "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:all-purpose-tool:000:spell-grant",
-            "clause_type": "granted_spell",
-            "evidence": {
-              "manual_review_required": false,
-              "source_excerpt": "*奇物，非普通（+1），珍稀（+2），极珍稀（+3）（需奇械师同调）*\n这把简单的螺丝刀可以转换为许多种工具：作为一个动作，你可以触摸这件物品，而后它会转换为一套由你选择的工匠工具（见《玩家手册》\n的装备\n章节以查看工匠工具的表格）。无论这件工具外表如何，你都拥有该工具的熟练项。\n当持握这套工具时，你在你奇械师法术的法术攻击骰和法术豁免DC上获得加值。加值取决于工具的稀有度。\n作为一个动作，你可以凝神于这套工具以引导你的创造力。选择一项非你已知的来自任意职业的戏法。在未来8小时内，你可以如同奇械师戏法一般施展该戏法。此属性使用后，直到下次黎明前，不能再次使用。"
-            },
-            "parameters": {
-              "grant_mode": "item_cast",
-              "source_text": "*奇物，非普通（+1），珍稀（+2），极珍稀（+3）（需奇械师同调）*\n这把简单的螺丝刀可以转换为许多种工具：作为一个动作，你可以触摸这件物品，而后它会转换为一套由你选择的工匠工具（见《玩家手册》\n的装备\n章节以查看工匠工具的表格）。无论这件工具外表如何，你都拥有该工具的熟练项。\n当持握这套工具时，你在你奇械师法术的法术攻击骰和法术豁免DC上获得加值。加值取决于工具的稀有度。\n作为一个动作，你可以凝神于这套工具以引导你的创造力。选择一项非你已知的来自任意职业的戏法。在未来8小时内，你可以如同奇械师戏法一般施展该戏法。此属性使用后，直到下次黎明前，不能再次使用。",
-              "spell_identities": [
-                {
-                  "english_name": "",
-                  "localized_name": "该戏法",
-                  "spell_id": "该戏法"
-                }
-              ],
-              "spell_ids": [
-                "该戏法"
-              ]
-            },
-            "trigger": "item_action_requested"
           }
         ],
         "compile": {
@@ -1587,40 +1563,15 @@
                 "target_policy": "self"
               },
               "trigger": "item_action_requested"
-            },
-            {
-              "action_economy": "action",
-              "clause_id": "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:all-purpose-tool:000:spell-grant",
-              "clause_type": "granted_spell",
-              "evidence": {
-                "manual_review_required": false,
-                "source_excerpt": "*奇物，非普通（+1），珍稀（+2），极珍稀（+3）（需奇械师同调）*\n这把简单的螺丝刀可以转换为许多种工具：作为一个动作，你可以触摸这件物品，而后它会转换为一套由你选择的工匠工具（见《玩家手册》\n的装备\n章节以查看工匠工具的表格）。无论这件工具外表如何，你都拥有该工具的熟练项。\n当持握这套工具时，你在你奇械师法术的法术攻击骰和法术豁免DC上获得加值。加值取决于工具的稀有度。\n作为一个动作，你可以凝神于这套工具以引导你的创造力。选择一项非你已知的来自任意职业的戏法。在未来8小时内，你可以如同奇械师戏法一般施展该戏法。此属性使用后，直到下次黎明前，不能再次使用。"
-              },
-              "parameters": {
-                "grant_mode": "item_cast",
-                "source_text": "*奇物，非普通（+1），珍稀（+2），极珍稀（+3）（需奇械师同调）*\n这把简单的螺丝刀可以转换为许多种工具：作为一个动作，你可以触摸这件物品，而后它会转换为一套由你选择的工匠工具（见《玩家手册》\n的装备\n章节以查看工匠工具的表格）。无论这件工具外表如何，你都拥有该工具的熟练项。\n当持握这套工具时，你在你奇械师法术的法术攻击骰和法术豁免DC上获得加值。加值取决于工具的稀有度。\n作为一个动作，你可以凝神于这套工具以引导你的创造力。选择一项非你已知的来自任意职业的戏法。在未来8小时内，你可以如同奇械师戏法一般施展该戏法。此属性使用后，直到下次黎明前，不能再次使用。",
-                "spell_identities": [
-                  {
-                    "english_name": "",
-                    "localized_name": "该戏法",
-                    "spell_id": "该戏法"
-                  }
-                ],
-                "spell_ids": [
-                  "该戏法"
-                ]
-              },
-              "trigger": "item_action_requested"
             }
           ],
           "compile_status": "partial",
           "consumer_ids": [
             "item.attunement.v1",
             "item.equipment_modifier.v1",
-            "item.granted_action.v1",
-            "item.granted_spell.v1"
+            "item.granted_action.v1"
           ],
-          "item_fingerprint": "df6cc7ad7c25fb3220247731d08f22d0253d56bc5d7f5d8296711448dd0d712a",
+          "item_fingerprint": "fa7bc1aeedebe1cdaf98f50021296f46825fed8cf0a8c44093569b7f2d4b9ea4",
           "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-all-purpose-tool-000",
           "runtime_preview_full": false,
           "schema_version": "item-ir-1",
@@ -1673,13 +1624,7 @@
             "target_policy": "self"
           }
         ],
-        "granted_spells": [
-          {
-            "english_name": "",
-            "localized_name": "该戏法",
-            "spell_id": "该戏法"
-          }
-        ],
+        "granted_spells": [],
         "healing": null,
         "immunities": [],
         "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-all-purpose-tool-000",
@@ -1695,7 +1640,7 @@
         "requires_attunement": true,
         "resistances": [],
         "resource_bindings": [],
-        "review_fingerprint": "df6cc7ad7c25fb3220247731d08f22d0253d56bc5d7f5d8296711448dd0d712a",
+        "review_fingerprint": "fa7bc1aeedebe1cdaf98f50021296f46825fed8cf0a8c44093569b7f2d4b9ea4",
         "review_status": "reviewed",
         "ruleset_version": "2024",
         "schema_version": "item-ir-1",
@@ -2647,30 +2592,6 @@
             "trigger": "attunement_confirmed"
           },
           {
-            "action_economy": "action",
-            "clause_id": "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:moon-sickle:006:spell-grant",
-            "clause_type": "granted_spell",
-            "evidence": {
-              "manual_review_required": false,
-              "source_excerpt": "*武器（镰刀），非普通（+1），珍稀（+2），极珍稀（+3）（需德鲁伊或游侠同调\n）\n*这把银刃镰刀闪烁着柔和的月光。当持握这把魔法武器时，你用其发动的攻击检定和伤害掷骰，与你德鲁伊或游侠法术的法术攻击检定与法术豁免DC上具有加值。加值取决于武器的稀有度。\n此外，你可以用镰刀作为你施展德鲁伊或游侠法术的法器。\n当你持握这把镰刀，施展一道恢复生命值的法术时，你可以骰一枚d4并将所得结果加入回复的生命值中。"
-            },
-            "parameters": {
-              "grant_mode": "item_cast",
-              "source_text": "*武器（镰刀），非普通（+1），珍稀（+2），极珍稀（+3）（需德鲁伊或游侠同调\n）\n*这把银刃镰刀闪烁着柔和的月光。当持握这把魔法武器时，你用其发动的攻击检定和伤害掷骰，与你德鲁伊或游侠法术的法术攻击检定与法术豁免DC上具有加值。加值取决于武器的稀有度。\n此外，你可以用镰刀作为你施展德鲁伊或游侠法术的法器。\n当你持握这把镰刀，施展一道恢复生命值的法术时，你可以骰一枚d4并将所得结果加入回复的生命值中。",
-              "spell_identities": [
-                {
-                  "english_name": "",
-                  "localized_name": "德鲁伊或游侠",
-                  "spell_id": "德鲁伊或游侠"
-                }
-              ],
-              "spell_ids": [
-                "德鲁伊或游侠"
-              ]
-            },
-            "trigger": "item_action_requested"
-          },
-          {
             "action_economy": "none",
             "clause_id": "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:moon-sickle:006:healing-modifier",
             "clause_type": "passive_modifier",
@@ -2714,30 +2635,6 @@
               "trigger": "attunement_confirmed"
             },
             {
-              "action_economy": "action",
-              "clause_id": "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:moon-sickle:006:spell-grant",
-              "clause_type": "granted_spell",
-              "evidence": {
-                "manual_review_required": false,
-                "source_excerpt": "*武器（镰刀），非普通（+1），珍稀（+2），极珍稀（+3）（需德鲁伊或游侠同调\n）\n*这把银刃镰刀闪烁着柔和的月光。当持握这把魔法武器时，你用其发动的攻击检定和伤害掷骰，与你德鲁伊或游侠法术的法术攻击检定与法术豁免DC上具有加值。加值取决于武器的稀有度。\n此外，你可以用镰刀作为你施展德鲁伊或游侠法术的法器。\n当你持握这把镰刀，施展一道恢复生命值的法术时，你可以骰一枚d4并将所得结果加入回复的生命值中。"
-              },
-              "parameters": {
-                "grant_mode": "item_cast",
-                "source_text": "*武器（镰刀），非普通（+1），珍稀（+2），极珍稀（+3）（需德鲁伊或游侠同调\n）\n*这把银刃镰刀闪烁着柔和的月光。当持握这把魔法武器时，你用其发动的攻击检定和伤害掷骰，与你德鲁伊或游侠法术的法术攻击检定与法术豁免DC上具有加值。加值取决于武器的稀有度。\n此外，你可以用镰刀作为你施展德鲁伊或游侠法术的法器。\n当你持握这把镰刀，施展一道恢复生命值的法术时，你可以骰一枚d4并将所得结果加入回复的生命值中。",
-                "spell_identities": [
-                  {
-                    "english_name": "",
-                    "localized_name": "德鲁伊或游侠",
-                    "spell_id": "德鲁伊或游侠"
-                  }
-                ],
-                "spell_ids": [
-                  "德鲁伊或游侠"
-                ]
-              },
-              "trigger": "item_action_requested"
-            },
-            {
               "action_economy": "none",
               "clause_id": "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:moon-sickle:006:healing-modifier",
               "clause_type": "passive_modifier",
@@ -2755,10 +2652,9 @@
           "compile_status": "full",
           "consumer_ids": [
             "item.attunement.v1",
-            "item.equipment_modifier.v1",
-            "item.granted_spell.v1"
+            "item.equipment_modifier.v1"
           ],
-          "item_fingerprint": "dfdc723a801c4c47d60a63e5187535e1152abfc1139d48b5c3a5900cf18f8cb5",
+          "item_fingerprint": "3de61e359af8cb34baff146eaf33da03f9b714af1266395756869a4bf00c96eb",
           "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-moon-sickle-006",
           "runtime_preview_full": true,
           "schema_version": "item-ir-1",
@@ -2792,13 +2688,7 @@
           "source_text_sha256": "bff6fb35f513660517feb8be644c71be1b4d062be0bb6042570e47d28690c3f8"
         },
         "granted_actions": [],
-        "granted_spells": [
-          {
-            "english_name": "",
-            "localized_name": "德鲁伊或游侠",
-            "spell_id": "德鲁伊或游侠"
-          }
-        ],
+        "granted_spells": [],
         "healing": null,
         "immunities": [],
         "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-moon-sickle-006",
@@ -2814,7 +2704,7 @@
         "requires_attunement": true,
         "resistances": [],
         "resource_bindings": [],
-        "review_fingerprint": "dfdc723a801c4c47d60a63e5187535e1152abfc1139d48b5c3a5900cf18f8cb5",
+        "review_fingerprint": "3de61e359af8cb34baff146eaf33da03f9b714af1266395756869a4bf00c96eb",
         "review_status": "reviewed",
         "ruleset_version": "2024",
         "schema_version": "item-ir-1",
@@ -2892,30 +2782,6 @@
               "target_policy": "source_text"
             },
             "trigger": "item_action_requested"
-          },
-          {
-            "action_economy": "action",
-            "clause_id": "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:nature-s-mantle:007:spell-grant",
-            "clause_type": "granted_spell",
-            "evidence": {
-              "manual_review_required": false,
-              "source_excerpt": "*奇物，非普通（需德鲁伊或游侠同调）*\n这件斗篷能随着你周围的环境改变颜色和材质。当穿戴着斗篷时，你可以使用其作为你施展德鲁伊和游侠法术的法器。\n当你处于一处有着轻度遮蔽的区域时，你可以用一个附赠动作进行躲藏动作，即便你能被直接观察到。"
-            },
-            "parameters": {
-              "grant_mode": "item_cast",
-              "source_text": "*奇物，非普通（需德鲁伊或游侠同调）*\n这件斗篷能随着你周围的环境改变颜色和材质。当穿戴着斗篷时，你可以使用其作为你施展德鲁伊和游侠法术的法器。\n当你处于一处有着轻度遮蔽的区域时，你可以用一个附赠动作进行躲藏动作，即便你能被直接观察到。",
-              "spell_identities": [
-                {
-                  "english_name": "",
-                  "localized_name": "德鲁伊和游侠",
-                  "spell_id": "德鲁伊和游侠"
-                }
-              ],
-              "spell_ids": [
-                "德鲁伊和游侠"
-              ]
-            },
-            "trigger": "item_action_requested"
           }
         ],
         "compile": {
@@ -2963,40 +2829,15 @@
                 "target_policy": "source_text"
               },
               "trigger": "item_action_requested"
-            },
-            {
-              "action_economy": "action",
-              "clause_id": "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:nature-s-mantle:007:spell-grant",
-              "clause_type": "granted_spell",
-              "evidence": {
-                "manual_review_required": false,
-                "source_excerpt": "*奇物，非普通（需德鲁伊或游侠同调）*\n这件斗篷能随着你周围的环境改变颜色和材质。当穿戴着斗篷时，你可以使用其作为你施展德鲁伊和游侠法术的法器。\n当你处于一处有着轻度遮蔽的区域时，你可以用一个附赠动作进行躲藏动作，即便你能被直接观察到。"
-              },
-              "parameters": {
-                "grant_mode": "item_cast",
-                "source_text": "*奇物，非普通（需德鲁伊或游侠同调）*\n这件斗篷能随着你周围的环境改变颜色和材质。当穿戴着斗篷时，你可以使用其作为你施展德鲁伊和游侠法术的法器。\n当你处于一处有着轻度遮蔽的区域时，你可以用一个附赠动作进行躲藏动作，即便你能被直接观察到。",
-                "spell_identities": [
-                  {
-                    "english_name": "",
-                    "localized_name": "德鲁伊和游侠",
-                    "spell_id": "德鲁伊和游侠"
-                  }
-                ],
-                "spell_ids": [
-                  "德鲁伊和游侠"
-                ]
-              },
-              "trigger": "item_action_requested"
             }
           ],
           "compile_status": "full",
           "consumer_ids": [
             "item.attunement.v1",
             "item.equipment_modifier.v1",
-            "item.granted_action.v1",
-            "item.granted_spell.v1"
+            "item.granted_action.v1"
           ],
-          "item_fingerprint": "4bf444d4ec9ee74fba18fd114a467312d7ad5eacae431e50c5ab8cab0141f272",
+          "item_fingerprint": "7dbce54d9e87a742b051477f3b8981e76c9aac282e16ce9d30c9b7f3c2335c26",
           "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-nature-s-mantle-007",
           "runtime_preview_full": true,
           "schema_version": "item-ir-1",
@@ -3040,13 +2881,7 @@
             "target_policy": "source_text"
           }
         ],
-        "granted_spells": [
-          {
-            "english_name": "",
-            "localized_name": "德鲁伊和游侠",
-            "spell_id": "德鲁伊和游侠"
-          }
-        ],
+        "granted_spells": [],
         "healing": null,
         "immunities": [],
         "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-nature-s-mantle-007",
@@ -3062,7 +2897,7 @@
         "requires_attunement": true,
         "resistances": [],
         "resource_bindings": [],
-        "review_fingerprint": "4bf444d4ec9ee74fba18fd114a467312d7ad5eacae431e50c5ab8cab0141f272",
+        "review_fingerprint": "7dbce54d9e87a742b051477f3b8981e76c9aac282e16ce9d30c9b7f3c2335c26",
         "review_status": "reviewed",
         "ruleset_version": "2024",
         "schema_version": "item-ir-1",
@@ -3436,10 +3271,10 @@
           "compile_full": true,
           "dm_assisted": false,
           "draft": true,
-          "game_usable": false,
-          "highest_status": "isolated_runtime_validated",
+          "game_usable": true,
+          "highest_status": "game_usable",
           "isolated_runtime_validated": true,
-          "registered_production_full": false,
+          "registered_production_full": true,
           "reviewed": true,
           "runtime_preview_full": true,
           "source_identified": true
@@ -3767,208 +3602,14 @@
             "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:spell-grant",
             "clause_type": "granted_spell",
             "evidence": {
-              "manual_review_required": false,
+              "manual_review_required": true,
               "source_excerpt": "**芭芭********雅嘎的臼与杵****|Baba\nYaga's Mortar and Pestle****\n***奇物**,**神器（需同调）*\n不朽鬼婆芭芭雅嘎的造物违逆了凡间魔法的法则。在她所有臭名昭著的劳什子里，让她在无尽的诸界中巩固传奇恶名的神器乃是能够助她穿越位面的：*芭芭****雅嘎的臼与杵**Baba\nYaga’s Mortar and Pestle*。这两件芭芭雅嘎特色鲜明的工具各是一件需要同调的单一神器。若两物件分开，那么*杵**Pestle*会在下一个黎明出现在*臼**Mortar*旁边。\n\n***随机属性***。这件神器具有以下随机属性，你可以通过对着*《城主指南》*中的“*神器*”章节掷骰以决定它们。\n\n- 两项弱效增益属性一项强效增益属性一项弱效减益属性\n\n***臼的属性***。"
             },
             "parameters": {
               "grant_mode": "item_cast",
               "source_text": "**芭芭********雅嘎的臼与杵****|Baba\nYaga's Mortar and Pestle****\n***奇物**,**神器（需同调）*\n不朽鬼婆芭芭雅嘎的造物违逆了凡间魔法的法则。在她所有臭名昭著的劳什子里，让她在无尽的诸界中巩固传奇恶名的神器乃是能够助她穿越位面的：*芭芭****雅嘎的臼与杵**Baba\nYaga’s Mortar and Pestle*。这两件芭芭雅嘎特色鲜明的工具各是一件需要同调的单一神器。若两物件分开，那么*杵**Pestle*会在下一个黎明出现在*臼**Mortar*旁边。\n\n***随机属性***。这件神器具有以下随机属性，你可以通过对着*《城主指南》*中的“*神器*”章节掷骰以决定它们。\n\n- 两项弱效增益属性一项强效增益属性一项弱效减益属性\n\n***臼的属性***。",
-              "spell_identities": [
-                {
-                  "english_name": "",
-                  "localized_name": "的法术对一个邪魔进行伤害掷骰时，直接取满值而无须掷骰",
-                  "spell_id": "的法术对一个邪魔进行伤害掷骰时，直接取满值而无须掷骰"
-                },
-                {
-                  "english_name": "",
-                  "localized_name": "了某个",
-                  "spell_id": "了某个"
-                },
-                {
-                  "english_name": "Revivify",
-                  "localized_name": "回生术",
-                  "spell_id": "revivify"
-                },
-                {
-                  "english_name": "",
-                  "localized_name": "庇护术Sanctuary，持续24小时或直至你打破该效应",
-                  "spell_id": "庇护术Sanctuary，持续24小时或直至你打破该效应"
-                },
-                {
-                  "english_name": "Detect Thoughts",
-                  "localized_name": "侦测思想",
-                  "spell_id": "detect-thoughts"
-                },
-                {
-                  "english_name": "Black Tentacles",
-                  "localized_name": "艾伐黑触手Evard’s",
-                  "spell_id": "black-tentacles"
-                },
-                {
-                  "english_name": "Eyebite",
-                  "localized_name": "摄心目光",
-                  "spell_id": "eyebite"
-                },
-                {
-                  "english_name": "Detect Magic",
-                  "localized_name": "侦测魔法",
-                  "spell_id": "detect-magic"
-                },
-                {
-                  "english_name": "Animate Dead",
-                  "localized_name": "活化死尸",
-                  "spell_id": "animate-dead"
-                },
-                {
-                  "english_name": "Dominate Monster",
-                  "localized_name": "支配怪物",
-                  "spell_id": "dominate-monster"
-                },
-                {
-                  "english_name": "Baba",
-                  "localized_name": "雅嘎的臼与杵",
-                  "spell_id": "baba"
-                },
-                {
-                  "english_name": "Croook of Rao",
-                  "localized_name": "拉奥圣杖",
-                  "spell_id": "croook-of-rao"
-                },
-                {
-                  "english_name": "Aura",
-                  "localized_name": "生命灵光",
-                  "spell_id": "aura"
-                },
-                {
-                  "english_name": "Aura",
-                  "localized_name": "净化灵光",
-                  "spell_id": "aura"
-                },
-                {
-                  "english_name": "Beacon",
-                  "localized_name": "希望信标",
-                  "spell_id": "beacon"
-                },
-                {
-                  "english_name": "Mass Cure Wounds",
-                  "localized_name": "群体疗伤术",
-                  "spell_id": "mass-cure-wounds"
-                },
-                {
-                  "english_name": "Croook",
-                  "localized_name": "拉奥圣杖",
-                  "spell_id": "croook"
-                },
-                {
-                  "english_name": "Tasha’s Hideous",
-                  "localized_name": "塔莎狂笑术",
-                  "spell_id": "tasha’s-hideous"
-                },
-                {
-                  "english_name": "Magic Circle",
-                  "localized_name": "防护法阵",
-                  "spell_id": "magic-circle"
-                },
-                {
-                  "english_name": "Magic Jar",
-                  "localized_name": "魔魂壶",
-                  "spell_id": "magic-jar"
-                },
-                {
-                  "english_name": "Planar Ally",
-                  "localized_name": "异界誓盟",
-                  "spell_id": "planar-ally"
-                },
-                {
-                  "english_name": "Planar Binding",
-                  "localized_name": "异界誓缚",
-                  "spell_id": "planar-binding"
-                },
-                {
-                  "english_name": "Plane Shift",
-                  "localized_name": "位面转移",
-                  "spell_id": "plane-shift"
-                },
-                {
-                  "english_name": "Summon Fiend",
-                  "localized_name": "邪魔召唤术",
-                  "spell_id": "summon-fiend"
-                },
-                {
-                  "english_name": "Comprehend Languages",
-                  "localized_name": "通晓语言",
-                  "spell_id": "comprehend-languages"
-                },
-                {
-                  "english_name": "Detect Evil and Good",
-                  "localized_name": "侦测善恶",
-                  "spell_id": "detect-evil-and-good"
-                },
-                {
-                  "english_name": "Detect Poison andDIsease",
-                  "localized_name": "侦测毒素和疾病",
-                  "spell_id": "detect-poison-anddisease"
-                },
-                {
-                  "english_name": "Locate Object",
-                  "localized_name": "物品定位术",
-                  "spell_id": "locate-object"
-                },
-                {
-                  "english_name": "Scrying",
-                  "localized_name": "探知术",
-                  "spell_id": "scrying"
-                },
-                {
-                  "english_name": "Mighty Servant ofLeuk-O",
-                  "localized_name": "的非凡机仆",
-                  "spell_id": "mighty-servant-ofleuk-o"
-                },
-                {
-                  "english_name": "Invisible",
-                  "localized_name": "隐形",
-                  "spell_id": "invisible"
-                },
-                {
-                  "english_name": "Prone",
-                  "localized_name": "倒地",
-                  "spell_id": "prone"
-                }
-              ],
-              "spell_ids": [
-                "的法术对一个邪魔进行伤害掷骰时，直接取满值而无须掷骰",
-                "了某个",
-                "revivify",
-                "庇护术Sanctuary，持续24小时或直至你打破该效应",
-                "detect-thoughts",
-                "black-tentacles",
-                "eyebite",
-                "detect-magic",
-                "animate-dead",
-                "dominate-monster",
-                "baba",
-                "croook-of-rao",
-                "aura",
-                "aura",
-                "beacon",
-                "mass-cure-wounds",
-                "croook",
-                "tasha’s-hideous",
-                "magic-circle",
-                "magic-jar",
-                "planar-ally",
-                "planar-binding",
-                "plane-shift",
-                "summon-fiend",
-                "comprehend-languages",
-                "detect-evil-and-good",
-                "detect-poison-anddisease",
-                "locate-object",
-                "scrying",
-                "mighty-servant-ofleuk-o",
-                "invisible",
-                "prone"
-              ]
+              "spell_identities": [],
+              "spell_ids": []
             },
             "trigger": "item_action_requested"
           },
@@ -4300,208 +3941,14 @@
               "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:spell-grant",
               "clause_type": "granted_spell",
               "evidence": {
-                "manual_review_required": false,
+                "manual_review_required": true,
                 "source_excerpt": "**芭芭********雅嘎的臼与杵****|Baba\nYaga's Mortar and Pestle****\n***奇物**,**神器（需同调）*\n不朽鬼婆芭芭雅嘎的造物违逆了凡间魔法的法则。在她所有臭名昭著的劳什子里，让她在无尽的诸界中巩固传奇恶名的神器乃是能够助她穿越位面的：*芭芭****雅嘎的臼与杵**Baba\nYaga’s Mortar and Pestle*。这两件芭芭雅嘎特色鲜明的工具各是一件需要同调的单一神器。若两物件分开，那么*杵**Pestle*会在下一个黎明出现在*臼**Mortar*旁边。\n\n***随机属性***。这件神器具有以下随机属性，你可以通过对着*《城主指南》*中的“*神器*”章节掷骰以决定它们。\n\n- 两项弱效增益属性一项强效增益属性一项弱效减益属性\n\n***臼的属性***。"
               },
               "parameters": {
                 "grant_mode": "item_cast",
                 "source_text": "**芭芭********雅嘎的臼与杵****|Baba\nYaga's Mortar and Pestle****\n***奇物**,**神器（需同调）*\n不朽鬼婆芭芭雅嘎的造物违逆了凡间魔法的法则。在她所有臭名昭著的劳什子里，让她在无尽的诸界中巩固传奇恶名的神器乃是能够助她穿越位面的：*芭芭****雅嘎的臼与杵**Baba\nYaga’s Mortar and Pestle*。这两件芭芭雅嘎特色鲜明的工具各是一件需要同调的单一神器。若两物件分开，那么*杵**Pestle*会在下一个黎明出现在*臼**Mortar*旁边。\n\n***随机属性***。这件神器具有以下随机属性，你可以通过对着*《城主指南》*中的“*神器*”章节掷骰以决定它们。\n\n- 两项弱效增益属性一项强效增益属性一项弱效减益属性\n\n***臼的属性***。",
-                "spell_identities": [
-                  {
-                    "english_name": "",
-                    "localized_name": "的法术对一个邪魔进行伤害掷骰时，直接取满值而无须掷骰",
-                    "spell_id": "的法术对一个邪魔进行伤害掷骰时，直接取满值而无须掷骰"
-                  },
-                  {
-                    "english_name": "",
-                    "localized_name": "了某个",
-                    "spell_id": "了某个"
-                  },
-                  {
-                    "english_name": "Revivify",
-                    "localized_name": "回生术",
-                    "spell_id": "revivify"
-                  },
-                  {
-                    "english_name": "",
-                    "localized_name": "庇护术Sanctuary，持续24小时或直至你打破该效应",
-                    "spell_id": "庇护术Sanctuary，持续24小时或直至你打破该效应"
-                  },
-                  {
-                    "english_name": "Detect Thoughts",
-                    "localized_name": "侦测思想",
-                    "spell_id": "detect-thoughts"
-                  },
-                  {
-                    "english_name": "Black Tentacles",
-                    "localized_name": "艾伐黑触手Evard’s",
-                    "spell_id": "black-tentacles"
-                  },
-                  {
-                    "english_name": "Eyebite",
-                    "localized_name": "摄心目光",
-                    "spell_id": "eyebite"
-                  },
-                  {
-                    "english_name": "Detect Magic",
-                    "localized_name": "侦测魔法",
-                    "spell_id": "detect-magic"
-                  },
-                  {
-                    "english_name": "Animate Dead",
-                    "localized_name": "活化死尸",
-                    "spell_id": "animate-dead"
-                  },
-                  {
-                    "english_name": "Dominate Monster",
-                    "localized_name": "支配怪物",
-                    "spell_id": "dominate-monster"
-                  },
-                  {
-                    "english_name": "Baba",
-                    "localized_name": "雅嘎的臼与杵",
-                    "spell_id": "baba"
-                  },
-                  {
-                    "english_name": "Croook of Rao",
-                    "localized_name": "拉奥圣杖",
-                    "spell_id": "croook-of-rao"
-                  },
-                  {
-                    "english_name": "Aura",
-                    "localized_name": "生命灵光",
-                    "spell_id": "aura"
-                  },
-                  {
-                    "english_name": "Aura",
-                    "localized_name": "净化灵光",
-                    "spell_id": "aura"
-                  },
-                  {
-                    "english_name": "Beacon",
-                    "localized_name": "希望信标",
-                    "spell_id": "beacon"
-                  },
-                  {
-                    "english_name": "Mass Cure Wounds",
-                    "localized_name": "群体疗伤术",
-                    "spell_id": "mass-cure-wounds"
-                  },
-                  {
-                    "english_name": "Croook",
-                    "localized_name": "拉奥圣杖",
-                    "spell_id": "croook"
-                  },
-                  {
-                    "english_name": "Tasha’s Hideous",
-                    "localized_name": "塔莎狂笑术",
-                    "spell_id": "tasha’s-hideous"
-                  },
-                  {
-                    "english_name": "Magic Circle",
-                    "localized_name": "防护法阵",
-                    "spell_id": "magic-circle"
-                  },
-                  {
-                    "english_name": "Magic Jar",
-                    "localized_name": "魔魂壶",
-                    "spell_id": "magic-jar"
-                  },
-                  {
-                    "english_name": "Planar Ally",
-                    "localized_name": "异界誓盟",
-                    "spell_id": "planar-ally"
-                  },
-                  {
-                    "english_name": "Planar Binding",
-                    "localized_name": "异界誓缚",
-                    "spell_id": "planar-binding"
-                  },
-                  {
-                    "english_name": "Plane Shift",
-                    "localized_name": "位面转移",
-                    "spell_id": "plane-shift"
-                  },
-                  {
-                    "english_name": "Summon Fiend",
-                    "localized_name": "邪魔召唤术",
-                    "spell_id": "summon-fiend"
-                  },
-                  {
-                    "english_name": "Comprehend Languages",
-                    "localized_name": "通晓语言",
-                    "spell_id": "comprehend-languages"
-                  },
-                  {
-                    "english_name": "Detect Evil and Good",
-                    "localized_name": "侦测善恶",
-                    "spell_id": "detect-evil-and-good"
-                  },
-                  {
-                    "english_name": "Detect Poison andDIsease",
-                    "localized_name": "侦测毒素和疾病",
-                    "spell_id": "detect-poison-anddisease"
-                  },
-                  {
-                    "english_name": "Locate Object",
-                    "localized_name": "物品定位术",
-                    "spell_id": "locate-object"
-                  },
-                  {
-                    "english_name": "Scrying",
-                    "localized_name": "探知术",
-                    "spell_id": "scrying"
-                  },
-                  {
-                    "english_name": "Mighty Servant ofLeuk-O",
-                    "localized_name": "的非凡机仆",
-                    "spell_id": "mighty-servant-ofleuk-o"
-                  },
-                  {
-                    "english_name": "Invisible",
-                    "localized_name": "隐形",
-                    "spell_id": "invisible"
-                  },
-                  {
-                    "english_name": "Prone",
-                    "localized_name": "倒地",
-                    "spell_id": "prone"
-                  }
-                ],
-                "spell_ids": [
-                  "的法术对一个邪魔进行伤害掷骰时，直接取满值而无须掷骰",
-                  "了某个",
-                  "revivify",
-                  "庇护术Sanctuary，持续24小时或直至你打破该效应",
-                  "detect-thoughts",
-                  "black-tentacles",
-                  "eyebite",
-                  "detect-magic",
-                  "animate-dead",
-                  "dominate-monster",
-                  "baba",
-                  "croook-of-rao",
-                  "aura",
-                  "aura",
-                  "beacon",
-                  "mass-cure-wounds",
-                  "croook",
-                  "tasha’s-hideous",
-                  "magic-circle",
-                  "magic-jar",
-                  "planar-ally",
-                  "planar-binding",
-                  "plane-shift",
-                  "summon-fiend",
-                  "comprehend-languages",
-                  "detect-evil-and-good",
-                  "detect-poison-anddisease",
-                  "locate-object",
-                  "scrying",
-                  "mighty-servant-ofleuk-o",
-                  "invisible",
-                  "prone"
-                ]
+                "spell_identities": [],
+                "spell_ids": []
               },
               "trigger": "item_action_requested"
             },
@@ -4528,7 +3975,7 @@
             "item.granted_action.v1",
             "item.granted_spell.v1"
           ],
-          "item_fingerprint": "c4ade86f9581ddd69d36380125ffe6c6ee005797610f6ef21e8ded703ac44b8b",
+          "item_fingerprint": "35cafb57324225b6022436fb22aaafaa6e67d02f9738a0b9c03342aae5486433",
           "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-23eee2e4e70e-004",
           "runtime_preview_full": false,
           "schema_version": "item-ir-1",
@@ -4680,168 +4127,7 @@
             "target_policy": "self"
           }
         ],
-        "granted_spells": [
-          {
-            "english_name": "",
-            "localized_name": "的法术对一个邪魔进行伤害掷骰时，直接取满值而无须掷骰",
-            "spell_id": "的法术对一个邪魔进行伤害掷骰时，直接取满值而无须掷骰"
-          },
-          {
-            "english_name": "",
-            "localized_name": "了某个",
-            "spell_id": "了某个"
-          },
-          {
-            "english_name": "Revivify",
-            "localized_name": "回生术",
-            "spell_id": "revivify"
-          },
-          {
-            "english_name": "",
-            "localized_name": "庇护术Sanctuary，持续24小时或直至你打破该效应",
-            "spell_id": "庇护术Sanctuary，持续24小时或直至你打破该效应"
-          },
-          {
-            "english_name": "Detect Thoughts",
-            "localized_name": "侦测思想",
-            "spell_id": "detect-thoughts"
-          },
-          {
-            "english_name": "Black Tentacles",
-            "localized_name": "艾伐黑触手Evard’s",
-            "spell_id": "black-tentacles"
-          },
-          {
-            "english_name": "Eyebite",
-            "localized_name": "摄心目光",
-            "spell_id": "eyebite"
-          },
-          {
-            "english_name": "Detect Magic",
-            "localized_name": "侦测魔法",
-            "spell_id": "detect-magic"
-          },
-          {
-            "english_name": "Animate Dead",
-            "localized_name": "活化死尸",
-            "spell_id": "animate-dead"
-          },
-          {
-            "english_name": "Dominate Monster",
-            "localized_name": "支配怪物",
-            "spell_id": "dominate-monster"
-          },
-          {
-            "english_name": "Baba",
-            "localized_name": "雅嘎的臼与杵",
-            "spell_id": "baba"
-          },
-          {
-            "english_name": "Croook of Rao",
-            "localized_name": "拉奥圣杖",
-            "spell_id": "croook-of-rao"
-          },
-          {
-            "english_name": "Aura",
-            "localized_name": "生命灵光",
-            "spell_id": "aura"
-          },
-          {
-            "english_name": "Aura",
-            "localized_name": "净化灵光",
-            "spell_id": "aura"
-          },
-          {
-            "english_name": "Beacon",
-            "localized_name": "希望信标",
-            "spell_id": "beacon"
-          },
-          {
-            "english_name": "Mass Cure Wounds",
-            "localized_name": "群体疗伤术",
-            "spell_id": "mass-cure-wounds"
-          },
-          {
-            "english_name": "Croook",
-            "localized_name": "拉奥圣杖",
-            "spell_id": "croook"
-          },
-          {
-            "english_name": "Tasha’s Hideous",
-            "localized_name": "塔莎狂笑术",
-            "spell_id": "tasha’s-hideous"
-          },
-          {
-            "english_name": "Magic Circle",
-            "localized_name": "防护法阵",
-            "spell_id": "magic-circle"
-          },
-          {
-            "english_name": "Magic Jar",
-            "localized_name": "魔魂壶",
-            "spell_id": "magic-jar"
-          },
-          {
-            "english_name": "Planar Ally",
-            "localized_name": "异界誓盟",
-            "spell_id": "planar-ally"
-          },
-          {
-            "english_name": "Planar Binding",
-            "localized_name": "异界誓缚",
-            "spell_id": "planar-binding"
-          },
-          {
-            "english_name": "Plane Shift",
-            "localized_name": "位面转移",
-            "spell_id": "plane-shift"
-          },
-          {
-            "english_name": "Summon Fiend",
-            "localized_name": "邪魔召唤术",
-            "spell_id": "summon-fiend"
-          },
-          {
-            "english_name": "Comprehend Languages",
-            "localized_name": "通晓语言",
-            "spell_id": "comprehend-languages"
-          },
-          {
-            "english_name": "Detect Evil and Good",
-            "localized_name": "侦测善恶",
-            "spell_id": "detect-evil-and-good"
-          },
-          {
-            "english_name": "Detect Poison andDIsease",
-            "localized_name": "侦测毒素和疾病",
-            "spell_id": "detect-poison-anddisease"
-          },
-          {
-            "english_name": "Locate Object",
-            "localized_name": "物品定位术",
-            "spell_id": "locate-object"
-          },
-          {
-            "english_name": "Scrying",
-            "localized_name": "探知术",
-            "spell_id": "scrying"
-          },
-          {
-            "english_name": "Mighty Servant ofLeuk-O",
-            "localized_name": "的非凡机仆",
-            "spell_id": "mighty-servant-ofleuk-o"
-          },
-          {
-            "english_name": "Invisible",
-            "localized_name": "隐形",
-            "spell_id": "invisible"
-          },
-          {
-            "english_name": "Prone",
-            "localized_name": "倒地",
-            "spell_id": "prone"
-          }
-        ],
+        "granted_spells": [],
         "healing": null,
         "immunities": [
           {
@@ -4864,7 +4150,7 @@
         "requires_attunement": true,
         "resistances": [],
         "resource_bindings": [],
-        "review_fingerprint": "c4ade86f9581ddd69d36380125ffe6c6ee005797610f6ef21e8ded703ac44b8b",
+        "review_fingerprint": "35cafb57324225b6022436fb22aaafaa6e67d02f9738a0b9c03342aae5486433",
         "review_status": "reviewed",
         "ruleset_version": "2024",
         "schema_version": "item-ir-1",
@@ -4948,64 +4234,22 @@
             "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:3e9825c326a3:003:spell-grant",
             "clause_type": "granted_spell",
             "evidence": {
-              "manual_review_required": false,
+              "manual_review_required": true,
               "source_excerpt": "of Souls**\n*奇物，神器（需同调）*\n并非所有逗留于世的灵魂都是迷失在通往死后国度之路上的悲惨灵魂。有些灵魂失去活力，成为了囚徒；它们是如此邪恶，以至于凡人不敢将它们释放到那毫无戒心的来世。\n作为由维斯塔尼传说中的人物创造的物品，*鲁芭的灵魂塔罗卡**|Luba‘s Tarokka\nof Souls*塑造了无数英雄的命运。这套牌作出的预言也揭示了巨大的邪恶，引导它的创造者走入邪恶势力的道路。牌组的创造者，鲁芭夫人，依靠着她敏锐的直觉无数次侥幸逃离了自己的毁灭。但就算是她也无法躲过所有的邪恶。在最危急的关头，鲁芭夫人设法用命运的丝线封印住这些至恶的存在，将它们囚禁在了这套塔罗卡中。这些邪恶的灵魂被困于隐藏在卡牌洗混翻转之中的下界空间内，静静地等待着命运本身也被玷污的那一天这一天绝对会到来的。\n和所有塔罗"
             },
             "parameters": {
               "grant_mode": "item_cast",
               "source_text": "of Souls**\n*奇物，神器（需同调）*\n并非所有逗留于世的灵魂都是迷失在通往死后国度之路上的悲惨灵魂。有些灵魂失去活力，成为了囚徒；它们是如此邪恶，以至于凡人不敢将它们释放到那毫无戒心的来世。\n作为由维斯塔尼传说中的人物创造的物品，*鲁芭的灵魂塔罗卡**|Luba‘s Tarokka\nof Souls*塑造了无数英雄的命运。这套牌作出的预言也揭示了巨大的邪恶，引导它的创造者走入邪恶势力的道路。牌组的创造者，鲁芭夫人，依靠着她敏锐的直觉无数次侥幸逃离了自己的毁灭。但就算是她也无法躲过所有的邪恶。在最危急的关头，鲁芭夫人设法用命运的丝线封印住这些至恶的存在，将它们囚禁在了这套塔罗卡中。这些邪恶的灵魂被困于隐藏在卡牌洗混翻转之中的下界空间内，静静地等待着命运本身也被玷污的那一天这一天绝对会到来的。\n和所有塔罗",
-              "spell_identities": [
-                {
-                  "english_name": "",
-                  "localized_name": "了某个",
-                  "spell_id": "了某个"
-                },
-                {
-                  "english_name": "Comprehend Languages",
-                  "localized_name": "通晓语言",
-                  "spell_id": "comprehend-languages"
-                },
-                {
-                  "english_name": "Detect Evil and Good",
-                  "localized_name": "侦测善恶",
-                  "spell_id": "detect-evil-and-good"
-                },
-                {
-                  "english_name": "Detect Magic",
-                  "localized_name": "侦测魔法",
-                  "spell_id": "detect-magic"
-                },
-                {
-                  "english_name": "Detect Poison andDIsease",
-                  "localized_name": "侦测毒素和疾病",
-                  "spell_id": "detect-poison-anddisease"
-                },
-                {
-                  "english_name": "Locate Object",
-                  "localized_name": "物品定位术",
-                  "spell_id": "locate-object"
-                },
-                {
-                  "english_name": "Scrying",
-                  "localized_name": "探知术",
-                  "spell_id": "scrying"
-                }
-              ],
-              "spell_ids": [
-                "了某个",
-                "comprehend-languages",
-                "detect-evil-and-good",
-                "detect-magic",
-                "detect-poison-anddisease",
-                "locate-object",
-                "scrying"
-              ]
+              "spell_identities": [],
+              "spell_ids": []
             },
             "trigger": "item_action_requested"
           }
         ],
         "compile": {
-          "blockers": [],
+          "blockers": [
+            "manual_clause_requires_dm_or_additional_typed_fields"
+          ],
           "clauses": [
             {
               "action_economy": "none",
@@ -5055,72 +4299,28 @@
               "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:3e9825c326a3:003:spell-grant",
               "clause_type": "granted_spell",
               "evidence": {
-                "manual_review_required": false,
+                "manual_review_required": true,
                 "source_excerpt": "of Souls**\n*奇物，神器（需同调）*\n并非所有逗留于世的灵魂都是迷失在通往死后国度之路上的悲惨灵魂。有些灵魂失去活力，成为了囚徒；它们是如此邪恶，以至于凡人不敢将它们释放到那毫无戒心的来世。\n作为由维斯塔尼传说中的人物创造的物品，*鲁芭的灵魂塔罗卡**|Luba‘s Tarokka\nof Souls*塑造了无数英雄的命运。这套牌作出的预言也揭示了巨大的邪恶，引导它的创造者走入邪恶势力的道路。牌组的创造者，鲁芭夫人，依靠着她敏锐的直觉无数次侥幸逃离了自己的毁灭。但就算是她也无法躲过所有的邪恶。在最危急的关头，鲁芭夫人设法用命运的丝线封印住这些至恶的存在，将它们囚禁在了这套塔罗卡中。这些邪恶的灵魂被困于隐藏在卡牌洗混翻转之中的下界空间内，静静地等待着命运本身也被玷污的那一天这一天绝对会到来的。\n和所有塔罗"
               },
               "parameters": {
                 "grant_mode": "item_cast",
                 "source_text": "of Souls**\n*奇物，神器（需同调）*\n并非所有逗留于世的灵魂都是迷失在通往死后国度之路上的悲惨灵魂。有些灵魂失去活力，成为了囚徒；它们是如此邪恶，以至于凡人不敢将它们释放到那毫无戒心的来世。\n作为由维斯塔尼传说中的人物创造的物品，*鲁芭的灵魂塔罗卡**|Luba‘s Tarokka\nof Souls*塑造了无数英雄的命运。这套牌作出的预言也揭示了巨大的邪恶，引导它的创造者走入邪恶势力的道路。牌组的创造者，鲁芭夫人，依靠着她敏锐的直觉无数次侥幸逃离了自己的毁灭。但就算是她也无法躲过所有的邪恶。在最危急的关头，鲁芭夫人设法用命运的丝线封印住这些至恶的存在，将它们囚禁在了这套塔罗卡中。这些邪恶的灵魂被困于隐藏在卡牌洗混翻转之中的下界空间内，静静地等待着命运本身也被玷污的那一天这一天绝对会到来的。\n和所有塔罗",
-                "spell_identities": [
-                  {
-                    "english_name": "",
-                    "localized_name": "了某个",
-                    "spell_id": "了某个"
-                  },
-                  {
-                    "english_name": "Comprehend Languages",
-                    "localized_name": "通晓语言",
-                    "spell_id": "comprehend-languages"
-                  },
-                  {
-                    "english_name": "Detect Evil and Good",
-                    "localized_name": "侦测善恶",
-                    "spell_id": "detect-evil-and-good"
-                  },
-                  {
-                    "english_name": "Detect Magic",
-                    "localized_name": "侦测魔法",
-                    "spell_id": "detect-magic"
-                  },
-                  {
-                    "english_name": "Detect Poison andDIsease",
-                    "localized_name": "侦测毒素和疾病",
-                    "spell_id": "detect-poison-anddisease"
-                  },
-                  {
-                    "english_name": "Locate Object",
-                    "localized_name": "物品定位术",
-                    "spell_id": "locate-object"
-                  },
-                  {
-                    "english_name": "Scrying",
-                    "localized_name": "探知术",
-                    "spell_id": "scrying"
-                  }
-                ],
-                "spell_ids": [
-                  "了某个",
-                  "comprehend-languages",
-                  "detect-evil-and-good",
-                  "detect-magic",
-                  "detect-poison-anddisease",
-                  "locate-object",
-                  "scrying"
-                ]
+                "spell_identities": [],
+                "spell_ids": []
               },
               "trigger": "item_action_requested"
             }
           ],
-          "compile_status": "full",
+          "compile_status": "partial",
           "consumer_ids": [
             "item.attunement.v1",
             "item.equipment_modifier.v1",
             "item.granted_action.v1",
             "item.granted_spell.v1"
           ],
-          "item_fingerprint": "073240dedd6f550165391b46d19c53edc316352d19265f07a695b6151d1e7c61",
+          "item_fingerprint": "e4a567fd9009d28e36ba0e11b217231919675ed74955eddefd4d8b9dec90293d",
           "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-3e9825c326a3-003",
-          "runtime_preview_full": true,
+          "runtime_preview_full": false,
           "schema_version": "item-ir-1",
           "source_trust": "authored_ir"
         },
@@ -5132,7 +4332,7 @@
         "duration": null,
         "equipped_slot": null,
         "evidence": {
-          "manual_review_required": false,
+          "manual_review_required": true,
           "rejected_inferences": [
             "unknown_effects",
             "unresolved_spell_identity",
@@ -5162,49 +4362,13 @@
             "target_policy": "self"
           }
         ],
-        "granted_spells": [
-          {
-            "english_name": "",
-            "localized_name": "了某个",
-            "spell_id": "了某个"
-          },
-          {
-            "english_name": "Comprehend Languages",
-            "localized_name": "通晓语言",
-            "spell_id": "comprehend-languages"
-          },
-          {
-            "english_name": "Detect Evil and Good",
-            "localized_name": "侦测善恶",
-            "spell_id": "detect-evil-and-good"
-          },
-          {
-            "english_name": "Detect Magic",
-            "localized_name": "侦测魔法",
-            "spell_id": "detect-magic"
-          },
-          {
-            "english_name": "Detect Poison andDIsease",
-            "localized_name": "侦测毒素和疾病",
-            "spell_id": "detect-poison-anddisease"
-          },
-          {
-            "english_name": "Locate Object",
-            "localized_name": "物品定位术",
-            "spell_id": "locate-object"
-          },
-          {
-            "english_name": "Scrying",
-            "localized_name": "探知术",
-            "spell_id": "scrying"
-          }
-        ],
+        "granted_spells": [],
         "healing": null,
         "immunities": [],
         "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-3e9825c326a3-003",
         "item_kind": "wondrous_item",
         "localized_name": "鲁芭的灵魂塔罗卡",
-        "manual_review_required": false,
+        "manual_review_required": true,
         "name": "鲁芭的灵魂塔罗卡",
         "namespace": "dnd.tashas.recovery.item",
         "pack_id": "tashas-cauldron",
@@ -5214,7 +4378,7 @@
         "requires_attunement": true,
         "resistances": [],
         "resource_bindings": [],
-        "review_fingerprint": "073240dedd6f550165391b46d19c53edc316352d19265f07a695b6151d1e7c61",
+        "review_fingerprint": "e4a567fd9009d28e36ba0e11b217231919675ed74955eddefd4d8b9dec90293d",
         "review_status": "reviewed",
         "ruleset_version": "2024",
         "schema_version": "item-ir-1",
@@ -5229,15 +4393,15 @@
         "status_layers": {
           "authored_typed_ir": true,
           "candidate": true,
-          "compile_full": true,
+          "compile_full": false,
           "dm_assisted": false,
           "draft": true,
           "game_usable": false,
-          "highest_status": "isolated_runtime_validated",
-          "isolated_runtime_validated": true,
+          "highest_status": "authored_typed_ir",
+          "isolated_runtime_validated": false,
           "registered_production_full": false,
           "reviewed": true,
-          "runtime_preview_full": true,
+          "runtime_preview_full": false,
           "source_identified": true
         },
         "temporary_hp": null,
@@ -5344,30 +4508,6 @@
               "target_policy": "self"
             },
             "trigger": "item_action_requested"
-          },
-          {
-            "action_economy": "action",
-            "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:b106ea54c961:000:spell-grant",
-            "clause_type": "granted_spell",
-            "evidence": {
-              "manual_review_required": false,
-              "source_excerpt": "Yaga's Mortar and Pestle****\n***奇物**,**神器（需同调）*\n不朽鬼婆芭芭雅嘎的造物违逆了凡间魔法的法则。在她所有臭名昭著的劳什子里，让她在无尽的诸界中巩固传奇恶名的神器乃是能够助她穿越位面的：*芭芭****雅嘎的臼与杵**Baba\nYaga’s Mortar and Pestle*。这两件芭芭雅嘎特色鲜明的工具各是一件需要同调的单一神器。若两物件分开，那么*杵**Pestle*会在下一个黎明出现在*臼**Mortar*旁边。\n\n***随机属性***。这件神器具有以下随机属性，你可以通过对着*《城主指南》*中的“*神器*”章节掷骰以决定它们。\n\n- 两项弱效增益属性一项强效增益属性一项弱效减益属性\n\n***臼的属性***。臼是一个微型的小木碗。然而，臼的大小会随着你放进去的任何"
-            },
-            "parameters": {
-              "grant_mode": "item_cast",
-              "source_text": "Yaga's Mortar and Pestle****\n***奇物**,**神器（需同调）*\n不朽鬼婆芭芭雅嘎的造物违逆了凡间魔法的法则。在她所有臭名昭著的劳什子里，让她在无尽的诸界中巩固传奇恶名的神器乃是能够助她穿越位面的：*芭芭****雅嘎的臼与杵**Baba\nYaga’s Mortar and Pestle*。这两件芭芭雅嘎特色鲜明的工具各是一件需要同调的单一神器。若两物件分开，那么*杵**Pestle*会在下一个黎明出现在*臼**Mortar*旁边。\n\n***随机属性***。这件神器具有以下随机属性，你可以通过对着*《城主指南》*中的“*神器*”章节掷骰以决定它们。\n\n- 两项弱效增益属性一项强效增益属性一项弱效减益属性\n\n***臼的属性***。臼是一个微型的小木碗。然而，臼的大小会随着你放进去的任何",
-              "spell_identities": [
-                {
-                  "english_name": "Baba",
-                  "localized_name": "雅嘎的臼与杵",
-                  "spell_id": "baba"
-                }
-              ],
-              "spell_ids": [
-                "baba"
-              ]
-            },
-            "trigger": "item_action_requested"
           }
         ],
         "compile": {
@@ -5462,30 +4602,6 @@
                 "target_policy": "self"
               },
               "trigger": "item_action_requested"
-            },
-            {
-              "action_economy": "action",
-              "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:b106ea54c961:000:spell-grant",
-              "clause_type": "granted_spell",
-              "evidence": {
-                "manual_review_required": false,
-                "source_excerpt": "Yaga's Mortar and Pestle****\n***奇物**,**神器（需同调）*\n不朽鬼婆芭芭雅嘎的造物违逆了凡间魔法的法则。在她所有臭名昭著的劳什子里，让她在无尽的诸界中巩固传奇恶名的神器乃是能够助她穿越位面的：*芭芭****雅嘎的臼与杵**Baba\nYaga’s Mortar and Pestle*。这两件芭芭雅嘎特色鲜明的工具各是一件需要同调的单一神器。若两物件分开，那么*杵**Pestle*会在下一个黎明出现在*臼**Mortar*旁边。\n\n***随机属性***。这件神器具有以下随机属性，你可以通过对着*《城主指南》*中的“*神器*”章节掷骰以决定它们。\n\n- 两项弱效增益属性一项强效增益属性一项弱效减益属性\n\n***臼的属性***。臼是一个微型的小木碗。然而，臼的大小会随着你放进去的任何"
-              },
-              "parameters": {
-                "grant_mode": "item_cast",
-                "source_text": "Yaga's Mortar and Pestle****\n***奇物**,**神器（需同调）*\n不朽鬼婆芭芭雅嘎的造物违逆了凡间魔法的法则。在她所有臭名昭著的劳什子里，让她在无尽的诸界中巩固传奇恶名的神器乃是能够助她穿越位面的：*芭芭****雅嘎的臼与杵**Baba\nYaga’s Mortar and Pestle*。这两件芭芭雅嘎特色鲜明的工具各是一件需要同调的单一神器。若两物件分开，那么*杵**Pestle*会在下一个黎明出现在*臼**Mortar*旁边。\n\n***随机属性***。这件神器具有以下随机属性，你可以通过对着*《城主指南》*中的“*神器*”章节掷骰以决定它们。\n\n- 两项弱效增益属性一项强效增益属性一项弱效减益属性\n\n***臼的属性***。臼是一个微型的小木碗。然而，臼的大小会随着你放进去的任何",
-                "spell_identities": [
-                  {
-                    "english_name": "Baba",
-                    "localized_name": "雅嘎的臼与杵",
-                    "spell_id": "baba"
-                  }
-                ],
-                "spell_ids": [
-                  "baba"
-                ]
-              },
-              "trigger": "item_action_requested"
             }
           ],
           "compile_status": "full",
@@ -5493,10 +4609,9 @@
             "item.attunement.v1",
             "item.charge_resource.v1",
             "item.equipment_modifier.v1",
-            "item.granted_action.v1",
-            "item.granted_spell.v1"
+            "item.granted_action.v1"
           ],
-          "item_fingerprint": "13d19e69a27edf538bdec13dcf40f59af4f53c5085e8aee5391b405ccc2b530e",
+          "item_fingerprint": "e7ad6394044e0ea9bc6868a99af43f01c2bd2f715c8f0810700c97033c3303e5",
           "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-b106ea54c961-000",
           "runtime_preview_full": true,
           "schema_version": "item-ir-1",
@@ -5549,13 +4664,7 @@
             "target_policy": "self"
           }
         ],
-        "granted_spells": [
-          {
-            "english_name": "Baba",
-            "localized_name": "雅嘎的臼与杵",
-            "spell_id": "baba"
-          }
-        ],
+        "granted_spells": [],
         "healing": null,
         "immunities": [],
         "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-b106ea54c961-000",
@@ -5571,7 +4680,7 @@
         "requires_attunement": true,
         "resistances": [],
         "resource_bindings": [],
-        "review_fingerprint": "13d19e69a27edf538bdec13dcf40f59af4f53c5085e8aee5391b405ccc2b530e",
+        "review_fingerprint": "e7ad6394044e0ea9bc6868a99af43f01c2bd2f715c8f0810700c97033c3303e5",
         "review_status": "reviewed",
         "ruleset_version": "2024",
         "schema_version": "item-ir-1",
@@ -5689,58 +4798,22 @@
             "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:db0e19f5d68b:001:spell-grant",
             "clause_type": "granted_spell",
             "evidence": {
-              "manual_review_required": false,
+              "manual_review_required": true,
               "source_excerpt": "Rao**\n*奇物**,**神器（需同调）*\n数个世纪以先，沉静之神拉奥创造了一件工具以保护那些尚未成熟的信徒们免受下层位面的邪恶侵扰。随着时光飞逝，凡人们已经自己找到了抵抗相关威胁的方法，而圣杖也接近被人遗忘。而在近几世纪，*拉奥圣杖**Croook of Rao*重现于世并被用于对抗巫后伊格薇尔伏（法师塔莎的一个别名）。虽然巫后被击败了，但伊格薇尔伏，成功地在战斗中给圣杖造成了伤害，她用一个隐秘的诅咒污染了圣杖作为在未来战胜圣杖的可能性。而后，圣杖再次失落于世。有时，圣杖会再次现身，但是这件著名的神器已不再是它曾是之物了。无论神器的持有者有没有意识到它全部的威胁，都很少会冒险使用*拉奥圣杖**Croook of Rao*说不定就会是最后一次。\n\n***随机属性***。这件神器具有以下随机属性，你可以通过对着"
             },
             "parameters": {
               "grant_mode": "item_cast",
               "source_text": "Rao**\n*奇物**,**神器（需同调）*\n数个世纪以先，沉静之神拉奥创造了一件工具以保护那些尚未成熟的信徒们免受下层位面的邪恶侵扰。随着时光飞逝，凡人们已经自己找到了抵抗相关威胁的方法，而圣杖也接近被人遗忘。而在近几世纪，*拉奥圣杖**Croook of Rao*重现于世并被用于对抗巫后伊格薇尔伏（法师塔莎的一个别名）。虽然巫后被击败了，但伊格薇尔伏，成功地在战斗中给圣杖造成了伤害，她用一个隐秘的诅咒污染了圣杖作为在未来战胜圣杖的可能性。而后，圣杖再次失落于世。有时，圣杖会再次现身，但是这件著名的神器已不再是它曾是之物了。无论神器的持有者有没有意识到它全部的威胁，都很少会冒险使用*拉奥圣杖**Croook of Rao*说不定就会是最后一次。\n\n***随机属性***。这件神器具有以下随机属性，你可以通过对着",
-              "spell_identities": [
-                {
-                  "english_name": "Croook of Rao",
-                  "localized_name": "拉奥圣杖",
-                  "spell_id": "croook-of-rao"
-                },
-                {
-                  "english_name": "Aura",
-                  "localized_name": "生命灵光",
-                  "spell_id": "aura"
-                },
-                {
-                  "english_name": "Aura",
-                  "localized_name": "净化灵光",
-                  "spell_id": "aura"
-                },
-                {
-                  "english_name": "Beacon",
-                  "localized_name": "希望信标",
-                  "spell_id": "beacon"
-                },
-                {
-                  "english_name": "Mass Cure Wounds",
-                  "localized_name": "群体疗伤术",
-                  "spell_id": "mass-cure-wounds"
-                },
-                {
-                  "english_name": "Croook",
-                  "localized_name": "拉奥圣杖",
-                  "spell_id": "croook"
-                }
-              ],
-              "spell_ids": [
-                "croook-of-rao",
-                "aura",
-                "aura",
-                "beacon",
-                "mass-cure-wounds",
-                "croook"
-              ]
+              "spell_identities": [],
+              "spell_ids": []
             },
             "trigger": "item_action_requested"
           }
         ],
         "compile": {
-          "blockers": [],
+          "blockers": [
+            "manual_clause_requires_dm_or_additional_typed_fields"
+          ],
           "clauses": [
             {
               "action_economy": "none",
@@ -5819,57 +4892,19 @@
               "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:db0e19f5d68b:001:spell-grant",
               "clause_type": "granted_spell",
               "evidence": {
-                "manual_review_required": false,
+                "manual_review_required": true,
                 "source_excerpt": "Rao**\n*奇物**,**神器（需同调）*\n数个世纪以先，沉静之神拉奥创造了一件工具以保护那些尚未成熟的信徒们免受下层位面的邪恶侵扰。随着时光飞逝，凡人们已经自己找到了抵抗相关威胁的方法，而圣杖也接近被人遗忘。而在近几世纪，*拉奥圣杖**Croook of Rao*重现于世并被用于对抗巫后伊格薇尔伏（法师塔莎的一个别名）。虽然巫后被击败了，但伊格薇尔伏，成功地在战斗中给圣杖造成了伤害，她用一个隐秘的诅咒污染了圣杖作为在未来战胜圣杖的可能性。而后，圣杖再次失落于世。有时，圣杖会再次现身，但是这件著名的神器已不再是它曾是之物了。无论神器的持有者有没有意识到它全部的威胁，都很少会冒险使用*拉奥圣杖**Croook of Rao*说不定就会是最后一次。\n\n***随机属性***。这件神器具有以下随机属性，你可以通过对着"
               },
               "parameters": {
                 "grant_mode": "item_cast",
                 "source_text": "Rao**\n*奇物**,**神器（需同调）*\n数个世纪以先，沉静之神拉奥创造了一件工具以保护那些尚未成熟的信徒们免受下层位面的邪恶侵扰。随着时光飞逝，凡人们已经自己找到了抵抗相关威胁的方法，而圣杖也接近被人遗忘。而在近几世纪，*拉奥圣杖**Croook of Rao*重现于世并被用于对抗巫后伊格薇尔伏（法师塔莎的一个别名）。虽然巫后被击败了，但伊格薇尔伏，成功地在战斗中给圣杖造成了伤害，她用一个隐秘的诅咒污染了圣杖作为在未来战胜圣杖的可能性。而后，圣杖再次失落于世。有时，圣杖会再次现身，但是这件著名的神器已不再是它曾是之物了。无论神器的持有者有没有意识到它全部的威胁，都很少会冒险使用*拉奥圣杖**Croook of Rao*说不定就会是最后一次。\n\n***随机属性***。这件神器具有以下随机属性，你可以通过对着",
-                "spell_identities": [
-                  {
-                    "english_name": "Croook of Rao",
-                    "localized_name": "拉奥圣杖",
-                    "spell_id": "croook-of-rao"
-                  },
-                  {
-                    "english_name": "Aura",
-                    "localized_name": "生命灵光",
-                    "spell_id": "aura"
-                  },
-                  {
-                    "english_name": "Aura",
-                    "localized_name": "净化灵光",
-                    "spell_id": "aura"
-                  },
-                  {
-                    "english_name": "Beacon",
-                    "localized_name": "希望信标",
-                    "spell_id": "beacon"
-                  },
-                  {
-                    "english_name": "Mass Cure Wounds",
-                    "localized_name": "群体疗伤术",
-                    "spell_id": "mass-cure-wounds"
-                  },
-                  {
-                    "english_name": "Croook",
-                    "localized_name": "拉奥圣杖",
-                    "spell_id": "croook"
-                  }
-                ],
-                "spell_ids": [
-                  "croook-of-rao",
-                  "aura",
-                  "aura",
-                  "beacon",
-                  "mass-cure-wounds",
-                  "croook"
-                ]
+                "spell_identities": [],
+                "spell_ids": []
               },
               "trigger": "item_action_requested"
             }
           ],
-          "compile_status": "full",
+          "compile_status": "partial",
           "consumer_ids": [
             "item.attunement.v1",
             "item.charge_resource.v1",
@@ -5877,9 +4912,9 @@
             "item.granted_action.v1",
             "item.granted_spell.v1"
           ],
-          "item_fingerprint": "01e686d3b2c181dae7b00cf94d1e5a990724487c2f452fc53339528b0c36d9df",
+          "item_fingerprint": "9b7104a71ef1499eaf3c700aa86fdda1c73927ca57d2296ce2c684792a65e695",
           "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-db0e19f5d68b-001",
-          "runtime_preview_full": true,
+          "runtime_preview_full": false,
           "schema_version": "item-ir-1",
           "source_trust": "authored_ir"
         },
@@ -5891,7 +4926,7 @@
         "duration": null,
         "equipped_slot": null,
         "evidence": {
-          "manual_review_required": false,
+          "manual_review_required": true,
           "rejected_inferences": [
             "unknown_effects",
             "unresolved_spell_identity",
@@ -5921,44 +4956,13 @@
             "target_policy": "self"
           }
         ],
-        "granted_spells": [
-          {
-            "english_name": "Croook of Rao",
-            "localized_name": "拉奥圣杖",
-            "spell_id": "croook-of-rao"
-          },
-          {
-            "english_name": "Aura",
-            "localized_name": "生命灵光",
-            "spell_id": "aura"
-          },
-          {
-            "english_name": "Aura",
-            "localized_name": "净化灵光",
-            "spell_id": "aura"
-          },
-          {
-            "english_name": "Beacon",
-            "localized_name": "希望信标",
-            "spell_id": "beacon"
-          },
-          {
-            "english_name": "Mass Cure Wounds",
-            "localized_name": "群体疗伤术",
-            "spell_id": "mass-cure-wounds"
-          },
-          {
-            "english_name": "Croook",
-            "localized_name": "拉奥圣杖",
-            "spell_id": "croook"
-          }
-        ],
+        "granted_spells": [],
         "healing": null,
         "immunities": [],
         "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-db0e19f5d68b-001",
         "item_kind": "tool",
         "localized_name": "拉奥圣杖",
-        "manual_review_required": false,
+        "manual_review_required": true,
         "name": "拉奥圣杖",
         "namespace": "dnd.tashas.recovery.item",
         "pack_id": "tashas-cauldron",
@@ -5968,7 +4972,7 @@
         "requires_attunement": true,
         "resistances": [],
         "resource_bindings": [],
-        "review_fingerprint": "01e686d3b2c181dae7b00cf94d1e5a990724487c2f452fc53339528b0c36d9df",
+        "review_fingerprint": "9b7104a71ef1499eaf3c700aa86fdda1c73927ca57d2296ce2c684792a65e695",
         "review_status": "reviewed",
         "ruleset_version": "2024",
         "schema_version": "item-ir-1",
@@ -5983,15 +4987,15 @@
         "status_layers": {
           "authored_typed_ir": true,
           "candidate": true,
-          "compile_full": true,
+          "compile_full": false,
           "dm_assisted": false,
           "draft": true,
           "game_usable": false,
-          "highest_status": "isolated_runtime_validated",
-          "isolated_runtime_validated": true,
+          "highest_status": "authored_typed_ir",
+          "isolated_runtime_validated": false,
           "registered_production_full": false,
           "reviewed": true,
-          "runtime_preview_full": true,
+          "runtime_preview_full": false,
           "source_identified": true
         },
         "temporary_hp": null,
@@ -6122,70 +5126,22 @@
             "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:demonomiconofiggwilv:002:spell-grant",
             "clause_type": "granted_spell",
             "evidence": {
-              "manual_review_required": false,
+              "manual_review_required": true,
               "source_excerpt": "*奇物**,**神器（需同调）*\n作为一份关于深渊之无限层级及其居民的宏大论文，*伊格薇尔伏恶魔**志**Demonomicon**ofIggwilv*是多元宇宙中最详细而最为亵渎的关于恶魔学识的记载。这卷书记载了从亘古到现在关于深渊与恶魔的所有渎神之物。恶魔们尝试过删减其中的文本，而虽有的部分被从书本的脊页上撕下，但大部分章节仍存，而且较之前更能揭示恶魔的秘密。这书所含之物已非亵渎二字所能形容。一小片不为人知的，无底深渊本身的碎片被囚禁于字字句句之后，使得无论有多少页被撕下，也能让书时刻保持着更新，这本书也不仅仅只是想要成为一本参考材料。\n***随机属性***。这件神器具有以下随机属性，你可以通过对着*《城主指南》*中的*“**神器**”*章节掷骰以决定它们。\n\n- 两项弱效增益属性一项强效减益属性一项弱效减"
             },
             "parameters": {
               "grant_mode": "item_cast",
               "source_text": "*奇物**,**神器（需同调）*\n作为一份关于深渊之无限层级及其居民的宏大论文，*伊格薇尔伏恶魔**志**Demonomicon**ofIggwilv*是多元宇宙中最详细而最为亵渎的关于恶魔学识的记载。这卷书记载了从亘古到现在关于深渊与恶魔的所有渎神之物。恶魔们尝试过删减其中的文本，而虽有的部分被从书本的脊页上撕下，但大部分章节仍存，而且较之前更能揭示恶魔的秘密。这书所含之物已非亵渎二字所能形容。一小片不为人知的，无底深渊本身的碎片被囚禁于字字句句之后，使得无论有多少页被撕下，也能让书时刻保持着更新，这本书也不仅仅只是想要成为一本参考材料。\n***随机属性***。这件神器具有以下随机属性，你可以通过对着*《城主指南》*中的*“**神器**”*章节掷骰以决定它们。\n\n- 两项弱效增益属性一项强效减益属性一项弱效减",
-              "spell_identities": [
-                {
-                  "english_name": "",
-                  "localized_name": "的法术对一个邪魔进行伤害掷骰时，直接取满值而无须掷骰",
-                  "spell_id": "的法术对一个邪魔进行伤害掷骰时，直接取满值而无须掷骰"
-                },
-                {
-                  "english_name": "Tasha’s Hideous",
-                  "localized_name": "塔莎狂笑术",
-                  "spell_id": "tasha’s-hideous"
-                },
-                {
-                  "english_name": "Magic Circle",
-                  "localized_name": "防护法阵",
-                  "spell_id": "magic-circle"
-                },
-                {
-                  "english_name": "Magic Jar",
-                  "localized_name": "魔魂壶",
-                  "spell_id": "magic-jar"
-                },
-                {
-                  "english_name": "Planar Ally",
-                  "localized_name": "异界誓盟",
-                  "spell_id": "planar-ally"
-                },
-                {
-                  "english_name": "Planar Binding",
-                  "localized_name": "异界誓缚",
-                  "spell_id": "planar-binding"
-                },
-                {
-                  "english_name": "Plane Shift",
-                  "localized_name": "位面转移",
-                  "spell_id": "plane-shift"
-                },
-                {
-                  "english_name": "Summon Fiend",
-                  "localized_name": "邪魔召唤术",
-                  "spell_id": "summon-fiend"
-                }
-              ],
-              "spell_ids": [
-                "的法术对一个邪魔进行伤害掷骰时，直接取满值而无须掷骰",
-                "tasha’s-hideous",
-                "magic-circle",
-                "magic-jar",
-                "planar-ally",
-                "planar-binding",
-                "plane-shift",
-                "summon-fiend"
-              ]
+              "spell_identities": [],
+              "spell_ids": []
             },
             "trigger": "item_action_requested"
           }
         ],
         "compile": {
-          "blockers": [],
+          "blockers": [
+            "manual_clause_requires_dm_or_additional_typed_fields"
+          ],
           "clauses": [
             {
               "action_economy": "none",
@@ -6300,69 +5256,19 @@
               "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:demonomiconofiggwilv:002:spell-grant",
               "clause_type": "granted_spell",
               "evidence": {
-                "manual_review_required": false,
+                "manual_review_required": true,
                 "source_excerpt": "*奇物**,**神器（需同调）*\n作为一份关于深渊之无限层级及其居民的宏大论文，*伊格薇尔伏恶魔**志**Demonomicon**ofIggwilv*是多元宇宙中最详细而最为亵渎的关于恶魔学识的记载。这卷书记载了从亘古到现在关于深渊与恶魔的所有渎神之物。恶魔们尝试过删减其中的文本，而虽有的部分被从书本的脊页上撕下，但大部分章节仍存，而且较之前更能揭示恶魔的秘密。这书所含之物已非亵渎二字所能形容。一小片不为人知的，无底深渊本身的碎片被囚禁于字字句句之后，使得无论有多少页被撕下，也能让书时刻保持着更新，这本书也不仅仅只是想要成为一本参考材料。\n***随机属性***。这件神器具有以下随机属性，你可以通过对着*《城主指南》*中的*“**神器**”*章节掷骰以决定它们。\n\n- 两项弱效增益属性一项强效减益属性一项弱效减"
               },
               "parameters": {
                 "grant_mode": "item_cast",
                 "source_text": "*奇物**,**神器（需同调）*\n作为一份关于深渊之无限层级及其居民的宏大论文，*伊格薇尔伏恶魔**志**Demonomicon**ofIggwilv*是多元宇宙中最详细而最为亵渎的关于恶魔学识的记载。这卷书记载了从亘古到现在关于深渊与恶魔的所有渎神之物。恶魔们尝试过删减其中的文本，而虽有的部分被从书本的脊页上撕下，但大部分章节仍存，而且较之前更能揭示恶魔的秘密。这书所含之物已非亵渎二字所能形容。一小片不为人知的，无底深渊本身的碎片被囚禁于字字句句之后，使得无论有多少页被撕下，也能让书时刻保持着更新，这本书也不仅仅只是想要成为一本参考材料。\n***随机属性***。这件神器具有以下随机属性，你可以通过对着*《城主指南》*中的*“**神器**”*章节掷骰以决定它们。\n\n- 两项弱效增益属性一项强效减益属性一项弱效减",
-                "spell_identities": [
-                  {
-                    "english_name": "",
-                    "localized_name": "的法术对一个邪魔进行伤害掷骰时，直接取满值而无须掷骰",
-                    "spell_id": "的法术对一个邪魔进行伤害掷骰时，直接取满值而无须掷骰"
-                  },
-                  {
-                    "english_name": "Tasha’s Hideous",
-                    "localized_name": "塔莎狂笑术",
-                    "spell_id": "tasha’s-hideous"
-                  },
-                  {
-                    "english_name": "Magic Circle",
-                    "localized_name": "防护法阵",
-                    "spell_id": "magic-circle"
-                  },
-                  {
-                    "english_name": "Magic Jar",
-                    "localized_name": "魔魂壶",
-                    "spell_id": "magic-jar"
-                  },
-                  {
-                    "english_name": "Planar Ally",
-                    "localized_name": "异界誓盟",
-                    "spell_id": "planar-ally"
-                  },
-                  {
-                    "english_name": "Planar Binding",
-                    "localized_name": "异界誓缚",
-                    "spell_id": "planar-binding"
-                  },
-                  {
-                    "english_name": "Plane Shift",
-                    "localized_name": "位面转移",
-                    "spell_id": "plane-shift"
-                  },
-                  {
-                    "english_name": "Summon Fiend",
-                    "localized_name": "邪魔召唤术",
-                    "spell_id": "summon-fiend"
-                  }
-                ],
-                "spell_ids": [
-                  "的法术对一个邪魔进行伤害掷骰时，直接取满值而无须掷骰",
-                  "tasha’s-hideous",
-                  "magic-circle",
-                  "magic-jar",
-                  "planar-ally",
-                  "planar-binding",
-                  "plane-shift",
-                  "summon-fiend"
-                ]
+                "spell_identities": [],
+                "spell_ids": []
               },
               "trigger": "item_action_requested"
             }
           ],
-          "compile_status": "full",
+          "compile_status": "partial",
           "consumer_ids": [
             "item.attunement.v1",
             "item.charge_resource.v1",
@@ -6370,9 +5276,9 @@
             "item.granted_action.v1",
             "item.granted_spell.v1"
           ],
-          "item_fingerprint": "05f6ed7a54443f591e92f0b9d5d7e39bcea741e22a4f7034c34ecd0e61f1661f",
+          "item_fingerprint": "8d7ed5da8870d422da276aaf32bdfb4ae2f888ac60afb3e3aed77a2cbe1f76d4",
           "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-demonomiconofiggwilv-002",
-          "runtime_preview_full": true,
+          "runtime_preview_full": false,
           "schema_version": "item-ir-1",
           "source_trust": "authored_ir"
         },
@@ -6384,7 +5290,7 @@
         "duration": null,
         "equipped_slot": null,
         "evidence": {
-          "manual_review_required": false,
+          "manual_review_required": true,
           "rejected_inferences": [
             "unknown_effects",
             "unresolved_spell_identity",
@@ -6432,54 +5338,13 @@
             "target_policy": "source_text"
           }
         ],
-        "granted_spells": [
-          {
-            "english_name": "",
-            "localized_name": "的法术对一个邪魔进行伤害掷骰时，直接取满值而无须掷骰",
-            "spell_id": "的法术对一个邪魔进行伤害掷骰时，直接取满值而无须掷骰"
-          },
-          {
-            "english_name": "Tasha’s Hideous",
-            "localized_name": "塔莎狂笑术",
-            "spell_id": "tasha’s-hideous"
-          },
-          {
-            "english_name": "Magic Circle",
-            "localized_name": "防护法阵",
-            "spell_id": "magic-circle"
-          },
-          {
-            "english_name": "Magic Jar",
-            "localized_name": "魔魂壶",
-            "spell_id": "magic-jar"
-          },
-          {
-            "english_name": "Planar Ally",
-            "localized_name": "异界誓盟",
-            "spell_id": "planar-ally"
-          },
-          {
-            "english_name": "Planar Binding",
-            "localized_name": "异界誓缚",
-            "spell_id": "planar-binding"
-          },
-          {
-            "english_name": "Plane Shift",
-            "localized_name": "位面转移",
-            "spell_id": "plane-shift"
-          },
-          {
-            "english_name": "Summon Fiend",
-            "localized_name": "邪魔召唤术",
-            "spell_id": "summon-fiend"
-          }
-        ],
+        "granted_spells": [],
         "healing": null,
         "immunities": [],
         "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-demonomiconofiggwilv-002",
         "item_kind": "wondrous_item",
         "localized_name": "伊格薇尔伏恶魔志",
-        "manual_review_required": false,
+        "manual_review_required": true,
         "name": "伊格薇尔伏恶魔志|DemonomiconofIggwilv",
         "namespace": "dnd.tashas.recovery.item",
         "pack_id": "tashas-cauldron",
@@ -6489,7 +5354,7 @@
         "requires_attunement": true,
         "resistances": [],
         "resource_bindings": [],
-        "review_fingerprint": "05f6ed7a54443f591e92f0b9d5d7e39bcea741e22a4f7034c34ecd0e61f1661f",
+        "review_fingerprint": "8d7ed5da8870d422da276aaf32bdfb4ae2f888ac60afb3e3aed77a2cbe1f76d4",
         "review_status": "reviewed",
         "ruleset_version": "2024",
         "schema_version": "item-ir-1",
@@ -6504,15 +5369,15 @@
         "status_layers": {
           "authored_typed_ir": true,
           "candidate": true,
-          "compile_full": true,
+          "compile_full": false,
           "dm_assisted": false,
           "draft": true,
           "game_usable": false,
-          "highest_status": "isolated_runtime_validated",
-          "isolated_runtime_validated": true,
+          "highest_status": "authored_typed_ir",
+          "isolated_runtime_validated": false,
           "registered_production_full": false,
           "reviewed": true,
-          "runtime_preview_full": true,
+          "runtime_preview_full": false,
           "source_identified": true
         },
         "temporary_hp": null,
@@ -6639,72 +5504,6 @@
               "manual_review_required": true,
               "source_excerpt": "作为一个动作，你可以呼唤神圣力量援助你。描述你需要的帮助，回应的结果由 DM 决定；此时通常请求任何牧师法术的效应都在可接受范围内。该属性被使用后，七天内不能再次使用。 |",
               "target_policy": "self"
-            },
-            "trigger": "item_action_requested"
-          },
-          {
-            "action_economy": "action",
-            "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:teeth-ofdahlver-nar:005:spell-grant",
-            "clause_type": "granted_spell",
-            "evidence": {
-              "manual_review_required": false,
-              "source_excerpt": "***奇物，神器（需调谐）*\n达文-纳之牙是多个故事的具现。它们是成套的牙齿，每一颗都代表着各自大不相同的起源，并且由多种多样的材料制成。整套牙齿被收藏在一个小皮袋中，皮袋上缝着英雄和幻想生物的图案。牙齿在哪里落下，传说就会在哪里化为真实。\n***使用牙齿***。当持握小皮袋时，你可以使用一个动作从中取出某一颗牙齿。在达文-纳之牙表格中掷骰以决定被取出的是哪颗牙齿，你可以选择将其播种或者进行植牙。（这两种行为会在之后进行说明）\n如果你不进行播种也不植牙，则在你的回合结束时投一个骰子。投出偶数时，牙齿会消失，对应的生物会如同你播种了牙齿一样出现，并且与你和你的盟友敌对。投出奇数时，该牙齿会取代你的一颗牙齿，就如同你进行了植牙一样（有可能取代另一颗被植入的牙齿，见下文）。\n每颗牙齿只能被使用一次。记录有哪些牙齿被使"
-            },
-            "parameters": {
-              "grant_mode": "item_cast",
-              "source_text": "***奇物，神器（需调谐）*\n达文-纳之牙是多个故事的具现。它们是成套的牙齿，每一颗都代表着各自大不相同的起源，并且由多种多样的材料制成。整套牙齿被收藏在一个小皮袋中，皮袋上缝着英雄和幻想生物的图案。牙齿在哪里落下，传说就会在哪里化为真实。\n***使用牙齿***。当持握小皮袋时，你可以使用一个动作从中取出某一颗牙齿。在达文-纳之牙表格中掷骰以决定被取出的是哪颗牙齿，你可以选择将其播种或者进行植牙。（这两种行为会在之后进行说明）\n如果你不进行播种也不植牙，则在你的回合结束时投一个骰子。投出偶数时，牙齿会消失，对应的生物会如同你播种了牙齿一样出现，并且与你和你的盟友敌对。投出奇数时，该牙齿会取代你的一颗牙齿，就如同你进行了植牙一样（有可能取代另一颗被植入的牙齿，见下文）。\n每颗牙齿只能被使用一次。记录有哪些牙齿被使",
-              "spell_identities": [
-                {
-                  "english_name": "Revivify",
-                  "localized_name": "回生术",
-                  "spell_id": "revivify"
-                },
-                {
-                  "english_name": "",
-                  "localized_name": "庇护术Sanctuary，持续24小时或直至你打破该效应",
-                  "spell_id": "庇护术Sanctuary，持续24小时或直至你打破该效应"
-                },
-                {
-                  "english_name": "Detect Thoughts",
-                  "localized_name": "侦测思想",
-                  "spell_id": "detect-thoughts"
-                },
-                {
-                  "english_name": "Black Tentacles",
-                  "localized_name": "艾伐黑触手Evard’s",
-                  "spell_id": "black-tentacles"
-                },
-                {
-                  "english_name": "Eyebite",
-                  "localized_name": "摄心目光",
-                  "spell_id": "eyebite"
-                },
-                {
-                  "english_name": "Detect Magic",
-                  "localized_name": "侦测魔法",
-                  "spell_id": "detect-magic"
-                },
-                {
-                  "english_name": "Animate Dead",
-                  "localized_name": "活化死尸",
-                  "spell_id": "animate-dead"
-                },
-                {
-                  "english_name": "Dominate Monster",
-                  "localized_name": "支配怪物",
-                  "spell_id": "dominate-monster"
-                }
-              ],
-              "spell_ids": [
-                "revivify",
-                "庇护术Sanctuary，持续24小时或直至你打破该效应",
-                "detect-thoughts",
-                "black-tentacles",
-                "eyebite",
-                "detect-magic",
-                "animate-dead",
-                "dominate-monster"
-              ]
             },
             "trigger": "item_action_requested"
           },
@@ -6849,72 +5648,6 @@
               "trigger": "item_action_requested"
             },
             {
-              "action_economy": "action",
-              "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:teeth-ofdahlver-nar:005:spell-grant",
-              "clause_type": "granted_spell",
-              "evidence": {
-                "manual_review_required": false,
-                "source_excerpt": "***奇物，神器（需调谐）*\n达文-纳之牙是多个故事的具现。它们是成套的牙齿，每一颗都代表着各自大不相同的起源，并且由多种多样的材料制成。整套牙齿被收藏在一个小皮袋中，皮袋上缝着英雄和幻想生物的图案。牙齿在哪里落下，传说就会在哪里化为真实。\n***使用牙齿***。当持握小皮袋时，你可以使用一个动作从中取出某一颗牙齿。在达文-纳之牙表格中掷骰以决定被取出的是哪颗牙齿，你可以选择将其播种或者进行植牙。（这两种行为会在之后进行说明）\n如果你不进行播种也不植牙，则在你的回合结束时投一个骰子。投出偶数时，牙齿会消失，对应的生物会如同你播种了牙齿一样出现，并且与你和你的盟友敌对。投出奇数时，该牙齿会取代你的一颗牙齿，就如同你进行了植牙一样（有可能取代另一颗被植入的牙齿，见下文）。\n每颗牙齿只能被使用一次。记录有哪些牙齿被使"
-              },
-              "parameters": {
-                "grant_mode": "item_cast",
-                "source_text": "***奇物，神器（需调谐）*\n达文-纳之牙是多个故事的具现。它们是成套的牙齿，每一颗都代表着各自大不相同的起源，并且由多种多样的材料制成。整套牙齿被收藏在一个小皮袋中，皮袋上缝着英雄和幻想生物的图案。牙齿在哪里落下，传说就会在哪里化为真实。\n***使用牙齿***。当持握小皮袋时，你可以使用一个动作从中取出某一颗牙齿。在达文-纳之牙表格中掷骰以决定被取出的是哪颗牙齿，你可以选择将其播种或者进行植牙。（这两种行为会在之后进行说明）\n如果你不进行播种也不植牙，则在你的回合结束时投一个骰子。投出偶数时，牙齿会消失，对应的生物会如同你播种了牙齿一样出现，并且与你和你的盟友敌对。投出奇数时，该牙齿会取代你的一颗牙齿，就如同你进行了植牙一样（有可能取代另一颗被植入的牙齿，见下文）。\n每颗牙齿只能被使用一次。记录有哪些牙齿被使",
-                "spell_identities": [
-                  {
-                    "english_name": "Revivify",
-                    "localized_name": "回生术",
-                    "spell_id": "revivify"
-                  },
-                  {
-                    "english_name": "",
-                    "localized_name": "庇护术Sanctuary，持续24小时或直至你打破该效应",
-                    "spell_id": "庇护术Sanctuary，持续24小时或直至你打破该效应"
-                  },
-                  {
-                    "english_name": "Detect Thoughts",
-                    "localized_name": "侦测思想",
-                    "spell_id": "detect-thoughts"
-                  },
-                  {
-                    "english_name": "Black Tentacles",
-                    "localized_name": "艾伐黑触手Evard’s",
-                    "spell_id": "black-tentacles"
-                  },
-                  {
-                    "english_name": "Eyebite",
-                    "localized_name": "摄心目光",
-                    "spell_id": "eyebite"
-                  },
-                  {
-                    "english_name": "Detect Magic",
-                    "localized_name": "侦测魔法",
-                    "spell_id": "detect-magic"
-                  },
-                  {
-                    "english_name": "Animate Dead",
-                    "localized_name": "活化死尸",
-                    "spell_id": "animate-dead"
-                  },
-                  {
-                    "english_name": "Dominate Monster",
-                    "localized_name": "支配怪物",
-                    "spell_id": "dominate-monster"
-                  }
-                ],
-                "spell_ids": [
-                  "revivify",
-                  "庇护术Sanctuary，持续24小时或直至你打破该效应",
-                  "detect-thoughts",
-                  "black-tentacles",
-                  "eyebite",
-                  "detect-magic",
-                  "animate-dead",
-                  "dominate-monster"
-                ]
-              },
-              "trigger": "item_action_requested"
-            },
-            {
               "action_economy": "none",
               "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:teeth-ofdahlver-nar:005:healing-modifier",
               "clause_type": "passive_modifier",
@@ -6932,10 +5665,9 @@
           "compile_status": "partial",
           "consumer_ids": [
             "item.equipment_modifier.v1",
-            "item.granted_action.v1",
-            "item.granted_spell.v1"
+            "item.granted_action.v1"
           ],
-          "item_fingerprint": "c544da4355f9d8d7a3f1dd714277fbbdd2a080f2d206e16e49499caa2512eb1a",
+          "item_fingerprint": "f5c4bec1d4a3856366f65dbd0c2c20856d078aea280662da930a063b815b58c6",
           "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-teeth-ofdahlver-nar-005",
           "runtime_preview_full": false,
           "schema_version": "item-ir-1",
@@ -7024,48 +5756,7 @@
             "target_policy": "self"
           }
         ],
-        "granted_spells": [
-          {
-            "english_name": "Revivify",
-            "localized_name": "回生术",
-            "spell_id": "revivify"
-          },
-          {
-            "english_name": "",
-            "localized_name": "庇护术Sanctuary，持续24小时或直至你打破该效应",
-            "spell_id": "庇护术Sanctuary，持续24小时或直至你打破该效应"
-          },
-          {
-            "english_name": "Detect Thoughts",
-            "localized_name": "侦测思想",
-            "spell_id": "detect-thoughts"
-          },
-          {
-            "english_name": "Black Tentacles",
-            "localized_name": "艾伐黑触手Evard’s",
-            "spell_id": "black-tentacles"
-          },
-          {
-            "english_name": "Eyebite",
-            "localized_name": "摄心目光",
-            "spell_id": "eyebite"
-          },
-          {
-            "english_name": "Detect Magic",
-            "localized_name": "侦测魔法",
-            "spell_id": "detect-magic"
-          },
-          {
-            "english_name": "Animate Dead",
-            "localized_name": "活化死尸",
-            "spell_id": "animate-dead"
-          },
-          {
-            "english_name": "Dominate Monster",
-            "localized_name": "支配怪物",
-            "spell_id": "dominate-monster"
-          }
-        ],
+        "granted_spells": [],
         "healing": null,
         "immunities": [],
         "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-teeth-ofdahlver-nar-005",
@@ -7081,7 +5772,7 @@
         "requires_attunement": false,
         "resistances": [],
         "resource_bindings": [],
-        "review_fingerprint": "c544da4355f9d8d7a3f1dd714277fbbdd2a080f2d206e16e49499caa2512eb1a",
+        "review_fingerprint": "f5c4bec1d4a3856366f65dbd0c2c20856d078aea280662da930a063b815b58c6",
         "review_status": "reviewed",
         "ruleset_version": "2024",
         "schema_version": "item-ir-1",
@@ -7386,30 +6077,6 @@
               "target_policy": "self"
             },
             "trigger": "item_action_requested"
-          },
-          {
-            "action_economy": "action",
-            "clause_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:astral-shard:001:spell-grant",
-            "clause_type": "granted_spell",
-            "evidence": {
-              "manual_review_required": false,
-              "source_excerpt": "*奇物, 珍稀（需术士同调）*\n这块水晶是一块来自星光位面的坚硬碎晶，银色的迷雾在其表面上流转。\n作为一个动作，你可以将碎晶附上一件微型物件（如一把武器或一块珠宝）或摘下。当同调结束时它会掉落下来。当你持握或穿戴碎晶时，你可以将其作为法器使用。\n当你持握或穿戴碎晶，并在一道法术上应用一种超魔法选项时，可以在施展法术后立即传送到至多30尺内一个你能看见且未被占据的位置。"
-            },
-            "parameters": {
-              "grant_mode": "item_cast",
-              "source_text": "*奇物, 珍稀（需术士同调）*\n这块水晶是一块来自星光位面的坚硬碎晶，银色的迷雾在其表面上流转。\n作为一个动作，你可以将碎晶附上一件微型物件（如一把武器或一块珠宝）或摘下。当同调结束时它会掉落下来。当你持握或穿戴碎晶时，你可以将其作为法器使用。\n当你持握或穿戴碎晶，并在一道法术上应用一种超魔法选项时，可以在施展法术后立即传送到至多30尺内一个你能看见且未被占据的位置。",
-              "spell_identities": [
-                {
-                  "english_name": "",
-                  "localized_name": "法术后立即传送到至多30尺内一个你能看见且未被占据的位置",
-                  "spell_id": "法术后立即传送到至多30尺内一个你能看见且未被占据的位置"
-                }
-              ],
-              "spell_ids": [
-                "法术后立即传送到至多30尺内一个你能看见且未被占据的位置"
-              ]
-            },
-            "trigger": "item_action_requested"
           }
         ],
         "compile": {
@@ -7457,40 +6124,15 @@
                 "target_policy": "self"
               },
               "trigger": "item_action_requested"
-            },
-            {
-              "action_economy": "action",
-              "clause_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:astral-shard:001:spell-grant",
-              "clause_type": "granted_spell",
-              "evidence": {
-                "manual_review_required": false,
-                "source_excerpt": "*奇物, 珍稀（需术士同调）*\n这块水晶是一块来自星光位面的坚硬碎晶，银色的迷雾在其表面上流转。\n作为一个动作，你可以将碎晶附上一件微型物件（如一把武器或一块珠宝）或摘下。当同调结束时它会掉落下来。当你持握或穿戴碎晶时，你可以将其作为法器使用。\n当你持握或穿戴碎晶，并在一道法术上应用一种超魔法选项时，可以在施展法术后立即传送到至多30尺内一个你能看见且未被占据的位置。"
-              },
-              "parameters": {
-                "grant_mode": "item_cast",
-                "source_text": "*奇物, 珍稀（需术士同调）*\n这块水晶是一块来自星光位面的坚硬碎晶，银色的迷雾在其表面上流转。\n作为一个动作，你可以将碎晶附上一件微型物件（如一把武器或一块珠宝）或摘下。当同调结束时它会掉落下来。当你持握或穿戴碎晶时，你可以将其作为法器使用。\n当你持握或穿戴碎晶，并在一道法术上应用一种超魔法选项时，可以在施展法术后立即传送到至多30尺内一个你能看见且未被占据的位置。",
-                "spell_identities": [
-                  {
-                    "english_name": "",
-                    "localized_name": "法术后立即传送到至多30尺内一个你能看见且未被占据的位置",
-                    "spell_id": "法术后立即传送到至多30尺内一个你能看见且未被占据的位置"
-                  }
-                ],
-                "spell_ids": [
-                  "法术后立即传送到至多30尺内一个你能看见且未被占据的位置"
-                ]
-              },
-              "trigger": "item_action_requested"
             }
           ],
           "compile_status": "full",
           "consumer_ids": [
             "item.attunement.v1",
             "item.equipment_modifier.v1",
-            "item.granted_action.v1",
-            "item.granted_spell.v1"
+            "item.granted_action.v1"
           ],
-          "item_fingerprint": "f7004d37b474cadddf2f459eb7c452b241f478074f48c3a2d48b780f08c68453",
+          "item_fingerprint": "c7a076ce1ad3b4207d319c11f85f9262d5790b25ddf9eea881e63c6b867e9640",
           "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-astral-shard-001",
           "runtime_preview_full": true,
           "schema_version": "item-ir-1",
@@ -7534,13 +6176,7 @@
             "target_policy": "self"
           }
         ],
-        "granted_spells": [
-          {
-            "english_name": "",
-            "localized_name": "法术后立即传送到至多30尺内一个你能看见且未被占据的位置",
-            "spell_id": "法术后立即传送到至多30尺内一个你能看见且未被占据的位置"
-          }
-        ],
+        "granted_spells": [],
         "healing": null,
         "immunities": [],
         "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-astral-shard-001",
@@ -7556,7 +6192,7 @@
         "requires_attunement": true,
         "resistances": [],
         "resource_bindings": [],
-        "review_fingerprint": "f7004d37b474cadddf2f459eb7c452b241f478074f48c3a2d48b780f08c68453",
+        "review_fingerprint": "c7a076ce1ad3b4207d319c11f85f9262d5790b25ddf9eea881e63c6b867e9640",
         "review_status": "reviewed",
         "ruleset_version": "2024",
         "schema_version": "item-ir-1",
@@ -7784,10 +6420,10 @@
           "compile_full": true,
           "dm_assisted": false,
           "draft": true,
-          "game_usable": false,
-          "highest_status": "isolated_runtime_validated",
+          "game_usable": true,
+          "highest_status": "game_usable",
           "isolated_runtime_validated": true,
-          "registered_production_full": false,
+          "registered_production_full": true,
           "reviewed": true,
           "runtime_preview_full": true,
           "source_identified": true
@@ -7994,10 +6630,10 @@
           "compile_full": true,
           "dm_assisted": false,
           "draft": true,
-          "game_usable": false,
-          "highest_status": "isolated_runtime_validated",
+          "game_usable": true,
+          "highest_status": "game_usable",
           "isolated_runtime_validated": true,
-          "registered_production_full": false,
+          "registered_production_full": true,
           "reviewed": true,
           "runtime_preview_full": true,
           "source_identified": true
@@ -8251,10 +6887,10 @@
           "compile_full": true,
           "dm_assisted": false,
           "draft": true,
-          "game_usable": false,
-          "highest_status": "isolated_runtime_validated",
+          "game_usable": true,
+          "highest_status": "game_usable",
           "isolated_runtime_validated": true,
-          "registered_production_full": false,
+          "registered_production_full": true,
           "reviewed": true,
           "runtime_preview_full": true,
           "source_identified": true
@@ -8444,10 +7080,10 @@
           "compile_full": true,
           "dm_assisted": false,
           "draft": true,
-          "game_usable": false,
-          "highest_status": "isolated_runtime_validated",
+          "game_usable": true,
+          "highest_status": "game_usable",
           "isolated_runtime_validated": true,
-          "registered_production_full": false,
+          "registered_production_full": true,
           "reviewed": true,
           "runtime_preview_full": true,
           "source_identified": true
@@ -8556,30 +7192,6 @@
               "target_policy": "source_text"
             },
             "trigger": "item_action_requested"
-          },
-          {
-            "action_economy": "action",
-            "clause_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:duplicitous-manuscript:006:spell-grant",
-            "clause_type": "granted_spell",
-            "evidence": {
-              "manual_review_required": false,
-              "source_excerpt": "*奇物, 珍稀（需法师同调）*\n这本书对你来说是一本魔法法术书。对其他人而言，这本书看起来只是一本冗长的浪漫小说。作为一个动作，你可以改变书籍的外观和其中的浪漫故事。\n这本书在被找到时，包含了以下法术：*幻景Hallucinatory\nTerrain*，*高级幻影Major Image*，*镜影术Mirror Image*，*假象术Mislead*，*涅斯图魔法灵光Nystul's Magic Aura*，*魅影之力Phantasmal Force*和*无声幻影Silent\nImage*。你可以将其作为法术书。\n当你持握这本书时，你可以将其作为你法师法术的法器。\n书具有3发充能，且每天黎明时恢复1d3发已消耗的充能。你持握它时，可以通过以下方式消耗充能：\n\n- 如果你花费1分钟时间研究这本书，你可以消耗1发充能"
-            },
-            "parameters": {
-              "grant_mode": "item_cast",
-              "source_text": "*奇物, 珍稀（需法师同调）*\n这本书对你来说是一本魔法法术书。对其他人而言，这本书看起来只是一本冗长的浪漫小说。作为一个动作，你可以改变书籍的外观和其中的浪漫故事。\n这本书在被找到时，包含了以下法术：*幻景Hallucinatory\nTerrain*，*高级幻影Major Image*，*镜影术Mirror Image*，*假象术Mislead*，*涅斯图魔法灵光Nystul's Magic Aura*，*魅影之力Phantasmal Force*和*无声幻影Silent\nImage*。你可以将其作为法术书。\n当你持握这本书时，你可以将其作为你法师法术的法器。\n书具有3发充能，且每天黎明时恢复1d3发已消耗的充能。你持握它时，可以通过以下方式消耗充能：\n\n- 如果你花费1分钟时间研究这本书，你可以消耗1发充能",
-              "spell_identities": [
-                {
-                  "english_name": "",
-                  "localized_name": "幻术系",
-                  "spell_id": "幻术系"
-                }
-              ],
-              "spell_ids": [
-                "幻术系"
-              ]
-            },
-            "trigger": "item_action_requested"
           }
         ],
         "compile": {
@@ -8674,30 +7286,6 @@
                 "target_policy": "source_text"
               },
               "trigger": "item_action_requested"
-            },
-            {
-              "action_economy": "action",
-              "clause_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:duplicitous-manuscript:006:spell-grant",
-              "clause_type": "granted_spell",
-              "evidence": {
-                "manual_review_required": false,
-                "source_excerpt": "*奇物, 珍稀（需法师同调）*\n这本书对你来说是一本魔法法术书。对其他人而言，这本书看起来只是一本冗长的浪漫小说。作为一个动作，你可以改变书籍的外观和其中的浪漫故事。\n这本书在被找到时，包含了以下法术：*幻景Hallucinatory\nTerrain*，*高级幻影Major Image*，*镜影术Mirror Image*，*假象术Mislead*，*涅斯图魔法灵光Nystul's Magic Aura*，*魅影之力Phantasmal Force*和*无声幻影Silent\nImage*。你可以将其作为法术书。\n当你持握这本书时，你可以将其作为你法师法术的法器。\n书具有3发充能，且每天黎明时恢复1d3发已消耗的充能。你持握它时，可以通过以下方式消耗充能：\n\n- 如果你花费1分钟时间研究这本书，你可以消耗1发充能"
-              },
-              "parameters": {
-                "grant_mode": "item_cast",
-                "source_text": "*奇物, 珍稀（需法师同调）*\n这本书对你来说是一本魔法法术书。对其他人而言，这本书看起来只是一本冗长的浪漫小说。作为一个动作，你可以改变书籍的外观和其中的浪漫故事。\n这本书在被找到时，包含了以下法术：*幻景Hallucinatory\nTerrain*，*高级幻影Major Image*，*镜影术Mirror Image*，*假象术Mislead*，*涅斯图魔法灵光Nystul's Magic Aura*，*魅影之力Phantasmal Force*和*无声幻影Silent\nImage*。你可以将其作为法术书。\n当你持握这本书时，你可以将其作为你法师法术的法器。\n书具有3发充能，且每天黎明时恢复1d3发已消耗的充能。你持握它时，可以通过以下方式消耗充能：\n\n- 如果你花费1分钟时间研究这本书，你可以消耗1发充能",
-                "spell_identities": [
-                  {
-                    "english_name": "",
-                    "localized_name": "幻术系",
-                    "spell_id": "幻术系"
-                  }
-                ],
-                "spell_ids": [
-                  "幻术系"
-                ]
-              },
-              "trigger": "item_action_requested"
             }
           ],
           "compile_status": "full",
@@ -8705,10 +7293,9 @@
             "item.attunement.v1",
             "item.charge_resource.v1",
             "item.equipment_modifier.v1",
-            "item.granted_action.v1",
-            "item.granted_spell.v1"
+            "item.granted_action.v1"
           ],
-          "item_fingerprint": "2da05a9981c7a882175c5c57e99236ba0b8eda9206ef049c26f1d4f564e149c8",
+          "item_fingerprint": "f4e980349d4cd65c13f2f50c71d39296c2eaf0b768f30f7d328551aa6c26067f",
           "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-duplicitous-manuscript-006",
           "runtime_preview_full": true,
           "schema_version": "item-ir-1",
@@ -8761,13 +7348,7 @@
             "target_policy": "source_text"
           }
         ],
-        "granted_spells": [
-          {
-            "english_name": "",
-            "localized_name": "幻术系",
-            "spell_id": "幻术系"
-          }
-        ],
+        "granted_spells": [],
         "healing": null,
         "immunities": [],
         "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-duplicitous-manuscript-006",
@@ -8783,7 +7364,7 @@
         "requires_attunement": true,
         "resistances": [],
         "resource_bindings": [],
-        "review_fingerprint": "2da05a9981c7a882175c5c57e99236ba0b8eda9206ef049c26f1d4f564e149c8",
+        "review_fingerprint": "f4e980349d4cd65c13f2f50c71d39296c2eaf0b768f30f7d328551aa6c26067f",
         "review_status": "reviewed",
         "ruleset_version": "2024",
         "schema_version": "item-ir-1",
@@ -9283,30 +7864,6 @@
               "target_policy": "explicit_target"
             },
             "trigger": "item_action_requested"
-          },
-          {
-            "action_economy": "action",
-            "clause_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:fulminating-treatise:009:spell-grant",
-            "clause_type": "granted_spell",
-            "evidence": {
-              "manual_review_required": false,
-              "source_excerpt": "*奇物, 珍稀（需法师同调）*\n这本书被烧焦的厚实法术书散发着烟雾和臭氧的气味，书页的边缘闪烁着能量的火花。\n这本书在被找到时，包含了以下法术：*触发术Contingency*，*火球术Fireball*，*造风术Gust of\nWind*，*李欧蒙小屋Leomund's Tiny\nHut*，*魔法飞弹Magic Missile*，*雷鸣波Thunderwave*和*力场墙Wall of\nForce*。你可以将其作为法术书。\n当你持握这本书时，你可以将其作为你法师法术的法器。\n书具有3发充能，且每天黎明时恢复1d3发已消耗的充能。你持握它时，可以通过以下方式消耗充能：\n\n- 如果你花费1分钟时间研究这本书，你可以消耗1发充能来将你的一道已准备法术替换为书中的另一道法术。新法术必须是塑能学派的法术。当一个你可见的"
-            },
-            "parameters": {
-              "grant_mode": "item_cast",
-              "source_text": "*奇物, 珍稀（需法师同调）*\n这本书被烧焦的厚实法术书散发着烟雾和臭氧的气味，书页的边缘闪烁着能量的火花。\n这本书在被找到时，包含了以下法术：*触发术Contingency*，*火球术Fireball*，*造风术Gust of\nWind*，*李欧蒙小屋Leomund's Tiny\nHut*，*魔法飞弹Magic Missile*，*雷鸣波Thunderwave*和*力场墙Wall of\nForce*。你可以将其作为法术书。\n当你持握这本书时，你可以将其作为你法师法术的法器。\n书具有3发充能，且每天黎明时恢复1d3发已消耗的充能。你持握它时，可以通过以下方式消耗充能：\n\n- 如果你花费1分钟时间研究这本书，你可以消耗1发充能来将你的一道已准备法术替换为书中的另一道法术。新法术必须是塑能学派的法术。当一个你可见的",
-              "spell_identities": [
-                {
-                  "english_name": "",
-                  "localized_name": "的塑能系",
-                  "spell_id": "的塑能系"
-                }
-              ],
-              "spell_ids": [
-                "的塑能系"
-              ]
-            },
-            "trigger": "item_action_requested"
           }
         ],
         "compile": {
@@ -9383,30 +7940,6 @@
                 "target_policy": "explicit_target"
               },
               "trigger": "item_action_requested"
-            },
-            {
-              "action_economy": "action",
-              "clause_id": "tashas-cauldron:atom:7f82da3807a304a28c05c79b:fulminating-treatise:009:spell-grant",
-              "clause_type": "granted_spell",
-              "evidence": {
-                "manual_review_required": false,
-                "source_excerpt": "*奇物, 珍稀（需法师同调）*\n这本书被烧焦的厚实法术书散发着烟雾和臭氧的气味，书页的边缘闪烁着能量的火花。\n这本书在被找到时，包含了以下法术：*触发术Contingency*，*火球术Fireball*，*造风术Gust of\nWind*，*李欧蒙小屋Leomund's Tiny\nHut*，*魔法飞弹Magic Missile*，*雷鸣波Thunderwave*和*力场墙Wall of\nForce*。你可以将其作为法术书。\n当你持握这本书时，你可以将其作为你法师法术的法器。\n书具有3发充能，且每天黎明时恢复1d3发已消耗的充能。你持握它时，可以通过以下方式消耗充能：\n\n- 如果你花费1分钟时间研究这本书，你可以消耗1发充能来将你的一道已准备法术替换为书中的另一道法术。新法术必须是塑能学派的法术。当一个你可见的"
-              },
-              "parameters": {
-                "grant_mode": "item_cast",
-                "source_text": "*奇物, 珍稀（需法师同调）*\n这本书被烧焦的厚实法术书散发着烟雾和臭氧的气味，书页的边缘闪烁着能量的火花。\n这本书在被找到时，包含了以下法术：*触发术Contingency*，*火球术Fireball*，*造风术Gust of\nWind*，*李欧蒙小屋Leomund's Tiny\nHut*，*魔法飞弹Magic Missile*，*雷鸣波Thunderwave*和*力场墙Wall of\nForce*。你可以将其作为法术书。\n当你持握这本书时，你可以将其作为你法师法术的法器。\n书具有3发充能，且每天黎明时恢复1d3发已消耗的充能。你持握它时，可以通过以下方式消耗充能：\n\n- 如果你花费1分钟时间研究这本书，你可以消耗1发充能来将你的一道已准备法术替换为书中的另一道法术。新法术必须是塑能学派的法术。当一个你可见的",
-                "spell_identities": [
-                  {
-                    "english_name": "",
-                    "localized_name": "的塑能系",
-                    "spell_id": "的塑能系"
-                  }
-                ],
-                "spell_ids": [
-                  "的塑能系"
-                ]
-              },
-              "trigger": "item_action_requested"
             }
           ],
           "compile_status": "full",
@@ -9414,10 +7947,9 @@
             "item.attunement.v1",
             "item.charge_resource.v1",
             "item.equipment_modifier.v1",
-            "item.granted_action.v1",
-            "item.granted_spell.v1"
+            "item.granted_action.v1"
           ],
-          "item_fingerprint": "42b7cb943039dcd413ce7b8fb01b4aa5ac26b1566ba764215aa3cc05fc784f1e",
+          "item_fingerprint": "b153c21cf2728a5a8c34041cf0f041f1d0eb6dd1d499eeeaa8a756dc7442d114",
           "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-fulminating-treatise-009",
           "runtime_preview_full": true,
           "schema_version": "item-ir-1",
@@ -9461,13 +7993,7 @@
             "target_policy": "explicit_target"
           }
         ],
-        "granted_spells": [
-          {
-            "english_name": "",
-            "localized_name": "的塑能系",
-            "spell_id": "的塑能系"
-          }
-        ],
+        "granted_spells": [],
         "healing": null,
         "immunities": [],
         "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-fulminating-treatise-009",
@@ -9483,7 +8009,7 @@
         "requires_attunement": true,
         "resistances": [],
         "resource_bindings": [],
-        "review_fingerprint": "42b7cb943039dcd413ce7b8fb01b4aa5ac26b1566ba764215aa3cc05fc784f1e",
+        "review_fingerprint": "b153c21cf2728a5a8c34041cf0f041f1d0eb6dd1d499eeeaa8a756dc7442d114",
         "review_status": "reviewed",
         "ruleset_version": "2024",
         "schema_version": "item-ir-1",
@@ -9711,10 +8237,10 @@
           "compile_full": true,
           "dm_assisted": false,
           "draft": true,
-          "game_usable": false,
-          "highest_status": "isolated_runtime_validated",
+          "game_usable": true,
+          "highest_status": "game_usable",
           "isolated_runtime_validated": true,
-          "registered_production_full": false,
+          "registered_production_full": true,
           "reviewed": true,
           "runtime_preview_full": true,
           "source_identified": true
@@ -9968,10 +8494,10 @@
           "compile_full": true,
           "dm_assisted": false,
           "draft": true,
-          "game_usable": false,
-          "highest_status": "isolated_runtime_validated",
+          "game_usable": true,
+          "highest_status": "game_usable",
           "isolated_runtime_validated": true,
-          "registered_production_full": false,
+          "registered_production_full": true,
           "reviewed": true,
           "runtime_preview_full": true,
           "source_identified": true
@@ -10656,10 +9182,10 @@
           "compile_full": true,
           "dm_assisted": false,
           "draft": true,
-          "game_usable": false,
-          "highest_status": "isolated_runtime_validated",
+          "game_usable": true,
+          "highest_status": "game_usable",
           "isolated_runtime_validated": true,
-          "registered_production_full": false,
+          "registered_production_full": true,
           "reviewed": true,
           "runtime_preview_full": true,
           "source_identified": true
@@ -11576,18 +10102,12 @@
               "source_text": "Tattoo****\n***奇物（刺青）**,**普通（需同调）*\n该魔法刺青用一根特殊的针制作，显现为你所想要的样子。\n***刺青同调。***同调此物品时，你需要将针持握，并抵在你想要让刺青出现的那处皮肤上。当同调完成时，针头会化为墨水再变成刺青。若你与刺青的同调结束，刺青会消失，针头会再次出现在你的位置中。\n***液态油墨。***作为一个附赠动作，你可以将刺青变为任意颜色或图纹，并移动到你皮肤上的任意区域。无论其有着什么形态，它看起来总是一个刺青。它的尺寸最小可为一枚铜币，大则可覆盖你的全身。\n***易容自我。***作为一个动作，你可以使用刺青施展*易容术**Disguise Self*法术（识破DC13）。使用刺青施展这道法术后，直到下次黎明前，不能再次用刺青施展。",
               "spell_identities": [
                 {
-                  "english_name": "",
-                  "localized_name": "这道",
-                  "spell_id": "这道"
-                },
-                {
                   "english_name": "Disguise Self",
                   "localized_name": "易容术",
                   "spell_id": "disguise-self"
                 }
               ],
               "spell_ids": [
-                "这道",
                 "disguise-self"
               ]
             },
@@ -11684,18 +10204,12 @@
                 "source_text": "Tattoo****\n***奇物（刺青）**,**普通（需同调）*\n该魔法刺青用一根特殊的针制作，显现为你所想要的样子。\n***刺青同调。***同调此物品时，你需要将针持握，并抵在你想要让刺青出现的那处皮肤上。当同调完成时，针头会化为墨水再变成刺青。若你与刺青的同调结束，刺青会消失，针头会再次出现在你的位置中。\n***液态油墨。***作为一个附赠动作，你可以将刺青变为任意颜色或图纹，并移动到你皮肤上的任意区域。无论其有着什么形态，它看起来总是一个刺青。它的尺寸最小可为一枚铜币，大则可覆盖你的全身。\n***易容自我。***作为一个动作，你可以使用刺青施展*易容术**Disguise Self*法术（识破DC13）。使用刺青施展这道法术后，直到下次黎明前，不能再次用刺青施展。",
                 "spell_identities": [
                   {
-                    "english_name": "",
-                    "localized_name": "这道",
-                    "spell_id": "这道"
-                  },
-                  {
                     "english_name": "Disguise Self",
                     "localized_name": "易容术",
                     "spell_id": "disguise-self"
                   }
                 ],
                 "spell_ids": [
-                  "这道",
                   "disguise-self"
                 ]
               },
@@ -11709,7 +10223,7 @@
             "item.granted_action.v1",
             "item.granted_spell.v1"
           ],
-          "item_fingerprint": "85818c66f9846494614431f43e6004e6149d1bac006d11f3bdbcf25f67f1fae4",
+          "item_fingerprint": "dac3cbb93781032bfca9983e7ce1c0628805c1f813932a06325d64b64a87962b",
           "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-a92dd000492e-001",
           "runtime_preview_full": true,
           "schema_version": "item-ir-1",
@@ -11764,11 +10278,6 @@
         ],
         "granted_spells": [
           {
-            "english_name": "",
-            "localized_name": "这道",
-            "spell_id": "这道"
-          },
-          {
             "english_name": "Disguise Self",
             "localized_name": "易容术",
             "spell_id": "disguise-self"
@@ -11789,7 +10298,7 @@
         "requires_attunement": true,
         "resistances": [],
         "resource_bindings": [],
-        "review_fingerprint": "85818c66f9846494614431f43e6004e6149d1bac006d11f3bdbcf25f67f1fae4",
+        "review_fingerprint": "dac3cbb93781032bfca9983e7ce1c0628805c1f813932a06325d64b64a87962b",
         "review_status": "reviewed",
         "ruleset_version": "2024",
         "schema_version": "item-ir-1",
@@ -12306,30 +10815,6 @@
               "target_policy": "explicit_target"
             },
             "trigger": "item_action_requested"
-          },
-          {
-            "action_economy": "action",
-            "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:coiling:004:spell-grant",
-            "clause_type": "granted_spell",
-            "evidence": {
-              "manual_review_required": false,
-              "source_excerpt": "Grasp Tattoo********\n***奇物（刺青）**,**非普通（需同调）***\n该魔法刺青用一根特殊的针制作，绘有错杂盘虬的图案。\n刺青同调。同调此物品时，你需要将针持握，并抵在你想要让刺青出现的那处皮肤上。当同调完成时，针头会化为墨水再变成刺青。若你与刺青的同调结束，刺青会消失，针头会再次出现在你的位置中。\n缠握触须。当刺青在你的皮肤上时，你可以用一个动作让刺青伸缩出一团能够触及一个15尺内你可见生物的墨黑色触须。目标生物需要进行一次DC14的力量豁免，豁免失败则受到3d6力场伤害并被你***擒抱**Grappled*。作为一个动作，被擒抱的生物可以通过DC14的力量（运动）或敏捷（特技）检定以摆脱擒抱。在你使触手停止（无需动作），或生物与你相距15尺以上或你对另一个生物使用此刺青时，擒抱也会结"
-            },
-            "parameters": {
-              "grant_mode": "item_cast",
-              "source_text": "Grasp Tattoo********\n***奇物（刺青）**,**非普通（需同调）***\n该魔法刺青用一根特殊的针制作，绘有错杂盘虬的图案。\n刺青同调。同调此物品时，你需要将针持握，并抵在你想要让刺青出现的那处皮肤上。当同调完成时，针头会化为墨水再变成刺青。若你与刺青的同调结束，刺青会消失，针头会再次出现在你的位置中。\n缠握触须。当刺青在你的皮肤上时，你可以用一个动作让刺青伸缩出一团能够触及一个15尺内你可见生物的墨黑色触须。目标生物需要进行一次DC14的力量豁免，豁免失败则受到3d6力场伤害并被你***擒抱**Grappled*。作为一个动作，被擒抱的生物可以通过DC14的力量（运动）或敏捷（特技）检定以摆脱擒抱。在你使触手停止（无需动作），或生物与你相距15尺以上或你对另一个生物使用此刺青时，擒抱也会结",
-              "spell_identities": [
-                {
-                  "english_name": "Grappled",
-                  "localized_name": "擒抱",
-                  "spell_id": "grappled"
-                }
-              ],
-              "spell_ids": [
-                "grappled"
-              ]
-            },
-            "trigger": "item_action_requested"
           }
         ],
         "compile": {
@@ -12408,40 +10893,15 @@
                 "target_policy": "explicit_target"
               },
               "trigger": "item_action_requested"
-            },
-            {
-              "action_economy": "action",
-              "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:coiling:004:spell-grant",
-              "clause_type": "granted_spell",
-              "evidence": {
-                "manual_review_required": false,
-                "source_excerpt": "Grasp Tattoo********\n***奇物（刺青）**,**非普通（需同调）***\n该魔法刺青用一根特殊的针制作，绘有错杂盘虬的图案。\n刺青同调。同调此物品时，你需要将针持握，并抵在你想要让刺青出现的那处皮肤上。当同调完成时，针头会化为墨水再变成刺青。若你与刺青的同调结束，刺青会消失，针头会再次出现在你的位置中。\n缠握触须。当刺青在你的皮肤上时，你可以用一个动作让刺青伸缩出一团能够触及一个15尺内你可见生物的墨黑色触须。目标生物需要进行一次DC14的力量豁免，豁免失败则受到3d6力场伤害并被你***擒抱**Grappled*。作为一个动作，被擒抱的生物可以通过DC14的力量（运动）或敏捷（特技）检定以摆脱擒抱。在你使触手停止（无需动作），或生物与你相距15尺以上或你对另一个生物使用此刺青时，擒抱也会结"
-              },
-              "parameters": {
-                "grant_mode": "item_cast",
-                "source_text": "Grasp Tattoo********\n***奇物（刺青）**,**非普通（需同调）***\n该魔法刺青用一根特殊的针制作，绘有错杂盘虬的图案。\n刺青同调。同调此物品时，你需要将针持握，并抵在你想要让刺青出现的那处皮肤上。当同调完成时，针头会化为墨水再变成刺青。若你与刺青的同调结束，刺青会消失，针头会再次出现在你的位置中。\n缠握触须。当刺青在你的皮肤上时，你可以用一个动作让刺青伸缩出一团能够触及一个15尺内你可见生物的墨黑色触须。目标生物需要进行一次DC14的力量豁免，豁免失败则受到3d6力场伤害并被你***擒抱**Grappled*。作为一个动作，被擒抱的生物可以通过DC14的力量（运动）或敏捷（特技）检定以摆脱擒抱。在你使触手停止（无需动作），或生物与你相距15尺以上或你对另一个生物使用此刺青时，擒抱也会结",
-                "spell_identities": [
-                  {
-                    "english_name": "Grappled",
-                    "localized_name": "擒抱",
-                    "spell_id": "grappled"
-                  }
-                ],
-                "spell_ids": [
-                  "grappled"
-                ]
-              },
-              "trigger": "item_action_requested"
             }
           ],
           "compile_status": "full",
           "consumer_ids": [
             "item.attunement.v1",
             "item.equipment_modifier.v1",
-            "item.granted_action.v1",
-            "item.granted_spell.v1"
+            "item.granted_action.v1"
           ],
-          "item_fingerprint": "6ebba94cdb20eaaad76950657e1622282777fbc627ed62592cba79a75176c344",
+          "item_fingerprint": "26426940fcdd5e259488d88284489012db53f6dc5bee0d67f54d238ee1195212",
           "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-coiling-004",
           "runtime_preview_full": true,
           "schema_version": "item-ir-1",
@@ -12494,13 +10954,7 @@
             "target_policy": "explicit_target"
           }
         ],
-        "granted_spells": [
-          {
-            "english_name": "Grappled",
-            "localized_name": "擒抱",
-            "spell_id": "grappled"
-          }
-        ],
+        "granted_spells": [],
         "healing": null,
         "immunities": [],
         "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-coiling-004",
@@ -12516,7 +10970,7 @@
         "requires_attunement": true,
         "resistances": [],
         "resource_bindings": [],
-        "review_fingerprint": "6ebba94cdb20eaaad76950657e1622282777fbc627ed62592cba79a75176c344",
+        "review_fingerprint": "26426940fcdd5e259488d88284489012db53f6dc5bee0d67f54d238ee1195212",
         "review_status": "reviewed",
         "ruleset_version": "2024",
         "schema_version": "item-ir-1",
@@ -12860,36 +11314,6 @@
               "target_policy": "self"
             },
             "trigger": "item_action_requested"
-          },
-          {
-            "action_economy": "action",
-            "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:ghost-step-tattoo:008:spell-grant",
-            "clause_type": "granted_spell",
-            "evidence": {
-              "manual_review_required": false,
-              "source_excerpt": "***奇物（刺青）**,**极珍稀（需同调）*\n该魔法刺青用一根特殊的针制作，图案于你身上各处闪烁、模糊不清。\n***刺青同调。***同调此物品时，你需要将针持握，并抵在你想要让刺青出现的那处皮肤上。当同调完成时，针头会化为墨水再变成刺青。若你与刺青的同调结束，刺青会消失，针头会再次出现在你的位置中。\n***鬼灵形态********。***刺青具有3发充能，且每天黎明时恢复所有已消耗的充能。刺青在你的皮肤上时，作为一个附赠动作，你可以消耗1发刺青的充能变为虚体，直到你的下个回合开始。在持续时间内，你获得以下增益：\n\n1.你获得对非魔法武器的钝击、穿刺和挥砍抗性。\n\n2.你不会被*擒抱**Grappled*或*束缚**Restrained*\n\n3.你可以像穿过困难地形那样穿过其他生物或物件。如果你在回合结束时处于"
-            },
-            "parameters": {
-              "grant_mode": "item_cast",
-              "source_text": "***奇物（刺青）**,**极珍稀（需同调）*\n该魔法刺青用一根特殊的针制作，图案于你身上各处闪烁、模糊不清。\n***刺青同调。***同调此物品时，你需要将针持握，并抵在你想要让刺青出现的那处皮肤上。当同调完成时，针头会化为墨水再变成刺青。若你与刺青的同调结束，刺青会消失，针头会再次出现在你的位置中。\n***鬼灵形态********。***刺青具有3发充能，且每天黎明时恢复所有已消耗的充能。刺青在你的皮肤上时，作为一个附赠动作，你可以消耗1发刺青的充能变为虚体，直到你的下个回合开始。在持续时间内，你获得以下增益：\n\n1.你获得对非魔法武器的钝击、穿刺和挥砍抗性。\n\n2.你不会被*擒抱**Grappled*或*束缚**Restrained*\n\n3.你可以像穿过困难地形那样穿过其他生物或物件。如果你在回合结束时处于",
-              "spell_identities": [
-                {
-                  "english_name": "Grappled",
-                  "localized_name": "擒抱",
-                  "spell_id": "grappled"
-                },
-                {
-                  "english_name": "Restrained",
-                  "localized_name": "束缚",
-                  "spell_id": "restrained"
-                }
-              ],
-              "spell_ids": [
-                "grappled",
-                "restrained"
-              ]
-            },
-            "trigger": "item_action_requested"
           }
         ],
         "compile": {
@@ -12979,36 +11403,6 @@
                 "target_policy": "self"
               },
               "trigger": "item_action_requested"
-            },
-            {
-              "action_economy": "action",
-              "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:ghost-step-tattoo:008:spell-grant",
-              "clause_type": "granted_spell",
-              "evidence": {
-                "manual_review_required": false,
-                "source_excerpt": "***奇物（刺青）**,**极珍稀（需同调）*\n该魔法刺青用一根特殊的针制作，图案于你身上各处闪烁、模糊不清。\n***刺青同调。***同调此物品时，你需要将针持握，并抵在你想要让刺青出现的那处皮肤上。当同调完成时，针头会化为墨水再变成刺青。若你与刺青的同调结束，刺青会消失，针头会再次出现在你的位置中。\n***鬼灵形态********。***刺青具有3发充能，且每天黎明时恢复所有已消耗的充能。刺青在你的皮肤上时，作为一个附赠动作，你可以消耗1发刺青的充能变为虚体，直到你的下个回合开始。在持续时间内，你获得以下增益：\n\n1.你获得对非魔法武器的钝击、穿刺和挥砍抗性。\n\n2.你不会被*擒抱**Grappled*或*束缚**Restrained*\n\n3.你可以像穿过困难地形那样穿过其他生物或物件。如果你在回合结束时处于"
-              },
-              "parameters": {
-                "grant_mode": "item_cast",
-                "source_text": "***奇物（刺青）**,**极珍稀（需同调）*\n该魔法刺青用一根特殊的针制作，图案于你身上各处闪烁、模糊不清。\n***刺青同调。***同调此物品时，你需要将针持握，并抵在你想要让刺青出现的那处皮肤上。当同调完成时，针头会化为墨水再变成刺青。若你与刺青的同调结束，刺青会消失，针头会再次出现在你的位置中。\n***鬼灵形态********。***刺青具有3发充能，且每天黎明时恢复所有已消耗的充能。刺青在你的皮肤上时，作为一个附赠动作，你可以消耗1发刺青的充能变为虚体，直到你的下个回合开始。在持续时间内，你获得以下增益：\n\n1.你获得对非魔法武器的钝击、穿刺和挥砍抗性。\n\n2.你不会被*擒抱**Grappled*或*束缚**Restrained*\n\n3.你可以像穿过困难地形那样穿过其他生物或物件。如果你在回合结束时处于",
-                "spell_identities": [
-                  {
-                    "english_name": "Grappled",
-                    "localized_name": "擒抱",
-                    "spell_id": "grappled"
-                  },
-                  {
-                    "english_name": "Restrained",
-                    "localized_name": "束缚",
-                    "spell_id": "restrained"
-                  }
-                ],
-                "spell_ids": [
-                  "grappled",
-                  "restrained"
-                ]
-              },
-              "trigger": "item_action_requested"
             }
           ],
           "compile_status": "full",
@@ -13016,10 +11410,9 @@
             "item.attunement.v1",
             "item.charge_resource.v1",
             "item.equipment_modifier.v1",
-            "item.granted_action.v1",
-            "item.granted_spell.v1"
+            "item.granted_action.v1"
           ],
-          "item_fingerprint": "3fbee53dfe079e63c67a2b8c6fed5ed48356a90eef5dec1c2cfe49cb947ffb2d",
+          "item_fingerprint": "8b7984138c5c8988ea6dba5632aeed17401a19d0252700efb4db7469fcd13eeb",
           "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-ghost-step-tattoo-008",
           "runtime_preview_full": true,
           "schema_version": "item-ir-1",
@@ -13063,18 +11456,7 @@
             "target_policy": "self"
           }
         ],
-        "granted_spells": [
-          {
-            "english_name": "Grappled",
-            "localized_name": "擒抱",
-            "spell_id": "grappled"
-          },
-          {
-            "english_name": "Restrained",
-            "localized_name": "束缚",
-            "spell_id": "restrained"
-          }
-        ],
+        "granted_spells": [],
         "healing": null,
         "immunities": [],
         "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-ghost-step-tattoo-008",
@@ -13090,7 +11472,7 @@
         "requires_attunement": true,
         "resistances": [],
         "resource_bindings": [],
-        "review_fingerprint": "3fbee53dfe079e63c67a2b8c6fed5ed48356a90eef5dec1c2cfe49cb947ffb2d",
+        "review_fingerprint": "8b7984138c5c8988ea6dba5632aeed17401a19d0252700efb4db7469fcd13eeb",
         "review_status": "reviewed",
         "ruleset_version": "2024",
         "schema_version": "item-ir-1",
@@ -13803,28 +12185,22 @@
             "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:spell-wrought-tattoo:002:spell-grant",
             "clause_type": "granted_spell",
             "evidence": {
-              "manual_review_required": false,
+              "manual_review_required": true,
               "source_excerpt": "***奇物（刺青）**,****多种稀有度*\n该魔法刺青用一根特殊的针制作，包含着一道最高5环的法术，用魔法针纹在你的身上。为了使用此刺青，你必须持针抵住你的皮肤，并说出命令语。针会变为墨水，化为刺青，在你的皮肤上显现为你喜欢的样子。刺青在你身上时，你可以施展那道法术而不需要材料成分。在你施展这道法术时，刺青会在法术的持续时间内发出微光。法术结束时，刺青会从你的皮肤上消失。\n刺青的稀有度、其法术的豁免DC和攻击加值由它所记载的法术环阶决定，如下表所示："
             },
             "parameters": {
               "grant_mode": "item_cast",
               "source_text": "***奇物（刺青）**,****多种稀有度*\n该魔法刺青用一根特殊的针制作，包含着一道最高5环的法术，用魔法针纹在你的身上。为了使用此刺青，你必须持针抵住你的皮肤，并说出命令语。针会变为墨水，化为刺青，在你的皮肤上显现为你喜欢的样子。刺青在你身上时，你可以施展那道法术而不需要材料成分。在你施展这道法术时，刺青会在法术的持续时间内发出微光。法术结束时，刺青会从你的皮肤上消失。\n刺青的稀有度、其法术的豁免DC和攻击加值由它所记载的法术环阶决定，如下表所示：",
-              "spell_identities": [
-                {
-                  "english_name": "",
-                  "localized_name": "这道",
-                  "spell_id": "这道"
-                }
-              ],
-              "spell_ids": [
-                "这道"
-              ]
+              "spell_identities": [],
+              "spell_ids": []
             },
             "trigger": "item_action_requested"
           }
         ],
         "compile": {
-          "blockers": [],
+          "blockers": [
+            "manual_clause_requires_dm_or_additional_typed_fields"
+          ],
           "clauses": [
             {
               "action_economy": "none",
@@ -13856,35 +12232,27 @@
               "clause_id": "tashas-cauldron:atom:932a86d7b29c891ff8c75d2c:spell-wrought-tattoo:002:spell-grant",
               "clause_type": "granted_spell",
               "evidence": {
-                "manual_review_required": false,
+                "manual_review_required": true,
                 "source_excerpt": "***奇物（刺青）**,****多种稀有度*\n该魔法刺青用一根特殊的针制作，包含着一道最高5环的法术，用魔法针纹在你的身上。为了使用此刺青，你必须持针抵住你的皮肤，并说出命令语。针会变为墨水，化为刺青，在你的皮肤上显现为你喜欢的样子。刺青在你身上时，你可以施展那道法术而不需要材料成分。在你施展这道法术时，刺青会在法术的持续时间内发出微光。法术结束时，刺青会从你的皮肤上消失。\n刺青的稀有度、其法术的豁免DC和攻击加值由它所记载的法术环阶决定，如下表所示："
               },
               "parameters": {
                 "grant_mode": "item_cast",
                 "source_text": "***奇物（刺青）**,****多种稀有度*\n该魔法刺青用一根特殊的针制作，包含着一道最高5环的法术，用魔法针纹在你的身上。为了使用此刺青，你必须持针抵住你的皮肤，并说出命令语。针会变为墨水，化为刺青，在你的皮肤上显现为你喜欢的样子。刺青在你身上时，你可以施展那道法术而不需要材料成分。在你施展这道法术时，刺青会在法术的持续时间内发出微光。法术结束时，刺青会从你的皮肤上消失。\n刺青的稀有度、其法术的豁免DC和攻击加值由它所记载的法术环阶决定，如下表所示：",
-                "spell_identities": [
-                  {
-                    "english_name": "",
-                    "localized_name": "这道",
-                    "spell_id": "这道"
-                  }
-                ],
-                "spell_ids": [
-                  "这道"
-                ]
+                "spell_identities": [],
+                "spell_ids": []
               },
               "trigger": "item_action_requested"
             }
           ],
-          "compile_status": "full",
+          "compile_status": "partial",
           "consumer_ids": [
             "item.attunement.v1",
             "item.equipment_modifier.v1",
             "item.granted_spell.v1"
           ],
-          "item_fingerprint": "7f116d36242f35c370d61b929dd51ef0261f7b53b17e55d07e30ef51561e4332",
+          "item_fingerprint": "a2f2bd32736f1fdb0ffa112ea8369df3fe281274211112b19852b8becf535481",
           "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-spell-wrought-tattoo-002",
-          "runtime_preview_full": true,
+          "runtime_preview_full": false,
           "schema_version": "item-ir-1",
           "source_trust": "authored_ir"
         },
@@ -13896,7 +12264,7 @@
         "duration": null,
         "equipped_slot": "worn",
         "evidence": {
-          "manual_review_required": false,
+          "manual_review_required": true,
           "rejected_inferences": [
             "unknown_effects",
             "unresolved_spell_identity",
@@ -13916,19 +12284,13 @@
           "source_text_sha256": "0622645595cf40747e3ec9f82ddcad58175e17bd21b507fca80c9cd3b00e2913"
         },
         "granted_actions": [],
-        "granted_spells": [
-          {
-            "english_name": "",
-            "localized_name": "这道",
-            "spell_id": "这道"
-          }
-        ],
+        "granted_spells": [],
         "healing": null,
         "immunities": [],
         "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-932a86d7b29c891ff8c75d2c-spell-wrought-tattoo-002",
         "item_kind": "magic_tattoo",
         "localized_name": "蕴法刺青",
-        "manual_review_required": false,
+        "manual_review_required": true,
         "name": "蕴法刺青|Spell wrought Tattoo",
         "namespace": "dnd.tashas.recovery.item",
         "pack_id": "tashas-cauldron",
@@ -13938,7 +12300,7 @@
         "requires_attunement": false,
         "resistances": [],
         "resource_bindings": [],
-        "review_fingerprint": "7f116d36242f35c370d61b929dd51ef0261f7b53b17e55d07e30ef51561e4332",
+        "review_fingerprint": "a2f2bd32736f1fdb0ffa112ea8369df3fe281274211112b19852b8becf535481",
         "review_status": "reviewed",
         "ruleset_version": "2024",
         "schema_version": "item-ir-1",
@@ -13953,15 +12315,15 @@
         "status_layers": {
           "authored_typed_ir": true,
           "candidate": true,
-          "compile_full": true,
+          "compile_full": false,
           "dm_assisted": false,
           "draft": true,
           "game_usable": false,
-          "highest_status": "isolated_runtime_validated",
-          "isolated_runtime_validated": true,
+          "highest_status": "authored_typed_ir",
+          "isolated_runtime_validated": false,
           "registered_production_full": false,
           "reviewed": true,
-          "runtime_preview_full": true,
+          "runtime_preview_full": false,
           "source_identified": true
         },
         "temporary_hp": null,
@@ -14034,42 +12396,6 @@
               "target_policy": "explicit_target"
             },
             "trigger": "item_action_requested"
-          },
-          {
-            "action_economy": "action",
-            "clause_id": "tashas-cauldron:atom:953875067ac4d9a793c844f0:6ad29778c06b:000:spell-grant",
-            "clause_type": "granted_spell",
-            "evidence": {
-              "manual_review_required": false,
-              "source_excerpt": "of Rebirth**\n*奇物**,**极珍稀（需德鲁伊或邪术师同调）*\n这只微型小锅的铸铁侧边上刻有英雄群像的浮雕。你可以将这件坩埚作为法器使用，且其可以作为*探知术**Scrying*法术的代替材料。当你完成一次长休时，你可以使用坩埚制造一瓶*高等治疗药水**Potion\nof Greater Healing*。药水持续24个小时，若其没有被使用，则它失去魔力。\n作为一个动作，你可以让坩埚增大至足以容纳一个中型生物。你可以用一个动作让坩埚恢复其普通大小，并且无害地将任何它无法容纳的东西转出到最近未被占据的位置。\n如果你将一个类人生物的尸体放入坩埚之中并将200磅的盐（耗费10金币）覆盖到坩埚之上持续八小时，那么盐会被消耗，而那个生物会在下一个黎明时复活，如同*死者复活**Raise\ndead*法术。使用后"
-            },
-            "parameters": {
-              "grant_mode": "item_cast",
-              "source_text": "of Rebirth**\n*奇物**,**极珍稀（需德鲁伊或邪术师同调）*\n这只微型小锅的铸铁侧边上刻有英雄群像的浮雕。你可以将这件坩埚作为法器使用，且其可以作为*探知术**Scrying*法术的代替材料。当你完成一次长休时，你可以使用坩埚制造一瓶*高等治疗药水**Potion\nof Greater Healing*。药水持续24个小时，若其没有被使用，则它失去魔力。\n作为一个动作，你可以让坩埚增大至足以容纳一个中型生物。你可以用一个动作让坩埚恢复其普通大小，并且无害地将任何它无法容纳的东西转出到最近未被占据的位置。\n如果你将一个类人生物的尸体放入坩埚之中并将200磅的盐（耗费10金币）覆盖到坩埚之上持续八小时，那么盐会被消耗，而那个生物会在下一个黎明时复活，如同*死者复活**Raise\ndead*法术。使用后",
-              "spell_identities": [
-                {
-                  "english_name": "Scrying",
-                  "localized_name": "探知术",
-                  "spell_id": "scrying"
-                },
-                {
-                  "english_name": "Potion",
-                  "localized_name": "高等治疗药水",
-                  "spell_id": "potion"
-                },
-                {
-                  "english_name": "Raise",
-                  "localized_name": "死者复活",
-                  "spell_id": "raise"
-                }
-              ],
-              "spell_ids": [
-                "scrying",
-                "potion",
-                "raise"
-              ]
-            },
-            "trigger": "item_action_requested"
           }
         ],
         "compile": {
@@ -14135,52 +12461,15 @@
                 "target_policy": "explicit_target"
               },
               "trigger": "item_action_requested"
-            },
-            {
-              "action_economy": "action",
-              "clause_id": "tashas-cauldron:atom:953875067ac4d9a793c844f0:6ad29778c06b:000:spell-grant",
-              "clause_type": "granted_spell",
-              "evidence": {
-                "manual_review_required": false,
-                "source_excerpt": "of Rebirth**\n*奇物**,**极珍稀（需德鲁伊或邪术师同调）*\n这只微型小锅的铸铁侧边上刻有英雄群像的浮雕。你可以将这件坩埚作为法器使用，且其可以作为*探知术**Scrying*法术的代替材料。当你完成一次长休时，你可以使用坩埚制造一瓶*高等治疗药水**Potion\nof Greater Healing*。药水持续24个小时，若其没有被使用，则它失去魔力。\n作为一个动作，你可以让坩埚增大至足以容纳一个中型生物。你可以用一个动作让坩埚恢复其普通大小，并且无害地将任何它无法容纳的东西转出到最近未被占据的位置。\n如果你将一个类人生物的尸体放入坩埚之中并将200磅的盐（耗费10金币）覆盖到坩埚之上持续八小时，那么盐会被消耗，而那个生物会在下一个黎明时复活，如同*死者复活**Raise\ndead*法术。使用后"
-              },
-              "parameters": {
-                "grant_mode": "item_cast",
-                "source_text": "of Rebirth**\n*奇物**,**极珍稀（需德鲁伊或邪术师同调）*\n这只微型小锅的铸铁侧边上刻有英雄群像的浮雕。你可以将这件坩埚作为法器使用，且其可以作为*探知术**Scrying*法术的代替材料。当你完成一次长休时，你可以使用坩埚制造一瓶*高等治疗药水**Potion\nof Greater Healing*。药水持续24个小时，若其没有被使用，则它失去魔力。\n作为一个动作，你可以让坩埚增大至足以容纳一个中型生物。你可以用一个动作让坩埚恢复其普通大小，并且无害地将任何它无法容纳的东西转出到最近未被占据的位置。\n如果你将一个类人生物的尸体放入坩埚之中并将200磅的盐（耗费10金币）覆盖到坩埚之上持续八小时，那么盐会被消耗，而那个生物会在下一个黎明时复活，如同*死者复活**Raise\ndead*法术。使用后",
-                "spell_identities": [
-                  {
-                    "english_name": "Scrying",
-                    "localized_name": "探知术",
-                    "spell_id": "scrying"
-                  },
-                  {
-                    "english_name": "Potion",
-                    "localized_name": "高等治疗药水",
-                    "spell_id": "potion"
-                  },
-                  {
-                    "english_name": "Raise",
-                    "localized_name": "死者复活",
-                    "spell_id": "raise"
-                  }
-                ],
-                "spell_ids": [
-                  "scrying",
-                  "potion",
-                  "raise"
-                ]
-              },
-              "trigger": "item_action_requested"
             }
           ],
           "compile_status": "full",
           "consumer_ids": [
             "item.attunement.v1",
             "item.equipment_modifier.v1",
-            "item.granted_action.v1",
-            "item.granted_spell.v1"
+            "item.granted_action.v1"
           ],
-          "item_fingerprint": "b265c05b8ba0ba748dd520233fd8b5776a2c108b374e2cbd6faa1ed4d2ef7a5f",
+          "item_fingerprint": "2dded0b1fadbbb3d4f425cebe747ce6f2036c54fbe45bb40b3ff73c247dc6794",
           "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-953875067ac4d9a793c844f0-6ad29778c06b-000",
           "runtime_preview_full": true,
           "schema_version": "item-ir-1",
@@ -14233,23 +12522,7 @@
             "target_policy": "explicit_target"
           }
         ],
-        "granted_spells": [
-          {
-            "english_name": "Scrying",
-            "localized_name": "探知术",
-            "spell_id": "scrying"
-          },
-          {
-            "english_name": "Potion",
-            "localized_name": "高等治疗药水",
-            "spell_id": "potion"
-          },
-          {
-            "english_name": "Raise",
-            "localized_name": "死者复活",
-            "spell_id": "raise"
-          }
-        ],
+        "granted_spells": [],
         "healing": null,
         "immunities": [],
         "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-953875067ac4d9a793c844f0-6ad29778c06b-000",
@@ -14265,7 +12538,7 @@
         "requires_attunement": true,
         "resistances": [],
         "resource_bindings": [],
-        "review_fingerprint": "b265c05b8ba0ba748dd520233fd8b5776a2c108b374e2cbd6faa1ed4d2ef7a5f",
+        "review_fingerprint": "2dded0b1fadbbb3d4f425cebe747ce6f2036c54fbe45bb40b3ff73c247dc6794",
         "review_status": "reviewed",
         "ruleset_version": "2024",
         "schema_version": "item-ir-1",
@@ -14359,90 +12632,6 @@
               "typed_dawn_event_required": true
             },
             "trigger": "dawn"
-          },
-          {
-            "action_economy": "action",
-            "clause_id": "tashas-cauldron:atom:953875067ac4d9a793c844f0:771dcd20c4dc:001:spell-grant",
-            "clause_type": "granted_spell",
-            "evidence": {
-              "manual_review_required": false,
-              "source_excerpt": "Chronicle**\n*奇物**,**极珍稀（需法师同调）*\n这颗蚀刻水晶球有柚子大小，随着内部杂乱的耀斑辐射不断轻声鸣响着。当你触摸水晶球时，你可以以与读写相同的速率往水晶球中储存信息或法术。水晶球在被找到时，包含了以下法术：*侦测思想**Detect\nThoughts*，*智能壁垒**Intellect\nFortress**，*拉瑞心灵**连接**Rary’s\nTelepathic Bond*，*短讯术**Sending*，*心灵遥控**Telekinesis*，*塔莎心灵鞭**Tasha’s Mind Whip**与*谭森浮碟术**Tenser’s**Floating Disk*（带星号的法术出现于本书）。你可以将其作为法术书，其法术与其他文字通过精神编排在水晶之中。\n当你持握水晶球时，你可以将其作为你"
-            },
-            "parameters": {
-              "grant_mode": "item_cast",
-              "source_text": "Chronicle**\n*奇物**,**极珍稀（需法师同调）*\n这颗蚀刻水晶球有柚子大小，随着内部杂乱的耀斑辐射不断轻声鸣响着。当你触摸水晶球时，你可以以与读写相同的速率往水晶球中储存信息或法术。水晶球在被找到时，包含了以下法术：*侦测思想**Detect\nThoughts*，*智能壁垒**Intellect\nFortress**，*拉瑞心灵**连接**Rary’s\nTelepathic Bond*，*短讯术**Sending*，*心灵遥控**Telekinesis*，*塔莎心灵鞭**Tasha’s Mind Whip**与*谭森浮碟术**Tenser’s**Floating Disk*（带星号的法术出现于本书）。你可以将其作为法术书，其法术与其他文字通过精神编排在水晶之中。\n当你持握水晶球时，你可以将其作为你",
-              "spell_identities": [
-                {
-                  "english_name": "",
-                  "localized_name": "这道",
-                  "spell_id": "这道"
-                },
-                {
-                  "english_name": "Detect",
-                  "localized_name": "侦测思想",
-                  "spell_id": "detect"
-                },
-                {
-                  "english_name": "Intellect",
-                  "localized_name": "智能壁垒",
-                  "spell_id": "intellect"
-                },
-                {
-                  "english_name": "Rary’s",
-                  "localized_name": "连接",
-                  "spell_id": "rary’s"
-                },
-                {
-                  "english_name": "Sending",
-                  "localized_name": "短讯术",
-                  "spell_id": "sending"
-                },
-                {
-                  "english_name": "Telekinesis",
-                  "localized_name": "心灵遥控",
-                  "spell_id": "telekinesis"
-                },
-                {
-                  "english_name": "Tasha’s Mind Whip",
-                  "localized_name": "塔莎心灵鞭",
-                  "spell_id": "tasha’s-mind-whip"
-                },
-                {
-                  "english_name": "Tenser’s",
-                  "localized_name": "谭森浮碟术",
-                  "spell_id": "tenser’s"
-                },
-                {
-                  "english_name": "Mage",
-                  "localized_name": "法师之手",
-                  "spell_id": "mage"
-                },
-                {
-                  "english_name": "Mind Sliver",
-                  "localized_name": "心灵之楔",
-                  "spell_id": "mind-sliver"
-                },
-                {
-                  "english_name": "Message",
-                  "localized_name": "传讯术",
-                  "spell_id": "message"
-                }
-              ],
-              "spell_ids": [
-                "这道",
-                "detect",
-                "intellect",
-                "rary’s",
-                "sending",
-                "telekinesis",
-                "tasha’s-mind-whip",
-                "tenser’s",
-                "mage",
-                "mind-sliver",
-                "message"
-              ]
-            },
-            "trigger": "item_action_requested"
           }
         ],
         "compile": {
@@ -14501,100 +12690,15 @@
                 "typed_dawn_event_required": true
               },
               "trigger": "dawn"
-            },
-            {
-              "action_economy": "action",
-              "clause_id": "tashas-cauldron:atom:953875067ac4d9a793c844f0:771dcd20c4dc:001:spell-grant",
-              "clause_type": "granted_spell",
-              "evidence": {
-                "manual_review_required": false,
-                "source_excerpt": "Chronicle**\n*奇物**,**极珍稀（需法师同调）*\n这颗蚀刻水晶球有柚子大小，随着内部杂乱的耀斑辐射不断轻声鸣响着。当你触摸水晶球时，你可以以与读写相同的速率往水晶球中储存信息或法术。水晶球在被找到时，包含了以下法术：*侦测思想**Detect\nThoughts*，*智能壁垒**Intellect\nFortress**，*拉瑞心灵**连接**Rary’s\nTelepathic Bond*，*短讯术**Sending*，*心灵遥控**Telekinesis*，*塔莎心灵鞭**Tasha’s Mind Whip**与*谭森浮碟术**Tenser’s**Floating Disk*（带星号的法术出现于本书）。你可以将其作为法术书，其法术与其他文字通过精神编排在水晶之中。\n当你持握水晶球时，你可以将其作为你"
-              },
-              "parameters": {
-                "grant_mode": "item_cast",
-                "source_text": "Chronicle**\n*奇物**,**极珍稀（需法师同调）*\n这颗蚀刻水晶球有柚子大小，随着内部杂乱的耀斑辐射不断轻声鸣响着。当你触摸水晶球时，你可以以与读写相同的速率往水晶球中储存信息或法术。水晶球在被找到时，包含了以下法术：*侦测思想**Detect\nThoughts*，*智能壁垒**Intellect\nFortress**，*拉瑞心灵**连接**Rary’s\nTelepathic Bond*，*短讯术**Sending*，*心灵遥控**Telekinesis*，*塔莎心灵鞭**Tasha’s Mind Whip**与*谭森浮碟术**Tenser’s**Floating Disk*（带星号的法术出现于本书）。你可以将其作为法术书，其法术与其他文字通过精神编排在水晶之中。\n当你持握水晶球时，你可以将其作为你",
-                "spell_identities": [
-                  {
-                    "english_name": "",
-                    "localized_name": "这道",
-                    "spell_id": "这道"
-                  },
-                  {
-                    "english_name": "Detect",
-                    "localized_name": "侦测思想",
-                    "spell_id": "detect"
-                  },
-                  {
-                    "english_name": "Intellect",
-                    "localized_name": "智能壁垒",
-                    "spell_id": "intellect"
-                  },
-                  {
-                    "english_name": "Rary’s",
-                    "localized_name": "连接",
-                    "spell_id": "rary’s"
-                  },
-                  {
-                    "english_name": "Sending",
-                    "localized_name": "短讯术",
-                    "spell_id": "sending"
-                  },
-                  {
-                    "english_name": "Telekinesis",
-                    "localized_name": "心灵遥控",
-                    "spell_id": "telekinesis"
-                  },
-                  {
-                    "english_name": "Tasha’s Mind Whip",
-                    "localized_name": "塔莎心灵鞭",
-                    "spell_id": "tasha’s-mind-whip"
-                  },
-                  {
-                    "english_name": "Tenser’s",
-                    "localized_name": "谭森浮碟术",
-                    "spell_id": "tenser’s"
-                  },
-                  {
-                    "english_name": "Mage",
-                    "localized_name": "法师之手",
-                    "spell_id": "mage"
-                  },
-                  {
-                    "english_name": "Mind Sliver",
-                    "localized_name": "心灵之楔",
-                    "spell_id": "mind-sliver"
-                  },
-                  {
-                    "english_name": "Message",
-                    "localized_name": "传讯术",
-                    "spell_id": "message"
-                  }
-                ],
-                "spell_ids": [
-                  "这道",
-                  "detect",
-                  "intellect",
-                  "rary’s",
-                  "sending",
-                  "telekinesis",
-                  "tasha’s-mind-whip",
-                  "tenser’s",
-                  "mage",
-                  "mind-sliver",
-                  "message"
-                ]
-              },
-              "trigger": "item_action_requested"
             }
           ],
           "compile_status": "full",
           "consumer_ids": [
             "item.attunement.v1",
             "item.charge_resource.v1",
-            "item.equipment_modifier.v1",
-            "item.granted_spell.v1"
+            "item.equipment_modifier.v1"
           ],
-          "item_fingerprint": "add9dcaa4d10c097855f02968c4e40a333b000d882cf5c8074aa840adc8bf81e",
+          "item_fingerprint": "2f8d817b0ed3917f4cd090b96698e5f00515cbfdc83b95e1cb25c3214931ec8b",
           "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-953875067ac4d9a793c844f0-771dcd20c4dc-001",
           "runtime_preview_full": true,
           "schema_version": "item-ir-1",
@@ -14628,63 +12732,7 @@
           "source_text_sha256": "d6174e8770e1a7793e15caf7cf131aeb51b6c5980e9f73b8f2a3b51a329a5ae4"
         },
         "granted_actions": [],
-        "granted_spells": [
-          {
-            "english_name": "",
-            "localized_name": "这道",
-            "spell_id": "这道"
-          },
-          {
-            "english_name": "Detect",
-            "localized_name": "侦测思想",
-            "spell_id": "detect"
-          },
-          {
-            "english_name": "Intellect",
-            "localized_name": "智能壁垒",
-            "spell_id": "intellect"
-          },
-          {
-            "english_name": "Rary’s",
-            "localized_name": "连接",
-            "spell_id": "rary’s"
-          },
-          {
-            "english_name": "Sending",
-            "localized_name": "短讯术",
-            "spell_id": "sending"
-          },
-          {
-            "english_name": "Telekinesis",
-            "localized_name": "心灵遥控",
-            "spell_id": "telekinesis"
-          },
-          {
-            "english_name": "Tasha’s Mind Whip",
-            "localized_name": "塔莎心灵鞭",
-            "spell_id": "tasha’s-mind-whip"
-          },
-          {
-            "english_name": "Tenser’s",
-            "localized_name": "谭森浮碟术",
-            "spell_id": "tenser’s"
-          },
-          {
-            "english_name": "Mage",
-            "localized_name": "法师之手",
-            "spell_id": "mage"
-          },
-          {
-            "english_name": "Mind Sliver",
-            "localized_name": "心灵之楔",
-            "spell_id": "mind-sliver"
-          },
-          {
-            "english_name": "Message",
-            "localized_name": "传讯术",
-            "spell_id": "message"
-          }
-        ],
+        "granted_spells": [],
         "healing": null,
         "immunities": [],
         "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-953875067ac4d9a793c844f0-771dcd20c4dc-001",
@@ -14700,7 +12748,7 @@
         "requires_attunement": true,
         "resistances": [],
         "resource_bindings": [],
-        "review_fingerprint": "add9dcaa4d10c097855f02968c4e40a333b000d882cf5c8074aa840adc8bf81e",
+        "review_fingerprint": "2f8d817b0ed3917f4cd090b96698e5f00515cbfdc83b95e1cb25c3214931ec8b",
         "review_status": "reviewed",
         "ruleset_version": "2024",
         "schema_version": "item-ir-1",

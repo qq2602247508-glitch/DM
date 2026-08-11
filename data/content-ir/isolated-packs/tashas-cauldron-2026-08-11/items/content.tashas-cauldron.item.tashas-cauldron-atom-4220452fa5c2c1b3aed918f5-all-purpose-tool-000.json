@@ -65,30 +65,6 @@
         "target_policy": "self"
       },
       "trigger": "item_action_requested"
-    },
-    {
-      "action_economy": "action",
-      "clause_id": "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:all-purpose-tool:000:spell-grant",
-      "clause_type": "granted_spell",
-      "evidence": {
-        "manual_review_required": false,
-        "source_excerpt": "*奇物，非普通（+1），珍稀（+2），极珍稀（+3）（需奇械师同调）*\n这把简单的螺丝刀可以转换为许多种工具：作为一个动作，你可以触摸这件物品，而后它会转换为一套由你选择的工匠工具（见《玩家手册》\n的装备\n章节以查看工匠工具的表格）。无论这件工具外表如何，你都拥有该工具的熟练项。\n当持握这套工具时，你在你奇械师法术的法术攻击骰和法术豁免DC上获得加值。加值取决于工具的稀有度。\n作为一个动作，你可以凝神于这套工具以引导你的创造力。选择一项非你已知的来自任意职业的戏法。在未来8小时内，你可以如同奇械师戏法一般施展该戏法。此属性使用后，直到下次黎明前，不能再次使用。"
-      },
-      "parameters": {
-        "grant_mode": "item_cast",
-        "source_text": "*奇物，非普通（+1），珍稀（+2），极珍稀（+3）（需奇械师同调）*\n这把简单的螺丝刀可以转换为许多种工具：作为一个动作，你可以触摸这件物品，而后它会转换为一套由你选择的工匠工具（见《玩家手册》\n的装备\n章节以查看工匠工具的表格）。无论这件工具外表如何，你都拥有该工具的熟练项。\n当持握这套工具时，你在你奇械师法术的法术攻击骰和法术豁免DC上获得加值。加值取决于工具的稀有度。\n作为一个动作，你可以凝神于这套工具以引导你的创造力。选择一项非你已知的来自任意职业的戏法。在未来8小时内，你可以如同奇械师戏法一般施展该戏法。此属性使用后，直到下次黎明前，不能再次使用。",
-        "spell_identities": [
-          {
-            "english_name": "",
-            "localized_name": "该戏法",
-            "spell_id": "该戏法"
-          }
-        ],
-        "spell_ids": [
-          "该戏法"
-        ]
-      },
-      "trigger": "item_action_requested"
     }
   ],
   "compile": {
@@ -156,40 +132,15 @@
           "target_policy": "self"
         },
         "trigger": "item_action_requested"
-      },
-      {
-        "action_economy": "action",
-        "clause_id": "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:all-purpose-tool:000:spell-grant",
-        "clause_type": "granted_spell",
-        "evidence": {
-          "manual_review_required": false,
-          "source_excerpt": "*奇物，非普通（+1），珍稀（+2），极珍稀（+3）（需奇械师同调）*\n这把简单的螺丝刀可以转换为许多种工具：作为一个动作，你可以触摸这件物品，而后它会转换为一套由你选择的工匠工具（见《玩家手册》\n的装备\n章节以查看工匠工具的表格）。无论这件工具外表如何，你都拥有该工具的熟练项。\n当持握这套工具时，你在你奇械师法术的法术攻击骰和法术豁免DC上获得加值。加值取决于工具的稀有度。\n作为一个动作，你可以凝神于这套工具以引导你的创造力。选择一项非你已知的来自任意职业的戏法。在未来8小时内，你可以如同奇械师戏法一般施展该戏法。此属性使用后，直到下次黎明前，不能再次使用。"
-        },
-        "parameters": {
-          "grant_mode": "item_cast",
-          "source_text": "*奇物，非普通（+1），珍稀（+2），极珍稀（+3）（需奇械师同调）*\n这把简单的螺丝刀可以转换为许多种工具：作为一个动作，你可以触摸这件物品，而后它会转换为一套由你选择的工匠工具（见《玩家手册》\n的装备\n章节以查看工匠工具的表格）。无论这件工具外表如何，你都拥有该工具的熟练项。\n当持握这套工具时，你在你奇械师法术的法术攻击骰和法术豁免DC上获得加值。加值取决于工具的稀有度。\n作为一个动作，你可以凝神于这套工具以引导你的创造力。选择一项非你已知的来自任意职业的戏法。在未来8小时内，你可以如同奇械师戏法一般施展该戏法。此属性使用后，直到下次黎明前，不能再次使用。",
-          "spell_identities": [
-            {
-              "english_name": "",
-              "localized_name": "该戏法",
-              "spell_id": "该戏法"
-            }
-          ],
-          "spell_ids": [
-            "该戏法"
-          ]
-        },
-        "trigger": "item_action_requested"
       }
     ],
     "compile_status": "partial",
     "consumer_ids": [
       "item.attunement.v1",
       "item.equipment_modifier.v1",
-      "item.granted_action.v1",
-      "item.granted_spell.v1"
+      "item.granted_action.v1"
     ],
-    "item_fingerprint": "df6cc7ad7c25fb3220247731d08f22d0253d56bc5d7f5d8296711448dd0d712a",
+    "item_fingerprint": "fa7bc1aeedebe1cdaf98f50021296f46825fed8cf0a8c44093569b7f2d4b9ea4",
     "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-all-purpose-tool-000",
     "runtime_preview_full": false,
     "schema_version": "item-ir-1",
@@ -242,13 +193,7 @@
       "target_policy": "self"
     }
   ],
-  "granted_spells": [
-    {
-      "english_name": "",
-      "localized_name": "该戏法",
-      "spell_id": "该戏法"
-    }
-  ],
+  "granted_spells": [],
   "healing": null,
   "immunities": [],
   "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-all-purpose-tool-000",
@@ -264,7 +209,7 @@
   "requires_attunement": true,
   "resistances": [],
   "resource_bindings": [],
-  "review_fingerprint": "df6cc7ad7c25fb3220247731d08f22d0253d56bc5d7f5d8296711448dd0d712a",
+  "review_fingerprint": "fa7bc1aeedebe1cdaf98f50021296f46825fed8cf0a8c44093569b7f2d4b9ea4",
   "review_status": "reviewed",
   "ruleset_version": "2024",
   "schema_version": "item-ir-1",

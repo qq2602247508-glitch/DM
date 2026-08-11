@@ -1,7 +1,111 @@
 {
-  "current_round": "round-10",
+  "current_round": "round-11",
   "goal": "Local AI D&D DM Assistant complete official-content rules platform",
   "rounds": [
+    {
+      "authored_count": 0,
+      "baseline": {
+        "actual": {
+          "content_ir": {
+            "compile_only": 35,
+            "production_full": 142,
+            "unique_compiled": 111
+          },
+          "formal_499": {
+            "dm_only": 61,
+            "full": 328,
+            "partial": 110,
+            "total": 499
+          },
+          "protected_fingerprints": {
+            "database": "f3abdcf57b0d71888f085ca081511df4e4f23f100066b402d49d769089fa6aad",
+            "formal_registry": "f4b5eab251b2f9f2d426ba271bb25faec773884a327f9d46e566791b97cbca6b",
+            "integrations_manifest": "ae4ef9f5518ac28272643dc668c40ed49e76da052c84c7023bbb5636d303cd91",
+            "ollama": "8027a6d8d23f42110ce9d0fa00308d0f15c54ebe19211735bdb549abc15e6ab3"
+          },
+          "tashas": {
+            "authored_typed_ir": 94,
+            "compile_only": 17,
+            "content_atoms_after_qa": 524,
+            "executable": 407,
+            "game_usable": 76,
+            "item_spec_compile_full": 41,
+            "item_spec_isolated_runtime_validated": 41,
+            "item_spec_registered_production_full": 8,
+            "item_spec_game_usable": 8,
+            "manual_authoring": 314,
+            "production_full": 74,
+            "runtime_preview_full": 93,
+            "source_records": 144
+          }
+        },
+        "difference": "Round 11 starts from Round 10's 8 registered ItemSpecs, corrects false granted-spell extraction fail-closed, and adds eight further complete ItemSpecs through the shared equipment consumer.",
+        "prompt_baseline": {"round_target_item_production": 8}
+      },
+      "commits": [],
+      "compile_full_delta": 0,
+      "dm_assisted_delta": 0,
+      "files_changed": [
+        "backend/src/dnd_dm_assistant/application/tashas_recovery.py",
+        "scripts/validate-tashas-item-production-consumer-round-X.py",
+        "scripts/validate-tashas-item-production-consumer-round-XI.py",
+        "backend/tests/test_tashas_item_production_consumer_round_X.py",
+        "backend/tests/test_tashas_item_production_consumer_round_XI.py",
+        "backend/tests/test_tashas_recovery.py",
+        "backend/tests/test_tashas_whole_pack_migration.py",
+        "reports/tashas-item-production-consumer-round-XI-2026-08-12.json",
+        "data/content-ir/compiled/production-runtime-results-XIII.json",
+        "docs/tashas-item-production-consumer-round-XI-2026-08-12.md"
+      ],
+      "item_compile_full_delta": -4,
+      "manual_delta": 0,
+      "next_round_reason": "Continue remaining tattoo lifecycle, explicit spell-cast and unresolved item effect clauses only with real typed producers/consumers.",
+      "objective": "Correct false ItemSpec spell identities and expand the shared equipment/attunement/charge consumer with eight additional real items.",
+      "pack_coverage_delta": {
+        "content_ir_production_full_before": 142,
+        "content_ir_production_full_after": 150,
+        "item_compile_full_before": 41,
+        "item_compile_full_after": 37,
+        "item_production_evidence_selected": 8,
+        "item_registered_production_full_before": 8,
+        "item_registered_production_full_after": 16,
+        "item_game_usable_before": 8,
+        "item_game_usable_after": 16,
+        "tasha_feature_game_usable_unchanged": 76,
+        "tasha_feature_registered_production_unchanged": 74
+      },
+      "phase": "I",
+      "push_receipt": null,
+      "reports": [
+        "reports/tashas-item-production-consumer-round-XI-2026-08-12.json",
+        "data/content-ir/compiled/production-runtime-results-XIII.json",
+        "reports/tashas-item-spec-catalog-2026-08-11.json",
+        "docs/tashas-item-production-consumer-round-XI-2026-08-12.md"
+      ],
+      "reviewed_count": 0,
+      "selected_clusters": [
+        "item.content_quality",
+        "item.equipment_modifier",
+        "item.attunement",
+        "item.charge_resource",
+        "item.granted_action"
+      ],
+      "selected_platforms": [
+        "item_spec_fail_closed_parser",
+        "spell_economy.create_equipment",
+        "spell_economy.equipment_preview",
+        "spell_economy.equipment_confirm",
+        "operation_transaction",
+        "character_version_cas"
+      ],
+      "status": "in_progress",
+      "tests": [
+        "Round XI validator: 8/8 ItemSpec create/preview/confirm/replay",
+        "Round X/XI item consumer and Tasha recovery/whole-pack targeted tests",
+        "Round XI report/result twice: byte-identical hashes",
+        "whole-pack migration twice: stdout and key ItemSpec/catalog/runtime hashes byte-identical"
+      ]
+    },
     {
       "authored_count": 0,
       "baseline": {

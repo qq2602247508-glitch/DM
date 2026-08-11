@@ -87,58 +87,22 @@
       "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:db0e19f5d68b:001:spell-grant",
       "clause_type": "granted_spell",
       "evidence": {
-        "manual_review_required": false,
+        "manual_review_required": true,
         "source_excerpt": "Rao**\n*奇物**,**神器（需同调）*\n数个世纪以先，沉静之神拉奥创造了一件工具以保护那些尚未成熟的信徒们免受下层位面的邪恶侵扰。随着时光飞逝，凡人们已经自己找到了抵抗相关威胁的方法，而圣杖也接近被人遗忘。而在近几世纪，*拉奥圣杖**Croook of Rao*重现于世并被用于对抗巫后伊格薇尔伏（法师塔莎的一个别名）。虽然巫后被击败了，但伊格薇尔伏，成功地在战斗中给圣杖造成了伤害，她用一个隐秘的诅咒污染了圣杖作为在未来战胜圣杖的可能性。而后，圣杖再次失落于世。有时，圣杖会再次现身，但是这件著名的神器已不再是它曾是之物了。无论神器的持有者有没有意识到它全部的威胁，都很少会冒险使用*拉奥圣杖**Croook of Rao*说不定就会是最后一次。\n\n***随机属性***。这件神器具有以下随机属性，你可以通过对着"
       },
       "parameters": {
         "grant_mode": "item_cast",
         "source_text": "Rao**\n*奇物**,**神器（需同调）*\n数个世纪以先，沉静之神拉奥创造了一件工具以保护那些尚未成熟的信徒们免受下层位面的邪恶侵扰。随着时光飞逝，凡人们已经自己找到了抵抗相关威胁的方法，而圣杖也接近被人遗忘。而在近几世纪，*拉奥圣杖**Croook of Rao*重现于世并被用于对抗巫后伊格薇尔伏（法师塔莎的一个别名）。虽然巫后被击败了，但伊格薇尔伏，成功地在战斗中给圣杖造成了伤害，她用一个隐秘的诅咒污染了圣杖作为在未来战胜圣杖的可能性。而后，圣杖再次失落于世。有时，圣杖会再次现身，但是这件著名的神器已不再是它曾是之物了。无论神器的持有者有没有意识到它全部的威胁，都很少会冒险使用*拉奥圣杖**Croook of Rao*说不定就会是最后一次。\n\n***随机属性***。这件神器具有以下随机属性，你可以通过对着",
-        "spell_identities": [
-          {
-            "english_name": "Croook of Rao",
-            "localized_name": "拉奥圣杖",
-            "spell_id": "croook-of-rao"
-          },
-          {
-            "english_name": "Aura",
-            "localized_name": "生命灵光",
-            "spell_id": "aura"
-          },
-          {
-            "english_name": "Aura",
-            "localized_name": "净化灵光",
-            "spell_id": "aura"
-          },
-          {
-            "english_name": "Beacon",
-            "localized_name": "希望信标",
-            "spell_id": "beacon"
-          },
-          {
-            "english_name": "Mass Cure Wounds",
-            "localized_name": "群体疗伤术",
-            "spell_id": "mass-cure-wounds"
-          },
-          {
-            "english_name": "Croook",
-            "localized_name": "拉奥圣杖",
-            "spell_id": "croook"
-          }
-        ],
-        "spell_ids": [
-          "croook-of-rao",
-          "aura",
-          "aura",
-          "beacon",
-          "mass-cure-wounds",
-          "croook"
-        ]
+        "spell_identities": [],
+        "spell_ids": []
       },
       "trigger": "item_action_requested"
     }
   ],
   "compile": {
-    "blockers": [],
+    "blockers": [
+      "manual_clause_requires_dm_or_additional_typed_fields"
+    ],
     "clauses": [
       {
         "action_economy": "none",
@@ -217,57 +181,19 @@
         "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:db0e19f5d68b:001:spell-grant",
         "clause_type": "granted_spell",
         "evidence": {
-          "manual_review_required": false,
+          "manual_review_required": true,
           "source_excerpt": "Rao**\n*奇物**,**神器（需同调）*\n数个世纪以先，沉静之神拉奥创造了一件工具以保护那些尚未成熟的信徒们免受下层位面的邪恶侵扰。随着时光飞逝，凡人们已经自己找到了抵抗相关威胁的方法，而圣杖也接近被人遗忘。而在近几世纪，*拉奥圣杖**Croook of Rao*重现于世并被用于对抗巫后伊格薇尔伏（法师塔莎的一个别名）。虽然巫后被击败了，但伊格薇尔伏，成功地在战斗中给圣杖造成了伤害，她用一个隐秘的诅咒污染了圣杖作为在未来战胜圣杖的可能性。而后，圣杖再次失落于世。有时，圣杖会再次现身，但是这件著名的神器已不再是它曾是之物了。无论神器的持有者有没有意识到它全部的威胁，都很少会冒险使用*拉奥圣杖**Croook of Rao*说不定就会是最后一次。\n\n***随机属性***。这件神器具有以下随机属性，你可以通过对着"
         },
         "parameters": {
           "grant_mode": "item_cast",
           "source_text": "Rao**\n*奇物**,**神器（需同调）*\n数个世纪以先，沉静之神拉奥创造了一件工具以保护那些尚未成熟的信徒们免受下层位面的邪恶侵扰。随着时光飞逝，凡人们已经自己找到了抵抗相关威胁的方法，而圣杖也接近被人遗忘。而在近几世纪，*拉奥圣杖**Croook of Rao*重现于世并被用于对抗巫后伊格薇尔伏（法师塔莎的一个别名）。虽然巫后被击败了，但伊格薇尔伏，成功地在战斗中给圣杖造成了伤害，她用一个隐秘的诅咒污染了圣杖作为在未来战胜圣杖的可能性。而后，圣杖再次失落于世。有时，圣杖会再次现身，但是这件著名的神器已不再是它曾是之物了。无论神器的持有者有没有意识到它全部的威胁，都很少会冒险使用*拉奥圣杖**Croook of Rao*说不定就会是最后一次。\n\n***随机属性***。这件神器具有以下随机属性，你可以通过对着",
-          "spell_identities": [
-            {
-              "english_name": "Croook of Rao",
-              "localized_name": "拉奥圣杖",
-              "spell_id": "croook-of-rao"
-            },
-            {
-              "english_name": "Aura",
-              "localized_name": "生命灵光",
-              "spell_id": "aura"
-            },
-            {
-              "english_name": "Aura",
-              "localized_name": "净化灵光",
-              "spell_id": "aura"
-            },
-            {
-              "english_name": "Beacon",
-              "localized_name": "希望信标",
-              "spell_id": "beacon"
-            },
-            {
-              "english_name": "Mass Cure Wounds",
-              "localized_name": "群体疗伤术",
-              "spell_id": "mass-cure-wounds"
-            },
-            {
-              "english_name": "Croook",
-              "localized_name": "拉奥圣杖",
-              "spell_id": "croook"
-            }
-          ],
-          "spell_ids": [
-            "croook-of-rao",
-            "aura",
-            "aura",
-            "beacon",
-            "mass-cure-wounds",
-            "croook"
-          ]
+          "spell_identities": [],
+          "spell_ids": []
         },
         "trigger": "item_action_requested"
       }
     ],
-    "compile_status": "full",
+    "compile_status": "partial",
     "consumer_ids": [
       "item.attunement.v1",
       "item.charge_resource.v1",
@@ -275,9 +201,9 @@
       "item.granted_action.v1",
       "item.granted_spell.v1"
     ],
-    "item_fingerprint": "01e686d3b2c181dae7b00cf94d1e5a990724487c2f452fc53339528b0c36d9df",
+    "item_fingerprint": "9b7104a71ef1499eaf3c700aa86fdda1c73927ca57d2296ce2c684792a65e695",
     "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-db0e19f5d68b-001",
-    "runtime_preview_full": true,
+    "runtime_preview_full": false,
     "schema_version": "item-ir-1",
     "source_trust": "authored_ir"
   },
@@ -289,7 +215,7 @@
   "duration": null,
   "equipped_slot": null,
   "evidence": {
-    "manual_review_required": false,
+    "manual_review_required": true,
     "rejected_inferences": [
       "unknown_effects",
       "unresolved_spell_identity",
@@ -319,44 +245,13 @@
       "target_policy": "self"
     }
   ],
-  "granted_spells": [
-    {
-      "english_name": "Croook of Rao",
-      "localized_name": "拉奥圣杖",
-      "spell_id": "croook-of-rao"
-    },
-    {
-      "english_name": "Aura",
-      "localized_name": "生命灵光",
-      "spell_id": "aura"
-    },
-    {
-      "english_name": "Aura",
-      "localized_name": "净化灵光",
-      "spell_id": "aura"
-    },
-    {
-      "english_name": "Beacon",
-      "localized_name": "希望信标",
-      "spell_id": "beacon"
-    },
-    {
-      "english_name": "Mass Cure Wounds",
-      "localized_name": "群体疗伤术",
-      "spell_id": "mass-cure-wounds"
-    },
-    {
-      "english_name": "Croook",
-      "localized_name": "拉奥圣杖",
-      "spell_id": "croook"
-    }
-  ],
+  "granted_spells": [],
   "healing": null,
   "immunities": [],
   "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-db0e19f5d68b-001",
   "item_kind": "tool",
   "localized_name": "拉奥圣杖",
-  "manual_review_required": false,
+  "manual_review_required": true,
   "name": "拉奥圣杖",
   "namespace": "dnd.tashas.recovery.item",
   "pack_id": "tashas-cauldron",
@@ -366,7 +261,7 @@
   "requires_attunement": true,
   "resistances": [],
   "resource_bindings": [],
-  "review_fingerprint": "01e686d3b2c181dae7b00cf94d1e5a990724487c2f452fc53339528b0c36d9df",
+  "review_fingerprint": "9b7104a71ef1499eaf3c700aa86fdda1c73927ca57d2296ce2c684792a65e695",
   "review_status": "reviewed",
   "ruleset_version": "2024",
   "schema_version": "item-ir-1",
@@ -381,15 +276,15 @@
   "status_layers": {
     "authored_typed_ir": true,
     "candidate": true,
-    "compile_full": true,
+    "compile_full": false,
     "dm_assisted": false,
     "draft": true,
     "game_usable": false,
-    "highest_status": "isolated_runtime_validated",
-    "isolated_runtime_validated": true,
+    "highest_status": "authored_typed_ir",
+    "isolated_runtime_validated": false,
     "registered_production_full": false,
     "reviewed": true,
-    "runtime_preview_full": true,
+    "runtime_preview_full": false,
     "source_identified": true
   },
   "temporary_hp": null,

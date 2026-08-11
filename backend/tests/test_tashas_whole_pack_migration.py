@@ -116,5 +116,5 @@ def test_item_specs_are_typed_with_fail_closed_effect_boundaries() -> None:
     assert migration["item_ir"]["inventory_atom_count"] == 47
     assert migration["item_ir"]["typed_count"] == 47
     assert migration["item_ir"]["production_count"] == 0
-    assert migration["item_spec_catalog"]["item_spec_compile_full"] == 41
+    assert migration["item_spec_catalog"]["item_spec_compile_full"] == 37
     assert migration["item_ir"]["dm_assisted_count"] == 0

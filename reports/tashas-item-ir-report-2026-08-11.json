@@ -1,9 +1,9 @@
 {
   "blocker": "manual_review_required is retained per unresolved action/spell/effect clause",
-  "compile_full": 41,
-  "compile_only": 6,
+  "compile_full": 37,
+  "compile_only": 10,
   "dm_assisted": 0,
-  "game_usable": 8,
+  "game_usable": 16,
   "inventory": [
     {
       "atom_id": "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:all-purpose-tool:000",
@@ -2638,18 +2638,18 @@
       "variant_of": null
     }
   ],
-  "isolated_runtime_validated": 41,
+  "isolated_runtime_validated": 37,
   "item_ir_implemented": true,
   "item_spec_total": 47,
   "magic_item_atom_total": 47,
   "magic_tattoo_atom_total": 11,
   "name_branch_count": 0,
   "pack_id": "tashas-cauldron",
-  "production_full": 8,
-  "registered_production_full": 8,
-  "requires_dm": 6,
+  "production_full": 16,
+  "registered_production_full": 16,
+  "requires_dm": 10,
   "reviewed": 47,
-  "runtime_preview_full": 41,
+  "runtime_preview_full": 37,
   "schema_version": "tashas-item-ir-report-1",
   "status_counts": {
     "manual_authoring": 47
@@ -2664,27 +2664,27 @@
     {
       "capability": "item.passive_modifier",
       "consumer": "item.equipment_modifier.v1",
-      "unlock_count": 41
+      "unlock_count": 37
     },
     {
       "capability": "item.attunement",
       "consumer": "item.attunement.v1",
-      "unlock_count": 38
+      "unlock_count": 35
     },
     {
       "capability": "item.charge_resource",
       "consumer": "item.charge_resource.v1",
-      "unlock_count": 17
+      "unlock_count": 15
     },
     {
       "capability": "item.granted_action",
       "consumer": "item.granted_action.v1",
-      "unlock_count": 27
+      "unlock_count": 24
     },
     {
       "capability": "item.tattoo_lifecycle",
       "consumer": "item.attunement.v1",
-      "unlock_count": 11
+      "unlock_count": 10
     }
   ]
 }
