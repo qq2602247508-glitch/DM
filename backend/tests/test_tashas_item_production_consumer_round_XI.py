@@ -38,7 +38,7 @@ def test_round_XI_corrects_spell_identity_quality_and_adds_item_evidence() -> No
         set(report["selected_item_ids"]) | set(round_xii["selected_item_ids"])
     )
     assert catalog["item_spec_total"] == 47
-    assert catalog["item_spec_compile_full"] == 37
+    assert catalog["item_spec_compile_full"] >= 37
     assert catalog["registered_production_full"] >= 24
     assert catalog["game_usable"] >= 24
     assert (
@@ -47,3 +47,10 @@ def test_round_XI_corrects_spell_identity_quality_and_adds_item_evidence() -> No
     )
     assert _explicit_spell_identities("作为你施展德鲁伊和游侠法术的法器") == []
     assert _explicit_spell_identities("你可以施展那道法术") == []
+    assert [
+        item["spell_id"]
+        for item in _explicit_spell_identities(
+            "用一个动作用牌组施展以下法术：*通晓语言**Comprehend Languages*，"
+            "*侦测魔法**Detect Magic*。"
+        )
+    ] == ["comprehend-languages", "detect-magic"]

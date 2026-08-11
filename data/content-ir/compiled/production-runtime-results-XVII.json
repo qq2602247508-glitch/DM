@@ -1,0 +1,394 @@
+{
+  "checks": {
+    "all_attunement_cas": true,
+    "all_create_preview_confirm_replay": true,
+    "all_item_spell_consumers": true,
+    "all_item_state_persisted": true,
+    "all_typed_consumers": true,
+    "charge_lifecycle_count": 2,
+    "formal_database_written": false,
+    "formal_registry_written": false,
+    "isolated_database": true,
+    "name_branch_count": 0,
+    "operation_transaction_count": 6,
+    "production_runtime_full_count": 3,
+    "selected_count": 3,
+    "spell_identity_count": 16
+  },
+  "content_kind": "item",
+  "evidence_by_id": {
+    "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-3e9825c326a3-003": {
+      "attunement_persisted": true,
+      "charge_lifecycle_persisted": true,
+      "compile_status": "full",
+      "consumer_ids": [
+        "item.attunement.v1",
+        "item.equipment_modifier.v1",
+        "item.granted_action.v1",
+        "item.granted_spell.v1"
+      ],
+      "content_id": "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-3e9825c326a3-003",
+      "content_kind": "item",
+      "created": true,
+      "item_name": "鲁芭的灵魂塔罗卡",
+      "item_state_persisted": true,
+      "operation_transaction_persisted": true,
+      "operations": [
+        {
+          "confirm": true,
+          "idempotency_replayed": true,
+          "operation": "attune",
+          "output": {
+            "after": {
+              "active_attunements": 1,
+              "armor_class": 10,
+              "attuned": true
+            },
+            "before": {
+              "armor_class": 10,
+              "charges": null,
+              "equipped": false,
+              "quantity": 1
+            },
+            "confirmed": true,
+            "operation": "attune",
+            "slot": null,
+            "tattoo_lifecycle": null,
+            "warnings": []
+          },
+          "preview": true,
+          "replay": true
+        },
+        {
+          "confirm": true,
+          "idempotency_replayed": true,
+          "operation": "use_action",
+          "output": {
+            "after": {
+              "action_id": "tashas-cauldron:atom:760b230e1396825928305642:3e9825c326a3:003:action:1",
+              "armor_class": 10,
+              "charges": null,
+              "item_spell_cast": {
+                "consumer_id": "item.granted_spell.v1",
+                "grant_mode": "item_cast",
+                "spell_identities": [
+                  {
+                    "english_name": "Comprehend Languages",
+                    "localized_name": "通晓语言",
+                    "spell_id": "comprehend-languages"
+                  },
+                  {
+                    "english_name": "Detect Evil and Good",
+                    "localized_name": "侦测善恶",
+                    "spell_id": "detect-evil-and-good"
+                  },
+                  {
+                    "english_name": "Detect Magic",
+                    "localized_name": "侦测魔法",
+                    "spell_id": "detect-magic"
+                  },
+                  {
+                    "english_name": "Detect Poison andDIsease",
+                    "localized_name": "侦测毒素和疾病",
+                    "spell_id": "detect-poison-anddisease"
+                  },
+                  {
+                    "english_name": "Locate Object",
+                    "localized_name": "物品定位术",
+                    "spell_id": "locate-object"
+                  },
+                  {
+                    "english_name": "Scrying",
+                    "localized_name": "探知术",
+                    "spell_id": "scrying"
+                  }
+                ]
+              },
+              "rules_kernel_consumer": "item.granted_action.v1"
+            },
+            "before": {
+              "armor_class": 10,
+              "charges": null,
+              "equipped": false,
+              "quantity": 1
+            },
+            "confirmed": true,
+            "operation": "use_action",
+            "slot": null,
+            "tattoo_lifecycle": null,
+            "warnings": []
+          },
+          "preview": true,
+          "replay": true
+        }
+      ],
+      "persisted": {
+        "attuned": true,
+        "charges": null,
+        "item_fingerprint": "4265df274dbcff0e461278c1c8fc26ca6cbef41a7553190a8b5fc5fef37a5794",
+        "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-3e9825c326a3-003",
+        "operation_transaction_count": 2,
+        "tattoo_lifecycle": null,
+        "version": 3
+      },
+      "preview_confirm_replay": true,
+      "tattoo_lifecycle_persisted": true,
+      "typed_consumer": true,
+      "typed_projection_consumers": [
+        "item.attunement.v1",
+        "item.equipment_modifier.v1",
+        "item.granted_action.v1",
+        "item.granted_spell.v1"
+      ]
+    },
+    "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-db0e19f5d68b-001": {
+      "attunement_persisted": true,
+      "charge_lifecycle_persisted": true,
+      "compile_status": "full",
+      "consumer_ids": [
+        "item.attunement.v1",
+        "item.charge_resource.v1",
+        "item.equipment_modifier.v1",
+        "item.granted_action.v1",
+        "item.granted_spell.v1"
+      ],
+      "content_id": "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-db0e19f5d68b-001",
+      "content_kind": "item",
+      "created": true,
+      "item_name": "拉奥圣杖",
+      "item_state_persisted": true,
+      "operation_transaction_persisted": true,
+      "operations": [
+        {
+          "confirm": true,
+          "idempotency_replayed": true,
+          "operation": "attune",
+          "output": {
+            "after": {
+              "active_attunements": 1,
+              "armor_class": 10,
+              "attuned": true
+            },
+            "before": {
+              "armor_class": 10,
+              "charges": 6,
+              "equipped": false,
+              "quantity": 1
+            },
+            "confirmed": true,
+            "operation": "attune",
+            "slot": null,
+            "tattoo_lifecycle": null,
+            "warnings": []
+          },
+          "preview": true,
+          "replay": true
+        },
+        {
+          "confirm": true,
+          "idempotency_replayed": true,
+          "operation": "use_action",
+          "output": {
+            "after": {
+              "action_id": "tashas-cauldron:atom:760b230e1396825928305642:db0e19f5d68b:001:action:1",
+              "armor_class": 10,
+              "charges": 5,
+              "item_spell_cast": {
+                "consumer_id": "item.granted_spell.v1",
+                "grant_mode": "item_cast",
+                "spell_identities": [
+                  {
+                    "english_name": "Aura of Life",
+                    "localized_name": "生命灵光",
+                    "spell_id": "aura-of-life"
+                  },
+                  {
+                    "english_name": "Aura of Purity",
+                    "localized_name": "净化灵光",
+                    "spell_id": "aura-of-purity"
+                  },
+                  {
+                    "english_name": "Beacon of Hope",
+                    "localized_name": "希望信标",
+                    "spell_id": "beacon-of-hope"
+                  },
+                  {
+                    "english_name": "Mass Cure Wounds",
+                    "localized_name": "群体疗伤术",
+                    "spell_id": "mass-cure-wounds"
+                  }
+                ]
+              },
+              "rules_kernel_consumer": "item.granted_action.v1"
+            },
+            "before": {
+              "armor_class": 10,
+              "charges": 6,
+              "equipped": false,
+              "quantity": 1
+            },
+            "confirmed": true,
+            "operation": "use_action",
+            "slot": null,
+            "tattoo_lifecycle": null,
+            "warnings": []
+          },
+          "preview": true,
+          "replay": true
+        }
+      ],
+      "persisted": {
+        "attuned": true,
+        "charges": 5,
+        "item_fingerprint": "66f65914acbd3a55c70f66202b0a17507fdbf3ea8c755c25ade026cf94e0d879",
+        "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-db0e19f5d68b-001",
+        "operation_transaction_count": 2,
+        "tattoo_lifecycle": null,
+        "version": 3
+      },
+      "preview_confirm_replay": true,
+      "tattoo_lifecycle_persisted": true,
+      "typed_consumer": true,
+      "typed_projection_consumers": [
+        "item.attunement.v1",
+        "item.charge_resource.v1",
+        "item.equipment_modifier.v1",
+        "item.granted_action.v1",
+        "item.granted_spell.v1"
+      ]
+    },
+    "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-demonomiconofiggwilv-002": {
+      "attunement_persisted": true,
+      "charge_lifecycle_persisted": true,
+      "compile_status": "full",
+      "consumer_ids": [
+        "item.attunement.v1",
+        "item.charge_resource.v1",
+        "item.equipment_modifier.v1",
+        "item.granted_action.v1",
+        "item.granted_spell.v1"
+      ],
+      "content_id": "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-demonomiconofiggwilv-002",
+      "content_kind": "item",
+      "created": true,
+      "item_name": "伊格薇尔伏恶魔志|DemonomiconofIggwilv",
+      "item_state_persisted": true,
+      "operation_transaction_persisted": true,
+      "operations": [
+        {
+          "confirm": true,
+          "idempotency_replayed": true,
+          "operation": "attune",
+          "output": {
+            "after": {
+              "active_attunements": 1,
+              "armor_class": 10,
+              "attuned": true
+            },
+            "before": {
+              "armor_class": 10,
+              "charges": 8,
+              "equipped": false,
+              "quantity": 1
+            },
+            "confirmed": true,
+            "operation": "attune",
+            "slot": null,
+            "tattoo_lifecycle": null,
+            "warnings": []
+          },
+          "preview": true,
+          "replay": true
+        },
+        {
+          "confirm": true,
+          "idempotency_replayed": true,
+          "operation": "use_action",
+          "output": {
+            "after": {
+              "action_id": "tashas-cauldron:atom:760b230e1396825928305642:demonomiconofiggwilv:002:action:1",
+              "armor_class": 10,
+              "charges": 7,
+              "item_spell_cast": {
+                "consumer_id": "item.granted_spell.v1",
+                "grant_mode": "item_cast",
+                "spell_identities": [
+                  {
+                    "english_name": "Magic Circle",
+                    "localized_name": "防护法阵",
+                    "spell_id": "magic-circle"
+                  },
+                  {
+                    "english_name": "Magic Jar",
+                    "localized_name": "魔魂壶",
+                    "spell_id": "magic-jar"
+                  },
+                  {
+                    "english_name": "Planar Ally",
+                    "localized_name": "异界誓盟",
+                    "spell_id": "planar-ally"
+                  },
+                  {
+                    "english_name": "Planar Binding",
+                    "localized_name": "异界誓缚",
+                    "spell_id": "planar-binding"
+                  },
+                  {
+                    "english_name": "Plane Shift",
+                    "localized_name": "位面转移",
+                    "spell_id": "plane-shift"
+                  },
+                  {
+                    "english_name": "Summon Fiend",
+                    "localized_name": "邪魔召唤术",
+                    "spell_id": "summon-fiend"
+                  }
+                ]
+              },
+              "rules_kernel_consumer": "item.granted_action.v1"
+            },
+            "before": {
+              "armor_class": 10,
+              "charges": 8,
+              "equipped": false,
+              "quantity": 1
+            },
+            "confirmed": true,
+            "operation": "use_action",
+            "slot": null,
+            "tattoo_lifecycle": null,
+            "warnings": []
+          },
+          "preview": true,
+          "replay": true
+        }
+      ],
+      "persisted": {
+        "attuned": true,
+        "charges": 7,
+        "item_fingerprint": "9dfacca99be6b8ff146a68e8d48d3a4b7f25626718afd69dd91109c15a4401aa",
+        "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-demonomiconofiggwilv-002",
+        "operation_transaction_count": 2,
+        "tattoo_lifecycle": null,
+        "version": 3
+      },
+      "preview_confirm_replay": true,
+      "tattoo_lifecycle_persisted": true,
+      "typed_consumer": true,
+      "typed_projection_consumers": [
+        "item.attunement.v1",
+        "item.charge_resource.v1",
+        "item.equipment_modifier.v1",
+        "item.granted_action.v1",
+        "item.granted_spell.v1"
+      ]
+    }
+  },
+  "production_runtime_full_ids": [
+    "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-3e9825c326a3-003",
+    "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-db0e19f5d68b-001",
+    "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-demonomiconofiggwilv-002"
+  ],
+  "schema_version": "content-ir-production-runtime-results-XVII-1",
+  "source": "Round XV runs typed item-cast spell lists through the generic equipment action consumer on an isolated migrated database"
+}

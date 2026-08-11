@@ -22,24 +22,6 @@
       "blockers": [
         "manual_clause_requires_dm_or_additional_typed_fields"
       ],
-      "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-3e9825c326a3-003"
-    },
-    {
-      "blockers": [
-        "manual_clause_requires_dm_or_additional_typed_fields"
-      ],
-      "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-db0e19f5d68b-001"
-    },
-    {
-      "blockers": [
-        "manual_clause_requires_dm_or_additional_typed_fields"
-      ],
-      "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-demonomiconofiggwilv-002"
-    },
-    {
-      "blockers": [
-        "manual_clause_requires_dm_or_additional_typed_fields"
-      ],
       "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-teeth-ofdahlver-nar-005"
     },
     {
@@ -68,10 +50,10 @@
     "item.granted_action.v1",
     "item.granted_spell.v1"
   ],
-  "game_usable": 37,
+  "game_usable": 40,
   "isolated_registry_reload": {
-    "blocked": 10,
-    "compile_full": 37,
+    "blocked": 7,
+    "compile_full": 40,
     "dm_assisted": 0,
     "dm_assisted_ids": [],
     "entry_ids": [
@@ -126,7 +108,7 @@
     "entry_total": 47,
     "formal_apply": false,
     "game_usable": 0,
-    "isolated_runtime_validated": 37,
+    "isolated_runtime_validated": 40,
     "isolated_runtime_validated_ids": [
       "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-amulet-of-the-devout-001",
       "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-arcane-grimoire-002",
@@ -136,7 +118,10 @@
       "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-nature-s-mantle-007",
       "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-rhythm-maker-s-drum-008",
       "content.tashas-cauldron.item.tashas-cauldron-atom-62c7a0c6a042e571b17d35e3-dfaab0b0f93c-000",
+      "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-3e9825c326a3-003",
       "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-b106ea54c961-000",
+      "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-db0e19f5d68b-001",
+      "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-demonomiconofiggwilv-002",
       "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-alchemical-compendium-000",
       "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-astral-shard-001",
       "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-astromancy-archive-002",
@@ -170,30 +155,30 @@
     "pack_version": "whole-pack-2026-08-11",
     "registered_production_full": 0,
     "registered_production_full_ids": [],
-    "runtime_preview_full": 37,
+    "runtime_preview_full": 40,
     "schema_version": "content-pack-runtime-registry-1",
     "status_layers": {
       "authored_typed_ir": 47,
       "candidate": 47,
-      "compile_full": 37,
+      "compile_full": 40,
       "dm_assisted": 0,
       "draft": 47,
       "game_usable": 0,
-      "isolated_runtime_validated": 37,
+      "isolated_runtime_validated": 40,
       "registered_production_full": 0,
       "reviewed": 47,
-      "runtime_preview_full": 37,
+      "runtime_preview_full": 40,
       "source_identified": 47
     }
   },
-  "isolated_runtime_validated": 37,
+  "isolated_runtime_validated": 40,
   "item_spec_total": 47,
   "pack_id": "tashas-cauldron",
-  "registered_production_full": 37,
-  "runtime_preview_full": 37,
+  "registered_production_full": 40,
+  "runtime_preview_full": 40,
   "schema_version": "tashas-item-runtime-validation-II-1",
   "temporary_db_validation": "passed:test_tashas_recovery.py::test_typed_item_api_uses_attunement_action_and_idempotency",
-  "typed_compile_full": 37,
+  "typed_compile_full": 40,
   "validation_contract": {
     "attunement_reused": true,
     "equipment_instance_reused": true,

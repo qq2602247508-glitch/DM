@@ -174,54 +174,65 @@ def _action_clauses(text: str, atom_id: str) -> tuple[list[dict[str, Any]], bool
 
 
 def _explicit_spell_identities(text: str) -> list[dict[str, str]]:
-    """Extract only spell names that the source states next to ``施展``."""
+    """Extract inline spell identities from an explicit ``施展`` clause.
 
-    pattern = re.compile(
-        r"施展\s*\*+(?P<localized>[\u3400-\u9fff][^*\n。]+?)\*{1,2}"
-        r"\s*(?P<english>[A-Z][A-Za-z’' -]{2,})\*?\s*法术"
+    The source uses both a singular ``施展*中文**English*法术`` form and a
+    list form such as ``施展以下法术：*中文**English*，...``.  The scope is
+    anchored after the verb so generic references like ``这道法术`` and class
+    spell-list prose remain fail-closed.
+    """
+
+    inline_pattern = re.compile(
+        r"\*+(?P<localized>[\u3400-\u9fff][^*\n。|]{1,48}?)\*{1,2}"
+        r"\s*(?P<english>[A-Z][A-Za-z’'\-\s]{2,}?)\*{1,2}"
+        r"(?=\s*(?:法术|[，,。；;|（(]|$))"
     )
     identities: list[dict[str, str]] = []
     seen: set[tuple[str, str]] = set()
-    for match in pattern.finditer(text):
-        localized = re.sub(r"\s+", "", match.group("localized")).strip("* ")
-        english = re.sub(r"\s+", " ", match.group("english").strip("* "))
-        if (
-            not english
-            or english.casefold() in {"grappled", "restrained"}
-            or any(
-                token in localized
-                for token in (
-                    "一道",
-                    "下列",
-                    "以下",
-                    "那道",
-                    "该法术",
-                    "任意",
-                    "任何",
-                    "恢复生命值",
-                    "德鲁伊",
-                    "游侠",
-                    "法师",
-                    "术士",
-                    "邪术师",
-                    "牧师",
-                    "法术后",
-                    "法术对",
-                    "某个",
+    for marker in re.finditer(r"施展", text):
+        remainder = text[marker.end() : marker.end() + 1800]
+        boundaries = [position for position in (remainder.find("。"), remainder.find("|")) if position >= 0]
+        window = remainder[: min(boundaries)] if boundaries else remainder
+        for match in inline_pattern.finditer(window):
+            localized = re.sub(r"\s+", "", match.group("localized")).strip("* ")
+            english = re.sub(r"\s+", " ", match.group("english").strip("* "))
+            if (
+                not english
+                or english.casefold() in {"grappled", "restrained"}
+                or any(
+                    token in localized
+                    for token in (
+                        "一道",
+                        "下列",
+                        "以下",
+                        "那道",
+                        "该法术",
+                        "任意",
+                        "任何",
+                        "恢复生命值",
+                        "德鲁伊",
+                        "游侠",
+                        "法师",
+                        "术士",
+                        "邪术师",
+                        "牧师",
+                        "法术后",
+                        "法术对",
+                        "某个",
+                    )
                 )
-            )
-        ):
-            continue
-        key = (localized, english)
-        if localized and key not in seen:
-            seen.add(key)
-            identities.append(
-                {
-                    "localized_name": localized,
-                    "english_name": english,
-                    "spell_id": english.casefold().replace(" ", "-") if english else localized,
-                }
-            )
+            ):
+                continue
+            key = (localized, english)
+            if localized and key not in seen:
+                seen.add(key)
+                identities.append(
+                    {
+                        "localized_name": localized,
+                        "english_name": english,
+                        "spell_id": english.casefold().replace(" ", "-") if english else localized,
+                    }
+                )
     return identities
 
 

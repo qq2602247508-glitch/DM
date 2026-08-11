@@ -11,28 +11,28 @@
       "runtime_consumer": "item.equipment_modifier.v1",
       "status": "unlocked",
       "template_id": "item.passive",
-      "unlock_count": 37
+      "unlock_count": 40
     },
     {
       "candidate_count": 47,
       "runtime_consumer": "item.attunement.v1",
       "status": "unlocked",
       "template_id": "item.attunement",
-      "unlock_count": 35
+      "unlock_count": 38
     },
     {
       "candidate_count": 47,
       "runtime_consumer": "item.granted_action.v1",
       "status": "unlocked",
       "template_id": "item.action",
-      "unlock_count": 24
+      "unlock_count": 27
     },
     {
       "candidate_count": 47,
       "runtime_consumer": "item.charge_resource.v1",
       "status": "unlocked",
       "template_id": "item.charges",
-      "unlock_count": 15
+      "unlock_count": 17
     },
     {
       "candidate_count": 11,

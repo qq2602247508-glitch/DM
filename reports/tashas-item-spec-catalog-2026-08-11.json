@@ -1,32 +1,32 @@
 {
-  "catalog_fingerprint": "7eed95cfaa8a1c20321a9279279fda2acce1bc64a534bfd00151b9389c18b404",
+  "catalog_fingerprint": "cd670a8caaa3dd60d9924e1023d82b214772a7b66d226f23bbfe7a436117df52",
   "compile_status_counts": {
-    "full": 37,
-    "partial": 10
+    "full": 40,
+    "partial": 7
   },
-  "game_usable": 37,
-  "isolated_runtime_validated": 37,
-  "item_spec_compile_full": 37,
-  "item_spec_compile_only": 10,
+  "game_usable": 40,
+  "isolated_runtime_validated": 40,
+  "item_spec_compile_full": 40,
+  "item_spec_compile_only": 7,
   "item_spec_reviewed": 47,
-  "item_spec_runtime_preview_full": 37,
+  "item_spec_runtime_preview_full": 40,
   "item_spec_total": 47,
   "item_spec_typed": 47,
   "name_branch_count": 0,
   "pack_id": "tashas-cauldron",
-  "production_full": 37,
+  "production_full": 40,
   "rates": {
-    "compile_full": 0.7872340425531915,
-    "game_usable": 0.7872340425531915,
-    "isolated_runtime_validated": 0.7872340425531915,
-    "production_full": 0.7872340425531915,
-    "registered_production_full": 0.7872340425531915,
+    "compile_full": 0.851063829787234,
+    "game_usable": 0.851063829787234,
+    "isolated_runtime_validated": 0.851063829787234,
+    "production_full": 0.851063829787234,
+    "registered_production_full": 0.851063829787234,
     "reviewed": 1.0,
-    "runtime_preview_full": 0.7872340425531915,
+    "runtime_preview_full": 0.851063829787234,
     "typed": 1.0
   },
-  "registered_production_full": 37,
-  "requires_dm": 10,
+  "registered_production_full": 40,
+  "requires_dm": 7,
   "schema_version": "tashas-item-spec-catalog-1",
   "specs": [
     {
@@ -2202,14 +2202,112 @@
           "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:spell-grant",
           "clause_type": "granted_spell",
           "evidence": {
-            "manual_review_required": true,
+            "manual_review_required": false,
             "source_excerpt": "**芭芭********雅嘎的臼与杵****|Baba\nYaga's Mortar and Pestle****\n***奇物**,**神器（需同调）*\n不朽鬼婆芭芭雅嘎的造物违逆了凡间魔法的法则。在她所有臭名昭著的劳什子里，让她在无尽的诸界中巩固传奇恶名的神器乃是能够助她穿越位面的：*芭芭****雅嘎的臼与杵**Baba\nYaga’s Mortar and Pestle*。这两件芭芭雅嘎特色鲜明的工具各是一件需要同调的单一神器。若两物件分开，那么*杵**Pestle*会在下一个黎明出现在*臼**Mortar*旁边。\n\n***随机属性***。这件神器具有以下随机属性，你可以通过对着*《城主指南》*中的“*神器*”章节掷骰以决定它们。\n\n- 两项弱效增益属性一项强效增益属性一项弱效减益属性\n\n***臼的属性***。"
           },
           "parameters": {
             "grant_mode": "item_cast",
             "source_text": "**芭芭********雅嘎的臼与杵****|Baba\nYaga's Mortar and Pestle****\n***奇物**,**神器（需同调）*\n不朽鬼婆芭芭雅嘎的造物违逆了凡间魔法的法则。在她所有臭名昭著的劳什子里，让她在无尽的诸界中巩固传奇恶名的神器乃是能够助她穿越位面的：*芭芭****雅嘎的臼与杵**Baba\nYaga’s Mortar and Pestle*。这两件芭芭雅嘎特色鲜明的工具各是一件需要同调的单一神器。若两物件分开，那么*杵**Pestle*会在下一个黎明出现在*臼**Mortar*旁边。\n\n***随机属性***。这件神器具有以下随机属性，你可以通过对着*《城主指南》*中的“*神器*”章节掷骰以决定它们。\n\n- 两项弱效增益属性一项强效增益属性一项弱效减益属性\n\n***臼的属性***。",
-            "spell_identities": [],
-            "spell_ids": []
+            "spell_identities": [
+              {
+                "english_name": "Aura of Life",
+                "localized_name": "生命灵光",
+                "spell_id": "aura-of-life"
+              },
+              {
+                "english_name": "Aura of Purity",
+                "localized_name": "净化灵光",
+                "spell_id": "aura-of-purity"
+              },
+              {
+                "english_name": "Beacon of Hope",
+                "localized_name": "希望信标",
+                "spell_id": "beacon-of-hope"
+              },
+              {
+                "english_name": "Mass Cure Wounds",
+                "localized_name": "群体疗伤术",
+                "spell_id": "mass-cure-wounds"
+              },
+              {
+                "english_name": "Magic Circle",
+                "localized_name": "防护法阵",
+                "spell_id": "magic-circle"
+              },
+              {
+                "english_name": "Magic Jar",
+                "localized_name": "魔魂壶",
+                "spell_id": "magic-jar"
+              },
+              {
+                "english_name": "Planar Ally",
+                "localized_name": "异界誓盟",
+                "spell_id": "planar-ally"
+              },
+              {
+                "english_name": "Planar Binding",
+                "localized_name": "异界誓缚",
+                "spell_id": "planar-binding"
+              },
+              {
+                "english_name": "Plane Shift",
+                "localized_name": "位面转移",
+                "spell_id": "plane-shift"
+              },
+              {
+                "english_name": "Summon Fiend",
+                "localized_name": "邪魔召唤术",
+                "spell_id": "summon-fiend"
+              },
+              {
+                "english_name": "Comprehend Languages",
+                "localized_name": "通晓语言",
+                "spell_id": "comprehend-languages"
+              },
+              {
+                "english_name": "Detect Evil and Good",
+                "localized_name": "侦测善恶",
+                "spell_id": "detect-evil-and-good"
+              },
+              {
+                "english_name": "Detect Magic",
+                "localized_name": "侦测魔法",
+                "spell_id": "detect-magic"
+              },
+              {
+                "english_name": "Detect Poison andDIsease",
+                "localized_name": "侦测毒素和疾病",
+                "spell_id": "detect-poison-anddisease"
+              },
+              {
+                "english_name": "Locate Object",
+                "localized_name": "物品定位术",
+                "spell_id": "locate-object"
+              },
+              {
+                "english_name": "Scrying",
+                "localized_name": "探知术",
+                "spell_id": "scrying"
+              }
+            ],
+            "spell_ids": [
+              "aura-of-life",
+              "aura-of-purity",
+              "beacon-of-hope",
+              "mass-cure-wounds",
+              "magic-circle",
+              "magic-jar",
+              "planar-ally",
+              "planar-binding",
+              "plane-shift",
+              "summon-fiend",
+              "comprehend-languages",
+              "detect-evil-and-good",
+              "detect-magic",
+              "detect-poison-anddisease",
+              "locate-object",
+              "scrying"
+            ]
           },
           "trigger": "item_action_requested"
         },
@@ -2541,14 +2639,112 @@
             "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:23eee2e4e70e:004:spell-grant",
             "clause_type": "granted_spell",
             "evidence": {
-              "manual_review_required": true,
+              "manual_review_required": false,
               "source_excerpt": "**芭芭********雅嘎的臼与杵****|Baba\nYaga's Mortar and Pestle****\n***奇物**,**神器（需同调）*\n不朽鬼婆芭芭雅嘎的造物违逆了凡间魔法的法则。在她所有臭名昭著的劳什子里，让她在无尽的诸界中巩固传奇恶名的神器乃是能够助她穿越位面的：*芭芭****雅嘎的臼与杵**Baba\nYaga’s Mortar and Pestle*。这两件芭芭雅嘎特色鲜明的工具各是一件需要同调的单一神器。若两物件分开，那么*杵**Pestle*会在下一个黎明出现在*臼**Mortar*旁边。\n\n***随机属性***。这件神器具有以下随机属性，你可以通过对着*《城主指南》*中的“*神器*”章节掷骰以决定它们。\n\n- 两项弱效增益属性一项强效增益属性一项弱效减益属性\n\n***臼的属性***。"
             },
             "parameters": {
               "grant_mode": "item_cast",
               "source_text": "**芭芭********雅嘎的臼与杵****|Baba\nYaga's Mortar and Pestle****\n***奇物**,**神器（需同调）*\n不朽鬼婆芭芭雅嘎的造物违逆了凡间魔法的法则。在她所有臭名昭著的劳什子里，让她在无尽的诸界中巩固传奇恶名的神器乃是能够助她穿越位面的：*芭芭****雅嘎的臼与杵**Baba\nYaga’s Mortar and Pestle*。这两件芭芭雅嘎特色鲜明的工具各是一件需要同调的单一神器。若两物件分开，那么*杵**Pestle*会在下一个黎明出现在*臼**Mortar*旁边。\n\n***随机属性***。这件神器具有以下随机属性，你可以通过对着*《城主指南》*中的“*神器*”章节掷骰以决定它们。\n\n- 两项弱效增益属性一项强效增益属性一项弱效减益属性\n\n***臼的属性***。",
-              "spell_identities": [],
-              "spell_ids": []
+              "spell_identities": [
+                {
+                  "english_name": "Aura of Life",
+                  "localized_name": "生命灵光",
+                  "spell_id": "aura-of-life"
+                },
+                {
+                  "english_name": "Aura of Purity",
+                  "localized_name": "净化灵光",
+                  "spell_id": "aura-of-purity"
+                },
+                {
+                  "english_name": "Beacon of Hope",
+                  "localized_name": "希望信标",
+                  "spell_id": "beacon-of-hope"
+                },
+                {
+                  "english_name": "Mass Cure Wounds",
+                  "localized_name": "群体疗伤术",
+                  "spell_id": "mass-cure-wounds"
+                },
+                {
+                  "english_name": "Magic Circle",
+                  "localized_name": "防护法阵",
+                  "spell_id": "magic-circle"
+                },
+                {
+                  "english_name": "Magic Jar",
+                  "localized_name": "魔魂壶",
+                  "spell_id": "magic-jar"
+                },
+                {
+                  "english_name": "Planar Ally",
+                  "localized_name": "异界誓盟",
+                  "spell_id": "planar-ally"
+                },
+                {
+                  "english_name": "Planar Binding",
+                  "localized_name": "异界誓缚",
+                  "spell_id": "planar-binding"
+                },
+                {
+                  "english_name": "Plane Shift",
+                  "localized_name": "位面转移",
+                  "spell_id": "plane-shift"
+                },
+                {
+                  "english_name": "Summon Fiend",
+                  "localized_name": "邪魔召唤术",
+                  "spell_id": "summon-fiend"
+                },
+                {
+                  "english_name": "Comprehend Languages",
+                  "localized_name": "通晓语言",
+                  "spell_id": "comprehend-languages"
+                },
+                {
+                  "english_name": "Detect Evil and Good",
+                  "localized_name": "侦测善恶",
+                  "spell_id": "detect-evil-and-good"
+                },
+                {
+                  "english_name": "Detect Magic",
+                  "localized_name": "侦测魔法",
+                  "spell_id": "detect-magic"
+                },
+                {
+                  "english_name": "Detect Poison andDIsease",
+                  "localized_name": "侦测毒素和疾病",
+                  "spell_id": "detect-poison-anddisease"
+                },
+                {
+                  "english_name": "Locate Object",
+                  "localized_name": "物品定位术",
+                  "spell_id": "locate-object"
+                },
+                {
+                  "english_name": "Scrying",
+                  "localized_name": "探知术",
+                  "spell_id": "scrying"
+                }
+              ],
+              "spell_ids": [
+                "aura-of-life",
+                "aura-of-purity",
+                "beacon-of-hope",
+                "mass-cure-wounds",
+                "magic-circle",
+                "magic-jar",
+                "planar-ally",
+                "planar-binding",
+                "plane-shift",
+                "summon-fiend",
+                "comprehend-languages",
+                "detect-evil-and-good",
+                "detect-magic",
+                "detect-poison-anddisease",
+                "locate-object",
+                "scrying"
+              ]
             },
             "trigger": "item_action_requested"
           },
@@ -2575,7 +2771,7 @@
           "item.granted_action.v1",
           "item.granted_spell.v1"
         ],
-        "item_fingerprint": "35cafb57324225b6022436fb22aaafaa6e67d02f9738a0b9c03342aae5486433",
+        "item_fingerprint": "868ab944ab6442642e15f8c4c44f6e957eb244ec0d79d747e2e8e43b14e10b99",
         "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-23eee2e4e70e-004",
         "runtime_preview_full": false,
         "schema_version": "item-ir-1",
@@ -2727,7 +2923,88 @@
           "target_policy": "self"
         }
       ],
-      "granted_spells": [],
+      "granted_spells": [
+        {
+          "english_name": "Aura of Life",
+          "localized_name": "生命灵光",
+          "spell_id": "aura-of-life"
+        },
+        {
+          "english_name": "Aura of Purity",
+          "localized_name": "净化灵光",
+          "spell_id": "aura-of-purity"
+        },
+        {
+          "english_name": "Beacon of Hope",
+          "localized_name": "希望信标",
+          "spell_id": "beacon-of-hope"
+        },
+        {
+          "english_name": "Mass Cure Wounds",
+          "localized_name": "群体疗伤术",
+          "spell_id": "mass-cure-wounds"
+        },
+        {
+          "english_name": "Magic Circle",
+          "localized_name": "防护法阵",
+          "spell_id": "magic-circle"
+        },
+        {
+          "english_name": "Magic Jar",
+          "localized_name": "魔魂壶",
+          "spell_id": "magic-jar"
+        },
+        {
+          "english_name": "Planar Ally",
+          "localized_name": "异界誓盟",
+          "spell_id": "planar-ally"
+        },
+        {
+          "english_name": "Planar Binding",
+          "localized_name": "异界誓缚",
+          "spell_id": "planar-binding"
+        },
+        {
+          "english_name": "Plane Shift",
+          "localized_name": "位面转移",
+          "spell_id": "plane-shift"
+        },
+        {
+          "english_name": "Summon Fiend",
+          "localized_name": "邪魔召唤术",
+          "spell_id": "summon-fiend"
+        },
+        {
+          "english_name": "Comprehend Languages",
+          "localized_name": "通晓语言",
+          "spell_id": "comprehend-languages"
+        },
+        {
+          "english_name": "Detect Evil and Good",
+          "localized_name": "侦测善恶",
+          "spell_id": "detect-evil-and-good"
+        },
+        {
+          "english_name": "Detect Magic",
+          "localized_name": "侦测魔法",
+          "spell_id": "detect-magic"
+        },
+        {
+          "english_name": "Detect Poison andDIsease",
+          "localized_name": "侦测毒素和疾病",
+          "spell_id": "detect-poison-anddisease"
+        },
+        {
+          "english_name": "Locate Object",
+          "localized_name": "物品定位术",
+          "spell_id": "locate-object"
+        },
+        {
+          "english_name": "Scrying",
+          "localized_name": "探知术",
+          "spell_id": "scrying"
+        }
+      ],
       "healing": null,
       "immunities": [
         {
@@ -2750,7 +3027,7 @@
       "requires_attunement": true,
       "resistances": [],
       "resource_bindings": [],
-      "review_fingerprint": "35cafb57324225b6022436fb22aaafaa6e67d02f9738a0b9c03342aae5486433",
+      "review_fingerprint": "868ab944ab6442642e15f8c4c44f6e957eb244ec0d79d747e2e8e43b14e10b99",
       "review_status": "reviewed",
       "ruleset_version": "2024",
       "schema_version": "item-ir-1",
@@ -2834,22 +3111,58 @@
           "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:3e9825c326a3:003:spell-grant",
           "clause_type": "granted_spell",
           "evidence": {
-            "manual_review_required": true,
+            "manual_review_required": false,
             "source_excerpt": "of Souls**\n*奇物，神器（需同调）*\n并非所有逗留于世的灵魂都是迷失在通往死后国度之路上的悲惨灵魂。有些灵魂失去活力，成为了囚徒；它们是如此邪恶，以至于凡人不敢将它们释放到那毫无戒心的来世。\n作为由维斯塔尼传说中的人物创造的物品，*鲁芭的灵魂塔罗卡**|Luba‘s Tarokka\nof Souls*塑造了无数英雄的命运。这套牌作出的预言也揭示了巨大的邪恶，引导它的创造者走入邪恶势力的道路。牌组的创造者，鲁芭夫人，依靠着她敏锐的直觉无数次侥幸逃离了自己的毁灭。但就算是她也无法躲过所有的邪恶。在最危急的关头，鲁芭夫人设法用命运的丝线封印住这些至恶的存在，将它们囚禁在了这套塔罗卡中。这些邪恶的灵魂被困于隐藏在卡牌洗混翻转之中的下界空间内，静静地等待着命运本身也被玷污的那一天这一天绝对会到来的。\n和所有塔罗"
           },
           "parameters": {
             "grant_mode": "item_cast",
             "source_text": "of Souls**\n*奇物，神器（需同调）*\n并非所有逗留于世的灵魂都是迷失在通往死后国度之路上的悲惨灵魂。有些灵魂失去活力，成为了囚徒；它们是如此邪恶，以至于凡人不敢将它们释放到那毫无戒心的来世。\n作为由维斯塔尼传说中的人物创造的物品，*鲁芭的灵魂塔罗卡**|Luba‘s Tarokka\nof Souls*塑造了无数英雄的命运。这套牌作出的预言也揭示了巨大的邪恶，引导它的创造者走入邪恶势力的道路。牌组的创造者，鲁芭夫人，依靠着她敏锐的直觉无数次侥幸逃离了自己的毁灭。但就算是她也无法躲过所有的邪恶。在最危急的关头，鲁芭夫人设法用命运的丝线封印住这些至恶的存在，将它们囚禁在了这套塔罗卡中。这些邪恶的灵魂被困于隐藏在卡牌洗混翻转之中的下界空间内，静静地等待着命运本身也被玷污的那一天这一天绝对会到来的。\n和所有塔罗",
-            "spell_identities": [],
-            "spell_ids": []
+            "spell_identities": [
+              {
+                "english_name": "Comprehend Languages",
+                "localized_name": "通晓语言",
+                "spell_id": "comprehend-languages"
+              },
+              {
+                "english_name": "Detect Evil and Good",
+                "localized_name": "侦测善恶",
+                "spell_id": "detect-evil-and-good"
+              },
+              {
+                "english_name": "Detect Magic",
+                "localized_name": "侦测魔法",
+                "spell_id": "detect-magic"
+              },
+              {
+                "english_name": "Detect Poison andDIsease",
+                "localized_name": "侦测毒素和疾病",
+                "spell_id": "detect-poison-anddisease"
+              },
+              {
+                "english_name": "Locate Object",
+                "localized_name": "物品定位术",
+                "spell_id": "locate-object"
+              },
+              {
+                "english_name": "Scrying",
+                "localized_name": "探知术",
+                "spell_id": "scrying"
+              }
+            ],
+            "spell_ids": [
+              "comprehend-languages",
+              "detect-evil-and-good",
+              "detect-magic",
+              "detect-poison-anddisease",
+              "locate-object",
+              "scrying"
+            ]
           },
           "trigger": "item_action_requested"
         }
       ],
       "compile": {
-        "blockers": [
-          "manual_clause_requires_dm_or_additional_typed_fields"
-        ],
+        "blockers": [],
         "clauses": [
           {
             "action_economy": "none",
@@ -2899,28 +3212,66 @@
             "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:3e9825c326a3:003:spell-grant",
             "clause_type": "granted_spell",
             "evidence": {
-              "manual_review_required": true,
+              "manual_review_required": false,
               "source_excerpt": "of Souls**\n*奇物，神器（需同调）*\n并非所有逗留于世的灵魂都是迷失在通往死后国度之路上的悲惨灵魂。有些灵魂失去活力，成为了囚徒；它们是如此邪恶，以至于凡人不敢将它们释放到那毫无戒心的来世。\n作为由维斯塔尼传说中的人物创造的物品，*鲁芭的灵魂塔罗卡**|Luba‘s Tarokka\nof Souls*塑造了无数英雄的命运。这套牌作出的预言也揭示了巨大的邪恶，引导它的创造者走入邪恶势力的道路。牌组的创造者，鲁芭夫人，依靠着她敏锐的直觉无数次侥幸逃离了自己的毁灭。但就算是她也无法躲过所有的邪恶。在最危急的关头，鲁芭夫人设法用命运的丝线封印住这些至恶的存在，将它们囚禁在了这套塔罗卡中。这些邪恶的灵魂被困于隐藏在卡牌洗混翻转之中的下界空间内，静静地等待着命运本身也被玷污的那一天这一天绝对会到来的。\n和所有塔罗"
             },
             "parameters": {
               "grant_mode": "item_cast",
               "source_text": "of Souls**\n*奇物，神器（需同调）*\n并非所有逗留于世的灵魂都是迷失在通往死后国度之路上的悲惨灵魂。有些灵魂失去活力，成为了囚徒；它们是如此邪恶，以至于凡人不敢将它们释放到那毫无戒心的来世。\n作为由维斯塔尼传说中的人物创造的物品，*鲁芭的灵魂塔罗卡**|Luba‘s Tarokka\nof Souls*塑造了无数英雄的命运。这套牌作出的预言也揭示了巨大的邪恶，引导它的创造者走入邪恶势力的道路。牌组的创造者，鲁芭夫人，依靠着她敏锐的直觉无数次侥幸逃离了自己的毁灭。但就算是她也无法躲过所有的邪恶。在最危急的关头，鲁芭夫人设法用命运的丝线封印住这些至恶的存在，将它们囚禁在了这套塔罗卡中。这些邪恶的灵魂被困于隐藏在卡牌洗混翻转之中的下界空间内，静静地等待着命运本身也被玷污的那一天这一天绝对会到来的。\n和所有塔罗",
-              "spell_identities": [],
-              "spell_ids": []
+              "spell_identities": [
+                {
+                  "english_name": "Comprehend Languages",
+                  "localized_name": "通晓语言",
+                  "spell_id": "comprehend-languages"
+                },
+                {
+                  "english_name": "Detect Evil and Good",
+                  "localized_name": "侦测善恶",
+                  "spell_id": "detect-evil-and-good"
+                },
+                {
+                  "english_name": "Detect Magic",
+                  "localized_name": "侦测魔法",
+                  "spell_id": "detect-magic"
+                },
+                {
+                  "english_name": "Detect Poison andDIsease",
+                  "localized_name": "侦测毒素和疾病",
+                  "spell_id": "detect-poison-anddisease"
+                },
+                {
+                  "english_name": "Locate Object",
+                  "localized_name": "物品定位术",
+                  "spell_id": "locate-object"
+                },
+                {
+                  "english_name": "Scrying",
+                  "localized_name": "探知术",
+                  "spell_id": "scrying"
+                }
+              ],
+              "spell_ids": [
+                "comprehend-languages",
+                "detect-evil-and-good",
+                "detect-magic",
+                "detect-poison-anddisease",
+                "locate-object",
+                "scrying"
+              ]
             },
             "trigger": "item_action_requested"
           }
         ],
-        "compile_status": "partial",
+        "compile_status": "full",
         "consumer_ids": [
           "item.attunement.v1",
           "item.equipment_modifier.v1",
           "item.granted_action.v1",
           "item.granted_spell.v1"
         ],
-        "item_fingerprint": "e4a567fd9009d28e36ba0e11b217231919675ed74955eddefd4d8b9dec90293d",
+        "item_fingerprint": "4265df274dbcff0e461278c1c8fc26ca6cbef41a7553190a8b5fc5fef37a5794",
         "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-3e9825c326a3-003",
-        "runtime_preview_full": false,
+        "runtime_preview_full": true,
         "schema_version": "item-ir-1",
         "source_trust": "authored_ir"
       },
@@ -2932,7 +3283,7 @@
       "duration": null,
       "equipped_slot": null,
       "evidence": {
-        "manual_review_required": true,
+        "manual_review_required": false,
         "rejected_inferences": [
           "unknown_effects",
           "unresolved_spell_identity",
@@ -2962,13 +3313,44 @@
           "target_policy": "self"
         }
       ],
-      "granted_spells": [],
+      "granted_spells": [
+        {
+          "english_name": "Comprehend Languages",
+          "localized_name": "通晓语言",
+          "spell_id": "comprehend-languages"
+        },
+        {
+          "english_name": "Detect Evil and Good",
+          "localized_name": "侦测善恶",
+          "spell_id": "detect-evil-and-good"
+        },
+        {
+          "english_name": "Detect Magic",
+          "localized_name": "侦测魔法",
+          "spell_id": "detect-magic"
+        },
+        {
+          "english_name": "Detect Poison andDIsease",
+          "localized_name": "侦测毒素和疾病",
+          "spell_id": "detect-poison-anddisease"
+        },
+        {
+          "english_name": "Locate Object",
+          "localized_name": "物品定位术",
+          "spell_id": "locate-object"
+        },
+        {
+          "english_name": "Scrying",
+          "localized_name": "探知术",
+          "spell_id": "scrying"
+        }
+      ],
       "healing": null,
       "immunities": [],
       "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-3e9825c326a3-003",
       "item_kind": "wondrous_item",
       "localized_name": "鲁芭的灵魂塔罗卡",
-      "manual_review_required": true,
+      "manual_review_required": false,
       "name": "鲁芭的灵魂塔罗卡",
       "namespace": "dnd.tashas.recovery.item",
       "pack_id": "tashas-cauldron",
@@ -2978,7 +3360,7 @@
       "requires_attunement": true,
       "resistances": [],
       "resource_bindings": [],
-      "review_fingerprint": "e4a567fd9009d28e36ba0e11b217231919675ed74955eddefd4d8b9dec90293d",
+      "review_fingerprint": "4265df274dbcff0e461278c1c8fc26ca6cbef41a7553190a8b5fc5fef37a5794",
       "review_status": "reviewed",
       "ruleset_version": "2024",
       "schema_version": "item-ir-1",
@@ -2993,15 +3375,15 @@
       "status_layers": {
         "authored_typed_ir": true,
         "candidate": true,
-        "compile_full": false,
+        "compile_full": true,
         "dm_assisted": false,
         "draft": true,
-        "game_usable": false,
-        "highest_status": "authored_typed_ir",
-        "isolated_runtime_validated": false,
-        "registered_production_full": false,
+        "game_usable": true,
+        "highest_status": "game_usable",
+        "isolated_runtime_validated": true,
+        "registered_production_full": true,
         "reviewed": true,
-        "runtime_preview_full": false,
+        "runtime_preview_full": true,
         "source_identified": true
       },
       "temporary_hp": null,
@@ -3398,22 +3780,46 @@
           "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:db0e19f5d68b:001:spell-grant",
           "clause_type": "granted_spell",
           "evidence": {
-            "manual_review_required": true,
+            "manual_review_required": false,
             "source_excerpt": "Rao**\n*奇物**,**神器（需同调）*\n数个世纪以先，沉静之神拉奥创造了一件工具以保护那些尚未成熟的信徒们免受下层位面的邪恶侵扰。随着时光飞逝，凡人们已经自己找到了抵抗相关威胁的方法，而圣杖也接近被人遗忘。而在近几世纪，*拉奥圣杖**Croook of Rao*重现于世并被用于对抗巫后伊格薇尔伏（法师塔莎的一个别名）。虽然巫后被击败了，但伊格薇尔伏，成功地在战斗中给圣杖造成了伤害，她用一个隐秘的诅咒污染了圣杖作为在未来战胜圣杖的可能性。而后，圣杖再次失落于世。有时，圣杖会再次现身，但是这件著名的神器已不再是它曾是之物了。无论神器的持有者有没有意识到它全部的威胁，都很少会冒险使用*拉奥圣杖**Croook of Rao*说不定就会是最后一次。\n\n***随机属性***。这件神器具有以下随机属性，你可以通过对着"
           },
           "parameters": {
             "grant_mode": "item_cast",
             "source_text": "Rao**\n*奇物**,**神器（需同调）*\n数个世纪以先，沉静之神拉奥创造了一件工具以保护那些尚未成熟的信徒们免受下层位面的邪恶侵扰。随着时光飞逝，凡人们已经自己找到了抵抗相关威胁的方法，而圣杖也接近被人遗忘。而在近几世纪，*拉奥圣杖**Croook of Rao*重现于世并被用于对抗巫后伊格薇尔伏（法师塔莎的一个别名）。虽然巫后被击败了，但伊格薇尔伏，成功地在战斗中给圣杖造成了伤害，她用一个隐秘的诅咒污染了圣杖作为在未来战胜圣杖的可能性。而后，圣杖再次失落于世。有时，圣杖会再次现身，但是这件著名的神器已不再是它曾是之物了。无论神器的持有者有没有意识到它全部的威胁，都很少会冒险使用*拉奥圣杖**Croook of Rao*说不定就会是最后一次。\n\n***随机属性***。这件神器具有以下随机属性，你可以通过对着",
-            "spell_identities": [],
-            "spell_ids": []
+            "spell_identities": [
+              {
+                "english_name": "Aura of Life",
+                "localized_name": "生命灵光",
+                "spell_id": "aura-of-life"
+              },
+              {
+                "english_name": "Aura of Purity",
+                "localized_name": "净化灵光",
+                "spell_id": "aura-of-purity"
+              },
+              {
+                "english_name": "Beacon of Hope",
+                "localized_name": "希望信标",
+                "spell_id": "beacon-of-hope"
+              },
+              {
+                "english_name": "Mass Cure Wounds",
+                "localized_name": "群体疗伤术",
+                "spell_id": "mass-cure-wounds"
+              }
+            ],
+            "spell_ids": [
+              "aura-of-life",
+              "aura-of-purity",
+              "beacon-of-hope",
+              "mass-cure-wounds"
+            ]
           },
           "trigger": "item_action_requested"
         }
       ],
       "compile": {
-        "blockers": [
-          "manual_clause_requires_dm_or_additional_typed_fields"
-        ],
+        "blockers": [],
         "clauses": [
           {
             "action_economy": "none",
@@ -3492,19 +3898,45 @@
             "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:db0e19f5d68b:001:spell-grant",
             "clause_type": "granted_spell",
             "evidence": {
-              "manual_review_required": true,
+              "manual_review_required": false,
               "source_excerpt": "Rao**\n*奇物**,**神器（需同调）*\n数个世纪以先，沉静之神拉奥创造了一件工具以保护那些尚未成熟的信徒们免受下层位面的邪恶侵扰。随着时光飞逝，凡人们已经自己找到了抵抗相关威胁的方法，而圣杖也接近被人遗忘。而在近几世纪，*拉奥圣杖**Croook of Rao*重现于世并被用于对抗巫后伊格薇尔伏（法师塔莎的一个别名）。虽然巫后被击败了，但伊格薇尔伏，成功地在战斗中给圣杖造成了伤害，她用一个隐秘的诅咒污染了圣杖作为在未来战胜圣杖的可能性。而后，圣杖再次失落于世。有时，圣杖会再次现身，但是这件著名的神器已不再是它曾是之物了。无论神器的持有者有没有意识到它全部的威胁，都很少会冒险使用*拉奥圣杖**Croook of Rao*说不定就会是最后一次。\n\n***随机属性***。这件神器具有以下随机属性，你可以通过对着"
             },
             "parameters": {
               "grant_mode": "item_cast",
               "source_text": "Rao**\n*奇物**,**神器（需同调）*\n数个世纪以先，沉静之神拉奥创造了一件工具以保护那些尚未成熟的信徒们免受下层位面的邪恶侵扰。随着时光飞逝，凡人们已经自己找到了抵抗相关威胁的方法，而圣杖也接近被人遗忘。而在近几世纪，*拉奥圣杖**Croook of Rao*重现于世并被用于对抗巫后伊格薇尔伏（法师塔莎的一个别名）。虽然巫后被击败了，但伊格薇尔伏，成功地在战斗中给圣杖造成了伤害，她用一个隐秘的诅咒污染了圣杖作为在未来战胜圣杖的可能性。而后，圣杖再次失落于世。有时，圣杖会再次现身，但是这件著名的神器已不再是它曾是之物了。无论神器的持有者有没有意识到它全部的威胁，都很少会冒险使用*拉奥圣杖**Croook of Rao*说不定就会是最后一次。\n\n***随机属性***。这件神器具有以下随机属性，你可以通过对着",
-              "spell_identities": [],
-              "spell_ids": []
+              "spell_identities": [
+                {
+                  "english_name": "Aura of Life",
+                  "localized_name": "生命灵光",
+                  "spell_id": "aura-of-life"
+                },
+                {
+                  "english_name": "Aura of Purity",
+                  "localized_name": "净化灵光",
+                  "spell_id": "aura-of-purity"
+                },
+                {
+                  "english_name": "Beacon of Hope",
+                  "localized_name": "希望信标",
+                  "spell_id": "beacon-of-hope"
+                },
+                {
+                  "english_name": "Mass Cure Wounds",
+                  "localized_name": "群体疗伤术",
+                  "spell_id": "mass-cure-wounds"
+                }
+              ],
+              "spell_ids": [
+                "aura-of-life",
+                "aura-of-purity",
+                "beacon-of-hope",
+                "mass-cure-wounds"
+              ]
             },
             "trigger": "item_action_requested"
           }
         ],
-        "compile_status": "partial",
+        "compile_status": "full",
         "consumer_ids": [
           "item.attunement.v1",
           "item.charge_resource.v1",
@@ -3512,9 +3944,9 @@
           "item.granted_action.v1",
           "item.granted_spell.v1"
         ],
-        "item_fingerprint": "9b7104a71ef1499eaf3c700aa86fdda1c73927ca57d2296ce2c684792a65e695",
+        "item_fingerprint": "66f65914acbd3a55c70f66202b0a17507fdbf3ea8c755c25ade026cf94e0d879",
         "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-db0e19f5d68b-001",
-        "runtime_preview_full": false,
+        "runtime_preview_full": true,
         "schema_version": "item-ir-1",
         "source_trust": "authored_ir"
       },
@@ -3526,7 +3958,7 @@
       "duration": null,
       "equipped_slot": null,
       "evidence": {
-        "manual_review_required": true,
+        "manual_review_required": false,
         "rejected_inferences": [
           "unknown_effects",
           "unresolved_spell_identity",
@@ -3556,13 +3988,34 @@
           "target_policy": "self"
         }
       ],
-      "granted_spells": [],
+      "granted_spells": [
+        {
+          "english_name": "Aura of Life",
+          "localized_name": "生命灵光",
+          "spell_id": "aura-of-life"
+        },
+        {
+          "english_name": "Aura of Purity",
+          "localized_name": "净化灵光",
+          "spell_id": "aura-of-purity"
+        },
+        {
+          "english_name": "Beacon of Hope",
+          "localized_name": "希望信标",
+          "spell_id": "beacon-of-hope"
+        },
+        {
+          "english_name": "Mass Cure Wounds",
+          "localized_name": "群体疗伤术",
+          "spell_id": "mass-cure-wounds"
+        }
+      ],
       "healing": null,
       "immunities": [],
       "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-db0e19f5d68b-001",
       "item_kind": "tool",
       "localized_name": "拉奥圣杖",
-      "manual_review_required": true,
+      "manual_review_required": false,
       "name": "拉奥圣杖",
       "namespace": "dnd.tashas.recovery.item",
       "pack_id": "tashas-cauldron",
@@ -3572,7 +4025,7 @@
       "requires_attunement": true,
       "resistances": [],
       "resource_bindings": [],
-      "review_fingerprint": "9b7104a71ef1499eaf3c700aa86fdda1c73927ca57d2296ce2c684792a65e695",
+      "review_fingerprint": "66f65914acbd3a55c70f66202b0a17507fdbf3ea8c755c25ade026cf94e0d879",
       "review_status": "reviewed",
       "ruleset_version": "2024",
       "schema_version": "item-ir-1",
@@ -3587,15 +4040,15 @@
       "status_layers": {
         "authored_typed_ir": true,
         "candidate": true,
-        "compile_full": false,
+        "compile_full": true,
         "dm_assisted": false,
         "draft": true,
-        "game_usable": false,
-        "highest_status": "authored_typed_ir",
-        "isolated_runtime_validated": false,
-        "registered_production_full": false,
+        "game_usable": true,
+        "highest_status": "game_usable",
+        "isolated_runtime_validated": true,
+        "registered_production_full": true,
         "reviewed": true,
-        "runtime_preview_full": false,
+        "runtime_preview_full": true,
         "source_identified": true
       },
       "temporary_hp": null,
@@ -3726,22 +4179,58 @@
           "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:demonomiconofiggwilv:002:spell-grant",
           "clause_type": "granted_spell",
           "evidence": {
-            "manual_review_required": true,
+            "manual_review_required": false,
             "source_excerpt": "*奇物**,**神器（需同调）*\n作为一份关于深渊之无限层级及其居民的宏大论文，*伊格薇尔伏恶魔**志**Demonomicon**ofIggwilv*是多元宇宙中最详细而最为亵渎的关于恶魔学识的记载。这卷书记载了从亘古到现在关于深渊与恶魔的所有渎神之物。恶魔们尝试过删减其中的文本，而虽有的部分被从书本的脊页上撕下，但大部分章节仍存，而且较之前更能揭示恶魔的秘密。这书所含之物已非亵渎二字所能形容。一小片不为人知的，无底深渊本身的碎片被囚禁于字字句句之后，使得无论有多少页被撕下，也能让书时刻保持着更新，这本书也不仅仅只是想要成为一本参考材料。\n***随机属性***。这件神器具有以下随机属性，你可以通过对着*《城主指南》*中的*“**神器**”*章节掷骰以决定它们。\n\n- 两项弱效增益属性一项强效减益属性一项弱效减"
           },
           "parameters": {
             "grant_mode": "item_cast",
             "source_text": "*奇物**,**神器（需同调）*\n作为一份关于深渊之无限层级及其居民的宏大论文，*伊格薇尔伏恶魔**志**Demonomicon**ofIggwilv*是多元宇宙中最详细而最为亵渎的关于恶魔学识的记载。这卷书记载了从亘古到现在关于深渊与恶魔的所有渎神之物。恶魔们尝试过删减其中的文本，而虽有的部分被从书本的脊页上撕下，但大部分章节仍存，而且较之前更能揭示恶魔的秘密。这书所含之物已非亵渎二字所能形容。一小片不为人知的，无底深渊本身的碎片被囚禁于字字句句之后，使得无论有多少页被撕下，也能让书时刻保持着更新，这本书也不仅仅只是想要成为一本参考材料。\n***随机属性***。这件神器具有以下随机属性，你可以通过对着*《城主指南》*中的*“**神器**”*章节掷骰以决定它们。\n\n- 两项弱效增益属性一项强效减益属性一项弱效减",
-            "spell_identities": [],
-            "spell_ids": []
+            "spell_identities": [
+              {
+                "english_name": "Magic Circle",
+                "localized_name": "防护法阵",
+                "spell_id": "magic-circle"
+              },
+              {
+                "english_name": "Magic Jar",
+                "localized_name": "魔魂壶",
+                "spell_id": "magic-jar"
+              },
+              {
+                "english_name": "Planar Ally",
+                "localized_name": "异界誓盟",
+                "spell_id": "planar-ally"
+              },
+              {
+                "english_name": "Planar Binding",
+                "localized_name": "异界誓缚",
+                "spell_id": "planar-binding"
+              },
+              {
+                "english_name": "Plane Shift",
+                "localized_name": "位面转移",
+                "spell_id": "plane-shift"
+              },
+              {
+                "english_name": "Summon Fiend",
+                "localized_name": "邪魔召唤术",
+                "spell_id": "summon-fiend"
+              }
+            ],
+            "spell_ids": [
+              "magic-circle",
+              "magic-jar",
+              "planar-ally",
+              "planar-binding",
+              "plane-shift",
+              "summon-fiend"
+            ]
           },
           "trigger": "item_action_requested"
         }
       ],
       "compile": {
-        "blockers": [
-          "manual_clause_requires_dm_or_additional_typed_fields"
-        ],
+        "blockers": [],
         "clauses": [
           {
             "action_economy": "none",
@@ -3856,19 +4345,57 @@
             "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:demonomiconofiggwilv:002:spell-grant",
             "clause_type": "granted_spell",
             "evidence": {
-              "manual_review_required": true,
+              "manual_review_required": false,
               "source_excerpt": "*奇物**,**神器（需同调）*\n作为一份关于深渊之无限层级及其居民的宏大论文，*伊格薇尔伏恶魔**志**Demonomicon**ofIggwilv*是多元宇宙中最详细而最为亵渎的关于恶魔学识的记载。这卷书记载了从亘古到现在关于深渊与恶魔的所有渎神之物。恶魔们尝试过删减其中的文本，而虽有的部分被从书本的脊页上撕下，但大部分章节仍存，而且较之前更能揭示恶魔的秘密。这书所含之物已非亵渎二字所能形容。一小片不为人知的，无底深渊本身的碎片被囚禁于字字句句之后，使得无论有多少页被撕下，也能让书时刻保持着更新，这本书也不仅仅只是想要成为一本参考材料。\n***随机属性***。这件神器具有以下随机属性，你可以通过对着*《城主指南》*中的*“**神器**”*章节掷骰以决定它们。\n\n- 两项弱效增益属性一项强效减益属性一项弱效减"
             },
             "parameters": {
               "grant_mode": "item_cast",
               "source_text": "*奇物**,**神器（需同调）*\n作为一份关于深渊之无限层级及其居民的宏大论文，*伊格薇尔伏恶魔**志**Demonomicon**ofIggwilv*是多元宇宙中最详细而最为亵渎的关于恶魔学识的记载。这卷书记载了从亘古到现在关于深渊与恶魔的所有渎神之物。恶魔们尝试过删减其中的文本，而虽有的部分被从书本的脊页上撕下，但大部分章节仍存，而且较之前更能揭示恶魔的秘密。这书所含之物已非亵渎二字所能形容。一小片不为人知的，无底深渊本身的碎片被囚禁于字字句句之后，使得无论有多少页被撕下，也能让书时刻保持着更新，这本书也不仅仅只是想要成为一本参考材料。\n***随机属性***。这件神器具有以下随机属性，你可以通过对着*《城主指南》*中的*“**神器**”*章节掷骰以决定它们。\n\n- 两项弱效增益属性一项强效减益属性一项弱效减",
-              "spell_identities": [],
-              "spell_ids": []
+              "spell_identities": [
+                {
+                  "english_name": "Magic Circle",
+                  "localized_name": "防护法阵",
+                  "spell_id": "magic-circle"
+                },
+                {
+                  "english_name": "Magic Jar",
+                  "localized_name": "魔魂壶",
+                  "spell_id": "magic-jar"
+                },
+                {
+                  "english_name": "Planar Ally",
+                  "localized_name": "异界誓盟",
+                  "spell_id": "planar-ally"
+                },
+                {
+                  "english_name": "Planar Binding",
+                  "localized_name": "异界誓缚",
+                  "spell_id": "planar-binding"
+                },
+                {
+                  "english_name": "Plane Shift",
+                  "localized_name": "位面转移",
+                  "spell_id": "plane-shift"
+                },
+                {
+                  "english_name": "Summon Fiend",
+                  "localized_name": "邪魔召唤术",
+                  "spell_id": "summon-fiend"
+                }
+              ],
+              "spell_ids": [
+                "magic-circle",
+                "magic-jar",
+                "planar-ally",
+                "planar-binding",
+                "plane-shift",
+                "summon-fiend"
+              ]
             },
             "trigger": "item_action_requested"
           }
         ],
-        "compile_status": "partial",
+        "compile_status": "full",
         "consumer_ids": [
           "item.attunement.v1",
           "item.charge_resource.v1",
@@ -3876,9 +4403,9 @@
           "item.granted_action.v1",
           "item.granted_spell.v1"
         ],
-        "item_fingerprint": "8d7ed5da8870d422da276aaf32bdfb4ae2f888ac60afb3e3aed77a2cbe1f76d4",
+        "item_fingerprint": "9dfacca99be6b8ff146a68e8d48d3a4b7f25626718afd69dd91109c15a4401aa",
         "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-demonomiconofiggwilv-002",
-        "runtime_preview_full": false,
+        "runtime_preview_full": true,
         "schema_version": "item-ir-1",
         "source_trust": "authored_ir"
       },
@@ -3890,7 +4417,7 @@
       "duration": null,
       "equipped_slot": null,
       "evidence": {
-        "manual_review_required": true,
+        "manual_review_required": false,
         "rejected_inferences": [
           "unknown_effects",
           "unresolved_spell_identity",
@@ -3938,13 +4465,44 @@
           "target_policy": "source_text"
         }
       ],
-      "granted_spells": [],
+      "granted_spells": [
+        {
+          "english_name": "Magic Circle",
+          "localized_name": "防护法阵",
+          "spell_id": "magic-circle"
+        },
+        {
+          "english_name": "Magic Jar",
+          "localized_name": "魔魂壶",
+          "spell_id": "magic-jar"
+        },
+        {
+          "english_name": "Planar Ally",
+          "localized_name": "异界誓盟",
+          "spell_id": "planar-ally"
+        },
+        {
+          "english_name": "Planar Binding",
+          "localized_name": "异界誓缚",
+          "spell_id": "planar-binding"
+        },
+        {
+          "english_name": "Plane Shift",
+          "localized_name": "位面转移",
+          "spell_id": "plane-shift"
+        },
+        {
+          "english_name": "Summon Fiend",
+          "localized_name": "邪魔召唤术",
+          "spell_id": "summon-fiend"
+        }
+      ],
       "healing": null,
       "immunities": [],
       "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-demonomiconofiggwilv-002",
       "item_kind": "wondrous_item",
       "localized_name": "伊格薇尔伏恶魔志",
-      "manual_review_required": true,
+      "manual_review_required": false,
       "name": "伊格薇尔伏恶魔志|DemonomiconofIggwilv",
       "namespace": "dnd.tashas.recovery.item",
       "pack_id": "tashas-cauldron",
@@ -3954,7 +4512,7 @@
       "requires_attunement": true,
       "resistances": [],
       "resource_bindings": [],
-      "review_fingerprint": "8d7ed5da8870d422da276aaf32bdfb4ae2f888ac60afb3e3aed77a2cbe1f76d4",
+      "review_fingerprint": "9dfacca99be6b8ff146a68e8d48d3a4b7f25626718afd69dd91109c15a4401aa",
       "review_status": "reviewed",
       "ruleset_version": "2024",
       "schema_version": "item-ir-1",
@@ -3969,15 +4527,15 @@
       "status_layers": {
         "authored_typed_ir": true,
         "candidate": true,
-        "compile_full": false,
+        "compile_full": true,
         "dm_assisted": false,
         "draft": true,
-        "game_usable": false,
-        "highest_status": "authored_typed_ir",
-        "isolated_runtime_validated": false,
-        "registered_production_full": false,
+        "game_usable": true,
+        "highest_status": "game_usable",
+        "isolated_runtime_validated": true,
+        "registered_production_full": true,
         "reviewed": true,
-        "runtime_preview_full": false,
+        "runtime_preview_full": true,
         "source_identified": true
       },
       "temporary_hp": null,

@@ -123,22 +123,58 @@
       "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:demonomiconofiggwilv:002:spell-grant",
       "clause_type": "granted_spell",
       "evidence": {
-        "manual_review_required": true,
+        "manual_review_required": false,
         "source_excerpt": "*奇物**,**神器（需同调）*\n作为一份关于深渊之无限层级及其居民的宏大论文，*伊格薇尔伏恶魔**志**Demonomicon**ofIggwilv*是多元宇宙中最详细而最为亵渎的关于恶魔学识的记载。这卷书记载了从亘古到现在关于深渊与恶魔的所有渎神之物。恶魔们尝试过删减其中的文本，而虽有的部分被从书本的脊页上撕下，但大部分章节仍存，而且较之前更能揭示恶魔的秘密。这书所含之物已非亵渎二字所能形容。一小片不为人知的，无底深渊本身的碎片被囚禁于字字句句之后，使得无论有多少页被撕下，也能让书时刻保持着更新，这本书也不仅仅只是想要成为一本参考材料。\n***随机属性***。这件神器具有以下随机属性，你可以通过对着*《城主指南》*中的*“**神器**”*章节掷骰以决定它们。\n\n- 两项弱效增益属性一项强效减益属性一项弱效减"
       },
       "parameters": {
         "grant_mode": "item_cast",
         "source_text": "*奇物**,**神器（需同调）*\n作为一份关于深渊之无限层级及其居民的宏大论文，*伊格薇尔伏恶魔**志**Demonomicon**ofIggwilv*是多元宇宙中最详细而最为亵渎的关于恶魔学识的记载。这卷书记载了从亘古到现在关于深渊与恶魔的所有渎神之物。恶魔们尝试过删减其中的文本，而虽有的部分被从书本的脊页上撕下，但大部分章节仍存，而且较之前更能揭示恶魔的秘密。这书所含之物已非亵渎二字所能形容。一小片不为人知的，无底深渊本身的碎片被囚禁于字字句句之后，使得无论有多少页被撕下，也能让书时刻保持着更新，这本书也不仅仅只是想要成为一本参考材料。\n***随机属性***。这件神器具有以下随机属性，你可以通过对着*《城主指南》*中的*“**神器**”*章节掷骰以决定它们。\n\n- 两项弱效增益属性一项强效减益属性一项弱效减",
-        "spell_identities": [],
-        "spell_ids": []
+        "spell_identities": [
+          {
+            "english_name": "Magic Circle",
+            "localized_name": "防护法阵",
+            "spell_id": "magic-circle"
+          },
+          {
+            "english_name": "Magic Jar",
+            "localized_name": "魔魂壶",
+            "spell_id": "magic-jar"
+          },
+          {
+            "english_name": "Planar Ally",
+            "localized_name": "异界誓盟",
+            "spell_id": "planar-ally"
+          },
+          {
+            "english_name": "Planar Binding",
+            "localized_name": "异界誓缚",
+            "spell_id": "planar-binding"
+          },
+          {
+            "english_name": "Plane Shift",
+            "localized_name": "位面转移",
+            "spell_id": "plane-shift"
+          },
+          {
+            "english_name": "Summon Fiend",
+            "localized_name": "邪魔召唤术",
+            "spell_id": "summon-fiend"
+          }
+        ],
+        "spell_ids": [
+          "magic-circle",
+          "magic-jar",
+          "planar-ally",
+          "planar-binding",
+          "plane-shift",
+          "summon-fiend"
+        ]
       },
       "trigger": "item_action_requested"
     }
   ],
   "compile": {
-    "blockers": [
-      "manual_clause_requires_dm_or_additional_typed_fields"
-    ],
+    "blockers": [],
     "clauses": [
       {
         "action_economy": "none",
@@ -253,19 +289,57 @@
         "clause_id": "tashas-cauldron:atom:760b230e1396825928305642:demonomiconofiggwilv:002:spell-grant",
         "clause_type": "granted_spell",
         "evidence": {
-          "manual_review_required": true,
+          "manual_review_required": false,
           "source_excerpt": "*奇物**,**神器（需同调）*\n作为一份关于深渊之无限层级及其居民的宏大论文，*伊格薇尔伏恶魔**志**Demonomicon**ofIggwilv*是多元宇宙中最详细而最为亵渎的关于恶魔学识的记载。这卷书记载了从亘古到现在关于深渊与恶魔的所有渎神之物。恶魔们尝试过删减其中的文本，而虽有的部分被从书本的脊页上撕下，但大部分章节仍存，而且较之前更能揭示恶魔的秘密。这书所含之物已非亵渎二字所能形容。一小片不为人知的，无底深渊本身的碎片被囚禁于字字句句之后，使得无论有多少页被撕下，也能让书时刻保持着更新，这本书也不仅仅只是想要成为一本参考材料。\n***随机属性***。这件神器具有以下随机属性，你可以通过对着*《城主指南》*中的*“**神器**”*章节掷骰以决定它们。\n\n- 两项弱效增益属性一项强效减益属性一项弱效减"
         },
         "parameters": {
           "grant_mode": "item_cast",
           "source_text": "*奇物**,**神器（需同调）*\n作为一份关于深渊之无限层级及其居民的宏大论文，*伊格薇尔伏恶魔**志**Demonomicon**ofIggwilv*是多元宇宙中最详细而最为亵渎的关于恶魔学识的记载。这卷书记载了从亘古到现在关于深渊与恶魔的所有渎神之物。恶魔们尝试过删减其中的文本，而虽有的部分被从书本的脊页上撕下，但大部分章节仍存，而且较之前更能揭示恶魔的秘密。这书所含之物已非亵渎二字所能形容。一小片不为人知的，无底深渊本身的碎片被囚禁于字字句句之后，使得无论有多少页被撕下，也能让书时刻保持着更新，这本书也不仅仅只是想要成为一本参考材料。\n***随机属性***。这件神器具有以下随机属性，你可以通过对着*《城主指南》*中的*“**神器**”*章节掷骰以决定它们。\n\n- 两项弱效增益属性一项强效减益属性一项弱效减",
-          "spell_identities": [],
-          "spell_ids": []
+          "spell_identities": [
+            {
+              "english_name": "Magic Circle",
+              "localized_name": "防护法阵",
+              "spell_id": "magic-circle"
+            },
+            {
+              "english_name": "Magic Jar",
+              "localized_name": "魔魂壶",
+              "spell_id": "magic-jar"
+            },
+            {
+              "english_name": "Planar Ally",
+              "localized_name": "异界誓盟",
+              "spell_id": "planar-ally"
+            },
+            {
+              "english_name": "Planar Binding",
+              "localized_name": "异界誓缚",
+              "spell_id": "planar-binding"
+            },
+            {
+              "english_name": "Plane Shift",
+              "localized_name": "位面转移",
+              "spell_id": "plane-shift"
+            },
+            {
+              "english_name": "Summon Fiend",
+              "localized_name": "邪魔召唤术",
+              "spell_id": "summon-fiend"
+            }
+          ],
+          "spell_ids": [
+            "magic-circle",
+            "magic-jar",
+            "planar-ally",
+            "planar-binding",
+            "plane-shift",
+            "summon-fiend"
+          ]
         },
         "trigger": "item_action_requested"
       }
     ],
-    "compile_status": "partial",
+    "compile_status": "full",
     "consumer_ids": [
       "item.attunement.v1",
       "item.charge_resource.v1",
@@ -273,9 +347,9 @@
       "item.granted_action.v1",
       "item.granted_spell.v1"
     ],
-    "item_fingerprint": "8d7ed5da8870d422da276aaf32bdfb4ae2f888ac60afb3e3aed77a2cbe1f76d4",
+    "item_fingerprint": "9dfacca99be6b8ff146a68e8d48d3a4b7f25626718afd69dd91109c15a4401aa",
     "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-demonomiconofiggwilv-002",
-    "runtime_preview_full": false,
+    "runtime_preview_full": true,
     "schema_version": "item-ir-1",
     "source_trust": "authored_ir"
   },
@@ -287,7 +361,7 @@
   "duration": null,
   "equipped_slot": null,
   "evidence": {
-    "manual_review_required": true,
+    "manual_review_required": false,
     "rejected_inferences": [
       "unknown_effects",
       "unresolved_spell_identity",
@@ -335,13 +409,44 @@
       "target_policy": "source_text"
     }
   ],
-  "granted_spells": [],
+  "granted_spells": [
+    {
+      "english_name": "Magic Circle",
+      "localized_name": "防护法阵",
+      "spell_id": "magic-circle"
+    },
+    {
+      "english_name": "Magic Jar",
+      "localized_name": "魔魂壶",
+      "spell_id": "magic-jar"
+    },
+    {
+      "english_name": "Planar Ally",
+      "localized_name": "异界誓盟",
+      "spell_id": "planar-ally"
+    },
+    {
+      "english_name": "Planar Binding",
+      "localized_name": "异界誓缚",
+      "spell_id": "planar-binding"
+    },
+    {
+      "english_name": "Plane Shift",
+      "localized_name": "位面转移",
+      "spell_id": "plane-shift"
+    },
+    {
+      "english_name": "Summon Fiend",
+      "localized_name": "邪魔召唤术",
+      "spell_id": "summon-fiend"
+    }
+  ],
   "healing": null,
   "immunities": [],
   "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-demonomiconofiggwilv-002",
   "item_kind": "wondrous_item",
   "localized_name": "伊格薇尔伏恶魔志",
-  "manual_review_required": true,
+  "manual_review_required": false,
   "name": "伊格薇尔伏恶魔志|DemonomiconofIggwilv",
   "namespace": "dnd.tashas.recovery.item",
   "pack_id": "tashas-cauldron",
@@ -351,7 +456,7 @@
   "requires_attunement": true,
   "resistances": [],
   "resource_bindings": [],
-  "review_fingerprint": "8d7ed5da8870d422da276aaf32bdfb4ae2f888ac60afb3e3aed77a2cbe1f76d4",
+  "review_fingerprint": "9dfacca99be6b8ff146a68e8d48d3a4b7f25626718afd69dd91109c15a4401aa",
   "review_status": "reviewed",
   "ruleset_version": "2024",
   "schema_version": "item-ir-1",
@@ -366,15 +471,15 @@
   "status_layers": {
     "authored_typed_ir": true,
     "candidate": true,
-    "compile_full": false,
+    "compile_full": true,
     "dm_assisted": false,
     "draft": true,
-    "game_usable": false,
-    "highest_status": "authored_typed_ir",
-    "isolated_runtime_validated": false,
-    "registered_production_full": false,
+    "game_usable": true,
+    "highest_status": "game_usable",
+    "isolated_runtime_validated": true,
+    "registered_production_full": true,
     "reviewed": true,
-    "runtime_preview_full": false,
+    "runtime_preview_full": true,
     "source_identified": true
   },
   "temporary_hp": null,

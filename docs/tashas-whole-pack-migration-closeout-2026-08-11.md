@@ -18,7 +18,7 @@
 
 ## 真实阻塞
 
-- ItemSpec：47 件物品/刺青均已 typed；compile full 37，isolated runtime validated 37，registered production full 37，game usable 37；剩余 10 个保留逐条 DM/人工语义边界。
+- ItemSpec：47 件物品/刺青均已 typed；compile full 40，isolated runtime validated 40，registered production full 40，game usable 40；剩余 7 个保留逐条 DM/人工语义边界。
 - 角色成长：pack pin、升级、历史快照降级、选择/资源/快照重建和 CAS/幂等已有隔离闭环；整包 feature/option typed/production 阈值仍未达到，不宣称整包 production closed。
 - 复杂召唤的既有 production evidence 使用正式 typed DM continuation，因此计入 dm_assisted，而不是把“请 DM 决定”文本当作可用。
 

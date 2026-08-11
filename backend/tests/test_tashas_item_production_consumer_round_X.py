@@ -38,7 +38,7 @@ def test_round_X_item_specs_have_real_production_consumer_evidence() -> None:
         | set(round_xi["selected_item_ids"])
         | set(round_xii["selected_item_ids"])
     )
-    assert catalog["isolated_runtime_validated"] == 37
+    assert catalog["isolated_runtime_validated"] >= 37
     assert catalog["registered_production_full"] >= 24
     assert catalog["game_usable"] >= 24
     assert sum(

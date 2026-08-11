@@ -989,6 +989,9 @@ class SpellEconomyService:
                     "charges": (e.charges - cost) if cost and e.charges is not None else e.charges,
                     "rules_kernel_consumer": "item.granted_action.v1",
                 }
+                item_spell_cast = self._typed_item_spell_cast(item_spec)
+                if item_spell_cast is not None:
+                    out["after"]["item_spell_cast"] = item_spell_cast
             elif op == "attune":
                 out["after"] = {"attuned": True, "active_attunements": active + 1}
                 if tattoo_lifecycle:
@@ -1165,6 +1168,41 @@ class SpellEconomyService:
                 "on_unattune": on_unattune,
             }
         return None
+
+    @staticmethod
+    def _typed_item_spell_cast(item_spec: object) -> dict[str, Any] | None:
+        """Materialize an item-cast spell list from typed clauses only."""
+
+        if not isinstance(item_spec, dict):
+            return None
+        identities: dict[str, dict[str, Any]] = {}
+        for raw_clause in item_spec.get("clauses", []):
+            if not isinstance(raw_clause, dict) or raw_clause.get("clause_type") != "granted_spell":
+                continue
+            parameters = raw_clause.get("parameters")
+            if not isinstance(parameters, dict):
+                raise ValueError("granted spell clause parameters must be typed")
+            raw_identities = parameters.get("spell_identities")
+            if not isinstance(raw_identities, list):
+                raise ValueError("granted spell clause requires spell identities")
+            for raw_identity in raw_identities:
+                if not isinstance(raw_identity, dict):
+                    raise ValueError("granted spell identity must be typed")
+                spell_id = str(raw_identity.get("spell_id") or "").strip()
+                if not spell_id:
+                    raise ValueError("granted spell identity requires spell_id")
+                identities[spell_id] = {
+                    "spell_id": spell_id,
+                    "localized_name": str(raw_identity.get("localized_name") or "").strip(),
+                    "english_name": str(raw_identity.get("english_name") or "").strip(),
+                }
+        if not identities:
+            return None
+        return {
+            "consumer_id": "item.granted_spell.v1",
+            "grant_mode": "item_cast",
+            "spell_identities": [identities[key] for key in sorted(identities)],
+        }
 
     @staticmethod
     def _item_adjudication_clause(

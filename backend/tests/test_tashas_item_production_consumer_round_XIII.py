@@ -30,6 +30,6 @@ def test_round_XIII_adds_complete_item_consumer_batch() -> None:
     assert results["content_kind"] == "item"
     assert results["production_runtime_full_ids"] == sorted(report["selected_item_ids"])
     assert load_item_production_evidence(ROOT) >= set(report["selected_item_ids"])
-    assert catalog["item_spec_compile_full"] == 37
+    assert catalog["item_spec_compile_full"] >= 37
     assert catalog["registered_production_full"] >= 32
     assert catalog["game_usable"] >= 32

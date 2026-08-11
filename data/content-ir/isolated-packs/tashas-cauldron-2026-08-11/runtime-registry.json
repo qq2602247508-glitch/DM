@@ -1230,7 +1230,7 @@
       "typed_ir_path": "items/content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-23eee2e4e70e-004.json"
     },
     {
-      "compile_status": "partial",
+      "compile_status": "full",
       "consumer_ids": [
         "item.attunement.v1",
         "item.equipment_modifier.v1",
@@ -1244,15 +1244,15 @@
       "status_layers": {
         "authored_typed_ir": true,
         "candidate": true,
-        "compile_full": false,
+        "compile_full": true,
         "dm_assisted": false,
         "draft": true,
-        "game_usable": false,
-        "highest_status": "authored_typed_ir",
-        "isolated_runtime_validated": false,
-        "registered_production_full": false,
+        "game_usable": true,
+        "highest_status": "game_usable",
+        "isolated_runtime_validated": true,
+        "registered_production_full": true,
         "reviewed": true,
-        "runtime_preview_full": false,
+        "runtime_preview_full": true,
         "source_identified": true
       },
       "typed_ir_path": "items/content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-3e9825c326a3-003.json"
@@ -1286,7 +1286,7 @@
       "typed_ir_path": "items/content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-b106ea54c961-000.json"
     },
     {
-      "compile_status": "partial",
+      "compile_status": "full",
       "consumer_ids": [
         "item.attunement.v1",
         "item.charge_resource.v1",
@@ -1301,21 +1301,21 @@
       "status_layers": {
         "authored_typed_ir": true,
         "candidate": true,
-        "compile_full": false,
+        "compile_full": true,
         "dm_assisted": false,
         "draft": true,
-        "game_usable": false,
-        "highest_status": "authored_typed_ir",
-        "isolated_runtime_validated": false,
-        "registered_production_full": false,
+        "game_usable": true,
+        "highest_status": "game_usable",
+        "isolated_runtime_validated": true,
+        "registered_production_full": true,
         "reviewed": true,
-        "runtime_preview_full": false,
+        "runtime_preview_full": true,
         "source_identified": true
       },
       "typed_ir_path": "items/content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-db0e19f5d68b-001.json"
     },
     {
-      "compile_status": "partial",
+      "compile_status": "full",
       "consumer_ids": [
         "item.attunement.v1",
         "item.charge_resource.v1",
@@ -1330,15 +1330,15 @@
       "status_layers": {
         "authored_typed_ir": true,
         "candidate": true,
-        "compile_full": false,
+        "compile_full": true,
         "dm_assisted": false,
         "draft": true,
-        "game_usable": false,
-        "highest_status": "authored_typed_ir",
-        "isolated_runtime_validated": false,
-        "registered_production_full": false,
+        "game_usable": true,
+        "highest_status": "game_usable",
+        "isolated_runtime_validated": true,
+        "registered_production_full": true,
         "reviewed": true,
-        "runtime_preview_full": false,
+        "runtime_preview_full": true,
         "source_identified": true
       },
       "typed_ir_path": "items/content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-demonomiconofiggwilv-002.json"

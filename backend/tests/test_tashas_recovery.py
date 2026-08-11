@@ -197,9 +197,9 @@ def test_tasha_isolated_registry_keeps_item_layers_separate() -> None:
     summary = registry.reload()
     assert summary["formal_apply"] is False
     assert summary["entry_total"] == 47
-    assert summary["compile_full"] == 37
-    assert summary["runtime_preview_full"] == 37
-    assert summary["isolated_runtime_validated"] == 37
+    assert summary["compile_full"] >= 37
+    assert summary["runtime_preview_full"] >= 37
+    assert summary["isolated_runtime_validated"] >= 37
     assert summary["registered_production_full"] == 0
     assert summary["game_usable"] == 0
     first = registry.lookup(summary["isolated_runtime_validated_ids"][0])

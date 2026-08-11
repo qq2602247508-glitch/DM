@@ -1,7 +1,7 @@
 {
   "after": {
     "compile_only": 35,
-    "production_full": 171,
+    "production_full": 174,
     "tasha_atom_pack": {
       "authored_typed_ir": 94,
       "candidate_generated": 407,
@@ -33,7 +33,10 @@
             "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-nature-s-mantle-007",
             "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-rhythm-maker-s-drum-008",
             "content.tashas-cauldron.item.tashas-cauldron-atom-62c7a0c6a042e571b17d35e3-dfaab0b0f93c-000",
+            "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-3e9825c326a3-003",
             "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-b106ea54c961-000",
+            "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-db0e19f5d68b-001",
+            "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-demonomiconofiggwilv-002",
             "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-alchemical-compendium-000",
             "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-astral-shard-001",
             "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-astromancy-archive-002",
@@ -139,8 +142,8 @@
       },
       "current_project_compile_only": 35,
       "current_project_compiled_unique": 111,
-      "current_project_production_full": 171,
-      "current_project_production_registry_fingerprint": "3ceb726d6524e4ceaabc1fc7bb7e454f5a5fde343240fbeb58e76b670d0bc14e",
+      "current_project_production_full": 174,
+      "current_project_production_registry_fingerprint": "c7d6055db60b87988ccb5814c89d49499340c64e64a64e2a906b53017c775302",
       "dm_assisted": 2,
       "dm_reference": 107,
       "draft_total": 407,
@@ -164,29 +167,29 @@
         "dm_assisted_count": 0,
         "implemented": true,
         "inventory_atom_count": 47,
-        "isolated_runtime_validated_count": 37,
-        "production_count": 37,
+        "isolated_runtime_validated_count": 40,
+        "production_count": 40,
         "typed_count": 47,
         "unlock_ranking": [
           {
             "capability": "item.passive_modifier",
             "consumer": "item.equipment_modifier.v1",
-            "unlock_count": 37
+            "unlock_count": 40
           },
           {
             "capability": "item.attunement",
             "consumer": "item.attunement.v1",
-            "unlock_count": 35
+            "unlock_count": 38
           },
           {
             "capability": "item.charge_resource",
             "consumer": "item.charge_resource.v1",
-            "unlock_count": 15
+            "unlock_count": 17
           },
           {
             "capability": "item.granted_action",
             "consumer": "item.granted_action.v1",
-            "unlock_count": 24
+            "unlock_count": 27
           },
           {
             "capability": "item.tattoo_lifecycle",
@@ -255,7 +258,7 @@
   },
   "baseline": {
     "compile_only": 35,
-    "production_full": 171,
+    "production_full": 174,
     "unique_compiled": 111
   },
   "database_unchanged": true,
@@ -265,6 +268,6 @@
   "name_branches_added": 0,
   "registry_and_database_unchanged": true,
   "schema_version": "content-ir-runtime-level-audit-V-1",
-  "tasha_item_compile_full": 37,
+  "tasha_item_compile_full": 40,
   "tasha_item_spec_typed": 47
 }

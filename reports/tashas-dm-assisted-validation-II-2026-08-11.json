@@ -47,7 +47,7 @@
     }
   ],
   "dm_assisted_count": 2,
-  "eligible_typed_clause_count": 17,
+  "eligible_typed_clause_count": 13,
   "existing_dm_assisted_count": 2,
   "formal_window_requirements": {
     "decision_schema_and_permission": true,

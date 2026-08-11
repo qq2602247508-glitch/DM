@@ -30,7 +30,10 @@
           "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-nature-s-mantle-007",
           "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-rhythm-maker-s-drum-008",
           "content.tashas-cauldron.item.tashas-cauldron-atom-62c7a0c6a042e571b17d35e3-dfaab0b0f93c-000",
+          "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-3e9825c326a3-003",
           "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-b106ea54c961-000",
+          "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-db0e19f5d68b-001",
+          "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-demonomiconofiggwilv-002",
           "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-alchemical-compendium-000",
           "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-astral-shard-001",
           "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-astromancy-archive-002",
@@ -136,8 +139,8 @@
     },
     "current_project_compile_only": 35,
     "current_project_compiled_unique": 111,
-    "current_project_production_full": 171,
-    "current_project_production_registry_fingerprint": "3ceb726d6524e4ceaabc1fc7bb7e454f5a5fde343240fbeb58e76b670d0bc14e",
+    "current_project_production_full": 174,
+    "current_project_production_registry_fingerprint": "c7d6055db60b87988ccb5814c89d49499340c64e64a64e2a906b53017c775302",
     "dm_assisted": 2,
     "dm_reference": 107,
     "draft_total": 407,
@@ -161,29 +164,29 @@
       "dm_assisted_count": 0,
       "implemented": true,
       "inventory_atom_count": 47,
-      "isolated_runtime_validated_count": 37,
-      "production_count": 37,
+      "isolated_runtime_validated_count": 40,
+      "production_count": 40,
       "typed_count": 47,
       "unlock_ranking": [
         {
           "capability": "item.passive_modifier",
           "consumer": "item.equipment_modifier.v1",
-          "unlock_count": 37
+          "unlock_count": 40
         },
         {
           "capability": "item.attunement",
           "consumer": "item.attunement.v1",
-          "unlock_count": 35
+          "unlock_count": 38
         },
         {
           "capability": "item.charge_resource",
           "consumer": "item.charge_resource.v1",
-          "unlock_count": 15
+          "unlock_count": 17
         },
         {
           "capability": "item.granted_action",
           "consumer": "item.granted_action.v1",
-          "unlock_count": 24
+          "unlock_count": 27
         },
         {
           "capability": "item.tattoo_lifecycle",
@@ -299,7 +302,10 @@
           "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-nature-s-mantle-007",
           "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-rhythm-maker-s-drum-008",
           "content.tashas-cauldron.item.tashas-cauldron-atom-62c7a0c6a042e571b17d35e3-dfaab0b0f93c-000",
+          "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-3e9825c326a3-003",
           "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-b106ea54c961-000",
+          "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-db0e19f5d68b-001",
+          "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-demonomiconofiggwilv-002",
           "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-alchemical-compendium-000",
           "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-astral-shard-001",
           "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-astromancy-archive-002",
@@ -405,8 +411,8 @@
     },
     "current_project_compile_only": 35,
     "current_project_compiled_unique": 111,
-    "current_project_production_full": 171,
-    "current_project_production_registry_fingerprint": "3ceb726d6524e4ceaabc1fc7bb7e454f5a5fde343240fbeb58e76b670d0bc14e",
+    "current_project_production_full": 174,
+    "current_project_production_registry_fingerprint": "c7d6055db60b87988ccb5814c89d49499340c64e64a64e2a906b53017c775302",
     "dm_assisted": 2,
     "dm_reference": 107,
     "draft_total": 407,
@@ -430,29 +436,29 @@
       "dm_assisted_count": 0,
       "implemented": true,
       "inventory_atom_count": 47,
-      "isolated_runtime_validated_count": 37,
-      "production_count": 37,
+      "isolated_runtime_validated_count": 40,
+      "production_count": 40,
       "typed_count": 47,
       "unlock_ranking": [
         {
           "capability": "item.passive_modifier",
           "consumer": "item.equipment_modifier.v1",
-          "unlock_count": 37
+          "unlock_count": 40
         },
         {
           "capability": "item.attunement",
           "consumer": "item.attunement.v1",
-          "unlock_count": 35
+          "unlock_count": 38
         },
         {
           "capability": "item.charge_resource",
           "consumer": "item.charge_resource.v1",
-          "unlock_count": 15
+          "unlock_count": 17
         },
         {
           "capability": "item.granted_action",
           "consumer": "item.granted_action.v1",
-          "unlock_count": 24
+          "unlock_count": 27
         },
         {
           "capability": "item.tattoo_lifecycle",
@@ -19345,8 +19351,8 @@
     "duplicate_content_ids": [],
     "formal_registry_unchanged": true,
     "isolated_runtime_registry": {
-      "blocked": 10,
-      "compile_full": 37,
+      "blocked": 7,
+      "compile_full": 40,
       "dm_assisted": 0,
       "dm_assisted_ids": [],
       "entry_ids": [
@@ -19401,7 +19407,7 @@
       "entry_total": 47,
       "formal_apply": false,
       "game_usable": 0,
-      "isolated_runtime_validated": 37,
+      "isolated_runtime_validated": 40,
       "isolated_runtime_validated_ids": [
         "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-amulet-of-the-devout-001",
         "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-arcane-grimoire-002",
@@ -19411,7 +19417,10 @@
         "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-nature-s-mantle-007",
         "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-rhythm-maker-s-drum-008",
         "content.tashas-cauldron.item.tashas-cauldron-atom-62c7a0c6a042e571b17d35e3-dfaab0b0f93c-000",
+        "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-3e9825c326a3-003",
         "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-b106ea54c961-000",
+        "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-db0e19f5d68b-001",
+        "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-demonomiconofiggwilv-002",
         "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-alchemical-compendium-000",
         "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-astral-shard-001",
         "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-astromancy-archive-002",
@@ -19445,19 +19454,19 @@
       "pack_version": "whole-pack-2026-08-11",
       "registered_production_full": 0,
       "registered_production_full_ids": [],
-      "runtime_preview_full": 37,
+      "runtime_preview_full": 40,
       "schema_version": "content-pack-runtime-registry-1",
       "status_layers": {
         "authored_typed_ir": 47,
         "candidate": 47,
-        "compile_full": 37,
+        "compile_full": 40,
         "dm_assisted": 0,
         "draft": 47,
         "game_usable": 0,
-        "isolated_runtime_validated": 37,
+        "isolated_runtime_validated": 40,
         "registered_production_full": 0,
         "reviewed": 47,
-        "runtime_preview_full": 37,
+        "runtime_preview_full": 40,
         "source_identified": 47
       }
     },
@@ -19591,24 +19600,6 @@
         "blockers": [
           "manual_clause_requires_dm_or_additional_typed_fields"
         ],
-        "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-3e9825c326a3-003"
-      },
-      {
-        "blockers": [
-          "manual_clause_requires_dm_or_additional_typed_fields"
-        ],
-        "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-db0e19f5d68b-001"
-      },
-      {
-        "blockers": [
-          "manual_clause_requires_dm_or_additional_typed_fields"
-        ],
-        "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-demonomiconofiggwilv-002"
-      },
-      {
-        "blockers": [
-          "manual_clause_requires_dm_or_additional_typed_fields"
-        ],
         "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-teeth-ofdahlver-nar-005"
       },
       {
@@ -19637,10 +19628,10 @@
       "item.granted_action.v1",
       "item.granted_spell.v1"
     ],
-    "game_usable": 37,
+    "game_usable": 40,
     "isolated_registry_reload": {
-      "blocked": 10,
-      "compile_full": 37,
+      "blocked": 7,
+      "compile_full": 40,
       "dm_assisted": 0,
       "dm_assisted_ids": [],
       "entry_ids": [
@@ -19695,7 +19686,7 @@
       "entry_total": 47,
       "formal_apply": false,
       "game_usable": 0,
-      "isolated_runtime_validated": 37,
+      "isolated_runtime_validated": 40,
       "isolated_runtime_validated_ids": [
         "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-amulet-of-the-devout-001",
         "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-arcane-grimoire-002",
@@ -19705,7 +19696,10 @@
         "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-nature-s-mantle-007",
         "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-rhythm-maker-s-drum-008",
         "content.tashas-cauldron.item.tashas-cauldron-atom-62c7a0c6a042e571b17d35e3-dfaab0b0f93c-000",
+        "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-3e9825c326a3-003",
         "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-b106ea54c961-000",
+        "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-db0e19f5d68b-001",
+        "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-demonomiconofiggwilv-002",
         "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-alchemical-compendium-000",
         "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-astral-shard-001",
         "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-astromancy-archive-002",
@@ -19739,30 +19733,30 @@
       "pack_version": "whole-pack-2026-08-11",
       "registered_production_full": 0,
       "registered_production_full_ids": [],
-      "runtime_preview_full": 37,
+      "runtime_preview_full": 40,
       "schema_version": "content-pack-runtime-registry-1",
       "status_layers": {
         "authored_typed_ir": 47,
         "candidate": 47,
-        "compile_full": 37,
+        "compile_full": 40,
         "dm_assisted": 0,
         "draft": 47,
         "game_usable": 0,
-        "isolated_runtime_validated": 37,
+        "isolated_runtime_validated": 40,
         "registered_production_full": 0,
         "reviewed": 47,
-        "runtime_preview_full": 37,
+        "runtime_preview_full": 40,
         "source_identified": 47
       }
     },
-    "isolated_runtime_validated": 37,
+    "isolated_runtime_validated": 40,
     "item_spec_total": 47,
     "pack_id": "tashas-cauldron",
-    "registered_production_full": 37,
-    "runtime_preview_full": 37,
+    "registered_production_full": 40,
+    "runtime_preview_full": 40,
     "schema_version": "tashas-item-runtime-validation-II-1",
     "temporary_db_validation": "passed:test_tashas_recovery.py::test_typed_item_api_uses_attunement_action_and_idempotency",
-    "typed_compile_full": 37,
+    "typed_compile_full": 40,
     "validation_contract": {
       "attunement_reused": true,
       "equipment_instance_reused": true,
@@ -19775,10 +19769,10 @@
   },
   "items": {
     "blocker": "manual_review_required is retained per unresolved action/spell/effect clause",
-    "compile_full": 37,
-    "compile_only": 10,
+    "compile_full": 40,
+    "compile_only": 7,
     "dm_assisted": 0,
-    "game_usable": 37,
+    "game_usable": 40,
     "inventory": [
       {
         "atom_id": "tashas-cauldron:atom:4220452fa5c2c1b3aed918f5:all-purpose-tool:000",
@@ -22413,18 +22407,18 @@
         "variant_of": null
       }
     ],
-    "isolated_runtime_validated": 37,
+    "isolated_runtime_validated": 40,
     "item_ir_implemented": true,
     "item_spec_total": 47,
     "magic_item_atom_total": 47,
     "magic_tattoo_atom_total": 11,
     "name_branch_count": 0,
     "pack_id": "tashas-cauldron",
-    "production_full": 37,
-    "registered_production_full": 37,
-    "requires_dm": 10,
+    "production_full": 40,
+    "registered_production_full": 40,
+    "requires_dm": 7,
     "reviewed": 47,
-    "runtime_preview_full": 37,
+    "runtime_preview_full": 40,
     "schema_version": "tashas-item-ir-report-1",
     "status_counts": {
       "manual_authoring": 47
@@ -22439,22 +22433,22 @@
       {
         "capability": "item.passive_modifier",
         "consumer": "item.equipment_modifier.v1",
-        "unlock_count": 37
+        "unlock_count": 40
       },
       {
         "capability": "item.attunement",
         "consumer": "item.attunement.v1",
-        "unlock_count": 35
+        "unlock_count": 38
       },
       {
         "capability": "item.charge_resource",
         "consumer": "item.charge_resource.v1",
-        "unlock_count": 15
+        "unlock_count": 17
       },
       {
         "capability": "item.granted_action",
         "consumer": "item.granted_action.v1",
-        "unlock_count": 24
+        "unlock_count": 27
       },
       {
         "capability": "item.tattoo_lifecycle",
@@ -26183,7 +26177,10 @@
           "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-nature-s-mantle-007",
           "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-rhythm-maker-s-drum-008",
           "content.tashas-cauldron.item.tashas-cauldron-atom-62c7a0c6a042e571b17d35e3-dfaab0b0f93c-000",
+          "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-3e9825c326a3-003",
           "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-b106ea54c961-000",
+          "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-db0e19f5d68b-001",
+          "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-demonomiconofiggwilv-002",
           "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-alchemical-compendium-000",
           "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-astral-shard-001",
           "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-astromancy-archive-002",
@@ -26359,7 +26356,7 @@
       "tashas-cauldron:atom:fbf8451f879a169fb17a01e9:arcane-firearm:004",
       "tashas-cauldron:atom:fbf8451f879a169fb17a01e9:explosive-cannon:005"
     ],
-    "registry_production_runtime_full_count": 114,
+    "registry_production_runtime_full_count": 117,
     "runtime_evidence": {
       "content.tashas-cauldron.feature.alchemist-chemical-mastery": {
         "confirm_status": 200,
@@ -27095,6 +27092,131 @@
           "item.granted_action.v1"
         ]
       },
+      "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-3e9825c326a3-003": {
+        "attunement_persisted": true,
+        "charge_lifecycle_persisted": true,
+        "compile_status": "full",
+        "consumer_ids": [
+          "item.attunement.v1",
+          "item.equipment_modifier.v1",
+          "item.granted_action.v1",
+          "item.granted_spell.v1"
+        ],
+        "content_id": "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-3e9825c326a3-003",
+        "content_kind": "item",
+        "created": true,
+        "evidence_path": "data/content-ir/compiled/production-runtime-results-XVII.json",
+        "item_name": "鲁芭的灵魂塔罗卡",
+        "item_state_persisted": true,
+        "operation_transaction_persisted": true,
+        "operations": [
+          {
+            "confirm": true,
+            "idempotency_replayed": true,
+            "operation": "attune",
+            "output": {
+              "after": {
+                "active_attunements": 1,
+                "armor_class": 10,
+                "attuned": true
+              },
+              "before": {
+                "armor_class": 10,
+                "charges": null,
+                "equipped": false,
+                "quantity": 1
+              },
+              "confirmed": true,
+              "operation": "attune",
+              "slot": null,
+              "tattoo_lifecycle": null,
+              "warnings": []
+            },
+            "preview": true,
+            "replay": true
+          },
+          {
+            "confirm": true,
+            "idempotency_replayed": true,
+            "operation": "use_action",
+            "output": {
+              "after": {
+                "action_id": "tashas-cauldron:atom:760b230e1396825928305642:3e9825c326a3:003:action:1",
+                "armor_class": 10,
+                "charges": null,
+                "item_spell_cast": {
+                  "consumer_id": "item.granted_spell.v1",
+                  "grant_mode": "item_cast",
+                  "spell_identities": [
+                    {
+                      "english_name": "Comprehend Languages",
+                      "localized_name": "通晓语言",
+                      "spell_id": "comprehend-languages"
+                    },
+                    {
+                      "english_name": "Detect Evil and Good",
+                      "localized_name": "侦测善恶",
+                      "spell_id": "detect-evil-and-good"
+                    },
+                    {
+                      "english_name": "Detect Magic",
+                      "localized_name": "侦测魔法",
+                      "spell_id": "detect-magic"
+                    },
+                    {
+                      "english_name": "Detect Poison andDIsease",
+                      "localized_name": "侦测毒素和疾病",
+                      "spell_id": "detect-poison-anddisease"
+                    },
+                    {
+                      "english_name": "Locate Object",
+                      "localized_name": "物品定位术",
+                      "spell_id": "locate-object"
+                    },
+                    {
+                      "english_name": "Scrying",
+                      "localized_name": "探知术",
+                      "spell_id": "scrying"
+                    }
+                  ]
+                },
+                "rules_kernel_consumer": "item.granted_action.v1"
+              },
+              "before": {
+                "armor_class": 10,
+                "charges": null,
+                "equipped": false,
+                "quantity": 1
+              },
+              "confirmed": true,
+              "operation": "use_action",
+              "slot": null,
+              "tattoo_lifecycle": null,
+              "warnings": []
+            },
+            "preview": true,
+            "replay": true
+          }
+        ],
+        "persisted": {
+          "attuned": true,
+          "charges": null,
+          "item_fingerprint": "4265df274dbcff0e461278c1c8fc26ca6cbef41a7553190a8b5fc5fef37a5794",
+          "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-3e9825c326a3-003",
+          "operation_transaction_count": 2,
+          "tattoo_lifecycle": null,
+          "version": 3
+        },
+        "preview_confirm_replay": true,
+        "tattoo_lifecycle_persisted": true,
+        "typed_consumer": true,
+        "typed_projection_consumers": [
+          "item.attunement.v1",
+          "item.equipment_modifier.v1",
+          "item.granted_action.v1",
+          "item.granted_spell.v1"
+        ]
+      },
       "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-b106ea54c961-000": {
         "attunement_persisted": true,
         "charge_lifecycle_persisted": true,
@@ -27206,6 +27328,250 @@
           "item.charge_resource.v1",
           "item.equipment_modifier.v1",
           "item.granted_action.v1"
+        ]
+      },
+      "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-db0e19f5d68b-001": {
+        "attunement_persisted": true,
+        "charge_lifecycle_persisted": true,
+        "compile_status": "full",
+        "consumer_ids": [
+          "item.attunement.v1",
+          "item.charge_resource.v1",
+          "item.equipment_modifier.v1",
+          "item.granted_action.v1",
+          "item.granted_spell.v1"
+        ],
+        "content_id": "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-db0e19f5d68b-001",
+        "content_kind": "item",
+        "created": true,
+        "evidence_path": "data/content-ir/compiled/production-runtime-results-XVII.json",
+        "item_name": "拉奥圣杖",
+        "item_state_persisted": true,
+        "operation_transaction_persisted": true,
+        "operations": [
+          {
+            "confirm": true,
+            "idempotency_replayed": true,
+            "operation": "attune",
+            "output": {
+              "after": {
+                "active_attunements": 1,
+                "armor_class": 10,
+                "attuned": true
+              },
+              "before": {
+                "armor_class": 10,
+                "charges": 6,
+                "equipped": false,
+                "quantity": 1
+              },
+              "confirmed": true,
+              "operation": "attune",
+              "slot": null,
+              "tattoo_lifecycle": null,
+              "warnings": []
+            },
+            "preview": true,
+            "replay": true
+          },
+          {
+            "confirm": true,
+            "idempotency_replayed": true,
+            "operation": "use_action",
+            "output": {
+              "after": {
+                "action_id": "tashas-cauldron:atom:760b230e1396825928305642:db0e19f5d68b:001:action:1",
+                "armor_class": 10,
+                "charges": 5,
+                "item_spell_cast": {
+                  "consumer_id": "item.granted_spell.v1",
+                  "grant_mode": "item_cast",
+                  "spell_identities": [
+                    {
+                      "english_name": "Aura of Life",
+                      "localized_name": "生命灵光",
+                      "spell_id": "aura-of-life"
+                    },
+                    {
+                      "english_name": "Aura of Purity",
+                      "localized_name": "净化灵光",
+                      "spell_id": "aura-of-purity"
+                    },
+                    {
+                      "english_name": "Beacon of Hope",
+                      "localized_name": "希望信标",
+                      "spell_id": "beacon-of-hope"
+                    },
+                    {
+                      "english_name": "Mass Cure Wounds",
+                      "localized_name": "群体疗伤术",
+                      "spell_id": "mass-cure-wounds"
+                    }
+                  ]
+                },
+                "rules_kernel_consumer": "item.granted_action.v1"
+              },
+              "before": {
+                "armor_class": 10,
+                "charges": 6,
+                "equipped": false,
+                "quantity": 1
+              },
+              "confirmed": true,
+              "operation": "use_action",
+              "slot": null,
+              "tattoo_lifecycle": null,
+              "warnings": []
+            },
+            "preview": true,
+            "replay": true
+          }
+        ],
+        "persisted": {
+          "attuned": true,
+          "charges": 5,
+          "item_fingerprint": "66f65914acbd3a55c70f66202b0a17507fdbf3ea8c755c25ade026cf94e0d879",
+          "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-db0e19f5d68b-001",
+          "operation_transaction_count": 2,
+          "tattoo_lifecycle": null,
+          "version": 3
+        },
+        "preview_confirm_replay": true,
+        "tattoo_lifecycle_persisted": true,
+        "typed_consumer": true,
+        "typed_projection_consumers": [
+          "item.attunement.v1",
+          "item.charge_resource.v1",
+          "item.equipment_modifier.v1",
+          "item.granted_action.v1",
+          "item.granted_spell.v1"
+        ]
+      },
+      "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-demonomiconofiggwilv-002": {
+        "attunement_persisted": true,
+        "charge_lifecycle_persisted": true,
+        "compile_status": "full",
+        "consumer_ids": [
+          "item.attunement.v1",
+          "item.charge_resource.v1",
+          "item.equipment_modifier.v1",
+          "item.granted_action.v1",
+          "item.granted_spell.v1"
+        ],
+        "content_id": "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-demonomiconofiggwilv-002",
+        "content_kind": "item",
+        "created": true,
+        "evidence_path": "data/content-ir/compiled/production-runtime-results-XVII.json",
+        "item_name": "伊格薇尔伏恶魔志|DemonomiconofIggwilv",
+        "item_state_persisted": true,
+        "operation_transaction_persisted": true,
+        "operations": [
+          {
+            "confirm": true,
+            "idempotency_replayed": true,
+            "operation": "attune",
+            "output": {
+              "after": {
+                "active_attunements": 1,
+                "armor_class": 10,
+                "attuned": true
+              },
+              "before": {
+                "armor_class": 10,
+                "charges": 8,
+                "equipped": false,
+                "quantity": 1
+              },
+              "confirmed": true,
+              "operation": "attune",
+              "slot": null,
+              "tattoo_lifecycle": null,
+              "warnings": []
+            },
+            "preview": true,
+            "replay": true
+          },
+          {
+            "confirm": true,
+            "idempotency_replayed": true,
+            "operation": "use_action",
+            "output": {
+              "after": {
+                "action_id": "tashas-cauldron:atom:760b230e1396825928305642:demonomiconofiggwilv:002:action:1",
+                "armor_class": 10,
+                "charges": 7,
+                "item_spell_cast": {
+                  "consumer_id": "item.granted_spell.v1",
+                  "grant_mode": "item_cast",
+                  "spell_identities": [
+                    {
+                      "english_name": "Magic Circle",
+                      "localized_name": "防护法阵",
+                      "spell_id": "magic-circle"
+                    },
+                    {
+                      "english_name": "Magic Jar",
+                      "localized_name": "魔魂壶",
+                      "spell_id": "magic-jar"
+                    },
+                    {
+                      "english_name": "Planar Ally",
+                      "localized_name": "异界誓盟",
+                      "spell_id": "planar-ally"
+                    },
+                    {
+                      "english_name": "Planar Binding",
+                      "localized_name": "异界誓缚",
+                      "spell_id": "planar-binding"
+                    },
+                    {
+                      "english_name": "Plane Shift",
+                      "localized_name": "位面转移",
+                      "spell_id": "plane-shift"
+                    },
+                    {
+                      "english_name": "Summon Fiend",
+                      "localized_name": "邪魔召唤术",
+                      "spell_id": "summon-fiend"
+                    }
+                  ]
+                },
+                "rules_kernel_consumer": "item.granted_action.v1"
+              },
+              "before": {
+                "armor_class": 10,
+                "charges": 8,
+                "equipped": false,
+                "quantity": 1
+              },
+              "confirmed": true,
+              "operation": "use_action",
+              "slot": null,
+              "tattoo_lifecycle": null,
+              "warnings": []
+            },
+            "preview": true,
+            "replay": true
+          }
+        ],
+        "persisted": {
+          "attuned": true,
+          "charges": 7,
+          "item_fingerprint": "9dfacca99be6b8ff146a68e8d48d3a4b7f25626718afd69dd91109c15a4401aa",
+          "item_id": "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-demonomiconofiggwilv-002",
+          "operation_transaction_count": 2,
+          "tattoo_lifecycle": null,
+          "version": 3
+        },
+        "preview_confirm_replay": true,
+        "tattoo_lifecycle_persisted": true,
+        "typed_consumer": true,
+        "typed_projection_consumers": [
+          "item.attunement.v1",
+          "item.charge_resource.v1",
+          "item.equipment_modifier.v1",
+          "item.granted_action.v1",
+          "item.granted_spell.v1"
         ]
       },
       "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-alchemical-compendium-000": {
@@ -31448,7 +31814,10 @@
       "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-nature-s-mantle-007",
       "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-rhythm-maker-s-drum-008",
       "content.tashas-cauldron.item.tashas-cauldron-atom-62c7a0c6a042e571b17d35e3-dfaab0b0f93c-000",
+      "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-3e9825c326a3-003",
       "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-b106ea54c961-000",
+      "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-db0e19f5d68b-001",
+      "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-demonomiconofiggwilv-002",
       "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-alchemical-compendium-000",
       "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-astral-shard-001",
       "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-astromancy-archive-002",
@@ -32811,7 +33180,7 @@
     "source_identified": 524
   },
   "template_catalog": {
-    "catalog_fingerprint": "118f3fb9799e742a87892e3e16822f2ccf5159751b238c35bce4205e39bc2b7a",
+    "catalog_fingerprint": "89b4e459a9dfe25af9c07c9d751617541783bffc4bce3e24fbf34a3a21c3ec0e",
     "cluster_count": 14,
     "minimum_required": 15,
     "new_template_total": 28,
@@ -33798,7 +34167,10 @@
           "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-nature-s-mantle-007",
           "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-rhythm-maker-s-drum-008",
           "content.tashas-cauldron.item.tashas-cauldron-atom-62c7a0c6a042e571b17d35e3-dfaab0b0f93c-000",
+          "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-3e9825c326a3-003",
           "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-b106ea54c961-000",
+          "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-db0e19f5d68b-001",
+          "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-demonomiconofiggwilv-002",
           "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-alchemical-compendium-000",
           "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-astral-shard-001",
           "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-astromancy-archive-002",
@@ -33833,7 +34205,7 @@
         "runtime_consumer": "item.equipment_modifier.v1",
         "template_id": "item.passive",
         "template_kind": "item",
-        "unlock_count": 37,
+        "unlock_count": 40,
         "unlock_gate": {
           "complete_contract_required": true,
           "minimum_cluster_content": 8,
@@ -33876,7 +34248,10 @@
           "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-moon-sickle-006",
           "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-nature-s-mantle-007",
           "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-rhythm-maker-s-drum-008",
+          "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-3e9825c326a3-003",
           "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-b106ea54c961-000",
+          "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-db0e19f5d68b-001",
+          "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-demonomiconofiggwilv-002",
           "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-astral-shard-001",
           "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-astromancy-archive-002",
           "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-atlas-of-endless-horizons-003",
@@ -33910,7 +34285,7 @@
         "runtime_consumer": "item.attunement.v1",
         "template_id": "item.attunement",
         "template_kind": "item",
-        "unlock_count": 35,
+        "unlock_count": 38,
         "unlock_gate": {
           "complete_contract_required": true,
           "minimum_cluster_content": 8,
@@ -33948,6 +34323,8 @@
         "evidence_ids": [
           "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-guardian-emblem-005",
           "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-b106ea54c961-000",
+          "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-db0e19f5d68b-001",
+          "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-demonomiconofiggwilv-002",
           "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-alchemical-compendium-000",
           "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-astromancy-archive-002",
           "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-atlas-of-endless-horizons-003",
@@ -33967,7 +34344,7 @@
         "runtime_consumer": "item.charge_resource.v1",
         "template_id": "item.charges",
         "template_kind": "item",
-        "unlock_count": 15,
+        "unlock_count": 17,
         "unlock_gate": {
           "complete_contract_required": true,
           "minimum_cluster_content": 8,
@@ -34007,7 +34384,10 @@
           "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-nature-s-mantle-007",
           "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-rhythm-maker-s-drum-008",
           "content.tashas-cauldron.item.tashas-cauldron-atom-62c7a0c6a042e571b17d35e3-dfaab0b0f93c-000",
+          "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-3e9825c326a3-003",
           "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-b106ea54c961-000",
+          "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-db0e19f5d68b-001",
+          "content.tashas-cauldron.item.tashas-cauldron-atom-760b230e1396825928305642-demonomiconofiggwilv-002",
           "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-alchemical-compendium-000",
           "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-astral-shard-001",
           "content.tashas-cauldron.item.tashas-cauldron-atom-7f82da3807a304a28c05c79b-bell-branch-004",
@@ -34033,7 +34413,7 @@
         "runtime_consumer": "item.granted_action.v1",
         "template_id": "item.action",
         "template_kind": "item",
-        "unlock_count": 24,
+        "unlock_count": 27,
         "unlock_gate": {
           "complete_contract_required": true,
           "minimum_cluster_content": 8,
