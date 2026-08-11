@@ -8,7 +8,7 @@
 
 ## Round 8：Trigger-bound Modifier / Activation Consumer Expansion
 
-当前状态：`evidence_gated`；本轮完成 8 条真实 API evidence，待提交/推送收据，整包 game usable 达到 70。
+当前状态：`accepted`；本轮完成 8 条真实 API evidence，已提交并推送，整包 game usable 达到 70。
 
 - 8/8 条 Round-II Feature contracts 通过真实 `ContentIRRuntimeService` combat preview→confirm→幂等 replay；7 条通过 typed passive/inspection registry，`psi-powered-leap` 通过已有 feature-action activation，临时迁移 SQLite。formal apply/database/campaign/character 写入均为 false。
 - Tasha status layers：`registered_production_full=68`（60→68）、`dm_assisted=2`、`game_usable=70`；`manual_authoring=314`、`compile-only=23`（31→23）、`authored Typed IR=94`、`runtime_preview_full=93`。

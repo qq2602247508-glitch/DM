@@ -38,7 +38,7 @@
         "difference": "Round 8 starts from the accepted Round 7 state and selects only full contracts whose typed combat snapshot already has a generic passive/feature-action consumer; unresolved reaction-window and resource-exchange contracts remain ranked but unpromoted.",
         "prompt_baseline": {"round_target_production_or_dm": 8}
       },
-      "commits": [],
+      "commits": ["c2e0a65"],
       "compile_full_delta": 0,
       "dm_assisted_delta": 0,
       "files_changed": [
@@ -70,11 +70,11 @@
       "phase": "H",
       "push_receipt": {
         "branch": "main",
-        "commit_hash": null,
-        "pushed_at": null,
+        "commit_hash": "c2e0a6590d776d7da91111c058eecc9acb621998",
+        "pushed_at": "2026-08-12T04:06:08+0800",
         "remote": "origin",
         "remote_url": "https://github.com/qq2602247508-glitch/DM.git",
-        "result": "pending"
+        "result": "success"
       },
       "reports": [
         "reports/tashas-feature-production-consumer-round-VIII-2026-08-12.json",
@@ -96,7 +96,7 @@
         "typed_passive_registry",
         "combat_context_resolvers"
       ],
-      "status": "evidence_gated",
+      "status": "accepted",
       "tests": [
         "backend/.venv/bin/python -m pytest -q backend/tests",
         "backend/.venv/bin/python -m pytest -q Round III/V/VI/VII/VIII and whole-pack tests",
