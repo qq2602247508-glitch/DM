@@ -1,12 +1,12 @@
 {
   "atom_coverage": {
-    "content_atom_total": 524,
+    "content_atom_total": 525,
     "dm_reference_total": 107,
     "duplicate_total": 0,
-    "executable_candidate_total": 407,
+    "executable_candidate_total": 408,
     "invalid_source_total": 0,
     "non_instantiable_total": 10,
-    "player_facing_atom_total": 407
+    "player_facing_atom_total": 408
   },
   "atom_quality_audit": {
     "after_atom_counts": {
@@ -22,17 +22,17 @@
         "invocation": 8,
         "magic_item": 36,
         "magic_tattoo": 11,
-        "maneuver": 8,
+        "maneuver": 9,
         "narrative": 10,
         "puzzle": 15,
         "spell": 21,
         "subclass_feature": 263
       },
-      "executable": 407,
-      "player_facing": 407,
-      "total": 524
+      "executable": 408,
+      "player_facing": 408,
+      "total": 525
     },
-    "audit_fingerprint": "08de394ce0366e3469376ad14d2c4958820ca0712d51b43e572cfec23521f351",
+    "audit_fingerprint": "c01c4263d20fc79cbfafd4466af16b0f8517c259a198aa1caca6a13750745041",
     "before_atom_counts": {
       "by_kind": {
         "character_option": 15,
@@ -372,7 +372,7 @@
     ],
     "pack_id": "tashas-cauldron",
     "qa_status_counts": {
-      "confirmed_atom": 407,
+      "confirmed_atom": 408,
       "duplicate": 0,
       "example_not_rule": 0,
       "heading_only": 117,
@@ -1353,40 +1353,40 @@
     }
   },
   "conversion_funnel": {
-    "authored_typed_ir": 94,
-    "candidate_generated": 407,
-    "compile_full": 93,
-    "compile_only": 12,
+    "authored_typed_ir": 95,
+    "candidate_generated": 408,
+    "compile_full": 94,
+    "compile_only": 11,
     "dm_assisted": 2,
-    "draft_total": 407,
+    "draft_total": 408,
     "invalid": 0,
     "manual_authoring": 314,
-    "production_full": 79,
-    "reviewed_total": 407,
-    "runtime_preview_full": 93,
-    "template_matched": 93
+    "production_full": 81,
+    "reviewed_total": 408,
+    "runtime_preview_full": 94,
+    "template_matched": 94
   },
   "feature_option_batch": {
-    "atom_total": 339,
+    "atom_total": 340,
     "by_kind": {
       "class_feature": 63,
       "feat": 15,
       "infusion": 15,
       "invocation": 7,
-      "maneuver": 7,
+      "maneuver": 8,
       "subclass_feature": 232
     },
-    "compile_full_total": 85,
+    "compile_full_total": 86,
     "dm_assisted_total": 1,
     "gate_status": "partial",
     "manual_total": 254,
     "pack_id": "tashas-cauldron",
-    "production_full_total": 76,
+    "production_full_total": 78,
     "review_blocker_counts": {
-      "reviewed_typed_mapping": 85,
+      "reviewed_typed_mapping": 86,
       "unmatched_requires_review": 254
     },
-    "reviewed_total": 339,
+    "reviewed_total": 340,
     "schema_version": "tashas-feature-option-batch-I-1",
     "source_of_truth": "tashas-content-atom-catalog-II plus authored Typed IR provenance",
     "thresholds": {
@@ -1396,7 +1396,7 @@
       "reviewed": 120,
       "typed": 100
     },
-    "typed_total": 85
+    "typed_total": 86
   },
   "item_spec": {
     "catalog_fingerprint": "cd670a8caaa3dd60d9924e1023d82b214772a7b66d226f23bbfe7a436117df52",
@@ -13385,7 +13385,7 @@
     "invocation": 8,
     "magic_item": 36,
     "magic_tattoo": 11,
-    "maneuver": 8,
+    "maneuver": 9,
     "narrative": 10,
     "puzzle": 15,
     "spell": 21,
@@ -13394,24 +13394,16 @@
   "provenance_reconciliation": {
     "alias_reconciled_total": 2,
     "authored_total": 95,
-    "explicitly_retired_total": 1,
+    "explicitly_retired_total": 0,
     "hard_gate": {
       "orphan_total": 0,
       "status": "passed"
     },
-    "matched_total": 94,
+    "matched_total": 95,
     "orphan_total": 0,
     "orphaned_content_ids": [],
     "pack_id": "tashas-cauldron",
-    "reconciled": [
-      {
-        "content_id": "content.tashas-cauldron.feature.battle-master.precision-attack",
-        "reason": "source page is a Battle Master build recommendation; Precision Attack is not an independent atom on that page",
-        "replacement": null,
-        "status": "explicitly_retired",
-        "typed_ir_path": "data/content-ir/authored/official-packs/tashas-cauldron/features/features/content-tashas-cauldron-feature-battle-master-precision-attack.json"
-      }
-    ],
+    "reconciled": [],
     "schema_version": "tashas-authored-provenance-reconciliation-II-1"
   },
   "schema_version": "tashas-whole-pack-coverage-II-1",
@@ -13422,7 +13414,7 @@
     "source_record_unclassified": 0
   },
   "status_counts": {
-    "compile_only": 12,
+    "compile_only": 11,
     "dm_assisted": 2,
     "dm_reference": 107,
     "duplicate_or_reprint": 0,
@@ -13430,25 +13422,25 @@
     "manual_authoring": 314,
     "non_instantiable": 10,
     "out_of_scope_with_reason": 0,
-    "production_full": 79
+    "production_full": 81
   },
   "status_layers": {
-    "authored_typed_ir": 93,
-    "candidate": 407,
-    "compile_full": 93,
+    "authored_typed_ir": 94,
+    "candidate": 408,
+    "compile_full": 94,
     "dm_assisted": 2,
-    "draft": 407,
-    "game_usable": 81,
-    "isolated_runtime_validated": 81,
-    "registered_production_full": 79,
-    "reviewed": 407,
-    "runtime_preview_full": 93,
-    "source_identified": 524
+    "draft": 408,
+    "game_usable": 83,
+    "isolated_runtime_validated": 83,
+    "registered_production_full": 81,
+    "reviewed": 408,
+    "runtime_preview_full": 94,
+    "source_identified": 525
   },
   "usable_coverage": {
-    "dm_assisted_rate": 0.004914,
-    "game_usable_rate": 0.199017,
-    "manual_rate": 0.771499,
-    "production_full_rate": 0.194103
+    "dm_assisted_rate": 0.004902,
+    "game_usable_rate": 0.203431,
+    "manual_rate": 0.769608,
+    "production_full_rate": 0.198529
   }
 }

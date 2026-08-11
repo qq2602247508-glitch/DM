@@ -57,7 +57,10 @@
   ],
   "compatibility": {
     "runtime_source": "feature_ir",
-    "source_fingerprint": "13418d41bbe36e695c131a0a0972e749979d8174421fc9bcc2bf767a92f19eef"
+    "source_fingerprint": "13418d41bbe36e695c131a0a0972e749979d8174421fc9bcc2bf767a92f19eef",
+    "source_content_kind": "maneuver",
+    "source_subclause": true,
+    "source_subclause_level": 3
   },
   "compiler_fingerprint": "e6fb6a582b9f7bb302bcc26560ed68578a2155c019bde6d0009b5731c6b77e8e",
   "dependencies": [],

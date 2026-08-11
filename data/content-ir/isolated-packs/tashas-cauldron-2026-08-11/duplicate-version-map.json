@@ -5554,9 +5554,19 @@
       },
       "related_atom_ids": [],
       "relationship": "independent"
+    },
+    {
+      "atom_id": "tashas-cauldron:authored-subclause:12139219bf7e575f9cde019c:0d3fc31f44e0",
+      "evidence": {
+        "legacy_marker": false,
+        "same_name_count": 1,
+        "source_fingerprint": "13418d41bbe36e695c131a0a0972e749979d8174421fc9bcc2bf767a92f19eef"
+      },
+      "related_atom_ids": [],
+      "relationship": "independent"
     }
   ],
-  "map_fingerprint": "825a9b7982177e87f4a62b0cca95242dfbd5368414d8dba31fa1eb29e1e06ea7",
+  "map_fingerprint": "dc05ceb9a1bb4f0c19b899b6ae201abf04ba2e489c9688fbb6438a808c1ff4df",
   "policy": {
     "exact_duplicate": "reuse canonical content ID and retain provenance",
     "legacy_variant": "retain separate atom and require legacy opt-in",
@@ -5566,7 +5576,7 @@
   },
   "relationship_counts": {
     "exact_duplicate": 48,
-    "independent": 331,
+    "independent": 332,
     "legacy_variant": 104,
     "rules_variant": 41
   },

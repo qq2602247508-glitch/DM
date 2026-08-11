@@ -4,8 +4,8 @@
 
 ## QA 与分母
 
-- Source records：144/144；Content Atoms：524；玩家向 executable：407。
-- 第一轮分母：625 atoms / 558 executable；本轮清理后：524 / 407；QA 删除/合并候选 115，结构检查全部通过。
+- Source records：144/144；Content Atoms：525；玩家向 executable：408。
+- 第一轮分母：625 atoms / 558 executable；本轮清理后：525 / 408；QA 删除/合并候选 115，结构检查全部通过。
 - Item QA：magic item 36，magic tattoo 11；不存在 page heading/表格行冒充 item asset。
 
 ## ItemSpec 与运行时
@@ -16,7 +16,7 @@
 
 ## Feature/Option 与角色成长
 
-- Feature/Option reviewed：339；typed 85；compile 85；production 76；DM-assisted 1。该批次仍未达到 120/100/80/50/10 硬阈值，保持 partial，不虚报覆盖。
+- Feature/Option reviewed：340；typed 86；compile 86；production 78；DM-assisted 1。该批次仍未达到 120/100/80/50/10 硬阈值，保持 partial，不虚报覆盖。
 - 新增 28 个 name-independent semantic/template interfaces，其中 item 相关 5 个达到保守 unlock gate；feature/option cluster 的未知合同字段仍阻断 unlock。
 - 角色成长增加历史快照支撑的降级、不可变 pack pin、选择/资源/动作/休息重建和 CAS/幂等验证；整包 feature/option 资产不足以宣称 whole-pack production closed。
 

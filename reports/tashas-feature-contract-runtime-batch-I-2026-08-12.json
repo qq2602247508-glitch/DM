@@ -7486,14 +7486,14 @@
     "idempotent_replay": false,
     "migration_plan": {
       "changed_features": [],
-      "kind": "new_pack"
+      "kind": "idempotent_replay"
     },
     "mode": "dry-run",
     "pack_id": "tashas-cauldron",
     "pack_version": "source-7011166c19bd"
   },
   "first_apply": {
-    "applied": true,
+    "applied": false,
     "conflicts": [],
     "counts": {
       "full": 59,
@@ -14952,10 +14952,10 @@
         "unsupported_operators": []
       }
     ],
-    "idempotent_replay": false,
+    "idempotent_replay": true,
     "migration_plan": {
       "changed_features": [],
-      "kind": "new_pack"
+      "kind": "idempotent_replay"
     },
     "mode": "apply",
     "pack_id": "tashas-cauldron",
@@ -22502,10 +22502,10 @@
   },
   "source_book": "塔莎的万事坩埚",
   "tasha_migration_snapshot": {
-    "authored_typed_ir": 94,
+    "authored_typed_ir": 95,
     "formal_registry_unchanged": true,
-    "game_usable": 81,
-    "registered_production_full": 79,
-    "runtime_preview_full": 93
+    "game_usable": 83,
+    "registered_production_full": 81,
+    "runtime_preview_full": 94
   }
 }

@@ -1,0 +1,72 @@
+{
+  "checks": {
+    "all_preview_confirm_replay": true,
+    "character_cas_and_transaction": true,
+    "final_resource_current": true,
+    "formal_database_written": false,
+    "formal_registry_written": false,
+    "isolated_database": true,
+    "name_branch_count": 0,
+    "production_runtime_full_count": 2,
+    "selected_count": 2,
+    "typed_roll_consumer": true,
+    "weapon_attack_only_boundary": true
+  },
+  "content_kind": "feature",
+  "evidence_by_id": {
+    "content.tashas-cauldron.feature.battle-master.commanding-presence": {
+      "action_id": "commanding_presence:check",
+      "attack_type_boundary": true,
+      "character_cas": true,
+      "character_version_after": 2,
+      "character_version_before": 1,
+      "compile_status": "full",
+      "confirm": true,
+      "content_id": "content.tashas-cauldron.feature.battle-master.commanding-presence",
+      "content_kind": "feature",
+      "execution_mode": "typed",
+      "pack_id": "tashas-cauldron",
+      "preview": true,
+      "replay": true,
+      "resource_after": 3,
+      "resource_before": 4,
+      "source_book": "塔莎的万事坩埚",
+      "transaction": true,
+      "trigger": "ability_check",
+      "typed_consumer": "player_roll_resolution.feature.roll_intervention.v1",
+      "window_ids": [
+        "commanding_presence:check"
+      ]
+    },
+    "content.tashas-cauldron.feature.battle-master.precision-attack": {
+      "action_id": "precision_attack:roll",
+      "attack_type_boundary": true,
+      "character_cas": true,
+      "character_version_after": 3,
+      "character_version_before": 2,
+      "compile_status": "full",
+      "confirm": true,
+      "content_id": "content.tashas-cauldron.feature.battle-master.precision-attack",
+      "content_kind": "feature",
+      "execution_mode": "typed",
+      "pack_id": "tashas-cauldron",
+      "preview": true,
+      "replay": true,
+      "resource_after": 2,
+      "resource_before": 3,
+      "source_book": "塔莎的万事坩埚",
+      "transaction": true,
+      "trigger": "attack_declared",
+      "typed_consumer": "player_roll_resolution.feature.roll_intervention.v1",
+      "window_ids": [
+        "precision_attack:roll"
+      ]
+    }
+  },
+  "production_runtime_full_ids": [
+    "content.tashas-cauldron.feature.battle-master.commanding-presence",
+    "content.tashas-cauldron.feature.battle-master.precision-attack"
+  ],
+  "schema_version": "content-ir-production-runtime-results-XX-1",
+  "source": "Round XVIII runs typed Tasha roll-intervention Features through the real player-roll preview/confirm/replay and actor resource CAS consumer on an isolated migrated database"
+}

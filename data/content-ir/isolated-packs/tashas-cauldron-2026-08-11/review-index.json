@@ -20792,6 +20792,54 @@
         "source_record_id": "ff7049c6a4d0aad0dae4adf5"
       },
       "typed_content_ids": []
+    },
+    {
+      "accepted_fields": [
+        "name",
+        "content_kind",
+        "level",
+        "prerequisites",
+        "typed_clauses",
+        "runtime_contract"
+      ],
+      "atom_id": "tashas-cauldron:authored-subclause:12139219bf7e575f9cde019c:0d3fc31f44e0",
+      "clause_boundaries": {
+        "source_fragment": "authored:0d3fc31f44e0"
+      },
+      "edited_fields": [
+        "localized_name"
+      ],
+      "manual_decisions": [],
+      "missing_fields": [],
+      "rejected_inferences": [
+        "natural_language_to_operator",
+        "automatic_player_choice",
+        "automatic_dm_ruling"
+      ],
+      "review_blockers": [],
+      "review_fingerprint": "812faf79f772c0b71c6b795b4c81f0fcd75d7140491a54de8635adcf9bb83928",
+      "review_status": "accepted_with_edits",
+      "reviewed_at": "2026-08-11",
+      "reviewed_fields": [
+        "name",
+        "content_kind",
+        "level",
+        "prerequisites",
+        "action_economy",
+        "trigger",
+        "target_policy",
+        "clauses",
+        "resource_and_recovery",
+        "dm_boundary"
+      ],
+      "source_evidence": {
+        "source_fragment": "authored:0d3fc31f44e0",
+        "source_path": "塔莎的万事坩埚/玩家选项/职业/战士（TCE）/战技选项.htm",
+        "source_record_id": "12139219bf7e575f9cde019c"
+      },
+      "typed_content_ids": [
+        "content.tashas-cauldron.feature.battle-master.precision-attack"
+      ]
     }
   ],
   "schema_version": "content-pack-review-index-1"

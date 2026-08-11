@@ -465,6 +465,8 @@ def _typed_entries(repo_root: Path) -> dict[str, dict[str, Any]]:
         content_id = _text(value.get("feature_id") or value.get("spell_id"))
         if not content_id or value.get("kind") not in {"feature", "spell"}:
             continue
+        compatibility = value.get("compatibility")
+        compatibility = compatibility if isinstance(compatibility, dict) else {}
         entries[content_id] = {
             "content_id": content_id,
             "kind": _text(value.get("kind")),
@@ -472,6 +474,15 @@ def _typed_entries(repo_root: Path) -> dict[str, dict[str, Any]]:
             "source_name": _text(value.get("source_name") or value.get("name")),
             "source_path": _text(value.get("source_path")),
             "source_fingerprint": _text(value.get("source_fingerprint")),
+            "source_content_kind": _text(
+                value.get("source_content_kind") or compatibility.get("source_content_kind")
+            ),
+            "source_subclause": bool(
+                value.get("source_subclause") or compatibility.get("source_subclause")
+            ),
+            "source_subclause_level": value.get(
+                "source_subclause_level", compatibility.get("source_subclause_level")
+            ),
             "typed_ir_path": str(path.relative_to(repo_root)),
             "source_trust": _text(value.get("source_trust")),
             "review_status": _text(value.get("review_status")),
@@ -483,32 +494,24 @@ def _reconcile_typed_provenance(
     typed: Mapping[str, Mapping[str, Any]],
     matched_ids: set[str],
 ) -> tuple[list[dict[str, Any]], list[str]]:
-    """Resolve legacy authored files that are not independent source assets.
-
-    Two older tool-proficiency specs use a translated alias and are matched by
-    ``_matches_typed``.  The old Precision Attack file points at a Battle
-    Master *build recommendation* page; that page contains a recommendation,
-    not the maneuver's rule text, so the authored file is explicitly retired
-    as ``subclause_not_asset`` rather than attached to the page heading.
-    """
+    """Resolve authored files that are not independent source assets."""
 
     reconciled: list[dict[str, Any]] = []
-    retired = "content.tashas-cauldron.feature.battle-master.precision-attack"
     for content_id, entry in sorted(typed.items()):
         if content_id in matched_ids:
             continue
-        if content_id == retired:
+        if entry.get("source_subclause"):
             reconciled.append(
                 {
                     "content_id": content_id,
-                    "status": "explicitly_retired",
-                    "reason": "source page is a Battle Master build recommendation; Precision Attack is not an independent atom on that page",
-                    "replacement": None,
+                    "status": "unmatched_source_subclause",
+                    "reason": "source-declared authored subclause has not been attached to an atom",
+                    "replacement": "authored_subclause_atom_pending",
                     "typed_ir_path": entry.get("typed_ir_path"),
                 }
             )
-    retired_ids = {str(item["content_id"]) for item in reconciled}
-    orphaned = sorted(set(typed) - matched_ids - retired_ids)
+    reconciled_ids = {str(item["content_id"]) for item in reconciled}
+    orphaned = sorted(set(typed) - matched_ids - reconciled_ids)
     return reconciled, orphaned
 
 
@@ -733,6 +736,89 @@ def build_atoms(records: Iterable[Mapping[str, Any]]) -> list[dict[str, Any]]:
     for record in records:
         atoms.extend(atomize_record(record))
     return sorted(atoms, key=lambda item: str(item["atom_id"]))
+
+
+def add_authored_subclause_atoms(
+    atoms: Iterable[Mapping[str, Any]],
+    typed: Mapping[str, Mapping[str, Any]],
+    records: Iterable[Mapping[str, Any]],
+) -> list[dict[str, Any]]:
+    """Attach explicitly source-declared typed subclauses to the atom graph.
+
+    Some official pages expose a shared option index while an authored IR file
+    carries one complete, reviewed subclause from that page.  The subclause is
+    only promoted when the IR declares its source content kind and source
+    record identity; no feature name is used as a dispatch key.
+    """
+
+    result = [dict(item) for item in atoms]
+    records_by_id = {
+        _text(record.get("stable_id") or record.get("id")): record
+        for record in records
+        if _text(record.get("stable_id") or record.get("id"))
+    }
+    existing_content_ids = {
+        str(content_id)
+        for atom in result
+        for content_id in atom.get("typed_content_ids") or []
+    }
+    for entry in typed.values():
+        content_id = _text(entry.get("content_id"))
+        source_id = _text(entry.get("source_record_id"))
+        source_name = _text(entry.get("source_name"))
+        content_kind = _text(entry.get("source_content_kind"))
+        if (
+            not entry.get("source_subclause")
+            or not content_id
+            or content_id in existing_content_ids
+            or not source_id
+            or not source_name
+            or content_kind not in EXECUTABLE_KINDS
+        ):
+            continue
+        record = records_by_id.get(source_id)
+        if record is None:
+            continue
+        source_info = classify_source_record(record)
+        localized_name, english_name = _title_parts(source_name)
+        source_fingerprint_value = _text(entry.get("source_fingerprint")) or source_fingerprint(
+            record, source_name
+        )
+        atom = {
+            "atom_id": f"{PACK_ID}:authored-subclause:{source_id}:{_slug(source_name)}",
+            "content_kind": content_kind,
+            "name": source_name,
+            "localized_name": localized_name,
+            "english_name": english_name,
+            "source_book": SOURCE_BOOK,
+            "source_record_id": source_id,
+            "source_path": _text(entry.get("source_path"))
+            or _text(record.get("source_relative_path")),
+            "source_fragment": f"authored:{_slug(source_name)}",
+            "source_heading_path": list(record.get("heading_path") or []),
+            "source_fingerprint": source_fingerprint_value,
+            "edition": normalized_record_edition(dict(record)),
+            "officiality": _text(record.get("officiality")) or "unknown",
+            "parent_atom_id": None,
+            "class_name": source_info.get("class_name"),
+            "subclass_name": source_info.get("subclass_name"),
+            "level": entry.get("source_subclause_level"),
+            "prerequisites": None,
+            "variant_of": None,
+            "reprint_of": None,
+            "supersedes": None,
+            "player_facing": source_info.get("source_role") == "player_facing",
+            "instantiable": True,
+            "executable_candidate": True,
+            "source_legacy": bool(record.get("legacy")),
+            "source_record_fingerprint": source_fingerprint(record),
+            "qa_status": "confirmed_atom",
+            "atom_origin": "authored_source_subclause",
+            "source_subclause": True,
+        }
+        result.append(atom)
+        existing_content_ids.add(content_id)
+    return sorted(result, key=lambda item: str(item["atom_id"]))
 
 
 def _removed_atom_qa_status(atom: Mapping[str, Any]) -> str:
@@ -1232,8 +1318,8 @@ def database_fingerprint(repo_root: Path) -> dict[str, Any]:
 def build_migration(repo_root: Path) -> dict[str, Any]:
     source_root = repo_root / "data/generated-content/dnd5e_chm/json"
     records = select_source_records(load_records(source_root))
-    atoms = build_atoms(records)
     typed = _typed_entries(repo_root)
+    atoms = add_authored_subclause_atoms(build_atoms(records), typed, records)
     production, evidence = _production_evidence(repo_root)
     compiled = _existing_content_ids(typed, production)
     enriched: list[dict[str, Any]] = []

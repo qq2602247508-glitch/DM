@@ -1,12 +1,12 @@
 {
   "after": {
     "compile_only": 35,
-    "production_full": 179,
+    "production_full": 181,
     "tasha_atom_pack": {
-      "authored_typed_ir": 94,
-      "candidate_generated": 407,
-      "compile_full": 93,
-      "compile_only": 12,
+      "authored_typed_ir": 95,
+      "candidate_generated": 408,
+      "compile_full": 94,
+      "compile_only": 11,
       "consumer_unlocks": {
         "existing_generic_consumer": {
           "content_ids": [
@@ -19,6 +19,8 @@
             "content.tashas-cauldron.feature.armorer-lightning-launcher",
             "content.tashas-cauldron.feature.armorer.tools-of-the-trade",
             "content.tashas-cauldron.feature.artillerist.tool-proficiency",
+            "content.tashas-cauldron.feature.battle-master.commanding-presence",
+            "content.tashas-cauldron.feature.battle-master.precision-attack",
             "content.tashas-cauldron.feature.battle-smith-arcane-jolt-damage",
             "content.tashas-cauldron.feature.battle-smith-arcane-jolt-healing",
             "content.tashas-cauldron.feature.battle-smith-repair",
@@ -137,23 +139,23 @@
           "new_consumer_count": 0
         }
       },
-      "content_atom_total": 524,
+      "content_atom_total": 525,
       "content_id_funnel": {
-        "compile_only": 12,
+        "compile_only": 11,
         "dm_assisted": 2,
-        "matched_typed_ir": 94,
-        "production_full": 80,
+        "matched_typed_ir": 95,
+        "production_full": 82,
         "relation_holds": true
       },
       "current_project_compile_only": 35,
       "current_project_compiled_unique": 111,
-      "current_project_production_full": 179,
-      "current_project_production_registry_fingerprint": "bf68fb0cbfbe130d8c5a29070a8333bbef2c3e5b5fcb8fbf63641f13f311af4e",
+      "current_project_production_full": 181,
+      "current_project_production_registry_fingerprint": "dae8e103d5a87c977ced52f158cae393841b1b3b68b5c1ff0d62cbdecebdf671",
       "dm_assisted": 2,
       "dm_reference": 107,
-      "draft_total": 407,
+      "draft_total": 408,
       "duplicate_or_reprint": 0,
-      "executable_candidate_total": 407,
+      "executable_candidate_total": 408,
       "existing_typed_ir_total": 95,
       "existing_typed_ir_unmatched": [],
       "formal_499_status": {
@@ -165,7 +167,7 @@
         },
         "total": 499
       },
-      "game_usable": 81,
+      "game_usable": 83,
       "invalid_source": 0,
       "item_ir": {
         "blocker": "manual_review_required is retained for unresolved action, spell, and effect clauses",
@@ -215,7 +217,7 @@
         "invocation": 8,
         "magic_item": 36,
         "magic_tattoo": 11,
-        "maneuver": 8,
+        "maneuver": 9,
         "narrative": 10,
         "puzzle": 15,
         "spell": 21,
@@ -223,9 +225,9 @@
       },
       "manual_authoring": 314,
       "non_instantiable": 10,
-      "pack_fingerprint": "c49bc727a3a19701b60aee9123836e1e9824c99960a30150d3ba7b1795e07105",
+      "pack_fingerprint": "53a2bb2a554f029315e509b6c9c498c684f381f96ee3bd9645e0b590d998f505",
       "pack_id": "tashas-cauldron",
-      "player_facing_atom_total": 407,
+      "player_facing_atom_total": 408,
       "player_kind_counts": {
         "class_feature": 63,
         "feat": 15,
@@ -233,13 +235,13 @@
         "invocation": 7,
         "magic_item": 36,
         "magic_tattoo": 11,
-        "maneuver": 7,
+        "maneuver": 8,
         "spell": 21,
         "subclass_feature": 232
       },
-      "production_full": 79,
-      "reviewed_total": 407,
-      "runtime_preview_full": 93,
+      "production_full": 81,
+      "reviewed_total": 408,
+      "runtime_preview_full": 94,
       "schema_version": "tashas-whole-pack-migration-1",
       "source_book": "塔莎的万事坩埚",
       "source_record_classified": 144,
@@ -247,7 +249,7 @@
       "source_record_total": 144,
       "source_record_unclassified": 0,
       "status_counts": {
-        "compile_only": 12,
+        "compile_only": 11,
         "dm_assisted": 2,
         "dm_reference": 107,
         "duplicate_or_reprint": 0,
@@ -255,15 +257,15 @@
         "manual_authoring": 314,
         "non_instantiable": 10,
         "out_of_scope_with_reason": 0,
-        "production_full": 79
+        "production_full": 81
       },
-      "template_matched": 93
+      "template_matched": 94
     },
     "unique_compiled": 111
   },
   "baseline": {
     "compile_only": 35,
-    "production_full": 179,
+    "production_full": 181,
     "unique_compiled": 111
   },
   "database_unchanged": true,

@@ -5,16 +5,16 @@
 ## 真实分母
 
 - Source records：144 / 144 已扫描、已分类；未分类 0。
-- Content atoms：524；玩家向 407；executable candidate 407。
-- 类型：{"character_option": 15, "class_feature": 63, "companion_profile": 3, "directory": 10, "dm_tool": 7, "environment_rule": 22, "feat": 16, "infusion": 16, "invocation": 8, "magic_item": 36, "magic_tattoo": 11, "maneuver": 8, "narrative": 10, "puzzle": 15, "spell": 21, "subclass_feature": 263}。
+- Content atoms：525；玩家向 408；executable candidate 408。
+- 类型：{"character_option": 15, "class_feature": 63, "companion_profile": 3, "directory": 10, "dm_tool": 7, "environment_rule": 22, "feat": 16, "infusion": 16, "invocation": 8, "magic_item": 36, "magic_tattoo": 11, "maneuver": 9, "narrative": 10, "puzzle": 15, "spell": 21, "subclass_feature": 263}。
 
 ## 转换与可用性
 
-- Draft/Candidate/Review：407 / 407 / 407。
-- Template match：93（22.85%）；game usable 另按 executable atom 分母报告。
-- Authored/verified Typed IR：94；compile full 93；runtime preview full 93。
-- Atom status：production_full 79，dm_assisted 2，game usable 81，compile-only 12，manual authoring 314，DM reference 107，non-instantiable 10。
-- 现有 authored IR：95 条；匹配 94，别名协调 2，明确退役 1，孤儿 0。
+- Draft/Candidate/Review：408 / 408 / 408。
+- Template match：94（23.04%）；game usable 另按 executable atom 分母报告。
+- Authored/verified Typed IR：95；compile full 94；runtime preview full 94。
+- Atom status：production_full 81，dm_assisted 2，game usable 83，compile-only 11，manual authoring 314，DM reference 107，non-instantiable 10。
+- 现有 authored IR：95 条；匹配 95，别名协调 2，明确退役 0，孤儿 0。
 
 ## 真实阻塞
 

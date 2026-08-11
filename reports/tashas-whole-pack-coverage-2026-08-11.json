@@ -1,26 +1,26 @@
 {
   "atom_coverage": {
-    "content_atom_total": 524,
+    "content_atom_total": 525,
     "dm_reference_total": 107,
     "duplicate_total": 0,
-    "executable_candidate_total": 407,
+    "executable_candidate_total": 408,
     "invalid_source_total": 0,
     "non_instantiable_total": 10,
-    "player_facing_atom_total": 407
+    "player_facing_atom_total": 408
   },
   "conversion_funnel": {
-    "authored_typed_ir": 94,
-    "candidate_generated": 407,
-    "compile_full": 93,
-    "compile_only": 12,
+    "authored_typed_ir": 95,
+    "candidate_generated": 408,
+    "compile_full": 94,
+    "compile_only": 11,
     "dm_assisted": 2,
-    "draft_total": 407,
+    "draft_total": 408,
     "invalid": 0,
     "manual_authoring": 314,
-    "production_full": 79,
-    "reviewed_total": 407,
-    "runtime_preview_full": 93,
-    "template_matched": 93
+    "production_full": 81,
+    "reviewed_total": 408,
+    "runtime_preview_full": 94,
+    "template_matched": 94
   },
   "minimum_target_check": {
     "authored_typed_ir_75_percent": false,
@@ -45,7 +45,7 @@
     "invocation": 8,
     "magic_item": 36,
     "magic_tattoo": 11,
-    "maneuver": 8,
+    "maneuver": 9,
     "narrative": 10,
     "puzzle": 15,
     "spell": 21,
@@ -59,7 +59,7 @@
     "source_record_unclassified": 0
   },
   "status_counts": {
-    "compile_only": 12,
+    "compile_only": 11,
     "dm_assisted": 2,
     "dm_reference": 107,
     "duplicate_or_reprint": 0,
@@ -67,25 +67,25 @@
     "manual_authoring": 314,
     "non_instantiable": 10,
     "out_of_scope_with_reason": 0,
-    "production_full": 79
+    "production_full": 81
   },
   "status_layers": {
-    "authored_typed_ir": 93,
-    "candidate": 407,
-    "compile_full": 93,
+    "authored_typed_ir": 94,
+    "candidate": 408,
+    "compile_full": 94,
     "dm_assisted": 2,
-    "draft": 407,
-    "game_usable": 81,
-    "isolated_runtime_validated": 81,
-    "registered_production_full": 79,
-    "reviewed": 407,
-    "runtime_preview_full": 93,
-    "source_identified": 524
+    "draft": 408,
+    "game_usable": 83,
+    "isolated_runtime_validated": 83,
+    "registered_production_full": 81,
+    "reviewed": 408,
+    "runtime_preview_full": 94,
+    "source_identified": 525
   },
   "usable_coverage": {
-    "dm_assisted_rate": 0.004914,
-    "game_usable_rate": 0.199017,
-    "manual_rate": 0.771499,
-    "production_full_rate": 0.194103
+    "dm_assisted_rate": 0.004902,
+    "game_usable_rate": 0.203431,
+    "manual_rate": 0.769608,
+    "production_full_rate": 0.198529
   }
 }

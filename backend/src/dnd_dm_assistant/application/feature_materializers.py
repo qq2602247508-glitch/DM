@@ -255,8 +255,112 @@ def _materialize_exchange(context: MaterializerContext) -> MaterializedBlock:
     return MaterializedBlock("resources", entry)
 
 
+def _materialize_roll_intervention(context: MaterializerContext) -> MaterializedBlock:
+    """Project a typed superiority-die modifier into the shared d20 window."""
+
+    params = context.parameters
+    if context.clause.trigger not in {"ability_check", "attack_declared"}:
+        raise MaterializerError("superiority-die intervention trigger is unsupported")
+    if str(params.get("value_source") or "") != "superiority_die":
+        raise MaterializerError("roll intervention requires a typed superiority die")
+    resource_effects = [
+        effect
+        for effect in context.clause.effects
+        if effect.operator == "consume_resource"
+    ]
+    if len(resource_effects) != 1:
+        raise MaterializerError(
+            "roll intervention requires exactly one consume_resource effect"
+        )
+    resource = resource_effects[0].parameters
+    resource_key = str(resource.get("resource_key") or "").strip()
+    resource_cost = resource.get("amount")
+    if not resource_key or not isinstance(resource_cost, int) or resource_cost < 1:
+        raise MaterializerError("roll intervention resource cost is invalid")
+
+    applies_when = str(params.get("applies_when") or "").strip()
+    eligibility: dict[str, Any] = {
+        "entity_types": ["character"],
+        "resource": {
+            "key": resource_key,
+            "minimum": resource_cost,
+            "value_bind_as": "superiority_die_sides",
+        },
+        "forbidden_conditions": ["incapacitated"],
+    }
+    if context.clause.trigger == "ability_check":
+        eligibility["test_kinds"] = ["ability_check"]
+        stat = str(params.get("stat") or "")
+        if stat.endswith("_social_check"):
+            eligibility["abilities"] = [stat.removesuffix("_social_check")]
+        elif stat != "ability_check":
+            raise MaterializerError(
+                "ability-check intervention stat is not a typed ability check"
+            )
+        skills = [item for item in applies_when.split("_or_") if item]
+        if not skills:
+            raise MaterializerError("ability-check intervention lacks typed skills")
+        eligibility["skills"] = skills
+    else:
+        if applies_when != "weapon_attack":
+            raise MaterializerError("attack intervention lacks weapon_attack binding")
+        eligibility["test_kinds"] = ["armor_class"]
+        eligibility["attack_types"] = ["weapon_attack"]
+
+    entry = context.base(kind="roll_intervention")
+    entry.update(
+        {
+            "name": context.spec.source_name,
+            "trigger": "after_d20_test",
+            "source_trigger": context.clause.trigger,
+            "operation": {
+                "kind": "add_die",
+                "input_key": "superiority_die_roll",
+                "die_sides_expression": "superiority_die_sides",
+            },
+            "eligibility": eligibility,
+            "input_requirements": [
+                {"key": "superiority_die_roll", "kind": "integer"}
+            ],
+            "window": {"phase": "after_d20_test", "expires": "operation"},
+            "action_cost": "none",
+            "resource": {"key": resource_key, "cost": resource_cost},
+            "idempotency": {"prefix": "typed-roll-intervention"},
+            "runtime_execution": {
+                "status": "ready",
+                "consumer": "player_roll_resolution",
+                "capability_id": "feature.roll_intervention",
+                "contract_version": "feature-roll-intervention-1",
+                "materializer_id": "modifier.passive",
+                "persistence": "character_resource_and_operation_transaction",
+            },
+            "automation_status": "full",
+            "requires_dm_adjudication": False,
+        }
+    )
+    return MaterializedBlock("actions", entry)
+
+
 def _materialize_modifier(context: MaterializerContext) -> MaterializedBlock:
     params = context.parameters
+    if (
+        context.operator == "add_modifier"
+        and params.get("value_source") == "superiority_die"
+        and (
+            (
+                context.clause.trigger == "ability_check"
+                and params.get("stat") == "charisma_social_check"
+                and str(params.get("applies_when") or "").strip()
+                in {"intimidation_or_performance_or_persuasion"}
+            )
+            or (
+                context.clause.trigger == "attack_declared"
+                and params.get("stat") == "attack_roll"
+                and params.get("applies_when") == "weapon_attack"
+            )
+        )
+    ):
+        return _materialize_roll_intervention(context)
     entry = context.base(kind="modifier")
     if context.operator == "replace_damage_type":
         entry.update(

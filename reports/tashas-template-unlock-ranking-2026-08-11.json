@@ -42,7 +42,7 @@
       "unlock_count": 10
     },
     {
-      "candidate_count": 350,
+      "candidate_count": 351,
       "runtime_consumer": "combat.feature_action",
       "status": "blocked",
       "template_id": "feature.action.grant",
@@ -56,7 +56,7 @@
       "unlock_count": 0
     },
     {
-      "candidate_count": 350,
+      "candidate_count": 351,
       "runtime_consumer": "advancement.replacement",
       "status": "blocked",
       "template_id": "feature.choice.replacement",
@@ -196,7 +196,7 @@
       "unlock_count": 0
     },
     {
-      "candidate_count": 8,
+      "candidate_count": 9,
       "runtime_consumer": "combat.maneuver",
       "status": "blocked",
       "template_id": "option.maneuver.choice",

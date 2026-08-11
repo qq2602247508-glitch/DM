@@ -12,17 +12,17 @@
       "invocation": 8,
       "magic_item": 36,
       "magic_tattoo": 11,
-      "maneuver": 8,
+      "maneuver": 9,
       "narrative": 10,
       "puzzle": 15,
       "spell": 21,
       "subclass_feature": 263
     },
-    "executable": 407,
-    "player_facing": 407,
-    "total": 524
+    "executable": 408,
+    "player_facing": 408,
+    "total": 525
   },
-  "audit_fingerprint": "08de394ce0366e3469376ad14d2c4958820ca0712d51b43e572cfec23521f351",
+  "audit_fingerprint": "c01c4263d20fc79cbfafd4466af16b0f8517c259a198aa1caca6a13750745041",
   "before_atom_counts": {
     "by_kind": {
       "character_option": 15,
@@ -362,7 +362,7 @@
   ],
   "pack_id": "tashas-cauldron",
   "qa_status_counts": {
-    "confirmed_atom": 407,
+    "confirmed_atom": 408,
     "duplicate": 0,
     "example_not_rule": 0,
     "heading_only": 117,

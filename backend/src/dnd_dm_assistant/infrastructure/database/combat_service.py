@@ -5593,8 +5593,11 @@ class CombatEngineService:
         request: dict[str, Any],
         session: Session | None,
         combat: Combat | None = None,
+        actor: Combatant | None = None,
     ) -> list[dict[str, object]]:
         reactors: list[Combatant] = [target]
+        if actor is not None and actor.id != target.id:
+            reactors.append(actor)
         if (
             session is not None
             and combat is not None
@@ -5609,7 +5612,7 @@ class CombatEngineService:
                         Combatant.is_active.is_(True),
                     )
                 ).all()
-                if item.id != target.id
+                if item.id not in {target.id, actor.id if actor is not None else None}
             )
         resolved: list[dict[str, object]] = []
         for reactor in reactors:
@@ -5642,6 +5645,7 @@ class CombatEngineService:
                     "test_kind": resolution_type,
                     "ability": request.get("ability"),
                     "skill": request.get("skill"),
+                    "attack_type": request.get("attack_type"),
                     "conditions": sorted(cls._condition_set(reactor)),
                     "class_levels": class_levels,
                     "resources": resources,
@@ -5678,7 +5682,7 @@ class CombatEngineService:
                         continue
                     candidate["pool_resource_key"] = pool_key
                     candidate["available_pool_values"] = pool_values
-                if reactor.id != target.id:
+                if reactor.id != target.id and (actor is None or reactor.id != actor.id):
                     policy = candidate.get("target_policy")
                     if not isinstance(policy, dict) or combat is None or session is None:
                         continue
@@ -12240,6 +12244,7 @@ class CombatEngineService:
         consume_defenses: bool = False,
         session: Session | None = None,
         combat: Combat | None = None,
+        actor: Combatant | None = None,
     ) -> dict[str, Any]:
         request = action.request_json
         command = cls._prepare_pre_roll_intervention(
@@ -12651,6 +12656,7 @@ class CombatEngineService:
                 request=intervention_request,
                 session=session,
                 combat=combat,
+                actor=actor or target,
             )
             if not generic_options and not success:
                 generic_options = cls._generic_roll_intervention_options(
@@ -12660,6 +12666,7 @@ class CombatEngineService:
                     request=intervention_request,
                     session=session,
                     combat=combat,
+                    actor=actor or target,
                 )
             # Eligibility may declare success_only/failure_only: a reaction
             # like 语出惊人 only opens after a successful ability check and
@@ -13105,6 +13112,7 @@ class CombatEngineService:
                     command,
                     session=session,
                     combat=combat,
+                    actor=actor,
                 ),
             }
 
@@ -13286,6 +13294,7 @@ class CombatEngineService:
                 consume_defenses=True,
                 session=session,
                 combat=combat,
+                actor=actor,
             )
             if isinstance(request.get("zero_hp_intervention"), dict):
                 return self._confirm_zero_hp_intervention(
@@ -17152,7 +17161,11 @@ class CombatEngineService:
                         "window_type": window_type,
                         "window_kind": str(window_spec.get("window_kind") or "typed_attack"),
                         "reaction_event": str(window_spec.get("event") or "typed_feature_event"),
-                        "action_cost": str(window_spec.get("action_cost") or action.get("action_cost") or "reaction"),
+                        "action_cost": str(
+                            window_spec.get("action_cost")
+                            or action.get("action_cost")
+                            or "reaction"
+                        ),
                         "feature_id": command.feature_id,
                         "feature_name": action.get("name"),
                         "resource_key": resource_key or None,

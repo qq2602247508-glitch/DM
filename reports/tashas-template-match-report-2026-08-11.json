@@ -8,13 +8,13 @@
     "invocation:unmatched_requires_review": 7,
     "magic_item:unmatched_requires_review": 36,
     "magic_tattoo:unmatched_requires_review": 11,
-    "maneuver:reviewed_typed_mapping": 7,
+    "maneuver:reviewed_typed_mapping": 8,
     "spell:reviewed_typed_mapping": 8,
     "spell:unmatched_requires_review": 13,
     "subclass_feature:reviewed_typed_mapping": 63,
     "subclass_feature:unmatched_requires_review": 169
   },
-  "candidate_total": 407,
+  "candidate_total": 408,
   "candidates": [
     {
       "atom_id": "tashas-cauldron:atom:0036d7dc058c496ef08fe340:a27f6b57964b:000",
@@ -20398,6 +20398,51 @@
       "uncertain_fields": {
         "clauses": "requires authored review"
       }
+    },
+    {
+      "atom_id": "tashas-cauldron:authored-subclause:12139219bf7e575f9cde019c:0d3fc31f44e0",
+      "candidate_status": "generated_candidate",
+      "compile_status": "never_full_before_review",
+      "content_kind": "maneuver",
+      "derived_non_executable_fields": {
+        "localized_name": "战技选项：精准攻击"
+      },
+      "exact_fields": {
+        "class_name": "战士",
+        "level": 3
+      },
+      "forbidden_inferences": [
+        "natural_language_to_operator",
+        "automatic_player_choice",
+        "automatic_dm_ruling"
+      ],
+      "match_confidence": "high",
+      "match_status": "reviewed_typed_mapping",
+      "matched_template_id": "feature.shape.authored",
+      "missing_fields": [],
+      "name": "战技选项：精准攻击",
+      "required_review_fields": [
+        "name",
+        "content_kind",
+        "level",
+        "prerequisites",
+        "action_economy",
+        "trigger",
+        "target_policy",
+        "clauses",
+        "resource_and_recovery",
+        "dm_boundary"
+      ],
+      "source_evidence": {
+        "source_fragment": "authored:0d3fc31f44e0",
+        "source_path": "塔莎的万事坩埚/玩家选项/职业/战士（TCE）/战技选项.htm",
+        "source_record_id": "12139219bf7e575f9cde019c"
+      },
+      "source_fingerprint": "13418d41bbe36e695c131a0a0972e749979d8174421fc9bcc2bf767a92f19eef",
+      "source_path": "塔莎的万事坩埚/玩家选项/职业/战士（TCE）/战技选项.htm",
+      "source_record_id": "12139219bf7e575f9cde019c",
+      "template_fingerprint": "306af7f15b9498b0273c693b3ee49636db40edb8f23c8a1334d8acf35cd438fd",
+      "uncertain_fields": {}
     }
   ],
   "existing_template_count": 12,
@@ -20434,6 +20479,6 @@
   ],
   "pack_id": "tashas-cauldron",
   "schema_version": "tashas-template-match-report-1",
-  "template_match_rate": 0.228501,
-  "template_matched": 93
+  "template_match_rate": 0.230392,
+  "template_matched": 94
 }

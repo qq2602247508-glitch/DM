@@ -1,5 +1,5 @@
 {
-  "inventory_fingerprint": "549424ddcf7d5d605f130324f0f4dba6efce38e6dfca19227211d8732783373f",
+  "inventory_fingerprint": "928dce9704cde105db8c19fa0c3f55d91d42bfbdf744eec8549f0e0a5496bc57",
   "pack_id": "tashas-cauldron",
   "records": [
     {
@@ -2396,7 +2396,7 @@
       "subclass_name": null
     },
     {
-      "atom_count": 8,
+      "atom_count": 9,
       "class_name": "战士",
       "content_length": 821,
       "edition": "2014",

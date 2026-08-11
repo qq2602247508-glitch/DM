@@ -1399,6 +1399,7 @@ class _PlayerRollPromptBase(BaseModel):
         "skill_check",
     ]
     dc: int = Field(ge=0, le=99)
+    attack_type: Literal["weapon_attack", "spell_attack", "unarmed_attack", "other"] | None = None
     ability: str | None = Field(default=None, max_length=30)
     # Jack of All Trades only applies when the caller explicitly confirms
     # that this is an ability check without proficiency.  ``None`` is
@@ -1475,6 +1476,8 @@ class _PlayerRollPromptBase(BaseModel):
 
     @model_validator(mode="after")
     def validate_roll_prompt(self) -> _PlayerRollPromptBase:
+        if self.attack_type is not None and self.resolution_type != "armor_class":
+            raise ValueError("attack_type is only valid for armor_class roll prompts")
         if self.resolution_type == "saving_throw" and not (self.ability or "").strip():
             raise ValueError("ability is required for a saving throw")
         if self.ability_check_proficient is not None and self.resolution_type != "ability_check":

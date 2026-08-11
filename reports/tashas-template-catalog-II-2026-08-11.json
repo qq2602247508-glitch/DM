@@ -1,5 +1,5 @@
 {
-  "catalog_fingerprint": "89b4e459a9dfe25af9c07c9d751617541783bffc4bce3e24fbf34a3a21c3ec0e",
+  "catalog_fingerprint": "2bf23bd66012402bceb6e192019b50a2a214fc44c057d754954380dc00ddac4e",
   "cluster_count": 14,
   "minimum_required": 15,
   "new_template_total": 28,
@@ -500,7 +500,7 @@
       }
     },
     {
-      "candidate_count": 350,
+      "candidate_count": 351,
       "contract_signature": {
         "action_economy": "explicit_or_reviewed",
         "attack_save": "explicit_or_reviewed",
@@ -541,7 +541,7 @@
       }
     },
     {
-      "candidate_count": 350,
+      "candidate_count": 351,
       "contract_signature": {
         "action_economy": "explicit_or_reviewed",
         "attack_save": "explicit_or_reviewed",
@@ -828,7 +828,7 @@
       }
     },
     {
-      "candidate_count": 8,
+      "candidate_count": 9,
       "contract_signature": {
         "action_economy": "explicit_or_reviewed",
         "attack_save": "explicit_or_reviewed",
