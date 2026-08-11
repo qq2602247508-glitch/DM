@@ -1,0 +1,14 @@
+{
+  "checks": {
+    "before_after": true,
+    "cursor": true,
+    "dedupe": true,
+    "engine_neutral": true,
+    "ordering": true,
+    "replay": true,
+    "source_command": true,
+    "stable_id": true,
+    "version": true
+  },
+  "schema_version": "scene-delta-validation-1"
+}

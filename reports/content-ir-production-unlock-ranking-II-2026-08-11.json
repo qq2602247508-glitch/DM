@@ -1,0 +1,167 @@
+{
+  "counts_are_unique_content_assets": true,
+  "major_platform_threshold": 8,
+  "ranking": [
+    {
+      "blocked_clause_count": 90,
+      "blocked_content_count": 50,
+      "complete_content_unlock_count": 18,
+      "core_unlock_count": 14,
+      "domain": "adjudication",
+      "estimated_test_surface": 10,
+      "feature_unlock_count": 0,
+      "fizban_unlock_count": 1,
+      "implementation_risk": "medium",
+      "many_things_unlock_count": 1,
+      "other_pack_unlock_count": 0,
+      "platform_id": "kernel.dm.adjudication",
+      "required_3d_protocol_changes": [
+        "scene-delta-1"
+      ],
+      "required_api_changes": [
+        "rules-kernel/preview",
+        "rules-kernel/confirm"
+      ],
+      "required_database_changes": [
+        "rules_kernel_commands",
+        "rules_kernel_scene_deltas"
+      ],
+      "required_domain_changes": [
+        "adjudication"
+      ],
+      "required_frontend_changes": [],
+      "spell_unlock_count": 18,
+      "tasha_unlock_count": 1,
+      "xanathar_unlock_count": 1
+    },
+    {
+      "blocked_clause_count": 33,
+      "blocked_content_count": 16,
+      "complete_content_unlock_count": 11,
+      "core_unlock_count": 5,
+      "domain": "typed_content",
+      "estimated_test_surface": 25,
+      "feature_unlock_count": 5,
+      "fizban_unlock_count": 1,
+      "implementation_risk": "low",
+      "many_things_unlock_count": 0,
+      "other_pack_unlock_count": 0,
+      "platform_id": "kernel.content.typed",
+      "required_3d_protocol_changes": [
+        "scene-delta-1"
+      ],
+      "required_api_changes": [
+        "rules-kernel/preview",
+        "rules-kernel/confirm"
+      ],
+      "required_database_changes": [
+        "rules_kernel_commands",
+        "rules_kernel_scene_deltas"
+      ],
+      "required_domain_changes": [
+        "typed_content"
+      ],
+      "required_frontend_changes": [],
+      "spell_unlock_count": 6,
+      "tasha_unlock_count": 5,
+      "xanathar_unlock_count": 0
+    },
+    {
+      "blocked_clause_count": 26,
+      "blocked_content_count": 11,
+      "complete_content_unlock_count": 3,
+      "core_unlock_count": 3,
+      "domain": "spatial",
+      "estimated_test_surface": 10,
+      "feature_unlock_count": 0,
+      "fizban_unlock_count": 0,
+      "implementation_risk": "medium",
+      "many_things_unlock_count": 0,
+      "other_pack_unlock_count": 0,
+      "platform_id": "kernel.spatial.movement",
+      "required_3d_protocol_changes": [
+        "scene-delta-1"
+      ],
+      "required_api_changes": [
+        "rules-kernel/preview",
+        "rules-kernel/confirm"
+      ],
+      "required_database_changes": [
+        "rules_kernel_commands",
+        "rules_kernel_scene_deltas"
+      ],
+      "required_domain_changes": [
+        "spatial"
+      ],
+      "required_frontend_changes": [],
+      "spell_unlock_count": 3,
+      "tasha_unlock_count": 0,
+      "xanathar_unlock_count": 0
+    },
+    {
+      "blocked_clause_count": 0,
+      "blocked_content_count": 0,
+      "complete_content_unlock_count": 0,
+      "core_unlock_count": 0,
+      "domain": "choice",
+      "estimated_test_surface": 10,
+      "feature_unlock_count": 0,
+      "fizban_unlock_count": 0,
+      "implementation_risk": "low",
+      "many_things_unlock_count": 0,
+      "other_pack_unlock_count": 0,
+      "platform_id": "kernel.choice.window",
+      "required_3d_protocol_changes": [
+        "scene-delta-1"
+      ],
+      "required_api_changes": [
+        "rules-kernel/preview",
+        "rules-kernel/confirm"
+      ],
+      "required_database_changes": [
+        "rules_kernel_commands",
+        "rules_kernel_scene_deltas"
+      ],
+      "required_domain_changes": [
+        "choice"
+      ],
+      "required_frontend_changes": [],
+      "spell_unlock_count": 0,
+      "tasha_unlock_count": 0,
+      "xanathar_unlock_count": 0
+    },
+    {
+      "blocked_clause_count": 0,
+      "blocked_content_count": 0,
+      "complete_content_unlock_count": 0,
+      "core_unlock_count": 0,
+      "domain": "entity",
+      "estimated_test_surface": 10,
+      "feature_unlock_count": 0,
+      "fizban_unlock_count": 0,
+      "implementation_risk": "medium",
+      "many_things_unlock_count": 0,
+      "other_pack_unlock_count": 0,
+      "platform_id": "kernel.entity.lifecycle",
+      "required_3d_protocol_changes": [
+        "scene-delta-1"
+      ],
+      "required_api_changes": [
+        "rules-kernel/preview",
+        "rules-kernel/confirm"
+      ],
+      "required_database_changes": [
+        "rules_kernel_commands",
+        "rules_kernel_scene_deltas"
+      ],
+      "required_domain_changes": [
+        "entity"
+      ],
+      "required_frontend_changes": [],
+      "spell_unlock_count": 0,
+      "tasha_unlock_count": 0,
+      "xanathar_unlock_count": 0
+    }
+  ],
+  "schema_version": "content-ir-production-unlock-ranking-II-1"
+}

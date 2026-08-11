@@ -1,0 +1,13 @@
+{
+  "checks": {
+    "cardinality": true,
+    "cas": true,
+    "dm_scope": true,
+    "fixed_options": true,
+    "frozen_options": true,
+    "idempotency": true,
+    "invalid_option_rejected": true,
+    "player_scope": true
+  },
+  "schema_version": "rules-kernel-choice-validation-1"
+}

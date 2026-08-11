@@ -1,0 +1,15 @@
+{
+  "checks": {
+    "controller_boundary": true,
+    "existing_combatant": true,
+    "existing_scene_token": true,
+    "idempotency": true,
+    "known_profile": true,
+    "position_validation": true,
+    "profile_required": true,
+    "rollback": true,
+    "snapshot_rebuild": true,
+    "spawn_delta": true
+  },
+  "schema_version": "rules-kernel-entity-lifecycle-validation-1"
+}

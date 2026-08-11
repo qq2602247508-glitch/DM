@@ -1,0 +1,26 @@
+{
+  "assets": [
+    "docs/protocols/dm-adjudication-v1.schema.json",
+    "docs/protocols/examples/area-save.json",
+    "docs/protocols/examples/dm-adjudication.json",
+    "docs/protocols/examples/healing.json",
+    "docs/protocols/examples/spell-attack.json",
+    "docs/protocols/examples/summon.json",
+    "docs/protocols/examples/teleport.json",
+    "docs/protocols/negative-examples.json",
+    "docs/protocols/rules-kernel-command-v1.schema.json",
+    "docs/protocols/rules-kernel-confirmation-v1.schema.json",
+    "docs/protocols/rules-kernel-preview-v1.schema.json",
+    "docs/protocols/rules-kernel-result-v1.schema.json",
+    "docs/protocols/scene-delta-v1.schema.json",
+    "docs/protocols/scene-query-v1.schema.json"
+  ],
+  "checks": {
+    "backend_serialization": true,
+    "byte_stable": true,
+    "examples": true,
+    "json_schema_assets": true,
+    "negative_examples": true
+  },
+  "schema_version": "rules-kernel-3d-protocol-validation-1"
+}

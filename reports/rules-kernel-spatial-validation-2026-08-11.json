@@ -1,0 +1,19 @@
+{
+  "checks": {
+    "area_targets": true,
+    "cover": true,
+    "distance": true,
+    "footprint": true,
+    "forced_movement": true,
+    "line_of_sight": true,
+    "nearest_unoccupied": true,
+    "occupancy": true,
+    "path": true,
+    "teleport": true
+  },
+  "implementations": [
+    "deterministic_test",
+    "scene_grid_existing_adapter"
+  ],
+  "schema_version": "rules-kernel-spatial-validation-1"
+}

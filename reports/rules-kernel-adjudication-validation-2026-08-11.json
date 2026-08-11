@@ -1,0 +1,15 @@
+{
+  "checks": {
+    "allowed_schema": true,
+    "cas": true,
+    "create": true,
+    "dm_approval": true,
+    "dm_modification": true,
+    "dm_rejection": true,
+    "expiry_contract": true,
+    "frozen_context": true,
+    "idempotency": true,
+    "non_dm_rejected": true
+  },
+  "schema_version": "rules-kernel-adjudication-validation-1"
+}

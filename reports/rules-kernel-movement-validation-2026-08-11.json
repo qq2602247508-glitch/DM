@@ -1,0 +1,15 @@
+{
+  "checks": {
+    "blocked_path": true,
+    "cas": true,
+    "footprint": true,
+    "forced": true,
+    "idempotency": true,
+    "range": true,
+    "scene_delta_replay": true,
+    "swap": true,
+    "teleport": true,
+    "voluntary": true
+  },
+  "schema_version": "rules-kernel-movement-validation-1"
+}

@@ -1,0 +1,4164 @@
+{
+  "blocker_category_counts": {
+    "adjudication.target_semantics": 44,
+    "condition.composite": 9,
+    "duration.multi_phase": 28,
+    "runtime.evidence_missing": 5,
+    "spatial.area": 11
+  },
+  "counts_are_unique_content_assets": true,
+  "entries": [
+    {
+      "action_requirements": [],
+      "adjudication_requirements": [
+        {
+          "category": "target_semantics"
+        }
+      ],
+      "candidate_platforms": [
+        "kernel.dm.adjudication"
+      ],
+      "cas_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "choice_requirements": [],
+      "compile_status": "full",
+      "condition_requirements": [],
+      "content_id": "book-of-many-things:spell:d52d8cc60a51205a85548bf1",
+      "content_kind": "spell",
+      "duration_requirements": {
+        "concentration": true,
+        "duration": "专注，至多1小时"
+      },
+      "entity_requirements": [],
+      "existing_consumers": [],
+      "idempotency_requirements": {
+        "command": true,
+        "replay": true
+      },
+      "missing_consumers": [
+        "kernel.dm.adjudication"
+      ],
+      "persistence_requirements": {
+        "combatant": true,
+        "scene_delta": true
+      },
+      "production_blockers": [
+        "adjudication.target_semantics",
+        "duration.multi_phase"
+      ],
+      "production_status": "compile_only",
+      "resource_requirements": {},
+      "runtime_preview_status": "full",
+      "scene_delta_requirements": [],
+      "snapshot_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "source_book": "万象无常书",
+      "source_path": "万象无常书/贤者/卡牌法术详述.htm",
+      "source_record_id": "d52d8cc60a51205a85548bf1",
+      "spatial_requirements": [],
+      "target_requirements": {},
+      "template_id": "spell:runtime:spell-runtime-1",
+      "typed_clause_ids": [
+        "book-of-many-things:spell:d52d8cc60a51205a85548bf1:clause:0",
+        "book-of-many-things:spell:d52d8cc60a51205a85548bf1:clause:1"
+      ],
+      "typed_ir_fingerprint": "ba182f7db4b088eb5ed282e8970bb22d48e0c21b1b8b48241783ca0132923237"
+    },
+    {
+      "action_requirements": [],
+      "adjudication_requirements": [],
+      "candidate_platforms": [
+        "kernel.content.typed"
+      ],
+      "cas_requirements": {
+        "actor": true,
+        "scene": false,
+        "targets": true
+      },
+      "choice_requirements": [],
+      "compile_status": "full",
+      "condition_requirements": [],
+      "content_id": "content.tashas-cauldron.feature.armorer-dampening-field",
+      "content_kind": "feature",
+      "duration_requirements": {
+        "concentration": false,
+        "duration": null
+      },
+      "entity_requirements": [],
+      "existing_consumers": [],
+      "idempotency_requirements": {
+        "command": true,
+        "replay": true
+      },
+      "missing_consumers": [
+        "kernel.content.typed"
+      ],
+      "persistence_requirements": {
+        "combatant": true,
+        "scene_delta": true
+      },
+      "production_blockers": [
+        "runtime.evidence_missing"
+      ],
+      "production_status": "compile_only",
+      "resource_requirements": {},
+      "runtime_preview_status": "full",
+      "scene_delta_requirements": [
+        "emit_combat_log"
+      ],
+      "snapshot_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "source_book": null,
+      "source_path": null,
+      "source_record_id": null,
+      "spatial_requirements": [],
+      "target_requirements": {},
+      "template_id": "feature:runtime:feature-runtime-1",
+      "typed_clause_ids": [],
+      "typed_ir_fingerprint": "614f8f7bf4198f5e3bd08aaedd4f562d7e4d611b9c233a82a9c7a2e6500ba250"
+    },
+    {
+      "action_requirements": [],
+      "adjudication_requirements": [],
+      "candidate_platforms": [
+        "kernel.content.typed"
+      ],
+      "cas_requirements": {
+        "actor": true,
+        "scene": false,
+        "targets": true
+      },
+      "choice_requirements": [],
+      "compile_status": "full",
+      "condition_requirements": [],
+      "content_id": "content.tashas-cauldron.feature.battle-smith-arcane-jolt-damage",
+      "content_kind": "feature",
+      "duration_requirements": {
+        "concentration": false,
+        "duration": null
+      },
+      "entity_requirements": [],
+      "existing_consumers": [],
+      "idempotency_requirements": {
+        "command": true,
+        "replay": true
+      },
+      "missing_consumers": [
+        "kernel.content.typed"
+      ],
+      "persistence_requirements": {
+        "combatant": true,
+        "scene_delta": true
+      },
+      "production_blockers": [
+        "runtime.evidence_missing"
+      ],
+      "production_status": "compile_only",
+      "resource_requirements": {
+        "arcane_jolt_uses": {
+          "action_cost": "none",
+          "activation": "automatic",
+          "amount": 1,
+          "automation_status": "full",
+          "class_level": 9,
+          "class_name": "奇械师",
+          "clause_id": "battle-smith-arcane-jolt-damage",
+          "feature_id": "content.tashas-cauldron.feature.battle-smith-arcane-jolt-damage",
+          "feature_name": "奥能震荡：伤害",
+          "id": "content.tashas-cauldron.feature.battle-smith-arcane-jolt-damage:battle-smith-arcane-jolt-damage:0",
+          "key": "arcane_jolt_uses",
+          "kind": "resource_lifecycle",
+          "operation": "consume",
+          "operator": "consume_resource",
+          "recovery": "attack_hit",
+          "requires_dm_adjudication": false,
+          "runtime_execution": {
+            "capability_id": "resource.lifecycle.consume",
+            "consumer": "combat_and_advancement_resource_cas",
+            "contract_version": "1.0",
+            "materializer_id": "resource.lifecycle.consume",
+            "persistence": "character.resources",
+            "status": "ready"
+          },
+          "source_record_id": "606d89f6e0ea3b2e0194f24c",
+          "targeting": {
+            "kind": "enemy",
+            "parameters": {}
+          },
+          "trigger": "attack_hit"
+        }
+      },
+      "runtime_preview_status": "full",
+      "scene_delta_requirements": [
+        "update_health"
+      ],
+      "snapshot_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "source_book": null,
+      "source_path": null,
+      "source_record_id": null,
+      "spatial_requirements": [],
+      "target_requirements": {},
+      "template_id": "feature:runtime:feature-runtime-1",
+      "typed_clause_ids": [],
+      "typed_ir_fingerprint": "0ce01fdd8901fb69281ed95b35f1447d9864418f862d064b87ff709249e9aedb"
+    },
+    {
+      "action_requirements": [],
+      "adjudication_requirements": [],
+      "candidate_platforms": [
+        "kernel.content.typed"
+      ],
+      "cas_requirements": {
+        "actor": true,
+        "scene": false,
+        "targets": true
+      },
+      "choice_requirements": [],
+      "compile_status": "full",
+      "condition_requirements": [],
+      "content_id": "content.tashas-cauldron.feature.psi-warrior-protective-field",
+      "content_kind": "feature",
+      "duration_requirements": {
+        "concentration": false,
+        "duration": null
+      },
+      "entity_requirements": [],
+      "existing_consumers": [],
+      "idempotency_requirements": {
+        "command": true,
+        "replay": true
+      },
+      "missing_consumers": [
+        "kernel.content.typed"
+      ],
+      "persistence_requirements": {
+        "combatant": true,
+        "scene_delta": true
+      },
+      "production_blockers": [
+        "runtime.evidence_missing"
+      ],
+      "production_status": "compile_only",
+      "resource_requirements": {
+        "psionic_dice": {
+          "action_cost": "reaction",
+          "activation": "automatic",
+          "amount": 1,
+          "automation_status": "full",
+          "class_level": 3,
+          "class_name": "战士",
+          "clause_id": "psi-warrior-protective-field",
+          "feature_id": "content.tashas-cauldron.feature.psi-warrior-protective-field",
+          "feature_name": "庇护力场",
+          "id": "content.tashas-cauldron.feature.psi-warrior-protective-field:psi-warrior-protective-field:0",
+          "key": "psionic_dice",
+          "kind": "resource_lifecycle",
+          "operation": "consume",
+          "operator": "consume_resource",
+          "recovery": "damage_before_apply",
+          "requires_dm_adjudication": false,
+          "runtime_execution": {
+            "capability_id": "resource.lifecycle.consume",
+            "consumer": "combat_and_advancement_resource_cas",
+            "contract_version": "1.0",
+            "materializer_id": "resource.lifecycle.consume",
+            "persistence": "character.resources",
+            "status": "ready"
+          },
+          "source_record_id": "a13253dc90904c96eaa719ab",
+          "targeting": {
+            "kind": "ally",
+            "parameters": {}
+          },
+          "trigger": "damage_before_apply"
+        }
+      },
+      "runtime_preview_status": "full",
+      "scene_delta_requirements": [
+        "emit_combat_log"
+      ],
+      "snapshot_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "source_book": null,
+      "source_path": null,
+      "source_record_id": null,
+      "spatial_requirements": [],
+      "target_requirements": {},
+      "template_id": "feature:runtime:feature-runtime-1",
+      "typed_clause_ids": [],
+      "typed_ir_fingerprint": "f5a4f7b89bf1368e7b842f9642197050f5dd29d6aa52b6042c2ec2b684a03c99"
+    },
+    {
+      "action_requirements": [],
+      "adjudication_requirements": [],
+      "candidate_platforms": [
+        "kernel.content.typed"
+      ],
+      "cas_requirements": {
+        "actor": true,
+        "scene": false,
+        "targets": true
+      },
+      "choice_requirements": [],
+      "compile_status": "full",
+      "condition_requirements": [],
+      "content_id": "content.tashas-cauldron.feature.psi-warrior-psionic-strike",
+      "content_kind": "feature",
+      "duration_requirements": {
+        "concentration": false,
+        "duration": null
+      },
+      "entity_requirements": [],
+      "existing_consumers": [],
+      "idempotency_requirements": {
+        "command": true,
+        "replay": true
+      },
+      "missing_consumers": [
+        "kernel.content.typed"
+      ],
+      "persistence_requirements": {
+        "combatant": true,
+        "scene_delta": true
+      },
+      "production_blockers": [
+        "runtime.evidence_missing"
+      ],
+      "production_status": "compile_only",
+      "resource_requirements": {
+        "psionic_dice": {
+          "action_cost": "none",
+          "activation": "automatic",
+          "amount": 1,
+          "automation_status": "full",
+          "class_level": 3,
+          "class_name": "战士",
+          "clause_id": "psi-warrior-psionic-strike",
+          "feature_id": "content.tashas-cauldron.feature.psi-warrior-psionic-strike",
+          "feature_name": "灵能打击",
+          "id": "content.tashas-cauldron.feature.psi-warrior-psionic-strike:psi-warrior-psionic-strike:0",
+          "key": "psionic_dice",
+          "kind": "resource_lifecycle",
+          "operation": "consume",
+          "operator": "consume_resource",
+          "recovery": "attack_hit",
+          "requires_dm_adjudication": false,
+          "runtime_execution": {
+            "capability_id": "resource.lifecycle.consume",
+            "consumer": "combat_and_advancement_resource_cas",
+            "contract_version": "1.0",
+            "materializer_id": "resource.lifecycle.consume",
+            "persistence": "character.resources",
+            "status": "ready"
+          },
+          "source_record_id": "a13253dc90904c96eaa719ab",
+          "targeting": {
+            "kind": "enemy",
+            "parameters": {}
+          },
+          "trigger": "attack_hit"
+        }
+      },
+      "runtime_preview_status": "full",
+      "scene_delta_requirements": [
+        "update_health"
+      ],
+      "snapshot_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "source_book": null,
+      "source_path": null,
+      "source_record_id": null,
+      "spatial_requirements": [],
+      "target_requirements": {},
+      "template_id": "feature:runtime:feature-runtime-1",
+      "typed_clause_ids": [],
+      "typed_ir_fingerprint": "2d76dbb0b3c5dd9e6e18ea31c828f16185983edfa8aea438ec8d5ad7e19d8f08"
+    },
+    {
+      "action_requirements": [],
+      "adjudication_requirements": [],
+      "candidate_platforms": [
+        "kernel.content.typed"
+      ],
+      "cas_requirements": {
+        "actor": true,
+        "scene": false,
+        "targets": true
+      },
+      "choice_requirements": [],
+      "compile_status": "full",
+      "condition_requirements": [],
+      "content_id": "content.tashas-cauldron.feature.way-of-mercy-hand-harm",
+      "content_kind": "feature",
+      "duration_requirements": {
+        "concentration": false,
+        "duration": null
+      },
+      "entity_requirements": [],
+      "existing_consumers": [],
+      "idempotency_requirements": {
+        "command": true,
+        "replay": true
+      },
+      "missing_consumers": [
+        "kernel.content.typed"
+      ],
+      "persistence_requirements": {
+        "combatant": true,
+        "scene_delta": true
+      },
+      "production_blockers": [
+        "runtime.evidence_missing"
+      ],
+      "production_status": "compile_only",
+      "resource_requirements": {
+        "ki": {
+          "action_cost": "none",
+          "activation": "automatic",
+          "amount": 1,
+          "automation_status": "full",
+          "class_level": 3,
+          "class_name": "武僧",
+          "clause_id": "way-of-mercy-hand-harm",
+          "feature_id": "content.tashas-cauldron.feature.way-of-mercy-hand-harm",
+          "feature_name": "夺命之手",
+          "id": "content.tashas-cauldron.feature.way-of-mercy-hand-harm:way-of-mercy-hand-harm:0",
+          "key": "ki",
+          "kind": "resource_lifecycle",
+          "operation": "consume",
+          "operator": "consume_resource",
+          "recovery": "attack_hit",
+          "requires_dm_adjudication": false,
+          "runtime_execution": {
+            "capability_id": "resource.lifecycle.consume",
+            "consumer": "combat_and_advancement_resource_cas",
+            "contract_version": "1.0",
+            "materializer_id": "resource.lifecycle.consume",
+            "persistence": "character.resources",
+            "status": "ready"
+          },
+          "source_record_id": "d4e98761778ae5c18fd66bdb",
+          "targeting": {
+            "kind": "enemy",
+            "parameters": {}
+          },
+          "trigger": "attack_hit"
+        }
+      },
+      "runtime_preview_status": "full",
+      "scene_delta_requirements": [
+        "update_health"
+      ],
+      "snapshot_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "source_book": null,
+      "source_path": null,
+      "source_record_id": null,
+      "spatial_requirements": [],
+      "target_requirements": {},
+      "template_id": "feature:runtime:feature-runtime-1",
+      "typed_clause_ids": [],
+      "typed_ir_fingerprint": "39a59d33acf35f0da13d621a94f77be07636dc47e7e7c71db4bf699bbb2f1499"
+    },
+    {
+      "action_requirements": [],
+      "adjudication_requirements": [],
+      "candidate_platforms": [
+        "kernel.content.typed",
+        "kernel.dm.adjudication"
+      ],
+      "cas_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "choice_requirements": [],
+      "compile_status": "full",
+      "condition_requirements": [
+        {
+          "capability_id": "spell.apply_condition.v1",
+          "clause_id": "core-phb-2024:spell:02b84b3586dddb3bc8f00815:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "condition-0",
+            "condition": "魅惑",
+            "evidence_ref": "、M（一些化妆品） **持续时间：**专注，至多1分钟 你魔法性地向施法距离内的一名可见生物散发出友谊感。目标必须成功于一次感知豁免，否则其在法术持续时间内陷入魅惑状态。若目标并非类人生物，或者你正在与其战斗，又或者你在过去24小时内曾对其施展过这道法术，则其进行的此次豁免自动成功。 若目标受到伤害，或你进行一次攻击检定、造成伤害、迫使任何人进行一次豁免，则法术会提早结束。法术结束时，目标会知道他曾被你魅惑。",
+            "target": "one_creature",
+            "type": "apply_condition"
+          },
+          "spell_id": "core-phb-2024:spell:02b84b3586dddb3bc8f00815",
+          "type": "apply_condition"
+        }
+      ],
+      "content_id": "core-phb-2024:spell:02b84b3586dddb3bc8f00815",
+      "content_kind": "spell",
+      "duration_requirements": {
+        "concentration": true,
+        "duration": "专注，至多1分钟"
+      },
+      "entity_requirements": [],
+      "existing_consumers": [],
+      "idempotency_requirements": {
+        "command": true,
+        "replay": true
+      },
+      "missing_consumers": [
+        "kernel.content.typed",
+        "kernel.dm.adjudication"
+      ],
+      "persistence_requirements": {
+        "combatant": true,
+        "scene_delta": true
+      },
+      "production_blockers": [
+        "condition.composite",
+        "duration.multi_phase"
+      ],
+      "production_status": "compile_only",
+      "resource_requirements": {},
+      "runtime_preview_status": "full",
+      "scene_delta_requirements": [
+        "apply_condition"
+      ],
+      "snapshot_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "source_book": "玩家手册 2024",
+      "source_path": "玩家手册2024/法术详述/0环.htm",
+      "source_record_id": "02b84b3586dddb3bc8f00815",
+      "spatial_requirements": [],
+      "target_requirements": {},
+      "template_id": "spell:runtime:spell-runtime-1",
+      "typed_clause_ids": [
+        "core-phb-2024:spell:02b84b3586dddb3bc8f00815:clause:0",
+        "core-phb-2024:spell:02b84b3586dddb3bc8f00815:clause:1",
+        "core-phb-2024:spell:02b84b3586dddb3bc8f00815:clause:2"
+      ],
+      "typed_ir_fingerprint": "d78ebd20dde26649f30153b902c47f4c38f03652d8245561b7982753fa5ee9c9"
+    },
+    {
+      "action_requirements": [],
+      "adjudication_requirements": [
+        {
+          "category": "target_semantics"
+        }
+      ],
+      "candidate_platforms": [
+        "kernel.dm.adjudication"
+      ],
+      "cas_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "choice_requirements": [],
+      "compile_status": "full",
+      "condition_requirements": [],
+      "content_id": "core-phb-2024:spell:0a6ce73a1735af465a59f154",
+      "content_kind": "spell",
+      "duration_requirements": {
+        "concentration": true,
+        "duration": "专注，至多10分钟"
+      },
+      "entity_requirements": [],
+      "existing_consumers": [],
+      "idempotency_requirements": {
+        "command": true,
+        "replay": true
+      },
+      "missing_consumers": [
+        "kernel.dm.adjudication"
+      ],
+      "persistence_requirements": {
+        "combatant": true,
+        "scene_delta": true
+      },
+      "production_blockers": [
+        "adjudication.target_semantics",
+        "duration.multi_phase"
+      ],
+      "production_status": "compile_only",
+      "resource_requirements": {},
+      "runtime_preview_status": "full",
+      "scene_delta_requirements": [],
+      "snapshot_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "source_book": "玩家手册 2024",
+      "source_path": "玩家手册2024/法术详述/1环.htm",
+      "source_record_id": "0a6ce73a1735af465a59f154",
+      "spatial_requirements": [],
+      "target_requirements": {},
+      "template_id": "spell:runtime:spell-runtime-1",
+      "typed_clause_ids": [
+        "core-phb-2024:spell:0a6ce73a1735af465a59f154:clause:0"
+      ],
+      "typed_ir_fingerprint": "715f27b5e3c580c6b2c46c3832bbba3a160f8590fb6e1f9bcb2a30a8297bea7d"
+    },
+    {
+      "action_requirements": [],
+      "adjudication_requirements": [
+        {
+          "category": "target_semantics"
+        }
+      ],
+      "candidate_platforms": [
+        "kernel.dm.adjudication"
+      ],
+      "cas_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "choice_requirements": [],
+      "compile_status": "full",
+      "condition_requirements": [],
+      "content_id": "core-phb-2024:spell:11cc203e3b28f9f15dee00ab",
+      "content_kind": "spell",
+      "duration_requirements": {
+        "concentration": true,
+        "duration": "专注，至多10分钟"
+      },
+      "entity_requirements": [],
+      "existing_consumers": [],
+      "idempotency_requirements": {
+        "command": true,
+        "replay": true
+      },
+      "missing_consumers": [
+        "kernel.dm.adjudication"
+      ],
+      "persistence_requirements": {
+        "combatant": true,
+        "scene_delta": true
+      },
+      "production_blockers": [
+        "adjudication.target_semantics",
+        "duration.multi_phase"
+      ],
+      "production_status": "compile_only",
+      "resource_requirements": {},
+      "runtime_preview_status": "full",
+      "scene_delta_requirements": [],
+      "snapshot_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "source_book": "玩家手册 2024",
+      "source_path": "玩家手册2024/法术详述/1环.htm",
+      "source_record_id": "11cc203e3b28f9f15dee00ab",
+      "spatial_requirements": [],
+      "target_requirements": {},
+      "template_id": "spell:runtime:spell-runtime-1",
+      "typed_clause_ids": [
+        "core-phb-2024:spell:11cc203e3b28f9f15dee00ab:clause:0",
+        "core-phb-2024:spell:11cc203e3b28f9f15dee00ab:clause:1"
+      ],
+      "typed_ir_fingerprint": "c1979f7673568881ac08c3fee77deb1f80a987e991124035f26513327970d2d6"
+    },
+    {
+      "action_requirements": [],
+      "adjudication_requirements": [],
+      "candidate_platforms": [
+        "kernel.content.typed",
+        "kernel.spatial.movement"
+      ],
+      "cas_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "choice_requirements": [],
+      "compile_status": "full",
+      "condition_requirements": [
+        {
+          "capability_id": "spell.apply_condition.v1",
+          "clause_id": "core-phb-2024:spell:14b0a3430f1aab0be22d0c9d:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "condition-0",
+            "condition": "倒地",
+            "evidence_ref": "Drop。**目标放下持握的任何东西，然后结束自己的回合。**走开Flee。**目标消耗其整个回合，以最快最有效的方式远离你。**趴下Grovel。**目标陷入倒地状态并结束自己的回合。**立定Halt。**在其回合内，目标不进行移动且不作任何动作和附赠动作。 **升环施法。**使用的法术位每比一环高一环，你就可以额外选择一个生物作为目标。",
+            "target": "one_creature",
+            "type": "apply_condition"
+          },
+          "spell_id": "core-phb-2024:spell:14b0a3430f1aab0be22d0c9d",
+          "type": "apply_condition"
+        }
+      ],
+      "content_id": "core-phb-2024:spell:14b0a3430f1aab0be22d0c9d",
+      "content_kind": "spell",
+      "duration_requirements": {
+        "concentration": false,
+        "duration": "立即"
+      },
+      "entity_requirements": [],
+      "existing_consumers": [],
+      "idempotency_requirements": {
+        "command": true,
+        "replay": true
+      },
+      "missing_consumers": [
+        "kernel.content.typed",
+        "kernel.spatial.movement"
+      ],
+      "persistence_requirements": {
+        "combatant": true,
+        "scene_delta": true
+      },
+      "production_blockers": [
+        "condition.composite",
+        "spatial.area"
+      ],
+      "production_status": "compile_only",
+      "resource_requirements": {},
+      "runtime_preview_status": "full",
+      "scene_delta_requirements": [
+        "apply_condition"
+      ],
+      "snapshot_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "source_book": "玩家手册 2024",
+      "source_path": "玩家手册2024/法术详述/1环.htm",
+      "source_record_id": "14b0a3430f1aab0be22d0c9d",
+      "spatial_requirements": [
+        {
+          "capability_id": "spell.area.v1",
+          "clause_id": "core-phb-2024:spell:14b0a3430f1aab0be22d0c9d:clause:2",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "area",
+            "evidence_ref": "#### 命令术｜Command *一环 惑控（吟游诗人、牧师、圣武士）* **施法时间：**动作 **施法距离：**60 尺 **法术成分：**V **持续时间：**立即 你对施法距离内一个你能看见的生物说出一个单词的命令。目标生物必须通过一次感知豁免，否则在它自己的下一回合中，其必须服从这道命令行事。从以下选项中选择一条命令： - **过来Approach。**目标以最短最直接的路线向你移动，若其到达你5尺范围内，其会结束自己的回合。**放下Drop。**目标放下持握的任何东西，然后结束自己的回合。**走开Flee。**目标消耗其整个回合，以最快最有效的方式远离你。**趴下Grovel。**目标陷入倒地状态并结束自己的回合。**",
+            "origin": "source_explicit_origin",
+            "shape": "sphere",
+            "size_ft": 5,
+            "type": "area"
+          },
+          "spell_id": "core-phb-2024:spell:14b0a3430f1aab0be22d0c9d",
+          "type": "area"
+        }
+      ],
+      "target_requirements": {},
+      "template_id": "spell:runtime:spell-runtime-1",
+      "typed_clause_ids": [
+        "core-phb-2024:spell:14b0a3430f1aab0be22d0c9d:clause:0",
+        "core-phb-2024:spell:14b0a3430f1aab0be22d0c9d:clause:1",
+        "core-phb-2024:spell:14b0a3430f1aab0be22d0c9d:clause:2"
+      ],
+      "typed_ir_fingerprint": "e7589d74feaa058927d7a92391700274c3c1d8565d54d634532aa9cd6905bc07"
+    },
+    {
+      "action_requirements": [],
+      "adjudication_requirements": [],
+      "candidate_platforms": [
+        "kernel.content.typed",
+        "kernel.dm.adjudication"
+      ],
+      "cas_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "choice_requirements": [],
+      "compile_status": "full",
+      "condition_requirements": [],
+      "content_id": "core-phb-2024:spell:1864d52fb924e62599328614",
+      "content_kind": "spell",
+      "duration_requirements": {
+        "concentration": true,
+        "duration": "专注，至多1分钟"
+      },
+      "entity_requirements": [],
+      "existing_consumers": [],
+      "idempotency_requirements": {
+        "command": true,
+        "replay": true
+      },
+      "missing_consumers": [
+        "kernel.content.typed",
+        "kernel.dm.adjudication"
+      ],
+      "persistence_requirements": {
+        "combatant": true,
+        "scene_delta": true
+      },
+      "production_blockers": [
+        "duration.multi_phase"
+      ],
+      "production_status": "compile_only",
+      "resource_requirements": {},
+      "runtime_preview_status": "full",
+      "scene_delta_requirements": [
+        "update_health"
+      ],
+      "snapshot_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "source_book": "玩家手册 2024",
+      "source_path": "玩家手册2024/法术详述/1环.htm",
+      "source_record_id": "1864d52fb924e62599328614",
+      "spatial_requirements": [],
+      "target_requirements": {},
+      "template_id": "spell:runtime:spell-runtime-1",
+      "typed_clause_ids": [
+        "core-phb-2024:spell:1864d52fb924e62599328614:clause:0",
+        "core-phb-2024:spell:1864d52fb924e62599328614:clause:1",
+        "core-phb-2024:spell:1864d52fb924e62599328614:clause:2",
+        "core-phb-2024:spell:1864d52fb924e62599328614:clause:3",
+        "core-phb-2024:spell:1864d52fb924e62599328614:clause:4"
+      ],
+      "typed_ir_fingerprint": "43c13fb34290820dcf1aceddbf873d40576cf7028b66c17731a2c137be77c378"
+    },
+    {
+      "action_requirements": [],
+      "adjudication_requirements": [
+        {
+          "category": "target_semantics"
+        }
+      ],
+      "candidate_platforms": [
+        "kernel.dm.adjudication"
+      ],
+      "cas_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "choice_requirements": [],
+      "compile_status": "full",
+      "condition_requirements": [],
+      "content_id": "core-phb-2024:spell:1cfc37bb2e7203bd167cd224",
+      "content_kind": "spell",
+      "duration_requirements": {
+        "concentration": false,
+        "duration": "立即"
+      },
+      "entity_requirements": [],
+      "existing_consumers": [],
+      "idempotency_requirements": {
+        "command": true,
+        "replay": true
+      },
+      "missing_consumers": [
+        "kernel.dm.adjudication"
+      ],
+      "persistence_requirements": {
+        "combatant": true,
+        "scene_delta": true
+      },
+      "production_blockers": [
+        "adjudication.target_semantics"
+      ],
+      "production_status": "compile_only",
+      "resource_requirements": {},
+      "runtime_preview_status": "full",
+      "scene_delta_requirements": [],
+      "snapshot_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "source_book": "玩家手册 2024",
+      "source_path": "玩家手册2024/法术详述/0环.htm",
+      "source_record_id": "1cfc37bb2e7203bd167cd224",
+      "spatial_requirements": [],
+      "target_requirements": {},
+      "template_id": "spell:runtime:spell-runtime-1",
+      "typed_clause_ids": [
+        "core-phb-2024:spell:1cfc37bb2e7203bd167cd224:clause:0"
+      ],
+      "typed_ir_fingerprint": "01f9b29a174369adc030b595799be30840b165a95fe6c5f91525f04e6abec2ee"
+    },
+    {
+      "action_requirements": [],
+      "adjudication_requirements": [
+        {
+          "category": "target_semantics"
+        }
+      ],
+      "candidate_platforms": [
+        "kernel.dm.adjudication"
+      ],
+      "cas_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "choice_requirements": [],
+      "compile_status": "full",
+      "condition_requirements": [],
+      "content_id": "core-phb-2024:spell:223c34bf8bf6032f64a4c85c",
+      "content_kind": "spell",
+      "duration_requirements": {
+        "concentration": true,
+        "duration": "专注，至多1分钟"
+      },
+      "entity_requirements": [],
+      "existing_consumers": [],
+      "idempotency_requirements": {
+        "command": true,
+        "replay": true
+      },
+      "missing_consumers": [
+        "kernel.dm.adjudication"
+      ],
+      "persistence_requirements": {
+        "combatant": true,
+        "scene_delta": true
+      },
+      "production_blockers": [
+        "adjudication.target_semantics",
+        "duration.multi_phase"
+      ],
+      "production_status": "compile_only",
+      "resource_requirements": {},
+      "runtime_preview_status": "full",
+      "scene_delta_requirements": [],
+      "snapshot_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "source_book": "玩家手册 2024",
+      "source_path": "玩家手册2024/法术详述/0环.htm",
+      "source_record_id": "223c34bf8bf6032f64a4c85c",
+      "spatial_requirements": [],
+      "target_requirements": {},
+      "template_id": "spell:runtime:spell-runtime-1",
+      "typed_clause_ids": [
+        "core-phb-2024:spell:223c34bf8bf6032f64a4c85c:clause:0",
+        "core-phb-2024:spell:223c34bf8bf6032f64a4c85c:clause:1"
+      ],
+      "typed_ir_fingerprint": "58b5bbac7c299ed23580eed5f0d24c27560e38d901d88a23fe4d7a1eddd0fd38"
+    },
+    {
+      "action_requirements": [],
+      "adjudication_requirements": [],
+      "candidate_platforms": [
+        "kernel.content.typed"
+      ],
+      "cas_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "choice_requirements": [],
+      "compile_status": "full",
+      "condition_requirements": [
+        {
+          "capability_id": "spell.apply_condition.v1",
+          "clause_id": "core-phb-2024:spell:257ea89a8bd81510e3eecbb1:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "condition-0",
+            "condition": "倒地",
+            "evidence_ref": "滑的不可燃油脂以该点为中心覆盖一处10尺的方状区域。在法术持续时间内。该区域变为困难地形。 油脂出现时，站在其范围内的每个生物必须成功通过一次敏捷豁免，否则陷入倒地状态。进入该区域或在区域内结束其回合的生物也必须进行该敏捷豁免，豁免失败则陷入倒地。",
+            "target": "one_creature",
+            "type": "apply_condition"
+          },
+          "spell_id": "core-phb-2024:spell:257ea89a8bd81510e3eecbb1",
+          "type": "apply_condition"
+        }
+      ],
+      "content_id": "core-phb-2024:spell:257ea89a8bd81510e3eecbb1",
+      "content_kind": "spell",
+      "duration_requirements": {
+        "concentration": false,
+        "duration": "1分钟"
+      },
+      "entity_requirements": [],
+      "existing_consumers": [],
+      "idempotency_requirements": {
+        "command": true,
+        "replay": true
+      },
+      "missing_consumers": [
+        "kernel.content.typed"
+      ],
+      "persistence_requirements": {
+        "combatant": true,
+        "scene_delta": true
+      },
+      "production_blockers": [
+        "condition.composite"
+      ],
+      "production_status": "compile_only",
+      "resource_requirements": {},
+      "runtime_preview_status": "full",
+      "scene_delta_requirements": [
+        "apply_condition"
+      ],
+      "snapshot_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "source_book": "玩家手册 2024",
+      "source_path": "玩家手册2024/法术详述/1环.htm",
+      "source_record_id": "257ea89a8bd81510e3eecbb1",
+      "spatial_requirements": [],
+      "target_requirements": {},
+      "template_id": "spell:runtime:spell-runtime-1",
+      "typed_clause_ids": [
+        "core-phb-2024:spell:257ea89a8bd81510e3eecbb1:clause:0",
+        "core-phb-2024:spell:257ea89a8bd81510e3eecbb1:clause:1"
+      ],
+      "typed_ir_fingerprint": "702b429bf5115e959bbdb45d5a4e5ad4d61571712513d9e8b14dea77df9bf20d"
+    },
+    {
+      "action_requirements": [],
+      "adjudication_requirements": [
+        {
+          "category": "target_semantics"
+        }
+      ],
+      "candidate_platforms": [
+        "kernel.dm.adjudication"
+      ],
+      "cas_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "choice_requirements": [],
+      "compile_status": "full",
+      "condition_requirements": [],
+      "content_id": "core-phb-2024:spell:2651f6cafdb7c5e42b2e5463",
+      "content_kind": "spell",
+      "duration_requirements": {
+        "concentration": false,
+        "duration": "立即"
+      },
+      "entity_requirements": [],
+      "existing_consumers": [],
+      "idempotency_requirements": {
+        "command": true,
+        "replay": true
+      },
+      "missing_consumers": [
+        "kernel.dm.adjudication"
+      ],
+      "persistence_requirements": {
+        "combatant": true,
+        "scene_delta": true
+      },
+      "production_blockers": [
+        "adjudication.target_semantics"
+      ],
+      "production_status": "compile_only",
+      "resource_requirements": {},
+      "runtime_preview_status": "full",
+      "scene_delta_requirements": [],
+      "snapshot_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "source_book": "玩家手册 2024",
+      "source_path": "玩家手册2024/法术详述/0环.htm",
+      "source_record_id": "2651f6cafdb7c5e42b2e5463",
+      "spatial_requirements": [],
+      "target_requirements": {},
+      "template_id": "spell:runtime:spell-runtime-1",
+      "typed_clause_ids": [
+        "core-phb-2024:spell:2651f6cafdb7c5e42b2e5463:clause:0"
+      ],
+      "typed_ir_fingerprint": "16ab62bc90e8ab949d0e922c2a032d33ef8344be05e0973a71f623a31b55e73e"
+    },
+    {
+      "action_requirements": [],
+      "adjudication_requirements": [
+        {
+          "category": "target_semantics"
+        }
+      ],
+      "candidate_platforms": [
+        "kernel.dm.adjudication"
+      ],
+      "cas_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "choice_requirements": [],
+      "compile_status": "full",
+      "condition_requirements": [],
+      "content_id": "core-phb-2024:spell:290bd78fea53959b3e83f36b",
+      "content_kind": "spell",
+      "duration_requirements": {
+        "concentration": false,
+        "duration": "1小时"
+      },
+      "entity_requirements": [],
+      "existing_consumers": [],
+      "idempotency_requirements": {
+        "command": true,
+        "replay": true
+      },
+      "missing_consumers": [
+        "kernel.dm.adjudication"
+      ],
+      "persistence_requirements": {
+        "combatant": true,
+        "scene_delta": true
+      },
+      "production_blockers": [
+        "adjudication.target_semantics"
+      ],
+      "production_status": "compile_only",
+      "resource_requirements": {},
+      "runtime_preview_status": "full",
+      "scene_delta_requirements": [],
+      "snapshot_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "source_book": "玩家手册 2024",
+      "source_path": "玩家手册2024/法术详述/0环.htm",
+      "source_record_id": "290bd78fea53959b3e83f36b",
+      "spatial_requirements": [],
+      "target_requirements": {},
+      "template_id": "spell:runtime:spell-runtime-1",
+      "typed_clause_ids": [
+        "core-phb-2024:spell:290bd78fea53959b3e83f36b:clause:0"
+      ],
+      "typed_ir_fingerprint": "befae40f0f09f0ca2ac695641ac1de909329acab401e05ffad1f397a29916c0f"
+    },
+    {
+      "action_requirements": [],
+      "adjudication_requirements": [
+        {
+          "category": "target_semantics"
+        }
+      ],
+      "candidate_platforms": [
+        "kernel.dm.adjudication"
+      ],
+      "cas_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "choice_requirements": [],
+      "compile_status": "full",
+      "condition_requirements": [],
+      "content_id": "core-phb-2024:spell:3f7277b4f03f20cf28b87d6c",
+      "content_kind": "spell",
+      "duration_requirements": {
+        "concentration": false,
+        "duration": "8小时"
+      },
+      "entity_requirements": [],
+      "existing_consumers": [],
+      "idempotency_requirements": {
+        "command": true,
+        "replay": true
+      },
+      "missing_consumers": [
+        "kernel.dm.adjudication"
+      ],
+      "persistence_requirements": {
+        "combatant": true,
+        "scene_delta": true
+      },
+      "production_blockers": [
+        "adjudication.target_semantics"
+      ],
+      "production_status": "compile_only",
+      "resource_requirements": {},
+      "runtime_preview_status": "full",
+      "scene_delta_requirements": [],
+      "snapshot_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "source_book": "玩家手册 2024",
+      "source_path": "玩家手册2024/法术详述/1环.htm",
+      "source_record_id": "3f7277b4f03f20cf28b87d6c",
+      "spatial_requirements": [],
+      "target_requirements": {},
+      "template_id": "spell:runtime:spell-runtime-1",
+      "typed_clause_ids": [
+        "core-phb-2024:spell:3f7277b4f03f20cf28b87d6c:clause:0"
+      ],
+      "typed_ir_fingerprint": "728e661dff79e273a30fc0b93a82c47eb7375cfa8b644e4d70cd667464803093"
+    },
+    {
+      "action_requirements": [],
+      "adjudication_requirements": [
+        {
+          "category": "target_semantics"
+        }
+      ],
+      "candidate_platforms": [
+        "kernel.dm.adjudication"
+      ],
+      "cas_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "choice_requirements": [],
+      "compile_status": "full",
+      "condition_requirements": [],
+      "content_id": "core-phb-2024:spell:40ce13e08d6772a121c8023e",
+      "content_kind": "spell",
+      "duration_requirements": {
+        "concentration": false,
+        "duration": "立即"
+      },
+      "entity_requirements": [],
+      "existing_consumers": [],
+      "idempotency_requirements": {
+        "command": true,
+        "replay": true
+      },
+      "missing_consumers": [
+        "kernel.dm.adjudication"
+      ],
+      "persistence_requirements": {
+        "combatant": true,
+        "scene_delta": true
+      },
+      "production_blockers": [
+        "adjudication.target_semantics"
+      ],
+      "production_status": "compile_only",
+      "resource_requirements": {},
+      "runtime_preview_status": "full",
+      "scene_delta_requirements": [],
+      "snapshot_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "source_book": "玩家手册 2024",
+      "source_path": "玩家手册2024/法术详述/0环.htm",
+      "source_record_id": "40ce13e08d6772a121c8023e",
+      "spatial_requirements": [],
+      "target_requirements": {},
+      "template_id": "spell:runtime:spell-runtime-1",
+      "typed_clause_ids": [
+        "core-phb-2024:spell:40ce13e08d6772a121c8023e:clause:0"
+      ],
+      "typed_ir_fingerprint": "de14ccc288733c9ac43672ae205c6ac57e562fba32f1e138c50c4df09396915a"
+    },
+    {
+      "action_requirements": [],
+      "adjudication_requirements": [
+        {
+          "category": "target_semantics"
+        }
+      ],
+      "candidate_platforms": [
+        "kernel.dm.adjudication",
+        "kernel.spatial.movement"
+      ],
+      "cas_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "choice_requirements": [],
+      "compile_status": "full",
+      "condition_requirements": [],
+      "content_id": "core-phb-2024:spell:45510e2fe0a073745431d47a",
+      "content_kind": "spell",
+      "duration_requirements": {
+        "concentration": true,
+        "duration": "专注，至多1分钟"
+      },
+      "entity_requirements": [],
+      "existing_consumers": [],
+      "idempotency_requirements": {
+        "command": true,
+        "replay": true
+      },
+      "missing_consumers": [
+        "kernel.dm.adjudication",
+        "kernel.spatial.movement"
+      ],
+      "persistence_requirements": {
+        "combatant": true,
+        "scene_delta": true
+      },
+      "production_blockers": [
+        "adjudication.target_semantics",
+        "duration.multi_phase",
+        "spatial.area"
+      ],
+      "production_status": "compile_only",
+      "resource_requirements": {},
+      "runtime_preview_status": "full",
+      "scene_delta_requirements": [],
+      "snapshot_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "source_book": "玩家手册 2024",
+      "source_path": "玩家手册2024/法术详述/1环.htm",
+      "source_record_id": "45510e2fe0a073745431d47a",
+      "spatial_requirements": [
+        {
+          "capability_id": "spell.area.v1",
+          "clause_id": "core-phb-2024:spell:45510e2fe0a073745431d47a:clause:2",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "area",
+            "evidence_ref": "游诗人、德鲁伊、奇械师）* **施法时间：**动作 **施法距离：**60尺 **法术成分：**V **持续时间：**专注，至多1分钟 施法距离内一处20尺立方区域内每个物件的轮廓都将被蓝色、绿色、或紫色的光芒所勾勒（颜色由你指定）。区域内的生物则必须进行一次敏捷豁免，豁免失败时也会被彩色光芒勾勒出轮廓。受术物件和生物在法术持续时间内发出10尺半径的微光光照。 受术生物或物件无法受益于隐形状态，且任何能看见他们的攻击者对其发动的攻击检定具有优势。",
+            "origin": "source_explicit_origin",
+            "shape": "cube",
+            "size_ft": 20,
+            "type": "area"
+          },
+          "spell_id": "core-phb-2024:spell:45510e2fe0a073745431d47a",
+          "type": "area"
+        }
+      ],
+      "target_requirements": {},
+      "template_id": "spell:runtime:spell-runtime-1",
+      "typed_clause_ids": [
+        "core-phb-2024:spell:45510e2fe0a073745431d47a:clause:0",
+        "core-phb-2024:spell:45510e2fe0a073745431d47a:clause:1",
+        "core-phb-2024:spell:45510e2fe0a073745431d47a:clause:2"
+      ],
+      "typed_ir_fingerprint": "1d67d1ebe5a8418af8a83b12cc469434f5bf430dbbbfdceafddc25e8f8573e3e"
+    },
+    {
+      "action_requirements": [],
+      "adjudication_requirements": [
+        {
+          "category": "target_semantics"
+        }
+      ],
+      "candidate_platforms": [
+        "kernel.dm.adjudication",
+        "kernel.spatial.movement"
+      ],
+      "cas_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "choice_requirements": [],
+      "compile_status": "full",
+      "condition_requirements": [],
+      "content_id": "core-phb-2024:spell:4d1ce8974e2e9fe11782b53f",
+      "content_kind": "spell",
+      "duration_requirements": {
+        "concentration": false,
+        "duration": "1分钟"
+      },
+      "entity_requirements": [],
+      "existing_consumers": [],
+      "idempotency_requirements": {
+        "command": true,
+        "replay": true
+      },
+      "missing_consumers": [
+        "kernel.dm.adjudication",
+        "kernel.spatial.movement"
+      ],
+      "persistence_requirements": {
+        "combatant": true,
+        "scene_delta": true
+      },
+      "production_blockers": [
+        "adjudication.target_semantics",
+        "spatial.area"
+      ],
+      "production_status": "compile_only",
+      "resource_requirements": {},
+      "runtime_preview_status": "full",
+      "scene_delta_requirements": [],
+      "snapshot_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "source_book": "玩家手册 2024",
+      "source_path": "玩家手册2024/法术详述/0环.htm",
+      "source_record_id": "4d1ce8974e2e9fe11782b53f",
+      "spatial_requirements": [
+        {
+          "capability_id": "spell.area.v1",
+          "clause_id": "core-phb-2024:spell:4d1ce8974e2e9fe11782b53f:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "area",
+            "evidence_ref": "的时间段创造几段分散的声响。 > **影像Image。**如果你创造一个物件的影像，比如一把椅子、泥泞的脚印、一个小箱子等，则该物件各方向上大小不得大于5尺立方区域。该影像不具有声音、光亮、味道或任何其他的感官效应。由于影像可以被任何物体穿透，因此与之进行物理互动时都会揭露其幻象的本质。",
+            "origin": "source_explicit_origin",
+            "shape": "cube",
+            "size_ft": 5,
+            "type": "area"
+          },
+          "spell_id": "core-phb-2024:spell:4d1ce8974e2e9fe11782b53f",
+          "type": "area"
+        }
+      ],
+      "target_requirements": {},
+      "template_id": "spell:runtime:spell-runtime-1",
+      "typed_clause_ids": [
+        "core-phb-2024:spell:4d1ce8974e2e9fe11782b53f:clause:0",
+        "core-phb-2024:spell:4d1ce8974e2e9fe11782b53f:clause:1"
+      ],
+      "typed_ir_fingerprint": "cc71eed6f26418d7f37014ffadcfe4302edae87deacbc1c30e2bfe2bcb45c9f8"
+    },
+    {
+      "action_requirements": [],
+      "adjudication_requirements": [
+        {
+          "category": "target_semantics"
+        }
+      ],
+      "candidate_platforms": [
+        "kernel.dm.adjudication"
+      ],
+      "cas_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "choice_requirements": [],
+      "compile_status": "full",
+      "condition_requirements": [],
+      "content_id": "core-phb-2024:spell:56f0695c307b9cfc806c74a8",
+      "content_kind": "spell",
+      "duration_requirements": {
+        "concentration": true,
+        "duration": "专注，至多1分钟"
+      },
+      "entity_requirements": [],
+      "existing_consumers": [],
+      "idempotency_requirements": {
+        "command": true,
+        "replay": true
+      },
+      "missing_consumers": [
+        "kernel.dm.adjudication"
+      ],
+      "persistence_requirements": {
+        "combatant": true,
+        "scene_delta": true
+      },
+      "production_blockers": [
+        "adjudication.target_semantics",
+        "duration.multi_phase"
+      ],
+      "production_status": "compile_only",
+      "resource_requirements": {},
+      "runtime_preview_status": "full",
+      "scene_delta_requirements": [],
+      "snapshot_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "source_book": "玩家手册 2024",
+      "source_path": "玩家手册2024/法术详述/0环.htm",
+      "source_record_id": "56f0695c307b9cfc806c74a8",
+      "spatial_requirements": [],
+      "target_requirements": {},
+      "template_id": "spell:runtime:spell-runtime-1",
+      "typed_clause_ids": [
+        "core-phb-2024:spell:56f0695c307b9cfc806c74a8:clause:0",
+        "core-phb-2024:spell:56f0695c307b9cfc806c74a8:clause:1"
+      ],
+      "typed_ir_fingerprint": "5597a487d1d49b3afd08b9d9a08e5632477330e033ce7b6b738c2b4aff57e19a"
+    },
+    {
+      "action_requirements": [],
+      "adjudication_requirements": [],
+      "candidate_platforms": [
+        "kernel.content.typed",
+        "kernel.dm.adjudication"
+      ],
+      "cas_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "choice_requirements": [],
+      "compile_status": "full",
+      "condition_requirements": [
+        {
+          "capability_id": "spell.apply_condition.v1",
+          "clause_id": "core-phb-2024:spell:5add51530a922ac9deb3e9e5:clause:0",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "condition-0",
+            "condition": "发光",
+            "evidence_ref": "**持续时间：**专注，至多1分钟 你在施法距离内创造至多四个火把大小的光源，使其在法术持续时间内看起来如同火把、灯笼或悬浮珠。或者，你可以将四个光源合并为一个发光的整体形态，使其看上去像一个模糊的中型人形。无论你选择哪种形态，每个光源都会发出10尺半径的微光光照。 你可以用附赠动作将光源移动至多60尺至施法距离内的一处空间。一个由此法术创造的光源必须始终位于任一光源周围20尺内，而超出施法距离的光源会随即熄灭。",
+            "target": "one_creature",
+            "type": "apply_condition"
+          },
+          "spell_id": "core-phb-2024:spell:5add51530a922ac9deb3e9e5",
+          "type": "apply_condition"
+        }
+      ],
+      "content_id": "core-phb-2024:spell:5add51530a922ac9deb3e9e5",
+      "content_kind": "spell",
+      "duration_requirements": {
+        "concentration": true,
+        "duration": "专注，至多1分钟"
+      },
+      "entity_requirements": [],
+      "existing_consumers": [],
+      "idempotency_requirements": {
+        "command": true,
+        "replay": true
+      },
+      "missing_consumers": [
+        "kernel.content.typed",
+        "kernel.dm.adjudication"
+      ],
+      "persistence_requirements": {
+        "combatant": true,
+        "scene_delta": true
+      },
+      "production_blockers": [
+        "condition.composite",
+        "duration.multi_phase"
+      ],
+      "production_status": "compile_only",
+      "resource_requirements": {},
+      "runtime_preview_status": "full",
+      "scene_delta_requirements": [
+        "apply_condition"
+      ],
+      "snapshot_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "source_book": "玩家手册 2024",
+      "source_path": "玩家手册2024/法术详述/0环.htm",
+      "source_record_id": "5add51530a922ac9deb3e9e5",
+      "spatial_requirements": [],
+      "target_requirements": {},
+      "template_id": "spell:runtime:spell-runtime-1",
+      "typed_clause_ids": [
+        "core-phb-2024:spell:5add51530a922ac9deb3e9e5:clause:0",
+        "core-phb-2024:spell:5add51530a922ac9deb3e9e5:clause:1"
+      ],
+      "typed_ir_fingerprint": "2976c3e7648f2b3cd059bd1ae321dc5d0f5953ae24172f8332376ce3c9c4581f"
+    },
+    {
+      "action_requirements": [],
+      "adjudication_requirements": [
+        {
+          "category": "target_semantics"
+        }
+      ],
+      "candidate_platforms": [
+        "kernel.dm.adjudication"
+      ],
+      "cas_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "choice_requirements": [],
+      "compile_status": "full",
+      "condition_requirements": [],
+      "content_id": "core-phb-2024:spell:63fb2360b8c30fb0419d9225",
+      "content_kind": "spell",
+      "duration_requirements": {
+        "concentration": true,
+        "duration": "专注，至多1小时"
+      },
+      "entity_requirements": [],
+      "existing_consumers": [],
+      "idempotency_requirements": {
+        "command": true,
+        "replay": true
+      },
+      "missing_consumers": [
+        "kernel.dm.adjudication"
+      ],
+      "persistence_requirements": {
+        "combatant": true,
+        "scene_delta": true
+      },
+      "production_blockers": [
+        "adjudication.target_semantics",
+        "duration.multi_phase"
+      ],
+      "production_status": "compile_only",
+      "resource_requirements": {},
+      "runtime_preview_status": "full",
+      "scene_delta_requirements": [],
+      "snapshot_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "source_book": "玩家手册 2024",
+      "source_path": "玩家手册2024/法术详述/1环.htm",
+      "source_record_id": "63fb2360b8c30fb0419d9225",
+      "spatial_requirements": [],
+      "target_requirements": {},
+      "template_id": "spell:runtime:spell-runtime-1",
+      "typed_clause_ids": [
+        "core-phb-2024:spell:63fb2360b8c30fb0419d9225:clause:0",
+        "core-phb-2024:spell:63fb2360b8c30fb0419d9225:clause:1"
+      ],
+      "typed_ir_fingerprint": "a67388d8110c498236a8d7e490ec9093a790bf1bee604e388748777425c4ee39"
+    },
+    {
+      "action_requirements": [],
+      "adjudication_requirements": [
+        {
+          "category": "target_semantics"
+        }
+      ],
+      "candidate_platforms": [
+        "kernel.dm.adjudication",
+        "kernel.spatial.movement"
+      ],
+      "cas_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "choice_requirements": [],
+      "compile_status": "full",
+      "condition_requirements": [],
+      "content_id": "core-phb-2024:spell:65b211e271db5fa11508dbbc",
+      "content_kind": "spell",
+      "duration_requirements": {
+        "concentration": true,
+        "duration": "专注，至多 10 分钟"
+      },
+      "entity_requirements": [],
+      "existing_consumers": [],
+      "idempotency_requirements": {
+        "command": true,
+        "replay": true
+      },
+      "missing_consumers": [
+        "kernel.dm.adjudication",
+        "kernel.spatial.movement"
+      ],
+      "persistence_requirements": {
+        "combatant": true,
+        "scene_delta": true
+      },
+      "production_blockers": [
+        "adjudication.target_semantics",
+        "duration.multi_phase",
+        "spatial.area"
+      ],
+      "production_status": "compile_only",
+      "resource_requirements": {},
+      "runtime_preview_status": "full",
+      "scene_delta_requirements": [],
+      "snapshot_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "source_book": "玩家手册 2024",
+      "source_path": "玩家手册2024/法术详述/1环.htm",
+      "source_record_id": "65b211e271db5fa11508dbbc",
+      "spatial_requirements": [
+        {
+          "capability_id": "spell.area.v1",
+          "clause_id": "core-phb-2024:spell:65b211e271db5fa11508dbbc:clause:2",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "area",
+            "evidence_ref": "法距离：**60 尺 **法术成分：**V、S、M（少量羊毛） **持续时间：**专注，至多 10 分钟 你创造一个影像，其形象来自一个大小不超过边长 15 尺立方体的物件，生物或其他的可视现象。影像出现在施法距离内的一处位置并在法术持续时间内持续存在。该影像是纯粹的视觉影像；它不会被听觉，嗅觉或其他感官感受到。 你可以使用魔法动作将影像移动到施法距离内的另一个位置。影像改变位置时，你可以改变影像的外观使其移动得更自然。例如，如果你创造了一个生物的影像并移动它，则你可以改变影像，使它看起来就像是在走路。 由于影像无法被碰到，任何与该影像进行的物理互动都会暴露其幻象的本质。一个生物使用研究动作调查影像时，它可以进行一次对抗法术豁免 DC 的智力（调查）检定。辨出幻象的生物可",
+            "origin": "source_explicit_origin",
+            "shape": "cube",
+            "size_ft": 15,
+            "type": "area"
+          },
+          "spell_id": "core-phb-2024:spell:65b211e271db5fa11508dbbc",
+          "type": "area"
+        }
+      ],
+      "target_requirements": {},
+      "template_id": "spell:runtime:spell-runtime-1",
+      "typed_clause_ids": [
+        "core-phb-2024:spell:65b211e271db5fa11508dbbc:clause:0",
+        "core-phb-2024:spell:65b211e271db5fa11508dbbc:clause:1",
+        "core-phb-2024:spell:65b211e271db5fa11508dbbc:clause:2"
+      ],
+      "typed_ir_fingerprint": "94ebce3fb057ad09dc5f21b9ef0121f947c06d553341afb27ba344db50c0f25f"
+    },
+    {
+      "action_requirements": [],
+      "adjudication_requirements": [
+        {
+          "category": "target_semantics"
+        }
+      ],
+      "candidate_platforms": [
+        "kernel.dm.adjudication",
+        "kernel.spatial.movement"
+      ],
+      "cas_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "choice_requirements": [],
+      "compile_status": "full",
+      "condition_requirements": [],
+      "content_id": "core-phb-2024:spell:6c07317bf4d16b92da3c8f55",
+      "content_kind": "spell",
+      "duration_requirements": {
+        "concentration": false,
+        "duration": "立即"
+      },
+      "entity_requirements": [],
+      "existing_consumers": [],
+      "idempotency_requirements": {
+        "command": true,
+        "replay": true
+      },
+      "missing_consumers": [
+        "kernel.dm.adjudication",
+        "kernel.spatial.movement"
+      ],
+      "persistence_requirements": {
+        "combatant": true,
+        "scene_delta": true
+      },
+      "production_blockers": [
+        "adjudication.target_semantics",
+        "spatial.area"
+      ],
+      "production_status": "compile_only",
+      "resource_requirements": {},
+      "runtime_preview_status": "full",
+      "scene_delta_requirements": [],
+      "snapshot_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "source_book": "玩家手册 2024",
+      "source_path": "玩家手册2024/法术详述/1环.htm",
+      "source_record_id": "6c07317bf4d16b92da3c8f55",
+      "spatial_requirements": [
+        {
+          "capability_id": "spell.area.v1",
+          "clause_id": "core-phb-2024:spell:6c07317bf4d16b92da3c8f55:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "area",
+            "evidence_ref": "奇械师）* **施法时间：**动作或仪式 **施法距离：**10尺 **法术成分：**V、S **持续时间：**立即 以施法距离内一点为中心，你移除半径5尺球状区域内非魔法食物与饮品中的毒素和腐败。",
+            "origin": "source_explicit_origin",
+            "shape": "sphere",
+            "size_ft": 5,
+            "type": "area"
+          },
+          "spell_id": "core-phb-2024:spell:6c07317bf4d16b92da3c8f55",
+          "type": "area"
+        }
+      ],
+      "target_requirements": {},
+      "template_id": "spell:runtime:spell-runtime-1",
+      "typed_clause_ids": [
+        "core-phb-2024:spell:6c07317bf4d16b92da3c8f55:clause:0",
+        "core-phb-2024:spell:6c07317bf4d16b92da3c8f55:clause:1"
+      ],
+      "typed_ir_fingerprint": "8b5b5b4e6edd9a2a1662f3df244e33418eccd43a64f03fc4bce7db4011cdd2fb"
+    },
+    {
+      "action_requirements": [],
+      "adjudication_requirements": [
+        {
+          "category": "target_semantics"
+        }
+      ],
+      "candidate_platforms": [
+        "kernel.dm.adjudication"
+      ],
+      "cas_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "choice_requirements": [],
+      "compile_status": "full",
+      "condition_requirements": [],
+      "content_id": "core-phb-2024:spell:6f5b6f21ffa22e705a9bd6cb",
+      "content_kind": "spell",
+      "duration_requirements": {
+        "concentration": false,
+        "duration": "1 小时"
+      },
+      "entity_requirements": [],
+      "existing_consumers": [],
+      "idempotency_requirements": {
+        "command": true,
+        "replay": true
+      },
+      "missing_consumers": [
+        "kernel.dm.adjudication"
+      ],
+      "persistence_requirements": {
+        "combatant": true,
+        "scene_delta": true
+      },
+      "production_blockers": [
+        "adjudication.target_semantics"
+      ],
+      "production_status": "compile_only",
+      "resource_requirements": {},
+      "runtime_preview_status": "full",
+      "scene_delta_requirements": [],
+      "snapshot_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "source_book": "玩家手册 2024",
+      "source_path": "玩家手册2024/法术详述/1环.htm",
+      "source_record_id": "6f5b6f21ffa22e705a9bd6cb",
+      "spatial_requirements": [],
+      "target_requirements": {},
+      "template_id": "spell:runtime:spell-runtime-1",
+      "typed_clause_ids": [
+        "core-phb-2024:spell:6f5b6f21ffa22e705a9bd6cb:clause:0"
+      ],
+      "typed_ir_fingerprint": "64a42c30879170fe977389372828bdb7358a19e33a54c5630f77c6606b97d519"
+    },
+    {
+      "action_requirements": [],
+      "adjudication_requirements": [
+        {
+          "category": "target_semantics"
+        }
+      ],
+      "candidate_platforms": [
+        "kernel.dm.adjudication"
+      ],
+      "cas_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "choice_requirements": [],
+      "compile_status": "full",
+      "condition_requirements": [],
+      "content_id": "core-phb-2024:spell:82f220a9e3474d8fe1cafd8b",
+      "content_kind": "spell",
+      "duration_requirements": {
+        "concentration": false,
+        "duration": "立即"
+      },
+      "entity_requirements": [],
+      "existing_consumers": [],
+      "idempotency_requirements": {
+        "command": true,
+        "replay": true
+      },
+      "missing_consumers": [
+        "kernel.dm.adjudication"
+      ],
+      "persistence_requirements": {
+        "combatant": true,
+        "scene_delta": true
+      },
+      "production_blockers": [
+        "adjudication.target_semantics"
+      ],
+      "production_status": "compile_only",
+      "resource_requirements": {},
+      "runtime_preview_status": "full",
+      "scene_delta_requirements": [],
+      "snapshot_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "source_book": "玩家手册 2024",
+      "source_path": "玩家手册2024/法术详述/0环.htm",
+      "source_record_id": "82f220a9e3474d8fe1cafd8b",
+      "spatial_requirements": [],
+      "target_requirements": {},
+      "template_id": "spell:runtime:spell-runtime-1",
+      "typed_clause_ids": [
+        "core-phb-2024:spell:82f220a9e3474d8fe1cafd8b:clause:0"
+      ],
+      "typed_ir_fingerprint": "b5e34562810d0169c48aed51a5f3bd6fc81b7d5290b5bb3b03ec1ae3a9b145e0"
+    },
+    {
+      "action_requirements": [],
+      "adjudication_requirements": [
+        {
+          "category": "target_semantics"
+        }
+      ],
+      "candidate_platforms": [
+        "kernel.dm.adjudication"
+      ],
+      "cas_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "choice_requirements": [],
+      "compile_status": "full",
+      "condition_requirements": [],
+      "content_id": "core-phb-2024:spell:83b7d94b77f332dd71310bbe",
+      "content_kind": "spell",
+      "duration_requirements": {
+        "concentration": false,
+        "duration": "1小时"
+      },
+      "entity_requirements": [],
+      "existing_consumers": [],
+      "idempotency_requirements": {
+        "command": true,
+        "replay": true
+      },
+      "missing_consumers": [
+        "kernel.dm.adjudication"
+      ],
+      "persistence_requirements": {
+        "combatant": true,
+        "scene_delta": true
+      },
+      "production_blockers": [
+        "adjudication.target_semantics"
+      ],
+      "production_status": "compile_only",
+      "resource_requirements": {},
+      "runtime_preview_status": "full",
+      "scene_delta_requirements": [],
+      "snapshot_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "source_book": "玩家手册 2024",
+      "source_path": "玩家手册2024/法术详述/1环.htm",
+      "source_record_id": "83b7d94b77f332dd71310bbe",
+      "spatial_requirements": [],
+      "target_requirements": {},
+      "template_id": "spell:runtime:spell-runtime-1",
+      "typed_clause_ids": [
+        "core-phb-2024:spell:83b7d94b77f332dd71310bbe:clause:0"
+      ],
+      "typed_ir_fingerprint": "ac271e31a36a2cce564d90a89198c5796bd1c7c0b1d06ec7c4e78f0a69aff220"
+    },
+    {
+      "action_requirements": [],
+      "adjudication_requirements": [],
+      "candidate_platforms": [
+        "kernel.content.typed",
+        "kernel.dm.adjudication"
+      ],
+      "cas_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "choice_requirements": [],
+      "compile_status": "full",
+      "condition_requirements": [
+        {
+          "capability_id": "spell.apply_condition.v1",
+          "clause_id": "core-phb-2024:spell:85595d634b480207249dd2ac:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "condition-0",
+            "condition": "失能",
+            "evidence_ref": "法术成分：**V、S、M（一块甜馅饼和一根羽毛） **持续时间：**专注，至多1分钟 施法距离内你可见的一名生物进行一次感知豁免。豁免失败，目标在持续时间内陷入失能和倒地状态。在此期间，目标会不受控制地狂笑（只要它能够发笑），且无法结束自身的倒地状态。 目标在其每回合结束或受到伤害时，可以再进行一次感知豁免。如果豁免是因受到伤害所致，则该次豁免具有优势。豁免成功时，法术终止。 **升环施法。**使用的法术位每比一环高一环，你就可以额外选择一个生物作为目标。",
+            "target": "one_creature",
+            "type": "apply_condition"
+          },
+          "spell_id": "core-phb-2024:spell:85595d634b480207249dd2ac",
+          "type": "apply_condition"
+        }
+      ],
+      "content_id": "core-phb-2024:spell:85595d634b480207249dd2ac",
+      "content_kind": "spell",
+      "duration_requirements": {
+        "concentration": true,
+        "duration": "专注，至多1分钟"
+      },
+      "entity_requirements": [],
+      "existing_consumers": [],
+      "idempotency_requirements": {
+        "command": true,
+        "replay": true
+      },
+      "missing_consumers": [
+        "kernel.content.typed",
+        "kernel.dm.adjudication"
+      ],
+      "persistence_requirements": {
+        "combatant": true,
+        "scene_delta": true
+      },
+      "production_blockers": [
+        "condition.composite",
+        "duration.multi_phase"
+      ],
+      "production_status": "compile_only",
+      "resource_requirements": {},
+      "runtime_preview_status": "full",
+      "scene_delta_requirements": [
+        "apply_condition"
+      ],
+      "snapshot_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "source_book": "玩家手册 2024",
+      "source_path": "玩家手册2024/法术详述/1环.htm",
+      "source_record_id": "85595d634b480207249dd2ac",
+      "spatial_requirements": [],
+      "target_requirements": {},
+      "template_id": "spell:runtime:spell-runtime-1",
+      "typed_clause_ids": [
+        "core-phb-2024:spell:85595d634b480207249dd2ac:clause:0",
+        "core-phb-2024:spell:85595d634b480207249dd2ac:clause:1",
+        "core-phb-2024:spell:85595d634b480207249dd2ac:clause:2"
+      ],
+      "typed_ir_fingerprint": "a55dfdba5beaf90ef1d0cff58508c9808b9ff84e3113f0db173e1be6c6f55992"
+    },
+    {
+      "action_requirements": [],
+      "adjudication_requirements": [
+        {
+          "category": "target_semantics"
+        }
+      ],
+      "candidate_platforms": [
+        "kernel.dm.adjudication"
+      ],
+      "cas_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "choice_requirements": [],
+      "compile_status": "full",
+      "condition_requirements": [],
+      "content_id": "core-phb-2024:spell:90c12635dd6eca81ebe04449",
+      "content_kind": "spell",
+      "duration_requirements": {
+        "concentration": true,
+        "duration": "专注，至多10分钟"
+      },
+      "entity_requirements": [],
+      "existing_consumers": [],
+      "idempotency_requirements": {
+        "command": true,
+        "replay": true
+      },
+      "missing_consumers": [
+        "kernel.dm.adjudication"
+      ],
+      "persistence_requirements": {
+        "combatant": true,
+        "scene_delta": true
+      },
+      "production_blockers": [
+        "adjudication.target_semantics",
+        "duration.multi_phase"
+      ],
+      "production_status": "compile_only",
+      "resource_requirements": {},
+      "runtime_preview_status": "full",
+      "scene_delta_requirements": [],
+      "snapshot_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "source_book": "玩家手册 2024",
+      "source_path": "玩家手册2024/法术详述/1环.htm",
+      "source_record_id": "90c12635dd6eca81ebe04449",
+      "spatial_requirements": [],
+      "target_requirements": {},
+      "template_id": "spell:runtime:spell-runtime-1",
+      "typed_clause_ids": [
+        "core-phb-2024:spell:90c12635dd6eca81ebe04449:clause:0",
+        "core-phb-2024:spell:90c12635dd6eca81ebe04449:clause:1"
+      ],
+      "typed_ir_fingerprint": "40786845c18c416fb03475ce4786cf595c0304c8ca057e580a021f03da006d8d"
+    },
+    {
+      "action_requirements": [],
+      "adjudication_requirements": [
+        {
+          "category": "target_semantics"
+        }
+      ],
+      "candidate_platforms": [
+        "kernel.dm.adjudication"
+      ],
+      "cas_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "choice_requirements": [],
+      "compile_status": "full",
+      "condition_requirements": [],
+      "content_id": "core-phb-2024:spell:9b29fbb72177f058bf1448ef",
+      "content_kind": "spell",
+      "duration_requirements": {
+        "concentration": true,
+        "duration": "专注，至多1小时"
+      },
+      "entity_requirements": [],
+      "existing_consumers": [],
+      "idempotency_requirements": {
+        "command": true,
+        "replay": true
+      },
+      "missing_consumers": [
+        "kernel.dm.adjudication"
+      ],
+      "persistence_requirements": {
+        "combatant": true,
+        "scene_delta": true
+      },
+      "production_blockers": [
+        "adjudication.target_semantics",
+        "duration.multi_phase"
+      ],
+      "production_status": "compile_only",
+      "resource_requirements": {},
+      "runtime_preview_status": "full",
+      "scene_delta_requirements": [],
+      "snapshot_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "source_book": "玩家手册 2024",
+      "source_path": "玩家手册2024/法术详述/1环.htm",
+      "source_record_id": "9b29fbb72177f058bf1448ef",
+      "spatial_requirements": [],
+      "target_requirements": {},
+      "template_id": "spell:runtime:spell-runtime-1",
+      "typed_clause_ids": [
+        "core-phb-2024:spell:9b29fbb72177f058bf1448ef:clause:0"
+      ],
+      "typed_ir_fingerprint": "7df646d96a37c118709473480571b77d5576c7a03b82b8042ddc69170ce19989"
+    },
+    {
+      "action_requirements": [],
+      "adjudication_requirements": [
+        {
+          "category": "target_semantics"
+        }
+      ],
+      "candidate_platforms": [
+        "kernel.dm.adjudication",
+        "kernel.spatial.movement"
+      ],
+      "cas_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "choice_requirements": [],
+      "compile_status": "full",
+      "condition_requirements": [],
+      "content_id": "core-phb-2024:spell:9c4208ec038463dfd608ba9e",
+      "content_kind": "spell",
+      "duration_requirements": {
+        "concentration": false,
+        "duration": "立即"
+      },
+      "entity_requirements": [],
+      "existing_consumers": [],
+      "idempotency_requirements": {
+        "command": true,
+        "replay": true
+      },
+      "missing_consumers": [
+        "kernel.dm.adjudication",
+        "kernel.spatial.movement"
+      ],
+      "persistence_requirements": {
+        "combatant": true,
+        "scene_delta": true
+      },
+      "production_blockers": [
+        "adjudication.target_semantics",
+        "spatial.area"
+      ],
+      "production_status": "compile_only",
+      "resource_requirements": {},
+      "runtime_preview_status": "full",
+      "scene_delta_requirements": [],
+      "snapshot_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "source_book": "玩家手册 2024",
+      "source_path": "玩家手册2024/法术详述/0环.htm",
+      "source_record_id": "9c4208ec038463dfd608ba9e",
+      "spatial_requirements": [
+        {
+          "capability_id": "spell.area.v1",
+          "clause_id": "core-phb-2024:spell:9c4208ec038463dfd608ba9e:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "area",
+            "evidence_ref": "30尺 **法术成分：**V、S **持续时间：**立即 你操控元素，在施法距离内创造下述效应之一。 > **召气Beckon > Air。**你在一处5尺立方区域内创造一股和风，其足以吹动布料、搅动灰尘、使落叶沙沙作响、关闭开着的门和百叶窗。若开着的门/百叶窗被某人/某物顶住，则其不受该效应影响。 > **召土Beckon > Earth。**你创造灰尘或沙子组成的薄帷，覆盖在5尺立方区域内的表面上，或者你可以在一堆泥土或沙子中使一个单词以你的手写体出现。 > **召火Beckon > Fire。**你在一处5尺立方区域内创造一片无害余烬与一股富有色彩和气味的烟。你选择烟的色彩和气味，而余烬可以点燃区域中的蜡烛、火把或油灯。烟的气味会存留1分钟。 > **召水Becko",
+            "origin": "source_explicit_origin",
+            "shape": "cube",
+            "size_ft": 5,
+            "type": "area"
+          },
+          "spell_id": "core-phb-2024:spell:9c4208ec038463dfd608ba9e",
+          "type": "area"
+        }
+      ],
+      "target_requirements": {},
+      "template_id": "spell:runtime:spell-runtime-1",
+      "typed_clause_ids": [
+        "core-phb-2024:spell:9c4208ec038463dfd608ba9e:clause:0",
+        "core-phb-2024:spell:9c4208ec038463dfd608ba9e:clause:1"
+      ],
+      "typed_ir_fingerprint": "da8333a78d842d8557f7c67bcbd6c1c65b67e74c27bab8929b2f4b0acacdad12"
+    },
+    {
+      "action_requirements": [],
+      "adjudication_requirements": [
+        {
+          "category": "target_semantics"
+        }
+      ],
+      "candidate_platforms": [
+        "kernel.dm.adjudication"
+      ],
+      "cas_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "choice_requirements": [],
+      "compile_status": "full",
+      "condition_requirements": [],
+      "content_id": "core-phb-2024:spell:a0c914f228b833357f0c2779",
+      "content_kind": "spell",
+      "duration_requirements": {
+        "concentration": true,
+        "duration": "专注，至多1分钟"
+      },
+      "entity_requirements": [],
+      "existing_consumers": [],
+      "idempotency_requirements": {
+        "command": true,
+        "replay": true
+      },
+      "missing_consumers": [
+        "kernel.dm.adjudication"
+      ],
+      "persistence_requirements": {
+        "combatant": true,
+        "scene_delta": true
+      },
+      "production_blockers": [
+        "adjudication.target_semantics",
+        "duration.multi_phase"
+      ],
+      "production_status": "compile_only",
+      "resource_requirements": {},
+      "runtime_preview_status": "full",
+      "scene_delta_requirements": [],
+      "snapshot_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "source_book": "玩家手册 2024",
+      "source_path": "玩家手册2024/法术详述/0环.htm",
+      "source_record_id": "a0c914f228b833357f0c2779",
+      "spatial_requirements": [],
+      "target_requirements": {},
+      "template_id": "spell:runtime:spell-runtime-1",
+      "typed_clause_ids": [
+        "core-phb-2024:spell:a0c914f228b833357f0c2779:clause:0",
+        "core-phb-2024:spell:a0c914f228b833357f0c2779:clause:1"
+      ],
+      "typed_ir_fingerprint": "26110853f82a554440d9aae6c70f892ea6d5ae3ffab0e42528d7a261d33e406b"
+    },
+    {
+      "action_requirements": [],
+      "adjudication_requirements": [],
+      "candidate_platforms": [
+        "kernel.content.typed"
+      ],
+      "cas_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "choice_requirements": [],
+      "compile_status": "full",
+      "condition_requirements": [
+        {
+          "capability_id": "spell.apply_condition.v1",
+          "clause_id": "core-phb-2024:spell:aa17c997419ff77ab783e003:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "bonus_action",
+            "clause_id": "condition-0",
+            "condition": "恐慌",
+            "evidence_ref": "分：**V **持续时间：**1分钟 被该次攻击检定命中的目标会在此次攻击中额外受到1d6点暗蚀伤害，并且目标必须通过一次感知豁免检定，否则直到法术结束为止陷入恐慌状态。在自己的每回合结束时，被恐慌的目标可以重复此豁免，成功则结束该法术对自身的影响。 **升环施法。**使用的法术位每比一环高一环，伤害就提高1d6。",
+            "target": "one_creature",
+            "type": "apply_condition"
+          },
+          "spell_id": "core-phb-2024:spell:aa17c997419ff77ab783e003",
+          "type": "apply_condition"
+        }
+      ],
+      "content_id": "core-phb-2024:spell:aa17c997419ff77ab783e003",
+      "content_kind": "spell",
+      "duration_requirements": {
+        "concentration": false,
+        "duration": "1分钟"
+      },
+      "entity_requirements": [],
+      "existing_consumers": [],
+      "idempotency_requirements": {
+        "command": true,
+        "replay": true
+      },
+      "missing_consumers": [
+        "kernel.content.typed"
+      ],
+      "persistence_requirements": {
+        "combatant": true,
+        "scene_delta": true
+      },
+      "production_blockers": [
+        "condition.composite"
+      ],
+      "production_status": "compile_only",
+      "resource_requirements": {},
+      "runtime_preview_status": "full",
+      "scene_delta_requirements": [
+        "apply_condition"
+      ],
+      "snapshot_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "source_book": "玩家手册 2024",
+      "source_path": "玩家手册2024/法术详述/1环.htm",
+      "source_record_id": "aa17c997419ff77ab783e003",
+      "spatial_requirements": [],
+      "target_requirements": {},
+      "template_id": "spell:runtime:spell-runtime-1",
+      "typed_clause_ids": [
+        "core-phb-2024:spell:aa17c997419ff77ab783e003:clause:0",
+        "core-phb-2024:spell:aa17c997419ff77ab783e003:clause:1"
+      ],
+      "typed_ir_fingerprint": "753bda6b3075720ea39d9be5058bdbb5d840de1f681cf67d297fa59f9e1f9884"
+    },
+    {
+      "action_requirements": [],
+      "adjudication_requirements": [],
+      "candidate_platforms": [
+        "kernel.content.typed",
+        "kernel.spatial.movement"
+      ],
+      "cas_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "choice_requirements": [],
+      "compile_status": "full",
+      "condition_requirements": [
+        {
+          "capability_id": "spell.apply_condition.v1",
+          "clause_id": "core-phb-2024:spell:ad887cac0fa7f6c2cf7c566f:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "condition-0",
+            "condition": "目盲",
+            "evidence_ref": "成分：**V、S、M（一撮彩色沙子） **持续时间：**立即 你射出一道炫目的闪耀彩光。以你为源点的15尺锥状区域内的每个生物必须成功通过一次体质豁免，否则陷入目盲状态，持续至下个你的回合结束。",
+            "target": "one_creature",
+            "type": "apply_condition"
+          },
+          "spell_id": "core-phb-2024:spell:ad887cac0fa7f6c2cf7c566f",
+          "type": "apply_condition"
+        }
+      ],
+      "content_id": "core-phb-2024:spell:ad887cac0fa7f6c2cf7c566f",
+      "content_kind": "spell",
+      "duration_requirements": {
+        "concentration": false,
+        "duration": "立即"
+      },
+      "entity_requirements": [],
+      "existing_consumers": [],
+      "idempotency_requirements": {
+        "command": true,
+        "replay": true
+      },
+      "missing_consumers": [
+        "kernel.content.typed",
+        "kernel.spatial.movement"
+      ],
+      "persistence_requirements": {
+        "combatant": true,
+        "scene_delta": true
+      },
+      "production_blockers": [
+        "condition.composite",
+        "spatial.area"
+      ],
+      "production_status": "compile_only",
+      "resource_requirements": {},
+      "runtime_preview_status": "full",
+      "scene_delta_requirements": [
+        "apply_condition"
+      ],
+      "snapshot_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "source_book": "玩家手册 2024",
+      "source_path": "玩家手册2024/法术详述/1环.htm",
+      "source_record_id": "ad887cac0fa7f6c2cf7c566f",
+      "spatial_requirements": [
+        {
+          "capability_id": "spell.area.v1",
+          "clause_id": "core-phb-2024:spell:ad887cac0fa7f6c2cf7c566f:clause:2",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "area",
+            "evidence_ref": "法时间：**动作 **施法距离：**自身 **法术成分：**V、S、M（一撮彩色沙子） **持续时间：**立即 你射出一道炫目的闪耀彩光。以你为源点的15尺锥状区域内的每个生物必须成功通过一次体质豁免，否则陷入目盲状态，持续至下个你的回合结束。",
+            "origin": "source_explicit_origin",
+            "shape": "cone",
+            "size_ft": 15,
+            "type": "area"
+          },
+          "spell_id": "core-phb-2024:spell:ad887cac0fa7f6c2cf7c566f",
+          "type": "area"
+        }
+      ],
+      "target_requirements": {},
+      "template_id": "spell:runtime:spell-runtime-1",
+      "typed_clause_ids": [
+        "core-phb-2024:spell:ad887cac0fa7f6c2cf7c566f:clause:0",
+        "core-phb-2024:spell:ad887cac0fa7f6c2cf7c566f:clause:1",
+        "core-phb-2024:spell:ad887cac0fa7f6c2cf7c566f:clause:2"
+      ],
+      "typed_ir_fingerprint": "a6514912cbd28cba8cd455f1715d8f07f0ee7c53304d73f1729bf65f3cc58fca"
+    },
+    {
+      "action_requirements": [],
+      "adjudication_requirements": [
+        {
+          "category": "target_semantics"
+        }
+      ],
+      "candidate_platforms": [
+        "kernel.dm.adjudication"
+      ],
+      "cas_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "choice_requirements": [],
+      "compile_status": "full",
+      "condition_requirements": [],
+      "content_id": "core-phb-2024:spell:b9db026fa1853bca5b6f1c13",
+      "content_kind": "spell",
+      "duration_requirements": {
+        "concentration": false,
+        "duration": "至多1小时"
+      },
+      "entity_requirements": [],
+      "existing_consumers": [],
+      "idempotency_requirements": {
+        "command": true,
+        "replay": true
+      },
+      "missing_consumers": [
+        "kernel.dm.adjudication"
+      ],
+      "persistence_requirements": {
+        "combatant": true,
+        "scene_delta": true
+      },
+      "production_blockers": [
+        "adjudication.target_semantics"
+      ],
+      "production_status": "compile_only",
+      "resource_requirements": {},
+      "runtime_preview_status": "full",
+      "scene_delta_requirements": [],
+      "snapshot_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "source_book": "玩家手册 2024",
+      "source_path": "玩家手册2024/法术详述/0环.htm",
+      "source_record_id": "b9db026fa1853bca5b6f1c13",
+      "spatial_requirements": [],
+      "target_requirements": {},
+      "template_id": "spell:runtime:spell-runtime-1",
+      "typed_clause_ids": [
+        "core-phb-2024:spell:b9db026fa1853bca5b6f1c13:clause:0"
+      ],
+      "typed_ir_fingerprint": "f0e14bf3afefa418d85893d497ebad64a3ae63f3d092e57873b1af1be2629240"
+    },
+    {
+      "action_requirements": [],
+      "adjudication_requirements": [
+        {
+          "category": "target_semantics"
+        }
+      ],
+      "candidate_platforms": [
+        "kernel.dm.adjudication"
+      ],
+      "cas_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "choice_requirements": [],
+      "compile_status": "full",
+      "condition_requirements": [],
+      "content_id": "core-phb-2024:spell:c724eb95e2f08220d161e608",
+      "content_kind": "spell",
+      "duration_requirements": {
+        "concentration": true,
+        "duration": "专注，至多1分钟"
+      },
+      "entity_requirements": [],
+      "existing_consumers": [],
+      "idempotency_requirements": {
+        "command": true,
+        "replay": true
+      },
+      "missing_consumers": [
+        "kernel.dm.adjudication"
+      ],
+      "persistence_requirements": {
+        "combatant": true,
+        "scene_delta": true
+      },
+      "production_blockers": [
+        "adjudication.target_semantics",
+        "duration.multi_phase"
+      ],
+      "production_status": "compile_only",
+      "resource_requirements": {},
+      "runtime_preview_status": "full",
+      "scene_delta_requirements": [],
+      "snapshot_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "source_book": "玩家手册 2024",
+      "source_path": "玩家手册2024/法术详述/1环.htm",
+      "source_record_id": "c724eb95e2f08220d161e608",
+      "spatial_requirements": [],
+      "target_requirements": {},
+      "template_id": "spell:runtime:spell-runtime-1",
+      "typed_clause_ids": [
+        "core-phb-2024:spell:c724eb95e2f08220d161e608:clause:0",
+        "core-phb-2024:spell:c724eb95e2f08220d161e608:clause:1"
+      ],
+      "typed_ir_fingerprint": "8406a39b1ae61156716bd779e9cc33e6b672229811c7278e8fd8b30021e0b536"
+    },
+    {
+      "action_requirements": [],
+      "adjudication_requirements": [
+        {
+          "category": "target_semantics"
+        }
+      ],
+      "candidate_platforms": [
+        "kernel.dm.adjudication"
+      ],
+      "cas_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "choice_requirements": [],
+      "compile_status": "full",
+      "condition_requirements": [],
+      "content_id": "core-phb-2024:spell:d82624a42cf6c33ccec927b8",
+      "content_kind": "spell",
+      "duration_requirements": {
+        "concentration": false,
+        "duration": "10 分钟"
+      },
+      "entity_requirements": [],
+      "existing_consumers": [],
+      "idempotency_requirements": {
+        "command": true,
+        "replay": true
+      },
+      "missing_consumers": [
+        "kernel.dm.adjudication"
+      ],
+      "persistence_requirements": {
+        "combatant": true,
+        "scene_delta": true
+      },
+      "production_blockers": [
+        "adjudication.target_semantics"
+      ],
+      "production_status": "compile_only",
+      "resource_requirements": {},
+      "runtime_preview_status": "full",
+      "scene_delta_requirements": [],
+      "snapshot_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "source_book": "玩家手册 2024",
+      "source_path": "玩家手册2024/法术详述/1环.htm",
+      "source_record_id": "d82624a42cf6c33ccec927b8",
+      "spatial_requirements": [],
+      "target_requirements": {},
+      "template_id": "spell:runtime:spell-runtime-1",
+      "typed_clause_ids": [
+        "core-phb-2024:spell:d82624a42cf6c33ccec927b8:clause:0"
+      ],
+      "typed_ir_fingerprint": "f925f8ae69910541e14cce428820c5123221fb77b06508d6393cd7e1b173099c"
+    },
+    {
+      "action_requirements": [],
+      "adjudication_requirements": [
+        {
+          "category": "target_semantics"
+        }
+      ],
+      "candidate_platforms": [
+        "kernel.dm.adjudication",
+        "kernel.spatial.movement"
+      ],
+      "cas_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "choice_requirements": [],
+      "compile_status": "full",
+      "condition_requirements": [],
+      "content_id": "core-phb-2024:spell:d84dec64befac8db7294e0f1",
+      "content_kind": "spell",
+      "duration_requirements": {
+        "concentration": false,
+        "duration": "立即"
+      },
+      "entity_requirements": [],
+      "existing_consumers": [],
+      "idempotency_requirements": {
+        "command": true,
+        "replay": true
+      },
+      "missing_consumers": [
+        "kernel.dm.adjudication",
+        "kernel.spatial.movement"
+      ],
+      "persistence_requirements": {
+        "combatant": true,
+        "scene_delta": true
+      },
+      "production_blockers": [
+        "adjudication.target_semantics",
+        "spatial.area"
+      ],
+      "production_status": "compile_only",
+      "resource_requirements": {},
+      "runtime_preview_status": "full",
+      "scene_delta_requirements": [],
+      "snapshot_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "source_book": "玩家手册 2024",
+      "source_path": "玩家手册2024/法术详述/0环.htm",
+      "source_record_id": "d84dec64befac8db7294e0f1",
+      "spatial_requirements": [
+        {
+          "capability_id": "spell.area.v1",
+          "clause_id": "core-phb-2024:spell:d84dec64befac8db7294e0f1:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "area",
+            "evidence_ref": "时间：**动作 **施法距离：**60 尺 **法术成分：**V、S **持续时间：**立即 你在施法距离内一点创造出一颗酸液泡，以该点5尺球状范围爆发。该球状区域内的每名生物必须通过一次敏捷豁免，否则受到1d6点强酸伤害。 **戏法强化。**本法术的伤害会在你达到下列等级时提升1d6：5级（2d6）、11级（3d6）以及17级（4d6）。",
+            "origin": "source_explicit_origin",
+            "shape": "sphere",
+            "size_ft": 5,
+            "type": "area"
+          },
+          "spell_id": "core-phb-2024:spell:d84dec64befac8db7294e0f1",
+          "type": "area"
+        }
+      ],
+      "target_requirements": {},
+      "template_id": "spell:runtime:spell-runtime-1",
+      "typed_clause_ids": [
+        "core-phb-2024:spell:d84dec64befac8db7294e0f1:clause:0",
+        "core-phb-2024:spell:d84dec64befac8db7294e0f1:clause:1"
+      ],
+      "typed_ir_fingerprint": "13004ae381ae244ef3f834b6779c8bfaf42b53f245b8aa89257efc64626ea5b0"
+    },
+    {
+      "action_requirements": [],
+      "adjudication_requirements": [],
+      "candidate_platforms": [
+        "kernel.content.typed",
+        "kernel.dm.adjudication"
+      ],
+      "cas_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "choice_requirements": [],
+      "compile_status": "full",
+      "condition_requirements": [],
+      "content_id": "core-phb-2024:spell:dccfb9fc9cd30b9fb8b627b0",
+      "content_kind": "spell",
+      "duration_requirements": {
+        "concentration": true,
+        "duration": "专注，至多1分钟"
+      },
+      "entity_requirements": [],
+      "existing_consumers": [],
+      "idempotency_requirements": {
+        "command": true,
+        "replay": true
+      },
+      "missing_consumers": [
+        "kernel.content.typed",
+        "kernel.dm.adjudication"
+      ],
+      "persistence_requirements": {
+        "combatant": true,
+        "scene_delta": true
+      },
+      "production_blockers": [
+        "duration.multi_phase"
+      ],
+      "production_status": "compile_only",
+      "resource_requirements": {},
+      "runtime_preview_status": "full",
+      "scene_delta_requirements": [
+        "update_health"
+      ],
+      "snapshot_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "source_book": "玩家手册 2024",
+      "source_path": "玩家手册2024/法术详述/1环.htm",
+      "source_record_id": "dccfb9fc9cd30b9fb8b627b0",
+      "spatial_requirements": [],
+      "target_requirements": {},
+      "template_id": "spell:runtime:spell-runtime-1",
+      "typed_clause_ids": [
+        "core-phb-2024:spell:dccfb9fc9cd30b9fb8b627b0:clause:0",
+        "core-phb-2024:spell:dccfb9fc9cd30b9fb8b627b0:clause:1",
+        "core-phb-2024:spell:dccfb9fc9cd30b9fb8b627b0:clause:2",
+        "core-phb-2024:spell:dccfb9fc9cd30b9fb8b627b0:clause:3"
+      ],
+      "typed_ir_fingerprint": "b37960e4e6e29a237f21cf41fad33862ffd93d83e100ec061a5882c6ea6ad00b"
+    },
+    {
+      "action_requirements": [],
+      "adjudication_requirements": [
+        {
+          "category": "target_semantics"
+        }
+      ],
+      "candidate_platforms": [
+        "kernel.dm.adjudication"
+      ],
+      "cas_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "choice_requirements": [],
+      "compile_status": "full",
+      "condition_requirements": [],
+      "content_id": "core-phb-2024:spell:dd9cb25c63b7e13194c7d01c",
+      "content_kind": "spell",
+      "duration_requirements": {
+        "concentration": false,
+        "duration": "立即"
+      },
+      "entity_requirements": [],
+      "existing_consumers": [],
+      "idempotency_requirements": {
+        "command": true,
+        "replay": true
+      },
+      "missing_consumers": [
+        "kernel.dm.adjudication"
+      ],
+      "persistence_requirements": {
+        "combatant": true,
+        "scene_delta": true
+      },
+      "production_blockers": [
+        "adjudication.target_semantics"
+      ],
+      "production_status": "compile_only",
+      "resource_requirements": {},
+      "runtime_preview_status": "full",
+      "scene_delta_requirements": [],
+      "snapshot_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "source_book": "玩家手册 2024",
+      "source_path": "玩家手册2024/法术详述/0环.htm",
+      "source_record_id": "dd9cb25c63b7e13194c7d01c",
+      "spatial_requirements": [],
+      "target_requirements": {},
+      "template_id": "spell:runtime:spell-runtime-1",
+      "typed_clause_ids": [
+        "core-phb-2024:spell:dd9cb25c63b7e13194c7d01c:clause:0"
+      ],
+      "typed_ir_fingerprint": "3ef7adc93ae852337e5834fcdfb48612d0d4acaca25855c2fff47e57aa4c32b3"
+    },
+    {
+      "action_requirements": [],
+      "adjudication_requirements": [
+        {
+          "category": "target_semantics"
+        }
+      ],
+      "candidate_platforms": [
+        "kernel.dm.adjudication",
+        "kernel.spatial.movement"
+      ],
+      "cas_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "choice_requirements": [],
+      "compile_status": "full",
+      "condition_requirements": [],
+      "content_id": "core-phb-2024:spell:ea1d170f71d30f4ddeb84f9e",
+      "content_kind": "spell",
+      "duration_requirements": {
+        "concentration": false,
+        "duration": "立即"
+      },
+      "entity_requirements": [],
+      "existing_consumers": [],
+      "idempotency_requirements": {
+        "command": true,
+        "replay": true
+      },
+      "missing_consumers": [
+        "kernel.dm.adjudication",
+        "kernel.spatial.movement"
+      ],
+      "persistence_requirements": {
+        "combatant": true,
+        "scene_delta": true
+      },
+      "production_blockers": [
+        "adjudication.target_semantics",
+        "spatial.area"
+      ],
+      "production_status": "compile_only",
+      "resource_requirements": {},
+      "runtime_preview_status": "full",
+      "scene_delta_requirements": [],
+      "snapshot_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "source_book": "玩家手册 2024",
+      "source_path": "玩家手册2024/法术详述/0环.htm",
+      "source_record_id": "ea1d170f71d30f4ddeb84f9e",
+      "spatial_requirements": [
+        {
+          "capability_id": "spell.area.v1",
+          "clause_id": "core-phb-2024:spell:ea1d170f71d30f4ddeb84f9e:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "area",
+            "evidence_ref": "师）* **施法时间：**动作 **施法距离：**自身 **法术成分：**V、M（一枚艳阳标志） **持续时间：**立即 灼热的光辉喷薄而出，覆盖你周身5尺光环区域。每个区域中你可见且受你选择的生物必须通过一次体质豁免，否则受到1d6点光耀伤害。 **戏法强化。**到达特定等级后，此戏法的伤害将增加1d6：5级（2d6）、11级（3d6）、17级（4d6）。",
+            "origin": "source_explicit_origin",
+            "shape": "sphere",
+            "size_ft": 5,
+            "type": "area"
+          },
+          "spell_id": "core-phb-2024:spell:ea1d170f71d30f4ddeb84f9e",
+          "type": "area"
+        }
+      ],
+      "target_requirements": {},
+      "template_id": "spell:runtime:spell-runtime-1",
+      "typed_clause_ids": [
+        "core-phb-2024:spell:ea1d170f71d30f4ddeb84f9e:clause:0",
+        "core-phb-2024:spell:ea1d170f71d30f4ddeb84f9e:clause:1"
+      ],
+      "typed_ir_fingerprint": "dcea339a11579e885eff18de10cd239ad5e13c844b834f730b5e554f116381c2"
+    },
+    {
+      "action_requirements": [],
+      "adjudication_requirements": [],
+      "candidate_platforms": [
+        "kernel.content.typed"
+      ],
+      "cas_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "choice_requirements": [],
+      "compile_status": "full",
+      "condition_requirements": [
+        {
+          "capability_id": "spell.apply_condition.v1",
+          "clause_id": "core-phb-2024:spell:eaaa6893b004c177f8237eb0:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "condition-0",
+            "condition": "魅惑",
+            "evidence_ref": "**法术成分：**V、S、M（一点食物） **持续时间：**24 小时 在施法距离内指定一只你能看见的野兽。该野兽必须通过一次感知豁免，否则在法术持续时间内陷入魅惑状态。如果你或你的盟友对目标造成伤害，法术将提前终止。 **升环施法。**你使用的法术位每比一环高一环，就可以多选择一个野兽作为目标。",
+            "target": "one_creature",
+            "type": "apply_condition"
+          },
+          "spell_id": "core-phb-2024:spell:eaaa6893b004c177f8237eb0",
+          "type": "apply_condition"
+        }
+      ],
+      "content_id": "core-phb-2024:spell:eaaa6893b004c177f8237eb0",
+      "content_kind": "spell",
+      "duration_requirements": {
+        "concentration": false,
+        "duration": "24 小时"
+      },
+      "entity_requirements": [],
+      "existing_consumers": [],
+      "idempotency_requirements": {
+        "command": true,
+        "replay": true
+      },
+      "missing_consumers": [
+        "kernel.content.typed"
+      ],
+      "persistence_requirements": {
+        "combatant": true,
+        "scene_delta": true
+      },
+      "production_blockers": [
+        "condition.composite"
+      ],
+      "production_status": "compile_only",
+      "resource_requirements": {},
+      "runtime_preview_status": "full",
+      "scene_delta_requirements": [
+        "apply_condition"
+      ],
+      "snapshot_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "source_book": "玩家手册 2024",
+      "source_path": "玩家手册2024/法术详述/1环.htm",
+      "source_record_id": "eaaa6893b004c177f8237eb0",
+      "spatial_requirements": [],
+      "target_requirements": {},
+      "template_id": "spell:runtime:spell-runtime-1",
+      "typed_clause_ids": [
+        "core-phb-2024:spell:eaaa6893b004c177f8237eb0:clause:0",
+        "core-phb-2024:spell:eaaa6893b004c177f8237eb0:clause:1"
+      ],
+      "typed_ir_fingerprint": "77964d948ea3d5f08b76a2ede6a2ed7b97f0f0102e68ab9d44407ceba6d8a5d8"
+    },
+    {
+      "action_requirements": [],
+      "adjudication_requirements": [
+        {
+          "category": "target_semantics"
+        }
+      ],
+      "candidate_platforms": [
+        "kernel.dm.adjudication"
+      ],
+      "cas_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "choice_requirements": [],
+      "compile_status": "full",
+      "condition_requirements": [],
+      "content_id": "core-phb-2024:spell:ed5371dd95cf605bf1c24cd3",
+      "content_kind": "spell",
+      "duration_requirements": {
+        "concentration": true,
+        "duration": "专注，至多 1 \n分钟"
+      },
+      "entity_requirements": [],
+      "existing_consumers": [],
+      "idempotency_requirements": {
+        "command": true,
+        "replay": true
+      },
+      "missing_consumers": [
+        "kernel.dm.adjudication"
+      ],
+      "persistence_requirements": {
+        "combatant": true,
+        "scene_delta": true
+      },
+      "production_blockers": [
+        "adjudication.target_semantics",
+        "duration.multi_phase"
+      ],
+      "production_status": "compile_only",
+      "resource_requirements": {},
+      "runtime_preview_status": "full",
+      "scene_delta_requirements": [],
+      "snapshot_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "source_book": "玩家手册 2024",
+      "source_path": "玩家手册2024/法术详述/1环.htm",
+      "source_record_id": "ed5371dd95cf605bf1c24cd3",
+      "spatial_requirements": [],
+      "target_requirements": {},
+      "template_id": "spell:runtime:spell-runtime-1",
+      "typed_clause_ids": [
+        "core-phb-2024:spell:ed5371dd95cf605bf1c24cd3:clause:0",
+        "core-phb-2024:spell:ed5371dd95cf605bf1c24cd3:clause:1"
+      ],
+      "typed_ir_fingerprint": "4c89e4cc94ac6178dd326b2a1051fea192170002168311dc81bead517d9b9214"
+    },
+    {
+      "action_requirements": [],
+      "adjudication_requirements": [
+        {
+          "category": "target_semantics"
+        }
+      ],
+      "candidate_platforms": [
+        "kernel.dm.adjudication"
+      ],
+      "cas_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "choice_requirements": [],
+      "compile_status": "full",
+      "condition_requirements": [],
+      "content_id": "core-phb-2024:spell:f0e1229e39b1dfb476f90c6b",
+      "content_kind": "spell",
+      "duration_requirements": {
+        "concentration": false,
+        "duration": "1 分钟"
+      },
+      "entity_requirements": [],
+      "existing_consumers": [],
+      "idempotency_requirements": {
+        "command": true,
+        "replay": true
+      },
+      "missing_consumers": [
+        "kernel.dm.adjudication"
+      ],
+      "persistence_requirements": {
+        "combatant": true,
+        "scene_delta": true
+      },
+      "production_blockers": [
+        "adjudication.target_semantics"
+      ],
+      "production_status": "compile_only",
+      "resource_requirements": {},
+      "runtime_preview_status": "full",
+      "scene_delta_requirements": [],
+      "snapshot_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "source_book": "玩家手册 2024",
+      "source_path": "玩家手册2024/法术详述/1环.htm",
+      "source_record_id": "f0e1229e39b1dfb476f90c6b",
+      "spatial_requirements": [],
+      "target_requirements": {},
+      "template_id": "spell:runtime:spell-runtime-1",
+      "typed_clause_ids": [
+        "core-phb-2024:spell:f0e1229e39b1dfb476f90c6b:clause:0"
+      ],
+      "typed_ir_fingerprint": "7e228368fa4512ec8e8231451e07f7f147f7e6139af518da7bf649dfb35304ea"
+    },
+    {
+      "action_requirements": [],
+      "adjudication_requirements": [
+        {
+          "category": "target_semantics"
+        }
+      ],
+      "candidate_platforms": [
+        "kernel.dm.adjudication"
+      ],
+      "cas_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "choice_requirements": [],
+      "compile_status": "full",
+      "condition_requirements": [],
+      "content_id": "core-phb-2024:spell:fa352b4b5b77382c47bad253",
+      "content_kind": "spell",
+      "duration_requirements": {
+        "concentration": false,
+        "duration": "立即"
+      },
+      "entity_requirements": [],
+      "existing_consumers": [],
+      "idempotency_requirements": {
+        "command": true,
+        "replay": true
+      },
+      "missing_consumers": [
+        "kernel.dm.adjudication"
+      ],
+      "persistence_requirements": {
+        "combatant": true,
+        "scene_delta": true
+      },
+      "production_blockers": [
+        "adjudication.target_semantics"
+      ],
+      "production_status": "compile_only",
+      "resource_requirements": {},
+      "runtime_preview_status": "full",
+      "scene_delta_requirements": [],
+      "snapshot_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "source_book": "玩家手册 2024",
+      "source_path": "玩家手册2024/法术详述/0环.htm",
+      "source_record_id": "fa352b4b5b77382c47bad253",
+      "spatial_requirements": [],
+      "target_requirements": {},
+      "template_id": "spell:runtime:spell-runtime-1",
+      "typed_clause_ids": [
+        "core-phb-2024:spell:fa352b4b5b77382c47bad253:clause:0"
+      ],
+      "typed_ir_fingerprint": "0ac3043f8a2ffc8bad0a12e74e57e26d389ae4869fc5a3eb57302ad1075cbab1"
+    },
+    {
+      "action_requirements": [],
+      "adjudication_requirements": [],
+      "candidate_platforms": [
+        "kernel.content.typed",
+        "kernel.dm.adjudication"
+      ],
+      "cas_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "choice_requirements": [],
+      "compile_status": "full",
+      "condition_requirements": [
+        {
+          "capability_id": "spell.apply_condition.v1",
+          "clause_id": "fizbans-treasury:spell:051cb2f9130d4b712da3aa90:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "condition-0",
+            "condition": "失能",
+            "evidence_ref": "他们陷入目盲，直至你的下回合开始。 | > | 3 | 范围内的每个生物必须成功通过一次感知豁免，否则将开始咯咯笑，直至你的下回合开始。一个正在咯咯笑的生物陷入失能，并使用他的所有移动力向一个随机方向移动。 | > | 4 | 一滴滴蜜糖出现并在矩形内悬停，将其内变成困难地形，直至你的下回合开始。 |",
+            "target": "one_creature",
+            "type": "apply_condition"
+          },
+          "spell_id": "fizbans-treasury:spell:051cb2f9130d4b712da3aa90",
+          "type": "apply_condition"
+        },
+        {
+          "capability_id": "spell.apply_condition.v1",
+          "clause_id": "fizbans-treasury:spell:051cb2f9130d4b712da3aa90:clause:2",
+          "kind": "spell_clause",
+          "parameters": {
+            "action_economy": "action",
+            "clause_id": "condition-1",
+            "condition": "目盲",
+            "evidence_ref": "豁免，否则将被你魅惑，直至你的下回合开始。 | > | 2 | 一束束鲜花出现在四周，范围内的生物必须成功通过一次敏捷豁免，否则鲜花将往他们脸上喷水，使他们陷入目盲，直至你的下回合开始。 | > | 3 | 范围内的每个生物必须成功通过一次感知豁免，否则将开始咯咯笑，直至你的下回合开始。一个正在咯咯笑的生物陷入失能，并使用他的所有移动力向一个随机方向移动。 | > | 4 | 一滴滴蜜糖出现并在矩形内悬停，将其内变成困难地形，直至你的下回合开始。 |",
+            "target": "one_creature",
+            "type": "apply_condition"
+          },
+          "spell_id": "fizbans-treasury:spell:051cb2f9130d4b712da3aa90",
+          "type": "apply_condition"
+        }
+      ],
+      "content_id": "fizbans-treasury:spell:051cb2f9130d4b712da3aa90",
+      "content_kind": "spell",
+      "duration_requirements": {
+        "concentration": true,
+        "duration": "专注，至多一分钟"
+      },
+      "entity_requirements": [],
+      "existing_consumers": [],
+      "idempotency_requirements": {
+        "command": true,
+        "replay": true
+      },
+      "missing_consumers": [
+        "kernel.content.typed",
+        "kernel.dm.adjudication"
+      ],
+      "persistence_requirements": {
+        "combatant": true,
+        "scene_delta": true
+      },
+      "production_blockers": [
+        "condition.composite",
+        "duration.multi_phase"
+      ],
+      "production_status": "compile_only",
+      "resource_requirements": {},
+      "runtime_preview_status": "full",
+      "scene_delta_requirements": [
+        "apply_condition"
+      ],
+      "snapshot_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "source_book": "费资本的巨龙宝库",
+      "source_path": "费资本的巨龙宝库/玩家选项/巨龙法术详述.htm",
+      "source_record_id": "051cb2f9130d4b712da3aa90",
+      "spatial_requirements": [],
+      "target_requirements": {},
+      "template_id": "spell:runtime:spell-runtime-1",
+      "typed_clause_ids": [
+        "fizbans-treasury:spell:051cb2f9130d4b712da3aa90:clause:0",
+        "fizbans-treasury:spell:051cb2f9130d4b712da3aa90:clause:1",
+        "fizbans-treasury:spell:051cb2f9130d4b712da3aa90:clause:2",
+        "fizbans-treasury:spell:051cb2f9130d4b712da3aa90:clause:3"
+      ],
+      "typed_ir_fingerprint": "68cd73c7c9debdff694bc27b20e545def64e416670e148e2823ddbe5dbf60f52"
+    },
+    {
+      "action_requirements": [],
+      "adjudication_requirements": [
+        {
+          "category": "target_semantics"
+        }
+      ],
+      "candidate_platforms": [
+        "kernel.dm.adjudication"
+      ],
+      "cas_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "choice_requirements": [],
+      "compile_status": "full",
+      "condition_requirements": [],
+      "content_id": "fizbans-treasury:spell:843fb135e4cc8a1fb34c46be",
+      "content_kind": "spell",
+      "duration_requirements": {
+        "concentration": true,
+        "duration": "专注，至多 \n1分钟"
+      },
+      "entity_requirements": [],
+      "existing_consumers": [],
+      "idempotency_requirements": {
+        "command": true,
+        "replay": true
+      },
+      "missing_consumers": [
+        "kernel.dm.adjudication"
+      ],
+      "persistence_requirements": {
+        "combatant": true,
+        "scene_delta": true
+      },
+      "production_blockers": [
+        "adjudication.target_semantics",
+        "duration.multi_phase"
+      ],
+      "production_status": "compile_only",
+      "resource_requirements": {},
+      "runtime_preview_status": "full",
+      "scene_delta_requirements": [],
+      "snapshot_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "source_book": "费资本的巨龙宝库",
+      "source_path": "费资本的巨龙宝库/玩家选项/巨龙法术详述.htm",
+      "source_record_id": "843fb135e4cc8a1fb34c46be",
+      "spatial_requirements": [],
+      "target_requirements": {},
+      "template_id": "spell:runtime:spell-runtime-1",
+      "typed_clause_ids": [
+        "fizbans-treasury:spell:843fb135e4cc8a1fb34c46be:clause:0",
+        "fizbans-treasury:spell:843fb135e4cc8a1fb34c46be:clause:1"
+      ],
+      "typed_ir_fingerprint": "609829a412d67dd8cf2d092426dcbe60f7d790f2a5e07adafa6c84f3c2a3d567"
+    },
+    {
+      "action_requirements": [],
+      "adjudication_requirements": [
+        {
+          "category": "target_semantics"
+        }
+      ],
+      "candidate_platforms": [
+        "kernel.dm.adjudication",
+        "kernel.spatial.movement"
+      ],
+      "cas_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "choice_requirements": [],
+      "compile_status": "full",
+      "condition_requirements": [],
+      "content_id": "fizbans-treasury:spell:cadce71b1ba7a42354f785dc",
+      "content_kind": "spell",
+      "duration_requirements": {
+        "concentration": false,
+        "duration": "立即"
+      },
+      "entity_requirements": [],
+      "existing_consumers": [],
+      "idempotency_requirements": {
+        "command": true,
+        "replay": true
+      },
+      "missing_consumers": [
+        "kernel.dm.adjudication",
+        "kernel.spatial.movement"
+      ],
+      "persistence_requirements": {
+        "combatant": true,
+        "scene_delta": true
+      },
+      "production_blockers": [
+        "adjudication.target_semantics",
+        "spatial.area"
+      ],
+      "production_status": "compile_only",
+      "resource_requirements": {},
+      "runtime_preview_status": "full",
+      "scene_delta_requirements": [],
+      "snapshot_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "source_book": "费资本的巨龙宝库",
+      "source_path": "费资本的巨龙宝库/玩家选项/巨龙法术详述.htm",
+      "source_record_id": "cadce71b1ba7a42354f785dc",
+      "spatial_requirements": [
+        {
+          "capability_id": "spell.area.v1",
+          "clause_id": "fizbans-treasury:spell:cadce71b1ba7a42354f785dc:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "area",
+            "evidence_ref": "#### 雾凇霜缚｜Rime's Binding Ice *二环 塑能（术士、法师）* **施法时间：**1动作 **施法距离：**自身（30尺锥形） **法术成分：**S、M（一瓶冰雪融化而成的水） **持续时间：**立即 你向30尺锥形范围内放出一股冰冷的能量。范围内的每个生物都必须成功通过一体质豁免，否则将受到3d8寒冷伤害并且被冰霜包裹，持续一分钟或直至一个生物用动作为自己或触及范围内的其他生物破冰。被冰霜包裹的生物其速度降至0。豁免成功则伤害减半，并且不会受到其他效应影响。 **升环施法效果：**当你用3环或更高的法术位施展此法术时，你使用的法术位每比2环高一环，法术的伤害增加1d8。",
+            "origin": "source_explicit_origin",
+            "shape": "cone",
+            "size_ft": 30,
+            "type": "area"
+          },
+          "spell_id": "fizbans-treasury:spell:cadce71b1ba7a42354f785dc",
+          "type": "area"
+        }
+      ],
+      "target_requirements": {},
+      "template_id": "spell:runtime:spell-runtime-1",
+      "typed_clause_ids": [
+        "fizbans-treasury:spell:cadce71b1ba7a42354f785dc:clause:0",
+        "fizbans-treasury:spell:cadce71b1ba7a42354f785dc:clause:1"
+      ],
+      "typed_ir_fingerprint": "0c670ef422828fdb1fdd8dd40abcdb3f75bd1d4c08c893c54f8ebffcb6f14f17"
+    },
+    {
+      "action_requirements": [],
+      "adjudication_requirements": [
+        {
+          "category": "target_semantics"
+        }
+      ],
+      "candidate_platforms": [
+        "kernel.dm.adjudication"
+      ],
+      "cas_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "choice_requirements": [],
+      "compile_status": "full",
+      "condition_requirements": [],
+      "content_id": "tashas-cauldron:spell:0036d7dc058c496ef08fe340",
+      "content_kind": "spell",
+      "duration_requirements": {
+        "concentration": true,
+        "duration": "专注，至多 1 \n小时"
+      },
+      "entity_requirements": [],
+      "existing_consumers": [],
+      "idempotency_requirements": {
+        "command": true,
+        "replay": true
+      },
+      "missing_consumers": [
+        "kernel.dm.adjudication"
+      ],
+      "persistence_requirements": {
+        "combatant": true,
+        "scene_delta": true
+      },
+      "production_blockers": [
+        "adjudication.target_semantics",
+        "duration.multi_phase"
+      ],
+      "production_status": "compile_only",
+      "resource_requirements": {},
+      "runtime_preview_status": "full",
+      "scene_delta_requirements": [],
+      "snapshot_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "source_book": "塔莎的万事坩埚",
+      "source_path": "塔莎的万事坩埚/法术/法术详述/3环.html",
+      "source_record_id": "0036d7dc058c496ef08fe340",
+      "spatial_requirements": [],
+      "target_requirements": {},
+      "template_id": "spell:runtime:spell-runtime-1",
+      "typed_clause_ids": [
+        "tashas-cauldron:spell:0036d7dc058c496ef08fe340:clause:0",
+        "tashas-cauldron:spell:0036d7dc058c496ef08fe340:clause:1"
+      ],
+      "typed_ir_fingerprint": "cd627078d37aac669591647d8be1382379baebe7cb7ce923d608590d7ad196b2"
+    },
+    {
+      "action_requirements": [],
+      "adjudication_requirements": [
+        {
+          "category": "target_semantics"
+        }
+      ],
+      "candidate_platforms": [
+        "kernel.dm.adjudication"
+      ],
+      "cas_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "choice_requirements": [],
+      "compile_status": "full",
+      "condition_requirements": [],
+      "content_id": "tashas-cauldron:spell:083419d9de551806a5ca9748",
+      "content_kind": "spell",
+      "duration_requirements": {
+        "concentration": true,
+        "duration": "专注，至多 1 \n小时"
+      },
+      "entity_requirements": [],
+      "existing_consumers": [],
+      "idempotency_requirements": {
+        "command": true,
+        "replay": true
+      },
+      "missing_consumers": [
+        "kernel.dm.adjudication"
+      ],
+      "persistence_requirements": {
+        "combatant": true,
+        "scene_delta": true
+      },
+      "production_blockers": [
+        "adjudication.target_semantics",
+        "duration.multi_phase"
+      ],
+      "production_status": "compile_only",
+      "resource_requirements": {},
+      "runtime_preview_status": "full",
+      "scene_delta_requirements": [],
+      "snapshot_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "source_book": "塔莎的万事坩埚",
+      "source_path": "塔莎的万事坩埚/法术/法术详述/3环.html",
+      "source_record_id": "083419d9de551806a5ca9748",
+      "spatial_requirements": [],
+      "target_requirements": {},
+      "template_id": "spell:runtime:spell-runtime-1",
+      "typed_clause_ids": [
+        "tashas-cauldron:spell:083419d9de551806a5ca9748:clause:0"
+      ],
+      "typed_ir_fingerprint": "081c468cec48a97d3157fd0e884c8d33b9c020347d82ed042786c7d755071d51"
+    },
+    {
+      "action_requirements": [],
+      "adjudication_requirements": [
+        {
+          "category": "target_semantics"
+        }
+      ],
+      "candidate_platforms": [
+        "kernel.dm.adjudication"
+      ],
+      "cas_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "choice_requirements": [],
+      "compile_status": "full",
+      "condition_requirements": [],
+      "content_id": "tashas-cauldron:spell:54c8c29188db1442473d9dc1",
+      "content_kind": "spell",
+      "duration_requirements": {
+        "concentration": true,
+        "duration": "专注，至多 1 \n小时"
+      },
+      "entity_requirements": [],
+      "existing_consumers": [],
+      "idempotency_requirements": {
+        "command": true,
+        "replay": true
+      },
+      "missing_consumers": [
+        "kernel.dm.adjudication"
+      ],
+      "persistence_requirements": {
+        "combatant": true,
+        "scene_delta": true
+      },
+      "production_blockers": [
+        "adjudication.target_semantics",
+        "duration.multi_phase"
+      ],
+      "production_status": "compile_only",
+      "resource_requirements": {},
+      "runtime_preview_status": "full",
+      "scene_delta_requirements": [],
+      "snapshot_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "source_book": "塔莎的万事坩埚",
+      "source_path": "塔莎的万事坩埚/法术/法术详述/2环.html",
+      "source_record_id": "54c8c29188db1442473d9dc1",
+      "spatial_requirements": [],
+      "target_requirements": {},
+      "template_id": "spell:runtime:spell-runtime-1",
+      "typed_clause_ids": [
+        "tashas-cauldron:spell:54c8c29188db1442473d9dc1:clause:0"
+      ],
+      "typed_ir_fingerprint": "66ca21e1429ff804cc0b8a1cd516482be659a11732b99622bf8b5a66f6eddf79"
+    },
+    {
+      "action_requirements": [],
+      "adjudication_requirements": [
+        {
+          "category": "target_semantics"
+        }
+      ],
+      "candidate_platforms": [
+        "kernel.dm.adjudication"
+      ],
+      "cas_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "choice_requirements": [],
+      "compile_status": "full",
+      "condition_requirements": [],
+      "content_id": "tashas-cauldron:spell:b4ea0dc1907dd5ac08666af3",
+      "content_kind": "spell",
+      "duration_requirements": {
+        "concentration": true,
+        "duration": "专注，最长 1 \n小时"
+      },
+      "entity_requirements": [],
+      "existing_consumers": [],
+      "idempotency_requirements": {
+        "command": true,
+        "replay": true
+      },
+      "missing_consumers": [
+        "kernel.dm.adjudication"
+      ],
+      "persistence_requirements": {
+        "combatant": true,
+        "scene_delta": true
+      },
+      "production_blockers": [
+        "adjudication.target_semantics",
+        "duration.multi_phase"
+      ],
+      "production_status": "compile_only",
+      "resource_requirements": {},
+      "runtime_preview_status": "full",
+      "scene_delta_requirements": [],
+      "snapshot_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "source_book": "塔莎的万事坩埚",
+      "source_path": "塔莎的万事坩埚/法术/法术详述/3环.html",
+      "source_record_id": "b4ea0dc1907dd5ac08666af3",
+      "spatial_requirements": [],
+      "target_requirements": {},
+      "template_id": "spell:runtime:spell-runtime-1",
+      "typed_clause_ids": [
+        "tashas-cauldron:spell:b4ea0dc1907dd5ac08666af3:clause:0",
+        "tashas-cauldron:spell:b4ea0dc1907dd5ac08666af3:clause:1"
+      ],
+      "typed_ir_fingerprint": "61cfdeeedfb19bf9886116264e45ebdbb9cea18ad0f48c2a60cef92577ac6a31"
+    },
+    {
+      "action_requirements": [],
+      "adjudication_requirements": [
+        {
+          "category": "target_semantics"
+        }
+      ],
+      "candidate_platforms": [
+        "kernel.dm.adjudication"
+      ],
+      "cas_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "choice_requirements": [],
+      "compile_status": "full",
+      "condition_requirements": [],
+      "content_id": "xanathars-guide:spell:32029f628876bce678c798d1",
+      "content_kind": "spell",
+      "duration_requirements": {
+        "concentration": true,
+        "duration": "专注，至多 1 \n分钟"
+      },
+      "entity_requirements": [],
+      "existing_consumers": [],
+      "idempotency_requirements": {
+        "command": true,
+        "replay": true
+      },
+      "missing_consumers": [
+        "kernel.dm.adjudication"
+      ],
+      "persistence_requirements": {
+        "combatant": true,
+        "scene_delta": true
+      },
+      "production_blockers": [
+        "adjudication.target_semantics",
+        "duration.multi_phase"
+      ],
+      "production_status": "compile_only",
+      "resource_requirements": {},
+      "runtime_preview_status": "full",
+      "scene_delta_requirements": [],
+      "snapshot_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "source_book": "珊娜萨的万事指南",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/1环.html",
+      "source_record_id": "32029f628876bce678c798d1",
+      "spatial_requirements": [],
+      "target_requirements": {},
+      "template_id": "spell:runtime:spell-runtime-1",
+      "typed_clause_ids": [
+        "xanathars-guide:spell:32029f628876bce678c798d1:clause:0",
+        "xanathars-guide:spell:32029f628876bce678c798d1:clause:1"
+      ],
+      "typed_ir_fingerprint": "5019bf364aa9584d4d6a8d2e20796b749aecd55c570ede6df34b0bf46c931821"
+    },
+    {
+      "action_requirements": [],
+      "adjudication_requirements": [
+        {
+          "category": "target_semantics"
+        }
+      ],
+      "candidate_platforms": [
+        "kernel.dm.adjudication"
+      ],
+      "cas_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "choice_requirements": [],
+      "compile_status": "full",
+      "condition_requirements": [],
+      "content_id": "xanathars-guide:spell:5aa5cf7f93be0fa149fdcd62",
+      "content_kind": "spell",
+      "duration_requirements": {
+        "concentration": false,
+        "duration": "立即"
+      },
+      "entity_requirements": [],
+      "existing_consumers": [],
+      "idempotency_requirements": {
+        "command": true,
+        "replay": true
+      },
+      "missing_consumers": [
+        "kernel.dm.adjudication"
+      ],
+      "persistence_requirements": {
+        "combatant": true,
+        "scene_delta": true
+      },
+      "production_blockers": [
+        "adjudication.target_semantics"
+      ],
+      "production_status": "compile_only",
+      "resource_requirements": {},
+      "runtime_preview_status": "full",
+      "scene_delta_requirements": [],
+      "snapshot_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "source_book": "珊娜萨的万事指南",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/1环.html",
+      "source_record_id": "5aa5cf7f93be0fa149fdcd62",
+      "spatial_requirements": [],
+      "target_requirements": {},
+      "template_id": "spell:runtime:spell-runtime-1",
+      "typed_clause_ids": [
+        "xanathars-guide:spell:5aa5cf7f93be0fa149fdcd62:clause:0"
+      ],
+      "typed_ir_fingerprint": "015a2f629c0db564641143defd92bf2b2898eb8c380678899bd810d0e358181f"
+    },
+    {
+      "action_requirements": [],
+      "adjudication_requirements": [
+        {
+          "category": "target_semantics"
+        }
+      ],
+      "candidate_platforms": [
+        "kernel.dm.adjudication"
+      ],
+      "cas_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "choice_requirements": [],
+      "compile_status": "full",
+      "condition_requirements": [],
+      "content_id": "xanathars-guide:spell:6d32a73dbc7bf6f5fac303bd",
+      "content_kind": "spell",
+      "duration_requirements": {
+        "concentration": true,
+        "duration": "专注，至多 \n10 分钟"
+      },
+      "entity_requirements": [],
+      "existing_consumers": [],
+      "idempotency_requirements": {
+        "command": true,
+        "replay": true
+      },
+      "missing_consumers": [
+        "kernel.dm.adjudication"
+      ],
+      "persistence_requirements": {
+        "combatant": true,
+        "scene_delta": true
+      },
+      "production_blockers": [
+        "adjudication.target_semantics",
+        "duration.multi_phase"
+      ],
+      "production_status": "compile_only",
+      "resource_requirements": {},
+      "runtime_preview_status": "full",
+      "scene_delta_requirements": [],
+      "snapshot_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "source_book": "珊娜萨的万事指南",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/1环.html",
+      "source_record_id": "6d32a73dbc7bf6f5fac303bd",
+      "spatial_requirements": [],
+      "target_requirements": {},
+      "template_id": "spell:runtime:spell-runtime-1",
+      "typed_clause_ids": [
+        "xanathars-guide:spell:6d32a73dbc7bf6f5fac303bd:clause:0",
+        "xanathars-guide:spell:6d32a73dbc7bf6f5fac303bd:clause:1"
+      ],
+      "typed_ir_fingerprint": "a3ae2bc8ed9f66d3570b0b5968734d18751a62a405f39e1554e54a9c3e9b50fc"
+    },
+    {
+      "action_requirements": [],
+      "adjudication_requirements": [
+        {
+          "category": "target_semantics"
+        }
+      ],
+      "candidate_platforms": [
+        "kernel.dm.adjudication"
+      ],
+      "cas_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "choice_requirements": [],
+      "compile_status": "full",
+      "condition_requirements": [],
+      "content_id": "xanathars-guide:spell:805cbf82765f6710391cc75f",
+      "content_kind": "spell",
+      "duration_requirements": {
+        "concentration": false,
+        "duration": "8 小时"
+      },
+      "entity_requirements": [],
+      "existing_consumers": [],
+      "idempotency_requirements": {
+        "command": true,
+        "replay": true
+      },
+      "missing_consumers": [
+        "kernel.dm.adjudication"
+      ],
+      "persistence_requirements": {
+        "combatant": true,
+        "scene_delta": true
+      },
+      "production_blockers": [
+        "adjudication.target_semantics"
+      ],
+      "production_status": "compile_only",
+      "resource_requirements": {},
+      "runtime_preview_status": "full",
+      "scene_delta_requirements": [],
+      "snapshot_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "source_book": "珊娜萨的万事指南",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/1环.html",
+      "source_record_id": "805cbf82765f6710391cc75f",
+      "spatial_requirements": [],
+      "target_requirements": {},
+      "template_id": "spell:runtime:spell-runtime-1",
+      "typed_clause_ids": [
+        "xanathars-guide:spell:805cbf82765f6710391cc75f:clause:0"
+      ],
+      "typed_ir_fingerprint": "49787075227620b68310143fecb5f6db5b051b1ed91699b5589542090655b1d8"
+    },
+    {
+      "action_requirements": [],
+      "adjudication_requirements": [
+        {
+          "category": "target_semantics"
+        }
+      ],
+      "candidate_platforms": [
+        "kernel.dm.adjudication",
+        "kernel.spatial.movement"
+      ],
+      "cas_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "choice_requirements": [],
+      "compile_status": "full",
+      "condition_requirements": [],
+      "content_id": "xanathars-guide:spell:96d5c3265bc938448c4aef58",
+      "content_kind": "spell",
+      "duration_requirements": {
+        "concentration": false,
+        "duration": "立即"
+      },
+      "entity_requirements": [],
+      "existing_consumers": [],
+      "idempotency_requirements": {
+        "command": true,
+        "replay": true
+      },
+      "missing_consumers": [
+        "kernel.dm.adjudication",
+        "kernel.spatial.movement"
+      ],
+      "persistence_requirements": {
+        "combatant": true,
+        "scene_delta": true
+      },
+      "production_blockers": [
+        "adjudication.target_semantics",
+        "spatial.area"
+      ],
+      "production_status": "compile_only",
+      "resource_requirements": {},
+      "runtime_preview_status": "full",
+      "scene_delta_requirements": [],
+      "snapshot_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "source_book": "珊娜萨的万事指南",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/1环.html",
+      "source_record_id": "96d5c3265bc938448c4aef58",
+      "spatial_requirements": [
+        {
+          "capability_id": "spell.area.v1",
+          "clause_id": "xanathars-guide:spell:96d5c3265bc938448c4aef58:clause:1",
+          "kind": "spell_clause",
+          "parameters": {
+            "clause_id": "area",
+            "evidence_ref": "#### 典礼术｜Ceremony *一环 防护（仪式；牧师、圣武士）* **施法时间：**1 小时 **施法距离：**触碰 **法术成分：**V、S、M（价值 25gp 的银粉，作为该法术的耗材） **持续时间：**立即 你进行几种宗教典礼之一。当你施展此法术时，选择下述典礼之一，其目标必须在施法过程中处于你周围 10 尺内。 > **赎罪Atonement。**你接触一个阵营发生了改变的自愿生物，而你进行一次 DC20 的感知（洞悉）检定。成功则你令目标恢复其原始阵营。 > > > > **祝福圣水Bless Water。**你接触一瓶水并将它转变为圣水。 > > > > **成人礼Coming of > Age。**你接触一个",
+            "origin": "source_explicit_origin",
+            "shape": "sphere",
+            "size_ft": 30,
+            "type": "area"
+          },
+          "spell_id": "xanathars-guide:spell:96d5c3265bc938448c4aef58",
+          "type": "area"
+        }
+      ],
+      "target_requirements": {},
+      "template_id": "spell:runtime:spell-runtime-1",
+      "typed_clause_ids": [
+        "xanathars-guide:spell:96d5c3265bc938448c4aef58:clause:0",
+        "xanathars-guide:spell:96d5c3265bc938448c4aef58:clause:1"
+      ],
+      "typed_ir_fingerprint": "1f082195fde4699582e6e607f53749731bbab21d444e7206fa5a093002b7e438"
+    },
+    {
+      "action_requirements": [],
+      "adjudication_requirements": [
+        {
+          "category": "target_semantics"
+        }
+      ],
+      "candidate_platforms": [
+        "kernel.dm.adjudication"
+      ],
+      "cas_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "choice_requirements": [],
+      "compile_status": "full",
+      "condition_requirements": [],
+      "content_id": "xanathars-guide:spell:aadf89719f073bfca1fefb3a",
+      "content_kind": "spell",
+      "duration_requirements": {
+        "concentration": true,
+        "duration": "专注，至多 1 小时"
+      },
+      "entity_requirements": [],
+      "existing_consumers": [],
+      "idempotency_requirements": {
+        "command": true,
+        "replay": true
+      },
+      "missing_consumers": [
+        "kernel.dm.adjudication"
+      ],
+      "persistence_requirements": {
+        "combatant": true,
+        "scene_delta": true
+      },
+      "production_blockers": [
+        "adjudication.target_semantics",
+        "duration.multi_phase"
+      ],
+      "production_status": "compile_only",
+      "resource_requirements": {},
+      "runtime_preview_status": "full",
+      "scene_delta_requirements": [],
+      "snapshot_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "source_book": "珊娜萨的万事指南",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/2环.html",
+      "source_record_id": "aadf89719f073bfca1fefb3a",
+      "spatial_requirements": [],
+      "target_requirements": {},
+      "template_id": "spell:runtime:spell-runtime-1",
+      "typed_clause_ids": [
+        "xanathars-guide:spell:aadf89719f073bfca1fefb3a:clause:0"
+      ],
+      "typed_ir_fingerprint": "35587fe024d43f0711b1d1a2cda84bcd24a32a8c4ad9a8c81fd3fbe2c2b11506"
+    },
+    {
+      "action_requirements": [],
+      "adjudication_requirements": [
+        {
+          "category": "target_semantics"
+        }
+      ],
+      "candidate_platforms": [
+        "kernel.dm.adjudication"
+      ],
+      "cas_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "choice_requirements": [],
+      "compile_status": "full",
+      "condition_requirements": [],
+      "content_id": "xanathars-guide:spell:c9d315871dc96f3fed66c29b",
+      "content_kind": "spell",
+      "duration_requirements": {
+        "concentration": true,
+        "duration": "专注，至多 1 \n分钟"
+      },
+      "entity_requirements": [],
+      "existing_consumers": [],
+      "idempotency_requirements": {
+        "command": true,
+        "replay": true
+      },
+      "missing_consumers": [
+        "kernel.dm.adjudication"
+      ],
+      "persistence_requirements": {
+        "combatant": true,
+        "scene_delta": true
+      },
+      "production_blockers": [
+        "adjudication.target_semantics",
+        "duration.multi_phase"
+      ],
+      "production_status": "compile_only",
+      "resource_requirements": {},
+      "runtime_preview_status": "full",
+      "scene_delta_requirements": [],
+      "snapshot_requirements": {
+        "actor": true,
+        "scene": true,
+        "targets": true
+      },
+      "source_book": "珊娜萨的万事指南",
+      "source_path": "珊娜萨的万事指南/法术/法术详述/1环.html",
+      "source_record_id": "c9d315871dc96f3fed66c29b",
+      "spatial_requirements": [],
+      "target_requirements": {},
+      "template_id": "spell:runtime:spell-runtime-1",
+      "typed_clause_ids": [
+        "xanathars-guide:spell:c9d315871dc96f3fed66c29b:clause:0"
+      ],
+      "typed_ir_fingerprint": "b77cd998e2ecaf7a5f99d3c5796938c65fe2ad45f68db63381f0a937303735a4"
+    }
+  ],
+  "entry_count": 60,
+  "formal_feature_audit_unchanged": {
+    "dm_only": 61,
+    "full": 328,
+    "partial": 110,
+    "total": 499,
+    "unchanged": true
+  },
+  "schema_version": "content-ir-production-blocker-audit-II-1"
+}

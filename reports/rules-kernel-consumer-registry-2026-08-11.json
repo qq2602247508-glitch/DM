@@ -1,0 +1,296 @@
+{
+  "consumers": {
+    "kernel.choice.window": {
+      "cas_entities": [
+        "actor",
+        "targets",
+        "choice_window"
+      ],
+      "idempotency_scope": "campaign:rules-kernel:choice-window",
+      "required_adjudication_kinds": [],
+      "required_choice_kinds": [
+        "fixed_options",
+        "typed_asset_options",
+        "target_options",
+        "position_options",
+        "replacement_choice",
+        "mode_choice",
+        "resource_choice"
+      ],
+      "required_fields": [
+        "actor_id",
+        "choice_inputs"
+      ],
+      "required_services": [
+        "choice_window_store"
+      ],
+      "required_spatial_queries": [],
+      "scene_delta_types": [
+        "emit_combat_log"
+      ],
+      "snapshot_effects": [
+        "choice_resolution"
+      ],
+      "supported_clause_types": [
+        "choice",
+        "replacement_choice",
+        "mode_choice",
+        "resource_choice"
+      ],
+      "supported_content_kinds": [
+        "spell",
+        "feature",
+        "feat",
+        "item",
+        "system"
+      ],
+      "supported_schema_versions": [
+        "rules-kernel-1"
+      ],
+      "transaction_boundary": "choice_window_compare_and_swap"
+    },
+    "kernel.content.typed": {
+      "cas_entities": [
+        "actor",
+        "targets",
+        "scene",
+        "combat",
+        "resource"
+      ],
+      "idempotency_scope": "campaign:rules-kernel:command",
+      "required_adjudication_kinds": [],
+      "required_choice_kinds": [],
+      "required_fields": [
+        "actor_id",
+        "command_id"
+      ],
+      "required_services": [
+        "content_ir_runtime",
+        "combat_engine",
+        "spell_economy"
+      ],
+      "required_spatial_queries": [
+        "validate_target_range",
+        "resolve_area_targets"
+      ],
+      "scene_delta_types": [
+        "update_health",
+        "update_resource",
+        "apply_condition",
+        "set_concentration"
+      ],
+      "snapshot_effects": [
+        "content_state",
+        "combat_state",
+        "resource_state"
+      ],
+      "supported_clause_types": [
+        "damage",
+        "healing",
+        "temporary_hp",
+        "apply_condition",
+        "remove_condition",
+        "area",
+        "attack_roll",
+        "saving_throw",
+        "concentration",
+        "duration",
+        "modifier",
+        "reaction_window"
+      ],
+      "supported_content_kinds": [
+        "spell",
+        "feature",
+        "feat",
+        "item",
+        "monster_action"
+      ],
+      "supported_schema_versions": [
+        "rules-kernel-1",
+        "spell-runtime-1",
+        "feature-runtime-1"
+      ],
+      "transaction_boundary": "kernel_command_transaction_with_content_rollback"
+    },
+    "kernel.dm.adjudication": {
+      "cas_entities": [
+        "actor",
+        "targets",
+        "scene",
+        "adjudication_window"
+      ],
+      "idempotency_scope": "campaign:rules-kernel:adjudication",
+      "required_adjudication_kinds": [
+        "target_semantics",
+        "freeform_effect",
+        "illusion_interpretation",
+        "environment_interaction",
+        "custom_object",
+        "custom_movement",
+        "rule_exception"
+      ],
+      "required_choice_kinds": [],
+      "required_fields": [
+        "actor_id"
+      ],
+      "required_services": [
+        "adjudication_window_store"
+      ],
+      "required_spatial_queries": [
+        "validate_target_range",
+        "validate_area_origin"
+      ],
+      "scene_delta_types": [
+        "request_dm_adjudication",
+        "emit_combat_log"
+      ],
+      "snapshot_effects": [
+        "adjudication_decision",
+        "command_continuation"
+      ],
+      "supported_clause_types": [
+        "target_semantics",
+        "freeform_effect",
+        "illusion",
+        "environment",
+        "custom_movement",
+        "rule_exception"
+      ],
+      "supported_content_kinds": [
+        "spell",
+        "feature",
+        "feat",
+        "item",
+        "monster_action",
+        "system"
+      ],
+      "supported_schema_versions": [
+        "rules-kernel-1",
+        "dm-adjudication-1"
+      ],
+      "transaction_boundary": "adjudication_compare_and_swap_then_command"
+    },
+    "kernel.entity.lifecycle": {
+      "cas_entities": [
+        "actor",
+        "scene",
+        "combat",
+        "entity_profile"
+      ],
+      "idempotency_scope": "campaign:rules-kernel:command",
+      "required_adjudication_kinds": [
+        "custom_object"
+      ],
+      "required_choice_kinds": [],
+      "required_fields": [
+        "actor_id",
+        "spatial_intent.entity_profile_id"
+      ],
+      "required_services": [
+        "compendium",
+        "combat_engine",
+        "scene"
+      ],
+      "required_spatial_queries": [
+        "is_space_occupied",
+        "find_nearest_unoccupied_space"
+      ],
+      "scene_delta_types": [
+        "spawn_entity",
+        "despawn_entity",
+        "create_object",
+        "create_hazard"
+      ],
+      "snapshot_effects": [
+        "combatant",
+        "scene_token",
+        "initiative",
+        "lifecycle_effect"
+      ],
+      "supported_clause_types": [
+        "summon_known_profile",
+        "create_known_object",
+        "create_known_hazard"
+      ],
+      "supported_content_kinds": [
+        "spell",
+        "feature",
+        "monster_action",
+        "system"
+      ],
+      "supported_schema_versions": [
+        "rules-kernel-1"
+      ],
+      "transaction_boundary": "entity_spawn_transaction"
+    },
+    "kernel.spatial.movement": {
+      "cas_entities": [
+        "actor",
+        "targets",
+        "scene",
+        "combat"
+      ],
+      "idempotency_scope": "campaign:rules-kernel:command",
+      "required_adjudication_kinds": [
+        "custom_movement"
+      ],
+      "required_choice_kinds": [],
+      "required_fields": [
+        "actor_id",
+        "spatial_intent"
+      ],
+      "required_services": [
+        "spatial_authority",
+        "combat_engine"
+      ],
+      "required_spatial_queries": [
+        "validate_path",
+        "validate_forced_movement",
+        "validate_teleport_destination"
+      ],
+      "scene_delta_types": [
+        "move_entity",
+        "teleport_entity"
+      ],
+      "snapshot_effects": [
+        "position",
+        "movement_budget",
+        "combatant_version"
+      ],
+      "supported_clause_types": [
+        "movement",
+        "forced_movement",
+        "teleport",
+        "swap_positions"
+      ],
+      "supported_content_kinds": [
+        "feature",
+        "spell",
+        "system"
+      ],
+      "supported_schema_versions": [
+        "rules-kernel-1"
+      ],
+      "transaction_boundary": "multi_entity_movement_transaction"
+    }
+  },
+  "dispatch_keys": [
+    "runtime_schema_version",
+    "content_kind",
+    "clause_type",
+    "consumer_id"
+  ],
+  "forbidden_dispatch_keys": [
+    "spell_name",
+    "feature_name",
+    "source_book"
+  ],
+  "production_consumers": [
+    "kernel.choice.window",
+    "kernel.content.typed",
+    "kernel.dm.adjudication",
+    "kernel.entity.lifecycle",
+    "kernel.spatial.movement"
+  ],
+  "schema_version": "rules-kernel-consumer-registry-1"
+}

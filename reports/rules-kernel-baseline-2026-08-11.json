@@ -1,0 +1,62 @@
+{
+  "compile_only_unique_before_batch": 60,
+  "compiled_rows": {
+    "batch_II": 100,
+    "batch_III_rows": 13,
+    "compile_full": 111,
+    "duplicate_rows_across_batches": 2,
+    "runtime_preview_full": 111,
+    "unique_content_ids": 111
+  },
+  "difference_from_previous_handoff": "113 compile rows contain two duplicate IDs; 111 unique compiled IDs and 60 unique compile-only IDs are the authoritative baseline.",
+  "formal_feature_audit": {
+    "dm_only": 61,
+    "full": 328,
+    "partial": 110,
+    "total": 499,
+    "unchanged": true
+  },
+  "new_authored_ir_this_round": 0,
+  "official_pack_distribution": {
+    "book-of-many-things": {
+      "after": 3,
+      "before": 2,
+      "compile_only": 1,
+      "unlocked": 1
+    },
+    "core-phb-2024": {
+      "after": 42,
+      "before": 26,
+      "compile_only": 40,
+      "unlocked": 16
+    },
+    "fizbans-treasury": {
+      "after": 3,
+      "before": 2,
+      "compile_only": 3,
+      "unlocked": 1
+    },
+    "tashas-cauldron": {
+      "after": 19,
+      "before": 13,
+      "compile_only": 9,
+      "unlocked": 6
+    },
+    "xanathars-guide": {
+      "after": 9,
+      "before": 8,
+      "compile_only": 7,
+      "unlocked": 1
+    }
+  },
+  "production_runtime": {
+    "after": 76,
+    "before": 51,
+    "feature_after": 15,
+    "feature_before": 10,
+    "new_from_existing_compile_only": 25,
+    "spell_after": 61,
+    "spell_before": 41
+  },
+  "schema_version": "rules-kernel-baseline-1"
+}
