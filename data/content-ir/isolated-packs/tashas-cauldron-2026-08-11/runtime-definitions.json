@@ -745,7 +745,7 @@
       "atom_id": "tashas-cauldron:atom:d4e98761778ae5c18fd66bdb:implements-of-mercy:001",
       "content_id": "content.tashas-cauldron.feature.way-of-mercy.implements-of-mercy",
       "content_kind": "subclass_feature",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "source_fingerprint": "204988b76db45e60389c1fe7e1049be4c2ab379ce491e9a26fc70c334b667b63",
       "typed_content_ids": [
         "content.tashas-cauldron.feature.way-of-mercy.implements-of-mercy"

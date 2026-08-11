@@ -15654,7 +15654,7 @@
       "instantiable": true,
       "level": 3,
       "localized_name": "命流之器",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "name": "命流之器 Implements of Mercy",
       "officiality": "unknown",
       "parent_atom_id": "tashas-cauldron:atom:d4e98761778ae5c18fd66bdb:654f28b3dc2e:000",
@@ -15683,10 +15683,10 @@
         "compile_full": true,
         "dm_assisted": false,
         "draft": true,
-        "game_usable": false,
-        "highest_status": "runtime_preview_full",
-        "isolated_runtime_validated": false,
-        "registered_production_full": false,
+        "game_usable": true,
+        "highest_status": "game_usable",
+        "isolated_runtime_validated": true,
+        "registered_production_full": true,
         "reviewed": true,
         "runtime_preview_full": true,
         "source_identified": true
@@ -18853,11 +18853,11 @@
   "pack_id": "tashas-cauldron",
   "schema_version": "tashas-feature-ir-report-1",
   "status_counts": {
-    "compile_only": 6,
+    "compile_only": 5,
     "dm_assisted": 1,
     "dm_reference": 31,
     "manual_authoring": 222,
-    "production_full": 66
+    "production_full": 67
   },
   "typed_atom_total": 73
 }

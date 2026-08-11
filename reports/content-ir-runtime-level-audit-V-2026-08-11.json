@@ -1,12 +1,12 @@
 {
   "after": {
     "compile_only": 35,
-    "production_full": 181,
+    "production_full": 182,
     "tasha_atom_pack": {
       "authored_typed_ir": 95,
       "candidate_generated": 408,
       "compile_full": 94,
-      "compile_only": 11,
+      "compile_only": 10,
       "consumer_unlocks": {
         "existing_generic_consumer": {
           "content_ids": [
@@ -31,6 +31,7 @@
             "content.tashas-cauldron.feature.way-of-mercy-hand-harm",
             "content.tashas-cauldron.feature.way-of-mercy-hand-healing",
             "content.tashas-cauldron.feature.way-of-mercy-physicians-touch",
+            "content.tashas-cauldron.feature.way-of-mercy.implements-of-mercy",
             "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-amulet-of-the-devout-001",
             "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-arcane-grimoire-002",
             "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-bloodwell-vial-003",
@@ -141,16 +142,16 @@
       },
       "content_atom_total": 525,
       "content_id_funnel": {
-        "compile_only": 11,
+        "compile_only": 10,
         "dm_assisted": 2,
         "matched_typed_ir": 95,
-        "production_full": 82,
+        "production_full": 83,
         "relation_holds": true
       },
       "current_project_compile_only": 35,
       "current_project_compiled_unique": 111,
-      "current_project_production_full": 181,
-      "current_project_production_registry_fingerprint": "dae8e103d5a87c977ced52f158cae393841b1b3b68b5c1ff0d62cbdecebdf671",
+      "current_project_production_full": 182,
+      "current_project_production_registry_fingerprint": "b2cc8a2c1f4a622bbd66d0365247e3906941577b63a83eac66b2fde6f16cee29",
       "dm_assisted": 2,
       "dm_reference": 107,
       "draft_total": 408,
@@ -167,7 +168,7 @@
         },
         "total": 499
       },
-      "game_usable": 83,
+      "game_usable": 84,
       "invalid_source": 0,
       "item_ir": {
         "blocker": "manual_review_required is retained for unresolved action, spell, and effect clauses",
@@ -239,7 +240,7 @@
         "spell": 21,
         "subclass_feature": 232
       },
-      "production_full": 81,
+      "production_full": 82,
       "reviewed_total": 408,
       "runtime_preview_full": 94,
       "schema_version": "tashas-whole-pack-migration-1",
@@ -249,7 +250,7 @@
       "source_record_total": 144,
       "source_record_unclassified": 0,
       "status_counts": {
-        "compile_only": 11,
+        "compile_only": 10,
         "dm_assisted": 2,
         "dm_reference": 107,
         "duplicate_or_reprint": 0,
@@ -257,7 +258,7 @@
         "manual_authoring": 314,
         "non_instantiable": 10,
         "out_of_scope_with_reason": 0,
-        "production_full": 81
+        "production_full": 82
       },
       "template_matched": 94
     },
@@ -265,7 +266,7 @@
   },
   "baseline": {
     "compile_only": 35,
-    "production_full": 181,
+    "production_full": 182,
     "unique_compiled": 111
   },
   "database_unchanged": true,

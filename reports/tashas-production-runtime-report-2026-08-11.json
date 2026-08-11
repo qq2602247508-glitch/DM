@@ -1,6 +1,6 @@
 {
   "atom_dm_assisted_count": 2,
-  "atom_production_full_count": 81,
+  "atom_production_full_count": 82,
   "dm_assisted_atoms": [
     "tashas-cauldron:atom:0036d7dc058c496ef08fe340:a27f6b57964b:000",
     "tashas-cauldron:atom:867896faa26eb295d846a574:glorious-defense:010"
@@ -29,6 +29,7 @@
         "content.tashas-cauldron.feature.way-of-mercy-hand-harm",
         "content.tashas-cauldron.feature.way-of-mercy-hand-healing",
         "content.tashas-cauldron.feature.way-of-mercy-physicians-touch",
+        "content.tashas-cauldron.feature.way-of-mercy.implements-of-mercy",
         "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-amulet-of-the-devout-001",
         "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-arcane-grimoire-002",
         "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-bloodwell-vial-003",
@@ -137,7 +138,7 @@
       "new_consumer_count": 0
     }
   },
-  "matched_atom_production_runtime_full_count": 84,
+  "matched_atom_production_runtime_full_count": 85,
   "name_branch_count": 0,
   "new_consumer_count": 0,
   "pack_id": "tashas-cauldron",
@@ -207,6 +208,7 @@
     "tashas-cauldron:atom:cf864e58ba0d62c93110f5c6:tools-of-the-trade:001",
     "tashas-cauldron:atom:d4e98761778ae5c18fd66bdb:hand-of-harm:003",
     "tashas-cauldron:atom:d4e98761778ae5c18fd66bdb:hand-of-healing:002",
+    "tashas-cauldron:atom:d4e98761778ae5c18fd66bdb:implements-of-mercy:001",
     "tashas-cauldron:atom:d4e98761778ae5c18fd66bdb:physician-s-touch:004",
     "tashas-cauldron:atom:dc4f2bf18baca6ec97d7d0bf:alchemical-savant:004",
     "tashas-cauldron:atom:dc4f2bf18baca6ec97d7d0bf:alchemist-spells:002",
@@ -224,7 +226,7 @@
     "tashas-cauldron:atom:fbf8451f879a169fb17a01e9:tool-proficiency:001",
     "tashas-cauldron:authored-subclause:12139219bf7e575f9cde019c:0d3fc31f44e0"
   ],
-  "registry_production_runtime_full_count": 124,
+  "registry_production_runtime_full_count": 125,
   "runtime_evidence": {
     "content.tashas-cauldron.feature.alchemist-chemical-mastery": {
       "confirm_status": 200,
@@ -537,6 +539,34 @@
       "preview_status": 200,
       "production_runtime_full": true,
       "runtime_id": "content.tashas-cauldron.feature.way-of-mercy-physicians-touch"
+    },
+    "content.tashas-cauldron.feature.way-of-mercy.implements-of-mercy": {
+      "advancement_block_ready": true,
+      "character_cas": true,
+      "choice_lifecycle": false,
+      "confirm": true,
+      "content_id": "content.tashas-cauldron.feature.way-of-mercy.implements-of-mercy",
+      "content_kind": "advancement",
+      "evidence_path": "data/content-ir/compiled/production-runtime-results-XXI.json",
+      "execution_mode": "typed",
+      "feature_persisted": true,
+      "pack_id": "tashas-cauldron",
+      "platform_core_exception": {
+        "batch_size": 1,
+        "minimum_batch": 8,
+        "reason": "one complete Feature closes three typed proficiency grants through the existing character-growth consumer"
+      },
+      "preview": true,
+      "production_runtime_full": true,
+      "proficiency_grant_count": 3,
+      "replay": true,
+      "selected_choices": {},
+      "source": "round-II-reviewed-feature-runtime-through-round-VII-character-consumer",
+      "source_clause_count": 3,
+      "spell_grant_count": 0,
+      "transaction": true,
+      "typed_consumer": "advancement_service.character_growth.v1",
+      "typed_contract": true
     },
     "content.tashas-cauldron.item.tashas-cauldron-atom-4220452fa5c2c1b3aed918f5-amulet-of-the-devout-001": {
       "attunement_persisted": true,

@@ -24543,7 +24543,7 @@
       "instantiable": true,
       "level": 3,
       "localized_name": "命流之器",
-      "migration_status": "compile_only",
+      "migration_status": "production_full",
       "name": "命流之器 Implements of Mercy",
       "officiality": "unknown",
       "parent_atom_id": "tashas-cauldron:atom:d4e98761778ae5c18fd66bdb:654f28b3dc2e:000",
@@ -24572,10 +24572,10 @@
         "compile_full": true,
         "dm_assisted": false,
         "draft": true,
-        "game_usable": false,
-        "highest_status": "runtime_preview_full",
-        "isolated_runtime_validated": false,
-        "registered_production_full": false,
+        "game_usable": true,
+        "highest_status": "game_usable",
+        "isolated_runtime_validated": true,
+        "registered_production_full": true,
         "reviewed": true,
         "runtime_preview_full": true,
         "source_identified": true
@@ -30066,7 +30066,7 @@
       "player_facing": 408,
       "total": 525
     },
-    "audit_fingerprint": "c01c4263d20fc79cbfafd4466af16b0f8517c259a198aa1caca6a13750745041",
+    "audit_fingerprint": "84c521e67e0d35aff574e4793678cfcdf7120536167adde9a7fd276150d363f8",
     "before_atom_counts": {
       "by_kind": {
         "character_option": 15,
@@ -31390,7 +31390,7 @@
   "semantic_cluster_fingerprint": "ddd2d18315cfceeb0e469507e3f43504ce220479057b6adb394bcaab8c5ca5e3",
   "source_book": "塔莎的万事坩埚",
   "status_counts": {
-    "compile_only": 11,
+    "compile_only": 10,
     "dm_assisted": 2,
     "dm_reference": 107,
     "duplicate_or_reprint": 0,
@@ -31398,6 +31398,6 @@
     "manual_authoring": 314,
     "non_instantiable": 10,
     "out_of_scope_with_reason": 0,
-    "production_full": 81
+    "production_full": 82
   }
 }
